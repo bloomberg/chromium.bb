@@ -129,7 +129,6 @@
 #include "chrome/browser/chromeos/audio_handler.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/customization_document.h"
@@ -1543,10 +1542,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Profile creation ----------------------------------------------------------
 
 #if defined(OS_CHROMEOS)
-  // Initialize the screen locker now so that it can receive
-  // LOGIN_USER_CHANGED notification from UserManager.
-  chromeos::ScreenLocker::InitClass();
-
   // This forces the ProfileManager to be created and register for the
   // notification it needs to track the logged in user.
   g_browser_process->profile_manager();

@@ -8,7 +8,7 @@
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
-#include "chrome/browser/chromeos/cros/mock_screen_lock_library.h"
+#include "chrome/browser/chromeos/dbus/mock_power_manager_client.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
@@ -24,8 +24,7 @@ using ::testing::Return;
 
 class LoginTestBase : public CrosInProcessBrowserTest {
  public:
-  LoginTestBase() : mock_cryptohome_library_(NULL),
-                    mock_screen_lock_library_(NULL) {
+  LoginTestBase() : mock_cryptohome_library_(NULL) {
   }
 
  protected:
@@ -33,15 +32,13 @@ class LoginTestBase : public CrosInProcessBrowserTest {
     cros_mock_->InitStatusAreaMocks();
     cros_mock_->SetStatusAreaMocksExpectations();
     cros_mock_->InitMockCryptohomeLibrary();
-    cros_mock_->InitMockScreenLockLibrary();
     mock_cryptohome_library_ = cros_mock_->mock_cryptohome_library();
-    mock_screen_lock_library_ = cros_mock_->mock_screen_lock_library();
     EXPECT_CALL(*mock_cryptohome_library_, IsMounted())
         .WillRepeatedly(Return(true));
   }
 
   MockCryptohomeLibrary* mock_cryptohome_library_;
-  MockScreenLockLibrary* mock_screen_lock_library_;
+  MockPowerManagerClient mock_power_manager_client_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoginTestBase);
@@ -51,10 +48,10 @@ class LoginUserTest : public LoginTestBase {
  protected:
   virtual void SetUpInProcessBrowserTestFixture() {
     LoginTestBase::SetUpInProcessBrowserTestFixture();
-    EXPECT_CALL(*mock_screen_lock_library_, AddObserver(_))
+    EXPECT_CALL(mock_power_manager_client_, AddObserver(_))
        .Times(AtLeast(1))
        .WillRepeatedly(Return());
-    EXPECT_CALL(*mock_screen_lock_library_, RemoveObserver(_))
+    EXPECT_CALL(mock_power_manager_client_, RemoveObserver(_))
        .Times(AtLeast(1))
        .WillRepeatedly(Return());
   }

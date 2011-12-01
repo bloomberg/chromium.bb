@@ -16,9 +16,8 @@
 #include "base/string_util.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
@@ -55,7 +54,7 @@ using content::BrowserThread;
 namespace {
 
 // Observer to start ScreenLocker when the screen lock
-class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
+class ScreenLockObserver : public chromeos::PowerManagerClient::Observer,
                            public content::NotificationObserver {
  public:
   ScreenLockObserver() {
@@ -70,22 +69,23 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
     if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
       // Register Screen Lock after login screen to make sure
       // we don't show the screen lock on top of the login screen by accident.
-      chromeos::CrosLibrary::Get()->GetScreenLockLibrary()->AddObserver(this);
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+          AddObserver(this);
     }
   }
 
-  virtual void LockScreen(chromeos::ScreenLockLibrary* obj) OVERRIDE {
+  virtual void LockScreen() OVERRIDE {
     VLOG(1) << "In: ScreenLockObserver::LockScreen";
     SetupInputMethodsForScreenLocker();
     chromeos::ScreenLocker::Show();
   }
 
-  virtual void UnlockScreen(chromeos::ScreenLockLibrary* obj) OVERRIDE {
+  virtual void UnlockScreen() OVERRIDE {
     RestoreInputMethods();
     chromeos::ScreenLocker::Hide();
   }
 
-  virtual void UnlockScreenFailed(chromeos::ScreenLockLibrary* obj) OVERRIDE {
+  virtual void UnlockScreenFailed() OVERRIDE {
     chromeos::ScreenLocker::UnlockScreenFailed();
   }
 
@@ -271,7 +271,8 @@ void ScreenLocker::OnLoginSuccess(
       service->SetPassphrase(password, false);
     }
   }
-  CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenUnlockRequested();
+  DBusThreadManager::Get()->GetPowerManagerClient()->
+      NotifyScreenUnlockRequested();
 
   if (login_status_consumer_)
     login_status_consumer_->OnLoginSuccess(username, password,
@@ -362,7 +363,8 @@ void ScreenLocker::Show() {
     // receive the response within timeout. Just send complete
     // signal.
     VLOG(1) << "Show: locker already exists. Just sending completion event.";
-    CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenLockCompleted();
+    DBusThreadManager::Get()->GetPowerManagerClient()->
+        NotifyScreenLockCompleted();
   }
 }
 
@@ -416,7 +418,8 @@ ScreenLocker::~ScreenLocker() {
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       content::Source<ScreenLocker>(this),
       content::Details<bool>(&state));
-  CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenUnlockCompleted();
+  DBusThreadManager::Get()->GetPowerManagerClient()->
+      NotifyScreenUnlockCompleted();
 }
 
 void ScreenLocker::SetAuthenticator(Authenticator* authenticator) {
@@ -435,7 +438,8 @@ void ScreenLocker::ScreenLockReady() {
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       content::Source<ScreenLocker>(this),
       content::Details<bool>(&state));
-  CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenLockCompleted();
+  DBusThreadManager::Get()->GetPowerManagerClient()->
+      NotifyScreenLockCompleted();
 }
 
 }  // namespace chromeos

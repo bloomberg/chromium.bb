@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "chrome/browser/accessibility/accessibility_events.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -21,11 +20,9 @@ SystemEventObserver* g_system_event_observer = NULL;
 }
 
 SystemEventObserver::SystemEventObserver() {
-  CrosLibrary::Get()->GetScreenLockLibrary()->AddObserver(this);
 }
 
 SystemEventObserver::~SystemEventObserver() {
-  CrosLibrary::Get()->GetScreenLockLibrary()->RemoveObserver(this);
 }
 
 void SystemEventObserver::SystemResumed() {
@@ -35,19 +32,16 @@ void SystemEventObserver::SystemResumed() {
       chrome::NOTIFICATION_ACCESSIBILITY_WOKE_UP, &info);
 }
 
-void SystemEventObserver::LockScreen(ScreenLockLibrary* screen_lock_library) {
-}
+void SystemEventObserver::LockScreen() {}
 
-void SystemEventObserver::UnlockScreen(ScreenLockLibrary* screen_lock_library) {
+void SystemEventObserver::UnlockScreen() {
   Profile* profile = ProfileManager::GetDefaultProfile();
   ScreenUnlockedEventInfo info(profile);
   SendAccessibilityNotification(
       chrome::NOTIFICATION_ACCESSIBILITY_SCREEN_UNLOCKED, &info);
 }
 
-void SystemEventObserver::UnlockScreenFailed(
-    ScreenLockLibrary* screen_lock_library) {
-}
+void SystemEventObserver::UnlockScreenFailed() {}
 
 // static
 void SystemEventObserver::Initialize() {

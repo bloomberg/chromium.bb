@@ -92,6 +92,29 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
+
+    // Monitor the D-Bus signal for screen lock and unlock signals.
+    power_manager_proxy_->ConnectToSignal(
+        chromium::kChromiumInterface,
+        chromium::kLockScreenSignal,
+        base::Bind(&PowerManagerClientImpl::ScreenLockSignalReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&PowerManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+    power_manager_proxy_->ConnectToSignal(
+        chromium::kChromiumInterface,
+        chromium::kUnlockScreenSignal,
+        base::Bind(&PowerManagerClientImpl::ScreenUnlockSignalReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&PowerManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+    power_manager_proxy_->ConnectToSignal(
+        chromium::kChromiumInterface,
+        chromium::kUnlockScreenFailedSignal,
+        base::Bind(&PowerManagerClientImpl::ScreenUnlockFailedSignalReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&PowerManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   virtual ~PowerManagerClientImpl() {
@@ -176,6 +199,22 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
+  virtual void NotifyScreenLockRequested() OVERRIDE {
+    SimpleMethodCallToPowerManager(power_manager::kRequestLockScreenMethod);
+  }
+
+  virtual void NotifyScreenLockCompleted() OVERRIDE {
+    SimpleMethodCallToPowerManager(power_manager::kScreenIsLockedMethod);
+  }
+
+  virtual void NotifyScreenUnlockRequested() OVERRIDE {
+    SimpleMethodCallToPowerManager(power_manager::kRequestUnlockScreenMethod);
+  }
+
+  virtual void NotifyScreenUnlockCompleted() OVERRIDE {
+    SimpleMethodCallToPowerManager(power_manager::kScreenIsUnlockedMethod);
+  }
+
  private:
   // Called when a dbus signal is initially connected.
   void SignalConnected(const std::string& interface_name,
@@ -183,6 +222,16 @@ class PowerManagerClientImpl : public PowerManagerClient {
                        bool success) {
     LOG_IF(WARNING, !success) << "Failed to connect to signal "
                               << signal_name << ".";
+  }
+
+  // Make a method call to power manager with no arguments and no response.
+  void SimpleMethodCallToPowerManager(const std::string& method_name) {
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 method_name);
+    power_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
   }
 
   // Called when a brightness change signal is received.
@@ -292,6 +341,18 @@ class PowerManagerClientImpl : public PowerManagerClient {
     callback.Run(idle_time_ms/1000);
   }
 
+  void ScreenLockSignalReceived(dbus::Signal* signal) {
+    FOR_EACH_OBSERVER(Observer, observers_, LockScreen());
+  }
+
+  void ScreenUnlockSignalReceived(dbus::Signal* signal) {
+    FOR_EACH_OBSERVER(Observer, observers_, UnlockScreen());
+  }
+
+  void ScreenUnlockFailedSignalReceived(dbus::Signal* signal) {
+    FOR_EACH_OBSERVER(Observer, observers_, UnlockScreenFailed());
+  }
+
   dbus::ObjectProxy* power_manager_proxy_;
   ObserverList<Observer> observers_;
   base::WeakPtrFactory<PowerManagerClientImpl> weak_ptr_factory_;
@@ -351,6 +412,14 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
       OVERRIDE {
     callback.Run(0);
   }
+
+  virtual void NotifyScreenLockRequested() OVERRIDE {}
+
+  virtual void NotifyScreenLockCompleted() OVERRIDE {}
+
+  virtual void NotifyScreenUnlockRequested() OVERRIDE {}
+
+  virtual void NotifyScreenUnlockCompleted() OVERRIDE {}
 
  private:
   void Update() {

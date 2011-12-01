@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_SYSTEM_EVENT_OBSERVER_H_
 #pragma once
 
-#include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 
 namespace chromeos {
@@ -14,8 +13,7 @@ namespace accessibility {
 
 // A singleton class to observe system events like wake up from sleep and
 // screen unlock.
-class SystemEventObserver : public PowerManagerClient::Observer,
-                            public ScreenLockLibrary::Observer {
+class SystemEventObserver : public PowerManagerClient::Observer {
  public:
   virtual ~SystemEventObserver();
 
@@ -23,14 +21,13 @@ class SystemEventObserver : public PowerManagerClient::Observer,
   virtual void SystemResumed() OVERRIDE;
 
   // ScreenLockLibrary::Observer override.
-  virtual void LockScreen(ScreenLockLibrary* screen_lock_library) OVERRIDE;
+  virtual void LockScreen() OVERRIDE;
 
   // ScreenLockLibrary::Observer override.
-  virtual void UnlockScreen(ScreenLockLibrary* screen_lock_library) OVERRIDE;
+  virtual void UnlockScreen() OVERRIDE;
 
   // ScreenLockLibrary::Observer override.
-  virtual void UnlockScreenFailed(ScreenLockLibrary* screen_lock_library)
-      OVERRIDE;
+  virtual void UnlockScreenFailed() OVERRIDE;
 
   // Creates the global SystemEventObserver instance.
   static void Initialize();
