@@ -169,8 +169,6 @@
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
       # crbug.com/103379
       '-policy.PolicyTest.testDisable3DAPIs',
-      # crbug.com/105632
-      '-plugins.PluginsTest.testBlockPluginException',
     ],
 
     'mac': [
@@ -209,8 +207,6 @@
       '-search_engines.SearchEnginesTest.testDiscoverSearchEngine',
       # Keychain popups make sync tests difficult on Mac.  crbug.com/49378
       '-sync',
-      # crbug.com/100595
-      '-plugins.PluginsTest.testBlockPluginException',
       # crbug.com/98526
       '-pyauto_webdriver.PyAutoWebDriverTest.testCanConnectToRestartedBrowser',
       '-pyauto_webdriver.PyAutoWebDriverTest.testTypeIntoTextBox',
@@ -270,8 +266,6 @@
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
       # crbug.com/103379
       '-policy.PolicyTest.testDisable3DAPIs',
-      # crbug.com/105632
-      '-plugins.PluginsTest.testBlockPluginException',
     ],
 
     # ChromeOS is linux, but note that this section does not include the
@@ -402,7 +396,6 @@
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
       '-plugins.PluginsTest.testBlockAllPlugins',
-      '-plugins.PluginsTest.testBlockPluginException',
       '-popups.PopupsTest.testMultiplePopups',
       '-popups.PopupsTest.testPopupBlockedEverySec',
       '-process_count.ProcessCountTest.testProcessCountCombination',

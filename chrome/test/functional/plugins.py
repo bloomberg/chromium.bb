@@ -215,8 +215,7 @@ class PluginsTest(pyauto.PyUITest):
   def testBlockPluginException(self):
     """Verify that plugins can be blocked on a domain by adding
     an exception(s)."""
-    url = self.GetHttpURLForDataPath(os.path.join('plugin',
-                                                  'flash-clicktoplay.html'))
+    url = 'http://www.hulu.com'
     self.NavigateToURL(url)
     # Wait until Shockwave Flash plugin process loads.
     self.assertTrue(self.WaitUntil(
@@ -229,7 +228,7 @@ class PluginsTest(pyauto.PyUITest):
 
     # Add an exception to block plugins on localhost.
     self.SetPrefs(pyauto.kContentSettingsPatterns,
-                 {'[*.]127.0.0.1,*': {'plugins': 2}})
+                 {'[*.]hulu.com,*': {'plugins': 2}})
     self.GetBrowserWindow(0).GetTab(0).Reload()
     self.assertFalse(self._GetPluginPID('Shockwave Flash'),
                      msg='Shockwave Flash Plug-in not blocked.')
