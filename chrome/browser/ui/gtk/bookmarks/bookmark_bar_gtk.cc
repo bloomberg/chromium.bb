@@ -296,7 +296,9 @@ void BookmarkBarGtk::SetBookmarkBarState(
 }
 
 int BookmarkBarGtk::GetHeight() {
-  return event_box_->allocation.height - kBookmarkBarMinimumHeight;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(event_box_.get(), &allocation);
+  return allocation.height - kBookmarkBarMinimumHeight;
 }
 
 bool BookmarkBarGtk::IsAnimating() {
@@ -304,7 +306,6 @@ bool BookmarkBarGtk::IsAnimating() {
 }
 
 void BookmarkBarGtk::CalculateMaxHeight() {
-
   if (theme_service_->UsingNativeTheme()) {
     // Get the requisition of our single child instead of the event box itself
     // because the event box probably already has a size request.
@@ -488,8 +489,11 @@ void BookmarkBarGtk::SetChevronState() {
   }
 
   int extra_space = 0;
-  if (gtk_widget_get_visible(overflow_button_))
-    extra_space = overflow_button_->allocation.width;
+  if (gtk_widget_get_visible(overflow_button_)) {
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(overflow_button_, &allocation);
+    extra_space = allocation.width;
+  }
 
   int overflow_idx = GetFirstHiddenBookmark(extra_space, NULL);
   if (overflow_idx == -1)
@@ -571,7 +575,9 @@ int BookmarkBarGtk::GetFirstHiddenBookmark(int extra_space,
   // last buttons on the bar.
   // TODO(gideonwald): figure out the precise source of these extra two pixels
   // and make this calculation more reliable.
-  int total_width = bookmark_toolbar_.get()->allocation.width - 2;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(bookmark_toolbar_.get(), &allocation);
+  int total_width = allocation.width - 2;
   bool overflow = false;
   GtkRequisition requested_size_;
   GList* toolbar_items =
@@ -794,10 +800,13 @@ gboolean BookmarkBarGtk::ItemDraggedOverToolbar(GdkDragContext* context,
   return TRUE;
 }
 
-int BookmarkBarGtk::GetToolbarIndexForDragOverFolder(
-    GtkWidget* button, gint x) {
-  int margin = std::min(15, static_cast<int>(0.3 * button->allocation.width));
-  if (x > margin && x < (button->allocation.width - margin))
+int BookmarkBarGtk::GetToolbarIndexForDragOverFolder(GtkWidget* button,
+                                                     gint x) {
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(button, &allocation);
+
+  int margin = std::min(15, static_cast<int>(0.3 * allocation.width));
+  if (x > margin && x < (allocation.width - margin))
     return -1;
 
   gint index = gtk_toolbar_get_item_index(GTK_TOOLBAR(bookmark_toolbar_.get()),
@@ -1219,15 +1228,14 @@ gboolean BookmarkBarGtk::OnToolbarDragMotion(GtkWidget* toolbar,
 
 void BookmarkBarGtk::OnToolbarSizeAllocate(GtkWidget* widget,
                                            GtkAllocation* allocation) {
-  if (bookmark_toolbar_.get()->allocation.width ==
-      last_allocation_width_) {
+  if (allocation->width == last_allocation_width_) {
     // If the width hasn't changed, then the visibility of the chevron
     // doesn't need to change. This check prevents us from getting stuck in a
     // loop where allocates are queued indefinitely while the visibility of
     // overflow chevron toggles without actual resizes of the toolbar.
     return;
   }
-  last_allocation_width_ = bookmark_toolbar_.get()->allocation.width;
+  last_allocation_width_ = allocation->width;
 
   SetChevronState();
 }
@@ -1384,9 +1392,12 @@ gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
       return FALSE;
     gfx::CanvasSkiaPaint canvas(event, true);
 
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
+
     gfx::Rect area = GTK_WIDGET_NO_WINDOW(widget) ?
-        gfx::Rect(widget->allocation) :
-        gfx::Rect(0, 0, widget->allocation.width, widget->allocation.height);
+        gfx::Rect(allocation) :
+        gfx::Rect(0, 0, allocation.width, allocation.height);
     NtpBackgroundUtil::PaintBackgroundDetachedMode(theme_provider, &canvas,
         area, tab_contents_size.height());
   }

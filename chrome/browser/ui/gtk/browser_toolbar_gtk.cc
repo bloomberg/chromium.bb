@@ -487,16 +487,17 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
   // between the edge of the toolbar and where we anchor the corner images.
   const int kShadowThickness = 2;
 
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
   gfx::Rect area(e->area);
-  gfx::Rect right(widget->allocation.x + widget->allocation.width -
-                      kCornerWidth,
-                  widget->allocation.y - kShadowThickness,
+  gfx::Rect right(allocation.x + allocation.width - kCornerWidth,
+                  allocation.y - kShadowThickness,
                   kCornerWidth,
-                  widget->allocation.height + kShadowThickness);
-  gfx::Rect left(widget->allocation.x - kShadowThickness,
-                 widget->allocation.y - kShadowThickness,
+                  allocation.height + kShadowThickness);
+  gfx::Rect left(allocation.x - kShadowThickness,
+                 allocation.y - kShadowThickness,
                  kCornerWidth,
-                 widget->allocation.height + kShadowThickness);
+                 allocation.height + kShadowThickness);
 
   if (window_->ShouldDrawContentDropShadow()) {
     // Leave room to draw rounded corners.
@@ -524,8 +525,8 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
     cairo_surface_t* target = cairo_surface_create_similar(
         cairo_get_target(cr),
         CAIRO_CONTENT_COLOR_ALPHA,
-        widget->allocation.x + widget->allocation.width,
-        widget->allocation.y + widget->allocation.height);
+        allocation.x + allocation.width,
+        allocation.y + allocation.height);
     cairo_t* copy_cr = cairo_create(target);
 
     cairo_set_operator(copy_cr, CAIRO_OPERATOR_SOURCE);
@@ -568,9 +569,11 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
 gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
                                                  GdkEventExpose* e) {
   if (theme_service_->UsingNativeTheme()) {
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(location_hbox, &allocation);
     gtk_util::DrawTextEntryBackground(offscreen_entry_.get(),
                                       location_hbox, &e->area,
-                                      &location_hbox->allocation);
+                                      &allocation);
   }
 
   return FALSE;
@@ -659,16 +662,17 @@ gboolean BrowserToolbarGtk::OnWrenchMenuButtonExpose(GtkWidget* sender,
   if (!resource_id)
     return FALSE;
 
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(sender, &allocation);
+
   // Draw the chrome app menu icon onto the canvas.
   const SkBitmap* badge = theme_service_->GetBitmapNamed(resource_id);
   gfx::CanvasSkiaPaint canvas(expose, false);
-  int x_offset = base::i18n::IsRTL() ? 0 :
-      sender->allocation.width - badge->width();
+  int x_offset = base::i18n::IsRTL() ? 0 : allocation.width - badge->width();
   int y_offset = 0;
-  canvas.DrawBitmapInt(
-      *badge,
-      sender->allocation.x + x_offset,
-      sender->allocation.y + y_offset);
+  canvas.DrawBitmapInt(*badge,
+                       allocation.x + x_offset,
+                       allocation.y + y_offset);
 
   return FALSE;
 }

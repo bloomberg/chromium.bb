@@ -90,11 +90,13 @@ gboolean CustomDrawButtonBase::OnExpose(GtkWidget* widget,
     return FALSE;
 
   cairo_t* cairo_context = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-  cairo_translate(cairo_context, widget->allocation.x, widget->allocation.y);
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  cairo_translate(cairo_context, allocation.x, allocation.y);
 
   if (flipped_) {
     // Horizontally flip the image for non-LTR/RTL reasons.
-    cairo_translate(cairo_context, widget->allocation.width, 0.0f);
+    cairo_translate(cairo_context, allocation.width, 0.0f);
     cairo_scale(cairo_context, -1.0f, 1.0f);
   }
 
@@ -102,7 +104,7 @@ gboolean CustomDrawButtonBase::OnExpose(GtkWidget* widget,
   // start of the widget (left for LTR, right for RTL) and its bottom.
   gfx::Rect bounds = gfx::Rect(0, 0, pixbuf->Width(), 0);
   int x = gtk_util::MirroredLeftPointForRect(widget, bounds);
-  int y = widget->allocation.height - pixbuf->Height();
+  int y = allocation.height - pixbuf->Height();
 
   if (background_image_->valid()) {
     background_image_->SetSource(cairo_context, x, y);
@@ -295,6 +297,12 @@ void CustomDrawButton::Observe(int type,
     const content::NotificationDetails& details) {
   DCHECK(chrome::NOTIFICATION_BROWSER_THEME_CHANGED == type);
   SetBrowserTheme();
+}
+
+int CustomDrawButton::WidgetWidth() const {
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget_.get(), &allocation);
+  return allocation.width;
 }
 
 int CustomDrawButton::SurfaceWidth() const {

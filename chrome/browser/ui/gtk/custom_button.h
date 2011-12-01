@@ -169,15 +169,8 @@ class CustomDrawButton : public content::NotificationObserver {
 
   GtkWidget* widget() const { return widget_.get(); }
 
-  gfx::Rect bounds() const {
-      return gfx::Rect(widget_->allocation.x,
-                       widget_->allocation.y,
-                       widget_->allocation.width,
-                       widget_->allocation.height);
-  }
-
-  int width() const { return widget_->allocation.width; }
-  int height() const { return widget_->allocation.height; }
+  // Returns the width of the widget's allocation.
+  int WidgetWidth() const;
 
   // Returns the dimensions of the first surface.
   int SurfaceWidth() const;
