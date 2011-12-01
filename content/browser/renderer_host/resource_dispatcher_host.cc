@@ -1781,6 +1781,15 @@ void ResourceDispatcherHost::OnResponseCompleted(net::URLRequest* request) {
         -request->status().error(),
         base::CustomHistogram::ArrayToCustomRanges(
             kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));
+
+    if (request->url().SchemeIsSecure() &&
+        request->url().host() == "www.google.com") {
+      UMA_HISTOGRAM_CUSTOM_ENUMERATION(
+          "Net.ErrorCodesForHTTPSGoogleMainFrame",
+          -request->status().error(),
+          base::CustomHistogram::ArrayToCustomRanges(
+              kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));
+    }
   }
 
   std::string security_info;
