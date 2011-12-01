@@ -1195,15 +1195,9 @@ BaseTransaction::BaseTransaction(const tracked_objects::Location& from_here,
   TRACE_EVENT_BEGIN2("sync", name_,
                      "src_file", from_here_.file_name(),
                      "src_func", from_here_.function_name());
-  dirkernel_->transaction_observer.Call(FROM_HERE,
-      &TransactionObserver::OnTransactionStart, from_here_, writer_);
 }
 
 BaseTransaction::~BaseTransaction() {
-  if (writer_ != INVALID) {
-    dirkernel_->transaction_observer.Call(FROM_HERE,
-        &TransactionObserver::OnTransactionEnd, from_here_, writer_);
-  }
   TRACE_EVENT_END0("sync", name_);
 }
 

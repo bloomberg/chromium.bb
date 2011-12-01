@@ -91,9 +91,7 @@ chrome.sync.events = {
   ],
 
   'transaction': [
-    'onTransactionStart',
     'onTransactionWrite',
-    'onTransactionEnd'
   ]
 };
 

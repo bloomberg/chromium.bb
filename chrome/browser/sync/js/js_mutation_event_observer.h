@@ -49,15 +49,9 @@ class JsMutationEventObserver
   virtual void OnChangesComplete(syncable::ModelType model_type) OVERRIDE;
 
   // syncable::TransactionObserver implementation.
-  virtual void OnTransactionStart(
-      const tracked_objects::Location& location,
-      const syncable::WriterTag& writer) OVERRIDE;
   virtual void OnTransactionWrite(
       const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
       const syncable::ModelTypeBitSet& models_with_changes) OVERRIDE;
-  virtual void OnTransactionEnd(
-      const tracked_objects::Location& location,
-      const syncable::WriterTag& writer) OVERRIDE;
 
  private:
   base::NonThreadSafe non_thread_safe_;

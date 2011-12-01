@@ -9,23 +9,13 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 
-namespace tracked_objects {
-class Location;
-}  // namespace tracked_objects
-
 namespace syncable {
 
 class TransactionObserver {
  public:
-  virtual void OnTransactionStart(
-      const tracked_objects::Location& location,
-      const WriterTag& writer) = 0;
   virtual void OnTransactionWrite(
       const ImmutableWriteTransactionInfo& write_transaction_info,
       const ModelTypeBitSet& models_with_changes) = 0;
-  virtual void OnTransactionEnd(
-      const tracked_objects::Location& location,
-      const WriterTag& writer) = 0;
  protected:
   virtual ~TransactionObserver() {}
 };

@@ -35,19 +35,6 @@ void JsMutationEventObserver::SetJsEventHandler(
   event_handler_ = event_handler;
 }
 
-void JsMutationEventObserver::OnTransactionStart(
-    const tracked_objects::Location& location,
-    const syncable::WriterTag& writer) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
-  if (!event_handler_.IsInitialized()) {
-    return;
-  }
-  DictionaryValue details;
-  details.SetString("location", location.ToString());
-  details.SetString("writer", syncable::WriterTagToString(writer));
-  HandleJsEvent(FROM_HERE, "onTransactionStart", JsEventDetails(&details));
-}
-
 namespace {
 
 // Max number of changes we attempt to convert to values (to avoid
@@ -109,19 +96,6 @@ void JsMutationEventObserver::OnTransactionWrite(
   details.Set("modelsWithChanges",
               syncable::ModelTypeBitSetToValue(models_with_changes));
   HandleJsEvent(FROM_HERE, "onTransactionWrite", JsEventDetails(&details));
-}
-
-void JsMutationEventObserver::OnTransactionEnd(
-    const tracked_objects::Location& location,
-    const syncable::WriterTag& writer) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
-  if (!event_handler_.IsInitialized()) {
-    return;
-  }
-  DictionaryValue details;
-  details.SetString("location", location.ToString());
-  details.SetString("writer", syncable::WriterTagToString(writer));
-  HandleJsEvent(FROM_HERE, "onTransactionEnd", JsEventDetails(&details));
 }
 
 void JsMutationEventObserver::HandleJsEvent(
