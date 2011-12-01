@@ -5,22 +5,20 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_APP_NOTIFY_CHANNEL_SETUP_H_
 #define CHROME_BROWSER_EXTENSIONS_APP_NOTIFY_CHANNEL_SETUP_H_
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/app_notify_channel_ui.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "chrome/common/net/gaia/oauth2_access_token_consumer.h"
+#include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"
 #include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 
 class AppNotifyChannelSetupTest;
 class Profile;
-
-namespace content {
-class NotificationDetails;
-}
 
 // This class uses the browser login credentials to setup app notifications
 // for a given app.
@@ -33,8 +31,8 @@ class NotificationDetails;
 //    the above steps.
 class AppNotifyChannelSetup
     : public content::URLFetcherDelegate,
-      public content::NotificationObserver,
       public AppNotifyChannelUI::Delegate,
+      public OAuth2AccessTokenConsumer,
       public base::RefCountedThreadSafe<AppNotifyChannelSetup> {
  public:
   class Delegate {
@@ -74,10 +72,10 @@ class AppNotifyChannelSetup
   // credentials (or using |ui_| to prompt for login if needed).
   void Start();
 
-  // Implementing content::NotificationObserver interface.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // OAuth2AccessTokenConsumer implementation.
+  virtual void OnGetTokenSuccess(const std::string& access_token) OVERRIDE;
+  virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
+
 
   // Getters for various members.
   const std::string& extension_id() const { return extension_id_; }
@@ -97,8 +95,8 @@ class AppNotifyChannelSetup
     INITIAL,
     LOGIN_STARTED,
     LOGIN_DONE,
-    FETCH_TOKEN_STARTED,
-    FETCH_TOKEN_DONE,
+    FETCH_ACCESS_TOKEN_STARTED,
+    FETCH_ACCESS_TOKEN_DONE,
     RECORD_GRANT_STARTED,
     RECORD_GRANT_DONE,
     CHANNEL_ID_SETUP_STARTED,
@@ -118,8 +116,8 @@ class AppNotifyChannelSetup
     const GURL& url, const std::string& body, const std::string& auth_token);
   void BeginLogin();
   void EndLogin(bool success);
-  void BeginFetchTokens();
-  void EndFetchTokens(bool success);
+  void BeginGetAccessToken();
+  void EndGetAccessToken(bool success);
   void BeginRecordGrant();
   void EndRecordGrant(const content::URLFetcher* source);
   void BeginGetChannelId();
@@ -132,20 +130,14 @@ class AppNotifyChannelSetup
   static std::string MakeOAuth2IssueTokenBody(
       const std::string& oauth_client_id, const std::string& extension_id);
   static std::string MakeAuthorizationHeader(const std::string& auth_token);
-  std::string GetLSOAuthToken();
-  std::string GetCWSAuthToken();
   static bool ParseCWSChannelServiceResponse(
       const std::string& data, std::string* result);
-  static bool IsGaiaServiceRelevant(const std::string& service);
   // Checks if the user needs to be prompted for login.
   bool ShouldPromptForLogin() const;
-  // Checks if we need to fetch auth tokens for services we care about.
-  virtual bool ShouldFetchServiceTokens() const;
   void RegisterForTokenServiceNotifications();
   void UnregisterForTokenServiceNotifications();
 
   Profile* profile_;
-  content::NotificationRegistrar registrar_;
   std::string extension_id_;
   std::string client_id_;
   GURL requestor_url_;
@@ -153,10 +145,10 @@ class AppNotifyChannelSetup
   int callback_id_;
   base::WeakPtr<Delegate> delegate_;
   scoped_ptr<content::URLFetcher> url_fetcher_;
+  scoped_ptr<OAuth2AccessTokenFetcher> oauth2_fetcher_;
   scoped_ptr<AppNotifyChannelUI> ui_;
   State state_;
-  int fetch_token_success_count_;
-  int fetch_token_fail_count_;
+  std::string oauth2_access_token_;
 
   DISALLOW_COPY_AND_ASSIGN(AppNotifyChannelSetup);
 };

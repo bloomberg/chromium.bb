@@ -32,6 +32,13 @@ const int kRouteId = 4;
 const int kCallbackId = 5;
 const char* kFakeExtensionId = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
+static const char kValidAccessTokenResponse[] =
+    "{"
+    "  \"access_token\": \"at1\","
+    "  \"expires_in\": 3600,"
+    "  \"token_type\": \"Bearer\""
+    "}";
+
 class MockTokenService : public TokenService {
  public:
   MockTokenService() { }
@@ -41,7 +48,8 @@ class MockTokenService : public TokenService {
     return true;
   }
 
-  MOCK_CONST_METHOD1(HasTokenForService, bool(const char*));
+  MOCK_CONST_METHOD0(HasOAuthLoginToken, bool());
+  MOCK_CONST_METHOD0(GetOAuth2LoginRefreshToken, std::string());
 };
 
 class TestProfile : public TestingProfile {
@@ -54,8 +62,10 @@ class TestProfile : public TestingProfile {
   }
 
   void SetTokenServiceHasTokenResult(bool result) {
-    EXPECT_CALL(token_service_, HasTokenForService(_))
+    EXPECT_CALL(token_service_, HasOAuthLoginToken())
         .WillRepeatedly(Return(result));
+    EXPECT_CALL(token_service_, GetOAuth2LoginRefreshToken())
+        .WillRepeatedly(Return("test_refresh_token"));
   }
 
  private:
@@ -173,20 +183,19 @@ class AppNotifyChannelSetupTest : public testing::Test {
   }
 
   virtual void SetupLogin(bool should_succeed) {
-    if (should_succeed)
+    if (should_succeed) {
       SetLoggedInUser("user@gmail.com");
-    else
+      profile_.SetTokenServiceHasTokenResult(true);
+    } else {
       ui_->SetSyncSetupResult(false);
+    }
   }
 
-  virtual void SetupFetchTokens(bool should_have_tokens, bool should_succeed) {
-    profile_.SetTokenServiceHasTokenResult(should_have_tokens);
-    if (!should_have_tokens) {
-      factory_.SetFakeResponse(
-          GaiaUrls::GetInstance()->issue_auth_token_url(),
-          "some_token",
-          should_succeed);
-    }
+  virtual void SetupFetchAccessToken(bool should_succeed) {
+    factory_.SetFakeResponse(
+        GaiaUrls::GetInstance()->oauth2_token_url(),
+        kValidAccessTokenResponse,
+        should_succeed);
   }
 
   virtual void SetupRecordGrant(bool should_succeed) {
@@ -220,7 +229,6 @@ class AppNotifyChannelSetupTest : public testing::Test {
   FakeURLFetcherFactory factory_;
 };
 
-/*
 TEST_F(AppNotifyChannelSetupTest, LoginFailure) {
   SetupLogin(false);
 
@@ -228,26 +236,17 @@ TEST_F(AppNotifyChannelSetupTest, LoginFailure) {
   RunServerTest(setup, "", "canceled_by_user");
 }
 
-TEST_F(AppNotifyChannelSetupTest, FetchTokensFailure) {
+TEST_F(AppNotifyChannelSetupTest, FetchAccessTokenFailure) {
   SetupLogin(true);
-  SetupFetchTokens(false, false);
+  SetupFetchAccessToken(false);
 
   scoped_refptr<AppNotifyChannelSetup> setup = CreateInstance();
   RunServerTest(setup, "", "internal_error");
 }
 
-TEST_F(AppNotifyChannelSetupTest, TokensAvailableRecordGrantFailure) {
+TEST_F(AppNotifyChannelSetupTest, RecordGrantFailure) {
   SetupLogin(true);
-  SetupFetchTokens(true, false);
-  SetupRecordGrant(false);
-
-  scoped_refptr<AppNotifyChannelSetup> setup = CreateInstance();
-  RunServerTest(setup, "", "internal_error");
-}
-
-TEST_F(AppNotifyChannelSetupTest, TokenFetchSuccessAndRecordGrantFailure) {
-  SetupLogin(true);
-  SetupFetchTokens(false , true);
+  SetupFetchAccessToken(true);
   SetupRecordGrant(false);
 
   scoped_refptr<AppNotifyChannelSetup> setup = CreateInstance();
@@ -256,7 +255,7 @@ TEST_F(AppNotifyChannelSetupTest, TokenFetchSuccessAndRecordGrantFailure) {
 
 TEST_F(AppNotifyChannelSetupTest, GetChannelIdFailure) {
   SetupLogin(true);
-  SetupFetchTokens(true, false);
+  SetupFetchAccessToken(true);
   SetupRecordGrant(true);
   SetupGetChannelId(false);
 
@@ -266,11 +265,10 @@ TEST_F(AppNotifyChannelSetupTest, GetChannelIdFailure) {
 
 TEST_F(AppNotifyChannelSetupTest, ServerSuccess) {
   SetupLogin(true);
-  SetupFetchTokens(true, false);
+  SetupFetchAccessToken(true);
   SetupRecordGrant(true);
   SetupGetChannelId(true);
 
   scoped_refptr<AppNotifyChannelSetup> setup = CreateInstance();
   RunServerTest(setup, "dummy_do_not_use", "");
 }
-*/
