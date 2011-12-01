@@ -30,8 +30,7 @@ const float kDrawAttentionBFraction = kDrawAttentionB / 255.0;
 
 // Delay before click on a titlebar is allowed to minimize the panel after
 // the 'draw attention' mode has been cleared.
-const base::TimeDelta kSuspendMinimizeOnClickIntervalMs =
-    base::TimeDelta::FromMilliseconds(500);
+const int kSuspendMinimizeOnClickIntervalMs = 500;
 
 // Markup for title text in draw attention state. Set to color white.
 const char* const kDrawAttentionTitleMarkupPrefix =
@@ -596,8 +595,8 @@ void PanelBrowserWindowGtk::HandleFocusIn(GtkWidget* widget,
   UpdateTitleBar();
   DCHECK(panel_->expansion_state() == Panel::EXPANDED);
 
-  disableMinimizeUntilTime_ =
-      base::Time::Now() + kSuspendMinimizeOnClickIntervalMs;
+  disableMinimizeUntilTime_ = base::Time::Now() +
+      base::TimeDelta::FromMilliseconds(kSuspendMinimizeOnClickIntervalMs);
 }
 
 void PanelBrowserWindowGtk::OnDragBegin(GtkWidget* widget,

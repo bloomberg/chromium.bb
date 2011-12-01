@@ -25,13 +25,11 @@ namespace {
 const int kSetBoundsAnimationMs = 180;
 
 // The threshold to differentiate the short click and long click.
-const base::TimeDelta kShortClickThresholdMs =
-    base::TimeDelta::FromMilliseconds(200);
+const int kShortClickThresholdMs = 200;
 
 // Delay before click-to-minimize is allowed after the attention has been
 // cleared.
-const base::TimeDelta kSuspendMinimizeOnClickIntervalMs =
-    base::TimeDelta::FromMilliseconds(500);
+const int kSuspendMinimizeOnClickIntervalMs = 500;
 
 }
 
@@ -450,13 +448,14 @@ bool PanelBrowserView::OnTitlebarMouseReleased() {
   // a hack to prevent the panel from being minimized when the user clicks on
   // the title-bar to clear the attention.
   if (panel_->expansion_state() == Panel::EXPANDED &&
-      base::TimeTicks::Now() < attention_cleared_time_ +
-                               kSuspendMinimizeOnClickIntervalMs) {
+      base::TimeTicks::Now() - attention_cleared_time_ <
+      base::TimeDelta::FromMilliseconds(kSuspendMinimizeOnClickIntervalMs)) {
     return true;
   }
 
   // Do not minimize the panel if it is long click.
-  if (base::TimeTicks::Now() - mouse_pressed_time_ > kShortClickThresholdMs)
+  if (base::TimeTicks::Now() - mouse_pressed_time_ >
+      base::TimeDelta::FromMilliseconds(kShortClickThresholdMs))
     return true;
 
   Panel::ExpansionState new_expansion_state =
