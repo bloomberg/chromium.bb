@@ -3815,15 +3815,6 @@ are declared in build/common.gypi.
       <message name="IDS_EXTENSION_INSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension or app installation prompt. Asks the user if they want to install a particular extension or app.">
         Install <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>?
       </message>
-      <message name="IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_HEADING_EXTENSIONS" desc="First bold line in the content area of the extension bundle installation prompt. Asks the user if they want to install the set of extensions.">
-        Install these extensions?
-      </message>
-      <message name="IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_HEADING_APPS" desc="First bold line in the content area of the app bundle installation prompt. Asks the user if they want to install the set of apps.">
-        Install these apps?
-      </message>
-      <message name="IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_HEADING_EXTENSION_APPS" desc="First bold line in the content area of the extension and app bundle installation prompt. Asks the user if they want to install the set of apps and extensions.">
-        Install these apps and extensions?
-      </message>
       <message name="IDS_EXTENSION_UNINSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension or app uninstallation prompt. Asks the user if they want to uninstall a particular extension or app.">
         Uninstall "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
@@ -3860,9 +3851,6 @@ are declared in build/common.gypi.
       </message>
       <message name="IDS_EXTENSION_PROMPT_WILL_NOW_HAVE_ACCESS_TO" desc="Second line in the content area of the extension or app re-enable prompt. Note that the exact wording is important. This should mean that the extension _can now_ access the listed privileges, but not necessarily that it will or needs to. This message appeared because the user must approve new permissions of the extension or app.">
         It can now access:
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_THESE_WILL_HAVE_ACCESS_TO" desc="Header for the permissions area of the bundled extension or app installation prompt. Note that the exact wording is important. This means that the extensions or apps _can_ access the listed privileges, but not necessarily that it will or needs to.">
-        They can access:
       </message>
       <message name="IDS_EXTENSION_PROMPT_WANTS_ACCESS_TO" desc="Second line in the content area of the extension or app permissions prompt. Note that the exact wording is important. This should mean that the extension _wants to_ access the listed privileges, but not necessarily that it will or needs to. This message appeared because the user must approve new permissions of the extension or app.">
         It could access:
@@ -4056,20 +4044,6 @@ are declared in build/common.gypi.
       <!-- Extension installed bubble -->
       <message name="IDS_EXTENSION_INSTALLED_HEADING" desc="First line in the content area of the extension installed bubble. Instructs that the extension was installed.">
         <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> is now installed.
-      </message>
-
-      <message name="IDS_EXTENSION_BUNDLE_INSTALLED_HEADING_EXTENSIONS" desc="First line in the content area of the extension bundle installed bubble. Instructs which extensions were installed.">
-        The following extensions are now installed:
-      </message>
-      <message name="IDS_EXTENSION_BUNDLE_INSTALLED_HEADING_APPS" desc="First line in the content area of the extension bundle installed bubble. Instructs which apps were installed.">
-        The following apps are now installed:
-      </message>
-      <message name="IDS_EXTENSION_BUNDLE_INSTALLED_HEADING_EXTENSION_APPS" desc="First line in the content area of the extension bundle installed bubble. Instructs which apps and extensions were installed.">
-        The following apps and extensions are now installed:
-      </message>
-
-      <message name="IDS_EXTENSION_BUNDLE_ERROR_HEADING" desc="Text displayed in the extension bundle installed bubble when some extensions or apps failed to install. Instructs which extensions did not install.">
-        We were unable to install:
       </message>
 
       <message name="IDS_EXTENSION_INSTALLED_APP_INFO" desc="Text displayed inside a link when an app is installed. Clicking this link opens up the New Tab Page to show the app's icon.">
@@ -9068,7 +9042,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NUMBERED_PROFILE_NAME" desc="The name given to a newly created profile. Displayed in wrench menu and settings UI.">
         User <ph name="VALUE">$1<ex>1</ex></ph>
       </message>
-      
+
       <message name="IDS_DEFAULT_AVATAR_NAME_8" desc="The default name given to a newly created profile with the female spy avatar.">
         Agent X
       </message>
@@ -14472,7 +14446,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_MEDIA_CAPTURE_NO_DEVICES" desc="Label for a drop-down button, used if there are no available devices (e.g. camera, microphone) available on the computer.">
       (no devices)
     </message>
-    
+
     <!-- Quota messages -->
     <if expr="pp_ifdef('android')">
       <message name="IDS_REQUEST_QUOTA_INFOBAR_QUESTION" desc="For mobile device. Question asked on the info bar whenever webapp requests new (larger) quota to persistently store data on the mobile device (e.g. for persistent-type filesystem).">
