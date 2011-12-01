@@ -378,7 +378,8 @@ so we include the original license below:
         Always enable
       </message>
       <message name="IDS_ERROR_MESSAGE_DISPLAYED_ON_FAILURE_TO_READ_A_DATABASE_TABLE" desc="Error message displayed on failure to read a database table.">
-        An error occurred trying to\nread the “<ph name="TABLE_NAME">%s<ex>CLIENTS</ex></ph>” table.
+An error occurred trying to
+read the “<ph name="TABLE_NAME">%s<ex>CLIENTS</ex></ph>” table.
       </message>
       <message name="IDS_ERROR_MESSAGE_DISPLAYED_WHEN_AN_UNEXPECTED_ERROR_OCCURS_DURING_DATABASE_QUERY" desc="Error message displayed when an unexpected error occurs during database query.">
         An unexpected error <ph name="ERROR">%s<ex>No memory</ex></ph> occurred.
@@ -549,7 +550,8 @@ so we include the original license below:
         Domain
       </message>
       <message name="IDS_NO_PAUSE_ON_EXCEPTIONS" desc="The current state: don't pause on exception, after LF: a hint for a button that changes the state.">
-        Don't pause on exceptions.\nClick to Pause on all exceptions.
+Don't pause on exceptions.
+Click to Pause on all exceptions.
       </message>
       <message name="IDS_TOGGLE_URL_FORMAT" desc="A hint on how to toggle between URL formats.">
         Double-Click to toggle between URL encoded and decoded formats
@@ -864,10 +866,12 @@ so we include the original license below:
         Path
       </message>
       <message name="IDS_PAUSE_ON_ALL_EXCEPTIONS" desc="Current state: pause on all exceptions. After the \n separator: a hint on how to switch the state.">
-        Pause on all exceptions.\nClick to Pause on uncaught exceptions.
+Pause on all exceptions.
+Click to Pause on uncaught exceptions.
       </message>
       <message name="IDS_PAUSE_ON_UNHANDLED_EXCEPTIONS" desc="Current state: pause on unhandled exceptions. After the \n separator: a hint on how to switch the state.">
-        Pause on uncaught exceptions.\nClick to Not pause on exceptions.
+Pause on uncaught exceptions.
+Click to Not pause on exceptions.
       </message>
       <message name="IDS_HINT_FOR_A_BUTTON_THAT_PAUSES_SCRIPT_EXECUTION" desc="Hint for a button that pauses script execution.">
         Pause script execution.
@@ -1158,7 +1162,8 @@ so we include the original license below:
         The breakpoint on line <ph name="LINE_NUMBER">%d<ex>15</ex></ph> will stop only if this expression is true:
       </message>
       <message name="IDS_MESSAGE_INDICATING_THAT_DATABASE_TABLE_IS_EMPTY" desc="Message indicating that database table is empty.">
-        The “<ph name="TABLE_NAME">%s<ex>foo</ex></ph>”\ntable is empty.
+The “<ph name="TABLE_NAME">%s<ex>foo</ex></ph>”
+table is empty.
       </message>
       <message name="IDS_MESSAGE_INDICATING_THAT_CURRENT_SITE_DOES_NOT_HAVE_COOKIES" desc="Message indicating that current site doesn't have cookies.">
         This site has no cookies.

@@ -333,19 +333,27 @@ be available for now. -->
         Continue running background apps when Chromium is closed
       </message>
       <message name="IDS_CANT_WRITE_USER_DIRECTORY_SUMMARY" desc="Summary of problem displayed in dialog when we can't create a directory for this user.">
-        Chromium cannot read and write to its data directory:\n\n<ph name="USER_DATA_DIRECTORY">$1<ex>C:\Documents and Settings\devint\Local Settings\Application Data\Google\Chrome</ex></ph>
+Chromium cannot read and write to its data directory:
+
+<ph name="USER_DATA_DIRECTORY">$1<ex>C:\Documents and Settings\devint\Local Settings\Application Data\Google\Chrome</ex></ph>
       </message>
       <message name="IDS_EULA_CHECKBOX_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
         Optional: Help make Chromium better by automatically sending usage statistics and crash reports to Google.
       </message>
       <message name="IDS_PROFILE_TOO_NEW_ERROR" desc="Error displayed on startup when the profile is from a newer version of the product and can not be read">
-        Your profile can not be used because it is from a newer version of Chromium.\n\nSome features may be unavailable. Please specify a different profile directory or use a newer version of Chromium.
+Your profile can not be used because it is from a newer version of Chromium.
+
+Some features may be unavailable. Please specify a different profile directory or use a newer version of Chromium.
       </message>
       <message name="IDS_PREFERENCES_UNREADABLE_ERROR" desc="Error displayed on startup when user preferences file can not be read">
-        Your preferences can not be read.\n\nSome features may be unavailable and changes to preferences won't be saved.
+Your preferences can not be read.
+
+Some features may be unavailable and changes to preferences won't be saved.
       </message>
       <message name="IDS_PREFERENCES_CORRUPT_ERROR" desc="Error displayed on startup when user preferences file can not be read">
-        Your preferences file is corrupt or invalid.\n\nChromium is unable to recover your settings.
+Your preferences file is corrupt or invalid.
+
+Chromium is unable to recover your settings.
       </message>
       <!-- Crash Recovery Dialog -->
       <message name="IDS_CRASH_RECOVERY_TITLE" desc="Title of dialog shown when the browser crashes.">
