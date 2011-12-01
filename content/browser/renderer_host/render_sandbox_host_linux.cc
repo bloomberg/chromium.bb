@@ -661,7 +661,7 @@ void SandboxIPCProcess::EnsureWebKitInitialized() {
   if (webkit_platform_support_.get())
     return;
   webkit_platform_support_.reset(new content::WebKitPlatformSupportImpl);
-  WebKit::initialize(webkit_platform_support_.get());
+  WebKit::initializeWithoutV8(webkit_platform_support_.get());
 }
 
 // -----------------------------------------------------------------------------
