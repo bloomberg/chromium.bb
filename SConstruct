@@ -2677,6 +2677,7 @@ def MakeUnixLikeEnv():
         ] + werror_flags,
     CXXFLAGS=['-std=c++98'],
     LIBPATH=['/usr/lib'],
+    # NOTE: pthread is only neeeded for libppNaClPlugin.so and on arm
     LIBS = ['pthread'],
     CPPDEFINES = [['__STDC_LIMIT_MACROS', '1'],
                   ['__STDC_FORMAT_MACROS', '1'],
@@ -2844,6 +2845,11 @@ def MakeLinuxEnv():
                                  '-isystem',
                                  jail + '/usr/include',
                                 ])
+      # /usr/lib makes sense for most configuration except this one
+      # No ARM compatible libs can be found there.
+      # So this just makes the command lines longer and sometimes results
+      # in linker warnings referring to this directory.
+      linux_env.FilterOut(LIBPATH=['/usr/lib'])
      # This appears to be needed for sel_universal
     linux_env.Append(LIBS=['dl'])
   else:
