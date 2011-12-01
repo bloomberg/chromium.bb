@@ -1000,19 +1000,25 @@ def CMDcommit(change_info, args):
   handle, commit_filename = tempfile.mkstemp(text=True)
   os.write(handle, commit_message)
   os.close(handle)
-
-  handle, targets_filename = tempfile.mkstemp(text=True)
-  os.write(handle, "\n".join(change_info.GetFileNames()))
-  os.close(handle)
-
-  commit_cmd += ['--file=' + commit_filename]
-  commit_cmd += ['--targets=' + targets_filename]
-  # Change the current working directory before calling commit.
-  previous_cwd = os.getcwd()
-  os.chdir(change_info.GetLocalRoot())
-  output = RunShell(commit_cmd, True)
-  os.remove(commit_filename)
-  os.remove(targets_filename)
+  try:
+    handle, targets_filename = tempfile.mkstemp(text=True)
+    os.write(handle, "\n".join(change_info.GetFileNames()))
+    os.close(handle)
+    try:
+      commit_cmd += ['--file=' + commit_filename]
+      commit_cmd += ['--targets=' + targets_filename]
+      # Change the current working directory before calling commit.
+      previous_cwd = os.getcwd()
+      os.chdir(change_info.GetLocalRoot())
+      output = ''
+      try:
+        output = RunShell(commit_cmd, True)
+      except subprocess2.CalledProcessError, e:
+        ErrorExit('Commit failed.\n%s' % e)
+    finally:
+      os.remove(commit_filename)
+  finally:
+    os.remove(targets_filename)
   if output.find("Committed revision") != -1:
     change_info.Delete()
 
