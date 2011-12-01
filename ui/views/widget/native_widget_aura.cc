@@ -22,7 +22,8 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/native_widget_delegate.h"
-#include "ui/views/widget/tooltip_manager_views.h"
+#include "ui/views/widget/tooltip_manager_aura.h"
+#include "ui/views/widget/widget_delegate.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"
@@ -156,10 +157,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   delegate_->OnNativeWidgetSizeChanged(params.bounds.size());
   can_activate_ = params.can_activate;
   DCHECK(GetWidget()->GetRootView());
-  if (params.type != Widget::InitParams::TYPE_TOOLTIP && !params.child) {
-    views::TooltipManagerViews* manager = new views::TooltipManagerViews(
-        GetWidget()->GetRootView());
-    tooltip_manager_.reset(manager);
+  if (params.type != Widget::InitParams::TYPE_TOOLTIP) {
+    tooltip_manager_.reset(new views::TooltipManagerAura(this));
   }
 
   drop_helper_.reset(new DropHelper(GetWidget()->GetRootView()));
@@ -598,13 +597,11 @@ bool NativeWidgetAura::OnMouseEvent(aura::MouseEvent* event) {
   DCHECK(window_->IsVisible());
   if (event->type() == ui::ET_MOUSEWHEEL) {
     MouseWheelEvent wheel_event(event);
-    if (tooltip_manager_.get())
-      tooltip_manager_->UpdateForMouseEvent(wheel_event);
     return delegate_->OnMouseEvent(wheel_event);
   }
   MouseEvent mouse_event(event);
   if (tooltip_manager_.get())
-    tooltip_manager_->UpdateForMouseEvent(mouse_event);
+    tooltip_manager_->UpdateTooltip();
   return delegate_->OnMouseEvent(mouse_event);
 }
 

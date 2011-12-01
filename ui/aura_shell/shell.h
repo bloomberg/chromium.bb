@@ -29,6 +29,7 @@ namespace aura_shell {
 class Launcher;
 class ShellAcceleratorController;
 class ShellDelegate;
+class ShellTooltipManager;
 
 namespace internal {
 class AppList;
@@ -72,6 +73,10 @@ class AURA_SHELL_EXPORT Shell {
     return accelerator_controller_.get();
   }
 
+  ShellTooltipManager* tooltip_manager() {
+    return tooltip_manager_.get();
+  }
+
   ShellDelegate* delegate() { return delegate_.get(); }
   Launcher* launcher() { return launcher_.get(); }
 
@@ -112,6 +117,8 @@ class AURA_SHELL_EXPORT Shell {
 
   // An event filter that pre-handles global accelerators.
   scoped_ptr<internal::ShellAcceleratorFilter> accelerator_filter_;
+
+  scoped_ptr<ShellTooltipManager> tooltip_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

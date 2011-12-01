@@ -13,6 +13,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
@@ -272,6 +273,12 @@ void RenderWidgetHostViewAura::Destroy() {
 
 void RenderWidgetHostViewAura::SetTooltipText(const string16& tooltip_text) {
   tooltip_ = tooltip_text;
+  void* property = aura::Desktop::GetInstance()->GetProperty(
+      aura::kDesktopTooltipClientKey);
+  if (property) {
+    aura::TooltipClient* tc = static_cast<aura::TooltipClient*>(property);
+    tc->UpdateTooltip(window_);
+  }
 }
 
 BackingStore* RenderWidgetHostViewAura::AllocBackingStore(
