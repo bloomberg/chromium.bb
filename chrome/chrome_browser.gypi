@@ -4030,9 +4030,6 @@
           ],
         }],
         ['configuration_policy==0', {
-          'sources!': [
-            'browser/ui/webui/options/options_managed_banner_handler.cc',
-          ],
           'sources/': [
             ['exclude', '^browser/policy/'],
             ['include', '^browser/policy/policy_path_parser'],
@@ -4372,7 +4369,6 @@
         ['OS=="mac"', {
           'sources!': [
             'browser/automation/automation_provider_list_generic.cc',
-            'browser/bookmarks/bookmark_context_menu.cc',
             'browser/bookmarks/bookmark_drop_info.cc',
             'browser/first_run/upgrade_util.cc',
             'browser/importer/nss_decryptor_system_nss.cc',
