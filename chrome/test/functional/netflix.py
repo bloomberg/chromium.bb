@@ -48,7 +48,9 @@ class NetflixTestHelper():
     self._pyauto.assertEqual(self._pyauto.ExecuteJavascript(login_js), 'ok',
         msg='Failed to set login credentials.')
     self._pyauto.assertTrue(self._pyauto.SubmitForm('login-form'),
-        msg='Login to Netflix failed.')
+        msg='Login to Netflix failed. We think this is an authetication '
+            'problem from the Netflix side. Sometimes we also see this while '
+            'login in manually.')
     
   def _GetVideoDroppedFrames(self, tab_index=0, windex=0):
     """Returns total Netflix video dropped frames."""
