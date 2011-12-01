@@ -332,10 +332,10 @@ class WebSocketJobTest : public PlatformTest {
       websocket_->SendData(kDataHello, kDataHelloLength);
   }
   void DoSync() {
-    sync_callback_.Run(OK);
+    sync_test_callback_.callback().Run(OK);
   }
   int WaitForResult() {
-    return sync_callback_.WaitForResult();
+    return sync_test_callback_.WaitForResult();
   }
  protected:
   enum StreamType {
@@ -445,7 +445,7 @@ class WebSocketJobTest : public PlatformTest {
   scoped_refptr<SocketStream> socket_;
   scoped_ptr<MockClientSocketFactory> socket_factory_;
   scoped_refptr<OrderedSocketData> data_;
-  TestOldCompletionCallback sync_callback_;
+  TestCompletionCallback sync_test_callback_;
   scoped_refptr<MockSSLConfigService> ssl_config_service_;
   scoped_ptr<net::ProxyService> proxy_service_;
   scoped_ptr<net::MockHostResolver> host_resolver_;
