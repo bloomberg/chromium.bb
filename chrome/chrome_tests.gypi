@@ -714,6 +714,7 @@
           'destination': '<(PRODUCT_DIR)',
           'files': [
             '../ppapi/tests/test_case.html',
+            '../ppapi/tests/test_case.html.mock-http-headers',
             '../ppapi/tests/test_page.css',
             '../ppapi/native_client/tests/ppapi_tests/test_case.nmf',
           ],

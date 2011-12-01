@@ -116,11 +116,15 @@ void TestURLLoader::RunTests(const std::string& filter) {
   RUN_TEST_FORCEASYNC_AND_NOT(BinaryDataPOST, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(CustomRequestHeader, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(FailsBogusContentLength, filter);
-  // Disable portion of test which fails when the HTTP server's
-  // data_dir is moved to PRODUCT_DIR.
-  // http://code.google.com/p/chromium/issues/detail?id=103690
-  //  RUN_TEST_FORCEASYNC_AND_NOT(SameOriginRestriction, filter);
-  //  RUN_TEST_FORCEASYNC_AND_NOT(CrossOriginRequest, filter);
+  // TODO(bbudge) Enable these tests for NaCl when we have a way to get
+  // the document URL. The PPAPI tests use PPB_URLUtil_Dev.
+#if !(defined __native_client__)
+  RUN_TEST_FORCEASYNC_AND_NOT(SameOriginRestriction, filter);
+  // Cross origin requests require the 'test_case.html.mock-http-headers'
+  // file to be in the same directory as 'test_case.html', so that the test
+  // server returns CORS response headers.
+  RUN_TEST_FORCEASYNC_AND_NOT(CrossOriginRequest, filter);
+#endif
   RUN_TEST_FORCEASYNC_AND_NOT(JavascriptURLRestriction, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(MethodRestriction, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(HeaderRestriction, filter);
@@ -266,10 +270,21 @@ std::string TestURLLoader::GetReachableCrossOriginURL() {
   pp::Var pp_document_url = pp::URLUtil_Dev::Get()->GetDocumentURL(
       *instance_, &components);
   std::string document_url = pp_document_url.AsString();
-  // Replace "127.0.0.1" with "localhost".
-  ASSERT_TRUE(document_url.find("127.0.0.1") != std::string::npos);
-  return document_url.replace(
-      components.host.begin, components.host.len, "localhost");
+  // Replace "127.0.0.1" with "localhost". Or vice versa.
+  bool changedHost = false;
+  if (document_url.find("127.0.0.1") != std::string::npos) {
+    document_url.replace(components.host.begin,
+                         components.host.len,
+                         "localhost");
+    changedHost = true;
+  } else if (document_url.find("localhost") != std::string::npos) {
+    document_url.replace(components.host.begin,
+                         components.host.len,
+                         "127.0.0.1");
+    changedHost = true;
+  }
+  ASSERT_TRUE(changedHost);
+  return document_url;
 }
 
 int32_t TestURLLoader::OpenUntrusted(const std::string& method,
@@ -532,9 +547,11 @@ std::string TestURLLoader::TestCrossOriginRequest() {
   if (rv != PP_OK)
     return ReportError(
         "Untrusted, intended cross-origin request", rv);
+#if !(defined __native_client__)
   rv = OpenTrusted(request);
   if (rv != PP_OK)
     return ReportError("Trusted cross-origin request", rv);
+#endif
 
   PASS();
 }
