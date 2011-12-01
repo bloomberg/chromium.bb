@@ -4547,12 +4547,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_INSTANT_AUTOCOMPLETE_IMMEDIATELY_DESCRIPTION" desc="Description of the 'Instant Autocomplete Immediately' lab.">
         Whether the search provider suggestion should be autocompleted immediately when instant is enabled.
       </message>
-      <message name="IDS_FLAGS_REMOTING_NAME" desc="Description of the 'Remoting' lab.">
-        Remoting
-      </message>
-      <message name="IDS_FLAGS_REMOTING_DESCRIPTION" desc="Description of the 'Remoting' client lab.">
-        Enable the Remoting client plugin. Warning: This is currently for developer testing only. Unless you are on the dev team and whitelisted, nothing in the enabled UI will work.
-      </message>
       <message name="IDS_FLAGS_FOCUS_EXISTING_TAB_ON_OPEN_NAME" desc="Name for 'Focus existing tab on open' lab">
         Focus existing tab on open
       </message>
