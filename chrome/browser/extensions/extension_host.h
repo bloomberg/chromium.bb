@@ -17,7 +17,7 @@
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/common/view_types.h"
+#include "content/public/common/view_type.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/extensions/extension_view.h"

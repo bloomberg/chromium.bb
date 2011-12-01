@@ -72,7 +72,7 @@
     'public/common/url_fetcher.h',
     'public/common/url_fetcher_delegate.h',
     'public/common/url_fetcher_factory.h',
-    'public/common/view_types.h',
+    'public/common/view_type.h',
     'public/common/zygote_fork_delegate_linux.h',
     'common/appcache/appcache_backend_proxy.cc',
     'common/appcache/appcache_backend_proxy.h',

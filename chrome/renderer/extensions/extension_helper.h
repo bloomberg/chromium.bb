@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
-#include "content/public/common/view_types.h"
+#include "content/public/common/view_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 
 class ExtensionDispatcher;

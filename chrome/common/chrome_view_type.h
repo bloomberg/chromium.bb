@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_CHROME_VIEW_TYPES_H_
-#define CHROME_COMMON_CHROME_VIEW_TYPES_H_
+#ifndef CHROME_COMMON_CHROME_VIEW_TYPE_H_
+#define CHROME_COMMON_CHROME_VIEW_TYPE_H_
 #pragma once
 
-#include "content/public/common/view_types.h"
+#include "content/public/common/view_type.h"
 
 namespace chrome {
 
@@ -34,4 +34,4 @@ extern const char kViewTypeAll[];
 
 }  // namespace chrome
 
-#endif  // CHROME_COMMON_CHROME_VIEW_TYPES_H_
+#endif  // CHROME_COMMON_CHROME_VIEW_TYPE_H_

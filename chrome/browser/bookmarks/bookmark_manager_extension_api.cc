@@ -22,7 +22,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/chrome_view_types.h"
+#include "chrome/common/chrome_view_type.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"

@@ -25,7 +25,7 @@
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_view_types.h"
+#include "chrome/common/chrome_view_type.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/gpu/gpu_data_manager.h"

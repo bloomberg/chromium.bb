@@ -12,7 +12,7 @@
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "chrome/common/web_apps.h"
-#include "content/public/common/view_types.h"
+#include "content/public/common/view_type.h"
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START ExtensionMsgStart

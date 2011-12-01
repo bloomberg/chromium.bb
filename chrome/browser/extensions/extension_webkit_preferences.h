@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBKIT_PREFERENCES_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBKIT_PREFERENCES_H_
 
-#include "chrome/common/chrome_view_types.h"
+#include "chrome/common/chrome_view_type.h"
 
 class Extension;
 struct WebPreferences;

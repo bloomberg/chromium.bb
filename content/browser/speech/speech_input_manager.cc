@@ -9,7 +9,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/speech/speech_input_preferences.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/view_types.h"
+#include "content/public/common/view_type.h"
 #include "media/audio/audio_manager.h"
 
 using content::BrowserThread;

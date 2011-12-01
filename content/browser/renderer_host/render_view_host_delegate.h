@@ -16,7 +16,7 @@
 #include "base/string16.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
-#include "content/public/common/view_types.h"
+#include "content/public/common/view_type.h"
 #include "content/public/common/window_container_type.h"
 #include "ipc/ipc_channel.h"
 #include "net/base/load_states.h"

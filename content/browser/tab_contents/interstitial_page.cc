@@ -29,7 +29,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/page_transition_types.h"
-#include "content/public/common/view_types.h"
+#include "content/public/common/view_type.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_context_getter.h"
 

@@ -26,7 +26,7 @@
 #include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/chrome_view_types.h"
+#include "chrome/common/chrome_view_type.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
