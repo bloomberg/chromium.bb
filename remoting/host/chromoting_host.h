@@ -171,8 +171,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   int AuthenticatedClientsCount() const;
 
-  void EnableCurtainMode(bool enable);
-
   void StopScreenRecorder();
   void OnScreenRecorderStopped();
 
@@ -221,7 +219,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   // TODO(sergeyu): The following members do not belong to
   // ChromotingHost and should be moved elsewhere.
-  bool is_curtained_;
   bool is_it2me_;
   std::string access_code_;
   UiStrings ui_strings_;

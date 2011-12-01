@@ -14,7 +14,6 @@
 #include "remoting/base/encoder_row_based.h"
 #include "remoting/base/encoder_vp8.h"
 #include "remoting/host/chromoting_host_context.h"
-#include "remoting/host/curtain.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
@@ -52,7 +51,6 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
       stopping_recorders_(0),
       state_(kInitial),
       protocol_config_(protocol::CandidateSessionConfig::CreateDefault()),
-      is_curtained_(false),
       is_it2me_(false) {
   DCHECK(desktop_environment_);
   desktop_environment_->set_host(this);
@@ -208,12 +206,6 @@ void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
        it != status_observers_.end(); ++it) {
     (*it)->OnClientAuthenticated(jid);
   }
-  // TODO(jamiewalch): Tidy up actions to be taken on connect/disconnect,
-  // including closing the connection on failure of a critical operation.
-  EnableCurtainMode(true);
-
-  std::string username = jid.substr(0, jid.find('/'));
-  desktop_environment_->OnConnect(username);
 }
 
 void ChromotingHost::OnSessionAuthenticationFailed(ClientSession* client) {
@@ -247,10 +239,6 @@ void ChromotingHost::OnSessionClosed(ClientSession* client) {
       // Stop the recorder if there are no more clients.
       StopScreenRecorder();
     }
-
-    // Disable the "curtain" if there are no more active clients.
-    EnableCurtainMode(false);
-    desktop_environment_->OnLastDisconnect();
   }
 }
 
@@ -383,7 +371,6 @@ void ChromotingHost::PauseSession(bool pause) {
   for (client = clients_.begin(); client != clients_.end(); ++client) {
     (*client)->set_awaiting_continue_approval(pause);
   }
-  desktop_environment_->OnPause(pause);
 }
 
 void ChromotingHost::SetUiStrings(const UiStrings& ui_strings) {
@@ -418,16 +405,6 @@ int ChromotingHost::AuthenticatedClientsCount() const {
       ++authenticated_clients;
   }
   return authenticated_clients;
-}
-
-void ChromotingHost::EnableCurtainMode(bool enable) {
-  // TODO(jamiewalch): This will need to be more sophisticated when we think
-  // about proper crash recovery and daemon mode.
-  // TODO(wez): CurtainMode shouldn't be driven directly by ChromotingHost.
-  if (is_it2me_ || enable == is_curtained_)
-    return;
-  desktop_environment_->curtain()->EnableCurtainMode(enable);
-  is_curtained_ = enable;
 }
 
 void ChromotingHost::StopScreenRecorder() {

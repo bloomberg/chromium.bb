@@ -11,6 +11,7 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/host/in_memory_host_config.h"
+#include "remoting/host/it2me_host_user_interface.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/session_config.h"
@@ -89,17 +90,21 @@ class ChromotingHostTest : public testing::Test {
 
     Capturer* capturer = new CapturerFake();
     event_executor_ = new MockEventExecutor();
-    curtain_ = new MockCurtain();
-    disconnect_window_ = new MockDisconnectWindow();
-    continue_window_ = new MockContinueWindow();
-    local_input_monitor_ = new MockLocalInputMonitor();
     desktop_environment_.reset(
-        new DesktopEnvironment(&context_, capturer, event_executor_, curtain_,
-                               disconnect_window_, continue_window_,
-                               local_input_monitor_));
+        new DesktopEnvironment(&context_, capturer, event_executor_));
 
     host_ = ChromotingHost::Create(
         &context_, config_,desktop_environment_.get(), false);
+
+    disconnect_window_ = new MockDisconnectWindow();
+    continue_window_ = new MockContinueWindow();
+    local_input_monitor_ = new MockLocalInputMonitor();
+    it2me_host_user_interface_.reset(new It2MeHostUserInterface(host_,
+                                                                &context_));
+    it2me_host_user_interface_->InitFrom(disconnect_window_, continue_window_,
+                              local_input_monitor_);
+    host_->AddStatusObserver(it2me_host_user_interface_.get());
+
     session_ = new MockSession();
     session2_ = new MockSession();
     session_config_ = SessionConfig::GetDefault();
@@ -215,6 +220,7 @@ class ChromotingHostTest : public testing::Test {
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   MockConnectionToClientEventHandler handler_;
   scoped_ptr<DesktopEnvironment> desktop_environment_;
+  scoped_ptr<It2MeHostUserInterface> it2me_host_user_interface_;
   scoped_refptr<ChromotingHost> host_;
   scoped_refptr<InMemoryHostConfig> config_;
   MockChromotingHostContext context_;
@@ -240,7 +246,6 @@ class ChromotingHostTest : public testing::Test {
 
   // Owned by |host_|.
   MockEventExecutor* event_executor_;
-  MockCurtain* curtain_;
   MockDisconnectWindow* disconnect_window_;
   MockContinueWindow* continue_window_;
   MockLocalInputMonitor* local_input_monitor_;
@@ -263,8 +268,6 @@ TEST_F(ChromotingHostTest, DISABLED_Connect) {
   // then execute the done task.
   {
     InSequence s;
-    EXPECT_CALL(*curtain_, EnableCurtainMode(true))
-        .Times(1);
     EXPECT_CALL(*disconnect_window_, Show(_, _))
         .Times(0);
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
@@ -288,9 +291,6 @@ TEST_F(ChromotingHostTest, DISABLED_Reconnect) {
   // connection.
   {
     InSequence s;
-    // Ensure that curtain mode is activated before the first video packet.
-    EXPECT_CALL(*curtain_, EnableCurtainMode(true))
-        .Times(1);
     EXPECT_CALL(*disconnect_window_, Show(_, _))
         .Times(0);
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
@@ -300,8 +300,6 @@ TEST_F(ChromotingHostTest, DISABLED_Reconnect) {
         .RetiresOnSaturation();
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
         .Times(AnyNumber());
-    EXPECT_CALL(*curtain_, EnableCurtainMode(false))
-        .Times(1);
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
         .Times(AnyNumber());
   }
@@ -317,8 +315,6 @@ TEST_F(ChromotingHostTest, DISABLED_Reconnect) {
   // Connect the client again.
   {
     InSequence s;
-    EXPECT_CALL(*curtain_, EnableCurtainMode(true))
-        .Times(1);
     EXPECT_CALL(*disconnect_window_, Show(_, _))
         .Times(0);
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
@@ -344,9 +340,6 @@ TEST_F(ChromotingHostTest, DISABLED_ConnectTwice) {
   // connection.
   {
     InSequence s;
-    EXPECT_CALL(*curtain_, EnableCurtainMode(true))
-        .Times(1)
-        .WillOnce(QuitMainMessageLoop(&message_loop_));
     EXPECT_CALL(*disconnect_window_, Show(_, _))
         .Times(0);
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
@@ -357,9 +350,6 @@ TEST_F(ChromotingHostTest, DISABLED_ConnectTwice) {
                     &ChromotingHostTest::SimulateClientConnection, 1, true)),
             RunDoneTask()))
         .RetiresOnSaturation();
-    // Check that the second connection does not affect curtain mode.
-    EXPECT_CALL(*curtain_, EnableCurtainMode(_))
-        .Times(0);
     EXPECT_CALL(*disconnect_window_, Show(_, _))
         .Times(0);
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
@@ -380,126 +370,6 @@ TEST_F(ChromotingHostTest, DISABLED_ConnectTwice) {
 
   SimulateClientConnection(0, true);
   message_loop_.Run();
-}
-
-TEST_F(ChromotingHostTest, CurtainModeFail) {
-  host_->Start();
-
-  // Ensure that curtain mode is not activated if a connection does not
-  // authenticate.
-  EXPECT_CALL(*curtain_, EnableCurtainMode(_))
-      .Times(0);
-  EXPECT_CALL(*disconnect_window_, Show(_, _))
-      .Times(0);
-  EXPECT_CALL(*continue_window_, Hide())
-      .Times(AnyNumber());
-  EXPECT_CALL(*disconnect_window_, Hide())
-      .Times(AnyNumber());
-  SimulateClientConnection(0, false);
-  context_.network_message_loop()->PostTask(
-      FROM_HERE, base::Bind(&ChromotingHostTest::RemoveClientSession,
-                            base::Unretained(this)));
-  PostQuitTask(&message_loop_);
-  message_loop_.Run();
-}
-
-TEST_F(ChromotingHostTest, CurtainModeFailSecond) {
-  host_->Start();
-
-  // When a video packet is received we connect the second mock
-  // connection.
-  {
-    InSequence s;
-    EXPECT_CALL(*curtain_, EnableCurtainMode(true))
-        .WillOnce(QuitMainMessageLoop(&message_loop_));
-    EXPECT_CALL(*local_input_monitor_, Start(_))
-        .Times(1);
-    EXPECT_CALL(*disconnect_window_, Show(_, "user@domain"))
-        .Times(1);
-    EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
-        .WillOnce(DoAll(
-            InvokeWithoutArgs(
-                CreateFunctor(
-                    this,
-                    &ChromotingHostTest::SimulateClientConnection, 1, false)),
-            RunDoneTask()))
-        .RetiresOnSaturation();
-    // Check that the second connection does not affect curtain mode.
-    EXPECT_CALL(*curtain_, EnableCurtainMode(_))
-        .Times(0);
-    EXPECT_CALL(*disconnect_window_, Show(_, _))
-        .Times(0);
-    EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
-        .Times(AnyNumber());
-    EXPECT_CALL(video_stub2_, ProcessVideoPacket(_, _))
-        .Times(0);
-  }
-
-  SimulateClientConnection(0, true);
-  message_loop_.Run();
-
-  // Curtain is removed when there are no clients connected.
-  EXPECT_CALL(*curtain_, EnableCurtainMode(false))
-      .Times(AtLeast(1));
-  EXPECT_CALL(*continue_window_, Hide())
-      .Times(AtLeast(1));
-  EXPECT_CALL(*disconnect_window_, Hide())
-      .Times(AtLeast(1));
-  EXPECT_CALL(*local_input_monitor_, Stop())
-      .Times(AtLeast(1));
-
-  // Close connections before destroying the host.
-  client_->OnConnectionClosed(connection_);
-  client2_->OnConnectionClosed(connection2_);
-}
-
-ACTION_P(SetBool, var) { *var = true; }
-
-TEST_F(ChromotingHostTest, CurtainModeIT2Me) {
-  host_->Start();
-  host_->set_it2me(true);
-
-  // When the video packet is received we first shutdown ChromotingHost
-  // then execute the done task.
-  bool curtain_activated = false;
-  {
-    Sequence s1, s2;
-    // Can't just expect Times(0) because if it fails then the host will
-    // not be shut down and the message loop will never exit.
-    EXPECT_CALL(*curtain_, EnableCurtainMode(_))
-        .Times(AnyNumber())
-        .WillRepeatedly(SetBool(&curtain_activated));
-    EXPECT_CALL(*disconnect_window_, Show(_, "user@domain"))
-        .Times(1)
-        .InSequence(s1);
-    EXPECT_CALL(*local_input_monitor_, Start(_))
-        .Times(1)
-        .InSequence(s2);
-    EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
-        .InSequence(s1, s2)
-        .WillOnce(DoAll(
-            InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost),
-            RunDoneTask()))
-        .RetiresOnSaturation();
-    EXPECT_CALL(*connection_, Disconnect())
-        .InSequence(s1, s2)
-        .WillOnce(InvokeWithoutArgs(
-            this, &ChromotingHostTest::RemoveClientSession))
-        .RetiresOnSaturation();
-    EXPECT_CALL(*local_input_monitor_, Stop())
-        .Times(1)
-        .InSequence(s1, s2);
-    EXPECT_CALL(*continue_window_, Hide())
-        .Times(1)
-        .InSequence(s1);
-    EXPECT_CALL(*disconnect_window_, Hide())
-        .Times(1)
-        .InSequence(s2);
-  }
-  SimulateClientConnection(0, true);
-  message_loop_.Run();
-  host_->set_it2me(false);
-  EXPECT_THAT(curtain_activated, false);
 }
 
 }  // namespace remoting

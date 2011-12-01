@@ -31,6 +31,7 @@ namespace remoting {
 
 class ChromotingHost;
 class DesktopEnvironment;
+class It2MeHostUserInterface;
 class MutableHostConfig;
 class RegisterSupportHostRequest;
 class SignalStrategy;
@@ -181,6 +182,7 @@ class HostNPScriptObject : public HostStatusObserver {
   scoped_refptr<MutableHostConfig> host_config_;
   ChromotingHostContext host_context_;
   scoped_ptr<DesktopEnvironment> desktop_environment_;
+  scoped_ptr<It2MeHostUserInterface> it2me_host_user_interface_;
 
   scoped_refptr<ChromotingHost> host_;
   int failed_login_attempts_;

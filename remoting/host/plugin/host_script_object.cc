@@ -18,6 +18,7 @@
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/host_secret.h"
 #include "remoting/host/in_memory_host_config.h"
+#include "remoting/host/it2me_host_user_interface.h"
 #include "remoting/host/plugin/host_log_handler.h"
 #include "remoting/host/plugin/policy_hack/nat_policy.h"
 #include "remoting/host/register_support_host_request.h"
@@ -99,10 +100,10 @@ HostNPScriptObject::HostNPScriptObject(
 HostNPScriptObject::~HostNPScriptObject() {
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
 
-  // Shutdown DesktopEnvironment first so that it doesn't try to post
+  // Shutdown It2MeHostUserInterface first so that it doesn't try to post
   // tasks on the UI thread while we are stopping the host.
-  if (desktop_environment_.get()) {
-    desktop_environment_->Shutdown();
+  if (it2me_host_user_interface_.get()) {
+    it2me_host_user_interface_->Shutdown();
   }
 
   HostLogHandler::UnregisterLoggingScriptObject(this);
@@ -520,6 +521,10 @@ void HostNPScriptObject::FinishConnect(
     host_->AddStatusObserver(log_to_server_.get());
   }
   host_->set_it2me(true);
+  it2me_host_user_interface_.reset(new It2MeHostUserInterface(host_.get(),
+                                                              &host_context_));
+  it2me_host_user_interface_->Init();
+  host_->AddStatusObserver(it2me_host_user_interface_.get());
 
   {
     base::AutoLock auto_lock(ui_strings_lock_);

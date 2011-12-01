@@ -35,14 +35,11 @@
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
-#include "remoting/host/continue_window.h"
-#include "remoting/host/curtain.h"
 #include "remoting/host/desktop_environment.h"
-#include "remoting/host/disconnect_window.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_secret.h"
-#include "remoting/host/local_input_monitor.h"
+#include "remoting/host/it2me_host_user_interface.h"
 #include "remoting/host/log_to_server.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/register_support_host_request.h"
@@ -62,6 +59,7 @@ using remoting::ChromotingHost;
 using remoting::DesktopEnvironment;
 using remoting::kChromotingTokenDefaultServiceName;
 using remoting::kXmppAuthServiceConfigPath;
+using remoting::It2MeHostUserInterface;
 using remoting::protocol::CandidateSessionConfig;
 using remoting::protocol::ChannelConfig;
 using std::string;
@@ -154,17 +152,8 @@ class SimpleHost {
       remoting::EventExecutor* event_executor =
           remoting::EventExecutor::Create(context.desktop_message_loop(),
                                           capturer);
-      remoting::Curtain* curtain = remoting::Curtain::Create();
-      remoting::DisconnectWindow* disconnect_window =
-          remoting::DisconnectWindow::Create();
-      remoting::ContinueWindow* continue_window =
-          remoting::ContinueWindow::Create();
-      remoting::LocalInputMonitor* local_input_monitor =
-          remoting::LocalInputMonitor::Create();
       desktop_environment.reset(
-          new DesktopEnvironment(&context, capturer, event_executor, curtain,
-                                 disconnect_window, continue_window,
-                                 local_input_monitor));
+          new DesktopEnvironment(&context, capturer, event_executor));
     } else {
       desktop_environment.reset(DesktopEnvironment::Create(&context));
     }
@@ -172,6 +161,14 @@ class SimpleHost {
     host_ = ChromotingHost::Create(
         &context, config, desktop_environment.get(), false);
     host_->set_it2me(is_it2me_);
+
+    scoped_ptr<It2MeHostUserInterface> it2me_host_user_interface;
+    if (is_it2me_) {
+      it2me_host_user_interface.reset(new It2MeHostUserInterface(host_,
+                                                                 &context));
+      it2me_host_user_interface->Init();
+      host_->AddStatusObserver(it2me_host_user_interface.get());
+    }
 
     if (protocol_config_.get()) {
       host_->set_protocol_config(protocol_config_.release());
