@@ -30,6 +30,9 @@ CryptoModulePasswordDialogView::CryptoModulePasswordDialogView(
   Init(server, slot_name, reason);
 }
 
+CryptoModulePasswordDialogView::~CryptoModulePasswordDialogView() {
+}
+
 void CryptoModulePasswordDialogView::Init(
     const std::string& server,
     const std::string& slot_name,
@@ -140,6 +143,11 @@ bool CryptoModulePasswordDialogView::HandleKeyEvent(
     views::Textfield* sender,
     const views::KeyEvent& keystroke) {
   return false;
+}
+
+void CryptoModulePasswordDialogView::ContentsChanged(
+    views::Textfield* sender,
+    const string16& new_contents) {
 }
 
 string16 CryptoModulePasswordDialogView::GetWindowTitle() const {

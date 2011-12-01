@@ -34,28 +34,28 @@ class CryptoModulePasswordDialogView : public views::DialogDelegateView,
       const std::string& server,
       const base::Callback<void(const char*)>& callback);
 
-  virtual ~CryptoModulePasswordDialogView() {}
+  virtual ~CryptoModulePasswordDialogView();
 
   // views::DialogDelegate:
-  virtual bool Accept();
-  virtual bool Cancel();
+  virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
   string16 GetDialogButtonLabel(
-      ui::DialogButton button) const;
+      ui::DialogButton button) const OVERRIDE;
 
 
   // views::WidgetDelegate:
-  virtual views::View* GetInitiallyFocusedView();
-  virtual bool IsModal() const;
-  virtual views::View* GetContentsView();
+  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
+  virtual bool IsModal() const OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
 
   // views::View:
-  virtual string16 GetWindowTitle() const;
+  virtual string16 GetWindowTitle() const OVERRIDE;
 
   // views::TextfieldController:
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const views::KeyEvent& keystroke);
+                              const views::KeyEvent& keystroke) OVERRIDE;
   virtual void ContentsChanged(views::Textfield* sender,
-                               const string16& new_contents) {}
+                               const string16& new_contents) OVERRIDE;
 
  private:
   // Initialize views and layout.
