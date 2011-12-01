@@ -468,17 +468,11 @@ string16 GetNameForURL(const GURL& url) {
   }
 }
 
-// This is used with a tree iterator to skip subtrees which are not visible.
-static bool PruneInvisibleFolders(const BookmarkNode* node) {
-  return !node->IsVisible();
-}
-
 std::vector<const BookmarkNode*> GetMostRecentlyModifiedFolders(
     BookmarkModel* model,
     size_t max_count) {
   std::vector<const BookmarkNode*> nodes;
-  ui::TreeNodeIterator<const BookmarkNode>
-      iterator(model->root_node(), PruneInvisibleFolders);
+  ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
 
   while (iterator.has_next()) {
     const BookmarkNode* parent = iterator.Next();
@@ -506,8 +500,7 @@ std::vector<const BookmarkNode*> GetMostRecentlyModifiedFolders(
 
     for (int i = 0; i < root_node->child_count(); ++i) {
       const BookmarkNode* node = root_node->GetChild(i);
-      if (node->IsVisible() &&
-          find(nodes.begin(), nodes.end(), node) == nodes.end()) {
+      if (find(nodes.begin(), nodes.end(), node) == nodes.end()) {
         nodes.push_back(node);
 
         if (nodes.size() == max_count)

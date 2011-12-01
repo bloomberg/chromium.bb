@@ -169,7 +169,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   //   F3
   //     F4
   //       url1
-  // Synced
+  // Mobile
   //   url1
   string16 f1_title = ASCIIToUTF16("F\"&;<1\"");
   string16 f2_title = ASCIIToUTF16("F2");
@@ -208,7 +208,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   model->AddURLWithCreationTime(f4, 0, url1_title, url1, t1);
   model->AddURLWithCreationTime(model->bookmark_bar_node(), 2, url4_title,
                                 url4, t4);
-  model->AddURLWithCreationTime(model->synced_node(), 0, url1_title, url1, t1);
+  model->AddURLWithCreationTime(model->mobile_node(), 0, url1_title, url1, t1);
 
   // Write to a temp file.
   BookmarksObserver observer(&message_loop);

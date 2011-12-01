@@ -30,16 +30,16 @@ class BookmarkLoadDetails {
  public:
   BookmarkLoadDetails(BookmarkNode* bb_node,
                       BookmarkNode* other_folder_node,
-                      BookmarkNode* synced_folder_node,
+                      BookmarkNode* mobile_folder_node,
                       BookmarkIndex* index,
                       int64 max_id);
   ~BookmarkLoadDetails();
 
   BookmarkNode* bb_node() { return bb_node_.get(); }
   BookmarkNode* release_bb_node() { return bb_node_.release(); }
-  BookmarkNode* synced_folder_node() { return synced_folder_node_.get(); }
-  BookmarkNode* release_synced_folder_node() {
-    return synced_folder_node_.release();
+  BookmarkNode* mobile_folder_node() { return mobile_folder_node_.get(); }
+  BookmarkNode* release_mobile_folder_node() {
+    return mobile_folder_node_.release();
   }
   BookmarkNode* other_folder_node() { return other_folder_node_.get(); }
   BookmarkNode* release_other_folder_node() {
@@ -74,7 +74,7 @@ class BookmarkLoadDetails {
  private:
   scoped_ptr<BookmarkNode> bb_node_;
   scoped_ptr<BookmarkNode> other_folder_node_;
-  scoped_ptr<BookmarkNode> synced_folder_node_;
+  scoped_ptr<BookmarkNode> mobile_folder_node_;
   scoped_ptr<BookmarkIndex> index_;
   int64 max_id_;
   std::string computed_checksum_;

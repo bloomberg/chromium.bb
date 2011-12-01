@@ -17,11 +17,9 @@ void AddNode(const BookmarkNode* node,
              base::ListValue* list,
              bool recurse,
              bool only_folders) {
-  if (node->IsVisible()) {
-    base::DictionaryValue* dict = bookmark_extension_helpers::GetNodeDictionary(
-        node, recurse, only_folders);
-    list->Append(dict);
-  }
+  base::DictionaryValue* dict = bookmark_extension_helpers::GetNodeDictionary(
+      node, recurse, only_folders);
+  list->Append(dict);
 }
 
 }  // namespace
@@ -61,7 +59,7 @@ base::DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
     base::ListValue* children = new base::ListValue;
     for (int i = 0; i < node->child_count(); ++i) {
       const BookmarkNode* child = node->GetChild(i);
-      if (child->IsVisible() && (!only_folders || child->is_folder())) {
+      if (!only_folders || child->is_folder()) {
         DictionaryValue* dict = GetNodeDictionary(child, true, only_folders);
         children->Append(dict);
       }

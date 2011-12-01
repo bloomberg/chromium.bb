@@ -391,7 +391,7 @@ void BookmarkBubbleNotificationBridge::Observe(
   }
   for (int i = 0; i < parent->child_count(); i++) {
     const BookmarkNode* child = parent->GetChild(i);
-    if (child->is_folder() && child->IsVisible())
+    if (child->is_folder())
       [self addFolderNodes:child
              toPopUpButton:button
                indentation:indentation];

@@ -305,8 +305,8 @@ struct StarredEntry {
     // The "other bookmarks" folder that holds uncategorized bookmarks.
     OTHER,
 
-    // The synced folder.
-    SYNCED,
+    // The mobile folder.
+    MOBILE,
   };
 
   StarredEntry();

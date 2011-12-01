@@ -116,7 +116,7 @@ class BookmarkCodecTest : public testing::Test {
     int64 max_id;
     bool result = codec->Decode(AsMutable(model->bookmark_bar_node()),
                                 AsMutable(model->other_node()),
-                                AsMutable(model->synced_node()),
+                                AsMutable(model->mobile_node()),
                                 &max_id, value);
     model->set_next_node_id(max_id);
     return result;
@@ -167,7 +167,7 @@ class BookmarkCodecTest : public testing::Test {
     std::set<int64> assigned_ids;
     CheckIDs(model->bookmark_bar_node(), &assigned_ids);
     CheckIDs(model->other_node(), &assigned_ids);
-    CheckIDs(model->synced_node(), &assigned_ids);
+    CheckIDs(model->mobile_node(), &assigned_ids);
   }
 };
 
@@ -295,7 +295,7 @@ TEST_F(BookmarkCodecTest, PersistIDsTest) {
                                             true);
 }
 
-TEST_F(BookmarkCodecTest, CanDecodeModelWithoutSyncedBookmarks) {
+TEST_F(BookmarkCodecTest, CanDecodeModelWithoutMobileBookmarks) {
   FilePath test_data_directory;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory));
   FilePath test_file = test_data_directory.AppendASCII(
@@ -334,5 +334,5 @@ TEST_F(BookmarkCodecTest, CanDecodeModelWithoutSyncedBookmarks) {
   EXPECT_EQ(BookmarkNode::URL, child->type());
   EXPECT_EQ(ASCIIToUTF16("Get started with Google Chrome"), child->GetTitle());
 
-  ASSERT_TRUE(decoded_model.synced_node() != NULL);
+  ASSERT_TRUE(decoded_model.mobile_node() != NULL);
 }

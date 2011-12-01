@@ -537,11 +537,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 }
 
 - (BOOL)canEditBookmark:(const BookmarkNode*)node {
-  // Don't allow edit/delete of the bar node, or of "Other Bookmarks"
-  if (node == nil ||
-      node == bookmarkModel_->bookmark_bar_node() ||
-      node == bookmarkModel_->other_node() ||
-      node == bookmarkModel_->synced_node())
+  // Don't allow edit/delete of the permanent nodes.
+  if (node == nil || bookmarkModel_->is_permanent_node(node))
     return NO;
   return YES;
 }
@@ -799,7 +796,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   BookmarkNode::Type type = senderNode->type();
   if (type == BookmarkNode::BOOKMARK_BAR ||
       type == BookmarkNode::OTHER_NODE ||
-      type == BookmarkNode::SYNCED ||
+      type == BookmarkNode::MOBILE ||
       type == BookmarkNode::FOLDER) {
     parent = senderNode;
     newIndex = parent->child_count();

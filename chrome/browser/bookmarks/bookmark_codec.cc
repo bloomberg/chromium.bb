@@ -19,7 +19,8 @@ using base::Time;
 const char* BookmarkCodec::kRootsKey = "roots";
 const char* BookmarkCodec::kRootFolderNameKey = "bookmark_bar";
 const char* BookmarkCodec::kOtherBookmarkFolderNameKey = "other";
-const char* BookmarkCodec::kSyncedBookmarkFolderNameKey = "synced";
+// The value is left as 'synced' for historical reasons.
+const char* BookmarkCodec::kMobileBookmarkFolderNameKey = "synced";
 const char* BookmarkCodec::kVersionKey = "version";
 const char* BookmarkCodec::kChecksumKey = "checksum";
 const char* BookmarkCodec::kIdKey = "id";
@@ -46,18 +47,18 @@ BookmarkCodec::~BookmarkCodec() {}
 Value* BookmarkCodec::Encode(BookmarkModel* model) {
   return Encode(model->bookmark_bar_node(),
                 model->other_node(),
-                model->synced_node());
+                model->mobile_node());
 }
 
 Value* BookmarkCodec::Encode(const BookmarkNode* bookmark_bar_node,
                              const BookmarkNode* other_folder_node,
-                             const BookmarkNode* synced_folder_node) {
+                             const BookmarkNode* mobile_folder_node) {
   ids_reassigned_ = false;
   InitializeChecksum();
   DictionaryValue* roots = new DictionaryValue();
   roots->Set(kRootFolderNameKey, EncodeNode(bookmark_bar_node));
   roots->Set(kOtherBookmarkFolderNameKey, EncodeNode(other_folder_node));
-  roots->Set(kSyncedBookmarkFolderNameKey, EncodeNode(synced_folder_node));
+  roots->Set(kMobileBookmarkFolderNameKey, EncodeNode(mobile_folder_node));
 
   DictionaryValue* main = new DictionaryValue();
   main->SetInteger(kVersionKey, kCurrentVersion);
@@ -72,7 +73,7 @@ Value* BookmarkCodec::Encode(const BookmarkNode* bookmark_bar_node,
 
 bool BookmarkCodec::Decode(BookmarkNode* bb_node,
                            BookmarkNode* other_folder_node,
-                           BookmarkNode* synced_folder_node,
+                           BookmarkNode* mobile_folder_node,
                            int64* max_id,
                            const Value& value) {
   ids_.clear();
@@ -81,13 +82,13 @@ bool BookmarkCodec::Decode(BookmarkNode* bb_node,
   maximum_id_ = 0;
   stored_checksum_.clear();
   InitializeChecksum();
-  bool success = DecodeHelper(bb_node, other_folder_node, synced_folder_node,
+  bool success = DecodeHelper(bb_node, other_folder_node, mobile_folder_node,
                               value);
   FinalizeChecksum();
   // If either the checksums differ or some IDs were missing/not unique,
   // reassign IDs.
   if (!ids_valid_ || computed_checksum() != stored_checksum())
-    ReassignIDs(bb_node, other_folder_node, synced_folder_node);
+    ReassignIDs(bb_node, other_folder_node, mobile_folder_node);
   *max_id = maximum_id_ + 1;
   return success;
 }
@@ -122,7 +123,7 @@ Value* BookmarkCodec::EncodeNode(const BookmarkNode* node) {
 
 bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
                                  BookmarkNode* other_folder_node,
-                                 BookmarkNode* synced_folder_node,
+                                 BookmarkNode* mobile_folder_node,
                                  const Value& value) {
   if (value.GetType() != Value::TYPE_DICTIONARY)
     return false;  // Unexpected type.
@@ -164,23 +165,22 @@ bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
   DecodeNode(*static_cast<DictionaryValue*>(other_folder_value), NULL,
              other_folder_node);
 
-  // Fail silently if we can't deserialize synced bookmarks. We can't require
+  // Fail silently if we can't deserialize mobile bookmarks. We can't require
   // them to exist in order to be backwards-compatible with older versions of
   // chrome.
-  Value* synced_folder_value;
-  if (roots_d_value->Get(kSyncedBookmarkFolderNameKey, &synced_folder_value) &&
-      synced_folder_value->GetType() == Value::TYPE_DICTIONARY) {
-    DecodeNode(*static_cast<DictionaryValue*>(synced_folder_value), NULL,
-               synced_folder_node);
+  Value* mobile_folder_value;
+  if (roots_d_value->Get(kMobileBookmarkFolderNameKey, &mobile_folder_value) &&
+      mobile_folder_value->GetType() == Value::TYPE_DICTIONARY) {
+    DecodeNode(*static_cast<DictionaryValue*>(mobile_folder_value), NULL,
+               mobile_folder_node);
   } else {
-    // If we didn't find the synced folder, we're almost guaranteed to have a
-    // duplicate id when we add the synced folder. Consequently, if we don't
+    // If we didn't find the mobile folder, we're almost guaranteed to have a
+    // duplicate id when we add the mobile folder. Consequently, if we don't
     // intend to reassign ids in the future (ids_valid_ is still true), then at
-    // least reassign the synced bookmarks to avoid it colliding with anything
+    // least reassign the mobile bookmarks to avoid it colliding with anything
     // else.
-    if (ids_valid_) {
-      ReassignIDsHelper(synced_folder_node);
-    }
+    if (ids_valid_)
+      ReassignIDsHelper(mobile_folder_node);
   }
 
   // Need to reset the type as decoding resets the type to FOLDER. Similarly
@@ -188,12 +188,12 @@ bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
   // the file.
   bb_node->set_type(BookmarkNode::BOOKMARK_BAR);
   other_folder_node->set_type(BookmarkNode::OTHER_NODE);
-  synced_folder_node->set_type(BookmarkNode::SYNCED);
+  mobile_folder_node->set_type(BookmarkNode::MOBILE);
   bb_node->set_title(l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_FOLDER_NAME));
   other_folder_node->set_title(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME));
-  synced_folder_node->set_title(
-        l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_SYNCED_FOLDER_NAME));
+  mobile_folder_node->set_title(
+        l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME));
 
   return true;
 }
@@ -322,11 +322,11 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
 
 void BookmarkCodec::ReassignIDs(BookmarkNode* bb_node,
                                 BookmarkNode* other_node,
-                                BookmarkNode* synced_node) {
+                                BookmarkNode* mobile_node) {
   maximum_id_ = 0;
   ReassignIDsHelper(bb_node);
   ReassignIDsHelper(other_node);
-  ReassignIDsHelper(synced_node);
+  ReassignIDsHelper(mobile_node);
   ids_reassigned_ = true;
 }
 

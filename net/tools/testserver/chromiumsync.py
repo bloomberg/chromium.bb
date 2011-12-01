@@ -394,6 +394,8 @@ class SyncDataModel(object):
                     parent_tag='google_chrome_bookmarks', sync_type=BOOKMARK),
       PermanentItem('other_bookmarks', name='Other Bookmarks',
                     parent_tag='google_chrome_bookmarks', sync_type=BOOKMARK),
+      PermanentItem('synced_bookmarks', name='Mobile Bookmarks',
+                    parent_tag='google_chrome_bookmarks', sync_type=BOOKMARK),
       PermanentItem('google_chrome_preferences', name='Preferences',
                     parent_tag='google_chrome', sync_type=PREFERENCE),
       PermanentItem('google_chrome_autofill', name='Autofill',

@@ -211,14 +211,14 @@ TEST_F(BookmarkModelTest, InitialState) {
   EXPECT_EQ(0, other_node->child_count());
   EXPECT_EQ(BookmarkNode::OTHER_NODE, other_node->type());
 
-  const BookmarkNode* synced_node = model_.synced_node();
-  ASSERT_TRUE(synced_node != NULL);
-  EXPECT_EQ(0, synced_node->child_count());
-  EXPECT_EQ(BookmarkNode::SYNCED, synced_node->type());
+  const BookmarkNode* mobile_node = model_.mobile_node();
+  ASSERT_TRUE(mobile_node != NULL);
+  EXPECT_EQ(0, mobile_node->child_count());
+  EXPECT_EQ(BookmarkNode::MOBILE, mobile_node->type());
 
   EXPECT_TRUE(bb_node->id() != other_node->id());
-  EXPECT_TRUE(bb_node->id() != synced_node->id());
-  EXPECT_TRUE(other_node->id() != synced_node->id());
+  EXPECT_TRUE(bb_node->id() != mobile_node->id());
+  EXPECT_TRUE(other_node->id() != mobile_node->id());
 }
 
 TEST_F(BookmarkModelTest, AddURL) {
@@ -238,7 +238,7 @@ TEST_F(BookmarkModelTest, AddURL) {
 
   EXPECT_TRUE(new_node->id() != root->id() &&
               new_node->id() != model_.other_node()->id() &&
-              new_node->id() != model_.synced_node()->id());
+              new_node->id() != model_.mobile_node()->id());
 }
 
 TEST_F(BookmarkModelTest, AddURLWithWhitespaceTitle) {
@@ -257,8 +257,8 @@ TEST_F(BookmarkModelTest, AddURLWithWhitespaceTitle) {
   }
 }
 
-TEST_F(BookmarkModelTest, AddURLToSyncedBookmarks) {
-  const BookmarkNode* root = model_.synced_node();
+TEST_F(BookmarkModelTest, AddURLToMobileBookmarks) {
+  const BookmarkNode* root = model_.mobile_node();
   const string16 title(ASCIIToUTF16("foo"));
   const GURL url("http://foo.com");
 
@@ -274,7 +274,7 @@ TEST_F(BookmarkModelTest, AddURLToSyncedBookmarks) {
 
   EXPECT_TRUE(new_node->id() != root->id() &&
               new_node->id() != model_.other_node()->id() &&
-              new_node->id() != model_.synced_node()->id());
+              new_node->id() != model_.mobile_node()->id());
 }
 
 TEST_F(BookmarkModelTest, AddFolder) {
@@ -291,7 +291,7 @@ TEST_F(BookmarkModelTest, AddFolder) {
 
   EXPECT_TRUE(new_node->id() != root->id() &&
               new_node->id() != model_.other_node()->id() &&
-              new_node->id() != model_.synced_node()->id());
+              new_node->id() != model_.mobile_node()->id());
 
   // Add another folder, just to make sure folder_ids are incremented correctly.
   ClearCounts();
@@ -491,14 +491,14 @@ TEST_F(BookmarkModelTest, ParentForNewNodes) {
 }
 
 // Tests that adding a URL to a folder updates the last modified time.
-TEST_F(BookmarkModelTest, ParentForNewSyncedNodes) {
+TEST_F(BookmarkModelTest, ParentForNewMobileNodes) {
   ASSERT_EQ(model_.bookmark_bar_node(), model_.GetParentForNewNodes());
 
   const string16 title(ASCIIToUTF16("foo"));
   const GURL url("http://foo.com");
 
-  model_.AddURL(model_.synced_node(), 0, title, url);
-  ASSERT_EQ(model_.synced_node(), model_.GetParentForNewNodes());
+  model_.AddURL(model_.mobile_node(), 0, title, url);
+  ASSERT_EQ(model_.mobile_node(), model_.GetParentForNewNodes());
 }
 
 // Make sure recently modified stays in sync when adding a URL.
@@ -836,7 +836,7 @@ TEST_F(BookmarkModelTestWithProfile, CreateAndRestore) {
     // Structure of the children of the other node.
     const std::string other_contents;
     // Structure of the children of the synced node.
-    const std::string synced_contents;
+    const std::string mobile_contents;
   } data[] = {
     // See PopulateNodeFromString for a description of these strings.
     { "", "" },
@@ -864,16 +864,16 @@ TEST_F(BookmarkModelTestWithProfile, CreateAndRestore) {
     PopulateNodeFromString(data[i].other_contents, &other);
     PopulateBookmarkNode(&other, bb_model_, bb_model_->other_node());
 
-    TestNode synced;
-    PopulateNodeFromString(data[i].synced_contents, &synced);
-    PopulateBookmarkNode(&synced, bb_model_, bb_model_->synced_node());
+    TestNode mobile;
+    PopulateNodeFromString(data[i].mobile_contents, &mobile);
+    PopulateBookmarkNode(&mobile, bb_model_, bb_model_->mobile_node());
 
     profile_->CreateBookmarkModel(false);
     BlockTillBookmarkModelLoaded();
 
     VerifyModelMatchesNode(&bbn, bb_model_->bookmark_bar_node());
     VerifyModelMatchesNode(&other, bb_model_->other_node());
-    VerifyModelMatchesNode(&synced, bb_model_->synced_node());
+    VerifyModelMatchesNode(&mobile, bb_model_->mobile_node());
     VerifyNoDuplicateIDs(bb_model_);
   }
 }
@@ -943,7 +943,7 @@ class BookmarkModelTestWithProfile2 : public BookmarkModelTestWithProfile {
     ASSERT_TRUE(child->url() ==
                 GURL("http://www.google.com/intl/en/about.html"));
 
-    parent = bb_model_->synced_node();
+    parent = bb_model_->mobile_node();
     ASSERT_EQ(0, parent->child_count());
 
     ASSERT_TRUE(bb_model_->IsBookmarked(GURL("http://www.google.com")));
@@ -1079,35 +1079,6 @@ TEST_F(BookmarkModelTest, Sort) {
   EXPECT_EQ(parent->GetChild(1)->GetTitle(), ASCIIToUTF16("C"));
   EXPECT_EQ(parent->GetChild(2)->GetTitle(), ASCIIToUTF16("B"));
   EXPECT_EQ(parent->GetChild(3)->GetTitle(), ASCIIToUTF16("d"));
-}
-
-TEST_F(BookmarkModelTest, NodeVisibility) {
-  EXPECT_TRUE(model_.bookmark_bar_node()->IsVisible());
-  EXPECT_TRUE(model_.other_node()->IsVisible());
-  // Sync node invisible by default
-  EXPECT_FALSE(model_.synced_node()->IsVisible());
-
-  // Arbitrary node should be visible
-  TestNode bbn;
-  PopulateNodeFromString("B", &bbn);
-  const BookmarkNode* parent = model_.bookmark_bar_node();
-  PopulateBookmarkNode(&bbn, &model_, parent);
-  EXPECT_TRUE(parent->GetChild(0)->IsVisible());
-}
-
-TEST_F(BookmarkModelTest, SyncNodeVisibileIfFlagSet) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableSyncedBookmarksFolder);
-  EXPECT_TRUE(model_.synced_node()->IsVisible());
-}
-
-TEST_F(BookmarkModelTest, SyncNodeVisibileWithChildren) {
-  const BookmarkNode* root = model_.synced_node();
-  const string16 title(ASCIIToUTF16("foo"));
-  const GURL url("http://foo.com");
-
-  model_.AddURL(root, 0, title, url);
-  EXPECT_TRUE(model_.synced_node()->IsVisible());
 }
 
 }  // namespace

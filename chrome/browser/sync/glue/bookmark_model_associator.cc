@@ -47,7 +47,7 @@ namespace browser_sync {
 // TODO(ncarter): Pull these tags from an external protocol specification
 // rather than hardcoding them here.
 static const char kBookmarkBarTag[] = "bookmark_bar";
-static const char kSyncedBookmarksTag[] = "synced_bookmarks";
+static const char kMobileBookmarksTag[] = "synced_bookmarks";
 static const char kOtherBookmarksTag[] = "other_bookmarks";
 static const char kServerError[] =
     "Server did not create top-level nodes.  Possibly we are running against "
@@ -243,7 +243,7 @@ void BookmarkModelAssociator::Disassociate(int64 sync_id) {
 bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   DCHECK(has_nodes);
   *has_nodes = false;
-  bool has_synced_folder = true;
+  bool has_mobile_folder = true;
   int64 bookmark_bar_sync_id;
   if (!GetSyncIdForTaggedNode(kBookmarkBarTag, &bookmark_bar_sync_id)) {
     return false;
@@ -252,9 +252,9 @@ bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   if (!GetSyncIdForTaggedNode(kOtherBookmarksTag, &other_bookmarks_sync_id)) {
     return false;
   }
-  int64 synced_bookmarks_sync_id;
-  if (!GetSyncIdForTaggedNode(kSyncedBookmarksTag, &synced_bookmarks_sync_id)) {
-    has_synced_folder = false;
+  int64 mobile_bookmarks_sync_id;
+  if (!GetSyncIdForTaggedNode(kMobileBookmarksTag, &mobile_bookmarks_sync_id)) {
+    has_mobile_folder = false;
   }
 
   sync_api::ReadTransaction trans(FROM_HERE, user_share_);
@@ -269,17 +269,17 @@ bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
     return false;
   }
 
-  sync_api::ReadNode synced_bookmarks_node(&trans);
-  if (has_synced_folder &&
-      !synced_bookmarks_node.InitByIdLookup(synced_bookmarks_sync_id)) {
+  sync_api::ReadNode mobile_bookmarks_node(&trans);
+  if (has_mobile_folder &&
+      !mobile_bookmarks_node.InitByIdLookup(mobile_bookmarks_sync_id)) {
     return false;
   }
 
-  // Sync model has user created nodes if either one of the permanent nodes
-  // has children.
+  // Sync model has user created nodes if any of the permanent nodes has
+  // children.
   *has_nodes = bookmark_bar_node.HasChildren() ||
       other_bookmarks_node.HasChildren() ||
-      (has_synced_folder && synced_bookmarks_node.HasChildren());
+      (has_mobile_folder && mobile_bookmarks_node.HasChildren());
   return true;
 }
 
@@ -368,12 +368,8 @@ bool BookmarkModelAssociator::BuildAssociations(SyncError* error) {
     error->Reset(FROM_HERE, kServerError, model_type());
     return false;
   }
-  if (!AssociateTaggedPermanentNode(bookmark_model_->synced_node(),
-                                    kSyncedBookmarksTag) &&
-      // We only need to ensure that the "synced bookmarks" folder exists on the
-      // server if the command line flag is set.
-      CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSyncedBookmarksFolder)) {
+  if (!AssociateTaggedPermanentNode(bookmark_model_->mobile_node(),
+                                    kMobileBookmarksTag)) {
     error->Reset(FROM_HERE, kServerError, model_type());
     return false;
   }
@@ -383,16 +379,13 @@ bool BookmarkModelAssociator::BuildAssociations(SyncError* error) {
   int64 other_bookmarks_sync_id = GetSyncIdFromChromeId(
       bookmark_model_->other_node()->id());
   DCHECK_NE(other_bookmarks_sync_id, sync_api::kInvalidId);
-  int64 synced_bookmarks_sync_id = GetSyncIdFromChromeId(
-       bookmark_model_->synced_node()->id());
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSyncedBookmarksFolder)) {
-    DCHECK_NE(synced_bookmarks_sync_id, sync_api::kInvalidId);
-  }
+  int64 mobile_bookmarks_sync_id = GetSyncIdFromChromeId(
+       bookmark_model_->mobile_node()->id());
+  DCHECK_NE(mobile_bookmarks_sync_id, sync_api::kInvalidId);
 
   std::stack<int64> dfs_stack;
-  if (synced_bookmarks_sync_id != sync_api::kInvalidId)
-    dfs_stack.push(synced_bookmarks_sync_id);
+  if (mobile_bookmarks_sync_id != sync_api::kInvalidId)
+    dfs_stack.push(mobile_bookmarks_sync_id);
   dfs_stack.push(other_bookmarks_sync_id);
   dfs_stack.push(bookmark_bar_sync_id);
 
@@ -531,11 +524,8 @@ bool BookmarkModelAssociator::LoadAssociations() {
     // We should always be able to find the permanent nodes.
     return false;
   }
-  int64 synced_bookmarks_id = -1;
-  if (!GetSyncIdForTaggedNode(kSyncedBookmarksTag, &synced_bookmarks_id) &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSyncedBookmarksFolder)) {
-
+  int64 mobile_bookmarks_id = -1;
+  if (!GetSyncIdForTaggedNode(kMobileBookmarksTag, &mobile_bookmarks_id)) {
     // We should always be able to find the permanent nodes.
     return false;
   }
@@ -545,11 +535,10 @@ bool BookmarkModelAssociator::LoadAssociations() {
   BookmarkNodeIdIndex id_index;
   id_index.AddAll(bookmark_model_->bookmark_bar_node());
   id_index.AddAll(bookmark_model_->other_node());
-  id_index.AddAll(bookmark_model_->synced_node());
+  id_index.AddAll(bookmark_model_->mobile_node());
 
   std::stack<int64> dfs_stack;
-  if (synced_bookmarks_id != -1)
-    dfs_stack.push(synced_bookmarks_id);
+  dfs_stack.push(mobile_bookmarks_id);
   dfs_stack.push(other_bookmarks_id);
   dfs_stack.push(bookmark_bar_id);
 
@@ -578,7 +567,7 @@ bool BookmarkModelAssociator::LoadAssociations() {
     // Don't try to call NodesMatch on permanent nodes like bookmark bar and
     // other bookmarks. They are not expected to match.
     if (node != bookmark_model_->bookmark_bar_node() &&
-        node != bookmark_model_->synced_node() &&
+        node != bookmark_model_->mobile_node() &&
         node != bookmark_model_->other_node() &&
         !NodesMatch(node, &sync_parent))
       return false;

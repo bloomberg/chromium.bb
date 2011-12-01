@@ -296,8 +296,6 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
   virtual void SetUp() {
     test_user_share_.SetUp();
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableSyncedBookmarksFolder);
   }
 
   virtual void TearDown() {
@@ -465,7 +463,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     const BookmarkNode* root = model_->root_node();
     EXPECT_EQ(root->GetIndexOf(model_->bookmark_bar_node()), 0);
     EXPECT_EQ(root->GetIndexOf(model_->other_node()), 1);
-    EXPECT_EQ(root->GetIndexOf(model_->synced_node()), 2);
+    EXPECT_EQ(root->GetIndexOf(model_->mobile_node()), 2);
 
     std::stack<int64> stack;
     stack.push(bookmark_bar_id());
@@ -488,9 +486,9 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     ExpectModelMatch(&trans);
   }
 
-  int64 synced_bookmarks_id() {
+  int64 mobile_bookmarks_id() {
     return
-        model_associator_->GetSyncIdFromChromeId(model_->synced_node()->id());
+        model_associator_->GetSyncIdFromChromeId(model_->mobile_node()->id());
   }
 
   int64 other_bookmarks_id() {
@@ -526,7 +524,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, InitialState) {
 
   EXPECT_TRUE(other_bookmarks_id());
   EXPECT_TRUE(bookmark_bar_id());
-  EXPECT_TRUE(synced_bookmarks_id());
+  EXPECT_TRUE(mobile_bookmarks_id());
 
   ExpectModelMatch();
 }
@@ -554,9 +552,9 @@ TEST_F(ProfileSyncServiceBookmarkTest, BookmarkModelOperations) {
   ExpectSyncerNodeMatching(url2);
   ExpectModelMatch();
   // Test addition.
-  const BookmarkNode* synced_folder =
-      model_->AddFolder(model_->synced_node(), 0, ASCIIToUTF16("pie"));
-  ExpectSyncerNodeMatching(synced_folder);
+  const BookmarkNode* mobile_folder =
+      model_->AddFolder(model_->mobile_node(), 0, ASCIIToUTF16("pie"));
+  ExpectSyncerNodeMatching(mobile_folder);
   ExpectModelMatch();
 
   // Test modification.
@@ -574,7 +572,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, BookmarkModelOperations) {
   ExpectModelMatch();
   model_->Copy(url2, model_->bookmark_bar_node(), 0);
   ExpectModelMatch();
-  model_->SetTitle(synced_folder, ASCIIToUTF16("strawberry"));
+  model_->SetTitle(mobile_folder, ASCIIToUTF16("strawberry"));
   ExpectModelMatch();
 
   // Test deletion.
@@ -585,7 +583,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, BookmarkModelOperations) {
   model_->Remove(folder2->parent(),
                  folder2->parent()->GetIndexOf(folder2));
   ExpectModelMatch();
-  model_->Remove(model_->synced_node(), 0);
+  model_->Remove(model_->mobile_node(), 0);
   ExpectModelMatch();
 }
 
@@ -614,7 +612,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, ServerChangeProcessing) {
       "height=300,resizable');});");
   adds.AddURL(L"", javascript_url, other_bookmarks_id(), 0);
   int64 u6 = adds.AddURL(L"Sync1", "http://www.syncable.edu/",
-                         synced_bookmarks_id(), 0);
+                         mobile_bookmarks_id(), 0);
 
   sync_api::ChangeRecordList::const_iterator it;
   // The bookmark model shouldn't yet have seen any of the nodes of |adds|.
@@ -643,7 +641,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, ServerChangeProcessing) {
   // Then add u3 after f1.
   int64 u3_old_parent = mods.ModifyPosition(u3, f2, f1);
 
-  std::wstring u6_old_title = mods.ModifyTitle(u6, L"Synced Folder A");
+  std::wstring u6_old_title = mods.ModifyTitle(u6, L"Mobile Folder A");
 
   // Test that the property changes have not yet taken effect.
   ExpectBrowserNodeTitle(u2, u2_old_title);
@@ -982,7 +980,7 @@ namespace {
 // |   +-- dup
 // |       +-- dupu2, http://www.dupu1.com/
 // |
-// +-- Synced bookmarks
+// +-- Mobile bookmarks
 //     |-- f5
 //     |   |-- f5u1, http://www.f5u1.com/
 //     |-- f6
@@ -1036,7 +1034,7 @@ static TestData kDup2Children[] = {
   { L"dupu2", "http://www.dupu2.com/" },
 };
 
-static TestData kSyncedBookmarkChildren[] = {
+static TestData kMobileBookmarkChildren[] = {
   { L"f5", NULL },
   { L"f6", NULL },
   { L"u5", "http://www.u5.com/" },
@@ -1117,15 +1115,15 @@ void ProfileSyncServiceBookmarkTestWithData::WriteTestDataToBookmarkModel() {
   dup_node = other_bookmarks_node->GetChild(5);
   PopulateFromTestData(dup_node, kDup2Children, arraysize(kDup2Children));
 
-  const BookmarkNode* synced_bookmarks_node = model_->synced_node();
-  PopulateFromTestData(synced_bookmarks_node,
-                       kSyncedBookmarkChildren,
-                       arraysize(kSyncedBookmarkChildren));
+  const BookmarkNode* mobile_bookmarks_node = model_->mobile_node();
+  PopulateFromTestData(mobile_bookmarks_node,
+                       kMobileBookmarkChildren,
+                       arraysize(kMobileBookmarkChildren));
 
-  ASSERT_GE(synced_bookmarks_node->child_count(), 3);
-  const BookmarkNode* f5_node = synced_bookmarks_node->GetChild(0);
+  ASSERT_GE(mobile_bookmarks_node->child_count(), 3);
+  const BookmarkNode* f5_node = mobile_bookmarks_node->GetChild(0);
   PopulateFromTestData(f5_node, kF5Children, arraysize(kF5Children));
-  const BookmarkNode* f6_node = synced_bookmarks_node->GetChild(1);
+  const BookmarkNode* f6_node = mobile_bookmarks_node->GetChild(1);
   PopulateFromTestData(f6_node, kF6Children, arraysize(kF6Children));
 
   ExpectBookmarkModelMatchesTestData();
@@ -1159,15 +1157,15 @@ void ProfileSyncServiceBookmarkTestWithData::
   dup_node = other_bookmarks_node->GetChild(5);
   CompareWithTestData(dup_node, kDup2Children, arraysize(kDup2Children));
 
-  const BookmarkNode* synced_bookmarks_node = model_->synced_node();
-  CompareWithTestData(synced_bookmarks_node,
-                      kSyncedBookmarkChildren,
-                      arraysize(kSyncedBookmarkChildren));
+  const BookmarkNode* mobile_bookmarks_node = model_->mobile_node();
+  CompareWithTestData(mobile_bookmarks_node,
+                      kMobileBookmarkChildren,
+                      arraysize(kMobileBookmarkChildren));
 
-  ASSERT_GE(synced_bookmarks_node->child_count(), 3);
-  const BookmarkNode* f5_node = synced_bookmarks_node->GetChild(0);
+  ASSERT_GE(mobile_bookmarks_node->child_count(), 3);
+  const BookmarkNode* f5_node = mobile_bookmarks_node->GetChild(0);
   CompareWithTestData(f5_node, kF5Children, arraysize(kF5Children));
-  const BookmarkNode* f6_node = synced_bookmarks_node->GetChild(1);
+  const BookmarkNode* f6_node = mobile_bookmarks_node->GetChild(1);
   CompareWithTestData(f6_node, kF6Children, arraysize(kF6Children));
 
 }
@@ -1236,7 +1234,7 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, MergeWithEmptyBookmarkModel) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   EXPECT_EQ(model_->bookmark_bar_node()->child_count(), 0);
   EXPECT_EQ(model_->other_node()->child_count(), 0);
-  EXPECT_EQ(model_->synced_node()->child_count(), 0);
+  EXPECT_EQ(model_->mobile_node()->child_count(), 0);
 
   // Now restart the sync service.  Starting it should populate the bookmark
   // model -- test for consistency.

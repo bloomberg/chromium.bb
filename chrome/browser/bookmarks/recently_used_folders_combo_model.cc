@@ -27,7 +27,7 @@ RecentlyUsedFoldersComboModel::RecentlyUsedFoldersComboModel(
   // We special case the placement of these, so remove them from the list, then
   // fix up the order.
   RemoveNode(model->bookmark_bar_node());
-  RemoveNode(model->synced_node());
+  RemoveNode(model->mobile_node());
   RemoveNode(model->other_node());
   RemoveNode(node->parent());
 
@@ -43,8 +43,7 @@ RecentlyUsedFoldersComboModel::RecentlyUsedFoldersComboModel(
   // And put the bookmark bar and other nodes at the end of the list.
   nodes_.push_back(model->bookmark_bar_node());
   nodes_.push_back(model->other_node());
-  if (model->synced_node()->IsVisible())
-    nodes_.push_back(model->synced_node());
+  nodes_.push_back(model->mobile_node());
 
   std::vector<const BookmarkNode*>::iterator it = std::find(nodes_.begin(),
                                                             nodes_.end(),

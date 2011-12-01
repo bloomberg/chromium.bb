@@ -50,7 +50,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
     FOLDER,
     BOOKMARK_BAR,
     OTHER_NODE,
-    SYNCED
+    MOBILE
   };
 
   // Creates a new node with an id of 0 and |url|.
@@ -110,15 +110,6 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
     favicon_load_handle_ = handle;
   }
 
-  // Accessor method for controlling the visibility of a bookmark node/sub-tree.
-  // Note that visibility is not propagated down the tree hierarchy so if a
-  // parent node is marked as invisible, a child node may return "Visible". This
-  // function is primarily useful when traversing the model to generate a UI
-  // representation but we may want to suppress some nodes.
-  // TODO(yfriedman): Remove this when enable-synced-bookmarks-folder is
-  // no longer a command line flag.
-  virtual bool IsVisible() const;
-
   // TODO(sky): Consider adding last visit time here, it'll greatly simplify
   // HistoryContentsProvider.
 
@@ -160,30 +151,11 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   DISALLOW_COPY_AND_ASSIGN(BookmarkNode);
 };
 
-// BookmarkPermanentNode ------------------------------------------------------
-
-// The permanent nodes are the three special top level nodes "bookmark_bar",
-// "synced" and "other". Their visibility is dependent on information from the
-// profile, hence this special subclass to accomodate them.
-class BookmarkPermanentNode : public BookmarkNode {
- public:
-  // Creates a new node with |id| and |url|.
-  BookmarkPermanentNode(int64 id, const GURL& url, Profile* profile);
-
-  virtual ~BookmarkPermanentNode();
-  virtual bool IsVisible() const OVERRIDE;
-
- private:
-  Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(BookmarkPermanentNode);
-};
-
 // BookmarkModel --------------------------------------------------------------
 
 // BookmarkModel provides a directed acyclic graph of URLs and folders.
 // Three graphs are provided for the three entry points: those on the 'bookmarks
-// bar', those in the 'other bookmarks' folder and those in the 'synced' folder.
+// bar', those in the 'other bookmarks' folder and those in the 'mobile' folder.
 //
 // An observer may be attached to observe relevant events.
 //
@@ -218,18 +190,18 @@ class BookmarkModel : public content::NotificationObserver,
   // Returns the 'other' node. This is NULL until loaded.
   const BookmarkNode* other_node() { return other_node_; }
 
-  // Returns the 'synced' node. This is NULL until loaded.
-  const BookmarkNode* synced_node() { return synced_node_; }
+  // Returns the 'mobile' node. This is NULL until loaded.
+  const BookmarkNode* mobile_node() { return mobile_node_; }
 
   bool is_root_node(const BookmarkNode* node) const { return node == &root_; }
 
   // Returns whether the given |node| is one of the permanent nodes - root node,
-  // 'bookmark bar' node, 'other' node or 'synced' node.
+  // 'bookmark bar' node, 'other' node or 'mobile' node.
   bool is_permanent_node(const BookmarkNode* node) const {
     return node == &root_ ||
            node == bookmark_bar_node_ ||
            node == other_node_ ||
-           node == synced_node_;
+           node == mobile_node_;
   }
 
   Profile* profile() const { return profile_; }
@@ -399,7 +371,7 @@ class BookmarkModel : public content::NotificationObserver,
   bool IsValidIndex(const BookmarkNode* parent, int index, bool allow_end);
 
   // Creates one of the possible permanent nodes (bookmark bar node, other node
-  // and synced node) from |type|.
+  // and mobile node) from |type|.
   BookmarkNode* CreatePermanentNode(BookmarkNode::Type type);
 
   // Notification that a favicon has finished loading. If we can decode the
@@ -451,7 +423,7 @@ class BookmarkModel : public content::NotificationObserver,
 
   BookmarkNode* bookmark_bar_node_;
   BookmarkNode* other_node_;
-  BookmarkNode* synced_node_;
+  BookmarkNode* mobile_node_;
 
   // The maximum ID assigned to the bookmark nodes in the model.
   int64 next_node_id_;

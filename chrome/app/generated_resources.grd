@@ -6678,8 +6678,8 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Name shown in the tree for the bookmarks bar folder">
           Bookmarks bar
         </message>
-        <message name="IDS_BOOKMARK_BAR_SYNCED_FOLDER_NAME" desc="Name shown in the tree for the synced bookmarks folder">
-          Synced bookmarks
+        <message name="IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME" desc="Name shown in the tree for the mobile bookmarks folder">
+          Mobile bookmarks
         </message>
         <message name="IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME" desc="Name shown in the tree for the other bookmarks folder">
           Other bookmarks
@@ -6689,8 +6689,8 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the bookmarks bar folder">
           Bookmarks Bar
         </message>
-        <message name="IDS_BOOKMARK_BAR_SYNCED_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the synced bookmarks folder">
-          Synced Bookmarks
+        <message name="IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the mobile bookmarks folder">
+          Mobile Bookmarks
         </message>
         <message name="IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the other bookmarks folder">
           Other Bookmarks

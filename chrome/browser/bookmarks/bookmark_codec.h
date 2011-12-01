@@ -50,7 +50,7 @@ class BookmarkCodec {
   // bookmarks out of the database.
   base::Value* Encode(const BookmarkNode* bookmark_bar_node,
                 const BookmarkNode* other_folder_node,
-                const BookmarkNode* synced_folder_node);
+                const BookmarkNode* mobile_folder_node);
 
   // Decodes the previously encoded value to the specified nodes as well as
   // setting |max_node_id| to the greatest node id. Returns true on success,
@@ -59,7 +59,7 @@ class BookmarkCodec {
   // |max_node_id| is set to the max id of the nodes.
   bool Decode(BookmarkNode* bb_node,
               BookmarkNode* other_folder_node,
-              BookmarkNode* synced_folder_node,
+              BookmarkNode* mobile_folder_node,
               int64* max_node_id,
               const base::Value& value);
 
@@ -81,7 +81,7 @@ class BookmarkCodec {
   static const char* kRootsKey;
   static const char* kRootFolderNameKey;
   static const char* kOtherBookmarkFolderNameKey;
-  static const char* kSyncedBookmarkFolderNameKey;
+  static const char* kMobileBookmarkFolderNameKey;
   static const char* kVersionKey;
   static const char* kChecksumKey;
   static const char* kIdKey;
@@ -104,7 +104,7 @@ class BookmarkCodec {
   // Helper to perform decoding.
   bool DecodeHelper(BookmarkNode* bb_node,
                     BookmarkNode* other_folder_node,
-                    BookmarkNode* synced_folder_node,
+                    BookmarkNode* mobile_folder_node,
                     const base::Value& value);
 
   // Decodes the children of the specified node. Returns true on success.
@@ -114,7 +114,7 @@ class BookmarkCodec {
   // Reassigns bookmark IDs for all nodes.
   void ReassignIDs(BookmarkNode* bb_node,
                    BookmarkNode* other_node,
-                   BookmarkNode* synced_node);
+                   BookmarkNode* mobile_node);
 
   // Helper to recursively reassign IDs.
   void ReassignIDsHelper(BookmarkNode* node);

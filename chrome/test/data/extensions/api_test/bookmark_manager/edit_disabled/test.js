@@ -22,13 +22,14 @@ var ERROR = "Bookmark editing is disabled.";
 //        "BBB"
 //      "AAA"
 //    Other Bookmarks/
+//    Mobile Bookmarks/
 
 var tests = [
   function verifyModel() {
     bookmarks.getTree(pass(function(result) {
       assertEq(1, result.length);
       var root = result[0];
-      assertEq(2, root.children.length);
+      assertEq(3, root.children.length);
       bar = root.children[0];
       assertEq(2, bar.children.length);
       folder = bar.children[0];

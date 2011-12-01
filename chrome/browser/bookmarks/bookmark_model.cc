@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
 #include "base/string_util.h"
 #include "build/build_config.h"
@@ -23,7 +22,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
@@ -57,10 +55,6 @@ BookmarkNode::BookmarkNode(int64 id, const GURL& url)
 BookmarkNode::~BookmarkNode() {
 }
 
-bool BookmarkNode::IsVisible() const {
-  return true;
-}
-
 void BookmarkNode::Initialize(int64 id) {
   id_ = id;
   type_ = url_.is_empty() ? FOLDER : URL;
@@ -72,27 +66,6 @@ void BookmarkNode::Initialize(int64 id) {
 void BookmarkNode::InvalidateFavicon() {
   favicon_ = SkBitmap();
   is_favicon_loaded_ = false;
-}
-
-// BookmarkPermanentNode ------------------------------------------------------
-
-BookmarkPermanentNode::BookmarkPermanentNode(int64 id,
-                                             const GURL& url,
-                                             Profile* profile)
-    : BookmarkNode(id, url),
-      profile_(profile) {
-}
-
-BookmarkPermanentNode::~BookmarkPermanentNode() {
-}
-
-bool BookmarkPermanentNode::IsVisible() const {
-  // The synced bookmark folder is invisible if the flag isn't set and there are
-  // no bookmarks under it.
-  return type() != BookmarkNode::SYNCED ||
-         CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableSyncedBookmarksFolder) ||
-         !empty();
 }
 
 // BookmarkModel --------------------------------------------------------------
@@ -133,7 +106,7 @@ BookmarkModel::BookmarkModel(Profile* profile)
       root_(GURL()),
       bookmark_bar_node_(NULL),
       other_node_(NULL),
-      synced_node_(NULL),
+      mobile_node_(NULL),
       next_node_id_(1),
       observers_(ObserverList<BookmarkModelObserver>::NOTIFY_EXISTING_ONLY),
       loaded_signal_(true, false) {
@@ -598,14 +571,14 @@ void BookmarkModel::DoneLoading(
   }
   bookmark_bar_node_ = details->release_bb_node();
   other_node_ = details->release_other_folder_node();
-  synced_node_ = details->release_synced_folder_node();
+  mobile_node_ = details->release_mobile_folder_node();
   index_.reset(details->release_index());
 
   // WARNING: order is important here, various places assume the order is
   // constant.
   root_.Add(bookmark_bar_node_, 0);
   root_.Add(other_node_, 1);
-  root_.Add(synced_node_, 2);
+  root_.Add(mobile_node_, 2);
 
   {
     base::AutoLock url_lock(url_lock_);
@@ -729,9 +702,8 @@ bool BookmarkModel::IsValidIndex(const BookmarkNode* parent,
 BookmarkNode* BookmarkModel::CreatePermanentNode(BookmarkNode::Type type) {
   DCHECK(type == BookmarkNode::BOOKMARK_BAR ||
          type == BookmarkNode::OTHER_NODE ||
-         type == BookmarkNode::SYNCED);
-  BookmarkPermanentNode* node = new BookmarkPermanentNode(
-      generate_next_node_id(), GURL(), profile_);
+         type == BookmarkNode::MOBILE);
+  BookmarkNode* node = new BookmarkNode(generate_next_node_id(), GURL());
   node->set_type(type);
   if (type == BookmarkNode::BOOKMARK_BAR) {
     node->set_title(l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_FOLDER_NAME));
@@ -740,7 +712,7 @@ BookmarkNode* BookmarkModel::CreatePermanentNode(BookmarkNode::Type type) {
         l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME));
   } else {
     node->set_title(
-        l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_SYNCED_FOLDER_NAME));
+        l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME));
   }
   return node;
 }
@@ -839,7 +811,7 @@ int64 BookmarkModel::generate_next_node_id() {
 BookmarkLoadDetails* BookmarkModel::CreateLoadDetails() {
   BookmarkNode* bb_node = CreatePermanentNode(BookmarkNode::BOOKMARK_BAR);
   BookmarkNode* other_node = CreatePermanentNode(BookmarkNode::OTHER_NODE);
-  BookmarkNode* synced_node = CreatePermanentNode(BookmarkNode::SYNCED);
-  return new BookmarkLoadDetails(bb_node, other_node, synced_node,
+  BookmarkNode* mobile_node = CreatePermanentNode(BookmarkNode::MOBILE);
+  return new BookmarkLoadDetails(bb_node, other_node, mobile_node,
                                  new BookmarkIndex(profile_), next_node_id_);
 }
