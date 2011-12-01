@@ -19,6 +19,9 @@ function getURLNonUTF8SetCookie() {
 function getURLHttpSimpleLoad() {
   return getServerURL('files/extensions/api_test/webrequest/simpleLoad/a.html');
 }
+function getURLHttpXHRData() {
+  return getServerURL('files/extensions/api_test/webrequest/xhr/data.json');
+}
 
 function toCharCodes(str) {
   var result = [];
@@ -514,6 +517,117 @@ runTests([
       { code: "chrome.extension.sendRequest(" +
             "{pass: document.cookie.indexOf('Foo') == -1});"
         });
+    });
+  },
+
+  // Checks that XHR requests from ourself are invisible to blocking handlers.
+  function xhrsFromOurselfAreInvisible() {
+    expect(
+      [  // events
+        { label: "a-onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            url: getURL("simpleLoad/a.html"),
+            frameUrl: getURL("simpleLoad/a.html")
+          }
+        },
+        { label: "a-onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: getURL("simpleLoad/a.html"),
+            statusCode: 200,
+            fromCache: false,
+            statusLine: "HTTP/1.1 200 OK",
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+        { label: "a-onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURL("simpleLoad/a.html"),
+            statusCode: 200,
+            fromCache: false,
+            statusLine: "HTTP/1.1 200 OK",
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+        // We do not see onBeforeRequest for the XHR request here because it is
+        // handled by a blocking handler.
+        { label: "x-onSendHeaders",
+          event: "onSendHeaders",
+          details: {
+            url: getURLHttpXHRData(),
+            tabId: 1,
+            type: "xmlhttprequest",
+          }
+        },
+        { label: "x-onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: getURLHttpXHRData(),
+            statusCode: 200,
+            fromCache: false,
+            statusLine: "HTTP/1.0 200 OK",
+            tabId: 1,
+            type: "xmlhttprequest",
+            ip: "127.0.0.1",
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+        { label: "x-onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURLHttpXHRData(),
+            statusCode: 200,
+            fromCache: false,
+            statusLine: "HTTP/1.0 200 OK",
+            tabId: 1,
+            type: "xmlhttprequest",
+            ip: "127.0.0.1",
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+        { label: "b-onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            url: getURL("complexLoad/b.jpg"),
+            frameUrl: getURL("complexLoad/b.jpg")
+          }
+        },
+        { label: "b-onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: getURL("complexLoad/b.jpg"),
+            statusCode: 200,
+            fromCache: false,
+            statusLine: "HTTP/1.1 200 OK",
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+        { label: "b-onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURL("complexLoad/b.jpg"),
+            statusCode: 200,
+            fromCache: false,
+            statusLine: "HTTP/1.1 200 OK",
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+      ],
+      [  // event order
+        ["a-onBeforeRequest", "a-onResponseStarted", "a-onCompleted",
+         "x-onSendHeaders", "x-onResponseStarted", "x-onCompleted",
+         "b-onBeforeRequest", "b-onResponseStarted", "b-onCompleted"]
+      ],
+      {}, ["blocking"]);
+    // Check the page content for our modified User-Agent string.
+    navigateAndWait(getURL("simpleLoad/a.html"), function() {
+        var req = new XMLHttpRequest();
+        var asynchronous = false;
+        req.open("GET", getURLHttpXHRData(), asynchronous);
+        req.send(null);
+        navigateAndWait(getURL("complexLoad/b.jpg"));
     });
   },
 ]);

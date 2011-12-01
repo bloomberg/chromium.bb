@@ -114,6 +114,25 @@ bool IsWebRequestEvent(const std::string& event_name) {
                    event_name) != ARRAYEND(kWebRequestEvents);
 }
 
+// Returns whether |request| has been triggered by an extension in
+// |extension_info_map|.
+bool IsRequestFromExtension(const net::URLRequest* request,
+                            const ExtensionInfoMap* extension_info_map) {
+  // |extension_info_map| is NULL for system-level requests.
+  if (!extension_info_map)
+    return false;
+
+  const ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(request);
+
+  // If this request was not created by the ResourceDispatcher, |info| is NULL.
+  // All requests from extensions are created by the ResourceDispatcher.
+  if (!info)
+    return false;
+
+  return extension_info_map->process_map().Contains(info->child_id());
+}
+
 // Returns true if the scheme is one we want to allow extensions to have access
 // to. Extensions still need specific permissions for a given URL, which is
 // covered by CanExtensionAccessURL.
@@ -1093,6 +1112,7 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     int tab_id,
     int window_id,
     ResourceType::Type resource_type,
+    bool is_request_from_extension,
     int* extra_info_spec,
     std::vector<const ExtensionWebRequestEventRouter::EventListener*>*
         matching_listeners) {
@@ -1127,9 +1147,24 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
            !extension_info_map->CanCrossIncognito(extension)))
         continue;
 
+      bool blocking_listener =
+          (it->extra_info_spec &
+              (ExtraInfoSpec::BLOCKING | ExtraInfoSpec::ASYNC_BLOCKING)) != 0;
+
+      // We do not want to notify extensions about XHR requests that are
+      // triggered by themselves. This is a workaround to prevent deadlocks
+      // in case of synchronous XHR requests that block the extension renderer
+      // and therefore prevent the extension from processing the request
+      // handler. This is only a problem for blocking listeners.
+      // http://crbug.com/105656
+      bool possibly_synchronous_xhr_from_extension =
+          is_request_from_extension && resource_type == ResourceType::XHR;
+
       // Only send webRequest events for URLs the extension has access to.
-      if (!CanExtensionAccessURL(extension, url))
+      if (!CanExtensionAccessURL(extension, url) ||
+          (blocking_listener && possibly_synchronous_xhr_from_extension)) {
         continue;
+      }
     }
 
     matching_listeners->push_back(&(*it));
@@ -1163,15 +1198,20 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
   std::vector<const ExtensionWebRequestEventRouter::EventListener*>
       matching_listeners;
 
+  bool is_request_from_extension =
+      IsRequestFromExtension(request, extension_info_map);
+
   GetMatchingListenersImpl(
       profile, extension_info_map, false, event_name, url,
-      tab_id, window_id, resource_type, extra_info_spec, &matching_listeners);
+      tab_id, window_id, resource_type, is_request_from_extension,
+      extra_info_spec, &matching_listeners);
   CrossProfileMap::const_iterator cross_profile =
       cross_profile_map_.find(profile);
   if (cross_profile != cross_profile_map_.end()) {
     GetMatchingListenersImpl(
         cross_profile->second, extension_info_map, true, event_name, url,
-        tab_id, window_id, resource_type, extra_info_spec, &matching_listeners);
+        tab_id, window_id, resource_type, is_request_from_extension,
+        extra_info_spec, &matching_listeners);
   }
 
   return matching_listeners;
