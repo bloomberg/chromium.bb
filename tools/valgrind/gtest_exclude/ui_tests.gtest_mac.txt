@@ -334,8 +334,6 @@ PPAPITest.Flash_GetProxyForURL
 PPAPITest.Flash_MessageLoop
 PPAPITest.Flash_SetInstanceAlwaysOnTop
 PPAPITest.InputEvent
-PPAPITest.WebSocket_Create
-PPAPITest.WebSocket_IsWebSocket
 
 # Fails consistently.  http://crbug.com/105080.
 OutOfProcessPPAPITest.NetAddressPrivate_AreEqual
@@ -352,6 +350,9 @@ PPAPITest.NetAddressPrivate_GetAnyAddress
 PPAPITest.NetAddressPrivate_ReplacePort
 
 # http://crbug.com/105551
+PPAPITest.WebSocket_IsWebSocket
 PPAPITest.WebSocket_InvalidConnect
+PPAPITest.WebSocket_GetURL
 PPAPITest.WebSocket_ValidConnect
+PPAPITest.WebSocket_GetProtocol
 PPAPITest.WebSocket_TextSendReceive
