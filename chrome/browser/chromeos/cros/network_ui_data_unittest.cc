@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_ptr.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/network_ui_data.h"
@@ -47,6 +48,7 @@ class NetworkUIDataTest : public testing::Test {
                             const char* property_key,
                             const char* controller,
                             base::Value* default_value) {
+    scoped_ptr<base::Value> scoped_default_value(default_value);
     DictionaryValue* property_dict;
     std::string key = base::StringPrintf("%s.%s",
                                          NetworkUIData::kKeyProperties,
