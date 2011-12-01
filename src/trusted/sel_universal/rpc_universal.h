@@ -80,6 +80,7 @@ class NaClCommandLoop {
 // possibly platform dependent stuff (c.f. rpc_universal_system.cc)
 bool HandlerSleep(NaClCommandLoop* ncl, const vector<string>& args);
 bool HandlerReadonlyFile(NaClCommandLoop* ncl, const vector<string>& args);
+bool HandlerReadwriteFile(NaClCommandLoop* ncl, const vector<string>& args);
 bool HandlerShmem(NaClCommandLoop* ncl, const vector<string>& args);
 bool HandlerMap(NaClCommandLoop* ncl, const vector<string>& args);
 bool HandlerSaveToFile(NaClCommandLoop* ncl, const vector<string>& args);

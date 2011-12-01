@@ -27,6 +27,7 @@
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/reverse_service/reverse_service.h"
 #include "native_client/src/trusted/sel_universal/pepper_emu_handler.h"
+#include "native_client/src/trusted/sel_universal/pnacl_emu_handler.h"
 #include "native_client/src/trusted/sel_universal/replay_handler.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 
@@ -300,6 +301,7 @@ int raii_main(int argc, char* argv[]) {
   // possible platform specific stuff
   loop.AddHandler("shmem", HandlerShmem);
   loop.AddHandler("readonly_file", HandlerReadonlyFile);
+  loop.AddHandler("readwrite_file", HandlerReadwriteFile);
   loop.AddHandler("sleep", HandlerSleep);
   loop.AddHandler("map_shmem", HandlerMap);
   loop.AddHandler("save_to_file", HandlerSaveToFile);
@@ -311,6 +313,10 @@ int raii_main(int argc, char* argv[]) {
   loop.AddHandler("sdl_initialize", HandlerPepperEmuInitialize);
   loop.AddHandler("sdl_event_loop", HandlerPepperEmuEventLoop);
   // new names
+  loop.AddHandler("pnacl_emu_initialize", HandlerPnaclEmuInitialize);
+  loop.AddHandler("pnacl_emu_add_varname_mapping",
+                  HandlerPnaclEmuAddVarnameMapping);
+
   loop.AddHandler("pepper_emu_initialize", HandlerPepperEmuInitialize);
   loop.AddHandler("pepper_emu_event_loop", HandlerPepperEmuEventLoop);
   loop.AddHandler("pepper_emu_set_quit_message",

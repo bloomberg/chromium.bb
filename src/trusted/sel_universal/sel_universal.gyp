@@ -19,6 +19,8 @@
                     'pepper_emu_postmessage.cc',
                     'pepper_emu_2d.cc',
                     'pepper_emu_3d_stub.cc',
+                    'pnacl_emu_coordinator.cc',
+                    'pnacl_emu_handler.cc',
                     'primitives_simple.cc',
                     'replay_handler.cc',
                     'rpc_universal_system.cc',

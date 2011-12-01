@@ -25,6 +25,7 @@ using std::stringstream;
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/sel_universal/parsing.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 
 
 namespace {
@@ -152,7 +153,28 @@ bool HandlerReadonlyFile(NaClCommandLoop* ncl, const vector<string>& args) {
   }
 
   nacl::DescWrapperFactory factory;
-  nacl::DescWrapper* desc = factory.OpenHostFile(args[2].c_str(), O_RDONLY, 0);
+  nacl::DescWrapper* desc = factory.OpenHostFile(args[2].c_str(),
+                                                 NACL_ABI_O_RDONLY, 0);
+  if (NULL == desc) {
+    NaClLog(LOG_ERROR, "cound not create file desc for %s\n", args[2].c_str());
+    return false;
+  }
+  ncl->AddDesc(desc->desc(), args[1]);
+  return true;
+}
+
+// create a descriptor representing a read-write file.
+// Used for temporary files created by the pnacl translator.
+bool HandlerReadwriteFile(NaClCommandLoop* ncl, const vector<string>& args) {
+  if (args.size() < 3) {
+    NaClLog(LOG_ERROR, "not enough args\n");
+    return false;
+  }
+
+  nacl::DescWrapperFactory factory;
+  nacl::DescWrapper* desc =
+      factory.OpenHostFile(args[2].c_str(),
+                           NACL_ABI_O_RDWR | NACL_ABI_O_CREAT, 0666);
   if (NULL == desc) {
     NaClLog(LOG_ERROR, "cound not create file desc for %s\n", args[2].c_str());
     return false;
