@@ -21,7 +21,7 @@ typedef std::vector<SettingChange> SettingChangeList;
 class SettingChange {
  public:
   // Converts an SettingChangeList into JSON of the form:
-  // [ { "key": "foo", "oldValue": "bar", "newValue": "baz" } ]
+  // { "foo": { "key": "foo", "oldValue": "bar", "newValue": "baz" } }
   static std::string GetEventJson(const SettingChangeList& changes);
 
   // Ownership of |old_value| and |new_value| taken.

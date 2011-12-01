@@ -652,7 +652,7 @@
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.storage.</span><span>onChanged</span><span class="subdued">.addListener</span>(function(<span>array of StorageChange changes, string namespace</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.experimental.storage.</span><span>onChanged</span><span class="subdued">.addListener</span>(function(<span>object changes, string namespace</span>) <span class="subdued">{...}</span><span></span>);
               </div>
 
               <div class="description">
@@ -679,21 +679,10 @@
                         <a> Type</a>
                       </span>
                       <span>
-                        <span>
-                          array of <span><span>
-                      <span>
-                        <a href="experimental.storage.html#type-StorageChange">StorageChange</a>
-                      </span>
-                      <span style="display: none; ">
-                        <span>
+                        <span style="display: none; ">
                           array of <span><span></span></span>
                         </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
-                    </span></span>
-                        </span>
-                        <span style="display: none; ">paramType</span>
+                        <span>object</span>
                         <span style="display: none; "></span>
                       </span>
                     </span>
@@ -702,12 +691,10 @@
 
               </em>
           </dt>
-          <dd class="todo">
+          <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
+          <dd>Object mapping each key that changed to its corresponding <a href="#type-StorageChange">StorageChange</a> for that item.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -719,9 +706,9 @@
           </dd>
 
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
+          <dd>
             <dl>
-              <div>
+              <div style="display: none; ">
                 <div>
                 </div>
               </div>
@@ -775,7 +762,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The namespace (e.g. sync or local) of the storage area the changes are for.</dd>
+          <dd>The namespace ("sync" or "local") of the storage area the changes are for.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -898,74 +885,6 @@
           <dd>
             <dl>
               <div>
-                <div>
-          <dt>
-            <var>key</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>string</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>The key of the item which changed.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-              </div><div>
                 <div>
           <dt>
             <var>oldValue</var>

@@ -11,20 +11,18 @@
 namespace extensions {
 
 /* static */
-std::string SettingChange::GetEventJson(
-    const SettingChangeList& changes) {
-  ListValue changes_value;
+std::string SettingChange::GetEventJson(const SettingChangeList& changes) {
+  DictionaryValue changes_value;
   for (SettingChangeList::const_iterator it = changes.begin();
       it != changes.end(); ++it) {
     DictionaryValue* change_value = new DictionaryValue();
-    change_value->SetString("key", it->key());
     if (it->old_value()) {
       change_value->Set("oldValue", it->old_value()->DeepCopy());
     }
     if (it->new_value()) {
       change_value->Set("newValue", it->new_value()->DeepCopy());
     }
-    changes_value.Append(change_value);
+    changes_value.Set(it->key(), change_value);
   }
   std::string json;
   base::JSONWriter::Write(&changes_value, false, &json);

@@ -1021,7 +1021,6 @@
         "id": "StorageChange",
         "type": "object",
         "properties": {
-          "key": {"type": "string", "description": "The key of the item which changed."},
           "oldValue": {
             "type": "any",
             "description": "The old value of the item, if there was an old value.",
@@ -1147,13 +1146,15 @@
         "parameters": [
           {
             "name": "changes",
-            "type": "array",
-            "items": {"$ref": "StorageChange"}
+            "type": "object",
+            "properties": {},
+            "additionalProperties": { "$ref": "StorageChange" },
+            "description": "Object mapping each key that changed to its corresponding <a href='#type-StorageChange'>StorageChange</a> for that item."
           },
           {
             "name": "namespace",
             "type": "string",
-            "description": "The namespace (e.g. sync or local) of the storage area the changes are for."
+            "description": "The namespace (\"sync\" or \"local\") of the storage area the changes are for."
           }
         ]
       }

@@ -4,11 +4,12 @@ var assertEq = chrome.test.assertEq;
 var inIncognitoContext = chrome.extension.inIncognitoContext;
 
 ['sync', 'local'].forEach(function(namespace) {
-  api[namespace].notifications = [];
+  api[namespace].notifications = {};
   api.onChanged.addListener(function(changes, event_namespace) {
     if (event_namespace == namespace) {
-      changes.forEach(function(change) {
-        api[namespace].notifications.push(change);
+      var notifications = api[namespace].notifications;
+      Object.keys(changes).forEach(function(key) {
+        notifications[key] = changes[key];
       });
     }
   });
@@ -25,13 +26,13 @@ var testActions = {
   },
   assertEmpty: function(callback) {
     this.get(null, function(settings) {
-      chrome.test.assertEq({}, settings);
+      assertEq({}, settings);
       callback();
     });
   },
   assertFoo: function(callback) {
     this.get(null, function(settings) {
-      chrome.test.assertEq({foo: "bar"}, settings);
+      assertEq({foo: "bar"}, settings);
       callback();
     });
   },
@@ -45,19 +46,19 @@ var testActions = {
     this.clear(callback);
   },
   assertNoNotifications: function(callback) {
-    assertEq([], this.notifications);
+    assertEq({}, this.notifications);
     callback();
   },
   clearNotifications: function(callback) {
-    this.notifications.length = 0;
+    this.notifications = {};
     callback();
   },
   assertAddFooNotification: function(callback) {
-    assertEq([{ key: 'foo', newValue: 'bar' }], this.notifications);
+    assertEq({ foo: { newValue: 'bar' } }, this.notifications);
     callback();
   },
   assertDeleteFooNotification: function(callback) {
-    assertEq([{ key: 'foo', oldValue: 'bar' }], this.notifications);
+    assertEq({ foo: { oldValue: 'bar' } }, this.notifications);
     callback();
   }
 };
