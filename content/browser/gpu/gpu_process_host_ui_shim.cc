@@ -81,6 +81,18 @@ class ScopedSendOnIOThread {
   bool cancelled_;
 };
 
+RenderWidgetHostView* GetRenderWidgetHostViewFromID(int render_process_id,
+                                                    int render_widget_id) {
+  content::RenderProcessHost* process =
+      content::RenderProcessHost::FromID(render_process_id);
+  if (!process)
+    return NULL;
+
+  RenderWidgetHost* host = static_cast<RenderWidgetHost*>(
+      process->GetListenerByID(render_widget_id));
+  return host ? host->view() : NULL;
+}
+
 }  // namespace
 
 RouteToGpuProcessHostUIShimTask::RouteToGpuProcessHostUIShimTask(
@@ -230,11 +242,8 @@ void GpuProcessHostUIShim::OnResizeView(int32 renderer_id,
       host_id_,
       new AcceleratedSurfaceMsg_ResizeViewACK(route_id));
 
-  RenderViewHost* host = RenderViewHost::FromID(renderer_id, render_view_id);
-  if (!host)
-    return;
-
-  RenderWidgetHostView* view = host->view();
+  RenderWidgetHostView* view = GetRenderWidgetHostViewFromID(renderer_id,
+                                                             render_view_id);
   if (!view)
     return;
 
@@ -277,12 +286,8 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
           params.surface_id,
           TransportDIB::DefaultHandleValue()));
 
-  RenderViewHost* host = RenderViewHost::FromID(params.renderer_id,
-                                                params.render_view_id);
-  if (!host)
-    return;
-
-  RenderWidgetHostView* view = host->view();
+  RenderWidgetHostView* view = GetRenderWidgetHostViewFromID(
+      params.renderer_id, params.render_view_id);
   if (!view)
     return;
 
@@ -336,12 +341,8 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
       host_id_,
       new AcceleratedSurfaceMsg_BuffersSwappedACK(params.route_id));
 
-  RenderViewHost* host = RenderViewHost::FromID(params.renderer_id,
-                                                params.render_view_id);
-  if (!host)
-    return;
-
-  RenderWidgetHostView* view = host->view();
+  RenderWidgetHostView* view = GetRenderWidgetHostViewFromID(
+      params.renderer_id, params.render_view_id);
   if (!view)
     return;
 
@@ -360,12 +361,8 @@ void GpuProcessHostUIShim::OnAcceleratedSurfacePostSubBuffer(
       host_id_,
       new AcceleratedSurfaceMsg_PostSubBufferACK(params.route_id));
 
-  RenderViewHost* host = RenderViewHost::FromID(params.renderer_id,
-                                                params.render_view_id);
-  if (!host)
-    return;
-
-  RenderWidgetHostView* view = host->view();
+  RenderWidgetHostView* view = GetRenderWidgetHostViewFromID(
+      params.renderer_id, params.render_view_id);
   if (!view)
     return;
 
@@ -379,11 +376,8 @@ void GpuProcessHostUIShim::OnAcceleratedSurfacePostSubBuffer(
 
 void GpuProcessHostUIShim::OnAcceleratedSurfaceRelease(
     const GpuHostMsg_AcceleratedSurfaceRelease_Params& params) {
-  RenderViewHost* host = RenderViewHost::FromID(params.renderer_id,
-                                                params.render_view_id);
-  if (!host)
-    return;
-  RenderWidgetHostView* view = host->view();
+  RenderWidgetHostView* view = GetRenderWidgetHostViewFromID(
+      params.renderer_id, params.render_view_id);
   if (!view)
     return;
   view->AcceleratedSurfaceRelease(params.identifier);

@@ -424,6 +424,9 @@ const float kTexCoords[] = {
 
 bool RenderWidgetFullscreenPepper::InitContext() {
   gpu::gles2::GLES2Implementation* gl = context_->GetImplementation();
+  gl->ResizeCHROMIUM(size().width(), size().height());
+  gl->Viewport(0, 0, size().width(), size().height());
+
   program_ = gl->CreateProgram();
 
   GLuint vertex_shader =
