@@ -261,10 +261,9 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
         method_call,
         base::Bind(&ProxyResolutionServiceProviderTest::OnResponse,
                    base::Unretained(this)));
-    // Wait for a response.
-    while (!response_received_) {
+    // Check for a response.
+    if (!response_received_)
       message_loop_.Run();
-    }
     // Return response.
     return response_.release();
   }
@@ -273,9 +272,8 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
   void OnResponse(dbus::Response* response) {
     response_.reset(response);
     response_received_ = true;
-    if (message_loop_.is_running()) {
-        message_loop_.Quit();
-    }
+    if (message_loop_.is_running())
+      message_loop_.Quit();
   }
 
   // Behaves as |mock_object_proxy_|'s ConnectToSignal().
