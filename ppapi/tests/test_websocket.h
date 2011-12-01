@@ -26,11 +26,13 @@ class TestWebSocket : public TestCase {
   void ReleaseVar(const PP_Var& var);
   bool AreEqual(const PP_Var& var, const char* string);
 
-  PP_Resource Connect();
+  PP_Resource Connect(const char* url, int32_t* result, const char* protocol);
 
   std::string TestIsWebSocket();
   std::string TestInvalidConnect();
+  std::string TestGetURL();
   std::string TestValidConnect();
+  std::string TestGetProtocol();
   std::string TestTextSendReceive();
 
   // Used by the tests that access the C API directly.

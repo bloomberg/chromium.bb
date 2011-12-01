@@ -93,7 +93,6 @@ class PPB_WebSocket_Impl : public ::ppapi::Resource,
 
   scoped_refptr< ::ppapi::StringVar> empty_string_;
   scoped_refptr< ::ppapi::StringVar> extensions_;
-  scoped_refptr< ::ppapi::StringVar> protocol_;
   scoped_refptr< ::ppapi::StringVar> url_;
 
   uint64_t buffered_amount_;

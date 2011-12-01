@@ -131,6 +131,8 @@ int32_t PPB_WebSocket_Impl::Connect(PP_Var url,
   if (!url_string)
     return PP_ERROR_BADARGUMENT;
   GURL gurl(url_string->value());
+  url_ = new StringVar(
+      PpapiGlobals::Get()->GetModuleForInstance(pp_instance()), gurl.spec());
   if (!gurl.is_valid())
     return PP_ERROR_BADARGUMENT;
   if (!gurl.SchemeIs("ws") && !gurl.SchemeIs("wss"))
@@ -324,17 +326,21 @@ PP_Bool PPB_WebSocket_Impl::GetCloseWasClean() {
 }
 
 PP_Var PPB_WebSocket_Impl::GetExtensions() {
-  // TODO(toyoshim): For now, always returns empty string.
+  // TODO(toyoshim): For now, always returns empty string because WebKit side
+  // doesn't support it yet.
   if (!extensions_)
     return empty_string_->GetPPVar();
   return extensions_->GetPPVar();
 }
 
 PP_Var PPB_WebSocket_Impl::GetProtocol() {
-  // TODO(toyoshim): Implement.
-  if (!protocol_)
+  // Check mandatory interfaces.
+  if (!websocket_.get())
     return empty_string_->GetPPVar();
-  return protocol_->GetPPVar();
+
+  std::string protocol = websocket_->subprotocol().utf8();
+  return StringVar::StringToPPVar(
+      PpapiGlobals::Get()->GetModuleForInstance(pp_instance()), protocol);
 }
 
 PP_WebSocketReadyState_Dev PPB_WebSocket_Impl::GetReadyState() {
@@ -342,7 +348,6 @@ PP_WebSocketReadyState_Dev PPB_WebSocket_Impl::GetReadyState() {
 }
 
 PP_Var PPB_WebSocket_Impl::GetURL() {
-  // TODO(toyoshim): For now, always returns empty string.
   if (!url_)
     return empty_string_->GetPPVar();
   return url_->GetPPVar();

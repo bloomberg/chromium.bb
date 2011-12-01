@@ -21,6 +21,17 @@
 static const char kEchoServerURL[] =
     "ws://localhost:8880/websocket/tests/hybi/echo";
 
+static const char kProtocolTestServerURL[] =
+    "ws://localhost:8880/websocket/tests/hybi/protocol-test?protocol=";
+
+static const char* kInvalidURLs[] = {
+  "http://www.google.com/invalid_scheme",
+  "ws://www.google.com/invalid#fragment",
+  // TODO(toyoshim): Add URL which has invalid port like
+  // ws://www.google.com:65535/invalid_port
+  NULL
+};
+
 REGISTER_TEST_CASE(WebSocket);
 
 bool TestWebSocket::Init() {
@@ -39,7 +50,9 @@ bool TestWebSocket::Init() {
 void TestWebSocket::RunTests(const std::string& filter) {
   RUN_TEST(IsWebSocket, filter);
   RUN_TEST(InvalidConnect, filter);
+  RUN_TEST(GetURL, filter);
   RUN_TEST(ValidConnect, filter);
+  RUN_TEST(GetProtocol, filter);
   RUN_TEST(TextSendReceive, filter);
 }
 
@@ -65,25 +78,27 @@ bool TestWebSocket::AreEqual(const PP_Var& var, const char* string) {
   return true;
 }
 
-PP_Resource TestWebSocket::Connect() {
+PP_Resource TestWebSocket::Connect(
+    const char* url, int32_t* result, const char* protocol) {
   PP_Var protocols[] = { PP_MakeUndefined() };
   PP_Resource ws = websocket_interface_->Create(instance_->pp_instance());
   if (!ws)
     return 0;
-  PP_Var url = CreateVar(kEchoServerURL);
+  PP_Var url_var = CreateVar(url);
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-  int32_t result = websocket_interface_->Connect(
-      ws, url, protocols, 0,
+  int protocol_count = 0;
+  if (protocol) {
+    protocols[0] = CreateVar(protocol);
+    protocol_count = 1;
+  }
+  *result = websocket_interface_->Connect(
+      ws, url_var, protocols, protocol_count,
       static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
-  ReleaseVar(url);
-  if (force_async_ && result != PP_OK_COMPLETIONPENDING) {
-    core_interface_->ReleaseResource(ws);
-    return 0;
-  }
-  if (callback.WaitForResult() != PP_OK) {
-    core_interface_->ReleaseResource(ws);
-    return 0;
-  }
+  ReleaseVar(url_var);
+  if (protocol)
+    ReleaseVar(protocols[0]);
+  if (*result == PP_OK_COMPLETIONPENDING)
+    *result = callback.WaitForResult();
   return ws;
 }
 
@@ -105,6 +120,8 @@ std::string TestWebSocket::TestIsWebSocket() {
   PASS();
 }
 
+// TODO(toyoshim): Add tests to call various interfaces before calling connect.
+
 std::string TestWebSocket::TestInvalidConnect() {
   PP_Var protocols[] = { PP_MakeUndefined() };
 
@@ -124,24 +141,12 @@ std::string TestWebSocket::TestInvalidConnect() {
 
   core_interface_->ReleaseResource(ws);
 
-  const char* invalid_urls[] = {
-    "http://www.google.com/invalid_scheme",
-    "ws://www.google.com/invalid#fragment",
-    // TODO(toyoshim): Add URL which has invalid port like
-    // ws://www.google.com:65535/invalid_port
-    NULL
-  };
-  for (int i = 0; invalid_urls[i]; ++i) {
-    ws = websocket_interface_->Create(instance_->pp_instance());
+  for (int i = 0; kInvalidURLs[i]; ++i) {
+    ws = Connect(kInvalidURLs[i], &result, NULL);
     ASSERT_TRUE(ws);
-    PP_Var invalid_url = CreateVar(invalid_urls[i]);
-    result = websocket_interface_->Connect(
-        ws, invalid_url, protocols, 0,
-        static_cast<pp::CompletionCallback>(
-            callback).pp_completion_callback());
-    ReleaseVar(invalid_url);
-    core_interface_->ReleaseResource(ws);
     ASSERT_EQ(PP_ERROR_BADARGUMENT, result);
+
+    core_interface_->ReleaseResource(ws);
   }
 
   // TODO(toyoshim): Add invalid protocols tests
@@ -149,30 +154,62 @@ std::string TestWebSocket::TestInvalidConnect() {
   PASS();
 }
 
+std::string TestWebSocket::TestGetURL() {
+  for (int i = 0; kInvalidURLs[i]; ++i) {
+    int32_t result;
+    PP_Resource ws = Connect(kInvalidURLs[i], &result, NULL);
+    ASSERT_TRUE(ws);
+    PP_Var url = websocket_interface_->GetURL(ws);
+    ASSERT_TRUE(AreEqual(url, kInvalidURLs[i]));
+    ASSERT_EQ(PP_ERROR_BADARGUMENT, result);
+
+    ReleaseVar(url);
+    core_interface_->ReleaseResource(ws);
+  }
+
+  PASS();
+}
 
 std::string TestWebSocket::TestValidConnect() {
-  PP_Resource ws = websocket_interface_->Create(instance_->pp_instance());
-  PP_Var url = CreateVar(kEchoServerURL);
-  PP_Var protocols[] = { PP_MakeUndefined() };
-  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-  int32_t result = websocket_interface_->Connect(
-      ws, url, protocols, 0,
-      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
-  ReleaseVar(url);
-  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
-  result = callback.WaitForResult();
+  int32_t result;
+  PP_Resource ws = Connect(kEchoServerURL, &result, NULL);
+  ASSERT_TRUE(ws);
   ASSERT_EQ(PP_OK, result);
   core_interface_->ReleaseResource(ws);
 
   PASS();
 }
 
-// TODO(toyoshim): Add tests to call various interfaces before calling connect.
+std::string TestWebSocket::TestGetProtocol() {
+  const char* expected_protocols[] = {
+    "x-chat",
+    "hoehoe",
+    NULL
+  };
+  for (int i = 0; expected_protocols[i]; ++i) {
+    std::string url(kProtocolTestServerURL);
+    url += expected_protocols[i];
+    int32_t result;
+    PP_Resource ws = Connect(url.c_str(), &result, expected_protocols[i]);
+    ASSERT_TRUE(ws);
+    ASSERT_EQ(PP_OK, result);
+
+    PP_Var protocol = websocket_interface_->GetProtocol(ws);
+    ASSERT_TRUE(AreEqual(protocol, expected_protocols[i]));
+
+    ReleaseVar(protocol);
+    core_interface_->ReleaseResource(ws);
+  }
+
+  PASS();
+}
 
 std::string TestWebSocket::TestTextSendReceive() {
   // Connect to test echo server.
-  PP_Resource ws = Connect();
+  int32_t connect_result;
+  PP_Resource ws = Connect(kEchoServerURL, &connect_result, NULL);
   ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, connect_result);
 
   // Send 'hello pepper' text message.
   const char* message = "hello pepper";
