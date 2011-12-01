@@ -124,23 +124,6 @@ TEST_F(SessionModelAssociatorTest, PopulateSessionTab) {
   ASSERT_EQ(GURL("http://foo/1"), tab.navigations[0].virtual_url());
 }
 
-#if defined(OS_WIN)
-// The test is somewhat silly, and just verifies that we return a computer name.
-TEST(SessionModelAssociatorTest, TestGetComputerName) {
-  std::string computer_name = SessionModelAssociator::GetComputerName();
-  EXPECT_TRUE(!computer_name.empty());
-}
-#endif
-
-#if defined(OS_MACOSX)
-// The test is somewhat silly, and just verifies that we return a hardware
-// model name.
-TEST_F(SessionModelAssociatorTest, GetHardwareModelName) {
-  std::string hardware_model = SessionModelAssociator::GetHardwareModelName();
-  EXPECT_TRUE(!hardware_model.empty());
-}
-#endif
-
 TEST_F(SessionModelAssociatorTest, TabNodePool) {
   SessionModelAssociator::TabNodePool pool(NULL);
   pool.set_machine_tag("tag");

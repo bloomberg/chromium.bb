@@ -2233,7 +2233,6 @@
         'browser/sync/glue/session_data_type_controller.cc',
         'browser/sync/glue/session_data_type_controller.h',
         'browser/sync/glue/session_model_associator.cc',
-        'browser/sync/glue/session_model_associator_mac.mm',
         'browser/sync/glue/session_model_associator.h',
         'browser/sync/glue/shared_change_processor.cc',
         'browser/sync/glue/shared_change_processor.h',

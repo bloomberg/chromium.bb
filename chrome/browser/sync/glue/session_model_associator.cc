@@ -8,6 +8,7 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/sys_info.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/util/get_session_name_task.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/navigation_entry.h"
@@ -554,52 +556,22 @@ void SessionModelAssociator::InitializeCurrentMachineTag(
 void SessionModelAssociator::OnSessionNameInitialized(const std::string name) {
   DCHECK(CalledOnValidThread());
   // Only use the default machine name if it hasn't already been set.
-  if (current_session_name_.empty()) {
+  if (current_session_name_.empty())
     current_session_name_ = name;
-  }
 }
-
-// Task which runs on the file thread because it runs system calls which can
-// block while retrieving sytem information.
-class GetSessionNameTask : public Task {
- public:
-  explicit GetSessionNameTask(
-      const WeakHandle<SessionModelAssociator> associator) :
-    associator_(associator) {}
-
-  virtual void Run() {
-#if defined(OS_LINUX)
-    std::string session_name = base::GetLinuxDistro();
-#elif defined(OS_MACOSX)
-    std::string session_name = SessionModelAssociator::GetHardwareModelName();
-#elif defined(OS_WIN)
-    std::string session_name = SessionModelAssociator::GetComputerName();
-#else
-    std::string session_name;
-#endif
-    if (session_name == "Unknown" || session_name.empty()) {
-      session_name = base::SysInfo::OperatingSystemName();
-    }
-    associator_.Call(FROM_HERE,
-                     &SessionModelAssociator::OnSessionNameInitialized,
-                     session_name);
-  }
-  const WeakHandle<SessionModelAssociator> associator_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetSessionNameTask);
-};
 
 void SessionModelAssociator::InitializeCurrentSessionName() {
   DCHECK(CalledOnValidThread());
   if (setup_for_test_) {
     OnSessionNameInitialized("TestSessionName");
   } else {
-#if defined(OS_CHROMEOS)
-    OnSessionNameInitialized("Chromebook");
-#else
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        new GetSessionNameTask(MakeWeakHandle(AsWeakPtr())));
-#endif
+    scoped_refptr<GetSessionNameTask> task = new GetSessionNameTask(
+        base::Bind(&SessionModelAssociator::OnSessionNameInitialized,
+                   AsWeakPtr()));
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&GetSessionNameTask::GetSessionNameAsync, task.get()));
   }
 }
 
@@ -1277,19 +1249,5 @@ bool SessionModelAssociator::CryptoReadyIfNecessary() {
   return encrypted_types.count(SESSIONS) == 0 ||
          sync_service_->IsCryptographerReady(&trans);
 }
-
-#if defined(OS_WIN)
-// Static
-// TODO(nzea): This isn't safe to call on the UI-thread. Move it out to a util
-// or object that lives on the FILE thread.
-std::string SessionModelAssociator::GetComputerName() {
-  char computer_name[MAX_COMPUTERNAME_LENGTH + 1];
-  DWORD size = sizeof(computer_name);
-  if (GetComputerNameA(computer_name, &size)) {
-    return computer_name;
-  }
-  return std::string();
-}
-#endif
 
 }  // namespace browser_sync

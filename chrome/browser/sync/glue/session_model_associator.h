@@ -203,19 +203,6 @@ class SessionModelAssociator
   // Callback for when the session name has been computed.
   void OnSessionNameInitialized(const std::string name);
 
-#if defined(OS_WIN)
-  // Returns the computer name or the empty string an error occurred.
-  static std::string GetComputerName();
-#endif
-
-#if defined(OS_MACOSX)
-  // Returns the Hardware model name, without trailing numbers, if possible.
-  // See http://www.cocoadev.com/index.pl?MacintoshModels for an example list of
-  // models. If an error occurs trying to read the model, this simply returns
-  // "Unknown".
-  static std::string GetHardwareModelName();
-#endif
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, WriteSessionToNode);
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest,

@@ -1691,6 +1691,7 @@
         'browser/sync/test/test_http_bridge_factory.cc',
         'browser/sync/test/test_http_bridge_factory.h',
         'browser/sync/util/cryptographer_unittest.cc',
+        'browser/sync/util/get_session_name_task_unittest.cc',
         'browser/sync/util/nigori_unittest.cc',
         'browser/tab_contents/render_view_context_menu_unittest.cc',
         'browser/tab_contents/thumbnail_generator_unittest.cc',
