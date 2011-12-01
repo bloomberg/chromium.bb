@@ -1,7 +1,7 @@
 {
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCqtHjbcvWT9Kbcapi0SaG28I66eRQHQvOqngCizm87qMb9RTgrftaUAGwPmxFLy4gBwO572N5ACpxsR6m2fRg9PSjeqaEojiFd28KY/b4VPoq/ukNOy97Ns7lPv4gmtNB8txuFIFuNw3s1k8nEJVAp659d7SnMsL4O1uXkW1huGQIDAQAB",
   "name": "Help",
-  "version": "2.4",
+  "version": "2.5",
   "icons": {"16": "images/Help_16.png",
             "24": "images/Help_24.png",
             "48": "images/Help_48.png",
@@ -22,5 +22,5 @@
       "all_frames": true
     }
   ],
-  "content_security_policy": "default-src 'self' https://ssl.google-analytics.com 'unsafe-inline'; frame-src https://www.google.com; connect-src https://www.google.com;"
+  "content_security_policy": "default-src 'self' https://ssl.google-analytics.com http://www.google-analytics.com; frame-src https://www.google.com; connect-src https://www.google.com; style-src 'self' 'unsafe-inline'"
 }
