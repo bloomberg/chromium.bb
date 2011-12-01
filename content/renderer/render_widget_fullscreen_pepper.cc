@@ -486,6 +486,10 @@ void RenderWidgetFullscreenPepper::SwapBuffers() {
   context_->Echo(base::Bind(
       &RenderWidgetFullscreenPepper::OnSwapBuffersCompleteByRendererGLContext,
       weak_ptr_factory_.GetWeakPtr()));
+
+  // The compositor isn't actually active in this path, but pretend it is for
+  // scheduling purposes.
+  didCommitAndDrawCompositorFrame();
 }
 
 void RenderWidgetFullscreenPepper::OnLostContext(
