@@ -103,7 +103,10 @@ function load() {
                         templateData.languagePinyinPageTabTitle,
                         'languagePinyinPage'),
         LanguageOptions.getInstance());
-    if (cr.isTouch) {
+    // Only use the VirtualKeyboardManager if the keyboard DOM elements (which
+    // it will assume exists) are present (i.e. if we were built with
+    // USE_VIRTUAL_KEYBOARD).
+    if ($('language-options-virtual-keyboard')) {
       OptionsPage.registerSubPage(VirtualKeyboardManager.getInstance(),
                                   LanguageOptions.getInstance());
     }

@@ -108,4 +108,6 @@ DevToolsUI::DevToolsUI(TabContents* contents) : ChromeWebUI(contents) {
 void DevToolsUI::RenderViewCreated(RenderViewHost* render_view_host) {
   render_view_host->Send(new DevToolsMsg_SetupDevToolsClient(
       render_view_host->routing_id()));
+
+  ChromeWebUI::RenderViewCreated(render_view_host);
 }

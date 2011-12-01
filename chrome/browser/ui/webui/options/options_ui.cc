@@ -298,12 +298,12 @@ OptionsUI::~OptionsUI() {
 // Override.
 void OptionsUI::RenderViewCreated(RenderViewHost* render_view_host) {
   SetCommandLineString(render_view_host);
-  WebUI::RenderViewCreated(render_view_host);
+  ChromeWebUI::RenderViewCreated(render_view_host);
 }
 
 void OptionsUI::RenderViewReused(RenderViewHost* render_view_host) {
   SetCommandLineString(render_view_host);
-  WebUI::RenderViewReused(render_view_host);
+  ChromeWebUI::RenderViewReused(render_view_host);
 }
 
 void OptionsUI::DidBecomeActiveForReusedRenderView() {
@@ -315,7 +315,7 @@ void OptionsUI::DidBecomeActiveForReusedRenderView() {
   // initialized).
   CallJavascriptFunction("OptionsPage.reinitializeCore");
 
-  WebUI::DidBecomeActiveForReusedRenderView();
+  ChromeWebUI::DidBecomeActiveForReusedRenderView();
 }
 
 // static

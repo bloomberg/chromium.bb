@@ -22,30 +22,31 @@
   margin: 0;
 }
 
-<if expr="pp_ifdef('touchui')">
 /*
  * Add padding to increase the touchable area of search box. Use original font
  * size to avoid the width of search box exceeding the width of navbar.
  */
-#search-field {
+html[touch-optimized] #search-field {
   font-size: 13px;
   padding: 5px;
 }
-#search-field::-webkit-search-cancel-button {
+html[touch-optimized] #search-field::-webkit-search-cancel-button {
   -webkit-transform: scale(1.5);
 }
 
 /*
- * In TOUCH_UI builds, make the radio/checkbox input boxes in
+ * For touch-optimized UI, make the radio/checkbox input boxes in
  * options/preference pages easier to touch.
+ * TODO(rbyers): We need to solve this more generally for all web pages
+ * (crbug.com/99981), and perhaps temporarily for all WebUI (crbug.com/102482).
  */
-div.radio > label > span,
-div.checkbox > label > span {
+html[touch-optimized] div.radio > label > span,
+html[touch-optimized] div.checkbox > label > span {
   -webkit-padding-start: 5px;
 }
 
-label > input[type=checkbox],
-label > input[type=radio] {
+html[touch-optimized] label > input[type=checkbox],
+html[touch-optimized] label > input[type=radio] {
   -webkit-transform: scale(1.4);
 }
 
@@ -54,10 +55,9 @@ label > input[type=radio] {
  * 16 px font-size proved to be more touch friendly. It increases the touchable
  * area for buttons and input boxes.
  */
-body {
+html[touch-optimized] body {
   font-size: 16px;
 }
-</if>
 
 .overlay {
   -webkit-box-align: center;

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -33,6 +34,17 @@ Profile* ChromeWebUI::GetProfile() const {
 
 bool ChromeWebUI::CanShowBookmarkBar() const {
   return false;
+}
+
+void ChromeWebUI::RenderViewCreated(RenderViewHost* render_view_host) {
+  WebUI::RenderViewCreated(render_view_host);
+
+  // Let the WebUI know that we're looking for UI that's optimized for touch
+  // input.
+  // TODO(rbyers) Figure out the right model for enabling touch-optimized UI
+  // (http://crbug.com/105380).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTouchOptimizedUI))
+    render_view_host->SetWebUIProperty("touchOptimized", "true");
 }
 
 // static

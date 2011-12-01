@@ -3,13 +3,13 @@
 Buttons are too small for touch in the touchui builds.
 Use drop down box for touchui builds instead.
 -->
-<if expr="pp_ifdef('chromeos') and not pp_ifdef('touchui')">
+<if expr="pp_ifdef('chromeos')">
   <ul id="add-language-overlay-language-list">
   </ul>
   <button id="add-language-overlay-cancel-button"
           i18n-content="cancel"></button>
 </if>
-<if expr="not pp_ifdef('chromeos') or pp_ifdef('touchui')">
+<if expr="not pp_ifdef('chromeos')">
   <h1 i18n-content="add_language_title"></h1>
   <div class="content-area">
     <label>

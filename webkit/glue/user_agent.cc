@@ -87,9 +87,6 @@ std::string BuildOSCpuInfo() {
       os_bugfix_version
 #elif defined(OS_CHROMEOS)
       "CrOS "
-#if defined(TOUCH_UI)
-      "Touch "
-#endif
       "%s %d.%d.%d",
       cputype.c_str(),   // e.g. i686
       os_major_version,

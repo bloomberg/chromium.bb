@@ -17,12 +17,10 @@
   width: 200px;
 }
 
-/*  In TOUCH_UI builds, make the links easier to touch. */
-<if expr="pp_ifdef('touchui')">
-#signin-right {
+/*  For touch-optimized UI, make the links bigger. */
+html[touch-optimized] #signin-right {
   font-size: 14px;
 }
-</if>
 
 html[dir=ltr] #signin-right {
   right: -150px;  /* ('gaia-sign'.width - 'signin-frame'.width) / 2 -

@@ -155,12 +155,15 @@ void NewTabUI::StartTimingPaint(RenderViewHost* render_view_host) {
                &NewTabUI::PaintTimeout);
 
 }
+
 void NewTabUI::RenderViewCreated(RenderViewHost* render_view_host) {
   StartTimingPaint(render_view_host);
+  ChromeWebUI::RenderViewCreated(render_view_host);
 }
 
 void NewTabUI::RenderViewReused(RenderViewHost* render_view_host) {
   StartTimingPaint(render_view_host);
+  ChromeWebUI::RenderViewReused(render_view_host);
 }
 
 bool NewTabUI::CanShowBookmarkBar() const {

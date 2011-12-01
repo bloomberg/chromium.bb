@@ -1059,6 +1059,9 @@ const char kTestType[]                      = "test-type";
 // channel with the given ID.
 const char kTestingChannelID[]              = "testing-channel";
 
+// Enables UI changes that make it easier to use with a touchscreen.
+const char kTouchOptimizedUI[]              = "touch-optimized-ui";
+
 // Experimental. Shows a dialog asking the user to try chrome. This flag is to
 // be used only by the upgrade process.
 const char kTryChromeAgain[]                = "try-chrome-again";

@@ -48,7 +48,7 @@ cr.define('options', function() {
           displayText += ' - ' + language.nativeDisplayName;
         }
 
-        if (cr.isChromeOS && !cr.isTouch) {
+        if (cr.isChromeOS) {
           var button = document.createElement('button');
           button.className = 'link-button';
           button.textContent = displayText;

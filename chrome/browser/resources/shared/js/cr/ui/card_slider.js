@@ -132,19 +132,22 @@ cr.define('cr.ui', function() {
       this.frame_.addEventListener('mousewheel',
                                    this.onMouseWheel_.bind(this));
 
-      if (document.documentElement.getAttribute('touchui')) {
-        var TouchHandler = cr.ui.TouchHandler;
-        this.container_.addEventListener(TouchHandler.EventType.TOUCH_START,
-                                         this.onTouchStart_.bind(this));
-        this.container_.addEventListener(TouchHandler.EventType.DRAG_START,
-                                         this.onDragStart_.bind(this));
-        this.container_.addEventListener(TouchHandler.EventType.DRAG_MOVE,
-                                         this.onDragMove_.bind(this));
-        this.container_.addEventListener(TouchHandler.EventType.DRAG_END,
-                                         this.onDragEnd_.bind(this));
+      // Also support touch events in case a touch screen happens to be
+      // available.  Note that we could check cr.isTouchOptimized here, but
+      // in general sites should just be listening for touch events without
+      // trying to determine in advance if they may be supported (eg. a touch
+      // screen can always be plugged in after a page has loaded).
+      var TouchHandler = cr.ui.TouchHandler;
+      this.container_.addEventListener(TouchHandler.EventType.TOUCH_START,
+                                       this.onTouchStart_.bind(this));
+      this.container_.addEventListener(TouchHandler.EventType.DRAG_START,
+                                       this.onDragStart_.bind(this));
+      this.container_.addEventListener(TouchHandler.EventType.DRAG_MOVE,
+                                       this.onDragMove_.bind(this));
+      this.container_.addEventListener(TouchHandler.EventType.DRAG_END,
+                                       this.onDragEnd_.bind(this));
 
-        this.touchHandler_.enable(/* opt_capture */ false);
-      }
+      this.touchHandler_.enable(/* opt_capture */ false);
     },
 
     /**

@@ -287,6 +287,7 @@ extern const char kTestNaClSandbox[];
 extern const char kTestName[];
 extern const char kTestType[];
 extern const char kTestingChannelID[];
+extern const char kTouchOptimizedUI[];
 extern const char kTryChromeAgain[];
 extern const char kUninstall[];
 extern const char kUseMoreWebUI[];
