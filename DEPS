@@ -73,6 +73,8 @@ deps = {
      "/trunk/lss@" + Var("lss_rev")),
   "third_party/khronos":
     Var("chromium_trunk") + "/src/third_party/khronos@" + Var("chrome_rev"),
+  "third_party/ply":
+    Var("chromium_trunk") + "/src/third_party/ply@" + Var("chrome_rev"),
   "third_party/pyftpdlib":
     Var("chromium_trunk") + "/src/third_party/pyftpdlib@" + Var("chrome_rev"),
   "third_party/pyftpdlib/src":
