@@ -186,6 +186,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
 #endif
 
@@ -2236,6 +2238,12 @@ void Browser::OpenFileManager() {
 #endif
 
 #if defined(OS_CHROMEOS)
+void Browser::LockScreen() {
+  UserMetrics::RecordAction(UserMetricsAction("LockScreen"));
+  chromeos::CrosLibrary::Get()->GetScreenLockLibrary()->
+      NotifyScreenLockRequested();
+}
+
 void Browser::OpenSystemOptionsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("OpenSystemOptionsDialog"));
   ShowOptionsTab(chrome::kSystemOptionsSubPage);
@@ -2840,6 +2848,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_VIEW_INCOMPATIBILITIES: ShowAboutConflictsTab();         break;
     case IDC_HELP_PAGE:             ShowHelpTab();                    break;
 #if defined(OS_CHROMEOS)
+    case IDC_LOCK_SCREEN:           LockScreen();                     break;
     case IDC_FILE_MANAGER:          OpenFileManager();                break;
     case IDC_SYSTEM_OPTIONS:        OpenSystemOptionsDialog();        break;
     case IDC_INTERNET_OPTIONS:      OpenInternetOptionsDialog();      break;
@@ -3694,7 +3703,7 @@ void Browser::OnStartDownload(TabContents* source, DownloadItem* download) {
     // Don't show content browser for extension/theme downloads from gallery.
     ExtensionService* service = profile_->GetExtensionService();
     if (!ChromeDownloadManagerDelegate::IsExtensionDownload(download) ||
-        (service == NULL) ||
+        service == NULL ||
         !service->IsDownloadFromGallery(download->GetURL(),
                                         download->GetReferrerUrl())) {
       // Open the Active Downloads ui for chromeos.
@@ -4367,6 +4376,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARKS_MENU, true);
 
 #if defined(OS_CHROMEOS)
+  command_updater_.UpdateCommandEnabled(IDC_LOCK_SCREEN, true);
   command_updater_.UpdateCommandEnabled(IDC_FILE_MANAGER, true);
   command_updater_.UpdateCommandEnabled(IDC_SEARCH, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_KEYBOARD_OVERLAY, true);

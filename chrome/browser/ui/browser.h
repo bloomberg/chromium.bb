@@ -639,6 +639,7 @@ class Browser : public TabHandlerDelegate,
   void OpenFileManager();
 #endif
 #if defined(OS_CHROMEOS)
+  void LockScreen();
   void OpenSystemOptionsDialog();
   void OpenInternetOptionsDialog();
   void OpenLanguageOptionsDialog();

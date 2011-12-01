@@ -12,6 +12,8 @@ namespace browser {
 
 // NOTE: Keep this list in the same (mostly-alphabetical) order as
 // the Windows accelerators in ../../app/chrome_dll.rc.
+// Do not use Ctrl-Alt as a shortcut modifier, as it is used by i18n keyboards:
+// http://blogs.msdn.com/b/oldnewthing/archive/2004/03/29/101121.aspx
 const AcceleratorMapping kAcceleratorMap[] = {
   // Keycode                  Shift  Ctrl   Alt    Command ID
   { ui::VKEY_LEFT,           false, false, true,  IDC_BACK },
@@ -85,6 +87,9 @@ const AcceleratorMapping kAcceleratorMap[] = {
 #else
   { ui::VKEY_OEM_2,          false, true,  false, IDC_HELP_PAGE },
   { ui::VKEY_OEM_2,          true,  true,  false, IDC_HELP_PAGE },
+#endif
+#if defined(OS_CHROMEOS)
+  { ui::VKEY_L,              true,  true,  false, IDC_LOCK_SCREEN },
 #endif
   { ui::VKEY_I,              true,  true,  false, IDC_DEV_TOOLS },
   { ui::VKEY_F12,            false, false, false, IDC_DEV_TOOLS },
