@@ -590,7 +590,7 @@ void ThreadWatcherList::InitializeAndStartWatching(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(StartupTimeBomb::Disarm));
+      base::Bind(&StartupTimeBomb::DisarmStartupTimeBomb));
 }
 
 // static
@@ -828,18 +828,33 @@ class ShutdownWatchDogThread : public base::Watchdog {
 // StartupTimeBomb methods and members.
 //
 // static
-base::Watchdog* StartupTimeBomb::startup_watchdog_ = NULL;
+StartupTimeBomb* StartupTimeBomb::g_startup_timebomb_ = NULL;
 
-// static
+StartupTimeBomb::StartupTimeBomb()
+    : startup_watchdog_(NULL),
+      thread_id_(base::PlatformThread::CurrentId()) {
+  CHECK(!g_startup_timebomb_);
+  g_startup_timebomb_ = this;
+}
+
+StartupTimeBomb::~StartupTimeBomb() {
+  DCHECK(this == g_startup_timebomb_);
+  DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
+  if (startup_watchdog_)
+    Disarm();
+  g_startup_timebomb_ = NULL;
+}
+
 void StartupTimeBomb::Arm(const base::TimeDelta& duration) {
+  DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!startup_watchdog_);
   startup_watchdog_ = new StartupWatchDogThread(duration);
   startup_watchdog_->Arm();
 }
 
-// static
 void StartupTimeBomb::Disarm() {
+  DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (startup_watchdog_) {
     startup_watchdog_->Disarm();
@@ -851,14 +866,24 @@ void StartupTimeBomb::Disarm() {
   }
 }
 
+// static
+void StartupTimeBomb::DisarmStartupTimeBomb() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (g_startup_timebomb_)
+    g_startup_timebomb_->Disarm();
+}
+
 // ShutdownWatcherHelper methods and members.
 //
 // ShutdownWatcherHelper is a wrapper class for detecting hangs during
 // shutdown.
-ShutdownWatcherHelper::ShutdownWatcherHelper() : shutdown_watchdog_(NULL) {
+ShutdownWatcherHelper::ShutdownWatcherHelper()
+    : shutdown_watchdog_(NULL),
+      thread_id_(base::PlatformThread::CurrentId()) {
 }
 
 ShutdownWatcherHelper::~ShutdownWatcherHelper() {
+  DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
   if (shutdown_watchdog_) {
     shutdown_watchdog_->Disarm();
     delete shutdown_watchdog_;
@@ -867,6 +892,7 @@ ShutdownWatcherHelper::~ShutdownWatcherHelper() {
 }
 
 void ShutdownWatcherHelper::Arm(const base::TimeDelta& duration) {
+  DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
   DCHECK(!shutdown_watchdog_);
   base::TimeDelta actual_duration = duration;
 

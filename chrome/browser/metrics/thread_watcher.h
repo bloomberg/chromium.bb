@@ -56,6 +56,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/threading/watchdog.h"
 #include "base/time.h"
@@ -493,18 +494,34 @@ class WatchDogThread : public base::Thread {
 // startup.
 class StartupTimeBomb {
  public:
+  // This singleton is instantiated when the browser process is launched.
+  StartupTimeBomb();
+
+  // Destructor disarm's startup_watchdog_ (if it is arm'ed) so that alarm
+  // doesn't go off.
+  ~StartupTimeBomb();
+
   // Constructs |startup_watchdog_| which spawns a thread and starts timer.
   // |duration| specifies how long |startup_watchdog_| will wait before it
   // calls alarm.
-  static void Arm(const base::TimeDelta& duration);
+  void Arm(const base::TimeDelta& duration);
 
   // Disarms |startup_watchdog_| thread and then deletes it which stops the
   // Watchdog thread.
-  static void Disarm();
+  void Disarm();
+
+  // Disarms |g_startup_timebomb_|.
+  static void DisarmStartupTimeBomb();
 
  private:
+  // The singleton of this class.
+  static StartupTimeBomb* g_startup_timebomb_;
+
   // Watches for hangs during startup until it is disarm'ed.
-  static base::Watchdog* startup_watchdog_;
+  base::Watchdog* startup_watchdog_;
+
+  // The |thread_id_| on which this object is constructed.
+  const base::PlatformThreadId thread_id_;
 
   DISALLOW_COPY_AND_ASSIGN(StartupTimeBomb);
 };
@@ -525,6 +542,9 @@ class ShutdownWatcherHelper {
  private:
   // shutdown_watchdog_ watches for hangs during shutdown.
   base::Watchdog* shutdown_watchdog_;
+
+  // The |thread_id_| on which this object is constructed.
+  const base::PlatformThreadId thread_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownWatcherHelper);
 };

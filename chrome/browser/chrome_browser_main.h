@@ -26,6 +26,7 @@ class HistogramSynchronizer;
 class MetricsService;
 class PrefService;
 class Profile;
+class StartupTimeBomb;
 class ShutdownWatcherHelper;
 class TranslateManager;
 
@@ -137,6 +138,9 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   const content::MainFunctionParams& parameters_;
   const CommandLine& parsed_command_line_;
   int result_code_;
+
+  // Create StartupTimeBomb object for watching jank during startup.
+  scoped_ptr<StartupTimeBomb> startup_watcher_;
 
   // Create ShutdownWatcherHelper object for watching jank during shutdown.
   // Please keep |shutdown_watcher| as the first object constructed, and hence

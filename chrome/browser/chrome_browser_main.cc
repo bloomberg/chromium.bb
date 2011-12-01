@@ -655,6 +655,7 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
       result_code_(content::RESULT_CODE_NORMAL_EXIT),
+      startup_watcher_(new StartupTimeBomb()),
       shutdown_watcher_(new ShutdownWatcherHelper()),
       record_search_engine_(false),
       translate_manager_(NULL),
@@ -1745,10 +1746,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif  // GOOGLE_CHROME_BUILD
 #endif  // OS_WIN
 
-  // Start watching for hangs during startup. We disarm this hang detector when
-  // ThreadWatcher takes over or when browser is shutdown.
-  StartupTimeBomb::Arm(base::TimeDelta::FromSeconds(300));
-
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
 
@@ -1843,6 +1840,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       return content::RESULT_CODE_NORMAL_EXIT;
     return chrome::RESULT_CODE_UNINSTALL_EXTENSION_ERROR;
   }
+
+  // Start watching for hangs during startup. We disarm this hang detector when
+  // ThreadWatcher takes over or when browser is shutdown or when
+  // startup_watcher_ is deleted.
+  startup_watcher_->Arm(base::TimeDelta::FromSeconds(300));
 
   // Start watching for a hang.
   MetricsService::LogNeedForCleanShutdown();
@@ -1992,7 +1994,7 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   shutdown_watcher_->Arm(base::TimeDelta::FromSeconds(90));
 
   // Disarm the startup hang detector time bomb if it is still Arm'ed.
-  StartupTimeBomb::Disarm();
+  startup_watcher_->Disarm();
 
 #if defined(OS_WIN)
   // If it's the first run, log the search engine chosen.  We wait until
