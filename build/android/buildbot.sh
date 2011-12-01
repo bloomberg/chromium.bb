@@ -58,10 +58,10 @@ for target in ${EXPERIMENTAL_TARGETS} ; do
   echo "@@@BUILD_STEP Experimental Compile $target @@@"
   set +e
   make -j4 "${target}"
-  set -e
   if [ $? -ne 0 ] ; then
     echo "@@@STEP_WARNINGS@@@"
   fi
+  set -e
 done
 
 echo "@@@BUILD_STEP Run Tests@@@"
