@@ -863,7 +863,15 @@ Ribbon.Item.prototype.onSaveError = function(error) {
   delete this.canvas_;
 };
 
-Ribbon.MAX_THUMBNAIL_PIXEL_COUNT = 1 << 20; // 1 MPix
+Ribbon.MAX_THUMBNAIL_PIXEL_COUNT = 1 << 21; // 2 MPix
+Ribbon.MAX_THUMBNAIL_FILE_SIZE = 1 << 20; // 1 Mb
+
+Ribbon.Item.canUseImageForThumbnail = function(metadata) {
+  return (metadata.fileSize &&
+      metadata.fileSize <= Ribbon.MAX_THUMBNAIL_FILE_SIZE)  ||
+      (metadata.width && metadata.height &&
+      (metadata.width * metadata.height <= Ribbon.MAX_THUMBNAIL_PIXEL_COUNT));
+};
 
 Ribbon.PLACEHOLDER_ICON_URL = '../../images/filetype_large_image.png';
 
@@ -876,11 +884,7 @@ Ribbon.Item.prototype.setMetadata = function(metadata) {
   if (metadata.thumbnailURL) {
     url = metadata.thumbnailURL;
     transform = metadata.thumbnailTransform;
-  } else if (metadata.width && metadata.height &&
-      (metadata.width * metadata.height < Ribbon.MAX_THUMBNAIL_PIXEL_COUNT)){
-    // TODO(kaznacheev): We only have image dimensions for JPEG at the moment.
-    // Need to add simple metadata parsers for all supported formats.
-    // Another way would be getting the file size from FileManager.
+  } else if (Ribbon.Item.canUseImageForThumbnail(metadata)){
     url = this.url_;
     transform = metadata.imageTransform;
   } else {

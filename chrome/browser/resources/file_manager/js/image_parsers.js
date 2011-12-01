@@ -11,12 +11,12 @@ function SimpleImageParser(parent, type, urlFilter, headerSize) {
 
 SimpleImageParser.prototype = {__proto__: ImageParser.prototype};
 
-SimpleImageParser.prototype.parse = function(file, callback, errorCallback) {
+SimpleImageParser.prototype.parse = function(
+    file, metadata, callback, errorCallback) {
   var self = this;
   util.readFileBytes(file, 0, this.headerSize,
     function (file, br) {
       try {
-        var metadata = self.createDefaultMetadata();
         self.parseHeader(metadata, br);
         callback(metadata);
       } catch(e) {

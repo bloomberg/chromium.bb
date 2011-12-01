@@ -117,9 +117,7 @@ MpegParser.createRootParser = function(metadata) {
   };
 };
 
-MpegParser.prototype.parse = function (file, callback, onError) {
-  var metadata = {metadataType: 'mpeg'};
-
+MpegParser.prototype.parse = function (file, metadata, callback, onError) {
   this.rootParser_ = MpegParser.createRootParser(metadata);
 
   // Kick off the processing by reading the first atom's header.

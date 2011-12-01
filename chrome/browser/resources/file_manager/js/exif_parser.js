@@ -28,8 +28,7 @@ function ExifParser(parent) {
 
 ExifParser.prototype = {__proto__: ImageParser.prototype};
 
-ExifParser.prototype.parse = function(file, callback, errorCallback) {
-  var metadata = this.createDefaultMetadata();
+ExifParser.prototype.parse = function(file, metadata, callback, errorCallback) {
   this.requestSlice(file, callback, errorCallback, metadata, 0);
 };
 

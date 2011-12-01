@@ -2466,12 +2466,18 @@ FileManager.prototype = {
       callback(iconType, previewArt[iconType] || previewArt['unknown']);
     }
 
-    var SIZE_LIMIT = 1 << 20;  // 1 Mb/Mpix
+    var MAX_PIXEL_COUNT = 1 << 21;  // 2 Mpix
+    var MAX_FILE_SIZE = 1 << 20;  // 1 Mb
 
-    function isImageTooLarge(entry, metadata) {
-      return ((metadata.width && metadata.height &&
-              (metadata.width * metadata.height > SIZE_LIMIT))) ||
-        (entry.cachedSize_ && entry.cachedSize_ > SIZE_LIMIT);
+    // This is a clone of a method in gallery.js which we cannot call because
+    // it is only available when the gallery is loaded in to an iframe.
+    // TODO(kaznacheev): Extract a common js file.
+    // Keep in sync manually until then.
+    function canUseImageForThumbnail(entry, metadata) {
+      var fileSize = metadata.fileSize || entry.cachedSize_;
+      return (fileSize && fileSize <= MAX_FILE_SIZE) ||
+          (metadata.width && metadata.height &&
+          (metadata.width * metadata.height <= MAX_PIXEL_COUNT));
     }
 
     this.metadataProvider_.fetch(entry.toURL(), function (metadata) {
@@ -2479,10 +2485,10 @@ FileManager.prototype = {
         callback(iconType, metadata.thumbnailURL, metadata.thumbnailTransform);
       } else if (iconType == 'image') {
         cacheEntrySize(entry, function() {
-          if (isImageTooLarge(entry, metadata)) {
-            returnStockIcon();
-          } else {
+          if (canUseImageForThumbnail(entry, metadata)) {
             callback(iconType, entry.toURL(), metadata.imageTransform);
+          } else {
+            returnStockIcon();
           }
         }, returnStockIcon);
       } else {

@@ -207,9 +207,7 @@ Id3Parser.prototype.readFrame_ = function(reader, majorVersion) {
   return frame;
 };
 
-Id3Parser.prototype.parse = function (file, callback, onError) {
-  var metadata = {};
-
+Id3Parser.prototype.parse = function (file, metadata, callback, onError) {
   var self = this;
 
   this.log('Starting id3 parser for ' + file.name);

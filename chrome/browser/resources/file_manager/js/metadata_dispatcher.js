@@ -126,11 +126,11 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
     steps[++currentStep].apply(self, arguments);
   }
 
-  var defaultMetadata;  // To pass along with error.
+  var metadata;
 
   function onError(err, stepName) {
     self.error(fileURL, stepName || steps[currentStep].name, err.toString(),
-        defaultMetadata);
+        metadata);
   }
 
   var steps =
@@ -139,7 +139,9 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
       for (var i = 0; i != self.parserInstances_.length; i++) {
         var parser = self.parserInstances_[i];
         if (fileURL.match(parser.urlFilter)) {
-          defaultMetadata = parser.createDefaultMetadata();
+          // Create the metadata object as early as possible so that we can
+          // pass it with the error message.
+          metadata = parser.createDefaultMetadata();
           nextStep(parser);
           return;
         }
@@ -162,7 +164,8 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
 
     // Step four, parse the file content.
     function parseContent(file, parser) {
-      parser.parse(file, callback, onError);
+      metadata.fileSize = file.size;
+      parser.parse(file, metadata, callback, onError);
     }
   ];
 
@@ -189,7 +192,7 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
         for (var i = 0; i != self.parserInstances_.length; i++) {
           var parser = self.parserInstances_[i];
           if (parser.acceptsMimeType(mimeType)) {
-            defaultMetadata = parser.createDefaultMetadata();
+            metadata = parser.createDefaultMetadata();
             var blobBuilder = new WebKitBlobBuilder();
             blobBuilder.append(arrayBuffer);
             nextStep(blobBuilder.getBlob(), parser);

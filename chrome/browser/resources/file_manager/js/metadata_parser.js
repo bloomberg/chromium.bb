@@ -22,7 +22,9 @@ MetadataParser.prototype.vlog = function(var_args) {
     this.parent_.log.apply(this.parent_, arguments);
 };
 
-MetadataParser.prototype.createDefaultMetadata = function() { return {} };
+MetadataParser.prototype.createDefaultMetadata = function() {
+  return {type: this.type};
+};
 
 MetadataParser.prototype.acceptsMimeType = function(mimeType) { return false };
 
@@ -36,10 +38,12 @@ function ImageParser(parent, type, urlFilter) {
 ImageParser.prototype = {__proto__: MetadataParser.prototype};
 
 ImageParser.prototype.createDefaultMetadata = function() {
-  return { mimeType: this.mimeType };
+  var metadata = MetadataParser.prototype.createDefaultMetadata.call(this);
+  metadata.mimeType = this.mimeType;
+  return metadata;
 };
 
 ImageParser.prototype.acceptsMimeType = function(mimeType) {
   return mimeType == this.mimeType;
-}
+};
 
