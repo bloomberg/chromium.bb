@@ -313,6 +313,9 @@ OutOfProcessPPAPITest.FlashClipboard
 PrintPreviewUITest.PrintCommands
 
 # Fails consistently. http://crbug.com/104535.
+OutOfProcessPPAPITest.Audio_Creation
+OutOfProcessPPAPITest.Audio_DestroyNoStop
+OutOfProcessPPAPITest.Audio_Failures
 OutOfProcessPPAPITest.AudioConfig_InvalidConfigs
 OutOfProcessPPAPITest.AudioConfig_ValidConfigs
 OutOfProcessPPAPITest.Flash_GetCommandLineArgs
