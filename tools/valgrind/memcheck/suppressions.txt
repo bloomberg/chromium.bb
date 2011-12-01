@@ -5233,15 +5233,6 @@
    fun:_ZNK4base8CallbackIFvvEE3RunEv
 }
 {
-   bug_105864
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   fun:_ZN4base16MessageLoopProxy16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
-   fun:_ZN7content13BrowserThread16PostTaskAndReplyENS0_2IDERKN15tracked_objects8LocationERKN4base8CallbackIFvvEEESB_
-   fun:_ZN16ProfileInfoCache30SetGAIAPictureOfProfileAtIndexE?PKN3gfx5ImageE
-}
-{
    bug_105907
    Memcheck:Uninitialized
    ...
