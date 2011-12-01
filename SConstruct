@@ -2837,8 +2837,6 @@ def MakeLinuxEnv():
                                  ],
                         # NOTE: we do build .sos so this needs to be revisited
                         LINKFLAGS=['-static',
-                                   '-Wl,-rpath-link=' + jail +
-                                   '/lib/arm-linux-gnueabi',
                                    '-Wl,-T',
                                    '-Wl,%s' % linker_script,
                                    ]
