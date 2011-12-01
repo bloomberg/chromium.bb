@@ -14087,8 +14087,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_TITLE" desc="An offline message title shown when we suggest that user may be behind the captive portal.">
        Tips for accessing this network
       </message>
-      <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL" desc="An offline message shown when we suggest that user may be behind the captive portal. Translation note: exit Guest - should be assumed as exit Guest session. Word session may be added to the translation if needed.">
-        To use <ph name="NETWORK_ID">$1<ex>&gt;b&lt;Public Wifi&gt;/b&lt;</ex></ph> you may first need to visit the network's sign-in page. To do so, <ph name="LINK_START">$2<ex>&gt;a&lt;</ex></ph>enter as Guest<ph name="LINK_END">$3<ex>&gt;/a&lt;</ex></ph> and visit any web page. Once you can access the network, you may exit Guest and try signing in again.
+      <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL" desc="An offline message shown when we suggest that user may be behind the captive portal. Translation note: enter as Guest - could also be said enter as Guest user. Word user may be added to the translation if needed.">
+        To use <ph name="NETWORK_ID">$1<ex>&gt;b&lt;Public Wifi&gt;/b&lt;</ex></ph> you may first need to visit the network's sign-in page. To do so, <ph name="LINK_START">$2<ex>&gt;a&lt;</ex></ph>enter as Guest<ph name="LINK_END">$3<ex>&gt;/a&lt;</ex></ph> and visit any web page. Once you can access the network, you may exit the Guest session and try signing in again.
       </message>
       <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_NETWORK_SELECT" desc="An offline message shown when we suggest that user may select other network.">
         You may also select another network.
