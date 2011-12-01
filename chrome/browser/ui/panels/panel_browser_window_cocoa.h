@@ -55,6 +55,8 @@ class PanelBrowserWindowCocoa : public NativePanel,
       const NativeWebKeyboardEvent& event) OVERRIDE;
   virtual Browser* GetPanelBrowser() const OVERRIDE;
   virtual void DestroyPanelBrowser() OVERRIDE;
+  virtual gfx::Size IconOnlySize() const OVERRIDE;
+  virtual void EnsurePanelFullyVisible() OVERRIDE;
 
   // These sizes are in screen coordinates.
   virtual gfx::Size WindowSizeFromContentSize(

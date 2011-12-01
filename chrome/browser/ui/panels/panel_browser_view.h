@@ -107,6 +107,8 @@ class PanelBrowserView : public BrowserView,
   virtual int TitleOnlyHeight() const OVERRIDE;
   virtual Browser* GetPanelBrowser() const OVERRIDE;
   virtual void DestroyPanelBrowser() OVERRIDE;
+  virtual gfx::Size IconOnlySize() const OVERRIDE;
+  virtual void EnsurePanelFullyVisible() OVERRIDE;
 
   // Overridden from AnimationDelegate:
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;

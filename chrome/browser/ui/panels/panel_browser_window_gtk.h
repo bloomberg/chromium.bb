@@ -98,6 +98,8 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual gfx::Size ContentSizeFromWindowSize(
       const gfx::Size& window_size) const OVERRIDE;
   virtual int TitleOnlyHeight() const OVERRIDE;
+  virtual gfx::Size IconOnlySize() const OVERRIDE;
+  virtual void EnsurePanelFullyVisible() OVERRIDE;
 
  private:
   void StartBoundsAnimation(const gfx::Rect& current_bounds);

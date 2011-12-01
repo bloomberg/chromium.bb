@@ -371,6 +371,15 @@ void PanelBrowserWindowGtk::DestroyPanelBrowser() {
   DestroyBrowser();
 }
 
+gfx::Size PanelBrowserWindowGtk::IconOnlySize() const {
+  // TODO(prasdt): to be implemented.
+  return gfx::Size();
+}
+
+void PanelBrowserWindowGtk::EnsurePanelFullyVisible() {
+  // TODO(prasdt): to be implemented.
+}
+
 gfx::Size PanelBrowserWindowGtk::WindowSizeFromContentSize(
     const gfx::Size& content_size) const {
   gfx::Size frame = GetNonClientFrameSize();

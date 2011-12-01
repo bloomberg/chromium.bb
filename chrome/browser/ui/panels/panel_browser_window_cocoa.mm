@@ -246,6 +246,15 @@ void PanelBrowserWindowCocoa::DestroyPanelBrowser() {
   [controller_ close];
 }
 
+gfx::Size PanelBrowserWindowCocoa::IconOnlySize() const {
+  // TODO(dimich): to be implemented.
+  return gfx::Size();
+}
+
+void PanelBrowserWindowCocoa::EnsurePanelFullyVisible() {
+  // TODO(dimich): to be implemented.
+}
+
 void PanelBrowserWindowCocoa::DidCloseNativeWindow() {
   DCHECK(!isClosed());
   panel_->OnNativePanelClosed();

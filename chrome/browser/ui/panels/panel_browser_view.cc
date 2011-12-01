@@ -377,6 +377,15 @@ void PanelBrowserView::DestroyPanelBrowser() {
   DestroyBrowser();
 }
 
+gfx::Size PanelBrowserView::IconOnlySize() const {
+  // TODO(jianli): to be implemented.
+  return gfx::Size();
+}
+
+void PanelBrowserView::EnsurePanelFullyVisible() {
+  // TODO(jianli): to be implemented.
+}
+
 PanelBrowserFrameView* PanelBrowserView::GetFrameView() const {
   return static_cast<PanelBrowserFrameView*>(frame()->GetFrameView());
 }

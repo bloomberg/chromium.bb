@@ -70,6 +70,14 @@ class NativePanel {
       const gfx::Size& window_size) const = 0;
 
   virtual int TitleOnlyHeight() const = 0;
+
+  // Returns the size of the iconified panel. This is the size we use to draw
+  // the panel put in the overflow area.
+  virtual gfx::Size IconOnlySize() const = 0;
+
+  // Brings the panel to the top of the z-order without activating it. This
+  // will make sure that the panel is not obscured by other top-most windows.
+  virtual void EnsurePanelFullyVisible() = 0;
 };
 
 // A NativePanel utility interface used for accessing elements of the
