@@ -275,6 +275,10 @@ cr.define('sync_promo', function() {
     SyncPromo.getInstance().recordPageViewActions_();
   };
 
+  SyncPromo.populatePromoMessage = function(resName) {
+    SyncPromo.getInstance().populatePromoMessage_(resName);
+  };
+
   // Export
   return {
     SyncPromo: SyncPromo

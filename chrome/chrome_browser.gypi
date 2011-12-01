@@ -3908,6 +3908,8 @@
         'browser/ui/webui/sync_internals_ui.h',
         'browser/ui/webui/sync_promo_handler.cc',
         'browser/ui/webui/sync_promo_handler.h',
+        'browser/ui/webui/sync_promo_trial.cc',
+        'browser/ui/webui/sync_promo_trial.h',
         'browser/ui/webui/sync_promo_ui.cc',
         'browser/ui/webui/sync_promo_ui.h',
         'browser/ui/webui/sync_setup_handler.cc',

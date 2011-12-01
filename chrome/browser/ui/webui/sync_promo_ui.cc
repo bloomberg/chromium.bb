@@ -32,7 +32,7 @@ namespace {
 const char kStringsJsFile[] = "strings.js";
 const char kSyncPromoJsFile[]  = "sync_promo.js";
 
-const char kSyncPromoQueryKeyShowTitle[]  = "show_title";
+const char kSyncPromoQueryKeyIsLaunchPage[] = "is_launch_page";
 const char kSyncPromoQueryKeyNextPage[]  = "next_page";
 
 // The maximum number of times we want to show the sync promo at startup.
@@ -62,18 +62,18 @@ bool AllowPromoAtStartupForCurrentBrand() {
 // The Web UI data source for the sync promo page.
 class SyncPromoUIHTMLSource : public ChromeWebUIDataSource {
  public:
-  SyncPromoUIHTMLSource();
+  explicit SyncPromoUIHTMLSource(WebUI* web_ui);
 
  private:
   ~SyncPromoUIHTMLSource() {}
   DISALLOW_COPY_AND_ASSIGN(SyncPromoUIHTMLSource);
 };
 
-SyncPromoUIHTMLSource::SyncPromoUIHTMLSource()
+SyncPromoUIHTMLSource::SyncPromoUIHTMLSource(WebUI* web_ui)
     : ChromeWebUIDataSource(chrome::kChromeUISyncPromoHost) {
   DictionaryValue localized_strings;
   CoreOptionsHandler::GetStaticLocalizedValues(&localized_strings);
-  SyncSetupHandler::GetStaticLocalizedValues(&localized_strings);
+  SyncSetupHandler::GetStaticLocalizedValues(&localized_strings, web_ui);
   AddLocalizedStrings(localized_strings);
 }
 
@@ -116,7 +116,7 @@ SyncPromoUI::SyncPromoUI(TabContents* contents) : ChromeWebUI(contents) {
   profile->GetChromeURLDataManager()->AddDataSource(theme);
 
   // Set up the sync promo source.
-  SyncPromoUIHTMLSource* html_source = new SyncPromoUIHTMLSource();
+  SyncPromoUIHTMLSource* html_source = new SyncPromoUIHTMLSource(this);
   html_source->set_json_path(kStringsJsFile);
   html_source->add_resource_path(kSyncPromoJsFile, IDR_SYNC_PROMO_JS);
   html_source->set_default_resource(IDR_SYNC_PROMO_HTML);
@@ -214,8 +214,9 @@ void SyncPromoUI::SetUserSkippedSyncPromo(Profile* profile) {
 // static
 GURL SyncPromoUI::GetSyncPromoURL(const GURL& next_page, bool show_title) {
   std::stringstream stream;
-  stream << chrome::kChromeUISyncPromoURL << "?" << kSyncPromoQueryKeyShowTitle
-         << "=" << (show_title ? "true" : "false");
+  stream << chrome::kChromeUISyncPromoURL << "?"
+         << kSyncPromoQueryKeyIsLaunchPage << "="
+         << (show_title ? "true" : "false");
 
   if (!next_page.spec().empty()) {
     url_canon::RawCanonOutputT<char> output;
@@ -229,9 +230,11 @@ GURL SyncPromoUI::GetSyncPromoURL(const GURL& next_page, bool show_title) {
 }
 
 // static
-bool SyncPromoUI::GetShowTitleForSyncPromoURL(const GURL& url) {
+bool SyncPromoUI::GetIsLaunchPageForSyncPromoURL(const GURL& url) {
   std::string value;
-  if (GetValueForKeyInQuery(url, kSyncPromoQueryKeyShowTitle, &value))
+  // Show the title if the promo is currently the Chrome launch page (and not
+  // the page accessed through the NTP).
+  if (GetValueForKeyInQuery(url, kSyncPromoQueryKeyIsLaunchPage, &value))
     return value == "true";
   return false;
 }

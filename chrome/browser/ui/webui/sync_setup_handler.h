@@ -46,7 +46,8 @@ class SyncSetupHandler : public GaiaOAuthConsumer,
       const GoogleServiceAuthError& error) OVERRIDE;
 
   static void GetStaticLocalizedValues(
-      base::DictionaryValue* localized_strings);
+      base::DictionaryValue* localized_strings,
+      WebUI* web_ui);
 
   // Initializes the sync setup flow and shows the setup UI.
   void OpenSyncSetup();

@@ -25,6 +25,8 @@ class SyncPromoHandler : public SyncSetupHandler {
   virtual void RegisterMessages() OVERRIDE;
 
   // SyncSetupFlowHandler implementation.
+  virtual void ShowGaiaSuccessAndClose() OVERRIDE;
+  virtual void ShowGaiaSuccessAndSettingUp() OVERRIDE;
   virtual void ShowConfigure(const base::DictionaryValue& args) OVERRIDE;
 
   // content::NotificationObserver implementation.
@@ -70,6 +72,9 @@ class SyncPromoHandler : public SyncSetupHandler {
 
   // Record a user's flow through the promo to our histogram in UMA.
   void RecordUserFlowAction(int action);
+
+  // Load any experiments that run on the promo page.
+  void LoadPromoExperiments();
 
   // Use this to register for certain notifications (currently when tabs or
   // windows close).

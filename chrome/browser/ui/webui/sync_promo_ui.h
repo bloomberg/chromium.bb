@@ -45,8 +45,8 @@ class SyncPromoUI : public ChromeWebUI {
   // If |show_title| is true then the promo title is made visible.
   static GURL GetSyncPromoURL(const GURL& next_page, bool show_title);
 
-  // Gets the show title value from the query portion of the sync promo URL.
-  static bool GetShowTitleForSyncPromoURL(const GURL& url);
+  // Gets the is launch page value from the query portion of the sync promo URL.
+  static bool GetIsLaunchPageForSyncPromoURL(const GURL& url);
 
   // Gets the next page URL from the query portion of the sync promo URL.
   static GURL GetNextPageURLForSyncPromoURL(const GURL& url);

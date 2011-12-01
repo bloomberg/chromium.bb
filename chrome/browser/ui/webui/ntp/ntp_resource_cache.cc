@@ -341,8 +341,6 @@ void NTPResourceCache::CreateNewTabHTML() {
   NewTabPageHandler::GetLocalizedValues(profile_, &localized_strings);
   NTPLoginHandler::GetLocalizedValues(profile_, &localized_strings);
 
-  SyncSetupHandler::GetStaticLocalizedValues(&localized_strings);
-
   // Don't initiate the sync related message passing with the page if the sync
   // code is not present.
   if (profile_->GetProfileSyncService())

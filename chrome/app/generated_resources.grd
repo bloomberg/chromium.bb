@@ -10774,8 +10774,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_PROMO_MESSAGE_TITLE" desc="The first part of the sync promo message.">
         Set up <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> with your Google Account
       </message>
-      <message name="IDS_SYNC_PROMO_MESSAGE_BODY" desc="The body of the sync promo message. This is followed by a learn more link.">
+      <message name="IDS_SYNC_PROMO_MESSAGE_BODY_A" desc="The body of the sync promo message. This is experiment choice 0, and the control/default message.">
         Get your bookmarks, history, and settings on all your devices.
+      </message>
+      <message name="IDS_SYNC_PROMO_MESSAGE_BODY_B" desc="The body of the sync promo message. Experiment choice 1.">
+        Back up your bookmarks, history, and settings online.
+      </message>
+      <message name="IDS_SYNC_PROMO_MESSAGE_BODY_C" desc="The body of the sync promo message. Experiment choice 2.">
+        Sync your personalized browser features between all your devices.
+      </message>
+      <message name="IDS_SYNC_PROMO_MESSAGE_BODY_D" desc="The body of the sync promo message. Experiment choice 3.">
+        Get your bookmarks, history, and settings on all your devices. Plus, you'll be automatically signed in to your favorite Google services.
       </message>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_PROMO_SKIP_BUTTON" desc="In Title Case: The button at the bottom to let the user skip the sync promo.">

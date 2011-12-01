@@ -77,6 +77,7 @@
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
+#include "chrome/browser/ui/webui/sync_promo_trial.h"
 #include "chrome/browser/web_resource/gpu_blacklist_updater.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
@@ -1131,6 +1132,7 @@ void ChromeBrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
   WarmConnectionFieldTrial();
   PredictorFieldTrial();
   DefaultAppsFieldTrial();
+  sync_promo_trial::Activate();
 }
 
 // -----------------------------------------------------------------------------

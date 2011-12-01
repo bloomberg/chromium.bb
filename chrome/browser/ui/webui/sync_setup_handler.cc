@@ -23,6 +23,7 @@
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/sync/util/oauth.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/webui/sync_promo_trial.h"
 #include "chrome/browser/ui/webui/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/user_selectable_sync_type.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -258,11 +259,12 @@ SyncSetupHandler::~SyncSetupHandler() {
 }
 
 void SyncSetupHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
-  GetStaticLocalizedValues(localized_strings);
+  GetStaticLocalizedValues(localized_strings, web_ui_);
 }
 
 void SyncSetupHandler::GetStaticLocalizedValues(
-    DictionaryValue* localized_strings) {
+    DictionaryValue* localized_strings,
+    WebUI* web_ui) {
   DCHECK(localized_strings);
 
   localized_strings->SetString(
@@ -303,6 +305,17 @@ void SyncSetupHandler::GetStaticLocalizedValues(
       "promoMessageTitle",
       GetStringFUTF16(IDS_SYNC_PROMO_MESSAGE_TITLE,
                       GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+
+  // The experimental body string only appears if we are on the launch page
+  // version of the Sync Promo.
+  int message_body_resource_id = IDS_SYNC_PROMO_MESSAGE_BODY_A;
+  if (web_ui && SyncPromoUI::GetIsLaunchPageForSyncPromoURL(
+      web_ui->tab_contents()->GetURL())) {
+    message_body_resource_id = sync_promo_trial::GetMessageBodyResID();
+  }
+  localized_strings->SetString(
+      "promoMessageBody",
+      GetStringUTF16(message_body_resource_id));
 
   std::string create_account_url =
       google_util::StringAppendGoogleLocaleParam(kCreateNewAccountUrl);
@@ -384,7 +397,6 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "encryptAllOption", IDS_SYNC_ENCRYPT_ALL_DATA },
     { "aspWarningText", IDS_SYNC_ASP_PASSWORD_WARNING_TEXT },
     { "promoPageTitle", IDS_SYNC_PROMO_TAB_TITLE},
-    { "promoMessageBody", IDS_SYNC_PROMO_MESSAGE_BODY},
     { "promoSkipButton", IDS_SYNC_PROMO_SKIP_BUTTON},
     { "promoAdvanced", IDS_SYNC_PROMO_ADVANCED},
     { "promoLearnMoreShow", IDS_SYNC_PROMO_LEARN_MORE_SHOW},

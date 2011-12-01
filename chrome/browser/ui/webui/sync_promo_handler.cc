@@ -15,6 +15,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/webui/sync_promo_trial.h"
 #include "chrome/browser/ui/webui/sync_promo_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -120,6 +121,20 @@ void SyncPromoHandler::RegisterMessages() {
   SyncSetupHandler::RegisterMessages();
 }
 
+void SyncPromoHandler::ShowGaiaSuccessAndClose() {
+  if (sync_promo_trial::IsExperimentActive())
+    sync_promo_trial::RecordUserSignedIn();
+
+  SyncSetupHandler::ShowGaiaSuccessAndClose();
+}
+
+void SyncPromoHandler::ShowGaiaSuccessAndSettingUp() {
+  if (sync_promo_trial::IsExperimentActive())
+    sync_promo_trial::RecordUserSignedIn();
+
+  SyncSetupHandler::ShowGaiaSuccessAndSettingUp();
+}
+
 void SyncPromoHandler::ShowConfigure(const base::DictionaryValue& args) {
   bool usePassphrase = false;
   args.GetBoolean("usePassphrase", &usePassphrase);
@@ -186,8 +201,13 @@ void SyncPromoHandler::HandleCloseSyncPromo(const base::ListValue* args) {
 }
 
 void SyncPromoHandler::HandleInitializeSyncPromo(const base::ListValue* args) {
-  base::FundamentalValue visible(SyncPromoUI::GetShowTitleForSyncPromoURL(
-      web_ui_->tab_contents()->GetURL()));
+  // If the promo is also the Chrome launch page, we want to show the title and
+  // log an event if we are running an experiment.
+  bool is_launch_page = SyncPromoUI::GetIsLaunchPageForSyncPromoURL(
+      web_ui_->tab_contents()->GetURL());
+  if (is_launch_page && sync_promo_trial::IsExperimentActive())
+    sync_promo_trial::RecordUserSawMessage();
+  base::FundamentalValue visible(is_launch_page);
   web_ui_->CallJavascriptFunction("SyncSetupOverlay.setPromoTitleVisible",
                                   visible);
 
