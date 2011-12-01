@@ -13,7 +13,7 @@ namespace content {
 class DevToolsFrontendWindowDelegate;
 
 // Installs delegate for DevTools front-end loaded into |client_tab_contents|.
-void SetupDevToolsFrontendDelegate(
+CONTENT_EXPORT void SetupDevToolsFrontendDelegate(
     TabContents* client_tab_contents,
     DevToolsFrontendWindowDelegate* delegate);
 
