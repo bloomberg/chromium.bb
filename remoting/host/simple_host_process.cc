@@ -189,6 +189,16 @@ class SimpleHost {
 
     // Let the chromoting host run until the shutdown task is executed.
     host_->Start();
+
+    // Set an empty shared-secret for Me2Me.
+    // TODO(lambroslambrou): This is a temporary fix, pending a Me2Me-specific
+    // AuthenticatorFactory - crbug.com/105214.
+    if (!is_it2me_) {
+      context.network_message_loop()->PostTask(
+          FROM_HERE, base::Bind(&ChromotingHost::SetSharedSecret, host_.get(),
+                                ""));
+    }
+
     message_loop.MessageLoop::Run();
 
     // And then stop the chromoting context.

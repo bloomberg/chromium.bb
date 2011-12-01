@@ -187,6 +187,15 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   HostKeyPair key_pair_;
   bool allow_nat_traversal_;
 
+  // TODO(lambroslambrou): The following is a temporary fix for Me2Me
+  // (crbug.com/105995), pending the AuthenticatorFactory work.
+  // Cache the shared secret, in case SetSharedSecret() is called before the
+  // session manager has been created.
+  // The |have_shared_secret_| flag is to distinguish SetSharedSecret() not
+  // being called at all, from being called with an empty string.
+  std::string shared_secret_;
+  bool have_shared_secret_;
+
   // Connection objects.
   scoped_ptr<SignalStrategy> signal_strategy_;
   std::string local_jid_;

@@ -48,6 +48,7 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
       desktop_environment_(environment),
       config_(config),
       allow_nat_traversal_(allow_nat_traversal),
+      have_shared_secret_(false),
       stopping_recorders_(0),
       state_(kInitial),
       protocol_config_(protocol::CandidateSessionConfig::CreateDefault()),
@@ -134,6 +135,7 @@ void ChromotingHost::Shutdown(const base::Closure& shutdown_task) {
     // deletion.
     context_->network_message_loop()->DeleteSoon(
         FROM_HERE, session_manager_.release());
+    have_shared_secret_ = false;
   }
 
   // Stop XMPP connection synchronously.
@@ -161,10 +163,14 @@ void ChromotingHost::AddStatusObserver(HostStatusObserver* observer) {
 
 void ChromotingHost::SetSharedSecret(const std::string& shared_secret) {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
-  session_manager_->set_authenticator_factory(
-      new protocol::V1HostAuthenticatorFactory(
-          key_pair_.GenerateCertificate(), key_pair_.private_key(),
-          shared_secret));
+  shared_secret_ = shared_secret;
+  have_shared_secret_ = true;
+  if (session_manager_.get()) {
+    session_manager_->set_authenticator_factory(
+        new protocol::V1HostAuthenticatorFactory(
+            key_pair_.GenerateCertificate(), key_pair_.private_key(),
+            shared_secret_));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -266,6 +272,12 @@ void ChromotingHost::OnStateChange(
                  this, allow_nat_traversal_);
 
     session_manager_.reset(server);
+    if (have_shared_secret_) {
+      session_manager_->set_authenticator_factory(
+          new protocol::V1HostAuthenticatorFactory(
+              key_pair_.GenerateCertificate(), key_pair_.private_key(),
+              shared_secret_));
+    }
 
     for (StatusObserverList::iterator it = status_observers_.begin();
          it != status_observers_.end(); ++it) {
