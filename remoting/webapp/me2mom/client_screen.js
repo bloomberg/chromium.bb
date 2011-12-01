@@ -47,6 +47,19 @@ remoting.hostPublicKey = '';
 remoting.supportHostsXhr_ = null;
 
 /**
+ * @enum {string}
+ */
+remoting.ConnectionType = {
+  It2Me: 'It2Me',
+  Me2Me: 'Me2Me'
+};
+
+/**
+ * @type {remoting.ConnectionType?}
+ */
+remoting.currentConnectionType = null;
+
+/**
  * Entry point for the 'connect' functionality. This function checks for the
  * existence of an OAuth2 token, and either requests one asynchronously, or
  * calls through directly to tryConnectWithAccessToken_.
@@ -123,7 +136,11 @@ remoting.disconnect = function() {
     remoting.clientSession.disconnect();
     remoting.clientSession = null;
     remoting.debug.log('Disconnected.');
-    remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED);
+    if (remoting.currentConnectionType == remoting.ConnectionType.It2Me) {
+      remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_IT2ME);
+    } else {
+      remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
+    }
   }
 }
 
@@ -166,6 +183,7 @@ function tryConnectWithWcs_(success) {
       showConnectError_(remoting.Error.INVALID_ACCESS_CODE);
     } else {
       var supportId = remoting.accessCode.substring(0, kSupportIdLen);
+      remoting.currentConnectionType = remoting.ConnectionType.It2Me;
       remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
       resolveSupportId(supportId);
     }
@@ -214,7 +232,11 @@ function onClientStateChange_(oldState, newState) {
       remoting.clientSession.removePlugin();
       remoting.clientSession = null;
       remoting.debug.log('Connection closed by host');
-      remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED);
+      if (remoting.currentConnectionType == remoting.ConnectionType.It2Me) {
+        remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_IT2ME);
+      } else {
+        remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
+      }
     } else {
       // The transition from CONNECTING to CLOSED state may happen
       // only with older client plugins. Current version should go the
@@ -289,7 +311,11 @@ function showConnectError_(errorTag) {
     remoting.clientSession.disconnect();
     remoting.clientSession = null;
   }
-  remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED);
+  if (remoting.currentConnectionType == remoting.ConnectionType.It2Me) {
+    remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
+  } else {
+    remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_ME2ME);
+  }
 }
 
 /**
@@ -388,22 +414,22 @@ function recenterToolbar_() {
 /**
  * Start a connection to the specified host, using the stored details.
  *
- * @param {string} hostId The Id of the host to connect to.
+ * @param {string} hostJid The jabber Id of the host.
+ * @param {string} hostPublicKey The public key of the host.
+ * @param {string} hostName The name of the host.
  * @return {void} Nothing.
  */
-remoting.connectHost = function(hostId) {
-  var hostTableEntry = remoting.hostList.getHostForId(hostId);
-  if (!hostTableEntry) {
-    console.error('connectHost: Unrecognised hostId: ' + hostId);
-    return;
-  }
-
-  remoting.hostJid = hostTableEntry.host.jabberId;
-  remoting.hostPublicKey = hostTableEntry.host.publicKey;
-  document.getElementById('connected-to').innerText =
-  hostTableEntry.host.hostName;
+remoting.connectHost = function(hostJid, hostPublicKey, hostName) {
+  // TODO(jamiewalch): Instead of passing the jid in the URL, cache it in local
+  // storage so that host bookmarks can be implemented efficiently.
+  remoting.hostJid = hostJid;
+  remoting.hostPublicKey = hostPublicKey;
+  document.getElementById('connected-to').innerText = hostName;
+  document.title = document.title + ': ' + hostName;
 
   remoting.debug.log('Connecting to host...');
+  remoting.currentConnectionType = remoting.ConnectionType.Me2Me;
+  remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
 
   if (!remoting.wcsLoader) {
     remoting.wcsLoader = new remoting.WcsLoader();
@@ -412,10 +438,7 @@ remoting.connectHost = function(hostId) {
   var callWithToken = function(setToken) {
     remoting.oauth2.callWithToken(setToken);
   };
-  remoting.wcsLoader.start(
-      remoting.oauth2.getAccessToken(),
-      callWithToken,
-      remoting.connectHostWithWcs);
+  remoting.wcsLoader.startAsync(callWithToken, remoting.connectHostWithWcs);
 }
 
 /**
@@ -424,8 +447,6 @@ remoting.connectHost = function(hostId) {
  * @return {void} Nothing.
  */
 remoting.connectHostWithWcs = function() {
-  remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
-
   remoting.clientSession =
   new remoting.ClientSession(
       remoting.hostJid, remoting.hostPublicKey,
@@ -438,7 +459,6 @@ remoting.connectHostWithWcs = function() {
         token);
   };
 
-  remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
   remoting.oauth2.callWithToken(createPluginAndConnect);
 }
 

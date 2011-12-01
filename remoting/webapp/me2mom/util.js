@@ -38,3 +38,16 @@ function removeClass(element, cls) {
       element.className.replace(new RegExp('\\b' + cls + '\\b', 'g'), '')
                        .replace('  ', ' ');
 }
+
+/**
+ * @return {Object.<string, string>} The URL parameters.
+ */
+function getUrlParameters() {
+  var result = {};
+  var parts = window.location.search.substring(1).split('&');
+  for (var i = 0; i < parts.length; i++) {
+    var pair = parts[i].split('=');
+    result[pair[0]] = decodeURIComponent(pair[1]);
+  }
+  return result;
+}

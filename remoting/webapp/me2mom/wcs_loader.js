@@ -76,6 +76,28 @@ remoting.WcsLoader.prototype.TALK_GADGET_URL_ =
     'https://talkgadget.google.com/talkgadget/';
 
 /**
+ * Starts loading the WCS IQ client aynchronously. If an OAuth2 token is
+ * already available, this is equivalent to the start method; if not, then
+ * the client will be loaded after an OAuth token exchange has occurred.
+ *
+ * @param {function(function(string): void): void} tokenRefresh
+ *     Gets a (possibly updated) access token asynchronously.
+ * @param {function(boolean): void} onReady If the WCS connection is not yet
+ *     ready, then |onReady| will be called with a true parameter when it is
+ *     ready, or with a false parameter on error.
+ * @return {void} Nothing.
+ */
+remoting.WcsLoader.prototype.startAsync = function(tokenRefresh, onReady) {
+  /** @type {remoting.WcsLoader} */
+  var that = this;
+  /** @param {string} token The OAuth2 access token. */
+  var start = function(token) {
+    that.start(token, tokenRefresh, onReady);
+  };
+  remoting.oauth2.callWithToken(start);
+};
+
+/**
  * Starts loading the WCS IQ client.
  *
  * When it's loaded, construct remoting.wcs as a wrapper for it.

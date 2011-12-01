@@ -82,11 +82,16 @@ remoting.HostTableEntry.prototype.init = function(host, onRename, onDelete) {
   // Create the host status cell.
   var hostStatus = document.createElement('td');
   if (host.status == 'ONLINE') {
+    var hostUrl = chrome.extension.getURL('choice.html') +
+        '?mode=me2me' +
+        '&hostJid=' + encodeURIComponent(host.jabberId) +
+        '&hostPublicKey=' + encodeURIComponent(host.publicKey) +
+        '&hostName=' + encodeURIComponent(host.hostName);
     var connectButton = document.createElement('button');
     connectButton.setAttribute('class', 'mode-select-button');
     connectButton.setAttribute('type', 'button');
     connectButton.setAttribute('onclick',
-                               'remoting.connectHost("' + host.hostId + '")');
+                               'window.open("' + hostUrl + '", "_blank");');
     connectButton.innerHTML =
         chrome.i18n.getMessage(/*i18n-content*/'CONNECT_BUTTON');
     hostStatus.appendChild(connectButton);
@@ -137,7 +142,7 @@ remoting.HostTableEntry.prototype.beginRename_ = function() {
   var that = this;
   editBox.onblur = function() { that.commitRename_(); };
 
-  /** @param {Event} event */
+  /** @param {Event} event The keydown event. */
   var onKeydown = function(event) { that.onKeydown_(event); }
   editBox.onkeydown = onKeydown;
 };

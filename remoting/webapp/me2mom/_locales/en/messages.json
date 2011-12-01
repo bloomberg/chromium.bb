@@ -147,6 +147,10 @@
     "message": "Connected:",
     "description": "String displayed in front of the host when a connection is active informing the client user who they are connected to."
   },
+  "MESSAGE_CONNECTING": {
+    "message": "Connecting\u2026",
+    "description": "Message displayed on the client while a connection to the host is being established."
+  },
   "MESSAGE_GENERATING": {
     "message": "Generating access code\u2026",
     "description": "Text shown while generating an access code."
@@ -204,10 +208,6 @@
   "TOOLTIP_SCALING": {
     "message": "Scale to fit",
     "description": "The tool-tip shown when the user hovers over the scale to fit button. Clicking this button toggles between scaling down the remote desktop to fit it inside the Chromium browser window and displaying it at 1:1 scale."
-  },
-  "VERIFYING_CODE": {
-    "message": "Verifying access code\u2026",
-    "description": "Message displayed on the client while the access code is verified."
   },
   "WARNING_NAT_DISABLED": {
     "message": "NOTE: Policy settings permit connections only between computers within your network.",

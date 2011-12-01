@@ -47,6 +47,21 @@ remoting.init = function() {
     document.getElementById('current-email').innerText = email;
   }
 
+  window.addEventListener('blur', pluginLostFocus_, false);
+
+  // Parse URL parameters.
+  var urlParams = getUrlParameters();
+  if ('mode' in urlParams) {
+    if (urlParams['mode'] == 'me2me') {
+      var hostJid = urlParams['hostJid'];
+      var hostPublicKey = urlParams['hostPublicKey'];
+      var hostName = urlParams['hostName'];
+      remoting.connectHost(hostJid, hostPublicKey, hostName);
+      return;
+    }
+  }
+
+  // No valid URL parameters, start up normally.
   remoting.setMode(getAppStartupMode_());
   if (isHostModeSupported_()) {
     var noShare = document.getElementById('chrome-os-no-share');
@@ -55,8 +70,6 @@ remoting.init = function() {
     var button = document.getElementById('share-button');
     button.disabled = true;
   }
-
-  window.addEventListener('blur', pluginLostFocus_, false);
 }
 
 remoting.cancelPendingOperation = function() {
