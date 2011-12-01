@@ -41,6 +41,7 @@ list > [selected]:hover {
 }
 
 .table-row-cell {
+  display: -webkit-box;
   overflow: hidden;
 }
 

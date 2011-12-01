@@ -4,10 +4,11 @@
   -- Use of this source code is governed by a BSD-style license that can be
   -- found in the LICENSE file.
   -->
-<html>
+<html i18n-values="dir:textdirection;">
   <head>
     <if expr="0">
     <!-- <if ... /if> is removed while flattening HTML. -->
+    <base href="">
     <script>
       // Instruction for enabling loading file manager files remotely (speeds up
       // development cycle):
@@ -23,17 +24,13 @@
       //
       // 4. Open the File Manager. Execute the following JS code in its context
       //    using DevTools:
-      //    localStorage['base'] = 'http://yourmachine:1080/file_manager/'
+      //    localStorage.base = 'http://yourmachine:1080/file_manager/'
       //
       // This will make the File Manager use fresh JS and CSS files from the
       // development machine. HTML files and JS files for WebWorkers would still
       // need a rebuild to update.
 
-      if (localStorage['base']) {
-        var base = document.createElement('base');
-        base.setAttribute('href', localStorage['base']);
-        document.head.appendChild(base);
-      }
+      document.querySelector('base').setAttribute('href', localStorage.base);
     </script>
     </if>
     <!-- metrics.js initiates load performance tracking

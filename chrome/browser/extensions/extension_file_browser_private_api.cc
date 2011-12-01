@@ -1677,6 +1677,8 @@ bool FileDialogStringsFunction::RunImpl() {
   SET_STRING(IDS_FILE_BROWSER, ENQUEUE);
 #undef SET_STRING
 
+  ChromeURLDataManager::DataSource::SetFontAndTextDirection(dict);
+
   // TODO(serya): Create a new string in .grd file for this one in M13.
   dict->SetString("PREVIEW_IMAGE",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_VIEW_CERT_BUTTON));

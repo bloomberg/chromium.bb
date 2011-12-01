@@ -1164,10 +1164,8 @@ FileManager.prototype = {
     columns[3].renderFunction = this.renderDate_.bind(this);
 
     if (this.showCheckboxes_) {
-      columns.unshift(new cr.ui.table.TableColumn('checkbox_', '', 3.6));
-      columns[0].renderFunction = this.renderCheckbox_.bind(this);
       columns[0].headerRenderFunction =
-          this.renderCheckboxColumnHeader_.bind(this);
+          this.renderNameColumnHeader_.bind(this, columns[0].name);
     }
 
     this.table_ = this.dialogDom_.querySelector('.detail-table');
@@ -1553,7 +1551,7 @@ FileManager.prototype = {
     return input;
   };
 
-  FileManager.prototype.renderCheckboxColumnHeader_ = function(table) {
+  FileManager.prototype.renderNameColumnHeader_ = function(name, table) {
     var input = this.document_.createElement('input');
     input.setAttribute('type', 'checkbox');
     input.setAttribute('tabindex', -1);
@@ -1567,9 +1565,13 @@ FileManager.prototype = {
       else
         table.selectionModel.selectAll();
       event.preventDefault();
+      event.stopPropagation();
     });
 
-    return input;
+    var fragment = this.document_.createDocumentFragment();
+    fragment.appendChild(input);
+    fragment.appendChild(this.document_.createTextNode(name));
+    return fragment;
   };
 
   /**
@@ -1577,7 +1579,7 @@ FileManager.prototype = {
    * @return {boolean} True if all items are selected.
    */
   FileManager.prototype.areAllItemsSelected = function() {
-    return this.selection &&
+    return this.selection && this.dataModel_.length > 0 &&
            this.dataModel_.length == this.selection.totalCount;
   };
 
@@ -1686,16 +1688,11 @@ FileManager.prototype = {
    * @param {cr.ui.Table} table The table doing the rendering.
    */
   FileManager.prototype.renderIconType_ = function(entry, columnId, table) {
-    var div = this.document_.createElement('div');
-    div.className = 'detail-icon-container';
-
     var icon = this.document_.createElement('div');
     icon.className = 'detail-icon';
     this.getIconType(entry);
     icon.setAttribute('iconType', entry.cachedIconType_);
-    div.appendChild(icon);
-
-    return div;
+    return icon;
   };
 
   FileManager.prototype.getLabelForRootPath_ = function(path) {
@@ -1723,9 +1720,11 @@ FileManager.prototype = {
    */
   FileManager.prototype.renderName_ = function(entry, columnId, table) {
     var label = this.document_.createElement('div');
+    if (this.showCheckboxes_)
+      label.appendChild(this.renderCheckbox_(entry));
     label.appendChild(this.renderIconType_(entry, columnId, table));
     label.entry = entry;
-    label.className = 'detail-name filename-label';
+    label.className = 'detail-name';
     if (this.currentDirEntry_.name == '') {
       label.appendChild(this.document_.createTextNode(
           this.getLabelForRootPath_(entry.name)));
@@ -1745,7 +1744,6 @@ FileManager.prototype = {
    */
   FileManager.prototype.renderSize_ = function(entry, columnId, table) {
     var div = this.document_.createElement('div');
-    div.className = 'detail-size';
 
     div.textContent = '...';
     cacheEntrySize(entry, function(entry) {
@@ -1768,7 +1766,6 @@ FileManager.prototype = {
    */
   FileManager.prototype.renderType_ = function(entry, columnId, table) {
     var div = this.document_.createElement('div');
-    div.className = 'detail-type';
 
     this.cacheEntryFileType(entry, function(entry) {
       var info = entry.cachedFileType_;
@@ -1793,7 +1790,6 @@ FileManager.prototype = {
    */
   FileManager.prototype.renderDate_ = function(entry, columnId, table) {
     var div = this.document_.createElement('div');
-    div.className = 'detail-date';
 
     div.textContent = '...';
 
