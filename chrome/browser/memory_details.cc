@@ -21,10 +21,10 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/child_process_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/process_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -67,7 +67,7 @@ std::string ProcessMemoryInformation::GetFullTypeNameInEnglish(
     RendererProcessType rtype) {
   if (type == content::PROCESS_TYPE_RENDERER)
     return GetRendererTypeNameInEnglish(rtype);
-  return ChildProcessInfo::GetTypeNameInEnglish(type);
+  return content::GetProcessTypeNameInEnglish(type);
 }
 
 ProcessMemoryInformation::ProcessMemoryInformation()

@@ -2732,8 +2732,7 @@ void GetChildProcessHostInfo(ListValue* child_processes) {
     ChildProcessInfo* info = *iter;
     DictionaryValue* item = new DictionaryValue;
     item->SetString("name", info->name());
-    item->SetString("type",
-                    ChildProcessInfo::GetTypeNameInEnglish(info->type()));
+    item->SetString("type", content::GetProcessTypeNameInEnglish(info->type()));
     item->SetInteger("pid", base::GetProcId(info->handle()));
     child_processes->Append(item);
   }

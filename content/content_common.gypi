@@ -212,6 +212,7 @@
     'common/plugin_carbon_interpose_constants_mac.cc',
     'common/plugin_carbon_interpose_constants_mac.h',
     'common/plugin_messages.h',
+    'common/process_type.cc',
     'common/quota_messages.h',
     'common/quota_dispatcher.cc',
     'common/quota_dispatcher.h',

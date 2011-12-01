@@ -14,9 +14,9 @@
 #include "chrome/browser/ui/webui/tracing_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
-#include "content/common/child_process_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/process_type.h"
 
 using base::TimeTicks;
 using content::BrowserThread;
@@ -155,7 +155,7 @@ void TrackingSynchronizer::DeserializeTrackingListOnUI(
   base::DictionaryValue* dictionary_value =
       static_cast<DictionaryValue*>(value);
   dictionary_value->SetString(
-      "process_type", ChildProcessInfo::GetTypeNameInEnglish(process_type));
+      "process_type", content::GetProcessTypeNameInEnglish(process_type));
 
   current_synchronizer->DecrementPendingProcessesAndSendData(
       sequence_number, dictionary_value);
@@ -195,7 +195,7 @@ int TrackingSynchronizer::RegisterAndNotifyAllProcesses(
   // Get the ThreadData for the browser process and send it back.
   base::DictionaryValue* value = tracked_objects::ThreadData::ToValue();
   const std::string process_type =
-      ChildProcessInfo::GetTypeNameInEnglish(content::PROCESS_TYPE_BROWSER);
+      content::GetProcessTypeNameInEnglish(content::PROCESS_TYPE_BROWSER);
   value->SetString("process_type", process_type);
   value->SetInteger("process_id", base::GetCurrentProcId());
   DCHECK_GT(request->processes_pending_, 0);

@@ -45,10 +45,6 @@ class CONTENT_EXPORT ChildProcessInfo {
 
   void SetProcessBackgrounded() const { process_.SetProcessBackgrounded(true); }
 
-  // Returns an English name of the process type, should only be used for non
-  // user-visible strings, or debugging pages like about:memory.
-  static std::string GetTypeNameInEnglish(content::ProcessType type);
-
   // We define the < operator so that the ChildProcessInfo can be used as a key
   // in a std::map.
   bool operator <(const ChildProcessInfo& rhs) const {

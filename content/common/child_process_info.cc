@@ -45,43 +45,6 @@ ChildProcessInfo& ChildProcessInfo::operator=(
   return *this;
 }
 
-// static
-std::string ChildProcessInfo::GetTypeNameInEnglish(
-    content::ProcessType type) {
-  switch (type) {
-    case content::PROCESS_TYPE_BROWSER:
-      return "Browser";
-    case content::PROCESS_TYPE_RENDERER:
-      return "Tab";
-    case content::PROCESS_TYPE_PLUGIN:
-      return "Plug-in";
-    case content::PROCESS_TYPE_WORKER:
-      return "Web Worker";
-    case content::PROCESS_TYPE_UTILITY:
-      return "Utility";
-    case content::PROCESS_TYPE_PROFILE_IMPORT:
-      return "Profile Import helper";
-    case content::PROCESS_TYPE_ZYGOTE:
-      return "Zygote";
-    case content::PROCESS_TYPE_SANDBOX_HELPER:
-      return "Sandbox helper";
-    case content::PROCESS_TYPE_NACL_LOADER:
-      return "Native Client module";
-    case content::PROCESS_TYPE_NACL_BROKER:
-      return "Native Client broker";
-    case content::PROCESS_TYPE_GPU:
-      return "GPU";
-    case content::PROCESS_TYPE_PPAPI_PLUGIN:
-      return "Pepper Plugin";
-    case content::PROCESS_TYPE_PPAPI_BROKER:
-      return "Pepper Plugin Broker";
-    case content::PROCESS_TYPE_UNKNOWN:
-    default:
-      DCHECK(false) << "Unknown child process type!";
-      return "Unknown";
-  }
-}
-
 std::string ChildProcessInfo::GenerateRandomChannelID(void* instance) {
   // Note: the string must start with the current process id, this is how
   // child processes determine the pid of the parent.

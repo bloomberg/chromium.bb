@@ -75,7 +75,6 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/child_process_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/process_type.h"
@@ -2868,7 +2867,7 @@ void ProcessInfoObserver::OnDetailsAvailable() {
       // The following condition avoids a DCHECK in debug builds when the
       // process type passed to |GetTypeNameInEnglish| is unknown.
       if (iterator->type != content::PROCESS_TYPE_UNKNOWN)
-        process_type = ChildProcessInfo::GetTypeNameInEnglish(iterator->type);
+        process_type = content::GetProcessTypeNameInEnglish(iterator->type);
       proc_data->SetString("child_process_type", process_type);
 
       // Renderer type, if this is a renderer process.

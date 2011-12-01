@@ -6,6 +6,8 @@
 #define CONTENT_PUBLIC_COMMON_PROCESS_TYPE_H_
 #pragma once
 
+#include <string>
+
 namespace content {
 
 // Defines the different process types.
@@ -29,6 +31,10 @@ enum ProcessType {
   PROCESS_TYPE_PPAPI_BROKER,
   PROCESS_TYPE_MAX
 };
+
+// Returns an English name of the process type, should only be used for non
+// user-visible strings, or debugging pages like about:memory.
+std::string GetProcessTypeNameInEnglish(ProcessType type);
 
 }  // namespace content
 
