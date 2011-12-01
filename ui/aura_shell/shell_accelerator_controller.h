@@ -6,6 +6,8 @@
 #define UI_AURA_SHELL_SHELL_ACCELERATOR_CONTROLLER_H_
 #pragma once
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -52,7 +54,14 @@ class AURA_SHELL_EXPORT ShellAcceleratorController
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
  private:
+  // Initialize the accelerators this class handles as a target.
+  void Init();
+
   scoped_ptr<ui::AcceleratorManager> accelerator_manager_;
+
+  // A map from accelerators to the AcceleratorAction values, which are used in
+  // the implementation.
+  std::map<ui::Accelerator, int> accelerators_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellAcceleratorController);
 };

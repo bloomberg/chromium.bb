@@ -4,6 +4,7 @@
 
 #include "ui/aura_shell/shell_accelerator_controller.h"
 
+#include "base/logging.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura_shell/shell.h"
@@ -15,31 +16,55 @@
 
 namespace {
 
+enum AcceleratorAction {
+  CYCLE_BACKWARD,
+  CYCLE_FORWARD,
+  TAKE_SCREENSHOT,
+#if !defined(NDEBUG)
+  ROTATE_SCREEN,
+  TOGGLE_DESKTOP_FULL_SCREEN,
+#endif
+};
+
 // Acceleraters handled by ShellAcceleratorController.
 struct AcceleratorData {
   ui::KeyboardCode keycode;
   bool shift;
   bool ctrl;
   bool alt;
+  AcceleratorAction action;
 } kAcceleratorData[] = {
-  { ui::VKEY_F11, false, false, false },
-  { ui::VKEY_HOME, false, true, false },
+  { ui::VKEY_TAB, true, false, true, CYCLE_BACKWARD },
+  { ui::VKEY_TAB, false, false, true, CYCLE_FORWARD },
+  { ui::VKEY_F5, false, true, false, TAKE_SCREENSHOT },
+  { ui::VKEY_PRINT, false, false, false, TAKE_SCREENSHOT },
+#if !defined(NDEBUG)
+  { ui::VKEY_HOME, false, true, false, ROTATE_SCREEN },
+  { ui::VKEY_F11, false, true, false, TOGGLE_DESKTOP_FULL_SCREEN },
+#endif
 };
 
-// Registers the accelerators with ShellAcceleratorController.
-void RegisterAccelerators(aura_shell::ShellAcceleratorController* controller) {
-  for (size_t i = 0; i < arraysize(kAcceleratorData); ++i) {
-    controller->Register(ui::Accelerator(kAcceleratorData[i].keycode,
-                                         kAcceleratorData[i].shift,
-                                         kAcceleratorData[i].ctrl,
-                                         kAcceleratorData[i].alt),
-                         controller);
-  }
+bool HandleCycleBackward() {
+  // TODO(mazda): http://crbug.com/105204
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool HandleCycleForward() {
+  // TODO(mazda): http://crbug.com/105204
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool HandleTakeScreenshot() {
+  // TODO(mazda): http://crbug.com/105198
+  NOTIMPLEMENTED();
+  return false;
 }
 
 #if !defined(NDEBUG)
 // Rotates the screen.
-void RotateScreen() {
+bool HandleRotateScreen() {
   static int i = 0;
   int delta = 0;
   switch (i) {
@@ -66,6 +91,12 @@ void RotateScreen() {
   screen_rotation->AddObserver(aura::Desktop::GetInstance());
   aura::Desktop::GetInstance()->layer()->GetAnimator()->StartAnimation(
       screen_rotation.release());
+  return true;
+}
+
+bool HandleToggleDesktopFullScreen() {
+  aura::Desktop::GetInstance()->ToggleFullScreen();
+  return true;
 }
 #endif
 
@@ -78,10 +109,22 @@ namespace aura_shell {
 
 ShellAcceleratorController::ShellAcceleratorController()
     : accelerator_manager_(new ui::AcceleratorManager) {
-  RegisterAccelerators(this);
+  Init();
 }
 
 ShellAcceleratorController::~ShellAcceleratorController() {
+}
+
+void ShellAcceleratorController::Init() {
+  for (size_t i = 0; i < arraysize(kAcceleratorData); ++i) {
+    ui::Accelerator accelerator(kAcceleratorData[i].keycode,
+                                kAcceleratorData[i].shift,
+                                kAcceleratorData[i].ctrl,
+                                kAcceleratorData[i].alt);
+    Register(accelerator, this);
+    accelerators_.insert(std::make_pair(accelerator,
+                                        kAcceleratorData[i].action));
+  }
 }
 
 void ShellAcceleratorController::Register(
@@ -110,16 +153,25 @@ bool ShellAcceleratorController::Process(const ui::Accelerator& accelerator) {
 
 bool ShellAcceleratorController::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
+  std::map<ui::Accelerator, int>::const_iterator it =
+      accelerators_.find(accelerator);
+  DCHECK(it != accelerators_.end());
+  switch (static_cast<AcceleratorAction>(it->second)) {
+    case CYCLE_BACKWARD:
+      return HandleCycleBackward();
+    case CYCLE_FORWARD:
+      return HandleCycleForward();
+    case TAKE_SCREENSHOT:
+      return HandleTakeScreenshot();
 #if !defined(NDEBUG)
-  if (accelerator.key_code() == ui::VKEY_F11) {
-    aura::Desktop::GetInstance()->ToggleFullScreen();
-    return true;
-  } else if (accelerator.key_code() == ui::VKEY_HOME &&
-             accelerator.IsCtrlDown()) {
-    RotateScreen();
-    return true;
-  }
+    case ROTATE_SCREEN:
+      return HandleRotateScreen();
+    case TOGGLE_DESKTOP_FULL_SCREEN:
+      return HandleToggleDesktopFullScreen();
 #endif
+    default:
+      NOTREACHED() << "Unhandled action " << it->second;;
+  }
   return false;
 }
 

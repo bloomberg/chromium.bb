@@ -150,6 +150,7 @@
         'modal_container_layout_manager_unittest.cc',
         'run_all_unittests.cc',
         'shadow_controller_unittest.cc',
+        'shell_accelerator_controller_unittest.cc',
         'shell_unittest.cc',
         'stacking_controller_unittest.cc',
         'test_suite.cc',
