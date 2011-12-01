@@ -307,6 +307,10 @@ void Label::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
 void Label::OnPaint(gfx::Canvas* canvas) {
   OnPaintBackground(canvas);
+  // We skip painting the focus border because it is being handled seperately by
+  // some subclasses of Label. We do not want View's focus border painting to
+  // interfere with that.
+  OnPaintBorder(canvas);
 
   string16 paint_text;
   gfx::Rect text_bounds;
