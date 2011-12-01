@@ -262,6 +262,7 @@ chrome.fileBrowserPrivate = {
       GALLERY_ENTER_WHEN_DONE: 'Press Enter when done',
       GALLERY_UNDO: 'Undo',
       GALLERY_REDO: 'Redo',
+      GALLERY_FILE_EXISTS: 'File already exists',
 
       CONFIRM_OVERWRITE_FILE: 'A file named "$1" already exists. Do you want to replace it?',
       FILE_ALREADY_EXISTS: 'The file named "$1" already exists. Please choose a different name.',

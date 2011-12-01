@@ -438,3 +438,30 @@ ImageUtil.ImageLoader.prototype.copyStrip_ = function(
 ImageUtil.removeChildren = function(element) {
   element.textContent = '';
 };
+
+ImageUtil.getFullNameFromUrl = function(url) {
+  if (url.indexOf('/') != -1)
+    return url.substr(url.lastIndexOf('/') + 1);
+  else
+    return url;
+};
+
+ImageUtil.getFileNameFromFullName = function(name) {
+  var index = name.lastIndexOf('.');
+  if (index != -1)
+    return name.substr(0, index);
+  else
+    return name;
+};
+
+ImageUtil.getFileNameFromUrl = function(url) {
+  return ImageUtil.getFileNameFromFullName(ImageUtil.getFullNameFromUrl(url));
+};
+
+ImageUtil.replaceFileNameInFullName = function(fullName, name) {
+  var index = fullName.lastIndexOf('.');
+  if (index != -1)
+    return name + fullName.substr(index);
+  else
+    return name;
+};

@@ -37,6 +37,7 @@ function Gallery(container, closeCallback, metadataProvider, shareActions,
   this.onFadeTimeoutBound_ = this.onFadeTimeout_.bind(this);
   this.fadeTimeoutId_ = null;
   this.mouseOverTool_ = false;
+  this.imageChanges_ = 0;
 
   this.initDom_(shareActions);
 }
@@ -96,6 +97,18 @@ Gallery.prototype.initDom_ = function(shareActions) {
   this.toolbar_.className = 'toolbar tool dimmable';
   this.container_.appendChild(this.toolbar_);
 
+  var filenameSpacer = doc.createElement('div');
+  filenameSpacer.className = 'filename-spacer';
+  this.toolbar_.appendChild(filenameSpacer);
+
+  this.filenameEdit_ = doc.createElement('input');
+  this.filenameEdit_.setAttribute('type', 'text');
+  this.filenameEdit_.addEventListener('blur',
+      this.updateFilename_.bind(this));
+  this.filenameEdit_.addEventListener('keydown',
+      this.onFilenameEditKeydown_.bind(this));
+  filenameSpacer.appendChild(this.filenameEdit_);
+
   this.ribbonSpacer_ = doc.createElement('div');
   this.ribbonSpacer_.className = 'ribbon-spacer';
   this.toolbar_.appendChild(this.ribbonSpacer_);
@@ -153,6 +166,7 @@ Gallery.prototype.initDom_ = function(shareActions) {
       this.displayStringFunction_);
 
   this.imageView_ = this.editor_.getImageView();
+  this.imageView_.addContentCallback(this.onImageContentChanged_.bind(this));
 
   this.editor_.trackWindow(doc.defaultView);
 
@@ -212,9 +226,19 @@ Gallery.prototype.load = function(parentDirEntry, items, selectedItem) {
   var selectedURL = urls[selectedIndex];
   // Initialize the ribbon only after the selected image is fully loaded.
   this.metadataProvider_.fetch(selectedURL, function (metadata) {
+    // The first change is load, we should not count it.
+    self.imageChanges_ = -1;
+    self.filenameEdit_.value = ImageUtil.getFileNameFromUrl(selectedURL);
     self.editor_.openSession(
         selectedIndex, selectedURL, metadata, 0, initRibbon);
   });
+};
+
+Gallery.prototype.onImageContentChanged_ = function() {
+  this.imageChanges_++;
+  if (this.imageChanges_ == 1)
+    this.ribbon_.getSelectedItem().setCopyName();
+  this.updateFilename_();
 };
 
 Gallery.prototype.saveItem_ = function(item, callback, canvas, modified) {
@@ -227,6 +251,7 @@ Gallery.prototype.saveItem_ = function(item, callback, canvas, modified) {
 };
 
 Gallery.prototype.saveChanges_ = function(opt_callback) {
+  this.imageChanges_ = 0;
   this.editor_.requestImage(
       this.saveItem_.bind(this, this.ribbon_.getSelectedItem(), opt_callback));
 };
@@ -235,6 +260,80 @@ Gallery.prototype.onActionExecute_ = function(action) {
   var url = this.ribbon_.getSelectedItem().getUrl();
   // saveChanges_ makes the editor leave the mode and close the sharing menu.
   this.saveChanges_(action.execute.bind(action, [url]));
+};
+
+Gallery.prototype.updateFilename_ = function() {
+  var item = this.ribbon_.getSelectedItem();
+  if (!item)
+    return;
+
+  var fullName = item.getCopyName() ||
+      ImageUtil.getFullNameFromUrl(item.getUrl());
+  this.filenameEdit_.value = ImageUtil.getFileNameFromFullName(fullName);
+};
+
+Gallery.prototype.onFilenameEditKeydown_ = function() {
+  switch (event.keyCode) {
+    case 27:  // Escape
+      this.filenameEdit_.blur();
+      break;
+
+    case 13:  // Enter
+      if (this.filenameEdit_.value) {
+        this.renameItem_(this.ribbon_.getSelectedItem(),
+            this.filenameEdit_.value);
+        this.filenameEdit_.blur();
+      }
+      break;
+  }
+  event.stopPropagation();
+};
+
+Gallery.prototype.renameItem_ = function(item, name) {
+  var dir = this.parentDirEntry_;
+  var self = this;
+  var newName;
+
+  if (this.imageChanges_ > 0) {
+    // We are editing the file.
+    newName = ImageUtil.replaceFileNameInFullName(
+        item.getCopyName(), name);
+  } else {
+    newName = ImageUtil.replaceFileNameInFullName(
+        ImageUtil.getFullNameFromUrl(item.getUrl()), name);
+  }
+
+  function onError() {
+    console.log('Rename error: "' +
+        ImageUtil.getFullNameFromUrl(item.getUrl()) + '" to "' + name + '"');
+  }
+
+  function onSuccess(entry) {
+    item.setUrl(entry.toURL());
+    self.updateFilename_();
+  }
+
+  function doRename() {
+    if (self.imageChanges_ > 0) {
+      // User this name in the next save operation.
+      item.setCopyName(newName);
+      self.updateFilename_();
+    } else {
+      // Rename file in place.
+      dir.getFile(
+          ImageUtil.getFullNameFromUrl(item.getUrl()),
+          {create: false},
+          function(entry) { entry.moveTo(dir, newName, onSuccess, onError); },
+          onError);
+    }
+  }
+
+  function onVictimFound(victim) {
+    self.editor_.getPrompt().show('file_exists', 3000);
+  }
+
+  dir.getFile(newName, {create: false, exclusive: false},
+      onVictimFound, doRename);
 };
 
 Gallery.prototype.onClose_ = function() {
@@ -247,6 +346,9 @@ Gallery.prototype.prefetchImage = function(id, content, metadata) {
 };
 
 Gallery.prototype.openImage = function(id, content, metadata, slide, callback) {
+  // The first change is load, we should not count it.
+  this.imageChanges_ = -1;
+  this.updateFilename_();
   this.editor_.openSession(id, content, metadata, slide, callback);
 };
 
@@ -383,6 +485,9 @@ function Ribbon(container, client, metadataProvider, arrowLeft, arrowRight) {
   this.document_ = container.ownerDocument;
   this.client_ = client;
   this.metadataProvider_ = metadataProvider;
+
+  this.items_ = [];
+  this.selectedIndex_ = -1;
 
   this.arrowLeft_ = arrowLeft;
   this.arrowLeft_.
@@ -678,6 +783,7 @@ Ribbon.Item = function(index, url, document, selectClosure) {
   }
 
   this.original_ = true;
+  this.copyName_ = null;
 };
 
 Ribbon.Item.prototype.getIndex = function () { return this.index_ };
@@ -687,6 +793,9 @@ Ribbon.Item.prototype.getBox = function (index) { return this.boxes_[index] };
 Ribbon.Item.prototype.isOriginal = function () { return this.original_ };
 
 Ribbon.Item.prototype.getUrl = function () { return this.url_ };
+Ribbon.Item.prototype.setUrl = function (url) { this.url_ = url };
+
+Ribbon.Item.prototype.getCopyName = function () { return this.copyName_ };
 
 Ribbon.Item.prototype.isSelected = function() {
   return this.boxes_[0].hasAttribute('selected');
@@ -725,7 +834,9 @@ Ribbon.Item.prototype.save = function(
   }
 
   var newFile = this.isOriginal();
-  var name = this.getCopyName();
+  var name = this.copyName_;
+  this.original_ = false;
+  this.copyName_ = '';
 
   function onSuccess(url) {
     console.log('Saved from gallery', name);
@@ -761,9 +872,9 @@ Ribbon.Item.prototype.save = function(
 };
 
 // TODO: Localize?
-Ribbon.Item.COPY_SIGNATURE = '_Edited_';
+Ribbon.Item.COPY_SIGNATURE = 'Copy of ';
 
-Ribbon.Item.prototype.getCopyName = function () {
+Ribbon.Item.prototype.createCopyName_ = function () {
   // When saving a modified image we never overwrite the original file (the one
   // that existed prior to opening the Gallery. Instead we save to a file named
   // <original-name>_Edited_<date-stamp>.<original extension>.
@@ -775,19 +886,16 @@ Ribbon.Item.prototype.getCopyName = function () {
   if (!this.original_)
     return name;
 
-  this.original_ = false;
-
   var ext = '';
   var index = name.lastIndexOf('.');
   if (index != -1) {
     ext = name.substr(index);
     name = name.substr(0, index);
   }
-  var signaturePos = name.indexOf(Ribbon.Item.COPY_SIGNATURE);
-  if (signaturePos >= 0) {
-    // The file is likely to be a copy created during a previous session.
-    // Replace the signature instead of appending a new one.
-    name = name.substr(0, signaturePos);
+
+  if (name.indexOf(Ribbon.Item.COPY_SIGNATURE) == 0) {
+    // TODO(dgozman): add a number to form 'Copy (X) of File.jpg'.
+    name = name.substr(Ribbon.Item.COPY_SIGNATURE.length);
   }
 
   var mimeType = this.metadata_.mimeType.toLowerCase();
@@ -806,21 +914,15 @@ Ribbon.Item.prototype.getCopyName = function () {
     }
   }
 
-  function twoDigits(n) { return (n < 10 ? '0' : '' ) + n }
+  return Ribbon.Item.COPY_SIGNATURE + name + ext;
+};
 
-  var now = new Date();
-
-  // Datestamp the copy with YYYYMMDD_HHMMSS (similar to what many cameras do)
-  return name +
-      Ribbon.Item.COPY_SIGNATURE +
-      now.getFullYear() +
-      twoDigits(now.getMonth() + 1) +
-      twoDigits(now.getDate()) +
-      '_' +
-      twoDigits(now.getHours()) +
-      twoDigits(now.getMinutes()) +
-      twoDigits(now.getSeconds()) +
-      ext;
+Ribbon.Item.prototype.setCopyName = function(opt_name) {
+  if (opt_name) {
+    this.copyName_ = opt_name;
+  } else {
+    this.copyName_ = this.createCopyName_();
+  }
 };
 
 // The url and metadata stored in the item are not valid while the modified

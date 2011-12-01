@@ -226,6 +226,29 @@ body {
   opacity: 0.2;
 }
 
+/* Filename */
+
+.gallery .filename-spacer {
+  padding: 0 10px;
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
+}
+
+.gallery .filename-spacer > input {
+  background-color: transparent;
+  color: white;
+  width: 40em;
+  border: none;
+  outline: none;
+}
+
+.gallery .filename-spacer > input:focus {
+  background-color: rgba(48, 48, 48, 0.75);
+  border-right: 1px solid white;
+  border-bottom: 1px solid white;
+}
+
 /* Thumbnails */
 
 .gallery .ribbon-spacer {
