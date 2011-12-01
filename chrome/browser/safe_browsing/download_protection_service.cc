@@ -527,12 +527,20 @@ class DownloadProtectionService::CheckClientDownloadRequest
       RecordImprovedProtectionStats(REASON_PING_DISABLED);
       CheckDigestList();
     } else {
+      // Currently, the UI only works on Windows so we don't even bother
+      // with pinging the server if we're not on Windows.  TODO(noelutz):
+      // change this code once the UI is done for Linux and Mac.
+#if defined(OS_WIN)
       // The URLFetcher is owned by the UI thread, so post a message to
       // start the pingback.
       BrowserThread::PostTask(
           BrowserThread::UI,
           FROM_HERE,
           base::Bind(&CheckClientDownloadRequest::SendRequest, this));
+#else
+      RecordImprovedProtectionStats(REASON_OS_NOT_SUPPORTED);
+      CheckDigestList();
+#endif
     }
   }
 

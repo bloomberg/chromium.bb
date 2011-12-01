@@ -353,7 +353,11 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
   msg_loop_.Run();
+#if defined(OS_WIN)
   ExpectResult(DownloadProtectionService::DANGEROUS);
+#else
+  ExpectResult(DownloadProtectionService::SAFE);
+#endif
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
@@ -373,6 +377,13 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*signature_util_, CheckSignature(info.local_file, _))
       .WillOnce(SetCertificateContents("dummy cert data"));
+#if !defined(OS_WIN)
+  // If we're not on windows we won't be sending any request but instead
+  // we'll be looking up the download hash.
+  EXPECT_CALL(*sb_service_,
+              CheckDownloadHash(info.sha256_hash, NotNull()))
+      .WillOnce(Return(true));
+#endif
 
   download_service_->CheckClientDownload(
       info,
@@ -382,6 +393,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
   FlushThreadMessageLoops();
 
   TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+#if !defined(OS_WIN)
+  EXPECT_EQ(NULL, fetcher);
+#else
   ASSERT_TRUE(fetcher);
   ClientDownloadRequest request;
   EXPECT_TRUE(request.ParseFromString(fetcher->upload_data()));
@@ -410,6 +424,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
       base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
                  base::Unretained(this), fetcher));
   msg_loop_.Run();
+#endif
 }
 
 // Similar to above, but with an unsigned binary.
@@ -430,6 +445,13 @@ TEST_F(DownloadProtectionServiceTest,
   EXPECT_CALL(*sb_service_, MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*signature_util_, CheckSignature(info.local_file, _));
+#if !defined(OS_WIN)
+  // If we're not on windows we won't be sending any request but instead
+  // we'll be looking up the download hash.
+  EXPECT_CALL(*sb_service_,
+              CheckDownloadHash(info.sha256_hash, NotNull()))
+      .WillOnce(Return(true));
+#endif
 
   download_service_->CheckClientDownload(
       info,
@@ -439,6 +461,9 @@ TEST_F(DownloadProtectionServiceTest,
   FlushThreadMessageLoops();
 
   TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+#if !defined(OS_WIN)
+  EXPECT_EQ(NULL, fetcher);
+#else
   ASSERT_TRUE(fetcher);
   ClientDownloadRequest request;
   EXPECT_TRUE(request.ParseFromString(fetcher->upload_data()));
@@ -463,6 +488,7 @@ TEST_F(DownloadProtectionServiceTest,
       base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
                  base::Unretained(this), fetcher));
   msg_loop_.Run();
+#endif
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadDigestList) {

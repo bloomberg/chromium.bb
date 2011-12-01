@@ -125,6 +125,7 @@ class DownloadProtectionService {
     REASON_HTTPS_URL,
     REASON_PING_DISABLED,
     REASON_TRUSTED_EXECUTABLE,
+    REASON_OS_NOT_SUPPORTED,
     REASON_MAX  // Always add new values before this one.
   };
 
