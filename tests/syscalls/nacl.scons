@@ -71,11 +71,7 @@ env.AddNodeToTestSuite(node,
 # The first one checks for exit success.
 exit_test_nexe = env.ComponentProgram('exit_test', ['exit_test.cc'],
                                       EXTRA_LIBS=['${NONIRT_LIBS}'])
-node = env.CommandSelLdrTestNacl(
-    'exit_success_test.out',
-    exit_test_nexe,
-    exit_status='0',
-    )
+node = env.CommandSelLdrTestNacl('exit_success_test.out', exit_test_nexe)
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_exit_success_test')

@@ -14,9 +14,7 @@ nacl_close_test_nexe = env.ComponentProgram(
                                        'gio',
                                        '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
-    'nacl_close_test_nexe.out',
-    nacl_close_test_nexe,
-    exit_status='0')
+    'nacl_close_test_nexe.out', nacl_close_test_nexe)
 env.AddNodeToTestSuite(node,
                        ['small_tests'],
                        'run_nacl_close_test_nexe')
@@ -30,9 +28,7 @@ double_nacl_close_test_nexe = env.ComponentProgram(
                                               'gio',
                                               '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
-    'double_nacl_close_test_nexe.out',
-    double_nacl_close_test_nexe,
-    exit_status='0')
+    'double_nacl_close_test_nexe.out', double_nacl_close_test_nexe)
 env.AddNodeToTestSuite(node,
                        ['small_tests'],
                        'run_double_nacl_close_test_nexe')
@@ -48,8 +44,7 @@ nacl_create_memory_object_test_nexe = env.ComponentProgram(
                 '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'nacl_create_memory_object_test_nexe.out',
-    nacl_create_memory_object_test_nexe,
-    exit_status='0')
+    nacl_create_memory_object_test_nexe)
 env.AddNodeToTestSuite(node,
                        ['small_tests'],
                        'run_nacl_create_memory_object_test_nexe')

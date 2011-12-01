@@ -729,8 +729,7 @@ if not env.CrossToolsBuild():
   node = env.CommandSelLdrTestNacl(
       'fuzz_nullptr_test.out',
       env.File(arch_testdata_dir + '/nullptr.nexe'),
-      sel_ldr_flags=['-F'],
-      exit_status = '0')
+      sel_ldr_flags=['-F'])
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_fuzz_nullptr_test')
 
 if env.Bit('target_x86_64') and not env.CrossToolsBuild():
