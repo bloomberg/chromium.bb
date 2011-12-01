@@ -21,7 +21,8 @@ class TestAudioConfig : public TestCase {
   virtual void RunTests(const std::string& filter);
 
  private:
-  std::string TestEverything();
+  std::string TestValidConfigs();
+  std::string TestInvalidConfigs();
 
   const PPB_AudioConfig* audio_config_interface_;
   const PPB_Core* core_interface_;

@@ -20,10 +20,11 @@ bool TestAudioConfig::Init() {
 }
 
 void TestAudioConfig::RunTests(const std::string& filter) {
-  RUN_TEST(Everything, filter);
+  RUN_TEST(ValidConfigs, filter);
+  RUN_TEST(InvalidConfigs, filter);
 }
 
-std::string TestAudioConfig::TestEverything() {
+std::string TestAudioConfig::TestValidConfigs() {
   static const PP_AudioSampleRate kSampleRates[] = {
     PP_AUDIOSAMPLERATE_44100,
     PP_AUDIOSAMPLERATE_48000
@@ -60,6 +61,35 @@ std::string TestAudioConfig::TestEverything() {
       core_interface_->ReleaseResource(ac);
     }
   }
+
+  PASS();
+}
+
+std::string TestAudioConfig::TestInvalidConfigs() {
+  // |PP_AUDIOSAMPLERATE_NONE| is not a valid rate, so this should fail.
+  PP_Resource ac = audio_config_interface_->CreateStereo16Bit(
+      instance_->pp_instance(),
+      PP_AUDIOSAMPLERATE_NONE,
+      PP_AUDIOMINSAMPLEFRAMECOUNT);
+  ASSERT_EQ(0, ac);
+
+  // Test invalid frame counts.
+  ASSERT_TRUE(PP_AUDIOMINSAMPLEFRAMECOUNT >= 1);
+  ac = audio_config_interface_->CreateStereo16Bit(
+      instance_->pp_instance(),
+      PP_AUDIOSAMPLERATE_44100,
+      PP_AUDIOMINSAMPLEFRAMECOUNT - 1u);
+  ASSERT_EQ(0, ac);
+  ac = audio_config_interface_->CreateStereo16Bit(
+      instance_->pp_instance(),
+      PP_AUDIOSAMPLERATE_44100,
+      PP_AUDIOMAXSAMPLEFRAMECOUNT + 1u);
+  ASSERT_EQ(0, ac);
+
+  // Test rest of API whose failure cases are defined.
+  ASSERT_FALSE(audio_config_interface_->IsAudioConfig(0));
+  ASSERT_EQ(PP_AUDIOSAMPLERATE_NONE, audio_config_interface_->GetSampleRate(0));
+  ASSERT_EQ(0u, audio_config_interface_->GetSampleFrameCount(0));
 
   PASS();
 }
