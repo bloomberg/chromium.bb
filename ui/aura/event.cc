@@ -17,6 +17,41 @@
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #endif
 
+#if !defined(OS_WIN)
+namespace {
+
+// On non-windows systems, double-click events aren't reported by the system.
+// So aura has to detect double-clicks itself.
+double g_last_click_time = 0.0;
+int g_last_click_x = 0;
+int g_last_click_y = 0;
+int g_flags = 0;
+
+void RememberClickForDoubleClickDetection(const aura::MouseEvent& event) {
+  g_last_click_time = event.time_stamp().ToDoubleT();
+  g_last_click_x = event.location().x();
+  g_last_click_y = event.location().y();
+  g_flags = event.flags();
+}
+
+bool IsDoubleClick(const aura::MouseEvent& event) {
+  // The flags must be the same
+  if ((g_flags & event.flags()) != g_flags)
+    return false;
+
+  const int double_click_distance = 5;
+  const double double_click_time = 0.250;  // in seconds
+  return std::abs(event.location().x() - g_last_click_x) <=
+           double_click_distance &&
+         std::abs(event.location().y() - g_last_click_y) <=
+           double_click_distance &&
+         event.time_stamp().ToDoubleT() - g_last_click_time <=
+           double_click_time;
+}
+
+}  // namespace
+#endif  // !defined(OS_WIN)
+
 namespace aura {
 
 Event::Event(ui::EventType type, int flags)
@@ -81,6 +116,14 @@ void LocatedEvent::UpdateForTransform(const ui::Transform& transform) {
 
 MouseEvent::MouseEvent(const base::NativeEvent& native_event)
     : LocatedEvent(native_event) {
+#if !defined(OS_WIN)
+  if (type() == ui::ET_MOUSE_PRESSED) {
+    if (IsDoubleClick(*this))
+      set_flags(flags() | ui::EF_IS_DOUBLE_CLICK);
+    else
+      RememberClickForDoubleClickDetection(*this);
+  }
+#endif
 }
 
 MouseEvent::MouseEvent(const MouseEvent& model, Window* source, Window* target)
