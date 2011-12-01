@@ -127,6 +127,7 @@ const char kRunAtDocumentIdle[] = "document_idle";
 const char kPageActionTypeTab[] = "tab";
 const char kPageActionTypePermanent[] = "permanent";
 const char kLaunchContainerPanel[] = "panel";
+const char kLaunchContainerShell[] = "shell";
 const char kLaunchContainerTab[] = "tab";
 const char kLaunchContainerWindow[] = "window";
 }  // namespace extension_manifest_values
@@ -256,8 +257,10 @@ const char kInvalidKey[] =
     "Value 'key' is missing or invalid.";
 const char kInvalidLaunchContainer[] =
     "Invalid value for 'app.launch.container'.";
+const char kInvalidLaunchContainerForNonPlatform[] =
+    "'app.launch.container' = 'shell' can only be used with platform_app.";
 const char kInvalidLaunchContainerForPlatform[] =
-    "platform_app requires 'app.launch.container' == 'panel'.";
+    "platform_app requires 'app.launch.container' == 'shell'.";
 const char kInvalidLaunchHeight[] =
     "Invalid value for 'app.launch.height'.";
 const char kInvalidLaunchHeightContainer[] =

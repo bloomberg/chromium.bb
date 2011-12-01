@@ -125,6 +125,7 @@ namespace extension_manifest_values {
   extern const char kIntentDispositionInline[];
   extern const char kIsolatedStorage[];
   extern const char kLaunchContainerPanel[];
+  extern const char kLaunchContainerShell[];
   extern const char kLaunchContainerTab[];
   extern const char kLaunchContainerWindow[];
   extern const char kPageActionTypePermanent[];
@@ -196,6 +197,7 @@ namespace extension_manifest_errors {
   extern const char kInvalidJsList[];
   extern const char kInvalidKey[];
   extern const char kInvalidLaunchContainer[];
+  extern const char kInvalidLaunchContainerForNonPlatform[];
   extern const char kInvalidLaunchContainerForPlatform[];
   extern const char kInvalidLaunchHeight[];
   extern const char kInvalidLaunchHeightContainer[];
@@ -350,7 +352,8 @@ namespace extension_misc {
   enum LaunchContainer {
     LAUNCH_WINDOW,
     LAUNCH_PANEL,
-    LAUNCH_TAB
+    LAUNCH_TAB,
+    LAUNCH_SHELL
   };
 
   // The name of the apps promo histogram.

@@ -621,6 +621,7 @@ TabContents* Browser::OpenApplication(
   switch (container) {
     case extension_misc::LAUNCH_WINDOW:
     case extension_misc::LAUNCH_PANEL:
+    case extension_misc::LAUNCH_SHELL:
       tab = Browser::OpenApplicationWindow(profile, extension, container,
                                            override_url, NULL);
       break;
@@ -651,8 +652,18 @@ TabContents* Browser::OpenApplicationWindow(
       web_app::GenerateApplicationNameFromExtensionId(extension->id()) :
       web_app::GenerateApplicationNameFromURL(url);
 
-  Type type = extension && (container == extension_misc::LAUNCH_PANEL) ?
-      TYPE_PANEL : TYPE_POPUP;
+  Type type = TYPE_POPUP;
+  if (extension) {
+    switch (container) {
+      case extension_misc::LAUNCH_PANEL:
+        type = TYPE_PANEL;
+        break;
+      case extension_misc::LAUNCH_SHELL:
+        type = TYPE_SHELL;
+        break;
+      default: break;
+    }
+  }
 
   gfx::Rect window_bounds;
   if (extension) {
@@ -870,6 +881,8 @@ bool Browser::ShouldSaveWindowPlacement() const {
     case TYPE_PANEL:
       // Do not save the window placement of panels.
       return false;
+    case TYPE_SHELL:
+      return true;
     default:
       return false;
   }

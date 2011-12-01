@@ -1908,7 +1908,8 @@ void BrowserWindowGtk::ConnectAccelerators() {
 }
 
 void BrowserWindowGtk::UpdateCustomFrame() {
-  gtk_window_set_decorated(window_, !UseCustomFrame());
+  gtk_window_set_decorated(
+      window_, !UseCustomFrame() && browser_->type() != Browser::TYPE_SHELL);
   titlebar_->UpdateCustomFrame(UseCustomFrame() && !IsFullscreen());
   UpdateWindowShape(bounds_.width(), bounds_.height());
 }

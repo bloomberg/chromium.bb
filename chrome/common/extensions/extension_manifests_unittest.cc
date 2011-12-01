@@ -242,6 +242,8 @@ TEST_F(ExtensionManifestTest, InitFromValueValid) {
 }
 
 TEST_F(ExtensionManifestTest, PlatformApps) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePlatformApps);
+
   // A minimal platform app.
   LoadAndExpectSuccess("init_valid_platform_app.json");
 }
@@ -378,8 +380,7 @@ TEST_F(ExtensionManifestTest, AppWebUrls) {
 
 TEST_F(ExtensionManifestTest, AppLaunchContainer) {
   scoped_refptr<Extension> extension;
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnablePlatformApps);
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePlatformApps);
 
   extension = LoadAndExpectSuccess("launch_tab.json");
   EXPECT_EQ(extension_misc::LAUNCH_TAB, extension->launch_container());

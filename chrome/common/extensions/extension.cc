@@ -1105,7 +1105,9 @@ bool Extension::LoadLaunchContainer(const DictionaryValue* manifest,
     return false;
   }
 
-  if (launch_container_string == values::kLaunchContainerPanel) {
+  if (launch_container_string == values::kLaunchContainerShell) {
+    launch_container_ = extension_misc::LAUNCH_SHELL;
+  } else if (launch_container_string == values::kLaunchContainerPanel) {
     launch_container_ = extension_misc::LAUNCH_PANEL;
   } else if (launch_container_string == values::kLaunchContainerTab) {
     launch_container_ = extension_misc::LAUNCH_TAB;
@@ -1549,10 +1551,13 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
   }
 
   if (is_platform_app_) {
-    if (launch_container() != extension_misc::LAUNCH_PANEL) {
+    if (launch_container() != extension_misc::LAUNCH_SHELL) {
       *error = errors::kInvalidLaunchContainerForPlatform;
       return false;
     }
+  } else if (launch_container() == extension_misc::LAUNCH_SHELL) {
+    *error = errors::kInvalidLaunchContainerForNonPlatform;
+    return false;
   }
 
   // Initialize the permissions (optional).

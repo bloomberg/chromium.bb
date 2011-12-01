@@ -624,6 +624,10 @@ void BrowserTitlebar::UpdateTitleAndIcon() {
         NOTREACHED() << "We should never have a tabbed app window.";
         break;
       }
+      case Browser::TYPE_SHELL: {
+        // Shell windows don't show titles and icons for now.
+        break;
+      }
       case Browser::TYPE_PANEL: {
         break;
       }

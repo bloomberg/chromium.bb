@@ -1,0 +1,12 @@
+{
+  "name": "Platform App Test: shell container",
+  "platform_app": true,
+  "version": "1",
+  "manifest_version": 2,
+  "app": {
+    "launch": {
+      "local_path": "empty.html",
+      "container": "shell"
+    }
+  }
+}

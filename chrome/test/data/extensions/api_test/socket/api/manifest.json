@@ -6,7 +6,7 @@
   "background_page": "background.html",
   "app": {
     "launch": {
-      "container": "panel",
+      "container": "shell",
       "local_path": "main.html"
     }
   },

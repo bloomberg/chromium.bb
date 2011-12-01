@@ -2556,6 +2556,7 @@
         'browser/extensions/notifications_apitest.cc',
         'browser/extensions/page_action_apitest.cc',
         'browser/extensions/permissions_apitest.cc',
+        'browser/extensions/platform_app_browsertest.cc',
         'browser/extensions/socket_apitest.cc',
         'browser/extensions/settings/settings_apitest.cc',
         'browser/extensions/stubs_apitest.cc',
