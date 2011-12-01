@@ -39,7 +39,7 @@ class CryptoModulePasswordDialogView : public views::DialogDelegateView,
   // views::DialogDelegate:
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
-  string16 GetDialogButtonLabel(
+  virtual string16 GetDialogButtonLabel(
       ui::DialogButton button) const OVERRIDE;
 
 
