@@ -256,8 +256,26 @@ gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
     case GenericEvent: {
       XIDeviceEvent* xievent =
           static_cast<XIDeviceEvent*>(native_event->xcookie.data);
-      return gfx::Point(static_cast<int>(xievent->event_x),
-                        static_cast<int>(xievent->event_y));
+
+      // Read the position from the valuators, because the location reported in
+      // event_x/event_y seems to be different (and doesn't match for events
+      // coming from slave device and master device) from the values in the
+      // valuators. See more on crbug.com/103981. The position in the valuators
+      // is in the global screen coordinates. But it is necessary to convert it
+      // into the window's coordinates. If the valuator is not set, that means
+      // the value hasn't changed, and so we can use the value from
+      // event_x/event_y (which are in the window's coordinates).
+      double* valuators = xievent->valuators.values;
+
+      double x = xievent->event_x;
+      if (XIMaskIsSet(xievent->valuators.mask, 0))
+        x = *valuators++ - (xievent->root_x - xievent->event_x);
+
+      double y = xievent->event_y;
+      if (XIMaskIsSet(xievent->valuators.mask, 1))
+        y = *valuators++ - (xievent->root_y - xievent->event_y);
+
+      return gfx::Point(static_cast<int>(x), static_cast<int>(y));
     }
   }
   return gfx::Point();

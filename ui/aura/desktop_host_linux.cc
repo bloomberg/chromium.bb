@@ -33,6 +33,53 @@ namespace aura {
 
 namespace {
 
+// The events reported for slave devices can have incorrect information for some
+// fields. This utility function is used to check for such inconsistencies.
+void CheckXEventForConsistency(XEvent* xevent) {
+  static bool expect_master_event = false;
+  static XIDeviceEvent slave_event;
+  static gfx::Point slave_location;
+
+  // Note: If an event comes from a slave pointer device, then it will be
+  // followed by the same event, but reported from its master pointer device.
+  // However, if the event comes from a floating slave device (e.g. a
+  // touchscreen), then it will not be followed by a duplicate event, since the
+  // floating slave isn't attached to a master.
+
+  bool was_expecting_master_event = expect_master_event;
+  expect_master_event = false;
+
+  if (!xevent || xevent->type != GenericEvent)
+    return;
+
+  XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xevent->xcookie.data);
+  if (xievent->evtype != XI_Motion &&
+      xievent->evtype != XI_ButtonPress &&
+      xievent->evtype != XI_ButtonRelease) {
+    return;
+  }
+
+  if (xievent->sourceid == xievent->deviceid) {
+    slave_event = *xievent;
+    slave_location = ui::EventLocationFromNative(xevent);
+    expect_master_event = true;
+  } else if (was_expecting_master_event) {
+    CHECK_EQ(slave_location.x(), ui::EventLocationFromNative(xevent).x());
+    CHECK_EQ(slave_location.y(), ui::EventLocationFromNative(xevent).y());
+
+    CHECK_EQ(slave_event.type, xievent->type);
+    CHECK_EQ(slave_event.evtype, xievent->evtype);
+    CHECK_EQ(slave_event.detail, xievent->detail);
+    CHECK_EQ(slave_event.flags, xievent->flags);
+    CHECK_EQ(slave_event.buttons.mask_len, xievent->buttons.mask_len);
+    CHECK_EQ(slave_event.valuators.mask_len, xievent->valuators.mask_len);
+    CHECK_EQ(slave_event.mods.base, xievent->mods.base);
+    CHECK_EQ(slave_event.mods.latched, xievent->mods.latched);
+    CHECK_EQ(slave_event.mods.locked, xievent->mods.locked);
+    CHECK_EQ(slave_event.mods.effective, xievent->mods.effective);
+  }
+}
+
 // Returns X font cursor shape from an Aura cursor.
 int CursorShapeFromNative(gfx::NativeCursor native_cursor) {
   switch (native_cursor) {
@@ -141,6 +188,7 @@ int CoalescePendingXIMotionEvents(const XEvent* xev, XEvent* last_event) {
     // with one from the master and one from the slave so there will
     // always be at least one pending.
     if (!ui::TouchFactory::GetInstance()->ShouldProcessXI2Event(&next_event)) {
+      CheckXEventForConsistency(&next_event);
       XFreeEventData(display, &next_event.xcookie);
       XNextEvent(display, &next_event);
       continue;
@@ -169,6 +217,7 @@ int CoalescePendingXIMotionEvents(const XEvent* xev, XEvent* last_event) {
         // Get the event and its cookie data.
         XNextEvent(display, last_event);
         XGetEventData(display, &last_event->xcookie);
+        CheckXEventForConsistency(last_event);
         ++num_coalesed;
         continue;
       } else {
@@ -284,6 +333,7 @@ DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
 
   long event_mask = ButtonPressMask | ButtonReleaseMask |
                     KeyPressMask | KeyReleaseMask |
+                    EnterWindowMask | LeaveWindowMask |
                     ExposureMask | VisibilityChangeMask |
                     StructureNotifyMask | PropertyChangeMask |
                     PointerMotionMask;
@@ -291,11 +341,8 @@ DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
   XSelectInput(xdisplay_, root_window_, StructureNotifyMask);
   XFlush(xdisplay_);
 
-  // TODO(sadrul): reenable once 103981 is fixed.
-#if defined(TOUCH_UI)
   if (base::MessagePumpForUI::HasXInput2())
     ui::TouchFactory::GetInstance()->SetupXI2ForXWindow(xwindow_);
-#endif
 
   base::MessagePumpX::SetDefaultDispatcher(this);
   MessageLoopForUI::current()->AddDestructionObserver(this);
@@ -316,6 +363,9 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
   DLOG(WARNING) << "DispatchEvent:" << xev->type;
 
   bool handled = false;
+
+  CheckXEventForConsistency(xev);
+
   switch (xev->type) {
     case Expose:
       desktop_->Draw();

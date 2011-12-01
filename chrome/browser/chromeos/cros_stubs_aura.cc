@@ -51,7 +51,7 @@ SystemNotification::~SystemNotification() {
 void SystemNotification::Show(const string16& message,
                               bool urgent,
                               bool sticky) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED() << " " << message;
 }
 
 void SystemNotification::Show(const string16& message,
