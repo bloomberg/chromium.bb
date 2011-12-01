@@ -5459,6 +5459,66 @@ TEST_F(GLES2DecoderWithShaderTest, UnClearedAttachmentsGetClearedOnReadPixels) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_F(GLES2DecoderManualInitTest,
+       UnClearedAttachmentsGetClearedOnReadPixelsAndDrawBufferGetsRestored) {
+  InitDecoder(
+      "GL_EXT_framebuffer_multisample",  // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false,   // request stencil
+      true);   // bind generates resource
+  const GLuint kFBOClientTextureId = 4100;
+  const GLuint kFBOServiceTextureId = 4101;
+
+  // Register a texture id.
+  EXPECT_CALL(*gl_, GenTextures(_, _))
+      .WillOnce(SetArgumentPointee<1>(kFBOServiceTextureId))
+      .RetiresOnSaturation();
+  GenHelper<GenTexturesImmediate>(kFBOClientTextureId);
+
+  // Setup "render from" texture.
+  DoBindTexture(GL_TEXTURE_2D, kFBOClientTextureId, kFBOServiceTextureId);
+  DoTexImage2D(
+      GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0, 0);
+  DoBindFramebuffer(
+      GL_READ_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
+  DoFramebufferTexture2D(
+      GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+      kFBOClientTextureId, kFBOServiceTextureId, 0, GL_NO_ERROR);
+
+  SetupExpectationsForFramebufferClearingMulti(
+      kServiceFramebufferId,  // read framebuffer service id
+      0,                      // backbuffer service id
+      GL_READ_FRAMEBUFFER,    // target
+      GL_COLOR_BUFFER_BIT,    // clear bits
+      0, 0, 0, 0,             // color
+      0,                      // stencil
+      1.0f,                   // depth
+      false);                 // scissor test
+
+  EXPECT_CALL(*gl_, GetError())
+     .WillOnce(Return(GL_NO_ERROR))
+     .WillOnce(Return(GL_NO_ERROR))
+     .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  typedef ReadPixels::Result Result;
+  uint32 result_shm_id = kSharedMemoryId;
+  uint32 result_shm_offset = kSharedMemoryOffset;
+  uint32 pixels_shm_id = kSharedMemoryId;
+  uint32 pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
+  ReadPixels cmd;
+  cmd.Init(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
+         pixels_shm_id, pixels_shm_offset,
+         result_shm_id, result_shm_offset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 TEST_F(GLES2DecoderWithShaderTest, DrawClearsAfterRenderbufferStorageInFBO) {
   SetupTexture();
   DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,

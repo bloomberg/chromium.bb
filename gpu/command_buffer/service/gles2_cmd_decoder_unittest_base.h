@@ -326,26 +326,39 @@ class GLES2DecoderTestBase : public testing::Test {
       GLsizei height);
 
   void SetupExpectationsForFramebufferClearing(
-    GLenum target,
-    GLuint clear_bits,
-    GLclampf restore_red,
-    GLclampf restore_green,
-    GLclampf restore_blue,
-    GLclampf restore_alpha,
-    GLuint restore_stencil,
-    GLclampf restore_depth,
-    bool restore_scissor_test);
+      GLenum target,
+      GLuint clear_bits,
+      GLclampf restore_red,
+      GLclampf restore_green,
+      GLclampf restore_blue,
+      GLclampf restore_alpha,
+      GLuint restore_stencil,
+      GLclampf restore_depth,
+      bool restore_scissor_test);
+
+  void SetupExpectationsForFramebufferClearingMulti(
+      GLuint read_framebuffer_service_id,
+      GLuint draw_framebuffer_service_id,
+      GLenum target,
+      GLuint clear_bits,
+      GLclampf restore_red,
+      GLclampf restore_green,
+      GLclampf restore_blue,
+      GLclampf restore_alpha,
+      GLuint restore_stencil,
+      GLclampf restore_depth,
+      bool restore_scissor_test);
 
   void SetupExpectationsForApplyingDirtyState(
-    bool framebuffer_is_rgb,
-    bool framebuffer_has_depth,
-    bool framebuffer_has_stencil,
-    GLuint color_bits,  // NOTE! bits are 0x1000, 0x0100, 0x0010, and 0x0001
-    bool depth_mask,
-    bool depth_enabled,
-    GLuint front_stencil_mask,
-    GLuint back_stencil_mask,
-    bool stencil_enabled);
+      bool framebuffer_is_rgb,
+      bool framebuffer_has_depth,
+      bool framebuffer_has_stencil,
+      GLuint color_bits,  // NOTE! bits are 0x1000, 0x0100, 0x0010, and 0x0001
+      bool depth_mask,
+      bool depth_enabled,
+      GLuint front_stencil_mask,
+      GLuint back_stencil_mask,
+      bool stencil_enabled);
 
   void SetupExpectationsForApplyingDefaultDirtyState();
 

@@ -344,11 +344,46 @@ void GLES2DecoderTestBase::SetupExpectationsForFramebufferClearing(
     GLuint restore_stencil,
     GLclampf restore_depth,
     bool restore_scissor_test) {
+  SetupExpectationsForFramebufferClearingMulti(
+      0,
+      0,
+      target,
+      clear_bits,
+      restore_red,
+      restore_green,
+      restore_blue,
+      restore_alpha,
+      restore_stencil,
+      restore_depth,
+      restore_scissor_test);
+}
+
+void GLES2DecoderTestBase::SetupExpectationsForFramebufferClearingMulti(
+    GLuint read_framebuffer_service_id,
+    GLuint draw_framebuffer_service_id,
+    GLenum target,
+    GLuint clear_bits,
+    GLclampf restore_red,
+    GLclampf restore_green,
+    GLclampf restore_blue,
+    GLclampf restore_alpha,
+    GLuint restore_stencil,
+    GLclampf restore_depth,
+    bool restore_scissor_test) {
   // TODO(gman): Figure out why InSequence stopped working.
   // InSequence sequence;
   EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(target))
       .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
       .RetiresOnSaturation();
+  if (target == GL_READ_FRAMEBUFFER_EXT) {
+    EXPECT_CALL(*gl_, BindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, BindFramebufferEXT(
+        GL_DRAW_FRAMEBUFFER_EXT, read_framebuffer_service_id))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
   if ((clear_bits & GL_COLOR_BUFFER_BIT) != 0) {
     EXPECT_CALL(*gl_, ClearColor(0.0f, 0.0f, 0.0f, 0.0f))
         .Times(1)
@@ -391,6 +426,16 @@ void GLES2DecoderTestBase::SetupExpectationsForFramebufferClearing(
       .RetiresOnSaturation();
   if (restore_scissor_test) {
     EXPECT_CALL(*gl_, Enable(GL_SCISSOR_TEST))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  if (target == GL_READ_FRAMEBUFFER_EXT) {
+    EXPECT_CALL(*gl_, BindFramebufferEXT(
+        GL_READ_FRAMEBUFFER_EXT, read_framebuffer_service_id))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, BindFramebufferEXT(
+        GL_DRAW_FRAMEBUFFER_EXT, draw_framebuffer_service_id))
         .Times(1)
         .RetiresOnSaturation();
   }

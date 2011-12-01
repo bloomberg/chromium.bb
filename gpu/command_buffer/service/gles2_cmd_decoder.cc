@@ -3979,10 +3979,11 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
 
   if (target == GL_READ_FRAMEBUFFER_EXT) {
     glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, info->service_id());
-    FramebufferManager::FramebufferInfo*framebuffer =
-        GetFramebufferInfoForTarget(GL_READ_FRAMEBUFFER);
-    glBindFramebufferEXT(
-        GL_DRAW_FRAMEBUFFER_EXT, framebuffer ? framebuffer->service_id() : 0);
+    FramebufferManager::FramebufferInfo* framebuffer =
+        GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
+    GLuint service_id =
+        framebuffer ? framebuffer->service_id() : GetBackbufferServiceId();
+    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, service_id);
   }
 }
 
