@@ -1,0 +1,6 @@
+{
+  "name": "experimental test",
+  "version": "1",
+  "manifest_version": 2,
+  "permissions": ["experimental"]
+}
