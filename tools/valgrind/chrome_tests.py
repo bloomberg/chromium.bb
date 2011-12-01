@@ -127,9 +127,18 @@ class ChromeTests:
     return self._test_list[self._test](self)
 
   def _AppendGtestFilter(self, tool, name, cmd):
-    '''Read a file which is a list of tests to filter out with --gtest_filter
-    and append the command-line option to cmd.
+    '''Append an appropriate --gtest_filter flag to the googletest binary
+       invocation.
+       If the user passed his own filter mentioning only one test, just use it.
+       Othewise, filter out tests listed in the appropriate gtest_exclude files.
     '''
+    if (self._gtest_filter and
+        ":" not in self._gtest_filter and
+        "?" not in self._gtest_filter and
+        "*" not in self._gtest_filter):
+      cmd.append("--gtest_filter=%s" % self._gtest_filter)
+      return
+
     filters = []
     gtest_files_dir = os.path.join(path_utils.ScriptDir(), "gtest_exclude")
 
