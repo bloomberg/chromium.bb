@@ -179,6 +179,8 @@
     'common/mac/font_descriptor.mm',
     'common/mac/font_loader.h',
     'common/mac/font_loader.mm',
+    'common/mac/scoped_sending_event.h',
+    'common/mac/scoped_sending_event.mm',
     'common/media/audio_messages.h',
     'common/media/audio_stream_state.h',
     'common/media/media_stream_messages.h',

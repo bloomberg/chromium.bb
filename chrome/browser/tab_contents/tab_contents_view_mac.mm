@@ -8,7 +8,6 @@
 
 #include <string>
 
-#import "base/mac/scoped_sending_event.h"
 #import "chrome/browser/renderer_host/chrome_render_widget_host_view_mac_delegate.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_mac.h"
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_mac.h"
@@ -24,6 +23,7 @@
 #import "content/browser/tab_contents/web_drag_dest_mac.h"
 #import "content/browser/tab_contents/web_drag_source_mac.h"
 #import "content/common/chrome_application_mac.h"
+#import "content/common/mac/scoped_sending_event.h"
 #include "content/common/view_messages.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
@@ -172,7 +172,7 @@ void TabContentsViewMac::StartDragging(
   // processing -sendEvent:, so Close() is deferred in that case.
   // Drags from web content do not come via -sendEvent:, this sets the
   // same flag -sendEvent: would.
-  base::mac::ScopedSendingEvent sending_event_scoper;
+  content::mac::ScopedSendingEvent sending_event_scoper;
 
   // The drag invokes a nested event loop, arrange to continue
   // processing events.

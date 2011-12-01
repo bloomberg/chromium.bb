@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "base/mac/scoped_sending_event.h"
+#import "content/common/mac/scoped_sending_event.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,7 +13,7 @@ TEST(ScopedSendingEventTest, SetHandlingSendEvent) {
   id<CrAppProtocol> app = NSApp;
   EXPECT_FALSE([app isHandlingSendEvent]);
   {
-    base::mac::ScopedSendingEvent is_handling_send_event;
+    content::mac::ScopedSendingEvent is_handling_send_event;
     EXPECT_TRUE([app isHandlingSendEvent]);
   }
   EXPECT_FALSE([app isHandlingSendEvent]);
@@ -24,10 +24,10 @@ TEST(ScopedSendingEventTest, NestedSetHandlingSendEvent) {
   id<CrAppProtocol> app = NSApp;
   EXPECT_FALSE([app isHandlingSendEvent]);
   {
-    base::mac::ScopedSendingEvent is_handling_send_event;
+    content::mac::ScopedSendingEvent is_handling_send_event;
     EXPECT_TRUE([app isHandlingSendEvent]);
     {
-      base::mac::ScopedSendingEvent nested_is_handling_send_event;
+      content::mac::ScopedSendingEvent nested_is_handling_send_event;
       EXPECT_TRUE([app isHandlingSendEvent]);
     }
     EXPECT_TRUE([app isHandlingSendEvent]);

@@ -17,6 +17,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "content/test/mock_chrome_application_mac.h"
 #endif
 
 namespace {
@@ -67,6 +68,7 @@ ContentTestSuite::~ContentTestSuite() {
 void ContentTestSuite::Initialize() {
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
+  mock_cr_app::RegisterMockCrControlApp();
 #endif
 
   base::TestSuite::Initialize();

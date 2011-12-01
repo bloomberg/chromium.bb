@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MAC_SCOPED_SENDING_EVENT_H_
-#define BASE_MAC_SCOPED_SENDING_EVENT_H_
+#ifndef CONTENT_COMMON_MAC_SCOPED_SENDING_EVENT_H_
+#define CONTENT_COMMON_MAC_SCOPED_SENDING_EVENT_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -26,7 +26,7 @@
 - (void)setHandlingSendEvent:(BOOL)handlingSendEvent;
 @end
 
-namespace base {
+namespace content {
 namespace mac {
 
 class ScopedSendingEvent {
@@ -44,6 +44,6 @@ class ScopedSendingEvent {
 };
 
 }  // namespace mac
-}  // namespace base
+}  // namespace content
 
-#endif  // BASE_MAC_SCOPED_SENDING_EVENT_H_
+#endif  // CONTENT_COMMON_MAC_SCOPED_SENDING_EVENT_H_
