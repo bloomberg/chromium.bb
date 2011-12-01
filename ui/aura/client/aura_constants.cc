@@ -14,5 +14,6 @@ const char kModalKey[] = "Modal";
 const char kShadowTypeKey[] = "ShadowType";
 const char kDesktopDragDropClientKey[] = "DesktopDragDropClient";
 const char kDragDropDelegateKey[] = "DragDropDelegate";
+const char kDesktopTooltipClientKey[] = "DesktopTooltipClient";
 
 }  // namespace aura

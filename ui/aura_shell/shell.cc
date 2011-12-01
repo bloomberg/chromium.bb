@@ -26,6 +26,7 @@
 #include "ui/aura_shell/shell_accelerator_filter.h"
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/aura_shell/shell_factory.h"
+#include "ui/aura_shell/shell_tooltip_manager.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/aura_shell/stacking_controller.h"
 #include "ui/aura_shell/toplevel_layout_manager.h"
@@ -121,6 +122,13 @@ Shell::Shell(ShellDelegate* delegate)
 Shell::~Shell() {
   RemoveDesktopEventFilter(accelerator_filter_.get());
 
+  // ShellTooltipManager needs a valid shell instance. We delete it before
+  // deleting the shell |instance_|.
+  RemoveDesktopEventFilter(tooltip_manager_.get());
+  aura::Desktop::GetInstance()->SetProperty(aura::kDesktopTooltipClientKey,
+      NULL);
+  tooltip_manager_.reset();
+
   // Drag drop controller needs a valid shell instance. We destroy it first.
   drag_drop_controller_.reset();
 
@@ -207,6 +215,12 @@ void Shell::Init() {
   // Initialize ShellAcceleratorFilter
   accelerator_filter_.reset(new internal::ShellAcceleratorFilter);
   AddDesktopEventFilter(accelerator_filter_.get());
+
+  // Initialize ShellTooltipManager
+  tooltip_manager_.reset(new ShellTooltipManager);
+  aura::Desktop::GetInstance()->SetProperty(aura::kDesktopTooltipClientKey,
+      static_cast<aura::TooltipClient*>(tooltip_manager_.get()));
+  AddDesktopEventFilter(tooltip_manager_.get());
 
   // Initialize drag drop controller.
   drag_drop_controller_.reset(new internal::DragDropController);
