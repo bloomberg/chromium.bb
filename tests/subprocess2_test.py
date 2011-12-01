@@ -28,6 +28,14 @@ from testing_support import auto_stub
 # pylint: disable=R0201
 
 
+# Create aliases for subprocess2 specific tests. They shouldn't be used for
+# regression tests.
+TIMED_OUT = subprocess2.TIMED_OUT
+VOID = subprocess2.VOID
+PIPE = subprocess2.PIPE
+STDOUT = subprocess2.STDOUT
+
+
 def convert_to_crlf(string):
   """Unconditionally convert LF to CRLF."""
   return string.replace('\n', '\r\n')
@@ -202,8 +210,9 @@ class RegressionTest(BaseTestCase):
       function(noop, self.exe + ['--cr'], True, subp)
       function(noop, self.exe + ['--crlf'], True, subp)
 
-  def _check_pipes(self, subp, e, stdout, stderr):
+  def _check_exception(self, subp, e, stdout, stderr, returncode):
     """On exception, look if the exception members are set correctly."""
+    self.assertEquals(returncode, e.returncode)
     if subp is subprocess:
       # subprocess never save the output.
       self.assertFalse(hasattr(e, 'stdout'))
@@ -239,8 +248,7 @@ class RegressionTest(BaseTestCase):
             e + ['--fail', '--stdout'], universal_newlines=un)
         self.fail()
       except subp.CalledProcessError, e:
-        self._check_pipes(subp, e, c('A\nBB\nCCC\n'), None)
-        self.assertEquals(64, e.returncode)
+        self._check_exception(subp, e, c('A\nBB\nCCC\n'), None, 64)
     self._run_test(fn)
 
   def test_check_output_throw_no_stderr(self):
@@ -252,8 +260,7 @@ class RegressionTest(BaseTestCase):
             e + ['--fail', '--stderr'], universal_newlines=un)
         self.fail()
       except subp.CalledProcessError, e:
-        self._check_pipes(subp, e, c(''), None)
-        self.assertEquals(64, e.returncode)
+        self._check_exception(subp, e, c(''), None, 64)
     self._run_test(fn)
 
   def test_check_output_throw_stderr(self):
@@ -267,8 +274,7 @@ class RegressionTest(BaseTestCase):
             universal_newlines=un)
         self.fail()
       except subp.CalledProcessError, e:
-        self._check_pipes(subp, e, '', c('a\nbb\nccc\n'))
-        self.assertEquals(64, e.returncode)
+        self._check_exception(subp, e, '', c('a\nbb\nccc\n'), 64)
     self._run_test(fn)
 
   def test_check_output_throw_stderr_stdout(self):
@@ -282,8 +288,7 @@ class RegressionTest(BaseTestCase):
             universal_newlines=un)
         self.fail()
       except subp.CalledProcessError, e:
-        self._check_pipes(subp, e, c('a\nbb\nccc\n'), None)
-        self.assertEquals(64, e.returncode)
+        self._check_exception(subp, e, c('a\nbb\nccc\n'), None, 64)
     self._run_test(fn)
 
   def test_check_call_throw(self):
@@ -292,8 +297,7 @@ class RegressionTest(BaseTestCase):
         subp.check_call(self.exe + ['--fail', '--stderr'])
         self.fail()
       except subp.CalledProcessError, e:
-        self._check_pipes(subp, e, None, None)
-        self.assertEquals(64, e.returncode)
+        self._check_exception(subp, e, None, None, 64)
 
 
 class S2Test(BaseTestCase):
@@ -322,65 +326,80 @@ class S2Test(BaseTestCase):
     function(noop, self.exe + ['--cr'], True)
     function(noop, self.exe + ['--crlf'], True)
 
+  def _check_res(self, res, stdout, stderr, returncode):
+    (out, err), code = res
+    self.assertEquals(stdout, out)
+    self.assertEquals(stderr, err)
+    self.assertEquals(returncode, code)
+
   def test_timeout(self):
     # timeout doesn't exist in subprocess.
     def fn(c, e, un):
-      out, returncode = subprocess2.communicate(
+      res = subprocess2.communicate(
           self.exe + ['--sleep_first', '--stdout'],
           timeout=0.01,
-          stdout=subprocess2.PIPE,
+          stdout=PIPE,
           shell=False)
-      self.assertEquals(subprocess2.TIMED_OUT, returncode)
-      self.assertEquals(('', None), out)
+      self._check_res(res, '', None, TIMED_OUT)
+    self._run_test(fn)
+
+  def test_timeout_shell_throws(self):
+    def fn(c, e, un):
+      try:
+        # With shell=True, it needs a string.
+        subprocess2.communicate(' '.join(self.exe), timeout=0.01, shell=True)
+        self.fail()
+      except TypeError:
+        pass
     self._run_test(fn)
 
   def test_stdout_void(self):
     def fn(c, e, un):
-      (out, err), code = subprocess2.communicate(
+      res = subprocess2.communicate(
           e + ['--stdout', '--stderr'],
-          stdout=subprocess2.VOID,
-          stderr=subprocess2.PIPE,
+          stdout=VOID,
+          stderr=PIPE,
           universal_newlines=un)
-      self.assertEquals(None, out)
-      self.assertEquals(c('a\nbb\nccc\n'), err)
-      self.assertEquals(0, code)
+      self._check_res(res, None, c('a\nbb\nccc\n'), 0)
     self._run_test(fn)
 
   def test_stderr_void(self):
     def fn(c, e, un):
-      (out, err), code = subprocess2.communicate(
+      res = subprocess2.communicate(
           e + ['--stdout', '--stderr'],
-          stdout=subprocess2.PIPE,
-          stderr=subprocess2.VOID,
+          stdout=PIPE,
+          stderr=VOID,
           universal_newlines=un)
-      self.assertEquals(c('A\nBB\nCCC\n'), out)
-      self.assertEquals(None, err)
-      self.assertEquals(0, code)
+      self._check_res(res, c('A\nBB\nCCC\n'), None, 0)
+    self._run_test(fn)
+
+  def test_stdout_void_stderr_redirect(self):
+    def fn(c, e, un):
+      res = subprocess2.communicate(
+          e + ['--stdout', '--stderr'],
+          stdout=VOID,
+          stderr=STDOUT,
+          universal_newlines=un)
+      self._check_res(res, None, None, 0)
     self._run_test(fn)
 
   def test_check_output_redirect_stderr_to_stdout_pipe(self):
     def fn(c, e, un):
-      (out, err), code = subprocess2.communicate(
-          e + ['--stderr'],
-          stdout=subprocess2.PIPE,
-          stderr=subprocess2.STDOUT,
-          universal_newlines=un)
       # stderr output into stdout.
-      self.assertEquals(c('a\nbb\nccc\n'), out)
-      self.assertEquals(None, err)
-      self.assertEquals(0, code)
+      res = subprocess2.communicate(
+          e + ['--stderr'],
+          stdout=PIPE,
+          stderr=STDOUT,
+          universal_newlines=un)
+      self._check_res(res, c('a\nbb\nccc\n'), None, 0)
     self._run_test(fn)
 
   def test_check_output_redirect_stderr_to_stdout(self):
     def fn(c, e, un):
-      (out, err), code = subprocess2.communicate(
-          e + ['--stderr'],
-          stderr=subprocess2.STDOUT,
-          universal_newlines=un)
       # stderr output into stdout but stdout is not piped.
-      self.assertEquals(None, out)
-      self.assertEquals(None, err)
-      self.assertEquals(0, code)
+      res = subprocess2.communicate(
+          e + ['--stderr'], stderr=STDOUT, universal_newlines=un)
+      self._check_res(res, None, None, 0)
     self._run_test(fn)
 
 

@@ -17,6 +17,7 @@ import tempfile
 import time
 import threading
 
+
 # Constants forwarded from subprocess.
 PIPE = subprocess.PIPE
 STDOUT = subprocess.STDOUT
@@ -182,8 +183,10 @@ class Popen(subprocess.Popen):
     fix('stderr')
 
     self.start = time.time()
+    self.shell = kwargs.get('shell', None)
     # Silence pylint on MacOSX
     self.returncode = None
+
     try:
       super(Popen, self).__init__(args, **kwargs)
     except OSError, e:
@@ -238,6 +241,10 @@ def communicate(args, timeout=None, **kwargs):
   with tempfile.TemporaryFile() as buff:
     kwargs['stdout'] = buff
     proc = Popen(args, **kwargs)
+    if proc.shell:
+      raise TypeError(
+          'Using timeout and shell simultaneously will cause a process leak '
+          'since the shell will be killed instead of the child process.')
     if stdin is not None:
       proc.stdin.write(stdin)
     while proc.returncode is None:
