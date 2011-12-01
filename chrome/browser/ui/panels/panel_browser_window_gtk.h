@@ -70,6 +70,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void ShowPanelInactive() OVERRIDE;
   virtual gfx::Rect GetPanelBounds() const OVERRIDE;
   virtual void SetPanelBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void SetPanelBoundsInstantly(const gfx::Rect& bounds) OVERRIDE;
   virtual void ClosePanel() OVERRIDE;
   virtual void ActivatePanel() OVERRIDE;
   virtual void DeactivatePanel() OVERRIDE;
@@ -117,6 +118,8 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   void DestroyDragWidget();
   void EndDrag(bool canceled);
   void CleanupDragDrop();
+
+  void SetBoundsInternal(const gfx::Rect& bounds, bool animate);
 
   GdkRectangle GetTitlebarRectForDrawAttention() const;
 

@@ -38,6 +38,7 @@ class NativePanel {
   virtual void ShowPanelInactive() = 0;
   virtual gfx::Rect GetPanelBounds() const = 0;
   virtual void SetPanelBounds(const gfx::Rect& bounds) = 0;
+  virtual void SetPanelBoundsInstantly(const gfx::Rect& bounds) = 0;
   virtual void ClosePanel() = 0;
   virtual void ActivatePanel() = 0;
   virtual void DeactivatePanel() = 0;

@@ -78,6 +78,18 @@ void Panel::SetPanelBounds(const gfx::Rect& bounds) {
       content::NotificationService::NoDetails());
 }
 
+void Panel::SetPanelBoundsInstantly(const gfx::Rect& bounds) {
+  if (expansion_state_ == Panel::EXPANDED)
+    restored_size_ = bounds.size();
+
+  native_panel_->SetPanelBoundsInstantly(bounds);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PANEL_CHANGED_BOUNDS,
+      content::Source<Panel>(this),
+      content::NotificationService::NoDetails());
+}
+
 void Panel::SetAutoResizable(bool resizable) {
   if (auto_resizable_ == resizable)
     return;

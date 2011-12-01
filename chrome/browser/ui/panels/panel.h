@@ -221,6 +221,9 @@ class Panel : public BrowserWindow,
   //   not allowed for Panel.
   void SetPanelBounds(const gfx::Rect& bounds);
 
+  // Updates the panel bounds instantly without any animation.
+  void SetPanelBoundsInstantly(const gfx::Rect& bounds);
+
   // Sets whether the panel will auto resize according to its content.
   void SetAutoResizable(bool resizable);
 

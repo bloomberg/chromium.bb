@@ -103,13 +103,22 @@ gfx::Rect PanelBrowserWindowCocoa::GetPanelBounds() const {
 // |bounds| is the platform-independent screen coordinates, with (0,0) at
 // top-left of the primary screen.
 void PanelBrowserWindowCocoa::SetPanelBounds(const gfx::Rect& bounds) {
+  setBoundsInternal(bounds, true);
+}
+
+void PanelBrowserWindowCocoa::SetPanelBoundsInstantly(const gfx::Rect& bounds) {
+  setBoundsInternal(bounds, false);
+}
+
+void PanelBrowserWindowCocoa::setBoundsInternal(const gfx::Rect& bounds,
+                                                bool animate) {
   if (bounds_ == bounds)
     return;
 
   bounds_ = bounds;
 
   NSRect frame = ConvertCoordinatesToCocoa(bounds);
-  [controller_ setPanelFrame:frame];
+  [controller_ setPanelFrame:frame animate:animate];
 }
 
 void PanelBrowserWindowCocoa::ClosePanel() {

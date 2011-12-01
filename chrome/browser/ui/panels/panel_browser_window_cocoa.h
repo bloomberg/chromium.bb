@@ -32,6 +32,7 @@ class PanelBrowserWindowCocoa : public NativePanel,
   virtual void ShowPanelInactive() OVERRIDE;
   virtual gfx::Rect GetPanelBounds() const OVERRIDE;
   virtual void SetPanelBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void SetPanelBoundsInstantly(const gfx::Rect& bounds) OVERRIDE;
   virtual void ClosePanel() OVERRIDE;
   virtual void ActivatePanel() OVERRIDE;
   virtual void DeactivatePanel() OVERRIDE;
@@ -94,6 +95,8 @@ class PanelBrowserWindowCocoa : public NativePanel,
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, ActivatePanel);
 
   bool isClosed();
+
+  void setBoundsInternal(const gfx::Rect& bounds, bool animate);
 
   scoped_ptr<Browser> browser_;
   scoped_ptr<Panel> panel_;

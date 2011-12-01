@@ -79,6 +79,7 @@ class PanelBrowserView : public BrowserView,
   virtual void ShowPanelInactive() OVERRIDE;
   virtual gfx::Rect GetPanelBounds() const OVERRIDE;
   virtual void SetPanelBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void SetPanelBoundsInstantly(const gfx::Rect& bounds) OVERRIDE;
   virtual void ClosePanel() OVERRIDE;
   virtual void ActivatePanel() OVERRIDE;
   virtual void DeactivatePanel() OVERRIDE;
@@ -117,6 +118,8 @@ class PanelBrowserView : public BrowserView,
   bool EndDragging(bool cancelled);
 
   void StopDrawingAttention();
+
+  void SetBoundsInternal(const gfx::Rect& bounds, bool animate);
 
   scoped_ptr<Panel> panel_;
   gfx::Rect bounds_;

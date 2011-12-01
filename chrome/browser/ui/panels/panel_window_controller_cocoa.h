@@ -90,7 +90,9 @@ class PanelBrowserWindowCocoa;
 // important in case of dragging a Panel when other Panels should 'slide out',
 // indicating the potential drop slot.
 // |frame| is in screen coordinates, same as [window frame].
-- (void)setPanelFrame:(NSRect)frame;
+// |animate| controls if the bounds animation is needed or not.
+- (void)setPanelFrame:(NSRect)frame
+              animate:(BOOL)animate;
 
 // Used by PanelTitlebarViewCocoa when user rearranges the Panels by dragging.
 - (void)startDrag;

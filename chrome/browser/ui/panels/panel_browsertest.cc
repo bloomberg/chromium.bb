@@ -882,6 +882,28 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_AutoResize) {
   panel->Close();
 }
 
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AnimateBounds) {
+  Panel* panel = CreatePanelWithBounds("PanelTest", gfx::Rect(0, 0, 100, 100));
+  scoped_ptr<NativePanelTesting> panel_testing(
+      NativePanelTesting::Create(panel->native_panel()));
+
+  // Set bounds with animation.
+  gfx::Rect bounds = gfx::Rect(10, 20, 150, 160);
+  panel->SetPanelBounds(bounds);
+  EXPECT_TRUE(panel_testing->IsAnimatingBounds());
+  WaitForBoundsAnimationFinished(panel);
+  EXPECT_FALSE(panel_testing->IsAnimatingBounds());
+  EXPECT_EQ(bounds, panel->GetBounds());
+
+  // Set bounds without animation.
+  bounds = gfx::Rect(30, 40, 200, 220);
+  panel->SetPanelBoundsInstantly(bounds);
+  EXPECT_FALSE(panel_testing->IsAnimatingBounds());
+  EXPECT_EQ(bounds, panel->GetBounds());
+
+  panel->Close();
+}
+
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoredBounds) {
   // Disable mouse watcher. We don't care about mouse movements in this test.
   PanelManager* panel_manager = PanelManager::GetInstance();

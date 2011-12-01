@@ -244,10 +244,19 @@ gfx::Rect PanelBrowserWindowGtk::GetPanelBounds() const {
 }
 
 void PanelBrowserWindowGtk::SetPanelBounds(const gfx::Rect& bounds) {
+  SetBoundsInternal(bounds, true);
+}
+
+void PanelBrowserWindowGtk::SetPanelBoundsInstantly(const gfx::Rect& bounds) {
+  SetBoundsInternal(bounds, false);
+}
+
+void PanelBrowserWindowGtk::SetBoundsInternal(const gfx::Rect& bounds,
+                                              bool animate) {
   if (bounds == bounds_)
     return;
 
-  if (drag_widget_) {
+  if (drag_widget_ || !animate) {
     DCHECK(!bounds_animator_.get() || !bounds_animator_->is_animating());
     // If the current panel is being dragged, it should just move with the
     // user drag, we should not animate.

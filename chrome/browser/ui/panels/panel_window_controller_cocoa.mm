@@ -405,7 +405,8 @@ enum {
   windowShim_->panel()->manager()->Drag(deltaX);
 }
 
-- (void)setPanelFrame:(NSRect)frame {
+- (void)setPanelFrame:(NSRect)frame
+              animate:(BOOL)animate {
   // Setup the whole window as the tracking area so that we can get notified
   // when the mouse enters or leaves the window. This will make us be able to
   // show or hide settings button accordingly.
@@ -421,7 +422,7 @@ enum {
   [[[[self window] contentView] superview]
       addTrackingArea:windowTrackingArea_.get()];
 
-  if (!animateOnBoundsChange_) {
+  if (!animateOnBoundsChange_ || !animate) {
     [[self window] setFrame:frame display:YES animate:NO];
     return;
   }
