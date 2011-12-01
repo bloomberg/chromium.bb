@@ -207,9 +207,12 @@ class Server(BaseHTTPServer.HTTPServer):
     self.timeout = timeout
     self.ResetTimeout()
     self.JavaScriptIsAlive()
+    # Have we seen any requests from the browser?
+    self.received_request = False
 
   def ResetTimeout(self):
     self.last_activity = time.time()
+    self.received_request = True
 
   def JavaScriptIsAlive(self):
     self.last_js_activity = time.time()

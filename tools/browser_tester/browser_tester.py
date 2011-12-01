@@ -149,6 +149,11 @@ def ProcessToolLogs(options, logs_dir):
   return retcode
 
 
+# An exception that indicates possible flake.
+class RetryTest(Exception):
+  pass
+
+
 def Run(url, options):
   # Set this inside the Run function so we're assured hard_timeout will work.
   # Tests, such as run_inbrowser_trusted_crash_in_startup_test, may not use the
@@ -219,7 +224,15 @@ def Run(url, options):
       if not browser.IsRunning():
         listener.ServerError('Browser process ended during test '
                              '(return code %r)' % browser.GetReturnCode())
-        break
+        # If Chrome exits prematurely without making a single request to the
+        # web server, this is probally a Chrome crash-on-launch bug not related
+        # to the test at hand.  Retry, unless we're in interactive mode.  In
+        # interactive mode the user may manually close the browser, so don't
+        # retry (it would just be annoying.)
+        if not server.received_request and not options.interactive:
+          raise RetryTest('Chrome failed to launch.')
+        else:
+          break
       elif not options.interactive and server.TimedOut(options.timeout):
         js_time = server.TimeSinceJSHeartbeat()
         err = 'Did not hear from the test for %.1f seconds.' % options.timeout
@@ -256,6 +269,27 @@ def Run(url, options):
     return 0
 
 
+def RunWithRetries(url, options):
+  result = 1
+  attempt = 1
+  while True:
+    try:
+      result = Run(url, options)
+      break
+    except RetryTest:
+      # Only retry once.
+      if attempt < 2:
+        sys.stdout.write('\n@@@STEP_WARNINGS@@@\n')
+        sys.stdout.write('WARNING: suspected flake, retrying test!\n\n')
+        attempt += 1
+        continue
+      else:
+        sys.stdout.write('\nWARNING: failed too many times, not retrying.\n\n')
+        result = 1
+        break
+  return result
+
+
 def RunFromCommandLine():
   parser = BuildArgParser()
   options, args = parser.parse_args()
@@ -269,7 +303,7 @@ def RunFromCommandLine():
   if url is None:
     parser.error('Must specify a URL')
 
-  return Run(url, options)
+  return RunWithRetries(url, options)
 
 
 if __name__ == '__main__':
