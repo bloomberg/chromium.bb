@@ -58,6 +58,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/process_type.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/auth.h"
 #include "net/base/cert_status_flags.h"
@@ -152,10 +153,10 @@ GURL MaybeStripReferrer(const GURL& possible_referrer) {
 // ResourceDispatcherHost should service this request.  A request might be
 // disallowed if the renderer is not authorized to retrieve the request URL or
 // if the renderer is attempting to upload an unauthorized file.
-bool ShouldServiceRequest(ChildProcessInfo::ProcessType process_type,
+bool ShouldServiceRequest(content::ProcessType process_type,
                           int child_id,
                           const ResourceHostMsg_Request& request_data)  {
-  if (process_type == ChildProcessInfo::PLUGIN_PROCESS)
+  if (process_type == content::PROCESS_TYPE_PLUGIN)
     return true;
 
   ChildProcessSecurityPolicy* policy =
@@ -450,7 +451,7 @@ void ResourceDispatcherHost::BeginRequest(
     const ResourceHostMsg_Request& request_data,
     IPC::Message* sync_result,  // only valid for sync
     int route_id) {
-  ChildProcessInfo::ProcessType process_type = filter_->process_type();
+  content::ProcessType process_type = filter_->process_type();
   int child_id = filter_->child_id();
 
   // If we crash here, figure out what URL the renderer was requesting.
@@ -570,7 +571,7 @@ void ResourceDispatcherHost::BeginRequest(
   // MAIN_FRAME requests. Unblock requests only come from a blocked page, do
   // not count as cross-site, otherwise it gets blocked indefinitely.
   if (request_data.resource_type == ResourceType::MAIN_FRAME &&
-      process_type == ChildProcessInfo::RENDER_PROCESS &&
+      process_type == content::PROCESS_TYPE_RENDERER &&
       CrossSiteRequestManager::GetInstance()->
           HasPendingCrossSiteRequest(child_id, route_id)) {
     // Wrap the event handler to be sure the current page's onunload handler
@@ -754,7 +755,7 @@ ResourceDispatcherHostRequestInfo* ResourceDispatcherHost::CreateRequestInfo(
     const content::ResourceContext& context) {
   return new ResourceDispatcherHostRequestInfo(
       handler,
-      ChildProcessInfo::RENDER_PROCESS,
+      content::PROCESS_TYPE_RENDERER,
       child_id,
       route_id,
       0,
@@ -1218,7 +1219,7 @@ void ResourceDispatcherHost::OnReceivedRedirect(net::URLRequest* request,
 
   DCHECK(request->status().is_success());
 
-  if (info->process_type() != ChildProcessInfo::PLUGIN_PROCESS &&
+  if (info->process_type() != content::PROCESS_TYPE_PLUGIN &&
       !ChildProcessSecurityPolicy::GetInstance()->
           CanRequestURL(info->child_id(), new_url)) {
     VLOG(1) << "Denied unauthorized request for "
@@ -1838,7 +1839,7 @@ bool ResourceDispatcherHost::RenderViewForRequest(
   }
 
   // If the request is from the worker process, find a tab that owns the worker.
-  if (info->process_type() == ChildProcessInfo::WORKER_PROCESS) {
+  if (info->process_type() == content::PROCESS_TYPE_WORKER) {
     // Need to display some related UI for this network request - pick an
     // arbitrary parent to do so.
     if (!WorkerService::GetInstance()->GetRendererForWorker(

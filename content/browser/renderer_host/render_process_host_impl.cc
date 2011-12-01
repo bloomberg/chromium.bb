@@ -85,6 +85,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -456,7 +457,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(render_message_filter);
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
-      GetID(), ChildProcessInfo::RENDER_PROCESS,
+      GetID(), content::PROCESS_TYPE_RENDERER,
       &GetBrowserContext()->GetResourceContext(),
       new RendererURLRequestContextSelector(GetBrowserContext(), GetID()),
       content::GetContentClient()->browser()->GetResourceDispatcherHost());

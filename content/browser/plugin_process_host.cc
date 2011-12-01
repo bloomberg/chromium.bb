@@ -28,6 +28,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/process_type.h"
 #include "ipc/ipc_switches.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/gl/gl_switches.h"
@@ -111,7 +112,7 @@ void PluginProcessHost::OnMapNativeViewId(gfx::NativeViewId id,
 #endif  // defined(TOOLKIT_USES_GTK)
 
 PluginProcessHost::PluginProcessHost()
-    : BrowserChildProcessHost(PLUGIN_PROCESS)
+    : BrowserChildProcessHost(content::PROCESS_TYPE_PLUGIN)
 #if defined(OS_MACOSX)
       , plugin_cursor_visible_(true)
 #endif
@@ -343,8 +344,7 @@ void PluginProcessHost::CancelRequests() {
 // static
 void PluginProcessHost::CancelPendingRequestsForResourceContext(
     const content::ResourceContext* context) {
-  for (BrowserChildProcessHost::Iterator host_it(
-           ChildProcessInfo::PLUGIN_PROCESS);
+  for (BrowserChildProcessHost::Iterator host_it(content::PROCESS_TYPE_PLUGIN);
        !host_it.Done(); ++host_it) {
     PluginProcessHost* host = static_cast<PluginProcessHost*>(*host_it);
     for (size_t i = 0; i < host->pending_requests_.size(); ++i) {

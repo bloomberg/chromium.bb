@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/process_type.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -80,7 +81,8 @@ void WillLoadPluginsCallback() {
 static void NotifyPluginsOfActivation() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::PLUGIN_PROCESS);
+  for (BrowserChildProcessHost::Iterator iter(
+           content::PROCESS_TYPE_PLUGIN);
        !iter.Done(); ++iter) {
     PluginProcessHost* plugin = static_cast<PluginProcessHost*>(*iter);
     plugin->OnAppActivation();
@@ -221,7 +223,7 @@ PluginProcessHost* PluginService::FindNpapiPluginProcess(
     const FilePath& plugin_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::PLUGIN_PROCESS);
+  for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_PLUGIN);
        !iter.Done(); ++iter) {
     PluginProcessHost* plugin = static_cast<PluginProcessHost*>(*iter);
     if (plugin->info().path == plugin_path)
@@ -236,7 +238,7 @@ PpapiPluginProcessHost* PluginService::FindPpapiPluginProcess(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   for (BrowserChildProcessHost::Iterator iter(
-           ChildProcessInfo::PPAPI_PLUGIN_PROCESS);
+           content::PROCESS_TYPE_PPAPI_PLUGIN);
        !iter.Done(); ++iter) {
     PpapiPluginProcessHost* plugin =
         static_cast<PpapiPluginProcessHost*>(*iter);
@@ -252,7 +254,7 @@ PpapiPluginProcessHost* PluginService::FindPpapiBrokerProcess(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   for (BrowserChildProcessHost::Iterator iter(
-           ChildProcessInfo::PPAPI_BROKER_PROCESS);
+           content::PROCESS_TYPE_PPAPI_BROKER);
        !iter.Done(); ++iter) {
     PpapiPluginProcessHost* broker =
         static_cast<PpapiPluginProcessHost*>(*iter);

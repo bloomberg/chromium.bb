@@ -331,8 +331,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 
   static void TerminateWorkerOnIOThread(
       scoped_refptr<WorkerData> worker_data) {
-    for (BrowserChildProcessHost::Iterator iter(
-             ChildProcessInfo::WORKER_PROCESS);
+    for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
          !iter.Done(); ++iter) {
       if (iter->id() == worker_data->worker_process_id) {
         WorkerProcessHost* host = static_cast<WorkerProcessHost*>(*iter);
@@ -354,7 +353,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 
   static void WaitForFirstSharedWorkerOnIOThread(
       scoped_refptr<WorkerData> worker_data) {
-    BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+    BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
     for (; !iter.Done(); ++iter) {
       WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
       const WorkerProcessHost::Instances& instances = worker->instances();

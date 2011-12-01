@@ -16,7 +16,7 @@
 #include "chrome/common/nacl_messages.h"
 
 NaClBrokerHost::NaClBrokerHost()
-    : BrowserChildProcessHost(NACL_BROKER_PROCESS),
+    : BrowserChildProcessHost(content::PROCESS_TYPE_NACL_BROKER),
       stopping_(false) {
 }
 

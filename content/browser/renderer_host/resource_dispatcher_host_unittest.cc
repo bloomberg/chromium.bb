@@ -162,7 +162,7 @@ class ForwardingFilter : public ResourceMessageFilter {
   explicit ForwardingFilter(IPC::Message::Sender* dest)
     : ResourceMessageFilter(
         ChildProcessInfo::GenerateChildProcessUniqueId(),
-        ChildProcessInfo::RENDER_PROCESS,
+        content::PROCESS_TYPE_RENDERER,
         content::MockResourceContext::GetInstance(),
         new MockURLRequestContextSelector(
             content::MockResourceContext::GetInstance()->request_context()),

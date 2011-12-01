@@ -11,7 +11,7 @@
 
 ResourceDispatcherHostRequestInfo::ResourceDispatcherHostRequestInfo(
     ResourceHandler* handler,
-    ChildProcessInfo::ProcessType process_type,
+    content::ProcessType process_type,
     int child_id,
     int route_id,
     int origin_pid,

@@ -21,6 +21,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/child_process_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/bindings_policy.h"
@@ -62,9 +63,9 @@ std::string ProcessMemoryInformation::GetRendererTypeNameInEnglish(
 
 // static
 std::string ProcessMemoryInformation::GetFullTypeNameInEnglish(
-    ChildProcessInfo::ProcessType type,
+    content::ProcessType type,
     RendererProcessType rtype) {
-  if (type == ChildProcessInfo::RENDER_PROCESS)
+  if (type == content::PROCESS_TYPE_RENDERER)
     return GetRendererTypeNameInEnglish(rtype);
   return ChildProcessInfo::GetTypeNameInEnglish(type);
 }
@@ -73,7 +74,7 @@ ProcessMemoryInformation::ProcessMemoryInformation()
     : pid(0),
       num_processes(0),
       is_diagnostics(false),
-      type(ChildProcessInfo::UNKNOWN_PROCESS),
+      type(content::PROCESS_TYPE_UNKNOWN),
       renderer_type(RENDERER_UNKNOWN) {
 }
 
@@ -175,7 +176,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
           process.pid != base::GetProcId(render_process_host->GetHandle())) {
         continue;
       }
-      process.type = ChildProcessInfo::RENDER_PROCESS;
+      process.type = content::PROCESS_TYPE_RENDERER;
       Profile* profile =
           Profile::FromBrowserContext(
               render_process_host->GetBrowserContext());
@@ -299,9 +300,9 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     if (process.pid == zygote_pid) {
-      process.type = ChildProcessInfo::ZYGOTE_PROCESS;
+      process.type = content::PROCESS_TYPE_ZYGOTE;
     } else if (process.pid == sandbox_helper_pid) {
-      process.type = ChildProcessInfo::SANDBOX_HELPER_PROCESS;
+      process.type = content::PROCESS_TYPE_SANDBOX_HELPER;
     }
 #endif
   }
@@ -310,7 +311,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
   for (size_t index = 0; index < chrome_browser->processes.size();
       index++) {
     if (chrome_browser->processes[index].type ==
-        ChildProcessInfo::UNKNOWN_PROCESS) {
+        content::PROCESS_TYPE_UNKNOWN) {
       chrome_browser->processes.erase(
           chrome_browser->processes.begin() + index);
       index--;
@@ -339,10 +340,10 @@ void MemoryDetails::UpdateHistograms() {
     int sample = static_cast<int>(browser.processes[index].working_set.priv);
     aggregate_memory += sample;
     switch (browser.processes[index].type) {
-      case ChildProcessInfo::BROWSER_PROCESS:
+      case content::PROCESS_TYPE_BROWSER:
         UMA_HISTOGRAM_MEMORY_KB("Memory.Browser", sample);
         break;
-      case ChildProcessInfo::RENDER_PROCESS: {
+      case content::PROCESS_TYPE_RENDERER: {
         ProcessMemoryInformation::RendererProcessType renderer_type =
             browser.processes[index].renderer_type;
         switch (renderer_type) {
@@ -366,39 +367,39 @@ void MemoryDetails::UpdateHistograms() {
         }
         break;
       }
-      case ChildProcessInfo::PLUGIN_PROCESS:
+      case content::PROCESS_TYPE_PLUGIN:
         UMA_HISTOGRAM_MEMORY_KB("Memory.Plugin", sample);
         plugin_count++;
         break;
-      case ChildProcessInfo::WORKER_PROCESS:
+      case content::PROCESS_TYPE_WORKER:
         UMA_HISTOGRAM_MEMORY_KB("Memory.Worker", sample);
         worker_count++;
         break;
-      case ChildProcessInfo::UTILITY_PROCESS:
+      case content::PROCESS_TYPE_UTILITY:
         UMA_HISTOGRAM_MEMORY_KB("Memory.Utility", sample);
         other_count++;
         break;
-      case ChildProcessInfo::ZYGOTE_PROCESS:
+      case content::PROCESS_TYPE_ZYGOTE:
         UMA_HISTOGRAM_MEMORY_KB("Memory.Zygote", sample);
         other_count++;
         break;
-      case ChildProcessInfo::SANDBOX_HELPER_PROCESS:
+      case content::PROCESS_TYPE_SANDBOX_HELPER:
         UMA_HISTOGRAM_MEMORY_KB("Memory.SandboxHelper", sample);
         other_count++;
         break;
-      case ChildProcessInfo::NACL_LOADER_PROCESS:
+      case content::PROCESS_TYPE_NACL_LOADER:
         UMA_HISTOGRAM_MEMORY_KB("Memory.NativeClient", sample);
         other_count++;
         break;
-      case ChildProcessInfo::NACL_BROKER_PROCESS:
+      case content::PROCESS_TYPE_NACL_BROKER:
         UMA_HISTOGRAM_MEMORY_KB("Memory.NativeClientBroker", sample);
         other_count++;
         break;
-      case ChildProcessInfo::GPU_PROCESS:
+      case content::PROCESS_TYPE_GPU:
         UMA_HISTOGRAM_MEMORY_KB("Memory.Gpu", sample);
         other_count++;
         break;
-      case ChildProcessInfo::PPAPI_PLUGIN_PROCESS:
+      case content::PROCESS_TYPE_PPAPI_PLUGIN:
         UMA_HISTOGRAM_MEMORY_KB("Memory.PepperPlugin", sample);
         pepper_plugin_count++;
         break;

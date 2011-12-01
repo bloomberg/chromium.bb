@@ -38,6 +38,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
+#include "content/public/common/process_type.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -111,7 +112,7 @@ void NotifyPluginProcessHostHelper(HWND window, HWND parent, int tries) {
   DWORD plugin_process_id;
   bool found_starting_plugin_process = false;
   GetWindowThreadProcessId(window, &plugin_process_id);
-  for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::PLUGIN_PROCESS);
+  for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_PLUGIN);
        !iter.Done(); ++iter) {
     PluginProcessHost* plugin = static_cast<PluginProcessHost*>(*iter);
     if (!plugin->handle()) {

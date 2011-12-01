@@ -21,6 +21,7 @@
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/browser/worker_host/worker_service.h"
 #include "content/browser/worker_host/worker_service_observer.h"
+#include "content/public/common/process_type.h"
 #include "grit/generated_resources.h"
 #include "grit/workers_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -84,7 +85,7 @@ void WorkersUIHTMLSource::StartDataRequest(const std::string& path,
 
 void WorkersUIHTMLSource::SendSharedWorkersData(int request_id) {
     ListValue workers_list;
-    BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+    BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
     for (; !iter.Done(); ++iter) {
       WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
       const WorkerProcessHost::Instances& instances = worker->instances();
@@ -148,7 +149,7 @@ void WorkersDOMHandler::HandleOpenDevTools(const ListValue* args) {
 }
 
 static void TerminateWorker(int worker_process_id, int worker_route_id) {
-  for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+  for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
        !iter.Done(); ++iter) {
     if (iter->id() == worker_process_id) {
       WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);

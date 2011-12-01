@@ -24,6 +24,7 @@
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/process_type.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -150,7 +151,7 @@ void MemoryDetails::CollectProcessData(
          it != pids_by_browser[index].end(); ++it) {
       ProcessMemoryInformation info;
       info.pid = *it;
-      info.type = ChildProcessInfo::UNKNOWN_PROCESS;
+      info.type = content::PROCESS_TYPE_UNKNOWN;
 
       // Try to get version information. To do this, we need first to get the
       // executable's name (we can only believe |proc_info.command| if it looks
@@ -211,9 +212,9 @@ void MemoryDetails::CollectProcessDataChrome(
   ProcessMemoryInformation info;
   info.pid = pid;
   if (info.pid == base::GetCurrentProcId())
-    info.type = ChildProcessInfo::BROWSER_PROCESS;
+    info.type = content::PROCESS_TYPE_BROWSER;
   else
-    info.type = ChildProcessInfo::UNKNOWN_PROCESS;
+    info.type = content::PROCESS_TYPE_UNKNOWN;
 
   chrome::VersionInfo version_info;
   if (version_info.is_valid()) {

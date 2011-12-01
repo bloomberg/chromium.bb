@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/webui/tracing_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
+#include "content/common/child_process_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 
@@ -128,7 +129,7 @@ void TrackingSynchronizer::SetTrackingStatusInProcess(int process_id) {
 void TrackingSynchronizer::DeserializeTrackingList(
     int sequence_number,
     const std::string& tracking_data,
-    ChildProcessInfo::ProcessType process_type) {
+    content::ProcessType process_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -141,7 +142,7 @@ void TrackingSynchronizer::DeserializeTrackingList(
 void TrackingSynchronizer::DeserializeTrackingListOnUI(
     int sequence_number,
     const std::string& tracking_data,
-    ChildProcessInfo::ProcessType process_type) {
+    content::ProcessType process_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   TrackingSynchronizer* current_synchronizer = CurrentSynchronizer();
@@ -194,7 +195,7 @@ int TrackingSynchronizer::RegisterAndNotifyAllProcesses(
   // Get the ThreadData for the browser process and send it back.
   base::DictionaryValue* value = tracked_objects::ThreadData::ToValue();
   const std::string process_type =
-      ChildProcessInfo::GetTypeNameInEnglish(ChildProcessInfo::BROWSER_PROCESS);
+      ChildProcessInfo::GetTypeNameInEnglish(content::PROCESS_TYPE_BROWSER);
   value->SetString("process_type", process_type);
   value->SetInteger("process_id", base::GetCurrentProcId());
   DCHECK_GT(request->processes_pending_, 0);

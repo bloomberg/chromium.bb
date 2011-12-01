@@ -14,7 +14,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 
-ChildProcessInfo::ChildProcessInfo(ProcessType type, int id) :
+ChildProcessInfo::ChildProcessInfo(content::ProcessType type, int id) :
     type_(type) {
   if (id == -1)
     id_ = GenerateChildProcessUniqueId();
@@ -47,35 +47,35 @@ ChildProcessInfo& ChildProcessInfo::operator=(
 
 // static
 std::string ChildProcessInfo::GetTypeNameInEnglish(
-    ChildProcessInfo::ProcessType type) {
+    content::ProcessType type) {
   switch (type) {
-    case BROWSER_PROCESS:
+    case content::PROCESS_TYPE_BROWSER:
       return "Browser";
-    case RENDER_PROCESS:
+    case content::PROCESS_TYPE_RENDERER:
       return "Tab";
-    case PLUGIN_PROCESS:
+    case content::PROCESS_TYPE_PLUGIN:
       return "Plug-in";
-    case WORKER_PROCESS:
+    case content::PROCESS_TYPE_WORKER:
       return "Web Worker";
-    case UTILITY_PROCESS:
+    case content::PROCESS_TYPE_UTILITY:
       return "Utility";
-    case PROFILE_IMPORT_PROCESS:
+    case content::PROCESS_TYPE_PROFILE_IMPORT:
       return "Profile Import helper";
-    case ZYGOTE_PROCESS:
+    case content::PROCESS_TYPE_ZYGOTE:
       return "Zygote";
-    case SANDBOX_HELPER_PROCESS:
+    case content::PROCESS_TYPE_SANDBOX_HELPER:
       return "Sandbox helper";
-    case NACL_LOADER_PROCESS:
+    case content::PROCESS_TYPE_NACL_LOADER:
       return "Native Client module";
-    case NACL_BROKER_PROCESS:
+    case content::PROCESS_TYPE_NACL_BROKER:
       return "Native Client broker";
-    case GPU_PROCESS:
+    case content::PROCESS_TYPE_GPU:
       return "GPU";
-    case PPAPI_PLUGIN_PROCESS:
+    case content::PROCESS_TYPE_PPAPI_PLUGIN:
       return "Pepper Plugin";
-    case PPAPI_BROKER_PROCESS:
+    case content::PROCESS_TYPE_PPAPI_BROKER:
       return "Pepper Plugin Broker";
-    case UNKNOWN_PROCESS:
+    case content::PROCESS_TYPE_UNKNOWN:
     default:
       DCHECK(false) << "Unknown child process type!";
       return "Unknown";

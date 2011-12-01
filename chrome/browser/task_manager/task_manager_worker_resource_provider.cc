@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/process_type.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -237,7 +238,7 @@ void TaskManagerWorkerResourceProvider::Observe(
     const content::NotificationDetails& details) {
   ChildProcessInfo* process_info =
       content::Details<ChildProcessInfo>(details).ptr();
-  if (process_info->type() != ChildProcessInfo::WORKER_PROCESS)
+  if (process_info->type() != content::PROCESS_TYPE_WORKER)
     return;
   if (type == content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED) {
     ProcessIdToWorkerResources::iterator it =
@@ -299,7 +300,7 @@ void TaskManagerWorkerResourceProvider::StartObservingWorkers() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   scoped_ptr<WorkerResourceListHolder> holder(new WorkerResourceListHolder);
-  BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+  BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
   for (; !iter.Done(); ++iter) {
     WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
     const WorkerProcessHost::Instances& instances = worker->instances();

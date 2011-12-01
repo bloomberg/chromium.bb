@@ -54,6 +54,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/process_type.h"
 #include "crypto/nss_util.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
@@ -1226,7 +1227,7 @@ void AboutMemoryHandler::OnDetailsAvailable() {
   root.SetString("current_browser_name", process.name);
 
   for (size_t index = 0; index < process.processes.size(); index++) {
-    if (process.processes[index].type == ChildProcessInfo::BROWSER_PROCESS)
+    if (process.processes[index].type == content::PROCESS_TYPE_BROWSER)
       BindProcessMetrics(browser_data, &process.processes[index]);
     else
       AppendProcess(child_data, &process.processes[index]);

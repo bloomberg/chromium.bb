@@ -165,7 +165,7 @@ class GViewRequestInterceptorTest : public testing::Test {
     ResourceDispatcherHostRequestInfo* info =
         new ResourceDispatcherHostRequestInfo(
             handler_,
-            ChildProcessInfo::RENDER_PROCESS,
+            content::PROCESS_TYPE_RENDERER,
             -1,          // child_id
             MSG_ROUTING_NONE,
             0,           // origin_pid

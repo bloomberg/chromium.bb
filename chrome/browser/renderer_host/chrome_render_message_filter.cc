@@ -31,8 +31,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/common/child_process_info.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/process_type.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -173,7 +173,7 @@ void ChromeRenderMessageFilter::OnRendererTrackedData(
     const std::string& tracked_data) {
   // TODO(rtenneti): Add support for other process types.
   chrome_browser_metrics::TrackingSynchronizer::DeserializeTrackingList(
-      sequence_number, tracked_data, ChildProcessInfo::RENDER_PROCESS);
+      sequence_number, tracked_data, content::PROCESS_TYPE_RENDERER);
 }
 
 void ChromeRenderMessageFilter::OnIsTrackingEnabled() {

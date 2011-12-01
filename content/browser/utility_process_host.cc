@@ -34,7 +34,7 @@ bool UtilityProcessHost::Client::OnMessageReceived(
 
 UtilityProcessHost::UtilityProcessHost(Client* client,
                                        BrowserThread::ID client_thread_id)
-    : BrowserChildProcessHost(UTILITY_PROCESS),
+    : BrowserChildProcessHost(content::PROCESS_TYPE_UTILITY),
       client_(client),
       client_thread_id_(client_thread_id),
       is_batch_mode_(false),

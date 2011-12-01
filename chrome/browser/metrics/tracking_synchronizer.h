@@ -16,8 +16,8 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/profiler_ui.h"
-#include "content/common/child_process_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/process_type.h"
 
 // This class maintains state that is used to upload tracking data from the
 // various processes, into the browser process. Such transactions are usually
@@ -110,14 +110,14 @@ class TrackingSynchronizer : public
   static void DeserializeTrackingList(
       int sequence_number,
       const std::string& tracking_data,
-      ChildProcessInfo::ProcessType process_type);
+      content::ProcessType process_type);
 
   // Deserialize the tracking data and record that we have received tracking
   // data from a process. This method is accessible on UI thread.
   static void DeserializeTrackingListOnUI(
       int sequence_number,
       const std::string& tracking_data,
-      ChildProcessInfo::ProcessType process_type);
+      content::ProcessType process_type);
 
  private:
   friend class base::RefCountedThreadSafe<TrackingSynchronizer>;

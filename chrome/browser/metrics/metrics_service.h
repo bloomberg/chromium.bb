@@ -21,7 +21,7 @@
 #include "base/process_util.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/common/metrics_helpers.h"
-#include "content/common/child_process_info.h"
+#include "content/public/common/process_type.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -311,7 +311,7 @@ class MetricsService : public content::NotificationObserver,
 
   // Returns true if process of type |type| should be counted as a plugin
   // process, and false otherwise.
-  static bool IsPluginProcess(ChildProcessInfo::ProcessType type);
+  static bool IsPluginProcess(content::ProcessType type);
 
   content::NotificationRegistrar registrar_;
 

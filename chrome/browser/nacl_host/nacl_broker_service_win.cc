@@ -62,7 +62,7 @@ void NaClBrokerService::OnLoaderDied() {
 }
 
 NaClBrokerHost* NaClBrokerService::GetBrokerHost() {
-  BrowserChildProcessHost::Iterator iter(ChildProcessInfo::NACL_BROKER_PROCESS);
+  BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_NACL_BROKER);
   if (iter.Done())
     return NULL;
   NaClBrokerHost* broker_host = static_cast<NaClBrokerHost*>(*iter);

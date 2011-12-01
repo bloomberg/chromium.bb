@@ -14,6 +14,7 @@
 #include "content/common/child_process_host.h"
 #include "content/common/child_process_info.h"
 #include "content/common/content_export.h"
+#include "content/public/common/process_type.h"
 
 namespace base {
 class WaitableEvent;
@@ -46,7 +47,7 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   class CONTENT_EXPORT Iterator {
    public:
     Iterator();
-    explicit Iterator(ChildProcessInfo::ProcessType type);
+    explicit Iterator(content::ProcessType type);
     BrowserChildProcessHost* operator->() { return *iterator_; }
     BrowserChildProcessHost* operator*() { return *iterator_; }
     BrowserChildProcessHost* operator++();
@@ -54,12 +55,12 @@ class CONTENT_EXPORT BrowserChildProcessHost :
 
    private:
     bool all_;
-    ChildProcessInfo::ProcessType type_;
+    content::ProcessType type_;
     std::list<BrowserChildProcessHost*>::iterator iterator_;
   };
 
  protected:
-  explicit BrowserChildProcessHost(ChildProcessInfo::ProcessType type);
+  explicit BrowserChildProcessHost(content::ProcessType type);
 
   // Derived classes call this to launch the child process asynchronously.
   void Launch(

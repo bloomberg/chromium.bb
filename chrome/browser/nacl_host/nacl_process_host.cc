@@ -108,7 +108,7 @@ static bool RunningOnWOW64() {
 }
 
 NaClProcessHost::NaClProcessHost(const std::wstring& url)
-    : BrowserChildProcessHost(NACL_LOADER_PROCESS),
+    : BrowserChildProcessHost(content::PROCESS_TYPE_NACL_LOADER),
       reply_msg_(NULL),
       internal_(new NaClInternal()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {

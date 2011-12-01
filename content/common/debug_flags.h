@@ -6,8 +6,8 @@
 #define CONTENT_COMMON_DEBUG_FLAGS_H_
 #pragma once
 
-#include "content/common/child_process_info.h"
 #include "content/common/content_export.h"
+#include "content/public/common/process_type.h"
 
 class CommandLine;
 
@@ -23,7 +23,7 @@ class CONTENT_EXPORT DebugFlags {
   // calling the JIT debugger on it. It may only happen if
   // is_in_sandbox is true.
   static bool ProcessDebugFlags(CommandLine* command_line,
-                                ChildProcessInfo::ProcessType type,
+                                content::ProcessType type,
                                 bool is_in_sandbox);
 };
 

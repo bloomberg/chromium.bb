@@ -16,10 +16,10 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/win/windows_version.h"
-#include "content/common/child_process_info.h"
 #include "content/common/debug_flags.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/process_type.h"
 #include "sandbox/src/sandbox.h"
 #include "ui/gfx/gl/gl_switches.h"
 
@@ -384,26 +384,26 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
                                            const FilePath& exposed_dir) {
   base::ProcessHandle process = 0;
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  ChildProcessInfo::ProcessType type;
+  content::ProcessType type;
   std::string type_str = cmd_line->GetSwitchValueASCII(switches::kProcessType);
   if (type_str == switches::kRendererProcess) {
-    type = ChildProcessInfo::RENDER_PROCESS;
+    type = content::PROCESS_TYPE_RENDERER;
   } else if (type_str == switches::kPluginProcess) {
-    type = ChildProcessInfo::PLUGIN_PROCESS;
+    type = content::PROCESS_TYPE_PLUGIN;
   } else if (type_str == switches::kWorkerProcess) {
-    type = ChildProcessInfo::WORKER_PROCESS;
+    type = content::PROCESS_TYPE_WORKER;
   } else if (type_str == switches::kNaClLoaderProcess) {
-    type = ChildProcessInfo::NACL_LOADER_PROCESS;
+    type = content::PROCESS_TYPE_NACL_LOADER;
   } else if (type_str == switches::kUtilityProcess) {
-    type = ChildProcessInfo::UTILITY_PROCESS;
+    type = content::PROCESS_TYPE_UTILITY;
   } else if (type_str == switches::kNaClBrokerProcess) {
-    type = ChildProcessInfo::NACL_BROKER_PROCESS;
+    type = content::PROCESS_TYPE_NACL_BROKER;
   } else if (type_str == switches::kGpuProcess) {
-    type = ChildProcessInfo::GPU_PROCESS;
+    type = content::PROCESS_TYPE_GPU;
   } else if (type_str == switches::kPpapiPluginProcess) {
-    type = ChildProcessInfo::PPAPI_PLUGIN_PROCESS;
+    type = content::PROCESS_TYPE_PPAPI_PLUGIN;
   } else if (type_str == switches::kPpapiBrokerProcess) {
-    type = ChildProcessInfo::PPAPI_BROKER_PROCESS;
+    type = content::PROCESS_TYPE_PPAPI_BROKER;
   } else {
     NOTREACHED();
     return 0;
@@ -415,12 +415,12 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   // First case: all process types except the nacl broker, and the plugin
   // process are sandboxed by default.
   bool in_sandbox =
-      (type != ChildProcessInfo::NACL_BROKER_PROCESS) &&
-      (type != ChildProcessInfo::PLUGIN_PROCESS) &&
-      (type != ChildProcessInfo::PPAPI_BROKER_PROCESS);
+      (type != content::PROCESS_TYPE_NACL_BROKER) &&
+      (type != content::PROCESS_TYPE_PLUGIN) &&
+      (type != content::PROCESS_TYPE_PPAPI_BROKER);
 
   // If it is the GPU process then it can be disabled by a command line flag.
-  if ((type == ChildProcessInfo::GPU_PROCESS) &&
+  if ((type == content::PROCESS_TYPE_GPU) &&
       (browser_command_line.HasSwitch(switches::kDisableGpuSandbox))) {
     in_sandbox = false;
     DVLOG(1) << "GPU sandbox is disabled";
@@ -465,7 +465,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   sandbox::TargetPolicy* policy = g_broker_services->CreatePolicy();
 
 #if !defined(NACL_WIN64)  // We don't need this code on win nacl64.
-  if (type == ChildProcessInfo::PLUGIN_PROCESS &&
+  if (type == content::PROCESS_TYPE_PLUGIN &&
       !browser_command_line.HasSwitch(switches::kNoSandbox) &&
       content::GetContentClient()->SandboxPlugin(cmd_line, policy)) {
     in_sandbox = true;
@@ -478,21 +478,21 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     return process;
   }
 
-  if (type == ChildProcessInfo::PLUGIN_PROCESS) {
+  if (type == content::PROCESS_TYPE_PLUGIN) {
     AddGenericDllEvictionPolicy(policy);
     AddPluginDllEvictionPolicy(policy);
-  } else if (type == ChildProcessInfo::GPU_PROCESS) {
+  } else if (type == content::PROCESS_TYPE_GPU) {
     if (!AddPolicyForGPU(cmd_line, policy))
       return 0;
-  } else if (type == ChildProcessInfo::PPAPI_PLUGIN_PROCESS) {
+  } else if (type == content::PROCESS_TYPE_PPAPI_PLUGIN) {
     if (!AddPolicyForPepperPlugin(policy))
       return 0;
   } else {
     AddPolicyForRenderer(policy);
     // TODO(jschuh): Need get these restrictions applied to NaCl and Pepper.
     // Just have to figure out what needs to be warmed up first.
-    if (type == ChildProcessInfo::RENDER_PROCESS ||
-        type == ChildProcessInfo::WORKER_PROCESS) {
+    if (type == content::PROCESS_TYPE_RENDERER ||
+        type == content::PROCESS_TYPE_WORKER) {
       AddBaseHandleClosePolicy(policy);
     }
 
@@ -545,7 +545,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   // scanning the address space using VirtualQuery.
   // TODO(bbudge) Handle the --no-sandbox case.
   // http://code.google.com/p/nativeclient/issues/detail?id=2131
-  if (type == ChildProcessInfo::NACL_LOADER_PROCESS &&
+  if (type == content::PROCESS_TYPE_NACL_LOADER &&
       (base::win::OSInfo::GetInstance()->wow64_status() ==
           base::win::OSInfo::WOW64_DISABLED)) {
     const SIZE_T kOneGigabyte = 1 << 30;

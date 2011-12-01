@@ -19,6 +19,7 @@
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/process_type.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -109,9 +110,9 @@ void MemoryDetails::CollectProcessData(
       ProcessMemoryInformation info;
       info.pid = pid;
       if (info.pid == GetCurrentProcessId())
-        info.type = ChildProcessInfo::BROWSER_PROCESS;
+        info.type = content::PROCESS_TYPE_BROWSER;
       else
-        info.type = ChildProcessInfo::UNKNOWN_PROCESS;
+        info.type = content::PROCESS_TYPE_UNKNOWN;
 
       scoped_ptr<base::ProcessMetrics> metrics;
       metrics.reset(base::ProcessMetrics::CreateProcessMetrics(process_handle));

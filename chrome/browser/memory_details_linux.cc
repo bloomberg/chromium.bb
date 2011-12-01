@@ -21,6 +21,7 @@
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/zygote_host_linux.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/process_type.h"
 #include "grit/chromium_strings.h"
 
 using content::BrowserThread;
@@ -158,9 +159,9 @@ static void GetProcessDataMemoryInformation(
     pmi.num_processes = 1;
 
     if (pmi.pid == base::GetCurrentProcId())
-      pmi.type = ChildProcessInfo::BROWSER_PROCESS;
+      pmi.type = content::PROCESS_TYPE_BROWSER;
     else
-      pmi.type = ChildProcessInfo::UNKNOWN_PROCESS;
+      pmi.type = content::PROCESS_TYPE_UNKNOWN;
 
     base::ProcessMetrics* metrics =
         base::ProcessMetrics::CreateProcessMetrics(*i);

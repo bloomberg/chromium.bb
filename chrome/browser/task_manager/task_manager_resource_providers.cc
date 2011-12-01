@@ -47,6 +47,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/process_type.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -786,22 +787,22 @@ TaskManager::Resource::Type TaskManagerChildProcessResource::GetType() const {
   // Translate types to TaskManager::ResourceType, since ChildProcessInfo's type
   // is not available for all TaskManager resources.
   switch (child_process_.type()) {
-    case ChildProcessInfo::PLUGIN_PROCESS:
-    case ChildProcessInfo::PPAPI_PLUGIN_PROCESS:
-    case ChildProcessInfo::PPAPI_BROKER_PROCESS:
+    case content::PROCESS_TYPE_PLUGIN:
+    case content::PROCESS_TYPE_PPAPI_PLUGIN:
+    case content::PROCESS_TYPE_PPAPI_BROKER:
       return TaskManager::Resource::PLUGIN;
-    case ChildProcessInfo::NACL_LOADER_PROCESS:
-    case ChildProcessInfo::NACL_BROKER_PROCESS:
+    case content::PROCESS_TYPE_NACL_LOADER:
+    case content::PROCESS_TYPE_NACL_BROKER:
       return TaskManager::Resource::NACL;
-    case ChildProcessInfo::UTILITY_PROCESS:
+    case content::PROCESS_TYPE_UTILITY:
       return TaskManager::Resource::UTILITY;
-    case ChildProcessInfo::PROFILE_IMPORT_PROCESS:
+    case content::PROCESS_TYPE_PROFILE_IMPORT:
       return TaskManager::Resource::PROFILE_IMPORT;
-    case ChildProcessInfo::ZYGOTE_PROCESS:
+    case content::PROCESS_TYPE_ZYGOTE:
       return TaskManager::Resource::ZYGOTE;
-    case ChildProcessInfo::SANDBOX_HELPER_PROCESS:
+    case content::PROCESS_TYPE_SANDBOX_HELPER:
       return TaskManager::Resource::SANDBOX_HELPER;
-    case ChildProcessInfo::GPU_PROCESS:
+    case content::PROCESS_TYPE_GPU:
       return TaskManager::Resource::GPU;
     default:
       return TaskManager::Resource::UNKNOWN;
@@ -820,9 +821,9 @@ string16 TaskManagerChildProcessResource::GetLocalizedTitle() const {
   string16 title = child_process_.name();
   if (title.empty()) {
     switch (child_process_.type()) {
-      case ChildProcessInfo::PLUGIN_PROCESS:
-      case ChildProcessInfo::PPAPI_PLUGIN_PROCESS:
-      case ChildProcessInfo::PPAPI_BROKER_PROCESS:
+      case content::PROCESS_TYPE_PLUGIN:
+      case content::PROCESS_TYPE_PPAPI_PLUGIN:
+      case content::PROCESS_TYPE_PPAPI_BROKER:
         title = l10n_util::GetStringUTF16(IDS_TASK_MANAGER_UNKNOWN_PLUGIN_NAME);
         break;
       default:
@@ -838,44 +839,44 @@ string16 TaskManagerChildProcessResource::GetLocalizedTitle() const {
   base::i18n::AdjustStringForLocaleDirection(&title);
 
   switch (child_process_.type()) {
-    case ChildProcessInfo::UTILITY_PROCESS:
+    case content::PROCESS_TYPE_UTILITY:
       return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_UTILITY_PREFIX);
 
-    case ChildProcessInfo::PROFILE_IMPORT_PROCESS:
+    case content::PROCESS_TYPE_PROFILE_IMPORT:
       return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_UTILITY_PREFIX);
 
-    case ChildProcessInfo::GPU_PROCESS:
+    case content::PROCESS_TYPE_GPU:
       return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_GPU_PREFIX);
 
-    case ChildProcessInfo::NACL_BROKER_PROCESS:
+    case content::PROCESS_TYPE_NACL_BROKER:
       return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NACL_BROKER_PREFIX);
 
-    case ChildProcessInfo::PLUGIN_PROCESS:
-    case ChildProcessInfo::PPAPI_PLUGIN_PROCESS:
+    case content::PROCESS_TYPE_PLUGIN:
+    case content::PROCESS_TYPE_PPAPI_PLUGIN:
       return l10n_util::GetStringFUTF16(
           IDS_TASK_MANAGER_PLUGIN_PREFIX, title, child_process_.version());
 
-    case ChildProcessInfo::PPAPI_BROKER_PROCESS:
+    case content::PROCESS_TYPE_PPAPI_BROKER:
       return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PLUGIN_BROKER_PREFIX,
                                         title, child_process_.version());
 
-    case ChildProcessInfo::NACL_LOADER_PROCESS:
+    case content::PROCESS_TYPE_NACL_LOADER:
       return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_NACL_PREFIX, title);
 
     // These types don't need display names or get them from elsewhere.
-    case ChildProcessInfo::BROWSER_PROCESS:
-    case ChildProcessInfo::RENDER_PROCESS:
-    case ChildProcessInfo::ZYGOTE_PROCESS:
-    case ChildProcessInfo::SANDBOX_HELPER_PROCESS:
-    case ChildProcessInfo::MAX_PROCESS:
+    case content::PROCESS_TYPE_BROWSER:
+    case content::PROCESS_TYPE_RENDERER:
+    case content::PROCESS_TYPE_ZYGOTE:
+    case content::PROCESS_TYPE_SANDBOX_HELPER:
+    case content::PROCESS_TYPE_MAX:
       NOTREACHED();
       break;
 
-    case ChildProcessInfo::WORKER_PROCESS:
+    case content::PROCESS_TYPE_WORKER:
       NOTREACHED() << "Workers are not handled by this provider.";
       break;
 
-    case ChildProcessInfo::UNKNOWN_PROCESS:
+    case content::PROCESS_TYPE_UNKNOWN:
       NOTREACHED() << "Need localized name for child process type.";
   }
 
@@ -969,7 +970,7 @@ void TaskManagerChildProcessResourceProvider::Add(
   if (!updating_)
     return;
   // Workers are handled by TaskManagerWorkerResourceProvider.
-  if (child_process_info.type() == ChildProcessInfo::WORKER_PROCESS)
+  if (child_process_info.type() == content::PROCESS_TYPE_WORKER)
     return;
   std::map<ChildProcessInfo, TaskManagerChildProcessResource*>::
       const_iterator iter = resources_.find(child_process_info);
@@ -987,7 +988,7 @@ void TaskManagerChildProcessResourceProvider::Remove(
     const ChildProcessInfo& child_process_info) {
   if (!updating_)
     return;
-  if (child_process_info.type() == ChildProcessInfo::WORKER_PROCESS)
+  if (child_process_info.type() == content::PROCESS_TYPE_WORKER)
     return;
   std::map<ChildProcessInfo, TaskManagerChildProcessResource*>
       ::iterator iter = resources_.find(child_process_info);

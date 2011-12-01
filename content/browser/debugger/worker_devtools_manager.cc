@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/process_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -355,7 +356,7 @@ WorkerDevToolsManager::FindInspectedWorker(
 }
 
 static WorkerProcessHost* FindWorkerProcess(int worker_process_id) {
-  BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+  BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
   for (; !iter.Done(); ++iter) {
     if (iter->id() == worker_process_id)
       return static_cast<WorkerProcessHost*>(*iter);

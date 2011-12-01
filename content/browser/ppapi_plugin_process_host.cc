@@ -14,6 +14,7 @@
 #include "content/common/child_process_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/pepper_plugin_info.h"
+#include "content/public/common/process_type.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/network_change_notifier.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -100,7 +101,7 @@ void PpapiPluginProcessHost::OpenChannelToPlugin(Client* client) {
 }
 
 PpapiPluginProcessHost::PpapiPluginProcessHost(net::HostResolver* host_resolver)
-    : BrowserChildProcessHost(ChildProcessInfo::PPAPI_PLUGIN_PROCESS),
+    : BrowserChildProcessHost(content::PROCESS_TYPE_PPAPI_PLUGIN),
       filter_(new PepperMessageFilter(host_resolver)),
       network_observer_(new PluginNetworkObserver(this)),
       is_broker_(false),
@@ -109,7 +110,7 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(net::HostResolver* host_resolver)
 }
 
 PpapiPluginProcessHost::PpapiPluginProcessHost()
-    : BrowserChildProcessHost(ChildProcessInfo::PPAPI_BROKER_PROCESS),
+    : BrowserChildProcessHost(content::PROCESS_TYPE_PPAPI_BROKER),
       is_broker_(true),
       process_id_(ChildProcessInfo::GenerateChildProcessUniqueId()) {
 }

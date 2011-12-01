@@ -78,6 +78,7 @@
 #include "content/common/child_process_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/process_type.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -2866,7 +2867,7 @@ void ProcessInfoObserver::OnDetailsAvailable() {
       std::string process_type = "Unknown";
       // The following condition avoids a DCHECK in debug builds when the
       // process type passed to |GetTypeNameInEnglish| is unknown.
-      if (iterator->type != ChildProcessInfo::UNKNOWN_PROCESS)
+      if (iterator->type != content::PROCESS_TYPE_UNKNOWN)
         process_type = ChildProcessInfo::GetTypeNameInEnglish(iterator->type);
       proc_data->SetString("child_process_type", process_type);
 

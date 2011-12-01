@@ -84,7 +84,7 @@ void WorkerCrashCallback(int render_process_unique_id, int render_view_id) {
 WorkerProcessHost::WorkerProcessHost(
     const content::ResourceContext* resource_context,
     ResourceDispatcherHost* resource_dispatcher_host)
-    : BrowserChildProcessHost(WORKER_PROCESS),
+    : BrowserChildProcessHost(content::PROCESS_TYPE_WORKER),
       resource_context_(resource_context),
       resource_dispatcher_host_(resource_dispatcher_host) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -234,7 +234,7 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       resource_context_->request_context();
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
-      id(), WORKER_PROCESS, resource_context_,
+      id(), content::PROCESS_TYPE_WORKER, resource_context_,
       new URLRequestContextSelector(request_context),
       resource_dispatcher_host_);
   AddFilter(resource_message_filter);

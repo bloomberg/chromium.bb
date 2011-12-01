@@ -11,7 +11,7 @@
 #include "ipc/ipc_switches.h"
 
 bool DebugFlags::ProcessDebugFlags(CommandLine* command_line,
-                                   ChildProcessInfo::ProcessType type,
+                                   content::ProcessType type,
                                    bool is_in_sandbox) {
   bool should_help_child = false;
   const CommandLine& current_cmd_line = *CommandLine::ForCurrentProcess();
@@ -20,11 +20,11 @@ bool DebugFlags::ProcessDebugFlags(CommandLine* command_line,
     std::string value = current_cmd_line.GetSwitchValueASCII(
         switches::kDebugChildren);
     if (value.empty() ||
-        (type == ChildProcessInfo::WORKER_PROCESS &&
+        (type == content::PROCESS_TYPE_WORKER &&
          value == switches::kWorkerProcess) ||
-        (type == ChildProcessInfo::RENDER_PROCESS &&
+        (type == content::PROCESS_TYPE_RENDERER &&
          value == switches::kRendererProcess) ||
-        (type == ChildProcessInfo::PLUGIN_PROCESS &&
+        (type == content::PROCESS_TYPE_PLUGIN &&
          value == switches::kPluginProcess)) {
       command_line->AppendSwitch(switches::kDebugOnStart);
       should_help_child = true;
@@ -35,11 +35,11 @@ bool DebugFlags::ProcessDebugFlags(CommandLine* command_line,
     std::string value = current_cmd_line.GetSwitchValueASCII(
         switches::kWaitForDebuggerChildren);
     if (value.empty() ||
-        (type == ChildProcessInfo::WORKER_PROCESS &&
+        (type == content::PROCESS_TYPE_WORKER &&
          value == switches::kWorkerProcess) ||
-        (type == ChildProcessInfo::RENDER_PROCESS &&
+        (type == content::PROCESS_TYPE_RENDERER &&
          value == switches::kRendererProcess) ||
-        (type == ChildProcessInfo::PLUGIN_PROCESS &&
+        (type == content::PROCESS_TYPE_PLUGIN &&
          value == switches::kPluginProcess)) {
       command_line->AppendSwitch(switches::kWaitForDebugger);
     }

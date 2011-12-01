@@ -232,7 +232,7 @@ MetricsService::ShutdownCleanliness MetricsService::clean_shutdown_status_ =
 // reported to the UMA server on next launch.
 struct MetricsService::ChildProcessStats {
  public:
-  explicit ChildProcessStats(ChildProcessInfo::ProcessType type)
+  explicit ChildProcessStats(content::ProcessType type)
       : process_launches(0),
         process_crashes(0),
         instances(0),
@@ -244,7 +244,7 @@ struct MetricsService::ChildProcessStats {
       : process_launches(0),
         process_crashes(0),
         instances(0),
-        process_type(ChildProcessInfo::UNKNOWN_PROCESS) {}
+        process_type(content::PROCESS_TYPE_UNKNOWN) {}
 
   // The number of times that the given child process has been launched
   int process_launches;
@@ -257,7 +257,7 @@ struct MetricsService::ChildProcessStats {
   // load.
   int instances;
 
-  ChildProcessInfo::ProcessType process_type;
+  content::ProcessType process_type;
 };
 
 // Handles asynchronous fetching of memory details.
@@ -1526,9 +1526,9 @@ void MetricsService::RecordCurrentState(PrefService* pref) {
 }
 
 // static
-bool MetricsService::IsPluginProcess(ChildProcessInfo::ProcessType type) {
-  return (type == ChildProcessInfo::PLUGIN_PROCESS ||
-          type == ChildProcessInfo::PPAPI_PLUGIN_PROCESS);
+bool MetricsService::IsPluginProcess(content::ProcessType type) {
+  return (type == content::PROCESS_TYPE_PLUGIN||
+          type == content::PROCESS_TYPE_PPAPI_PLUGIN);
 }
 
 static bool IsSingleThreaded() {

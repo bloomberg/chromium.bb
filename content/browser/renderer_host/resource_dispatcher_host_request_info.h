@@ -10,9 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/time.h"
-#include "content/common/child_process_info.h"
 #include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/process_type.h"
 #include "net/base/load_states.h"
 #include "net/url_request/url_request.h"
 #include "webkit/glue/resource_type.h"
@@ -38,7 +38,7 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   // This will take a reference to the handler.
   CONTENT_EXPORT ResourceDispatcherHostRequestInfo(
       ResourceHandler* handler,
-      ChildProcessInfo::ProcessType process_type,
+      content::ProcessType process_type,
       int child_id,
       int route_id,
       int origin_pid,
@@ -83,7 +83,7 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   void set_ssl_client_auth_handler(SSLClientAuthHandler* s);
 
   // Identifies the type of process (renderer, plugin, etc.) making the request.
-  ChildProcessInfo::ProcessType process_type() const {
+  content::ProcessType process_type() const {
     return process_type_;
   }
 
@@ -221,7 +221,7 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   CrossSiteResourceHandler* cross_site_handler_;  // Non-owning, may be NULL.
   scoped_refptr<ResourceDispatcherHostLoginDelegate> login_delegate_;
   scoped_refptr<SSLClientAuthHandler> ssl_client_auth_handler_;
-  ChildProcessInfo::ProcessType process_type_;
+  content::ProcessType process_type_;
   int child_id_;
   int route_id_;
   int origin_pid_;

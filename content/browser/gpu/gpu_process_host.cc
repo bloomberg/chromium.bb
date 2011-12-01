@@ -251,7 +251,7 @@ GpuProcessHost* GpuProcessHost::FromID(int host_id) {
 }
 
 GpuProcessHost::GpuProcessHost(int host_id)
-    : BrowserChildProcessHost(GPU_PROCESS),
+    : BrowserChildProcessHost(content::PROCESS_TYPE_GPU),
       host_id_(host_id),
       gpu_process_(base::kNullProcessHandle),
       in_process_(false),

@@ -60,7 +60,7 @@ class ChildNotificationTask : public Task {
 }  // namespace
 
 BrowserChildProcessHost::BrowserChildProcessHost(
-    ChildProcessInfo::ProcessType type)
+    content::ProcessType type)
     : ChildProcessInfo(type, -1),
       ALLOW_THIS_IN_INITIALIZER_LIST(client_(this)),
 #if !defined(OS_WIN)
@@ -157,10 +157,12 @@ void BrowserChildProcessHost::OnChildDisconnected() {
       // Report that this child process crashed.
       Notify(content::NOTIFICATION_CHILD_PROCESS_CRASHED);
       UMA_HISTOGRAM_ENUMERATION("ChildProcess.Crashed",
-                                this->type(), MAX_PROCESS);
+                                this->type(),
+                                content::PROCESS_TYPE_MAX);
       if (disconnect_was_alive_) {
         UMA_HISTOGRAM_ENUMERATION("ChildProcess.CrashedWasAlive",
-                                  this->type(), MAX_PROCESS);
+                                  this->type(),
+                                  content::PROCESS_TYPE_MAX);
       }
       break;
     }
@@ -169,10 +171,12 @@ void BrowserChildProcessHost::OnChildDisconnected() {
       // Report that this child process was killed.
       Notify(content::NOTIFICATION_CHILD_PROCESS_WAS_KILLED);
       UMA_HISTOGRAM_ENUMERATION("ChildProcess.Killed",
-                                this->type(), MAX_PROCESS);
+                                this->type(),
+                                content::PROCESS_TYPE_MAX);
       if (disconnect_was_alive_) {
         UMA_HISTOGRAM_ENUMERATION("ChildProcess.KilledWasAlive",
-                                  this->type(), MAX_PROCESS);
+                                  this->type(),
+                                  content::PROCESS_TYPE_MAX);
       }
       break;
     }
@@ -181,7 +185,8 @@ void BrowserChildProcessHost::OnChildDisconnected() {
       // code.
       if (disconnect_was_alive_) {
         UMA_HISTOGRAM_ENUMERATION("ChildProcess.DisconnectedAlive",
-                                  this->type(), MAX_PROCESS);
+                                  this->type(),
+                                  content::PROCESS_TYPE_MAX);
         break;
       }
       disconnect_was_alive_ = true;
@@ -206,7 +211,8 @@ void BrowserChildProcessHost::OnChildDisconnected() {
       break;
   }
   UMA_HISTOGRAM_ENUMERATION("ChildProcess.Disconnected",
-                            this->type(), MAX_PROCESS);
+                            this->type(),
+                            content::PROCESS_TYPE_MAX);
   // Notify in the main loop of the disconnection.
   Notify(content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED);
   OnChildDied();
@@ -248,13 +254,13 @@ void BrowserChildProcessHost::ClientHook::OnProcessLaunched() {
 }
 
 BrowserChildProcessHost::Iterator::Iterator()
-    : all_(true), type_(UNKNOWN_PROCESS) {
+    : all_(true), type_(content::PROCESS_TYPE_UNKNOWN) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO)) <<
           "ChildProcessInfo::Iterator must be used on the IO thread.";
   iterator_ = g_child_process_list.Get().begin();
 }
 
-BrowserChildProcessHost::Iterator::Iterator(ChildProcessInfo::ProcessType type)
+BrowserChildProcessHost::Iterator::Iterator(content::ProcessType type)
     : all_(false), type_(type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO)) <<
           "ChildProcessInfo::Iterator must be used on the IO thread.";

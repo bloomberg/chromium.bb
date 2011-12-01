@@ -10,7 +10,7 @@
 
 ResourceMessageFilter::ResourceMessageFilter(
     int child_id,
-    ChildProcessInfo::ProcessType process_type,
+    content::ProcessType process_type,
     const content::ResourceContext* resource_context,
     URLRequestContextSelector* url_request_context_selector,
     ResourceDispatcherHost* resource_dispatcher_host)
