@@ -93,7 +93,7 @@ class MockSocketStreamDelegate : public net::SocketStream::Delegate {
   }
 
   virtual int OnStartOpenConnection(net::SocketStream* socket,
-                                    net::OldCompletionCallback* callback) {
+                                    const net::CompletionCallback& callback) {
     if (!on_start_open_connection_.is_null())
       on_start_open_connection_.Run();
     return net::OK;
