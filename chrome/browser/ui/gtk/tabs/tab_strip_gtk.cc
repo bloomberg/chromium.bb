@@ -1395,7 +1395,7 @@ void TabStripGtk::HandleGlobalMouseMoveEvent() {
     if (!weak_factory_.HasWeakPtrs()) {
       MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&TabStripGtk::ResizeLayoutTabsWithoutResult,
+          base::Bind(&TabStripGtk::ResizeLayoutTabs,
                      weak_factory_.GetWeakPtr()),
           kResizeTabsTimeMs);
     }
@@ -1560,7 +1560,7 @@ int TabStripGtk::tab_start_x() const {
   return 0;
 }
 
-bool TabStripGtk::ResizeLayoutTabs() {
+void TabStripGtk::ResizeLayoutTabs() {
   weak_factory_.InvalidateWeakPtrs();
   layout_factory_.InvalidateWeakPtrs();
 
@@ -1573,7 +1573,7 @@ bool TabStripGtk::ResizeLayoutTabs() {
   if (mini_tab_count == GetTabCount()) {
     // Only mini tabs, we know the tab widths won't have changed (all mini-tabs
     // have the same width), so there is nothing to do.
-    return false;
+    return;
   }
   TabGtk* first_tab = GetTabAt(mini_tab_count);
   double unselected, selected;
@@ -1582,16 +1582,8 @@ bool TabStripGtk::ResizeLayoutTabs() {
 
   // We only want to run the animation if we're not already at the desired
   // size.
-  if (abs(first_tab->width() - w) > 1) {
+  if (abs(first_tab->width() - w) > 1)
     StartResizeLayoutAnimation();
-    return true;
-  }
-
-  return false;
-}
-
-void TabStripGtk::ResizeLayoutTabsWithoutResult() {
-  ResizeLayoutTabs();
 }
 
 bool TabStripGtk::IsCursorInTabStripZone() const {
