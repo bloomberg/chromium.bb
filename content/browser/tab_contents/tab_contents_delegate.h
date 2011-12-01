@@ -32,6 +32,7 @@ class ListValue;
 namespace content {
 class BrowserContext;
 struct FileChooserParams;
+class IntentsHost;
 class JavaScriptDialogCreator;
 }
 
@@ -333,11 +334,9 @@ class CONTENT_EXPORT TabContentsDelegate {
                                      const string16& title,
                                      const string16& disposition);
 
-  // WebIntent notification handler.
+  // Web Intents notification handler. Takes ownership of the |intents_host|.
   virtual void WebIntentDispatch(TabContents* tab,
-                                 int routing_id,
-                                 const webkit_glue::WebIntentData& intent,
-                                 int intent_id);
+                                 content::IntentsHost* intents_host);
 
   // Result of string search in the page. This includes the number of matches
   // found and the selection rect (in screen coordinates) for the string found.

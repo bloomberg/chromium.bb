@@ -9,6 +9,7 @@
 #include "base/memory/singleton.h"
 #include "content/browser/javascript_dialogs.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/intents_host.h"
 #include "content/public/common/url_constants.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/web_intent_data.h"
@@ -313,9 +314,10 @@ void TabContentsDelegate::RegisterIntentHandler(TabContents* tab,
 
 void TabContentsDelegate::WebIntentDispatch(
     TabContents* tab,
-    int routing_id,
-    const webkit_glue::WebIntentData& intent,
-    int intent_id) {
+    content::IntentsHost* intents_host) {
+  // The caller passes this method ownership of the |intents_host|, but this
+  // empty implementation will not use it, so we delete it immediately.
+  delete intents_host;
 }
 
 void TabContentsDelegate::FindReply(TabContents* tab,

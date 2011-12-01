@@ -1013,9 +1013,7 @@ class Browser : public TabHandlerDelegate,
                                      const string16& title,
                                      const string16& disposition) OVERRIDE;
   virtual void WebIntentDispatch(TabContents* tab,
-                                 int routing_id,
-                                 const webkit_glue::WebIntentData& intent,
-                                 int intent_id) OVERRIDE;
+                                 content::IntentsHost* intents_host) OVERRIDE;
   virtual void UpdatePreferredSize(TabContents* source,
                                    const gfx::Size& pref_size) OVERRIDE;
 

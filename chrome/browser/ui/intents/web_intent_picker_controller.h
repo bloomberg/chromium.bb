@@ -24,6 +24,10 @@ class TabContentsWrapper;
 class WebIntentPicker;
 class WebIntentPickerFactory;
 
+namespace content {
+class IntentsHost;
+}
+
 namespace webkit_glue {
 struct WebIntentServiceData;
 }
@@ -38,14 +42,10 @@ class WebIntentPickerController : public content::NotificationObserver,
                             WebIntentPickerFactory* factory);
   virtual ~WebIntentPickerController();
 
-  // Sets the intent data for which this picker was created. The picker will
-  // copy and hold this data until the user has made a service selection.
-  // |routing_id| is the IPC routing ID of the source renderer.
-  // |intent| is the intent data as created by the client content.
-  // |intent_id| is the ID assigned by the source renderer.
-  void SetIntent(int routing_id,
-                 const webkit_glue::WebIntentData& intent,
-                 int intent_id);
+  // Sets the intent data and return pathway handler object for which
+  // this picker was created. The picker takes ownership of |intents_host|.
+  // |intents_host| must not be NULL.
+  void SetIntentsHost(content::IntentsHost* intents_host);
 
   // Shows the web intent picker for |browser|, given the intent
   // |action| and MIME-type |type|.
@@ -118,15 +118,9 @@ class WebIntentPickerController : public content::NotificationObserver,
   // A count of the outstanding asynchronous calls.
   int pending_async_count_;
 
-  // The routing id of the renderer which launched the intent. Should be the
-  // renderer associated with the TabContents which owns this object.
-  int routing_id_;
-
-  // The intent data from the client.
-  webkit_glue::WebIntentData intent_;
-
-  // The intent ID assigned to this intent by the renderer.
-  int intent_id_;
+  // The routing object for the renderer which launched the intent.
+  // Contains the intent data and a way to signal back to the client page.
+  scoped_ptr<content::IntentsHost> intents_host_;
 
   // Weak pointer to the tab servicing the intent. Remembered in order to
   // close it when a reply is sent.

@@ -16,6 +16,7 @@
 
 IntentInjector::IntentInjector(TabContents* tab_contents)
     : TabContentsObserver(tab_contents),
+      source_tab_(NULL),
       intent_id_(0) {
   DCHECK(tab_contents);
 }
@@ -24,10 +25,8 @@ IntentInjector::~IntentInjector() {
 }
 
 void IntentInjector::TabContentsDestroyed(TabContents* tab) {
-  if (source_tab_.get() != NULL) {
-    scoped_ptr<IPC::Message::Sender> sender;
-    sender.swap(source_tab_);
-    sender->Send(new IntentsMsg_WebIntentReply(
+  if (source_tab_) {
+    source_tab_->Send(new IntentsMsg_WebIntentReply(
         0, webkit_glue::WEB_INTENT_SERVICE_TAB_CLOSED, string16(), intent_id_));
   }
 
@@ -35,13 +34,13 @@ void IntentInjector::TabContentsDestroyed(TabContents* tab) {
 }
 
 void IntentInjector::SourceTabContentsDestroyed(TabContents* tab) {
-  source_tab_.reset(NULL);
+  source_tab_ = NULL;
 }
 
 void IntentInjector::SetIntent(IPC::Message::Sender* source_tab,
                                const webkit_glue::WebIntentData& intent,
                                int intent_id) {
-  source_tab_.reset(source_tab);
+  source_tab_ = source_tab;
   source_intent_.reset(new webkit_glue::WebIntentData(intent));
   intent_id_ = intent_id;
 
@@ -96,12 +95,8 @@ void IntentInjector::OnReply(const IPC::Message& message,
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
     NOTREACHED();
 
-  if (source_tab_.get() != NULL) {
-    // Swap before use since sending this message may cause
-    // TabContentsDestroyed to be called.
-    scoped_ptr<IPC::Message::Sender> sender;
-    sender.swap(source_tab_);
-    sender->Send(new IntentsMsg_WebIntentReply(
+  if (source_tab_) {
+    source_tab_->Send(new IntentsMsg_WebIntentReply(
         0, reply_type, data, intent_id));
   }
 }

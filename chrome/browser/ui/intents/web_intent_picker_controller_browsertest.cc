@@ -19,6 +19,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/intents_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/web_intent_service_data.h"
@@ -98,6 +99,31 @@ class WebIntentPickerFactoryMock : public WebIntentPickerFactory {
   WebIntentPicker* picker_;
 };
 
+class IntentsHostMock : public content::IntentsHost {
+ public:
+  explicit IntentsHostMock(const webkit_glue::WebIntentData& intent)
+      : intent_(intent),
+        dispatched_(false) {}
+
+  virtual const webkit_glue::WebIntentData& GetIntent() {
+    return intent_;
+  }
+
+  virtual void DispatchIntent(TabContents* tab_contents) {
+    dispatched_ = true;
+  }
+
+  virtual void SendReplyMessage(webkit_glue::WebIntentReplyType reply_type,
+                                const string16& data) {
+  }
+
+  virtual void RegisterReplyNotification(const base::Closure&) {
+  }
+
+  webkit_glue::WebIntentData intent_;
+  bool dispatched_;
+};
+
 class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
  protected:
   void AddWebIntentService(const string16& action,
@@ -153,12 +179,15 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, ChooseService) {
   webkit_glue::WebIntentData intent;
   intent.action = ASCIIToUTF16("a");
   intent.type = ASCIIToUTF16("b");
-  controller->SetIntent(1, intent, 1);
+  IntentsHostMock* host = new IntentsHostMock(intent);
+  controller->SetIntentsHost(host);
 
   OnServiceChosen(controller, 1);
   ASSERT_EQ(2, browser()->tab_count());
   EXPECT_EQ(GURL(kServiceURL2),
             browser()->GetSelectedTabContents()->GetURL());
+
+  EXPECT_TRUE(host->dispatched_);
 
   OnSendReturnMessage(controller);
   ASSERT_EQ(1, browser()->tab_count());

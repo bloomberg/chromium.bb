@@ -152,6 +152,7 @@
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/intents_host.h"
 #include "content/public/common/content_restriction.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
@@ -3894,19 +3895,15 @@ void Browser::RegisterIntentHandler(TabContents* tab,
 }
 
 void Browser::WebIntentDispatch(TabContents* tab,
-                                int routing_id,
-                                const webkit_glue::WebIntentData& intent,
-                                int intent_id) {
+                                content::IntentsHost* intents_host) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
     return;
 
   TabContentsWrapper* tcw =
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
-  tcw->web_intent_picker_controller()->SetIntent(routing_id,
-                                                 intent,
-                                                 intent_id);
-  tcw->web_intent_picker_controller()->ShowDialog(this,
-                                                  intent.action, intent.type);
+  tcw->web_intent_picker_controller()->SetIntentsHost(intents_host);
+  tcw->web_intent_picker_controller()->ShowDialog(
+      this, intents_host->GetIntent().action, intents_host->GetIntent().type);
 }
 
 void Browser::FindReply(TabContents* tab,

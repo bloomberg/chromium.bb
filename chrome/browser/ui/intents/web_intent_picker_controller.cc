@@ -22,6 +22,7 @@
 #include "content/browser/intents/intent_injector.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/intents_messages.h"
+#include "content/public/browser/intents_host.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "webkit/glue/web_intent_service_data.h"
@@ -115,8 +116,6 @@ WebIntentPickerController::WebIntentPickerController(
               new FaviconFetcher(this, GetFaviconService(wrapper))),
           picker_(NULL),
           pending_async_count_(0),
-          routing_id_(0),
-          intent_id_(0),
           service_tab_(NULL) {
   NavigationController* controller = &wrapper->controller();
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
@@ -128,13 +127,12 @@ WebIntentPickerController::WebIntentPickerController(
 WebIntentPickerController::~WebIntentPickerController() {
 }
 
-void WebIntentPickerController::SetIntent(
-    int routing_id,
-    const webkit_glue::WebIntentData& intent,
-    int intent_id) {
-  routing_id_ = routing_id;
-  intent_ = intent;
-  intent_id_ = intent_id;
+void WebIntentPickerController::SetIntentsHost(
+    content::IntentsHost* intents_host) {
+  intents_host_.reset(intents_host);
+  intents_host_->RegisterReplyNotification(
+      base::Bind(&WebIntentPickerController::OnSendReturnMessage,
+                 base::Unretained(this)));
 }
 
 void WebIntentPickerController::ShowDialog(Browser* browser,
@@ -161,55 +159,6 @@ void WebIntentPickerController::Observe(
          type == content::NOTIFICATION_TAB_CLOSING);
   ClosePicker();
 }
-
-// Used to forward messages to the source tab from the service context.
-// Also watches the source tab contents, and if it closes, doesn't forward
-// messages.
-class InvokingTabObserver : public TabContentsObserver {
- public:
-  InvokingTabObserver(TabContentsWrapper* wrapper,
-                      IntentInjector* injector,
-                      int routing_id)
-      : TabContentsObserver(wrapper->tab_contents()),
-        wrapper_(wrapper),
-        intent_injector_(injector),
-        routing_id_(routing_id) {}
-  virtual ~InvokingTabObserver() {}
-
-  virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE {
-    if (intent_injector_)
-      intent_injector_->SourceTabContentsDestroyed(tab);
-    wrapper_ = NULL;
-  }
-
-  virtual bool Send(IPC::Message* message) OVERRIDE {
-    // The injector can return exactly one message. After that we don't talk
-    // to it again, since it may have deleted itself.
-    intent_injector_ = NULL;
-
-    if (!wrapper_)
-      return false;
-
-    MessageLoopForUI::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&WebIntentPickerController::OnSendReturnMessage,
-                   base::Unretained(wrapper_->web_intent_picker_controller())));
-
-    message->set_routing_id(routing_id_);
-    return wrapper_->Send(message);
-  }
-
- private:
-  // Weak pointer to the source tab invoking the intent.
-  TabContentsWrapper* wrapper_;
-
-  // Weak pointer to the intent injector managing delivering the intent data to
-  // the service tab.
-  IntentInjector* intent_injector_;
-
-  // Renderer-side object invoking the intent.
-  int routing_id_;
-};
 
 void WebIntentPickerController::OnServiceChosen(size_t index) {
   DCHECK(index < urls_.size());
@@ -238,20 +187,19 @@ void WebIntentPickerController::OnServiceChosen(size_t index) {
     ClosePicker();
   }
 
-  IntentInjector* injector = new IntentInjector(new_tab_contents);
-  injector->SetIntent(new InvokingTabObserver(wrapper_, injector, routing_id_),
-                      intent_,
-                      intent_id_);
+  intents_host_->DispatchIntent(new_tab_contents);
 }
 
 void WebIntentPickerController::OnCancelled() {
-  InvokingTabObserver forwarder(wrapper_, NULL, routing_id_);
+  if (!intents_host_.get())
+    return;
+
   if (service_tab_) {
-    forwarder.Send(new IntentsMsg_WebIntentReply(
-        0, webkit_glue::WEB_INTENT_SERVICE_TAB_CLOSED, string16(), intent_id_));
+    intents_host_->SendReplyMessage(webkit_glue::WEB_INTENT_SERVICE_TAB_CLOSED,
+                                    string16());
   } else {
-    forwarder.Send(new IntentsMsg_WebIntentReply(
-        0, webkit_glue::WEB_INTENT_PICKER_CANCELLED, string16(), intent_id_));
+    intents_host_->SendReplyMessage(webkit_glue::WEB_INTENT_PICKER_CANCELLED,
+                                    string16());
   }
 
   ClosePicker();

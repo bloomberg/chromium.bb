@@ -40,8 +40,9 @@ class CONTENT_EXPORT IntentInjector : public TabContentsObserver {
 
   // Sets the intent data to be injected. Call after the user has selected a
   // service to pass the intent data to that service.
-  // |source_tab| is a sender to use to communicate to the source tab. Takes
-  // ownership of |source_tab|.
+  // |source_tab| is a sender to use to communicate to the source tab. The
+  // caller must ensure that SourceTabContentsDestroyed is called when this
+  // object becomes unusable.
   // |intent| is the intent data from the source
   // |intent_id| is the ID assigned to the intent invocation from the source
   // context.
@@ -62,8 +63,8 @@ class CONTENT_EXPORT IntentInjector : public TabContentsObserver {
   // Source intent data provided by caller.
   scoped_ptr<webkit_glue::WebIntentData> source_intent_;
 
-  // Message forwarder to the tab invoking the intent.
-  scoped_ptr<IPC::Message::Sender> source_tab_;
+  // Weak pointer to the message forwarder to the tab invoking the intent.
+  IPC::Message::Sender* source_tab_;
 
   // Unique ID assigned to the intent by the source tab.
   int intent_id_;
