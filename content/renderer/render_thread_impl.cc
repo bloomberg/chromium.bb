@@ -193,6 +193,7 @@ void RenderThreadImpl::Init() {
   hidden_widget_count_ = 0;
   idle_notification_delay_in_ms_ = kInitialIdleHandlerDelayMs;
   idle_notifications_to_skip_ = 0;
+  compositor_initialized_ = false;
   task_factory_.reset(new ScopedRunnableMethodFactory<RenderThreadImpl>(this));
 
   appcache_dispatcher_.reset(new AppCacheDispatcher(Get()));
@@ -246,7 +247,10 @@ RenderThreadImpl::~RenderThreadImpl() {
     file_thread_->Stop();
 
 #ifdef WEBCOMPOSITOR_HAS_INITIALIZE
-  WebKit::WebCompositor::shutdown();
+  if (compositor_initialized_) {
+    WebKit::WebCompositor::shutdown();
+    compositor_initialized_ = false;
+  }
 #endif
   if (compositor_thread_.get()) {
     RemoveFilter(compositor_thread_->GetMessageFilter());
@@ -446,6 +450,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
     WebKit::WebCompositor::initialize(NULL);
 #endif
   }
+  compositor_initialized_ = true;
 
   WebScriptController::enableV8SingleThreadMode();
 

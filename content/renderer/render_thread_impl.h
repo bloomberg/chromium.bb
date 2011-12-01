@@ -242,6 +242,7 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   // Map of registered v8 extensions. The key is the extension name.
   std::set<std::string> v8_extensions_;
 
+  bool compositor_initialized_;
   scoped_ptr<CompositorThread> compositor_thread_;
 
   ObserverList<content::RenderProcessObserver> observers_;
