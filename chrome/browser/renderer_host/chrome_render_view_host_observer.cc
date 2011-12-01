@@ -122,6 +122,7 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
   if (type == Extension::TYPE_EXTENSION ||
       type == Extension::TYPE_USER_SCRIPT ||
       type == Extension::TYPE_PACKAGED_APP ||
+      type == Extension::TYPE_PLATFORM_APP ||
       (type == Extension::TYPE_HOSTED_APP &&
        extension->location() == Extension::COMPONENT)) {
     Send(new ExtensionMsg_ActivateExtension(extension->id()));

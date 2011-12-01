@@ -560,7 +560,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool is_app() const { return is_app_; }
   bool is_platform_app() const { return is_platform_app_; }
   bool is_hosted_app() const { return is_app() && !web_extent().is_empty(); }
-  bool is_packaged_app() const { return is_app() && web_extent().is_empty(); }
+  bool is_packaged_app() const {
+    return !is_platform_app() && is_app() && web_extent().is_empty();
+  }
   bool is_storage_isolated() const { return is_app() && is_storage_isolated_; }
   const URLPatternSet& web_extent() const { return extent_; }
   const std::string& launch_local_path() const { return launch_local_path_; }
@@ -694,8 +696,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                                std::string* error) const;
   bool CanSpecifyComponentOnlyPermission() const;
   bool CanSpecifyExperimentalPermission() const;
-  bool CanSpecifyPermissionForHostedApp(
-      const ExtensionAPIPermission* api) const;
 
   // Checks whether the host |pattern| is allowed for this extension, given API
   // permissions |permissions|.

@@ -630,6 +630,7 @@ TEST_F(ExtensionManifestTest, HostedAppPermissions) {
   ListValue* permissions = NULL;
   ASSERT_TRUE(manifest->GetList("permissions", &permissions));
 
+  int platform_app = ExtensionAPIPermission::kTypePlatformApp;
   ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
   ExtensionAPIPermissionSet api_perms = info->GetAll();
   for (ExtensionAPIPermissionSet::iterator i = api_perms.begin();
@@ -654,12 +655,12 @@ TEST_F(ExtensionManifestTest, HostedAppPermissions) {
       EXPECT_TRUE(extension->GetActivePermissions()->HasAPIPermission(
           permission->id()));
 
-    } else if (permission->is_platform_app_only()) {
+    } else if (permission->type_restrictions() == platform_app) {
       LoadAndExpectError(Manifest(manifest.get(), name),
                          errors::kPermissionNotAllowed,
                          Extension::INTERNAL,
                          Extension::STRICT_ERROR_CHECKS);
-    } else if (!permission->is_hosted_app()) {
+    } else if (!permission->supports_hosted_apps()) {
       // Most normal extension permissions also aren't available to hosted apps.
       // For these, the error is only reported in strict mode for legacy
       // reasons: crbug.com/101993.
@@ -975,11 +976,12 @@ TEST_F(ExtensionManifestTest, PlatformAppOnlyPermissions) {
 
   ExtensionAPIPermissionSet perms = info->GetAll();
   int count = 0;
+  int platform_app = ExtensionAPIPermission::kTypePlatformApp;
   for (ExtensionAPIPermissionSet::iterator i = perms.begin();
        i != perms.end(); ++i) {
     count += private_perms.count(*i);
     EXPECT_EQ(private_perms.count(*i) > 0,
-              info->GetByID(*i)->is_platform_app_only());
+              info->GetByID(*i)->type_restrictions() == platform_app);
   }
   EXPECT_EQ(1, count);
 
@@ -994,7 +996,8 @@ TEST_F(ExtensionManifestTest, PlatformAppOnlyPermissions) {
   // questions about his permissions.
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess("not_platform_app.json"));
-  scoped_refptr<const ExtensionPermissionSet> permissions;
-  permissions = extension->GetActivePermissions();
-  EXPECT_FALSE(permissions->HasPlatformAppPermissions());
+  ExtensionAPIPermissionSet apis = extension->GetActivePermissions()->apis();
+  for (ExtensionAPIPermissionSet::const_iterator i = apis.begin();
+       i != apis.end(); ++i)
+    EXPECT_NE(platform_app, info->GetByID(*i)->type_restrictions());
 }

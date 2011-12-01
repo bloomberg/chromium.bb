@@ -158,11 +158,35 @@ TEST(ExtensionAPIPermissionTest, HostedAppPermissions) {
   for (ExtensionAPIPermissionSet::iterator i = perms.begin();
        i != perms.end(); ++i) {
     count += hosted_perms.count(*i);
-    EXPECT_EQ(hosted_perms.count(*i) > 0, info->GetByID(*i)->is_hosted_app());
+    EXPECT_EQ(hosted_perms.count(*i) > 0,
+              info->GetByID(*i)->supports_hosted_apps());
   }
 
   EXPECT_EQ(hosted_perms.size(), count);
-  EXPECT_EQ(hosted_perms.size(), info->get_hosted_app_permission_count());
+}
+
+TEST(ExtensionAPIPermissionTest, PlatformAppPermissions) {
+  ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
+  ExtensionAPIPermissionSet blacklist;
+  blacklist.insert(ExtensionAPIPermission::kChromeAuthPrivate);
+  blacklist.insert(ExtensionAPIPermission::kChromePrivate);
+  blacklist.insert(ExtensionAPIPermission::kCookie);
+  blacklist.insert(ExtensionAPIPermission::kTab);
+  blacklist.insert(ExtensionAPIPermission::kWebNavigation);
+  blacklist.insert(ExtensionAPIPermission::kWebRequest);
+  blacklist.insert(ExtensionAPIPermission::kWebRequestBlocking);
+  blacklist.insert(ExtensionAPIPermission::kWebSocketProxyPrivate);
+
+  ExtensionAPIPermissionSet perms = info->GetAll();
+  size_t count = 0;
+  for (ExtensionAPIPermissionSet::iterator i = perms.begin();
+       i != perms.end(); ++i) {
+    count += blacklist.count(*i);
+    EXPECT_EQ(blacklist.count(*i) > 0,
+              !info->GetByID(*i)->supports_platform_apps());
+  }
+
+  EXPECT_EQ(blacklist.size(), count);
 }
 
 TEST(ExtensionAPIPermissionTest, ComponentOnlyPermissions) {

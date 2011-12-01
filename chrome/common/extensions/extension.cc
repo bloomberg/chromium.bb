@@ -365,6 +365,8 @@ Extension::Type Extension::GetType() const {
     return TYPE_THEME;
   if (converted_from_user_script())
     return TYPE_USER_SCRIPT;
+  if (is_platform_app())
+    return TYPE_PLATFORM_APP;
   if (is_hosted_app())
     return TYPE_HOSTED_APP;
   if (is_packaged_app())
@@ -2860,29 +2862,43 @@ bool Extension::CanSpecifyAPIPermission(
     }
   }
 
-  if (is_hosted_app()) {
-    if (!CanSpecifyPermissionForHostedApp(permission)) {
-      // Some old versions of Chrome did not return errors here and we ended up
-      // with extensions in the store containing bad data: crbug.com/101993.
-      //
-      // TODO(aa): Consider just being a lot looser when loading and installing
-      // extensions. We can be strict when packing and in development mode. Then
-      // we won't have to maintain all these tricky backward compat issues:
-      // crbug.com/102328.
-      if (creation_flags_ & STRICT_ERROR_CHECKS) {
-        *error = ExtensionErrorUtils::FormatErrorMessage(
-            errors::kPermissionNotAllowed, permission->name());
-      }
-      return false;
-    }
+  if (location_ == Extension::COMPONENT)
+    return true;
+
+  bool supports_type = false;
+  switch (GetType()) {
+    case TYPE_USER_SCRIPT: // Pass through.
+    case TYPE_EXTENSION:
+      supports_type = permission->supports_extensions();
+      break;
+    case TYPE_HOSTED_APP:
+      supports_type = permission->supports_hosted_apps();
+      break;
+    case TYPE_PACKAGED_APP:
+      supports_type = permission->supports_packaged_apps();
+      break;
+    case TYPE_PLATFORM_APP:
+      supports_type = permission->supports_platform_apps();
+      break;
+    default:
+      supports_type = false;
+      break;
   }
 
-  if (permission->is_platform_app_only()) {
-    if (!is_platform_app()) {
+  if (!supports_type) {
+    // We special case hosted apps because some old versions of Chrome did not
+    // return errors here and we ended up with extensions in the store
+    // containing bad data: crbug.com/101993.
+    //
+    // TODO(aa): Consider just being a lot looser when loading and installing
+    // extensions. We can be strict when packing and in development mode. Then
+    // we won't have to maintain all these tricky backward compat issues:
+    // crbug.com/102328.
+    if (!is_hosted_app() || creation_flags_ & STRICT_ERROR_CHECKS) {
       *error = ExtensionErrorUtils::FormatErrorMessage(
           errors::kPermissionNotAllowed, permission->name());
-      return false;
     }
+    return false;
   }
 
   return true;
@@ -2918,17 +2934,6 @@ bool Extension::CanSpecifyExperimentalPermission() const {
   // whitelist extensions to have access to experimental in just the store, and
   // not have to push a new version of the client.
   if (from_webstore())
-    return true;
-
-  return false;
-}
-
-bool Extension::CanSpecifyPermissionForHostedApp(
-    const ExtensionAPIPermission* permission) const {
-  if (location_ == Extension::COMPONENT)
-    return true;
-
-  if (permission->is_hosted_app())
     return true;
 
   return false;
