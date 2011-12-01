@@ -4,13 +4,14 @@
 
 #include "chrome/browser/chromeos/login/user_manager.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
@@ -34,7 +35,6 @@
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_downloader.h"
@@ -265,7 +265,6 @@ void UserManager::UserLoggedIn(const std::string& email) {
 
   if (logged_in_user == users_.end()) {
     current_user_is_new_ = true;
-    browser_defaults::skip_restore = true;
     logged_in_user_ = CreateUser(email);
   } else {
     logged_in_user_ = *logged_in_user;
