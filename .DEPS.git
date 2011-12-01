@@ -42,6 +42,8 @@ deps = {
         Var('git_url') + '/chromium/src/third_party/lcov.git@ba4a791b2b525fc13d169b4cc671dede09bbfb64',
     'third_party/lss':
         Var('git_url') + '/external/linux-syscall-support/lss.git@a799993a9a4c60ab8ecdff72096edcc84e764d83',
+    'third_party/ply':
+        Var('git_url') + '/chromium/src/third_party/ply.git@85f199de78c81a719d20096120379c704f14082e',
     'third_party/pyftpdlib':
         Var('git_url') + '/chromium/src/third_party/pyftpdlib.git@69a5604ca34948831339ac985216a0fdbfb9f575',
     'third_party/pyftpdlib/src':
