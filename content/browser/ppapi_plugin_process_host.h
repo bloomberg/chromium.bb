@@ -8,10 +8,6 @@
 
 #include <queue>
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
@@ -97,9 +93,6 @@ class PpapiPluginProcessHost
 
   // IPC message handlers.
   void OnRendererPluginChannelCreated(const IPC::ChannelHandle& handle);
-#if defined(OS_WIN)
-  void OnPreCacheFont(const LOGFONT& font);
-#endif
 
   // Handles most requests from the plugin. May be NULL.
   scoped_refptr<PepperMessageFilter> filter_;

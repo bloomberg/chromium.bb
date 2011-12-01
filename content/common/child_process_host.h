@@ -8,13 +8,8 @@
 
 #include <string>
 #include <vector>
-#include <map>
 
 #include "build/build_config.h"
-
-#if defined(OS_WIN)
-#include <windows.h>
-#endif  // defined(OS_WIN)
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -84,13 +79,6 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Channel::Listener,
   //
   // On failure, returns an empty FilePath.
   static FilePath GetChildPath(int flags);
-
-#if defined(OS_WIN)
-  // See comments in the cc file. This is a common hack needed for a process
-  // hosting a sandboxed child process. Hence it lives in this file.
-  static void PreCacheFont(LOGFONT font, int pid);
-  static void ReleaseCachedFonts(int pid);
-#endif  // defined(OS_WIN)
 
   // IPC::Message::Sender implementation.
   virtual bool Send(IPC::Message* message) OVERRIDE;
@@ -164,35 +152,6 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Channel::Listener,
   };
 
   ListenerHook listener_;
-
-#if defined (OS_WIN)
-  class FontCache {
-   public:
-    static FontCache* GetInstance();
-    void PreCacheFont(LOGFONT font, int process_id);
-    void ReleaseCachedFonts(int process_id);
-
-   private:
-    struct CacheElement {
-      CacheElement();
-      ~CacheElement();
-
-      HFONT font_;
-      HDC dc_;
-      int ref_count_;
-    };
-    friend struct DefaultSingletonTraits<FontCache>;
-
-    FontCache();
-    ~FontCache();
-
-    std::map<string16, CacheElement> cache_;
-    std::map<int, std::vector<string16> > process_id_font_map_;
-    base::Lock mutex_;
-
-    DISALLOW_COPY_AND_ASSIGN(FontCache);
-  };
-#endif
 
   bool opening_channel_;  // True while we're waiting the channel to be opened.
   scoped_ptr<IPC::Channel> channel_;

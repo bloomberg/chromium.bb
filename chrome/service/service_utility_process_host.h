@@ -8,10 +8,6 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif  // defined(OS_WIN)
-
 #include <string>
 #include <vector>
 
@@ -131,11 +127,6 @@ class ServiceUtilityProcessHost : public ServiceChildProcessHost {
   // retrieved successfully.
   void OnGetPrinterCapsAndDefaultsFailed(const std::string& printer_name);
 
-#if defined(OS_WIN)  // This hack is Windows-specific.
-  void OnPreCacheFont(const LOGFONT& font);
-  void OnReleaseCachedFonts();
-#endif  // defined(OS_WIN)
-
   // A pointer to our client interface, who will be informed of progress.
   scoped_refptr<Client> client_;
   scoped_refptr<base::MessageLoopProxy> client_message_loop_proxy_;
@@ -144,8 +135,6 @@ class ServiceUtilityProcessHost : public ServiceChildProcessHost {
   FilePath metafile_path_;
   // The temporary folder created for the metafile.
   scoped_ptr<ScopedTempDir> scratch_metafile_dir_;
-  // The unique id created for the process.
-  int process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceUtilityProcessHost);
 };

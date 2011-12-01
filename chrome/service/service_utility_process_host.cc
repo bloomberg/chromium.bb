@@ -13,7 +13,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
-#include "content/common/child_process_info.h"
 #include "ipc/ipc_switches.h"
 #include "printing/page_range.h"
 #include "ui/base/ui_base_switches.h"
@@ -22,7 +21,6 @@
 #if defined(OS_WIN)
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_handle.h"
-#include "content/common/child_process_messages.h"
 #include "printing/emf_win.h"
 #endif
 
@@ -31,7 +29,6 @@ ServiceUtilityProcessHost::ServiceUtilityProcessHost(
         : client_(client),
           client_message_loop_proxy_(client_message_loop_proxy),
           waiting_for_reply_(false) {
-  process_id_ = ChildProcessInfo::GenerateChildProcessUniqueId();
 }
 
 ServiceUtilityProcessHost::~ServiceUtilityProcessHost() {
@@ -137,13 +134,8 @@ void ServiceUtilityProcessHost::OnChildDied() {
 }
 
 bool ServiceUtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
-  bool msg_is_ok = false;
-  IPC_BEGIN_MESSAGE_MAP_EX(ServiceUtilityProcessHost, message, msg_is_ok)
-#if defined(OS_WIN)  // This hack is Windows-specific.
-    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_PreCacheFont, OnPreCacheFont)
-    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ReleaseCachedFonts,
-                        OnReleaseCachedFonts)
-#endif
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(ServiceUtilityProcessHost, message)
     IPC_MESSAGE_HANDLER(
         ChromeUtilityHostMsg_RenderPDFPagesToMetafile_Succeeded,
         OnRenderPDFPagesToMetafileSucceeded)
@@ -154,20 +146,10 @@ bool ServiceUtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
         OnGetPrinterCapsAndDefaultsSucceeded)
     IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Failed,
                         OnGetPrinterCapsAndDefaultsFailed)
-    IPC_MESSAGE_UNHANDLED(msg_is_ok__ = false)
-  IPC_END_MESSAGE_MAP_EX()
-  return true;
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
-
-#if defined(OS_WIN)  // This hack is Windows-specific.
-void ServiceUtilityProcessHost::OnPreCacheFont(const LOGFONT& font) {
-  PreCacheFont(font, process_id_);
-}
-
-void ServiceUtilityProcessHost::OnReleaseCachedFonts() {
-  ReleaseCachedFonts(process_id_);
-}
-#endif  // OS_WIN
 
 void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafileSucceeded(
     int highest_rendered_page_number) {

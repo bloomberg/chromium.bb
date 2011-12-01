@@ -315,18 +315,11 @@ void RenderMessageFilter::OnChannelConnected(int32 peer_id) {
   cpu_usage_sample_time_ = base::TimeTicks::Now();
 }
 
-#if defined (OS_WIN)
-void RenderMessageFilter::OnChannelError() {
-  ChildProcessHost::ReleaseCachedFonts(render_process_id_);
-}
-#endif
-
 bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                                             bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(RenderMessageFilter, message, *message_was_ok)
-#if defined(OS_WIN)
-#if !defined(USE_AURA)
+#if defined(OS_WIN) && !defined(USE_AURA)
     // On Windows, we handle these on the IO thread to avoid a deadlock with
     // plugins.  On non-Windows systems, we need to handle them on the UI
     // thread.
@@ -334,13 +327,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowRect, OnGetWindowRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetRootWindowRect, OnGetRootWindowRect)
 #endif
-
-    // This hack is Windows-specific.
-    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_PreCacheFont, OnPreCacheFont)
-    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ReleaseCachedFonts,
-                        OnReleaseCachedFonts)
-#endif
-
     IPC_MESSAGE_HANDLER(ViewHostMsg_GenerateRoutingID, OnGenerateRoutingID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnMsgCreateWindow)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget)
@@ -540,16 +526,6 @@ void RenderMessageFilter::OnLoadFont(const FontDescriptor& font,
   font_data.GiveToProcess(base::GetCurrentProcessHandle(), handle);
 }
 #endif  // OS_MACOSX
-
-#if defined(OS_WIN)  // This hack is Windows-specific.
-void RenderMessageFilter::OnPreCacheFont(const LOGFONT& font) {
-  ChildProcessHost::PreCacheFont(font, render_process_id_);
-}
-
-void RenderMessageFilter::OnReleaseCachedFonts() {
-  ChildProcessHost::ReleaseCachedFonts(render_process_id_);
-}
-#endif  // OS_WIN
 
 void RenderMessageFilter::OnGetPlugins(
     bool refresh,

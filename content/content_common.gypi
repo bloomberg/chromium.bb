@@ -127,6 +127,8 @@
     'common/file_system/webfilewriter_impl.h',
     'common/file_system_messages.h',
     'common/file_utilities_messages.h',
+    'common/font_cache_dispatcher_win.cc',
+    'common/font_cache_dispatcher_win.h',
     'common/font_config_ipc_linux.cc',
     'common/font_config_ipc_linux.h',
     'common/font_list.h',

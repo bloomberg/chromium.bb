@@ -58,10 +58,6 @@ PpapiPluginProcessHost::~PpapiPluginProcessHost() {
   DVLOG(1) << "PpapiPluginProcessHost" << (is_broker_ ? "[broker]" : "")
            << "~PpapiPluginProcessHost()";
   CancelRequests();
-
-#if defined(OS_WIN)
-  ReleaseCachedFonts(process_id_);
-#endif
 }
 
 PpapiPluginProcessHost* PpapiPluginProcessHost::CreatePluginHost(
@@ -215,9 +211,6 @@ bool PpapiPluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PpapiPluginProcessHost, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_ChannelCreated,
                         OnRendererPluginChannelCreated)
-#if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_PreCacheFont, OnPreCacheFont)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
@@ -295,9 +288,3 @@ void PpapiPluginProcessHost::OnRendererPluginChannelCreated(
 
   client->OnChannelOpened(renderers_plugin_handle, channel_handle);
 }
-
-#if defined(OS_WIN)
-void PpapiPluginProcessHost::OnPreCacheFont(const LOGFONT& font) {
-  PreCacheFont(font, process_id_);
-}
-#endif

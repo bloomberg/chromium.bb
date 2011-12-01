@@ -75,9 +75,6 @@ class RenderMessageFilter : public BrowserMessageFilter {
   // IPC::ChannelProxy::MessageFilter methods:
   virtual void OnChannelClosing() OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-#if defined (OS_WIN)
-  virtual void OnChannelError() OVERRIDE;
-#endif
 
   // BrowserMessageFilter methods:
   virtual bool OnMessageReceived(const IPC::Message& message,
@@ -134,23 +131,13 @@ class RenderMessageFilter : public BrowserMessageFilter {
                   uint32* font_id);
 #endif
 
-#if defined(OS_WIN)
-#if !defined(USE_AURA)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // On Windows, we handle these on the IO thread to avoid a deadlock with
   // plugins.  On non-Windows systems, we need to handle them on the UI thread.
   void OnGetScreenInfo(gfx::NativeViewId window,
                        WebKit::WebScreenInfo* results);
   void OnGetWindowRect(gfx::NativeViewId window, gfx::Rect* rect);
   void OnGetRootWindowRect(gfx::NativeViewId window, gfx::Rect* rect);
-#endif
-
-  // This hack is Windows-specific.
-  // Cache fonts for the renderer. See RenderMessageFilter::OnPreCacheFont
-  // implementation for more details.
-  void OnPreCacheFont(const LOGFONT& font);
-
-  // Release fonts cached for renderer.
-  void OnReleaseCachedFonts();
 #endif
 
   void OnGetPlugins(bool refresh, IPC::Message* reply_msg);

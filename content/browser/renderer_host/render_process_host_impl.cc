@@ -104,6 +104,7 @@
 #if defined(OS_WIN)
 #include <objbase.h>
 #include "base/synchronization/waitable_event.h"
+#include "content/common/font_cache_dispatcher_win.h"
 #endif
 
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -506,6 +507,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetBrowserContext()->GetDatabaseTracker()));
 #if defined(OS_MACOSX)
   channel_->AddFilter(new TextInputClientMessageFilter(GetID()));
+#elif defined(OS_WIN)
+  channel_->AddFilter(new FontCacheDispatcher());
 #endif
 
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
