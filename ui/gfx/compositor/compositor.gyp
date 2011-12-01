@@ -107,6 +107,8 @@
             'sources!': [
               'compositor_cc.cc',
               'compositor_cc.h',
+              'test_web_graphics_context_3d.cc',
+              'test_web_graphics_context_3d.h',
             ],
           }
         ],
