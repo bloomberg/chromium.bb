@@ -23,7 +23,3 @@ SignedSettingsTest.StorePolicyNoPolicyData
 
 # Flaky and not very interesting under Valgrind http://crbug.com/93027
 ProcessWatcherTest.ImmediateTermination
-
-# Failing on CrOS, see http://crbug.com/106041
-GAIAInfoUpdateServiceTest.ShouldUseGAIAProfileInfo
-

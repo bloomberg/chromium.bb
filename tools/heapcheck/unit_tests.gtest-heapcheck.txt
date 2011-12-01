@@ -27,6 +27,3 @@ GViewRequestInterceptorTest.DoNotInterceptPdfWhenEnabled
 
 # Crashing on CrOS. http://crbug.com/105335
 BrowserMainTest.WarmConnectionFieldTrial_WarmestSocket
-
-# Fails under Heapcheck. http://crbug.com/106041
-GAIAInfoUpdateServiceTest.ShouldUseGAIAProfileInfo
