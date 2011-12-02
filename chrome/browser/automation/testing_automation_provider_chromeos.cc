@@ -1128,11 +1128,3 @@ void TestingAutomationProvider::PowerChanged(
     const chromeos::PowerSupplyStatus& status) {
   power_status = status;
 }
-
-void TestingAutomationProvider::LockScreen() {
-  // Not used, but defined to make clang happy with the overloaded name.
-}
-
-void TestingAutomationProvider::UnlockScreen() {
-  // Not used, but defined to make clang happy with the overloaded name.
-}

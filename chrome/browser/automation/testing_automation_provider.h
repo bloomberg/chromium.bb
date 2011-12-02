@@ -1344,8 +1344,6 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // chromeos::PowerManagerClient::Observer overrides.
   virtual void PowerChanged(const chromeos::PowerSupplyStatus& status) OVERRIDE;
-  virtual void LockScreen() OVERRIDE;
-  virtual void UnlockScreen() OVERRIDE;
 
 #endif  // defined(OS_CHROMEOS)
 
