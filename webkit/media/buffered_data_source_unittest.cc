@@ -17,7 +17,6 @@
 using ::testing::_;
 using ::testing::Assign;
 using ::testing::Invoke;
-using ::testing::Mock;
 using ::testing::StrictMock;
 using ::testing::NiceMock;
 
@@ -55,14 +54,6 @@ class MockBufferedDataSource : public BufferedDataSource {
         .WillByDefault(Assign(&loading_, true));
     ON_CALL(*url_loader, cancel())
         .WillByDefault(Assign(&loading_, false));
-
-    // TODO(scherkus): this is a real leak detected by http://crbug.com/100914
-    // but the fix will have to wait for a more invasive follow up patch.
-    //
-    // If you're curious what the fix is, we no longer need the reference
-    // counting added to BufferedResourceLoader in r23274 since we started
-    // using WebURLLoader in r69429.
-    Mock::AllowLeak(url_loader);
 
     loader->SetURLLoaderForTest(url_loader);
     return loader;
@@ -162,8 +153,12 @@ class BufferedDataSourceTest : public testing::Test {
   }
 
   // Accessors for private variables on |data_source_|.
-  BufferedResourceLoader* loader() { return data_source_->loader_.get(); }
-  WebURLLoader* url_loader() { return loader()->url_loader_.get(); }
+  BufferedResourceLoader* loader() {
+    return data_source_->loader_.get();
+  }
+  WebURLLoader* url_loader() {
+    return loader()->active_loader_->loader_.get();
+  }
 
   media::Preload preload() { return data_source_->preload_; }
   BufferedResourceLoader::DeferStrategy defer_strategy() {
@@ -405,6 +400,10 @@ TEST_F(BufferedDataSourceTest, SetBitrate) {
   EXPECT_NE(old_loader, loader());
   EXPECT_EQ(1234, loader_bitrate());
 
+  // During teardown we'll also report our final network status.
+  EXPECT_CALL(host_, SetNetworkActivity(true));
+  EXPECT_CALL(host_, SetBufferedBytes(4000000));
+
   EXPECT_TRUE(data_source_->loading());
   EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
   Stop();
@@ -427,6 +426,10 @@ TEST_F(BufferedDataSourceTest, SetPlaybackRate) {
   // Verify loader changed but still has same playback rate.
   EXPECT_NE(old_loader, loader());
 
+  // During teardown we'll also report our final network status.
+  EXPECT_CALL(host_, SetNetworkActivity(true));
+  EXPECT_CALL(host_, SetBufferedBytes(4000000));
+
   EXPECT_TRUE(data_source_->loading());
   EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
   Stop();
@@ -445,7 +448,7 @@ TEST_F(BufferedDataSourceTest, Read) {
 
   // During teardown we'll also report our final network status.
   EXPECT_CALL(host_, SetBufferedBytes(kDataSize));
-  EXPECT_CALL(host_, SetNetworkActivity(false));
+  //EXPECT_CALL(host_, SetNetworkActivity(false));
 
   EXPECT_TRUE(data_source_->loading());
   Stop();

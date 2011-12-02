@@ -53,15 +53,6 @@ enum NetworkState {
   LOADING
 };
 
-// Submit a request completed event to the resource loader due to request
-// being canceled. Pretending the event is from external.
-ACTION_P(RequestCanceled, loader) {
-  WebURLError error;
-  error.reason = net::ERR_ABORTED;
-  error.domain = WebString::fromUTF8(net::kErrorDomain);
-  loader->didFail(NULL, error);
-}
-
 // Predicate that tests that request disallows compressed data.
 static bool CorrectAcceptEncoding(const WebKit::WebURLRequest &request) {
   std::string value = request.httpHeaderField(
@@ -121,10 +112,6 @@ class BufferedResourceLoaderTest : public testing::Test {
 
   void FullResponse(int64 instance_size, int status) {
     EXPECT_CALL(*this, StartCallback(status));
-    if (status != net::OK) {
-      EXPECT_CALL(*url_loader_, cancel())
-          .WillOnce(RequestCanceled(loader_));
-    }
 
     WebURLResponse response(gurl_);
     response.setHTTPHeaderField(WebString::fromUTF8("Content-Length"),
@@ -202,8 +189,7 @@ class BufferedResourceLoaderTest : public testing::Test {
 
   void StopWhenLoad() {
     InSequence s;
-    EXPECT_CALL(*url_loader_, cancel())
-        .WillOnce(RequestCanceled(loader_));
+    EXPECT_CALL(*url_loader_, cancel());
     loader_->Stop();
     loader_ = NULL;
   }
@@ -276,7 +262,7 @@ class BufferedResourceLoaderTest : public testing::Test {
   }
 
   void ConfirmLoaderDeferredState(bool expectedVal) {
-    EXPECT_EQ(loader_->deferred_, expectedVal);
+    EXPECT_EQ(loader_->active_loader_->deferred(), expectedVal);
   }
 
   // Makes sure the |loader_| buffer window is in a reasonable range.
@@ -329,13 +315,12 @@ TEST_F(BufferedResourceLoaderTest, BadHttpResponse) {
   Start();
 
   EXPECT_CALL(*this, StartCallback(net::ERR_FAILED));
-  EXPECT_CALL(*url_loader_, cancel())
-      .WillOnce(RequestCanceled(loader_));
 
   WebURLResponse response(gurl_);
   response.setHTTPStatusCode(404);
   response.setHTTPStatusText("Not Found\n");
   loader_->didReceiveResponse(url_loader_, response);
+  StopWhenLoad();
 }
 
 // Tests that partial content is requested but not fulfilled.
@@ -343,6 +328,7 @@ TEST_F(BufferedResourceLoaderTest, NotPartialResponse) {
   Initialize(kHttpUrl, 100, -1);
   Start();
   FullResponse(1024, net::ERR_INVALID_RESPONSE);
+  StopWhenLoad();
 }
 
 // Tests that a 200 response is received.
@@ -388,8 +374,6 @@ TEST_F(BufferedResourceLoaderTest, InvalidPartialResponse) {
   Start();
 
   EXPECT_CALL(*this, StartCallback(net::ERR_INVALID_RESPONSE));
-  EXPECT_CALL(*url_loader_, cancel())
-      .WillOnce(RequestCanceled(loader_));
 
   WebURLResponse response(gurl_);
   response.setHTTPHeaderField(WebString::fromUTF8("Content-Range"),
@@ -398,6 +382,7 @@ TEST_F(BufferedResourceLoaderTest, InvalidPartialResponse) {
   response.setExpectedContentLength(10);
   response.setHTTPStatusCode(kHttpPartialContent);
   loader_->didReceiveResponse(url_loader_, response);
+  StopWhenLoad();
 }
 
 // Tests the logic of sliding window for data buffering and reading.
@@ -529,8 +514,8 @@ TEST_F(BufferedResourceLoaderTest, ReadOutsideBuffer) {
   // The following call cannot be fulfilled now.
   ReadLoader(25, 10, buffer);
 
-  EXPECT_CALL(*this, ReadCallback(5));
   EXPECT_CALL(*this, NetworkCallback());
+  EXPECT_CALL(*this, ReadCallback(5));
   loader_->didFinishLoading(url_loader_, 0);
 }
 
@@ -543,8 +528,8 @@ TEST_F(BufferedResourceLoaderTest, RequestFailedWhenRead) {
   InSequence s;
 
   ReadLoader(10, 10, buffer);
-  EXPECT_CALL(*this, ReadCallback(net::ERR_FAILED));
   EXPECT_CALL(*this, NetworkCallback());
+  EXPECT_CALL(*this, ReadCallback(net::ERR_FAILED));
   WebURLError error;
   error.reason = net::ERR_FAILED;
   loader_->didFail(url_loader_, error);
@@ -583,9 +568,6 @@ TEST_F(BufferedResourceLoaderTest, ReadThenDeferStrategy) {
   uint8 buffer[10];
 
   // Make an outstanding read request.
-  // We should disable deferring after the read request, so expect
-  // a network event.
-  EXPECT_CALL(*this, NetworkCallback());
   ReadLoader(10, 10, buffer);
 
   // Receive almost enough data to cover, shouldn't defer.

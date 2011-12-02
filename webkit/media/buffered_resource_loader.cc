@@ -93,7 +93,6 @@ static void ComputeTargetBufferWindow(float playback_rate, int bitrate,
     std::swap(*out_forward_capacity, *out_backward_capacity);
 }
 
-
 BufferedResourceLoader::BufferedResourceLoader(
     const GURL& url,
     int64 first_byte_position,
@@ -102,9 +101,7 @@ BufferedResourceLoader::BufferedResourceLoader(
     int bitrate,
     float playback_rate,
     media::MediaLog* media_log)
-    : deferred_(false),
-      defer_strategy_(strategy),
-      completed_(false),
+    : defer_strategy_(strategy),
       range_requested_(false),
       range_supported_(false),
       saved_forward_capacity_(0),
@@ -120,7 +117,6 @@ BufferedResourceLoader::BufferedResourceLoader(
       read_buffer_(NULL),
       first_offset_(0),
       last_offset_(0),
-      keep_test_loader_(false),
       bitrate_(bitrate),
       playback_rate_(playback_rate),
       media_log_(media_log) {
@@ -132,10 +128,7 @@ BufferedResourceLoader::BufferedResourceLoader(
   buffer_.reset(new media::SeekableBuffer(backward_capacity, forward_capacity));
 }
 
-BufferedResourceLoader::~BufferedResourceLoader() {
-  if (!completed_ && url_loader_.get())
-    url_loader_->cancel();
-}
+BufferedResourceLoader::~BufferedResourceLoader() {}
 
 void BufferedResourceLoader::Start(
     const net::CompletionCallback& start_callback,
@@ -157,10 +150,6 @@ void BufferedResourceLoader::Start(
     offset_ = first_byte_position_;
   }
 
-  // Increment the reference count right before we start the request. This
-  // reference will be release when this request has ended.
-  AddRef();
-
   // Prepare the request.
   WebURLRequest request(url_);
   request.setTargetType(WebURLRequest::TargetIsMedia);
@@ -179,17 +168,21 @@ void BufferedResourceLoader::Start(
       WebString::fromUTF8(net::HttpRequestHeaders::kAcceptEncoding),
       WebString::fromUTF8("identity;q=1, *;q=0"));
 
-  // This flag is for unittests as we don't want to reset |url_loader|
-  if (!keep_test_loader_) {
+  // Check for our test WebURLLoader.
+  WebURLLoader* loader = NULL;
+  if (test_loader_.get()) {
+    loader = test_loader_.release();
+  } else {
     WebURLLoaderOptions options;
     options.allowCredentials = true;
     options.crossOriginRequestPolicy =
         WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
-    url_loader_.reset(frame->createAssociatedURLLoader(options));
+    loader = frame->createAssociatedURLLoader(options);
   }
 
   // Start the resource loading.
-  url_loader_->loadAsynchronously(request, this);
+  loader->loadAsynchronously(request, this);
+  active_loader_.reset(new ActiveLoader(this, loader));
 }
 
 void BufferedResourceLoader::Stop() {
@@ -206,16 +199,8 @@ void BufferedResourceLoader::Stop() {
   // Destroy internal buffer.
   buffer_.reset();
 
-  if (url_loader_.get()) {
-    if (deferred_)
-      url_loader_->setDefersLoading(false);
-    deferred_ = false;
-
-    if (!completed_) {
-      url_loader_->cancel();
-      completed_ = true;
-    }
-  }
+  // Cancel and reset any active loaders.
+  active_loader_.reset();
 }
 
 void BufferedResourceLoader::Read(
@@ -223,9 +208,10 @@ void BufferedResourceLoader::Read(
     int read_size,
     uint8* buffer,
     const net::CompletionCallback& read_callback) {
+  DCHECK(start_callback_.is_null());
   DCHECK(read_callback_.is_null());
-  DCHECK(buffer_.get());
   DCHECK(!read_callback.is_null());
+  DCHECK(buffer_.get());
   DCHECK(buffer);
   DCHECK_GT(read_size, 0);
 
@@ -292,9 +278,7 @@ void BufferedResourceLoader::Read(
     }
 
     // Make sure we stop deferring now that there's additional capacity.
-    //
-    // XXX: can we DCHECK(url_loader_.get()) at this point in time?
-    if (deferred_)
+    if (active_loader_->deferred())
       SetDeferred(false);
 
     DCHECK(!ShouldEnableDefer())
@@ -326,16 +310,15 @@ bool BufferedResourceLoader::range_supported() {
 }
 
 bool BufferedResourceLoader::is_downloading_data() {
-  return !completed_ && !deferred_;
+  return active_loader_.get() && !active_loader_->deferred();
 }
 
 const GURL& BufferedResourceLoader::url() {
   return url_;
 }
 
-void BufferedResourceLoader::SetURLLoaderForTest(WebURLLoader* mock_loader) {
-  url_loader_.reset(mock_loader);
-  keep_test_loader_ = true;
+void BufferedResourceLoader::SetURLLoaderForTest(WebURLLoader* test_loader) {
+  test_loader_.reset(test_loader);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -371,6 +354,7 @@ void BufferedResourceLoader::didReceiveResponse(
     WebURLLoader* loader,
     const WebURLResponse& response) {
   VLOG(1) << "didReceiveResponse: " << response.httpStatusCode();
+  DCHECK(active_loader_.get());
 
   // The loader may have been stopped and |start_callback| is destroyed.
   // In this case we shouldn't do anything.
@@ -408,7 +392,6 @@ void BufferedResourceLoader::didReceiveResponse(
 
     if (error != net::OK) {
       DoneStart(error);
-      Stop();
       return;
     }
   } else {
@@ -436,8 +419,7 @@ void BufferedResourceLoader::didReceiveData(
     int data_length,
     int encoded_data_length) {
   VLOG(1) << "didReceiveData: " << data_length << " bytes";
-
-  DCHECK(!completed_);
+  DCHECK(active_loader_.get());
   DCHECK_GT(data_length, 0);
 
   // If this loader has been stopped, |buffer_| would be destroyed.
@@ -485,9 +467,11 @@ void BufferedResourceLoader::didFinishLoading(
     WebURLLoader* loader,
     double finishTime) {
   VLOG(1) << "didFinishLoading";
+  DCHECK(active_loader_.get());
 
-  DCHECK(!completed_);
-  completed_ = true;
+  // We're done with the loader.
+  active_loader_.reset();
+  NotifyNetworkEvent();
 
   // If we didn't know the |instance_size_| we do now.
   if (instance_size_ == kPositionNotSpecified) {
@@ -496,10 +480,13 @@ void BufferedResourceLoader::didFinishLoading(
 
   // If there is a start callback, run it.
   if (!start_callback_.is_null()) {
+    DCHECK(read_callback_.is_null())
+        << "Shouldn't have a read callback during start";
     DoneStart(net::OK);
+    return;
   }
 
-  // If there is a pending read but the request has ended, returns with what
+  // If there is a pending read but the request has ended, return with what
   // we have.
   if (HasPendingRead()) {
     // Make sure we have a valid buffer before we satisfy a read request.
@@ -514,38 +501,30 @@ void BufferedResourceLoader::didFinishLoading(
 
   // There must not be any outstanding read request.
   DCHECK(!HasPendingRead());
-
-  // Notify that network response is completed.
-  NotifyNetworkEvent();
-
-  url_loader_.reset();
-  Release();
 }
 
 void BufferedResourceLoader::didFail(
     WebURLLoader* loader,
     const WebURLError& error) {
   VLOG(1) << "didFail: " << error.reason;
+  DCHECK(active_loader_.get());
 
-  DCHECK(!completed_);
-  completed_ = true;
+  // We don't need to continue loading after failure.
+  active_loader_->Cancel();
+  NotifyNetworkEvent();
 
-  // If there is a start callback, run it.
+  // Don't leave start callbacks hanging around.
   if (!start_callback_.is_null()) {
+    DCHECK(read_callback_.is_null())
+        << "Shouldn't have a read callback during start";
     DoneStart(error.reason);
+    return;
   }
 
-  // If there is a pending read but the request failed, return with the
-  // reason for the error.
+  // Don't leave read callbacks hanging around.
   if (HasPendingRead()) {
     DoneRead(error.reason);
   }
-
-  // Notify that network response is completed.
-  NotifyNetworkEvent();
-
-  url_loader_.reset();
-  Release();
 }
 
 bool BufferedResourceLoader::HasSingleOrigin() const {
@@ -594,26 +573,23 @@ void BufferedResourceLoader::UpdateBufferWindow() {
 }
 
 void BufferedResourceLoader::UpdateDeferBehavior() {
-  if (!url_loader_.get() || !buffer_.get())
+  if (!active_loader_.get() || !buffer_.get())
     return;
 
   // If necessary, toggle defer state and continue/pause downloading data
   // accordingly.
   if (ShouldEnableDefer() || ShouldDisableDefer())
-    SetDeferred(!deferred_);
+    SetDeferred(!active_loader_->deferred());
 }
 
 void BufferedResourceLoader::SetDeferred(bool deferred) {
-  deferred_ = deferred;
-  if (url_loader_.get()) {
-    url_loader_->setDefersLoading(deferred);
-    NotifyNetworkEvent();
-  }
+  active_loader_->SetDeferred(deferred);
+  NotifyNetworkEvent();
 }
 
-bool BufferedResourceLoader::ShouldEnableDefer() {
+bool BufferedResourceLoader::ShouldEnableDefer() const {
   // If we're already deferring, then enabling makes no sense.
-  if (deferred_)
+  if (active_loader_->deferred())
     return false;
 
   switch(defer_strategy_) {
@@ -633,9 +609,9 @@ bool BufferedResourceLoader::ShouldEnableDefer() {
   return false;
 }
 
-bool BufferedResourceLoader::ShouldDisableDefer() {
+bool BufferedResourceLoader::ShouldDisableDefer() const {
   // If we're not deferring, then disabling makes no sense.
-  if (!deferred_)
+  if (!active_loader_->deferred())
     return false;
 
   switch(defer_strategy_) {
@@ -662,7 +638,7 @@ bool BufferedResourceLoader::ShouldDisableDefer() {
   return false;
 }
 
-bool BufferedResourceLoader::CanFulfillRead() {
+bool BufferedResourceLoader::CanFulfillRead() const {
   // If we are reading too far in the backward direction.
   if (first_offset_ < 0 &&
       first_offset_ + static_cast<int>(buffer_->backward_bytes()) < 0)
@@ -674,7 +650,7 @@ bool BufferedResourceLoader::CanFulfillRead() {
 
   // At the point, we verified that first byte requested is within the buffer.
   // If the request has completed, then just returns with what we have now.
-  if (completed_)
+  if (!active_loader_.get())
     return true;
 
   // If the resource request is still active, make sure the whole requested
@@ -685,7 +661,7 @@ bool BufferedResourceLoader::CanFulfillRead() {
   return true;
 }
 
-bool BufferedResourceLoader::WillFulfillRead() {
+bool BufferedResourceLoader::WillFulfillRead() const {
   // Trying to read too far behind.
   if (first_offset_ < 0 &&
       first_offset_ + static_cast<int>(buffer_->backward_bytes()) < 0)
@@ -698,7 +674,7 @@ bool BufferedResourceLoader::WillFulfillRead() {
 
   // The resource request has completed, there's no way we can fulfill the
   // read request.
-  if (completed_)
+  if (!active_loader_.get())
     return false;
 
   return true;
@@ -764,8 +740,6 @@ std::string BufferedResourceLoader::GenerateHeaders(
 }
 
 void BufferedResourceLoader::DoneRead(int error) {
-  read_callback_.Run(error);
-  read_callback_.Reset();
   if (buffer_.get() && saved_forward_capacity_) {
     buffer_->set_forward_capacity(saved_forward_capacity_);
     saved_forward_capacity_ = 0;
@@ -776,11 +750,16 @@ void BufferedResourceLoader::DoneRead(int error) {
   first_offset_ = 0;
   last_offset_ = 0;
   Log();
+
+  net::CompletionCallback read_callback;
+  std::swap(read_callback, read_callback_);
+  read_callback.Run(error);
 }
 
 void BufferedResourceLoader::DoneStart(int error) {
-  start_callback_.Run(error);
-  start_callback_.Reset();
+  net::CompletionCallback start_callback;
+  std::swap(start_callback, start_callback_);
+  start_callback.Run(error);
 }
 
 void BufferedResourceLoader::NotifyNetworkEvent() {

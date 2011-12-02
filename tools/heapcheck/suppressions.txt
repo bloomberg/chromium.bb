@@ -1772,30 +1772,6 @@
    fun:ProfileSyncService::Shutdown
 }
 {
-   bug_100914_a
-   Heapcheck:Leak
-   ...
-   fun:webkit_media::MockBufferedDataSource::CreateMockResourceLoader
-}
-{
-   bug_100914_b
-   Heapcheck:Leak
-   ...
-   fun:BufferedDataSourceTest
-}
-{
-   bug_100914_c
-   Heapcheck:Leak
-   ...
-   fun:webkit_media::BufferedDataSourceTest::Initialize
-}
-{
-   bug_100914_d
-   Heapcheck:Leak
-   fun:webkit_media::MockBufferedDataSource::MockBufferedDataSource
-   fun:webkit_media::BufferedDataSourceTest::BufferedDataSourceTest
-}
-{
    bug_106109
    Heapcheck:Leak
    ...
@@ -1809,4 +1785,3 @@
    fun:AccessibilityEventRouterViewsTest::CreateWindowWithContents
    fun:AccessibilityEventRouterViewsTest_TestFocusNotification_Test::TestBody
 }
-

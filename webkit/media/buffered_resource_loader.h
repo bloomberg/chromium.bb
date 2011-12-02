@@ -17,6 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoader.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
+#include "webkit/media/active_loader.h"
 #include "webkit/media/web_data_source.h"
 #include "webkit/media/webmediaplayer_impl.h"
 
@@ -83,7 +84,10 @@ class BufferedResourceLoader
                      const base::Closure& event_callback,
                      WebKit::WebFrame* frame);
 
-  // Stop this loader, cancels and request and release internal buffer.
+  // Stops everything associated with this loader, including active URL loads
+  // and pending callbacks.
+  //
+  // It is safe to delete a BufferedResourceLoader after calling Stop().
   virtual void Stop();
 
   // Reads the specified |read_size| from |position| into |buffer| and when
@@ -122,8 +126,11 @@ class BufferedResourceLoader
   // Returns resulting URL.
   virtual const GURL& url();
 
-  // Used to inject a mock used for unittests.
-  virtual void SetURLLoaderForTest(WebKit::WebURLLoader* mock_loader);
+  // Transfer ownership of an existing WebURLLoader instance for
+  // testing purposes.
+  //
+  // |test_loader| will get used the next time Start() is called.
+  virtual void SetURLLoaderForTest(WebKit::WebURLLoader* test_loader);
 
   // WebKit::WebURLLoaderClient implementation.
   virtual void willSendRequest(
@@ -181,11 +188,11 @@ class BufferedResourceLoader
 
   // Returns true if we should defer resource loading, based
   // on current buffering scheme.
-  bool ShouldEnableDefer();
+  bool ShouldEnableDefer() const;
 
   // Returns true if we should enable resource loading, based
   // on current buffering scheme.
-  bool ShouldDisableDefer();
+  bool ShouldDisableDefer() const;
 
   // Updates deferring behavior based on current buffering scheme.
   void UpdateDeferBehavior();
@@ -196,10 +203,10 @@ class BufferedResourceLoader
 
   // Returns true if the current read request can be fulfilled by what is in
   // the buffer.
-  bool CanFulfillRead();
+  bool CanFulfillRead() const;
 
   // Returns true if the current read request will be fulfilled in the future.
-  bool WillFulfillRead();
+  bool WillFulfillRead() const;
 
   // Method that does the actual read and calls the |read_callback_|, assuming
   // the request range is in |buffer_|.
@@ -238,14 +245,11 @@ class BufferedResourceLoader
   // A sliding window of buffer.
   scoped_ptr<media::SeekableBuffer> buffer_;
 
-  // True if resource loading was deferred.
-  bool deferred_;
+  // Keeps track of an active WebURLLoader and associated state.
+  scoped_ptr<ActiveLoader> active_loader_;
 
   // Current buffering algorithm in place for resource loading.
   DeferStrategy defer_strategy_;
-
-  // True if resource loading has completed.
-  bool completed_;
 
   // True if a range request was made.
   bool range_requested_;
@@ -255,9 +259,6 @@ class BufferedResourceLoader
 
   // Forward capacity to reset to after an extension.
   size_t saved_forward_capacity_;
-
-  // Does the work of loading and sends data back to this client.
-  scoped_ptr<WebKit::WebURLLoader> url_loader_;
 
   GURL url_;
   int64 first_byte_position_;
@@ -285,8 +286,8 @@ class BufferedResourceLoader
   int first_offset_;
   int last_offset_;
 
-  // Used to ensure mocks for unittests are used instead of reset in Start().
-  bool keep_test_loader_;
+  // Injected WebURLLoader instance for testing purposes.
+  scoped_ptr<WebKit::WebURLLoader> test_loader_;
 
   // Bitrate of the media. Set to 0 if unknown.
   int bitrate_;

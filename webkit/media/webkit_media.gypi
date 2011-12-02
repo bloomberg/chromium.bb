@@ -14,6 +14,8 @@
         '<(DEPTH)/skia/skia.gyp:skia',
       ],
       'sources': [
+        'active_loader.cc',
+        'active_loader.h',
         'audio_decoder.cc',
         'audio_decoder.h',
         'buffered_data_source.cc',
