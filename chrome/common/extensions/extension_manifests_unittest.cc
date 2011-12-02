@@ -588,12 +588,8 @@ TEST_F(ExtensionManifestTest, Sidebar) {
             extension->sidebar_defaults()->default_page().spec());
 }
 
-TEST_F(ExtensionManifestTest, DisallowHybridApps) {
-  LoadAndExpectError("disallow_hybrid_1.json",
-      ExtensionErrorUtils::FormatErrorMessage(
-          errors::kHostedAppsCannotIncludeExtensionFeatures,
-          keys::kBrowserAction));
-  LoadAndExpectError("disallow_hybrid_2.json",
+TEST_F(ExtensionManifestTest, BackgroundPermission) {
+  LoadAndExpectError("background_permission.json",
                      errors::kBackgroundPermissionNeeded);
 }
 
@@ -742,9 +738,7 @@ TEST_F(ExtensionManifestTest, NormalizeIconPaths) {
 }
 
 TEST_F(ExtensionManifestTest, DisallowMultipleUISurfaces) {
-  LoadAndExpectError("multiple_ui_surfaces_1.json", errors::kOneUISurfaceOnly);
-  LoadAndExpectError("multiple_ui_surfaces_2.json", errors::kOneUISurfaceOnly);
-  LoadAndExpectError("multiple_ui_surfaces_3.json", errors::kOneUISurfaceOnly);
+  LoadAndExpectError("multiple_ui_surfaces.json", errors::kOneUISurfaceOnly);
 }
 
 TEST_F(ExtensionManifestTest, ParseHomepageURLs) {

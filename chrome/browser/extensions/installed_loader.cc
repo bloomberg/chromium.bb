@@ -15,6 +15,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/browser/user_metrics.h"
@@ -141,7 +142,7 @@ void InstalledLoader::LoadAllExtensions() {
       if (extension.get()) {
         extensions_info->at(i)->extension_manifest.reset(
             static_cast<DictionaryValue*>(
-                extension->manifest_value()->DeepCopy()));
+                extension->manifest()->value()->DeepCopy()));
         should_write_prefs = true;
       }
     }

@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/manifest.h"
 #include "content/public/common/common_param_traits.h"
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params()
@@ -49,10 +50,11 @@ ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
     extension_manifest_keys::kVersion,
   };
 
-  // Copy only the data we need.
+  // Copy only the data we need and bypass the manifest type checks.
+  DictionaryValue* source = extension->manifest()->value();
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRendererExtensionKeys); ++i) {
     Value* temp = NULL;
-    if (extension->manifest_value()->Get(kRendererExtensionKeys[i], &temp))
+    if (source->Get(kRendererExtensionKeys[i], &temp))
       manifest->Set(kRendererExtensionKeys[i], temp->DeepCopy());
   }
 }

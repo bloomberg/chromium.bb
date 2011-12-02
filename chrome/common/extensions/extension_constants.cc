@@ -166,8 +166,8 @@ const char kExpectString[] = "Expect string value.";
 const char kExperimentalFlagRequired[] =
     "Loading extensions with 'experimental' permission requires"
     " --enable-experimental-extension-apis command line flag.";
-const char kHostedAppsCannotIncludeExtensionFeatures[] =
-    "Hosted apps cannot use the extension feature '*'.";
+const char kFeatureNotAllowed[] =
+    "Feature '*' is not allowed in this type of manifest.";
 const char kInvalidAllFrames[] =
     "Invalid value for 'content_scripts[*].all_frames'.";
 const char kInvalidBackground[] =
@@ -429,8 +429,6 @@ const char kReservedMessageFound[] =
 const char kSidebarExperimental[] =
     "You must request the 'experimental' permission in order to use the"
     " Sidebar API.";
-const char kThemesCannotContainExtensions[] =
-    "A theme cannot contain extensions code.";
 #if defined(OS_CHROMEOS)
 const char kIllegalPlugins[] =
     "Extensions cannot install plugins on Chrome OS";
