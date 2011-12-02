@@ -38,7 +38,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and V8 without interference from each other.
-  "v8_revision": "10136",
+  "v8_revision": "10089",
   "webrtc_revision": "1027",
   "jsoncpp_revision": "246",
 }
@@ -104,7 +104,7 @@ deps = {
     (Var("googlecode_url") % "gyp") + "/trunk@1101",
 
   "src/v8":
-    (Var("googlecode_url") % "v8") + "/branches/3.7@" + Var("v8_revision"),
+    (Var("googlecode_url") % "v8") + "/trunk@" + Var("v8_revision"),
 
   "src/native_client":
     Var("nacl_trunk") + "/src/native_client@" + Var("nacl_revision"),
