@@ -434,7 +434,7 @@ sub parselicense($) {
 	$license = "MIT/X11 (BSD like) $license";
     }
 
-    if ($licensetext  =~ /Permission to use, copy, modify, and(\/or)? distribute this software for any purpose with or without fee is hereby granted, provided.*copyright notice.*permission notice.*all copies/) {
+    if ($licensetext  =~ /Permission to use, copy, modify, and(\/or)? distribute this software for any purpose (with or )?without fee is hereby granted, provided.*(copyright|entire) notice.*all copies/) {
 	$license = "ISC $license";
     }
 
