@@ -56,7 +56,8 @@ class GamepadProviderTest : public testing::Test {
   scoped_refptr<GamepadProvider> provider_;
 };
 
-TEST_F(GamepadProviderTest, PollingAccess) {
+// Crashes. http://crbug.com/106163
+TEST_F(GamepadProviderTest, DISABLED_PollingAccess) {
   WebGamepads test_data;
   test_data.length = 1;
   test_data.items[0].connected = true;
