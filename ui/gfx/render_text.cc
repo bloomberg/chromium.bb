@@ -511,6 +511,7 @@ void RenderText::SetSelectionModel(const SelectionModel& model) {
   selection_model_.set_caret_placement(model.caret_placement());
 
   cached_bounds_and_offset_valid_ = false;
+  UpdateLayout();
 }
 
 size_t RenderText::GetIndexOfPreviousGrapheme(size_t position) {
