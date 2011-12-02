@@ -5308,6 +5308,47 @@
    fun:_ZN33AccessibilityEventRouterViewsTest24CreateWindowWithContentsEPN5views4ViewE
    fun:_ZN60AccessibilityEventRouterViewsTest_TestFocusNotification_Test8TestBodyEv
 }
+{
+   bug_106183a
+   Memcheck:Uninitialized
+   fun:_ZN7WebCore13RenderMarquee18updateMarqueeStyleEv
+   fun:_ZN7WebCore11RenderLayer12styleChangedENS_15StyleDifferenceEPKNS_11RenderStyleE
+   fun:_ZN7WebCore20RenderBoxModelObject14styleDidChangeENS_15StyleDifferenceEPKNS_11RenderStyleE
+   fun:_ZN7WebCore9RenderBox14styleDidChangeENS_15StyleDifferenceEPKNS_11RenderStyleE
+   fun:_ZN7WebCore11RenderBlock14styleDidChangeENS_15StyleDifferenceEPKNS_11RenderStyleE
+   fun:_ZN7WebCore12RenderObject8setStyleEN3WTF10PassRefPtrINS_11RenderStyleEEE
+   fun:_ZN7WebCore12RenderObject18setAnimatableStyleEN3WTF10PassRefPtrINS_11RenderStyleEEE
+   fun:_ZN7WebCore19NodeRendererFactory14createRendererEv
+   fun:_ZN7WebCore19NodeRendererFactory22createRendererIfNeededEv
+   fun:_ZN7WebCore4Node22createRendererIfNeededEv
+   fun:_ZN7WebCore7Element6attachEv
+}
+{
+   bug_106183b
+   Memcheck:Uninitialized
+   fun:_ZN7WebCore21ComplexTextController10setPaddingEi
+   fun:_ZN7WebCore21ComplexTextControllerC1ERKNS_7TextRunEiijjjPKNS_4FontE
+   fun:_ZNK7WebCore4Font27selectionRectForComplexTextERKNS_7TextRunERKNS_10FloatPointEiii
+   fun:_ZNK7WebCore4Font20selectionRectForTextERKNS_7TextRunERKNS_10FloatPointEiii
+   fun:_ZNK7WebCore13InlineTextBox17positionForOffsetEi
+   fun:_ZN7WebCore10RenderText14localCaretRectEPNS_9InlineBoxEiPi
+   fun:_ZNK7WebCore15VisiblePosition14localCaretRectERPNS_12RenderObjectE
+   fun:_ZN7WebCore9CaretBase15updateCaretRectEPNS_8DocumentERKNS_15VisiblePositionE
+   fun:_ZN7WebCore14FrameSelection14localCaretRectEv
+   fun:_ZN7WebCore14FrameSelection18recomputeCaretRectEv
+   fun:_ZN7WebCore14FrameSelection16updateAppearanceEv
+   fun:_ZN7WebCore9FrameView22performPostLayoutTasksEv
+   fun:_ZN7WebCore9FrameView6layoutEb
+   fun:_ZN7WebCore8Document12updateLayoutEv
+   fun:_ZN7WebCore8Document36updateLayoutIgnorePendingStylesheetsEv
+   fun:_ZN7WebCore19ReplacementFragment30insertFragmentForTestRenderingEPNS_4NodeE
+   fun:_ZN7WebCore19ReplacementFragmentC1EPNS_8DocumentEPNS_16DocumentFragmentEbRKNS_16VisibleSelectionE
+   fun:_ZN7WebCore23ReplaceSelectionCommand7doApplyEv
+   fun:_ZN7WebCore11EditCommand5applyEv
+   fun:_ZN7WebCore12applyCommandEN3WTF10PassRefPtrINS_11EditCommandEEE
+   fun:_ZN7WebCoreL21executeInsertFragmentEPNS_5FrameEN3WTF10PassRefPtrINS_16DocumentFragmentEEE
+   fun:_ZN7WebCoreL17executeInsertHTMLEPNS_5FrameEPNS_5EventENS_19EditorCommandSourceERKN3WTF6StringE
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
