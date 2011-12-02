@@ -828,7 +828,10 @@ class DrMemory(BaseTool):
         raise RuntimeError, "Configuring python children failed "
 
     suppression_count = 0
-    for suppression_file in self._options.suppressions:
+    supp_files = self._options.suppressions
+    if self.handle_uninits_and_leaks:
+      supp_files += [s.replace(".txt", "_full.txt") for s in supp_files]
+    for suppression_file in supp_files:
       if os.path.exists(suppression_file):
         suppression_count += 1
         proc += ["-suppress", common.NormalizeWindowsPath(suppression_file)]
