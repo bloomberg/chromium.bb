@@ -3783,6 +3783,9 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_TASK_MANAGER_NOTIFICATION_PREFIX" desc="The prefix for a Desktop Notification in the Task Manager">
         Notification: <ph name="NOTIFICATION_NAME">$1<ex>http://www.domain.com</ex></ph>
       </message>
+      <message name="IDS_TASK_MANAGER_INSTANT_PREVIEW_PREFIX" desc="The prefix for an Instant preview in the Task Manager">
+        Instant: <ph name="INSTANT_PREVIEW_NAME">$1<ex>http://www.google.com/</ex></ph>
+      </message>
 
       <!-- Theme preview info bar -->
       <message name="IDS_THEME_INSTALL_INFOBAR_LABEL" desc="Text displayed on an infobar when a theme has been installed.">

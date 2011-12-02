@@ -98,6 +98,10 @@ class TaskManagerTabContentsResource : public TaskManagerRendererResource {
   explicit TaskManagerTabContentsResource(TabContentsWrapper* tab_contents);
   virtual ~TaskManagerTabContentsResource();
 
+  // Called when the underlying tab_contents has been committed, and is thus no
+  // longer an Instant preview.
+  void InstantCommitted();
+
   // TaskManager::Resource methods:
   virtual Type GetType() const OVERRIDE;
   virtual string16 GetTitle() const OVERRIDE;
@@ -114,6 +118,7 @@ class TaskManagerTabContentsResource : public TaskManagerRendererResource {
 
   static SkBitmap* prerender_icon_;
   TabContentsWrapper* tab_contents_;
+  bool is_instant_preview_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerTabContentsResource);
 };
@@ -140,6 +145,7 @@ class TaskManagerTabContentsResourceProvider
 
   void Add(TabContentsWrapper* tab_contents);
   void Remove(TabContentsWrapper* tab_contents);
+  void Update(TabContentsWrapper* tab_contents);
 
   void AddToTaskManager(TabContentsWrapper* tab_contents);
 

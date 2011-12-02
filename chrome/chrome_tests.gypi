@@ -542,6 +542,7 @@
         'browser/mouseleave_interactive_uitest.cc',
         'browser/notifications/notifications_interactive_uitest.cc',
         'browser/npapi_interactive_test.cc',
+        'browser/task_manager/task_manager_browsertest_util.cc',
         'browser/ui/gtk/bookmarks/bookmark_bar_gtk_interactive_uitest.cc',
         'browser/ui/omnibox/omnibox_view_browsertest.cc',
         'browser/ui/panels/panel_browsertest.cc',

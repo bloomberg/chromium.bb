@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
@@ -14,6 +15,8 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/task_manager/task_manager.h"
+#include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -29,6 +32,8 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // Tests are flaky on Linux because of http://crbug.com/80118.
 #if defined(OS_LINUX)
@@ -800,6 +805,28 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(PageVisibilityTest)) {
   ASSERT_TRUE(PressEnter());
   EXPECT_EQ(preview_contents, browser()->GetSelectedTabContents());
   ASSERT_TRUE(CheckVisibilityIs(preview_contents, true));
+}
+
+// Tests that the task manager identifies instant's preview tab correctly.
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(TaskManagerPrefix)) {
+  // The browser starts with one new tab, so the task manager should have two
+  // rows initially, one for the browser process and one for tab's renderer.
+  TaskManagerModel* task_manager = TaskManager::GetInstance()->model();
+  task_manager->StartUpdating();
+  TaskManagerBrowserTestUtil::WaitForResourceChange(2);
+
+  ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
+  SetupInstantProvider("instant.html");
+  DetermineInstantSupport();
+  SearchAndWaitForPreviewToShow();
+
+  // Now there should be three rows, the third being the instant preview.
+  TaskManagerBrowserTestUtil::WaitForResourceChange(3);
+  string16 prefix = l10n_util::GetStringFUTF16(
+      IDS_TASK_MANAGER_INSTANT_PREVIEW_PREFIX, string16());
+  string16 title = task_manager->GetResourceTitle(2);
+  EXPECT_TRUE(StartsWith(title, prefix, true)) << title << " vs " << prefix;
 }
 
 // Tests the INSTANT experiment of the field trial.

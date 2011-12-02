@@ -25,6 +25,7 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -70,8 +71,11 @@ namespace {
 
 // Returns the appropriate message prefix ID for tabs and extensions,
 // reflecting whether they are apps or in incognito mode.
-int GetMessagePrefixID(bool is_app, bool is_extension,
-                       bool is_incognito, bool is_prerender) {
+int GetMessagePrefixID(bool is_app,
+                       bool is_extension,
+                       bool is_incognito,
+                       bool is_prerender,
+                       bool is_instant_preview) {
   if (is_app) {
     if (is_incognito)
       return IDS_TASK_MANAGER_APP_INCOGNITO_PREFIX;
@@ -84,6 +88,8 @@ int GetMessagePrefixID(bool is_app, bool is_extension,
       return IDS_TASK_MANAGER_EXTENSION_PREFIX;
   } else if (is_prerender) {
     return IDS_TASK_MANAGER_PRERENDER_PREFIX;
+  } else if (is_instant_preview) {
+    return IDS_TASK_MANAGER_INSTANT_PREVIEW_PREFIX;
   } else {
     return IDS_TASK_MANAGER_TAB_PREFIX;
   }
@@ -216,14 +222,28 @@ TaskManagerTabContentsResource::TaskManagerTabContentsResource(
     : TaskManagerRendererResource(
           tab_contents->tab_contents()->GetRenderProcessHost()->GetHandle(),
           tab_contents->render_view_host()),
-      tab_contents_(tab_contents) {
+      tab_contents_(tab_contents),
+      is_instant_preview_(false) {
   if (!prerender_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     prerender_icon_ = rb.GetBitmapNamed(IDR_PRERENDER);
   }
+  for (BrowserList::const_iterator i = BrowserList::begin();
+       i != BrowserList::end(); ++i) {
+    if ((*i)->instant() &&
+        (*i)->instant()->GetPreviewContents() == tab_contents_) {
+      is_instant_preview_ = true;
+      break;
+    }
+  }
 }
 
 TaskManagerTabContentsResource::~TaskManagerTabContentsResource() {
+}
+
+void TaskManagerTabContentsResource::InstantCommitted() {
+  DCHECK(is_instant_preview_);
+  is_instant_preview_ = false;
 }
 
 bool TaskManagerTabContentsResource::IsPrerendering() const {
@@ -279,7 +299,8 @@ string16 TaskManagerTabContentsResource::GetTitle() const {
       is_app,
       HostsExtension(),
       tab_contents_->profile()->IsOffTheRecord(),
-      IsPrerendering());
+      IsPrerendering(),
+      is_instant_preview_);
   return l10n_util::GetStringFUTF16(message_id, tab_title);
 }
 
@@ -376,6 +397,8 @@ void TaskManagerTabContentsResourceProvider::StartUpdating() {
   // (http://crbug.com/7321).
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, chrome::NOTIFICATION_INSTANT_COMMITTED,
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 void TaskManagerTabContentsResourceProvider::StopUpdating() {
@@ -394,6 +417,9 @@ void TaskManagerTabContentsResourceProvider::StopUpdating() {
       content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Remove(
       this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+      content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Remove(
+      this, chrome::NOTIFICATION_INSTANT_COMMITTED,
       content::NotificationService::AllBrowserContextsAndSources());
 
   // Delete all the resources.
@@ -456,12 +482,27 @@ void TaskManagerTabContentsResourceProvider::Remove(
   delete resource;
 }
 
+void TaskManagerTabContentsResourceProvider::Update(
+    TabContentsWrapper* tab_contents) {
+  if (!updating_)
+    return;
+  std::map<TabContentsWrapper*, TaskManagerTabContentsResource*>::iterator
+      iter = resources_.find(tab_contents);
+  DCHECK(iter != resources_.end());
+  if (iter != resources_.end())
+    iter->second->InstantCommitted();
+}
+
 void TaskManagerTabContentsResourceProvider::Observe(int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  TabContentsWrapper* tab_contents =
-      TabContentsWrapper::GetCurrentWrapperForContents(
-          content::Source<TabContents>(source).ptr());
+  TabContentsWrapper* tab_contents;
+  if (type == chrome::NOTIFICATION_INSTANT_COMMITTED) {
+    tab_contents = content::Source<TabContentsWrapper>(source).ptr();
+  } else {
+    tab_contents = TabContentsWrapper::GetCurrentWrapperForContents(
+        content::Source<TabContents>(source).ptr());
+  }
   // A background page does not have a TabContentsWrapper.
   if (!tab_contents)
     return;
@@ -481,6 +522,9 @@ void TaskManagerTabContentsResourceProvider::Observe(int type,
       // Fall through.
     case content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED:
       Remove(tab_contents);
+      break;
+    case chrome::NOTIFICATION_INSTANT_COMMITTED:
+      Update(tab_contents);
       break;
     default:
       NOTREACHED() << "Unexpected notification.";
@@ -1073,7 +1117,7 @@ TaskManagerExtensionProcessResource::TaskManagerExtensionProcessResource(
   DCHECK(!extension_name.empty());
 
   int message_id = GetMessagePrefixID(GetExtension()->is_app(), true,
-      extension_host_->profile()->IsOffTheRecord(), false);
+      extension_host_->profile()->IsOffTheRecord(), false, false);
   title_ = l10n_util::GetStringFUTF16(message_id, extension_name);
 }
 
