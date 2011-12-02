@@ -51,6 +51,7 @@ d3dx9_43.dll: %(VersionDir)s\
 D3DCompiler_43.dll: %(VersionDir)s\
 libEGL.dll: %(VersionDir)s\
 libGLESv2.dll: %(VersionDir)s\
+xinput1_3.dll: %(VersionDir)s\
 default_apps\*.crx: %(VersionDir)s\default_apps\
 default_apps\external_extensions.json: %(VersionDir)s\default_apps\
 

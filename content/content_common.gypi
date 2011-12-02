@@ -323,5 +323,29 @@
         ],
       },
     }],
+    ['OS=="win" and directxsdk_exists=="True"', {
+      'actions': [
+      {
+        'action_name': 'extract_xinput',
+        'variables': {
+          'input': 'APR2007_xinput_x86.cab',
+          'output': 'xinput1_3.dll',
+        },
+        'inputs': [
+          '../third_party/directxsdk/files/Redist/<(input)',
+        ],
+        'outputs': [
+          '<(PRODUCT_DIR)/<(output)',
+        ],
+        'action': [
+          'python',
+        '../build/extract_from_cab.py',
+        '..\\third_party\\directxsdk\\files\\Redist\\<(input)',
+        '<(output)',
+        '<(PRODUCT_DIR)',
+        ],
+      },
+     ]
+    }]
   ],
 }
