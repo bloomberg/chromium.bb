@@ -63,7 +63,7 @@ function minimizeWindow(theWindow) {
 function testWindowState(windowType) {
   // Specifying size prevents 'panel' windows from computing size asynchronously. It ensures
   // panel sizes stay fixed through the test.
-  chrome.windows.create({'url': 'hello.html', 'type': windowType, 'width':100, 'height':100 },
+  chrome.windows.create({'url': 'hello.html', 'type': windowType, 'width':200, 'height':300 },
     pass(minimizeWindow));
 }
 
