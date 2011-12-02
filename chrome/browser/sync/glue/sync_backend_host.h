@@ -235,11 +235,6 @@ class SyncBackendHost {
     return sync_data_folder_path_;
   }
 
-  // Returns the authenticated username of the sync user, or empty if none
-  // exists. It will only exist if the authentication service provider (e.g
-  // GAIA) has confirmed the username is authentic.
-  string16 GetAuthenticatedUsername() const;
-
   // Determines if the underlying sync engine has made any local changes to
   // items that have not yet been synced with the server.
   // ONLY CALL THIS IF OnInitializationComplete was called!

@@ -315,11 +315,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Returns a user-friendly string form of last synced time (in minutes).
   virtual string16 GetLastSyncedTimeString() const;
 
-  // Returns the authenticated username of the sync user, or empty if none
-  // exists. It will only exist if the authentication service provider (e.g
-  // GAIA) has confirmed the username is authentic.
-  virtual string16 GetAuthenticatedUsername() const;
-
   const std::string& last_attempted_user_email() const {
     return last_attempted_user_email_;
   }

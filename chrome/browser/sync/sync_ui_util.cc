@@ -8,6 +8,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -20,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -43,6 +45,8 @@ void GetStatusLabelsForAuthError(const AuthError& auth_error,
                                  string16* global_error_menu_label,
                                  string16* global_error_bubble_message,
                                  string16* global_error_bubble_accept_label) {
+  string16 username = UTF8ToUTF16(service.profile()->GetPrefs()->GetString(
+      prefs::kGoogleServicesUsername));
   string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   if (link_label)
     link_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL));
@@ -53,7 +57,7 @@ void GetStatusLabelsForAuthError(const AuthError& auth_error,
     case AuthError::ACCOUNT_DISABLED:
       // If the user name is empty then the first login failed, otherwise the
       // credentials are out-of-date.
-      if (service.GetAuthenticatedUsername().empty()) {
+      if (username.empty()) {
         if (status_label) {
           status_label->assign(
               l10n_util::GetStringUTF16(IDS_SYNC_INVALID_USER_CREDENTIALS));
@@ -78,7 +82,6 @@ void GetStatusLabelsForAuthError(const AuthError& auth_error,
       }
       break;
     case AuthError::SERVICE_UNAVAILABLE:
-      DCHECK(service.GetAuthenticatedUsername().empty());
       if (status_label) {
         status_label->assign(
             l10n_util::GetStringUTF16(IDS_SYNC_SERVICE_UNAVAILABLE));
@@ -134,10 +137,12 @@ void GetStatusLabelsForAuthError(const AuthError& auth_error,
 // empty string is returned.
 string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
                                    StatusLabelStyle style) {
-  string16 label;
-  string16 user_name(service->GetAuthenticatedUsername());
-  if (user_name.empty())
-    return label;
+  if (!service->sync_initialized())
+    return string16();
+
+  string16 user_name = UTF8ToUTF16(service->profile()->GetPrefs()->GetString(
+      prefs::kGoogleServicesUsername));
+  DCHECK(!user_name.empty());
 
   // Message may also carry additional advice with an HTML link, if acceptable.
   switch (style) {

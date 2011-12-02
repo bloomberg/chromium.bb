@@ -343,11 +343,6 @@ const SyncSessionSnapshot* SyncBackendHost::GetLastSessionSnapshot() const {
   return last_snapshot_.get();
 }
 
-string16 SyncBackendHost::GetAuthenticatedUsername() const {
-  DCHECK(initialized());
-  return UTF8ToUTF16(core_->sync_manager()->GetAuthenticatedUsername());
-}
-
 bool SyncBackendHost::HasUnsyncedItems() const {
   DCHECK(initialized());
   return core_->sync_manager()->HasUnsyncedItems();

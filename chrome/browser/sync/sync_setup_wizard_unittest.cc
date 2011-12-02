@@ -9,6 +9,8 @@
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_service_mock_builder.h"
+#include "chrome/browser/prefs/testing_pref_store.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/signin_manager.h"
@@ -202,6 +204,9 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
     profile()->CreateBookmarkModel(false);
     // Wait for the bookmarks model to load.
     profile()->BlockUntilBookmarkModelLoaded();
+    PrefService* prefs = profile()->GetPrefs();
+    prefs->SetString(prefs::kGoogleServicesUsername, kTestUser);
+
     set_browser(new Browser(Browser::TYPE_TABBED, profile()));
     browser()->set_window(window());
     BrowserList::SetLastActive(browser());

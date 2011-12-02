@@ -1057,13 +1057,6 @@ string16 ProfileSyncService::GetLastSyncedTimeString() const {
   return TimeFormat::TimeElapsed(last_synced);
 }
 
-string16 ProfileSyncService::GetAuthenticatedUsername() const {
-  if (backend_.get() && backend_initialized_)
-    return backend_->GetAuthenticatedUsername();
-  else
-    return string16();
-}
-
 void ProfileSyncService::OnUserSubmittedAuth(
     const std::string& username, const std::string& password,
     const std::string& captcha, const std::string& access_code) {

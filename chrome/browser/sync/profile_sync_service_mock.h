@@ -21,7 +21,12 @@
 class ProfileSyncServiceMock : public ProfileSyncService {
  public:
   ProfileSyncServiceMock();
+  explicit ProfileSyncServiceMock(Profile* profile);
   virtual ~ProfileSyncServiceMock();
+
+  // A utility used by sync tests to create a TestingProfile with a Google
+  // Services username stored in a (Testing)PrefService.
+  static Profile* MakeSignedInTestingProfile();
 
   MOCK_METHOD0(DisableForUser, void());
   MOCK_METHOD2(OnBackendInitialized,

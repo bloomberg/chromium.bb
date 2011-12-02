@@ -4,7 +4,9 @@
 
 #include <set>
 #include "base/basictypes.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "content/test/test_browser_thread.h"
@@ -42,14 +44,6 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
   EXPECT_CALL(*service, HasSyncSetupCompleted())
               .WillRepeatedly(Return(is_signed_in));
 
-  if (error_state == GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
-    EXPECT_CALL(*service, GetAuthenticatedUsername())
-                .WillRepeatedly(Return(UTF8ToUTF16("")));
-  } else {
-    EXPECT_CALL(*service, GetAuthenticatedUsername())
-                .WillRepeatedly(Return(UTF8ToUTF16("foo")));
-  }
-
   GoogleServiceAuthError auth_error(error_state);
   EXPECT_CALL(*service, GetAuthError()).WillRepeatedly(ReturnRef(auth_error));
 
@@ -66,7 +60,9 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
 TEST(SyncUIUtilTest, ConstructAboutInformationWithUnrecoverableErrorTest) {
   MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
-  NiceMock<ProfileSyncServiceMock> service;
+  scoped_ptr<Profile> profile(
+      ProfileSyncServiceMock::MakeSignedInTestingProfile());
+  NiceMock<ProfileSyncServiceMock> service(profile.get());
   DictionaryValue strings;
 
   // Will be released when the dictionary is destroyed
@@ -99,7 +95,9 @@ TEST(SyncUIUtilTest, ConstructAboutInformationWithUnrecoverableErrorTest) {
 TEST(SyncUIUtilTest, PassphraseGlobalError) {
   MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
-  NiceMock<ProfileSyncServiceMock> service;
+  scoped_ptr<Profile> profile(
+      ProfileSyncServiceMock::MakeSignedInTestingProfile());
+  NiceMock<ProfileSyncServiceMock> service(profile.get());
 
   EXPECT_CALL(service, IsPassphraseRequired())
               .WillOnce(Return(true));
@@ -115,7 +113,9 @@ TEST(SyncUIUtilTest, PassphraseGlobalError) {
 TEST(SyncUIUtilTest, AuthStateGlobalError) {
   MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
-  NiceMock<ProfileSyncServiceMock> service;
+  scoped_ptr<Profile> profile(
+      ProfileSyncServiceMock::MakeSignedInTestingProfile());
+  NiceMock<ProfileSyncServiceMock> service(profile.get());
 
   browser_sync::SyncBackendHost::Status status;
   EXPECT_CALL(service, QueryDetailedSyncStatus())
@@ -210,8 +210,6 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
          GoogleServiceAuthError::SERVICE_UNAVAILABLE);
       EXPECT_CALL(service, unrecoverable_error_detected())
                   .WillOnce(Return(false));
-      EXPECT_CALL(service, GetAuthenticatedUsername())
-                  .Times(AtMost(1)).WillRepeatedly(Return(ASCIIToUTF16("")));
       EXPECT_CALL(service, GetAuthError())
                   .WillOnce(ReturnRef(**auth_error));
       EXPECT_CALL(service, UIShouldDepictAuthInProgress())
@@ -249,8 +247,6 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
                   .WillOnce(ReturnRef(**auth_error));
       EXPECT_CALL(service, unrecoverable_error_detected())
                   .WillOnce(Return(false));
-      EXPECT_CALL(service, GetAuthenticatedUsername())
-                  .WillOnce(Return(ASCIIToUTF16("example@example.com")));
       EXPECT_CALL(service, UIShouldDepictAuthInProgress())
                   .WillOnce(Return(false));
       EXPECT_CALL(service, IsPassphraseRequired())
@@ -271,8 +267,6 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
                   .WillOnce(ReturnRef(**auth_error));
       EXPECT_CALL(service, unrecoverable_error_detected())
                   .WillOnce(Return(false));
-      EXPECT_CALL(service, GetAuthenticatedUsername())
-                  .WillOnce(Return(ASCIIToUTF16("example@example.com")));
       EXPECT_CALL(service, UIShouldDepictAuthInProgress())
                   .WillOnce(Return(false));
       EXPECT_CALL(service, IsPassphraseRequired())
@@ -288,11 +282,11 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
 // will return a unique combination of status and link messages from
 // GetStatusLabels().
 TEST(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
-  ProfileSyncServiceMock service;
-
   std::set<string16> messages;
   for (int idx = 0; idx != NUMBER_OF_STATUS_CASES; idx++) {
-    ProfileSyncServiceMock service;
+    scoped_ptr<Profile> profile(
+        ProfileSyncServiceMock::MakeSignedInTestingProfile());
+    ProfileSyncServiceMock service(profile.get());
     GoogleServiceAuthError* auth_error = NULL;
     GetDistinctCase(service, &auth_error, idx);
     string16 status_label;
@@ -316,9 +310,10 @@ TEST(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
 // This test ensures that the html_links parameter on GetStatusLabels() is
 // honored.
 TEST(SyncUIUtilTest, HtmlNotIncludedInStatusIfNotRequested) {
-  ProfileSyncServiceMock service;
   for (int idx = 0; idx != NUMBER_OF_STATUS_CASES; idx++) {
-    ProfileSyncServiceMock service;
+    scoped_ptr<Profile> profile(
+        ProfileSyncServiceMock::MakeSignedInTestingProfile());
+    ProfileSyncServiceMock service(profile.get());
     GoogleServiceAuthError* auth_error = NULL;
     GetDistinctCase(service, &auth_error, idx);
     string16 status_label;

@@ -879,6 +879,9 @@ void LoginUtilsImpl::StartSync(
 
     // Set the CrOS user by getting this constructor run with the
     // user's email on first retrieval.
+    // TODO(tim): Tidy this up once cros_user is gone (part of bug 93922).
+    user_profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                        username_);
     user_profile->GetProfileSyncService(username_)->SetPassphrase(
         password_, false);
     username_ = "";

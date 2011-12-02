@@ -13,7 +13,9 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"
@@ -115,10 +117,12 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const ListValue* args) {
     return;
   if (sync_service_->HasSyncSetupCompleted()) {
     sync_service_->ShowErrorUI();
+    string16 user = UTF8ToUTF16(sync_service_->profile()->GetPrefs()->GetString(
+        prefs::kGoogleServicesUsername));
     DictionaryValue value;
     value.SetString("syncEnabledMessage",
                     l10n_util::GetStringFUTF16(IDS_SYNC_NTP_SYNCED_TO,
-                        sync_service_->GetAuthenticatedUsername()));
+                    user));
     web_ui_->CallJavascriptFunction("syncAlreadyEnabled", value);
   } else {
     // User clicked the 'Start now' link to begin syncing.

@@ -726,11 +726,6 @@ void SyncManager::StartConfigurationMode(const base::Closure& callback) {
       browser_sync::SyncScheduler::CONFIGURATION_MODE, callback);
 }
 
-const std::string& SyncManager::GetAuthenticatedUsername() {
-  DCHECK(data_);
-  return data_->username_for_share();
-}
-
 bool SyncManager::SyncInternal::Init(
     const FilePath& database_location,
     const WeakHandle<JsEventHandler>& event_handler,

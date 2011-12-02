@@ -103,10 +103,8 @@ void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
     args->SetBoolean("editable_user", true);
   } else {
     string16 user;
-    if (!service->cros_user().empty())
-      user = UTF8ToUTF16(service->cros_user());
-    else
-      user = service->GetAuthenticatedUsername();
+    user = UTF8ToUTF16(service->profile()->GetPrefs()->GetString(
+        prefs::kGoogleServicesUsername));
     args->SetString("user", user);
     args->SetInteger("error", 0);
     args->SetBoolean("editable_user", user.empty());
@@ -496,7 +494,9 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
     }
     case SyncSetupWizard::DONE:
     case SyncSetupWizard::ABORT:
-      flow_handler_->ShowSetupDone(service_->GetAuthenticatedUsername());
+      flow_handler_->ShowSetupDone(UTF8ToUTF16(
+          service_->profile()->GetPrefs()->GetString(
+          prefs::kGoogleServicesUsername)));
       break;
     default:
       NOTREACHED() << "Invalid advance state: " << state;
