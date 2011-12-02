@@ -171,6 +171,48 @@ static MimeTypeToDownloadContent kMapMimeTypeToDownloadContent[] = {
   {"application/x-chrome-extension", DOWNLOAD_CONTENT_CRX},
 };
 
+enum DownloadImage {
+  DOWNLOAD_IMAGE_UNRECOGNIZED = 0,
+  DOWNLOAD_IMAGE_GIF = 1,
+  DOWNLOAD_IMAGE_JPEG = 2,
+  DOWNLOAD_IMAGE_PNG = 3,
+  DOWNLOAD_IMAGE_TIFF = 4,
+  DOWNLOAD_IMAGE_ICON = 5,
+  DOWNLOAD_IMAGE_WEBP = 6,
+  DOWNLOAD_IMAGE_MAX = 7,
+};
+
+struct MimeTypeToDownloadImage {
+  const char* mime_type;
+  DownloadImage download_image;
+};
+
+static MimeTypeToDownloadImage kMapMimeTypeToDownloadImage[] = {
+  {"image/gif", DOWNLOAD_IMAGE_GIF},
+  {"image/jpeg", DOWNLOAD_IMAGE_JPEG},
+  {"image/png", DOWNLOAD_IMAGE_PNG},
+  {"image/tiff", DOWNLOAD_IMAGE_TIFF},
+  {"image/vnd.microsoft.icon", DOWNLOAD_IMAGE_ICON},
+  {"image/webp", DOWNLOAD_IMAGE_WEBP},
+};
+
+void RecordDownloadImageType(const std::string& mime_type_string) {
+  DownloadImage download_image = DOWNLOAD_IMAGE_UNRECOGNIZED;
+
+  // Look up exact matches.
+  for (size_t i = 0; i < arraysize(kMapMimeTypeToDownloadImage); ++i) {
+    const MimeTypeToDownloadImage& entry = kMapMimeTypeToDownloadImage[i];
+    if (mime_type_string == entry.mime_type) {
+      download_image = entry.download_image;
+      break;
+    }
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Download.ContentImageType",
+                            download_image,
+                            DOWNLOAD_IMAGE_MAX);
+}
+
 }  // namespace
 
 void RecordDownloadMimeType(const std::string& mime_type_string) {
@@ -178,8 +220,7 @@ void RecordDownloadMimeType(const std::string& mime_type_string) {
 
   // Look up exact matches.
   for (size_t i = 0; i < arraysize(kMapMimeTypeToDownloadContent); ++i) {
-    const MimeTypeToDownloadContent& entry =
-        kMapMimeTypeToDownloadContent[i];
+    const MimeTypeToDownloadContent& entry = kMapMimeTypeToDownloadContent[i];
     if (mime_type_string == entry.mime_type) {
       download_content = entry.download_content;
       break;
@@ -192,6 +233,7 @@ void RecordDownloadMimeType(const std::string& mime_type_string) {
       download_content = DOWNLOAD_CONTENT_TEXT;
     } else if (StartsWithASCII(mime_type_string, "image/", true)) {
       download_content = DOWNLOAD_CONTENT_IMAGE;
+      RecordDownloadImageType(mime_type_string);
     } else if (StartsWithASCII(mime_type_string, "audio/", true)) {
       download_content = DOWNLOAD_CONTENT_AUDIO;
     } else if (StartsWithASCII(mime_type_string, "video/", true)) {
