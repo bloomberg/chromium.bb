@@ -47,8 +47,8 @@ TEST_F(SyncableKernelTest, ToValue) {
   if (value.get()) {
     // Not much to check without repeating the ToValue() code.
     EXPECT_TRUE(value->HasKey("isDirty"));
-    // The extra +2 is for "isDirty" and "serverModelType".
-    EXPECT_EQ(BIT_TEMPS_END - BEGIN_FIELDS + 2,
+    // The extra +1 is for "isDirty".
+    EXPECT_EQ(BIT_TEMPS_END - BEGIN_FIELDS + 1,
               static_cast<int>(value->size()));
   } else {
     ADD_FAILURE();
@@ -370,6 +370,7 @@ TEST_F(SyncableGeneralTest, ToValue) {
     scoped_ptr<DictionaryValue> value(me.ToValue());
     ExpectDictBooleanValue(true, *value, "good");
     EXPECT_TRUE(value->HasKey("kernel"));
+    ExpectDictStringValue("Unspecified", *value, "serverModelType");
     ExpectDictStringValue("Unspecified", *value, "modelType");
     ExpectDictBooleanValue(true, *value, "existsOnClientBecauseNameIsNonEmpty");
     ExpectDictBooleanValue(false, *value, "isRoot");
@@ -879,12 +880,10 @@ TEST_F(SyncableDirectoryTest, TestGetUnsynced) {
 TEST_F(SyncableDirectoryTest, TestGetUnappliedUpdates) {
   Directory::UnappliedUpdateMetaHandles handles;
   int64 handle1, handle2;
-  syncable::ModelTypeBitSet all_types;
-  all_types.set();
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
 
-    dir_->GetUnappliedUpdateMetaHandles(&trans, all_types, &handles);
+    dir_->GetUnappliedUpdateMetaHandles(&trans, &handles);
     ASSERT_TRUE(0 == handles.size());
 
     MutableEntry e1(&trans, CREATE, trans.root_id(), "abba");
@@ -906,7 +905,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnappliedUpdates) {
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
 
-    dir_->GetUnappliedUpdateMetaHandles(&trans, all_types, &handles);
+    dir_->GetUnappliedUpdateMetaHandles(&trans, &handles);
     ASSERT_TRUE(0 == handles.size());
 
     MutableEntry e3(&trans, GET_BY_HANDLE, handle1);
@@ -916,7 +915,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnappliedUpdates) {
   dir_->SaveChanges();
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
-    dir_->GetUnappliedUpdateMetaHandles(&trans, all_types, &handles);
+    dir_->GetUnappliedUpdateMetaHandles(&trans, &handles);
     ASSERT_TRUE(1 == handles.size());
     ASSERT_TRUE(handle1 == handles[0]);
 
@@ -927,7 +926,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnappliedUpdates) {
   dir_->SaveChanges();
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
-    dir_->GetUnappliedUpdateMetaHandles(&trans, all_types, &handles);
+    dir_->GetUnappliedUpdateMetaHandles(&trans, &handles);
     ASSERT_TRUE(2 == handles.size());
     if (handle1 == handles[0]) {
       ASSERT_TRUE(handle2 == handles[1]);
@@ -943,7 +942,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnappliedUpdates) {
   dir_->SaveChanges();
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
-    dir_->GetUnappliedUpdateMetaHandles(&trans, all_types, &handles);
+    dir_->GetUnappliedUpdateMetaHandles(&trans, &handles);
     ASSERT_TRUE(1 == handles.size());
     ASSERT_TRUE(handle2 == handles[0]);
   }

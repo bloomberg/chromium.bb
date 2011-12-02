@@ -17,10 +17,7 @@ class ResolveConflictsCommand : public ModelChangingSyncerCommand {
   ResolveConflictsCommand();
   virtual ~ResolveConflictsCommand();
 
- protected:
   // ModelChangingSyncerCommand implementation.
-  virtual std::set<ModelSafeGroup> GetGroupsToChange(
-      const sessions::SyncSession& session) const OVERRIDE;
   virtual void ModelChangingExecuteImpl(
       sessions::SyncSession* session) OVERRIDE;
 
