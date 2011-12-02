@@ -236,6 +236,11 @@ arm = {
   'factory_install_netboot' : True,
 }
 
+amd64 = {
+  'unittests' : False,
+  'vm_tests' : None,
+}
+
 binary = {
   # Full builds that build fully from binaries.
   'chroot_replace' : False,
@@ -396,6 +401,12 @@ add_config('arm-tegra2-bin', [arm, pfq, {
   'description' : 'arm-tegra2 PFQ',
 }])
 
+add_config('amd64-corei7-bin', [amd64, pfq, {
+  'board' : 'amd64-corei7',
+  'description' : 'amd64-corei7 PFQ',
+  'important' : False, # TODO(mtennant): remove when stable
+}])
+
 add_config('x86-generic-commit-queue', [commit_queue, {
   'board' : 'x86-generic',
   'master' : True,
@@ -410,6 +421,11 @@ add_config('arm-generic-commit-queue', [arm, commit_queue, {
 add_config('arm-tegra2-commit-queue', [arm, commit_queue, {
   'board' : 'tegra2',
   'paladin_builder_name': 'tegra2%20commit%20queue',
+}])
+
+add_config('amd64-corei7-commit-queue', [amd64, commit_queue, {
+  'board' : 'amd64-corei7',
+  'important' : False, # TODO(mtennant): remove when stable
 }])
 
 add_config('x86-mario-commit-queue', [commit_queue, internal, {
@@ -448,6 +464,12 @@ add_config('arm-tegra2-chrome-pre-flight-queue', [chrome_pfq, arm, {
   'chrome_rev': constants.CHROME_REV_LATEST,
 }])
 
+add_config('amd64-corei7-chrome-pre-flight-queue', [chrome_pfq, amd64, {
+  'board' : 'arm-generic',
+  'chrome_rev' : constants.CHROME_REV_LATEST,
+  'important' : False, # TODO(mtennant): remove when stable
+}])
+
 add_config('x86-generic-tot-chrome-pfq-informational', [chrome_pfq_info, {
   'board' : 'x86-generic',
 }])
@@ -458,6 +480,12 @@ add_config('arm-generic-tot-chrome-pfq-informational', [chrome_pfq_info, arm, {
 
 add_config('arm-tegra2-tot-chrome-pfq-informational', [chrome_pfq_info, arm, {
   'board' : 'tegra2',
+}])
+
+add_config('amd64-corei7-tot-chrome-pfq-informational',
+           [chrome_pfq_info, amd64, {
+  'board' : 'arm-generic',
+  'important' : False,
 }])
 
 # arm- doesn't really matter, but cycles faster
