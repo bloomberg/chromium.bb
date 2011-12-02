@@ -38,13 +38,13 @@ using WebKit::WebSocket;
 using WebKit::WebSocketClient;
 using WebKit::WebURL;
 
-namespace {
-
 const uint32_t kMaxReasonSizeInBytes = 123;
 const size_t kHybiBaseFramingOverhead = 2;
 const size_t kHybiMaskingKeyLength = 4;
 const size_t kMinimumPayloadSizeWithTwoByteExtendedPayloadLength = 126;
 const size_t kMinimumPayloadSizeWithEightByteExtendedPayloadLength = 0x10000;
+
+namespace {
 
 uint64_t SaturateAdd(uint64_t a, uint64_t b) {
   if (kuint64max - a < b)
@@ -139,9 +139,8 @@ int32_t PPB_WebSocket_Impl::Connect(PP_Var url,
     return PP_ERROR_BADARGUMENT;
   if (gurl.has_ref())
     return PP_ERROR_BADARGUMENT;
-  // TODO(toyoshim): Must check if the port is allowed by default.
-  // We could not just use net::IsPortAllowedByDefault() because it doesn't
-  // be exported over the shared library.
+  if (!net::IsPortAllowedByDefault(gurl.IntPort()))
+    return PP_ERROR_BADARGUMENT;
   WebURL web_url(gurl);
 
   // Validate protocols and convert it to WebString.
@@ -235,8 +234,6 @@ int32_t PPB_WebSocket_Impl::Close(uint16_t code,
         "WebSocket was closed before the connection was established.");
     return PP_OK_COMPLETIONPENDING;
   }
-
-  // TODO(toyoshim): Handle bufferedAmount here.
 
   state_ = PP_WEBSOCKETREADYSTATE_CLOSING_DEV;
   WebString web_reason = WebString::fromUTF8(reason_string->value());

@@ -26,8 +26,7 @@ static const char kProtocolTestServerURL[] =
 static const char* kInvalidURLs[] = {
   "http://www.google.com/invalid_scheme",
   "ws://www.google.com/invalid#fragment",
-  // TODO(toyoshim): Add URL which has invalid port like
-  // ws://www.google.com:65535/invalid_port
+  "ws://www.google.com:65535/invalid_port",
   NULL
 };
 
