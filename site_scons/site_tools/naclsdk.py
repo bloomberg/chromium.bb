@@ -162,6 +162,7 @@ def _SetEnvForX86Sdk(env, sdk_path):
               CXX=os.path.join(bin_path, '%s-g++' % arch),
               AR=os.path.join(bin_path, '%s-ar' % arch),
               AS=os.path.join(bin_path, '%s-as' % arch),
+              ASPP=os.path.join(bin_path, '%s-gcc' % arch),
               GDB=os.path.join(bin_path, 'nacl-gdb'),
               # NOTE: use g++ for linking so we can handle C AND C++.
               LINK=os.path.join(bin_path, '%s-g++' % arch),
@@ -277,6 +278,7 @@ def _SetEnvForPnacl(env, root):
               # Replace the normal unix tools with the PNaCl ones.
               CC=pnacl_cc + pnacl_cc_flags,
               CXX=pnacl_cxx + pnacl_cxx_flags,
+              ASPP=pnacl_cc + pnacl_cc_flags,
               LIBPREFIX="lib",
               SHLIBPREFIX="lib",
               SHLIBSUFFIX=".so",
@@ -322,6 +324,7 @@ def PNaClForceNative(env):
   cc_flags = ' --pnacl-allow-native --pnacl-allow-translate'
   env.Append(CC=arch_flag + cc_flags,
              CXX=arch_flag + cc_flags,
+             ASPP=arch_flag + cc_flags,
              LINK=cc_flags) # Already has -arch
   env['LD'] = '${NATIVELD}' + arch_flag
   env['SHLINK'] = '${LINK}'
@@ -398,6 +401,7 @@ Configuration is:
   CXX=${CXX}
   AR=${AR}
   AS=${AS}
+  ASPP=${ASPP}
   LINK=${LINK}
   RANLIB=${RANLIB}
 
@@ -511,7 +515,7 @@ def generate(env):
                 '$SOURCES $_LIBDIRFLAGS $_LIBFLAGS -o $TARGET',
 
       ASCOM='$AS $BASE_ASFLAGS $ASFLAGS $EXTRA_ASFLAGS -o $TARGET $SOURCES',
-      ASPPCOM='$CC $BASE_ASPPFLAGS $ASPPFLAGS $EXTRA_ASPPFLAGS ' +
+      ASPPCOM='$ASPP $BASE_ASPPFLAGS $ASPPFLAGS $EXTRA_ASPPFLAGS ' +
               '$CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS -c -o $TARGET $SOURCES',
 
         # Strip doesn't seem to be a first-class citizen in SCons country,
