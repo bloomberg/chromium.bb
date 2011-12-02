@@ -1,6 +1,7 @@
 {
   "name": "Test of old-style page actions API",
   "version": "1.0",
+  "manifest_version": 2,
   "background_page": "background.html",
   "permissions": ["tabs"],
   "page_actions": [

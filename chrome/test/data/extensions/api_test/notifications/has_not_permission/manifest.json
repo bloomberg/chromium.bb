@@ -1,6 +1,7 @@
 {
   "name": "notifications test",
   "version": "1",
+  "manifest_version": 2,
   "permissions": [ "tabs" ],
   "background_page": "background.html"
 }

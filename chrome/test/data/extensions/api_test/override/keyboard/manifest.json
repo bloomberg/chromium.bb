@@ -1,6 +1,7 @@
 {
   "name": "Keyboard override test",
   "version": "0.1",
+  "manifest_version": 2,
   "description": "Test chrome://keyboard override",
   "background_page": "background.html",
   "chrome_url_overrides": {

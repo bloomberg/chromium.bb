@@ -1,6 +1,7 @@
 {
   "name": "Launch App on Install (test extension)",
   "version": "1",
+  "manifest_version": 2,
   "permissions": ["management"],
   "background_page": "background.html"
 }
