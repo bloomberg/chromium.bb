@@ -63,8 +63,12 @@ class StatusController {
   UpdateProgress* mutable_update_progress();
   const ConflictProgress* GetUnrestrictedConflictProgress(
       ModelSafeGroup group) const;
+  ConflictProgress* GetUnrestrictedMutableConflictProgressForTest(
+      ModelSafeGroup group);
   const UpdateProgress* GetUnrestrictedUpdateProgress(
       ModelSafeGroup group) const;
+  UpdateProgress* GetUnrestrictedMutableUpdateProgressForTest(
+      ModelSafeGroup group);
 
   // ClientToServer messages.
   const ClientToServerMessage& commit_message() {

@@ -5,6 +5,7 @@
 #include "base/location.h"
 #include "chrome/browser/sync/engine/verify_updates_command.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
+#include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -81,12 +82,16 @@ TEST_F(VerifyUpdatesCommandTest, AllVerified) {
   CreateLocalItem("p1", root, syncable::PREFERENCES);
   CreateLocalItem("a1", root, syncable::AUTOFILL);
 
+  ExpectNoGroupsToChange(command_);
+
   GetUpdatesResponse* updates = session()->mutable_status_controller()->
       mutable_updates_response()->mutable_get_updates();
   AddUpdate(updates, "b1", root, syncable::BOOKMARKS);
   AddUpdate(updates, "b2", root, syncable::BOOKMARKS);
   AddUpdate(updates, "p1", root, syncable::PREFERENCES);
   AddUpdate(updates, "a1", root, syncable::AUTOFILL);
+
+  ExpectGroupsToChange(command_, GROUP_UI, GROUP_DB);
 
   command_.ExecuteImpl(session());
 
