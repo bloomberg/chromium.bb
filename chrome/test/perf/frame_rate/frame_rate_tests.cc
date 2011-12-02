@@ -84,6 +84,12 @@ class FrameRateTest
     if (HasFlag(kUseReferenceBuild))
       UseReferenceBuild();
 
+    // Turn on chrome.Interval to get higher-resolution timestamps on frames.
+    launch_arguments_.AppendSwitch(switches::kEnableBenchmarking);
+
+    // Required additional argument to make the kEnableBenchmarking switch work.
+    launch_arguments_.AppendSwitch(switches::kEnableStatsTable);
+
     // UI tests boot up render views starting from about:blank. This causes
     // the renderer to start up thinking it cannot use the GPU. To work
     // around that, and allow the frame rate test to use the GPU, we must
@@ -132,7 +138,8 @@ class FrameRateTest
 
   void RunTest(const std::string& name) {
     if (HasFlag(kUseGpu) && !IsGpuAvailable()) {
-      printf("Test skipped: requires gpu\n");
+      printf("Test skipped: requires gpu. Pass --enable-gpu on the command "
+             "line if use of GPU is desired.\n");
       return;
     }
 
@@ -218,7 +225,7 @@ class FrameRateTest
     ASSERT_TRUE(results.find("means") != results.end());
     ASSERT_TRUE(results.find("sigmas") != results.end());
 
-    std::string trace_name = "fps" + GetSuffixForTestFlags();
+    std::string trace_name = "interval" + GetSuffixForTestFlags();
     printf("GESTURES %s: %s= [%s] [%s] [%s]\n", name.c_str(),
                                                 trace_name.c_str(),
                                                 results["gestures"].c_str(),
