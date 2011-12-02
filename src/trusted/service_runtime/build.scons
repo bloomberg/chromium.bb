@@ -281,6 +281,10 @@ else:
   # Unknown architecture
   raise AssertionError('Unknown architecture')
 
+r_debug_objs = []
+if env.Bit('linux'):
+  r_debug_objs += [env.ComponentObject('linux/r_debug.c')]
+
 sel_ldr_libs = ['sel',
                 'env_cleanser',
                 'nacl_error_code',
@@ -301,12 +305,9 @@ sel_ldr_libs = ['sel',
                 ] + DEBUG_LIBS
 if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
     not env.CrossToolsBuild()):
-  sel_main_objs = [env.ComponentObject('sel_main.c')]
-  if env.Bit('linux'):
-    sel_main_objs += [env.ComponentObject('linux/r_debug.c')]
+  sel_main_objs = [env.ComponentObject('sel_main.c')] + r_debug_objs
   SEL_LDR_NODE = env.ComponentProgram('sel_ldr', sel_main_objs,
                                       EXTRA_LIBS=sel_ldr_libs)
-
   if env.Bit('mac'):
     # This target exists only to check that the service_runtime code
     # can successfully be linked into a Mac OS X dynamic library.  Our
@@ -489,9 +490,10 @@ else:
 if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
     not env.CrossToolsBuild()):
   # NOTE: uses validator
+  mmap_test_objs = [env.ComponentObject('mmap_test.c')] + r_debug_objs
   mmap_test_exe = env.ComponentProgram(
       'mmap_test',
-      ['mmap_test.c'],
+      mmap_test_objs,
       EXTRA_LIBS=['sel',
                   'env_cleanser',
                   'manifest_proxy',
@@ -509,11 +511,18 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
                   ] + DEBUG_LIBS)
   env.Requires(mmap_test_exe, crt)
 
+  mmap_test_file = env.File(arch_testdata_dir + '/hello_world.nexe')
+  bootstrap, bootstrap_arg = env.GetBootstrap()
+  if bootstrap is None:
+    mmap_test_command = [mmap_test_exe, mmap_test_file]
+  else:
+    mmap_test_command = [bootstrap, mmap_test_exe,
+                         bootstrap_arg, mmap_test_file]
+
   # TODO(robertm): This test emits lots of messages to stderr
   node = env.CommandTest (
       "mmap_test.out",
-      command=[mmap_test_exe,
-               env.File(arch_testdata_dir + '/hello_world.nexe')],
+      command=mmap_test_command,
       # TODO(mseaborn): Extend this test to cover the case where the
       # dynamic code segment is present.
       osenv='NACL_DISABLE_DYNAMIC_LOADING=1')

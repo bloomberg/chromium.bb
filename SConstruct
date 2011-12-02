@@ -1162,6 +1162,8 @@ def GetBootstrap(env):
               '--r_debug=0xXXXXXXXXXXXXXXXX')
   return None, None
 
+pre_base_env.AddMethod(GetBootstrap)
+
 
 def GetIrtNexe(env, irt_name='irt'):
   image = ARGUMENTS.get('force_irt')
