@@ -94,6 +94,7 @@ import logging
 import optparse
 import os
 import Queue
+import re
 import shutil
 import signal
 import subprocess
@@ -144,6 +145,10 @@ def TerminateSignalHandler(sig, stack):
 
 class RunTooLongException(Exception):
   """Thrown when a command runs too long without output."""
+  pass
+
+class BadUserInput(Exception):
+  """Thrown when arguments from the user are incorrectly formatted."""
   pass
 
 
@@ -316,6 +321,8 @@ class Coverage(object):
     self.ConfirmPlatformAndPaths()
     self.tests = []
     self.xvfb_pid = 0
+    self.test_files = []        # List of files with test specifications.
+    self.test_filters = {}      # Mapping from testname->--gtest_filter arg.
     logging.info('self.directory: ' + self.directory)
     logging.info('self.directory_parent: ' + self.directory_parent)
 
@@ -437,8 +444,20 @@ class Coverage(object):
     if self.options.all_unittests:
       self.tests += glob.glob(os.path.join(self.directory, '*_unittests'))
 
-    # Tests can come in as args or as a file of bundles.
+    # Tests can come in as args directly, indirectly (through a file
+    # of test lists) or as a file of bundles.
     all_testnames = self.args[:]  # Copy since we might modify
+
+    for test_file in self.options.test_files:
+      f = open(test_file)
+      for line in f:
+        line = re.sub(r"#.*$", "", line)
+        line = re.sub(r"\s*", "", line)
+        if re.match("\s*$"):
+          continue
+        all_testnames.append(line)
+      f.close()
+
     tests_from_bundles = None
     if self.options.bundles:
       try:
@@ -459,10 +478,18 @@ class Coverage(object):
     # If told explicit tests, run those (after stripping the name as
     # appropriate)
     for testname in all_testnames:
+      mo = re.search(r"(.*)\[(.*)\]$", testname)
+      gtest_filter = None
+      if mo:
+        gtest_filter = mo.group(2)
+        testname = mo.group(1)
+
       if ':' in testname:
-        self.tests += [os.path.join(self.directory, testname.split(':')[1])]
-      else:
-        self.tests += [os.path.join(self.directory, testname)]
+        testname = testname.split(':')[1]
+      self.tests += [os.path.join(self.directory, testname)]
+      if gtest_filter:
+        self.test_filters[testname] = gtest_filter
+
     # Medium tests?
     # Not sure all of these work yet (e.g. page_cycler_tests)
     # self.tests += glob.glob(os.path.join(self.directory, '*_tests'))
@@ -600,17 +627,47 @@ class Coverage(object):
     Returns:
       String of the form '--gtest_filter=BLAH', or None.
     """
-    if self.options.no_exclusions:
-      return
-    exclusions = excl or gTestExclusions
-    excldict = exclusions.get(sys.platform)
-    if excldict:
-      for test in excldict.keys():
-        # example: if base_unittests in ../blah/blah/base_unittests.exe
-        if test in fulltest:
-          gfilter = '--gtest_filter=-' + ':-'.join(excldict[test])
-          return gfilter
-    return None
+    positive_gfilter_list = []
+    negative_gfilter_list = []
+
+    # Exclude all flaky and failing tests; they don't count for code coverage.
+    negative_gfilter_list += ('*.FLAKY_*', '*.FAILS_*')
+
+    if not self.options.no_exclusions:
+      exclusions = excl or gTestExclusions
+      excldict = exclusions.get(sys.platform)
+      if excldict:
+        for test in excldict.keys():
+          # example: if base_unittests in ../blah/blah/base_unittests.exe
+          if test in fulltest:
+            negative_gfilter_list += excldict[test]
+
+    fulltest_basename = os.path.basename(fulltest)
+    if fulltest_basename in self.test_filters:
+      specific_test_filters = self.test_filters[fulltest_basename].split('-')
+      if len(specific_test_filters) > 2:
+        logging.error('Multiple "-" symbols in filter list: %s' %
+          self.test_filters[fulltest_basename])
+        raise BadUserInput()
+      if len(specific_test_filters) == 2:
+        # Remove trailing ':'
+        specific_test_filters[0] = specific_test_filters[0][:-1]
+
+      if specific_test_filters[0]: # Test for no positive filters.
+        positive_gfilter_list += specific_test_filters[0].split(':')
+      if len(specific_test_filters) > 1:
+        negative_gfilter_list += specific_test_filters[1].split(':')
+
+    if not positive_gfilter_list and not negative_gfilter_list:
+      return None
+
+    result = '--gtest_filter='
+    if positive_gfilter_list:
+      result += ':'.join(positive_gfilter_list)
+    if negative_gfilter_list:
+      if positive_gfilter_list: result += ':'
+      result += '-' + ':'.join(negative_gfilter_list)
+    return result
 
   def RunTests(self):
     """Run all unit tests and generate appropriate lcov files."""
@@ -888,6 +945,13 @@ def CoverageOptionParser():
                     default=False,
                     action='store_true',
                     help=('Turn off clearing of cov data from a prev run'))
+  parser.add_option('-F',
+                    '--test-file',
+                    dest="test_files",
+                    default=[],
+                    action='append',
+                    help=('Specify a file from which tests to be run will ' +
+                          'be extracted'))
   return parser
 
 
