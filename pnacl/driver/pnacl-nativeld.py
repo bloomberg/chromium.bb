@@ -207,21 +207,6 @@ def RunLDSRPC():
              '${SEL_UNIVERSAL_FLAGS} -- ${LD_SRPC}',
              stdin=script, echo_stdout = False, echo_stderr = False)
 
-def MakeSelUniversalScriptForFile(filename):
-  """ Return sel_universal script text for sending a commandline argument
-      representing an input file to LD.nexe. """
-  script = []
-  basename = pathtools.basename(filename)
-  # A nice name for making a sel_universal variable.
-  # Hopefully this does not clash...
-  nicename = basename.replace('.','_').replace('-','_')
-  script.append('echo "adding %s"' % basename)
-  script.append('readonly_file %s %s' % (nicename, filename))
-  script.append('rpc AddFile s("%s") h(%s) *' % (basename, nicename))
-  script.append('rpc AddArg s("%s") *' % basename)
-  return script
-
-
 def MakeSelUniversalScriptForLD(ld_flags,
                                 main_input,
                                 files,
@@ -231,35 +216,31 @@ def MakeSelUniversalScriptForLD(ld_flags,
       other input files. The output will be written to outfile.  """
   script = []
 
-  # Go through all the arguments and add them.
+  # Join all the arguments.
   # Based on the format of RUN_LD, the order of arguments is:
   # ld_flags, then input files (which are more sensitive to order).
-  # Omit the "-o" for output so that it will use "a.out" internally.
-  # We will take the fd from "a.out" and write it to the proper -o filename.
-  for flag in ld_flags:
-    script.append('rpc AddArg s("%s") *' % flag)
-    script.append('')
+  kTerminator = '\0'
+  command_line = kTerminator.join(ld_flags) + kTerminator
 
-  # We need to virtualize these files.
+  # Open the output file.
+  script.append('readwrite_file nexefile %s' % outfile)
+  # Start the pnacl lookup service.
+  script.append('pnacl_emu_initialize')
+  script.append('install_upcalls lookup_service_string dummy_channel')
+  script.append('rpc StartLookupService s("${lookup_service_string}") *')
+  # Create a mapping for each input file and add it to the command line.
   for f in files:
-    if f == main_input:
-      # Reload the temporary main_input object file into a new shmem region.
-      basename = pathtools.basename(f)
-      script.append('file_size %s in_size' % f)
-      script.append('shmem in_file in_addr ${in_size}')
-      script.append('load_from_file %s ${in_addr} 0 ${in_size}' % f)
-      script.append('rpc AddFileWithSize s("%s") h(in_file) i(${in_size}) *' %
-                    basename)
-      script.append('rpc AddArg s("%s") *' % basename)
-    else:
-      script += MakeSelUniversalScriptForFile(f)
-    script.append('')
+    basename = pathtools.basename(f)
+    # A nice name for making a sel_universal variable.
+    # Hopefully this does not clash...
+    nicename = basename.replace('.','_').replace('-','_')
+    script.append('readonly_file %s %s' % (nicename, f))
+    script.append('pnacl_emu_add_varname_mapping %s %s' % (basename, nicename))
+    command_line = command_line + basename + kTerminator
 
-  script.append('rpc Link * h() i()')
-  script.append('set_variable out_file ${result0}')
-  script.append('set_variable out_size ${result1}')
-  script.append('map_shmem ${out_file} out_addr')
-  script.append('save_to_file %s ${out_addr} 0 ${out_size}' % outfile)
+  command_line_escaped = command_line.replace(kTerminator, '\\x00')
+  script.append('rpc Run C(%d,%s) h(nexefile) i(0) s("") s("") *' %
+                (len(command_line), command_line_escaped))
   script.append('echo "ld complete"')
   script.append('')
   return '\n'.join(script)

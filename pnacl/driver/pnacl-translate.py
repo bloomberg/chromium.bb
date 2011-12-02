@@ -330,13 +330,17 @@ def RunLLCSRPC():
 def MakeSelUniversalScriptForLLC(infile, outfile, flags):
   script = []
   script.append('readonly_file myfile %s' % infile)
-  for f in flags:
-    script.append('rpc AddArg s("%s") *' % f)
-  script.append('rpc Translate h(myfile) * h() i() i() s() s()')
-  script.append('set_variable out_handle ${result0}')
-  script.append('set_variable out_size ${result1}')
-  script.append('map_shmem ${out_handle} addr')
-  script.append('save_to_file %s ${addr} 0 ${out_size}' % outfile)
+  script.append('readwrite_file objfile %s' % outfile)
+  script.append('pnacl_emu_initialize')
+  script.append('install_upcalls lookup_service_string dummy_channel')
+  script.append('rpc StartLookupService s("${lookup_service_string}") *')
+  # command_line is a NUL (\x00) terminated sequence.
+  kTerminator = '\0'
+  command_line = kTerminator.join(['llc'] + flags) + kTerminator
+  command_line_escaped = command_line.replace(kTerminator, '\\x00')
+  script.append('rpc Run C(%d,%s) h(myfile) h(objfile) * i() s() s()' %
+                (len(command_line), command_line_escaped))
+  script.append('echo "llc complete"')
   script.append('')
   return '\n'.join(script)
 
