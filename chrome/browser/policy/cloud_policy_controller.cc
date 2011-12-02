@@ -139,19 +139,19 @@ void CloudPolicyController::OnError(DeviceManagementBackend::ErrorCode code) {
                    << "device manager, re-registering device.";
       // Will retry fetching a token but gracefully backing off.
       SetState(STATE_TOKEN_ERROR);
-      break;
+      return;
     }
     case DeviceManagementBackend::kErrorServiceInvalidSerialNumber: {
       VLOG(1) << "The device is no longer enlisted for the domain.";
       token_fetcher_->SetSerialNumberInvalidState();
       SetState(STATE_TOKEN_ERROR);
-      break;
+      return;
     }
     case DeviceManagementBackend::kErrorServiceManagementNotSupported: {
       VLOG(1) << "The device is no longer managed.";
       token_fetcher_->SetUnmanagedState();
       SetState(STATE_TOKEN_UNMANAGED);
-      break;
+      return;
     }
     case DeviceManagementBackend::kErrorServicePolicyNotFound:
     case DeviceManagementBackend::kErrorRequestInvalid:
@@ -161,17 +161,20 @@ void CloudPolicyController::OnError(DeviceManagementBackend::ErrorCode code) {
       VLOG(1) << "An error in the communication with the policy server occurred"
               << ", will retry in a few hours.";
       SetState(STATE_POLICY_UNAVAILABLE);
-      break;
+      return;
     }
     case DeviceManagementBackend::kErrorRequestFailed:
     case DeviceManagementBackend::kErrorTemporaryUnavailable: {
       VLOG(1) << "A temporary error in the communication with the policy server"
               << " occurred.";
-    }
-    default:
       // Will retry last operation but gracefully backing off.
       SetState(STATE_POLICY_ERROR);
+      return;
+    }
   }
+
+  NOTREACHED();
+  SetState(STATE_POLICY_ERROR);
 }
 
 void CloudPolicyController::OnDeviceTokenChanged() {

@@ -303,7 +303,9 @@ void DevicePolicyCache::InstallInitialPolicy(
   data_store_->set_user_name(policy_data.username());
   data_store_->set_device_id(policy_data.device_id());
   *device_token = policy_data.request_token();
-  SetPolicyInternal(policy, NULL, false);
+  base::Time timestamp;
+  if (SetPolicyInternal(policy, &timestamp, true))
+    set_last_policy_refresh_time(timestamp);
 }
 
 // static
