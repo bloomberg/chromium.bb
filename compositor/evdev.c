@@ -224,7 +224,7 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 	struct input_event ev[8], *e, *end;
 	int len;
 	struct evdev_motion_accumulator accumulator;
-	uint32_t time;
+	uint32_t time = 0;
 
 	ec = device->master->base.compositor;
 	if (!ec->focus)
@@ -267,8 +267,7 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 		}
 	}
 
-	evdev_flush_motion(&device->master->base.input_device, time,
-			   &accumulator);
+	evdev_flush_motion(&device->master->base.input_device, time, &accumulator);
 
 	return 1;
 }
