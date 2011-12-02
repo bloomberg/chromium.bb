@@ -1482,6 +1482,11 @@ FileManager.prototype = {
    * go fetch data for the sort field that we may not have yet.
    */
   FileManager.prototype.prepareSort_ = function(field, callback) {
+    this.prepareSortEntries_(this.dataModel_.slice(), field, callback);
+  };
+
+  FileManager.prototype.prepareSortEntries_ = function(entries, field,
+                                                       callback) {
     var cacheFunction;
 
     if (field == 'name' || field == 'cachedMtime_') {
@@ -1507,11 +1512,10 @@ FileManager.prototype = {
       }
     }
 
-    var dataModel = this.dataModel_;
-    var uncachedCount = dataModel.length;
+    var uncachedCount = entries.length;
 
     for (var i = uncachedCount - 1; i >= 0 ; i--) {
-      var entry = dataModel.item(i);
+      var entry = entries[i];
       if (field in entry) {
         uncachedCount--;
       } else {
@@ -3212,11 +3216,13 @@ FileManager.prototype = {
             });
         }
 
-        spliceArgs.unshift(0, 0);  // index, deleteCount
-        self.dataModel_.splice.apply(self.dataModel_, spliceArgs);
+        self.prefetchCacheForSorting_(spliceArgs, function() {
+          spliceArgs.unshift(0, 0);  // index, deleteCount
+          self.dataModel_.splice.apply(self.dataModel_, spliceArgs);
 
-        // Keep reading until entries.length is 0.
-        reader.readEntries(onReadSome, onError);
+          // Keep reading until entries.length is 0.
+          reader.readEntries(onReadSome, onError);
+        });
       };
 
       metrics.startInterval('DirectoryScan');
@@ -3236,6 +3242,16 @@ FileManager.prototype = {
 
     if (opt_callback)
       opt_callback();
+  };
+
+  FileManager.prototype.prefetchCacheForSorting_ = function(entries, callback) {
+    var field = this.dataModel_.sortStatus.field;
+    if (field) {
+      this.prepareSortEntries_(entries, field, callback);
+    } else {
+      callback();
+      return;
+    }
   };
 
   FileManager.prototype.findListItem_ = function(event) {
