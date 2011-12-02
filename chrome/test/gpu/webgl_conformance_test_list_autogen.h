@@ -281,7 +281,7 @@ CONFORMANCE_TEST(conformance_textures_tex_image_and_sub_image_2d_with_image_data
   "conformance/textures/tex-image-and-sub-image-2d-with-image-data.html");
 CONFORMANCE_TEST(conformance_textures_tex_image_and_sub_image_2d_with_image,
   "conformance/textures/tex-image-and-sub-image-2d-with-image.html");
-CONFORMANCE_TEST(FAILS_conformance_textures_tex_image_and_sub_image_2d_with_video,
+CONFORMANCE_TEST(conformance_textures_tex_image_and_sub_image_2d_with_video,
   "conformance/textures/tex-image-and-sub-image-2d-with-video.html");
 CONFORMANCE_TEST(conformance_textures_tex_image_and_uniform_binding_bugs,
   "conformance/textures/tex-image-and-uniform-binding-bugs.html");
