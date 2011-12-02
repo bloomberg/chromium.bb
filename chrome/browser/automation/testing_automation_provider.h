@@ -658,6 +658,16 @@ class TestingAutomationProvider : public AutomationProvider,
                              base::DictionaryValue* args,
                              IPC::Message* reply_message);
 
+  // Trigger page action asynchronously in the active tab.
+  // Uses the JSON interface for input/output.
+  void TriggerPageActionById(base::DictionaryValue* args,
+                             IPC::Message* reply_message);
+
+  // Trigger browser action asynchronously in the active tab.
+  // Uses the JSON interface for input/output.
+  void TriggerBrowserActionById(base::DictionaryValue* args,
+                                IPC::Message* reply_message);
+
   // Responds to the Find request and returns the match count.
   void FindInPage(Browser* browser,
                   base::DictionaryValue* args,

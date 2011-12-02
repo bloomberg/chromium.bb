@@ -50,10 +50,11 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/save_package_file_picker.h"
 #include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/history/top_sites.h"
@@ -107,6 +108,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "chrome/common/pref_names.h"
@@ -2325,6 +2327,10 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::GetExtensionsInfo;
   handler_map["RefreshPolicies"] =
       &TestingAutomationProvider::RefreshPolicies;
+  handler_map["TriggerPageActionById"] =
+      &TestingAutomationProvider::TriggerPageActionById;
+  handler_map["TriggerBrowserActionById"] =
+      &TestingAutomationProvider::TriggerBrowserActionById;
 #if defined(OS_CHROMEOS)
   handler_map["GetLoginInfo"] = &TestingAutomationProvider::GetLoginInfo;
   handler_map["ShowCreateAccountUI"] =
@@ -2469,7 +2475,6 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
 
   browser_handler_map["UninstallExtensionById"] =
       &TestingAutomationProvider::UninstallExtensionById;
-
   browser_handler_map["SetExtensionStateById"] =
       &TestingAutomationProvider::SetExtensionStateById;
 
@@ -2795,6 +2800,17 @@ void TestingAutomationProvider::GetBrowserInfo(
     browser_item->SetInteger("height", rect.height());
     browser_item->SetBoolean("fullscreen",
                              browser->window()->IsFullscreen());
+    ListValue* visible_page_actions = new ListValue;
+    LocationBarTesting* loc_bar =
+        browser->window()->GetLocationBar()->GetLocationBarForTesting();
+    size_t page_action_visible_count =
+        static_cast<size_t>(loc_bar->PageActionVisibleCount());
+    for (size_t i = 0; i < page_action_visible_count; ++i) {
+      StringValue* extension_id = new StringValue(
+          loc_bar->GetVisiblePageAction(i)->extension_id());
+      visible_page_actions->Append(extension_id);
+    }
+    browser_item->Set("visible_page_actions", visible_page_actions);
     browser_item->SetInteger("selected_tab", browser->active_index());
     browser_item->SetBoolean("incognito",
                              browser->profile()->IsOffTheRecord());
@@ -4493,6 +4509,118 @@ void TestingAutomationProvider::SetExtensionStateById(
 
   service->SetIsIncognitoEnabled(id, allow_in_incognito);
   reply.SendSuccess(NULL);
+}
+
+// See TriggerPageActionById() in chrome/test/pyautolib/pyauto.py
+// for sample json input.
+void TestingAutomationProvider::TriggerPageActionById(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+
+  std::string error;
+  Browser* browser;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
+    reply.SendError(error);
+    return;
+  }
+  std::string id;
+  if (!args->GetString("id", &id)) {
+    reply.SendError("Missing or invalid key: id");
+    return;
+  }
+
+  ExtensionService* service = browser->profile()->GetExtensionService();
+  if (!service) {
+    reply.SendError("No extensions service.");
+    return;
+  }
+  if (!service->GetInstalledExtension(id)) {
+    // The extension ID does not correspond to any extension, whether crashed
+    // or not.
+    reply.SendError(base::StringPrintf("Extension %s is not installed.",
+                                       id.c_str()));
+    return;
+  }
+  const Extension* extension = service->GetExtensionById(id, false);
+  if (!extension) {
+    reply.SendError("Extension is disabled or has crashed.");
+    return;
+  }
+
+  if (ExtensionAction* page_action = extension->page_action()) {
+    LocationBarTesting* loc_bar =
+        browser->window()->GetLocationBar()->GetLocationBarForTesting();
+    size_t page_action_visible_count =
+        static_cast<size_t>(loc_bar->PageActionVisibleCount());
+    for (size_t i = 0; i < page_action_visible_count; ++i) {
+      if (loc_bar->GetVisiblePageAction(i) == page_action) {
+        loc_bar->TestPageActionPressed(i);
+        reply.SendSuccess(NULL);
+        return;
+      }
+    }
+    reply.SendError("Extension doesn't have any visible page action icon.");
+  } else {
+    reply.SendError("Extension doesn't have any page action.");
+  }
+}
+
+// See TriggerBrowserActionById() in chrome/test/pyautolib/pyauto.py
+// for sample json input.
+void TestingAutomationProvider::TriggerBrowserActionById(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+
+  std::string error;
+  Browser* browser;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
+    reply.SendError(error);
+    return;
+  }
+  std::string id;
+  if (!args->GetString("id", &id)) {
+    reply.SendError("Missing or invalid key: id");
+    return;
+  }
+
+  ExtensionService* service = browser->profile()->GetExtensionService();
+  if (!service) {
+    reply.SendError("No extensions service.");
+    return;
+  }
+  if (!service->GetInstalledExtension(id)) {
+    // The extension ID does not correspond to any extension, whether crashed
+    // or not.
+    reply.SendError(base::StringPrintf("Extension %s is not installed.",
+                                       id.c_str()));
+    return;
+  }
+  const Extension* extension = service->GetExtensionById(id, false);
+  if (!extension) {
+    reply.SendError("Extension is disabled or has crashed.");
+    return;
+  }
+
+  if (extension->browser_action()) {
+    BrowserActionTestUtil browser_actions(browser);
+    int num_browser_actions = browser_actions.NumberOfBrowserActions();
+    // TODO: Implement the platform-specific GetExtensionId() in
+    // BrowserActionTestUtil.
+    if (num_browser_actions != 1) {
+      reply.SendError(StringPrintf(
+          "Found %d browser actions. Only one browser action must be active.",
+          num_browser_actions));
+      return;
+    }
+    browser_actions.Press(0);
+    reply.SendSuccess(NULL);
+    return;
+  } else {
+    reply.SendError("Extension doesn't have any browser action.");
+    return;
+  }
 }
 
 // Sample json input:
