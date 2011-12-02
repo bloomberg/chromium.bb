@@ -32,24 +32,7 @@ ShadowController::~ShadowController() {
 
 void ShadowController::OnWindowInitialized(aura::Window* window) {
   window->AddObserver(this);
-}
-
-void ShadowController::OnWindowParentChanged(aura::Window* window,
-                                             aura::Window* parent) {
-  Shadow* shadow = GetShadowForWindow(window);
-
-  if (parent) {
-    if (shadow) {
-      parent->layer()->Add(shadow->layer());
-      StackShadowBelowWindow(shadow, window);
-    } else {
-      if (ShouldShowShadowForWindow(window))
-        CreateShadowForWindow(window);
-    }
-  } else {
-    if (shadow && shadow->layer()->parent())
-      shadow->layer()->parent()->Remove(shadow->layer());
-  }
+  HandlePossibleShadowVisibilityChange(window);
 }
 
 void ShadowController::OnWindowPropertyChanged(aura::Window* window,
@@ -59,22 +42,11 @@ void ShadowController::OnWindowPropertyChanged(aura::Window* window,
     HandlePossibleShadowVisibilityChange(window);
 }
 
-void ShadowController::OnWindowVisibilityChanged(aura::Window* window,
-                                                 bool visible) {
-  HandlePossibleShadowVisibilityChange(window);
-}
-
 void ShadowController::OnWindowBoundsChanged(aura::Window* window,
                                              const gfx::Rect& bounds) {
   Shadow* shadow = GetShadowForWindow(window);
   if (shadow)
-    shadow->SetContentBounds(bounds);
-}
-
-void ShadowController::OnWindowStackingChanged(aura::Window* window) {
-  Shadow* shadow = GetShadowForWindow(window);
-  if (shadow)
-    StackShadowBelowWindow(shadow, window);
+    shadow->SetContentBounds(gfx::Rect(bounds.size()));
 }
 
 void ShadowController::OnWindowDestroyed(aura::Window* window) {
@@ -84,18 +56,15 @@ void ShadowController::OnWindowDestroyed(aura::Window* window) {
 bool ShadowController::ShouldShowShadowForWindow(aura::Window* window) const {
   const aura::ShadowType type = static_cast<aura::ShadowType>(
       window->GetIntProperty(aura::kShadowTypeKey));
-  bool requested = false;
   switch (type) {
     case aura::SHADOW_TYPE_NONE:
-      break;
+      return false;
     case aura::SHADOW_TYPE_RECTANGULAR:
-      requested = true;
-      break;
+      return true;
     default:
       NOTREACHED() << "Unknown shadow type " << type;
+      return false;
   }
-
-  return requested && window->layer()->visible();
 }
 
 Shadow* ShadowController::GetShadowForWindow(aura::Window* window) {
@@ -118,25 +87,9 @@ void ShadowController::CreateShadowForWindow(aura::Window* window) {
   window_shadows_.insert(make_pair(window, shadow));
 
   shadow->Init();
-  shadow->SetContentBounds(window->bounds());
+  shadow->SetContentBounds(gfx::Rect(window->bounds().size()));
   shadow->layer()->SetVisible(ShouldShowShadowForWindow(window));
-
-  if (window->parent()) {
-    window->parent()->layer()->Add(shadow->layer());
-    StackShadowBelowWindow(shadow.get(), window);
-  }
-}
-
-void ShadowController::StackShadowBelowWindow(Shadow* shadow,
-                                              aura::Window* window) {
-  ui::Layer* parent_layer = window->parent()->layer();
-  DCHECK_EQ(shadow->layer()->parent(), parent_layer);
-
-  // TODO(derat): Add a StackBelow() method and use that instead (although we
-  // then run the risk of other layers getting stacked between a window and its
-  // shadow).
-  parent_layer->StackAbove(shadow->layer(), window->layer());
-  parent_layer->StackAbove(window->layer(), shadow->layer());
+  window->layer()->Add(shadow->layer());
 }
 
 }  // namespace internal

@@ -54,15 +54,10 @@ public:
   virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
 
   // aura::WindowObserver overrides:
-  virtual void OnWindowParentChanged(
-      aura::Window* window, aura::Window* parent) OVERRIDE;
   virtual void OnWindowPropertyChanged(
       aura::Window* window, const char* name, void* old) OVERRIDE;
-  virtual void OnWindowVisibilityChanged(
-      aura::Window* window, bool visible) OVERRIDE;
   virtual void OnWindowBoundsChanged(
       aura::Window* window, const gfx::Rect& bounds) OVERRIDE;
-  virtual void OnWindowStackingChanged(aura::Window* window) OVERRIDE;
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
  private:
@@ -80,11 +75,8 @@ public:
   void HandlePossibleShadowVisibilityChange(aura::Window* window);
 
   // Creates a new shadow for |window| and stores it in |window_shadows_|.  The
-  // shadow's visibility, bounds, and stacking are initialized appropriately.
+  // shadow's bounds are initialized and it is added to the window's layer.
   void CreateShadowForWindow(aura::Window* window);
-
-  // Stacks |shadow|'s layer directly beneath |window|'s layer.
-  void StackShadowBelowWindow(Shadow* shadow, aura::Window* window);
 
   WindowShadowMap window_shadows_;
 
