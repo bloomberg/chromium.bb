@@ -10,9 +10,6 @@ cr.define('cert_viewer', function() {
    * substituting in translated strings and requesting certificate details.
    */
   function initialize() {
-    $('close').onclick = function() {
-      window.close();
-    }
     $('export').onclick = exportCertificate;
     cr.ui.decorate('tabbox', cr.ui.TabBox);
 

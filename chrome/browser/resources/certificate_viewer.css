@@ -2,6 +2,7 @@
 body {
   bottom: 0;
   left: 0;
+  margin: 8px 0 0 0;
   position: absolute;
   right: 0;
   top: 0;
@@ -54,10 +55,6 @@ body {
   white-space: pre-wrap;
 }
 
-.controls {
-  text-align: end;
-}
-
 /* Used so that 100% width within tabpanel will correspond to usable space. */
 tabpanel {
   position: relative;
@@ -90,7 +87,13 @@ tabpanel {
 
 .section-contents {
   -webkit-box-flex: 1;
-  border: 1px solid black;
+  border: 1px solid #9e9e9e;
   /* Scrolling should be enabled on all tree views and value field. */
   overflow: auto;
+}
+
+#export {
+  -webkit-margin-start: 1px;
+  margin-bottom: 10px;
+  margin-top: 5px;
 }

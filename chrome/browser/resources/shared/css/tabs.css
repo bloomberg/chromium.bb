@@ -4,6 +4,7 @@ tabbox {
 }
 
 tabs {
+  -webkit-padding-start: 8px;
   display: -webkit-box;
   background: -webkit-linear-gradient(white, rgb(243, 243, 243));
   border-bottom: 1px solid rgb(160, 160, 160);
@@ -25,8 +26,12 @@ tabs > * {
   text-align: center;
 }
 
+tabs > :not([selected]) {
+  background: rgba(238, 238, 238, .3);
+}
+
 tabs > :not([selected]):hover {
-  background: rgba(200, 200, 200, .3);
+  background: rgba(247, 247, 247, .3);
 }
 
 tabs > [selected] {
@@ -51,10 +56,8 @@ tabpanels {
   -webkit-box-flex: 1;
   background: white;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, .2);
-  border: 1px solid rgb(160, 160, 160);
-  border-top: 0;
   display: -webkit-box;
-  padding: 5px;
+  padding: 5px 15px 0 15px;
 }
 
 tabpanels > * {

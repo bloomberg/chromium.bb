@@ -24,8 +24,11 @@ enum DialogStyle {
   // Deprecated, see BubbleWindow::Create().
   STYLE_THROBBER = 1 << 1,
 
-  // Content flush to edge, no padding.
-  STYLE_FLUSH = 1 << 2
+  // Content and title flush to edge, no padding.
+  STYLE_FLUSH = 1 << 2,
+
+  // Content flush to edge. Padding only on title.
+  STYLE_FLUSH_CONTENT = 1 << 3
 #endif
 
 };

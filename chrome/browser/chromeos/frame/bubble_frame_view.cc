@@ -140,7 +140,7 @@ void BubbleFrameView::UpdateWindowIcon() {
 }
 
 gfx::Insets BubbleFrameView::GetInsets() const {
-  return (style_ & STYLE_FLUSH) ?
+  return (style_ & STYLE_FLUSH || style_ & STYLE_FLUSH_CONTENT) ?
          gfx::Insets() :
          gfx::Insets(kTitleTopPadding,
                      kHorizontalPadding,
@@ -168,27 +168,49 @@ void BubbleFrameView::Layout() {
   if (throbber_)
     throbber_size = throbber_->GetPreferredSize();
 
+  // Need to center elements which are shorter.
+  int max_height = std::max(title_size.height(),
+                            std::max(close_button_size.height(),
+                                     throbber_size.height()));
+
+  gfx::Insets title_insets = gfx::Insets();
+  // Need to insert title padding for STYLE_FLUSH_CONTENT.
+  if (style_ & STYLE_FLUSH_CONTENT)
+    title_insets = gfx::Insets(kTitleTopPadding,
+                               kHorizontalPadding,
+                               0,
+                               kHorizontalPadding);
+
   if (title_) {
     title_->SetBounds(
-        insets.left(), insets.top(),
-        std::max(0, width() - insets.width() - close_button_size.width()),
+        insets.left() + title_insets.left(),
+        insets.top() + title_insets.top() +
+            (max_height - title_size.height())/2, // Center.
+        std::max(0, width() - insets.width() - title_insets.width() -
+            close_button_size.width()),
         title_size.height());
   }
 
   if (close_button_) {
     close_button_->SetBounds(
-        width() - insets.right() - close_button_size.width(), insets.top(),
-        close_button_size.width(), close_button_size.height());
+        width() - insets.right() - title_insets.right() -
+            close_button_size.width(),
+        insets.top() + title_insets.top() +
+            (max_height - close_button_size.height())/2,
+        close_button_size.width(),
+        close_button_size.height());
   }
 
   if (throbber_) {
     throbber_->SetBounds(
-        insets.left(), insets.top(),
+        insets.left() + title_insets.left(),
+        insets.top() + title_insets.top() +
+            (max_height - throbber_size.height())/2,
         std::min(throbber_size.width(), width()),
         throbber_size.height());
   }
 
-  int top_height = insets.top();
+  int top_height = insets.top() + title_insets.top();
   if (title_size.height() > 0 ||
       close_button_size.height() > 0 ||
       throbber_size.height() > 0) {
