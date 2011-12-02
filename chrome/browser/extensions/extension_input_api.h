@@ -37,10 +37,10 @@ class SetKeyboardHeightFunction : public AsyncExtensionFunction {
 };
 #endif
 
-#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
-// Note that this experimental APIs are currently only available for
-// TOUCH_UI version of Chrome OS. Please also note that the version of Chrome
-// OS is always built with TOOLKIT_VIEWS.
+#if defined(OS_CHROMEOS) && defined(USE_VIRTUAL_KEYBOARD)
+// Note that these experimental APIs are currently only available for
+// versions of Chrome OS built with USE_VIRTUAL_KEYBOARD. Please also note that
+// the version of Chrome OS is always built with TOOLKIT_VIEWS.
 //
 // We may eventually support other platforms, especially non TOUCH_UI version
 // of Chrome OS.

@@ -23,7 +23,7 @@
 #include "content/public/browser/notification_service.h"
 #endif
 
-#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
+#if defined(OS_CHROMEOS) && defined(USE_VIRTUAL_KEYBOARD)
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
@@ -74,7 +74,7 @@ uint16 UnicodeIdentifierStringToInt(const std::string& key_identifier) {
 }
 
 views::Widget* GetTopLevelWidget(Browser* browser) {
-#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
+#if defined(OS_CHROMEOS) && defined(USE_VIRTUAL_KEYBOARD)
   chromeos::LoginDisplayHost* host =
       chromeos::BaseLoginDisplayHost::default_host();
   if (host)
@@ -187,7 +187,7 @@ bool SetKeyboardHeightFunction::RunImpl() {
 }
 #endif
 
-#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
+#if defined(OS_CHROMEOS) && defined(USE_VIRTUAL_KEYBOARD)
 // TODO(yusukes): This part should be moved to extension_input_api_chromeos.cc.
 bool SendHandwritingStrokeFunction::RunImpl() {
   // TODO(yusukes): Add a parameter for an input context ID.

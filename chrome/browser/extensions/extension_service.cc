@@ -113,7 +113,7 @@
 #include "webkit/fileapi/file_system_path_manager.h"
 #endif
 
-#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
+#if defined(OS_CHROMEOS) && defined(USE_VIRTUAL_KEYBOARD)
 #include "chrome/browser/extensions/extension_input_ui_api.h"
 #endif
 
@@ -511,7 +511,7 @@ void ExtensionService::InitEventRouters() {
   ExtensionInputImeEventRouter::GetInstance()->Init();
 #endif
 
-#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
+#if defined(OS_CHROMEOS) && defined(USE_VIRTUAL_KEYBOARD)
   ExtensionInputUiEventRouter::GetInstance()->Init();
 #endif
 
@@ -1013,7 +1013,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
     PluginService::GetInstance()->PurgePluginListCache(profile_, false);
 
 #if defined(OS_CHROMEOS)
-#if defined(TOUCH_UI)
+#if defined(USE_VIRTUAL_KEYBOARD)
   chromeos::input_method::InputMethodManager* input_method_manager =
       chromeos::input_method::InputMethodManager::GetInstance();
 #endif
@@ -1025,7 +1025,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
       ExtensionInputImeEventRouter::GetInstance()->RegisterIme(
           profile_, extension->id(), *component);
     }
-#if defined(TOUCH_UI)
+#if defined(USE_VIRTUAL_KEYBOARD)
     if (component->type == Extension::INPUT_COMPONENT_TYPE_VIRTUAL_KEYBOARD &&
         !component->layouts.empty()) {
       const bool is_system =

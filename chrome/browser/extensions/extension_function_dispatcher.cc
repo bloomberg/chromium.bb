@@ -74,7 +74,7 @@
 #include "chrome/browser/extensions/extension_input_api.h"
 #endif
 
-#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
+#if defined(OS_CHROMEOS) && defined(USE_VIRTUAL_KEYBOARD)
 #include "chrome/browser/extensions/extension_input_ui_api.h"
 #endif
 
@@ -328,7 +328,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<UpdateMenuItemsFunction>();
 
   RegisterFunction<InputEventHandled>();
-#if defined(TOUCH_UI)
+#if defined(USE_VIRTUAL_KEYBOARD)
   RegisterFunction<CandidateClickedInputUiFunction>();
   RegisterFunction<CursorUpInputUiFunction>();
   RegisterFunction<CursorDownInputUiFunction>();
@@ -411,7 +411,7 @@ void FactoryRegistry::ResetFunctions() {
   // InputMethod
   RegisterFunction<GetInputMethodFunction>();
 
-#if defined(TOUCH_UI)
+#if defined(USE_VIRTUAL_KEYBOARD)
   // Input
   RegisterFunction<SendHandwritingStrokeFunction>();
   RegisterFunction<CancelHandwritingStrokesFunction>();
