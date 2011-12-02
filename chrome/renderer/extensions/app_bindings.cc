@@ -187,8 +187,9 @@ v8::Handle<v8::Value> AppBindingsHandler::GetDetailsForFrame(
 
 v8::Handle<v8::Value> AppBindingsHandler::GetDetailsForFrameImpl(
     WebFrame* frame) {
-  const ::Extension* extension =
-      dispatcher_->extensions()->GetByURL(frame->document().url());
+  const ::Extension* extension = dispatcher_->extensions()->GetByURL(
+      ExtensionURLInfo(frame->document().securityOrigin(),
+                       frame->document().url()));
   if (!extension)
     return v8::Null();
 

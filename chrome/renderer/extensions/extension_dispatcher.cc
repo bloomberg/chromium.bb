@@ -25,6 +25,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -41,6 +42,7 @@ static const int64 kMaxExtensionIdleHandlerDelayMs = 5*60*1000;
 using extensions::MiscellaneousBindings;
 using extensions::SchemaGeneratedBindings;
 using WebKit::WebDataSource;
+using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebSecurityPolicy;
 using WebKit::WebString;
@@ -273,8 +275,9 @@ bool ExtensionDispatcher::AllowScriptExtension(
   // Extension-only bindings should be restricted to content scripts and
   // extension-blessed URLs.
   if (extension_group == EXTENSION_GROUP_CONTENT_SCRIPTS ||
-      extensions_.ExtensionBindingsAllowed(
-          UserScriptSlave::GetLatestURLForFrame(frame))) {
+      extensions_.ExtensionBindingsAllowed(ExtensionURLInfo(
+          frame->document().securityOrigin(),
+          UserScriptSlave::GetDataSourceURLForFrame(frame)))) {
     return true;
   }
 
@@ -289,8 +292,9 @@ void ExtensionDispatcher::DidCreateScriptContext(
   } else if (world_id != 0) {
     extension_id = user_script_slave_->GetExtensionIdForIsolatedWorld(world_id);
   } else {
-    GURL frame_url = UserScriptSlave::GetLatestURLForFrame(frame);
-    extension_id = extensions_.GetIdByURL(frame_url);
+    GURL frame_url = UserScriptSlave::GetDataSourceURLForFrame(frame);
+    extension_id = extensions_.GetIdByURL(
+      ExtensionURLInfo(frame->document().securityOrigin(), frame_url));
   }
 
   ChromeV8Context* context =

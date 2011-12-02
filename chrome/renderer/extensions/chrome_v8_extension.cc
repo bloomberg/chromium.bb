@@ -20,6 +20,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using extensions::ExtensionAPI;
+using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebView;
 
@@ -103,12 +104,15 @@ const Extension* ChromeV8Extension::GetExtensionForCurrentRenderView() const {
   if (!renderview)
     return NULL;  // this can happen as a tab is closing.
 
-  GURL url = renderview->GetWebView()->mainFrame()->document().url();
+  WebDocument document = renderview->GetWebView()->mainFrame()->document();
+  GURL url = document.url();
   const ExtensionSet* extensions = extension_dispatcher_->extensions();
-  if (!extensions->ExtensionBindingsAllowed(url))
+  if (!extensions->ExtensionBindingsAllowed(
+      ExtensionURLInfo(document.securityOrigin(), url)))
     return NULL;
 
-  return extensions->GetByURL(url);
+  return extensions->GetByURL(
+      ExtensionURLInfo(document.securityOrigin(), url));
 }
 
 bool ChromeV8Extension::CheckCurrentContextAccessToExtensionAPI(
