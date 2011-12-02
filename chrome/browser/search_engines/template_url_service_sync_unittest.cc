@@ -1275,3 +1275,23 @@ TEST_F(TemplateURLServiceSyncTest, SyncWithManagedDefaultSearch) {
 
   EXPECT_EQ(expected_default, model()->GetDefaultSearchProvider());
 }
+
+TEST_F(TemplateURLServiceSyncTest, SyncMergeDeletesDefault) {
+  // If the value from Sync is a duplicate of the local default and is newer, it
+  // should safely replace the local value and set as the new default.
+  TemplateURL* default_turl =
+      CreateTestTemplateURL("key1", "http://key1.com", "whateverguid", 10);
+  model()->Add(default_turl);
+  model()->SetDefaultSearchProvider(default_turl);
+
+  // The key1 entry should be a duplicate of the default.
+  model()->MergeDataAndStartSyncing(
+      syncable::SEARCH_ENGINES,
+      CreateInitialSyncData(),
+      processor());
+
+  EXPECT_EQ(3U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
+  EXPECT_FALSE(model()->GetTemplateURLForGUID("whateverguid"));
+  EXPECT_EQ(model()->GetDefaultSearchProvider(),
+            model()->GetTemplateURLForGUID("key1"));
+}

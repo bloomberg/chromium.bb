@@ -1807,10 +1807,22 @@ void TemplateURLService::MergeSyncAndLocalURLDuplicates(
     // rather than ResetTemplateURL, |sync_url| is added with a fresh
     // TemplateURLID. We don't need to sync the new ID back to the server since
     // it's only relevant locally.
-    Remove(local_turl);
-    // Force the local ID to 0 so we can add it.
-    scoped_sync_turl->set_id(0);
-    Add(scoped_sync_turl.release());
+    bool delete_default = (local_turl == GetDefaultSearchProvider());
+    if (delete_default && is_default_search_managed_) {
+      NOTREACHED() << "Tried to delete managed default search provider";
+    } else {
+      if (delete_default)
+        default_search_provider_ = NULL;
+
+      Remove(local_turl);
+
+      // Force the local ID to 0 so we can add it.
+      scoped_sync_turl->set_id(0);
+      TemplateURL* temp = scoped_sync_turl.release();
+      Add(temp);
+      if (delete_default)
+        SetDefaultSearchProvider(temp);
+    }
   } else {
     // Change the local TURL's GUID to the server's GUID and push an update to
     // Sync. This ensures that the rest of local_url's fields are sync'd up to
