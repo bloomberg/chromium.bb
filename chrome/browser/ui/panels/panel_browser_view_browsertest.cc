@@ -615,7 +615,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, DISABLED_DrawAttention) {
   TestDrawAttention();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, ChangeAutoHideTaskBarThickness) {
+IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest,
+                       DISABLED_ChangeAutoHideTaskBarThickness) {
   TestChangeAutoHideTaskBarThickness();
 }
 #endif
