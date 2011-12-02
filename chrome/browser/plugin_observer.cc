@@ -350,8 +350,9 @@ void PluginObserver::DidNotFindMissingPlugin(int placeholder_id,
 
 void PluginObserver::InstallMissingPlugin(PluginInstaller* installer) {
   if (installer->url_for_display()) {
-    tab_contents()->OpenURL(installer->plugin_url(), tab_contents()->GetURL(),
-                            NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED);
+    tab_contents()->OpenURL(OpenURLParams(
+        installer->plugin_url(), tab_contents()->GetURL(),
+        NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED, false));
   } else {
     NOTIMPLEMENTED();
   }

@@ -213,10 +213,12 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
     return;
 
   const GURL& previousURL = entry->virtual_url();
-  tabContents_->tab_contents()->OpenURL(url,
-                                        previousURL,
-                                        CURRENT_TAB,
-                                        content::PAGE_TRANSITION_TYPED);
+  tabContents_->tab_contents()->OpenURL(OpenURLParams(
+      url,
+      previousURL,
+      CURRENT_TAB,
+      content::PAGE_TRANSITION_TYPED,
+      false));
 }
 
 - (NSString*)title {

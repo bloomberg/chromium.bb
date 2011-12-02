@@ -573,6 +573,8 @@ TabContents* TabContents::OpenURL(const GURL& url,
                                   const GURL& referrer,
                                   WindowOpenDisposition disposition,
                                   content::PageTransition transition) {
+  // For specifying a referrer, use the version of OpenURL taking OpenURLParams.
+  DCHECK(referrer.is_empty());
   return OpenURL(OpenURLParams(url, referrer, disposition, transition,
                                false));
 }
