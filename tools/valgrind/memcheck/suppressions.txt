@@ -5294,6 +5294,20 @@
    fun:_ZN3WTF16VectorDestructorILb1ENS_6OwnPtrIN7WebCore27InspectorBaseAgentInterfaceEEEE8destructEPS4_S6_
    fun:_ZN3WTF20VectorTypeOperationsINS_6OwnPtrIN7WebCore27InspectorBaseAgentInterfaceEEEE8destructEPS4_S6_
 }
+{
+   bug_106109
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN*DefaultFocusManagerFactory18CreateFocusManagerEPN5views6WidgetE
+   fun:_ZN5views19FocusManagerFactory6CreateEPNS_6WidgetE
+   fun:_ZN5views6Widget21OnNativeWidgetCreatedEv
+   fun:_ZN5views15NativeWidgetGtk16InitNativeWidgetERKNS_6Widget10InitParamsE
+   fun:_ZN5views6Widget4InitERKNS0_10InitParamsE
+   fun:_ZN5views6Widget31CreateWindowWithParentAndBoundsEPNS_14WidgetDelegateEP10_GtkWindowRKN3gfx4RectE
+   fun:_ZN5views6Widget22CreateWindowWithBoundsEPNS_14WidgetDelegateERKN3gfx4RectE
+   fun:_ZN33AccessibilityEventRouterViewsTest24CreateWindowWithContentsEPN5views4ViewE
+   fun:_ZN60AccessibilityEventRouterViewsTest_TestFocusNotification_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
