@@ -154,11 +154,11 @@ class RetryTest(Exception):
   pass
 
 
-def Run(url, options):
-  # Set this inside the Run function so we're assured hard_timeout will work.
+def RunTestsOnce(url, options):
+  # Set the default here so we're assured hard_timeout will be defined.
   # Tests, such as run_inbrowser_trusted_crash_in_startup_test, may not use the
   # RunFromCommand line entry point - and otherwise get stuck in an infinite
-  # loop when the hard timeout is not set.
+  # loop when something goes wrong and the hard timeout is not set.
   # http://code.google.com/p/chromium/issues/detail?id=105406
   if options.hard_timeout is None:
     options.hard_timeout = options.timeout * 4
@@ -269,12 +269,15 @@ def Run(url, options):
     return 0
 
 
-def RunWithRetries(url, options):
+# This is an entrypoint for tests that treat the browser tester as a Python
+# library rather than an opaque script.
+# (e.g. run_inbrowser_trusted_crash_in_startup_test)
+def Run(url, options):
   result = 1
   attempt = 1
   while True:
     try:
-      result = Run(url, options)
+      result = RunTestsOnce(url, options)
       break
     except RetryTest:
       # Only retry once.
@@ -303,7 +306,7 @@ def RunFromCommandLine():
   if url is None:
     parser.error('Must specify a URL')
 
-  return RunWithRetries(url, options)
+  return Run(url, options)
 
 
 if __name__ == '__main__':
