@@ -704,3 +704,10 @@
   fun:ChromeMain
   fun:main
 }
+{
+  bug_106196
+  ThreadSanitizer:Race
+  fun:tracked_objects::ThreadData::InitializeAndSetTrackingStatus
+  fun:ChildThread::OnSetProfilerStatus
+  fun:DispatchToMethod
+}
