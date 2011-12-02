@@ -178,6 +178,12 @@ class RenderViewImpl : public RenderWidget,
   // Sets the "next page id" counter.
   static void SetNextPageID(int32 next_page_id);
 
+  // TODO(creis): Remove when we no longer need
+  // RenderThreadImpl::OnTempCrashWithData.
+  static int32 next_page_id() {
+    return next_page_id_;
+  }
+
   // May return NULL when the view is closing.
   CONTENT_EXPORT WebKit::WebView* webview() const;
 

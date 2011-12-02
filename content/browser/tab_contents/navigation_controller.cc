@@ -675,8 +675,8 @@ content::NavigationType NavigationController::ClassifyNavigation(
     UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_NC"));
 
     // Temporary code so we can get more information.  Format:
-    //  http://url/foo.html#page1#max3#frame1#ids:2,x,3
-    std::string temp = params.url.spec();;
+    //  http://url/foo.html#page1#max3#frame1#ids:2_Nx,1_1x,3_2
+    std::string temp = params.url.spec();
     temp.append("#page");
     temp.append(base::IntToString(params.page_id));
     temp.append("#max");
@@ -685,10 +685,17 @@ content::NavigationType NavigationController::ClassifyNavigation(
     temp.append(base::IntToString(params.frame_id));
     temp.append("#ids");
     for (int i = 0; i < static_cast<int>(entries_.size()); ++i) {
-      // Append all same-process page_ids (with placeholders for out of process)
-      if (entries_[i]->site_instance() == tab_contents_->GetSiteInstance())
-        temp.append(base::IntToString(entries_[i]->page_id()));
+      // Append entry metadata (e.g., 3_7x):
+      //  3: page_id
+      //  7: SiteInstance ID, or N for null
+      //  x: appended if not from the current SiteInstance
+      temp.append(base::IntToString(entries_[i]->page_id()));
+      temp.append("_");
+      if (entries_[i]->site_instance())
+        temp.append(base::IntToString(entries_[i]->site_instance()->id()));
       else
+        temp.append("N");
+      if (entries_[i]->site_instance() != tab_contents_->GetSiteInstance())
         temp.append("x");
       temp.append(",");
     }

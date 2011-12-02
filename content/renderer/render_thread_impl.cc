@@ -17,6 +17,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_table.h"
 #include "base/shared_memory.h"
+#include "base/string_number_conversions.h"  // Temporary
 #include "base/task.h"
 #include "base/threading/thread_local.h"
 #include "base/values.h"
@@ -839,7 +840,12 @@ void RenderThreadImpl::OnNetworkStateChanged(bool online) {
 }
 
 void RenderThreadImpl::OnTempCrashWithData(const GURL& data) {
-  content::GetContentClient()->SetActiveURL(data);
+  // Append next_page_id_ to the data from the browser.
+  std::string temp = data.spec();
+  temp.append("#next");
+  temp.append(base::IntToString(RenderViewImpl::next_page_id()));
+
+  content::GetContentClient()->SetActiveURL(GURL(temp));
   CHECK(false);
 }
 
