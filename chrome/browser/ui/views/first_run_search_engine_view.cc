@@ -169,6 +169,13 @@ string16 FirstRunSearchEngineView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_FIRSTRUN_DLG_TITLE);
 }
 
+bool FirstRunSearchEngineView::CanClose() {
+  // We need a valid search engine to set as default, so if the user tries to
+  // close the window before the template URL service is loaded, we must prevent
+  // this from happening.
+  return fallback_choice_ != NULL;
+}
+
 void FirstRunSearchEngineView::WindowClosing() {
   // If the window is closed by clicking the close button, we default to the
   // engine in the first slot.
@@ -477,7 +484,7 @@ void FirstRunSearchEngineView::AddSearchEnginesIfPossible() {
 
 void FirstRunSearchEngineView::ChooseSearchEngine(SearchEngineChoice* choice) {
   user_chosen_engine_ = true;
-  DCHECK(template_url_service_);
+  DCHECK(choice && template_url_service_);
   template_url_service_->SetSearchEngineDialogSlot(choice->slot());
   const TemplateURL* default_search = choice->GetSearchEngine();
   if (default_search)

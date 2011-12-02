@@ -128,6 +128,10 @@ bool WidgetDelegate::ShouldRestoreWindowSize() const {
   return true;
 }
 
+bool WidgetDelegate::CanClose() {
+  return true;
+}
+
 View* WidgetDelegate::GetContentsView() {
   if (!default_contents_view_)
     default_contents_view_ = new View;
