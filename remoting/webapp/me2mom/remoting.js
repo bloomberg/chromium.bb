@@ -40,6 +40,8 @@ remoting.init = function() {
   remoting.hostList = new remoting.HostList(
       document.getElementById('host-list'),
       document.getElementById('host-list-error'));
+  remoting.toolbar = new remoting.Toolbar(
+      document.getElementById('session-toolbar'));
 
   refreshEmail_();
   var email = remoting.oauth2.getCachedEmail();
@@ -165,8 +167,8 @@ function getEmail_() {
  * @return {remoting.AppMode} The mode to start in.
  */
 function getAppStartupMode_() {
-  return remoting.oauth2.isAuthenticated() ? remoting.AppMode.HOME
-      : remoting.AppMode.UNAUTHENTICATED;
+  return remoting.oauth2.isAuthenticated() ? remoting.AppMode.HOME :
+      remoting.AppMode.UNAUTHENTICATED;
 }
 
 /**

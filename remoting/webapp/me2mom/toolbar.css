@@ -18,7 +18,7 @@
   padding: 3px 9px;
 }
 
-.toolbar-container:hover, .toolbar-preview {
+.toolbar-visible {
   top: -8px;
   -webkit-transition-delay: 0s;
 }

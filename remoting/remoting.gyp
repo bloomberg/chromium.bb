@@ -128,6 +128,7 @@
       'webapp/me2mom/server_log_entry.js',
       'webapp/me2mom/spinner.gif',
       'webapp/me2mom/toolbar.css',
+      'webapp/me2mom/toolbar.js',
       'webapp/me2mom/ui_mode.js',
       'webapp/me2mom/util.js',
       'webapp/me2mom/wcs.js',

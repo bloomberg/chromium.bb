@@ -123,7 +123,7 @@ remoting.toggleScaleToFit = function(button) {
 remoting.onResize = function() {
   if (remoting.clientSession)
     remoting.clientSession.onWindowSizeChanged();
-  recenterToolbar_();
+  remoting.toolbar.center();
 }
 
 /**
@@ -222,8 +222,8 @@ function onClientStateChange_(oldState, newState) {
   } else if (newState == remoting.ClientSession.State.CONNECTED) {
     if (remoting.clientSession) {
       remoting.setMode(remoting.AppMode.IN_SESSION);
-      recenterToolbar_();
-      showToolbarPreview_();
+      remoting.toolbar.center();
+      remoting.toolbar.preview();
       updateStatistics_();
     }
 
@@ -393,23 +393,6 @@ function updateStatistics_() {
   window.setTimeout(updateStatistics_, 1000);
 }
 
-/**
- * Force-show the tool-bar for three seconds to aid discoverability.
- */
-function showToolbarPreview_() {
-  var toolbar = document.getElementById('session-toolbar');
-  addClass(toolbar, 'toolbar-preview');
-  window.setTimeout(removeClass, 3000, toolbar, 'toolbar-preview');
-}
-
-/**
- * Update the horizontal position of the tool-bar to center it.
- */
-function recenterToolbar_() {
-  var toolbar = document.getElementById('session-toolbar');
-  var toolbarX = (window.innerWidth - toolbar.clientWidth) / 2;
-  toolbar.style['left'] = toolbarX + 'px';
-}
 
 /**
  * Start a connection to the specified host, using the stored details.
