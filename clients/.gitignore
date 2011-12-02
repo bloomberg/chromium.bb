@@ -1,9 +1,11 @@
-libtoytoolkit.a
+desktop-shell-client-protocol.h
+desktop-shell-protocol.c
 dnd
 eventdemo
 flower
 gears
 image
+libtoytoolkit.a
 resizor
 screenshooter-client-protocol.h
 screenshooter-protocol.c
@@ -11,10 +13,10 @@ screenshot
 simple-egl
 simple-shm
 smoke
+tablet-shell-client-protocol.h
+tablet-shell-protocol.c
 terminal
 view
-desktop-shell-client-protocol.h
-desktop-shell-protocol.c
-desktop-shell
-simple-client
+wayland-desktop-shell
+wayland-tablet-shell
 wscreensaver
