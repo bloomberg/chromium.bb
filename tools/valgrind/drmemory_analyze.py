@@ -36,7 +36,7 @@ class DrMemoryError:
       bang_index = supp_lines[l].find("!")
       d_exe_index = supp_lines[l].find(".exe!")
       if bang_index >= 4 and d_exe_index + 4 == bang_index:
-        supp_lines[l] = "*.exe" + supp_lines[l][bang_index:]
+        supp_lines[l] = "*" + supp_lines[l][bang_index:]
     self._suppression = "\n".join(supp_lines)
 
   def __str__(self):
@@ -59,6 +59,9 @@ class DrMemoryError:
 
   def __hash__(self):
     return hash(self._suppression)
+
+  def __eq__(self, rhs):
+    return self._suppression == rhs
 
 
 class DrMemoryAnalyzer:
@@ -179,6 +182,7 @@ def main():
     parser.error("no filename specified")
   filenames = args
 
+  logging.getLogger().setLevel(logging.INFO)
   return DrMemoryAnalyzer().Report(filenames, None, False)
 
 
