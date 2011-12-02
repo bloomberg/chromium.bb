@@ -202,6 +202,11 @@ remoting.ClientSession.prototype.removePlugin = function() {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.disconnect = function() {
+  // The plugin won't send a state change notification, so we explicitly log
+  // the fact that the connection has closed.
+  this.logToServer.logClientSessionStateChange(
+      remoting.ClientSession.State.CLOSED,
+      remoting.ClientSession.ConnectionError.NONE);
   if (remoting.wcs) {
     remoting.wcs.setOnIq(function(stanza) {});
     this.sendIq_(
