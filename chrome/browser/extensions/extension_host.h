@@ -109,6 +109,7 @@ class ExtensionHost : public TabContentsDelegate,
   // TabContentsObserver
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewDeleted(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewReady() OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual void DocumentAvailableInMainFrame() OVERRIDE;
@@ -187,6 +188,11 @@ class ExtensionHost : public TabContentsDelegate,
 
   // The host for our HTML content.
   scoped_ptr<TabContents> host_contents_;
+
+  // A weak pointer to the current or pending RenderViewHost. We don't access
+  // this through the host_contents because we want to deal with the pending
+  // host, so we can send messages to it before it finishes loading.
+  RenderViewHost* render_view_host_;
 
   // Whether the RenderWidget has reported that it has stopped loading.
   bool did_stop_loading_;

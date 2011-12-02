@@ -120,6 +120,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
       extension_id_(extension->id()),
       profile_(Profile::FromBrowserContext(
           site_instance->browsing_instance()->browser_context())),
+      render_view_host_(NULL),
       did_stop_loading_(false),
       document_element_available_(false),
       initial_url_(url),
@@ -132,6 +133,8 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   TabContentsObserver::Observe(host_contents_.get());
   host_contents_->set_delegate(this);
   host_contents_->set_view_type(host_type);
+
+  render_view_host_ = host_contents_->render_view_host();
 
   // Listen for when an extension is unloaded from the same profile, as it may
   // be the same extension that this points to.
@@ -185,12 +188,12 @@ TabContents* ExtensionHost::GetAssociatedTabContents() const {
 }
 
 content::RenderProcessHost* ExtensionHost::render_process_host() const {
-  return host_contents()->GetRenderProcessHost();
+  return render_view_host()->process();
 }
 
 RenderViewHost* ExtensionHost::render_view_host() const {
   // TODO(mpcomplete): This can be NULL. How do we handle that?
-  return host_contents()->render_view_host();
+  return render_view_host_;
 }
 
 bool ExtensionHost::IsRenderViewLive() const {
@@ -198,7 +201,7 @@ bool ExtensionHost::IsRenderViewLive() const {
 }
 
 void ExtensionHost::CreateRenderViewSoon() {
-  if (render_process_host()->HasConnection()) {
+  if (render_process_host() && render_process_host()->HasConnection()) {
     // If the process is already started, go ahead and initialize the RenderView
     // synchronously. The process creation is the real meaty part that we want
     // to defer.
@@ -419,6 +422,8 @@ void ExtensionHost::OnRequest(const ExtensionHostMsg_Request_Params& params) {
 }
 
 void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
+  render_view_host_ = render_view_host;
+
   if (view_.get())
     view_->RenderViewCreated();
 
@@ -436,6 +441,14 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
         render_view_host->routing_id(),
         ExtensionTabUtil::GetWindowId(browser)));
   }
+}
+
+void ExtensionHost::RenderViewDeleted(RenderViewHost* render_view_host) {
+  // If our RenderViewHost is deleted, fall back to the host_contents' current
+  // RVH. There is sometimes a small gap between the pending RVH being deleted
+  // and RenderViewCreated being called, so we update it here.
+  if (render_view_host == render_view_host_)
+    render_view_host_ = host_contents_->render_view_host();
 }
 
 content::JavaScriptDialogCreator* ExtensionHost::GetJavaScriptDialogCreator() {

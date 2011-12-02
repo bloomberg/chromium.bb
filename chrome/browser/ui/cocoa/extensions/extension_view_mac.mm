@@ -57,10 +57,9 @@ void ExtensionViewMac::SetBackground(const SkBitmap& background) {
 void ExtensionViewMac::UpdatePreferredSize(const gfx::Size& new_size) {
   // When we update the size, our container becomes visible. Stay hidden until
   // the host is loaded.
-  if (!extension_host_->did_stop_loading()) {
-    pending_preferred_size_ = new_size;
+  pending_preferred_size_ = new_size;
+  if (!extension_host_->did_stop_loading())
     return;
-  }
 
   // No need to use CA here, our caller calls us repeatedly to animate the
   // resizing.
