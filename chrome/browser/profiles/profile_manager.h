@@ -208,8 +208,16 @@ class ProfileManager : public base::NonThreadSafe,
   virtual void DoFinalInitForServices(Profile* profile, bool go_off_the_record);
   virtual void DoFinalInitLogging(Profile* profile);
 
-  // Creates a new profile. Virtual so that unittests can return TestingProfile.
-  virtual Profile* CreateProfile(const FilePath& path);
+  // Creates a new profile by calling into the profile's profile creation
+  // method. Virtual so that unittests can return a TestingProfile instead
+  // of the Profile's result.
+  virtual Profile* CreateProfileHelper(const FilePath& path);
+
+  // Creates a new profile asynchronously by calling into the profile's
+  // asynchronous profile creation method. Virtual so that unittests can return
+  // a TestingProfile instead of the Profile's result.
+  virtual Profile* CreateProfileAsyncHelper(const FilePath& path,
+                                            Delegate* delegate);
 
  private:
   friend class TestingProfileManager;

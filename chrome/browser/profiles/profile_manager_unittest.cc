@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
@@ -26,6 +27,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -43,6 +45,36 @@ namespace {
 Profile* g_created_profile;
 
 }  // namespace
+
+namespace testing {
+
+class ProfileManager : public ::ProfileManagerWithoutInit {
+ public:
+  explicit ProfileManager(const FilePath& user_data_dir)
+      : ::ProfileManagerWithoutInit(user_data_dir) {}
+
+ protected:
+  virtual Profile* CreateProfileHelper(const FilePath& file_path) OVERRIDE {
+    if (!file_util::PathExists(file_path)) {
+      if (!file_util::CreateDirectory(file_path))
+        return NULL;
+    }
+    return new TestingProfile(file_path, NULL);
+  }
+
+  virtual Profile* CreateProfileAsyncHelper(const FilePath& path,
+                                            Delegate* delegate) OVERRIDE {
+    // This is safe while all file operations are done on the FILE thread.
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::IgnoreReturn<bool>(base::Bind(&file_util::CreateDirectory,
+                                            path)));
+
+    return new TestingProfile(path, this);
+  }
+};
+
+}  // namespace testing
 
 class ProfileManagerTest : public testing::Test {
  protected:
@@ -65,12 +97,16 @@ class ProfileManagerTest : public testing::Test {
   virtual void SetUp() {
     // Create a new temporary directory, and store the path
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    profile_manager_.reset(new ProfileManagerWithoutInit(temp_dir_.path()));
+    profile_manager_.reset(new testing::ProfileManager(temp_dir_.path()));
 #if defined(OS_WIN)
     // Force the ProfileInfoCache to be created immediately, so we can
     // remove the shortcut manager for testing.
     profile_manager_->GetProfileInfoCache();
     profile_manager_->RemoveProfileShortcutManagerForTesting();
+#endif
+#if defined(OS_CHROMEOS)
+  CommandLine *cl = CommandLine::ForCurrentProcess();
+  cl->AppendSwitch(switches::kTestType);
 #endif
   }
 
@@ -101,6 +137,7 @@ class ProfileManagerTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread file_thread_;
+  // IOThread is necessary for the creation of some services below.
   IOThread io_thread_;
 
   scoped_ptr<base::SystemMonitor> system_monitor_dummy_;
@@ -124,11 +161,6 @@ TEST_F(ProfileManagerTest, GetProfile) {
 }
 
 TEST_F(ProfileManagerTest, DefaultProfileDir) {
-  CommandLine *cl = CommandLine::ForCurrentProcess();
-  std::string profile_dir("my_user");
-
-  cl->AppendSwitch(switches::kTestType);
-
   FilePath expected_default =
       FilePath().AppendASCII(chrome::kInitialProfile);
   EXPECT_EQ(expected_default.value(),
@@ -142,7 +174,6 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
   std::string profile_dir("my_user");
 
   cl->AppendSwitchASCII(switches::kLoginProfile, profile_dir);
-  cl->AppendSwitch(switches::kTestType);
 
   FilePath expected_default =
       FilePath().AppendASCII(chrome::kInitialProfile);
@@ -168,20 +199,23 @@ TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
   FilePath dest_path2 = temp_dir_.path();
   dest_path2 = dest_path2.Append(FILE_PATH_LITERAL("New Profile 2"));
 
-  Profile* profile1;
-  Profile* profile2;
-
   // Successfully create the profiles.
-  profile1 = profile_manager_->GetProfile(dest_path1);
+  TestingProfile* profile1 =
+      static_cast<TestingProfile*>(profile_manager_->GetProfile(dest_path1));
   ASSERT_TRUE(profile1);
 
-  profile2 = profile_manager_->GetProfile(dest_path2);
+  TestingProfile* profile2 =
+      static_cast<TestingProfile*>(profile_manager_->GetProfile(dest_path2));
   ASSERT_TRUE(profile2);
 
   // Force lazy-init of some profile services to simulate use.
+  profile1->CreateHistoryService(true, false);
   EXPECT_TRUE(profile1->GetHistoryService(Profile::EXPLICIT_ACCESS));
+  profile1->CreateBookmarkModel(true);
   EXPECT_TRUE(profile1->GetBookmarkModel());
+  profile2->CreateBookmarkModel(true);
   EXPECT_TRUE(profile2->GetBookmarkModel());
+  profile2->CreateHistoryService(true, false);
   EXPECT_TRUE(profile2->GetHistoryService(Profile::EXPLICIT_ACCESS));
 
   // Make sure any pending tasks run before we destroy the profiles.
