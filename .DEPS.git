@@ -6,7 +6,7 @@ vars = {
     'git_url':
          'http://git.chromium.org',
     'webkit_rev':
-         '@a12b97490f6367a58a9809f81679db902ee5d9ed'
+         '@c4ffaeca18130352632f5f21c99624fe6d613601'
 }
 
 deps = {
@@ -83,9 +83,9 @@ deps = {
     'src/third_party/sfntly/src/sfntly':
         Var('git_url') + '/external/sfntly/cpp/src/sfntly.git@f5e2e4d0b7db0926f6519b0ed1e1d06c4f0b6f05',
     'src/third_party/skia/include':
-        Var('git_url') + '/external/skia/include.git@c684ed7893fe2f6974d1f6deea3b71e293cd9a7e',
+        Var('git_url') + '/external/skia/include.git@83a4806248b8c36c8e15bb36c4243e873330f0fe',
     'src/third_party/skia/src':
-        Var('git_url') + '/external/skia/src.git@42cfe86274b56e77adb778e7f8bfc810f048a303',
+        Var('git_url') + '/external/skia/src.git@b575562fac6bbcc83c19bee8d4fbae67d5ebc4a4',
     'src/third_party/skia/third_party/glu':
         Var('git_url') + '/external/skia/third_party/glu.git@c988402115946ed3cb7fb347f6eef4a8cec543e2',
     'src/third_party/smhasher/src':
