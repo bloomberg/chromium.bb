@@ -121,6 +121,13 @@ base::WaitableEvent* NPChannelBase::GetModalDialogEvent(
 bool NPChannelBase::Init(base::MessageLoopProxy* ipc_message_loop,
                          bool create_pipe_now,
                          base::WaitableEvent* shutdown_event) {
+#if defined(OS_POSIX)
+  // Check the validity of fd for bug investigation.  Remove after fixed.
+  // See for details: crbug.com/95129, crbug.com/97285.
+  if (mode_ == IPC::Channel::MODE_CLIENT)
+    CHECK_NE(-1, channel_handle_.socket.fd);
+#endif
+
   channel_.reset(new IPC::SyncChannel(
       channel_handle_, mode_, this, ipc_message_loop, create_pipe_now,
       shutdown_event));

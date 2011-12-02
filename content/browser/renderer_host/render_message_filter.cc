@@ -159,6 +159,11 @@ class OpenChannelToPpapiBrokerCallback
 
   virtual void OnChannelOpened(base::ProcessHandle broker_process_handle,
                                const IPC::ChannelHandle& channel_handle) {
+#if defined(OS_POSIX)
+    // Check the validity of fd for bug investigation. Remove after fixed.
+    // See for details: crbug.com/103957.
+    CHECK_NE(-1, channel_handle.socket.fd);
+#endif
     filter_->Send(new ViewMsg_PpapiBrokerChannelCreated(routing_id_,
                                                         request_id_,
                                                         broker_process_handle,

@@ -804,6 +804,12 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
     return NULL;
   }
 
+#if defined(OS_POSIX)
+  // Check the validity of fd for bug investigation.  Replace with normal error
+  // handling (see above) after bug fixed. See for details: crbug.com/95732.
+  CHECK_NE(-1, channel_handle.socket.fd);
+#endif
+
   gpu_channel_->set_gpu_info(gpu_info);
   content::GetContentClient()->SetGpuInfo(gpu_info);
 
