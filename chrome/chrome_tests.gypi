@@ -2801,9 +2801,9 @@
             'browser/ui/views/select_file_dialog_extension_browsertest.cc',
           ],
         }],
-        ['toolkit_views==0', {
+        ['chromeos==0 or use_virtual_keyboard==0', {
           'sources!': [
-            'browser/extensions/extension_input_apitest.cc',
+            'browser/extensions/extension_input_ui_apitest.cc',
           ],
         }],
         ['configuration_policy==0', {
@@ -2967,6 +2967,7 @@
         }, { # else: toolkit_views == 0
           'sources!': [
             'browser/extensions/browser_action_test_util_views.cc',
+            'browser/extensions/extension_input_apitest.cc',
             'browser/tab_first_render_watcher_browsertest.cc',
             'browser/ui/panels/panel_browser_view_browsertest.cc',
             'browser/ui/views/browser_actions_container_browsertest.cc',

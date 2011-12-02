@@ -4054,8 +4054,6 @@
             ['exclude', 'browser/extensions/extension_input_ime_api.h'],
             ['exclude', 'browser/extensions/extension_input_method_api.cc'],
             ['exclude', 'browser/extensions/extension_input_method_api.h'],
-            ['exclude', 'browser/extensions/extension_input_ui_api.cc'],
-            ['exclude', 'browser/extensions/extension_input_ui_api.h'],
             ['exclude', 'browser/extensions/extension_tts_api_chromeos.cc'],
             ['exclude', 'browser/oom_priority_manager.cc'],
             ['exclude', 'browser/oom_priority_manager.h'],
@@ -4137,14 +4135,6 @@
           'sources!': [
             'browser/password_manager/native_backend_gnome_x.cc',
             'browser/password_manager/native_backend_gnome_x.h',
-          ],
-        }],
-        ['use_virtual_keyboard==0', {
-          'sources/': [
-            ['exclude', '^browser/extensions/extension_input_ui_api.cc'],
-            ['exclude', '^browser/extensions/extension_input_ui_api.h'],
-            ['exclude', '^browser/ui/touch/status_bubble_touch.cc'],
-            ['exclude', '^browser/ui/touch/status_bubble_touch.h'],
           ],
         }],
         # linux/chromeos only status area button.
@@ -4251,6 +4241,8 @@
         }],
         ['use_virtual_keyboard==0', {
           'sources/': [
+            ['exclude', '^browser/extensions/extension_input_ui_api.*'],
+            ['exclude', '^browser/ui/touch/status_bubble_touch.*'],
             ['exclude', '^browser/ui/virtual_keyboard/*'],
             ['exclude', '^browser/ui/webui/keyboard_ui.*'],
           ],
@@ -4960,7 +4952,7 @@
             }],
             # Exclude extension_input_ui_api that depends on chromeos again
             # (Required because of the '^browser/extensions/' include above)
-            ['chromeos == 0', {
+            ['chromeos == 0 or use_virtual_keyboard == 0', {
               'sources/': [
                 ['exclude', '^browser/extensions/extension_input_ui_api.cc'],
                 ['exclude', '^browser/extensions/extension_input_ui_api.h'],
