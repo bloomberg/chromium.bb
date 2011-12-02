@@ -452,7 +452,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 
 // Tests that debugger works correctly if pause event occurs when DevTools
 // frontend is being loaded.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenLoadingDevTools) {
+// http://crbug.com/106114
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
+                       DISABLED_TestPauseWhenLoadingDevTools) {
   RunTest("testPauseWhenLoadingDevTools", kPauseWhenLoadingDevTools);
 }
 
@@ -541,8 +543,12 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, MAYBE_InspectSharedWorker) {
 #define MAYBE_PauseInSharedWorkerInitialization PauseInSharedWorkerInitialization
 #endif
 // See http://crbug.com/100538
+
+// http://crbug.com/106114 is masking
+// MAYBE_PauseInSharedWorkerInitialization into
+// DISABLED_PauseInSharedWorkerInitialization
 IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest,
-                       MAYBE_PauseInSharedWorkerInitialization) {
+                       DISABLED_PauseInSharedWorkerInitialization) {
     ASSERT_TRUE(test_server()->Start());
     GURL url = test_server()->GetURL(kReloadSharedWorkerTestPage);
     ui_test_utils::NavigateToURL(browser(), url);
