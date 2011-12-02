@@ -8,7 +8,6 @@
 
 #include <set>
 
-#include "net/base/completion_callback.h"
 #include "webkit/appcache/appcache_storage.h"
 
 namespace appcache {
@@ -37,7 +36,6 @@ class AppCacheTestHelper : public appcache::AppCacheStorage::Delegate {
   int group_id_;
   int appcache_id_;
   int response_id_;
-  net::OldCompletionCallbackImpl<AppCacheTestHelper> appcache_got_info_callback_;
   scoped_refptr<appcache::AppCacheInfoCollection> appcache_info_;
   std::set<GURL>* origins_;  // not owned
 

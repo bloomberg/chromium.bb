@@ -11,6 +11,7 @@
 #include "base/format_macros.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -316,16 +317,16 @@ class BaseInternalsJob : public net::URLRequestSimpleJob {
 class MainPageJob : public BaseInternalsJob {
  public:
   MainPageJob(net::URLRequest* request, AppCacheService* service)
-      : BaseInternalsJob(request, service) {}
+      : BaseInternalsJob(request, service),
+        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+  }
 
   virtual void Start() {
     DCHECK(request_);
     info_collection_ = new AppCacheInfoCollection;
-    gotinfo_complete_callback_ =
-        new net::CancelableOldCompletionCallback<MainPageJob>(
-            this, &MainPageJob::OnGotInfoComplete);
     appcache_service_->GetAllAppCacheInfo(
-        info_collection_, gotinfo_complete_callback_);
+        info_collection_, base::Bind(&MainPageJob::OnGotInfoComplete,
+                                     weak_factory_.GetWeakPtr()));
   }
 
   // Produces a page containing the listing
@@ -360,20 +361,15 @@ class MainPageJob : public BaseInternalsJob {
   }
 
  private:
-  virtual ~MainPageJob() {
-    if (gotinfo_complete_callback_)
-      gotinfo_complete_callback_.release()->Cancel();
-  }
+  virtual ~MainPageJob() {}
 
   void OnGotInfoComplete(int rv) {
-    gotinfo_complete_callback_ = NULL;
     if (rv != net::OK)
       info_collection_ = NULL;
     StartAsync();
   }
 
-  scoped_refptr<net::CancelableOldCompletionCallback<MainPageJob> >
-      gotinfo_complete_callback_;
+  base::WeakPtrFactory<MainPageJob> weak_factory_;
   scoped_refptr<AppCacheInfoCollection> info_collection_;
   DISALLOW_COPY_AND_ASSIGN(MainPageJob);
 };

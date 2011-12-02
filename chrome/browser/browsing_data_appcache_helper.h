@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "net/base/completion_callback.h"
 #include "googleurl/src/gurl.h"
 
 class Profile;
@@ -41,8 +42,7 @@ class BrowsingDataAppCacheHelper
 
   bool is_fetching_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
-  scoped_refptr<net::CancelableOldCompletionCallback<BrowsingDataAppCacheHelper> >
-      appcache_info_callback_;
+  net::CancelableCompletionCallback appcache_info_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataAppCacheHelper);
 };

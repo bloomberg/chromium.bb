@@ -4,6 +4,8 @@
 
 #include "webkit/appcache/appcache_test_helper.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache.h"
@@ -17,8 +19,6 @@ AppCacheTestHelper::AppCacheTestHelper()
     : group_id_(0),
       appcache_id_(0),
       response_id_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(appcache_got_info_callback_(
-          this, &AppCacheTestHelper::OnGotAppCacheInfo)),
       origins_(NULL) {}
 
 AppCacheTestHelper::~AppCacheTestHelper() {}
@@ -57,7 +57,9 @@ void AppCacheTestHelper::GetOriginsWithCaches(AppCacheService* appcache_service,
   appcache_info_ = new AppCacheInfoCollection;
   origins_ = origins;
   appcache_service->GetAllAppCacheInfo(
-      appcache_info_, &appcache_got_info_callback_);
+      appcache_info_, base::Bind(&AppCacheTestHelper::OnGotAppCacheInfo,
+                                 base::Unretained(this)));
+
   // OnGotAppCacheInfo will quit the message loop.
   MessageLoop::current()->Run();
 }

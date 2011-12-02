@@ -299,12 +299,12 @@ void AppCacheService::DeleteOriginHelper::CacheCompleted(bool success) {
 
 // GetInfoHelper -------
 
-class AppCacheService::GetInfoHelper : AsyncHelper {
+class AppCacheService::GetInfoHelper : NewAsyncHelper {
  public:
   GetInfoHelper(
       AppCacheService* service, AppCacheInfoCollection* collection,
-      net::OldCompletionCallback* callback)
-      : AsyncHelper(service, callback), collection_(collection) {
+      const net::CompletionCallback& callback)
+      : NewAsyncHelper(service, callback), collection_(collection) {
   }
 
   virtual void Start() {
@@ -316,6 +316,7 @@ class AppCacheService::GetInfoHelper : AsyncHelper {
   virtual void OnAllInfo(AppCacheInfoCollection* collection);
 
   scoped_refptr<AppCacheInfoCollection> collection_;
+
   DISALLOW_COPY_AND_ASSIGN(GetInfoHelper);
 };
 
@@ -506,8 +507,9 @@ void AppCacheService::CanHandleMainResourceOffline(
   helper->Start();
 }
 
-void AppCacheService::GetAllAppCacheInfo(AppCacheInfoCollection* collection,
-                                         net::OldCompletionCallback* callback) {
+void AppCacheService::GetAllAppCacheInfo(
+    AppCacheInfoCollection* collection,
+    const net::CompletionCallback& callback) {
   DCHECK(collection);
   GetInfoHelper* helper = new GetInfoHelper(this, collection, callback);
   helper->Start();

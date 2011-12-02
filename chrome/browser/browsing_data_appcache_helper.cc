@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data_appcache_helper.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
@@ -34,11 +35,11 @@ void BrowsingDataAppCacheHelper::StartFetching(const base::Closure& callback) {
   }
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  appcache_info_callback_ =
-      new net::CancelableOldCompletionCallback<BrowsingDataAppCacheHelper>(
-          this, &BrowsingDataAppCacheHelper::OnFetchComplete);
+  appcache_info_callback_.Reset(
+      base::Bind(&BrowsingDataAppCacheHelper::OnFetchComplete,
+                 base::Unretained(this)));
   appcache_service_->GetAllAppCacheInfo(info_collection_,
-                                        appcache_info_callback_);
+                                        appcache_info_callback_.callback());
 }
 
 void BrowsingDataAppCacheHelper::CancelNotification() {
@@ -50,8 +51,7 @@ void BrowsingDataAppCacheHelper::CancelNotification() {
     return;
   }
 
-  if (appcache_info_callback_)
-    appcache_info_callback_.release()->Cancel();
+  appcache_info_callback_.Cancel();
 }
 
 void BrowsingDataAppCacheHelper::DeleteAppCacheGroup(
@@ -82,7 +82,6 @@ void BrowsingDataAppCacheHelper::OnFetchComplete(int rv) {
         origin_map.erase(current);
     }
 
-    appcache_info_callback_ = NULL;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&BrowsingDataAppCacheHelper::OnFetchComplete, this, rv));
