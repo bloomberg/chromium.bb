@@ -429,18 +429,6 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
   CallClientFunction(ASCIIToUTF16("WebInspector.addExtensions"), results);
 }
 
-// TODO(adriansc): Remove this method once refactoring changed all call sites.
-TabContents* DevToolsWindow::OpenURLFromTab(
-    TabContents* source,
-    const GURL& url,
-    const GURL& referrer,
-    WindowOpenDisposition disposition,
-    content::PageTransition transition) {
-  return OpenURLFromTab(source,
-                        OpenURLParams(url, referrer, disposition, transition,
-                                      false));
-}
-
 TabContents* DevToolsWindow::OpenURLFromTab(TabContents* source,
                                             const OpenURLParams& params) {
   if (inspected_tab_) {

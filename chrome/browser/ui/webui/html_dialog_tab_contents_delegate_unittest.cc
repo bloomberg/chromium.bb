@@ -72,8 +72,8 @@ TEST_F(HtmlDialogTabContentsDelegateTest, DoNothingMethodsTest) {
 
 TEST_F(HtmlDialogTabContentsDelegateTest, OpenURLFromTabTest) {
   test_tab_contents_delegate_->OpenURLFromTab(
-    NULL, GURL(chrome::kAboutBlankURL), GURL(),
-    NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
+    NULL, OpenURLParams(GURL(chrome::kAboutBlankURL), GURL(),
+    NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
   // This should create a new foreground tab in the existing browser.
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_EQ(1U, BrowserList::size());
@@ -95,8 +95,8 @@ TEST_F(HtmlDialogTabContentsDelegateTest, DetachTest) {
   EXPECT_EQ(NULL, test_tab_contents_delegate_->profile());
   // Now, none of the following calls should do anything.
   test_tab_contents_delegate_->OpenURLFromTab(
-      NULL, GURL(chrome::kAboutBlankURL), GURL(),
-      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
+      NULL, OpenURLParams(GURL(chrome::kAboutBlankURL), GURL(),
+      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
   test_tab_contents_delegate_->AddNewContents(NULL, NULL, NEW_FOREGROUND_TAB,
                                               gfx::Rect(), false);
   EXPECT_EQ(0, browser()->tab_count());

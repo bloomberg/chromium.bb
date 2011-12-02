@@ -65,14 +65,6 @@ class CONTENT_EXPORT TabContentsDelegate {
 
   // Returns the TabContents the URL is opened in, or NULL if the URL wasn't
   // opened immediately.
-  // Deprecated. Please use the two-arguments method instead.
-  // TODO(adriansc): Remove this method once refactoring changed all call sites.
-  virtual TabContents* OpenURLFromTab(TabContents* source,
-                                      const GURL& url,
-                                      const GURL& referrer,
-                                      WindowOpenDisposition disposition,
-                                      content::PageTransition transition);
-
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const OpenURLParams& params);
 

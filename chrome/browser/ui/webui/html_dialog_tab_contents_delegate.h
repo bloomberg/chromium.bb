@@ -33,14 +33,6 @@ class HtmlDialogTabContentsDelegate : public TabContentsDelegate {
 
   // TabContentsDelegate declarations.
 
-  // Deprecated. Use two-arguments variant instead.
-  // TODO(adriansc): Remove this method once refactoring changed all call sites.
-  virtual TabContents* OpenURLFromTab(
-      TabContents* source,
-      const GURL& url,
-      const GURL& referrer,
-      WindowOpenDisposition disposition,
-      content::PageTransition transition) OVERRIDE;
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const OpenURLParams& params) OVERRIDE;
 

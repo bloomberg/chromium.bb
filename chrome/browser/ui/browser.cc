@@ -3376,16 +3376,6 @@ void Browser::TabStripEmpty() {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, TabContentsDelegate implementation:
 
-// TODO(adriansc): Remove this method once refactoring changed all call sites.
-TabContents* Browser::OpenURLFromTab(TabContents* source,
-                                     const GURL& url,
-                                     const GURL& referrer,
-                                     WindowOpenDisposition disposition,
-                                     content::PageTransition transition) {
-  return OpenURLFromTab(source, OpenURLParams(url, referrer, disposition,
-                                              transition, false));
-}
-
 TabContents* Browser::OpenURLFromTab(TabContents* source,
                                      const OpenURLParams& params) {
   browser::NavigateParams nav_params(this, params.url, params.transition);

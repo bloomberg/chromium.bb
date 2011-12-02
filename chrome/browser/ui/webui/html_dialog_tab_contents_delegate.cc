@@ -28,15 +28,6 @@ void HtmlDialogTabContentsDelegate::Detach() {
   profile_ = NULL;
 }
 
-// TODO(adriansc): Remove this method once refactoring changed all call sites.
-TabContents* HtmlDialogTabContentsDelegate::OpenURLFromTab(
-    TabContents* source, const GURL& url, const GURL& referrer,
-    WindowOpenDisposition disposition, content::PageTransition transition) {
-  return OpenURLFromTab(source,
-                        OpenURLParams(url, referrer, disposition, transition,
-                                      false));
-}
-
 TabContents* HtmlDialogTabContentsDelegate::OpenURLFromTab(
     TabContents* source, const OpenURLParams& params) {
   if (profile_) {

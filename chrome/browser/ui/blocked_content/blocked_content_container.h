@@ -57,13 +57,6 @@ class BlockedContentContainer : public BlockedContentTabHelperDelegate,
   // Overridden from TabContentsDelegate:
 
   // Forwards OpenURLFromTab to our |owner_|.
-  // Deprecated. Please use the two-arguments variant.
-  // TODO(adriansc): Remove method once refactoring changed all call sites.
-  virtual TabContents* OpenURLFromTab(
-      TabContents* source,
-      const GURL& url, const GURL& referrer,
-      WindowOpenDisposition disposition,
-      content::PageTransition transition) OVERRIDE;
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const OpenURLParams& params) OVERRIDE;
 

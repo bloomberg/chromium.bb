@@ -108,18 +108,6 @@ void RegistrationScreen::OnPageLoadFailed(const std::string& url) {
 ///////////////////////////////////////////////////////////////////////////////
 // RegistrationScreen, TabContentsDelegate implementation:
 
-// TODO(adriansc): Remove this method once refactoring changed all call sites.
-TabContents* RegistrationScreen::OpenURLFromTab(
-    TabContents* source,
-    const GURL& url,
-    const GURL& referrer,
-    WindowOpenDisposition disposition,
-    content::PageTransition transition) {
-  return OpenURLFromTab(source,
-                        OpenURLParams(url, referrer, disposition, transition,
-                                      false));
-}
-
 TabContents* RegistrationScreen::OpenURLFromTab(TabContents* source,
                                                 const OpenURLParams& params) {
   if (params.url.spec() == kRegistrationSuccessUrl) {

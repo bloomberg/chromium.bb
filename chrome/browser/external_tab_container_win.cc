@@ -331,18 +331,6 @@ ExternalTabContainer*
 ////////////////////////////////////////////////////////////////////////////////
 // ExternalTabContainer, TabContentsDelegate implementation:
 
-// TODO(adriansc): Remove this method once refactoring changed all call sites.
-TabContents* ExternalTabContainer::OpenURLFromTab(
-    TabContents* source,
-    const GURL& url,
-    const GURL& referrer,
-    WindowOpenDisposition disposition,
-    content::PageTransition transition) {
-  return OpenURLFromTab(source,
-                        OpenURLParams(url, referrer, disposition, transition,
-                                      false));
-}
-
 TabContents* ExternalTabContainer::OpenURLFromTab(TabContents* source,
                                                   const OpenURLParams& params) {
   if (pending()) {
@@ -1158,14 +1146,6 @@ TemporaryPopupExternalTabContainer::TemporaryPopupExternalTabContainer(
 
 TemporaryPopupExternalTabContainer::~TemporaryPopupExternalTabContainer() {
   DVLOG(1) << __FUNCTION__;
-}
-
-TabContents* TemporaryPopupExternalTabContainer::OpenURLFromTab(
-    TabContents* source, const GURL& url, const GURL& referrer,
-    WindowOpenDisposition disposition, content::PageTransition transition) {
-  return OpenURLFromTab(source,
-                        OpenURLParams(url, referrer, disposition, transition,
-                                      false));
 }
 
 TabContents* TemporaryPopupExternalTabContainer::OpenURLFromTab(

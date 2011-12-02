@@ -16,16 +16,6 @@ class MockTabContentsDelegate : public TabContentsDelegate {
  public:
   virtual ~MockTabContentsDelegate() {}
 
-  // TODO(adriansc): Remove this method when refactoring changed all call sites.
-  virtual TabContents* OpenURLFromTab(
-      TabContents* source,
-      const GURL& url,
-      const GURL& referrer,
-      WindowOpenDisposition disposition,
-      content::PageTransition transition) OVERRIDE {
-    return NULL;
-  }
-
   virtual TabContents* OpenURLFromTab(TabContents* source,
                               const OpenURLParams& params) OVERRIDE {
     return NULL;

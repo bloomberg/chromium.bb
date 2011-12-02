@@ -98,13 +98,6 @@ class DevToolsWindow : private content::NotificationObserver,
   void CallClientFunction(const string16& function_name,
                           const base::Value& arg);
   // Overridden from TabContentsDelegate.
-  // Deprecated. Use two-arguments variant instead.
-  virtual TabContents* OpenURLFromTab(
-      TabContents* source,
-      const GURL& url,
-      const GURL& referrer,
-      WindowOpenDisposition disposition,
-      content::PageTransition transition) OVERRIDE;
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const OpenURLParams& params) OVERRIDE;
   virtual void AddNewContents(TabContents* source,

@@ -168,19 +168,6 @@ DraggedTabData DraggedTabControllerGtk::InitDraggedTabData(TabGtk* tab) {
 ////////////////////////////////////////////////////////////////////////////////
 // DraggedTabControllerGtk, TabContentsDelegate implementation:
 
-// TODO(adriansc): Remove this method once refactoring has changed all call
-// sites.
-TabContents* DraggedTabControllerGtk::OpenURLFromTab(
-    TabContents* source,
-    const GURL& url,
-    const GURL& referrer,
-    WindowOpenDisposition disposition,
-    content::PageTransition transition) {
-  return OpenURLFromTab(source,
-                        OpenURLParams(url, referrer, disposition, transition,
-                                      false));
-}
-
 TabContents* DraggedTabControllerGtk::OpenURLFromTab(
     TabContents* source,
     const OpenURLParams& params) {

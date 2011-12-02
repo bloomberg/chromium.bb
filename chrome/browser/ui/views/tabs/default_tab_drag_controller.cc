@@ -408,18 +408,6 @@ bool DefaultTabDragController::GetStartedDrag() const {
 ///////////////////////////////////////////////////////////////////////////////
 // DefaultTabDragController, PageNavigator implementation:
 
-// TODO(adriansc): Remove this method once refactoring changed all call sites.
-TabContents* DefaultTabDragController::OpenURLFromTab(
-    TabContents* source,
-    const GURL& url,
-    const GURL& referrer,
-    WindowOpenDisposition disposition,
-    content::PageTransition transition) {
-  return OpenURLFromTab(source,
-                        OpenURLParams(url, referrer, disposition, transition,
-                                      false));
-}
-
 TabContents* DefaultTabDragController::OpenURLFromTab(TabContents* source,
                                                   const OpenURLParams& params) {
   if (source_tab_drag_data()->original_delegate) {
