@@ -48,8 +48,17 @@ TEST_F(RepostFormWarningTest, MAYBE_TestDoubleReload) {
   tab->ReloadAsync();
   tab->ReloadAsync();
 
+  // There should only be one dialog open.
+  int num_constrained_windows = 0;
+  ASSERT_TRUE(tab->GetConstrainedWindowCount(&num_constrained_windows));
+  EXPECT_EQ(1, num_constrained_windows);
+
   // Navigate away from the page (this is when the test usually crashes).
   ASSERT_TRUE(tab->NavigateToURL(test_server.GetURL("bar")));
+
+  // The dialog should've been closed.
+  ASSERT_TRUE(tab->GetConstrainedWindowCount(&num_constrained_windows));
+  EXPECT_EQ(0, num_constrained_windows);
 }
 
 #if defined(OS_WIN)

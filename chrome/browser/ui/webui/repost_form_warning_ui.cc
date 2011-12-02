@@ -146,14 +146,18 @@ RepostFormWarningUI::RepostFormWarningUI(gfx::NativeWindow parent_window,
       TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
   Profile* profile = wrapper->profile();
   RepostFormWarningSource::RegisterDataSource(profile);
-  RepostFormWarningHtmlDelegate* delegate =
+  RepostFormWarningHtmlDelegate* html_delegate =
       new RepostFormWarningHtmlDelegate(this);
-  ConstrainedHtmlUI::CreateConstrainedHtmlDialog(profile, delegate, wrapper);
+  ConstrainedHtmlUIDelegate* dialog_delegate =
+      ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
+          profile, html_delegate, wrapper);
+  controller_->set_window(dialog_delegate->window());
 }
 
 RepostFormWarningUI::~RepostFormWarningUI() {}
 
 void RepostFormWarningUI::OnDialogClosed(bool repost) {
+  controller_->set_window(NULL);
   if (repost)
     controller_->Continue();
   else
