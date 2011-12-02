@@ -227,14 +227,6 @@ void RendererAccessibility::SendPendingAccessibilityNotifications() {
     WebAccessibilityObject obj = document.accessibilityObjectFromID(
         notification.id);
 
-    if (!obj.isValid()) {
-#ifndef NDEBUG
-      if (logging_)
-        LOG(WARNING) << "Got notification on invalid object id " << obj.axID();
-#endif
-      continue;
-    }
-
     // The browser may not have this object yet, for example if we get a
     // notification on an object that was recently added, or if we get a
     // notification on a node before the page has loaded. Work our way
@@ -242,6 +234,7 @@ void RendererAccessibility::SendPendingAccessibilityNotifications() {
     // we reach the root.
     int root_id = document.accessibilityObject().axID();
     while (browser_id_map_.find(obj.axID()) == browser_id_map_.end() &&
+           obj.isValid() &&
            obj.axID() != root_id) {
       obj = obj.parentObject();
       includes_children = true;
@@ -251,6 +244,15 @@ void RendererAccessibility::SendPendingAccessibilityNotifications() {
       }
     }
 
+    if (!obj.isValid()) {
+#ifndef NDEBUG
+      if (logging_)
+        LOG(WARNING) << "Got notification on object that is invalid or has"
+                     << " invalid ancestor. Id: " << obj.axID();
+#endif
+      continue;
+    }
+
     // Another potential problem is that this notification may be on an
     // object that is detached from the tree. Determine if this node is not a
     // child of its parent, and if so move the notification to the parent.
@@ -258,10 +260,15 @@ void RendererAccessibility::SendPendingAccessibilityNotifications() {
     // https://bugs.webkit.org/show_bug.cgi?id=68466 is fixed.
     if (obj.axID() != root_id) {
       WebAccessibilityObject parent = obj.parentObject();
-      while (!parent.isNull() && parent.accessibilityIsIgnored())
+      while (!parent.isNull() &&
+             parent.isValid() &&
+             parent.accessibilityIsIgnored()) {
         parent = parent.parentObject();
-      if (parent.isNull()) {
+      }
+
+      if (parent.isNull() || !parent.isValid()) {
         NOTREACHED();
+        continue;
       }
       bool is_child_of_parent = false;
       for (unsigned int i = 0; i < parent.childCount(); ++i) {
