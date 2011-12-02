@@ -699,11 +699,6 @@
         '../dbus/dbus.gyp:dbus',
       ],
     }],
-    ['OS=="linux" and toolkit_views==1',{
-      'dependencies': [
-        '../ui/views/views.gyp:views',
-      ],
-    }],
     ['OS=="mac"', {
       'sources': [
         # Build necessary Mozilla sources
