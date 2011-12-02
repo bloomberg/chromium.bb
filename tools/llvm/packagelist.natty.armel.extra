@@ -80,5 +80,3 @@ main/x/x11proto-record/x11proto-record-dev_1.14.1-1_all.deb
 main/x/x11proto-render/x11proto-render-dev_0.11.1-1_all.deb
 main/x/x11proto-scrnsaver/x11proto-scrnsaver-dev_1.2.1-1_all.deb
 main/x/x11proto-xext/x11proto-xext-dev_7.1.99.0~git20110111.9df8b776-0ubuntu2_all.deb
-main/z/zlib/zlib1g_1.2.3.4.dfsg-3ubuntu3_armel.deb
-main/z/zlib/zlib1g-dev_1.2.3.4.dfsg-3ubuntu3_armel.deb

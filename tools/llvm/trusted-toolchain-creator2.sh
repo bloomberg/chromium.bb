@@ -103,12 +103,14 @@ readonly ARMEL_BASE_PACKAGES="\
   libx11-6 \
   x11proto-core-dev \
   libxt-dev \
-  libxt6"
+  libxt6 \
+  zlib1g \
+  zlib1g-dev"
 
 # These are needed for chrome
 # NOTE: the package listing here should be updated using the
 # GeneratePackageListXXX() functions below
-readonly ARMEL_BASE_DEP_FILES="$(cat ${SCRIPT_DIR}/packagelist.armel.base)"
+readonly ARMEL_BASE_DEP_FILES="$(cat ${SCRIPT_DIR}/packagelist.natty.armel.base)"
 
 readonly ARMEL_EXTRA_PACKAGES="\
   krb5-multidev \
@@ -192,13 +194,11 @@ readonly ARMEL_EXTRA_PACKAGES="\
   x11proto-record-dev \
   x11proto-render-dev \
   x11proto-scrnsaver-dev \
-  x11proto-xext-dev \
-  zlib1g \
-  zlib1g-dev"
+  x11proto-xext-dev"
 
 # NOTE: the package listing here should be updated using the
 # GeneratePackageListXXX() functions below
-readonly ARMEL_EXTRA_DEP_FILES="$(cat ${SCRIPT_DIR}/packagelist.armel.extra)"
+readonly ARMEL_EXTRA_DEP_FILES="$(cat ${SCRIPT_DIR}/packagelist.natty.armel.extra)"
 
 ######################################################################
 # Helper
@@ -350,10 +350,6 @@ InstallTrustedLinkerScript() {
       sed -e 's/00008000/70000000/g' > ${trusted_ld_script}
 }
 
-# libssl.so and libcrypto.so cannot be used because they have
-# a dependency on libz.so. We don't download libz, although
-# we probably should. For now, remove the .so and let the linker
-# use the .a instead.
 HacksAndPatches() {
   rel_path=toolchain/linux_arm-trusted
   Banner "Misc Hacks & Patches"
@@ -365,16 +361,6 @@ HacksAndPatches() {
   SubBanner "Rewriting Linker Scripts"
   sed -i -e 's|/usr/lib/arm-linux-gnueabi/||g'  ${lscripts}
   sed -i -e 's|/lib/arm-linux-gnueabi/||g' ${lscripts}
-
-  # libssl.so and libcrypto.so cannot be used because they have
-  # a dependency on libz.so. We don't download libz, although
-  # we probably should. For now, remove the .so and let the linker
-  # use the .a instead.
-  SubBanner "Deleting some .sos"
-  rm -fv ${rel_path}/usr/lib/libcrypto.so
-  rm -fv ${rel_path}/usr/lib/libssl.so.0.9.8
-  rm -fv ${rel_path}/usr/lib/libssl.so
-  rm -fv ${rel_path}/lib/libssl.so.0.9.8
 
   # This is for chrome's ./build/linux/pkg-config-wrapper
   # which overwrites PKG_CONFIG_PATH internally
@@ -488,35 +474,39 @@ BuildAndInstallQemu() {
   cd ${saved_dir}
   cp tools/llvm/qemu_tool.sh ${INSTALL_ROOT}
   ln -sf qemu_tool.sh ${INSTALL_ROOT}/run_under_qemu_arm
-  # HACK: eliminate this after we we retire the old script
-  sed -i -e "s|/arm-2009q3/arm-none-linux-gnueabi/libc||"  \
-    ${INSTALL_ROOT}/qemu_tool.sh
 }
 
 #@
 #@ BuildJail
 BuildJail() {
   ClearInstallDir
-  InstallMissingArmLibrariesAndHeadersIntoJail ${ARMEL_BASE_DEP_FILES}
+  InstallMissingArmLibrariesAndHeadersIntoJail \
+    ${ARMEL_BASE_DEP_FILES} \
+    ${ARMEL_EXTRA_DEP_FILES}
   CleanupJailSymlinks
   InstallTrustedLinkerScript
   HacksAndPatches
+  AddChromeWrapperScripts
   BuildAndInstallQemu
   CreateTarBall $1
 }
 
 #@
-#@ ExperimentalBuildBigJail
-ExperimentalBuildBigJail() {
-  ClearInstallDir
-  InstallMissingArmLibrariesAndHeadersIntoJail ${ARMEL_BASE_DEP_FILES}
-  InstallMissingArmLibrariesAndHeadersIntoJail ${ARMEL_EXTRA_DEP_FILES}
-  CleanupJailSymlinks
-  HacksAndPatches
+#@ AddChromeWrapperScripts
+AddChromeWrapperScripts() {
+   SubBanner "Installing Chrome Wrapper"
+
+   cp -a tools/llvm/chrome.cc.arm.sh ${INSTALL_ROOT}/chrome.cc.arm.sh
+   cp -a tools/llvm/chrome.cc.arm.sh ${INSTALL_ROOT}/chrome.c++.arm.sh
+
+   cp -a tools/llvm/chrome.cc.host.sh ${INSTALL_ROOT}/chrome.cc.host.sh
+   cp -a tools/llvm/chrome.cc.host.sh ${INSTALL_ROOT}/chrome.c++.host.sh
+
+   chmod a+rx ${INSTALL_ROOT}/chrome.c*.sh
 }
 
 #@
-#@ Regenerat Package List
+#@ Regenerate Package List
 #@
 #@ This will need some manual intervention, e.g.
 #@ pool/ needs to be stripped and special characters like may "+" cause problems

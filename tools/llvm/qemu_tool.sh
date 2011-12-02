@@ -18,7 +18,7 @@ set -o errexit
 # From a qemu build based on qemu-0.10.1.tar.gz
 readonly SDK_ROOT=$(dirname $0)
 readonly QEMU=${SDK_ROOT}/qemu-arm
-readonly QEMU_JAIL=${SDK_ROOT}/arm-2009q3/arm-none-linux-gnueabi/libc
+readonly QEMU_JAIL=${SDK_ROOT}
 # NOTE: some useful debugging options for qemu:
 #       env vars:
 #                  QEMU_STRACE=1

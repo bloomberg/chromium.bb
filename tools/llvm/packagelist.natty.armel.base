@@ -9,3 +9,5 @@ main/libx/libx11/libx11-6_1.4.2-1ubuntu3_armel.deb
 main/x/x11proto-core/x11proto-core-dev_7.0.20-1_all.deb
 main/libx/libxt/libxt-dev_1.0.9-1ubuntu1_armel.deb
 main/libx/libxt/libxt6_1.0.9-1ubuntu1_armel.deb
+main/z/zlib/zlib1g_1.2.3.4.dfsg-3ubuntu3_armel.deb
+main/z/zlib/zlib1g-dev_1.2.3.4.dfsg-3ubuntu3_armel.deb
