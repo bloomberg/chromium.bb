@@ -27,7 +27,6 @@
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_performer.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
-#include "chrome/browser/chromeos/login/screen_locker_views.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_screen_locker.h"
 #include "chrome/browser/profiles/profile.h"
@@ -48,6 +47,10 @@
 
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
+#endif
+
+#if !defined(USE_AURA)
+#include "chrome/browser/chromeos/login/screen_locker_views.h"
 #endif
 
 using content::BrowserThread;
@@ -201,10 +204,14 @@ ScreenLocker::ScreenLocker(const User& user)
 
 void ScreenLocker::Init() {
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
+#if defined(USE_AURA)
+  delegate_.reset(new WebUIScreenLocker(this));
+#else
   if (UseWebUILockScreen())
     delegate_.reset(new WebUIScreenLocker(this));
   else
     delegate_.reset(new ScreenLockerViews(this));
+#endif
   delegate_->LockScreen(unlock_on_input_);
 }
 
@@ -392,11 +399,13 @@ void ScreenLocker::UnlockScreenFailed() {
   }
 }
 
+#if !defined(USE_AURA)
 // static
 bool ScreenLocker::UseWebUILockScreen() {
   return !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableWebUILockScreen);
 }
+#endif
 
 // static
 void ScreenLocker::InitClass() {

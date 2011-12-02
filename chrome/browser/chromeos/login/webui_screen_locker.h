@@ -10,16 +10,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/login/lock_window.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/screen_locker_delegate.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(TOOLKIT_USES_GTK)
-#include "ui/views/widget/native_widget_gtk.h"
-#endif
 
 namespace chromeos {
 
@@ -31,12 +28,10 @@ class WebUILoginDisplay;
 class WebUIScreenLocker : public WebUILoginView,
                           public LoginDisplay::Delegate,
                           public content::NotificationObserver,
-                          public ScreenLockerDelegate {
+                          public ScreenLockerDelegate,
+                          public LockWindow::Observer {
  public:
   explicit WebUIScreenLocker(ScreenLocker* screen_locker);
-
-  // Called when the GTK grab breaks.
-  void HandleGtkGrabBroke();
 
   // ScreenLockerDelegate implementation:
   virtual void LockScreen(bool unlock_on_input) OVERRIDE;
@@ -67,29 +62,14 @@ class WebUIScreenLocker : public WebUILoginView,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // LockWindow::Observer implementation.
+  virtual void OnLockWindowReady() OVERRIDE;
+
+  // Overridden from WebUILoginView.
+  virtual void OnTabMainFrameFirstRender() OVERRIDE;
+
  private:
   virtual ~WebUIScreenLocker();
-
-  // Called when the window manager is ready to handle locked state.
-  void OnWindowManagerReady();
-
-  // Called when the all inputs are grabbed.
-  void OnGrabInputs();
-
-  // Clear current GTK grab.
-  void ClearGtkGrab();
-
-  // Try to grab all inputs. It initiates another try if it fails to
-  // grab and the retry count is within a limit, or fails with CHECK.
-  void TryGrabAllInputs();
-
-  // This method tries to steal pointer/keyboard grab from other
-  // client by sending events that will hopefully close menus or windows
-  // that have the grab.
-  void TryUngrabOtherClients();
-
-  // Event handler for client-event.
-  CHROMEGTK_CALLBACK_1(WebUIScreenLocker, void, OnClientEvent, GdkEventClient*)
 
   // The screen locker window.
   views::Widget* lock_window_;
@@ -100,20 +80,11 @@ class WebUIScreenLocker : public WebUILoginView,
   // Used for user image changed notifications.
   content::NotificationRegistrar registrar_;
 
-  // True if the screen locker's window has been drawn.
-  bool drawn_;
+  // Tracks when the lock window is displayed and ready.
+  bool lock_ready_;
 
-  // True if both mouse input and keyboard input are grabbed.
-  bool input_grabbed_;
-
-  base::WeakPtrFactory<WebUIScreenLocker> weak_factory_;
-
-  // The number times the widget tried to grab all focus.
-  int grab_failure_count_;
-
-  // Status of keyboard and mouse grab.
-  GdkGrabStatus kbd_grab_status_;
-  GdkGrabStatus mouse_grab_status_;
+  // Tracks when the WebUI finishes loading.
+  bool webui_ready_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIScreenLocker);
 };

@@ -34,12 +34,7 @@ class ScreenLocker : public LoginStatusConsumer {
 
   // Returns the default instance if it has been created.
   static ScreenLocker* default_screen_locker() {
-#if defined(TOOLKIT_USES_GTK)
     return screen_locker_;
-#else
-    NOTIMPLEMENTED();
-    return NULL;
-#endif
   }
 
   // Initialize and show the screen locker.
@@ -125,10 +120,8 @@ class ScreenLocker : public LoginStatusConsumer {
   // Logged in user.
   const User& user_;
 
-#if defined(TOOLKIT_USES_GTK)
   // Used to authenticate the user to unlock.
   scoped_refptr<Authenticator> authenticator_;
-#endif
 
   // Unlock the screen when it detects key/mouse event without asking
   // password. True when chrome is in BWSI or auto login mode.
