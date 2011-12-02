@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 #include <X11/keysym.h>
+#include <X11/Xlib.h>
+#undef Bool
+#undef None
+#undef Status
 
 #include <cstring>
 
@@ -14,8 +18,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "ui/base/x/x11_util.h"
-
-#include <X11/Xlib.h>  // should be here since it #defines lots of macros.
 
 #if defined(USE_VIRTUAL_KEYBOARD)
 // Since USE_VIRTUAL_KEYBOARD build only supports a few keyboard layouts, we
@@ -166,7 +168,7 @@ class SystemKeyEventListenerTest : public InProcessBrowserTest {
     key_event->same_screen = True;
     key_event->send_event = False;
     key_event->state = modifiers;
-    key_event->subwindow = None;
+    key_event->subwindow = 0L;  // None
     key_event->time = CurrentTime;
     key_event->type = is_press ? KeyPress : KeyRelease;
     key_event->window = focused;
