@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/shared_memory.h"
+#include "base/synchronization/lock.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/task.h"
 #include "content/browser/gamepad/data_fetcher.h"
@@ -29,11 +30,13 @@ class CONTENT_EXPORT GamepadProvider :
  public:
   explicit GamepadProvider(GamepadDataFetcher* fetcher);
 
-  // Starts or Stops the provider. Called from creator_loop_.
-  void Start();
-  void Stop();
   base::SharedMemoryHandle GetRendererSharedMemoryHandle(
       base::ProcessHandle renderer_process);
+
+  // Pause and resume the background polling thread. Can be called from any
+  // thread.
+  void Pause();
+  void Resume();
 
  private:
   friend class base::RefCountedThreadSafe<GamepadProvider>;
@@ -53,16 +56,27 @@ class CONTENT_EXPORT GamepadProvider :
 
   enum { kDesiredSamplingIntervalMs = 16 };
 
+  // Keeps track of when the background thread is paused. Access to is_paused_
+  // must be guarded by is_paused_lock_.
+  base::Lock is_paused_lock_;
+  bool is_paused_;
+
+  // Updated based on notification from SystemMonitor when the system devices
+  // have been updated, and this notification is passed on to the data fetcher
+  // to enable it to avoid redundant (and possibly expensive) is-connected
+  // tests. Access to devices_changed_ must be guarded by
+  // devices_changed_lock_.
+  base::Lock devices_changed_lock_;
+  bool devices_changed_;
+
   // The Message Loop on which this object was created.
   // Typically the I/O loop, but may be something else during testing.
-  scoped_refptr<base::MessageLoopProxy> creator_loop_;
   scoped_ptr<GamepadDataFetcher> provided_fetcher_;
 
   // When polling_thread_ is running, members below are only to be used
   // from that thread.
   scoped_ptr<GamepadDataFetcher> data_fetcher_;
   base::SharedMemory gamepad_shared_memory_;
-  bool devices_changed_;
 
   // Polling is done on this background thread.
   scoped_ptr<base::Thread> polling_thread_;

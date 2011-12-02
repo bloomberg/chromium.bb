@@ -7,11 +7,18 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "base/shared_memory.h"
 #include "content/browser/browser_message_filter.h"
-#include "content/browser/gamepad/gamepad_provider.h"
+
+namespace content {
+
+class GamepadService;
+class RenderProcessHost;
 
 class GamepadBrowserMessageFilter : public BrowserMessageFilter {
  public:
+  explicit GamepadBrowserMessageFilter(RenderProcessHost* rph);
+
   // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
@@ -23,9 +30,11 @@ class GamepadBrowserMessageFilter : public BrowserMessageFilter {
   void OnGamepadStartPolling(base::SharedMemoryHandle* renderer_handle);
   void OnGamepadStopPolling();
 
-  scoped_refptr<content::GamepadProvider> provider_;
+  RenderProcessHost* render_process_host_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadBrowserMessageFilter);
 };
+
+} // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_GAMEPAD_BROWSER_MESSAGE_FILTER_H_

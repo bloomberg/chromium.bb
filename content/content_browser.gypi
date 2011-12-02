@@ -211,6 +211,8 @@
     'browser/gamepad/data_fetcher_win.h',
     'browser/gamepad/gamepad_provider.cc',
     'browser/gamepad/gamepad_provider.h',
+    'browser/gamepad/gamepad_service.cc',
+    'browser/gamepad/gamepad_service.h',
     'browser/geolocation/access_token_store.cc',
     'browser/geolocation/access_token_store.h',
     'browser/geolocation/arbitrator_dependency_factory.cc',

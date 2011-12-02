@@ -538,7 +538,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new QuotaDispatcherHost(
       GetID(), GetBrowserContext()->GetQuotaManager(),
       content::GetContentClient()->browser()->CreateQuotaPermissionContext()));
-  channel_->AddFilter(new GamepadBrowserMessageFilter);
+  channel_->AddFilter(new content::GamepadBrowserMessageFilter(this));
   channel_->AddFilter(new ProfilerMessageFilter());
 }
 

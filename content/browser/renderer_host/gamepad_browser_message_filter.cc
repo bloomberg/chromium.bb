@@ -4,9 +4,14 @@
 
 #include "content/browser/renderer_host/gamepad_browser_message_filter.h"
 
+#include "content/browser/gamepad/gamepad_service.h"
 #include "content/common/gamepad_messages.h"
 
-GamepadBrowserMessageFilter::GamepadBrowserMessageFilter() {
+namespace content {
+
+GamepadBrowserMessageFilter::GamepadBrowserMessageFilter(
+    content::RenderProcessHost* render_process_host)
+    : render_process_host_(render_process_host) {
 }
 
 GamepadBrowserMessageFilter::~GamepadBrowserMessageFilter() {
@@ -28,14 +33,14 @@ bool GamepadBrowserMessageFilter::OnMessageReceived(
 
 void GamepadBrowserMessageFilter::OnGamepadStartPolling(
     base::SharedMemoryHandle* renderer_handle) {
-  if (!provider_) {
-    provider_ = new content::GamepadProvider(NULL);
-    provider_->Start();
-  }
-  *renderer_handle = provider_->GetRendererSharedMemoryHandle(peer_handle());
+  GamepadService* service = GamepadService::GetInstance();
+  service->Start(NULL, render_process_host_);
+  *renderer_handle = service->GetSharedMemoryHandle(peer_handle());
 }
 
 void GamepadBrowserMessageFilter::OnGamepadStopPolling() {
-  // TODO(scottmg) Remove this message entirely?
-  // Stop is currently handled by the refcount on provider_.
+  // TODO(scottmg): Probably get rid of this message. We can't trust it will
+  // arrive anyway if the renderer crashes, etc.
 }
+
+} // namespace content

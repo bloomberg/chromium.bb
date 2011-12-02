@@ -56,15 +56,6 @@ class GamepadProviderTest : public testing::Test {
   scoped_refptr<GamepadProvider> provider_;
 };
 
-TEST_F(GamepadProviderTest, BasicStartStop) {
-  WebGamepads test_data;
-  memset(&test_data, 0, sizeof(test_data));
-  GamepadProvider* provider = CreateProvider(test_data);
-  provider->Start();
-  provider->Stop();
-  // Just ensure that there's no asserts on startup, shutdown, or destroy.
-}
-
 TEST_F(GamepadProviderTest, PollingAccess) {
   WebGamepads test_data;
   test_data.length = 1;
@@ -77,7 +68,6 @@ TEST_F(GamepadProviderTest, PollingAccess) {
   test_data.items[0].axes[1] = .5f;
 
   GamepadProvider* provider = CreateProvider(test_data);
-  provider->Start();
 
   main_message_loop_.RunAllPending();
 
@@ -107,8 +97,6 @@ TEST_F(GamepadProviderTest, PollingAccess) {
   EXPECT_EQ(2u, output.items[0].axesLength);
   EXPECT_EQ(-1.f, output.items[0].axes[0]);
   EXPECT_EQ(0.5f, output.items[0].axes[1]);
-
-  provider->Stop();
 }
 
 }  // namespace
