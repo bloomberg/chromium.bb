@@ -52,6 +52,8 @@ class PanelBrowserWindowCocoa;
   BOOL animateOnBoundsChange_;
   ScopedCrTrackingArea windowTrackingArea_;
   BOOL throbberShouldSpin_;
+  BOOL playingMinimizeAnimation_;
+  float animationStopToShowTitlebarOnly_;
 }
 
 // Load the browser window nib and do any Cocoa-specific initialization.

@@ -429,19 +429,18 @@ enum {
   // Will be enabled back in animationDidEnd callback.
   [self disableTabContentsViewAutosizing];
 
+  // Terminate previous animation, if it is still playing.
+  [self terminateBoundsAnimation];
+
   NSDictionary *windowResize = [NSDictionary dictionaryWithObjectsAndKeys:
       [self window], NSViewAnimationTargetKey,
       [NSValue valueWithRect:frame], NSViewAnimationEndFrameKey, nil];
 
   NSArray *animations = [NSArray arrayWithObjects:windowResize, nil];
 
-  // Terminate previous animation, if it is still playing.
-  [self terminateBoundsAnimation];
   boundsAnimation_ =
       [[NSViewAnimation alloc] initWithViewAnimations:animations];
   [boundsAnimation_ setDelegate:self];
-
-  [boundsAnimation_ setAnimationBlockingMode: NSAnimationNonblocking];
 
   NSRect currentFrame = [[self window] frame];
   // Compute duration. We use constant speed of animation, however if the change
@@ -455,11 +454,55 @@ enum {
   double distance = std::max(distanceX, distanceY);
   double duration = std::min(distance / kBoundsAnimationSpeedPixelsPerSecond,
                              kBoundsAnimationMaxDurationSeconds);
+  // Detect animation that happens when expansion state is set to MINIMIZED
+  // and there is relatively big portion of the panel to hide from view.
+  // Initialize animation differently in this case, using fast-pause-slow
+  // method, see below for more details.
+  if (windowShim_->panel()->expansion_state() == Panel::MINIMIZED) {
+    animationStopToShowTitlebarOnly_ =
+        1.0 - (windowShim_->TitleOnlyHeight() - NSHeight(frame)) / distanceY;
+    if (animationStopToShowTitlebarOnly_ > 0.7) {  // Relatively big movement.
+      playingMinimizeAnimation_ = YES;
+      duration = 1.5;
+    }
+  }
   [boundsAnimation_ setDuration: duration];
+  [boundsAnimation_ setFrameRate:0.0];
+  [boundsAnimation_ setAnimationBlockingMode: NSAnimationNonblocking];
   [boundsAnimation_ startAnimation];
 }
 
+- (float)animation:(NSAnimation*)animation
+  valueForProgress:(NSAnimationProgress)progress {
+  if (!playingMinimizeAnimation_) {
+    // Cubic easing out.
+    float value = 1.0 - progress;
+    return 1.0 - value * value * value;
+  }
+
+  // Minimize animation:
+  // 1. Quickly (0 -> 0.15) make only titlebar visible.
+  // 2. Stay a little bit (0.15->0.6) in place, just showing titlebar.
+  // 3. Slowly minimize to thin strip (0.6->1.0)
+  const float kAnimationStopAfterQuickDecrease = 0.15;
+  const float kAnimationStopAfterShowingTitlebar = 0.6;
+  float value;
+  if (progress <= kAnimationStopAfterQuickDecrease) {
+      value = progress * animationStopToShowTitlebarOnly_ /
+              kAnimationStopAfterQuickDecrease;
+  } else if (progress <= kAnimationStopAfterShowingTitlebar) {
+      value = animationStopToShowTitlebarOnly_;
+  } else {
+      value = animationStopToShowTitlebarOnly_ +
+          (progress - kAnimationStopAfterShowingTitlebar) *
+          (1.0 - animationStopToShowTitlebarOnly_) /
+          (1.0 - kAnimationStopAfterShowingTitlebar);
+  }
+  return value;
+}
+
 - (void)animationDidEnd:(NSAnimation*)animation {
+  playingMinimizeAnimation_ = NO;
   if (windowShim_->panel()->expansion_state() == Panel::EXPANDED)
     [self enableTabContentsViewAutosizing];
 

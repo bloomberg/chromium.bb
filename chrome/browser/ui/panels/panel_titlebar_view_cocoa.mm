@@ -212,7 +212,6 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   [[settingsButton_ cell] setHighlightsBy:NSNoCellMask];
   [self checkMouseAndUpdateSettingsButtonVisibility];
 
-  // Update layout of controls in the titlebar.
   [self updateCloseButtonLayout];
 
   // Set autoresizing behavior: glued to edges on left, top and right.
@@ -264,19 +263,20 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   NSRect bounds = [self bounds];
 
   buttonFrame.origin.x = kButtonPadding;
-  buttonFrame.origin.y = (NSHeight(bounds) - NSHeight(buttonFrame)) / 2;
+  // Lower Close Button's frame 1 px to avoid it 'peeking' in MINIMIZED mode.
+  buttonFrame.origin.y = (NSHeight(bounds) - NSHeight(buttonFrame)) / 2 - 1;
   [closeButton_ setFrame:buttonFrame];
-
-  DCHECK(!closeButtonTrackingArea_.get());
-  closeButtonTrackingArea_.reset(
-      [[CrTrackingArea alloc] initWithRect:buttonFrame
-                                   options:(NSTrackingMouseEnteredAndExited |
-                                            NSTrackingActiveAlways)
-                              proxiedOwner:self
-                                  userInfo:nil]);
-  NSWindow* panelWindow = [self window];
-  [closeButtonTrackingArea_.get() clearOwnerWhenWindowWillClose:panelWindow];
-  [self addTrackingArea:closeButtonTrackingArea_.get()];
+  if (!closeButtonTrackingArea_.get()) {
+    closeButtonTrackingArea_.reset(
+        [[CrTrackingArea alloc] initWithRect:[closeButton_ bounds]
+                                     options:(NSTrackingMouseEnteredAndExited |
+                                              NSTrackingActiveAlways)
+                                proxiedOwner:self
+                                    userInfo:nil]);
+    NSWindow* panelWindow = [self window];
+    [closeButtonTrackingArea_.get() clearOwnerWhenWindowWillClose:panelWindow];
+    [closeButton_ addTrackingArea:closeButtonTrackingArea_.get()];
+  }
 }
 
 - (void)updateIconAndTitleLayout {
