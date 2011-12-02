@@ -168,6 +168,7 @@ struct SelLdrLauncher {
 
   void GetPluginDirectory(char* buffer, size_t len);
   nacl::string GetSelLdrPathName();
+  nacl::string GetSelLdrBootstrapPathName();
   void CloseHandlesAfterLaunch();
 
   Handle child_process_;
