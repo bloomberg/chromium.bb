@@ -128,8 +128,7 @@ cr.define('oobe', function() {
       this.profileImageLoading_ = value;
       $('user-image-screen-main').classList[
           value ? 'add' : 'remove']('profile-image-loading');
-      this.profileImageCaption = localStrings.getString(
-          value ? 'profilePhotoLoading' : 'profilePhoto');
+      this.updateProfileImageCaption_();
     },
 
     /**
@@ -319,6 +318,23 @@ cr.define('oobe', function() {
     updateCaption_: function() {
       $('user-image-preview-caption').textContent =
           this.profileImageSelected ? this.profileImageCaption : '';
+    },
+
+    /**
+     * Updates localized content of the screen that is not updated via template.
+     * @public
+     */
+    updateLocalizedContent: function() {
+      this.updateProfileImageCaption_();
+    },
+
+    /**
+     * Updates profile image caption.
+     * @private
+     */
+    updateProfileImageCaption_: function() {
+      this.profileImageCaption = localStrings.getString(
+        this.profileImageLoading_ ? 'profilePhotoLoading' : 'profilePhoto');
     }
   };
 
