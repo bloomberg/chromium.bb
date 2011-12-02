@@ -84,6 +84,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
+#include "ppapi/proxy/ppapi_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
@@ -278,6 +279,10 @@ static const float kScalingIncrement = 0.1f;
 
 static const float kScalingIncrementForGesture = 0.01f;
 
+static const char* kPredefinedAllowedSocketOrigins[] = {
+  "okddffdblfhhnmhodogpojmfkjmhinfp"
+};
+
 static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
   WebVector<WebURL> urls;
   ds->redirectChain(urls);
@@ -424,6 +429,18 @@ RenderViewImpl::RenderViewImpl(
   if (command_line.HasSwitch(switches::kEnableMediaStream)) {
     media_stream_impl_ = new MediaStreamImpl(
         RenderThreadImpl::current()->video_capture_impl_manager());
+  }
+
+  for (size_t i = 0; i < arraysize(kPredefinedAllowedSocketOrigins); ++i)
+    allowed_socket_origins_.insert(kPredefinedAllowedSocketOrigins[i]);
+
+  std::string allowed_list =
+      command_line.GetSwitchValueASCII(switches::kAllowNaClSocketAPI);
+  if (!allowed_list.empty()) {
+    StringTokenizer t(allowed_list, ",");
+    while (t.GetNext()) {
+      allowed_socket_origins_.insert(t.token());
+    }
   }
 
   content::GetContentClient()->renderer()->RenderViewCreated(this);
@@ -578,6 +595,16 @@ bool RenderViewImpl::GetPluginInfo(const GURL& url,
   return found;
 }
 
+bool RenderViewImpl::CanUseSocketAPIs() {
+  WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
+  GURL url(main_frame ? GURL(main_frame->document().url()) : GURL());
+  if (!url.is_valid())
+    return false;
+
+  return allowed_socket_origins_.find(url.host()) !=
+      allowed_socket_origins_.end();
+}
+
 bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
   WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
   if (main_frame)
@@ -685,6 +712,17 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
 #if defined(ENABLE_FLAPPER_HACKS)
     IPC_MESSAGE_HANDLER(PepperMsg_ConnectTcpACK, OnConnectTcpACK)
 #endif
+    // TODO(dpolukhin): Move TCP/UDP to a separate message filter.
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_ConnectACK,
+                        OnTCPSocketConnectACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_SSLHandshakeACK,
+                        OnTCPSocketSSLHandshakeACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_ReadACK, OnTCPSocketReadACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_WriteACK, OnTCPSocketWriteACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBUDPSocket_BindACK, OnUDPSocketBindACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBUDPSocket_RecvFromACK,
+                        OnUDPSocketRecvFromACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBUDPSocket_SendToACK, OnUDPSocketSendToACK)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInLiveResize, OnSetInLiveResize)
 #endif
@@ -4713,6 +4751,62 @@ void RenderViewImpl::OnConnectTcpACK(
       remote_addr);
 }
 #endif
+
+void RenderViewImpl::OnTCPSocketConnectACK(
+    uint32 plugin_dispatcher_id,
+    uint32 socket_id,
+    bool succeeded,
+    const PP_NetAddress_Private& local_addr,
+    const PP_NetAddress_Private& remote_addr) {
+  pepper_delegate_.OnTCPSocketConnectACK(
+      socket_id, succeeded, local_addr, remote_addr);
+}
+
+void RenderViewImpl::OnTCPSocketSSLHandshakeACK(
+    uint32 plugin_dispatcher_id,
+    uint32 socket_id,
+    bool succeeded) {
+  pepper_delegate_.OnTCPSocketSSLHandshakeACK(socket_id, succeeded);
+}
+
+void RenderViewImpl::OnTCPSocketReadACK(uint32 plugin_dispatcher_id,
+                                        uint32 socket_id,
+                                        bool succeeded,
+                                        const std::string& data) {
+  pepper_delegate_.OnTCPSocketReadACK(socket_id, succeeded, data);
+}
+
+void RenderViewImpl::OnTCPSocketWriteACK(uint32 plugin_dispatcher_id,
+                                         uint32 socket_id,
+                                         bool succeeded,
+                                         int32_t bytes_written) {
+  pepper_delegate_.OnTCPSocketWriteACK(socket_id, succeeded, bytes_written);
+}
+
+void RenderViewImpl::OnUDPSocketBindACK(uint32 plugin_dispatcher_id,
+                                        uint32 socket_id,
+                                        bool succeeded) {
+  pepper_delegate_.OnUDPSocketBindACK(socket_id, succeeded);
+}
+
+void RenderViewImpl::OnUDPSocketRecvFromACK(
+    uint32 plugin_dispatcher_id,
+    uint32 socket_id,
+    bool succeeded,
+    const std::string& data,
+    const PP_NetAddress_Private& remote_addr) {
+  pepper_delegate_.OnUDPSocketRecvFromACK(socket_id,
+                                          succeeded,
+                                          data,
+                                          remote_addr);
+}
+
+void RenderViewImpl::OnUDPSocketSendToACK(uint32 plugin_dispatcher_id,
+                                          uint32 socket_id,
+                                          bool succeeded,
+                                          int32_t bytes_written) {
+  pepper_delegate_.OnUDPSocketSendToACK(socket_id, succeeded, bytes_written);
+}
 
 void RenderViewImpl::OnContextMenuClosed(
     const webkit_glue::CustomContextMenuContext& custom_context) {

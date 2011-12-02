@@ -17,13 +17,6 @@
 namespace ppapi {
 namespace proxy {
 
-// The maximum number of bytes that each PpapiHostMsg_PPBTCPSocket_Read
-// message is allowed to request.
-PPAPI_PROXY_EXPORT extern const int32_t kTCPSocketMaxReadSize;
-// The maximum number of bytes that each PpapiHostMsg_PPBTCPSocket_Write
-// message is allowed to carry.
-PPAPI_PROXY_EXPORT extern const int32_t kTCPSocketMaxWriteSize;
-
 class PPB_TCPSocket_Private_Proxy : public InterfaceProxy {
  public:
   PPB_TCPSocket_Private_Proxy(Dispatcher* dispatcher);

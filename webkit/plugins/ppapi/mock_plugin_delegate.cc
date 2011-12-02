@@ -232,6 +232,59 @@ int32_t MockPluginDelegate::ConnectTcpAddress(
   return PP_ERROR_FAILED;
 }
 
+uint32 MockPluginDelegate::TCPSocketCreate() {
+  return 0;
+}
+
+void MockPluginDelegate::TCPSocketConnect(PPB_TCPSocket_Private_Impl* socket,
+                                          uint32 socket_id,
+                                          const std::string& host,
+                                          uint16_t port) {
+}
+
+void MockPluginDelegate::TCPSocketConnectWithNetAddress(
+    PPB_TCPSocket_Private_Impl* socket,
+    uint32 socket_id,
+    const PP_NetAddress_Private& addr) {
+}
+
+void MockPluginDelegate::TCPSocketSSLHandshake(uint32 socket_id,
+                                               const std::string& server_name,
+                                               uint16_t server_port) {
+}
+
+void MockPluginDelegate::TCPSocketRead(uint32 socket_id,
+                                       int32_t bytes_to_read) {
+}
+
+void MockPluginDelegate::TCPSocketWrite(uint32 socket_id,
+                                        const std::string& buffer) {
+}
+
+void MockPluginDelegate::TCPSocketDisconnect(uint32 socket_id) {
+}
+
+uint32 MockPluginDelegate::UDPSocketCreate() {
+  return 0;
+}
+
+void MockPluginDelegate::UDPSocketBind(PPB_UDPSocket_Private_Impl* socket,
+                                       uint32 socket_id,
+                                       const PP_NetAddress_Private& addr) {
+}
+
+void MockPluginDelegate::UDPSocketRecvFrom(uint32 socket_id,
+                                           int32_t num_bytes) {
+}
+
+void MockPluginDelegate::UDPSocketSendTo(uint32 socket_id,
+                                         const std::string& buffer,
+                                         const PP_NetAddress_Private& addr) {
+}
+
+void MockPluginDelegate::UDPSocketClose(uint32 socket_id) {
+}
+
 int32_t MockPluginDelegate::ShowContextMenu(
     PluginInstance* instance,
     webkit::ppapi::PPB_Flash_Menu_Impl* menu,

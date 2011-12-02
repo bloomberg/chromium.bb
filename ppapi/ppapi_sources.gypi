@@ -253,10 +253,14 @@
       'tests/pp_thread.h',
       'tests/test_case.cc',
       'tests/test_case.h',
+      'tests/test_tcp_socket_private_shared.cc',
+      'tests/test_tcp_socket_private_shared.h',
+      'tests/test_udp_socket_private_shared.cc',
+      'tests/test_udp_socket_private_shared.h',
       'tests/test_utils.cc',
       'tests/testing_instance.cc',
       'tests/testing_instance.h',
-      
+
       # Compile-time tests
       'tests/test_c_includes.c',
       'tests/test_cpp_includes.cc',

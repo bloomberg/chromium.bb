@@ -94,6 +94,11 @@
         'shared_impl/private/net_address_private_impl.cc',
         'shared_impl/private/net_address_private_impl.h',
 
+        'shared_impl/private/tcp_socket_private_impl.cc',
+        'shared_impl/private/tcp_socket_private_impl.h',
+        'shared_impl/private/udp_socket_private_impl.cc',
+        'shared_impl/private/udp_socket_private_impl.h',
+
         'thunk/common.h',
         'thunk/common.cc',
         'thunk/enter.cc',

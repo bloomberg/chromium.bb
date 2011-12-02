@@ -293,6 +293,14 @@ class RenderViewImpl : public RenderWidget,
                                     webkit::WebPluginInfo* plugin_info,
                                     std::string* actual_mime_type);
 
+  // Helper function to check that TCP/UDP private APIs are allowed for current
+  // page. This check actually allows socket usage for NativeClient code only.
+  // It is better to move this check to browser process but Pepper message
+  // filters in browser process have no context about page that sent
+  // the request. Doing this check in render process is safe because NaCl code
+  // is executed in separate NaCl process.
+  bool CanUseSocketAPIs();
+
   // IPC::Channel::Listener implementation -------------------------------------
 
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -751,6 +759,35 @@ class RenderViewImpl : public RenderWidget,
                        const PP_NetAddress_Private& local_addr,
                        const PP_NetAddress_Private& remote_addr);
 #endif
+  void OnTCPSocketConnectACK(uint32 plugin_dispatcher_id,
+                             uint32 socket_id,
+                             bool succeeded,
+                             const PP_NetAddress_Private& local_addr,
+                             const PP_NetAddress_Private& remote_addr);
+  void OnTCPSocketSSLHandshakeACK(uint32 plugin_dispatcher_id,
+                                  uint32 socket_id,
+                                  bool succeeded);
+  void OnTCPSocketReadACK(uint32 plugin_dispatcher_id,
+                          uint32 socket_id,
+                          bool succeeded,
+                          const std::string& data);
+  void OnTCPSocketWriteACK(uint32 plugin_dispatcher_id,
+                           uint32 socket_id,
+                           bool succeeded,
+                           int32_t bytes_written);
+  void OnUDPSocketBindACK(uint32 plugin_dispatcher_id,
+                          uint32 socket_id,
+                          bool succeeded);
+  void OnUDPSocketSendToACK(uint32 plugin_dispatcher_id,
+                            uint32 socket_id,
+                            bool succeeded,
+                            int32_t bytes_written);
+  void OnUDPSocketRecvFromACK(uint32 plugin_dispatcher_id,
+                              uint32 socket_id,
+                              bool succeeded,
+                              const std::string& data,
+                              const PP_NetAddress_Private& addr);
+
   void OnContextMenuClosed(
       const webkit_glue::CustomContextMenuContext& custom_context);
   void OnCopy();
@@ -1218,6 +1255,9 @@ class RenderViewImpl : public RenderWidget,
   // Used to inform didChangeSelection() when it is called in the context
   // of handling a ViewMsg_SelectRange IPC.
   bool handling_select_range_;
+
+  // Set of origins that can use TCP/UDP private APIs from NaCl.
+  std::set<std::string> allowed_socket_origins_;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above

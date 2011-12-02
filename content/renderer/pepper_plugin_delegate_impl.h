@@ -6,8 +6,8 @@
 #define CONTENT_RENDERER_PEPPER_PLUGIN_DELEGATE_IMPL_H_
 #pragma once
 
-#include <set>
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -18,6 +18,8 @@
 #include "content/renderer/pepper_parent_context_provider.h"
 #include "ppapi/proxy/broker_dispatcher.h"
 #include "ppapi/proxy/proxy_channel.h"
+#include "ppapi/shared_impl/private/tcp_socket_private_impl.h"
+#include "ppapi/shared_impl/private/udp_socket_private_impl.h"
 #include "ui/base/ime/text_input_type.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppb_broker_impl.h"
@@ -310,6 +312,64 @@ class PepperPluginDelegateImpl
       base::PlatformFile socket,
       const PP_NetAddress_Private& local_addr,
       const PP_NetAddress_Private& remote_addr);
+
+  virtual uint32 TCPSocketCreate() OVERRIDE;
+  virtual void TCPSocketConnect(
+      webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,
+      uint32 socket_id,
+      const std::string& host,
+      uint16_t port) OVERRIDE;
+  virtual void TCPSocketConnectWithNetAddress(
+      webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,
+      uint32 socket_id,
+      const PP_NetAddress_Private& addr) OVERRIDE;
+  void OnTCPSocketConnectACK(uint32 socket_id,
+                             bool succeeded,
+                             const PP_NetAddress_Private& local_addr,
+                             const PP_NetAddress_Private& remote_addr);
+
+  virtual void TCPSocketSSLHandshake(uint32 socket_id,
+                                     const std::string& server_name,
+                                     uint16_t server_port) OVERRIDE;
+  void OnTCPSocketSSLHandshakeACK(uint32 socket_id, bool succeeded);
+
+  virtual void TCPSocketRead(uint32 socket_id, int32_t bytes_to_read) OVERRIDE;
+  void OnTCPSocketReadACK(uint32 socket_id,
+                          bool succeeded,
+                          const std::string& data);
+
+  virtual void TCPSocketWrite(uint32 socket_id,
+                              const std::string& buffer) OVERRIDE;
+  void OnTCPSocketWriteACK(uint32 socket_id,
+                           bool succeeded,
+                           int32_t bytes_written);
+
+  virtual void TCPSocketDisconnect(uint32 socket_id) OVERRIDE;
+
+  virtual uint32 UDPSocketCreate() OVERRIDE;
+
+  virtual void UDPSocketBind(
+      webkit::ppapi::PPB_UDPSocket_Private_Impl* socket,
+      uint32 socket_id,
+      const PP_NetAddress_Private& addr) OVERRIDE;
+  void OnUDPSocketBindACK(uint32 socket_id, bool succeeded);
+
+  virtual void UDPSocketRecvFrom(uint32 socket_id,
+                                 int32_t num_bytes) OVERRIDE;
+  void OnUDPSocketRecvFromACK(uint32 socket_id,
+                              bool succeeded,
+                              const std::string& data,
+                              const PP_NetAddress_Private& remote_addr);
+
+  virtual void UDPSocketSendTo(uint32 socket_id,
+                               const std::string& buffer,
+                               const PP_NetAddress_Private& addr) OVERRIDE;
+  void OnUDPSocketSendToACK(uint32 socket_id,
+                            bool succeeded,
+                            int32_t bytes_written);
+
+  virtual void UDPSocketClose(uint32 socket_id) OVERRIDE;
+
   virtual int32_t ShowContextMenu(
       webkit::ppapi::PluginInstance* instance,
       webkit::ppapi::PPB_Flash_Menu_Impl* menu,
@@ -375,6 +435,10 @@ class PepperPluginDelegateImpl
 
   IDMap<scoped_refptr<webkit::ppapi::PPB_Flash_NetConnector_Impl>,
         IDMapOwnPointer> pending_connect_tcps_;
+
+  IDMap<webkit::ppapi::PPB_TCPSocket_Private_Impl> tcp_sockets_;
+
+  IDMap<webkit::ppapi::PPB_UDPSocket_Private_Impl> udp_sockets_;
 
   IDMap<scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl>,
         IDMapOwnPointer> pending_context_menus_;

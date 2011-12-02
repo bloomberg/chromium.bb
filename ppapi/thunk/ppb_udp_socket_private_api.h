@@ -6,11 +6,12 @@
 #define PPAPI_THUNK_PPB_UDP_SOCKET_PRIVATE_API_H_
 
 #include "ppapi/c/private/ppb_udp_socket_private.h"
+#include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
 namespace thunk {
 
-class PPB_UDPSocket_Private_API {
+class PPAPI_THUNK_EXPORT PPB_UDPSocket_Private_API {
  public:
   virtual ~PPB_UDPSocket_Private_API() {}
 

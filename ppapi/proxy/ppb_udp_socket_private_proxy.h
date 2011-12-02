@@ -16,13 +16,6 @@
 namespace ppapi {
 namespace proxy {
 
-// The maximum number of bytes that each PpapiHostMsg_PPBUDPSocket_RecvFrom
-// message is allowed to request.
-extern const int32_t kUDPSocketMaxReadSize;
-// The maximum number of bytes that each PpapiHostMsg_PPBUDPSocket_SendTo
-// message is allowed to carry.
-extern const int32_t kUDPSocketMaxWriteSize;
-
 class PPB_UDPSocket_Private_Proxy : public InterfaceProxy {
  public:
   PPB_UDPSocket_Private_Proxy(Dispatcher* dispatcher);
@@ -57,4 +50,3 @@ class PPB_UDPSocket_Private_Proxy : public InterfaceProxy {
 }  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPB_UDP_SOCKET_PRIVATE_PROXY_H_
-
