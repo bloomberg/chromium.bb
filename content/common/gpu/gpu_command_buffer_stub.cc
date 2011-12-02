@@ -164,6 +164,8 @@ void GpuCommandBufferStub::OnInitialize(
     IPC::Message* reply_message) {
   DCHECK(!command_buffer_.get());
 
+  UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "TryCreateGLContext");
+
   command_buffer_.reset(new gpu::CommandBufferService);
 
 #if defined(OS_WIN)
@@ -179,6 +181,7 @@ void GpuCommandBufferStub::OnInitialize(
 #endif
 
   if (!command_buffer_->Initialize(&shared_memory, size)) {
+    DLOG(ERROR) << "CommandBufferService failed to initialize.\n";
     OnInitializeFailed(reply_message);
     return;
   }
@@ -194,6 +197,7 @@ void GpuCommandBufferStub::OnInitialize(
   if (handle_) {
 #if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
     if (software_) {
+      DLOG(ERROR) << "No software support.\n";
       OnInitializeFailed(reply_message);
       return;
     }
@@ -278,6 +282,9 @@ void GpuCommandBufferStub::OnInitialize(
 
   GpuCommandBufferMsg_Initialize::WriteReplyParams(reply_message, true);
   Send(reply_message);
+
+  UNSHIPPED_TRACE_EVENT_INSTANT1("test_gpu", "CreateGLContextSuccess",
+                                 "offscreen", surface_->IsOffscreen());
 }
 
 void GpuCommandBufferStub::OnSetParent(int32 parent_route_id,

@@ -4,26 +4,38 @@
 <meta charset="utf-8">
 <title>GPU Feature Testing: Canvas2D</title>
 <script>
+var frameCount = 0;
+var context = null;
+
 function init() {
-  var canvas = document.createElement("canvas");
+  var canvas = document.getElementById("da-canvas");
   if (!canvas)
-    return null;
-  // Make sure canvas is large enough to trigger gpu acceleration.
-  canvas.width = 500;
-  canvas.height = 500;
-  var context = null;
+    return;
   try {
     context = canvas.getContext("2d");
   } catch(e) {}
-  return context;
 }
 
 function runTest() {
-  var c2d = init();
-  if (c2d) {
-    // Initialization was triggered lazily on the first draw.
-    c2d.fillRect(0, 0, 1, 1);
+  init();
+  if (context)
+    window.webkitRequestAnimationFrame(draw);
+  else
+    endTest();
+}
+
+function draw() {
+  frameCount++;
+  document.body.style.backgroundColor = (frameCount & 1) ? "red" : "blue";
+  context.fillRect(0, 0, 500, frameCount*100);
+  if (frameCount == 5) {
+    endTest();
+  } else {
+    window.webkitRequestAnimationFrame(draw);
   }
+}
+
+function endTest() {
   domAutomationController.setAutomationId(1);
   domAutomationController.send("FINISHED");
 }
@@ -31,5 +43,6 @@ function runTest() {
 </head>
 <body onload="runTest()">
 Canvas2D should trigger GPU process launch if accelerated-2d-canvas is allowed.
+<canvas id="da-canvas" width="500" height="500"></canvas>
 </body>
 </html>

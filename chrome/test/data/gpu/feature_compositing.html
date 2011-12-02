@@ -9,9 +9,20 @@ body {
 }
 </style>
 <script>
+var frameCount = 0;
+
 function runTest() {
-  domAutomationController.setAutomationId(1);
-  domAutomationController.send("FINISHED");
+  window.webkitRequestAnimationFrame(draw);
+}
+function draw() {
+  frameCount++;
+  document.body.style.backgroundColor = (frameCount & 1) ? "red" : "blue";
+  if (frameCount == 5) {
+    domAutomationController.setAutomationId(1);
+    domAutomationController.send("FINISHED");
+  } else {
+    window.webkitRequestAnimationFrame(draw);
+  }
 }
 </script>
 </head>

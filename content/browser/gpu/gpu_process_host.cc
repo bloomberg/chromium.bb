@@ -481,6 +481,10 @@ void GpuProcessHost::OnDestroyCommandBuffer(
 }
 
 void GpuProcessHost::OnGraphicsInfoCollected(const content::GPUInfo& gpu_info) {
+  // OnGraphicsInfoCollected is sent back after the GPU process successfully
+  // initializes GL.
+  TRACE_EVENT0("test_gpu", "OnGraphicsInfoCollected");
+
   GpuDataManager::GetInstance()->UpdateGpuInfo(gpu_info);
 }
 
@@ -492,8 +496,6 @@ void GpuProcessHost::OnProcessLaunched() {
   // Send the GPU process handle to the UI thread before it has to
   // respond to any requests to establish a GPU channel. The response
   // to such requests require that the GPU process handle be known.
-
-  TRACE_EVENT0("test_gpu", "GpuProcessLaunched");
 
   base::ProcessHandle child_handle = in_process_ ?
       base::GetCurrentProcessHandle() : handle();

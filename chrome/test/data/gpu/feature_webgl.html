@@ -4,24 +4,44 @@
 <meta charset="utf-8">
 <title>GPU Feature Testing: WebGL</title>
 <script>
+var frameCount = 0;
+var gl = null;
+
 function init() {
-  var canvas = document.createElement("canvas");
+  var canvas = document.getElementById("da-canvas");
   if (!canvas)
-    return null;
-  var context = null;
+    return;
   try {
-    context = canvas.getContext("webgl");
+    gl = canvas.getContext("webgl");
   } catch(e) {}
-  if (!context) {
+  if (!gl) {
     try {
-      context = canvas.getContext("experimental-webgl");
+      gl = canvas.getContext("experimental-webgl");
     } catch(e) {}
   }
-  return context;
 }
 
 function runTest() {
-  var gl = init();
+  init();
+  if (gl)
+    window.webkitRequestAnimationFrame(draw);
+  else
+    endTest();
+}
+
+function draw() {
+  frameCount++;
+  gl.viewport(0, 0, 500, 500);
+  gl.clearColor(1.0/frameCount, 0.0, 0.0, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  if (frameCount == 5) {
+    endTest();
+  } else {
+    window.webkitRequestAnimationFrame(draw);
+  }
+}
+
+function endTest() {
   domAutomationController.setAutomationId(1);
   domAutomationController.send("FINISHED");
 }
@@ -29,5 +49,6 @@ function runTest() {
 </head>
 <body onload="runTest()">
 WebGL should trigger GPU process launch if it is allowed.
+<canvas id="da-canvas" width="500" height="500"></canvas>
 </body>
 </html>

@@ -103,12 +103,12 @@ void GpuChildThread::OnInitialize() {
       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU))
     logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
 
+  // Always set gpu info and send it back, even if there's an error and it's
+  // impartially collected.
   bool succeeded = gpu_info_collector::CollectGraphicsInfo(&gpu_info_);
-
-  if (succeeded) {
-    content::GetContentClient()->SetGpuInfo(gpu_info_);
-    LOG(INFO) << "gpu_info_collector::CollectGraphicsInfo complete";
-  }
+  content::GetContentClient()->SetGpuInfo(gpu_info_);
+  LOG(INFO) << "gpu_info_collector::CollectGraphicsInfo complete. success = " <<
+               succeeded;
 
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
@@ -157,8 +157,7 @@ void GpuChildThread::OnInitialize() {
 
   // Ensure the browser process receives the GPU info before a reply to any
   // subsequent IPC it might send.
-  if (succeeded)
-    Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info_));
+  Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info_));
 }
 
 void GpuChildThread::StopWatchdog() {
