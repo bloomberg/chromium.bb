@@ -97,7 +97,7 @@ TEST_F(PerTabPrefsTabHelperTest, OverridePrefsOnViewCreation) {
   TestPerTabPrefsTabHelper* test_prefs_helper = new TestPerTabPrefsTabHelper(
       contents_wrapper());
   contents_wrapper()->per_tab_prefs_tab_helper_.reset(test_prefs_helper);
-  EXPECT_EQ(false, test_prefs_helper->was_override_web_prefernces_called());
+  EXPECT_FALSE(test_prefs_helper->was_override_web_prefernces_called());
   test_prefs_helper->NotifyRenderViewCreated();
-  EXPECT_EQ(true, test_prefs_helper->was_override_web_prefernces_called());
+  EXPECT_TRUE(test_prefs_helper->was_override_web_prefernces_called());
 }
