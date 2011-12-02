@@ -617,7 +617,8 @@ add_config('lumpy-private-bin', [internal, binary, {
 add_config('link-private-bin', [internal, pfq, {
   'board' : 'link',
   'overlays': 'private',
-  'description' : 'link PFQ'
+  'description' : 'link PFQ',
+  'prebuilts' : False,
 }])
 
 add_config('x86-alex-toolchain', [internal, full, official, {
