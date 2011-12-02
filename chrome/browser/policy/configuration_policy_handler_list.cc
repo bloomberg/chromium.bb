@@ -16,7 +16,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/policy/configuration_policy_handler_chromeos.h"
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 namespace policy {
 
@@ -198,7 +198,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kEnableScreenLock },
   { Value::TYPE_STRING, kPolicyChromeOsReleaseChannel,
     prefs::kChromeOsReleaseChannel },
-#endif
+#endif  // defined(OS_CHROMEOS)
 };
 
 }  // namespace
@@ -222,7 +222,7 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
 
 #if !defined(OS_CHROMEOS)
   handlers_.push_back(new DownloadDirPolicyHandler());
-#endif  // !defined(OS_CHROME0S)
+#endif  // !defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
   handlers_.push_back(
@@ -231,7 +231,7 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
   handlers_.push_back(
       new NetworkConfigurationPolicyHandler(
           kPolicyOpenNetworkConfiguration));
-#endif
+#endif  // defined(OS_CHROMEOS)
 }
 
 ConfigurationPolicyHandlerList::~ConfigurationPolicyHandlerList() {

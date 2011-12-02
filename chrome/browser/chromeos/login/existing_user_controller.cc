@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -29,6 +31,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/views/window.h"
@@ -407,6 +410,7 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
   // TODO(nkostylev): May add login UI implementation callback call.
   if (!ready_for_browser_launch_) {
     // Add the appropriate first-login URL.
+    std::vector<std::string> start_urls;
     PrefService* prefs = g_browser_process->local_state();
     const std::string current_locale =
         StringToLowerASCII(prefs->GetString(prefs::kApplicationLocale));
@@ -420,7 +424,7 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
         url = kGetStartedOwnerURLPattern;
       start_url = base::StringPrintf(url, current_locale.c_str());
     }
-    CommandLine::ForCurrentProcess()->AppendArg(start_url);
+    start_urls.push_back(start_url);
 
     ServicesCustomizationDocument* customization =
       ServicesCustomizationDocument::GetInstance();
@@ -430,7 +434,7 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
       std::string initial_start_page =
           customization->GetInitialStartPage(locale);
       if (!initial_start_page.empty())
-        CommandLine::ForCurrentProcess()->AppendArg(initial_start_page);
+        start_urls.push_back(initial_start_page);
       customization->ApplyCustomization();
     }
 
@@ -438,9 +442,15 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
       // If we have a two factor error and and this is a new user,
       // load the personal settings page.
       // TODO(stevenjb): direct the user to a lightweight sync login page.
-      CommandLine::ForCurrentProcess()->AppendArg(kSettingsSyncLoginURL);
+      start_urls.push_back(kSettingsSyncLoginURL);
     }
 
+    // Don't specify start URLs if the administrator has configured the start
+    // URLs via policy.
+    if (!SessionStartupPref::TypeIsManaged(profile->GetPrefs())) {
+      for (size_t i = 0; i < start_urls.size(); ++i)
+        CommandLine::ForCurrentProcess()->AppendArg(start_urls[i]);
+    }
 #ifndef NDEBUG
     if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kOobeSkipPostLogin)) {
