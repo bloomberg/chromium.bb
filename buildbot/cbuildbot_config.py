@@ -611,6 +611,7 @@ add_config('link-private-bin', [internal, pfq, {
   'overlays': 'private',
   'description' : 'link PFQ',
   'prebuilts' : False,
+  'vm_tests' : None,
 }])
 
 add_config('x86-alex-toolchain', [internal, full, official, {
@@ -684,6 +685,8 @@ add_config('lumpy-release', [internal, full, official, release, {
 
 add_config('link-release', [internal, full, official, release, {
   'board' : 'link',
+  'prebuilts' : False,
+  'vm_tests' : None,
 }])
 
 add_config('arm-tegra2_seaboard-release', [
