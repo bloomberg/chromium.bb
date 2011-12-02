@@ -676,8 +676,13 @@ void ProfileManager::ScheduleProfileForDeletion(const FilePath& profile_dir) {
   // TODO(sail): Due to bug 88586 we don't delete the profile instance. Once we
   // start deleting the profile instance we need to close background apps too.
   Profile* profile = GetProfileByPath(profile_dir);
-  if (profile)
+  if (profile) {
     BrowserList::CloseAllBrowsersWithProfile(profile);
+
+    // Disable sync for doomed profile.
+    if (profile->HasProfileSyncService())
+      profile->GetProfileSyncService()->DisableForUser();
+  }
 
   QueueProfileDirectoryForDeletion(profile_dir);
   cache.DeleteProfileFromCache(profile_dir);
