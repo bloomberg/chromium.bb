@@ -29,6 +29,7 @@ class BrowserMainParts;
 class BrowserShutdownImpl;
 class BrowserThreadImpl;
 struct MainFunctionParams;
+class WebKitThread;
 
 // Implements the main browser loop stages called from |BrowserMain()|.
 // See comments in browser_main_parts.h for additional info.
@@ -78,11 +79,12 @@ class BrowserMainLoop {
   // Members initialized in |InitializeMainThread()| ---------------------------
   // This must get destroyed before other threads that are created in parts_.
   scoped_ptr<BrowserThreadImpl> main_thread_;
-  scoped_ptr<BrowserProcessSubThread> io_thread_;
-  scoped_ptr<BrowserProcessSubThread> file_thread_;
   scoped_ptr<BrowserProcessSubThread> db_thread_;
+  scoped_ptr<WebKitThread> webkit_thread_;
+  scoped_ptr<BrowserProcessSubThread> file_thread_;
   scoped_ptr<BrowserProcessSubThread> process_launcher_thread_;
   scoped_ptr<BrowserProcessSubThread> cache_thread_;
+  scoped_ptr<BrowserProcessSubThread> io_thread_;
 #if defined(OS_CHROMEOS)
   scoped_ptr<BrowserProcessSubThread> web_socket_proxy_thread_;
 #endif

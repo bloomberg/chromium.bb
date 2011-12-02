@@ -11,7 +11,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "webkit/glue/webkit_glue.h"
 
-using content::BrowserThread;
+namespace content {
 
 WebKitThread::WebKitThread() {
 }
@@ -66,3 +66,5 @@ void WebKitThread::InternalWebKitThread::CleanUp() {
   DCHECK(webkit_platform_support_.get());
   WebKit::shutdown();
 }
+
+}  // namespace content

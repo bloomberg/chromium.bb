@@ -14,6 +14,8 @@
 
 class BrowserWebKitPlatformSupportImpl;
 
+namespace content {
+
 // This creates a WebKit main thread on instantiation (if not in
 // --single-process mode) on construction and kills it on deletion.
 class CONTENT_EXPORT WebKitThread {
@@ -44,5 +46,7 @@ class CONTENT_EXPORT WebKitThread {
 
   DISALLOW_COPY_AND_ASSIGN(WebKitThread);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_THREAD_H_

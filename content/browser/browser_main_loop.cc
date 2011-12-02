@@ -12,6 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/in_process_webkit/webkit_thread.h"
 #include "content/browser/trace_controller.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/sandbox_policy.h"
@@ -320,10 +321,8 @@ void BrowserMainLoop::RunMainMessageLoopParts(
         thread_to_start = &db_thread_;
         break;
       case BrowserThread::WEBKIT:
-        // For now, the WebKit thread in the browser is owned by
-        // ResourceDispatcherHost, not by the content framework. Until
-        // this is fixed, we don't start the thread but still call
-        // Pre/PostStartThread for the ID.
+        // Special case as WebKitThread is a separate
+        // type.  |thread_to_start| is not used in this case.
         break;
       case BrowserThread::FILE:
         thread_to_start = &file_thread_;
@@ -365,9 +364,14 @@ void BrowserMainLoop::RunMainMessageLoopParts(
     if (parts_.get())
       parts_->PreStartThread(id);
 
-    if (thread_to_start) {
+    if (thread_id == BrowserThread::WEBKIT) {
+      webkit_thread_.reset(new WebKitThread);
+      webkit_thread_->Initialize();
+    } else if (thread_to_start) {
       (*thread_to_start).reset(new BrowserProcessSubThread(id));
       (*thread_to_start)->StartWithOptions(*options);
+    } else {
+      NOTREACHED();
     }
 
     if (parts_.get())
@@ -443,10 +447,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
         thread_to_stop = &db_thread_;
         break;
       case BrowserThread::WEBKIT:
-        // For now, the WebKit thread in the browser is owned by
-        // ResourceDispatcherHost, not by the content framework. Until
-        // this is fixed, we don't stop the thread but still call
-        // Pre/PostStopThread for the ID.
+        // Special case as WebKitThread is a separate
+        // type.  |thread_to_stop| is not used in this case.
         break;
       case BrowserThread::FILE:
         thread_to_stop = &file_thread_;
@@ -476,8 +478,15 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 
     if (parts_.get())
       parts_->PreStopThread(id);
-    if (thread_to_stop)
+
+    if (id == BrowserThread::WEBKIT) {
+      webkit_thread_.reset();
+    } else if (thread_to_stop) {
       thread_to_stop->reset();
+    } else {
+      NOTREACHED();
+    }
+
     if (parts_.get())
       parts_->PostStopThread(id);
   }

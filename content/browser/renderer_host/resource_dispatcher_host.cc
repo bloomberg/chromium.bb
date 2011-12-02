@@ -32,7 +32,6 @@
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/download/save_file_resource_handler.h"
-#include "content/browser/in_process_webkit/webkit_thread.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/async_resource_handler.h"
 #include "content/browser/renderer_host/buffered_resource_handler.h"
@@ -296,7 +295,6 @@ ResourceDispatcherHost::ResourceDispatcherHost(
           download_file_manager_(new DownloadFileManager(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           save_file_manager_(new SaveFileManager(this))),
-      webkit_thread_(new WebKitThread),
       request_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       is_shutdown_(false),
@@ -319,7 +317,6 @@ ResourceDispatcherHost::~ResourceDispatcherHost() {
 
 void ResourceDispatcherHost::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  webkit_thread_->Initialize();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&appcache::AppCacheInterceptor::EnsureRegistered));

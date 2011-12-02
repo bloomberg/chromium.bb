@@ -5,7 +5,7 @@
 #include "content/browser/in_process_webkit/webkit_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
+namespace content {
 
 TEST(WebKitThreadTest, DISABLED_ExposedInBrowserThread) {
   int* null = NULL;  // Help the template system out.
@@ -22,3 +22,5 @@ TEST(WebKitThreadTest, DISABLED_ExposedInBrowserThread) {
   EXPECT_FALSE(BrowserThread::DeleteSoon(BrowserThread::WEBKIT,
                                          FROM_HERE, null));
 }
+
+}  // namespace content

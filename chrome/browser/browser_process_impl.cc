@@ -274,9 +274,7 @@ void BrowserProcessImpl::PreStopThread(BrowserThread::ID thread_id) {
     case BrowserThread::WEBKIT:
       // Need to destroy ResourceDispatcherHost before PluginService
       // and SafeBrowsingService, since it caches a pointer to
-      // it. This also causes the webkit thread to terminate (which is
-      // still the responsibility of the embedder, not of the content
-      // framework).
+      // it.
       resource_dispatcher_host_.reset();
       break;
     default:

@@ -67,8 +67,6 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 
 void ShellBrowserMainParts::PreStopThread(BrowserThread::ID id) {
   if (id == BrowserThread::WEBKIT) {
-    // It remains the embedder's responsibility to kill the WebKit
-    // thread.  This happens when RDH is destroyed.
     resource_dispatcher_host_.reset();
   }
 }
