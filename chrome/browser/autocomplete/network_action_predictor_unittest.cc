@@ -30,7 +30,6 @@ namespace {
 struct TestUrlInfo {
   GURL url;
   string16 title;
-  int typed_count;
   int days_from_now;
   string16 user_text;
   int number_of_hits;
@@ -38,40 +37,40 @@ struct TestUrlInfo {
   NetworkActionPredictor::Action expected_action;
 } test_url_db[] = {
   { GURL("http://www.testsite.com/a.html"),
-    ASCIIToUTF16("Test - site - just a test"), 1, 1,
-    ASCIIToUTF16("just"), 1, 2,
+    ASCIIToUTF16("Test - site - just a test"), 1,
+    ASCIIToUTF16("just"), 5, 0,
     NetworkActionPredictor::ACTION_PRERENDER },
   { GURL("http://www.testsite.com/b.html"),
-    ASCIIToUTF16("Test - site - just a test"), 0, 1,
-    ASCIIToUTF16("just"), 0, 0,
+    ASCIIToUTF16("Test - site - just a test"), 1,
+    ASCIIToUTF16("just"), 3, 0,
     NetworkActionPredictor::ACTION_PRERENDER },
   { GURL("http://www.testsite.com/c.html"),
-    ASCIIToUTF16("Test - site - just a test"), 1, 5,
-    ASCIIToUTF16("just"), 0, 0,
+    ASCIIToUTF16("Test - site - just a test"), 5,
+    ASCIIToUTF16("just"), 3, 1,
     NetworkActionPredictor::ACTION_PRECONNECT },
   { GURL("http://www.testsite.com/d.html"),
-    ASCIIToUTF16("Test - site - just a test"), 2, 5,
-    ASCIIToUTF16("just"), 0, 0,
+    ASCIIToUTF16("Test - site - just a test"), 5,
+    ASCIIToUTF16("just"), 3, 0,
     NetworkActionPredictor::ACTION_PRERENDER },
   { GURL("http://www.testsite.com/e.html"),
-    ASCIIToUTF16("Test - site - just a test"), 1, 8,
-    ASCIIToUTF16("just"), 0, 0,
+    ASCIIToUTF16("Test - site - just a test"), 8,
+    ASCIIToUTF16("just"), 3, 1,
     NetworkActionPredictor::ACTION_PRECONNECT },
   { GURL("http://www.testsite.com/f.html"),
-    ASCIIToUTF16("Test - site - just a test"), 4, 8,
-    ASCIIToUTF16("just"), 0, 0,
+    ASCIIToUTF16("Test - site - just a test"), 8,
+    ASCIIToUTF16("just"), 3, 0,
     NetworkActionPredictor::ACTION_PRERENDER },
   { GURL("http://www.testsite.com/g.html"),
-    ASCIIToUTF16("Test - site - just a test"), 1, 12,
-    ASCIIToUTF16("just a"), 0, 0,
+    ASCIIToUTF16("Test - site - just a test"), 12,
+    ASCIIToUTF16("j"), 5, 0,
     NetworkActionPredictor::ACTION_NONE },
   { GURL("http://www.testsite.com/h.html"),
-    ASCIIToUTF16("Test - site - just a test"), 2, 21,
-    ASCIIToUTF16("just a test"), 0, 0,
+    ASCIIToUTF16("Test - site - just a test"), 21,
+    ASCIIToUTF16("just a test"), 2, 0,
     NetworkActionPredictor::ACTION_NONE },
   { GURL("http://www.testsite.com/i.html"),
-    ASCIIToUTF16("Test - site - just a test"), 3, 28,
-    ASCIIToUTF16("just a test"), 0, 0,
+    ASCIIToUTF16("Test - site - just a test"), 28,
+    ASCIIToUTF16("just a test"), 2, 0,
     NetworkActionPredictor::ACTION_NONE }
 };
 
@@ -93,7 +92,7 @@ class NetworkActionPredictorTest : public testing::Test {
         switches::kPrerenderFromOmniboxSwitchValueEnabled);
 
     ASSERT_TRUE(prerender::GetOmniboxHeuristicToUse() ==
-          prerender::OMNIBOX_HEURISTIC_ORIGINAL)
+          prerender::OMNIBOX_HEURISTIC_EXACT)
         << "The heuristic has changed so the expectations need to be updated.";
     profile_.CreateHistoryService(true, false);
     profile_.BlockUntilHistoryProcessesPendingRequests();
@@ -131,7 +130,6 @@ class NetworkActionPredictorTest : public testing::Test {
 
     history::URLRow row(test_row.url);
     row.set_title(test_row.title);
-    row.set_typed_count(test_row.typed_count);
     row.set_last_visit(visit_time);
 
     return url_db->AddURL(row);
@@ -146,6 +144,11 @@ class NetworkActionPredictorTest : public testing::Test {
     row.number_of_hits = test_row.number_of_hits;
     row.number_of_misses = test_row.number_of_misses;
     return row;
+  }
+
+  void AddAllRows() {
+    for (size_t i = 0; i < arraysize(test_url_db); ++i)
+      AddRow(test_url_db[i]);
   }
 
   std::string AddRow(const TestUrlInfo& test_row) {
@@ -205,39 +208,6 @@ class NetworkActionPredictorTest : public testing::Test {
   scoped_ptr<NetworkActionPredictor> predictor_;
 };
 
-TEST_F(NetworkActionPredictorTest, RecommendActionURL) {
-  ASSERT_NO_FATAL_FAILURE(AddAllRowsToHistory());
-
-  AutocompleteMatch match;
-  match.type = AutocompleteMatch::HISTORY_URL;
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_url_db); ++i) {
-    match.destination_url = GURL(test_url_db[i].url);
-    EXPECT_EQ(test_url_db[i].expected_action,
-              predictor()->RecommendAction(test_url_db[i].user_text, match))
-        << "Unexpected action for " << match.destination_url;
-  }
-}
-
-TEST_F(NetworkActionPredictorTest, RecommendActionSearch) {
-  ASSERT_NO_FATAL_FAILURE(AddAllRowsToHistory());
-
-  AutocompleteMatch match;
-  match.type = AutocompleteMatch::SEARCH_WHAT_YOU_TYPED;
-
-  for (size_t i = 0; i < arraysize(test_url_db); ++i) {
-    match.destination_url = GURL(test_url_db[i].url);
-    const NetworkActionPredictor::Action expected =
-        (test_url_db[i].expected_action ==
-         NetworkActionPredictor::ACTION_PRERENDER) ?
-            NetworkActionPredictor::ACTION_PRECONNECT :
-            test_url_db[i].expected_action;
-
-    EXPECT_EQ(expected,
-              predictor()->RecommendAction(test_url_db[i].user_text, match))
-        << "Unexpected action for " << match.destination_url;
-  }
-}
 
 TEST_F(NetworkActionPredictorTest, AddRow) {
   // Add a test entry to the predictor.
@@ -259,8 +229,7 @@ TEST_F(NetworkActionPredictorTest, AddRow) {
 }
 
 TEST_F(NetworkActionPredictorTest, UpdateRow) {
-  for (size_t i = 0; i < arraysize(test_url_db); ++i)
-    AddRow(test_url_db[i]);
+  ASSERT_NO_FATAL_FAILURE(AddAllRows());
 
   EXPECT_EQ(arraysize(test_url_db), db_cache()->size());
   EXPECT_EQ(arraysize(test_url_db), db_id_cache()->size());
@@ -296,8 +265,7 @@ TEST_F(NetworkActionPredictorTest, UpdateRow) {
 }
 
 TEST_F(NetworkActionPredictorTest, DeleteAllRows) {
-  for (size_t i = 0; i < arraysize(test_url_db); ++i)
-    AddRow(test_url_db[i]);
+  ASSERT_NO_FATAL_FAILURE(AddAllRows());
 
   EXPECT_EQ(arraysize(test_url_db), db_cache()->size());
   EXPECT_EQ(arraysize(test_url_db), db_id_cache()->size());
@@ -309,8 +277,7 @@ TEST_F(NetworkActionPredictorTest, DeleteAllRows) {
 }
 
 TEST_F(NetworkActionPredictorTest, DeleteRowsWithURLs) {
-  for (size_t i = 0; i < arraysize(test_url_db); ++i)
-    AddRow(test_url_db[i]);
+  ASSERT_NO_FATAL_FAILURE(AddAllRows());
 
   EXPECT_EQ(arraysize(test_url_db), db_cache()->size());
   EXPECT_EQ(arraysize(test_url_db), db_id_cache()->size());
@@ -364,5 +331,39 @@ TEST_F(NetworkActionPredictorTest, DeleteOldIdsFromCaches) {
     bool in_list =
         (std::find(id_list.begin(), id_list.end(), *it) != id_list.end());
     EXPECT_EQ(in_expected, in_list);
+  }
+}
+
+TEST_F(NetworkActionPredictorTest, RecommendActionURL) {
+  ASSERT_NO_FATAL_FAILURE(AddAllRows());
+
+  AutocompleteMatch match;
+  match.type = AutocompleteMatch::HISTORY_URL;
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_url_db); ++i) {
+    match.destination_url = GURL(test_url_db[i].url);
+    EXPECT_EQ(test_url_db[i].expected_action,
+              predictor()->RecommendAction(test_url_db[i].user_text, match))
+        << "Unexpected action for " << match.destination_url;
+  }
+}
+
+TEST_F(NetworkActionPredictorTest, RecommendActionSearch) {
+  ASSERT_NO_FATAL_FAILURE(AddAllRows());
+
+  AutocompleteMatch match;
+  match.type = AutocompleteMatch::SEARCH_WHAT_YOU_TYPED;
+
+  for (size_t i = 0; i < arraysize(test_url_db); ++i) {
+    match.destination_url = GURL(test_url_db[i].url);
+    const NetworkActionPredictor::Action expected =
+        (test_url_db[i].expected_action ==
+         NetworkActionPredictor::ACTION_PRERENDER) ?
+            NetworkActionPredictor::ACTION_PRECONNECT :
+            test_url_db[i].expected_action;
+
+    EXPECT_EQ(expected,
+              predictor()->RecommendAction(test_url_db[i].user_text, match))
+        << "Unexpected action for " << match.destination_url;
   }
 }

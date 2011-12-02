@@ -337,14 +337,6 @@ bool PrerenderManager::AddPrerenderFromOmnibox(
 
   Origin origin = ORIGIN_MAX;
   switch (GetOmniboxHeuristicToUse()) {
-    case OMNIBOX_HEURISTIC_ORIGINAL:
-      origin = ORIGIN_OMNIBOX_ORIGINAL;
-      break;
-
-    case OMNIBOX_HEURISTIC_CONSERVATIVE:
-      origin = ORIGIN_OMNIBOX_CONSERVATIVE;
-      break;
-
     case OMNIBOX_HEURISTIC_EXACT:
       origin = ORIGIN_OMNIBOX_EXACT;
       break;
@@ -1065,12 +1057,6 @@ DictionaryValue* PrerenderManager::GetAsValue() const {
   dict_value->SetBoolean("omnibox_enabled", IsOmniboxEnabled(profile_));
   if (IsOmniboxEnabled(profile_)) {
     switch (GetOmniboxHeuristicToUse()) {
-      case OMNIBOX_HEURISTIC_ORIGINAL:
-        dict_value->SetString("omnibox_heuristic", "(original)");
-        break;
-      case OMNIBOX_HEURISTIC_CONSERVATIVE:
-        dict_value->SetString("omnibox_heuristic", "(conservative)");
-        break;
       case OMNIBOX_HEURISTIC_EXACT:
         dict_value->SetString("omnibox_heuristic", "(exact)");
         break;

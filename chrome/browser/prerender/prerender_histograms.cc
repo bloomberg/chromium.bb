@@ -42,10 +42,6 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
     return ComposeHistogramName("wash", name);
 
   switch (origin) {
-    case ORIGIN_OMNIBOX_ORIGINAL:
-      return ComposeHistogramName("omnibox_original", name);
-    case ORIGIN_OMNIBOX_CONSERVATIVE:
-      return ComposeHistogramName("omnibox_conservative", name);
     case ORIGIN_OMNIBOX_EXACT:
       return ComposeHistogramName("omnibox_exact", name);
     case ORIGIN_OMNIBOX_EXACT_FULL:
@@ -64,10 +60,7 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
 }
 
 bool OriginIsOmnibox(Origin origin) {
-  return origin == ORIGIN_OMNIBOX_ORIGINAL ||
-         origin == ORIGIN_OMNIBOX_CONSERVATIVE ||
-         origin == ORIGIN_OMNIBOX_EXACT ||
-         origin == ORIGIN_OMNIBOX_EXACT_FULL;
+  return origin == ORIGIN_OMNIBOX_EXACT || origin == ORIGIN_OMNIBOX_EXACT_FULL;
 }
 
 }  // namespace
@@ -106,9 +99,7 @@ bool OriginIsOmnibox(Origin origin) {
               experiment != recording_experiment)) { \
   } else if (origin == ORIGIN_LINK_REL_PRERENDER) { \
     HISTOGRAM; \
-  } else if (origin == ORIGIN_OMNIBOX_ORIGINAL || \
-             origin == ORIGIN_OMNIBOX_CONSERVATIVE || \
-             origin == ORIGIN_OMNIBOX_EXACT || \
+  } else if (origin == ORIGIN_OMNIBOX_EXACT || \
              origin == ORIGIN_OMNIBOX_EXACT_FULL) { \
     HISTOGRAM; \
   } else if (experiment != kNoExperiment) { \

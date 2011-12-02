@@ -20,14 +20,10 @@ namespace prerender {
 
 namespace {
 
-int omnibox_original_group_id = 0;
-int omnibox_conservative_group_id = 0;
 int omnibox_exact_group_id = 0;
 int omnibox_exact_full_group_id = 0;
 
 const char* kOmniboxHeuristicNames[] = {
-  "Original",
-  "Conservative",
   "Exact",
   "Exact_Full"
 };
@@ -178,18 +174,11 @@ void ConfigurePrerenderFromOmnibox() {
   enabled_trial->AppendGroup("OmniboxPrerenderEnabled", kEnabledProbability);
 
   // Field trial to see which heuristic to use.
-  const base::FieldTrial::Probability kConservativeProbability = 25;
-  const base::FieldTrial::Probability kExactProbability = 25;
-  const base::FieldTrial::Probability kExactFullProbability = 25;
+  const base::FieldTrial::Probability kExactFullProbability = 50;
   scoped_refptr<base::FieldTrial> heuristic_trial(
       new base::FieldTrial(kPrerenderFromOmniboxHeuristicTrialName, kDivisor,
                            "OriginalAlgorithm", 2012, 8, 30));
-  omnibox_original_group_id = base::FieldTrial::kDefaultGroupNumber;
-  omnibox_conservative_group_id =
-      heuristic_trial->AppendGroup("ConservativeAlgorithm",
-                                   kConservativeProbability);
-  omnibox_exact_group_id =
-      heuristic_trial->AppendGroup("ExactAlgorithm", kExactProbability);
+  omnibox_exact_group_id = base::FieldTrial::kDefaultGroupNumber;
   omnibox_exact_full_group_id =
       heuristic_trial->AppendGroup("ExactFullAlgorithm", kExactFullProbability);
 }
@@ -229,17 +218,13 @@ bool IsOmniboxEnabled(Profile* profile) {
 OmniboxHeuristic GetOmniboxHeuristicToUse() {
   const int group =
       base::FieldTrialList::FindValue(kPrerenderFromOmniboxHeuristicTrialName);
-  if (group == omnibox_original_group_id)
-    return OMNIBOX_HEURISTIC_ORIGINAL;
-  if (group == omnibox_conservative_group_id)
-    return OMNIBOX_HEURISTIC_CONSERVATIVE;
   if (group == omnibox_exact_group_id)
     return OMNIBOX_HEURISTIC_EXACT;
   if (group == omnibox_exact_full_group_id)
     return OMNIBOX_HEURISTIC_EXACT_FULL;
 
-  // If we don't have a group just return the original heuristic.
-  return OMNIBOX_HEURISTIC_ORIGINAL;
+  // If we don't have a group just return the exact heuristic.
+  return OMNIBOX_HEURISTIC_EXACT;
 }
 
 std::string GetOmniboxHistogramSuffix() {

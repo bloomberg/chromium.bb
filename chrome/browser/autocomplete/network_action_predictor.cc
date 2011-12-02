@@ -42,45 +42,6 @@ COMPILE_ASSERT(arraysize(kConfidenceCutoff) ==
                NetworkActionPredictor::LAST_PREDICT_ACTION,
                ConfidenceCutoff_count_mismatch);
 
-double OriginalAlgorithm(const history::URLRow& url_row) {
-  const double base_score = 1.0;
-
-  // This constant is ln(1/0.65) so we end up decaying to 65% of the base score
-  // for each week that passes.
-  const double kLnDecayPercent = 0.43078291609245;
-  base::TimeDelta time_passed = base::Time::Now() - url_row.last_visit();
-
-  // Clamp to 0.
-  const double decay_exponent = std::max(0.0,
-      kLnDecayPercent * static_cast<double>(time_passed.InMicroseconds()) /
-          base::Time::kMicrosecondsPerWeek);
-
-  const double kMaxDecaySpeedDivisor = 5.0;
-  const double kNumUsesPerDecaySpeedDivisorIncrement = 2.0;
-  const double decay_divisor = std::min(kMaxDecaySpeedDivisor,
-      (url_row.typed_count() + kNumUsesPerDecaySpeedDivisorIncrement - 1) /
-          kNumUsesPerDecaySpeedDivisorIncrement);
-
-  return base_score / exp(decay_exponent / decay_divisor);
-}
-
-double ConservativeAlgorithm(const history::URLRow& url_row) {
-  const double normalized_typed_count =
-      std::min(url_row.typed_count() / 5.0, 1.0);
-  const double base_score = atan(10 * normalized_typed_count) / atan(10.0);
-
-  // This constant is ln(1/0.65) so we end up decaying to 65% of the base score
-  // for each week that passes.
-  const double kLnDecayPercent = 0.43078291609245;
-  base::TimeDelta time_passed = base::Time::Now() - url_row.last_visit();
-
-  const double decay_exponent = std::max(0.0,
-      kLnDecayPercent * static_cast<double>(time_passed.InMicroseconds()) /
-          base::Time::kMicrosecondsPerWeek);
-
-  return base_score / exp(decay_exponent);
-}
-
 bool GetURLRowForAutocompleteMatch(Profile* profile,
                                    const AutocompleteMatch& match,
                                    history::URLRow* url_row) {
@@ -173,18 +134,6 @@ NetworkActionPredictor::Action NetworkActionPredictor::RecommendAction(
   double confidence = 0.0;
 
   switch (prerender::GetOmniboxHeuristicToUse()) {
-    case prerender::OMNIBOX_HEURISTIC_ORIGINAL: {
-      history::URLRow url_row;
-      if (GetURLRowForAutocompleteMatch(profile_, match, &url_row))
-        confidence = OriginalAlgorithm(url_row);
-      break;
-    }
-    case prerender::OMNIBOX_HEURISTIC_CONSERVATIVE: {
-      history::URLRow url_row;
-      if (GetURLRowForAutocompleteMatch(profile_, match, &url_row))
-        confidence = ConservativeAlgorithm(url_row);
-      break;
-    }
     case prerender::OMNIBOX_HEURISTIC_EXACT:
     case prerender::OMNIBOX_HEURISTIC_EXACT_FULL:
       confidence = ExactAlgorithm(user_text, match);
@@ -435,8 +384,11 @@ double NetworkActionPredictor::ExactAlgorithm(
     const string16& user_text,
     const AutocompleteMatch& match) const {
   const DBCacheKey key = { user_text, match.destination_url };
-  const DBCacheMap::const_iterator iter = db_cache_.find(key);
 
+  if (user_text.length() < kMinimumUserTextLength)
+    return 0.0;
+
+  const DBCacheMap::const_iterator iter = db_cache_.find(key);
   if (iter == db_cache_.end())
     return 0.0;
 
