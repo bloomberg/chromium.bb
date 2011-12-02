@@ -26,8 +26,7 @@ namespace {
 const int64 kMBytes = 1024 * 1024;
 const double kUsageRatioToStartEviction = 0.7;
 const int kThresholdOfErrorsToStopEviction = 5;
-const base::TimeDelta kHistogramReportInterval =
-    base::TimeDelta::FromMilliseconds(60 * 60 * 1000);  // 1 hour
+const int kHistogramReportIntervalMinutes = 60;
 }
 
 namespace quota {
@@ -130,8 +129,10 @@ void QuotaTemporaryStorageEvictor::Start() {
 
   if (histogram_timer_.IsRunning())
     return;
-  histogram_timer_.Start(FROM_HERE, kHistogramReportInterval, this,
-                         &QuotaTemporaryStorageEvictor::ReportPerHourHistogram);
+
+  histogram_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMinutes(kHistogramReportIntervalMinutes),
+      this, &QuotaTemporaryStorageEvictor::ReportPerHourHistogram);
 }
 
 void QuotaTemporaryStorageEvictor::StartEvictionTimerWithDelay(int delay_ms) {
