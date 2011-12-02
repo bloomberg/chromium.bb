@@ -171,15 +171,18 @@ InterfaceList::InterfaceList() {
   AddFlashInterfaces();
 
   // PPB (browser) interfaces.
+  // Do not add more stuff here, they should be added to interface_list*.h
+  // TODO(brettw) remove these.
   AddPPB(PPB_FileChooser_Proxy::GetTrustedInfo());
   AddPPB(PPB_Instance_Proxy::GetInfoPrivate());
   AddPPB(PPB_PDF_Proxy::GetInfo());
   AddPPB(PPB_Testing_Proxy::GetInfo());
   AddPPB(PPB_URLLoader_Proxy::GetTrustedInfo());
   AddPPB(PPB_Var_Deprecated_Proxy::GetInfo());
-  AddPPB(PPB_FileRef_Proxy::GetPrivateInfo());
 
   // PPP (plugin) interfaces.
+  // Do not add more stuff here, they should be added to interface_list*.h
+  // TODO(brettw) remove these.
   AddPPP(PPP_Graphics3D_Proxy::GetInfo());
   AddPPP(PPP_InputEvent_Proxy::GetInfo());
   AddPPP(PPP_Instance_Private_Proxy::GetInfo());

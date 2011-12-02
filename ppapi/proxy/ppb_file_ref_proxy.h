@@ -29,8 +29,6 @@ class PPB_FileRef_Proxy : public InterfaceProxy {
   explicit PPB_FileRef_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_FileRef_Proxy();
 
-  static const Info* GetPrivateInfo();
-
   static PP_Resource CreateProxyResource(PP_Resource file_system,
                                          const char* path);
 

@@ -197,18 +197,6 @@ PPB_FileRef_Proxy::~PPB_FileRef_Proxy() {
 }
 
 // static
-const InterfaceProxy::Info* PPB_FileRef_Proxy::GetPrivateInfo() {
-  static const Info info = {
-    thunk::GetPPB_FileRefPrivate_Thunk(),
-    PPB_FILEREFPRIVATE_INTERFACE,
-    API_ID_NONE,  // URL_LOADER is the canonical one.
-    false,
-    &CreateFileRefProxy
-  };
-  return &info;
-}
-
-// static
 PP_Resource PPB_FileRef_Proxy::CreateProxyResource(PP_Resource file_system,
                                                    const char* path) {
   Resource* file_system_object =
