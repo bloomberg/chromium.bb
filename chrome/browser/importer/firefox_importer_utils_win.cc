@@ -7,6 +7,7 @@
 #include <shlobj.h>
 
 #include "base/file_util.h"
+#include "base/string16.h"
 #include "base/win/registry.h"
 
 // NOTE: Keep these in order since we need test all those paths according
@@ -42,7 +43,7 @@ int GetCurrentFirefoxMajorVersionFromRegistry() {
 
 FilePath GetFirefoxInstallPathFromRegistry() {
   // Detects the path that Firefox is installed in.
-  std::wstring registry_path = L"Software\\Mozilla\\Mozilla Firefox";
+  string16 registry_path = L"Software\\Mozilla\\Mozilla Firefox";
   wchar_t buffer[MAX_PATH];
   DWORD buffer_length = sizeof(buffer);
   base::win::RegKey reg_key(HKEY_LOCAL_MACHINE, registry_path.c_str(),
@@ -52,7 +53,7 @@ FilePath GetFirefoxInstallPathFromRegistry() {
   if (result != ERROR_SUCCESS)
     return FilePath();
 
-  registry_path += L"\\" + std::wstring(buffer) + L"\\Main";
+  registry_path += L"\\" + string16(buffer) + L"\\Main";
   buffer_length = sizeof(buffer);
   base::win::RegKey reg_key_directory(HKEY_LOCAL_MACHINE,
                                       registry_path.c_str(), KEY_READ);
