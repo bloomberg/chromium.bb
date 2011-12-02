@@ -17,6 +17,16 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace {
+
+// |UpdateDeviceCallback| takes a variable length list as an arugment. The
+// value stored in each list element is indicated by the following constants.
+const int kUpdateDeviceAddressIndex = 0;
+const int kUpdateDeviceCommandIndex = 1;
+const int kUpdateDevicePasskeyIndex = 2;
+
+}  // namespace
+
 namespace chromeos {
 
 BluetoothOptionsHandler::BluetoothOptionsHandler() {
@@ -77,6 +87,12 @@ void BluetoothOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_FORGET));
   localized_strings->SetString("bluetoothCancel",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_CANCEL));
+  localized_strings->SetString("bluetoothAcceptPasskey",
+      l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_BLUETOOTH_ACCEPT_PASSKEY));
+  localized_strings->SetString("bluetoothRejectPasskey",
+      l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_BLUETOOTH_REJECT_PASSKEY));
   localized_strings->SetString("bluetoothConfirmPasskey",
       l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY_REQUEST));
@@ -171,6 +187,21 @@ void BluetoothOptionsHandler::FindDevicesCallback(
 void BluetoothOptionsHandler::UpdateDeviceCallback(
     const ListValue* args) {
   // TODO(kevers): Trigger connect/disconnect.
+  int size = args->GetSize();
+  std::string address;
+  std::string command;
+  args->GetString(kUpdateDeviceAddressIndex, &address);
+  args->GetString(kUpdateDeviceCommandIndex, &command);
+  if (size > kUpdateDevicePasskeyIndex) {
+    // Passkey confirmation as part of the pairing process.
+    std::string passkey;
+    args->GetString(kUpdateDevicePasskeyIndex, &passkey);
+    DVLOG(1) << "UpdateDeviceCallback: " << address << ": " << command
+            << " [" << passkey << "]";
+  } else {
+    // Initiating a device connection or disconnecting
+    DVLOG(1) << "UpdateDeviceCallback: " << address << ": " << command;
+  }
 }
 
 void BluetoothOptionsHandler::SendDeviceNotification(

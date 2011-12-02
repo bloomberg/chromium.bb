@@ -45,8 +45,9 @@ class BluetoothOptionsHandler : public OptionsPageUIHandler,
 
   // Called when the user requests to connect to or disconnect from a Bluetooth
   // device.
-  // |args| will be a list containing two arguments, the first argument is the
-  // device ID and the second is the requested action.
+  // |args| will be a list containing two or three arguments, the first argument
+  // is the device ID and the second is the requested action.  If a third
+  // argument is present, it is the passkey for pairing confirmation.
   void UpdateDeviceCallback(const base::ListValue* args);
 
   // Sends a notification to the Web UI of the status of a Bluetooth device.

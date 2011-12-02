@@ -326,10 +326,15 @@ cr.define('options.system.bluetooth', function() {
         callbackType = 'disconnect';
       } else if (this.paired) {
         buttonLabelKey = 'bluetoothForgetDevice';
-        callbackType = 'disconnect';
+        callbackType = 'forget';
       } else if (this.connecting) {
-        buttonLabelKey = 'bluetoothCancel';
-        callbackType = 'cancel';
+        if (this.data.pairing == Constants.PAIRING.CONFIRM_PASSKEY) {
+          buttonLabelKey = 'bluetoothRejectPasskey';
+          callbackType = 'reject';
+        } else {
+          buttonLabelKey = 'bluetoothCancel';
+          callbackType = 'cancel';
+        }
       } else {
         buttonLabelKey = 'bluetoothConnectDevice';
         callbackType = 'connect';
@@ -348,8 +353,21 @@ cr.define('options.system.bluetooth', function() {
       if (this.data.pairing == Constants.PAIRING.CONFIRM_PASSKEY ||
           this.data.pairing == Constants.PAIRING.ENTER_PASSKEY) {
         var buttonEl = this.ownerDocument.createElement('button');
-        buttonEl.textContent = localStrings.getString('bluetoothConnectDevice');
-        // TODO(kevers): Add callbacks.
+        buttonEl.className = 'accept-pairing-button';
+        var msg = this.data.pairing == Constants.PAIRING.CONFIRM_PASSKEY ?
+            'bluetoothAcceptPasskey' : 'bluetoothConnectDevice';
+        buttonEl.textContent = localStrings.getString(msg);
+        var self = this;
+        var callback = function(e) {
+          var passkey = self.data.passkey;
+          if (self.data.pairing == Constants.PAIRING.ENTER_PASSKEY) {
+            var passkeyField = self.getNodeByClass_('bluetooth-passkey-field');
+            passkey = passkeyField.value;
+          }
+          chrome.send('updateBluetoothDevice',
+              [self.data.address, 'connect', String(passkey)]);
+        }
+        buttonEl.addEventListener('click', callback);
         buttonsDiv.insertBefore(buttonEl, buttonsDiv.firstChild);
       }
       this.appendChild(buttonsDiv);

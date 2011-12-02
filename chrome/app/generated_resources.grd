@@ -11867,6 +11867,12 @@ changed since last sign in
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CANCEL">
         Cancel
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ACCEPT_PASSKEY">
+        Accept
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_REJECT_PASSKEY">
+        Reject
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY_REQUEST" desc="Bluetooth pairing message typically shown when pairing with a device that has a display.  The label %1 is replaced by the passkey and %2 with the name of the device.">
         Please confirm that the passkey %1 is shown on "%2".
       </message>
