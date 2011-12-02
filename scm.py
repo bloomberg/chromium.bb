@@ -102,14 +102,14 @@ class GIT(object):
         ['git'] + args, stderr=subprocess2.PIPE, **kwargs)
 
   @staticmethod
-  def CaptureStatus(files, upstream_branch=None):
+  def CaptureStatus(cwd, files, upstream_branch=None):
     """Returns git status.
 
     @files can be a string (one file) or a list of files.
 
     Returns an array of (status, file) tuples."""
     if upstream_branch is None:
-      upstream_branch = GIT.GetUpstreamBranch(os.getcwd())
+      upstream_branch = GIT.GetUpstreamBranch(cwd)
       if upstream_branch is None:
         raise gclient_utils.Error('Cannot determine upstream branch')
     command = ['diff', '--name-status', '-r', '%s...' % upstream_branch]
