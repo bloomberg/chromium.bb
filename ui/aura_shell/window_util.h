@@ -6,6 +6,8 @@
 #define UI_AURA_SHELL_WINDOW_UTIL_H_
 #pragma once
 
+#include "ui/aura_shell/aura_shell_export.h"
+
 namespace aura {
 class Window;
 }
@@ -13,7 +15,7 @@ class Window;
 namespace aura_shell {
 
 // Returns true if |window| is in the maximized state.
-bool IsWindowMaximized(aura::Window* window);
+AURA_SHELL_EXPORT bool IsWindowMaximized(aura::Window* window);
 
 }  // namespace aura_shell
 
