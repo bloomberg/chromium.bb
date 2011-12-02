@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/frame/browser_view.h"
+#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/browser/ui/browser.h"
@@ -25,7 +26,7 @@ class AccessibilityMenuButtonTest : public InProcessBrowserTest {
   const AccessibilityMenuButton* GetAccessibilityMenuButton() {
     const views::View* view =
 #if defined(USE_AURA)
-        ChromeShellDelegate::instance()->GetStatusAreaForTest();
+        ChromeShellDelegate::instance()->GetStatusArea();
 #else
         static_cast<BrowserView*>(browser()->window());
 #endif

@@ -18,6 +18,7 @@
 
 class DOMView;
 class GURL;
+class StatusAreaView;
 class WebUI;
 
 namespace views {
@@ -26,8 +27,6 @@ class Widget;
 }
 
 namespace chromeos {
-
-class StatusAreaViewChromeos;
 
 // View used to render a WebUI supporting Widget. This widget is used for the
 // WebUI based start up and lock screens. It contains a StatusAreaView and
@@ -95,7 +94,7 @@ class WebUILoginView : public views::WidgetDelegateView,
   // Creates and adds the status area (separate window).
   virtual void InitStatusArea();
 
-  StatusAreaViewChromeos* status_area_;
+  StatusAreaView* status_area_;
 
   // DOMView for rendering a webpage as a webui login.
   DOMView* webui_login_;

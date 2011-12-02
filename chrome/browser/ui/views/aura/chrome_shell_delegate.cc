@@ -24,8 +24,8 @@ ChromeShellDelegate::~ChromeShellDelegate() {
     instance_ = NULL;
 }
 
-views::View* ChromeShellDelegate::GetStatusAreaForTest() {
-  return status_area_host_->GetStatusAreaForTest();
+StatusAreaView* ChromeShellDelegate::GetStatusArea() {
+  return status_area_host_->GetStatusArea();
 }
 
 // static

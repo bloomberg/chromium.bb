@@ -21,7 +21,7 @@ class StatusAreaViewTest : public InProcessBrowserTest {
   const StatusAreaView* GetStatusAreaView() {
     const views::View* view =
 #if defined(USE_AURA)
-        ChromeShellDelegate::instance()->GetStatusAreaForTest();
+        ChromeShellDelegate::instance()->GetStatusArea();
 #else
         static_cast<BrowserView*>(browser()->window());
 #endif

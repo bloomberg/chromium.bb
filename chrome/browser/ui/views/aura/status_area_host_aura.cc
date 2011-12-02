@@ -34,7 +34,7 @@ StatusAreaHostAura::StatusAreaHostAura()
 StatusAreaHostAura::~StatusAreaHostAura() {
 }
 
-views::View* StatusAreaHostAura::GetStatusAreaForTest() {
+StatusAreaView* StatusAreaHostAura::GetStatusArea() {
   return status_area_view_;
 }
 

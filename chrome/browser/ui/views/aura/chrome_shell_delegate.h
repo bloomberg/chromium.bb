@@ -14,6 +14,7 @@
 
 class Browser;
 class StatusAreaHostAura;
+class StatusAreaView;
 
 namespace views {
 class View;
@@ -26,7 +27,7 @@ class ChromeShellDelegate : public aura_shell::ShellDelegate {
 
   static ChromeShellDelegate* instance() { return instance_; }
 
-  views::View* GetStatusAreaForTest();
+  StatusAreaView* GetStatusArea();
 
   // Returns whether a launcher item should be created for |browser|. If an item
   // should be created |type| is set to the launcher type to create.

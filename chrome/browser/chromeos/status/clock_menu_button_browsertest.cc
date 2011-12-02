@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/frame/browser_view.h"
+#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -34,7 +35,7 @@ class ClockMenuButtonTest : public InProcessBrowserTest {
   const ClockMenuButton* GetClockMenuButton() {
     const views::View* parent = NULL;
 #if defined(USE_AURA)
-    parent = ChromeShellDelegate::instance()->GetStatusAreaForTest();
+    parent = ChromeShellDelegate::instance()->GetStatusArea();
 #else
     parent = static_cast<const BrowserView*>(browser()->window());
 #endif

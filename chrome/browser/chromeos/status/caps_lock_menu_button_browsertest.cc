@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/frame/browser_view.h"
+#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -32,7 +33,7 @@ class CapsLockMenuButtonTest : public CrosInProcessBrowserTest {
   const CapsLockMenuButton* GetCapsLockMenuButton() {
     const views::View* view =
 #if defined(USE_AURA)
-        ChromeShellDelegate::instance()->GetStatusAreaForTest();
+        ChromeShellDelegate::instance()->GetStatusArea();
 #else
         static_cast<BrowserView*>(browser()->window());
 #endif

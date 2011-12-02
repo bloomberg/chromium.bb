@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
+#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/dom_view.h"
@@ -33,6 +34,10 @@
 
 #if defined(USE_VIRTUAL_KEYBOARD)
 #include "chrome/browser/ui/virtual_keyboard/virtual_keyboard_manager.h"
+#endif
+
+#if defined(USE_AURA)
+#include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 #endif
 
 namespace {
@@ -280,9 +285,10 @@ void WebUILoginView::OnTabMainFrameFirstRender() {
   StatusAreaViewChromeos::SetScreenMode(
       StatusAreaViewChromeos::LOGIN_MODE_WEBUI);
   // In aura there's a global status area shown already.
-  // TODO(nkostylev): Figure out how to communicate from login screen with
-  // global status area.
-#if !defined(USE_AURA)
+#if defined(USE_AURA)
+  status_area_ = ChromeShellDelegate::instance()->GetStatusArea();
+  status_area_->SetVisible(status_area_visibility_on_init_);
+#else
   InitStatusArea();
 #endif
 
@@ -317,8 +323,9 @@ void WebUILoginView::OnTabMainFrameFirstRender() {
 void WebUILoginView::InitStatusArea() {
   DCHECK(status_area_ == NULL);
   DCHECK(status_window_ == NULL);
-  status_area_ = new StatusAreaViewChromeos();
-  status_area_->Init(this);
+  StatusAreaViewChromeos* status_area_chromeos = new StatusAreaViewChromeos();
+  status_area_chromeos->Init(this);
+  status_area_ = status_area_chromeos;
   status_area_->SetVisible(status_area_visibility_on_init_);
 
   // Width of |status_window| is meant to be large enough.
