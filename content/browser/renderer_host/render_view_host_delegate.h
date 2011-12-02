@@ -11,13 +11,10 @@
 
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
-#include "base/memory/ref_counted.h"
 #include "base/process_util.h"
 #include "base/string16.h"
-#include "base/values.h"
 #include "content/common/content_export.h"
 #include "content/public/common/view_type.h"
-#include "content/public/common/window_container_type.h"
 #include "ipc/ipc_channel.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
@@ -36,6 +33,10 @@ struct ViewHostMsg_FrameNavigate_Params;
 struct WebDropData;
 struct WebMenuItem;
 struct WebPreferences;
+
+namespace base {
+class ListValue;
+}
 
 namespace content {
 class BrowserContext;
@@ -79,8 +80,6 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
     //
     // Note: this is not called "CreateWindow" because that will clash with
     // the Windows function which is actually a #define.
-    //
-    // NOTE: this takes ownership of @modal_dialog_event
     virtual void CreateNewWindow(
         int route_id,
         const ViewHostMsg_CreateWindow_Params& params) = 0;

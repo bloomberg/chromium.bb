@@ -4,10 +4,7 @@
 
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 
-#include "base/memory/singleton.h"
-#include "content/public/common/renderer_preferences.h"
 #include "googleurl/src/gurl.h"
-#include "ui/gfx/rect.h"
 #include "webkit/glue/webpreferences.h"
 
 RenderViewHostDelegate::View* RenderViewHostDelegate::GetViewDelegate() {

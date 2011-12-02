@@ -9,6 +9,7 @@
 #include <map>
 
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 
 class SSLAddCertHandler;
