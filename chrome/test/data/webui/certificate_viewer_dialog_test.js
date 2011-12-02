@@ -43,10 +43,9 @@ CertificateViewerUITestAsync.prototype = {
 // Include the bulk of c++ code.
 // Certificate viewer UI tests are disabled on platforms with native certificate
 // viewers.
-// They fails on aura/linux, aura/chromeos. See crbug.com/105952.
 GEN('#include "chrome/test/data/webui/certificate_viewer_ui_test-inl.h"');
 GEN('')
-GEN('#if !defined(OS_POSIX) || defined(OS_MACOSX) || defined(USE_AURA)')
+GEN('#if !defined(OS_POSIX) || defined(OS_MACOSX)')
 GEN('#define MAYBE_testDialogURL DISABLED_testDialogURL')
 GEN('#define MAYBE_testCN DISABLED_testCN')
 GEN('#define MAYBE_testDetails DISABLED_testDetails')

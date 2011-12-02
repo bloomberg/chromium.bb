@@ -52,7 +52,7 @@ void ConstrainedHtmlUI::RenderViewCreated(RenderViewHost* render_view_host) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_HTML_DIALOG_SHOWN,
       content::Source<WebUI>(this),
-      content::NotificationService::NoDetails());
+      content::Details<RenderViewHost>(render_view_host));
 }
 
 void ConstrainedHtmlUI::OnDialogCloseMessage(const ListValue* args) {
