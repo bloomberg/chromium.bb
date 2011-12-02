@@ -78,6 +78,12 @@ def LayoutTranslatorBinariesOnServer():
                                        'libgcc_eh.a',
                                        'libcrt_platform.a']]
 
+    # This might grab a more stale version of the pnacl IRT shim
+    # from the toolchain tarball but it should have the stable
+    # interfaces used by this PPAPI hello world example.
+    if arch == 'x86-64':
+      toolchain_native_libs.append(toolchain_lib_dir + 'libpnacl_irt_shim.a')
+
     toolchain_local_files = toolchain_native_libs + toolchain_binaries
     ReplicateAndMap(toolchain_local_files,
                     arch,
