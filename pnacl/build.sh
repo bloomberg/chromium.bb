@@ -3157,7 +3157,7 @@ newlib-nacl-headers-check() {
 }
 
 #+-------------------------------------------------------------------------
-#+ driver                - Install driver scripts.
+#@ driver                - Install driver scripts.
 driver() {
   StepBanner "DRIVER"
   driver-install
