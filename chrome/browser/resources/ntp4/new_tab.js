@@ -120,17 +120,16 @@ cr.define('ntp4', function() {
       loginBubble.deactivateToDismissDelay = 2000;
       loginBubble.setCloseButtonVisible(false);
 
+      $('login-status-learn-more').href =
+          localStrings.getString('login_status_url');
+      $('login-status-advanced').onclick = function() {
+        chrome.send('showAdvancedLoginUI');
+      }
+      $('login-status-dismiss').onclick = loginBubble.hide.bind(loginBubble);
+
       var bubbleContent = $('login-status-bubble-contents');
       loginBubble.content = bubbleContent;
       bubbleContent.hidden = false;
-
-      var advancedButton = loginBubble.querySelector('#login-status-advanced');
-      advancedButton.onclick = function() {
-        chrome.send('showAdvancedLoginUI');
-      }
-
-      var dismissButton = loginBubble.querySelector('#login-status-dismiss');
-      dismissButton.onclick = loginBubble.hide.bind(loginBubble);
 
       // The anchor node won't be updated until updateLogin is called so don't
       // show the bubble yet.
