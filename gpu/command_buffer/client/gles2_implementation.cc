@@ -1098,14 +1098,9 @@ void GLES2Implementation::SwapBuffers() {
 
 void GLES2Implementation::GenSharedIdsCHROMIUM(
   GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids) {
-  GPU_CLIENT_LOG("[" << this << "] glGenSharedIdsCHROMIUMTextures("
+  GPU_CLIENT_LOG("[" << this << "] glGenSharedIdsCHROMIUM("
       << namespace_id << ", " << id_offset << ", " << n << ", " <<
       static_cast<void*>(ids) << ")");
-  GPU_CLIENT_LOG_CODE_BLOCK({
-    for (GLsizei i = 0; i < n; ++i) {
-      GPU_CLIENT_LOG("  " << i << ": " << ids[i]);
-    }
-  });
   TRACE_EVENT0("gpu", "GLES2::GenSharedIdsCHROMIUM");
   AlignedRingBuffer* transfer_buffer = transfer_buffer_.GetBuffer();
   GLsizei max_size = transfer_buffer->GetLargestFreeOrPendingSize();
@@ -1123,6 +1118,11 @@ void GLES2Implementation::GenSharedIdsCHROMIUM(
     n -= num;
     ids += num;
   }
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < n; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << ids[i]);
+    }
+  });
 }
 
 void GLES2Implementation::DeleteSharedIdsCHROMIUM(
