@@ -236,4 +236,6 @@ std::string TestWebSocket::TestTextSendReceive() {
 // For now, the function doesn't work fine because update callback in WebKit is
 // not landed yet.
 
+// TODO(toyoshim): Add tests for didReceiveMessageError().
+
 // TODO(toyoshim): Add other function tests.

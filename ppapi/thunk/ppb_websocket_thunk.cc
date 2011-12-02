@@ -4,6 +4,7 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/thunk/common.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_websocket_api.h"
@@ -33,8 +34,10 @@ int32_t Connect(PP_Resource resource,
                 PP_CompletionCallback callback) {
   EnterResource<PPB_WebSocket_API> enter(resource, false);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->Connect(url, protocols, protocol_count, callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result =
+      enter.object()->Connect(url, protocols, protocol_count, callback);
+  return MayForceCallback(callback, result);
 }
 
 int32_t Close(PP_Resource resource,
@@ -43,8 +46,9 @@ int32_t Close(PP_Resource resource,
               PP_CompletionCallback callback) {
   EnterResource<PPB_WebSocket_API> enter(resource, false);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->Close(code, reason, callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->Close(code, reason, callback);
+  return MayForceCallback(callback, result);
 }
 
 int32_t ReceiveMessage(PP_Resource resource,
@@ -52,8 +56,9 @@ int32_t ReceiveMessage(PP_Resource resource,
                        PP_CompletionCallback callback) {
   EnterResource<PPB_WebSocket_API> enter(resource, false);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->ReceiveMessage(message, callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->ReceiveMessage(message, callback);
+  return MayForceCallback(callback, result);
 }
 
 int32_t SendMessage(PP_Resource resource, PP_Var message) {

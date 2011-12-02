@@ -64,6 +64,11 @@ uint64_t GetFrameSize(uint64_t payload_size) {
   return SaturateAdd(payload_size, overhead);
 }
 
+bool InValidStateToReceive(PP_WebSocketReadyState_Dev state) {
+  return state == PP_WEBSOCKETREADYSTATE_OPEN_DEV ||
+      state == PP_WEBSOCKETREADYSTATE_CLOSING_DEV;
+}
+
 }  // namespace
 
 namespace webkit {
@@ -72,6 +77,7 @@ namespace ppapi {
 PPB_WebSocket_Impl::PPB_WebSocket_Impl(PP_Instance instance)
     : Resource(instance),
       state_(PP_WEBSOCKETREADYSTATE_INVALID_DEV),
+      error_was_received_(false),
       receive_callback_var_(NULL),
       wait_for_receive_(false),
       close_code_(0),
@@ -121,10 +127,6 @@ int32_t PPB_WebSocket_Impl::Connect(PP_Var url,
   if (state_ != PP_WEBSOCKETREADYSTATE_INVALID_DEV)
     return PP_ERROR_INPROGRESS;
   state_ = PP_WEBSOCKETREADYSTATE_CLOSED_DEV;
-
-  // Validate |callback| (Doesn't support blocking callback)
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   // Validate url and convert it to WebURL.
   scoped_refptr<StringVar> url_string = StringVar::FromPPVar(url);
@@ -178,7 +180,11 @@ int32_t PPB_WebSocket_Impl::Connect(PP_Var url,
   }
   WebString web_protocols = WebString::fromUTF8(protocol_string);
 
-  // Create WebKit::WebSocket object.
+  // Validate |callback| (Doesn't support blocking callback)
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
+
+  // Create WebKit::WebSocket object and connect.
   WebDocument document = plugin_instance->container()->element().document();
   websocket_.reset(WebSocket::create(document, this));
   DCHECK(websocket_.get());
@@ -201,10 +207,6 @@ int32_t PPB_WebSocket_Impl::Close(uint16_t code,
   if (!websocket_.get())
     return PP_ERROR_FAILED;
 
-  // Validate |callback| (Doesn't support blocking callback)
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
-
   // Validate |code|.
   if (code != WebSocket::CloseEventCodeNotSpecified) {
     if (!(code == WebSocket::CloseEventCodeNormalClosure ||
@@ -212,6 +214,7 @@ int32_t PPB_WebSocket_Impl::Close(uint16_t code,
         code <= WebSocket::CloseEventCodeMaximumUserDefined)))
     return PP_ERROR_NOACCESS;
   }
+
   // Validate |reason|.
   // TODO(toyoshim): Returns PP_ERROR_BADARGUMENT if |reason| contains any
   // surrogates.
@@ -224,6 +227,10 @@ int32_t PPB_WebSocket_Impl::Close(uint16_t code,
       state_ == PP_WEBSOCKETREADYSTATE_CLOSED_DEV)
     return PP_ERROR_INPROGRESS;
 
+  // Validate |callback| (Doesn't support blocking callback)
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
+
   // Install |callback|.
   close_callback_ = callback;
 
@@ -235,6 +242,7 @@ int32_t PPB_WebSocket_Impl::Close(uint16_t code,
     return PP_OK_COMPLETIONPENDING;
   }
 
+  // Close connection.
   state_ = PP_WEBSOCKETREADYSTATE_CLOSING_DEV;
   WebString web_reason = WebString::fromUTF8(reason_string->value());
   websocket_->close(code, web_reason);
@@ -252,6 +260,15 @@ int32_t PPB_WebSocket_Impl::ReceiveMessage(PP_Var* message,
   // Just return received message if any received message is queued.
   if (!received_messages_.empty())
     return DoReceive();
+
+  // Returns PP_ERROR_FAILED after an error is received and received messages
+  // is exhausted.
+  if (error_was_received_)
+    return PP_ERROR_FAILED;
+
+  // Validate |callback| (Doesn't support blocking callback)
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   // Or retain |message| as buffer to store and install |callback|.
   wait_for_receive_ = true;
@@ -357,6 +374,10 @@ void PPB_WebSocket_Impl::didConnect() {
 }
 
 void PPB_WebSocket_Impl::didReceiveMessage(const WebString& message) {
+  // Dispose packets after receiving an error or in invalid state.
+  if (error_was_received_ || !InValidStateToReceive(state_))
+    return;
+
   // Append received data to queue.
   std::string string = message.utf8();
   PP_Var var = StringVar::StringToPPVar(
@@ -370,13 +391,30 @@ void PPB_WebSocket_Impl::didReceiveMessage(const WebString& message) {
 }
 
 void PPB_WebSocket_Impl::didReceiveBinaryData(const WebData& binaryData) {
-  DLOG(INFO) << "didReceiveBinaryData is not implemented yet.";
+  // Dispose packets after receiving an error or in invalid state.
+  if (error_was_received_ || !InValidStateToReceive(state_))
+    return;
+
   // TODO(toyoshim): Support to receive binary data.
+  DLOG(INFO) << "didReceiveBinaryData is not implemented yet.";
 }
 
 void PPB_WebSocket_Impl::didReceiveMessageError() {
-  // TODO(toyoshim): Must implement.
-  DLOG(INFO) << "didReceiveMessageError is not implemented yet.";
+  // Ignore error notification in invalid state.
+  if (!InValidStateToReceive(state_))
+    return;
+
+  // Records the error, then stops receiving any frames after this error.
+  // The error will be notified after all queued messages are read via
+  // ReceiveMessage().
+  error_was_received_ = true;
+  if (!wait_for_receive_)
+    return;
+
+  // But, if no messages are queued and ReceiveMessage() is now on going.
+  // We must invoke the callback with error code here.
+  wait_for_receive_ = false;
+  PP_RunAndClearCompletionCallback(&receive_callback_, PP_ERROR_FAILED);
 }
 
 void PPB_WebSocket_Impl::didUpdateBufferedAmount(
@@ -387,11 +425,10 @@ void PPB_WebSocket_Impl::didUpdateBufferedAmount(
 }
 
 void PPB_WebSocket_Impl::didStartClosingHandshake() {
-  // TODO(toyoshim): Must implement.
-  DLOG(INFO) << "didStartClosingHandshake is not implemented yet.";
+  state_ = PP_WEBSOCKETREADYSTATE_CLOSING_DEV;
 }
 
-void PPB_WebSocket_Impl::didClose(unsigned long buffered_amount,
+void PPB_WebSocket_Impl::didClose(unsigned long unhandled_buffered_amount,
                                   ClosingHandshakeCompletionStatus status,
                                   unsigned short code,
                                   const WebString& reason) {
@@ -401,26 +438,33 @@ void PPB_WebSocket_Impl::didClose(unsigned long buffered_amount,
   close_reason_ = new StringVar(
       PpapiGlobals::Get()->GetModuleForInstance(pp_instance()), reason_string);
 
-  // TODO(toyoshim): Set close_was_clean_.
+  // Set close_was_clean_.
+  bool was_clean =
+      state_ == PP_WEBSOCKETREADYSTATE_CLOSING_DEV &&
+      !unhandled_buffered_amount &&
+      status == WebSocketClient::ClosingHandshakeComplete;
+  close_was_clean_ = was_clean ? PP_TRUE : PP_FALSE;
+
+  // Update buffered_amount_.
+  buffered_amount_ = unhandled_buffered_amount;
 
   // Handle state transition and invoking callback.
   DCHECK_NE(PP_WEBSOCKETREADYSTATE_CLOSED_DEV, state_);
   PP_WebSocketReadyState_Dev state = state_;
   state_ = PP_WEBSOCKETREADYSTATE_CLOSED_DEV;
 
-  // Update buffered_amount_.
-  buffered_amount_ = buffered_amount;
-
   if (state == PP_WEBSOCKETREADYSTATE_CONNECTING_DEV)
     PP_RunAndClearCompletionCallback(&connect_callback_, PP_OK);
 
   if (state == PP_WEBSOCKETREADYSTATE_CLOSING_DEV)
     PP_RunAndClearCompletionCallback(&close_callback_, PP_OK);
+
+  // Disconnect.
+  if (websocket_.get())
+    websocket_->disconnect();
 }
 
 int32_t PPB_WebSocket_Impl::DoReceive() {
-  // TODO(toyoshim): Check state.
-
   if (!receive_callback_var_)
     return PP_OK;
 

@@ -66,7 +66,7 @@ class PPB_WebSocket_Impl : public ::ppapi::Resource,
   virtual void didReceiveMessageError();
   virtual void didUpdateBufferedAmount(unsigned long buffered_amount);
   virtual void didStartClosingHandshake();
-  virtual void didClose(unsigned long buffered_amount,
+  virtual void didClose(unsigned long unhandled_buffered_amount,
                         ClosingHandshakeCompletionStatus status,
                         unsigned short code,
                         const WebKit::WebString& reason);
@@ -75,6 +75,7 @@ class PPB_WebSocket_Impl : public ::ppapi::Resource,
 
   scoped_ptr<WebKit::WebSocket> websocket_;
   PP_WebSocketReadyState_Dev state_;
+  bool error_was_received_;
 
   PP_CompletionCallback connect_callback_;
 
