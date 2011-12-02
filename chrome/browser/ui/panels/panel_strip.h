@@ -82,6 +82,8 @@ class PanelStrip : public PanelMouseWatcherObserver {
       AutoHidingDesktopBar::Alignment alignment,
       AutoHidingDesktopBar::Visibility visibility);
 
+  void OnFullScreenModeChanged(bool is_full_screen);
+
 #ifdef UNIT_TEST
   static int horizontal_spacing() { return kPanelsHorizontalSpacing; }
 

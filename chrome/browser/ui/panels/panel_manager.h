@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/timer.h"
 #include "chrome/browser/ui/panels/auto_hiding_desktop_bar.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "ui/gfx/rect.h"
@@ -100,6 +101,8 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
     return panel_strip_.get();
   }
 
+  bool is_full_screen() const { return is_full_screen_; }
+
 #ifdef UNIT_TEST
   static int horizontal_spacing() { return PanelStrip::horizontal_spacing(); }
 
@@ -155,6 +158,9 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
   // Positions the various groupings of panels.
   void Layout();
 
+  // Tests if the current active app is in full screen mode.
+  void CheckFullScreenMode();
+
   scoped_ptr<PanelStrip> panel_strip_;
 
   // Use a mouse watcher to know when to bring up titlebars to "peek" at
@@ -178,6 +184,12 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
   // changed. The testing code could set this flag to false so that other tests
   // will not be affected.
   bool auto_sizing_enabled_;
+
+  // Timer used to track if the current active app is in full screen mode.
+  base::RepeatingTimer<PanelManager> full_screen_mode_timer_;
+
+  // True if current active app is in full screen mode.
+  bool is_full_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelManager);
 };

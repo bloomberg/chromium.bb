@@ -58,6 +58,11 @@ PanelBrowserView::~PanelBrowserView() {
 }
 
 void PanelBrowserView::Init() {
+  if (!panel_->manager()->is_full_screen()) {
+    // TODO(prasadt): Implement this code.
+    // HideThePanel.
+  }
+
   BrowserView::Init();
 
   GetWidget()->non_client_view()->SetAccessibleName(
@@ -351,6 +356,14 @@ bool PanelBrowserView::PreHandlePanelKeyboardEvent(
     const NativeWebKeyboardEvent& event,
     bool* is_keyboard_shortcut) {
   return PreHandleKeyboardEvent(event, is_keyboard_shortcut);
+}
+
+void PanelBrowserView::FullScreenModeChanged(bool is_full_screen) {
+  // TODO(prasadt): Enable this code.
+  // if (is_full_screen)
+  //   HideThePanel.
+  // else
+  //   ShowThePanel.
 }
 
 void PanelBrowserView::HandlePanelKeyboardEvent(

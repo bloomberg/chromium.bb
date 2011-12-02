@@ -559,6 +559,11 @@ void PanelStrip::OnAutoHidingDesktopBarVisibilityChanged(
   delayed_titlebar_action_ = NO_ACTION;
 }
 
+void PanelStrip::OnFullScreenModeChanged(bool is_full_screen) {
+  for (size_t i = 0; i < panels_.size(); ++i)
+    panels_[i]->FullScreenModeChanged(is_full_screen);
+}
+
 void PanelStrip::Rearrange() {
   int rightmost_position = StartingRightPosition();
 

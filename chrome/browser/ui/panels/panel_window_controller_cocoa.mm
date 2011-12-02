@@ -112,7 +112,8 @@ enum {
   DCHECK(titlebar_view_);
   DCHECK_EQ(self, [window delegate]);
 
-  [window setLevel:NSStatusWindowLevel];
+  if (!windowShim_->panel()->manager()->is_full_screen())
+    [window setLevel:NSStatusWindowLevel];
 
   if (base::mac::IsOSSnowLeopardOrLater()) {
     [window setCollectionBehavior:
@@ -608,6 +609,11 @@ enum {
     browser_window->Activate();
   else
     [NSApp deactivate];
+}
+
+- (void)fullScreenModeChanged:(bool)isFullScreen {
+  NSWindow* window = [self window];
+  [window setLevel:(isFullScreen ? NSNormalWindowLevel : NSStatusWindowLevel)];
 }
 
 - (BOOL)canBecomeKeyWindow {

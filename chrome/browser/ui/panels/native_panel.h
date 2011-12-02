@@ -59,6 +59,7 @@ class NativePanel {
       const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) = 0;
   virtual void HandlePanelKeyboardEvent(
       const NativeWebKeyboardEvent& event) = 0;
+  virtual void FullScreenModeChanged(bool is_full_screen) = 0;
 
   virtual Browser* GetPanelBrowser() const = 0;
   virtual void DestroyPanelBrowser() = 0;

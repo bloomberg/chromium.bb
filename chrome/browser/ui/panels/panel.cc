@@ -189,6 +189,10 @@ bool Panel::IsDrawingAttention() const {
   return native_panel_->IsDrawingAttention();
 }
 
+void Panel::FullScreenModeChanged(bool is_full_screen) {
+  native_panel_->FullScreenModeChanged(is_full_screen);
+}
+
 void Panel::Show() {
   native_panel_->ShowPanel();
 }

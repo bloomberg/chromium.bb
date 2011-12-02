@@ -366,6 +366,11 @@ bool PanelBrowserWindowGtk::PreHandlePanelKeyboardEvent(
   return PreHandleKeyboardEvent(event, is_keyboard_shortcut);
 }
 
+void PanelBrowserWindowGtk::FullScreenModeChanged(bool is_full_screen) {
+  // Nothing to do here as z-order rules for panels ensures that they're below
+  // any app running in full screen mode.
+}
+
 void PanelBrowserWindowGtk::HandlePanelKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   HandleKeyboardEvent(event);

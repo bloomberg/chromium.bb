@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/fullscreen.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
@@ -25,6 +26,8 @@ const int kPanelStripRightMargin = 24;
 // Height of panel strip is based on the factor of the working area.
 const double kPanelStripHeightFactor = 0.5;
 
+static const int kFullScreenModeCheckIntervalMs = 1000;
+
 }  // namespace
 
 // static
@@ -35,7 +38,8 @@ PanelManager* PanelManager::GetInstance() {
 
 PanelManager::PanelManager()
     : panel_mouse_watcher_(PanelMouseWatcher::Create()),
-      auto_sizing_enabled_(true) {
+      auto_sizing_enabled_(true),
+      is_full_screen_(false) {
   panel_strip_.reset(new PanelStrip(this));
   auto_hiding_desktop_bar_ = AutoHidingDesktopBar::Create(this);
   OnDisplayChanged();
@@ -90,6 +94,12 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
       content::Source<Panel>(panel),
       content::NotificationService::NoDetails());
 
+  if (num_panels() == 1) {
+    full_screen_mode_timer_.Start(FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kFullScreenModeCheckIntervalMs),
+        this, &PanelManager::CheckFullScreenMode);
+  }
+
   return panel;
 }
 
@@ -97,7 +107,18 @@ int PanelManager::StartingRightPosition() const {
   return panel_strip_->StartingRightPosition();
 }
 
+void PanelManager::CheckFullScreenMode() {
+  bool is_full_screen_new = IsFullScreenMode();
+  if (is_full_screen_ == is_full_screen_new)
+    return;
+  is_full_screen_ = is_full_screen_new;
+  panel_strip_->OnFullScreenModeChanged(is_full_screen_);
+}
+
 void PanelManager::Remove(Panel* panel) {
+  if (num_panels() == 1)
+    full_screen_mode_timer_.Stop();
+
   if (panel_strip_->Remove(panel))
     return;
   // TODO(jianli): else try removing from overflow strip

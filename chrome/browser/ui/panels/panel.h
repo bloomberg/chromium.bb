@@ -63,6 +63,13 @@ class Panel : public BrowserWindow,
 
   bool IsDrawingAttention() const;
 
+  // This function will only get called by PanelManager when full screen mode
+  // changes i.e it gets called when an app goes into full screen mode or when
+  // an app exits full screen mode. Panel should respond by making sure
+  // a) it does not go on top when some app enters full screen mode.
+  // b) it remains on top when an app exits full screen mode.
+  void FullScreenModeChanged(bool is_full_screen);
+
   // BrowserWindow overrides.
   virtual void Show() OVERRIDE;
   virtual void ShowInactive() OVERRIDE;

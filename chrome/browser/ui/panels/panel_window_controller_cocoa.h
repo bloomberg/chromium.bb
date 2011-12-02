@@ -129,6 +129,9 @@ class PanelBrowserWindowCocoa;
 // Removes the Key status from the panel to some other window.
 - (void)deactivate;
 
+// See Panel::FullScreenModeChanged.
+- (void)fullScreenModeChanged:(bool)isFullScreen;
+
 // Helper for NSWindow, returns NO for minimized panels in some cases, so they
 // are not un-minimized when another panel is minimized.
 - (BOOL)canBecomeKeyWindow;

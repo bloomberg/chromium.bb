@@ -247,6 +247,11 @@ void PanelBrowserWindowCocoa::HandlePanelKeyboardEvent(
   }
 }
 
+void PanelBrowserWindowCocoa::FullScreenModeChanged(
+    bool is_full_screen) {
+  [controller_ fullScreenModeChanged:is_full_screen];
+}
+
 Browser* PanelBrowserWindowCocoa::GetPanelBrowser() const {
   return browser();
 }
