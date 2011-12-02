@@ -10,12 +10,8 @@
 #include "chrome/browser/ui/views/browser_actions_container.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
-
-#ifdef UNIT_TEST
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#endif  // UNIT_TEST
-
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -38,13 +34,11 @@ int BrowserActionTestUtil::VisibleBrowserActions() {
   return GetContainer(browser_)->VisibleBrowserActions();
 }
 
-#ifdef UNIT_TEST
 void BrowserActionTestUtil::WaitForBrowserActionUpdated(int index) {
   ui_test_utils::WaitForBrowserActionUpdated(
       GetContainer(browser_)->GetBrowserActionViewAt(index)->
           button()->extension()->browser_action());
 }
-#endif  // UNIT_TEST
 
 bool BrowserActionTestUtil::HasIcon(int index) {
   return GetContainer(browser_)->GetBrowserActionViewAt(index)->button()->
