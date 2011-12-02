@@ -2,7 +2,7 @@
   "name": "CatBlock",
   "version": "1.0",
   "description": "I can't has cheezburger!",
-  "permissions": ["webRequestBlocking",
+  "permissions": ["webRequest", "webRequestBlocking",
                   "http://icanhascheezburger.files.wordpress.com/*",
                   "http://chzmemebase.files.wordpress.com/*"],
   "background_page": "background.html"

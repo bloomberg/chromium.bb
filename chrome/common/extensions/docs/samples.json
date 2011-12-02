@@ -501,6 +501,7 @@
       "description": "I can't has cheezburger!",
       "features": [
         "background_page",
+        "webRequest",
         "webRequestBlocking"
       ],
       "icon": null,
@@ -512,13 +513,13 @@
         "http:\/\/",
         "http:\/\/"
       ],
-      "search_string": "CATBLOCK I CANT HAS CHEEZBURGER! BACKGROUND_PAGE WEBREQUESTBLOCKING CHROME.WEBREQUEST.ONBEFOREREQUEST",
+      "search_string": "CATBLOCK I CANT HAS CHEEZBURGER! BACKGROUND_PAGE WEBREQUEST WEBREQUESTBLOCKING CHROME.WEBREQUEST.ONBEFOREREQUEST",
       "source_files": [
         "background.html",
         "loldogs.js",
         "manifest.json"
       ],
-      "source_hash": "253beeba9cda9c03cb266f1db7bf25a46d1d4e19",
+      "source_hash": "0afc8f58830e62802ac52ab275b78fe1ed209616",
       "zip_path": "examples\/extensions\/catblock.zip"
     },
     {
