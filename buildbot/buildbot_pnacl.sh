@@ -100,6 +100,7 @@ gyp-arm-build() {
   gypmode=$1
   TOOLCHAIN_DIR=native_client/toolchain/linux_arm-trusted
   EXTRA="-isystem ${TOOLCHAIN_DIR}/usr/include \
+         -Wl,-rpath-link=${TOOLCHAIN_DIR}/lib/arm-linux-gnueabi \
          -L${TOOLCHAIN_DIR}/lib \
          -L${TOOLCHAIN_DIR}/lib/arm-linux-gnueabi \
          -L${TOOLCHAIN_DIR}/usr/lib \
