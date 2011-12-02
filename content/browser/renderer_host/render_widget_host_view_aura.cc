@@ -409,12 +409,6 @@ gfx::Rect RenderWidgetHostViewAura::GetRootWindowBounds() {
   return window_->GetScreenBounds();
 }
 
-void RenderWidgetHostViewAura::SetVisuallyDeemphasized(const SkColor* color,
-                                                       bool animate) {
-  // http://crbug.com/102568
-  NOTIMPLEMENTED();
-}
-
 void RenderWidgetHostViewAura::UnhandledWheelEvent(
     const WebKit::WebMouseWheelEvent& event) {
   // Not needed. Mac-only.

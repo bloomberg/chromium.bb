@@ -285,6 +285,11 @@ IPC_MESSAGE_ROUTED4(ChromeViewMsg_DetermineIfPageSupportsInstant,
                     int /* selection_start */,
                     int /* selection_end */)
 
+// Toggles visual muting of the render view area. This is on when a constrained
+// window is showing.
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetVisuallyDeemphasized,
+                    bool /* deemphazied */)
+
 // Tells the renderer to translate the page contents from one language to
 // another.
 IPC_MESSAGE_ROUTED4(ChromeViewMsg_TranslatePage,

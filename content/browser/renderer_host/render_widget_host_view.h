@@ -288,14 +288,6 @@ class RenderWidgetHostView {
 
   virtual gfx::PluginWindowHandle GetCompositingSurface() = 0;
 
-  // Toggles visual muting of the render view area. This is on when a
-  // constrained window is showing, for example. |color| is the shade of
-  // the overlay that covers the render view. If |animate| is true, the overlay
-  // gradually fades in; otherwise it takes effect immediately. To remove the
-  // fade effect, pass a NULL value for |color|. In this case, |animate| is
-  // ignored.
-  virtual void SetVisuallyDeemphasized(const SkColor* color, bool animate) = 0;
-
   virtual void UnhandledWheelEvent(const WebKit::WebMouseWheelEvent& event) = 0;
 
   virtual void SetHasHorizontalScrollbar(bool has_horizontal_scrollbar) = 0;

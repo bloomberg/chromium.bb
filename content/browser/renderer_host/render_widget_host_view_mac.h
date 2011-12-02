@@ -278,9 +278,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // to be reloaded.
   void ForceTextureReload();
 
-  virtual void SetVisuallyDeemphasized(const SkColor* color,
-                                       bool animate) OVERRIDE;
-
   virtual void UnhandledWheelEvent(
       const WebKit::WebMouseWheelEvent& event) OVERRIDE;
   virtual void SetHasHorizontalScrollbar(

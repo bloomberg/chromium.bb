@@ -93,8 +93,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
-  virtual void SetVisuallyDeemphasized(const SkColor* color,
-                                       bool animate) OVERRIDE;
   virtual void UnhandledWheelEvent(
       const WebKit::WebMouseWheelEvent& event) OVERRIDE;
   virtual void SetHasHorizontalScrollbar(

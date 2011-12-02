@@ -126,8 +126,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE {}
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
 #endif
-  virtual void SetVisuallyDeemphasized(const SkColor* color,
-                                       bool animate) OVERRIDE { }
   virtual void UnhandledWheelEvent(
       const WebKit::WebMouseWheelEvent& event) OVERRIDE { }
   virtual void SetHasHorizontalScrollbar(

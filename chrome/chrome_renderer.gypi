@@ -194,6 +194,8 @@
         'renderer/visitedlink_slave.h',
         'renderer/weak_v8_function_map.cc',
         'renderer/weak_v8_function_map.h',
+        'renderer/webview_color_overlay.cc',
+        'renderer/webview_color_overlay.h',
       ],
       'conditions': [      
         ['disable_nacl!=1', {

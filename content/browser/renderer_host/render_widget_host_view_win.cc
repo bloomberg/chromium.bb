@@ -153,31 +153,6 @@ BOOL CALLBACK DetachPluginWindowsCallback(HWND window, LPARAM param) {
   return TRUE;
 }
 
-// Draw the contents of |backing_store_dc| onto |paint_rect| with a 70% grey
-// filter.
-void DrawDeemphasized(const SkColor& color,
-                      const gfx::Rect& paint_rect,
-                      HDC backing_store_dc,
-                      HDC paint_dc) {
-  gfx::CanvasSkia canvas(paint_rect.width(), paint_rect.height(), true);
-  {
-    skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
-    HDC dc = scoped_platform_paint.GetPlatformSurface();
-    BitBlt(dc,
-           0,
-           0,
-           paint_rect.width(),
-           paint_rect.height(),
-           backing_store_dc,
-           paint_rect.x(),
-           paint_rect.y(),
-           SRCCOPY);
-  }
-  canvas.FillRect(color, gfx::Rect(gfx::Point(), paint_rect.size()));
-  skia::DrawToNativeContext(canvas.sk_canvas(), paint_dc, paint_rect.x(),
-                            paint_rect.y(), NULL);
-}
-
 // The plugin wrapper window which lives in the browser process has this proc
 // as its window procedure. We only handle the WM_PARENTNOTIFY message sent by
 // windowed plugins for mouse input. This is forwarded off to the wrappers
@@ -331,7 +306,6 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       weak_factory_(this),
       parent_hwnd_(NULL),
       is_loading_(false),
-      overlay_color_(0),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       is_fullscreen_(false),
       ignore_mouse_movement_(true),
@@ -870,19 +844,6 @@ void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {
   render_widget_host_->SetBackground(background);
 }
 
-void RenderWidgetHostViewWin::SetVisuallyDeemphasized(const SkColor* color,
-                                                      bool animate) {
-  // |animate| is not yet implemented, and currently isn't used.
-  CHECK(!animate);
-
-  SkColor overlay_color = color ? *color : 0;
-  if (overlay_color_ == overlay_color)
-    return;
-  overlay_color_ = overlay_color;
-
-  InvalidateRect(NULL, FALSE);
-}
-
 void RenderWidgetHostViewWin::UnhandledWheelEvent(
     const WebKit::WebMouseWheelEvent& event) {
 }
@@ -1037,22 +998,15 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
     for (DWORD i = 0; i < region_data->rdh.nCount; ++i) {
       gfx::Rect paint_rect = bitmap_rect.Intersect(gfx::Rect(region_rects[i]));
       if (!paint_rect.IsEmpty()) {
-        if (SkColorGetA(overlay_color_) > 0) {
-          DrawDeemphasized(overlay_color_,
-                           paint_rect,
-                           backing_store->hdc(),
-                           paint_dc.m_hDC);
-        } else {
-          BitBlt(paint_dc.m_hDC,
-                 paint_rect.x(),
-                 paint_rect.y(),
-                 paint_rect.width(),
-                 paint_rect.height(),
-                 backing_store->hdc(),
-                 paint_rect.x(),
-                 paint_rect.y(),
-                 SRCCOPY);
-        }
+        BitBlt(paint_dc.m_hDC,
+               paint_rect.x(),
+               paint_rect.y(),
+               paint_rect.width(),
+               paint_rect.height(),
+               backing_store->hdc(),
+               paint_rect.x(),
+               paint_rect.y(),
+               SRCCOPY);
       }
     }
 

@@ -44,8 +44,7 @@ typedef struct _GtkSelectionData GtkSelectionData;
 // -----------------------------------------------------------------------------
 // See comments in render_widget_host_view.h about this class and its members.
 // -----------------------------------------------------------------------------
-class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView,
-                                               public ui::AnimationDelegate {
+class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView {
  public:
   explicit RenderWidgetHostViewGtk(RenderWidgetHost* widget);
   virtual ~RenderWidgetHostViewGtk();
@@ -104,8 +103,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView,
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
-  virtual void SetVisuallyDeemphasized(const SkColor* color,
-                                       bool animate) OVERRIDE;
   virtual void UnhandledWheelEvent(
       const WebKit::WebMouseWheelEvent& event) OVERRIDE;
   virtual void SetHasHorizontalScrollbar(
@@ -117,11 +114,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView,
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
-
-  // ui::AnimationDelegate implementation.
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
 
   gfx::NativeView native_view() const { return view_.get(); }
 
@@ -222,14 +214,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView,
 
   // The time it took after this view was selected for it to be fully painted.
   base::TimeTicks tab_switch_paint_time_;
-
-  // A color we use to shade the entire render view. If 100% transparent, we do
-  // not shade the render view.
-  SkColor overlay_color_;
-
-  // The animation used for the abovementioned shade effect. The animation's
-  // value affects the alpha we use for |overlay_color_|.
-  ui::SlideAnimation overlay_animation_;
 
   // The native view of our parent widget.  Used only for popups.
   GtkWidget* parent_;

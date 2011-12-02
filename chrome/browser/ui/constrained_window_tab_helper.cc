@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
+#include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/navigation_details.h"
@@ -73,14 +74,13 @@ void ConstrainedWindowTabHelper::BlockTabContent(bool blocked) {
     return;
   }
 
-  RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView();
-  // 70% opaque grey.
-  SkColor greyish = SkColorSetARGB(178, 0, 0, 0);
-  if (rwhv)
-    rwhv->SetVisuallyDeemphasized(blocked ? &greyish : NULL, false);
   // RenderViewHost may be NULL during shutdown.
-  if (contents->render_view_host())
-    contents->render_view_host()->set_ignore_input_events(blocked);
+  RenderViewHost* host = contents->render_view_host();
+  if (host) {
+    host->set_ignore_input_events(blocked);
+    host->Send(
+        new ChromeViewMsg_SetVisuallyDeemphasized(host->routing_id(), blocked));
+  }
   if (delegate_)
     delegate_->SetTabContentBlocked(wrapper_, blocked);
 }

@@ -193,8 +193,6 @@ class RenderWidgetHostViewWin
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
-  virtual void SetVisuallyDeemphasized(const SkColor* color,
-                                       bool animate) OVERRIDE;
   virtual void UnhandledWheelEvent(
       const WebKit::WebMouseWheelEvent& event) OVERRIDE;
   virtual void SetHasHorizontalScrollbar(
@@ -461,10 +459,6 @@ class RenderWidgetHostViewWin
 
   // The time it took after this view was selected for it to be fully painted.
   base::TimeTicks tab_switch_paint_time_;
-
-  // A color we use to shade the entire render view. If 100% transparent, we do
-  // not shade the render view.
-  SkColor overlay_color_;
 
   // Registrar so we can listen to RENDERER_PROCESS_TERMINATED events.
   content::NotificationRegistrar registrar_;

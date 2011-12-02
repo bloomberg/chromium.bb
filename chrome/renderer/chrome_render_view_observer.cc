@@ -27,6 +27,7 @@
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/translate_helper.h"
+#include "chrome/renderer/webview_color_overlay.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -47,6 +48,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
+#include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "webkit/glue/image_decoder.h"
 #include "webkit/glue/image_resource_fetcher.h"
@@ -259,6 +261,8 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
                         OnSetAllowRunningInsecureContent)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetClientSidePhishingDetection,
                         OnSetClientSidePhishingDetection)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetVisuallyDeemphasized,
+                        OnSetVisuallyDeemphasized)
 #if defined(OS_CHROMEOS)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_StartFrameSniffer, OnStartFrameSniffer)
 #endif
@@ -378,6 +382,21 @@ void ChromeRenderViewObserver::OnSetClientSidePhishingDetection(
           render_view(), NULL) :
       NULL;
 #endif
+}
+
+void ChromeRenderViewObserver::OnSetVisuallyDeemphasized(bool deemphasized) {
+  bool already_deemphasized = !!dimmed_color_overlay_.get();
+  if (already_deemphasized == deemphasized)
+    return;
+
+  if (deemphasized) {
+    // 70% opaque grey.
+    SkColor greyish = SkColorSetARGB(178, 0, 0, 0);
+    dimmed_color_overlay_.reset(
+        new WebViewColorOverlay(render_view(), greyish));
+  } else {
+    dimmed_color_overlay_.reset();
+  }
 }
 
 void ChromeRenderViewObserver::OnStartFrameSniffer(const string16& frame_name) {

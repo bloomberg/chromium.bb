@@ -25,10 +25,12 @@ class ExternalHostBindings;
 class SkBitmap;
 class TranslateHelper;
 struct ThumbnailScore;
+class WebViewColorOverlay;
 
 namespace WebKit {
 class WebView;
 }
+
 namespace safe_browsing {
 class PhishingClassifierDelegate;
 }
@@ -127,6 +129,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   void OnSetAllowDisplayingInsecureContent(bool allow);
   void OnSetAllowRunningInsecureContent(bool allow);
   void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
+  void OnSetVisuallyDeemphasized(bool deemphasized);
   void OnStartFrameSniffer(const string16& frame_name);
   void OnGetFPS();
   void OnAddStrictSecurityHost(const std::string& host);
@@ -219,6 +222,9 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
 
   // ImageResourceFetchers schedule via DownloadImage.
   ImageResourceFetcherList image_fetchers_;
+
+  // A color page overlay when visually de-emaphasized.
+  scoped_ptr<WebViewColorOverlay> dimmed_color_overlay_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderViewObserver);
 };
