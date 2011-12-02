@@ -750,14 +750,15 @@ fade_frame(struct wlsc_animation *animation,
 
 	wlsc_spring_update(&compositor->fade.spring, msecs);
 	if (wlsc_spring_done(&compositor->fade.spring)) {
-		if (compositor->fade.spring.current > 0.999) {
-			compositor->state = WLSC_COMPOSITOR_SLEEPING;
-			compositor->shell->lock(compositor->shell);
-		}
 		compositor->fade.spring.current =
 			compositor->fade.spring.target;
 		wl_list_remove(&animation->link);
 		wl_list_init(&animation->link);
+
+		if (compositor->fade.spring.current > 0.999) {
+			compositor->state = WLSC_COMPOSITOR_SLEEPING;
+			compositor->shell->lock(compositor->shell);
+		}
 	}
 
 	wlsc_output_damage(output);
