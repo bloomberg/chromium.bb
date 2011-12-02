@@ -91,7 +91,17 @@ TEST_F(ProtoValueConversionsTest, AppNotificationSpecificsToValue) {
 }
 
 TEST_F(ProtoValueConversionsTest, AppSettingSpecificsToValue) {
-  TestSpecificsToValue(AppSettingSpecificsToValue);
+  sync_pb::AppNotificationSettings specifics;
+  specifics.set_disabled(true);
+  specifics.set_oauth_client_id("some_id_value");
+  scoped_ptr<DictionaryValue> value(AppSettingsToValue(specifics));
+  EXPECT_FALSE(value->empty());
+  bool disabled_value = false;
+  std::string oauth_client_id_value;
+  EXPECT_TRUE(value->GetBoolean("disabled", &disabled_value));
+  EXPECT_EQ(true, disabled_value);
+  EXPECT_TRUE(value->GetString("oauth_client_id", &oauth_client_id_value));
+  EXPECT_EQ("some_id_value", oauth_client_id_value);
 }
 
 TEST_F(ProtoValueConversionsTest, AppSpecificsToValue) {

@@ -108,6 +108,7 @@ DictionaryValue* AppSettingsToValue(
   DictionaryValue* value = new DictionaryValue();
   SET_BOOL(initial_setup_done);
   SET_BOOL(disabled);
+  SET_STR(oauth_client_id);
   return value;
 }
 
