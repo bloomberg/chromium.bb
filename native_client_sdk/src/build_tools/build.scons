@@ -279,7 +279,7 @@ for dir in env['NACL_TOOLCHAIN_ROOTS'].values():
 
 nacl_tools_cmd = env.Command(all_tools,
                              ['make_nacl_tools.py',
-                              os.path.join(env['ROOT_DIR'], 'DEPS')],
+                              os.path.join(env['SRC_DIR'], 'DEPS')],
                              build_nacl_tools)
 env.Depends(nacl_tools_cmd, env.GetHeadersNode())
 env.Depends(env.GetToolchainNode(), nacl_tools_cmd)
