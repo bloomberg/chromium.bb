@@ -208,6 +208,12 @@ class SafeBrowsingService
   // This method is expected to be called on the IO thread.
   virtual bool MatchDownloadWhitelistUrl(const GURL& url);
 
+  // Check if |str| matches any of the full-length hashes from the download
+  // whitelist.  Returns true if there was a match and false otherwise.
+  // To make sure we are conservative we will return true if an error occurs.
+  // This method is expected to be called on the IO thread.
+  virtual bool MatchDownloadWhitelistString(const std::string& str);
+
   // Called on the IO thread to cancel a pending check if the result is no
   // longer needed.
   void CancelCheck(Client* client);

@@ -304,6 +304,15 @@ bool SafeBrowsingService::MatchDownloadWhitelistUrl(const GURL& url) {
   return database_->ContainsDownloadWhitelistedUrl(url);
 }
 
+bool SafeBrowsingService::MatchDownloadWhitelistString(
+    const std::string& str) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!enabled_ || !enable_download_whitelist_ || !MakeDatabaseAvailable()) {
+    return true;
+  }
+  return database_->ContainsDownloadWhitelistedString(str);
+}
+
 bool SafeBrowsingService::CheckBrowseUrl(const GURL& url,
                                          Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

@@ -25,6 +25,7 @@ class SafeBrowsingService;
 
 namespace net {
 class URLRequestContextGetter;
+class X509Certificate;
 }  // namespace net
 
 namespace safe_browsing {
@@ -140,7 +141,6 @@ class DownloadProtectionService {
                            CheckClientDownloadFetchFailed);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            TestDownloadRequestTimeout);
-
   static const char kDownloadRequestUrl[];
 
   // Cancels all requests in |download_requests_|, and empties it, releasing
@@ -153,6 +153,14 @@ class DownloadProtectionService {
 
   static void FillDownloadInfo(const DownloadItem& item,
                                DownloadInfo* download_info);
+
+  // Given a certificate and its immediate issuer certificate, generates the
+  // list of strings that need to be checked against the download whitelist to
+  // determine whether the certificate is whitelisted.
+  static void GetCertificateWhitelistStrings(
+      const net::X509Certificate& certificate,
+      const net::X509Certificate& issuer,
+      std::vector<std::string>* whitelist_strings);
 
   // This pointer may be NULL if SafeBrowsing is disabled. The
   // SafeBrowsingService owns us, so we don't need to hold a reference to it.

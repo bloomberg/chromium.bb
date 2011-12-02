@@ -7,12 +7,16 @@
 #include <map>
 #include <string>
 
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/signature_util.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -20,12 +24,15 @@
 #include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
+#include "crypto/rsa_private_key.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/x509_certificate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::ContainerEq;
 using ::testing::DoAll;
+using ::testing::ElementsAre;
 using ::testing::Mock;
 using ::testing::NotNull;
 using ::testing::Return;
@@ -42,6 +49,7 @@ class MockSafeBrowsingService : public SafeBrowsingService {
   virtual ~MockSafeBrowsingService() {}
 
   MOCK_METHOD1(MatchDownloadWhitelistUrl, bool(const GURL&));
+  MOCK_METHOD1(MatchDownloadWhitelistString, bool(const std::string&));
   MOCK_METHOD2(CheckDownloadUrl, bool(const std::vector<GURL>& url_chain,
                                       Client* client));
   MOCK_METHOD2(CheckDownloadHash, bool(const std::string&, Client* client));
@@ -66,8 +74,16 @@ ACTION_P(SetCertificateContents, contents) {
   arg1->add_certificate_chain()->add_element()->set_certificate(contents);
 }
 
-ACTION(TrustSignature) {
+ACTION_P(TrustSignature, certificate_file) {
   arg1->set_trusted(true);
+  // Add a certificate chain.  Note that we add the certificate twice so that
+  // it appears as its own issuer.
+  std::string cert_data;
+  ASSERT_TRUE(file_util::ReadFileToString(certificate_file, &cert_data));
+  ClientDownloadRequest_CertificateChain* chain =
+      arg1->add_certificate_chain();
+  chain->add_element()->set_certificate(cert_data);
+  chain->add_element()->set_certificate(cert_data);
 }
 
 // We can't call OnSafeBrowsingResult directly because SafeBrowsingCheck does
@@ -122,6 +138,15 @@ class DownloadProtectionServiceTest : public testing::Test {
     download_service_->signature_util_ = signature_util_;
     download_service_->SetEnabled(true);
     msg_loop_.RunAllPending();
+
+    FilePath source_path;
+    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &source_path));
+    testdata_path_ = source_path
+        .AppendASCII("chrome")
+        .AppendASCII("test")
+        .AppendASCII("data")
+        .AppendASCII("safe_browsing")
+        .AppendASCII("download_protection");
   }
 
   virtual void TearDown() {
@@ -153,6 +178,15 @@ class DownloadProtectionServiceTest : public testing::Test {
     FlushMessageLoop(BrowserThread::FILE);
     FlushMessageLoop(BrowserThread::IO);
     msg_loop_.RunAllPending();
+  }
+
+  // Proxy for private method.
+  static void GetCertificateWhitelistStrings(
+      const net::X509Certificate& certificate,
+      const net::X509Certificate& issuer,
+      std::vector<std::string>* whitelist_strings) {
+    DownloadProtectionService::GetCertificateWhitelistStrings(
+        certificate, issuer, whitelist_strings);
   }
 
  private:
@@ -212,6 +246,7 @@ class DownloadProtectionServiceTest : public testing::Test {
   scoped_ptr<content::TestBrowserThread> io_thread_;
   scoped_ptr<content::TestBrowserThread> file_thread_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
+  FilePath testdata_path_;
 };
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
@@ -602,7 +637,13 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadDigestList) {
   EXPECT_CALL(*sb_service_, MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*signature_util_, CheckSignature(info.local_file, _))
-      .WillOnce(TrustSignature());
+      .WillOnce(TrustSignature(
+          testdata_path_.AppendASCII("signature_util_test.cer")));
+  EXPECT_CALL(*sb_service_,
+              MatchDownloadWhitelistString(
+                  "cert/58AFF702772EB67BDD412571BA40AAC07F0D936C/"
+                  "CN=Joe's-Software-Emporium"))
+      .WillOnce(Return(true));
   EXPECT_CALL(*sb_service_,
               CheckDownloadHash(info.sha256_hash, NotNull()))
       .WillOnce(DoAll(CheckDownloadHashDone(SafeBrowsingService::SAFE),
@@ -701,4 +742,119 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadRequestTimeout) {
   msg_loop_.Run();
   ExpectResult(DownloadProtectionService::SAFE);
 }
+
+TEST_F(DownloadProtectionServiceTest,
+       GetCertificateWhitelistStrings_TestCert) {
+  std::string cert_data;
+  ASSERT_TRUE(file_util::ReadFileToString(testdata_path_.AppendASCII(
+      "signature_util_test.cer"), &cert_data));
+
+  scoped_refptr<net::X509Certificate> cert(
+      net::X509Certificate::CreateFromBytes(cert_data.data(),
+                                            cert_data.size()));
+  ASSERT_TRUE(cert.get());
+
+  std::vector<std::string> whitelist_strings;
+  GetCertificateWhitelistStrings(*cert, *cert, &whitelist_strings);
+
+  EXPECT_THAT(whitelist_strings, ElementsAre(
+      "cert/58AFF702772EB67BDD412571BA40AAC07F0D936C"
+      "/CN=Joe's-Software-Emporium"));
+}
+
+// Only some implementations have the ability to generate self-signed certs.
+#if defined(USE_NSS) || defined(OS_WIN) || defined(OS_MACOSX)
+TEST_F(DownloadProtectionServiceTest,
+       GetCertificateWhitelistStrings_SelfSigned) {
+  scoped_ptr<crypto::RSAPrivateKey> private_key(
+      crypto::RSAPrivateKey::Create(1024));
+  // We'll pass this cert in as the "issuer", even though it isn't really
+  // used to sign the certs below.  GetCertificateWhitelistStirngs doesn't care
+  // about this.
+  scoped_refptr<net::X509Certificate> issuer_cert =
+      net::X509Certificate::CreateSelfSigned(
+          private_key.get(), "CN=issuer", 1, base::TimeDelta::FromDays(1));
+  ASSERT_TRUE(issuer_cert.get());
+  std::string cert_base = "cert/" + base::HexEncode(
+      issuer_cert->fingerprint().data,
+      sizeof(issuer_cert->fingerprint().data));
+
+  scoped_refptr<net::X509Certificate> cert =
+      net::X509Certificate::CreateSelfSigned(
+          private_key.get(), "CN=subject/%1", 1, base::TimeDelta::FromDays(1));
+  ASSERT_TRUE(cert.get());
+  std::vector<std::string> whitelist_strings;
+  GetCertificateWhitelistStrings(*cert, *issuer_cert, &whitelist_strings);
+  // This also tests escaping of characters in the certificate attributes.
+  EXPECT_THAT(whitelist_strings, ElementsAre(
+      cert_base + "/CN=subject%2F%251"));
+
+  cert = net::X509Certificate::CreateSelfSigned(
+      private_key.get(), "CN=subject,O=org", 1, base::TimeDelta::FromDays(1));
+  ASSERT_TRUE(cert.get());
+  whitelist_strings.clear();
+  GetCertificateWhitelistStrings(*cert, *issuer_cert, &whitelist_strings);
+  EXPECT_THAT(whitelist_strings, ElementsAre(
+      cert_base + "/CN=subject",
+      cert_base + "/CN=subject/O=org",
+      cert_base + "/O=org"));
+
+  cert = net::X509Certificate::CreateSelfSigned(
+      private_key.get(), "CN=subject,O=org,OU=unit", 1,
+      base::TimeDelta::FromDays(1));
+  ASSERT_TRUE(cert.get());
+  whitelist_strings.clear();
+  GetCertificateWhitelistStrings(*cert, *issuer_cert, &whitelist_strings);
+  EXPECT_THAT(whitelist_strings, ElementsAre(
+      cert_base + "/CN=subject",
+      cert_base + "/CN=subject/O=org",
+      cert_base + "/CN=subject/O=org/OU=unit",
+      cert_base + "/CN=subject/OU=unit",
+      cert_base + "/O=org",
+      cert_base + "/O=org/OU=unit",
+      cert_base + "/OU=unit"));
+
+  cert = net::X509Certificate::CreateSelfSigned(
+      private_key.get(), "CN=subject,OU=unit", 1,
+      base::TimeDelta::FromDays(1));
+  ASSERT_TRUE(cert.get());
+  whitelist_strings.clear();
+  GetCertificateWhitelistStrings(*cert, *issuer_cert, &whitelist_strings);
+  EXPECT_THAT(whitelist_strings, ElementsAre(
+      cert_base + "/CN=subject",
+      cert_base + "/CN=subject/OU=unit",
+      cert_base + "/OU=unit"));
+
+  cert = net::X509Certificate::CreateSelfSigned(
+      private_key.get(), "O=org,", 1, base::TimeDelta::FromDays(1));
+  ASSERT_TRUE(cert.get());
+  whitelist_strings.clear();
+  GetCertificateWhitelistStrings(*cert, *issuer_cert, &whitelist_strings);
+  EXPECT_THAT(whitelist_strings, ElementsAre(cert_base + "/O=org"));
+
+  cert = net::X509Certificate::CreateSelfSigned(
+      private_key.get(), "O=org,OU=unit", 1, base::TimeDelta::FromDays(1));
+  ASSERT_TRUE(cert.get());
+  whitelist_strings.clear();
+  GetCertificateWhitelistStrings(*cert, *issuer_cert, &whitelist_strings);
+  EXPECT_THAT(whitelist_strings, ElementsAre(
+      cert_base + "/O=org",
+      cert_base + "/O=org/OU=unit",
+      cert_base + "/OU=unit"));
+
+  cert = net::X509Certificate::CreateSelfSigned(
+      private_key.get(), "OU=unit", 1, base::TimeDelta::FromDays(1));
+  ASSERT_TRUE(cert.get());
+  whitelist_strings.clear();
+  GetCertificateWhitelistStrings(*cert, *issuer_cert, &whitelist_strings);
+  EXPECT_THAT(whitelist_strings, ElementsAre(cert_base + "/OU=unit"));
+
+  cert = net::X509Certificate::CreateSelfSigned(
+      private_key.get(), "C=US", 1, base::TimeDelta::FromDays(1));
+  ASSERT_TRUE(cert.get());
+  whitelist_strings.clear();
+  GetCertificateWhitelistStrings(*cert, *issuer_cert, &whitelist_strings);
+  EXPECT_THAT(whitelist_strings, ElementsAre());
+}
+#endif
 }  // namespace safe_browsing

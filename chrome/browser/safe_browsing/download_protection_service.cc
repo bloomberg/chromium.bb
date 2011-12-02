@@ -24,6 +24,8 @@
 #include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "net/base/load_flags.h"
+#include "net/base/x509_cert_types.h"
+#include "net/base/x509_certificate.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -503,12 +505,15 @@ class DownloadProtectionService::CheckClientDownloadRequest
       for (size_t i = 0; i < info_.download_url_chain.size(); ++i) {
         const GURL& url = info_.download_url_chain[i];
         if (url.is_valid() && sb_service_->MatchDownloadWhitelistUrl(url)) {
+          VLOG(2) << url << " is on the download whitelist.";
           reason = REASON_WHITELISTED_URL;
           break;
         }
       }
       if (info_.referrer_url.is_valid() && reason == REASON_MAX &&
           sb_service_->MatchDownloadWhitelistUrl(info_.referrer_url)) {
+        VLOG(2) << "Referrer url " << info_.referrer_url
+                << " is on the download whitelist.";
         reason = REASON_WHITELISTED_REFERRER;
       }
       if (reason != REASON_MAX || signature_info_.trusted()) {
@@ -516,9 +521,13 @@ class DownloadProtectionService::CheckClientDownloadRequest
       }
     }
     if (reason == REASON_MAX && signature_info_.trusted()) {
-      // TODO(noelutz): implement a certificate whitelist and only whitelist
-      // binaries whose certificate match the whitelist.
-      reason = REASON_TRUSTED_EXECUTABLE;
+      for (int i = 0; i < signature_info_.certificate_chain_size(); ++i) {
+        if (CertificateChainIsWhitelisted(
+                signature_info_.certificate_chain(i))) {
+          reason = REASON_TRUSTED_EXECUTABLE;
+          break;
+        }
+      }
     }
     if (reason != REASON_MAX) {
       RecordImprovedProtectionStats(reason);
@@ -622,6 +631,46 @@ class DownloadProtectionService::CheckClientDownloadRequest
                               REASON_MAX);
   }
 
+  bool CertificateChainIsWhitelisted(
+      const ClientDownloadRequest_CertificateChain& chain) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    if (chain.element_size() < 2) {
+      // We need to have both a signing certificate and its issuer certificate
+      // present to construct a whitelist entry.
+      return false;
+    }
+    scoped_refptr<net::X509Certificate> cert =
+        net::X509Certificate::CreateFromBytes(
+            chain.element(0).certificate().data(),
+            chain.element(0).certificate().size());
+    if (!cert.get()) {
+      return false;
+    }
+
+    for (int i = 1; i < chain.element_size(); ++i) {
+      scoped_refptr<net::X509Certificate> issuer =
+          net::X509Certificate::CreateFromBytes(
+              chain.element(i).certificate().data(),
+              chain.element(i).certificate().size());
+      if (!issuer.get()) {
+        return false;
+      }
+      std::vector<std::string> whitelist_strings;
+      DownloadProtectionService::GetCertificateWhitelistStrings(
+          *cert, *issuer, &whitelist_strings);
+      for (size_t j = 0; j < whitelist_strings.size(); ++j) {
+        if (sb_service_->MatchDownloadWhitelistString(whitelist_strings[j])) {
+          VLOG(2) << "Certificate matched whitelist, cert="
+                  << cert->subject().GetDisplayName()
+                  << " issuer=" << issuer->subject().GetDisplayName();
+          return true;
+        }
+      }
+      cert = issuer;
+    }
+    return false;
+  }
+
   DownloadInfo info_;
   ClientDownloadRequest_SignatureInfo signature_info_;
   CheckDownloadCallback callback_;
@@ -712,4 +761,80 @@ void DownloadProtectionService::RequestFinished(
   DCHECK(it != download_requests_.end());
   download_requests_.erase(*it);
 }
+
+namespace {
+// Escapes a certificate attribute so that it can be used in a whitelist
+// entry.  Currently, we only escape slashes, since they are used as a
+// separator between attributes.
+std::string EscapeCertAttribute(const std::string& attribute) {
+  std::string escaped;
+  for (size_t i = 0; i < attribute.size(); ++i) {
+    if (attribute[i] == '%') {
+      escaped.append("%25");
+    } else if (attribute[i] == '/') {
+      escaped.append("%2F");
+    } else {
+      escaped.push_back(attribute[i]);
+    }
+  }
+  return escaped;
+}
+}  // namespace
+
+// static
+void DownloadProtectionService::GetCertificateWhitelistStrings(
+    const net::X509Certificate& certificate,
+    const net::X509Certificate& issuer,
+    std::vector<std::string>* whitelist_strings) {
+  // The whitelist paths are in the format:
+  // cert/<ascii issuer fingerprint>[/CN=common_name][/O=org][/OU=unit]
+  //
+  // Any of CN, O, or OU may be omitted from the whitelist entry, in which
+  // case they match anything.  However, the attributes that do appear will
+  // always be in the order shown above.  At least one attribute will always
+  // be present.
+
+  const net::CertPrincipal& subject = certificate.subject();
+  std::vector<std::string> ou_tokens;
+  for (size_t i = 0; i < subject.organization_unit_names.size(); ++i) {
+    ou_tokens.push_back(
+        "/OU=" + EscapeCertAttribute(subject.organization_unit_names[i]));
+  }
+
+  std::vector<std::string> o_tokens;
+  for (size_t i = 0; i < subject.organization_names.size(); ++i) {
+    o_tokens.push_back(
+        "/O=" + EscapeCertAttribute(subject.organization_names[i]));
+  }
+
+  std::string cn_token;
+  if (!subject.common_name.empty()) {
+    cn_token = "/CN=" + EscapeCertAttribute(subject.common_name);
+  }
+
+  std::set<std::string> paths_to_check;
+  if (!cn_token.empty()) {
+    paths_to_check.insert(cn_token);
+  }
+  for (size_t i = 0; i < o_tokens.size(); ++i) {
+    paths_to_check.insert(cn_token + o_tokens[i]);
+    paths_to_check.insert(o_tokens[i]);
+    for (size_t j = 0; j < ou_tokens.size(); ++j) {
+      paths_to_check.insert(cn_token + o_tokens[i] + ou_tokens[j]);
+      paths_to_check.insert(o_tokens[i] + ou_tokens[j]);
+    }
+  }
+  for (size_t i = 0; i < ou_tokens.size(); ++i) {
+    paths_to_check.insert(cn_token + ou_tokens[i]);
+    paths_to_check.insert(ou_tokens[i]);
+  }
+
+  std::string issuer_fp = base::HexEncode(issuer.fingerprint().data,
+                                          sizeof(issuer.fingerprint().data));
+  for (std::set<std::string>::iterator it = paths_to_check.begin();
+       it != paths_to_check.end(); ++it) {
+    whitelist_strings->push_back("cert/" + issuer_fp + *it);
+  }
+}
+
 }  // namespace safe_browsing
