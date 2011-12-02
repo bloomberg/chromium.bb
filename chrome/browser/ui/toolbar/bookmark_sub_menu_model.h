@@ -14,7 +14,7 @@
 
 #if defined(TOOLKIT_USES_GTK) && !defined(TOOLKIT_VIEWS)
 
-#include "chrome/browser/ui/gtk/bookmark_sub_menu_model_gtk.h"
+#include "chrome/browser/ui/gtk/bookmarks/bookmark_sub_menu_model_gtk.h"
 
 #else  // defined(TOOLKIT_USES_GTK) && !defined(TOOLKIT_VIEWS)
 

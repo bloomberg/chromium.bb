@@ -11,7 +11,7 @@
 // injecting the bookmarks to the bookmark submenu. This is done to support
 // advanced interactions with the menu contents, like right click context menus.
 // For the time being on GTK systems, we have a dedicated bookmark menu model in
-// chrome/browser/ui/gtk/bookmark_sub_menu_model_gtk.cc instead.
+// chrome/browser/ui/gtk/bookmarks/bookmark_sub_menu_model_gtk.cc instead.
 
 // Note that although this file's header is included on GTK systems, this
 // source file is not compiled there. (The header just includes the GTK one.)

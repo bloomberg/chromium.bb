@@ -24,7 +24,7 @@
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
 #include "chrome/browser/ui/gtk/back_forward_button_gtk.h"
-#include "chrome/browser/ui/gtk/bookmark_sub_menu_model_gtk.h"
+#include "chrome/browser/ui/gtk/bookmarks/bookmark_sub_menu_model_gtk.h"
 #include "chrome/browser/ui/gtk/browser_actions_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/cairo_cached_surface.h"

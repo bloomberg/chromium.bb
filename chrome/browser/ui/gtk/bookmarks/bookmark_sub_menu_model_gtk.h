@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_BOOKMARK_SUB_MENU_MODEL_GTK_H_
-#define CHROME_BROWSER_UI_GTK_BOOKMARK_SUB_MENU_MODEL_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_SUB_MENU_MODEL_GTK_H_
+#define CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_SUB_MENU_MODEL_GTK_H_
 #pragma once
 
 #include <vector>
@@ -117,4 +117,4 @@ class BookmarkSubMenuModel : public BookmarkNodeMenuModel,
   DISALLOW_COPY_AND_ASSIGN(BookmarkSubMenuModel);
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_BOOKMARK_SUB_MENU_MODEL_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_SUB_MENU_MODEL_GTK_H_

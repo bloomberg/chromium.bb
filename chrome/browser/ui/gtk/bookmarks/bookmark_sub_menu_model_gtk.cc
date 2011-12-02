@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/bookmark_sub_menu_model_gtk.h"
+#include "chrome/browser/ui/gtk/bookmarks/bookmark_sub_menu_model_gtk.h"
 
 #include "base/stl_util.h"
 #include "base/string16.h"
@@ -158,6 +158,11 @@ void BookmarkSubMenuModel::MenuWillShow() {
   if (model()->other_node()->GetTotalNodeCount() > 1) {
     AddSeparator();
     AddSubMenuForNode(model()->other_node());
+  }
+  if (model()->mobile_node()->GetTotalNodeCount() > 1) {
+    if (model()->other_node()->GetTotalNodeCount() == 1)
+      AddSeparator();
+    AddSubMenuForNode(model()->mobile_node());
   }
 }
 
