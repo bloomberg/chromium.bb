@@ -882,13 +882,9 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   /*
    * For x86, we adjust the stack pointer down to push a dummy return
    * address.  This happens after the stack pointer alignment.
-   * We avoid the otherwise harmless call for the zero case because
-   * _FORTIFY_SOURCE memset can warn about zero-length calls.
    */
-  if (NACL_STACK_PAD_BELOW_ALIGN != 0) {
-    stack_ptr -= NACL_STACK_PAD_BELOW_ALIGN;
-    memset((void *) stack_ptr, 0, NACL_STACK_PAD_BELOW_ALIGN);
-  }
+  stack_ptr -= NACL_STACK_PAD_BELOW_ALIGN;
+  memset((void *) stack_ptr, 0, NACL_STACK_PAD_BELOW_ALIGN);
 
   NaClLog(2, "system stack ptr : %016"NACL_PRIxPTR"\n", stack_ptr);
   NaClLog(2, "  user stack ptr : %016"NACL_PRIxPTR"\n",

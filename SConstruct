@@ -1155,12 +1155,13 @@ def GetSelLdr(env):
 def GetBootstrap(env):
   if 'TRUSTED_ENV' in env:
     trusted_env = env['TRUSTED_ENV']
-    if trusted_env.Bit('linux'):
+    # TODO(mcgrathr): For now, only x86-64 sel_ldr is built as a PIE.
+    # Turn this on for all Linux once we're building as PIE everywhere.
+    if trusted_env.Bit('linux') and trusted_env.Bit('target_x86_64'):
       return (trusted_env.File('${STAGING_DIR}/nacl_helper_bootstrap'),
               '--r_debug=0xXXXXXXXXXXXXXXXX')
   return None, None
 
-pre_base_env.AddMethod(GetBootstrap)
 
 def GetIrtNexe(env, irt_name='irt'):
   image = ARGUMENTS.get('force_irt')
@@ -2769,17 +2770,22 @@ def MakeLinuxEnv():
                     ['_LARGEFILE64_SOURCE', '1'],
                     ],
       LIBS = ['rt'],
-      )
+  )
 
   if linux_env.Bit('build_x86_32'):
     linux_env.Prepend(
+        CPPDEFINES = [['-D_FORTIFY_SOURCE', '2']],
+        ASFLAGS = ['-m32', ],
         CCFLAGS = ['-m32', ],
-        LINKFLAGS = ['-m32', '-L/usr/lib32', ],
+        LINKFLAGS = ['-m32', '-L/usr/lib32', '-Wl,-z,relro', '-Wl,-z,now'],
         )
   elif linux_env.Bit('build_x86_64'):
     linux_env.Prepend(
-        CCFLAGS = ['-m64', ],
-        LINKFLAGS = ['-m64', '-L/usr/lib64', ],
+        CPPDEFINES = [['-D_FORTIFY_SOURCE', '2']],
+        ASFLAGS = ['-m64', ],
+        CCFLAGS = ['-m64', '-fPIE', ],
+        LINKFLAGS = ['-m64', '-L/usr/lib64', '-pie', '-Wl,-z,relro',
+                     '-Wl,-z,now'],
         )
   elif linux_env.Bit('build_arm'):
     if linux_env.Bit('built_elsewhere'):
@@ -2817,6 +2823,7 @@ def MakeLinuxEnv():
         linux_env.Append(LIBS=['rt', 'dl', 'pthread', 'crypto'])
     else:
       jail = '${SCONSTRUCT_DIR}/toolchain/linux_arm-trusted'
+      linker_script = jail + '/ld_script_arm_trusted'
       linux_env.Replace(CC='arm-linux-gnueabi-gcc-4.5',
                         CXX='arm-linux-gnueabi-g++-4.5',
                         LD='arm-linux-gnueabi-ld',
@@ -2828,6 +2835,11 @@ def MakeLinuxEnv():
                                  jail + '/usr/lib/arm-linux-gnueabi',
                                  jail + '/lib/arm-linux-gnueabi',
                                  ],
+                        # NOTE: we do build .sos so this needs to be revisited
+                        LINKFLAGS=['-static',
+                                   '-Wl,-T',
+                                   '-Wl,%s' % linker_script,
+                                   ]
                         )
       linux_env.Prepend(CCFLAGS=['-march=armv7-a',
                                  '-isystem',
@@ -2843,31 +2855,10 @@ def MakeLinuxEnv():
   else:
     Banner('Strange platform: %s' % BUILD_NAME)
 
-  # These are desireable options for every Linux platform:
-  # _FORTIFY_SOURCE: general paranoia "hardening" option for library functions
-  # -fPIE/-pie: create a position-independent executable
-  # relro/now: "hardening" options for linking
-  # noexecstack: ensure that the executable does not get a PT_GNU_STACK
-  #              header that causes the kernel to set the READ_IMPLIES_EXEC
-  #              personality flag, which disables NX page protection.
-  linux_env.Prepend(
-      CPPDEFINES=[['-D_FORTIFY_SOURCE', '2']],
-      LINKFLAGS=['-pie', '-Wl,-z,relro', '-Wl,-z,now', '-Wl,-z,noexecstack'],
-      )
-  # The ARM toolchain has a linker that doesn't handle the code its
-  # compiler generates under -fPIE.
-  if linux_env.Bit('build_arm'):
-    linux_env.Prepend(CCFLAGS=['-fPIC'])
-    # TODO(mcgrathr): Temporarily punt _FORTIFY_SOURCE for ARM because
-    # it causes a libc dependency newer than the old bots have installed.
-    linux_env.FilterOut(CPPDEFINES=[['-D_FORTIFY_SOURCE', '2']])
-  else:
-    linux_env.Prepend(CCFLAGS=['-fPIE'])
-
-  # We always want to use the same flags for .S as for .c because
-  # code-generation flags affect the predefines we might test there.
-  linux_env.Replace(ASFLAGS=['${CCFLAGS}'])
-
+  # Ensure that the executable does not get a PT_GNU_STACK header that
+  # causes the kernel to set the READ_IMPLIES_EXEC personality flag,
+  # which disables NX page protection.  This is Linux-specific.
+  linux_env.Prepend(LINKFLAGS=['-Wl,-z,noexecstack'])
   return linux_env
 
 (linux_debug_env, linux_optimized_env) = \
@@ -3597,8 +3588,9 @@ linux_coverage_env = linux_debug_env.Clone(
     LIBS_STRICT = False,
 )
 
-linux_coverage_env.FilterOut(CCFLAGS=['-fPIE'])
-linux_coverage_env.Append(CCFLAGS=['-fPIC'])
+if linux_coverage_env.Bit('target_x86_64'):
+  linux_coverage_env.Append(CCFLAGS=['-fPIC'])
+  linux_coverage_env.FilterOut(CCFLAGS=['-fPIE'])
 
 linux_coverage_env['OPTIONAL_COVERAGE_LIBS'] = '$COVERAGE_LIBS'
 AddDualLibrary(linux_coverage_env)
