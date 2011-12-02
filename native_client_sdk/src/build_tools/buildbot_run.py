@@ -19,12 +19,12 @@ sys.path.append(os.path.join(SRC_DIR, 'third_party/scons-2.0.1/engine'))
 import build_utils
 
 
-def Archive(revision, chrome_milestone):
+def Archive(revision, chrome_version):
   """Archive the sdk to google storage.
 
   Args:
     revision: SDK svn revision number.
-    chrome_milestone: Chrome milestone (m14 etc), this is for.
+    chrome_version: Chrome version number / trunk svn.
   """
   if sys.platform in ['cygwin', 'win32']:
     src = 'nacl-sdk.exe'
@@ -35,8 +35,8 @@ def Archive(revision, chrome_milestone):
   else:
     src = 'nacl-sdk.tgz'
     dst = 'naclsdk_linux.tgz'
-  bucket_path = 'nativeclient-mirror/nacl/nacl_sdk/pepper_%s_%s/%s' % (
-      chrome_milestone, revision, dst)
+  bucket_path = 'nativeclient-mirror/nacl/nacl_sdk/%s/%s' % (
+      chrome_version, dst)
   full_dst = 'gs://%s' % bucket_path
   subprocess.check_call(
       '/b/build/scripts/slave/gsutil cp -a public-read %s %s' % (
@@ -80,7 +80,7 @@ def main(argv):
     print '@@@BUILD_STEP archive build@@@'
     sys.stdout.flush()
     Archive(revision=os.environ.get('BUILDBOT_GOT_REVISION'),
-            chrome_milestone=build_utils.ChromeMilestone())
+            chrome_version=build_utils.ChromeVersion())
 
   return 0
 

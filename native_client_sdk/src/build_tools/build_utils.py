@@ -19,29 +19,46 @@ import sys
 from nacl_sdk_scons import nacl_utils
 
 
-def ChromeMilestone():
-  '''Extract chrome_milestone from src/DEPS
+# Reuse last change utility code.
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(SCRIPT_DIR)))
+sys.path.append(os.path.join(SRC_DIR, 'build/util'))
+import lastchange
+
+
+# Location of chrome's version file.
+VERSION_PATH = os.path.join(SRC_DIR, 'chrome', 'VERSION')
+
+
+def ChromeVersion():
+  '''Extract chrome version from src/chrome/VERSION + svn.
 
   Returns:
-    Chrome milestone variable value from src/DEPS.
+    Chrome version string or trunk + svn rev.
   '''
-  parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-  def From(x, y):
-    return ''
-  def Var(x):
-    return ''
-  def File(x):
-    return ''
-  with open(os.path.join(parent_dir, 'DEPS'), 'r') as fh:
-    exec(fh.read())
-  return vars.get('chrome_milestone')
+  info = lastchange.FetchVersionInfo(None)
+  if info.url.startswith('/trunk/'):
+    return 'trunk.%s' % info.revision
+  else:
+    exec(open(VERSION_PATH, 'r').read())
+    return '%s.%s.%s.%s' % (MAJOR, MINOR, BUILD, PATCH)
+
+
+def ChromeMajorVersion():
+  '''Extract chrome major version from src/chrome/VERSION.
+
+  Returns:
+    Chrome major version.
+  '''
+  exec(open(VERSION_PATH, 'r').read())
+  return str(MAJOR)
 
 
 #------------------------------------------------------------------------------
 # Parameters
 
 # Revision numbers for the SDK
-PLATFORM_VERSION = 'pepper_' + ChromeMilestone()
+PLATFORM_VERSION = 'pepper_' + ChromeMajorVersion()
 
 TOOLCHAIN_AUTODETECT = "AUTODETECT"
 
