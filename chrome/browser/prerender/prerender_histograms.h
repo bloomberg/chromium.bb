@@ -55,6 +55,9 @@ class PrerenderHistograms {
   // To be called when a new prerender is added.
   void RecordPrerender(Origin origin, const GURL& url);
 
+  // To be called when a new prerender is started.
+  void RecordPrerenderStarted(Origin origin) const;
+
   // Called when we swap in a prerender.
   void RecordUsedPrerender(Origin origin) const;
 

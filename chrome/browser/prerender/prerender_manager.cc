@@ -447,6 +447,8 @@ bool PrerenderManager::AddPrerender(
   if (!prerender_contents || !prerender_contents->Init())
     return false;
 
+  histograms_->RecordPrerenderStarted(origin);
+
   // TODO(cbentzel): Move invalid checks here instead of PrerenderContents?
   PrerenderContentsData data(prerender_contents, GetCurrentTime());
 

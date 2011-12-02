@@ -153,7 +153,9 @@ void PrerenderHistograms::RecordPrerender(Origin origin, const GURL& url) {
   last_prerender_seen_time_ = GetCurrentTimeTicks();
   seen_any_pageload_ = false;
   seen_pageload_started_after_prerender_ = false;
+}
 
+void PrerenderHistograms::RecordPrerenderStarted(Origin origin) const {
   if (OriginIsOmnibox(origin)) {
     UMA_HISTOGRAM_COUNTS("Prerender.OmniboxPrerenderCount_" +
                          GetOmniboxHistogramSuffix(), 1);
