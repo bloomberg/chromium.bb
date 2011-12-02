@@ -445,12 +445,15 @@ void LoginDialogCallback(const GURL& request_url,
     return;
   }
 
-  // Tell the password manager to look for saved passwords.
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(parent_contents);
-  if (!wrapper)
-    NOTREACHED() << "Login dialog created for TabContents with no wrapper";
+  if (!wrapper) {
+    // Same logic as above.
+    handler->CancelAuth();
+    return;
+  }
 
+  // Tell the password manager to look for saved passwords.
   PasswordManager* password_manager = wrapper->password_manager();
   std::vector<PasswordForm> v;
   MakeInputForPasswordManager(request_url, auth_info, handler, &v);
