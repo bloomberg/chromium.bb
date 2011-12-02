@@ -145,7 +145,7 @@ tty_create(struct wlsc_compositor *compositor, tty_vt_func_t vt_func,
 	mode.mode = VT_PROCESS;
 	mode.relsig = SIGUSR1;
 	mode.acqsig = SIGUSR2;
-	if (!ioctl(tty->fd, VT_SETMODE, &mode) < 0) {
+	if (ioctl(tty->fd, VT_SETMODE, &mode) < 0) {
 		fprintf(stderr, "failed to take control of vt handling\n");
 		return NULL;
 	}
