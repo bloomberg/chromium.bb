@@ -637,11 +637,16 @@ bool BrowserInit::LaunchWithProfile::Launch(
         command_line_.GetSwitchValueASCII(switches::kRemoteDebuggingPort);
     int64 port;
     if (base::StringToInt64(port_str, &port) && port > 0 && port < 65535) {
+      std::string frontend_str;
+      if (command_line_.HasSwitch(switches::kRemoteDebuggingFrontend)) {
+        frontend_str = command_line_.GetSwitchValueASCII(
+            switches::kRemoteDebuggingFrontend);
+      }
       g_browser_process->InitDevToolsHttpProtocolHandler(
           profile,
           "127.0.0.1",
           static_cast<int>(port),
-          "");
+          frontend_str);
     } else {
       DLOG(WARNING) << "Invalid http debugger port number " << port;
     }
