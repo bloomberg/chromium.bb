@@ -1367,7 +1367,7 @@ class NetworkLibrary {
     // for example, networks have appeared or disappeared.
     virtual void OnNetworkManagerChanged(NetworkLibrary* obj) = 0;
    protected:
-    ~NetworkManagerObserver() { }
+    virtual ~NetworkManagerObserver() { }
   };
 
   class NetworkObserver {
@@ -1377,7 +1377,7 @@ class NetworkLibrary {
     virtual void OnNetworkChanged(NetworkLibrary* cros,
                                   const Network* network) = 0;
    protected:
-    ~NetworkObserver() {}
+    virtual ~NetworkObserver() {}
   };
 
   class NetworkDeviceObserver {
@@ -1394,7 +1394,7 @@ class NetworkLibrary {
     virtual void OnNetworkDeviceSimLockChanged(NetworkLibrary* cros,
                                                const NetworkDevice* device) {}
    protected:
-    ~NetworkDeviceObserver() {}
+    virtual ~NetworkDeviceObserver() {}
   };
 
   class CellularDataPlanObserver {
@@ -1402,7 +1402,7 @@ class NetworkLibrary {
     // Called when the cellular data plan has changed.
     virtual void OnCellularDataPlanChanged(NetworkLibrary* obj) = 0;
    protected:
-    ~CellularDataPlanObserver() {}
+    virtual ~CellularDataPlanObserver() {}
   };
 
   class PinOperationObserver {
@@ -1412,7 +1412,7 @@ class NetworkLibrary {
     virtual void OnPinOperationCompleted(NetworkLibrary* cros,
                                          PinOperationError error) = 0;
    protected:
-    ~PinOperationObserver() {}
+    virtual ~PinOperationObserver() {}
   };
 
   class UserActionObserver {
@@ -1422,7 +1422,7 @@ class NetworkLibrary {
     virtual void OnConnectionInitiated(NetworkLibrary* cros,
                                        const Network* network) = 0;
    protected:
-    ~UserActionObserver() {}
+    virtual ~UserActionObserver() {}
   };
 
   virtual ~NetworkLibrary() {}
@@ -1743,7 +1743,8 @@ class NetworkLibrary {
   virtual void SwitchToPreferredNetwork() = 0;
 
   // Load networks from an Open Network Configuration blob.
-  virtual bool LoadOncNetworks(const std::string& onc_blob) = 0;
+  virtual bool LoadOncNetworks(const std::string& onc_blob,
+                               const std::string& passcode) = 0;
 
   // This sets the active network for the network type. Note: priority order
   // is unchanged (i.e. if a wifi network is set to active, but an ethernet

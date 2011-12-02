@@ -1730,7 +1730,8 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   // virtual GetIPConfigs implemented in derived classes.
   // virtual SetIPConfig implemented in derived classes.
   virtual void SwitchToPreferredNetwork() OVERRIDE;
-  virtual bool LoadOncNetworks(const std::string& onc_blob) OVERRIDE;
+  virtual bool LoadOncNetworks(const std::string& onc_blob,
+                               const std::string& passcode) OVERRIDE;
   virtual bool SetActiveNetwork(ConnectionType type,
                                 const std::string& service_path) OVERRIDE;
 
@@ -2818,7 +2819,9 @@ void NetworkLibraryImplBase::SwitchToPreferredNetwork() {
   }
 }
 
-bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob) {
+bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
+                                             const std::string& passcode) {
+  // TODO(gspencer): Add support for decrypting onc files. crbug.com/19397
   OncNetworkParser parser(onc_blob);
 
   for (int i = 0; i < parser.GetCertificatesSize(); i++) {
@@ -5076,7 +5079,7 @@ void NetworkLibraryImplStub::Init() {
         "  ],"
         "  \"Certificates\": []"
         "}");
-  LoadOncNetworks(test_blob);
+  LoadOncNetworks(test_blob, "");
 }
 
 ////////////////////////////////////////////////////////////////////////////
