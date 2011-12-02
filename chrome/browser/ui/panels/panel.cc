@@ -107,6 +107,9 @@ void Panel::SetAutoResizable(bool resizable) {
 }
 
 void Panel::SetSizeRange(const gfx::Size& min_size, const gfx::Size& max_size) {
+  if (min_size == min_size_ && max_size == max_size_)
+    return;
+
   DCHECK(min_size.width() <= max_size.width());
   DCHECK(min_size.height() <= max_size.height());
   min_size_ = min_size;

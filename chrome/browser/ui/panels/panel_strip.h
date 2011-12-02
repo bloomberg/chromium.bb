@@ -101,10 +101,6 @@ class PanelStrip : public PanelMouseWatcherObserver {
     BRING_DOWN
   };
 
-  // Helper functions to add a panel to the strip.
-  void AddNewPanel(Panel* panel);
-  void AddExistingPanel(Panel* panel);
-
   // Keep track of the minimized panels to control mouse watching.
   void IncrementMinimizedPanels();
   void DecrementMinimizedPanels();
@@ -181,9 +177,6 @@ class PanelStrip : public PanelMouseWatcherObserver {
   bool remove_delays_for_testing_;
   // Owned by MessageLoop after posting.
   base::WeakPtrFactory<PanelStrip> titlebar_action_factory_;
-
-  // Factory used for moving new panels to overflow after a delay.
-  base::WeakPtrFactory<PanelStrip> overflow_action_factory_;
 
   static const int kPanelsHorizontalSpacing = 4;
 

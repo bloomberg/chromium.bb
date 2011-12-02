@@ -57,8 +57,7 @@ PanelStrip::PanelStrip(PanelManager* panel_manager)
       dragging_panel_original_x_(0),
       delayed_titlebar_action_(NO_ACTION),
       remove_delays_for_testing_(false),
-      titlebar_action_factory_(this),
-      overflow_action_factory_(this) {
+      titlebar_action_factory_(this) {
 }
 
 PanelStrip::~PanelStrip() {
@@ -84,16 +83,8 @@ void PanelStrip::SetDisplayArea(const gfx::Rect& new_area) {
 }
 
 void PanelStrip::AddPanel(Panel* panel) {
-  if (panel->initialized())
-    AddExistingPanel(panel);
-  else
-    AddNewPanel(panel);
-  panels_.push_back(panel);
-}
-
-void PanelStrip::AddNewPanel(Panel* panel) {
-  DCHECK(!panel->initialized());
-
+  // Always update limits, even for exiting panels, in case the maximums changed
+  // while panel was out of the strip.
   int max_panel_width = GetMaxPanelWidth();
   int max_panel_height = GetMaxPanelHeight();
   panel->SetSizeRange(gfx::Size(kPanelMinWidth, kPanelMinHeight),
@@ -103,58 +94,60 @@ void PanelStrip::AddNewPanel(Panel* panel) {
   int height = restored_size.height();
   int width = restored_size.width();
 
-  if (height == 0 && width == 0) {
-    // Auto resizable is enabled only if no initial size is provided.
-    panel->SetAutoResizable(true);
+  if (panel->initialized()) {
+    // Bump panels in the strip to make room for this panel.
+    int x;
+    while ((x = GetRightMostAvailablePosition() - width) < display_area_.x()) {
+      DCHECK(!panels_.empty());
+      MovePanelToOverflow(panels_.back(), false);
+    }
+    int y = display_area_.bottom() - height;
+    panel->SetPanelBounds(gfx::Rect(x, y, width, height));
   } else {
-    if (height == 0)
-      height = width / kPanelDefaultWidthToHeightRatio;
-    if (width == 0)
-      width = height * kPanelDefaultWidthToHeightRatio;
+    // Initialize the newly created panel. Does not bump any panels from strip.
+    if (height == 0 && width == 0) {
+      // Auto resizable is enabled only if no initial size is provided.
+      panel->SetAutoResizable(true);
+    } else {
+      if (height == 0)
+        height = width / kPanelDefaultWidthToHeightRatio;
+      if (width == 0)
+        width = height * kPanelDefaultWidthToHeightRatio;
+    }
+
+    // Constrain sizes to limits.
+    if (width < kPanelMinWidth)
+      width = kPanelMinWidth;
+    else if (width > max_panel_width)
+      width = max_panel_width;
+
+    if (height < kPanelMinHeight)
+      height = kPanelMinHeight;
+    else if (height > max_panel_height)
+      height = max_panel_height;
+
+    panel->set_restored_size(gfx::Size(width, height));
+    int x = GetRightMostAvailablePosition() - width;
+    int y = display_area_.bottom() - height;
+
+    // Keep panel visible in the strip even if overlap would occur.
+    // Panel is moved to overflow from the strip after a delay.
+    if (x < display_area_.x()) {
+      x = display_area_.x();
+      int delay_ms = remove_delays_for_testing_ ? 0 :
+          kMoveNewPanelToOverflowDelayMilliseconds;
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&PanelStrip::MovePanelToOverflow,
+                     base::Unretained(this),
+                     panel,
+                     true),  // new panel
+          delay_ms);
+    }
+    panel->Initialize(gfx::Rect(x, y, width, height));
   }
 
-  // Constrain sizes to limits.
-  if (width < kPanelMinWidth)
-    width = kPanelMinWidth;
-  else if (width > max_panel_width)
-    width = max_panel_width;
-
-  if (height < kPanelMinHeight)
-    height = kPanelMinHeight;
-  else if (height > max_panel_height)
-    height = max_panel_height;
-  panel->set_restored_size(gfx::Size(width, height));
-
-  // Layout the new panel.
-  int y = display_area_.bottom() - height;
-  int x = GetRightMostAvailablePosition() - width;
-
-  // Keep panel visible in the strip even if overlap would occur.
-  // Panel is moved to overflow from the strip after a delay.
-  if (x < display_area_.x()) {
-    x = display_area_.x();
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&PanelStrip::MovePanelToOverflow,
-                   overflow_action_factory_.GetWeakPtr(),
-                   panel,
-                   true),  // new panel
-        kMoveNewPanelToOverflowDelayMilliseconds);
-  }
-  panel->Initialize(gfx::Rect(x, y, width, height));
-}
-
-void PanelStrip::AddExistingPanel(Panel* panel) {
-  gfx::Size restored_size = panel->restored_size();
-  int height = restored_size.height();
-  int width = restored_size.width();
-  int x;
-  while ((x = GetRightMostAvailablePosition() - width) < display_area_.x()) {
-    DCHECK(!panels_.empty());
-    MovePanelToOverflow(panels_.back(), false);
-  }
-  int y = display_area_.bottom() - height;
-  panel->SetPanelBounds(gfx::Rect(x, y, width, height));
+  panels_.push_back(panel);
 }
 
 int PanelStrip::GetMaxPanelWidth() const {
@@ -205,6 +198,7 @@ bool PanelStrip::DoRemove(Panel* panel) {
     DecrementMinimizedPanels();
 
   panels_.erase(iter);
+  panel_manager_->OnPanelRemoved(panel);
   return true;
 }
 
