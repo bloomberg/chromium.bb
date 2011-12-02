@@ -332,7 +332,14 @@ ImageEditor.prototype.enterMode = function(mode, event) {
   }
 
   this.leaveModeGently();
+  // The above call could have caused a commit which might have initiated
+  // an asynchronous command execution. Wait for it to complete, then proceed
+  // with the mode set up.
+  this.commandQueue_.requestCurrentImage(
+      this.setUpMode_.bind(this, mode, event));
+};
 
+ImageEditor.prototype.setUpMode_ = function(mode, event) {
   this.currentTool_ = event.target;
 
   ImageUtil.setAttribute(this.currentTool_, 'pressed', true);
