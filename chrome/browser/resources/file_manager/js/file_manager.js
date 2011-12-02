@@ -2509,12 +2509,18 @@ FileManager.prototype = {
   FileManager.prototype.selectEntry = function(name) {
     for (var i = 0; i < this.dataModel_.length; i++) {
       if (this.dataModel_.item(i).name == name) {
-        this.currentList_.selectionModel.selectedIndex = i;
-        this.currentList_.scrollIndexIntoView(i);
-        this.currentList_.focus();
+        this.selectIndex(i);
         return;
       }
     }
+  };
+
+  FileManager.prototype.selectIndex = function(index) {
+    this.currentList_.focus();
+    if (index >= this.dataModel_.length)
+      return;
+    this.currentList_.selectionModel.selectedIndex = index;
+    this.currentList_.scrollIndexIntoView(index);
   };
 
   /**
@@ -2649,6 +2655,8 @@ FileManager.prototype = {
       // Directory didn't actually change.
       if (opt_selectedEntry)
         this.selectEntry(opt_selectedEntry);
+      else
+        this.selectIndex(0);
       return;
     }
 
@@ -3066,6 +3074,8 @@ FileManager.prototype = {
     this.rescanDirectory_(function() {
         if (event.selectedEntry)
           self.selectEntry(event.selectedEntry);
+        else
+          self.selectIndex(0);
         if (event.opt_callback) {
           try {
             event.opt_callback();
