@@ -4,12 +4,15 @@
 
 #include "content/browser/renderer_host/render_process_host_browsertest.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/process.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/test_url_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 
 RenderProcessHostTest::RenderProcessHostTest() {
@@ -26,6 +29,29 @@ int RenderProcessHostTest::RenderProcessHostCount() {
     hosts.Advance();
   }
   return count;
+}
+
+void PostQuit(MessageLoop* loop) {
+  loop->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+}
+
+void DoNothing() {}
+
+// Show a tab, activating the current one if there is one, and wait for
+// the renderer process to be created or foregrounded, returning the process
+// handle.
+base::ProcessHandle RenderProcessHostTest::ShowSingletonTab(const GURL& page) {
+  browser()->ShowSingletonTab(page);
+  TabContents* tc = browser()->GetSelectedTabContents();
+  CHECK(tc->GetURL() == page);
+
+  // Ensure that the backgrounding / foregrounding gets a chance to run.
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
+      base::Bind(DoNothing), MessageLoop::QuitClosure());
+  MessageLoop::current()->Run();
+
+  return tc->GetRenderProcessHost()->GetHandle();
 }
 
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
@@ -83,6 +109,42 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
   EXPECT_EQ(tab_count, browser()->tab_count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
 }
+
+// We don't change process priorities on Mac or Posix because the user lacks the
+// permission to raise a process' priority even after lowering it.
+#if defined(OS_WIN) || defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, Backgrounding) {
+  if (!base::Process::CanBackgroundProcesses()) {
+    LOG(ERROR) << "Can't background processes";
+    return;
+  }
+  CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  parsed_command_line.AppendSwitch(switches::kProcessPerTab);
+
+  // Change the first tab to be the new tab page (TYPE_WEBUI).
+  GURL newtab(chrome::kTestNewTabURL);
+  ui_test_utils::NavigateToURL(browser(), newtab);
+
+  // Create a new tab. It should be foreground.
+  GURL page1("data:text/html,hello world1");
+  base::ProcessHandle pid1 = ShowSingletonTab(page1);
+  EXPECT_FALSE(base::Process(pid1).IsProcessBackgrounded());
+
+  // Create another tab. It should be foreground, and the first tab should
+  // now be background.
+  GURL page2("data:text/html,hello world2");
+  base::ProcessHandle pid2 = ShowSingletonTab(page2);
+  EXPECT_NE(pid1, pid2);
+  EXPECT_TRUE(base::Process(pid1).IsProcessBackgrounded());
+  EXPECT_FALSE(base::Process(pid2).IsProcessBackgrounded());
+
+  // Navigate back to first page. It should be foreground again, and the second
+  // tab should be background.
+  EXPECT_EQ(pid1, ShowSingletonTab(page1));
+  EXPECT_FALSE(base::Process(pid1).IsProcessBackgrounded());
+  EXPECT_TRUE(base::Process(pid2).IsProcessBackgrounded());
+}
+#endif
 
 // When we hit the max number of renderers, verify that the way we do process
 // sharing behaves correctly.  In particular, this test is verifying that even
