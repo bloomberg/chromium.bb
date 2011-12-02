@@ -360,8 +360,6 @@ DesktopHostLinux::~DesktopHostLinux() {
 
 base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
     XEvent* xev) {
-  DLOG(WARNING) << "DispatchEvent:" << xev->type;
-
   bool handled = false;
 
   CheckXEventForConsistency(xev);
@@ -590,8 +588,7 @@ void DesktopHostLinux::PostNativeEvent(const base::NativeEvent& native_event) {
     default:
       break;
   }
-  Status status = XSendEvent(xdisplay_, xwindow_, False, 0, &xevent);
-  DLOG(WARNING) << "PostEvent:" << xevent.type << ", status=" << status;
+  XSendEvent(xdisplay_, xwindow_, False, 0, &xevent);
 }
 
 void DesktopHostLinux::WillDestroyCurrentMessageLoop() {
