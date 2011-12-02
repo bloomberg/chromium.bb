@@ -73,7 +73,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PreferencePersistentIncognito) {
   EXPECT_FALSE(prefs->GetBoolean(prefs::kBlockThirdPartyCookies));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PreferenceIncognitoDisabled) {
+// Flakily times out: http://crbug.com/106144
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_PreferenceIncognitoDisabled) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
