@@ -30,6 +30,7 @@ import posixpath
 import re
 import SimpleHTTPServer
 import SocketServer
+import sys
 import tempfile
 import threading
 import time
@@ -135,6 +136,7 @@ class BasePerfTest(pyauto.PyUITest):
                         description, description[:30])
       print '\n%s(\'%s\', %.2f)%s' % (self._PERF_OUTPUT_MARKER_PRE, description,
                                       value, self._PERF_OUTPUT_MARKER_POST)
+      sys.stdout.flush()
 
   def _PrintSummaryResults(self, description, values, units):
     """Logs summary measurement information.
