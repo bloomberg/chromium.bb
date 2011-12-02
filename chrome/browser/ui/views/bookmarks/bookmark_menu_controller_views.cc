@@ -40,7 +40,7 @@ BookmarkMenuController::BookmarkMenuController(Profile* profile,
       for_drop_(false),
       bookmark_bar_(NULL) {
   menu_delegate_->Init(this, NULL, node, start_child_index,
-                       BookmarkMenuDelegate::HIDE_OTHER_FOLDER,
+                       BookmarkMenuDelegate::HIDE_PERMANENT_FOLDERS,
                        bookmark_utils::LAUNCH_BAR_SUBFOLDER);
   menu_runner_.reset(new views::MenuRunner(menu_delegate_->menu()));
 }

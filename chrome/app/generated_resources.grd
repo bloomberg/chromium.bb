@@ -6761,9 +6761,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </if>
 
       <!-- bookmark bar messages -->
-      <message name="IDS_BOOKMARK_BAR_OTHER_BOOKMARKED" desc="Title of button showing other bookmarks">
-        Other bookmarks
-      </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_BOOKMARK_BAR_OPEN_IN_NEW_TAB" desc="Menu description for loading bookmark in a new tab">
           &amp;Open in new tab

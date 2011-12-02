@@ -38,13 +38,13 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
                              public BookmarkContextMenuObserver {
  public:
   enum ShowOptions {
-    // Indicates a menu should be added containing the 'other' bookmarks folder
-    // and all its contents. This only makes sense when showing the contents
-    // of the bookmark folder.
-    SHOW_OTHER_FOLDER,
+    // Indicates a menu should be added containing the permanent folders (other
+    // than then bookmark bar folder). This only makes sense when showing the
+    // contents of the bookmark bar folder.
+    SHOW_PERMANENT_FOLDERS,
 
-    // Don't show the 'other' bookmarks folder.
-    HIDE_OTHER_FOLDER
+    // Don't show any additional folders.
+    HIDE_PERMANENT_FOLDERS
   };
 
   BookmarkMenuDelegate(Profile* profile,
@@ -134,9 +134,19 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
                                   int start_child_index,
                                   ShowOptions show_options);
 
-  // Builds the menu for the other bookmarks folder. This is added as the last
-  // item to menu_.
-  void BuildOtherFolderMenu(views::MenuItemView* menu, int* next_menu_id);
+  // Invokes BuildMenuForPermanentNode() for the permanent nodes (excluding
+  // 'other bookmarks' folder).
+  void BuildMenusForPermanentNodes(views::MenuItemView* menu,
+                                   int* next_menu_id);
+
+  // If |node| has children a new menu is created and added to |menu| to
+  // represent it. If |node| is not empty and |added_separator| is false, a
+  // separator is added before the new menu items and |added_separator| is set
+  // to true.
+  void BuildMenuForPermanentNode(const BookmarkNode* node,
+                                 views::MenuItemView* menu,
+                                 int* next_menu_id,
+                                 bool* added_separator);
 
   // Creates an entry in menu for each child node of |parent| starting at
   // |start_child_index|.

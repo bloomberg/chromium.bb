@@ -833,15 +833,17 @@ void BookmarkBarView::ShowImportDialog() {
 }
 
 void BookmarkBarView::Loaded(BookmarkModel* model, bool ids_reassigned) {
-  volatile int button_count = GetBookmarkButtonCount();
-  DCHECK(button_count == 0);  // If non-zero it means Load was invoked more than
-                              // once, or we didn't properly clear things.
-                              // Either of which shouldn't happen
+  // There should be no buttons. If non-zero it means Load was invoked more than
+  // once, or we didn't properly clear things. Either of which shouldn't happen.
+  DCHECK_EQ(0, GetBookmarkButtonCount());
   const BookmarkNode* node = model_->bookmark_bar_node();
-  DCHECK(node && model_->other_node());
+  DCHECK(node);
   // Create a button for each of the children on the bookmark bar.
   for (int i = 0, child_count = node->child_count(); i < child_count; ++i)
     AddChildViewAt(CreateBookmarkButton(node->GetChild(i)), i);
+  DCHECK(model_->other_node());
+  other_bookmarked_button_->SetAccessibleName(model_->other_node()->GetTitle());
+  other_bookmarked_button_->SetText(model_->other_node()->GetTitle());
   UpdateColors();
   UpdateOtherBookmarksVisibility();
   other_bookmarked_button_->SetEnabled(true);
@@ -1167,17 +1169,12 @@ int BookmarkBarView::GetFirstHiddenNodeIndex() {
 }
 
 MenuButton* BookmarkBarView::CreateOtherBookmarkedButton() {
-  MenuButton* button = new BookmarkFolderButton(
-      this,
-      l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_BOOKMARKED),
-      this,
-      false);
+  // Title is set in Loaded.
+  MenuButton* button = new BookmarkFolderButton(this, string16(), this, false);
   button->set_id(VIEW_ID_OTHER_BOOKMARKS);
   button->SetIcon(GetFolderIcon());
   button->set_context_menu_controller(this);
   button->set_tag(kOtherFolderButtonTag);
-  button->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_BOOKMARKED));
   return button;
 }
 

@@ -69,14 +69,8 @@ void BookmarkMenuDelegate::Init(
       parent->AppendSeparator();
     }
     BuildMenu(node, start_child_index, parent, &next_menu_id_);
-    if (show_options == SHOW_OTHER_FOLDER) {
-      const BookmarkNode* other_folder =
-          profile_->GetBookmarkModel()->other_node();
-      if (!other_folder->empty()) {
-        parent->AppendSeparator();
-        BuildOtherFolderMenu(parent, &next_menu_id_);
-      }
-    }
+    if (show_options == SHOW_PERMANENT_FOLDERS)
+      BuildMenusForPermanentNodes(parent, &next_menu_id_);
   } else {
     menu_ = CreateMenu(node, start_child_index, show_options);
   }
@@ -94,7 +88,7 @@ void BookmarkMenuDelegate::SetActiveMenu(const BookmarkNode* node,
                                          int start_index) {
   DCHECK(!parent_menu_item_);
   if (!node_to_menu_map_[node])
-    CreateMenu(node, start_index, HIDE_OTHER_FOLDER);
+    CreateMenu(node, start_index, HIDE_PERMANENT_FOLDERS);
   menu_ = node_to_menu_map_[node];
 }
 
@@ -189,16 +183,31 @@ int BookmarkMenuDelegate::GetDropOperation(
   const BookmarkNode* node = menu_id_to_node_map_[item->GetCommand()];
   const BookmarkNode* drop_parent = node->parent();
   int index_to_drop_at = drop_parent->GetIndexOf(node);
-  if (*position == views::MenuDelegate::DROP_AFTER) {
-    if (node == profile_->GetBookmarkModel()->other_node()) {
-      // The other folder is shown after all bookmarks on the bookmark bar.
-      // Dropping after the other folder makes no sense.
-      *position = views::MenuDelegate::DROP_NONE;
-    }
-    index_to_drop_at++;
-  } else if (*position == views::MenuDelegate::DROP_ON) {
-    drop_parent = node;
-    index_to_drop_at = node->child_count();
+  switch (*position) {
+    case views::MenuDelegate::DROP_AFTER:
+      if (node == profile_->GetBookmarkModel()->other_node() ||
+          node == profile_->GetBookmarkModel()->mobile_node()) {
+        // Dropping after these nodes makes no sense.
+        *position = views::MenuDelegate::DROP_NONE;
+      }
+      index_to_drop_at++;
+      break;
+
+    case views::MenuDelegate::DROP_BEFORE:
+      if (node == profile_->GetBookmarkModel()->mobile_node()) {
+        // Dropping before this node makes no sense.
+        *position = views::MenuDelegate::DROP_NONE;
+      }
+      index_to_drop_at++;
+      break;
+
+    case views::MenuDelegate::DROP_ON:
+      drop_parent = node;
+      index_to_drop_at = node->child_count();
+      break;
+
+    default:
+      break;
   }
   DCHECK(drop_parent);
   return bookmark_utils::BookmarkDropOperation(
@@ -228,8 +237,9 @@ int BookmarkMenuDelegate::OnPerformDrop(
       break;
 
     case views::MenuDelegate::DROP_BEFORE:
-      if (drop_node == model->other_node()) {
-        // This can happen with SHOW_OTHER_FOLDER.
+      if (drop_node == model->other_node() ||
+          drop_node == model->mobile_node()) {
+        // This can happen with SHOW_PERMANENT_FOLDERS.
         drop_parent = model->bookmark_bar_node();
         index_to_drop_at = drop_parent->child_count();
       }
@@ -391,25 +401,43 @@ MenuItemView* BookmarkMenuDelegate::CreateMenu(const BookmarkNode* parent,
   menu_id_to_node_map_[menu->GetCommand()] = parent;
   menu->set_has_icons(true);
   BuildMenu(parent, start_child_index, menu, &next_menu_id_);
-  if (show_options == SHOW_OTHER_FOLDER)
-    BuildOtherFolderMenu(menu, &next_menu_id_);
+  if (show_options == SHOW_PERMANENT_FOLDERS)
+    BuildMenusForPermanentNodes(menu, &next_menu_id_);
   node_to_menu_map_[parent] = menu;
   return menu;
 }
 
-void BookmarkMenuDelegate::BuildOtherFolderMenu(
-    MenuItemView* menu, int* next_menu_id) {
-  const BookmarkNode* other_folder = profile_->GetBookmarkModel()->other_node();
+void BookmarkMenuDelegate::BuildMenusForPermanentNodes(
+    views::MenuItemView* menu,
+    int* next_menu_id) {
+  BookmarkModel* model = profile_->GetBookmarkModel();
+  bool added_separator = false;
+  BuildMenuForPermanentNode(model->other_node(), menu, next_menu_id,
+                            &added_separator);
+  BuildMenuForPermanentNode(model->mobile_node(), menu, next_menu_id,
+                            &added_separator);
+}
+
+void BookmarkMenuDelegate::BuildMenuForPermanentNode(
+    const BookmarkNode* node,
+    MenuItemView* menu,
+    int* next_menu_id,
+    bool* added_separator) {
+  if (node->GetTotalNodeCount() == 1)
+    return;  // No children, don't create a menu.
+
+  if (!*added_separator) {
+    *added_separator = true;
+    menu->AppendSeparator();
+  }
   int id = *next_menu_id;
   (*next_menu_id)++;
   SkBitmap* folder_icon = ResourceBundle::GetSharedInstance().
       GetBitmapNamed(IDR_BOOKMARK_BAR_FOLDER);
   MenuItemView* submenu = menu->AppendSubMenuWithIcon(
-      id,
-      l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_BOOKMARKED),
-      *folder_icon);
-  BuildMenu(other_folder, 0, submenu, next_menu_id);
-  menu_id_to_node_map_[id] = other_folder;
+      id, node->GetTitle(), *folder_icon);
+  BuildMenu(node, 0, submenu, next_menu_id);
+  menu_id_to_node_map_[id] = node;
 }
 
 void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
