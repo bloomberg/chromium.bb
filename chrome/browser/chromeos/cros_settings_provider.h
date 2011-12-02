@@ -30,10 +30,13 @@ class CrosSettingsProvider {
   // was needed in which case the return value is false. Else it will return
   // true and won't call the |callback|.
   virtual bool GetTrusted(const std::string& path,
-                          const base::Closure& callback) const = 0;
+                          const base::Closure& callback) = 0;
 
-  // Gets the namespace prefix provided by this provider
+  // Gets the namespace prefix provided by this provider.
   virtual bool HandlesSetting(const std::string& path) const = 0;
+
+  // Reloads the caches if the provider has any.
+  virtual void Reload() = 0;
 
  private:
   // Does the real job for Set().

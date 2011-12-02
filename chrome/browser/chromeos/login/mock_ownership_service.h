@@ -18,9 +18,6 @@ class MockOwnershipService : public OwnershipService {
   MockOwnershipService();
   virtual ~MockOwnershipService();
 
-  MOCK_METHOD1(set_cached_policy, void(const em::PolicyData&));
-  MOCK_METHOD0(has_cached_policy, bool(void));
-  MOCK_METHOD0(cached_policy, const em::PolicyData&(void));
   MOCK_METHOD0(IsAlreadyOwned, bool(void));
   MOCK_METHOD1(GetStatus, OwnershipService::Status(bool));
   MOCK_METHOD0(StartLoadOwnerKeyAttempt, void(void));

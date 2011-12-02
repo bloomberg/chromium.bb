@@ -6,7 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
-#include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
+#include "chrome/browser/chromeos/login/signed_settings_cache.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -64,7 +64,7 @@ void SessionManagerObserver::OwnerKeySet(bool success) {
   // Now owner is assigned and key is generated and we should persist
   // those settings into signed storage.
   if (g_browser_process && g_browser_process->local_state()) {
-    SignedSettingsTempStorage::Finalize(g_browser_process->local_state());
+    signed_settings_cache::Finalize(g_browser_process->local_state());
   }
 }
 

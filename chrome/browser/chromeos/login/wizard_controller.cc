@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -31,7 +32,6 @@
 #include "chrome/browser/chromeos/login/network_screen.h"
 #include "chrome/browser/chromeos/login/oobe_display.h"
 #include "chrome/browser/chromeos/login/registration_screen.h"
-#include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
 #include "chrome/browser/chromeos/login/update_screen.h"
 #include "chrome/browser/chromeos/login/user_image_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -376,23 +376,9 @@ void WizardController::OnUpdateCompleted() {
 
 void WizardController::OnEulaAccepted() {
   MarkEulaAccepted();
-  // TODO(pastarmovj): Make this code cache the value for the pref in a better
-  // way until we can store it in the policy blob. See explanation below:
-  // At this point we can not write this in the signed settings pref blob.
-  // But we can at least create the consent file and Chrome would port that
-  // if the device is owned by a local user. In case of enterprise enrolled
-  // device the setting will be respected only until the policy is not set.
-  base::FundamentalValue value(usage_statistics_reporting_);
-  SignedSettingsTempStorage::Store(
-      kStatsReportingPref,
-      value,
-      g_browser_process->local_state());
   bool enabled =
       OptionsUtil::ResolveMetricsReportingEnabled(usage_statistics_reporting_);
-  // Make sure the local state cached value is updated too because the real
-  // policy will only get written when the owner is created and the cache won't
-  // be updated until the policy is reread.
-  g_browser_process->local_state()->SetBoolean(kStatsReportingPref, enabled);
+  CrosSettings::Get()->SetBoolean(kStatsReportingPref, enabled);
   if (enabled) {
 #if defined(USE_LINUX_BREAKPAD)
     // The crash reporter initialization needs IO to complete.

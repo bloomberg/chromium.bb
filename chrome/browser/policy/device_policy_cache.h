@@ -8,9 +8,12 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
-#include "chrome/browser/chromeos/login/signed_settings_helper.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
+
+namespace chromeos {
+class SignedSettingsHelper;
+}  // namespace chromeos
 
 namespace policy {
 
@@ -22,8 +25,7 @@ namespace em = enterprise_management;
 
 // CloudPolicyCacheBase implementation that persists policy information
 // to ChromeOS' session manager (via SignedSettingsHelper).
-class DevicePolicyCache : public CloudPolicyCacheBase,
-                          public chromeos::SignedSettingsHelper::Callback {
+class DevicePolicyCache : public CloudPolicyCacheBase {
  public:
   DevicePolicyCache(CloudPolicyDataStore* data_store,
                     EnterpriseInstallAttributes* install_attributes);
@@ -34,10 +36,8 @@ class DevicePolicyCache : public CloudPolicyCacheBase,
   virtual void SetPolicy(const em::PolicyFetchResponse& policy) OVERRIDE;
   virtual void SetUnmanaged() OVERRIDE;
 
-  // SignedSettingsHelper::Callback implementation:
-  virtual void OnRetrievePolicyCompleted(
-      chromeos::SignedSettings::ReturnCode code,
-      const em::PolicyFetchResponse& policy) OVERRIDE;
+  void OnRetrievePolicyCompleted(chromeos::SignedSettings::ReturnCode code,
+                                 const em::PolicyFetchResponse& policy);
 
  private:
   friend class DevicePolicyCacheTest;

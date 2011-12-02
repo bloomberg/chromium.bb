@@ -696,9 +696,6 @@ class DevicePolicyCacheTestHelper {
     install_attributes_.ExpectUsage();
     EXPECT_CALL(mock_signed_settings_helper_, StartStorePolicyOp(_, _))
         .WillOnce(MockSignedSettingsHelperStorePolicy(code));
-    EXPECT_CALL(mock_signed_settings_helper_, CancelCallback(_))
-        .Times(1)
-        .RetiresOnSaturation();
     EXPECT_CALL(mock_signed_settings_helper_,
                 StartRetrievePolicyOp(_)).Times(expected_retrieves);
   }
@@ -714,7 +711,6 @@ class DevicePolicyCacheTestHelper {
                                install_attributes_.install_attributes(),
                                &mock_signed_settings_helper_));
     data_store_->SetupForTesting("", "id", "user", "gaia_token", false);
-    EXPECT_CALL(mock_signed_settings_helper_, CancelCallback(_)).Times(1);
   }
 
   chromeos::MockSignedSettingsHelper mock_signed_settings_helper_;

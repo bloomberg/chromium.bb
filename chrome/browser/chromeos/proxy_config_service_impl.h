@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/login/signed_settings.h"
 #include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/notification_registrar.h"
@@ -35,7 +34,6 @@ namespace chromeos {
 //   user profile
 class ProxyConfigServiceImpl
     : public PrefProxyConfigTrackerImpl,
-      public SignedSettings::Delegate<const base::Value*>,
       public NetworkLibrary::NetworkManagerObserver,
       public NetworkLibrary::NetworkObserver {
  public:
@@ -191,10 +189,6 @@ class ProxyConfigServiceImpl
   virtual void OnProxyConfigChanged(ProxyPrefs::ConfigState config_state,
                                     const net::ProxyConfig& config) OVERRIDE;
 
-  // Implementation for SignedSettings::Delegate
-  virtual void OnSettingsOpCompleted(SignedSettings::ReturnCode code,
-                                     const base::Value* value) OVERRIDE;
-
   // NetworkLibrary::NetworkManagerObserver implementation.
   virtual void OnNetworkManagerChanged(NetworkLibrary* cros) OVERRIDE;
 
@@ -264,6 +258,8 @@ class ProxyConfigServiceImpl
   // Reset UI cache variables that keep track of UI activities.
   void ResetUICache();
 
+  void FetchProxyPolicy();
+
   // Data members.
 
   // Service path of currently active network (determined via flimflam
@@ -295,12 +291,11 @@ class ProxyConfigServiceImpl
 
   content::NotificationRegistrar registrar_;
 
-  // Operation to retrieve proxy setting from device.
-  scoped_refptr<SignedSettings> retrieve_property_op_;
-
   // Callbacks for notification when network to be viewed has been changed from
   // the UI.
   std::vector<base::Closure> callbacks_;
+
+  base::WeakPtrFactory<ProxyConfigServiceImpl> pointer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyConfigServiceImpl);
 };

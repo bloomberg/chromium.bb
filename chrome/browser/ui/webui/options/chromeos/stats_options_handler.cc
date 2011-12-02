@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "content/browser/user_metrics.h"
 
 namespace chromeos {

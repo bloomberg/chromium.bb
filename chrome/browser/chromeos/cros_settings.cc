@@ -8,7 +8,7 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/user_cros_settings_provider.h"
+#include "chrome/browser/chromeos/device_settings_provider.h"
 #include "chrome/browser/ui/webui/options/chromeos/system_settings_provider.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
@@ -50,9 +50,8 @@ void CrosSettings::Set(const std::string& path, const base::Value& in_value) {
   DCHECK(CalledOnValidThread());
   CrosSettingsProvider* provider;
   provider = GetProvider(path);
-  if (provider) {
+  if (provider)
     provider->Set(path, in_value);
-  }
 }
 
 void CrosSettings::SetBoolean(const std::string& path, bool in_value) {
@@ -104,8 +103,8 @@ bool CrosSettings::FindEmailInList(const std::string& path,
                                    const std::string& email) const {
   DCHECK(CalledOnValidThread());
   base::StringValue email_value(email);
-  const base::ListValue* value =
-      static_cast<const base::ListValue*>(GetPref(path));
+  const base::ListValue* value(
+      static_cast<const base::ListValue*>(GetPref(path)));
   if (value) {
     if (value->Find(email_value) != value->end())
       return true;
@@ -144,7 +143,7 @@ void CrosSettings::AddSettingsObserver(const char* path,
 
   if (!GetProvider(std::string(path))) {
     NOTREACHED() << "Trying to add an observer for an unregistered setting: "
-        << path;
+                 << path;
     return;
   }
 
@@ -178,9 +177,8 @@ void CrosSettings::RemoveSettingsObserver(const char* path,
 
   SettingsObserverMap::iterator observer_iterator =
       settings_observers_.find(path);
-  if (observer_iterator == settings_observers_.end()) {
+  if (observer_iterator == settings_observers_.end())
     return;
-  }
 
   NotificationObserverList* observer_list = observer_iterator->second;
   observer_list->RemoveObserver(obs);
@@ -193,6 +191,11 @@ CrosSettingsProvider* CrosSettings::GetProvider(
       return providers_[i];
   }
   return NULL;
+}
+
+void CrosSettings::ReloadProviders() {
+  for (size_t i = 0; i < providers_.size(); ++i)
+    providers_[i]->Reload();
 }
 
 const base::Value* CrosSettings::GetPref(const std::string& path) const {
@@ -261,7 +264,7 @@ bool CrosSettings::GetList(const std::string& path,
 
 CrosSettings::CrosSettings() {
   AddSettingsProvider(new SystemSettingsProvider());
-  AddSettingsProvider(new UserCrosSettingsProvider());
+  AddSettingsProvider(new DeviceSettingsProvider());
 }
 
 CrosSettings::~CrosSettings() {

@@ -51,6 +51,9 @@ class PrefValueMap {
   // the value was found and of the proper type.
   bool GetBoolean(const std::string& key, bool* value) const;
 
+  // Sets the value for |key| to the boolean |value|.
+  void SetBoolean(const std::string& key, bool value);
+
   // Gets a string value for |key| and stores it in |value|. Returns true if
   // the value was found and of the proper type.
   bool GetString(const std::string& key, std::string* value) const;

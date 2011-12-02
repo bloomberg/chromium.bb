@@ -92,6 +92,10 @@ class CrosSettings : public base::NonThreadSafe {
   // Returns the provider that handles settings with the path or prefix.
   CrosSettingsProvider* GetProvider(const std::string& path) const;
 
+  // Forces all providers to reload their caches from the respective backing
+  // stores if they have any.
+  void ReloadProviders();
+
  private:
   // List of ChromeOS system settings providers.
   std::vector<CrosSettingsProvider*> providers_;

@@ -4,11 +4,8 @@
 
 #include "chrome/browser/chromeos/login/signed_settings.h"
 
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
-#include "base/stringprintf.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
@@ -20,7 +17,6 @@
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "content/test/test_browser_thread.h"
-#include "crypto/rsa_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -84,19 +80,6 @@ class NormalDelegate : public DummyDelegate<T> {
   }
 };
 
-// Specialized version for Value objects because these compare differently.
-class PolicyDelegate : public DummyDelegate<const base::Value*> {
- public:
-  explicit PolicyDelegate(const base::Value* to_expect)
-      : DummyDelegate<const base::Value*>(to_expect) {}
-  virtual ~PolicyDelegate() {}
- protected:
-  virtual void compare_expected(const base::Value* to_compare) {
-    // without this-> this won't build.
-    EXPECT_TRUE(this->expected_->Equals(to_compare));
-  }
-};
-
 class ProtoDelegate : public DummyDelegate<const em::PolicyFetchResponse&> {
  public:
   explicit ProtoDelegate(const em::PolicyFetchResponse& e)
@@ -117,9 +100,7 @@ class ProtoDelegate : public DummyDelegate<const em::PolicyFetchResponse&> {
 class SignedSettingsTest : public testing::Test {
  public:
   SignedSettingsTest()
-      : fake_email_("fakey@example.com"),
-        fake_domain_("*@example.com"),
-        fake_prop_(kAccountsPrefAllowGuest),
+      : fake_prop_(kAccountsPrefAllowGuest),
         fake_signature_("false"),
         fake_value_(false),
         fake_value_signature_(
@@ -149,57 +130,6 @@ class SignedSettingsTest : public testing::Test {
     s->set_service(m);
   }
 
-  em::PolicyData BuildPolicyData(std::vector<std::string> whitelist) {
-    em::PolicyData to_return;
-    em::ChromeDeviceSettingsProto pol;
-    em::GuestModeEnabledProto* allow = pol.mutable_guest_mode_enabled();
-    allow->set_guest_mode_enabled(false);
-    pol.mutable_device_proxy_settings()->set_proxy_mode("direct");
-
-    if (!whitelist.empty()) {
-      em::UserWhitelistProto* whitelist_proto = pol.mutable_user_whitelist();
-      for (std::vector<std::string>::const_iterator it = whitelist.begin();
-           it != whitelist.end();
-           ++it) {
-        whitelist_proto->add_user_whitelist(*it);
-      }
-    }
-
-    to_return.set_policy_type(SignedSettings::kDevicePolicyType);
-    to_return.set_policy_value(pol.SerializeAsString());
-    return to_return;
-  }
-
-  void SetAllowNewUsers(bool desired, em::PolicyData* poldata) {
-    em::ChromeDeviceSettingsProto pol;
-    pol.ParseFromString(poldata->policy_value());
-    em::AllowNewUsersProto* allow = pol.mutable_allow_new_users();
-    allow->set_allow_new_users(desired);
-    poldata->set_policy_value(pol.SerializeAsString());
-  }
-
-  void FailingStorePropertyOp(const OwnerManager::KeyOpCode return_code) {
-    NormalDelegate<bool> d(false);
-    scoped_refptr<SignedSettings> s(
-        SignedSettings::CreateStorePropertyOp(fake_prop_, fake_value_, &d));
-    d.expect_failure(SignedSettings::MapKeyOpCode(return_code));
-
-    mock_service(s.get(), &m_);
-    EXPECT_CALL(m_, StartSigningAttempt(_, _))
-        .Times(1);
-    EXPECT_CALL(m_, GetStatus(_))
-        .WillOnce(Return(OwnershipService::OWNERSHIP_TAKEN));
-    EXPECT_CALL(m_, has_cached_policy())
-        .WillOnce(Return(true));
-    em::PolicyData fake_pol;
-    EXPECT_CALL(m_, cached_policy())
-        .WillOnce(ReturnRef(fake_pol));
-
-    s->Execute();
-    s->OnKeyOpComplete(return_code, std::vector<uint8>());
-    message_loop_.RunAllPending();
-  }
-
   void FailingStorePolicyOp(const OwnerManager::KeyOpCode return_code) {
     NormalDelegate<bool> d(false);
     d.expect_failure(SignedSettings::MapKeyOpCode(return_code));
@@ -221,6 +151,27 @@ class SignedSettingsTest : public testing::Test {
     message_loop_.RunAllPending();
   }
 
+  em::PolicyData BuildPolicyData(std::vector<std::string> whitelist) {
+    em::PolicyData to_return;
+    em::ChromeDeviceSettingsProto pol;
+    em::GuestModeEnabledProto* allow = pol.mutable_guest_mode_enabled();
+    allow->set_guest_mode_enabled(false);
+    pol.mutable_device_proxy_settings()->set_proxy_mode("direct");
+
+    if (!whitelist.empty()) {
+      em::UserWhitelistProto* whitelist_proto = pol.mutable_user_whitelist();
+      for (std::vector<std::string>::const_iterator it = whitelist.begin();
+           it != whitelist.end();
+           ++it) {
+        whitelist_proto->add_user_whitelist(*it);
+      }
+    }
+
+    to_return.set_policy_type(chromeos::kDevicePolicyType);
+    to_return.set_policy_value(pol.SerializeAsString());
+    return to_return;
+  }
+
   em::PolicyFetchResponse BuildProto(const std::string& data,
                                      const std::string& sig,
                                      std::string* out_serialized) {
@@ -233,43 +184,15 @@ class SignedSettingsTest : public testing::Test {
     return fake_policy;
   }
 
-  void DoRetrieveProperty(const std::string& name,
-                          const base::Value* value,
-                          em::PolicyData* fake_pol) {
-    PolicyDelegate d(value);
-    d.expect_success();
-    scoped_refptr<SignedSettings> s(
-        SignedSettings::CreateRetrievePropertyOp(name, &d));
-    mock_service(s.get(), &m_);
-    EXPECT_CALL(m_, GetStatus(_))
-        .WillOnce(Return(OwnershipService::OWNERSHIP_TAKEN));
-    EXPECT_CALL(m_, has_cached_policy())
-        .WillOnce(Return(true));
-
-    EXPECT_CALL(m_, cached_policy())
-        .WillOnce(ReturnRef(*fake_pol));
-
-    s->Execute();
-    message_loop_.RunAllPending();
-  }
-
-  const std::string fake_email_;
-  const std::string fake_domain_;
   const std::string fake_prop_;
   const std::string fake_signature_;
   const base::FundamentalValue fake_value_;
   const std::vector<uint8> fake_value_signature_;
   MockOwnershipService m_;
 
-  ScopedTempDir tmpdir_;
-  FilePath tmpfile_;
-
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
-
-  std::vector<uint8> fake_public_key_;
-  scoped_ptr<crypto::RSAPrivateKey> fake_private_key_;
 
   MockKeyUtils* mock_;
   MockInjector injector_;
@@ -280,156 +203,6 @@ class SignedSettingsTest : public testing::Test {
 
 ACTION_P(Retrieve, policy_blob) { arg0.Run(policy_blob); }
 ACTION_P(Store, success) { arg1.Run(success); }
-ACTION_P(FinishKeyOp, s) { arg2->OnKeyOpComplete(OwnerManager::SUCCESS, s); }
-
-TEST_F(SignedSettingsTest, StoreProperty) {
-  NormalDelegate<bool> d(true);
-  d.expect_success();
-  scoped_refptr<SignedSettings> s(
-      SignedSettings::CreateStorePropertyOp(fake_prop_, fake_value_, &d));
-
-  mock_service(s.get(), &m_);
-  EXPECT_CALL(m_, StartSigningAttempt(_, _))
-      .Times(1);
-  EXPECT_CALL(m_, GetStatus(_))
-      .WillOnce(Return(OwnershipService::OWNERSHIP_TAKEN));
-  EXPECT_CALL(m_, has_cached_policy())
-      .WillOnce(Return(true));
-  em::PolicyData in_pol =
-      BuildPolicyData(std::vector<std::string>(1, fake_email_));
-  EXPECT_CALL(m_, cached_policy())
-      .WillOnce(ReturnRef(in_pol));
-  em::PolicyData out_pol;
-  EXPECT_CALL(m_, set_cached_policy(A<const em::PolicyData&>()))
-      .WillOnce(SaveArg<0>(&out_pol));
-
-  MockSessionManagerClient* client =
-      mock_dbus_thread_manager_->mock_session_manager_client();
-  EXPECT_CALL(*client, StorePolicy(_, _))
-      .WillOnce(Store(true))
-      .RetiresOnSaturation();
-
-  s->Execute();
-  s->OnKeyOpComplete(OwnerManager::SUCCESS, std::vector<uint8>());
-  message_loop_.RunAllPending();
-
-  ASSERT_TRUE(out_pol.has_policy_value());
-  em::ChromeDeviceSettingsProto pol;
-  pol.ParseFromString(out_pol.policy_value());
-  ASSERT_TRUE(pol.has_guest_mode_enabled());
-  ASSERT_TRUE(pol.guest_mode_enabled().has_guest_mode_enabled());
-  ASSERT_FALSE(pol.guest_mode_enabled().guest_mode_enabled());
-}
-
-TEST_F(SignedSettingsTest, StorePropertyNoKey) {
-  FailingStorePropertyOp(OwnerManager::KEY_UNAVAILABLE);
-}
-
-TEST_F(SignedSettingsTest, StorePropertyFailed) {
-  FailingStorePropertyOp(OwnerManager::OPERATION_FAILED);
-}
-
-TEST_F(SignedSettingsTest, RetrieveProperty) {
-  em::PolicyData fake_pol = BuildPolicyData(std::vector<std::string>());
-  base::FundamentalValue fake_value(false);
-  DoRetrieveProperty(fake_prop_, &fake_value, &fake_pol);
-}
-
-TEST_F(SignedSettingsTest, RetrieveOwnerProperty) {
-  em::PolicyData fake_pol = BuildPolicyData(std::vector<std::string>());
-  fake_pol.set_username(fake_email_);
-  base::StringValue fake_value(fake_email_);
-  DoRetrieveProperty(kDeviceOwner, &fake_value, &fake_pol);
-}
-
-TEST_F(SignedSettingsTest, ExplicitlyAllowNewUsers) {
-  em::PolicyData fake_pol = BuildPolicyData(std::vector<std::string>());
-  SetAllowNewUsers(true, &fake_pol);
-  base::FundamentalValue fake_value(true);
-  DoRetrieveProperty(kAccountsPrefAllowNewUser, &fake_value, &fake_pol);
-}
-
-TEST_F(SignedSettingsTest, ExplicitlyDisallowNewUsers) {
-  std::vector<std::string> whitelist(1, fake_email_ + "m");
-  em::PolicyData fake_pol = BuildPolicyData(whitelist);
-  SetAllowNewUsers(false, &fake_pol);
-  base::FundamentalValue fake_value(false);
-  DoRetrieveProperty(kAccountsPrefAllowNewUser, &fake_value, &fake_pol);
-}
-
-TEST_F(SignedSettingsTest, ImplicitlyDisallowNewUsers) {
-  std::vector<std::string> whitelist(1, fake_email_ + "m");
-  em::PolicyData fake_pol = BuildPolicyData(whitelist);
-  base::FundamentalValue fake_value(false);
-  DoRetrieveProperty(kAccountsPrefAllowNewUser, &fake_value, &fake_pol);
-}
-
-TEST_F(SignedSettingsTest, AccidentallyDisallowNewUsers) {
-  em::PolicyData fake_pol = BuildPolicyData(std::vector<std::string>());
-  SetAllowNewUsers(false, &fake_pol);
-  base::FundamentalValue fake_value(true);
-  DoRetrieveProperty(kAccountsPrefAllowNewUser, &fake_value, &fake_pol);
-}
-
-TEST_F(SignedSettingsTest, RetrievePropertyNotFound) {
-  PolicyDelegate d(&fake_value_);
-  d.expect_failure(SignedSettings::NOT_FOUND);
-  scoped_refptr<SignedSettings> s(
-      SignedSettings::CreateRetrievePropertyOp("unknown_prop", &d));
-  mock_service(s.get(), &m_);
-  EXPECT_CALL(m_, GetStatus(_))
-      .WillOnce(Return(OwnershipService::OWNERSHIP_TAKEN));
-  EXPECT_CALL(m_, has_cached_policy())
-      .WillOnce(Return(true));
-
-  em::PolicyData fake_pol = BuildPolicyData(std::vector<std::string>());
-  EXPECT_CALL(m_, cached_policy())
-      .WillOnce(ReturnRef(fake_pol));
-
-  s->Execute();
-  message_loop_.RunAllPending();
-}
-
-TEST_F(SignedSettingsTest, RetrievePolicyToRetrieveProperty) {
-  base::FundamentalValue fake_value(false);
-  PolicyDelegate d(&fake_value);
-  d.expect_success();
-  scoped_refptr<SignedSettings> s(
-      SignedSettings::CreateRetrievePropertyOp(fake_prop_, &d));
-
-  em::PolicyData fake_pol = BuildPolicyData(std::vector<std::string>());
-  std::string data = fake_pol.SerializeAsString();
-  std::string signed_serialized;
-  em::PolicyFetchResponse signed_policy = BuildProto(data,
-                                                     fake_signature_,
-                                                     &signed_serialized);
-  MockSessionManagerClient* client =
-      mock_dbus_thread_manager_->mock_session_manager_client();
-  EXPECT_CALL(*client, RetrievePolicy(_))
-      .WillOnce(Retrieve(signed_serialized))
-      .RetiresOnSaturation();
-
-  mock_service(s.get(), &m_);
-
-  EXPECT_CALL(m_, GetStatus(_))
-      .WillOnce(Return(OwnershipService::OWNERSHIP_TAKEN))
-      .WillOnce(Return(OwnershipService::OWNERSHIP_TAKEN));
-  EXPECT_CALL(m_, has_cached_policy())
-      .WillOnce(Return(false))
-      .WillOnce(Return(true));
-  em::PolicyData out_pol;
-  EXPECT_CALL(m_, set_cached_policy(A<const em::PolicyData&>()))
-      .WillOnce(SaveArg<0>(&out_pol));
-  EXPECT_CALL(m_, cached_policy())
-      .WillOnce(ReturnRef(out_pol));
-
-  EXPECT_CALL(m_, StartVerifyAttempt(data, fake_value_signature_, _))
-      .WillOnce(FinishKeyOp(fake_value_signature_))
-      .RetiresOnSaturation();
-
-  s->Execute();
-  message_loop_.RunAllPending();
-}
 
 TEST_F(SignedSettingsTest, SignAndStorePolicy) {
   NormalDelegate<bool> d(true);
@@ -448,8 +221,6 @@ TEST_F(SignedSettingsTest, SignAndStorePolicy) {
   EXPECT_CALL(m_, StartSigningAttempt(StrEq(data_serialized), _))
       .Times(1);
   em::PolicyData out_pol;
-  EXPECT_CALL(m_, set_cached_policy(A<const em::PolicyData&>()))
-      .WillOnce(SaveArg<0>(&out_pol));
 
   // Ask for signature over unsigned policy.
   s->Execute();
@@ -489,8 +260,6 @@ TEST_F(SignedSettingsTest, StoreSignedPolicy) {
 
   mock_service(s.get(), &m_);
   em::PolicyData out_pol;
-  EXPECT_CALL(m_, set_cached_policy(A<const em::PolicyData&>()))
-      .WillOnce(SaveArg<0>(&out_pol));
 
   s->Execute();
   message_loop_.RunAllPending();
@@ -540,8 +309,6 @@ TEST_F(SignedSettingsTest, RetrievePolicy) {
   EXPECT_CALL(m_, StartVerifyAttempt(serialized, fake_value_signature_, _))
       .Times(1);
   em::PolicyData out_pol;
-  EXPECT_CALL(m_, set_cached_policy(A<const em::PolicyData&>()))
-      .WillOnce(SaveArg<0>(&out_pol));
 
   s->Execute();
   message_loop_.RunAllPending();

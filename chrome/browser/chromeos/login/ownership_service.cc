@@ -30,7 +30,6 @@ OwnershipService* OwnershipService::GetSharedInstance() {
 OwnershipService::OwnershipService()
     : manager_(new OwnerManager),
       utils_(OwnerKeyUtils::Create()),
-      policy_(NULL),
       ownership_status_(OWNERSHIP_UNKNOWN) {
   notification_registrar_.Add(
       this,
@@ -55,19 +54,6 @@ void OwnershipService::Prewarm() {
     // DISABLE_RUNNABLE_METHOD_REFCOUNT.  So avoid posting task in those
     // circumstances in order to avoid accessing already deleted object.
   }
-}
-
-void OwnershipService::set_cached_policy(const em::PolicyData& pol) {
-  policy_.reset(pol.New());
-  policy_->CheckTypeAndMergeFrom(pol);
-}
-
-bool OwnershipService::has_cached_policy() {
-  return policy_.get();
-}
-
-const em::PolicyData& OwnershipService::cached_policy() {
-  return *(policy_.get());
 }
 
 bool OwnershipService::IsAlreadyOwned() {

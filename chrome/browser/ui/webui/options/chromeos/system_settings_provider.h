@@ -30,8 +30,9 @@ class SystemSettingsProvider : public CrosSettingsProvider,
   // CrosSettingsProvider overrides.
   virtual const base::Value* Get(const std::string& path) const OVERRIDE;
   virtual bool GetTrusted(const std::string& path,
-                          const base::Closure& callback) const OVERRIDE;
+                          const base::Closure& callback) OVERRIDE;
   virtual bool HandlesSetting(const std::string& path) const OVERRIDE;
+  virtual void Reload() OVERRIDE;
 
   // Overridden from TimezoneSettings::Observer:
   virtual void TimezoneChanged(const icu::TimeZone& timezone) OVERRIDE;
@@ -64,8 +65,8 @@ class SystemSettingsProvider : public CrosSettingsProvider,
 
   // Timezones.
   std::vector<icu::TimeZone*> timezones_;
-  // TODO(pastarmovj): This will be cached in the local_state PrefStore soon.
-  mutable scoped_ptr<base::StringValue> system_timezone_;
+
+  scoped_ptr<base::Value> timezone_value_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemSettingsProvider);
 };

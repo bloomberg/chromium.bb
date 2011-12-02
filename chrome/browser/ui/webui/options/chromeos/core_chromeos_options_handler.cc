@@ -44,9 +44,9 @@ base::Value* CreateSettingsValue(base::Value *value,
 // This function decorates the bare list of emails with some more information
 // needed by the UI to properly display the Accounts page.
 base::Value* CreateUsersWhitelist(const base::Value *pref_value) {
-  const base::ListValue *list_value =
+  const base::ListValue* list_value =
       static_cast<const base::ListValue*>(pref_value);
-  base::ListValue *user_list = new base::ListValue();
+  base::ListValue* user_list = new base::ListValue();
 
   const User& self = UserManager::Get()->logged_in_user();
   bool is_owner = UserManager::Get()->current_user_is_owner();
@@ -118,8 +118,7 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
     return ::CoreOptionsHandler::FetchPref(pref_name);
   }
 
-  const base::Value* pref_value =
-      CrosSettings::Get()->GetPref(pref_name);
+  const base::Value* pref_value = CrosSettings::Get()->GetPref(pref_name);
   if (!pref_value)
     return base::Value::CreateNullValue();
 
@@ -127,11 +126,12 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
   if (pref_value->GetType() == base::Value::TYPE_LIST) {
     if (pref_name == kAccountsPrefUsers)
       return CreateUsersWhitelist(pref_value);
+    // Return a copy because the UI will take ownership of this object.
     return pref_value->DeepCopy();
   }
   // All other prefs are decorated the same way.
   return CreateSettingsValue(
-      pref_value->DeepCopy(),
+      pref_value->DeepCopy(),  // The copy will be owned by the dictionary.
       g_browser_process->browser_policy_connector()->IsEnterpriseManaged(),
       !UserManager::Get()->current_user_is_owner());
 }
@@ -204,7 +204,7 @@ void CoreChromeOSOptionsHandler::NotifySettingsChanged(
     const std::string* setting_name) {
   DCHECK(web_ui_);
   DCHECK(CrosSettings::Get()->IsCrosSettings(*setting_name));
-  const base::Value* value = CrosSettings::Get()->GetPref(*setting_name);
+  const base::Value* value = FetchPref(*setting_name);
   if (!value) {
     NOTREACHED();
     return;

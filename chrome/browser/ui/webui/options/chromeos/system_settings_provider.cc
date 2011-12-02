@@ -189,7 +189,8 @@ SystemSettingsProvider::SystemSettingsProvider() {
         icu::UnicodeString(kTimeZones[i], -1, US_INV)));
   }
   system::TimezoneSettings::GetInstance()->AddObserver(this);
-
+  timezone_value_.reset(base::Value::CreateStringValue(GetKnownTimezoneID(
+      system::TimezoneSettings::GetInstance()->GetTimezone())));
 }
 
 SystemSettingsProvider::~SystemSettingsProvider() {
@@ -211,22 +212,20 @@ void SystemSettingsProvider::DoSet(const std::string& path,
     if (!timezone)
       return;
     system::TimezoneSettings::GetInstance()->SetTimezone(*timezone);
+    timezone_value_.reset(
+        base::Value::CreateStringValue(GetKnownTimezoneID(*timezone)));
   }
 }
 
 const base::Value* SystemSettingsProvider::Get(const std::string& path) const {
-  if (path == kSystemTimezone) {
-    // TODO(pastarmovj): Cache this in the local_state instead of locally.
-    system_timezone_.reset(base::Value::CreateStringValue(GetKnownTimezoneID(
-        system::TimezoneSettings::GetInstance()->GetTimezone())));
-    return system_timezone_.get();
-  }
+  if (path == kSystemTimezone)
+    return timezone_value_.get();
   return NULL;
 }
 
 // The timezone is always trusted.
 bool SystemSettingsProvider::GetTrusted(const std::string& path,
-                                        const base::Closure& callback) const {
+                                        const base::Closure& callback) {
   return true;
 }
 
@@ -234,8 +233,15 @@ bool SystemSettingsProvider::HandlesSetting(const std::string& path) const {
   return path == kSystemTimezone;
 }
 
+void SystemSettingsProvider::Reload() {
+  // TODO(pastarmovj): We can actually cache the timezone here to make returning
+  // it faster.
+}
+
 void SystemSettingsProvider::TimezoneChanged(const icu::TimeZone& timezone) {
   // Fires system setting change notification.
+  timezone_value_.reset(
+      base::Value::CreateStringValue(GetKnownTimezoneID(timezone)));
   CrosSettings::Get()->FireObservers(kSystemTimezone);
 }
 

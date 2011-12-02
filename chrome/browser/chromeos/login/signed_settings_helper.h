@@ -26,45 +26,19 @@ class SignedSettings;
 // and handle callbacks destruction before ops completion.
 class SignedSettingsHelper {
  public:
-  class Callback {
-   public:
-    // Callback of StorePropertyOp.
-    virtual void OnStorePropertyCompleted(
-        SignedSettings::ReturnCode code,
-        const std::string& name,
-        const base::Value& value) {}
-
-    // Callback of RetrievePropertyOp.
-    virtual void OnRetrievePropertyCompleted(
-        SignedSettings::ReturnCode code,
-        const std::string& name,
-        const base::Value* value) {}
-
-    // Callback of StorePolicyOp.
-    virtual void OnStorePolicyCompleted(
-        SignedSettings::ReturnCode code) {}
-
-    // Callback of RetrievePolicyOp.
-    virtual void OnRetrievePolicyCompleted(
-        SignedSettings::ReturnCode code,
-        const em::PolicyFetchResponse& policy) {}
-  };
+  typedef base::Callback<void(SignedSettings::ReturnCode)> StorePolicyCallback;
+  typedef base::Callback<void(SignedSettings::ReturnCode,
+      const em::PolicyFetchResponse&)> RetrievePolicyCallback;
 
   // Class factory
   static SignedSettingsHelper* Get();
 
   // Functions to start signed settings ops.
-  virtual void StartStorePropertyOp(const std::string& name,
-                                    const base::Value& value,
-                                    Callback* callback) = 0;
-  virtual void StartRetrieveProperty(const std::string& name,
-                                     Callback* callback) = 0;
-  virtual void StartStorePolicyOp(const em::PolicyFetchResponse& policy,
-                                  Callback* callback) = 0;
-  virtual void StartRetrievePolicyOp(Callback* callback) = 0;
-
-  // Cancels all pending calls of given callback.
-  virtual void CancelCallback(Callback* callback) = 0;
+  virtual void StartStorePolicyOp(
+      const em::PolicyFetchResponse& policy,
+      StorePolicyCallback callback) = 0;
+  virtual void StartRetrievePolicyOp(
+      RetrievePolicyCallback callback) = 0;
 
   class TestDelegate {
    public:

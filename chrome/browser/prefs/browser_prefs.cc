@@ -82,14 +82,13 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/audio_mixer_alsa.h"
 #include "chrome/browser/chromeos/customization_document.h"
-#include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
+#include "chrome/browser/chromeos/login/signed_settings_cache.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/status/input_method_menu.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
-#include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #else
 #include "chrome/browser/extensions/default_apps.h"
 #endif
@@ -135,11 +134,10 @@ void RegisterLocalState(PrefService* local_state) {
 #if defined(OS_CHROMEOS)
   chromeos::AudioMixerAlsa::RegisterPrefs(local_state);
   chromeos::UserManager::RegisterPrefs(local_state);
-  chromeos::UserCrosSettingsProvider::RegisterPrefs(local_state);
   chromeos::WizardController::RegisterPrefs(local_state);
   chromeos::InputMethodMenu::RegisterPrefs(local_state);
   chromeos::ServicesCustomizationDocument::RegisterPrefs(local_state);
-  chromeos::SignedSettingsTempStorage::RegisterPrefs(local_state);
+  chromeos::signed_settings_cache::RegisterPrefs(local_state);
   chromeos::NetworkMenuButton::RegisterPrefs(local_state);
   chromeos::ProxyConfigServiceImpl::RegisterPrefs(local_state);
 #endif

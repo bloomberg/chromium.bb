@@ -15,10 +15,11 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/update_engine_client.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
-#include "chrome/browser/chromeos/user_cros_settings_provider.h"
+#include "chrome/browser/chromeos/login/signed_settings_helper.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
@@ -32,8 +33,7 @@ namespace {
 
 // Stores policy, updates the owner key if required and reports the status
 // through a callback.
-class StorePolicyOperation : public chromeos::SignedSettingsHelper::Callback,
-                             public chromeos::OwnerManager::KeyUpdateDelegate {
+class StorePolicyOperation : public chromeos::OwnerManager::KeyUpdateDelegate {
  public:
   typedef base::Callback<void(chromeos::SignedSettings::ReturnCode)> Callback;
 
@@ -42,16 +42,17 @@ class StorePolicyOperation : public chromeos::SignedSettingsHelper::Callback,
                        const Callback& callback)
       : signed_settings_helper_(signed_settings_helper),
         policy_(policy),
-        callback_(callback) {
-    signed_settings_helper_->StartStorePolicyOp(policy, this);
+        callback_(callback),
+        weak_ptr_factory_(this) {
+    signed_settings_helper_->StartStorePolicyOp(
+        policy,
+        base::Bind(&StorePolicyOperation::OnStorePolicyCompleted,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
   virtual ~StorePolicyOperation() {
-    signed_settings_helper_->CancelCallback(this);
   }
 
-  // SignedSettingsHelper implementation:
-  virtual void OnStorePolicyCompleted(
-      chromeos::SignedSettings::ReturnCode code) OVERRIDE {
+  void OnStorePolicyCompleted(chromeos::SignedSettings::ReturnCode code) {
     if (code != chromeos::SignedSettings::SUCCESS) {
       callback_.Run(code);
       delete this;
@@ -68,7 +69,7 @@ class StorePolicyOperation : public chromeos::SignedSettingsHelper::Callback,
           new_key_data, this);
       return;
     } else {
-      UpdateUserCrosSettings();
+      chromeos::CrosSettings::Get()->ReloadProviders();
       callback_.Run(chromeos::SignedSettings::SUCCESS);
       delete this;
       return;
@@ -77,22 +78,18 @@ class StorePolicyOperation : public chromeos::SignedSettingsHelper::Callback,
 
   // OwnerManager::KeyUpdateDelegate implementation:
   virtual void OnKeyUpdated() OVERRIDE {
-    UpdateUserCrosSettings();
+    chromeos::CrosSettings::Get()->ReloadProviders();
     callback_.Run(chromeos::SignedSettings::SUCCESS);
     delete this;
   }
 
  private:
-  void UpdateUserCrosSettings() {
-    // TODO(mnissler): Find a better way. This is a hack that updates the
-    // UserCrosSettingsProvider's cache, since it is unable to notice we've
-    // updated policy information.
-    chromeos::UserCrosSettingsProvider().Reload();
-  }
 
   chromeos::SignedSettingsHelper* signed_settings_helper_;
   em::PolicyFetchResponse policy_;
   Callback callback_;
+
+  base::WeakPtrFactory<StorePolicyOperation> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(StorePolicyOperation);
 };
@@ -134,11 +131,12 @@ DevicePolicyCache::DevicePolicyCache(
 }
 
 DevicePolicyCache::~DevicePolicyCache() {
-  signed_settings_helper_->CancelCallback(this);
 }
 
 void DevicePolicyCache::Load() {
-  signed_settings_helper_->StartRetrievePolicyOp(this);
+  signed_settings_helper_->StartRetrievePolicyOp(
+      base::Bind(&DevicePolicyCache::OnRetrievePolicyCompleted,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
@@ -258,7 +256,9 @@ void DevicePolicyCache::PolicyStoreOpCompleted(
   }
   UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyStoreSucceeded,
                             kMetricPolicySize);
-  signed_settings_helper_->StartRetrievePolicyOp(this);
+  signed_settings_helper_->StartRetrievePolicyOp(
+      base::Bind(&DevicePolicyCache::OnRetrievePolicyCompleted,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DevicePolicyCache::InstallInitialPolicy(

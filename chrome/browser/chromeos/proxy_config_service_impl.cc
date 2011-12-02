@@ -6,10 +6,12 @@
 
 #include <ostream>
 
+#include "base/bind.h"
 #include "base/json/json_value_serializer.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
@@ -352,7 +354,8 @@ void ProxyConfigServiceImpl::ProxyConfig::EncodeAndAppendProxyServer(
 
 ProxyConfigServiceImpl::ProxyConfigServiceImpl(PrefService* pref_service)
     : PrefProxyConfigTrackerImpl(pref_service),
-      active_config_state_(ProxyPrefs::CONFIG_UNSET) {
+      active_config_state_(ProxyPrefs::CONFIG_UNSET),
+      pointer_factory_(this) {
 
   // Register for notification when user logs in, so that we can activate the
   // new proxy config.
@@ -363,16 +366,11 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl(PrefService* pref_service)
   if (pref_service->FindPreference(prefs::kUseSharedProxies))
     use_shared_proxies_.Init(prefs::kUseSharedProxies, pref_service, this);
 
-  // Start async fetch of proxy config from settings persisted on device.
-  if (CrosLibrary::Get()->libcros_loaded()) {
-    retrieve_property_op_ = SignedSettings::CreateRetrievePropertyOp(
-        kSettingProxyEverywhere, this);
-    if (retrieve_property_op_) {
-      retrieve_property_op_->Execute();
-      VLOG(1) << this << ": Start retrieving proxy setting from device";
-    } else {
-      VLOG(1) << this << ": Fail to retrieve proxy setting from device";
-    }
+  if (CrosSettings::Get()->GetTrusted(
+          kSettingProxyEverywhere,
+          base::Bind(&ProxyConfigServiceImpl::FetchProxyPolicy,
+                     pointer_factory_.GetWeakPtr()))) {
+    FetchProxyPolicy();
   }
 
   // Register for flimflam network notifications.
@@ -522,32 +520,6 @@ void ProxyConfigServiceImpl::OnProxyConfigChanged(
       LOG(ERROR) << "can't find requested network " << active_network_;
   }
   DetermineEffectiveConfig(network, true);
-}
-
-void ProxyConfigServiceImpl::OnSettingsOpCompleted(
-    SignedSettings::ReturnCode code,
-    const base::Value* value) {
-  retrieve_property_op_ = NULL;
-  if (code != SignedSettings::SUCCESS) {
-    LOG(WARNING) << this << ": Error retrieving proxy setting from device";
-    device_config_.clear();
-    return;
-  }
-  std::string policy_value;
-  value->GetAsString(&policy_value);
-  VLOG(1) << "Retrieved proxy setting from device, value=["
-          << policy_value << "]";
-  ProxyConfig device_config;
-  if (!device_config.DeserializeForDevice(policy_value) ||
-      !device_config.SerializeForNetwork(&device_config_)) {
-    LOG(WARNING) << "Can't deserialize device setting or serialize for network";
-    device_config_.clear();
-    return;
-  }
-  if (!active_network_.empty()) {
-    VLOG(1) << this << ": try migrating device config to " << active_network_;
-    SetProxyConfigForNetwork(active_network_, device_config_, true);
-  }
 }
 
 void ProxyConfigServiceImpl::OnNetworkManagerChanged(
@@ -817,6 +789,30 @@ void ProxyConfigServiceImpl::OnUISetCurrentNetwork(const Network* network) {
 void ProxyConfigServiceImpl::ResetUICache() {
   current_ui_network_.clear();
   current_ui_config_ = ProxyConfig();
+}
+
+void ProxyConfigServiceImpl::FetchProxyPolicy() {
+  std::string policy_value;
+  if (!CrosSettings::Get()->GetString(kSettingProxyEverywhere,
+                                      &policy_value)) {
+    LOG(WARNING) << this << ": Error retrieving proxy setting from device";
+    device_config_.clear();
+    return;
+  }
+
+  VLOG(1) << "Retrieved proxy setting from device, value=["
+          << policy_value << "]";
+  ProxyConfig device_config;
+  if (!device_config.DeserializeForDevice(policy_value) ||
+      !device_config.SerializeForNetwork(&device_config_)) {
+    LOG(WARNING) << "Can't deserialize device setting or serialize for network";
+    device_config_.clear();
+    return;
+  }
+  if (!active_network_.empty()) {
+    VLOG(1) << this << ": try migrating device config to " << active_network_;
+    SetProxyConfigForNetwork(active_network_, device_config_, true);
+  }
 }
 
 }  // namespace chromeos

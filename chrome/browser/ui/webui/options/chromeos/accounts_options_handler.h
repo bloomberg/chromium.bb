@@ -11,8 +11,6 @@
 
 namespace chromeos {
 
-class UserCrosSettingsProvider;
-
 // ChromeOS accounts options page handler.
 class AccountsOptionsHandler : public OptionsPageUIHandler {
  public:
