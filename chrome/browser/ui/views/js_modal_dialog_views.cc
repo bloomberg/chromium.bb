@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/js_modal_dialog_views.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
+#include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/views/window.h"
 #include "grit/generated_resources.h"
@@ -100,7 +100,6 @@ void JSModalDialogViews::WindowClosing() {
 }
 
 void JSModalDialogViews::DeleteDelegate() {
-  delete parent_;
   delete this;
 }
 

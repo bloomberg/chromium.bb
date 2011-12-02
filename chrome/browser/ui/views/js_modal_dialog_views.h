@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_JS_MODAL_DIALOG_VIEWS_H_
 #pragma once
 
-#include <string>
-
-#include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "ui/views/window/dialog_delegate.h"
+
+class JavaScriptAppModalDialog;
 
 namespace views {
 class MessageBoxView;
@@ -50,7 +50,7 @@ class JSModalDialogViews : public NativeAppModalDialog,
 
  private:
   // A pointer to the AppModalDialog that owns us.
-  JavaScriptAppModalDialog* parent_;
+  scoped_ptr<JavaScriptAppModalDialog> parent_;
 
   // The message box view whose commands we handle.
   views::MessageBoxView* message_box_view_;
