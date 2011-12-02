@@ -205,6 +205,17 @@
         'gles2_book/demo_texture_wrap.cc',
       ],
     },
+    {
+      'target_name': 'compressed_textures_exe',
+      'type': 'executable',
+      'dependencies': [
+        'gpu_demo_framework_exe',
+        '../../third_party/gles2_book/gles2_book.gyp:es_util',
+      ],
+      'sources': [
+        'compressed_textures/compressed_textures.cc',
+      ],
+    },
   ],
   'conditions': [
     ['enable_pepper_demos==1', {
