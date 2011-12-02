@@ -14,9 +14,11 @@
 SdchDictionaryFetcher::SdchDictionaryFetcher()
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       task_is_pending_(false) {
+  DCHECK(CalledOnValidThread());
 }
 
 SdchDictionaryFetcher::~SdchDictionaryFetcher() {
+  DCHECK(CalledOnValidThread());
 }
 
 // static
@@ -25,6 +27,8 @@ void SdchDictionaryFetcher::Shutdown() {
 }
 
 void SdchDictionaryFetcher::Schedule(const GURL& dictionary_url) {
+  DCHECK(CalledOnValidThread());
+
   // Avoid pushing duplicate copy onto queue.  We may fetch this url again later
   // and get a different dictionary, but there is no reason to have it in the
   // queue twice at one time.

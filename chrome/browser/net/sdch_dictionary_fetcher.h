@@ -16,11 +16,14 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
+#include "base/threading/non_thread_safe.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "net/base/sdch_manager.h"
 
-class SdchDictionaryFetcher : public content::URLFetcherDelegate,
-                              public net::SdchFetcher {
+class SdchDictionaryFetcher
+    : public content::URLFetcherDelegate,
+      public net::SdchFetcher,
+      public base::NonThreadSafe {
  public:
   SdchDictionaryFetcher();
   virtual ~SdchDictionaryFetcher();

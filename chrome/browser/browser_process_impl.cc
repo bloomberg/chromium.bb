@@ -184,7 +184,8 @@ void BrowserProcessImpl::StartTearDown() {
   // a pointer to a URLFetcher, and that URLFetcher (upon destruction) will do
   // a PostDelayedTask onto the IO thread.  This shutdown call will both discard
   // any pending URLFetchers, and avoid creating any more.
-  SdchDictionaryFetcher::Shutdown();
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&SdchDictionaryFetcher::Shutdown));
 
   // We need to destroy the MetricsService, GoogleURLTracker,
   // IntranetRedirectDetector, and SafeBrowsing ClientSideDetectionService
