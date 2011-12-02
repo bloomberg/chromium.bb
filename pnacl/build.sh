@@ -240,13 +240,13 @@ else
 fi
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-8feaf6ae3e50}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-dc86ec95d15e}
 
 readonly NEWLIB_REV=c6358617f3fd
 readonly BINUTILS_REV=fb93e69d9948
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 
-readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-144909}
+readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-145642}
 readonly LLVM_MASTER_REV=${LLVM_PROJECT_REV}
 readonly CLANG_REV=${LLVM_PROJECT_REV}
 readonly DRAGONEGG_REV=${LLVM_PROJECT_REV}
