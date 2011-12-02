@@ -11,12 +11,3 @@
 BUGCR105025 MAC CPU GPU : fast/canvas/webgl/css-webkit-canvas.html = IMAGE 
 BUGCR105025 MAC CPU GPU : fast/canvas/webgl/css-webkit-canvas-repaint.html = IMAGE
 
-// 2011-12-01 Suppress temporarily to land webkit 101681
-BUG_GARDENER : inspector/elements/dom-agent-query-selector.html = TIMEOUT
-BUG_GARDENER : inspector/elements/insert-node.html = CRASH
-BUG_GARDENER : inspector/elements/remove-node.html = TIMEOUT
-BUG_GARDENER : inspector/styles/get-set-stylesheet-text.html = CRASH
-BUG_GARDENER : inspector/styles/styles-iframe.html = TIMEOUT
-BUG_GARDENER : inspector/styles/styles-new-API.html = TIMEOUT
-BUG_GARDENER : inspector/styles/styles-url-linkify.html = TIMEOUT
-BUG_GARDENER : inspector/timeline/timeline-receive-response-event.html = TEXT
