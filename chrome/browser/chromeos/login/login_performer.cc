@@ -14,10 +14,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -367,7 +367,7 @@ void LoginPerformer::RequestScreenLock() {
     ResolveScreenLocked();
   } else {
     screen_lock_requested_ = true;
-    DBusThreadManager::Get()->GetPowerManagerClient()->
+    chromeos::CrosLibrary::Get()->GetScreenLockLibrary()->
         NotifyScreenLockRequested();
   }
 }
@@ -375,7 +375,7 @@ void LoginPerformer::RequestScreenLock() {
 void LoginPerformer::RequestScreenUnlock() {
   DVLOG(1) << "Screen unlock requested";
   if (ScreenLocker::default_screen_locker()) {
-    DBusThreadManager::Get()->GetPowerManagerClient()->
+    chromeos::CrosLibrary::Get()->GetScreenLockLibrary()->
         NotifyScreenUnlockRequested();
     // Will unsubscribe from notifications once unlock is successful.
   } else {

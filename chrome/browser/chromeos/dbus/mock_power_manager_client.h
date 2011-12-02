@@ -25,10 +25,6 @@ class MockPowerManagerClient : public PowerManagerClient {
   MOCK_METHOD0(RequestRestart, void(void));
   MOCK_METHOD0(RequestShutdown, void(void));
   MOCK_METHOD1(CalculateIdleTime, void(const CalculateIdleTimeCallback&));
-  MOCK_METHOD0(NotifyScreenLockRequested, void(void));
-  MOCK_METHOD0(NotifyScreenLockCompleted, void(void));
-  MOCK_METHOD0(NotifyScreenUnlockRequested, void(void));
-  MOCK_METHOD0(NotifyScreenUnlockCompleted, void(void));
 };
 
 }  // namespace chromeos

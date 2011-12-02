@@ -25,16 +25,10 @@ void ChromeBrowserMainExtraParts::PostMainMessageLoopStart() {
 void ChromeBrowserMainExtraParts::ToolkitInitialized() {
 }
 
-void ChromeBrowserMainExtraParts::PreProfileInit() {
+void ChromeBrowserMainExtraParts::PostBrowserProcessInit() {
 }
 
-void ChromeBrowserMainExtraParts::PostProfileInit() {
-}
-
-void ChromeBrowserMainExtraParts::PreBrowserStart() {
-}
-
-void ChromeBrowserMainExtraParts::PostBrowserStart() {
+void ChromeBrowserMainExtraParts::PostProfileInitialized() {
 }
 
 void ChromeBrowserMainExtraParts::PreMainMessageLoopRun() {

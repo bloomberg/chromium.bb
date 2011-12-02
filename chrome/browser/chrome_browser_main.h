@@ -56,9 +56,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
       const content::MainFunctionParams& parameters);
 
   // content::BrowserMainParts overrides.
-  // These are called in-order by content::BrowserMainLoop.
-  // Each stage calls the same stages in any ChromeBrowserMainExtraParts added
-  // with AddParts() from ChromeContentBrowserClient::CreateBrowserMainParts.
   virtual void PreEarlyInitialization() OVERRIDE;
   virtual void PostEarlyInitialization() OVERRIDE;
   virtual void ToolkitInitialized() OVERRIDE;
@@ -74,13 +71,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   virtual void PostStopThread(content::BrowserThread::ID identifier) OVERRIDE;
   virtual void PostDestroyThreads() OVERRIDE;
 
-  // Additional stages for ChromeBrowserMainExtraParts. These stages are called
-  // in order from PreMainMessageLoopStart(). See implementation for details.
-  virtual void PreProfileInit();
-  virtual void PostProfileInit();
-  virtual void PreBrowserStart();
-  virtual void PostBrowserStart();
-
   // Displays a warning message that we can't find any locale data files.
   virtual void ShowMissingLocaleMessageBox() = 0;
 
@@ -92,7 +82,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   }
 
   Profile* profile() { return profile_; }
-  MetricsService* metrics() { return metrics_; }
 
  private:
   // Methods for |EarlyInitialization()| ---------------------------------------

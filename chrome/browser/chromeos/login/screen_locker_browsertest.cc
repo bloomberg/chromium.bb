@@ -7,7 +7,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
-#include "chrome/browser/chromeos/dbus/mock_power_manager_client.h"
+#include "chrome/browser/chromeos/cros/mock_screen_lock_library.h"
 #include "chrome/browser/chromeos/login/mock_authenticator.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/screen_locker_tester.h"
@@ -97,19 +97,19 @@ namespace chromeos {
 
 class ScreenLockerTest : public CrosInProcessBrowserTest {
  public:
-  ScreenLockerTest() {
+  ScreenLockerTest() : mock_screen_lock_library_(NULL) {
   }
 
  protected:
-  MockPowerManagerClient mock_power_manager_client_;
+  MockScreenLockLibrary *mock_screen_lock_library_;
 
   // Test the no password mode with different unlock scheme given by
   // |unlock| function.
   void TestNoPassword(void (unlock)(views::Widget*)) {
-    EXPECT_CALL(mock_power_manager_client_, NotifyScreenUnlockRequested())
+    EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenUnlockRequested())
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(mock_power_manager_client_, NotifyScreenLockCompleted())
+    EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenLockCompleted())
         .Times(1)
         .RetiresOnSaturation();
     UserManager::Get()->GuestUserLoggedIn();
@@ -151,10 +151,12 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
  private:
   virtual void SetUpInProcessBrowserTestFixture() {
     cros_mock_->InitStatusAreaMocks();
-    EXPECT_CALL(mock_power_manager_client_, AddObserver(testing::_))
+    cros_mock_->InitMockScreenLockLibrary();
+    mock_screen_lock_library_ = cros_mock_->mock_screen_lock_library();
+    EXPECT_CALL(*mock_screen_lock_library_, AddObserver(testing::_))
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(mock_power_manager_client_, NotifyScreenUnlockCompleted())
+    EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenUnlockCompleted())
         .Times(1)
         .RetiresOnSaturation();
     // Expectations for the status are on the screen lock window.
@@ -174,10 +176,10 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
 // Temporarily disabling all screen locker tests while investigating the
 // issue crbug.com/78764.
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestBasic) {
-  EXPECT_CALL(mock_power_manager_client_, NotifyScreenUnlockRequested())
+  EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenUnlockRequested())
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(mock_power_manager_client_, NotifyScreenLockCompleted())
+  EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenLockCompleted())
       .Times(1)
       .RetiresOnSaturation();
   UserManager::Get()->UserLoggedIn("user");
@@ -215,10 +217,10 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestBasic) {
 }
 
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestFullscreenExit) {
-  EXPECT_CALL(mock_power_manager_client_, NotifyScreenUnlockRequested())
+  EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenUnlockRequested())
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(mock_power_manager_client_, NotifyScreenLockCompleted())
+  EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenLockCompleted())
       .Times(1)
       .RetiresOnSaturation();
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
@@ -274,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestNoPasswordWithKeyPress) {
 }
 
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestShowTwice) {
-  EXPECT_CALL(mock_power_manager_client_, NotifyScreenLockCompleted())
+  EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenLockCompleted())
       .Times(2)
       .RetiresOnSaturation();
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
@@ -294,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestShowTwice) {
 }
 
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestEscape) {
-  EXPECT_CALL(mock_power_manager_client_, NotifyScreenLockCompleted())
+  EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenLockCompleted())
       .Times(1)
       .RetiresOnSaturation();
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());

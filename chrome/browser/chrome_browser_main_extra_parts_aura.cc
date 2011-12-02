@@ -16,7 +16,7 @@ ChromeBrowserMainExtraPartsAura::ChromeBrowserMainExtraPartsAura()
     : ChromeBrowserMainExtraParts() {
 }
 
-void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
+void ChromeBrowserMainExtraPartsAura::PostBrowserProcessInit() {
 #if defined(OS_CHROMEOS)
   if (chromeos::system::runtime_environment::IsRunningOnChromeOS())
     aura::Desktop::set_use_fullscreen_host_window(true);
