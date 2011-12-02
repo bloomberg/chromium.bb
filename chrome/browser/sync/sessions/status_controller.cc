@@ -62,11 +62,23 @@ const ConflictProgress* StatusController::GetUnrestrictedConflictProgress(
   return state ? &state->conflict_progress : NULL;
 }
 
+ConflictProgress*
+    StatusController::GetUnrestrictedMutableConflictProgressForTest(
+        ModelSafeGroup group) {
+  return &GetOrCreateModelSafeGroupState(false, group)->conflict_progress;
+}
+
 const UpdateProgress* StatusController::GetUnrestrictedUpdateProgress(
     ModelSafeGroup group) const {
   const PerModelSafeGroupState* state =
       GetModelSafeGroupState(false, group);
   return state ? &state->update_progress : NULL;
+}
+
+UpdateProgress*
+    StatusController::GetUnrestrictedMutableUpdateProgressForTest(
+        ModelSafeGroup group) {
+  return &GetOrCreateModelSafeGroupState(false, group)->update_progress;
 }
 
 const PerModelSafeGroupState* StatusController::GetModelSafeGroupState(

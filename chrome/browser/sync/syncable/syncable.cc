@@ -258,6 +258,20 @@ EntryKernel::EntryKernel() : dirty_(false) {
 
 EntryKernel::~EntryKernel() {}
 
+syncable::ModelType EntryKernel::GetServerModelType() const {
+  ModelType specifics_type = GetModelTypeFromSpecifics(ref(SERVER_SPECIFICS));
+  if (specifics_type != UNSPECIFIED)
+    return specifics_type;
+  if (ref(ID).IsRoot())
+    return TOP_LEVEL_FOLDER;
+  // Loose check for server-created top-level folders that aren't
+  // bound to a particular model type.
+  if (!ref(UNIQUE_SERVER_TAG).empty() && ref(SERVER_IS_DIR))
+    return TOP_LEVEL_FOLDER;
+
+  return UNSPECIFIED;
+}
+
 bool EntryKernel::ContainsString(const std::string& lowercase_query) const {
   // TODO(lipalani) - figure out what to do if the node is encrypted.
   const sync_pb::EntitySpecifics& specifics = ref(SPECIFICS);
@@ -328,6 +342,7 @@ StringValue* IdToValue(const Id& id) {
 DictionaryValue* EntryKernel::ToValue() const {
   DictionaryValue* kernel_info = new DictionaryValue();
   kernel_info->SetBoolean("isDirty", is_dirty());
+  kernel_info->Set("serverModelType", ModelTypeToValue(GetServerModelType()));
 
   // Int64 fields.
   SetFieldValues(*this, kernel_info,
@@ -433,7 +448,6 @@ Directory::Kernel::Kernel(
       ids_index(new Directory::IdsIndex),
       parent_id_child_index(new Directory::ParentIdChildIndex),
       client_tag_index(new Directory::ClientTagIndex),
-      unapplied_update_metahandles(new MetahandleSet),
       unsynced_metahandles(new MetahandleSet),
       dirty_metahandles(new MetahandleSet),
       metahandles_to_purge(new MetahandleSet),
@@ -459,7 +473,6 @@ void Directory::Kernel::Release() {
 Directory::Kernel::~Kernel() {
   CHECK_EQ(0, refcount);
   delete unsynced_metahandles;
-  delete unapplied_update_metahandles;
   delete dirty_metahandles;
   delete metahandles_to_purge;
   delete parent_id_child_index;
@@ -496,10 +509,13 @@ void Directory::InitializeIndices() {
         kernel_->parent_id_child_index);
     InitializeIndexEntry<IdIndexer>(entry, kernel_->ids_index);
     InitializeIndexEntry<ClientTagIndexer>(entry, kernel_->client_tag_index);
+    const int64 metahandle = entry->ref(META_HANDLE);
     if (entry->ref(IS_UNSYNCED))
-      kernel_->unsynced_metahandles->insert(entry->ref(META_HANDLE));
-    if (entry->ref(IS_UNAPPLIED_UPDATE))
-      kernel_->unapplied_update_metahandles->insert(entry->ref(META_HANDLE));
+      kernel_->unsynced_metahandles->insert(metahandle);
+    if (entry->ref(IS_UNAPPLIED_UPDATE)) {
+      const ModelType type = entry->GetServerModelType();
+      kernel_->unapplied_update_metahandles[type].insert(metahandle);
+    }
     DCHECK(!entry->is_dirty());
   }
 }
@@ -702,11 +718,12 @@ bool Directory::SafeToPurgeFromMemory(const EntryKernel* const entry) const {
       !entry->ref(IS_UNSYNCED);
 
   if (safe) {
-    int64 handle = entry->ref(META_HANDLE);
+    const int64 handle = entry->ref(META_HANDLE);
+    const ModelType type = entry->GetServerModelType();
     CHECK_EQ(kernel_->dirty_metahandles->count(handle), 0U);
     // TODO(tim): Bug 49278.
     CHECK(!kernel_->unsynced_metahandles->count(handle));
-    CHECK(!kernel_->unapplied_update_metahandles->count(handle));
+    CHECK(!kernel_->unapplied_update_metahandles[type].count(handle));
   }
 
   return safe;
@@ -837,7 +854,8 @@ void Directory::PurgeEntriesWithTypeIn(const std::set<ModelType>& types) {
           DCHECK_EQ(entry->ref(UNIQUE_CLIENT_TAG).empty(), !num_erased);
           num_erased = kernel_->unsynced_metahandles->erase(handle);
           DCHECK_EQ(entry->ref(IS_UNSYNCED), num_erased > 0);
-          num_erased = kernel_->unapplied_update_metahandles->erase(handle);
+          num_erased =
+              kernel_->unapplied_update_metahandles[server_type].erase(handle);
           DCHECK_EQ(entry->ref(IS_UNAPPLIED_UPDATE), num_erased > 0);
           num_erased = kernel_->parent_id_child_index->erase(entry);
           DCHECK_EQ(entry->ref(IS_DEL), !num_erased);
@@ -1007,13 +1025,33 @@ int64 Directory::unsynced_entity_count() const {
   return kernel_->unsynced_metahandles->size();
 }
 
-void Directory::GetUnappliedUpdateMetaHandles(BaseTransaction* trans,
+syncable::ModelTypeBitSet
+    Directory::GetServerTypesWithUnappliedUpdates(
+        BaseTransaction* trans) const {
+  syncable::ModelTypeBitSet server_types;
+  ScopedKernelLock lock(this);
+  for (int i = 0; i < MODEL_TYPE_COUNT; ++i) {
+    if (!kernel_->unapplied_update_metahandles[i].empty()) {
+      server_types.set(i);
+    }
+  }
+  return server_types;
+}
+
+void Directory::GetUnappliedUpdateMetaHandles(
+    BaseTransaction* trans,
+    syncable::ModelTypeBitSet server_types,
     UnappliedUpdateMetaHandles* result) {
   result->clear();
   ScopedKernelLock lock(this);
-  copy(kernel_->unapplied_update_metahandles->begin(),
-       kernel_->unapplied_update_metahandles->end(),
-       back_inserter(*result));
+  for (int i = 0; i < MODEL_TYPE_COUNT; ++i) {
+    const ModelType type = ModelTypeFromInt(i);
+    if (server_types.test(type)) {
+      std::copy(kernel_->unapplied_update_metahandles[type].begin(),
+                kernel_->unapplied_update_metahandles[type].end(),
+                back_inserter(*result));
+    }
+  }
 }
 
 
@@ -1370,8 +1408,6 @@ DictionaryValue* Entry::ToValue() const {
   entry_info->SetBoolean("good", good());
   if (good()) {
     entry_info->Set("kernel", kernel_->ToValue());
-    entry_info->Set("serverModelType",
-                    ModelTypeToValue(GetServerModelTypeHelper()));
     entry_info->Set("modelType",
                     ModelTypeToValue(GetModelType()));
     entry_info->SetBoolean("existsOnClientBecauseNameIsNonEmpty",
@@ -1387,7 +1423,7 @@ const string& Entry::Get(StringField field) const {
 }
 
 syncable::ModelType Entry::GetServerModelType() const {
-  ModelType specifics_type = GetServerModelTypeHelper();
+  ModelType specifics_type = kernel_->GetServerModelType();
   if (specifics_type != UNSPECIFIED)
     return specifics_type;
 
@@ -1400,20 +1436,6 @@ syncable::ModelType Entry::GetServerModelType() const {
   DCHECK(Get(SERVER_IS_DEL));
   // Note: can't enforce !Get(ID).ServerKnows() here because that could
   // actually happen if we hit AttemptReuniteLostCommitResponses.
-  return UNSPECIFIED;
-}
-
-syncable::ModelType Entry::GetServerModelTypeHelper() const {
-  ModelType specifics_type = GetModelTypeFromSpecifics(Get(SERVER_SPECIFICS));
-  if (specifics_type != UNSPECIFIED)
-    return specifics_type;
-  if (IsRoot())
-    return TOP_LEVEL_FOLDER;
-  // Loose check for server-created top-level folders that aren't
-  // bound to a particular model type.
-  if (!Get(UNIQUE_SERVER_TAG).empty() && Get(SERVER_IS_DIR))
-    return TOP_LEVEL_FOLDER;
-
   return UNSPECIFIED;
 }
 
@@ -1603,8 +1625,32 @@ bool MutableEntry::Put(ProtoField field,
   // TODO(ncarter): This is unfortunately heavyweight.  Can we do
   // better?
   if (kernel_->ref(field).SerializeAsString() != value.SerializeAsString()) {
+    const bool update_unapplied_updates_index =
+        (field == SERVER_SPECIFICS) && kernel_->ref(IS_UNAPPLIED_UPDATE);
+    if (update_unapplied_updates_index) {
+      // Remove ourselves from unapplied_update_metahandles with our
+      // old server type.
+      const syncable::ModelType old_server_type =
+          kernel_->GetServerModelType();
+      const int64 metahandle = kernel_->ref(META_HANDLE);
+      size_t erase_count =
+          dir()->kernel_->unapplied_update_metahandles[old_server_type]
+          .erase(metahandle);
+      DCHECK_EQ(erase_count, 1u);
+    }
+
     kernel_->put(field, value);
     kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
+
+    if (update_unapplied_updates_index) {
+      // Add ourselves back into unapplied_update_metahandles with our
+      // new server type.
+      const syncable::ModelType new_server_type =
+          kernel_->GetServerModelType();
+      const int64 metahandle = kernel_->ref(META_HANDLE);
+      dir()->kernel_->unapplied_update_metahandles[new_server_type]
+          .insert(metahandle);
+    }
   }
   return true;
 }
@@ -1667,10 +1713,16 @@ bool MutableEntry::Put(IndexedBitField field, bool value) {
   DCHECK(kernel_);
   if (kernel_->ref(field) != value) {
     MetahandleSet* index;
-    if (IS_UNSYNCED == field)
+    if (IS_UNSYNCED == field) {
       index = dir()->kernel_->unsynced_metahandles;
-    else
-      index = dir()->kernel_->unapplied_update_metahandles;
+    } else {
+      // Use kernel_->GetServerModelType() instead of
+      // GetServerModelType() as we may trigger some DCHECKs in the
+      // latter.
+      index =
+          &dir()->kernel_->unapplied_update_metahandles[
+              kernel_->GetServerModelType()];
+    }
 
     ScopedKernelLock lock(dir());
     if (value)

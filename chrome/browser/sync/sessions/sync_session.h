@@ -16,6 +16,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -119,7 +120,7 @@ class SyncSession {
   // session. Purges types from the above 3 which are not in session. Useful
   // to update the sync session when the user has disabled some types from
   // syncing.
-  void RebaseRoutingInfoWithLatest(SyncSession* session);
+  void RebaseRoutingInfoWithLatest(const SyncSession& session);
 
   // Should be called any time |this| is being re-used in a new call to
   // SyncShare (e.g., HasMoreToSync returned true).
@@ -152,6 +153,15 @@ class SyncSession {
   const ModelSafeRoutingInfo& routing_info() const { return routing_info_; }
   const SyncSourceInfo& source() const { return source_; }
 
+  // Returns the set of groups which have enabled types.
+  const std::set<ModelSafeGroup>& GetEnabledGroups() const;
+
+  // Returns the set of enabled groups that have conflicts.
+  std::set<ModelSafeGroup> GetEnabledGroupsWithConflicts() const;
+
+  // Returns the set of enabled groups that have verified updates.
+  std::set<ModelSafeGroup> GetEnabledGroupsWithVerifiedUpdates() const;
+
  private:
   // Extend the encapsulation boundary to utilities for internal member
   // assignments. This way, the scope of these actions is explicit, they can't
@@ -171,7 +181,7 @@ class SyncSession {
   syncable::WriteTransaction* write_transaction_;
 
   // The delegate for this session, must never be NULL.
-  Delegate* delegate_;
+  Delegate* const delegate_;
 
   // Our controller for various status and error counters.
   scoped_ptr<StatusController> status_controller_;
@@ -184,6 +194,10 @@ class SyncSession {
   // datatypes should be synced and which workers should be used when working
   // on those datatypes.
   ModelSafeRoutingInfo routing_info_;
+
+  // The set of groups with enabled types.  Computed from
+  // |routing_info_|.
+  std::set<ModelSafeGroup> enabled_groups_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSession);
 };
