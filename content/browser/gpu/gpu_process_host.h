@@ -92,9 +92,7 @@ class GpuProcessHost : public BrowserChildProcessHost,
   // Post an IPC message to the UI shim's message handler on the UI thread.
   void RouteOnUIThread(const IPC::Message& message);
 
-  virtual bool CanShutdown() OVERRIDE;
   virtual void OnProcessLaunched() OVERRIDE;
-  virtual void OnChildDied() OVERRIDE;
   virtual void OnProcessCrashed(int exit_code) OVERRIDE;
 
   // Message handlers.

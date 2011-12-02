@@ -10,6 +10,7 @@
 #include "base/version.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service.h"
+#include "content/common/child_process_host.h"
 #include "content/common/plugin_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/plugins/npapi/plugin_group.h"

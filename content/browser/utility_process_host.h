@@ -84,7 +84,6 @@ class CONTENT_EXPORT UtilityProcessHost : public BrowserChildProcessHost {
 
   // BrowserChildProcessHost:
   virtual void OnProcessCrashed(int exit_code) OVERRIDE;
-  virtual bool CanShutdown() OVERRIDE;
 
   // A pointer to our client interface, who will be informed of progress.
   scoped_refptr<Client> client_;

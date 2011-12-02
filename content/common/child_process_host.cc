@@ -17,6 +17,7 @@
 #include "base/stringprintf.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "content/common/child_process_messages.h"
+#include "content/public/common/child_process_host_delegate.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_logging.h"
@@ -73,8 +74,9 @@ FilePath TransformPathForFeature(const FilePath& path,
 }  // namespace
 #endif  // OS_MACOSX
 
-ChildProcessHost::ChildProcessHost()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(listener_(this)),
+ChildProcessHost::ChildProcessHost(content::ChildProcessHostDelegate* delegate)
+    : delegate_(delegate),
+      peer_handle_(base::kNullProcessHandle),
       opening_channel_(false) {
 #if defined(OS_WIN)
   AddFilter(new FontCacheDispatcher());
@@ -86,7 +88,8 @@ ChildProcessHost::~ChildProcessHost() {
     filters_[i]->OnChannelClosing();
     filters_[i]->OnFilterRemoved();
   }
-  listener_.Shutdown();
+
+  base::CloseProcessHandle(peer_handle_);
 }
 
 void ChildProcessHost::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
@@ -147,7 +150,7 @@ void ChildProcessHost::ForceShutdown() {
 bool ChildProcessHost::CreateChannel() {
   channel_id_ = GenerateRandomChannelID(this);
   channel_.reset(new IPC::Channel(
-      channel_id_, IPC::Channel::MODE_SERVER, &listener_));
+      channel_id_, IPC::Channel::MODE_SERVER, this));
   if (!channel_->Connect())
     return false;
 
@@ -167,16 +170,6 @@ bool ChildProcessHost::CreateChannel() {
   return true;
 }
 
-bool ChildProcessHost::OnMessageReceived(const IPC::Message& msg) {
-  return false;
-}
-
-void ChildProcessHost::OnChannelConnected(int32 peer_pid) {
-}
-
-void ChildProcessHost::OnChannelError() {
-}
-
 bool ChildProcessHost::Send(IPC::Message* message) {
   if (!channel_.get()) {
     delete message;
@@ -185,7 +178,7 @@ bool ChildProcessHost::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
-void ChildProcessHost::OnAllocateSharedMemory(
+void ChildProcessHost::AllocateSharedMemory(
       uint32 buffer_size, base::ProcessHandle child_process_handle,
       base::SharedMemoryHandle* shared_memory_handle) {
   base::SharedMemory shared_buf;
@@ -215,35 +208,7 @@ int ChildProcessHost::GenerateChildProcessUniqueId() {
   return base::subtle::NoBarrier_AtomicIncrement(&last_unique_child_id, 1);
 }
 
-
-void ChildProcessHost::OnChildDied() {
-  delete this;
-}
-
-void ChildProcessHost::OnChildDisconnected() {
-  OnChildDied();
-}
-
-void ChildProcessHost::ShutdownStarted() {
-}
-
-ChildProcessHost::ListenerHook::ListenerHook(ChildProcessHost* host)
-    : host_(host), peer_handle_(base::kNullProcessHandle) {
-}
-
-ChildProcessHost::ListenerHook::~ListenerHook() {
-  base::CloseProcessHandle(peer_handle_);
-}
-
-void ChildProcessHost::ListenerHook::Shutdown() {
-  host_ = NULL;
-}
-
-bool ChildProcessHost::ListenerHook::OnMessageReceived(
-    const IPC::Message& msg) {
-  if (!host_)
-    return true;
-
+bool ChildProcessHost::OnMessageReceived(const IPC::Message& msg) {
 #ifdef IPC_MESSAGE_LOG_ENABLED
   IPC::Logging* logger = IPC::Logging::GetInstance();
   if (msg.type() == IPC_LOGGING_ID) {
@@ -256,72 +221,62 @@ bool ChildProcessHost::ListenerHook::OnMessageReceived(
 #endif
 
   bool handled = false;
-  for (size_t i = 0; i < host_->filters_.size(); ++i) {
-    if (host_->filters_[i]->OnMessageReceived(msg)) {
+  for (size_t i = 0; i < filters_.size(); ++i) {
+    if (filters_[i]->OnMessageReceived(msg)) {
       handled = true;
       break;
     }
   }
 
   if (!handled) {
-    bool msg_is_good = false;
     handled = true;
-    IPC_BEGIN_MESSAGE_MAP_EX(ListenerHook, msg, msg_is_good)
+    IPC_BEGIN_MESSAGE_MAP(ChildProcessHost, msg)
       IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ShutdownRequest,
                           OnShutdownRequest)
       IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateSharedMemory,
                           OnAllocateSharedMemory)
       IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP_EX()
+    IPC_END_MESSAGE_MAP()
 
     if (!handled)
-      handled = host_->OnMessageReceived(msg);
+      handled = delegate_->OnMessageReceived(msg);
   }
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
   if (logger->Enabled())
-    logger->OnPostDispatchMessage(msg, host_->channel_id_);
+    logger->OnPostDispatchMessage(msg, channel_id_);
 #endif
   return handled;
 }
 
-void ChildProcessHost::ListenerHook::OnChannelConnected(int32 peer_pid) {
-  if (!host_)
-    return;
+void ChildProcessHost::OnChannelConnected(int32 peer_pid) {
   if (!base::OpenProcessHandle(peer_pid, &peer_handle_)) {
     NOTREACHED();
   }
-  host_->opening_channel_ = false;
-  host_->OnChannelConnected(peer_pid);
-  for (size_t i = 0; i < host_->filters_.size(); ++i)
-    host_->filters_[i]->OnChannelConnected(peer_pid);
+  opening_channel_ = false;
+  delegate_->OnChannelConnected(peer_pid);
+  for (size_t i = 0; i < filters_.size(); ++i)
+    filters_[i]->OnChannelConnected(peer_pid);
 }
 
-void ChildProcessHost::ListenerHook::OnChannelError() {
-  if (!host_)
-    return;
-  host_->opening_channel_ = false;
-  host_->OnChannelError();
+void ChildProcessHost::OnChannelError() {
+  opening_channel_ = false;
+  delegate_->OnChannelError();
 
-  for (size_t i = 0; i < host_->filters_.size(); ++i)
-    host_->filters_[i]->OnChannelError();
+  for (size_t i = 0; i < filters_.size(); ++i)
+    filters_[i]->OnChannelError();
 
   // This will delete host_, which will also destroy this!
-  host_->OnChildDisconnected();
+  delegate_->OnChildDisconnected();
 }
 
-bool ChildProcessHost::ListenerHook::Send(IPC::Message* message) {
-  return host_->Send(message);
-}
-
-void ChildProcessHost::ListenerHook::OnAllocateSharedMemory(
+void ChildProcessHost::OnAllocateSharedMemory(
     uint32 buffer_size,
     base::SharedMemoryHandle* handle) {
-  ChildProcessHost::OnAllocateSharedMemory(
-      buffer_size, peer_handle_, handle);
+  AllocateSharedMemory(buffer_size, peer_handle_, handle);
 }
 
-void ChildProcessHost::ListenerHook::OnShutdownRequest() {
-  if (host_->CanShutdown())
-    host_->Send(new ChildProcessMsg_Shutdown());
+void ChildProcessHost::OnShutdownRequest() {
+  if (delegate_->CanShutdown())
+    Send(new ChildProcessMsg_Shutdown());
 }

@@ -23,6 +23,7 @@
 #include "chrome/common/nacl_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
+#include "content/common/child_process_host.h"
 #include "ipc/ipc_switches.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 
@@ -116,6 +117,21 @@ NaClProcessHost::NaClProcessHost(const std::wstring& url)
 }
 
 NaClProcessHost::~NaClProcessHost() {
+  int exit_code;
+  GetChildTerminationStatus(&exit_code);
+  std::string message =
+      base::StringPrintf("NaCl process exited with status %i (0x%x)",
+                         exit_code, exit_code);
+  if (exit_code == 0) {
+    LOG(INFO) << message;
+  } else {
+    LOG(ERROR) << message;
+  }
+
+#if defined(OS_WIN)
+  NaClBrokerService::GetInstance()->OnLoaderDied();
+#endif
+
   for (size_t i = 0; i < internal_->sockets_for_renderer.size(); i++) {
     if (nacl::Close(internal_->sockets_for_renderer[i]) != 0) {
       LOG(ERROR) << "nacl::Close() failed";
@@ -212,7 +228,7 @@ bool NaClProcessHost::Launch(
 }
 
 bool NaClProcessHost::LaunchSelLdr() {
-  if (!CreateChannel())
+  if (!child_process_host()->CreateChannel())
     return false;
 
   CommandLine::StringType nacl_loader_prefix;
@@ -230,14 +246,15 @@ bool NaClProcessHost::LaunchSelLdr() {
   // to accomodate this request will exist in the child process' address
   // space. Disable PIE for NaCl processes. See http://crbug.com/90221 and
   // http://code.google.com/p/nativeclient/issues/detail?id=2043.
-  int flags = CHILD_NO_PIE;
+  int flags = ChildProcessHost::CHILD_NO_PIE;
 #elif defined(OS_LINUX)
-  int flags = nacl_loader_prefix.empty() ? CHILD_ALLOW_SELF : CHILD_NORMAL;
+  int flags = nacl_loader_prefix.empty() ? ChildProcessHost::CHILD_ALLOW_SELF :
+                                           ChildProcessHost::CHILD_NORMAL;
 #else
-  int flags = CHILD_NORMAL;
+  int flags = ChildProcessHost::CHILD_NORMAL;
 #endif
 
-  FilePath exe_path = GetChildPath(flags);
+  FilePath exe_path = ChildProcessHost::GetChildPath(flags);
   if (exe_path.empty())
     return false;
 
@@ -246,7 +263,8 @@ bool NaClProcessHost::LaunchSelLdr() {
 
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               switches::kNaClLoaderProcess);
-  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
+  cmd_line->AppendSwitchASCII(switches::kProcessChannelID,
+                              child_process_host()->channel_id());
   if (logging::DialogsAreSuppressed())
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
@@ -257,7 +275,7 @@ bool NaClProcessHost::LaunchSelLdr() {
 #if defined(OS_WIN)
   if (RunningOnWOW64()) {
     return NaClBrokerService::GetInstance()->LaunchLoader(
-        this, ASCIIToWide(channel_id()));
+        this, ASCIIToWide(child_process_host()->channel_id()));
   } else {
     BrowserChildProcessHost::Launch(FilePath(), cmd_line);
   }
@@ -280,24 +298,6 @@ base::TerminationStatus NaClProcessHost::GetChildTerminationStatus(
   if (RunningOnWOW64())
     return base::GetTerminationStatus(handle(), exit_code);
   return BrowserChildProcessHost::GetChildTerminationStatus(exit_code);
-}
-
-void NaClProcessHost::OnChildDied() {
-  int exit_code;
-  GetChildTerminationStatus(&exit_code);
-  std::string message =
-    base::StringPrintf("NaCl process exited with status %i (0x%x)",
-                       exit_code, exit_code);
-  if (exit_code == 0) {
-    LOG(INFO) << message;
-  } else {
-    LOG(ERROR) << message;
-  }
-
-#if defined(OS_WIN)
-  NaClBrokerService::GetInstance()->OnLoaderDied();
-#endif
-  BrowserChildProcessHost::OnChildDied();
 }
 
 // This only ever runs on the BrowserThread::FILE thread.
@@ -518,8 +518,4 @@ void NaClProcessHost::SendStart(base::PlatformFile irt_file) {
 bool NaClProcessHost::OnMessageReceived(const IPC::Message& msg) {
   NOTREACHED() << "Invalid message with type = " << msg.type();
   return false;
-}
-
-bool NaClProcessHost::CanShutdown() {
-  return true;
 }

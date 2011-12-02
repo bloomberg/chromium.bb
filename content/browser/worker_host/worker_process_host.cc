@@ -31,6 +31,7 @@
 #include "content/browser/worker_host/message_port_service.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/browser/worker_host/worker_service.h"
+#include "content/common/child_process_host.h"
 #include "content/common/debug_flags.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
@@ -111,22 +112,23 @@ WorkerProcessHost::~WorkerProcessHost() {
 }
 
 bool WorkerProcessHost::Init(int render_process_id) {
-  if (!CreateChannel())
+  if (!child_process_host()->CreateChannel())
     return false;
 
 #if defined(OS_LINUX)
-  int flags = CHILD_ALLOW_SELF;
+  int flags = ChildProcessHost::CHILD_ALLOW_SELF;
 #else
-  int flags = CHILD_NORMAL;
+  int flags = ChildProcessHost::CHILD_NORMAL;
 #endif
 
-  FilePath exe_path = GetChildPath(flags);
+  FilePath exe_path = ChildProcessHost::GetChildPath(flags);
   if (exe_path.empty())
     return false;
 
   CommandLine* cmd_line = new CommandLine(exe_path);
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kWorkerProcess);
-  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
+  cmd_line->AppendSwitchASCII(switches::kProcessChannelID,
+                              child_process_host()->channel_id());
   std::string locale =
       content::GetContentClient()->browser()->GetApplicationLocale();
   cmd_line->AppendSwitchASCII(switches::kLang, locale);
@@ -237,29 +239,30 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       id(), content::PROCESS_TYPE_WORKER, resource_context_,
       new URLRequestContextSelector(request_context),
       resource_dispatcher_host_);
-  AddFilter(resource_message_filter);
+  child_process_host()->AddFilter(resource_message_filter);
 
   worker_message_filter_ = new WorkerMessageFilter(
       render_process_id, resource_context_, resource_dispatcher_host_,
       base::Bind(&WorkerService::next_worker_route_id,
                  base::Unretained(WorkerService::GetInstance())));
-  AddFilter(worker_message_filter_);
-  AddFilter(new AppCacheDispatcherHost(
+  child_process_host()->AddFilter(worker_message_filter_);
+  child_process_host()->AddFilter(new AppCacheDispatcherHost(
       resource_context_->appcache_service(), id()));
-  AddFilter(new FileSystemDispatcherHost(
+  child_process_host()->AddFilter(new FileSystemDispatcherHost(
       request_context, resource_context_->file_system_context()));
-  AddFilter(new FileUtilitiesMessageFilter(id()));
-  AddFilter(new BlobMessageFilter(
+  child_process_host()->AddFilter(new FileUtilitiesMessageFilter(id()));
+  child_process_host()->AddFilter(new BlobMessageFilter(
       id(), resource_context_->blob_storage_context()));
-  AddFilter(new MimeRegistryMessageFilter());
-  AddFilter(new DatabaseMessageFilter(
+  child_process_host()->AddFilter(new MimeRegistryMessageFilter());
+  child_process_host()->AddFilter(new DatabaseMessageFilter(
       resource_context_->database_tracker()));
 
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
       new SocketStreamDispatcherHost(
           new URLRequestContextSelector(request_context), resource_context_);
-  AddFilter(socket_stream_dispatcher_host);
-  AddFilter(new content::WorkerDevToolsMessageFilter(id()));
+  child_process_host()->AddFilter(socket_stream_dispatcher_host);
+  child_process_host()->AddFilter(
+      new content::WorkerDevToolsMessageFilter(id()));
 }
 
 void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {

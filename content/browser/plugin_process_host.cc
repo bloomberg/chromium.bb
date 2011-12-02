@@ -22,6 +22,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/plugin_service.h"
+#include "content/common/child_process_host.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -167,7 +168,7 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info,
   info_ = info;
   set_name(info_.name);
 
-  if (!CreateChannel())
+  if (!child_process_host()->CreateChannel())
     return false;
 
   // Build command line for plugin. When we have a plugin launcher, we can't
@@ -180,14 +181,15 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info,
   // Run the plug-in process in a mode tolerant of heap execution without
   // explicit mprotect calls. Some plug-ins still rely on this quaint and
   // archaic "feature." See http://crbug.com/93551.
-  int flags = CHILD_ALLOW_HEAP_EXECUTION;
+  int flags = ChildProcessHost::CHILD_ALLOW_HEAP_EXECUTION;
 #elif defined(OS_LINUX)
-  int flags = plugin_launcher.empty() ? CHILD_ALLOW_SELF : CHILD_NORMAL;
+  int flags = plugin_launcher.empty() ? ChildProcessHost::CHILD_ALLOW_SELF :
+                                        ChildProcessHost::CHILD_NORMAL;
 #else
-  int flags = CHILD_NORMAL;
+  int flags = ChildProcessHost::CHILD_NORMAL;
 #endif
 
-  FilePath exe_path = GetChildPath(flags);
+  FilePath exe_path = ChildProcessHost::GetChildPath(flags);
   if (exe_path.empty())
     return false;
 
@@ -233,7 +235,8 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info,
     cmd_line->AppendSwitchASCII(switches::kLang, locale);
   }
 
-  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
+  cmd_line->AppendSwitchASCII(switches::kProcessChannelID,
+                              child_process_host()->channel_id());
 
 #if defined(OS_POSIX)
   base::environment_vector env;
@@ -277,6 +280,10 @@ void PluginProcessHost::ForceShutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   Send(new PluginProcessMsg_NotifyRenderersOfPendingShutdown());
   BrowserChildProcessHost::ForceShutdown();
+}
+
+void PluginProcessHost::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
+  child_process_host()->AddFilter(filter);
 }
 
 bool PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
@@ -359,7 +366,7 @@ void PluginProcessHost::CancelPendingRequestsForResourceContext(
 void PluginProcessHost::OpenChannelToPlugin(Client* client) {
   Notify(content::NOTIFICATION_CHILD_INSTANCE_CREATED);
   client->SetPluginInfo(info_);
-  if (opening_channel()) {
+  if (child_process_host()->opening_channel()) {
     // The channel is already in the process of being opened.  Put
     // this "open channel" request into a queue of requests that will
     // be run once the channel is open.

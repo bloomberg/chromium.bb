@@ -17,6 +17,7 @@
 #include "content/browser/profiler_message_filter.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/browser/trace_message_filter.h"
+#include "content/common/child_process_host.h"
 #include "content/common/plugin_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
@@ -59,10 +60,11 @@ BrowserChildProcessHost::BrowserChildProcessHost(
 #endif
       disconnect_was_alive_(false) {
   data_.type = type;
-  data_.id = GenerateChildProcessUniqueId();
+  data_.id = ChildProcessHost::GenerateChildProcessUniqueId();
 
-  AddFilter(new TraceMessageFilter);
-  AddFilter(new ProfilerMessageFilter);
+  child_process_host_.reset(new ChildProcessHost(this));
+  child_process_host_->AddFilter(new TraceMessageFilter);
+  child_process_host_->AddFilter(new ProfilerMessageFilter);
 
   g_child_process_list.Get().push_back(this);
 }
@@ -96,7 +98,7 @@ void BrowserChildProcessHost::Launch(
 #elif defined(OS_POSIX)
       use_zygote,
       environ,
-      channel()->TakeClientFileDescriptor(),
+      child_process_host()->channel()->TakeClientFileDescriptor(),
 #endif
       cmd_line,
       &client_));
@@ -112,7 +114,7 @@ base::ProcessHandle BrowserChildProcessHost::GetChildProcessHandle() const {
 
 void BrowserChildProcessHost::ForceShutdown() {
   g_child_process_list.Get().remove(this);
-  ChildProcessHost::ForceShutdown();
+  child_process_host_->ForceShutdown();
 }
 
 void BrowserChildProcessHost::SetTerminateChildOnShutdown(
@@ -132,11 +134,19 @@ base::TerminationStatus BrowserChildProcessHost::GetChildTerminationStatus(
   return child_process_->GetChildTerminationStatus(exit_code);
 }
 
+bool BrowserChildProcessHost::OnMessageReceived(const IPC::Message& message) {
+  return false;
+}
+
 void BrowserChildProcessHost::OnChannelConnected(int32 peer_pid) {
   Notify(content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED);
 }
 
-// The ChildProcessHost default implementation calls OnChildDied() always but at
+bool BrowserChildProcessHost::CanShutdown() {
+  return true;
+}
+
+// Normally a ChildProcessHostDelegate deletes itself from this callback, but at
 // this layer and below we need to have the final child process exit code to
 // properly bucket crashes vs kills. On Windows we can do this if we wait until
 // the process handle is signaled; on the rest of the platforms, we schedule a
@@ -212,7 +222,7 @@ void BrowserChildProcessHost::OnChildDisconnected() {
                             content::PROCESS_TYPE_MAX);
   // Notify in the main loop of the disconnection.
   Notify(content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED);
-  OnChildDied();
+  delete this;
 }
 
 // The child process handle has been signaled so the exit code is finally
@@ -226,11 +236,15 @@ void BrowserChildProcessHost::OnWaitableEventSignaled(
   GetExitCodeProcess(waitable_event->Release(), &exit_code);
   delete waitable_event;
   if (exit_code == STILL_ACTIVE) {
-    OnChildDied();
+    delete this;
   } else {
     BrowserChildProcessHost::OnChildDisconnected();
   }
 #endif
+}
+
+bool BrowserChildProcessHost::Send(IPC::Message* message) {
+  return child_process_host_->Send(message);
 }
 
 void BrowserChildProcessHost::ShutdownStarted() {
@@ -245,7 +259,7 @@ BrowserChildProcessHost::ClientHook::ClientHook(BrowserChildProcessHost* host)
 
 void BrowserChildProcessHost::ClientHook::OnProcessLaunched() {
   if (!host_->child_process_->GetHandle()) {
-    host_->OnChildDied();
+    delete host_;
     return;
   }
   host_->data_.handle = host_->child_process_->GetHandle();

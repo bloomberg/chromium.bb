@@ -686,8 +686,7 @@ void RenderMessageFilter::OnCheckNotificationPermission(
 void RenderMessageFilter::OnAllocateSharedMemory(
     uint32 buffer_size,
     base::SharedMemoryHandle* handle) {
-  ChildProcessHost::OnAllocateSharedMemory(
-      buffer_size, peer_handle(), handle);
+  ChildProcessHost::AllocateSharedMemory(buffer_size, peer_handle(), handle);
 }
 
 net::URLRequestContext* RenderMessageFilter::GetRequestContextForURL(

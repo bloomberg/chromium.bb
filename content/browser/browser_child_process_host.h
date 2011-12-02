@@ -8,13 +8,17 @@
 
 #include <list>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "content/browser/child_process_launcher.h"
-#include "content/common/child_process_host.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/common/child_process_host_delegate.h"
+#include "ipc/ipc_message.h"
+
+class ChildProcessHost;
 
 namespace base {
 class WaitableEvent;
@@ -26,9 +30,10 @@ class WaitableEvent;
 // [Browser]RenderProcessHost is the main exception that doesn't derive from
 // this class. That project lives on the UI thread.
 class CONTENT_EXPORT BrowserChildProcessHost :
-    public ChildProcessHost,
+    public content::ChildProcessHostDelegate,
     public ChildProcessLauncher::Client,
-    public base::WaitableEventWatcher::Delegate {
+    public base::WaitableEventWatcher::Delegate,
+    public IPC::Message::Sender {
  public:
   virtual ~BrowserChildProcessHost();
 
@@ -57,6 +62,9 @@ class CONTENT_EXPORT BrowserChildProcessHost :
     content::ProcessType type_;
     std::list<BrowserChildProcessHost*>::iterator iterator_;
   };
+
+  // IPC::Message::Sender override
+  virtual bool Send(IPC::Message* message) OVERRIDE;
 
   const content::ChildProcessData& data() const { return data_; }
   content::ProcessType type() const { return data_.type; }
@@ -102,13 +110,15 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   // GetExitCodeProcess()).  |exit_code| may be NULL.
   virtual base::TerminationStatus GetChildTerminationStatus(int* exit_code);
 
-  // Overrides from ChildProcessHost
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+  // ChildProcessHostDelegate implementation:
+  virtual bool CanShutdown() OVERRIDE;
   virtual void OnChildDisconnected() OVERRIDE;
   virtual void ShutdownStarted() OVERRIDE;
-  // Extends the base class implementation and removes this host from
-  // the host list. Calls ChildProcessHost::ForceShutdown
-  virtual void ForceShutdown() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+
+  // Removes this host from the host list. Calls ChildProcessHost::ForceShutdown
+  void ForceShutdown();
 
   // Controls whether the child process should be terminated on browser
   // shutdown. Default is to always terminate.
@@ -117,6 +127,9 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   // Sends the given notification on the UI thread.
   void Notify(int type);
 
+  ChildProcessHost* child_process_host() const {
+    return child_process_host_.get();
+  }
   void set_name(const string16& name) { data_.name = name; }
   void set_handle(base::ProcessHandle handle) { data_.handle = handle; }
 
@@ -133,6 +146,7 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   };
 
   content::ChildProcessData data_;
+  scoped_ptr<ChildProcessHost> child_process_host_;
 
   ClientHook client_;
   scoped_ptr<ChildProcessLauncher> child_process_;

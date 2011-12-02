@@ -17,6 +17,7 @@
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/common/child_process_host.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
@@ -279,6 +280,25 @@ GpuProcessHost::GpuProcessHost(int host_id)
 
 GpuProcessHost::~GpuProcessHost() {
   DCHECK(CalledOnValidThread());
+
+  SendOutstandingReplies();
+  UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
+                            DIED_FIRST_TIME + g_gpu_crash_count,
+                            GPU_PROCESS_LIFETIME_EVENT_MAX);
+
+  int exit_code;
+  base::TerminationStatus status = GetChildTerminationStatus(&exit_code);
+  UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationStatus",
+                            status,
+                            base::TERMINATION_STATUS_MAX_ENUM);
+
+  if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION ||
+      status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
+    UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessExitCode",
+                              exit_code,
+                              content::RESULT_CODE_LAST_CODE);
+  }
+
 #if defined(OS_WIN)
   if (gpu_process_)
     CloseHandle(gpu_process_);
@@ -299,14 +319,15 @@ GpuProcessHost::~GpuProcessHost() {
 }
 
 bool GpuProcessHost::Init() {
-  if (!CreateChannel())
+  if (!child_process_host()->CreateChannel())
     return false;
 
   if (in_process_) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDisableGpuWatchdog);
 
-    in_process_gpu_thread_.reset(new GpuMainThread(channel_id()));
+    in_process_gpu_thread_.reset(new GpuMainThread(
+        child_process_host()->channel_id()));
 
     base::Thread::Options options;
 #if defined(OS_WIN)
@@ -337,7 +358,7 @@ void GpuProcessHost::RouteOnUIThread(const IPC::Message& message) {
 
 bool GpuProcessHost::Send(IPC::Message* msg) {
   DCHECK(CalledOnValidThread());
-  if (opening_channel()) {
+  if (child_process_host()->opening_channel()) {
     queued_messages_.push(msg);
     return true;
   }
@@ -488,10 +509,6 @@ void GpuProcessHost::OnGraphicsInfoCollected(const content::GPUInfo& gpu_info) {
   GpuDataManager::GetInstance()->UpdateGpuInfo(gpu_info);
 }
 
-bool GpuProcessHost::CanShutdown() {
-  return true;
-}
-
 void GpuProcessHost::OnProcessLaunched() {
   // Send the GPU process handle to the UI thread before it has to
   // respond to any requests to establish a GPU channel. The response
@@ -511,30 +528,6 @@ void GpuProcessHost::OnProcessLaunched() {
 #else
   gpu_process_ = child_handle;
 #endif
-}
-
-void GpuProcessHost::OnChildDied() {
-  SendOutstandingReplies();
-  // Located in OnChildDied because OnProcessCrashed suffers from a race
-  // condition on Linux.
-  UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
-                            DIED_FIRST_TIME + g_gpu_crash_count,
-                            GPU_PROCESS_LIFETIME_EVENT_MAX);
-
-  int exit_code;
-  base::TerminationStatus status = GetChildTerminationStatus(&exit_code);
-  UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationStatus",
-                            status,
-                            base::TERMINATION_STATUS_MAX_ENUM);
-
-  if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION ||
-      status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
-    UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessExitCode",
-                              exit_code,
-                              content::RESULT_CODE_LAST_CODE);
-  }
-
-  ChildProcessHost::OnChildDied();
 }
 
 void GpuProcessHost::OnProcessCrashed(int exit_code) {
@@ -575,7 +568,8 @@ bool GpuProcessHost::LaunchGpuProcess() {
 
   CommandLine* cmd_line = new CommandLine(exe_path);
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
-  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
+  cmd_line->AppendSwitchASCII(switches::kProcessChannelID,
+                              child_process_host()->channel_id());
 
   // Propagate relevant command line switches.
   static const char* const kSwitchNames[] = {

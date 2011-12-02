@@ -7,31 +7,41 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/process_util.h"
 #include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
+#include "content/common/child_process_host.h"
+#include "content/public/common/result_codes.h"
 #include "ipc/ipc_switches.h"
 #include "printing/page_range.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/rect.h"
 
 #if defined(OS_WIN)
+#include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_handle.h"
+#include "content/common/sandbox_policy.h"
 #include "printing/emf_win.h"
 #endif
 
 ServiceUtilityProcessHost::ServiceUtilityProcessHost(
     Client* client, base::MessageLoopProxy* client_message_loop_proxy)
-        : client_(client),
+        : handle_(base::kNullProcessHandle),
+          client_(client),
           client_message_loop_proxy_(client_message_loop_proxy),
           waiting_for_reply_(false) {
+  child_process_host_.reset(new ChildProcessHost(this));
 }
 
 ServiceUtilityProcessHost::~ServiceUtilityProcessHost() {
+  // We need to kill the child process when the host dies.
+  base::KillProcess(handle_, content::RESULT_CODE_NORMAL_EXIT, false);
 }
 
 bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
@@ -72,7 +82,7 @@ bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
   if (!pdf_file_in_utility_process)
     return false;
   waiting_for_reply_ = true;
-  return Send(
+  return child_process_host_->Send(
       new ChromeUtilityMsg_RenderPDFPagesToMetafile(
           pdf_file_in_utility_process,
           metafile_path_,
@@ -87,12 +97,13 @@ bool ServiceUtilityProcessHost::StartGetPrinterCapsAndDefaults(
   if (!StartProcess(true, exposed_path))
     return false;
   waiting_for_reply_ = true;
-  return Send(new ChromeUtilityMsg_GetPrinterCapsAndDefaults(printer_name));
+  return child_process_host_->Send(
+      new ChromeUtilityMsg_GetPrinterCapsAndDefaults(printer_name));
 }
 
 bool ServiceUtilityProcessHost::StartProcess(bool no_sandbox,
                                              const FilePath& exposed_dir) {
-  if (!CreateChannel())
+  if (!child_process_host_->CreateChannel())
     return false;
 
   FilePath exe_path = GetUtilityProcessCmd();
@@ -103,34 +114,57 @@ bool ServiceUtilityProcessHost::StartProcess(bool no_sandbox,
 
   CommandLine cmd_line(exe_path);
   cmd_line.AppendSwitchASCII(switches::kProcessType, switches::kUtilityProcess);
-  cmd_line.AppendSwitchASCII(switches::kProcessChannelID, channel_id());
+  cmd_line.AppendSwitchASCII(switches::kProcessChannelID,
+                             child_process_host_->channel_id());
   cmd_line.AppendSwitch(switches::kLang);
 
   return Launch(&cmd_line, no_sandbox, exposed_dir);
 }
 
+bool ServiceUtilityProcessHost::Launch(CommandLine* cmd_line,
+                                       bool no_sandbox,
+                                       const FilePath& exposed_dir) {
+#if !defined(OS_WIN)
+  // TODO(sanjeevr): Implement for non-Windows OSes.
+  NOTIMPLEMENTED();
+  return false;
+#else  // !defined(OS_WIN)
+
+  if (no_sandbox) {
+    base::ProcessHandle process = base::kNullProcessHandle;
+    cmd_line->AppendSwitch(switches::kNoSandbox);
+    base::LaunchProcess(*cmd_line, base::LaunchOptions(), &handle_);
+  } else {
+    handle_ = sandbox::StartProcessWithAccess(cmd_line, exposed_dir);
+  }
+  return (handle_ != base::kNullProcessHandle);
+#endif  // !defined(OS_WIN)
+}
+
 FilePath ServiceUtilityProcessHost::GetUtilityProcessCmd() {
 #if defined(OS_LINUX)
-  int flags = CHILD_ALLOW_SELF;
+  int flags = ChildProcessHost::CHILD_ALLOW_SELF;
 #else
-  int flags = CHILD_NORMAL;
+  int flags = ChildProcessHost::CHILD_NORMAL;
 #endif
-  return GetChildPath(flags);
+  return ChildProcessHost::GetChildPath(flags);
 }
 
 bool ServiceUtilityProcessHost::CanShutdown() {
   return true;
 }
 
-void ServiceUtilityProcessHost::OnChildDied() {
+void ServiceUtilityProcessHost::OnChildDisconnected() {
   if (waiting_for_reply_) {
     // If we are yet to receive a reply then notify the client that the
     // child died.
     client_message_loop_proxy_->PostTask(
         FROM_HERE, base::Bind(&Client::OnChildDied, client_.get()));
   }
-  // The base class implementation will delete |this|.
-  ServiceChildProcessHost::OnChildDied();
+  delete this;
+}
+
+void ServiceUtilityProcessHost::ShutdownStarted() {
 }
 
 bool ServiceUtilityProcessHost::OnMessageReceived(const IPC::Message& message) {

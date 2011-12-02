@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "content/common/child_process_host.h"
 #include "content/common/utility_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
@@ -40,9 +41,9 @@ UtilityProcessHost::UtilityProcessHost(Client* client,
       is_batch_mode_(false),
       no_sandbox_(false),
 #if defined(OS_LINUX)
-      child_flags_(CHILD_ALLOW_SELF),
+      child_flags_(ChildProcessHost::CHILD_ALLOW_SELF),
 #else
-      child_flags_(CHILD_NORMAL),
+      child_flags_(ChildProcessHost::CHILD_NORMAL),
 #endif
       started_(false) {
 }
@@ -72,7 +73,7 @@ void UtilityProcessHost::EndBatchMode()  {
 }
 
 FilePath UtilityProcessHost::GetUtilityProcessCmd() {
-  return GetChildPath(child_flags_);
+  return ChildProcessHost::GetChildPath(child_flags_);
 }
 
 bool UtilityProcessHost::StartProcess() {
@@ -86,7 +87,7 @@ bool UtilityProcessHost::StartProcess() {
   // launches a UtilityProcessHost.
   set_name(ASCIIToUTF16("utility process"));
 
-  if (!CreateChannel())
+  if (!child_process_host()->CreateChannel())
     return false;
 
   FilePath exe_path = GetUtilityProcessCmd();
@@ -98,7 +99,8 @@ bool UtilityProcessHost::StartProcess() {
   CommandLine* cmd_line = new CommandLine(exe_path);
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               switches::kUtilityProcess);
-  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
+  cmd_line->AppendSwitchASCII(switches::kProcessChannelID,
+                              child_process_host()->channel_id());
   std::string locale =
       content::GetContentClient()->browser()->GetApplicationLocale();
   cmd_line->AppendSwitchASCII(switches::kLang, locale);
@@ -150,8 +152,4 @@ void UtilityProcessHost::OnProcessCrashed(int exit_code) {
   BrowserThread::PostTask(
       client_thread_id_, FROM_HERE,
       base::Bind(&Client::OnProcessCrashed, client_.get(), exit_code));
-}
-
-bool UtilityProcessHost::CanShutdown() {
-  return true;
 }

@@ -43,7 +43,6 @@ class NaClProcessHost : public BrowserChildProcessHost {
  protected:
   virtual base::TerminationStatus GetChildTerminationStatus(
       int* exit_code) OVERRIDE;
-  virtual void OnChildDied() OVERRIDE;
 
  private:
   // Internal class that holds the nacl::Handle objecs so that
@@ -58,8 +57,6 @@ class NaClProcessHost : public BrowserChildProcessHost {
 
   void IrtReady();
   void SendStart(base::PlatformFile irt_file);
-
-  virtual bool CanShutdown() OVERRIDE;
 
  private:
   // The ChromeRenderMessageFilter that requested this NaCl process.  We use

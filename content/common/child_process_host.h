@@ -21,12 +21,12 @@
 
 class FilePath;
 
-namespace IPC {
-class Message;
+namespace content {
+class ChildProcessHostDelegate;
 }
 
 // Provides common functionality for hosting a child process and processing IPC
-// messages between the host and the child process. Subclasses are responsible
+// messages between the host and the child process. Users are responsible
 // for the actual launching and terminating of the child processes.
 class CONTENT_EXPORT ChildProcessHost : public IPC::Channel::Listener,
                                         public IPC::Message::Sender {
@@ -80,6 +80,8 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Channel::Listener,
   // On failure, returns an empty FilePath.
   static FilePath GetChildPath(int flags);
 
+  explicit ChildProcessHost(content::ChildProcessHostDelegate* delegate);
+
   // IPC::Message::Sender implementation.
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
@@ -87,7 +89,7 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Channel::Listener,
   void AddFilter(IPC::ChannelProxy::MessageFilter* filter);
 
   // Public and static for reuse by RenderMessageFilter.
-  static void OnAllocateSharedMemory(
+  static void AllocateSharedMemory(
       uint32 buffer_size, base::ProcessHandle child_process,
       base::SharedMemoryHandle* handle);
 
@@ -104,68 +106,30 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Channel::Listener,
   // but normally this will be used on the IO thread.
   static int GenerateChildProcessUniqueId();
 
- protected:
-  ChildProcessHost();
-
-  // Derived classes return true if it's ok to shut down the child process.
-  virtual bool CanShutdown() = 0;
-
   // Send the shutdown message to the child process.
   // Does not check if CanShutdown is true.
-  virtual void ForceShutdown();
+  void ForceShutdown();
 
   // Creates the IPC channel.  Returns true iff it succeeded.
-  virtual bool CreateChannel();
-
-  // IPC::Channel::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  bool CreateChannel();
 
   bool opening_channel() { return opening_channel_; }
   const std::string& channel_id() { return channel_id_; }
   IPC::Channel* channel() { return channel_.get(); }
 
-  // Called when the child process goes away. See OnChildDisconnected().
-  virtual void OnChildDied();
-
-  // Called when the child process unexpected closes the IPC channel. The
-  // default action is to call OnChildDied(). Subclasses might want to override
-  // this behavior.
-  virtual void OnChildDisconnected();
-
-  // Notifies the derived class that we told the child process to kill itself.
-  virtual void ShutdownStarted();
-
  private:
-  // By using an internal class as the IPC::Channel::Listener, we can intercept
-  // OnMessageReceived/OnChannelConnected and do our own processing before
-  // calling the subclass' implementation.
-  class ListenerHook : public IPC::Channel::Listener {
-   public:
-    explicit ListenerHook(ChildProcessHost* host);
-    virtual ~ListenerHook();
+  // IPC::Channel::Listener methods:
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
-    void Shutdown();
+  // Message handlers:
+  void OnShutdownRequest();
+  void OnAllocateSharedMemory(uint32 buffer_size,
+                              base::SharedMemoryHandle* handle);
 
-    // IPC::Channel::Listener methods:
-    virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
-    virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-    virtual void OnChannelError() OVERRIDE;
-
-    bool Send(IPC::Message* message);
-
-   private:
-    void OnShutdownRequest();
-    void OnAllocateSharedMemory(uint32 buffer_size,
-                                base::SharedMemoryHandle* handle);
-    ChildProcessHost* host_;
-    base::ProcessHandle peer_handle_;
-    DISALLOW_COPY_AND_ASSIGN(ListenerHook);
-  };
-
-  ListenerHook listener_;
-
+  content::ChildProcessHostDelegate* delegate_;
+  base::ProcessHandle peer_handle_;
   bool opening_channel_;  // True while we're waiting the channel to be opened.
   scoped_ptr<IPC::Channel> channel_;
   std::string channel_id_;

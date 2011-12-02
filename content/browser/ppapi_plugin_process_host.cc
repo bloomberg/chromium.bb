@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_message_filter.h"
+#include "content/common/child_process_host.h"
 #include "content/common/child_process_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/pepper_plugin_info.h"
@@ -84,7 +85,7 @@ PpapiPluginProcessHost* PpapiPluginProcessHost::CreateBrokerHost(
 }
 
 void PpapiPluginProcessHost::OpenChannelToPlugin(Client* client) {
-  if (opening_channel()) {
+  if (child_process_host()->opening_channel()) {
     // The channel is already in the process of being opened.  Put
     // this "open channel" request into a queue of requests that will
     // be run once the channel is open.
@@ -102,7 +103,7 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(net::HostResolver* host_resolver)
       network_observer_(new PluginNetworkObserver(this)),
       is_broker_(false),
       process_id_(ChildProcessHost::GenerateChildProcessUniqueId()) {
-  AddFilter(filter_.get());
+  child_process_host()->AddFilter(filter_.get());
 }
 
 PpapiPluginProcessHost::PpapiPluginProcessHost()
@@ -119,7 +120,7 @@ bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
     set_name(UTF8ToUTF16(info.name));
   }
 
-  if (!CreateChannel())
+  if (!child_process_host()->CreateChannel())
     return false;
 
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
@@ -140,7 +141,8 @@ bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               is_broker_ ? switches::kPpapiBrokerProcess
                                          : switches::kPpapiPluginProcess);
-  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
+  cmd_line->AppendSwitchASCII(switches::kProcessChannelID,
+                              child_process_host()->channel_id());
 
   // These switches are forwarded to both plugin and broker pocesses.
   static const char* kCommonForwardSwitches[] = {
@@ -196,10 +198,6 @@ void PpapiPluginProcessHost::RequestPluginChannel(Client* client) {
     sent_requests_.push(client);
   else
     client->OnChannelOpened(base::kNullProcessHandle, IPC::ChannelHandle());
-}
-
-bool PpapiPluginProcessHost::CanShutdown() {
-  return true;
 }
 
 void PpapiPluginProcessHost::OnProcessLaunched() {

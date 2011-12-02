@@ -604,8 +604,6 @@
       'sources': [
         'service/chrome_service_application_mac.h',
         'service/chrome_service_application_mac.mm',
-        'service/service_child_process_host.cc',
-        'service/service_child_process_host.h',
         'service/service_ipc_server.cc',
         'service/service_ipc_server.h',
         'service/service_main.cc',
