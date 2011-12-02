@@ -1,6 +1,7 @@
 {
   "name": "window/create.panel not enabled",
   "version": "0.1",
+  "manifest_version": 2,
   "description": "Tests window.create with panel type when --enable-panels not set.",
   "background_page": "test.html",
   "permissions": ["tabs"]

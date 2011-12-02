@@ -1,6 +1,7 @@
 {
   "name": "window.open test - spanning",
   "version": "1",
+  "manifest_version": 2,
   "permissions": ["experimental", "tabs"],
   "background_page": "background.html"
 }

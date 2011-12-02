@@ -1,7 +1,8 @@
 {
   "name": "Bundle App 2",
-	"version": "1",
-	"app": {
+  "version": "1",
+  "manifest_version": 2,
+  "app": {
     "urls": [ "http://www.testapp2.com" ],
     "launch": { "web_url": "http://www.testapp2.com" }
   }

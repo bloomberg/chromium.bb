@@ -1,7 +1,8 @@
 {
   "name": "Extension Bundle 2",
-	"version": "1",
-	"permissions": ["management", "http://google.com" ],
+  "version": "1",
+  "manifest_version": 2,
+  "permissions": ["management", "http://google.com" ],
   "content_script": [{
     "matches": [ "http://www.example.com/*" ],
     "js": [ "content_script.js" ],

@@ -1,6 +1,7 @@
 {
   "name": "Browser Is App For Popups Test",
   "version": "1",
+  "manifest_version": 2,
   "description": "Browser instance for popups created with window.open() from an extension should return true for is_app()",
   "background_page": "background.html",
   "permissions": ["tabs"]

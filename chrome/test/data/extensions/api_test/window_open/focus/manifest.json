@@ -1,6 +1,7 @@
 {
   "name": "window/create.focus",
   "version": "0.1",
+  "manifest_version": 2,
   "description": "Tests the window.create focus parameter.",
   "background_page": "test.html",
   "permissions": ["tabs"]

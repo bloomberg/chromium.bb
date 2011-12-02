@@ -1,6 +1,7 @@
 {
   "name": "window/update.sizing",
   "version": "0.1",
+  "manifest_version": 2,
   "description": "Tests the window.update size and position parameters.",
   "background_page": "test.html",
   "permissions": ["tabs"]
