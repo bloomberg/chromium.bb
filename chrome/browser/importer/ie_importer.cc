@@ -462,30 +462,30 @@ void IEImporter::ImportHomepage() {
   bridge_->AddHomePage(homepage);
 }
 
-std::wstring IEImporter::ResolveInternetShortcut(const std::wstring& file) {
+string16 IEImporter::ResolveInternetShortcut(const string16& file) {
   base::win::ScopedCoMem<wchar_t> url;
   base::win::ScopedComPtr<IUniformResourceLocator> url_locator;
   HRESULT result = url_locator.CreateInstance(CLSID_InternetShortcut, NULL,
                                               CLSCTX_INPROC_SERVER);
   if (FAILED(result))
-    return std::wstring();
+    return string16();
 
   base::win::ScopedComPtr<IPersistFile> persist_file;
   result = persist_file.QueryFrom(url_locator);
   if (FAILED(result))
-    return std::wstring();
+    return string16();
 
   // Loads the Internet Shortcut from persistent storage.
   result = persist_file->Load(file.c_str(), STGM_READ);
   if (FAILED(result))
-    return std::wstring();
+    return string16();
 
   result = url_locator->GetURL(&url);
   // GetURL can return S_FALSE (FAILED(S_FALSE) is false) when url == NULL.
   if (FAILED(result) || (url == NULL))
-    return std::wstring();
+    return string16();
 
-  return std::wstring(url);
+  return string16(url);
 }
 
 bool IEImporter::GetFavoritesInfo(IEImporter::FavoritesInfo* info) {

@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_IMPORTER_IE_IMPORTER_H_
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/file_path.h"
+#include "base/string16.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/profile_writer.h"
 
@@ -31,7 +31,7 @@ class IEImporter : public Importer {
   // A struct that hosts the information of IE Favorite folder.
   struct FavoritesInfo {
     FilePath path;
-    std::wstring links_folder;
+    string16 links_folder;
   };
 
   // IE PStore subkey GUID: AutoComplete password & form data.
@@ -65,7 +65,7 @@ class IEImporter : public Importer {
 
   // Resolves what's the .url file actually targets.
   // Returns empty string if failed.
-  std::wstring ResolveInternetShortcut(const std::wstring& file);
+  string16 ResolveInternetShortcut(const string16& file);
 
   // Gets the information of Favorites folder. Returns true if successful.
   bool GetFavoritesInfo(FavoritesInfo* info);
