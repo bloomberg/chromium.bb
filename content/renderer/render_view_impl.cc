@@ -681,6 +681,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetBackground, OnSetBackground)
     IPC_MESSAGE_HANDLER(ViewMsg_EnablePreferredSizeChangedMode,
                         OnEnablePreferredSizeChangedMode)
+    IPC_MESSAGE_HANDLER(ViewMsg_EnableAutoResize, OnEnableAutoResize)
     IPC_MESSAGE_HANDLER(ViewMsg_DisableScrollbarsForSmallWindows,
                         OnDisableScrollbarsForSmallWindows)
     IPC_MESSAGE_HANDLER(ViewMsg_SetRendererPrefs, OnSetRendererPrefs)
@@ -3904,6 +3905,14 @@ void RenderViewImpl::OnFileChooserResponse(const std::vector<FilePath>& paths) {
     Send(new ViewHostMsg_RunFileChooser(routing_id_,
         file_chooser_completions_.front()->params));
   }
+}
+
+void RenderViewImpl::OnEnableAutoResize(const gfx::Size& min_size,
+                                        const gfx::Size& max_size) {
+  DCHECK(disable_scrollbars_size_limit_.IsEmpty());
+  if (!webview())
+    return;
+  webview()->enableAutoResizeMode(true, min_size, max_size);
 }
 
 void RenderViewImpl::OnEnablePreferredSizeChangedMode() {

@@ -496,6 +496,9 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   virtual void NotifyRendererUnresponsive() {}
   virtual void NotifyRendererResponsive() {}
 
+  // Called when auto-resize resulted in the renderer size changing.
+  virtual void OnRenderAutoResized(const gfx::Size& new_size) {}
+
   // ---------------------------------------------------------------------------
 
   // RenderViewHost overrides this method to impose further restrictions on when
@@ -509,6 +512,10 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
 
   // RenderViewHost overrides this method to report when in fullscreen mode.
   virtual bool IsFullscreen() const;
+
+  // Indicates if the render widget host should track the render widget's size
+  // as opposed to visa versa.
+  void SetShouldAutoResize(bool enable);
 
  protected:
   // true if a renderer has once been valid. We use this flag to display a sad
@@ -673,6 +680,10 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   // is only updated once the resize message has been ack'd. This on the other
   // hand is updated when the resize message is sent.
   gfx::Rect in_flight_reserved_rect_;
+
+  // True if the render widget host should track the render widget's size as
+  // opposed to visa versa.
+  bool should_auto_resize_;
 
   // True if a mouse move event was sent to the render view and we are waiting
   // for a corresponding ViewHostMsg_HandleInputEvent_ACK message.

@@ -1023,6 +1023,10 @@ void RenderViewHost::OnMsgDidContentsPreferredSizeChange(
   delegate_->UpdatePreferredSize(new_size);
 }
 
+void RenderViewHost::OnRenderAutoResized(const gfx::Size& new_size) {
+  delegate_->UpdatePreferredSize(new_size);
+}
+
 void RenderViewHost::OnMsgDidChangeScrollbarsForMainFrame(
     bool has_horizontal_scrollbar, bool has_vertical_scrollbar) {
   if (view())
@@ -1337,6 +1341,12 @@ void RenderViewHost::DisableScrollbarsForThreshold(const gfx::Size& size) {
 
 void RenderViewHost::EnablePreferredSizeMode() {
   Send(new ViewMsg_EnablePreferredSizeChangedMode(routing_id()));
+}
+
+void RenderViewHost::EnableAutoResize(const gfx::Size& min_size,
+                                      const gfx::Size& max_size) {
+  SetShouldAutoResize(true);
+  Send(new ViewMsg_EnableAutoResize(routing_id(), min_size, max_size));
 }
 
 void RenderViewHost::ExecuteCustomContextMenuCommand(

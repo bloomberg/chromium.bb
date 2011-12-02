@@ -89,6 +89,7 @@ RenderWidgetHost::RenderWidgetHost(content::RenderProcessHost* process,
       is_accelerated_compositing_active_(false),
       repaint_ack_pending_(false),
       resize_ack_pending_(false),
+      should_auto_resize_(false),
       mouse_move_pending_(false),
       mouse_wheel_pending_(false),
       touch_move_pending_(false),
@@ -332,7 +333,7 @@ void RenderWidgetHost::WasRestored() {
 
 void RenderWidgetHost::WasResized() {
   if (resize_ack_pending_ || !process_->HasConnection() || !view_ ||
-      !renderer_initialized_) {
+      !renderer_initialized_ || should_auto_resize_) {
     return;
   }
 
@@ -868,6 +869,20 @@ bool RenderWidgetHost::IsFullscreen() const {
   return false;
 }
 
+void RenderWidgetHost::SetShouldAutoResize(bool enable) {
+  // Note if this switches from true to false then one has to verify that the
+  // mechanics about all the messaging works. For example, what happens to a
+  // update message rect that was in progress from the render widget. Perhaps,
+  // on a transition to false, this should do a WasResized, but what if that
+  // will not trigger a resize message...etc. Due to these complications it is
+  // fitting that this method doesn't look like a simple set method.
+  DCHECK(enable);
+
+  // TODO: Change this to enable instead of true when this supports turning
+  // off auto-resize.
+  should_auto_resize_ = true;
+}
+
 void RenderWidgetHost::Destroy() {
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
@@ -991,11 +1006,13 @@ void RenderWidgetHost::OnMsgUpdateRect(
 
   // resize_ack_pending_ needs to be cleared before we call DidPaintRect, since
   // that will end up reaching GetBackingStore.
-  if (is_resize_ack) {
-    DCHECK(resize_ack_pending_);
-    resize_ack_pending_ = false;
-    in_flight_size_.SetSize(0, 0);
-    in_flight_reserved_rect_.SetRect(0, 0, 0, 0);
+  if (is_resize_ack || should_auto_resize_) {
+    if (is_resize_ack) {
+      DCHECK(resize_ack_pending_);
+      resize_ack_pending_ = false;
+      in_flight_size_.SetSize(0, 0);
+      in_flight_reserved_rect_.SetRect(0, 0, 0, 0);
+    }
     // Update our knowledge of the RenderWidget's resizer rect.
     // ViewMsg_Resize is acknowledged only when view size is actually changed,
     // otherwise current_reserved_rect_ is updated immediately after sending
@@ -1054,6 +1071,10 @@ void RenderWidgetHost::OnMsgUpdateRect(
 
   if (!was_async) {
     DidUpdateBackingStore(params, paint_start);
+  }
+
+  if (should_auto_resize_) {
+    OnRenderAutoResized(params.view_size);
   }
 
   // Log the time delta for processing a paint message. On platforms that don't

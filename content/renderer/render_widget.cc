@@ -924,6 +924,10 @@ void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
       FROM_HERE, base::Bind(&RenderWidget::InvalidationCallback, this));
 }
 
+void RenderWidget::didAutoResize(const WebSize& new_size) {
+  size_ = new_size;
+}
+
 void RenderWidget::didActivateCompositor(int compositor_identifier) {
   TRACE_EVENT0("gpu", "RenderWidget::didActivateCompositor");
 

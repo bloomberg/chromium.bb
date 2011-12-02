@@ -442,6 +442,10 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   // Instructs the RenderView to send back updates to the preferred size.
   void EnablePreferredSizeMode();
 
+  // Instructs the RenderView to automatically resize and send back updates
+  // for the new size.
+  void EnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
+
   // Executes custom context menu action that was provided from WebKit.
   void ExecuteCustomContextMenuCommand(
       int action, const webkit_glue::CustomContextMenuContext& context);
@@ -495,6 +499,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   virtual void OnUserGesture() OVERRIDE;
   virtual void NotifyRendererUnresponsive() OVERRIDE;
   virtual void NotifyRendererResponsive() OVERRIDE;
+  virtual void OnRenderAutoResized(const gfx::Size& size) OVERRIDE;
   virtual void RequestToLockMouse() OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
   virtual void OnMsgFocus() OVERRIDE;
