@@ -106,11 +106,17 @@ class ProfileSyncServiceTest : public testing::Test {
       }
 
       if (issue_auth_token) {
-        profile_->GetTokenService()->IssueAuthTokenForTest(
-            GaiaConstants::kSyncService, "token");
+        IssueTestTokens();
       }
       service_->Initialize();
     }
+  }
+
+  void IssueTestTokens() {
+    profile_->GetTokenService()->IssueAuthTokenForTest(
+        GaiaConstants::kSyncService, "token1");
+    profile_->GetTokenService()->IssueAuthTokenForTest(
+        GaiaConstants::kGaiaOAuth2LoginRefreshToken, "token2");
   }
 
   MessageLoop ui_loop_;
@@ -165,8 +171,7 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
   EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
       WillRepeatedly(ReturnNewDataTypeManager());
 
-  profile_->GetTokenService()->IssueAuthTokenForTest(
-      GaiaConstants::kSyncService, "token");
+  IssueTestTokens();
 
   service_->Initialize();
   EXPECT_TRUE(service_->sync_initialized());
@@ -207,8 +212,7 @@ TEST_F(ProfileSyncServiceTest,
   js_controller->AddJsEventHandler(&event_handler);
   // Since we're doing synchronous initialization, backend should be
   // initialized by this call.
-  profile_->GetTokenService()->IssueAuthTokenForTest(
-      GaiaConstants::kSyncService, "token");
+  IssueTestTokens();
   EXPECT_TRUE(service_->sync_initialized());
   js_controller->RemoveJsEventHandler(&event_handler);
 }
@@ -253,8 +257,7 @@ TEST_F(ProfileSyncServiceTest,
                                     args1, reply_handler.AsWeakHandle());
   }
 
-  profile_->GetTokenService()->IssueAuthTokenForTest(
-      GaiaConstants::kSyncService, "token");
+  IssueTestTokens();
 
   // This forces the sync thread to process the message and reply.
   service_.reset();
@@ -286,8 +289,7 @@ TEST_F(ProfileSyncServiceTest, TestStartupWithOldSyncData) {
 
   // Since we're doing synchronous initialization, backend should be
   // initialized by this call.
-  profile_->GetTokenService()->IssueAuthTokenForTest(
-      GaiaConstants::kSyncService, "token");
+  IssueTestTokens();
 
   // Stop the service so we can read the new Sync Data files that were
   // created.

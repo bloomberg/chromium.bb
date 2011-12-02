@@ -124,6 +124,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   service_->OnUserSubmittedAuth("test_user", "", "", "");
   profile_->GetTokenService()->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
+  profile_->GetTokenService()->IssueAuthTokenForTest(
+      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
 
   syncable::ModelTypeSet set;
   set.insert(syncable::BOOKMARKS);

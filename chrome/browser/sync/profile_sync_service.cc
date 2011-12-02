@@ -84,6 +84,20 @@ const char* ProfileSyncService::kDevServerUrl =
 
 static const int kSyncClearDataTimeoutInSeconds = 60;  // 1 minute.
 
+static const char* kRelevantTokenServices[] = {
+    GaiaConstants::kSyncService,
+    GaiaConstants::kGaiaOAuth2LoginRefreshToken};
+static const int kRelevantTokenServicesCount =
+    arraysize(kRelevantTokenServices);
+
+// Helper to check if the given token service is relevant for sync.
+static bool IsTokenServiceRelevant(const std::string& service) {
+  for (int i = 0; i < kRelevantTokenServicesCount; ++i) {
+    if (service == kRelevantTokenServices[i])
+      return true;
+  }
+  return false;
+}
 
 bool ShouldShowActionOnUI(
     const browser_sync::SyncProtocolError& error) {
@@ -141,18 +155,27 @@ ProfileSyncService::~ProfileSyncService() {
 }
 
 bool ProfileSyncService::AreCredentialsAvailable() {
+  return AreCredentialsAvailable(false);
+}
+
+bool ProfileSyncService::AreCredentialsAvailable(
+    bool check_oauth_login_token) {
   if (IsManaged()) {
     return false;
   }
 
   // CrOS user is always logged in. Chrome uses signin_ to check logged in.
-  if (!cros_user_.empty() || !signin_->GetUsername().empty()) {
-    // TODO(chron): Verify CrOS unit test behavior.
-    return profile()->GetTokenService() &&
-        profile()->GetTokenService()->HasTokenForService(
-            browser_sync::SyncServiceName());
-  }
-  return false;
+  if (cros_user_.empty() && signin_->GetUsername().empty())
+    return false;
+
+  TokenService* token_service = profile()->GetTokenService();
+  if (!token_service)
+    return false;
+
+  // TODO(chron): Verify CrOS unit test behavior.
+  if (!token_service->HasTokenForService(browser_sync::SyncServiceName()))
+    return false;
+  return !check_oauth_login_token || token_service->HasOAuthLoginToken();
 }
 
 void ProfileSyncService::Initialize() {
@@ -1435,13 +1458,22 @@ void ProfileSyncService::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_TOKEN_REQUEST_FAILED: {
-      GoogleServiceAuthError error(
-          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-      UpdateAuthErrorState(error);
+      const TokenService::TokenRequestFailedDetails& token_details =
+          *(content::Details<const TokenService::TokenRequestFailedDetails>(
+              details).ptr());
+      if (IsTokenServiceRelevant(token_details.service())) {
+        GoogleServiceAuthError error(
+            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+        UpdateAuthErrorState(error);
+      }
       break;
     }
     case chrome::NOTIFICATION_TOKEN_AVAILABLE: {
-      if (AreCredentialsAvailable()) {
+      const TokenService::TokenAvailableDetails& token_details =
+          *(content::Details<const TokenService::TokenAvailableDetails>(
+              details).ptr());
+      if (IsTokenServiceRelevant(token_details.service()) &&
+          AreCredentialsAvailable(true)) {
         if (backend_initialized_) {
           backend_->UpdateCredentials(GetCredentials());
         }
@@ -1451,11 +1483,22 @@ void ProfileSyncService::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_TOKEN_LOADING_FINISHED: {
-      // If not in Chrome OS, and we have a username without tokens,
-      // the user will need to signin again, so sign out.
-      if (cros_user_.empty() &&
-          !signin_->GetUsername().empty() &&
-          !AreCredentialsAvailable()) {
+      // This notification gets fired when TokenService loads the tokens
+      // from storage. Here we only check if the chromiumsync token is
+      // available (versus both chromiumsync and oauth login tokens) to
+      // start up sync successfully for already logged in users who may
+      // only have chromiumsync token if they logged in before the code
+      // to generate oauth login token released.
+      if (AreCredentialsAvailable()) {
+        // Initialize the backend if sync token was loaded.
+        if (backend_initialized_) {
+          backend_->UpdateCredentials(GetCredentials());
+        }
+        if (!sync_prefs_.IsStartSuppressed())
+          StartUp();
+      } else if (cros_user_.empty() && !signin_->GetUsername().empty()) {
+        // If not in Chrome OS, and we have a username without tokens,
+        // the user will need to signin again, so sign out.
         DisableForUser();
       }
       break;

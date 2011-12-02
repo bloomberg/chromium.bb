@@ -381,6 +381,10 @@ void SyncTest::SetupMockGaiaResponses() {
   fake_factory_->SetFakeResponse(kSearchDomainCheckUrl, ".google.com", true);
   fake_factory_->SetFakeResponse(
       GaiaUrls::GetInstance()->client_login_to_oauth2_url(),
+      "some_response",
+      true);
+  fake_factory_->SetFakeResponse(
+      GaiaUrls::GetInstance()->oauth2_token_url(),
       kOAuth2LoginTokenValidResponse,
       true);
 }
