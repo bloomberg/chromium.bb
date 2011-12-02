@@ -74,7 +74,7 @@ class BackgroundSteps(multiprocessing.Process):
     If an exception occurs, return a string containing the traceback.
     """
     assert not self.Empty()
-    step, output = self._steps.pop(0)
+    _step, output = self._steps.pop(0)
     pos = 0
     more_output = True
     while more_output:

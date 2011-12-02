@@ -703,7 +703,6 @@ class HWTestStage(NonHaltingBuilderStage):
 
     if self._build_config['hw_tests_reimage']:
       commands.UpdateRemoteHW(self._build_root,
-                              self._build_config['board'],
                               self.GetImageDirSymlink(),
                               ip)
 

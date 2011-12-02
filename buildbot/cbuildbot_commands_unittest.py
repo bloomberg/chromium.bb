@@ -9,7 +9,6 @@
 import mox
 import os
 import shutil
-import socket
 import sys
 import tempfile
 import unittest
@@ -60,13 +59,9 @@ class CBuildBotTest(mox.MoxTestBase):
 
   def testRunTestSuite(self):
     """Tests if we can parse the test_types so that sane commands are called."""
-    def ItemsInList(items, list):
-      """Helper function that returns whether items are in a list."""
-      return set(items).issubset(set(list))
-
-    def ItemsNotInList(items, list):
+    def ItemsNotInList(items, list_):
       """Helper function that returns whether items are not in a list."""
-      return set(items).isdisjoint(set(list))
+      return set(items).isdisjoint(set(list_))
 
     cwd = self._work_dir + '/src/scripts'
 
@@ -82,9 +77,8 @@ class CBuildBotTest(mox.MoxTestBase):
     self.mox.VerifyAll()
     self.mox.ResetAll()
 
-    cros_lib.OldRunCommand(
-        mox.Func(lambda x: ItemsInList(['--quick'], x)),
-        cwd=cwd, error_ok=True, exit_code=True)
+    cros_lib.OldRunCommand(mox.In('--quick'), cwd=cwd, error_ok=True,
+                           exit_code=True)
 
     self.mox.ReplayAll()
     commands.RunTestSuite(self._work_dir, self._test_board, self._buildroot,
@@ -95,7 +89,7 @@ class CBuildBotTest(mox.MoxTestBase):
     self.mox.ResetAll()
 
     cros_lib.OldRunCommand(
-        mox.Func(lambda x: ItemsInList(['--quick', '--only_verify'], x)),
+        mox.And(mox.In('--quick'), mox.In('--only_verify')),
         cwd=cwd, error_ok=True, exit_code=True)
 
     self.mox.ReplayAll()
@@ -186,11 +180,11 @@ class CBuildBotTest(mox.MoxTestBase):
     os.unlink(test_tarball)
     shutil.rmtree(temp_dir)
 
-    self.mox.ReplayAll();
+    self.mox.ReplayAll()
     commands.GenerateMinidumpStackTraces(buildroot, board,
                                          gzipped_test_tarball,
                                          archive_dir)
-    self.mox.VerifyAll();
+    self.mox.VerifyAll()
 
   def testUprevAllPackages(self):
     """Test if we get None in revisions.pfq indicating Full Builds."""

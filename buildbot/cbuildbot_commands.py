@@ -56,7 +56,7 @@ def _BuildRootGitCleanup(buildroot):
             combine_stdout_stderr=True, error_code_ok=True)
         if check_returncode and result.returncode != 0:
           logging.info(result.output)
-          logging.warn('Deleting %s because %s failed' % (cwd, cmd))
+          logging.warn('Deleting %s because %s failed', cwd, cmd)
           shutil.rmtree(cwd)
           print '@@@STEP_WARNINGS@@@'
           return
@@ -389,7 +389,7 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
     raise TestException('** VMTests failed with code %d **' % code)
 
 
-def UpdateRemoteHW(buildroot, board, image_dir, remote_ip):
+def UpdateRemoteHW(buildroot, image_dir, remote_ip):
   """Reimage the remote machine using the image modified for test."""
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
@@ -490,7 +490,7 @@ def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball,
   if not tar_cmd.returncode:
     symbol_dir = os.path.join('/build', board, 'usr', 'lib', 'debug',
                               'breakpad')
-    for curr_dir, subdirs, files in os.walk(temp_dir):
+    for curr_dir, _subdirs, files in os.walk(temp_dir):
       for curr_file in files:
         # Skip crash files that were purposely generated.
         if curr_file.find('crasher_nobreakpad') == 0: continue
@@ -663,7 +663,7 @@ def UploadPrebuilts(buildroot, board, overlay_config, category,
                     binhost_base_url=None,
                     use_binhost_package_file=False,
                     git_sync=False,
-                    extra_args=[]):
+                    extra_args=None):
   """Upload prebuilts.
 
   Args:
@@ -688,6 +688,9 @@ def UploadPrebuilts(buildroot, board, overlay_config, category,
                               packages are selected.
     extra_args: Extra args to send to prebuilt.py.
   """
+  if extra_args is None:
+    extra_args = []
+
   cwd = os.path.dirname(__file__)
   cmd = ['./prebuilt.py',
          '--build-path', buildroot,

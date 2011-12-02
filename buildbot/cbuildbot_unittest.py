@@ -7,7 +7,6 @@
 """Unittests for build stages."""
 
 import mox
-import optparse
 import os
 import shutil
 import sys
@@ -407,6 +406,7 @@ class FullInterfaceTest(unittest.TestCase):
     """Buildbot should quit if run inside a chroot."""
     # Need to do this since a cros_lib.IsInsideChroot() call is already queued
     # up in setup() and we can't Reset() an individual mock.
+    # pylint: disable=E1102
     new_is_inside_chroot = self.mox.CreateMockAnything()
     new_is_inside_chroot().InAnyOrder().AndReturn(True)
     cros_lib.IsInsideChroot = new_is_inside_chroot

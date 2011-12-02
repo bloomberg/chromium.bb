@@ -30,7 +30,7 @@ from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib as cros_lib
 
 
-# pylint: disable=W0212,R0904
+# pylint: disable=E1120,W0212,R0904
 class AbstractStageTest(mox.MoxTestBase):
   """Base class for tests that test a particular build stage.
 
@@ -118,6 +118,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
   """Tests the two (heavily related) stages ManifestVersionedSync, and
      ManifestVersionedSyncCompleted.
   """
+  # pylint: disable=W0223
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
@@ -395,7 +396,7 @@ class BuildBoardTest(AbstractStageTest):
     os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
                                self.build_config['board'])).AndReturn(True)
 
-    commands.RunChrootUpgradeHooks(self.build_root);
+    commands.RunChrootUpgradeHooks(self.build_root)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -551,7 +552,6 @@ class HWTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'RunRemoteTest')
 
     commands.UpdateRemoteHW(self.build_root,
-                            self.build_config['board'],
                             mox.IgnoreArg(),
                             self.options.remote_ip)
     commands.RunRemoteTest(self.build_root,
@@ -576,7 +576,6 @@ class HWTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'RunRemoteTest')
 
     commands.UpdateRemoteHW(self.build_root,
-                            self.build_config['board'],
                             mox.IgnoreArg(),
                             self.options.remote_ip)
     commands.RunRemoteTest(self.build_root,
@@ -617,7 +616,6 @@ class HWTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'RunRemoteTest')
 
     commands.UpdateRemoteHW(self.build_root,
-                            self.build_config['board'],
                             mox.IgnoreArg(),
                             self.options.remote_ip)
     commands.RunRemoteTest(self.build_root,
@@ -670,7 +668,6 @@ class HWTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'RunRemoteTest')
 
     commands.UpdateRemoteHW(self.build_root,
-                            self.build_config['board'],
                             mox.IgnoreArg(),
                             self.options.remote_ip)
     commands.RunRemoteTest(self.build_root,
@@ -1096,7 +1093,7 @@ class BuildStagesResultsTest(unittest.TestCase):
     self.url = 'fake_url'
 
     # Create a class to hold
-    class Options:
+    class Options(object):
       pass
 
     self.options = Options()

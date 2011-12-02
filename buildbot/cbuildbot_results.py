@@ -9,7 +9,7 @@ import math
 
 from chromite.lib import cros_build_lib as cros_lib
 
-class Results:
+class Results(object):
   """Static class that collects the results of our BuildStages as they run."""
 
   # List of results for all stages that's built up as we run. Members are of
@@ -94,12 +94,10 @@ class Results:
            The textual backtrace of the exception, or None
     """
     for index in range(len(cls._results_log)):
-      if cls._results_log[index][0] == name: break
-    else:
-      return
-
-    _, _, _, run_time = cls._results_log[index]
-    cls._results_log[index] = name, result, description, run_time
+      if cls._results_log[index][0] == name:
+        _, _, _, run_time = cls._results_log[index]
+        cls._results_log[index] = name, result, description, run_time
+        break
 
   @classmethod
   def Get(cls):
@@ -120,18 +118,18 @@ class Results:
     return cls._previous
 
   @classmethod
-  def SaveCompletedStages(cls, file):
-    """Save out the successfully completed stages to the provided file."""
+  def SaveCompletedStages(cls, out):
+    """Save the successfully completed stages to the provided file |out|."""
     for name, result, description, time in cls._results_log:
       if result != cls.SUCCESS: break
-      file.write(cls.SPLIT_TOKEN.join([name, str(description), str(time)]))
-      file.write('\n')
+      out.write(cls.SPLIT_TOKEN.join([name, str(description), str(time)]))
+      out.write('\n')
 
   @classmethod
-  def RestoreCompletedStages(cls, file):
-    """Load the successfully completed stages from the provided file."""
+  def RestoreCompletedStages(cls, out):
+    """Load the successfully completed stages from the provided file |out|."""
     # Read the file, and strip off the newlines.
-    for line in file:
+    for line in out:
       record = line.strip().split(cls.SPLIT_TOKEN)
       if len(record) != 3:
         cros_lib.Warning('State file does not match expected format, ignoring.')
@@ -143,7 +141,7 @@ class Results:
 
 
   @classmethod
-  def Report(cls, file, archive_url=None, current_version=None):
+  def Report(cls, out, archive_url=None, current_version=None):
     """Generate a user friendly text display of the results data."""
     results = cls._results_log
 
@@ -151,28 +149,28 @@ class Results:
     edge = '*' * 2
 
     if current_version:
-      file.write(line)
-      file.write(edge +
-                 ' RELEASE VERSION: ' +
-                 current_version +
-                 '\n')
+      out.write(line)
+      out.write(edge +
+                ' RELEASE VERSION: ' +
+                current_version +
+                '\n')
 
-    file.write(line)
-    file.write(edge + ' Stage Results\n')
+    out.write(line)
+    out.write(edge + ' Stage Results\n')
 
     first_exception = None
 
     for name, result, description, run_time in results:
       timestr = datetime.timedelta(seconds=math.ceil(run_time))
 
-      file.write(line)
+      out.write(line)
       if result == cls.SUCCESS:
         # These was no error
-        file.write('%s PASS %s (%s)\n' % (edge, name, timestr))
+        out.write('%s PASS %s (%s)\n' % (edge, name, timestr))
 
       elif result == cls.FORGIVEN:
         # The stage was executed previously, and skipped this time
-        file.write('%s FAILED BUT FORGIVEN %s (%s)\n' %
+        out.write('%s FAILED BUT FORGIVEN %s (%s)\n' %
                    (edge, name, timestr))
       else:
         if type(result) in (cros_lib.RunCommandException,
@@ -180,27 +178,27 @@ class Results:
           # If there was a RunCommand error, give just the command that
           # failed, not it's full argument list, since those are usually
           # too long.
-          file.write('%s FAIL %s (%s) in %s\n' %
+          out.write('%s FAIL %s (%s) in %s\n' %
                      (edge, name, timestr, result.cmd[0]))
         else:
           # There was a normal error, give the type of exception
-          file.write('%s FAIL %s (%s) with %s\n' %
+          out.write('%s FAIL %s (%s) with %s\n' %
                      (edge, name, timestr, type(result).__name__))
 
         if not first_exception:
           first_exception = description
 
-    file.write(line)
+    out.write(line)
 
     if archive_url:
-      file.write('%s BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:\n' % edge)
-      file.write('%s  %s\n' % (edge, archive_url))
-      file.write('@@@STEP_LINK@Artifacts@%s@@@\n' % archive_url)
-      file.write(line)
+      out.write('%s BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:\n' % edge)
+      out.write('%s  %s\n' % (edge, archive_url))
+      out.write('@@@STEP_LINK@Artifacts@%s@@@\n' % archive_url)
+      out.write(line)
 
     if first_exception:
-      file.write('\n')
-      file.write('Build failed with:\n')
-      file.write('\n')
-      file.write(first_exception)
-      file.write('\n')
+      out.write('\n')
+      out.write('Build failed with:\n')
+      out.write('\n')
+      out.write(first_exception)
+      out.write('\n')

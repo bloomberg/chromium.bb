@@ -63,7 +63,7 @@ def _PrintValidConfigs(trybot_only=True):
       print name.ljust(COLUMN_WIDTH), desc
 
 
-def _GetConfig(config_name, options):
+def _GetConfig(config_name):
   """Gets the configuration for the build"""
   if not cbuildbot_config.config.has_key(config_name):
     print 'Non-existent configuration specified.'
@@ -583,12 +583,12 @@ def _CheckAndSplitLocalPatches(options):
     options.local_patches.append(patch)
 
 
-def _CheckAndSplitGerritPatches(option, opt_str, value, parser):
+def _CheckAndSplitGerritPatches(_option, _opt_str, value, parser):
   """Early quick check of patches and convert them into a list."""
   parser.values.gerrit_patches = value.split()
 
 
-def _CheckBuildRootOption(option, opt_str, value, parser):
+def _CheckBuildRootOption(_option, _opt_str, value, parser):
   """Validate and convert buildroot to full-path form."""
   value = value.strip()
   if not value or value == '/':
@@ -597,7 +597,7 @@ def _CheckBuildRootOption(option, opt_str, value, parser):
   parser.values.buildroot = os.path.realpath(os.path.expanduser(value))
 
 
-def _CheckChromeVersionOption(option, opt_str, value, parser):
+def _CheckChromeVersionOption(_option, _opt_str, value, parser):
   """Upgrade other options based on chrome_version being passed."""
   value = value.strip()
 
@@ -607,7 +607,7 @@ def _CheckChromeVersionOption(option, opt_str, value, parser):
   parser.values.chrome_version = value
 
 
-def _CheckChromeRootOption(option, opt_str, value, parser):
+def _CheckChromeRootOption(_option, _opt_str, value, parser):
   """Validate and convert chrome_root to full-path form."""
   value = value.strip()
   if not value or value == '/':
@@ -619,7 +619,7 @@ def _CheckChromeRootOption(option, opt_str, value, parser):
   parser.values.chrome_root = os.path.realpath(os.path.expanduser(value))
 
 
-def _CheckChromeRevOption(option, opt_str, value, parser):
+def _CheckChromeRevOption(_option, _opt_str, value, parser):
   """Validate the chrome_rev option."""
   value = value.strip()
   if value not in constants.VALID_CHROME_REVISIONS:
@@ -628,7 +628,7 @@ def _CheckChromeRevOption(option, opt_str, value, parser):
   parser.values.chrome_rev = value
 
 
-def _ProcessBuildBotOption(option, opt_str, value, parser):
+def _ProcessBuildBotOption(_option, _opt_str, _value, parser):
   """Set side-effects of --buildbot option"""
   parser.values.debug = False
   parser.values.buildbot = True
@@ -815,7 +815,7 @@ def main(argv=None):
 
   if len(args) >= 1:
     bot_id = args[-1]
-    build_config = _GetConfig(bot_id, options)
+    build_config = _GetConfig(bot_id)
   else:
     parser.error('Invalid usage.  Use -h to see usage.')
 
