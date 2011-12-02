@@ -9,7 +9,6 @@
 #include "base/process_util.h"
 #include "base/threading/thread.h"
 #include "base/tracked_objects.h"
-#include "content/common/child_process_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/profiler_controller.h"
 #include "content/public/common/process_type.h"
