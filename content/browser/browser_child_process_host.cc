@@ -225,9 +225,11 @@ void BrowserChildProcessHost::OnWaitableEventSignaled(
   unsigned long exit_code = 0;
   GetExitCodeProcess(waitable_event->Release(), &exit_code);
   delete waitable_event;
-  if (exit_code == STILL_ACTIVE)
+  if (exit_code == STILL_ACTIVE) {
     OnChildDied();
-  BrowserChildProcessHost::OnChildDisconnected();
+  } else {
+    BrowserChildProcessHost::OnChildDisconnected();
+  }
 #endif
 }
 
