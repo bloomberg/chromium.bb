@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "content/browser/browser_child_process_host.h"
-#include "content/common/child_process_info.h"
 #include "content/common/child_process_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/profiler_subscriber.h"
