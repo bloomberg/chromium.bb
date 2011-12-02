@@ -50,6 +50,7 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
       const WebKit::WebString& name,
       const WebKit::WebString& key_path,
       bool unique,
+      bool multi_entry,
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode& ec);
   // Transfers ownership of the WebIDBIndex to the caller.

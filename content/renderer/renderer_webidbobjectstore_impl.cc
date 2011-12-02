@@ -119,12 +119,14 @@ WebIDBIndex* RendererWebIDBObjectStoreImpl::createIndex(
     const WebString& name,
     const WebString& key_path,
     bool unique,
+    bool multi_entry,
     const WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBHostMsg_ObjectStoreCreateIndex_Params params;
   params.name = name;
   params.key_path = key_path;
   params.unique = unique;
+  params.multi_entry = multi_entry;
   params.transaction_id = IndexedDBDispatcher::TransactionId(transaction);
   params.idb_object_store_id = idb_object_store_id_;
 

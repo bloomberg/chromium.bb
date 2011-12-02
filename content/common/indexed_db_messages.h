@@ -106,6 +106,8 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_ObjectStoreCreateIndex_Params)
   IPC_STRUCT_MEMBER(NullableString16, key_path)
   // Whether the index created has unique keys.
   IPC_STRUCT_MEMBER(bool, unique)
+  // Whether the index created produces keys for each array entry.
+  IPC_STRUCT_MEMBER(bool, multi_entry)
   // The transaction this is associated with.
   IPC_STRUCT_MEMBER(int32, transaction_id)
   // The object store the index belongs to.

@@ -797,7 +797,8 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnCreateIndex(
 
   *ec = 0;
   WebIDBIndex* index = idb_object_store->createIndex(
-      params.name, params.key_path, params.unique, *idb_transaction, *ec);
+      params.name, params.key_path, params.unique, params.multi_entry,
+      *idb_transaction, *ec);
   *index_id = *ec ? 0 : parent_->Add(index);
   WebIDBObjectIDToURLMap* transaction_url_map =
       &parent_->transaction_dispatcher_host_->transaction_url_map_;
