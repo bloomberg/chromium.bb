@@ -36,4 +36,10 @@ node = env.PPAPIBrowserTester('ppapi_ppb_pdf_browser_test.out',
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_ppapi_ppb_pdf_browser_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken())
+                    # Pnacl x86-64 requires a shim. However the shim
+                    # is generated via IDL, and pdf header is not
+                    # generated via IDL right now
+                    # http://code.google.com/p/chromium/issues/detail?id=89968
+                       is_broken=(
+                           env.PPAPIBrowserTesterIsBroken() or
+                           (env.Bit('bitcode') and env.Bit('target_x86_64'))))
