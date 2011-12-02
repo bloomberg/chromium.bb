@@ -360,6 +360,13 @@ shell_surface_set_transient(struct wl_client *client,
 	shsurf->type = SHELL_SURFACE_TRANSIENT;
 }
 
+static struct wlsc_output *
+get_default_output(struct wlsc_compositor *compositor)
+{
+	return container_of(compositor->output_list.next,
+			    struct wlsc_output, link);
+}
+
 static void
 shell_surface_set_fullscreen(struct wl_client *client,
 			     struct wl_resource *resource)
@@ -374,8 +381,7 @@ shell_surface_set_fullscreen(struct wl_client *client,
 
 	/* FIXME: Fullscreen on first output */
 	/* FIXME: Handle output going away */
-	output = container_of(es->compositor->output_list.next,
-			      struct wlsc_output, link);
+	output = get_default_output(es->compositor);
 	es->output = output;
 
 	shsurf->saved_x = es->x;
@@ -945,6 +951,9 @@ map(struct wlsc_shell *base,
 	case SHELL_SURFACE_SCREENSAVER:
 	case SHELL_SURFACE_FULLSCREEN:
 		center_on_output(surface, surface->fullscreen_output);
+		break;
+	case SHELL_SURFACE_LOCK:
+		center_on_output(surface, get_default_output(compositor));
 		break;
 	default:
 		;
