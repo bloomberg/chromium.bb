@@ -1028,25 +1028,32 @@ bool AutocompleteEditModel::DoInstant(const AutocompleteMatch& match,
   if (!instant)
     return false;
 
+  // It's possible the tab strip does not have an active tab contents, for
+  // instance if the tab has been closed or on return from a sleep state
+  // (http://crbug.com/105689)
   TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
-
   if (!tab)
     return false;
 
   if (user_input_in_progress() && popup_->IsOpen()) {
     return instant->Update(tab, match, view_->GetText(), UseVerbatimInstant(),
                            suggested_text);
-  } else {
-    instant->Hide();
-    return false;
   }
+
+  instant->Hide();
+  return false;
 }
 
 void AutocompleteEditModel::DoPrerender(const AutocompleteMatch& match) {
   // Do not prerender if the destination URL is the same as the current URL.
   if (match.destination_url == PermanentURL())
     return;
+  // It's possible the tab strip does not have an active tab contents, for
+  // instance if the tab has been closed or on return from a sleep state
+  // (http://crbug.com/105689)
   TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
+  if (!tab)
+    return;
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(tab->profile());
   if (prerender_manager) {
