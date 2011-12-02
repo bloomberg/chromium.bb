@@ -5206,21 +5206,6 @@
    fun:_ZNK4base8CallbackIFvvEE3RunEv
 }
 {
-   bug_104749
-   Memcheck:Unaddressable
-   ...
-   fun:_ZN7WebCore14CachedResource6finishEv
-   fun:_ZN7WebCore17SubresourceLoader16didFinishLoadingEd
-   fun:_ZN7WebCore14ResourceLoader16didFinishLoadingEPNS_14ResourceHandleEd
-   fun:_ZN7WebCore22ResourceHandleInternal16didFinishLoadingEPN6WebKit12WebURLLoaderEd
-   fun:_ZN11webkit_glue16WebURLLoaderImpl7Context18OnCompletedRequestERKN3net16URLRequestStatusERKSsRKN4base4TimeE
-   fun:_ZN12_GLOBAL__N_112RequestProxy22NotifyCompletedRequestERKN3net16URLRequestStatusERKSsRKN4base4TimeE
-   fun:_ZN4base8internal15RunnableAdapterIMN12_GLOBAL__N_112RequestProxyEFvRKN3net16URLRequestStatusERKSsRKNS_4TimeEEE3RunEPS3_S7_S9_SC_
-   fun:_ZN4base8internal12InvokeHelperILb0EvNS0_15RunnableAdapterIMN12_GLOBAL__N_112RequestProxyEFvRKN3net16URLRequestStatusERKSsRKNS_4TimeEEEEFvRKPS4_S8_SA_SD_EE8MakeItSoESG_SJ_S8_SA_SD_
-   fun:_ZN4base8internal7InvokerILi4ENS0_9BindStateINS0_15RunnableAdapterIMN12_GLOBAL__N_112RequestProxyEFvRKN3net16URLRequestStatusERKSsRKNS_4TimeEEEEFvPS5_S9_SB_SE_EFvSI_S7_SsSC_EEESJ_E3RunEPNS0_13BindStateBaseE
-   fun:_ZNK4base8CallbackIFvvEE3RunEv
-}
-{
    bug_105907
    Memcheck:Uninitialized
    ...
