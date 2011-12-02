@@ -12,6 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "remoting/host/chromoting_host.h"
 #import "third_party/GTM/AppKit/GTMCarbonEvent.h"
@@ -21,7 +22,7 @@
 static const NSUInteger kEscKeyCode = 53;
 
 namespace {
-typedef std::set<remoting::ChromotingHost*> Hosts;
+typedef std::set<scoped_refptr<remoting::ChromotingHost> > Hosts;
 }
 
 @interface LocalInputMonitorImpl : NSObject {

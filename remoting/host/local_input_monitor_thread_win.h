@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/simple_thread.h"
 #include "remoting/host/chromoting_host.h"
@@ -35,7 +36,7 @@ class LocalInputMonitorThread : public base::SimpleThread {
                                                  LPARAM event_data);
 
   base::Lock hosts_lock_;
-  typedef std::set<ChromotingHost*> ChromotingHosts;
+  typedef std::set<scoped_refptr<ChromotingHost> > ChromotingHosts;
   ChromotingHosts hosts_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalInputMonitorThread);

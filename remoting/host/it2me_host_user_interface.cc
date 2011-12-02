@@ -66,7 +66,8 @@ void It2MeHostUserInterface::OnClientAuthenticated(const std::string& jid) {
 
   std::string username = jid.substr(0, jid.find('/'));
   ui_thread_proxy_.PostTask(FROM_HERE, base::Bind(
-    &It2MeHostUserInterface::ProcessOnConnect, base::Unretained(this),
+    &It2MeHostUserInterface::ProcessOnClientAuthenticated,
+    base::Unretained(this),
     username));
 }
 
@@ -74,7 +75,7 @@ void It2MeHostUserInterface::OnClientDisconnected(const std::string& jid) {
   if (jid == authenticated_jid_) {
     authenticated_jid_.clear();
     ui_thread_proxy_.PostTask(FROM_HERE, base::Bind(
-        &It2MeHostUserInterface::ProcessOnLastDisconnect,
+        &It2MeHostUserInterface::ProcessOnClientDisconnected,
         base::Unretained(this)));
   }
 }
@@ -96,19 +97,8 @@ void It2MeHostUserInterface::Shutdown() {
   ui_thread_proxy_.Detach();
 }
 
-void It2MeHostUserInterface::OnConnect(const std::string& username) {
-  ui_thread_proxy_.PostTask(FROM_HERE, base::Bind(
-      &It2MeHostUserInterface::ProcessOnConnect, base::Unretained(this),
-      username));
-}
-
-void It2MeHostUserInterface::OnLastDisconnect() {
-  ui_thread_proxy_.PostTask(FROM_HERE, base::Bind(
-      &It2MeHostUserInterface::ProcessOnLastDisconnect,
-      base::Unretained(this)));
-}
-
-void It2MeHostUserInterface::ProcessOnConnect(const std::string& username) {
+void It2MeHostUserInterface::ProcessOnClientAuthenticated(
+    const std::string& username) {
   DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
 
   MonitorLocalInputs(true);
@@ -116,7 +106,7 @@ void It2MeHostUserInterface::ProcessOnConnect(const std::string& username) {
   StartContinueWindowTimer(true);
 }
 
-void It2MeHostUserInterface::ProcessOnLastDisconnect() {
+void It2MeHostUserInterface::ProcessOnClientDisconnected() {
   DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
 
   MonitorLocalInputs(false);

@@ -67,11 +67,8 @@ class It2MeHostUserInterface : public HostStatusObserver {
                 ContinueWindow* continue_window,
                 LocalInputMonitor* monitor);
 
-  void OnConnect(const std::string& username);
-  void OnLastDisconnect();
-
-  void ProcessOnConnect(const std::string& username);
-  void ProcessOnLastDisconnect();
+  void ProcessOnClientAuthenticated(const std::string& username);
+  void ProcessOnClientDisconnected();
 
   void MonitorLocalInputs(bool enable);
 
