@@ -161,6 +161,47 @@ TEST(LookaheadFilterInterpreterTest, SimpleTest) {
   }
 }
 
+// This test makes sure that if an interpreter requests a timeout, and then
+// there is a spurious callback, that we request another callback for the time
+// that remains.
+TEST(LookaheadFilterInterpreterTest, SpuriousCallbackTest) {
+  LookaheadFilterInterpreterTestInterpreter* base_interpreter = NULL;
+  scoped_ptr<LookaheadFilterInterpreter> interpreter;
+
+  HardwareProperties initial_hwprops = {
+    0, 0, 100, 100,  // left, top, right, bottom
+    10,  // x res (pixels/mm)
+    10,  // y res (pixels/mm)
+    133, 133, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    1, 0, 0  // t5r2, semi, button pad
+  };
+
+  HardwareState hs = {1, 0, 0, 0, NULL};
+
+  base_interpreter = new LookaheadFilterInterpreterTestInterpreter;
+  base_interpreter->timer_return_ = 1.0;
+  interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
+  interpreter->SetHardwareProperties(initial_hwprops);
+  interpreter->delay_.val_ = 0.05;
+  EXPECT_TRUE(base_interpreter->set_hwprops_called_);
+
+  stime_t timeout = -1.0;
+  Gesture* out = interpreter->SyncInterpret(&hs, &timeout);
+  EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
+  EXPECT_FLOAT_EQ(interpreter->delay_.val_, timeout);
+
+  out = interpreter->HandleTimer(hs.timestamp + interpreter->delay_.val_,
+                                 &timeout);
+  EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
+  EXPECT_FLOAT_EQ(1.0, timeout);
+
+
+  out = interpreter->HandleTimer(hs.timestamp + interpreter->delay_.val_ + 0.25,
+                                 &timeout);
+  EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
+  EXPECT_FLOAT_EQ(0.75, timeout);
+}
+
 TEST(LookaheadFilterInterpreterTest, TimeGoesBackwardsTest) {
   LookaheadFilterInterpreterTestInterpreter* base_interpreter =
       new LookaheadFilterInterpreterTestInterpreter;

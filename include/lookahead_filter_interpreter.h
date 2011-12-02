@@ -26,6 +26,7 @@ class LookaheadFilterInterpreter : public Interpreter {
   FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolateTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolationOverdueTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, SimpleTest);
+  FRIEND_TEST(LookaheadFilterInterpreterTest, SpuriousCallbackTest);
  public:
   LookaheadFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
   virtual ~LookaheadFilterInterpreter();

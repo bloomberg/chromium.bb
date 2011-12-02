@@ -229,8 +229,10 @@ Gesture* LookaheadFilterInterpreter::HandleTimer(stime_t now,
   stime_t next_timeout = -1.0;
   while (true) {
     if (interpreter_due_ > 0.0) {
-      if (interpreter_due_ > now)
+      if (interpreter_due_ > now) {
+        next_timeout = interpreter_due_ - now;
         break;  // Spurious callback
+      }
       next_timeout = -1.0;
       last_interpreted_time_ = now;
       result = next_->HandleTimer(now, &next_timeout);
