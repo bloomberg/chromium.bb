@@ -369,6 +369,7 @@ cr.define('ntp4', function() {
           this.appsPromoExtras_.querySelector('.apps-promo-heading');
       this.appsPromoLink_ =
           this.appsPromoExtras_.querySelector('.apps-promo-link');
+      this.appsPromoLink_.addEventListener('click', this.onClick_.bind(this));
 
       this.appsPromoLogo_ = this.ownerDocument.createElement('img');
       this.appsPromoLogo_.className = 'apps-promo-logo';
@@ -437,9 +438,7 @@ cr.define('ntp4', function() {
       var is_promo = this.appsPromoExtras_ &&
           window.getComputedStyle(this.appsPromoExtras_).display != 'none';
       var url = !this.appData_.is_webstore ? '' :
-          is_promo ? appendParam(this.appsPromoLink_.href,
-                                 'utm_source',
-                                 'chrome-ntp-promo') :
+          is_promo ? this.appsPromoLink_.href :
                      appendParam(this.appData_.url,
                                  'utm_source',
                                  'chrome-ntp-icon');
