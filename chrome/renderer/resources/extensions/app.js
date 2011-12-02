@@ -20,15 +20,16 @@ var chrome = chrome || {};
     this.install = Install;
     this.getDetails = GetDetails;
     this.getDetailsForFrame = GetDetailsForFrame;
-    this.experimental = {
-      getNotificationChannel: function(clientId, callback) {
-        var callbackId = 0;
-        if (callback) {
-          callbackId = nextCallbackId++;
-          callbacks[callbackId] = callback;
-        }
-        GetAppNotifyChannel(clientId, callbackId);
+  }();
+
+  chrome.appNotifications = new function() {
+    this.getChannel = function(clientId, callback) {
+      var callbackId = 0;
+      if (callback) {
+        callbackId = nextCallbackId++;
+        callbacks[callbackId] = callback;
       }
+      GetAppNotifyChannel(clientId, callbackId);
     };
   }();
 

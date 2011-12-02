@@ -91,6 +91,7 @@ class ExtensionAPIPermission {
     kUnknown = -1,
 
     // Real permissions.
+    kAppNotifications,
     kBackground,
     kBookmark,
     kChromeAuthPrivate,

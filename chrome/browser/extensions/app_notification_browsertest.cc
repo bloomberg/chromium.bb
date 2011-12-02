@@ -15,14 +15,7 @@
 
 using content::BrowserThread;
 
-class AppNotificationTest : public ExtensionBrowserTest {
- public:
-  void  SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalExtensionApis);
-  }
-};
+class AppNotificationTest : public ExtensionBrowserTest {};
 
 namespace {
 

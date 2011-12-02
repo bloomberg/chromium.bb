@@ -177,7 +177,7 @@ void ExtensionTabHelper::OnGetAppNotifyChannel(
   bool allowed =
       extension &&
       extension->HasAPIPermission(
-          ExtensionAPIPermission::kExperimental) &&
+          ExtensionAPIPermission::kAppNotifications) &&
       process_map->Contains(extension->id(), process->GetID());
   if (!allowed) {
     Send(new ExtensionMsg_GetAppNotifyChannelResponse(

@@ -211,6 +211,12 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kWebstorePrivate, "webstorePrivate", 0,
       ExtensionPermissionMessage::kNone, kFlagComponentOnly, kTypeAll);
 
+  // Register hosted / packaged app permissions.
+  info->RegisterPermission(
+      kAppNotifications, "appNotifications", 0,
+      ExtensionPermissionMessage::kNone, kFlagSupportsOptional,
+      kTypeHostedApp | kTypePackagedApp);
+
   // Register extension permissions.
   info->RegisterPermission(
       kBookmark, "bookmarks", IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS,

@@ -2,4 +2,4 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-chrome.app.experimental.getNotificationChannel({"clientId":"dummy_client_id"});
+chrome.appNotifications.getChannel({"clientId":"dummy_client_id"});

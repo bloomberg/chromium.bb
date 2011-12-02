@@ -142,6 +142,7 @@ TEST(ExtensionAPIPermissionTest, Aliases) {
 TEST(ExtensionAPIPermissionTest, HostedAppPermissions) {
   ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
   ExtensionAPIPermissionSet hosted_perms;
+  hosted_perms.insert(ExtensionAPIPermission::kAppNotifications);
   hosted_perms.insert(ExtensionAPIPermission::kBackground);
   hosted_perms.insert(ExtensionAPIPermission::kClipboardRead);
   hosted_perms.insert(ExtensionAPIPermission::kClipboardWrite);
@@ -168,6 +169,7 @@ TEST(ExtensionAPIPermissionTest, HostedAppPermissions) {
 TEST(ExtensionAPIPermissionTest, PlatformAppPermissions) {
   ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
   ExtensionAPIPermissionSet blacklist;
+  blacklist.insert(ExtensionAPIPermission::kAppNotifications);
   blacklist.insert(ExtensionAPIPermission::kChromeAuthPrivate);
   blacklist.insert(ExtensionAPIPermission::kChromePrivate);
   blacklist.insert(ExtensionAPIPermission::kCookie);
@@ -629,6 +631,7 @@ TEST(ExtensionPermissionSetTest, PermissionMessages) {
 
   // These are considered "nuisance" or "trivial" permissions that don't need
   // a prompt.
+  skip.insert(ExtensionAPIPermission::kAppNotifications);
   skip.insert(ExtensionAPIPermission::kContextMenus);
   skip.insert(ExtensionAPIPermission::kIdle);
   skip.insert(ExtensionAPIPermission::kNotification);
