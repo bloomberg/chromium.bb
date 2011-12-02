@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
+#include "content/public/browser/devtools_http_handler.h"
 
 RemoteDebuggingServer::RemoteDebuggingServer(Profile* profile,
                                              const std::string& ip,
@@ -17,10 +18,10 @@ RemoteDebuggingServer::RemoteDebuggingServer(Profile* profile,
   DevToolsUI::RegisterDevToolsDataSource(profile);
 
   devtools_http_handler_ =
-      DevToolsHttpProtocolHandler::Start(ip,
-                                         port,
-                                         frontend_url,
-                                         new BrowserListTabContentsProvider());
+      content::DevToolsHttpHandler::Start(ip,
+                                          port,
+                                          frontend_url,
+                                          new BrowserListTabContentsProvider());
 }
 
 RemoteDebuggingServer::~RemoteDebuggingServer() {

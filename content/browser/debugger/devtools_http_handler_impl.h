@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DEBUGGER_DEVTOOLS_HTTP_PROTOCOL_HANDLER_H_
-#define CONTENT_BROWSER_DEBUGGER_DEVTOOLS_HTTP_PROTOCOL_HANDLER_H_
+#ifndef CONTENT_BROWSER_DEBUGGER_DEVTOOLS_HTTP_HANDLER_IMPL_H_
+#define CONTENT_BROWSER_DEBUGGER_DEVTOOLS_HTTP_HANDLER_IMPL_H_
 #pragma once
 
 #include <map>
@@ -14,64 +14,37 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/devtools_http_handler.h"
 #include "net/server/http_server.h"
 #include "net/url_request/url_request.h"
 
 class TabContents;
 
-namespace content {
-class DevToolsClientHost;
-}
-
 namespace net {
 class URLRequestContext;
 }
 
-class DevToolsHttpProtocolHandler
-    : public net::HttpServer::Delegate,
-      public net::URLRequest::Delegate,
-      public base::RefCountedThreadSafe<DevToolsHttpProtocolHandler> {
- public:
-  typedef std::vector<TabContents*> InspectableTabs;
-  class Delegate {
-   public:
-    Delegate() {}
-    virtual ~Delegate() {}
+namespace content {
 
-    // Should return the list of inspectable tabs. Called on the UI thread.
-    virtual InspectableTabs GetInspectableTabs() = 0;
+class DevToolsClientHost;
 
-    // Should return discovery page HTML that should list available tabs
-    // and provide attach links. Called on the IO thread.
-    virtual std::string GetDiscoveryPageHTML() = 0;
-
-    // Should return URL request context for issuing requests against devtools
-    // webui or NULL if no context is available. Called on the IO thread.
-    virtual net::URLRequestContext* GetURLRequestContext() = 0;
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
-  };
-
-  // Takes ownership over |delegate|.
-  CONTENT_EXPORT static scoped_refptr<DevToolsHttpProtocolHandler> Start(
-      const std::string& ip,
-      int port,
-      const std::string& frontend_url,
-      Delegate* delegate);
-
-  // Called from the main thread in order to stop protocol handler.
-  // Will schedule tear down task on IO thread.
-  CONTENT_EXPORT void Stop();
-
+class DevToolsHttpHandlerImpl
+    : public DevToolsHttpHandler,
+      public base::RefCountedThreadSafe<DevToolsHttpHandlerImpl>,
+      public net::HttpServer::Delegate,
+      public net::URLRequest::Delegate {
  private:
-  friend class base::RefCountedThreadSafe<DevToolsHttpProtocolHandler>;
-
-  DevToolsHttpProtocolHandler(const std::string& ip,
-                              int port,
-                              const std::string& frontend_url,
-                              Delegate* delegate);
-  virtual ~DevToolsHttpProtocolHandler();
+  friend class base::RefCountedThreadSafe<DevToolsHttpHandlerImpl>;
+  friend class DevToolsHttpHandler;
+  DevToolsHttpHandlerImpl(const std::string& ip,
+                          int port,
+                          const std::string& frontend_url,
+                          DevToolsHttpHandlerDelegate* delegate);
+  virtual ~DevToolsHttpHandlerImpl();
   void Start();
+
+  // DevToolsHttpHandler implementation.
+  virtual void Stop() OVERRIDE;
 
   // net::HttpServer::Delegate implementation.
   virtual void OnHttpRequest(int connection_id,
@@ -126,8 +99,11 @@ class DevToolsHttpProtocolHandler
   typedef std::map<int, content::DevToolsClientHost*>
       ConnectionToClientHostMap;
   ConnectionToClientHostMap connection_to_client_host_ui_;
-  scoped_ptr<Delegate> delegate_;
-  DISALLOW_COPY_AND_ASSIGN(DevToolsHttpProtocolHandler);
+  scoped_ptr<DevToolsHttpHandlerDelegate> delegate_;
+  scoped_refptr<DevToolsHttpHandlerImpl> protect_ptr_;
+  DISALLOW_COPY_AND_ASSIGN(DevToolsHttpHandlerImpl);
 };
 
-#endif  // CONTENT_BROWSER_DEBUGGER_DEVTOOLS_HTTP_PROTOCOL_HANDLER_H_
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_DEBUGGER_DEVTOOLS_HTTP_HANDLER_IMPL_H_

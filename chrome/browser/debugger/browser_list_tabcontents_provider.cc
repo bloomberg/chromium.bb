@@ -12,9 +12,11 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/resource/resource_bundle.h"
 
-DevToolsHttpProtocolHandler::InspectableTabs
+using content::DevToolsHttpHandlerDelegate;
+
+DevToolsHttpHandlerDelegate::InspectableTabs
 BrowserListTabContentsProvider::GetInspectableTabs() {
-  DevToolsHttpProtocolHandler::InspectableTabs tabs;
+  DevToolsHttpHandlerDelegate::InspectableTabs tabs;
   for (BrowserList::const_iterator it = BrowserList::begin(),
        end = BrowserList::end(); it != end; ++it) {
     TabStripModel* model = (*it)->tabstrip_model();

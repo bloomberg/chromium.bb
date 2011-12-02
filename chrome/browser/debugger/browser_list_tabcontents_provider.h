@@ -6,19 +6,23 @@
 #define CHROME_BROWSER_DEBUGGER_BROWSER_LIST_TABCONTENTS_PROVIDER_H_
 
 #include <string>
-#include "content/browser/debugger/devtools_http_protocol_handler.h"
+
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "content/public/browser/devtools_http_handler_delegate.h"
 
 class BrowserListTabContentsProvider
-    : public DevToolsHttpProtocolHandler::Delegate {
+    : public content::DevToolsHttpHandlerDelegate {
  public:
   BrowserListTabContentsProvider() {}
   virtual ~BrowserListTabContentsProvider() {}
 
   // DevToolsHttpProtocolHandler::Delegate overrides.
-  virtual DevToolsHttpProtocolHandler::InspectableTabs
+  virtual DevToolsHttpHandlerDelegate::InspectableTabs
       GetInspectableTabs() OVERRIDE;
   virtual std::string GetDiscoveryPageHTML() OVERRIDE;
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserListTabContentsProvider);
 };

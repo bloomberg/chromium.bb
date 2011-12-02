@@ -9,23 +9,24 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
-#include "content/browser/debugger/devtools_http_protocol_handler.h"
 
-class DevToolsHttpProtocolHandler;
 class Profile;
+
+namespace content {
+class DevToolsHttpHandler;
+}
 
 class RemoteDebuggingServer {
  public:
   RemoteDebuggingServer(Profile* profile,
-                             const std::string& ip,
-                             int port,
-                             const std::string& frontend_url);
+                        const std::string& ip,
+                        int port,
+                        const std::string& frontend_url);
 
   virtual ~RemoteDebuggingServer();
 
  private:
-  scoped_refptr<DevToolsHttpProtocolHandler> devtools_http_handler_;
+  content::DevToolsHttpHandler* devtools_http_handler_;
   DISALLOW_COPY_AND_ASSIGN(RemoteDebuggingServer);
 };
 
