@@ -10,11 +10,12 @@
 
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field_predictions.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {
 
 // Holds information about a form to be filled and/or submitted.
-struct FormDataPredictions {
+struct WEBKIT_GLUE_EXPORT FormDataPredictions {
   // Data for this form.
   FormData data;
   // The form signature for communication with the crowdsourcing server.

@@ -9,6 +9,7 @@
 
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/password_form.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace WebKit {
 class WebForm;
@@ -25,7 +26,7 @@ namespace webkit_glue {
 // unless the PasswordManager determined there is an additional risk
 // associated with this form. This can happen, for example, if action URI's
 // of the observed form and our saved representation don't match up.
-struct PasswordFormFillData {
+struct WEBKIT_GLUE_EXPORT PasswordFormFillData {
   typedef std::map<string16, string16> LoginCollection;
 
   FormData basic_data;
@@ -41,7 +42,8 @@ class PasswordFormDomManager {
   // custom metadata to DOM nodes, so we have to do this every time an event
   // happens with a given form and compare against previously Create'd forms
   // to identify..which sucks.
-  static PasswordForm* CreatePasswordForm(const WebKit::WebFormElement& form);
+  WEBKIT_GLUE_EXPORT static PasswordForm* CreatePasswordForm(
+      const WebKit::WebFormElement& form);
 
   // Create a FillData structure in preparation for autofilling a form,
   // from basic_data identifying which form to fill, and a collection of
@@ -49,7 +51,7 @@ class PasswordFormDomManager {
   // preferred_match should equal (address) one of matches.
   // wait_for_username_before_autofill is true if we should not autofill
   // anything until the user typed in a valid username and blurred the field.
-  static void InitFillData(const PasswordForm& form_on_page,
+  WEBKIT_GLUE_EXPORT static void InitFillData(const PasswordForm& form_on_page,
                            const PasswordFormMap& matches,
                            const PasswordForm* const preferred_match,
                            bool wait_for_username_before_autofill,

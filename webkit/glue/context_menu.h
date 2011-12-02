@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/glue/webkit_glue_export.h"
 #include "webkit/glue/webmenuitem.h"
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
@@ -25,7 +26,7 @@ struct CustomContextMenuContext {
   int32 render_widget_id;
   static const int32 kCurrentRenderWidget;
 
-  CustomContextMenuContext();
+  WEBKIT_GLUE_EXPORT CustomContextMenuContext();
 };
 
 }  // namespace webkit_glue
@@ -37,7 +38,7 @@ struct CustomContextMenuContext {
 //              they contain for the ContextMenu task. It might be better
 //              to make the string fields more generic so that this object
 //              could be used for more contextual actions.
-struct ContextMenuParams {
+struct WEBKIT_GLUE_EXPORT ContextMenuParams {
   // This is the type of Context Node that the context menu was invoked on.
   WebKit::WebContextMenuData::MediaType media_type;
 

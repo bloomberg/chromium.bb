@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <iosfwd>
 
 #include "build/build_config.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace WebKit {
 
@@ -17,7 +18,8 @@ std::ostream& operator<<(std::ostream& out, const WebString& s);
 #endif  // defined(WCHAR_T_IS_UTF32)
 
 struct WebPoint;
-std::ostream& operator<<(std::ostream& out, const WebPoint& p);
+WEBKIT_GLUE_EXPORT std::ostream& operator<<(std::ostream& out,
+                                            const WebPoint& p);
 
 struct WebRect;
 std::ostream& operator<<(std::ostream& out, const WebRect& p);

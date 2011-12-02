@@ -5,12 +5,14 @@
 #ifndef WEBKIT_PLUGINS_PLUGIN_CONSTANTS_H_
 #define WEBKIT_PLUGINS_PLUGIN_CONSTANTS_H_
 
-extern const char kFlashPluginName[];
-extern const char kFlashPluginSwfMimeType[];
-extern const char kFlashPluginSwfExtension[];
-extern const char kFlashPluginSwfDescription[];
-extern const char kFlashPluginSplMimeType[];
-extern const char kFlashPluginSplExtension[];
-extern const char kFlashPluginSplDescription[];
+#include "webkit/plugins/webkit_plugins_export.h"
+
+WEBKIT_PLUGINS_EXPORT extern const char kFlashPluginName[];
+WEBKIT_PLUGINS_EXPORT extern const char kFlashPluginSwfMimeType[];
+WEBKIT_PLUGINS_EXPORT extern const char kFlashPluginSwfExtension[];
+WEBKIT_PLUGINS_EXPORT extern const char kFlashPluginSwfDescription[];
+WEBKIT_PLUGINS_EXPORT extern const char kFlashPluginSplMimeType[];
+WEBKIT_PLUGINS_EXPORT extern const char kFlashPluginSplExtension[];
+WEBKIT_PLUGINS_EXPORT extern const char kFlashPluginSplDescription[];
 
 #endif  // WEBKIT_PLUGINS_PLUGIN_CONSTANTS_H_

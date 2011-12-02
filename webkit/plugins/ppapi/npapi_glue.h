@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_var.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 struct NPObject;
 typedef struct _NPVariant NPVariant;
@@ -37,7 +38,8 @@ bool PPVarToNPVariant(PP_Var var, NPVariant* result);
 //
 // The returned PP_Var will have a refcount of 1, this passing ownership of
 // the reference to the caller. This is suitable for returning to a plugin.
-PP_Var NPVariantToPPVar(PluginInstance* instance, const NPVariant* variant);
+WEBKIT_PLUGINS_EXPORT PP_Var NPVariantToPPVar(PluginInstance* instance,
+                                              const NPVariant* variant);
 
 // Returns a NPIdentifier that corresponds to the given PP_Var. The contents
 // of the PP_Var will be copied. Returns 0 if the given PP_Var is not a a
@@ -64,7 +66,8 @@ PP_Var NPIdentifierToPPVar(PP_Module module, NPIdentifier id);
 // Note: this could easily be changed to take a PP_Instance instead if that
 // makes certain calls in the future easier. Currently all callers have a
 // PluginInstance so that's what we use here.
-PP_Var NPObjectToPPVar(PluginInstance* instance, NPObject* object);
+WEBKIT_PLUGINS_EXPORT PP_Var NPObjectToPPVar(PluginInstance* instance,
+                                             NPObject* object);
 
 // PPResultAndExceptionToNPResult ----------------------------------------------
 

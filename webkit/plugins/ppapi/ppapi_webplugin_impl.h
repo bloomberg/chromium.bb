@@ -13,6 +13,7 @@
 #include "base/task.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
 #include "ui/gfx/rect.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 namespace WebKit {
 struct WebPluginParams;
@@ -28,14 +29,15 @@ class PPB_URLLoader_Impl;
 
 class WebPluginImpl : public WebKit::WebPlugin {
  public:
-  WebPluginImpl(PluginModule* module,
-                const WebKit::WebPluginParams& params,
-                const base::WeakPtr<PluginDelegate>& plugin_delegate);
+  WEBKIT_PLUGINS_EXPORT WebPluginImpl(
+      PluginModule* module,
+      const WebKit::WebPluginParams& params,
+      const base::WeakPtr<PluginDelegate>& plugin_delegate);
 
  private:
   friend class DeleteTask<WebPluginImpl>;
 
-  virtual ~WebPluginImpl();
+  WEBKIT_PLUGINS_EXPORT virtual ~WebPluginImpl();
 
   // WebKit::WebPlugin implementation.
   virtual bool initialize(WebKit::WebPluginContainer* container);

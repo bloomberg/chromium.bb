@@ -9,11 +9,12 @@
 
 #include "base/string16.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {
 
 // Stores information about a field in a form.
-struct FormField {
+struct WEBKIT_GLUE_EXPORT FormField {
   FormField();
   virtual ~FormField();
 
@@ -41,7 +42,8 @@ struct FormField {
 };
 
 // So we can compare FormFields with EXPECT_EQ().
-std::ostream& operator<<(std::ostream& os, const FormField& field);
+WEBKIT_GLUE_EXPORT std::ostream& operator<<(std::ostream& os,
+                                            const FormField& field);
 
 }  // namespace webkit_glue
 

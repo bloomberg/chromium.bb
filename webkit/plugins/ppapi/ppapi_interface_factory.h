@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 namespace webkit {
 namespace ppapi {
@@ -21,10 +22,10 @@ class PpapiInterfaceFactoryManager {
   typedef const void* (InterfaceFactory)(const std::string& interface_name);
 
   // Registers a custom PPAPI interface factory.
-  void RegisterFactory(InterfaceFactory* factory);
+  WEBKIT_PLUGINS_EXPORT void RegisterFactory(InterfaceFactory* factory);
 
   // Unregisters the custom PPAPI interface factory passed in.
-  void UnregisterFactory(InterfaceFactory* factory);
+  WEBKIT_PLUGINS_EXPORT void UnregisterFactory(InterfaceFactory* factory);
 
   // Returns a pointer to the interface identified by the name passed in.
   // Returns NULL if no factory handles this interface.
@@ -32,7 +33,7 @@ class PpapiInterfaceFactoryManager {
 
   // Returns a pointer to the global instance of the
   // PpapiInterfaceFactoryManager class.
-  static PpapiInterfaceFactoryManager* GetInstance();
+  WEBKIT_PLUGINS_EXPORT static PpapiInterfaceFactoryManager* GetInstance();
 
  private:
   friend struct base::DefaultLazyInstanceTraits<PpapiInterfaceFactoryManager>;

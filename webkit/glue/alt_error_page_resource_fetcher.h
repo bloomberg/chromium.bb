@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace WebKit {
 class WebFrame;
@@ -28,11 +29,12 @@ class AltErrorPageResourceFetcher {
   typedef base::Callback<void(WebKit::WebFrame*, const WebKit::WebURLError&,
                     const std::string&)> Callback;
 
-  AltErrorPageResourceFetcher(const GURL& url,
-                              WebKit::WebFrame* frame,
-                              const WebKit::WebURLError& original_error,
-                              const Callback& callback);
-  ~AltErrorPageResourceFetcher();
+  WEBKIT_GLUE_EXPORT AltErrorPageResourceFetcher(
+      const GURL& url,
+      WebKit::WebFrame* frame,
+      const WebKit::WebURLError& original_error,
+      const Callback& callback);
+  WEBKIT_GLUE_EXPORT ~AltErrorPageResourceFetcher();
 
   // Stop any pending loads.
   void Cancel();

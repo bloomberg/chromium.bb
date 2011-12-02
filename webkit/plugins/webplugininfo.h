@@ -10,10 +10,11 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 namespace webkit {
 
-struct WebPluginMimeType {
+struct WEBKIT_PLUGINS_EXPORT WebPluginMimeType {
   WebPluginMimeType();
   // A constructor for the common case of a single file extension and an ASCII
   // description.
@@ -37,7 +38,7 @@ struct WebPluginMimeType {
 };
 
 // Describes an available NPAPI or Pepper plugin.
-struct WebPluginInfo {
+struct WEBKIT_PLUGINS_EXPORT WebPluginInfo {
   enum PluginType {
     PLUGIN_TYPE_NPAPI,
     PLUGIN_TYPE_PEPPER_IN_PROCESS,
@@ -76,9 +77,9 @@ struct WebPluginInfo {
 };
 
 // Checks whether a plugin is a Pepper plugin, enabled or disabled.
-bool IsPepperPlugin(const WebPluginInfo& plugin);
+WEBKIT_PLUGINS_EXPORT bool IsPepperPlugin(const WebPluginInfo& plugin);
 
-bool IsOutOfProcessPlugin(const WebPluginInfo& plugin);
+WEBKIT_PLUGINS_EXPORT bool IsOutOfProcessPlugin(const WebPluginInfo& plugin);
 
 }  // namespace webkit
 

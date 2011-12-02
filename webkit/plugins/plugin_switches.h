@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,15 +6,16 @@
 #define WEBKIT_PLUGINS_PLUGIN_SWITCHES_H_
 
 #include "build/build_config.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 namespace switches {
 
-extern const char kDebugPluginLoading[];
-extern const char kDisablePepper3dForUntrustedUse[];
-extern const char kEnablePepperTesting[];
+WEBKIT_PLUGINS_EXPORT extern const char kDebugPluginLoading[];
+WEBKIT_PLUGINS_EXPORT extern const char kDisablePepper3dForUntrustedUse[];
+WEBKIT_PLUGINS_EXPORT extern const char kEnablePepperTesting[];
 
 #if defined(OS_WIN)
-extern const char kUseOldWMPPlugin[];
+WEBKIT_PLUGINS_EXPORT extern const char kUseOldWMPPlugin[];
 #endif
 
 }  // namespace switches

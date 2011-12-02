@@ -9,11 +9,12 @@
 #include <vector>
 
 #include "webkit/glue/form_field.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {
 
 // Stores information about a field in a form.
-struct FormFieldPredictions {
+struct WEBKIT_GLUE_EXPORT FormFieldPredictions {
   FormFieldPredictions();
   FormFieldPredictions(const FormFieldPredictions& other);
   ~FormFieldPredictions();

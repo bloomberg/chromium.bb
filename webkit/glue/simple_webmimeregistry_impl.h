@@ -5,11 +5,14 @@
 #ifndef WEBMIMEREGISTRY_IMPL_H_
 #define WEBMIMEREGISTRY_IMPL_H_
 
+#include "base/compiler_specific.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMimeRegistry.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {
 
-class SimpleWebMimeRegistryImpl : public WebKit::WebMimeRegistry {
+class WEBKIT_GLUE_EXPORT SimpleWebMimeRegistryImpl :
+    NON_EXPORTED_BASE(public WebKit::WebMimeRegistry) {
  public:
   SimpleWebMimeRegistryImpl() {}
   virtual ~SimpleWebMimeRegistryImpl() {}

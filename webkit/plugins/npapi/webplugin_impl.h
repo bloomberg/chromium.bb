@@ -21,6 +21,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/plugins/npapi/webplugin.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 namespace WebKit {
 class WebFrame;
@@ -43,9 +44,10 @@ class WebPluginPageDelegate;
 // This is the WebKit side of the plugin implementation that forwards calls,
 // after changing out of WebCore types, to a delegate.  The delegate may
 // be in a different process.
-class WebPluginImpl : public WebPlugin,
-                      public WebKit::WebPlugin,
-                      public WebKit::WebURLLoaderClient {
+class WEBKIT_PLUGINS_EXPORT WebPluginImpl :
+    NON_EXPORTED_BASE(public WebPlugin),
+    NON_EXPORTED_BASE(public WebKit::WebPlugin),
+    NON_EXPORTED_BASE(public WebKit::WebURLLoaderClient) {
  public:
   WebPluginImpl(
       WebKit::WebFrame* frame,

@@ -12,6 +12,7 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_flash_net_connector_api.h"
 #include "webkit/plugins/ppapi/callbacks.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 namespace webkit {
 namespace ppapi {
@@ -41,9 +42,10 @@ class PPB_Flash_NetConnector_Impl
                                     PP_CompletionCallback callback) OVERRIDE;
 
   // Called to complete |ConnectTcp()| and |ConnectTcpAddress()|.
-  void CompleteConnectTcp(PP_FileHandle socket,
-                          const PP_NetAddress_Private& local_addr,
-                          const PP_NetAddress_Private& remote_addr);
+  WEBKIT_PLUGINS_EXPORT void CompleteConnectTcp(
+      PP_FileHandle socket,
+      const PP_NetAddress_Private& local_addr,
+      const PP_NetAddress_Private& remote_addr);
 
  private:
   // Any pending callback (for |ConnectTcp()| or |ConnectTcpAddress()|).

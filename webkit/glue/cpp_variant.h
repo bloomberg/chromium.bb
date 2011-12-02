@@ -23,8 +23,9 @@
 
 #include "base/basictypes.h"
 #include "third_party/npapi/bindings/npruntime.h"
+#include "webkit/glue/webkit_glue_export.h"
 
-class CppVariant : public NPVariant {
+class WEBKIT_GLUE_EXPORT CppVariant : public NPVariant {
  public:
   CppVariant();
   ~CppVariant();

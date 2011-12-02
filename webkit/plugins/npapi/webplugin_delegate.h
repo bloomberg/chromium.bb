@@ -13,6 +13,7 @@
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
 #include "ui/gfx/native_widget_types.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 class GURL;
 struct NPObject;
@@ -33,7 +34,7 @@ class WebPlugin;
 class WebPluginResourceClient;
 
 // This is the interface that a plugin implementation needs to provide.
-class WebPluginDelegate {
+class WEBKIT_PLUGINS_EXPORT WebPluginDelegate {
  public:
   virtual ~WebPluginDelegate() {}
 

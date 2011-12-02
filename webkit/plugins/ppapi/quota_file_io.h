@@ -13,6 +13,7 @@
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_instance.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 #include "webkit/quota/quota_types.h"
 
 namespace webkit {
@@ -28,11 +29,11 @@ class QuotaFileIO {
   typedef base::FileUtilProxy::WriteCallback WriteCallback;
   typedef base::FileUtilProxy::StatusCallback StatusCallback;
 
-  QuotaFileIO(PP_Instance instance,
-              base::PlatformFile file,
-              const GURL& path_url,
-              PP_FileSystemType type);
-  ~QuotaFileIO();
+  WEBKIT_PLUGINS_EXPORT QuotaFileIO(PP_Instance instance,
+                                    base::PlatformFile file,
+                                    const GURL& path_url,
+                                    PP_FileSystemType type);
+  WEBKIT_PLUGINS_EXPORT ~QuotaFileIO();
 
   // Performs write or setlength operation with quota checks.
   // Returns true when the operation is successfully dispatched.
@@ -44,16 +45,18 @@ class QuotaFileIO {
   // SetLength/WillSetLength cannot be called while there're any in-flight
   // operations.  For Write/WillWrite it is guaranteed that |callback| are
   // always dispatched in the same order as Write being called.
-  bool Write(int64_t offset,
-             const char* buffer,
-             int32_t bytes_to_write,
-             const WriteCallback& callback);
-  bool WillWrite(int64_t offset,
-                 int32_t bytes_to_write,
-                 const WriteCallback& callback);
+  WEBKIT_PLUGINS_EXPORT bool Write(int64_t offset,
+                                   const char* buffer,
+                                   int32_t bytes_to_write,
+                                   const WriteCallback& callback);
+  WEBKIT_PLUGINS_EXPORT bool WillWrite(int64_t offset,
+                                       int32_t bytes_to_write,
+                                       const WriteCallback& callback);
 
-  bool SetLength(int64_t length, const StatusCallback& callback);
-  bool WillSetLength(int64_t length, const StatusCallback& callback);
+  WEBKIT_PLUGINS_EXPORT bool SetLength(int64_t length,
+                                       const StatusCallback& callback);
+  WEBKIT_PLUGINS_EXPORT bool WillSetLength(int64_t length,
+                                           const StatusCallback& callback);
 
   // Returns the plugin delegate or NULL if the resource has outlived the
   // instance.

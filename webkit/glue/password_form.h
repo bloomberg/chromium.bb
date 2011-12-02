@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPasswordFormData.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {
 
@@ -36,7 +37,7 @@ namespace webkit_glue {
 // describe which fields are not strictly required when adding a saved password
 // entry to the database and how they can affect the matching process.
 
-struct PasswordForm {
+struct WEBKIT_GLUE_EXPORT PasswordForm {
   // Enum to differentiate between HTML form based authentication, and dialogs
   // using basic or digest schemes. Default is SCHEME_HTML. Only PasswordForms
   // of the same Scheme will be matched/autofilled against each other.

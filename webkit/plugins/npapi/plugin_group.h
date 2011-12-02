@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 #include "webkit/plugins/webplugininfo.h"
 
 class FilePath;
@@ -72,7 +73,7 @@ struct VersionRange {
 // of a plugin that is needed in order not to exhibit known security
 // vulnerabilities.
 
-class PluginGroup {
+class WEBKIT_PLUGINS_EXPORT PluginGroup {
  public:
   // Used by about:plugins to disable Reader plugin when internal PDF viewer is
   // enabled.

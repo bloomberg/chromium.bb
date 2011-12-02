@@ -13,6 +13,7 @@
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_file_chooser_api.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 struct PP_CompletionCallback;
 
@@ -70,7 +71,7 @@ class PPB_FileChooser_Impl : public ::ppapi::Resource,
   // Splits a comma-separated MIME type list |accept_mime_types|, trims the
   // resultant split types, makes them lowercase, and returns them.
   // Though this should be private, this is public for testing.
-  static std::vector<WebKit::WebString> ParseAcceptValue(
+  WEBKIT_PLUGINS_EXPORT static std::vector<WebKit::WebString> ParseAcceptValue(
       const std::string& accept_mime_types);
 
  private:

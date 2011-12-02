@@ -15,6 +15,7 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_flash_menu_api.h"
 #include "webkit/plugins/ppapi/callbacks.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 struct WebMenuItem;
 
@@ -38,7 +39,7 @@ class PPB_Flash_Menu_Impl : public ::ppapi::Resource,
                        PP_CompletionCallback callback) OVERRIDE;
 
   // Called to complete |Show()|.
-  void CompleteShow(int32_t result, unsigned action);
+  WEBKIT_PLUGINS_EXPORT void CompleteShow(int32_t result, unsigned action);
 
   typedef std::vector<WebMenuItem> MenuData;
   const MenuData& menu_data() const { return menu_data_; }

@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoader.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {
 
@@ -29,7 +30,7 @@ class WebURLLoaderImpl : public WebKit::WebURLLoader {
   virtual void cancel();
   virtual void setDefersLoading(bool value);
 
-  void UpdateRoutingId(int new_routing_id);
+  WEBKIT_GLUE_EXPORT void UpdateRoutingId(int new_routing_id);
 
  private:
   class Context;

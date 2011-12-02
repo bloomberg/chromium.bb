@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "googleurl/src/gurl.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace WebKit {
 class WebDocument;
@@ -49,7 +50,8 @@ struct SavableResourcesResult {
 // and sub-frame. After collecting all savable resource links, this function
 // will send those links to embedder. Return value indicates whether we get
 // all saved resource links successfully.
-bool GetAllSavableResourceLinksForCurrentPage(WebKit::WebView* view,
+WEBKIT_GLUE_EXPORT bool GetAllSavableResourceLinksForCurrentPage(
+    WebKit::WebView* view,
     const GURL& page_url, SavableResourcesResult* savable_resources_result,
     const char** savable_schemes);
 
@@ -82,12 +84,12 @@ int NumberOfActiveAnimations(WebKit::WebView* view);
 // the value in "href". For BODY, TABLE, TR, TD, returns the value in
 // "background". For BLOCKQUOTE, Q, DEL, INS, returns the value in "cite"
 // attribute. Otherwise returns a null WebString.
-WebKit::WebString GetSubResourceLinkFromElement(
+WEBKIT_GLUE_EXPORT WebKit::WebString GetSubResourceLinkFromElement(
     const WebKit::WebElement& element);
 
 // Puts the meta-elements of |document| that have the attribute |attribute_name|
 // with a value of |attribute_value| in |meta_elements|.
-void GetMetaElementsWithAttribute(
+WEBKIT_GLUE_EXPORT void GetMetaElementsWithAttribute(
     WebKit::WebDocument* document,
     const string16& attribute_name,
     const string16& atribute_value,

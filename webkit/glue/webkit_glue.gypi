@@ -108,6 +108,11 @@
       'target_name': 'glue',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
+      'defines': [
+        'WEBKIT_EXTENSIONS_IMPLEMENTATION',
+        'WEBKIT_GLUE_IMPLEMENTATION',
+        'WEBKIT_PLUGINS_IMPLEMENTATION',
+      ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base_i18n',
         '<(DEPTH)/base/base.gyp:base_static',
@@ -326,6 +331,7 @@
         '../plugins/ppapi/webkit_forwarding_impl.h',
         '../plugins/sad_plugin.cc',
         '../plugins/sad_plugin.h',
+        '../plugins/webkit_plugins_export.h',
         '../plugins/webplugininfo.cc',
         '../plugins/webplugininfo.h',
         '../plugins/webview_plugin.cc',
@@ -403,6 +409,7 @@
         'webkit_constants.h',
         'webkit_glue.cc',
         'webkit_glue.h',
+        'webkit_glue_export.h',
         'webkitplatformsupport_impl.cc',
         'webkitplatformsupport_impl.h',
         'webmenuitem.cc',
@@ -444,6 +451,7 @@
         '../extensions/v8/playback_extension.h',
         '../extensions/v8/profiler_extension.cc',
         '../extensions/v8/profiler_extension.h',
+        '../extensions/webkit_extensions_export.h',
 
       ],
       # When glue is a dependency, it needs to be a hard dependency.

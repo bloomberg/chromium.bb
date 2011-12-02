@@ -9,12 +9,14 @@
 #include "base/compiler_specific.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebReferrerPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {
 
 // Base class for Chrome's implementation of the "extra data" stored in each
 // ResourceRequest.
-class WebURLRequestExtraDataImpl : public WebKit::WebURLRequest::ExtraData {
+class WEBKIT_GLUE_EXPORT WebURLRequestExtraDataImpl :
+    NON_EXPORTED_BASE(public WebKit::WebURLRequest::ExtraData) {
  public:
   WebURLRequestExtraDataImpl(WebKit::WebReferrerPolicy referrer_policy);
   virtual ~WebURLRequestExtraDataImpl();

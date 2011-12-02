@@ -18,6 +18,7 @@
 #include "base/synchronization/lock.h"
 #include "third_party/npapi/bindings/nphostapi.h"
 #include "webkit/plugins/npapi/plugin_group.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 #include "webkit/plugins/webplugininfo.h"
 
 class GURL;
@@ -32,7 +33,7 @@ struct DefaultLazyInstanceTraits;
 namespace webkit {
 namespace npapi {
 
-extern FilePath::CharType kDefaultPluginLibraryName[];
+WEBKIT_PLUGINS_EXPORT extern FilePath::CharType kDefaultPluginLibraryName[];
 
 // This struct holds entry points into a plugin.  The entry points are
 // slightly different between Win/Mac and Unixes.  Note that the interface for
@@ -54,7 +55,7 @@ struct PluginEntryPoints {
 // the correct types. On Linux, it walks the plugin directories as well
 // (e.g. /usr/lib/browser-plugins/).
 // This object is thread safe.
-class PluginList {
+class WEBKIT_PLUGINS_EXPORT PluginList {
  public:
   // Gets the one instance of the PluginList.
   static PluginList* Singleton();

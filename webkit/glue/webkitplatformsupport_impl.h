@@ -5,11 +5,14 @@
 #ifndef WEBKIT_PLATFORM_SUPPORT_IMPL_H_
 #define WEBKIT_PLATFORM_SUPPORT_IMPL_H_
 
+#include "base/compiler_specific.h"
 #include "base/platform_file.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/timer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKitPlatformSupport.h"
 #include "webkit/glue/resource_loader_bridge.h"
+#include "webkit/glue/webkit_glue_export.h"
+
 #if defined(OS_WIN)
 #include "webkit/glue/webthemeengine_impl_win.h"
 #elif defined(OS_MACOSX)
@@ -34,7 +37,8 @@ namespace webkit_glue {
 class WebSocketStreamHandleDelegate;
 class WebSocketStreamHandleBridge;
 
-class WebKitPlatformSupportImpl : public WebKit::WebKitPlatformSupport {
+class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
+    NON_EXPORTED_BASE(public WebKit::WebKitPlatformSupport) {
  public:
   WebKitPlatformSupportImpl();
   virtual ~WebKitPlatformSupportImpl();

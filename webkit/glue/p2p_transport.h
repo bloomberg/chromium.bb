@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace net {
 class Socket;
@@ -50,7 +51,7 @@ class P2PTransport {
     virtual void OnError(int error) = 0;
   };
 
-  struct Config {
+  struct WEBKIT_GLUE_EXPORT Config {
     Config();
     ~Config();
 

@@ -15,6 +15,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 namespace WebKit {
 class WebMouseEvent;
@@ -56,10 +57,11 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   // Convenience method to set up a new WebViewPlugin using |preferences|
   // and displaying |html_data|. |url| should be a (fake) chrome:// URL; it is
   // only used for navigation and never actually resolved.
-  static WebViewPlugin* Create(Delegate* delegate,
-                               const WebPreferences& preferences,
-                               const std::string& html_data,
-                               const GURL& url);
+  WEBKIT_PLUGINS_EXPORT static WebViewPlugin* Create(
+      Delegate* delegate,
+      const WebPreferences& preferences,
+      const std::string& html_data,
+      const GURL& url);
 
   WebKit::WebView* web_view() { return web_view_; }
 
@@ -68,9 +70,9 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   // When loading a plug-in document (i.e. a full page plug-in not embedded in
   // another page), we save all data that has been received, and replay it with
   // this method on the actual plug-in.
-  void ReplayReceivedData(WebKit::WebPlugin* plugin);
+  WEBKIT_PLUGINS_EXPORT void ReplayReceivedData(WebKit::WebPlugin* plugin);
 
-  void RestoreTitleText();
+  WEBKIT_PLUGINS_EXPORT void RestoreTitleText();
 
   // WebPlugin methods:
   virtual bool initialize(WebKit::WebPluginContainer*);

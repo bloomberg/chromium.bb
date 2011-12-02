@@ -19,6 +19,7 @@
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/var_tracker.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 typedef struct NPObject NPObject;
 
@@ -52,7 +53,8 @@ class HostVarTracker : public ::ppapi::VarTracker {
 
   // Returns the number of NPObjectVar's associated with the given instance.
   // Returns 0 if the instance isn't known.
-  int GetLiveNPObjectVarsForInstance(PP_Instance instance) const;
+  WEBKIT_PLUGINS_EXPORT int GetLiveNPObjectVarsForInstance(
+      PP_Instance instance) const;
 
   // Forcibly deletes all np object vars for the given instance. Used for
   // instance cleanup.

@@ -25,6 +25,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace WebKit {
 class WebFrame;
@@ -34,7 +35,7 @@ typedef std::vector<CppVariant> CppArgumentList;
 
 // CppBoundClass lets you map Javascript method calls and property accesses
 // directly to C++ method calls and CppVariant* variable access.
-class CppBoundClass {
+class WEBKIT_GLUE_EXPORT CppBoundClass {
  public:
   class PropertyCallback {
    public:

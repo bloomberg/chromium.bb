@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/file_path.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 namespace webkit {
 namespace ppapi {
@@ -29,8 +30,8 @@ class PepperFilePath {
     DOMAIN_MAX_VALID = DOMAIN_MODULE_LOCAL
   };
 
-  PepperFilePath();
-  PepperFilePath(Domain d, const FilePath& p);
+  WEBKIT_PLUGINS_EXPORT PepperFilePath();
+  WEBKIT_PLUGINS_EXPORT PepperFilePath(Domain d, const FilePath& p);
 
   static PepperFilePath MakeAbsolute(const FilePath& path);
   static PepperFilePath MakeModuleLocal(PluginModule* module,

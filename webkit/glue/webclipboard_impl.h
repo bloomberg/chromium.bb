@@ -5,15 +5,18 @@
 #ifndef WEBCLIPBOARD_IMPL_H_
 #define WEBCLIPBOARD_IMPL_H_
 
+#include "base/compiler_specific.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebClipboard.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 #include <string>
 
 namespace webkit_glue {
 class ClipboardClient;
 
-class WebClipboardImpl : public WebKit::WebClipboard {
+class WEBKIT_GLUE_EXPORT WebClipboardImpl :
+    NON_EXPORTED_BASE(public WebKit::WebClipboard) {
  public:
   static std::string URLToMarkup(const WebKit::WebURL& url,
       const WebKit::WebString& title);

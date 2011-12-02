@@ -8,12 +8,13 @@
 
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/glue/webkit_glue_export.h"
 #include <iosfwd>
 
 namespace webkit_glue {
 
 // Describes the relevant elements of a WebIntent service.
-struct WebIntentServiceData {
+struct WEBKIT_GLUE_EXPORT WebIntentServiceData {
   // An intents disposition determines which context the service is opened in.
   enum Disposition {
     DISPOSITION_WINDOW,  // Open service inside a new window. (Default)
@@ -39,8 +40,9 @@ struct WebIntentServiceData {
 };
 
 // Printing operator - helps gtest produce readable error messages.
-std::ostream& operator<<(std::ostream& os,
-                         const webkit_glue::WebIntentServiceData& intent);
+WEBKIT_GLUE_EXPORT std::ostream& operator<<(
+    std::ostream& os,
+    const webkit_glue::WebIntentServiceData& intent);
 
 }  // namespace webkit_glue
 

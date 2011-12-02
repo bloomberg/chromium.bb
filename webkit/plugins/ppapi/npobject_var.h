@@ -11,6 +11,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/shared_impl/var.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 typedef struct NPObject NPObject;
 typedef struct _NPVariant NPVariant;
@@ -54,7 +55,7 @@ class NPObjectVar : public Var {
 
   // Helper function that converts a PP_Var to an object. This will return NULL
   // if the PP_Var is not of object type or the object is invalid.
-  static scoped_refptr<NPObjectVar> FromPPVar(PP_Var var);
+  WEBKIT_PLUGINS_EXPORT static scoped_refptr<NPObjectVar> FromPPVar(PP_Var var);
 
  private:
   // Possibly 0 if the object has outlived its instance.

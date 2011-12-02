@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -10,10 +10,11 @@
 #define WEBKIT_GLUE_WEBCOOKIE_H_
 
 #include "net/base/cookie_monster.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {
 
-struct WebCookie {
+struct WEBKIT_GLUE_EXPORT WebCookie {
   WebCookie();
   explicit WebCookie(const net::CookieMonster::CanonicalCookie& c);
   WebCookie(const std::string& name, const std::string& value,

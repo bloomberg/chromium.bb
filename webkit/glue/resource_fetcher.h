@@ -16,12 +16,14 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 class GURL;
 
@@ -33,7 +35,8 @@ struct WebURLError;
 
 namespace webkit_glue {
 
-class ResourceFetcher : public WebKit::WebURLLoaderClient {
+class WEBKIT_GLUE_EXPORT ResourceFetcher :
+    NON_EXPORTED_BASE(public WebKit::WebURLLoaderClient) {
  public:
   // This will be called when the URL has been fetched, successfully or not.
   // If there is a failure, response and data will both be empty.  |response|
@@ -107,7 +110,7 @@ class ResourceFetcher : public WebKit::WebURLLoaderClient {
 
 /////////////////////////////////////////////////////////////////////////////
 // A resource fetcher with a timeout
-class ResourceFetcherWithTimeout : public ResourceFetcher {
+class WEBKIT_GLUE_EXPORT ResourceFetcherWithTimeout : public ResourceFetcher {
  public:
   ResourceFetcherWithTimeout(const GURL& url,
                              WebKit::WebFrame* frame,

@@ -5,6 +5,7 @@
 #include "ppapi/shared_impl/webkit_forwarding.h"
 
 #include "base/compiler_specific.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 namespace ppapi {
 struct Preferences;
@@ -15,8 +16,8 @@ namespace ppapi {
 
 class WebKitForwardingImpl : public ::ppapi::WebKitForwarding {
  public:
-  WebKitForwardingImpl();
-  virtual ~WebKitForwardingImpl();
+  WEBKIT_PLUGINS_EXPORT WebKitForwardingImpl();
+  WEBKIT_PLUGINS_EXPORT virtual ~WebKitForwardingImpl();
 
   virtual void CreateFontForwarding(base::WaitableEvent* event,
                                     const PP_FontDescription_Dev& desc,

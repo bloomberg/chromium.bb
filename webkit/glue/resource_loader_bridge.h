@@ -34,6 +34,7 @@
 #include "net/url_request/url_request_status.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "webkit/glue/resource_type.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace net {
 class HttpResponseHeaders;
@@ -48,8 +49,8 @@ namespace webkit_glue {
 // All the values for starts and ends are given in milliseconds and are
 // offsets with respect to the given base time.
 struct ResourceLoadTimingInfo {
-  ResourceLoadTimingInfo();
-  ~ResourceLoadTimingInfo();
+  WEBKIT_GLUE_EXPORT ResourceLoadTimingInfo();
+  WEBKIT_GLUE_EXPORT ~ResourceLoadTimingInfo();
 
   // All the values in this struct are given as offsets in milliseconds wrt
   // this base time.
@@ -103,8 +104,8 @@ struct ResourceDevToolsInfo : base::RefCounted<ResourceDevToolsInfo> {
   typedef std::vector<std::pair<std::string, std::string> >
       HeadersVector;
 
-  ResourceDevToolsInfo();
-  ~ResourceDevToolsInfo();
+  WEBKIT_GLUE_EXPORT ResourceDevToolsInfo();
+  WEBKIT_GLUE_EXPORT ~ResourceDevToolsInfo();
 
   int32 http_status_code;
   std::string http_status_text;
@@ -115,8 +116,8 @@ struct ResourceDevToolsInfo : base::RefCounted<ResourceDevToolsInfo> {
 };
 
 struct ResourceResponseInfo {
-  ResourceResponseInfo();
-  ~ResourceResponseInfo();
+  WEBKIT_GLUE_EXPORT ResourceResponseInfo();
+  WEBKIT_GLUE_EXPORT ~ResourceResponseInfo();
 
   // The time at which the request was made that resulted in this response.
   // For cached responses, this time could be "far" in the past.
@@ -198,7 +199,7 @@ class ResourceLoaderBridge {
  public:
   // Structure used when calling
   // WebKitPlatformSupportImpl::CreateResourceLoader().
-  struct RequestInfo {
+  struct WEBKIT_GLUE_EXPORT RequestInfo {
     RequestInfo();
     ~RequestInfo();
 
@@ -331,7 +332,7 @@ class ResourceLoaderBridge {
 
   // use WebKitPlatformSupportImpl::CreateResourceLoader() for construction, but
   // anybody can delete at any time, INCLUDING during processing of callbacks.
-  virtual ~ResourceLoaderBridge();
+  WEBKIT_GLUE_EXPORT virtual ~ResourceLoaderBridge();
 
   // Call this method before calling Start() to append a chunk of binary data
   // to the request body.  May only be used with HTTP(S) POST requests.
@@ -392,7 +393,7 @@ class ResourceLoaderBridge {
   // WebKitPlatformSupportImpl::CreateResourceLoader()
   // For HTTP(S) POST requests, the AppendDataToUpload and AppendFileToUpload
   // methods may be called to construct the body of the request.
-  ResourceLoaderBridge();
+  WEBKIT_GLUE_EXPORT ResourceLoaderBridge();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ResourceLoaderBridge);

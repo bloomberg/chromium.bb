@@ -7,13 +7,14 @@
 #include "base/threading/thread.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebThread.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {
 
 class WebThreadImpl : public WebKit::WebThread {
  public:
-  WebThreadImpl(const char* name);
-  virtual ~WebThreadImpl();
+  WEBKIT_GLUE_EXPORT WebThreadImpl(const char* name);
+  WEBKIT_GLUE_EXPORT virtual ~WebThreadImpl();
 
   virtual void postTask(Task* task) OVERRIDE;
   virtual void postDelayedTask(Task* task, long long delay_ms) OVERRIDE;

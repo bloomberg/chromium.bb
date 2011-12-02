@@ -9,6 +9,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 #include <vector>
 
@@ -39,7 +40,7 @@ struct WebCursorInfo;
 // specific methods are provided to translate the cross-platform cursor into a
 // platform specific cursor.  It is also possible to serialize / de-serialize a
 // WebCursor.
-class WebCursor {
+class WEBKIT_GLUE_EXPORT WebCursor {
  public:
   WebCursor();
   explicit WebCursor(const WebKit::WebCursorInfo& cursor_info);

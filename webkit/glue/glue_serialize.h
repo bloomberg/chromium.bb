@@ -12,18 +12,21 @@
 
 #include <string>
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {
 
 // HistoryItem serialization.
-std::string HistoryItemToString(const WebKit::WebHistoryItem& item);
-WebKit::WebHistoryItem HistoryItemFromString(
+WEBKIT_GLUE_EXPORT std::string HistoryItemToString(
+    const WebKit::WebHistoryItem& item);
+WEBKIT_GLUE_EXPORT WebKit::WebHistoryItem HistoryItemFromString(
     const std::string& serialized_item);
 
 // For testing purposes only.
-void HistoryItemToVersionedString(const WebKit::WebHistoryItem& item,
-                                  int version,
-                                  std::string* serialized_item);
+WEBKIT_GLUE_EXPORT void HistoryItemToVersionedString(
+    const WebKit::WebHistoryItem& item,
+    int version,
+    std::string* serialized_item);
 
 }  // namespace webkit_glue
 

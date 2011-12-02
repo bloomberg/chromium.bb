@@ -6,6 +6,7 @@
 #define WEBKIT_PLUGINS_SAD_PLUGIN_H_
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 class SkBitmap;
 
@@ -17,9 +18,9 @@ namespace webkit {
 
 // Paints the sad plugin to the given canvas for the given plugin bounds. This
 // is used by both the NPAPI and the PPAPI out-of-process plugin impls.
-void PaintSadPlugin(WebKit::WebCanvas* canvas,
-                    const gfx::Rect& plugin_rect,
-                    const SkBitmap& sad_plugin_bitmap);
+WEBKIT_PLUGINS_EXPORT void PaintSadPlugin(WebKit::WebCanvas* canvas,
+                                          const gfx::Rect& plugin_rect,
+                                          const SkBitmap& sad_plugin_bitmap);
 
 }  // namespace
 

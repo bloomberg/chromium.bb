@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 class FilePath;
 
@@ -24,7 +25,7 @@ class PluginInstance;
 
 // A PluginLib is a single NPAPI Plugin Library, and is the lifecycle
 // manager for new PluginInstances.
-class PluginLib : public base::RefCounted<PluginLib> {
+class WEBKIT_PLUGINS_EXPORT PluginLib : public base::RefCounted<PluginLib> {
  public:
   static PluginLib* CreatePluginLib(const FilePath& filename);
 

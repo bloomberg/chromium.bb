@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "webkit/glue/resource_fetcher.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 class SkBitmap;
 
@@ -20,14 +21,15 @@ class ImageResourceFetcher {
  public:
   typedef base::Callback<void(ImageResourceFetcher*, const SkBitmap&)> Callback;
 
-  ImageResourceFetcher(const GURL& image_url,
-                       WebKit::WebFrame* frame,
-                       int id,
-                       int image_size,
-                       WebKit::WebURLRequest::TargetType target_type,
-                       const Callback& callback);
+  WEBKIT_GLUE_EXPORT ImageResourceFetcher(
+      const GURL& image_url,
+      WebKit::WebFrame* frame,
+      int id,
+      int image_size,
+      WebKit::WebURLRequest::TargetType target_type,
+      const Callback& callback);
 
-  virtual ~ImageResourceFetcher();
+  WEBKIT_GLUE_EXPORT virtual ~ImageResourceFetcher();
 
   // URL of the image we're downloading.
   const GURL& image_url() const { return image_url_; }

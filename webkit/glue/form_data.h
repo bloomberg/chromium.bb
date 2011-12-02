@@ -10,11 +10,12 @@
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/form_field.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {
 
 // Holds information about a form to be filled and/or submitted.
-struct FormData {
+struct WEBKIT_GLUE_EXPORT FormData {
   // The name of the form.
   string16 name;
   // GET or POST.

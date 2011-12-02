@@ -12,6 +12,7 @@
 #include "ui/gfx/gl/gpu_preference.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 // TODO(port): this typedef is obviously incorrect on non-Windows
 // platforms, but now a lot of code now accidentally depends on them
@@ -30,7 +31,7 @@ class WebPluginAcceleratedSurface;
 #endif
 
 // Describes the new location for a plugin window.
-struct WebPluginGeometry {
+struct WEBKIT_PLUGINS_EXPORT WebPluginGeometry {
   WebPluginGeometry();
   ~WebPluginGeometry();
 

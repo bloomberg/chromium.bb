@@ -13,6 +13,7 @@
 #include "base/task.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_resource.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 namespace webkit {
 namespace ppapi {
@@ -76,7 +77,7 @@ class CallbackTracker : public base::RefCountedThreadSafe<CallbackTracker> {
 
  private:
   friend class base::RefCountedThreadSafe<CallbackTracker>;
-  ~CallbackTracker();
+  WEBKIT_PLUGINS_EXPORT ~CallbackTracker();
 
   // |TrackedCallback| are expected to automatically add and
   // remove themselves from their provided |CallbackTracker|.
@@ -132,7 +133,7 @@ class TrackedCallback : public base::RefCountedThreadSafe<TrackedCallback> {
 
   // These run the callback in an abortive manner, or post a task to do so (but
   // immediately marking the callback as to be aborted).
-  void Abort();
+  WEBKIT_PLUGINS_EXPORT void Abort();
   void PostAbort();
 
   // Returns the ID of the resource which "owns" the callback, or 0 if the
@@ -179,14 +180,15 @@ class TrackedCompletionCallback : public TrackedCallback {
  public:
   // Create a tracked completion callback and register it with the tracker. The
   // resource ID may be 0 if the callback is not associated to any resource.
-  TrackedCompletionCallback(const scoped_refptr<CallbackTracker>& tracker,
-                            PP_Resource resource_id,
-                            const PP_CompletionCallback& callback);
+  WEBKIT_PLUGINS_EXPORT TrackedCompletionCallback(
+      const scoped_refptr<CallbackTracker>& tracker,
+      PP_Resource resource_id,
+      const PP_CompletionCallback& callback);
 
   // Run the callback with the given result. If the callback had previously been
   // marked as to be aborted (by |PostAbort()|), |result| will be ignored and
   // the callback will be run with result |PP_ERROR_ABORTED|.
-  void Run(int32_t result);
+  WEBKIT_PLUGINS_EXPORT void Run(int32_t result);
 
  protected:
   // |TrackedCallback| method:

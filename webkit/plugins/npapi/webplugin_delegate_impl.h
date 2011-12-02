@@ -19,6 +19,7 @@
 #include "ui/gfx/rect.h"
 #include "webkit/plugins/npapi/webplugin_delegate.h"
 #include "webkit/glue/webcursor.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "base/memory/weak_ptr.h"
@@ -61,7 +62,7 @@ class WebPluginIMEWin;
 
 // An implementation of WebPluginDelegate that runs in the plugin process,
 // proxied from the renderer by WebPluginDelegateProxy.
-class WebPluginDelegateImpl : public WebPluginDelegate {
+class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
  public:
   enum PluginQuirks {
     PLUGIN_QUIRK_SETWINDOW_TWICE = 1,  // Win32

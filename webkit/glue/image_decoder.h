@@ -1,9 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
 #include "ui/gfx/size.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 class SkBitmap;
 
@@ -14,7 +15,7 @@ namespace webkit_glue {
 // Note to future: This class should be deleted. We should have our own nice
 // image decoders in base/gfx, and our port should use those. Currently, it's
 // the other way around.
-class ImageDecoder {
+class WEBKIT_GLUE_EXPORT ImageDecoder {
  public:
   // Use the constructor with desired_size when you think you may have an .ico
   // format and care about which size you get back. Otherwise, use the 0-arg

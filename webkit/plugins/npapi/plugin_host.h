@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/nphostapi.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 namespace webkit {
 namespace npapi {
@@ -28,7 +29,7 @@ class PluginHost : public base::RefCounted<PluginHost> {
  public:
   // Access the single PluginHost instance.  Callers
   // must call deref() when finished with the object.
-  static PluginHost* Singleton();
+  WEBKIT_PLUGINS_EXPORT static PluginHost* Singleton();
 
   // The table of functions provided to the plugin.
   NPNetscapeFuncs* host_functions() { return &host_funcs_; }
@@ -43,7 +44,7 @@ class PluginHost : public base::RefCounted<PluginHost> {
                           std::vector<std::string>* values,
                           std::vector<char>* body);
 
-  void PatchNPNetscapeFuncs(NPNetscapeFuncs* overrides);
+  WEBKIT_PLUGINS_EXPORT void PatchNPNetscapeFuncs(NPNetscapeFuncs* overrides);
 
  private:
   friend class base::RefCounted<PluginHost>;

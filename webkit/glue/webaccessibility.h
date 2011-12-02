@@ -11,6 +11,7 @@
 
 #include "base/string16.h"
 #include "ui/gfx/rect.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace WebKit {
 class WebAccessibilityObject;
@@ -21,7 +22,7 @@ namespace webkit_glue {
 // A compact representation of the accessibility information for a
 // single web object, in a form that can be serialized and sent from
 // the renderer process to the browser process.
-struct WebAccessibility {
+struct WEBKIT_GLUE_EXPORT WebAccessibility {
  public:
   // An enumeration of accessibility roles.
   enum Role {

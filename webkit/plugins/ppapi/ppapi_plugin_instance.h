@@ -36,6 +36,7 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/rect.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 struct PP_Var;
 struct PPP_Find_Dev;
@@ -81,10 +82,11 @@ class PPB_URLRequestInfo_Impl;
 //
 // Note: to get from a PP_Instance to a PluginInstance*, use the
 // ResourceTracker.
-class PluginInstance : public base::RefCounted<PluginInstance>,
-                       public ::ppapi::FunctionGroupBase,
-                       public ::ppapi::thunk::PPB_Instance_FunctionAPI,
-                       public ::ppapi::InstanceImpl {
+class WEBKIT_PLUGINS_EXPORT PluginInstance :
+    public base::RefCounted<PluginInstance>,
+    public ::ppapi::FunctionGroupBase,
+    NON_EXPORTED_BASE(public ::ppapi::thunk::PPB_Instance_FunctionAPI),
+    public ::ppapi::InstanceImpl {
  public:
   // Create and return a PluginInstance object which supports the
   // PPP_Instance_1_0 interface.

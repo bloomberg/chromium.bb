@@ -10,6 +10,7 @@
 #include "ppapi/shared_impl/var_tracker.h"
 #include "webkit/plugins/ppapi/host_resource_tracker.h"
 #include "webkit/plugins/ppapi/host_var_tracker.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 namespace webkit {
 namespace ppapi {
@@ -71,13 +72,13 @@ class HostGlobals : public ::ppapi::PpapiGlobals {
   // Returns a pointer to the plugin instance object associated with the given
   // instance handle. The return value will be NULL if the handle is invalid or
   // if the instance has crashed.
-  PluginInstance* GetInstance(PP_Instance instance);
+  WEBKIT_PLUGINS_EXPORT PluginInstance* GetInstance(PP_Instance instance);
 
  private:
   // Per-instance data we track.
   struct InstanceData;
 
-  static HostGlobals* host_globals_;
+  WEBKIT_PLUGINS_EXPORT static HostGlobals* host_globals_;
 
   HostResourceTracker host_resource_tracker_;
   HostVarTracker host_var_tracker_;

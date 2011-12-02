@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "ppapi/c/pp_resource.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 namespace ppapi {
 class Resource;
@@ -32,7 +33,8 @@ class ResourceHelper {
 
   // Returns the module for the given resource, or NULL if the resource has
   // outlived its instance.
-  static PluginModule* GetPluginModule(const ::ppapi::Resource* resource);
+  WEBKIT_PLUGINS_EXPORT static PluginModule* GetPluginModule(
+      const ::ppapi::Resource* resource);
 
   // Returns the plugin delegate for the given resource, or NULL if the
   // resource has outlived its instance.
