@@ -1,0 +1,219 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#results-separator {
+  border-top: 1px solid rgb(156, 194, 239);
+  background-color: rgb(235, 239, 249);
+  font-weight: bold;
+  padding: 3px;
+  margin-bottom: -8px;
+  margin-top: 12px;
+}
+
+#results-separator table {
+  width: 100%;
+}
+
+#results-summary {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 50%;
+}
+
+#editing-controls button {
+  margin: 18px 0 -8px 0;
+}
+
+#results-display {
+  margin: 16px 0 0 0;
+  max-width: 740px;
+}
+
+.day {
+  color: rgb(106, 106, 106);
+  font-size: 13px;
+  font-weight: bold;
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
+}
+
+.edit-button {
+  -webkit-appearance: none;
+  background: none;
+  border: 0;
+  color: blue; /* -webkit-link makes it purple :'( */
+  cursor: pointer;
+  display: inline-block;
+  font: inherit;
+  text-decoration: underline;
+  padding: 0px 9px;
+}
+
+.gap,
+.entry,
+.no-entries {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.gap {
+  -webkit-border-end: 1px solid rgb(221, 221, 221);
+  height: 14px;
+  width: 35px;
+}
+
+.entry {
+  overflow: auto; /* Make sure it's at least as large as its children. */
+}
+
+.entry-box {
+  -webkit-box-orient: horizontal;
+  cursor: default;
+  display: -webkit-box;
+  float: left;  /* Box will shrink to fit its content. */
+  line-height: 1.6em;
+
+  /* The box should be no bigger than its parent. */
+  max-width: 100%;
+
+  overflow: hidden;
+}
+
+html[dir=rtl] .entry-box {
+  float: right; /* To make the box shrink to fit its content. */
+}
+
+.search-results, .day-results {
+  margin: 0 0 24px 0;
+  padding: 0;
+}
+
+.snippet {
+  -webkit-margin-start: 90px; /* Align it with .domain. */
+  clear: both;
+  font-size: 12px;
+  line-height: 1.6em;
+  margin-bottom: 12px;
+}
+
+.entry .domain {
+  color: rgb(154, 154, 154);
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+.drop-down {
+  -webkit-margin-end: 4px;
+  background: white -webkit-canvas(drop-down-arrow) no-repeat center center;
+  border: 1px solid rgb(182, 212, 252);
+  border-radius: 2px;
+  height: 13px;
+  position: relative;
+  top: 2px;
+  width: 13px;
+}
+
+.drop-down:hover {
+  background-image: -webkit-canvas(drop-down-arrow-hover);
+  border-color: rgb(106, 134, 222);
+}
+
+.drop-down[menu-shown], .drop-down:focus {
+  background-color: rgb(106, 134, 222);
+  background-image: -webkit-canvas(drop-down-arrow-active);
+  border-color: rgb(106, 134, 222);
+}
+
+html[dir='rtl'] .entry .title {
+  /* Put the favicon on the right. */
+  background-position-x: right;
+}
+
+.entry .time {
+  color: #9a9a9a;
+  width: 90px;
+}
+
+.entry input[type=checkbox] {
+  -webkit-margin-end: 6px;
+  -webkit-margin-start: 4px;
+  height: 13px;
+  line-height: 12px;
+  text-indent: -1px;
+  top: 2px;
+  width: 14px;
+}
+
+/* Checkboxes are shown when checked or focused, or when the entry is hovered.
+   Fade in on focus, but not on hover, because it makes the UI feel laggy. */
+.entry input[type=checkbox]:not(:checked) {
+  opacity: 0;
+}
+
+.entry-box:hover input[type=checkbox],
+.entry-box input[type=checkbox]:focus {
+  opacity: 1;
+}
+
+.entry-box input[type=checkbox]:focus {
+  -webkit-transition: opacity 150ms;
+}
+
+.entry-box {
+  background-color: none;
+}
+
+.entry-box:hover, .entry-box.contains-focus {
+  background-color: rgb(228, 236, 247);
+  border-radius: 2px;
+}
+
+.entry .title {
+  -webkit-box-flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entry .title {
+  /* Make room for the favicon. */
+  -webkit-padding-start: 20px;
+
+  /* Control the favicon appearance. */
+  background-repeat: no-repeat;
+  background-position-y: center;
+}
+
+.entry .starred {
+  -webkit-margin-start: 4px;
+  background: url('shared/images/star_small.png') no-repeat;
+  display: inline-block;
+  height: 11px;
+  width: 11px;
+}
+
+.entry .title > a {
+  color: rgb(17, 17, 204);
+  text-decoration: none;
+}
+
+.entry .title > a.to-be-removed {
+  text-decoration: line-through;
+}
+
+.entry .title > a:hover {
+  text-decoration: underline;
+}
+
+/* Since all history links are visited, we can make them blue. */
+.entry .title > a:visted {
+  color: rgb(17, 17, 204);
+}
+
+.fade-out {
+  -webkit-transition: opacity 200ms;
+  opacity: 0;
+}

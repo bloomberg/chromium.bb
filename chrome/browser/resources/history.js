@@ -21,8 +21,15 @@ function createElementWithClassName(type, className) {
 
 // Escapes a URI as appropriate for CSS.
 function encodeURIForCSS(uri) {
-  // CSS uris need to have '(' and ')' escaped.
+  // CSS URIs need to have '(' and ')' escaped.
   return uri.replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+}
+
+function findAncestorWithClass(node, className) {
+  while ((node = node.parentNode)) {
+    if (node.classList.contains(className)) return node;
+  }
+  return null;
 }
 
 // TODO(glen): Get rid of these global references, replace with a controller
@@ -103,7 +110,7 @@ function Page(result, continued, model, id) {
 Page.prototype.getResultDOM = function(searchResultFlag) {
   var node = createElementWithClassName('li', 'entry');
   var time = createElementWithClassName('div', 'time');
-  var entryBox = createElementWithClassName('div', 'entry-box');
+  var entryBox = createElementWithClassName('label', 'entry-box');
   var domain = createElementWithClassName('div', 'domain');
 
   var dropDown = createElementWithClassName('button', 'drop-down');
@@ -130,24 +137,19 @@ Page.prototype.getResultDOM = function(searchResultFlag) {
   dropDown.addEventListener('mousedown', setActivePage);
   dropDown.addEventListener('focus', setActivePage);
 
-  domain.style.backgroundImage =
-    'url(chrome://favicon/' + encodeURIForCSS(this.url_) + ')';
   domain.textContent = this.domain_;
 
   // Clicking anywhere in the entryBox will check/uncheck the checkbox.
+  entryBox.setAttribute('for', checkbox.id);
   entryBox.addEventListener('mousedown', entryBoxMousedown, false);
 
   // Prevent clicks on the drop down from affecting the checkbox.
   dropDown.addEventListener('click', function(e) { e.preventDefault(); });
 
-  // A label around the parts that should be clicked to activate the check box.
-  var label = document.createElement('label');
-  label.appendChild(time);
-  label.appendChild(domain);
-
   // We use a wrapper div so that the entry contents will be shinkwrapped.
-  entryBox.appendChild(label);
+  entryBox.appendChild(time);
   entryBox.appendChild(this.getTitleDOM_());
+  entryBox.appendChild(domain);
   entryBox.appendChild(dropDown);
 
   // Let the entryBox be styled appropriately when it contains keyboard focus.
@@ -226,6 +228,9 @@ Page.prototype.addHighlightedText_ = function(node, content, highlightText) {
  */
 Page.prototype.getTitleDOM_ = function() {
   var node = createElementWithClassName('div', 'title');
+  node.style.backgroundImage =
+      'url(chrome://favicon/' + encodeURIForCSS(this.url_) + ')';
+
   var link = document.createElement('a');
   link.href = this.url_;
   link.id = "id-" + this.id_;
@@ -237,10 +242,8 @@ Page.prototype.getTitleDOM_ = function() {
   this.addHighlightedText_(link, this.title_, this.model_.getSearchText());
   node.appendChild(link);
 
-  if (this.starred_) {
-    node.className += ' starred';
+  if (this.starred_)
     node.appendChild(createElementWithClassName('div', 'starred'));
-  }
 
   return node;
 };
@@ -984,7 +987,7 @@ function removeItems() {
       urls = [];
       date = cbDate;
     }
-    var link = checkbox.parentNode.parentNode.parentNode.querySelector('a');
+    var link = findAncestorWithClass(checkbox, 'entry-box').querySelector('a');
     checkbox.disabled = true;
     link.classList.add('to-be-removed');
     disabledItems.push(checkbox);
@@ -1006,7 +1009,8 @@ function removeItems() {
     // enabled, non-line-through state.
     for (var i = 0; i < disabledItems.length; i++) {
       var checkbox = disabledItems[i];
-      var link = checkbox.parentNode.parentNode.parentNode.querySelector('a');
+      var link = findAncestorWithClass(
+          checkbox, 'entry-box').querySelector('a');
       checkbox.disabled = false;
       link.classList.remove('to-be-removed');
     }
