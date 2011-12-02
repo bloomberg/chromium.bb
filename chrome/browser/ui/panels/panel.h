@@ -17,7 +17,6 @@
 
 class NativePanel;
 class PanelManager;
-class RenderViewHost;
 
 // A platform independent implementation of BrowserWindow for Panels.  This
 // class would get the first crack at all the BrowserWindow calls for Panels and
@@ -250,20 +249,12 @@ class Panel : public BrowserWindow,
   // size may differ after panel layout.
   Panel(Browser* browser, const gfx::Size& requested_size);
 
-  // NULL might be returned if the tab has not been added.
-  RenderViewHost* GetRenderViewHost() const;
-
   // Configures the tab contents for auto resize, including configurations
   // on the renderer and detecting renderer changes.
   void EnableTabContentsAutoResize(TabContents* tab_contents);
 
-  // Configures the renderer for auto resize.
-  void EnableRendererAutoResize(RenderViewHost* render_view_host);
-
-  // Requests RenderViewHost not to show the scrollbars till |max_size_| since
-  // the panel can grow to |max_size_|.
-  void RequestRenderViewHostToDisableScrollbars(
-      RenderViewHost* render_view_host);
+  // Configures the renderer for auto resize (if auto resize is enabled).
+  void ConfigureAutoResize(TabContents* tab_contents);
 
   Browser* browser_;  // Weak, owned by native panel.
 

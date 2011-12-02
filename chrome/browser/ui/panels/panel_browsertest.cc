@@ -859,7 +859,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_AutoResize) {
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
       panel->browser()->GetSelectedTabContents()->render_view_host(),
       std::wstring(),
-      L"changeSize(50);"));
+      L"changeSize(10);"));
   enlarge.Wait();
   gfx::Rect bounds_on_grow = panel->GetBounds();
   EXPECT_GT(bounds_on_grow.width(), initial_bounds.width());
@@ -872,7 +872,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_AutoResize) {
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
       panel->browser()->GetSelectedTabContents()->render_view_host(),
       std::wstring(),
-      L"changeSize(-30);"));
+      L"changeSize(-5);"));
   shrink.Wait();
   gfx::Rect bounds_on_shrink = panel->GetBounds();
   EXPECT_LT(bounds_on_shrink.width(), bounds_on_grow.width());
