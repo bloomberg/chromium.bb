@@ -73,6 +73,8 @@ class IPCResourceLoaderBridge : public ResourceLoaderBridge {
 
   // The routing id used when sending IPC messages.
   int routing_id_;
+
+  bool is_synchronous_request_;
 };
 
 IPCResourceLoaderBridge::IPCResourceLoaderBridge(
@@ -81,7 +83,8 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
     : peer_(NULL),
       dispatcher_(dispatcher),
       request_id_(-1),
-      routing_id_(request_info.routing_id) {
+      routing_id_(request_info.routing_id),
+      is_synchronous_request_(false) {
   DCHECK(dispatcher_) << "no resource dispatcher";
   request_.method = request_info.method;
   request_.url = request_info.url;
@@ -190,7 +193,8 @@ void IPCResourceLoaderBridge::Cancel() {
     return;
   }
 
-  dispatcher_->CancelPendingRequest(routing_id_, request_id_);
+  if (!is_synchronous_request_)
+    dispatcher_->CancelPendingRequest(routing_id_, request_id_);
 
   // We can't remove the request ID from the resource dispatcher because more
   // data might be pending. Sending the cancel message may cause more data
@@ -214,6 +218,7 @@ void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
   }
 
   request_id_ = MakeRequestID();
+  is_synchronous_request_ = true;
 
   content::SyncLoadResult result;
   IPC::SyncMessage* msg = new ResourceHostMsg_SyncLoad(routing_id_, request_id_,
