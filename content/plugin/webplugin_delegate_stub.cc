@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "content/common/npobject_stub.h"
@@ -29,25 +30,14 @@ using WebKit::WebCursorInfo;
 using webkit::npapi::WebPlugin;
 using webkit::npapi::WebPluginResourceClient;
 
-class FinishDestructionTask : public Task {
- public:
-  FinishDestructionTask(webkit::npapi::WebPluginDelegateImpl* delegate,
-                        WebPlugin* webplugin)
-      : delegate_(delegate), webplugin_(webplugin) {
-  }
+void FinishDestructionCallback(webkit::npapi::WebPluginDelegateImpl* delegate,
+                               WebPlugin* webplugin) {
+  // WebPlugin must outlive WebPluginDelegate.
+  if (delegate)
+    delegate->PluginDestroyed();
 
-  void Run() {
-    // WebPlugin must outlive WebPluginDelegate.
-    if (delegate_)
-      delegate_->PluginDestroyed();
-
-    delete webplugin_;
-  }
-
- private:
-  webkit::npapi::WebPluginDelegateImpl* delegate_;
-  webkit::npapi::WebPlugin* webplugin_;
-};
+  delete webplugin;
+}
 
 WebPluginDelegateStub::WebPluginDelegateStub(
     const std::string& mime_type, int instance_id, PluginChannel* channel) :
@@ -68,7 +58,7 @@ WebPluginDelegateStub::~WebPluginDelegateStub() {
     // The delegate or an npobject is in the callstack, so don't delete it
     // right away.
     MessageLoop::current()->PostNonNestableTask(FROM_HERE,
-        new FinishDestructionTask(delegate_, webplugin_));
+        base::Bind(&FinishDestructionCallback, delegate_, webplugin_));
   } else {
     // Safe to delete right away.
     if (delegate_)
