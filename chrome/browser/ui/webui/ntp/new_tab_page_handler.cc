@@ -137,7 +137,6 @@ void NewTabPageHandler::GetLocalizedValues(Profile* profile,
                                            DictionaryValue* values) {
   values->SetInteger("most_visited_page_id", MOST_VISITED_PAGE_ID);
   values->SetInteger("apps_page_id", APPS_PAGE_ID);
-  values->SetInteger("bookmarks_page_id", BOOKMARKS_PAGE_ID);
 
   PrefService* prefs = profile->GetPrefs();
   int shown_page = prefs->GetInteger(prefs::kNTPShownPage);
