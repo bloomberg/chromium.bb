@@ -373,12 +373,14 @@ class SandboxIPCProcess  {
 
   void HandleMakeSharedMemorySegment(int fd, const Pickle& pickle, void* iter,
                                      std::vector<int>& fds) {
-    uint32_t shm_size;
-    if (!pickle.ReadUInt32(&iter, &shm_size))
+    base::SharedMemoryCreateOptions options;
+    if (!pickle.ReadUInt32(&iter, &options.size))
+      return;
+    if (!pickle.ReadBool(&iter, &options.executable))
       return;
     int shm_fd = -1;
     base::SharedMemory shm;
-    if (shm.CreateAnonymous(shm_size))
+    if (shm.Create(options))
       shm_fd = shm.handle().fd;
     Pickle reply;
     SendRendererReply(fds, reply, shm_fd);

@@ -91,6 +91,7 @@ int MakeSharedMemorySegmentViaIPC(size_t length, bool executable) {
   Pickle request;
   request.WriteInt(LinuxSandbox::METHOD_MAKE_SHARED_MEMORY_SEGMENT);
   request.WriteUInt32(length);
+  request.WriteBool(executable);
   uint8_t reply_buf[10];
   int result_fd;
   ssize_t result = UnixDomainSocket::SendRecvMsg(GetSandboxFD(),

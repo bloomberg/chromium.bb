@@ -13,9 +13,13 @@
 
 namespace content {
 
-// Returns a file descriptor for a shared memory segment.
-// The second argument is ignored because SHM segments are always
-// mappable with PROT_EXEC on Linux.
+// Returns a file descriptor for a shared memory segment.  The
+// executable flag indicates that the caller intends to use mprotect
+// with PROT_EXEC after making a mapping, but not that it intends to
+// mmap with PROT_EXEC in the first place.  (Some systems, such as
+// ChromeOS, disallow PROT_EXEC in mmap on /dev/shm files but do allow
+// PROT_EXEC in mprotect on mappings from such files.  This function
+// can yield an object that has that constraint.)
 CONTENT_EXPORT int MakeSharedMemorySegmentViaIPC(size_t length,
                                                  bool executable);
 
