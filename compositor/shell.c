@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <linux/input.h>
 #include <assert.h>
+#include <signal.h>
 
 #include <wayland-server.h>
 #include "compositor.h"
@@ -58,6 +59,7 @@ struct wl_shell {
 	struct {
 		struct wl_resource *binding;
 		struct wl_list surfaces;
+		struct wlsc_process process;
 	} screensaver;
 };
 
@@ -490,18 +492,30 @@ static const struct wl_shell_interface shell_implementation = {
 };
 
 static void
+handle_screensaver_sigchld(struct wlsc_process *proc, int status)
+{
+	proc->pid = 0;
+}
+
+static void
 launch_screensaver(struct wl_shell *shell)
 {
 	if (shell->screensaver.binding)
 		return;
 
-	/* TODO: exec() the screensaver process */
+	wlsc_client_launch(shell->compositor,
+			   &shell->screensaver.process,
+			   "./clients/wscreensaver",
+			   handle_screensaver_sigchld);
 }
 
 static void
 terminate_screensaver(struct wl_shell *shell)
 {
-	/* TODO */
+	if (shell->screensaver.process.pid == 0)
+		return;
+
+	kill(shell->screensaver.process.pid, SIGTERM);
 }
 
 static void
