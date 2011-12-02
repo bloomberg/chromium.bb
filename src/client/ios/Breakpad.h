@@ -45,7 +45,7 @@ extern "C" {
 
 #include <Foundation/Foundation.h>
 
-#include <client/mac/Framework/BreakpadDefines.h>
+#include <client/apple/Framework/BreakpadDefines.h>
 
 // Optional user-defined function to decide if we should handle this crash or
 // forward it along.
