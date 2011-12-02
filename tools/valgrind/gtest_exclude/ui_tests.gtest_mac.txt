@@ -359,4 +359,6 @@ PPAPITest.WebSocket_TextSendReceive
 
 # More PPAPI crashes under Valgrind.  http://crbug.com/105080
 PPAPITest.UDPSocketPrivateShared
+PPAPITest.TCPSocketPrivateShared
 OutOfProcessPPAPITest.UDPSocketPrivateShared
+OutOfProcessPPAPITest.TCPSocketPrivateShared
