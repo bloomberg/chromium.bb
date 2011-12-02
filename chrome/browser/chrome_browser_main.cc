@@ -1739,8 +1739,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   PrefService* pref_service = profile_->GetPrefs();
   if (pref_service) {
     std::string homepage = pref_service->GetString(prefs::kHomePage);
-    google_search_homepage =
-        homepage == GoogleURLTracker::kDefaultGoogleHomepage;
+    google_search_homepage = google_util::IsGoogleHomePageUrl(homepage);
   }
 
   RLZTracker::InitRlzDelayed(is_first_run_, master_prefs_->ping_delay,

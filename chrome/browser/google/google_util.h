@@ -38,6 +38,9 @@ bool GetBrand(std::string* brand);
 // install. Returns false if the information is not available.
 bool GetReactivationBrand(std::string* brand);
 
+// True if |url| represents a valid Google home page URL.
+bool IsGoogleHomePageUrl(const std::string& url);
+
 // True if a build is strictly organic, according to its brand code.
 bool IsOrganic(const std::string& brand);
 

@@ -128,6 +128,43 @@ bool GetReactivationBrand(std::string* brand) {
 
 #endif
 
+bool IsGoogleHomePageUrl(const std::string& url) {
+  GURL original_url(url);
+  if (!original_url.is_valid())
+    return false;
+
+  // Make sure the scheme is valid.
+  if (!original_url.SchemeIs("http") && !original_url.SchemeIs("https"))
+    return false;
+
+  // Make sure port is default for the respective scheme.
+  if (!original_url.port().empty())
+    return false;
+
+  // Accept only valid TLD.
+  size_t tld_length = net::RegistryControlledDomainService::GetRegistryLength(
+      original_url, false);
+  if (tld_length == 0 || tld_length == std::string::npos)
+    return false;
+
+  // We only accept "www.google." in front of the TLD.
+  std::string host = original_url.host();
+  host = host.substr(0, host.length() - tld_length);
+  if (!LowerCaseEqualsASCII(host, "www.google.") &&
+      !LowerCaseEqualsASCII(host, "google."))
+    return false;
+
+  // Make sure the path is a known home page path.
+  std::string path(original_url.path());
+  if (!LowerCaseEqualsASCII(path, "/") &&
+      !LowerCaseEqualsASCII(path, "/webhp") &&
+      !StartsWithASCII(path, "/ig", false)) {
+    return false;
+  }
+
+  return true;
+}
+
 bool IsOrganic(const std::string& brand) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kOrganicInstall))
