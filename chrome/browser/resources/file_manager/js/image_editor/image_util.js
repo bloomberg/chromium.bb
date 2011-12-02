@@ -330,7 +330,7 @@ ImageUtil.setAttribute = function(element, attribute, on) {
 
 ImageUtil.ImageLoader = function(document) {
   this.document_ = document;
-  this.image_ = new Image();
+  this.image_ = null;
 };
 
 /**
@@ -351,7 +351,14 @@ ImageUtil.ImageLoader.prototype.load = function(
   var self = this;
   function startLoad() {
     self.timeout_ = null;
-    self.image_.onload = self.convertImage_.bind(self);
+    // The clients of this class sometimes request the same url repeatedly.
+    // The onload fires only if the src is different from the previous value.
+    // To work around that we create a new Image every time.
+    self.image_ = new Image();
+    self.image_.onload = function(e) {
+      self.image_ = null;
+      self.convertImage_(e.target);
+    };
     self.image_.src = url;
   }
   if (opt_delay) {
@@ -380,18 +387,21 @@ ImageUtil.ImageLoader.prototype.cancel = function() {
     clearTimeout(this.timeout_);
     this.timeout_ = null;
   }
-  this.image_.onload = function(){};
+  if (this.image_) {
+    this.image_.onload = function(){};
+    this.image_ = null;
+  }
 };
 
-ImageUtil.ImageLoader.prototype.convertImage_ = function() {
+ImageUtil.ImageLoader.prototype.convertImage_ = function(image) {
   var canvas = this.document_.createElement('canvas');
 
   if (this.transform_.rotate90 & 1) {  // Rotated +/-90deg, swap the dimensions.
-    canvas.width = this.image_.height;
-    canvas.height = this.image_.width;
+    canvas.width = image.height;
+    canvas.height = image.width;
   } else  {
-    canvas.width = this.image_.width;
-    canvas.height = this.image_.height;
+    canvas.width = image.width;
+    canvas.height = image.height;
   }
 
   ImageUtil.trace.resetTimer('load-convert');
@@ -402,24 +412,22 @@ ImageUtil.ImageLoader.prototype.convertImage_ = function() {
   context.rotate(this.transform_.rotate90 * Math.PI/2);
   context.scale(this.transform_.scaleX, this.transform_.scaleY);
 
-  var stripCount =
-      Math.ceil (this.image_.width * this.image_.height / ( 1 << 21));
-  var step =
-      Math.max(16, Math.ceil(this.image_.height / stripCount)) & 0xFFFFF0;
+  var stripCount = Math.ceil(image.width * image.height / ( 1 << 21));
+  var step = Math.max(16, Math.ceil(image.height / stripCount)) & 0xFFFFF0;
 
-  this.copyStrip_(context, 0, step);
+  this.copyStrip_(context, image, 0, step);
 };
 
 ImageUtil.ImageLoader.prototype.copyStrip_ = function(
-    context, firstRow, rowCount) {
-  var lastRow = Math.min (firstRow + rowCount, this.image_.height);
+    context, image, firstRow, rowCount) {
+  var lastRow = Math.min (firstRow + rowCount, image.height);
 
   context.drawImage(
-      this.image_, 0, firstRow, this.image_.width, lastRow - firstRow,
-      -this.image_.width / 2, firstRow - this.image_.height / 2,
-      this.image_.width, lastRow - firstRow);
+      image, 0, firstRow, image.width, lastRow - firstRow,
+      -image.width / 2, firstRow - image.height / 2,
+      image.width, lastRow - firstRow);
 
-  if (lastRow == this.image_.height) {
+  if (lastRow == image.height) {
     context.restore();
     ImageUtil.trace.reportTimer('load-convert');
     var callback = this.callback_;
@@ -430,7 +438,7 @@ ImageUtil.ImageLoader.prototype.copyStrip_ = function(
     this.timeout_ = setTimeout(
         function() {
           self.timeout_ = null;
-          self.copyStrip_(context, lastRow, rowCount);
+          self.copyStrip_(context, image, lastRow, rowCount);
         }, 0);
   }
 };
