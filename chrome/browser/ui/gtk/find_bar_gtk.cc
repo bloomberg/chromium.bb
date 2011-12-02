@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
-#include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -43,6 +42,7 @@
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/cairo_cached_surface.h"
 
 namespace {
 
@@ -888,19 +888,20 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
     GtkAllocation border_allocation = bar->border_bin_->allocation;
 
     // Blit the left part of the background image once on the left.
-    CairoCachedSurface* background_left =
+    gfx::CairoCachedSurface* background_left =
         bar->theme_service_->GetRTLEnabledSurfaceNamed(
         IDR_FIND_BOX_BACKGROUND_LEFT, widget);
-    background_left->SetSource(cr, border_allocation.x, border_allocation.y);
+    background_left->SetSource(cr, widget,
+                               border_allocation.x, border_allocation.y);
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
     cairo_rectangle(cr, border_allocation.x, border_allocation.y,
                     background_left->Width(), background_left->Height());
     cairo_fill(cr);
 
     // Blit the center part of the background image in all the space between.
-    CairoCachedSurface* background = bar->theme_service_->GetSurfaceNamed(
+    gfx::CairoCachedSurface* background = bar->theme_service_->GetSurfaceNamed(
         IDR_FIND_BOX_BACKGROUND, widget);
-    background->SetSource(cr,
+    background->SetSource(cr, widget,
                           border_allocation.x + background_left->Width(),
                           border_allocation.y);
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);

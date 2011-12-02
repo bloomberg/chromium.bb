@@ -24,7 +24,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "content/browser/disposition_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -43,6 +42,7 @@
 #include "ui/base/text/text_elider.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/image/image.h"
 
 #if defined(OS_CHROMEOS)
@@ -801,9 +801,9 @@ void DrawThemedToolbarBackground(GtkWidget* widget,
   // The toolbar is supposed to blend in with the active tab, so we have to pass
   // coordinates for the IDR_THEME_TOOLBAR bitmap relative to the top of the
   // tab strip.
-  CairoCachedSurface* background = theme_service->GetSurfaceNamed(
+  gfx::CairoCachedSurface* background = theme_service->GetSurfaceNamed(
       IDR_THEME_TOOLBAR, widget);
-  background->SetSource(cr, tabstrip_origin.x(), tabstrip_origin.y());
+  background->SetSource(cr, widget, tabstrip_origin.x(), tabstrip_origin.y());
   // We tile the toolbar background in both directions.
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr,

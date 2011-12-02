@@ -35,6 +35,10 @@ class ImageMacTest;
 
 namespace gfx {
 
+#if defined(TOOLKIT_USES_GTK)
+class CairoCachedSurface;
+#endif
+
 namespace internal {
 class ImageRep;
 class ImageStorage;
@@ -45,6 +49,7 @@ class UI_EXPORT Image {
   enum RepresentationType {
     kImageRepGdk,
     kImageRepCocoa,
+    kImageRepCairoCache,
     kImageRepSkia,
   };
 
@@ -84,6 +89,7 @@ class UI_EXPORT Image {
   const SkBitmap* ToSkBitmap() const;
 #if defined(TOOLKIT_USES_GTK)
   GdkPixbuf* ToGdkPixbuf() const;
+  CairoCachedSurface* const ToCairo() const;
 #elif defined(OS_MACOSX)
   NSImage* ToNSImage() const;
 #endif

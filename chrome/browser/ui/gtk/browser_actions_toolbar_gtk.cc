@@ -17,7 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/extensions/extension_popup_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_shrinkable_hbox.h"

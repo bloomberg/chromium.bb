@@ -2976,8 +2976,6 @@
         'browser/ui/gtk/bubble/bubble_accelerators_gtk.h',
         'browser/ui/gtk/bubble/bubble_gtk.cc',
         'browser/ui/gtk/bubble/bubble_gtk.h',
-        'browser/ui/gtk/cairo_cached_surface.cc',
-        'browser/ui/gtk/cairo_cached_surface.h',
         'browser/ui/gtk/certificate_viewer.cc',
         'browser/ui/gtk/chrome_gtk_frame.cc',
         'browser/ui/gtk/chrome_gtk_frame.h',

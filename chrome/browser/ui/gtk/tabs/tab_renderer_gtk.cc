@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
-#include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -33,6 +32,7 @@
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/pango_util.h"
 #include "ui/gfx/platform_font_pango.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -483,9 +483,9 @@ void TabRendererGtk::PaintFaviconArea(GtkWidget* widget, cairo_t* cr) {
   }
 
   // Paint the background behind the favicon.
-  CairoCachedSurface* tab_bg =
+  gfx::CairoCachedSurface* tab_bg =
       theme_service_->GetSurfaceNamed(theme_id, widget);
-  tab_bg->SetSource(cr, -x(), -offset_y);
+  tab_bg->SetSource(cr, widget, -x(), -offset_y);
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr,
                   favicon_bounds_.x(), favicon_bounds_.y(),
@@ -496,9 +496,9 @@ void TabRendererGtk::PaintFaviconArea(GtkWidget* widget, cairo_t* cr) {
     double throb_value = GetThrobValue();
     if (throb_value > 0) {
       cairo_push_group(cr);
-      CairoCachedSurface* active_bg = theme_service_->GetSurfaceNamed(
+      gfx::CairoCachedSurface* active_bg = theme_service_->GetSurfaceNamed(
           IDR_THEME_TOOLBAR, widget);
-      active_bg->SetSource(cr, -x(), 0);
+      active_bg->SetSource(cr, widget, -x(), 0);
       cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
 
       cairo_rectangle(cr,
@@ -859,7 +859,7 @@ void TabRendererGtk::PaintIcon(GtkWidget* widget, cairo_t* cr) {
     return;
   }
 
-  CairoCachedSurface* to_display = NULL;
+  gfx::CairoCachedSurface* to_display = NULL;
   if (should_display_crashed_favicon_) {
     to_display = theme_service_->GetSurfaceNamed(IDR_SAD_FAVICON, widget);
   } else if (!data_.favicon.isNull()) {
@@ -873,6 +873,7 @@ void TabRendererGtk::PaintIcon(GtkWidget* widget, cairo_t* cr) {
 
   if (to_display) {
     to_display->SetSource(cr,
+                          widget,
                           favicon_bounds_.x(),
                           favicon_bounds_.y() + favicon_hiding_offset_);
     cairo_paint(cr);
@@ -898,16 +899,16 @@ void TabRendererGtk::PaintTabBackground(GtkWidget* widget, cairo_t* cr) {
 void TabRendererGtk::DrawTabBackground(
     cairo_t* cr,
     GtkWidget* widget,
-    CairoCachedSurface* tab_bg,
+    gfx::CairoCachedSurface* tab_bg,
     int offset_x,
     int offset_y) {
-  tab_bg->SetSource(cr, -offset_x, -offset_y);
+  tab_bg->SetSource(cr, widget, -offset_x, -offset_y);
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
 
   // Draw left edge
-  CairoCachedSurface* tab_l_mask =
+  gfx::CairoCachedSurface* tab_l_mask =
       theme_service_->GetSurfaceNamed(IDR_TAB_ALPHA_LEFT, widget);
-  tab_l_mask->MaskSource(cr, 0, 0);
+  tab_l_mask->MaskSource(cr, widget, 0, 0);
 
   // Draw center
   cairo_rectangle(cr,
@@ -917,9 +918,9 @@ void TabRendererGtk::DrawTabBackground(
   cairo_fill(cr);
 
   // Draw right edge
-  CairoCachedSurface* tab_r_mask =
+  gfx::CairoCachedSurface* tab_r_mask =
       theme_service_->GetSurfaceNamed(IDR_TAB_ALPHA_RIGHT, widget);
-  tab_r_mask->MaskSource(cr, width() - tab_active_l_width_, 0);
+  tab_r_mask->MaskSource(cr, widget, width() - tab_active_l_width_, 0);
 }
 
 void TabRendererGtk::DrawTabShadow(
@@ -929,15 +930,15 @@ void TabRendererGtk::DrawTabShadow(
     int center_idr,
     int right_idr) {
   // Draw left drop shadow
-  CairoCachedSurface* active_image_l =
+  gfx::CairoCachedSurface* active_image_l =
       theme_service_->GetSurfaceNamed(left_idr, widget);
-  active_image_l->SetSource(cr, 0, 0);
+  active_image_l->SetSource(cr, widget, 0, 0);
   cairo_paint(cr);
 
   // Draw the center shadow
-  CairoCachedSurface* active_image_c =
+  gfx::CairoCachedSurface* active_image_c =
       theme_service_->GetSurfaceNamed(center_idr, widget);
-  active_image_c->SetSource(cr, 0, 0);
+  active_image_c->SetSource(cr, widget, 0, 0);
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr, tab_active_l_width_, 0,
                   width() - (2 * tab_active_l_width_),
@@ -945,9 +946,9 @@ void TabRendererGtk::DrawTabShadow(
   cairo_fill(cr);
 
   // Draw right drop shadow
-  CairoCachedSurface* active_image_r =
+  gfx::CairoCachedSurface* active_image_r =
       theme_service_->GetSurfaceNamed(right_idr, widget);
-  active_image_r->SetSource(cr, width() - active_image_r->Width(), 0);
+  active_image_r->SetSource(cr, widget, width() - active_image_r->Width(), 0);
   cairo_paint(cr);
 }
 
@@ -956,7 +957,7 @@ void TabRendererGtk::PaintInactiveTabBackground(GtkWidget* widget,
   int theme_id = data_.incognito ?
       IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
 
-  CairoCachedSurface* tab_bg =
+  gfx::CairoCachedSurface* tab_bg =
       theme_service_->GetSurfaceNamed(theme_id, widget);
 
   // If the theme is providing a custom background image, then its top edge
@@ -972,8 +973,8 @@ void TabRendererGtk::PaintInactiveTabBackground(GtkWidget* widget,
 }
 
 void TabRendererGtk::PaintActiveTabBackground(GtkWidget* widget,
-                                                   cairo_t* cr) {
-  CairoCachedSurface* tab_bg =
+                                              cairo_t* cr) {
+  gfx::CairoCachedSurface* tab_bg =
       theme_service_->GetSurfaceNamed(IDR_THEME_TOOLBAR, widget);
 
   DrawTabBackground(cr, widget, tab_bg, background_offset_x_, 0);
@@ -982,17 +983,18 @@ void TabRendererGtk::PaintActiveTabBackground(GtkWidget* widget,
 }
 
 void TabRendererGtk::PaintLoadingAnimation(GtkWidget* widget,
-                                                cairo_t* cr) {
+                                           cairo_t* cr) {
   int id = loading_animation_.animation_state() == ANIMATION_WAITING ?
            IDR_THROBBER_WAITING : IDR_THROBBER;
-  CairoCachedSurface* throbber = theme_service_->GetSurfaceNamed(id, widget);
+  gfx::CairoCachedSurface* throbber =
+      theme_service_->GetSurfaceNamed(id, widget);
 
   const int image_size = throbber->Height();
   const int image_offset = loading_animation_.animation_frame() * image_size;
   DCHECK(image_size == favicon_bounds_.height());
   DCHECK(image_size == favicon_bounds_.width());
 
-  throbber->SetSource(cr, favicon_bounds_.x() - image_offset,
+  throbber->SetSource(cr, widget, favicon_bounds_.x() - image_offset,
                       favicon_bounds_.y());
   cairo_rectangle(cr, favicon_bounds_.x(), favicon_bounds_.y(),
                   image_size, image_size);

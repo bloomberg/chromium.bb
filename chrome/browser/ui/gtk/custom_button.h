@@ -19,9 +19,12 @@
 #include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/rect.h"
 
-class CairoCachedSurface;
 class GtkThemeService;
 class SkBitmap;
+
+namespace gfx {
+class CairoCachedSurface;
+}
 
 // These classes implement two kinds of custom-drawn buttons.  They're
 // used on the toolbar and the bookmarks bar.
@@ -64,14 +67,14 @@ class CustomDrawButtonBase : public content::NotificationObserver {
 
  private:
   // Get the CairoCachedSurface from |surfaces_| for |state|.
-  CairoCachedSurface* PixbufForState(int state);
+  gfx::CairoCachedSurface* PixbufForState(int state);
 
   // We store one surface for each possible state of the button;
   // INSENSITIVE is the last available state;
-  scoped_ptr<CairoCachedSurface> surfaces_[GTK_STATE_INSENSITIVE + 1];
+  scoped_ptr<gfx::CairoCachedSurface> surfaces_[GTK_STATE_INSENSITIVE + 1];
 
   // The background image.
-  scoped_ptr<CairoCachedSurface> background_image_;
+  scoped_ptr<gfx::CairoCachedSurface> background_image_;
 
   // If non-negative, the state to paint the button.
   int paint_override_;

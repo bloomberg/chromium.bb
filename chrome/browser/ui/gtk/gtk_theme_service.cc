@@ -18,7 +18,6 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/chrome_gtk_frame.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
@@ -43,6 +42,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
@@ -563,7 +563,7 @@ void GtkThemeService::GetScrollbarColors(GdkColor* thumb_active_color,
     *track_color = *theme_trough_color;
 }
 
-CairoCachedSurface* GtkThemeService::GetSurfaceNamed(
+gfx::CairoCachedSurface* GtkThemeService::GetSurfaceNamed(
     int id,
     GtkWidget* widget_on_display) {
   return GetSurfaceNamedImpl(
@@ -573,7 +573,7 @@ CairoCachedSurface* GtkThemeService::GetSurfaceNamed(
       widget_on_display);
 }
 
-CairoCachedSurface* GtkThemeService::GetRTLEnabledSurfaceNamed(
+gfx::CairoCachedSurface* GtkThemeService::GetRTLEnabledSurfaceNamed(
     int id,
     GtkWidget* widget_on_display) {
   // We flip the sign of |id| when passing it to GetSurfaceNamedImpl() for the
@@ -588,7 +588,7 @@ CairoCachedSurface* GtkThemeService::GetRTLEnabledSurfaceNamed(
       widget_on_display);
 }
 
-CairoCachedSurface* GtkThemeService::GetUnthemedSurfaceNamed(
+gfx::CairoCachedSurface* GtkThemeService::GetUnthemedSurfaceNamed(
     int id,
     GtkWidget* widget_on_display) {
   return GetSurfaceNamedImpl(id,
@@ -597,7 +597,7 @@ CairoCachedSurface* GtkThemeService::GetUnthemedSurfaceNamed(
       widget_on_display);
 }
 
-CairoCachedSurface* GtkThemeService::GetCairoIcon(
+gfx::CairoCachedSurface* GtkThemeService::GetCairoIcon(
     int id,
     GtkWidget* widget_on_display) {
   return GetSurfaceNamedImpl(id,
@@ -1131,7 +1131,7 @@ void GtkThemeService::GetSelectedEntryForegroundHSL(
   color_utils::SkColorToHSL(GdkToSkColor(&color), tint);
 }
 
-CairoCachedSurface* GtkThemeService::GetSurfaceNamedImpl(
+gfx::CairoCachedSurface* GtkThemeService::GetSurfaceNamedImpl(
     int id,
     PerDisplaySurfaceMap* display_surface_map,
     PixbufProvidingMethod provider,
@@ -1144,7 +1144,7 @@ CairoCachedSurface* GtkThemeService::GetSurfaceNamedImpl(
   if (found != surface_map.end())
     return found->second;
 
-  CairoCachedSurface* surface = new CairoCachedSurface;
+  gfx::CairoCachedSurface* surface = new gfx::CairoCachedSurface;
   surface->UsePixbuf((this->*provider)(id));
 
   surface_map[id] = surface;

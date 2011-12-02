@@ -141,6 +141,13 @@ TEST_F(ImageTest, SkiaToGdkCopy) {
   EXPECT_TRUE(pixbuf);
   g_object_unref(pixbuf);
 }
+
+TEST_F(ImageTest, SkiaToCairoCreatesGdk) {
+  gfx::Image image(gt::CreateBitmap(25, 25));
+  EXPECT_FALSE(image.HasRepresentation(gfx::Image::kImageRepGdk));
+  EXPECT_TRUE(image.ToCairo());
+  EXPECT_TRUE(image.HasRepresentation(gfx::Image::kImageRepGdk));
+}
 #endif
 
 #if defined(OS_MACOSX)

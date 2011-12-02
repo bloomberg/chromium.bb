@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_sub_menu_model_gtk.h"
 #include "chrome/browser/ui/gtk/browser_actions_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
-#include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
@@ -55,6 +54,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/skbitmap_operations.h"
 
 namespace {
@@ -504,9 +504,9 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
     area = area.Subtract(right).Subtract(left);
   }
 
-  CairoCachedSurface* background = theme_service_->GetSurfaceNamed(
+  gfx::CairoCachedSurface* background = theme_service_->GetSurfaceNamed(
       IDR_THEME_TOOLBAR, widget);
-  background->SetSource(cr, tabstrip_origin.x(), tabstrip_origin.y());
+  background->SetSource(cr, widget, tabstrip_origin.x(), tabstrip_origin.y());
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr, area.x(), area.y(), area.width(), area.height());
   cairo_fill(cr);
@@ -531,15 +531,15 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
 
     cairo_set_operator(copy_cr, CAIRO_OPERATOR_SOURCE);
     if (draw_left_corner) {
-      CairoCachedSurface* left_corner = theme_service_->GetSurfaceNamed(
+      gfx::CairoCachedSurface* left_corner = theme_service_->GetSurfaceNamed(
           IDR_CONTENT_TOP_LEFT_CORNER_MASK, widget);
-      left_corner->SetSource(copy_cr, left.x(), left.y());
+      left_corner->SetSource(copy_cr, widget, left.x(), left.y());
       cairo_paint(copy_cr);
     }
     if (draw_right_corner) {
-      CairoCachedSurface* right_corner = theme_service_->GetSurfaceNamed(
+      gfx::CairoCachedSurface* right_corner = theme_service_->GetSurfaceNamed(
           IDR_CONTENT_TOP_RIGHT_CORNER_MASK, widget);
-      right_corner->SetSource(copy_cr, right.x(), right.y());
+      right_corner->SetSource(copy_cr, widget, right.x(), right.y());
       // We fill a path rather than just painting because we don't want to
       // overwrite the left corner.
       cairo_rectangle(copy_cr, right.x(), right.y(),
@@ -549,7 +549,8 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
 
     // Draw the background. CAIRO_OPERATOR_IN uses the existing pixel data as
     // an alpha mask.
-    background->SetSource(copy_cr, tabstrip_origin.x(), tabstrip_origin.y());
+    background->SetSource(copy_cr, widget,
+                          tabstrip_origin.x(), tabstrip_origin.y());
     cairo_set_operator(copy_cr, CAIRO_OPERATOR_IN);
     cairo_pattern_set_extend(cairo_get_source(copy_cr), CAIRO_EXTEND_REPEAT);
     cairo_paint(copy_cr);

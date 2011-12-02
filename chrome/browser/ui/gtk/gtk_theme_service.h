@@ -19,8 +19,11 @@
 #include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/color_utils.h"
 
-class CairoCachedSurface;
 class Profile;
+
+namespace gfx {
+class CairoCachedSurface;
+}
 
 namespace ui {
 class GtkSignalRegistrar;
@@ -116,23 +119,24 @@ class GtkThemeService : public ThemeService {
   // Returns a CairoCachedSurface for a particular Display. CairoCachedSurfaces
   // (hopefully) live on the X server, instead of the client so we don't have
   // to send the image to the server on each expose.
-  CairoCachedSurface* GetSurfaceNamed(int id, GtkWidget* widget_on_display);
+  gfx::CairoCachedSurface* GetSurfaceNamed(
+      int id, GtkWidget* widget_on_display);
 
   // Same as above, but auto-mirrors the underlying pixbuf in RTL mode.
-  CairoCachedSurface* GetRTLEnabledSurfaceNamed(int id,
-                                                GtkWidget* widget_on_display);
+  gfx::CairoCachedSurface* GetRTLEnabledSurfaceNamed(
+      int id, GtkWidget* widget_on_display);
 
   // Same as above, but gets the resource from the ResourceBundle instead of the
   // ThemeService.
   // NOTE: Never call this with resource IDs that are ever passed to the above
   // two functions!  Depending on which call comes first, all callers will
   // either get the themed or the unthemed version.
-  CairoCachedSurface* GetUnthemedSurfaceNamed(int id,
-                                              GtkWidget* widget_on_display);
+  gfx::CairoCachedSurface* GetUnthemedSurfaceNamed(
+      int id, GtkWidget* widget_on_display);
 
   // A way to get a cached cairo surface for the equivalent of GetFolderIcon()
   // or GetDefaultFavicon(). Uses the ids defined in CairoDefaultIcon.
-  CairoCachedSurface* GetCairoIcon(int id, GtkWidget* widget_on_display);
+  gfx::CairoCachedSurface* GetCairoIcon(int id, GtkWidget* widget_on_display);
 
   // Returns colors that we pass to webkit to match the system theme.
   const SkColor& get_focus_ring_color() const { return focus_ring_color_; }
@@ -167,7 +171,7 @@ class GtkThemeService : public ThemeService {
   typedef std::map<int, SkColor> ColorMap;
   typedef std::map<int, color_utils::HSL> TintMap;
   typedef std::map<int, SkBitmap*> ImageCache;
-  typedef std::map<int, CairoCachedSurface*> CairoCachedSurfaceMap;
+  typedef std::map<int, gfx::CairoCachedSurface*> CairoCachedSurfaceMap;
   typedef std::map<GdkDisplay*, CairoCachedSurfaceMap> PerDisplaySurfaceMap;
 
   typedef GdkPixbuf*(GtkThemeService::*PixbufProvidingMethod)(int id) const;
@@ -251,7 +255,7 @@ class GtkThemeService : public ThemeService {
   void GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const;
 
   // Implements GetXXXSurfaceNamed(), given the appropriate pixbuf to use.
-  CairoCachedSurface* GetSurfaceNamedImpl(
+  gfx::CairoCachedSurface* GetSurfaceNamedImpl(
       int id,
       PerDisplaySurfaceMap* surface_map,
       PixbufProvidingMethod provider,

@@ -13,9 +13,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
@@ -26,6 +24,7 @@
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/image/image.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -84,12 +83,12 @@ gboolean OnEventBoxExpose(GtkWidget* event_box,
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(event_box->window));
   gdk_cairo_rectangle(cr, &expose->area);
   cairo_clip(cr);
-  GtkThemeService* theme_provider =
-      GtkThemeService::GetFrom(BrowserList::GetLastActive()->profile());
-  CairoCachedSurface* background = theme_provider->GetSurfaceNamed(
-      IDR_ABOUT_BACKGROUND_COLOR, event_box);
 
-  background->SetSource(cr, 0, 0);
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  gfx::CairoCachedSurface* background =
+      rb.GetNativeImageNamed(IDR_ABOUT_BACKGROUND).ToCairo();
+  background->SetSource(cr, event_box, 0, 0);
+
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   gdk_cairo_rectangle(cr, &expose->area);
   cairo_fill(cr);

@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
-#include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/content_setting_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/extensions/extension_popup_gtk.h"
 #include "chrome/browser/ui/gtk/first_run_bubble.h"

@@ -15,6 +15,7 @@
 #include <glib-object.h>
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image/cairo_cached_surface.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -42,6 +43,7 @@ const SkBitmap* GdkPixbufToSkBitmap(GdkPixbuf* pixbuf) {
 
 class ImageRepSkia;
 class ImageRepGdk;
+class ImageRepCairoCached;
 class ImageRepCocoa;
 
 // An ImageRep is the object that holds the backing memory for an Image. Each
@@ -66,6 +68,11 @@ class ImageRep {
   ImageRepGdk* AsImageRepGdk() {
     CHECK_EQ(type_, Image::kImageRepGdk);
     return reinterpret_cast<ImageRepGdk*>(this);
+  }
+
+  ImageRepCairoCached* AsImageRepCairo() {
+    CHECK_EQ(type_, Image::kImageRepCairoCache);
+    return reinterpret_cast<ImageRepCairoCached*>(this);
   }
 #endif
 
@@ -133,7 +140,29 @@ class ImageRepGdk : public ImageRep {
 
   DISALLOW_COPY_AND_ASSIGN(ImageRepGdk);
 };
-#endif
+
+// Represents data that lives on the display server instead of in the client.
+class ImageRepCairoCached : public ImageRep {
+ public:
+  explicit ImageRepCairoCached(GdkPixbuf* pixbuf)
+      : ImageRep(Image::kImageRepCairoCache),
+        cairo_cache_(new CairoCachedSurface) {
+    CHECK(pixbuf);
+    cairo_cache_->UsePixbuf(pixbuf);
+  }
+
+  virtual ~ImageRepCairoCached() {
+    delete cairo_cache_;
+  }
+
+  CairoCachedSurface* surface() const { return cairo_cache_; }
+
+ private:
+  CairoCachedSurface* cairo_cache_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageRepCairoCached);
+};
+#endif  // defined(TOOLKIT_USES_GTK)
 
 #if defined(OS_MACOSX)
 class ImageRepCocoa : public ImageRep {
@@ -156,7 +185,7 @@ class ImageRepCocoa : public ImageRep {
 
   DISALLOW_COPY_AND_ASSIGN(ImageRepCocoa);
 };
-#endif
+#endif  // defined(OS_MACOSX)
 
 // The Storage class acts similarly to the pixels in a SkBitmap: the Image
 // class holds a refptr instance of Storage, which in turn holds all the
@@ -243,6 +272,11 @@ const SkBitmap* Image::ToSkBitmap() const {
 GdkPixbuf* Image::ToGdkPixbuf() const {
   internal::ImageRep* rep = GetRepresentation(Image::kImageRepGdk);
   return rep->AsImageRepGdk()->pixbuf();
+}
+
+CairoCachedSurface* const Image::ToCairo() const {
+  internal::ImageRep* rep = GetRepresentation(Image::kImageRepCairoCache);
+  return rep->AsImageRepCairo()->surface();
 }
 #endif
 
@@ -337,6 +371,9 @@ internal::ImageRep* Image::GetRepresentation(
       rep = new internal::ImageRepSkia(
           internal::GdkPixbufToSkBitmap(pixbuf_rep->pixbuf()));
     }
+    // We don't do conversions from CairoCachedSurfaces to Skia because the
+    // data lives on the display server and we'll always have a GdkPixbuf if we
+    // have a CairoCachedSurface.
 #elif defined(OS_MACOSX)
     if (storage_->default_representation_type() == Image::kImageRepCocoa) {
       internal::ImageRepCocoa* nsimage_rep = default_rep->AsImageRepCocoa();
@@ -349,6 +386,19 @@ internal::ImageRep* Image::GetRepresentation(
     AddRepresentation(rep);
     return rep;
   }
+#if defined(TOOLKIT_USES_GTK)
+  else if (rep_type == Image::kImageRepCairoCache) {
+    // Handle any-to-Cairo conversion. This may recursively create an
+    // intermediate pixbuf before we send the data to the display server.
+    internal::ImageRep* rep = GetRepresentation(Image::kImageRepGdk);
+    internal::ImageRepCairoCached* native_rep =
+        new internal::ImageRepCairoCached(rep->AsImageRepGdk()->pixbuf());
+
+    CHECK(native_rep);
+    AddRepresentation(native_rep);
+    return native_rep;
+  }
+#endif
 
   // Handle Skia-to-native conversions.
   if (default_rep->type() == Image::kImageRepSkia) {

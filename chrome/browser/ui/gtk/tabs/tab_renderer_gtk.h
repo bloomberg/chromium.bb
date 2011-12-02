@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -22,13 +21,14 @@
 #include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/rect.h"
 
 namespace gfx {
+class CairoCachedSurface;
 class Size;
 }  // namespace gfx
 
-class CairoCachedSurface;
 class CustomDrawButton;
 class TabContents;
 class GtkThemeService;
@@ -242,7 +242,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
     ~TabData();
 
     SkBitmap favicon;
-    CairoCachedSurface cairo_favicon;
+    gfx::CairoCachedSurface cairo_favicon;
     bool is_default_favicon;
     string16 title;
     bool loading;
@@ -300,7 +300,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
   // sides for the rounded tab shape.
   void DrawTabBackground(cairo_t* cr,
                          GtkWidget* widget,
-                         CairoCachedSurface* tab_bg,
+                         gfx::CairoCachedSurface* tab_bg,
                          int offset_x,
                          int offset_y);
 

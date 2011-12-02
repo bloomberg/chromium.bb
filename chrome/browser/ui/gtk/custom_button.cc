@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -16,6 +15,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/skbitmap_operations.h"
 
 CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeService* theme_provider,
@@ -32,8 +32,8 @@ CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeService* theme_provider,
       theme_service_(theme_provider),
       flipped_(false) {
   for (int i = 0; i < (GTK_STATE_INSENSITIVE + 1); ++i)
-    surfaces_[i].reset(new CairoCachedSurface);
-  background_image_.reset(new CairoCachedSurface);
+    surfaces_[i].reset(new gfx::CairoCachedSurface);
+  background_image_.reset(new gfx::CairoCachedSurface);
 
   if (theme_provider) {
     // Load images by pretending that we got a BROWSER_THEME_CHANGED
@@ -81,8 +81,8 @@ gboolean CustomDrawButtonBase::OnExpose(GtkWidget* widget,
     paint_state = GTK_STATE_NORMAL;
   bool animating_hover = hover_state > 0.0 &&
       paint_state == GTK_STATE_NORMAL;
-  CairoCachedSurface* pixbuf = PixbufForState(paint_state);
-  CairoCachedSurface* hover_pixbuf = PixbufForState(GTK_STATE_PRELIGHT);
+  gfx::CairoCachedSurface* pixbuf = PixbufForState(paint_state);
+  gfx::CairoCachedSurface* hover_pixbuf = PixbufForState(GTK_STATE_PRELIGHT);
 
   if (!pixbuf || !pixbuf->valid())
     return FALSE;
@@ -107,15 +107,15 @@ gboolean CustomDrawButtonBase::OnExpose(GtkWidget* widget,
   int y = allocation.height - pixbuf->Height();
 
   if (background_image_->valid()) {
-    background_image_->SetSource(cairo_context, x, y);
+    background_image_->SetSource(cairo_context, widget, x, y);
     cairo_paint(cairo_context);
   }
 
-  pixbuf->SetSource(cairo_context, x, y);
+  pixbuf->SetSource(cairo_context, widget, x, y);
   cairo_paint(cairo_context);
 
   if (animating_hover) {
-    hover_pixbuf->SetSource(cairo_context, x, y);
+    hover_pixbuf->SetSource(cairo_context, widget, x, y);
     cairo_paint_with_alpha(cairo_context, hover_state);
   }
 
@@ -161,8 +161,8 @@ void CustomDrawButtonBase::Observe(int type,
       theme_service_->GetRTLEnabledPixbufNamed(disabled_id_) : NULL);
 }
 
-CairoCachedSurface* CustomDrawButtonBase::PixbufForState(int state) {
-  CairoCachedSurface* pixbuf = surfaces_[state].get();
+gfx::CairoCachedSurface* CustomDrawButtonBase::PixbufForState(int state) {
+  gfx::CairoCachedSurface* pixbuf = surfaces_[state].get();
 
   // Fall back to the default image if we don't have one for this state.
   if (!pixbuf || !pixbuf->valid())

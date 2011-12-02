@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_menu_controller_gtk.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
-#include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
@@ -47,6 +46,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/image/image.h"
 
 namespace {
