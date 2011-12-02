@@ -147,6 +147,12 @@ IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksSuccessCursorContinue,
                      IndexedDBKey /* key */,
                      IndexedDBKey /* primary key */,
                      content::SerializedScriptValue /* script_value */)
+IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksSuccessCursorPrefetch,
+                     int32 /* response_id */,
+                     int32 /* cursor_id */,
+                     std::vector<IndexedDBKey> /* keys */,
+                     std::vector<IndexedDBKey> /* primary keys */,
+                     std::vector<content::SerializedScriptValue> /* values */)
 IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessIDBDatabase,
                      int32 /* response_id */,
                      int32 /* idb_database_id */)
@@ -199,6 +205,19 @@ IPC_SYNC_MESSAGE_CONTROL3_1(IndexedDBHostMsg_CursorContinue,
                      int32, /* response_id */
                      IndexedDBKey, /* key */
                      WebKit::WebExceptionCode /* ec */)
+
+// WebIDBCursor::prefetchContinue() message.
+IPC_SYNC_MESSAGE_CONTROL3_1(IndexedDBHostMsg_CursorPrefetch,
+                     int32, /* idb_cursor_id */
+                     int32, /* response_id */
+                     int32, /* n */
+                     WebKit::WebExceptionCode /* ec */)
+
+// WebIDBCursor::prefetchReset() message.
+IPC_SYNC_MESSAGE_CONTROL3_0(IndexedDBHostMsg_CursorPrefetchReset,
+                     int32, /* idb_cursor_id */
+                     int32, /* used_prefetches */
+                     int32  /* used_prefetches */)
 
 // WebIDBCursor::remove() message.
 IPC_SYNC_MESSAGE_CONTROL2_1(IndexedDBHostMsg_CursorDelete,

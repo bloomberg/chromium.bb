@@ -59,6 +59,31 @@ void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccessWithContinuation() {
           content::SerializedScriptValue(idb_cursor->value())));
 }
 
+void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccessWithPrefetch(
+    const WebKit::WebVector<WebKit::WebIDBKey>& keys,
+    const WebKit::WebVector<WebKit::WebIDBKey>& primaryKeys,
+    const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values) {
+  DCHECK(cursor_id_ != -1);
+
+  std::vector<IndexedDBKey> msgKeys;
+  std::vector<IndexedDBKey> msgPrimaryKeys;
+  std::vector<content::SerializedScriptValue> msgValues;
+
+  for (size_t i = 0; i < keys.size(); ++i) {
+    msgKeys.push_back(IndexedDBKey(keys[i]));
+    msgPrimaryKeys.push_back(IndexedDBKey(primaryKeys[i]));
+    msgValues.push_back(content::SerializedScriptValue(values[i]));
+  }
+
+  dispatcher_host()->Send(
+      new IndexedDBMsg_CallbacksSuccessCursorPrefetch(
+          response_id(),
+          cursor_id_,
+          msgKeys,
+          msgPrimaryKeys,
+          msgValues));
+}
+
 void IndexedDBCallbacks<WebKit::WebIDBKey>::onSuccess(
     const WebKit::WebIDBKey& value) {
   dispatcher_host()->Send(

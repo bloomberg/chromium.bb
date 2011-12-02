@@ -4,7 +4,10 @@
 
 function debug(message)
 {
-  document.getElementById('status').innerHTML += '<br/>' + message;
+  var span = document.createElement("span");
+  span.appendChild(document.createTextNode(message));
+  span.appendChild(document.createElement("br"));
+  document.getElementById('status').appendChild(span);
 }
 
 function done(message)

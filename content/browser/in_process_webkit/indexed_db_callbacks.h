@@ -93,6 +93,10 @@ class IndexedDBCallbacks<WebKit::WebIDBCursor>
   virtual void onSuccess(WebKit::WebIDBCursor* idb_object);
   virtual void onSuccess(const WebKit::WebSerializedScriptValue& value);
   virtual void onSuccessWithContinuation();
+  virtual void onSuccessWithPrefetch(
+      const WebKit::WebVector<WebKit::WebIDBKey>& keys,
+      const WebKit::WebVector<WebKit::WebIDBKey>& primaryKeys,
+      const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values);
 
  private:
   // The id of the cursor this callback concerns, or -1 if the cursor

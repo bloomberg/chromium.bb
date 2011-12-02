@@ -70,6 +70,15 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
       int32 idb_cursor_id,
       WebKit::WebExceptionCode* ec);
 
+  void RequestIDBCursorPrefetch(
+      int n,
+      WebKit::WebIDBCallbacks* callbacks_ptr,
+      int32 idb_cursor_id,
+      WebKit::WebExceptionCode* ec);
+
+  void RequestIDBCursorPrefetchReset(int used_prefetches, int unused_prefetches,
+                                     int32 idb_cursor_id);
+
   void RequestIDBCursorDelete(
       WebKit::WebIDBCallbacks* callbacks_ptr,
       int32 idb_cursor_id,
@@ -174,6 +183,12 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
                                const IndexedDBKey& key,
                                const IndexedDBKey& primary_key,
                                const content::SerializedScriptValue& value);
+  void OnSuccessCursorPrefetch(
+      int32 response_id,
+      int32 cursor_id,
+      const std::vector<IndexedDBKey>& keys,
+      const std::vector<IndexedDBKey>& primary_keys,
+      const std::vector<content::SerializedScriptValue>& values);
   void OnSuccessStringList(int32 response_id,
                            const std::vector<string16>& value);
   void OnSuccessSerializedScriptValue(
@@ -184,6 +199,9 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
   void OnAbort(int32 transaction_id);
   void OnComplete(int32 transaction_id);
   void OnVersionChange(int32 database_id, const string16& newVersion);
+
+  // Reset cursor prefetch caches for all cursors except exception_cursor_id.
+  void ResetCursorPrefetchCaches(int32 exception_cursor_id = -1);
 
   // Careful! WebIDBCallbacks wraps non-threadsafe data types. It must be
   // destroyed and used on the same thread it was created on.

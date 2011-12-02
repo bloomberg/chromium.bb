@@ -238,6 +238,12 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
                     int32 response_id,
                     const IndexedDBKey& key,
                     WebKit::WebExceptionCode* ec);
+    void OnPrefetch(int32 idb_cursor_id,
+                    int32 response_id,
+                    int n,
+                    WebKit::WebExceptionCode* ec);
+    void OnPrefetchReset(int32 idb_cursor_id, int used_prefetches,
+                         int unused_prefetches);
     void OnDelete(int32 idb_object_store_id,
                   int32 response_id,
                   WebKit::WebExceptionCode* ec);

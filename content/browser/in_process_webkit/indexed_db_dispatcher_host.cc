@@ -886,6 +886,8 @@ bool IndexedDBDispatcherHost::CursorDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorDirection, OnDirection)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorUpdate, OnUpdate)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorContinue, OnContinue)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorPrefetch, OnPrefetch)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorPrefetchReset, OnPrefetchReset)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorDelete, OnDelete)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorDestroyed, OnDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -965,6 +967,32 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
   idb_cursor->continueFunction(
       key, new IndexedDBCallbacks<WebIDBCursor>(parent_, response_id,
                                                 cursor_id), *ec);
+}
+
+void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrefetch(
+    int32 cursor_id,
+    int32 response_id,
+    int n,
+    WebKit::WebExceptionCode* ec) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(&map_, cursor_id);
+  if (!idb_cursor)
+    return;
+
+  *ec = 0;
+  idb_cursor->prefetchContinue(
+      n, new IndexedDBCallbacks<WebIDBCursor>(parent_, response_id,
+                                              cursor_id), *ec);
+}
+
+void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrefetchReset(
+    int32 cursor_id, int used_prefetches, int unused_prefetches) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(&map_, cursor_id);
+  if (!idb_cursor)
+    return;
+
+  idb_cursor->prefetchReset(used_prefetches, unused_prefetches);
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnDelete(
