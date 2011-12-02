@@ -9,7 +9,7 @@
 #include "base/time.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/common/child_process_info.h"
+#include "content/common/child_process_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
@@ -18,7 +18,7 @@ MockRenderProcessHost::MockRenderProcessHost(
         : transport_dib_(NULL),
           bad_msg_count_(0),
           factory_(NULL),
-          id_(ChildProcessInfo::GenerateChildProcessUniqueId()),
+          id_(ChildProcessHost::GenerateChildProcessUniqueId()),
           browser_context_(browser_context),
           max_page_id_(-1),
           fast_shutdown_started_(false) {

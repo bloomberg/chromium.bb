@@ -16,10 +16,10 @@
 #include "content/browser/worker_host/worker_service.h"
 #include "content/browser/worker_host/worker_service_observer.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/common/process_type.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,15 +34,15 @@ using content::DevToolsAgentHostRegistry;
 // only on the UI thread. Destructor may be called on any thread.
 class TaskManagerSharedWorkerResource : public TaskManager::Resource {
  public:
-  TaskManagerSharedWorkerResource(const ChildProcessInfo& process_info,
+  TaskManagerSharedWorkerResource(const content::ChildProcessData& process_data,
                                   int routing_id, const GURL& url,
                                   const string16& name);
   virtual ~TaskManagerSharedWorkerResource();
 
   bool Matches(int process_id, int routing_id) const;
 
-  void UpdateProcessInfo(const ChildProcessInfo& process_info);
-  const ChildProcessInfo& process_info() { return process_info_; }
+  void UpdateProcessData(const content::ChildProcessData& process_data);
+  const content::ChildProcessData& process_data() { return process_data_; }
 
  private:
   // TaskManager::Resource methods:
@@ -57,7 +57,7 @@ class TaskManagerSharedWorkerResource : public TaskManager::Resource {
   virtual bool SupportNetworkUsage() const OVERRIDE;
   virtual void SetSupportNetworkUsage() OVERRIDE;
 
-  ChildProcessInfo process_info_;
+  content::ChildProcessData process_data_;
   int routing_id_;
   string16 title_;
 
@@ -69,11 +69,11 @@ class TaskManagerSharedWorkerResource : public TaskManager::Resource {
 SkBitmap* TaskManagerSharedWorkerResource::default_icon_ = NULL;
 
 TaskManagerSharedWorkerResource::TaskManagerSharedWorkerResource(
-    const ChildProcessInfo& process_info,
+    const content::ChildProcessData& process_data,
     int routing_id,
     const GURL& url,
     const string16& name)
-    : process_info_(process_info),
+    : process_data_(process_data),
       routing_id_(routing_id) {
   title_ = UTF8ToUTF16(url.spec());
   if (!name.empty())
@@ -85,12 +85,12 @@ TaskManagerSharedWorkerResource::~TaskManagerSharedWorkerResource() {
 
 bool TaskManagerSharedWorkerResource::Matches(int process_id,
                                               int routing_id) const {
-  return process_info_.id() == process_id && routing_id_ == routing_id;
+  return process_data_.id == process_id && routing_id_ == routing_id;
 }
 
-void TaskManagerSharedWorkerResource::UpdateProcessInfo(
-    const ChildProcessInfo& process_info) {
-  process_info_ = process_info;
+void TaskManagerSharedWorkerResource::UpdateProcessData(
+    const content::ChildProcessData& process_data) {
+  process_data_ = process_data;
 }
 
 string16 TaskManagerSharedWorkerResource::GetTitle() const {
@@ -111,7 +111,7 @@ SkBitmap TaskManagerSharedWorkerResource::GetIcon() const {
 }
 
 base::ProcessHandle TaskManagerSharedWorkerResource::GetProcess() const {
-  return process_info_.handle();
+  return process_data_.handle;
 }
 
 TaskManager::Resource::Type TaskManagerSharedWorkerResource::GetType() const {
@@ -130,7 +130,7 @@ void TaskManagerSharedWorkerResource::Inspect() const {
     return;
   DevToolsAgentHost* agent_host =
       DevToolsAgentHostRegistry::GetDevToolsAgentHostForWorker(
-          process_info_.id(),
+          process_data_.id,
           routing_id_);
   DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host);
 }
@@ -217,7 +217,8 @@ void TaskManagerWorkerResourceProvider::WorkerCreated(
       WorkerProcessHost* process,
       const WorkerProcessHost::WorkerInstance& instance) {
   TaskManagerSharedWorkerResource* resource =
-      new TaskManagerSharedWorkerResource(*process, instance.worker_route_id(),
+      new TaskManagerSharedWorkerResource(process->data(),
+                                          instance.worker_route_id(),
                                           instance.url(), instance.name());
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -238,19 +239,19 @@ void TaskManagerWorkerResourceProvider::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  ChildProcessInfo* process_info =
-      content::Details<ChildProcessInfo>(details).ptr();
-  if (process_info->type() != content::PROCESS_TYPE_WORKER)
+  content::ChildProcessData* process_data =
+      content::Details<content::ChildProcessData>(details).ptr();
+  if (process_data->type != content::PROCESS_TYPE_WORKER)
     return;
   if (type == content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED) {
     ProcessIdToWorkerResources::iterator it =
-        launching_workers_.find(process_info->id());
+        launching_workers_.find(process_data->id);
     if (it == launching_workers_.end())
       return;
     WorkerResourceList& resources = it->second;
     for (WorkerResourceList::iterator r = resources.begin();
          r !=resources.end(); ++r) {
-      (*r)->UpdateProcessInfo(*process_info);
+      (*r)->UpdateProcessData(*process_data);
       task_manager_->AddResource(*r);
     }
     launching_workers_.erase(it);
@@ -261,7 +262,7 @@ void TaskManagerWorkerResourceProvider::Observe(
     // workers here when the worker process has been destroyed.
     for (WorkerResourceList::iterator it = resources_.begin();
          it !=resources_.end();) {
-      if ((*it)->process_info().id() == process_info->id()) {
+      if ((*it)->process_data().id == process_data->id) {
         task_manager_->RemoveResource(*it);
         delete *it;
         it = resources_.erase(it);
@@ -269,7 +270,7 @@ void TaskManagerWorkerResourceProvider::Observe(
         ++it;
       }
     }
-    DCHECK(launching_workers_.find(process_info->id()) ==
+    DCHECK(launching_workers_.find(process_data->id) ==
            launching_workers_.end());
   }
 }
@@ -309,7 +310,7 @@ void TaskManagerWorkerResourceProvider::StartObservingWorkers() {
     for (WorkerProcessHost::Instances::const_iterator i = instances.begin();
          i != instances.end(); ++i) {
        holder->resources()->push_back(new TaskManagerSharedWorkerResource(
-           **iter, i->worker_route_id(), i->url(), i->name()));
+           (*iter)->data(), i->worker_route_id(), i->url(), i->name()));
     }
   }
 
@@ -343,8 +344,8 @@ void TaskManagerWorkerResourceProvider::AddResource(
     TaskManagerSharedWorkerResource* resource) {
   DCHECK(updating_);
   resources_.push_back(resource);
-  if (resource->process_info().handle() == base::kNullProcessHandle) {
-    int process_id = resource->process_info().id();
+  if (resource->process_data().handle == base::kNullProcessHandle) {
+    int process_id = resource->process_data().id;
     launching_workers_[process_id].push_back(resource);
   } else {
     task_manager_->AddResource(resource);

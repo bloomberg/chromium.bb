@@ -1339,13 +1339,13 @@ void MetricsService::LogChildProcessChange(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  content::Details<ChildProcessInfo> child_details(details);
-  const string16& child_name = child_details->name();
+  content::Details<content::ChildProcessData> child_details(details);
+  const string16& child_name = child_details->name;
 
   if (child_process_stats_buffer_.find(child_name) ==
       child_process_stats_buffer_.end()) {
     child_process_stats_buffer_[child_name] =
-        ChildProcessStats(child_details->type());
+        ChildProcessStats(child_details->type);
   }
 
   ChildProcessStats& stats = child_process_stats_buffer_[child_name];
@@ -1362,7 +1362,7 @@ void MetricsService::LogChildProcessChange(
       stats.process_crashes++;
       // Exclude plugin crashes from the count below because we report them via
       // a separate UMA metric.
-      if (!IsPluginProcess(child_details->type())) {
+      if (!IsPluginProcess(child_details->type)) {
         IncrementPrefValue(prefs::kStabilityChildProcessCrashCount);
       }
       break;

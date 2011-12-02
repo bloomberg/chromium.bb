@@ -4,14 +4,18 @@
 
 #include "content/common/child_process_host.h"
 
+#include <limits>
+
+#include "base/atomicops.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/rand_util.h"
+#include "base/stringprintf.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
-#include "content/common/child_process_info.h"
 #include "content/common/child_process_messages.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -141,7 +145,7 @@ void ChildProcessHost::ForceShutdown() {
 }
 
 bool ChildProcessHost::CreateChannel() {
-  channel_id_ = ChildProcessInfo::GenerateRandomChannelID(this);
+  channel_id_ = GenerateRandomChannelID(this);
   channel_.reset(new IPC::Channel(
       channel_id_, IPC::Channel::MODE_SERVER, &listener_));
   if (!channel_->Connect())
@@ -192,6 +196,25 @@ void ChildProcessHost::OnAllocateSharedMemory(
   }
   shared_buf.GiveToProcess(child_process_handle, shared_memory_handle);
 }
+
+std::string ChildProcessHost::GenerateRandomChannelID(void* instance) {
+  // Note: the string must start with the current process id, this is how
+  // child processes determine the pid of the parent.
+  // Build the channel ID.  This is composed of a unique identifier for the
+  // parent browser process, an identifier for the child instance, and a random
+  // component. We use a random component so that a hacked child process can't
+  // cause denial of service by causing future named pipe creation to fail.
+  return base::StringPrintf("%d.%p.%d",
+                            base::GetCurrentProcId(), instance,
+                            base::RandInt(0, std::numeric_limits<int>::max()));
+}
+
+int ChildProcessHost::GenerateChildProcessUniqueId() {
+  // This function must be threadsafe.
+  static base::subtle::Atomic32 last_unique_child_id = 0;
+  return base::subtle::NoBarrier_AtomicIncrement(&last_unique_child_id, 1);
+}
+
 
 void ChildProcessHost::OnChildDied() {
   delete this;

@@ -787,7 +787,7 @@ base::ProcessHandle TaskManagerChildProcessResource::GetProcess() const {
 }
 
 TaskManager::Resource::Type TaskManagerChildProcessResource::GetType() const {
-  // Translate types to TaskManager::ResourceType, since ChildProcessInfo's type
+  // Translate types to TaskManager::ResourceType, since ChildProcessData's type
   // is not available for all TaskManager resources.
   switch (type_) {
     case content::PROCESS_TYPE_PLUGIN:
@@ -924,7 +924,7 @@ void TaskManagerChildProcessResourceProvider::StartUpdating() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
-          &TaskManagerChildProcessResourceProvider::RetrieveChildProcessInfo,
+          &TaskManagerChildProcessResourceProvider::RetrieveChildProcessData,
           this));
 }
 
@@ -952,11 +952,8 @@ void TaskManagerChildProcessResourceProvider::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  content::Details<ChildProcessInfo> child_details(details);
-      ChildProcessData data;
-      data.type = child_details->type();
-      data.name = child_details->name();
-      data.handle = child_details->handle();
+  content::ChildProcessData data =
+      *content::Details<content::ChildProcessData>(details).ptr();
   switch (type) {
     case content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED:
       Add(data);
@@ -971,7 +968,7 @@ void TaskManagerChildProcessResourceProvider::Observe(
 }
 
 void TaskManagerChildProcessResourceProvider::Add(
-    const ChildProcessData& child_process_data) {
+    const content::ChildProcessData& child_process_data) {
   if (!updating_)
     return;
   // Workers are handled by TaskManagerWorkerResourceProvider.
@@ -988,14 +985,14 @@ void TaskManagerChildProcessResourceProvider::Add(
 }
 
 void TaskManagerChildProcessResourceProvider::Remove(
-    const ChildProcessData& child_process_data) {
+    const content::ChildProcessData& child_process_data) {
   if (!updating_)
     return;
   if (child_process_data.type == content::PROCESS_TYPE_WORKER)
     return;
   ChildProcessMap::iterator iter = resources_.find(child_process_data.handle);
   if (iter == resources_.end()) {
-    // ChildProcessInfo disconnection notifications are asynchronous, so we
+    // ChildProcessData disconnection notifications are asynchronous, so we
     // might be notified for a plugin we don't know anything about (if it was
     // closed before the task manager was shown and destroyed after that).
     return;
@@ -1017,7 +1014,7 @@ void TaskManagerChildProcessResourceProvider::Remove(
 }
 
 void TaskManagerChildProcessResourceProvider::AddToTaskManager(
-    const ChildProcessData& child_process_data) {
+    const content::ChildProcessData& child_process_data) {
   TaskManagerChildProcessResource* resource =
       new TaskManagerChildProcessResource(
           child_process_data.type,
@@ -1028,14 +1025,14 @@ void TaskManagerChildProcessResourceProvider::AddToTaskManager(
   task_manager_->AddResource(resource);
 }
 
-// The ChildProcessInfo::Iterator has to be used from the IO thread.
-void TaskManagerChildProcessResourceProvider::RetrieveChildProcessInfo() {
-  std::vector<ChildProcessData> child_processes;
+// The ChildProcessData::Iterator has to be used from the IO thread.
+void TaskManagerChildProcessResourceProvider::RetrieveChildProcessData() {
+  std::vector<content::ChildProcessData> child_processes;
   for (BrowserChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
     // Only add processes which are already started, since we need their handle.
     if ((*iter)->handle() == base::kNullProcessHandle)
       continue;
-    ChildProcessData data;
+    content::ChildProcessData data;
     data.type = (*iter)->type();
     data.name = (*iter)->name();
     data.handle = (*iter)->handle();
@@ -1046,13 +1043,13 @@ void TaskManagerChildProcessResourceProvider::RetrieveChildProcessInfo() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
-          &TaskManagerChildProcessResourceProvider::ChildProcessInfoRetreived,
+          &TaskManagerChildProcessResourceProvider::ChildProcessDataRetreived,
           this, child_processes));
 }
 
 // This is called on the UI thread.
-void TaskManagerChildProcessResourceProvider::ChildProcessInfoRetreived(
-    const std::vector<ChildProcessData>& child_processes) {
+void TaskManagerChildProcessResourceProvider::ChildProcessDataRetreived(
+    const std::vector<content::ChildProcessData>& child_processes) {
   for (size_t i = 0; i < child_processes.size(); ++i)
     Add(child_processes[i]);
 }

@@ -9,12 +9,12 @@
 #include <list>
 
 #include "base/memory/weak_ptr.h"
+#include "base/process.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/common/child_process_host.h"
-#include "content/common/child_process_info.h"
 #include "content/common/content_export.h"
-#include "content/public/common/process_type.h"
+#include "content/public/browser/child_process_data.h"
 
 namespace base {
 class WaitableEvent;
@@ -27,7 +27,6 @@ class WaitableEvent;
 // this class. That project lives on the UI thread.
 class CONTENT_EXPORT BrowserChildProcessHost :
     public ChildProcessHost,
-    public ChildProcessInfo,
     public ChildProcessLauncher::Client,
     public base::WaitableEventWatcher::Delegate {
  public:
@@ -58,6 +57,12 @@ class CONTENT_EXPORT BrowserChildProcessHost :
     content::ProcessType type_;
     std::list<BrowserChildProcessHost*>::iterator iterator_;
   };
+
+  const content::ChildProcessData& data() const { return data_; }
+  content::ProcessType type() const { return data_.type; }
+  const string16& name() const { return data_.name; }
+  base::ProcessHandle handle() const { return data_.handle; }
+  int id() const { return data_.id; }
 
  protected:
   explicit BrowserChildProcessHost(content::ProcessType type);
@@ -112,6 +117,9 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   // Sends the given notification on the UI thread.
   void Notify(int type);
 
+  void set_name(const string16& name) { data_.name = name; }
+  void set_handle(base::ProcessHandle handle) { data_.handle = handle; }
+
  private:
   // By using an internal class as the ChildProcessLauncher::Client, we can
   // intercept OnProcessLaunched and do our own processing before
@@ -123,6 +131,8 @@ class CONTENT_EXPORT BrowserChildProcessHost :
    private:
     BrowserChildProcessHost* host_;
   };
+
+  content::ChildProcessData data_;
 
   ClientHook client_;
   scoped_ptr<ChildProcessLauncher> child_process_;

@@ -2723,11 +2723,11 @@ void GetChildProcessHostInfo(ListValue* child_processes) {
     // since we need their handle.
     if ((*iter)->handle() == base::kNullProcessHandle)
       continue;
-    ChildProcessInfo* info = *iter;
     DictionaryValue* item = new DictionaryValue;
-    item->SetString("name", info->name());
-    item->SetString("type", content::GetProcessTypeNameInEnglish(info->type()));
-    item->SetInteger("pid", base::GetProcId(info->handle()));
+    item->SetString("name", iter->name());
+    item->SetString("type",
+                    content::GetProcessTypeNameInEnglish(iter->type()));
+    item->SetInteger("pid", base::GetProcId(iter->handle()));
     child_processes->Append(item);
   }
 }

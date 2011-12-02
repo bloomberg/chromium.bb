@@ -375,27 +375,27 @@ enum NotificationType {
   // This notification is sent when a child process host has connected to a
   // child process.  There is no usable source, since it is sent from an
   // ephemeral task; register for AllSources() to receive this notification.
-  // The details are in a Details<ChildProcessInfo>.
+  // The details are in a Details<content::ChildProcessData>.
   NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED,
 
   // This message is sent after a ChildProcessHost is disconnected from the
   // child process.  There is no usable source, since it is sent from an
   // ephemeral task; register for AllSources() to receive this notification.
-  // The details are in a Details<ChildProcessInfo>.
+  // The details are in a Details<content::ChildProcessData>.
   NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED,
 
   // This message is sent when a child process disappears
   // unexpectedly as a result of a crash.  There is no usable
   // source, since it is sent from an ephemeral task; register for
   // AllSources() to receive this notification.  The details are in
-  // a Details<ChildProcessInfo>.
+  // a Details<content::ChildProcessData>.
   NOTIFICATION_CHILD_PROCESS_CRASHED,
 
   // This message is sent when a child process disappears
   // unexpectedly as a result of a termination signal.  There is no
   // usable source, since it is sent from an ephemeral task;
   // register for AllSources() to receive this notification.  The
-  // details are in a Details<ChildProcessInfo>.
+  // details are in a Details<content::ChildProcessData>.
   NOTIFICATION_CHILD_PROCESS_WAS_KILLED,
 
   // This message indicates that an instance of a particular child was
@@ -405,7 +405,7 @@ enum NotificationType {
   //
   // There is no usable source, since it is sent from an ephemeral task;
   // register for AllSources() to receive this notification.  The details are
-  // in a Details<ChildProcessInfo>.
+  // in a Details<content::ChildProcessData>.
   NOTIFICATION_CHILD_INSTANCE_CREATED,
 
   // Saved Pages -------------------------------------------------------------

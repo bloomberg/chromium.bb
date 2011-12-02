@@ -92,7 +92,7 @@ class PluginDataRemoverImpl::Context
   // PluginProcessHost::Client methods.
   virtual int ID() OVERRIDE {
     // Generate a unique identifier for this PluginProcessHostClient.
-    return ChildProcessInfo::GenerateChildProcessUniqueId();
+    return ChildProcessHost::GenerateChildProcessUniqueId();
   }
 
   virtual bool OffTheRecord() OVERRIDE {

@@ -15,7 +15,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/common/child_process_info.h"
+#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -191,7 +191,7 @@ void MachBroker::Observe(int type,
       break;
     case content::NOTIFICATION_CHILD_PROCESS_CRASHED:
     case content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED:
-      handle = content::Details<ChildProcessInfo>(details)->handle();
+      handle = content::Details<content::ChildProcessData>(details)->handle;
       break;
     default:
       NOTREACHED() << "Unexpected notification";

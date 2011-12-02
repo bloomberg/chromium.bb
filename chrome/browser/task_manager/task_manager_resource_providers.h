@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/process_util.h"
 #include "chrome/browser/task_manager/task_manager.h"
+#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/process_type.h"
@@ -288,27 +289,21 @@ class TaskManagerChildProcessResourceProvider
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  struct ChildProcessData {
-    content::ProcessType type;
-    string16 name;
-    base::ProcessHandle handle;
-  };
-
   virtual ~TaskManagerChildProcessResourceProvider();
 
   // Retrieves information about the running ChildProcessHosts (performed in the
   // IO thread).
-  virtual void RetrieveChildProcessInfo();
+  virtual void RetrieveChildProcessData();
 
   // Notifies the UI thread that the ChildProcessHosts information have been
   // retrieved.
-  virtual void ChildProcessInfoRetreived(
-      const std::vector<ChildProcessData>& child_processes);
+  virtual void ChildProcessDataRetreived(
+      const std::vector<content::ChildProcessData>& child_processes);
 
-  void Add(const ChildProcessData& child_process_data);
-  void Remove(const ChildProcessData& child_process_data);
+  void Add(const content::ChildProcessData& child_process_data);
+  void Remove(const content::ChildProcessData& child_process_data);
 
-  void AddToTaskManager(const ChildProcessData& child_process_data);
+  void AddToTaskManager(const content::ChildProcessData& child_process_data);
 
   TaskManager* task_manager_;
 
@@ -316,7 +311,7 @@ class TaskManagerChildProcessResourceProvider
   // notifications sent after StopUpdating().
   bool updating_;
 
-  // Maps the actual resources (the ChildProcessInfo) to the Task Manager
+  // Maps the actual resources (the ChildProcessData) to the Task Manager
   // resources.
   typedef std::map<base::ProcessHandle, TaskManagerChildProcessResource*>
       ChildProcessMap;

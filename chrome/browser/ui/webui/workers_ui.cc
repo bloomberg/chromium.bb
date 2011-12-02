@@ -52,7 +52,7 @@ DictionaryValue* BuildWorkerData(
   worker_data->SetInteger(kWorkerRouteIdField, instance.worker_route_id());
   worker_data->SetString(kUrlField, instance.url().spec());
   worker_data->SetString(kNameField, instance.name());
-  worker_data->SetInteger(kPidField, process->pid());
+  worker_data->SetInteger(kPidField, base::GetProcId(process->handle()));
   return worker_data;
 }
 

@@ -4,6 +4,7 @@
 
 #include "content/browser/browser_child_process_host.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/lazy_instance.h"
@@ -18,6 +19,7 @@
 #include "content/browser/trace_message_filter.h"
 #include "content/common/plugin_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -38,36 +40,27 @@ typedef std::list<BrowserChildProcessHost*> ChildProcessList;
 static base::LazyInstance<ChildProcessList> g_child_process_list =
     LAZY_INSTANCE_INITIALIZER;
 
-// The NotificationTask is used to notify about plugin process connection/
-// disconnection. It is needed because the notifications in the
-// NotificationService must happen in the main thread.
-class ChildNotificationTask : public Task {
- public:
-  ChildNotificationTask(
-      int notification_type, ChildProcessInfo* info)
-      : notification_type_(notification_type), info_(*info) { }
-
-  virtual void Run() {
-    content::NotificationService::current()->
-        Notify(notification_type_, content::NotificationService::AllSources(),
-               content::Details<ChildProcessInfo>(&info_));
-  }
-
- private:
-  int notification_type_;
-  ChildProcessInfo info_;
-};
+// Helper functions since the child process related notifications happen on the
+// UI thread.
+void ChildNotificationHelper(int notification_type,
+                             content::ChildProcessData data) {
+  content::NotificationService::current()->
+        Notify(notification_type, content::NotificationService::AllSources(),
+               content::Details<content::ChildProcessData>(&data));
+}
 
 }  // namespace
 
 BrowserChildProcessHost::BrowserChildProcessHost(
     content::ProcessType type)
-    : ChildProcessInfo(type, -1),
-      ALLOW_THIS_IN_INITIALIZER_LIST(client_(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(client_(this)),
 #if !defined(OS_WIN)
       ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)),
 #endif
       disconnect_was_alive_(false) {
+  data_.type = type;
+  data_.id = GenerateChildProcessUniqueId();
+
   AddFilter(new TraceMessageFilter);
   AddFilter(new ProfilerMessageFilter);
 
@@ -129,7 +122,9 @@ void BrowserChildProcessHost::SetTerminateChildOnShutdown(
 
 void BrowserChildProcessHost::Notify(int type) {
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, new ChildNotificationTask(type, this));
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&ChildNotificationHelper, type, data_));
 }
 
 base::TerminationStatus BrowserChildProcessHost::GetChildTerminationStatus(
@@ -251,21 +246,21 @@ void BrowserChildProcessHost::ClientHook::OnProcessLaunched() {
     host_->OnChildDied();
     return;
   }
-  host_->set_handle(host_->child_process_->GetHandle());
+  host_->data_.handle = host_->child_process_->GetHandle();
   host_->OnProcessLaunched();
 }
 
 BrowserChildProcessHost::Iterator::Iterator()
     : all_(true), type_(content::PROCESS_TYPE_UNKNOWN) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO)) <<
-          "ChildProcessInfo::Iterator must be used on the IO thread.";
+          "BrowserChildProcessHost::Iterator must be used on the IO thread.";
   iterator_ = g_child_process_list.Get().begin();
 }
 
 BrowserChildProcessHost::Iterator::Iterator(content::ProcessType type)
     : all_(false), type_(type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO)) <<
-          "ChildProcessInfo::Iterator must be used on the IO thread.";
+          "BrowserChildProcessHost::Iterator must be used on the IO thread.";
   iterator_ = g_child_process_list.Get().begin();
   if (!Done() && (*iterator_)->type() != type_)
     ++(*this);

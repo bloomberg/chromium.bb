@@ -83,8 +83,6 @@
     'common/child_process.h',
     'common/child_process_host.cc',
     'common/child_process_host.h',
-    'common/child_process_info.cc',
-    'common/child_process_info.h',
     'common/child_process_messages.h',
     'common/child_process_sandbox_support_impl_linux.cc',
     'common/child_process_sandbox_support_impl_linux.h',

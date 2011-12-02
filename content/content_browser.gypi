@@ -28,6 +28,7 @@
     'public/browser/browser_shutdown.h',
     'public/browser/browser_thread.h',
     'public/browser/browser_thread_delegate.h',
+    'public/browser/child_process_data.h',
     'public/browser/content_browser_client.h',
     'public/browser/content_ipc_logging.h',
     'public/browser/devtools_agent_host_registry.h',

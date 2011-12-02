@@ -21,6 +21,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_handler.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
+#include "content/common/child_process_host.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/resource_response.h"
@@ -161,7 +162,7 @@ class ForwardingFilter : public ResourceMessageFilter {
  public:
   explicit ForwardingFilter(IPC::Message::Sender* dest)
     : ResourceMessageFilter(
-        ChildProcessInfo::GenerateChildProcessUniqueId(),
+        ChildProcessHost::GenerateChildProcessUniqueId(),
         content::PROCESS_TYPE_RENDERER,
         content::MockResourceContext::GetInstance(),
         new MockURLRequestContextSelector(

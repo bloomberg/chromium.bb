@@ -101,14 +101,14 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(net::HostResolver* host_resolver)
       filter_(new PepperMessageFilter(host_resolver)),
       network_observer_(new PluginNetworkObserver(this)),
       is_broker_(false),
-      process_id_(ChildProcessInfo::GenerateChildProcessUniqueId()) {
+      process_id_(ChildProcessHost::GenerateChildProcessUniqueId()) {
   AddFilter(filter_.get());
 }
 
 PpapiPluginProcessHost::PpapiPluginProcessHost()
     : BrowserChildProcessHost(content::PROCESS_TYPE_PPAPI_BROKER),
       is_broker_(true),
-      process_id_(ChildProcessInfo::GenerateChildProcessUniqueId()) {
+      process_id_(ChildProcessHost::GenerateChildProcessUniqueId()) {
 }
 
 bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
@@ -118,7 +118,6 @@ bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
   } else {
     set_name(UTF8ToUTF16(info.name));
   }
-  set_version(UTF8ToUTF16(info.version));
 
   if (!CreateChannel())
     return false;

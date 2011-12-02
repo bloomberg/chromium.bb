@@ -78,7 +78,7 @@
 #include "content/browser/user_metrics.h"
 #include "content/browser/webui/web_ui_factory.h"
 #include "content/browser/worker_host/worker_message_filter.h"
-#include "content/common/child_process_info.h"
+#include "content/common/child_process_host.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/notification_service.h"
@@ -283,7 +283,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
                 this, &RenderProcessHostImpl::ClearTransportDIBCache)),
           accessibility_enabled_(false),
           is_initialized_(false),
-          id_(ChildProcessInfo::GenerateChildProcessUniqueId()),
+          id_(ChildProcessHost::GenerateChildProcessUniqueId()),
           browser_context_(browser_context),
           sudden_termination_allowed_(true),
           ignore_input_events_(false) {
@@ -387,7 +387,7 @@ bool RenderProcessHostImpl::Init(bool is_accessibility_enabled) {
 
   // Setup the IPC channel.
   const std::string channel_id =
-      ChildProcessInfo::GenerateRandomChannelID(this);
+      ChildProcessHost::GenerateRandomChannelID(this);
   channel_.reset(new IPC::ChannelProxy(
       channel_id, IPC::Channel::MODE_SERVER, this,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
