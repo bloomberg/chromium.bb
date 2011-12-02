@@ -21,14 +21,18 @@ if env.Bit('windows'):
 env.FilterOut(CCFLAGS=['-Wswitch-enum'])
 
 # Load ppapi_cpp.gypi
+# Unfortunately gyp_extract does not handle variables or includes so we must
+# pull the list of sources from ppapi_sources.gypi directly.
+
+ppapi_sources_gypi = open(
+    env.File('$SOURCE_ROOT/ppapi/ppapi_sources.gypi').abspath, 'r').read()
+ppapi_sources_list = eval(ppapi_sources_gypi)['variables']['cpp_sources']
+
 ppapi_cpp_gypi = gyp_extract.LoadGypFile(
     env.File('$SOURCE_ROOT/ppapi/ppapi_cpp.gypi').abspath)
 
-# From ppapi_cpp.gypi:ppapi_cpp_objects:.*\.cc
-# From ppapi_cpp.gypi:ppapi_cpp:.*\.cc
 cpp_sources = (
-    gyp_extract.GypTargetSources(
-        ppapi_cpp_gypi, 'ppapi_cpp_objects', '.*\.cc') +
+    [src for src in ppapi_sources_list if src.endswith('.cc')] +
     gyp_extract.GypTargetSources(
         ppapi_cpp_gypi, 'ppapi_cpp', '.*\.cc')
 )
