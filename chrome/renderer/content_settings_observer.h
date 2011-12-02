@@ -66,6 +66,8 @@ class ContentSettingsObserver
   void DidNotAllowScript(WebKit::WebFrame* frame);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ContentSettingsObserverTest, WhitelistedSchemes);
+
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
@@ -76,6 +78,13 @@ class ContentSettingsObserver
 
   // Resets the |content_blocked_| array.
   void ClearBlockedContentSettings();
+
+  // Helpers.
+  // True if |frame| contains content that is white-listed for content settings.
+  static bool IsWhitelistedForContentSettings(WebKit::WebFrame* frame);
+  static bool IsWhitelistedForContentSettings(
+      const WebKit::WebSecurityOrigin& origin,
+      const GURL& document_url);
 
   // A pointer to content setting rules stored by the renderer. Normally, the
   // |RendererContentSettingRules| object is owned by

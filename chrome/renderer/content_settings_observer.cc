@@ -29,32 +29,6 @@ using content::NavigationState;
 
 namespace {
 
-// True if |frame| contains content that is white-listed for content settings.
-static bool IsWhitelistedForContentSettings(WebFrame* frame) {
-  WebSecurityOrigin origin = frame->document().securityOrigin();
-  if (origin.isUnique())
-    return false;  // Uninitialized document?
-
-  if (EqualsASCII(origin.protocol(), chrome::kChromeUIScheme))
-    return true;  // Browser UI elements should still work.
-
-  if (EqualsASCII(origin.protocol(), chrome::kChromeDevToolsScheme))
-    return true;  // DevTools UI elements should still work.
-
-  // If the scheme is ftp: or file:, an empty file name indicates a directory
-  // listing, which requires JavaScript to function properly.
-  GURL document_url = frame->document().url();
-  const char* kDirProtocols[] = { chrome::kFtpScheme, chrome::kFileScheme };
-  for (size_t i = 0; i < arraysize(kDirProtocols); ++i) {
-    if (EqualsASCII(origin.protocol(), kDirProtocols[i])) {
-      return document_url.SchemeIs(kDirProtocols[i]) &&
-             document_url.ExtractFileName().empty();
-    }
-  }
-
-  return false;
-}
-
 GURL GetOriginOrURL(const WebFrame* frame) {
   WebString top_origin = frame->top()->document().securityOrigin().toString();
   // The the |top_origin| is unique ("null") e.g., for file:// URLs. Use the
@@ -307,4 +281,40 @@ void ContentSettingsObserver::ClearBlockedContentSettings() {
     content_blocked_[i] = false;
   cached_storage_permissions_.clear();
   cached_script_permissions_.clear();
+}
+
+bool ContentSettingsObserver::IsWhitelistedForContentSettings(WebFrame* frame) {
+  return IsWhitelistedForContentSettings(frame->document().securityOrigin(),
+                                         frame->document().url());
+}
+
+bool ContentSettingsObserver::IsWhitelistedForContentSettings(
+    const WebSecurityOrigin& origin,
+    const GURL& document_url) {
+  if (origin.isUnique())
+    return false;  // Uninitialized document?
+
+  if (EqualsASCII(origin.protocol(), chrome::kChromeUIScheme))
+    return true;  // Browser UI elements should still work.
+
+  if (EqualsASCII(origin.protocol(), chrome::kChromeDevToolsScheme))
+    return true;  // DevTools UI elements should still work.
+
+  if (EqualsASCII(origin.protocol(), chrome::kExtensionScheme))
+    return true;
+
+  if (EqualsASCII(origin.protocol(), chrome::kChromeInternalScheme))
+    return true;
+
+  // If the scheme is ftp: or file:, an empty file name indicates a directory
+  // listing, which requires JavaScript to function properly.
+  const char* kDirProtocols[] = { chrome::kFtpScheme, chrome::kFileScheme };
+  for (size_t i = 0; i < arraysize(kDirProtocols); ++i) {
+    if (EqualsASCII(origin.protocol(), kDirProtocols[i])) {
+      return document_url.SchemeIs(kDirProtocols[i]) &&
+             document_url.ExtractFileName().empty();
+    }
+  }
+
+  return false;
 }
