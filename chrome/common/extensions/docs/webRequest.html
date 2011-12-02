@@ -366,11 +366,11 @@
                   <li>
             <a href="#global-methods">Methods</a>
             <ol>
-              <li>
+              <li style="display: none; ">
+                <a href="#method-anchor">methodName</a>
+              </li><li style="display: none; ">
                 <a href="#method-anchor">methodName</a>
               </li><li>
-                <a href="#method-anchor">methodName</a>
-              </li><li style="">
                 <a href="#method-handlerBehaviorChanged">handlerBehaviorChanged</a>
               </li>
             </ol>
@@ -823,7 +823,73 @@ chrome.windows.onRemoved.addListener(
             <h3>Methods</h3>
 
             <!-- iterates over all functions -->
-            <div class="apiItem">
+            <div class="apiItem" style="display: none; ">
+              <a></a> <!-- method-anchor -->
+              <h4>method name</h4>
+
+              <div class="summary"><span>void</span>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.module.methodName</span>(<span><span>, </span><span></span>
+                      <var><span></span></var></span>)</div>
+
+              <div class="description">
+                <p class="todo">Undocumented.</p>
+                <p>
+                  A description from the json schema def of the function goes here.
+                </p>
+
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+                <!-- RETURNS -->
+                <h4>Returns</h4>
+                <dl>
+                  <div>
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    The callback <em>parameter</em> should specify a function
+                    that looks like this:
+                  </p>
+                  <p>
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
+                  </p>
+
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+
+                <!-- MIN_VERSION -->
+                <p>
+                  This function was added in version <b><span></span></b>.
+                  If you require this function, the manifest key
+                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+                  can ensure that your extension won't be run in an earlier browser version.
+                </p>
+              </div> <!-- /description -->
+
+            </div><div class="apiItem" style="display: none; ">
               <a></a> <!-- method-anchor -->
               <h4>method name</h4>
 
@@ -890,72 +956,6 @@ chrome.windows.onRemoved.addListener(
               </div> <!-- /description -->
 
             </div><div class="apiItem">
-              <a></a> <!-- method-anchor -->
-              <h4>method name</h4>
-
-              <div class="summary"><span>void</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.module.methodName</span>(<span><span>, </span><span></span>
-                      <var><span></span></var></span>)</div>
-
-              <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the function goes here.
-                </p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- RETURNS -->
-                <h4>Returns</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-
-                <!-- MIN_VERSION -->
-                <p>
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
-              </div> <!-- /description -->
-
-            </div><div class="apiItem" style="">
               <a name="method-handlerBehaviorChanged"></a> <!-- method-anchor -->
               <h4>handlerBehaviorChanged</h4>
 

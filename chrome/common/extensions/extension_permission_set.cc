@@ -225,7 +225,8 @@ void ExtensionAPIPermission::RegisterAllPermissions(
   info->RegisterPermission(
       kContentSettings, "contentSettings",
       IDS_EXTENSION_PROMPT_WARNING_CONTENT_SETTINGS,
-      ExtensionPermissionMessage::kContentSettings, kFlagNone, kTypeDefault);
+      ExtensionPermissionMessage::kContentSettings,
+      kFlagSupportsOptional, kTypeDefault);
   info->RegisterPermission(
       kContextMenus, "contextMenus", 0,
       ExtensionPermissionMessage::kNone, kFlagSupportsOptional, kTypeDefault);
@@ -257,28 +258,29 @@ void ExtensionAPIPermission::RegisterAllPermissions(
   info->RegisterPermission(
       kPageCapture, "pageCapture",
       IDS_EXTENSION_PROMPT_WARNING_ALL_PAGES_CONTENT,
-      ExtensionPermissionMessage::kAllPageContent, kFlagNone, kTypeDefault);
+      ExtensionPermissionMessage::kAllPageContent,
+      kFlagSupportsOptional, kTypeDefault);
   info->RegisterPermission(
       kTab, "tabs", IDS_EXTENSION_PROMPT_WARNING_TABS,
       ExtensionPermissionMessage::kTabs, kFlagSupportsOptional,
       kTypeDefault - kTypePlatformApp);
   info->RegisterPermission(
       kTts, "tts", 0,
-      ExtensionPermissionMessage::kNone,  kFlagNone, kTypeDefault);
+      ExtensionPermissionMessage::kNone, kFlagNone, kTypeDefault);
   info->RegisterPermission(
       kTtsEngine, "ttsEngine", IDS_EXTENSION_PROMPT_WARNING_TTS_ENGINE,
       ExtensionPermissionMessage::kTtsEngine, kFlagNone, kTypeDefault);
   info->RegisterPermission(
       kWebNavigation, "webNavigation", 0,
-      ExtensionPermissionMessage::kNone, kFlagNone,
+      ExtensionPermissionMessage::kNone, kFlagSupportsOptional,
       kTypeDefault - kTypePlatformApp);
   info->RegisterPermission(
       kWebRequest, "webRequest", 0,
-      ExtensionPermissionMessage::kNone, kFlagNone,
+      ExtensionPermissionMessage::kNone, kFlagSupportsOptional,
       kTypeDefault - kTypePlatformApp);
   info->RegisterPermission(
       kWebRequestBlocking, "webRequestBlocking", 0,
-      ExtensionPermissionMessage::kNone, kFlagNone,
+      ExtensionPermissionMessage::kNone, kFlagSupportsOptional,
       kTypeDefault - kTypePlatformApp);
   info->RegisterPermission(
       kWebSocketProxyPrivate, "webSocketProxyPrivate", 0,
