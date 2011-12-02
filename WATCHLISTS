@@ -25,17 +25,16 @@
     },
     'views': {
       # Applies to all files and subdirs within this directory.
-      'filepath': '^views/.*|'\
-                  '^ui/views/.*',
+      'filepath': '^ui/views/.*',
     },
     'aura': {
       'filepath': 'ui/aura/.*|'\
                   'ui/aura_shell/.*',
     },
     'views_core': {
-      'filepath': 'views/view.h|'\
-                  'views/view.cc|'\
-                  'views/widget/.*',
+      'filepath': 'ui/views/view.h|'\
+                  'ui/views/view.cc|'\
+                  'ui/views/widget/.*',
     },
     'browser': {
       'filepath': 'chrome/browser/.*',
@@ -47,7 +46,7 @@
       'filepath': 'chrome/browser/resources/.*',
     },
     'bubble': {
-      'filepath': 'views/bubble/.*|'\
+      'filepath': 'ui/views/bubble/.*|'\
                   'chrome/browser/ui/views/bubble/.*',
     },
     'chromeos_login': {
@@ -127,7 +126,7 @@
       'filepath': 'sandbox/linux/.*',
     },
     'sync': {
-      'filepath': 'chrome/browser/sync/.*|chrome/browser/views/sync/.*',
+      'filepath': 'chrome/browser/sync/.*',
     },
     'layout_tests': {
       'filepath': 'webkit/(tools|data)/(layout_tests|test_shell)/.*',
@@ -157,10 +156,6 @@
     'locale_settings': {
       'filepath': 'chrome/app/resources/locale_settings.*',
     },
-    'options_dialog_content': {
-      'filepath': 'chrome/browser/views/options/content_page_view.h|'\
-        'chrome/browser/views/options/general_page_view.h',
-    },
     'chromeos': {
       'filepath': 'chrome/browser/chromeos/.*',
     },
@@ -177,7 +172,7 @@
     'domui_options': {
       'filepath': 'chrome/browser/resources/options/.*|'\
                   'chrome/browser/resources/options.html|'\
-                  'chrome/browser/dom_ui/options/.*',
+                  'chrome/browser/ui/webui/options/.*',
     },
     'ntp': {
       'filepath': 'chrome/browser/resources/ntp/.*|'\
@@ -275,7 +270,7 @@
                   '|content/browser/accessibility/.*' \
                   '|chrome/.*accessib.*' \
                   '|ui/base/accessibility/.*' \
-                  '|views/accessibility/.*'
+                  '|ui/views/accessibility/.*'
     },
     'tools_emacs': {
       'filepath': 'tools/emacs/.*',
@@ -296,8 +291,8 @@
                   '|ui/base/gtk/gtk_im.*'\
                   '|ui/base/keycodes/.*'\
                   '|ui/base/win/ime.*'\
-                  '|ui/views/ime/.*'\
-                  '|views/controls/textfield/.*'
+                  '|ui/views/controls/textfield/.*'\
+                  '|ui/views/ime/.*'
     },
     'textinput_chromeos': {
       'filepath': 'chrome/browser/chromeos/input_method/.*'\
@@ -372,7 +367,6 @@
     'appcache': ['michaeln@chromium.org'],
     'gpu': ['apatrick@chromium.org'],
     'locale_settings': ['finnur+watch@chromium.org'],
-    'options_dialog_content': ['finnur+watch@chromium.org'],
     'chromeos': ['davemoore+watch@chromium.org', 'stevenjb+watch@chromium.org',
                  'nkostylev+watch@chromium.org'],
     'chromeos_webui': ['nkostylev+watch@chromium.org'],
