@@ -362,3 +362,7 @@ PPAPITest.UDPSocketPrivateShared
 PPAPITest.TCPSocketPrivateShared
 OutOfProcessPPAPITest.UDPSocketPrivateShared
 OutOfProcessPPAPITest.TCPSocketPrivateShared
+
+# Crashes intermittently.
+LoadtimesExtensionBindingsUITest.LoadTimesSameAfterClientInDocNavigation
+LoadtimesExtensionBindingsUITest.LoadTimesSameAfterUserInDocNavigation
