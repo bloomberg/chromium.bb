@@ -430,11 +430,8 @@ TEST_PPAPI_OUT_OF_PROCESS(FlashClipboard)
 #endif
 
 // Flaky on Mac + Linux, maybe http://codereview.chromium.org/7094008
+// Not implemented out of process: http://crbug.com/106129
 TEST_F(PPAPITest, MAYBE_DirectoryReader) {
-  RunTestViaHTTP("DirectoryReader");
-}
-// http://crbug.com/89961
-TEST_F(OutOfProcessPPAPITest, FAILS_DirectoryReader) {
   RunTestViaHTTP("DirectoryReader");
 }
 
