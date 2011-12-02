@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/csp_validator.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -49,6 +50,9 @@
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
 namespace errors = extension_manifest_errors;
+
+using extensions::csp_validator::ContentSecurityPolicyIsLegal;
+using extensions::csp_validator::ContentSecurityPolicyIsSecure;
 
 namespace {
 
@@ -2240,21 +2244,23 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       *error = errors::kInvalidContentSecurityPolicy;
       return false;
     }
-    // We block these characters to prevent HTTP header injection when
-    // representing the content security policy as an HTTP header.
-    const char kBadCSPCharacters[] = {'\r', '\n', '\0'};
-    if (content_security_policy.find_first_of(kBadCSPCharacters, 0,
-                                              arraysize(kBadCSPCharacters)) !=
-        std::string::npos) {
+    if (!ContentSecurityPolicyIsLegal(content_security_policy)) {
       *error = errors::kInvalidContentSecurityPolicy;
       return false;
     }
+    if (manifest_version_ >= 2 &&
+        !ContentSecurityPolicyIsSecure(content_security_policy)) {
+      *error = errors::kInvalidContentSecurityPolicy;
+      return false;
+    }
+
     content_security_policy_ = content_security_policy;
   } else if (manifest_version_ >= 2) {
     // Manifest version 2 introduced a default Content-Security-Policy.
     // TODO(abarth): Should we continue to let extensions override the
     //               default Content-Security-Policy?
     content_security_policy_ = kDefaultContentSecurityPolicy;
+    CHECK(ContentSecurityPolicyIsSecure(content_security_policy_));
   }
 
   // Initialize devtools page url (optional).

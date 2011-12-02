@@ -1941,6 +1941,7 @@
         'common/content_settings_helper_unittest.cc',
         'common/content_settings_pattern_parser_unittest.cc',
         'common/content_settings_pattern_unittest.cc',
+        'common/extensions/csp_validator_unittest.cc',
         'common/extensions/extension_action_unittest.cc',
         'common/extensions/extension_file_util_unittest.cc',
         'common/extensions/extension_icon_set_unittest.cc',

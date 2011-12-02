@@ -103,6 +103,8 @@
         'common/content_settings_types.h',
         'common/custom_handlers/protocol_handler.cc',
         'common/custom_handlers/protocol_handler.h',
+        'common/extensions/csp_validator.cc',
+        'common/extensions/csp_validator.h',
         'common/extensions/extension.cc',
         'common/extensions/extension.h',
         'common/extensions/extension_action.cc',
