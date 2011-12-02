@@ -11,6 +11,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/plugin_finder.h"
+#include "chrome/browser/plugin_installer.h"
 #include "chrome/browser/plugin_installer_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
@@ -19,6 +20,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -330,17 +332,15 @@ void PluginObserver::OnFindMissingPlugin(int placeholder_id,
 
 void PluginObserver::FoundMissingPlugin(int placeholder_id,
                                         const std::string& mime_type,
-                                        const GURL& url,
-                                        const string16& name,
-                                        bool display_url) {
-  Send(new ChromeViewMsg_FoundMissingPlugin(placeholder_id, name));
+                                        PluginInstaller* installer) {
+  Send(new ChromeViewMsg_FoundMissingPlugin(placeholder_id, installer->name()));
   InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
   infobar_helper->AddInfoBar(new PluginInstallerInfoBarDelegate(
       infobar_helper,
-      name,
-      GURL(),  // TODO(bauerb): Get URL from JSON file.
+      installer->name(),
+      installer->help_url(),
       base::Bind(&PluginObserver::InstallMissingPlugin,
-                 weak_ptr_factory_.GetWeakPtr(), url, display_url)));
+                 weak_ptr_factory_.GetWeakPtr(), installer)));
 }
 
 void PluginObserver::DidNotFindMissingPlugin(int placeholder_id,
@@ -348,11 +348,10 @@ void PluginObserver::DidNotFindMissingPlugin(int placeholder_id,
   Send(new ChromeViewMsg_DidNotFindMissingPlugin(placeholder_id));
 }
 
-void PluginObserver::InstallMissingPlugin(const GURL& url,
-                                          bool display_url) {
-  if (display_url) {
-    tab_contents()->OpenURL(url, tab_contents()->GetURL(), NEW_FOREGROUND_TAB,
-                            content::PAGE_TRANSITION_TYPED);
+void PluginObserver::InstallMissingPlugin(PluginInstaller* installer) {
+  if (installer->url_for_display()) {
+    tab_contents()->OpenURL(installer->plugin_url(), tab_contents()->GetURL(),
+                            NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED);
   } else {
     NOTIMPLEMENTED();
   }

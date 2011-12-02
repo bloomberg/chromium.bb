@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_PLUGIN_FINDER_H_
 #pragma once
 
+#include <map>
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -19,16 +19,11 @@ class ListValue;
 }
 
 class GURL;
+class PluginInstaller;
 
 class PluginFinder {
  public:
-  // If |display_url| is false, |plugin_url| is the URL of the download page for
-  // the plug-in, which should be opened in a new tab. If it is true,
-  // |plugin_url| is the URL of the plug-in installer binary, which can be
-  // directly downloaded.
-  typedef base::Callback<void(GURL /* plugin_url */,
-                              string16 /* name */,
-                              bool /* display_url */)> FindPluginCallback;
+  typedef base::Callback<void(PluginInstaller*)> FindPluginCallback;
 
   static PluginFinder* GetInstance();
 
@@ -47,6 +42,7 @@ class PluginFinder {
   ~PluginFinder();
 
   scoped_ptr<base::ListValue> plugin_list_;
+  std::map<std::string, PluginInstaller*> installers_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginFinder);
 };

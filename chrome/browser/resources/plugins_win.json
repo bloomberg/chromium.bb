@@ -36,6 +36,7 @@
       ],
       "lang": "en-US",
       "name": "Java(TM)",
+      "identifier": "java-runtime-environment",
       "url": "http://java.com/download",
       "displayurl": true
     },
@@ -48,6 +49,7 @@
       ],
       "lang": "en-US",
       "name": "RealPlayer",
+      "identifier": "realplayer",
       "url": "http://forms.real.com/real/realone/download.html?type=rpsp_us"
     },
     {
@@ -57,6 +59,7 @@
       ],
       "lang": "en-US",
       "name": "Adobe Flash Player",
+      "identifier": "adobe-flash-player",
       "url": "http://fpdownload.adobe.com/get/flashplayer/current/install_flash_player.exe"
     },
     {
@@ -65,6 +68,7 @@
       ],
       "lang": "en-US",
       "name": "Adobe Shockwave Player",
+      "identifier": "shockwave",
       "url": "http://fpdownload.macromedia.com/get/shockwave/default/english/win95nt/latest/Shockwave_Installer_Slim.exe"
     },
     {
@@ -78,6 +82,7 @@
       ],
       "lang": "en-US",
       "name": "Adobe Reader",
+      "identifier": "adobe-reader",
       "url": "http://ardownload.adobe.com/pub/adobe/reader/win/9.x/9.1/enu/AdbeRdr910_en_US.exe"
     },
     {
@@ -134,6 +139,7 @@
       ],
       "lang": "en-US",
       "name": "QuickTime Player",
+      "identifier": "apple-quicktime",
       "url": "http://appldnld.apple.com.edgesuite.net/content.info.apple.com/QuickTime/061-6118.20090601.Pq3V9/QuickTimeInstaller.exe"
     },
     {
@@ -151,6 +157,7 @@
       ],
       "lang": "en-US",
       "name": "Windows Media Player",
+      "identifier": "windows-media-player",
       "url": "http://port25.technet.com/videos/downloads/wmpfirefoxplugin.exe"
     },
     {
@@ -160,6 +167,7 @@
       ],
       "lang": "en-US",
       "name": "DivX Web Player",
+      "identifier": "divx-player",
       "url": "http://download.divx.com/player/divxdotcom/DivXWebPlayerInstaller.exe"
     }
   ]

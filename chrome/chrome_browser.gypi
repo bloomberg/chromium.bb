@@ -1731,6 +1731,8 @@
         'browser/plugin_download_helper.h',
         'browser/plugin_finder.cc',
         'browser/plugin_finder.h',
+        'browser/plugin_installer.cc',
+        'browser/plugin_installer.h',
         'browser/plugin_installer_infobar_delegate.cc',
         'browser/plugin_installer_infobar_delegate.h',
         'browser/plugin_observer.cc',

@@ -7,8 +7,10 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/message_loop.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/plugin_installer.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -47,6 +49,7 @@ PluginFinder::PluginFinder() {
 }
 
 PluginFinder::~PluginFinder() {
+  STLDeleteValues(&installers_);
 }
 
 void PluginFinder::FindPlugin(
@@ -81,17 +84,29 @@ void PluginFinder::FindPlugin(
       success = (*mime_type_it)->GetAsString(&mime_type_str);
       DCHECK(success);
       if (mime_type_str == mime_type) {
-        std::string url;
-        success = plugin->GetString("url", &url);
+        std::string identifier;
+        success = plugin->GetString("identifier", &identifier);
         DCHECK(success);
-        string16 name;
-        success = plugin->GetString("name", &name);
-        DCHECK(success);
-        bool display_url = false;
-        plugin->GetBoolean("displayurl", &display_url);
+        PluginInstaller* installer = installers_[identifier];
+        if (!installer) {
+          std::string url;
+          success = plugin->GetString("url", &url);
+          DCHECK(success);
+          std::string help_url;
+          plugin->GetString("help_url", &help_url);
+          string16 name;
+          success = plugin->GetString("name", &name);
+          DCHECK(success);
+          bool display_url = false;
+          plugin->GetBoolean("displayurl", &display_url);
+          installer = new PluginInstaller(identifier,
+                                          GURL(url), GURL(help_url), name,
+                                          display_url);
+          installers_[identifier] = installer;
+        }
         MessageLoop::current()->PostTask(
             FROM_HERE,
-            base::Bind(found_callback, GURL(url), name, display_url));
+            base::Bind(found_callback, installer));
         return;
       }
     }

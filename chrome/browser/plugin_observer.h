@@ -11,6 +11,7 @@
 
 class GURL;
 class InfoBarDelegate;
+class PluginInstaller;
 class TabContentsWrapper;
 
 class PluginObserver : public TabContentsObserver {
@@ -27,17 +28,14 @@ class PluginObserver : public TabContentsObserver {
 
   void FoundMissingPlugin(int placeholder_id,
                           const std::string& mime_type,
-                          const GURL& url,
-                          const string16& name,
-                          bool display_url);
+                          PluginInstaller* installer);
   void DidNotFindMissingPlugin(int placeholder_id,
                                const std::string& mime_type);
-  void InstallMissingPlugin(const GURL& url, bool display_url);
+  void InstallMissingPlugin(PluginInstaller* installer);
 
   base::WeakPtrFactory<PluginObserver> weak_ptr_factory_;
 
   TabContentsWrapper* tab_contents_;
-  scoped_ptr<InfoBarDelegate> plugin_installer_;  // Lazily created.
 
   DISALLOW_COPY_AND_ASSIGN(PluginObserver);
 };

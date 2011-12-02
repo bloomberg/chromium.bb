@@ -36,6 +36,7 @@
       ],
       "lang": "en-US",
       "name": "Java(TM)",
+      "identifier": "java-runtime-environment",
       "url": "http://java.com/en/download/apple_manual.jsp",
       "displayurl": true
     },
@@ -48,6 +49,7 @@
       ],
       "lang": "en-US",
       "name": "RealPlayer",
+      "identifier": "realplayer",
       "url": "http://www.real.com/realplayer/download",
       "displayurl": true
     },
@@ -58,6 +60,7 @@
       ],
       "lang": "en-US",
       "name": "Adobe Flash Player",
+      "identifier": "adobe-flash-player",
       "url": "http://get.adobe.com/flashplayer/",
       "displayurl": true
     },
@@ -67,6 +70,7 @@
       ],
       "lang": "en-US",
       "name": "Adobe Shockwave Player",
+      "identifier": "shockwave",
       "url": "http://www.adobe.com/shockwave/download/",
       "displayurl": true
     },
@@ -81,6 +85,7 @@
       ],
       "lang": "en-US",
       "name": "Adobe Reader",
+      "identifier": "adobe-reader",
       "url": "http://get.adobe.com/reader/",
       "displayurl": true
     },
@@ -138,6 +143,7 @@
       ],
       "lang": "en-US",
       "name": "QuickTime Player",
+      "identifier": "apple-quicktime",
       "url": "http://www.apple.com/quicktime/download/",
       "displayurl": true
     },
@@ -156,6 +162,7 @@
       ],
       "lang": "en-US",
       "name": "Flip4Mac",
+      "identifier": "flip4mac",
       "url": "http://www.telestream.net/flip4mac-wmv/overview.htm",
       "displayurl": true
     },
@@ -166,6 +173,7 @@
       ],
       "lang": "en-US",
       "name": "DivX Web Player",
+      "identifier": "divx-player",
       "url": "http://www.divx.com/en/downloads/divx/mac",
       "displayurl": true
     }
