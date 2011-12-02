@@ -78,6 +78,15 @@ TEST_F(DefaultProviderTest, DefaultValues) {
                               CONTENT_SETTINGS_TYPE_GEOLOCATION,
                               std::string(),
                               false));
+
+  scoped_ptr<base::Value> value(
+      GetContentSettingValue(&provider_,
+                             GURL("http://example.com/"),
+                             GURL("http://example.com/"),
+                             CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
+                             std::string(),
+                             false));
+  EXPECT_FALSE(value.get());
 }
 
 TEST_F(DefaultProviderTest, IgnoreNonDefaultSettings) {

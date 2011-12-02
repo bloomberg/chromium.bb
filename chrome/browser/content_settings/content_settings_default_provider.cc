@@ -55,7 +55,8 @@ namespace {
 class DefaultRuleIterator : public RuleIterator {
  public:
   explicit DefaultRuleIterator(const base::Value* value) {
-    value_.reset(value->DeepCopy());
+    if (value)
+      value_.reset(value->DeepCopy());
   }
 
   bool HasNext() const {
@@ -316,9 +317,11 @@ void DefaultProvider::ReadDefaultSettings(bool overwrite) {
 void DefaultProvider::ForceDefaultsToBeExplicit() {
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     ContentSettingsType type = ContentSettingsType(i);
-    if (!default_settings_[type].get())
+    if (!default_settings_[type].get() &&
+        kDefaultSettings[i] != CONTENT_SETTING_DEFAULT) {
       default_settings_[type].reset(
           Value::CreateIntegerValue(kDefaultSettings[i]));
+    }
   }
 }
 
