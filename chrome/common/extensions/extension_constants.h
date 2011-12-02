@@ -150,7 +150,7 @@ namespace extension_manifest_errors {
   extern const char kDisabledByPolicy[];
   extern const char kExperimentalFlagRequired[];
   extern const char kExpectString[];
-  extern const char kFeatureNotAllowed[];
+  extern const char kHostedAppsCannotIncludeExtensionFeatures[];
   extern const char kInvalidAllFrames[];
   extern const char kInvalidBackground[];
   extern const char kInvalidBackgroundInHostedApp[];
@@ -280,6 +280,7 @@ namespace extension_manifest_errors {
   extern const char kOneUISurfaceOnly[];
   extern const char kReservedMessageFound[];
   extern const char kSidebarExperimental[];
+  extern const char kThemesCannotContainExtensions[];
   extern const char kWebContentMustBeEnabled[];
 #if defined(OS_CHROMEOS)
   extern const char kIllegalPlugins[];

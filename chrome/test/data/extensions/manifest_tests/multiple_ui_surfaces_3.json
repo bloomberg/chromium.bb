@@ -1,0 +1,11 @@
+{
+  "name": "foo",
+  "version": "1",
+  "browser_action": {},
+  "page_action": {},
+  "app": {
+    "launch": {
+      "local_path": "foo.html"
+    }
+  }
+}

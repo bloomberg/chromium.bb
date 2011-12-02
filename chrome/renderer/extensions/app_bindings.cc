@@ -12,7 +12,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/extensions/manifest.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
@@ -195,7 +194,7 @@ v8::Handle<v8::Value> AppBindingsHandler::GetDetailsForFrameImpl(
     return v8::Null();
 
   scoped_ptr<DictionaryValue> manifest_copy(
-      extension->manifest()->value()->DeepCopy());
+      extension->manifest_value()->DeepCopy());
   manifest_copy->SetString("id", extension->id());
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
   return converter->ToV8Value(manifest_copy.get(),

@@ -12,7 +12,6 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -1107,7 +1106,7 @@ void ExtensionPrefs::OnExtensionInstalled(
   // since it may change on disk.
   if (extension->location() != Extension::LOAD) {
     extension_dict->Set(kPrefManifest,
-                        extension->manifest()->value()->DeepCopy());
+                        extension->manifest_value()->DeepCopy());
   }
 
   if (extension->is_app()) {
@@ -1197,10 +1196,10 @@ void ExtensionPrefs::UpdateManifest(const Extension* extension) {
     DictionaryValue* old_manifest = NULL;
     bool update_required =
         !extension_dict->GetDictionary(kPrefManifest, &old_manifest) ||
-        !extension->manifest()->value()->Equals(old_manifest);
+        !extension->manifest_value()->Equals(old_manifest);
     if (update_required) {
       UpdateExtensionPref(extension->id(), kPrefManifest,
-                          extension->manifest()->value()->DeepCopy());
+                          extension->manifest_value()->DeepCopy());
     }
   }
 }

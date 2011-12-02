@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/manifest.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
@@ -99,10 +98,10 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, IsInstalled) {
   scoped_ptr<DictionaryValue> app_details(
       static_cast<DictionaryValue*>(
           base::JSONReader::Read(result, false /* allow trailing comma */)));
-  // extension->manifest() does not contain the id.
+  // extension->manifest_value() does not contain the id.
   app_details->Remove("id", NULL);
   EXPECT_TRUE(app_details.get());
-  EXPECT_TRUE(app_details->Equals(extension->manifest()->value()));
+  EXPECT_TRUE(app_details->Equals(extension->manifest_value()));
 
   // Try to change app.isInstalled.  Should silently fail, so
   // that isInstalled should have the initial value.
@@ -178,8 +177,8 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, GetDetailsForFrame) {
   scoped_ptr<DictionaryValue> app_details(
       static_cast<DictionaryValue*>(
           base::JSONReader::Read(json, false /* allow trailing comma */)));
-  // extension->manifest() does not contain the id.
+  // extension->manifest_value() does not contain the id.
   app_details->Remove("id", NULL);
   EXPECT_TRUE(app_details.get());
-  EXPECT_TRUE(app_details->Equals(extension->manifest()->value()));
+  EXPECT_TRUE(app_details->Equals(extension->manifest_value()));
 }

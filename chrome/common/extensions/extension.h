@@ -20,7 +20,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_permission_set.h"
-#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/extensions/url_pattern_set.h"
@@ -375,7 +374,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Parses the host and api permissions from the specified permission |key|
   // in the manifest |source|.
-  bool ParsePermissions(const extensions::Manifest* source,
+  bool ParsePermissions(const base::DictionaryValue* source,
                         const char* key,
                         int flags,
                         std::string* error,
@@ -532,8 +531,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   }
   const GURL& update_url() const { return update_url_; }
   const ExtensionIconSet& icons() const { return icons_; }
-  const extensions::Manifest* manifest() const {
-    return manifest_.get();
+  const base::DictionaryValue* manifest_value() const {
+    return manifest_value_.get();
   }
   const std::string default_locale() const { return default_locale_; }
   const URLOverrideMap& GetChromeURLOverrides() const {
@@ -558,12 +557,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   }
 
   // App-related.
-  bool is_app() const {
-    return is_packaged_app() || is_hosted_app() || is_platform_app();
+  bool is_app() const { return is_app_; }
+  bool is_platform_app() const { return is_platform_app_; }
+  bool is_hosted_app() const { return is_app() && !web_extent().is_empty(); }
+  bool is_packaged_app() const {
+    return !is_platform_app() && is_app() && web_extent().is_empty();
   }
-  bool is_platform_app() const { return manifest()->IsPlatformApp(); }
-  bool is_hosted_app() const { return manifest()->IsHostedApp(); }
-  bool is_packaged_app() const { return manifest()->IsPackagedApp(); }
   bool is_storage_isolated() const { return is_app() && is_storage_isolated_; }
   const URLPatternSet& web_extent() const { return extent_; }
   const std::string& launch_local_path() const { return launch_local_path_; }
@@ -575,7 +574,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   int launch_height() const { return launch_height_; }
 
   // Theme-related.
-  bool is_theme() const { return manifest()->IsTheme(); }
+  bool is_theme() const { return is_theme_; }
   base::DictionaryValue* GetThemeImages() const { return theme_images_.get(); }
   base::DictionaryValue* GetThemeColors() const {return theme_colors_.get(); }
   base::DictionaryValue* GetThemeTints() const { return theme_tints_.get(); }
@@ -617,8 +616,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   ~Extension();
 
   // Initialize the extension from a parsed manifest.
-  // Takes ownership of the manifest |value|.
-  bool InitFromValue(extensions::Manifest* value, int flags,
+  bool InitFromValue(const base::DictionaryValue& value, int flags,
                      std::string* error);
 
   // Helper function for implementing HasCachedImage/GetCachedImage. A return
@@ -645,21 +643,24 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                        UserScript *instance);
 
   // Helpers to load various chunks of the manifest.
-  bool LoadExtent(const extensions::Manifest* manifest,
+  bool LoadIsApp(const base::DictionaryValue* manifest, std::string* error);
+  bool LoadExtent(const base::DictionaryValue* manifest,
                   const char* key,
                   URLPatternSet* extent,
                   const char* list_error,
                   const char* value_error,
                   URLPattern::ParseOption parse_strictness,
                   std::string* error);
-  bool LoadLaunchContainer(const extensions::Manifest* manifest,
+  bool LoadLaunchContainer(const base::DictionaryValue* manifest,
                            std::string* error);
-  bool LoadLaunchURL(const extensions::Manifest* manifest,
+  bool LoadLaunchURL(const base::DictionaryValue* manifest,
                      std::string* error);
-  bool LoadAppIsolation(const extensions::Manifest* manifest,
+  bool LoadAppIsolation(const base::DictionaryValue* manifest,
                         std::string* error);
-  bool LoadWebIntentServices(const extensions::Manifest* manifest,
+  bool LoadWebIntentServices(const base::DictionaryValue& manifest,
                              std::string* error);
+  bool EnsureNotHybridApp(const base::DictionaryValue* manifest,
+                          std::string* error);
 
   // Helper method to load an ExtensionAction from the page_action or
   // browser_action entries in the manifest.
@@ -681,6 +682,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Returns true if the extension has more than one "UI surface". For example,
   // an extension that has a browser action and a page action.
   bool HasMultipleUISurfaces() const;
+
+  // Figures out if a source contains keys not associated with themes - we
+  // don't want to allow scripts and such to be bundled with themes.
+  bool ContainsNonThemeKeys(const base::DictionaryValue& source) const;
 
   // Updates the launch URL and extents for the extension using the given
   // |override_url|.
@@ -815,6 +820,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // A map of display properties.
   scoped_ptr<base::DictionaryValue> theme_display_properties_;
 
+  // Whether the extension is a theme.
+  bool is_theme_;
+
   // The homepage for this extension. Useful if it is not hosted by Google and
   // therefore does not have a Gallery URL.
   GURL homepage_url_;
@@ -822,12 +830,18 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // URL for fetching an update manifest
   GURL update_url_;
 
-  // The manifest that this extension was created from.
-  scoped_ptr<extensions::Manifest> manifest_;
+  // A copy of the manifest that this extension was created from.
+  scoped_ptr<base::DictionaryValue> manifest_value_;
 
   // A map of chrome:// hostnames (newtab, downloads, etc.) to Extension URLs
   // which override the handling of those URLs. (see ExtensionOverrideUI).
   URLOverrideMap chrome_url_overrides_;
+
+  // Whether this extension uses app features.
+  bool is_app_;
+
+  // Whether this app uses platform features.
+  bool is_platform_app_;
 
   // Whether this extension requests isolated storage.
   bool is_storage_isolated_;
