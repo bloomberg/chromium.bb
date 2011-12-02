@@ -42,6 +42,8 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
   virtual void Destroy();
   virtual bool IsOffscreen();
   virtual bool SwapBuffers();
+  virtual std::string GetExtensions();
+  virtual bool PostSubBuffer(int x, int y, int width, int height);
 
  private:
   bool UpdateSize();
@@ -190,6 +192,59 @@ bool NativeViewGLSurfaceOSMesa::SwapBuffers() {
             0, 0,
             size.width(), size.height(),
             0, 0);
+
+  return true;
+}
+
+std::string NativeViewGLSurfaceOSMesa::GetExtensions() {
+  std::string extensions = gfx::GLSurfaceOSMesa::GetExtensions();
+  extensions += extensions.empty() ? "" : " ";
+  extensions += "GL_CHROMIUM_post_sub_buffer";
+  return extensions;
+}
+
+bool NativeViewGLSurfaceOSMesa::PostSubBuffer(
+    int x, int y, int width, int height) {
+  // Update the size before blitting so that the blit size is exactly the same
+  // as the window.
+  if (!UpdateSize()) {
+    LOG(ERROR) << "Failed to update size of GLContextOSMesa.";
+    return false;
+  }
+
+  gfx::Size size = GetSize();
+
+  // Move (0,0) from lower-left to upper-left
+  y = size.height() - y - height;
+
+  XWindowAttributes attributes;
+  if (!XGetWindowAttributes(g_osmesa_display, window_, &attributes)) {
+    LOG(ERROR) << "XGetWindowAttributes failed for window " << window_ << ".";
+    return false;
+  }
+
+  // Copy the frame into the pixmap.
+  ui::PutARGBImage(g_osmesa_display,
+                   attributes.visual,
+                   attributes.depth,
+                   pixmap_,
+                   pixmap_graphics_context_,
+                   static_cast<const uint8*>(GetHandle()),
+                   size.width(),
+                   size.height(),
+                   x, y,
+                   x, y,
+                   width,
+                   height);
+
+  // Copy the pixmap to the window.
+  XCopyArea(g_osmesa_display,
+            pixmap_,
+            window_,
+            window_graphics_context_,
+            x, y,
+            width, height,
+            x, y);
 
   return true;
 }

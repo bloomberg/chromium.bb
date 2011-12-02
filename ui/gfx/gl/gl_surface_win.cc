@@ -30,6 +30,8 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
   virtual void Destroy();
   virtual bool IsOffscreen();
   virtual bool SwapBuffers();
+  virtual std::string GetExtensions();
+  virtual bool PostSubBuffer(int x, int y, int width, int height);
 
  private:
   void UpdateSize();
@@ -126,6 +128,54 @@ bool NativeViewGLSurfaceOSMesa::SwapBuffers() {
   StretchDIBits(device_context_,
                 0, 0, size.width(), size.height(),
                 0, 0, size.width(), size.height(),
+                GetHandle(),
+                reinterpret_cast<BITMAPINFO*>(&info),
+                DIB_RGB_COLORS,
+                SRCCOPY);
+
+  return true;
+}
+
+std::string NativeViewGLSurfaceOSMesa::GetExtensions() {
+  std::string extensions = gfx::GLSurfaceOSMesa::GetExtensions();
+  extensions += extensions.empty() ? "" : " ";
+  extensions += "GL_CHROMIUM_post_sub_buffer";
+  return extensions;
+}
+
+bool NativeViewGLSurfaceOSMesa::PostSubBuffer(
+    int x, int y, int width, int height) {
+  DCHECK(device_context_);
+
+  // Update the size before blitting so that the blit size is exactly the same
+  // as the window.
+  UpdateSize();
+
+  gfx::Size size = GetSize();
+
+  // Note: negating the height below causes GDI to treat the bitmap data as row
+  // 0 being at the top.
+  BITMAPV4HEADER info = { sizeof(BITMAPV4HEADER) };
+  info.bV4Width = size.width();
+  info.bV4Height = -size.height();
+  info.bV4Planes = 1;
+  info.bV4BitCount = 32;
+  info.bV4V4Compression = BI_BITFIELDS;
+  info.bV4RedMask = 0x000000FF;
+  info.bV4GreenMask = 0x0000FF00;
+  info.bV4BlueMask = 0x00FF0000;
+  info.bV4AlphaMask = 0xFF000000;
+
+  // Copy the back buffer to the window's device context. Do not check whether
+  // StretchDIBits succeeds or not. It will fail if the window has been
+  // destroyed but it is preferable to allow rendering to silently fail if the
+  // window is destroyed. This is because the primary application of this
+  // class of GLContext is for testing and we do not want every GL related ui /
+  // browser test to become flaky if there is a race condition between GL
+  // context destruction and window destruction.
+  StretchDIBits(device_context_,
+                x, size.height() - y - height, width, height,
+                x, y, width, height,
                 GetHandle(),
                 reinterpret_cast<BITMAPINFO*>(&info),
                 DIB_RGB_COLORS,

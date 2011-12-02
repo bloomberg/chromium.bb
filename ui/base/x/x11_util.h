@@ -178,9 +178,24 @@ UI_EXPORT XID CreatePictureFromSkiaPixmap(Display* display, XID pixmap);
 // server side visual depth as needed.  Destination is assumed to be the same
 // dimensions as |data| or larger.  |data| is also assumed to be in row order
 // with each line being exactly |width| * 4 bytes long.
-UI_EXPORT void PutARGBImage(Display* display, void* visual, int depth,
-                            XID pixmap, void* pixmap_gc, const uint8* data,
+UI_EXPORT void PutARGBImage(Display* display,
+                            void* visual, int depth,
+                            XID pixmap, void* pixmap_gc,
+                            const uint8* data,
                             int width, int height);
+
+// Same as above only more general:
+// - |data_width| and |data_height| refer to the data image
+// - |src_x|, |src_y|, |copy_width| and |copy_height| define source region
+// - |dst_x|, |dst_y|, |copy_width| and |copy_height| define destination region
+UI_EXPORT void PutARGBImage(Display* display,
+                            void* visual, int depth,
+                            XID pixmap, void* pixmap_gc,
+                            const uint8* data,
+                            int data_width, int data_height,
+                            int src_x, int src_y,
+                            int dst_x, int dst_y,
+                            int copy_width, int copy_height);
 
 void FreePicture(Display* display, XID picture);
 void FreePixmap(Display* display, XID pixmap);

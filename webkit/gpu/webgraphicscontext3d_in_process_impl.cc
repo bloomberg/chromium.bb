@@ -1254,8 +1254,9 @@ WebString WebGraphicsContext3DInProcessImpl::getShaderSource(WebGLId shader) {
 
 WebString WebGraphicsContext3DInProcessImpl::getString(WGC3Denum name) {
   makeContextCurrent();
-  std::string result(reinterpret_cast<const char*>(glGetString(name)));
+  std::string result;
   if (name == GL_EXTENSIONS) {
+    result = gl_context_->GetExtensions();
     if (!is_gles2_) {
       std::vector<std::string> split;
       base::SplitString(result, ' ', &split);
@@ -1265,6 +1266,8 @@ WebString WebGraphicsContext3DInProcessImpl::getString(WGC3Denum name) {
         result += " GL_EXT_texture_format_BGRA8888 GL_EXT_read_format_bgra";
       }
     }
+  } else {
+    result = reinterpret_cast<const char*>(glGetString(name));
   }
   return WebString::fromUTF8(result.c_str());
 }
