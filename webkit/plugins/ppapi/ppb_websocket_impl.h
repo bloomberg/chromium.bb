@@ -60,18 +60,16 @@ class PPB_WebSocket_Impl : public ::ppapi::Resource,
   virtual PP_Var GetURL() OVERRIDE;
 
   // WebSocketClient implementation.
-  virtual void didConnect() OVERRIDE;
-  virtual void didReceiveMessage(const WebKit::WebString& message) OVERRIDE;
-  virtual void didReceiveBinaryData(
-      const WebKit::WebData& binaryData) OVERRIDE;
-  virtual void didReceiveMessageError() OVERRIDE;
-  // TODO(toyoshim): Add OVERRIDE after landing WebKit side change.
+  virtual void didConnect();
+  virtual void didReceiveMessage(const WebKit::WebString& message);
+  virtual void didReceiveBinaryData(const WebKit::WebData& binaryData);
+  virtual void didReceiveMessageError();
   virtual void didUpdateBufferedAmount(unsigned long buffered_amount);
-  virtual void didStartClosingHandshake() OVERRIDE;
+  virtual void didStartClosingHandshake();
   virtual void didClose(unsigned long buffered_amount,
                         ClosingHandshakeCompletionStatus status,
                         unsigned short code,
-                        const WebKit::WebString& reason) OVERRIDE;
+                        const WebKit::WebString& reason);
  private:
   int32_t DoReceive();
 
