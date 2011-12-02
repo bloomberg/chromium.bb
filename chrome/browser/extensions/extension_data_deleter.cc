@@ -24,7 +24,7 @@
 
 using content::BrowserThread;
 
-/* static */
+// static
 void ExtensionDataDeleter::StartDeleting(
     Profile* profile,
     const std::string& extension_id,
@@ -141,5 +141,6 @@ void ExtensionDataDeleter::DeleteFileSystemOnFileThread() {
 
 void ExtensionDataDeleter::DeleteAppcachesOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  appcache_service_->DeleteAppCachesForOrigin(storage_origin_, NULL);
+  appcache_service_->DeleteAppCachesForOrigin(
+      storage_origin_, net::CompletionCallback());
 }

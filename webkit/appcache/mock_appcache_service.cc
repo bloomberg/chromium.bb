@@ -9,12 +9,13 @@
 
 namespace appcache {
 
-static void DeferredCallCallback(net::OldCompletionCallback* callback, int rv) {
-  callback->Run(rv);
+static void DeferredCallCallback(
+    const net::CompletionCallback& callback, int rv) {
+  callback.Run(rv);
 }
 
 void MockAppCacheService::DeleteAppCachesForOrigin(
-    const GURL& origin, net::OldCompletionCallback* callback) {
+    const GURL& origin, const net::CompletionCallback& callback) {
   ++delete_called_count_;
   MessageLoop::current()->PostTask(
       FROM_HERE,

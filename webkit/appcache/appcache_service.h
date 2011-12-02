@@ -90,9 +90,9 @@ class APPCACHE_EXPORT AppCacheService {
 
   // Deletes all appcaches for the origin, 'callback' is invoked upon
   // completion. This method always completes asynchronously.
-  // (virtual for unittesting)
-  virtual void DeleteAppCachesForOrigin(const GURL& origin,
-                                        net::OldCompletionCallback* callback);
+  // (virtual for unit testing)
+  virtual void DeleteAppCachesForOrigin(
+      const GURL& origin, const net::CompletionCallback& callback);
 
   // Checks the integrity of 'response_id' by reading the headers and data.
   // If it cannot be read, the cache group for 'manifest_url' is deleted.

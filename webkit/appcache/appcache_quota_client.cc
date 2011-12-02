@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "webkit/appcache/appcache_service.h"
 
 using quota::QuotaClient;
@@ -34,9 +35,10 @@ namespace appcache {
 
 AppCacheQuotaClient::AppCacheQuotaClient(AppCacheService* service)
     : ALLOW_THIS_IN_INITIALIZER_LIST(service_delete_callback_(
-          new net::CancelableOldCompletionCallback<AppCacheQuotaClient>(
-              this, &AppCacheQuotaClient::DidDeleteAppCachesForOrigin))),
-      service_(service), appcache_is_ready_(false),
+          base::Bind(&AppCacheQuotaClient::DidDeleteAppCachesForOrigin,
+                     base::Unretained(this)))),
+      service_(service),
+      appcache_is_ready_(false),
       quota_manager_is_destroyed_(false) {
 }
 
@@ -54,10 +56,9 @@ void AppCacheQuotaClient::OnQuotaManagerDestroyed() {
   DeletePendingRequests();
   if (!current_delete_request_callback_.is_null()) {
     current_delete_request_callback_.Reset();
-    service_delete_callback_.release()->Cancel();
-  } else {
-    service_delete_callback_ = NULL;
+    service_delete_callback_.Cancel();
   }
+
   quota_manager_is_destroyed_ = true;
   if (!service_)
     delete this;
@@ -136,7 +137,9 @@ void AppCacheQuotaClient::DeleteOriginData(const GURL& origin,
     DidDeleteAppCachesForOrigin(net::OK);
     return;
   }
-  service_->DeleteAppCachesForOrigin(origin, service_delete_callback_);
+
+  service_->DeleteAppCachesForOrigin(
+      origin, service_delete_callback_.callback());
 }
 
 void AppCacheQuotaClient::DidDeleteAppCachesForOrigin(int rv) {
@@ -223,10 +226,9 @@ void AppCacheQuotaClient::NotifyAppCacheDestroyed() {
   if (!current_delete_request_callback_.is_null()) {
     current_delete_request_callback_.Run(quota::kQuotaErrorAbort);
     current_delete_request_callback_.Reset();
-    service_delete_callback_.release()->Cancel();
-  } else {
-    service_delete_callback_ = NULL;
+    service_delete_callback_.Cancel();
   }
+
   if (quota_manager_is_destroyed_)
     delete this;
 }

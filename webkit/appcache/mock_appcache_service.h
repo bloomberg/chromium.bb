@@ -26,7 +26,7 @@ class MockAppCacheService : public AppCacheService {
   // removing groups and caches in our mock storage instance.
   virtual void DeleteAppCachesForOrigin(
       const GURL& origin,
-      net::OldCompletionCallback* callback) OVERRIDE;
+      const net::CompletionCallback& callback) OVERRIDE;
 
   void set_quota_manager_proxy(quota::QuotaManagerProxy* proxy) {
     quota_manager_proxy_ = proxy;
@@ -37,6 +37,7 @@ class MockAppCacheService : public AppCacheService {
   }
 
   int delete_called_count() const { return delete_called_count_; }
+
  private:
   int mock_delete_appcaches_for_origin_result_;
   int delete_called_count_;

@@ -210,12 +210,12 @@ void AppCacheService::DeleteHelper::OnGroupMadeObsolete(
 
 // DeleteOriginHelper -------
 
-class AppCacheService::DeleteOriginHelper : public AsyncHelper {
+class AppCacheService::DeleteOriginHelper : public NewAsyncHelper {
  public:
   DeleteOriginHelper(
       AppCacheService* service, const GURL& origin,
-      net::OldCompletionCallback* callback)
-      : AsyncHelper(service, callback), origin_(origin),
+      const net::CompletionCallback& callback)
+      : NewAsyncHelper(service, callback), origin_(origin),
         num_caches_to_delete_(0), successes_(0), failures_(0) {
   }
 
@@ -238,17 +238,19 @@ class AppCacheService::DeleteOriginHelper : public AsyncHelper {
   int num_caches_to_delete_;
   int successes_;
   int failures_;
+
   DISALLOW_COPY_AND_ASSIGN(DeleteOriginHelper);
 };
 
 void AppCacheService::DeleteOriginHelper::OnAllInfo(
-      AppCacheInfoCollection* collection) {
+    AppCacheInfoCollection* collection) {
   if (!collection) {
     // Failed to get a listing.
     CallCallback(net::ERR_FAILED);
     delete this;
     return;
   }
+
   std::map<GURL, AppCacheInfoVector>::iterator found =
       collection->infos_by_origin.find(origin_);
   if (found == collection->infos_by_origin.end() || found->second.empty()) {
@@ -524,7 +526,7 @@ void AppCacheService::DeleteAppCacheGroup(
 }
 
 void AppCacheService::DeleteAppCachesForOrigin(
-    const GURL& origin,  net::OldCompletionCallback* callback) {
+    const GURL& origin,  const net::CompletionCallback& callback) {
   DeleteOriginHelper* helper = new DeleteOriginHelper(this, origin, callback);
   helper->Start();
 }
