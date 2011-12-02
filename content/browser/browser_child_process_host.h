@@ -8,6 +8,7 @@
 
 #include <list>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process.h"
@@ -30,7 +31,7 @@ class WaitableEvent;
 // [Browser]RenderProcessHost is the main exception that doesn't derive from
 // this class. That project lives on the UI thread.
 class CONTENT_EXPORT BrowserChildProcessHost :
-    public content::ChildProcessHostDelegate,
+    public NON_EXPORTED_BASE(content::ChildProcessHostDelegate),
     public ChildProcessLauncher::Client,
     public base::WaitableEventWatcher::Delegate,
     public IPC::Message::Sender {
