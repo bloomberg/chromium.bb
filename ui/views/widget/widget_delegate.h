@@ -117,9 +117,6 @@ class VIEWS_EXPORT WidgetDelegate {
   // Default is true.
   virtual bool ShouldRestoreWindowSize() const;
 
-  // Return false to indicate that the window can't be closed. Defaults to true.
-  virtual bool CanClose();
-
   // Called when the window closes. The delegate MUST NOT delete itself during
   // this call, since it can be called afterwards. See DeleteDelegate().
   virtual void WindowClosing() {}

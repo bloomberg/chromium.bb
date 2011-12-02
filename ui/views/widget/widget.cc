@@ -466,8 +466,8 @@ void Widget::Close() {
     return;
   }
 
-  bool can_close = widget_delegate_->CanClose();
-  if (non_client_view_ && can_close)
+  bool can_close = true;
+  if (non_client_view_)
     can_close = non_client_view_->CanClose();
   if (can_close) {
     SaveWindowPlacement();
