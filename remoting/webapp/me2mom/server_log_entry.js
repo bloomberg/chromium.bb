@@ -27,6 +27,9 @@ remoting.ServerLogEntry.prototype.VALUE_EVENT_NAME_SESSION_STATE_ =
     'session-state';
 
 /** @private */
+remoting.ServerLogEntry.prototype.KEY_ID_ = 'id';
+
+/** @private */
 remoting.ServerLogEntry.prototype.KEY_ROLE_ = 'role';
 /** @private */
 remoting.ServerLogEntry.prototype.VALUE_ROLE_CLIENT_ = 'client';
@@ -157,6 +160,15 @@ remoting.ServerLogEntry.prototype.makeClientSessionStateChange =
   }
   return entry;
 };
+
+/**
+ * Adds an ID field to this log entry.
+ *
+ * @param {string} id
+ */
+remoting.ServerLogEntry.prototype.addIdField = function(id) {
+  this.set(this.KEY_ID_, id);
+}
 
 /**
  * Adds fields describing the host to this log entry.

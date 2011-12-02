@@ -664,7 +664,7 @@ remoting.DebugLog.prototype.prettyIqSet = function(action, iq_list) {
       /** @type {Node} */
       var entry = log.childNodes[0];
       if (!this.verifyAttributes(entry, 'role,event-name,session-state,cpu,' +
-                                 'os-name,browser-version,webapp-version')) {
+                                 'os-name,browser-version,webapp-version,id')) {
         return false;
       }
       var role = entry.getAttribute('role');
@@ -676,7 +676,7 @@ remoting.DebugLog.prototype.prettyIqSet = function(action, iq_list) {
         return false;
       }
       var session_state = entry.getAttribute('session-state');
-      this.prettyIqHeading(action, '?', 'set session-state ' + session_state,
+      this.prettyIqHeading(action, '?', 'log session-state ' + session_state,
                            null);
 
       var os_name = entry.getAttribute('os-name');
@@ -685,6 +685,10 @@ remoting.DebugLog.prototype.prettyIqSet = function(action, iq_list) {
       var webapp_version = entry.getAttribute('webapp-version');
       this.logIndent(1, os_name + ' ' + cpu + ' Chromium_v' + browser_version +
                      ' Chromoting_v' + webapp_version);
+      var remoting_id = entry.getAttribute('id');
+      if (remoting_id) {
+        this.logIndent(1, 'id: ' + remoting_id);
+      }
       return true;
     }
   }
