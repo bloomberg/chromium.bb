@@ -86,7 +86,7 @@ class APPCACHE_EXPORT AppCacheService {
   // subresource loads for pages associated with a deleted group
   // will fail. This method always completes asynchronously.
   void DeleteAppCacheGroup(const GURL& manifest_url,
-                           net::OldCompletionCallback* callback);
+                           const net::CompletionCallback& callback);
 
   // Deletes all appcaches for the origin, 'callback' is invoked upon
   // completion. This method always completes asynchronously.

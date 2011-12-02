@@ -63,14 +63,16 @@ void BrowsingDataAppCacheHelper::DeleteAppCacheGroup(
                    manifest_url));
     return;
   }
-  appcache_service_->DeleteAppCacheGroup(manifest_url, NULL);
+
+  appcache_service_->DeleteAppCacheGroup(
+      manifest_url, net::CompletionCallback());
 }
 
 BrowsingDataAppCacheHelper::~BrowsingDataAppCacheHelper() {}
 
 void BrowsingDataAppCacheHelper::OnFetchComplete(int rv) {
   if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    // Filter out appache info entries for extensions. Extension state is not
+    // Filter out appcache info entries for extensions. Extension state is not
     // considered browsing data.
     typedef std::map<GURL, appcache::AppCacheInfoVector> InfoByOrigin;
     InfoByOrigin& origin_map = info_collection_->infos_by_origin;

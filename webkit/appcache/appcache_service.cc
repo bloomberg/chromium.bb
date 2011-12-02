@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
+#include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_backend_impl.h"
@@ -94,7 +95,7 @@ class AppCacheService::AsyncHelper
  protected:
   void CallCallback(int rv) {
     if (callback_) {
-      // Defer to guarentee async completion.
+      // Defer to guarantee async completion.
       MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(&DeferredCallCallback, callback_, rv));
     }
@@ -143,7 +144,7 @@ class AppCacheService::CanHandleOfflineHelper : NewAsyncHelper {
   }
 
  private:
-  // AppCacheStorage::Delegate override
+  // AppCacheStorage::Delegate implementation.
   virtual void OnMainResponseFound(
       const GURL& url, const AppCacheEntry& entry,
       const GURL& fallback_url, const AppCacheEntry& fallback_entry,
@@ -166,12 +167,12 @@ void AppCacheService::CanHandleOfflineHelper::OnMainResponseFound(
 
 // DeleteHelper -------
 
-class AppCacheService::DeleteHelper : public AsyncHelper {
+class AppCacheService::DeleteHelper : public NewAsyncHelper {
  public:
   DeleteHelper(
       AppCacheService* service, const GURL& manifest_url,
-      net::OldCompletionCallback* callback)
-      : AsyncHelper(service, callback), manifest_url_(manifest_url) {
+      const net::CompletionCallback& callback)
+      : NewAsyncHelper(service, callback), manifest_url_(manifest_url) {
   }
 
   virtual void Start() {
@@ -179,7 +180,7 @@ class AppCacheService::DeleteHelper : public AsyncHelper {
   }
 
  private:
-  // AppCacheStorage::Delegate methods
+  // AppCacheStorage::Delegate implementation.
   virtual void OnGroupLoaded(
       appcache::AppCacheGroup* group, const GURL& manifest_url);
   virtual void OnGroupMadeObsolete(
@@ -224,7 +225,7 @@ class AppCacheService::DeleteOriginHelper : public AsyncHelper {
   }
 
  private:
-  // AppCacheStorage::Delegate methods
+  // AppCacheStorage::Delegate implementation.
   virtual void OnAllInfo(AppCacheInfoCollection* collection);
   virtual void OnGroupLoaded(
       appcache::AppCacheGroup* group, const GURL& manifest_url);
@@ -312,7 +313,7 @@ class AppCacheService::GetInfoHelper : NewAsyncHelper {
   }
 
  private:
-  // AppCacheStorage::Delegate override
+  // AppCacheStorage::Delegate implementation.
   virtual void OnAllInfo(AppCacheInfoCollection* collection);
 
   scoped_refptr<AppCacheInfoCollection> collection_;
@@ -401,7 +402,7 @@ void AppCacheService::CheckResponseHelper::OnGroupLoaded(
     if (cache_->cache_id() == cache_id_) {
       AppCacheHistograms::CountCheckResponseResult(
           AppCacheHistograms::ENTRY_NOT_FOUND);
-      service_->DeleteAppCacheGroup(manifest_url_, NULL);
+      service_->DeleteAppCacheGroup(manifest_url_, net::CompletionCallback());
     } else {
       AppCacheHistograms::CountCheckResponseResult(
           AppCacheHistograms::RESPONSE_OUT_OF_DATE);
@@ -422,7 +423,7 @@ void AppCacheService::CheckResponseHelper::OnReadInfoComplete(int result) {
   if (result < 0) {
     AppCacheHistograms::CountCheckResponseResult(
         AppCacheHistograms::READ_HEADERS_ERROR);
-    service_->DeleteAppCacheGroup(manifest_url_, NULL);
+    service_->DeleteAppCacheGroup(manifest_url_, net::CompletionCallback());
     delete this;
     return;
   }
@@ -454,7 +455,7 @@ void AppCacheService::CheckResponseHelper::OnReadDataComplete(int result) {
   AppCacheHistograms::CountCheckResponseResult(check_result);
 
   if (check_result != AppCacheHistograms::RESPONSE_OK)
-    service_->DeleteAppCacheGroup(manifest_url_, NULL);
+    service_->DeleteAppCacheGroup(manifest_url_, net::CompletionCallback());
   delete this;
 }
 
@@ -515,8 +516,9 @@ void AppCacheService::GetAllAppCacheInfo(
   helper->Start();
 }
 
-void AppCacheService::DeleteAppCacheGroup(const GURL& manifest_url,
-                                          net::OldCompletionCallback* callback) {
+void AppCacheService::DeleteAppCacheGroup(
+    const GURL& manifest_url,
+    const net::CompletionCallback& callback) {
   DeleteHelper* helper = new DeleteHelper(this, manifest_url, callback);
   helper->Start();
 }

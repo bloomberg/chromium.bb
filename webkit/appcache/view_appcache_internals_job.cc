@@ -8,6 +8,7 @@
 #include "webkit/appcache/view_appcache_internals_job.h"
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
@@ -400,31 +401,27 @@ class RemoveAppCacheJob : public RedirectToMainPageJob {
       net::URLRequest* request, AppCacheService* service,
       const GURL& manifest_url)
       : RedirectToMainPageJob(request, service),
-        manifest_url_(manifest_url) {}
+        manifest_url_(manifest_url),
+        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+  }
 
   virtual void Start() {
     DCHECK(request_);
-    delete_appcache_callback_ =
-        new net::CancelableOldCompletionCallback<RemoveAppCacheJob>(
-            this, &RemoveAppCacheJob::OnDeleteAppCacheComplete);
+
     appcache_service_->DeleteAppCacheGroup(
-        manifest_url_, delete_appcache_callback_);
+        manifest_url_,base::Bind(&RemoveAppCacheJob::OnDeleteAppCacheComplete,
+                                 weak_factory_.GetWeakPtr()));
   }
 
  private:
-  virtual ~RemoveAppCacheJob() {
-    if (delete_appcache_callback_)
-      delete_appcache_callback_.release()->Cancel();
-  }
+  virtual ~RemoveAppCacheJob() {}
 
   void OnDeleteAppCacheComplete(int rv) {
-    delete_appcache_callback_ = NULL;
     StartAsync();  // Causes the base class to redirect.
   }
 
   GURL manifest_url_;
-  scoped_refptr<net::CancelableOldCompletionCallback<RemoveAppCacheJob> >
-      delete_appcache_callback_;
+  base::WeakPtrFactory<RemoveAppCacheJob> weak_factory_;
 };
 
 
