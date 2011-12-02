@@ -27,9 +27,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <linux/input.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <fcntl.h>
 #include <assert.h>
 
 #include <wayland-server.h>
@@ -880,44 +877,14 @@ static int
 launch_desktop_shell_process(struct wl_shell *shell)
 {
 	const char *shell_exe = LIBEXECDIR "/wayland-desktop-shell";
-	struct wlsc_compositor *compositor = shell->compositor;
-	char s[32];
-	int sv[2], flags;
 
-	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, sv) < 0) {
-		fprintf(stderr, "socketpair failed\n");
+	shell->child.client = wlsc_client_launch(shell->compositor,
+						 &shell->child.process,
+						 shell_exe,
+						 desktop_shell_sigchld);
+
+	if (!shell->child.client)
 		return -1;
-	}
-
-	shell->child.process.pid = fork();
-	shell->child.process.cleanup = desktop_shell_sigchld;
-
-	switch (shell->child.process.pid) {
-	case 0:
-		/* SOCK_CLOEXEC closes both ends, so we need to unset
-		 * the flag on the client fd. */
-		flags = fcntl(sv[1], F_GETFD);
-		if (flags != -1)
-			fcntl(sv[1], F_SETFD, flags & ~FD_CLOEXEC);
-
-		snprintf(s, sizeof s, "%d", sv[1]);
-		setenv("WAYLAND_SOCKET", s, 1);
-		if (execl(shell_exe, shell_exe, NULL) < 0)
-			fprintf(stderr, "%s: running '%s' failed: %m\n",
-				__func__, shell_exe);
-		exit(-1);
-
-	default:
-		close(sv[1]);
-		shell->child.client =
-			wl_client_create(compositor->wl_display, sv[0]);
-		wlsc_watch_process(&shell->child.process);
-		break;
-
-	case -1:
-		fprintf(stderr, "%s: fork failed: %m\n", __func__);
-		return -1;
-	}
 	return 0;
 }
 

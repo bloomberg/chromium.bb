@@ -418,11 +418,21 @@ uint32_t *
 wlsc_load_image(const char *filename,
 		int32_t *width_arg, int32_t *height_arg, uint32_t *stride_arg);
 
+struct wlsc_process;
+typedef void (*wlsc_process_cleanup_func_t)(struct wlsc_process *process,
+					    int status);
+
 struct wlsc_process {
 	pid_t pid;
-	void (*cleanup)(struct wlsc_process *process, int status);
+	wlsc_process_cleanup_func_t cleanup;
 	struct wl_list link;
 };
+
+struct wl_client *
+wlsc_client_launch(struct wlsc_compositor *compositor,
+		   struct wlsc_process *proc,
+		   const char *path,
+		   wlsc_process_cleanup_func_t cleanup);
 
 int
 wlsc_data_device_manager_init(struct wlsc_compositor *compositor);

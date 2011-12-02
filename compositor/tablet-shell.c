@@ -25,9 +25,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <fcntl.h>
 #include <linux/input.h>
 
 #include "compositor.h"
@@ -369,43 +366,10 @@ static void
 launch_ux_daemon(struct tablet_shell *shell)
 {
 	const char *shell_exe = LIBEXECDIR "/wayland-tablet-shell";
-	struct wlsc_compositor *compositor = shell->compositor;
-	char s[32];
-	int sv[2], flags;
 
-	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, sv) < 0) {
-		fprintf(stderr, "socketpair failed\n");
-		return;
-	}
-
-	shell->process.pid = fork();
-	shell->process.cleanup = tablet_shell_sigchld;
-
-	switch (shell->process.pid) {
-	case 0:
-		/* SOCK_CLOEXEC closes both ends, so we need to unset
-		 * the flag on the client fd. */
-		flags = fcntl(sv[1], F_GETFD);
-		if (flags != -1)
-			fcntl(sv[1], F_SETFD, flags & ~FD_CLOEXEC);
-
-		snprintf(s, sizeof s, "%d", sv[1]);
-		setenv("WAYLAND_SOCKET", s, 1);
-		if (execl(shell_exe, shell_exe, NULL) < 0)
-			fprintf(stderr, "exec failed: %m\n");
-		exit(-1);
-
-	default:
-		close(sv[1]);
-		shell->client =
-			wl_client_create(compositor->wl_display, sv[0]);
-		wlsc_watch_process(&shell->process);
-		break;
-
-	case -1:
-		fprintf(stderr, "failed to fork\n");
-		break;
-	}
+	shell->client = wlsc_client_launch(shell->compositor,
+					   &shell->process,
+					   shell_exe, tablet_shell_sigchld);
 }
 
 static void

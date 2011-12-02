@@ -34,6 +34,8 @@
 #include <assert.h>
 #include <sys/ioctl.h>
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <math.h>
@@ -81,6 +83,75 @@ WL_EXPORT void
 wlsc_watch_process(struct wlsc_process *process)
 {
 	wl_list_insert(&child_process_list, &process->link);
+}
+
+static void
+child_client_exec(int sockfd, const char *path)
+{
+	int flags;
+	char s[32];
+
+	/* SOCK_CLOEXEC closes both ends, so we need to unset
+	 * the flag on the client fd. */
+	flags = fcntl(sockfd, F_GETFD);
+	if (flags != -1)
+		fcntl(sockfd, F_SETFD, flags & ~FD_CLOEXEC);
+
+	snprintf(s, sizeof s, "%d", sockfd);
+	setenv("WAYLAND_SOCKET", s, 1);
+
+	if (execl(path, path, NULL) < 0)
+		fprintf(stderr, "compositor: executing '%s' failed: %m\n",
+			path);
+}
+
+WL_EXPORT struct wl_client *
+wlsc_client_launch(struct wlsc_compositor *compositor,
+		   struct wlsc_process *proc,
+		   const char *path,
+		   wlsc_process_cleanup_func_t cleanup)
+{
+	int sv[2];
+	pid_t pid;
+	struct wl_client *client;
+
+	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, sv) < 0) {
+		fprintf(stderr, "wlsc_client_launch: "
+			"socketpair failed while launching '%s': %m\n",
+			path);
+		return NULL;
+	}
+
+	pid = fork();
+	if (pid == -1) {
+		close(sv[0]);
+		close(sv[1]);
+		fprintf(stderr,  "wlsc_client_launch: "
+			"fork failed while launching '%s': %m\n", path);
+		return NULL;
+	}
+
+	if (pid == 0) {
+		child_client_exec(sv[1], path);
+		exit(-1);
+	}
+
+	close(sv[1]);
+
+	client = wl_client_create(compositor->wl_display, sv[0]);
+	if (!client) {
+		close(sv[0]);
+		fprintf(stderr, "wlsc_client_launch: "
+			"wl_client_create failed while launching '%s'.\n",
+			path);
+		return NULL;
+	}
+
+	proc->pid = pid;
+	proc->cleanup = cleanup;
+	wlsc_watch_process(proc);
+
+	return client;
 }
 
 static void
