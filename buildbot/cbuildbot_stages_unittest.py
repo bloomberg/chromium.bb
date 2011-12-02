@@ -50,7 +50,7 @@ class AbstractStageTest(mox.MoxTestBase):
     mox.MoxTestBase.setUp(self)
     # Always stub RunCommmand out as we use it in every method.
     self.bot_id = 'x86-generic-pre-flight-queue'
-    self.build_config = config.config[self.bot_id]
+    self.build_config = config.config[self.bot_id].copy()
     self.build_root = '/fake_root'
 
     self.url = 'fake_url'
@@ -789,14 +789,15 @@ class BuildTargetStageTest(AbstractStageTest):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     AbstractStageTest.setUp(self)
-    latest_image_dir = self.build_root + '/src/build/images/x86-generic/latest'
+    self.images_root = os.path.join(self.build_root,
+                                    'src/build/images/x86-generic')
+    latest_image_dir = os.path.join(self.images_root, 'latest')
     self.mox.StubOutWithMock(os, 'readlink')
     self.mox.StubOutWithMock(os, 'symlink')
     os.readlink(latest_image_dir).AndReturn('myimage')
     os.symlink('myimage', '%s-cbuildbot' % latest_image_dir)
 
     # Disable most paths by default and selectively enable in tests
-
     self.build_config['vm_tests'] = None
     self.build_config['build_type'] = constants.PFQ_TYPE
     self.build_config['usepkg_chroot'] = False
@@ -810,23 +811,28 @@ class BuildTargetStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'BuildImage')
     self.mox.StubOutWithMock(commands, 'BuildVMImageForTesting')
     self.mox.StubOutWithMock(bs.BuilderStage, '_GetPortageEnvVar')
+    self.mox.StubOutWithMock(shutil, 'copyfile')
+    self.mox.StubOutWithMock(tempfile, 'mkdtemp')
 
     self.mox.StubOutWithMock(background, 'RunParallelSteps')
     background.RunParallelSteps(mox.IgnoreArg()).WithSideEffects(_DoSteps)
 
     self.mox.StubOutWithMock(commands, 'BuildAutotestTarball')
     self.mox.StubOutWithMock(os, 'rename')
+    self.archive_stage_mock = self.mox.CreateMock(stages.ArchiveStage)
 
   def ConstructStage(self):
-    return stages.BuildTargetStage(self.bot_id,
-                                   self.options,
-                                   self.build_config)
+    return stages.BuildTargetStage(
+        self.bot_id, self.options, self.build_config,
+        self.archive_stage_mock)
 
   def testAllConditionalPaths(self):
     """Enable all paths to get line coverage."""
     self.build_config['vm_tests'] = constants.SIMPLE_AU_TEST_TYPE
     self.options.tests = True
     self.build_config['build_type'] = constants.BUILD_FROM_SOURCE_TYPE
+    self.build_config['build_tests'] = True
+    self.build_config['archive_build_debug'] = True
     self.build_config['usepkg_chroot'] = True
     self.build_config['usepkg_setup_board'] = True
     self.build_config['usepkg_build_packages'] = True
@@ -839,6 +845,11 @@ class BuildTargetStageTest(AbstractStageTest):
 
     proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
 
+    # Convenience variables.
+    fake_autotest_dir = '/fake/autotest'
+    tarball_name = 'autotest.tar.bz2'
+    autotest_tarball_path = os.path.join(fake_autotest_dir, tarball_name)
+
     commands.Build(self.build_root,
                    self.build_config['board'],
                    build_autotest=True,
@@ -848,12 +859,17 @@ class BuildTargetStageTest(AbstractStageTest):
                    nowithdebug=False,
                    extra_env=proper_env)
 
-    commands.BuildImage(self.build_root,
-                        self.build_config['board'],
-                        ['test', 'base', 'dev'],
-                        extra_env=proper_env)
+    commands.BuildImage(self.build_root, self.build_config['board'],
+                        ['test', 'base', 'dev'], extra_env=proper_env)
     commands.BuildVMImageForTesting(self.build_root, self.build_config['board'],
                                     extra_env=proper_env)
+    tempfile.mkdtemp(prefix='autotest').AndReturn(fake_autotest_dir)
+    commands.BuildAutotestTarball(self.build_root, self.build_config['board'],
+                                  autotest_tarball_path)
+    self.archive_stage_mock.AutotestTarballReady(autotest_tarball_path)
+    shutil.copyfile(autotest_tarball_path,
+                    os.path.join(self.images_root, 'latest-cbuildbot',
+                                 tarball_name))
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -871,9 +887,7 @@ class BuildTargetStageTest(AbstractStageTest):
                    skip_toolchain_update=mox.IgnoreArg(),
                    nowithdebug=mox.IgnoreArg(),
                    extra_env={})
-    commands.BuildImage(self.build_root,
-                        self.build_config['board'],
-                        ['test', 'base', 'dev'],
+    commands.BuildImage(self.build_root, self.build_config['board'], ['test'],
                         extra_env={})
 
     self.mox.ReplayAll()
@@ -905,9 +919,7 @@ class BuildTargetStageTest(AbstractStageTest):
                    nowithdebug=True,
                    extra_env=proper_env)
 
-    commands.BuildImage(self.build_root,
-                        self.build_config['board'],
-                        ['test', 'base', 'dev'],
+    commands.BuildImage(self.build_root, self.build_config['board'], ['test'],
                         extra_env=proper_env)
 
     self.mox.ReplayAll()
