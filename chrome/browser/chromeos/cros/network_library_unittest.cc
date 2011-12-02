@@ -186,7 +186,7 @@ TEST_F(NetworkLibraryStubTest, NetworkLibraryAccessors) {
             cros_->FindWifiNetworkByPath("wifi1"));
   EXPECT_TRUE(cros_->wifi_connected());
   EXPECT_FALSE(cros_->wifi_connecting());  // Only true for active wifi.
-  EXPECT_EQ(6U, cros_->wifi_networks().size());
+  EXPECT_EQ(7U, cros_->wifi_networks().size());
 
   // Cellular
   ASSERT_NE(static_cast<const CellularNetwork*>(NULL),
@@ -196,11 +196,11 @@ TEST_F(NetworkLibraryStubTest, NetworkLibraryAccessors) {
             cros_->FindCellularNetworkByPath("cellular1"));
   EXPECT_FALSE(cros_->cellular_connected());
   EXPECT_TRUE(cros_->cellular_connecting());
-  EXPECT_EQ(2U, cros_->cellular_networks().size());
+  EXPECT_EQ(4U, cros_->cellular_networks().size());
 
   // VPN
   ASSERT_EQ(static_cast<const VirtualNetwork*>(NULL), cros_->virtual_network());
-  EXPECT_EQ(3U, cros_->virtual_networks().size());
+  EXPECT_EQ(4U, cros_->virtual_networks().size());
 
   // Active network and global state
   EXPECT_TRUE(cros_->Connected());

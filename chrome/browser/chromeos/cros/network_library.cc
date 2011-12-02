@@ -28,11 +28,12 @@
 #include "base/utf_string_conversion_utils.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
+#include "chrome/browser/chromeos/cros/network_ui_data.h"
 #include "chrome/browser/chromeos/cros/onc_network_parser.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/network_login_observer.h"
 #include "chrome/common/time_format.h"
 #include "content/public/browser/browser_thread.h"
@@ -4876,6 +4877,26 @@ void NetworkLibraryImplStub::Init() {
   cellular->imsi_ = "123456789012345";
   device_map_["cellular"] = cellular;
 
+  CellularApn apn;
+  apn.apn = "apn";
+  apn.network_id = "network_id";
+  apn.username = "username";
+  apn.password = "password";
+  apn.name = "name";
+  apn.localized_name = "localized_name";
+  apn.language = "language";
+
+  CellularApnList apn_list;
+  apn_list.push_back(apn);
+
+  NetworkDevice* cellular_gsm = new NetworkDevice("cellular_gsm");
+  cellular_gsm->type_ = TYPE_CELLULAR;
+  cellular_gsm->set_technology_family(TECHNOLOGY_FAMILY_GSM);
+  cellular_gsm->imsi_ = "123456789012345";
+  cellular_gsm->set_sim_pin_required(SIM_PIN_REQUIRED);
+  cellular_gsm->set_provider_apn_list(apn_list);
+  device_map_["cellular_gsm"] = cellular_gsm;
+
   // Profiles
   AddProfile("default", PROFILE_SHARED);
   AddProfile("user", PROFILE_USER);
@@ -4935,8 +4956,22 @@ void NetworkLibraryImplStub::Init() {
   wifi6->set_strength(20);
   AddStubNetwork(wifi6, PROFILE_NONE);
 
+  WifiNetwork* wifi7 = new WifiNetwork("wifi7");
+  wifi7->set_name("Fake Wifi7 (policy-managed)");
+  wifi7->set_strength(100);
+  wifi7->set_connectable(false);
+  wifi7->set_passphrase_required(true);
+  wifi7->set_encryption(SECURITY_8021X);
+  wifi7->SetEAPMethod(EAP_METHOD_PEAP);
+  wifi7->SetEAPIdentity("enterprise@example.com");
+  wifi7->SetEAPPassphrase("password");
+  NetworkUIData wifi7_ui_data;
+  wifi7_ui_data.set_onc_source(NetworkUIData::ONC_SOURCE_DEVICE_POLICY);
+  wifi7_ui_data.FillDictionary(wifi7->ui_data());
+  AddStubNetwork(wifi7, PROFILE_USER);
+
   CellularNetwork* cellular1 = new CellularNetwork("cellular1");
-  cellular1->set_name("Fake Cellular1");
+  cellular1->set_name("Fake Cellular 1");
   cellular1->set_strength(100);
   cellular1->set_connected(true);
   cellular1->set_activation_state(ACTIVATION_STATE_ACTIVATED);
@@ -4946,12 +4981,32 @@ void NetworkLibraryImplStub::Init() {
   AddStubNetwork(cellular1, PROFILE_NONE);
 
   CellularNetwork* cellular2 = new CellularNetwork("cellular2");
-  cellular2->set_name("Fake Cellular2");
+  cellular2->set_name("Fake Cellular 2");
   cellular2->set_strength(50);
   cellular2->set_activation_state(ACTIVATION_STATE_NOT_ACTIVATED);
   cellular2->set_network_technology(NETWORK_TECHNOLOGY_UMTS);
   cellular2->set_roaming_state(ROAMING_STATE_ROAMING);
   AddStubNetwork(cellular2, PROFILE_NONE);
+
+  CellularNetwork* cellular3 = new CellularNetwork("cellular3");
+  cellular3->set_name("Fake Cellular 3 (policy-managed)");
+  cellular3->set_device_path(cellular->device_path());
+  cellular3->set_activation_state(ACTIVATION_STATE_ACTIVATED);
+  cellular3->set_network_technology(NETWORK_TECHNOLOGY_EVDO);
+  NetworkUIData cellular3_ui_data;
+  cellular3_ui_data.set_onc_source(NetworkUIData::ONC_SOURCE_USER_POLICY);
+  cellular3_ui_data.FillDictionary(cellular3->ui_data());
+  AddStubNetwork(cellular3, PROFILE_NONE);
+
+  CellularNetwork* cellular4 = new CellularNetwork("cellular4");
+  cellular4->set_name("Fake Cellular 4 (policy-managed)");
+  cellular4->set_device_path(cellular_gsm->device_path());
+  cellular4->set_activation_state(ACTIVATION_STATE_ACTIVATED);
+  cellular4->set_network_technology(NETWORK_TECHNOLOGY_GSM);
+  NetworkUIData cellular4_ui_data;
+  cellular4_ui_data.set_onc_source(NetworkUIData::ONC_SOURCE_USER_POLICY);
+  cellular4_ui_data.FillDictionary(cellular4->ui_data());
+  AddStubNetwork(cellular4, PROFILE_NONE);
 
   CellularDataPlan* base_plan = new CellularDataPlan();
   base_plan->plan_name = "Base plan";
@@ -4989,6 +5044,15 @@ void NetworkLibraryImplStub::Init() {
   vpn3->set_server_hostname("vpn3server.fake.com");
   vpn3->set_provider_type(PROVIDER_TYPE_OPEN_VPN);
   AddStubNetwork(vpn3, PROFILE_USER);
+
+  VirtualNetwork* vpn4 = new VirtualNetwork("vpn4");
+  vpn4->set_name("Fake VPN4 (policy-managed)");
+  vpn4->set_server_hostname("vpn4server.fake.com");
+  vpn4->set_provider_type(PROVIDER_TYPE_OPEN_VPN);
+  NetworkUIData vpn4_ui_data;
+  vpn4_ui_data.set_onc_source(NetworkUIData::ONC_SOURCE_DEVICE_POLICY);
+  vpn4_ui_data.FillDictionary(vpn4->ui_data());
+  AddStubNetwork(vpn4, PROFILE_USER);
 
   wifi_scanning_ = false;
   offline_mode_ = false;
