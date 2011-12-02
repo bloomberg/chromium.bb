@@ -7122,8 +7122,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           click
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Run<ph name="END_BOLD">&lt;/strong&gt;</ph>,
           type
-          <!-- GRIT maps \n to line breaks, but leaves \\'s alone, so we need to be a bit more creative in escaping backslashes. -->
-          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>%windir%&amp;#92;network diagnostic&amp;#92;xpnetdiag.exe<ph name="END_BOLD">&lt;/strong&gt;</ph>,
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD">&lt;/strong&gt;</ph>,
           and then click
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>OK<ph name="END_BOLD">&lt;/strong&gt;</ph>.
         </message>
