@@ -21,7 +21,6 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "content/browser/intents/intent_injector.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/intents_messages.h"
 #include "content/public/browser/intents_host.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/gfx/codec/png_codec.h"
