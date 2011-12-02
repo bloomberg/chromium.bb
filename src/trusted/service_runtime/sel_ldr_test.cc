@@ -7,6 +7,7 @@
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
+#include "native_client/src/trusted/service_runtime/nacl_text.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
@@ -159,4 +160,40 @@ TEST_F(SelLdrTest, ThreadTableTest) {
 
   NaClRemoveThread(&app, 0);
   ASSERT_EQ(2, app.num_threads);
+}
+
+TEST_F(SelLdrTest, MinimumThreadGenerationTest) {
+  struct NaClApp app;
+  ASSERT_EQ(1, NaClAppCtor(&app));
+  ASSERT_EQ(INT_MAX, NaClMinimumThreadGeneration(&app));
+
+  struct NaClAppThread thread1;
+  struct NaClAppThread thread2;
+  // Perform some minimal initialisation of our NaClAppThreads based
+  // on what we know NaClMinimumThreadGeneration() does.  Reusing
+  // NaClAppThreadCtor() here is difficult because it launches an
+  // untrusted thread.
+  memset(&thread1, 0xff, sizeof(thread1));
+  memset(&thread2, 0xff, sizeof(thread2));
+  ASSERT_EQ(1, NaClMutexCtor(&thread1.mu));
+  ASSERT_EQ(1, NaClMutexCtor(&thread2.mu));
+  thread1.dynamic_delete_generation = 200;
+  thread2.dynamic_delete_generation = 100;
+
+  ASSERT_EQ(0, NaClAddThread(&app, &thread1));
+  ASSERT_EQ(200, NaClMinimumThreadGeneration(&app));
+  ASSERT_EQ(1, NaClAddThread(&app, &thread2));
+  ASSERT_EQ(100, NaClMinimumThreadGeneration(&app));
+
+  thread2.dynamic_delete_generation = 300;
+  ASSERT_EQ(200, NaClMinimumThreadGeneration(&app));
+
+  // This is a regression test for
+  // http://code.google.com/p/nativeclient/issues/detail?id=2190.
+  // The thread array can contain NULL entries where threads have
+  // exited and been removed.  NaClMinimumThreadGeneration() should
+  // know to skip those.  Also, if it wrongly uses num_threads instead
+  // of threads.num_entries it will miss thread2 and not return 300.
+  NaClRemoveThread(&app, 0);
+  ASSERT_EQ(300, NaClMinimumThreadGeneration(&app));
 }

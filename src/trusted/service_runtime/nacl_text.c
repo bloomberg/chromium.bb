@@ -412,15 +412,18 @@ void NaClSetThreadGeneration(struct NaClAppThread *natp, int generation) {
 }
 
 int NaClMinimumThreadGeneration(struct NaClApp *nap) {
-  int i, rv = 0;
+  size_t index;
+  int rv = INT_MAX;
   NaClXMutexLock(&nap->threads_mu);
-  for (i = 0; i < nap->num_threads; ++i) {
-    struct NaClAppThread *thread = NaClGetThreadMu(nap, i);
-    NaClXMutexLock(&thread->mu);
-    if (i == 0 || rv > thread->dynamic_delete_generation) {
-      rv = thread->dynamic_delete_generation;
+  for (index = 0; index < nap->threads.num_entries; ++index) {
+    struct NaClAppThread *thread = NaClGetThreadMu(nap, (int) index);
+    if (thread != NULL) {
+      NaClXMutexLock(&thread->mu);
+      if (rv > thread->dynamic_delete_generation) {
+        rv = thread->dynamic_delete_generation;
+      }
+      NaClXMutexUnlock(&thread->mu);
     }
-    NaClXMutexUnlock(&thread->mu);
   }
   NaClXMutexUnlock(&nap->threads_mu);
   return rv;

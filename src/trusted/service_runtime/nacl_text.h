@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_TEXT_H_
@@ -30,6 +30,8 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap);
 
 struct NaClDescEffectorShm;
 int NaClDescEffectorShmCtor(struct NaClDescEffectorShm *self);
+
+int NaClMinimumThreadGeneration(struct NaClApp *nap);
 
 int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
                               uint32_t       dest,
