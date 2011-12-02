@@ -4330,9 +4330,9 @@
 {
    bug_96568a
    Memcheck:Leak
-   fun:realloc
+   fun:*alloc
    ...
-   fun:HB_OpenTypeShape
+   fun:HB_OpenType*
    ...
    fun:HB_ShapeItem
    fun:_ZN7WebCore21ComplexTextController11shapeGlyphsEv
