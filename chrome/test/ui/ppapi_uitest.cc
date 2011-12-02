@@ -170,8 +170,6 @@ class PPAPITest : public PPAPITestBase {
     pepper_plugin.append(FILE_PATH_LITERAL(";application/x-ppapi-tests"));
     launch_arguments_.AppendSwitchNative(switches::kRegisterPepperPlugins,
                                          pepper_plugin);
-    launch_arguments_.AppendSwitchASCII(switches::kAllowNaClSocketAPI,
-                                        "127.0.0.1");
   }
 
   std::string BuildQuery(const std::string& base,
@@ -201,8 +199,6 @@ class PPAPINaClTest : public PPAPITestBase {
 
     // Enable running NaCl outside of the store.
     launch_arguments_.AppendSwitch(switches::kEnableNaCl);
-    launch_arguments_.AppendSwitchASCII(switches::kAllowNaClSocketAPI,
-                                        "127.0.0.1");
   }
 
   // Append the correct mode and testcase string
@@ -294,20 +290,6 @@ TEST_PPAPI_NACL_VIA_HTTP(ImageData)
 
 TEST_PPAPI_IN_PROCESS(Buffer)
 TEST_PPAPI_OUT_OF_PROCESS(Buffer)
-
-// TODO(ygorshenin): investigate why
-// TEST_PPAPI_IN_PROCESS(TCPSocketPrivateShared) fails,
-// http://crbug.com/105860.
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(TCPSocketPrivateShared)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(TCPSocketPrivateShared)
-TEST_PPAPI_NACL_VIA_HTTP(TCPSocketPrivateShared)
-
-// TODO(ygorshenin): investigate why
-// TEST_PPAPI_IN_PROCESS(UDPSocketPrivateShared) fails,
-// http://crbug.com/105860.
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(UDPSocketPrivateShared)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivateShared)
-TEST_PPAPI_NACL_VIA_HTTP(UDPSocketPrivateShared)
 
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader)

@@ -14,8 +14,6 @@
 namespace switches {
 
 CONTENT_EXPORT extern const char kAllowFileAccessFromFiles[];
-// TODO(dpolukhin): this doesn't belong in content.
-CONTENT_EXPORT extern const char kAllowNaClSocketAPI[];
 extern const char kAllowSandboxDebugging[];
 extern const char kAuditHandles[];
 extern const char kAuditAllHandles[];

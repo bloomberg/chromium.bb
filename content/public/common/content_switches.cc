@@ -10,10 +10,6 @@ namespace switches {
 // override for developers who need the old behavior for testing.
 const char kAllowFileAccessFromFiles[]      = "allow-file-access-from-files";
 
-// Specifies comma-separated list of extension ids to grant access to TCP/UDP
-// socket APIs.
-const char kAllowNaClSocketAPI[]            = "allow-nacl-socket-api";
-
 // Allows debugging of sandboxed processes (see zygote_main_linux.cc).
 const char kAllowSandboxDebugging[]         = "allow-sandbox-debugging";
 

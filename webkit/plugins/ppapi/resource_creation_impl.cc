@@ -25,9 +25,7 @@
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
-#include "webkit/plugins/ppapi/ppb_tcp_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_transport_impl.h"
-#include "webkit/plugins/ppapi/ppb_udp_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_capture_impl.h"
@@ -235,7 +233,8 @@ PP_Resource ResourceCreationImpl::CreateScrollbar(PP_Instance instance,
 }
 
 PP_Resource ResourceCreationImpl::CreateTCPSocketPrivate(PP_Instance instance) {
-  return PPB_TCPSocket_Private_Impl::CreateResource(instance);
+  // Creating TCP socket resource at the renderer side is not supported.
+  return 0;
 }
 
 PP_Resource ResourceCreationImpl::CreateTransport(PP_Instance instance,
@@ -247,7 +246,8 @@ PP_Resource ResourceCreationImpl::CreateTransport(PP_Instance instance,
 }
 
 PP_Resource ResourceCreationImpl::CreateUDPSocketPrivate(PP_Instance instance) {
-  return PPB_UDPSocket_Private_Impl::CreateResource(instance);
+  // Creating UDP socket resource at the renderer side is not supported.
+  return 0;
 }
 
 PP_Resource ResourceCreationImpl::CreateURLLoader(PP_Instance instance) {
