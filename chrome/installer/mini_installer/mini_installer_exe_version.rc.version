@@ -2,9 +2,12 @@
 //
 // Version
 //
-#include "verrsrc.h"
 
-VS_VERSION_INFO VERSIONINFO
+// Use the ordinal 1 here, to avoid needing to #include a header file
+// to use the VS_VERSION_INFO macro. This header file changes with different
+// SDK versions which causes headaches building in some environments. The
+// VERSIONINFO resource will always be at index 1.
+1 VERSIONINFO
  FILEVERSION @MAJOR@,@MINOR@,@BUILD@,@PATCH@
  PRODUCTVERSION @MAJOR@,@MINOR@,@BUILD@,@PATCH@
  FILEFLAGSMASK 0x17L
