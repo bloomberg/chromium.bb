@@ -37,6 +37,15 @@ extern const char kProtectorHistogramNewSearchProvider[];
 extern const char kProtectorHistogramSearchProviderApplied[];
 // Histogram name to report when user keeps previous default search provider.
 extern const char kProtectorHistogramSearchProviderDiscarded[];
+// Histogram name to report the fallback default search provider when the
+// backup value is invalid or doesn't match an existing provider.
+extern const char kProtectorHistogramSearchProviderFallback[];
+// Histogram name to report when the prepopulated default search provider was
+// missing and has been added for fallback.
+extern const char kProtectorHistogramSearchProviderMissing[];
+// Histogram name to report the default search provider restored by Protector
+// before showing user the bubble.
+extern const char kProtectorHistogramSearchProviderRestored[];
 // Histogram name to report when user ignores search provider change.
 extern const char kProtectorHistogramSearchProviderTimeout[];
 

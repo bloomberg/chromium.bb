@@ -25,6 +25,12 @@ const char kProtectorHistogramSearchProviderApplied[] =
     "Protector.SearchProvider.Applied";
 const char kProtectorHistogramSearchProviderDiscarded[] =
     "Protector.SearchProvider.Discarded";
+const char kProtectorHistogramSearchProviderFallback[] =
+    "Protector.SearchProvider.Fallback";
+const char kProtectorHistogramSearchProviderMissing[] =
+    "Protector.SearchProvider.Missing";
+const char kProtectorHistogramSearchProviderRestored[] =
+    "Protector.SearchProvider.Restored";
 const char kProtectorHistogramSearchProviderTimeout[] =
     "Protector.SearchProvider.Timeout";
 
