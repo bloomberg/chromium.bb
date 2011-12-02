@@ -414,6 +414,14 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   // Relay a request from assistive technology to set focus to a given node.
   void AccessibilitySetFocus(int object_id);
 
+  // Relay a request from assistive technology to scroll.
+  void AccessibilityChangeScrollPosition(
+      int acc_obj_id, int scroll_x, int scroll_y);
+
+  // Relay a request from assistive technology to set text selection.
+  void AccessibilitySetTextSelection(
+      int acc_obj_id, int start_offset, int end_offset);
+
   // Executes the edit command on the RenderView.
   void ExecuteEditCommand(const std::string& command,
                           const std::string& value);

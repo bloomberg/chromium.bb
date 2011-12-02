@@ -220,6 +220,10 @@ class RenderWidgetHostViewWin
   // Implementation of BrowserAccessibilityDelegate:
   virtual void SetAccessibilityFocus(int acc_obj_id) OVERRIDE;
   virtual void AccessibilityDoDefaultAction(int acc_obj_id) OVERRIDE;
+  virtual void AccessibilityChangeScrollPosition(
+      int acc_obj_id, int scroll_x, int scroll_y) OVERRIDE;
+  virtual void AccessibilitySetTextSelection(
+      int acc_obj_id, int start_offset, int end_offset) OVERRIDE;
 
  protected:
   // Windows Message Handlers

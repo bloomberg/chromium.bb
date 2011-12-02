@@ -206,6 +206,22 @@ void BrowserAccessibilityManager::DoDefaultAction(
     delegate_->AccessibilityDoDefaultAction(node.renderer_id());
 }
 
+void BrowserAccessibilityManager::ChangeScrollPosition(
+    const BrowserAccessibility& node, int scroll_x, int scroll_y) {
+  if (delegate_) {
+    delegate_->AccessibilityChangeScrollPosition(
+        node.renderer_id(), scroll_x, scroll_y);
+  }
+}
+
+void BrowserAccessibilityManager::SetTextSelection(
+    const BrowserAccessibility& node, int start_offset, int end_offset) {
+  if (delegate_) {
+    delegate_->AccessibilitySetTextSelection(
+        node.renderer_id(), start_offset, end_offset);
+  }
+}
+
 gfx::Rect BrowserAccessibilityManager::GetViewBounds() {
   if (delegate_)
     return delegate_->GetViewBounds();

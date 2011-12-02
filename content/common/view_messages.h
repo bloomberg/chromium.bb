@@ -1100,6 +1100,20 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetAccessibilityFocus,
 IPC_MESSAGE_ROUTED1(ViewMsg_AccessibilityDoDefaultAction,
                     int /* object id */)
 
+// Relay a request from assistive technology to change the scroll position
+// of a scrollable container (like the whole page, an iframe, etc.).
+IPC_MESSAGE_ROUTED3(ViewMsg_AccessibilityChangeScrollPosition,
+                    int /* object id */,
+                    int /* New x scroll position */,
+                    int /* New y scroll position */)
+
+// Relay a request from assistive technology to set the cursor or
+// selection within an editable text element.
+IPC_MESSAGE_ROUTED3(ViewMsg_AccessibilitySetTextSelection,
+                    int /* object id */,
+                    int /* New start offset */,
+                    int /* New end offset */)
+
 // Tells the render view that a ViewHostMsg_AccessibilityNotifications
 // message was processed and it can send addition notifications.
 IPC_MESSAGE_ROUTED0(ViewMsg_AccessibilityNotifications_ACK)

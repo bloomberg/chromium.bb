@@ -2072,6 +2072,24 @@ void RenderWidgetHostViewWin::AccessibilityDoDefaultAction(int acc_obj_id) {
   render_widget_host_->AccessibilityDoDefaultAction(acc_obj_id);
 }
 
+void RenderWidgetHostViewWin::AccessibilityChangeScrollPosition(
+    int acc_obj_id, int scroll_x, int scroll_y) {
+  if (!render_widget_host_)
+    return;
+
+  render_widget_host_->AccessibilityChangeScrollPosition(
+      acc_obj_id, scroll_x, scroll_y);
+}
+
+void RenderWidgetHostViewWin::AccessibilitySetTextSelection(
+    int acc_obj_id, int start_offset, int end_offset) {
+  if (!render_widget_host_)
+    return;
+
+  render_widget_host_->AccessibilitySetTextSelection(
+      acc_obj_id, start_offset, end_offset);
+}
+
 IAccessible* RenderWidgetHostViewWin::GetIAccessible() {
   if (render_widget_host_ && !render_widget_host_->renderer_accessible()) {
     // Attempt to detect screen readers by sending an event with our custom id.

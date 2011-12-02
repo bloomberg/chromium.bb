@@ -82,8 +82,11 @@ class RendererAccessibility : public content::RenderViewObserver {
   // Handlers for messages from the browser to the renderer.
   void OnAccessibilityDoDefaultAction(int acc_obj_id);
   void OnAccessibilityNotificationsAck();
+  void OnChangeScrollPosition(int acc_obj_id, int scroll_x, int scroll_y);
   void OnEnableAccessibility();
   void OnSetAccessibilityFocus(int acc_obj_id);
+
+  void OnSetTextSelection(int acc_obj_id, int start_offset, int end_offset);
 
   // Whether or not this notification typically needs to send
   // updates to its children, too.

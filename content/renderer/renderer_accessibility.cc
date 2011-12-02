@@ -10,6 +10,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/webaccessibility.h"
 
@@ -18,6 +20,7 @@ using WebKit::WebAccessibilityObject;
 using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebNode;
+using WebKit::WebSize;
 using WebKit::WebView;
 using webkit_glue::WebAccessibility;
 
@@ -104,6 +107,10 @@ bool RendererAccessibility::OnMessageReceived(const IPC::Message& message) {
                         OnAccessibilityDoDefaultAction)
     IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityNotifications_ACK,
                         OnAccessibilityNotificationsAck)
+    IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityChangeScrollPosition,
+                        OnChangeScrollPosition)
+    IPC_MESSAGE_HANDLER(ViewMsg_AccessibilitySetTextSelection,
+                        OnSetTextSelection)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -371,6 +378,75 @@ void RendererAccessibility::OnAccessibilityDoDefaultAction(int acc_obj_id) {
   }
 
   obj.performDefaultAction();
+}
+
+void RendererAccessibility::OnChangeScrollPosition(
+    int acc_obj_id, int scroll_x, int scroll_y) {
+  if (!WebAccessibilityObject::accessibilityEnabled())
+    return;
+
+  const WebDocument& document = GetMainDocument();
+  if (document.isNull())
+    return;
+
+  WebAccessibilityObject root = document.accessibilityObject();
+
+  // TODO(dmazzoni): Support scrolling of any scrollable container,
+  // not just the main document frame.
+  if (acc_obj_id != root.axID())
+    return;
+
+  WebFrame* frame = document.frame();
+  if (!frame)
+    return;
+
+  WebSize min_offset = frame->minimumScrollOffset();
+  WebSize max_offset = frame->maximumScrollOffset();
+  scroll_x = std::max(min_offset.width, scroll_x);
+  scroll_x = std::min(max_offset.width, scroll_x);
+  scroll_y = std::max(min_offset.height, scroll_y);
+  scroll_y = std::min(max_offset.height, scroll_y);
+
+  frame->setScrollOffset(WebSize(scroll_x, scroll_y));
+  if (frame->view())
+    frame->view()->layout();
+
+  // Make sure the browser gets a notification when the scroll
+  // position actually changes.
+  // TODO(dmazzoni): remove this once this bug is fixed:
+  // https://bugs.webkit.org/show_bug.cgi?id=73460
+  PostAccessibilityNotification(
+      root,
+      WebKit::WebAccessibilityNotificationLayoutComplete);
+}
+
+void RendererAccessibility::OnSetTextSelection(
+    int acc_obj_id, int start_offset, int end_offset) {
+  if (!WebAccessibilityObject::accessibilityEnabled())
+    return;
+
+  const WebDocument& document = GetMainDocument();
+  if (document.isNull())
+    return;
+
+  WebAccessibilityObject obj = document.accessibilityObjectFromID(acc_obj_id);
+  if (!obj.isValid()) {
+#ifndef NDEBUG
+    if (logging_)
+      LOG(WARNING) << "SetTextSelection on invalid object id " << acc_obj_id;
+#endif
+    return;
+  }
+
+  // TODO(dmazzoni): support elements other than <input>.
+  WebKit::WebNode node = obj.node();
+  if (!node.isNull() && node.isElementNode()) {
+    WebKit::WebElement element = node.to<WebKit::WebElement>();
+    WebKit::WebInputElement* input_element =
+        WebKit::toWebInputElement(&element);
+    if (input_element && input_element->isTextField())
+      input_element->setSelectionRange(start_offset, end_offset);
+  }
 }
 
 void RendererAccessibility::OnAccessibilityNotificationsAck() {

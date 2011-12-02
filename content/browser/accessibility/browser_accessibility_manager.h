@@ -30,6 +30,10 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual ~BrowserAccessibilityDelegate() {}
   virtual void SetAccessibilityFocus(int acc_obj_id) = 0;
   virtual void AccessibilityDoDefaultAction(int acc_obj_id) = 0;
+  virtual void AccessibilityChangeScrollPosition(
+      int acc_obj_id, int scroll_x, int scroll_y) = 0;
+  virtual void AccessibilitySetTextSelection(
+      int acc_obj_id, int start_offset, int end_offset) = 0;
   virtual bool HasFocus() const = 0;
   virtual gfx::Rect GetViewBounds() const = 0;
 };
@@ -99,6 +103,14 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
 
   // Tell the renderer to do the default action for this node.
   void DoDefaultAction(const BrowserAccessibility& node);
+
+  // Tell the renderer to scroll this node to the given position.
+  void ChangeScrollPosition(
+      const BrowserAccessibility& node, int scroll_x, int scroll_y);
+
+  // Tell the renderer to set the text selection on a node.
+  void SetTextSelection(
+      const BrowserAccessibility& node, int start_offset, int end_offset);
 
   // Retrieve the bounds of the parent View in screen coordinates.
   gfx::Rect GetViewBounds();

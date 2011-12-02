@@ -1445,6 +1445,18 @@ void RenderWidgetHost::AccessibilitySetFocus(int object_id) {
   Send(new ViewMsg_SetAccessibilityFocus(routing_id(), object_id));
 }
 
+void RenderWidgetHost::AccessibilityChangeScrollPosition(
+    int object_id, int scroll_x, int scroll_y) {
+  Send(new ViewMsg_AccessibilityChangeScrollPosition(
+      routing_id(), object_id, scroll_x, scroll_y));
+}
+
+void RenderWidgetHost::AccessibilitySetTextSelection(
+    int object_id, int start_offset, int end_offset) {
+  Send(new ViewMsg_AccessibilitySetTextSelection(
+      routing_id(), object_id, start_offset, end_offset));
+}
+
 void RenderWidgetHost::ExecuteEditCommand(const std::string& command,
                                           const std::string& value) {
   Send(new ViewMsg_ExecuteEditCommand(routing_id(), command, value));
