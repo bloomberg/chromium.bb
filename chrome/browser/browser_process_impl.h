@@ -59,8 +59,6 @@ class BrowserProcessImpl : public BrowserProcess,
   void PreStopThread(content::BrowserThread::ID identifier);
   void PostStopThread(content::BrowserThread::ID identifier);
 
-  base::Thread* process_launcher_thread();
-
   // BrowserProcess methods
   virtual void EndSession() OVERRIDE;
   virtual ResourceDispatcherHost* resource_dispatcher_host() OVERRIDE;
@@ -68,7 +66,6 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual IOThread* io_thread() OVERRIDE;
   virtual base::Thread* file_thread() OVERRIDE;
   virtual base::Thread* db_thread() OVERRIDE;
-  virtual base::Thread* cache_thread() OVERRIDE;
   virtual WatchDogThread* watchdog_thread() OVERRIDE;
 #if defined(OS_CHROMEOS)
   virtual base::Thread* web_socket_proxy_thread() OVERRIDE;

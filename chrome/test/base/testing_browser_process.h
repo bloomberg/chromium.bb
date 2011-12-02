@@ -51,7 +51,6 @@ class TestingBrowserProcess : public BrowserProcess {
 
   virtual base::Thread* file_thread() OVERRIDE;
   virtual base::Thread* db_thread() OVERRIDE;
-  virtual base::Thread* cache_thread() OVERRIDE;
   virtual WatchDogThread* watchdog_thread() OVERRIDE;
 
 #if defined(OS_CHROMEOS)

@@ -51,10 +51,6 @@ base::Thread* TestingBrowserProcess::db_thread() {
   return NULL;
 }
 
-base::Thread* TestingBrowserProcess::cache_thread() {
-  return NULL;
-}
-
 WatchDogThread* TestingBrowserProcess::watchdog_thread() {
   return NULL;
 }

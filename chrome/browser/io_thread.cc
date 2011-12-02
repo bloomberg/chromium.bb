@@ -589,11 +589,6 @@ void IOThread::ClearHostCache() {
     host_cache->clear();
 }
 
-MessageLoop* IOThread::message_loop() const {
-  return BrowserThread::UnsafeGetBrowserThread(
-      BrowserThread::IO)->message_loop();
-}
-
 net::SSLConfigService* IOThread::GetSSLConfigService() {
   return ssl_config_service_manager_->Get();
 }
@@ -602,7 +597,7 @@ void IOThread::InitSystemRequestContext() {
   if (system_url_request_context_getter_)
     return;
   // If we're in unit_tests, IOThread may not be run.
-  if (!message_loop())
+  if (!BrowserThread::IsMessageLoopValid(BrowserThread::IO))
     return;
   ChromeProxyConfigService* proxy_config_service =
       ProxyServiceFactory::CreateProxyConfigService();
@@ -615,9 +610,11 @@ void IOThread::InitSystemRequestContext() {
       new SystemURLRequestContextGetter(this);
   // Safe to post an unretained this pointer, since IOThread is
   // guaranteed to outlive the IO BrowserThread.
-  message_loop()->PostTask(
-      FROM_HERE, base::Bind(&IOThread::InitSystemRequestContextOnIOThread,
-                            base::Unretained(this)));
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&IOThread::InitSystemRequestContextOnIOThread,
+                 base::Unretained(this)));
 }
 
 void IOThread::InitSystemRequestContextOnIOThread() {

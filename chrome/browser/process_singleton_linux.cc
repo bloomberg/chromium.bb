@@ -995,15 +995,13 @@ bool ProcessSingleton::Create() {
   if (listen(sock, 5) < 0)
     NOTREACHED() << "listen failed: " << safe_strerror(errno);
 
-  // Normally we would use BrowserThread, but the IO thread hasn't started yet.
-  // Using g_browser_process, we start the thread so we can listen on the
-  // socket.
-  MessageLoop* ml = g_browser_process->io_thread()->message_loop();
-  DCHECK(ml);
-  ml->PostTask(FROM_HERE, base::Bind(
-    &ProcessSingleton::LinuxWatcher::StartListening,
-    watcher_.get(),
-    sock));
+  DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::IO));
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&ProcessSingleton::LinuxWatcher::StartListening,
+                 watcher_.get(),
+                 sock));
 
   return true;
 }

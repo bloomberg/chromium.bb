@@ -332,7 +332,8 @@ unsigned int BrowserProcessImpl::ReleaseModule() {
     // of it on shutdown for valid reasons.
     base::ThreadRestrictions::SetIOAllowed(true);
     CHECK(!BrowserList::GetLastActive());
-    io_thread()->message_loop()->PostTask(
+    BrowserThread::PostTask(
+        BrowserThread::IO,
         FROM_HERE,
         base::IgnoreReturn<bool>(
             base::Bind(&base::ThreadRestrictions::SetIOAllowed, true)));
@@ -422,16 +423,6 @@ base::Thread* BrowserProcessImpl::file_thread() {
 base::Thread* BrowserProcessImpl::db_thread() {
   DCHECK(CalledOnValidThread());
   return BrowserThread::UnsafeGetBrowserThread(BrowserThread::DB);
-}
-
-base::Thread* BrowserProcessImpl::process_launcher_thread() {
-  DCHECK(CalledOnValidThread());
-  return BrowserThread::UnsafeGetBrowserThread(BrowserThread::PROCESS_LAUNCHER);
-}
-
-base::Thread* BrowserProcessImpl::cache_thread() {
-  DCHECK(CalledOnValidThread());
-  return BrowserThread::UnsafeGetBrowserThread(BrowserThread::CACHE);
 }
 
 WatchDogThread* BrowserProcessImpl::watchdog_thread() {

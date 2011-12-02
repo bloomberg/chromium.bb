@@ -401,6 +401,10 @@ base::Thread* BrowserThread::UnsafeGetBrowserThread(ID identifier) {
   return thread;
 }
 
+MessageLoop* BrowserThread::UnsafeGetMessageLoop(ID identifier) {
+  return UnsafeGetBrowserThread(identifier)->message_loop();
+}
+
 void BrowserThread::SetDelegate(ID identifier,
                                 BrowserThreadDelegate* delegate) {
   using base::subtle::AtomicWord;

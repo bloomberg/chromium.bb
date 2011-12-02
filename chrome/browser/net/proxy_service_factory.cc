@@ -46,8 +46,8 @@ ChromeProxyConfigService* ProxyServiceFactory::CreateProxyConfigService() {
   // that code be moved to chrome/browser instead of being in net, so that it
   // can use BrowserThread instead of raw MessageLoop pointers? See bug 25354.
   base_service = net::ProxyService::CreateSystemProxyConfigService(
-      g_browser_process->io_thread()->message_loop(),
-      g_browser_process->file_thread()->message_loop());
+      BrowserThread::UnsafeGetMessageLoop(BrowserThread::IO),
+      BrowserThread::UnsafeGetMessageLoop(BrowserThread::FILE));
 #endif  // !defined(OS_CHROMEOS)
 
   return new ChromeProxyConfigService(base_service);

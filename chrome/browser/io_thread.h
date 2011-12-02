@@ -47,8 +47,7 @@ class URLSecurityManager;
 }  // namespace net
 
 // Contains state associated with, initialized and cleaned up on, and
-// primarily used on, the IO thread.  Also acts as a convenience
-// accessor to the Thread object for the IO thread.
+// primarily used on, the IO thread.
 class IOThread : public content::BrowserThreadDelegate {
  public:
   struct Globals {
@@ -114,11 +113,6 @@ class IOThread : public content::BrowserThreadDelegate {
   // visited sites on about:net-internals/#dns and about:dns pages.  Must be
   // called on the IO thread.
   void ClearHostCache();
-
-  // Convenience method similar to base::Thread, giving access to the
-  // actual IO thread.
-  // TODO(joi): Remove this in follow-up changes.
-  MessageLoop* message_loop() const;
 
  private:
   // BrowserThreadDelegate implementation, runs on the IO thread.

@@ -134,9 +134,6 @@ class BrowserProcess {
   // database. History has its own thread since it has much higher traffic.
   virtual base::Thread* db_thread() = 0;
 
-  // Returns the thread that is used for background cache operations.
-  virtual base::Thread* cache_thread() = 0;
-
   // Returns the thread that is used for health check of all browser threads.
   virtual WatchDogThread* watchdog_thread() = 0;
 

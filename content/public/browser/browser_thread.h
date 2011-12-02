@@ -17,6 +17,8 @@
 #include "base/logging.h"
 #endif  // UNIT_TEST
 
+class MessageLoop;
+
 namespace base {
 class MessageLoopProxy;
 class Thread;
@@ -179,14 +181,31 @@ class CONTENT_EXPORT BrowserThread {
   // with a command-line that would specify a browser process (e.g. an
   // empty command line).
   //
-  // This is unsafe as your pointer may become invalid close to
-  // shutdown.
+  // It is unsafe to store this pointer as it may become invalid close
+  // to shutdown.
   //
   // TODO(joi): Remove this once clients such as BrowserProcessImpl
   // (and classes that call things like
   // g_browser_process->file_thread()) are switched to using
   // MessageLoopProxy.
   static base::Thread* UnsafeGetBrowserThread(ID identifier);
+
+  // Gets the MessageLoop for the specified thread, or NULL if the
+  // thread has not been created (or has been destroyed during
+  // shutdown).
+  //
+  // Before calling this, you must have called content::ContentMain
+  // with a command-line that would specify a browser process (e.g. an
+  // empty command line).
+  //
+  // It is unsafe to store this pointer as it may become invalid close
+  // to shutdown.
+  //
+  // TODO(joi): Remove this once clients such as BrowserProcessImpl
+  // (and classes that call things like
+  // g_browser_process->file_thread()) are switched to using
+  // MessageLoopProxy.
+  static MessageLoop* UnsafeGetMessageLoop(ID identifier);
 
   // Sets the delegate for the specified BrowserThread.
   //
