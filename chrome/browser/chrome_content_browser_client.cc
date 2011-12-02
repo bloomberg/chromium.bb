@@ -564,6 +564,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
     static const char* const kSwitchNames[] = {
       switches::kAllowHTTPBackgroundPage,
+      switches::kAllowLegacyExtensionManifests,
       switches::kAllowScriptingGallery,
       switches::kAppsCheckoutURL,
       switches::kAppsGalleryURL,

@@ -1413,7 +1413,9 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
   }
 
   if (flags & REQUIRE_MODERN_MANIFEST_VERSION &&
-      manifest_version() < kModernManifestVersion) {
+      manifest_version() < kModernManifestVersion &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+                switches::kAllowLegacyExtensionManifests)) {
     *error = errors::kInvalidManifestVersion;
     return false;
   }
