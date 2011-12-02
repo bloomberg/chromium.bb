@@ -52,6 +52,8 @@ struct drm_compositor {
 	uint32_t crtc_allocator;
 	uint32_t connector_allocator;
 	struct tty *tty;
+
+	uint32_t prev_state;
 };
 
 struct drm_mode {
@@ -788,11 +790,12 @@ vt_func(struct wlsc_compositor *compositor, int event)
 	case TTY_ENTER_VT:
 		compositor->focus = 1;
 		drmSetMaster(ec->drm.fd);
-		compositor->state = WLSC_COMPOSITOR_ACTIVE;
+		compositor->state = ec->prev_state;
 		wlsc_compositor_damage_all(compositor);
 		break;
 	case TTY_LEAVE_VT:
 		compositor->focus = 0;
+		ec->prev_state = compositor->state;
 		compositor->state = WLSC_COMPOSITOR_SLEEPING;
 
 		wl_list_for_each(output, &ec->base.output_list, link)
@@ -864,6 +867,8 @@ drm_compositor_create(struct wl_display *display,
 	ec->base.create_cursor_image = drm_compositor_create_cursor_image;
 
 	ec->base.focus = 1;
+
+	ec->prev_state = WLSC_COMPOSITOR_ACTIVE;
 
 	glGenFramebuffers(1, &ec->base.fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, ec->base.fbo);

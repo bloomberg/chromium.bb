@@ -1305,7 +1305,7 @@ wlsc_compositor_wake(struct wlsc_compositor *compositor)
 WL_EXPORT void
 wlsc_compositor_activity(struct wlsc_compositor *compositor)
 {
-	if (compositor->state != WLSC_COMPOSITOR_SLEEPING) {
+	if (compositor->state == WLSC_COMPOSITOR_ACTIVE) {
 		wlsc_compositor_wake(compositor);
 	} else {
 		compositor->shell->unlock(compositor->shell);

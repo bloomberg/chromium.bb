@@ -865,8 +865,10 @@ lock(struct wlsc_shell *base)
 	wl_list_for_each(shsurf, &shell->screensaver.surfaces, link)
 		show_screensaver(shell, shsurf);
 
-	if (!wl_list_empty(&shell->screensaver.surfaces))
+	if (!wl_list_empty(&shell->screensaver.surfaces)) {
 		wlsc_compositor_wake(shell->compositor);
+		shell->compositor->state = WLSC_COMPOSITOR_IDLE;
+	}
 
 	/* reset pointer foci */
 	wlsc_compositor_repick(shell->compositor);
@@ -983,6 +985,8 @@ map(struct wlsc_shell *base,
 		if (shell->locked) {
 			show_screensaver(shell, shsurf);
 			wlsc_compositor_wake(compositor);
+			if (!shell->lock_surface)
+				compositor->state = WLSC_COMPOSITOR_IDLE;
 		}
 		do_configure = 0;
 		break;

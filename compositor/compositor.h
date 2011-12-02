@@ -183,7 +183,8 @@ struct wlsc_shell {
 
 enum {
 	WLSC_COMPOSITOR_ACTIVE,
-	WLSC_COMPOSITOR_SLEEPING
+	WLSC_COMPOSITOR_IDLE,		/* shell->unlock called on activity */
+	WLSC_COMPOSITOR_SLEEPING	/* no rendering, no frame events */
 };
 
 struct wlsc_compositor {
