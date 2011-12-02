@@ -4414,7 +4414,7 @@
    bug_99304
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN2v88internal8SkipList6UpdateEPhi
+   ...
    fun:_ZN2v88internal10PagedSpace11AllocateRawEi
    fun:_ZN2v88internal12Deserializer8AllocateEiPNS0_5SpaceEi
    fun:_ZN2v88internal12Deserializer10ReadObjectEiPNS0_5SpaceEPPNS0_6ObjectE
