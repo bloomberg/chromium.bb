@@ -784,7 +784,7 @@ TEST_F(ContextMenuTest, CFTxtFieldCopy) {
 }
 
 // Test CF text field context menu - paste.
-TEST_F(ContextMenuTest, CFTxtFieldPaste) {
+TEST_F(ContextMenuTest, DISABLED_CFTxtFieldPaste) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   AccObjectMatcher txtfield_matcher(L"", L"editable text");
 
