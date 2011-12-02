@@ -190,9 +190,13 @@ struct WEBKIT_GLUE_EXPORT WebAccessibility {
   };
 
   enum IntAttribute {
-    // Document attributes.
-    ATTR_DOC_SCROLLX,
-    ATTR_DOC_SCROLLY,
+    // Scrollable container attributes.
+    ATTR_SCROLL_X,
+    ATTR_SCROLL_X_MIN,
+    ATTR_SCROLL_X_MAX,
+    ATTR_SCROLL_Y,
+    ATTR_SCROLL_Y_MIN,
+    ATTR_SCROLL_Y_MAX,
 
     // Editable text attributes.
     ATTR_TEXT_SEL_START,

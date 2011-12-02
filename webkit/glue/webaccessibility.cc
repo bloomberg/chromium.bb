@@ -582,11 +582,23 @@ std::string WebAccessibility::DebugString(bool recursive,
        ++iter) {
     std::string value = IntToString(iter->second);
     switch (iter->first) {
-      case ATTR_DOC_SCROLLX:
-        result += " scrollx=" + value;
+      case ATTR_SCROLL_X:
+        result += " scroll_x=" + value;
         break;
-      case ATTR_DOC_SCROLLY:
-        result += " scrolly=" + value;
+      case ATTR_SCROLL_X_MIN:
+        result += " scroll_x_min=" + value;
+        break;
+      case ATTR_SCROLL_X_MAX:
+        result += " scroll_x_max=" + value;
+        break;
+      case ATTR_SCROLL_Y:
+        result += " scroll_y=" + value;
+        break;
+      case ATTR_SCROLL_Y_MIN:
+        result += " scroll_y_min=" + value;
+        break;
+      case ATTR_SCROLL_Y_MAX:
+        result += " scroll_y_max=" + value;
         break;
       case ATTR_HIERARCHICAL_LEVEL:
         result += " level=" + value;
@@ -924,8 +936,16 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
       string_attributes[ATTR_DOC_DOCTYPE] = doctype.name();
 
     const gfx::Size& scroll_offset = document.frame()->scrollOffset();
-    int_attributes[ATTR_DOC_SCROLLX] = scroll_offset.width();
-    int_attributes[ATTR_DOC_SCROLLY] = scroll_offset.height();
+    int_attributes[ATTR_SCROLL_X] = scroll_offset.width();
+    int_attributes[ATTR_SCROLL_Y] = scroll_offset.height();
+
+    const gfx::Size& min_offset = document.frame()->minimumScrollOffset();
+    int_attributes[ATTR_SCROLL_X_MIN] = min_offset.width();
+    int_attributes[ATTR_SCROLL_Y_MIN] = min_offset.height();
+
+    const gfx::Size& max_offset = document.frame()->maximumScrollOffset();
+    int_attributes[ATTR_SCROLL_X_MAX] = max_offset.width();
+    int_attributes[ATTR_SCROLL_Y_MAX] = max_offset.height();
   }
 
   if (role == WebAccessibility::ROLE_TABLE) {
