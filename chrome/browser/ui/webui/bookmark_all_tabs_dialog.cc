@@ -31,7 +31,7 @@ class BookmarkAllTabsDialogBuilder : public ExtensionDialogObserver {
   virtual ~BookmarkAllTabsDialogBuilder();
 
   // ExtensionDialog::Observer implementation.
-  virtual void ExtensionDialogIsClosing(ExtensionDialog* dialog) OVERRIDE;
+  virtual void ExtensionDialogClosing(ExtensionDialog* dialog) OVERRIDE;
 
   void Show();
 
@@ -53,7 +53,7 @@ BookmarkAllTabsDialogBuilder::~BookmarkAllTabsDialogBuilder() {
     extension_dialog_->ObserverDestroyed();
 }
 
-void BookmarkAllTabsDialogBuilder::ExtensionDialogIsClosing(
+void BookmarkAllTabsDialogBuilder::ExtensionDialogClosing(
     ExtensionDialog* dialog) {
   extension_dialog_ = NULL;
   delete this;

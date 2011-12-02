@@ -34,9 +34,6 @@ class PendingDialog {
   static PendingDialog* GetInstance();
   void Add(int32 tab_id, scoped_refptr<SelectFileDialogExtension> dialog);
   void Remove(int32 tab_id);
-  // Returns scoped_refptr because in some cases, when the listener receives
-  // the callback, it deletes itself and the reference to the dialog, and
-  // otherwise we end up calling Close on a deleted dialog.
   scoped_refptr<SelectFileDialogExtension> Find(int32 tab_id);
 
  private:
@@ -56,7 +53,7 @@ void PendingDialog::Add(int32 tab_id,
   if (map_.find(tab_id) == map_.end())
     map_.insert(std::make_pair(tab_id, dialog));
   else
-    LOG(WARNING) << "Duplicate pending dialog " << tab_id;
+    DLOG(WARNING) << "Duplicate pending dialog " << tab_id;
 }
 
 void PendingDialog::Remove(int32 tab_id) {
@@ -65,10 +62,8 @@ void PendingDialog::Remove(int32 tab_id) {
 
 scoped_refptr<SelectFileDialogExtension> PendingDialog::Find(int32 tab_id) {
   Map::const_iterator it = map_.find(tab_id);
-  if (it == map_.end()) {
-    LOG(WARNING) << "Pending dialog not found " << tab_id;
+  if (it == map_.end())
     return NULL;
-  }
   return it->second;
 }
 
@@ -96,9 +91,11 @@ SelectFileDialogExtension* SelectFileDialogExtension::Create(
 SelectFileDialogExtension::SelectFileDialogExtension(Listener* listener)
     : SelectFileDialog(listener),
       has_multiple_file_type_choices_(false),
-      params_(NULL),
       tab_id_(0),
-      owner_window_(0) {
+      owner_window_(0),
+      selection_type_(CANCEL),
+      selection_index_(0),
+      params_(NULL) {
 }
 
 SelectFileDialogExtension::~SelectFileDialogExtension() {
@@ -117,18 +114,14 @@ void SelectFileDialogExtension::ListenerDestroyed() {
   PendingDialog::GetInstance()->Remove(tab_id_);
 }
 
-void SelectFileDialogExtension::ExtensionDialogIsClosing(
+void SelectFileDialogExtension::ExtensionDialogClosing(
     ExtensionDialog* dialog) {
   owner_window_ = NULL;
   // Release our reference to the dialog to allow it to close.
   extension_dialog_ = NULL;
   PendingDialog::GetInstance()->Remove(tab_id_);
-}
-
-void SelectFileDialogExtension::Close() {
-  if (extension_dialog_)
-    extension_dialog_->Close();
-  PendingDialog::GetInstance()->Remove(tab_id_);
+  // Actually invoke the appropriate callback on our listener.
+  NotifyListener();
 }
 
 // static
@@ -136,11 +129,12 @@ void SelectFileDialogExtension::OnFileSelected(
     int32 tab_id, const FilePath& path, int index) {
   scoped_refptr<SelectFileDialogExtension> dialog =
       PendingDialog::GetInstance()->Find(tab_id);
-  if (dialog) {
-    DCHECK(dialog->listener_);
-    dialog->listener_->FileSelected(path, index, dialog->params_);
-    dialog->Close();
-  }
+  if (!dialog)
+    return;
+  dialog->selection_type_ = SINGLE_FILE;
+  dialog->selection_files_.clear();
+  dialog->selection_files_.push_back(path);
+  dialog->selection_index_ = index;
 }
 
 // static
@@ -148,28 +142,47 @@ void SelectFileDialogExtension::OnMultiFilesSelected(
     int32 tab_id, const std::vector<FilePath>& files) {
   scoped_refptr<SelectFileDialogExtension> dialog =
       PendingDialog::GetInstance()->Find(tab_id);
-  if (dialog) {
-    DCHECK(dialog->listener_);
-    dialog->listener_->MultiFilesSelected(files, dialog->params_);
-    dialog->Close();
-  }
+  if (!dialog)
+    return;
+  dialog->selection_type_ = MULTIPLE_FILES;
+  dialog->selection_files_ = files;
+  dialog->selection_index_ = 0;
 }
 
 // static
 void SelectFileDialogExtension::OnFileSelectionCanceled(int32 tab_id) {
   scoped_refptr<SelectFileDialogExtension> dialog =
       PendingDialog::GetInstance()->Find(tab_id);
-  if (dialog) {
-    DCHECK(dialog->listener_);
-    dialog->listener_->FileSelectionCanceled(dialog->params_);
-    dialog->Close();
-  }
+  if (!dialog)
+    return;
+  dialog->selection_type_ = CANCEL;
+  dialog->selection_files_.clear();
+  dialog->selection_index_ = 0;
 }
 
 RenderViewHost* SelectFileDialogExtension::GetRenderViewHost() {
   if (extension_dialog_)
     return extension_dialog_->host()->render_view_host();
   return NULL;
+}
+
+void SelectFileDialogExtension::NotifyListener() {
+  if (!listener_)
+    return;
+  switch (selection_type_) {
+    case CANCEL:
+      listener_->FileSelectionCanceled(params_);
+      break;
+    case SINGLE_FILE:
+      listener_->FileSelected(selection_files_[0], selection_index_, params_);
+      break;
+    case MULTIPLE_FILES:
+      listener_->MultiFilesSelected(selection_files_, params_);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 void SelectFileDialogExtension::AddPending(int32 tab_id) {
@@ -212,8 +225,10 @@ void SelectFileDialogExtension::SelectFileImpl(
   // Check if we have another dialog opened in the tab. It's unlikely, but
   // possible.
   int32 tab_id = tab ? tab->restore_tab_helper()->session_id().id() : 0;
-  if (PendingExists(tab_id))
+  if (PendingExists(tab_id)) {
+    DLOG(WARNING) << "Pending dialog exists with id " << tab_id;
     return;
+  }
 
   FilePath virtual_path;
   if (!file_manager_util::ConvertFileToRelativeFileSystemPath(

@@ -139,7 +139,7 @@ string16 ExtensionDialog::GetWindowTitle() const {
 
 void ExtensionDialog::WindowClosing() {
   if (observer_)
-    observer_->ExtensionDialogIsClosing(this);
+    observer_->ExtensionDialogClosing(this);
 }
 
 void ExtensionDialog::DeleteDelegate() {

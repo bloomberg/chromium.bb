@@ -3725,40 +3725,40 @@ FileManager.prototype = {
   };
 
   /**
-   * Handle a click of the cancel button.  Closes the window.  Does not return.
+   * Handle a click of the cancel button.  Closes the window.
    * TODO(jamescook): Make unload handler work automatically, crbug.com/104811
    *
    * @param {Event} event The click event.
    */
   FileManager.prototype.onCancel_ = function(event) {
-    this.onUnload_();
-    // Closes the window and does not return.
     chrome.fileBrowserPrivate.cancelDialog();
+    this.onUnload_();
+    window.close();
   };
 
   /**
-   * Selects a file.  Closes the window.  Does not return.
+   * Selects a file.  Closes the window.
    * TODO(jamescook): Make unload handler work automatically, crbug.com/104811
    *
    * @param {string} fileUrl The filename as a URL.
    * @param {number} filterIndex The integer file filter index.
    */
   FileManager.prototype.selectFile_ = function(fileUrl, filterIndex) {
-    this.onUnload_();
-    // Closes the window and does not return.
     chrome.fileBrowserPrivate.selectFile(fileUrl, filterIndex);
+    this.onUnload_();
+    window.close();
   };
 
   /**
-   * Selects multiple files.  Closes the window.  Does not return.
+   * Selects multiple files.  Closes the window.
    * TODO(jamescook): Make unload handler work automatically, crbug.com/104811
    *
    * @param {Array.<string>} fileUrls Array of filename URLs.
    */
   FileManager.prototype.selectFiles_ = function(fileUrls) {
-    this.onUnload_();
-    // Closes the window and does not return.
     chrome.fileBrowserPrivate.selectFiles(fileUrls);
+    this.onUnload_();
+    window.close();
   };
 
   /**

@@ -120,7 +120,7 @@ class HtmlDialogUI : public ChromeWebUI {
 // Displays external URL contents inside a modal HTML dialog.
 //
 // Intended to be the place to collect the settings and lockdowns
-// necessary for running external UI conponents securely (e.g., the
+// necessary for running external UI components securely (e.g., the
 // cloud print dialog).
 class ExternalHtmlDialogUI : public HtmlDialogUI {
  public:

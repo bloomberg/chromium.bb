@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_SELECT_FILE_DIALOG_EXTENSION_H_
 #pragma once
 
-#include <map>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -31,10 +31,10 @@ class SelectFileDialogExtension
   virtual void ListenerDestroyed() OVERRIDE;
 
   // ExtensionDialog::Observer implementation.
-  virtual void ExtensionDialogIsClosing(ExtensionDialog* dialog) OVERRIDE;
+  virtual void ExtensionDialogClosing(ExtensionDialog* dialog) OVERRIDE;
 
   // Routes callback to appropriate SelectFileDialog::Listener based on
-  // the owning |tab_id|, then closes the dialog.
+  // the owning |tab_id|.
   static void OnFileSelected(int32 tab_id, const FilePath& path, int index);
   static void OnMultiFilesSelected(int32 tab_id,
                                    const std::vector<FilePath>& files);
@@ -63,11 +63,8 @@ class SelectFileDialogExtension
   explicit SelectFileDialogExtension(SelectFileDialog::Listener* listener);
   virtual ~SelectFileDialogExtension();
 
-  // Closes the dialog and cleans up callbacks and listeners.
-  void Close();
-
-  // Posts a task to close the dialog.
-  void PostTaskToClose();
+  // Invokes the appropriate file selection callback on our listener.
+  void NotifyListener();
 
   // Adds this to the list of pending dialogs, used for testing.
   void AddPending(int32 tab_id);
@@ -79,7 +76,6 @@ class SelectFileDialogExtension
   virtual bool HasMultipleFileTypeChoicesImpl() OVERRIDE;
 
   bool has_multiple_file_type_choices_;
-  void* params_;
 
   // Host for the extension that implements this dialog.
   scoped_refptr<ExtensionDialog> extension_dialog_;
@@ -88,6 +84,19 @@ class SelectFileDialogExtension
   int32 tab_id_;
 
   gfx::NativeWindow owner_window_;
+
+  // We defer the callback into SelectFileDialog::Listener until the window
+  // closes, to match the semantics of file selection on Windows and Mac.
+  // These are the data passed to the listener.
+  enum SelectionType {
+    CANCEL = 0,
+    SINGLE_FILE,
+    MULTIPLE_FILES
+  };
+  SelectionType selection_type_;
+  std::vector<FilePath> selection_files_;
+  int selection_index_;
+  void* params_;
 
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogExtension);
 };
