@@ -129,6 +129,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       tap_enable_(prop_reg, "Tap Enable", true),
       tap_timeout_(prop_reg, "Tap Timeout", 0.2),
       tap_drag_timeout_(prop_reg, "Tap Drag Timeout", 0.7),
+      drag_lock_enable_(prop_reg, "Tap Drag Lock Enable", 0),
       tap_move_dist_(prop_reg, "Tap Move Distance", 2.0),
       palm_pressure_(prop_reg, "Palm Pressure", 200.0),
       palm_edge_min_width_(prop_reg, "Tap Exclusion Border Width", 6.0),
@@ -796,7 +797,12 @@ void ImmediateInterpreter::UpdateTapState(
             *hwstate, added_fingers, removed_fingers, dead_fingers);
       if (tap_record_.TapComplete()) {
         tap_record_.Clear();
-        SetTapToClickState(kTtcDragRelease, now);
+        if (drag_lock_enable_.val_) {
+          SetTapToClickState(kTtcDragRelease, now);
+        } else {
+          *buttons_up = GESTURES_BUTTON_LEFT;
+          SetTapToClickState(kTtcIdle, now);
+        }
       }
       if (tap_record_.TapType() != GESTURES_BUTTON_LEFT &&
           now - tap_to_click_state_entered_ <= evaluation_timeout_.val_) {

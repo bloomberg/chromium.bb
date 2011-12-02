@@ -263,6 +263,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty tap_timeout_;
   // Time [s] it takes to stop dragging when you let go of the touchpad
   DoubleProperty tap_drag_timeout_;
+  // True if drag lock is enabled
+  BoolProperty drag_lock_enable_;
   // Distance [mm] a finger can move and still register a tap
   DoubleProperty tap_move_dist_;
   // Maximum pressure above which a finger is considered a palm
