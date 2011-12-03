@@ -6,6 +6,7 @@
 
 #include "content/browser/renderer_host/p2p/socket_host_tcp.h"
 #include "content/browser/renderer_host/p2p/socket_host_test_utils.h"
+#include "net/base/completion_callback.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,22 +21,25 @@ class FakeServerSocket : public net::ServerSocket {
  public:
   FakeServerSocket()
       : listening_(false),
-        accept_socket_(NULL),
-        accept_callback_(NULL) {
+        accept_socket_(NULL) {
   }
 
-  ~FakeServerSocket() { }
+  virtual ~FakeServerSocket() {}
 
   bool listening() { return listening_; }
 
   void AddIncoming(net::StreamSocket* socket) {
-    if (accept_callback_) {
+    if (!accept_callback_.is_null()) {
       DCHECK(incoming_sockets_.empty());
       accept_socket_->reset(socket);
       accept_socket_ = NULL;
-      net::OldCompletionCallback* cb = accept_callback_;
-      accept_callback_ = NULL;
-      cb->Run(net::OK);
+
+      // This copy is necessary because this implementation of ServerSocket
+      // bases logic on the null-ness of |accept_callback_| in the bound
+      // callback.
+      net::CompletionCallback cb = accept_callback_;
+      accept_callback_.Reset();
+      cb.Run(net::OK);
     } else {
       incoming_sockets_.push_back(socket);
     }
@@ -54,7 +58,7 @@ class FakeServerSocket : public net::ServerSocket {
   }
 
   virtual int Accept(scoped_ptr<net::StreamSocket>* socket,
-                     net::OldCompletionCallback* callback) OVERRIDE {
+                     const net::CompletionCallback& callback) OVERRIDE {
     DCHECK(socket);
     if (!incoming_sockets_.empty()) {
       socket->reset(incoming_sockets_.front());
@@ -73,7 +77,7 @@ class FakeServerSocket : public net::ServerSocket {
   net::IPEndPoint local_address_;
 
   scoped_ptr<net::StreamSocket>* accept_socket_;
-  net::OldCompletionCallback* accept_callback_;
+  net::CompletionCallback accept_callback_;
 
   std::list<net::StreamSocket*> incoming_sockets_;
 };

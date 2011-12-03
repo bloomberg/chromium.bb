@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/p2p/socket_host_tcp_server.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/p2p/socket_host_tcp.h"
 #include "content/common/p2p_messages.h"
@@ -24,8 +26,9 @@ P2PSocketHostTcpServer::P2PSocketHostTcpServer(
     int routing_id, int id)
     : P2PSocketHost(message_sender, routing_id, id),
       socket_(new net::TCPServerSocket(NULL, net::NetLog::Source())),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          accept_callback_(this, &P2PSocketHostTcpServer::OnAccepted)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(accept_callback_(
+          base::Bind(&P2PSocketHostTcpServer::OnAccepted,
+                     base::Unretained(this)))) {
 }
 
 P2PSocketHostTcpServer::~P2PSocketHostTcpServer() {
@@ -76,7 +79,7 @@ void P2PSocketHostTcpServer::OnError() {
 
 void P2PSocketHostTcpServer::DoAccept() {
   while (true) {
-    int result = socket_->Accept(&accept_socket_, &accept_callback_);
+    int result = socket_->Accept(&accept_socket_, accept_callback_);
     if (result == net::ERR_IO_PENDING) {
       break;
     } else {
