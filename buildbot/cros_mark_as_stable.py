@@ -213,7 +213,7 @@ def main():
 
   global VERBOSE
   VERBOSE = options.verbose
-  portage_utilities.EBuild.verbose = options.verbose
+  portage_utilities.EBuild.VERBOSE = options.verbose
 
   if len(args) != 1:
     _PrintUsageAndDie('Must specify a valid command [commit, push]')

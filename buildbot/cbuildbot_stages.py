@@ -162,7 +162,7 @@ class ManifestVersionedSyncStage(SyncStage):
     dry_run = self._options.debug
     source_repo = repository.RepoRepository(
         self._build_config['git_url'], self._build_root,
-        branch=self._tracking_branch)
+        branch=self._tracking_branch, stable_sync=True)
     ManifestVersionedSyncStage.manifest_manager = \
         manifest_version.BuildSpecsManager(
             source_repo=source_repo,

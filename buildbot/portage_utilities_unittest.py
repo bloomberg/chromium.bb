@@ -114,20 +114,23 @@ class EBuildTest(mox.MoxTestBase):
     result1 = _DummyCommandResult(' '.join([fake_project, fake_subdir]))
     portage_utilities.cros_build_lib.RunCommand(
         mox.IgnoreArg(),
-        print_cmd=fake_ebuild.verbose,
+        print_cmd=fake_ebuild.VERBOSE,
         redirect_stdout=True,
         shell=True).AndReturn(result1)
 
     # ... the result is used to construct a path, which the EBuild
-    # code expects to be a directory.
-    portage_utilities.os.path.isdir(
-      os.path.join(fake_sources, 'third_party', fake_subdir)).AndReturn(True)
+    # code expects to be a directory.  The path passes through
+    # os.path.realpath(), which strips the trailing '/' from
+    # fake_subdir.
+    expected_dir = os.path.join(
+        fake_sources, 'third_party', fake_subdir[0:-1])
+    portage_utilities.os.path.isdir(expected_dir).AndReturn(True)
 
     # ... the next RunCommand does 'git config --get ...'
     result2 = _DummyCommandResult(fake_project)
     portage_utilities.cros_build_lib.RunCommand(
         mox.IgnoreArg(),
-        print_cmd=fake_ebuild.verbose,
+        print_cmd=fake_ebuild.VERBOSE,
         redirect_stdout=True,
         shell=True).AndReturn(result2)
 
@@ -135,12 +138,12 @@ class EBuildTest(mox.MoxTestBase):
     result3 = _DummyCommandResult(fake_hash)
     portage_utilities.cros_build_lib.RunCommand(
         mox.IgnoreArg(),
-        print_cmd=fake_ebuild.verbose,
+        print_cmd=fake_ebuild.VERBOSE,
         redirect_stdout=True,
         shell=True).AndReturn(result3)
 
     self.mox.ReplayAll()
-    test_hash = fake_ebuild._GetCommitId(fake_sources)
+    test_hash = fake_ebuild.GetCommitId(fake_sources)
     self.mox.VerifyAll()
     self.assertEquals(test_hash, fake_hash)
 
@@ -154,7 +157,7 @@ class StubEBuild(portage_utilities.EBuild):
   def _ReadEBuild(self, path):
     pass
 
-  def _GetCommitId(self, srcroot):
+  def GetCommitId(self, srcroot):
     if srcroot == '/sources':
       return 'my_id'
     else:

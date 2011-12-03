@@ -103,18 +103,21 @@ class EBuildVersionFormatException(Exception):
 class EBuild(object):
   """Wrapper class for information about an ebuild."""
 
-  verbose = False
+  VERBOSE = False
+  _PACKAGE_VERSION_PATTERN = re.compile(
+    r'.*-(([0-9][0-9a-z_.]*)(-r[0-9]+)?)[.]ebuild')
+  _WORKON_COMMIT_PATTERN = re.compile(r'^CROS_WORKON_COMMIT="(.*)"$')
 
   @classmethod
   def _Print(cls, message):
     """Verbose print function."""
-    if cls.verbose:
+    if cls.VERBOSE:
       cros_build_lib.Info(message)
 
   @classmethod
   def _RunCommand(cls, command):
     command_result = cros_build_lib.RunCommand(
-      command, redirect_stdout=True, print_cmd=cls.verbose, shell=True)
+      command, redirect_stdout=True, print_cmd=cls.VERBOSE, shell=True)
     return command_result.output
 
   @classmethod
@@ -173,13 +176,10 @@ class EBuild(object):
     git_commit_cmd = 'git commit -am "%s"' % message
     cls._RunCommand(git_commit_cmd)
 
-  _package_version_re = re.compile(
-    r'.*-(([0-9][0-9a-z_.]*)(-r[0-9]+)?)[.]ebuild')
-
   def __init__(self, path):
     """Sets up data about an ebuild from its path."""
     _path, self._category, self._pkgname, filename = path.rsplit('/', 3)
-    m = self._package_version_re.match(filename)
+    m = self._PACKAGE_VERSION_PATTERN.match(filename)
     if not m:
       raise EBuildVersionFormatException(filename)
     self.version, self._version_no_rev, revision = m.groups()
@@ -219,7 +219,16 @@ class EBuild(object):
         self.is_stable = True
     fileinput.close()
 
-  def _GetCommitId(self, srcroot):
+  def GetStableCommitId(self):
+    """Return the CROS_WORKON_COMMIT setting from a stable EBuild."""
+    with open(self.ebuild_path, 'r') as infile:
+      for line in infile:
+        m = self._WORKON_COMMIT_PATTERN.match(line)
+        if m is not None:
+          return m.group(1)
+    return None
+
+  def GetSourcePath(self, srcroot):
     """Get the commit id for this ebuild."""
     # Grab and evaluate CROS_WORKON variables from this ebuild.
     cmd = ('export CROS_WORKON_LOCALNAME="%s" CROS_WORKON_PROJECT="%s"; '
@@ -235,7 +244,12 @@ class EBuild(object):
     else:
       dir_ = 'third_party'
 
-    srcdir = os.path.join(srcroot, dir_, subdir)
+    subdir_path = os.path.join(srcroot, dir_, subdir)
+    return project, os.path.realpath(subdir_path)
+
+  def GetCommitId(self, srcroot):
+    """Get the commit id for this ebuild."""
+    project, srcdir = self.GetSourcePath(srcroot)
 
     if not os.path.isdir(srcdir):
       cros_build_lib.Die('Cannot find commit id for %s' % self.ebuild_path)
@@ -294,7 +308,7 @@ class EBuild(object):
       cros_build_lib.Die('Missing unstable ebuild: %s' %
                          self._unstable_ebuild_path)
 
-    commit_id = self._GetCommitId(srcroot)
+    commit_id = self.GetCommitId(srcroot)
     self.MarkAsStable(self._unstable_ebuild_path,
                       new_stable_ebuild_path,
                       'CROS_WORKON_COMMIT', commit_id, redirect_file)
@@ -394,7 +408,8 @@ def BuildEBuildDictionary(overlays, use_all, packages):
   use_all: Whether to include all ebuilds in the specified directories.
     If true, then we gather all packages in the directories regardless
     of whether they are in our set of packages.
-  packages: A set of the packages we want to gather.
+  packages: A set of the packages we want to gather.  If use_all is
+    True, this argument is ignored, and should be None.
   """
   blacklist = _BlackListManager()
   for overlay in overlays:
