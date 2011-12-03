@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/compiler_specific.h"
 #include "net/base/net_errors.h"
 #include "net/base/ssl_config_service.h"
 #include "net/http/disk_cache_based_ssl_host_info.h"
@@ -9,20 +12,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-class DeleteSSLHostInfoOldCompletionCallback : public TestOldCompletionCallback {
- public:
-  explicit DeleteSSLHostInfoOldCompletionCallback(net::SSLHostInfo* ssl_host_info)
-      : ssl_host_info_(ssl_host_info) {}
-
-  virtual void RunWithParams(const Tuple1<int>& params) {
-    delete ssl_host_info_;
-    TestOldCompletionCallback::RunWithParams(params);
-  }
-
- private:
-  net::SSLHostInfo* ssl_host_info_;
-};
 
 // This is an empty transaction, needed to register the URL and the test mode.
 const MockTransaction kHostInfoTransaction = {
@@ -40,8 +29,6 @@ const MockTransaction kHostInfoTransaction = {
   0
 };
 
-}  // namespace
-
 // Tests that we can delete a DiskCacheBasedSSLHostInfo object in a
 // completion callback for DiskCacheBasedSSLHostInfo::WaitForDataReady.
 TEST(DiskCacheBasedSSLHostInfo, DeleteInCallback) {
@@ -51,12 +38,12 @@ TEST(DiskCacheBasedSSLHostInfo, DeleteInCallback) {
   MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
   MockHttpCache cache(factory);
   net::SSLConfig ssl_config;
-  net::SSLHostInfo* ssl_host_info =
+  scoped_ptr<net::SSLHostInfo> ssl_host_info(
       new net::DiskCacheBasedSSLHostInfo("https://www.verisign.com", ssl_config,
-                                         &cert_verifier, cache.http_cache());
+                                         &cert_verifier, cache.http_cache()));
   ssl_host_info->Start();
-  DeleteSSLHostInfoOldCompletionCallback callback(ssl_host_info);
-  int rv = ssl_host_info->WaitForDataReady(&callback);
+  net::TestCompletionCallback callback;
+  int rv = ssl_host_info->WaitForDataReady(callback.callback());
   EXPECT_EQ(net::ERR_IO_PENDING, rv);
   // Now complete the backend creation and let the callback run.
   factory->FinishCreation();
@@ -67,7 +54,7 @@ TEST(DiskCacheBasedSSLHostInfo, DeleteInCallback) {
 TEST(DiskCacheBasedSSLHostInfo, Update) {
   MockHttpCache cache;
   AddMockTransaction(&kHostInfoTransaction);
-  TestOldCompletionCallback callback;
+  net::TestCompletionCallback callback;
 
   // Store a certificate chain.
   net::CertVerifier cert_verifier;
@@ -76,7 +63,7 @@ TEST(DiskCacheBasedSSLHostInfo, Update) {
       new net::DiskCacheBasedSSLHostInfo("https://www.google.com", ssl_config,
                                          &cert_verifier, cache.http_cache()));
   ssl_host_info->Start();
-  int rv = ssl_host_info->WaitForDataReady(&callback);
+  int rv = ssl_host_info->WaitForDataReady(callback.callback());
   EXPECT_EQ(net::OK, callback.GetResult(rv));
 
   net::SSLHostInfo::State* state = ssl_host_info->mutable_state();
@@ -92,7 +79,7 @@ TEST(DiskCacheBasedSSLHostInfo, Update) {
       new net::DiskCacheBasedSSLHostInfo("https://www.google.com", ssl_config,
                                          &cert_verifier, cache.http_cache()));
   ssl_host_info->Start();
-  rv = ssl_host_info->WaitForDataReady(&callback);
+  rv = ssl_host_info->WaitForDataReady(callback.callback());
   EXPECT_EQ(net::OK, callback.GetResult(rv));
 
   // And now update the data.
@@ -111,7 +98,7 @@ TEST(DiskCacheBasedSSLHostInfo, Update) {
       new net::DiskCacheBasedSSLHostInfo("https://www.google.com", ssl_config,
                                          &cert_verifier, cache.http_cache()));
   ssl_host_info->Start();
-  rv = ssl_host_info->WaitForDataReady(&callback);
+  rv = ssl_host_info->WaitForDataReady(callback.callback());
   EXPECT_EQ(net::OK, callback.GetResult(rv));
 
   state = ssl_host_info->mutable_state();
@@ -121,3 +108,5 @@ TEST(DiskCacheBasedSSLHostInfo, Update) {
 
   RemoveMockTransaction(&kHostInfoTransaction);
 }
+
+}  // namespace

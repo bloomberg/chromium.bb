@@ -48,8 +48,7 @@ DiskCacheBasedSSLHostInfo::DiskCacheBasedSSLHostInfo(
       hostname_(hostname),
       http_cache_(http_cache),
       backend_(NULL),
-      entry_(NULL),
-      user_callback_(NULL) {
+      entry_(NULL) {
 }
 
 void DiskCacheBasedSSLHostInfo::Start() {
@@ -58,16 +57,19 @@ void DiskCacheBasedSSLHostInfo::Start() {
   DoLoop(OK);
 }
 
-int DiskCacheBasedSSLHostInfo::WaitForDataReady(OldCompletionCallback* callback) {
+int DiskCacheBasedSSLHostInfo::WaitForDataReady(
+    const CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(state_ != GET_BACKEND);
 
   if (ready_)
     return OK;
-  if (callback) {
-    DCHECK(!user_callback_);
+
+  if (!callback.is_null()) {
+    DCHECK(user_callback_.is_null());
     user_callback_ = callback;
   }
+
   return ERR_IO_PENDING;
 }
 
@@ -77,7 +79,7 @@ void DiskCacheBasedSSLHostInfo::Persist() {
 
   DCHECK(new_data_.empty());
   CHECK(ready_);
-  DCHECK(user_callback_ == NULL);
+  DCHECK(user_callback_.is_null());
   new_data_ = Serialize();
 
   if (!backend_)
@@ -88,7 +90,7 @@ void DiskCacheBasedSSLHostInfo::Persist() {
 }
 
 DiskCacheBasedSSLHostInfo::~DiskCacheBasedSSLHostInfo() {
-  DCHECK(!user_callback_);
+  DCHECK(user_callback_.is_null());
   if (entry_)
     entry_->Close();
   if (!IsCallbackPending())
@@ -101,11 +103,10 @@ std::string DiskCacheBasedSSLHostInfo::key() const {
 
 void DiskCacheBasedSSLHostInfo::OnIOComplete(int rv) {
   rv = DoLoop(rv);
-  if (rv != ERR_IO_PENDING) {
-    OldCompletionCallback* callback = user_callback_;
-    user_callback_ = NULL;
-    if (callback)
-      callback->Run(rv);
+  if (rv != ERR_IO_PENDING && !user_callback_.is_null()) {
+    CompletionCallback callback = user_callback_;
+    user_callback_.Reset();
+    callback.Run(rv);
   }
 }
 

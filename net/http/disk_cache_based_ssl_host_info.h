@@ -32,9 +32,9 @@ class NET_EXPORT_PRIVATE DiskCacheBasedSSLHostInfo
                             CertVerifier* cert_verifier,
                             HttpCache* http_cache);
 
-  // Implementation of SSLHostInfo
+  // SSLHostInfo implementation.
   virtual void Start() OVERRIDE;
-  virtual int WaitForDataReady(OldCompletionCallback* callback) OVERRIDE;
+  virtual int WaitForDataReady(const CompletionCallback& callback) OVERRIDE;
   virtual void Persist() OVERRIDE;
 
  private:
@@ -115,7 +115,7 @@ class NET_EXPORT_PRIVATE DiskCacheBasedSSLHostInfo
   HttpCache* const http_cache_;
   disk_cache::Backend* backend_;
   disk_cache::Entry* entry_;
-  OldCompletionCallback* user_callback_;
+  CompletionCallback user_callback_;
   scoped_refptr<IOBuffer> read_buffer_;
   scoped_refptr<IOBuffer> write_buffer_;
   std::string data_;
