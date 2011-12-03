@@ -9,11 +9,14 @@ This library is used by scripts that download tarballs, zipfiles, etc. as part
 of the build process.
 """
 
+import cygtar
+import hashlib
+import http_download
 import os.path
 import shutil
 import sys
 import time
-
+import urllib2
 
 SOURCE_STAMP = 'SOURCE_URL'
 
@@ -37,6 +40,21 @@ ARCH_COLLAPSE = {
     'x86_64': 'x86-64',
     'armv7l': 'arm',
 }
+
+EXT_COLLAPSE = {
+    '.tgz' : (cygtar)
+}
+
+
+class HashError(Exception):
+  def __init__(self, download_url, expected_hash, actual_hash):
+    self.download_url = download_url
+    self.expected_hash = expected_hash
+    self.actual_hash = actual_hash
+
+  def __str__(self):
+    return 'Got hash "%s" but expected hash "%s" for "%s"' % (
+        self.actual_hash, self.expected_hash, self.download_url)
 
 
 def PlatformName(name=None):
@@ -86,15 +104,7 @@ def WriteDataFromStream(filename, stream, chunk_size, verbose=True):
     dst.close()
 
 
-def StampMatches(stampfile, expected, script_time):
-  try:
-    # Check if the stamp is older than the script
-    url_time = os.stat(stampfile).st_mtime
-    if url_time <= script_time:
-      return False
-  except OSError:
-    return False
-
+def DoesStampMatch(stampfile, expected):
   try:
     f = open(stampfile, 'r')
     stamp = f.read()
@@ -115,9 +125,19 @@ def WriteStamp(stampfile, data):
   f.close()
 
 
-def SourceIsCurrent(path, url, script_time):
+def SourceIsCurrent(path, url, min_time=None):
   stampfile = os.path.join(path, SOURCE_STAMP)
-  return StampMatches(stampfile, url, script_time)
+
+  # Check if the stampfile is older than the minimum last mod time
+  if min_time:
+    try:
+      stamp_time = os.stat(stampfile).st_mtime
+      if stamp_time <= min_time:
+        return False
+    except OSError:
+      return False
+
+  return DoesStampMatch(stampfile, url)
 
 
 def WriteSourceStamp(path, url):
@@ -171,3 +191,93 @@ def RemoveDir(path):
 def RemoveFile(path):
   if os.path.exists(path):
     Retry(os.unlink, path)
+
+
+def _HashFileHandle(fh):
+  """sha1 of a file like object.
+
+  Arguments:
+    fh: file handle like object to hash.
+  Returns:
+    sha1 as a string.
+  """
+  hasher = hashlib.sha1()
+  try:
+    while True:
+      data = fh.read(4096)
+      if not data:
+        break
+      hasher.update(data)
+  finally:
+    fh.close()
+  return hasher.hexdigest()
+
+
+def HashFile(filename):
+  """sha1 a file on disk.
+
+  Arguments:
+    filename: filename to hash.
+  Returns:
+    sha1 as a string.
+  """
+  fh = open(filename, 'rb')
+  return _HashFileHandle(fh)
+
+
+def HashUrl(url):
+  """sha1 the data at an url.
+
+  Arguments:
+    url: url to download from.
+  Returns:
+    sha1 of the data at the url.
+  """
+  fh = urllib2.urlopen(url)
+  return _HashFileHandle(fh)
+
+
+def SyncURL(url, filename=None, stamp_dir=None, min_time=None,
+            hash=None, verbose=False):
+  """Synchronize a destination file with a URL
+
+  if the URL does not match the URL stamp, then we must re-download it.
+
+  Arugments:
+    url: the url which will to compare against and download
+    filename: the file to create on download
+    path: the download path
+    stamp_file: the filename containing the URL stamp to check against
+    hash: if set, the expected hash which must be matched
+    verbose: prints out status as it runs
+  Returns:
+    True if the file is replaced
+    False if the file is not replaced
+  Exception:
+    HashError: if the hash does not match
+  """
+
+  assert url and filename
+
+  # If the stamp_file matches the url, then it must be up to date
+  if stamp_dir and SourceIsCurrent(stamp_dir, url, min_time):
+    if verbose:
+      print '%s is already up to date.' % filename
+    return False
+
+  if verbose:
+    print 'Updating %s\n\tfrom %s.' % (filename, url)
+  EnsureFileCanBeWritten(filename)
+  http_download.HttpDownload(url, filename)
+
+  if hash:
+    tar_hash = HashFile(filename)
+    if hash != tar_hash:
+      raise HashError(actual_hash=tar_hash, expected_hash=hash,
+                      download_url=url)
+
+  return True
+
+
+
+

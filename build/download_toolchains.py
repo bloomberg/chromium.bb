@@ -8,14 +8,12 @@
 This module downloads multiple tgz's and expands them.
 """
 
-import optparse
-import os.path
-
+import cygtar
 import download_utils
-import toolchainbinaries
-import sync_tgz
+import optparse
+import os
 import sys
-
+import toolchainbinaries
 
 def VersionSelect(options, flavor):
   """Decide which version to used based on options + flavor.
@@ -58,8 +56,9 @@ def GetUpdatedDEPS(options):
   for flavor in flavors:
     url = toolchainbinaries.EncodeToolchainUrl(
       options.base_url, VersionSelect(options, flavor), flavor)
-    new_deps['nacl_toolchain_%s_hash' % flavor] = sync_tgz.HashUrl(url)
+    new_deps['nacl_toolchain_%s_hash' % flavor] = download_utils.HashUrl(url)
   return new_deps
+
 
 def ShowUpdatedDEPS(options):
   """Print a suggested DEPS toolchain hash update for all platforms.
@@ -73,7 +72,8 @@ def ShowUpdatedDEPS(options):
     sys.stdout.flush()
 
 
-def SyncFlavor(flavor, url, dst, hash):
+def SyncFlavor(flavor, url, dst, hash, min_time, keep=False, force=False,
+               verbose=False):
   """Sync a flavor of the nacl toolchain
 
   Arguments:
@@ -84,34 +84,55 @@ def SyncFlavor(flavor, url, dst, hash):
   """
 
   parent_dir = os.path.dirname(os.path.dirname(__file__))
+  download_dir = os.path.join(parent_dir, 'toolchain', '.tars')
+  untar_dir = os.path.join(parent_dir, 'toolchain', '.tmp')
+
+  # Build the tarfile name from the url
+  filepath = os.path.join(download_dir, url.split('/')[-1])
+
+  # If we are forcing a sync, then ignore stamp
+  if force:
+    stamp_dir = None
+  else:
+    stamp_dir = untar_dir
+
+  # If we did not need to synchronize, then we are done
+  if not download_utils.SyncURL(url, filepath, stamp_dir=stamp_dir,
+                                min_time=min_time, hash=hash, verbose=verbose):
+    return False
+
+  tar = cygtar.CygTar(filepath, 'r:*')
+  curdir = os.getcwd()
+  if not os.path.exists(untar_dir):
+    os.makedirs(untar_dir)
+  os.chdir(untar_dir)
+  tar.Extract()
+  tar.Close()
+  os.chdir(curdir)
+
+  if not keep:
+    os.remove(filepath)
+
   # TODO(bradnelson_): get rid of this when toolchain tarballs flattened.
   if 'arm' in flavor or 'pnacl' in flavor:
-    # TODO(cbiffle): we really shouldn't do this until the unpack succeeds!
-    # See: http://code.google.com/p/nativeclient/issues/detail?id=834
-    download_utils.RemoveDir(dst)
-    sync_tgz.SyncTgz(url, tar_dir=dst, verbose=False, hash=hash)
+    src = os.path.join(untar_dir)
   elif 'newlib' in flavor:
-    dst_tmp = os.path.join(parent_dir, 'toolchain', '.tmp')
-    sync_tgz.SyncTgz(url, dst_tmp, verbose=False, hash=hash)
-    subdir = os.path.join(dst_tmp, 'sdk', 'nacl-sdk')
-    download_utils.MoveDirCleanly(subdir, dst)
-    download_utils.RemoveDir(dst_tmp)
+    src = os.path.join(untar_dir, 'sdk', 'nacl-sdk')
   else:
-    dst_tmp = os.path.join(parent_dir, 'toolchain', '.tmp')
-    sync_tgz.SyncTgz(url, dst_tmp, verbose=False, hash=hash)
-    subdir = os.path.join(dst_tmp, 'toolchain', flavor)
-    download_utils.MoveDirCleanly(subdir, dst)
-    download_utils.RemoveDir(dst_tmp)
+    src = os.path.join(untar_dir, 'toolchain', flavor)
 
-  # Write out source url stamp.
+  # Move and update the stamp
+  download_utils.MoveDirCleanly(src ,dst)
+  download_utils.RemoveDir(untar_dir)
   download_utils.WriteSourceStamp(dst, url)
+  return True
 
 
 def Main(args):
  # Generate the time for the most recently modified script used by the download
   script_dir = os.path.dirname(__file__)
   src_list = ['download_toolchains.py', 'download_utils.py',
-              'sync_tgz.py', 'toolchainbinaries.py', 'http_download.py']
+              'cygtar.py', 'http_download.py']
   srcs = [os.path.join(script_dir, src) for src in src_list]
   src_times = []
   for src in srcs:
@@ -124,6 +145,16 @@ def Main(args):
       '-b', '--base-url', dest='base_url',
       default=toolchainbinaries.BASE_DOWNLOAD_URL,
       help='base url to download from')
+  parser.add_option(
+      '-k', '--keep', dest='keep',
+      default=False,
+      action='store_true',
+      help='Keep the downloaded tarballs.')
+  parser.add_option(
+      '-v', '--verbose', dest='verbose',
+      default=False,
+      action='store_true',
+      help='Use verbose output.')
   parser.add_option(
       '--x86-version', dest='x86_version',
       default='latest',
@@ -184,13 +215,9 @@ def Main(args):
     dst = os.path.join(options.toolchain_dir, flavor)
     if version == 'latest':
       print flavor + ': downloading latest version...'
+      force = True
     else:
-      msg = download_utils.SourceIsCurrent(dst, url, script_time)
-      if msg:
-        print flavor + ': ' + msg + '..'
-        continue
-      else:
-        print flavor + ': downloading version ' + version + '...'
+      force = False
 
     # If there are any hashes listed, check and require them for every flavor.
     # List a bogus hash if none is specified so we get an error listing the
@@ -205,8 +232,12 @@ def Main(args):
       hash_value = None
 
     try:
-      SyncFlavor(flavor, url, dst, hash_value)
-    except sync_tgz.HashError, e:
+      if SyncFlavor(flavor, url, dst, hash_value, script_time,
+                    force=force, verbose=options.verbose):
+        print flavor + ': updated to version ' + version + '.'
+      else:
+        print flavor + ': already up to date.'
+    except download_utils.HashError, e:
       print str(e)
       print '-' * 70
       print 'You probably want to update the DEPS hashes to:'
@@ -220,3 +251,4 @@ def Main(args):
 
 if __name__ == '__main__':
   Main(sys.argv[1:])
+

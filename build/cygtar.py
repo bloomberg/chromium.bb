@@ -12,7 +12,7 @@ import subprocess
 import sys
 import tarfile
 
-"""A Cygwin aware version of tar based on tarfile
+"""A Cygwin aware version compress/extract object.
 
 This module supports creating and unpacking a tarfile on all platforms.  For
 Cygwin, Mac, and Linux, it will use the standard tarfile implementation.  For
@@ -79,12 +79,14 @@ def CreateWin32Hardlink(filepath, targpath, try_mklink):
   Uses mklink to create a hardlink if possible.  On failure, it will
   assume mklink is unavailible and copy the file instead, returning False
   to indicate future calls should not attempt to use mklink."""
+
+  # Assume an error, if subprocess succeeds, then it should return 0
+  err = 1
   if try_mklink:
     dst_src = ToNativePath(filepath) + ' ' + ToNativePath(targpath)
     try:
       err = subprocess.call(['cmd', '/C', 'mklink /H ' + dst_src])
     except OSError:
-      err = 1
       try_mklink = False
       pass
     # If we failed to create a hardlink, then just copy it.
@@ -115,11 +117,10 @@ def ReadableSizeOf(num):
 
 class CygTar(object):
   """ CygTar is an object which represents a Win32 and Cygwin aware tarball."""
-  def __init__(self, filename, mode='r', verbose=False, hardlinks=True):
+  def __init__(self, filename, mode='r', verbose=False):
     self.size_map = {}
     self.tar = tarfile.open(filename, mode)
     self.verbose = verbose
-    self.hardlinks = hardlinks
 
   def __DumpInfo(self, tarinfo):
     """Prints information on a single object in the tarball."""

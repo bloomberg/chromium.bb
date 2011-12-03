@@ -1,22 +1,20 @@
 #!/usr/bin/python
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Download all Native Client toolchains for this platform.
 
 This module downloads multiple tgz's and expands them.
 """
 
-import optparse
-import os.path
-import sys
-import tempfile
-
 import chromebinaries
 import download_utils
-import sync_file
-import sync_zip
+import optparse
+import os
+import sys
+import tempfile
+import zipfile
 
 
 def MakeCommandLineParser():
@@ -56,11 +54,35 @@ def CreateLinkToMacFrameworkDir(bin_root):
   os.symlink(rel_path, os.path.join(bin_root, dir_name))
 
 
+def Unzip(zip_filename, target, verbose=True, remove_prefix=None):
+  if verbose:
+    print 'Extracting from %s...' % zip_filename
+  zf = zipfile.ZipFile(zip_filename, 'r')
+  for info in zf.infolist():
+    path = info.filename
+    if remove_prefix is not None:
+      if path.startswith(remove_prefix):
+        path = path[len(remove_prefix):]
+    if not path or path.endswith('/'):
+      # It's a directory
+      continue
+    fullpath = os.path.join(target, os.path.normpath(path))
+    bits = (info.external_attr >> 16) & 0777
+
+    if verbose:
+      print path, '%o' % bits
+    data = zf.read(info.filename)
+    download_utils.EnsureFileCanBeWritten(fullpath)
+    f = open(fullpath, 'wb')
+    f.write(data)
+    f.close()
+    os.chmod(fullpath, bits)
+
+
 def Main():
  # Generate the time for the most recently modified script used by the download
   script_dir = os.path.dirname(__file__)
-  src_list = ['download_chrome.py', 'download_utils.py',
-              'sync_tgz.py', 'toolchainbinaries.py', 'http_download.py']
+  src_list = ['download_chrome.py', 'download_utils.py', 'http_download.py']
   srcs = [os.path.join(script_dir, src) for src in src_list]
   src_times = []
   for src in srcs:
@@ -82,23 +104,18 @@ def Main():
   # dst will get blown away.
   # The downside is that SCons will need to understand how --dst gets modified.
   dst = os.path.join(options.dst, '%s_%s' % (options.os, options.arch))
+  chrome_url = chromebinaries.GetChromeURL(options.base_url, options.os,
+                                           options.arch, options.revision)
 
-  uid = " ".join([options.base_url, options.os, options.arch, options.revision])
-
-  if options.force or not download_utils.SourceIsCurrent(dst, uid, script_time):
-
-    # Create a temporary working directory.
-    tempdir = tempfile.mkdtemp(prefix='nacl_chrome_download_')
-    try:
-      chrome_url = chromebinaries.GetChromeURL(options.base_url,
-                                               options.os,
-                                               options.arch,
-                                               options.revision)
-      # Everything inside the zip file will be inside this directory.
-      prefix = os.path.splitext(os.path.split(chrome_url)[1])[0] + '/'
-
+  tempdir = tempfile.mkdtemp(prefix='nacl_chrome_download_')
+  filepath = os.path.join(tempdir, chrome_url.split('/')[-1])
+  try:
+    if options.force or download_utils.SyncURL(chrome_url, filepath,
+                                               stamp_dir=dst,
+                                               min_time=script_time):
       try:
-        sync_zip.SyncZip(chrome_url, tempdir, remove_prefix=prefix)
+        prefix = os.path.splitext(os.path.split(chrome_url)[1])[0] + '/'
+        Unzip(filepath, tempdir, verbose=True, remove_prefix=prefix)
       except Exception:
         print
         print '*'*78
@@ -115,24 +132,28 @@ def Main():
           options.os,
           options.arch,
           options.revision)
-      sync_file.SyncFile(pyautopy_url, tempdir)
-      sync_file.SyncFile(pyautolib_url, tempdir)
+
+      pyautopy_file = os.path.join(tempdir, pyautopy_url.split('/')[-1])
+      pyautolib_file = os.path.join(tempdir, pyautolib_url.split('/')[-1])
+      download_utils.SyncURL(pyautopy_url, pyautopy_file)
+      download_utils.SyncURL(pyautolib_url, pyautolib_file)
 
       # On Mac, create a symlink to the framework directory so it can be loaded.
       if options.os == 'mac':
         CreateLinkToMacFrameworkDir(tempdir)
 
       # Move binaries from temp directory to destination.
-      download_utils.WriteSourceStamp(tempdir, uid)
+      download_utils.WriteSourceStamp(tempdir, chrome_url)
       sys.stdout.write('Moving %s to %s\n' % (tempdir, dst))
       download_utils.MoveDirCleanly(tempdir, dst)
-
-    except Exception:
-      download_utils.RemoveDir(tempdir)
-      raise
-  else:
-    sys.stdout.write('No need to download Chrome.\n')
+    else:
+      sys.stdout.write('No need to download Chrome.\n')
+  except Exception:
+    download_utils.RemoveDir(tempdir)
+    print 'Failed to download.'
+    raise
 
 
 if __name__ == '__main__':
   Main()
+
