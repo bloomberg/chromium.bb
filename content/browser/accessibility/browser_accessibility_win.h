@@ -194,21 +194,19 @@ BrowserAccessibilityWin
       IAccessibleRelation** relations,
       LONG* n_relations);
 
+  CONTENT_EXPORT STDMETHODIMP scrollTo(enum IA2ScrollType scroll_type);
+
+  CONTENT_EXPORT STDMETHODIMP scrollToPoint(
+      enum IA2CoordinateType coordinate_type,
+      LONG x,
+      LONG y);
+
   CONTENT_EXPORT STDMETHODIMP get_groupPosition(LONG* group_level,
                                                 LONG* similar_items_in_group,
                                                 LONG* position_in_group);
 
   // IAccessible2 methods not implemented.
   CONTENT_EXPORT STDMETHODIMP get_extendedRole(BSTR* extended_role) {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP scrollTo(enum IA2ScrollType scroll_type) {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP scrollToPoint(
-      enum IA2CoordinateType coordinate_type,
-      LONG x,
-      LONG y) {
     return E_NOTIMPL;
   }
   CONTENT_EXPORT STDMETHODIMP get_localizedExtendedRole(
@@ -445,10 +443,28 @@ BrowserAccessibilityWin
       enum IA2CoordinateType coord_type,
       LONG* offset);
 
+  CONTENT_EXPORT STDMETHODIMP scrollSubstringTo(
+       LONG start_index,
+       LONG end_index,
+       enum IA2ScrollType scroll_type);
+
+  CONTENT_EXPORT STDMETHODIMP scrollSubstringToPoint(
+      LONG start_index,
+      LONG end_index,
+      enum IA2CoordinateType coordinate_type,
+      LONG x, LONG y);
+
+  CONTENT_EXPORT STDMETHODIMP addSelection(LONG start_offset, LONG end_offset);
+
+  CONTENT_EXPORT STDMETHODIMP removeSelection(LONG selection_index);
+
+  CONTENT_EXPORT STDMETHODIMP setCaretOffset(LONG offset);
+
+  CONTENT_EXPORT STDMETHODIMP setSelection(LONG selection_index,
+                                           LONG start_offset,
+                                           LONG end_offset);
+
   // IAccessibleText methods not implemented.
-  CONTENT_EXPORT STDMETHODIMP addSelection(LONG start_offset, LONG end_offset) {
-    return E_NOTIMPL;
-  }
   CONTENT_EXPORT STDMETHODIMP get_attributes(LONG offset, LONG* start_offset,
                                              LONG* end_offset,
                                              BSTR* text_attributes) {
@@ -458,28 +474,6 @@ BrowserAccessibilityWin
       enum IA2CoordinateType coord_type,
       LONG* x, LONG* y,
       LONG* width, LONG* height) {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP removeSelection(LONG selection_index) {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP setCaretOffset(LONG offset) {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP setSelection(LONG selection_index,
-                                           LONG start_offset,
-                                           LONG end_offset) {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP scrollSubstringTo(LONG start_index,
-       LONG end_index,
-       enum IA2ScrollType scroll_type) {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP scrollSubstringToPoint(LONG start_index,
-      LONG end_index,
-      enum IA2CoordinateType coordinate_type,
-      LONG x, LONG y) {
     return E_NOTIMPL;
   }
 

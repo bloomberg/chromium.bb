@@ -365,3 +365,44 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   delete manager;
   ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
 }
+
+TEST_F(BrowserAccessibilityTest, TestScrollingLogic) {
+  #define SCROLL BrowserAccessibility::ComputeBestScrollOffset
+
+  // Test some cases where the focus is already within the viewport.
+  EXPECT_EQ(0, SCROLL(0, 25, 75, 25, 75, 0, 100));
+  EXPECT_EQ(100, SCROLL(100, 125, 175, 125, 175, 0, 100));
+  EXPECT_EQ(105, SCROLL(105, 125, 175, 125, 175, 0, 100));
+  EXPECT_EQ(125, SCROLL(125, 125, 175, 125, 175, 0, 100));
+  EXPECT_EQ(75, SCROLL(75, 125, 175, 125, 175, 0, 100));
+
+  // Subfocus should be ignored if focus is already within the viewport.
+  EXPECT_EQ(100, SCROLL(100, 125, 125, 125, 175, 0, 100));
+  EXPECT_EQ(100, SCROLL(100, 175, 175, 125, 175, 0, 100));
+  EXPECT_EQ(100, SCROLL(100, -50, -50, 125, 175, 0, 100));
+
+  // Test some cases where the focus needs to be scrolled to fit.
+  EXPECT_EQ(75, SCROLL(74, 125, 175, 125, 175, 0, 100));
+  EXPECT_EQ(75, SCROLL(50, 125, 175, 125, 175, 0, 100));
+  EXPECT_EQ(75, SCROLL(0, 125, 175, 125, 175, 0, 100));
+  EXPECT_EQ(125, SCROLL(126, 125, 175, 125, 175, 0, 100));
+  EXPECT_EQ(125, SCROLL(150, 125, 175, 125, 175, 0, 100));
+  EXPECT_EQ(125, SCROLL(200, 125, 175, 125, 175, 0, 100));
+
+  // Test some cases where the focus doesn't fit, so the subfocus is used.
+  EXPECT_EQ(125, SCROLL(0, 125, 130, 125, 175, 0, 25));
+  EXPECT_EQ(125, SCROLL(125, 125, 130, 125, 175, 0, 25));
+  EXPECT_EQ(125, SCROLL(175, 125, 130, 125, 175, 0, 25));
+  EXPECT_EQ(125, SCROLL(500, 125, 130, 125, 175, 0, 25));
+  EXPECT_EQ(140, SCROLL(0, 140, 145, 125, 175, 0, 25));
+  EXPECT_EQ(150, SCROLL(0, 170, 175, 125, 175, 0, 25));
+
+  // Test some cases where the viewport is a single point - which can be
+  // used to force an object to be scrolled to a specific location.
+  EXPECT_EQ(50, SCROLL(0, 125, 175, 125, 175, 75, 75));
+  EXPECT_EQ(25, SCROLL(0, 125, 175, 125, 175, 100, 100));
+  EXPECT_EQ(0, SCROLL(0, 125, 175, 125, 175, 125, 125));
+
+  #undef SCROLL
+}
+

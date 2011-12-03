@@ -4,6 +4,8 @@
 
 #include "content/browser/accessibility/browser_accessibility_win.h"
 
+#include <limits>
+
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -722,6 +724,90 @@ STDMETHODIMP BrowserAccessibilityWin::get_relations(
     relations_[i]->AddRef();
     relations[i] = relations_[i];
   }
+
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::scrollTo(enum IA2ScrollType scroll_type) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  // TODO(dmazzoni): Extend this to scroll every scrollable element as
+  // needed, not just the root.
+  BrowserAccessibility* root = this;
+  while (root->parent())
+    root = root->parent();
+
+  gfx::Rect r = location_;
+  gfx::Rect view(std::numeric_limits<int>::min(),
+                 std::numeric_limits<int>::min(),
+                 std::numeric_limits<int>::max(),
+                 std::numeric_limits<int>::max());
+  switch(scroll_type) {
+    case IA2_SCROLL_TYPE_TOP_LEFT:
+      root->ScrollToMakeVisible(
+          gfx::Rect(r.x(), r.y(), 0, 0), r, view);
+      break;
+    case IA2_SCROLL_TYPE_BOTTOM_RIGHT:
+      root->ScrollToMakeVisible(
+          gfx::Rect(r.right(), r.bottom(), 0, 0), r, view);
+      break;
+    case IA2_SCROLL_TYPE_TOP_EDGE:
+      root->ScrollToMakeVisible(
+          gfx::Rect(r.x(), r.y(), r.width(), 0), r, view);
+      break;
+    case IA2_SCROLL_TYPE_BOTTOM_EDGE:
+      root->ScrollToMakeVisible(
+          gfx::Rect(r.x(), r.bottom(), r.width(), 0), r, view);
+    break;
+    case IA2_SCROLL_TYPE_LEFT_EDGE:
+      root->ScrollToMakeVisible(
+          gfx::Rect(r.x(), r.y(), 0, r.height()), r, view);
+      break;
+    case IA2_SCROLL_TYPE_RIGHT_EDGE:
+      root->ScrollToMakeVisible(
+          gfx::Rect(r.right(), r.y(), 0, r.height()), r, view);
+      break;
+    case IA2_SCROLL_TYPE_ANYWHERE:
+    default:
+      root->ScrollToMakeVisible(r, r, view);
+      break;
+  }
+
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::scrollToPoint(
+    enum IA2CoordinateType coordinate_type,
+    LONG x,
+    LONG y) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  // TODO(dmazzoni): Extend this to scroll every scrollable element as
+  // needed, not just the root.
+  BrowserAccessibility* root = this;
+  while (root->parent())
+    root = root->parent();
+
+  if (coordinate_type == IA2_COORDTYPE_SCREEN_RELATIVE) {
+    gfx::Point top_left = manager_->GetViewBounds().origin();
+    x -= top_left.x();
+    y -= top_left.y();
+  } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
+    if (parent_) {
+      gfx::Rect parent_bounds = parent_->location();
+      x += parent_bounds.x();
+      y += parent_bounds.y();
+    }
+  } else {
+    return E_INVALIDARG;
+  }
+
+  gfx::Rect r = location_;
+  root->ScrollToMakeVisible(gfx::Rect(r.x(), r.y(), 0, 0),
+                            r,
+                            gfx::Rect(x, y, 0, 0));
 
   return S_OK;
 }
@@ -1918,6 +2004,74 @@ STDMETHODIMP BrowserAccessibilityWin::get_offsetAtPoint(
   return S_OK;
 }
 
+STDMETHODIMP BrowserAccessibilityWin::scrollSubstringTo(
+    LONG start_index,
+    LONG end_index,
+    enum IA2ScrollType scroll_type) {
+  // TODO(dmazzoni): adjust this for the start and end index, too.
+  return scrollTo(scroll_type);
+}
+
+STDMETHODIMP BrowserAccessibilityWin::scrollSubstringToPoint(
+    LONG start_index,
+    LONG end_index,
+    enum IA2CoordinateType coordinate_type,
+    LONG x, LONG y) {
+  // TODO(dmazzoni): adjust this for the start and end index, too.
+  return scrollToPoint(coordinate_type, x, y);
+}
+
+STDMETHODIMP BrowserAccessibilityWin::addSelection(
+    LONG start_offset, LONG end_offset) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  const string16& text_str = TextForIAccessibleText();
+  HandleSpecialTextOffset(text_str, &start_offset);
+  HandleSpecialTextOffset(text_str, &end_offset);
+
+  manager_->SetTextSelection(*this, start_offset, end_offset);
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::removeSelection(LONG selection_index) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (selection_index != 0)
+    return E_INVALIDARG;
+
+  manager_->SetTextSelection(*this, 0, 0);
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::setCaretOffset(LONG offset) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  const string16& text_str = TextForIAccessibleText();
+  HandleSpecialTextOffset(text_str, &offset);
+  manager_->SetTextSelection(*this, offset, offset);
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::setSelection(LONG selection_index,
+                                                   LONG start_offset,
+                                                   LONG end_offset) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (selection_index != 0)
+    return E_INVALIDARG;
+
+  const string16& text_str = TextForIAccessibleText();
+  HandleSpecialTextOffset(text_str, &start_offset);
+  HandleSpecialTextOffset(text_str, &end_offset);
+
+  manager_->SetTextSelection(*this, start_offset, end_offset);
+  return S_OK;
+}
+
 //
 // IAccessibleValue methods.
 //
@@ -2180,7 +2334,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_computedStyleForProperties(
 }
 
 STDMETHODIMP BrowserAccessibilityWin::scrollTo(boolean placeTopLeft) {
-  return E_NOTIMPL;
+  return scrollTo(placeTopLeft ?
+                  IA2_SCROLL_TYPE_TOP_LEFT :
+                  IA2_SCROLL_TYPE_ANYWHERE);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_parentNode(ISimpleDOMNode** node) {
