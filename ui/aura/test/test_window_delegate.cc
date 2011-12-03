@@ -56,6 +56,10 @@ ui::TouchStatus TestWindowDelegate::OnTouchEvent(TouchEvent* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
+bool TestWindowDelegate::CanFocus() {
+  return true;
+}
+
 bool TestWindowDelegate::ShouldActivate(Event* event) {
   return true;
 }

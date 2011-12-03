@@ -52,6 +52,9 @@ class AURA_EXPORT WindowDelegate {
 
   virtual ui::TouchStatus OnTouchEvent(TouchEvent* event) = 0;
 
+  // Returns true of the window can be focused.
+  virtual bool CanFocus() = 0;
+
   // Returns true if the window should be activated. |event| is either the mouse
   // event supplied if the activation is the result of a mouse, or the touch
   // event if the activation is the result of a touch, or NULL if activation is

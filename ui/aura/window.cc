@@ -368,8 +368,7 @@ bool Window::HasFocus() const {
 // propagation of events that would otherwise be targeted at windows behind it.
 // We then perform this same check on every window up to the root.
 bool Window::CanFocus() const {
-  // TODO(beng): Figure out how to consult the delegate wrt. focusability also.
-  if (!IsVisible() || !parent_)
+  if (!IsVisible() || !parent_ || (delegate_ && !delegate_->CanFocus()))
     return false;
 
   Windows::const_iterator i = std::find(parent_->children().begin(),

@@ -131,6 +131,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual bool OnMouseEvent(aura::MouseEvent* event) OVERRIDE;
   virtual ui::TouchStatus OnTouchEvent(aura::TouchEvent* event) OVERRIDE;
+  virtual bool CanFocus() OVERRIDE;
   virtual bool ShouldActivate(aura::Event* event) OVERRIDE;
   virtual void OnActivated() OVERRIDE;
   virtual void OnLostActive() OVERRIDE;

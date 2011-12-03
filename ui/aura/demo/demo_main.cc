@@ -53,6 +53,7 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   virtual ui::TouchStatus OnTouchEvent(aura::TouchEvent* event) OVERRIDE {
     return ui::TOUCH_STATUS_END;
   }
+  virtual bool CanFocus() OVERRIDE { return true; }
   virtual bool ShouldActivate(aura::Event* event) OVERRIDE { return true; }
   virtual void OnActivated() OVERRIDE {}
   virtual void OnLostActive() OVERRIDE {}

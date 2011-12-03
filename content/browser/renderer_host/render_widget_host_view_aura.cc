@@ -531,6 +531,10 @@ ui::TouchStatus RenderWidgetHostViewAura::OnTouchEvent(
   return DecideTouchStatus(touch_event_, point);
 }
 
+bool RenderWidgetHostViewAura::CanFocus() {
+  return popup_type_ == WebKit::WebPopupTypeNone;
+}
+
 bool RenderWidgetHostViewAura::ShouldActivate(aura::Event* event) {
   return false;
 }

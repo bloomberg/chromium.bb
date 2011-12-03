@@ -611,6 +611,10 @@ ui::TouchStatus NativeWidgetAura::OnTouchEvent(aura::TouchEvent* event) {
   return delegate_->OnTouchEvent(touch_event);
 }
 
+bool NativeWidgetAura::CanFocus() {
+  return true;
+}
+
 bool NativeWidgetAura::ShouldActivate(aura::Event* event) {
   return can_activate_;
 }
