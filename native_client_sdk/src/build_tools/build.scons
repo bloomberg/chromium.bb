@@ -131,8 +131,29 @@ if env['IS_WINDOWS']:
 # Put together the toolchain
 
 import gyp_extract
+import re
+
+def GypSources(gyp_data, pattern):
+  """Extract a sources from a target matching a given pattern.
+
+  Args:
+    gyp_data: list containing sources from gyp file.
+    pattern: re pattern that sources must match.
+  Returns:
+    A list of strings containing source filenames.
+  """
+  # Extract source files that match.
+  re_compiled = re.compile(pattern)
+  return [source_file for source_file in gyp_data
+          if re_compiled.match(source_file)]
 
 ppapi_base = os.path.join(env['SRC_DIR'], 'ppapi')
+
+# Unfortunately gyp_extract does not handle variables or includes so we must
+# pull the list of sources from ppapi_sources.gypi directly.
+ppapi_sources_gypi = open(os.path.join(ppapi_base,
+                                       'ppapi_sources.gypi'), 'r').read()
+ppapi_sources_map = eval(ppapi_sources_gypi)['variables']
 
 # Load ppapi_cpp.gypi
 ppapi_cpp_gypi = gyp_extract.LoadGypFile(os.path.join(ppapi_base,
@@ -143,25 +164,22 @@ ppapi_gl_gypi = gyp_extract.LoadGypFile(os.path.join(ppapi_base,
                                                      'ppapi_gl.gypi'))
 
 # From ppapi_cpp.gypi:ppapi_c:c/[^/]*\.h
-c_headers = gyp_extract.GypTargetSources(
-    ppapi_cpp_gypi, 'ppapi_c', 'c/[^/]*\.h')
+c_headers = GypSources(ppapi_sources_map['c_sources'], 'c/[^/]*\.h')
 
 # From ppapi_cpp.gypi:ppapi_c:c/dev/[^/]*\.h
-c_dev_headers = gyp_extract.GypTargetSources(
-    ppapi_cpp_gypi, 'ppapi_c', 'c/dev/[^/]*\.h')
+c_dev_headers = GypSources(ppapi_sources_map['c_sources'], 'c/dev/[^/]*\.h')
 
 # From ppapi_cpp.gypi:ppapi_cpp_objects:cpp/[^/]*\.h
 # From ppapi_cpp.gypi:ppapi_cpp:cpp/[^/]*\.h
 cpp_headers = (
-    gyp_extract.GypTargetSources(
-        ppapi_cpp_gypi, 'ppapi_cpp_objects', 'cpp/[^/]*\.h') +
+    GypSources(ppapi_sources_map['cpp_sources'], 'cpp/[^/]*\.h') +
     gyp_extract.GypTargetSources(
         ppapi_cpp_gypi, 'ppapi_cpp', 'cpp/[^/]*\.h')
 )
 
 # From ppapi_cpp.gypi:ppapi_cpp_objects:cpp/dev/[^/]*\.h
-cpp_dev_headers = gyp_extract.GypTargetSources(
-    ppapi_cpp_gypi, 'ppapi_cpp_objects', 'cpp/dev/[^/]*\.h')
+cpp_dev_headers = GypSources(ppapi_sources_map['cpp_sources'],
+                             'cpp/dev/[^/]*\.h')
 
 # From ppapi_gl.gypi:ppapi_gles2:.*\.h
 gles2_headers = gyp_extract.GypTargetSources(
@@ -186,8 +204,7 @@ cpp_dev_header_install = env.AddHeaderToSdk(
 # From ppapi_cpp.gypi:ppapi_cpp_objects:cpp/[^/]*\.cc
 # From ppapi_cpp.gypi:ppapi_cpp:cpp/[^/]*\.cc
 cpp_trusted_sources = (
-    gyp_extract.GypTargetSources(
-        ppapi_cpp_gypi, 'ppapi_cpp_objects', 'cpp/[^/]*\.cc') +
+    GypSources(ppapi_sources_map['cpp_sources'], 'cpp/[^/]*\.cc') +
     gyp_extract.GypTargetSources(
         ppapi_cpp_gypi, 'ppapi_cpp', 'cpp/[^/]*\.cc')
 )
