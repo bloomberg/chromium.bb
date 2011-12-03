@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/env_vars.h"
@@ -83,7 +84,7 @@ class TestRLZTracker : public RLZTracker {
   using RLZTracker::DelayedInit;
   using RLZTracker::Observe;
 
-  TestRLZTracker() : pingnow_called_(false), assume_not_ui_thread_(false) {
+  TestRLZTracker() : assume_not_ui_thread_(false) {
     set_tracker(this);
   }
 
@@ -91,8 +92,8 @@ class TestRLZTracker : public RLZTracker {
     set_tracker(NULL);
   }
 
-  bool pingnow_called() const {
-    return pingnow_called_;
+  bool was_ping_sent_for_brand(const std::string& brand) const {
+    return pinged_brands_.count(brand) > 0;
   }
 
   void set_assume_not_ui_thread(bool assume_not_ui_thread) {
@@ -118,8 +119,9 @@ class TestRLZTracker : public RLZTracker {
   virtual bool SendFinancialPing(const std::string& brand,
                                  const string16& lang,
                                  const string16& referral) OVERRIDE {
-    // Don't ping the server during tests.
-    pingnow_called_ = true;
+    // Don't ping the server during tests, just pretend as if we did.
+    EXPECT_FALSE(brand.empty());
+    pinged_brands_.insert(brand);
 
     // Set new access points RLZ string, like the actual server ping would have
     // done.
@@ -129,7 +131,7 @@ class TestRLZTracker : public RLZTracker {
     return true;
   }
 
-  bool pingnow_called_;
+  std::set<std::string> pinged_brands_;
   bool assume_not_ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRLZTracker);
@@ -140,12 +142,17 @@ class RlzLibTest : public testing::Test {
   virtual void TearDown() OVERRIDE;
 
  protected:
+  void SetMainBrand(const char* brand);
+  void SetReactivationBrand(const char* brand);
+  void SetRegistryBrandValue(const wchar_t* name, const char* brand);
+
   void SimulateOmniboxUsage();
   void SimulateHomepageUsage();
   void InvokeDelayedInit();
 
   void ExpectEventRecorded(const char* event_name, bool expected);
   void ExpectRlzPingSent(bool expected);
+  void ExpectReactivationRlzPingSent(bool expected);
 
   TestRLZTracker tracker_;
   RegistryOverrideManager override_manager_;
@@ -187,15 +194,40 @@ void RlzLibTest::SetUp() {
 
   // Make sure a non-organic brand code is set in the registry or the RLZTracker
   // is pretty much a no-op.
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  string16 reg_path = dist->GetStateKey();
-  RegKey key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_SET_VALUE);
-  ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(google_update::kRegRLZBrandField,
-                                          L"TEST"));
+  SetMainBrand("TEST");
+  SetReactivationBrand("");
 }
 
 void RlzLibTest::TearDown() {
   testing::Test::TearDown();
+}
+
+void RlzLibTest::SetMainBrand(const char* brand) {
+  SetRegistryBrandValue(google_update::kRegRLZBrandField, brand);
+  std::string check_brand;
+  google_util::GetBrand(&check_brand);
+  EXPECT_EQ(brand, check_brand);
+}
+
+void RlzLibTest::SetReactivationBrand(const char* brand) {
+  SetRegistryBrandValue(google_update::kRegRLZReactivationBrandField, brand);
+  std::string check_brand;
+  google_util::GetReactivationBrand(&check_brand);
+  EXPECT_EQ(brand, check_brand);
+}
+
+void RlzLibTest::SetRegistryBrandValue(const wchar_t* name,
+                                       const char* brand) {
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  string16 reg_path = dist->GetStateKey();
+  RegKey key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_SET_VALUE);
+  if (*brand == 0) {
+    LONG result = key.DeleteValue(name);
+    ASSERT_TRUE(ERROR_SUCCESS == result || ERROR_FILE_NOT_FOUND == result);
+  } else {
+    string16 brand16 = ASCIIToWide(brand);
+    ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(name, brand16.c_str()));
+  }
 }
 
 void RlzLibTest::SimulateOmniboxUsage() {
@@ -227,7 +259,15 @@ void RlzLibTest::ExpectEventRecorded(const char* event_name, bool expected) {
 }
 
 void RlzLibTest::ExpectRlzPingSent(bool expected) {
-  EXPECT_EQ(expected, tracker_.pingnow_called());
+  std::string brand;
+  google_util::GetBrand(&brand);
+  EXPECT_EQ(expected, tracker_.was_ping_sent_for_brand(brand.c_str()));
+}
+
+void RlzLibTest::ExpectReactivationRlzPingSent(bool expected) {
+  std::string brand;
+  google_util::GetReactivationBrand(&brand);
+  EXPECT_EQ(expected, tracker_.was_ping_sent_for_brand(brand.c_str()));
 }
 
 TEST_F(RlzLibTest, RecordProductEvent) {
@@ -549,3 +589,47 @@ TEST_F(RlzLibTest, ObserveHandlesBadArgs) {
                    content::NotificationService::AllSources(),
                    content::Details<NavigationEntry>(&entry));
 }
+
+TEST_F(RlzLibTest, ReactivationNonOrganicNonOrganic) {
+  SetReactivationBrand("REAC");
+
+  RLZTracker::InitRlzDelayed(true, 20, true, true);
+  InvokeDelayedInit();
+
+  ExpectRlzPingSent(true);
+  ExpectReactivationRlzPingSent(true);
+}
+
+TEST_F(RlzLibTest, ReactivationOrganicNonOrganic) {
+  SetMainBrand("GGLS");
+  SetReactivationBrand("REAC");
+
+  RLZTracker::InitRlzDelayed(true, 20, true, true);
+  InvokeDelayedInit();
+
+  ExpectRlzPingSent(false);
+  ExpectReactivationRlzPingSent(true);
+}
+
+TEST_F(RlzLibTest, ReactivationNonOrganicOrganic) {
+  SetMainBrand("TEST");
+  SetReactivationBrand("GGLS");
+
+  RLZTracker::InitRlzDelayed(true, 20, true, true);
+  InvokeDelayedInit();
+
+  ExpectRlzPingSent(true);
+  ExpectReactivationRlzPingSent(false);
+}
+
+TEST_F(RlzLibTest, ReactivationOrganicOrganic) {
+  SetMainBrand("GGLS");
+  SetReactivationBrand("GGRS");
+
+  RLZTracker::InitRlzDelayed(true, 20, true, true);
+  InvokeDelayedInit();
+
+  ExpectRlzPingSent(false);
+  ExpectReactivationRlzPingSent(false);
+}
+
