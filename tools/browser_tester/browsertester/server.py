@@ -162,6 +162,7 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
       self.server.listener.Log('REDIRECT %s (%s -> %s)' %
                                 (self.path, path, dest))
     else:
+      self.server.listener.Log('GET %s (%s)' % (self.path, path))
       # A normal GET request for transferring files, etc.
       f = self.send_head()
       if f:
@@ -175,7 +176,6 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
           time.sleep(delay)
         self.copyfile(f, self.wfile)
         f.close()
-      self.server.listener.Log('GET %s (%s)' % (self.path, path))
 
     self.server.ResetTimeout()
 
@@ -185,9 +185,15 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     pass
 
 
-# NOTE: SocketServer.ThreadingMixIn seems to cause stability problems
-# when using older versions of Python.
-class Server(BaseHTTPServer.HTTPServer):
+# The ThreadingMixIn allows the server to handle multiple requests
+# concurently (or at least as concurently as Python allows).  This is desirable
+# because server sockets only allow a limited "backlog" of pending connections
+# and in the worst case the browser could make multiple connections and exceed
+# this backlog - causing the server to drop requests.  Using ThreadingMixIn
+# helps reduce the chance this will happen.
+# There were apparently some problems using this Mixin with Python 2.5, but we
+# are no longer using anything older than 2.6.
+class Server(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
 
   def Configure(
     self, file_mapping, redirect_mapping, extensions_mapping, allow_404,
