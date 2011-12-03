@@ -11,6 +11,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
 #include "webkit/glue/password_form.h"
@@ -40,7 +41,7 @@ struct CONTENT_EXPORT FrameNavigateParams {
 
   // URL of the referrer of this load. WebKit generates this based on the
   // source of the event that caused the load.
-  GURL referrer;
+  content::Referrer referrer;
 
   // The type of transition.
   PageTransition transition;

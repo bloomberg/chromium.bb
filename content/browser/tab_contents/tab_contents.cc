@@ -160,7 +160,8 @@ void MakeNavigateParams(const NavigationEntry& entry,
   params->current_history_list_offset = controller.last_committed_entry_index();
   params->current_history_list_length = controller.entry_count();
   params->url = entry.url();
-  params->referrer = entry.referrer();
+  params->referrer = content::Referrer(entry.referrer(),
+                                       WebKit::WebReferrerPolicyDefault);
   params->transition = entry.transition_type();
   params->state = entry.content_state();
   params->navigation_type =
@@ -1751,12 +1752,12 @@ void TabContents::DocumentOnLoadCompletedInMainFrame(
 }
 
 void TabContents::RequestOpenURL(const GURL& url,
-                                 const GURL& referrer,
+                                 const content::Referrer& referrer,
                                  WindowOpenDisposition disposition,
                                  int64 source_frame_id) {
   // Delegate to RequestTransferURL because this is just the generic
   // case where |old_request_id| is empty.
-  RequestTransferURL(url, referrer, disposition, source_frame_id,
+  RequestTransferURL(url, referrer.url, disposition, source_frame_id,
                      GlobalRequestID());
 }
 

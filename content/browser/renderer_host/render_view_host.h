@@ -52,8 +52,9 @@ class ListValue;
 }
 
 namespace content {
-class RenderViewHostObserver;
 struct FileChooserParams;
+struct Referrer;
+class RenderViewHostObserver;
 struct ShowDesktopNotificationHostMsgParams;
 }
 
@@ -533,7 +534,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   void OnMsgContextMenu(const ContextMenuParams& params);
   void OnMsgToggleFullscreen(bool enter_fullscreen);
   void OnMsgOpenURL(const GURL& url,
-                    const GURL& referrer,
+                    const content::Referrer& referrer,
                     WindowOpenDisposition disposition,
                     int64 source_frame_id);
   void OnMsgDidContentsPreferredSizeChange(const gfx::Size& new_size);

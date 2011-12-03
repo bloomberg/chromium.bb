@@ -97,7 +97,8 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     static int page_id = 0;
     ViewHostMsg_FrameNavigate_Params params;
     InitNavigateParams(&params, ++page_id, url, type);
-    params.referrer = referrer;
+    params.referrer =
+        content::Referrer(referrer, WebKit::WebReferrerPolicyDefault);
 
     RenderViewHost* rvh = contents()->pending_rvh();
     if (!rvh) {

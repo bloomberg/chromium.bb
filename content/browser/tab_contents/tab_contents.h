@@ -510,7 +510,7 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
       RenderViewHost* render_view_host,
       int32 page_id) OVERRIDE;
   virtual void RequestOpenURL(const GURL& url,
-                              const GURL& referrer,
+                              const content::Referrer& referrer,
                               WindowOpenDisposition disposition,
                               int64 source_frame_id) OVERRIDE;
   virtual void RequestTransferURL(

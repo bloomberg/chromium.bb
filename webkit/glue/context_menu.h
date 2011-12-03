@@ -14,6 +14,7 @@
 #include "webkit/glue/webmenuitem.h"
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebReferrerPolicy.h"
 
 namespace webkit_glue {
 
@@ -125,6 +126,9 @@ struct WEBKIT_GLUE_EXPORT ContextMenuParams {
 
   // The character encoding of the frame on which the menu is invoked.
   std::string frame_charset;
+
+  // The referrer policy of the frame on which the menu is invoked.
+  WebKit::WebReferrerPolicy referrer_policy;
 
   webkit_glue::CustomContextMenuContext custom_context;
   std::vector<WebMenuItem> custom_items;

@@ -27,6 +27,7 @@
 #include "content/common/edit_command.h"
 #include "content/common/navigation_gesture.h"
 #include "content/public/common/page_zoom.h"
+#include "content/public/common/referrer.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/renderer/render_view.h"
@@ -714,7 +715,7 @@ class RenderViewImpl : public RenderWidget,
 
   void OpenURL(WebKit::WebFrame* frame,
                const GURL& url,
-               const GURL& referrer,
+               const content::Referrer& referrer,
                WebKit::WebNavigationPolicy policy);
 
   bool RunJavaScriptMessage(int type,
@@ -1003,7 +1004,7 @@ class RenderViewImpl : public RenderWidget,
   // of the page that initiated it. Specifically, when a load is committed this
   // is used to determine if that load originated from a client-side redirect.
   // It is empty if there is no top-level client-side redirect.
-  GURL completed_client_redirect_src_;
+  content::Referrer completed_client_redirect_src_;
 
   // Holds state pertaining to a navigation that we initiated.  This is held by
   // the WebDataSource::ExtraData attribute.  We use pending_navigation_state_

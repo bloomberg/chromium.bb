@@ -26,7 +26,7 @@ void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
                         content::PageTransition transition) {
   params->page_id = page_id;
   params->url = url;
-  params->referrer = GURL();
+  params->referrer = content::Referrer();
   params->transition = transition;
   params->redirects = std::vector<GURL>();
   params->should_update_history = false;
@@ -87,7 +87,7 @@ void TestRenderViewHost::SendNavigateWithTransition(
 
   params.page_id = page_id;
   params.url = url;
-  params.referrer = GURL();
+  params.referrer = content::Referrer();
   params.transition = transition;
   params.redirects = std::vector<GURL>();
   params.should_update_history = true;

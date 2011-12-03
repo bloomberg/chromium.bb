@@ -113,6 +113,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRange.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebReferrerPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSearchableFormData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
@@ -213,6 +214,7 @@ using WebKit::WebPoint;
 using WebKit::WebPopupMenuInfo;
 using WebKit::WebRange;
 using WebKit::WebRect;
+using WebKit::WebReferrerPolicy;
 using WebKit::WebScriptSource;
 using WebKit::WebSearchableFormData;
 using WebKit::WebSecurityOrigin;
@@ -246,6 +248,7 @@ using content::NavigationState;
 using content::RenderThread;
 using content::RenderViewObserver;
 using content::RenderViewVisitor;
+using content::Referrer;
 using content::V8ValueConverter;
 using webkit_glue::AltErrorPageResourceFetcher;
 using webkit_glue::FormField;
@@ -300,6 +303,13 @@ static bool IsReload(const ViewMsg_Navigate_Params& params) {
   return
       params.navigation_type == ViewMsg_Navigate_Type::RELOAD ||
       params.navigation_type == ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE;
+}
+
+static WebReferrerPolicy getReferrerPolicyFromRequest(
+    const WebURLRequest& request) {
+  return request.extraData() ?
+      static_cast<RequestExtraData*>(request.extraData())->referrer_policy() :
+      WebKit::WebReferrerPolicyDefault;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -771,13 +781,13 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
     if (main_frame->isViewSourceModeEnabled())
       request.setCachePolicy(WebURLRequest::ReturnCacheDataElseLoad);
 
-    if (params.referrer.is_valid()) {
-      if (!WebSecurityPolicy::shouldHideReferrer(
-              params.url,
-              WebString::fromUTF8(params.referrer.spec()))) {
-        request.setHTTPHeaderField(WebString::fromUTF8("Referer"),
-                                   WebString::fromUTF8(params.referrer.spec()));
-      }
+    if (params.referrer.url.is_valid()) {
+      WebString referrer = WebSecurityPolicy::generateReferrerHeader(
+          params.referrer.policy,
+          params.url,
+          WebString::fromUTF8(params.referrer.url.spec()));
+      if (!referrer.isEmpty())
+        request.setHTTPHeaderField(WebString::fromUTF8("Referer"), referrer);
     }
 
     if (!params.extra_headers.empty()) {
@@ -1143,16 +1153,17 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
     // If we have a valid consumed client redirect source,
     // the page contained a client redirect (meta refresh, document.loc...),
     // so we set the referrer and transition to match.
-    if (completed_client_redirect_src_.is_valid()) {
-      DCHECK(completed_client_redirect_src_ == params.redirects[0]);
+    if (completed_client_redirect_src_.url.is_valid()) {
+      DCHECK(completed_client_redirect_src_.url == params.redirects[0]);
       params.referrer = completed_client_redirect_src_;
       params.transition = static_cast<content::PageTransition>(
           params.transition | content::PAGE_TRANSITION_CLIENT_REDIRECT);
     } else {
       // Bug 654101: the referrer will be empty on https->http transitions. It
       // would be nice if we could get the real referrer from somewhere.
-      params.referrer = GURL(
-          original_request.httpHeaderField(WebString::fromUTF8("Referer")));
+      params.referrer = Referrer(GURL(
+          original_request.httpHeaderField(WebString::fromUTF8("Referer"))),
+          getReferrerPolicyFromRequest(original_request));
     }
 
     string16 method = request.httpMethod();
@@ -1237,7 +1248,7 @@ void RenderViewImpl::UpdateSessionHistory(WebFrame* frame) {
 
 void RenderViewImpl::OpenURL(WebFrame* frame,
                              const GURL& url,
-                             const GURL& referrer,
+                             const Referrer& referrer,
                              WebNavigationPolicy policy) {
   Send(new ViewHostMsg_OpenURL(
       routing_id_,
@@ -1981,7 +1992,8 @@ void RenderViewImpl::loadURLExternally(
     Send(new ViewHostMsg_DownloadUrl(routing_id_, request.url(), referrer,
                                      suggested_name));
   } else {
-    OpenURL(frame, request.url(), referrer, policy);
+    OpenURL(frame, request.url(),
+            Referrer(referrer, getReferrerPolicyFromRequest(request)), policy);
   }
 }
 
@@ -2018,7 +2030,9 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     // TODO(cevans): revisit whether this origin check is still necessary once
     // crbug.com/101395 is fixed.
     if (frame_url.GetOrigin() != url.GetOrigin()) {
-      GURL referrer(request.httpHeaderField(WebString::fromUTF8("Referer")));
+      Referrer referrer(
+          GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
+          getReferrerPolicyFromRequest(request));
       OpenURL(frame, url, referrer, default_policy);
       return WebKit::WebNavigationPolicyIgnore;
     }
@@ -2029,7 +2043,9 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
   if (is_content_initiated &&
       renderer_preferences_.browser_handles_top_level_requests &&
       IsNonLocalTopLevelNavigation(url, frame, type)) {
-    GURL referrer(request.httpHeaderField(WebString::fromUTF8("Referer")));
+    Referrer referrer(
+        GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
+        getReferrerPolicyFromRequest(request));
     // Reset these counters as the RenderView could be reused for the next
     // navigation.
     page_id_ = -1;
@@ -2072,8 +2088,11 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     }
 
     if (should_fork) {
-      GURL referrer(request.httpHeaderField(WebString::fromUTF8("Referer")));
-      OpenURL(frame, url, send_referrer ? referrer : GURL(), default_policy);
+      Referrer referrer(
+          GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
+          getReferrerPolicyFromRequest(request));
+      OpenURL(
+          frame, url, send_referrer ? referrer : Referrer(), default_policy);
       return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
     }
   }
@@ -2143,7 +2162,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
 
   if (is_fork || is_noreferrer_and_blank_target) {
     // Open the URL via the browser, not via WebKit.
-    OpenURL(frame, url, GURL(), default_policy);
+    OpenURL(frame, url, Referrer(), default_policy);
     return WebKit::WebNavigationPolicyIgnore;
   }
 
@@ -2241,8 +2260,14 @@ void RenderViewImpl::didCancelClientRedirect(WebFrame* frame) {
 
 void RenderViewImpl::didCompleteClientRedirect(
     WebFrame* frame, const WebURL& from) {
-  if (!frame->parent())
-    completed_client_redirect_src_ = from;
+  if (!frame->parent()) {
+    WebDataSource* ds = frame->provisionalDataSource();
+    // If there's no provisional data source, it's a reference fragment
+    // navigation.
+    completed_client_redirect_src_ = Referrer(
+        from, ds ? getReferrerPolicyFromRequest(ds->request()) :
+        frame->referrerPolicy());
+  }
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, DidCompleteClientRedirect(frame, from));
 }
@@ -2376,7 +2401,7 @@ void RenderViewImpl::didStartProvisionalLoad(WebFrame* frame) {
         NavigationGestureUser : NavigationGestureAuto;
 
     // Make sure redirect tracking state is clear for the new load.
-    completed_client_redirect_src_ = GURL();
+    completed_client_redirect_src_ = Referrer();
   } else if (frame->parent()->isLoading()) {
     // Take note of AUTO_SUBFRAME loads here, so that we can know how to
     // load an error page.  See didFailProvisionalLoad.
@@ -2566,7 +2591,7 @@ void RenderViewImpl::didCommitProvisionalLoad(WebFrame* frame,
 
   // If this committed load was initiated by a client redirect, we're
   // at the last stop now, so clear it.
-  completed_client_redirect_src_ = GURL();
+  completed_client_redirect_src_ = Referrer();
 
   // Check whether we have new encoding name.
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
@@ -3937,6 +3962,8 @@ void RenderViewImpl::OnGetAllSavableResourceLinksForCurrentPage(
                                              &referrers_list,
                                              &frames_list);
 
+  // FIXME(rdsmith): When GetAllSavableResourceLinksForCurrentPage starts to
+  // return referrers, it should also return the referrer policies.
   if (!webkit_glue::GetAllSavableResourceLinksForCurrentPage(
           webview(),
           page_url,

@@ -16,6 +16,7 @@
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_zoom.h"
+#include "content/public/common/referrer.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/webkit_param_traits.h"
@@ -30,6 +31,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebReferrerPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/range/range.h"
@@ -57,6 +59,7 @@ IPC_ENUM_TRAITS(ViewMsg_Navigate_Type::Value)
 IPC_ENUM_TRAITS(WebKit::WebContextMenuData::MediaType)
 IPC_ENUM_TRAITS(WebKit::WebMediaPlayerAction::Type)
 IPC_ENUM_TRAITS(WebKit::WebPopupType)
+IPC_ENUM_TRAITS(WebKit::WebReferrerPolicy)
 IPC_ENUM_TRAITS(WebKit::WebTextDirection)
 IPC_ENUM_TRAITS(WebMenuItem::Type)
 IPC_ENUM_TRAITS(WindowContainerType)
@@ -258,6 +261,11 @@ IPC_STRUCT_TRAITS_BEGIN(content::FrameNavigateParams)
   IPC_STRUCT_TRAITS_MEMBER(password_form)
   IPC_STRUCT_TRAITS_MEMBER(contents_mime_type)
   IPC_STRUCT_TRAITS_MEMBER(socket_address)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::Referrer)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(policy)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
@@ -574,8 +582,7 @@ IPC_STRUCT_BEGIN(ViewMsg_Navigate_Params)
 
   // The URL to send in the "Referer" header field. Can be empty if there is
   // no referrer.
-  // TODO: consider folding this into extra_headers.
-  IPC_STRUCT_MEMBER(GURL, referrer)
+  IPC_STRUCT_MEMBER(content::Referrer, referrer)
 
   // The type of transition.
   IPC_STRUCT_MEMBER(content::PageTransition, transition)
@@ -1582,7 +1589,7 @@ IPC_SYNC_MESSAGE_ROUTED4_2(ViewHostMsg_RunJavaScriptMessage,
 // Requests that the given URL be opened in the specified manner.
 IPC_MESSAGE_ROUTED4(ViewHostMsg_OpenURL,
                     GURL /* url */,
-                    GURL /* referrer */,
+                    content::Referrer /* referrer */,
                     WindowOpenDisposition /* disposition */,
                     int64 /* frame id */)
 

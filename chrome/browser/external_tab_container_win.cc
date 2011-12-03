@@ -356,7 +356,9 @@ TabContents* ExternalTabContainer::OpenURLFromTab(TabContents* source,
         // ViewHostMsg_FrameNavigate_Params structure. Another option could be
         // to refactor the UpdateHistoryForNavigation function in TabContents.
         content::FrameNavigateParams nav_params;
-        nav_params.referrer = params.referrer;
+        nav_params.referrer = content::Referrer(
+            params.referrer,
+            WebKit::WebReferrerPolicyDefault);
         nav_params.url = params.url;
         nav_params.page_id = -1;
         nav_params.transition = content::PAGE_TRANSITION_LINK;

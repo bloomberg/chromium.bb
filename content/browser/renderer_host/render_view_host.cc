@@ -896,7 +896,7 @@ void RenderViewHost::OnMsgNavigate(const IPC::Message& msg) {
   // the URL.  To prevent this attack, we block the renderer from inserting
   // banned URLs into the navigation controller in the first place.
   FilterURL(policy, renderer_id, &validated_params.url);
-  FilterURL(policy, renderer_id, &validated_params.referrer);
+  FilterURL(policy, renderer_id, &validated_params.referrer.url);
   for (std::vector<GURL>::iterator it(validated_params.redirects.begin());
       it != validated_params.redirects.end(); ++it) {
     FilterURL(policy, renderer_id, &(*it));
@@ -1007,7 +1007,7 @@ void RenderViewHost::OnMsgToggleFullscreen(bool enter_fullscreen) {
 }
 
 void RenderViewHost::OnMsgOpenURL(const GURL& url,
-                                  const GURL& referrer,
+                                  const content::Referrer& referrer,
                                   WindowOpenDisposition disposition,
                                   int64 source_frame_id) {
   GURL validated_url(url);

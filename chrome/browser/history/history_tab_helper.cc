@@ -50,7 +50,7 @@ HistoryTabHelper::CreateHistoryAddPageArgs(
   scoped_refptr<history::HistoryAddPageArgs> add_page_args(
       new history::HistoryAddPageArgs(
           params.url, base::Time::Now(), tab_contents(), params.page_id,
-          params.referrer, params.redirects, params.transition,
+          params.referrer.url, params.redirects, params.transition,
           history::SOURCE_BROWSED, details.did_replace_entry));
   if (content::PageTransitionIsMainFrame(params.transition) &&
       virtual_url != params.url) {
