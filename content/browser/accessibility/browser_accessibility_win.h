@@ -77,7 +77,7 @@ BrowserAccessibilityWin
   // Represents a non-static text node in IAccessibleHypertext. This character
   // is embedded in the response to IAccessibleText::get_text, indicating the
   // position where a non-static text child object appears.
-  static const char16 kEmbeddedCharacter[];
+  CONTENT_EXPORT static const char16 kEmbeddedCharacter[];
 
   CONTENT_EXPORT BrowserAccessibilityWin();
 
@@ -87,7 +87,7 @@ BrowserAccessibilityWin
   // BrowserAccessibility methods.
   //
   CONTENT_EXPORT virtual void PreInitialize();
-CONTENT_EXPORT virtual void PostInitialize();
+  CONTENT_EXPORT virtual void PostInitialize();
   CONTENT_EXPORT virtual void NativeAddReference();
   CONTENT_EXPORT virtual void NativeReleaseReference();
 
