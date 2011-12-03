@@ -48,7 +48,7 @@ void BrowserAccessibility::DetachTree(
   parent_ = NULL;
 }
 
-void BrowserAccessibility::Initialize(
+void BrowserAccessibility::PreInitialize(
     BrowserAccessibilityManager* manager,
     BrowserAccessibility* parent,
     int32 child_id,
@@ -76,11 +76,7 @@ void BrowserAccessibility::Initialize(
   cell_ids_ = src.cell_ids;
   unique_cell_ids_ = src.unique_cell_ids;
 
-  Initialize();
-}
-
-void BrowserAccessibility::Initialize() {
-  instance_active_ = true;
+  PreInitialize();
 }
 
 void BrowserAccessibility::AddChild(BrowserAccessibility* child) {
@@ -269,7 +265,7 @@ void BrowserAccessibility::InternalReleaseReference(bool recursive) {
     // Allow the object to fire a TEXT_REMOVED notification.
     name_.clear();
     value_.clear();
-    SendNodeUpdateEvents();
+    PostInitialize();
 
     manager_->NotifyAccessibilityEvent(
         ViewHostMsg_AccEvent::OBJECT_HIDE, this);
@@ -361,4 +357,8 @@ string16 BrowserAccessibility::GetTextRecursive() const {
   for (size_t i = 0; i < children_.size(); ++i)
     result += children_[i]->GetTextRecursive();
   return result;
+}
+
+void BrowserAccessibility::PreInitialize() {
+  instance_active_ = true;
 }
