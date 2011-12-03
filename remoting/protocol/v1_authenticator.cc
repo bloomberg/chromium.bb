@@ -87,11 +87,11 @@ V1ClientAuthenticator::CreateChannelAuthenticator() const {
 
 V1HostAuthenticator::V1HostAuthenticator(
     const std::string& local_cert,
-    crypto::RSAPrivateKey* local_private_key,
+    const crypto::RSAPrivateKey* local_private_key,
     const std::string& shared_secret,
     const std::string& remote_jid)
     : local_cert_(local_cert),
-      local_private_key_(local_private_key),
+      local_private_key_(local_private_key->Copy()),
       shared_secret_(shared_secret),
       remote_jid_(remote_jid),
       state_(WAITING_MESSAGE) {
@@ -141,22 +141,16 @@ ChannelAuthenticator*
 V1HostAuthenticator::CreateChannelAuthenticator() const {
   DCHECK_EQ(state_, ACCEPTED);
   return new V1HostChannelAuthenticator(
-      local_cert_, local_private_key_, shared_secret_);
+      local_cert_, local_private_key_.get(), shared_secret_);
 };
 
 V1HostAuthenticatorFactory::V1HostAuthenticatorFactory(
     const std::string& local_cert,
-    crypto::RSAPrivateKey* local_private_key,
+    const crypto::RSAPrivateKey* local_private_key,
     const std::string& shared_secret)
     : local_cert_(local_cert),
+      local_private_key_(local_private_key->Copy()),
       shared_secret_(shared_secret) {
-  DCHECK(local_private_key);
-
-  // TODO(hclam): Need a better way to clone a key. See crbug.com/105220 .
-  std::vector<uint8> key_bytes;
-  CHECK(local_private_key->ExportPrivateKey(&key_bytes));
-  local_private_key_.reset(
-      crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_bytes));
   CHECK(local_private_key_.get());
 }
 

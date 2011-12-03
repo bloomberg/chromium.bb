@@ -42,7 +42,7 @@ class V1HostAuthenticator : public Authenticator {
  public:
   // Doesn't take ownership of |local_private_key|.
   V1HostAuthenticator(const std::string& local_cert,
-                      crypto::RSAPrivateKey* local_private_key,
+                      const crypto::RSAPrivateKey* local_private_key,
                       const std::string& shared_secret,
                       const std::string& remote_jid);
   virtual ~V1HostAuthenticator();
@@ -55,7 +55,7 @@ class V1HostAuthenticator : public Authenticator {
 
  private:
   std::string local_cert_;
-  crypto::RSAPrivateKey* local_private_key_;
+  scoped_ptr<crypto::RSAPrivateKey> local_private_key_;
   std::string shared_secret_;
   std::string remote_jid_;
   State state_;
@@ -67,7 +67,7 @@ class V1HostAuthenticatorFactory : public AuthenticatorFactory {
  public:
   // Doesn't take ownership of |local_private_key|.
   V1HostAuthenticatorFactory(const std::string& local_cert,
-                             crypto::RSAPrivateKey* local_private_key,
+                             const crypto::RSAPrivateKey* local_private_key,
                              const std::string& shared_secret);
   virtual ~V1HostAuthenticatorFactory();
 
