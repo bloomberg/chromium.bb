@@ -943,6 +943,10 @@
         'browser/extensions/app_notify_channel_ui.h',
         'browser/extensions/apps_promo.cc',
         'browser/extensions/apps_promo.h',
+        'browser/extensions/browser_action_test_util.h',
+        'browser/extensions/browser_action_test_util_gtk.cc',
+        'browser/extensions/browser_action_test_util_mac.mm',
+        'browser/extensions/browser_action_test_util_views.cc',
         'browser/extensions/component_loader.cc',
         'browser/extensions/component_loader.h',
         'browser/extensions/convert_user_script.cc',
@@ -4894,6 +4898,7 @@
                 ['include', '^browser/ui/window_sizer.h'],
 
                 # Other excluded stuff.
+                ['exclude', '^browser/extensions/browser_action_test_util_gtk.cc'],
                 ['exclude', '^browser/extensions/extension_host_mac.h'],
                 ['exclude', '^browser/extensions/extension_host_mac.mm'],
                 ['exclude', '^browser/extensions/external_registry_extension_loader_win.cc'],

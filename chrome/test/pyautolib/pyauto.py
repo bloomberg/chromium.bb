@@ -1488,6 +1488,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                         u'incognito': False,
                         u'profile_path': u'Default',
                         u'fullscreen': False,
+                        u'visible_page_actions':
+                          [u'dgcoklnmbeljaehamekjpeidmbicddfj',
+                           u'osfcklnfasdofpcldmalwpicslasdfgd']
                         u'selected_tab': 0,
                         u'tabs': [ {
                           u'index': 0,
@@ -1837,6 +1840,38 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict)
 
+  def TriggerPageActionById(self, id, windex=0):
+    """Trigger page action asynchronously in the active tab.
+
+    The page action icon must be displayed before invoking this function.
+
+    Args:
+      id: The string id of the extension.
+      windex: Integer index of the browser window to use; defaults to 0
+              (first window).
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'TriggerPageActionById',
+      'id': id,
+      'windex': windex,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+
+  def TriggerBrowserActionById(self, id, windex=0):
+    """Trigger browser action asynchronously in the active tab.
+
+    Args:
+      id: The string id of the extension.
+      windex: Integer index of the browser window to use; defaults to 0
+              (first window).
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'TriggerBrowserActionById',
+      'id': id,
+      'windex': windex,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+
   def UpdateExtensionsNow(self):
     """Auto-updates installed extensions.
 
@@ -1867,6 +1902,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       extension_id: (optional) ID of the extension.
       url: (optional) URL of the extension view.
       view_type: (optional) Type of the extension view.
+        ['EXTENSION_BACKGROUND_PAGE'|'EXTENSION_POPUP'|'EXTENSION_INFOBAR'|
+         'EXTENSION_DIALOG']
 
     Returns:
       The 'view' property of the extension view.

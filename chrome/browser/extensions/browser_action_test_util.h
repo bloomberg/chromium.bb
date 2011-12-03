@@ -27,7 +27,7 @@ class BrowserActionTestUtil {
   // Returns the number of browser action currently visible.
   int VisibleBrowserActions();
 
-#if defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS) && defined(UNIT_TEST)
   // Waits for a browser action at |index| to get updated.
   void WaitForBrowserActionUpdated(int index);
 #endif
