@@ -3264,7 +3264,6 @@
         'browser/sync/notifier/non_blocking_invalidation_notifier_unittest.cc',
         'browser/sync/notifier/p2p_notifier_unittest.cc',
         'browser/sync/notifier/registration_manager_unittest.cc',
-        'browser/sync/profile_sync_factory_mock.h',
         'browser/sync/protocol/proto_enum_conversions_unittest.cc',
         'browser/sync/protocol/proto_value_conversions_unittest.cc',
         'browser/sync/sessions/ordered_commit_set_unittest.cc',

@@ -33,7 +33,7 @@
     'public/browser/content_ipc_logging.h',
     'public/browser/devtools_agent_host_registry.h',
     'public/browser/devtools_client_host.h',
-    'public/browser/devtools_frontend_window_delegate.h',
+    'public/browser/devtools_frontend_host_delegate.h',
     'public/browser/devtools_http_handler.h',
     'public/browser/devtools_http_handler_delegate.h',
     'public/browser/devtools_manager.h',
