@@ -241,8 +241,6 @@ void BrowserMainLoop::EarlyInitialization() {
     net::SSLConfigService::DisableFalseStart();
   if (parsed_command_line_.HasSwitch(switches::kEnableSSLCachedInfo))
     net::SSLConfigService::EnableCachedInfo();
-  if (parsed_command_line_.HasSwitch(switches::kEnableOriginBoundCerts))
-    net::SSLConfigService::EnableOriginBoundCerts();
   if (parsed_command_line_.HasSwitch(
           switches::kEnableDNSCertProvenanceChecking)) {
     net::SSLConfigService::EnableDNSCertProvenanceChecking();

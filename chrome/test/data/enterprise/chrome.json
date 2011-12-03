@@ -38,6 +38,7 @@
   "DownloadDirectory": "Downloads",
   "EditBookmarksEnabled": true,
   "EnableAuthNegotiatePort": false,
+  "EnableOriginBoundCerts": false,
   "EnabledPlugins": ["Java"],
   "ExtensionInstallBlacklist": ["extension_id1", "extension_id2"],
   "ExtensionInstallForcelist": ["extension_id1;https://clients2.google.com/service/update2/crx"],

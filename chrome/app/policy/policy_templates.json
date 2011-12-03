@@ -100,7 +100,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 113
+#   For your editing convenience: highest ID currently used: 114
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -429,7 +429,7 @@
       'example_value': True,
       'id': 13,
       'caption': '''Enable <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> proxy''',
-      'desc': '''      Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to act as a proxy between <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> and legacy printers connected to the machine.
+      'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to act as a proxy between <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> and legacy printers connected to the machine.
 
       If this setting is enabled or not configured, users can enable the cloud print proxy by authentication with their Google account.
 
@@ -2097,7 +2097,7 @@
       'example_value': True,
       'id': 109,
       'caption': '''Enable submission of documents to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>''',
-      'desc': '''      Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to submit documents to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> for printing.  NOTE: This only affects <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> support in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.  It does not prevent users from submitting print jobs on web sites.
+      'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to submit documents to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> for printing.  NOTE: This only affects <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> support in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.  It does not prevent users from submitting print jobs on web sites.
 
       If this setting is enabled or not configured, users can print to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> from the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> print dialog.
 
@@ -2128,6 +2128,19 @@
       'desc': '''The name of the enterprise web store, which will appear underneath the app icon on the new tab page. This setting has no effect if EnterpriseWebStoreURL is not set.
 
       If this setting is disabled, the enterprise web store app (if it exists) will be labeled with its URL.''',
+    },
+    {
+      'name': 'EnableOriginBoundCerts',
+      'type': 'main',
+      'supported_on': ['chrome.*:17-'],
+      'features': {'dynamic_refresh': 1},
+      'future': True,
+      'example_value': True,
+      'id': 114,
+      'caption': '''Enable TLS origin-bound certificates extension''',
+      'desc': '''Specifies whether the TLS origin-bound certificates extension should be enabled.
+
+      This setting is used to enable the TLS origin-bound certificates extension for testing.  This experimental setting will be removed in the future.''',
     },
   ],
   'messages': {

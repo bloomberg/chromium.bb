@@ -318,6 +318,7 @@ extern const char kCertRevocationCheckingEnabled[];
 extern const char kSSL3Enabled[];
 extern const char kTLS1Enabled[];
 extern const char kCipherSuiteBlacklist[];
+extern const char kEnableOriginBoundCerts[];
 
 extern const char kMetricsClientID[];
 extern const char kMetricsSessionID[];

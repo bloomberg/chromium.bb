@@ -120,6 +120,7 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
     'ProxyPacUrl': ('http://localhost:8080/proxy.pac', [],
                     [ 'win', 'mac', 'linux' ]),
     'ProxyBypassList': ('localhost', [], [ 'win', 'mac', 'linux' ]),
+    'EnableOriginBoundCerts': (False, []),
     'AuthSchemes': ('AuthSchemes', []),
     'DisableAuthNegotiateCnameLookup': (True, []),
     'EnableAuthNegotiatePort': (False, []),

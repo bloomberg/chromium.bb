@@ -901,6 +901,7 @@ const char kCertRevocationCheckingEnabled[] = "ssl.rev_checking.enabled";
 const char kSSL3Enabled[] = "ssl.ssl3.enabled";
 const char kTLS1Enabled[] = "ssl.tls1.enabled";
 const char kCipherSuiteBlacklist[] = "ssl.cipher_suites.blacklist";
+const char kEnableOriginBoundCerts[] = "ssl.origin_bound_certs.enabled";
 
 // The metrics client GUID and session ID.
 const char kMetricsClientID[] = "user_experience_metrics.client_id";

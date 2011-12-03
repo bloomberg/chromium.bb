@@ -140,6 +140,7 @@ class SSLConfigServiceManagerPref
   BooleanPrefMember rev_checking_enabled_;
   BooleanPrefMember ssl3_enabled_;
   BooleanPrefMember tls1_enabled_;
+  BooleanPrefMember origin_bound_certs_enabled_;
 
   // The cached list of disabled SSL cipher suites.
   std::vector<uint16> disabled_cipher_suites_;
@@ -158,6 +159,8 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
                              local_state, this);
   ssl3_enabled_.Init(prefs::kSSL3Enabled, local_state, this);
   tls1_enabled_.Init(prefs::kTLS1Enabled, local_state, this);
+  origin_bound_certs_enabled_.Init(prefs::kEnableOriginBoundCerts,
+                                   local_state, this);
   pref_change_registrar_.Init(local_state);
   pref_change_registrar_.Add(prefs::kCipherSuiteBlacklist, this);
 
@@ -176,6 +179,8 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefService* prefs) {
                              default_config.ssl3_enabled);
   prefs->RegisterBooleanPref(prefs::kTLS1Enabled,
                              default_config.tls1_enabled);
+  prefs->RegisterBooleanPref(prefs::kEnableOriginBoundCerts,
+                             default_config.origin_bound_certs_enabled);
   prefs->RegisterListPref(prefs::kCipherSuiteBlacklist);
   // The Options menu used to allow changing the ssl.ssl3.enabled and
   // ssl.tls1.enabled preferences, so some users' Local State may have
@@ -221,6 +226,7 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
   config->ssl3_enabled = ssl3_enabled_.GetValue();
   config->tls1_enabled = tls1_enabled_.GetValue();
   config->disabled_cipher_suites = disabled_cipher_suites_;
+  config->origin_bound_certs_enabled = origin_bound_certs_enabled_.GetValue();
   SSLConfigServicePref::SetSSLConfigFlags(config);
 }
 

@@ -22,6 +22,7 @@
   "DnsPrefetchingEnabled": false,
   "EditBookmarksEnabled":false,
   "EnableAuthNegotiatePort": true,
+  "EnableOriginBoundCerts": true,
   "HomepageIsNewTabPage": false,
   "HomepageLocation": "http://chromium.org",
   "IncognitoEnabled": false,

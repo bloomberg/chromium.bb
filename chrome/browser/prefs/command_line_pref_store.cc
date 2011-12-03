@@ -46,6 +46,8 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
         prefs::kAllowCrossOriginAuthPrompt, true },
       { switches::kDisableSSL3, prefs::kSSL3Enabled, false },
       { switches::kDisableTLS1, prefs::kTLS1Enabled, false },
+      { switches::kEnableOriginBoundCerts, prefs::kEnableOriginBoundCerts,
+          true },
 };
 
 const CommandLinePrefStore::IntegerSwitchToPreferenceMapEntry

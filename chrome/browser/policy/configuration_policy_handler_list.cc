@@ -124,6 +124,8 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kManagedDefaultNotificationsSetting },
   { Value::TYPE_INTEGER, kPolicyDefaultGeolocationSetting,
     prefs::kManagedDefaultGeolocationSetting },
+  { Value::TYPE_BOOLEAN, kPolicyEnableOriginBoundCerts,
+    prefs::kEnableOriginBoundCerts },
   { Value::TYPE_STRING, kPolicyAuthSchemes,
     prefs::kAuthSchemes },
   { Value::TYPE_BOOLEAN, kPolicyDisableAuthNegotiateCnameLookup,

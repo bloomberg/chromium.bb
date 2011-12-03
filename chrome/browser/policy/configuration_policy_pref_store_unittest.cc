@@ -215,6 +215,8 @@ INSTANTIATE_TEST_CASE_P(
                     prefs::kSavingBrowserHistoryDisabled),
         TypeAndName(kPolicySavingBrowserHistoryDisabled,
                     prefs::kSavingBrowserHistoryDisabled),
+        TypeAndName(kPolicyEnableOriginBoundCerts,
+                    prefs::kEnableOriginBoundCerts),
         TypeAndName(kPolicyDisableAuthNegotiateCnameLookup,
                     prefs::kDisableAuthNegotiateCnameLookup),
         TypeAndName(kPolicyEnableAuthNegotiatePort,
