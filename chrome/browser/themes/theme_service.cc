@@ -220,20 +220,6 @@ void ThemeService::Init(Profile* profile) {
   LoadThemePrefs();
 }
 
-const gfx::Image* ThemeService::GetImageNamed(int id) const {
-  DCHECK(CalledOnValidThread());
-
-  const gfx::Image* image = NULL;
-
-  if (theme_pack_.get())
-    image = theme_pack_->GetImageNamed(id);
-
-  if (!image)
-    image = &rb_.GetNativeImageNamed(id);
-
-  return image;
-}
-
 SkBitmap* ThemeService::GetBitmapNamed(int id) const {
   DCHECK(CalledOnValidThread());
 

@@ -28,10 +28,6 @@ class GtkThemeService;
 class OmniboxView;
 class SkBitmap;
 
-namespace gfx {
-class Image;
-}
-
 class OmniboxPopupViewGtk : public AutocompletePopupView,
                             public content::NotificationObserver {
  public:
@@ -79,7 +75,7 @@ class OmniboxPopupViewGtk : public AutocompletePopupView,
   // Accept a line of the results, for example, when the user clicks a line.
   void AcceptLine(size_t line, WindowOpenDisposition disposition);
 
-  const gfx::Image* IconForMatch(const AutocompleteMatch& match, bool selected);
+  GdkPixbuf* IconForMatch(const AutocompleteMatch& match, bool selected);
 
   CHROMEGTK_CALLBACK_1(OmniboxPopupViewGtk, gboolean, HandleMotion,
                        GdkEventMotion*);
@@ -112,8 +108,8 @@ class OmniboxPopupViewGtk : public AutocompletePopupView,
 
   // Used to cache GdkPixbufs and map them from the SkBitmaps they were created
   // from.
-  typedef std::map<const SkBitmap*, gfx::Image*> ImageMap;
-  ImageMap images_;
+  typedef std::map<const SkBitmap*, GdkPixbuf*> PixbufMap;
+  PixbufMap pixbufs_;
 
   // A list of colors which we should use for drawing the popup. These change
   // between gtk and normal mode.
