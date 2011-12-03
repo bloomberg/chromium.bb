@@ -188,13 +188,13 @@ class ServerCACertComboboxModel : public ui::ComboboxModel {
   }
   virtual ~ServerCACertComboboxModel() {}
   virtual int GetItemCount() {
-    if (!cert_library_->CertificatesLoaded())
+    if (cert_library_->CertificatesLoading())
       return 1;  // "Loading"
     // First "Default", then the certs, then "Do not check".
     return cert_library_->GetCACertificates().Size() + 2;
   }
   virtual string16 GetItemAt(int combo_index) {
-    if (!cert_library_->CertificatesLoaded())
+    if (cert_library_->CertificatesLoading())
       return l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING);
     if (combo_index == 0)
@@ -220,7 +220,7 @@ class UserCertComboboxModel : public ui::ComboboxModel {
   }
   virtual ~UserCertComboboxModel() {}
   virtual int GetItemCount() {
-    if (!cert_library_->CertificatesLoaded())
+    if (cert_library_->CertificatesLoading())
       return 1;  // "Loading"
     int num_certs = cert_library_->GetUserCertificates().Size();
     if (num_certs == 0)
@@ -228,7 +228,7 @@ class UserCertComboboxModel : public ui::ComboboxModel {
     return num_certs;
   }
   virtual string16 GetItemAt(int combo_index) {
-    if (!cert_library_->CertificatesLoaded())
+    if (cert_library_->CertificatesLoading())
       return l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING);
     if (cert_library_->GetUserCertificates().Size() == 0)
@@ -385,7 +385,7 @@ void WifiConfigView::RefreshEapFields() {
     passphrase_textfield_->SetText(string16());
 
   // User certs only for EAP-TLS
-  bool certs_loading = !cert_library_->CertificatesLoaded();
+  bool certs_loading = cert_library_->CertificatesLoading();
   bool user_cert_enabled = (selected == EAP_METHOD_INDEX_TLS);
   user_cert_label_->SetEnabled(user_cert_enabled);
   bool have_user_certs = !certs_loading && HaveUserCerts();

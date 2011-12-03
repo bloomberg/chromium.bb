@@ -80,6 +80,9 @@ class CertLibrary {
   // Must be called from the UI thread.
   virtual void RequestCertificates() = 0;
 
+  // Returns true when the certificate list has been requested but not loaded.
+  virtual bool CertificatesLoading() const = 0;
+
   // Returns true when the certificate list has been initiailized.
   virtual bool CertificatesLoaded() const = 0;
 
