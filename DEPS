@@ -31,6 +31,7 @@ vars = {
   "nacl_toolchain_revision": "7258",
 
   "libjingle_revision": "95",
+  "libphonenumber_revision": "407",
   "libvpx_revision": "109236",
   "ffmpeg_revision": "112050",
   "sfntly_revision": "111",
@@ -298,6 +299,16 @@ deps = {
 
   "src/third_party/smhasher/src":
     (Var("googlecode_url") % "smhasher") + "/trunk@136",
+
+  "src/third_party/libphonenumber/src/phonenumbers":
+     (Var("googlecode_url") % "libphonenumber") +
+         "/trunk/cpp/src/phonenumbers@" + Var("libphonenumber_revision"),
+  "src/third_party/libphonenumber/src/test":
+     (Var("googlecode_url") % "libphonenumber") + "/trunk/cpp/test@" +
+         Var("libphonenumber_revision"),
+  "src/third_party/libphonenumber/src/resources":
+     (Var("googlecode_url") % "libphonenumber") + "/trunk/resources@" +
+         Var("libphonenumber_revision"),
 }
 
 
