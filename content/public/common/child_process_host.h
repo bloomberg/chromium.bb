@@ -17,12 +17,12 @@ namespace content {
 class ChildProcessHostDelegate;
 
 // Interface that all users of ChildProcessHost need to provide.
-class ChildProcessHost : public IPC::Message::Sender {
+class CONTENT_EXPORT ChildProcessHost : public IPC::Message::Sender {
  public:
   virtual ~ChildProcessHost() {}
 
   // Used to create a child process host. The delegate must outlive this object.
-  CONTENT_EXPORT static ChildProcessHost* Create(
+  static ChildProcessHost* Create(
       ChildProcessHostDelegate* delegate);
 
   // These flags may be passed to GetChildPath in order to alter its behavior,
@@ -70,7 +70,7 @@ class ChildProcessHost : public IPC::Message::Sender {
   // if none of these special behaviors are required.
   //
   // On failure, returns an empty FilePath.
-  CONTENT_EXPORT static FilePath GetChildPath(int flags);
+  static FilePath GetChildPath(int flags);
 
   // Send the shutdown message to the child process.
   // Does not check with the delegate's CanShutdown.
