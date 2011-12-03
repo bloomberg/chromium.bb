@@ -5,8 +5,8 @@
 #include "webkit/support/weburl_loader_mock.h"
 
 #include "base/logging.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
 #include "webkit/support/weburl_loader_mock_factory.h"
 
 WebURLLoaderMock::WebURLLoaderMock(WebURLLoaderMockFactory* factory,

@@ -12,8 +12,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 

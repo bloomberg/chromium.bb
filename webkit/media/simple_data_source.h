@@ -18,10 +18,10 @@
 #include "media/base/filter_factories.h"
 #include "media/base/filters.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoader.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoader.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLResponse.h"
 #include "webkit/media/web_data_source.h"
 
 class MessageLoop;

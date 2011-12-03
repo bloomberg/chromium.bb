@@ -8,7 +8,7 @@
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMessagePortChannelClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 using WebKit::WebMessagePortChannel;
 using WebKit::WebMessagePortChannelArray;

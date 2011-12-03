@@ -10,7 +10,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"

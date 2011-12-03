@@ -8,9 +8,9 @@
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBlobData.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebBlobData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
 
 using WebKit::WebBlobData;
 using WebKit::WebData;

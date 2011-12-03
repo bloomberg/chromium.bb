@@ -23,7 +23,7 @@
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPoint.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/resource/resource_bundle.h"

@@ -11,9 +11,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotification.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPermissionCallback.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 
 using WebKit::WebNotification;
 using WebKit::WebNotificationPresenter;

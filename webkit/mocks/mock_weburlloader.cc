@@ -4,10 +4,10 @@
 
 #include "webkit/mocks/mock_weburlloader.h"
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 
 namespace webkit_glue {
 

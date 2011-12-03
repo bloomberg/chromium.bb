@@ -38,7 +38,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
 #if defined(TOOLKIT_USES_GTK)
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #endif

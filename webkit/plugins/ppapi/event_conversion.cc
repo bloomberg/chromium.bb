@@ -16,7 +16,7 @@
 #include "ppapi/shared_impl/input_event_impl.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "webkit/plugins/ppapi/common.h"
 
 using ppapi::EventTimeToPPTimeTicks;

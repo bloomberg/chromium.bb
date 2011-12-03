@@ -9,8 +9,8 @@
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebApplicationCacheHostClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "webkit/appcache/appcache_export.h"
 #include "webkit/appcache/appcache_interfaces.h"
 

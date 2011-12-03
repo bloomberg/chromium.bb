@@ -6,7 +6,7 @@
 #define WEBKIT_GLUE_WEBURLLOADER_IMPL_H_
 
 #include "base/memory/ref_counted.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoader.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoader.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {

@@ -17,8 +17,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeCollection.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeList.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 using WebKit::WebAnimationController;

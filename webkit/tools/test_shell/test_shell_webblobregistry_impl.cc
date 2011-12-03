@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBlobData.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebBlobData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_storage_controller.h"
 

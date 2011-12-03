@@ -5,7 +5,7 @@
 #include "webkit/support/test_webplugin_page_delegate.h"
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKitPlatformSupport.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
 
 namespace webkit_support {
 

@@ -11,9 +11,9 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKitPlatformSupport.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderOptions.h"
 #include "webkit/glue/multipart_response_delegate.h"
 

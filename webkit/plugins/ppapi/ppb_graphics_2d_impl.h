@@ -13,7 +13,7 @@
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_graphics_2d_api.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
 
 struct PPB_Graphics2D;
 

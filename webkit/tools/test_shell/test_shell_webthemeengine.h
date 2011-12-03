@@ -22,7 +22,7 @@
 #define WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_WEBTHEMEENGINE_H_
 
 #include "base/basictypes.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/win/WebThemeEngine.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/win/WebThemeEngine.h"
 
 namespace TestShellWebTheme {
 

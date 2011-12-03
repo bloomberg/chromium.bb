@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebGraphicsContext3D.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/native_widget_types.h"
 

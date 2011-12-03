@@ -17,7 +17,7 @@
 #include "base/file_path.h"
 #include "base/platform_file.h"
 #include "base/string16.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileError.h"
 #include "webkit/glue/webkit_glue_export.h"
 

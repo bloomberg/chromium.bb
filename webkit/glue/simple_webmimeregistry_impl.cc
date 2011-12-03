@@ -8,7 +8,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/mime_util.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebString;

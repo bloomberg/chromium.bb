@@ -4,7 +4,7 @@
 
 #include "webkit/media/active_loader.h"
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoader.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoader.h"
 #include "webkit/media/buffered_resource_loader.h"
 
 namespace webkit_media {

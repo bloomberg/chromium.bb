@@ -14,12 +14,12 @@
 #include "net/base/cookie_monster.h"
 #include "net/http/http_cache.h"
 #include "net/test/test_server.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioDevice.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebAudioDevice.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebGamepads.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGamepads.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
@@ -27,12 +27,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptController.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageArea.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageEventDispatcher.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "v8/include/v8.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/database/vfs_backend.h"
@@ -59,12 +59,12 @@
 #include "webkit/tools/test_shell/test_shell_webblobregistry_impl.h"
 
 #if defined(OS_WIN)
-#include "third_party/WebKit/Source/WebKit/chromium/public/win/WebThemeEngine.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/win/WebThemeEngine.h"
 #include "webkit/tools/test_shell/test_shell_webthemeengine.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
-#include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebThemeEngine.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/linux/WebThemeEngine.h"
 #endif
 
 using WebKit::WebScriptController;

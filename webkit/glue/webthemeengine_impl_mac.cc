@@ -6,8 +6,8 @@
 
 #include <Carbon/Carbon.h>
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 
 #if WEBKIT_USING_SKIA
 #include "skia/ext/skia_utils_mac.h"

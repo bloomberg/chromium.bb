@@ -11,7 +11,7 @@
 #include "media/base/limits.h"
 #include "media/filters/audio_file_reader.h"
 #include "media/filters/in_memory_url_protocol.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioBus.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebAudioBus.h"
 
 using media::AudioFileReader;
 using media::InMemoryUrlProtocol;

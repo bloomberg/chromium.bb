@@ -13,7 +13,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupMenu.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "webkit/glue/webkit_glue.h"

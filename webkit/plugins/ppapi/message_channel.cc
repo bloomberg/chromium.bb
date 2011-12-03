@@ -18,7 +18,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "v8/include/v8.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"

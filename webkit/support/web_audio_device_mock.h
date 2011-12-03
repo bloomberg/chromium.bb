@@ -5,7 +5,7 @@
 #ifndef WEBKIT_SUPPORT_WEB_AUDIO_DEVICE_MOCK_H_
 #define WEBKIT_SUPPORT_WEB_AUDIO_DEVICE_MOCK_H_
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioDevice.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebAudioDevice.h"
 
 class WebAudioDeviceMock : public WebKit::WebAudioDevice {
  public:

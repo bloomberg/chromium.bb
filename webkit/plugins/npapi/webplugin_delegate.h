@@ -11,7 +11,7 @@
 #include "base/string16.h"
 #include "build/build_config.h"
 #include "third_party/npapi/bindings/npapi.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 

@@ -7,11 +7,11 @@
 #include "base/logging.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKitPlatformSupport.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoader.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoader.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 
 using base::TimeDelta;
 using WebKit::WebFrame;

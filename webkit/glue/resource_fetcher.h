@@ -20,9 +20,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLResponse.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 class GURL;

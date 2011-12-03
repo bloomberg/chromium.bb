@@ -5,7 +5,7 @@
 #ifndef WEBTHEMEENGINE_IMPL_LINUX_H_
 #define WEBTHEMEENGINE_IMPL_LINUX_H_
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebThemeEngine.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/linux/WebThemeEngine.h"
 
 namespace webkit_glue {
 

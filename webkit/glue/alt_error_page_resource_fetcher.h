@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 namespace WebKit {

@@ -12,8 +12,8 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_nsobject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebImage.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebImage.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 
 #if WEBKIT_USING_SKIA

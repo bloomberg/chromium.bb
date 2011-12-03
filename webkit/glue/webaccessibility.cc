@@ -20,10 +20,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNamedNodeMap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
 #ifndef NDEBUG
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityNotification.h"

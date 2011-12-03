@@ -19,8 +19,8 @@
 #include <windows.h>
 
 #include "base/logging.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "webkit/tools/test_shell/test_shell_webthemecontrol.h"
 #include "third_party/skia/include/core/SkRect.h"
 
