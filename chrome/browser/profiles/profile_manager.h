@@ -264,6 +264,10 @@ class ProfileManager : public base::NonThreadSafe,
   // Adds |profile| to the profile info cache if it hasn't been added yet.
   void AddProfileToCache(Profile* profile);
 
+  // Initializes user prefs of |profile|. This includes profile name and
+  // avatar values
+  void InitProfileUserPrefs(Profile* profile);
+
   // For ChromeOS, determines if profile should be otr.
   bool ShouldGoOffTheRecord();
 

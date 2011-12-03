@@ -190,6 +190,11 @@ class ProfileImpl : public Profile,
 
   void UpdateProfileUserNameCache();
 
+
+  // Updates the ProfileInfoCache with data from this profile.
+  void UpdateProfileNameCache();
+  void UpdateProfileAvatarCache();
+
   void GetCacheParameters(bool is_media_context,
                           FilePath* cache_path,
                           int* max_size);
