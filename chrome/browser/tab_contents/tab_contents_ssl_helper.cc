@@ -41,24 +41,6 @@ gfx::Image* GetCertIcon() {
       IDR_INFOBAR_SAVE_PASSWORD);
 }
 
-bool CertMatchesFilter(const net::X509Certificate& cert,
-                       const base::DictionaryValue& filter) {
-  // TODO(markusheintz): This is the minimal required filter implementation.
-  // Implement a better matcher.
-
-  // An empty filter matches any client certificate since no requirements are
-  // specified at all.
-  if (filter.empty())
-    return true;
-
-  std::string common_name;
-  if (filter.GetString("ISSUER.CN", &common_name) &&
-      (cert.issuer().common_name == common_name)) {
-    return true;
-  }
-  return false;
-}
-
 // SSLCertAddedInfoBarDelegate ------------------------------------------------
 
 class SSLCertAddedInfoBarDelegate : public ConfirmInfoBarDelegate {
@@ -202,48 +184,6 @@ TabContentsSSLHelper::TabContentsSSLHelper(TabContentsWrapper* tab_contents)
 }
 
 TabContentsSSLHelper::~TabContentsSSLHelper() {
-}
-
-void TabContentsSSLHelper::SelectClientCertificate(
-    scoped_refptr<SSLClientAuthHandler> handler) {
-  net::SSLCertRequestInfo* cert_request_info = handler->cert_request_info();
-  GURL requesting_url("https://" + cert_request_info->host_and_port);
-  DCHECK(requesting_url.is_valid()) << "Invalid URL string: https://"
-                                    << cert_request_info->host_and_port;
-
-  HostContentSettingsMap* map =
-      tab_contents_->profile()->GetHostContentSettingsMap();
-  scoped_ptr<Value> filter(map->GetWebsiteSetting(
-      requesting_url, requesting_url,
-      CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
-      std::string(), NULL));
-
-  scoped_refptr<net::X509Certificate> selected_cert;
-  if (filter.get()) {
-    // Try to automatically select a client certificate.
-    if (filter->IsType(Value::TYPE_DICTIONARY)) {
-      DictionaryValue* filter_dict =
-          static_cast<DictionaryValue*>(filter.get());
-
-      const std::vector<scoped_refptr<net::X509Certificate> >&
-          all_client_certs = cert_request_info->client_certs;
-      for (size_t i = 0; i < all_client_certs.size(); ++i) {
-        if (CertMatchesFilter(*all_client_certs[i], *filter_dict)) {
-          selected_cert = all_client_certs[i];
-          // Use the first certificate that is matched by the filter.
-          break;
-        }
-      }
-    } else {
-      NOTREACHED();
-    }
-  }
-
-  if (selected_cert) {
-    handler->CertificateSelected(selected_cert);
-  } else {
-    ShowClientCertificateRequestDialog(handler);
-  }
 }
 
 void TabContentsSSLHelper::ShowClientCertificateRequestDialog(

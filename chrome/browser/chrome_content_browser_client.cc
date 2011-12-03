@@ -19,6 +19,7 @@
 #include "chrome/browser/chrome_quota_permission_context.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_info_map.h"
@@ -206,6 +207,24 @@ RenderProcessHostPrivilege GetProcessPrivilege(
   }
 
   return PRIV_EXTENSION;
+}
+
+bool CertMatchesFilter(const net::X509Certificate& cert,
+                       const base::DictionaryValue& filter) {
+  // TODO(markusheintz): This is the minimal required filter implementation.
+  // Implement a better matcher.
+
+  // An empty filter matches any client certificate since no requirements are
+  // specified at all.
+  if (filter.empty())
+    return true;
+
+  std::string common_name;
+  if (filter.GetString("ISSUER.CN", &common_name) &&
+      (cert.issuer().common_name == common_name)) {
+    return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -855,9 +874,51 @@ void ChromeContentBrowserClient::SelectClientCertificate(
     return;
   }
 
+  net::SSLCertRequestInfo* cert_request_info = handler->cert_request_info();
+  GURL requesting_url("https://" + cert_request_info->host_and_port);
+  DCHECK(requesting_url.is_valid()) << "Invalid URL string: https://"
+                                    << cert_request_info->host_and_port;
+
+  Profile* profile = Profile::FromBrowserContext(tab->browser_context());
+  DCHECK(profile);
+  scoped_ptr<Value> filter(
+      profile->GetHostContentSettingsMap()->GetWebsiteSetting(
+          requesting_url,
+          requesting_url,
+          CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
+          std::string(), NULL));
+
+  if (filter.get()) {
+    // Try to automatically select a client certificate.
+    if (filter->IsType(Value::TYPE_DICTIONARY)) {
+      DictionaryValue* filter_dict =
+          static_cast<DictionaryValue*>(filter.get());
+
+      const std::vector<scoped_refptr<net::X509Certificate> >&
+          all_client_certs = cert_request_info->client_certs;
+      for (size_t i = 0; i < all_client_certs.size(); ++i) {
+        if (CertMatchesFilter(*all_client_certs[i], *filter_dict)) {
+          // Use the first certificate that is matched by the filter.
+          handler->CertificateSelected(all_client_certs[i]);
+          return;
+        }
+      }
+    } else {
+      NOTREACHED();
+    }
+  }
+
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
-  wrapper->ssl_helper()->SelectClientCertificate(handler);
+  if (!wrapper) {
+    LOG(ERROR) << " *** No TabcontentsWrapper for: " << tab->GetURL().spec();
+    // If there is no TabContentsWrapper for the given TabContents then we can't
+    // show the user a dialog to select a client certificate. So we simply
+    // cancel the request.
+    handler->CertificateSelected(NULL);
+    return;
+  }
+  wrapper->ssl_helper()->ShowClientCertificateRequestDialog(handler);
 }
 
 void ChromeContentBrowserClient::AddNewCertificate(
