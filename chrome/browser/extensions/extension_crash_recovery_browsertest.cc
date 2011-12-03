@@ -51,7 +51,7 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
     Balloon* balloon = GetNotificationDelegate(index);
     NotificationUIManager* manager =
         g_browser_process->notification_ui_manager();
-    manager->CancelById(balloon->notification().notification_id());
+    ASSERT_TRUE(manager->CancelById(balloon->notification().notification_id()));
   }
 
   size_t CountBalloons() {
@@ -355,14 +355,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
 }
 
-// Flaky on mac&&linux due to http://crbug.com/89078.
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-#define MAYBE_TwoExtensionsIgnoreFirst FLAKY_TwoExtensionsIgnoreFirst
-#else
-#define MAYBE_TwoExtensionsIgnoreFirst TwoExtensionsIgnoreFirst
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
-                       MAYBE_TwoExtensionsIgnoreFirst) {
+                       TwoExtensionsIgnoreFirst) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
   LoadSecondExtension();
@@ -371,13 +365,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   CrashExtension(size_before);
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
 
+  // Accept notification 1 before canceling notification 0.
+  // Otherwise, on Linux and Windows, there is a race here, in which
+  // canceled notifications do not immediately go away.
+  AcceptNotification(1);
   CancelNotification(0);
-  // Cancelling the balloon at 0 will close the balloon, and the balloon in
-  // index 1 will move into index 0.
-  AcceptNotification(0);
 
   SCOPED_TRACE("balloons done");
   ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
+  EXPECT_EQ(second_extension_id_,
+            GetExtensionService()->extensions()->at(size_before)->id());
   CheckExtensionConsistency(size_before);
 }
 
