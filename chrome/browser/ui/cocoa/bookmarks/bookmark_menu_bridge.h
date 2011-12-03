@@ -92,7 +92,6 @@ class BookmarkMenuBridge : public BookmarkModelObserver,
   // menu, such as "Open All Bookmarks".
   void AddNodeAsSubmenu(NSMenu* menu,
                         const BookmarkNode* node,
-                        NSString* title,
                         bool add_extra_items);
 
   // Helper for recursively adding items to our bookmark menu.

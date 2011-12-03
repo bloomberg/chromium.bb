@@ -21,8 +21,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 
-BookmarkMenuBridge::BookmarkMenuBridge(Profile* profile,
-                                       NSMenu *menu)
+BookmarkMenuBridge::BookmarkMenuBridge(Profile* profile, NSMenu* menu)
     : menuIsValid_(false),
       profile_(profile),
       controller_([[BookmarkMenuCocoaController alloc] initWithBridge:this
@@ -32,7 +31,7 @@ BookmarkMenuBridge::BookmarkMenuBridge(Profile* profile,
 }
 
 BookmarkMenuBridge::~BookmarkMenuBridge() {
-  BookmarkModel *model = GetBookmarkModel();
+  BookmarkModel* model = GetBookmarkModel();
   if (model)
     model->RemoveObserver(this);
   [controller_ release];
@@ -59,6 +58,7 @@ void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
   DCHECK(bookmark_menu);
   if (menuIsValid_)
     return;
+
   BookmarkModel* model = GetBookmarkModel();
   if (!model || !model->IsLoaded())
     return;
@@ -82,12 +82,22 @@ void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
   // If the "Other Bookmarks" folder has any content, make a submenu for it and
   // fill it in.
   if (!model->other_node()->empty()) {
-    NSString* other_items_title =
-        l10n_util::GetNSString(IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME);
     [bookmark_menu addItem:[NSMenuItem separatorItem]];
     AddNodeAsSubmenu(bookmark_menu,
                      model->other_node(),
-                     other_items_title,
+                     !is_submenu);
+  }
+
+  // If the "Mobile Bookmarks" folder has any content, make a submenu for it and
+  // fill it in.
+  if (!model->mobile_node()->empty()) {
+    // Add a separator if we did not already add one due to a non-empty
+    // "Other Bookmarks" folder.
+    if (model->other_node()->empty())
+      [bookmark_menu addItem:[NSMenuItem separatorItem]];
+
+    AddNodeAsSubmenu(bookmark_menu,
+                     model->mobile_node(),
                      !is_submenu);
   }
 
@@ -195,18 +205,17 @@ void BookmarkMenuBridge::ClearBookmarkMenu(NSMenu* menu) {
 
 void BookmarkMenuBridge::AddNodeAsSubmenu(NSMenu* menu,
                                           const BookmarkNode* node,
-                                          NSString* title,
                                           bool add_extra_items) {
+  NSString* title = SysUTF16ToNSString(node->GetTitle());
   NSMenuItem* items = [[[NSMenuItem alloc]
-                               initWithTitle:title
-                                      action:nil
-                               keyEquivalent:@""] autorelease];
+                            initWithTitle:title
+                                   action:nil
+                            keyEquivalent:@""] autorelease];
   [items setImage:folder_image_];
   [menu addItem:items];
-  NSMenu* other_submenu = [[[NSMenu alloc] initWithTitle:title]
-                            autorelease];
-  [menu setSubmenu:other_submenu forItem:items];
-  AddNodeToMenu(node, other_submenu, add_extra_items);
+  NSMenu* submenu = [[[NSMenu alloc] initWithTitle:title] autorelease];
+  [menu setSubmenu:submenu forItem:items];
+  AddNodeToMenu(node, submenu, add_extra_items);
 }
 
 // TODO(jrg): limit the number of bookmarks in the menubar?
