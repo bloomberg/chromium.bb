@@ -13,7 +13,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCursor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 
 class RendererWebIDBCursorImpl : public WebKit::WebIDBCursor {
  public:

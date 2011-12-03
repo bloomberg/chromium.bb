@@ -10,8 +10,8 @@
 #include "content/common/file_system/webfilewriter_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebFileInfo;

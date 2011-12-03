@@ -8,7 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/webkitplatformsupport_impl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMimeRegistry.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMimeRegistry.h"
 
 class WebFileSystemImpl;
 

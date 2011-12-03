@@ -13,7 +13,7 @@
 #include "content/common/chrome_descriptors.h"
 #include "content/common/sandbox_methods_linux.h"
 #include "content/common/unix_domain_socket_posix.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontFamily.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/linux/WebFontFamily.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontRenderStyle.h"
 
 static int GetSandboxFD() {

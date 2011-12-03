@@ -9,8 +9,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/renderer/media/audio_device.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioDevice.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebAudioDevice.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
 class RendererWebAudioDeviceImpl : public WebKit::WebAudioDevice,
                                    public AudioDevice::RenderCallback {

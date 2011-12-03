@@ -10,10 +10,10 @@
 #include "content/browser/in_process_webkit/indexed_db_key_utility_client.h"
 #include "content/common/indexed_db_key.h"
 #include "content/public/common/serialized_script_value.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "webkit/glue/webkit_glue.h"
 
 BrowserWebKitPlatformSupportImpl::BrowserWebKitPlatformSupportImpl() {

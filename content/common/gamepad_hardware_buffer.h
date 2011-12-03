@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_GAMEPAD_HARDWARE_BUFFER_H_
 
 #include "content/common/gamepad_seqlock.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebGamepads.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGamepads.h"
 
 namespace content {
 

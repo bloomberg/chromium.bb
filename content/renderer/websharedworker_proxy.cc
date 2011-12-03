@@ -7,7 +7,7 @@
 #include "content/common/view_messages.h"
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWorkerClient.h"
 
 WebSharedWorkerProxy::WebSharedWorkerProxy(ChildThread* child_thread,

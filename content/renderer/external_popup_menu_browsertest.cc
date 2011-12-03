@@ -7,7 +7,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 // Tests for the external select popup menu (Mac specific).

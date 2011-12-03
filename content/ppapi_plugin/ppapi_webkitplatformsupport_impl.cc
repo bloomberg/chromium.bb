@@ -13,17 +13,17 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/child_thread.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 #if defined(OS_WIN)
-#include "third_party/WebKit/Source/WebKit/chromium/public/win/WebSandboxSupport.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/win/WebSandboxSupport.h"
 #elif defined(OS_MACOSX)
-#include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebSandboxSupport.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/mac/WebSandboxSupport.h"
 #elif defined(OS_POSIX)
 #include "content/common/child_process_sandbox_support_impl_linux.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontFamily.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebSandboxSupport.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/linux/WebFontFamily.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/linux/WebSandboxSupport.h"
 #endif
 
 using WebKit::WebSandboxSupport;

@@ -9,7 +9,7 @@
 #include "content/common/dom_storage_messages.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 
 using WebKit::WebStorageNamespace;
 using WebKit::WebString;

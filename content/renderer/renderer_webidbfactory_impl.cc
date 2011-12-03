@@ -7,7 +7,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/indexed_db_dispatcher.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMStringList.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 using WebKit::WebDOMStringList;
 using WebKit::WebFrame;

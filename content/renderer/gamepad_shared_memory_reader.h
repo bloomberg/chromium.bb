@@ -7,7 +7,7 @@
 
 #include "base/shared_memory.h"
 #include "base/memory/scoped_ptr.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebGamepads.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGamepads.h"
 
 namespace content {
 

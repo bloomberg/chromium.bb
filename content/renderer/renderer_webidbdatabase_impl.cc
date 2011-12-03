@@ -9,8 +9,8 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_webidbobjectstore_impl.h"
 #include "content/renderer/renderer_webidbtransaction_impl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
 using WebKit::WebDOMStringList;
 using WebKit::WebExceptionCode;

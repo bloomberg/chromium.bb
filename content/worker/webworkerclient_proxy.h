@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_channel.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWorkerClient.h"
 
 namespace WebKit {

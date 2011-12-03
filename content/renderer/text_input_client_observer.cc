@@ -10,9 +10,9 @@
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebSubstringUtil.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPoint.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/rect.h"
 

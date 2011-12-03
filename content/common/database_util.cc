@@ -8,7 +8,7 @@
 #include "content/common/database_messages.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/sqlite/sqlite3.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 using WebKit::WebKitPlatformSupport;
 using WebKit::WebString;

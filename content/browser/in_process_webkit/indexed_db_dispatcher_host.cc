@@ -27,7 +27,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBObjectStore.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "webkit/glue/webkit_glue.h"
 
 using content::BrowserThread;

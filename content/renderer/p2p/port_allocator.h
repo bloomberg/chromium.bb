@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/net_util.h"
 #include "third_party/libjingle/source/talk/p2p/client/basicportallocator.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
 #include "webkit/glue/p2p_transport.h"
 
 namespace WebKit {

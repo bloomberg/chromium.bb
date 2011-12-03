@@ -16,7 +16,7 @@
 #include "content/common/dom_storage_common.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/quota/special_storage_policy.h"
 

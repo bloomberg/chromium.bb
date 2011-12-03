@@ -10,7 +10,7 @@
 #include "content/renderer/devtools_agent.h"
 #include "content/renderer/plugin_channel_host.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 using WebKit::WebDevToolsAgent;
 using WebKit::WebString;

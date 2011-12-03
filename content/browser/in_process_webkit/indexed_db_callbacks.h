@@ -14,7 +14,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCursor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 class IndexedDBMsg_CallbacksSuccessIDBDatabase;
 class IndexedDBMsg_CallbacksSuccessIDBTransaction;

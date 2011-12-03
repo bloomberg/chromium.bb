@@ -32,17 +32,17 @@
 #include "content/renderer/websharedworkerrepository_impl.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBlobRegistry.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebBlobRegistry.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebGamepads.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebGraphicsContext3D.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGamepads.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageEventDispatcher.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
@@ -51,13 +51,13 @@
 
 #if defined(OS_WIN)
 #include "content/common/child_process_messages.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/win/WebSandboxSupport.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/win/WebSandboxSupport.h"
 #endif
 
 #if defined(OS_MACOSX)
 #include "content/common/mac/font_descriptor.h"
 #include "content/common/mac/font_loader.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebSandboxSupport.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/mac/WebSandboxSupport.h"
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -66,8 +66,8 @@
 
 #include "base/synchronization/lock.h"
 #include "content/common/child_process_sandbox_support_impl_linux.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontFamily.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebSandboxSupport.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/linux/WebFontFamily.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/linux/WebSandboxSupport.h"
 #endif
 
 #if defined(OS_POSIX)

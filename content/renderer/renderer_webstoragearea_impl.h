@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageArea.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 class RendererWebStorageAreaImpl : public WebKit::WebStorageArea {
  public:

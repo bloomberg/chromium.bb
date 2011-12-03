@@ -16,7 +16,7 @@
 #include "content/public/utility/content_utility_client.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "webkit/glue/idb_bindings.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 

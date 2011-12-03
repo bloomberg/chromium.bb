@@ -8,7 +8,7 @@
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
 namespace WebKit {
 class WebFrame;

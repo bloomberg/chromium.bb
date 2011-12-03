@@ -7,8 +7,8 @@
 #pragma once
 
 // TODO(darin): WebCookieJar.h is missing a WebString.h include!
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCookieJar.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCookieJar.h"
 
 class RenderViewImpl;
 

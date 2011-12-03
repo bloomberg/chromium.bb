@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/test/test_suite.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKitPlatformSupport.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
 
 // A stubbed out WebKit platform support impl.
 class UnitTestTestSuite::UnitTestWebKitPlatformSupport

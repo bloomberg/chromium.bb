@@ -34,7 +34,7 @@
 #include "content/renderer/render_widget.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIconURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"

@@ -13,8 +13,8 @@
 #include "content/worker/worker_thread.h"
 #include "content/worker/shared_worker_devtools_agent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorker.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 
 WebSharedWorkerStub::WebSharedWorkerStub(
     const string16& name, int route_id,

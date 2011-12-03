@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_WEBBLOBREGISTRY_IMPL_H_
 #pragma once
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBlobRegistry.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebBlobRegistry.h"
 
 class ChildThread;
 

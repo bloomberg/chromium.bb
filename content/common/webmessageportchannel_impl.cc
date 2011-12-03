@@ -8,7 +8,7 @@
 #include "content/common/child_process.h"
 #include "content/common/child_thread.h"
 #include "content/common/worker_messages.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMessagePortChannelClient.h"
 
 using WebKit::WebMessagePortChannel;
