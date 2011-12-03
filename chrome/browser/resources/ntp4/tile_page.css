@@ -52,6 +52,7 @@
 .tile {
   display: inline-block;
   position: absolute;
+  -webkit-print-color-adjust: exact;
   /* Don't offer the context menu on long-press. */
   -webkit-touch-callout: none;
   -webkit-user-drag: element;
