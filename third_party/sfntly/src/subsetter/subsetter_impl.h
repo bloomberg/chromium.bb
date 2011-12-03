@@ -19,6 +19,9 @@
 
 #include "third_party/sfntly/src/sfntly/font.h"
 #include "third_party/sfntly/src/sfntly/font_factory.h"
+#include "third_party/sfntly/src/sfntly/table/truetype/glyph_table.h"
+#include "third_party/sfntly/src/sfntly/table/truetype/loca_table.h"
+#include "third_party/sfntly/src/sfntly/tag.h"
 
 namespace sfntly {
 
@@ -57,12 +60,8 @@ class SubsetterImpl {
                  unsigned char** output_buffer);
 
  private:
-  Font* FindFont(const char* font_name, const FontArray& font_array);
-  bool HasName(const char* font_name, Font* font);
-  bool ResolveCompositeGlyphs(const unsigned int* glyph_ids,
-                              size_t glyph_count,
-                              IntegerSet* glyph_id_processed);
-  CALLER_ATTACH Font* Subset(const IntegerSet& glyph_ids);
+  CALLER_ATTACH Font* Subset(const IntegerSet& glyph_ids,
+                             GlyphTable* glyf, LocaTable* loca);
 
   FontFactoryPtr factory_;
   FontPtr font_;

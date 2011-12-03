@@ -33,7 +33,7 @@ vars = {
   "libjingle_revision": "95",
   "libvpx_revision": "109236",
   "ffmpeg_revision": "112050",
-  "sfntly_revision": "98",
+  "sfntly_revision": "111",
   "skia_revision": "2785",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
