@@ -34,6 +34,8 @@ class SelfDeletingClient : public SelectFileDialog::Listener {
       dialog_->ListenerDestroyed();
   }
 
+  SelectFileDialogExtension* dialog() const { return dialog_.get(); }
+
   // SelectFileDialog::Listener implementation
   virtual void FileSelected(const FilePath& path,
                             int index, void* params) OVERRIDE {
@@ -46,10 +48,10 @@ class SelfDeletingClient : public SelectFileDialog::Listener {
 
 TEST_F(SelectFileDialogExtensionTest, SelfDeleting) {
   const int32 kTabId = 123;
-  // Registers itself with an internal map, so we don't need the pointer,
-  // and it would be unused anyway.
-  new SelfDeletingClient(kTabId);
+  SelfDeletingClient* client = new SelfDeletingClient(kTabId);
   // Ensure we don't crash or trip an Address Sanitizer warning about
   // use-after-free.
   SelectFileDialogExtension::OnFileSelected(kTabId, FilePath(), 0);
+  // Simulate closing the dialog so the listener gets invoked.
+  client->dialog()->ExtensionDialogClosing(NULL);
 }
