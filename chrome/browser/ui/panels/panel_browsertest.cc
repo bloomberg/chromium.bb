@@ -847,14 +847,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateSettingsMenu) {
       "http://home", "options.html");
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_AutoResize AutoResize
-#else
-#define MAYBE_AutoResize FLAKY_AutoResize
-#endif
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_AutoResize) {
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AutoResize) {
   PanelManager::GetInstance()->enable_auto_sizing(true);
-  set_testing_work_area(gfx::Rect(0, 0, 1200, 900));
+  PanelManager::GetInstance()->SetWorkAreaForTesting(
+      gfx::Rect(0, 0, 1200, 900));  // bigger space is needed by this test
 
   // Create a test panel with tab contents loaded.
   CreatePanelParams params("PanelTest1", gfx::Rect(), SHOW_AS_ACTIVE);
@@ -872,7 +868,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_AutoResize) {
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
       panel->browser()->GetSelectedTabContents()->render_view_host(),
       std::wstring(),
-      L"changeSize(10);"));
+      L"changeSize(50);"));
   enlarge.Wait();
   gfx::Rect bounds_on_grow = panel->GetBounds();
   EXPECT_GT(bounds_on_grow.width(), initial_bounds.width());
@@ -885,7 +881,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_AutoResize) {
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
       panel->browser()->GetSelectedTabContents()->render_view_host(),
       std::wstring(),
-      L"changeSize(-5);"));
+      L"changeSize(-30);"));
   shrink.Wait();
   gfx::Rect bounds_on_shrink = panel->GetBounds();
   EXPECT_LT(bounds_on_shrink.width(), bounds_on_grow.width());
