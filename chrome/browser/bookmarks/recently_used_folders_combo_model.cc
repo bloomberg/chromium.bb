@@ -43,7 +43,8 @@ RecentlyUsedFoldersComboModel::RecentlyUsedFoldersComboModel(
   // And put the bookmark bar and other nodes at the end of the list.
   nodes_.push_back(model->bookmark_bar_node());
   nodes_.push_back(model->other_node());
-  nodes_.push_back(model->mobile_node());
+  if (model->mobile_node()->IsVisible())
+    nodes_.push_back(model->mobile_node());
 
   std::vector<const BookmarkNode*>::iterator it = std::find(nodes_.begin(),
                                                             nodes_.end(),

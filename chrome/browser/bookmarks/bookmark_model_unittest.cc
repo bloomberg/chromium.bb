@@ -1081,4 +1081,27 @@ TEST_F(BookmarkModelTest, Sort) {
   EXPECT_EQ(parent->GetChild(3)->GetTitle(), ASCIIToUTF16("d"));
 }
 
+TEST_F(BookmarkModelTest, NodeVisibility) {
+  EXPECT_TRUE(model_.bookmark_bar_node()->IsVisible());
+  EXPECT_TRUE(model_.other_node()->IsVisible());
+  // Mobile node invisible by default
+  EXPECT_FALSE(model_.mobile_node()->IsVisible());
+
+  // Arbitrary node should be visible
+  TestNode bbn;
+  PopulateNodeFromString("B", &bbn);
+  const BookmarkNode* parent = model_.bookmark_bar_node();
+  PopulateBookmarkNode(&bbn, &model_, parent);
+  EXPECT_TRUE(parent->GetChild(0)->IsVisible());
+}
+
+TEST_F(BookmarkModelTest, MobileNodeVisibileWithChildren) {
+  const BookmarkNode* root = model_.mobile_node();
+  const string16 title(ASCIIToUTF16("foo"));
+  const GURL url("http://foo.com");
+
+  model_.AddURL(root, 0, title, url);
+  EXPECT_TRUE(model_.mobile_node()->IsVisible());
+}
+
 }  // namespace

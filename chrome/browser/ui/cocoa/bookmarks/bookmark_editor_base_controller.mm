@@ -456,7 +456,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
   int childCount = node->child_count();
   for (int i = 0; i < childCount; ++i) {
     const BookmarkNode* childNode = node->GetChild(i);
-    if (childNode->is_folder()) {
+    if (childNode->is_folder() && childNode->IsVisible()) {
       NSString* childName = base::SysUTF16ToNSString(childNode->GetTitle());
       NSMutableArray* children = [self addChildFoldersFromNode:childNode];
       BookmarkFolderInfo* folderInfo =

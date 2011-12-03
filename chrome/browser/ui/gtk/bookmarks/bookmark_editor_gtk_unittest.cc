@@ -118,8 +118,14 @@ TEST_F(BookmarkEditorGtkTest, ModelsMatch) {
   GtkTreeIter bookmark_bar_node = toplevel;
   ASSERT_TRUE(gtk_tree_model_iter_next(store, &toplevel));
   GtkTreeIter other_node = toplevel;
-  ASSERT_TRUE(gtk_tree_model_iter_next(store, &toplevel));
-  ASSERT_FALSE(gtk_tree_model_iter_next(store, &toplevel));
+  if (model_->mobile_node()->IsVisible()) {
+    // If we have a mobile node, then the iterator should find one element after
+    // "other bookmarks"
+    ASSERT_TRUE(gtk_tree_model_iter_next(store, &toplevel));
+    ASSERT_FALSE(gtk_tree_model_iter_next(store, &toplevel));
+  } else {
+    ASSERT_FALSE(gtk_tree_model_iter_next(store, &toplevel));
+  }
 
   // The bookmark bar should have 2 nodes: folder F1 and F2.
   GtkTreeIter f1_iter;

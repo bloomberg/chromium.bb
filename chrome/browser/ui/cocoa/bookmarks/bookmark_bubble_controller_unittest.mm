@@ -175,7 +175,11 @@ TEST_F(BookmarkBubbleControllerTest, TestFillInFolder) {
   // Verify that the top level folders are displayed correctly.
   EXPECT_TRUE([titles containsObject:@"Other Bookmarks"]);
   EXPECT_TRUE([titles containsObject:@"Bookmarks Bar"]);
-  EXPECT_TRUE([titles containsObject:@"Mobile Bookmarks"]);
+  if (model->mobile_node()->IsVisible()) {
+    EXPECT_TRUE([titles containsObject:@"Mobile Bookmarks"]);
+  } else {
+    EXPECT_FALSE([titles containsObject:@"Mobile Bookmarks"]);
+  }
 }
 
 // Confirm ability to handle folders with blank name.

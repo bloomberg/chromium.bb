@@ -110,6 +110,13 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
     favicon_load_handle_ = handle;
   }
 
+  // Accessor method for controlling the visibility of a bookmark node/sub-tree.
+  // Note that visibility is not propagated down the tree hierarchy so if a
+  // parent node is marked as invisible, a child node may return "Visible". This
+  // function is primarily useful when traversing the model to generate a UI
+  // representation but we may want to suppress some nodes.
+  virtual bool IsVisible() const;
+
   // TODO(sky): Consider adding last visit time here, it'll greatly simplify
   // HistoryContentsProvider.
 

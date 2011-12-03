@@ -423,7 +423,7 @@ void BookmarkMenuDelegate::BuildMenuForPermanentNode(
     MenuItemView* menu,
     int* next_menu_id,
     bool* added_separator) {
-  if (node->GetTotalNodeCount() == 1)
+  if (!node->IsVisible() || node->GetTotalNodeCount() == 1)
     return;  // No children, don't create a menu.
 
   if (!*added_separator) {

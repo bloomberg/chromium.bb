@@ -55,6 +55,10 @@ BookmarkNode::BookmarkNode(int64 id, const GURL& url)
 BookmarkNode::~BookmarkNode() {
 }
 
+bool BookmarkNode::IsVisible() const {
+  return true;
+}
+
 void BookmarkNode::Initialize(int64 id) {
   id_ = id;
   type_ = url_.is_empty() ? FOLDER : URL;
@@ -67,8 +71,6 @@ void BookmarkNode::InvalidateFavicon() {
   favicon_ = SkBitmap();
   is_favicon_loaded_ = false;
 }
-
-// BookmarkModel --------------------------------------------------------------
 
 namespace {
 
@@ -97,7 +99,39 @@ class SortComparator : public std::binary_function<const BookmarkNode*,
   icu::Collator* collator_;
 };
 
+// MobileNode ------------------------------------------------------------------
+
+// The visibility of the mobile node changes based on sync state, requiring a
+// special subclass.
+class MobileNode : public BookmarkNode {
+ public:
+  explicit MobileNode(int64 id);
+  virtual ~MobileNode();
+
+  // BookmarkNode overrides:
+  virtual bool IsVisible() const OVERRIDE;
+
+ private:
+  bool visible_;
+
+  DISALLOW_COPY_AND_ASSIGN(MobileNode);
+};
+
+MobileNode::MobileNode(int64 id)
+    : BookmarkNode(id, GURL()),
+      visible_(false) {
+}
+
+MobileNode::~MobileNode() {
+}
+
+bool MobileNode::IsVisible() const {
+  return visible_ || !empty();
+}
+
 }  // namespace
+
+// BookmarkModel --------------------------------------------------------------
 
 BookmarkModel::BookmarkModel(Profile* profile)
     : profile_(profile),
@@ -703,17 +737,23 @@ BookmarkNode* BookmarkModel::CreatePermanentNode(BookmarkNode::Type type) {
   DCHECK(type == BookmarkNode::BOOKMARK_BAR ||
          type == BookmarkNode::OTHER_NODE ||
          type == BookmarkNode::MOBILE);
-  BookmarkNode* node = new BookmarkNode(generate_next_node_id(), GURL());
-  node->set_type(type);
-  if (type == BookmarkNode::BOOKMARK_BAR) {
-    node->set_title(l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_FOLDER_NAME));
-  } else if (type == BookmarkNode::OTHER_NODE) {
-    node->set_title(
-        l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME));
-  } else {
+  BookmarkNode* node;
+  if (type == BookmarkNode::MOBILE) {
+    node = new MobileNode(generate_next_node_id());
     node->set_title(
         l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME));
+  } else {
+    node = new BookmarkNode(generate_next_node_id(), GURL());
+    if (type == BookmarkNode::BOOKMARK_BAR) {
+      node->set_title(l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_FOLDER_NAME));
+    } else if (type == BookmarkNode::OTHER_NODE) {
+      node->set_title(
+          l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME));
+    } else {
+      NOTREACHED();
+    }
   }
+  node->set_type(type);
   return node;
 }
 

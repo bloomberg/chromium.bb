@@ -23,7 +23,27 @@ namespace ui {
 template <class NodeType>
 class TreeNodeIterator {
  public:
-  explicit TreeNodeIterator(NodeType* node) {
+  // This contructor accepts an optional filter function |prune| which could be
+  // used to prune complete branches of the tree. The filter function will be
+  // evaluated on each tree node and if it evaluates to true the node and all
+  // its descendants will be skipped by the iterator.
+  TreeNodeIterator(NodeType* node, bool (*prune)(NodeType*))
+      : prune_(prune) {
+    int index = 0;
+
+    // Move forward through the children list until the first non prunable node.
+    // This is to satisfy the iterator invariant that the current index in the
+    // Position at the top of the _positions list must point to a node the
+    // iterator will be returning.
+    for (; index < node->child_count(); ++index)
+      if (!prune || !prune(node->GetChild(index)))
+        break;
+
+    if (index < node->child_count())
+      positions_.push(Position<NodeType>(node, index));
+  }
+
+  explicit TreeNodeIterator(NodeType* node) : prune_(NULL) {
     if (!node->empty())
       positions_.push(Position<NodeType>(node, 0));
   }
@@ -47,9 +67,18 @@ class TreeNodeIterator {
     // Iterate over result's children.
     positions_.push(Position<NodeType>(result, 0));
 
-    while (!positions_.empty() &&
-           positions_.top().index >= positions_.top().node->child_count()) {
-      positions_.pop(); // This Position is all processed, move to the next.
+    // Advance to next valid node by skipping over the pruned nodes and the
+    // empty Positions. At the end of this loop two cases are possible:
+    // - the current index of the top() Position points to a valid node
+    // - the _position list is empty, the iterator has_next() will return false.
+    while (!positions_.empty()) {
+      if (positions_.top().index >= positions_.top().node->child_count())
+        positions_.pop(); // This Position is all processed, move to the next.
+      else if (prune_ &&
+          prune_(positions_.top().node->GetChild(positions_.top().index)))
+        positions_.top().index++;  // Prune the branch.
+      else
+        break;  // Now positioned at the next node to be returned.
     }
 
     return result;
@@ -66,6 +95,7 @@ class TreeNodeIterator {
   };
 
   std::stack<Position<NodeType> > positions_;
+  bool (*prune_)(NodeType*);
 
   DISALLOW_COPY_AND_ASSIGN(TreeNodeIterator);
 };

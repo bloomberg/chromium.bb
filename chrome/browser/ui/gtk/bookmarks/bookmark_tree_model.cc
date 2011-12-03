@@ -118,7 +118,8 @@ void AddToTreeStore(BookmarkModel* model, int64 selected_id,
   const BookmarkNode* root_node = model->root_node();
   for (int i = 0; i < root_node->child_count(); ++i) {
     const BookmarkNode* child = root_node->GetChild(i);
-    AddToTreeStoreAt(child, selected_id, store, selected_iter, NULL);
+    if (child->IsVisible())
+      AddToTreeStoreAt(child, selected_id, store, selected_iter, NULL);
   }
 }
 
