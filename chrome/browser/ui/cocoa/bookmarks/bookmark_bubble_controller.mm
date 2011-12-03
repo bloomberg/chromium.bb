@@ -9,6 +9,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_cell_single_line.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "content/browser/user_metrics.h"
@@ -104,6 +105,17 @@ void BookmarkBubbleNotificationBridge::Observe(
                  object:parentWindow_];
   }
   return self;
+}
+
+- (void)awakeFromNib {
+  // Check if NSTextFieldCell supports the method. This check is in place as
+  // only 10.6 and greater support the setUsesSingleLineMode method.
+  // TODO(kushi.p): Remove this when the project hits a 10.6+ only state.
+  NSTextFieldCell* nameFieldCell_ = [nameTextField_ cell];
+  if ([nameFieldCell_
+          respondsToSelector:@selector(setUsesSingleLineMode:)]) {
+    [nameFieldCell_ setUsesSingleLineMode:YES];
+  }
 }
 
 - (void)dealloc {

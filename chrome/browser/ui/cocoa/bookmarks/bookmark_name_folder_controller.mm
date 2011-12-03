@@ -72,6 +72,7 @@
 
   // Check if NSTextFieldCell supports the method. This check is in place as
   // only 10.6 and greater support the setUsesSingleLineMode method.
+  // TODO(kushi.p): Remove this when the project hits a 10.6+ only state.
   NSTextFieldCell* nameFieldCell_ = [nameField_ cell];
   if ([nameFieldCell_
           respondsToSelector:@selector(setUsesSingleLineMode:)]) {

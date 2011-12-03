@@ -11,6 +11,7 @@
 // Provides a category for 10.5 compilation of a selector which is only
 // available on 10.6+. This purely enables compilation when the selector
 // is present and does not implement the method itself.
+// TODO(kushi.p): Remove this when the project hits a 10.6+ only state.
 @interface NSCell(multilinebookmarks)
 - (void)setUsesSingleLineMode:(BOOL)flag;
 @end

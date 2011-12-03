@@ -567,6 +567,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
     DCHECK(row >= 0);
 
     // Put the cell into single-line mode before putting it into edit mode.
+    // TODO(kushi.p): Remove this when the project hits a 10.6+ only state.
     NSCell* folderCell = [folderTreeView_ preparedCellAtColumn:0 row:row];
     if ([folderCell
           respondsToSelector:@selector(setUsesSingleLineMode:)]) {
