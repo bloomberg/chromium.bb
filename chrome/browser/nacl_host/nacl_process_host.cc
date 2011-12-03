@@ -149,6 +149,10 @@ NaClProcessHost::~NaClProcessHost() {
     reply_msg_->set_reply_error();
     chrome_render_message_filter_->Send(reply_msg_);
   }
+
+#if defined(OS_WIN)
+  NaClBrokerService::GetInstance()->OnLoaderDied();
+#endif
 }
 
 // Attempt to ensure the IRT will be available when we need it, but don't wait.
@@ -293,11 +297,10 @@ void NaClProcessHost::OnProcessLaunchedByBroker(base::ProcessHandle handle) {
   OnProcessLaunched();
 }
 
-base::TerminationStatus NaClProcessHost::GetChildTerminationStatus(
-    int* exit_code) {
-  if (RunningOnWOW64())
-    return base::GetTerminationStatus(handle(), exit_code);
-  return BrowserChildProcessHost::GetChildTerminationStatus(exit_code);
+void NaClProcessHost::OnProcessCrashed(int exit_code) {
+  std::string message = base::StringPrintf(
+      "NaCl process exited with status %i (0x%x)", exit_code, exit_code);
+  LOG(ERROR) << message;
 }
 
 // This only ever runs on the BrowserThread::FILE thread.

@@ -131,6 +131,8 @@ void BrowserChildProcessHost::Notify(int type) {
 
 base::TerminationStatus BrowserChildProcessHost::GetChildTerminationStatus(
     int* exit_code) {
+  if (!child_process_.get())  // If the delegate doesn't use Launch() helper.
+    return base::GetTerminationStatus(handle(), exit_code);
   return child_process_->GetChildTerminationStatus(exit_code);
 }
 
@@ -174,9 +176,7 @@ void BrowserChildProcessHost::OnChildDisconnected() {
       break;
     }
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED: {
-      OnProcessWasKilled(exit_code);
       // Report that this child process was killed.
-      Notify(content::NOTIFICATION_CHILD_PROCESS_WAS_KILLED);
       UMA_HISTOGRAM_ENUMERATION("ChildProcess.Killed",
                                 this->type(),
                                 content::PROCESS_TYPE_MAX);

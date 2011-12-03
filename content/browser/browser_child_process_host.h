@@ -99,19 +99,13 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   // GetExitCodeProcess()).
   virtual void OnProcessCrashed(int exit_code) {}
 
-  // Derived classes can override this to know if the process was
-  // killed.  |exit_code| is the status returned when the process
-  // was killed (for posix, as returned from waitpid(), for Windows,
-  // as returned from GetExitCodeProcess()).
-  virtual void OnProcessWasKilled(int exit_code) {}
-
   // Returns the termination status of a child.  |exit_code| is the
   // status returned when the process exited (for posix, as returned
   // from waitpid(), for Windows, as returned from
   // GetExitCodeProcess()).  |exit_code| may be NULL.
-  virtual base::TerminationStatus GetChildTerminationStatus(int* exit_code);
+  base::TerminationStatus GetChildTerminationStatus(int* exit_code);
 
-  // ChildProcessHostDelegate implementation:
+  // Overrides from ChildProcessHost
   virtual bool CanShutdown() OVERRIDE;
   virtual void OnChildDisconnected() OVERRIDE;
   virtual void ShutdownStarted() OVERRIDE;

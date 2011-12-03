@@ -41,8 +41,7 @@ class NaClProcessHost : public BrowserChildProcessHost {
   void OnProcessLaunchedByBroker(base::ProcessHandle handle);
 
  protected:
-  virtual base::TerminationStatus GetChildTerminationStatus(
-      int* exit_code) OVERRIDE;
+  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
 
  private:
   // Internal class that holds the nacl::Handle objecs so that
