@@ -32,9 +32,15 @@ void CompositorTestSuite::Initialize() {
 
   message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
   ui::CompositorTestSupport::Initialize();
+#if defined(USE_WEBKIT_COMPOSITOR)
+  ui::CompositorCC::Initialize(false);
+#endif
 }
 
 void CompositorTestSuite::Shutdown() {
+#if defined(USE_WEBKIT_COMPOSITOR)
+  ui::CompositorCC::Terminate();
+#endif
   ui::CompositorTestSupport::Terminate();
   message_loop_.reset();
 

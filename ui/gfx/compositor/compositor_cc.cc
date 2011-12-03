@@ -166,9 +166,10 @@ void CompositorCC::Terminate() {
 #ifdef WEBCOMPOSITOR_HAS_INITIALIZE
   WebKit::WebCompositor::shutdown();
 #endif
-  DCHECK(g_compositor_thread);
-  delete g_compositor_thread;
-  g_compositor_thread = NULL;
+  if (g_compositor_thread) {
+    delete g_compositor_thread;
+    g_compositor_thread = NULL;
+  }
 }
 
 // static
