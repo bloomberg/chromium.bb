@@ -13,13 +13,8 @@ if prog_env.Bit('bitcode'):
 nexe = prog_env.ComponentProgram('execute_data', ['execute_data.c'],
                                  EXTRA_LIBS=['${NONIRT_LIBS}'])
 
-# We check the output to ensure that the process doesn't die for an
-# unexpected reason.
 node = prog_env.CommandSelLdrTestNacl(
-    'execute_data.out',
-    nexe,
-    exit_status='untrusted_sigsegv_or_equivalent',
-    stdout_golden=prog_env.File('execute_data.stdout'))
+    'execute_data.out', nexe, declares_exit_status=1)
 
 # This test does not work under qemu-arm because qemu-arm does not
 # support the NX page protection bit.

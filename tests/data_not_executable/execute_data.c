@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdint.h>
@@ -30,9 +30,9 @@ int main() {
   /* Double cast required to stop gcc complaining. */
   func = (void (*)()) (uintptr_t) code;
 
-  fprintf(stdout, "This should fault...\n");
-  fflush(stdout);
+  fprintf(stderr, "** intended_exit_status=untrusted_sigsegv_or_equivalent\n");
+  /* This should fault because the data segment should not be executable. */
   func();
-  fprintf(stdout, "We're still running. This is bad.\n");
+  fprintf(stderr, "We're still running. This is bad.\n");
   return 1;
 }

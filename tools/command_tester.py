@@ -14,6 +14,7 @@ This harness is used instead of shell scripts to ensure windows compatibility
 # python imports
 import getopt
 import os
+import re
 import sys
 
 # local imports
@@ -72,6 +73,14 @@ def ResetGlobalSettings():
   GlobalSettings = {
       'exit_status': 0,
       'using_nacl_signal_handler': False,
+
+      # When declares_exit_status is set, we read the expected exit
+      # status from stderr.  We look for a line of the form
+      # "** intended_exit_status=X".  This allows crash tests to
+      # declare their expected exit status close to where the crash is
+      # generated, rather than in a Scons file.  It reduces the risk
+      # that the test passes accidentally by crashing during setup.
+      'declares_exit_status': False,
 
       # List of environment variables to set.
       'osenv': '',
@@ -325,8 +334,32 @@ def PrintStdStreams(stdout, stderr):
     Banner('Stderr for %s:' % os.path.basename(GlobalSettings['name']))
     Print(stderr)
 
+def GetIntendedExitStatuses(stderr):
+  statuses = []
+  for line in stderr.splitlines():
+    match = re.match(r'\*\* intended_exit_status=(.*)$', line)
+    if match is not None:
+      statuses.append(match.group(1))
+  return statuses
+
 def CheckExitStatus(failed, req_status, using_nacl_signal_handler,
                     exit_status, stdout, stderr):
+  if GlobalSettings['declares_exit_status']:
+    assert req_status == 0
+    intended_statuses = GetIntendedExitStatuses(stderr)
+    if len(intended_statuses) == 0:
+      Print('\nERROR: Command returned exit status %s but did not output an '
+            'intended_exit_status line to stderr - did it exit too early?'
+            % FormatExitStatus(exit_status))
+      return False
+    elif len(intended_statuses) != 1:
+      Print('\nERROR: Command returned exit status %s but produced '
+            'multiple intended_exit_status lines (%s)'
+            % (FormatExitStatus(exit_status), ', '.join(intended_statuses)))
+      return False
+    else:
+      req_status = intended_statuses[0]
+
   expected_sigtype = 'normal'
   if req_status in status_map:
     expected_statuses = status_map[req_status][GlobalPlatform]
@@ -382,8 +415,6 @@ def CheckExitStatus(failed, req_status, using_nacl_signal_handler,
       Print(msg)
       failed = True
 
-  if failed:
-    PrintStdStreams(stdout, stderr)
   return not failed
 
 def CheckTimeBounds(total_time):
@@ -501,6 +532,7 @@ def DoRun(command, stdin_data):
                            GlobalSettings['exit_status'],
                            GlobalSettings['using_nacl_signal_handler'],
                            exit_status, stdout, stderr):
+      PrintStdStreams(stdout, stderr)
       Print(FailureMessage(total_time))
       return (-1, stdout, stderr)
     if not CheckGoldenOutput(stdout, stderr):

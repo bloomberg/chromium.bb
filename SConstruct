@@ -1946,7 +1946,8 @@ TEST_EXTRA_ARGS = ['stdin', 'log_file',
                    'filter_regex', 'filter_inverse', 'filter_group_only',
                    'osenv', 'arch', 'subarch', 'exit_status', 'track_cmdtime',
                    'num_runs', 'process_output_single',
-                   'process_output_combined', 'using_nacl_signal_handler']
+                   'process_output_combined', 'using_nacl_signal_handler',
+                   'declares_exit_status']
 
 TEST_TIME_THRESHOLD = {
     'small':   2,
@@ -2011,8 +2012,13 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
     skip = 'AddressSanitizer'
   else:
     skip = None
+  # Valgrind tends to break crash tests by changing the exit status.
+  # So far, tests using declares_exit_status are crash tests.  If this
+  # changes, we will have to find a way to make declares_exit_status
+  # work with Valgrind.
   if (skip is not None and
-      extra.get('exit_status') in UNSUPPORTED_VALGRIND_EXIT_STATUS):
+      (extra.get('exit_status') in UNSUPPORTED_VALGRIND_EXIT_STATUS or
+       bool(int(extra.get('declares_exit_status', 0))))):
     print 'Skipping death test "%s" under %s' % (name, skip)
     return []
 
