@@ -12,6 +12,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/panels/panel_overflow_strip.h"
+#include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -121,34 +123,10 @@ void Panel::SetSizeRange(const gfx::Size& min_size, const gfx::Size& max_size) {
 void Panel::SetExpansionState(ExpansionState new_state) {
   if (expansion_state_ == new_state)
     return;
-
   ExpansionState old_state = expansion_state_;
   expansion_state_ = new_state;
 
-  int height;
-  switch (expansion_state_) {
-    case EXPANDED:
-      height = restored_size_.height();
-      break;
-    case TITLE_ONLY:
-      height = native_panel_->TitleOnlyHeight();
-      break;
-    case MINIMIZED:
-      height = kMinimizedPanelHeight;
-      break;
-    default:
-      NOTREACHED();
-      height = restored_size_.height();
-      break;
-  }
-
-  int bottom = manager()->GetBottomPositionForExpansionState(expansion_state_);
-  gfx::Rect bounds = native_panel_->GetPanelBounds();
-  bounds.set_y(bottom - height);
-  bounds.set_height(height);
-  SetPanelBounds(bounds);
-
-  manager()->OnPanelExpansionStateChanged(old_state, new_state);
+  manager()->OnPanelExpansionStateChanged(this, old_state);
 
   // The minimized panel should not get the focus.
   if (expansion_state_ == MINIMIZED)
@@ -189,7 +167,11 @@ void Panel::FullScreenModeChanged(bool is_full_screen) {
 }
 
 void Panel::Show() {
-  native_panel_->ShowPanel();
+  // Don't show panel as active if it is in overflow state.
+  if (expansion_state_ == IN_OVERFLOW)
+    ShowInactive();
+  else
+    native_panel_->ShowPanel();
 }
 
 void Panel::ShowInactive() {
@@ -207,7 +189,16 @@ void Panel::Close() {
   native_panel_->ClosePanel();
 }
 
+void Panel::MoveOutOfOverflow() {
+  if (expansion_state_ != Panel::IN_OVERFLOW)
+    return;
+  manager()->panel_overflow_strip()->Remove(this);
+  manager()->panel_strip()->AddPanel(this);
+}
+
 void Panel::Activate() {
+  MoveOutOfOverflow();
+
   // Make sure the panel is expanded when activated programmatically,
   // so the user input does not go into collapsed window.
   SetExpansionState(Panel::EXPANDED);
@@ -276,6 +267,18 @@ gfx::Rect Panel::GetRestoredBounds() const {
 
 gfx::Rect Panel::GetBounds() const {
   return native_panel_->GetPanelBounds();
+}
+
+int Panel::TitleOnlyHeight() const {
+  return native_panel_->TitleOnlyHeight();
+}
+
+gfx::Size Panel::IconOnlySize() const {
+  return native_panel_->IconOnlySize();
+}
+
+void Panel::EnsureFullyVisible() {
+  native_panel_->EnsurePanelFullyVisible();
 }
 
 bool Panel::IsMaximized() const {

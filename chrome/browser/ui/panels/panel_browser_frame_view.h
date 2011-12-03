@@ -56,7 +56,7 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
 
   // Returns the size of the non-client area upon which only the title icon
   // is drawn.
-  gfx::Size IconifiedSize() const;
+  gfx::Size IconOnlySize() const;
 
  protected:
   // Overridden from BrowserNonClientFrameView:

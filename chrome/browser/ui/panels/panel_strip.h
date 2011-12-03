@@ -10,8 +10,8 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/panels/auto_hiding_desktop_bar.h"
-#include "chrome/browser/ui/panels/panel_mouse_watcher_observer.h"
 #include "chrome/browser/ui/panels/panel.h"
+#include "chrome/browser/ui/panels/panel_mouse_watcher_observer.h"
 #include "ui/gfx/rect.h"
 
 class Browser;
@@ -29,7 +29,7 @@ class PanelStrip : public PanelMouseWatcherObserver {
   virtual ~PanelStrip();
 
   // Sets the bounds of the panel strip.
-  // |bounds| is in screen coordinates.
+  // |area| is in screen coordinates.
   void SetDisplayArea(const gfx::Rect& area);
 
   // Adds a panel to the strip. The panel may be a newly created panel or one
@@ -46,8 +46,8 @@ class PanelStrip : public PanelMouseWatcherObserver {
   void EndDragging(bool cancelled);
 
   // Invoked when a panel's expansion state changes.
-  void OnPanelExpansionStateChanged(Panel::ExpansionState old_state,
-                                    Panel::ExpansionState new_state);
+  void OnPanelExpansionStateChanged(Panel* panel,
+                                    Panel::ExpansionState old_state);
 
   // Invoked when the preferred window size of the given panel might need to
   // get changed.
@@ -70,13 +70,11 @@ class PanelStrip : public PanelMouseWatcherObserver {
   int num_panels() const { return panels_.size(); }
   bool is_dragging_panel() const;
   const Panels& panels() const { return panels_; }
+  gfx::Rect display_area() const { return display_area_; }
 
   int GetMaxPanelWidth() const;
   int GetMaxPanelHeight() const;
   int StartingRightPosition() const;
-
-  // Overridden from PanelMouseWatcherObserver:
-  virtual void OnMouseMove(const gfx::Point& mouse_position) OVERRIDE;
 
   void OnAutoHidingDesktopBarVisibilityChanged(
       AutoHidingDesktopBar::Alignment alignment,
@@ -102,6 +100,9 @@ class PanelStrip : public PanelMouseWatcherObserver {
     BRING_UP,
     BRING_DOWN
   };
+
+  // Overridden from PanelMouseWatcherObserver:
+  virtual void OnMouseMove(const gfx::Point& mouse_position) OVERRIDE;
 
   // Keep track of the minimized panels to control mouse watching.
   void IncrementMinimizedPanels();

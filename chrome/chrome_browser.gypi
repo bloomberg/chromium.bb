@@ -3203,6 +3203,8 @@
         'browser/ui/panels/panel_mouse_watcher_observer.h',
         'browser/ui/panels/panel_mouse_watcher_timer.cc',
         'browser/ui/panels/panel_mouse_watcher_win.cc',
+        'browser/ui/panels/panel_overflow_strip.cc',
+        'browser/ui/panels/panel_overflow_strip.h',
         'browser/ui/panels/panel_settings_menu_model.cc',
         'browser/ui/panels/panel_settings_menu_model.h',
         'browser/ui/panels/panel_strip.cc',

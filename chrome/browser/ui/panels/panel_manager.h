@@ -24,6 +24,7 @@
 
 class Browser;
 class PanelMouseWatcher;
+class PanelOverflowStrip;
 class PanelStrip;
 
 // This class manages a set of panels.
@@ -53,8 +54,8 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
   void EndDragging(bool cancelled);
 
   // Invoked when a panel's expansion state changes.
-  void OnPanelExpansionStateChanged(Panel::ExpansionState old_state,
-                                    Panel::ExpansionState new_state);
+  void OnPanelExpansionStateChanged(Panel* panel,
+                                    Panel::ExpansionState old_state);
 
   // Invoked when the preferred window size of the given panel might need to
   // get changed.
@@ -68,12 +69,6 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
   // Brings up or down the titlebars for all minimized panels.
   void BringUpOrDownTitlebars(bool bring_up);
 
-  // Returns the bottom position for the panel per its expansion state. If auto-
-  // hide bottom bar is present, we want to move the minimized panel to the
-  // bottom of the screen, not the bottom of the work area.
-  int GetBottomPositionForExpansionState(
-      Panel::ExpansionState expansion_state) const;
-
   // Returns the next browser window which could be either panel window or
   // tabbed window, to switch to if the given panel is going to be deactivated.
   // Returns NULL if such window cannot be found.
@@ -83,11 +78,6 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
   bool is_dragging_panel() const;
   int StartingRightPosition() const;
   const Panels& panels() const;
-
-  // Moves a panel to the overflow strip. The panel does not currently
-  // belong in any other strip.
-  // |is_new| is true if the panel was just created.
-  void MoveToOverflowStrip(Panel* panel, bool is_new);
 
   AutoHidingDesktopBar* auto_hiding_desktop_bar() const {
     return auto_hiding_desktop_bar_;
@@ -102,6 +92,9 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
   }
 
   bool is_full_screen() const { return is_full_screen_; }
+  PanelOverflowStrip* panel_overflow_strip() const {
+    return panel_overflow_strip_.get();
+  }
 
 #ifdef UNIT_TEST
   static int horizontal_spacing() { return PanelStrip::horizontal_spacing(); }
@@ -162,6 +155,7 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
   void CheckFullScreenMode();
 
   scoped_ptr<PanelStrip> panel_strip_;
+  scoped_ptr<PanelOverflowStrip> panel_overflow_strip_;
 
   // Use a mouse watcher to know when to bring up titlebars to "peek" at
   // minimized panels. Mouse movement is only tracked when there is a minimized

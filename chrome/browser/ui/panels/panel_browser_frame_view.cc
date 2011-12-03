@@ -660,7 +660,7 @@ int PanelBrowserFrameView::IconOnlyWidth() const {
   return kBorderThickness * 2 + kIconAndBorderSpacing * 2 + kIconSize;
 }
 
-gfx::Size PanelBrowserFrameView::IconifiedSize() const {
+gfx::Size PanelBrowserFrameView::IconOnlySize() const {
   return gfx::Size(IconOnlyWidth(), NonClientTopBorderHeight());
 }
 

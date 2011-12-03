@@ -69,6 +69,18 @@ class Panel : public BrowserWindow,
   // b) it remains on top when an app exits full screen mode.
   void FullScreenModeChanged(bool is_full_screen);
 
+  void MoveOutOfOverflow();
+
+  // Ensures that the panel is fully visible, that is, not obscured by other
+  // top-most windows.
+  void EnsureFullyVisible();
+
+  int TitleOnlyHeight() const;
+
+  // Returns the size of the panel when it is iconified, as shown on the
+  // overflow area.
+  gfx::Size IconOnlySize() const;
+
   // BrowserWindow overrides.
   virtual void Show() OVERRIDE;
   virtual void ShowInactive() OVERRIDE;

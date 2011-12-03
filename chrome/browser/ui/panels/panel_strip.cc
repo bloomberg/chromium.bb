@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
+#include "chrome/browser/ui/panels/panel_overflow_strip.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -73,13 +74,10 @@ void PanelStrip::SetDisplayArea(const gfx::Rect& new_area) {
   gfx::Rect old_area = display_area_;
   display_area_ = new_area;
 
-  if (panels_.empty() || new_area.width() == old_area.width())
+  if (panels_.empty())
     return;
 
-  if (new_area.width() < old_area.width())
-    Rearrange();
-  else
-    MovePanelsFromOverflowIfNeeded();
+  Rearrange();
 }
 
 void PanelStrip::AddPanel(Panel* panel) {
@@ -132,6 +130,9 @@ void PanelStrip::AddPanel(Panel* panel) {
 
     // Keep panel visible in the strip even if overlap would occur.
     // Panel is moved to overflow from the strip after a delay.
+    // TODO(jianli): remove the guard when overflow support is enabled on other
+    // platforms. http://crbug.com/105073
+#if defined(OS_WIN)
     if (x < display_area_.x()) {
       x = display_area_.x();
       int delay_ms = remove_delays_for_testing_ ? 0 :
@@ -144,6 +145,7 @@ void PanelStrip::AddPanel(Panel* panel) {
                      true),  // new panel
           delay_ms);
     }
+#endif
     panel->Initialize(gfx::Rect(x, y, width, height));
   }
 
@@ -334,20 +336,36 @@ void PanelStrip::EndDragging(bool cancelled) {
 }
 
 void PanelStrip::OnPanelExpansionStateChanged(
-    Panel::ExpansionState old_state, Panel::ExpansionState new_state) {
-  DCHECK_NE(new_state, old_state);
-  switch (new_state) {
+    Panel* panel, Panel::ExpansionState old_state) {
+  gfx::Size size = panel->restored_size();
+  Panel::ExpansionState expansion_state = panel->expansion_state();
+  switch (expansion_state) {
     case Panel::EXPANDED:
-      DecrementMinimizedPanels();
+      if (old_state == Panel::TITLE_ONLY || old_state == Panel::MINIMIZED)
+        DecrementMinimizedPanels();
+      break;
+    case Panel::TITLE_ONLY:
+      size.set_height(panel->TitleOnlyHeight());
+      if (old_state == Panel::EXPANDED)
+        IncrementMinimizedPanels();
       break;
     case Panel::MINIMIZED:
-    case Panel::TITLE_ONLY:
+      size.set_height(Panel::kMinimizedPanelHeight);
       if (old_state == Panel::EXPANDED)
         IncrementMinimizedPanels();
       break;
     default:
+      NOTREACHED();
       break;
   }
+
+  int bottom = GetBottomPositionForExpansionState(expansion_state);
+  gfx::Rect bounds = panel->GetBounds();
+  panel->SetPanelBounds(
+      gfx::Rect(bounds.right() - size.width(),
+                bottom - size.height(),
+                size.width(),
+                size.height()));
 }
 
 void PanelStrip::IncrementMinimizedPanels() {
@@ -573,12 +591,16 @@ void PanelStrip::Rearrange() {
     gfx::Rect new_bounds(panel->GetBounds());
     int x = rightmost_position - new_bounds.width();
 
+  // TODO(jianli): remove the guard when overflow support is enabled on other
+  // platforms. http://crbug.com/105073
+#if defined(OS_WIN)
     if (x < display_area_.x()) {
       MovePanelsToOverflow(panel_index);
       break;
     }
+#endif
 
-    new_bounds.set_x(rightmost_position - new_bounds.width());
+    new_bounds.set_x(x);
     new_bounds.set_y(
         GetBottomPositionForExpansionState(panel->expansion_state()) -
             new_bounds.height());
@@ -587,8 +609,12 @@ void PanelStrip::Rearrange() {
     rightmost_position = new_bounds.x() - kPanelsHorizontalSpacing;
   }
 
+  // TODO(jianli): remove the guard when overflow support is enabled on other
+  // platforms. http://crbug.com/105073
+#if defined(OS_WIN)
   if (panel_index == panels_.size())
     MovePanelsFromOverflowIfNeeded();
+#endif
 }
 
 void PanelStrip::MovePanelsToOverflow(size_t overflow_point) {
@@ -602,20 +628,18 @@ void PanelStrip::MovePanelToOverflow(Panel* panel, bool is_new) {
   if (!DoRemove(panel))
     return;
 
-  // TODO(jianli): Replace with the real code using overflow strip.
-  // panel_manager_->panel_overflow_strip()->AddPanel(panel, is_new);
+  panel_manager_->panel_overflow_strip()->AddPanel(panel, is_new);
 }
 
 void PanelStrip::MovePanelsFromOverflowIfNeeded() {
-  // TODO(jianli): Replace with the real code using overflow strip.
-  // PanelOverflowStrip* overflow = panel_manager_->panel_overflow_strip();
-  // Panel* candidate;
-  // while (candidate = overflow->FirstPanel() &&
-  //     GetRightMostAvailablePosition -
-  //         candidate->GetRestoredSize().width() >= display_area_.x()) {
-  //   overflow->Remove(candidate);
-  //   AddPanel(candidate);
-  // }
+  PanelOverflowStrip* overflow_strip = panel_manager_->panel_overflow_strip();
+  Panel* overflow_panel;
+  while ((overflow_panel = overflow_strip->first_panel()) &&
+          GetRightMostAvailablePosition() -
+              overflow_panel->restored_size().width() >= display_area_.x()) {
+    overflow_strip->Remove(overflow_panel);
+    AddPanel(overflow_panel);
+  }
 }
 
 void PanelStrip::RemoveAll() {

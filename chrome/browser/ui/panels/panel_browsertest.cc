@@ -27,7 +27,9 @@
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/panels/panel_overflow_strip.h"
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
+#include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/ui/panels/test_panel_mouse_watcher.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -81,6 +83,9 @@ class PanelBrowserTest : public BasePanelBrowserTest {
 
   void TestCreatePanelOnOverflow() {
     PanelManager* panel_manager = PanelManager::GetInstance();
+    PanelStrip* panel_strip = panel_manager->panel_strip();
+    PanelOverflowStrip* panel_overflow_strip =
+        panel_manager->panel_overflow_strip();
     EXPECT_EQ(0, panel_manager->num_panels()); // No panels initially.
 
     // Create testing extensions.
@@ -106,42 +111,50 @@ class PanelBrowserTest : public BasePanelBrowserTest {
         web_app::GenerateApplicationNameFromExtensionId(extension1->id()),
         gfx::Rect(0, 0, 200, 200));
     ASSERT_EQ(3, panel_manager->num_panels());
+    EXPECT_EQ(3, panel_strip->num_panels());
+    EXPECT_EQ(0, panel_overflow_strip->num_panels());
 
     // Open a panel that would overflow.
     Panel* panel4 = CreatePanelWithBounds(
         web_app::GenerateApplicationNameFromExtensionId(extension2->id()),
         gfx::Rect(0, 0, 280, 200));
     ASSERT_EQ(4, panel_manager->num_panels());
-    EXPECT_LT(panel4->GetBounds().right(), panel3->GetBounds().x());
-    EXPECT_GT(0, panel4->GetBounds().x());
+    EXPECT_EQ(3, panel_strip->num_panels());
+    EXPECT_EQ(1, panel_overflow_strip->num_panels());
+    EXPECT_EQ(Panel::IN_OVERFLOW, panel4->expansion_state());
 
     // Open another panel that would overflow.
     Panel* panel5 = CreatePanelWithBounds(
         web_app::GenerateApplicationNameFromExtensionId(extension3->id()),
         gfx::Rect(0, 0, 300, 200));
     ASSERT_EQ(5, panel_manager->num_panels());
-    EXPECT_LT(panel5->GetBounds().right(), panel4->GetBounds().x());
-    EXPECT_GT(0, panel5->GetBounds().x());
+    EXPECT_EQ(3, panel_strip->num_panels());
+    EXPECT_EQ(2, panel_overflow_strip->num_panels());
+    EXPECT_EQ(Panel::IN_OVERFLOW, panel4->expansion_state());
+    EXPECT_EQ(Panel::IN_OVERFLOW, panel5->expansion_state());
 
-    // Close a visible panel. Expect an overflow panel to slide over.
+    // Close a visible panel. Expect an overflow panel to move over.
     CloseWindowAndWait(panel2->browser());
     ASSERT_EQ(4, panel_manager->num_panels());
-    EXPECT_LT(panel4->GetBounds().right(), panel3->GetBounds().x());
-    EXPECT_LE(0, panel4->GetBounds().x());
-    EXPECT_GT(0, panel5->GetBounds().x());
+    EXPECT_EQ(3, panel_strip->num_panels());
+    EXPECT_EQ(1, panel_overflow_strip->num_panels());
+    EXPECT_NE(Panel::IN_OVERFLOW, panel4->expansion_state());
+    EXPECT_EQ(Panel::IN_OVERFLOW, panel5->expansion_state());
 
-    // Close another visible panel. Remaining overflow panel should slide over
-    // but still not enough room to be fully visible.
+    // Close another visible panel. Remaining overflow panel cannot move over
+    // due to not enough room.
     CloseWindowAndWait(panel3->browser());
     ASSERT_EQ(3, panel_manager->num_panels());
-    EXPECT_LT(panel5->GetBounds().right(), panel4->GetBounds().x());
-    EXPECT_GT(0, panel5->GetBounds().x());
+    EXPECT_EQ(2, panel_strip->num_panels());
+    EXPECT_EQ(1, panel_overflow_strip->num_panels());
+    EXPECT_EQ(Panel::IN_OVERFLOW, panel5->expansion_state());
 
     // Closing one more panel makes room for all panels to fit on screen.
     CloseWindowAndWait(panel4->browser());
     ASSERT_EQ(2, panel_manager->num_panels());
-    EXPECT_LT(panel5->GetBounds().right(), panel1->GetBounds().x());
-    EXPECT_LE(0, panel5->GetBounds().x());
+    EXPECT_EQ(2, panel_strip->num_panels());
+    EXPECT_EQ(0, panel_overflow_strip->num_panels());
+    EXPECT_NE(Panel::IN_OVERFLOW, panel5->expansion_state());
 
     panel1->Close();
     panel5->Close();

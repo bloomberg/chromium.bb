@@ -122,6 +122,8 @@ class PanelBrowserView : public BrowserView,
 
   void SetBoundsInternal(const gfx::Rect& bounds, bool animate);
 
+  void ShowOrHidePanelAppIcon(bool show);
+
   scoped_ptr<Panel> panel_;
   gfx::Rect bounds_;
 

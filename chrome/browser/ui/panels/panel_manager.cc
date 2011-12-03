@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
+#include "chrome/browser/ui/panels/panel_overflow_strip.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -41,6 +42,7 @@ PanelManager::PanelManager()
       auto_sizing_enabled_(true),
       is_full_screen_(false) {
   panel_strip_.reset(new PanelStrip(this));
+  panel_overflow_strip_.reset(new PanelOverflowStrip(this));
   auto_hiding_desktop_bar_ = AutoHidingDesktopBar::Create(this);
   OnDisplayChanged();
 }
@@ -81,6 +83,10 @@ void PanelManager::Layout() {
                                kPanelStripLeftMargin - kPanelStripRightMargin);
   panel_strip_bounds.set_height(height);
   panel_strip_->SetDisplayArea(panel_strip_bounds);
+
+  gfx::Rect overflow_area(adjusted_work_area_);
+  overflow_area.set_width(kOverflowStripThickness);
+  panel_overflow_strip_->SetDisplayArea(overflow_area);
 }
 
 Panel* PanelManager::CreatePanel(Browser* browser) {
@@ -113,6 +119,7 @@ void PanelManager::CheckFullScreenMode() {
     return;
   is_full_screen_ = is_full_screen_new;
   panel_strip_->OnFullScreenModeChanged(is_full_screen_);
+  panel_overflow_strip_->OnFullScreenModeChanged(is_full_screen_);
 }
 
 void PanelManager::Remove(Panel* panel) {
@@ -121,7 +128,8 @@ void PanelManager::Remove(Panel* panel) {
 
   if (panel_strip_->Remove(panel))
     return;
-  // TODO(jianli): else try removing from overflow strip
+  bool removed = panel_overflow_strip_->Remove(panel);
+  DCHECK(removed);
 }
 
 void PanelManager::OnPanelRemoved(Panel* panel) {
@@ -144,8 +152,11 @@ void PanelManager::EndDragging(bool cancelled) {
 }
 
 void PanelManager::OnPanelExpansionStateChanged(
-    Panel::ExpansionState old_state, Panel::ExpansionState new_state) {
-  panel_strip_->OnPanelExpansionStateChanged(old_state, new_state);
+    Panel* panel, Panel::ExpansionState old_state) {
+  if (panel->expansion_state() == Panel::IN_OVERFLOW)
+    panel_overflow_strip_->OnPanelExpansionStateChanged(panel, old_state);
+  else
+    panel_strip_->OnPanelExpansionStateChanged(panel, old_state);
 }
 
 void PanelManager::OnPreferredWindowSizeChanged(
@@ -180,11 +191,6 @@ void PanelManager::AdjustWorkAreaForAutoHidingDesktopBars() {
   }
 }
 
-int PanelManager::GetBottomPositionForExpansionState(
-    Panel::ExpansionState expansion_state) const {
-  return panel_strip_->GetBottomPositionForExpansionState(expansion_state);
-}
-
 BrowserWindow* PanelManager::GetNextBrowserWindowToActivate(
     Panel* panel) const {
   // Find the last active browser window that is not minimized.
@@ -197,10 +203,6 @@ BrowserWindow* PanelManager::GetNextBrowserWindowToActivate(
   }
 
   return NULL;
-}
-
-void PanelManager::MoveToOverflowStrip(Panel* panel, bool is_new) {
-  // TODO(jianli) - implement.
 }
 
 void PanelManager::OnAutoHidingDesktopBarThicknessChanged() {
@@ -216,12 +218,11 @@ void PanelManager::OnAutoHidingDesktopBarVisibilityChanged(
 
 void PanelManager::RemoveAll() {
   panel_strip_->RemoveAll();
-  // TODO(jianli): overflow_strip_->RemoveAll();
+  panel_overflow_strip_->RemoveAll();
 }
 
 int PanelManager::num_panels() const {
-  return panel_strip_->num_panels();
-  // TODO(jianli): + overflow_strip_->num_panels();
+  return panel_strip_->num_panels() + panel_overflow_strip_->num_panels();
 }
 
 bool PanelManager::is_dragging_panel() const {
