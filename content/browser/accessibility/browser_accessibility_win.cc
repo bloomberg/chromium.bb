@@ -7,6 +7,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/enum_variant.h"
 #include "base/win/scoped_comptr.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/common/view_messages.h"
@@ -168,7 +169,8 @@ BrowserAccessibilityWin::BrowserAccessibilityWin()
       ia_state_(0),
       ia2_role_(0),
       ia2_state_(0),
-      first_time_(true) {
+      first_time_(true),
+      old_ia_state_(0) {
 }
 
 BrowserAccessibilityWin::~BrowserAccessibilityWin() {
@@ -529,7 +531,48 @@ STDMETHODIMP BrowserAccessibilityWin::get_accSelection(VARIANT* selected) {
   if (!instance_active_)
     return E_FAIL;
 
-  return E_NOTIMPL;
+  if (role_ != WebAccessibility::ROLE_LISTBOX)
+    return E_NOTIMPL;
+
+  unsigned long selected_count = 0;
+  for (size_t i = 0; i < children_.size(); ++i) {
+    if (children_[i]->HasState(WebAccessibility::STATE_SELECTED))
+      ++selected_count;
+  }
+
+  if (selected_count == 0) {
+    selected->vt = VT_EMPTY;
+    return S_OK;
+  }
+
+  if (selected_count == 1) {
+    for (size_t i = 0; i < children_.size(); ++i) {
+      if (children_[i]->HasState(WebAccessibility::STATE_SELECTED)) {
+        selected->vt = VT_DISPATCH;
+        selected->pdispVal =
+            children_[i]->toBrowserAccessibilityWin()->NewReference();
+        return S_OK;
+      }
+    }
+  }
+
+  // Multiple items are selected.
+  base::win::EnumVariant* enum_variant =
+      new base::win::EnumVariant(selected_count);
+  enum_variant->AddRef();
+  unsigned long index = 0;
+  for (size_t i = 0; i < children_.size(); ++i) {
+    if (children_[i]->HasState(WebAccessibility::STATE_SELECTED)) {
+      enum_variant->ItemAt(index)->vt = VT_DISPATCH;
+      enum_variant->ItemAt(index)->pdispVal =
+        children_[i]->toBrowserAccessibilityWin()->NewReference();
+      ++index;
+    }
+  }
+  selected->vt = VT_UNKNOWN;
+  selected->punkVal = static_cast<IUnknown*>(
+      static_cast<base::win::IUnknownImpl*>(enum_variant));
+  return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::accSelect(
@@ -681,6 +724,28 @@ STDMETHODIMP BrowserAccessibilityWin::get_relations(
   }
 
   return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::get_groupPosition(
+    LONG* group_level,
+    LONG* similar_items_in_group,
+    LONG* position_in_group) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!group_level || !similar_items_in_group || !position_in_group)
+    return E_INVALIDARG;
+
+  if (role_ == WebAccessibility::ROLE_LISTBOX_OPTION &&
+      parent_ &&
+      parent_->role() == WebAccessibility::ROLE_LISTBOX) {
+    *group_level = 0;
+    *similar_items_in_group = parent_->child_count();
+    *position_in_group = index_in_parent_ + 1;
+    return S_OK;
+  }
+
+  return E_NOTIMPL;
 }
 
 //
@@ -2335,6 +2400,16 @@ void BrowserAccessibilityWin::Initialize() {
   // Expose "level" attribute for tree nodes.
   IntAttributeToIA2(WebAccessibility::ATTR_HIERARCHICAL_LEVEL, "level");
 
+  // Expose the set size and position in set for listbox options.
+  if (role_ == WebAccessibility::ROLE_LISTBOX_OPTION &&
+      parent_ &&
+      parent_->role() == WebAccessibility::ROLE_LISTBOX) {
+    ia2_attributes_.push_back(
+        L"setsize:" + base::IntToString16(parent_->child_count()));
+    ia2_attributes_.push_back(
+        L"setsize:" + base::IntToString16(index_in_parent_ + 1));
+  }
+
   // Expose live region attributes.
   StringAttributeToIA2(WebAccessibility::ATTR_LIVE_STATUS, "live");
   StringAttributeToIA2(WebAccessibility::ATTR_LIVE_RELEVANT, "relevant");
@@ -2387,9 +2462,11 @@ void BrowserAccessibilityWin::Initialize() {
     }
   }
 
-  // If this is static text, put the text in the name rather than the value.
-  if (role_ == WebAccessibility::ROLE_STATIC_TEXT && name_.empty())
+  if (name_.empty() &&
+      (role_ == WebAccessibility::ROLE_LISTBOX_OPTION ||
+       role_ == WebAccessibility::ROLE_STATIC_TEXT)) {
     name_.swap(value_);
+  }
 
   // If this object doesn't have a name but it does have a description,
   // use the description as its name - because some screen readers only
@@ -2441,6 +2518,40 @@ void BrowserAccessibilityWin::SendNodeUpdateEvents() {
 
     old_text_ = previous_text_;
     previous_text_ = text;
+  }
+
+  // Fire events if the state has changed.
+  if (!first_time_ && ia_state_ != old_ia_state_) {
+    // Normally focus events are handled elsewhere, however
+    // focus for managed descendants is platform-specific.
+    // Fire a focus event if the focused descendant in a multi-select
+    // list box changes.
+    if (role_ == WebAccessibility::ROLE_LISTBOX_OPTION &&
+        (ia_state_ & STATE_SYSTEM_FOCUSABLE) &&
+        (ia_state_ & STATE_SYSTEM_SELECTABLE) &&
+        (ia_state_ & STATE_SYSTEM_FOCUSED) &&
+        !(old_ia_state_ & STATE_SYSTEM_FOCUSED)) {
+      ::NotifyWinEvent(EVENT_OBJECT_FOCUS,
+                       manager_->GetParentView(),
+                       OBJID_CLIENT,
+                       child_id());
+    }
+
+    if ((ia_state_ & STATE_SYSTEM_SELECTED) &&
+        !(old_ia_state_ & STATE_SYSTEM_SELECTED)) {
+      ::NotifyWinEvent(EVENT_OBJECT_SELECTIONADD,
+                       manager_->GetParentView(),
+                       OBJID_CLIENT,
+                       child_id());
+    } else if (!(ia_state_ & STATE_SYSTEM_SELECTED) &&
+               (old_ia_state_ & STATE_SYSTEM_SELECTED)) {
+      ::NotifyWinEvent(EVENT_OBJECT_SELECTIONREMOVE,
+                       manager_->GetParentView(),
+                       OBJID_CLIENT,
+                       child_id());
+    }
+
+    old_ia_state_ = ia_state_;
   }
 
   first_time_ = false;
@@ -2571,51 +2682,53 @@ void BrowserAccessibilityWin::InitRoleAndState() {
   ia2_state_ = IA2_STATE_OPAQUE;
   ia2_attributes_.clear();
 
-  if ((state_ >> WebAccessibility::STATE_BUSY) & 1)
+  if (HasState(WebAccessibility::STATE_BUSY))
     ia_state_|= STATE_SYSTEM_BUSY;
-  if ((state_ >> WebAccessibility::STATE_CHECKED) & 1)
+  if (HasState(WebAccessibility::STATE_CHECKED))
     ia_state_ |= STATE_SYSTEM_CHECKED;
-  if ((state_ >> WebAccessibility::STATE_COLLAPSED) & 1)
+  if (HasState(WebAccessibility::STATE_COLLAPSED))
     ia_state_|= STATE_SYSTEM_COLLAPSED;
-  if ((state_ >> WebAccessibility::STATE_EXPANDED) & 1)
+  if (HasState(WebAccessibility::STATE_EXPANDED))
     ia_state_|= STATE_SYSTEM_EXPANDED;
-  if ((state_ >> WebAccessibility::STATE_FOCUSABLE) & 1)
+  if (HasState(WebAccessibility::STATE_FOCUSABLE))
     ia_state_|= STATE_SYSTEM_FOCUSABLE;
-  if ((state_ >> WebAccessibility::STATE_HASPOPUP) & 1)
+  if (HasState(WebAccessibility::STATE_HASPOPUP))
     ia_state_|= STATE_SYSTEM_HASPOPUP;
-  if ((state_ >> WebAccessibility::STATE_HOTTRACKED) & 1)
+  if (HasState(WebAccessibility::STATE_HOTTRACKED))
     ia_state_|= STATE_SYSTEM_HOTTRACKED;
-  if ((state_ >> WebAccessibility::STATE_INDETERMINATE) & 1)
+  if (HasState(WebAccessibility::STATE_INDETERMINATE))
     ia_state_|= STATE_SYSTEM_INDETERMINATE;
-  if ((state_ >> WebAccessibility::STATE_INVISIBLE) & 1)
+  if (HasState(WebAccessibility::STATE_INVISIBLE))
     ia_state_|= STATE_SYSTEM_INVISIBLE;
-  if ((state_ >> WebAccessibility::STATE_LINKED) & 1)
+  if (HasState(WebAccessibility::STATE_LINKED))
     ia_state_|= STATE_SYSTEM_LINKED;
-  if ((state_ >> WebAccessibility::STATE_MULTISELECTABLE) & 1)
+  if (HasState(WebAccessibility::STATE_MULTISELECTABLE)) {
+    ia_state_|= STATE_SYSTEM_EXTSELECTABLE;
     ia_state_|= STATE_SYSTEM_MULTISELECTABLE;
+  }
   // TODO(ctguil): Support STATE_SYSTEM_EXTSELECTABLE/accSelect.
-  if ((state_ >> WebAccessibility::STATE_OFFSCREEN) & 1)
+  if (HasState(WebAccessibility::STATE_OFFSCREEN))
     ia_state_|= STATE_SYSTEM_OFFSCREEN;
-  if ((state_ >> WebAccessibility::STATE_PRESSED) & 1)
+  if (HasState(WebAccessibility::STATE_PRESSED))
     ia_state_|= STATE_SYSTEM_PRESSED;
-  if ((state_ >> WebAccessibility::STATE_PROTECTED) & 1)
+  if (HasState(WebAccessibility::STATE_PROTECTED))
     ia_state_|= STATE_SYSTEM_PROTECTED;
-  if ((state_ >> WebAccessibility::STATE_REQUIRED) & 1)
+  if (HasState(WebAccessibility::STATE_REQUIRED))
     ia2_state_|= IA2_STATE_REQUIRED;
-  if ((state_ >> WebAccessibility::STATE_SELECTABLE) & 1)
+  if (HasState(WebAccessibility::STATE_SELECTABLE))
     ia_state_|= STATE_SYSTEM_SELECTABLE;
-  if ((state_ >> WebAccessibility::STATE_SELECTED) & 1)
+  if (HasState(WebAccessibility::STATE_SELECTED))
     ia_state_|= STATE_SYSTEM_SELECTED;
-  if ((state_ >> WebAccessibility::STATE_TRAVERSED) & 1)
+  if (HasState(WebAccessibility::STATE_TRAVERSED))
     ia_state_|= STATE_SYSTEM_TRAVERSED;
-  if ((state_ >> WebAccessibility::STATE_UNAVAILABLE) & 1)
+  if (HasState(WebAccessibility::STATE_UNAVAILABLE))
     ia_state_|= STATE_SYSTEM_UNAVAILABLE;
-  if ((state_ >> WebAccessibility::STATE_VERTICAL) & 1) {
+  if (HasState(WebAccessibility::STATE_VERTICAL)) {
     ia2_state_|= IA2_STATE_VERTICAL;
   } else {
     ia2_state_|= IA2_STATE_HORIZONTAL;
   }
-  if ((state_ >> WebAccessibility::STATE_VISITED) & 1)
+  if (HasState(WebAccessibility::STATE_VISITED))
     ia_state_|= STATE_SYSTEM_TRAVERSED;
 
   // The meaning of the readonly state on Windows is very different from
@@ -2788,6 +2901,11 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       break;
     case WebAccessibility::ROLE_LISTBOX_OPTION:
       ia_role_ = ROLE_SYSTEM_LISTITEM;
+      if (ia_state_ & STATE_SYSTEM_SELECTABLE) {
+        ia_state_ |= STATE_SYSTEM_FOCUSABLE;
+        if (HasState(WebAccessibility::STATE_FOCUSED))
+          ia_state_|= STATE_SYSTEM_FOCUSED;
+      }
       break;
     case WebAccessibility::ROLE_LIST_ITEM:
       ia_role_ = ROLE_SYSTEM_LISTITEM;

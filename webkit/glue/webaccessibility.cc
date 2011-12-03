@@ -813,6 +813,10 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
   if (role == ROLE_SLIDER)
     include_children = false;
 
+  // Treat the active list box item as focused.
+  if (role == ROLE_LISTBOX_OPTION && src.isSelectedOptionActive())
+    state |= (1 << WebAccessibility::STATE_FOCUSED);
+
   WebKit::WebNode node = src.node();
   bool is_iframe = false;
 

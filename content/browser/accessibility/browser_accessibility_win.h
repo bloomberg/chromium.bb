@@ -194,6 +194,10 @@ BrowserAccessibilityWin
       IAccessibleRelation** relations,
       LONG* n_relations);
 
+  CONTENT_EXPORT STDMETHODIMP get_groupPosition(LONG* group_level,
+                                                LONG* similar_items_in_group,
+                                                LONG* position_in_group);
+
   // IAccessible2 methods not implemented.
   CONTENT_EXPORT STDMETHODIMP get_extendedRole(BSTR* extended_role) {
     return E_NOTIMPL;
@@ -205,11 +209,6 @@ BrowserAccessibilityWin
       enum IA2CoordinateType coordinate_type,
       LONG x,
       LONG y) {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP get_groupPosition(LONG* group_level,
-                                                LONG* similar_items_in_group,
-                                                LONG* position_in_group) {
     return E_NOTIMPL;
   }
   CONTENT_EXPORT STDMETHODIMP get_localizedExtendedRole(
@@ -721,6 +720,9 @@ BrowserAccessibilityWin
   // previous_text_ except that it's NOT updated when the object
   // is initialized again but the text doesn't change.
   string16 old_text_;
+
+  // The previous state, used to see if there was a state change.
+  int32 old_ia_state_;
 
   // Relationships between this node and other nodes.
   std::vector<BrowserAccessibilityRelation*> relations_;

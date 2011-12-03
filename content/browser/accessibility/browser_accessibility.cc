@@ -257,6 +257,10 @@ bool BrowserAccessibility::GetHtmlAttribute(
   return false;
 }
 
+bool BrowserAccessibility::HasState(WebAccessibility::State state_enum) const {
+  return (state_ >> state_enum) & 1;
+}
+
 bool BrowserAccessibility::IsEditableText() const {
   return (role_ == WebAccessibility::ROLE_TEXT_FIELD ||
           role_ == WebAccessibility::ROLE_TEXTAREA);

@@ -514,7 +514,8 @@ bool RendererAccessibility::ShouldIncludeChildren(
   WebKit::WebAccessibilityNotification type = notification.type;
   if (type == WebKit::WebAccessibilityNotificationChildrenChanged ||
       type == WebKit::WebAccessibilityNotificationLoadComplete ||
-      type == WebKit::WebAccessibilityNotificationLiveRegionChanged) {
+      type == WebKit::WebAccessibilityNotificationLiveRegionChanged ||
+      type == WebKit::WebAccessibilityNotificationSelectedChildrenChanged) {
     return true;
   }
   return false;

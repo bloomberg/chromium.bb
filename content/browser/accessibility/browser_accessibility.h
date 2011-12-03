@@ -222,6 +222,9 @@ class CONTENT_EXPORT BrowserAccessibility {
   // returns true if found.
   bool GetHtmlAttribute(const char* attr, string16* value) const;
 
+  // Returns true if the bit corresponding to the given state enum is 1.
+  bool HasState(WebAccessibility::State state_enum) const;
+
   // Returns true if this node is an editable text field of any kind.
   bool IsEditableText() const;
 
