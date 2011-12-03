@@ -142,7 +142,7 @@ bool MessagePumpX::ProcessXEvent(MessagePumpDispatcher* dispatcher,
     have_cookie = true;
   }
 
-  if (WillProcessXEvent(xev) == EVENT_CONTINUE) {
+  if (!WillProcessXEvent(xev)) {
     MessagePumpDispatcher::DispatchStatus status =
         dispatcher->Dispatch(xev);
 
