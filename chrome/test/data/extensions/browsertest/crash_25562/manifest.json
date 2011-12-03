@@ -13,5 +13,6 @@
       "tooltip": "Page action tooltip"
    } ],
    "permissions": [ "http://*/*" ],
+   "manifest_version": 2,
    "version": "1.0"
 }

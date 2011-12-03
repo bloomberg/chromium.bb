@@ -1,6 +1,7 @@
 {
   "name": "Test App 2",
   "version": "1",
+  "manifest_version": 2,
   "permissions": ["unlimited_storage"],
   "app": {
     "urls": [

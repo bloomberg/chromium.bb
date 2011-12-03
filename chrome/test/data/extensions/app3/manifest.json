@@ -1,6 +1,7 @@
 {
   "name": "Test App 3",
   "version": "1",
+  "manifest_version": 2,
   "app": {
     "urls": [
       "http://www.example.com/path1/should_overlap",

@@ -1,6 +1,7 @@
 {
   "name": "DevTools test",
   "version": "0.1",
+  "manifest_version": 2,
   "description": "",
   "background_page": "background.html",
   "permissions": [ "tabs" ]

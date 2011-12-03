@@ -1,6 +1,7 @@
 {
     "name": "Popup Test",
     "version": "1.0",
+  "manifest_version": 2,
     "page_action": {
         "default_icon": "icon.png",
         "popup": "popup.html"

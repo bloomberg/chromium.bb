@@ -6,5 +6,6 @@
      "default_icon": "chrome-16.png"
    },
    "permissions": [ "http://*/*" ],
+   "manifest_version": 2,
    "version": "1.0"
 }

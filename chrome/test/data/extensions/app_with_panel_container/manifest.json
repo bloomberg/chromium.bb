@@ -1,6 +1,7 @@
 {
   "name": "App Test: panel container",
   "version": "1",
+  "manifest_version": 2,
   "permissions": [
     "notifications"
   ],
