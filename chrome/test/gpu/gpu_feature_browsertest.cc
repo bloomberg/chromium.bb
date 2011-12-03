@@ -113,7 +113,13 @@ class GpuFeatureTest : public InProcessBrowserTest {
   size_t num_offscreen_contexts_;
 };
 
-IN_PROC_BROWSER_TEST_F(GpuFeatureTest, AcceleratedCompositingAllowed) {
+#if defined(OS_CHROMEOS)
+// http://crbug.com/106259
+#define MAYBE_AcceleratedCompositingAllowed DISABLED_testSetBooleanPrefTriggers
+#else
+#define MAYBE_AcceleratedCompositingAllowed AcceleratedCompositingAllowed
+#endif
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_AcceleratedCompositingAllowed) {
   GpuFeatureFlags flags = GpuDataManager::GetInstance()->GetGpuFeatureFlags();
   EXPECT_EQ(flags.flags(), 0u);
 
