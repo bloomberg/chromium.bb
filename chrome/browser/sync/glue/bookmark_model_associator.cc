@@ -368,11 +368,10 @@ bool BookmarkModelAssociator::BuildAssociations(SyncError* error) {
     error->Reset(FROM_HERE, kServerError, model_type());
     return false;
   }
-  if (!AssociateTaggedPermanentNode(bookmark_model_->mobile_node(),
-                                    kMobileBookmarksTag)) {
-    error->Reset(FROM_HERE, kServerError, model_type());
-    return false;
-  }
+  // The mobile folder isn't always present on the backend, so we don't fail if
+  // it doesn't exist.
+  ignore_result(AssociateTaggedPermanentNode(bookmark_model_->mobile_node(),
+                                             kMobileBookmarksTag));
   int64 bookmark_bar_sync_id = GetSyncIdFromChromeId(
       bookmark_model_->bookmark_bar_node()->id());
   DCHECK_NE(bookmark_bar_sync_id, sync_api::kInvalidId);
@@ -381,7 +380,6 @@ bool BookmarkModelAssociator::BuildAssociations(SyncError* error) {
   DCHECK_NE(other_bookmarks_sync_id, sync_api::kInvalidId);
   int64 mobile_bookmarks_sync_id = GetSyncIdFromChromeId(
        bookmark_model_->mobile_node()->id());
-  DCHECK_NE(mobile_bookmarks_sync_id, sync_api::kInvalidId);
 
   std::stack<int64> dfs_stack;
   if (mobile_bookmarks_sync_id != sync_api::kInvalidId)
@@ -525,10 +523,9 @@ bool BookmarkModelAssociator::LoadAssociations() {
     return false;
   }
   int64 mobile_bookmarks_id = -1;
-  if (!GetSyncIdForTaggedNode(kMobileBookmarksTag, &mobile_bookmarks_id)) {
-    // We should always be able to find the permanent nodes.
-    return false;
-  }
+  // Can't fail here as the mobile folder may not exist.
+  ignore_result(
+      GetSyncIdForTaggedNode(kMobileBookmarksTag, &mobile_bookmarks_id));
 
   // Build a bookmark node ID index since we are going to repeatedly search for
   // bookmark nodes by their IDs.
@@ -538,7 +535,8 @@ bool BookmarkModelAssociator::LoadAssociations() {
   id_index.AddAll(bookmark_model_->mobile_node());
 
   std::stack<int64> dfs_stack;
-  dfs_stack.push(mobile_bookmarks_id);
+  if (mobile_bookmarks_id != -1)
+    dfs_stack.push(mobile_bookmarks_id);
   dfs_stack.push(other_bookmarks_id);
   dfs_stack.push(bookmark_bar_id);
 

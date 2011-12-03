@@ -116,7 +116,7 @@ class BookmarkModelAssociator
   // user's share.  For example, "other_bookmarks" is the tag for the Other
   // Bookmarks folder.  The sync nodes are server-created.
   bool AssociateTaggedPermanentNode(const BookmarkNode* permanent_node,
-                                    const std::string& tag);
+                                    const std::string& tag) WARN_UNUSED_RESULT;
 
   // Compare the properties of a pair of nodes from either domain.
   bool NodesMatch(const BookmarkNode* bookmark,
