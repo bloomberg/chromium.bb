@@ -78,7 +78,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/browser/ui/webui/sync_promo_trial.h"
-#include "chrome/browser/web_resource/gpu_blacklist_updater.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -93,11 +92,14 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "content/browser/gpu/gpu_blacklist.h"
+#include "content/browser/gpu/gpu_data_manager.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/main_function_params.h"
 #include "grit/app_locale_settings.h"
+#include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/platform_locale_settings.h"
@@ -445,6 +447,27 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
 #endif
 
   return NULL;
+}
+
+// Load GPU Blacklist, collect preliminary gpu info, and compute preliminary
+// gpu feature flags.
+void InitializeGpuDataManager(const CommandLine& parsed_command_line) {
+  GpuDataManager::GetInstance();
+
+  if (parsed_command_line.HasSwitch(switches::kSkipGpuDataLoading))
+    return;
+
+  const base::StringPiece gpu_blacklist_json(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_GPU_BLACKLIST));
+  chrome::VersionInfo version_info;
+  std::string chrome_version_string =
+      version_info.is_valid() ? version_info.Version() : "0";
+  GpuBlacklist* gpu_blacklist = new GpuBlacklist(chrome_version_string);
+  bool succeed = gpu_blacklist->LoadGpuBlacklist(
+      gpu_blacklist_json.as_string(), GpuBlacklist::kCurrentOsOnly);
+  DCHECK(succeed);
+  GpuDataManager::GetInstance()->SetGpuBlacklist(gpu_blacklist);
 }
 
 #if defined(OS_CHROMEOS)
@@ -1875,8 +1898,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // ProfileKeyedServiceFactory::ServiceIsCreatedWithProfile() instead?
   CloudPrintProxyServiceFactory::GetForProfile(profile_);
 
-  // Initialize GpuDataManager and collect preliminary gpu info.
-  GpuBlacklistUpdater::Setup();
+  // Load GPU Blacklist.
+  InitializeGpuDataManager(parsed_command_line());
 
   // Start watching all browser threads for responsiveness.
   ThreadWatcherList::StartWatchingAll(parsed_command_line());

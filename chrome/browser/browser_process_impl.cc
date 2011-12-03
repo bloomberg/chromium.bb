@@ -56,7 +56,6 @@
 #include "chrome/browser/tab_closeable_state_watcher.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/web_resource/gpu_blacklist_updater.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -684,13 +683,6 @@ MHTMLGenerationManager* BrowserProcessImpl::mhtml_generation_manager() {
     mhtml_generation_manager_ = new MHTMLGenerationManager();
 
   return mhtml_generation_manager_.get();
-}
-
-GpuBlacklistUpdater* BrowserProcessImpl::gpu_blacklist_updater() {
-  if (!gpu_blacklist_updater_.get())
-    gpu_blacklist_updater_ = new GpuBlacklistUpdater();
-
-  return gpu_blacklist_updater_.get();
 }
 
 ComponentUpdateService* BrowserProcessImpl::component_updater() {

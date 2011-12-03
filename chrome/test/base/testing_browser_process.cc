@@ -232,10 +232,6 @@ MHTMLGenerationManager* TestingBrowserProcess::mhtml_generation_manager() {
   return NULL;
 }
 
-GpuBlacklistUpdater* TestingBrowserProcess::gpu_blacklist_updater() {
-  return NULL;
-}
-
 ComponentUpdateService* TestingBrowserProcess::component_updater() {
   return NULL;
 }

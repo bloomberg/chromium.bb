@@ -26,7 +26,6 @@ class ComponentUpdateService;
 class DownloadRequestLimiter;
 class DownloadStatusUpdater;
 class ExtensionEventRouterForwarder;
-class GpuBlacklistUpdater;
 class GoogleURLTracker;
 class IconManager;
 class IntranetRedirectDetector;
@@ -218,8 +217,6 @@ class BrowserProcess {
   virtual prerender::PrerenderTracker* prerender_tracker() = 0;
 
   virtual MHTMLGenerationManager* mhtml_generation_manager() = 0;
-
-  virtual GpuBlacklistUpdater* gpu_blacklist_updater() = 0;
 
   virtual ComponentUpdateService* component_updater() = 0;
 

@@ -124,7 +124,6 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual ChromeNetLog* net_log() OVERRIDE;
   virtual prerender::PrerenderTracker* prerender_tracker() OVERRIDE;
   virtual MHTMLGenerationManager* mhtml_generation_manager() OVERRIDE;
-  virtual GpuBlacklistUpdater* gpu_blacklist_updater() OVERRIDE;
   virtual ComponentUpdateService* component_updater() OVERRIDE;
   virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
 
@@ -280,8 +279,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
   // Per-process listener for online state changes.
   scoped_ptr<BrowserOnlineStateObserver> online_state_observer_;
-
-  scoped_refptr<GpuBlacklistUpdater> gpu_blacklist_updater_;
 
 #if !defined(OS_CHROMEOS)
   scoped_ptr<ComponentUpdateService> component_updater_;

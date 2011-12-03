@@ -51,7 +51,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
 
     ASSERT_TRUE(blacklist->LoadGpuBlacklist(
         json_blacklist, GpuBlacklist::kAllOs));
-    GpuDataManager::GetInstance()->SetBuiltInGpuBlacklist(blacklist);
+    GpuDataManager::GetInstance()->SetGpuBlacklist(blacklist);
   }
 
   void RunTest(const FilePath& url, GpuResultFlags expectations) {

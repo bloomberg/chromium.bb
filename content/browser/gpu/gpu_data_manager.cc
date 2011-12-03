@@ -485,47 +485,12 @@ void GpuDataManager::AppendGpuCommandLine(
   }
 }
 
-void GpuDataManager::SetBuiltInGpuBlacklist(GpuBlacklist* built_in_list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(built_in_list);
-  uint16 version_major, version_minor;
-  bool succeed = built_in_list->GetVersion(
-      &version_major, &version_minor);
-  DCHECK(succeed);
-  gpu_blacklist_.reset(built_in_list);
-  UpdateGpuFeatureFlags();
-  preliminary_gpu_feature_flags_ = gpu_feature_flags_;
-  VLOG(1) << "Using software rendering list version "
-          << version_major << "." << version_minor;
-}
-
-void GpuDataManager::UpdateGpuBlacklist(
-    GpuBlacklist* gpu_blacklist, bool preliminary) {
+void GpuDataManager::SetGpuBlacklist(GpuBlacklist* gpu_blacklist) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(gpu_blacklist);
-
-  scoped_ptr<GpuBlacklist> updated_list(gpu_blacklist);
-
-  uint16 updated_version_major, updated_version_minor;
-  if (!updated_list->GetVersion(
-          &updated_version_major, &updated_version_minor))
-    return;
-
-  uint16 current_version_major, current_version_minor;
-  bool succeed = gpu_blacklist_->GetVersion(
-      &current_version_major, &current_version_minor);
-  DCHECK(succeed);
-  if (updated_version_major < current_version_major ||
-      (updated_version_major == current_version_major &&
-       updated_version_minor <= current_version_minor))
-    return;
-
-  gpu_blacklist_.reset(updated_list.release());
+  gpu_blacklist_.reset(gpu_blacklist);
   UpdateGpuFeatureFlags();
-  if (preliminary)
-    preliminary_gpu_feature_flags_ = gpu_feature_flags_;
-  VLOG(1) << "Using software rendering list version "
-          << updated_version_major << "." << updated_version_minor;
+  preliminary_gpu_feature_flags_ = gpu_feature_flags_;
 }
 
 void GpuDataManager::HandleGpuSwitch() {

@@ -494,9 +494,6 @@ extern const char kNTPWebStorePromoUserGroup[];
 extern const char kNTPAppPageNames[];
 extern const char kNTPHideWebStorePromo[];
 
-extern const char kGpuBlacklist[];
-extern const char kGpuBlacklistUpdate[];
-
 extern const char kDevToolsDisabled[];
 extern const char kDevToolsOpenDocked[];
 extern const char kDevToolsSplitLocation[];

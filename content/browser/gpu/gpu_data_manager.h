@@ -114,13 +114,7 @@ class CONTENT_EXPORT GpuDataManager {
 
   // Gives ownership of the built-in blacklist.  This is always called on the
   // UI thread.
-  void SetBuiltInGpuBlacklist(GpuBlacklist* built_in_list);
-
-  // Gives ownership of the latest blacklist.  This is always called on the UI
-  // thread.
-  // TODO(zmo): Get rid of preliminary because it should not be exposed to
-  // outside GpuDataManager.
-  void UpdateGpuBlacklist(GpuBlacklist* updated_list, bool preliminary);
+  void SetGpuBlacklist(GpuBlacklist* gpu_blacklist);
 
   // This gets called when switching GPU might have happened.
   void HandleGpuSwitch();

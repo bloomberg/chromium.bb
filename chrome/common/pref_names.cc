@@ -1384,13 +1384,6 @@ const char kNTPAppPageNames[] = "ntp.app_page_names";
 // When true, web store promos will never be shown.
 const char kNTPHideWebStorePromo[] = "ntp.hide_webstore_promo";
 
-// The most up-to-date GPU blacklist downloaded from the web, which replaces
-// the one that's installed with chrome.
-const char kGpuBlacklist[] = "gpu_blacklist";
-
-// Last time of update of gpu_blacklist.
-const char kGpuBlacklistUpdate[] = "gpu_blacklist_update";
-
 const char kDevToolsDisabled[] = "devtools.disabled";
 
 // A boolean specifying whether dev tools window should be opened docked.
