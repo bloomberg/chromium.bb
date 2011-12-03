@@ -11939,12 +11939,6 @@ changed since last sign in
       <message name="IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING" desc="In the settings tab, the text next to the checkbox for data roaming.">
         Allow mobile data roaming
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_IMPORT_NETWORK_SETTINGS" desc="In the settings tab, the text next to the file input selector.">
-        Import network settings:
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_INVALID_NETWORK_SETTINGS" desc="Dialog when network settings file is of invalid format.">
-        Invalid network settings file
-      </message>
       <message name="IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to allow browse without signing in.">
         Enable guest browsing
       </message>
