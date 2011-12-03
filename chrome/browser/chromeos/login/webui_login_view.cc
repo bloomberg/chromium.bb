@@ -269,7 +269,8 @@ StatusAreaButton::TextStyle WebUILoginView::GetStatusAreaTextStyle() const {
 }
 
 void WebUILoginView::ButtonVisibilityChanged(views::View* button_view) {
-  status_area_->UpdateButtonVisibility();
+  if (status_area_)
+    status_area_->UpdateButtonVisibility();
 }
 
 void WebUILoginView::OnRenderHostCreated(RenderViewHost* host) {
