@@ -2162,8 +2162,6 @@ TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
 }
 
 TEST_F(SyncerTest, ParentAndChildBothMatch) {
-  syncable::ModelTypeBitSet all_types;
-  all_types.set();
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
   syncable::Id parent_id = ids_.NewServerId();
@@ -2200,7 +2198,7 @@ TEST_F(SyncerTest, ParentAndChildBothMatch) {
     dir->GetChildHandlesById(&trans, parent_id, &children);
     EXPECT_EQ(1u, children.size());
     Directory::UnappliedUpdateMetaHandles unapplied;
-    dir->GetUnappliedUpdateMetaHandles(&trans, all_types, &unapplied);
+    dir->GetUnappliedUpdateMetaHandles(&trans, &unapplied);
     EXPECT_EQ(0u, unapplied.size());
     syncable::Directory::UnsyncedMetaHandles unsynced;
     dir->GetUnsyncedMetaHandles(&trans, &unsynced);

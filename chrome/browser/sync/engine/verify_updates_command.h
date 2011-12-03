@@ -26,10 +26,7 @@ class VerifyUpdatesCommand : public ModelChangingSyncerCommand {
   VerifyUpdatesCommand();
   virtual ~VerifyUpdatesCommand();
 
- protected:
-  // ModelChangingSyncerCommand implementation.
-  virtual std::set<ModelSafeGroup> GetGroupsToChange(
-      const sessions::SyncSession& session) const OVERRIDE;
+  // SyncerCommand implementation.
   virtual void ModelChangingExecuteImpl(
       sessions::SyncSession* session) OVERRIDE;
 

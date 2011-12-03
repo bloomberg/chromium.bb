@@ -53,9 +53,6 @@ class ProcessCommitResponseCommandTestWithParam
 
     commit_set_.reset(new sessions::OrderedCommitSet(routing_info()));
     SyncerCommandTestWithParam<T>::SetUp();
-    // Need to explicitly use this-> to avoid obscure template
-    // warning.
-    this->ExpectNoGroupsToChange(command_);
   }
 
  protected:
@@ -236,7 +233,6 @@ TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
   CreateUnprocessedCommitResult(autofill_id2, id_factory_.root(),
                                 "Autofill 2", syncable::AUTOFILL);
 
-  ExpectGroupsToChange(command_, GROUP_UI, GROUP_DB);
   command_.ExecuteImpl(session());
 
   ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
@@ -328,7 +324,6 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
   // 25 items.  This should apply the values indicated by
   // each CommitResponse_EntryResponse to the syncable Entries.  All new
   // items in the commit batch should have their IDs changed to server IDs.
-  ExpectGroupToChange(command_, GROUP_UI);
   command_.ExecuteImpl(session());
 
   ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
@@ -433,7 +428,6 @@ TEST_P(MixedResult, ExtensionActivity) {
     (*records)["xyz"].extension_id = "xyz";
     (*records)["xyz"].bookmark_write_count = 4U;
   }
-  ExpectGroupsToChange(command_, GROUP_UI, GROUP_DB);
   command_.ExecuteImpl(session());
 
   ExtensionsActivityMonitor::Records final_monitor_records;

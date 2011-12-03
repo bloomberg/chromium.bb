@@ -28,12 +28,8 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
   ProcessCommitResponseCommand();
   virtual ~ProcessCommitResponseCommand();
 
- protected:
   // ModelChangingSyncerCommand implementation.
-  virtual std::set<ModelSafeGroup> GetGroupsToChange(
-      const sessions::SyncSession& session) const OVERRIDE;
-  virtual bool ModelNeutralExecuteImpl(
-      sessions::SyncSession* session) OVERRIDE;
+  virtual bool ModelNeutralExecuteImpl(sessions::SyncSession* session) OVERRIDE;
   virtual void ModelChangingExecuteImpl(
       sessions::SyncSession* session) OVERRIDE;
 
