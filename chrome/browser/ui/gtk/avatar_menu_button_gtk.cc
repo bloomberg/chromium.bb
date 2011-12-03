@@ -58,7 +58,9 @@ void AvatarMenuButtonGtk::OnSizeAllocate(GtkWidget* widget,
 }
 
 void AvatarMenuButtonGtk::ShowAvatarBubble() {
-  new AvatarMenuBubbleGtk(browser_, widget_.get(), arrow_location_, NULL);
+  // Only show the avatar bubble if the avatar button is in the title bar.
+  if (gtk_widget_get_parent_window(widget_.get()))
+    new AvatarMenuBubbleGtk(browser_, widget_.get(), arrow_location_, NULL);
 }
 
 void AvatarMenuButtonGtk::UpdateButtonIcon() {
