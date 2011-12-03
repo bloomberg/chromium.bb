@@ -106,11 +106,18 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenURLsPopup) {
   BrowserList::RemoveObserver(&observer);
 }
 
+#if defined(USE_AURA)
+// Fails on aura. See crbug.com/106248.
+#define MAYBE_StartupURLsOnNewWindowWithNoTabbedBrowsers DISABLED_StartupURLsOnNewWindowWithNoTabbedBrowsers
+#else
+#define MAYBE_StartupURLsOnNewWindowWithNoTabbedBrowsers StartupURLsOnNewWindowWithNoTabbedBrowsers
+#endif
+
 // Verify that startup URLs are honored when the process already exists but has
 // no tabbed browser windows (eg. as if the process is running only due to a
 // background application.
 IN_PROC_BROWSER_TEST_F(BrowserInitTest,
-                       StartupURLsOnNewWindowWithNoTabbedBrowsers) {
+                       MAYBE_StartupURLsOnNewWindowWithNoTabbedBrowsers) {
   // Use a couple arbitrary URLs.
   std::vector<GURL> urls;
   urls.push_back(ui_test_utils::GetTestUrl(
