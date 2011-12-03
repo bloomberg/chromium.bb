@@ -147,11 +147,6 @@ class ParallelAuthenticator : public Authenticator,
                          const std::string& password,
                          const std::string& login_token,
                          const std::string& login_captcha) OVERRIDE;
-  virtual void VerifyOAuth1AccessToken(const std::string& oauth1_access_token,
-      const std::string& oauth1_secret) OVERRIDE;
-  virtual std::string EncryptToken(const std::string& token) OVERRIDE;
-  virtual std::string DecryptToken(const std::string& encrypted_token) OVERRIDE;
-
   // AuthAttemptStateResolver overrides.
   // Attempts to make a decision and call back |consumer_| based on
   // the state we have gathered at the time of call.  If a decision
@@ -239,12 +234,6 @@ class ParallelAuthenticator : public Authenticator,
   // Records OAuth1 access token verification failure for |user_account|.
   void RecordOAuthCheckFailure(const std::string& user_account);
 
-  // Stores a hash of |password|, salted with the ascii of |system_salt_|.
-  std::string HashPassword(const std::string& password);
-
-  // Returns the ascii encoding of the system salt.
-  std::string SaltAsAscii();
-
   // Signal login completion status for cases when a new user is added via
   // an external authentication provider (i.e. GAIA extension).
   void ResolveLoginCompletionStatus();
@@ -273,10 +262,6 @@ class ParallelAuthenticator : public Authenticator,
   scoped_refptr<CryptohomeOp> guest_mounter_;
   scoped_refptr<CryptohomeOp> key_checker_;
 
-  std::string ascii_hash_;
-  chromeos::CryptohomeBlob system_salt_;
-  scoped_ptr<crypto::SymmetricKey> supplemental_user_key_;
-
   // When the user has changed her password, but gives us the old one, we will
   // be able to mount her cryptohome, but online authentication will fail.
   // This allows us to present the same behavior to the caller, regardless
@@ -294,7 +279,6 @@ class ParallelAuthenticator : public Authenticator,
 
   friend class ResolveChecker;
   friend class ParallelAuthenticatorTest;
-  FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest, SaltToAscii);
   FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest, ReadLocalaccount);
   FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest,
                            ReadLocalaccountTrailingWS);

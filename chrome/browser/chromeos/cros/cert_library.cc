@@ -7,12 +7,19 @@
 #include <algorithm>
 
 #include "base/observer_list_threadsafe.h"
+#include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"  // g_browser_process
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "content/public/browser/browser_thread.h"
+#include "crypto/encryptor.h"
 #include "crypto/nss_util.h"
+#include "crypto/sha2.h"
+#include "crypto/symmetric_key.h"
 #include "grit/generated_resources.h"
 #include "net/base/cert_database.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -30,6 +37,32 @@ const char kRootCertificateTokenName[] = "Builtin Object Token";
 
 // Delay between certificate requests while waiting for TPM/PKCS#11 init.
 const int kRequestDelayMs = 500;
+
+const size_t kKeySize = 16;
+
+// Decrypts (AES) hex encoded encrypted token given |key| and |salt|.
+std::string DecryptTokenWithKey(
+    crypto::SymmetricKey* key,
+    const std::string& salt,
+    const std::string& encrypted_token_hex) {
+  std::vector<uint8> encrypted_token_bytes;
+  if (!base::HexStringToBytes(encrypted_token_hex, &encrypted_token_bytes))
+    return std::string();
+
+  std::string encrypted_token(
+      reinterpret_cast<char*>(encrypted_token_bytes.data()),
+      encrypted_token_bytes.size());
+  crypto::Encryptor encryptor;
+  if (!encryptor.Init(key, crypto::Encryptor::CTR, std::string()))
+    return std::string();
+
+  std::string nonce = salt.substr(0, kKeySize);
+  std::string token;
+  CHECK(encryptor.SetCounter(nonce));
+  if (!encryptor.Decrypt(encrypted_token, &token))
+    return std::string();
+  return token;
+}
 
 string16 GetDisplayString(net::X509Certificate* cert, bool hardware_backed) {
   std::string org;
@@ -100,12 +133,14 @@ class CertLibraryImpl
       // Set 'loaded' to true for the UI, since we are not waiting on loading.
       LOG(WARNING) << "Requesting certificates before login.";
       certificates_loaded_ = true;
+      supplemental_user_key_.reset(NULL);
       return;
     }
 
     if (!user_logged_in_) {
       user_logged_in_ = true;
       certificates_loaded_ = false;
+      supplemental_user_key_.reset(NULL);
     }
 
     VLOG(1) << "Requesting Certificates.";
@@ -179,8 +214,33 @@ class CertLibraryImpl
     return server_ca_certs_;
   }
 
-  virtual crypto::SymmetricKey* GetSupplementalUserKey() const {
-    return crypto::GetSupplementalUserKey();
+  virtual std::string EncryptToken(const std::string& token) OVERRIDE {
+    if (!LoadSupplementalUserKey())
+      return std::string();
+    crypto::Encryptor encryptor;
+    if (!encryptor.Init(supplemental_user_key_.get(), crypto::Encryptor::CTR,
+                        std::string()))
+      return std::string();
+    std::string salt =
+        CrosLibrary::Get()->GetCryptohomeLibrary()->GetSystemSalt();
+    std::string nonce = salt.substr(0, kKeySize);
+    std::string encoded_token;
+    CHECK(encryptor.SetCounter(nonce));
+    if (!encryptor.Encrypt(token, &encoded_token))
+      return std::string();
+
+    return StringToLowerASCII(base::HexEncode(
+        reinterpret_cast<const void*>(encoded_token.data()),
+        encoded_token.size()));
+  }
+
+  virtual std::string DecryptToken(
+      const std::string& encrypted_token_hex) OVERRIDE {
+    if (!LoadSupplementalUserKey())
+      return std::string();
+    return DecryptTokenWithKey(supplemental_user_key_.get(),
+        CrosLibrary::Get()->GetCryptohomeLibrary()->GetSystemSalt(),
+        encrypted_token_hex);
   }
 
   // net::CertDatabase::Observer implementation. Observer added on UI thread.
@@ -319,6 +379,19 @@ class CertLibraryImpl
     }
   }
 
+  bool LoadSupplementalUserKey() {
+    if (!user_logged_in_) {
+      // If we are not logged in, we cannot load any certificates.
+      // Set 'loaded' to true for the UI, since we are not waiting on loading.
+      LOG(WARNING) << "Requesting supplemental use key before login.";
+      return false;
+    }
+    if (!supplemental_user_key_.get()) {
+      supplemental_user_key_.reset(crypto::GetSupplementalUserKey());
+    }
+    return supplemental_user_key_.get() != NULL;
+  }
+
   // Observers.
   const scoped_refptr<CertLibraryObserverList> observer_list_;
 
@@ -327,6 +400,9 @@ class CertLibraryImpl
 
   // Cached TPM token name.
   std::string tpm_token_name_;
+
+  // Supplemental user key.
+  scoped_ptr<crypto::SymmetricKey> supplemental_user_key_;
 
   // Local state.
   bool user_logged_in_;

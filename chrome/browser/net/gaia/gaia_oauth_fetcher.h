@@ -12,9 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 
 struct ChromeCookieDetails;
@@ -206,7 +206,8 @@ class GaiaOAuthFetcher : public content::URLFetcherDelegate,
   // From a URLFetcher result, generate an appropriate error.
   static GoogleServiceAuthError GenerateAuthError(
       const std::string& data,
-      const net::URLRequestStatus& status);
+      const net::URLRequestStatus& status,
+      int response_code);
 
   // Given parameters, create a OAuth v1 request URL.
   static GURL MakeGetOAuthTokenUrl(const std::string& oauth1_login_scope,

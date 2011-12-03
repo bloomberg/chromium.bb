@@ -13,8 +13,6 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/rand_util.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
@@ -33,9 +31,6 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "crypto/encryptor.h"
-#include "crypto/sha2.h"
-#include "crypto/symmetric_key.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
@@ -48,37 +43,6 @@ using file_util::GetFileSize;
 using file_util::PathExists;
 using file_util::ReadFile;
 using file_util::ReadFileToString;
-
-namespace {
-
-const int kPassHashLen = 32;
-const size_t kKeySize = 16;
-
-// Decrypts (AES) hex encoded encrypted token given |key| and |salt|.
-std::string DecryptTokenWithKey(
-    crypto::SymmetricKey* key,
-    const std::string& salt,
-    const std::string& encrypted_token_hex) {
-  std::vector<uint8> encrypted_token_bytes;
-  if (!base::HexStringToBytes(encrypted_token_hex, &encrypted_token_bytes))
-    return std::string();
-
-  std::string encrypted_token(
-      reinterpret_cast<char*>(encrypted_token_bytes.data()),
-      encrypted_token_bytes.size());
-  crypto::Encryptor encryptor;
-  if (!encryptor.Init(key, crypto::Encryptor::CTR, std::string()))
-    return std::string();
-
-  std::string nonce = salt.substr(0, kKeySize);
-  std::string token;
-  CHECK(encryptor.SetCounter(nonce));
-  if (!encryptor.Decrypt(encrypted_token, &token))
-    return std::string();
-  return token;
-}
-
-}   // namespace
 
 namespace chromeos {
 
@@ -115,12 +79,13 @@ void ParallelAuthenticator::AuthenticateToLogin(
   std::string canonicalized = Authenticator::Canonicalize(username);
   authentication_profile_ = profile;
   current_state_.reset(
-      new AuthAttemptState(canonicalized,
-                           password,
-                           HashPassword(password),
-                           login_token,
-                           login_captcha,
-                           !UserManager::Get()->IsKnownUser(canonicalized)));
+      new AuthAttemptState(
+          canonicalized,
+          password,
+          CrosLibrary::Get()->GetCryptohomeLibrary()->HashPassword(password),
+          login_token,
+          login_captcha,
+          !UserManager::Get()->IsKnownUser(canonicalized)));
   mounter_ = CryptohomeOp::CreateMountAttempt(current_state_.get(),
                                               this,
                                               false /* don't create */);
@@ -151,10 +116,11 @@ void ParallelAuthenticator::CompleteLogin(Profile* profile,
   std::string canonicalized = Authenticator::Canonicalize(username);
   authentication_profile_ = profile;
   current_state_.reset(
-      new AuthAttemptState(canonicalized,
-                           password,
-                           HashPassword(password),
-                           !UserManager::Get()->IsKnownUser(canonicalized)));
+      new AuthAttemptState(
+          canonicalized,
+          password,
+          CrosLibrary::Get()->GetCryptohomeLibrary()->HashPassword(password),
+          !UserManager::Get()->IsKnownUser(canonicalized)));
   mounter_ = CryptohomeOp::CreateMountAttempt(current_state_.get(),
                                               this,
                                               false /* don't create */);
@@ -190,8 +156,9 @@ void ParallelAuthenticator::CompleteLogin(Profile* profile,
 void ParallelAuthenticator::AuthenticateToUnlock(const std::string& username,
                                                  const std::string& password) {
   current_state_.reset(
-      new AuthAttemptState(Authenticator::Canonicalize(username),
-                           HashPassword(password)));
+      new AuthAttemptState(
+          Authenticator::Canonicalize(username),
+          CrosLibrary::Get()->GetCryptohomeLibrary()->HashPassword(password)));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&ParallelAuthenticator::LoadLocalaccount, this,
@@ -310,7 +277,8 @@ void ParallelAuthenticator::RecordOAuthCheckFailure(
 void ParallelAuthenticator::RecoverEncryptedData(
     const std::string& old_password,
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
-  std::string old_hash = HashPassword(old_password);
+  std::string old_hash =
+      CrosLibrary::Get()->GetCryptohomeLibrary()->HashPassword(old_password);
   key_migrator_ = CryptohomeOp::CreateMigrateAttempt(current_state_.get(),
                                                      this,
                                                      true,
@@ -345,12 +313,13 @@ void ParallelAuthenticator::RetryAuth(Profile* profile,
                                       const std::string& login_token,
                                       const std::string& login_captcha) {
   reauth_state_.reset(
-      new AuthAttemptState(Authenticator::Canonicalize(username),
-                           password,
-                           HashPassword(password),
-                           login_token,
-                           login_captcha,
-                           false /* not a new user */));
+      new AuthAttemptState(
+          Authenticator::Canonicalize(username),
+          password,
+          CrosLibrary::Get()->GetCryptohomeLibrary()->HashPassword(password),
+          login_token,
+          login_captcha,
+          false /* not a new user */));
   // Always use ClientLogin regardless of using_oauth flag. This is because
   // we are unable to renew oauth token on lock screen currently and will
   // stuck with lock screen if we use OAuthLogin here.
@@ -359,18 +328,6 @@ void ParallelAuthenticator::RetryAuth(Profile* profile,
                                       reauth_state_.get(),
                                       this);
   current_online_->Initiate(profile);
-}
-
-
-void ParallelAuthenticator::VerifyOAuth1AccessToken(
-    const std::string& oauth1_access_token, const std::string& oauth1_secret) {
-  DCHECK(using_oauth_);
-  current_state_->SetOAuth1Token(oauth1_access_token, oauth1_secret);
-  // Initiate ClientLogin-based post authentication.
-  current_online_ = new OnlineAttempt(using_oauth_,
-                                      current_state_.get(),
-                                      this);
-  current_online_->Initiate(authentication_profile());
 }
 
 
@@ -677,23 +634,6 @@ ParallelAuthenticator::ResolveOnlineSuccessState(
   }
 }
 
-void ParallelAuthenticator::LoadSystemSalt() {
-  if (!system_salt_.empty())
-    return;
-  system_salt_ = CrosLibrary::Get()->GetCryptohomeLibrary()->GetSystemSalt();
-  CHECK(!system_salt_.empty());
-  CHECK_EQ(system_salt_.size() % 2, 0U);
-}
-
-bool ParallelAuthenticator::LoadSupplementalUserKey() {
-  if (!supplemental_user_key_.get()) {
-    supplemental_user_key_.reset(
-        CrosLibrary::Get()->GetCertLibrary()->GetSupplementalUserKey());
-  }
-  return supplemental_user_key_.get() != NULL;
-}
-
-
 void ParallelAuthenticator::LoadLocalaccount(const std::string& filename) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   {
@@ -722,55 +662,6 @@ void ParallelAuthenticator::SetLocalaccount(const std::string& new_name) {
     base::AutoLock for_this_block(localaccount_lock_);
     checked_for_localaccount_ = true;
   }
-}
-
-std::string ParallelAuthenticator::EncryptToken(const std::string& token) {
-  if (!LoadSupplementalUserKey())
-    return std::string();
-  crypto::Encryptor encryptor;
-  if (!encryptor.Init(supplemental_user_key_.get(), crypto::Encryptor::CTR,
-                      std::string()))
-    return std::string();
-
-  std::string nonce = SaltAsAscii().substr(0, kKeySize);
-  std::string encoded_token;
-  CHECK(encryptor.SetCounter(nonce));
-  if (!encryptor.Encrypt(token, &encoded_token))
-    return std::string();
-
-  return StringToLowerASCII(base::HexEncode(
-      reinterpret_cast<const void*>(encoded_token.data()),
-      encoded_token.size()));
-}
-std::string ParallelAuthenticator::DecryptToken(
-    const std::string& encrypted_token_hex) {
-  if (!LoadSupplementalUserKey())
-    return std::string();
-  return DecryptTokenWithKey(supplemental_user_key_.get(),
-                             SaltAsAscii(),
-                             encrypted_token_hex);
-}
-
-std::string ParallelAuthenticator::HashPassword(const std::string& password) {
-  // Get salt, ascii encode, update sha with that, then update with ascii
-  // of password, then end.
-  std::string ascii_salt = SaltAsAscii();
-  char passhash_buf[kPassHashLen];
-
-  // Hash salt and password
-  crypto::SHA256HashString(ascii_salt + password,
-                           &passhash_buf, sizeof(passhash_buf));
-
-  return StringToLowerASCII(base::HexEncode(
-      reinterpret_cast<const void*>(passhash_buf),
-      sizeof(passhash_buf) / 2));
-}
-
-std::string ParallelAuthenticator::SaltAsAscii() {
-  LoadSystemSalt();  // no-op if it's already loaded.
-  return StringToLowerASCII(base::HexEncode(
-      reinterpret_cast<const void*>(system_salt_.data()),
-      system_salt_.size()));
 }
 
 void ParallelAuthenticator::ResolveLoginCompletionStatus() {

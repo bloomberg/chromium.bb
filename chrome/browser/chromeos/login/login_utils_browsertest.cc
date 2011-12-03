@@ -234,14 +234,8 @@ class LoginUtilsTestBase : public TESTBASE,
     MockSessionManagerClient* session_managed_client =
         dbus_thread_manager_.mock_session_manager_client();
     EXPECT_CALL(*session_managed_client, StartSession(_));
-
-    // crypto::Encryptor::SetCounter wants exactly 128 bits, and
-    // ParallelAuthenticator CHECKs on that.
-    CryptohomeBlob blob;
-    for (size_t i = 0; i < 16; ++i)
-      blob.push_back(i);
     EXPECT_CALL(*cryptohome_, GetSystemSalt())
-        .WillRepeatedly(Return(blob));
+        .WillRepeatedly(Return(std::string("stub_system_salt")));
     EXPECT_CALL(*cryptohome_, AsyncMount(_, _, _, _))
         .WillRepeatedly(Return(true));
 

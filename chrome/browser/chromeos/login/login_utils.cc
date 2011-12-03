@@ -24,6 +24,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
@@ -103,6 +104,11 @@ const char kServiceScopeChromeOS[] =
 
 const char kServiceScopeChromeOSDeviceManagement[] =
     "https://www.googleapis.com/auth/chromeosdevicemanagement";
+
+const char kServiceScopeChromeOSDocuments[] =
+    "https://docs.google.com/feeds/ "
+    "https://spreadsheets.google.com/feeds/ "
+    "https://docs.googleusercontent.com/";
 
 class InitializeCookieMonsterHelper {
  public:
@@ -1114,14 +1120,10 @@ void LoginUtilsImpl::RestoreAuthenticationSession(const std::string& username,
 }
 
 void LoginUtilsImpl::KickStartAuthentication(Profile* user_profile) {
-  if (!authenticator_.get())
-    CreateAuthenticator(NULL);
   std::string oauth1_token;
   std::string oauth1_secret;
   if (ReadOAuth1AccessToken(user_profile, &oauth1_token, &oauth1_secret))
     VerifyOAuth1AccessToken(user_profile, oauth1_token, oauth1_secret);
-
-  authenticator_ = NULL;
 }
 
 void LoginUtilsImpl::SetBackgroundView(BackgroundView* background_view) {
@@ -1201,9 +1203,10 @@ bool LoginUtilsImpl::ReadOAuth1AccessToken(Profile* user_profile,
   if (!encoded_token.length() || !encoded_secret.length())
     return false;
 
-  DCHECK(authenticator_.get());
-  std::string decoded_token = authenticator_->DecryptToken(encoded_token);
-  std::string decoded_secret = authenticator_->DecryptToken(encoded_secret);
+  std::string decoded_token =
+      CrosLibrary::Get()->GetCertLibrary()->DecryptToken(encoded_token);
+  std::string decoded_secret =
+      CrosLibrary::Get()->GetCertLibrary()->DecryptToken(encoded_secret);
   if (!decoded_token.length() || !decoded_secret.length())
     return false;
 
@@ -1218,9 +1221,9 @@ void LoginUtilsImpl::StoreOAuth1AccessToken(Profile* user_profile,
   // First store OAuth1 token + service for the current user profile...
   PrefService* pref_service = user_profile->GetPrefs();
   pref_service->SetString(prefs::kOAuth1Token,
-                          authenticator_->EncryptToken(token));
+      CrosLibrary::Get()->GetCertLibrary()->EncryptToken(token));
   pref_service->SetString(prefs::kOAuth1Secret,
-                          authenticator_->EncryptToken(secret));
+      CrosLibrary::Get()->GetCertLibrary()->EncryptToken(secret));
 
   // ...then record the presence of valid OAuth token for this account in local
   // state as well.

@@ -247,22 +247,6 @@ class ParallelAuthenticatorTest : public testing::Test {
   scoped_ptr<TestAttemptState> state_;
 };
 
-TEST_F(ParallelAuthenticatorTest, SaltToAscii) {
-  unsigned char fake_salt[8] = { 0 };
-  fake_salt[0] = 10;
-  fake_salt[1] = 1;
-  fake_salt[7] = 10 << 4;
-  std::vector<unsigned char> salt_v(fake_salt, fake_salt + sizeof(fake_salt));
-
-  ON_CALL(*mock_library_, GetSystemSalt())
-      .WillByDefault(Return(salt_v));
-  EXPECT_CALL(*mock_library_, GetSystemSalt())
-      .Times(1)
-      .RetiresOnSaturation();
-
-  EXPECT_EQ("0a010000000000a0", auth_->SaltAsAscii());
-}
-
 TEST_F(ParallelAuthenticatorTest, ReadLocalaccount) {
   FilePath tmp_file_path = FakeLocalaccountFile(username_);
 
@@ -464,8 +448,8 @@ TEST_F(ParallelAuthenticatorTest, DriveDataRecover) {
   EXPECT_CALL(*mock_library_, AsyncMount(username_, hash_ascii_, false, _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_library_, GetSystemSalt())
-      .WillOnce(Return(CryptohomeBlob(2, 0)))
+  EXPECT_CALL(*mock_library_, HashPassword(_))
+      .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
 
   state_->PresetOnlineLoginStatus(result_, LoginFailure::None());
@@ -485,8 +469,8 @@ TEST_F(ParallelAuthenticatorTest, DriveDataRecoverButFail) {
   EXPECT_CALL(*mock_library_, AsyncMigrateKey(username_, _, hash_ascii_, _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_library_, GetSystemSalt())
-      .WillOnce(Return(CryptohomeBlob(2, 0)))
+  EXPECT_CALL(*mock_library_, HashPassword(_))
+      .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
 
   SetAttemptState(auth_, state_.release());
@@ -616,8 +600,8 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetNewPassword) {
                                               _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_library_, GetSystemSalt())
-      .WillOnce(Return(CryptohomeBlob(2, 0)))
+  EXPECT_CALL(*mock_library_, HashPassword(_))
+      .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
 
   // Set up state as though a cryptohome mount attempt has occurred and
@@ -653,8 +637,8 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetNewPassword) {
 TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetCaptchad) {
   ExpectLoginSuccess(username_, password_, result_, true);
   FailOnLoginFailure();
-  EXPECT_CALL(*mock_library_, GetSystemSalt())
-      .WillOnce(Return(CryptohomeBlob(2, 0)))
+  EXPECT_CALL(*mock_library_, HashPassword(_))
+      .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
 
   // Set up state as though a cryptohome mount attempt has occurred and
@@ -766,8 +750,8 @@ TEST_F(ParallelAuthenticatorTest, DriveUnlock) {
   EXPECT_CALL(*mock_library_, AsyncCheckKey(username_, _, _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_library_, GetSystemSalt())
-      .WillOnce(Return(CryptohomeBlob(2, 0)))
+  EXPECT_CALL(*mock_library_, HashPassword(_))
+      .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
 
   auth_->AuthenticateToUnlock(username_, "");
@@ -784,8 +768,8 @@ TEST_F(ParallelAuthenticatorTest, DriveLocalUnlock) {
   EXPECT_CALL(*mock_library_, AsyncCheckKey(username_, _, _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_library_, GetSystemSalt())
-      .WillOnce(Return(CryptohomeBlob(2, 0)))
+  EXPECT_CALL(*mock_library_, HashPassword(_))
+      .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
 
   // Deal with getting the localaccount file

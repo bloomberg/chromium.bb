@@ -62,15 +62,6 @@ void MockAuthenticator::OnLoginFailure(const LoginFailure& failure) {
         BrowserThread::UI, FROM_HERE, new MessageLoop::QuitTask);
 }
 
-std::string MockAuthenticator::EncryptToken(const std::string& token) {
-  return std::string();
-}
-
-std::string MockAuthenticator::DecryptToken(
-    const std::string& encrypted_token) {
-  return std::string();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // MockLoginUtils
 

@@ -39,7 +39,8 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
   MOCK_METHOD1(AsyncMountForBwsi, bool(Delegate* callback));
   MOCK_METHOD2(AsyncRemove, bool(const std::string& user_email, Delegate* d));
   MOCK_METHOD0(IsMounted, bool(void));
-  MOCK_METHOD0(GetSystemSalt, CryptohomeBlob(void));
+  MOCK_METHOD1(HashPassword, std::string(const std::string& password));
+  MOCK_METHOD0(GetSystemSalt, std::string(void));
   MOCK_METHOD2(AsyncSetOwnerUser, bool(const std::string&, Delegate* callback));
 
   MOCK_METHOD0(TpmIsReady, bool(void));

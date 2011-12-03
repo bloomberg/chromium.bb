@@ -90,14 +90,6 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
                          const std::string& login_token,
                          const std::string& login_captcha) = 0;
 
-  // Kicks of verification of OAuth1 access token.
-  virtual void VerifyOAuth1AccessToken(const std::string& oauth1_access_token,
-                                       const std::string& oauth1_secret) = 0;
-
-  // OAuth token encryption helpers.
-  virtual std::string EncryptToken(const std::string& token) = 0;
-  virtual std::string DecryptToken(const std::string& encrypted_token) = 0;
-
   // Profile (usually off the record ) that was used to perform the last
   // authentication process.
   Profile* authentication_profile() { return authentication_profile_; }

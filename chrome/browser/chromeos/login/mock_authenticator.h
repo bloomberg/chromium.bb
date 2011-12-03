@@ -67,14 +67,6 @@ class MockAuthenticator : public Authenticator {
                          const std::string& login_token,
                          const std::string& login_captcha) OVERRIDE {}
 
-  virtual std::string EncryptToken(const std::string& token) OVERRIDE;
-
-  virtual std::string DecryptToken(const std::string& encrypted_token) OVERRIDE;
-
-  virtual void VerifyOAuth1AccessToken(
-      const std::string& oauth1_access_token,
-      const std::string& oauth1_secret) OVERRIDE {}
-
  private:
   std::string expected_username_;
   std::string expected_password_;

@@ -8,14 +8,21 @@
 #include "base/command_line.h"
 #include "base/hash_tables.h"
 #include "base/message_loop.h"
+#include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "crypto/encryptor.h"
+#include "crypto/sha2.h"
 
 using content::BrowserThread;
 
 namespace {
-  const char kStubSystemSalt[] = "stub_system_salt";
+
+const char kStubSystemSalt[] = "stub_system_salt";
+const int kPassHashLen = 32;
+
 }
 
 namespace chromeos {
@@ -82,23 +89,6 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
 
   virtual bool IsMounted() OVERRIDE {
     return chromeos::CryptohomeIsMounted();
-  }
-
-  virtual CryptohomeBlob GetSystemSalt() OVERRIDE {
-    CryptohomeBlob system_salt;
-    char* salt_buf;
-    int salt_len;
-    bool result = chromeos::CryptohomeGetSystemSaltSafe(&salt_buf, &salt_len);
-    if (result) {
-      system_salt.resize(salt_len);
-      if ((int)system_salt.size() == salt_len) {
-        memcpy(&system_salt[0], static_cast<const void*>(salt_buf),
-               salt_len);
-      } else {
-        system_salt.clear();
-      }
-    }
-    return system_salt;
   }
 
   virtual bool AsyncSetOwnerUser(
@@ -184,7 +174,31 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
     return chromeos::CryptohomePkcs11IsTpmTokenReady();
   }
 
+  virtual std::string HashPassword(const std::string& password) OVERRIDE {
+    // Get salt, ascii encode, update sha with that, then update with ascii
+    // of password, then end.
+    std::string ascii_salt = GetSystemSalt();
+    char passhash_buf[kPassHashLen];
+
+    // Hash salt and password
+    crypto::SHA256HashString(ascii_salt + password,
+                             &passhash_buf, sizeof(passhash_buf));
+
+    return StringToLowerASCII(base::HexEncode(
+        reinterpret_cast<const void*>(passhash_buf),
+        sizeof(passhash_buf) / 2));
+  }
+
+  virtual std::string GetSystemSalt() OVERRIDE {
+    LoadSystemSalt();  // no-op if it's already loaded.
+    return StringToLowerASCII(base::HexEncode(
+        reinterpret_cast<const void*>(system_salt_.data()),
+        system_salt_.size()));
+  }
+
  private:
+  typedef base::hash_map<int, Delegate*> CallbackMap;
+
   static void Handler(const chromeos::CryptohomeAsyncCallStatus& event,
                       void* cryptohome_library) {
     CryptohomeLibraryImpl* library =
@@ -213,7 +227,25 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
     return true;
   }
 
-  typedef base::hash_map<int, Delegate*> CallbackMap;
+  void LoadSystemSalt() {
+    if (!system_salt_.empty())
+      return;
+
+    char* salt_buf;
+    int salt_len;
+    bool result = chromeos::CryptohomeGetSystemSaltSafe(&salt_buf, &salt_len);
+    if (result) {
+      system_salt_.resize(salt_len);
+      if (static_cast<int>(system_salt_.size()) == salt_len)
+        memcpy(&system_salt_[0], static_cast<const void*>(salt_buf), salt_len);
+      else
+        system_salt_.clear();
+    }
+    CHECK(!system_salt_.empty());
+    CHECK_EQ(system_salt_.size() % 2, 0U);
+  }
+
+  chromeos::CryptohomeBlob system_salt_;
   mutable CallbackMap callback_map_;
 
   void* cryptohome_connection_;
@@ -275,14 +307,6 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
 
   virtual bool IsMounted() OVERRIDE {
     return true;
-  }
-
-  virtual CryptohomeBlob GetSystemSalt() OVERRIDE {
-    CryptohomeBlob salt = CryptohomeBlob();
-    for (size_t i = 0; i < strlen(kStubSystemSalt); i++)
-      salt.push_back(static_cast<unsigned char>(kStubSystemSalt[i]));
-
-    return salt;
   }
 
   virtual bool AsyncSetOwnerUser(
@@ -359,6 +383,16 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   }
 
   virtual bool Pkcs11IsTpmTokenReady() OVERRIDE { return true; }
+
+  virtual std::string HashPassword(const std::string& password) OVERRIDE {
+    return StringToLowerASCII(base::HexEncode(
+            reinterpret_cast<const void*>(password.data()),
+            password.length()));
+  }
+
+  virtual std::string GetSystemSalt() OVERRIDE {
+    return kStubSystemSalt;
+  }
 
  private:
   static void DoStubCallback(Delegate* callback) {

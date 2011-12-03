@@ -101,8 +101,11 @@ class CertLibrary {
   // Returns the current list of server CA certificates.
   virtual const CertList& GetCACertificates() const = 0;
 
-  // Returns the supplemental user key.
-  virtual crypto::SymmetricKey* GetSupplementalUserKey() const = 0;
+  // Encrypts |token| with supplemental user key.
+  virtual std::string EncryptToken(const std::string& token) = 0;
+
+  // Decrypts |token| with supplemental user key.
+  virtual std::string DecryptToken(const std::string& encrypted_token) = 0;
 };
 
 }  // namespace chromeos

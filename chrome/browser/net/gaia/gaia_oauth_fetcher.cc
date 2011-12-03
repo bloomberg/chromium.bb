@@ -461,7 +461,8 @@ void GaiaOAuthFetcher::StartOAuthRevokeWrapToken(const std::string& token) {
 // static
 GoogleServiceAuthError GaiaOAuthFetcher::GenerateAuthError(
     const std::string& data,
-    const net::URLRequestStatus& status) {
+    const net::URLRequestStatus& status,
+    int response_code) {
   if (!status.is_success()) {
     if (status.status() == net::URLRequestStatus::CANCELED) {
       return GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
@@ -471,7 +472,8 @@ GoogleServiceAuthError GaiaOAuthFetcher::GenerateAuthError(
       return GoogleServiceAuthError::FromConnectionError(status.error());
     }
   } else {
-    LOG(WARNING) << "Unrecognized response from Google Accounts servers.";
+    LOG(WARNING) << "Unrecognized response from Google Accounts servers "
+                 << "code " << response_code << " data " << data;
     return GoogleServiceAuthError(
         GoogleServiceAuthError::SERVICE_UNAVAILABLE);
   }
@@ -606,7 +608,8 @@ void GaiaOAuthFetcher::OnOAuthGetAccessTokenFetched(
       StartOAuthWrapBridge(
           token, secret, GaiaConstants::kGaiaOAuthDuration, service_scope_);
   } else {
-    consumer_->OnOAuthGetAccessTokenFailure(GenerateAuthError(data, status));
+    consumer_->OnOAuthGetAccessTokenFailure(GenerateAuthError(data, status,
+                                                              response_code));
   }
 }
 
@@ -624,7 +627,8 @@ void GaiaOAuthFetcher::OnOAuthWrapBridgeFetched(
       StartUserInfo(token);
   } else {
     consumer_->OnOAuthWrapBridgeFailure(service_scope_,
-                                        GenerateAuthError(data, status));
+                                        GenerateAuthError(data, status,
+                                                          response_code));
   }
 }
 
@@ -636,7 +640,8 @@ void GaiaOAuthFetcher::OnOAuthRevokeTokenFetched(
     consumer_->OnOAuthRevokeTokenSuccess();
   } else {
     LOG(ERROR) << "Token revocation failure " << response_code << ": " << data;
-    consumer_->OnOAuthRevokeTokenFailure(GenerateAuthError(data, status));
+    consumer_->OnOAuthRevokeTokenFailure(GenerateAuthError(data, status,
+                                                           response_code));
   }
 }
 
@@ -650,7 +655,8 @@ void GaiaOAuthFetcher::OnUserInfoFetched(
     VLOG(1) << "GAIA user info fetched for " << email << ".";
     consumer_->OnUserInfoSuccess(email);
   } else {
-    consumer_->OnUserInfoFailure(GenerateAuthError(data, status));
+    consumer_->OnUserInfoFailure(GenerateAuthError(data, status,
+                                                   response_code));
   }
 }
 

@@ -75,9 +75,6 @@ class CryptohomeLibrary {
   // Asks cryptohomed if a drive is currently mounted.
   virtual bool IsMounted() = 0;
 
-  // Asks cryptohomed for the system salt.
-  virtual CryptohomeBlob GetSystemSalt() = 0;
-
   // Passes cryptohomed the owner user. It is used to prevent
   // deletion of the owner in low disk space cleanup (see above).
   virtual bool AsyncSetOwnerUser(const std::string& username,
@@ -127,6 +124,12 @@ class CryptohomeLibrary {
   // because it's getting the staus of the PKCS#11 initialization of
   // the TPM token, not the TPM itself.
   virtual bool Pkcs11IsTpmTokenReady() = 0;
+
+  // Returns hash of |password|, salted with the system salt.
+  virtual std::string HashPassword(const std::string& password) = 0;
+
+  // Returns system hash in hex encoded ascii format.
+  virtual std::string GetSystemSalt() = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().
