@@ -218,8 +218,15 @@ def _SetEnvForPnacl(env, root):
   if env.Bit('host_windows'):
     binext = '.bat'
 
-  pnacl_lib = os.path.join(root, 'lib')
-  pnacl_lib_arch = os.path.join(root, 'lib-%s' % arch)
+  if env.Bit('nacl_glibc'):
+    # TODO(pdox): This bias is needed because runnable-ld is
+    # expected to be in the same directory as the SDK.
+    # This assumption should be removed.
+    pnacl_lib = os.path.join(root, 'lib-%s' % arch)
+    pnacl_extra_lib = os.path.join(root, 'lib')
+  else:
+    pnacl_lib = os.path.join(root, 'lib')
+    pnacl_extra_lib = ''
 
   #TODO(robertm): remove NACL_SDK_INCLUDE ASAP
   if env.Bit('nacl_glibc'):
@@ -268,13 +275,13 @@ def _SetEnvForPnacl(env, root):
     if env.Bit('sandboxed_translator_is_dynamic'):
       pnacl_ld_flags += ' --pnacl-sb-dynamic'
 
-  # NACL_SDK_LIB is prepended to LIBPATH in generate()
-  env.Prepend(LIBPATH=pnacl_lib)
+  if pnacl_extra_lib:
+    env.Prepend(LIBPATH=pnacl_extra_lib)
 
   env.Replace(# Replace header and lib paths.
               PNACL_ROOT=root,
               NACL_SDK_INCLUDE=pnacl_include,
-              NACL_SDK_LIB=pnacl_lib_arch,
+              NACL_SDK_LIB=pnacl_lib,
               # Replace the normal unix tools with the PNaCl ones.
               CC=pnacl_cc + pnacl_cc_flags,
               CXX=pnacl_cxx + pnacl_cxx_flags,

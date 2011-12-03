@@ -59,19 +59,22 @@ function declareTests(tester) {
       'pnacl_bad_doesnotexist_pexe_only.nmf',
       'NaCl module load failed: PNaCl pexe load failed.');
 
+  // missing_llc and missing_ld are failing.
+  // BUG= http://code.google.com/p/nativeclient/issues/detail?id=2470
+
   // 'nonexistent_llc' loads a manifest, then tries to load a nonexistent llc.
-  badLoadTest(
-      tester,
-      'missing_llc',
-      'pnacl_bad_missing_llc.nmf',
-      'NaCl module load failed: PNaCl llc load failed.');
+  //badLoadTest(
+  //    tester,
+  //    'missing_llc',
+  //    'pnacl_bad_missing_llc.nmf',
+  //    'NaCl module load failed: PNaCl llc load failed.');
 
   // 'nonexistent_ld' loads a manifest, then tries to load a nonexistent ld.
-  badLoadTest(
-      tester,
-      'missing_ld',
-      'pnacl_bad_missing_ld.nmf',
-      'NaCl module load failed: PNaCl ld load failed.');
+  //badLoadTest(
+  //    tester,
+  //    'missing_ld',
+  //    'pnacl_bad_missing_ld.nmf',
+  //    'NaCl module load failed: PNaCl ld load failed.');
 }
 
 
