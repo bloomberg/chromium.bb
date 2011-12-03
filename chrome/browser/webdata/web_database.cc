@@ -22,8 +22,8 @@ namespace {
 // Current version number.  Note: when changing the current version number,
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
-const int kCurrentVersionNumber = 41;
-const int kCompatibleVersionNumber = 41;
+const int kCurrentVersionNumber = 42;
+const int kCompatibleVersionNumber = 42;
 
 // Change the version number and possibly the compatibility version of
 // |meta_table_|.
@@ -317,6 +317,13 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
         return FailedMigrationTo(41);
 
       ChangeVersion(&meta_table_, 41, true);
+      // FALL THROUGH
+
+    case 41:
+      if (!keyword_table_->MigrateToVersion42AddKeywordsBackupTable())
+        return FailedMigrationTo(42);
+
+      ChangeVersion(&meta_table_, 42, true);
       // FALL THROUGH
 
     // Add successive versions here.  Each should set the version number and

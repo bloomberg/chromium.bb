@@ -3,7 +3,6 @@ BEGIN TRANSACTION;
 CREATE TABLE meta(key LONGVARCHAR NOT NULL UNIQUE PRIMARY KEY,value LONGVARCHAR);
 INSERT INTO "meta" VALUES('version','24');
 INSERT INTO "meta" VALUES('last_compatible_version','24');
-INSERT INTO "meta" VALUES('Default Search Provider ID','2');
 INSERT INTO "meta" VALUES('Builtin Keyword Version','29');
 CREATE TABLE keywords (id INTEGER PRIMARY KEY,short_name VARCHAR NOT NULL,keyword VARCHAR NOT NULL,favicon_url VARCHAR NOT NULL,url VARCHAR NOT NULL,show_in_default_list INTEGER,safe_for_autoreplace INTEGER,originating_url VARCHAR,date_created INTEGER DEFAULT 0,usage_count INTEGER DEFAULT 0,input_encodings VARCHAR,suggest_url VARCHAR,prepopulate_id INTEGER DEFAULT 0,autogenerate_keyword INTEGER DEFAULT 0);
 CREATE TABLE logins (origin_url VARCHAR NOT NULL, action_url VARCHAR,username_element VARCHAR, username_value VARCHAR,password_element VARCHAR, password_value BLOB, submit_element VARCHAR,signon_realm VARCHAR NOT NULL,ssl_valid INTEGER NOT NULL,preferred INTEGER NOT NULL,date_created INTEGER NOT NULL,blacklisted_by_user INTEGER NOT NULL,scheme INTEGER NOT NULL,UNIQUE (origin_url, username_element,username_value, password_element, submit_element, signon_realm));

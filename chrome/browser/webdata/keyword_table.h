@@ -16,6 +16,10 @@
 
 class TemplateURL;
 
+namespace sql {
+class Statement;
+}  // namespace sql
+
 // This class manages the |keywords| MetaTable within the SQLite database
 // passed to the constructor. It expects the following schema:
 //
@@ -49,6 +53,24 @@ class TemplateURL;
 //                          version 38.
 //   sync_guid              See TemplateURL::sync_guid. This was added in
 //                          version 39.
+//
+// This class also manages some fields in the |meta| table:
+//   Default Search Provider ID      The id of the default search provider.
+//   Default Search Provider ID Backup
+//                                   Backup copy of the above for restoring it
+//                                   in case the setting was hijacked or
+//                                   corrupted. This was added in version 40.
+//   Default Search Provider Backup  Backup copy of the raw in |keywords|
+//                                   with the default search provider ID to
+//                                   restore all provider info. This was added
+//                                   in version 42.
+//   Default Search Provider ID Backup Signature
+//                                   The signature of backup data and
+//                                   |keywords| table contents to be able to
+//                                   verify the backup and understand when the
+//                                   settings were changed. This was added
+//                                   in version 40.
+//   Builtin Keyword Version         The version of builtin keywords data.
 //
 class KeywordTable : public WebDatabaseTable {
  public:
@@ -101,17 +123,35 @@ class KeywordTable : public WebDatabaseTable {
   bool MigrateToVersion39AddSyncGUIDColumn();
   bool MigrateToVersion40AddDefaultSearchProviderBackup();
   bool MigrateToVersion41RewriteDefaultSearchProviderBackup();
+  bool MigrateToVersion42AddKeywordsBackupTable();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, DefaultSearchProviderBackup);
 
-  // Sets backup for id of the default search provider.
-  // Backup value is used to notice when unexpected change of the id
-  // occurred (i.e. by third-party process trying to modify user settings).
-  bool SetDefaultSearchProviderBackupID(int64 id);
+  // Returns contents of |keywords| table and default search provider backup
+  // as a string.
+  std::string GetSignatureData();
 
-  // Sets signature for the backup field.
-  bool SetDefaultSearchProviderBackupIDSignature(int64 id);
+  // Updates settings backup, signs it and stores the signature in the
+  // database. Returns true on success.
+  bool UpdateBackupSignature();
+
+  // Checks the signature for the current settings backup. Returns true
+  // if signature is valid, false otherwise.
+  bool IsBackupSignatureValid();
+
+  // Parses TemplateURL out of SQL statement result.
+  void GetURLFromStatement(const sql::Statement& s, TemplateURL* url);
+
+  // Gets a string representation for TemplateURL with id specified.
+  // Used to store its result in |meta| table or to compare with this
+  // backup. Returns true on success, false otherwise.
+  bool GetTemplateURLBackup(TemplateURLID id, std::string* result);
+
+  // Updates default search provider backup with TemplateURL data with
+  // specified id. Returns true on success.
+  // If id is 0, sets an empty string as a backup.
+  bool UpdateDefaultSearchProviderBackup(TemplateURLID id);
 
   DISALLOW_COPY_AND_ASSIGN(KeywordTable);
 };

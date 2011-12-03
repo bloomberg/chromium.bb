@@ -14,18 +14,12 @@ namespace protector {
 // provider. Values are below.
 extern const char kProtectorHistogramDefaultSearchProvider[];
 
-// Histogram value to report that the backup value is invalid or missing.
-extern const char kProtectorBackupInvalidCounter[];
-// Histogram value to report that the value does not match the backup.
-extern const char kProtectorValueChangedCounter[];
-// Histogram value to report that the value matches the backup.
-extern const char kProtectorValueValidCounter[];
-
 // Protector histogram values.
 enum ProtectorError {
   kProtectorErrorBackupInvalid,
   kProtectorErrorValueChanged,
   kProtectorErrorValueValid,
+  kProtectorErrorValueValidZero,
 
   // This is for convenience only, must always be the last.
   kProtectorErrorCount

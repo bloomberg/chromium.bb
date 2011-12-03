@@ -196,7 +196,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 41;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 42;
 
 void WebDatabaseMigrationTest::LoadDatabase(const FilePath::StringType& file) {
   std::string contents;
@@ -1652,6 +1652,107 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion40ToCurrent) {
         "Default Search Provider ID Backup Signature",
         &default_search_provider_id_backup_signature));
     EXPECT_FALSE(default_search_provider_id_backup_signature.empty());
+  }
+}
+
+// Tests that all keywords are backed up and signed.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion41ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_41.sql")));
+
+  // Verify pre-conditions.  These are expectations for version 40 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 41, 41));
+
+    int64 default_search_provider_id = 0;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID",
+        &default_search_provider_id));
+
+    int64 default_search_provider_id_backup = 0;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID Backup",
+        &default_search_provider_id_backup));
+
+    std::string default_search_provider_id_backup_signature;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID Backup Signature",
+        &default_search_provider_id_backup_signature));
+    EXPECT_FALSE(default_search_provider_id_backup_signature.empty());
+
+    std::string default_search_provider_backup;
+    EXPECT_FALSE(meta_table.GetValue(
+        "Default Search Provider Backup",
+        &default_search_provider_backup));
+  }
+
+  // Load the database via the WebDatabase class and migrate the database to
+  // the current version.
+  {
+    WebDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+  }
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(
+        &connection,
+        kCurrentTestedVersionNumber,
+        kCurrentTestedVersionNumber));
+
+    int64 default_search_provider_id = 0;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID",
+        &default_search_provider_id));
+    EXPECT_NE(0, default_search_provider_id);
+
+    int64 default_search_provider_id_backup = 0;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID Backup",
+        &default_search_provider_id_backup));
+    EXPECT_EQ(default_search_provider_id, default_search_provider_id_backup);
+
+    std::string default_search_provider_id_backup_signature;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID Backup Signature",
+        &default_search_provider_id_backup_signature));
+    EXPECT_FALSE(default_search_provider_id_backup_signature.empty());
+
+    std::string default_search_provider_backup;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider Backup",
+        &default_search_provider_backup));
+    EXPECT_EQ("2"
+              "Google"
+              "google.com"
+              "http://www.google.com/favicon.ico"
+              "{google:baseURL}search?{google:RLZ}{google:acceptedSuggestion}"
+                  "{google:originalQueryForSuggestion}sourceid=chrome&"
+                  "ie={inputEncoding}&q={searchTerms}"
+              "100"
+              "UTF-8"
+              "1"
+              "{google:baseSuggestURL}search?client=chrome&hl={language}&"
+                  "q={searchTerms}"
+              "1162620"
+              "{google:baseURL}webhp?{google:RLZ}sourceid=chrome-instant&"
+                  "ie={inputEncoding}&ion=1{searchTerms}&nord=10"
+              "{1234-5678-90AB-CDEF}",
+              default_search_provider_backup);
   }
 }
 

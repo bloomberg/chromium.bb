@@ -14,11 +14,6 @@ namespace protector {
 const char kProtectorHistogramDefaultSearchProvider[] =
     "Protector.DefaultSearchProvider";
 
-const char kProtectorBackupInvalidCounter[] =
-    "Protector.BackupInvalidCounter";
-const char kProtectorValueChangedCounter[] = "Protector.ValueChangedCounter";
-const char kProtectorValueValidCounter[] = "Protector.ValueValidCounter";
-
 const char kProtectorHistogramNewSearchProvider[] =
     "Protector.SearchProvider.New";
 const char kProtectorHistogramSearchProviderApplied[] =
