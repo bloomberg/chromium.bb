@@ -303,13 +303,24 @@ cr.define('ntp4', function() {
    * the login container is hidden.
    * @param {string} loginHeader The first line of text.
    * @param {string} loginSubHeader The second line of text.
+   * @param {string} iconURL The url for the login status icon. If this is null
+        then the login status icon is hidden.
    */
-  function updateLogin(loginHeader, loginSubHeader) {
+  function updateLogin(loginHeader, loginSubHeader, iconURL) {
     if (loginHeader || loginSubHeader) {
       $('login-container').hidden = false;
       $('login-status-header').innerHTML = loginHeader;
       $('login-status-sub-header').innerHTML = loginSubHeader;
       $('card-slider-frame').classList.add('showing-login-area');
+
+      if (iconURL) {
+        $('login-status-header-container').style.backgroundImage = url(iconURL);
+        $('login-status-header-container').classList.add('login-status-icon');
+      } else {
+        $('login-status-header-container').style.backgroundImage = 'none';
+        $('login-status-header-container').classList.remove(
+            'login-status-icon');
+      }
     } else {
       $('login-container').hidden = true;
       $('card-slider-frame').classList.remove('showing-login-area');
@@ -318,6 +329,8 @@ cr.define('ntp4', function() {
       window.setTimeout(loginBubble.show.bind(loginBubble), 0);
       chrome.send('loginMessageSeen');
       shouldShowLoginBubble = false;
+    } else if (loginBubble) {
+      loginBubble.reposition();
     }
   }
 

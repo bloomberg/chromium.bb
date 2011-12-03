@@ -195,6 +195,17 @@ html[dir='rtl'] #login-container {
   right: auto;
 }
 
+.login-status-icon {
+  background-position: right center;
+  background-repeat: no-repeat;
+  min-height: 27px;
+  -webkit-padding-end: 37px;
+}
+
+html[dir='rtl'] .login-status-icon {
+  background-position-x: left;
+}
+
 .link-span {
   text-decoration: underline;
 }
@@ -211,11 +222,11 @@ html[dir='rtl'] #login-container {
   display: inline-block;
 }
 
-#login-status-action-area {
+.login-status-row {
+  display: -webkit-box;
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
-  display: -webkit-box;
 }
 
 #login-status-advanced-container {

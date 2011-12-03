@@ -65,7 +65,9 @@
 
 <body>
   <button id="login-container" class="custom-appearance" hidden>
-    <div id="login-status-header"></div>
+    <div id="login-status-header-container" class="login-status-row">
+      <div id="login-status-header"></div>
+    </div>
     <div id="login-status-sub-header"></div>
   </button>
 
@@ -125,7 +127,7 @@
     <a id="login-status-learn-more" i18n-content="login_status_learn_more"
         target="_blank"></a>
   </div>
-  <div id="login-status-action-area">
+  <div class="login-status-row">
     <div id="login-status-advanced-container">
       <a id="login-status-advanced"
           i18n-content="login_status_advanced" href="#"></a>

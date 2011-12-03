@@ -9,6 +9,7 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Profile;
 
@@ -71,6 +72,7 @@ class NTPLoginHandler : public WebUIMessageHandler,
   void UpdateLogin();
 
   StringPrefMember username_pref_;
+  content::NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_NTP_NTP_LOGIN_HANDLER_H_
