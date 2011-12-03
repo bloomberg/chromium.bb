@@ -345,16 +345,13 @@ class SimpleBuilder(Builder):
       return
 
     self._RunStage(stages.UprevStage)
-
-    # Create the archive stage as other stages may need it.
-    archive_stage = self._GetStageInstance(stages.ArchiveStage)
-    self.archive_url = archive_stage.GetDownloadUrl()
-
-    self._RunStage(stages.BuildTargetStage, archive_stage)
+    self._RunStage(stages.BuildTargetStage)
 
     bg = background.BackgroundSteps()
     build_and_test_success = False
 
+    archive_stage = self._GetStageInstance(stages.ArchiveStage)
+    self.archive_url = archive_stage.GetDownloadUrl()
     vm_test_stage = self._GetStageInstance(stages.VMTestStage, archive_stage)
     chrome_test_stage = self._GetStageInstance(stages.ChromeTestStage,
                                                archive_stage)

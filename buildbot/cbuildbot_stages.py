@@ -512,7 +512,7 @@ class BuildTargetStage(bs.BuilderStage):
 
   option_name = 'build'
 
-  def __init__(self, bot_id, options, build_config, archive_stage):
+  def __init__(self, bot_id, options, build_config):
     super(BuildTargetStage, self).__init__(bot_id, options, build_config)
     self._env = {}
     if self._build_config.get('useflags'):
@@ -525,7 +525,6 @@ class BuildTargetStage(bs.BuilderStage):
       self._env['IGNORE_PREFLIGHT_BINHOST'] = '1'
 
     self._autotest_tarball = None
-    self._archive_stage = archive_stage
 
   def _BuildImages(self):
     # We only build base, dev, and test images from this stage.
@@ -548,7 +547,6 @@ class BuildTargetStage(bs.BuilderStage):
     cbuildbot_image_link = self.GetImageDirSymlink()
     if os.path.lexists(cbuildbot_image_link):
       os.remove(cbuildbot_image_link)
-
     os.symlink(latest_image, cbuildbot_image_link)
 
 
@@ -559,7 +557,6 @@ class BuildTargetStage(bs.BuilderStage):
     commands.BuildAutotestTarball(self._build_root,
                                   self._build_config['board'],
                                   self._autotest_tarball)
-    self._archive_stage.AutotestTarballReady(self._autotest_tarball)
 
   def _PerformStage(self):
     build_autotest = (self._build_config['build_tests'] and
@@ -581,18 +578,16 @@ class BuildTargetStage(bs.BuilderStage):
     # Build images and autotest tarball in parallel.
     steps = []
     if build_autotest and self._build_config['archive_build_debug']:
-      tarball_dir = tempfile.mkdtemp(prefix='autotest')
-      self._autotest_tarball = os.path.join(tarball_dir, 'autotest.tar.bz2')
+      self._autotest_tarball = os.path.join(self._build_root,
+                                            'autotest.tar.bz2')
       steps.append(self._BuildAutotestTarball)
-
     steps.append(self._BuildImages)
     background.RunParallelSteps(steps)
 
-    # TODO(sosa): Remove copy once crosbug.com/23690 is closed.
+    # Rename autotest tarball into place.
     if build_autotest and self._build_config['archive_build_debug']:
-      shutil.copyfile(self._autotest_tarball,
-                      os.path.join(self.GetImageDirSymlink(),
-                                   'autotest.tar.bz2'))
+      os.rename(self._autotest_tarball,
+                os.path.join(self.GetImageDirSymlink(), 'autotest.tar.bz2'))
 
 
 class ChromeTestStage(bs.BuilderStage):
@@ -880,7 +875,6 @@ class ArchiveStage(NonHaltingBuilderStage):
       cros_lib.Info('Found autotest tarball at %s...' % autotest_tarball)
     else:
       cros_lib.Info('No autotest tarball.')
-
     return autotest_tarball
 
   def _GetUpdatePayloads(self):
@@ -939,7 +933,6 @@ class ArchiveStage(NonHaltingBuilderStage):
     # The following functions are run in parallel (except where indicated
     # otherwise)
     # \- BuildAndArchiveArtifacts
-    #    \- ArchiveAutotestTarball
     #    \- ArchivePayloads
     #    \- ArchiveTestResults
     #    \- ArchiveDebugSymbols
@@ -949,12 +942,6 @@ class ArchiveStage(NonHaltingBuilderStage):
     #       \- ArchiveRegularImages
     # \- UploadDebugSymbols
     # \- UploadArtifacts
-
-    def ArchiveAutotestTarball():
-      """Archives the autotest tarball produced in BuildTarget."""
-      autotest_tarball = self._GetAutotestTarball()
-      if autotest_tarball:
-        upload_queue.put(commands.ArchiveFile(autotest_tarball, archive_path))
 
     def ArchivePayloads():
       """Archives update payloads when they are ready."""
@@ -1069,10 +1056,10 @@ class ArchiveStage(NonHaltingBuilderStage):
     def BuildAndArchiveArtifacts():
       try:
         # Run archiving steps in parallel.
-        steps = [ArchiveDebugSymbols, BuildAndArchiveAllImages]
+        steps = []
         if self._options.tests:
-          steps += [ArchiveAutotestTarball, ArchivePayloads, ArchiveTestResults]
-
+          steps += [ArchivePayloads, ArchiveTestResults]
+        steps += [ArchiveDebugSymbols, BuildAndArchiveAllImages]
         background.RunParallelSteps(steps)
       finally:
         # Shut down upload queues.
