@@ -21,13 +21,16 @@
 #include "content/public/common/child_process_host_delegate.h"
 #include "printing/pdf_render_settings.h"
 
-class ChildProcessHost;
 class CommandLine;
 class ScopedTempDir;
 
 namespace base {
 class MessageLoopProxy;
 }  // namespace base
+
+namespace content {
+class ChildProcessHost;
+}
 
 namespace printing {
 class Emf;
@@ -135,7 +138,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
       const printing::PrinterCapsAndDefaults& caps_and_defaults);
   void OnGetPrinterCapsAndDefaultsFailed(const std::string& printer_name);
 
-  scoped_ptr<ChildProcessHost> child_process_host_;
+  scoped_ptr<content::ChildProcessHost> child_process_host_;
   base::ProcessHandle handle_;
   // A pointer to our client interface, who will be informed of progress.
   scoped_refptr<Client> client_;

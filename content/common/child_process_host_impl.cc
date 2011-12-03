@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/child_process_host.h"
+#include "content/common/child_process_host_impl.h"
 
 #include <limits>
 
@@ -74,29 +74,11 @@ FilePath TransformPathForFeature(const FilePath& path,
 }  // namespace
 #endif  // OS_MACOSX
 
-ChildProcessHost::ChildProcessHost(content::ChildProcessHostDelegate* delegate)
-    : delegate_(delegate),
-      peer_handle_(base::kNullProcessHandle),
-      opening_channel_(false) {
-#if defined(OS_WIN)
-  AddFilter(new FontCacheDispatcher());
-#endif
-}
+namespace content {
 
-ChildProcessHost::~ChildProcessHost() {
-  for (size_t i = 0; i < filters_.size(); ++i) {
-    filters_[i]->OnChannelClosing();
-    filters_[i]->OnFilterRemoved();
-  }
-
-  base::CloseProcessHandle(peer_handle_);
-}
-
-void ChildProcessHost::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
-  filters_.push_back(filter);
-
-  if (channel_.get())
-    filter->OnFilterAdded(channel_.get());
+// static
+ChildProcessHost* ChildProcessHost::Create(ChildProcessHostDelegate* delegate) {
+  return new ChildProcessHostImpl(delegate);
 }
 
 // static
@@ -143,16 +125,41 @@ FilePath ChildProcessHost::GetChildPath(int flags) {
   return child_path;
 }
 
-void ChildProcessHost::ForceShutdown() {
+ChildProcessHostImpl::ChildProcessHostImpl(ChildProcessHostDelegate* delegate)
+    : delegate_(delegate),
+      peer_handle_(base::kNullProcessHandle),
+      opening_channel_(false) {
+#if defined(OS_WIN)
+  AddFilter(new FontCacheDispatcher());
+#endif
+}
+
+ChildProcessHostImpl::~ChildProcessHostImpl() {
+  for (size_t i = 0; i < filters_.size(); ++i) {
+    filters_[i]->OnChannelClosing();
+    filters_[i]->OnFilterRemoved();
+  }
+
+  base::CloseProcessHandle(peer_handle_);
+}
+
+void ChildProcessHostImpl::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
+  filters_.push_back(filter);
+
+  if (channel_.get())
+    filter->OnFilterAdded(channel_.get());
+}
+
+void ChildProcessHostImpl::ForceShutdown() {
   Send(new ChildProcessMsg_Shutdown());
 }
 
-bool ChildProcessHost::CreateChannel() {
+std::string ChildProcessHostImpl::CreateChannel() {
   channel_id_ = GenerateRandomChannelID(this);
   channel_.reset(new IPC::Channel(
       channel_id_, IPC::Channel::MODE_SERVER, this));
   if (!channel_->Connect())
-    return false;
+    return std::string();
 
   for (size_t i = 0; i < filters_.size(); ++i)
     filters_[i]->OnFilterAdded(channel_.get());
@@ -167,10 +174,20 @@ bool ChildProcessHost::CreateChannel() {
 
   opening_channel_ = true;
 
-  return true;
+  return channel_id_;
 }
 
-bool ChildProcessHost::Send(IPC::Message* message) {
+bool ChildProcessHostImpl::IsChannelOpening() {
+  return opening_channel_;
+}
+
+#if defined(OS_POSIX)
+int ChildProcessHostImpl::TakeClientFileDescriptor() {
+  return channel_->TakeClientFileDescriptor();
+}
+#endif
+
+bool ChildProcessHostImpl::Send(IPC::Message* message) {
   if (!channel_.get()) {
     delete message;
     return false;
@@ -178,7 +195,7 @@ bool ChildProcessHost::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
-void ChildProcessHost::AllocateSharedMemory(
+void ChildProcessHostImpl::AllocateSharedMemory(
       uint32 buffer_size, base::ProcessHandle child_process_handle,
       base::SharedMemoryHandle* shared_memory_handle) {
   base::SharedMemory shared_buf;
@@ -190,7 +207,7 @@ void ChildProcessHost::AllocateSharedMemory(
   shared_buf.GiveToProcess(child_process_handle, shared_memory_handle);
 }
 
-std::string ChildProcessHost::GenerateRandomChannelID(void* instance) {
+std::string ChildProcessHostImpl::GenerateRandomChannelID(void* instance) {
   // Note: the string must start with the current process id, this is how
   // child processes determine the pid of the parent.
   // Build the channel ID.  This is composed of a unique identifier for the
@@ -202,13 +219,13 @@ std::string ChildProcessHost::GenerateRandomChannelID(void* instance) {
                             base::RandInt(0, std::numeric_limits<int>::max()));
 }
 
-int ChildProcessHost::GenerateChildProcessUniqueId() {
+int ChildProcessHostImpl::GenerateChildProcessUniqueId() {
   // This function must be threadsafe.
   static base::subtle::Atomic32 last_unique_child_id = 0;
   return base::subtle::NoBarrier_AtomicIncrement(&last_unique_child_id, 1);
 }
 
-bool ChildProcessHost::OnMessageReceived(const IPC::Message& msg) {
+bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
 #ifdef IPC_MESSAGE_LOG_ENABLED
   IPC::Logging* logger = IPC::Logging::GetInstance();
   if (msg.type() == IPC_LOGGING_ID) {
@@ -230,7 +247,7 @@ bool ChildProcessHost::OnMessageReceived(const IPC::Message& msg) {
 
   if (!handled) {
     handled = true;
-    IPC_BEGIN_MESSAGE_MAP(ChildProcessHost, msg)
+    IPC_BEGIN_MESSAGE_MAP(ChildProcessHostImpl, msg)
       IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ShutdownRequest,
                           OnShutdownRequest)
       IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateSharedMemory,
@@ -249,7 +266,7 @@ bool ChildProcessHost::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void ChildProcessHost::OnChannelConnected(int32 peer_pid) {
+void ChildProcessHostImpl::OnChannelConnected(int32 peer_pid) {
   if (!base::OpenProcessHandle(peer_pid, &peer_handle_)) {
     NOTREACHED();
   }
@@ -259,7 +276,7 @@ void ChildProcessHost::OnChannelConnected(int32 peer_pid) {
     filters_[i]->OnChannelConnected(peer_pid);
 }
 
-void ChildProcessHost::OnChannelError() {
+void ChildProcessHostImpl::OnChannelError() {
   opening_channel_ = false;
   delegate_->OnChannelError();
 
@@ -270,13 +287,15 @@ void ChildProcessHost::OnChannelError() {
   delegate_->OnChildDisconnected();
 }
 
-void ChildProcessHost::OnAllocateSharedMemory(
+void ChildProcessHostImpl::OnAllocateSharedMemory(
     uint32 buffer_size,
     base::SharedMemoryHandle* handle) {
   AllocateSharedMemory(buffer_size, peer_handle_, handle);
 }
 
-void ChildProcessHost::OnShutdownRequest() {
+void ChildProcessHostImpl::OnShutdownRequest() {
   if (delegate_->CanShutdown())
     Send(new ChildProcessMsg_Shutdown());
 }
+
+}  // namespace content

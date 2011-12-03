@@ -102,7 +102,7 @@ class GpuProcessHost : public BrowserChildProcessHost,
       gfx::PluginWindowHandle window, int32 renderer_id, int32 render_view_id);
   void OnGraphicsInfoCollected(const content::GPUInfo& gpu_info);
 
-  bool LaunchGpuProcess();
+  bool LaunchGpuProcess(const std::string& channel_id);
 
   void SendOutstandingReplies();
   void EstablishChannelError(

@@ -18,12 +18,13 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/service_messages.h"
 #include "chrome/common/service_process_util.h"
-#include "content/common/child_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/child_process_host.h"
 #include "ui/base/ui_base_switches.h"
 
 using content::BrowserThread;
+using content::ChildProcessHost;
 
 // ServiceProcessControl implementation.
 ServiceProcessControl::ServiceProcessControl() {

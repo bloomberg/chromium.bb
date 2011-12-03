@@ -29,7 +29,7 @@
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/child_process_host.h"
+#include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/view_messages.h"
@@ -67,6 +67,7 @@
 #endif
 
 using content::BrowserThread;
+using content::ChildProcessHostImpl;
 using content::PluginServiceFilter;
 using net::CookieStore;
 
@@ -686,7 +687,8 @@ void RenderMessageFilter::OnCheckNotificationPermission(
 void RenderMessageFilter::OnAllocateSharedMemory(
     uint32 buffer_size,
     base::SharedMemoryHandle* handle) {
-  ChildProcessHost::AllocateSharedMemory(buffer_size, peer_handle(), handle);
+  ChildProcessHostImpl::AllocateSharedMemory(
+      buffer_size, peer_handle(), handle);
 }
 
 net::URLRequestContext* RenderMessageFilter::GetRequestContextForURL(

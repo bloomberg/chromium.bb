@@ -10,12 +10,13 @@
 #include "base/version.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service.h"
-#include "content/common/child_process_host.h"
+#include "content/common/child_process_host_impl.h"
 #include "content/common/plugin_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 
 using content::BrowserThread;
+using content::ChildProcessHostImpl;
 
 namespace {
 
@@ -93,7 +94,7 @@ class PluginDataRemoverImpl::Context
   // PluginProcessHost::Client methods.
   virtual int ID() OVERRIDE {
     // Generate a unique identifier for this PluginProcessHostClient.
-    return ChildProcessHost::GenerateChildProcessUniqueId();
+    return ChildProcessHostImpl::GenerateChildProcessUniqueId();
   }
 
   virtual bool OffTheRecord() OVERRIDE {

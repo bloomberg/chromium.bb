@@ -8,12 +8,13 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
-#include "content/common/child_process_host.h"
+#include "content/common/child_process_host_impl.h"
 #include "content/common/utility_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
 using content::BrowserThread;
+using content::ChildProcessHost;
 
 PluginLoaderPosix::PluginLoaderPosix()
     : next_load_index_(0) {

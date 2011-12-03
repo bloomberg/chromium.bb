@@ -117,9 +117,9 @@
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
-#include "content/common/child_process_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/common_param_traits.h"
 #include "net/base/cookie_store.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -145,6 +145,7 @@
 
 using automation_util::SendErrorIfModalDialogActive;
 using content::BrowserThread;
+using content::ChildProcessHost;
 
 namespace {
 

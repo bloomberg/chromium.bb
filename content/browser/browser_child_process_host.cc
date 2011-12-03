@@ -17,7 +17,7 @@
 #include "content/browser/profiler_message_filter.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/browser/trace_message_filter.h"
-#include "content/common/child_process_host.h"
+#include "content/common/child_process_host_impl.h"
 #include "content/common/plugin_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
@@ -34,6 +34,8 @@
 #endif
 
 using content::BrowserThread;
+using content::ChildProcessHost;
+using content::ChildProcessHostImpl;
 
 namespace {
 
@@ -60,9 +62,9 @@ BrowserChildProcessHost::BrowserChildProcessHost(
 #endif
       disconnect_was_alive_(false) {
   data_.type = type;
-  data_.id = ChildProcessHost::GenerateChildProcessUniqueId();
+  data_.id = ChildProcessHostImpl::GenerateChildProcessUniqueId();
 
-  child_process_host_.reset(new ChildProcessHost(this));
+  child_process_host_.reset(ChildProcessHost::Create(this));
   child_process_host_->AddFilter(new TraceMessageFilter);
   child_process_host_->AddFilter(new ProfilerMessageFilter);
 
@@ -98,7 +100,7 @@ void BrowserChildProcessHost::Launch(
 #elif defined(OS_POSIX)
       use_zygote,
       environ,
-      child_process_host()->channel()->TakeClientFileDescriptor(),
+      child_process_host()->TakeClientFileDescriptor(),
 #endif
       cmd_line,
       &client_));

@@ -78,7 +78,7 @@
 #include "content/browser/user_metrics.h"
 #include "content/browser/webui/web_ui_factory.h"
 #include "content/browser/worker_host/worker_message_filter.h"
-#include "content/common/child_process_host.h"
+#include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/notification_service.h"
@@ -112,6 +112,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 using content::BrowserThread;
+using content::ChildProcessHost;
+using content::ChildProcessHostImpl;
 
 // This class creates the IO thread for the renderer when running in
 // single-process mode.  It's not used in multi-process mode.
@@ -283,7 +285,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
                 this, &RenderProcessHostImpl::ClearTransportDIBCache)),
           accessibility_enabled_(false),
           is_initialized_(false),
-          id_(ChildProcessHost::GenerateChildProcessUniqueId()),
+          id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
           browser_context_(browser_context),
           sudden_termination_allowed_(true),
           ignore_input_events_(false) {
@@ -387,7 +389,7 @@ bool RenderProcessHostImpl::Init(bool is_accessibility_enabled) {
 
   // Setup the IPC channel.
   const std::string channel_id =
-      ChildProcessHost::GenerateRandomChannelID(this);
+      ChildProcessHostImpl::GenerateRandomChannelID(this);
   channel_.reset(new IPC::ChannelProxy(
       channel_id, IPC::Channel::MODE_SERVER, this,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));

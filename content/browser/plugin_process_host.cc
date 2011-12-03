@@ -22,7 +22,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/plugin_service.h"
-#include "content/common/child_process_host.h"
+#include "content/common/child_process_host_impl.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -36,6 +36,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 using content::BrowserThread;
+using content::ChildProcessHost;
 
 #if defined(USE_X11)
 #include "ui/gfx/gtk_native_view_id_manager.h"
@@ -168,7 +169,8 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info,
   info_ = info;
   set_name(info_.name);
 
-  if (!child_process_host()->CreateChannel())
+  std::string channel_id = child_process_host()->CreateChannel();
+  if (channel_id.empty())
     return false;
 
   // Build command line for plugin. When we have a plugin launcher, we can't
@@ -235,8 +237,7 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info,
     cmd_line->AppendSwitchASCII(switches::kLang, locale);
   }
 
-  cmd_line->AppendSwitchASCII(switches::kProcessChannelID,
-                              child_process_host()->channel_id());
+  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
 
 #if defined(OS_POSIX)
   base::environment_vector env;
@@ -366,7 +367,7 @@ void PluginProcessHost::CancelPendingRequestsForResourceContext(
 void PluginProcessHost::OpenChannelToPlugin(Client* client) {
   Notify(content::NOTIFICATION_CHILD_INSTANCE_CREATED);
   client->SetPluginInfo(info_);
-  if (child_process_host()->opening_channel()) {
+  if (child_process_host()->IsChannelOpening()) {
     // The channel is already in the process of being opened.  Put
     // this "open channel" request into a queue of requests that will
     // be run once the channel is open.

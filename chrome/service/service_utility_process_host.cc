@@ -15,7 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
-#include "content/common/child_process_host.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/result_codes.h"
 #include "ipc/ipc_switches.h"
 #include "printing/page_range.h"
@@ -30,13 +30,15 @@
 #include "printing/emf_win.h"
 #endif
 
+using content::ChildProcessHost;
+
 ServiceUtilityProcessHost::ServiceUtilityProcessHost(
     Client* client, base::MessageLoopProxy* client_message_loop_proxy)
         : handle_(base::kNullProcessHandle),
           client_(client),
           client_message_loop_proxy_(client_message_loop_proxy),
           waiting_for_reply_(false) {
-  child_process_host_.reset(new ChildProcessHost(this));
+  child_process_host_.reset(ChildProcessHost::Create(this));
 }
 
 ServiceUtilityProcessHost::~ServiceUtilityProcessHost() {
@@ -103,7 +105,8 @@ bool ServiceUtilityProcessHost::StartGetPrinterCapsAndDefaults(
 
 bool ServiceUtilityProcessHost::StartProcess(bool no_sandbox,
                                              const FilePath& exposed_dir) {
-  if (!child_process_host_->CreateChannel())
+  std::string channel_id = child_process_host_->CreateChannel();
+  if (channel_id.empty())
     return false;
 
   FilePath exe_path = GetUtilityProcessCmd();
@@ -114,8 +117,7 @@ bool ServiceUtilityProcessHost::StartProcess(bool no_sandbox,
 
   CommandLine cmd_line(exe_path);
   cmd_line.AppendSwitchASCII(switches::kProcessType, switches::kUtilityProcess);
-  cmd_line.AppendSwitchASCII(switches::kProcessChannelID,
-                             child_process_host_->channel_id());
+  cmd_line.AppendSwitchASCII(switches::kProcessChannelID, channel_id);
   cmd_line.AppendSwitch(switches::kLang);
 
   return Launch(&cmd_line, no_sandbox, exposed_dir);

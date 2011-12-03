@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -23,7 +24,7 @@
 #include "chrome/common/nacl_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
-#include "content/common/child_process_host.h"
+#include "content/public/common/child_process_host.h"
 #include "ipc/ipc_switches.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 
@@ -34,6 +35,7 @@
 #endif
 
 using content::BrowserThread;
+using content::ChildProcessHost;
 
 namespace {
 
@@ -232,7 +234,8 @@ bool NaClProcessHost::Launch(
 }
 
 bool NaClProcessHost::LaunchSelLdr() {
-  if (!child_process_host()->CreateChannel())
+  std::string channel_id = child_process_host()->CreateChannel();
+  if (channel_id.empty())
     return false;
 
   CommandLine::StringType nacl_loader_prefix;
@@ -267,8 +270,7 @@ bool NaClProcessHost::LaunchSelLdr() {
 
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               switches::kNaClLoaderProcess);
-  cmd_line->AppendSwitchASCII(switches::kProcessChannelID,
-                              child_process_host()->channel_id());
+  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
   if (logging::DialogsAreSuppressed())
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
@@ -279,7 +281,7 @@ bool NaClProcessHost::LaunchSelLdr() {
 #if defined(OS_WIN)
   if (RunningOnWOW64()) {
     return NaClBrokerService::GetInstance()->LaunchLoader(
-        this, ASCIIToWide(child_process_host()->channel_id()));
+        this, ASCIIToWide(channel_id));
   } else {
     BrowserChildProcessHost::Launch(FilePath(), cmd_line);
   }

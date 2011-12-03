@@ -31,7 +31,7 @@
 #include "content/browser/worker_host/message_port_service.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/browser/worker_host/worker_service.h"
-#include "content/common/child_process_host.h"
+#include "content/common/child_process_host_impl.h"
 #include "content/common/debug_flags.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
@@ -49,6 +49,7 @@
 #include "webkit/glue/resource_type.h"
 
 using content::BrowserThread;
+using content::ChildProcessHost;
 
 namespace {
 
@@ -112,7 +113,8 @@ WorkerProcessHost::~WorkerProcessHost() {
 }
 
 bool WorkerProcessHost::Init(int render_process_id) {
-  if (!child_process_host()->CreateChannel())
+  std::string channel_id = child_process_host()->CreateChannel();
+  if (channel_id.empty())
     return false;
 
 #if defined(OS_LINUX)
@@ -127,8 +129,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
 
   CommandLine* cmd_line = new CommandLine(exe_path);
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kWorkerProcess);
-  cmd_line->AppendSwitchASCII(switches::kProcessChannelID,
-                              child_process_host()->channel_id());
+  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
   std::string locale =
       content::GetContentClient()->browser()->GetApplicationLocale();
   cmd_line->AppendSwitchASCII(switches::kLang, locale);

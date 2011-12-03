@@ -29,6 +29,7 @@
   ],
   'sources': [
     'public/common/bindings_policy.h',
+    'public/common/child_process_host.h',
     'public/common/child_process_host_delegate.h',
     'public/common/child_process_sandbox_support_linux.h',
     'public/common/content_constants.cc',
@@ -82,8 +83,8 @@
     'common/appcache_messages.h',
     'common/child_process.cc',
     'common/child_process.h',
-    'common/child_process_host.cc',
-    'common/child_process_host.h',
+    'common/child_process_host_impl.cc',
+    'common/child_process_host_impl.h',
     'common/child_process_messages.h',
     'common/child_process_sandbox_support_impl_linux.cc',
     'common/child_process_sandbox_support_impl_linux.h',

@@ -21,7 +21,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_handler.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
-#include "content/common/child_process_host.h"
+#include "content/common/child_process_host_impl.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/resource_response.h"
@@ -36,6 +36,7 @@
 
 using content::BrowserThread;
 using content::BrowserThreadImpl;
+using content::ChildProcessHostImpl;
 
 // TODO(eroman): Write unit tests for SafeBrowsing that exercise
 //               SafeBrowsingResourceHandler.
@@ -162,7 +163,7 @@ class ForwardingFilter : public ResourceMessageFilter {
  public:
   explicit ForwardingFilter(IPC::Message::Sender* dest)
     : ResourceMessageFilter(
-        ChildProcessHost::GenerateChildProcessUniqueId(),
+        ChildProcessHostImpl::GenerateChildProcessUniqueId(),
         content::PROCESS_TYPE_RENDERER,
         content::MockResourceContext::GetInstance(),
         new MockURLRequestContextSelector(

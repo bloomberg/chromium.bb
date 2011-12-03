@@ -19,10 +19,12 @@
 #include "content/public/common/child_process_host_delegate.h"
 #include "ipc/ipc_message.h"
 
-class ChildProcessHost;
-
 namespace base {
 class WaitableEvent;
+}
+
+namespace content {
+class ChildProcessHost;
 }
 
 // Plugins/workers and other child processes that live on the IO thread should
@@ -122,7 +124,7 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   // Sends the given notification on the UI thread.
   void Notify(int type);
 
-  ChildProcessHost* child_process_host() const {
+  content::ChildProcessHost* child_process_host() const {
     return child_process_host_.get();
   }
   void set_name(const string16& name) { data_.name = name; }
@@ -141,7 +143,7 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   };
 
   content::ChildProcessData data_;
-  scoped_ptr<ChildProcessHost> child_process_host_;
+  scoped_ptr<content::ChildProcessHost> child_process_host_;
 
   ClientHook client_;
   scoped_ptr<ChildProcessLauncher> child_process_;

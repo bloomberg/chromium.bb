@@ -17,7 +17,7 @@
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/common/child_process_host.h"
+#include "content/common/child_process_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
@@ -35,6 +35,7 @@
 #endif
 
 using content::BrowserThread;
+using content::ChildProcessHost;
 
 bool GpuProcessHost::gpu_enabled_ = true;
 
@@ -319,15 +320,15 @@ GpuProcessHost::~GpuProcessHost() {
 }
 
 bool GpuProcessHost::Init() {
-  if (!child_process_host()->CreateChannel())
+  std::string channel_id = child_process_host()->CreateChannel();
+  if (channel_id.empty())
     return false;
 
   if (in_process_) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDisableGpuWatchdog);
 
-    in_process_gpu_thread_.reset(new GpuMainThread(
-        child_process_host()->channel_id()));
+    in_process_gpu_thread_.reset(new GpuMainThread(channel_id));
 
     base::Thread::Options options;
 #if defined(OS_WIN)
@@ -343,7 +344,7 @@ bool GpuProcessHost::Init() {
     in_process_gpu_thread_->StartWithOptions(options);
 
     OnProcessLaunched();  // Fake a callback that the process is ready.
-  } else if (!LaunchGpuProcess())
+  } else if (!LaunchGpuProcess(channel_id))
     return false;
 
   return Send(new GpuMsg_Initialize());
@@ -358,7 +359,7 @@ void GpuProcessHost::RouteOnUIThread(const IPC::Message& message) {
 
 bool GpuProcessHost::Send(IPC::Message* msg) {
   DCHECK(CalledOnValidThread());
-  if (child_process_host()->opening_channel()) {
+  if (child_process_host()->IsChannelOpening()) {
     queued_messages_.push(msg);
     return true;
   }
@@ -543,7 +544,7 @@ bool GpuProcessHost::software_rendering() {
   return software_rendering_;
 }
 
-bool GpuProcessHost::LaunchGpuProcess() {
+bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
   if (!gpu_enabled_ || g_gpu_crash_count >= kGpuMaxCrashCount) {
     SendOutstandingReplies();
     gpu_enabled_ = false;
@@ -568,8 +569,7 @@ bool GpuProcessHost::LaunchGpuProcess() {
 
   CommandLine* cmd_line = new CommandLine(exe_path);
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
-  cmd_line->AppendSwitchASCII(switches::kProcessChannelID,
-                              child_process_host()->channel_id());
+  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
 
   // Propagate relevant command line switches.
   static const char* const kSwitchNames[] = {
