@@ -8,7 +8,7 @@
 
 #include "base/string16.h"
 #include "chrome/renderer/plugins/plugin_placeholder.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 namespace content {
 class RenderThread;

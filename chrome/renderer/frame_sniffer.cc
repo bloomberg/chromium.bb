@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "chrome/common/render_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
 
 FrameSniffer::FrameSniffer(content::RenderView* render_view,
                            const string16 &frame_name)
