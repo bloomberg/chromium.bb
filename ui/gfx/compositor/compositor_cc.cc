@@ -145,6 +145,10 @@ CompositorCC::CompositorCC(CompositorDelegate* delegate,
 }
 
 CompositorCC::~CompositorCC() {
+  // There's a cycle between |root_web_layer_| and |host_|, which results in
+  // leaking and/or crashing. Explicitly set the root layer to NULL so the cycle
+  // is broken.
+  host_.setRootLayer(NULL);
 }
 
 void CompositorCC::Initialize(bool use_thread) {
