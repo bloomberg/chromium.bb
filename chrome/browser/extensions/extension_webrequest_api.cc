@@ -1057,6 +1057,9 @@ void ExtensionWebRequestEventRouter::RemoveEventListener(
   }
 
   listeners_[profile][event_name].erase(listener);
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&ClearCacheOnNavigationOnUI));
 }
 
 void ExtensionWebRequestEventRouter::OnOTRProfileCreated(
@@ -1532,6 +1535,9 @@ bool WebRequestAddEventListener::RunImpl() {
       profile_id(), extension_id(), extension_name,
       event_name, sub_event_name, filter,
       extra_info_spec, ipc_sender_weak());
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&ClearCacheOnNavigationOnUI));
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
       &NotifyWebRequestAPIUsed,
