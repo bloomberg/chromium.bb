@@ -1476,6 +1476,20 @@ void ProfileSyncService::Observe(int type,
           AreCredentialsAvailable(true)) {
         if (backend_initialized_) {
           backend_->UpdateCredentials(GetCredentials());
+          const GoogleServiceAuthError& last_error = GetAuthError();
+          if (GoogleServiceAuthError::NONE == last_error.state()) {
+            // SyncBackendHost::UpdateCredentials call does not call back
+            // OnAuthError in cases when the underlying syncer state does not
+            // change. Due to that if the login dialog is showing up when the
+            // credentials have not expired as such (this happens when login
+            // dialog is shown by app notifications setup code) the login dialog
+            // will show the spinner forever. Hence, we call OnAuthError
+            // explicitly here to avoid the infinite spinner in that case.
+            // Note that SyncBackendHost::UpdateCredentials may actually end up
+            // failing, but in that case an error will be shown to the user in
+            // bookmarks bar and preferences.
+            OnAuthError();
+          }
         }
         if (!sync_prefs_.IsStartSuppressed())
           StartUp();

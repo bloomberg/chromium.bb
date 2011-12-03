@@ -114,7 +114,9 @@ void AppNotifyChannelUIImpl::PromptSyncSetup(
 void AppNotifyChannelUIImpl::OnInfoBarResult(bool accepted) {
   if (accepted) {
     StartObservingSync();
-    browser_->ShowSyncSetup();
+    ProfileSyncService* service =
+        browser_->profile()->GetOriginalProfile()->GetProfileSyncService();
+    service->ShowLoginDialog();
   } else {
     delegate_->OnSyncSetupResult(false);
   }
