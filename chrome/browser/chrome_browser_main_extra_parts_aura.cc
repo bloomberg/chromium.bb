@@ -28,3 +28,8 @@ void ChromeBrowserMainExtraPartsAura::PostBrowserProcessInit() {
   // Make sure the singleton ScreenOrientationListener object is created.
   ScreenOrientationListener::GetInstance();
 }
+
+void ChromeBrowserMainExtraPartsAura::PostMainMessageLoopRun() {
+  aura_shell::Shell::DeleteInstance();
+  aura::Desktop::DeleteInstance();
+}

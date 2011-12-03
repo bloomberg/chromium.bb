@@ -14,6 +14,7 @@ class ChromeBrowserMainExtraPartsAura : public ChromeBrowserMainExtraParts {
   ChromeBrowserMainExtraPartsAura();
 
   virtual void PostBrowserProcessInit() OVERRIDE;
+  virtual void PostMainMessageLoopRun() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAura);

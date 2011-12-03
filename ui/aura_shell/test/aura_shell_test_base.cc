@@ -27,7 +27,7 @@ void AuraShellTestBase::TearDown() {
   RunAllPendingInMessageLoop();
 
   // Tear down the shell.
-  aura_shell::Shell::DeleteInstanceForTesting();
+  aura_shell::Shell::DeleteInstance();
 
   aura::test::AuraTestBase::TearDown();
 }

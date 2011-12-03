@@ -127,6 +127,21 @@ Shell::~Shell() {
   RemoveDesktopEventFilter(tooltip_manager_.get());
   aura::Desktop::GetInstance()->SetProperty(aura::kDesktopTooltipClientKey,
       NULL);
+
+  // Make sure we delete WorkspaceController before launcher is
+  // deleted as it has a reference to launcher model.
+  workspace_controller_.reset();
+  launcher_.reset();
+
+  // Delete containers now so that child windows does not access
+  // observers when they are destructed. This has to be after launcher
+  // is destructed because launcher closes the widget in its destructor.
+  aura::Desktop* desktop_window = aura::Desktop::GetInstance();
+  while (!desktop_window->children().empty()) {
+    aura::Window* child = desktop_window->children()[0];
+    delete child;
+  }
+
   tooltip_manager_.reset();
 
   // Drag drop controller needs a valid shell instance. We destroy it first.
@@ -134,10 +149,6 @@ Shell::~Shell() {
 
   DCHECK(instance_ == this);
   instance_ = NULL;
-
-  // Make sure we delete WorkspaceController before launcher is
-  // deleted as it has a reference to launcher model.
-  workspace_controller_.reset();
 }
 
 // static
@@ -155,7 +166,7 @@ Shell* Shell::GetInstance() {
 }
 
 // static
-void Shell::DeleteInstanceForTesting() {
+void Shell::DeleteInstance() {
   delete instance_;
   instance_ = NULL;
 }

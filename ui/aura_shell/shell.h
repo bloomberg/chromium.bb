@@ -54,7 +54,7 @@ class AURA_SHELL_EXPORT Shell {
   // Should never be called before |CreateInstance()|.
   static Shell* GetInstance();
 
-  static void DeleteInstanceForTesting();
+  static void DeleteInstance();
 
   aura::Window* GetContainer(int container_id);
   const aura::Window* GetContainer(int container_id) const;

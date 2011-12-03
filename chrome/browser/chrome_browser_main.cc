@@ -2002,6 +2002,9 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // Disarm the startup hang detector time bomb if it is still Arm'ed.
   startup_watcher_->Disarm();
 
+  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
+    chrome_extra_parts_[i]->PostMainMessageLoopRun();
+
 #if defined(OS_WIN)
   // If it's the first run, log the search engine chosen.  We wait until
   // shutdown because otherwise we can't be sure the user has finished
@@ -2102,9 +2105,6 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
   // to bypass this code.  Perhaps we need a *final* hook that is called on all
   // paths from content/browser/browser_main.
   CHECK(MetricsService::UmaMetricsProperlyShutdown());
-
-  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
-    chrome_extra_parts_[i]->PostMainMessageLoopRun();
 }
 
 // Public members:

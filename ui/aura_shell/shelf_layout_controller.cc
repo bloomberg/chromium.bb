@@ -35,7 +35,8 @@ ShelfLayoutController::ShelfLayoutController(views::Widget* launcher,
 }
 
 ShelfLayoutController::~ShelfLayoutController() {
-  GetLayer(launcher_)->GetAnimator()->RemoveObserver(this);
+  // Do not try to remove observer from layer as the Launcher is
+  // already deleted.
 }
 
 void ShelfLayoutController::LayoutShelf() {

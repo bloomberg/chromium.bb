@@ -372,10 +372,10 @@ void NativeWidgetAura::Close() {
   // and ownership is WIDGET_OWNS_NATIVE_WIDGET.
   DCHECK(window_ ||
          ownership_ == Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
-  if (window_)
+  if (window_) {
     Hide();
-
-  window_->SetIntProperty(aura::kModalKey, 0);
+    window_->SetIntProperty(aura::kModalKey, 0);
+  }
 
   if (!close_widget_factory_.HasWeakPtrs()) {
     MessageLoop::current()->PostTask(

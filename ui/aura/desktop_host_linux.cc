@@ -592,7 +592,7 @@ void DesktopHostLinux::PostNativeEvent(const base::NativeEvent& native_event) {
 }
 
 void DesktopHostLinux::WillDestroyCurrentMessageLoop() {
-  desktop_->DeleteInstance();
+  aura::Desktop::DeleteInstance();
 }
 
 bool DesktopHostLinux::IsWindowManagerPresent() {
