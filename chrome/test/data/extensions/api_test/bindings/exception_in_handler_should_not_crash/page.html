@@ -1,0 +1,8 @@
+<script>
+chrome.tabs.create({}, function() {
+  throw new Error("tada");
+});
+chrome.tabs.create({}, function() {
+  chrome.test.notifyPass();
+});
+</script>

@@ -83,7 +83,6 @@ bool ChromeV8Context::CallChromeHiddenMethod(
     v8::Handle<v8::Value>* argv,
     v8::Handle<v8::Value>* result) const {
   v8::Context::Scope context_scope(v8_context_);
-  v8::TryCatch try_catch;
 
   // Look up the function name, which may be a sub-property like
   // "Port.dispatchOnMessage" in the hidden global variable.
@@ -97,10 +96,6 @@ bool ChromeV8Context::CallChromeHiddenMethod(
     if (!value.IsEmpty() && value->IsObject()) {
       value = v8::Local<v8::Object>::Cast(value)->Get(
           v8::String::New(components[i].c_str()));
-      if (try_catch.HasCaught()) {
-        NOTREACHED() << *v8::String::AsciiValue(try_catch.Exception());
-        return false;
-      }
     }
   }
 
@@ -111,10 +106,6 @@ bool ChromeV8Context::CallChromeHiddenMethod(
 
   v8::Handle<v8::Value> result_temp =
       v8::Local<v8::Function>::Cast(value)->Call(v8::Object::New(), argc, argv);
-  if (try_catch.HasCaught()) {
-    NOTREACHED() << *v8::String::AsciiValue(try_catch.Exception());
-    return false;
-  }
   if (result)
     *result = result_temp;
   return true;
