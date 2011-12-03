@@ -1134,7 +1134,7 @@ class UploadPrebuiltsStage(bs.BuilderStage):
           builders = self._GetImportantBuildersForMaster(config)
           for builder in builders:
             builder_config = config[builder]
-            if not builder_config['master']:
+            if not builder_config['master'] and builder_config['prebuilts']:
               slave_board = builder_config['board']
               extra_args.extend(['--slave-board', slave_board])
 
