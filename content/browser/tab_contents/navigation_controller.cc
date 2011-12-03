@@ -497,6 +497,25 @@ void NavigationController::AddTransientEntry(NavigationEntry* entry) {
   tab_contents_->NotifyNavigationStateChanged(kInvalidateAll);
 }
 
+void NavigationController::TransferURL(
+    const GURL& url,
+    const GURL& referrer,
+    content::PageTransition transition,
+    const std::string& extra_headers,
+    const GlobalRequestID& transferred_global_request_id,
+    bool is_renderer_initiated) {
+  // The user initiated a load, we don't need to reload anymore.
+  needs_reload_ = false;
+
+  NavigationEntry* entry = CreateNavigationEntry(url, referrer, transition,
+                                                 is_renderer_initiated,
+                                                 extra_headers,
+                                                 browser_context_);
+  entry->set_transferred_global_request_id(transferred_global_request_id);
+
+  LoadEntry(entry);
+}
+
 void NavigationController::LoadURL(
     const GURL& url,
     const GURL& referrer,

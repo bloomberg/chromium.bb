@@ -111,6 +111,13 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
   IPC_STRUCT_MEMBER(int64, parent_frame_id)
 
   IPC_STRUCT_MEMBER(content::PageTransition, transition_type)
+
+  // The following two members identify a previous request that has been
+  // created before this navigation has been transferred to a new render view.
+  // This serves the purpose of recycling the old request.
+  // Unless this refers to a transferred navigation, these values are -1 and -1.
+  IPC_STRUCT_MEMBER(int, transferred_request_child_id)
+  IPC_STRUCT_MEMBER(int, transferred_request_request_id)
 IPC_STRUCT_END()
 
 // Resource messages sent from the browser to the renderer.

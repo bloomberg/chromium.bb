@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/chrome_url_request_user_data.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_handler.h"
+#include "chrome/browser/renderer_host/transfer_navigation_resource_handler.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/auto_login_prompter.h"
 #include "chrome/browser/ui/login/login_prompt.h"
@@ -151,7 +152,11 @@ ResourceHandler* ChromeResourceDispatcherHostDelegate::RequestBeginning(
     const content::ResourceContext& resource_context,
     bool is_subresource,
     int child_id,
-    int route_id) {
+    int route_id,
+    bool is_continuation_of_transferred_request) {
+  if (is_continuation_of_transferred_request)
+    ChromeURLRequestUserData::Delete(request);
+
   ChromeURLRequestUserData* user_data =
       ChromeURLRequestUserData::Create(request);
   if (prerender_tracker_->IsPrerenderingOnIOThread(child_id, route_id)) {
@@ -177,6 +182,14 @@ ResourceHandler* ChromeResourceDispatcherHostDelegate::RequestBeginning(
       handler, child_id, route_id, resource_dispatcher_host_, request,
       resource_context.appcache_service());
 #endif
+
+  // TODO(mpcomplete): Leaving disabled for now, since I'm checking this in
+  // close to the branch point.
+#if defined(TRANSFER_REDIRECTS_BUG79520)
+  handler = new TransferNavigationResourceHandler(
+      handler, resource_dispatcher_host_, request);
+#endif
+
   return handler;
 }
 

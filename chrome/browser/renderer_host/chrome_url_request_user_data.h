@@ -19,6 +19,10 @@ class ChromeURLRequestUserData : public net::URLRequest::UserData {
   // is owned by |request|.
   static ChromeURLRequestUserData* Create(net::URLRequest* request);
 
+  // Delete the ChromeURLRequestUserData from a |request|. |request| must be
+  // non-NULL.
+  static void Delete(net::URLRequest* request);
+
   // Gets the ChromeURLRequestUserData instance attached to |request|, or
   // returns NULL if one is not attached. |request| must be non-NULL.
   static ChromeURLRequestUserData* Get(const net::URLRequest* request);

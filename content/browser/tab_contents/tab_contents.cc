@@ -167,6 +167,10 @@ void MakeNavigateParams(const NavigationEntry& entry,
       GetNavigationType(controller.browser_context(), entry, reload_type);
   params->request_time = base::Time::Now();
   params->extra_headers = entry.extra_headers();
+  params->transferred_request_child_id =
+      entry.transferred_global_request_id().child_id;
+  params->transferred_request_request_id =
+      entry.transferred_global_request_id().request_id;
 
   if (delegate)
     delegate->AddNavigationHeaders(params->url, &params->extra_headers);
@@ -1750,6 +1754,17 @@ void TabContents::RequestOpenURL(const GURL& url,
                                  const GURL& referrer,
                                  WindowOpenDisposition disposition,
                                  int64 source_frame_id) {
+  // Delegate to RequestTransferURL because this is just the generic
+  // case where |old_request_id| is empty.
+  RequestTransferURL(url, referrer, disposition, source_frame_id,
+                     GlobalRequestID());
+}
+
+void TabContents::RequestTransferURL(const GURL& url,
+                                     const GURL& referrer,
+                                     WindowOpenDisposition disposition,
+                                     int64 source_frame_id,
+                                     const GlobalRequestID& old_request_id) {
   TabContents* new_contents = NULL;
   content::PageTransition transition_type = content::PAGE_TRANSITION_LINK;
   if (render_manager_.web_ui()) {
@@ -1761,13 +1776,17 @@ void TabContents::RequestOpenURL(const GURL& url,
     // want web sites to see a referrer of "chrome://blah" (and some
     // chrome: URLs might have search terms or other stuff we don't want to
     // send to the site), so we send no referrer.
-    new_contents = OpenURL(url, GURL(), disposition,
-            render_manager_.web_ui()->link_transition_type());
+    OpenURLParams params(url, GURL(), disposition,
+        render_manager_.web_ui()->link_transition_type(),
+        false /* is_renderer_initiated */);
+    params.transferred_global_request_id = old_request_id;
+    new_contents = OpenURL(params);
     transition_type = render_manager_.web_ui()->link_transition_type();
   } else {
-    new_contents = OpenURL(OpenURLParams(
-        url, referrer, disposition, content::PAGE_TRANSITION_LINK,
-        true /* is_renderer_initiated */));
+    OpenURLParams params(url, referrer, disposition,
+        content::PAGE_TRANSITION_LINK, true /* is_renderer_initiated */);
+    params.transferred_global_request_id = old_request_id;
+    new_contents = OpenURL(params);
   }
   if (new_contents) {
     // Notify observers.

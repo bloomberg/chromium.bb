@@ -47,7 +47,8 @@ class ChromeResourceDispatcherHostDelegate
       const content::ResourceContext& resource_context,
       bool is_subresource,
       int child_id,
-      int route_id) OVERRIDE;
+      int route_id,
+      bool is_continuation_of_transferred_request) OVERRIDE;
   virtual ResourceHandler* DownloadStarting(
       ResourceHandler* handler,
       const content::ResourceContext& resource_context,

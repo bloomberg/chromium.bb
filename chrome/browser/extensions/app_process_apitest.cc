@@ -348,9 +348,26 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessRedirectBack) {
   browser()->NewTab();
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
   browser()->NewTab();
-  // Wait until the second tab finishes its redirect train (2 hops).
+  // Wait until the second tab finishes its redirect train (3 hops).
+  // 1. We navigate to redirect.html
+  // 2. Renderer navigates and finishes, counting as a load stop.
+  // 3. Renderer issues the meta refresh to navigate to server-redirect.
+  // 4. Renderer is now in a "provisional load", waiting for navigation to
+  //    complete.
+  // 5. Browser sees a redirect response from server-redirect to empty.html, and
+  //    transfers that to a new navigation, using RequestTransferURL.
+  // 6. We navigate to empty.html.
+  // 7. Renderer is still in a provisional load to server-redirect, so that is
+  //    cancelled, and counts as a load stop
+  // 8. Renderer navigates to empty.html, and finishes loading, counting as the
+  //    third load stop
+#if defined(TRANSFER_REDIRECTS_BUG79520)
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), base_url.Resolve("path1/redirect.html"), 3);
+#else
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), base_url.Resolve("path1/redirect.html"), 2);
+#endif
 
   // 3 tabs, including the initial about:blank. The last 2 should be the same
   // process.
@@ -358,8 +375,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessRedirectBack) {
   EXPECT_EQ("/files/extensions/api_test/app_process/path1/empty.html",
             browser()->GetTabContentsAt(2)->controller().
                 GetLastCommittedEntry()->url().path());
-  RenderViewHost* host = browser()->GetTabContentsAt(1)->render_view_host();
-  EXPECT_EQ(host->process(),
+  EXPECT_EQ(browser()->GetTabContentsAt(1)->render_view_host()->process(),
             browser()->GetTabContentsAt(2)->render_view_host()->process());
 }
 

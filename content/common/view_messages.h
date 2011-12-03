@@ -591,6 +591,13 @@ IPC_STRUCT_BEGIN(ViewMsg_Navigate_Params)
 
   // Extra headers (separated by \n) to send during the request.
   IPC_STRUCT_MEMBER(std::string, extra_headers)
+
+  // The following two members identify a previous request that has been
+  // created before this navigation is being transferred to a new render view.
+  // This serves the purpose of recycling the old request.
+  // Unless this refers to a transferred navigation, these values are -1 and -1.
+  IPC_STRUCT_MEMBER(int, transferred_request_child_id)
+  IPC_STRUCT_MEMBER(int, transferred_request_request_id)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewMsg_New_Params)

@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "content/browser/renderer_host/global_request_id.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
@@ -179,6 +180,11 @@ struct NavigateParams {
   // If |browser| == NULL, specifies a Profile to use when finding or
   // creating a Browser.
   Profile* profile;
+
+  // Refers to a navigation that was parked in the browser in order to be
+  // transferred to another RVH. Only used in case of a redirection of a request
+  // to a different site that created a new RVH.
+  GlobalRequestID transferred_global_request_id;
 
  private:
   NavigateParams();

@@ -173,7 +173,7 @@ class ResourceDispatcherTest : public testing::Test,
     request_info.routing_id = 0;
     RequestExtraData extra_data(WebKit::WebReferrerPolicyDefault,
                                 true, 0, false, -1,
-                                content::PAGE_TRANSITION_LINK);
+                                content::PAGE_TRANSITION_LINK, -1, -1);
     request_info.extra_data = &extra_data;
 
     return dispatcher_->CreateBridge(request_info);

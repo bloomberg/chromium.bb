@@ -15,7 +15,9 @@ NavigationState::NavigationState(content::PageTransition transition_type,
       is_content_initiated_(is_content_initiated),
       pending_page_id_(pending_page_id),
       pending_history_list_offset_(pending_history_list_offset),
-      was_within_same_page_(false) {
+      was_within_same_page_(false),
+      transferred_request_child_id_(-1),
+      transferred_request_request_id_(-1) {
 }
 
 NavigationState::~NavigationState() {}

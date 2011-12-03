@@ -2030,6 +2030,8 @@
         'browser/renderer_host/plugin_info_message_filter.h',
         'browser/renderer_host/safe_browsing_resource_handler.cc',
         'browser/renderer_host/safe_browsing_resource_handler.h',
+        'browser/renderer_host/transfer_navigation_resource_handler.cc',
+        'browser/renderer_host/transfer_navigation_resource_handler.h',
         'browser/renderer_host/web_cache_manager.cc',
         'browser/renderer_host/web_cache_manager.h',
         'browser/renderer_preferences_util.cc',

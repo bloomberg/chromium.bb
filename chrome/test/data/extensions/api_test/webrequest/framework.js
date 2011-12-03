@@ -215,8 +215,10 @@ function captureEvent(name, details, callback) {
     }
   });
   if (!found) {
+    console.log("Expected events: " +
+        JSON.stringify(expectedEventData, null, 2));
     chrome.test.fail("Received unexpected event '" + name + "':" +
-        JSON.stringify(details));
+        JSON.stringify(details, null, 2));
   }
 
   capturedEventData.push({label: label, event: name, details: details});

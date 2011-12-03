@@ -264,6 +264,12 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
     return delegate_;
   }
 
+  // Marks the request as "parked". This happens if a request is
+  // redirected cross-site and needs to be resumed by a new render view.
+  void MarkAsTransferredNavigation(
+      const GlobalRequestID& transferred_request_id,
+      net::URLRequest* transferred_request);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            TestBlockedRequestsProcessDies);
@@ -499,6 +505,11 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
 
   static bool is_prefetch_enabled_;
   bool allow_cross_origin_auth_prompt_;
+
+  // Maps the request ID of request that is being transferred to a new RVH
+  // to the respective request.
+  typedef std::map<GlobalRequestID, net::URLRequest*> TransferredNavigations;
+  TransferredNavigations transferred_navigations_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHost);
 };

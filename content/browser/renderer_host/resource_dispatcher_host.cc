@@ -312,7 +312,12 @@ ResourceDispatcherHost::ResourceDispatcherHost(
 
 ResourceDispatcherHost::~ResourceDispatcherHost() {
   AsyncResourceHandler::GlobalCleanup();
+  for (PendingRequestList::const_iterator i = pending_requests_.begin();
+       i != pending_requests_.end(); ++i) {
+    transferred_navigations_.erase(i->first);
+  }
   STLDeleteValues(&pending_requests_);
+  DCHECK(transferred_navigations_.empty());
 }
 
 void ResourceDispatcherHost::Initialize() {
@@ -340,6 +345,10 @@ void ResourceDispatcherHost::OnShutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   is_shutdown_ = true;
   resource_queue_.Shutdown();
+  for (PendingRequestList::const_iterator i = pending_requests_.begin();
+       i != pending_requests_.end(); ++i) {
+    transferred_navigations_.erase(i->first);
+  }
   STLDeleteValues(&pending_requests_);
   // Make sure we shutdown the timer now, otherwise by the time our destructor
   // runs if the timer is still running the Task is deleted twice (once by
@@ -457,6 +466,20 @@ void ResourceDispatcherHost::BeginRequest(
   base::strlcpy(url_buf, request_data.url.spec().c_str(), arraysize(url_buf));
   base::debug::Alias(url_buf);
 
+  // If the request that's coming in is being transferred from another process,
+  // we want to reuse and resume the old request rather than start a new one.
+  net::URLRequest* deferred_request = NULL;
+
+  GlobalRequestID old_request_id(request_data.transferred_request_child_id,
+                                 request_data.transferred_request_request_id);
+  TransferredNavigations::iterator iter =
+      transferred_navigations_.find(old_request_id);
+  if (iter != transferred_navigations_.end()) {
+    deferred_request = iter->second;
+    pending_requests_.erase(old_request_id);
+    transferred_navigations_.erase(iter);
+  }
+
   const content::ResourceContext& resource_context =
       filter_->resource_context();
 
@@ -508,13 +531,18 @@ void ResourceDispatcherHost::BeginRequest(
   }
 
   // Construct the request.
-  net::URLRequest* request = new net::URLRequest(request_data.url, this);
-  request->set_method(request_data.method);
-  request->set_first_party_for_cookies(request_data.first_party_for_cookies);
-  request->set_referrer(referrer.spec());
-  net::HttpRequestHeaders headers;
-  headers.AddHeadersFromString(request_data.headers);
-  request->SetExtraRequestHeaders(headers);
+  net::URLRequest* request;
+  if (deferred_request) {
+    request = deferred_request;
+  } else {
+    request = new net::URLRequest(request_data.url, this);
+    request->set_method(request_data.method);
+    request->set_first_party_for_cookies(request_data.first_party_for_cookies);
+    request->set_referrer(referrer.spec());
+    net::HttpRequestHeaders headers;
+    headers.AddHeadersFromString(request_data.headers);
+    request->SetExtraRequestHeaders(headers);
+  }
 
   int load_flags = request_data.load_flags;
   // Although EV status is irrelevant to sub-frames and sub-resources, we have
@@ -543,15 +571,16 @@ void ResourceDispatcherHost::BeginRequest(
                    net::LOAD_DO_NOT_SAVE_COOKIES);
   }
 
-  // Raw headers are sensitive, as they inclide Cookie/Set-Cookie, so only
-  // allow requesting them if requestor has ReadRawCookies permission.
+  // Raw headers are sensitive, as they include Cookie/Set-Cookie, so only
+  // allow requesting them if requester has ReadRawCookies permission.
   if ((load_flags & net::LOAD_REPORT_RAW_HEADERS)
       && !policy->CanReadRawCookies(child_id)) {
-    VLOG(1) << "Denied unathorized request for raw headers";
+    VLOG(1) << "Denied unauthorized request for raw headers";
     load_flags &= ~net::LOAD_REPORT_RAW_HEADERS;
   }
 
   request->set_load_flags(load_flags);
+
   request->set_context(
       filter_->GetURLRequestContext(request_data.resource_type));
   request->set_priority(DetermineRequestPriority(request_data.resource_type));
@@ -584,8 +613,11 @@ void ResourceDispatcherHost::BeginRequest(
 
   if (delegate_) {
     bool sub = request_data.resource_type != ResourceType::MAIN_FRAME;
-    handler = delegate_->RequestBeginning(handler, request, resource_context,
-                                          sub, child_id, route_id);
+    bool is_continuation_of_transferred_request =
+        (deferred_request != NULL);
+    handler = delegate_->RequestBeginning(
+        handler, request, resource_context, sub, child_id, route_id,
+        is_continuation_of_transferred_request);
   }
 
   // Make extra info and read footer (contains request ID).
@@ -624,7 +656,16 @@ void ResourceDispatcherHost::BeginRequest(
       request, resource_context.appcache_service(), child_id,
       request_data.appcache_host_id, request_data.resource_type);
 
-  BeginRequestInternal(request);
+  if (deferred_request) {
+    // This is a request that has been transferred from another process, so
+    // resume it rather than continuing the regular procedure for starting a
+    // request. Currently this is only done for redirects.
+    GlobalRequestID global_id(extra_info->child_id(), extra_info->request_id());
+    pending_requests_[global_id] = request;
+    request->FollowDeferredRedirect();
+  } else {
+    BeginRequestInternal(request);
+  }
 }
 
 void ResourceDispatcherHost::OnReleaseDownloadedFile(int request_id) {
@@ -1039,7 +1080,13 @@ void ResourceDispatcherHost::CancelRequestsForRoute(int child_id,
        i != pending_requests_.end(); ++i) {
     if (i->first.child_id == child_id) {
       ResourceDispatcherHostRequestInfo* info = InfoForRequest(i->second);
+      GlobalRequestID id(child_id, i->first.request_id);
+      DCHECK(id == i->first);
+      // Don't cancel navigations that are transferring to another process,
+      // since they belong to another process now.
       if (!info->is_download() &&
+          (transferred_navigations_.find(id) ==
+               transferred_navigations_.end()) &&
           (route_id == -1 || route_id == info->route_id())) {
         matching_requests.push_back(
             GlobalRequestID(child_id, i->first.request_id));
@@ -1418,8 +1465,15 @@ bool ResourceDispatcherHost::CompleteResponseStarted(net::URLRequest* request) {
 void ResourceDispatcherHost::CancelRequest(int child_id,
                                            int request_id,
                                            bool from_renderer) {
-  PendingRequestList::iterator i = pending_requests_.find(
-      GlobalRequestID(child_id, request_id));
+  GlobalRequestID id(child_id, request_id);
+  if (from_renderer) {
+    // When the old renderer dies, it sends a message to us to cancel its
+    // requests.
+    if (transferred_navigations_.find(id) != transferred_navigations_.end())
+      return;
+  }
+
+  PendingRequestList::iterator i = pending_requests_.find(id);
   if (i == pending_requests_.end()) {
     // We probably want to remove this warning eventually, but I wanted to be
     // able to notice when this happens during initial development since it
@@ -1481,7 +1535,7 @@ int ResourceDispatcherHost::IncrementOutstandingRequestsMemoryCost(
   new_cost += cost;
   CHECK(new_cost >= 0);
   if (new_cost == 0)
-    outstanding_requests_memory_cost_map_.erase(prev_entry);
+    outstanding_requests_memory_cost_map_.erase(child_id);
   else
     outstanding_requests_memory_cost_map_[child_id] = new_cost;
 
@@ -2178,4 +2232,10 @@ bool ResourceDispatcherHost::allow_cross_origin_auth_prompt() {
 
 void ResourceDispatcherHost::set_allow_cross_origin_auth_prompt(bool value) {
   allow_cross_origin_auth_prompt_ = value;
+}
+
+void ResourceDispatcherHost::MarkAsTransferredNavigation(
+    const GlobalRequestID& transferred_request_id,
+    net::URLRequest* ransferred_request) {
+  transferred_navigations_[transferred_request_id] = ransferred_request;
 }

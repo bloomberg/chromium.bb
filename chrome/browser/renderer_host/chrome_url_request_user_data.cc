@@ -30,3 +30,9 @@ ChromeURLRequestUserData* ChromeURLRequestUserData::Create(
   request->SetUserData(kKeyName, user_data);
   return user_data;
 }
+
+// static
+void ChromeURLRequestUserData::Delete(net::URLRequest* request) {
+  DCHECK(request);
+  request->SetUserData(kKeyName, NULL);
+}

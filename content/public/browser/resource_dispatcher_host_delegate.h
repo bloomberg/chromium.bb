@@ -53,7 +53,8 @@ class ResourceDispatcherHostDelegate {
       const content::ResourceContext& resource_context,
       bool is_subresource,
       int child_id,
-      int route_id) = 0;
+      int route_id,
+      bool is_continuation_of_transferred_request) = 0;
 
   // Allows an embedder to add additional resource handlers for a download.
   // |is_new_request| is true if this is a request that is just starting, i.e.

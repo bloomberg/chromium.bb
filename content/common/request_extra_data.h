@@ -21,7 +21,9 @@ class CONTENT_EXPORT RequestExtraData
                    int64 frame_id,
                    bool parent_is_main_frame,
                    int64 parent_frame_id,
-                   content::PageTransition transition_type);
+                   content::PageTransition transition_type,
+                   int transferred_request_child_id,
+                   int transferred_request_request_id);
   virtual ~RequestExtraData();
 
   bool is_main_frame() const { return is_main_frame_; }
@@ -29,6 +31,12 @@ class CONTENT_EXPORT RequestExtraData
   bool parent_is_main_frame() const { return parent_is_main_frame_; }
   int64 parent_frame_id() const { return parent_frame_id_; }
   content::PageTransition transition_type() const { return transition_type_; }
+  int transferred_request_child_id() const {
+    return transferred_request_child_id_;
+  }
+  int transferred_request_request_id() const {
+    return transferred_request_request_id_;
+  }
 
  private:
   bool is_main_frame_;
@@ -36,6 +44,8 @@ class CONTENT_EXPORT RequestExtraData
   bool parent_is_main_frame_;
   int64 parent_frame_id_;
   content::PageTransition transition_type_;
+  int transferred_request_child_id_;
+  int transferred_request_request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestExtraData);
 };

@@ -2052,13 +2052,8 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
   // issue a special POST navigation in WebKit (via
   // FrameLoader::loadFrameRequest). See ResourceDispatcher and WebURLLoaderImpl
   // for examples of how to send the httpBody data.
-  // Note2: We normally don't do this for browser-initiated navigations, since
-  // it's pointless to tell the browser about navigations it gave us. But
-  // we do potentially ask the browser to handle a redirect that was originally
-  // initiated by the browser. See http://crbug.com/70943
-  //
-  // TODO(creis): Move this redirect check to the browser process to avoid
-  // ping-ponging.  See http://crbug.com/72380.
+  // TODO(mpcomplete): remove is_redirect clause when http://crbug.com/79520 is
+  // fixed.
   if (!frame->parent() && (is_content_initiated || is_redirect) &&
       default_policy == WebKit::WebNavigationPolicyCurrentTab &&
       request.httpMethod() == "GET" && !url.SchemeIs(chrome::kAboutScheme)) {
@@ -2332,6 +2327,10 @@ void RenderViewImpl::PopulateStateFromPendingNavigationParams(
         params.page_id,
         params.pending_history_list_offset,
         params.transition);
+    navigation_state->set_transferred_request_child_id(
+        params.transferred_request_child_id);
+    navigation_state->set_transferred_request_request_id(
+        params.transferred_request_request_id);
     if (params.navigation_type == ViewMsg_Navigate_Type::RESTORE) {
       // We're doing a load of a page that was restored from the last session.
       // By default this prefers the cache over loading (LOAD_PREFERRING_CACHE)
@@ -2732,7 +2731,9 @@ void RenderViewImpl::willSendRequest(WebFrame* frame,
                            frame->identifier(),
                            frame->parent() == top_frame,
                            frame->parent() ? frame->parent()->identifier() : -1,
-                           transition_type));
+                           transition_type,
+                           navigation_state->transferred_request_child_id(),
+                           navigation_state->transferred_request_request_id()));
 
   DocumentState* top_document_state =
       DocumentState::FromDataSource(top_data_source);

@@ -57,6 +57,23 @@ class NavigationState {
   void set_was_within_same_page(bool value) { was_within_same_page_ = value; }
   bool was_within_same_page() const { return was_within_same_page_; }
 
+  // transferred_request_child_id and transferred_request_request_id identify
+  // a request that has been created before the navigation is being transferred
+  // to a new renderer. This is used to recycle the old request once the new
+  // renderer tries to pick up the navigation of the old one.
+  void set_transferred_request_child_id(int value) {
+    transferred_request_child_id_ = value;
+  }
+  int transferred_request_child_id() const {
+    return transferred_request_child_id_;
+  }
+  void set_transferred_request_request_id(int value) {
+    transferred_request_request_id_ = value;
+  }
+  int transferred_request_request_id() const {
+    return transferred_request_request_id_;
+  }
+
  private:
   NavigationState(content::PageTransition transition_type,
                   bool is_content_initiated,
@@ -70,6 +87,8 @@ class NavigationState {
   int pending_history_list_offset_;
 
   bool was_within_same_page_;
+  int transferred_request_child_id_;
+  int transferred_request_request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationState);
 };

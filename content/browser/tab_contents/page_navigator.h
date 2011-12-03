@@ -12,6 +12,7 @@
 
 #include <string>
 
+#include "content/browser/renderer_host/global_request_id.h"
 #include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
@@ -26,7 +27,6 @@ struct CONTENT_EXPORT OpenURLParams {
                 content::PageTransition transition,
                 bool is_renderer_initiated);
   ~OpenURLParams();
-class TabContents;
 
   // The URL/referrer to be opened.
   GURL url;
@@ -43,6 +43,10 @@ class TabContents;
 
   // The override encoding of the URL contents to be opened.
   std::string override_encoding;
+
+  // Reference to the old request id in case this is a navigation that is being
+  // transferred to a new renderer.
+  GlobalRequestID transferred_global_request_id;
 
  private:
   OpenURLParams();

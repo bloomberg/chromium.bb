@@ -2969,9 +2969,8 @@ TabContents* Browser::OpenURL(const GURL& url,
                               content::PageTransition transition) {
   // For specifying a referrer, use the version of OpenURL taking OpenURLParams.
   DCHECK(referrer.is_empty());
-  return OpenURLFromTab(NULL,
-                        OpenURLParams(url, referrer, disposition, transition,
-                                      false));
+  return OpenURLFromTab(NULL, OpenURLParams(url, referrer, disposition,
+                                            transition, false));
 }
 
 TabContents* Browser::OpenURL(const OpenURLParams& params) {
@@ -3389,6 +3388,8 @@ TabContents* Browser::OpenURLFromTab(TabContents* source,
   nav_params.user_gesture = true;
   nav_params.override_encoding = params.override_encoding;
   nav_params.is_renderer_initiated = params.is_renderer_initiated;
+  nav_params.transferred_global_request_id =
+      params.transferred_global_request_id;
   browser::Navigate(&nav_params);
 
   return nav_params.target_contents ?

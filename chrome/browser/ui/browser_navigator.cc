@@ -242,6 +242,24 @@ Profile* GetSourceProfile(browser::NavigateParams* params,
   return params->browser->profile();
 }
 
+void LoadURLInContents(TabContents* target_contents,
+                       const GURL& url,
+                       browser::NavigateParams* params,
+                       const std::string& extra_headers) {
+  if (params->transferred_global_request_id != GlobalRequestID()) {
+    target_contents->controller().TransferURL(
+        url, params->referrer, params->transition, extra_headers,
+        params->transferred_global_request_id,
+        params->is_renderer_initiated);
+  } else if (params->is_renderer_initiated) {
+    target_contents->controller().LoadURLFromRenderer(
+        url, params->referrer, params->transition,  extra_headers);
+  } else {
+    target_contents->controller().LoadURL(
+        url, params->referrer, params->transition, extra_headers);
+  }
+
+}
 
 // This class makes sure the Browser object held in |params| is made visible
 // by the time it goes out of scope, provided |params| wants it to be shown.
@@ -499,13 +517,9 @@ void Navigate(NavigateParams* params) {
     if (!HandleNonNavigationAboutURL(url)) {
       // Perform the actual navigation, tracking whether it came from the
       // renderer.
-      if (params->is_renderer_initiated) {
-        params->target_contents->controller().LoadURLFromRenderer(
-            url, params->referrer, params->transition, extra_headers);
-      } else {
-        params->target_contents->controller().LoadURL(
-            url, params->referrer, params->transition, extra_headers);
-      }
+
+      LoadURLInContents(params->target_contents->tab_contents(),
+                        url, params, extra_headers);
     }
   } else {
     // |target_contents| was specified non-NULL, and so we assume it has already
@@ -553,13 +567,7 @@ void Navigate(NavigateParams* params) {
     } else if (params->path_behavior == NavigateParams::IGNORE_AND_NAVIGATE &&
         target->GetURL() != params->url) {
       InitializeExtraHeaders(params, NULL, &extra_headers);
-      if (params->is_renderer_initiated) {
-        target->controller().LoadURLFromRenderer(
-            params->url, params->referrer, params->transition, extra_headers);
-      } else {
-        target->controller().LoadURL(
-            params->url, params->referrer, params->transition, extra_headers);
-      }
+      LoadURLInContents(target, params->url, params, extra_headers);
     }
 
     // If the singleton tab isn't already selected, select it.

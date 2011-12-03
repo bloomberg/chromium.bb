@@ -14,6 +14,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
+#include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_type.h"
@@ -186,6 +187,20 @@ class CONTENT_EXPORT NavigationController {
                            const GURL& referrer,
                            content::PageTransition type,
                            const std::string& extra_headers);
+
+  // Behaves like LoadURL() and LoadURLFromRenderer() but marks the new
+  // navigation as being transferred from one RVH to another. In this case the
+  // browser can recycle the old request once the new renderer wants to
+  // navigate.
+  // |transferred_global_request_id| identifies the request ID of the old
+  // request.
+  void TransferURL(
+      const GURL& url,
+      const GURL& referrer,
+      content::PageTransition transition,
+      const std::string& extra_headers,
+      const GlobalRequestID& transferred_global_request_id,
+      bool is_renderer_initiated);
 
   // Loads the current page if this NavigationController was restored from
   // history and the current page has not loaded yet.

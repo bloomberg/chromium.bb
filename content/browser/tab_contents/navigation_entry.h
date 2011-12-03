@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "content/browser/renderer_host/global_request_id.h"
 #include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/page_type.h"
@@ -412,6 +413,15 @@ class CONTENT_EXPORT NavigationEntry {
     return restore_type_;
   }
 
+  void set_transferred_global_request_id(
+      const GlobalRequestID& transferred_global_request_id) {
+    transferred_global_request_id_ = transferred_global_request_id;
+  }
+
+  GlobalRequestID transferred_global_request_id() const {
+    return transferred_global_request_id_;
+  }
+
  private:
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
   // Session/Tab restore save portions of this class so that it can be recreated
@@ -450,6 +460,15 @@ class CONTENT_EXPORT NavigationEntry {
   // displayed. When the URL, virtual URL, or title is set, this should be
   // cleared to force a refresh.
   mutable string16 cached_display_title_;
+
+  // In case a navigation is transferred to a new RVH but the request has
+  // been generated in the renderer already, this identifies the old request so
+  // that it can be resumed. The old request is stored until the
+  // ResourceDispatcher receives the navigation from the renderer which
+  // carries this |transferred_global_request_id_| annotation. Once the request
+  // is transferred to the new process, this is cleared and the request
+  // continues as normal.
+  GlobalRequestID transferred_global_request_id_;
 
   // Copy and assignment is explicitly allowed for this class.
 };

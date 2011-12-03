@@ -513,6 +513,12 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
                               const GURL& referrer,
                               WindowOpenDisposition disposition,
                               int64 source_frame_id) OVERRIDE;
+  virtual void RequestTransferURL(
+      const GURL& url,
+      const GURL& referrer,
+      WindowOpenDisposition disposition,
+      int64 source_frame_id,
+      const GlobalRequestID& transferred_global_request_id) OVERRIDE;
   virtual void RunJavaScriptMessage(const RenderViewHost* rvh,
                                     const string16& message,
                                     const string16& default_prompt,
