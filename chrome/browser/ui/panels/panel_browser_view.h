@@ -12,14 +12,28 @@
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/slide_animation.h"
 
 class Browser;
 class Panel;
 class NativePanelTestingWin;
 class PanelBrowserFrameView;
-namespace ui {
-class SlideAnimation;
-}
+
+class PanelSlideAnimation : public ui::SlideAnimation {
+ public:
+  PanelSlideAnimation(ui::AnimationDelegate* target,
+                       bool for_minimize,
+                       double animation_stop_to_show_titlebar)
+    : ui::SlideAnimation(target),
+      for_minimize_(for_minimize),
+      animation_stop_to_show_titlebar_(animation_stop_to_show_titlebar) { }
+  virtual ~PanelSlideAnimation() { }
+  virtual double GetCurrentValue() const OVERRIDE;
+
+ private:
+  bool for_minimize_;
+  double animation_stop_to_show_titlebar_;
+};
 
 // A browser view that implements Panel specific behavior.
 class PanelBrowserView : public BrowserView,
@@ -148,7 +162,7 @@ class PanelBrowserView : public BrowserView,
   MouseDraggingState mouse_dragging_state_;
 
   // Used to animate the bounds change.
-  scoped_ptr<ui::SlideAnimation> bounds_animator_;
+  scoped_ptr<PanelSlideAnimation> bounds_animator_;
   gfx::Rect animation_start_bounds_;
 
   // Is the panel in highlighted state to draw people's attention?
