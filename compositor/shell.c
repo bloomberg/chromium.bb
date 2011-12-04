@@ -842,6 +842,9 @@ map(struct wlsc_shell *base,
 	if (!shell->locked || surface_type == SHELL_SURFACE_LOCK)
 		wlsc_surface_configure(surface,
 				       surface->x, surface->y, width, height);
+
+	if (surface_type == SHELL_SURFACE_TOPLEVEL)
+		wlsc_zoom_run(surface, 0.8, 1.0, NULL, NULL);
 }
 
 static void
