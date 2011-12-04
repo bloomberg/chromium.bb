@@ -36,6 +36,10 @@ struct wlsc_matrix {
 	GLfloat d[16];
 };
 
+struct wlsc_vector {
+	GLfloat f[4];
+};
+
 void
 wlsc_matrix_init(struct wlsc_matrix *matrix);
 void
@@ -43,6 +47,8 @@ wlsc_matrix_scale(struct wlsc_matrix *matrix, GLfloat x, GLfloat y, GLfloat z);
 void
 wlsc_matrix_translate(struct wlsc_matrix *matrix,
 		      GLfloat x, GLfloat y, GLfloat z);
+void
+wlsc_matrix_transform(struct wlsc_matrix *matrix, struct wlsc_vector *v);
 
 struct wlsc_transform {
 	struct wlsc_matrix matrix;
@@ -242,10 +248,6 @@ struct wlsc_compositor {
 
 enum wlsc_output_flags {
 	WL_OUTPUT_FLIPPED = 0x01
-};
-
-struct wlsc_vector {
-	GLfloat f[4];
 };
 
 struct wlsc_surface {
