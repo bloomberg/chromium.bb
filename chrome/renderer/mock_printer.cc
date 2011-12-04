@@ -48,7 +48,7 @@ MockPrinter::MockPrinter()
     use_invalid_settings_(false) {
   page_size_.SetSize(static_cast<int>(8.5 * dpi_),
                      static_cast<int>(11.0 * dpi_));
-  printable_size_.SetSize(static_cast<int>((7.5 * dpi_)),
+  content_size_.SetSize(static_cast<int>((7.5 * dpi_)),
                           static_cast<int>((10.0 * dpi_)));
   margin_left_ = margin_top_ = static_cast<int>(0.5 * dpi_);
 }
@@ -79,7 +79,7 @@ void MockPrinter::SetDefaultPrintSettings(const PrintMsg_Print_Params& params) {
   desired_dpi_ = params.desired_dpi;
   selection_only_ = params.selection_only;
   page_size_ = params.page_size;
-  printable_size_ = params.printable_size;
+  content_size_ = params.content_size;
   margin_left_ = params.margin_left;
   margin_top_ = params.margin_top;
   display_header_footer_ = params.display_header_footer;
@@ -110,7 +110,7 @@ void MockPrinter::ScriptedPrint(int cookie,
   settings->params.selection_only = selection_only_;
   settings->params.document_cookie = document_cookie_;
   settings->params.page_size = page_size_;
-  settings->params.printable_size = printable_size_;
+  settings->params.content_size = content_size_;
   settings->params.is_first_request = is_first_request_;
   settings->params.preview_request_id = preview_request_id_;
   settings->params.display_header_footer = display_header_footer_;
@@ -257,7 +257,7 @@ void MockPrinter::SetPrintParams(PrintMsg_Print_Params* params) {
   params->selection_only = selection_only_;
   params->document_cookie = document_cookie_;
   params->page_size = page_size_;
-  params->printable_size = printable_size_;
+  params->content_size = content_size_;
   params->margin_left = margin_left_;
   params->margin_top = margin_top_;
   params->is_first_request = is_first_request_;

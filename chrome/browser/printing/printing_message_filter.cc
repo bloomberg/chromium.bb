@@ -44,7 +44,7 @@ static base::LazyInstance<PrintingSequencePathMap>
 void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
                                    PrintMsg_Print_Params* params) {
   params->page_size = settings.page_setup_device_units().physical_size();
-  params->printable_size.SetSize(
+  params->content_size.SetSize(
       settings.page_setup_device_units().content_area().width(),
       settings.page_setup_device_units().content_area().height());
   params->margin_top = settings.page_setup_device_units().content_area().y();

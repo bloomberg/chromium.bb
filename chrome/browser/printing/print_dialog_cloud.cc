@@ -404,7 +404,7 @@ void CloudPrintFlowHandler::HandleSetPageParameters(const ListValue* args) {
   const double kMaxPageShrink = 2.0;
 
   PrintMsg_Print_Params default_settings;
-  default_settings.printable_size = gfx::Size(kWidth, kHeight);
+  default_settings.content_size = gfx::Size(kWidth, kHeight);
   default_settings.dpi = kDPI;
   default_settings.min_shrink = kMinPageShrink;
   default_settings.max_shrink = kMaxPageShrink;

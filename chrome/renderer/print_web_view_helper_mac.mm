@@ -36,8 +36,8 @@ void PrintWebViewHelper::PrintPageInternal(
   int page_number = params.page_number;
 
   // Render page for printing.
-  gfx::Rect content_area(params.params.printable_size);
-  RenderPage(params.params.printable_size, content_area, scale_factor,
+  gfx::Rect content_area(params.params.content_size);
+  RenderPage(params.params.content_size, content_area, scale_factor,
              page_number, frame, false, &metafile);
   metafile.FinishDocument();
 
@@ -49,8 +49,8 @@ void PrintWebViewHelper::PrintPageInternal(
   page_params.page_size = params.params.page_size;
   page_params.content_area = gfx::Rect(params.params.margin_left,
                                        params.params.margin_top,
-                                       params.params.printable_size.width(),
-                                       params.params.printable_size.height());
+                                       params.params.content_size.width(),
+                                       params.params.content_size.height());
 
   // Ask the browser to create the shared memory for us.
   if (!CopyMetafileDataToSharedMem(&metafile,
@@ -65,8 +65,8 @@ bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
   float scale_factor = print_preview_context_.frame()->getPrintPageShrink(0);
   PrintMsg_Print_Params printParams = print_preview_context_.print_params();
   gfx::Rect content_area(printParams.margin_left, printParams.margin_top,
-                         printParams.printable_size.width(),
-                         printParams.printable_size.height());
+                         printParams.content_size.width(),
+                         printParams.content_size.height());
 
   scoped_ptr<printing::Metafile> draft_metafile;
   printing::Metafile* initial_render_metafile =

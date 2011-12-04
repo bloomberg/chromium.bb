@@ -27,7 +27,7 @@ struct PrintMsg_Print_Params {
   void Reset();
 
   gfx::Size page_size;
-  gfx::Size printable_size;
+  gfx::Size content_size;
   int margin_top;
   int margin_left;
   double dpi;
@@ -70,7 +70,7 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
   IPC_STRUCT_TRAITS_MEMBER(page_size)
 
   // In pixels according to dpi_x and dpi_y.
-  IPC_STRUCT_TRAITS_MEMBER(printable_size)
+  IPC_STRUCT_TRAITS_MEMBER(content_size)
 
   // The y-offset of the printable area, in pixels according to dpi.
   IPC_STRUCT_TRAITS_MEMBER(margin_top)

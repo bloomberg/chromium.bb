@@ -10,7 +10,7 @@
 
 PrintMsg_Print_Params::PrintMsg_Print_Params()
   : page_size(),
-    printable_size(),
+    content_size(),
     margin_top(0),
     margin_left(0),
     dpi(0),
@@ -33,7 +33,7 @@ PrintMsg_Print_Params::~PrintMsg_Print_Params() {}
 
 void PrintMsg_Print_Params::Reset() {
   page_size = gfx::Size();
-  printable_size = gfx::Size();
+  content_size = gfx::Size();
   margin_top = 0;
   margin_left = 0;
   dpi = 0;

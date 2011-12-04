@@ -107,7 +107,7 @@ class MockPrinter {
 
   // In pixels according to dpi_x and dpi_y.
   gfx::Size page_size_;
-  gfx::Size printable_size_;
+  gfx::Size content_size_;
   int margin_left_;
   int margin_top_;
 

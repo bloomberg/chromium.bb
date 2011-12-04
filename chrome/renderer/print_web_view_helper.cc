@@ -100,7 +100,7 @@ int GetDPI(const PrintMsg_Print_Params* print_params) {
 
 bool PrintMsg_Print_Params_IsEmpty(const PrintMsg_Print_Params& params) {
   return !params.document_cookie && !params.desired_dpi && !params.max_shrink &&
-         !params.min_shrink && !params.dpi && params.printable_size.IsEmpty() &&
+         !params.min_shrink && !params.dpi && params.content_size.IsEmpty() &&
          !params.selection_only && params.page_size.IsEmpty() &&
          !params.margin_top && !params.margin_left &&
          !params.supports_alpha_blend;
@@ -108,7 +108,7 @@ bool PrintMsg_Print_Params_IsEmpty(const PrintMsg_Print_Params& params) {
 
 bool PageLayoutIsEqual(const PrintMsg_PrintPages_Params& oldParams,
                        const PrintMsg_PrintPages_Params& newParams) {
-  return oldParams.params.printable_size == newParams.params.printable_size &&
+  return oldParams.params.content_size == newParams.params.content_size &&
          oldParams.params.page_size == newParams.params.page_size &&
          oldParams.params.margin_top == newParams.params.margin_top &&
          oldParams.params.margin_left == newParams.params.margin_left &&
@@ -138,10 +138,10 @@ bool PrintMsg_Print_Params_IsEqual(
 void CalculatePrintCanvasSize(const PrintMsg_Print_Params& print_params,
                               gfx::Size* result) {
   int dpi = GetDPI(&print_params);
-  result->set_width(ConvertUnit(print_params.printable_size.width(), dpi,
+  result->set_width(ConvertUnit(print_params.content_size.width(), dpi,
                                 print_params.desired_dpi));
 
-  result->set_height(ConvertUnit(print_params.printable_size.height(), dpi,
+  result->set_height(ConvertUnit(print_params.content_size.height(), dpi,
                                  print_params.desired_dpi));
 }
 
@@ -895,11 +895,11 @@ void PrintWebViewHelper::GetPageSizeAndMarginsInPoints(
       dpi, printing::kPixelsPerInch);
   int margin_right_in_pixels = ConvertUnit(
       default_params.page_size.width() -
-      default_params.printable_size.width() - default_params.margin_left,
+      default_params.content_size.width() - default_params.margin_left,
       dpi, printing::kPixelsPerInch);
   int margin_bottom_in_pixels = ConvertUnit(
       default_params.page_size.height() -
-      default_params.printable_size.height() - default_params.margin_top,
+      default_params.content_size.height() - default_params.margin_top,
       dpi, printing::kPixelsPerInch);
   int margin_left_in_pixels = ConvertUnit(
       default_params.margin_left,
@@ -954,7 +954,7 @@ void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
   PrintWebViewHelper::GetPageSizeAndMarginsInPoints(frame, 0, *params,
                                                     &page_layout_in_points);
   int dpi = GetDPI(params);
-  params->printable_size = gfx::Size(
+  params->content_size = gfx::Size(
       static_cast<int>(ConvertUnitDouble(
           page_layout_in_points.content_width,
           printing::kPointsPerInch, dpi)),

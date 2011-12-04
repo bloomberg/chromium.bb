@@ -132,8 +132,8 @@ void PrintWebViewHelper::PrintPageInternal(
   page_params.actual_shrink = scale_factor;
   page_params.page_size = params.params.page_size;
   page_params.content_area = gfx::Rect(params.params.margin_left,
-      params.params.margin_top, params.params.printable_size.width(),
-      params.params.printable_size.height());
+      params.params.margin_top, params.params.content_size.width(),
+      params.params.content_size.height());
 
   if (!CopyMetafileDataToSharedMem(metafile.get(),
                                    &(page_params.metafile_data_handle))) {
