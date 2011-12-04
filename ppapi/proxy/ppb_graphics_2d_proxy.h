@@ -39,27 +39,31 @@ class PPB_Graphics2D_Proxy : public InterfaceProxy {
   static const ApiID kApiID = API_ID_PPB_GRAPHICS_2D;
 
  private:
-  // Plugin->renderer message handlers.
-  void OnMsgPaintImageData(const ppapi::HostResource& graphics_2d,
-                           const ppapi::HostResource& image_data,
-                           const PP_Point& top_left,
-                           bool src_rect_specified,
-                           const PP_Rect& src_rect);
-  void OnMsgScroll(const ppapi::HostResource& graphics_2d,
-                   bool clip_specified,
-                   const PP_Rect& clip,
-                   const PP_Point& amount);
-  void OnMsgReplaceContents(const ppapi::HostResource& graphics_2d,
-                            const ppapi::HostResource& image_data);
-  void OnMsgFlush(const ppapi::HostResource& graphics_2d);
+  // Plugin->host message handlers.
+  void OnHostMsgCreate(PP_Instance instance,
+                       const PP_Size& size,
+                       PP_Bool is_always_opaque,
+                       HostResource* result);
+  void OnHostMsgPaintImageData(const HostResource& graphics_2d,
+                               const HostResource& image_data,
+                               const PP_Point& top_left,
+                               bool src_rect_specified,
+                               const PP_Rect& src_rect);
+  void OnHostMsgScroll(const HostResource& graphics_2d,
+                       bool clip_specified,
+                       const PP_Rect& clip,
+                       const PP_Point& amount);
+  void OnHostMsgReplaceContents(const HostResource& graphics_2d,
+                                const HostResource& image_data);
+  void OnHostMsgFlush(const HostResource& graphics_2d);
 
-  // Renderer->plugin message handlers.
-  void OnMsgFlushACK(const ppapi::HostResource& graphics_2d,
-                     int32_t pp_error);
+  // Host->plugin message handlers.
+  void OnPluginMsgFlushACK(const HostResource& graphics_2d,
+                           int32_t pp_error);
 
   // Called in the renderer to send the given flush ACK to the plugin.
   void SendFlushACKToPlugin(int32_t result,
-                            const ppapi::HostResource& graphics_2d);
+                            const HostResource& graphics_2d);
 
   pp::CompletionCallbackFactory<PPB_Graphics2D_Proxy,
                                 ProxyNonThreadSafeRefCount> callback_factory_;

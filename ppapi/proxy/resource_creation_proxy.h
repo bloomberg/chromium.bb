@@ -131,25 +131,6 @@ class ResourceCreationProxy : public InterfaceProxy,
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
  private:
-  // IPC message handlers (called in browser).
-  void OnMsgCreateAudio(PP_Instance instance,
-                        int32_t sample_rate,
-                        uint32_t sample_frame_count,
-                        HostResource* result);
-  void OnMsgCreateAudioInput(PP_Instance instance,
-                             HostResource* result);
-  void OnMsgCreateGraphics2D(PP_Instance instance,
-                             const PP_Size& size,
-                             PP_Bool is_always_opaque,
-                             HostResource* result);
-  void OnMsgCreateImageData(PP_Instance instance,
-                            int32_t format,
-                            const PP_Size& size,
-                            PP_Bool init_to_zero,
-                            HostResource* result,
-                            std::string* image_data_desc,
-                            ImageHandle* result_image_handle);
-
   DISALLOW_COPY_AND_ASSIGN(ResourceCreationProxy);
 };
 

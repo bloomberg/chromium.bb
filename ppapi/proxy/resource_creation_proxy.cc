@@ -168,25 +168,8 @@ PP_Resource ResourceCreationProxy::CreateImageData(PP_Instance instance,
                                                    PP_ImageDataFormat format,
                                                    const PP_Size& size,
                                                    PP_Bool init_to_zero) {
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return 0;
-
-  HostResource result;
-  std::string image_data_desc;
-  ImageHandle image_handle = ImageData::NullHandle;
-  dispatcher->Send(new PpapiHostMsg_ResourceCreation_ImageData(
-      API_ID_RESOURCE_CREATION, instance, format, size, init_to_zero,
-      &result, &image_data_desc, &image_handle));
-
-  if (result.is_null() || image_data_desc.size() != sizeof(PP_ImageDataDesc))
-    return 0;
-
-  // We serialize the PP_ImageDataDesc just by copying to a string.
-  PP_ImageDataDesc desc;
-  memcpy(&desc, image_data_desc.data(), sizeof(PP_ImageDataDesc));
-
-  return (new ImageData(result, desc, image_handle))->GetReference();
+  return PPB_ImageData_Proxy::CreateProxyResource(instance, format, size,
+                                                  init_to_zero);
 }
 
 PP_Resource ResourceCreationProxy::CreateKeyboardInputEvent(
@@ -345,73 +328,7 @@ bool ResourceCreationProxy::Send(IPC::Message* msg) {
 }
 
 bool ResourceCreationProxy::OnMessageReceived(const IPC::Message& msg) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ResourceCreationProxy, msg)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_ResourceCreation_Graphics2D,
-                        OnMsgCreateGraphics2D)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_ResourceCreation_ImageData,
-                        OnMsgCreateImageData)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void ResourceCreationProxy::OnMsgCreateGraphics2D(PP_Instance instance,
-                                                  const PP_Size& size,
-                                                  PP_Bool is_always_opaque,
-                                                  HostResource* result) {
-  ppapi::thunk::EnterFunction<ResourceCreationAPI> enter(instance, false);
-  if (enter.succeeded()) {
-    result->SetHostResource(instance, enter.functions()->CreateGraphics2D(
-        instance, size, is_always_opaque));
-  }
-}
-
-void ResourceCreationProxy::OnMsgCreateImageData(
-    PP_Instance instance,
-    int32_t format,
-    const PP_Size& size,
-    PP_Bool init_to_zero,
-    HostResource* result,
-    std::string* image_data_desc,
-    ImageHandle* result_image_handle) {
-  *result_image_handle = ImageData::NullHandle;
-
-  ppapi::thunk::EnterFunction<ResourceCreationAPI> enter(instance, false);
-  if (enter.failed())
-    return;
-
-  PP_Resource resource = enter.functions()->CreateImageData(
-      instance, static_cast<PP_ImageDataFormat>(format), size, init_to_zero);
-  if (!resource)
-    return;
-  result->SetHostResource(instance, resource);
-
-  // Get the description, it's just serialized as a string.
-  ppapi::thunk::EnterResourceNoLock<ppapi::thunk::PPB_ImageData_API>
-      enter_resource(resource, false);
-  PP_ImageDataDesc desc;
-  if (enter_resource.object()->Describe(&desc) == PP_TRUE) {
-    image_data_desc->resize(sizeof(PP_ImageDataDesc));
-    memcpy(&(*image_data_desc)[0], &desc, sizeof(PP_ImageDataDesc));
-  }
-
-  // Get the shared memory handle.
-  const PPB_ImageDataTrusted* trusted =
-      reinterpret_cast<const PPB_ImageDataTrusted*>(
-          dispatcher()->local_get_interface()(PPB_IMAGEDATA_TRUSTED_INTERFACE));
-  uint32_t byte_count = 0;
-  if (trusted) {
-    int32_t handle;
-    if (trusted->GetSharedMemory(resource, &handle, &byte_count) == PP_OK) {
-#if defined(OS_WIN)
-      ImageHandle ih = ImageData::HandleFromInt(handle);
-      *result_image_handle = dispatcher()->ShareHandleWithRemote(ih, false);
-#else
-      *result_image_handle = ImageData::HandleFromInt(handle);
-#endif
-    }
-  }
+  return false;
 }
 
 }  // namespace proxy

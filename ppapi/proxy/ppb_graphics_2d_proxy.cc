@@ -52,6 +52,8 @@ class Graphics2D : public Resource, public thunk::PPB_Graphics2D_API {
     return PluginDispatcher::GetForResource(this);
   }
 
+  static const ApiID kApiID = API_ID_PPB_GRAPHICS_2D;
+
   PP_Size size_;
   PP_Bool is_always_opaque_;
 
@@ -95,9 +97,8 @@ void Graphics2D::PaintImageData(PP_Resource image_data,
   PP_Rect dummy;
   memset(&dummy, 0, sizeof(PP_Rect));
   GetDispatcher()->Send(new PpapiHostMsg_PPBGraphics2D_PaintImageData(
-      API_ID_PPB_GRAPHICS_2D, host_resource(),
-      image_object->host_resource(), *top_left, !!src_rect,
-      src_rect ? *src_rect : dummy));
+      kApiID, host_resource(), image_object->host_resource(), *top_left,
+      !!src_rect, src_rect ? *src_rect : dummy));
 }
 
 void Graphics2D::Scroll(const PP_Rect* clip_rect,
@@ -105,8 +106,8 @@ void Graphics2D::Scroll(const PP_Rect* clip_rect,
   PP_Rect dummy;
   memset(&dummy, 0, sizeof(PP_Rect));
   GetDispatcher()->Send(new PpapiHostMsg_PPBGraphics2D_Scroll(
-      API_ID_PPB_GRAPHICS_2D, host_resource(),
-      !!clip_rect, clip_rect ? *clip_rect : dummy, *amount));
+      kApiID, host_resource(), !!clip_rect, clip_rect ? *clip_rect : dummy,
+      *amount));
 }
 
 void Graphics2D::ReplaceContents(PP_Resource image_data) {
@@ -116,8 +117,7 @@ void Graphics2D::ReplaceContents(PP_Resource image_data) {
     return;
 
   GetDispatcher()->Send(new PpapiHostMsg_PPBGraphics2D_ReplaceContents(
-      API_ID_PPB_GRAPHICS_2D, host_resource(),
-      image_object->host_resource()));
+      kApiID, host_resource(), image_object->host_resource()));
 }
 
 int32_t Graphics2D::Flush(PP_CompletionCallback callback) {
@@ -130,8 +130,8 @@ int32_t Graphics2D::Flush(PP_CompletionCallback callback) {
     return PP_ERROR_INPROGRESS;  // Can't have >1 flush pending.
   current_flush_callback_ = callback;
 
-  GetDispatcher()->Send(new PpapiHostMsg_PPBGraphics2D_Flush(
-      API_ID_PPB_GRAPHICS_2D, host_resource()));
+  GetDispatcher()->Send(new PpapiHostMsg_PPBGraphics2D_Flush(kApiID,
+                                                             host_resource()));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -157,9 +157,8 @@ PP_Resource PPB_Graphics2D_Proxy::CreateProxyResource(
     return 0;
 
   HostResource result;
-  dispatcher->Send(new PpapiHostMsg_ResourceCreation_Graphics2D(
-      API_ID_RESOURCE_CREATION, instance, size, is_always_opaque,
-      &result));
+  dispatcher->Send(new PpapiHostMsg_PPBGraphics2D_Create(
+      kApiID, instance, size, is_always_opaque, &result));
   if (result.is_null())
     return 0;
   return (new Graphics2D(result, size, is_always_opaque))->GetReference();
@@ -168,24 +167,37 @@ PP_Resource PPB_Graphics2D_Proxy::CreateProxyResource(
 bool PPB_Graphics2D_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Graphics2D_Proxy, msg)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics2D_Create,
+                        OnHostMsgCreate)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics2D_PaintImageData,
-                        OnMsgPaintImageData)
+                        OnHostMsgPaintImageData)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics2D_Scroll,
-                        OnMsgScroll)
+                        OnHostMsgScroll)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics2D_ReplaceContents,
-                        OnMsgReplaceContents)
+                        OnHostMsgReplaceContents)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics2D_Flush,
-                        OnMsgFlush)
+                        OnHostMsgFlush)
 
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBGraphics2D_FlushACK,
-                        OnMsgFlushACK)
+                        OnPluginMsgFlushACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // FIXME(brettw) handle bad messages!
   return handled;
 }
 
-void PPB_Graphics2D_Proxy::OnMsgPaintImageData(
+void PPB_Graphics2D_Proxy::OnHostMsgCreate(PP_Instance instance,
+                                           const PP_Size& size,
+                                           PP_Bool is_always_opaque,
+                                           HostResource* result) {
+  thunk::EnterResourceCreation enter(instance);
+  if (enter.succeeded()) {
+    result->SetHostResource(instance, enter.functions()->CreateGraphics2D(
+        instance, size, is_always_opaque));
+  }
+}
+
+void PPB_Graphics2D_Proxy::OnHostMsgPaintImageData(
     const HostResource& graphics_2d,
     const HostResource& image_data,
     const PP_Point& top_left,
@@ -198,17 +210,17 @@ void PPB_Graphics2D_Proxy::OnMsgPaintImageData(
       src_rect_specified ? &src_rect : NULL);
 }
 
-void PPB_Graphics2D_Proxy::OnMsgScroll(const HostResource& graphics_2d,
-                                       bool clip_specified,
-                                       const PP_Rect& clip,
-                                       const PP_Point& amount) {
+void PPB_Graphics2D_Proxy::OnHostMsgScroll(const HostResource& graphics_2d,
+                                           bool clip_specified,
+                                           const PP_Rect& clip,
+                                           const PP_Point& amount) {
   EnterHostFromHostResource<PPB_Graphics2D_API> enter(graphics_2d);
   if (enter.failed())
     return;
   enter.object()->Scroll(clip_specified ? &clip : NULL, &amount);
 }
 
-void PPB_Graphics2D_Proxy::OnMsgReplaceContents(
+void PPB_Graphics2D_Proxy::OnHostMsgReplaceContents(
     const HostResource& graphics_2d,
     const HostResource& image_data) {
   EnterHostFromHostResource<PPB_Graphics2D_API> enter(graphics_2d);
@@ -217,7 +229,7 @@ void PPB_Graphics2D_Proxy::OnMsgReplaceContents(
   enter.object()->ReplaceContents(image_data.host_resource());
 }
 
-void PPB_Graphics2D_Proxy::OnMsgFlush(const HostResource& graphics_2d) {
+void PPB_Graphics2D_Proxy::OnHostMsgFlush(const HostResource& graphics_2d) {
   EnterHostFromHostResourceForceCallback<PPB_Graphics2D_API> enter(
       graphics_2d, callback_factory_,
       &PPB_Graphics2D_Proxy::SendFlushACKToPlugin, graphics_2d);
@@ -226,8 +238,9 @@ void PPB_Graphics2D_Proxy::OnMsgFlush(const HostResource& graphics_2d) {
   enter.SetResult(enter.object()->Flush(enter.callback()));
 }
 
-void PPB_Graphics2D_Proxy::OnMsgFlushACK(const HostResource& host_resource,
-                                         int32_t pp_error) {
+void PPB_Graphics2D_Proxy::OnPluginMsgFlushACK(
+    const HostResource& host_resource,
+    int32_t pp_error) {
   EnterPluginFromHostResource<PPB_Graphics2D_API> enter(host_resource);
   if (enter.succeeded())
     static_cast<Graphics2D*>(enter.object())->FlushACK(pp_error);
@@ -236,8 +249,8 @@ void PPB_Graphics2D_Proxy::OnMsgFlushACK(const HostResource& host_resource,
 void PPB_Graphics2D_Proxy::SendFlushACKToPlugin(
     int32_t result,
     const HostResource& graphics_2d) {
-  dispatcher()->Send(new PpapiMsg_PPBGraphics2D_FlushACK(
-      API_ID_PPB_GRAPHICS_2D, graphics_2d, result));
+  dispatcher()->Send(new PpapiMsg_PPBGraphics2D_FlushACK(kApiID, graphics_2d,
+                                                         result));
 }
 
 }  // namespace proxy

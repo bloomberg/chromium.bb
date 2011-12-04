@@ -754,6 +754,11 @@ IPC_SYNC_MESSAGE_CONTROL0_1(PpapiHostMsg_PPBFont_GetFontFamilies,
                             std::string /* result */)
 
 // PPB_Graphics2D.
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBGraphics2D_Create,
+                           PP_Instance /* instance */,
+                           PP_Size /* size */,
+                           PP_Bool /* is_always_opaque */,
+                           ppapi::HostResource /* result */)
 IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBGraphics2D_PaintImageData,
                     ppapi::HostResource /* graphics_2d */,
                     ppapi::HostResource /* image_data */,
@@ -776,43 +781,45 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBGraphics3D_Create,
                            PP_Instance /* instance */,
                            std::vector<int32_t> /* attrib_list */,
                            ppapi::HostResource /* result */)
-
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBGraphics3D_InitCommandBuffer,
                            ppapi::HostResource /* context */,
                            int32 /* size */,
                            base::SharedMemoryHandle /* ring_buffer */)
-
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBGraphics3D_GetState,
                            ppapi::HostResource /* context */,
                            gpu::CommandBuffer::State /* state */)
-
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBGraphics3D_Flush,
                            ppapi::HostResource /* context */,
                            int32 /* put_offset */,
                            int32 /* last_known_get */,
                            gpu::CommandBuffer::State /* state */)
-
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBGraphics3D_AsyncFlush,
                     ppapi::HostResource /* context */,
                     int32 /* put_offset */)
-
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBGraphics3D_CreateTransferBuffer,
                            ppapi::HostResource /* context */,
                            int32 /* size */,
                            int32 /* id */)
-
 IPC_SYNC_MESSAGE_ROUTED2_0(PpapiHostMsg_PPBGraphics3D_DestroyTransferBuffer,
                            ppapi::HostResource /* context */,
                            int32 /* id */)
-
 IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBGraphics3D_GetTransferBuffer,
                            ppapi::HostResource /* context */,
                            int32 /* id */,
                            base::SharedMemoryHandle /* transfer_buffer */,
                            uint32 /* size */)
-
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBGraphics3D_SwapBuffers,
                     ppapi::HostResource /* graphics_3d */)
+
+// PPB_ImageData.
+IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_PPBImageData_Create,
+                           PP_Instance /* instance */,
+                           int32 /* format */,
+                           PP_Size /* size */,
+                           PP_Bool /* init_to_zero */,
+                           ppapi::HostResource /* result_resource */,
+                           std::string /* image_data_desc */,
+                           ppapi::proxy::ImageHandle /* result */)
 
 // PPB_Instance.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetWindowObject,
@@ -1025,20 +1032,6 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBVar_CreateObjectDeprecated,
                            int64 /* object_class */,
                            int64 /* object_data */,
                            ppapi::proxy::SerializedVar /* result */)
-
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_ResourceCreation_Graphics2D,
-                           PP_Instance /* instance */,
-                           PP_Size /* size */,
-                           PP_Bool /* is_always_opaque */,
-                           ppapi::HostResource /* result */)
-IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_ResourceCreation_ImageData,
-                           PP_Instance /* instance */,
-                           int32 /* format */,
-                           PP_Size /* size */,
-                           PP_Bool /* init_to_zero */,
-                           ppapi::HostResource /* result_resource */,
-                           std::string /* image_data_desc */,
-                           ppapi::proxy::ImageHandle /* result */)
 
 // PPB_VideoCapture_Dev.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBVideoCapture_Create,

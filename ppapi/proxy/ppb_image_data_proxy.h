@@ -32,6 +32,8 @@ class HostResource;
 
 namespace proxy {
 
+// The proxied image data resource. Unlike most resources, this needs to be
+// public in the header since a number of other resources need to access it.
 class ImageData : public ppapi::Resource,
                   public ppapi::thunk::PPB_ImageData_API,
                   public ppapi::ImageDataImpl {
@@ -66,6 +68,34 @@ class ImageData : public ppapi::Resource,
   scoped_ptr<skia::PlatformCanvas> mapped_canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageData);
+};
+
+class PPB_ImageData_Proxy : public InterfaceProxy {
+ public:
+  PPB_ImageData_Proxy(Dispatcher* dispatcher);
+  virtual ~PPB_ImageData_Proxy();
+
+  static PP_Resource CreateProxyResource(PP_Instance instance,
+                                         PP_ImageDataFormat format,
+                                         const PP_Size& size,
+                                         PP_Bool init_to_zero);
+
+  // InterfaceProxy implementation.
+  virtual bool OnMessageReceived(const IPC::Message& msg);
+
+  static const ApiID kApiID = API_ID_PPB_IMAGE_DATA;
+
+ private:
+  // Message handler.
+  void OnHostMsgCreate(PP_Instance instance,
+                       int32_t format,
+                       const PP_Size& size,
+                       PP_Bool init_to_zero,
+                       HostResource* result,
+                       std::string* image_data_desc,
+                       ImageHandle* result_image_handle);
+
+  DISALLOW_COPY_AND_ASSIGN(PPB_ImageData_Proxy);
 };
 
 }  // namespace proxy
