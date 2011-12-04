@@ -437,4 +437,11 @@ wlsc_xserver_destroy(struct wlsc_compositor *compositor);
 void
 wlsc_xserver_surface_activate(struct wlsc_surface *surface);
 
+struct wlsc_zoom;
+typedef	void (*wlsc_zoom_done_func_t)(struct wlsc_zoom *zoom, void *data);
+
+struct wlsc_zoom *
+wlsc_zoom_run(struct wlsc_surface *surface, GLfloat start, GLfloat stop,
+	      wlsc_zoom_done_func_t done, void *data);
+
 #endif

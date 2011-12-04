@@ -81,17 +81,6 @@ struct tablet_client {
 	char *name;
 };
 
-struct tablet_zoom {
-	struct wlsc_surface *surface;
-	struct wlsc_animation animation;
-	struct wlsc_spring spring;
-	struct wlsc_transform transform;
-	struct wl_listener listener;
-	struct tablet_shell *shell;
-	void (*done)(struct tablet_zoom *zoom);
-};
-
-
 static void
 tablet_shell_sigchld(struct wlsc_process *process, int status)
 {
@@ -115,91 +104,6 @@ tablet_shell_set_state(struct tablet_shell *shell, int state)
 		states[state], states[shell->state]);
 	shell->previous_state = shell->state;
 	shell->state = state;
-}
-
-static void
-tablet_zoom_destroy(struct tablet_zoom *zoom)
-{
-	wl_list_remove(&zoom->animation.link);
-	zoom->surface->transform = NULL;
-	if (zoom->done)
-		zoom->done(zoom);
-	free(zoom);
-}
-
-static void
-handle_zoom_surface_destroy(struct wl_listener *listener,
-			    struct wl_resource *resource, uint32_t time)
-{
-	struct tablet_zoom *zoom =
-		container_of(listener, struct tablet_zoom, listener);
-
-	fprintf(stderr, "animation surface gone\n");
-	tablet_zoom_destroy(zoom);
-}
-
-static void
-tablet_zoom_frame(struct wlsc_animation *animation,
-			struct wlsc_output *output, uint32_t msecs)
-{
-	struct tablet_zoom *zoom =
-		container_of(animation, struct tablet_zoom, animation);
-	struct wlsc_surface *es = zoom->surface;
-	GLfloat scale;
-
-	wlsc_spring_update(&zoom->spring, msecs);
-
-	if (wlsc_spring_done(&zoom->spring)) {
-		fprintf(stderr, "animation done\n");
-		tablet_zoom_destroy(zoom);
-	}
-
-	scale = zoom->spring.current;
-	wlsc_matrix_init(&zoom->transform.matrix);
-	wlsc_matrix_translate(&zoom->transform.matrix,
-			      -es->width / 2.0, -es->height / 2.0, 0);
-	wlsc_matrix_scale(&zoom->transform.matrix, scale, scale, scale);
-	wlsc_matrix_translate(&zoom->transform.matrix,
-			      es->width / 2.0, es->height / 2.0, 0);
-
-	scale = 1.0 / zoom->spring.current;
-	wlsc_matrix_init(&zoom->transform.inverse);
-	wlsc_matrix_scale(&zoom->transform.inverse, scale, scale, scale);
-
-	wlsc_surface_damage(es);
-}
-
-static struct tablet_zoom *
-tablet_zoom_run(struct tablet_shell *shell,
-		      struct wlsc_surface *surface,
-		      GLfloat start, GLfloat stop)
-{
-	struct tablet_zoom *zoom;
-
-	fprintf(stderr, "starting animation for surface %p\n", surface);
-
-	zoom = malloc(sizeof *zoom);
-	if (!zoom)
-		return NULL;
-
-	zoom->shell = shell;
-	zoom->surface = surface;
-	zoom->done = NULL;
-	surface->transform = &zoom->transform;
-	wlsc_spring_init(&zoom->spring, 200.0, start, stop);
-	zoom->spring.timestamp = wlsc_compositor_get_time();
-	zoom->animation.frame = tablet_zoom_frame;
-	tablet_zoom_frame(&zoom->animation, NULL,
-				zoom->spring.timestamp);
-
-	zoom->listener.func = handle_zoom_surface_destroy;
-	wl_list_insert(surface->surface.resource.destroy_listener_list.prev,
-		       &zoom->listener.link);
-
-	wl_list_insert(shell->compositor->animation_list.prev,
-		       &zoom->animation.link);
-
-	return zoom;
 }
 
 static void
@@ -228,7 +132,7 @@ tablet_shell_map(struct wlsc_shell *base, struct wlsc_surface *surface,
 		   shell->current_client->client == surface->surface.resource.client) {
 		tablet_shell_set_state(shell, STATE_TASK);
 		shell->current_client->surface = surface;
-		tablet_zoom_run(shell, surface, 0.3, 1.0);
+		wlsc_zoom_run(surface, 0.3, 1.0, NULL, NULL);
 	}
 
 	wl_list_insert(&shell->compositor->surface_list, &surface->link);
@@ -319,9 +223,9 @@ tablet_shell_set_homescreen(struct wl_client *client,
 }
 
 static void
-minimize_zoom_done(struct tablet_zoom *zoom)
+minimize_zoom_done(struct wlsc_zoom *zoom, void *data)
 {
-	struct tablet_shell *shell = zoom->shell;
+	struct tablet_shell *shell = data;
 	struct wlsc_compositor *compositor = shell->compositor;
 	struct wlsc_input_device *device =
 		(struct wlsc_input_device *) compositor->input_device;
@@ -338,7 +242,6 @@ tablet_shell_switch_to(struct tablet_shell *shell,
 	struct wlsc_input_device *device =
 		(struct wlsc_input_device *) compositor->input_device;
 	struct wlsc_surface *current;
-	struct tablet_zoom *zoom;
 
 	if (shell->state == STATE_SWITCHER) {
 		wl_list_remove(&shell->switcher_listener.link);
@@ -350,15 +253,15 @@ tablet_shell_switch_to(struct tablet_shell *shell,
 
 		if (shell->current_client && shell->current_client->surface) {
 			current = shell->current_client->surface;
-			zoom = tablet_zoom_run(shell, current, 1.0, 0.3);
-			zoom->done = minimize_zoom_done;
+			wlsc_zoom_run(current, 1.0, 0.3,
+				      minimize_zoom_done, shell);
 		}
 	} else {
 		fprintf(stderr, "switch to %p\n", surface);
 		wlsc_surface_activate(surface, device,
 				      wlsc_compositor_get_time());
 		tablet_shell_set_state(shell, STATE_TASK);
-		tablet_zoom_run(shell, surface, 0.3, 1.0);
+		wlsc_zoom_run(surface, 0.3, 1.0, NULL, NULL);
 	}
 }
 

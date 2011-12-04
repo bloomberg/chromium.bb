@@ -20,6 +20,7 @@ wayland_compositor_SOURCES =			\
 	screenshooter.c				\
 	screenshooter-protocol.c		\
 	screenshooter-server-protocol.h		\
+	util.c					\
 	$(xserver_launcher_sources)
 
 if ENABLE_XSERVER_LAUNCHER
