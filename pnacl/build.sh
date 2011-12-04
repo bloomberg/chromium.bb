@@ -3048,13 +3048,17 @@ sdk-irt-shim() {
   #       the pnacl toolchain to depend on it.
   StepBanner "SDK" "IRT Shim"
   spushd "${NACL_ROOT}"
+  # NOTE: We specify bitcode=1, but it is really using nacl-gcc to build
+  # the library (it's only bitcode=1 because it's part of the pnacl sdk).
   RunWithLog "sdk.irt.shim" \
     ./scons -j${PNACL_CONCURRENCY} \
+            bitcode=1 \
             platform=x86-64 \
             naclsdk_validate=0 \
             --verbose \
             pnacl_irt_shim
-  local outdir="${SCONS_OUT}"/nacl-x86-64/obj/src/untrusted/pnacl_irt_shim
+  local out_dir_prefix="${SCONS_OUT}"/nacl-x86-64-pnacl-clang
+  local outdir="${out_dir_prefix}"/obj/src/untrusted/pnacl_irt_shim
   mkdir -p "${INSTALL_LIB_X8664}"
   cp "${outdir}"/libpnacl_irt_shim.a "${INSTALL_LIB_X8664}"
   spopd

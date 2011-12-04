@@ -10,6 +10,7 @@
 #include "native_client/src/shared/ppapi_proxy/ppruntime.h"
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/irt/irt_ppapi.h"
+#include "ppapi/generators/pnacl_shim.h"
 
 TYPE_nacl_irt_query __pnacl_real_irt_interface;
 
@@ -19,46 +20,29 @@ TYPE_nacl_irt_query __pnacl_real_irt_interface;
  */
 static struct PP_StartFunctions user_start_functions;
 
-/*
- * This remembers the interface pointer the IRT passes through
- * PPP_InitializeModule.
- */
-static const void *(*user_PPBGetInterface)(const char *interface_name);
-
-
-/*
- * Calls from user code to the PPB interfaces pass through here and may require
- * shims to convert the ABI.
- */
-static const void *wrap_PPBGetInterface(const char *interface_name) {
-  /* TODO(sehr): call PPB shims here. */
-  return (*user_PPBGetInterface)(interface_name);
-}
-
 static int32_t wrap_PPPInitializeModule(PP_Module module_id,
                                         PPB_GetInterface get_browser_intf) {
-  user_PPBGetInterface = get_browser_intf;
+  __set_real_Pnacl_PPBGetInterface(get_browser_intf);
+  /*
+   * Calls from user code to the PPB interfaces pass through here and may
+   * require shims to convert the ABI.
+   */
   return (*user_start_functions.PPP_InitializeModule)(module_id,
-                                                      wrap_PPBGetInterface);
+                                                      &__Pnacl_PPBGetInterface);
 }
 
 static void wrap_PPPShutdownModule() {
   (*user_start_functions.PPP_ShutdownModule)();
 }
 
-/*
- * Calls from the IRT to the user plugin pass through here and may require
- * shims to convert the ABI.
- */
-static const void *wrap_PPPGetInterface(const char *interface_name) {
-  /* TODO(sehr): call PPP shims here. */
-  return (*user_start_functions.PPP_GetInterface)(interface_name);
-}
-
 static const struct PP_StartFunctions wrapped_ppapi_methods = {
   wrap_PPPInitializeModule,
   wrap_PPPShutdownModule,
-  wrap_PPPGetInterface
+  /*
+   * Calls from the IRT to the user plugin pass through here and may require
+   * shims to convert the ABI.
+   */
+  __Pnacl_PPPGetInterface
 };
 
 static struct nacl_irt_ppapihook real_irt_ppapi_hook;
@@ -68,6 +52,8 @@ static int wrap_ppapi_start(const struct PP_StartFunctions *funcs) {
    * Save the user's real bindings for the start functions.
    */
   user_start_functions = *funcs;
+  __set_real_Pnacl_PPPGetInterface(user_start_functions.PPP_GetInterface);
+
   /*
    * Invoke the IRT's ppapi_start interface with the wrapped interface.
    */

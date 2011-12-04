@@ -5,16 +5,34 @@
 
 Import('env')
 
-# This library is part of the pnacl toolchain only, and is used to match the
-# pnacl ABI to the IRT ABI.  It was necessitated by problems in passing
-# structures by value on x86-64.  The library must be compiled with nacl-gcc.
-if env.Bit('bitcode') or not env.Bit('target_x86_64'):
+# This library is part of the pnacl x86-64 toolchain only, and is used
+# to match the pnacl ABI to the IRT ABI.  It was necessitated by problems
+# in passing structures by value on x86-64.
+if not env.Bit('bitcode') or not env.Bit('target_x86_64'):
   Return()
 
-pnacl_irt_shim = env.ComponentLibrary('pnacl_irt_shim', [
+# The library must be compiled with nacl-gcc.
+nacl_gcc_env = env.PNaClGetNNaClEnv()
+
+# Generate a 'pnacl_shim.c'
+generated_file_c = nacl_gcc_env.Command(
+    'pnacl_shim.c',
+    (env.Glob('${SOURCE_ROOT}/ppapi/api/*.idl') +
+     env.Glob('${SOURCE_ROOT}/ppapi/api/dev/*.idl') +
+     env.Glob('${SOURCE_ROOT}/ppapi/generators/*.py')
+     ),
+    ('${PYTHON} ' +
+     '${SOURCE_ROOT}/ppapi/generators/generator.py ' +
+     '--srcroot=${SOURCE_ROOT}/ppapi/api ' +
+     '--wnone --pnacl --pnaclshim=${TARGETS} '))
+
+pnacl_irt_shim = nacl_gcc_env.ComponentLibrary('pnacl_irt_shim', [
+    generated_file_c,
     'shim_entry.c',
     'shim_ppapi.c',
     ])
+
+# However, the library is part of the pnacl sdk (use original env).
 env.AddLibraryToSdk(pnacl_irt_shim)
 
 env.AddObjectToSdk(['libpnacl_irt_shim.a'])

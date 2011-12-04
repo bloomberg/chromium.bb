@@ -359,6 +359,12 @@ def PNaClGetNNaClEnv(env):
   native_env = env.Clone()
   native_env.ClearBits('bitcode')
   native_env = native_env.Clone(tools = ['naclsdk'])
+  # These are unfortunately clobbered by running Tool.
+  native_env.Replace(EXTRA_CFLAGS=env['EXTRA_CFLAGS'],
+                     EXTRA_CXXFLAGS=env['EXTRA_CXXFLAGS'],
+                     CCFLAGS=env['CCFLAGS'],
+                     CFLAGS=env['CFLAGS'],
+                     CXXFLAGS=env['CXXFLAGS'])
   return native_env
 
 

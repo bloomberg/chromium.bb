@@ -3372,12 +3372,7 @@ nacl_env.AddMethod(RawSyscallObjects)
 nacl_irt_env.ClearBits('nacl_glibc')
 nacl_irt_env.ClearBits('nacl_pic')
 # For ARM: Can only build arm IRT w/ bitcode=1.
-# For x86-64: there are calling convention differences between pnacl and gcc.
-# http://code.google.com/p/nativeclient/issues/detail?id=1902
-# We can try building a pnacl-specific x86-64 IRT for now, but that means
-# that we aren't testing the same x86-64 IRT that comes with chrome.
-if not (nacl_irt_env.Bit('target_arm')
-        or nacl_irt_env.Bit('target_x86_64')):
+if not nacl_irt_env.Bit('target_arm'):
   nacl_irt_env.ClearBits('bitcode')
 nacl_irt_env.Tool('naclsdk')
 # These are unfortunately clobbered by running Tool, which
@@ -3471,6 +3466,13 @@ nacl_env.AddMethod(NaClAddObject, 'AddObjectToSdk')
 # we do it separately for each after making nacl_irt_env and
 # clearing its Bit('nacl_glibc').
 def AddImplicitLibs(env):
+  implicit_libs = []
+
+  # Require the pnacl_irt_shim for pnacl x86-64.
+  # Use -B to have the compiler look for the fresh libpnacl_irt_shim.a.
+  if env.Bit('bitcode') and env.Bit('target_x86_64'):
+    implicit_libs += ['libpnacl_irt_shim.a']
+
   if not env.Bit('nacl_glibc'):
     # These are automatically linked in by the compiler, either directly
     # or via the linker script that is -lc.  In the non-glibc build, we
@@ -3478,15 +3480,17 @@ def AddImplicitLibs(env):
     # The ComponentProgram method (site_scons/site_tools/component_builders.py)
     # adds dependencies on env['IMPLICIT_LIBS'] if that's set.
     if env.Bit('bitcode'):
-      implicit_libs = ['libnacl.a']
+      implicit_libs += ['libnacl.a']
     else:
-      implicit_libs = ['crt1.o',
-                       'libnacl.a',
-                       'crti.o',
-                       'crtn.o']
+      implicit_libs += ['crt1.o',
+                        'libnacl.a',
+                        'crti.o',
+                        'crtn.o']
       # TODO(mcgrathr): multilib nonsense defeats -B!  figure out a better way.
       if GetPlatform('targetplatform') == 'x86-32':
         implicit_libs.append(os.path.join('32', 'crt1.o'))
+
+  if implicit_libs != []:
     env['IMPLICIT_LIBS'] = [env.File(os.path.join('${LIB_DIR}', file))
                             for file in implicit_libs]
     # The -B<dir>/ flag is necessary to tell gcc to look for crt[1in].o there.

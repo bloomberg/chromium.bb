@@ -167,7 +167,10 @@ bitcode_env.AddNodeToTestSuite(node,
                                ['chrome_browser_tests'],
                                'run_pnacl_example_browser_test',
                                is_broken=(
-                                   bitcode_env.PPAPIBrowserTesterIsBroken()))
+                                   bitcode_env.PPAPIBrowserTesterIsBroken() or
+                                   # Re-enable when coordinator uses shim
+                                   # and toolchain tarball has real shim.
+                                   bitcode_env.Bit('target_x86_64')))
 
 #### Test error handling.
 
@@ -213,4 +216,7 @@ bitcode_env.AddNodeToTestSuite(node,
                                ['chrome_browser_tests'],
                                'run_pnacl_bad_browser_test',
                                is_broken=(
-                                   bitcode_env.PPAPIBrowserTesterIsBroken()))
+                                   bitcode_env.PPAPIBrowserTesterIsBroken() or
+                                   # Re-enable when coordinator uses shim
+                                   # and toolchain tarball has real shim.
+                                   bitcode_env.Bit('target_x86_64')))
