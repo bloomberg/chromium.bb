@@ -757,20 +757,10 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_EQ(text, omnibox_view->model()->keyword());
     ASSERT_EQ(text, omnibox_view->GetText());
 
-    // Keyword shouldn't be accepted by pasting.
-    // Simulate pasting a whitespace to the end of content.
-    omnibox_view->OnBeforePossibleChange();
-    omnibox_view->model()->on_paste();
-    omnibox_view->SetWindowTextAndCaretPos(
-        text + char16(' '), text.length() + 1);
-    omnibox_view->OnAfterPossibleChange();
-    // Should be still in keyword hint mode.
-    ASSERT_TRUE(omnibox_view->model()->is_keyword_hint());
-    ASSERT_EQ(text, omnibox_view->model()->keyword());
-    ASSERT_EQ(text + char16(' '), omnibox_view->GetText());
-
     // Keyword shouldn't be accepted by pressing space with a trailing
     // whitespace.
+    omnibox_view->SetWindowTextAndCaretPos(
+        text + char16(' '), text.length() + 1);
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, 0));
     ASSERT_TRUE(omnibox_view->model()->is_keyword_hint());
     ASSERT_EQ(text, omnibox_view->model()->keyword());

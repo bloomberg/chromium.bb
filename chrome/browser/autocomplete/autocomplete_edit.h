@@ -291,6 +291,9 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   // Called when the user pastes in text.
   void on_paste() { paste_state_ = PASTING; }
 
+  // Returns true if pasting is in progress.
+  bool is_pasting() const { return paste_state_ == PASTING; }
+
   // Called when the user presses up or down.  |count| is a repeat count,
   // negative for moving up, positive for moving down.
   void OnUpOrDownKeyPressed(int count);
