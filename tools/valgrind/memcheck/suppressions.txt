@@ -5332,7 +5332,7 @@
 {
    bug_106331
    Memcheck:Leak
-   fun:_Znw*
+   ...
    fun:_ZN9Extension6CreateERK8FilePathNS_8LocationERKN4base15DictionaryValueEiPSs
 }
 
