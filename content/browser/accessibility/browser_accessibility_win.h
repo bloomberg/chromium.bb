@@ -44,12 +44,11 @@ BrowserAccessibilityWin
       public CComObjectRootEx<CComMultiThreadModel>,
       public IDispatchImpl<IAccessible2, &IID_IAccessible2,
                            &LIBID_IAccessible2Lib>,
-      public IAccessibleHyperlink,
-      public IAccessibleHypertext,
       public IAccessibleImage,
       public IAccessibleTable,
       public IAccessibleTable2,
       public IAccessibleTableCell,
+      public IAccessibleText,
       public IAccessibleValue,
       public IServiceProvider,
       public ISimpleDOMDocument,
@@ -59,25 +58,18 @@ BrowserAccessibilityWin
   BEGIN_COM_MAP(BrowserAccessibilityWin)
     COM_INTERFACE_ENTRY2(IDispatch, IAccessible2)
     COM_INTERFACE_ENTRY2(IAccessible, IAccessible2)
-    COM_INTERFACE_ENTRY2(IAccessibleText, IAccessibleHypertext)
     COM_INTERFACE_ENTRY(IAccessible2)
-    COM_INTERFACE_ENTRY(IAccessibleHyperlink)
-    COM_INTERFACE_ENTRY(IAccessibleHypertext)
     COM_INTERFACE_ENTRY(IAccessibleImage)
     COM_INTERFACE_ENTRY(IAccessibleTable)
     COM_INTERFACE_ENTRY(IAccessibleTable2)
     COM_INTERFACE_ENTRY(IAccessibleTableCell)
+    COM_INTERFACE_ENTRY(IAccessibleText)
     COM_INTERFACE_ENTRY(IAccessibleValue)
     COM_INTERFACE_ENTRY(IServiceProvider)
     COM_INTERFACE_ENTRY(ISimpleDOMDocument)
     COM_INTERFACE_ENTRY(ISimpleDOMNode)
     COM_INTERFACE_ENTRY(ISimpleDOMText)
   END_COM_MAP()
-
-  // Represents a non-static text node in IAccessibleHypertext. This character
-  // is embedded in the response to IAccessibleText::get_text, indicating the
-  // position where a non-static text child object appears.
-  CONTENT_EXPORT static const char16 kEmbeddedCharacter[];
 
   CONTENT_EXPORT BrowserAccessibilityWin();
 
@@ -86,8 +78,8 @@ BrowserAccessibilityWin
   //
   // BrowserAccessibility methods.
   //
-  CONTENT_EXPORT virtual void PreInitialize();
-  CONTENT_EXPORT virtual void PostInitialize();
+  CONTENT_EXPORT virtual void Initialize();
+  CONTENT_EXPORT virtual void SendNodeUpdateEvents();
   CONTENT_EXPORT virtual void NativeAddReference();
   CONTENT_EXPORT virtual void NativeReleaseReference();
 
@@ -486,66 +478,6 @@ BrowserAccessibilityWin
   }
 
   //
-  // IAccessibleHypertext methods.
-  //
-
-  CONTENT_EXPORT STDMETHODIMP get_nHyperlinks(long* hyperlink_count);
-
-  CONTENT_EXPORT STDMETHODIMP get_hyperlink(
-      long index,
-      IAccessibleHyperlink** hyperlink);
-
-  CONTENT_EXPORT STDMETHODIMP get_hyperlinkIndex(long char_index,
-      long* hyperlink_index);
-
-  // IAccessibleHyperlink not implemented.
-  CONTENT_EXPORT STDMETHODIMP get_anchor(long index, VARIANT* anchor) {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP get_anchorTarget(
-      long index,
-      VARIANT* anchor_target) {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP get_startIndex( long* index) {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP get_endIndex( long* index) {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP get_valid(boolean* valid) {
-    return E_NOTIMPL;
-  }
-
-  // IAccessibleAction not implemented.
-  CONTENT_EXPORT STDMETHODIMP nActions(long* n_actions) {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP doAction(long action_index) {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP get_description(
-      long action_index,
-      BSTR* description) {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP get_keyBinding(
-      long action_index,
-      long n_max_bindings,
-      BSTR** key_bindings,
-      long* n_bindings) {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP get_name(long action_index, BSTR* name) {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP get_localizedName(
-      long action_index,
-      BSTR* localized_name) {
-    return E_NOTIMPL;
-  }
-
-  //
   // IAccessibleValue methods.
   //
 
@@ -788,17 +720,6 @@ BrowserAccessibilityWin
 
   // Relationships between this node and other nodes.
   std::vector<BrowserAccessibilityRelation*> relations_;
-
-  // The text of this node including embedded hyperlink characters.
-  string16 hypertext_;
-
-  // Maps the |hypertext_| embedded character offset to an index in
-  // |hyperlinks_|.
-  std::map<int32, int32> hyperlink_offset_to_index_;
-
-  // Collection of non-static text child indicies, each of which corresponds to
-  // a hyperlink.
-  std::vector<int32> hyperlinks_;
 
   // Give BrowserAccessibility::Create access to our constructor.
   friend class BrowserAccessibility;

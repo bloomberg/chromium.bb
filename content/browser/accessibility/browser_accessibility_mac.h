@@ -18,7 +18,7 @@
 class BrowserAccessibilityMac : public BrowserAccessibility {
  public:
   // Implementation of BrowserAccessibility.
-  virtual void PreInitialize() OVERRIDE;
+  virtual void Initialize() OVERRIDE;
   virtual void NativeReleaseReference() OVERRIDE;
 
   // Overrides from BrowserAccessibility.
