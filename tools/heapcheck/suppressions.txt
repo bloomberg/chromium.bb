@@ -1785,3 +1785,9 @@
    fun:AccessibilityEventRouterViewsTest::CreateWindowWithContents
    fun:AccessibilityEventRouterViewsTest_TestFocusNotification_Test::TestBody
 }
+{
+   bug_106331
+   Heapcheck:Leak
+   ...
+   fun:Extension::Create
+}

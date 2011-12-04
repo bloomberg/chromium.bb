@@ -5329,6 +5329,12 @@
    fun:_ZN15tracked_objects10ThreadData11TallyADeathERKNS_6BirthsEii
    fun:_ZN15tracked_objects10ThreadData31TallyRunOnNamedThreadIfTrackingERKN4base12TrackingInfoERKNS_11TrackedTimeES7_
 }
+{
+   bug_106331
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9Extension6CreateERK8FilePathNS_8LocationERKN4base15DictionaryValueEiPSs
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
