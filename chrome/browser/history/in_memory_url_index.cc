@@ -412,8 +412,14 @@ InMemoryURLIndex::HistoryItemFactorGreater::~HistoryItemFactorGreater() {}
 bool InMemoryURLIndex::HistoryItemFactorGreater::operator()(
     const HistoryID h1,
     const HistoryID h2) {
-  const URLRow& r1(history_info_map_.find(h1)->second);
-  const URLRow& r2(history_info_map_.find(h2)->second);
+  HistoryInfoMap::const_iterator entry1(history_info_map_.find(h1));
+  if (entry1 == history_info_map_.end())
+    return false;
+  HistoryInfoMap::const_iterator entry2(history_info_map_.find(h2));
+  if (entry2 == history_info_map_.end())
+    return true;
+  const URLRow& r1(entry1->second);
+  const URLRow& r2(entry2->second);
   // First cut: typed count, visit count, recency.
   // TODO(mrossetti): This is too simplistic. Consider an approach which ranks
   // recently visited (within the last 12/24 hours) as highly important. Get
