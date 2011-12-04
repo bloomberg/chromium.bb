@@ -40,6 +40,8 @@ class WEBKIT_GLUE_EXPORT WebClipboardImpl :
       unsigned* fragment_start,
       unsigned* fragment_end);
   virtual WebKit::WebData readImage(Buffer buffer);
+  virtual WebKit::WebString readCustomData(
+      Buffer buffer, const WebKit::WebString& type);
   virtual void writeHTML(
       const WebKit::WebString& html_text,
       const WebKit::WebURL& source_url,

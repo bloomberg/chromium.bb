@@ -488,6 +488,13 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   return canvas.ExtractBitmap();
 }
 
+void Clipboard::ReadCustomData(Buffer buffer,
+                               const string16& type,
+                               string16* result) const {
+  // TODO(dcheng): Implement this.
+  NOTIMPLEMENTED();
+}
+
 void Clipboard::ReadBookmark(string16* title, std::string* url) const {
   // TODO(estade): implement this.
   NOTIMPLEMENTED();

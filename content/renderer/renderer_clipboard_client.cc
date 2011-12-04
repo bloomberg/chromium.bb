@@ -169,6 +169,13 @@ void RendererClipboardClient::ReadImage(ui::Clipboard::Buffer buffer,
   }
 }
 
+void RendererClipboardClient::ReadCustomData(ui::Clipboard::Buffer buffer,
+                                             const string16& type,
+                                             string16* data) {
+  RenderThreadImpl::current()->Send(
+      new ClipboardHostMsg_ReadCustomData(buffer, type, data));
+}
+
 webkit_glue::ClipboardClient::WriteContext*
 RendererClipboardClient::CreateWriteContext() {
   return new RendererClipboardWriteContext;

@@ -156,6 +156,10 @@ class UI_EXPORT Clipboard {
   // Reads an image from the clipboard, if available.
   SkBitmap ReadImage(Buffer buffer) const;
 
+  void ReadCustomData(Buffer buffer,
+                      const string16& type,
+                      string16* result) const;
+
   // Reads a bookmark from the clipboard, if available.
   void ReadBookmark(string16* title, std::string* url) const;
 

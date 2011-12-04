@@ -94,8 +94,13 @@ void SimpleClipboardClient::ReadImage(ui::Clipboard::Buffer buffer,
   }
 }
 
+void SimpleClipboardClient::ReadCustomData(ui::Clipboard::Buffer buffer,
+                                           const string16& type,
+                                           string16* data) {
+  GetClipboard()->ReadCustomData(buffer, type, data);
+}
+
 webkit_glue::ClipboardClient::WriteContext*
 SimpleClipboardClient::CreateWriteContext() {
   return NULL;
 }
-

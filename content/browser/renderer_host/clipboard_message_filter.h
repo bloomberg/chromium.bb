@@ -44,6 +44,9 @@ class ClipboardMessageFilter : public BrowserMessageFilter {
                   uint32* fragment_start, uint32* fragment_end);
   void OnReadImage(ui::Clipboard::Buffer buffer, IPC::Message* reply_msg);
   void OnReadImageReply(const SkBitmap& bitmap, IPC::Message* reply_msg);
+  void OnReadCustomData(ui::Clipboard::Buffer buffer,
+                        const string16& type,
+                        string16* result);
 #if defined(OS_MACOSX)
   void OnFindPboardWriteString(const string16& text);
 #endif

@@ -4,6 +4,8 @@
 
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
@@ -21,6 +23,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
+using WebKit::WebDragData;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebVector;
@@ -75,6 +78,11 @@ WebVector<WebString> MockWebClipboardImpl::readAvailableTypes(
   if (!m_image.isNull()) {
     results.push_back(WebString("image/png"));
   }
+  for (size_t i = 0; i < m_customData.size(); ++i) {
+    CHECK(std::find(results.begin(), results.end(), m_customData[i].type) ==
+          results.end());
+    results.push_back(m_customData[i].type);
+  }
   return results;
 }
 
@@ -124,12 +132,24 @@ WebKit::WebData MockWebClipboardImpl::readImage(
   return data;
 }
 
+WebKit::WebString MockWebClipboardImpl::readCustomData(
+    WebKit::WebClipboard::Buffer buffer,
+    const WebKit::WebString& type) {
+  for (size_t i = 0; i < m_customData.size(); ++i) {
+    if (m_customData[i].type == type) {
+      return m_customData[i].data;
+    }
+  }
+  return WebKit::WebString();
+}
+
 void MockWebClipboardImpl::writeHTML(
     const WebKit::WebString& htmlText, const WebKit::WebURL& url,
     const WebKit::WebString& plainText, bool writeSmartPaste) {
   m_htmlText = htmlText;
   m_plainText = plainText;
   m_image.reset();
+  m_customData = WebVector<WebDragData::CustomData>();
   m_writeSmartPaste = writeSmartPaste;
 }
 
@@ -137,6 +157,7 @@ void MockWebClipboardImpl::writePlainText(const WebKit::WebString& plain_text) {
   m_htmlText = WebKit::WebString();
   m_plainText = plain_text;
   m_image.reset();
+  m_customData = WebVector<WebDragData::CustomData>();
   m_writeSmartPaste = false;
 }
 
@@ -146,6 +167,7 @@ void MockWebClipboardImpl::writeURL(
       webkit_glue::WebClipboardImpl::URLToMarkup(url, title));
   m_plainText = url.spec().utf16();
   m_image.reset();
+  m_customData = WebVector<WebDragData::CustomData>();
   m_writeSmartPaste = false;
 }
 
@@ -156,6 +178,7 @@ void MockWebClipboardImpl::writeImage(const WebKit::WebImage& image,
         webkit_glue::WebClipboardImpl::URLToImageMarkup(url, title));
     m_plainText = m_htmlText;
     m_image = image;
+    m_customData = WebVector<WebDragData::CustomData>();
     m_writeSmartPaste = false;
   }
 }
@@ -164,5 +187,6 @@ void MockWebClipboardImpl::writeDataObject(const WebKit::WebDragData& data) {
   m_htmlText = data.htmlText();
   m_plainText = data.plainText();
   m_image.reset();
+  m_customData = data.customData();
   m_writeSmartPaste = false;
 }

@@ -30,6 +30,9 @@ class RendererClipboardClient : public webkit_glue::ClipboardClient {
                         uint32* fragment_end) OVERRIDE;
   virtual void ReadImage(ui::Clipboard::Buffer buffer,
                          std::string* data) OVERRIDE;
+  virtual void ReadCustomData(ui::Clipboard::Buffer buffer,
+                              const string16& type,
+                              string16* data) OVERRIDE;
   virtual WriteContext* CreateWriteContext() OVERRIDE;
 };
 

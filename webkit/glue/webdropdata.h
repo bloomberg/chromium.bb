@@ -9,6 +9,7 @@
 #ifndef WEBKIT_GLUE_WEBDROPDATA_H_
 #define WEBKIT_GLUE_WEBDROPDATA_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -55,6 +56,8 @@ struct WEBKIT_GLUE_EXPORT WebDropData {
   // User is dragging data from the webview (e.g., an image).
   string16 file_description_filename;
   std::string file_contents;
+
+  std::map<string16, string16> custom_data;
 
   // Convert to a WebDragData object.
   WebKit::WebDragData ToDragData() const;

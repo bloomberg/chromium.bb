@@ -62,6 +62,7 @@ bool ClipboardMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadAsciiText, OnReadAsciiText)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadHTML, OnReadHTML)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ClipboardHostMsg_ReadImage, OnReadImage)
+    IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadCustomData, OnReadCustomData)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_FindPboardWriteStringAsync,
                         OnFindPboardWriteString)
@@ -193,6 +194,11 @@ void ClipboardMessageFilter::OnReadImageReply(
   ClipboardHostMsg_ReadImage::WriteReplyParams(reply_msg, image_handle,
                                                image_size);
   Send(reply_msg);
+}
+
+void ClipboardMessageFilter::OnReadCustomData(
+    ui::Clipboard::Buffer buffer, const string16& type, string16* result) {
+  GetClipboard()->ReadCustomData(buffer, type, result);
 }
 
 // static

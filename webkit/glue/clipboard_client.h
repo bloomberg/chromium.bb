@@ -59,6 +59,11 @@ class ClipboardClient {
   // Reads and image from the clipboard, if available.
   virtual void ReadImage(ui::Clipboard::Buffer buffer, std::string* data) = 0;
 
+  // Reads a custom data type from the clipboard, if available.
+  virtual void ReadCustomData(ui::Clipboard::Buffer buffer,
+                              const string16& type,
+                              string16* data) = 0;
+
   // Creates a context to write clipboard data. May return NULL.
   virtual WriteContext* CreateWriteContext() = 0;
 };

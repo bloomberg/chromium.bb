@@ -240,6 +240,13 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   return image;
 }
 
+void Clipboard::ReadCustomData(Buffer buffer,
+                               const string16& type,
+                               string16* result) const {
+  // TODO(dcheng): Implement this.
+  NOTIMPLEMENTED();
+}
+
 void Clipboard::ReadBookmark(string16* title, std::string* url) const {
   *title = UTF8ToUTF16(GetClipboardData()->bookmark_title());
   *url = GetClipboardData()->bookmark_url();

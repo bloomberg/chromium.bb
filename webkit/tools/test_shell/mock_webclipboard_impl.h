@@ -11,6 +11,7 @@
 #define WEBKIT_TOOLS_TEST_SHELL_MOCK_WEBCLIPBOARD_IMPL_H_
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebClipboard.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebDragData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebImage.h"
 
 class MockWebClipboardImpl : public WebKit::WebClipboard {
@@ -28,7 +29,9 @@ class MockWebClipboardImpl : public WebKit::WebClipboard {
                                      WebKit::WebURL* url,
                                      unsigned* fragmentStart,
                                      unsigned* fragmentEnd);
-  virtual WebKit::WebData readImage(WebKit::WebClipboard::Buffer);
+  virtual WebKit::WebData readImage(WebKit::WebClipboard::Buffer buffer);
+  virtual WebKit::WebString readCustomData(WebKit::WebClipboard::Buffer buffer,
+                                           const WebKit::WebString& type);
 
   virtual void writePlainText(const WebKit::WebString& plain_text);
   virtual void writeHTML(
@@ -45,6 +48,7 @@ class MockWebClipboardImpl : public WebKit::WebClipboard {
   WebKit::WebString m_plainText;
   WebKit::WebString m_htmlText;
   WebKit::WebImage m_image;
+  WebKit::WebVector<WebKit::WebDragData::CustomData> m_customData;
   bool m_writeSmartPaste;
 };
 

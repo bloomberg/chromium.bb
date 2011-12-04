@@ -173,6 +173,17 @@ WebData WebClipboardImpl::readImage(Buffer buffer) {
   return WebData(png_data);
 }
 
+WebString WebClipboardImpl::readCustomData(Buffer buffer,
+                                           const WebString& type) {
+  ui::Clipboard::Buffer buffer_type;
+  if (!ConvertBufferType(buffer, &buffer_type))
+    return WebString();
+
+  string16 data;
+  client_->ReadCustomData(buffer_type, type, &data);
+  return data;
+}
+
 void WebClipboardImpl::writeHTML(
     const WebString& html_text, const WebURL& source_url,
     const WebString& plain_text, bool write_smart_paste) {
