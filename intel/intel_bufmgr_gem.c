@@ -2204,6 +2204,14 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	else
 		bufmgr_gem->gen = 6;
 
+	if (IS_GEN3(bufmgr_gem) && bufmgr_gem->gtt_size > 256*1024*1024) {
+		/* The unmappable part of gtt on gen 3 (i.e. above 256MB) can't
+		 * be used for tiled blits. To simplify the accounting, just
+		 * substract the unmappable part (fixed to 256MB on all known
+		 * gen3 devices) if the kernel advertises it. */
+		bufmgr_gem->gtt_size -= 256*1024*1024;
+	}
+
 	gp.value = &tmp;
 
 	gp.param = I915_PARAM_HAS_EXECBUF2;
