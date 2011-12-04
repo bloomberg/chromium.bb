@@ -1013,10 +1013,6 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
     PluginService::GetInstance()->PurgePluginListCache(profile_, false);
 
 #if defined(OS_CHROMEOS)
-#if defined(USE_VIRTUAL_KEYBOARD)
-  chromeos::input_method::InputMethodManager* input_method_manager =
-      chromeos::input_method::InputMethodManager::GetInstance();
-#endif
   for (std::vector<Extension::InputComponentInfo>::const_iterator component =
            extension->input_components().begin();
        component != extension->input_components().end();
@@ -1028,13 +1024,15 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
 #if defined(USE_VIRTUAL_KEYBOARD)
     if (component->type == Extension::INPUT_COMPONENT_TYPE_VIRTUAL_KEYBOARD &&
         !component->layouts.empty()) {
-      const bool is_system =
-          !Extension::IsExternalLocation(extension->location());
+      chromeos::input_method::InputMethodManager* input_method_manager =
+          chromeos::input_method::InputMethodManager::GetInstance();
+      const bool is_system_keyboard =
+          extension->location() == Extension::COMPONENT;
       input_method_manager->RegisterVirtualKeyboard(
           extension->url(),
           component->name,  // human-readable name of the keyboard extension.
           component->layouts,
-          is_system);
+          is_system_keyboard);
     }
 #endif
   }
