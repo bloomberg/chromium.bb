@@ -55,11 +55,13 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
 
   // Adds an entry to process_map_.
   void RegisterExtensionProcess(const std::string& extension_id,
-                                int process_id);
+                                int process_id,
+                                int site_instance_id);
 
   // Removes an entry from process_map_.
   void UnregisterExtensionProcess(const std::string& extension_id,
-                                  int process_id);
+                                  int process_id,
+                                  int site_instance_id);
   void UnregisterAllExtensionsInProcess(int process_id);
 
   // Returns true if there is exists an extension with the same origin as

@@ -457,14 +457,16 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
   if (!extension)
     return;
 
-  service->process_map()->Insert(
-      extension->id(), site_instance->GetProcess()->GetID());
+  service->process_map()->Insert(extension->id(),
+                                 site_instance->GetProcess()->GetID(),
+                                 site_instance->id());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ExtensionInfoMap::RegisterExtensionProcess,
                  profile->GetExtensionInfoMap(),
                  extension->id(),
-                 site_instance->GetProcess()->GetID()));
+                 site_instance->GetProcess()->GetID(),
+                 site_instance->id()));
 }
 
 void ChromeContentBrowserClient::SiteInstanceDeleting(
@@ -485,14 +487,16 @@ void ChromeContentBrowserClient::SiteInstanceDeleting(
   if (!extension)
     return;
 
-  service->process_map()->Remove(
-      extension->id(), site_instance->GetProcess()->GetID());
+  service->process_map()->Remove(extension->id(),
+                                 site_instance->GetProcess()->GetID(),
+                                 site_instance->id());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ExtensionInfoMap::UnregisterExtensionProcess,
                  profile->GetExtensionInfoMap(),
                  extension->id(),
-                 site_instance->GetProcess()->GetID()));
+                 site_instance->GetProcess()->GetID(),
+                 site_instance->id()));
 }
 
 bool ChromeContentBrowserClient::ShouldSwapProcessesForNavigation(

@@ -107,8 +107,9 @@ bool ExtensionInfoMap::CanCrossIncognito(const Extension* extension) {
 }
 
 void ExtensionInfoMap::RegisterExtensionProcess(const std::string& extension_id,
-                                                int process_id) {
-  if (!process_map_.Insert(extension_id, process_id)) {
+                                                int process_id,
+                                                int site_instance_id) {
+  if (!process_map_.Insert(extension_id, process_id, site_instance_id)) {
     NOTREACHED() << "Duplicate extension process registration for: "
                  << extension_id << "," << process_id << ".";
   }
@@ -116,15 +117,16 @@ void ExtensionInfoMap::RegisterExtensionProcess(const std::string& extension_id,
 
 void ExtensionInfoMap::UnregisterExtensionProcess(
     const std::string& extension_id,
-    int process_id) {
-  if (!process_map_.Remove(extension_id, process_id)) {
+    int process_id,
+    int site_instance_id) {
+  if (!process_map_.Remove(extension_id, process_id, site_instance_id)) {
     NOTREACHED() << "Unknown extension process registration for: "
                  << extension_id << "," << process_id << ".";
   }
 }
 
 void ExtensionInfoMap::UnregisterAllExtensionsInProcess(int process_id) {
-  process_map_.Remove(process_id);
+  process_map_.RemoveAllFromProcess(process_id);
 }
 
 bool ExtensionInfoMap::SecurityOriginHasAPIPermission(

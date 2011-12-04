@@ -16,6 +16,7 @@ namespace extensions {
 // Contains information about which extensions are assigned to which processes.
 //
 // The relationship between extensions and processes is complex:
+//
 // - Extensions can be either "split" mode or "spanning" mode.
 // - In spanning mode, extensions share a single process between all incognito
 //   and normal windows. This was the original mode for extensions.
@@ -23,6 +24,8 @@ namespace extensions {
 // - There are also hosted apps, which are a kind of extensions, and those
 //   usually have a process model similar to normal web sites: multiple
 //   processes per-profile.
+// - A single hosted app can have more than one SiteInstance in the same process
+//   if we're over the process limit and force them to share a process.
 //
 // In general, we seem to play with the process model of extensions a lot, so
 // it is safest to assume it is many-to-many in most places in the codebase.
@@ -43,12 +46,14 @@ namespace extensions {
 //    it is an "extension process" (e.g., for UI purposes). It may contain only
 //    hosted apps. See crbug.com/102533.
 //
-// 2. An extension can show be in multiple processes. That is why there is no
+// 2. An extension can show up in multiple processes. That is why there is no
 //    GetExtensionProcess() method here. There are two cases: a) The extension
 //    is actually a hosted app, in which case this is normal, or b) there is an
 //    incognito window open and the extension is "split mode". It is *not safe*
 //    to assume that there is one process per extension. If you only care about
-//    extensions (not hosted apps), and you are on the UI thread, then use
+//    extensions (not hosted apps), and you are on the UI thread, and you don't
+//    care about incognito version of this extension (or vice versa if you're in
+//    an incognito profile) then use
 //    ExtensionProcessManager::GetSiteInstanceForURL()->[Has|Get]Process().
 //
 // 3. The process ids contained in this class are *not limited* to the Profile
@@ -64,30 +69,23 @@ class ProcessMap {
 
   size_t size() const { return items_.size(); }
 
-  bool Insert(const std::string& extension_id, int process_id);
-  bool Remove(const std::string& extension_id, int process_id);
-  int Remove(int process_id);
+  bool Insert(const std::string& extension_id, int process_id,
+              int site_instance_id);
+
+  bool Remove(const std::string& extension_id, int process_id,
+              int site_instance_id);
+  int RemoveAllFromProcess(int process_id);
+
   bool Contains(const std::string& extension_id, int process_id) const;
   bool Contains(int process_id) const;
 
   std::set<std::string> GetExtensionsInProcess(int process_id) const;
 
  private:
-  struct Item {
-    Item();
-    Item(const Item& other);
-    Item(const std::string& extension_id, int process_id);
-    ~Item();
-
-    // Required for set membership.
-    bool operator<(const Item& other) const;
-
-    std::string extension_id;
-    int process_id;
-  };
+  struct Item;
 
   typedef std::set<Item> ItemSet;
-  std::set<Item> items_;
+  ItemSet items_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessMap);
 };

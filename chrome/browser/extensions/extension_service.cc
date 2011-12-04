@@ -2373,7 +2373,7 @@ void ExtensionService::Observe(int type,
 
       installed_app_hosts_.erase(process->GetID());
 
-      process_map_.Remove(process->GetID());
+      process_map_.RemoveAllFromProcess(process->GetID());
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(&ExtensionInfoMap::UnregisterAllExtensionsInProcess,
