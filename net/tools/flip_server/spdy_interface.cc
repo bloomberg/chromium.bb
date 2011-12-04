@@ -49,7 +49,7 @@ class SpdyFrameDataFrame : public DataFrame {
   SpdyFrameDataFrame(SpdyFrame* spdy_frame)
     : frame(spdy_frame) {
     data = spdy_frame->data();
-    size = spdy_frame->length() + SpdyFrame::size();
+    size = spdy_frame->length() + SpdyFrame::kHeaderSize;
   }
 
   virtual ~SpdyFrameDataFrame() {
@@ -479,7 +479,7 @@ size_t SpdySM::SendSynStreamImpl(uint32 stream_id,
   SpdySynStreamControlFrame* fsrcf =
     spdy_framer_->CreateSynStream(stream_id, 0, 0, CONTROL_FLAG_NONE, true,
                                   &block);
-  size_t df_size = fsrcf->length() + SpdyFrame::size();
+  size_t df_size = fsrcf->length() + SpdyFrame::kHeaderSize;
   EnqueueDataFrame(new SpdyFrameDataFrame(fsrcf));
 
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: Sending SynStreamheader "
@@ -496,7 +496,7 @@ size_t SpdySM::SendSynReplyImpl(uint32 stream_id, const BalsaHeaders& headers) {
 
   SpdySynReplyControlFrame* fsrcf =
     spdy_framer_->CreateSynReply(stream_id, CONTROL_FLAG_NONE, true, &block);
-  size_t df_size = fsrcf->length() + SpdyFrame::size();
+  size_t df_size = fsrcf->length() + SpdyFrame::kHeaderSize;
   EnqueueDataFrame(new SpdyFrameDataFrame(fsrcf));
 
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: Sending SynReplyheader "

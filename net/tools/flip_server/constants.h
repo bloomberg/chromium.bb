@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 
 const int kMSS = 1460;
 const int kSSLOverhead = 25;
-const int kSpdyOverhead = spdy::SpdyFrame::size();
+const int kSpdyOverhead = spdy::SpdyFrame::kHeaderSize;
 const int kInitialDataSendersThreshold = (2 * kMSS) - kSpdyOverhead;
 const int kSSLSegmentSize = (1 * kMSS) - kSSLOverhead;
 const int kSpdySegmentSize = kSSLSegmentSize - kSpdyOverhead;
@@ -28,4 +28,3 @@ const int kSpdySegmentSize = kSSLSegmentSize - kSpdyOverhead;
 #define PIDFILE "/var/run/flip-server.pid"
 
 #endif  // NET_TOOLS_FLIP_SERVER_CONSTANTS_H_
-

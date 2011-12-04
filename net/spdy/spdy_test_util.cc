@@ -39,7 +39,7 @@ MockWrite* ChopWriteFrame(const char* data, int length, int num_chunks) {
 // |num_chunks| is the number of chunks to create.
 MockWrite* ChopWriteFrame(const spdy::SpdyFrame& frame, int num_chunks) {
   return ChopWriteFrame(frame.data(),
-                        frame.length() + spdy::SpdyFrame::size(),
+                        frame.length() + spdy::SpdyFrame::kHeaderSize,
                         num_chunks);
 }
 
@@ -64,7 +64,7 @@ MockRead* ChopReadFrame(const char* data, int length, int num_chunks) {
 // |num_chunks| is the number of chunks to create.
 MockRead* ChopReadFrame(const spdy::SpdyFrame& frame, int num_chunks) {
   return ChopReadFrame(frame.data(),
-                       frame.length() + spdy::SpdyFrame::size(),
+                       frame.length() + spdy::SpdyFrame::kHeaderSize,
                        num_chunks);
 }
 
@@ -758,7 +758,7 @@ spdy::SpdyFrame* ConstructWrappedSpdyFrame(
     const scoped_ptr<spdy::SpdyFrame>& frame,
     int stream_id) {
   return ConstructSpdyBodyFrame(stream_id, frame->data(),
-                                frame->length() + spdy::SpdyFrame::size(),
+                                frame->length() + spdy::SpdyFrame::kHeaderSize,
                                 false);
 }
 
@@ -841,7 +841,7 @@ int ConstructSpdyReplyString(const char* const extra_headers[],
 // Create a MockWrite from the given SpdyFrame.
 MockWrite CreateMockWrite(const spdy::SpdyFrame& req) {
   return MockWrite(
-      true, req.data(), req.length() + spdy::SpdyFrame::size());
+      true, req.data(), req.length() + spdy::SpdyFrame::kHeaderSize);
 }
 
 // Create a MockWrite from the given SpdyFrame and sequence number.
@@ -852,13 +852,13 @@ MockWrite CreateMockWrite(const spdy::SpdyFrame& req, int seq) {
 // Create a MockWrite from the given SpdyFrame and sequence number.
 MockWrite CreateMockWrite(const spdy::SpdyFrame& req, int seq, bool async) {
   return MockWrite(
-      async, req.data(), req.length() + spdy::SpdyFrame::size(), seq);
+      async, req.data(), req.length() + spdy::SpdyFrame::kHeaderSize, seq);
 }
 
 // Create a MockRead from the given SpdyFrame.
 MockRead CreateMockRead(const spdy::SpdyFrame& resp) {
   return MockRead(
-      true, resp.data(), resp.length() + spdy::SpdyFrame::size());
+      true, resp.data(), resp.length() + spdy::SpdyFrame::kHeaderSize);
 }
 
 // Create a MockRead from the given SpdyFrame and sequence number.
@@ -869,7 +869,7 @@ MockRead CreateMockRead(const spdy::SpdyFrame& resp, int seq) {
 // Create a MockRead from the given SpdyFrame and sequence number.
 MockRead CreateMockRead(const spdy::SpdyFrame& resp, int seq, bool async) {
   return MockRead(
-      async, resp.data(), resp.length() + spdy::SpdyFrame::size(), seq);
+      async, resp.data(), resp.length() + spdy::SpdyFrame::kHeaderSize, seq);
 }
 
 // Combines the given SpdyFrames into the given char array and returns
@@ -878,12 +878,12 @@ int CombineFrames(const spdy::SpdyFrame** frames, int num_frames,
                   char* buff, int buff_len) {
   int total_len = 0;
   for (int i = 0; i < num_frames; ++i) {
-    total_len += frames[i]->length() + spdy::SpdyFrame::size();
+    total_len += frames[i]->length() + spdy::SpdyFrame::kHeaderSize;
   }
   DCHECK_LE(total_len, buff_len);
   char* ptr = buff;
   for (int i = 0; i < num_frames; ++i) {
-    int len = frames[i]->length() + spdy::SpdyFrame::size();
+    int len = frames[i]->length() + spdy::SpdyFrame::kHeaderSize;
     memcpy(ptr, frames[i]->data(), len);
     ptr += len;
   }
