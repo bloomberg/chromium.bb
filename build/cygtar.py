@@ -67,10 +67,32 @@ def CreateCygwinSymlink(filepath, target):
   Generates a Cygwin style symlink by creating a SYSTEM tagged
   file with the !<link> marker followed by a unicode path.
   """
-  lnk = open(filepath, 'wb')
-  lnk.write(PathToSymDat(target))
-  lnk.close()
-  subprocess.call(['cmd', '/C', 'attrib.exe', '+S', ToNativePath(filepath)])
+  # If we failed to create a symlink, then just copy it.  We wrap this in a
+  # retry for Windows which often has stale file lock issues.
+  for cnt in range(1,4):
+    try:
+      lnk = open(filepath, 'wb')
+      lnk.write(PathToSymDat(target))
+      lnk.close()
+      break
+    except EnvironmentError:
+      print 'Try %d: Failed open %s -> %s\n' % (cnt, filepath, target)
+
+  # Verify the file was created
+  if not os.path.isfile(filepath):
+    print 'Try %d: Failed create %s -> %s\n' % (cnt, filepath, target)
+    print 'Giving up.'
+    return False
+
+  # Now set the system attribute bit so that Cygwin knows it's a link.
+  for cnt in range(1,4):
+    try:
+      return subprocess.call(['cmd', '/C', 'attrib.exe', '+S',
+                              ToNativePath(filepath)])
+    except EnvironmentError:
+      print 'Try %d: Failed attrib %s -> %s\n' % (cnt, filepath, target)
+  print 'Giving up.'
+  return False
 
 
 def CreateWin32Hardlink(filepath, targpath, try_mklink):
@@ -86,13 +108,19 @@ def CreateWin32Hardlink(filepath, targpath, try_mklink):
     dst_src = ToNativePath(filepath) + ' ' + ToNativePath(targpath)
     try:
       err = subprocess.call(['cmd', '/C', 'mklink /H ' + dst_src])
-    except OSError:
+    except EnvironmentError:
       try_mklink = False
-      pass
-    # If we failed to create a hardlink, then just copy it.
+
+  # If we failed to create a hardlink, then just copy it.  We wrap this in a
+  # retry for Windows which often has stale file lock issues.
   if err or not os.path.isfile(filepath):
-    shutil.copyfile(targpath, filepath)
-    try_mklink = False
+    for cnt in range(1,4):
+      try:
+        shutil.copyfile(targpath, filepath)
+        return False
+      except EnvironmentError:
+        print 'Try %d: Failed hardlink %s -> %s\n' % (cnt, filepath, target)
+    print 'Giving up.'
   return try_mklink
 
 
