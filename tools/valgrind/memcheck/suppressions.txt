@@ -5322,6 +5322,13 @@
    fun:_ZN7WebCoreL21executeInsertFragmentEPNS_5FrameEN3WTF10PassRefPtrINS_16DocumentFragmentEEE
    fun:_ZN7WebCoreL17executeInsertHTMLEPNS_5FrameEPNS_5EventENS_19EditorCommandSourceERKN3WTF6StringE
 }
+{
+   bug_106326
+   Memcheck:Uninitialized
+   fun:_ZN15tracked_objects9DeathData11RecordDeathEiii
+   fun:_ZN15tracked_objects10ThreadData11TallyADeathERKNS_6BirthsEii
+   fun:_ZN15tracked_objects10ThreadData31TallyRunOnNamedThreadIfTrackingERKN4base12TrackingInfoERKNS_11TrackedTimeES7_
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
