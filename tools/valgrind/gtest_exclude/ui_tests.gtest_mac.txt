@@ -273,6 +273,7 @@ AutomationProxyTest4.BooleanValueIsEchoedByDomAutomationController
 
 # http://crbug.com/87625
 PPAPITest.Var
+OutOfProcessPPAPITest.Var
 
 # http://crbug.com/87766
 PPAPITest.URLLoader
