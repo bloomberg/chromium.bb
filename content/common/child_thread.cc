@@ -232,7 +232,7 @@ void ChildThread::OnGetChildProfilerData(
     int sequence_number,
     const std::string& process_type) {
   scoped_ptr<base::DictionaryValue> value(
-      tracked_objects::ThreadData::ToValue());
+      tracked_objects::ThreadData::ToValue(false));
   value->SetString("process_type", process_type);
   value->SetInteger("process_id", base::GetCurrentProcId());
 

@@ -245,7 +245,7 @@ int TrackingSynchronizer::RegisterAndNotifyAllProcesses(
   content::ProfilerController::GetInstance()->GetProfilerData(sequence_number);
 
   // Send profiler_data from browser process.
-  base::DictionaryValue* value = tracked_objects::ThreadData::ToValue();
+  base::DictionaryValue* value = tracked_objects::ThreadData::ToValue(false);
   const std::string process_type =
       content::GetProcessTypeNameInEnglish(content::PROCESS_TYPE_BROWSER);
   value->SetString("process_type", process_type);
