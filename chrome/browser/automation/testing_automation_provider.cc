@@ -101,6 +101,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/automation_id.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -932,9 +933,9 @@ void TestingAutomationProvider::WebkitMouseClick(DictionaryValue* args,
   if (SendErrorIfModalDialogActive(this, reply_message))
     return;
 
-  TabContents* tab_contents;
+  RenderViewHost* view;
   std::string error;
-  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+  if (!GetRenderViewFromJSONArgs(args, profile(), &view, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
@@ -968,12 +969,12 @@ void TestingAutomationProvider::WebkitMouseClick(DictionaryValue* args,
   mouse_event.type = WebKit::WebInputEvent::MouseDown;
   mouse_event.clickCount = 1;
 
-  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+  view->ForwardMouseEvent(mouse_event);
 
   mouse_event.type = WebKit::WebInputEvent::MouseUp;
   new InputEventAckNotificationObserver(this, reply_message, mouse_event.type,
                                         1);
-  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+  view->ForwardMouseEvent(mouse_event);
 }
 
 void TestingAutomationProvider::WebkitMouseMove(
@@ -981,9 +982,9 @@ void TestingAutomationProvider::WebkitMouseMove(
   if (SendErrorIfModalDialogActive(this, reply_message))
     return;
 
-  TabContents* tab_contents;
+  RenderViewHost* view;
   std::string error;
-  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+  if (!GetRenderViewFromJSONArgs(args, profile(), &view, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
@@ -999,7 +1000,7 @@ void TestingAutomationProvider::WebkitMouseMove(
   mouse_event.type = WebKit::WebInputEvent::MouseMove;
   new InputEventAckNotificationObserver(this, reply_message, mouse_event.type,
                                         1);
-  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+  view->ForwardMouseEvent(mouse_event);
 }
 
 void TestingAutomationProvider::WebkitMouseDrag(DictionaryValue* args,
@@ -1007,9 +1008,9 @@ void TestingAutomationProvider::WebkitMouseDrag(DictionaryValue* args,
   if (SendErrorIfModalDialogActive(this, reply_message))
     return;
 
-  TabContents* tab_contents;
+  RenderViewHost* view;
   std::string error;
-  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+  if (!GetRenderViewFromJSONArgs(args, profile(), &view, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
@@ -1029,29 +1030,27 @@ void TestingAutomationProvider::WebkitMouseDrag(DictionaryValue* args,
   // Step 1- Move the mouse to the start position.
   mouse_event.x = start_x;
   mouse_event.y = start_y;
-  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+  view->ForwardMouseEvent(mouse_event);
 
   // Step 2- Left click mouse down, the mouse button is fixed.
   mouse_event.type = WebKit::WebInputEvent::MouseDown;
   mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
   mouse_event.clickCount = 1;
-  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+  view->ForwardMouseEvent(mouse_event);
 
   // Step 3 - Move the mouse to the end position.
-  // TODO(JMikhail): See if we should simulate the by not making such
-  // a drastic jump by placing incrmental stops along the way.
   mouse_event.type = WebKit::WebInputEvent::MouseMove;
   mouse_event.x = end_x;
   mouse_event.y = end_y;
   mouse_event.clickCount = 0;
-  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+  view->ForwardMouseEvent(mouse_event);
 
   // Step 4 - Release the left mouse button.
   mouse_event.type = WebKit::WebInputEvent::MouseUp;
   mouse_event.clickCount = 1;
   new InputEventAckNotificationObserver(this, reply_message, mouse_event.type,
                                         1);
-  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+  view->ForwardMouseEvent(mouse_event);
 }
 
 void TestingAutomationProvider::WebkitMouseButtonDown(
@@ -1059,9 +1058,9 @@ void TestingAutomationProvider::WebkitMouseButtonDown(
   if (SendErrorIfModalDialogActive(this, reply_message))
     return;
 
-  TabContents* tab_contents;
+  RenderViewHost* view;
   std::string error;
-  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+  if (!GetRenderViewFromJSONArgs(args, profile(), &view, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
@@ -1079,7 +1078,7 @@ void TestingAutomationProvider::WebkitMouseButtonDown(
   mouse_event.clickCount = 1;
   new InputEventAckNotificationObserver(this, reply_message, mouse_event.type,
                                         1);
-  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+  view->ForwardMouseEvent(mouse_event);
 }
 
 void TestingAutomationProvider::WebkitMouseButtonUp(
@@ -1087,9 +1086,9 @@ void TestingAutomationProvider::WebkitMouseButtonUp(
   if (SendErrorIfModalDialogActive(this, reply_message))
     return;
 
-  TabContents* tab_contents;
+  RenderViewHost* view;
   std::string error;
-  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+  if (!GetRenderViewFromJSONArgs(args, profile(), &view, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
@@ -1107,7 +1106,7 @@ void TestingAutomationProvider::WebkitMouseButtonUp(
   mouse_event.clickCount = 1;
   new InputEventAckNotificationObserver(this, reply_message, mouse_event.type,
                                         1);
-  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+  view->ForwardMouseEvent(mouse_event);
 }
 
 void TestingAutomationProvider::WebkitMouseDoubleClick(
@@ -1115,9 +1114,9 @@ void TestingAutomationProvider::WebkitMouseDoubleClick(
   if (SendErrorIfModalDialogActive(this, reply_message))
     return;
 
-  TabContents* tab_contents;
+  RenderViewHost* view;
   std::string error;
-  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+  if (!GetRenderViewFromJSONArgs(args, profile(), &view, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
@@ -1133,19 +1132,19 @@ void TestingAutomationProvider::WebkitMouseDoubleClick(
   mouse_event.type = WebKit::WebInputEvent::MouseDown;
   mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
   mouse_event.clickCount = 1;
-  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+  view->ForwardMouseEvent(mouse_event);
 
   mouse_event.type = WebKit::WebInputEvent::MouseUp;
   new InputEventAckNotificationObserver(this, reply_message, mouse_event.type,
                                         2);
-  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+  view->ForwardMouseEvent(mouse_event);
 
   mouse_event.type = WebKit::WebInputEvent::MouseDown;
   mouse_event.clickCount = 2;
-  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+  view->ForwardMouseEvent(mouse_event);
 
   mouse_event.type = WebKit::WebInputEvent::MouseUp;
-  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+  view->ForwardMouseEvent(mouse_event);
 }
 
 void TestingAutomationProvider::DragAndDropFilePaths(
@@ -1153,9 +1152,9 @@ void TestingAutomationProvider::DragAndDropFilePaths(
   if (SendErrorIfModalDialogActive(this, reply_message))
     return;
 
-  TabContents* tab_contents;
+  RenderViewHost* view;
   std::string error;
-  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+  if (!GetRenderViewFromJSONArgs(args, profile(), &view, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
@@ -1197,12 +1196,11 @@ void TestingAutomationProvider::DragAndDropFilePaths(
   operations |= WebKit::WebDragOperationLink;
   operations |= WebKit::WebDragOperationMove;
 
-  RenderViewHost* host = tab_contents->render_view_host();
-  host->DragTargetDragEnter(
+  view->DragTargetDragEnter(
       drop_data, client, screen,
       static_cast<WebKit::WebDragOperationsMask>(operations));
   new DragTargetDropAckNotificationObserver(this, reply_message);
-  host->DragTargetDrop(client, screen);
+  view->DragTargetDrop(client, screen);
 }
 
 void TestingAutomationProvider::GetTabCount(int handle, int* tab_count) {
@@ -2263,10 +2261,6 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::GoBack;
   handler_map["Reload"] =
       &TestingAutomationProvider::ReloadJSON;
-  handler_map["GetTabURL"] =
-      &TestingAutomationProvider::GetTabURLJSON;
-  handler_map["GetTabTitle"] =
-      &TestingAutomationProvider::GetTabTitleJSON;
   handler_map["CaptureEntirePage"] =
       &TestingAutomationProvider::CaptureEntirePageJSON;
   handler_map["GetCookies"] =
@@ -2277,8 +2271,12 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::SetCookieJSON;
   handler_map["GetTabIds"] =
       &TestingAutomationProvider::GetTabIds;
+  handler_map["GetViews"] =
+      &TestingAutomationProvider::GetViews;
   handler_map["IsTabIdValid"] =
       &TestingAutomationProvider::IsTabIdValid;
+  handler_map["DoesAutomationObjectExist"] =
+      &TestingAutomationProvider::DoesAutomationObjectExist;
   handler_map["CloseTab"] =
       &TestingAutomationProvider::CloseTabJSON;
   handler_map["WebkitMouseMove"] =
@@ -2327,6 +2325,10 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::InstallExtension;
   handler_map["GetExtensionsInfo"] =
       &TestingAutomationProvider::GetExtensionsInfo;
+  handler_map["UninstallExtensionById"] =
+      &TestingAutomationProvider::UninstallExtensionById;
+  handler_map["SetExtensionStateById"] =
+      &TestingAutomationProvider::SetExtensionStateById;
   handler_map["RefreshPolicies"] =
       &TestingAutomationProvider::RefreshPolicies;
   handler_map["TriggerPageActionById"] =
@@ -2474,11 +2476,6 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   // SetTheme() implemented using InstallExtension().
   browser_handler_map["GetThemeInfo"] =
       &TestingAutomationProvider::GetThemeInfo;
-
-  browser_handler_map["UninstallExtensionById"] =
-      &TestingAutomationProvider::UninstallExtensionById;
-  browser_handler_map["SetExtensionStateById"] =
-      &TestingAutomationProvider::SetExtensionStateById;
 
   browser_handler_map["FindInPage"] = &TestingAutomationProvider::FindInPage;
 
@@ -4410,10 +4407,12 @@ void TestingAutomationProvider::GetExtensionsInfo(
     extension_value->Set("effective_host_permissions",
                          GetHostPermissions(extension, true));
     extension_value->Set("api_permissions", GetAPIPermissions(extension));
+    Extension::Location location = extension->location();
     extension_value->SetBoolean("is_component",
-                                extension->location() == Extension::COMPONENT);
-    extension_value->SetBoolean("is_internal",
-                                extension->location() == Extension::INTERNAL);
+                                location == Extension::COMPONENT);
+    extension_value->SetBoolean("is_internal", location == Extension::INTERNAL);
+    extension_value->SetBoolean("is_user_installed",
+        location == Extension::INTERNAL || location == Extension::LOAD);
     extension_value->SetBoolean("is_enabled", service->IsExtensionEnabled(id));
     extension_value->SetBoolean("allowed_in_incognito",
                                 service->IsIncognitoEnabled(id));
@@ -4427,7 +4426,6 @@ void TestingAutomationProvider::GetExtensionsInfo(
 // json input.
 // Sample json output: {}
 void TestingAutomationProvider::UninstallExtensionById(
-    Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
   std::string id;
@@ -4461,37 +4459,41 @@ void TestingAutomationProvider::UninstallExtensionById(
 // See SetExtensionStateById() in chrome/test/pyautolib/pyauto.py
 // for sample json input.
 void TestingAutomationProvider::SetExtensionStateById(
-    Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
   std::string id;
   if (!args->GetString("id", &id)) {
-    reply.SendError("Missing or invalid key: id");
+    AutomationJSONReply(this, reply_message)
+        .SendError("Missing or invalid key: id");
     return;
   }
 
   bool enable;
   if (!args->GetBoolean("enable", &enable)) {
-    reply.SendError("Missing or invalid key: enable");
+    AutomationJSONReply(this, reply_message)
+        .SendError("Missing or invalid key: enable");
     return;
   }
 
   bool allow_in_incognito;
   if (!args->GetBoolean("allow_in_incognito", &allow_in_incognito)) {
-    reply.SendError("Missing or invalid key: allow_in_incognito");
+    AutomationJSONReply(this, reply_message)
+        .SendError("Missing or invalid key: allow_in_incognito");
     return;
   }
 
   if (allow_in_incognito && !enable) {
-    reply.SendError("Invalid state: Disabled extension "
+    AutomationJSONReply(this, reply_message)
+        .SendError("Invalid state: Disabled extension "
                     "cannot be allowed in incognito mode.");
     return;
   }
 
   ExtensionService* service = profile()->GetExtensionService();
+  ExtensionProcessManager* manager = profile()->GetExtensionProcessManager();
   if (!service) {
-    reply.SendError("No extensions service.");
+    AutomationJSONReply(this, reply_message)
+        .SendError("No extensions service or process manager.");
     return;
   }
 
@@ -4499,18 +4501,28 @@ void TestingAutomationProvider::SetExtensionStateById(
       !service->GetTerminatedExtension(id)) {
     // The extension ID does not correspond to any extension, whether crashed
     // or not.
-    reply.SendError(base::StringPrintf("Extension does not exist: %s.",
-                                       id.c_str()));
+    AutomationJSONReply(this, reply_message).SendError(
+        base::StringPrintf("Extension does not exist: %s.", id.c_str()));
     return;
   }
 
-  if (enable)
-    service->EnableExtension(id);
-  else
-    service->DisableExtension(id);
-
   service->SetIsIncognitoEnabled(id, allow_in_incognito);
-  reply.SendSuccess(NULL);
+
+  if (enable) {
+    if (!service->IsExtensionEnabled(id)) {
+      new ExtensionReadyNotificationObserver(
+          manager,
+          service,
+          this,
+          reply_message);
+      service->EnableExtension(id);
+    } else {
+      AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+    }
+  } else {
+    service->DisableExtension(id);
+    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+  }
 }
 
 // See TriggerPageActionById() in chrome/test/pyautolib/pyauto.py
@@ -5632,13 +5644,13 @@ void TestingAutomationProvider::SendWebkitKeyEvent(
     return;
   }
 
-  TabContents* tab_contents;
-  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+  RenderViewHost* view;
+  if (!GetRenderViewFromJSONArgs(args, profile(), &view, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
   new InputEventAckNotificationObserver(this, reply_message, event.type, 1);
-  tab_contents->render_view_host()->ForwardKeyboardEvent(event);
+  view->ForwardKeyboardEvent(event);
 }
 
 void TestingAutomationProvider::SendOSLevelKeyEventToTab(
@@ -6064,8 +6076,8 @@ void TestingAutomationProvider::ExecuteJavascriptJSON(
 
   string16 frame_xpath, javascript;
   std::string error;
-  TabContents* tab_contents;
-  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+  RenderViewHost* render_view;
+  if (!GetRenderViewFromJSONArgs(args, profile(), &render_view, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
@@ -6082,7 +6094,7 @@ void TestingAutomationProvider::ExecuteJavascriptJSON(
 
   new DomOperationMessageSender(this, reply_message, true);
   ExecuteJavascriptInRenderViewFrame(frame_xpath, javascript, reply_message,
-                                     tab_contents->render_view_host());
+                                     render_view);
 }
 
 void TestingAutomationProvider::ExecuteJavascriptInRenderView(
@@ -6191,36 +6203,6 @@ void TestingAutomationProvider::ReloadJSON(
   controller.Reload(false);
 }
 
-void TestingAutomationProvider::GetTabURLJSON(
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-  TabContents* tab_contents;
-  std::string error;
-  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
-    reply.SendError(error);
-    return;
-  }
-  DictionaryValue dict;
-  dict.SetString("url", tab_contents->GetURL().possibly_invalid_spec());
-  reply.SendSuccess(&dict);
-}
-
-void TestingAutomationProvider::GetTabTitleJSON(
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-  TabContents* tab_contents;
-  std::string error;
-  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
-    reply.SendError(error);
-    return;
-  }
-  DictionaryValue dict;
-  dict.SetString("title", tab_contents->GetTitle());
-  reply.SendSuccess(&dict);
-}
-
 void TestingAutomationProvider::CaptureEntirePageJSON(
     DictionaryValue* args,
     IPC::Message* reply_message) {
@@ -6288,6 +6270,41 @@ void TestingAutomationProvider::GetTabIds(
   AutomationJSONReply(this, reply_message).SendSuccess(&dict);
 }
 
+void TestingAutomationProvider::GetViews(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  ListValue* view_list = new ListValue();
+  BrowserList::const_iterator browser_iter = BrowserList::begin();
+  for (; browser_iter != BrowserList::end(); ++browser_iter) {
+    Browser* browser = *browser_iter;
+    for (int i = 0; i < browser->tab_count(); ++i) {
+      DictionaryValue* dict = new DictionaryValue();
+      AutomationId id = automation_util::GetIdForTab(
+          browser->GetTabContentsWrapperAt(i));
+      dict->Set("auto_id", id.ToValue());
+      view_list->Append(dict);
+    }
+  }
+
+  ExtensionProcessManager* extension_mgr =
+      profile()->GetExtensionProcessManager();
+  ExtensionProcessManager::const_iterator iter;
+  for (iter = extension_mgr->begin(); iter != extension_mgr->end();
+       ++iter) {
+    ExtensionHost* host = *iter;
+    DictionaryValue* dict = new DictionaryValue();
+    AutomationId id = automation_util::GetIdForExtensionView(host);
+    if (!id.is_valid())
+      continue;
+    dict->Set("auto_id", id.ToValue());
+    dict->Set("extension_id", automation_util::GetIdForExtension(
+        host->extension()).ToValue());
+    view_list->Append(dict);
+  }
+  DictionaryValue dict;
+  dict.Set("views", view_list);
+  AutomationJSONReply(this, reply_message).SendSuccess(&dict);
+}
+
 void TestingAutomationProvider::IsTabIdValid(
     DictionaryValue* args, IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
@@ -6313,17 +6330,32 @@ void TestingAutomationProvider::IsTabIdValid(
   reply.SendSuccess(&dict);
 }
 
+void TestingAutomationProvider::DoesAutomationObjectExist(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  AutomationId id;
+  std::string error_msg;
+  if (!GetAutomationIdFromJSONArgs(args, "auto_id", &id, &error_msg)) {
+    reply.SendError(error_msg);
+    return;
+  }
+  DictionaryValue dict;
+  dict.SetBoolean(
+      "does_exist",
+      automation_util::DoesObjectWithIdExist(id, profile()));
+  reply.SendSuccess(&dict);
+}
+
 void TestingAutomationProvider::CloseTabJSON(
     DictionaryValue* args, IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
-  Browser* browser;
-  TabContents* tab_contents;
+  RenderViewHost* view;
   std::string error;
-  if (!GetBrowserAndTabFromJSONArgs(args, &browser, &tab_contents, &error)) {
+  if (!GetRenderViewFromJSONArgs(args, profile(), &view, &error)) {
     reply.SendError(error);
     return;
   }
-  browser->CloseTabContents(tab_contents);
+  view->ClosePage();
   reply.SendSuccess(NULL);
 }
 

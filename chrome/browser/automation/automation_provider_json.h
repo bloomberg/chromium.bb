@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,11 @@
 
 #include "base/compiler_specific.h"
 
+class AutomationId;
 class AutomationProvider;
 class Browser;
+class Profile;
+class RenderViewHost;
 class TabContents;
 
 namespace base {
@@ -72,5 +75,23 @@ bool GetBrowserAndTabFromJSONArgs(base::DictionaryValue* args,
                                   Browser** browser,
                                   TabContents** tab,
                                   std::string* error) WARN_UNUSED_RESULT;
+
+// Gets an automation ID from the given value in the given dicitionary |args|.
+// Returns true on success and sets |id|. Otherwise, |error| will be set.
+bool GetAutomationIdFromJSONArgs(
+    base::DictionaryValue* args,
+    const std::string& key_name,
+    AutomationId* id,
+    std::string* error) WARN_UNUSED_RESULT;
+
+// Gets the render view specified by the given dictionary |args|. |args|
+// should contain a key 'view_id' which refers to an automation ID for the
+// render view. Returns true on success and sets |rvh|. Otherwise, |error|
+// will be set.
+bool GetRenderViewFromJSONArgs(
+    base::DictionaryValue* args,
+    Profile* profile,
+    RenderViewHost** rvh,
+    std::string* error) WARN_UNUSED_RESULT;
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_JSON_H_

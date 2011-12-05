@@ -646,16 +646,14 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // Uninstalls the extension with the given id.
   // Uses the JSON interface for input/output.
-  void UninstallExtensionById(Browser* browser,
-                              base::DictionaryValue* args,
+  void UninstallExtensionById(base::DictionaryValue* args,
                               IPC::Message* reply_message);
 
   // Set extension states:
   //   Enable/disable extension.
   //   Allow/disallow extension in incognito mode.
   // Uses the JSON interface for input/output.
-  void SetExtensionStateById(Browser* browser,
-                             base::DictionaryValue* args,
+  void SetExtensionStateById(base::DictionaryValue* args,
                              IPC::Message* reply_message);
 
   // Trigger page action asynchronously in the active tab.
@@ -890,9 +888,12 @@ class TestingAutomationProvider : public AutomationProvider,
                          IPC::Message* reply_message);
 
   // Navigates to the given URL. Uses the JSON interface.
+  // The pair |windex| and |tab_index| or the single |auto_id| must be given
+  // to specify the tab.
   // Example:
   //   input: { "windex": 1,
   //            "tab_index": 3,
+  //            "auto_id": { "type": 0, "id": "awoein" },
   //            "url": "http://www.google.com",
   //            "navigation_count": 1  // number of navigations to wait for
   //          }
@@ -902,9 +903,12 @@ class TestingAutomationProvider : public AutomationProvider,
   // Executes javascript in the specified frame. Uses the JSON interface.
   // Waits for a result from the |DOMAutomationController|. The javascript
   // must send a string.
+  // The pair |windex| and |tab_index| or the single |auto_id| must be given
+  // to specify the tab.
   // Example:
   //   input: { "windex": 1,
   //            "tab_index": 1,
+  //            "auto_id": { "type": 0, "id": "awoein" },
   //            "frame_xpath": "//frames[1]",
   //            "javascript":
   //                "window.domAutomationController.send(window.name)",
@@ -936,44 +940,52 @@ class TestingAutomationProvider : public AutomationProvider,
       base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Goes forward in the specified tab. Uses the JSON interface.
+  // The pair |windex| and |tab_index| or the single |auto_id| must be given
+  // to specify the tab.
   // Example:
-  //   input: { "windex": 1, "tab_index": 1 }
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //            "auto_id": { "type": 0, "id": "awoein" }
+  //          }
   //   output: { "did_go_forward": true,                      // optional
   //             "result": AUTOMATION_MSG_NAVIGATION_SUCCESS  // optional
   //           }
   void GoForward(base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Goes back in the specified tab. Uses the JSON interface.
+  // The pair |windex| and |tab_index| or the single |auto_id| must be given
+  // to specify the tab.
   // Example:
-  //   input: { "windex": 1, "tab_index": 1 }
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //            "auto_id": { "type": 0, "id": "awoein" }
+  //          }
   //   output: { "did_go_back": true,                         // optional
   //             "result": AUTOMATION_MSG_NAVIGATION_SUCCESS  // optional
   //           }
   void GoBack(base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Reload the specified tab. Uses the JSON interface.
+  // The pair |windex| and |tab_index| or the single |auto_id| must be given
+  // to specify the tab.
   // Example:
-  //   input: { "windex": 1, "tab_index": 1 }
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //            "auto_id": { "type": 0, "id": "awoein" }
+  //          }
   //   output: { "result": AUTOMATION_MSG_NAVIGATION_SUCCESS  // optional }
   void ReloadJSON(base::DictionaryValue* args, IPC::Message* reply_message);
 
-  // Get the current url of the specified tab. Uses the JSON interface.
-  // Example:
-  //   input: { "windex": 1, "tab_index": 1 }
-  //   output: { "url": "http://www.google.com" }
-  void GetTabURLJSON(base::DictionaryValue* args, IPC::Message* reply_message);
-
-  // Get the current url of the specified tab. Uses the JSON interface.
-  // Example:
-  //   input: { "windex": 1, "tab_index": 1 }
-  //   output: { "title": "Google" }
-  void GetTabTitleJSON(base::DictionaryValue* args,
-                       IPC::Message* reply_message);
-
   // Captures the entire page of the the specified tab, including the
   // non-visible portions of the page, and saves the PNG to a file.
+  // The pair |windex| and |tab_index| or the single |auto_id| must be given
+  // to specify the tab.
   // Example:
-  //   input: { "windex": 1, "tab_index": 1, "path":"/tmp/foo.png"}
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //            "auto_id": { "type": 0, "id": "awoein" },
+  //            "path": "/tmp/foo.png"
+  //          }
   //   output: none
   void CaptureEntirePageJSON(
       base::DictionaryValue* args, IPC::Message* reply_message);
@@ -1034,8 +1046,20 @@ class TestingAutomationProvider : public AutomationProvider,
   // Gets the ID for every open tab. This ID is unique per session.
   // Example:
   //   input: none
-  //   output: { "ids": [4124, 213, 1] }
+  //   output: { "ids": [213, 1] }
   void GetTabIds(base::DictionaryValue* args, IPC::Message* reply_message);
+
+  // Gets info about all open views. Each view ID is unique per session.
+  // Example:
+  //   input: none
+  //   output: { "views": [
+  //               {
+  //                 "auto_id": { "type": 0, "id": "awoein" },
+  //                 "extension_id": "askjeoias3"  // optional
+  //               }
+  //             ]
+  //           }
+  void GetViews(base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Checks if the given tab ID refers to an open tab.
   // Example:
@@ -1043,16 +1067,31 @@ class TestingAutomationProvider : public AutomationProvider,
   //   output: { "is_valid": false }
   void IsTabIdValid(base::DictionaryValue* args, IPC::Message* reply_message);
 
-  // Closes the specified tab.
+  // Checks if the given automation ID refers to an actual object.
   // Example:
-  //   input: { "windex": 1, "tab_index": 1 }
+  //   input: { "auto_id": { "type": 0, "id": "awoein" } }
+  //   output: { "does_exist": false }
+  void DoesAutomationObjectExist(
+      base::DictionaryValue* args, IPC::Message* reply_message);
+
+  // Closes the specified tab.
+  // The pair |windex| and |tab_index| or the single |auto_id| must be given
+  // to specify the tab.
+  // Example:
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //            "auto_id": { "type": 0, "id": "awoein" }
+  //          }
   //   output: none
   void CloseTabJSON(base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Sends the WebKit events for a mouse click at a given coordinate.
+  // The pair |windex| and |tab_index| or the single |auto_id| must be given
+  // to specify the render view.
   // Example:
   //   input: { "windex": 1,
   //            "tab_index": 1,
+  //            "auto_id": { "type": 0, "id": "awoein" },
   //            "button": automation::kLeftButton,
   //            "x": 100,
   //            "y": 100
@@ -1062,9 +1101,12 @@ class TestingAutomationProvider : public AutomationProvider,
                         IPC::Message* message);
 
   // Sends the WebKit event for a mouse move to a given coordinate.
+  // The pair |windex| and |tab_index| or the single |auto_id| must be given
+  // to specify the render view.
   // Example:
   //   input: { "windex": 1,
   //            "tab_index": 1,
+  //            "auto_id": { "type": 0, "id": "awoein" },
   //            "x": 100,
   //            "y": 100
   //          }
@@ -1073,9 +1115,12 @@ class TestingAutomationProvider : public AutomationProvider,
                        IPC::Message* message);
 
   // Sends the WebKit events for a mouse drag between two coordinates.
+  // The pair |windex| and |tab_index| or the single |auto_id| must be given
+  // to specify the render view.
   // Example:
   //   input: { "windex": 1,
   //            "tab_index": 1,
+  //            "auto_id": { "type": 0, "id": "awoein" },
   //            "start_x": 100,
   //            "start_y": 100,
   //            "end_x": 100,
@@ -1086,9 +1131,12 @@ class TestingAutomationProvider : public AutomationProvider,
                        IPC::Message* message);
 
   // Sends the WebKit events for a mouse button down at a given coordinate.
+  // The pair |windex| and |tab_index| or the single |auto_id| must be given
+  // to specify the render view.
   // Example:
   //   input: { "windex": 1,
   //            "tab_index": 1,
+  //            "auto_id": { "type": 0, "id": "awoein" },
   //            "x": 100,
   //            "y": 100
   //          }
@@ -1097,9 +1145,12 @@ class TestingAutomationProvider : public AutomationProvider,
                              IPC::Message* message);
 
   // Sends the WebKit events for a mouse button up at a given coordinate.
+  // The pair |windex| and |tab_index| or the single |auto_id| must be given
+  // to specify the render view.
   // Example:
   //   input: { "windex": 1,
   //            "tab_index": 1,
+  //            "auto_id": { "type": 0, "id": "awoein" },
   //            "x": 100,
   //            "y": 100
   //          }
@@ -1108,9 +1159,12 @@ class TestingAutomationProvider : public AutomationProvider,
                            IPC::Message* message);
 
   // Sends the WebKit events for a mouse double click at a given coordinate.
+  // The pair |windex| and |tab_index| or the single |auto_id| must be given
+  // to specify the render view.
   // Example:
   //   input: { "windex": 1,
   //            "tab_index": 1,
+  //            "auto_id": { "type": 0, "id": "awoein" },
   //            "x": 100,
   //            "y": 100
   //          }
@@ -1119,9 +1173,12 @@ class TestingAutomationProvider : public AutomationProvider,
                               IPC::Message* message);
 
   // Drag and drop file paths at a given coordinate.
+  // The pair |windex| and |tab_index| or the single |auto_id| must be given
+  // to specify the render view.
   // Example:
   //   input: { "windex": 1,
   //            "tab_index": 1,
+  //            "auto_id": { "type": 0, "id": "awoein" },
   //            "x": 100,
   //            "y": 100,
   //            "paths": [
@@ -1133,9 +1190,12 @@ class TestingAutomationProvider : public AutomationProvider,
                             IPC::Message* message);
 
   // Sends the WebKit key event with the specified properties.
+  // The pair |windex| and |tab_index| or the single |auto_id| must be given
+  // to specify the render view.
   // Example:
   //   input: { "windex": 1,
   //            "tab_index": 1,
+  //            "auto_id": { "type": 0, "id": "awoein" },
   //            "type": automation::kRawKeyDownType,
   //            "nativeKeyCode": ui::VKEY_X,
   //            "windowsKeyCode": ui::VKEY_X,
@@ -1151,9 +1211,12 @@ class TestingAutomationProvider : public AutomationProvider,
   // Sends the key event from the OS level to the browser window,
   // allowing it to be preprocessed by some external application (ie. IME).
   // Will switch to the tab specified by tab_index before sending the event.
+  // The pair |windex| and |tab_index| or the single |auto_id| must be given
+  // to specify the tab.
   // Example:
   //   input: { "windex": 1,
   //            "tab_index": 1,
+  //            "auto_id": { "type": 0, "id": "awoein" },
   //            "keyCode": ui::VKEY_X,
   //            "modifiers": automation::kShiftKeyMask,
   //          }
@@ -1182,9 +1245,12 @@ class TestingAutomationProvider : public AutomationProvider,
       base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Activates the given tab.
+  // The pair |windex| and |tab_index| or the single |auto_id| must be given
+  // to specify the tab.
   // Example:
   //   input: { "windex": 1,
   //            "tab_index": 1,
+  //            "auto_id": { "type": 0, "id": "awoein" }
   //          }
   //   output: none
   void ActivateTabJSON(base::DictionaryValue* args, IPC::Message* message);

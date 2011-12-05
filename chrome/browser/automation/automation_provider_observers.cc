@@ -281,6 +281,10 @@ NavigationNotificationObserver::NavigationNotificationObserver(
       navigations_remaining_(number_of_navigations),
       navigation_started_(false),
       use_json_interface_(use_json_interface) {
+  if (number_of_navigations == 0) {
+    ConditionMet(AUTOMATION_MSG_NAVIGATION_SUCCESS);
+    return;
+  }
   DCHECK_LT(0, navigations_remaining_);
   content::Source<NavigationController> source(controller_);
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED, source);
@@ -652,10 +656,14 @@ void ExtensionReadyNotificationObserver::Observe(
   }
 
   if (use_json_) {
-    DictionaryValue dict;
-    dict.SetString("id", extension_->id());
-    AutomationJSONReply(automation_, reply_message_.release())
-        .SendSuccess(&dict);
+    AutomationJSONReply reply(automation_, reply_message_.release());
+    if (extension_) {
+      DictionaryValue dict;
+      dict.SetString("id", extension_->id());
+      reply.SendSuccess(&dict);
+    } else {
+      reply.SendError("Extension could not be installed");
+    }
   } else {
     if (id_ == AutomationMsg_InstallExtension::ID) {
       // A handle of zero indicates an error.

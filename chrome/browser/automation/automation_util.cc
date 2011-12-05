@@ -8,16 +8,26 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stringprintf.h"
+#include "base/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_provider_json.h"
+#include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
+#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/automation_id.h"
+#include "chrome/common/chrome_view_type.h"
+#include "chrome/common/extensions/extension.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
@@ -133,6 +143,18 @@ TabContents* GetTabContentsAt(int browser_index, int tab_index) {
   if (!browser || tab_index >= browser->tab_count())
     return NULL;
   return browser->GetTabContentsAt(tab_index);
+}
+
+Browser* GetBrowserForTab(TabContents* tab) {
+  BrowserList::const_iterator browser_iter = BrowserList::begin();
+  for (; browser_iter != BrowserList::end(); ++browser_iter) {
+    Browser* browser = *browser_iter;
+    for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
+      if (browser->GetTabContentsAt(tab_index) == tab)
+        return browser;
+    }
+  }
+  return NULL;
 }
 
 net::URLRequestContextGetter* GetRequestContext(TabContents* contents) {
@@ -379,6 +401,157 @@ bool SendErrorIfModalDialogActive(AutomationProvider* provider,
         "Command cannot be performed because a modal dialog is active");
   }
   return active;
+}
+
+AutomationId GetIdForTab(const TabContentsWrapper* tab) {
+  return AutomationId(
+      AutomationId::kTypeTab,
+      base::IntToString(tab->restore_tab_helper()->session_id().id()));
+}
+
+AutomationId GetIdForExtensionView(const ExtensionHost* ext_host) {
+  AutomationId::Type type;
+  switch (ext_host->extension_host_type()) {
+    case chrome::VIEW_TYPE_EXTENSION_POPUP:
+      type = AutomationId::kTypeExtensionPopup;
+      break;
+    case chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE:
+      type = AutomationId::kTypeExtensionBgPage;
+      break;
+    case chrome::VIEW_TYPE_EXTENSION_INFOBAR:
+      type = AutomationId::kTypeExtensionInfobar;
+      break;
+    default:
+      type = AutomationId::kTypeInvalid;
+      break;
+  }
+  // Since these extension views do not permit navigation, using the
+  // renderer process and view ID should suffice.
+  std::string id = base::StringPrintf("%d|%d",
+      ext_host->render_view_host()->routing_id(),
+      ext_host->render_process_host()->GetID());
+  return AutomationId(type, id);
+}
+
+AutomationId GetIdForExtension(const Extension* extension) {
+  return AutomationId(AutomationId::kTypeExtension, extension->id());
+}
+
+bool GetTabForId(const AutomationId& id, TabContents** tab) {
+  if (id.type() != AutomationId::kTypeTab)
+    return false;
+
+  BrowserList::const_iterator iter = BrowserList::begin();
+  for (; iter != BrowserList::end(); ++iter) {
+    Browser* browser = *iter;
+    for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
+      TabContentsWrapper* wrapper = browser->GetTabContentsWrapperAt(tab_index);
+      if (base::IntToString(wrapper->restore_tab_helper()->session_id().id()) ==
+              id.id()) {
+        *tab = wrapper->tab_contents();
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+namespace {
+
+bool GetExtensionRenderViewForId(
+    const AutomationId& id,
+    Profile* profile,
+    RenderViewHost** rvh) {
+  content::ViewType view_type;
+  switch (id.type()) {
+    case AutomationId::kTypeExtensionPopup:
+      view_type = chrome::VIEW_TYPE_EXTENSION_POPUP;
+      break;
+    case AutomationId::kTypeExtensionBgPage:
+      view_type = chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
+      break;
+    case AutomationId::kTypeExtensionInfobar:
+      view_type = chrome::VIEW_TYPE_EXTENSION_INFOBAR;
+      break;
+    default:
+      return false;
+  }
+
+  ExtensionProcessManager* extension_mgr =
+      profile->GetExtensionProcessManager();
+  ExtensionProcessManager::const_iterator iter;
+  for (iter = extension_mgr->begin(); iter != extension_mgr->end();
+       ++iter) {
+    ExtensionHost* host = *iter;
+    AutomationId this_id = GetIdForExtensionView(host);
+    if (id == this_id) {
+      *rvh = host->render_view_host();
+      return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace
+
+bool GetRenderViewForId(
+    const AutomationId& id,
+    Profile* profile,
+    RenderViewHost** rvh) {
+  switch (id.type()) {
+    case AutomationId::kTypeTab: {
+      TabContents* tab;
+      if (!GetTabForId(id, &tab))
+        return false;
+      *rvh = tab->render_view_host();
+      break;
+    }
+    case AutomationId::kTypeExtensionPopup:
+    case AutomationId::kTypeExtensionBgPage:
+    case AutomationId::kTypeExtensionInfobar:
+      if (!GetExtensionRenderViewForId(id, profile, rvh))
+        return false;
+      break;
+    default:
+      return false;
+  }
+  return true;
+}
+
+bool GetExtensionForId(
+    const AutomationId& id,
+    Profile* profile,
+    const Extension** extension) {
+  if (id.type() != AutomationId::kTypeExtension)
+    return false;
+  ExtensionService* service = profile->GetExtensionService();
+  const Extension* installed_extension =
+      service->GetInstalledExtension(id.id());
+  if (installed_extension)
+    *extension = installed_extension;
+  return !!installed_extension;
+}
+
+bool DoesObjectWithIdExist(const AutomationId& id, Profile* profile) {
+  switch (id.type()) {
+    case AutomationId::kTypeTab: {
+      TabContents* tab;
+      return GetTabForId(id, &tab);
+    }
+    case AutomationId::kTypeExtensionPopup:
+    case AutomationId::kTypeExtensionBgPage:
+    case AutomationId::kTypeExtensionInfobar: {
+      RenderViewHost* rvh;
+      return GetExtensionRenderViewForId(id, profile, &rvh);
+    }
+    case AutomationId::kTypeExtension: {
+      const Extension* extension;
+      return GetExtensionForId(id, profile, &extension);
+    }
+    default:
+      break;
+  }
+  return false;
 }
 
 }  // namespace automation_util
