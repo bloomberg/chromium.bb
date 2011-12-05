@@ -287,6 +287,11 @@
             '../base/allocator/allocator.gyp:allocator',
           ],
         }],
+        ['OS=="win"', {
+          'dependencies': [
+            '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
+          ],
+        }],
         ['chromeos==1', {
           'sources/': [
             ['exclude', '^browser/renderer_host/gtk_key_bindings_handler_unittest.cc'],
