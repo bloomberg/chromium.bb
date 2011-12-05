@@ -165,6 +165,8 @@
       ],
       'sources': [
         'app/startup_helper_win.cc',
+        'browser/accessibility/browser_accessibility_manager_unittest.cc',
+        'browser/accessibility/browser_accessibility_win_unittest.cc',
         'browser/appcache/chrome_appcache_service_unittest.cc',
         'browser/browser_thread_unittest.cc',
         'browser/browser_url_handler_unittest.cc',

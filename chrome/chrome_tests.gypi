@@ -1204,8 +1204,6 @@
         # All unittests in browser, common, renderer and service.
         'browser/about_flags_unittest.cc',
         'browser/accessibility/browser_accessibility_mac_unittest.mm',
-        'browser/accessibility/browser_accessibility_manager_unittest.cc',
-        'browser/accessibility/browser_accessibility_win_unittest.cc',
         'browser/app_controller_mac_unittest.mm',
         'browser/autocomplete/autocomplete_edit_unittest.cc',
         'browser/autocomplete/autocomplete_popup_model_unittest.cc',
@@ -2411,7 +2409,6 @@
         'app/chrome_dll.rc',
         'app/chrome_dll_resource.h',
         'app/chrome_version.rc.version',
-        'browser/accessibility/renderer_accessibility_browsertest.cc',
         'browser/autocomplete/autocomplete_browsertest.cc',
         'browser/autofill/form_structure_browsertest.cc',
         'browser/automation/automation_tab_helper_browsertest.cc',
@@ -2708,6 +2705,7 @@
         # is safe to run there. See http://crbug.com/78722 for details.
         '../base/files/file_path_watcher_browsertest.cc',
         '../content/app/startup_helper_win.cc',
+        '../content/browser/accessibility/renderer_accessibility_browsertest.cc',
         '../content/browser/child_process_security_policy_browsertest.cc',
         '../content/browser/device_orientation/device_orientation_browsertest.cc',
         '../content/browser/download/mhtml_generation_browsertest.cc',
