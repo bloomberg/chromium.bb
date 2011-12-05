@@ -24,8 +24,8 @@
 #include "content/browser/download/download_state_info.h"
 #include "content/browser/download/interrupt_reasons.h"
 
-class DownloadFileManager;
 class DownloadId;
+class DownloadFileManager;
 class DownloadManager;
 class FilePath;
 class GURL;
@@ -35,6 +35,10 @@ struct DownloadPersistentStoreInfo;
 namespace base {
 class Time;
 class TimeDelta;
+}
+
+namespace content {
+class BrowserContext;
 }
 
 // One DownloadItem per download. This is the model class that stores all the
@@ -153,6 +157,12 @@ class CONTENT_EXPORT DownloadItem {
   // Called when the downloaded file is removed.
   virtual void OnDownloadedFileRemoved() = 0;
 
+  // If all pre-requisites have been met, complete download processing, i.e.
+  // do internal cleanup, file rename, and potentially auto-open.
+  // (Dangerous downloads still may block on user acceptance after this
+  // point.)
+  virtual void MaybeCompleteDownload() = 0;
+
   // Download operation had an error.
   // |size| is the amount of data received at interruption.
   // |reason| is the download interrupt reason code that the operation received.
@@ -247,7 +257,6 @@ class CONTENT_EXPORT DownloadItem {
   virtual base::Time GetEndTime() const = 0;
   virtual void SetDbHandle(int64 handle) = 0;
   virtual int64 GetDbHandle() const = 0;
-  virtual DownloadManager* GetDownloadManager() = 0;
   virtual bool IsPaused() const = 0;
   virtual bool GetOpenWhenComplete() const = 0;
   virtual void SetOpenWhenComplete(bool open) = 0;
@@ -272,6 +281,7 @@ class CONTENT_EXPORT DownloadItem {
   virtual InterruptReason GetLastReason() const = 0;
   virtual DownloadPersistentStoreInfo GetPersistentStoreInfo() const = 0;
   virtual DownloadStateInfo GetStateInfo() const = 0;
+  virtual content::BrowserContext* BrowserContext() const = 0;
   virtual TabContents* GetTabContents() const = 0;
 
   // Returns the final target file path for the download.

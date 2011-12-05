@@ -124,25 +124,7 @@ class CONTENT_EXPORT DownloadManager
   // |size| is the number of bytes that are currently downloaded.
   // |reason| is a download interrupt reason code.
   virtual void OnDownloadInterrupted(int32 download_id, int64 size,
-                             InterruptReason reason) = 0;
-
-  // Called from DownloadItem to handle the DownloadManager portion of a
-  // Cancel; should not be called from other locations.
-  virtual void DownloadCancelledInternal(DownloadItem* download) = 0;
-
-  // Called from a view when a user clicks a UI button or link.
-  virtual void RemoveDownload(int64 download_handle) = 0;
-
-  // Determine if the download is ready for completion, i.e. has had
-  // all data saved, and completed the filename determination and
-  // history insertion.
-  virtual bool IsDownloadReadyForCompletion(DownloadItem* download) = 0;
-
-  // If all pre-requisites have been met, complete download processing, i.e.
-  // do internal cleanup, file rename, and potentially auto-open.
-  // (Dangerous downloads still may block on user acceptance after this
-  // point.)
-  virtual void MaybeCompleteDownload(DownloadItem* download) = 0;
+                                     InterruptReason reason) = 0;
 
   // Called when the download is renamed to its final name.
   // |uniquifier| is a number used to make unique names for the file.  It is
@@ -165,10 +147,6 @@ class CONTENT_EXPORT DownloadManager
   // Remove all downloads will delete all downloads. The number of downloads
   // deleted is returned back to the caller.
   virtual int RemoveAllDownloads() = 0;
-
-  // Final download manager transition for download: Update the download
-  // history and remove the download from |active_downloads_|.
-  virtual void DownloadCompleted(int32 download_id) = 0;
 
   // Download the object at the URL. Used in cases such as "Save Link As..."
   virtual void DownloadUrl(const GURL& url,
@@ -201,19 +179,26 @@ class CONTENT_EXPORT DownloadManager
   virtual void OnItemAddedToPersistentStore(int32 download_id,
                                             int64 db_handle) = 0;
 
-  // Display a new download in the appropriate browser UI.
-  virtual void ShowDownloadInBrowser(DownloadItem* download) = 0;
-
   // The number of in progress (including paused) downloads.
   virtual int InProgressCount() const = 0;
 
-  virtual content::BrowserContext* BrowserContext() = 0;
+  virtual content::BrowserContext* BrowserContext() const = 0;
 
   virtual FilePath LastDownloadPath() = 0;
 
   // Creates the download item.  Must be called on the UI thread.
-  virtual void CreateDownloadItem(DownloadCreateInfo* info,
-                          const DownloadRequestHandle& request_handle) = 0;
+  virtual void CreateDownloadItem(
+      DownloadCreateInfo* info,
+      const DownloadRequestHandle& request_handle) = 0;
+
+  // Creates a download item for the SavePackage system.
+  // Must be called on the UI thread.  Note that the DownloadManager
+  // retains ownership.
+  virtual DownloadItem* CreateSavePackageDownloadItem(
+      const FilePath& main_file_path,
+      const GURL& page_url,
+      bool is_otr,
+      DownloadItem::Observer* observer) = 0;
 
   // Clears the last download path, used to initialize "save as" dialogs.
   virtual void ClearLastDownloadPath() = 0;
@@ -226,30 +211,14 @@ class CONTENT_EXPORT DownloadManager
   // DownloadManagerDelegate::ShouldStartDownload and now is ready.
   virtual void RestartDownload(int32 download_id) = 0;
 
-  // Mark the download opened in the persistent store.
-  virtual void MarkDownloadOpened(DownloadItem* download) = 0;
-
   // Checks whether downloaded files still exist. Updates state of downloads
   // that refer to removed files. The check runs in the background and may
   // finish asynchronously after this method returns.
   virtual void CheckForHistoryFilesRemoval() = 0;
 
-  // Checks whether a downloaded file still exists and updates the file's state
-  // if the file is already removed. The check runs in the background and may
-  // finish asynchronously after this method returns.
-  virtual void CheckForFileRemoval(DownloadItem* download_item) = 0;
-
-  // Assert the named download item is on the correct queues
-  // in the DownloadManager.  For debugging.
-  virtual void AssertQueueStateConsistent(DownloadItem* download) = 0;
-
   // Get the download item from the history map.  Useful after the item has
   // been removed from the active map, or was retrieved from the history DB.
   virtual DownloadItem* GetDownloadItem(int id) = 0;
-
-  // Called when Save Page download starts. Transfers ownership of |download|
-  // to the DownloadManager.
-  virtual void SavePageDownloadStarted(DownloadItem* download) = 0;
 
   // Called when Save Page download is done.
   virtual void SavePageDownloadFinished(DownloadItem* download) = 0;
@@ -264,8 +233,6 @@ class CONTENT_EXPORT DownloadManager
   // other for testing only methods).
   virtual void SetDownloadManagerDelegate(
       content::DownloadManagerDelegate* delegate) = 0;
-
-  virtual DownloadId GetNextId() = 0;
 
  protected:
   // These functions are here for unit tests.

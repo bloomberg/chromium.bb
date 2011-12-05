@@ -350,7 +350,7 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
     it->second.pending = false;
     it->second.verdict = result;
   }
-  download_manager_->MaybeCompleteDownload(item);
+  item->MaybeCompleteDownload();
 }
 
 // content::NotificationObserver implementation.

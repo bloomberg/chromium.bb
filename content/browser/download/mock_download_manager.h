@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_MANAGER_H_
 #pragma once
 
+#include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/download_id_factory.h"
@@ -13,7 +14,8 @@
 class DownloadStatusUpdater;
 class DownloadItem;
 
-class MockDownloadManager : public DownloadManager {
+class MockDownloadManager
+    : public DownloadManager {
  public:
   explicit MockDownloadManager(content::DownloadManagerDelegate* delegate,
                                DownloadIdFactory* id_factory,
@@ -37,10 +39,6 @@ class MockDownloadManager : public DownloadManager {
   virtual void CancelDownload(int32 download_id) OVERRIDE;
   virtual void OnDownloadInterrupted(int32 download_id, int64 size,
                                      InterruptReason reason) OVERRIDE;
-  virtual void DownloadCancelledInternal(DownloadItem* download) OVERRIDE;
-  virtual void RemoveDownload(int64 download_handle) OVERRIDE;
-  virtual bool IsDownloadReadyForCompletion(DownloadItem* download) OVERRIDE;
-  virtual void MaybeCompleteDownload(DownloadItem* download) OVERRIDE;
   virtual void OnDownloadRenamedToFinalName(int download_id,
                                             const FilePath& full_path,
                                             int uniquifier) OVERRIDE;
@@ -48,7 +46,6 @@ class MockDownloadManager : public DownloadManager {
                                      const base::Time remove_end) OVERRIDE;
   virtual int RemoveDownloads(const base::Time remove_begin) OVERRIDE;
   virtual int RemoveAllDownloads() OVERRIDE;
-  virtual void DownloadCompleted(int32 download_id) OVERRIDE;
   virtual void DownloadUrl(const GURL& url,
                            const GURL& referrer,
                            const std::string& referrer_encoding,
@@ -64,29 +61,28 @@ class MockDownloadManager : public DownloadManager {
       std::vector<DownloadPersistentStoreInfo>* entries) OVERRIDE;
   virtual void OnItemAddedToPersistentStore(int32 download_id,
                                             int64 db_handle) OVERRIDE;
-  virtual void ShowDownloadInBrowser(DownloadItem* download) OVERRIDE;
   virtual int InProgressCount() const OVERRIDE;
-  virtual content::BrowserContext* BrowserContext() OVERRIDE;
+  virtual content::BrowserContext* BrowserContext() const OVERRIDE;
   virtual FilePath LastDownloadPath() OVERRIDE;
   virtual void CreateDownloadItem(
       DownloadCreateInfo* info,
       const DownloadRequestHandle& request_handle) OVERRIDE;
+  virtual DownloadItem* CreateSavePackageDownloadItem(
+      const FilePath& main_file_path,
+      const GURL& page_url,
+      bool is_otr,
+      DownloadItem::Observer* observer) OVERRIDE;
   virtual void ClearLastDownloadPath() OVERRIDE;
   virtual void FileSelected(const FilePath& path, void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
   virtual void RestartDownload(int32 download_id) OVERRIDE;
-  virtual void MarkDownloadOpened(DownloadItem* download) OVERRIDE;
   virtual void CheckForHistoryFilesRemoval() OVERRIDE;
-  virtual void CheckForFileRemoval(DownloadItem* download_item) OVERRIDE;
-  virtual void AssertQueueStateConsistent(DownloadItem* download) OVERRIDE;
   virtual DownloadItem* GetDownloadItem(int id) OVERRIDE;
-  virtual void SavePageDownloadStarted(DownloadItem* download) OVERRIDE;
   virtual void SavePageDownloadFinished(DownloadItem* download) OVERRIDE;
   virtual DownloadItem* GetActiveDownloadItem(int id) OVERRIDE;
   virtual content::DownloadManagerDelegate* delegate() const OVERRIDE;
   virtual void SetDownloadManagerDelegate(
       content::DownloadManagerDelegate* delegate) OVERRIDE;
-  virtual DownloadId GetNextId() OVERRIDE;
   virtual void ContinueDownloadWithPath(DownloadItem* download,
                                         const FilePath& chosen_file) OVERRIDE;
   virtual DownloadItem* GetActiveDownload(int32 download_id) OVERRIDE;

@@ -65,24 +65,6 @@ void MockDownloadManager::OnDownloadInterrupted(int32 download_id, int64 size,
                                                 InterruptReason reason) {
 }
 
-void MockDownloadManager::DownloadCancelledInternal(DownloadItem* download) {
-  download->Cancel(true);
-  item_map_.erase(download->GetId());
-  inactive_item_map_[download->GetId()] = download;
-}
-
-void MockDownloadManager::RemoveDownload(int64 download_handle) {
-}
-
-bool MockDownloadManager::IsDownloadReadyForCompletion(DownloadItem* download) {
-  return download->AllDataSaved();
-}
-
-void MockDownloadManager::MaybeCompleteDownload(DownloadItem* download) {
-  if (IsDownloadReadyForCompletion(download))
-    download->OnDownloadRenamedToFinalName(download->GetFullPath());
-}
-
 void MockDownloadManager::OnDownloadRenamedToFinalName(
     int download_id,
     const FilePath& full_path,
@@ -100,9 +82,6 @@ int MockDownloadManager::RemoveDownloads(const base::Time remove_begin) {
 
 int MockDownloadManager::RemoveAllDownloads() {
   return 1;
-}
-
-void MockDownloadManager::DownloadCompleted(int32 download_id) {
 }
 
 void MockDownloadManager::DownloadUrl(const GURL& url,
@@ -133,14 +112,11 @@ void MockDownloadManager::OnItemAddedToPersistentStore(int32 download_id,
                                                        int64 db_handle) {
 }
 
-void MockDownloadManager::ShowDownloadInBrowser(DownloadItem* download) {
-}
-
 int MockDownloadManager::InProgressCount() const {
   return 1;
 }
 
-content::BrowserContext* MockDownloadManager::BrowserContext() {
+content::BrowserContext* MockDownloadManager::BrowserContext() const {
   return NULL;
 }
 
@@ -151,9 +127,17 @@ FilePath MockDownloadManager::LastDownloadPath() {
 void MockDownloadManager::CreateDownloadItem(
     DownloadCreateInfo* info,
     const DownloadRequestHandle& request_handle) {
-  item_map_.insert(std::make_pair(
-      info->download_id.local(), new DownloadItemImpl(
-        this, *info, new DownloadRequestHandle(request_handle), false)));
+  NOTREACHED();                         // Not yet implemented.
+  return;
+}
+
+DownloadItem* MockDownloadManager::CreateSavePackageDownloadItem(
+      const FilePath& main_file_path,
+      const GURL& page_url,
+      bool is_otr,
+      DownloadItem::Observer* observer) {
+  NOTREACHED();                         // Not yet implemented.
+  return NULL;
 }
 
 void MockDownloadManager::ClearLastDownloadPath() {
@@ -168,17 +152,7 @@ void MockDownloadManager::FileSelectionCanceled(void* params) {
 void MockDownloadManager::RestartDownload(int32 download_id) {
 }
 
-void MockDownloadManager::MarkDownloadOpened(DownloadItem* download) {
-  download->SetOpenWhenComplete(true);
-}
-
 void MockDownloadManager::CheckForHistoryFilesRemoval() {
-}
-
-void MockDownloadManager::CheckForFileRemoval(DownloadItem* download_item) {
-}
-
-void MockDownloadManager::AssertQueueStateConsistent(DownloadItem* download) {
 }
 
 DownloadItem* MockDownloadManager::GetDownloadItem(int id) {
@@ -186,9 +160,6 @@ DownloadItem* MockDownloadManager::GetDownloadItem(int id) {
   if (it == item_map_.end())
     return NULL;
   return it->second;
-}
-
-void MockDownloadManager::SavePageDownloadStarted(DownloadItem* download) {
 }
 
 void MockDownloadManager::SavePageDownloadFinished(DownloadItem* download) {
@@ -204,10 +175,6 @@ content::DownloadManagerDelegate* MockDownloadManager::delegate() const {
 
 void MockDownloadManager::SetDownloadManagerDelegate(
     content::DownloadManagerDelegate* delegate) {
-}
-
-DownloadId MockDownloadManager::GetNextId() {
-  return DownloadId(this, 1);
 }
 
 void MockDownloadManager::ContinueDownloadWithPath(

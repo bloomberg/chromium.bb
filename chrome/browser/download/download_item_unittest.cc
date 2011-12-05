@@ -3,24 +3,51 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/download_id_factory.h"
-#include "content/browser/download/download_item.h"
+#include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/download/mock_download_item.h"
-#include "content/browser/download/mock_download_manager.h"
-#include "content/browser/download/mock_download_manager_delegate.h"
 #include "content/test/test_browser_thread.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
 
 DownloadId::Domain kValidDownloadItemIdDomain = "valid DownloadId::Domain";
+
+namespace {
+class MockDelegate : public DownloadItemImpl::Delegate {
+ public:
+  MOCK_METHOD1(ShouldOpenFileBasedOnExtension, bool(const FilePath& path));
+  MOCK_METHOD1(ShouldOpenDownload, bool(DownloadItem* download));
+  MOCK_METHOD1(CheckForFileRemoval, void(DownloadItem* download));
+  MOCK_METHOD1(MaybeCompleteDownload, void(DownloadItem* download));
+  MOCK_CONST_METHOD0(BrowserContext, content::BrowserContext*());
+  MOCK_METHOD1(DownloadCancelled, void(DownloadItem* download));
+  MOCK_METHOD1(DownloadCompleted, void(DownloadItem* download));
+  MOCK_METHOD1(DownloadOpened, void(DownloadItem* download));
+  MOCK_METHOD1(DownloadRemoved, void(DownloadItem* download));
+  MOCK_CONST_METHOD1(AssertStateConsistent, void(DownloadItem* download));
+};
+
+class MockRequestHandle : public DownloadRequestHandleInterface {
+ public:
+  MOCK_CONST_METHOD0(GetTabContents, TabContents*());
+  MOCK_CONST_METHOD0(GetDownloadManager, DownloadManager*());
+  MOCK_CONST_METHOD0(PauseRequest, void());
+  MOCK_CONST_METHOD0(ResumeRequest, void());
+  MOCK_CONST_METHOD0(CancelRequest, void());
+  MOCK_CONST_METHOD0(DebugString, std::string());
+};
+
+}
 
 class DownloadItemTest : public testing::Test {
  public:
@@ -48,7 +75,6 @@ class DownloadItemTest : public testing::Test {
 
   DownloadItemTest()
       : id_factory_(new DownloadIdFactory(kValidDownloadItemIdDomain)),
-        profile_(new TestingProfile()),
         ui_thread_(BrowserThread::UI, &loop_) {
   }
 
@@ -56,26 +82,16 @@ class DownloadItemTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    download_manager_delegate_.reset(new MockDownloadManagerDelegate());
-    download_manager_ = new MockDownloadManager(
-        download_manager_delegate_.get(),
-        id_factory_,
-        &download_status_updater_);
-    download_manager_->Init(profile_.get());
   }
 
   virtual void TearDown() {
-    download_manager_->Shutdown();
-    // When a DownloadManager's reference count drops to 0, it is not
-    // deleted immediately. Instead, a task is posted to the UI thread's
-    // message loop to delete it.
-    // So, drop the reference count to 0 and run the message loop once
-    // to ensure that all resources are cleaned up before the test exits.
-    download_manager_ = NULL;
-    profile_.reset(NULL);
     ui_thread_.DeprecatedGetThreadObject()->message_loop()->RunAllPending();
+    STLDeleteElements(&allocated_downloads_);
+    allocated_downloads_.clear();
   }
 
+  // This class keeps ownership of the created download item; it will
+  // be torn down at the end of the test.
   DownloadItem* CreateDownloadItem(DownloadItem::DownloadState state) {
     // Normally, the download system takes ownership of info, and is
     // responsible for deleting it.  In these unit tests, however, we
@@ -88,21 +104,25 @@ class DownloadItemTest : public testing::Test {
     info_->url_chain.push_back(GURL());
     info_->state = state;
 
-    download_manager_->CreateDownloadItem(info_.get(), DownloadRequestHandle());
-    return download_manager_->GetActiveDownloadItem(info_->download_id.local());
+    MockRequestHandle* request_handle =
+        new testing::NiceMock<MockRequestHandle>;
+    DownloadItem* download =
+        new DownloadItemImpl(&delegate_, *(info_.get()),
+                             request_handle, false);
+    allocated_downloads_.push_back(download);
+    return download;
   }
 
  protected:
   DownloadStatusUpdater download_status_updater_;
-  scoped_ptr<MockDownloadManagerDelegate> download_manager_delegate_;
-  scoped_refptr<DownloadManager> download_manager_;
 
  private:
   scoped_refptr<DownloadIdFactory> id_factory_;
-  scoped_ptr<TestingProfile> profile_;
   MessageLoopForUI loop_;
   // UI thread.
   content::TestBrowserThread ui_thread_;
+  testing::NiceMock<MockDelegate> delegate_;
+  std::vector<DownloadItem*> allocated_downloads_;
 };
 
 namespace {

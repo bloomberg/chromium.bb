@@ -20,7 +20,6 @@
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_id.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
@@ -28,7 +27,6 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/download_manager_delegate.h"
 #include "net/base/net_util.h"
 
 using content::BrowserThread;
@@ -118,15 +116,34 @@ class NullDownloadRequestHandle : public DownloadRequestHandleInterface {
 
 }  // namespace
 
+// Infrastructure in DownloadItemImpl::Delegate to assert invariant that
+// delegate always outlives all attached DownloadItemImpls.
+DownloadItemImpl::Delegate::Delegate()
+    : count_(0) {}
+
+DownloadItemImpl::Delegate::~Delegate() {
+  DCHECK_EQ(0, count_);
+}
+
+void DownloadItemImpl::Delegate::Attach() {
+  ++count_;
+}
+
+void DownloadItemImpl::Delegate::Detach() {
+  DCHECK_LT(0, count_);
+  --count_;
+}
+
 // Our download table ID starts at 1, so we use 0 to represent a download that
 // has started, but has not yet had its data persisted in the table. We use fake
 // database handles in incognito mode starting at -1 and progressively getting
 // more negative.
 
 // Constructor for reading from the history service.
-DownloadItemImpl::DownloadItemImpl(DownloadManager* download_manager,
+DownloadItemImpl::DownloadItemImpl(Delegate* delegate,
+                                   DownloadId download_id,
                                    const DownloadPersistentStoreInfo& info)
-    : download_id_(download_manager->GetNextId()),
+    : download_id_(download_id),
       full_path_(info.path),
       url_chain_(1, info.url),
       referrer_url_(info.referrer_url),
@@ -138,7 +155,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadManager* download_manager,
       start_time_(info.start_time),
       end_time_(info.end_time),
       db_handle_(info.db_handle),
-      download_manager_(download_manager),
+      delegate_(delegate),
       is_paused_(false),
       open_when_complete_(false),
       file_externally_removed_(false),
@@ -150,6 +167,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadManager* download_manager,
       opened_(info.opened),
       open_enabled_(true),
       delegate_delayed_complete_(false) {
+  delegate_->Attach();
   if (IsInProgress())
     state_ = CANCELLED;
   if (IsComplete())
@@ -159,7 +177,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadManager* download_manager,
 
 // Constructing for a regular download:
 DownloadItemImpl::DownloadItemImpl(
-    DownloadManager* download_manager,
+    Delegate* delegate,
     const DownloadCreateInfo& info,
     DownloadRequestHandleInterface* request_handle,
     bool is_otr)
@@ -185,7 +203,7 @@ DownloadItemImpl::DownloadItemImpl(
       state_(IN_PROGRESS),
       start_time_(info.start_time),
       db_handle_(DownloadItem::kUninitializedHandle),
-      download_manager_(download_manager),
+      delegate_(delegate),
       is_paused_(false),
       open_when_complete_(false),
       file_externally_removed_(false),
@@ -197,11 +215,12 @@ DownloadItemImpl::DownloadItemImpl(
       opened_(false),
       open_enabled_(true),
       delegate_delayed_complete_(false) {
+  delegate_->Attach();
   Init(true /* actively downloading */);
 }
 
 // Constructing for the "Save Page As..." feature:
-DownloadItemImpl::DownloadItemImpl(DownloadManager* download_manager,
+DownloadItemImpl::DownloadItemImpl(Delegate* delegate,
                                    const FilePath& path,
                                    const GURL& url,
                                    bool is_otr,
@@ -219,7 +238,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadManager* download_manager,
       state_(IN_PROGRESS),
       start_time_(base::Time::Now()),
       db_handle_(DownloadItem::kUninitializedHandle),
-      download_manager_(download_manager),
+      delegate_(delegate),
       is_paused_(false),
       open_when_complete_(false),
       file_externally_removed_(false),
@@ -231,6 +250,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadManager* download_manager,
       opened_(false),
       open_enabled_(true),
       delegate_delayed_complete_(false) {
+  delegate_->Attach();
   Init(true /* actively downloading */);
 }
 
@@ -239,7 +259,8 @@ DownloadItemImpl::~DownloadItemImpl() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   TransitionTo(REMOVING);
-  download_manager_->AssertQueueStateConsistent(this);
+  delegate_->AssertStateConsistent(this);
+  delegate_->Detach();
 }
 
 void DownloadItemImpl::AddObserver(Observer* observer) {
@@ -272,8 +293,7 @@ bool DownloadItemImpl::CanOpenDownload() {
 }
 
 bool DownloadItemImpl::ShouldOpenFileBasedOnExtension() {
-  return download_manager_->delegate()->ShouldOpenFileBasedOnExtension(
-      GetUserVerifiedFilePath());
+  return delegate_->ShouldOpenFileBasedOnExtension(GetUserVerifiedFilePath());
 }
 
 void DownloadItemImpl::OpenDownload() {
@@ -292,11 +312,11 @@ void DownloadItemImpl::OpenDownload() {
   // don't generally have the proper interface for that to the external
   // program that opens the file.  So instead we spawn a check to update
   // the UI if the file has been deleted in parallel with the open.
-  download_manager_->CheckForFileRemoval(this);
+  delegate_->CheckForFileRemoval(this);
   download_stats::RecordOpen(GetEndTime(), !GetOpened());
   opened_ = true;
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadOpened(this));
-  download_manager_->MarkDownloadOpened(this);
+  delegate_->DownloadOpened(this);
 
   // For testing: If download opening is disabled on this item,
   // make the rest of the routine a no-op.
@@ -324,7 +344,7 @@ void DownloadItemImpl::DangerousDownloadValidated() {
   safety_state_ = DANGEROUS_BUT_VALIDATED;
   UpdateObservers();
 
-  download_manager_->MaybeCompleteDownload(this);
+  delegate_->MaybeCompleteDownload(this);
 }
 
 void DownloadItemImpl::UpdateSize(int64 bytes_so_far) {
@@ -375,7 +395,7 @@ void DownloadItemImpl::Cancel(bool user_cancel) {
 
   TransitionTo(CANCELLED);
   if (user_cancel)
-    download_manager_->DownloadCancelledInternal(this);
+    delegate_->DownloadCancelled(this);
 }
 
 void DownloadItemImpl::MarkAsComplete() {
@@ -408,6 +428,11 @@ void DownloadItemImpl::OnDownloadedFileRemoved() {
   UpdateObservers();
 }
 
+void DownloadItemImpl::MaybeCompleteDownload() {
+  // TODO(rdsmith): Move logic for this function here.
+  delegate_->MaybeCompleteDownload(this);
+}
+
 void DownloadItemImpl::Completed() {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -417,7 +442,7 @@ void DownloadItemImpl::Completed() {
   DCHECK(all_data_saved_);
   end_time_ = base::Time::Now();
   TransitionTo(COMPLETE);
-  download_manager_->DownloadCompleted(GetId());
+  delegate_->DownloadCompleted(this);
   download_stats::RecordDownloadCompleted(start_tick_, received_bytes_);
 
   if (auto_opened_) {
@@ -503,12 +528,12 @@ void DownloadItemImpl::Remove() {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  download_manager_->AssertQueueStateConsistent(this);
+  delegate_->AssertStateConsistent(this);
   Cancel(true);
-  download_manager_->AssertQueueStateConsistent(this);
+  delegate_->AssertStateConsistent(this);
 
   TransitionTo(REMOVING);
-  download_manager_->RemoveDownload(db_handle_);
+  delegate_->DownloadRemoved(this);
   // We have now been deleted.
 }
 
@@ -582,16 +607,17 @@ void DownloadItemImpl::OnDownloadCompleting(DownloadFileManager* file_manager) {
   if (NeedsRename()) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         base::Bind(&DownloadFileManager::RenameCompletingDownloadFile,
-                   file_manager, GetGlobalId(),
+                   file_manager, download_id_,
                    GetTargetFilePath(), GetSafetyState() == SAFE));
     return;
   }
 
   Completed();
 
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&DownloadFileManager::CompleteDownload,
-                                     file_manager, GetGlobalId()));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DownloadFileManager::CompleteDownload,
+                 file_manager, download_id_));
 }
 
 void DownloadItemImpl::OnDownloadRenamedToFinalName(const FilePath& full_path) {
@@ -606,7 +632,7 @@ void DownloadItemImpl::OnDownloadRenamedToFinalName(const FilePath& full_path) {
 
   Rename(full_path);
 
-  if (download_manager_->delegate()->ShouldOpenDownload(this)) {
+  if (delegate_->ShouldOpenDownload(this)) {
     Completed();
   } else {
     delegate_delayed_complete_ = true;
@@ -629,11 +655,8 @@ bool DownloadItemImpl::MatchesQuery(const string16& query) const {
   //   L"/\x4f60\x597d\x4f60\x597d",
   //   "/%E4%BD%A0%E5%A5%BD%E4%BD%A0%E5%A5%BD"
   std::string languages;
-  TabContents* tab = GetTabContents();
-  if (tab) {
-    languages = content::GetContentClient()->browser()->GetAcceptLangs(
-        tab->browser_context());
-  }
+  languages = content::GetContentClient()->browser()->GetAcceptLangs(
+      BrowserContext());
   string16 url_formatted(net::FormatUrl(GetURL(), languages));
   if (base::i18n::StringSearchIgnoringCaseAndAccents(query, url_formatted))
     return true;
@@ -705,6 +728,10 @@ TabContents* DownloadItemImpl::GetTabContents() const {
   return NULL;
 }
 
+content::BrowserContext* DownloadItemImpl::BrowserContext() const {
+  return delegate_->BrowserContext();
+}
+
 FilePath DownloadItemImpl::GetTargetFilePath() const {
   return full_path_.DirName().Append(state_info_.target_name);
 }
@@ -727,9 +754,10 @@ void DownloadItemImpl::OffThreadCancel(DownloadFileManager* file_manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   request_handle_->CancelRequest();
 
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&DownloadFileManager::CancelDownload,
-                                     file_manager, GetGlobalId()));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DownloadFileManager::CancelDownload,
+                 file_manager, download_id_));
 }
 
 void DownloadItemImpl::Init(bool active) {
@@ -861,9 +889,6 @@ base::Time DownloadItemImpl::GetStartTime() const { return start_time_; }
 base::Time DownloadItemImpl::GetEndTime() const { return end_time_; }
 void DownloadItemImpl::SetDbHandle(int64 handle) { db_handle_ = handle; }
 int64 DownloadItemImpl::GetDbHandle() const { return db_handle_; }
-DownloadManager* DownloadItemImpl::GetDownloadManager() {
-  return download_manager_;
-}
 bool DownloadItemImpl::IsPaused() const { return is_paused_; }
 bool DownloadItemImpl::GetOpenWhenComplete() const {
   return open_when_complete_;

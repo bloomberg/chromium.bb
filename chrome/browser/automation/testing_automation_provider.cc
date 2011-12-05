@@ -3177,7 +3177,7 @@ void TestingAutomationProvider::PerformActionOnDownload(
     selected_item->OpenDownload();
   } else if (action == "toggle_open_files_like_this") {
     DownloadPrefs* prefs =
-        DownloadPrefs::FromDownloadManager(selected_item->GetDownloadManager());
+        DownloadPrefs::FromBrowserContext(selected_item->BrowserContext());
     FilePath path = selected_item->GetUserVerifiedFilePath();
     if (!selected_item->ShouldOpenFileBasedOnExtension())
       prefs->EnableAutoOpenBasedOnExtension(path);
