@@ -6,5 +6,6 @@
 # cros_mark_as_stable --all.  These packages should be stored in alphabetical
 # order.
 
+chromeos-base/courgette
 chromeos-base/libchrome
 chromeos-base/libchrome_crypto
