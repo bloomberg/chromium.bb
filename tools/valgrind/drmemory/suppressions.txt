@@ -86,10 +86,19 @@ name=TODO ExitProcess
 KERNEL32.dll!ExitProcess
 
 INVALID HEAP ARGUMENT
-name=http://crbug.com/103365
+name=http://crbug.com/103365 (a)
 ppapi_tests.dll!*
 ...
 ppapi_tests.dll!*
+*!base::internal::RunnableAdapter<*>::Run
+
+INVALID HEAP ARGUMENT
+name=http://crbug.com/103365 (b)
+ppapi_tests.dll!*
+...
+ppapi_tests.dll!*
+*!PP_RunCompletionCallback
+...
 *!base::internal::RunnableAdapter<*>::Run
 
 ############################
