@@ -34,6 +34,8 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image/cairo_cached_surface.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_utils_gtk.h"
 
@@ -104,13 +106,13 @@ gfx::Rect GetRectForLine(size_t line, int width) {
 }
 
 // Helper for drawing an entire pixbuf without dithering.
-void DrawFullPixbuf(GdkDrawable* drawable, GdkGC* gc, GdkPixbuf* pixbuf,
-                    gint dest_x, gint dest_y) {
-  gdk_draw_pixbuf(drawable, gc, pixbuf,
-                  0, 0,                        // Source.
-                  dest_x, dest_y,              // Dest.
-                  -1, -1,                      // Width/height (auto).
-                  GDK_RGB_DITHER_NONE, 0, 0);  // Don't dither.
+void DrawFullImage(cairo_t* cr, GtkWidget* widget, const gfx::Image* image,
+                   gint dest_x, gint dest_y) {
+  gfx::CairoCachedSurface* surface = image->ToCairo();
+  surface->SetSource(cr, widget, dest_x, dest_y);
+  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+  cairo_rectangle(cr, dest_x, dest_y, surface->Width(), surface->Height());
+  cairo_fill(cr);
 }
 
 // TODO(deanm): Find some better home for this, and make it more efficient.
@@ -338,8 +340,8 @@ OmniboxPopupViewGtk::~OmniboxPopupViewGtk() {
   g_object_unref(layout_);
   gtk_widget_destroy(window_);
 
-  for (PixbufMap::iterator it = pixbufs_.begin(); it != pixbufs_.end(); ++it)
-    g_object_unref(it->second);
+  for (ImageMap::iterator it = images_.begin(); it != images_.end(); ++it)
+    delete it->second;
 }
 
 bool OmniboxPopupViewGtk::IsOpen() const {
@@ -483,13 +485,16 @@ void OmniboxPopupViewGtk::AcceptLine(size_t line,
                            is_keyword_hint ? string16() : keyword);
 }
 
-GdkPixbuf* OmniboxPopupViewGtk::IconForMatch(const AutocompleteMatch& match,
-                                             bool selected) {
+const gfx::Image* OmniboxPopupViewGtk::IconForMatch(
+    const AutocompleteMatch& match, bool selected) {
   const SkBitmap* bitmap = model_->GetIconIfExtensionMatch(match);
   if (bitmap) {
-    if (!ContainsKey(pixbufs_, bitmap))
-      pixbufs_[bitmap] = gfx::GdkPixbufFromSkBitmap(bitmap);
-    return pixbufs_[bitmap];
+    if (!ContainsKey(images_, bitmap)) {
+      // gfx::Image wants ownership of bitmaps given to it, and we might as
+      // well make the bitmap copy a format that will be used.
+      images_[bitmap] = new gfx::Image(gfx::GdkPixbufFromSkBitmap(bitmap));
+    }
+    return images_[bitmap];
   }
 
   int icon = match.starred ?
@@ -517,8 +522,7 @@ GdkPixbuf* OmniboxPopupViewGtk::IconForMatch(const AutocompleteMatch& match,
     }
   }
 
-  // TODO(estade): Do we want to flip these for RTL?  (Windows doesn't).
-  return theme_service_->GetPixbufNamed(icon);
+  return theme_service_->GetImageNamed(icon);
 }
 
 gboolean OmniboxPopupViewGtk::HandleMotion(GtkWidget* widget,
@@ -583,20 +587,18 @@ gboolean OmniboxPopupViewGtk::HandleExpose(GtkWidget* widget,
   if (window_rect.width() < (kIconAreaWidth * 3))
     return TRUE;
 
-  GdkDrawable* drawable = GDK_DRAWABLE(event->window);
-  GdkGC* gc = gdk_gc_new(drawable);
-
-  // kBorderColor is unallocated, so use the GdkRGB routine.
-  gdk_gc_set_rgb_fg_color(gc, &border_color_);
+  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+  gdk_cairo_rectangle(cr, &event->area);
+  cairo_clip(cr);
 
   // This assert is kinda ugly, but it would be more currently unneeded work
   // to support painting a border that isn't 1 pixel thick.  There is no point
   // in writing that code now, and explode if that day ever comes.
   COMPILE_ASSERT(kBorderThickness == 1, border_1px_implied);
   // Draw the 1px border around the entire window.
-  gdk_draw_rectangle(drawable, gc, FALSE,
-                     0, 0,
-                     window_rect.width() - 1, window_rect.height() - 1);
+  gdk_cairo_set_source_color(cr, &border_color_);
+  cairo_rectangle(cr, 0, 0, window_rect.width(), window_rect.height());
+  cairo_stroke(cr);
 
   pango_layout_set_height(layout_, kHeightPerResult * PANGO_SCALE);
 
@@ -610,20 +612,20 @@ gboolean OmniboxPopupViewGtk::HandleExpose(GtkWidget* widget,
     bool is_selected = (model_->selected_line() == i);
     bool is_hovered = (model_->hovered_line() == i);
     if (is_selected || is_hovered) {
-      gdk_gc_set_rgb_fg_color(gc, is_selected ? &selected_background_color_ :
-                              &hovered_background_color_);
+      gdk_cairo_set_source_color(cr, is_selected ? &selected_background_color_ :
+                                 &hovered_background_color_);
       // This entry is selected or hovered, fill a rect with the color.
-      gdk_draw_rectangle(drawable, gc, TRUE,
-                         line_rect.x(), line_rect.y(),
-                         line_rect.width(), line_rect.height());
+      cairo_rectangle(cr, line_rect.x(), line_rect.y(),
+                      line_rect.width(), line_rect.height());
+      cairo_fill(cr);
     }
 
     int icon_start_x = ltr ? kIconLeftPadding :
         (line_rect.width() - kIconLeftPadding - kIconWidth);
     // Draw the icon for this result.
-    DrawFullPixbuf(drawable, gc,
-                   IconForMatch(match, is_selected),
-                   icon_start_x, line_rect.y() + kIconTopPadding);
+    DrawFullImage(cr, widget,
+                  IconForMatch(match, is_selected),
+                  icon_start_x, line_rect.y() + kIconTopPadding);
 
     // Draw the results text vertically centered in the results space.
     // First draw the contents / url, but don't let it take up the whole width
@@ -655,10 +657,13 @@ gboolean OmniboxPopupViewGtk::HandleExpose(GtkWidget* widget,
     int content_y = std::max(line_rect.y(),
         line_rect.y() + ((kHeightPerResult - actual_content_height) / 2));
 
-    gdk_draw_layout(drawable, gc,
-                    ltr ? kIconAreaWidth :
+    cairo_save(cr);
+    cairo_move_to(cr,
+                  ltr ? kIconAreaWidth :
                         (text_width - actual_content_width),
-                    content_y, layout_);
+                  content_y);
+    pango_cairo_show_layout(cr, layout_);
+    cairo_restore(cr);
 
     if (has_description) {
       pango_layout_set_width(layout_,
@@ -677,15 +682,18 @@ gboolean OmniboxPopupViewGtk::HandleExpose(GtkWidget* widget,
                           std::string(" - "));
       gint actual_description_width;
       pango_layout_get_size(layout_, &actual_description_width, NULL);
-      gdk_draw_layout(drawable, gc, ltr ?
-                          (kIconAreaWidth + actual_content_width) :
-                          (text_width - actual_content_width -
-                           (actual_description_width / PANGO_SCALE)),
-                      content_y, layout_);
+
+      cairo_save(cr);
+      cairo_move_to(cr, ltr ?
+                    (kIconAreaWidth + actual_content_width) :
+                    (text_width - actual_content_width -
+                     (actual_description_width / PANGO_SCALE)),
+                    content_y);
+      pango_cairo_show_layout(cr, layout_);
+      cairo_restore(cr);
     }
   }
 
-  g_object_unref(gc);
-
+  cairo_destroy(cr);
   return TRUE;
 }
