@@ -19,9 +19,9 @@
 #include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/url_constants.h"
-#include "grit/ui_resources.h"
-#include "grit/theme_resources.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
+#include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -155,11 +155,11 @@ void EditSearchEngineDialogHandlerWebUI::RequestValidation(
     bool isDescriptionValid = controller_->IsTitleValid(description_str);
     bool isKeywordValid = controller_->IsKeywordValid(keyword_str);
     bool isUrlValid = controller_->IsURLValid(url_str);
-    validation.SetBoolean("description", isDescriptionValid );
-    validation.SetBoolean("keyword", isKeywordValid );
-    validation.SetBoolean("url", isUrlValid );
+    validation.SetBoolean("description", isDescriptionValid);
+    validation.SetBoolean("keyword", isKeywordValid);
+    validation.SetBoolean("url", isUrlValid);
     validation.SetBoolean("ok", isDescriptionValid && isKeywordValid &&
-                          isUrlValid );
+                          isUrlValid);
     web_ui_->CallJavascriptFunction("editSearchEngineDialog.setValidation",
                                     validation);
   }
