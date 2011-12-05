@@ -85,14 +85,20 @@ ExifParser.prototype.parseSlice = function(
       var nextSectionStart = br.tell() + markLength;
       if (!br.canRead(markLength)) {
         // Get the entire section.
+        if (filePos + br.tell() + markLength > file.size) {
+          throw new Error(
+              'Invalid section length @' + (filePos + br.tell() - 2));
+        }
         reread(-4, markLength + 4);
         return;
       }
 
       if (mark == EXIF_MARK_EXIF) {
         this.parseExifSection(metadata, buf, br);
-      } else if (mark == EXIF_MARK_SOF) {
+      } else if ((mark & ~0xF) == EXIF_MARK_SOF) {
         // The most reliable size information is encoded in the SOF section.
+        // There are 16 variants of the SOF format distinguished by the last
+        // hex digit of the mark, but the part we want is always the same.
         br.seek(1, ByteReader.SEEK_CUR); // Skip the precision byte.
         var height = br.readScalar(2);
         var width = br.readScalar(2);
