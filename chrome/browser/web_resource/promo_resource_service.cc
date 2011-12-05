@@ -30,12 +30,12 @@ namespace {
 static const int kStartResourceFetchDelay = 5000;
 
 // Delay between calls to update the cache (48 hours), and 3 min in debug mode.
-static const int kCacheUpdateDelay = 48 * 60 * 60 * 1000;
-static const int kTestCacheUpdateDelay = 3 * 60 * 1000;
+static const int kCacheUpdateDelay = 1 * 60 * 1000;
+static const int kTestCacheUpdateDelay = 1 * 60 * 1000;
 
 // The version of the service (used to expire the cache when upgrading Chrome
 // to versions with different types of promos).
-static const int kPromoServiceVersion = 2;
+static const int kPromoServiceVersion = 7;
 
 // The number of groups sign-in promo users will be divided into (which gives us
 // a 1/N granularity when targeting more groups).
@@ -49,11 +49,14 @@ static const char kWebStoreLinkProperty[] = "inproduct";
 static const char kWebStoreExpireProperty[] = "tooltip";
 
 const char* GetPromoResourceURL() {
+const char* kCaitPromoResourceServer =
+    "http://caitkp-desktop.mon.corp.google.com/promo.js?";
   std::string promo_server_url = CommandLine::ForCurrentProcess()->
       GetSwitchValueASCII(switches::kPromoServerURL);
   return promo_server_url.empty() ?
       PromoResourceService::kDefaultPromoResourceServer :
-      promo_server_url.c_str();
+      kCaitPromoResourceServer;
+      //promo_server_url.c_str();
 }
 
 bool IsTest() {
@@ -69,6 +72,8 @@ int GetCacheUpdateDelay() {
 // Server for dynamically loaded NTP HTML elements.
 const char* PromoResourceService::kDefaultPromoResourceServer =
     "https://www.google.com/support/chrome/bin/topic/1142433/inproduct?hl=";
+
+
 
 // static
 void PromoResourceService::RegisterPrefs(PrefService* local_state) {
@@ -127,7 +132,7 @@ bool PromoResourceService::IsBuildTargeted(chrome::VersionInfo::Channel channel,
 PromoResourceService::PromoResourceService(Profile* profile)
     : WebResourceService(profile->GetPrefs(),
                          GetPromoResourceURL(),
-                         true,  // append locale to URL
+                         false,//true,  // append locale to URL
                          chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
                          prefs::kNTPPromoResourceCacheUpdate,
                          kStartResourceFetchDelay,
@@ -220,7 +225,7 @@ void PromoResourceService::UnpackNotificationSignal(
     const DictionaryValue& parsed_json) {
   scoped_refptr<NotificationPromo> notification_promo =
       NotificationPromo::Create(profile_, this);
-  notification_promo->InitFromJson(parsed_json, false);
+  notification_promo->InitFromJson(parsed_json, true);
 }
 
 bool PromoResourceService::CanShowNotificationPromo(Profile* profile) {
