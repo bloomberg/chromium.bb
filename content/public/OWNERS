@@ -1,7 +1,13 @@
 set noparent
+avi@chromium.org
 jam@chromium.org
+joi@chromium.org
+
+# Please include jam@ on all reviews that are adding new interfaces.
+# For other reviews (modifying existing APIs), prefer avi@ or joi@.
+
 # While the Content API is being worked on (see
-# http://dev.chromium.org/developers/content-module/content-api),
-# there's only one owner to ensure that the API is consistent. Once the
+# http://dev.chromium.org/developers/content-module/content-api), we have a very
+# limited set of owners to ensure that the API is consistent. Once the
 # implementation is complete, more owners will be added. If this is holding you
-# up, IM jam.
+# up, IM one of the owners above.
