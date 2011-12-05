@@ -17,6 +17,7 @@
 #include <sys/param.h>
 #include <unistd.h>
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
@@ -54,6 +55,16 @@ nacl::string SelLdrLauncher::GetSelLdrPathName() {
   char buffer[FILENAME_MAX];
   GetPluginDirectory(buffer, sizeof(buffer));
   return nacl::string(buffer) + "/sel_ldr";
+}
+
+nacl::string SelLdrLauncher::GetSelLdrBootstrapPathName() {
+#if NACL_LINUX
+  char buffer[FILENAME_MAX];
+  GetPluginDirectory(buffer, sizeof(buffer));
+  return nacl::string(buffer) + "/nacl_helper_bootstrap";
+#else
+  return nacl::string(NACL_NO_FILE_PATH);
+#endif
 }
 
 Handle SelLdrLauncher::ExportImcFD(int dest_fd) {

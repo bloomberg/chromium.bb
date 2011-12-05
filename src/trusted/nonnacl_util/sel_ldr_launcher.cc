@@ -291,8 +291,11 @@ void SelLdrLauncher::InitCommandLine(int imc_fd,
     sel_ldr_ = GetSelLdrPathName();
   }
   char *bootstrap_var = getenv("NACL_SEL_LDR_BOOTSTRAP");
-  if (bootstrap_var != NULL)
+  if (bootstrap_var != NULL) {
     sel_ldr_bootstrap_ = bootstrap_var;
+  } else {
+    sel_ldr_bootstrap_ = GetSelLdrBootstrapPathName();
+  }
   copy(sel_ldr_argv.begin(), sel_ldr_argv.end(), back_inserter(sel_ldr_argv_));
   copy(app_argv.begin(), app_argv.end(), back_inserter(application_argv_));
   channel_number_ = imc_fd;

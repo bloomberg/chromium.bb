@@ -44,10 +44,17 @@ void ExpectSelLdrLauncherArgv(std::vector<nacl::string>& expected_argv) {
   // Build the command line and verify it, skipping the executable.
   vector<nacl::string> command;
   launcher.BuildCommandLine(&command);
+
   // command vector includes the sel_ldr executable.
-  ASSERT_EQ(expected_argv.size() + 1, command.size());
+  size_t ignored_args = 1;
+#if NACL_LINUX
+  // Skip the bootstrap executable, the sel_ldr executable, and --r_debug.
+  ignored_args += 2;
+#endif
+
+  ASSERT_EQ(expected_argv.size() + ignored_args, command.size());
   for (size_t i = 0; i < expected_argv.size(); i++) {
-    EXPECT_EQ(expected_argv[i], command[i + 1]);
+    EXPECT_EQ(expected_argv[i], command[i + ignored_args]);
   }
 }
 

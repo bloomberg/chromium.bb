@@ -474,13 +474,18 @@ SetupSelLdr() {
   local extra_flags="${3-}"
   local preload="${4-}"
 
-  SEL_LDR="${SCONS_OUT}/opt-${SCONS_BUILD_PLATFORM}-${arch}/staging/sel_ldr"
+  local staging="${SCONS_OUT}/opt-${SCONS_BUILD_PLATFORM}-${arch}/staging"
+  SEL_LDR="${staging}/sel_ldr"
+  SEL_LDR_BOOTSTRAP="${staging}/nacl_helper_bootstrap"
   CheckFileBuilt "sel_ldr" "${SEL_LDR}"
+  CheckFileBuilt "bootstrap" "${SEL_LDR_BOOTSTRAP}"
 
   IRT_IMAGE="${SCONS_OUT}/nacl_irt-${arch}/staging/irt_core.nexe"
   CheckFileBuilt "IRT image" "${IRT_IMAGE}"
 
-  PREFIX="${prefix} ${SEL_LDR} -B ${IRT_IMAGE} -a ${extra_flags} -f ${preload}"
+  PREFIX="${prefix} ${SEL_LDR_BOOTSTRAP} \
+${SEL_LDR} --r_debug=0xXXXXXXXXXXXXXXXX \
+-B ${IRT_IMAGE} -a ${extra_flags} -f ${preload}"
   DASHDASH="--"
 }
 

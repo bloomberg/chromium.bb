@@ -52,6 +52,10 @@ nacl::string SelLdrLauncher::GetSelLdrPathName() {
   return nacl::string(buffer) + kSelLdrBasename;
 }
 
+nacl::string SelLdrLauncher::GetSelLdrBootstrapPathName() {
+  return nacl::string(NACL_NO_FILE_PATH);
+}
+
 // TODO(sehr): document what this is supposed to do exactly
 // NOTE: this may be buggy, e.g. how is \\ handled?
 static nacl::string Escape(nacl::string s) {

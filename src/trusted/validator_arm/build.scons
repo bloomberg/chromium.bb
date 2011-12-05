@@ -39,13 +39,11 @@ if env.Bit('linux'):
                        LIBS=['arm_validator_core',
                              '${OPTIONAL_COVERAGE_LIBS}'])
 
-  env_static = env.Clone()
-  env_static.Append(LINKFLAGS='-static')
-  ncval = env_static.ComponentProgram(
+  ncval = env.ComponentProgram(
       'arm-ncval-core',
       ['ncval.cc'],
       LIBS=['arm_validator_core',
-            env_static.NaClTargetArchSuffix('ncfileutils'),
+            env.NaClTargetArchSuffix('ncfileutils'),
             '${OPTIONAL_COVERAGE_LIBS}'])
 
   env.SDKInstallTrusted('ncval', ncval, target='arm')
