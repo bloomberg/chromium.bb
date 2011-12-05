@@ -501,24 +501,9 @@ function Ribbon(container, client, metadataProvider, arrowLeft, arrowRight) {
   this.arrowRight_.
       addEventListener('click', this.selectNext.bind(this, 1, null));
 
-  this.fadeLeft_ = this.document_.createElement('div');
-  this.fadeLeft_.className = 'fade left';
-  this.container_.appendChild(this.fadeLeft_);
-
-  this.bars_ = [];
-  for (var i = 0; i < 2; i++) {
-    var bar = this.document_.createElement('div');
-    bar.className = 'ribbon';
-    this.container_.appendChild(bar);
-    this.bars_.push(bar);
-  }
-  this.activeBarIndex_ = 0;
-  ImageUtil.setAttribute(this.bars_[0], 'inactive', false);
-  ImageUtil.setAttribute(this.bars_[1], 'inactive', true);
-
-  this.fadeRight_ = this.document_.createElement('div');
-  this.fadeRight_.className = 'fade right';
-  this.container_.appendChild(this.fadeRight_);
+  this.bar_ = this.document_.createElement('div');
+  this.bar_.className = 'ribbon';
+  this.container_.appendChild(this.bar_);
 }
 
 Ribbon.PAGING_SINGLE_ITEM_DELAY = 20;
@@ -529,11 +514,7 @@ Ribbon.prototype.getSelectedItem = function () {
 };
 
 Ribbon.prototype.clear = function() {
-  this.bars_[0].textContent = '';
-  this.bars_[1].textContent = '';
-  this.activeBarIndex_ = 0;
-  ImageUtil.setAttribute(this.bars_[0], 'inactive', false);
-  ImageUtil.setAttribute(this.bars_[1], 'inactive', true);
+  this.bar_.textContent = '';
   this.items_ = [];
   this.selectedIndex_ = -1;
   this.firstVisibleIndex_ = 0;
@@ -639,89 +620,96 @@ Ribbon.prototype.requestPrefetch = function(direction) {
   });
 };
 
-Ribbon.prototype.updateControls_ = function() {
-  ImageUtil.setAttribute(this.fadeLeft_, 'active', this.firstVisibleIndex_ > 0);
-  ImageUtil.setAttribute(this.fadeRight_, 'active',
-      this.lastVisibleIndex_ + 1 < this.items_.length);
-};
+Ribbon.ITEMS_COUNT = 5;
 
 Ribbon.prototype.redraw = function() {
-  // The thumbnails are square.
-  var itemWidth = this.bars_[0].parentNode.clientHeight;
-  var width = this.bars_[0].parentNode.clientWidth;
-
-  var fullItems = Math.floor(width / itemWidth);
+  // TODO(dgozman): use margin instead of 2 here.
+  var itemWidth = this.bar_.clientHeight - 2;
+  var fullItems = Ribbon.ITEMS_COUNT;
+  fullItems = Math.min(fullItems, this.items_.length);
+  var right = Math.floor((fullItems - 1) / 2);
 
   var fullWidth = fullItems * itemWidth;
+  this.bar_.style.width = fullWidth + 'px';
 
-  this.bars_[0].style.width = fullWidth + 'px';
-  this.bars_[1].style.width = fullWidth + 'px';
-
-  // Position the shadows over the first and the last visible thumbnails.
-  this.fadeLeft_.style.left = 0;
-  this.fadeRight_.style.right = (width - fullWidth) + 'px';
-
-  fullItems = Math.min(fullItems, this.items_.length);
-  var firstIndex = this.firstVisibleIndex_;
-  var lastIndex = firstIndex + fullItems - 1;
-
-  if (this.selectedIndex_ <= firstIndex && firstIndex > 0) {
-    firstIndex = Math.max(0, this.selectedIndex_ - (fullItems >> 1));
-    lastIndex = firstIndex + fullItems - 1;
-  }
-
-  if (this.selectedIndex_ >= lastIndex && lastIndex < this.items_.length - 1) {
-    lastIndex = Math.min(this.items_.length - 1,
-                         this.selectedIndex_ + (fullItems >> 1));
-    firstIndex = lastIndex - fullItems + 1;
-  }
-
-  this.updateControls_();
+  var lastIndex = this.selectedIndex_ + right;
+  lastIndex = Math.max(lastIndex, fullItems - 1);
+  lastIndex = Math.min(lastIndex, this.items_.length - 1);
+  var firstIndex = lastIndex - fullItems + 1;
 
   if (this.firstVisibleIndex_ == firstIndex &&
       this.lastVisibleIndex_ == lastIndex) {
     return;
   }
 
-  var activeBar = this.bars_[this.activeBarIndex_];
-  var children = activeBar.childNodes;
-  var totalDuration = children.length * Ribbon.PAGING_SINGLE_ITEM_DELAY +
-      Ribbon.PAGING_ANIMATION_DURATION;
-
-  var direction = 1;
-  var delay = 0;
-  if (firstIndex < this.firstVisibleIndex_) {
-    direction = -1;
-    delay = (children.length - 1) * Ribbon.PAGING_SINGLE_ITEM_DELAY;
-  }
-  for (var index = 0; index < children.length; ++index) {
-    setTimeout(
-        ImageUtil.setAttribute.bind(null, children[index], 'inactive', true),
-        delay);
-    delay += direction * Ribbon.PAGING_SINGLE_ITEM_DELAY;
+  if (this.lastVisibleIndex_ == -1) {
+    this.firstVisibleIndex_ = firstIndex;
+    this.lastVisibleIndex_ = lastIndex;
   }
 
-  // Place inactive bar below active after animation is finished.
-  setTimeout(
-      ImageUtil.setAttribute.bind(null, activeBar, 'inactive', true),
-      totalDuration);
+  this.bar_.textContent = '';
+  var startIndex = Math.min(firstIndex, this.firstVisibleIndex_);
+  var toRemove = [];
+  for (var index = startIndex + 1;
+       index <= Math.max(lastIndex, this.lastVisibleIndex_);
+       ++index) {
+    var box = this.items_[index].getBox(0);
+    box.style.marginLeft = '0';
+    this.bar_.appendChild(box);
+    if (index < firstIndex || index > lastIndex) {
+      toRemove.push(index);
+    }
+  }
+
+  var margin = itemWidth * Math.abs(firstIndex - this.firstVisibleIndex_);
+  var startBox = this.items_[startIndex].getBox(0);
+  if (startIndex == firstIndex) {
+    startBox.style.marginLeft = -margin + 'px';
+    if (this.bar_.firstChild)
+      this.bar_.insertBefore(startBox, this.bar_.firstChild);
+    else
+      this.bar_.appendChild(startBox);
+    setTimeout(function() {
+      startBox.style.marginLeft = '0';
+    }, 0);
+  } else {
+    toRemove.push(startBox);
+    startBox.style.marginLeft = '0';
+    if (this.bar_.firstChild)
+      this.bar_.insertBefore(startBox, this.bar_.firstChild);
+    else
+      this.bar_.appendChild(startBox);
+    setTimeout(function() {
+      startBox.style.marginLeft = -margin + 'px';
+    }, 0);
+  }
+
+  if (firstIndex > 0 && this.selectedIndex_ != firstIndex) {
+    this.bar_.classList.add('fade-left');
+  } else {
+    this.bar_.classList.remove('fade-left');
+  }
+
+  if (lastIndex < this.items_.length - 1 && this.selectedIndex_ != lastIndex) {
+    this.bar_.classList.add('fade-right');
+  } else {
+    this.bar_.classList.remove('fade-right');
+  }
 
   this.firstVisibleIndex_ = firstIndex;
   this.lastVisibleIndex_ = lastIndex;
 
-  this.activeBarIndex_ = 1 - this.activeBarIndex_;
-  activeBar = this.bars_[this.activeBarIndex_];
-  activeBar.textContent = '';
-  for (var index = firstIndex; index <= lastIndex; ++index) {
-    var box = this.items_[index].getBox(this.activeBarIndex_);
-    ImageUtil.setAttribute(box, 'inactive', false);
-    activeBar.appendChild(box);
-  }
-
-  // Place active bar above inactive after animation is finished.
-  setTimeout(
-      ImageUtil.setAttribute.bind(null, activeBar, 'inactive', false),
-      totalDuration);
+  var self = this;
+  setTimeout(function() {
+    for (var i = 0; i < toRemove.length; i++) {
+      var index = toRemove[i];
+      if (i < this.firstVisibleIndex_ || i > this.lastVisibleIndex_) {
+        var box = this.items_[index].getBox(0);
+        if (box.parentNode == this.bar_)
+          this.bar_.removeChild(box);
+      }
+    }
+  }, 200);
 };
 
 Ribbon.prototype.getNextSelectedIndex_ = function(direction) {
@@ -765,26 +753,16 @@ Ribbon.Item = function(index, url, document, selectClosure) {
   this.index_ = index;
   this.url_ = url;
 
-  this.boxes_ = [];
-  this.wrappers_ = [];
-  this.imgs_ = [];
+  this.box_ = document.createElement('div');
+  this.box_.className = 'ribbon-image';
+  this.box_.addEventListener('click', selectClosure);
 
-  for (var i = 0; i < 2; i++) {
-    var box = document.createElement('div');
-    box.className = 'ribbon-image';
-    box.addEventListener('click', selectClosure);
+  this.wrapper_ = document.createElement('div');
+  this.wrapper_.className = 'image-wrapper';
+  this.box_.appendChild(this.wrapper_);
 
-    var wrapper = document.createElement('div');
-    wrapper.className = 'image-wrapper';
-    box.appendChild(wrapper);
-
-    var img = document.createElement('img');
-    wrapper.appendChild(img);
-
-    this.boxes_.push(box);
-    this.wrappers_.push(wrapper);
-    this.imgs_.push(img);
-  }
+  this.img_ = document.createElement('img');
+  this.wrapper_.appendChild(this.img_);
 
   this.original_ = true;
   this.copyName_ = null;
@@ -792,7 +770,7 @@ Ribbon.Item = function(index, url, document, selectClosure) {
 
 Ribbon.Item.prototype.getIndex = function () { return this.index_ };
 
-Ribbon.Item.prototype.getBox = function (index) { return this.boxes_[index] };
+Ribbon.Item.prototype.getBox = function () { return this.box_ };
 
 Ribbon.Item.prototype.isOriginal = function () { return this.original_ };
 
@@ -802,13 +780,11 @@ Ribbon.Item.prototype.setUrl = function (url) { this.url_ = url };
 Ribbon.Item.prototype.getCopyName = function () { return this.copyName_ };
 
 Ribbon.Item.prototype.isSelected = function() {
-  return this.boxes_[0].hasAttribute('selected');
+  return this.box_.hasAttribute('selected');
 };
 
 Ribbon.Item.prototype.select = function(on) {
-  for (var i = 0; i < 2; i++) {
-    ImageUtil.setAttribute(this.boxes_[i], 'selected', on);
-  }
+  ImageUtil.setAttribute(this.box_, 'selected', on);
 };
 
 Ribbon.Item.prototype.updateThumbnail = function(canvas) {
@@ -1019,34 +995,31 @@ Ribbon.Item.prototype.setMetadata = function(metadata) {
       'scaleY(' + transform.scaleY + ') ' +
       'rotate(' + transform.rotate90 * 90 + 'deg)') :
       '';
+  this.wrapper_.style.webkitTransform = webkitTransform;
 
-  for (var i = 0; i < 2; i++) {
-    this.wrappers_[i].style.webkitTransform = webkitTransform;
+  var img = this.img_;
 
-    var img = this.imgs_[i];
-
-    if (metadata.width && metadata.height) {
-      var aspect = metadata.width / metadata.height;
-      if (transform && transform.rotate90) {
-        aspect = 1 / aspect;
-      }
-      resizeToFill(img, aspect);
-    } else {
-      // No metadata available, loading the thumbnail first,
-      // then adjust the size.
-      img.style.maxWidth = '100%';
-      img.style.maxHeight = '100%';
-
-      function onLoad(image) {
-        image.style.maxWidth = '';
-        image.style.maxHeight = '';
-        resizeToFill(image, image.width / image.height);
-      }
-      img.onload = onLoad.bind(null, img);
+  if (metadata.width && metadata.height) {
+    var aspect = metadata.width / metadata.height;
+    if (transform && transform.rotate90) {
+      aspect = 1 / aspect;
     }
+    resizeToFill(img, aspect);
+  } else {
+    // No metadata available, loading the thumbnail first,
+    // then adjust the size.
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '100%';
 
-    img.setAttribute('src', url);
+    function onLoad(image) {
+      image.style.maxWidth = '';
+      image.style.maxHeight = '';
+      resizeToFill(image, image.width / image.height);
+    }
+    img.onload = onLoad.bind(null, img);
   }
+
+  img.setAttribute('src', url);
 };
 
 function ShareMode(editor, container, toolbar, shareActions,

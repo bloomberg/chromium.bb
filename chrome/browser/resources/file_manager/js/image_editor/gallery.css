@@ -238,7 +238,7 @@ body {
 .gallery .filename-spacer > input {
   background-color: transparent;
   color: white;
-  width: 40em;
+  width: 200px;
   border: none;
   outline: none;
 }
@@ -252,29 +252,24 @@ body {
 /* Thumbnails */
 
 .gallery .ribbon-spacer {
-  position: relative;
   display: -webkit-box;
   -webkit-box-flex: 1;
   -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
 }
 
 .gallery .toolbar .ribbon {
-  position: absolute;
-  top: 0px;
-  left: 0px;
   overflow: hidden;
   height: 100%;
+  -webkit-box-flex: 0;
   display: -webkit-box;
   -webkit-box-orient: horizontal;
-  -webkit-box-pack: left;
+  -webkit-box-pack: start;
 
+  width: 280px;
   max-width: 100%;
   -webkit-transition: max-width 500ms ease-in-out;
   z-index: 0;
-}
-
-.gallery .toolbar .ribbon[inactive] {
-  z-index: -1;
 }
 
 .gallery[editing] .toolbar .ribbon {
@@ -292,18 +287,23 @@ body {
   height: 47px;
   margin: 2px;
   border: 2px solid rgba(255,255,255,0); /* transparent white */
-
-  margin-left: 2px;
-  -webkit-transition: opacity 200ms linear;
-}
-
-.gallery .ribbon-image[inactive] {
-  opacity: 0;
-  pointer-events: none;
+  -webkit-transition: margin-left 180ms linear;
 }
 
 .gallery .ribbon-image[selected] {
   border: 2px solid rgba(255,233,168,1);
+}
+
+.gallery .toolbar .ribbon.fade-left {
+  -webkit-mask-image: -webkit-linear-gradient(left, rgba(0,0,0,0) 0, rgba(0,0,0,1) 40px);
+}
+
+.gallery .toolbar .ribbon.fade-right {
+  -webkit-mask-image: -webkit-linear-gradient(right, rgba(0,0,0,0) 0, rgba(0,0,0,1) 40px);
+}
+
+.gallery .toolbar .ribbon.fade-left.fade-right {
+  -webkit-mask-image: -webkit-linear-gradient(left, rgba(0,0,0,0) 0, rgba(0,0,0,1) 40px, rgba(0,0,0,1) 230px, rgba(0,0,0,0) 100%);
 }
 
 .gallery .image-wrapper {
@@ -312,34 +312,6 @@ body {
   width: 45px;
   height: 45px;
   border: 1px solid rgba(0,0,0,0); /* transparent black */
-}
-
-.gallery .toolbar .fade {
-  background-repeat: no-repeat;
-  background-position: center center;
-  position: absolute;
-  z-index: 10;
-  width: 55px;
-  height: 100%;
-  pointer-events: none;
-  opacity: 0;
-  -webkit-transition: opacity 200ms linear;
-}
-
-.gallery .toolbar .fade[active] {
-  opacity: 1;
-}
-
-.gallery[editing] .toolbar .fade[active] {
-  opacity: 0;
-}
-
-.gallery .toolbar .fade.left {
-  background-image: url(../../images/gallery/thumb_fade_left.png);
-}
-
-.gallery .toolbar .fade.right {
-  background-image: url(../../images/gallery/thumb_fade_right.png);
 }
 
 /* Editor buttons */
