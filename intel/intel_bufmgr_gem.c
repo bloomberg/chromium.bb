@@ -953,6 +953,20 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 		bo_gem->relocs = NULL;
 	}
 
+	/* Clear any left-over mappings */
+	if (bo_gem->map_count) {
+		DBG("bo freed with non-zero map-count %d\n", bo_gem->map_count);
+		bo_gem->map_count = 0;
+	}
+	if (bo_gem->mem_virtual) {
+		munmap(bo_gem->mem_virtual, bo_gem->bo.size);
+		bo_gem->mem_virtual = 0;
+	}
+	if (bo_gem->gtt_virtual) {
+		munmap(bo_gem->gtt_virtual, bo_gem->bo.size);
+		bo_gem->gtt_virtual = 0;
+	}
+
 	DRMLISTDEL(&bo_gem->name_list);
 
 	bucket = drm_intel_gem_bo_bucket_for_size(bufmgr_gem, bo->size);
