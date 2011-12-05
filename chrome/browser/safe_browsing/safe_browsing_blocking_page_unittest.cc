@@ -11,6 +11,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/common/view_messages.h"
 #include "content/test/test_browser_thread.h"
 
 using content::BrowserThread;
@@ -109,9 +110,10 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness,
   }
 
   void Navigate(const char* url, int page_id) {
-    contents()->TestDidNavigate(
-        contents()->render_view_host(), page_id, GURL(url),
-        content::PAGE_TRANSITION_TYPED);
+    ViewHostMsg_FrameNavigate_Params params;
+    InitNavigateParams(
+        &params, page_id, GURL(url), content::PAGE_TRANSITION_TYPED);
+    contents()->TestDidNavigate(contents()->render_view_host(), params);
   }
 
   void GoBackCrossSite() {
@@ -120,9 +122,10 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness,
     contents()->controller().GoBack();
 
     // The navigation should commit in the pending RVH.
-    contents()->TestDidNavigate(
-        contents()->pending_rvh(), entry->page_id(), GURL(entry->url()),
-        content::PAGE_TRANSITION_TYPED);
+    ViewHostMsg_FrameNavigate_Params params;
+    InitNavigateParams(&params, entry->page_id(), GURL(entry->url()),
+                       content::PAGE_TRANSITION_TYPED);
+    contents()->TestDidNavigate(contents()->pending_rvh(), params);
   }
 
   void ShowInterstitial(bool is_subresource, const char* url) {

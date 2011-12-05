@@ -22,13 +22,12 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/common/view_messages.h"
 #include "content/public/common/page_transition_types.h"
-#include "content/public/common/referrer.h"
 #include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebReferrerPolicy.h"
 
 using ::testing::Return;
 using ::testing::StrictMock;
@@ -98,14 +97,17 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
         type, std::string());
 
     static int page_id = 0;
+    ViewHostMsg_FrameNavigate_Params params;
+    InitNavigateParams(&params, ++page_id, url, type);
+    params.referrer =
+        content::Referrer(referrer, WebKit::WebReferrerPolicyDefault);
+
     RenderViewHost* rvh = contents()->pending_rvh();
     if (!rvh) {
       rvh = contents()->render_view_host();
     }
     contents()->ProceedWithCrossSiteNavigation();
-    contents()->TestDidNavigateWithReferrer(
-        rvh, ++page_id, url,
-        content::Referrer(referrer, WebKit::WebReferrerPolicyDefault), type);
+    contents()->TestDidNavigate(rvh, params);
   }
 
   bool ExtractFeatures(ClientPhishingRequest* request) {

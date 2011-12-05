@@ -218,7 +218,10 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   const GURL url("http://www.google.com");
   controller().LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
-  contents()->TestDidNavigate(rvh(), 1, url, content::PAGE_TRANSITION_TYPED);
+  ViewHostMsg_FrameNavigate_Params params1;
+  InitNavigateParams(&params1, 1, url, content::PAGE_TRANSITION_TYPED);
+  TestRenderViewHost* orig_rvh = rvh();
+  contents()->TestDidNavigate(orig_rvh, params1);
   EXPECT_FALSE(contents()->cross_navigation_pending());
 
   TestDevToolsClientHost client_host;
@@ -238,7 +241,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   // Interrupt pending navigation and navigate back to the original site.
   controller().LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
-  contents()->TestDidNavigate(rvh(), 1, url, content::PAGE_TRANSITION_TYPED);
+  contents()->TestDidNavigate(orig_rvh, params1);
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(&client_host, devtools_manager->GetDevToolsClientHostFor(
       DevToolsAgentHostRegistry::GetDevToolsAgentHost(rvh())));
