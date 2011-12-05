@@ -180,6 +180,7 @@ class GViewRequestInterceptorTest : public testing::Test {
             false,       // is_download
             true,        // allow_download
             false,       // has_user_gesture
+            WebKit::WebReferrerPolicyDefault,
             context);
     request->SetUserData(NULL, info);
     request->set_context(context->request_context());
