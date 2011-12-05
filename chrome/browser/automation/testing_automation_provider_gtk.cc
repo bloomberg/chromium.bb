@@ -43,7 +43,10 @@ void TestingAutomationProvider::WindowGetViewBounds(int handle,
     if (!widget)
       return;
     *success = true;
-    *bounds = gfx::Rect(widget->allocation.width, widget->allocation.height);
+
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
+    *bounds = gfx::Rect(allocation.width, allocation.height);
     gint x, y;
     if (screen_coordinates) {
       gfx::Point point = gtk_util::GetWidgetScreenPosition(widget);

@@ -97,7 +97,9 @@ void StatusBubbleGtk::SetStatusTextToURL() {
   if (!parent || !gtk_widget_get_realized(parent))
     return;
 
-  int desired_width = parent->allocation.width;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(parent, &allocation);
+  int desired_width = allocation.width;
   if (!expanded()) {
     expand_timer_.Stop();
     expand_timer_.Start(FROM_HERE,
@@ -190,6 +192,9 @@ void StatusBubbleGtk::MouseMoved(
     GtkRequisition requisition;
     gtk_widget_size_request(container_.get(), &requisition);
 
+    GtkAllocation parent_allocation;
+    gtk_widget_get_allocation(parent, &parent_allocation);
+
     // Get our base position (that is, not including the current offset)
     // relative to the origin of the root window.
     gint toplevel_x = 0, toplevel_y = 0;
@@ -198,9 +203,9 @@ void StatusBubbleGtk::MouseMoved(
         gtk_util::GetWidgetRectRelativeToToplevel(parent);
     gfx::Rect bubble_rect(
         toplevel_x + parent_rect.x() +
-            (ltr ? 0 : parent->allocation.width - requisition.width),
+            (ltr ? 0 : parent_allocation.width - requisition.width),
         toplevel_y + parent_rect.y() +
-            parent->allocation.height - requisition.height,
+            parent_allocation.height - requisition.height,
         requisition.width,
         requisition.height);
 
@@ -328,7 +333,9 @@ void StatusBubbleGtk::SetFlipHorizontally(bool flip_horizontally) {
 }
 
 void StatusBubbleGtk::ExpandURL() {
-  start_width_ = label_.get()->allocation.width;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(label_.get(), &allocation);
+  start_width_ = allocation.width;
   expand_animation_.reset(new ui::SlideAnimation(this));
   expand_animation_->SetTweenType(ui::Tween::LINEAR);
   expand_animation_->Show();

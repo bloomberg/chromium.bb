@@ -417,15 +417,17 @@ gboolean BalloonViewImpl::OnContentsExpose(GtkWidget* sender,
   gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);
 
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(sender, &allocation);
+
   // According to a discussion on a mailing list I found, these degenerate
   // paths are the officially supported way to draw points in Cairo.
   cairo_set_source_rgb(cr, 0, 0, 0);
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
   cairo_set_line_width(cr, 1.0);
-  cairo_move_to(cr, 0.5, sender->allocation.height - 0.5);
+  cairo_move_to(cr, 0.5, allocation.height - 0.5);
   cairo_close_path(cr);
-  cairo_move_to(cr, sender->allocation.width - 0.5,
-                    sender->allocation.height - 0.5);
+  cairo_move_to(cr, allocation.width - 0.5, allocation.height - 0.5);
   cairo_close_path(cr);
   cairo_stroke(cr);
   cairo_destroy(cr);

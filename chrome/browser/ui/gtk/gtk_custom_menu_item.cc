@@ -205,16 +205,22 @@ static void gtk_custom_menu_item_expose_button(GtkWidget* hbox,
   if (base::i18n::IsRTL())
     std::swap(first_button, last_button);
 
-  int x = first_button->allocation.x;
-  int y = first_button->allocation.y;
-  int width = last_button->allocation.width + last_button->allocation.x -
-              first_button->allocation.x;
-  int height = last_button->allocation.height;
+  GtkAllocation first_allocation;
+  gtk_widget_get_allocation(first_button, &first_allocation);
+  GtkAllocation current_allocation;
+  gtk_widget_get_allocation(current_button, &current_allocation);
+  GtkAllocation last_allocation;
+  gtk_widget_get_allocation(last_button, &last_allocation);
+
+  int x = first_allocation.x;
+  int y = first_allocation.y;
+  int width = last_allocation.width + last_allocation.x - first_allocation.x;
+  int height = last_allocation.height;
 
   gtk_paint_box(hbox->style, hbox->window,
                 gtk_widget_get_state(current_button),
                 GTK_SHADOW_OUT,
-                &current_button->allocation, hbox, "button",
+                &current_allocation, hbox, "button",
                 x, y, width, height);
 
   // Propagate to the button's children.
@@ -248,16 +254,19 @@ static gboolean gtk_custom_menu_item_hbox_expose(GtkWidget* widget,
       GList* next_item = g_list_next(current_item);
       if (next_item && GTK_IS_BUTTON(next_item->data)) {
         GtkWidget* current_button = GTK_WIDGET(current_item->data);
-        GtkAllocation child_alloc =
-            gtk_bin_get_child(GTK_BIN(current_button))->allocation;
+        GtkAllocation button_allocation;
+        gtk_widget_get_allocation(current_button, &button_allocation);
+        GtkAllocation child_alloc;
+        gtk_widget_get_allocation(gtk_bin_get_child(GTK_BIN(current_button)),
+                                  &child_alloc);
         int half_offset = widget->style->xthickness / 2;
         gtk_paint_vline(widget->style, widget->window,
                         gtk_widget_get_state(current_button),
                         &event->area, widget, "button",
                         child_alloc.y,
                         child_alloc.y + child_alloc.height,
-                        current_button->allocation.x +
-                        current_button->allocation.width - half_offset);
+                        button_allocation.x +
+                        button_allocation.width - half_offset);
       }
     }
   }
@@ -368,7 +377,8 @@ void gtk_custom_menu_item_receive_motion_event(GtkCustomMenuItem* menu_item,
   GList* current = menu_item->button_widgets;
   for (; current != NULL; current = current->next) {
     GtkWidget* current_widget = GTK_WIDGET(current->data);
-    GtkAllocation alloc = current_widget->allocation;
+    GtkAllocation alloc;
+    gtk_widget_get_allocation(current_widget, &alloc);
     int offset_x, offset_y;
     gtk_widget_translate_coordinates(current_widget, GTK_WIDGET(menu_item),
                                      0, 0, &offset_x, &offset_y);

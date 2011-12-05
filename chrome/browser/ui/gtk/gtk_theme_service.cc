@@ -1217,11 +1217,13 @@ gboolean GtkThemeService::OnSeparatorExpose(GtkWidget* widget,
       static_cast<double>(bottom_color.green / 257) / 255.0,
       static_cast<double>(bottom_color.blue / 257) / 255.0, };
 
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+
   cairo_pattern_t* pattern =
-      cairo_pattern_create_linear(widget->allocation.x, widget->allocation.y,
-                                  widget->allocation.x,
-                                  widget->allocation.y +
-                                  widget->allocation.height);
+      cairo_pattern_create_linear(allocation.x, allocation.y,
+                                  allocation.x,
+                                  allocation.y + allocation.height);
   cairo_pattern_add_color_stop_rgb(
       pattern, 0.0,
       kTopSeparatorColor[0], kTopSeparatorColor[1], kTopSeparatorColor[2]);
@@ -1233,12 +1235,11 @@ gboolean GtkThemeService::OnSeparatorExpose(GtkWidget* widget,
       bottom_color_rgb[0], bottom_color_rgb[1], bottom_color_rgb[2]);
   cairo_set_source(cr, pattern);
 
-  double start_x = 0.5 + widget->allocation.x;
+  double start_x = 0.5 + allocation.x;
   cairo_new_path(cr);
   cairo_set_line_width(cr, 1.0);
-  cairo_move_to(cr, start_x, widget->allocation.y);
-  cairo_line_to(cr, start_x,
-                widget->allocation.y + widget->allocation.height);
+  cairo_move_to(cr, start_x, allocation.y);
+  cairo_line_to(cr, start_x, allocation.y + allocation.height);
   cairo_stroke(cr);
   cairo_destroy(cr);
   cairo_pattern_destroy(pattern);

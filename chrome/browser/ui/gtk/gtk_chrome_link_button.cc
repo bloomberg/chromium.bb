@@ -137,11 +137,13 @@ static gboolean gtk_chrome_link_button_expose(GtkWidget* widget,
 
   // Draw the focus rectangle.
   if (gtk_widget_has_focus(widget)) {
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
     gtk_paint_focus(widget->style, widget->window,
                     gtk_widget_get_state(widget),
                     &event->area, widget, NULL,
-                    widget->allocation.x, widget->allocation.y,
-                    widget->allocation.width, widget->allocation.height);
+                    allocation.x, allocation.y,
+                    allocation.width, allocation.height);
   }
 
   return TRUE;

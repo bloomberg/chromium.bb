@@ -162,7 +162,10 @@ void TabContentsViewGtk::GetContainerBounds(gfx::Rect* out) const {
   GdkWindow* expanded_window = gtk_widget_get_window(expanded_.get());
   if (expanded_window)
     gdk_window_get_origin(expanded_window, &x, &y);
-  out->SetRect(x + expanded_->allocation.x, y + expanded_->allocation.y,
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(expanded_.get(), &allocation);
+  out->SetRect(x + allocation.x, y + allocation.y,
                requested_size_.width(), requested_size_.height());
 }
 

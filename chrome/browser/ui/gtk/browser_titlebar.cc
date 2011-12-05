@@ -852,8 +852,11 @@ void BrowserTitlebar::MaximizeButtonClicked() {
 
     gint x, y;
     gtk_window_get_position(window_, &x, &y);
-    gint width = widget->allocation.width;
-    gint height = widget->allocation.height;
+
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
+    gint width = allocation.width;
+    gint height = allocation.height;
 
     if (event->button.button == 3) {
       x = 0;

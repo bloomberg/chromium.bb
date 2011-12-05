@@ -135,14 +135,17 @@ gboolean OnDragIconExpose(GtkWidget* sender,
   cairo_paint(cr);
   cairo_destroy(cr);
 
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(sender, &allocation);
+
   // Paint the title text.
   gfx::CanvasSkiaPaint canvas(event, false);
   int text_x = gdk_pixbuf_get_width(data->favicon) + kBarButtonPadding;
-  int text_width = sender->allocation.width - text_x;
+  int text_width = allocation.width - text_x;
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
   canvas.DrawStringInt(data->text, base_font, data->text_color,
-                       text_x, 0, text_width, sender->allocation.height);
+                       text_x, 0, text_width, allocation.height);
 
   return TRUE;
 }

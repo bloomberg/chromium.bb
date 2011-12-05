@@ -178,5 +178,7 @@ void ExtensionPopupGtk::DestroyPopupWithoutResult() {
 }
 
 gfx::Rect ExtensionPopupGtk::GetViewBounds() {
-  return gfx::Rect(host_->view()->native_view()->allocation);
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(host_->view()->native_view(), &allocation);
+  return gfx::Rect(allocation);
 }

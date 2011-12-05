@@ -175,8 +175,10 @@ void NineBox::RenderTopCenterStrip(cairo_t* cr, int x, int y,
 }
 
 void NineBox::ContourWidget(GtkWidget* widget) const {
-  int width = widget->allocation.width;
-  int height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width;
+  int height = allocation.height;
   int x1 = gdk_pixbuf_get_width(images_[0]);
   int x2 = width - gdk_pixbuf_get_width(images_[2]);
 

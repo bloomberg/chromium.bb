@@ -372,7 +372,9 @@ void FindBarGtk::UpdateUIForFindResult(const FindNotificationDetails& result,
   if (!result.selection_rect().IsEmpty()) {
     selection_rect_ = result.selection_rect();
     int xposition = GetDialogPosition(result.selection_rect()).x();
-    if (xposition != widget()->allocation.x)
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget(), &allocation);
+    if (xposition != allocation.x)
       Reposition();
   }
 
@@ -814,12 +816,9 @@ gboolean FindBarGtk::OnContentEventBoxExpose(GtkWidget* widget,
     // (*cough*Clearlooks*cough*) don't do any blending and use thickness to
     // make sure that widgets never overlap.
     int padding = gtk_widget_get_style(widget)->xthickness;
-    GdkRectangle rec = {
-      widget->allocation.x,
-      widget->allocation.y,
-      widget->allocation.width - padding,
-      widget->allocation.height
-    };
+    GdkRectangle rec;
+    gtk_widget_get_allocation(widget, &rec);
+    rec.width -= padding;
 
     gtk_util::DrawTextEntryBackground(bar->text_entry_, widget,
                                       &event->area, &rec);
@@ -831,11 +830,14 @@ gboolean FindBarGtk::OnContentEventBoxExpose(GtkWidget* widget,
 // Used to handle custom painting of |container_|.
 gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
                               FindBarGtk* bar) {
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+
   if (bar->theme_service_->UsingNativeTheme()) {
-    if (bar->container_width_ != widget->allocation.width ||
-        bar->container_height_ != widget->allocation.height) {
+    if (bar->container_width_ != allocation.width ||
+        bar->container_height_ != allocation.height) {
       std::vector<GdkPoint> mask_points = MakeFramePolygonPoints(
-          widget->allocation.width, widget->allocation.height, FRAME_MASK);
+          allocation.width, allocation.height, FRAME_MASK);
       GdkRegion* mask_region = gdk_region_polygon(&mask_points[0],
                                                   mask_points.size(),
                                                   GDK_EVEN_ODD_RULE);
@@ -844,8 +846,8 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
       gdk_window_shape_combine_region(widget->window, mask_region, 0, 0);
       gdk_region_destroy(mask_region);
 
-      bar->container_width_ = widget->allocation.width;
-      bar->container_height_ = widget->allocation.height;
+      bar->container_width_ = allocation.width;
+      bar->container_height_ = allocation.height;
     }
 
     GdkDrawable* drawable = GDK_DRAWABLE(e->window);
@@ -856,19 +858,19 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
 
     // Stroke the frame border.
     std::vector<GdkPoint> points = MakeFramePolygonPoints(
-        widget->allocation.width, widget->allocation.height, FRAME_STROKE);
+        allocation.width, allocation.height, FRAME_STROKE);
     gdk_draw_lines(drawable, gc, &points[0], points.size());
 
     g_object_unref(gc);
   } else {
-    if (bar->container_width_ != widget->allocation.width ||
-        bar->container_height_ != widget->allocation.height) {
+    if (bar->container_width_ != allocation.width ||
+        bar->container_height_ != allocation.height) {
       // Reset the shape.
       gdk_window_shape_combine_region(widget->window, NULL, 0, 0);
       SetDialogShape(bar->container_);
 
-      bar->container_width_ = widget->allocation.width;
-      bar->container_height_ = widget->allocation.height;
+      bar->container_width_ = allocation.width;
+      bar->container_height_ = allocation.height;
     }
 
     cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));

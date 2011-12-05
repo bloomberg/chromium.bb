@@ -96,7 +96,7 @@ void SetupImageIcon(GtkWidget* button,
 // Returns the new Y position of the popup menu.
 int CalculateMenuYPosition(const GdkRectangle* screen_rect,
                            const GtkRequisition* menu_req,
-                           const GtkWidget* widget, const int y) {
+                           GtkWidget* widget, const int y) {
   CHECK(screen_rect);
   CHECK(menu_req);
   // If the menu would run off the bottom of the screen, and there is enough
@@ -107,8 +107,11 @@ int CalculateMenuYPosition(const GdkRectangle* screen_rect,
   const int screen_bottom = screen_rect->y + screen_rect->height;
   const int menu_bottom = y + menu_req->height;
   int alternate_y = y - menu_req->height;
-  if (widget)
-    alternate_y -= widget->allocation.height;
+  if (widget) {
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
+    alternate_y -= allocation.height;
+  }
   if (menu_bottom >= screen_bottom && alternate_y >= screen_top)
     return alternate_y;
   return y;
@@ -695,11 +698,14 @@ void MenuGtk::WidgetMenuPositionFunc(GtkMenu* menu,
   gdk_screen_get_monitor_geometry(screen, monitor,
                                   &screen_rect);
 
-  if (GTK_WIDGET_NO_WINDOW(widget)) {
-    *x += widget->allocation.x;
-    *y += widget->allocation.y;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+
+  if (!gtk_widget_get_has_window(widget)) {
+    *x += allocation.x;
+    *y += allocation.y;
   }
-  *y += widget->allocation.height;
+  *y += allocation.height;
 
   bool start_align =
     !!g_object_get_data(G_OBJECT(widget), "left-align-popup");
@@ -707,7 +713,7 @@ void MenuGtk::WidgetMenuPositionFunc(GtkMenu* menu,
     start_align = !start_align;
 
   if (!start_align)
-    *x += widget->allocation.width - menu_req.width;
+    *x += allocation.width - menu_req.width;
 
   *y = CalculateMenuYPosition(&screen_rect, &menu_req, widget, *y);
 
