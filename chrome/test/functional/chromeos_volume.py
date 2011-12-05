@@ -18,6 +18,8 @@ class ChromeosVolume(pyauto.PyUITest):
   lock, logout, etc...
   """
 
+  DEFAULT_VOLUME = {u'volume': 77.134215500945189, u'is_mute': False}
+
   def setUp(self):
     # We want a clean session_manager instance for every run,
     # so restart session_manager now.
@@ -39,6 +41,14 @@ class ChromeosVolume(pyauto.PyUITest):
     logging.info('Logged in as %s' % credentials['username'])   
     login_info = self.GetLoginInfo()
     self.assertTrue(login_info['is_logged_in'], msg='Login failed.')
+
+  def testDefaultVolume(self):
+    """Test the default volume settings"""
+    self._Login()
+    volume = self.GetVolumeInfo()
+    self.assertEqual(volume, self.DEFAULT_VOLUME,
+        msg='Volume settings are set to %s, not matching with default '\
+        'volume settings %s.' % (volume, self.DEFAULT_VOLUME))
 
   def testLoginLogoutVolume(self):
     """Test that volume settings are preserved after login and logout"""
