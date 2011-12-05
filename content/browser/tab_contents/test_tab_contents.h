@@ -7,6 +7,7 @@
 #pragma once
 
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/common/page_transition_types.h"
 #include "webkit/glue/webpreferences.h"
 
 class TestRenderViewHost;
@@ -30,11 +31,15 @@ class TestTabContents : public TabContents {
   // alternatives without using command-line switches.
   bool ShouldTransitionCrossSite() { return transition_cross_site; }
 
-  // Promote DidNavigate to public.
   void TestDidNavigate(RenderViewHost* render_view_host,
-                       const ViewHostMsg_FrameNavigate_Params& params) {
-    DidNavigate(render_view_host, params);
-  }
+                       int page_id,
+                       const GURL& url,
+                       content::PageTransition transition);
+  void TestDidNavigateWithReferrer(RenderViewHost* render_view_host,
+                                   int page_id,
+                                   const GURL& url,
+                                   const content::Referrer& referrer,
+                                   content::PageTransition transition);
 
   // Promote GetWebkitPrefs to public.
   WebPreferences TestGetWebkitPrefs() {

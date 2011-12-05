@@ -8,7 +8,6 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
-#include "content/common/view_messages.h"
 #include "content/test/test_browser_thread.h"
 
 using content::BrowserThread;
@@ -75,10 +74,9 @@ class OfflineLoadPageTest : public ChromeRenderViewHostTestHarness {
   }
 
   void Navigate(const char* url, int page_id) {
-    ViewHostMsg_FrameNavigate_Params params;
-    InitNavigateParams(
-        &params, page_id, GURL(url), content::PAGE_TRANSITION_TYPED);
-    contents()->TestDidNavigate(contents()->render_view_host(), params);
+    contents()->TestDidNavigate(
+        contents()->render_view_host(), page_id, GURL(url),
+        content::PAGE_TRANSITION_TYPED);
   }
 
   void ShowInterstitial(const char* url) {
