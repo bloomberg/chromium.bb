@@ -7,7 +7,3 @@
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
 
-// These can be removed once http://trac.webkit.org/changeset/101997 has been rolled into Chrome.
-BUGVSEVIK LEOPARD : http/tests/security/mixedContent/insecure-video-in-main-frame.html = TEXT PASS
-BUGVSEVIK LEOPARD : http/tests/security/mixedContent/redirect-http-to-https-video-in-main-frame.html = TEXT PASS
-
