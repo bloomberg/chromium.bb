@@ -400,6 +400,16 @@ class S2Test(BaseTestCase):
       self._check_res(res, None, None, 10)
     self._run_test(fn)
 
+  def test_stdin_empty(self):
+    def fn(c, e, un):
+      stdin = ''
+      res = subprocess2.communicate(
+          e + ['--read'],
+          stdin=stdin,
+          universal_newlines=un)
+      self._check_res(res, None, None, 0)
+    self._run_test(fn)
+
   def test_stdin_void(self):
     res = subprocess2.communicate(self.exe + ['--read'], stdin=VOID)
     self._check_res(res, None, None, 0)

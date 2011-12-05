@@ -173,24 +173,21 @@ class Popen(subprocess.Popen):
 
     self.stdout_cb = None
     self.stderr_cb = None
-    self.stdout_void = False
-    self.stderr_void = False
-    def fix(stream):
+    self.stdin_is_void = False
+    self.stdout_is_void = False
+    self.stderr_is_void = False
+
+    if kwargs.get('stdin') is VOID:
+      kwargs['stdin'] = open(os.devnull, 'r')
+      self.stdin_is_void = True
+
+    for stream in ('stdout', 'stderr'):
       if kwargs.get(stream) in (VOID, os.devnull):
-        # Replaces VOID with handle to /dev/null.
-        # Create a temporary file to workaround python's deadlock.
-        # http://docs.python.org/library/subprocess.html#subprocess.Popen.wait
-        # When the pipe fills up, it will deadlock this process. Using a real
-        # file works around that issue.
         kwargs[stream] = open(os.devnull, 'w')
-        setattr(self, stream + '_void', True)
+        setattr(self, stream + '_is_void', True)
       if callable(kwargs.get(stream)):
-        # Callable stdout/stderr should be used only with call() wrappers.
         setattr(self, stream + '_cb', kwargs[stream])
         kwargs[stream] = PIPE
-
-    fix('stdout')
-    fix('stderr')
 
     self.start = time.time()
     self.timeout = None
@@ -288,6 +285,9 @@ class Popen(subprocess.Popen):
         target=_queue_pipe_read, args=(self.stderr, 'stderr'))
     if input:
       threads['stdin'] = threading.Thread(target=write_stdin)
+    elif self.stdin:
+      # Pipe but no input, make sure it's closed.
+      self.stdin.close()
     for t in threads.itervalues():
       t.start()
 
@@ -346,20 +346,19 @@ class Popen(subprocess.Popen):
     stderr = None
     # Convert to a lambda to workaround python's deadlock.
     # http://docs.python.org/library/subprocess.html#subprocess.Popen.wait
-    # When the pipe fills up, it will deadlock this process. Using a thread
-    # works around that issue. No need for thread safe function since the call
-    # backs are guaranteed to be called from the main thread.
-    if self.stdout and not self.stdout_cb and not self.stdout_void:
-      stdout = cStringIO.StringIO()
-      self.stdout_cb = stdout.write
-    if self.stderr and not self.stderr_cb and not self.stderr_void:
-      stderr = cStringIO.StringIO()
-      self.stderr_cb = stderr.write
+    # When the pipe fills up, it would deadlock this process.
+    if self.stdout and not self.stdout_cb and not self.stdout_is_void:
+      stdout = []
+      self.stdout_cb = stdout.append
+    if self.stderr and not self.stderr_cb and not self.stderr_is_void:
+      stderr = []
+      self.stderr_cb = stderr.append
     self._tee_threads(input)
-    if stdout:
-      stdout = stdout.getvalue()
-    if stderr:
-      stderr = stderr.getvalue()
+    if stdout is not None:
+      stdout = ''.join(stdout)
+    stderr = None
+    if stderr is not None:
+      stderr = ''.join(stderr)
     return (stdout, stderr)
 
 
@@ -374,17 +373,16 @@ def communicate(args, timeout=None, **kwargs):
   """
   stdin = kwargs.pop('stdin', None)
   if stdin is not None:
-    if stdin is VOID:
-      kwargs['stdin'] = open(os.devnull, 'r')
-      stdin = None
-    else:
-      assert isinstance(stdin, basestring)
+    if isinstance(stdin, basestring):
       # When stdin is passed as an argument, use it as the actual input data and
       # set the Popen() parameter accordingly.
       kwargs['stdin'] = PIPE
+    else:
+      kwargs['stdin'] = stdin
+      stdin = None
 
   proc = Popen(args, **kwargs)
-  if stdin not in (None, VOID):
+  if stdin:
     return proc.communicate(stdin, timeout), proc.returncode
   else:
     return proc.communicate(None, timeout), proc.returncode
