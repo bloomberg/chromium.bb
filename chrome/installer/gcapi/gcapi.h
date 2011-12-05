@@ -27,20 +27,23 @@ extern "C" {
 BOOL __stdcall GoogleChromeCompatibilityCheck(BOOL set_flag, DWORD* reasons);
 
 // This function launches Google Chrome after a successful install. Make
-// sure COM library is NOT initalized before you call this function (so if
+// sure COM library is NOT initialized before you call this function (so if
 // you called CoInitialize, call CoUninitialize before calling this function).
 BOOL __stdcall LaunchGoogleChrome();
 
 // This function launches Google Chrome after a successful install at the
-// given x,y coordinates with size height,length. Make
-// sure COM library is NOT initalized before you call this function (so if
-// you called CoInitialize, call CoUninitialize before calling this function).
+// given x,y coordinates with size height,length. Set in_background to true
+// to move Google Chrome behind all other windows or false to have it appear
+// at the default z-order. Make sure that COM is NOT initialized before you call
+// this function (so if you called CoInitialize, call CoUninitialize before
+// calling this function).
 // This call is synchronous, meaning it waits for Chrome to launch and appear
 // to resize it before returning.
 BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
-                                                          int y,
-                                                          int width,
-                                                          int height);
+                                                int y,
+                                                int width,
+                                                int height,
+                                                bool in_background);
 
 // This function returns the number of days since Google Chrome was last run by
 // the current user. If both user-level and machine-wide installations are

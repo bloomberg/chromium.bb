@@ -10,8 +10,6 @@
 
 #include "chrome/installer/gcapi/gcapi.h"
 
-#include <atlbase.h>
-#include <atlcom.h>
 #include <sddl.h>
 #define STRSAFE_NO_DEPRECATE
 #include <strsafe.h>
@@ -23,12 +21,25 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_com_initializer.h"
+#include "base/win/scoped_comptr.h"
+#include "base/win/scoped_handle.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/util_constants.h"
 
 #include "google_update_idl.h"  // NOLINT
+
+using base::Time;
+using base::TimeDelta;
+using base::win::RegKey;
+using base::win::ScopedCOMInitializer;
+using base::win::ScopedComPtr;
+using base::win::ScopedHandle;
 
 namespace {
 
@@ -47,6 +58,8 @@ const wchar_t kChromeRegLastLaunchCmd[] = L"LastInstallerSuccessLaunchCmdLine";
 const wchar_t kChromeRegVersion[] = L"pv";
 const wchar_t kNoChromeOfferUntil[] =
     L"SOFTWARE\\Google\\No Chrome Offer Until";
+
+const wchar_t kChromeWindowClass[] = L"Chrome_WidgetWin_0";
 
 // Return the company name specified in the file version info resource.
 bool GetCompanyName(const wchar_t* filename, wchar_t* buffer, DWORD out_len) {
@@ -339,29 +352,49 @@ BOOL __stdcall GoogleChromeCompatibilityCheck(BOOL set_flag, DWORD* reasons) {
 }
 
 BOOL __stdcall LaunchGoogleChrome() {
-  wchar_t launch_cmd[MAX_PATH];
-  size_t size = _countof(launch_cmd);
-  if (!ReadValueFromRegistry(HKEY_LOCAL_MACHINE, kChromeRegClientStateKey,
-                             kChromeRegLastLaunchCmd, launch_cmd, &size)) {
-    size = _countof(launch_cmd);
-    if (!ReadValueFromRegistry(HKEY_LOCAL_MACHINE, kChromeRegClientStateKey,
-                               kChromeRegLaunchCmd, launch_cmd, &size)) {
+  // Check to make sure we have a valid Chrome installation.
+  HKEY install_key = HKEY_LOCAL_MACHINE;
+  if (!IsChromeInstalled(install_key)) {
+    install_key = HKEY_CURRENT_USER;
+    if (!IsChromeInstalled(install_key)) {
       return false;
     }
   }
 
-  HRESULT hr = ::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-  if (hr != S_OK) {
-    if (hr == S_FALSE)
-      ::CoUninitialize();
+  // Now grab the uninstall string from the appropriate ClientState key
+  // and use that as the base for a path to chrome.exe.
+  FilePath chrome_exe_path;
+  RegKey client_state(install_key, kChromeRegClientStateKey, KEY_QUERY_VALUE);
+  if (client_state.Valid()) {
+    std::wstring uninstall_string;
+    if (client_state.ReadValue(installer::kUninstallStringField,
+                               &uninstall_string) == ERROR_SUCCESS) {
+      // The uninstall path contains the path to setup.exe which is two levels
+      // down from chrome.exe. Move up two levels (plus one to drop the file
+      // name) and look for chrome.exe from there.
+      FilePath uninstall_path(uninstall_string);
+      chrome_exe_path = uninstall_path.DirName()
+                                      .DirName()
+                                      .DirName()
+                                      .Append(installer::kChromeExe);
+      if (!file_util::PathExists(chrome_exe_path)) {
+        // By way of mild future proofing, look up one to see if there's a
+        // chrome.exe in the version directory
+        chrome_exe_path =
+            uninstall_path.DirName().DirName().Append(installer::kChromeExe);
+      }
+    }
+  }
+
+  if (!file_util::PathExists(chrome_exe_path)) {
     return false;
   }
 
+  ScopedCOMInitializer com_initializer;
   if (::CoInitializeSecurity(NULL, -1, NULL, NULL,
                              RPC_C_AUTHN_LEVEL_PKT_PRIVACY,
                              RPC_C_IMP_LEVEL_IDENTIFY, NULL,
                              EOAC_DYNAMIC_CLOAKING, NULL) != S_OK) {
-    ::CoUninitialize();
     return false;
   }
 
@@ -369,7 +402,6 @@ BOOL __stdcall LaunchGoogleChrome() {
   if (IsRunningElevated()) {
     wchar_t* curr_proc_sid;
     if (!GetUserIdForProcess(GetCurrentProcessId(), &curr_proc_sid)) {
-      ::CoUninitialize();
       return false;
     }
 
@@ -377,16 +409,17 @@ BOOL __stdcall LaunchGoogleChrome() {
     ::GetWindowThreadProcessId(::GetShellWindow(), &pid);
     if (pid <= 0) {
       ::LocalFree(curr_proc_sid);
-      ::CoUninitialize();
       return false;
     }
 
     wchar_t* exp_proc_sid;
     if (GetUserIdForProcess(pid, &exp_proc_sid)) {
       if (_wcsicmp(curr_proc_sid, exp_proc_sid) == 0) {
-        HANDLE process_handle = ::OpenProcess(
-            PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION, TRUE, pid);
-        if (process_handle != NULL) {
+        ScopedHandle process_handle(
+            ::OpenProcess(PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION,
+                          TRUE,
+                          pid));
+        if (process_handle.IsValid()) {
           HANDLE process_token = NULL;
           HANDLE user_token = NULL;
           if (::OpenProcessToken(process_handle, TOKEN_DUPLICATE | TOKEN_QUERY,
@@ -403,7 +436,6 @@ BOOL __stdcall LaunchGoogleChrome() {
             ::CloseHandle(user_token);
           if (process_token)
             ::CloseHandle(process_token);
-          ::CloseHandle(process_handle);
         }
       }
       ::LocalFree(exp_proc_sid);
@@ -411,30 +443,30 @@ BOOL __stdcall LaunchGoogleChrome() {
 
     ::LocalFree(curr_proc_sid);
     if (!impersonation_success) {
-      ::CoUninitialize();
       return false;
     }
   }
 
   bool ret = false;
-  CComPtr<IProcessLauncher> ipl;
-  if (!FAILED(ipl.CoCreateInstance(__uuidof(ProcessLauncherClass), NULL,
+  ScopedComPtr<IProcessLauncher> ipl;
+  if (SUCCEEDED(ipl.CreateInstance(__uuidof(ProcessLauncherClass),
+                                   NULL,
                                    CLSCTX_LOCAL_SERVER))) {
-    if (!FAILED(ipl->LaunchCmdLine(launch_cmd)))
+    if (SUCCEEDED(ipl->LaunchCmdLine(chrome_exe_path.value().c_str())))
       ret = true;
     ipl.Release();
   }
 
   if (impersonation_success)
     ::RevertToSelf();
-  ::CoUninitialize();
   return ret;
 }
 
 BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
                                                 int y,
                                                 int width,
-                                                int height) {
+                                                int height,
+                                                bool in_background) {
   if (!LaunchGoogleChrome())
     return false;
 
@@ -445,7 +477,7 @@ BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
   // yet. Wait for it to appear for 10 seconds, but exit if it takes longer
   // than that.
   while (!handle && seconds_elapsed < 10) {
-    handle = FindWindowEx(NULL, handle, L"Chrome_WindowImpl_0", NULL);
+    handle = FindWindowEx(NULL, handle, kChromeWindowClass, NULL);
     if (!handle) {
       Sleep(1000);
       seconds_elapsed++;
@@ -459,21 +491,21 @@ BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
   // but we only want the window that has child windows.
 
   // This loop iterates through all of the top-level Windows named
-  // Chrome_WindowImpl_0, and looks for the first one with any children.
-  while (handle && !FindWindowEx(handle, NULL, L"Chrome_WindowImpl_0", NULL)) {
+  // kChromeWindowClass, and looks for the first one with any children.
+  while (handle && !FindWindowEx(handle, NULL, kChromeWindowClass, NULL)) {
     // Get the next top-level Chrome window.
-    handle = FindWindowEx(NULL, handle, L"Chrome_WindowImpl_0", NULL);
+    handle = FindWindowEx(NULL, handle, kChromeWindowClass, NULL);
   }
 
+  HWND set_window_hwnd_insert_after = in_background ? HWND_BOTTOM : NULL;
+  DWORD set_window_flags = in_background ? SWP_NOACTIVATE : SWP_NOZORDER;
+
   return (handle &&
-          SetWindowPos(handle, 0, x, y, width, height, SWP_NOZORDER));
+          SetWindowPos(handle, set_window_hwnd_insert_after, x, y,
+                       width, height, set_window_flags));
 }
 
 int __stdcall GoogleChromeDaysSinceLastRun() {
-  using base::win::RegKey;
-  using base::Time;
-  using base::TimeDelta;
-
   int days_since_last_run = std::numeric_limits<int>::max();
 
   struct {
