@@ -291,10 +291,15 @@ SelectionModel RenderTextWin::LeftEndSelectionModel() {
   EnsureLayout();
   size_t cursor = base::i18n::IsRTL() ? text().length() : 0;
   internal::TextRun* run = runs_[visual_to_logical_[0]];
-  bool rtl = run->script_analysis.fRTL;
-  size_t caret = rtl ? run->range.end() - 1 : run->range.start();
-  SelectionModel::CaretPlacement placement =
-      rtl ? SelectionModel::TRAILING : SelectionModel::LEADING;
+  size_t caret;
+  SelectionModel::CaretPlacement placement;
+  if (run->script_analysis.fRTL) {
+    caret = IndexOfAdjacentGrapheme(run->range.end(), false);
+    placement = SelectionModel::TRAILING;
+  } else {
+    caret = run->range.start();
+    placement = SelectionModel::LEADING;
+  }
   return SelectionModel(cursor, caret, placement);
 }
 
@@ -305,10 +310,15 @@ SelectionModel RenderTextWin::RightEndSelectionModel() {
   EnsureLayout();
   size_t cursor = base::i18n::IsRTL() ? 0 : text().length();
   internal::TextRun* run = runs_[visual_to_logical_[runs_.size() - 1]];
-  bool rtl = run->script_analysis.fRTL;
-  size_t caret = rtl ? run->range.start() : run->range.end() - 1;
-  SelectionModel::CaretPlacement placement =
-      rtl ? SelectionModel::LEADING : SelectionModel::TRAILING;
+  size_t caret;
+  SelectionModel::CaretPlacement placement;
+  if (run->script_analysis.fRTL) {
+    caret = run->range.start();
+    placement = SelectionModel::LEADING;
+  } else {
+    caret = IndexOfAdjacentGrapheme(run->range.end(), false);
+    placement = SelectionModel::TRAILING;
+  }
   return SelectionModel(cursor, caret, placement);
 }
 
@@ -461,22 +471,50 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
 
 size_t RenderTextWin::IndexOfAdjacentGrapheme(size_t index, bool next) {
   EnsureLayout();
+
+  if (text().empty())
+    return 0;
+
+  if (index >= text().length()) {
+    if (next || index > text().length()) {
+      return text().length();
+    } else {
+      // The requested |index| is at the end of the text. Use the index of the
+      // last character to find the grapheme.
+      index = text().length() - 1;
+      if (IsCursorablePosition(index))
+        return index;
+    }
+  }
+
   size_t run_index = GetRunContainingPosition(index);
-  internal::TextRun* run = run_index < runs_.size() ? runs_[run_index] : NULL;
-  int start = run ? run->range.start() : 0;
-  int length = run ? run->range.length() : text().length();
-  int ch = index - start;
-  WORD cluster = run ? run->logical_clusters[ch] : 0;
+  DCHECK(run_index < runs_.size());
+  internal::TextRun* run = runs_[run_index];
+  size_t start = run->range.start();
+  size_t ch = index - start;
 
   if (!next) {
+    // If |ch| is the start of the run, use the preceding run, if any.
+    if (ch == 0) {
+      if (run_index == 0)
+        return 0;
+      run = runs_[run_index - 1];
+      start = run->range.start();
+      ch = run->range.length();
+    }
+
+    // Loop to find the start of the grapheme.
+    WORD cluster = run->logical_clusters[ch - 1];
     do {
       ch--;
-    } while (ch >= 0 && run && run->logical_clusters[ch] == cluster);
+    } while (ch > 0 && run->logical_clusters[ch - 1] == cluster);
   } else {
-    while (ch < length && run && run->logical_clusters[ch] == cluster)
+    WORD cluster = run->logical_clusters[ch];
+    while (ch < run->range.length() && run->logical_clusters[ch] == cluster)
       ch++;
   }
-  return std::max(std::min(ch, length) + start, 0);
+
+  return start + ch;
 }
 
 void RenderTextWin::ItemizeLogicalText() {
@@ -545,6 +583,7 @@ void RenderTextWin::LayoutVisualText() {
     internal::TextRun* run = *run_iter;
     size_t run_length = run->range.length();
     const wchar_t* run_text = &(text()[run->range.start()]);
+    bool tried_fallback = false;
 
     // Select the font desired for glyph generation.
     SelectObject(hdc, run->font.GetNativeFont());
@@ -569,12 +608,15 @@ void RenderTextWin::LayoutVisualText() {
       if (hr == E_OUTOFMEMORY) {
         max_glyphs *= 2;
       } else if (hr == USP_E_SCRIPT_NOT_IN_FONT) {
-        // TODO(msw): Don't use SCRIPT_UNDEFINED. Apparently Uniscribe can crash
-        //            on certain surrogate pairs with SCRIPT_UNDEFINED.
-        //            See https://bugzilla.mozilla.org/show_bug.cgi?id=341500
-        //            And http://maxradi.us/documents/uniscribe/
-        if (run->script_analysis.eScript == SCRIPT_UNDEFINED)
-          break;
+         // Only try font fallback if it hasn't yet been attempted for this run.
+         if (tried_fallback) {
+           // TODO(msw): Don't use SCRIPT_UNDEFINED. Apparently Uniscribe can
+           //            crash on certain surrogate pairs with SCRIPT_UNDEFINED.
+           //            See https://bugzilla.mozilla.org/show_bug.cgi?id=341500
+           //            And http://maxradi.us/documents/uniscribe/
+           run->script_analysis.eScript = SCRIPT_UNDEFINED;
+           break;
+         }
 
         // The run's font doesn't contain the required glyphs, use an alternate.
         if (ChooseFallbackFont(hdc, run->font, run_text, run_length,
@@ -583,7 +625,7 @@ void RenderTextWin::LayoutVisualText() {
           SelectObject(hdc, run->font.GetNativeFont());
         }
 
-        run->script_analysis.eScript = SCRIPT_UNDEFINED;
+        tried_fallback = true;
       } else {
         break;
       }
