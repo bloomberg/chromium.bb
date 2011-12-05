@@ -94,7 +94,7 @@ def SyncFlavor(flavor, url, dst, hash, min_time, keep=False, force=False,
   if force:
     stamp_dir = None
   else:
-    stamp_dir = untar_dir
+    stamp_dir = dst
 
   # If we did not need to synchronize, then we are done
   if not download_utils.SyncURL(url, filepath, stamp_dir=stamp_dir,
@@ -251,4 +251,3 @@ def Main(args):
 
 if __name__ == '__main__':
   Main(sys.argv[1:])
-
