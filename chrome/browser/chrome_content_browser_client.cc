@@ -160,8 +160,9 @@ bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
 // sure URLs are served by hosts with the right set of privileges.
 enum RenderProcessHostPrivilege {
   PRIV_NORMAL,
-  PRIV_EXTENSION,
+  PRIV_HOSTED,
   PRIV_ISOLATED,
+  PRIV_EXTENSION,
 };
 
 RenderProcessHostPrivilege GetPrivilegeRequiredByUrl(
@@ -178,9 +179,10 @@ RenderProcessHostPrivilege GetPrivilegeRequiredByUrl(
 
   if (url.SchemeIs(chrome::kExtensionScheme)) {
     const Extension* extension = service->GetExtensionByURL(url);
-    if (extension && extension->is_storage_isolated()) {
+    if (extension && extension->is_storage_isolated())
       return PRIV_ISOLATED;
-    }
+    if (extension && extension->is_hosted_app())
+      return PRIV_HOSTED;
 
     return PRIV_EXTENSION;
   }
@@ -192,8 +194,6 @@ RenderProcessHostPrivilege GetProcessPrivilege(
     content::RenderProcessHost* process_host,
     extensions::ProcessMap* process_map,
     ExtensionService* service) {
-  // TODO(aa): It seems like hosted apps should be grouped separately from
-  // extensions: crbug.com/102533.
   std::set<std::string> extension_ids =
       process_map->GetExtensionsInProcess(process_host->GetID());
   if (extension_ids.empty())
@@ -204,9 +204,32 @@ RenderProcessHostPrivilege GetProcessPrivilege(
     const Extension* extension = service->GetExtensionById(*iter, false);
     if (extension && extension->is_storage_isolated())
       return PRIV_ISOLATED;
+    if (extension && extension->is_hosted_app())
+      return PRIV_HOSTED;
   }
 
   return PRIV_EXTENSION;
+}
+
+bool IsIsolatedAppInProcess(const GURL& site_url,
+                            content::RenderProcessHost* process_host,
+                            extensions::ProcessMap* process_map,
+                            ExtensionService* service) {
+  std::set<std::string> extension_ids =
+      process_map->GetExtensionsInProcess(process_host->GetID());
+  if (extension_ids.empty())
+    return false;
+
+  for (std::set<std::string>::iterator iter = extension_ids.begin();
+       iter != extension_ids.end(); ++iter) {
+    const Extension* extension = service->GetExtensionById(*iter, false);
+    if (extension &&
+        extension->is_storage_isolated() &&
+        extension->url() == site_url)
+      return true;
+  }
+
+  return false;
 }
 
 bool CertMatchesFilter(const net::X509Certificate& cert,
@@ -436,8 +459,19 @@ bool ChromeContentBrowserClient::IsSuitableHost(
   if (command_line.HasSwitch(switches::kEnableStrictSiteIsolation))
     return false;
 
-  return GetProcessPrivilege(process_host, process_map, service) ==
+  // An isolated app is only allowed to share with the exact same app in order
+  // to provide complete renderer process isolation.  This also works around
+  // issue http://crbug.com/85588, where different isolated apps in the same
+  // process would end up using the first app's storage contexts.
+  RenderProcessHostPrivilege privilege_required =
       GetPrivilegeRequiredByUrl(site_url, service);
+  if (privilege_required == PRIV_ISOLATED)
+    return IsIsolatedAppInProcess(site_url, process_host, process_map, service);
+
+  // Otherwise, just make sure the process privilege matches the privilege
+  // required by the site.
+  return GetProcessPrivilege(process_host, process_map, service) ==
+      privilege_required;
 }
 
 void ChromeContentBrowserClient::SiteInstanceGotProcess(
