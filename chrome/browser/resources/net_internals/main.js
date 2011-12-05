@@ -102,6 +102,8 @@ var MainView = (function() {
                 false, cr.isChromeOS);
     tabs.addTab(PrerenderView.TAB_HANDLE_ID, PrerenderView.getInstance(),
                 false, true);
+    tabs.addTab(CrosView.TAB_HANDLE_ID, CrosView.getInstance(),
+                false, cr.isChromeOS);
 
     // Build a map from the anchor name of each tab handle to its "tab ID".
     // We will consider navigations to the #hash as a switch tab request.

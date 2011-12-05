@@ -57,8 +57,9 @@ body {
 #test-view-tab-content,
 #hsts-view-tab-content,
 #http-throttling-view-tab-content,
+#logs-view-tab-content,
 #prerender-view-tab-content,
-#logs-view-tab-content {
+#chromeos-view-tab-content {
   overflow: auto;
   padding: 10px;
 }
@@ -67,7 +68,7 @@ body {
  * Styles for TABLE that uses a thin collapsed border.
  */
 table.styledTable {
-  border-collapse:collapse;
+  border-collapse: collapse;
 }
 
 table.styledTable,

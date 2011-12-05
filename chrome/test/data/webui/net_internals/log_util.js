@@ -29,7 +29,8 @@ netInternalsTest.test('netInternalsExportImportDump', function() {
       tests: false,
       hsts: false,
       logs: false,
-      prerender: true
+      prerender: true,
+      chromeos: false
     };
 
     netInternalsTest.checkTabHandleVisibility(tabVisibilityState, false);

@@ -66,6 +66,7 @@
 
 #ifdef OS_CHROMEOS
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/system/syslogs_provider.h"
 #endif
 #ifdef OS_WIN
@@ -180,6 +181,7 @@ class NetInternalsMessageHandler
 #ifdef OS_CHROMEOS
   void OnRefreshSystemLogs(const ListValue* list);
   void OnGetSystemLog(const ListValue* list);
+  void OnImportONCFile(const ListValue* list);
 #endif
 
  private:
@@ -559,6 +561,10 @@ void NetInternalsMessageHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "getSystemLog",
       base::Bind(&NetInternalsMessageHandler::OnGetSystemLog,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback(
+      "importONCFile",
+      base::Bind(&NetInternalsMessageHandler::OnImportONCFile,
                  base::Unretained(this)));
 #endif
 }
@@ -1278,6 +1284,21 @@ void NetInternalsMessageHandler::OnRefreshSystemLogs(const ListValue* list) {
 void NetInternalsMessageHandler::OnGetSystemLog(const ListValue* list) {
   DCHECK(syslogs_getter_.get());
   syslogs_getter_->RequestSystemLog(list);
+}
+
+void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
+  std::string onc_blob;
+  std::string passcode;
+  if (list->GetSize() != 2 ||
+      !list->GetString(0, &onc_blob) ||
+      !list->GetString(1, &passcode)) {
+    NOTREACHED();
+  }
+
+  const bool success = chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
+      LoadOncNetworks(onc_blob, passcode);
+  SendJavascriptCommand("receivedONCFileParse",
+                        Value::CreateBooleanValue(success));
 }
 #endif
 

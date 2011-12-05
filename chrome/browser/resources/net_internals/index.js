@@ -38,6 +38,7 @@
 <include src="http_throttling_view.js"/>
 <include src="logs_view.js"/>
 <include src="prerender_view.js"/>
+<include src="chromeos_view.js"/>
 
 document.addEventListener('DOMContentLoaded', function() {
   MainView.getInstance();  // from main.js

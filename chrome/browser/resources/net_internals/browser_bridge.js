@@ -25,6 +25,7 @@ var BrowserBridge = (function() {
     this.hstsObservers_ = [];
     this.httpThrottlingObservers_ = [];
     this.constantsObservers_ = [];
+    this.crosONCFileParseObservers_ = [];
 
     this.pollableDataHelpers_ = {};
     this.pollableDataHelpers_.proxySettings =
@@ -224,6 +225,10 @@ var BrowserBridge = (function() {
       this.send('getSystemLog', [log_key, cellId]);
     },
 
+    importONCFile: function(fileContent, passcode) {
+      this.send('importONCFile', [fileContent, passcode]);
+    },
+
     //--------------------------------------------------------------------------
     // Messages received from the browser.
     //--------------------------------------------------------------------------
@@ -236,7 +241,7 @@ var BrowserBridge = (function() {
     },
 
     receivedConstants: function(constants) {
-      for (var i = 0; i < this.constantsObservers_.length; ++i)
+      for (var i = 0; i < this.constantsObservers_.length; i++)
         this.constantsObservers_[i].onReceivedConstants(constants);
     },
 
@@ -283,32 +288,37 @@ var BrowserBridge = (function() {
     },
 
     receivedStartConnectionTestSuite: function() {
-      for (var i = 0; i < this.connectionTestsObservers_.length; ++i)
+      for (var i = 0; i < this.connectionTestsObservers_.length; i++)
         this.connectionTestsObservers_[i].onStartedConnectionTestSuite();
     },
 
     receivedStartConnectionTestExperiment: function(experiment) {
-      for (var i = 0; i < this.connectionTestsObservers_.length; ++i) {
+      for (var i = 0; i < this.connectionTestsObservers_.length; i++) {
         this.connectionTestsObservers_[i].onStartedConnectionTestExperiment(
             experiment);
       }
     },
 
     receivedCompletedConnectionTestExperiment: function(info) {
-      for (var i = 0; i < this.connectionTestsObservers_.length; ++i) {
+      for (var i = 0; i < this.connectionTestsObservers_.length; i++) {
         this.connectionTestsObservers_[i].onCompletedConnectionTestExperiment(
             info.experiment, info.result);
       }
     },
 
     receivedCompletedConnectionTestSuite: function() {
-      for (var i = 0; i < this.connectionTestsObservers_.length; ++i)
+      for (var i = 0; i < this.connectionTestsObservers_.length; i++)
         this.connectionTestsObservers_[i].onCompletedConnectionTestSuite();
     },
 
     receivedHSTSResult: function(info) {
-      for (var i = 0; i < this.hstsObservers_.length; ++i)
+      for (var i = 0; i < this.hstsObservers_.length; i++)
         this.hstsObservers_[i].onHSTSQueryResult(info);
+    },
+
+    receivedONCFileParse: function(status) {
+      for (var i = 0; i < this.crosONCFileParseObservers_.length; i++)
+        this.crosONCFileParseObservers_[i].onONCFileParse(status);
     },
 
     receivedHttpCacheInfo: function(info) {
@@ -316,7 +326,7 @@ var BrowserBridge = (function() {
     },
 
     receivedHttpThrottlingEnabledPrefChanged: function(enabled) {
-      for (var i = 0; i < this.httpThrottlingObservers_.length; ++i) {
+      for (var i = 0; i < this.httpThrottlingObservers_.length; i++) {
         this.httpThrottlingObservers_[i].onHttpThrottlingEnabledPrefChanged(
             enabled);
       }
@@ -485,6 +495,16 @@ var BrowserBridge = (function() {
     },
 
     /**
+     * Adds a listener for ONC file parse status. The observer will be called
+     * back with:
+     *
+     *   observer.onONCFileParse(status);
+     */
+    addCrosONCFileParseObserver: function(observer) {
+      this.crosONCFileParseObservers_.push(observer);
+    },
+
+    /**
      * Adds a listener for HTTP throttling-related events. |observer| will be
      * called back when HTTP throttling is enabled/disabled, through:
      *
@@ -558,7 +578,7 @@ var BrowserBridge = (function() {
     },
 
     isObserver: function(object) {
-      for (var i = 0; i < this.observerInfos_.length; ++i) {
+      for (var i = 0; i < this.observerInfos_.length; i++) {
         if (this.observerInfos_[i].observer === object)
           return true;
       }
@@ -574,7 +594,7 @@ var BrowserBridge = (function() {
     },
 
     removeObserver: function(observer) {
-      for (var i = 0; i < this.observerInfos_.length; ++i) {
+      for (var i = 0; i < this.observerInfos_.length; i++) {
         if (this.observerInfos_[i].observer === observer) {
           this.observerInfos_.splice(i, 1);
           return;
@@ -600,7 +620,7 @@ var BrowserBridge = (function() {
       }
 
       // Notify the observers of the change, as needed.
-      for (var i = 0; i < this.observerInfos_.length; ++i) {
+      for (var i = 0; i < this.observerInfos_.length; i++) {
         var observerInfo = this.observerInfos_[i];
         if (changed || !observerInfo.hasReceivedData ||
             !observerInfo.ignoreWhenUnchanged) {
@@ -615,7 +635,7 @@ var BrowserBridge = (function() {
      * (i.e. is visible).
      */
     hasActiveObserver: function() {
-      for (var i = 0; i < this.observerInfos_.length; ++i) {
+      for (var i = 0; i < this.observerInfos_.length; i++) {
         if (this.observerInfos_[i].observer.isActive())
           return true;
       }
