@@ -620,7 +620,7 @@ void Clipboard::ReadFiles(std::vector<FilePath>* files) const {
   }
 }
 
-void Clipboard::ReadData(const std::string& format, std::string* result) const {
+void Clipboard::ReadData(const std::string& format, std::string* result) {
   if (!result) {
     NOTREACHED();
     return;

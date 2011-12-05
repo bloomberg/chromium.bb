@@ -260,7 +260,7 @@ void Clipboard::ReadFiles(std::vector<FilePath>* files) const {
   NOTIMPLEMENTED();
 }
 
-void Clipboard::ReadData(const std::string& format, std::string* result) const {
+void Clipboard::ReadData(const std::string& format, std::string* result) {
   result->clear();
   ClipboardData* data = GetClipboardData();
   if (data->custom_data_format() == format)
