@@ -51,6 +51,7 @@ const char* kFinalStatusNames[] = {
   "No Use Group",
   "Match Complete Dummy",
   "Duplicate",
+  "OpenURL",
   "Max",
 };
 COMPILE_ASSERT(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,

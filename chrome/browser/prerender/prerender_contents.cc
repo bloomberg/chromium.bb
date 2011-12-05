@@ -88,6 +88,19 @@ class PrerenderContents::TabContentsDelegateImpl
       prerender_contents_(prerender_contents) {
   }
 
+ virtual TabContents* OpenURLFromTab(TabContents* source,
+                                     const OpenURLParams& params) OVERRIDE {
+    // |OpenURLFromTab| is typically called when a frame performs a navigation
+    // that requires the browser to perform the transition instead of WebKit.
+    // Examples include prerendering a site that redirects to an app URL,
+    // or if --enable-strict-site-isolation is specified and the prerendered
+    // frame redirects to a different origin.
+    // TODO(cbentzel): Consider supporting this is if it is a common case
+    // during prerenders.
+    prerender_contents_->Destroy(FINAL_STATUS_OPEN_URL);
+    return NULL;
+  }
+
   // TabContentsDelegate implementation:
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
