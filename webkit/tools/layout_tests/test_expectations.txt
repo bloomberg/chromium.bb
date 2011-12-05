@@ -7,13 +7,3 @@
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
 
-// These can be removed once http://trac.webkit.org/changeset/101075 has been rolled into Chrome.
-BUGCR105025 MAC CPU GPU : fast/canvas/webgl/css-webkit-canvas.html = IMAGE 
-BUGCR105025 MAC CPU GPU : fast/canvas/webgl/css-webkit-canvas-repaint.html = IMAGE
-
-// These can be removed once http://trac.webkit.org/changeset/101795 has been rolled into Chrome.
-BUGWK73640 MAC : fast/events/offsetX-offsetY.html = TEXT
-
-// These can be removed once http://trac.webkit.org/changeset/101798 has been rolled into Chrome.
-BUGWK61117 MAC : svg/css/getComputedStyle-basic-expected.txt = TEXT
-
