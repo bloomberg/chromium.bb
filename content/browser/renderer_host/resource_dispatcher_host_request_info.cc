@@ -26,6 +26,7 @@ ResourceDispatcherHostRequestInfo::ResourceDispatcherHostRequestInfo(
     bool is_download,
     bool allow_download,
     bool has_user_gesture,
+    WebKit::WebReferrerPolicy referrer_policy,
     const content::ResourceContext* context)
     : resource_handler_(handler),
       cross_site_handler_(NULL),
@@ -49,6 +50,7 @@ ResourceDispatcherHostRequestInfo::ResourceDispatcherHostRequestInfo(
       last_upload_position_(0),
       waiting_for_upload_progress_ack_(false),
       memory_cost_(0),
+      referrer_policy_(referrer_policy),
       context_(context),
       is_paused_(false),
       called_on_response_started_(false),

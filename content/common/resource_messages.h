@@ -10,6 +10,7 @@
 #include "content/public/common/resource_response.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/upload_data.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebReferrerPolicy.h"
 
 #define IPC_MESSAGE_START ResourceMsgStart
 #undef IPC_MESSAGE_EXPORT
@@ -66,6 +67,9 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
 
   // The referrer to use (may be empty).
   IPC_STRUCT_MEMBER(GURL, referrer)
+
+  // The referrer policy to use.
+  IPC_STRUCT_MEMBER(WebKit::WebReferrerPolicy, referrer_policy)
 
   // Additional HTTP request headers.
   IPC_STRUCT_MEMBER(std::string, headers)

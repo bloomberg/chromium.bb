@@ -420,12 +420,12 @@ void WebURLLoaderImpl::Context::Start(
   request_info.download_to_file = request.downloadToFile();
   request_info.has_user_gesture = request.hasUserGesture();
   request_info.extra_data = request.extraData();
-  bridge_.reset(platform->CreateResourceLoader(request_info));
-
   if (request.extraData()) {
     referrer_policy_ = static_cast<WebURLRequestExtraDataImpl*>(
         request.extraData())->referrer_policy();
+    request_info.referrer_policy = referrer_policy_;
   }
+  bridge_.reset(platform->CreateResourceLoader(request_info));
 
   if (!request.httpBody().isNull()) {
     // GET and HEAD requests shouldn't have http bodies.

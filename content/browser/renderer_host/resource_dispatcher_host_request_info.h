@@ -15,6 +15,7 @@
 #include "content/public/common/process_type.h"
 #include "net/base/load_states.h"
 #include "net/url_request/url_request.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebReferrerPolicy.h"
 #include "webkit/glue/resource_type.h"
 
 class CrossSiteResourceHandler;
@@ -53,6 +54,7 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
       bool is_download,
       bool allow_download,
       bool has_user_gesture,
+      WebKit::WebReferrerPolicy referrer_policy,
       const content::ResourceContext* context);
   virtual ~ResourceDispatcherHostRequestInfo();
 
@@ -183,6 +185,8 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   }
   void set_requested_blob_data(webkit_blob::BlobData* data);
 
+  WebKit::WebReferrerPolicy referrer_policy() const { return referrer_policy_; }
+
   const content::ResourceContext* context() const { return context_; }
 
  private:
@@ -243,6 +247,7 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   bool waiting_for_upload_progress_ack_;
   int memory_cost_;
   scoped_refptr<webkit_blob::BlobData> requested_blob_data_;
+  WebKit::WebReferrerPolicy referrer_policy_;
   const content::ResourceContext* context_;
 
   // "Private" data accessible only to ResourceDispatcherHost (use the

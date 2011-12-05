@@ -33,6 +33,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/url_request/url_request_status.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebReferrerPolicy.h"
 #include "webkit/glue/resource_type.h"
 #include "webkit/glue/webkit_glue_export.h"
 
@@ -216,6 +217,9 @@ class ResourceLoaderBridge {
     // Optional parameter, a URL with similar constraints in how it must be
     // encoded as the url member.
     GURL referrer;
+
+    // The referrer policy that applies to the referrer.
+    WebKit::WebReferrerPolicy referrer_policy;
 
     // For HTTP(S) requests, the headers parameter can be a \r\n-delimited and
     // \r\n-terminated list of MIME headers.  They should be ASCII-encoded using

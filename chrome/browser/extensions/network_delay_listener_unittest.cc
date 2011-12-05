@@ -40,6 +40,7 @@ ResourceDispatcherHostRequestInfo* CreateRequestInfo(int request_id) {
       new DummyResourceHandler(), content::PROCESS_TYPE_RENDERER, 0, 0, 0,
       request_id, false, -1, false, -1, ResourceType::MAIN_FRAME,
       content::PAGE_TRANSITION_LINK, 0, false, false, false,
+      WebKit::WebReferrerPolicyDefault,
       content::MockResourceContext::GetInstance());
 }
 

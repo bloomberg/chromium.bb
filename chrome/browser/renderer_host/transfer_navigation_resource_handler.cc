@@ -52,8 +52,8 @@ bool CrossesExtensionExtents(
 
 void RequestTransferURLOnUIThread(int render_process_id,
                                   int render_view_id,
-                                  GURL new_url,
-                                  GURL referrer,
+                                  const GURL& new_url,
+                                  const content::Referrer& referrer,
                                   WindowOpenDisposition window_open_disposition,
                                   int64 frame_id,
                                   const GlobalRequestID& request_id) {
@@ -67,7 +67,7 @@ void RequestTransferURLOnUIThread(int render_process_id,
     return;
 
   delegate->RequestTransferURL(
-      new_url, content::Referrer(referrer, WebKit::WebReferrerPolicyDefault),
+      new_url, referrer,
       window_open_disposition, frame_id, request_id);
 }
 
@@ -124,8 +124,10 @@ bool TransferNavigationResourceHandler::OnRequestRedirected(
           FROM_HERE,
           base::Bind(&RequestTransferURLOnUIThread,
               render_process_id, render_view_id,
-              new_url, GURL(request_->referrer()), CURRENT_TAB,
-              info->frame_id(), global_id));
+              new_url,
+              content::Referrer(GURL(request_->referrer()),
+                                info->referrer_policy()),
+              CURRENT_TAB, info->frame_id(), global_id));
 
       *defer = true;
       return true;

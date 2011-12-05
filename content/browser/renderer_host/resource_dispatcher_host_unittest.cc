@@ -81,6 +81,7 @@ static ResourceHostMsg_Request CreateResourceRequest(
   request.method = std::string(method);
   request.url = url;
   request.first_party_for_cookies = url;  // bypass third-party cookie blocking
+  request.referrer_policy = WebKit::WebReferrerPolicyDefault;
   request.load_flags = 0;
   request.origin_pid = 0;
   request.resource_type = type;

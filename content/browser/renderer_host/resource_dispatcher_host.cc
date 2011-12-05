@@ -639,6 +639,7 @@ void ResourceDispatcherHost::BeginRequest(
           false,  // is download
           ResourceType::IsFrame(request_data.resource_type),  // allow_download
           request_data.has_user_gesture,
+          request_data.referrer_policy,
           &resource_context);
   SetRequestInfo(request, extra_info);  // Request takes ownership.
 
@@ -808,6 +809,7 @@ ResourceDispatcherHostRequestInfo* ResourceDispatcherHost::CreateRequestInfo(
       download,  // is_download
       download,  // allow_download
       false,     // has_user_gesture
+      WebKit::WebReferrerPolicyDefault,
       &context);
 }
 

@@ -49,7 +49,8 @@ ResourceResponseInfo::~ResourceResponseInfo() {
 }
 
 ResourceLoaderBridge::RequestInfo::RequestInfo()
-    : load_flags(0),
+    : referrer_policy(WebKit::WebReferrerPolicyDefault),
+      load_flags(0),
       requestor_pid(0),
       request_type(ResourceType::MAIN_FRAME),
       request_context(0),
