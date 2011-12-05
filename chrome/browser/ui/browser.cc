@@ -3388,7 +3388,7 @@ TabContents* Browser::OpenURLFromTab(TabContents* source,
   nav_params.source_contents =
       tabstrip_model()->GetTabContentsAt(
           tabstrip_model()->GetWrapperIndex(source));
-  nav_params.referrer = params.referrer.url;
+  nav_params.referrer = params.referrer;
   nav_params.disposition = params.disposition;
   nav_params.tabstrip_add_types = TabStripModel::ADD_NONE;
   nav_params.window_action = browser::NavigateParams::SHOW_WINDOW;

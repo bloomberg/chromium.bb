@@ -10,6 +10,7 @@
 
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -50,7 +51,7 @@ struct NavigateParams {
 
   // The URL/referrer to be loaded. Ignored if |target_contents| is non-NULL.
   GURL url;
-  GURL referrer;
+  content::Referrer referrer;
 
   // [in]  A TabContents to be navigated or inserted into the target Browser's
   //       tabstrip. If NULL, |url| or the homepage will be used instead. When

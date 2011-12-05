@@ -237,9 +237,9 @@ bool NavigationEquals(const TabNavigation& expected,
                << ", actual " << actual.virtual_url();
     return false;
   }
-  if (expected.referrer() != actual.referrer()) {
-    LOG(ERROR) << "Expected referrer " << expected.referrer()
-               << ", actual " << actual.referrer();
+  if (expected.referrer().url != actual.referrer().url) {
+    LOG(ERROR) << "Expected referrer " << expected.referrer().url
+               << ", actual " << actual.referrer().url;
     return false;
   }
   if (expected.title() != actual.title()) {

@@ -20,7 +20,7 @@ TabNavigation::TabNavigation()
 
 TabNavigation::TabNavigation(int index,
                              const GURL& virtual_url,
-                             const GURL& referrer,
+                             const content::Referrer& referrer,
                              const string16& title,
                              const std::string& state,
                              content::PageTransition transition)

@@ -93,7 +93,7 @@ class HistoryMenuBridgeTest : public CocoaProfileTest {
     MockTRS::Tab tab;
     tab.current_navigation_index = 0;
     tab.navigations.push_back(
-        TabNavigation(0, url, GURL(), title, std::string(),
+        TabNavigation(0, url, content::Referrer(), title, std::string(),
                       content::PAGE_TRANSITION_LINK));
     return tab;
   }

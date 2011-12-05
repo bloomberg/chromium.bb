@@ -14,7 +14,10 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/navigation_entry.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebReferrerPolicy.h"
 #include "webkit/glue/webkit_glue.h"
+
+using WebKit::WebReferrerPolicy;
 
 // InternalGetCommandsRequest -------------------------------------------------
 
@@ -178,7 +181,9 @@ SessionCommand* BaseSessionService::CreateUpdateTabNavigationCommand(
   pickle.WriteInt(type_mask);
 
   WriteStringToPickle(pickle, &bytes_written, max_state_size,
-      entry.referrer().is_valid() ? entry.referrer().spec() : std::string());
+      entry.referrer().url.is_valid() ?
+          entry.referrer().url.spec() : std::string());
+  pickle.WriteInt(entry.referrer().policy);
 
   // Adding more data? Be sure and update TabRestoreService too.
   return new SessionCommand(command_id, pickle);
@@ -229,8 +234,17 @@ bool BaseSessionService::RestoreUpdateTabNavigationCommand(
     // stream. As such, we don't fail if it can't be read.
     std::string referrer_spec;
     pickle->ReadString(&iterator, &referrer_spec);
-    if (!referrer_spec.empty())
-      navigation->referrer_ = GURL(referrer_spec);
+    // The "referrer policy" property was added even later, so we fall back to
+    // the default policy if the property is not present.
+    int policy_int;
+    WebReferrerPolicy policy;
+    if (pickle->ReadInt(&iterator, &policy_int))
+      policy = static_cast<WebReferrerPolicy>(policy_int);
+    else
+      policy = WebKit::WebReferrerPolicyDefault;
+    navigation->referrer_ = content::Referrer(
+        referrer_spec.empty() ? GURL() : GURL(referrer_spec),
+        policy);
   }
 
   navigation->virtual_url_ = GURL(url_spec);

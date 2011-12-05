@@ -14,6 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/page_type.h"
+#include "content/public/common/referrer.h"
 #include "content/public/common/security_style.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cert_status_flags.h"
@@ -185,7 +186,7 @@ class CONTENT_EXPORT NavigationEntry {
   NavigationEntry(SiteInstance* instance,
                   int page_id,
                   const GURL& url,
-                  const GURL& referrer,
+                  const content::Referrer& referrer,
                   const string16& title,
                   content::PageTransition transition_type,
                   bool is_renderer_initiated);
@@ -237,10 +238,10 @@ class CONTENT_EXPORT NavigationEntry {
   }
 
   // The referring URL. Can be empty.
-  void set_referrer(const GURL& referrer) {
+  void set_referrer(const content::Referrer& referrer) {
     referrer_ = referrer;
   }
-  const GURL& referrer() const {
+  const content::Referrer& referrer() const {
     return referrer_;
   }
 
@@ -434,7 +435,7 @@ class CONTENT_EXPORT NavigationEntry {
   scoped_refptr<SiteInstance> site_instance_;
   content::PageType page_type_;
   GURL url_;
-  GURL referrer_;
+  content::Referrer referrer_;
   GURL virtual_url_;
   bool update_virtual_url_with_url_;
   string16 title_;

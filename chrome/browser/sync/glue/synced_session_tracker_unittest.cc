@@ -63,7 +63,8 @@ TEST_F(SyncedSessionTrackerTest, LookupAllForeignSessions) {
   SessionTab* tab = tracker.GetTab("tag1", 15);
   ASSERT_TRUE(tab);
   tab->navigations.push_back(TabNavigation(
-      0, GURL("valid_url"), GURL("referrer"),
+      0, GURL("valid_url"),
+      content::Referrer(GURL("referrer"), WebKit::WebReferrerPolicyDefault),
       string16(ASCIIToUTF16("title")),
       std::string("state"), content::PageTransitionFromInt(0)));
   ASSERT_TRUE(tracker.LookupAllForeignSessions(&sessions));

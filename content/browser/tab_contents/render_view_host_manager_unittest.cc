@@ -300,7 +300,7 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   // 1) The first navigation. --------------------------
   const GURL kUrl1("http://www.google.com/");
   NavigationEntry entry1(NULL /* instance */, -1 /* page_id */, kUrl1,
-                         GURL() /* referrer */, string16() /* title */,
+                         content::Referrer(), string16() /* title */,
                          content::PAGE_TRANSITION_TYPED,
                          false /* is_renderer_init */);
   host = manager.Navigate(entry1);
@@ -319,10 +319,11 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
 
   // 2) Navigate to next site. -------------------------
   const GURL kUrl2("http://www.google.com/foo");
-  NavigationEntry entry2(NULL /* instance */, -1 /* page_id */, kUrl2,
-                         kUrl1 /* referrer */, string16() /* title */,
-                         content::PAGE_TRANSITION_LINK,
-                         true /* is_renderer_init */);
+  NavigationEntry entry2(
+      NULL /* instance */, -1 /* page_id */, kUrl2,
+      content::Referrer(kUrl1, WebKit::WebReferrerPolicyDefault),
+      string16() /* title */, content::PAGE_TRANSITION_LINK,
+      true /* is_renderer_init */);
   host = manager.Navigate(entry2);
 
   // The RenderViewHost created in Init will be reused.
@@ -337,10 +338,11 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
 
   // 3) Cross-site navigate to next site. --------------
   const GURL kUrl3("http://webkit.org/");
-  NavigationEntry entry3(NULL /* instance */, -1 /* page_id */, kUrl3,
-                         kUrl2 /* referrer */, string16() /* title */,
-                         content::PAGE_TRANSITION_LINK,
-                         false /* is_renderer_init */);
+  NavigationEntry entry3(
+      NULL /* instance */, -1 /* page_id */, kUrl3,
+      content::Referrer(kUrl2, WebKit::WebReferrerPolicyDefault),
+      string16() /* title */, content::PAGE_TRANSITION_LINK,
+      false /* is_renderer_init */);
   host = manager.Navigate(entry3);
 
   // A new RenderViewHost should be created.
@@ -384,7 +386,7 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
   // 1) The first navigation. --------------------------
   const GURL kUrl1("http://www.google.com/");
   NavigationEntry entry1(NULL /* instance */, -1 /* page_id */, kUrl1,
-                         GURL() /* referrer */, string16() /* title */,
+                         content::Referrer(), string16() /* title */,
                          content::PAGE_TRANSITION_TYPED,
                          false /* is_renderer_init */);
   RenderViewHost* host = manager.Navigate(entry1);
@@ -410,7 +412,7 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
   // 2) Cross-site navigate to next site. -------------------------
   const GURL kUrl2("http://www.example.com");
   NavigationEntry entry2(NULL /* instance */, -1 /* page_id */, kUrl2,
-                         GURL() /* referrer */, string16() /* title */,
+                         content::Referrer(), string16() /* title */,
                          content::PAGE_TRANSITION_TYPED,
                          false /* is_renderer_init */);
   RenderViewHost* host2 = manager.Navigate(entry2);
@@ -458,7 +460,7 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
   // 3) Cross-site navigate to next site before 2) has committed. --------------
   const GURL kUrl3("http://webkit.org/");
   NavigationEntry entry3(NULL /* instance */, -1 /* page_id */, kUrl3,
-                         GURL() /* referrer */, string16() /* title */,
+                         content::Referrer(), string16() /* title */,
                          content::PAGE_TRANSITION_TYPED,
                          false /* is_renderer_init */);
   RenderViewHost* host3 = manager.Navigate(entry3);
@@ -510,7 +512,7 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
 
   const GURL kUrl(chrome::kTestNewTabURL);
   NavigationEntry entry(NULL /* instance */, -1 /* page_id */, kUrl,
-                        GURL() /* referrer */, string16() /* title */,
+                        content::Referrer(), string16() /* title */,
                         content::PAGE_TRANSITION_TYPED,
                         false /* is_renderer_init */);
   RenderViewHost* host = manager.Navigate(entry);
@@ -549,14 +551,14 @@ TEST_F(RenderViewHostManagerTest, NonWebUIChromeURLs) {
   // NTP is a Web UI page.
   const GURL kNtpUrl(chrome::kTestNewTabURL);
   NavigationEntry ntp_entry(NULL /* instance */, -1 /* page_id */, kNtpUrl,
-                            GURL() /* referrer */, string16() /* title */,
+                            content::Referrer(), string16() /* title */,
                             content::PAGE_TRANSITION_TYPED,
                             false /* is_renderer_init */);
 
   // A URL with the Chrome UI scheme, that isn't handled by Web UI.
   GURL about_url(kChromeUISchemeButNotWebUIURL);
   NavigationEntry about_entry(NULL /* instance */, -1 /* page_id */, about_url,
-                              GURL() /* referrer */, string16() /* title */,
+                              content::Referrer(), string16() /* title */,
                               content::PAGE_TRANSITION_TYPED,
                               false /* is_renderer_init */);
 

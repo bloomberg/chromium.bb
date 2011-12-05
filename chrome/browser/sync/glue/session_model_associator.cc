@@ -381,7 +381,8 @@ void SessionModelAssociator::PopulateSessionSpecificsNavigation(
     sync_pb::TabNavigation* tab_navigation) {
   tab_navigation->set_index(navigation->index());
   tab_navigation->set_virtual_url(navigation->virtual_url().spec());
-  tab_navigation->set_referrer(navigation->referrer().spec());
+  // FIXME(zea): Support referrer policy?
+  tab_navigation->set_referrer(navigation->referrer().url.spec());
   tab_navigation->set_title(UTF16ToUTF8(navigation->title()));
   switch (navigation->transition()) {
     case content::PAGE_TRANSITION_LINK:
@@ -875,8 +876,10 @@ void SessionModelAssociator::AppendSessionTabNavigation(
         }
     }
   }
-  TabNavigation tab_navigation(index, virtual_url, referrer, title, state,
-                               transition);
+  TabNavigation tab_navigation(
+      index, virtual_url,
+      content::Referrer(referrer, WebKit::WebReferrerPolicyDefault), title,
+      state, transition);
   navigations->insert(navigations->end(), tab_navigation);
 }
 

@@ -49,7 +49,7 @@ NavigationEntry::NavigationEntry()
 NavigationEntry::NavigationEntry(SiteInstance* instance,
                                  int page_id,
                                  const GURL& url,
-                                 const GURL& referrer,
+                                 const content::Referrer& referrer,
                                  const string16& title,
                                  content::PageTransition transition_type,
                                  bool is_renderer_initiated)

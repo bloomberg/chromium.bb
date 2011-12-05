@@ -51,12 +51,12 @@ static void AddNavigationFeatures(const std::string& feature_prefix,
                                   const std::vector<GURL>& redirect_chain,
                                   ClientPhishingRequest* request) {
   NavigationEntry* entry = controller.GetEntryAtIndex(index);
-  bool is_secure_referrer = entry->referrer().SchemeIsSecure();
+  bool is_secure_referrer = entry->referrer().url.SchemeIsSecure();
   if (!is_secure_referrer) {
     AddFeature(StringPrintf("%s%s=%s",
                             feature_prefix.c_str(),
                             features::kReferrer,
-                            entry->referrer().spec().c_str()),
+                            entry->referrer().url.spec().c_str()),
                1.0,
                request);
   }

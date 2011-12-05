@@ -1477,8 +1477,8 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   GURL url("http://foo");
   std::vector<NavigationEntry*> entries;
   NavigationEntry* entry = NavigationController::CreateNavigationEntry(
-      url, GURL(), content::PAGE_TRANSITION_RELOAD, false, std::string(),
-      browser_context());
+      url, content::Referrer(), content::PAGE_TRANSITION_RELOAD, false,
+      std::string(), browser_context());
   entry->set_page_id(0);
   entry->set_title(ASCIIToUTF16("Title"));
   entry->set_content_state("state");
@@ -1537,8 +1537,8 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   GURL url("http://foo");
   std::vector<NavigationEntry*> entries;
   NavigationEntry* entry = NavigationController::CreateNavigationEntry(
-      url, GURL(), content::PAGE_TRANSITION_RELOAD, false, std::string(),
-      browser_context());
+      url, content::Referrer(), content::PAGE_TRANSITION_RELOAD, false,
+      std::string(), browser_context());
   entry->set_page_id(0);
   entry->set_title(ASCIIToUTF16("Title"));
   entry->set_content_state("state");

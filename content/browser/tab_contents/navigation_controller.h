@@ -30,6 +30,7 @@ struct ViewHostMsg_FrameNavigate_Params;
 namespace content {
 class BrowserContext;
 struct LoadCommittedDetails;
+struct Referrer;
 }
 
 // A NavigationController maintains the back-forward list for a single tab and
@@ -352,7 +353,7 @@ class CONTENT_EXPORT NavigationController {
   // separated by \n.
   static NavigationEntry* CreateNavigationEntry(
       const GURL& url,
-      const GURL& referrer,
+      const content::Referrer& referrer,
       content::PageTransition transition,
       bool is_renderer_initiated,
       const std::string& extra_headers,

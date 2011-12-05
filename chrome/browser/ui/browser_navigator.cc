@@ -249,19 +249,19 @@ void LoadURLInContents(TabContents* target_contents,
   if (params->transferred_global_request_id != GlobalRequestID()) {
     target_contents->controller().TransferURL(
         url,
-        content::Referrer(params->referrer, WebKit::WebReferrerPolicyDefault),
+        params->referrer,
         params->transition, extra_headers,
         params->transferred_global_request_id,
         params->is_renderer_initiated);
   } else if (params->is_renderer_initiated) {
     target_contents->controller().LoadURLFromRenderer(
         url,
-        content::Referrer(params->referrer, WebKit::WebReferrerPolicyDefault),
+        params->referrer,
         params->transition,  extra_headers);
   } else {
     target_contents->controller().LoadURL(
         url,
-        content::Referrer(params->referrer, WebKit::WebReferrerPolicyDefault),
+        params->referrer,
         params->transition,  extra_headers);
   }
 
@@ -422,7 +422,7 @@ void Navigate(NavigateParams* params) {
     // A tab is being opened from a link from a different profile, we must reset
     // source information that may cause state to be shared.
     params->source_contents = NULL;
-    params->referrer = GURL();
+    params->referrer = content::Referrer();
   }
 
   // Make sure the Browser is shown if params call for it.

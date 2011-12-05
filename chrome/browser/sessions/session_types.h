@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
@@ -36,7 +37,7 @@ class TabNavigation {
   TabNavigation();
   TabNavigation(int index,
                 const GURL& virtual_url,
-                const GURL& referrer,
+                const content::Referrer& referrer,
                 const string16& title,
                 const std::string& state,
                 content::PageTransition transition);
@@ -56,7 +57,7 @@ class TabNavigation {
   const GURL& virtual_url() const { return virtual_url_; }
 
   // The referrer.
-  const GURL& referrer() const { return referrer_; }
+  const content::Referrer& referrer() const { return referrer_; }
 
   // The title of the page.
   void set_title(const string16& title) { title_ = title; }
@@ -95,7 +96,7 @@ class TabNavigation {
   friend class BaseSessionService;
 
   GURL virtual_url_;
-  GURL referrer_;
+  content::Referrer referrer_;
   string16 title_;
   std::string state_;
   content::PageTransition transition_;

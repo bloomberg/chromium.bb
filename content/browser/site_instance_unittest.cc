@@ -173,7 +173,8 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
                                                &browsingDeleteCounter);
   EXPECT_EQ(0, siteDeleteCounter);
 
-  NavigationEntry* e1 = new NavigationEntry(instance, 0, url, GURL(),
+  NavigationEntry* e1 = new NavigationEntry(instance, 0, url,
+                                            content::Referrer(),
                                             string16(),
                                             content::PAGE_TRANSITION_LINK,
                                             false);
@@ -184,7 +185,7 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
 
   // Add a second reference
   NavigationEntry* e2 = new NavigationEntry(instance, 0, url,
-                                            GURL(), string16(),
+                                            content::Referrer(), string16(),
                                             content::PAGE_TRANSITION_LINK,
                                             false);
 
@@ -239,8 +240,8 @@ TEST_F(SiteInstanceTest, CloneNavigationEntry) {
       TestSiteInstance::CreateTestSiteInstance(NULL, &siteDeleteCounter2,
                                                &browsingDeleteCounter);
 
-  NavigationEntry* e1 = new NavigationEntry(instance1, 0, url, GURL(),
-                                            string16(),
+  NavigationEntry* e1 = new NavigationEntry(instance1, 0, url,
+                                            content::Referrer(), string16(),
                                             content::PAGE_TRANSITION_LINK,
                                             false);
   // Clone the entry

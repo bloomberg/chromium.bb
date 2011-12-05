@@ -98,7 +98,8 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
   bool CreateAndWriteSessionWithOneTab(bool pinned_state, bool write_always) {
     SessionID tab_id;
     TabNavigation nav1(0, GURL("http://google.com"),
-                       GURL("http://www.referrer.com"),
+                       content::Referrer(GURL("http://www.referrer.com"),
+                                         WebKit::WebReferrerPolicyDefault),
                        ASCIIToUTF16("abc"), "def",
                        content::PAGE_TRANSITION_QUALIFIER_MASK);
 
@@ -146,7 +147,8 @@ TEST_F(SessionServiceTest, Basic) {
   ASSERT_NE(window_id.id(), tab_id.id());
 
   TabNavigation nav1(0, GURL("http://google.com"),
-                     GURL("http://www.referrer.com"),
+                     content::Referrer(GURL("http://www.referrer.com"),
+                                       WebKit::WebReferrerPolicyDefault),
                      ASCIIToUTF16("abc"), "def",
                      content::PAGE_TRANSITION_QUALIFIER_MASK);
 
@@ -174,7 +176,7 @@ TEST_F(SessionServiceTest, PersistPostData) {
   SessionID tab_id;
   ASSERT_NE(window_id.id(), tab_id.id());
 
-  TabNavigation nav1(0, GURL("http://google.com"), GURL(),
+  TabNavigation nav1(0, GURL("http://google.com"), content::Referrer(),
                      ASCIIToUTF16("abc"), std::string(),
                      content::PAGE_TRANSITION_QUALIFIER_MASK);
   nav1.set_type_mask(TabNavigation::HAS_POST_DATA);
@@ -193,10 +195,10 @@ TEST_F(SessionServiceTest, ClosingTabStaysClosed) {
   SessionID tab2_id;
   ASSERT_NE(tab_id.id(), tab2_id.id());
 
-  TabNavigation nav1(0, GURL("http://google.com"), GURL(),
+  TabNavigation nav1(0, GURL("http://google.com"), content::Referrer(),
                      ASCIIToUTF16("abc"), "def",
                      content::PAGE_TRANSITION_QUALIFIER_MASK);
-  TabNavigation nav2(0, GURL("http://google2.com"), GURL(),
+  TabNavigation nav2(0, GURL("http://google2.com"), content::Referrer(),
                      ASCIIToUTF16("abcd"), "defg",
                      content::PAGE_TRANSITION_AUTO_BOOKMARK);
 
@@ -224,10 +226,10 @@ TEST_F(SessionServiceTest, ClosingTabStaysClosed) {
 TEST_F(SessionServiceTest, Pruning) {
   SessionID tab_id;
 
-  TabNavigation nav1(0, GURL("http://google.com"), GURL(),
+  TabNavigation nav1(0, GURL("http://google.com"), content::Referrer(),
                      ASCIIToUTF16("abc"), "def",
                      content::PAGE_TRANSITION_QUALIFIER_MASK);
-  TabNavigation nav2(0, GURL("http://google2.com"), GURL(),
+  TabNavigation nav2(0, GURL("http://google2.com"), content::Referrer(),
                      ASCIIToUTF16("abcd"), "defg",
                      content::PAGE_TRANSITION_AUTO_BOOKMARK);
 
@@ -260,10 +262,10 @@ TEST_F(SessionServiceTest, TwoWindows) {
   SessionID tab1_id;
   SessionID tab2_id;
 
-  TabNavigation nav1(0, GURL("http://google.com"), GURL(),
+  TabNavigation nav1(0, GURL("http://google.com"), content::Referrer(),
                      ASCIIToUTF16("abc"), "def",
                      content::PAGE_TRANSITION_QUALIFIER_MASK);
-  TabNavigation nav2(0, GURL("http://google2.com"), GURL(),
+  TabNavigation nav2(0, GURL("http://google2.com"), content::Referrer(),
                      ASCIIToUTF16("abcd"), "defg",
                      content::PAGE_TRANSITION_AUTO_BOOKMARK);
 
@@ -317,7 +319,7 @@ TEST_F(SessionServiceTest, WindowWithNoTabsGetsPruned) {
   SessionID tab1_id;
   SessionID tab2_id;
 
-  TabNavigation nav1(0, GURL("http://google.com"), GURL(),
+  TabNavigation nav1(0, GURL("http://google.com"), content::Referrer(),
                      ASCIIToUTF16("abc"), "def",
                      content::PAGE_TRANSITION_QUALIFIER_MASK);
 
@@ -349,10 +351,10 @@ TEST_F(SessionServiceTest, ClosingWindowDoesntCloseTabs) {
   SessionID tab2_id;
   ASSERT_NE(tab_id.id(), tab2_id.id());
 
-  TabNavigation nav1(0, GURL("http://google.com"), GURL(),
+  TabNavigation nav1(0, GURL("http://google.com"), content::Referrer(),
                      ASCIIToUTF16("abc"), "def",
                      content::PAGE_TRANSITION_QUALIFIER_MASK);
-  TabNavigation nav2(0, GURL("http://google2.com"), GURL(),
+  TabNavigation nav2(0, GURL("http://google2.com"), content::Referrer(),
                      ASCIIToUTF16("abcd"), "defg",
                      content::PAGE_TRANSITION_AUTO_BOOKMARK);
 
@@ -392,10 +394,10 @@ TEST_F(SessionServiceTest, WindowCloseCommittedAfterNavigate) {
                              window_bounds,
                              ui::SHOW_STATE_NORMAL);
 
-  TabNavigation nav1(0, GURL("http://google.com"), GURL(),
+  TabNavigation nav1(0, GURL("http://google.com"), content::Referrer(),
                      ASCIIToUTF16("abc"), "def",
                      content::PAGE_TRANSITION_QUALIFIER_MASK);
-  TabNavigation nav2(0, GURL("http://google2.com"), GURL(),
+  TabNavigation nav2(0, GURL("http://google2.com"), content::Referrer(),
                      ASCIIToUTF16("abcd"), "defg",
                      content::PAGE_TRANSITION_AUTO_BOOKMARK);
 
@@ -437,10 +439,10 @@ TEST_F(SessionServiceTest, IgnorePopups) {
                              window_bounds,
                              ui::SHOW_STATE_NORMAL);
 
-  TabNavigation nav1(0, GURL("http://google.com"), GURL(),
+  TabNavigation nav1(0, GURL("http://google.com"), content::Referrer(),
                      ASCIIToUTF16("abc"), "def",
                      content::PAGE_TRANSITION_QUALIFIER_MASK);
-  TabNavigation nav2(0, GURL("http://google2.com"), GURL(),
+  TabNavigation nav2(0, GURL("http://google2.com"), content::Referrer(),
                      ASCIIToUTF16("abcd"), "defg",
                      content::PAGE_TRANSITION_AUTO_BOOKMARK);
 
@@ -478,10 +480,10 @@ TEST_F(SessionServiceTest, RestorePopup) {
                              window_bounds,
                              ui::SHOW_STATE_NORMAL);
 
-  TabNavigation nav1(0, GURL("http://google.com"), GURL(),
+  TabNavigation nav1(0, GURL("http://google.com"), content::Referrer(),
                      ASCIIToUTF16("abc"), "def",
                      content::PAGE_TRANSITION_QUALIFIER_MASK);
-  TabNavigation nav2(0, GURL("http://google2.com"), GURL(),
+  TabNavigation nav2(0, GURL("http://google2.com"), content::Referrer(),
                      ASCIIToUTF16("abcd"), "defg",
                      content::PAGE_TRANSITION_AUTO_BOOKMARK);
 
@@ -524,7 +526,8 @@ TEST_F(SessionServiceTest, PruneFromFront) {
 
   // Add 5 navigations, with the 4th selected.
   for (int i = 0; i < 5; ++i) {
-    TabNavigation nav(0, GURL(base_url + base::IntToString(i)), GURL(),
+    TabNavigation nav(0, GURL(base_url + base::IntToString(i)),
+                      content::Referrer(),
                       ASCIIToUTF16("a"), "b",
                       content::PAGE_TRANSITION_QUALIFIER_MASK);
     UpdateNavigation(window_id, tab_id, nav, i, (i == 3));
@@ -566,7 +569,8 @@ TEST_F(SessionServiceTest, PruneToEmpty) {
 
   // Add 5 navigations, with the 4th selected.
   for (int i = 0; i < 5; ++i) {
-    TabNavigation nav(0, GURL(base_url + base::IntToString(i)), GURL(),
+    TabNavigation nav(0, GURL(base_url + base::IntToString(i)),
+                      content::Referrer(),
                       ASCIIToUTF16("a"), "b",
                       content::PAGE_TRANSITION_QUALIFIER_MASK);
     UpdateNavigation(window_id, tab_id, nav, i, (i == 3));
@@ -598,7 +602,7 @@ TEST_F(SessionServiceTest, PersistApplicationExtensionID) {
   ASSERT_NE(window_id.id(), tab_id.id());
   std::string app_id("foo");
 
-  TabNavigation nav1(0, GURL("http://google.com"), GURL(),
+  TabNavigation nav1(0, GURL("http://google.com"), content::Referrer(),
                      ASCIIToUTF16("abc"), std::string(),
                      content::PAGE_TRANSITION_QUALIFIER_MASK);
 
@@ -665,7 +669,8 @@ TEST_F(SessionServiceTest, CloseTabUserGesture) {
   ASSERT_NE(window_id.id(), tab_id.id());
 
   TabNavigation nav1(0, GURL("http://google.com"),
-                     GURL("http://www.referrer.com"),
+                     content::Referrer(GURL("http://www.referrer.com"),
+                                       WebKit::WebReferrerPolicyDefault),
                      ASCIIToUTF16("abc"), "def",
                      content::PAGE_TRANSITION_QUALIFIER_MASK);
 

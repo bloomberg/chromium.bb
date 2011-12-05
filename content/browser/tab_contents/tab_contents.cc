@@ -160,8 +160,7 @@ void MakeNavigateParams(const NavigationEntry& entry,
   params->current_history_list_offset = controller.last_committed_entry_index();
   params->current_history_list_length = controller.entry_count();
   params->url = entry.url();
-  params->referrer = content::Referrer(entry.referrer(),
-                                       WebKit::WebReferrerPolicyDefault);
+  params->referrer = entry.referrer();
   params->transition = entry.transition_type();
   params->state = entry.content_state();
   params->navigation_type =

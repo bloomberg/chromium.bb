@@ -223,7 +223,8 @@ bool NavigationController::IsInitialNavigation() {
 
 // static
 NavigationEntry* NavigationController::CreateNavigationEntry(
-    const GURL& url, const GURL& referrer, content::PageTransition transition,
+    const GURL& url, const content::Referrer& referrer,
+    content::PageTransition transition,
     bool is_renderer_initiated, const std::string& extra_headers,
     content::BrowserContext* browser_context) {
   // Allow the browser URL handler to rewrite the URL. This will, for example,
@@ -508,7 +509,7 @@ void NavigationController::TransferURL(
   // The user initiated a load, we don't need to reload anymore.
   needs_reload_ = false;
 
-  NavigationEntry* entry = CreateNavigationEntry(url, referrer.url, transition,
+  NavigationEntry* entry = CreateNavigationEntry(url, referrer, transition,
                                                  is_renderer_initiated,
                                                  extra_headers,
                                                  browser_context_);
@@ -525,7 +526,7 @@ void NavigationController::LoadURL(
   // The user initiated a load, we don't need to reload anymore.
   needs_reload_ = false;
 
-  NavigationEntry* entry = CreateNavigationEntry(url, referrer.url, transition,
+  NavigationEntry* entry = CreateNavigationEntry(url, referrer, transition,
                                                  false,
                                                  extra_headers,
                                                  browser_context_);
@@ -541,7 +542,7 @@ void NavigationController::LoadURLFromRenderer(
   // The user initiated a load, we don't need to reload anymore.
   needs_reload_ = false;
 
-  NavigationEntry* entry = CreateNavigationEntry(url, referrer.url, transition,
+  NavigationEntry* entry = CreateNavigationEntry(url, referrer, transition,
                                                  true,
                                                  extra_headers,
                                                  browser_context_);
@@ -803,7 +804,7 @@ void NavigationController::RendererDidNavigateToNewPage(
   new_entry->set_url(params.url);
   if (update_virtual_url)
     UpdateVirtualURLToURL(new_entry, params.url);
-  new_entry->set_referrer(params.referrer.url);
+  new_entry->set_referrer(params.referrer);
   new_entry->set_page_id(params.page_id);
   new_entry->set_transition_type(params.transition);
   new_entry->set_site_instance(tab_contents_->GetSiteInstance());

@@ -18,12 +18,13 @@ class NavigationEntryTest : public testing::Test {
     entry1_.reset(new NavigationEntry);
 
     instance_ = SiteInstance::CreateSiteInstance(NULL);
-    entry2_.reset(new NavigationEntry(instance_, 3,
-                                      GURL("test:url"),
-                                      GURL("from"),
-                                      ASCIIToUTF16("title"),
-                                      content::PAGE_TRANSITION_TYPED,
-                                      false));
+    entry2_.reset(new NavigationEntry(
+          instance_, 3,
+          GURL("test:url"),
+          content::Referrer(GURL("from"), WebKit::WebReferrerPolicyDefault),
+          ASCIIToUTF16("title"),
+          content::PAGE_TRANSITION_TYPED,
+          false));
   }
 
   virtual void TearDown() {
@@ -151,10 +152,11 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_EQ(content::PAGE_TYPE_INTERSTITIAL, entry2_.get()->page_type());
 
   // Referrer
-  EXPECT_EQ(GURL(), entry1_.get()->referrer());
-  EXPECT_EQ(GURL("from"), entry2_.get()->referrer());
-  entry2_.get()->set_referrer(GURL("from2"));
-  EXPECT_EQ(GURL("from2"), entry2_.get()->referrer());
+  EXPECT_EQ(GURL(), entry1_.get()->referrer().url);
+  EXPECT_EQ(GURL("from"), entry2_.get()->referrer().url);
+  entry2_.get()->set_referrer(
+      content::Referrer(GURL("from2"), WebKit::WebReferrerPolicyDefault));
+  EXPECT_EQ(GURL("from2"), entry2_.get()->referrer().url);
 
   // Title
   EXPECT_EQ(string16(), entry1_.get()->title());

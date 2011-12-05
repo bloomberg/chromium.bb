@@ -282,7 +282,7 @@ namespace {
 // Based on Browser::OpenURLFromTab
 void OpenGetOAuthTokenURL(Browser* browser,
                           const GURL& url,
-                          const GURL& referrer,
+                          const content::Referrer& referrer,
                           WindowOpenDisposition disposition,
                           content::PageTransition transition) {
   browser::NavigateParams params(
@@ -292,7 +292,7 @@ void OpenGetOAuthTokenURL(Browser* browser,
   params.source_contents =
       browser->tabstrip_model()->GetTabContentsAt(
           browser->tabstrip_model()->GetWrapperIndex(NULL));
-  params.referrer = GURL("chrome://settings/personal");
+  params.referrer = referrer;
   params.disposition = disposition;
   params.tabstrip_add_types = TabStripModel::ADD_NONE;
   params.window_action = browser::NavigateParams::SHOW_WINDOW;
@@ -317,7 +317,8 @@ void GaiaOAuthFetcher::StartGetOAuthToken() {
   OpenGetOAuthTokenURL(browser,
       MakeGetOAuthTokenUrl(GaiaUrls::GetInstance()->oauth1_login_scope(),
                            l10n_util::GetStringUTF8(IDS_PRODUCT_NAME)),
-      GURL("chrome://settings/personal"),
+      content::Referrer(GURL("chrome://settings/personal"),
+                        WebKit::WebReferrerPolicyDefault),
       NEW_POPUP,
       content::PAGE_TRANSITION_AUTO_BOOKMARK);
   popup_ = BrowserList::GetLastActiveWithProfile(profile_);
