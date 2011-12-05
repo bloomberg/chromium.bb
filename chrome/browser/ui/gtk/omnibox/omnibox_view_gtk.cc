@@ -1565,7 +1565,7 @@ void OmniboxViewGtk::HandleDragDataReceived(GtkWidget* sender,
   string16 possible_url = UTF8ToUTF16(reinterpret_cast<char*>(text));
   g_free(text);
   if (OnPerformDropImpl(possible_url)) {
-    gtk_drag_finish(context, TRUE, TRUE, time);
+    gtk_drag_finish(context, TRUE, FALSE, time);
 
     static guint signal_id =
         g_signal_lookup("drag-data-received", GTK_TYPE_WIDGET);
