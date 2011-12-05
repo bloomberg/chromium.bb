@@ -9,7 +9,6 @@
 #include "content/common/devtools_messages.h"
 #include "content/renderer/devtools_agent.h"
 #include "content/renderer/plugin_channel_host.h"
-#include "content/renderer/render_thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
@@ -69,7 +68,6 @@ void DevToolsAgentFilter::OnFilterAdded(IPC::Channel* channel) {
 
 void DevToolsAgentFilter::OnDispatchOnInspectorBackend(
     const std::string& message) {
-  RenderThread::current()->EnsureWebKitInitialized();
   if (!WebDevToolsAgent::shouldInterruptForMessage(
           WebString::fromUTF8(message))) {
       message_handled_ = false;
