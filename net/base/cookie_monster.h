@@ -275,6 +275,14 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   virtual CookieMonster* GetCookieMonster() OVERRIDE;
 
+  // Enables writing session cookies into the cookie database. If this this
+  // method is called, it must be called before first use of the instance
+  // (i.e. as part of the instance initialization process).
+  void SetPersistSessionCookies(bool persist_session_cookies);
+
+  // Protects session cookies from deletion on shutdown.
+  void SaveSessionCookies();
+
   // Debugging method to perform various validation checks on the map.
   // Currently just checking that there are no null CanonicalCookie pointers
   // in the map.
@@ -673,6 +681,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   base::Time last_statistic_record_time_;
 
   bool keep_expired_cookies_;
+  bool persist_session_cookies_;
 
   static bool enable_file_scheme_;
 

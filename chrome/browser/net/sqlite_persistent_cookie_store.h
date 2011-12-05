@@ -24,7 +24,8 @@ class Task;
 class SQLitePersistentCookieStore
     : public net::CookieMonster::PersistentCookieStore {
  public:
-  explicit SQLitePersistentCookieStore(const FilePath& path);
+  SQLitePersistentCookieStore(const FilePath& path,
+                              bool restore_old_session_cookies);
   virtual ~SQLitePersistentCookieStore();
 
   virtual void Load(const LoadedCallback& loaded_callback) OVERRIDE;

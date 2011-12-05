@@ -91,7 +91,8 @@ void ProfileImplIOData::Handle::Init(
       const FilePath& app_path,
       chrome_browser_net::Predictor* predictor,
       PrefService* local_state,
-      IOThread* io_thread) {
+      IOThread* io_thread,
+      bool restore_old_session_cookies) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!io_data_->lazy_params_.get());
   DCHECK(predictor);
@@ -105,6 +106,7 @@ void ProfileImplIOData::Handle::Init(
   lazy_params->media_cache_path = media_cache_path;
   lazy_params->media_cache_max_size = media_cache_max_size;
   lazy_params->extensions_cookie_path = extensions_cookie_path;
+  lazy_params->restore_old_session_cookies = restore_old_session_cookies;
 
   io_data_->lazy_params_.reset(lazy_params);
 
@@ -318,18 +320,23 @@ void ProfileImplIOData::LazyInitializeInternal(
     DCHECK(!lazy_params_->cookie_path.empty());
 
     scoped_refptr<SQLitePersistentCookieStore> cookie_db =
-        new SQLitePersistentCookieStore(lazy_params_->cookie_path);
+        new SQLitePersistentCookieStore(
+            lazy_params_->cookie_path,
+            lazy_params_->restore_old_session_cookies);
     cookie_db->SetClearLocalStateOnExit(
         profile_params->clear_local_state_on_exit);
     cookie_store =
         new net::CookieMonster(cookie_db.get(),
                                profile_params->cookie_monster_delegate);
+    if (command_line.HasSwitch(switches::kEnableRestoreSessionState))
+      cookie_store->GetCookieMonster()->SetPersistSessionCookies(true);
   }
 
   net::CookieMonster* extensions_cookie_store =
       new net::CookieMonster(
           new SQLitePersistentCookieStore(
-              lazy_params_->extensions_cookie_path), NULL);
+              lazy_params_->extensions_cookie_path,
+              lazy_params_->restore_old_session_cookies), NULL);
   // Enable cookies for devtools and extension URLs.
   const char* schemes[] = {chrome::kChromeDevToolsScheme,
                            chrome::kExtensionScheme};
@@ -464,7 +471,7 @@ ProfileImplIOData::InitializeAppRequestContext(
     DCHECK(!cookie_path.empty());
 
     scoped_refptr<SQLitePersistentCookieStore> cookie_db =
-        new SQLitePersistentCookieStore(cookie_path);
+        new SQLitePersistentCookieStore(cookie_path, false);
     cookie_db->SetClearLocalStateOnExit(clear_local_state_on_exit_);
     // TODO(creis): We should have a cookie delegate for notifying the cookie
     // extensions API, but we need to update it to understand isolated apps

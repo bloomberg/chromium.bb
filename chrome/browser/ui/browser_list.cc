@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/browser_list.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -14,10 +15,12 @@
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/background_printing_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/public/browser/browser_shutdown.h"
@@ -508,6 +511,13 @@ void BrowserList::AttemptUserExit() {
 
 // static
 void BrowserList::AttemptRestart() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableRestoreSessionState)) {
+    BrowserVector::const_iterator it;
+    for (it = begin(); it != end(); ++it)
+      (*it)->profile()->SaveSessionState();
+  }
+
 #if defined(OS_CHROMEOS)
   // For CrOS instead of browser restart (which is not supported) perform a full
   // sign out. Session will be only restored if user has that setting set.

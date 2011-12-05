@@ -137,6 +137,7 @@ class ProfileImpl : public Profile,
   virtual void ClearNetworkingHistorySince(base::Time time) OVERRIDE;
   virtual GURL GetHomePage() OVERRIDE;
   virtual NetworkActionPredictor* GetNetworkActionPredictor() OVERRIDE;
+  virtual void SaveSessionState() OVERRIDE;
 
 #if defined(OS_CHROMEOS)
   virtual void ChangeAppLocale(const std::string& locale,
@@ -321,6 +322,8 @@ class ProfileImpl : public Profile,
   Profile::Delegate* delegate_;
 
   chrome_browser_net::Predictor* predictor_;
+
+  bool session_restore_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
 };

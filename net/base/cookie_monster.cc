@@ -370,7 +370,8 @@ CookieMonster::CookieMonster(PersistentCookieStore* store, Delegate* delegate)
           TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds)),
       delegate_(delegate),
       last_statistic_record_time_(Time::Now()),
-      keep_expired_cookies_(false) {
+      keep_expired_cookies_(false),
+      persist_session_cookies_(false) {
   InitializeHistograms();
   SetDefaultCookieableSchemes();
 }
@@ -386,7 +387,8 @@ CookieMonster::CookieMonster(PersistentCookieStore* store,
           last_access_threshold_milliseconds)),
       delegate_(delegate),
       last_statistic_record_time_(base::Time::Now()),
-      keep_expired_cookies_(false) {
+      keep_expired_cookies_(false),
+      persist_session_cookies_(false) {
   InitializeHistograms();
   SetDefaultCookieableSchemes();
 }
@@ -1399,6 +1401,18 @@ CookieMonster* CookieMonster::GetCookieMonster() {
   return this;
 }
 
+void CookieMonster::SetPersistSessionCookies(bool persist_session_cookies) {
+  // This function must be called before the CookieMonster is used.
+  DCHECK(!initialized_);
+  persist_session_cookies_ = persist_session_cookies;
+}
+
+void CookieMonster::SaveSessionCookies() {
+  if (store_) {
+    store_->SetClearLocalStateOnExit(false);
+  }
+}
+
 CookieMonster::~CookieMonster() {
   DeleteAll(false);
 }
@@ -1774,7 +1788,8 @@ void CookieMonster::InternalInsertCookie(const std::string& key,
                                          bool sync_to_store) {
   lock_.AssertAcquired();
 
-  if (cc->IsPersistent() && store_ && sync_to_store)
+  if ((cc->IsPersistent() || persist_session_cookies_) &&
+      store_ && sync_to_store)
     store_->AddCookie(*cc);
   cookies_.insert(CookieMap::value_type(key, cc));
   if (delegate_.get()) {
@@ -1891,7 +1906,7 @@ void CookieMonster::InternalUpdateCookieAccessTime(CanonicalCookie* cc,
       (current - cc->LastAccessDate()).InMinutes());
 
   cc->SetLastAccessDate(current);
-  if (cc->IsPersistent() && store_)
+  if ((cc->IsPersistent() || persist_session_cookies_) && store_)
     store_->UpdateCookieAccessTime(*cc);
 }
 
@@ -1913,7 +1928,8 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
   CanonicalCookie* cc = it->second;
   VLOG(kVlogSetCookies) << "InternalDeleteCookie() cc: " << cc->DebugString();
 
-  if (cc->IsPersistent() && store_ && sync_to_store)
+  if ((cc->IsPersistent() || persist_session_cookies_)
+      && store_ && sync_to_store)
     store_->DeleteCookie(*cc);
   if (delegate_.get()) {
     ChangeCausePair mapping = ChangeCauseMapping[deletion_cause];

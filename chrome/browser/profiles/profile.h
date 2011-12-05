@@ -494,6 +494,9 @@ class Profile : public content::BrowserContext {
   // prerender or prefetch a result.
   virtual NetworkActionPredictor* GetNetworkActionPredictor() = 0;
 
+  // Makes the session state, e.g., cookies, persistent across the next restart.
+  virtual void SaveSessionState() {}
+
   std::string GetDebugName();
 
   // Returns whether it is a guest session.

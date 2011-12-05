@@ -42,7 +42,8 @@ class FastShutdown : public UITest {
     scoped_refptr<SQLitePersistentCookieStore> cookie_store(
        new SQLitePersistentCookieStore(
            user_data_dir_.AppendASCII(chrome::kInitialProfile)
-                         .Append(chrome::kCookieFilename)));
+                         .Append(chrome::kCookieFilename),
+           false));
     std::vector<net::CookieMonster::CanonicalCookie*> cookies;
     cookie_store->Load(
         base::Bind(&FastShutdown::LoadCookiesCallback,

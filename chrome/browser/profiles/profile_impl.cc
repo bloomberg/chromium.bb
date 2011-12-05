@@ -168,6 +168,13 @@ FilePath GetMediaCachePath(const FilePath& base) {
   return base.Append(chrome::kMediaCacheDirname);
 }
 
+void SaveSessionStateOnIOThread(
+    net::URLRequestContextGetter* url_request_context_getter) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  url_request_context_getter->GetURLRequestContext()->cookie_store()->
+      GetCookieMonster()->SaveSessionCookies();
+}
+
 }  // namespace
 
 // static
@@ -236,7 +243,8 @@ ProfileImpl::ProfileImpl(const FilePath& path,
       checked_instant_promo_(false),
 #endif
       delegate_(delegate),
-      predictor_(NULL) {
+      predictor_(NULL),
+      session_restore_enabled_(false) {
   DCHECK(!path.empty()) << "Using an empty path will attempt to write " <<
                             "profile files to the root directory!";
 
@@ -251,6 +259,8 @@ ProfileImpl::ProfileImpl(const FilePath& path,
       !command_line->HasSwitch(switches::kDisablePreconnect),
       g_browser_process->profile_manager() == NULL);
 
+  session_restore_enabled_ =
+      command_line->HasSwitch(switches::kEnableRestoreSessionState);
   if (delegate_) {
     prefs_.reset(PrefService::CreatePrefService(
         GetPrefFilePath(),
@@ -366,6 +376,12 @@ void ProfileImpl::DoFinalInit() {
 
   FilePath app_path = GetPath().Append(chrome::kIsolatedAppStateDirname);
 
+  bool restore_old_session_cookies =
+      session_restore_enabled_ &&
+      (!DidLastSessionExitCleanly() ||
+       CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kRestoreLastSession));
+
   // Make sure we initialize the ProfileIOData after everything else has been
   // initialized that we might be reading from the IO thread.
 
@@ -373,7 +389,8 @@ void ProfileImpl::DoFinalInit() {
                 cache_max_size, media_cache_path, media_cache_max_size,
                 extensions_cookie_path, app_path, predictor_,
                 g_browser_process->local_state(),
-                g_browser_process->io_thread());
+                g_browser_process->io_thread(),
+                restore_old_session_cookies);
 
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
       PluginPrefs::GetForProfile(this), &GetResourceContext());
@@ -1573,6 +1590,15 @@ NetworkActionPredictor* ProfileImpl::GetNetworkActionPredictor() {
   if (!network_action_predictor_.get())
     network_action_predictor_.reset(new NetworkActionPredictor(this));
   return network_action_predictor_.get();
+}
+
+void ProfileImpl::SaveSessionState() {
+  if (!session_restore_enabled_)
+    return;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&SaveSessionStateOnIOThread,
+                 make_scoped_refptr(GetRequestContext())));
 }
 
 SpellCheckProfile* ProfileImpl::GetSpellCheckProfile() {

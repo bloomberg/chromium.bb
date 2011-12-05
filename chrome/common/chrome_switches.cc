@@ -539,6 +539,10 @@ const char kEnablePreconnect[]              = "enable-preconnect";
 // during chrome_browser_main.
 const char kEnableProfiling[]               = "enable-profiling";
 
+// Experimental. Enables restoring session state (cookies, session storage,
+// etc.) when autorestarting.
+const char kEnableRestoreSessionState[]   = "enable-restore-session-state";
+
 // Controls the support for SDCH filtering (dictionary based expansion of
 // content). By default SDCH filtering is enabled. To disable SDCH filtering,
 // use "--enable-sdch=0" as command line argument. SDCH is currently only

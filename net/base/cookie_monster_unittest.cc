@@ -3579,4 +3579,42 @@ TEST_F(CookieMonsterTest, InvalidExpiryTime) {
   ASSERT_FALSE(cookie->DoesExpire());
 }
 
+// Test that CookieMonster writes session cookies into the underlying
+// CookieStore if the "persist session cookies" option is on.
+TEST_F(CookieMonsterTest, PersistSessionCookies) {
+  scoped_refptr<MockPersistentCookieStore> store(
+      new MockPersistentCookieStore);
+  scoped_refptr<CookieMonster> cm(new CookieMonster(store, NULL));
+  cm->SetPersistSessionCookies(true);
+
+  // All cookies set with SetCookie are session cookies.
+  EXPECT_TRUE(SetCookie(cm, url_google_, "A=B"));
+  EXPECT_EQ("A=B", GetCookies(cm, url_google_));
+
+  // The cookie was written to the backing store.
+  EXPECT_EQ(1u, store->commands().size());
+  EXPECT_EQ(CookieStoreCommand::ADD, store->commands()[0].type);
+  EXPECT_EQ("A", store->commands()[0].cookie.Name());
+  EXPECT_EQ("B", store->commands()[0].cookie.Value());
+
+  // Modify the cookie.
+  EXPECT_TRUE(SetCookie(cm, url_google_, "A=C"));
+  EXPECT_EQ("A=C", GetCookies(cm, url_google_));
+  EXPECT_EQ(3u, store->commands().size());
+  EXPECT_EQ(CookieStoreCommand::REMOVE, store->commands()[1].type);
+  EXPECT_EQ("A", store->commands()[1].cookie.Name());
+  EXPECT_EQ("B", store->commands()[1].cookie.Value());
+  EXPECT_EQ(CookieStoreCommand::ADD, store->commands()[2].type);
+  EXPECT_EQ("A", store->commands()[2].cookie.Name());
+  EXPECT_EQ("C", store->commands()[2].cookie.Value());
+
+  // Delete the cookie.
+  DeleteCookie(cm, url_google_, "A");
+  EXPECT_EQ("", GetCookies(cm, url_google_));
+  EXPECT_EQ(4u, store->commands().size());
+  EXPECT_EQ(CookieStoreCommand::REMOVE, store->commands()[3].type);
+  EXPECT_EQ("A", store->commands()[3].cookie.Name());
+  EXPECT_EQ("C", store->commands()[3].cookie.Value());
+}
+
 }  // namespace net

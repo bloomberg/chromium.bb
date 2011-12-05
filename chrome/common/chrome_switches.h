@@ -152,6 +152,7 @@ extern const char kEnableNaClDebug[];
 extern const char kEnablePlatformApps[];
 extern const char kEnablePreconnect[];
 extern const char kEnableProfiling[];
+extern const char kEnableRestoreSessionState[];
 extern const char kEnableResourceContentSettings[];
 extern const char kEnableSdch[];
 extern const char kEnableSearchProviderApiV2[];

@@ -45,7 +45,8 @@ class ProfileImplIOData : public ProfileIOData {
               const FilePath& app_path,
               chrome_browser_net::Predictor* predictor,
               PrefService* local_state,
-              IOThread* io_thread);
+              IOThread* io_thread,
+              bool restore_old_session_cookies);
 
     base::Callback<ChromeURLDataManagerBackend*(void)>
         GetChromeURLDataManagerBackendGetter() const;
@@ -113,6 +114,7 @@ class ProfileImplIOData : public ProfileIOData {
     FilePath media_cache_path;
     int media_cache_max_size;
     FilePath extensions_cookie_path;
+    bool restore_old_session_cookies;
   };
 
   typedef base::hash_map<std::string, net::HttpTransactionFactory* >
