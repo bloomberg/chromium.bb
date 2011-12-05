@@ -40,8 +40,7 @@ libtoytoolkit_a_SOURCES =			\
 	window.c				\
 	window.h				\
 	cairo-util.c				\
-	cairo-util.h				\
-	config.c
+	cairo-util.h
 
 toolkit_libs =					\
 	libtoytoolkit.a				\
@@ -81,13 +80,15 @@ wayland_desktop_shell_SOURCES =			\
 	desktop-shell.c				\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c
-wayland_desktop_shell_LDADD = $(toolkit_libs)
+wayland_desktop_shell_LDADD = $(toolkit_libs)	\
+	../shared/libconfigparser.la
 
 wayland_tablet_shell_SOURCES =			\
 	tablet-shell.c				\
 	tablet-shell-client-protocol.h		\
 	tablet-shell-protocol.c
-wayland_tablet_shell_LDADD = $(toolkit_libs)
+wayland_tablet_shell_LDADD = $(toolkit_libs)	\
+	../shared/libconfigparser.la
 
 BUILT_SOURCES =					\
 	screenshooter-client-protocol.h		\

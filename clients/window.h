@@ -362,31 +362,4 @@ void
 output_get_allocation(struct output *output, struct rectangle *allocation);
 
 
-enum {
-	CONFIG_KEY_INTEGER,
-	CONFIG_KEY_STRING,
-	CONFIG_KEY_BOOL
-};
-
-struct config_key {
-	const char *name;
-	int type;
-	void *data;
-};
-
-struct config_section {
-	const char *name;
-	const struct config_key *keys;
-	int num_keys;
-	void (*done)(void *data);
-};
-
-int
-parse_config_file(const char *path,
-		  const struct config_section *sections, int num_sections,
-		  void *data);
-
-char *
-config_file_path(const char *name);
-
 #endif

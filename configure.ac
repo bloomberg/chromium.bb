@@ -140,6 +140,7 @@ AC_SUBST(GCC_CFLAGS)
 WAYLAND_SCANNER_RULES(['$(top_srcdir)/protocol'])
 
 AC_CONFIG_FILES([Makefile
+		 shared/Makefile
 		 compositor/Makefile
 		 clients/Makefile
 		 data/Makefile])
