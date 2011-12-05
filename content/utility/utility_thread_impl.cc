@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_vector.h"
 #include "content/common/child_process.h"
@@ -19,6 +20,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "webkit/glue/idb_bindings.h"
 #include "webkit/plugins/npapi/plugin_list.h"
+
+#if defined(TOOLKIT_USES_GTK)
+#include <gtk/gtk.h>
+
+#include "ui/gfx/gtk_util.h"
+#endif
 
 namespace {
 
@@ -37,6 +44,13 @@ UtilityThreadImpl::UtilityThreadImpl()
   webkit_platform_support_.reset(new content::WebKitPlatformSupportImpl);
   WebKit::initialize(webkit_platform_support_.get());
   content::GetContentClient()->utility()->UtilityThreadStarted();
+
+  // On Linux, some plugins expect the browser to have loaded glib/gtk. Do that
+  // before attempting to call into the plugin.
+#if defined(TOOLKIT_USES_GTK)
+  g_thread_init(NULL);
+  gfx::GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
+#endif
 }
 
 UtilityThreadImpl::~UtilityThreadImpl() {
