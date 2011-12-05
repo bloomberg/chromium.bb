@@ -84,7 +84,7 @@ MockRowProvider.prototype.getRowNode = function(index) {
     return this.rowNodeCache_[index];
 
   var rec = this.getRowRecord_(index);
-  var rowNode = this.document_.createElement('div');
+  var rowNode = this.document_.createElement('x-row');
   rowNode.rowIndex = index;
   rowNode.innerHTML = rec.html;
 

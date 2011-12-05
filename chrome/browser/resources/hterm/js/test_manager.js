@@ -332,6 +332,22 @@ TestManager.Suite.prototype.setup = function(cx) {};
 TestManager.Suite.prototype.preamble = function(result, cx) {};
 
 /**
+ * Subclassable method called to do post-test tear-down.
+ *
+ * The default implementation of this method is a no-op.  If your test suite
+ * requires some kind of pre-test setup, this is the place to do it.
+ *
+ * This can be used to avoid a bunch of boilerplate setup/teardown code in
+ * this suite's testcases.
+ *
+ * Any exception here will abort the remainder of the test run.
+ *
+ * @param {TestManager.Result} result The result object for the upcoming test.
+ * @param {Object} cx The context object for a test run.
+ */
+TestManager.Suite.prototype.postamble = function(result, cx) {};
+
+/**
  * Object representing a single test in a test suite.
  *
  * These are created as part of the TestManager.Suite.addTest() method.  You
@@ -474,9 +490,9 @@ TestManager.TestRun.prototype.selectTest = function(test) {
   this.testQueue_.push(test);
 };
 
-TestManager.TestRun.prototype.selectSuite = function(suiteClass, pattern) {
+TestManager.TestRun.prototype.selectSuite = function(suiteClass, opt_pattern) {
+  var pattern = opt_pattern || this.ALL_TESTS;
   var selectCount = 0;
-
   var testList = suiteClass.getTestList();
 
   for (var j = 0; j < testList.length; j++) {
@@ -487,7 +503,7 @@ TestManager.TestRun.prototype.selectSuite = function(suiteClass, pattern) {
       if (pattern instanceof RegExp) {
         if (!pattern.test(test.testName))
           continue;
-      } else if (testName != pattern) {
+      } else if (test.testName != pattern) {
         continue;
       }
     }
@@ -537,7 +553,7 @@ TestManager.TestRun.prototype.onUncaughtException_ = function(
     // This is a result.pass() or result.fail() call from a callback.  We're
     // already going to deal with it as part of the completeTest_() call
     // that raised it.  We can safely squelch this error message.
-    return false;
+    return true;
   }
 
   if (!this.currentResult)
@@ -605,6 +621,14 @@ TestManager.TestRun.prototype.onTestRunComplete_ = function(opt_skipTimeout) {
  *     completed.
  */
 TestManager.TestRun.prototype.onResultComplete = function(result) {
+  try {
+    result.suite.postamble();
+  } catch (ex) {
+    this.log.println('Unexpected exception in postamble: ' +
+                     (ex.stack ? ex.stack : ex));
+    this.panic = true;
+  }
+
   this.log.popPrefix();
   this.log.print('} ' + result.status + ', ' +
                  this.msToSeconds_(result.duration));
@@ -749,7 +773,7 @@ TestManager.TestRun.prototype.run = function() {
  * Format milliseconds as fractional seconds.
  */
 TestManager.TestRun.prototype.msToSeconds_ = function(ms) {
-  var secs = (ms / 100).toFixed(2);
+  var secs = (ms / 1000).toFixed(2);
   return secs + 's';
 };
 

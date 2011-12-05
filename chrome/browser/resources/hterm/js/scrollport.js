@@ -19,20 +19,24 @@
  * of the selection is off screen.  It would be difficult to fix this without
  * adding significant overhead to pathologically large selection cases.
  *
+ * The RowProvider should return rows rooted by the custom tag name 'x-row'.
+ * This ensures that we can quickly assign the correct display height
+ * to the rows with css.
+ *
  * @param {RowProvider} rowProvider An object capable of providing rows as
  *     raw text or row nodes.
  * @param {integer} fontSize The css font-size, in pixels.
  * @param {integer} opt_lineHeight Optional css line-height in pixels.
  *    If omitted it will be computed based on the fontSize.
  */
-function ScrollPort(rowProvider, fontSize, opt_lineHeight) {
+hterm.ScrollPort = function(rowProvider, fontSize, opt_lineHeight) {
   PubSub.addBehavior(this);
 
   this.rowProvider_ = rowProvider;
   this.fontSize_ = fontSize;
   this.rowHeight_ = opt_lineHeight || fontSize + 2;
 
-  this.selection_ = new ScrollPort.Selection(this);
+  this.selection_ = new hterm.ScrollPort.Selection(this);
 
   // A map of rowIndex => rowNode for each row that is drawn as part of a
   // pending redraw_() call.  Null if there is no pending redraw_ call.
@@ -41,6 +45,9 @@ function ScrollPort(rowProvider, fontSize, opt_lineHeight) {
   // A map of rowIndex => rowNode for each row that was drawn as part of the
   // previous redraw_() call.
   this.previousRowNodeCache_ = {};
+
+  // The css rule that we use to control the height of a row.
+  this.xrowCssRule_ = null;
 
   this.div_ = null;
   this.document_ = null;
@@ -54,9 +61,9 @@ function ScrollPort(rowProvider, fontSize, opt_lineHeight) {
  * Proxy for the native selection object which understands how to walk up the
  * DOM to find the containing row node and sort out which comes first.
  *
- * @param {ScrollPort} scrollPort The parent ScrollPort instance.
+ * @param {hterm.ScrollPort} scrollPort The parent hterm.ScrollPort instance.
  */
-ScrollPort.Selection = function(scrollPort) {
+hterm.ScrollPort.Selection = function(scrollPort) {
   this.scrollPort_ = scrollPort;
   this.selection_ = null;
 
@@ -101,7 +108,7 @@ ScrollPort.Selection = function(scrollPort) {
  * This is a one-way synchronization, the DOM selection is copied to this
  * object, not the other way around.
  */
-ScrollPort.Selection.prototype.sync = function() {
+hterm.ScrollPort.Selection.prototype.sync = function() {
   var selection = this.scrollPort_.getDocument().getSelection();
 
   this.startRow = null;
@@ -146,9 +153,9 @@ ScrollPort.Selection.prototype.sync = function() {
 };
 
 /**
- * Turn a div into this ScrollPort.
+ * Turn a div into this hterm.ScrollPort.
  */
-ScrollPort.prototype.decorate = function(div) {
+hterm.ScrollPort.prototype.decorate = function(div) {
   this.div_ = div;
 
   this.iframe_ = div.ownerDocument.createElement('iframe');
@@ -172,6 +179,14 @@ ScrollPort.prototype.decorate = function(div) {
       'padding: 0px;' +
       'white-space: pre;' +
       '-webkit-user-select: none;');
+
+  var style = doc.createElement('style');
+  style.textContent = 'x-row {}';
+  doc.head.appendChild(style);
+
+  this.xrowCssRule_ = doc.styleSheets[0].cssRules[0];
+  this.xrowCssRule_.style.display = 'block';
+  this.xrowCssRule_.style.height = this.rowHeight_ + 'px';
 
   this.screen_ = doc.createElement('x-screen');
   this.screen_.style.cssText = (
@@ -229,19 +244,35 @@ ScrollPort.prototype.decorate = function(div) {
   this.setRowMetrics(this.fontSize_, this.rowHeight_);
 };
 
-ScrollPort.prototype.getRowHeight = function() {
+hterm.ScrollPort.prototype.getForegroundColor = function() {
+  return this.document_.body.style.color;
+};
+
+hterm.ScrollPort.prototype.setForegroundColor = function(color) {
+  this.document_.body.style.color = color;
+};
+
+hterm.ScrollPort.prototype.getBackgroundColor = function() {
+  return this.document_.body.style.backgroundColor;
+};
+
+hterm.ScrollPort.prototype.setBackgroundColor = function(color) {
+  this.document_.body.style.backgroundColor = color;
+};
+
+hterm.ScrollPort.prototype.getRowHeight = function() {
   return this.rowHeight_;
 };
 
-ScrollPort.prototype.getScreenWidth = function() {
+hterm.ScrollPort.prototype.getScreenWidth = function() {
   return this.screen_.clientWidth;
 };
 
-ScrollPort.prototype.getScreenWidth = function() {
+hterm.ScrollPort.prototype.getScreenHeight = function() {
   return this.screen_.clientHeight;
 };
 
-ScrollPort.prototype.getCharacterWidth = function() {
+hterm.ScrollPort.prototype.getCharacterWidth = function() {
   var span = this.document_.createElement('span');
   span.textContent = '\xa0';  // &nbsp;
   this.rowNodes_.appendChild(span);
@@ -251,16 +282,16 @@ ScrollPort.prototype.getCharacterWidth = function() {
 };
 
 /**
- * Return the document that holds the visible rows of this ScrollPort.
+ * Return the document that holds the visible rows of this hterm.ScrollPort.
  */
-ScrollPort.prototype.getDocument = function() {
+hterm.ScrollPort.prototype.getDocument = function() {
   return this.document_;
 };
 
 /**
  * Clear out any cached rowNodes.
  */
-ScrollPort.prototype.resetCache = function() {
+hterm.ScrollPort.prototype.resetCache = function() {
   this.currentRowNodeCache_ = null;
   this.previousRowNodeCache_ = {};
 };
@@ -271,27 +302,62 @@ ScrollPort.prototype.resetCache = function() {
  * This will clear the row cache and cause a redraw.
  *
  * @param {Object} rowProvider An object capable of providing the rows
- *     in this ScrollPort.
+ *     in this hterm.ScrollPort.
  */
-ScrollPort.prototype.setRowProvider = function(rowProvider) {
-  this.resetCache_();
+hterm.ScrollPort.prototype.setRowProvider = function(rowProvider) {
+  this.resetCache();
   this.rowProvider_ = rowProvider;
   this.redraw_();
 };
 
 /**
- * Set the fontSize and lineHeight of this ScrollPort.
+ * Inform the ScrollPort that a given range of rows is invalid.
+ *
+ * The RowProvider should call this method if the underlying x-row instance
+ * for a given rowIndex is no longer valid.
+ *
+ * Note that this is not necessary when only the *content* of the x-row has
+ * changed.  It's only needed when getRowNode(N) would return a different
+ * x-row than it used to.
+ *
+ * If rows in the sepecified range are visible, they will be redrawn.
+ */
+hterm.ScrollPort.prototype.invalidateRowRange = function(start, end) {
+  this.resetCache();
+
+  var node = this.rowNodes_.firstChild;
+  while (node) {
+    if ('rowIndex' in node &&
+        node.rowIndex >= start && node.rowIndex <= end) {
+      var nextSibling = node.nextSibling;
+      this.rowNodes_.removeChild(node);
+
+      var newNode = this.rowProvider_.getRowNode(node.rowIndex);
+
+      this.rowNodes_.insertBefore(newNode, nextSibling);
+      this.previousRowNodeCache_[node.rowIndex] = newNode;
+
+      node = nextSibling;
+    } else {
+      node = node.nextSibling;
+    }
+  }
+};
+
+/**
+ * Set the fontSize and lineHeight of this hterm.ScrollPort.
  *
  * @param {integer} fontSize The css font-size, in pixels.
  * @param {integer} opt_lineHeight Optional css line-height in pixels.
  *    If omitted it will be computed based on the fontSize.
  */
-ScrollPort.prototype.setRowMetrics = function(fontSize, opt_lineHeight) {
+hterm.ScrollPort.prototype.setRowMetrics = function(fontSize, opt_lineHeight) {
   this.fontSize_ = fontSize;
   this.rowHeight_ = opt_lineHeight || fontSize + 2;
 
   this.screen_.style.fontSize = this.fontSize_ + 'px';
   this.screen_.style.lineHeight = this.rowHeight_ + 'px';
+  this.xrowCssRule_.style.height = this.rowHeight_ + 'px';
 
   this.topSelectBag_.style.height = this.rowHeight_ + 'px';
   this.bottomSelectBag_.style.height = this.rowHeight_ + 'px';
@@ -310,7 +376,7 @@ ScrollPort.prototype.setRowMetrics = function(fontSize, opt_lineHeight) {
  * Reset dimensions and visible row count to account for a change in the
  * dimensions of the 'x-screen'.
  */
-ScrollPort.prototype.resize = function() {
+hterm.ScrollPort.prototype.resize = function() {
   var screenWidth = this.screen_.clientWidth;
   var screenHeight = this.screen_.clientHeight;
 
@@ -327,35 +393,42 @@ ScrollPort.prototype.resize = function() {
   this.visibleRowTopMargin = screenHeight - visibleRowsHeight;
   this.topFold_.style.marginBottom = this.visibleRowTopMargin + 'px';
 
-  // Resize the scroll area to appear as though it contains every row.
-  this.scrollArea_.style.height = (this.rowHeight_ *
-                                   this.rowProvider_.getRowCount() +
-                                   this.visibleRowTopMargin + 'px');
-
   // Set the dimensions of the visible rows container.
   this.rowNodes_.style.width = screenWidth + 'px';
   this.rowNodes_.style.height = visibleRowsHeight + 'px';
   this.rowNodes_.style.left = this.screen_.offsetLeft + 'px';
 
   var self = this;
-  this.publish('resize',
-               { scrollPort: this },
-               function() { self.redraw_() });
+  this.publish
+    ('resize', { scrollPort: this },
+     function() {
+       var index = self.bottomFold_.previousSibling.rowIndex;
+       self.scrollRowToBottom(index);
+     });
+};
+
+hterm.ScrollPort.prototype.syncScrollHeight = function() {
+  // Resize the scroll area to appear as though it contains every row.
+  this.scrollArea_.style.height = (this.rowHeight_ *
+                                   this.rowProvider_.getRowCount() +
+                                   this.visibleRowTopMargin + 'px');
 };
 
 /**
- * Redraw the current ScrollPort based on the current scrollbar position.
+ * Redraw the current hterm.ScrollPort based on the current scrollbar position.
  *
  * When redrawing, we are careful to make sure that the rows that start or end
  * the current selection are not touched in any way.  Doing so would disturb
  * the selection, and cleaning up after that would cause flashes at best and
  * incorrect selection at worst.  Instead, we modify the DOM around these nodes.
  * We even stash the selection start/end outside of the visible area if
- * they are not supposed to be visible in the ScrollPort.
+ * they are not supposed to be visible in the hterm.ScrollPort.
  */
-ScrollPort.prototype.redraw_ = function() {
+hterm.ScrollPort.prototype.redraw_ = function() {
   this.resetSelectBags_();
   this.selection_.sync();
+
+  this.syncScrollHeight();
 
   this.currentRowNodeCache_ = {};
 
@@ -376,8 +449,8 @@ ScrollPort.prototype.redraw_ = function() {
  * Ensure that the nodes above the top fold are as they should be.
  *
  * If the selection start and/or end nodes are above the visible range
- * of this ScrollPort then the dom will be adjusted so that they appear before
- * the top fold (the first x-fold element, aka this.topFold).
+ * of this hterm.ScrollPort then the dom will be adjusted so that they appear
+ * before the top fold (the first x-fold element, aka this.topFold).
  *
  * If not, the top fold will be the first element.
  *
@@ -385,7 +458,7 @@ ScrollPort.prototype.redraw_ = function() {
  * so would clear the current selection.  Instead, the rest of the DOM is
  * adjusted around them.
  */
-ScrollPort.prototype.drawTopFold_ = function(topRowIndex) {
+hterm.ScrollPort.prototype.drawTopFold_ = function(topRowIndex) {
   if (!this.selection_.startRow ||
       this.selection_.startRow.rowIndex >= topRowIndex) {
     // Selection is entirely below the top fold, just make sure the fold is
@@ -401,12 +474,12 @@ ScrollPort.prototype.drawTopFold_ = function(topRowIndex) {
     // Only the startRow is above the fold.
     if (this.selection_.startRow.nextSibling != this.topFold_)
       this.rowNodes_.insertBefore(this.topFold_,
-                                 this.selection_.startRow.nextSibling);
+                                  this.selection_.startRow.nextSibling);
   } else {
     // Both rows are above the fold.
     if (this.selection_.endRow.nextSibling != this.topFold_) {
       this.rowNodes_.insertBefore(this.topFold_,
-                                 this.selection_.endRow.nextSibling);
+                                  this.selection_.endRow.nextSibling);
     }
 
     // Trim any intermediate lines.
@@ -425,8 +498,8 @@ ScrollPort.prototype.drawTopFold_ = function(topRowIndex) {
  * Ensure that the nodes below the bottom fold are as they should be.
  *
  * If the selection start and/or end nodes are below the visible range
- * of this ScrollPort then the dom will be adjusted so that they appear after
- * the bottom fold (the second x-fold element, aka this.bottomFold).
+ * of this hterm.ScrollPort then the dom will be adjusted so that they appear
+ * after the bottom fold (the second x-fold element, aka this.bottomFold).
  *
  * If not, the bottom fold will be the last element.
  *
@@ -434,7 +507,7 @@ ScrollPort.prototype.drawTopFold_ = function(topRowIndex) {
  * so would clear the current selection.  Instead, the rest of the DOM is
  * adjusted around them.
  */
-ScrollPort.prototype.drawBottomFold_ = function(bottomRowIndex) {
+hterm.ScrollPort.prototype.drawBottomFold_ = function(bottomRowIndex) {
   if (!this.selection_.endRow ||
       this.selection_.endRow.rowIndex <= bottomRowIndex) {
     // Selection is entirely above the bottom fold, just make sure the fold is
@@ -484,7 +557,8 @@ ScrollPort.prototype.drawBottomFold_ = function(bottomRowIndex) {
  * so would clear the current selection.  Instead, the rest of the DOM is
  * adjusted around them.
  */
-ScrollPort.prototype.drawVisibleRows_ = function(topRowIndex, bottomRowIndex) {
+hterm.ScrollPort.prototype.drawVisibleRows_ = function(
+    topRowIndex, bottomRowIndex) {
   var self = this;
 
   // Keep removing nodes, starting with currentNode, until we encounter
@@ -511,12 +585,20 @@ ScrollPort.prototype.drawVisibleRows_ = function(topRowIndex, bottomRowIndex) {
   // The node we're examining during the current iteration.
   var node = this.topFold_.nextSibling;
 
-  for (var drawCount = 0; drawCount < this.visibleRowCount; drawCount++) {
+  var targetDrawCount = Math.min(this.visibleRowCount,
+                                 this.rowProvider_.getRowCount());
+
+  for (var drawCount = 0; drawCount < targetDrawCount; drawCount++) {
     var rowIndex = topRowIndex + drawCount;
 
     if (node == bottomFold) {
       // We've hit the bottom fold, we need to insert a new row.
       var newNode = this.fetchRowNode_(rowIndex);
+      if (!newNode) {
+        console.log("Couldn't fetch row index: " + rowIndex);
+        break;
+      }
+
       this.rowNodes_.insertBefore(newNode, node);
       continue;
     }
@@ -547,6 +629,11 @@ ScrollPort.prototype.drawVisibleRows_ = function(topRowIndex, bottomRowIndex) {
       // We encountered the start/end of the selection, but we don't want it
       // yet.  Insert a new row instead.
       var newNode = this.fetchRowNode_(rowIndex);
+      if (!newNode) {
+        console.log("Couldn't fetch row index: " + rowIndex);
+        break;
+      }
+
       this.rowNodes_.insertBefore(newNode, node);
       continue;
     }
@@ -554,7 +641,19 @@ ScrollPort.prototype.drawVisibleRows_ = function(topRowIndex, bottomRowIndex) {
     // There is nothing special about this node, but it's in our way.  Replace
     // it with the node that should be here.
     var newNode = this.fetchRowNode_(rowIndex);
+    if (!newNode) {
+      console.log("Couldn't fetch row index: " + rowIndex);
+      break;
+    }
+
+    if (node == newNode) {
+      node = node.nextSibling;
+      continue;
+    }
+
     this.rowNodes_.insertBefore(newNode, node);
+    if (!newNode.nextSibling)
+      debugger;
     this.rowNodes_.removeChild(node);
     node = newNode.nextSibling;
   }
@@ -570,7 +669,7 @@ ScrollPort.prototype.drawVisibleRows_ = function(topRowIndex, bottomRowIndex) {
  * when that text is otherwise off screen.  They are filled out in the
  * onCopy_ event.
  */
-ScrollPort.prototype.resetSelectBags_ = function() {
+hterm.ScrollPort.prototype.resetSelectBags_ = function() {
   if (this.topSelectBag_.parentNode) {
     this.topSelectBag_.textContent = '';
     this.topSelectBag_.parentNode.removeChild(this.topSelectBag_);
@@ -590,7 +689,7 @@ ScrollPort.prototype.resetSelectBags_ = function() {
  * so that the first node *after* the top fold is always the first visible
  * DOM node.
  */
-ScrollPort.prototype.syncRowNodesTop_ = function() {
+hterm.ScrollPort.prototype.syncRowNodesTop_ = function() {
   var topMargin = 0;
   var node = this.topFold_.previousSibling;
   while (node) {
@@ -606,7 +705,7 @@ ScrollPort.prototype.syncRowNodesTop_ = function() {
  *
  * This method may only be used during a redraw_.
  */
-ScrollPort.prototype.cacheRowNode_ = function(rowNode) {
+hterm.ScrollPort.prototype.cacheRowNode_ = function(rowNode) {
   this.currentRowNodeCache_[rowNode.rowIndex] = rowNode;
 };
 
@@ -618,7 +717,7 @@ ScrollPort.prototype.cacheRowNode_ = function(rowNode) {
  *
  * If a redraw_ is in progress the row will be added to the current cache.
  */
-ScrollPort.prototype.fetchRowNode_ = function(rowIndex) {
+hterm.ScrollPort.prototype.fetchRowNode_ = function(rowIndex) {
   var node;
 
   if (this.previousRowNodeCache_ && rowIndex in this.previousRowNodeCache_) {
@@ -636,7 +735,7 @@ ScrollPort.prototype.fetchRowNode_ = function(rowIndex) {
 /**
  * Select all rows in the viewport.
  */
-ScrollPort.prototype.selectAll = function() {
+hterm.ScrollPort.prototype.selectAll = function() {
   var firstRow;
 
   if (this.topFold_.nextSibling.rowIndex != 0) {
@@ -675,17 +774,19 @@ ScrollPort.prototype.selectAll = function() {
 /**
  * Return the maximum scroll position in pixels.
  */
-ScrollPort.prototype.getScrollMax_ = function(e) {
+hterm.ScrollPort.prototype.getScrollMax_ = function(e) {
   return (this.scrollArea_.clientHeight + this.visibleRowTopMargin -
           this.screen_.clientHeight);
 };
 
 /**
- * Scroll the given rowIndex to the top of the ScrollPort.
+ * Scroll the given rowIndex to the top of the hterm.ScrollPort.
  *
  * @param {integer} rowIndex Index of the target row.
  */
-ScrollPort.prototype.scrollRowToTop = function(rowIndex) {
+hterm.ScrollPort.prototype.scrollRowToTop = function(rowIndex) {
+  this.syncScrollHeight();
+
   var scrollTop = rowIndex * this.rowHeight_ + this.visibleRowTopMargin;
 
   var scrollMax = this.getScrollMax_();
@@ -697,11 +798,13 @@ ScrollPort.prototype.scrollRowToTop = function(rowIndex) {
 };
 
 /**
- * Scroll the given rowIndex to the bottom of the ScrollPort.
+ * Scroll the given rowIndex to the bottom of the hterm.ScrollPort.
  *
  * @param {integer} rowIndex Index of the target row.
  */
-ScrollPort.prototype.scrollRowToBottom = function(rowIndex) {
+hterm.ScrollPort.prototype.scrollRowToBottom = function(rowIndex) {
+  this.syncScrollHeight();
+
   var scrollTop = rowIndex * this.rowHeight_ + this.visibleRowTopMargin;
   scrollTop -= (this.visibleRowCount - 1) * this.rowHeight_;
 
@@ -718,7 +821,7 @@ ScrollPort.prototype.scrollRowToBottom = function(rowIndex) {
  * This is based on the scroll position.  If a redraw_ is in progress this
  * returns the row that *should* be at the top.
  */
-ScrollPort.prototype.getTopRowIndex = function() {
+hterm.ScrollPort.prototype.getTopRowIndex = function() {
   return Math.floor(this.screen_.scrollTop / this.rowHeight_);
 };
 
@@ -728,29 +831,30 @@ ScrollPort.prototype.getTopRowIndex = function() {
  * This is based on the scroll position.  If a redraw_ is in progress this
  * returns the row that *should* be at the bottom.
  */
-ScrollPort.prototype.getBottomRowIndex = function(topRowIndex) {
+hterm.ScrollPort.prototype.getBottomRowIndex = function(topRowIndex) {
   return topRowIndex + this.visibleRowCount - 1;
 };
 
 /**
  * Handler for scroll events.
  *
- * The onScroll event fires when the user moves the scrollbar associated with
- * this ScrollPort.
+ * The onScroll event fires when scrollArea's scrollTop property changes.  This
+ * may be due to the user manually move the scrollbar, or a programmatic change.
  */
-ScrollPort.prototype.onScroll_ = function(e) {
+hterm.ScrollPort.prototype.onScroll_ = function(e) {
   this.redraw_();
+  this.publish('scroll', { scrollPort: this });
 };
 
 /**
  * Handler for scroll-wheel events.
  *
  * The onScrollWheel event fires when the user moves their scrollwheel over this
- * ScrollPort.  Because the frontmost element in the ScrollPort is a fixed
- * position DIV, the scroll wheel does nothing by default.  Instead, we have
- * to handle it manually.
+ * hterm.ScrollPort.  Because the frontmost element in the hterm.ScrollPort is
+ * a fixed position DIV, the scroll wheel does nothing by default.  Instead, we
+ * have to handle it manually.
  */
-ScrollPort.prototype.onScrollWheel_ = function(e) {
+hterm.ScrollPort.prototype.onScrollWheel_ = function(e) {
   var top = this.screen_.scrollTop - e.wheelDeltaY;
   if (top < 0)
     top = 0;
@@ -769,10 +873,8 @@ ScrollPort.prototype.onScrollWheel_ = function(e) {
  * The browser will resize us such that the top row stays at the top, but we
  * prefer to the bottom row to stay at the bottom.
  */
-ScrollPort.prototype.onResize = function(e) {
-  var index = this.bottomFold_.previousSibling.rowIndex;
+hterm.ScrollPort.prototype.onResize = function(e) {
   this.resize();
-  this.scrollRowToBottom(index);
 };
 
 /**
@@ -783,7 +885,7 @@ ScrollPort.prototype.onResize = function(e) {
  * if we're missing some of the selected text, and if so populates one or both
  * of the "select bags" with the missing text.
  */
-ScrollPort.prototype.onCopy_ = function(e) {
+hterm.ScrollPort.prototype.onCopy_ = function(e) {
   this.resetSelectBags_();
   this.selection_.sync();
 

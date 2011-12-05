@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-ScrollPort.Tests = new TestManager.Suite('ScrollPort.Tests');
+hterm.ScrollPort.Tests = new TestManager.Suite('hterm.ScrollPort.Tests');
 
-ScrollPort.Tests.prototype.setup = function(cx) {
+hterm.ScrollPort.Tests.prototype.setup = function(cx) {
   this.setDefaults(cx,
       { visibleColumnCount: 80,
         visibleRowCount: 25,
@@ -25,8 +25,8 @@ ScrollPort.Tests.prototype.setup = function(cx) {
   div.style.width = '100%';
   document.body.appendChild(div);
 
-  this.scrollPort = new ScrollPort(this.rowProvider,
-                                   this.fontSize, this.lineHeight);
+  this.scrollPort = new hterm.ScrollPort(this.rowProvider,
+                                         this.fontSize, this.lineHeight);
   this.scrollPort.decorate(div);
 };
 
@@ -34,7 +34,7 @@ ScrollPort.Tests.prototype.setup = function(cx) {
  * Ensure the selection is collapsed, row caching is on, and we're at the
  * top of the scroll port.
  */
-ScrollPort.Tests.prototype.preamble = function(result, cx) {
+hterm.ScrollPort.Tests.prototype.preamble = function(result, cx) {
   var selection = cx.window.getSelection();
   if (!selection.isCollapsed)
     selection.collapseToStart();
@@ -49,7 +49,7 @@ ScrollPort.Tests.prototype.preamble = function(result, cx) {
  * Basic test to make sure that the viewport contains the right number of
  * rows at the right places after some scrolling.
  */
-ScrollPort.Tests.addTest('basic-scroll', function(result, cx) {
+hterm.ScrollPort.Tests.addTest('basic-scroll', function(result, cx) {
     var topRow = this.scrollPort.getTopRowIndex();
     result.assertEQ(topRow, 0);
     result.assertEQ(this.scrollPort.getBottomRowIndex(topRow),
@@ -66,9 +66,9 @@ ScrollPort.Tests.addTest('basic-scroll', function(result, cx) {
   });
 
 /**
- * Make sure the ScrollPort is reusing the same row nodes when it can.
+ * Make sure the hterm.ScrollPort is reusing the same row nodes when it can.
  */
-ScrollPort.Tests.addTest('node-recycler', function(result, cx) {
+hterm.ScrollPort.Tests.addTest('node-recycler', function(result, cx) {
     this.rowProvider.resetCallCount('getRowNode');
     this.scrollPort.scrollRowToTop(1);
     var count = this.rowProvider.getCallCount('getRowNode');
@@ -82,7 +82,7 @@ ScrollPort.Tests.addTest('node-recycler', function(result, cx) {
 /**
  * Make sure the selection is maintained even after scrolling off screen.
  */
-ScrollPort.Tests.addTest('scroll-selection', function(result, cx) {
+hterm.ScrollPort.Tests.addTest('scroll-selection', function(result, cx) {
     var doc = this.scrollPort.getDocument();
 
     // Scroll into a part of the buffer that can be scrolled off the top
@@ -122,7 +122,7 @@ ScrollPort.Tests.addTest('scroll-selection', function(result, cx) {
 /**
  * Test the select-all function.
  */
-ScrollPort.Tests.addTest('select-all', function(result, cx) {
+hterm.ScrollPort.Tests.addTest('select-all', function(result, cx) {
     this.scrollPort.selectAll();
     result.assertEQ(0, this.scrollPort.selection_.startRow.rowIndex);
     result.assertEQ(this.totalRowCount - 1,
@@ -137,7 +137,7 @@ ScrollPort.Tests.addTest('select-all', function(result, cx) {
  * This should always be the last test of the suite, since it leaves the user
  * with a full page scrollPort to poke at.
  */
-ScrollPort.Tests.addTest('fullscreen', function(result, cx) {
+hterm.ScrollPort.Tests.addTest('fullscreen', function(result, cx) {
     var document = cx.window.document;
 
     document.body.innerHTML = '';
@@ -150,8 +150,8 @@ ScrollPort.Tests.addTest('fullscreen', function(result, cx) {
     div.style.width = '100%';
     document.body.appendChild(div);
 
-    this.scrollPort = new ScrollPort(this.rowProvider,
-                                     this.fontSize, this.lineHeight);
+    this.scrollPort = new hterm.ScrollPort(this.rowProvider,
+                                           this.fontSize, this.lineHeight);
     this.scrollPort.decorate(div);
 
     cx.window.scrollPort = this.scrollPort;
