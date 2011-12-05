@@ -222,7 +222,10 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStream) {
   EXPECT_EQ(host_->NumberOfStreams(), 0u);
 }
 
-TEST_F(MediaStreamDispatcherHostTest, GenerateTwoStreams) {
+TEST_F(MediaStreamDispatcherHostTest, GenerateThreeStreams) {
+  // This test opens three video capture devices. Two fake devices exists and it
+  // is expected the last call to |Open()| will open the first device again, but
+  // with a different label.
   StreamOptions options(false, StreamOptions::kFacingUser);
 
   // Generate first stream.
@@ -234,25 +237,51 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateTwoStreams) {
   // Check the latest generated stream.
   EXPECT_EQ(host_->audio_devices_.size(), 0u);
   EXPECT_EQ(host_->video_devices_.size(), 1u);
+  std::string label1 = host_->label_;
+  std::string device_id1 = host_->video_devices_.front().device_id;
+
   // Check that we now have one opened streams.
   EXPECT_EQ(host_->NumberOfStreams(), 1u);
-  std::string label1 = host_->label_;
 
   // Generate second stream.
-  EXPECT_CALL(*host_, OnStreamGenerated(kRenderId, kPageRequestId+1, 0, 1));
+  EXPECT_CALL(*host_, OnStreamGenerated(kRenderId, kPageRequestId + 1, 0, 1));
   host_->OnGenerateStream(kPageRequestId+1, options);
 
   WaitForResult();
-  std::string label2 = host_->label_;
 
   // Check the latest generated stream.
   EXPECT_EQ(host_->audio_devices_.size(), 0u);
   EXPECT_EQ(host_->video_devices_.size(), 1u);
+  std::string label2 = host_->label_;
+  std::string device_id2 = host_->video_devices_.front().device_id;
+  EXPECT_NE(device_id1, device_id2);
+  EXPECT_NE(label1, label2);
+
   // Check that we now have two opened streams.
   EXPECT_EQ(host_->NumberOfStreams(), 2u);
 
+  // Generate third stream.
+  EXPECT_CALL(*host_, OnStreamGenerated(kRenderId, kPageRequestId + 2, 0, 1));
+  host_->OnGenerateStream(kPageRequestId+2, options);
+
+  WaitForResult();
+
+  // Check the latest generated stream.
+  EXPECT_EQ(host_->audio_devices_.size(), 0u);
+  EXPECT_EQ(host_->video_devices_.size(), 1u);
+  std::string label3 = host_->label_;
+  std::string device_id3 = host_->video_devices_.front().device_id;
+  EXPECT_EQ(device_id1, device_id3);
+  EXPECT_NE(device_id2, device_id3);
+  EXPECT_NE(label1, label3);
+  EXPECT_NE(label2, label3);
+
+  // Check that we now have three opened streams.
+  EXPECT_EQ(host_->NumberOfStreams(), 3u);
+
   host_->OnStopGeneratedStream(label1);
   host_->OnStopGeneratedStream(label2);
+  host_->OnStopGeneratedStream(label3);
   EXPECT_EQ(host_->NumberOfStreams(), 0u);
 }
 
