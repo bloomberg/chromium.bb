@@ -139,7 +139,6 @@ extern const char kEnableExtensionAlerts[];
 extern const char kEnableExtensionTimelineApi[];
 extern const char kEnableFastback[];
 extern const char kEnableFileCookies[];
-extern const char kEnableHttpPipelining[];
 extern const char kEnableInBrowserThumbnailing[];
 extern const char kEnableIPv6[];
 extern const char kEnableIPCFuzzing[];

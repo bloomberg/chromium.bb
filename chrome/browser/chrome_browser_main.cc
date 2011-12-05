@@ -289,9 +289,6 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
     // Enable WebSocket over SPDY.
     net::WebSocketJob::set_websocket_over_spdy_enabled(true);
   }
-
-  if (parsed_command_line.HasSwitch(switches::kEnableHttpPipelining))
-    net::HttpStreamFactory::set_http_pipelining_enabled(true);
 }
 
 void InitializeURLRequestThrottlerManager(net::NetLog* net_log) {

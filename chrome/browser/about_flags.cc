@@ -388,13 +388,6 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableExtensionAlerts)
   },
-  {
-    "enable-http-pipelining",
-    IDS_FLAGS_ENABLE_HTTP_PIPELINING_NAME,
-    IDS_FLAGS_ENABLE_HTTP_PIPELINING_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableHttpPipelining)
-  },
 #if defined(OS_CHROMEOS)
   {
     "enable-photo-editor",

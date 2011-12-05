@@ -478,11 +478,6 @@ const char kEnableFastback[]                = "enable-fastback";
 // for example page cycler and layout tests. See bug 1157243.
 const char kEnableFileCookies[]             = "enable-file-cookies";
 
-// Enable HTTP pipelining. Attempt to pipeline HTTP connections. Heuristics will
-// try to figure out if pipelining can be used for a given host and request.
-// Without this flag, pipelining will never be used.
-const char kEnableHttpPipelining[]          = "enable-http-pipelining";
-
 // Enables the in-browser thumbnailing, which is more efficient than the
 // in-renderer thumbnailing, as we can use more information to determine if we
 // need to update thumbnails.
