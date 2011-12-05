@@ -11649,6 +11649,54 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </if>
     <!-- Chrome OS Strings -->
     <if expr="pp_ifdef('chromeos')">
+      <message name="IDS_NETWORK_CONFIG_LOADING_ERROR" desc="Error message for loading network configuration file.">
+        Error loading network configuration file: <ph name="error">$1<ex>Unknown error</ex></ph>
+      </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_UNKNOWN" desc="Error for network configuration: Unknown error.">
+        Unknown error
+      </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_INCORRECT_PASSWORD" desc="Error for network configuration: Incorrect password.">
+        Incorrect password
+      </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_NETWORK_TYPE_MISSING" desc="Error for network configuration: Network type missing.">
+        Network type missing
+      </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_NETWORK_PROP_DICT_MALFORMED" desc="Error for network configuration: Network property dictionary malformed.">
+        Network property dictionary malformed
+      </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_NETWORK_EAP_DICT_MALFORMED" desc="Error for network configuration: Network EAP dictionary malformed.">
+        Network EAP dictionary malformed
+      </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_NETWORK_DELETE" desc="Error for network configuration: Network delete error.">
+        Network delete error
+      </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_NETWORK_IMPORT" desc="Error for network configuration: Network import error.">
+        Network import error
+      </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_CERT_GUID_MISSING" desc="Error for network configuration: Certificateg GUID missing.">
+        Certificate GUID missing
+      </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_CERT_TYPE_MISSING" desc="Error for network configuration: Certificate type missing.">
+        Certificate type missing
+      </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_CERT_TRUST_INVALID" desc="Error for network configuration: Certificate trust invalid.">
+        Certificate trust invalid
+      </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_CERT_TRUST_UNKNOWN" desc="Error for network configuration: Certificate trust unknown.">
+        Certificate trust unknown
+      </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_CERT_DATA_MISSING" desc="Error for network configuration: Certificate data missing.">
+        Certificate data missing
+      </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_CERT_DATA_MALFORMED" desc="Error for network configuration: Certificate data malformed.">
+        Certificate data malformed
+      </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_CERT_DELETE" desc="Error for network configuration: Certificate delete error.">
+        Certificate delete error
+      </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_CERT_IMPORT" desc="Error for network configuration: Certificate import error.">
+        Certificate import error
+      </message>
       <message name="IDS_NETWORK_PURCHASE_MORE_MESSAGE" desc="Message for purchase more link on notification when there is no cellular plan">
         Buy plan...
       </message>
