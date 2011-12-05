@@ -11,7 +11,10 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance.h"
+#include "content/common/view_messages.h"
 #include "content/public/common/page_transition_types.h"
+#include "webkit/glue/password_form.h"
+#include "webkit/glue/webkit_glue.h"
 
 TestTabContents::TestTabContents(content::BrowserContext* browser_context,
                                  SiteInstance* instance)
@@ -30,6 +33,43 @@ TestTabContents::~TestTabContents() {
 TestRenderViewHost* TestTabContents::pending_rvh() const {
   return static_cast<TestRenderViewHost*>(
       render_manager_.pending_render_view_host_);
+}
+
+void TestTabContents::TestDidNavigate(RenderViewHost* render_view_host,
+                                      int page_id,
+                                      const GURL& url,
+                                      content::PageTransition transition) {
+  TestDidNavigateWithReferrer(render_view_host,
+                              page_id,
+                              url,
+                              content::Referrer(),
+                              transition);
+}
+
+void TestTabContents::TestDidNavigateWithReferrer(
+    RenderViewHost* render_view_host,
+    int page_id,
+    const GURL& url,
+    const content::Referrer& referrer,
+    content::PageTransition transition) {
+  ViewHostMsg_FrameNavigate_Params params;
+
+  params.page_id = page_id;
+  params.url = url;
+  params.referrer = referrer;
+  params.transition = transition;
+  params.redirects = std::vector<GURL>();
+  params.should_update_history = false;
+  params.searchable_form_url = GURL();
+  params.searchable_form_encoding = std::string();
+  params.password_form = webkit_glue::PasswordForm();
+  params.security_info = std::string();
+  params.gesture = NavigationGestureUser;
+  params.was_within_same_page = false;
+  params.is_post = false;
+  params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
+
+  DidNavigate(render_view_host, params);
 }
 
 bool TestTabContents::CreateRenderViewForRenderManager(

@@ -597,7 +597,7 @@ TEST_F(RenderViewHostManagerTest, PageDoesBackAndReload) {
   params.was_within_same_page = false;
   params.is_post = false;
   params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(kUrl2));
-  contents()->TestDidNavigate(evil_rvh, params);
+  contents()->DidNavigate(evil_rvh, params);
 
   // That should have cancelled the pending RVH, and the evil RVH should be the
   // current one.
