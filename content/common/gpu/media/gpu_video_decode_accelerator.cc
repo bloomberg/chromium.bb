@@ -20,7 +20,10 @@
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_surface_egl.h"
 #endif
+#include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gfx/size.h"
+
+using gpu::gles2::TextureManager;
 
 GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
     IPC::Message::Sender* sender,
@@ -136,9 +139,19 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
       const std::vector<gfx::Size>& sizes) {
   DCHECK(stub_ && stub_->decoder());  // Ensure already Initialize()'d.
   gpu::gles2::GLES2Decoder* command_decoder = stub_->decoder();
+  gpu::gles2::TextureManager* texture_manager =
+      command_decoder->GetContextGroup()->texture_manager();
 
   std::vector<media::PictureBuffer> buffers;
   for (uint32 i = 0; i < buffer_ids.size(); ++i) {
+    gpu::gles2::TextureManager::TextureInfo* info =
+        texture_manager->GetTextureInfo(texture_ids[i]);
+    if (!info ||
+        !texture_manager->ClearRenderableLevels(command_decoder, info)) {
+      // TODO(fischman): send an error for invalid textures.
+      DLOG(DFATAL) << "Failed to Clear texture!";
+      return;
+    }
     uint32 service_texture_id;
     if (!command_decoder->GetServiceTextureId(
             texture_ids[i], &service_texture_id)) {
