@@ -87,7 +87,7 @@ AppNotifyChannelUIImpl::AppNotifyChannelUIImpl(Browser* browser,
                                                TabContentsWrapper* wrapper,
                                                const std::string& app_name)
     : browser_(browser), wrapper_(wrapper), app_name_(app_name),
-      delegate_(NULL), observing_sync_(false), got_first_sync_callback_(false) {
+      delegate_(NULL), observing_sync_(false), wizard_shown_to_user_(false) {
 }
 
 AppNotifyChannelUIImpl::~AppNotifyChannelUIImpl() {
@@ -125,8 +125,14 @@ void AppNotifyChannelUIImpl::OnInfoBarResult(bool accepted) {
 void AppNotifyChannelUIImpl::OnStateChanged() {
   ProfileSyncService* sync_service =
       browser_->profile()->GetProfileSyncService();
-  bool finished = got_first_sync_callback_ && !sync_service->SetupInProgress();
-  got_first_sync_callback_ = true;
+  bool wizard_visible = sync_service->WizardIsVisible();
+  // ProfileSyncService raises OnStateChanged many times. Even multiple
+  // times before the wizard actually becomes visible for the first time.
+  // So we have to wait for the wizard to become visible once and then we
+  // wait for it to get dismissed.
+  bool finished = wizard_shown_to_user_ && !wizard_visible;
+  if (wizard_visible)
+    wizard_shown_to_user_ = true;
 
   if (finished) {
     StopObservingSync();

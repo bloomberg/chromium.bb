@@ -68,10 +68,13 @@ class AppNotifyChannelUIImpl : public AppNotifyChannelUI,
   // Have we registered ourself as a ProfileSyncServiceObserver?
   bool observing_sync_;
 
-  // This is for working around a bug where the first ProfileSyncServiceObserver
-  // callback after starting the sync login process erroneously reports
-  // SetupInProgress as false. See crbug.com/101842.
-  bool got_first_sync_callback_;
+  // This is for working around a bug that ProfileSyncService calls
+  // ProfileSyncServiceObserver::OnStateChanged callback many times
+  // after ShowLoginDialog is called and before the wizard is
+  // actually visible to the user. So we record if the wizard was
+  // shown to user and then wait for wizard to get dismissed.
+  // See crbug.com/101842.
+  bool wizard_shown_to_user_;
 
   DISALLOW_COPY_AND_ASSIGN(AppNotifyChannelUIImpl);
 };
