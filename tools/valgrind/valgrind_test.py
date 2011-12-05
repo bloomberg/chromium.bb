@@ -1107,6 +1107,7 @@ class Asan(EmbeddedTool):
     if common.IsMac():
       self._env["DYLD_NO_PIE"] = "1"
 
+
   def ToolName(self):
     return "asan"
 
@@ -1142,8 +1143,9 @@ class TsanGcc(EmbeddedTool):
       return False
     ld_library_paths = []
     for tail in "lib32", "lib64":
-      ld_library_paths.append(os.path.join(self._source_dir, "third_party",
-                                           "compiler-tsan", "gcc-4.5.3", tail))
+      ld_library_paths.append(
+          os.path.join(self._source_dir, "third_party",
+                       "compiler-tsan", "gcc-current", tail))
     # LD_LIBRARY_PATH will be overriden.
     self._env["LD_LIBRARY_PATH"] = ":".join(ld_library_paths)
 
