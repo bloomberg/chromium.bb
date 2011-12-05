@@ -833,8 +833,7 @@ CandidateWindowView::CandidateWindowView(views::Widget* parent_frame)
       footer_area_(NULL),
       previous_shortcut_column_width_(0),
       previous_candidate_column_width_(0),
-      previous_annotation_column_width_(0),
-      is_suggestion_window_location_available_(false) {
+      previous_annotation_column_width_(0) {
 }
 
 CandidateWindowView::~CandidateWindowView() {
@@ -936,24 +935,6 @@ void CandidateWindowView::ShowLookupTable() {
 bool CandidateWindowView::ShouldUpdateCandidateViews(
     const InputMethodLookupTable& old_table,
     const InputMethodLookupTable& new_table) {
-
-  // Check if mozc lookup table location is changed.
-  if (old_table.mozc_candidates.has_window_location() ||
-      new_table.mozc_candidates.has_window_location()) {
-
-    if (!old_table.mozc_candidates.IsInitialized() ||
-        !new_table.mozc_candidates.IsInitialized()) {
-      return true;
-    }
-
-    std::string old_serialized_msg;
-    std::string new_serialized_msg;
-
-    old_table.mozc_candidates.SerializeToString(&old_serialized_msg);
-    new_table.mozc_candidates.SerializeToString(&new_serialized_msg);
-    return old_serialized_msg != new_serialized_msg;
-  }
-
   // Check if most table contents are identical.
   if (old_table.page_size == new_table.page_size &&
       old_table.orientation == new_table.orientation &&
@@ -977,24 +958,6 @@ void CandidateWindowView::UpdateCandidates(
   if (should_update) {
     // Initialize candidate views if necessary.
     MaybeInitializeCandidateViews(new_lookup_table);
-
-    // Store mozc specific window location.
-    if (new_lookup_table.mozc_candidates.has_window_location() &&
-        new_lookup_table.mozc_candidates.window_location() ==
-            mozc::commands::Candidates::COMPOSITION) {
-      DCHECK(new_lookup_table.mozc_candidates.has_composition_rectangle());
-      suggestion_window_location_.set_x(
-          new_lookup_table.mozc_candidates.composition_rectangle().x());
-      suggestion_window_location_.set_y(
-          new_lookup_table.mozc_candidates.composition_rectangle().y());
-      suggestion_window_location_.set_width(
-          new_lookup_table.mozc_candidates.composition_rectangle().width());
-      suggestion_window_location_.set_height(
-          new_lookup_table.mozc_candidates.composition_rectangle().height());
-      is_suggestion_window_location_available_ = true;
-    } else {
-      is_suggestion_window_location_available_ = false;
-    }
 
     // Compute the index of the current page.
     const int current_page_index = ComputePageIndex(new_lookup_table);
@@ -1220,16 +1183,8 @@ void CandidateWindowView::CommitCandidate() {
 }
 
 void CandidateWindowView::ResizeAndMoveParentFrame() {
-  // If rendering operation comes from mozc-engine, uses mozc specific location,
-  // otherwise lookup table is shown under the cursor.
-  const int x = is_suggestion_window_location_available_ ?
-      suggestion_window_location_.x() : cursor_location_.x();
-  // To avoid lookup-table overlapping, uses maximum y-position of mozc specific
-  // location and cursor location, because mozc-engine does not consider about
-  // multi-line composition.
-  const int y = is_suggestion_window_location_available_ ?
-      std::max(suggestion_window_location_.y(), cursor_location_.y()) :
-      cursor_location_.y();
+  const int x = cursor_location_.x();
+  const int y = cursor_location_.y();
   const int height = cursor_location_.height();
   const int horizontal_offset = GetHorizontalOffset();
 

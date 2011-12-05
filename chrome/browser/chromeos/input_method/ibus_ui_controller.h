@@ -15,7 +15,7 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
-#include "third_party/mozc/session/candidates_lite.pb.h"
+#include "third_party/mozc/session/commands.pb.h"
 
 namespace chromeos {
 namespace input_method {
