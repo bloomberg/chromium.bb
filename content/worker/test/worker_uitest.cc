@@ -238,7 +238,7 @@ TEST_F(WorkerTest, WorkerHttpAuth) {
 #define SharedWorkerHttpAuth DISABLED_SharedWorkerHttpAuth
 #endif
 // Make sure that auth dialog is displayed from shared worker context.
-TEST_F(WorkerTest, SharedWorkerHttpAuth) {
+TEST_F(WorkerTest, DISABLED_SharedWorkerHttpAuth) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
