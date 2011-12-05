@@ -96,6 +96,7 @@ void PluginLoaderPosix::LoadPluginsInternal() {
 
   process_host_ = new UtilityProcessHost(this, BrowserThread::IO);
   process_host_->set_no_sandbox(true);
+  process_host_->set_use_linux_zygote(false);
 #if defined(OS_MACOSX)
   process_host_->set_child_flags(ChildProcessHost::CHILD_ALLOW_HEAP_EXECUTION);
 #endif

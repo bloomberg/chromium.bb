@@ -192,6 +192,7 @@ int RunZygote(const content::MainFunctionParams& main_function_params,
     { switches::kRendererProcess,    RendererMain },
     { switches::kWorkerProcess,      WorkerMain },
     { switches::kPpapiPluginProcess, PpapiPluginMain },
+    { switches::kUtilityProcess,     UtilityMain },
   };
 
   scoped_ptr<content::ZygoteForkDelegate> zygote_fork_delegate;

@@ -77,6 +77,7 @@ void ExternalProcessImporterClient::StartProcessOnIOThread(
     BrowserThread::ID thread_id) {
   utility_process_host_ = new UtilityProcessHost(this, thread_id);
   utility_process_host_->set_no_sandbox(true);
+  utility_process_host_->set_use_linux_zygote(false);
 
 #if defined(OS_MACOSX)
   base::environment_vector env;

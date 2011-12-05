@@ -66,6 +66,8 @@ class CONTENT_EXPORT UtilityProcessHost : public BrowserChildProcessHost {
   void set_exposed_dir(const FilePath& dir) { exposed_dir_ = dir; }
   void set_no_sandbox(bool flag) { no_sandbox_ = flag; }
   void set_child_flags(int flags) { child_flags_ = flags; }
+  void set_use_linux_zygote(bool flag) { use_linux_zygote_ = flag; }
+
 #if defined(OS_POSIX)
   void set_env(const base::environment_vector& env) { env_ = env; }
 #endif
@@ -103,6 +105,12 @@ class CONTENT_EXPORT UtilityProcessHost : public BrowserChildProcessHost {
   int child_flags_;
 
   base::environment_vector env_;
+
+  // If the |no_sandbox_| flag is off, and we are on Linux, launch the
+  // utility process from the zygote. Defaults to true on Linux, and to
+  // false on all other platforms.
+  // Can only be used for tasks that do not require FS access.
+  bool use_linux_zygote_;
 
   bool started_;
 

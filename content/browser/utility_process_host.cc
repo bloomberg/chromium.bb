@@ -43,8 +43,10 @@ UtilityProcessHost::UtilityProcessHost(Client* client,
       no_sandbox_(false),
 #if defined(OS_LINUX)
       child_flags_(ChildProcessHost::CHILD_ALLOW_SELF),
+      use_linux_zygote_(true),
 #else
       child_flags_(ChildProcessHost::CHILD_NORMAL),
+      use_linux_zygote_(false),
 #endif
       started_(false) {
 }
@@ -115,8 +117,7 @@ bool UtilityProcessHost::StartProcess() {
     cmd_line->AppendSwitch(switches::kDebugPluginLoading);
 
 #if defined(OS_POSIX)
-  // TODO(port): Sandbox this on Linux.  Also, zygote this to work with
-  // Linux updating.
+  // TODO(port): Sandbox extension unpacking on Linux.
   bool has_cmd_prefix = browser_command_line.HasSwitch(
       switches::kUtilityCmdPrefix);
   if (has_cmd_prefix) {
@@ -129,11 +130,17 @@ bool UtilityProcessHost::StartProcess() {
   cmd_line->AppendSwitchPath(switches::kUtilityProcessAllowedDir, exposed_dir_);
 #endif
 
+  bool use_zygote = false;
+
+#if defined(OS_LINUX)
+  use_zygote = !no_sandbox_ && use_linux_zygote_;
+#endif
+
   Launch(
 #if defined(OS_WIN)
       exposed_dir_,
 #elif defined(OS_POSIX)
-      false,
+      use_zygote,
       env_,
 #endif
       cmd_line);

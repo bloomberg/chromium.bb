@@ -261,6 +261,9 @@ void SandboxedExtensionUnpacker::OnProcessCrashed(int exit_code) {
 void SandboxedExtensionUnpacker::StartProcessOnIOThread(
     const FilePath& temp_crx_path) {
   UtilityProcessHost* host = new UtilityProcessHost(this, thread_identifier_);
+  // Don't launch the utility process from the zygote on Linux since
+  // extension unpacking needs FS access.
+  host->set_use_linux_zygote(false);
   // Grant the subprocess access to the entire subdir the extension file is
   // in, so that it can unpack to that dir.
   host->set_exposed_dir(temp_crx_path.DirName());
