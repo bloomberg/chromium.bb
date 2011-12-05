@@ -5323,12 +5323,6 @@
    fun:_ZN7WebCoreL17executeInsertHTMLEPNS_5FrameEPNS_5EventENS_19EditorCommandSourceERKN3WTF6StringE
 }
 {
-   bug_106331
-   Memcheck:Leak
-   ...
-   fun:_ZN9Extension6CreateERK8FilePathNS_8LocationERKN4base15DictionaryValueEiPSs
-}
-{
    bug_106402
    Memcheck:Leak
    fun:_Znw*

@@ -1385,6 +1385,7 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
                               std::string* error) {
   DCHECK(error);
   base::AutoLock auto_lock(runtime_data_lock_);
+  manifest_.reset(manifest);
 
   if (!manifest->ValidateManifest(error))
     return false;
@@ -1445,8 +1446,6 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
   }
 
   creation_flags_ = flags;
-
-  manifest_.reset(manifest);
 
   // Initialize the URL.
   extension_url_ = Extension::GetBaseURLFromExtensionId(id());

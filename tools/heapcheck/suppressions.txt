@@ -1785,30 +1785,3 @@
    fun:AccessibilityEventRouterViewsTest::CreateWindowWithContents
    fun:AccessibilityEventRouterViewsTest_TestFocusNotification_Test::TestBody
 }
-{
-   bug_106331_a
-   Heapcheck:Leak
-   ...
-   fun:Extension::Create
-}
-{
-   bug_106331_b
-   Heapcheck:Leak
-   ...
-   fun:ExtensionUnpacker::ReadManifest
-   fun:ExtensionUnpacker::Run
-}
-{
-   bug_106331_c
-   Heapcheck:Leak
-   ...
-   fun:JSONFileValueSerializer::Deserialize
-   fun:::FileThreadDeserializer::DoReading
-   fun:JsonPrefStore::ReadPrefs
-   fun:PrefService::InitFromStorage
-   fun:PrefService*
-   fun:PrefServiceMockBuilder::Create
-   fun:ExtensionServiceTestBase::InitializeExtensionService
-   fun:ExtensionServiceTestBase::InitializeInstalledExtensionService
-   fun:ExtensionServiceTest_UninstallingNotLoadedExtension_Test::TestBody
-}
