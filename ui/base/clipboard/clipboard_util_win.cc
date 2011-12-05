@@ -203,6 +203,14 @@ FORMATETC* ClipboardUtil::GetWebKitSmartPasteFormat() {
   return &format;
 }
 
+FORMATETC* ClipboardUtil::GetWebCustomDataFormat() {
+  // TODO(dcheng): This name is temporary. See crbug.com/106449
+  static UINT cf =
+      RegisterClipboardFormat(L"Chromium Web Custom MIME Data Format");
+  static FORMATETC format = {cf, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+  return &format;
+}
+
 
 bool ClipboardUtil::HasUrl(IDataObject* data_object) {
   DCHECK(data_object);

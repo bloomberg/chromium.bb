@@ -24,6 +24,7 @@
 #include "base/win/wrapped_window_proc.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
+#include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/size.h"
 
@@ -377,6 +378,19 @@ void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
   if (::IsClipboardFormatAvailable(CF_DIB))
     types->push_back(UTF8ToUTF16(kMimeTypePNG));
   *contains_filenames = false;
+
+  // Acquire the clipboard.
+  ScopedClipboard clipboard;
+  if (!clipboard.Acquire(GetClipboardWindow()))
+    return;
+
+  HANDLE hdata = ::GetClipboardData(
+      ClipboardUtil::GetWebCustomDataFormat()->cfFormat);
+  if (!hdata)
+    return;
+
+  ReadCustomDataTypes(::GlobalLock(hdata), ::GlobalSize(hdata), types);
+  ::GlobalUnlock(hdata);
 }
 
 void Clipboard::ReadText(Clipboard::Buffer buffer, string16* result) const {
@@ -547,8 +561,20 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
 void Clipboard::ReadCustomData(Buffer buffer,
                                const string16& type,
                                string16* result) const {
-  // TODO(dcheng): Implement this.
-  NOTIMPLEMENTED();
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
+
+  // Acquire the clipboard.
+  ScopedClipboard clipboard;
+  if (!clipboard.Acquire(GetClipboardWindow()))
+    return;
+
+  HANDLE hdata = ::GetClipboardData(
+      ClipboardUtil::GetWebCustomDataFormat()->cfFormat);
+  if (!hdata)
+    return;
+
+  ReadCustomDataForType(::GlobalLock(hdata), ::GlobalSize(hdata), type, result);
+  ::GlobalUnlock(hdata);
 }
 
 void Clipboard::ReadBookmark(string16* title, std::string* url) const {
@@ -730,6 +756,16 @@ Clipboard::FormatType Clipboard::GetFileContentFormatZeroType() {
 Clipboard::FormatType Clipboard::GetWebKitSmartPasteFormatType() {
   return base::IntToString(
       ClipboardUtil::GetWebKitSmartPasteFormat()->cfFormat);
+}
+
+// static
+Clipboard::FormatType Clipboard::GetWebCustomDataFormatType() {
+  // TODO(dcheng): Clean up the duplicated constant.
+  // Clipboard::WritePickledData() takes a FormatType, but all the callers
+  // assume that it's a raw string. As a result, we return the format name here
+  // rather than returning a string-ified version of the registered clipboard
+  // format ID.
+  return "Chromium Web Custom MIME Data Format";
 }
 
 // static
