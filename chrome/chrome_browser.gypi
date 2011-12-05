@@ -4093,8 +4093,8 @@
           'dependencies': [
             '../build/linux/system.gyp:dbus-glib',
             '../third_party/libevent/libevent.gyp:libevent',
+            '../third_party/mozc/chrome/chromeos/renderer/chromeos_renderer.gyp:mozc_commands_proto',
             'browser/chromeos/input_method/input_method.gyp:gencode',
-            'browser/chromeos/input_method/input_method.gyp:mozc_commands_proto',
           ],
           'sources!': [
             'browser/background/background_mode_manager_gtk.cc',

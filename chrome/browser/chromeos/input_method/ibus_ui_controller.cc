@@ -11,7 +11,7 @@
 #include <sstream>
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "third_party/mozc/session/commands.pb.h"
+#include "third_party/mozc/session/candidates_lite.pb.h"
 
 namespace chromeos {
 namespace input_method {
