@@ -15,8 +15,8 @@
 using base::StringPrintf;
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
+using base::android::GetMethodIDFromClassName;
 using base::android::JavaRef;
-using base::android::MethodID;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using WebKit::WebBindings;
@@ -30,6 +30,14 @@ using WebKit::WebBindings;
 // revisit this decision in the future.
 
 namespace {
+
+const char kJavaLangClass[] = "java/lang/Class";
+const char kJavaLangObject[] = "java/lang/Object";
+const char kGetClass[] = "getClass";
+const char kGetMethods[] = "getMethods";
+const char kReturningJavaLangClass[] = "()Ljava/lang/Class;";
+const char kReturningJavaLangReflectMethodArray[] =
+    "()[Ljava/lang/reflect/Method;";
 
 // Our special NPObject type.  We extend an NPObject with a pointer to a
 // JavaBoundObject.  We also add static methods for each of the NPObject
@@ -481,34 +489,6 @@ jvalue CoerceJavaScriptValueToJavaValue(const NPVariant& variant,
   return jvalue();
 }
 
-class ObjectGetClassID : public MethodID {
- public:
-  static ObjectGetClassID* GetInstance() {
-    return Singleton<ObjectGetClassID>::get();
-  }
- private:
-  friend struct DefaultSingletonTraits<ObjectGetClassID>;
-  ObjectGetClassID()
-      : MethodID(AttachCurrentThread(), "java/lang/Object", "getClass",
-                 "()Ljava/lang/Class;") {
-  }
-  DISALLOW_COPY_AND_ASSIGN(ObjectGetClassID);
-};
-
-class ClassGetMethodsID : public MethodID {
- public:
-  static ClassGetMethodsID* GetInstance() {
-    return Singleton<ClassGetMethodsID>::get();
-  }
- private:
-  friend struct DefaultSingletonTraits<ClassGetMethodsID>;
-  ClassGetMethodsID()
-      : MethodID(AttachCurrentThread(), "java/lang/Class", "getMethods",
-                 "()[Ljava/lang/reflect/Method;") {
-  }
-  DISALLOW_COPY_AND_ASSIGN(ClassGetMethodsID);
-};
-
 }  // namespace
 
 
@@ -591,11 +571,17 @@ void JavaBoundObject::EnsureMethodsAreSetUp() const {
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jclass> clazz(env, static_cast<jclass>(
-      env->CallObjectMethod(java_object_,
-                            ObjectGetClassID::GetInstance()->id())));
+      env->CallObjectMethod(java_object_,  GetMethodIDFromClassName(
+          env,
+          kJavaLangObject,
+          kGetClass,
+          kReturningJavaLangClass))));
   ScopedJavaLocalRef<jobjectArray> methods(env, static_cast<jobjectArray>(
-      env->CallObjectMethod(clazz.obj(),
-                            ClassGetMethodsID::GetInstance()->id())));
+      env->CallObjectMethod(clazz.obj(), GetMethodIDFromClassName(
+          env,
+          kJavaLangClass,
+          kGetMethods,
+          kReturningJavaLangReflectMethodArray))));
   size_t num_methods = env->GetArrayLength(methods.obj());
   DCHECK(num_methods) << "Java objects always have public methods";
   for (size_t i = 0; i < num_methods; ++i) {

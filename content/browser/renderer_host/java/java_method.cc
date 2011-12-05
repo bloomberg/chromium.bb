@@ -11,10 +11,20 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
-using base::android::MethodID;
+using base::android::GetMethodIDFromClassName;
 using base::android::ScopedJavaLocalRef;
 
 namespace {
+
+const char kGetName[] = "getName";
+const char kGetDeclaringClass[] = "getDeclaringClass";
+const char kGetParameterTypes[] = "getParameterTypes";
+const char kGetReturnType[] = "getReturnType";
+const char kJavaLangClass[] = "java/lang/Class";
+const char kJavaLangReflectMethod[] = "java/lang/reflect/Method";
+const char kReturningJavaLangClass[] = "()Ljava/lang/Class;";
+const char kReturningJavaLangClassArray[] = "()[Ljava/lang/Class;";
+const char kReturningJavaLangString[] = "()Ljava/lang/String;";
 
 std::string BinaryNameToJNIName(const std::string& binary_name,
                                 JavaType* type) {
@@ -50,76 +60,6 @@ std::string BinaryNameToJNIName(const std::string& binary_name,
   }
 }
 
-class MethodGetParameterTypesID : public MethodID {
- public:
-  static MethodGetParameterTypesID* GetInstance() {
-    return Singleton<MethodGetParameterTypesID>::get();
-  }
- private:
-  friend struct DefaultSingletonTraits<MethodGetParameterTypesID>;
-  MethodGetParameterTypesID()
-      : MethodID(AttachCurrentThread(), "java/lang/reflect/Method",
-                 "getParameterTypes", "()[Ljava/lang/Class;") {
-  }
-  DISALLOW_COPY_AND_ASSIGN(MethodGetParameterTypesID);
-};
-
-class MethodGetNameID : public MethodID {
- public:
-  static MethodGetNameID* GetInstance() {
-    return Singleton<MethodGetNameID>::get();
-  }
- private:
-  friend struct DefaultSingletonTraits<MethodGetNameID>;
-  MethodGetNameID()
-      : MethodID(AttachCurrentThread(), "java/lang/reflect/Method",
-                 "getName", "()Ljava/lang/String;") {
-  }
-  DISALLOW_COPY_AND_ASSIGN(MethodGetNameID);
-};
-
-class MethodGetReturnTypeID : public MethodID {
- public:
-  static MethodGetReturnTypeID* GetInstance() {
-    return Singleton<MethodGetReturnTypeID>::get();
-  }
- private:
-  friend struct DefaultSingletonTraits<MethodGetReturnTypeID>;
-  MethodGetReturnTypeID()
-      : MethodID(AttachCurrentThread(), "java/lang/reflect/Method",
-                 "getReturnType", "()Ljava/lang/Class;") {
-  }
-  DISALLOW_COPY_AND_ASSIGN(MethodGetReturnTypeID);
-};
-
-class MethodGetDeclaringClassID : public MethodID {
- public:
-  static MethodGetDeclaringClassID* GetInstance() {
-    return Singleton<MethodGetDeclaringClassID>::get();
-  }
- private:
-  friend struct DefaultSingletonTraits<MethodGetDeclaringClassID>;
-  MethodGetDeclaringClassID()
-      : MethodID(AttachCurrentThread(), "java/lang/reflect/Method",
-                 "getDeclaringClass", "()Ljava/lang/Class;") {
-  }
-  DISALLOW_COPY_AND_ASSIGN(MethodGetDeclaringClassID);
-};
-
-class ClassGetNameID : public MethodID {
- public:
-  static ClassGetNameID* GetInstance() {
-    return Singleton<ClassGetNameID>::get();
-  }
- private:
-  friend struct DefaultSingletonTraits<ClassGetNameID>;
-  ClassGetNameID()
-      : MethodID(AttachCurrentThread(), "java/lang/Class", "getName",
-                 "()Ljava/lang/String;") {
-  }
-  DISALLOW_COPY_AND_ASSIGN(ClassGetNameID);
-};
-
 }  // namespace
 
 JavaMethod::JavaMethod(const base::android::JavaRef<jobject>& method)
@@ -130,8 +70,11 @@ JavaMethod::JavaMethod(const base::android::JavaRef<jobject>& method)
   // On construction, we do nothing except get the name. Everything else is
   // done lazily.
   ScopedJavaLocalRef<jstring> name(env, static_cast<jstring>(
-      env->CallObjectMethod(java_method_.obj(),
-                            MethodGetNameID::GetInstance()->id())));
+      env->CallObjectMethod(java_method_.obj(), GetMethodIDFromClassName(
+          env,
+          kJavaLangReflectMethod,
+          kGetName,
+          kReturningJavaLangString))));
   name_ = ConvertJavaStringToUTF8(env, name.obj());
 }
 
@@ -169,8 +112,11 @@ void JavaMethod::EnsureNumParametersIsSetUp() const {
   // required.
   JNIEnv* env = java_method_.env();
   ScopedJavaLocalRef<jarray> parameters(env, static_cast<jarray>(
-      env->CallObjectMethod(java_method_.obj(),
-                            MethodGetParameterTypesID::GetInstance()->id())));
+      env->CallObjectMethod(java_method_.obj(), GetMethodIDFromClassName(
+          env,
+          kJavaLangReflectMethod,
+          kGetParameterTypes,
+          kReturningJavaLangClassArray))));
   num_parameters_ = env->GetArrayLength(parameters.obj());
 }
 
@@ -182,8 +128,11 @@ void JavaMethod::EnsureTypesAndIDAreSetUp() const {
   // Get the parameters
   JNIEnv* env = java_method_.env();
   ScopedJavaLocalRef<jobjectArray> parameters(env, static_cast<jobjectArray>(
-      env->CallObjectMethod(java_method_.obj(),
-                            MethodGetParameterTypesID::GetInstance()->id())));
+      env->CallObjectMethod(java_method_.obj(), GetMethodIDFromClassName(
+          env,
+          kJavaLangReflectMethod,
+          kGetParameterTypes,
+          kReturningJavaLangClassArray))));
   // Usually, this will already have been called.
   EnsureNumParametersIsSetUp();
   DCHECK_EQ(num_parameters_,
@@ -202,8 +151,11 @@ void JavaMethod::EnsureTypesAndIDAreSetUp() const {
     ScopedJavaLocalRef<jobject> parameter(env, env->GetObjectArrayElement(
         parameters.obj(), i));
     ScopedJavaLocalRef<jstring> name(env, static_cast<jstring>(
-        env->CallObjectMethod(parameter.obj(),
-                              ClassGetNameID::GetInstance()->id())));
+        env->CallObjectMethod(parameter.obj(), GetMethodIDFromClassName(
+            env,
+            kJavaLangClass,
+            kGetName,
+            kReturningJavaLangString))));
     std::string name_utf8 = ConvertJavaStringToUTF8(env, name.obj());
     signature += BinaryNameToJNIName(name_utf8, &parameter_types_[i]);
   }
@@ -211,17 +163,27 @@ void JavaMethod::EnsureTypesAndIDAreSetUp() const {
 
   // Get the return type
   ScopedJavaLocalRef<jclass> clazz(env, static_cast<jclass>(
-      env->CallObjectMethod(java_method_.obj(),
-                            MethodGetReturnTypeID::GetInstance()->id())));
+      env->CallObjectMethod(java_method_.obj(), GetMethodIDFromClassName(
+          env,
+          kJavaLangReflectMethod,
+          kGetReturnType,
+          kReturningJavaLangClass))));
   ScopedJavaLocalRef<jstring> name(env, static_cast<jstring>(
-      env->CallObjectMethod(clazz.obj(), ClassGetNameID::GetInstance()->id())));
+      env->CallObjectMethod(clazz.obj(), GetMethodIDFromClassName(
+          env,
+          kJavaLangClass,
+          kGetName,
+          kReturningJavaLangString))));
   signature += BinaryNameToJNIName(ConvertJavaStringToUTF8(env, name.obj()),
                                    &return_type_);
 
   // Get the ID for this method.
   ScopedJavaLocalRef<jclass> declaring_class(env, static_cast<jclass>(
-      env->CallObjectMethod(java_method_.obj(),
-                            MethodGetDeclaringClassID::GetInstance()->id())));
+      env->CallObjectMethod(java_method_.obj(), GetMethodIDFromClassName(
+          env,
+          kJavaLangReflectMethod,
+          kGetDeclaringClass,
+          kReturningJavaLangClass))));
   id_ = base::android::GetMethodID(env, declaring_class.obj(), name_.c_str(),
                                    signature.c_str());
 
