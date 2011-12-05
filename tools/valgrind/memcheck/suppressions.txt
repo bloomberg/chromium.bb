@@ -5328,6 +5328,16 @@
    ...
    fun:_ZN9Extension6CreateERK8FilePathNS_8LocationERKN4base15DictionaryValueEiPSs
 }
+{
+   bug_106402
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN2pp25CompletionCallbackFactoryIN5ppapi5proxy20PPB_Graphics2D_ProxyENS2_26ProxyNonThreadSafeRefCountEE17NewCallbackHelperINS5_11Dispatcher1IMS3_FviRKNS1_12HostResourceEES8_EEEENS_18CompletionCallbackERKT_
+   fun:_ZN2pp25CompletionCallbackFactoryIN5ppapi5proxy20PPB_Graphics2D_ProxyENS2_26ProxyNonThreadSafeRefCountEE11NewCallbackIMS3_FviRKNS1_12HostResourceEES7_EENS_18CompletionCallbackET_RKT0_
+   fun:_ZN2pp25CompletionCallbackFactoryIN5ppapi5proxy20PPB_Graphics2D_ProxyENS2_26ProxyNonThreadSafeRefCountEE19NewOptionalCallbackIMS3_FviRKNS1_12HostResourceEES7_EENS_18CompletionCallbackET_RKT0_
+   fun:_ZN5ppapi5proxy38EnterHostFromHostResourceForceCallbackINS_5thunk18PPB_Graphics2D_APIEEC1IN2pp25CompletionCallbackFactoryINS0_20PPB_Graphics2D_ProxyENS0_26ProxyNonThreadSafeRefCountEEEMS8_FviRKNS_12HostResourceEESB_EESD_RT_T0_RKT1_
+   fun:_ZN5ppapi5proxy20PPB_Graphics2D_Proxy14OnHostMsgFlushERKNS_12HostResourceE
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
