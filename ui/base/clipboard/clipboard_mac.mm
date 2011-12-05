@@ -153,6 +153,17 @@ void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
   }
 }
 
+void Clipboard::WriteData(const char* format_name, size_t format_len,
+                          const char* data_data, size_t data_len) {
+  NSPasteboard* pb = GetPasteboard();
+  NSString* format = [[NSString alloc] initWithBytes:format_name
+                                              length:format_len
+                                            encoding:NSUTF8StringEncoding];
+  [pb addTypes:[NSArray arrayWithObject:format] owner:nil];
+  [pb setData:[NSData dataWithBytes:data_data length:data_len]
+      forType:format];
+}
+
 // Write an extra flavor that signifies WebKit was the last to modify the
 // pasteboard. This flavor has no data.
 void Clipboard::WriteWebSmartPaste() {
@@ -170,7 +181,7 @@ uint64 Clipboard::GetSequenceNumber(Buffer buffer) {
 }
 
 bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
-                                  Clipboard::Buffer buffer) const {
+                                  Buffer buffer) const {
   DCHECK_EQ(buffer, BUFFER_STANDARD);
   NSString* format_ns = base::SysUTF8ToNSString(format);
 
@@ -183,6 +194,17 @@ bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
     return [types containsObject:NSHTMLPboardType] ||
            [types containsObject:NSRTFPboardType];
   }
+  return [types containsObject:format_ns];
+}
+
+bool Clipboard::IsFormatAvailableByString(const std::string& format,
+                                          Buffer buffer) const {
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
+  NSString* format_ns = base::SysUTF8ToNSString(format);
+
+  NSPasteboard* pb = GetPasteboard();
+  NSArray* types = [pb types];
+
   return [types containsObject:format_ns];
 }
 
@@ -340,6 +362,13 @@ void Clipboard::ReadFiles(std::vector<FilePath>* files) const {
     std::string file = [[fileList objectAtIndex:i] UTF8String];
     files->push_back(FilePath(file));
   }
+}
+
+void Clipboard::ReadData(const std::string& format, std::string* result) const {
+  NSPasteboard* pb = GetPasteboard();
+  NSData* data = [pb dataForType:base::SysUTF8ToNSString(format)];
+  if ([data length])
+    result->assign(static_cast<const char*>([data bytes]), [data length]);
 }
 
 // static
