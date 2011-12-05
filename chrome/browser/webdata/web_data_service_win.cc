@@ -16,7 +16,8 @@ void WebDataService::AddIE7Login(const IE7PasswordInfo& info) {
       new GenericRequest<IE7PasswordInfo>(this, GetNextRequestHandle(), NULL,
                                           info);
   RegisterRequest(request);
-  ScheduleTask(Bind(&WebDataService::AddIE7LoginImpl, this, request));
+  ScheduleTask(FROM_HERE,
+               Bind(&WebDataService::AddIE7LoginImpl, this, request));
 }
 
 void WebDataService::RemoveIE7Login(const IE7PasswordInfo& info) {
@@ -24,7 +25,8 @@ void WebDataService::RemoveIE7Login(const IE7PasswordInfo& info) {
       new GenericRequest<IE7PasswordInfo>(this, GetNextRequestHandle(), NULL,
                                           info);
   RegisterRequest(request);
-  ScheduleTask(Bind(&WebDataService::RemoveIE7LoginImpl, this, request));
+  ScheduleTask(FROM_HERE,
+               Bind(&WebDataService::RemoveIE7LoginImpl, this, request));
 }
 
 WebDataService::Handle WebDataService::GetIE7Login(
@@ -34,7 +36,8 @@ WebDataService::Handle WebDataService::GetIE7Login(
       new GenericRequest<IE7PasswordInfo>(this, GetNextRequestHandle(),
                                           consumer, info);
   RegisterRequest(request);
-  ScheduleTask(Bind(&WebDataService::GetIE7LoginImpl, this, request));
+  ScheduleTask(FROM_HERE,
+               Bind(&WebDataService::GetIE7LoginImpl, this, request));
   return request->GetHandle();
 }
 

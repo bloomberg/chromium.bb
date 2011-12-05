@@ -12,6 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/file_path.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/search_engines/template_url_id.h"
@@ -592,7 +593,8 @@ class WebDataService
   void Commit();
 
   // Schedule a task on our worker thread.
-  void ScheduleTask(const base::Closure& task);
+  void ScheduleTask(const tracked_objects::Location& from_here,
+                    const base::Closure& task);
 
   // Schedule a commit if one is not already pending.
   void ScheduleCommit();
