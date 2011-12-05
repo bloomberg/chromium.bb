@@ -375,14 +375,14 @@ bool KeywordTable::MigrateToVersion42AddKeywordsBackupTable() {
 std::string KeywordTable::GetSignatureData() {
   int64 backup_value = 0;
   if (!meta_table_->GetValue(kDefaultSearchIDBackupKey, &backup_value)) {
-    NOTREACHED() << "Couldn't get id backup.";
+    LOG(ERROR) << "No backup id for signing.";
     return std::string();
   }
   std::string backup_data = base::Int64ToString(backup_value);
 
   std::string backup_url;
   if (!meta_table_->GetValue(kDefaultSearchBackupKey, &backup_url)) {
-    NOTREACHED() << "Couldn't get backup url";
+    LOG(ERROR) << "No backup for signing.";
     return std::string();
   }
   backup_data += backup_url;
