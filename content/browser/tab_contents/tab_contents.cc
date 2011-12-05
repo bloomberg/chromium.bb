@@ -580,8 +580,8 @@ TabContents* TabContents::OpenURL(const GURL& url,
                                   content::PageTransition transition) {
   // For specifying a referrer, use the version of OpenURL taking OpenURLParams.
   DCHECK(referrer.is_empty());
-  return OpenURL(OpenURLParams(url, referrer, disposition, transition,
-                               false));
+  return OpenURL(OpenURLParams(url, content::Referrer(), disposition,
+                               transition, false));
 }
 
 TabContents* TabContents::OpenURL(const OpenURLParams& params) {
@@ -1757,12 +1757,12 @@ void TabContents::RequestOpenURL(const GURL& url,
                                  int64 source_frame_id) {
   // Delegate to RequestTransferURL because this is just the generic
   // case where |old_request_id| is empty.
-  RequestTransferURL(url, referrer.url, disposition, source_frame_id,
+  RequestTransferURL(url, referrer, disposition, source_frame_id,
                      GlobalRequestID());
 }
 
 void TabContents::RequestTransferURL(const GURL& url,
-                                     const GURL& referrer,
+                                     const content::Referrer& referrer,
                                      WindowOpenDisposition disposition,
                                      int64 source_frame_id,
                                      const GlobalRequestID& old_request_id) {
@@ -1777,7 +1777,7 @@ void TabContents::RequestTransferURL(const GURL& url,
     // want web sites to see a referrer of "chrome://blah" (and some
     // chrome: URLs might have search terms or other stuff we don't want to
     // send to the site), so we send no referrer.
-    OpenURLParams params(url, GURL(), disposition,
+    OpenURLParams params(url, content::Referrer(), disposition,
         render_manager_.web_ui()->link_transition_type(),
         false /* is_renderer_initiated */);
     params.transferred_global_request_id = old_request_id;

@@ -1804,7 +1804,8 @@ void RenderViewContextMenu::OpenURL(
     WindowOpenDisposition disposition,
     content::PageTransition transition) {
   TabContents* new_contents = source_tab_contents_->OpenURL(OpenURLParams(
-      url, referrer, disposition, transition, false));
+      url, content::Referrer(referrer, params_.referrer_policy), disposition,
+      transition, false));
 
   if (new_contents) {
     content::RetargetingDetails details;

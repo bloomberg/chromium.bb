@@ -215,7 +215,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
   const GURL& previousURL = entry->virtual_url();
   tabContents_->tab_contents()->OpenURL(OpenURLParams(
       url,
-      previousURL,
+      content::Referrer(previousURL, WebKit::WebReferrerPolicyDefault),
       CURRENT_TAB,
       content::PAGE_TRANSITION_TYPED,
       false));

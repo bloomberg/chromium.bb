@@ -769,8 +769,11 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
     TabStripModel* model = browser->tabstrip_model();
     int tab_index = model->GetWrapperIndex(existing_tab);
 
-    existing_tab->OpenURL(OpenURLParams(extension_url, existing_tab->GetURL(),
-                          disposition, content::PAGE_TRANSITION_LINK, false));
+    existing_tab->OpenURL(OpenURLParams(
+          extension_url,
+          content::Referrer(existing_tab->GetURL(),
+                            WebKit::WebReferrerPolicyDefault),
+          disposition, content::PAGE_TRANSITION_LINK, false));
     if (params.tabstrip_add_types & TabStripModel::ADD_PINNED) {
       model->SetTabPinned(tab_index, true);
       tab_index = model->GetWrapperIndex(existing_tab);
@@ -2969,8 +2972,8 @@ TabContents* Browser::OpenURL(const GURL& url,
                               content::PageTransition transition) {
   // For specifying a referrer, use the version of OpenURL taking OpenURLParams.
   DCHECK(referrer.is_empty());
-  return OpenURLFromTab(NULL, OpenURLParams(url, referrer, disposition,
-                                            transition, false));
+  return OpenURLFromTab(NULL, OpenURLParams(
+      url, content::Referrer(), disposition, transition, false));
 }
 
 TabContents* Browser::OpenURL(const OpenURLParams& params) {
@@ -3385,7 +3388,7 @@ TabContents* Browser::OpenURLFromTab(TabContents* source,
   nav_params.source_contents =
       tabstrip_model()->GetTabContentsAt(
           tabstrip_model()->GetWrapperIndex(source));
-  nav_params.referrer = params.referrer;
+  nav_params.referrer = params.referrer.url;
   nav_params.disposition = params.disposition;
   nav_params.tabstrip_add_types = TabStripModel::ADD_NONE;
   nav_params.window_action = browser::NavigateParams::SHOW_WINDOW;

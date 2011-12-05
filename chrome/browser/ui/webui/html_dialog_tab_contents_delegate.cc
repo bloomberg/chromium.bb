@@ -36,7 +36,7 @@ TabContents* HtmlDialogTabContentsDelegate::OpenURLFromTab(
     Browser* browser = NULL;
     browser::NavigateParams nav_params(browser, params.url, params.transition);
     nav_params.profile = profile_;
-    nav_params.referrer = params.referrer;
+    nav_params.referrer = params.referrer.url;
     if (source && source->is_crashed() &&
         params.disposition == CURRENT_TAB &&
         params.transition == content::PAGE_TRANSITION_LINK)

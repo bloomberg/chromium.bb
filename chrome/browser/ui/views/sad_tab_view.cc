@@ -69,7 +69,7 @@ void SadTabView::LinkClicked(views::Link* source, int event_flags) {
                                                   chrome::kKillReasonURL));
     tab_contents_->OpenURL(OpenURLParams(
         help_url,
-        GURL(),
+        content::Referrer(),
         CURRENT_TAB,
         content::PAGE_TRANSITION_LINK,
         false /* is renderer initiated */));

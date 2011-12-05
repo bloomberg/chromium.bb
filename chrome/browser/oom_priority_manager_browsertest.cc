@@ -24,14 +24,14 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   WindowedNotificationObserver load1(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  OpenURLParams open1(GURL("chrome://about"), GURL(),
+  OpenURLParams open1(GURL("chrome://about"), content::Referrer(),
                       CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open1);
 
   WindowedNotificationObserver load2(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  OpenURLParams open2(GURL("chrome://credits"), GURL(),
+  OpenURLParams open2(GURL("chrome://credits"), content::Referrer(),
                       NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED,
                       false);
   browser()->OpenURL(open2);
@@ -39,7 +39,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   WindowedNotificationObserver load3(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  OpenURLParams open3(GURL("chrome://terms"), GURL(),
+  OpenURLParams open3(GURL("chrome://terms"), content::Referrer(),
                       NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED,
                       false);
   browser()->OpenURL(open3);

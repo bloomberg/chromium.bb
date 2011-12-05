@@ -161,6 +161,7 @@ void SadTabGtk::OnLinkButtonClick(GtkWidget* sender) {
             chrome::kCrashReasonURL :
             chrome::kKillReasonURL));
     tab_contents_->OpenURL(OpenURLParams(
-        help_url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_LINK, false));
+        help_url, content::Referrer(), CURRENT_TAB,
+        content::PAGE_TRANSITION_LINK, false));
   }
 }

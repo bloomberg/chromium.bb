@@ -16,6 +16,7 @@ class RenderViewHost;
 
 namespace content {
 struct FrameNavigateParams;
+struct Referrer;
 }
 
 // An observer API implemented by classes which are interested in various page
@@ -75,13 +76,13 @@ class CONTENT_EXPORT TabContentsObserver : public IPC::Channel::Listener,
   virtual void StopNavigation();
 
   virtual void DidOpenURL(const GURL& url,
-                          const GURL& referrer,
+                          const content::Referrer& referrer,
                           WindowOpenDisposition disposition,
                           content::PageTransition transition);
 
   virtual void DidOpenRequestedURL(TabContents* new_contents,
                                    const GURL& url,
-                                   const GURL& referrer,
+                                   const content::Referrer& referrer,
                                    WindowOpenDisposition disposition,
                                    content::PageTransition transition,
                                    int64 source_frame_id);

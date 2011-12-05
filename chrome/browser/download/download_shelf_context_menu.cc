@@ -111,7 +111,7 @@ void DownloadShelfContextMenu::ExecuteCommand(int command_id) {
       DCHECK(browser && browser->is_type_tabbed());
       GURL learn_more_url(chrome::kDownloadScanningLearnMoreURL);
       OpenURLParams params(google_util::AppendGoogleLocaleParam(learn_more_url),
-                           GURL(), NEW_FOREGROUND_TAB,
+                           content::Referrer(), NEW_FOREGROUND_TAB,
                            content::PAGE_TRANSITION_TYPED, false);
       browser->OpenURL(params);
       break;

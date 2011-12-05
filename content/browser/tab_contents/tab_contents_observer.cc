@@ -101,7 +101,7 @@ void TabContentsObserver::StopNavigation() {
 }
 
 void TabContentsObserver::DidOpenURL(const GURL& url,
-                                     const GURL& referrer,
+                                     const content::Referrer& referrer,
                                      WindowOpenDisposition disposition,
                                      content::PageTransition transition) {
 }
@@ -109,7 +109,7 @@ void TabContentsObserver::DidOpenURL(const GURL& url,
 void TabContentsObserver::DidOpenRequestedURL(
     TabContents* new_contents,
     const GURL& url,
-    const GURL& referrer,
+    const content::Referrer& referrer,
     WindowOpenDisposition disposition,
     content::PageTransition transition,
     int64 source_frame_id) {

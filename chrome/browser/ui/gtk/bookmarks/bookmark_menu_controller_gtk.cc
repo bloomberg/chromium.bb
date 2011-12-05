@@ -130,7 +130,7 @@ void BookmarkMenuController::NavigateToMenuItem(
   DCHECK(node);
   DCHECK(page_navigator_);
   page_navigator_->OpenURL(OpenURLParams(
-      node->url(), GURL(), disposition,
+      node->url(), content::Referrer(), disposition,
       content::PAGE_TRANSITION_AUTO_BOOKMARK, false));
 }
 

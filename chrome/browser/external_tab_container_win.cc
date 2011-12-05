@@ -51,6 +51,10 @@
 #include "content/public/common/page_zoom.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebReferrerPolicy.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -59,6 +63,10 @@
 
 using content::BrowserThread;
 using ui::ViewProp;
+using WebKit::WebCString;
+using WebKit::WebString;
+using WebKit::WebReferrerPolicy;
+using WebKit::WebSecurityPolicy;
 
 static const char kWindowObjectKey[] = "ChromeWindowObject";
 
@@ -347,18 +355,21 @@ TabContents* ExternalTabContainer::OpenURLFromTab(TabContents* source,
     case NEW_WINDOW:
     case SAVE_TO_DISK:
       if (automation_) {
+        GURL referrer = GURL(WebSecurityPolicy::generateReferrerHeader(
+            params.referrer.policy,
+            params.url,
+            WebString::fromUTF8(params.referrer.url.spec())).utf8());
         automation_->Send(new AutomationMsg_OpenURL(tab_handle_,
                                                     params.url,
-                                                    params.referrer,
+                                                    referrer,
                                                     params.disposition));
         // TODO(ananta)
         // We should populate other fields in the
         // ViewHostMsg_FrameNavigate_Params structure. Another option could be
         // to refactor the UpdateHistoryForNavigation function in TabContents.
         content::FrameNavigateParams nav_params;
-        nav_params.referrer = content::Referrer(
-            params.referrer,
-            WebKit::WebReferrerPolicyDefault);
+        nav_params.referrer = content::Referrer(referrer,
+                                                params.referrer.policy);
         nav_params.url = params.url;
         nav_params.page_id = -1;
         nav_params.transition = content::PAGE_TRANSITION_LINK;

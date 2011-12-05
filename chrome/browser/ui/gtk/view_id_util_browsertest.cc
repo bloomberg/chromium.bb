@@ -55,7 +55,8 @@ IN_PROC_BROWSER_TEST_F(ViewIDTest, Delegate) {
   CheckViewID(VIEW_ID_TAB_0, true);
   CheckViewID(VIEW_ID_TAB_1, false);
 
-  browser()->OpenURL(OpenURLParams(GURL(chrome::kAboutBlankURL), GURL(),
+  browser()->OpenURL(OpenURLParams(GURL(chrome::kAboutBlankURL),
+                     content::Referrer(),
                      NEW_BACKGROUND_TAB, content::PAGE_TRANSITION_TYPED,
                      false));
 

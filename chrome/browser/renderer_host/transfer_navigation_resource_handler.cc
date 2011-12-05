@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/public/common/referrer.h"
 
 namespace {
 
@@ -65,8 +66,9 @@ void RequestTransferURLOnUIThread(int render_process_id,
   if (!delegate)
     return;
 
-  delegate->RequestTransferURL(new_url, referrer, window_open_disposition,
-                               frame_id, request_id);
+  delegate->RequestTransferURL(
+      new_url, content::Referrer(referrer, WebKit::WebReferrerPolicyDefault),
+      window_open_disposition, frame_id, request_id);
 }
 
 }  // namespace

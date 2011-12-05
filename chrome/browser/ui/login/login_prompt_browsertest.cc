@@ -682,13 +682,13 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, SupplyRedundantAuths) {
     WindowedAuthNeededObserver auth_needed_waiter_2(controller_2);
     contents_1->tab_contents()->OpenURL(OpenURLParams(
         test_server()->GetURL("auth-basic/1"),
-        GURL(),
+        content::Referrer(),
         CURRENT_TAB,
         content::PAGE_TRANSITION_TYPED,
         false));
     contents_2->tab_contents()->OpenURL(OpenURLParams(
         test_server()->GetURL("auth-basic/2"),
-        GURL(),
+        content::Referrer(),
         CURRENT_TAB,
         content::PAGE_TRANSITION_TYPED,
         false));
@@ -748,13 +748,13 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, CancelRedundantAuths) {
     WindowedAuthNeededObserver auth_needed_waiter_2(controller_2);
     contents_1->tab_contents()->OpenURL(OpenURLParams(
         test_server()->GetURL("auth-basic/1"),
-        GURL(),
+        content::Referrer(),
         CURRENT_TAB,
         content::PAGE_TRANSITION_TYPED,
         false));
     contents_2->tab_contents()->OpenURL(OpenURLParams(
         test_server()->GetURL("auth-basic/2"),
-        GURL(),
+        content::Referrer(),
         CURRENT_TAB,
         content::PAGE_TRANSITION_TYPED,
         false));
@@ -815,13 +815,13 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
         controller_incognito);
     contents->tab_contents()->OpenURL(OpenURLParams(
         test_server()->GetURL("auth-basic/1"),
-        GURL(),
+        content::Referrer(),
         CURRENT_TAB,
         content::PAGE_TRANSITION_TYPED,
         false));
     contents_incognito->tab_contents()->OpenURL(OpenURLParams(
         test_server()->GetURL("auth-basic/2"),
-        GURL(),
+        content::Referrer(),
         CURRENT_TAB,
         content::PAGE_TRANSITION_TYPED,
         false));

@@ -280,7 +280,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
 
   // The page wants to transfer the request to a new renderer.
   virtual void RequestTransferURL(const GURL& url,
-                                  const GURL& referrer,
+                                  const content::Referrer& referrer,
                                   WindowOpenDisposition disposition,
                                   int64 source_frame_id,
                                   const GlobalRequestID& old_request_id) {}

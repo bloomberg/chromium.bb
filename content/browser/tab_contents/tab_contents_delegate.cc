@@ -149,8 +149,9 @@ void TabContentsDelegate::ViewSourceForTab(TabContents* source,
   // it with proper implementation.
   GURL url = GURL(chrome::kViewSourceScheme + std::string(":") +
                       page_url.spec());
-  OpenURLFromTab(source, OpenURLParams(
-      url, GURL(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
+  OpenURLFromTab(source, OpenURLParams(url, content::Referrer(),
+                                       NEW_FOREGROUND_TAB,
+                                       content::PAGE_TRANSITION_LINK, false));
 }
 
 void TabContentsDelegate::ViewSourceForFrame(TabContents* source,
@@ -159,8 +160,9 @@ void TabContentsDelegate::ViewSourceForFrame(TabContents* source,
   // Same as ViewSourceForTab, but for given subframe.
   GURL url = GURL(chrome::kViewSourceScheme + std::string(":") +
                       frame_url.spec());
-  OpenURLFromTab(source, OpenURLParams(
-      url, GURL(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
+  OpenURLFromTab(source, OpenURLParams(url, content::Referrer(),
+                                       NEW_FOREGROUND_TAB,
+                                       content::PAGE_TRANSITION_LINK, false));
 }
 
 bool TabContentsDelegate::PreHandleKeyboardEvent(

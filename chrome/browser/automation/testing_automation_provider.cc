@@ -6052,7 +6052,7 @@ void TestingAutomationProvider::NavigateToURL(
       &tab_contents->controller(), this, reply_message,
       navigation_count, false, true);
   browser->OpenURLFromTab(tab_contents, OpenURLParams(
-      GURL(url), GURL(), CURRENT_TAB,
+      GURL(url), content::Referrer(), CURRENT_TAB,
       content::PAGE_TRANSITION_TYPED, false));
 }
 

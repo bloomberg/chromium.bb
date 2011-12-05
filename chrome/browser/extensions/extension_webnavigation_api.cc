@@ -588,7 +588,7 @@ void ExtensionWebNavigationTabObserver::DidFinishLoad(
 void ExtensionWebNavigationTabObserver::DidOpenRequestedURL(
     TabContents* new_contents,
     const GURL& url,
-    const GURL& referrer,
+    const content::Referrer& referrer,
     WindowOpenDisposition disposition,
     content::PageTransition transition,
     int64 source_frame_id) {

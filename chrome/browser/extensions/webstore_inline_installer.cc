@@ -238,7 +238,8 @@ void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
 
     tab_contents()->OpenURL(OpenURLParams(
         GURL(redirect_url),
-        tab_contents()->GetURL(),
+        content::Referrer(tab_contents()->GetURL(),
+                          WebKit::WebReferrerPolicyDefault),
         NEW_FOREGROUND_TAB,
         content::PAGE_TRANSITION_AUTO_BOOKMARK,
         false));

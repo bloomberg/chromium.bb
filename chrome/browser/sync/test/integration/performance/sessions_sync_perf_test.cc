@@ -62,7 +62,10 @@ void SessionsSyncPerfTest::UpdateTabs(int profile) {
     browser->SelectNumberedTab(i);
     url = NextURL();
     browser->OpenURL(
-        OpenURLParams(url, GURL("http://localhost"), CURRENT_TAB,
+        OpenURLParams(url,
+        content::Referrer(GURL("http://localhost"),
+                          WebKit::WebReferrerPolicyDefault),
+        CURRENT_TAB,
         content::PageTransitionFromInt(0), false));
     urls.push_back(url);
   }

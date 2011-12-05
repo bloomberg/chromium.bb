@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -22,7 +23,7 @@ class TabContents;
 
 struct CONTENT_EXPORT OpenURLParams {
   OpenURLParams(const GURL& url,
-                const GURL& referrer,
+                const content::Referrer& referrer,
                 WindowOpenDisposition disposition,
                 content::PageTransition transition,
                 bool is_renderer_initiated);
@@ -30,7 +31,7 @@ struct CONTENT_EXPORT OpenURLParams {
 
   // The URL/referrer to be opened.
   GURL url;
-  GURL referrer;
+  content::Referrer referrer;
 
   // The disposition requested by the navigation source.
   WindowOpenDisposition disposition;

@@ -11,7 +11,7 @@ class GURL;
 
 OpenURLParams::OpenURLParams(
     const GURL& url,
-    const GURL& referrer,
+    const content::Referrer& referrer,
     WindowOpenDisposition disposition,
     content::PageTransition transition,
     bool is_renderer_initiated)
