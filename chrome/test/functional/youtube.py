@@ -121,11 +121,18 @@ class YoutubeTestHelper():
         expect_retval=self._pyauto.is_playing),
         msg='Player did not enter the playing state')
 
-  def PlayVideoAndAssert(self):
-    """Start video and assert the playing state."""
+  def PlayVideoAndAssert(self, youtube_video='zuzaxlddWbk'):
+    """Start video and assert the playing state.
+    
+    By default test uses http://www.youtube.com/watch?v=zuzaxlddWbki.
+
+    Args:
+      youtube_video: The string ID of the youtube video to play.
+    """
     self._pyauto.assertTrue(self._pyauto.IsFlashPluginEnabled(), 
         msg='From here Flash plugin is disabled or not available')
-    url = self._pyauto.GetHttpURLForDataPath('media', 'youtube.html')
+    url = self._pyauto.GetHttpURLForDataPath(
+        'media', 'youtube.html?video=' + youtube_video)
     self._pyauto.NavigateToURL(url)
     self._pyauto.assertTrue(self._pyauto.WaitUntilPlayerReady(),
                             msg='Failed to load YouTube player')

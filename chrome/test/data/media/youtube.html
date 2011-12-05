@@ -14,8 +14,10 @@ function onYouTubePlayerReady(playerId) {
 function loadPlayer() {
   var params = { allowScriptAccess: "always" };
   var atts = { id: "myytplayer" };
+  var video_id = window.location.href.split("video=");
   swfobject.embedSWF(
-    "http://www.youtube.com/e/zuzaxlddWbk?enablejsapi=1&playerapiid=ytplayer",
+    "http://www.youtube.com/e/" + video_id[1] +
+      "?enablejsapi=1&playerapiid=ytplayer",
     "ytapiplayer", "800", "600", "8", null, null, params, atts);
 }
 </script>

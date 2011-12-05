@@ -608,9 +608,9 @@ class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
     """Returns true if video loaded bytes information is available."""
     return self.GetVideoLoadedBytes() > 0
 
-  def StartVideoForPerformance(self):
+  def StartVideoForPerformance(self, video_id='zuzaxlddWbk'):
     """Start the test video with all required buffering."""
-    self.PlayVideoAndAssert()
+    self.PlayVideoAndAssert(video_id)
     self.ExecuteJavascript("""
         ytplayer.setPlaybackQuality('hd720');
         window.domAutomationController.send('');
@@ -634,19 +634,29 @@ class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
     time.sleep(10)
 
   def testYoutubeDroppedFrames(self):
-    """Measures the Youtube video dropped frames/second. Runs for 60 secs."""
-    self.StartVideoForPerformance()
-    init_dropped_frames = self.GetVideoDroppedFrames()
-    total_dropped_frames = 0
-    dropped_fps = []
-    for _ in xrange(60):
-      frames = self.GetVideoDroppedFrames() - init_dropped_frames
-      current_dropped_frames = frames - total_dropped_frames 
-      dropped_fps.append(current_dropped_frames)
-      total_dropped_frames = frames
-      # Play the video for some time
-      time.sleep(1)
-    self._PrintSummaryResults('YoutubeDroppedFrames', dropped_fps, 'frames')
+    """Measures the Youtube video dropped frames/second. Runs for 60 secs.
+       
+    This test measures Youtube video dropped frames for three different types
+    of videos like slow, normal and fast motion.
+    """
+    youtube_video = {'Slow': 'VT1-sitWRtY',
+                     'Normal': '2tqK_3mKQUw',
+                     'Fast': '8ETDE0VGJY4',
+                    }
+    for video_type in youtube_video: 
+      self.StartVideoForPerformance(youtube_video[video_type])
+      init_dropped_frames = self.GetVideoDroppedFrames()
+      total_dropped_frames = 0
+      dropped_fps = []
+      for _ in xrange(60):
+        frames = self.GetVideoDroppedFrames() - init_dropped_frames
+        current_dropped_frames = frames - total_dropped_frames 
+        dropped_fps.append(current_dropped_frames)
+        total_dropped_frames = frames
+        # Play the video for some time
+        time.sleep(1)
+      graph_description = 'YoutubeDroppedFrames' + video_type
+      self._PrintSummaryResults(graph_description, dropped_fps, 'frames')
 
   def testYoutubeCPU(self):
     """Measures the Youtube video CPU usage. Runs for 60 seconds.
