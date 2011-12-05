@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/pickle.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,10 +21,6 @@
 #if defined(OS_WIN)
 #include "base/message_loop.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
-#endif
-
-#if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_MACOSX))
-#include "base/pickle.h"
 #endif
 
 namespace ui {
@@ -380,10 +377,13 @@ TEST_F(ClipboardTest, MultipleBitmapReadWriteTest) {
 }
 #endif
 
-#if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_MACOSX))
 TEST_F(ClipboardTest, DataTest) {
   Clipboard clipboard;
+#if !defined(OS_MACOSX)
   const char* kFormat = "chromium/x-test-format";
+#else
+  const char* kFormat = "org.chromium.test.format";
+#endif  // !defined(OS_MACOSX)
   std::string payload("test string");
   Pickle write_pickle;
   write_pickle.WriteString(payload);
@@ -460,7 +460,6 @@ TEST_F(ClipboardTest, MultipleDataTest) {
   ASSERT_TRUE(read_pickle1.ReadString(&iter1, &unpickled_string1));
   EXPECT_EQ(payload1, unpickled_string1);
 }
-#endif
 
 #if defined(OS_WIN)  // Windows only tests.
 TEST_F(ClipboardTest, HyperlinkTest) {

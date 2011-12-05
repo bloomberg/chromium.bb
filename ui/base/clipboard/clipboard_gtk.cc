@@ -500,7 +500,7 @@ void Clipboard::ReadBookmark(string16* title, std::string* url) const {
   NOTIMPLEMENTED();
 }
 
-void Clipboard::ReadData(const std::string& format, std::string* result) {
+void Clipboard::ReadData(const std::string& format, std::string* result) const {
   GtkSelectionData* data =
       gtk_clipboard_wait_for_contents(clipboard_, StringToGdkAtom(format));
   if (!data)

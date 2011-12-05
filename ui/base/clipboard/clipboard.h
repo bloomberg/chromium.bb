@@ -172,7 +172,7 @@ class UI_EXPORT Clipboard {
   // as a byte vector.
   // TODO(dcheng): Due to platform limitations on Windows, we should make sure
   // format is never controlled by the user.
-  void ReadData(const std::string& format, std::string* result);
+  void ReadData(const std::string& format, std::string* result) const;
 
   // Get format Identifiers for various types.
   static FormatType GetUrlFormatType();
@@ -225,12 +225,10 @@ class UI_EXPORT Clipboard {
 
   void WriteBitmap(const char* pixel_data, const char* size_data);
 
-#if !defined(OS_MACOSX)
   // |format_name| is an ASCII string and should be NULL-terminated.
   // TODO(estade): port to mac.
   void WriteData(const char* format_name, size_t format_len,
                  const char* data_data, size_t data_len);
-#endif
 #if defined(OS_WIN)
   void WriteBitmapFromHandle(HBITMAP source_hbitmap,
                              const gfx::Size& size);
