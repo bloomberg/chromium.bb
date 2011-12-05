@@ -328,6 +328,7 @@ div.img-container > img {
   background-color: #F2F2F2;
   margin: 0;
   z-index: 1;
+  pointer-events: none;
   position: absolute;
 
   -webkit-transition: all 180ms ease-in;
@@ -340,6 +341,7 @@ div.img-container > img {
 .preview-thumbnails > div:hover > div.popup {
   -webkit-transform: translate(0, 0) scale(1.0);
   opacity: 1;
+  pointer-events: auto;
 }
 
 .preview-panel > * {
