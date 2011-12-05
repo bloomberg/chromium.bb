@@ -88,8 +88,17 @@ const int kIdCustom = 1;
 // process a grace period to stop referencing it.
 const int kDestroyCompositorHostWindowDelay = 10000;
 
+// In mouse lock mode, we need to prevent the (invisible) cursor from hitting
+// the border of the view, in order to get valid movement information. However,
+// forcing the cursor back to the center of the view after each mouse move
+// doesn't work well. It reduces the frequency of useful WM_MOUSEMOVE messages
+// significantly. Therefore, we move the cursor to the center of the view only
+// if it approaches the border. |kMouseLockBorderPercentage| specifies the width
+// of the border area, in percentage of the corresponding dimension.
+const int kMouseLockBorderPercentage = 15;
+
 // A callback function for EnumThreadWindows to enumerate and dismiss
-// any owned popop windows
+// any owned popup windows.
 BOOL CALLBACK DismissOwnedPopups(HWND window, LPARAM arg) {
   const HWND toplevel_hwnd = reinterpret_cast<HWND>(arg);
 
@@ -1358,7 +1367,7 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
 
   if (mouse_locked_) {
     HandleLockedMouseEvent(message, wparam, lparam);
-    MoveCursorToCenter();
+    MoveCursorToCenterIfNecessary();
     return 0;
   }
 
@@ -1846,12 +1855,13 @@ bool RenderWidgetHostViewWin::LockMouse() {
     ::ShowWindow(tooltip_hwnd_, SW_HIDE);
   }
 
-  // TODO(yzshen): Show an invisible cursor instead of using
-  // ::ShowCursor(FALSE), so that MoveCursorToCenter() works with Remote
-  // Desktop.
+  // TODO(yzshen): ShowCursor(FALSE) causes SetCursorPos() to be ignored on
+  // Remote Desktop.
   ::ShowCursor(FALSE);
 
-  MoveCursorToCenter();
+  move_to_center_request_.pending = false;
+  last_mouse_position_.locked_global = last_mouse_position_.unlocked_global;
+  MoveCursorToCenterIfNecessary();
 
   CRect rect;
   GetWindowRect(&rect);
@@ -1867,8 +1877,8 @@ void RenderWidgetHostViewWin::UnlockMouse() {
   mouse_locked_ = false;
 
   ::ClipCursor(NULL);
-  ::SetCursorPos(last_global_mouse_position_.x(),
-                 last_global_mouse_position_.y());
+  ::SetCursorPos(last_mouse_position_.unlocked_global.x(),
+                 last_mouse_position_.unlocked_global.y());
   ::ShowCursor(TRUE);
 
   if (render_widget_host_)
@@ -2268,28 +2278,30 @@ void RenderWidgetHostViewWin::ForwardMouseEventToRenderer(UINT message,
       WebInputEventFactory::mouseEvent(m_hWnd, message, wparam, lparam));
 
   if (mouse_locked_) {
-    CPoint center = GetClientCenter();
+    event.movementX = event.globalX - last_mouse_position_.locked_global.x();
+    event.movementY = event.globalY - last_mouse_position_.locked_global.y();
+    last_mouse_position_.locked_global.SetPoint(event.globalX, event.globalY);
 
-    event.movementX = event.windowX - center.x;
-    event.movementY = event.windowY - center.y;
-    event.x = last_mouse_position_.x();
-    event.y = last_mouse_position_.y();
-    event.windowX = last_mouse_position_.x();
-    event.windowY = last_mouse_position_.y();
-    event.globalX = last_global_mouse_position_.x();
-    event.globalY = last_global_mouse_position_.y();
+    event.x = last_mouse_position_.unlocked.x();
+    event.y = last_mouse_position_.unlocked.y();
+    event.windowX = last_mouse_position_.unlocked.x();
+    event.windowY = last_mouse_position_.unlocked.y();
+    event.globalX = last_mouse_position_.unlocked_global.x();
+    event.globalY = last_mouse_position_.unlocked_global.y();
   } else {
     if (ignore_mouse_movement_) {
       ignore_mouse_movement_ = false;
       event.movementX = 0;
       event.movementY = 0;
     } else {
-      event.movementX = event.globalX - last_global_mouse_position_.x();
-      event.movementY = event.globalY - last_global_mouse_position_.y();
+      event.movementX =
+          event.globalX - last_mouse_position_.unlocked_global.x();
+      event.movementY =
+          event.globalY - last_mouse_position_.unlocked_global.y();
     }
 
-    last_mouse_position_.SetPoint(event.windowX, event.windowY);
-    last_global_mouse_position_.SetPoint(event.globalX, event.globalY);
+    last_mouse_position_.unlocked.SetPoint(event.windowX, event.windowY);
+    last_mouse_position_.unlocked_global.SetPoint(event.globalX, event.globalY);
   }
 
   // Send the event to the renderer before changing mouse capture, so that the
@@ -2347,11 +2359,28 @@ CPoint RenderWidgetHostViewWin::GetClientCenter() const {
   return rect.CenterPoint();
 }
 
-void RenderWidgetHostViewWin::MoveCursorToCenter() const {
-  CPoint center = GetClientCenter();
-  ClientToScreen(&center);
-  if (!::SetCursorPos(center.x, center.y))
-    LOG_GETLASTERROR(WARNING) << "Failed to set cursor position.";
+void RenderWidgetHostViewWin::MoveCursorToCenterIfNecessary() {
+  DCHECK(mouse_locked_);
+
+  CRect rect;
+  GetWindowRect(&rect);
+  int border_x = rect.Width() * kMouseLockBorderPercentage / 100;
+  int border_y = rect.Height() * kMouseLockBorderPercentage / 100;
+
+  bool should_move =
+      last_mouse_position_.locked_global.x() < rect.left + border_x ||
+      last_mouse_position_.locked_global.x() > rect.right - border_x ||
+      last_mouse_position_.locked_global.y() < rect.top + border_y ||
+      last_mouse_position_.locked_global.y() > rect.bottom - border_y;
+
+  if (should_move) {
+    move_to_center_request_.pending = true;
+    move_to_center_request_.target = rect.CenterPoint();
+    if (!::SetCursorPos(move_to_center_request_.target.x(),
+                        move_to_center_request_.target.y())) {
+      LOG_GETLASTERROR(WARNING) << "Failed to set cursor position.";
+    }
+  }
 }
 
 void RenderWidgetHostViewWin::HandleLockedMouseEvent(UINT message,
@@ -2359,11 +2388,17 @@ void RenderWidgetHostViewWin::HandleLockedMouseEvent(UINT message,
                                                      LPARAM lparam) {
   DCHECK(mouse_locked_);
 
-  if (message == WM_MOUSEMOVE) {
-    CPoint center = GetClientCenter();
-    // Ignore WM_MOUSEMOVE messages generated by MoveCursorToCenter().
-    if (LOWORD(lparam) == center.x && HIWORD(lparam) == center.y)
+  if (message == WM_MOUSEMOVE && move_to_center_request_.pending) {
+    // Ignore WM_MOUSEMOVE messages generated by
+    // MoveCursorToCenterIfNecessary().
+    CPoint current_position(LOWORD(lparam), HIWORD(lparam));
+    ClientToScreen(&current_position);
+    if (move_to_center_request_.target.x() == current_position.x &&
+        move_to_center_request_.target.y() == current_position.y) {
+      move_to_center_request_.pending = false;
+      last_mouse_position_.locked_global = move_to_center_request_.target;
       return;
+    }
   }
 
   ForwardMouseEventToRenderer(message, wparam, lparam);

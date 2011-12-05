@@ -337,7 +337,9 @@ class RenderWidgetHostViewWin
                                DWORD ex_style);
 
   CPoint GetClientCenter() const;
-  void MoveCursorToCenter() const;
+  // In mouse lock mode, moves the mouse cursor to the center of the view if it
+  // is too close to the border.
+  void MoveCursorToCenterIfNecessary();
 
   void HandleLockedMouseEvent(UINT message, WPARAM wparam, LPARAM lparam);
 
@@ -477,12 +479,26 @@ class RenderWidgetHostViewWin
   bool is_fullscreen_;
 
   // Used to record the last position of the mouse.
-  // While the mouse is locked, they store the last known position just as mouse
-  // lock was entered.
-  // Relative to the upper-left corner of the view.
-  gfx::Point last_mouse_position_;
-  // Relative to the upper-left corner of the screen.
-  gfx::Point last_global_mouse_position_;
+  struct {
+    // While the mouse is locked, |unlocked| and |unlocked_global| store the
+    // last known position just as mouse lock was entered.
+    // Relative to the upper-left corner of the view.
+    gfx::Point unlocked;
+    // Relative to the upper-left corner of the screen.
+    gfx::Point unlocked_global;
+
+    // Only valid while the mouse is locked.
+    gfx::Point locked_global;
+  } last_mouse_position_;
+
+  // When the mouse cursor is moved to the center of the view by
+  // MoveCursorToCenterIfNecessary(), we ignore the resulting WM_MOUSEMOVE
+  // message.
+  struct {
+    bool pending;
+    // Relative to the upper-left corner of the screen.
+    gfx::Point target;
+  } move_to_center_request_;
 
   // In the case of the mouse being moved away from the view and then moved
   // back, we regard the mouse movement as (0, 0).
