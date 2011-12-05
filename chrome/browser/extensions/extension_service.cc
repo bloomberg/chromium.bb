@@ -444,15 +444,15 @@ ExtensionService::ExtensionService(Profile* profile,
                               install_directory_.value().length(), 0, 500, 100);
 }
 
-const ExtensionList* ExtensionService::extensions() const {
+const ExtensionSet* ExtensionService::extensions() const {
   return &extensions_;
 }
 
-const ExtensionList* ExtensionService::disabled_extensions() const {
+const ExtensionSet* ExtensionService::disabled_extensions() const {
   return &disabled_extensions_;
 }
 
-const ExtensionList* ExtensionService::terminated_extensions() const {
+const ExtensionSet* ExtensionService::terminated_extensions() const {
   return &terminated_extensions_;
 }
 
@@ -766,14 +766,11 @@ bool ExtensionService::UninstallExtension(
 
 bool ExtensionService::IsExtensionEnabled(
     const std::string& extension_id) const {
-  const Extension* extension =
-      GetExtensionByIdInternal(extension_id, true, false, true);
-  if (extension)
+  if (extensions_.Contains(extension_id) ||
+      terminated_extensions_.Contains(extension_id))
     return true;
 
-  extension =
-      GetExtensionByIdInternal(extension_id, false, true, false);
-  if (extension)
+  if (disabled_extensions_.Contains(extension_id))
     return false;
 
   // If the extension hasn't been loaded yet, check the prefs for it. Assume
@@ -803,11 +800,8 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
     return;
 
   // Move it over to the enabled list.
-  extensions_.push_back(make_scoped_refptr(extension));
-  ExtensionList::iterator iter = std::find(disabled_extensions_.begin(),
-                                           disabled_extensions_.end(),
-                                           extension);
-  disabled_extensions_.erase(iter);
+  extensions_.Insert(make_scoped_refptr(extension));
+  disabled_extensions_.Remove(extension->id());
 
   // Make sure any browser action contained within it is not hidden.
   extension_prefs_->SetBrowserActionVisibility(extension, true);
@@ -837,18 +831,11 @@ void ExtensionService::DisableExtension(const std::string& extension_id) {
     return;
 
   // Move it over to the disabled list.
-  disabled_extensions_.push_back(make_scoped_refptr(extension));
-  ExtensionList::iterator iter = std::find(extensions_.begin(),
-                                           extensions_.end(),
-                                           extension);
-  if (iter != extensions_.end()) {
-    extensions_.erase(iter);
-  } else {
-    iter = std::find(terminated_extensions_.begin(),
-                     terminated_extensions_.end(),
-                     extension);
-    terminated_extensions_.erase(iter);
-  }
+  disabled_extensions_.Insert(make_scoped_refptr(extension));
+  if (extensions_.Contains(extension->id()))
+    extensions_.Remove(extension->id());
+  else
+    terminated_extensions_.Remove(extension->id());
 
   NotifyExtensionUnloaded(extension, extension_misc::UNLOAD_REASON_DISABLE);
 
@@ -1115,7 +1102,7 @@ void ExtensionService::UpdateExtensionBlacklist(
   extension_prefs_->UpdateBlacklist(blacklist_set);
   std::vector<std::string> to_be_removed;
   // Loop current extensions, unload installed extensions.
-  for (ExtensionList::const_iterator iter = extensions_.begin();
+  for (ExtensionSet::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     const Extension* extension = (*iter);
     if (blacklist_set.find(extension->id()) != blacklist_set.end()) {
@@ -1158,7 +1145,7 @@ ExtensionUpdater* ExtensionService::updater() {
 void ExtensionService::CheckAdminBlacklist() {
   std::vector<std::string> to_be_removed;
   // Loop through extensions list, unload installed extensions.
-  for (ExtensionList::const_iterator iter = extensions_.begin();
+  for (ExtensionSet::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     const Extension* extension = (*iter);
     if (!extension_prefs_->IsExtensionAllowedByPolicy(extension->id(),
@@ -1359,10 +1346,10 @@ SyncError ExtensionService::ProcessSyncChanges(
 }
 
 void ExtensionService::GetSyncDataListHelper(
-    const ExtensionList& extensions,
+    const ExtensionSet& extensions,
     const SyncBundle& bundle,
     std::vector<ExtensionSyncData>* sync_data_list) const {
-  for (ExtensionList::const_iterator it = extensions.begin();
+  for (ExtensionSet::const_iterator it = extensions.begin();
        it != extensions.end(); ++it) {
     const Extension& extension = **it;
     if (bundle.filter(extension) &&
@@ -1493,8 +1480,7 @@ void ExtensionService::SetIsIncognitoEnabled(
 
   extension_prefs_->SetIsIncognitoEnabled(extension_id, enabled);
 
-  bool extension_is_enabled = std::find(extensions_.begin(), extensions_.end(),
-                                        extension) != extensions_.end();
+  bool extension_is_enabled = extensions_.Contains(extension->id());
 
   // When we reload the extension the ID may be invalidated if we've passed it
   // by const ref everywhere. Make a copy to be safe.
@@ -1571,8 +1557,7 @@ void ExtensionService::SetAllowFileAccess(const Extension* extension,
 
   extension_prefs_->SetAllowFileAccess(extension->id(), allow);
 
-  bool extension_is_enabled = std::find(extensions_.begin(), extensions_.end(),
-                                        extension) != extensions_.end();
+  bool extension_is_enabled = extensions_.Contains(extension->id());
   if (extension_is_enabled)
     ReloadExtension(extension->id());
 }
@@ -1676,12 +1661,9 @@ void ExtensionService::IdentifyAlertableExtensions() {
   scoped_ptr<ExtensionGlobalError> global_error(
       new ExtensionGlobalError(AsWeakPtr()));
   bool needs_alert = false;
-  for (ExtensionList::const_iterator iter = extensions_.begin();
+  for (ExtensionSet::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     const Extension* e = *iter;
-    if (!IsExtensionEnabled(e->id())) {
-      continue;
-    }
     if (Extension::IsExternalLocation(e->location())) {
       if (!extension_prefs_->IsExternalExtensionAcknowledged(e->id())) {
         global_error->AddExternalExtension(e->id());
@@ -1781,13 +1763,10 @@ void ExtensionService::UnloadExtension(
   // Clean up runtime data.
   extension_runtime_data_.erase(extension_id);
 
-  ExtensionList::iterator iter = std::find(disabled_extensions_.begin(),
-                                           disabled_extensions_.end(),
-                                           extension.get());
-  if (iter != disabled_extensions_.end()) {
+if (disabled_extensions_.Contains(extension->id())) {
     UnloadedExtensionInfo details(extension, reason);
     details.already_disabled = true;
-    disabled_extensions_.erase(iter);
+    disabled_extensions_.Remove(extension->id());
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_UNLOADED,
         content::Source<Profile>(profile_),
@@ -1799,10 +1778,8 @@ void ExtensionService::UnloadExtension(
     return;
   }
 
-  iter = std::find(extensions_.begin(), extensions_.end(), extension.get());
-
-  // Remove the extension from our list.
-  extensions_.erase(iter);
+// Remove the extension from our list.
+  extensions_.Remove(extension->id());
 
   NotifyExtensionUnloaded(extension.get(), reason);
 }
@@ -1811,10 +1788,9 @@ void ExtensionService::UnloadAllExtensions() {
   profile_->GetExtensionSpecialStoragePolicy()->
       RevokeRightsForAllExtensions();
 
-  extensions_.clear();
-  disabled_extensions_.clear();
-  terminated_extension_ids_.clear();
-  terminated_extensions_.clear();
+  extensions_.Clear();
+  disabled_extensions_.Clear();
+  terminated_extensions_.Clear();
   extension_runtime_data_.clear();
 
   // TODO(erikkay) should there be a notification for this?  We can't use
@@ -1898,10 +1874,10 @@ void ExtensionService::AddExtension(const Extension* extension) {
 
   bool disabled = extension_prefs_->IsExtensionDisabled(extension->id());
   if (disabled) {
-    disabled_extensions_.push_back(scoped_extension);
-    // TODO(aa): This seems dodgy. It seems that AddExtension() could get called
-    // with a disabled extension for other reasons other than that an update was
-    // disabled.
+    disabled_extensions_.Insert(scoped_extension);
+    // TODO(aa): This seems dodgy. AddExtension() could get called with a
+    // disabled extension for other reasons other than that an update was
+    // disabled, e.g. as in ExtensionManagementTest.InstallRequiresConfirm.
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
         content::Source<Profile>(profile_),
@@ -1910,7 +1886,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
     return;
   }
 
-  extensions_.push_back(scoped_extension);
+  extensions_.Insert(scoped_extension);
   SyncExtensionChangeIfNeeded(*extension);
   NotifyExtensionLoaded(extension);
   IdentifyAlertableExtensions();
@@ -2022,10 +1998,11 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
 
 void ExtensionService::UpdateActiveExtensionsInCrashReporter() {
   std::set<std::string> extension_ids;
-  for (size_t i = 0; i < extensions_.size(); ++i) {
-    if (!extensions_[i]->is_theme() &&
-        extensions_[i]->location() != Extension::COMPONENT)
-      extension_ids.insert(extensions_[i]->id());
+  for (ExtensionSet::const_iterator iter = extensions_.begin();
+       iter != extensions_.end(); ++iter) {
+    const Extension* extension = *iter;
+    if (!extension->is_theme() && extension->location() != Extension::COMPONENT)
+      extension_ids.insert(extension->id());
   }
 
   child_process_logging::SetActiveExtensions(extension_ids);
@@ -2118,51 +2095,33 @@ const Extension* ExtensionService::GetExtensionByIdInternal(
     bool include_terminated) const {
   std::string lowercase_id = StringToLowerASCII(id);
   if (include_enabled) {
-    for (ExtensionList::const_iterator iter = extensions_.begin();
-        iter != extensions_.end(); ++iter) {
-      if ((*iter)->id() == lowercase_id)
-        return *iter;
-    }
+    const Extension* extension = extensions_.GetByID(lowercase_id);
+    if (extension)
+      return extension;
   }
   if (include_disabled) {
-    for (ExtensionList::const_iterator iter = disabled_extensions_.begin();
-        iter != disabled_extensions_.end(); ++iter) {
-      if ((*iter)->id() == lowercase_id)
-        return *iter;
-    }
+    const Extension* extension = disabled_extensions_.GetByID(lowercase_id);
+    if (extension)
+      return extension;
   }
   if (include_terminated) {
-    for (ExtensionList::const_iterator iter = terminated_extensions_.begin();
-        iter != terminated_extensions_.end(); ++iter) {
-      if ((*iter)->id() == lowercase_id)
-        return *iter;
-    }
+    const Extension* extension = terminated_extensions_.GetByID(lowercase_id);
+    if (extension)
+      return extension;
   }
   return NULL;
 }
 
 void ExtensionService::TrackTerminatedExtension(const Extension* extension) {
-  if (terminated_extension_ids_.insert(extension->id()).second)
-    terminated_extensions_.push_back(make_scoped_refptr(extension));
+  if (!terminated_extensions_.Contains(extension->id()))
+    terminated_extensions_.Insert(make_scoped_refptr(extension));
 
-  // TODO(yoz): Listen to navcontrollers for that extension. Is this a todo?
-
-  // TODO(yoz): make sure this is okay in *ALL* the listeners!
   UnloadExtension(extension->id(), extension_misc::UNLOAD_REASON_TERMINATE);
 }
 
 void ExtensionService::UntrackTerminatedExtension(const std::string& id) {
   std::string lowercase_id = StringToLowerASCII(id);
-  if (terminated_extension_ids_.erase(lowercase_id) <= 0)
-    return;
-
-  for (ExtensionList::iterator iter = terminated_extensions_.begin();
-       iter != terminated_extensions_.end(); ++iter) {
-    if ((*iter)->id() == lowercase_id) {
-      terminated_extensions_.erase(iter);
-      return;
-    }
-  }
+  terminated_extensions_.Remove(lowercase_id);
 }
 
 const Extension* ExtensionService::GetTerminatedExtension(
@@ -2185,18 +2144,22 @@ const Extension* ExtensionService::GetExtensionByURL(const GURL& url) {
 }
 
 const Extension* ExtensionService::GetExtensionByWebExtent(const GURL& url) {
-  for (size_t i = 0; i < extensions_.size(); ++i) {
-    if (extensions_[i]->web_extent().MatchesURL(url))
-      return extensions_[i];
+  // TODO(yoz): Should be ExtensionSet::GetByURL.
+  for (ExtensionSet::const_iterator iter = extensions_.begin();
+       iter != extensions_.end(); ++iter) {
+    if ((*iter)->web_extent().MatchesURL(url))
+      return *iter;
   }
   return NULL;
 }
 
 const Extension* ExtensionService::GetDisabledExtensionByWebExtent(
     const GURL& url) {
-  for (size_t i = 0; i < disabled_extensions_.size(); ++i) {
-    if (disabled_extensions_[i]->web_extent().MatchesURL(url))
-      return disabled_extensions_[i];
+  // TODO(yoz): Should be ExtensionSet::GetByURL.
+  for (ExtensionSet::const_iterator iter = disabled_extensions_.begin();
+       iter != disabled_extensions_.end(); ++iter) {
+    if ((*iter)->web_extent().MatchesURL(url))
+      return *iter;
   }
   return NULL;
 }
@@ -2217,9 +2180,11 @@ bool ExtensionService::ExtensionBindingsAllowed(const GURL& url) {
 
 const Extension* ExtensionService::GetExtensionByOverlappingWebExtent(
     const URLPatternSet& extent) {
-  for (size_t i = 0; i < extensions_.size(); ++i) {
-    if (extensions_[i]->web_extent().OverlapsWith(extent))
-      return extensions_[i];
+  // TODO(yoz): Should be in ExtensionSet.
+  for (ExtensionSet::const_iterator iter = extensions_.begin();
+       iter != extensions_.end(); ++iter) {
+    if ((*iter)->web_extent().OverlapsWith(extent))
+      return *iter;
   }
 
   return NULL;
@@ -2354,9 +2319,9 @@ void ExtensionService::Observe(int type,
 
       // Loaded extensions.
       std::vector<ExtensionMsg_Loaded_Params> loaded_extensions;
-      for (size_t i = 0; i < extensions_.size(); ++i) {
-        loaded_extensions.push_back(
-            ExtensionMsg_Loaded_Params(extensions_[i]));
+      for (ExtensionSet::const_iterator iter = extensions_.begin();
+           iter != extensions_.end(); ++iter) {
+        loaded_extensions.push_back(ExtensionMsg_Loaded_Params(*iter));
       }
       process->Send(new ExtensionMsg_Loaded(loaded_extensions));
       break;
@@ -2407,7 +2372,7 @@ bool ExtensionService::HasApps() const {
 
 ExtensionIdSet ExtensionService::GetAppIds() const {
   ExtensionIdSet result;
-  for (ExtensionList::const_iterator it = extensions_.begin();
+  for (ExtensionSet::const_iterator it = extensions_.begin();
        it != extensions_.end(); ++it) {
     if ((*it)->is_app() && (*it)->location() != Extension::COMPONENT)
       result.insert((*it)->id());

@@ -98,9 +98,9 @@ void ExtensionTabHelper::DidNavigateMainFrame(
   if (!service)
     return;
 
-  for (size_t i = 0; i < service->extensions()->size(); ++i) {
-    ExtensionAction* browser_action =
-        service->extensions()->at(i)->browser_action();
+  for (ExtensionSet::const_iterator it = service->extensions()->begin();
+       it != service->extensions()->end(); ++it) {
+    ExtensionAction* browser_action = (*it)->browser_action();
     if (browser_action) {
       browser_action->ClearAllValuesForTab(
           wrapper_->restore_tab_helper()->session_id().id());
@@ -110,8 +110,7 @@ void ExtensionTabHelper::DidNavigateMainFrame(
           content::NotificationService::NoDetails());
     }
 
-    ExtensionAction* page_action =
-        service->extensions()->at(i)->page_action();
+    ExtensionAction* page_action = (*it)->page_action();
     if (page_action) {
       page_action->ClearAllValuesForTab(
           wrapper_->restore_tab_helper()->session_id().id());

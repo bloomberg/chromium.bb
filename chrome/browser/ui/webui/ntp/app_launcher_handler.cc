@@ -327,11 +327,12 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   AutoReset<bool> auto_reset(&ignore_changes_, true);
 
   ListValue* list = new ListValue();
-  const ExtensionList* extensions = extension_service_->extensions();
-  ExtensionList::const_iterator it;
+  const ExtensionSet* extensions = extension_service_->extensions();
+  ExtensionSet::const_iterator it;
   for (it = extensions->begin(); it != extensions->end(); ++it) {
-    if (!IsAppExcludedFromList(*it)) {
-      DictionaryValue* app_info = GetAppInfo(*it);
+    const Extension* extension = *it;
+    if (!IsAppExcludedFromList(extension)) {
+      DictionaryValue* app_info = GetAppInfo(extension);
       list->Append(app_info);
     } else {
       // This is necessary because in some previous versions of chrome, we set a
@@ -339,8 +340,8 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
       // and this fixes it. If we don't fix it, GetNaturalAppPageIndex() doesn't
       // work. See http://crbug.com/98325
       ExtensionPrefs* prefs = extension_service_->extension_prefs();
-      if (prefs->GetPageIndex((*it)->id()) != -1)
-        prefs->ClearPageIndex((*it)->id());
+      if (prefs->GetPageIndex(extension->id()) != -1)
+        prefs->ClearPageIndex(extension->id());
     }
   }
 

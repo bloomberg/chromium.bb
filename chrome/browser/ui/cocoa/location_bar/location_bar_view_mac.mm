@@ -540,10 +540,12 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
   if (!service)
     return;
 
+  // Find all the page actions.
   std::vector<ExtensionAction*> page_actions;
-  for (size_t i = 0; i < service->extensions()->size(); ++i) {
-    if (service->extensions()->at(i)->page_action())
-      page_actions.push_back(service->extensions()->at(i)->page_action());
+  for (ExtensionSet::const_iterator it = service->extensions()->begin();
+       it != service->extensions()->end(); ++it) {
+    if ((*it)->page_action())
+      page_actions.push_back((*it)->page_action());
   }
 
   // On startup we sometimes haven't loaded any extensions. This makes sure

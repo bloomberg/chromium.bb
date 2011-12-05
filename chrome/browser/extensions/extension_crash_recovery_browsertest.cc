@@ -62,12 +62,10 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
     return balloons.size();
   }
 
-  void CrashExtension(size_t index) {
-    ASSERT_LT(index, GetExtensionService()->extensions()->size());
+  void CrashExtension(std::string extension_id) {
     const Extension* extension =
-        GetExtensionService()->extensions()->at(index);
+        GetExtensionService()->extensions()->GetByID(extension_id);
     ASSERT_TRUE(extension);
-    std::string extension_id(extension->id());
     ExtensionHost* extension_host = GetExtensionProcessManager()->
         GetBackgroundHostForExtension(extension_id);
     ASSERT_TRUE(extension_host);
@@ -81,43 +79,36 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
                  GetBackgroundHostForExtension(extension_id));
   }
 
-  void CheckExtensionConsistency(size_t index) {
-    ASSERT_LT(index, GetExtensionService()->extensions()->size());
+  void CheckExtensionConsistency(std::string extension_id) {
     const Extension* extension =
-        GetExtensionService()->extensions()->at(index);
+        GetExtensionService()->extensions()->GetByID(extension_id);
     ASSERT_TRUE(extension);
     ExtensionHost* extension_host = GetExtensionProcessManager()->
-        GetBackgroundHostForExtension(extension->id());
+        GetBackgroundHostForExtension(extension_id);
     ASSERT_TRUE(extension_host);
     ASSERT_TRUE(GetExtensionProcessManager()->HasExtensionHost(extension_host));
     ASSERT_TRUE(extension_host->IsRenderViewLive());
     extensions::ProcessMap* process_map =
         browser()->profile()->GetExtensionService()->process_map();
     ASSERT_TRUE(process_map->Contains(
-        extension->id(), extension_host->render_view_host()->process()->
-            GetID()));
+        extension_id, extension_host->render_view_host()->process()->GetID()));
   }
 
   void LoadTestExtension() {
     ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
-    const size_t size_before = GetExtensionService()->extensions()->size();
-    ASSERT_TRUE(LoadExtension(
-        test_data_dir_.AppendASCII("common").AppendASCII("background_page")));
-    const Extension* extension = GetExtensionService()->extensions()->back();
+    const Extension* extension = LoadExtension(
+        test_data_dir_.AppendASCII("common").AppendASCII("background_page"));
     ASSERT_TRUE(extension);
     first_extension_id_ = extension->id();
-    CheckExtensionConsistency(size_before);
+    CheckExtensionConsistency(first_extension_id_);
   }
 
   void LoadSecondExtension() {
-    int offset = GetExtensionService()->extensions()->size();
-    ASSERT_TRUE(LoadExtension(
-        test_data_dir_.AppendASCII("install").AppendASCII("install")));
-    const Extension* extension =
-        GetExtensionService()->extensions()->at(offset);
+    const Extension* extension = LoadExtension(
+        test_data_dir_.AppendASCII("install").AppendASCII("install"));
     ASSERT_TRUE(extension);
     second_extension_id_ = extension->id();
-    CheckExtensionConsistency(offset);
+    CheckExtensionConsistency(second_extension_id_);
   }
 
   std::string first_extension_id_;
@@ -129,14 +120,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, Basic) {
   const size_t crash_size_before =
       GetExtensionService()->terminated_extensions()->size();
   LoadTestExtension();
-  CrashExtension(size_before);
+  CrashExtension(first_extension_id_);
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
   ASSERT_EQ(crash_size_before + 1,
             GetExtensionService()->terminated_extensions()->size());
   AcceptNotification(0);
 
   SCOPED_TRACE("after clicking the balloon");
-  CheckExtensionConsistency(size_before);
+  CheckExtensionConsistency(first_extension_id_);
   ASSERT_EQ(crash_size_before,
             GetExtensionService()->terminated_extensions()->size());
 }
@@ -146,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CloseAndReload) {
   const size_t crash_size_before =
       GetExtensionService()->terminated_extensions()->size();
   LoadTestExtension();
-  CrashExtension(size_before);
+  CrashExtension(first_extension_id_);
 
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
   ASSERT_EQ(crash_size_before + 1,
@@ -156,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CloseAndReload) {
   ReloadExtension(first_extension_id_);
 
   SCOPED_TRACE("after reloading");
-  CheckExtensionConsistency(size_before);
+  CheckExtensionConsistency(first_extension_id_);
   ASSERT_EQ(crash_size_before,
             GetExtensionService()->terminated_extensions()->size());
 }
@@ -164,13 +155,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CloseAndReload) {
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, ReloadIndependently) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
-  CrashExtension(size_before);
+  CrashExtension(first_extension_id_);
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
 
   ReloadExtension(first_extension_id_);
 
   SCOPED_TRACE("after reloading");
-  CheckExtensionConsistency(size_before);
+  CheckExtensionConsistency(first_extension_id_);
 
   TabContents* current_tab = browser()->GetSelectedTabContents();
   ASSERT_TRUE(current_tab);
@@ -184,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
                        ReloadIndependentlyChangeTabs) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
-  CrashExtension(size_before);
+  CrashExtension(first_extension_id_);
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
 
   TabContents* original_tab = browser()->GetSelectedTabContents();
@@ -201,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   ReloadExtension(first_extension_id_);
 
   SCOPED_TRACE("after reloading");
-  CheckExtensionConsistency(size_before);
+  CheckExtensionConsistency(first_extension_id_);
 
   // The balloon should automatically hide after the extension is successfully
   // reloaded.
@@ -212,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
                        ReloadIndependentlyNavigatePage) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
-  CrashExtension(size_before);
+  CrashExtension(first_extension_id_);
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
 
   TabContents* current_tab = browser()->GetSelectedTabContents();
@@ -228,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   ReloadExtension(first_extension_id_);
 
   SCOPED_TRACE("after reloading");
-  CheckExtensionConsistency(size_before);
+  CheckExtensionConsistency(first_extension_id_);
 
   // The balloon should automatically hide after the extension is successfully
   // reloaded.
@@ -249,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, MAYBE_ShutdownWhileCrashed) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
-  CrashExtension(size_before);
+  CrashExtension(first_extension_id_);
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
 }
 
@@ -257,26 +248,26 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsCrashFirst) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
   LoadSecondExtension();
-  CrashExtension(size_before);
+  CrashExtension(first_extension_id_);
   ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
   AcceptNotification(0);
 
   SCOPED_TRACE("after clicking the balloon");
-  CheckExtensionConsistency(size_before);
-  CheckExtensionConsistency(size_before + 1);
+  CheckExtensionConsistency(first_extension_id_);
+  CheckExtensionConsistency(second_extension_id_);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsCrashSecond) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
   LoadSecondExtension();
-  CrashExtension(size_before + 1);
+  CrashExtension(second_extension_id_);
   ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
   AcceptNotification(0);
 
   SCOPED_TRACE("after clicking the balloon");
-  CheckExtensionConsistency(size_before);
-  CheckExtensionConsistency(size_before + 1);
+  CheckExtensionConsistency(first_extension_id_);
+  CheckExtensionConsistency(second_extension_id_);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
@@ -286,11 +277,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
       GetExtensionService()->terminated_extensions()->size();
   LoadTestExtension();
   LoadSecondExtension();
-  CrashExtension(size_before);
+  CrashExtension(first_extension_id_);
   ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
   ASSERT_EQ(crash_size_before + 1,
             GetExtensionService()->terminated_extensions()->size());
-  CrashExtension(size_before);
+  CrashExtension(second_extension_id_);
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
   ASSERT_EQ(crash_size_before + 2,
             GetExtensionService()->terminated_extensions()->size());
@@ -298,37 +289,37 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   {
     SCOPED_TRACE("first balloon");
     AcceptNotification(0);
-    CheckExtensionConsistency(size_before);
+    CheckExtensionConsistency(first_extension_id_);
   }
 
   {
     SCOPED_TRACE("second balloon");
     AcceptNotification(0);
-    CheckExtensionConsistency(size_before);
-    CheckExtensionConsistency(size_before + 1);
+    CheckExtensionConsistency(first_extension_id_);
+    CheckExtensionConsistency(second_extension_id_);
   }
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsOneByOne) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
-  CrashExtension(size_before);
+  CrashExtension(first_extension_id_);
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
   LoadSecondExtension();
-  CrashExtension(size_before);
+  CrashExtension(second_extension_id_);
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
 
   {
     SCOPED_TRACE("first balloon");
     AcceptNotification(0);
-    CheckExtensionConsistency(size_before);
+    CheckExtensionConsistency(first_extension_id_);
   }
 
   {
     SCOPED_TRACE("second balloon");
     AcceptNotification(0);
-    CheckExtensionConsistency(size_before);
-    CheckExtensionConsistency(size_before + 1);
+    CheckExtensionConsistency(first_extension_id_);
+    CheckExtensionConsistency(second_extension_id_);
   }
 }
 
@@ -348,10 +339,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
                        MAYBE_TwoExtensionsShutdownWhileCrashed) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
-  CrashExtension(size_before);
+  CrashExtension(first_extension_id_);
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
   LoadSecondExtension();
-  CrashExtension(size_before);
+  CrashExtension(second_extension_id_);
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
 }
 
@@ -360,9 +351,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
   LoadSecondExtension();
-  CrashExtension(size_before);
+  CrashExtension(first_extension_id_);
   ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
-  CrashExtension(size_before);
+  CrashExtension(second_extension_id_);
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
 
   // Accept notification 1 before canceling notification 0.
@@ -373,9 +364,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
 
   SCOPED_TRACE("balloons done");
   ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
-  EXPECT_EQ(second_extension_id_,
-            GetExtensionService()->extensions()->at(size_before)->id());
-  CheckExtensionConsistency(size_before);
+  CheckExtensionConsistency(second_extension_id_);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
@@ -383,9 +372,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
   LoadSecondExtension();
-  CrashExtension(size_before);
+  CrashExtension(first_extension_id_);
   ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
-  CrashExtension(size_before);
+  CrashExtension(second_extension_id_);
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
 
   {
@@ -397,14 +386,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
     ReloadExtension(first_extension_id_);
     // One of the balloons should hide after the extension is reloaded.
     ASSERT_EQ(1U, CountBalloons());
-    CheckExtensionConsistency(size_before);
+    CheckExtensionConsistency(first_extension_id_);
   }
 
   {
     SCOPED_TRACE("second: balloon");
     AcceptNotification(0);
-    CheckExtensionConsistency(size_before);
-    CheckExtensionConsistency(size_before + 1);
+    CheckExtensionConsistency(first_extension_id_);
+    CheckExtensionConsistency(second_extension_id_);
   }
 }
 
@@ -414,7 +403,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CrashAndUninstall) {
       GetExtensionService()->terminated_extensions()->size();
   LoadTestExtension();
   LoadSecondExtension();
-  CrashExtension(size_before);
+  CrashExtension(first_extension_id_);
   ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
   ASSERT_EQ(crash_size_before + 1,
             GetExtensionService()->terminated_extensions()->size());
@@ -443,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, MAYBE_CrashAndUnloadAll) {
       GetExtensionService()->terminated_extensions()->size();
   LoadTestExtension();
   LoadSecondExtension();
-  CrashExtension(size_before);
+  CrashExtension(first_extension_id_);
   ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
   ASSERT_EQ(crash_size_before + 1,
             GetExtensionService()->terminated_extensions()->size());
@@ -471,7 +460,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
       GURL("chrome-extension://" + first_extension_id_ + "/background.html"));
 
   const int tabs_before = tab_strip->count();
-  CrashExtension(size_before);
+  CrashExtension(first_extension_id_);
 
   // Tab should still be open, and extension should be crashed.
   EXPECT_EQ(tabs_before, tab_strip->count());
@@ -488,6 +477,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
     observer.Wait();
   }
   // Extension should now be loaded.
+  SCOPED_TRACE("after reloading the tab");
+  CheckExtensionConsistency(first_extension_id_);
   ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
   ASSERT_EQ(0U, CountBalloons());
 }

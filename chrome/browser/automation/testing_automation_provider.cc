@@ -4379,8 +4379,8 @@ void TestingAutomationProvider::GetExtensionsInfo(
   }
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   ListValue* extensions_values = new ListValue;
-  const ExtensionList* extensions = service->extensions();
-  const ExtensionList* disabled_extensions = service->disabled_extensions();
+  const ExtensionSet* extensions = service->extensions();
+  const ExtensionSet* disabled_extensions = service->disabled_extensions();
   ExtensionList all;
   all.insert(all.end(),
              extensions->begin(),

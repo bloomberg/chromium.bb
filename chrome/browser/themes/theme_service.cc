@@ -338,8 +338,8 @@ void ThemeService::RemoveUnusedThemes() {
     return;
   std::string current_theme = GetThemeID();
   std::vector<std::string> remove_list;
-  const ExtensionList* extensions = service->extensions();
-  for (ExtensionList::const_iterator it = extensions->begin();
+  const ExtensionSet* extensions = service->extensions();
+  for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
     if ((*it)->is_theme() && (*it)->id() != current_theme) {
       remove_list.push_back((*it)->id());

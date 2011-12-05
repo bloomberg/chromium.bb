@@ -242,17 +242,14 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, ForceHide) {
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, TestCrash57536) {
   LOG(INFO) << "Test starting\n" << std::flush;
 
-  ExtensionService* service = browser()->profile()->GetExtensionService();
-  const size_t size_before = service->extensions()->size();
-
   LOG(INFO) << "Loading extension\n" << std::flush;
 
   // Load extension A (contains browser action).
-  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
-                                          .AppendASCII("browser_action")
-                                          .AppendASCII("crash_57536")));
-
-  const Extension* extension = service->extensions()->at(size_before);
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("api_test")
+      .AppendASCII("browser_action")
+      .AppendASCII("crash_57536"));
+  ASSERT_TRUE(extension);
 
   LOG(INFO) << "Creating bitmap\n" << std::flush;
 

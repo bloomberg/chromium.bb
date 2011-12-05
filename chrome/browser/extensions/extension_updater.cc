@@ -1025,8 +1025,8 @@ void ExtensionUpdater::CheckNow() {
     }
   }
 
-  const ExtensionList* extensions = service_->extensions();
-  for (ExtensionList::const_iterator iter = extensions->begin();
+  const ExtensionSet* extensions = service_->extensions();
+  for (ExtensionSet::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {
     // An extension might be overwritten by policy, and have its update url
     // changed. Make sure existing extensions aren't fetched again, if a

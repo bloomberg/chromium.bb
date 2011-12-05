@@ -83,8 +83,9 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
     // Count the number of non-component extensions.
     int found_extensions = 0;
-    for (size_t i = 0; i < service->extensions()->size(); i++)
-      if (service->extensions()->at(i)->location() != Extension::COMPONENT)
+    for (ExtensionSet::const_iterator it = service->extensions()->begin();
+         it != service->extensions()->end(); ++it)
+      if ((*it)->location() != Extension::COMPONENT)
         found_extensions++;
 
     ASSERT_EQ(static_cast<uint32>(num_expected_extensions),
@@ -163,17 +164,25 @@ IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, Test) {
 IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, MAYBE_NoFileAccess) {
   WaitForServicesToStart(num_expected_extensions_, true);
 
+  // Keep a separate list of extensions for which to disable file access, since
+  // doing so reloads them.
+  std::vector<const Extension*> extension_list;
+
   ExtensionService* service = browser()->profile()->GetExtensionService();
-  for (size_t i = 0; i < service->extensions()->size(); ++i) {
-    if (service->extensions()->at(i)->location() == Extension::COMPONENT)
+  for (ExtensionSet::const_iterator it = service->extensions()->begin();
+       it != service->extensions()->end(); ++it) {
+    if ((*it)->location() == Extension::COMPONENT)
       continue;
-    if (service->AllowFileAccess(service->extensions()->at(i))) {
-      ui_test_utils::WindowedNotificationObserver user_scripts_observer(
-          chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
-          content::NotificationService::AllSources());
-      service->SetAllowFileAccess(service->extensions()->at(i), false);
-      user_scripts_observer.Wait();
-    }
+    if (service->AllowFileAccess(*it))
+      extension_list.push_back(*it);
+  }
+
+  for (size_t i = 0; i < extension_list.size(); ++i) {
+    ui_test_utils::WindowedNotificationObserver user_scripts_observer(
+        chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
+        content::NotificationService::AllSources());
+    service->SetAllowFileAccess(extension_list[i], false);
+    user_scripts_observer.Wait();
   }
 
   TestInjection(false, false);

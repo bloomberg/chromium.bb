@@ -642,9 +642,10 @@ void LocationBarViewGtk::UpdatePageActions() {
     return;
 
   // Find all the page actions.
-  for (size_t i = 0; i < service->extensions()->size(); ++i) {
-    if (service->extensions()->at(i)->page_action())
-      page_actions.push_back(service->extensions()->at(i)->page_action());
+  for (ExtensionSet::const_iterator it = service->extensions()->begin();
+       it != service->extensions()->end(); ++it) {
+    if ((*it)->page_action())
+      page_actions.push_back((*it)->page_action());
   }
 
   // Initialize on the first call, or re-inialize if more extensions have been

@@ -130,10 +130,10 @@ bool GetFileBrowserHandlers(Profile* profile,
   if (!service)
     return false;  // In unit-tests, we may not have an ExtensionService.
 
-  for (ExtensionList::const_iterator iter = service->extensions()->begin();
+  for (ExtensionSet::const_iterator iter = service->extensions()->begin();
        iter != service->extensions()->end();
        ++iter) {
-    const Extension* extension = iter->get();
+    const Extension* extension = *iter;
     if (!extension->file_browser_handlers())
       continue;
 

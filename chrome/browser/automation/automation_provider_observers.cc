@@ -2017,11 +2017,11 @@ namespace {
 // as identified from a given list of extensions.  The caller takes ownership
 // of the created vector.
 std::vector<DictionaryValue*>* GetAppInfoFromExtensions(
-    const ExtensionList* extensions,
+    const ExtensionSet* extensions,
     ExtensionService* ext_service) {
   std::vector<DictionaryValue*>* apps_list =
       new std::vector<DictionaryValue*>();
-  for (ExtensionList::const_iterator ext = extensions->begin();
+  for (ExtensionSet::const_iterator ext = extensions->begin();
        ext != extensions->end(); ++ext) {
     // Only return information about extensions that are actually apps.
     if ((*ext)->is_app()) {
@@ -2089,7 +2089,7 @@ NTPInfoObserver::NTPInfoObserver(
   }
   // Process enabled extensions.
   ListValue* apps_list = new ListValue();
-  const ExtensionList* extensions = ext_service->extensions();
+  const ExtensionSet* extensions = ext_service->extensions();
   std::vector<DictionaryValue*>* enabled_apps = GetAppInfoFromExtensions(
       extensions, ext_service);
   for (std::vector<DictionaryValue*>::const_iterator app =
@@ -2099,7 +2099,7 @@ NTPInfoObserver::NTPInfoObserver(
   }
   delete enabled_apps;
   // Process disabled extensions.
-  const ExtensionList* disabled_extensions = ext_service->disabled_extensions();
+  const ExtensionSet* disabled_extensions = ext_service->disabled_extensions();
   std::vector<DictionaryValue*>* disabled_apps = GetAppInfoFromExtensions(
       disabled_extensions, ext_service);
   for (std::vector<DictionaryValue*>::const_iterator app =
@@ -2109,7 +2109,7 @@ NTPInfoObserver::NTPInfoObserver(
   }
   delete disabled_apps;
   // Process terminated extensions.
-  const ExtensionList* terminated_extensions =
+  const ExtensionSet* terminated_extensions =
       ext_service->terminated_extensions();
   std::vector<DictionaryValue*>* terminated_apps = GetAppInfoFromExtensions(
       terminated_extensions, ext_service);
