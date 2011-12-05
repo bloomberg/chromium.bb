@@ -107,7 +107,9 @@ node = env.CommandSelLdrTestNacl(
     # way to distinguish itself.  TODO(mseaborn): Fix that.
     # See http://code.google.com/p/nativeclient/issues/detail?id=889
     sel_ldr_flags=['-E', 'NACL_SRPC_STANDALONE=1'])
-env.AddNodeToTestSuite(node, test_suites, 'run_dynamic_load_test')
+env.AddNodeToTestSuite(node, test_suites, 'run_dynamic_load_test',
+                       is_broken=(env.Bit('target_arm') and
+                                  not env.UsingEmulator()))
 
 node = env.CommandSelLdrTestNacl(
     'write_to_dyncode.out',
