@@ -750,6 +750,9 @@ FileManager.prototype = {
       this.selectionModelClass_ = cr.ui.ListSelectionModel;
     }
 
+    this.dataModel_.addEventListener('splice',
+                                     this.onDataModelSplice_.bind(this));
+
     this.initTable_();
     this.initGrid_();
 
@@ -851,6 +854,12 @@ FileManager.prototype = {
     this.getIconType(entry);
     if (successCallback)
       setTimeout(function() { successCallback(entry) }, 0);
+  };
+
+  FileManager.prototype.onDataModelSplice_ = function(event) {
+    var checkbox = this.document_.querySelector('#select-all-checkbox');
+    if (checkbox)
+      this.updateSelectAllCheckboxState_(checkbox);
   };
 
   /**
@@ -1560,14 +1569,13 @@ FileManager.prototype = {
     input.setAttribute('type', 'checkbox');
     input.setAttribute('tabindex', -1);
     input.id = 'select-all-checkbox';
-    input.checked = this.areAllItemsSelected();
+    this.updateSelectAllCheckboxState_(input);
 
-    var self = this;
     input.addEventListener('click', function(event) {
-      if (self.areAllItemsSelected())
-        table.selectionModel.unselectAll();
-      else
+      if (input.checked)
         table.selectionModel.selectAll();
+      else
+        table.selectionModel.unselectAll();
       event.preventDefault();
       event.stopPropagation();
     });
@@ -1579,12 +1587,12 @@ FileManager.prototype = {
   };
 
   /**
-   * Check if all items in the current list are selected.
-   * @return {boolean} True if all items are selected.
+   * Update check and disable states of the 'Select all' checkbox.
    */
-  FileManager.prototype.areAllItemsSelected = function() {
-    return this.selection && this.dataModel_.length > 0 &&
-           this.dataModel_.length == this.selection.totalCount;
+  FileManager.prototype.updateSelectAllCheckboxState_ = function(checkbox) {
+    checkbox.checked = this.selection && this.dataModel_.length > 0 &&
+                       this.dataModel_.length == this.selection.totalCount;
+    checkbox.disabled = this.dataModel_.length == 0;
   };
 
   /**
@@ -2941,7 +2949,7 @@ FileManager.prototype = {
     var selectAllCheckbox =
         this.document_.getElementById('select-all-checkbox');
     if (selectAllCheckbox)
-      selectAllCheckbox.checked = this.areAllItemsSelected();
+      this.updateSelectAllCheckboxState_(selectAllCheckbox);
   };
 
   FileManager.prototype.updateOkButton_ = function(event) {
