@@ -78,17 +78,6 @@ body {
   background-color: $2;  /* COLOR_NTP_BACKGROUND */
 }
 
-/* Bookmarks ******************************************************************/
-
-.bookmark,
-.bookmark > .title {
-  color: $8;  /* COLOR_NTP_TEXT */
-}
-
-#bookmarks-title-wrapper {
-  border-bottom-color: rgba($22, 0.3);  /* COLOR_NTP_SECTION_BORDER */
-}
-
 /* Most Visited ***************************************************************/
 
 .most-visited,
