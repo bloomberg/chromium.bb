@@ -332,9 +332,12 @@ bool IncognitoIsForced(const CommandLine& command_line,
 
 SessionStartupPref GetSessionStartupPref(const CommandLine& command_line,
                                          Profile* profile) {
+  PrefService* pref_service = g_browser_process->local_state();
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(profile);
-  if (command_line.HasSwitch(switches::kRestoreLastSession))
+  if (command_line.HasSwitch(switches::kRestoreLastSession) ||
+      pref_service->GetBoolean(prefs::kWasRestarted)) {
     pref.type = SessionStartupPref::LAST;
+  }
   if (pref.type == SessionStartupPref::LAST &&
       IncognitoIsForced(command_line, profile->GetPrefs())) {
     // We don't store session information when incognito. If the user has

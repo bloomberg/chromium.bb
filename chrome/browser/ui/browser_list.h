@@ -115,7 +115,7 @@ class BrowserList {
   // CloseAllBrowsersAndExit. On ChromeOS, this tells session manager
   // that chrome is signing out, which lets session manager send
   // SIGTERM to start actual exit process.
-  static void AttemptUserExit();
+  static void AttemptUserExit(bool restart);
 
   // Starts a user initiated restart process. On platforms other than
   // chromeos, this sets a restart bit in the preference so that
@@ -131,7 +131,7 @@ class BrowserList {
   // successfully closed.
   //  Note that he exit process may be interrupted by download or
   // unload handler, and the browser may or may not exit.
-  static void AttemptExit();
+  static void AttemptExit(bool restart);
 
 #if defined(OS_CHROMEOS)
   // This is equivalent to AttemptUserExit, except that it always set
@@ -210,7 +210,7 @@ class BrowserList {
   // Helper method to remove a browser instance from a list of browsers
   static void RemoveBrowserFrom(Browser* browser, BrowserVector* browser_list);
   static void MarkAsCleanShutdown();
-  static void AttemptExitInternal();
+  static void AttemptExitInternal(bool restart);
 
   // Counter of calls to StartKeepAlive(). If non-zero, the application will
   // continue running after the last browser has exited.

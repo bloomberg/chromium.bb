@@ -218,10 +218,6 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
       else
         new_cl->AppendSwitch(i->first);
     }
-    // Ensure restore last session is set.
-    if (!new_cl->HasSwitch(switches::kRestoreLastSession))
-      new_cl->AppendSwitch(switches::kRestoreLastSession);
-
     upgrade_util::RelaunchChromeBrowser(*new_cl.get());
 #else
     NOTIMPLEMENTED();

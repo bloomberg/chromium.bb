@@ -380,7 +380,8 @@ void ProfileImpl::DoFinalInit() {
       session_restore_enabled_ &&
       (!DidLastSessionExitCleanly() ||
        CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kRestoreLastSession));
+           switches::kRestoreLastSession) ||
+       local_state->GetBoolean(prefs::kWasRestarted));
 
   // Make sure we initialize the ProfileIOData after everything else has been
   // initialized that we might be reading from the IO thread.

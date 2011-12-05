@@ -423,6 +423,7 @@ extern const char kShutdownNumProcesses[];
 extern const char kShutdownNumProcessesSlow[];
 
 extern const char kRestartLastSessionOnShutdown[];
+extern const char kWasRestarted[];
 
 extern const char kNumBookmarksOnBookmarkBar[];
 extern const char kNumFoldersOnBookmarkBar[];

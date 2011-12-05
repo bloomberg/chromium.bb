@@ -33,6 +33,7 @@ bool UseTestingIntervals() {
 // static
 void UpgradeDetector::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kRestartLastSessionOnShutdown, false);
+  prefs->RegisterBooleanPref(prefs::kWasRestarted, false);
 }
 
 int UpgradeDetector::GetIconResourceID(UpgradeNotificationIconType type) {

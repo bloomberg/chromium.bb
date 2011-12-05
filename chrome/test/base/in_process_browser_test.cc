@@ -328,6 +328,7 @@ void InProcessBrowserTest::QuitBrowsers() {
   // CloseAllBrowsersAndMayExit exits the message loop after everything has been
   // shut down properly.
   MessageLoopForUI::current()->PostTask(FROM_HERE,
-                                        base::Bind(&BrowserList::AttemptExit));
+                                        base::Bind(&BrowserList::AttemptExit,
+                                                   false));
   ui_test_utils::RunMessageLoop();
 }

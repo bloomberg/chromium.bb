@@ -396,7 +396,7 @@ void BackgroundModeManager::ExecuteCommand(int command_id) {
       break;
     case IDC_EXIT:
       UserMetrics::RecordAction(UserMetricsAction("Exit"));
-      BrowserList::AttemptExit();
+      BrowserList::AttemptExit(false);
       break;
     case IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND: {
       // Background mode must already be enabled (as otherwise this menu would

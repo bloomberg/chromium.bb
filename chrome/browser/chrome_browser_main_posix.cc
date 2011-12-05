@@ -140,7 +140,7 @@ void ShutdownDetector::ThreadMain() {
   // On ChromeOS, exiting on signal should be always clean.
   base::Closure task = base::Bind(&BrowserList::ExitCleanly);
 #else
-  base::Closure task = base::Bind(&BrowserList::AttemptExit);
+  base::Closure task = base::Bind(&BrowserList::AttemptExit, false);
 #endif
 
   if (!BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, task)) {
