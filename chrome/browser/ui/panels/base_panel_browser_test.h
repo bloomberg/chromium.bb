@@ -10,11 +10,10 @@
 #include "base/values.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/panels/auto_hiding_desktop_bar.h"
+#include "chrome/browser/ui/panels/panel.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/gfx/rect.h"
-
-class Panel;
 
 class BasePanelBrowserTest : public InProcessBrowserTest {
  public:
@@ -63,6 +62,8 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   void WaitForPanelActiveState(Panel* panel, ActiveState state);
   void WaitForWindowSizeAvailable(Panel* panel);
   void WaitForBoundsAnimationFinished(Panel* panel);
+  void WaitForExpansionStateChanged(Panel* panel,
+                                    Panel::ExpansionState expansion_state);
 
   void CreateTestTabContents(Browser* browser);
 

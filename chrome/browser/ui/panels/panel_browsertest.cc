@@ -115,23 +115,27 @@ class PanelBrowserTest : public BasePanelBrowserTest {
     EXPECT_EQ(0, panel_overflow_strip->num_panels());
 
     // Open a panel that would overflow.
-    Panel* panel4 = CreatePanelWithBounds(
+    CreatePanelParams params4(
         web_app::GenerateApplicationNameFromExtensionId(extension2->id()),
-        gfx::Rect(0, 0, 280, 200));
+        gfx::Rect(0, 0, 280, 200),
+        SHOW_AS_INACTIVE);
+    Panel* panel4 = CreatePanelWithParams(params4);
+    WaitForExpansionStateChanged(panel4, Panel::IN_OVERFLOW);
     ASSERT_EQ(4, panel_manager->num_panels());
     EXPECT_EQ(3, panel_strip->num_panels());
     EXPECT_EQ(1, panel_overflow_strip->num_panels());
-    EXPECT_EQ(Panel::IN_OVERFLOW, panel4->expansion_state());
 
     // Open another panel that would overflow.
-    Panel* panel5 = CreatePanelWithBounds(
+    CreatePanelParams params5(
         web_app::GenerateApplicationNameFromExtensionId(extension3->id()),
-        gfx::Rect(0, 0, 300, 200));
+        gfx::Rect(0, 0, 300, 200),
+        SHOW_AS_INACTIVE);
+    Panel* panel5 = CreatePanelWithParams(params5);
+    WaitForExpansionStateChanged(panel5, Panel::IN_OVERFLOW);
     ASSERT_EQ(5, panel_manager->num_panels());
     EXPECT_EQ(3, panel_strip->num_panels());
     EXPECT_EQ(2, panel_overflow_strip->num_panels());
     EXPECT_EQ(Panel::IN_OVERFLOW, panel4->expansion_state());
-    EXPECT_EQ(Panel::IN_OVERFLOW, panel5->expansion_state());
 
     // Close a visible panel. Expect an overflow panel to move over.
     CloseWindowAndWait(panel2->browser());
@@ -546,7 +550,14 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FindBar) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_CreatePanelOnOverflow) {
+// TODO(jianli): remove the guard when overflow support is enabled on other
+// platforms. http://crbug.com/105073
+#if defined(OS_WIN)
+#define MAYBE_CreatePanelOnOverflow CreatePanelOnOverflow
+#else
+#define MAYBE_CreatePanelOnOverflow DISABLED_CreatePanelOnOverflow
+#endif
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_CreatePanelOnOverflow) {
   TestCreatePanelOnOverflow();
 }
 
@@ -847,7 +858,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateSettingsMenu) {
       "http://home", "options.html");
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AutoResize) {
+// Flaky: http://crbug.com/105445
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FLAKY_AutoResize) {
   PanelManager::GetInstance()->enable_auto_sizing(true);
   PanelManager::GetInstance()->SetWorkAreaForTesting(
       gfx::Rect(0, 0, 1200, 900));  // bigger space is needed by this test

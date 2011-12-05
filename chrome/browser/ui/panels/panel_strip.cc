@@ -101,6 +101,7 @@ void PanelStrip::AddPanel(Panel* panel) {
     }
     int y = display_area_.bottom() - height;
     panel->SetPanelBounds(gfx::Rect(x, y, width, height));
+    panel->SetExpansionState(Panel::EXPANDED);
   } else {
     // Initialize the newly created panel. Does not bump any panels from strip.
     if (height == 0 && width == 0) {
@@ -149,6 +150,7 @@ void PanelStrip::AddPanel(Panel* panel) {
     panel->Initialize(gfx::Rect(x, y, width, height));
   }
 
+  DCHECK(panel->expansion_state() == Panel::EXPANDED);
   panels_.push_back(panel);
 }
 

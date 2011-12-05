@@ -157,8 +157,7 @@ bool PanelOverflowStrip::ShouldShowOverflowTitles(
 
   int width = are_overflow_titles_shown_ ? kOverflowAreaHoverWidth
                                          : display_area_.width();
-  return display_area_.x() <= mouse_position.x() &&
-         mouse_position.x() <= display_area_.x() + width &&
+  return mouse_position.x() <= display_area_.x() + width &&
          panels_.back()->GetBounds().y() <= mouse_position.y() &&
          mouse_position.y() <= display_area_.bottom();
 }

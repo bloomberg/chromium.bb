@@ -254,6 +254,17 @@ void BasePanelBrowserTest::WaitForBoundsAnimationFinished(Panel* panel) {
   EXPECT_TRUE(!panel_testing->IsAnimatingBounds());
 }
 
+void BasePanelBrowserTest::WaitForExpansionStateChanged(
+    Panel* panel, Panel::ExpansionState expansion_state) {
+  ui_test_utils::WindowedNotificationObserver signal(
+      chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
+      content::Source<Panel>(panel));
+  if (panel->expansion_state() == expansion_state)
+    return;
+  signal.Wait();
+  EXPECT_EQ(expansion_state, panel->expansion_state());
+}
+
 Panel* BasePanelBrowserTest::CreatePanelWithParams(
     const CreatePanelParams& params) {
 #if defined(OS_MACOSX)
