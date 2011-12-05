@@ -21,7 +21,7 @@ DownloadShelfContextMenuView::DownloadShelfContextMenuView(
 
 DownloadShelfContextMenuView::~DownloadShelfContextMenuView() {}
 
-bool DownloadShelfContextMenuView::Run(views::Widget* parent_widget,
+void DownloadShelfContextMenuView::Run(views::Widget* parent_widget,
                                        const gfx::Rect& rect) {
   views::MenuModelAdapter menu_model_adapter(GetMenuModel());
   menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
@@ -32,14 +32,15 @@ bool DownloadShelfContextMenuView::Run(views::Widget* parent_widget,
     position = views::MenuItemView::TOPRIGHT;
   else
     position = views::MenuItemView::TOPLEFT;
-  return menu_runner_->RunMenuAt(
+
+  // The return value of RunMenuAt indicates whether the MenuRunner was deleted
+  // while running the menu, which indicates that the containing view may have
+  // been deleted. We ignore the return value because our caller already assumes
+  // that the view could be deleted by the time we return from here.
+  ignore_result(menu_runner_->RunMenuAt(
       parent_widget,
       NULL,
       rect,
       position,
-      views::MenuRunner::HAS_MNEMONICS) == views::MenuRunner::MENU_DELETED;
-}
-
-void DownloadShelfContextMenuView::Stop() {
-  set_download_item(NULL);
+      views::MenuRunner::HAS_MNEMONICS));
 }

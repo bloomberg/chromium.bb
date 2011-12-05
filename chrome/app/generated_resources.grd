@@ -2328,11 +2328,11 @@ are declared in build/common.gypi.
       </message>
       <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_URL"
          desc="Message shown to the user to validate the download when the download url is classified to lead to malware by the safebrowsing database.">
-        This file is malicious. Do you want to keep it anyway?
+        This file appears malicious.
       </message>
       <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT"
          desc="Message shown to the user to validate the download when the download content is classified to lead to malware by safebrowsing.">
-        This file is malicious. Do you want to keep <ph name="FILE_NAME">$1<ex>malware.exe</ex></ph> anyway?
+        <ph name="FILE_NAME">$1<ex>malware.exe</ex></ph> appears malicious.
       </message>
       <message name="IDS_CONFIRM_DOWNLOAD"
                desc="Text for the button used to validate the downloading of a dangerous download.">
@@ -2449,6 +2449,18 @@ are declared in build/common.gypi.
                  desc="Download context menu resume download">
           &amp;Resume
         </message>
+        <message name="IDS_DOWNLOAD_MENU_DISCARD"
+                 desc="Download context menu discard malicious download">
+          &amp;Discard
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_KEEP"
+                 desc="Download context menu keep malicious download">
+          &amp;Keep
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_LEARN_MORE"
+                 desc="Download context menu show information about download scanning">
+          &amp;Learn more
+        </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE"
@@ -2474,6 +2486,18 @@ are declared in build/common.gypi.
         <message name="IDS_DOWNLOAD_MENU_RESUME_ITEM"
                  desc="In Title Case: Download context menu resume download">
           &amp;Resume
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_DISCARD"
+                 desc="In Title Case: Download context menu discard malicious download">
+          &amp;Discard
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_KEEP"
+                 desc="In Title Case: Download context menu keep malicious download">
+          &amp;Keep
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_LEARN_MORE"
+                 desc="In Title Case: Download context menu show information about download scanning">
+          &amp;Learn More
         </message>
       </if>
       <!-- GRIT doesn't support nesting <if>...</if> blocks, so these can't -->

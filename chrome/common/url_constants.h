@@ -293,6 +293,9 @@ extern const char kLearnMoreRegisterProtocolHandlerURL[];
 // The URL for the "Learn more" page for sync setup on the personal stuff page.
 extern const char kSyncLearnMoreURL[];
 
+// The URL for the "Learn more" page for download scanning.
+extern const char kDownloadScanningLearnMoreURL[];
+
 // "Debug" pages which are dangerous and not for general consumption.
 extern const char* const kChromeDebugURLs[];
 extern int kNumberOfChromeDebugURLs;

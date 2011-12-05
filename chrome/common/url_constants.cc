@@ -322,6 +322,9 @@ const char kLearnMoreRegisterProtocolHandlerURL[] =
 const char kSyncLearnMoreURL[] =
     "http://www.google.com/support/chrome/bin/answer.py?answer=165139";
 
+const char kDownloadScanningLearnMoreURL[] =
+    "http://www.google.com/support/chrome/bin/answer.py?answer=99020";
+
 #if defined(OS_CHROMEOS)
 const char kCloudPrintLearnMoreURL[] =
     "https://www.google.com/support/chromeos/bin/topic.py?topic=29023";
