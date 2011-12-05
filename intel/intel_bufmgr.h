@@ -145,6 +145,8 @@ drm_intel_bo *drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 						unsigned int handle);
 void drm_intel_bufmgr_gem_enable_reuse(drm_intel_bufmgr *bufmgr);
 void drm_intel_bufmgr_gem_enable_fenced_relocs(drm_intel_bufmgr *bufmgr);
+void drm_intel_bufmgr_gem_set_vma_cache_size(drm_intel_bufmgr *bufmgr,
+					     int limit);
 int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo);
 int drm_intel_gem_bo_unmap_gtt(drm_intel_bo *bo);
 int drm_intel_gem_bo_get_reloc_count(drm_intel_bo *bo);
