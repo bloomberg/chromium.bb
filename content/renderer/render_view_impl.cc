@@ -2937,6 +2937,9 @@ void RenderViewImpl::CheckPreferredSize() {
   size.set_width(static_cast<int>(size.width() * zoom_factor));
   size.set_height(static_cast<int>(size.height() * zoom_factor));
 
+  if (!size.height())
+    size.set_height(preferred_size_.height());
+
   if (size == preferred_size_)
     return;
 
