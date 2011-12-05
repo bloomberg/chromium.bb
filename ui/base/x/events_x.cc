@@ -24,6 +24,10 @@ static const int kWheelScrollAmount = 53;
 
 static const int kMinWheelButton = 4;
 #if defined(OS_CHROMEOS)
+// TODO(davemoore) For now use the button to decide how much to scroll by.
+// When we go to XI2 scroll events this won't be necessary. If this doesn't
+// happen for some reason we can better detect which devices are touchpads.
+static const int kTouchpadScrollAmount = 3;
 // Chrome OS also uses buttons 8 and 9 for scrolling.
 static const int kMaxWheelButton = 9;
 #else
@@ -312,12 +316,14 @@ int GetMouseWheelOffset(const base::NativeEvent& native_event) {
   switch (button) {
     case 4:
 #if defined(OS_CHROMEOS)
+      return kTouchpadScrollAmount;
     case 8:
 #endif
       return kWheelScrollAmount;
 
     case 5:
 #if defined(OS_CHROMEOS)
+      return -kTouchpadScrollAmount;
     case 9:
 #endif
       return -kWheelScrollAmount;
