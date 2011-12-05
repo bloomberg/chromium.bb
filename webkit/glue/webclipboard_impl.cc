@@ -5,7 +5,6 @@
 #include "webkit/glue/webclipboard_impl.h"
 
 #include "base/logging.h"
-#include "base/pickle.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
@@ -19,9 +18,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/base/clipboard/custom_data_helper.h"
 #include "webkit/glue/scoped_clipboard_writer_glue.h"
-#include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if WEBKIT_USING_CG
@@ -246,13 +243,9 @@ void WebClipboardImpl::writeDataObject(const WebDragData& data) {
   // The same is true of the other WebClipboard::write* methods.
   ScopedClipboardWriterGlue scw(client_);
 
-  WebDropData data_object(data);
   // TODO(dcheng): Properly support text/uri-list here.
-  scw.WriteText(data_object.plain_text);
-  scw.WriteHTML(data_object.text_html, "");
-  Pickle pickle;
-  ui::WriteCustomDataToPickle(data_object.custom_data, &pickle);
-  scw.WritePickledData(pickle, ui::Clipboard::GetWebCustomDataFormatType());
+  scw.WriteText(data.plainText());
+  scw.WriteHTML(data.htmlText(), "");
 }
 
 bool WebClipboardImpl::ConvertBufferType(Buffer buffer,

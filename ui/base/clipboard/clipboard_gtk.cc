@@ -17,7 +17,6 @@
 #include "base/memory/singleton.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/canvas_skia.h"
@@ -107,8 +106,6 @@ GdkFilterReturn SelectionChangeObserver::OnXEvent(GdkXEvent* xevent,
 const char kMimeTypeBitmap[] = "image/bmp";
 const char kMimeTypeMozillaURL[] = "text/x-moz-url";
 const char kMimeTypeWebkitSmartPaste[] = "chromium/x-webkit-paste";
-// TODO(dcheng): This name is temporary. See crbug.com/106449
-const char kMimeTypeWebCustomData[] = "chromium/x-web-custom-data";
 
 std::string GdkAtomToString(const GdkAtom& atom) {
   gchar* name = gdk_atom_name(atom);
@@ -393,17 +390,6 @@ void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
   if (IsFormatAvailable(GetBitmapFormatType(), buffer))
     types->push_back(UTF8ToUTF16(kMimeTypePNG));
   *contains_filenames = false;
-
-  GtkClipboard* clipboard = LookupBackingClipboard(buffer);
-  if (!clipboard)
-    return;
-
-  GtkSelectionData* data = gtk_clipboard_wait_for_contents(
-      clipboard, StringToGdkAtom(GetWebCustomDataFormatType()));
-  if (!data)
-    return;
-  ReadCustomDataTypes(data->data, data->length, types);
-  gtk_selection_data_free(data);
 }
 
 
@@ -505,16 +491,8 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
 void Clipboard::ReadCustomData(Buffer buffer,
                                const string16& type,
                                string16* result) const {
-  GtkClipboard* clipboard = LookupBackingClipboard(buffer);
-  if (!clipboard)
-    return;
-
-  GtkSelectionData* data = gtk_clipboard_wait_for_contents(
-      clipboard, StringToGdkAtom(GetWebCustomDataFormatType()));
-  if (!data)
-    return;
-  ReadCustomDataForType(data->data, data->length, type, result);
-  gtk_selection_data_free(data);
+  // TODO(dcheng): Implement this.
+  NOTIMPLEMENTED();
 }
 
 void Clipboard::ReadBookmark(string16* title, std::string* url) const {
@@ -561,11 +539,6 @@ Clipboard::FormatType Clipboard::GetBitmapFormatType() {
 // static
 Clipboard::FormatType Clipboard::GetWebKitSmartPasteFormatType() {
   return std::string(kMimeTypeWebkitSmartPaste);
-}
-
-// static
-Clipboard::FormatType Clipboard::GetWebCustomDataFormatType() {
-  return std::string(kMimeTypeWebCustomData);
 }
 
 void Clipboard::InsertMapping(const char* key,

@@ -15,7 +15,6 @@
 #include "base/utf_string_conversions.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/size.h"
@@ -30,9 +29,6 @@ NSString* const kUTTypeURLName = @"public.url-name";
 // Tells us if WebKit was the last to write to the pasteboard. There's no
 // actual data associated with this type.
 NSString* const kWebSmartPastePboardType = @"NeXT smart paste pasteboard type";
-
-// TODO(dcheng): This name is temporary. See crbug.com/106449.
-NSString* const kWebCustomDataType = @"org.chromium.web-custom-data";
 
 NSPasteboard* GetPasteboard() {
   // The pasteboard should not be nil in a UI session, but this handy DCHECK
@@ -228,13 +224,6 @@ void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
   if ([NSImage canInitWithPasteboard:GetPasteboard()])
     types->push_back(UTF8ToUTF16(kMimeTypePNG));
   *contains_filenames = false;
-
-  NSPasteboard* pb = GetPasteboard();
-  if ([[pb types] containsObject:kWebCustomDataType]) {
-    NSData* data = [pb dataForType:kWebCustomDataType];
-    if ([data length])
-      ReadCustomDataTypes([data bytes], [data length], types);
-  }
 }
 
 void Clipboard::ReadText(Clipboard::Buffer buffer, string16* result) const {
@@ -320,14 +309,8 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
 void Clipboard::ReadCustomData(Buffer buffer,
                                const string16& type,
                                string16* result) const {
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
-
-  NSPasteboard* pb = GetPasteboard();
-  if ([[pb types] containsObject:kWebCustomDataType]) {
-    NSData* data = [pb dataForType:kWebCustomDataType];
-    if ([data length])
-      ReadCustomDataForType([data bytes], [data length], type, result);
-  }
+  // TODO(dcheng): Implement this.
+  NOTIMPLEMENTED();
 }
 
 void Clipboard::ReadBookmark(string16* title, std::string* url) const {
@@ -431,11 +414,6 @@ Clipboard::FormatType Clipboard::GetBitmapFormatType() {
 // static
 Clipboard::FormatType Clipboard::GetWebKitSmartPasteFormatType() {
   return base::SysNSStringToUTF8(kWebSmartPastePboardType);
-}
-
-// static
-Clipboard::FormatType Clipboard::GetWebCustomDataFormatType() {
-  return base::SysNSStringToUTF8(kWebCustomDataType);
 }
 
 }  // namespace ui

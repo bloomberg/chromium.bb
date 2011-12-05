@@ -186,7 +186,6 @@ class UI_EXPORT Clipboard {
   // Win: MS HTML Format, Other: Generic HTML format
   static FormatType GetHtmlFormatType();
   static FormatType GetBitmapFormatType();
-  static FormatType GetWebCustomDataFormatType();
 
   // Embeds a pointer to a SharedMemory object pointed to by |bitmap_handle|
   // belonging to |process| into a shared bitmap [CBF_SMBITMAP] slot in
