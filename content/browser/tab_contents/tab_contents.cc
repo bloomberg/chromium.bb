@@ -316,7 +316,6 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
                         OnUpdateContentRestrictions)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SaveURLAs, OnSaveURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_EnumerateDirectory, OnEnumerateDirectory)
     IPC_MESSAGE_HANDLER(ViewHostMsg_JSOutOfMemory, OnJSOutOfMemory)
@@ -1151,13 +1150,6 @@ void TabContents::OnUpdateZoomLimits(int minimum_percent,
   minimum_zoom_percent_ = minimum_percent;
   maximum_zoom_percent_ = maximum_percent;
   temporary_zoom_settings_ = !remember;
-}
-
-void TabContents::OnFocusedNodeChanged(bool is_editable_node) {
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-      content::Source<TabContents>(this),
-      content::Details<const bool>(&is_editable_node));
 }
 
 void TabContents::OnEnumerateDirectory(int request_id,

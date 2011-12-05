@@ -26,7 +26,6 @@
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "net/test/test_server.h"
 
@@ -64,9 +63,9 @@
 #define MAYBE_TabsRememberFocusFindInPage FAILS_TabsRememberFocusFindInPage
 #elif defined(OS_WIN)
 // Disabled, http://crbug.com/62543.
-#define MAYBE_FocusTraversal DISABLED_FocusTraversal
+#define MAYBE_FocusTraversal FocusTraversal
 // Disabled, http://crbug.com/62544.
-#define MAYBE_FocusTraversalOnInterstitial DISABLED_FocusTraversalOnInterstitial
+#define MAYBE_FocusTraversalOnInterstitial FocusTraversalOnInterstitial
 // Flaky, http://crbug.com/62537.
 #define MAYBE_TabsRememberFocusFindInPage FLAKY_TabsRememberFocusFindInPage
 #endif
@@ -171,23 +170,6 @@ class TestInterstitialPage : public InterstitialPage {
 
   bool HasFocus() {
     return render_view_host()->view()->HasFocus();
-  }
-
- protected:
-  bool OnMessageReceived(const IPC::Message& message) {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(TestInterstitialPage, message)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
-  void OnFocusedNodeChanged(bool is_editable_node) {
-    content::NotificationService::current()->Notify(
-        content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-        content::Source<TabContents>(tab()),
-        content::Details<const bool>(&is_editable_node));
   }
 
  private:
@@ -511,8 +493,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
         ASSERT_TRUE(ui_test_utils::SendKeyPressAndWaitWithDetails(
             browser(), ui::VKEY_TAB, false, false, false, false,
             content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-            content::NotificationSource(content::Source<TabContents>(
-                browser()->GetSelectedTabContents())),
+            content::NotificationSource(content::Source<RenderViewHost>(
+                browser()->GetSelectedTabContents()->render_view_host())),
             details));
       } else {
         // On the last tab key press, the focus returns to the browser.
@@ -554,8 +536,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
         ASSERT_TRUE(ui_test_utils::SendKeyPressAndWaitWithDetails(
             browser(), ui::VKEY_TAB, false, true, false, false,
             content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-            content::NotificationSource(content::Source<TabContents>(
-                browser()->GetSelectedTabContents())),
+            content::NotificationSource(content::Source<RenderViewHost>(
+                browser()->GetSelectedTabContents()->render_view_host())),
             details));
       } else {
         // On the last tab key press, the focus returns to the browser.
@@ -638,8 +620,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
           content::NotificationService::AllSources();
       if (j < arraysize(kExpElementIDs) - 1) {
         notification_type = content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE;
-        notification_source = content::Source<TabContents>(
-            interstitial_page->tab());
+        notification_source = content::Source<RenderViewHost>(
+            interstitial_page->render_view_host());
       } else {
         // On the last tab key press, the focus returns to the browser.
         notification_type = chrome::NOTIFICATION_FOCUS_RETURNED_TO_BROWSER;
@@ -673,8 +655,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
           content::NotificationService::AllSources();
       if (j < arraysize(kExpElementIDs) - 1) {
         notification_type = content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE;
-        notification_source = content::Source<TabContents>(
-            interstitial_page->tab());
+        notification_source = content::Source<RenderViewHost>(
+            interstitial_page->render_view_host());
       } else {
         // On the last tab key press, the focus returns to the browser.
         notification_type = chrome::NOTIFICATION_FOCUS_RETURNED_TO_BROWSER;

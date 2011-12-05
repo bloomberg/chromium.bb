@@ -564,6 +564,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   void OnUpdateDragCursor(WebKit::WebDragOperation drag_operation);
   void OnTargetDropACK();
   void OnTakeFocus(bool reverse);
+  void OnFocusedNodeChanged(bool is_editable_node);
   void OnAddMessageToConsole(int32 level,
                              const string16& message,
                              int32 line_no,
