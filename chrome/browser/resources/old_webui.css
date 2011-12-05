@@ -8,8 +8,6 @@
  */
 
 body {
-  background-color: white;
-  color: black;
   margin: 10px 10px 34px 10px;
 }
 
@@ -31,10 +29,4 @@ html[dir='rtl'] .form {
   -webkit-margin-start: 12px;
   float: left;
   margin-top: 22px;
-}
-
-.page-navigation {
-  -webkit-margin-end: 4px;
-  background-color: #ebeff9;
-  padding: 8px;
 }

@@ -3,24 +3,16 @@
  * found in the LICENSE file.
  */
 
-#results-separator {
+#results-summary {
   border-top: 1px solid rgb(156, 194, 239);
   background-color: rgb(235, 239, 249);
   font-weight: bold;
   padding: 3px;
   margin-bottom: -8px;
   margin-top: 12px;
-}
-
-#results-separator table {
-  width: 100%;
-}
-
-#results-summary {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  width: 50%;
 }
 
 #editing-controls button {
@@ -229,4 +221,10 @@ html[dir='rtl'] .entry .title {
 .fade-out {
   -webkit-transition: opacity 200ms;
   opacity: 0;
+}
+
+.page-navigation {
+  -webkit-margin-end: 4px;
+  background-color: rgb(235, 239, 249);
+  padding: 8px;
 }
