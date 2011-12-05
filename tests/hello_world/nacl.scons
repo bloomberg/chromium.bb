@@ -6,8 +6,18 @@
 Import('env')
 import os
 
+# Since we test that the hello world executable size is
+# under 64K (for glibc), be sure not to link in the
+# pnacl IRT shim, which is at least 50KB.
+extra_hello_flags = []
+if env.Bit('bitcode'):
+  # --pnacl-allow-native allows us to specify --noirtshim.
+  extra_hello_flags += ['--pnacl-allow-native',
+                        '-Wt,--noirtshim']
+
 hello_nexe = env.ComponentProgram('hello_world', 'hello_world.c',
-                                  EXTRA_LIBS=['${NONIRT_LIBS}'])
+                                  EXTRA_LIBS=['${NONIRT_LIBS}'],
+                                  EXTRA_LINKFLAGS=extra_hello_flags)
 node = env.CommandSelLdrTestNacl(
     'hello_world_test.out',
     hello_nexe,
