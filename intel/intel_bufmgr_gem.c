@@ -156,6 +156,7 @@ struct _drm_intel_bo_gem {
 	void *mem_virtual;
 	/** GTT virtual address for the buffer, saved across map/unmap cycles */
 	void *gtt_virtual;
+	int map_count;
 
 	/** BO cache list */
 	drmMMListHead head;
@@ -879,11 +880,6 @@ drm_intel_gem_bo_free(drm_intel_bo *bo)
 	struct drm_gem_close close;
 	int ret;
 
-	if (bo_gem->mem_virtual)
-		munmap(bo_gem->mem_virtual, bo_gem->bo.size);
-	if (bo_gem->gtt_virtual)
-		munmap(bo_gem->gtt_virtual, bo_gem->bo.size);
-
 	/* Close this object */
 	memset(&close, 0, sizeof(close));
 	close.handle = bo_gem->gem_handle;
@@ -1017,6 +1013,7 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 		struct drm_i915_gem_mmap mmap_arg;
 
 		DBG("bo_map: %d (%s)\n", bo_gem->gem_handle, bo_gem->name);
+		assert(bo_gem->map_count == 0);
 
 		memset(&mmap_arg, 0, sizeof(mmap_arg));
 		mmap_arg.handle = bo_gem->gem_handle;
@@ -1038,6 +1035,7 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 	DBG("bo_map: %d (%s) -> %p\n", bo_gem->gem_handle, bo_gem->name,
 	    bo_gem->mem_virtual);
 	bo->virtual = bo_gem->mem_virtual;
+	bo_gem->map_count++;
 
 	set_domain.handle = bo_gem->gem_handle;
 	set_domain.read_domains = I915_GEM_DOMAIN_CPU;
@@ -1077,6 +1075,7 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 
 		DBG("bo_map_gtt: mmap %d (%s)\n", bo_gem->gem_handle,
 		    bo_gem->name);
+		assert(bo_gem->map_count == 0);
 
 		memset(&mmap_arg, 0, sizeof(mmap_arg));
 		mmap_arg.handle = bo_gem->gem_handle;
@@ -1112,6 +1111,7 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 	}
 
 	bo->virtual = bo_gem->gtt_virtual;
+	bo_gem->map_count++;
 
 	DBG("bo_map_gtt: %d (%s) -> %p\n", bo_gem->gem_handle, bo_gem->name,
 	    bo_gem->gtt_virtual);
@@ -1161,7 +1161,22 @@ static int drm_intel_gem_bo_unmap(drm_intel_bo *bo)
 		bo_gem->mapped_cpu_write = false;
 	}
 
-	bo->virtual = NULL;
+	/* We need to unmap after every innovation as we cannot track
+	 * an open vma for every bo as that will exhaasut the system
+	 * limits and cause later failures.
+	 */
+	if (--bo_gem->map_count == 0) {
+		if (bo_gem->mem_virtual) {
+			munmap(bo_gem->mem_virtual, bo_gem->bo.size);
+			bo_gem->mem_virtual = NULL;
+		}
+		if (bo_gem->gtt_virtual) {
+			munmap(bo_gem->gtt_virtual, bo_gem->bo.size);
+			bo_gem->gtt_virtual = NULL;
+		}
+
+		bo->virtual = NULL;
+	}
 	pthread_mutex_unlock(&bufmgr_gem->lock);
 
 	return ret;
