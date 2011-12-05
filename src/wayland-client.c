@@ -352,6 +352,7 @@ wl_display_connect(const char *name)
 		flags = fcntl(display->fd, F_GETFD);
 		if (flags != -1)
 			fcntl(display->fd, F_SETFD, flags | FD_CLOEXEC);
+		unsetenv("WAYLAND_SOCKET");
 	} else if (connect_to_socket(display, name) < 0) {
 		free(display);
 		return NULL;
