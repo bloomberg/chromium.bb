@@ -148,10 +148,6 @@ class TokenService : public GaiaAuthConsumer,
   // Results come back via event channel. Services can also poll before events
   // are issued.
   void StartFetchingTokens();
-  // Fetch tokens for only those services for which we are missing tokens.
-  // This can happen when new services are added in new Chrome versions and the
-  // user is already logged in.
-  void StartFetchingMissingTokens();
   void StartFetchingOAuthTokens();
   virtual bool HasTokenForService(const char* service) const;
   const std::string& GetTokenForService(const char* const service) const;
@@ -249,7 +245,7 @@ class TokenService : public GaiaAuthConsumer,
   // TokenService can continue to do some degree of ClientLogin token
   // management, mostly related to persistence while Sync and possibly other
   // services are using OAuth-based authentication.
-  static const int kNumServices = 7;
+  static const int kNumServices = 6;
   // List of services that are capable of ClientLogin-based authentication.
   static const char* kServices[kNumServices];
   // A bunch of fetchers suitable for ClientLogin token issuing. We don't care

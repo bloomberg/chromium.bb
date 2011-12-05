@@ -27,7 +27,6 @@ const char* TokenService::kServices[] = {
   GaiaConstants::kSyncService,
   GaiaConstants::kTalkService,
   GaiaConstants::kDeviceManagementService,
-  GaiaConstants::kCWSService,
   GaiaConstants::kLSOService,
 };
 
@@ -197,21 +196,6 @@ void TokenService::StartFetchingTokens() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(AreCredentialsValid());
   for (int i = 0; i < kNumServices; i++) {
-    fetchers_[i].reset(new GaiaAuthFetcher(this, source_, getter_));
-    fetchers_[i]->StartIssueAuthToken(credentials_.sid,
-                                      credentials_.lsid,
-                                      kServices[i]);
-  }
-}
-
-void TokenService::StartFetchingMissingTokens() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(AreCredentialsValid());
-  for (int i = 0; i < kNumServices; i++) {
-    // if token exists for a service, skip for that service.
-    if (HasTokenForService(kServices[i]))
-      continue;
-
     fetchers_[i].reset(new GaiaAuthFetcher(this, source_, getter_));
     fetchers_[i]->StartIssueAuthToken(credentials_.sid,
                                       credentials_.lsid,

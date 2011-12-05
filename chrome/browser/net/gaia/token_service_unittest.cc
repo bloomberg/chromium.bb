@@ -378,60 +378,6 @@ TEST_F(TokenServiceTest, FullIntegration) {
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kTalkService));
 }
 
-TEST_F(TokenServiceTest, FullIntegrationNewServicesAdded) {
-  std::string token1 = "token1";
-
-  for (int i = 0; i < TokenService::kNumServices; ++i) {
-    const char* service = TokenService::kServices[i];
-    EXPECT_FALSE(service_.HasTokenForService(service));
-  }
-  {
-    MockFactory<MockFetcher> factory;
-    factory.set_results(token1);
-    service_.StartFetchingTokens();
-  }
-
-  for (int i = 0; i < TokenService::kNumServices; ++i) {
-    const char* service = TokenService::kServices[i];
-    EXPECT_TRUE(service_.HasTokenForService(service));
-    EXPECT_EQ(token1, service_.GetTokenForService(service));
-  }
-
-  // Clear tokens for some services to simulate that those services got
-  // added in a new Chrome release.
-  service_.token_map_.erase(GaiaConstants::kLSOService);
-  service_.token_map_.erase(GaiaConstants::kCWSService);
-
-  for (int i = 0; i < TokenService::kNumServices; ++i) {
-    const char* service = TokenService::kServices[i];
-    if (service == GaiaConstants::kLSOService ||
-        service == GaiaConstants::kCWSService) {
-      EXPECT_FALSE(service_.HasTokenForService(service));
-    } else {
-      EXPECT_TRUE(service_.HasTokenForService(service));
-      EXPECT_EQ(token1, service_.GetTokenForService(service));
-    }
-  }
-
-  std::string token2 = "token2";
-  {
-    MockFactory<MockFetcher> factory;
-    factory.set_results(token2);
-    service_.StartFetchingMissingTokens();
-  }
-
-  for (int i = 0; i < TokenService::kNumServices; ++i) {
-    const char* service = TokenService::kServices[i];
-    EXPECT_TRUE(service_.HasTokenForService(service));
-    if (service == GaiaConstants::kLSOService ||
-        service == GaiaConstants::kCWSService) {
-      EXPECT_EQ(token2, service_.GetTokenForService(service));
-    } else {
-      EXPECT_EQ(token1, service_.GetTokenForService(service));
-    }
-  }
-}
-
 TEST_F(TokenServiceTest, LoadTokensIntoMemoryBasic) {
   // Validate that the method sets proper data in notifications and map.
   std::map<std::string, std::string> db_tokens;

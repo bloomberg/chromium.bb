@@ -33,8 +33,7 @@ const char kDeviceManagementService[] = "mobilesync";
 const char kDeviceManagementServiceOAuth[] =
     "https://www.googleapis.com/auth/chromeosdevicemanagement";
 
-// Service/scope names for chrome web store.
-const char kCWSService[] = "chromewebstore";
+// OAuth scopes for chrome web store.
 const char kCWSNotificationScope[] =
     "https://www.googleapis.com/auth/chromewebstore.notification";
 
