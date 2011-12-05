@@ -341,7 +341,6 @@
                'stuartmorgan+watch@chromium.org'],
     'worker': ['jam@chromium.org'],
     'extension': ['aa@chromium.org',
-                  'erikkay@chromium.org',
                   'mihaip+watch@chromium.org',
                   'jstritar+watch@chromium.org'],
     'net': ['darin-cc@chromium.org', 'cbentzel+watch@chromium.org'],
