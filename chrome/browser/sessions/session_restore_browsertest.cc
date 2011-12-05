@@ -158,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
     const TabRestoreService::Tab& tab = *it;
     // If this tab held url2, then restore this single tab.
     if (tab.navigations[0].virtual_url() == url2) {
-      service->RestoreEntryById(NULL, tab.id, false);
+      service->RestoreEntryById(NULL, tab.id, UNKNOWN);
       break;
     }
   }
@@ -193,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, WindowWithOneTab) {
       static_cast<TabRestoreService::Tab*>(service->entries().front());
 
   // Restore the tab.
-  service->RestoreEntryById(NULL, tab->id, false);
+  service->RestoreEntryById(NULL, tab->id, UNKNOWN);
 
   // Make sure the restore was successful.
   EXPECT_EQ(0U, service->entries().size());

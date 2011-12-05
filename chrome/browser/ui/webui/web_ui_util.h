@@ -8,6 +8,9 @@
 
 #include <string>
 
+#include "base/values.h"
+#include "webkit/glue/window_open_disposition.h"
+
 class SkBitmap;
 
 namespace web_ui_util {
@@ -23,6 +26,12 @@ std::string GetImageDataUrl(const SkBitmap& bitmap);
 // image. Returns empty string if a resource does not exist for given
 // |resource_id|.
 std::string GetImageDataUrlFromResource(int resource_id);
+
+// Extracts a disposition from click event arguments. |args| should contain
+// an integer button and booleans alt key, ctrl key, meta key, and shift key
+// (in that order), starting at |start_index|.
+WindowOpenDisposition GetDispositionFromClick(const ListValue* args,
+                                              int start_index);
 
 }  // namespace web_ui_util
 
