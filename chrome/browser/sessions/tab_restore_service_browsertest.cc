@@ -616,3 +616,24 @@ TEST_F(TabRestoreServiceTest, PruneEntries) {
       static_cast<Tab*>(service_->entries_.front())->
           navigations[1].virtual_url());
 }
+
+// Regression test for crbug.com/106082
+TEST_F(TabRestoreServiceTest, PruneIsCalled) {
+  CreateSessionServiceWithOneWindow(false);
+
+  SessionServiceFactory::GetForProfile(profile())->
+      MoveCurrentSessionToLastSession();
+
+  profile()->set_restored_last_session(true);
+
+  const size_t max_entries = TabRestoreService::kMaxEntries;
+  for (size_t i = 0; i < max_entries + 5; i++) {
+    NavigateAndCommit(GURL(StringPrintf("http://%d", static_cast<int>(i))));
+    service_->CreateHistoricalTab(&controller(), -1);
+  }
+
+  EXPECT_EQ(max_entries, service_->entries_.size());
+  // This should not crash.
+  service_->LoadTabsFromLastSession();
+  EXPECT_EQ(max_entries, service_->entries_.size());
+}

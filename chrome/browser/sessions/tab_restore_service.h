@@ -177,6 +177,7 @@ class TabRestoreService : public BaseSessionService {
  private:
   friend class TabRestoreServiceTest;
   FRIEND_TEST_ALL_PREFIXES(TabRestoreServiceTest, PruneEntries);
+  FRIEND_TEST_ALL_PREFIXES(TabRestoreServiceTest, PruneIsCalled);
 
   // Used to indicate what has loaded.
   enum LoadState {

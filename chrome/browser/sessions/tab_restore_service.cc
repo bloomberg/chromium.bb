@@ -537,6 +537,8 @@ void TabRestoreService::AddEntry(Entry* entry, bool notify, bool to_front) {
   else
     entries_.push_back(entry);
 
+  PruneEntries();
+
   if (notify)
     NotifyTabsChanged();
 
@@ -1121,7 +1123,7 @@ void TabRestoreService::LoadStateChanged() {
   // We're done loading.
   load_state_ ^= LOADING;
 
-  if (entries_.size() == kMaxEntries) {
+  if (staging_entries_.empty() || entries_.size() >= kMaxEntries) {
     STLDeleteElements(&staging_entries_);
     return;
   }
@@ -1130,7 +1132,9 @@ void TabRestoreService::LoadStateChanged() {
     // If we add all the staged entries we'll end up with more than
     // kMaxEntries. Delete entries such that we only end up with
     // at most kMaxEntries.
-    DCHECK(entries_.size() < kMaxEntries);
+    int surplus = kMaxEntries - entries_.size();
+    CHECK_LE(0, surplus);
+    CHECK_GE(static_cast<int>(staging_entries_.size()), surplus);
     STLDeleteContainerPointers(
         staging_entries_.begin() + (kMaxEntries - entries_.size()),
         staging_entries_.end());
