@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/shared_memory.h"
+#include "base/string16.h"
 #include "content/public/renderer/render_thread.h"
 #include "ipc/ipc_test_sink.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
@@ -28,6 +29,10 @@ class MockRenderThread : public content::RenderThread {
 
   // Provides access to the messages that have been received by this thread.
   IPC::TestSink& sink() { return sink_; }
+
+  // Helpers for embedders to know when content IPC messages are received, since
+  // they don't have access to content IPC files.
+  void VerifyRunJavaScriptMessageSend(const string16& expected_alert_message);
 
   // content::RenderThread implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;

@@ -11,7 +11,6 @@
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
 #include "chrome/test/base/chrome_render_view_test.h"
-#include "content/common/view_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::MiscellaneousBindings;
@@ -87,14 +86,8 @@ TEST_F(ChromeRenderViewTest, ExtensionMessagesOpenChannel) {
       kPortId, "{\"val\": 42}", NULL);
 
   // Verify that we got it.
-  const IPC::Message* alert_msg =
-      render_thread_->sink().GetUniqueMessageMatching(
-          ViewHostMsg_RunJavaScriptMessage::ID);
-  ASSERT_TRUE(alert_msg);
-  iter = IPC::SyncMessage::GetDataIterator(alert_msg);
-  ViewHostMsg_RunJavaScriptMessage::SendParam alert_param;
-  ASSERT_TRUE(IPC::ReadParam(alert_msg, &iter, &alert_param));
-  EXPECT_EQ(ASCIIToUTF16("content got: 42"), alert_param.a);
+  render_thread_->VerifyRunJavaScriptMessageSend(
+      ASCIIToUTF16("content got: 42"));
 }
 
 // Tests that the bindings for handling a new channel connection and channel
@@ -143,25 +136,13 @@ TEST_F(ChromeRenderViewTest, ExtensionMessagesOnConnect) {
       kPortId, "{\"val\": 42}", NULL);
 
   // Verify that we got it.
-  const IPC::Message* alert_msg =
-      render_thread_->sink().GetUniqueMessageMatching(
-          ViewHostMsg_RunJavaScriptMessage::ID);
-  ASSERT_TRUE(alert_msg);
-  void* iter = IPC::SyncMessage::GetDataIterator(alert_msg);
-  ViewHostMsg_RunJavaScriptMessage::SendParam alert_param;
-  ASSERT_TRUE(IPC::ReadParam(alert_msg, &iter, &alert_param));
-  EXPECT_EQ(ASCIIToUTF16("got: 42"), alert_param.a);
+  render_thread_->VerifyRunJavaScriptMessageSend(ASCIIToUTF16("got: 42"));
 
   // Now simulate the channel closing.
   render_thread_->sink().ClearMessages();
   DispatchOnDisconnect(extension_dispatcher_->v8_context_set(), kPortId);
 
   // Verify that we got it.
-  alert_msg =
-      render_thread_->sink().GetUniqueMessageMatching(
-          ViewHostMsg_RunJavaScriptMessage::ID);
-  ASSERT_TRUE(alert_msg);
-  iter = IPC::SyncMessage::GetDataIterator(alert_msg);
-  ASSERT_TRUE(IPC::ReadParam(alert_msg, &iter, &alert_param));
-  EXPECT_EQ(ASCIIToUTF16("disconnected: 24"), alert_param.a);
+  render_thread_->VerifyRunJavaScriptMessageSend(
+      ASCIIToUTF16("disconnected: 24"));
 }

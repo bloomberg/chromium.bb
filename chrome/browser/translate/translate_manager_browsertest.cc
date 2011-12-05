@@ -28,7 +28,6 @@
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/test/notification_observer_mock.h"
