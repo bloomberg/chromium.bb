@@ -163,7 +163,7 @@ Page.prototype.getResultDOM = function(searchResultFlag) {
   node.appendChild(entryBox);
 
   if (searchResultFlag) {
-    time.textContent = this.dateShort;
+    time.appendChild(document.createTextNode(this.dateShort));
     var snippet = createElementWithClassName('div', 'snippet');
     this.addHighlightedText_(snippet,
                              this.snippet_,

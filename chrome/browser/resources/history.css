@@ -92,11 +92,17 @@ html[dir=rtl] .entry-box {
 }
 
 .snippet {
-  -webkit-margin-start: 90px; /* Align it with .domain. */
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  -webkit-margin-start: 110px;
   clear: both;
+  color: rgb(34, 34, 34);
+  display: -webkit-box;
   font-size: 12px;
   line-height: 1.6em;
   margin-bottom: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .entry .domain {
@@ -134,7 +140,14 @@ html[dir='rtl'] .entry .title {
 
 .entry .time {
   color: #9a9a9a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   width: 90px;
+}
+
+.search-results .time {
+  width: 110px;
 }
 
 .entry input[type=checkbox] {
