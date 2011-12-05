@@ -37,6 +37,8 @@ const char DeviceManagementBackendImpl::kParamUserAffiliation[] =
 // String constants for the device and app type we report to the server.
 const char DeviceManagementBackendImpl::kValueAppType[] = "Chrome";
 const char DeviceManagementBackendImpl::kValueDeviceType[] = "2";
+const char DeviceManagementBackendImpl::kValueRequestAutoEnrollment[] =
+    "enterprise_check";
 const char DeviceManagementBackendImpl::kValueRequestPolicy[] = "policy";
 const char DeviceManagementBackendImpl::kValueRequestRegister[] = "register";
 const char DeviceManagementBackendImpl::kValueRequestUnregister[] =
@@ -457,6 +459,43 @@ class DeviceManagementPolicyJob : public DeviceManagementJobBase {
   DISALLOW_COPY_AND_ASSIGN(DeviceManagementPolicyJob);
 };
 
+// Handles auto enrollment request jobs. These are used to determine if a new
+// ChromiumOS device should automatically enter the enterprise enrollment screen
+// during the OOBE flow.
+class DeviceManagementAutoEnrollmentJob : public DeviceManagementJobBase {
+ public:
+  DeviceManagementAutoEnrollmentJob(
+      DeviceManagementBackendImpl* backend_impl,
+      const std::string& device_id,
+      const em::DeviceAutoEnrollmentRequest& request,
+      DeviceManagementBackend::DeviceAutoEnrollmentResponseDelegate* delegate)
+      : DeviceManagementJobBase(
+          backend_impl,
+          DeviceManagementBackendImpl::kValueRequestAutoEnrollment,
+          device_id),
+        delegate_(delegate) {
+    em::DeviceManagementRequest request_wrapper;
+    request_wrapper.mutable_auto_enrollment_request()->CopyFrom(request);
+    SetPayload(request_wrapper);
+  }
+  virtual ~DeviceManagementAutoEnrollmentJob() {}
+
+ private:
+  // DeviceManagementJobBase overrides.
+  virtual void OnError(DeviceManagementBackend::ErrorCode error) OVERRIDE {
+    delegate_->OnError(error);
+  }
+  virtual void OnResponse(
+      const em::DeviceManagementResponse& response) OVERRIDE {
+    delegate_->HandleAutoEnrollmentResponse(
+        response.auto_enrollment_response());
+  }
+
+  DeviceManagementBackend::DeviceAutoEnrollmentResponseDelegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceManagementAutoEnrollmentJob);
+};
+
 DeviceManagementBackendImpl::DeviceManagementBackendImpl(
     DeviceManagementService* service)
     : service_(service) {
@@ -569,6 +608,14 @@ void DeviceManagementBackendImpl::ProcessPolicyRequest(
   AddJob(new DeviceManagementPolicyJob(this, device_management_token, device_id,
                                        UserAffiliationToString(affiliation),
                                        request, delegate));
+}
+
+void DeviceManagementBackendImpl::ProcessAutoEnrollmentRequest(
+    const std::string& device_id,
+    const em::DeviceAutoEnrollmentRequest& request,
+    DeviceAutoEnrollmentResponseDelegate* delegate) {
+  AddJob(new DeviceManagementAutoEnrollmentJob(this, device_id, request,
+                                               delegate));
 }
 
 // static

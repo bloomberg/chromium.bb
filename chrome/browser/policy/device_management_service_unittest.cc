@@ -165,6 +165,23 @@ TEST_P(DeviceManagementServiceFailedRequestTest, PolicyRequest) {
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
+TEST_P(DeviceManagementServiceFailedRequestTest, AutoEnrollmentRequest) {
+  DeviceAutoEnrollmentResponseDelegateMock mock;
+  EXPECT_CALL(mock, OnError(GetParam().expected_error_));
+  em::DeviceAutoEnrollmentRequest request;
+  request.set_modulus(1);
+  request.set_remainder(0);
+  backend_->ProcessAutoEnrollmentRequest(kDeviceId, request, &mock);
+  TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+
+  fetcher->set_url(GURL(kServiceUrl));
+  fetcher->set_status(GetParam().request_status_);
+  fetcher->set_response_code(GetParam().http_status_);
+  fetcher->SetResponseString(GetParam().response_);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+}
+
 INSTANTIATE_TEST_CASE_P(
     DeviceManagementServiceFailedRequestTestInstance,
     DeviceManagementServiceFailedRequestTest,

@@ -44,6 +44,7 @@ Example:
 """
 
 import cgi
+import hashlib
 import logging
 import os
 import random
@@ -70,6 +71,9 @@ import chrome_device_policy_pb2 as dp
 
 # ASN.1 object identifier for PKCS#1/RSA.
 PKCS1_RSA_OID = '\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01'
+
+# SHA256 sum of "0".
+SHA256_0 = hashlib.sha256('0').digest()
 
 class RequestHandler(object):
   """Decodes and handles device management requests from clients.
@@ -144,6 +148,8 @@ class RequestHandler(object):
       return self.ProcessUnregister(rmsg.unregister_request)
     elif request_type == 'policy' or request_type == 'ping':
       return self.ProcessPolicy(rmsg.policy_request, request_type)
+    elif request_type == 'enterprise_check':
+      return self.ProcessAutoEnrollment(rmsg.auto_enrollment_request)
     else:
       return (400, 'Invalid request parameter')
 
@@ -253,6 +259,39 @@ class RequestHandler(object):
           return self.ProcessCloudPolicy(request)
       else:
         return (400, 'Invalid policy_type')
+
+  def ProcessAutoEnrollment(self, msg):
+    """Handles an auto-enrollment check request.
+
+    The reply depends on the value of the modulus:
+      1: replies with no new modulus and the sha256 hash of "0"
+      2: replies with a new modulus, 4.
+      4: replies with a new modulus, 2.
+      8: fails with error 400.
+      anything else: replies with no new modulus and an empty list of hashes
+
+    These allow the client to pick the testing scenario its wants to simulate.
+
+    Args:
+      msg: The DeviceAutoEnrollmentRequest message received from the client.
+
+    Returns:
+      A tuple of HTTP status code and response data to send to the client.
+    """
+    auto_enrollment_response = dm.DeviceAutoEnrollmentResponse()
+
+    if msg.modulus == 1:
+      auto_enrollment_response.hashes.append(SHA256_0)
+    elif msg.modulus == 2:
+      auto_enrollment_response.modulus = 4
+    elif msg.modulus == 4:
+      auto_enrollment_response.modulus = 2
+    elif msg.modulus == 8:
+      return (400, 'Server error')
+
+    response = dm.DeviceManagementResponse()
+    response.auto_enrollment_response.CopyFrom(auto_enrollment_response)
+    return (200, response.SerializeToString())
 
   def SetProtobufMessageField(self, group_message, field, field_value):
     '''Sets a field in a protobuf message.

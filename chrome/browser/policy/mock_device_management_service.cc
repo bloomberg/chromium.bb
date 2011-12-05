@@ -41,6 +41,13 @@ void ProxyDeviceManagementBackend::ProcessPolicyRequest(
                                  affiliation, request, delegate);
 }
 
+void ProxyDeviceManagementBackend::ProcessAutoEnrollmentRequest(
+    const std::string& device_id,
+    const em::DeviceAutoEnrollmentRequest& request,
+    DeviceAutoEnrollmentResponseDelegate* delegate) {
+  backend_->ProcessAutoEnrollmentRequest(device_id, request, delegate);
+}
+
 MockDeviceManagementService::MockDeviceManagementService()
     : DeviceManagementService("") {}
 

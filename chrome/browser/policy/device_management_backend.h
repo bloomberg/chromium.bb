@@ -99,6 +99,21 @@ class DeviceManagementBackend : base::NonThreadSafe {
     DISALLOW_COPY_AND_ASSIGN(DevicePolicyResponseDelegate);
   };
 
+  class DeviceAutoEnrollmentResponseDelegate {
+   public:
+    virtual ~DeviceAutoEnrollmentResponseDelegate() {}
+
+    virtual void HandleAutoEnrollmentResponse(
+        const em::DeviceAutoEnrollmentResponse& response) = 0;
+    virtual void OnError(ErrorCode code) = 0;
+
+   protected:
+    DeviceAutoEnrollmentResponseDelegate() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(DeviceAutoEnrollmentResponseDelegate);
+  };
+
   virtual ~DeviceManagementBackend() {}
 
   virtual void ProcessRegisterRequest(
@@ -120,6 +135,11 @@ class DeviceManagementBackend : base::NonThreadSafe {
       CloudPolicyDataStore::UserAffiliation user_affiliation,
       const em::DevicePolicyRequest& request,
       DevicePolicyResponseDelegate* delegate) = 0;
+
+  virtual void ProcessAutoEnrollmentRequest(
+      const std::string& device_id,
+      const em::DeviceAutoEnrollmentRequest& request,
+      DeviceAutoEnrollmentResponseDelegate* delegate) = 0;
 
  protected:
   DeviceManagementBackend() {}

@@ -44,6 +44,17 @@ class DevicePolicyResponseDelegateMock
   MOCK_METHOD1(OnError, void(DeviceManagementBackend::ErrorCode error));
 };
 
+class DeviceAutoEnrollmentResponseDelegateMock
+    : public DeviceManagementBackend::DeviceAutoEnrollmentResponseDelegate {
+ public:
+  DeviceAutoEnrollmentResponseDelegateMock();
+  virtual ~DeviceAutoEnrollmentResponseDelegateMock();
+
+  MOCK_METHOD1(HandleAutoEnrollmentResponse,
+               void(const em::DeviceAutoEnrollmentResponse&));
+  MOCK_METHOD1(OnError, void(DeviceManagementBackend::ErrorCode error));
+};
+
 }  // namespace policy
 
 #endif  // CHROME_BROWSER_POLICY_DEVICE_MANAGEMENT_BACKEND_MOCK_H_

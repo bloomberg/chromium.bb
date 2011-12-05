@@ -18,4 +18,10 @@ DevicePolicyResponseDelegateMock::DevicePolicyResponseDelegateMock() {}
 
 DevicePolicyResponseDelegateMock::~DevicePolicyResponseDelegateMock() {}
 
+DeviceAutoEnrollmentResponseDelegateMock::
+    DeviceAutoEnrollmentResponseDelegateMock() {}
+
+DeviceAutoEnrollmentResponseDelegateMock::
+    ~DeviceAutoEnrollmentResponseDelegateMock() {}
+
 }  // namespace policy

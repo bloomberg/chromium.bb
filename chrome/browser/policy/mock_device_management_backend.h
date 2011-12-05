@@ -49,6 +49,11 @@ class MockDeviceManagementBackend : public DeviceManagementBackend {
       const em::DevicePolicyRequest& request,
       DevicePolicyResponseDelegate* delegate));
 
+  MOCK_METHOD3(ProcessAutoEnrollmentRequest, void(
+      const std::string& device_id,
+      const em::DeviceAutoEnrollmentRequest& request,
+      DeviceAutoEnrollmentResponseDelegate* delegate));
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDeviceManagementBackend);
 };

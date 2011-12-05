@@ -6,8 +6,6 @@
 #include "chrome/browser/policy/device_management_backend_mock.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/common/url_fetcher.h"
 #include "net/test/test_server.h"
@@ -39,6 +37,9 @@ const char kServiceResponsePolicy[] =
 // Successful unregister response.
 const char kServiceResponseUnregister[] =
     "\x08\x00\x22\x00";
+// Auto-enrollment response with no modulus and no hashes.
+const char kServiceResponseAutoEnrollment[] = "\x42\x00";
+
 
 #define PROTO_STRING(name) (std::string(name, arraysize(name) - 1))
 
@@ -138,6 +139,20 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
 
     MessageLoop::current()->Run();
   }
+
+  {
+    CannedResponseInterceptor interceptor(
+        GURL(kServiceUrl), PROTO_STRING(kServiceResponseAutoEnrollment));
+    DeviceAutoEnrollmentResponseDelegateMock delegate;
+    EXPECT_CALL(delegate, HandleAutoEnrollmentResponse(_))
+        .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
+    em::DeviceAutoEnrollmentRequest request;
+    request.set_remainder(0);
+    request.set_modulus(1);
+    backend->ProcessAutoEnrollmentRequest("testid", request, &delegate);
+
+    MessageLoop::current()->Run();
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
@@ -186,6 +201,18 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
         .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
     em::DeviceUnregisterRequest request;
     backend->ProcessUnregisterRequest(token_, "testid", request, &delegate);
+
+    MessageLoop::current()->Run();
+  }
+
+  {
+    DeviceAutoEnrollmentResponseDelegateMock delegate;
+    EXPECT_CALL(delegate, HandleAutoEnrollmentResponse(_))
+        .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
+    em::DeviceAutoEnrollmentRequest request;
+    request.set_modulus(1);
+    request.set_remainder(0);
+    backend->ProcessAutoEnrollmentRequest("testid", request, &delegate);
 
     MessageLoop::current()->Run();
   }

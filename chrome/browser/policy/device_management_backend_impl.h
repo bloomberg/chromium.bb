@@ -40,6 +40,7 @@ class DeviceManagementBackendImpl : public DeviceManagementBackend {
   // String constants for the device and app type we report to the server.
   static const char kValueAppType[];
   static const char kValueDeviceType[];
+  static const char kValueRequestAutoEnrollment[];
   static const char kValueRequestPolicy[];
   static const char kValueRequestRegister[];
   static const char kValueRequestUnregister[];
@@ -76,6 +77,10 @@ class DeviceManagementBackendImpl : public DeviceManagementBackend {
       CloudPolicyDataStore::UserAffiliation affiliation,
       const em::DevicePolicyRequest& request,
       DevicePolicyResponseDelegate* response_delegate) OVERRIDE;
+  virtual void ProcessAutoEnrollmentRequest(
+      const std::string& device_id,
+      const em::DeviceAutoEnrollmentRequest& request,
+      DeviceAutoEnrollmentResponseDelegate* delegate) OVERRIDE;
 
   // Converts a user affiliation to the appropriate query parameter value.
   static const char* UserAffiliationToString(
