@@ -30,7 +30,8 @@ class WebUITest : public TabContentsWrapperTestHarness {
 
     // Start a pending load.
     GURL new_tab_url(chrome::kChromeUINewTabURL);
-    controller->LoadURL(new_tab_url, GURL(), content::PAGE_TRANSITION_LINK,
+    controller->LoadURL(new_tab_url, content::Referrer(),
+                        content::PAGE_TRANSITION_LINK,
                         std::string());
 
     // The navigation entry should be pending with no committed entry.
@@ -51,7 +52,8 @@ class WebUITest : public TabContentsWrapperTestHarness {
 
     // Start a pending navigation to a regular page.
     GURL next_url("http://google.com/");
-    controller->LoadURL(next_url, GURL(), content::PAGE_TRANSITION_LINK,
+    controller->LoadURL(next_url, content::Referrer(),
+                        content::PAGE_TRANSITION_LINK,
                         std::string());
 
     // Check the flags. Some should reflect the new page (URL, title), some
@@ -103,12 +105,14 @@ TEST_F(WebUITest, WebUIToStandard) {
 TEST_F(WebUITest, WebUIToWebUI) {
   // Do a load (this state is tested above).
   GURL new_tab_url(chrome::kChromeUINewTabURL);
-  controller().LoadURL(new_tab_url, GURL(), content::PAGE_TRANSITION_LINK,
+  controller().LoadURL(new_tab_url, content::Referrer(),
+                       content::PAGE_TRANSITION_LINK,
                        std::string());
   rvh()->SendNavigate(1, new_tab_url);
 
   // Start another pending load of the new tab page.
-  controller().LoadURL(new_tab_url, GURL(), content::PAGE_TRANSITION_LINK,
+  controller().LoadURL(new_tab_url, content::Referrer(),
+                       content::PAGE_TRANSITION_LINK,
                        std::string());
   rvh()->SendNavigate(2, new_tab_url);
 
@@ -122,7 +126,8 @@ TEST_F(WebUITest, StandardToWebUI) {
   // Start a pending navigation to a regular page.
   GURL std_url("http://google.com/");
 
-  controller().LoadURL(std_url, GURL(), content::PAGE_TRANSITION_LINK,
+  controller().LoadURL(std_url, content::Referrer(),
+                       content::PAGE_TRANSITION_LINK,
                        std::string());
 
   // The state should now reflect the default.
@@ -136,7 +141,8 @@ TEST_F(WebUITest, StandardToWebUI) {
 
   // Start a pending load for a WebUI.
   GURL new_tab_url(chrome::kChromeUINewTabURL);
-  controller().LoadURL(new_tab_url, GURL(), content::PAGE_TRANSITION_LINK,
+  controller().LoadURL(new_tab_url, content::Referrer(),
+                       content::PAGE_TRANSITION_LINK,
                        std::string());
   EXPECT_TRUE(contents_wrapper()->favicon_tab_helper()->ShouldDisplayFavicon());
   EXPECT_TRUE(contents()->FocusLocationBarByDefault());
@@ -169,14 +175,16 @@ TEST_F(WebUITest, FocusOnNavigate) {
 
   // Load the NTP.
   GURL new_tab_url(chrome::kChromeUINewTabURL);
-  controller().LoadURL(new_tab_url, GURL(), content::PAGE_TRANSITION_LINK,
+  controller().LoadURL(new_tab_url, content::Referrer(),
+                       content::PAGE_TRANSITION_LINK,
                        std::string());
   rvh()->SendNavigate(page_id, new_tab_url);
 
   // Navigate to another page.
   GURL next_url("http://google.com/");
   int next_page_id = page_id + 1;
-  controller().LoadURL(next_url, GURL(), content::PAGE_TRANSITION_LINK,
+  controller().LoadURL(next_url, content::Referrer(),
+                       content::PAGE_TRANSITION_LINK,
                        std::string());
   TestRenderViewHost* old_rvh = rvh();
   old_rvh->SendShouldCloseACK(true);

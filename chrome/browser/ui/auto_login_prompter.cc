@@ -129,7 +129,8 @@ void AutoLoginRedirector::RedirectToMergeSession(const std::string& token) {
   navigation_controller_->LoadURL(
       GURL(GaiaUrls::GetInstance()->merge_session_url() +
           "?source=chrome&uberauth=" + token + "&" + unescaped_args),
-      GURL(), content::PAGE_TRANSITION_AUTO_BOOKMARK, std::string());
+      content::Referrer(), content::PAGE_TRANSITION_AUTO_BOOKMARK,
+      std::string());
 }
 
 

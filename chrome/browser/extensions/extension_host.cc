@@ -245,7 +245,8 @@ void ExtensionHost::LoadInitialURL() {
   }
 
   host_contents_->controller().LoadURL(
-      initial_url_, GURL(), content::PAGE_TRANSITION_LINK, std::string());
+      initial_url_, content::Referrer(), content::PAGE_TRANSITION_LINK,
+      std::string());
 }
 
 void ExtensionHost::Observe(int type,

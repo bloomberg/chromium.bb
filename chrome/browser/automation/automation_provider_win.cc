@@ -368,7 +368,10 @@ void AutomationProvider::NavigateInExternalTab(
 
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    tab->LoadURL(url, referrer, content::PAGE_TRANSITION_TYPED, std::string());
+    tab->LoadURL(
+        url,
+        content::Referrer(referrer, WebKit::WebReferrerPolicyDefault),
+        content::PAGE_TRANSITION_TYPED, std::string());
     *status = AUTOMATION_MSG_NAVIGATION_SUCCESS;
   }
 }

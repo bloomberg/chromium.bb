@@ -48,7 +48,7 @@ TabContents* TestTabContents::Clone() {
 
 void TestTabContents::NavigateAndCommit(const GURL& url) {
   controller().LoadURL(
-      url, GURL(), content::PAGE_TRANSITION_LINK, std::string());
+      url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
   GURL loaded_url(url);
   bool reverse_on_redirect = false;
   BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(

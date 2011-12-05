@@ -19,6 +19,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/referrer.h"
 
 class NavigationEntry;
 class SessionStorageNamespace;
@@ -177,14 +178,14 @@ class CONTENT_EXPORT NavigationController {
   // Loads the specified URL, specifying extra http headers to add to the
   // request.  Extra headers are separated by \n.
   void LoadURL(const GURL& url,
-               const GURL& referrer,
+               const content::Referrer& referrer,
                content::PageTransition type,
                const std::string& extra_headers);
 
   // Same as LoadURL, but for renderer-initiated navigations.  This state is
   // important for tracking whether to display pending URLs.
   void LoadURLFromRenderer(const GURL& url,
-                           const GURL& referrer,
+                           const content::Referrer& referrer,
                            content::PageTransition type,
                            const std::string& extra_headers);
 
@@ -196,7 +197,7 @@ class CONTENT_EXPORT NavigationController {
   // request.
   void TransferURL(
       const GURL& url,
-      const GURL& referrer,
+      const content::Referrer& referrer,
       content::PageTransition transition,
       const std::string& extra_headers,
       const GlobalRequestID& transferred_global_request_id,

@@ -114,7 +114,7 @@ class RenderViewHostManagerTest : public RenderViewHostTestHarness {
     // won't have committed yet, so NavigateAndCommit does the wrong thing
     // for us.
     controller().LoadURL(
-        url, GURL(), content::PAGE_TRANSITION_LINK, std::string());
+        url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
     TestRenderViewHost* old_rvh = rvh();
 
     // Simulate the ShouldClose_ACK that is received from the current renderer
@@ -165,7 +165,8 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   // a RVH that's not pending (since there is no cross-site transition), so
   // we use the committed one.
   contents2.controller().LoadURL(
-      kNtpUrl, GURL(), content::PAGE_TRANSITION_LINK, std::string());
+      kNtpUrl, content::Referrer(), content::PAGE_TRANSITION_LINK,
+      std::string());
   TestRenderViewHost* ntp_rvh2 = static_cast<TestRenderViewHost*>(
       contents2.render_manager_for_testing()->current_host());
   EXPECT_FALSE(contents2.cross_navigation_pending());
@@ -174,7 +175,8 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   // The second one is the opposite, creating a cross-site transition and
   // requiring a beforeunload ack.
   contents2.controller().LoadURL(
-      kDestUrl, GURL(), content::PAGE_TRANSITION_LINK, std::string());
+      kDestUrl, content::Referrer(), content::PAGE_TRANSITION_LINK,
+      std::string());
   EXPECT_TRUE(contents2.cross_navigation_pending());
   TestRenderViewHost* dest_rvh2 = static_cast<TestRenderViewHost*>(
       contents2.render_manager_for_testing()->pending_render_view_host());
@@ -194,7 +196,8 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   NavigateActiveAndCommit(kNtpUrl);
 
   contents2.controller().LoadURL(
-      kNtpUrl, GURL(), content::PAGE_TRANSITION_LINK, std::string());
+      kNtpUrl, content::Referrer(), content::PAGE_TRANSITION_LINK,
+      std::string());
   dest_rvh2->SendShouldCloseACK(true);
   static_cast<TestRenderViewHost*>(contents2.render_manager_for_testing()->
      pending_render_view_host())->SendNavigate(102, kNtpUrl);
@@ -223,7 +226,7 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
 
   // Navigate.
   controller().LoadURL(
-      kUrl, GURL(), content::PAGE_TRANSITION_TYPED, std::string());
+      kUrl, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   // Simulate response from RenderView for FirePageBeforeUnload.
   rvh()->TestOnMessageReceived(
       ViewHostMsg_ShouldClose_ACK(rvh()->routing_id(), true));
@@ -244,7 +247,7 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
   process()->sink().ClearMessages();
   // Navigate, again.
   controller().LoadURL(
-      kUrl, GURL(), content::PAGE_TRANSITION_TYPED, std::string());
+      kUrl, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   // The same RenderViewHost should be reused.
   EXPECT_FALSE(pending_rvh());
   EXPECT_TRUE(last_rvh == rvh());

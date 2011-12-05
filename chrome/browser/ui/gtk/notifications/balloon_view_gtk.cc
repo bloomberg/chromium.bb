@@ -348,7 +348,7 @@ void BalloonViewImpl::Update() {
   if (!html_contents_->tab_contents())
     return;
   html_contents_->tab_contents()->controller().LoadURL(
-      balloon_->notification().content_url(), GURL(),
+      balloon_->notification().content_url(), content::Referrer(),
       content::PAGE_TRANSITION_LINK, std::string());
 }
 

@@ -217,7 +217,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   // Navigate to URL.  First URL should use first RenderViewHost.
   const GURL url("http://www.google.com");
   controller().LoadURL(
-      url, GURL(), content::PAGE_TRANSITION_TYPED, std::string());
+      url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   ViewHostMsg_FrameNavigate_Params params1;
   InitNavigateParams(&params1, 1, url, content::PAGE_TRANSITION_TYPED);
   TestRenderViewHost* orig_rvh = rvh();
@@ -233,14 +233,14 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   // Navigate to new site which should get a new RenderViewHost.
   const GURL url2("http://www.yahoo.com");
   controller().LoadURL(
-      url2, GURL(), content::PAGE_TRANSITION_TYPED, std::string());
+      url2, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(contents()->cross_navigation_pending());
   EXPECT_EQ(&client_host, devtools_manager->GetDevToolsClientHostFor(
       DevToolsAgentHostRegistry::GetDevToolsAgentHost(pending_rvh())));
 
   // Interrupt pending navigation and navigate back to the original site.
   controller().LoadURL(
-      url, GURL(), content::PAGE_TRANSITION_TYPED, std::string());
+      url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   contents()->TestDidNavigate(orig_rvh, params1);
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(&client_host, devtools_manager->GetDevToolsClientHostFor(

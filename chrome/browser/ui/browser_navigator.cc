@@ -248,15 +248,21 @@ void LoadURLInContents(TabContents* target_contents,
                        const std::string& extra_headers) {
   if (params->transferred_global_request_id != GlobalRequestID()) {
     target_contents->controller().TransferURL(
-        url, params->referrer, params->transition, extra_headers,
+        url,
+        content::Referrer(params->referrer, WebKit::WebReferrerPolicyDefault),
+        params->transition, extra_headers,
         params->transferred_global_request_id,
         params->is_renderer_initiated);
   } else if (params->is_renderer_initiated) {
     target_contents->controller().LoadURLFromRenderer(
-        url, params->referrer, params->transition,  extra_headers);
+        url,
+        content::Referrer(params->referrer, WebKit::WebReferrerPolicyDefault),
+        params->transition,  extra_headers);
   } else {
     target_contents->controller().LoadURL(
-        url, params->referrer, params->transition, extra_headers);
+        url,
+        content::Referrer(params->referrer, WebKit::WebReferrerPolicyDefault),
+        params->transition,  extra_headers);
   }
 
 }

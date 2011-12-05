@@ -1084,7 +1084,7 @@ bool UpdateTabFunction::RunImpl() {
     }
 
     controller.LoadURL(
-        url, GURL(), content::PAGE_TRANSITION_LINK, std::string());
+        url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
 
     // The URL of a tab contents never actually changes to a JavaScript URL, so
     // this check only makes sense in other cases.

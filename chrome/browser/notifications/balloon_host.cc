@@ -122,7 +122,7 @@ void BalloonHost::Init() {
   Observe(tab_contents_.get());
 
   tab_contents_->controller().LoadURL(
-      balloon_->notification().content_url(), GURL(),
+      balloon_->notification().content_url(), content::Referrer(),
       content::PAGE_TRANSITION_LINK, std::string());
 
   initialized_ = true;

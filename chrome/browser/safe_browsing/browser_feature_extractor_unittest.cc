@@ -92,7 +92,9 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
   void NavigateAndCommit(const GURL& url,
                          const GURL& referrer,
                          content::PageTransition type) {
-    contents()->controller().LoadURL(url, referrer, type, std::string());
+    contents()->controller().LoadURL(
+        url, content::Referrer(referrer, WebKit::WebReferrerPolicyDefault),
+        type, std::string());
 
     static int page_id = 0;
     ViewHostMsg_FrameNavigate_Params params;

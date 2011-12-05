@@ -210,8 +210,8 @@ void GeolocationPermissionContextTests::CheckPermissionMessageSentInternal(
 void GeolocationPermissionContextTests::AddNewTab(const GURL& url) {
   TabContents* new_tab =
       new TabContents(profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
-  new_tab->controller().LoadURL(url, GURL(), content::PAGE_TRANSITION_TYPED,
-                                std::string());
+  new_tab->controller().LoadURL(url, content::Referrer(),
+                                content::PAGE_TRANSITION_TYPED, std::string());
   static_cast<TestRenderViewHost*>(new_tab->render_manager_for_testing()->
       current_host())->SendNavigate(extra_tabs_.size() + 1, url);
   extra_tabs_.push_back(new TabContentsWrapper(new_tab));

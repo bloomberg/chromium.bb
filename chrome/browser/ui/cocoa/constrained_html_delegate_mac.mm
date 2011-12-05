@@ -106,7 +106,7 @@ ConstrainedHtmlDelegateMac::ConstrainedHtmlDelegateMac(
       tab_contents->property_bag(), this);
 
   tab_contents->controller().LoadURL(delegate->GetDialogContentURL(),
-                                     GURL(),
+                                     content::Referrer(),
                                      content::PAGE_TRANSITION_START_PAGE,
                                      std::string());
 

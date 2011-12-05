@@ -163,7 +163,7 @@ DevToolsWindow* DevToolsWindow::Create(
       content::BINDINGS_POLICY_WEB_UI);
   tab_contents->controller().LoadURL(
       GetDevToolsUrl(profile, docked, shared_worker_frontend),
-      GURL(),
+      content::Referrer(),
       content::PAGE_TRANSITION_START_PAGE,
       std::string());
   return new DevToolsWindow(tab_contents, profile, inspected_rvh, docked);

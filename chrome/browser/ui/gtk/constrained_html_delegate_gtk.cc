@@ -108,7 +108,8 @@ ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
   ConstrainedHtmlUI::GetPropertyAccessor().SetProperty(
       tab_contents->property_bag(), this);
 
-  tab_contents->controller().LoadURL(delegate->GetDialogContentURL(), GURL(),
+  tab_contents->controller().LoadURL(delegate->GetDialogContentURL(),
+                                     content::Referrer(),
                                      content::PAGE_TRANSITION_START_PAGE,
                                      std::string());
   tab_contents_container_.SetTab(tab_.get());

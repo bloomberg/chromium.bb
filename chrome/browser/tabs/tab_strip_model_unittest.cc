@@ -169,7 +169,7 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
   // Forwards a URL "load" request through to our dummy TabContents
   // implementation.
   void LoadURL(TabContents* con, const std::wstring& url) {
-    controller().LoadURL(GURL(WideToUTF16(url)), GURL(),
+    controller().LoadURL(GURL(WideToUTF16(url)), content::Referrer(),
                          content::PAGE_TRANSITION_LINK, std::string());
   }
 

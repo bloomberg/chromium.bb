@@ -254,7 +254,8 @@ TabContents* WebIntentPickerGtk::SetInlineDisposition(const GURL& url) {
   tab_contents_container_->SetTab(inline_disposition_tab_contents_.get());
 
   inline_disposition_tab_contents_->tab_contents()->controller().LoadURL(
-      url, GURL(), content::PAGE_TRANSITION_START_PAGE, std::string());
+      url, content::Referrer(), content::PAGE_TRANSITION_START_PAGE,
+      std::string());
 
   // Replace the bubble picker contents with the inline disposition.
 

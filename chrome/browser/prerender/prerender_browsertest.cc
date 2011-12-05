@@ -1314,8 +1314,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
   ASSERT_TRUE(GetPrerenderContents());
   ASSERT_TRUE(GetPrerenderContents()->prerender_contents());
   GetPrerenderContents()->prerender_contents()->controller().LoadURL(
-      GURL(chrome::kAboutCrashURL), GURL(), content::PAGE_TRANSITION_TYPED,
-      std::string());
+      GURL(chrome::kAboutCrashURL), content::Referrer(),
+      content::PAGE_TRANSITION_TYPED, std::string());
   ui_test_utils::RunMessageLoop();
 }
 

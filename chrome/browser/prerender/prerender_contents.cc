@@ -325,8 +325,10 @@ void PrerenderContents::StartPrerendering(
   content::PageTransition transition = content::PAGE_TRANSITION_LINK;
   if (origin_ == ORIGIN_OMNIBOX_EXACT || origin_ == ORIGIN_OMNIBOX_EXACT_FULL)
     transition = content::PAGE_TRANSITION_TYPED;
-  new_contents->controller().LoadURL(prerender_url_, referrer_, transition,
-                                     std::string());
+  new_contents->controller().LoadURL(
+      prerender_url_,
+      content::Referrer(referrer_, WebKit::WebReferrerPolicyDefault),
+      transition, std::string());
 }
 
 bool PrerenderContents::GetChildId(int* child_id) const {

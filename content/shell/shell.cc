@@ -76,7 +76,7 @@ Shell* Shell::CreateNewWindow(content::BrowserContext* browser_context,
 void Shell::LoadURL(const GURL& url) {
   tab_contents_->controller().LoadURL(
       url,
-      GURL(),
+      content::Referrer(),
       content::PAGE_TRANSITION_TYPED,
       std::string());
   tab_contents_->Focus();

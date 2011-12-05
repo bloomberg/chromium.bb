@@ -297,7 +297,7 @@ void HtmlDialogWindowDelegateBridge::HandleKeyboardEvent(
                                                   delegate_.get());
 
   tabContents_->controller().LoadURL(delegate_->GetDialogContentURL(),
-                                      GURL(),
+                                      content::Referrer(),
                                       content::PAGE_TRANSITION_START_PAGE,
                                       std::string());
 

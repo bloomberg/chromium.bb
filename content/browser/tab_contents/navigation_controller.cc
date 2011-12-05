@@ -472,7 +472,8 @@ void NavigationController::RemoveEntryAtIndex(int index,
     } else {
       // If there is nothing to show, show a default page.
       LoadURL(default_url.is_empty() ? GURL("about:blank") : default_url,
-              GURL(), content::PAGE_TRANSITION_START_PAGE, std::string());
+              content::Referrer(), content::PAGE_TRANSITION_START_PAGE,
+              std::string());
     }
   }
 }
@@ -499,7 +500,7 @@ void NavigationController::AddTransientEntry(NavigationEntry* entry) {
 
 void NavigationController::TransferURL(
     const GURL& url,
-    const GURL& referrer,
+    const content::Referrer& referrer,
     content::PageTransition transition,
     const std::string& extra_headers,
     const GlobalRequestID& transferred_global_request_id,
@@ -507,7 +508,7 @@ void NavigationController::TransferURL(
   // The user initiated a load, we don't need to reload anymore.
   needs_reload_ = false;
 
-  NavigationEntry* entry = CreateNavigationEntry(url, referrer, transition,
+  NavigationEntry* entry = CreateNavigationEntry(url, referrer.url, transition,
                                                  is_renderer_initiated,
                                                  extra_headers,
                                                  browser_context_);
@@ -518,13 +519,13 @@ void NavigationController::TransferURL(
 
 void NavigationController::LoadURL(
     const GURL& url,
-    const GURL& referrer,
+    const content::Referrer& referrer,
     content::PageTransition transition,
     const std::string& extra_headers) {
   // The user initiated a load, we don't need to reload anymore.
   needs_reload_ = false;
 
-  NavigationEntry* entry = CreateNavigationEntry(url, referrer, transition,
+  NavigationEntry* entry = CreateNavigationEntry(url, referrer.url, transition,
                                                  false,
                                                  extra_headers,
                                                  browser_context_);
@@ -534,13 +535,13 @@ void NavigationController::LoadURL(
 
 void NavigationController::LoadURLFromRenderer(
     const GURL& url,
-    const GURL& referrer,
+    const content::Referrer& referrer,
     content::PageTransition transition,
     const std::string& extra_headers) {
   // The user initiated a load, we don't need to reload anymore.
   needs_reload_ = false;
 
-  NavigationEntry* entry = CreateNavigationEntry(url, referrer, transition,
+  NavigationEntry* entry = CreateNavigationEntry(url, referrer.url, transition,
                                                  true,
                                                  extra_headers,
                                                  browser_context_);

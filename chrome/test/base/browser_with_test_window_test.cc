@@ -116,7 +116,7 @@ void BrowserWithTestWindowTest::NavigateAndCommit(
     NavigationController* controller,
     const GURL& url) {
   controller->LoadURL(
-      url, GURL(), content::PAGE_TRANSITION_LINK, std::string());
+      url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
   CommitPendingLoad(controller);
 }
 

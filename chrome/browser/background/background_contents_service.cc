@@ -456,7 +456,7 @@ void BackgroundContentsService::LoadBackgroundContents(
   // TODO(atwilson): Create RenderViews asynchronously to avoid increasing
   // startup latency (http://crbug.com/47236).
   contents->tab_contents()->controller().LoadURL(
-      url, GURL(), content::PAGE_TRANSITION_LINK, std::string());
+      url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
 }
 
 BackgroundContents* BackgroundContentsService::CreateBackgroundContents(
