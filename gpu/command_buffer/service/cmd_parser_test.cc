@@ -48,10 +48,12 @@ class CommandParserTest : public testing::Test {
     size_t command_buffer_size = entry_count *
                                  sizeof(CommandBufferEntry);  // NOLINT
     DCHECK_LE(command_buffer_size, shm_size);
-    CommandParser* parser = new CommandParser(api_mock());
-
-    parser->SetBuffer(buffer(), shm_size, 0, command_buffer_size);
-    return parser;
+    return new CommandParser(buffer(),
+                             shm_size,
+                             0,
+                             command_buffer_size,
+                             0,
+                             api_mock());
   }
 
   unsigned int buffer_entry_count() { return 20; }
@@ -284,36 +286,6 @@ TEST_F(CommandParserTest, TestError) {
   EXPECT_EQ(error::kNoError, parser->ProcessAllCommands());
   EXPECT_EQ(put, parser->get());
   Mock::VerifyAndClearExpectations(api_mock());
-}
-
-TEST_F(CommandParserTest, SetBuffer) {
-  scoped_ptr<CommandParser> parser(MakeParser(3));
-  CommandBufferOffset put = parser->put();
-  CommandHeader header;
-
-  // add a single command, no args
-  header.size = 2;
-  header.command = 123;
-  buffer()[put++].value_header = header;
-  buffer()[put++].value_int32 = 456;
-
-  CommandBufferEntry param_array[1];
-  param_array[0].value_int32 = 456;
-
-  parser->set_put(put);
-  AddDoCommandExpect(error::kNoError, 123, 1, param_array);
-  EXPECT_EQ(error::kNoError, parser->ProcessAllCommands());
-  // We should have advanced 2 entries
-  EXPECT_EQ(2, parser->get());
-  Mock::VerifyAndClearExpectations(api_mock());
-
-  scoped_array<CommandBufferEntry> buffer2(new CommandBufferEntry[2]);
-  parser->SetBuffer(
-      buffer2.get(), sizeof(CommandBufferEntry) * 2, 0,
-      sizeof(CommandBufferEntry) * 2);
-  // The put and get should have reset to 0.
-  EXPECT_EQ(0, parser->get());
-  EXPECT_EQ(0, parser->put());
 }
 
 }  // namespace gpu

@@ -25,12 +25,13 @@ class CommandBufferService : public CommandBuffer {
   virtual ~CommandBufferService();
 
   // CommandBuffer implementation:
-  virtual bool Initialize() OVERRIDE;
+  virtual bool Initialize(int32 size) OVERRIDE;
+  virtual bool Initialize(base::SharedMemory* buffer, int32 size) OVERRIDE;
+  virtual Buffer GetRingBuffer() OVERRIDE;
   virtual State GetState() OVERRIDE;
   virtual State GetLastState() OVERRIDE;
   virtual void Flush(int32 put_offset) OVERRIDE;
   virtual State FlushSync(int32 put_offset, int32 last_known_get) OVERRIDE;
-  virtual void SetGetBuffer(int32 transfer_buffer_id) OVERRIDE;
   virtual void SetGetOffset(int32 get_offset) OVERRIDE;
   virtual int32 CreateTransferBuffer(size_t size, int32 id_request) OVERRIDE;
   virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
@@ -54,7 +55,6 @@ class CommandBufferService : public CommandBuffer {
   virtual void SetParseErrorCallback(const base::Closure& callback);
 
  private:
-  int32 ring_buffer_id_;
   Buffer ring_buffer_;
   int32 num_entries_;
   int32 get_offset_;

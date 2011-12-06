@@ -25,8 +25,9 @@ class PPAPI_THUNK_EXPORT PPB_Graphics3D_API {
   virtual int32_t SwapBuffers(PP_CompletionCallback callback) = 0;
 
   // Graphics3DTrusted API.
-  virtual PP_Bool InitCommandBuffer() = 0;
-  virtual PP_Bool SetGetBuffer(int32_t shm_id) = 0;
+  virtual PP_Bool InitCommandBuffer(int32_t size) = 0;
+  virtual PP_Bool GetRingBuffer(int* shm_handle,
+                                uint32_t* shm_size) = 0;
   virtual PP_Graphics3DTrustedState GetState() = 0;
   virtual int32_t CreateTransferBuffer(uint32_t size) = 0;
   virtual PP_Bool DestroyTransferBuffer(int32_t id) = 0;

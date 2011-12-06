@@ -29,6 +29,21 @@ GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
       decoder_(decoder),
       parser_(parser),
       unscheduled_count_(0) {
+  // Map the ring buffer and create the parser.
+  if (!parser) {
+    Buffer ring_buffer = command_buffer_->GetRingBuffer();
+    if (ring_buffer.ptr) {
+      parser_.reset(new CommandParser(ring_buffer.ptr,
+                                      ring_buffer.size,
+                                      0,
+                                      ring_buffer.size,
+                                      0,
+                                      decoder_));
+    } else {
+      parser_.reset(new CommandParser(NULL, 0, 0, 0, 0,
+                                      decoder_));
+    }
+  }
 }
 
 GpuScheduler::~GpuScheduler() {
@@ -133,29 +148,6 @@ Buffer GpuScheduler::GetSharedMemoryBuffer(int32 shm_id) {
 
 void GpuScheduler::set_token(int32 token) {
   command_buffer_->SetToken(token);
-}
-
-bool GpuScheduler::SetGetBuffer(int32 transfer_buffer_id) {
-  // NOTE: This seems kind of strange. We need to update both the parser
-  // AND the command buffer.
-  Buffer ring_buffer = command_buffer_->GetTransferBuffer(transfer_buffer_id);
-  if (!ring_buffer.ptr) {
-    return false;
-  }
-
-  if (!parser_.get()) {
-    parser_.reset(new CommandParser(decoder_));
-  }
-
-  parser_->SetBuffer(
-      ring_buffer.ptr,
-      ring_buffer.size,
-      0,
-      ring_buffer.size);
-
-  command_buffer_->SetGetBuffer(transfer_buffer_id);
-  SetGetOffset(0);
-  return true;
 }
 
 bool GpuScheduler::SetGetOffset(int32 offset) {

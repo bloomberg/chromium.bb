@@ -10,29 +10,23 @@
 
 namespace gpu {
 
-CommandParser::CommandParser(AsyncAPIInterface* handler)
-    : get_(0),
-      put_(0),
-      buffer_(NULL),
-      entry_count_(0),
+CommandParser::CommandParser(void *shm_address,
+                             size_t shm_size,
+                             ptrdiff_t offset,
+                             size_t size,
+                             CommandBufferOffset start_get,
+                             AsyncAPIInterface *handler)
+    : get_(start_get),
+      put_(start_get),
       handler_(handler) {
-}
-
-void CommandParser::SetBuffer(
-    void* shm_address,
-    size_t shm_size,
-    ptrdiff_t offset,
-    size_t size) {
   // check proper alignments.
   DCHECK_EQ(0, (reinterpret_cast<intptr_t>(shm_address)) % 4);
   DCHECK_EQ(0, offset % 4);
   DCHECK_EQ(0u, size % 4);
   // check that the command buffer fits into the memory buffer.
   DCHECK_GE(shm_size, offset + size);
-  get_ = 0;
-  put_ = 0;
-  char* buffer_begin = static_cast<char*>(shm_address) + offset;
-  buffer_ = reinterpret_cast<CommandBufferEntry*>(buffer_begin);
+  char * buffer_begin = static_cast<char *>(shm_address) + offset;
+  buffer_ = reinterpret_cast<CommandBufferEntry *>(buffer_begin);
   entry_count_ = size / 4;
 }
 

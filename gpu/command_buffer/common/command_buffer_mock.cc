@@ -7,6 +7,8 @@
 namespace gpu {
 
 MockCommandBuffer::MockCommandBuffer() {
+  ON_CALL(*this, GetRingBuffer())
+      .WillByDefault(testing::Return(Buffer()));
   ON_CALL(*this, GetTransferBuffer(testing::_))
       .WillByDefault(testing::Return(Buffer()));
 }

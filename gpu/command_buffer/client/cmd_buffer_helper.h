@@ -214,10 +214,6 @@ class CommandBufferHelper {
     return command_buffer_;
   }
 
-  Buffer get_ring_buffer() const {
-    return ring_buffer_;
-  }
-
  private:
   // Waits until get changes, updating the value of get_.
   void WaitForGetChange();
@@ -228,13 +224,9 @@ class CommandBufferHelper {
         usable_entry_count_;
   }
 
-  bool AllocateRingBuffer();
-
   CommandBuffer* command_buffer_;
-  int32 ring_buffer_id_;
-  int32 ring_buffer_size_;
   Buffer ring_buffer_;
-  CommandBufferEntry* entries_;
+  CommandBufferEntry *entries_;
   int32 total_entry_count_;  // the total number of entries
   int32 usable_entry_count_;  // the usable number (ie, minus space for jump)
   int32 token_;

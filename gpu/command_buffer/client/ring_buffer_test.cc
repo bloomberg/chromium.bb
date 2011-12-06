@@ -65,9 +65,15 @@ class BaseRingBufferTest : public testing::Test {
                               Return(error::kNoError)));
 
     command_buffer_.reset(new CommandBufferService);
-    command_buffer_->Initialize();
+    command_buffer_->Initialize(kBufferSize);
+    Buffer ring_buffer = command_buffer_->GetRingBuffer();
 
-    parser_ = new CommandParser(api_mock_.get());
+    parser_ = new CommandParser(ring_buffer.ptr,
+                                ring_buffer.size,
+                                0,
+                                ring_buffer.size,
+                                0,
+                                api_mock_.get());
 
     gpu_scheduler_.reset(new GpuScheduler(
         command_buffer_.get(), NULL, parser_));
@@ -82,12 +88,6 @@ class BaseRingBufferTest : public testing::Test {
 
     helper_.reset(new CommandBufferHelper(command_buffer_.get()));
     helper_->Initialize(kBufferSize);
-
-    // Note: parser->SetBuffer would normally be called through
-    // helper_->Initialize but currently it needs a GpuCommandBufferStub as the
-    // CommandBuffer instead of the CommandBufferService for that to happen.
-    Buffer ring_buffer = helper_->get_ring_buffer();
-    parser_->SetBuffer(ring_buffer.ptr, ring_buffer.size, 0, ring_buffer.size);
   }
 
   int32 GetToken() {

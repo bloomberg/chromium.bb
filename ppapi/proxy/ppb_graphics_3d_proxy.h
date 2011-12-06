@@ -36,8 +36,8 @@ class Graphics3D : public Resource, public Graphics3DImpl {
   }
 
   // Graphics3DTrusted API. These are not implemented in the proxy.
-  virtual PP_Bool InitCommandBuffer() OVERRIDE;
-  virtual PP_Bool SetGetBuffer(int32_t shm_id) OVERRIDE;
+  virtual PP_Bool InitCommandBuffer(int32_t size) OVERRIDE;
+  virtual PP_Bool GetRingBuffer(int* shm_handle, uint32_t* shm_size) OVERRIDE;
   virtual PP_Graphics3DTrustedState GetState() OVERRIDE;
   virtual PP_Bool Flush(int32_t put_offset) OVERRIDE;
   virtual PP_Graphics3DTrustedState FlushSync(int32_t put_offset) OVERRIDE;
@@ -79,9 +79,9 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
   void OnMsgCreate(PP_Instance instance,
                    const std::vector<int32_t>& attribs,
                    HostResource* result);
-  void OnMsgInitCommandBuffer(const HostResource& context);
-  void OnMsgSetGetBuffer(const HostResource& context,
-                         int32 id);
+  void OnMsgInitCommandBuffer(const HostResource& context,
+                              int32 size,
+                              base::SharedMemoryHandle* ring_buffer);
   void OnMsgGetState(const HostResource& context,
                      gpu::CommandBuffer::State* state);
   void OnMsgFlush(const HostResource& context,

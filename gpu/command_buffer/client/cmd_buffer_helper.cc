@@ -17,8 +17,6 @@ const double kFlushDelay = 1.0 / (5.0 * 60.0);
 
 CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
     : command_buffer_(command_buffer),
-      ring_buffer_id_(-1),
-      ring_buffer_size_(0),
       entries_(NULL),
       total_entry_count_(0),
       usable_entry_count_(0),
@@ -29,25 +27,14 @@ CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
       last_flush_time_(0) {
 }
 
-bool CommandBufferHelper::AllocateRingBuffer() {
-  int32 id = command_buffer_->CreateTransferBuffer(ring_buffer_size_, -1);
-  if (id < 0) {
-    return false;
-  }
-
-  ring_buffer_ = command_buffer_->GetTransferBuffer(id);
+bool CommandBufferHelper::Initialize(int32 ring_buffer_size) {
+  ring_buffer_ = command_buffer_->GetRingBuffer();
   if (!ring_buffer_.ptr)
     return false;
 
-  ring_buffer_id_ = id;
-  command_buffer_->SetGetBuffer(id);
-
-  // TODO(gman): Do we really need to call GetState here? We know get & put = 0
-  // Also do we need to check state.num_entries?
   CommandBuffer::State state = command_buffer_->GetState();
   entries_ = static_cast<CommandBufferEntry*>(ring_buffer_.ptr);
-  int32 num_ring_buffer_entries =
-      ring_buffer_size_ / sizeof(CommandBufferEntry);
+  int32 num_ring_buffer_entries = ring_buffer_size / sizeof(CommandBufferEntry);
   if (num_ring_buffer_entries > state.num_entries) {
     return false;
   }
@@ -59,11 +46,6 @@ bool CommandBufferHelper::AllocateRingBuffer() {
   usable_entry_count_ = total_entry_count_ - kJumpEntries;
   put_ = state.put_offset;
   return true;
-}
-
-bool CommandBufferHelper::Initialize(int32 ring_buffer_size) {
-  ring_buffer_size_ = ring_buffer_size;
-  return AllocateRingBuffer();
 }
 
 CommandBufferHelper::~CommandBufferHelper() {
