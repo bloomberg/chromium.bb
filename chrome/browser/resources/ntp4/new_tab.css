@@ -240,6 +240,7 @@ html[dir='rtl'] .login-status-icon {
 /* Trash. *********************************************************************/
 
 #trash {
+  color: #7F7F7F;
   height: 100%;
   position: absolute;
   opacity: 0;
