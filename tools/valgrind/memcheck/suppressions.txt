@@ -1687,6 +1687,28 @@
    fun:_ZN7WebCore15PNGImageEncoder6encode*
 }
 {
+   bug_30704f
+   Memcheck:Uninitialized
+   ...
+   fun:png_process_data
+   fun:_ZN7WebCore14PNGImageReader6decodeERKNS_12SharedBufferEb
+   fun:_ZN7WebCore15PNGImageDecoder6decodeEb
+   fun:_ZN7WebCore15PNGImageDecoder18frameBufferAtIndexEm
+   fun:_ZN7WebCore11ImageSource18createFrameAtIndexEm
+   fun:_ZN7WebCore11BitmapImage10cacheFrameEm
+   fun:_ZN7WebCore11BitmapImage12frameAtIndexEm
+   fun:_ZN7WebCore11BitmapImage26nativeImageForCurrentFrameEv
+   fun:_ZN7WebCore11BitmapImage4drawEPNS_15GraphicsContextERKNS_9FloatRectES5_NS_10ColorSpaceENS_17CompositeOperatorE
+   fun:_ZN7WebCore15GraphicsContext9drawImageEPNS_5ImageENS_10ColorSpaceERKNS_9FloatRectES6_NS_17CompositeOperatorEb
+   fun:_ZN7WebCore15GraphicsContext9drawImageEPNS_5ImageENS_10ColorSpaceERKNS_7IntRectES6_NS_17CompositeOperatorEb
+   fun:_ZN7WebCore15GraphicsContext9drawImageEPNS_5ImageENS_10ColorSpaceERKNS_7IntRectENS_17CompositeOperatorEb
+   fun:_ZN7WebCore11RenderImage13paintIntoRectEPNS_15GraphicsContextERKNS_7IntRectE
+   fun:_ZN7WebCore11RenderImage13paintReplacedERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore14RenderReplaced5paintERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore11RenderImage5paintERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore9InlineBox5paintERNS_9PaintInfoERKNS_8IntPointEii
+}
+{
    bug_87232
    Memcheck:Uninitialized
    fun:_ZN7WebCore12base64EncodeEPKcjRN3WTF6VectorIcLj0EEEb
