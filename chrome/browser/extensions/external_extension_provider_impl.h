@@ -71,6 +71,10 @@ class ExternalExtensionProviderImpl
   static const char kExternalUpdateUrl[];
   static const char kSupportedLocales[];
 
+  void set_auto_acknowledge(bool auto_acknowledge) {
+    auto_acknowledge_ = auto_acknowledge;
+  }
+
  private:
   // Location for external extensions that are provided by this provider from
   // local crx files.
@@ -98,6 +102,10 @@ class ExternalExtensionProviderImpl
   // Creation flags to use for the extension.  These flags will be used
   // when calling Extenion::Create() by the crx installer.
   int creation_flags_;
+
+  // Whether loaded extensions should be automatically acknowledged, so that
+  // the user doesn't see an alert about them.
+  bool auto_acknowledge_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalExtensionProviderImpl);
 };

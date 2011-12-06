@@ -56,7 +56,8 @@ ExternalExtensionProviderImpl::ExternalExtensionProviderImpl(
     prefs_(NULL),
     ready_(false),
     loader_(loader),
-    creation_flags_(creation_flags) {
+    creation_flags_(creation_flags),
+    auto_acknowledge_(false) {
   loader_->Init(this);
 }
 
@@ -73,7 +74,7 @@ void ExternalExtensionProviderImpl::VisitRegisteredExtension() {
 void ExternalExtensionProviderImpl::SetPrefs(DictionaryValue* prefs) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Check if the service is still alive. It is possible that it had went
+  // Check if the service is still alive. It is possible that it went
   // away while |loader_| was working on the FILE thread.
   if (!service_) return;
 
@@ -196,7 +197,8 @@ void ExternalExtensionProviderImpl::SetPrefs(DictionaryValue* prefs) {
         continue;
       }
       service_->OnExternalExtensionFileFound(extension_id, version.get(), path,
-                                             crx_location_, creation_flags_);
+                                             crx_location_, creation_flags_,
+                                             auto_acknowledge_);
     } else { // if (has_external_update_url)
       CHECK(has_external_update_url);  // Checking of keys above ensures this.
       if (download_location_ == Extension::INVALID) {

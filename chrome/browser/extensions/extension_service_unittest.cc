@@ -155,7 +155,7 @@ class MockExtensionProvider : public ExternalExtensionProviderInterface {
 
       visitor_->OnExternalExtensionFileFound(
           i->first, version.get(), i->second.second, location_,
-          Extension::NO_FLAGS);
+          Extension::NO_FLAGS, false);
     }
     visitor_->OnExternalProviderReady(this);
   }
@@ -254,7 +254,8 @@ class MockProviderVisitor
                                             const Version* version,
                                             const FilePath& path,
                                             Extension::Location unused,
-                                            int creation_flags) {
+                                            int creation_flags,
+                                            bool mark_acknowledged) {
     EXPECT_EQ(Extension::NO_FLAGS, creation_flags);
 
     ++ids_found_;
@@ -1255,7 +1256,7 @@ TEST_F(ExtensionServiceTest, InstallingExternalExtensionWithFlags) {
   // Install an external extension.
   service_->OnExternalExtensionFileFound(good_crx, version.get(),
                                          path, Extension::EXTERNAL_PREF,
-                                         Extension::FROM_BOOKMARK);
+                                         Extension::FROM_BOOKMARK, false);
   loop_.RunAllPending();
 
   const Extension* extension = service_->GetExtensionById(good_crx, false);
@@ -1276,7 +1277,7 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
   // Install an external extension.
   service_->OnExternalExtensionFileFound(good_crx, version.get(),
                                          path, Extension::EXTERNAL_PREF,
-                                         Extension::NO_FLAGS);
+                                         Extension::NO_FLAGS, false);
   loop_.RunAllPending();
   ASSERT_TRUE(service_->GetExtensionById(good_crx, false));
 
@@ -1288,7 +1289,7 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
   // Try to re-install it externally. This should fail because of the killbit.
   service_->OnExternalExtensionFileFound(good_crx, version.get(),
                                          path, Extension::EXTERNAL_PREF,
-                                         Extension::NO_FLAGS);
+                                         Extension::NO_FLAGS, false);
   loop_.RunAllPending();
   ASSERT_TRUE(NULL == service_->GetExtensionById(good_crx, false));
   ValidateIntegerPref(good_crx, "location",
@@ -1299,7 +1300,7 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
   path = data_dir_.AppendASCII("good2.crx");
   service_->OnExternalExtensionFileFound(good_crx, version.get(),
                                          path, Extension::EXTERNAL_PREF,
-                                         Extension::NO_FLAGS);
+                                         Extension::NO_FLAGS, false);
   loop_.RunAllPending();
   ASSERT_TRUE(NULL == service_->GetExtensionById(good_crx, false));
   ValidateIntegerPref(good_crx, "location",
@@ -1359,7 +1360,7 @@ TEST_F(ExtensionServiceTest, FailOnWrongId) {
   // source that is not equal to the ID in the extension manifest.
   service_->OnExternalExtensionFileFound(
       wrong_id, version.get(), path, Extension::EXTERNAL_PREF,
-      Extension::NO_FLAGS);
+      Extension::NO_FLAGS, false);
 
   loop_.RunAllPending();
   ASSERT_FALSE(service_->GetExtensionById(good_crx, false));
@@ -1367,7 +1368,7 @@ TEST_F(ExtensionServiceTest, FailOnWrongId) {
   // Try again with the right ID. Expect success.
   service_->OnExternalExtensionFileFound(
       correct_id, version.get(), path, Extension::EXTERNAL_PREF,
-      Extension::NO_FLAGS);
+      Extension::NO_FLAGS, false);
   loop_.RunAllPending();
   ASSERT_TRUE(service_->GetExtensionById(good_crx, false));
 }
@@ -1384,7 +1385,7 @@ TEST_F(ExtensionServiceTest, FailOnWrongVersion) {
   wrong_version.reset(Version::GetVersionFromString("1.2.3.4"));
   service_->OnExternalExtensionFileFound(
       good_crx, wrong_version.get(), path, Extension::EXTERNAL_PREF,
-      Extension::NO_FLAGS);
+      Extension::NO_FLAGS, false);
 
   loop_.RunAllPending();
   ASSERT_FALSE(service_->GetExtensionById(good_crx, false));
@@ -1394,7 +1395,7 @@ TEST_F(ExtensionServiceTest, FailOnWrongVersion) {
   correct_version.reset(Version::GetVersionFromString("1.0.0.0"));
   service_->OnExternalExtensionFileFound(
       good_crx, correct_version.get(), path, Extension::EXTERNAL_PREF,
-      Extension::NO_FLAGS);
+      Extension::NO_FLAGS, false);
   loop_.RunAllPending();
   ASSERT_TRUE(service_->GetExtensionById(good_crx, false));
 }
@@ -4172,7 +4173,7 @@ class ExtensionSourcePriorityTest : public ExtensionServiceTest {
 
     service_->OnExternalExtensionFileFound(
         crx_id_, version.get(), crx_path_, Extension::EXTERNAL_PREF,
-        Extension::NO_FLAGS);
+        Extension::NO_FLAGS, false);
   }
 
   // Fake a request from sync to install an extension.

@@ -114,6 +114,7 @@ Provider::Provider(Profile* profile,
                                     download_location, creation_flags),
       profile_(profile) {
   DCHECK(profile);
+  set_auto_acknowledge(true);
 }
 
 void Provider::VisitRegisteredExtension() {

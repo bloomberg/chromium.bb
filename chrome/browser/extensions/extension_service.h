@@ -505,7 +505,8 @@ class ExtensionService
                                             const Version* version,
                                             const FilePath& path,
                                             Extension::Location location,
-                                            int creation_flags)
+                                            int creation_flags,
+                                            bool mark_acknowledged)
       OVERRIDE;
 
   virtual void OnExternalExtensionUpdateUrlFound(const std::string& id,
@@ -526,6 +527,10 @@ class ExtensionService
   // accept button.
   void HandleExtensionAlertAccept(const ExtensionGlobalError& global_error,
                                   Browser* browser);
+
+  // Given a (presumably just-installed) extension id, mark that extension as
+  // acknowledged.
+  void AcknowledgeExternalExtension(const std::string& id);
 
   // Opens the Extensions page because the user wants to get more details
   // about the alerts.

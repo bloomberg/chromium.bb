@@ -69,7 +69,8 @@ class MockExternalPolicyExtensionProviderVisitor
                                             const Version* version,
                                             const FilePath& path,
                                             Extension::Location unused,
-                                            int unused2) {
+                                            int unused2,
+                                            bool unused3) {
     ADD_FAILURE() << "There should be no external extensions from files.";
   }
 

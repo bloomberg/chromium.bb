@@ -1739,7 +1739,7 @@ void ExtensionService::HandleExtensionAlertAccept(
       global_error.get_external_extension_ids();
   for (ExtensionIdSet::const_iterator iter = extension_ids->begin();
        iter != extension_ids->end(); ++iter) {
-    extension_prefs_->AcknowledgeExternalExtension(*iter);
+    AcknowledgeExternalExtension(*iter);
   }
   extension_ids = global_error.get_blacklisted_extension_ids();
   for (ExtensionIdSet::const_iterator iter = extension_ids->begin();
@@ -1751,6 +1751,10 @@ void ExtensionService::HandleExtensionAlertAccept(
        iter != extension_ids->end(); ++iter) {
     extension_prefs_->AcknowledgeOrphanedExtension(*iter);
   }
+}
+
+void ExtensionService::AcknowledgeExternalExtension(const std::string& id) {
+  extension_prefs_->AcknowledgeExternalExtension(id);
 }
 
 void ExtensionService::HandleExtensionAlertDetails(
@@ -2245,7 +2249,8 @@ void ExtensionService::OnExternalExtensionFileFound(
          const Version* version,
          const FilePath& path,
          Extension::Location location,
-         int creation_flags) {
+         int creation_flags,
+         bool mark_acknowledged) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(Extension::IdIsValid(id));
   if (extension_prefs_->IsExternalExtensionUninstalled(id))
@@ -2282,6 +2287,12 @@ void ExtensionService::OnExternalExtensionFileFound(
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_EXTERNAL_FILE);
   installer->set_creation_flags(creation_flags);
   installer->InstallCrx(path);
+
+  // Depending on the source, a new external extension might not need a user
+  // notification on installation. For such extensions, mark them acknowledged
+  // now to suppress the notification.
+  if (mark_acknowledged)
+    AcknowledgeExternalExtension(id);
 }
 
 void ExtensionService::ReportExtensionLoadError(
