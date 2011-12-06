@@ -357,8 +357,9 @@ enum NotificationType {
   NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
 
   // The focused element inside a page has changed.  The source is the
-  // RenderViewHost. The details is a Details<const bool> that indicates whether
-  // or not an editable node was focused.
+  // TabContents containing the render view host for the page. The details is
+  // a Details<const bool> that indicates whether or not an editable node was
+  // focused.
   NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
 
   // Notification posted from ExecuteJavascriptInWebFrameNotifyResult. The

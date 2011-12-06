@@ -549,6 +549,18 @@ void CrashTab(TabContents* tab) {
                   content::Source<content::RenderProcessHost>(rph));
 }
 
+void WaitForFocusChange(TabContents* tab_contents) {
+  TestNotificationObserver observer;
+  RegisterAndWait(&observer, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
+                  content::Source<TabContents>(tab_contents));
+}
+
+void WaitForFocusInBrowser(Browser* browser) {
+  TestNotificationObserver observer;
+  RegisterAndWait(&observer, chrome::NOTIFICATION_FOCUS_RETURNED_TO_BROWSER,
+                  content::Source<Browser>(browser));
+}
+
 int FindInPage(TabContentsWrapper* tab_contents, const string16& search_string,
                bool forward, bool match_case, int* ordinal) {
   tab_contents->

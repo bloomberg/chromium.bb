@@ -712,7 +712,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(DragHostMsg_TargetDrop_ACK, OnTargetDropACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShouldClose_ACK, OnMsgShouldCloseACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnMsgClosePageACK)
@@ -1130,13 +1129,6 @@ void RenderViewHost::OnTakeFocus(bool reverse) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (view)
     view->TakeFocus(reverse);
-}
-
-void RenderViewHost::OnFocusedNodeChanged(bool is_editable_node) {
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-      content::Source<RenderViewHost>(this),
-      content::Details<const bool>(&is_editable_node));
 }
 
 void RenderViewHost::OnAddMessageToConsole(int32 level,
