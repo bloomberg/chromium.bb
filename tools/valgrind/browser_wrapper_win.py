@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import glob
 import os
 import re
 import sys
@@ -11,7 +12,6 @@ import subprocess
 # support layout_tests, remove Dr. Memory specific code and verify it works
 # on a "clean" Mac.
 
-wrapper_pid = os.getpid()
 testcase_name = None
 for arg in sys.argv:
   m = re.match("\-\-test\-name=(.*)", arg)
@@ -29,11 +29,20 @@ cmd_to_run = sys.argv[1:]
 # http://code.google.com/p/drmemory/issues/detail?id=684 fixed.
 logdir_idx = cmd_to_run.index("-logdir")
 old_logdir = cmd_to_run[logdir_idx + 1]
-cmd_to_run[logdir_idx + 1] += "\\testcase.%d.logs" % wrapper_pid
+
+wrapper_pid = str(os.getpid())
+
+# On Windows, there is a chance of PID collision. We avoid it by appending the
+# number of entries in the logdir at the end of wrapper_pid.
+# This number is monotonic and we can't have two simultaneously running wrappers
+# with the same PID.
+wrapper_pid += "_%d" % len(glob.glob(old_logdir + "\\*"))
+
+cmd_to_run[logdir_idx + 1] += "\\testcase.%s.logs" % wrapper_pid
 os.makedirs(cmd_to_run[logdir_idx + 1])
 
 if testcase_name:
-  f = open(old_logdir + "\\testcase.%d.name" % wrapper_pid, "w")
+  f = open(old_logdir + "\\testcase.%s.name" % wrapper_pid, "w")
   print >>f, testcase_name
   f.close()
 
