@@ -20,7 +20,7 @@ FakeNetworkManager::FakeNetworkManager(const net::IPAddressNumber& address)
   talk_base::SocketAddress socket_address;
   CHECK(IPEndPointToSocketAddress(endpoint, &socket_address));
   network_.reset(new talk_base::Network("fake", "Fake Network",
-                                        socket_address.ip(), 0));
+                                        socket_address.ip()));
 }
 
 FakeNetworkManager::~FakeNetworkManager() {

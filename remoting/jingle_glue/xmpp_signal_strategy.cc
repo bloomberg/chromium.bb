@@ -40,7 +40,7 @@ void XmppSignalStrategy::Init(StatusObserver* observer) {
   settings.set_user(login_jid.node());
   settings.set_host(login_jid.domain());
   settings.set_resource("chromoting");
-  settings.set_use_tls(true);
+  settings.set_use_tls(buzz::TLS_ENABLED);
   settings.set_token_service(auth_token_service_);
   settings.set_auth_cookie(auth_token_);
   settings.set_server(talk_base::SocketAddress("talk.google.com", 5222));

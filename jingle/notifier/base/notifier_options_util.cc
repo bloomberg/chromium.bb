@@ -23,14 +23,14 @@ buzz::XmppClientSettings MakeXmppClientSettings(
   xmpp_client_settings.set_user(jid.node());
   xmpp_client_settings.set_resource("chrome-sync");
   xmpp_client_settings.set_host(jid.domain());
-  xmpp_client_settings.set_use_tls(true);
+  xmpp_client_settings.set_use_tls(buzz::TLS_ENABLED);
   xmpp_client_settings.set_auth_cookie(
       notifier_options.invalidate_xmpp_login ?
       token + "bogus" : token);
   xmpp_client_settings.set_token_service(token_service);
   if (notifier_options.allow_insecure_connection) {
     xmpp_client_settings.set_allow_plain(true);
-    xmpp_client_settings.set_use_tls(false);
+    xmpp_client_settings.set_use_tls(buzz::TLS_DISABLED);
   }
   return xmpp_client_settings;
 }
