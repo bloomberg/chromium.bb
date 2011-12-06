@@ -43,13 +43,20 @@ ExtensionAPI::~ExtensionAPI() {
 }
 
 bool ExtensionAPI::IsPrivileged(const std::string& full_name) const {
-  std::vector<std::string> name_space;
-  base::SplitString(full_name, '.', &name_space);
-  std::string name = name_space.back();
-  name_space.pop_back();
+  std::vector<std::string> split_full_name;
+  base::SplitString(full_name, '.', &split_full_name);
+  std::string name = split_full_name.back();
+  split_full_name.pop_back();
+  std::string name_space = JoinString(split_full_name, '.');
+
+  // HACK(kalman): explicitly mark all Storage API methods as unprivileged.
+  // TODO(kalman): solve this in a more general way; the problem is that
+  // functions-on-properties are not found with the following algorithm.
+  if (name_space == "experimental.storage")
+    return false;
 
   base::DictionaryValue* name_space_node =
-      FindListItem(value_.get(), "namespace", JoinString(name_space, '.'));
+      FindListItem(value_.get(), "namespace", name_space);
   if (!name_space_node)
     return true;
 

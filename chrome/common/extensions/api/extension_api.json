@@ -1163,11 +1163,13 @@
       "sync": {
         "$ref": "StorageNamespace",
         "description": "Items under the \"sync\" namespace are synced using Chrome Sync.",
+        "unprivileged": true,
         "value": [ "sync" ]
       },
       "local": {
         "$ref": "StorageNamespace",
         "description": "Items under the \"local\" namespace are local to each machine.",
+        "unprivileged": true,
         "value": [ "local" ]
       }
     }
