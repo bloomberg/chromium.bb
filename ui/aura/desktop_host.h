@@ -8,12 +8,7 @@
 
 #include "base/message_loop.h"
 #include "ui/aura/cursor.h"
-#include "ui/base/ime/input_method_delegate.h"
 #include "ui/gfx/native_widget_types.h"
-
-namespace ui {
-class InputMethod;
-}
 
 namespace gfx {
 class Point;
@@ -27,8 +22,7 @@ class Desktop;
 
 // DesktopHost bridges between a native window and the embedded Desktop. It
 // provides the accelerated widget and maps events from the native os to aura.
-class DesktopHost : public MessageLoop::Dispatcher,
-                    public ui::internal::InputMethodDelegate {
+class DesktopHost : public MessageLoop::Dispatcher {
  public:
   virtual ~DesktopHost() {}
 
@@ -70,14 +64,6 @@ class DesktopHost : public MessageLoop::Dispatcher,
 
   // Posts |native_event| to the platform's event queue.
   virtual void PostNativeEvent(const base::NativeEvent& native_event) = 0;
-
-  // Sets the input method for the desktop. DesktopHost owns the input method.
-  // The function is only for unit tests.
-  virtual void SetInputMethod(ui::InputMethod* input_method) = 0;
-
-  // Gets the input method for the desktop. The caller does not own the returned
-  // value.
-  virtual ui::InputMethod* GetInputMethod() const = 0;
 };
 
 }  // namespace aura

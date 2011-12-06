@@ -53,13 +53,6 @@
         'window_observer.h',
         'window_types.h',
       ],
-      'conditions': [
-        ['use_ibus==1', {
-          'dependencies': [
-            '../../build/linux/system.gyp:ibus',
-          ],
-        }],
-      ],
     },
     {
       'target_name': 'test_support_aura',
@@ -138,7 +131,6 @@
         'test/run_all_unittests.cc',
         'test/test_suite.cc',
         'test/test_suite.h',
-        'desktop_host_ime_unittest.cc',
         'desktop_unittest.cc',
         'event_filter_unittest.cc',
         'window_unittest.cc',

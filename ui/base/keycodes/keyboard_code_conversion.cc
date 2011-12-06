@@ -56,10 +56,6 @@ uint16 GetCharacterFromKeyCode(KeyboardCode key_code, int flags) {
     }
   }
 
-  // For IME support
-  if (key_code == ui::VKEY_PROCESSKEY)
-    return 0xE5;
-
   // Normal characters
   if (key_code >= VKEY_0 && key_code <= VKEY_9) {
     return shift ? ")!@#$%^&*("[key_code - VKEY_0] :

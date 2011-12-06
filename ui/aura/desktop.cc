@@ -24,7 +24,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/ime/input_method.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
@@ -607,10 +606,6 @@ gfx::Rect Desktop::GetInitialHostWindowBounds() const {
   }
 
   return bounds;
-}
-
-ui::InputMethod* Desktop::GetInputMethod() {
-  return host_->GetInputMethod();
 }
 
 }  // namespace aura

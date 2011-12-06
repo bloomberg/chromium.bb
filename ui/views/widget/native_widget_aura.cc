@@ -32,7 +32,7 @@
 #endif
 
 #if defined(HAVE_IBUS)
-#include "ui/views/ime/input_method_bridge.h"
+#include "ui/views/ime/input_method_ibus.h"
 #else
 #include "ui/views/ime/mock_input_method.h"
 #endif
@@ -278,10 +278,8 @@ bool NativeWidgetAura::HasMouseCapture() const {
 
 InputMethod* NativeWidgetAura::CreateInputMethod() {
 #if defined(HAVE_IBUS)
-  ui::InputMethod* host = aura::Desktop::GetInstance()->GetInputMethod();
-  InputMethod* input_method = new InputMethodBridge(this, host);
+  InputMethod* input_method = new InputMethodIBus(this);
 #else
-  // Use the mock IME for unit tests.
   InputMethod* input_method = new MockInputMethod(this);
 #endif
   input_method->Init(GetWidget());
@@ -573,14 +571,15 @@ void NativeWidgetAura::OnBlur() {
 }
 
 bool NativeWidgetAura::OnKeyEvent(aura::KeyEvent* event) {
-  // TODO(yusukes): Need an ui::InputMethod to properly handle character events.
-  //                Right now, we just skip these.
+  // TODO(beng): Need an InputMethodAura to properly handle character events.
+  //             Right now, we just skip these.
   if (event->is_char())
     return false;
 
   DCHECK(window_->IsVisible());
   InputMethod* input_method = GetWidget()->GetInputMethod();
   DCHECK(input_method);
+  // TODO(oshima): DispatchKeyEvent should return bool?
   KeyEvent views_event(event);
   input_method->DispatchKeyEvent(views_event);
   return true;

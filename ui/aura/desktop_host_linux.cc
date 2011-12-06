@@ -12,8 +12,6 @@
 
 #include <algorithm>
 
-#include "base/event_types.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_pump_x.h"
 #include "ui/aura/cursor.h"
@@ -27,12 +25,6 @@
 #include <X11/cursorfont.h>
 #include <X11/extensions/XInput2.h>
 #include <X11/Xlib.h>
-
-#if defined(HAVE_IBUS)
-#include "ui/base/ime/input_method_ibus.h"
-#else
-#include "ui/base/ime/mock_input_method.h"
-#endif
 
 using std::max;
 using std::min;
@@ -238,6 +230,47 @@ int CoalescePendingXIMotionEvents(const XEvent* xev, XEvent* last_event) {
   return num_coalesed;
 }
 
+// We emulate Windows' WM_KEYDOWN and WM_CHAR messages.  WM_CHAR events are only
+// generated for certain keys; see
+// http://msdn.microsoft.com/en-us/library/windows/desktop/ms646268.aspx.
+bool ShouldSendCharEventForKeyboardCode(ui::KeyboardCode keycode) {
+  if ((keycode >= ui::VKEY_0 && keycode <= ui::VKEY_9) ||
+      (keycode >= ui::VKEY_A && keycode <= ui::VKEY_Z) ||
+      (keycode >= ui::VKEY_NUMPAD0 && keycode <= ui::VKEY_NUMPAD9)) {
+    return true;
+  }
+
+  switch (keycode) {
+    case ui::VKEY_BACK:
+    case ui::VKEY_RETURN:
+    case ui::VKEY_ESCAPE:
+    case ui::VKEY_SPACE:
+    case ui::VKEY_TAB:
+    // In addition to the keys listed at MSDN, we include other
+    // graphic-character and numpad keys.
+    case ui::VKEY_MULTIPLY:
+    case ui::VKEY_ADD:
+    case ui::VKEY_SUBTRACT:
+    case ui::VKEY_DECIMAL:
+    case ui::VKEY_DIVIDE:
+    case ui::VKEY_OEM_1:
+    case ui::VKEY_OEM_2:
+    case ui::VKEY_OEM_3:
+    case ui::VKEY_OEM_4:
+    case ui::VKEY_OEM_5:
+    case ui::VKEY_OEM_6:
+    case ui::VKEY_OEM_7:
+    case ui::VKEY_OEM_102:
+    case ui::VKEY_OEM_PLUS:
+    case ui::VKEY_OEM_COMMA:
+    case ui::VKEY_OEM_MINUS:
+    case ui::VKEY_OEM_PERIOD:
+      return true;
+    default:
+      return false;
+  }
+}
+
 class DesktopHostLinux : public DesktopHost,
                          public MessageLoop::DestructionObserver {
  public:
@@ -259,14 +292,6 @@ class DesktopHostLinux : public DesktopHost,
   virtual void SetCursor(gfx::NativeCursor cursor_type) OVERRIDE;
   virtual gfx::Point QueryMouseLocation() OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& event) OVERRIDE;
-  virtual void SetInputMethod(ui::InputMethod*) OVERRIDE;
-  virtual ui::InputMethod* GetInputMethod() const OVERRIDE;
-
-  // ui::internal::InputMethodDelegate Override.
-  virtual void DispatchKeyEventPostIME(const base::NativeEvent& event) OVERRIDE;
-  virtual void DispatchFabricatedKeyEventPostIME(ui::EventType type,
-                                                 ui::KeyboardCode key_code,
-                                                 int flags) OVERRIDE;
 
   // MessageLoop::DestructionObserver Overrides.
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
@@ -285,9 +310,6 @@ class DesktopHostLinux : public DesktopHost,
   // The native root window.
   ::Window root_window_;
 
-  // The input method for the desktop.
-  scoped_ptr<ui::InputMethod> input_method_;
-
   // Current Aura cursor.
   gfx::NativeCursor current_cursor_;
 
@@ -302,14 +324,6 @@ DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
       xdisplay_(base::MessagePumpX::GetDefaultXDisplay()),
       xwindow_(0),
       root_window_(DefaultRootWindow(xdisplay_)),
-#if defined(HAVE_IBUS)
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          input_method_(new ui::InputMethodIBus(this))),
-#else
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          input_method_(new ui::MockInputMethod(this))),
-#endif
-
       current_cursor_(aura::kCursorNull),
       bounds_(bounds) {
   xwindow_ = XCreateSimpleWindow(xdisplay_, root_window_,
@@ -317,7 +331,7 @@ DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
                                  bounds.width(), bounds.height(),
                                  0, 0, 0);
 
-  long event_mask = ButtonPressMask | ButtonReleaseMask | FocusChangeMask |
+  long event_mask = ButtonPressMask | ButtonReleaseMask |
                     KeyPressMask | KeyReleaseMask |
                     EnterWindowMask | LeaveWindowMask |
                     ExposureMask | VisibilityChangeMask |
@@ -335,11 +349,6 @@ DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
 
   base::MessagePumpX::SetDefaultDispatcher(this);
   MessageLoopForUI::current()->AddDestructionObserver(this);
-
-  ::Window focused_window = None;
-  int revert_to = 0;
-  XGetInputFocus(xdisplay_, &focused_window, &revert_to);
-  input_method_->Init(focused_window == xwindow_);
 }
 
 DesktopHostLinux::~DesktopHostLinux() {
@@ -363,10 +372,19 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
       desktop_->ScheduleDraw();
       handled = true;
       break;
-    case KeyPress:
+    case KeyPress: {
+      KeyEvent keydown_event(xev, false);
+      handled = desktop_->DispatchKeyEvent(&keydown_event);
+      if (ShouldSendCharEventForKeyboardCode(keydown_event.key_code())) {
+        KeyEvent char_event(xev, true);
+        handled |= desktop_->DispatchKeyEvent(&char_event);
+      }
+      break;
+    }
     case KeyRelease: {
-      input_method_->DispatchKeyEvent(xev);
-      handled = true;
+      KeyEvent keyup_event(xev, false);
+      handled = desktop_->DispatchKeyEvent(&keyup_event);
+      break;
     }
     case ButtonPress:
     case ButtonRelease: {
@@ -442,14 +460,6 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
       // If we coalesced an event we need to free its cookie.
       if (num_coalesced > 0)
         XFreeEventData(xev->xgeneric.display, &last_event.xcookie);
-      break;
-    }
-    case FocusIn: {
-      input_method_->OnFocus();
-      break;
-    }
-    case FocusOut: {
-      input_method_->OnBlur();
       break;
     }
     case MapNotify: {
@@ -599,27 +609,6 @@ bool DesktopHostLinux::IsWindowManagerPresent() {
   // of WM_Sn selections (where n is a screen number).
   ::Atom wm_s0_atom = XInternAtom(xdisplay_, "WM_S0", False);
   return XGetSelectionOwner(xdisplay_, wm_s0_atom) != None;
-}
-
-void DesktopHostLinux::SetInputMethod(ui::InputMethod* input_method) {
-  input_method_.reset(input_method);
-}
-
-ui::InputMethod* DesktopHostLinux::GetInputMethod() const {
-  return input_method_.get();
-}
-
-void DesktopHostLinux::DispatchKeyEventPostIME(const base::NativeEvent& event) {
-  KeyEvent aura_event(event, false /* is_char */);
-  desktop_->DispatchKeyEvent(&aura_event);
-  // We don't send a Char event here since the input method takes care of it.
-}
-
-void DesktopHostLinux::DispatchFabricatedKeyEventPostIME(
-    ui::EventType type, ui::KeyboardCode key_code, int flags) {
-  // Dispatch a ui::VKEY_PROCESSKEY event etc. generated by |input_method_|.
-  KeyEvent aura_event(type, key_code, flags);
-  desktop_->DispatchKeyEvent(&aura_event);
 }
 
 }  // namespace
