@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(yusukes): Remove this class when TOUCH_UI migrates to Aura. For Aura,
+// ui/base/ime/input_method_* classes are available.
+
 #include "ui/views/ime/input_method_ibus.h"
 
 #include <ibus.h>

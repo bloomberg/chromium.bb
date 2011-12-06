@@ -128,4 +128,5 @@ bool InputMethodBase::GetCaretBoundsInWidget(gfx::Rect* rect) const {
     return Widget::ConvertRect(GetFocusedView()->GetWidget(), widget_, rect);
   return true;
 }
+
 }  // namespace views

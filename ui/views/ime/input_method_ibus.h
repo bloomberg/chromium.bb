@@ -30,6 +30,8 @@ typedef struct _IBusText IBusText;
 namespace views {
 
 // An InputMethod implementation based on IBus.
+// TODO(yusukes): Remove this class when TOUCH_UI migrates to Aura. For Aura,
+// ui/base/ime/input_method_* classes are available.
 class InputMethodIBus : public InputMethodBase {
  public:
   explicit InputMethodIBus(internal::InputMethodDelegate* delegate);

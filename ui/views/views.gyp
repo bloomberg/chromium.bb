@@ -274,6 +274,8 @@
         'focus/widget_focus_manager.h',
         'ime/input_method_base.cc',
         'ime/input_method_base.h',
+        'ime/input_method_bridge.cc',
+        'ime/input_method_bridge.h',
         'ime/input_method_delegate.h',
         'ime/input_method_gtk.cc',
         'ime/input_method_gtk.h',
