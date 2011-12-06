@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@ window.onload = function() {
       var item = items[i];
       if (item.name == "packaged_app") {
         chrome.management.launchApp(item.id);
-        break;
       }
       if (item.name == "simple_extension") {
         // Try launching a non-app extension, which should fail.
