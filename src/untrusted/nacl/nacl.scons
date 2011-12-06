@@ -73,6 +73,8 @@ libnacl_dyncode = env.NaClSdkLibrary('libnacl_dyncode', ['dyncode.c'])
 env.AddLibraryToSdk(libnacl_dyncode)
 env.AddHeaderToSdk(['nacl_dyncode.h'])
 
+env.AddHeaderToSdk(['pnacl.h'])
+
 env.ComponentLibrary('libnacl_dyncode_private', ['dyncode_private.c'])
 
 imc_syscalls = [
