@@ -190,6 +190,9 @@ const char kCrashOnHangThreads[]            = "crash-on-hang-threads";
 //                          other threads are not responsive.
 const char kCrashOnLive[]                   = "crash-on-live";
 
+// If true the mobile bookmarks folder is created on the sync side.
+const char kCreateMobileBookmarksFolder[]   = "create-mobile-bookmarks-folder";
+
 // Path to the inspector files on disk (allows reloading of devtool files
 // without having to restart the browser).
 const char kDebugDevToolsFrontend[]         = "debug-devtools-frontend";
@@ -566,9 +569,6 @@ const char kEnableSyncTabsForOtherClients[] =
 
 // Enables context menu for selecting groups of tabs.
 const char kEnableTabGroupsContextMenu[]    = "enable-tab-groups-context-menu";
-
-// Enables the "synced bookmarks" folder.
-const char kEnableSyncedBookmarksFolder[]   = "enable-synced-bookmarks-folder";
 
 // Spawns threads to watch for excessive delays in specified message loops.
 // User should set breakpoints on Alarm() to examine problematic thread.

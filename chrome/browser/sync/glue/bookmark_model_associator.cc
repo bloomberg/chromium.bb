@@ -186,6 +186,14 @@ BookmarkModelAssociator::~BookmarkModelAssociator() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
+void BookmarkModelAssociator::UpdateMobileNodeVisibility() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(bookmark_model_->IsLoaded());
+
+  bookmark_model_->SetMobileFolderVisible(
+      id_map_.find(bookmark_model_->mobile_node()->id()) != id_map_.end());
+}
+
 bool BookmarkModelAssociator::DisassociateModels(SyncError* error) {
   id_map_.clear();
   id_map_inverse_.clear();
@@ -228,6 +236,7 @@ void BookmarkModelAssociator::Associate(const BookmarkNode* node,
   id_map_inverse_[sync_id] = node;
   dirty_associations_sync_ids_.insert(sync_id);
   PostPersistAssociationsTask();
+  UpdateMobileNodeVisibility();
 }
 
 void BookmarkModelAssociator::Disassociate(int64 sync_id) {
@@ -368,10 +377,15 @@ bool BookmarkModelAssociator::BuildAssociations(SyncError* error) {
     error->Reset(FROM_HERE, kServerError, model_type());
     return false;
   }
-  // The mobile folder isn't always present on the backend, so we don't fail if
-  // it doesn't exist.
-  ignore_result(AssociateTaggedPermanentNode(bookmark_model_->mobile_node(),
-                                             kMobileBookmarksTag));
+  if (!AssociateTaggedPermanentNode(bookmark_model_->mobile_node(),
+                                    kMobileBookmarksTag) &&
+      // The mobile folder only need exist if kCreateMobileBookmarksFolder is
+      // set.
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kCreateMobileBookmarksFolder)) {
+    error->Reset(FROM_HERE, kServerError, model_type());
+    return false;
+  }
   int64 bookmark_bar_sync_id = GetSyncIdFromChromeId(
       bookmark_model_->bookmark_bar_node()->id());
   DCHECK_NE(bookmark_bar_sync_id, sync_api::kInvalidId);
@@ -380,6 +394,10 @@ bool BookmarkModelAssociator::BuildAssociations(SyncError* error) {
   DCHECK_NE(other_bookmarks_sync_id, sync_api::kInvalidId);
   int64 mobile_bookmarks_sync_id = GetSyncIdFromChromeId(
        bookmark_model_->mobile_node()->id());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kCreateMobileBookmarksFolder)) {
+    DCHECK_NE(sync_api::kInvalidId, mobile_bookmarks_sync_id);
+  }
 
   std::stack<int64> dfs_stack;
   if (mobile_bookmarks_sync_id != sync_api::kInvalidId)
@@ -523,9 +541,11 @@ bool BookmarkModelAssociator::LoadAssociations() {
     return false;
   }
   int64 mobile_bookmarks_id = -1;
-  // Can't fail here as the mobile folder may not exist.
-  ignore_result(
-      GetSyncIdForTaggedNode(kMobileBookmarksTag, &mobile_bookmarks_id));
+  if (!GetSyncIdForTaggedNode(kMobileBookmarksTag, &mobile_bookmarks_id) &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kCreateMobileBookmarksFolder)) {
+    return false;
+  }
 
   // Build a bookmark node ID index since we are going to repeatedly search for
   // bookmark nodes by their IDs.
