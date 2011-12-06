@@ -477,6 +477,7 @@ TEST_PPAPI_OUT_OF_PROCESS(Flash_GetLocalTimeZoneOffset)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetCommandLineArgs)
 
 TEST_PPAPI_IN_PROCESS(WebSocket_IsWebSocket)
+TEST_PPAPI_IN_PROCESS(WebSocket_UninitializedPropertiesAccess)
 TEST_PPAPI_IN_PROCESS(WebSocket_InvalidConnect)
 TEST_PPAPI_IN_PROCESS(WebSocket_GetURL)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_ValidConnect)

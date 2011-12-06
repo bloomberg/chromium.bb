@@ -47,6 +47,7 @@ bool TestWebSocket::Init() {
 
 void TestWebSocket::RunTests(const std::string& filter) {
   RUN_TEST(IsWebSocket, filter);
+  RUN_TEST(UninitializedPropertiesAccess, filter);
   RUN_TEST(InvalidConnect, filter);
   RUN_TEST(GetURL, filter);
   RUN_TEST(ValidConnect, filter);
@@ -118,7 +119,37 @@ std::string TestWebSocket::TestIsWebSocket() {
   PASS();
 }
 
-// TODO(toyoshim): Add tests to call various interfaces before calling connect.
+std::string TestWebSocket::TestUninitializedPropertiesAccess() {
+  PP_Resource ws = websocket_interface_->Create(instance_->pp_instance());
+  ASSERT_TRUE(ws);
+
+  uint64_t bufferedAmount = websocket_interface_->GetBufferedAmount(ws);
+  ASSERT_EQ(0, bufferedAmount);
+
+  uint16_t close_code = websocket_interface_->GetCloseCode(ws);
+  ASSERT_EQ(0, close_code);
+
+  PP_Var close_reason = websocket_interface_->GetCloseReason(ws);
+  ASSERT_TRUE(AreEqual(close_reason, ""));
+
+  PP_Bool close_was_clean = websocket_interface_->GetCloseWasClean(ws);
+  ASSERT_EQ(PP_FALSE, close_was_clean);
+
+  PP_Var extensions = websocket_interface_->GetExtensions(ws);
+  ASSERT_TRUE(AreEqual(extensions, ""));
+
+  PP_Var protocol = websocket_interface_->GetProtocol(ws);
+  ASSERT_TRUE(AreEqual(protocol, ""));
+
+  PP_WebSocketReadyState_Dev ready_state =
+      websocket_interface_->GetReadyState(ws);
+  ASSERT_EQ(PP_WEBSOCKETREADYSTATE_INVALID_DEV, ready_state);
+
+  PP_Var url = websocket_interface_->GetURL(ws);
+  ASSERT_TRUE(AreEqual(url, ""));
+
+  PASS();
+}
 
 std::string TestWebSocket::TestInvalidConnect() {
   PP_Var protocols[] = { PP_MakeUndefined() };

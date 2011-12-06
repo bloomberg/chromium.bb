@@ -29,6 +29,7 @@ class TestWebSocket : public TestCase {
   PP_Resource Connect(const char* url, int32_t* result, const char* protocol);
 
   std::string TestIsWebSocket();
+  std::string TestUninitializedPropertiesAccess();
   std::string TestInvalidConnect();
   std::string TestGetURL();
   std::string TestValidConnect();
