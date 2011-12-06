@@ -164,9 +164,6 @@ if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   ${gsutil} -h Cache-Control:no-cache cp -a public-read \
       pnacl-toolchain.tgz \
       ${GS_BASE}/${BUILDBOT_GOT_REVISION}/naclsdk_${TOOLCHAIN_LABEL}.tgz
-  ${gsutil} -h Cache-Control:no-cache cp -a public-read \
-      pnacl-toolchain.tgz \
-      ${GS_BASE}/latest/naclsdk_${TOOLCHAIN_LABEL}.tgz
 fi
 
 if ${BUILD_32BIT_PLUGIN}; then
