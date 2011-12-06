@@ -466,6 +466,7 @@
         'browser/sync/syncable/transaction_observer.h',
         'browser/sync/util/cryptographer.cc',
         'browser/sync/util/cryptographer.h',
+        'browser/sync/util/enum_set.h',
         'browser/sync/util/extensions_activity_monitor.cc',
         'browser/sync/util/extensions_activity_monitor.h',
         'browser/sync/util/get_session_name_task.cc',

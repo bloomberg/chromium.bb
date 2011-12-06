@@ -3302,6 +3302,7 @@
         'browser/sync/test/engine/test_syncable_utils.h',
         'browser/sync/test/sessions/test_scoped_session_event_listener.h',
         'browser/sync/util/data_encryption_unittest.cc',
+        'browser/sync/util/enum_set_unittest.cc',
         'browser/sync/util/extensions_activity_monitor_unittest.cc',
         'browser/sync/util/protobuf_unittest.cc',
         'browser/sync/util/immutable_unittest.cc',
