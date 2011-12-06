@@ -6,25 +6,49 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "base/string_util.h"  // For ReplaceSubstringsAfterOffset
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
+using base::android::GetMethodID;
 using base::android::GetMethodIDFromClassName;
+using base::android::GetStaticMethodID;
+using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace {
 
 const char kGetName[] = "getName";
 const char kGetDeclaringClass[] = "getDeclaringClass";
+const char kGetModifiers[] = "getModifiers";
 const char kGetParameterTypes[] = "getParameterTypes";
 const char kGetReturnType[] = "getReturnType";
+const char kIntegerReturningBoolean[] = "(I)Z";
+const char kIsStatic[] = "isStatic";
 const char kJavaLangClass[] = "java/lang/Class";
 const char kJavaLangReflectMethod[] = "java/lang/reflect/Method";
+const char kJavaLangReflectModifier[] = "java/lang/reflect/Modifier";
+const char kReturningInteger[] = "()I";
 const char kReturningJavaLangClass[] = "()Ljava/lang/Class;";
 const char kReturningJavaLangClassArray[] = "()[Ljava/lang/Class;";
 const char kReturningJavaLangString[] = "()Ljava/lang/String;";
+
+struct ModifierClassTraits :
+    public base::LeakyLazyInstanceTraits<ScopedJavaGlobalRef<jclass> > {
+  static ScopedJavaGlobalRef<jclass>* New(void* instance) {
+    JNIEnv* env = AttachCurrentThread();
+    // Use placement new to initialize our instance in our preallocated space.
+    return new (instance) ScopedJavaGlobalRef<jclass>(
+        ScopedJavaLocalRef<jclass>(
+            env,
+            static_cast<jclass>(env->FindClass(kJavaLangReflectModifier))));
+  }
+};
+
+base::LazyInstance<ScopedJavaGlobalRef<jclass>, ModifierClassTraits>
+    g_java_lang_reflect_modifier_class = LAZY_INSTANCE_INITIALIZER;
 
 std::string BinaryNameToJNIName(const std::string& binary_name,
                                 JavaType* type) {
@@ -177,6 +201,20 @@ void JavaMethod::EnsureTypesAndIDAreSetUp() const {
   signature += BinaryNameToJNIName(ConvertJavaStringToUTF8(env, name.obj()),
                                    &return_type_);
 
+  // Determine whether the method is static.
+  jint modifiers = env->CallIntMethod(
+      java_method_.obj(), GetMethodIDFromClassName(env,
+                                                   kJavaLangReflectMethod,
+                                                   kGetModifiers,
+                                                   kReturningInteger));
+  bool is_static = env->CallStaticBooleanMethod(
+      g_java_lang_reflect_modifier_class.Get().obj(),
+      GetStaticMethodID(env,
+                        g_java_lang_reflect_modifier_class.Get().obj(),
+                        kIsStatic,
+                        kIntegerReturningBoolean),
+      modifiers);
+
   // Get the ID for this method.
   ScopedJavaLocalRef<jclass> declaring_class(env, static_cast<jclass>(
       env->CallObjectMethod(java_method_.obj(), GetMethodIDFromClassName(
@@ -184,8 +222,11 @@ void JavaMethod::EnsureTypesAndIDAreSetUp() const {
           kJavaLangReflectMethod,
           kGetDeclaringClass,
           kReturningJavaLangClass))));
-  id_ = base::android::GetMethodID(env, declaring_class.obj(), name_.c_str(),
-                                   signature.c_str());
+  id_ = is_static ?
+        GetStaticMethodID(env, declaring_class.obj(), name_.c_str(),
+                          signature.c_str()) :
+        GetMethodID(env, declaring_class.obj(), name_.c_str(),
+                    signature.c_str());
 
   java_method_.Reset();
 }
