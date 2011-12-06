@@ -2,6 +2,23 @@
   <div id="sync-setup-login" hidden>
     <h1 id="promo-title" i18n-content="promoTitle" hidden></h1>
     <div>
+      <div id="sync-setup-login-promo-column" hidden>
+        <h2 id="promo-message-title" i18n-content="promoMessageTitle"></h2>
+        <p>
+          <span i18n-values=".innerHTML:promoMessageBody"></span>
+          <a id="promo-learn-more-show" i18n-content="promoLearnMoreShow"
+              href="#" tabindex="1"></a>
+          <a id="promo-learn-more-hide" i18n-content="promoLearnMoreHide"
+              href="#" tabindex="1" hidden> </a>
+        </p>
+        <div id="promo-info-pane">
+          <img id="promo-infographic"
+              src="chrome://theme/IRD_SYNC_PROMO_INFO_GRAPHIC">
+          <div id="promo-information" i18n-values=".innerHTML:promoInformation"
+              hidden>
+          </div>
+        </div>
+      </div>
       <div id="sync-setup-login-content-column">
         <h1 id="sync-setup-overlay-title"
             i18n-content="syncSetupOverlayTitle">
@@ -104,23 +121,6 @@
           <div class="button-strip">
             <button id="sync-setup-cancel" type="reset" i18n-content="cancel">
             </button>
-          </div>
-        </div>
-      </div>
-      <div id="sync-setup-login-promo-column" hidden>
-        <h2 id="promo-message-title" i18n-content="promoMessageTitle"></h2>
-        <p>
-          <span i18n-values=".innerHTML:promoMessageBody"></span>
-          <a id="promo-learn-more-show" i18n-content="promoLearnMoreShow"
-              href="#"></a>
-          <a id="promo-learn-more-hide" i18n-content="promoLearnMoreHide"
-              href="#" hidden> </a>
-        </p>
-        <div id="promo-info-pane">
-          <img id="promo-infographic"
-              src="chrome://theme/IRD_SYNC_PROMO_INFO_GRAPHIC">
-          <div id="promo-information" i18n-values=".innerHTML:promoInformation"
-              hidden>
           </div>
         </div>
       </div>

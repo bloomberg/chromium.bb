@@ -120,8 +120,8 @@
       <include name="IDR_WEBSTORE_MANIFEST" file="resources\webstore_app\manifest.json" type="BINDATA" />
       <include name="IDR_ENTERPRISE_WEBSTORE_MANIFEST" file="resources\enterprise_webstore_app\manifest.json" type="BINDATA" />
       <if expr="not pp_ifdef('chromeos')">
-        <include name="IDR_SYNC_PROMO_JS" file="resources\sync_promo.js" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_SYNC_PROMO_HTML" file="resources\sync_promo.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_SYNC_PROMO_JS" file="resources\sync_promo\sync_promo.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_SYNC_PROMO_HTML" file="resources\sync_promo\sync_promo.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('chromeos')">
         <include name="IDR_ABOUT_SYS_HTML" file="resources\chromeos\about_sys.html" flattenhtml="true" type="BINDATA" />

@@ -23,7 +23,12 @@ body {
   margin: 0 auto;
   max-width: 900px;
   min-width: 830px;
+  position: relative;
   width: auto;
+}
+
+#sync-setup-login > div:first-of-type {
+  position: relative;
 }
 
 #sync-setup-configure {
@@ -34,12 +39,14 @@ body {
 }
 
 #sync-setup-login-promo-column {
-  margin-right: 385px;
+  left: 0;
+  position: absolute;
+  width: 444px;
 }
 
 html[dir='rtl'] #sync-setup-login-promo-column {
-  margin-left: 385px;
-  margin-right: 0;
+  left: auto;
+  right: 0;
 }
 
 #sync-setup-login-content-column {
