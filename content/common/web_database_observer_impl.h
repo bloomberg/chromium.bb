@@ -16,9 +16,27 @@ class WebDatabaseObserverImpl : public WebKit::WebDatabaseObserver {
   explicit WebDatabaseObserverImpl(IPC::Message::Sender* sender);
   virtual ~WebDatabaseObserverImpl();
 
-  virtual void databaseOpened(const WebKit::WebDatabase& database);
-  virtual void databaseModified(const WebKit::WebDatabase& database);
-  virtual void databaseClosed(const WebKit::WebDatabase& database);
+  virtual void databaseOpened(const WebKit::WebDatabase& database) OVERRIDE;
+  virtual void databaseModified(const WebKit::WebDatabase& database) OVERRIDE;
+  virtual void databaseClosed(const WebKit::WebDatabase& database) OVERRIDE;
+
+  virtual void reportOpenDatabaseResult(
+      const WebKit::WebDatabase& database, int callsite,
+      int webSqlErrorCode, int sqliteErrorCode) OVERRIDE;
+  virtual void reportChangeVersionResult(
+      const WebKit::WebDatabase& database, int callsite,
+      int webSqlErrorCode, int sqliteErrorCode) OVERRIDE;
+  virtual void reportStartTransactionResult(
+      const WebKit::WebDatabase& database, int callsite,
+      int webSqlErrorCode, int sqliteErrorCode) OVERRIDE;
+  virtual void reportCommitTransactionResult(
+      const WebKit::WebDatabase& database, int callsite,
+      int webSqlErrorCode, int sqliteErrorCode) OVERRIDE;
+  virtual void reportExecuteStatementResult(
+      const WebKit::WebDatabase& database, int callsite,
+      int webSqlErrorCode, int sqliteErrorCode) OVERRIDE;
+  virtual void reportVacuumDatabaseResult(
+      const WebKit::WebDatabase& database, int sqliteErrorCode) OVERRIDE;
 
   void WaitForAllDatabasesToClose();
 
