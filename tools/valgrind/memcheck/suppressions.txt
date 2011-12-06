@@ -5340,6 +5340,12 @@
    fun:_ZN10extensions16SocketController9CreateUdpEPK7ProfileRKSsRK4GURL
    fun:_ZN10extensions57SocketApiControllerTest_TestSocketControllerLifetime_Test8TestBodyEv
 }
+{
+   bug_106549
+   Memcheck:Uninitialized
+   fun:_ZN16ExtensionService24ProcessExtensionSyncDataERK17ExtensionSyncDataRNS_10SyncBundleE
+   fun:_ZN16ExtensionService18ProcessSyncChangesERKN15tracked_objects8LocationERKSt6vectorI10SyncChangeSaIS5_EE
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
