@@ -111,6 +111,7 @@ bool DownloadResourceHandler::OnResponseStarted(
   info->has_user_gesture = request_info->has_user_gesture();
   info->content_disposition = content_disposition_;
   info->mime_type = response->mime_type;
+  info->remote_address = request_->GetSocketAddress().host();
   download_stats::RecordDownloadMimeType(info->mime_type);
 
   DownloadRequestHandle request_handle(rdh_, global_id_.child_id,

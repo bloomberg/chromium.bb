@@ -102,6 +102,7 @@ class CONTENT_EXPORT DownloadItemImpl : public DownloadItem {
   virtual std::string GetMimeType() const OVERRIDE;
   virtual std::string GetOriginalMimeType() const OVERRIDE;
   virtual std::string GetReferrerCharset() const OVERRIDE;
+  virtual std::string GetRemoteAddress() const OVERRIDE;
   virtual int64 GetTotalBytes() const OVERRIDE;
   virtual void SetTotalBytes(int64 total_bytes) OVERRIDE;
   virtual const std::string& GetHash() const OVERRIDE;
@@ -209,6 +210,10 @@ class CONTENT_EXPORT DownloadItemImpl : public DownloadItem {
   // The charset of the referring page where the download request comes from.
   // It's used to construct a suggested filename.
   std::string referrer_charset_;
+
+  // The remote IP address where the download was fetched from.  Copied from
+  // DownloadCreateInfo::remote_address.
+  std::string remote_address_;
 
   // Total bytes expected
   int64 total_bytes_;

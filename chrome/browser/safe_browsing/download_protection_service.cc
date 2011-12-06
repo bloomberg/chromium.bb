@@ -158,7 +158,8 @@ DownloadProtectionService::DownloadInfo::FromDownloadItem(
   download_info.download_url_chain = item.GetUrlChain();
   download_info.referrer_url = item.GetReferrerUrl();
   download_info.total_bytes = item.GetTotalBytes();
-  // TODO(bryner): Populate user_initiated
+  download_info.remote_address = item.GetRemoteAddress();
+  download_info.user_initiated = item.GetStateInfo().has_user_gesture;
   return download_info;
 }
 
@@ -575,6 +576,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
         // The last URL in the chain is the download URL.
         resource->set_type(ClientDownloadRequest::DOWNLOAD_URL);
         resource->set_referrer(info_.referrer_url.spec());
+        if (!info_.remote_address.empty()) {
+          resource->set_remote_ip(info_.remote_address);
+        }
       } else {
         resource->set_type(ClientDownloadRequest::DOWNLOAD_REDIRECT);
       }

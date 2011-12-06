@@ -238,6 +238,7 @@ class CONTENT_EXPORT DownloadItem {
   virtual std::string GetMimeType() const = 0;
   virtual std::string GetOriginalMimeType() const = 0;
   virtual std::string GetReferrerCharset() const = 0;
+  virtual std::string GetRemoteAddress() const = 0;
   virtual int64 GetTotalBytes() const = 0;
   virtual void SetTotalBytes(int64 total_bytes) = 0;
   virtual int64 GetReceivedBytes() const = 0;

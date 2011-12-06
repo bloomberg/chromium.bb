@@ -177,6 +177,7 @@ DownloadItemImpl::DownloadItemImpl(
       mime_type_(info.mime_type),
       original_mime_type_(info.original_mime_type),
       referrer_charset_(info.referrer_charset),
+      remote_address_(info.remote_address),
       total_bytes_(info.total_bytes),
       received_bytes_(0),
       bytes_per_sec_(0),
@@ -848,6 +849,9 @@ std::string DownloadItemImpl::GetOriginalMimeType() const {
 }
 std::string DownloadItemImpl::GetReferrerCharset() const {
   return referrer_charset_;
+}
+std::string DownloadItemImpl::GetRemoteAddress() const {
+  return remote_address_;
 }
 int64 DownloadItemImpl::GetTotalBytes() const { return total_bytes_; }
 void DownloadItemImpl::SetTotalBytes(int64 total_bytes) {

@@ -173,6 +173,21 @@ class DownloadProtectionServiceTest : public testing::Test {
     return false;
   }
 
+  // At this point we only set the server IP for the download itself.
+  bool RequestContainsServerIp(const ClientDownloadRequest& request,
+                               const std::string& remote_address) {
+    for (int i = 0; i < request.resources_size(); ++i) {
+      // We want the last DOWNLOAD_URL in the chain.
+      if (request.resources(i).type() == ClientDownloadRequest::DOWNLOAD_URL &&
+          (i + 1 == request.resources_size() ||
+           request.resources(i + 1).type() !=
+           ClientDownloadRequest::DOWNLOAD_URL)) {
+        return remote_address == request.resources(i).remote_ip();
+      }
+    }
+    return false;
+  }
+
   // Flushes any pending tasks in the message loops of all threads.
   void FlushThreadMessageLoops() {
     FlushMessageLoop(BrowserThread::FILE);
@@ -406,7 +421,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
   info.referrer_url = GURL("http://www.google.com/");
   info.sha256_hash = "hash";
   info.total_bytes = 100;
-  info.user_initiated = false;
+  info.user_initiated = true;
+  info.remote_address = "10.11.12.13";
 
   EXPECT_CALL(*sb_service_, MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
@@ -438,6 +454,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
   EXPECT_EQ(info.sha256_hash, request.digests().sha256());
   EXPECT_EQ(info.total_bytes, request.length());
   EXPECT_EQ(info.user_initiated, request.user_initiated());
+  EXPECT_TRUE(RequestContainsServerIp(request, info.remote_address));
   EXPECT_EQ(2, request.resources_size());
   EXPECT_TRUE(RequestContainsResource(request,
                                       ClientDownloadRequest::DOWNLOAD_REDIRECT,

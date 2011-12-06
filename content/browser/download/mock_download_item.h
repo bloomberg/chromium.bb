@@ -65,6 +65,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(GetMimeType, std::string());
   MOCK_CONST_METHOD0(GetOriginalMimeType, std::string());
   MOCK_CONST_METHOD0(GetReferrerCharset, std::string());
+  MOCK_CONST_METHOD0(GetRemoteAddress, std::string());
   MOCK_CONST_METHOD0(GetTotalBytes, int64());
   MOCK_CONST_METHOD0(GetReceivedBytes, int64());
   MOCK_CONST_METHOD0(GetHash, const std::string&());

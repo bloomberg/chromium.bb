@@ -45,6 +45,7 @@ class DownloadProtectionService {
     std::string sha256_hash;
     int64 total_bytes;
     bool user_initiated;
+    std::string remote_address;
     DownloadInfo();
     ~DownloadInfo();
     std::string DebugString() const;

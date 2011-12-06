@@ -103,6 +103,10 @@ struct CONTENT_EXPORT DownloadCreateInfo {
 
   // The download file save info.
   DownloadSaveInfo save_info;
+
+  // The remote IP address where the download was fetched from.  Copied from
+  // UrlRequest::GetSocketAddress().
+  std::string remote_address;
 };
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_CREATE_INFO_H_
