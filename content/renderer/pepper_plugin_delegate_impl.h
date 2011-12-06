@@ -6,8 +6,8 @@
 #define CONTENT_RENDERER_PEPPER_PLUGIN_DELEGATE_IMPL_H_
 #pragma once
 
-#include <set>
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -15,9 +15,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/pepper_parent_context_provider.h"
 #include "ppapi/proxy/broker_dispatcher.h"
 #include "ppapi/proxy/proxy_channel.h"
+#include "ppapi/shared_impl/private/tcp_socket_private_impl.h"
+#include "ppapi/shared_impl/private/udp_socket_private_impl.h"
 #include "ui/base/ime/text_input_type.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppb_broker_impl.h"
@@ -121,7 +124,8 @@ class PpapiBrokerImpl : public webkit::ppapi::PluginDelegate::PpapiBroker,
 class PepperPluginDelegateImpl
     : public webkit::ppapi::PluginDelegate,
       public base::SupportsWeakPtr<PepperPluginDelegateImpl>,
-      public PepperParentContextProvider {
+      public PepperParentContextProvider,
+      public content::RenderViewObserver {
  public:
   explicit PepperPluginDelegateImpl(RenderViewImpl* render_view);
   virtual ~PepperPluginDelegateImpl();
@@ -310,6 +314,37 @@ class PepperPluginDelegateImpl
       base::PlatformFile socket,
       const PP_NetAddress_Private& local_addr,
       const PP_NetAddress_Private& remote_addr);
+
+  virtual uint32 TCPSocketCreate() OVERRIDE;
+  virtual void TCPSocketConnect(
+      webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,
+      uint32 socket_id,
+      const std::string& host,
+      uint16_t port) OVERRIDE;
+  virtual void TCPSocketConnectWithNetAddress(
+      webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,
+      uint32 socket_id,
+      const PP_NetAddress_Private& addr) OVERRIDE;
+  virtual void TCPSocketSSLHandshake(uint32 socket_id,
+                                     const std::string& server_name,
+                                     uint16_t server_port) OVERRIDE;
+  virtual void TCPSocketRead(uint32 socket_id, int32_t bytes_to_read) OVERRIDE;
+  virtual void TCPSocketWrite(uint32 socket_id,
+                              const std::string& buffer) OVERRIDE;
+  virtual void TCPSocketDisconnect(uint32 socket_id) OVERRIDE;
+
+  virtual uint32 UDPSocketCreate() OVERRIDE;
+  virtual void UDPSocketBind(
+      webkit::ppapi::PPB_UDPSocket_Private_Impl* socket,
+      uint32 socket_id,
+      const PP_NetAddress_Private& addr) OVERRIDE;
+  virtual void UDPSocketRecvFrom(uint32 socket_id,
+                                 int32_t num_bytes) OVERRIDE;
+  virtual void UDPSocketSendTo(uint32 socket_id,
+                               const std::string& buffer,
+                               const PP_NetAddress_Private& addr) OVERRIDE;
+  virtual void UDPSocketClose(uint32 socket_id) OVERRIDE;
+
   virtual int32_t ShowContextMenu(
       webkit::ppapi::PluginInstance* instance,
       webkit::ppapi::PPB_Flash_Menu_Impl* menu,
@@ -348,6 +383,39 @@ class PepperPluginDelegateImpl
       webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual bool IsInFullscreenMode() OVERRIDE;
 
+  // RenderViewObserver implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnDestruct() OVERRIDE;
+
+  void OnTCPSocketConnectACK(uint32 plugin_dispatcher_id,
+                             uint32 socket_id,
+                             bool succeeded,
+                             const PP_NetAddress_Private& local_addr,
+                             const PP_NetAddress_Private& remote_addr);
+  void OnTCPSocketSSLHandshakeACK(uint32 plugin_dispatcher_id,
+                                  uint32 socket_id,
+                                  bool succeeded);
+  void OnTCPSocketReadACK(uint32 plugin_dispatcher_id,
+                          uint32 socket_id,
+                          bool succeeded,
+                          const std::string& data);
+  void OnTCPSocketWriteACK(uint32 plugin_dispatcher_id,
+                           uint32 socket_id,
+                           bool succeeded,
+                           int32_t bytes_written);
+  void OnUDPSocketBindACK(uint32 plugin_dispatcher_id,
+                          uint32 socket_id,
+                          bool succeeded);
+  void OnUDPSocketSendToACK(uint32 plugin_dispatcher_id,
+                            uint32 socket_id,
+                            bool succeeded,
+                            int32_t bytes_written);
+  void OnUDPSocketRecvFromACK(uint32 plugin_dispatcher_id,
+                              uint32 socket_id,
+                              bool succeeded,
+                              const std::string& data,
+                              const PP_NetAddress_Private& addr);
+
   CONTENT_EXPORT int GetRoutingId() const;
 
  private:
@@ -362,6 +430,16 @@ class PepperPluginDelegateImpl
   // Implementation of PepperParentContextProvider.
   virtual RendererGLContext* GetParentContextForPlatformContext3D() OVERRIDE;
 
+  // Helper function to check that TCP/UDP private APIs are allowed for current
+  // page. This check actually allows socket usage for NativeClient code only.
+  // It is better to move this check to browser process but Pepper message
+  // filters in browser process have no context about page that sent
+  // the request. Doing this check in render process is safe because NaCl code
+  // is executed in separate NaCl process.
+  // TODO(dpolukhin, yzshen): make the check consistent for in- and out-process
+  // cases and do the check during socket creation in the browser process.
+  bool CanUseSocketAPIs();
+
   // Pointer to the RenderView that owns us.
   RenderViewImpl* render_view_;
 
@@ -375,6 +453,10 @@ class PepperPluginDelegateImpl
 
   IDMap<scoped_refptr<webkit::ppapi::PPB_Flash_NetConnector_Impl>,
         IDMapOwnPointer> pending_connect_tcps_;
+
+  IDMap<webkit::ppapi::PPB_TCPSocket_Private_Impl> tcp_sockets_;
+
+  IDMap<webkit::ppapi::PPB_UDPSocket_Private_Impl> udp_sockets_;
 
   IDMap<scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl>,
         IDMapOwnPointer> pending_context_menus_;

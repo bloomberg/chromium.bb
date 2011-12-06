@@ -354,10 +354,6 @@ RenderViewImpl::RenderViewImpl(
       cached_is_main_frame_pinned_to_right_(false),
       cached_has_main_frame_horizontal_scrollbar_(false),
       cached_has_main_frame_vertical_scrollbar_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)),
-#if defined(OS_WIN)
-      focused_plugin_id_(-1),
-#endif
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
       geolocation_dispatcher_(NULL),
       speech_input_dispatcher_(NULL),
@@ -366,7 +362,11 @@ RenderViewImpl::RenderViewImpl(
       devtools_agent_(NULL),
       renderer_accessibility_(NULL),
       session_storage_namespace_id_(session_storage_namespace_id),
-      handling_select_range_(false) {
+      handling_select_range_(false),
+#if defined(OS_WIN)
+      focused_plugin_id_(-1),
+#endif
+      ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)) {
   routing_id_ = routing_id;
   if (opener_id != MSG_ROUTING_NONE)
     opener_id_ = opener_id;

@@ -24,8 +24,8 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_client_socket.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/proxy/ppb_tcp_socket_private_proxy.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
+#include "ppapi/shared_impl/private/tcp_socket_private_impl.h"
 
 using content::BrowserThread;
 using ppapi::NetAddressPrivateImpl;
@@ -137,9 +137,9 @@ void PepperTCPSocket::Read(int32 bytes_to_read) {
     return;
   }
 
-  if (bytes_to_read > ppapi::proxy::kTCPSocketMaxReadSize) {
+  if (bytes_to_read > ppapi::TCPSocketPrivateImpl::kMaxReadSize) {
     NOTREACHED();
-    bytes_to_read = ppapi::proxy::kTCPSocketMaxReadSize;
+    bytes_to_read = ppapi::TCPSocketPrivateImpl::kMaxReadSize;
   }
 
   read_buffer_ = new net::IOBuffer(bytes_to_read);
@@ -157,9 +157,9 @@ void PepperTCPSocket::Write(const std::string& data) {
   }
 
   int data_size = data.size();
-  if (data_size > ppapi::proxy::kTCPSocketMaxWriteSize) {
+  if (data_size > ppapi::TCPSocketPrivateImpl::kMaxWriteSize) {
     NOTREACHED();
-    data_size = ppapi::proxy::kTCPSocketMaxWriteSize;
+    data_size = ppapi::TCPSocketPrivateImpl::kMaxWriteSize;
   }
 
   write_buffer_ = new net::IOBuffer(data_size);

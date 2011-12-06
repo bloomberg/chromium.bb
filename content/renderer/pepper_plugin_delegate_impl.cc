@@ -57,8 +57,10 @@
 #include "ppapi/shared_impl/platform_file.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserParams.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
@@ -75,10 +77,13 @@
 #include "webkit/plugins/ppapi/ppb_broker_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
+#include "webkit/plugins/ppapi/ppb_tcp_socket_private_impl.h"
+#include "webkit/plugins/ppapi/ppb_udp_socket_private_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 #include "webkit/plugins/webplugininfo.h"
 
 using WebKit::WebView;
+using WebKit::WebFrame;
 
 namespace {
 
@@ -844,7 +849,8 @@ void PpapiBrokerImpl::ConnectPluginToBroker(
 }
 
 PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderViewImpl* render_view)
-    : render_view_(render_view),
+    : content::RenderViewObserver(render_view),
+      render_view_(render_view),
       has_saved_context_menu_action_(false),
       saved_context_menu_action_(0),
       focused_plugin_(NULL),
@@ -1682,6 +1688,106 @@ void PepperPluginDelegateImpl::OnConnectTcpACK(
   connector->CompleteConnectTcp(socket, local_addr, remote_addr);
 }
 
+uint32 PepperPluginDelegateImpl::TCPSocketCreate() {
+  if (!CanUseSocketAPIs())
+    return 0;
+
+  uint32 socket_id = 0;
+  render_view_->Send(new PpapiHostMsg_PPBTCPSocket_Create(
+      render_view_->routing_id(), 0, &socket_id));
+  return socket_id;
+}
+
+void PepperPluginDelegateImpl::TCPSocketConnect(
+    webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,
+    uint32 socket_id,
+    const std::string& host,
+    uint16_t port) {
+  tcp_sockets_.AddWithID(socket, socket_id);
+  render_view_->Send(
+      new PpapiHostMsg_PPBTCPSocket_Connect(socket_id, host, port));
+}
+
+void PepperPluginDelegateImpl::TCPSocketConnectWithNetAddress(
+      webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,
+      uint32 socket_id,
+      const PP_NetAddress_Private& addr) {
+  tcp_sockets_.AddWithID(socket, socket_id);
+  render_view_->Send(
+      new PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress(socket_id, addr));
+}
+
+void PepperPluginDelegateImpl::TCPSocketSSLHandshake(
+    uint32 socket_id,
+    const std::string& server_name,
+    uint16_t server_port) {
+  DCHECK(tcp_sockets_.Lookup(socket_id));
+  render_view_->Send(new PpapiHostMsg_PPBTCPSocket_SSLHandshake(
+      socket_id, server_name, server_port));
+}
+
+void PepperPluginDelegateImpl::TCPSocketRead(uint32 socket_id,
+                                             int32_t bytes_to_read) {
+  DCHECK(tcp_sockets_.Lookup(socket_id));
+  render_view_->Send(
+      new PpapiHostMsg_PPBTCPSocket_Read(socket_id, bytes_to_read));
+}
+
+void PepperPluginDelegateImpl::TCPSocketWrite(uint32 socket_id,
+                                              const std::string& buffer) {
+  DCHECK(tcp_sockets_.Lookup(socket_id));
+  render_view_->Send(new PpapiHostMsg_PPBTCPSocket_Write(socket_id, buffer));
+}
+
+void PepperPluginDelegateImpl::TCPSocketDisconnect(uint32 socket_id) {
+  // There are no DCHECK(tcp_sockets_.Lookup(socket_id)) because it
+  // can be called before
+  // TCPSocketConnect/TCPSocketConnectWithNetAddress is called.
+  render_view_->Send(new PpapiHostMsg_PPBTCPSocket_Disconnect(socket_id));
+  tcp_sockets_.Remove(socket_id);
+}
+
+uint32 PepperPluginDelegateImpl::UDPSocketCreate() {
+  if (!CanUseSocketAPIs())
+    return 0;
+
+  uint32 socket_id = 0;
+  render_view_->Send(new PpapiHostMsg_PPBUDPSocket_Create(
+      render_view_->routing_id(), 0, &socket_id));
+  return socket_id;
+}
+
+void PepperPluginDelegateImpl::UDPSocketBind(
+    webkit::ppapi::PPB_UDPSocket_Private_Impl* socket,
+    uint32 socket_id,
+    const PP_NetAddress_Private& addr) {
+  udp_sockets_.AddWithID(socket, socket_id);
+  render_view_->Send(new PpapiHostMsg_PPBUDPSocket_Bind(socket_id, addr));
+}
+
+void PepperPluginDelegateImpl::UDPSocketRecvFrom(uint32 socket_id,
+                                                 int32_t num_bytes) {
+  DCHECK(udp_sockets_.Lookup(socket_id));
+  render_view_->Send(
+      new PpapiHostMsg_PPBUDPSocket_RecvFrom(socket_id, num_bytes));
+}
+
+void PepperPluginDelegateImpl::UDPSocketSendTo(
+    uint32 socket_id,
+    const std::string& buffer,
+    const PP_NetAddress_Private& net_addr) {
+  DCHECK(udp_sockets_.Lookup(socket_id));
+  render_view_->Send(
+      new PpapiHostMsg_PPBUDPSocket_SendTo(socket_id, buffer, net_addr));
+}
+
+void PepperPluginDelegateImpl::UDPSocketClose(uint32 socket_id) {
+  // There are no DCHECK(udp_sockets_.Lookup(socket_id)) because it
+  // can be called before UDPSocketBind is called.
+  render_view_->Send(new PpapiHostMsg_PPBUDPSocket_Close(socket_id));
+  udp_sockets_.Remove(socket_id);
+}
+
 int32_t PepperPluginDelegateImpl::ShowContextMenu(
     webkit::ppapi::PluginInstance* instance,
     webkit::ppapi::PPB_Flash_Menu_Impl* menu,
@@ -1922,6 +2028,103 @@ bool PepperPluginDelegateImpl::IsInFullscreenMode() {
   return render_view_->is_fullscreen();
 }
 
+bool PepperPluginDelegateImpl::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(PepperPluginDelegateImpl, message)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_ConnectACK,
+                        OnTCPSocketConnectACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_SSLHandshakeACK,
+                        OnTCPSocketSSLHandshakeACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_ReadACK, OnTCPSocketReadACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_WriteACK, OnTCPSocketWriteACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBUDPSocket_BindACK, OnUDPSocketBindACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBUDPSocket_RecvFromACK,
+                        OnUDPSocketRecvFromACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBUDPSocket_SendToACK, OnUDPSocketSendToACK)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void PepperPluginDelegateImpl::OnDestruct() {
+  // Nothing to do here. Default implementation in RenderViewObserver does
+  // 'delete this' but it's not suitable for PepperPluginDelegateImpl because
+  // it's non-pointer member in RenderViewImpl.
+}
+
+void PepperPluginDelegateImpl::OnTCPSocketConnectACK(
+    uint32 plugin_dispatcher_id,
+    uint32 socket_id,
+    bool succeeded,
+    const PP_NetAddress_Private& local_addr,
+    const PP_NetAddress_Private& remote_addr) {
+  webkit::ppapi::PPB_TCPSocket_Private_Impl* socket =
+      tcp_sockets_.Lookup(socket_id);
+  if (socket)
+    socket->OnConnectCompleted(succeeded, local_addr, remote_addr);
+}
+
+void PepperPluginDelegateImpl::OnTCPSocketSSLHandshakeACK(
+    uint32 plugin_dispatcher_id,
+    uint32 socket_id,
+    bool succeeded) {
+  webkit::ppapi::PPB_TCPSocket_Private_Impl* socket =
+      tcp_sockets_.Lookup(socket_id);
+  if (socket)
+    socket->OnSSLHandshakeCompleted(succeeded);
+}
+
+void PepperPluginDelegateImpl::OnTCPSocketReadACK(uint32 plugin_dispatcher_id,
+                                                  uint32 socket_id,
+                                                  bool succeeded,
+                                                  const std::string& data) {
+  webkit::ppapi::PPB_TCPSocket_Private_Impl* socket =
+      tcp_sockets_.Lookup(socket_id);
+  if (socket)
+    socket->OnReadCompleted(succeeded, data);
+}
+
+void PepperPluginDelegateImpl::OnTCPSocketWriteACK(uint32 plugin_dispatcher_id,
+                                                   uint32 socket_id,
+                                                   bool succeeded,
+                                                   int32_t bytes_written) {
+  webkit::ppapi::PPB_TCPSocket_Private_Impl* socket =
+      tcp_sockets_.Lookup(socket_id);
+  if (socket)
+    socket->OnWriteCompleted(succeeded, bytes_written);
+}
+
+void PepperPluginDelegateImpl::OnUDPSocketBindACK(uint32 plugin_dispatcher_id,
+                                                  uint32 socket_id,
+                                                  bool succeeded) {
+  webkit::ppapi::PPB_UDPSocket_Private_Impl* socket =
+      udp_sockets_.Lookup(socket_id);
+  if (socket)
+    socket->OnBindCompleted(succeeded);
+}
+
+void PepperPluginDelegateImpl::OnUDPSocketRecvFromACK(
+    uint32 plugin_dispatcher_id,
+    uint32 socket_id,
+    bool succeeded,
+    const std::string& data,
+    const PP_NetAddress_Private& remote_addr) {
+  webkit::ppapi::PPB_UDPSocket_Private_Impl* socket =
+      udp_sockets_.Lookup(socket_id);
+  if (socket)
+    socket->OnRecvFromCompleted(succeeded, data, remote_addr);
+}
+
+void PepperPluginDelegateImpl::OnUDPSocketSendToACK(uint32 plugin_dispatcher_id,
+                                                    uint32 socket_id,
+                                                    bool succeeded,
+                                                    int32_t bytes_written) {
+  webkit::ppapi::PPB_UDPSocket_Private_Impl* socket =
+      udp_sockets_.Lookup(socket_id);
+  if (socket)
+    socket->OnSendToCompleted(succeeded, bytes_written);
+}
+
 int PepperPluginDelegateImpl::GetRoutingId() const {
   return render_view_->routing_id();
 }
@@ -1940,4 +2143,14 @@ PepperPluginDelegateImpl::GetParentContextForPlatformContext3D() {
   if (!parent_context)
     return NULL;
   return parent_context;
+}
+
+bool PepperPluginDelegateImpl::CanUseSocketAPIs() {
+  WebView* webview = render_view_->webview();
+  WebFrame* main_frame = webview ? webview->mainFrame() : NULL;
+  GURL url(main_frame ? GURL(main_frame->document().url()) : GURL());
+  if (!url.is_valid())
+    return false;
+
+  return content::GetContentClient()->renderer()->AllowSocketAPI(url);
 }

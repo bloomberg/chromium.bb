@@ -14,7 +14,6 @@
 #include "net/base/net_errors.h"
 #include "net/udp/udp_server_socket.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/proxy/ppb_udp_socket_private_proxy.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 
 using content::BrowserThread;

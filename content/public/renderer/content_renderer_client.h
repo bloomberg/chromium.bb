@@ -146,6 +146,9 @@ class ContentRendererClient {
 
   virtual void RegisterPPAPIInterfaceFactories(
     webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) = 0;
+
+  // Return true if given URL can use TCP/UDP socket APIs.
+  virtual bool AllowSocketAPI(const GURL& url) = 0;
 };
 
 }  // namespace content

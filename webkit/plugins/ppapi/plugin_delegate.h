@@ -78,6 +78,8 @@ class PluginModule;
 class PPB_Broker_Impl;
 class PPB_Flash_Menu_Impl;
 class PPB_Flash_NetConnector_Impl;
+class PPB_TCPSocket_Private_Impl;
+class PPB_UDPSocket_Private_Impl;
 
 // Virtual interface that the browser implements to implement features for
 // PPAPI plugins.
@@ -405,6 +407,34 @@ class PluginDelegate {
   virtual int32_t ConnectTcpAddress(
       webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
       const PP_NetAddress_Private* addr) = 0;
+
+  // For PPB_TCPSocket_Private.
+  virtual uint32 TCPSocketCreate() = 0;
+  virtual void TCPSocketConnect(PPB_TCPSocket_Private_Impl* socket,
+                                uint32 socket_id,
+                                const std::string& host,
+                                uint16_t port) = 0;
+  virtual void TCPSocketConnectWithNetAddress(
+      PPB_TCPSocket_Private_Impl* socket,
+      uint32 socket_id,
+      const PP_NetAddress_Private& addr) = 0;
+  virtual void TCPSocketSSLHandshake(uint32 socket_id,
+                                     const std::string& server_name,
+                                     uint16_t server_port) = 0;
+  virtual void TCPSocketRead(uint32 socket_id, int32_t bytes_to_read) = 0;
+  virtual void TCPSocketWrite(uint32 socket_id, const std::string& buffer) = 0;
+  virtual void TCPSocketDisconnect(uint32 socket_id) = 0;
+
+  // For PPB_UDPSocket_Private.
+  virtual uint32 UDPSocketCreate() = 0;
+  virtual void UDPSocketBind(PPB_UDPSocket_Private_Impl* socket,
+                             uint32 socket_id,
+                             const PP_NetAddress_Private& addr) = 0;
+  virtual void UDPSocketRecvFrom(uint32 socket_id, int32_t num_bytes) = 0;
+  virtual void UDPSocketSendTo(uint32 socket_id,
+                               const std::string& buffer,
+                               const PP_NetAddress_Private& addr) = 0;
+  virtual void UDPSocketClose(uint32 socket_id) = 0;
 
   // Show the given context menu at the given position (in the plugin's
   // coordinates).

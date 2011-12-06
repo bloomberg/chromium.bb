@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_CHROME_CONTENT_RENDERER_CLIENT_H_
 #pragma once
 
+#include <set>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -109,6 +110,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual void RegisterPPAPIInterfaceFactories(
       webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) OVERRIDE;
 
+  virtual bool AllowSocketAPI(const GURL& url) OVERRIDE;
+
  private:
   WebKit::WebPlugin* CreatePlugin(
       content::RenderView* render_view,
@@ -145,6 +148,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   SpellCheckProvider* spellcheck_provider_;
   scoped_ptr<VisitedLinkSlave> visited_link_slave_;
   scoped_ptr<safe_browsing::PhishingClassifierFilter> phishing_classifier_;
+
+  // Set of origins that can use TCP/UDP private APIs from NaCl.
+  std::set<std::string> allowed_socket_origins_;
 };
 
 }  // namespace chrome

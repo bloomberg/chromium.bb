@@ -34,6 +34,10 @@ const char kAllowHTTPBackgroundPage[]       = "allow-http-background-page";
 const char kAllowLegacyExtensionManifests[]
     = "allow-legacy-extension-manifests";
 
+// Specifies comma-separated list of extension ids to grant access to TCP/UDP
+// socket APIs.
+const char kAllowNaClSocketAPI[]            = "allow-nacl-socket-api";
+
 // Don't block outdated plugins.
 const char kAllowOutdatedPlugins[]          = "allow-outdated-plugins";
 

@@ -1113,20 +1113,6 @@ class RenderViewImpl : public RenderWidget,
   std::set<gfx::PluginWindowHandle> fake_plugin_window_handles_;
 #endif
 
-  // Plugins -------------------------------------------------------------------
-
-  PepperPluginDelegateImpl pepper_delegate_;
-
-  // All the currently active plugin delegates for this RenderView; kept so
-  // that we can enumerate them to send updates about things like window
-  // location or tab focus and visibily. These are non-owning references.
-  std::set<WebPluginDelegateProxy*> plugin_delegates_;
-
-#if defined(OS_WIN)
-  // The ID of the focused NPAPI plug-in.
-  int focused_plugin_id_;
-#endif
-
   // Helper objects ------------------------------------------------------------
 
   RendererWebCookieJarImpl cookie_jar_;
@@ -1220,6 +1206,22 @@ class RenderViewImpl : public RenderWidget,
   // Used to inform didChangeSelection() when it is called in the context
   // of handling a ViewMsg_SelectRange IPC.
   bool handling_select_range_;
+
+  // Plugins -------------------------------------------------------------------
+
+  // All the currently active plugin delegates for this RenderView; kept so
+  // that we can enumerate them to send updates about things like window
+  // location or tab focus and visibily. These are non-owning references.
+  std::set<WebPluginDelegateProxy*> plugin_delegates_;
+
+#if defined(OS_WIN)
+  // The ID of the focused NPAPI plug-in.
+  int focused_plugin_id_;
+#endif
+
+  // NOTE: pepper_delegate_ should be last member because its constructor calls
+  // AddObservers method of RenderViewImpl from c-tor.
+  PepperPluginDelegateImpl pepper_delegate_;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above

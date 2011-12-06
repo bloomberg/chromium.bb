@@ -121,4 +121,8 @@ void ShellContentRendererClient::RegisterPPAPIInterfaceFactories(
     webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) {
 }
 
+bool ShellContentRendererClient::AllowSocketAPI(const GURL& url) {
+  return false;
+}
+
 }  // namespace content
