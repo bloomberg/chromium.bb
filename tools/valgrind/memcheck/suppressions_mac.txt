@@ -1764,6 +1764,19 @@
    fun:_ZN4base12LazyInstanceIN3net19NSSSSLInitSingletonENS_25DefaultLazyInstanceTraitsIS2_EEE6OnExitEPv
 }
 {
+   bug_95718_b
+   Memcheck:Leak
+   fun:calloc
+   fun:PR_NewLock
+   fun:ssl_Init*
+   fun:InitSessionCacheLocks
+   fun:initSessionCacheLocksLazily
+   fun:PR_CallOnce
+   fun:ssl_InitSessionCacheLocks
+   fun:lock_cache
+   fun:SSL_ClearSessionCache
+}
+{
    bug_96300
    Memcheck:Leak
    ...
