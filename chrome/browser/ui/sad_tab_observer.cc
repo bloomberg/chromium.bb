@@ -69,8 +69,9 @@ gfx::NativeView SadTabObserver::AcquireSadTab(base::TerminationStatus status) {
       SadTabView::KILLED : SadTabView::CRASHED;
   views::Widget::InitParams sad_tab_params(
       views::Widget::InitParams::TYPE_CONTROL);
-  // It is not possible to create a widget that has no parent, and later
-  // re-parent it. TODO(avi): This is a cheat. Can this be made cleaner?
+  // It is not possible to create a native_widget_win that has no parent in
+  // and later re-parent it.
+  // TODO(avi): This is a cheat. Can this be made cleaner?
   sad_tab_params.parent_widget =
       static_cast<TabContentsViewViews*>(tab_contents()->view());
   sad_tab_params.ownership =

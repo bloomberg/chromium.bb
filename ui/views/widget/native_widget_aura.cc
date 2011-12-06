@@ -764,8 +764,29 @@ void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
 // static
 void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
                                              gfx::NativeView new_parent) {
-  // http://crbug.com/102576
-  NOTIMPLEMENTED();
+  DCHECK(native_view != new_parent);
+
+  gfx::NativeView previous_parent = native_view->parent();
+  if (previous_parent == new_parent)
+    return;
+
+  Widget::Widgets widgets;
+  GetAllChildWidgets(native_view, &widgets);
+
+  // First notify all the widgets that they are being disassociated
+  // from their previous parent.
+  for (Widget::Widgets::iterator it = widgets.begin();
+      it != widgets.end(); ++it) {
+    (*it)->NotifyNativeViewHierarchyChanged(false, previous_parent);
+  }
+
+  native_view->SetParent(new_parent);
+
+  // And now, notify them that they have a brand new parent.
+  for (Widget::Widgets::iterator it = widgets.begin();
+      it != widgets.end(); ++it) {
+    (*it)->NotifyNativeViewHierarchyChanged(true, new_parent);
+  }
 }
 
 // static
