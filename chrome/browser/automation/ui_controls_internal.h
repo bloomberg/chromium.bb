@@ -27,7 +27,6 @@ bool SendMouseMoveImpl(long x, long y, const base::Closure& task);
 bool SendMouseEventsImpl(MouseButton type,
                          int state,
                          const base::Closure& task);
-void RunClosureAfterAllPendingUITasksImpl(const base::Closure& task);
 #endif
 
 }  // namespace internal

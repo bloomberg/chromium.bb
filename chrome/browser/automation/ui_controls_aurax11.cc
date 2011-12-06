@@ -70,6 +70,22 @@ bool Matcher(const base::NativeEvent& event) {
       event->xclient.message_type == MarkerEventAtom();
 }
 
+void RunClosureAfterEvents(const base::Closure closure) {
+  if (closure.is_null())
+    return;
+  static XEvent* marker_event = NULL;
+  if (!marker_event) {
+    marker_event = new XEvent();
+    marker_event->xclient.type = ClientMessage;
+    marker_event->xclient.display = NULL;
+    marker_event->xclient.window = None;
+    marker_event->xclient.format = 8;
+  }
+  marker_event->xclient.message_type = MarkerEventAtom();
+  aura::Desktop::GetInstance()->PostNativeEvent(marker_event);
+  new EventWaiter(closure, &Matcher);
+}
+
 }  // namespace
 
 namespace ui_controls {
@@ -117,7 +133,9 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
     SetMaskAndKeycodeThenSend(&xevent, ShiftMask, XK_Shift_L);
   if (alt)
     SetMaskAndKeycodeThenSend(&xevent, Mod1Mask, XK_Alt_L);
-  xevent.xkey.keycode = ui::XKeysymForWindowsKeyCode(key, shift);
+  xevent.xkey.keycode =
+      XKeysymToKeycode(base::MessagePumpX::GetDefaultXDisplay(),
+                       ui::XKeysymForWindowsKeyCode(key, shift));
   aura::Desktop::GetInstance()->PostNativeEvent(&xevent);
 
   // Send key release events.
@@ -130,7 +148,7 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
   if (control)
     SetKeycodeAndSendThenUnmask(&xevent, ControlMask, XK_Control_L);
   DCHECK(!xevent.xkey.state);
-  RunClosureAfterAllPendingUIEvents(closure);
+  RunClosureAfterEvents(closure);
   return true;
 }
 
@@ -147,7 +165,7 @@ bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& closure) {
   xmotion->same_screen = True;
   // Desktop will take care of other necessary fields.
   aura::Desktop::GetInstance()->PostNativeEvent(&xevent);
-  RunClosureAfterAllPendingUIEvents(closure);
+  RunClosureAfterEvents(closure);
   return false;
 }
 
@@ -190,7 +208,7 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type,
     xevent.xbutton.type = ButtonRelease;
     desktop->PostNativeEvent(&xevent);
   }
-  RunClosureAfterAllPendingUIEvents(closure);
+  RunClosureAfterEvents(closure);
   return false;
 }
 
@@ -206,22 +224,6 @@ void MoveMouseToCenterAndPress(views::View* view, MouseButton button,
   views::View::ConvertPointToScreen(view, &view_center);
   SendMouseMove(view_center.x(), view_center.y());
   SendMouseEventsNotifyWhenDone(button, state, closure);
-}
-
-void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
-  if (closure.is_null())
-    return;
-  static XEvent* marker_event = NULL;
-  if (!marker_event) {
-    marker_event = new XEvent();
-    marker_event->xclient.type = ClientMessage;
-    marker_event->xclient.display = NULL;
-    marker_event->xclient.window = None;
-    marker_event->xclient.format = 8;
-  }
-  marker_event->xclient.message_type = MarkerEventAtom();
-  aura::Desktop::GetInstance()->PostNativeEvent(marker_event);
-  new EventWaiter(closure, &Matcher);
 }
 
 }  // namespace ui_controls

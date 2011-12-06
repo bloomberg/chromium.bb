@@ -5,7 +5,6 @@
 #include "chrome/browser/automation/ui_controls.h"
 
 #include "base/callback.h"
-#include "base/message_loop.h"
 #include "chrome/browser/automation/ui_controls_internal.h"
 #include "ui/gfx/point.h"
 #include "ui/views/view.h"
@@ -64,11 +63,6 @@ void MoveMouseToCenterAndPress(views::View* view,
   views::View::ConvertPointToScreen(view, &view_center);
   SendMouseMove(view_center.x(), view_center.y());
   SendMouseEventsNotifyWhenDone(button, state, task);
-}
-
-void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
-  // On windows, posting UI events is synchronous so just post the closure.
-  MessageLoopForUI::current()->PostTask(FROM_HERE, closure);
 }
 
 }  // ui_controls

@@ -70,11 +70,9 @@ void ViewEventTestBase::Done() {
   PostMessage(window_->GetNativeWindow(), WM_USER, 0, 0);
 #endif
 
-  // If we're in a nested message loop, as is the case with menus, we
-  // need to quit twice. The second quit does that for us. Finish all
-  // pending UI events before posting closure because events it may be
-  // executed before UI events are executed.
-  ui_controls::RunClosureAfterAllPendingUIEvents(MessageLoop::QuitClosure());
+  // If we're in a nested message loop, as is the case with menus, we need
+  // to quit twice. The second quit does that for us.
+  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 void ViewEventTestBase::SetUp() {

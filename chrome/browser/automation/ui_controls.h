@@ -97,11 +97,6 @@ void MoveMouseToCenterAndPress(
     int state,
     const base::Closure& task);
 
-#if defined(TOOLKIT_VIEWS)
-// Runs |closure| after processing all pending ui events.
-void RunClosureAfterAllPendingUIEvents(const base::Closure& closure);
-#endif
-
 }  // ui_controls
 
 #endif  // CHROME_BROWSER_AUTOMATION_UI_CONTROLS_H_
