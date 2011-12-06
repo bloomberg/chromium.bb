@@ -170,19 +170,6 @@ static void Backtrace(CONTEXT *initial_context) {
         fprintf(stderr, "Error: stack does not fit with previous frame\n");
         failed = 1;
       }
-
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
-      if (frame_number > 0) {
-        ULONG64 base;
-        UNWIND_HISTORY_TABLE table;
-        PRUNTIME_FUNCTION info =
-          RtlLookupFunctionEntry(frame.AddrPC.Offset, &base, &table);
-        if (info == NULL) {
-          fprintf(stderr, "Error: return address has no unwind info\n");
-          failed = 1;
-        }
-      }
-#endif
     }
     frame_number++;
   }
