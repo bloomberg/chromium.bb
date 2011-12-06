@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/tracing.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/gpu/gpu_blacklist.h"
@@ -39,9 +40,9 @@ class GpuFeatureTest : public InProcessBrowserTest {
     // This enables DOM automation for tab contents.
     EnableDOMAutomation();
 #if !defined(OS_MACOSX)
-    CHECK(!command_line->HasSwitch(switches::kUseGL)) <<
+    CHECK(test_launcher_utils::OverrideGLImplementation(
+        command_line, gfx::kGLImplementationOSMesaName)) <<
         "kUseGL must not be set by test framework code!";
-    command_line->AppendSwitchASCII(switches::kUseGL, "osmesa");
 #endif
   }
 
