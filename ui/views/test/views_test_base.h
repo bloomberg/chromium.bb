@@ -35,6 +35,8 @@ class ViewsTestBase : public testing::Test {
     views_delegate_.reset(views_delegate);
   }
 
+  MessageLoop* message_loop() { return &message_loop_; }
+
  private:
   MessageLoopForUI message_loop_;
   scoped_ptr<TestViewsDelegate> views_delegate_;

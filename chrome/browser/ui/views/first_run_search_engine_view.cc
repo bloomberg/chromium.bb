@@ -140,7 +140,8 @@ void SearchEngineChoice::SetChoiceViewBounds(int x, int y, int width,
 
 FirstRunSearchEngineView::FirstRunSearchEngineView(Profile* profile,
                                                    bool randomize)
-    : background_image_(NULL),
+    : views::ClientView(NULL, NULL),
+      background_image_(NULL),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)),
       text_direction_is_rtl_(base::i18n::IsRTL()),
       added_to_view_hierarchy_(false),
@@ -169,6 +170,15 @@ string16 FirstRunSearchEngineView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_FIRSTRUN_DLG_TITLE);
 }
 
+views::View* FirstRunSearchEngineView::GetContentsView() {
+  return this;
+}
+
+views::ClientView* FirstRunSearchEngineView::CreateClientView(
+    views::Widget* widget) {
+  return this;
+}
+
 void FirstRunSearchEngineView::WindowClosing() {
   // If the window is closed by clicking the close button, we default to the
   // engine in the first slot.
@@ -176,6 +186,21 @@ void FirstRunSearchEngineView::WindowClosing() {
     ChooseSearchEngine(fallback_choice_);
   if (quit_on_closing_)
     MessageLoop::current()->Quit();
+}
+
+views::Widget* FirstRunSearchEngineView::GetWidget() {
+  return View::GetWidget();
+}
+
+const views::Widget* FirstRunSearchEngineView::GetWidget() const {
+  return View::GetWidget();
+}
+
+bool FirstRunSearchEngineView::CanClose() {
+  // We need a valid search engine to set as default, so if the user tries to
+  // close the window before the template URL service is loaded, we must prevent
+  // this from happening.
+  return fallback_choice_ != NULL;
 }
 
 void FirstRunSearchEngineView::ButtonPressed(views::Button* sender,
@@ -477,7 +502,7 @@ void FirstRunSearchEngineView::AddSearchEnginesIfPossible() {
 
 void FirstRunSearchEngineView::ChooseSearchEngine(SearchEngineChoice* choice) {
   user_chosen_engine_ = true;
-  DCHECK(template_url_service_);
+  DCHECK(choice && template_url_service_);
   template_url_service_->SetSearchEngineDialogSlot(choice->slot());
   const TemplateURL* default_search = choice->GetSearchEngine();
   if (default_search)

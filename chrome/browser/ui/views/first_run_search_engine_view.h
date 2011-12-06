@@ -13,6 +13,7 @@
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/client_view.h"
 
 class Profile;
 class TemplateURL;
@@ -74,7 +75,8 @@ class SearchEngineChoice : public views::NativeTextButton {
 
 // This class displays a large search engine choice dialog view during
 // initial first run import.
-class FirstRunSearchEngineView : public views::WidgetDelegateView,
+class FirstRunSearchEngineView : public views::ClientView,
+                                 public views::WidgetDelegate,
                                  public views::ButtonListener,
                                  public TemplateURLServiceObserver {
  public:
@@ -84,10 +86,16 @@ class FirstRunSearchEngineView : public views::WidgetDelegateView,
 
   virtual ~FirstRunSearchEngineView();
 
-  // Overridden from views::WidgetDelegateView:
+  // Overridden from views::WidgetDelegate:
   virtual string16 GetWindowTitle() const OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE { return this; }
+  virtual views::View* GetContentsView() OVERRIDE;
+  virtual views::ClientView* CreateClientView(views::Widget* widget) OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
+  virtual views::Widget* GetWidget() OVERRIDE;
+  virtual const views::Widget* GetWidget() const OVERRIDE;
+
+  // Overridden from views::ClientView:
+  virtual bool CanClose() OVERRIDE;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
