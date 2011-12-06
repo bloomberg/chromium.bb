@@ -22,6 +22,21 @@
 
 namespace chromeos {
 
+namespace {
+
+// Adds specified user to the whitelist. Returns false if that user is already
+// in the whitelist.
+bool WhitelistUser(const std::string& username) {
+  CrosSettings* cros_settings = CrosSettings::Get();
+  if (cros_settings->FindEmailInList(kAccountsPrefUsers, username))
+    return false;
+  base::StringValue username_value(username);
+  cros_settings->AppendToList(kAccountsPrefUsers, &username_value);
+  return true;
+}
+
+}  // namespace
+
 AccountsOptionsHandler::AccountsOptionsHandler() {
 }
 
@@ -31,13 +46,13 @@ AccountsOptionsHandler::~AccountsOptionsHandler() {
 void AccountsOptionsHandler::RegisterMessages() {
   DCHECK(web_ui_);
   web_ui_->RegisterMessageCallback("whitelistUser",
-      base::Bind(&AccountsOptionsHandler::WhitelistUser,
+      base::Bind(&AccountsOptionsHandler::HandleWhitelistUser,
                  base::Unretained(this)));
   web_ui_->RegisterMessageCallback("unwhitelistUser",
-      base::Bind(&AccountsOptionsHandler::UnwhitelistUser,
+      base::Bind(&AccountsOptionsHandler::HandleUnwhitelistUser,
                  base::Unretained(this)));
   web_ui_->RegisterMessageCallback("whitelistExistingUsers",
-      base::Bind(&AccountsOptionsHandler::WhitelistExistingUsers,
+      base::Bind(&AccountsOptionsHandler::HandleWhitelistExistingUsers,
                  base::Unretained(this)));
 }
 
@@ -63,9 +78,12 @@ void AccountsOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("owner_only", l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_OWNER_ONLY));
 
-  std::string owner;
-  CrosSettings::Get()->GetString(kDeviceOwner, &owner);
-  localized_strings->SetString("owner_user_id", UTF8ToUTF16(owner));
+  std::string owner_email;
+  CrosSettings::Get()->GetString(kDeviceOwner, &owner_email);
+  // Translate owner's email to the display email.
+  std::string display_email =
+      UserManager::Get()->GetUserDisplayEmail(owner_email);
+  localized_strings->SetString("owner_user_id", UTF8ToUTF16(display_email));
 
   localized_strings->SetString("current_user_is_owner",
       UserManager::Get()->current_user_is_owner() ?
@@ -78,47 +96,37 @@ void AccountsOptionsHandler::GetLocalizedValues(
           ASCIIToUTF16("true") : ASCIIToUTF16("false"));
 }
 
-void AccountsOptionsHandler::WhitelistUser(const base::ListValue* args) {
-  std::string email;
-  if (!args->GetString(0, &email)) {
+void AccountsOptionsHandler::HandleWhitelistUser(const base::ListValue* args) {
+  std::string typed_email;
+  std::string name;
+  if (!args->GetString(0, &typed_email) ||
+      !args->GetString(1, &name)) {
     return;
   }
 
-  scoped_ptr<base::StringValue> canonical_email(
-      base::Value::CreateStringValue(Authenticator::Canonicalize(email)));
-  CrosSettings::Get()->AppendToList(kAccountsPrefUsers, canonical_email.get());
+  WhitelistUser(Authenticator::Canonicalize(typed_email));
 }
 
-void AccountsOptionsHandler::UnwhitelistUser(const base::ListValue* args) {
+void AccountsOptionsHandler::HandleUnwhitelistUser(
+    const base::ListValue* args) {
   std::string email;
   if (!args->GetString(0, &email)) {
     return;
   }
 
-  scoped_ptr<base::StringValue> canonical_email(
-      base::Value::CreateStringValue(Authenticator::Canonicalize(email)));
-  CrosSettings::Get()->RemoveFromList(kAccountsPrefUsers,
-                                      canonical_email.get());
+  base::StringValue canonical_email(Authenticator::Canonicalize(email));
+  CrosSettings::Get()->RemoveFromList(kAccountsPrefUsers, &canonical_email);
   UserManager::Get()->RemoveUser(email, NULL);
 }
 
-void AccountsOptionsHandler::WhitelistExistingUsers(
+void AccountsOptionsHandler::HandleWhitelistExistingUsers(
     const base::ListValue* args) {
-  base::ListValue whitelist_users;
+  DCHECK(args && args->empty());
+
   const UserList& users = UserManager::Get()->GetUsers();
   for (UserList::const_iterator it = users.begin(); it < users.end(); ++it) {
-    const std::string& email = (*it)->email();
-    if (!CrosSettings::Get()->FindEmailInList(kAccountsPrefUsers, email)) {
-      base::DictionaryValue* user_dict = new DictionaryValue;
-      user_dict->SetString("name", (*it)->GetDisplayName());
-      user_dict->SetString("email", email);
-      user_dict->SetBoolean("owner", false);
-
-      whitelist_users.Append(user_dict);
-    }
+    WhitelistUser((*it)->email());
   }
-
-  web_ui_->CallJavascriptFunction("AccountsOptions.addUsers", whitelist_users);
 }
 
 }  // namespace chromeos

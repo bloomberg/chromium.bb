@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-
   var OptionsPage = options.OptionsPage;
 
   /////////////////////////////////////////////////////////////////////////////
@@ -16,6 +15,8 @@ cr.define('options', function() {
   function AccountsOptions(model) {
     OptionsPage.call(this, 'accounts', templateData.accountsPageTabTitle,
                      'accountsPage');
+    // Whether to show the whitelist.
+    this.showWhitelist_ = false;
   }
 
   cr.addSingletonGetter(AccountsOptions);
@@ -33,6 +34,7 @@ cr.define('options', function() {
 
       // Set up accounts page.
       var userList = $('userList');
+      userList.addEventListener('remove', this.handleRemoveUser_);
 
       var userNameEdit = $('userNameEdit');
       options.accounts.UserNameEdit.decorate(userNameEdit);
@@ -40,7 +42,8 @@ cr.define('options', function() {
 
       // If the current user is not the owner, show some warning,
       // and do not show the user list.
-      if (AccountsOptions.currentUserIsOwner()) {
+      this.showWhitelist_ = AccountsOptions.currentUserIsOwner();
+      if (this.showWhitelist_) {
         options.accounts.UserList.decorate(userList);
       } else {
         if (!AccountsOptions.whitelistIsManaged()) {
@@ -66,7 +69,7 @@ cr.define('options', function() {
      */
     updateControls_: function() {
       $('userList').disabled =
-      $('userNameEdit').disabled = !AccountsOptions.currentUserIsOwner() ||
+      $('userNameEdit').disabled = !this.showWhitelist_ ||
                                    AccountsOptions.whitelistIsManaged() ||
                                    !$('useWhitelistCheck').checked;
     },
@@ -79,7 +82,7 @@ cr.define('options', function() {
     handleVisibleChange_: function(e) {
       if (this.visible) {
         this.updateControls_();
-        if (AccountsOptions.currentUserIsOwner())
+        if (this.showWhitelist_)
           $('userList').redraw();
       }
     },
@@ -111,7 +114,16 @@ cr.define('options', function() {
      * @param {Event} e Add event fired from userNameEdit.
      */
     handleAddUser_: function(e) {
-      AccountsOptions.addUsers([e.user]);
+      chrome.send('whitelistUser', [e.user.email, e.user.name]);
+    },
+
+    /**
+     * Handler for "remove" event fired from userList.
+     * @private
+     * @param {Event} e Remove event fired from userList.
+     */
+    handleRemoveUser_: function(e) {
+      chrome.send('unwhitelistUser', [e.user.username]);
     }
   };
 
@@ -137,22 +149,12 @@ cr.define('options', function() {
   };
 
   /**
-   * Adds given users to userList.
-   */
-  AccountsOptions.addUsers = function(users) {
-    var userList = $('userList');
-    for (var i = 0; i < users.length; ++i) {
-      userList.addUser(users[i]);
-    }
-  };
-
-  /**
    * Update account picture.
-   * @param {string} email Email of the user to update.
+   * @param {string} username User for which to update the image.
    */
-  AccountsOptions.updateAccountPicture = function(email) {
-    if (this.currentUserIsOwner())
-      $('userList').updateAccountPicture(email);
+  AccountsOptions.updateAccountPicture = function(username) {
+    if (this.showWhitelist_)
+      $('userList').updateAccountPicture(username);
   };
 
   // Export

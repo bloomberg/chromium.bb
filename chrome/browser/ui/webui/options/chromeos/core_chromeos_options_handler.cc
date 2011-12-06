@@ -17,6 +17,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/options/chromeos/accounts_options_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/user_metrics.h"
@@ -41,25 +42,42 @@ base::Value* CreateSettingsValue(base::Value *value,
   return dict;
 }
 
+// Returns true if |username| is the logged-in owner.
+bool IsLoggedInOwner(const std::string& username) {
+  UserManager* user_manager = UserManager::Get();
+  return user_manager->current_user_is_owner() &&
+      user_manager->logged_in_user().email() == username;
+}
+
+// Creates a user info dictionary to be stored in the |ListValue| that is
+// passed to Javascript for the |kAccountsPrefUsers| preference.
+base::DictionaryValue* CreateUserInfo(const std::string& username,
+                                      const std::string& display_email,
+                                      const std::string& display_name) {
+  base::DictionaryValue* user_dict = new DictionaryValue;
+  user_dict->SetString("username", username);
+  user_dict->SetString("name", display_email);
+  user_dict->SetString("email", display_name);
+  user_dict->SetBoolean("owner", IsLoggedInOwner(username));
+  return user_dict;
+}
+
 // This function decorates the bare list of emails with some more information
 // needed by the UI to properly display the Accounts page.
 base::Value* CreateUsersWhitelist(const base::Value *pref_value) {
   const base::ListValue* list_value =
       static_cast<const base::ListValue*>(pref_value);
   base::ListValue* user_list = new base::ListValue();
-
-  const User& self = UserManager::Get()->logged_in_user();
-  bool is_owner = UserManager::Get()->current_user_is_owner();
+  UserManager* user_manager = UserManager::Get();
 
   for (base::ListValue::const_iterator i = list_value->begin();
        i != list_value->end(); ++i) {
     std::string email;
     if ((*i)->GetAsString(&email)) {
-      DictionaryValue* user = new DictionaryValue;
-      user->SetString("email", email);
-      user->SetString("name", "");
-      user->SetBoolean("owner", is_owner && email == self.email());
-      user_list->Append(user);
+      // Translate email to the display email.
+      std::string display_email = user_manager->GetUserDisplayEmail(email);
+      // TODO(ivankr): fetch display name for existing users.
+      user_list->Append(CreateUserInfo(email, display_email, std::string()));
     }
   }
   return user_list;

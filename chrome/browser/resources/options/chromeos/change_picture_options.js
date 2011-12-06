@@ -154,7 +154,7 @@ cr.define('options', function() {
      * @type {string}
      */
     get currentUserImageUrl() {
-      return 'chrome://userimage/' + PersonalOptions.getLoggedInUserEmail() +
+      return 'chrome://userimage/' + PersonalOptions.getLoggedInUsername() +
           '?id=' + (new Date()).getTime();
     },
 

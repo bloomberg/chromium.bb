@@ -11,21 +11,13 @@
 
 #include "base/string16.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
+#include "chrome/browser/chromeos/login/remove_user_delegate.h"
 #include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
 namespace chromeos {
-
-// Delegate to be used while user removing.
-class RemoveUserDelegate {
- public:
-  // Called right before actual user removal process is initiated.
-  virtual void OnBeforeUserRemoved(const std::string& username) = 0;
-
-  // Called right after user removal process has been initiated.
-  virtual void OnUserRemoved(const std::string& username) = 0;
-};
 
 // TODO(nkostylev): Extract interface, create a BaseLoginDisplay class.
 // An abstract class that defines login UI implementation.
@@ -42,13 +34,17 @@ class LoginDisplay : public RemoveUserDelegate {
     // Users decides to sign in into captive portal.
     virtual void FixCaptivePortal() = 0;
 
+    // Sets the displayed email for the next login attempt with |CompleteLogin|.
+    // If it succeeds, user's displayed email value will be updated to |email|.
+    virtual void SetDisplayEmail(const std::string& email) = 0;
+
     // Complete sign process with specified |username| and |password|.
     // Used for new users authenticated through an extension.
     virtual void CompleteLogin(const std::string& username,
                                const std::string& password) = 0;
 
     // Sign in using |username| and |password| specified.
-    // Used for both known and new users.
+    // Used for both known users only.
     virtual void Login(const std::string& username,
                        const std::string& password) = 0;
 

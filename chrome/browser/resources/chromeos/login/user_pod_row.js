@@ -221,18 +221,18 @@ cr.define('login', function() {
 
       this.updateUserImage();
 
-      this.nameElement.textContent = userDict.name;
+      this.nameElement.textContent = userDict.displayName;
       this.removeUserButtonElement.hidden = !userDict.canRemove;
       this.signedInIndicatorElement.hidden = !userDict.signedIn;
 
       if (this.isGuest) {
-        this.imageElement.title = userDict.name;
+        this.imageElement.title = userDict.displayName;
         this.enterButtonElement.hidden = false;
         this.passwordElement.hidden = true;
         this.signinButtonElement.hidden = true;
       } else {
         var needSignin = this.needGaiaSignin;
-        this.imageElement.title = userDict.emailAddress;
+        this.imageElement.title = userDict.nameTooltip || '';
         this.enterButtonElement.hidden = true;
         this.passwordElement.hidden = needSignin;
         this.removeUserButtonElement.setAttribute(
@@ -251,7 +251,7 @@ cr.define('login', function() {
      * @type {boolean}
      */
     get isGuest() {
-      return !this.user.emailAddress;
+      return !this.user.username;
     },
 
     /**
@@ -315,7 +315,7 @@ cr.define('login', function() {
     updateUserImage: function() {
       this.imageElement.src = this.isGuest ?
           'chrome://theme/IDR_LOGIN_GUEST' :
-          'chrome://userimage/' + this.user.emailAddress +
+          'chrome://userimage/' + this.user.username +
               '?id=' + (new Date()).getTime();
     },
 
@@ -349,15 +349,22 @@ cr.define('login', function() {
           this.focusInput();
           return false;
         }
-        this.parentNode.showSigninUI(this.user.emailAddress);
+        this.showSigninUI();
       } else if (!this.passwordElement.value) {
         return false;
       } else {
         chrome.send('authenticateUser',
-                    [this.user.emailAddress, this.passwordElement.value]);
+                    [this.user.username, this.passwordElement.value]);
       }
 
       return true;
+    },
+
+    /**
+     * Shows signin UI for this user.
+     */
+    showSigninUI: function() {
+      this.parentNode.showSigninUI(this.user.emailAddress);
     },
 
     /**
@@ -388,7 +395,7 @@ cr.define('login', function() {
       if (this.parentNode.disabled)
         return;
       if (this.activeRemoveButton)
-        chrome.send('removeUser', [this.user.emailAddress]);
+        chrome.send('removeUser', [this.user.username]);
       else
         this.activeRemoveButton = true;
     },
@@ -401,7 +408,7 @@ cr.define('login', function() {
       if (this.parentNode.disabled)
         return;
       if (!this.signinButtonElement.hidden) {
-        this.parentNode.showSigninUI(this.user.emailAddress);
+        this.showSigninUI();
         // Prevent default so that we don't trigger 'focus' event.
         e.preventDefault();
       }
@@ -645,12 +652,12 @@ cr.define('login', function() {
 
     /**
      * Updates current image of a user.
-     * @param {string} email Email of the user for which to update the image.
+     * @param {string} username User for which to update the image.
      * @public
      */
-    updateUserImage: function(email) {
+    updateUserImage: function(username) {
       for (var i = 0, pod; pod = this.pods[i]; ++i) {
-        if (pod.user.emailAddress == email) {
+        if (pod.user.username == username) {
           pod.updateUserImage();
           return;
         }

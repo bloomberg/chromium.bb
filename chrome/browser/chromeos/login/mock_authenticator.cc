@@ -75,6 +75,7 @@ MockLoginUtils::~MockLoginUtils() {}
 
 void MockLoginUtils::PrepareProfile(
     const std::string& username,
+    const std::string& display_email,
     const std::string& password,
     const GaiaAuthConsumer::ClientLoginResult& res,
     bool pending_requests,

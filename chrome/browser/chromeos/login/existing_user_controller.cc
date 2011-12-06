@@ -176,6 +176,10 @@ void ExistingUserController::FixCaptivePortal() {
   LoginAsGuest();
 }
 
+void ExistingUserController::SetDisplayEmail(const std::string& email) {
+  display_email_ = email;
+}
+
 void ExistingUserController::CompleteLogin(const std::string& username,
                                            const std::string& password) {
   SetOwnerUserInCryptohome();
@@ -365,6 +369,9 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
 
   if (login_status_consumer_)
     login_status_consumer_->OnLoginFailure(failure);
+
+  // Clear the recorded displayed email so it won't affect any future attempts.
+  display_email_.clear();
 }
 
 void ExistingUserController::OnLoginSuccess(
@@ -394,6 +401,7 @@ void ExistingUserController::OnLoginSuccess(
 
   // Will call OnProfilePrepared() in the end.
   LoginUtils::Get()->PrepareProfile(username,
+                                    display_email_,
                                     password,
                                     credentials,
                                     pending_requests,
@@ -401,6 +409,7 @@ void ExistingUserController::OnLoginSuccess(
                                     has_cookies,
                                     this);
 
+  display_email_.clear();
 
   // Notifiy LoginDisplay to allow it provide visual feedback to user.
   login_display_->OnLoginSuccess(username);
@@ -522,6 +531,8 @@ void ExistingUserController::OnPasswordChangeDetected(
 
   if (login_status_consumer_)
     login_status_consumer_->OnPasswordChangeDetected(credentials);
+
+  display_email_.clear();
 }
 
 void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
@@ -530,6 +541,8 @@ void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
   // Reenable clicking on other windows and status area.
   login_display_->SetUIEnabled(true);
   SetStatusAreaEnabled(true);
+
+  display_email_.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

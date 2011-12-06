@@ -83,11 +83,11 @@ cr.define('login', function() {
 
   /**
    * Updates current image of a user.
-   * @param {string} email Email of the user for which to update the image.
+   * @param {string} username User for which to update the image.
    * @public
    */
-  AccountPickerScreen.updateUserImage = function(email) {
-    $('pod-row').updateUserImage(email);
+  AccountPickerScreen.updateUserImage = function(username) {
+    $('pod-row').updateUserImage(username);
   };
 
   /**

@@ -60,7 +60,7 @@ cr.define('options.accounts', function() {
      *       more times in a row.)
      *
      * @param {string} str A string to parse.
-     * @return {Object} User info parsed from the string.
+     * @return {{name: string, email: string}} User info parsed from the string.
      */
     parse: function(str) {
       const format1 = new RegExp(format1String);
@@ -71,8 +71,7 @@ cr.define('options.accounts', function() {
       if (matches) {
         return {
           name: matches[1],
-          email: matches[1] + '@gmail.com',
-          owner:false
+          email: matches[1] + '@gmail.com'
         };
       }
 
@@ -80,8 +79,7 @@ cr.define('options.accounts', function() {
       if (matches) {
         return {
           name: matches[1],
-          email: matches[1] + '@' + matches[2],
-          owner:false
+          email: matches[1] + '@' + matches[2]
         };
       }
 
@@ -89,8 +87,7 @@ cr.define('options.accounts', function() {
       if (matches) {
         return {
           name: matches[1],
-          email: matches[2],
-          owner:false
+          email: matches[2]
         };
       }
 

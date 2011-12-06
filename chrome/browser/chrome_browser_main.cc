@@ -504,6 +504,7 @@ class StubLogin : public chromeos::LoginStatusConsumer,
     if (!profile_prepared_) {
       // Will call OnProfilePrepared in the end.
       chromeos::LoginUtils::Get()->PrepareProfile(username,
+                                                  std::string(),
                                                   password,
                                                   credentials,
                                                   pending_requests,
@@ -559,9 +560,8 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
   } else {
     if (!parsed_command_line.HasSwitch(switches::kTestName)) {
       // We did not log in (we crashed or are debugging), so we need to
-      // set the user name for sync.
-      chromeos::LoginUtils::Get()->RestoreAuthenticationSession(
-          chromeos::UserManager::Get()->logged_in_user().email(), profile);
+      // restore Sync.
+      chromeos::LoginUtils::Get()->RestoreAuthenticationSession(profile);
     }
   }
 }

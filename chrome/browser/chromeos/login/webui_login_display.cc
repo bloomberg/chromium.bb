@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -195,6 +194,11 @@ bool WebUILoginDisplay::IsShowGuest() const {
 
 bool WebUILoginDisplay::IsShowNewUser() const {
   return show_new_user_;
+}
+
+void WebUILoginDisplay::SetDisplayEmail(const std::string& email) {
+  if (delegate_)
+    delegate_->SetDisplayEmail(email);
 }
 
 }  // namespace chromeos

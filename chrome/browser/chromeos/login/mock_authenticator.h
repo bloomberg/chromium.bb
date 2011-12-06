@@ -81,6 +81,7 @@ class MockLoginUtils : public LoginUtils {
   virtual ~MockLoginUtils();
 
   virtual void PrepareProfile(const std::string& username,
+                              const std::string& display_email,
                               const std::string& password,
                               const GaiaAuthConsumer::ClientLoginResult& res,
                               bool pending_requests,
@@ -99,8 +100,7 @@ class MockLoginUtils : public LoginUtils {
 
   virtual void PrewarmAuthentication() OVERRIDE {}
 
-  virtual void RestoreAuthenticationSession(const std::string& user_name,
-                                            Profile* profile) OVERRIDE {}
+  virtual void RestoreAuthenticationSession(Profile* profile) OVERRIDE {}
 
   virtual void StartTokenServices(Profile* profile) OVERRIDE {}
 

@@ -246,8 +246,8 @@ class LoginUtilsTestBase : public TESTBASE,
                                  "password");
 
     GaiaAuthConsumer::ClientLoginResult credentials;
-    LoginUtils::Get()->PrepareProfile(
-        username, "password", credentials, false, true, false, this);
+    LoginUtils::Get()->PrepareProfile(username, std::string(), "password",
+                                      credentials, false, true, false, this);
     loop_.RunAllPending();
   }
 

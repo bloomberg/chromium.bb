@@ -340,7 +340,7 @@ cr.define('cr.ui.login', function() {
                $('pod-row').activatedPod) {
       const MAX_LOGIN_ATTEMMPTS_IN_POD = 3;
       if (loginAttempts > MAX_LOGIN_ATTEMMPTS_IN_POD) {
-        Oobe.showSigninUI($('pod-row').activatedPod.user.emailAddress);
+        $('pod-row').activatedPod.showSigninUI();
         return;
       }
 

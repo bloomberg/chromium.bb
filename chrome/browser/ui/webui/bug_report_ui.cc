@@ -99,7 +99,7 @@ std::string GetUserEmail() {
   if (!manager)
     return std::string();
   else
-    return manager->logged_in_user().email();
+    return manager->logged_in_user().display_email();
 }
 #endif
 

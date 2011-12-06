@@ -205,7 +205,7 @@ void PersonalOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("changePicture",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE));
   if (chromeos::UserManager::Get()->user_is_logged_in()) {
-    localized_strings->SetString("userEmail",
+    localized_strings->SetString("username",
         chromeos::UserManager::Get()->logged_in_user().email());
   }
 #endif

@@ -113,10 +113,10 @@ cr.define('login', function() {
      * @param {!Object} listener Listener to be wrapped.
      */
     selfBind_: function(listener) {
-      var selfBinded = function(e) {
-        listener(e, selfBinded);
-      }
-      return selfBinded;
+      var selfBound = function(e) {
+        listener(e, selfBound);
+      };
+      return selfBound;
     },
 
     /**

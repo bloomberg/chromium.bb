@@ -83,8 +83,15 @@ class UserManager : public ProfileDownloaderDelegate,
   void SaveUserOAuthStatus(const std::string& username,
                            User::OAuthTokenStatus oauth_token_status);
 
-  // Gets user's oauth token status in local state preferences.
-  User::OAuthTokenStatus GetUserOAuthStatus(const std::string& username) const;
+  // Save user's displayed (non-canonical) email in local state preferences.
+  // Ignored If there is no such user.
+  void SaveUserDisplayEmail(const std::string& username,
+                            const std::string& display_email);
+
+  // Returns the display email for user |username| if it is known (was
+  // previously set by a |SaveUserDisplayEmail| call).
+  // Otherwise, returns |username| itself.
+  std::string GetUserDisplayEmail(const std::string& username) const;
 
   // Sets user image to the default image with index |image_index|, sends
   // LOGIN_USER_IMAGE_CHANGED notification and updates Local State.
@@ -168,6 +175,9 @@ class UserManager : public ProfileDownloaderDelegate,
 
   // Notifies on new user session.
   void NotifyOnLogin();
+
+  // Reads user's oauth token status from local state preferences.
+  User::OAuthTokenStatus LoadUserOAuthStatus(const std::string& username) const;
 
   // Sets one of the default images for the specified user and saves this
   // setting in local state.

@@ -13,6 +13,7 @@ namespace chromeos {
 
 User::User(const std::string& email)
     : email_(email),
+      display_email_(email),
       oauth_token_status_(OAUTH_TOKEN_STATUS_UNKNOWN),
       image_index_(kInvalidImageIndex) {
   image_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
@@ -27,19 +28,19 @@ void User::SetImage(const SkBitmap& image, int image_index) {
 }
 
 std::string User::GetDisplayName() const {
-  size_t i = email_.find('@');
+  size_t i = display_email_.find('@');
   if (i == 0 || i == std::string::npos) {
-    return email_;
+    return display_email_;
   }
-  return email_.substr(0, i);
+  return display_email_.substr(0, i);
 }
 
 bool User::NeedsNameTooltip() const {
-  return UserManager::Get()->IsDisplayNameUnique(GetDisplayName());
+  return !UserManager::Get()->IsDisplayNameUnique(GetDisplayName());
 }
 
 std::string User::GetNameTooltip() const {
-  const std::string& user_email = email();
+  const std::string& user_email = display_email_;
   size_t at_pos = user_email.rfind('@');
   if (at_pos == std::string::npos) {
     NOTREACHED();

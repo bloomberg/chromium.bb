@@ -52,8 +52,10 @@ const char kGaiaExtStartPage[] =
     "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/main.html";
 
 // User dictionary keys.
-const char kKeyName[] = "name";
+const char kKeyUsername[] = "username";
+const char kKeyDisplayName[] = "displayName";
 const char kKeyEmailAddress[] = "emailAddress";
+const char kKeyNameTooltip[] = "nameTooltip";
 const char kKeySignedIn[] = "signedIn";
 const char kKeyCanRemove[] = "canRemove";
 const char kKeyOauthTokenStatus[] = "oauthTokenStatus";
@@ -523,16 +525,17 @@ void SigninScreenHandler::ShowSigninScreenForCreds(
 }
 
 void SigninScreenHandler::HandleCompleteLogin(const base::ListValue* args) {
-  std::string username;
+  std::string typed_email;
   std::string password;
-  if (!args->GetString(0, &username) ||
+  if (!args->GetString(0, &typed_email) ||
       !args->GetString(1, &password)) {
     NOTREACHED();
     return;
   }
 
-  username = SanitizeEmail(username);
-  delegate_->CompleteLogin(username, password);
+  typed_email = SanitizeEmail(typed_email);
+  delegate_->SetDisplayEmail(typed_email);
+  delegate_->CompleteLogin(typed_email, password);
 }
 
 void SigninScreenHandler::HandleAuthenticateUser(const base::ListValue* args) {
@@ -623,8 +626,11 @@ void SigninScreenHandler::SendUserList(bool animated) {
 
     if (non_owner_count < max_non_owner_users || is_owner) {
       DictionaryValue* user_dict = new DictionaryValue();
-      user_dict->SetString(kKeyName, (*it)->GetDisplayName());
-      user_dict->SetString(kKeyEmailAddress, email);
+      user_dict->SetString(kKeyUsername, email);
+      user_dict->SetString(kKeyEmailAddress, (*it)->display_email());
+      user_dict->SetString(kKeyDisplayName, (*it)->GetDisplayName());
+      if ((*it)->NeedsNameTooltip())
+        user_dict->SetString(kKeyNameTooltip, (*it)->GetNameTooltip());
       user_dict->SetInteger(kKeyOauthTokenStatus, (*it)->oauth_token_status());
       user_dict->SetBoolean(kKeySignedIn, signed_in);
 
@@ -646,8 +652,10 @@ void SigninScreenHandler::SendUserList(bool animated) {
   if (show_guest) {
     // Add the Guest to the user list.
     DictionaryValue* guest_dict = new DictionaryValue();
-    guest_dict->SetString(kKeyName, l10n_util::GetStringUTF16(IDS_GUEST));
+    guest_dict->SetString(kKeyUsername, "");
     guest_dict->SetString(kKeyEmailAddress, "");
+    guest_dict->SetString(kKeyDisplayName,
+                          l10n_util::GetStringUTF16(IDS_GUEST));
     guest_dict->SetBoolean(kKeyCanRemove, false);
     guest_dict->SetInteger(kKeyOauthTokenStatus,
                            User::OAUTH_TOKEN_STATUS_UNKNOWN);

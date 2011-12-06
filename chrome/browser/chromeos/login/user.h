@@ -15,6 +15,11 @@
 namespace chromeos {
 
 // A class representing information about a previously logged in user.
+// Each user has a canonical email (username), returned by |email()| and
+// may have a different displayed email (in the raw form as entered by user),
+// returned by |displayed_email()|.
+// Displayed emails are for use in UI only, anywhere else users must be referred
+// to by |email()|.
 class User {
  public:
   // User OAuth token status according to the last check.
@@ -45,15 +50,14 @@ class User {
   bool NeedsNameTooltip() const;
 
   // The image for this user.
-  void SetImage(const SkBitmap& image, int image_index);
   const SkBitmap& image() const { return image_; }
   int image_index() const { return image_index_; }
 
   // OAuth token status for this user.
   OAuthTokenStatus oauth_token_status() const { return oauth_token_status_; }
-  void set_oauth_token_status(OAuthTokenStatus status) {
-    oauth_token_status_ = status;
-  }
+
+  // The displayed (non-canonical) user email.
+  std::string display_email() const { return display_email_; }
 
  private:
   friend class UserManager;
@@ -62,7 +66,20 @@ class User {
   explicit User(const std::string& email);
   ~User();
 
+  // Setters are private so only UserManager can call them.
+  void SetImage(const SkBitmap& image, int image_index);
+
+  void set_oauth_token_status(OAuthTokenStatus status) {
+    oauth_token_status_ = status;
+  }
+
+  void set_display_email(const std::string& display_email) {
+    display_email_ = display_email;
+  }
+
   std::string email_;
+  // The displayed user email, defaults to |email_|.
+  std::string display_email_;
   SkBitmap image_;
   OAuthTokenStatus oauth_token_status_;
 

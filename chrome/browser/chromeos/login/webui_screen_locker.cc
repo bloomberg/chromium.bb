@@ -145,6 +145,10 @@ void WebUIScreenLocker::FixCaptivePortal() {
   NOTREACHED();
 }
 
+void WebUIScreenLocker::SetDisplayEmail(const std::string& email) {
+  NOTREACHED();
+}
+
 void WebUIScreenLocker::CompleteLogin(const std::string& username,
                                       const std::string& password) {
   NOTREACHED();

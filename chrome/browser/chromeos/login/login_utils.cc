@@ -543,6 +543,7 @@ class LoginUtilsImpl : public LoginUtils,
   // LoginUtils implementation:
   virtual void PrepareProfile(
       const std::string& username,
+      const std::string& display_email,
       const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool pending_requests,
@@ -555,8 +556,7 @@ class LoginUtilsImpl : public LoginUtils,
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
       LoginStatusConsumer* consumer) OVERRIDE;
   virtual void PrewarmAuthentication() OVERRIDE;
-  virtual void RestoreAuthenticationSession(const std::string& user_name,
-                                            Profile* profile) OVERRIDE;
+  virtual void RestoreAuthenticationSession(Profile* profile) OVERRIDE;
   virtual void StartTokenServices(Profile* user_profile) OVERRIDE;
   virtual void StartSync(
       Profile* profile,
@@ -642,7 +642,6 @@ class LoginUtilsImpl : public LoginUtils,
   // The current background view.
   chromeos::BackgroundView* background_view_;
 
-  std::string username_;
   std::string password_;
   GaiaAuthConsumer::ClientLoginResult credentials_;
   bool pending_requests_;
@@ -693,6 +692,7 @@ class LoginUtilsWrapper {
 
 void LoginUtilsImpl::PrepareProfile(
     const std::string& username,
+    const std::string& display_email,
     const std::string& password,
     const GaiaAuthConsumer::ClientLoginResult& credentials,
     bool pending_requests,
@@ -709,13 +709,17 @@ void LoginUtilsImpl::PrepareProfile(
   btl->AddLoginTimeMarker("StartSession-End", false);
 
   btl->AddLoginTimeMarker("UserLoggedIn-Start", false);
-  UserManager::Get()->UserLoggedIn(username);
+  UserManager* user_manager = UserManager::Get();
+  user_manager->UserLoggedIn(username);
   btl->AddLoginTimeMarker("UserLoggedIn-End", false);
 
   // Switch log file as soon as possible.
   logging::RedirectChromeLogging(*(CommandLine::ForCurrentProcess()));
 
-  username_ = username;
+  // Update user's displayed email.
+  if (!display_email.empty())
+    user_manager->SaveUserDisplayEmail(username, display_email);
+
   password_ = password;
 
   credentials_ = credentials;
@@ -885,12 +889,10 @@ void LoginUtilsImpl::StartSync(
 
     // Set the CrOS user by getting this constructor run with the
     // user's email on first retrieval.
+    std::string email = UserManager::Get()->logged_in_user().email();
     // TODO(tim): Tidy this up once cros_user is gone (part of bug 93922).
-    user_profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
-                                        username_);
-    user_profile->GetProfileSyncService(username_)->SetPassphrase(
-        password_, false);
-    username_ = "";
+    user_profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername, email);
+    user_profile->GetProfileSyncService(email)->SetPassphrase(password_, false);
     password_ = "";
 
     token_service->Initialize(GaiaConstants::kChromeOSSource, user_profile);
@@ -1113,9 +1115,7 @@ void LoginUtilsImpl::PrewarmAuthentication() {
   }
 }
 
-void LoginUtilsImpl::RestoreAuthenticationSession(const std::string& username,
-                                                  Profile* user_profile) {
-  username_ = username;
+void LoginUtilsImpl::RestoreAuthenticationSession(Profile* user_profile) {
   KickStartAuthentication(user_profile);
 }
 
@@ -1192,7 +1192,7 @@ bool LoginUtilsImpl::ReadOAuth1AccessToken(Profile* user_profile,
                                            std::string* token,
                                            std::string* secret) {
   // Skip reading oauth token if user does not have a valid status.
-  if (UserManager::Get()->GetUserOAuthStatus(username_) !=
+  if (UserManager::Get()->logged_in_user().oauth_token_status() !=
       User::OAUTH_TOKEN_STATUS_VALID) {
     return false;
   }
@@ -1227,8 +1227,9 @@ void LoginUtilsImpl::StoreOAuth1AccessToken(Profile* user_profile,
 
   // ...then record the presence of valid OAuth token for this account in local
   // state as well.
-  UserManager::Get()->SaveUserOAuthStatus(username_,
-                                          User::OAUTH_TOKEN_STATUS_VALID);
+  UserManager::Get()->SaveUserOAuthStatus(
+      UserManager::Get()->logged_in_user().email(),
+      User::OAUTH_TOKEN_STATUS_VALID);
 }
 
 void LoginUtilsImpl::VerifyOAuth1AccessToken(Profile* user_profile,
@@ -1244,11 +1245,9 @@ void LoginUtilsImpl::VerifyOAuth1AccessToken(Profile* user_profile,
 void LoginUtilsImpl::FetchCredentials(Profile* user_profile,
                                       const std::string& token,
                                       const std::string& secret) {
-  oauth_login_verifier_.reset(new OAuthLoginVerifier(this,
-                                                     user_profile,
-                                                     token,
-                                                     secret,
-                                                     username_));
+  oauth_login_verifier_.reset(new OAuthLoginVerifier(
+      this, user_profile, token, secret,
+      UserManager::Get()->logged_in_user().email()));
   oauth_login_verifier_->StartOAuthVerification();
 }
 

@@ -52,9 +52,12 @@ class LoginUtils {
 
   // Loads and prepares profile for the session. Fires |delegate| in the end.
   // If |pending_requests| is true, there's a pending online auth request.
+  // If |display_email| is not empty, user's displayed email will be set to
+  // this value, shown in UI.
   // Also see DelegateDeleted method.
   virtual void PrepareProfile(
       const std::string& username,
+      const std::string& display_email,
       const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool pending_requests,
@@ -90,8 +93,7 @@ class LoginUtils {
   virtual void PrewarmAuthentication() = 0;
 
   // Restores authentication session after crash.
-  virtual void RestoreAuthenticationSession(const std::string& user_name,
-                                            Profile* profile) = 0;
+  virtual void RestoreAuthenticationSession(Profile* profile) = 0;
 
   // Starts process of fetching OAuth2 tokens (based on OAuth1 tokens found
   // in |user_profile|) and kicks off internal services that depend on them.

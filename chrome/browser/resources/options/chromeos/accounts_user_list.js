@@ -27,8 +27,6 @@ cr.define('options.accounts', function() {
       // HACK(arv): http://crbug.com/40902
       window.addEventListener('resize', this.redraw.bind(this));
 
-      this.addEventListener('click', this.handleClick_);
-
       var self = this;
 
       // Listens to pref changes.
@@ -43,12 +41,12 @@ cr.define('options.accounts', function() {
     },
 
     /**
-     * Finds the index of user by given email.
+     * Finds the index of user by given username (canonicalized email).
      * @private
-     * @param {string} email The email address to look for.
+     * @param {string} username The username to look for.
      * @return {number} The index of the found user or -1 if not found.
      */
-    findUserByEmail_: function(email) {
+    indexOf_: function(username) {
       var dataModel = this.dataModel;
       if (!dataModel)
         return -1;
@@ -56,7 +54,7 @@ cr.define('options.accounts', function() {
       var length = dataModel.length;
       for (var i = 0; i < length; ++i) {
         var user = dataModel.item(i);
-        if (user.email == email) {
+        if (user.username == username) {
           return i;
         }
       }
@@ -65,36 +63,11 @@ cr.define('options.accounts', function() {
     },
 
     /**
-     * Adds given user to model and update backend.
-     * @param {Object} user A user to be added to user list.
-     */
-    addUser: function(user) {
-      var index = this.findUserByEmail_(user.email);
-      if (index == -1) {
-        this.dataModel.push(user);
-        chrome.send('whitelistUser', [user.email]);
-      }
-    },
-
-    /**
-     * Removes given user from model and update backend.
-     */
-    removeUser: function(user) {
-      var dataModel = this.dataModel;
-
-      var index = dataModel.indexOf(user);
-      if (index >= 0) {
-        dataModel.splice(index, 1);
-        chrome.send('unwhitelistUser', [user.email]);
-      }
-    },
-
-    /**
      * Update given user's account picture.
-     * @param {string} email Email of the user to update.
+     * @param {string} username User for which to update the image.
      */
-    updateAccountPicture: function(email) {
-      var index = this.findUserByEmail_(email);
+    updateAccountPicture: function(username) {
+      var index = this.indexOf_(username);
       if (index >= 0) {
         var item = this.getListItemByIndex(index);
         if (item)
@@ -103,27 +76,23 @@ cr.define('options.accounts', function() {
     },
 
     /**
-     * Handles the clicks on the list and triggers user removal if the click
-     * is on the remove user button.
-     * @private
-     * @param {!Event} e The click event object.
-     */
-    handleClick_: function(e) {
-      // Handle left button click
-      if (e.button == 0) {
-        var el = e.target;
-        if (el.classList.contains('remove-user-button')) {
-          this.removeUser(el.parentNode.user);
-        }
-      }
-    },
-
-    /**
      * Loads given user list.
-     * @param {Array} users An array of user object.
+     * @param {Array.<Object>} users An array of user info objects.
+     * @private
      */
     load_: function(users) {
       this.dataModel = new ArrayDataModel(users);
+    },
+
+    /**
+     * Removes given user from the list.
+     * @param {Object} user User info object to be removed from user list.
+     * @private
+     */
+    removeUser_: function(user) {
+      var e = new Event('remove');
+      e.user = user;
+      this.dispatchEvent(e);
     }
   };
 
@@ -193,15 +162,28 @@ cr.define('options.accounts', function() {
         var removeButton = this.ownerDocument.createElement('button');
         removeButton.className =
             'raw-button remove-user-button custom-appearance';
+        removeButton.addEventListener(
+            'click', this.handleRemoveButtonClick_.bind(this));
         this.appendChild(removeButton);
       }
+    },
+
+    /**
+     * Handles click on the remove button.
+     * @param {Event} e Click event.
+     * @private
+     */
+    handleRemoveButtonClick_: function(e) {
+      // Handle left button click
+      if (e.button == 0)
+        this.parentNode.removeUser_(this.user);
     },
 
     /**
      * Reloads user picture.
      */
     updatePicture: function() {
-      this.icon_.src = 'chrome://userimage/' + this.user.email +
+      this.icon_.src = 'chrome://userimage/' + this.user.username +
                        '?id=' + (new Date()).getTime();
     }
   };

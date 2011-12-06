@@ -26,11 +26,11 @@ class AccountsOptionsHandler : public OptionsPageUIHandler {
 
  private:
   // Javascript callbacks to whitelist/unwhitelist user.
-  void WhitelistUser(const base::ListValue* args);
-  void UnwhitelistUser(const base::ListValue* args);
+  void HandleWhitelistUser(const base::ListValue* args);
+  void HandleUnwhitelistUser(const base::ListValue* args);
 
   // Javascript callback to auto add existing users to white list.
-  void WhitelistExistingUsers(const base::ListValue* args);
+  void HandleWhitelistExistingUsers(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(AccountsOptionsHandler);
 };

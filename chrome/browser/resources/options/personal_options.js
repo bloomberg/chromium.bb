@@ -16,8 +16,9 @@ cr.define('options', function() {
                      templateData.personalPageTabTitle,
                      'personal-page');
     if (cr.isChromeOS) {
-      // Email of the currently logged in user (or |kGuestUser|).
-      this.userEmail_ = localStrings.getString('userEmail');
+      // Username (canonical email) of the currently logged in user or
+      // |kGuestUser| if a guest session is active.
+      this.username_ = localStrings.getString('username');
     }
   }
 
@@ -305,7 +306,7 @@ cr.define('options', function() {
      */
     updateAccountPicture_: function() {
       $('account-picture').src =
-          'chrome://userimage/' + this.userEmail_ +
+          'chrome://userimage/' + this.username_ +
           '?id=' + (new Date()).getTime();
     },
   };
@@ -329,11 +330,11 @@ cr.define('options', function() {
 
   if (cr.isChromeOS) {
     /**
-     * Returns email of the user logged in (ChromeOS only).
+     * Returns username (canonical email) of the user logged in (ChromeOS only).
      * @return {string} user email.
      */
-    PersonalOptions.getLoggedInUserEmail = function() {
-      return PersonalOptions.getInstance().userEmail_;
+    PersonalOptions.getLoggedInUsername = function() {
+      return PersonalOptions.getInstance().username_;
     };
   }
 

@@ -55,6 +55,7 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual const UserList& GetUsers() const OVERRIDE;
   virtual bool IsShowGuest() const OVERRIDE;
   virtual bool IsShowNewUser() const OVERRIDE;
+  virtual void SetDisplayEmail(const std::string& email) OVERRIDE;
 
  private:
   // Set of Users that are visible.

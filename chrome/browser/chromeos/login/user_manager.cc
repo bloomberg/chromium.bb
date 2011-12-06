@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
+#include "chrome/browser/chromeos/login/remove_user_delegate.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -64,6 +65,8 @@ namespace {
 const char kLoggedInUsers[] = "LoggedInUsers";
 // A dictionary that maps usernames to file paths to their images.
 const char kUserImages[] = "UserImages";
+// A dictionary that maps usernames to the displayed (non-canonical) emails.
+const char kUserDisplayEmail[] = "UserDisplayEmail";
 // A dictionary that maps usernames to OAuth token presence flag.
 const char kUserOAuthTokenStatus[] = "OAuthTokenStatus";
 
@@ -225,6 +228,8 @@ void UserManager::RegisterPrefs(PrefService* local_state) {
                                       PrefService::UNSYNCABLE_PREF);
   local_state->RegisterDictionaryPref(kUserOAuthTokenStatus,
                                       PrefService::UNSYNCABLE_PREF);
+  local_state->RegisterDictionaryPref(kUserDisplayEmail,
+                                      PrefService::UNSYNCABLE_PREF);
 }
 
 const UserList& UserManager::GetUsers() const {
@@ -260,7 +265,6 @@ void UserManager::UserLoggedIn(const std::string& email) {
     else
       logged_in_user = it;
   }
-  prefs->ScheduleSavePersistentPrefs();
 
   if (logged_in_user == users_.end()) {
     current_user_is_new_ = true;
@@ -359,7 +363,8 @@ void UserManager::RemoveUserFromList(const std::string& email) {
   prefs_oauth_update->GetIntegerWithoutPathExpansion(email, &oauth_status);
   prefs_oauth_update->RemoveWithoutPathExpansion(email, NULL);
 
-  prefs->ScheduleSavePersistentPrefs();
+  DictionaryPrefUpdate prefs_display_email_update(prefs, kUserDisplayEmail);
+  prefs_display_email_update->RemoveWithoutPathExpansion(email, NULL);
 
   if (user_to_remove != users_.end()) {
     --display_name_count_[(*user_to_remove)->GetDisplayName()];
@@ -408,14 +413,13 @@ void UserManager::SaveUserOAuthStatus(
   DictionaryPrefUpdate oauth_status_update(local_state, kUserOAuthTokenStatus);
   oauth_status_update->SetWithoutPathExpansion(username,
       new base::FundamentalValue(static_cast<int>(oauth_token_status)));
-  DVLOG(1) << "Saving user OAuth token status in Local State.";
-  local_state->ScheduleSavePersistentPrefs();
+  DVLOG(1) << "Saving user OAuth token status in Local State";
   User* user = const_cast<User*>(FindUser(username));
   if (user)
     user->set_oauth_token_status(oauth_token_status);
 }
 
-User::OAuthTokenStatus UserManager::GetUserOAuthStatus(
+User::OAuthTokenStatus UserManager::LoadUserOAuthStatus(
     const std::string& username) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -437,6 +441,30 @@ User::OAuthTokenStatus UserManager::GetUserOAuthStatus(
   }
 
   return User::OAUTH_TOKEN_STATUS_UNKNOWN;
+}
+
+void UserManager::SaveUserDisplayEmail(const std::string& username,
+                                       const std::string& display_email) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  User* user = const_cast<User*>(FindUser(username));
+  if (!user)
+    return;  // Ignore if there is no such user.
+
+  user->set_display_email(display_email);
+
+  PrefService* local_state = g_browser_process->local_state();
+
+  DictionaryPrefUpdate display_email_update(local_state, kUserDisplayEmail);
+  display_email_update->SetWithoutPathExpansion(
+      username,
+      base::Value::CreateStringValue(display_email));
+}
+
+std::string UserManager::GetUserDisplayEmail(
+    const std::string& username) const {
+  const User* user = FindUser(username);
+  return user ? user->display_email() : username;
 }
 
 void UserManager::SaveUserDefaultImageIndex(const std::string& username,
@@ -566,6 +594,8 @@ void UserManager::EnsureUsersLoaded() {
   PrefService* local_state = g_browser_process->local_state();
   const ListValue* prefs_users = local_state->GetList(kLoggedInUsers);
   const DictionaryValue* prefs_images = local_state->GetDictionary(kUserImages);
+  const DictionaryValue* prefs_display_emails =
+      local_state->GetDictionary(kUserDisplayEmail);
 
   if (prefs_users) {
     for (ListValue::const_iterator it = prefs_users->begin();
@@ -628,6 +658,13 @@ void UserManager::EnsureUsersLoaded() {
               NOTREACHED();
             }
           }
+        }
+
+        std::string display_email;
+        if (prefs_display_emails &&
+            prefs_display_emails->GetStringWithoutPathExpansion(
+                email, &display_email)) {
+          user->set_display_email(display_email);
         }
       }
     }
@@ -785,7 +822,6 @@ void UserManager::SaveImageToLocalState(const std::string& username,
                         new base::FundamentalValue(image_index));
   images_update->SetWithoutPathExpansion(username, image_properties);
   DVLOG(1) << "Saving path to user image in Local State.";
-  local_state->ScheduleSavePersistentPrefs();
 
   NotifyLocalStateChanged();
 }
@@ -905,7 +941,7 @@ void UserManager::OnDownloadComplete(ProfileDownloader* downloader,
 
 User* UserManager::CreateUser(const std::string& email) const {
   User* user = new User(email);
-  user->set_oauth_token_status(GetUserOAuthStatus(email));
+  user->set_oauth_token_status(LoadUserOAuthStatus(email));
   // Used to determine whether user's display name is unique.
   ++display_name_count_[user->GetDisplayName()];
   return user;

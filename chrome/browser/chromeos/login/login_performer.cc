@@ -276,7 +276,8 @@ void LoginPerformer::CompleteLogin(const std::string& username,
     StartLoginCompletion();
   } else {
     // Otherwise, do whitelist check first.
-    if (cros_settings->FindEmailInList(kAccountsPrefUsers, username)) {
+    if (cros_settings->FindEmailInList(
+            kAccountsPrefUsers, Authenticator::Canonicalize(username))) {
       StartLoginCompletion();
     } else {
       if (delegate_)

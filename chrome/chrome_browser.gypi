@@ -621,6 +621,7 @@
         'browser/chromeos/login/proxy_settings_dialog.h',
         'browser/chromeos/login/registration_screen.cc',
         'browser/chromeos/login/registration_screen.h',
+        'browser/chromeos/login/remove_user_delegate.h',
         'browser/chromeos/login/rounded_rect_painter.cc',
         'browser/chromeos/login/rounded_rect_painter.h',
         'browser/chromeos/login/screen_lock_view.cc',

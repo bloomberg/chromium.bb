@@ -66,6 +66,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   virtual void CreateAccount() OVERRIDE;
   virtual string16 GetConnectedNetworkName() OVERRIDE;
   virtual void FixCaptivePortal() OVERRIDE;
+  virtual void SetDisplayEmail(const std::string& email) OVERRIDE;
   virtual void CompleteLogin(const std::string& username,
                              const std::string& password) OVERRIDE;
   virtual void Login(const std::string& username,
@@ -201,6 +202,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Whether it's first login to the device and this user will be owner.
   bool is_owner_login_;
+
+  // The displayed email for the next login attempt set by |SetDisplayEmail|.
+  std::string display_email_;
 
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, NewUserLogin);
 
