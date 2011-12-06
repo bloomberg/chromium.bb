@@ -642,7 +642,6 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   void OnUpdateZoomLimits(int minimum_percent,
                           int maximum_percent,
                           bool remember);
-  void OnFocusedNodeChanged(bool is_editable_node);
   void OnEnumerateDirectory(int request_id, const FilePath& path);
   void OnJSOutOfMemory();
   void OnRegisterProtocolHandler(const std::string& protocol,
