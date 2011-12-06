@@ -150,7 +150,7 @@ bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& closure) {
   // Desktop will take care of other necessary fields.
   aura::Desktop::GetInstance()->PostNativeEvent(&xevent);
   RunClosureAfterAllPendingUIEvents(closure);
-  return false;
+  return true;
 }
 
 bool SendMouseEvents(MouseButton type, int state) {
@@ -193,7 +193,7 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type,
     desktop->PostNativeEvent(&xevent);
   }
   RunClosureAfterAllPendingUIEvents(closure);
-  return false;
+  return true;
 }
 
 bool SendMouseClick(MouseButton type) {
