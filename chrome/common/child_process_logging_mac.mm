@@ -176,10 +176,8 @@ void SetNumberOfViews(int number_of_views) {
 }
 
 void SetCommandLine(const CommandLine* command_line) {
-  DCHECK(SetCrashKeyValue);
-  DCHECK(ClearCrashKey);
   DCHECK(command_line);
-  if (!command_line || !SetCrashKeyValue || !ClearCrashKey)
+  if (!command_line)
     return;
 
   // These should match the corresponding strings in breakpad_win.cc.
