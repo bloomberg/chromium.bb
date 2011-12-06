@@ -98,7 +98,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // If the RenderViewHost source is itself prerendering, the prerender is added
   // as a pending prerender.
   bool AddPrerenderFromLinkRelPrerender(int process_id, int route_id,
-                                        const GURL& url, const GURL& referrer);
+                                        const GURL& url,
+                                        const content::Referrer& referrer);
 
   // Adds a prerender for |url| if valid. As the prerender request is coming
   // from a source without a RenderViewHost (i.e., the omnibox) we don't have a
@@ -260,7 +261,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       Origin origin,
       const std::pair<int, int>& child_route_id_pair,
       const GURL& url,
-      const GURL& referrer,
+      const content::Referrer& referrer,
       SessionStorageNamespace* session_storage_namespace);
 
   // Adds a pending preload issued by the prerendering RenderView identified by
@@ -269,7 +270,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void AddPendingPrerender(Origin origin,
                            const std::pair<int, int>& child_route_id_pair,
                            const GURL& url,
-                           const GURL& referrer);
+                           const content::Referrer& referrer);
 
   // Retrieves the PrerenderContents object for the specified URL, if it
   // has been prerendered.  The caller will then have ownership of the
@@ -306,7 +307,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   virtual base::TimeTicks GetCurrentTimeTicks() const;
   virtual PrerenderContents* CreatePrerenderContents(
       const GURL& url,
-      const GURL& referrer,
+      const content::Referrer& referrer,
       Origin origin,
       uint8 experiment_id);
 

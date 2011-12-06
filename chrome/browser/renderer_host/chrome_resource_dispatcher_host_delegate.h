@@ -40,7 +40,7 @@ class ChromeResourceDispatcherHostDelegate
       const GURL& url,
       ResourceType::Type resource_type,
       const content::ResourceContext& resource_context,
-      const GURL& referrer) OVERRIDE;
+      const content::Referrer& referrer) OVERRIDE;
   virtual ResourceHandler* RequestBeginning(
       ResourceHandler* handler,
       net::URLRequest* request,

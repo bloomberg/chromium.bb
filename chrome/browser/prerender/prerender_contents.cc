@@ -63,7 +63,7 @@ class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
  public:
   virtual PrerenderContents* CreatePrerenderContents(
       PrerenderManager* prerender_manager, PrerenderTracker* prerender_tracker,
-      Profile* profile, const GURL& url, const GURL& referrer,
+      Profile* profile, const GURL& url, const content::Referrer& referrer,
       Origin origin, uint8 experiment_id) OVERRIDE {
     return new PrerenderContents(prerender_manager, prerender_tracker, profile,
                                  url, referrer, origin, experiment_id);
@@ -73,7 +73,7 @@ class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
 PrerenderContents::PendingPrerenderData::PendingPrerenderData(
     Origin origin,
     const GURL& url,
-    const GURL& referrer)
+    const content::Referrer& referrer)
     : origin(origin),
       url(url),
       referrer(referrer) {
@@ -158,7 +158,7 @@ class PrerenderContents::TabContentsDelegateImpl
 
 void PrerenderContents::AddPendingPrerender(Origin origin,
                                             const GURL& url,
-                                            const GURL& referrer) {
+                                            const content::Referrer& referrer) {
   pending_prerender_list_.push_back(
       PendingPrerenderData(origin, url, referrer));
 }
@@ -193,7 +193,7 @@ PrerenderContents::PrerenderContents(
     PrerenderTracker* prerender_tracker,
     Profile* profile,
     const GURL& url,
-    const GURL& referrer,
+    const content::Referrer& referrer,
     Origin origin,
     uint8 experiment_id)
     : prerender_manager_(prerender_manager),
@@ -340,7 +340,7 @@ void PrerenderContents::StartPrerendering(
     transition = content::PAGE_TRANSITION_TYPED;
   new_contents->controller().LoadURL(
       prerender_url_,
-      content::Referrer(referrer_, WebKit::WebReferrerPolicyDefault),
+      referrer_,
       transition, std::string());
 }
 

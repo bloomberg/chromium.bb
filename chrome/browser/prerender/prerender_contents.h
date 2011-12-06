@@ -16,6 +16,7 @@
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/referrer.h"
 
 class Profile;
 class RenderViewHost;
@@ -57,7 +58,7 @@ class PrerenderContents : public content::NotificationObserver,
         PrerenderTracker* prerender_tracker,
         Profile* profile,
         const GURL& url,
-        const GURL& referrer,
+        const content::Referrer& referrer,
         Origin origin,
         uint8 experiment_id) = 0;
 
@@ -67,11 +68,13 @@ class PrerenderContents : public content::NotificationObserver,
 
   // Information on pages that the prerendered page has tried to prerender.
   struct PendingPrerenderData {
-    PendingPrerenderData(Origin origin, const GURL& url, const GURL& referrer);
+    PendingPrerenderData(Origin origin,
+                         const GURL& url,
+                         const content::Referrer& referrer);
 
     Origin origin;
     GURL url;
-    GURL referrer;
+    content::Referrer referrer;
   };
   typedef std::list<PendingPrerenderData> PendingPrerenderList;
 
@@ -97,7 +100,7 @@ class PrerenderContents : public content::NotificationObserver,
   int32 page_id() const { return page_id_; }
   GURL icon_url() const { return icon_url_; }
   const GURL& prerender_url() const { return prerender_url_; }
-  const GURL& referrer() const { return referrer_; }
+  const content::Referrer& referrer() const { return referrer_; }
   bool has_stopped_loading() const { return has_stopped_loading_; }
   bool prerendering_has_started() const { return prerendering_has_started_; }
 
@@ -179,7 +182,7 @@ class PrerenderContents : public content::NotificationObserver,
   // Adds a pending prerender to the list.
   virtual void AddPendingPrerender(Origin origin,
                                    const GURL& url,
-                                   const GURL& referrer);
+                                   const content::Referrer& referrer);
 
   // Returns true if |url| corresponds to a pending prerender.
   bool IsPendingEntry(const GURL& url) const;
@@ -193,7 +196,7 @@ class PrerenderContents : public content::NotificationObserver,
                     PrerenderTracker* prerender_tracker,
                     Profile* profile,
                     const GURL& url,
-                    const GURL& referrer,
+                    const content::Referrer& referrer,
                     Origin origin,
                     uint8 experiment_id);
 
@@ -236,7 +239,7 @@ class PrerenderContents : public content::NotificationObserver,
   GURL prerender_url_;
 
   // The referrer.
-  GURL referrer_;
+  content::Referrer referrer_;
 
   // The profile being used
   Profile* profile_;

@@ -317,10 +317,11 @@ void PrerenderManager::SetPrerenderContentsFactory(
   prerender_contents_factory_.reset(prerender_contents_factory);
 }
 
-bool PrerenderManager::AddPrerenderFromLinkRelPrerender(int process_id,
-                                                        int route_id,
-                                                        const GURL& url,
-                                                        const GURL& referrer) {
+bool PrerenderManager::AddPrerenderFromLinkRelPrerender(
+    int process_id,
+    int route_id,
+    const GURL& url,
+    const content::Referrer& referrer) {
   std::pair<int, int> child_route_id_pair = std::make_pair(process_id,
                                                            route_id);
 
@@ -349,7 +350,7 @@ bool PrerenderManager::AddPrerenderFromOmnibox(
       NOTREACHED();
       break;
   };
-  return AddPrerender(origin, std::make_pair(-1, -1), url, GURL(),
+  return AddPrerender(origin, std::make_pair(-1, -1), url, content::Referrer(),
                       session_storage_namespace);
 }
 
@@ -357,12 +358,14 @@ bool PrerenderManager::AddPrerender(
     Origin origin,
     const std::pair<int, int>& child_route_id_pair,
     const GURL& url_arg,
-    const GURL& referrer,
+    const content::Referrer& referrer,
     SessionStorageNamespace* session_storage_namespace) {
   DCHECK(CalledOnValidThread());
 
-  if (origin == ORIGIN_LINK_REL_PRERENDER && IsGoogleSearchResultURL(referrer))
+  if (origin == ORIGIN_LINK_REL_PRERENDER &&
+      IsGoogleSearchResultURL(referrer.url)) {
     origin = ORIGIN_GWS_PRERENDER;
+  }
 
   // If the referring page is prerendering, defer the prerender.
   std::list<PrerenderContentsData>::iterator source_prerender =
@@ -770,7 +773,7 @@ bool PrerenderManager::IsPrerenderElementFresh(const base::Time start) const {
 
 PrerenderContents* PrerenderManager::CreatePrerenderContents(
     const GURL& url,
-    const GURL& referrer,
+    const content::Referrer& referrer,
     Origin origin,
     uint8 experiment_id) {
   DCHECK(CalledOnValidThread());

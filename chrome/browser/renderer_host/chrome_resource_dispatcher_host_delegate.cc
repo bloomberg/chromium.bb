@@ -63,7 +63,7 @@ class InstantResourceDispatcherHostLoginDelegate
 
 void AddPrerenderOnUI(
     int render_process_id, int render_view_id,
-    const GURL& url, const GURL& referrer) {
+    const GURL& url, const content::Referrer& referrer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   prerender::PrerenderManager* prerender_manager =
       prerender::FindPrerenderManagerUsingRenderProcessId(render_process_id);
@@ -109,7 +109,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
     const GURL& url,
     ResourceType::Type resource_type,
     const content::ResourceContext& resource_context,
-    const GURL& referrer) {
+    const content::Referrer& referrer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Handle a PREFETCH resource type. If prefetch is disabled, squelch the

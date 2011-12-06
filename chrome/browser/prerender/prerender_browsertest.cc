@@ -117,7 +117,7 @@ class TestPrerenderContents : public PrerenderContents {
       PrerenderTracker* prerender_tracker,
       Profile* profile,
       const GURL& url,
-      const GURL& referrer,
+      const content::Referrer& referrer,
       int expected_number_of_loads,
       FinalStatus expected_final_status)
       : PrerenderContents(prerender_manager, prerender_tracker,
@@ -202,7 +202,7 @@ class TestPrerenderContents : public PrerenderContents {
 
   virtual void AddPendingPrerender(Origin origin,
                                    const GURL& url,
-                                   const GURL& referrer) {
+                                   const content::Referrer& referrer) OVERRIDE {
     PrerenderContents::AddPendingPrerender(origin, url, referrer);
     if (expected_pending_prerenders_ > 0 &&
         pending_prerender_list()->size() == expected_pending_prerenders_) {
@@ -306,7 +306,7 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
       PrerenderTracker* prerender_tracker,
       Profile* profile,
       const GURL& url,
-      const GURL& referrer,
+      const content::Referrer& referrer,
       Origin origin,
       uint8 experiment_id) OVERRIDE {
     FinalStatus expected_final_status = FINAL_STATUS_MATCH_COMPLETE_DUMMY;

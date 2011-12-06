@@ -27,7 +27,8 @@ class DummyPrerenderContents : public PrerenderContents {
                          const GURL& url,
                          FinalStatus expected_final_status)
       : PrerenderContents(prerender_manager, prerender_tracker,
-                          NULL, url, GURL(), ORIGIN_LINK_REL_PRERENDER,
+                          NULL, url, content::Referrer(),
+                          ORIGIN_LINK_REL_PRERENDER,
                           PrerenderManager::kNoExperiment),
         has_started_(false),
         expected_final_status_(expected_final_status) {
@@ -128,7 +129,7 @@ class TestPrerenderManager : public PrerenderManager {
   bool AddSimplePrerender(const GURL& url) {
     return AddPrerenderFromLinkRelPrerender(-1, -1,
                                             url,
-                                            GURL());
+                                            content::Referrer());
   }
 
   void set_rate_limit_enabled(bool enabled) {
@@ -157,7 +158,7 @@ class TestPrerenderManager : public PrerenderManager {
 
   virtual PrerenderContents* CreatePrerenderContents(
       const GURL& url,
-      const GURL& referrer,
+      const content::Referrer& referrer,
       Origin origin,
       uint8 experiment_id) OVERRIDE {
     DCHECK(next_prerender_contents_.get());
@@ -437,7 +438,7 @@ TEST_F(PrerenderManagerTest, PendingPrerenderTest) {
 
   EXPECT_TRUE(prerender_manager()->AddPrerenderFromLinkRelPrerender(
       child_id, route_id,
-      pending_url, url));
+      pending_url, content::Referrer(url, WebKit::WebReferrerPolicyDefault)));
 
   EXPECT_TRUE(prerender_manager()->IsPendingEntry(pending_url));
   EXPECT_TRUE(prerender_contents->has_started());
@@ -468,7 +469,7 @@ TEST_F(PrerenderManagerTest, SourceRenderViewClosed) {
       url,
       FINAL_STATUS_MANAGER_SHUTDOWN);
   EXPECT_FALSE(prerender_manager()->AddPrerenderFromLinkRelPrerender(
-      100, 100, url, GURL()));
+      100, 100, url, content::Referrer()));
 }
 
 // Tests that the prerender manager ignores fragment references when matching

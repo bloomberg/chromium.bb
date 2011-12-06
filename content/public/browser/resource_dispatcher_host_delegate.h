@@ -17,6 +17,7 @@ class ResourceHandler;
 class ResourceMessageFilter;
 
 namespace content {
+struct Referrer;
 class ResourceContext;
 struct ResourceResponse;
 }
@@ -41,7 +42,7 @@ class ResourceDispatcherHostDelegate {
       const GURL& url,
       ResourceType::Type resource_type,
       const content::ResourceContext& resource_context,
-      const GURL& referrer) = 0;
+      const content::Referrer& referrer) = 0;
 
   // Called after ShouldBeginRequest when all the resource handlers from the
   // content layer have been added.  To add new handlers to the front, return

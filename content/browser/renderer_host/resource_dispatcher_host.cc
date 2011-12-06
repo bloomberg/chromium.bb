@@ -495,7 +495,8 @@ void ResourceDispatcherHost::BeginRequest(
     return;
   }
 
-  const GURL referrer = MaybeStripReferrer(request_data.referrer);
+  const content::Referrer referrer(MaybeStripReferrer(request_data.referrer),
+                                   request_data.referrer_policy);
 
   // Allow the observer to block/handle the request.
   if (delegate_ && !delegate_->ShouldBeginRequest(child_id,
@@ -538,7 +539,7 @@ void ResourceDispatcherHost::BeginRequest(
     request = new net::URLRequest(request_data.url, this);
     request->set_method(request_data.method);
     request->set_first_party_for_cookies(request_data.first_party_for_cookies);
-    request->set_referrer(referrer.spec());
+    request->set_referrer(referrer.url.spec());
     net::HttpRequestHeaders headers;
     headers.AddHeadersFromString(request_data.headers);
     request->SetExtraRequestHeaders(headers);
