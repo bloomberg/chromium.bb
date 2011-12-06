@@ -45,11 +45,7 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
  public:
   enum State {
     CONNECTING,
-    // TODO(sergeyu): Currently CONNECTED state is not used and state
-    // is set to AUTHENTICATED after we are connected. Remove it and
-    // renamed AUTHENTICATED to CONNECTED?
     CONNECTED,
-    AUTHENTICATED,
     FAILED,
     CLOSED,
   };

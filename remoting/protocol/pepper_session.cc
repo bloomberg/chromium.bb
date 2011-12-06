@@ -163,7 +163,7 @@ void PepperSession::set_config(const SessionConfig& config) {
 void PepperSession::Close() {
   DCHECK(CalledOnValidThread());
 
-  if (state_ == CONNECTING || state_ == CONNECTED) {
+  if (state_ == CONNECTING || state_ == CONNECTED || state_ == AUTHENTICATED) {
     // Send session-terminate message.
     JingleMessage message(peer_jid_, JingleMessage::SESSION_TERMINATE,
                           session_id_);
@@ -237,6 +237,9 @@ void PepperSession::OnAccept(const JingleMessage& message,
 
   SetState(CONNECTED);
 
+  if (authenticator_->state() == Authenticator::ACCEPTED)
+    SetState(AUTHENTICATED);
+
    // In case there is transport information in the accept message.
   ProcessTransportInfo(message);
 }
@@ -274,7 +277,7 @@ void PepperSession::OnTerminate(const JingleMessage& message,
     return;
   }
 
-  if (state_ == CONNECTED) {
+  if (state_ == CONNECTED || state_ == AUTHENTICATED) {
     if (message.reason == JingleMessage::GENERAL_ERROR) {
       OnError(CHANNEL_CONNECTION_ERROR);
     } else {

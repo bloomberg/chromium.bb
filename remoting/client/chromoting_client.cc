@@ -162,8 +162,7 @@ void ChromotingClient::OnConnectionState(
     protocol::ConnectionToHost::Error error) {
   DCHECK(message_loop()->BelongsToCurrentThread());
   VLOG(1) << "ChromotingClient::OnConnectionState(" << state << ")";
-  if (state == protocol::ConnectionToHost::CONNECTED ||
-      state == protocol::ConnectionToHost::AUTHENTICATED)
+  if (state == protocol::ConnectionToHost::CONNECTED)
     Initialize();
   view_->SetConnectionState(state, error);
 }

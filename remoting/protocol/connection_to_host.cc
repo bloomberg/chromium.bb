@@ -159,6 +159,33 @@ void ConnectionToHost::OnSessionStateChange(
   DCHECK(event_callback_);
 
   switch (state) {
+    case Session::INITIALIZING:
+    case Session::CONNECTING:
+    case Session::CONNECTED:
+      // Don't care about these events.
+      break;
+
+    case Session::AUTHENTICATED:
+      video_reader_.reset(VideoReader::Create(
+          message_loop_, session_->config()));
+      video_reader_->Init(session_.get(), video_stub_, base::Bind(
+          &ConnectionToHost::OnChannelInitialized, base::Unretained(this)));
+
+      control_dispatcher_.reset(new ClientControlDispatcher());
+      control_dispatcher_->Init(session_.get(), base::Bind(
+          &ConnectionToHost::OnChannelInitialized, base::Unretained(this)));
+      control_dispatcher_->set_client_stub(client_stub_);
+
+      event_dispatcher_.reset(new ClientEventDispatcher());
+      event_dispatcher_->Init(session_.get(), base::Bind(
+          &ConnectionToHost::OnChannelInitialized, base::Unretained(this)));
+      break;
+
+    case Session::CLOSED:
+      CloseChannels();
+      SetState(CLOSED, OK);
+      break;
+
     case Session::FAILED:
       switch (session_->error()) {
         case Session::PEER_IS_OFFLINE:
@@ -179,31 +206,6 @@ void ConnectionToHost::OnSessionStateChange(
           CloseOnError(NETWORK_FAILURE);
       }
       break;
-
-    case Session::CLOSED:
-      CloseChannels();
-      SetState(CLOSED, OK);
-      break;
-
-    case Session::CONNECTED:
-      video_reader_.reset(VideoReader::Create(
-          message_loop_, session_->config()));
-      video_reader_->Init(session_.get(), video_stub_, base::Bind(
-          &ConnectionToHost::OnChannelInitialized, base::Unretained(this)));
-
-      control_dispatcher_.reset(new ClientControlDispatcher());
-      control_dispatcher_->Init(session_.get(), base::Bind(
-          &ConnectionToHost::OnChannelInitialized, base::Unretained(this)));
-      control_dispatcher_->set_client_stub(client_stub_);
-
-      event_dispatcher_.reset(new ClientEventDispatcher());
-      event_dispatcher_->Init(session_.get(), base::Bind(
-          &ConnectionToHost::OnChannelInitialized, base::Unretained(this)));
-      break;
-
-    default:
-      // Ignore the other states by default.
-      break;
   }
 }
 
@@ -223,7 +225,6 @@ void ConnectionToHost::NotifyIfChannelsReady() {
       video_reader_.get() && video_reader_->is_connected() &&
       state_ == CONNECTING) {
     SetState(CONNECTED, OK);
-    SetState(AUTHENTICATED, OK);
   }
 }
 

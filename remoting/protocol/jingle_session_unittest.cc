@@ -349,6 +349,9 @@ class JingleSessionTest : public testing::Test {
 
       EXPECT_CALL(host_connection_callback_,
                   OnStateChange(Session::CONNECTED))
+          .Times(1);
+      EXPECT_CALL(host_connection_callback_,
+                  OnStateChange(Session::AUTHENTICATED))
           .Times(1)
           .WillOnce(QuitThreadOnCounter(&not_connected_peers));
       // Expect that the connection will be closed eventually.
@@ -365,6 +368,9 @@ class JingleSessionTest : public testing::Test {
           .Times(1);
       EXPECT_CALL(client_connection_callback_,
                   OnStateChange(Session::CONNECTED))
+          .Times(1);
+      EXPECT_CALL(client_connection_callback_,
+                  OnStateChange(Session::AUTHENTICATED))
           .Times(1)
           .WillOnce(QuitThreadOnCounter(&not_connected_peers));
       // Expect that the connection will be closed eventually.

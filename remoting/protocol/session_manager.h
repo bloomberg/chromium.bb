@@ -18,12 +18,20 @@
 // The callback function decides whether the session should be accepted or
 // rejected.
 //
+// AUTHENTICATION
+// Implementations of the Session and SessionManager interfaces
+// delegate authentication to an Authenticator implementation. For
+// incoming connections authenticators are created using an
+// AuthenticatorFactory set via the set_authenticator_factory()
+// method. For outgoing sessions authenticator must be passed to the
+// Connect() method. The Session's state changes to AUTHENTICATED once
+// authentication succeeds.
+//
 // SESSION OWNERSHIP AND SHUTDOWN
-// SessionManager owns all Sessions it creates. The manager must not
-// be closed or destroyed before all sessions created by that
-// SessionManager are destroyed. Caller owns Sessions created by a
-// SessionManager (except rejected sessions). Sessions must outlive
-// SessionManager, and SignalStrategy must outlive SessionManager.
+// The SessionManager must not be closed or destroyed before all sessions
+// created by that SessionManager are destroyed. Caller owns Sessions
+// created by a SessionManager (except rejected
+// sessions). The SignalStrategy must outlive the SessionManager.
 //
 // PROTOCOL VERSION NEGOTIATION
 // When client connects to a host it sends a session-initiate stanza with list

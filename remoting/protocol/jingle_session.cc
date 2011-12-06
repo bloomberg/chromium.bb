@@ -325,6 +325,9 @@ void JingleSession::OnAccept() {
   }
 
   SetState(CONNECTED);
+
+  if (authenticator_->state() == Authenticator::ACCEPTED)
+    SetState(AUTHENTICATED);
 }
 
 void JingleSession::OnTerminate() {

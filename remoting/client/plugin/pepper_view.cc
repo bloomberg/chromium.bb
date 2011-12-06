@@ -238,9 +238,6 @@ void PepperView::SetConnectionState(protocol::ConnectionToHost::State state,
       break;
 
     case protocol::ConnectionToHost::CONNECTED:
-      break;
-
-    case protocol::ConnectionToHost::AUTHENTICATED:
       UnsetSolidFill();
       scriptable_obj->SetConnectionStatus(
           ChromotingScriptableObject::STATUS_CONNECTED,

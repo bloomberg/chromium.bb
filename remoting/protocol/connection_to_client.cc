@@ -88,16 +88,18 @@ void ConnectionToClient::set_input_stub(protocol::InputStub* input_stub) {
   input_stub_ = input_stub;
 }
 
-void ConnectionToClient::OnSessionStateChange(protocol::Session::State state) {
+void ConnectionToClient::OnSessionStateChange(Session::State state) {
   DCHECK(CalledOnValidThread());
 
   DCHECK(handler_);
   switch(state) {
-    case protocol::Session::CONNECTING:
-      // Don't care about this message.
+    case Session::INITIALIZING:
+    case Session::CONNECTING:
+    case Session::CONNECTED:
+      // Don't care about these events.
       break;
 
-    case protocol::Session::CONNECTED:
+    case Session::AUTHENTICATED:
       // Initialize channels.
       control_dispatcher_.reset(new HostControlDispatcher());
       control_dispatcher_->Init(session_.get(), base::Bind(
@@ -118,18 +120,14 @@ void ConnectionToClient::OnSessionStateChange(protocol::Session::State state) {
 
       break;
 
-    case protocol::Session::CLOSED:
+    case Session::CLOSED:
       CloseChannels();
       handler_->OnConnectionClosed(this);
       break;
 
-    case protocol::Session::FAILED:
+    case Session::FAILED:
       CloseOnError();
       break;
-
-    default:
-      // We shouldn't receive other states.
-      NOTREACHED();
   }
 }
 

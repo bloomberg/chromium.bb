@@ -36,10 +36,14 @@ class Session : public base::NonThreadSafe {
 
     // Sent or received session-initiate, but haven't sent or received
     // session-accept.
+    // TODO(sergeyu): Do we really need this state?
     CONNECTING,
 
-    // Session has been accepted.
+    // Session has been accepted and is pending authentication.
     CONNECTED,
+
+    // Session has been connected and authenticated.
+    AUTHENTICATED,
 
     // Session has been closed.
     CLOSED,
@@ -58,7 +62,10 @@ class Session : public base::NonThreadSafe {
     CHANNEL_CONNECTION_ERROR,
   };
 
-  typedef base::Callback<void(State)> StateChangeCallback;
+  // State change callbacks are called after session state has
+  // changed. It is not safe to destroy the session from within the
+  // handler unless |state| is CLOSED or FAILED.
+  typedef base::Callback<void(State state)> StateChangeCallback;
 
   // TODO(sergeyu): Specify connection error code when channel
   // connection fails.
@@ -80,8 +87,8 @@ class Session : public base::NonThreadSafe {
   // callback is called with NULL if connection failed for any reason.
   // Ownership of the channel socket is given to the caller when the
   // callback is called. All channels must be destroyed before the
-  // session is destroyed. Can be called only when in CONNECTING or
-  // CONNECTED state.
+  // session is destroyed. Can be called only when in CONNECTING,
+  // CONNECTED or AUTHENTICATED states.
   virtual void CreateStreamChannel(
       const std::string& name, const StreamChannelCallback& callback) = 0;
   virtual void CreateDatagramChannel(
