@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/shelf_layout_controller.h"
+#include "ui/aura_shell/shelf_layout_manager.h"
 
+#include "base/auto_reset.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/gfx/compositor/layer.h"
@@ -21,9 +22,13 @@ ui::Layer* GetLayer(views::Widget* widget) {
 
 }  // namespace
 
-ShelfLayoutController::ShelfLayoutController(views::Widget* launcher,
-                                             views::Widget* status)
+////////////////////////////////////////////////////////////////////////////////
+// ShelfLayoutManager, public:
+
+ShelfLayoutManager::ShelfLayoutManager(views::Widget* launcher,
+                                       views::Widget* status)
     : animating_(false),
+      in_layout_(false),
       visible_(true),
       max_height_(-1),
       launcher_(launcher),
@@ -34,12 +39,14 @@ ShelfLayoutController::ShelfLayoutController(views::Widget* launcher,
   GetLayer(launcher)->GetAnimator()->AddObserver(this);
 }
 
-ShelfLayoutController::~ShelfLayoutController() {
+
+ShelfLayoutManager::~ShelfLayoutManager() {
   // Do not try to remove observer from layer as the Launcher is
   // already deleted.
 }
 
-void ShelfLayoutController::LayoutShelf() {
+void ShelfLayoutManager::LayoutShelf() {
+  AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
   StopAnimating();
   TargetBounds target_bounds;
   float target_opacity = visible_ ? 1.0f : 0.0f;
@@ -52,7 +59,7 @@ void ShelfLayoutController::LayoutShelf() {
       target_bounds.work_area_insets);
 }
 
-void ShelfLayoutController::SetVisible(bool visible) {
+void ShelfLayoutManager::SetVisible(bool visible) {
   bool current_visibility = animating_ ? !visible_ : visible_;
   if (visible == current_visibility)
     return;  // Nothing changed.
@@ -68,7 +75,34 @@ void ShelfLayoutController::SetVisible(bool visible) {
   // |visible_| is updated once the animation completes.
 }
 
-void ShelfLayoutController::StopAnimating() {
+////////////////////////////////////////////////////////////////////////////////
+// ShelfLayoutManager, aura::LayoutManager implementation:
+
+void ShelfLayoutManager::OnWindowResized() {
+  LayoutShelf();
+}
+
+void ShelfLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
+}
+
+void ShelfLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
+}
+
+void ShelfLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
+                                                        bool visible) {
+}
+
+void ShelfLayoutManager::SetChildBounds(aura::Window* child,
+                                        const gfx::Rect& requested_bounds) {
+  SetChildBoundsDirect(child, requested_bounds);
+  if (!in_layout_)
+    LayoutShelf();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ShelfLayoutManager, private:
+
+void ShelfLayoutManager::StopAnimating() {
   if (animating_) {
     animating_ = false;
     visible_ = !visible_;
@@ -76,8 +110,8 @@ void ShelfLayoutController::StopAnimating() {
   GetLayer(launcher_)->GetAnimator()->StopAnimating();
 }
 
-void ShelfLayoutController::CalculateTargetBounds(bool visible,
-                                                  TargetBounds* target_bounds) {
+void ShelfLayoutManager::CalculateTargetBounds(bool visible,
+                                               TargetBounds* target_bounds) {
   const gfx::Rect& available_bounds(aura::Desktop::GetInstance()->bounds());
   int y = available_bounds.bottom() - (visible ? max_height_ : 0);
   gfx::Rect status_bounds(status_->GetWindowScreenBounds());
@@ -94,16 +128,16 @@ void ShelfLayoutController::CalculateTargetBounds(bool visible,
     target_bounds->work_area_insets = gfx::Insets(0, 0, max_height_, 0);
 }
 
-void ShelfLayoutController::AnimateWidgetTo(views::Widget* widget,
-                                            const gfx::Rect& target_bounds,
-                                            float target_opacity) {
+void ShelfLayoutManager::AnimateWidgetTo(views::Widget* widget,
+                                         const gfx::Rect& target_bounds,
+                                         float target_opacity) {
   ui::Layer* layer = GetLayer(widget);
   ui::LayerAnimator::ScopedSettings animation_setter(layer->GetAnimator());
   widget->SetBounds(target_bounds);
   layer->SetOpacity(target_opacity);
 }
 
-void ShelfLayoutController::OnLayerAnimationEnded(
+void ShelfLayoutManager::OnLayerAnimationEnded(
     const ui::LayerAnimationSequence* sequence) {
   if (!animating_)
     return;
