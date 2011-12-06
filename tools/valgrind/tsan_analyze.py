@@ -236,8 +236,10 @@ class TsanAnalyzer(object):
     retcode = 0
     if reports:
       logging.error("FAIL! Found %i report(s)" % len(reports))
+      sys.stderr.flush()
       for report in reports:
-        logging.error('\n' + report)
+        logging.info('\n' + report)
+      sys.stdout.flush()
       retcode = -1
 
     # Report tool's insanity even if there were errors.
@@ -265,6 +267,7 @@ def main():
     parser.error("no filename specified")
   filenames = args
 
+  logging.getLogger().setLevel(logging.INFO)
   analyzer = TsanAnalyzer(options.source_dir, use_gdb=True)
   return analyzer.Report(filenames, None)
 
