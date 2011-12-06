@@ -90,6 +90,12 @@ body {
   background-color: $6;  /* COLOR_NTP_HEADER */
 }
 
+.edit-bar {
+  background-image: -webkit-linear-gradient(
+                        $7,  /* COLOR_HEADER_GRADIENT_LIGHT */
+                        $6);  /* COLOR_NTP_HEADER */
+}
+
 .thumbnail-wrapper {
   /* This shows through at the (rounded) thumbnail's corners. */
   background-color: $11;  /* COLOR_NTP_SECTION_BORDER */
