@@ -1,0 +1,48 @@
+# Failures which are probably or potentially real bugs
+
+# library or compiler errors
+# libstdcpp/include/c++/4.6.2/ext/hash_map:61 includes 'backward_warning.h'
+# which is not found
+hash2
+SingleSource/Benchmarks/Shootout-C++/hash
+# pnacl-clang does not recognize -w flag
+SPASS
+# newlib does not have ffsl function?
+2005-05-11-Popcount-ffs-fls
+# newlib math.h defines infinity as a function, the test source defines
+# a double called infinity
+sphereflake
+ray
+# no tsearch (even though it is in newlib)
+# http://code.google.com/p/nativeclient/issues/detail?id=2449
+SIBsim4
+
+# link error (pexe link line is wrong?)
+tls
+spirit
+# runtime errors
+# crash, works on ARM
+aha
+# crash
+dt
+# crash on ARM/qemu
+AMGmk
+almabench
+exception_spec_test
+# wrong output on ARM (a time? really?)
+stepanov_v1p2
+# has stderr ordering problem, but also extraneous "<<" in output
+lambda
+# FP nan/inf handling
+voronoi
+# exception not caught
+BuiltinTypeInfo
+# bad tail call label applied in clang optimization passes
+byval-alignment
+# don't know (incorrect output but no crash)
+burg
+imp
+automotive-bitcount
+security-sha
+telecomm-fft
+puzzle

@@ -1,0 +1,92 @@
+# Base known failures - Things which probably will not or cannot be fixed,
+# or have a non-pnacl-related cause
+
+############################################################################
+# General nacl issues (probably will never work in nacl)
+############################################################################
+# no fork()
+lemon
+paq8p
+############################################################################
+# Newlib related issues
+# (in most cases, small porting efforts could make these working/testable)
+############################################################################
+# no sys/socket.h
+clamscan
+netbench-url
+# no netinet/in.h
+ldecod
+hexxagon
+consumer-lame
+consumer-typeset
+# no strings.h
+lencod
+archie
+mybison
+# no memory.h
+viterbi
+bullet
+gs
+security-rijndael
+huffbench
+oourafft
+# no sys/uio.h
+make_dparser
+# getrusage undeclared in newlib
+minisat
+# u_int8_t and friends undeclared in newlib
+Obsequi
+oggenc
+# struct dirent fields different in nacl than linux
+siod
+# struct flock definition
+sqlite3
+# no err.h
+network-patricia
+fasta
+# no sgtty.h
+office-ispell
+# random() undeclared
+city
+ocean
+ft
+ReedSolomon
+# undefined re_comp (also needs regex library port?)
+plot2fig
+# no sys/utsname.h
+unix-smail
+# no fenv.h, C99 floating point exception functions not present
+uint64_to_float
+tramp3d-v4
+# test's declaration of log2 function conflicts with newlib's log2 macro
+fftbench
+# complex type undeclared (_Complex is implemented, maybe just need header?)
+mandel-2
+############################################################################
+# Stderr/stdout related issues
+############################################################################
+# dependent on stderr ordering
+# (these could be fixed by implementing a fuzzy/unordered compare)
+hbd
+kc
+analyzer
+distray
+cdecl
+pairlocalalign
+mpeg2decode
+anagram
+mason
+# dependeng on output buffering
+fsm
+gnugo
+inlined_cleanup
+2003-05-23-TransparentUnion
+fourinarow
+pcompress2
+neural
+pifft
+############################################################################
+# Aggregates in va_arg
+############################################################################
+2003-05-07-VarArgs
+2003-08-11-VaListArg

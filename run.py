@@ -381,10 +381,12 @@ def Run(args, cwd = None, capture = False):
     raise e
 
   if env.quiet and not env.paranoid:
-    # Filter out sel_ldr's un-suppressable output when -a is given
+    # Filter out sel_ldr's un-suppressable output when -a or -Q is given
     for line in stderr_contents.split('\n'):
       if (not line.startswith('DEBUG MODE') and
-          not line.endswith('ACL CHECKS') and line != ''):
+          not line.endswith('ACL CHECKS') and
+          not line.startswith('PLATFORM QUALIFICATION') and
+          line != ''):
         print >> sys.stderr, line
 
   if p.returncode != 0:
