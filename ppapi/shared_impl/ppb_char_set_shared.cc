@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/shared_impl/char_set_impl.h"
+#include "ppapi/shared_impl/ppb_char_set_shared.h"
 
 #include "base/i18n/icu_string_conversions.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
@@ -43,11 +43,12 @@ bool PPToBaseConversionError(PP_CharSet_ConversionError on_error,
 // implementation in base, so we partially duplicate the code from
 // icu_string_conversions.cc with the correct error handling setup required
 // by the PPAPI interface.
-char* CharSetImpl::UTF16ToCharSet(const uint16_t* utf16,
-                                  uint32_t utf16_len,
-                                  const char* output_char_set,
-                                  PP_CharSet_ConversionError on_error,
-                                  uint32_t* output_length) {
+char* PPB_CharSet_Shared::UTF16ToCharSet(
+    const uint16_t* utf16,
+    uint32_t utf16_len,
+    const char* output_char_set,
+    PP_CharSet_ConversionError on_error,
+    uint32_t* output_length) {
   if (!utf16 || !output_char_set || !output_length)
     return NULL;
 
@@ -117,11 +118,12 @@ char* CharSetImpl::UTF16ToCharSet(const uint16_t* utf16,
 }
 
 // static
-uint16_t* CharSetImpl::CharSetToUTF16(const char* input,
-                                      uint32_t input_len,
-                                      const char* input_char_set,
-                                      PP_CharSet_ConversionError on_error,
-                                      uint32_t* output_length) {
+uint16_t* PPB_CharSet_Shared::CharSetToUTF16(
+    const char* input,
+    uint32_t input_len,
+    const char* input_char_set,
+    PP_CharSet_ConversionError on_error,
+    uint32_t* output_length) {
   if (!input || !input_char_set || !output_length)
     return NULL;
 

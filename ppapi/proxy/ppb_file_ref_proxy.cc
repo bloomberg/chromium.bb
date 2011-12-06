@@ -16,7 +16,7 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
-#include "ppapi/shared_impl/file_ref_impl.h"
+#include "ppapi/shared_impl/ppb_file_ref_shared.h"
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
@@ -28,12 +28,12 @@ using ppapi::thunk::ResourceCreationAPI;
 namespace ppapi {
 namespace proxy {
 
-class FileRef : public FileRefImpl {
+class FileRef : public PPB_FileRef_Shared {
  public:
   explicit FileRef(const PPB_FileRef_CreateInfo& info);
   virtual ~FileRef();
 
-  // PPB_FileRef_API implementation (not provided by FileRefImpl).
+  // PPB_FileRef_API implementation (not provided by PPB_FileRef_Shared).
   virtual PP_Resource GetParent() OVERRIDE;
   virtual int32_t MakeDirectory(PP_Bool make_ancestors,
                                 PP_CompletionCallback callback) OVERRIDE;
@@ -72,7 +72,7 @@ class FileRef : public FileRefImpl {
 };
 
 FileRef::FileRef(const PPB_FileRef_CreateInfo& info)
-    : FileRefImpl(FileRefImpl::InitAsProxy(), info),
+    : PPB_FileRef_Shared(PPB_FileRef_Shared::InitAsProxy(), info),
       next_callback_id_(1) {
 }
 

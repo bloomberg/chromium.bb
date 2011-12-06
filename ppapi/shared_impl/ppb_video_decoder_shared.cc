@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/shared_impl/video_decoder_impl.h"
+#include "ppapi/shared_impl/ppb_video_decoder_shared.h"
 
 #include "base/logging.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -12,17 +12,17 @@
 
 namespace ppapi {
 
-VideoDecoderImpl::VideoDecoderImpl()
+PPB_VideoDecoder_Shared::PPB_VideoDecoder_Shared()
     : flush_callback_(PP_MakeCompletionCallback(NULL, NULL)),
       reset_callback_(PP_MakeCompletionCallback(NULL, NULL)),
       graphics_context_(0),
       gles2_impl_(NULL) {
 }
 
-VideoDecoderImpl::~VideoDecoderImpl() {
+PPB_VideoDecoder_Shared::~PPB_VideoDecoder_Shared() {
 }
 
-void VideoDecoderImpl::InitCommon(
+void PPB_VideoDecoder_Shared::InitCommon(
     PP_Resource graphics_context,
     gpu::gles2::GLES2Implementation* gles2_impl) {
   DCHECK(graphics_context);
@@ -32,13 +32,13 @@ void VideoDecoderImpl::InitCommon(
   graphics_context_ = graphics_context;
 }
 
-void VideoDecoderImpl::Destroy() {
+void PPB_VideoDecoder_Shared::Destroy() {
   graphics_context_ = 0;
   gles2_impl_ = NULL;
   PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(graphics_context_);
 }
 
-bool VideoDecoderImpl::SetFlushCallback(PP_CompletionCallback callback) {
+bool PPB_VideoDecoder_Shared::SetFlushCallback(PP_CompletionCallback callback) {
   CHECK(callback.func);
   if (flush_callback_.func)
     return false;
@@ -46,7 +46,7 @@ bool VideoDecoderImpl::SetFlushCallback(PP_CompletionCallback callback) {
   return true;
 }
 
-bool VideoDecoderImpl::SetResetCallback(PP_CompletionCallback callback) {
+bool PPB_VideoDecoder_Shared::SetResetCallback(PP_CompletionCallback callback) {
   CHECK(callback.func);
   if (reset_callback_.func)
     return false;
@@ -54,23 +54,23 @@ bool VideoDecoderImpl::SetResetCallback(PP_CompletionCallback callback) {
   return true;
 }
 
-bool VideoDecoderImpl::SetBitstreamBufferCallback(
+bool PPB_VideoDecoder_Shared::SetBitstreamBufferCallback(
     int32 bitstream_buffer_id, PP_CompletionCallback callback) {
   return bitstream_buffer_callbacks_.insert(
       std::make_pair(bitstream_buffer_id, callback)).second;
 }
 
-void VideoDecoderImpl::RunFlushCallback(int32 result) {
+void PPB_VideoDecoder_Shared::RunFlushCallback(int32 result) {
   DCHECK(flush_callback_.func);
   PP_RunAndClearCompletionCallback(&flush_callback_, result);
 }
 
-void VideoDecoderImpl::RunResetCallback(int32 result) {
+void PPB_VideoDecoder_Shared::RunResetCallback(int32 result) {
   DCHECK(reset_callback_.func);
   PP_RunAndClearCompletionCallback(&reset_callback_, result);
 }
 
-void VideoDecoderImpl::RunBitstreamBufferCallback(
+void PPB_VideoDecoder_Shared::RunBitstreamBufferCallback(
     int32 bitstream_buffer_id, int32 result) {
   CallbackById::iterator it =
       bitstream_buffer_callbacks_.find(bitstream_buffer_id);
@@ -80,7 +80,7 @@ void VideoDecoderImpl::RunBitstreamBufferCallback(
   PP_RunCompletionCallback(&cc, PP_OK);
 }
 
-void VideoDecoderImpl::FlushCommandBuffer() {
+void PPB_VideoDecoder_Shared::FlushCommandBuffer() {
   if (gles2_impl_)
     gles2_impl_->Flush();
 }

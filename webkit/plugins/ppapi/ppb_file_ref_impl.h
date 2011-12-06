@@ -10,7 +10,7 @@
 #include "base/file_path.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/ppb_file_ref.h"
-#include "ppapi/shared_impl/file_ref_impl.h"
+#include "ppapi/shared_impl/ppb_file_ref_shared.h"
 #include "ppapi/shared_impl/var.h"
 
 namespace webkit {
@@ -20,7 +20,7 @@ using ::ppapi::StringVar;
 
 class PPB_FileSystem_Impl;
 
-class PPB_FileRef_Impl : public ::ppapi::FileRefImpl {
+class PPB_FileRef_Impl : public ::ppapi::PPB_FileRef_Shared {
  public:
   PPB_FileRef_Impl(const ::ppapi::PPB_FileRef_CreateInfo& info,
                    PPB_FileSystem_Impl* file_system);
@@ -36,7 +36,7 @@ class PPB_FileRef_Impl : public ::ppapi::FileRefImpl {
   static PPB_FileRef_Impl* CreateExternal(PP_Instance instance,
                                           const FilePath& external_file_path);
 
-  // PPB_FileRef_API implementation (not provided by FileRefImpl).
+  // PPB_FileRef_API implementation (not provided by PPB_FileRef_Shared).
   virtual PP_Resource GetParent() OVERRIDE;
   virtual int32_t MakeDirectory(PP_Bool make_ancestors,
                                 PP_CompletionCallback callback) OVERRIDE;

@@ -12,8 +12,8 @@
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/trusted/ppb_audio_input_trusted_dev.h"
-#include "ppapi/shared_impl/audio_config_impl.h"
-#include "ppapi/shared_impl/audio_input_impl.h"
+#include "ppapi/shared_impl/ppb_audio_config_shared.h"
+#include "ppapi/shared_impl/ppb_audio_input_shared.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "webkit/plugins/ppapi/audio_helper.h"
@@ -26,7 +26,7 @@ namespace ppapi {
 // Some of the backend functionality of this class is implemented by the
 // AudioInputImpl so it can be shared with the proxy.
 class PPB_AudioInput_Impl : public ::ppapi::Resource,
-                            public ::ppapi::AudioInputImpl,
+                            public ::ppapi::PPB_AudioInput_Shared,
                             public AudioHelper {
  public:
   // Trusted initialization. You must call Init after this.

@@ -15,9 +15,9 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/api_id.h"
-#include "ppapi/shared_impl/audio_impl.h"
 #include "ppapi/shared_impl/platform_file.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/shared_impl/ppb_audio_shared.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_audio_config_api.h"
 #include "ppapi/thunk/enter.h"
@@ -32,7 +32,7 @@ using ppapi::thunk::PPB_AudioConfig_API;
 namespace ppapi {
 namespace proxy {
 
-class Audio : public Resource, public AudioImpl {
+class Audio : public Resource, public PPB_Audio_Shared {
  public:
   Audio(const HostResource& audio_id,
         PP_Resource config_id,

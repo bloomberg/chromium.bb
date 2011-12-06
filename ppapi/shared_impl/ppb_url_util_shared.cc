@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/shared_impl/url_util_impl.h"
+#include "ppapi/shared_impl/ppb_url_util_shared.h"
 
 #include "googleurl/src/gurl.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
@@ -43,8 +43,8 @@ void ConvertComponents(const url_parse::Parsed& input,
 }  // namespace
 
 // static
-PP_Var URLUtilImpl::Canonicalize(PP_Var url,
-                                 PP_URLComponents_Dev* components) {
+PP_Var PPB_URLUtil_Shared::Canonicalize(PP_Var url,
+                                        PP_URLComponents_Dev* components) {
   StringVar* url_string = StringVar::FromPPVar(url);
   if (!url_string)
     return PP_MakeNull();
@@ -53,9 +53,10 @@ PP_Var URLUtilImpl::Canonicalize(PP_Var url,
 }
 
 // static
-PP_Var URLUtilImpl::ResolveRelativeToURL(PP_Var base_url,
-                                         PP_Var relative,
-                                         PP_URLComponents_Dev* components) {
+PP_Var PPB_URLUtil_Shared::ResolveRelativeToURL(
+    PP_Var base_url,
+    PP_Var relative,
+    PP_URLComponents_Dev* components) {
   StringVar* base_url_string = StringVar::FromPPVar(base_url);
   StringVar* relative_string = StringVar::FromPPVar(relative);
   if (!base_url_string || !relative_string)
@@ -70,7 +71,7 @@ PP_Var URLUtilImpl::ResolveRelativeToURL(PP_Var base_url,
 }
 
 // static
-PP_Bool URLUtilImpl::IsSameSecurityOrigin(PP_Var url_a, PP_Var url_b) {
+PP_Bool PPB_URLUtil_Shared::IsSameSecurityOrigin(PP_Var url_a, PP_Var url_b) {
   StringVar* url_a_string = StringVar::FromPPVar(url_a);
   StringVar* url_b_string = StringVar::FromPPVar(url_b);
   if (!url_a_string || !url_b_string)
@@ -86,16 +87,17 @@ PP_Bool URLUtilImpl::IsSameSecurityOrigin(PP_Var url_a, PP_Var url_b) {
 
 // Used for returning the given GURL from a PPAPI function, with an optional
 // out param indicating the components.
-PP_Var URLUtilImpl::GenerateURLReturn(PP_Module module,
-                                      const GURL& url,
-                                      PP_URLComponents_Dev* components) {
+PP_Var PPB_URLUtil_Shared::GenerateURLReturn(
+    PP_Module module,
+    const GURL& url,
+    PP_URLComponents_Dev* components) {
   if (!url.is_valid())
     return PP_MakeNull();
   ConvertComponents(url.parsed_for_possibly_invalid_spec(), components);
   return StringVar::StringToPPVar(module, url.possibly_invalid_spec());
 }
 
-PP_Var URLUtilImpl::ConvertComponentsAndReturnURL(
+PP_Var PPB_URLUtil_Shared::ConvertComponentsAndReturnURL(
     const PP_Var& url,
     PP_URLComponents_Dev* components) {
   if (!components)

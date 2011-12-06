@@ -4,7 +4,7 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_image_data.h"
-#include "ppapi/shared_impl/image_data_impl.h"
+#include "ppapi/shared_impl/ppb_image_data_shared.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
@@ -16,11 +16,11 @@ namespace thunk {
 namespace {
 
 PP_ImageDataFormat GetNativeImageDataFormat() {
-  return ppapi::ImageDataImpl::GetNativeImageDataFormat();
+  return ppapi::PPB_ImageData_Shared::GetNativeImageDataFormat();
 }
 
 PP_Bool IsImageDataFormatSupported(PP_ImageDataFormat format) {
-  return ppapi::ImageDataImpl::IsImageDataFormatSupported(format)
+  return ppapi::PPB_ImageData_Shared::IsImageDataFormatSupported(format)
       ? PP_TRUE : PP_FALSE;
 }
 
