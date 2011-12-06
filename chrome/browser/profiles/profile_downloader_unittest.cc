@@ -99,6 +99,4 @@ TEST_F(ProfileDownloaderTest, DefaultURL) {
   // Not default with 7 components
   EXPECT_FALSE(ProfileDownloader::IsDefaultProfileImageURL(
       "https://example.com/-4/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s32-c/photo.jpg"));
-  // Not default with invalid URL
-  EXPECT_FALSE(ProfileDownloader::IsDefaultProfileImageURL("invalid url"));
 }
