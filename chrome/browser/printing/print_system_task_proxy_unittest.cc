@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <cups/cups.h>
+#include <cups/ppd.h>
 
 #include <cstring>
 #include <string>
