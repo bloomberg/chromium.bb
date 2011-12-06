@@ -366,7 +366,7 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
 
   switch (xev->type) {
     case Expose:
-      desktop_->Draw();
+      desktop_->ScheduleDraw();
       handled = true;
       break;
     case KeyPress: {

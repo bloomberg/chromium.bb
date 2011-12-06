@@ -150,6 +150,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   void ToggleFullScreen();
 #endif
 
+  // Overridden from ui::CompositorDelegate:
+  virtual void ScheduleDraw();
+
  private:
   Desktop();
   virtual ~Desktop();
@@ -161,9 +164,6 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   bool ProcessMouseEvent(Window* target, MouseEvent* event);
   bool ProcessKeyEvent(Window* target, KeyEvent* event);
   ui::TouchStatus ProcessTouchEvent(Window* target, TouchEvent* event);
-
-  // Overridden from ui::CompositorDelegate
-  virtual void ScheduleDraw();
 
   // Overridden from Window:
   virtual bool CanFocus() const OVERRIDE;
