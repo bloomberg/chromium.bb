@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -28,8 +29,8 @@ class ProxyResolverImpl : public ProxyResolverInterface {
   class Request {
    public:
     explicit Request(const std::string& source_url)
-        : ALLOW_THIS_IN_INITIALIZER_LIST(
-            completion_callback_(this, &Request::OnCompletion)),
+        : ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
+            base::Bind(&Request::OnCompletion, base::Unretained(this)))),
           source_url_(source_url) {
     }
 
@@ -46,7 +47,7 @@ class ProxyResolverImpl : public ProxyResolverInterface {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, notify_task_);
     }
 
-    net::OldCompletionCallbackImpl<Request> completion_callback_;
+    net::CompletionCallback callback_;
 
     std::string source_url_;  // URL being resolved.
     net::ProxyInfo proxy_info_;  // ProxyInfo resolved for source_url_.
@@ -135,7 +136,7 @@ class ProxyResolverImpl : public ProxyResolverInterface {
             << request->source_url_;
     const int result = proxy_service->ResolveProxy(
         GURL(request->source_url_), &request->proxy_info_,
-        &request->completion_callback_, NULL, net::BoundNetLog());
+        request->callback_, NULL, net::BoundNetLog());
     if (result != net::ERR_IO_PENDING) {
       VLOG(1) << "Network proxy resolution completed synchronously.";
       request->OnCompletion(result);
