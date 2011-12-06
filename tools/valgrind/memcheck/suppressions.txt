@@ -5346,6 +5346,23 @@
    fun:_ZN16ExtensionService24ProcessExtensionSyncDataERK17ExtensionSyncDataRNS_10SyncBundleE
    fun:_ZN16ExtensionService18ProcessSyncChangesERKN15tracked_objects8LocationERKSt6vectorI10SyncChangeSaIS5_EE
 }
+{
+   bug_106552
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN25JSONStringValueSerializer17SerializeInternalERKN4base5ValueEb
+   fun:_ZN25JSONStringValueSerializer9SerializeERKN4base5ValueE
+   fun:_ZN13JsonPrefStore13SerializeDataEPSs
+   fun:_ZN19ImportantFileWriter16DoScheduledWriteEv
+   fun:_ZN13JsonPrefStore18CommitPendingWriteEv
+   fun:_ZN13JsonPrefStoreD0Ev
+   fun:_ZNK4base10RefCountedI9PrefStoreE7ReleaseEv
+   fun:_ZN13scoped_refptrI19PersistentPrefStoreEaSEPS0_
+   fun:_ZN11PrefServiceD0Ev
+   fun:_ZN10scoped_ptrI11PrefServiceED1Ev
+   fun:_ZN14TestingProfileD2Ev
+   fun:_ZN23ExtensionTestingProfileD0Ev
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
