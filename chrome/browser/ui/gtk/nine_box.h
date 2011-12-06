@@ -8,6 +8,10 @@
 
 #include <gtk/gtk.h>
 
+namespace gfx {
+class Image;
+}
+
 // A NineBox manages a set of source images representing a 3x3 grid, where
 // non-corner images can be tiled to make a larger image.  It's used to
 // use bitmaps for constructing image-based resizable widgets like buttons.
@@ -16,9 +20,6 @@
 // in width, only pass in images for the left column (leave others NULL).
 // Similarly, for a horizontal image that stretches in width but is fixed in
 // height, only pass in images for the top row.
-//
-// TODO(port): add support for caching server-side pixmaps of prerendered
-// nineboxes.
 class NineBox {
  public:
   // Construct a NineBox with nine images.  Images are specified using resource
@@ -39,10 +40,6 @@ class NineBox {
   // As above, but rendered partially transparent.
   void RenderToWidgetWithOpacity(GtkWidget* dst, double opacity) const;
 
-  // Render the top row of images to |dst| between |x1| and |x1| + |width|.
-  // This is split from RenderToWidget so the toolbar can use it.
-  void RenderTopCenterStrip(cairo_t* cr, int x, int y, int width) const;
-
   // Set the shape of |widget| to match that of the ninebox. Note that |widget|
   // must have its own window and be allocated. Also, currently only the top
   // three images are used.
@@ -51,8 +48,8 @@ class NineBox {
   void ContourWidget(GtkWidget* widget) const;
 
  private:
-  GdkPixbuf* images_[9];
-  bool unref_pixbufs_on_destroy_;
+  gfx::Image* images_[9];
+  bool unref_images_on_destroy_;
 };
 
 #endif  // CHROME_BROWSER_UI_GTK_NINE_BOX_H_

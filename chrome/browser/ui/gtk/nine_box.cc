@@ -10,31 +10,40 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/point.h"
 
 namespace {
 
 // Draw pixbuf |src| into |dst| at position (x, y).
-void DrawPixbuf(cairo_t* cr, GdkPixbuf* src, int x, int y, double alpha) {
-  gdk_cairo_set_source_pixbuf(cr, src, x, y);
+void DrawImage(cairo_t* cr, GtkWidget* widget, gfx::Image* src,
+                int x, int y, double alpha) {
+  if (!src)
+    return;
+
+  src->ToCairo()->SetSource(cr, widget, x, y);
   cairo_paint_with_alpha(cr, alpha);
 }
 
 // Tile pixbuf |src| across |cr| at |x|, |y| for |width| and |height|.
-void TileImage(cairo_t* cr, GdkPixbuf* src,
+void TileImage(cairo_t* cr, GtkWidget* widget, gfx::Image* src,
                int x, int y, int width, int height, double alpha) {
+  if (!src)
+    return;
+
   if (alpha == 1.0) {
-    gdk_cairo_set_source_pixbuf(cr, src, x, y);
+    src->ToCairo()->SetSource(cr, widget, x, y);
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
     cairo_rectangle(cr, x, y, width, height);
     cairo_fill(cr);
   } else {
     // Since there is no easy way to apply a mask to a fill operation, we create
     // a secondary surface and tile into that, then paint it with |alpha|.
-    cairo_surface_t* surface = cairo_image_surface_create(
-        CAIRO_FORMAT_ARGB32, width, height);
+    cairo_surface_t* target = cairo_get_target(cr);
+    cairo_surface_t* surface = cairo_surface_create_similar(
+        target, CAIRO_CONTENT_COLOR_ALPHA, width, height);
     cairo_t* tiled = cairo_create(surface);
-    gdk_cairo_set_source_pixbuf(tiled, src, 0, 0);
+    src->ToCairo()->SetSource(tiled, widget, 0, 0);
     cairo_pattern_set_extend(cairo_get_source(tiled), CAIRO_EXTEND_REPEAT);
     cairo_rectangle(tiled, 0, 0, width, height);
     cairo_fill(tiled);
@@ -47,30 +56,27 @@ void TileImage(cairo_t* cr, GdkPixbuf* src,
   }
 }
 
-GdkPixbuf* GetPixbufImage(int resource_id) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return static_cast<GdkPixbuf*>(rb.GetNativeImageNamed(resource_id));
-}
-
 }  // namespace
 
 NineBox::NineBox(int top_left, int top, int top_right, int left, int center,
                  int right, int bottom_left, int bottom, int bottom_right)
-    : unref_pixbufs_on_destroy_(false) {
-  images_[0] = top_left ? GetPixbufImage(top_left) : NULL;
-  images_[1] = top ? GetPixbufImage(top) : NULL;
-  images_[2] = top_right ? GetPixbufImage(top_right) : NULL;
-  images_[3] = left ? GetPixbufImage(left) : NULL;
-  images_[4] = center ? GetPixbufImage(center) : NULL;
-  images_[5] = right ? GetPixbufImage(right) : NULL;
-  images_[6] = bottom_left ? GetPixbufImage(bottom_left) : NULL;
-  images_[7] = bottom ? GetPixbufImage(bottom) : NULL;
-  images_[8] = bottom_right ? GetPixbufImage(bottom_right) : NULL;
+    : unref_images_on_destroy_(false) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+
+  images_[0] = top_left ? &rb.GetNativeImageNamed(top_left) : NULL;
+  images_[1] = top ? &rb.GetNativeImageNamed(top) : NULL;
+  images_[2] = top_right ? &rb.GetNativeImageNamed(top_right) : NULL;
+  images_[3] = left ? &rb.GetNativeImageNamed(left) : NULL;
+  images_[4] = center ? &rb.GetNativeImageNamed(center) : NULL;
+  images_[5] = right ? &rb.GetNativeImageNamed(right) : NULL;
+  images_[6] = bottom_left ? &rb.GetNativeImageNamed(bottom_left) : NULL;
+  images_[7] = bottom ? &rb.GetNativeImageNamed(bottom) : NULL;
+  images_[8] = bottom_right ? &rb.GetNativeImageNamed(bottom_right) : NULL;
 }
 
 NineBox::NineBox(int image, int top_margin, int bottom_margin, int left_margin,
                  int right_margin)
-    : unref_pixbufs_on_destroy_(true) {
+    : unref_images_on_destroy_(true) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   GdkPixbuf* pixbuf = rb.GetNativeImageNamed(image);
   int width = gdk_pixbuf_get_width(pixbuf);
@@ -78,33 +84,34 @@ NineBox::NineBox(int image, int top_margin, int bottom_margin, int left_margin,
   int inset_width = left_margin + right_margin;
   int inset_height = top_margin + bottom_margin;
 
-  images_[0] = gdk_pixbuf_new_subpixbuf(pixbuf, 0, 0, left_margin, top_margin);
-  images_[1] = gdk_pixbuf_new_subpixbuf(pixbuf, left_margin, 0,
-                                        width - inset_width, top_margin);
-  images_[2] = gdk_pixbuf_new_subpixbuf(pixbuf, width - right_margin, 0,
-                                        right_margin, top_margin);
-  images_[3] = gdk_pixbuf_new_subpixbuf(pixbuf, 0, top_margin,
-                                        left_margin, height - inset_height);
-  images_[4] = gdk_pixbuf_new_subpixbuf(pixbuf, left_margin, top_margin,
-                                        width - inset_width,
-                                        height - inset_height);
-  images_[5] = gdk_pixbuf_new_subpixbuf(pixbuf, width - right_margin,
-                                        top_margin, right_margin,
-                                        height - inset_height);
-  images_[6] = gdk_pixbuf_new_subpixbuf(pixbuf, 0, height - bottom_margin,
-                                        left_margin, bottom_margin);
-  images_[7] = gdk_pixbuf_new_subpixbuf(pixbuf, left_margin,
-                                        height - bottom_margin,
-                                        width - inset_width, bottom_margin);
-  images_[8] = gdk_pixbuf_new_subpixbuf(pixbuf, width - right_margin,
-                                        height - bottom_margin,
-                                        right_margin, bottom_margin);
+  images_[0] = new gfx::Image(gdk_pixbuf_new_subpixbuf(
+      pixbuf, 0, 0, left_margin, top_margin));
+  images_[1] = new gfx::Image(gdk_pixbuf_new_subpixbuf(
+      pixbuf, left_margin, 0, width - inset_width, top_margin));
+  images_[2] = new gfx::Image(gdk_pixbuf_new_subpixbuf(
+      pixbuf, width - right_margin, 0, right_margin, top_margin));
+  images_[3] = new gfx::Image(gdk_pixbuf_new_subpixbuf(
+      pixbuf, 0, top_margin, left_margin, height - inset_height));
+  images_[4] = new gfx::Image(gdk_pixbuf_new_subpixbuf(
+      pixbuf, left_margin, top_margin, width - inset_width,
+      height - inset_height));
+  images_[5] = new gfx::Image(gdk_pixbuf_new_subpixbuf(
+      pixbuf, width - right_margin, top_margin, right_margin,
+      height - inset_height));
+  images_[6] = new gfx::Image(gdk_pixbuf_new_subpixbuf(
+      pixbuf, 0, height - bottom_margin, left_margin, bottom_margin));
+  images_[7] = new gfx::Image(gdk_pixbuf_new_subpixbuf(
+      pixbuf, left_margin, height - bottom_margin,
+      width - inset_width, bottom_margin));
+  images_[8] = new gfx::Image(gdk_pixbuf_new_subpixbuf(
+      pixbuf, width - right_margin, height - bottom_margin,
+      right_margin, bottom_margin));
 }
 
 NineBox::~NineBox() {
-  if (unref_pixbufs_on_destroy_) {
+  if (unref_images_on_destroy_) {
     for (int i = 0; i < 9; i++) {
-      g_object_unref(images_[i]);
+      delete images_[i];
     }
   }
 }
@@ -119,10 +126,12 @@ void NineBox::RenderToWidgetWithOpacity(GtkWidget* dst, double opacity) const {
 
   // The upper-left and lower-right corners of the center square in the
   // rendering of the ninebox.
-  int x1 = gdk_pixbuf_get_width(images_[0]);
-  int y1 = gdk_pixbuf_get_height(images_[0]);
-  int x2 = images_[2] ? dst_width - gdk_pixbuf_get_width(images_[2]) : x1;
-  int y2 = images_[6] ? dst_height - gdk_pixbuf_get_height(images_[6]) : y1;
+  int x1 = gdk_pixbuf_get_width(images_[0]->ToGdkPixbuf());
+  int y1 = gdk_pixbuf_get_height(images_[0]->ToGdkPixbuf());
+  int x2 = images_[2] ? dst_width - gdk_pixbuf_get_width(
+      images_[2]->ToGdkPixbuf()) : x1;
+  int y2 = images_[6] ? dst_height - gdk_pixbuf_get_height(
+      images_[6]->ToGdkPixbuf()) : y1;
   // Paint nothing if there's not enough room.
   if (x2 < x1 || y2 < y1)
     return;
@@ -142,36 +151,21 @@ void NineBox::RenderToWidgetWithOpacity(GtkWidget* dst, double opacity) const {
   }
 
   // Top row, center image is horizontally tiled.
-  if (images_[0])
-    DrawPixbuf(cr, images_[0], 0, 0, opacity);
-  if (images_[1])
-    TileImage(cr, images_[1], x1, 0, x2 - x1, y1, opacity);
-  if (images_[2])
-    DrawPixbuf(cr, images_[2], x2, 0, opacity);
+  DrawImage(cr, dst, images_[0], 0, 0, opacity);
+  TileImage(cr, dst, images_[1], x1, 0, x2 - x1, y1, opacity);
+  DrawImage(cr, dst, images_[2], x2, 0, opacity);
 
   // Center row, all images are vertically tiled, center is horizontally tiled.
-  if (images_[3])
-    TileImage(cr, images_[3], 0, y1, x1, y2 - y1, opacity);
-  if (images_[4])
-    TileImage(cr, images_[4], x1, y1, x2 - x1, y2 - y1, opacity);
-  if (images_[5])
-    TileImage(cr, images_[5], x2, y1, dst_width - x2, y2 - y1, opacity);
+  TileImage(cr, dst, images_[3], 0, y1, x1, y2 - y1, opacity);
+  TileImage(cr, dst, images_[4], x1, y1, x2 - x1, y2 - y1, opacity);
+  TileImage(cr, dst, images_[5], x2, y1, dst_width - x2, y2 - y1, opacity);
 
   // Bottom row, center image is horizontally tiled.
-  if (images_[6])
-    DrawPixbuf(cr, images_[6], 0, y2, opacity);
-  if (images_[7])
-    TileImage(cr, images_[7], x1, y2, x2 - x1, dst_height - y2, opacity);
-  if (images_[8])
-    DrawPixbuf(cr, images_[8], x2, y2, opacity);
+  DrawImage(cr, dst, images_[6], 0, y2, opacity);
+  TileImage(cr, dst, images_[7], x1, y2, x2 - x1, dst_height - y2, opacity);
+  DrawImage(cr, dst, images_[8], x2, y2, opacity);
 
   cairo_destroy(cr);
-}
-
-void NineBox::RenderTopCenterStrip(cairo_t* cr, int x, int y,
-                                   int width) const {
-  const int height = gdk_pixbuf_get_height(images_[1]);
-  TileImage(cr, images_[1], x, y, width, height, 1.0);
 }
 
 void NineBox::ContourWidget(GtkWidget* widget) const {
@@ -179,16 +173,19 @@ void NineBox::ContourWidget(GtkWidget* widget) const {
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width;
   int height = allocation.height;
-  int x1 = gdk_pixbuf_get_width(images_[0]);
-  int x2 = width - gdk_pixbuf_get_width(images_[2]);
+  int x1 = gdk_pixbuf_get_width(images_[0]->ToGdkPixbuf());
+  int x2 = width - gdk_pixbuf_get_width(images_[2]->ToGdkPixbuf());
+
+  // TODO(erg): Far in the future, when we're doing the real gtk3 porting, this
+  // all needs to be switchted to pure cairo operations.
 
   // Paint the left and right sides.
   GdkBitmap* mask = gdk_pixmap_new(NULL, width, height, 1);
-  gdk_pixbuf_render_threshold_alpha(images_[0], mask,
+  gdk_pixbuf_render_threshold_alpha(images_[0]->ToGdkPixbuf(), mask,
                                     0, 0,
                                     0, 0, -1, -1,
                                     1);
-  gdk_pixbuf_render_threshold_alpha(images_[2], mask,
+  gdk_pixbuf_render_threshold_alpha(images_[2]->ToGdkPixbuf(), mask,
                                     0, 0,
                                     x2, 0, -1, -1,
                                     1);
