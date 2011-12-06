@@ -31,8 +31,7 @@ BuildAndProcessConflictSetsCommand::BuildAndProcessConflictSetsCommand() {}
 BuildAndProcessConflictSetsCommand::~BuildAndProcessConflictSetsCommand() {}
 
 bool BuildAndProcessConflictSetsCommand::HasCustomGroupsToChange() const {
-  // TODO(akalin): Set to true.
-  return false;
+  return true;
 }
 
 std::set<ModelSafeGroup> BuildAndProcessConflictSetsCommand::GetGroupsToChange(
