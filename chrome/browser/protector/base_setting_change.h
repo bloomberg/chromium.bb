@@ -44,6 +44,15 @@ class BaseSettingChange {
   // Called before the change is removed from the protector instance.
   virtual void OnBeforeRemoved() = 0;
 
+  // Returns the resource ID of the badge icon.
+  virtual int GetBadgeIconID() const = 0;
+
+  // Returns the resource ID for the menu item icon.
+  virtual int GetMenuItemIconID() const = 0;
+
+  // Returns the resource ID for bubble view icon.
+  virtual int GetBubbleIconID() const = 0;
+
   // Returns the wrench menu item and bubble title.
   virtual string16 GetBubbleTitle() const = 0;
 

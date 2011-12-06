@@ -43,11 +43,14 @@ class SettingsChangeGlobalError : public GlobalError {
 
   // GlobalError implementation.
   virtual bool HasBadge() OVERRIDE;
+  virtual int GetBadgeResourceID() OVERRIDE;
   virtual bool HasMenuItem() OVERRIDE;
   virtual int MenuItemCommandID() OVERRIDE;
   virtual string16 MenuItemLabel() OVERRIDE;
+  virtual int MenuItemIconResourceID() OVERRIDE;
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
   virtual bool HasBubbleView() OVERRIDE;
+  virtual int GetBubbleViewIconResourceID() OVERRIDE;
   virtual string16 GetBubbleViewTitle() OVERRIDE;
   virtual string16 GetBubbleViewMessage() OVERRIDE;
   virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;

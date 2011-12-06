@@ -47,6 +47,10 @@ bool SettingsChangeGlobalError::HasBadge() {
   return true;
 }
 
+int SettingsChangeGlobalError::GetBadgeResourceID() {
+  return change_->GetBadgeIconID();
+}
+
 bool SettingsChangeGlobalError::HasMenuItem() {
   return true;
 }
@@ -59,6 +63,10 @@ string16 SettingsChangeGlobalError::MenuItemLabel() {
   return change_->GetBubbleTitle();
 }
 
+int SettingsChangeGlobalError::MenuItemIconResourceID() {
+  return change_->GetMenuItemIconID();
+}
+
 void SettingsChangeGlobalError::ExecuteMenuItem(Browser* browser) {
   // Cancel previously posted tasks.
   weak_factory_.InvalidateWeakPtrs();
@@ -68,6 +76,10 @@ void SettingsChangeGlobalError::ExecuteMenuItem(Browser* browser) {
 
 bool SettingsChangeGlobalError::HasBubbleView() {
   return true;
+}
+
+int SettingsChangeGlobalError::GetBubbleViewIconResourceID() {
+  return change_->GetBubbleIconID();
 }
 
 string16 SettingsChangeGlobalError::GetBubbleViewTitle() {

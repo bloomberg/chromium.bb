@@ -19,6 +19,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace protector {
@@ -96,6 +97,9 @@ class DefaultSearchProviderChange : public BaseSettingChange,
   virtual void Discard() OVERRIDE;
   virtual void Timeout() OVERRIDE;
   virtual void OnBeforeRemoved() OVERRIDE;
+  virtual int GetBadgeIconID() const OVERRIDE;
+  virtual int GetMenuItemIconID() const OVERRIDE;
+  virtual int GetBubbleIconID() const OVERRIDE;
   virtual string16 GetBubbleTitle() const OVERRIDE;
   virtual string16 GetBubbleMessage() const OVERRIDE;
   virtual string16 GetApplyButtonText() const OVERRIDE;
@@ -235,6 +239,18 @@ void DefaultSearchProviderChange::Timeout() {
 
 void DefaultSearchProviderChange::OnBeforeRemoved() {
   protector()->GetTemplateURLService()->RemoveObserver(this);
+}
+
+int DefaultSearchProviderChange::GetBadgeIconID() const {
+  return IDR_SEARCH_ENGINE_CHANGE_BADGE;
+}
+
+int DefaultSearchProviderChange::GetMenuItemIconID() const {
+  return IDR_SEARCH_ENGINE_CHANGE_MENU;
+}
+
+int DefaultSearchProviderChange::GetBubbleIconID() const {
+  return IDR_SEARCH_ENGINE_CHANGE_ALERT;
 }
 
 string16 DefaultSearchProviderChange::GetBubbleTitle() const {
