@@ -139,18 +139,26 @@ class DrMemoryAnalyzer:
   def Report(self, filenames, testcase, check_sanity):
     sys.stdout.flush()
     # TODO(timurrrr): support positive tests / check_sanity==True
+    self.used_suppressions = defaultdict(int)
 
     to_report = []
-    self.used_suppressions = defaultdict(int)
+    reports_for_this_test = set()
     for f in filenames:
       cur_reports = self.ParseReportFile(f, testcase)
 
       # Filter out the reports that were there in previous tests.
       for r in cur_reports:
-        if r in self.known_errors:
-          pass  # TODO: print out a hash once we add hashes to the reports.
+        if r in reports_for_this_test:
+          # A similar report is about to be printed for this test.
+          pass
+        elif r in self.known_errors:
+          # A similar report has already been printed in one of the prev tests.
+          to_report.append("This error was already printed in some "
+                           "other test, see 'hash=#%016X#'" % r.ErrorHash())
+          reports_for_this_test.add(r)
         else:
           self.known_errors.add(r)
+          reports_for_this_test.add(r)
           to_report.append(r)
 
     common.PrintUsedSuppressionsList(self.used_suppressions)
