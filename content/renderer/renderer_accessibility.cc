@@ -169,7 +169,7 @@ void RendererAccessibility::PostAccessibilityNotification(
     // in cases where we don't get it first to avoid focus problems.
     PostAccessibilityNotification(
         document.accessibilityObject(),
-        WebKit::WebAccessibilityNotificationLoadComplete);
+        WebKit::WebAccessibilityNotificationLayoutComplete);
   }
 
   gfx::Size scroll_offset = document.frame()->scrollOffset();
