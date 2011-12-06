@@ -177,6 +177,16 @@ class CandidateWindowView : public views::View {
   // The last cursor location.
   gfx::Rect cursor_location_;
 
+  // This location is used by suggestion window rendering which is mostly used
+  // by ibus-mozc. The suggestion window should be aligned with the composition
+  // text as opposed to the cursor. In case of ibus-mozc, suggestion window
+  // location is calculated by engine and it carried by update_lookup_table
+  // signal as additional information. This value is available when
+  // is_suggestion_window_available is true.
+  gfx::Rect suggestion_window_location_;
+
+  bool is_suggestion_window_location_available_;
+
   DISALLOW_COPY_AND_ASSIGN(CandidateWindowView);
 };
 

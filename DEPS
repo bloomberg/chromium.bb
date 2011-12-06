@@ -296,7 +296,10 @@ deps = {
     (Var("googlecode_url") % "libyuv") + "/trunk@64",
 
   "src/third_party/mozc/session":
-    (Var("googlecode_url") % "mozc") + "/trunk/src/session@58",
+    (Var("googlecode_url") % "mozc") + "/trunk/src/session@83",
+
+  "src/third_party/mozc/chrome/chromeos/renderer":
+    (Var("googlecode_url") % "mozc") + "/trunk/src/chrome/chromeos/renderer@83",
 
   "src/third_party/smhasher/src":
     (Var("googlecode_url") % "smhasher") + "/trunk@136",
