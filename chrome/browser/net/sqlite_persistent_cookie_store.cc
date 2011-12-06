@@ -65,6 +65,7 @@ class SQLitePersistentCookieStore::Backend
         clear_local_state_on_exit_(false),
         initialized_(false),
         restore_old_session_cookies_(restore_old_session_cookies),
+        num_cookies_read_(0),
         num_priority_waiting_(0),
         total_priority_requests_(0) {
   }
@@ -128,11 +129,13 @@ class SQLitePersistentCookieStore::Backend
 
  private:
   // Creates or loads the SQLite database on DB thread.
-  void LoadAndNotifyOnDBThread(const LoadedCallback& loaded_callback);
+  void LoadAndNotifyOnDBThread(const LoadedCallback& loaded_callback,
+                               const base::Time& posted_at);
 
   // Loads cookies for the domain key (eTLD+1) on DB thread.
   void LoadKeyAndNotifyOnDBThread(const std::string& domains,
-      const LoadedCallback& loaded_callback);
+                                  const LoadedCallback& loaded_callback,
+                                  const base::Time& posted_at);
 
   // Notifies the CookieMonster when loading completes for a specific domain key
   // or for all domain keys. Triggers the callback and passes it all cookies
@@ -208,6 +211,10 @@ class SQLitePersistentCookieStore::Backend
   // The cumulative time spent loading the cookies on the DB thread. Incremented
   // and reported from the DB thread.
   base::TimeDelta cookie_load_duration_;
+
+  // The total number of cookies read. Incremented and reported on the DB
+  // thread.
+  int num_cookies_read_;
 
   // Guards the following metrics-related properties (only accessed when
   // starting/completing priority loads or completing the total load).
@@ -303,7 +310,8 @@ void SQLitePersistentCookieStore::Backend::Load(
   DCHECK(!db_.get());
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(&Backend::LoadAndNotifyOnDBThread, this, loaded_callback));
+      base::Bind(&Backend::LoadAndNotifyOnDBThread, this, loaded_callback,
+                 base::Time::Now()));
 }
 
 void SQLitePersistentCookieStore::Backend::LoadCookiesForKey(
@@ -320,14 +328,21 @@ void SQLitePersistentCookieStore::Backend::LoadCookiesForKey(
   BrowserThread::PostTask(
     BrowserThread::DB, FROM_HERE,
     base::Bind(&Backend::LoadKeyAndNotifyOnDBThread, this,
-    key,
-    loaded_callback));
+               key,
+               loaded_callback,
+               base::Time::Now()));
 }
 
 void SQLitePersistentCookieStore::Backend::LoadAndNotifyOnDBThread(
-    const LoadedCallback& loaded_callback) {
+    const LoadedCallback& loaded_callback, const base::Time& posted_at) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   IncrementTimeDelta increment(&cookie_load_duration_);
+
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "Cookie.TimeLoadDBQueueWait",
+      base::Time::Now() - posted_at,
+      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
+      50);
 
   if (!InitializeDatabase()) {
     BrowserThread::PostTask(
@@ -341,9 +356,16 @@ void SQLitePersistentCookieStore::Backend::LoadAndNotifyOnDBThread(
 
 void SQLitePersistentCookieStore::Backend::LoadKeyAndNotifyOnDBThread(
     const std::string& key,
-    const LoadedCallback& loaded_callback) {
+    const LoadedCallback& loaded_callback,
+    const base::Time& posted_at) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   IncrementTimeDelta increment(&cookie_load_duration_);
+
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "Cookie.TimeKeyLoadDBQueueWait",
+      base::Time::Now() - posted_at,
+      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
+      50);
 
   bool success = false;
   if (InitializeDatabase()) {
@@ -403,6 +425,10 @@ void SQLitePersistentCookieStore::Backend::ReportMetrics() {
     UMA_HISTOGRAM_COUNTS_100(
         "Cookie.PriorityLoadCount",
         total_priority_requests_);
+
+    UMA_HISTOGRAM_COUNTS_10000(
+        "Cookie.NumberOfLoadedCookies",
+        num_cookies_read_);
   }
 }
 
@@ -435,9 +461,17 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
     return true;
   }
 
+  base::Time start = base::Time::Now();
+
   const FilePath dir = path_.DirName();
   if (!file_util::PathExists(dir) && !file_util::CreateDirectory(dir)) {
     return false;
+  }
+
+  int64 db_size = 0;
+  if (file_util::GetFileSize(path_, &db_size)) {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    UMA_HISTOGRAM_COUNTS("Cookie.DBSizeInKB", db_size / 1024 );
   }
 
   db_.reset(new sql::Connection);
@@ -456,6 +490,14 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
   }
 
   db_->Preload();
+
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+    "Cookie.TimeInitializeDB",
+    base::Time::Now() - start,
+    base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
+    50);
+
+  start = base::Time::Now();
 
   // Retrieve all the domains
   sql::Statement smt(db_->GetUniqueStatement(
@@ -480,6 +522,12 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
                                 (key, std::set<std::string>())).first;
     it->second.insert(domain);
   }
+
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+    "Cookie.TimeInitializeDomainMap",
+    base::Time::Now() - start,
+    base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
+    50);
 
   initialized_ = true;
   return true;
@@ -565,6 +613,7 @@ bool SQLitePersistentCookieStore::Backend::LoadCookiesForDomains(
       DLOG_IF(WARNING,
               cc->CreationDate() > Time::Now()) << L"CreationDate too recent";
       cookies.push_back(cc.release());
+      ++num_cookies_read_;
     }
     smt.Reset();
   }
