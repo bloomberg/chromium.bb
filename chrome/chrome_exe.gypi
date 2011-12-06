@@ -418,7 +418,7 @@
             # For now, do not build nacl_helper when disable_nacl=1
             ['disable_nacl!=1', {
               'dependencies': [
-                'nacl_helper_bootstrap',
+                '../native_client/src/trusted/service_runtime/linux/nacl_bootstrap.gyp:nacl_helper_bootstrap',
                 'nacl_helper',
                 ],
             }],

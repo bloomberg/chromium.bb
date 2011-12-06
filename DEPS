@@ -33,6 +33,7 @@ vars = {
   "libjingle_revision": "95",
   "libphonenumber_revision": "407",
   "libvpx_revision": "109236",
+  "lss_revision": "9",
   "ffmpeg_revision": "112050",
   "sfntly_revision": "111",
   "skia_revision": "2785",
@@ -402,7 +403,8 @@ deps_os = {
       "/trunk/deps/third_party/swig/linux@" + Var("swig_revision"),
 
     "src/third_party/lss":
-      (Var("googlecode_url") % "linux-syscall-support") + "/trunk/lss@8",
+      ((Var("googlecode_url") % "linux-syscall-support") + "/trunk/lss@" +
+       Var("lss_revision")),
 
     "src/third_party/openssl":
       "/trunk/deps/third_party/openssl@105093",
