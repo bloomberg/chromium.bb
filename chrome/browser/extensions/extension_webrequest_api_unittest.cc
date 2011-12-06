@@ -988,6 +988,72 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses) {
   EXPECT_EQ(4u, event_log.size());
 }
 
+// This tests that we can redirect to data:// urls, which is considered
+// a kind of cancelling requests.
+TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses2) {
+  using namespace extension_webrequest_api_helpers;
+  EventResponseDeltas deltas;
+  EventLogEntries event_log;
+  std::set<std::string> conflicting_extensions;
+  GURL effective_new_url;
+
+  // Single redirect.
+  GURL new_url_0("http://foo.com");
+  linked_ptr<EventResponseDelta> d0(
+      new EventResponseDelta("extid0", base::Time::FromInternalValue(2000)));
+  d0->new_url = GURL(new_url_0);
+  deltas.push_back(d0);
+  MergeOnBeforeRequestResponses(
+      deltas, &effective_new_url, &conflicting_extensions, &event_log);
+  EXPECT_EQ(new_url_0, effective_new_url);
+
+  // Cancel request by redirecting to a data:// URL. This shall override
+  // the other redirect but not cause any conflict warnings.
+  GURL new_url_1("data://foo");
+  linked_ptr<EventResponseDelta> d1(
+      new EventResponseDelta("extid1", base::Time::FromInternalValue(1500)));
+  d1->new_url = GURL(new_url_1);
+  deltas.push_back(d1);
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+  event_log.clear();
+  MergeOnBeforeRequestResponses(
+      deltas, &effective_new_url, &conflicting_extensions, &event_log);
+  EXPECT_EQ(new_url_1, effective_new_url);
+  EXPECT_TRUE(conflicting_extensions.empty());
+  EXPECT_EQ(1u, event_log.size());
+
+  // Cancel request by redirecting to the same data:// URL. This shall
+  // not create any conflicts as it is in line with d1.
+  GURL new_url_2("data://foo");
+  linked_ptr<EventResponseDelta> d2(
+      new EventResponseDelta("extid2", base::Time::FromInternalValue(1000)));
+  d2->new_url = GURL(new_url_2);
+  deltas.push_back(d2);
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+  event_log.clear();
+  MergeOnBeforeRequestResponses(
+      deltas, &effective_new_url, &conflicting_extensions, &event_log);
+  EXPECT_EQ(new_url_1, effective_new_url);
+  EXPECT_TRUE(conflicting_extensions.empty());
+  EXPECT_EQ(2u, event_log.size());
+
+  // Cancel redirect by redirecting to a different data:// URL. This needs
+  // to create a conflict.
+  GURL new_url_3("data://something_totally_different");
+  linked_ptr<EventResponseDelta> d3(
+      new EventResponseDelta("extid3", base::Time::FromInternalValue(500)));
+  d3->new_url = GURL(new_url_3);
+  deltas.push_back(d3);
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+  event_log.clear();
+  MergeOnBeforeRequestResponses(
+      deltas, &effective_new_url, &conflicting_extensions, &event_log);
+  EXPECT_EQ(new_url_1, effective_new_url);
+  EXPECT_EQ(1u, conflicting_extensions.size());
+  EXPECT_TRUE(ContainsKey(conflicting_extensions, "extid3"));
+  EXPECT_EQ(3u, event_log.size());
+}
+
 TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   using namespace extension_webrequest_api_helpers;
   net::HttpRequestHeaders base_headers;

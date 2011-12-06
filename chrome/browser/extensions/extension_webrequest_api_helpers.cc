@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
+#include "chrome/common/url_constants.h"
 #include "net/http/http_util.h"
 
 namespace extension_webrequest_api_helpers {
@@ -247,34 +248,67 @@ void MergeCancelOfResponses(
   }
 }
 
+// Helper function for MergeOnBeforeRequestResponses() that allows considering
+// only data:// urls. These are considered a special case of cancelling a
+// request. This helper function allows us to ignore all other redirects
+// in case any extension wants to cancel the request by redirecting to a
+// data:// url.
+// Returns whether a redirect occurred.
+static bool MergeOnBeforeRequestResponsesHelper(
+    const EventResponseDeltas& deltas,
+    GURL* new_url,
+    std::set<std::string>* conflicting_extensions,
+    EventLogEntries* event_log_entries,
+    bool consider_only_data_scheme_urls) {
+  bool redirected = false;
+
+  EventResponseDeltas::const_iterator delta;
+  for (delta = deltas.begin(); delta != deltas.end(); ++delta) {
+    if ((*delta)->new_url.is_empty())
+      continue;
+    if (consider_only_data_scheme_urls &&
+        !(*delta)->new_url.SchemeIs(chrome::kDataScheme)) {
+      continue;
+    }
+
+    if (!redirected || *new_url == (*delta)->new_url) {
+      *new_url = (*delta)->new_url;
+      redirected = true;
+      EventLogEntry log_entry(
+          net::NetLog::TYPE_CHROME_EXTENSION_REDIRECTED_REQUEST,
+          make_scoped_refptr(
+              new NetLogExtensionIdParameter((*delta)->extension_id)));
+      event_log_entries->push_back(log_entry);
+    } else {
+      conflicting_extensions->insert((*delta)->extension_id);
+      EventLogEntry log_entry(
+          net::NetLog::TYPE_CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
+          make_scoped_refptr(
+              new NetLogExtensionIdParameter((*delta)->extension_id)));
+      event_log_entries->push_back(log_entry);
+    }
+  }
+  return redirected;
+}
+
 void MergeOnBeforeRequestResponses(
     const EventResponseDeltas& deltas,
     GURL* new_url,
     std::set<std::string>* conflicting_extensions,
     EventLogEntries* event_log_entries) {
-  EventResponseDeltas::const_iterator delta;
 
-  bool redirected = false;
-  for (delta = deltas.begin(); delta != deltas.end(); ++delta) {
-    if (!(*delta)->new_url.is_empty()) {
-      if (!redirected || *new_url == (*delta)->new_url) {
-        *new_url = (*delta)->new_url;
-        redirected = true;
-        EventLogEntry log_entry(
-            net::NetLog::TYPE_CHROME_EXTENSION_REDIRECTED_REQUEST,
-            make_scoped_refptr(
-                new NetLogExtensionIdParameter((*delta)->extension_id)));
-        event_log_entries->push_back(log_entry);
-      } else {
-        conflicting_extensions->insert((*delta)->extension_id);
-        EventLogEntry log_entry(
-            net::NetLog::TYPE_CHROME_EXTENSION_REDIRECTED_REQUEST,
-            make_scoped_refptr(
-                new NetLogExtensionIdParameter((*delta)->extension_id)));
-        event_log_entries->push_back(log_entry);
-      }
-    }
+  // First handle only redirects to data:// URLs. These are a special case as
+  // they represent a way of cancelling a request.
+  if (MergeOnBeforeRequestResponsesHelper(
+          deltas, new_url, conflicting_extensions, event_log_entries, true)) {
+    // If any extension cancelled a request by redirecting to a data:// URL,
+    // we don't consider the other redirects.
+    return;
   }
+
+  // Handle all other redirects.
+  MergeOnBeforeRequestResponsesHelper(
+            deltas, new_url, conflicting_extensions, event_log_entries, false);
 }
 
 void MergeOnBeforeSendHeadersResponses(
