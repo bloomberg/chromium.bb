@@ -269,5 +269,10 @@ name=http://crbug.com/96010
 ...
 *!NotificationService::Notify
 
+UNADDRESSABLE ACCESS
+name=http://crbug.com/106522
+npapi_test_plugin.dll!NPAPIClient::PluginTest::id
+npapi_test_plugin.dll!NPAPIClient::ExecuteGetJavascriptUrlTest::TimerProc
+
 # Empty line at EOF - workaround for
 # http://code.google.com/p/drmemory/issues/detail?id=41
