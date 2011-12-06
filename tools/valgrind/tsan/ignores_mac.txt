@@ -36,3 +36,6 @@ fun_r:_cthread_fork_child
 # False reports on Snow Leopard.
 fun_r: _pthread_exit
 fun_r: _dispatch_queue_drain
+
+# See http://crbug.com/106197
+fun_r: __sfp
