@@ -329,9 +329,6 @@ class BookmarkModel : public content::NotificationObserver,
     return expanded_state_tracker_.get();
   }
 
-  // Sets whether the mobile folder is visible. This is set by sync.
-  void SetMobileFolderVisible(bool value);
-
  private:
   friend class BookmarkCodecTest;
   friend class BookmarkModelTest;

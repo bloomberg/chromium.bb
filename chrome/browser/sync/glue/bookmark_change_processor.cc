@@ -451,9 +451,6 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
     foster_parent = NULL;
   }
 
-  // The visibility of the mobile node may need to change.
-  model_associator_->UpdateMobileNodeVisibility();
-
   // We are now ready to hear about bookmarks changes again.
   model->AddObserver(this);
 }

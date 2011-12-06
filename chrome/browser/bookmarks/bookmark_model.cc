@@ -108,8 +108,6 @@ class MobileNode : public BookmarkNode {
   explicit MobileNode(int64 id);
   virtual ~MobileNode();
 
-  void set_visible(bool value) { visible_ = value; }
-
   // BookmarkNode overrides:
   virtual bool IsVisible() const OVERRIDE;
 
@@ -546,11 +544,6 @@ void BookmarkModel::GetBookmarksWithTitlesMatching(
 void BookmarkModel::ClearStore() {
   registrar_.RemoveAll();
   store_ = NULL;
-}
-
-void BookmarkModel::SetMobileFolderVisible(bool value) {
-  DCHECK(loaded_);
-  static_cast<MobileNode*>(mobile_node_)->set_visible(value);
 }
 
 bool BookmarkModel::IsBookmarkedNoLock(const GURL& url) {
