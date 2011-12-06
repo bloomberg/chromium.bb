@@ -4,9 +4,6 @@
  * They will be overridden by the real functions in
  * libgcc_eh / libgcc_s / libcrt_platform
  *
- * TODO(pdox): It would be better to do this in a way that
- *             doesn't require native code.
- *
  * for more information on these functions see:
  * http://www.nongnu.org/libunwind/docs.html
  * NOTE: libunwind uses slightly different function names:
@@ -17,10 +14,8 @@
  * _Unwind_PNaClSetResult1
  */
 
-#define STUB(sym) \
-.weak sym; sym:
+#define STUB(sym)   void sym() { }
 
-.text
 STUB(_Unwind_DeleteException)
 STUB(_Unwind_GetRegionStart)
 STUB(_Unwind_GetDataRelBase)

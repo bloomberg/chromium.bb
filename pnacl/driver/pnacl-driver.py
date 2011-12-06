@@ -38,7 +38,7 @@ EXTRA_ENV = {
   'STDLIB'      : '1',    # Include standard libraries (-nostdlib sets to 0)
   'DEFAULTLIBS' : '1',    # Link with default libraries
   'DIAGNOSTIC'  : '0',    # Diagnostic flag detected
-  'STATIC'      : '${LIBMODE_NEWLIB ? 1 : 0}', # -static (on for newlib)
+  'STATIC'      : '0',    # -static
   'PIC'         : '0',    # Generate PIC
 
   'INPUTS'      : '',    # Input files
@@ -96,10 +96,12 @@ EXTRA_ENV = {
   'PREFIXES'         : '', # Prefixes specified by using the -B flag.
 
   # Library Strings
-  'EMITMODE'         : '${STATIC ? static : ${SHARED ? shared : dynamic}}',
+  'EMITMODE'         : '${!STDLIB ? nostdlib : ' +
+                       '${STATIC ? ${LIBMODE}_static : ' +
+                       '${SHARED ? ${LIBMODE}_shared : ${LIBMODE}_dynamic}}}',
 
-  'LD_ARGS' : '${STDLIB ? ${LD_ARGS_%LIBMODE%_%EMITMODE%}' +
-                      ' : ${LD_ARGS_nostdlib}}',
+  # This is setup so that LD_ARGS_xxx is evaluated lazily.
+  'LD_ARGS' : '${LD_ARGS_%EMITMODE%}',
 
   # ${ld_inputs} signifies where to place the objects and libraries
   # provided on the command-line.
@@ -111,27 +113,27 @@ EXTRA_ENV = {
   'LD_ARGS_newlib_static':
     '-l:crt1.x -l:crti.bc -l:crtbegin.bc ${ld_inputs} ' +
     '${DEFAULTLIBS ? --start-group ${LIBSTDCPP} -lc -lnacl --end-group ' +
-    '-l:pnacl_abi.o}',
+    '-l:pnacl_abi.bc}',
 
   # The next three are copied verbatim from nacl-gcc
   'LD_ARGS_glibc_static':
     '-l:crt1.o -l:crti.o -l:crtbeginT.o ' +
     '${ld_inputs} ${DEFAULTLIBS ? ${LIBSTDCPP} -lc ' +
-    # Replace with pnacl_abi.o
+    # Replace with pnacl_abi.bc
     '--start-group -lgcc_eh -lc -lgcc --end-group} ' +
     '-l:crtend.o -l:crtn.o',
 
   'LD_ARGS_glibc_shared':
     '-shared -l:crti.o -l:crtbeginS.o ' +
     '${ld_inputs} ${DEFAULTLIBS ? ${LIBSTDCPP} -lc ' +
-    # Replace with pnacl_abi.o
+    # Replace with pnacl_abi.bc
     '-lgcc_s} ' +
     '-l:crtendS.o -l:crtn.o',
 
   'LD_ARGS_glibc_dynamic':
     '-l:crt1.o -l:crti.o ' +
     '-l:crtbegin.o ${ld_inputs} ${DEFAULTLIBS ? ${LIBSTDCPP} -lc ' +
-    # Replace with pnacl_abi.o
+    # Replace with pnacl_abi.bc
     '-lgcc_s} ' +
     '-l:crtend.o -l:crtn.o',
 
@@ -322,11 +324,12 @@ def main(argv):
     UnrecognizedOption(*unmatched)
 
   libmode_newlib = env.getbool('LIBMODE_NEWLIB')
-  is_static = env.getbool('STATIC')
   is_shared = env.getbool('SHARED')
+  if libmode_newlib and is_shared and env.getbool('STDLIB'):
+      Log.Fatal("Can't produce dynamic objects with newlib.")
 
-  if libmode_newlib and (is_shared or not is_static):
-    Log.Fatal("Can't produce dynamic objects with newlib.")
+  if libmode_newlib and not is_shared:
+    env.set('STATIC', '1')
 
   if env.getbool('STATIC') and env.getbool('SHARED'):
     Log.Fatal("Can't handle both -static and -shared")

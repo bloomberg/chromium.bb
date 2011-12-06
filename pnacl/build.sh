@@ -240,7 +240,7 @@ else
 fi
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-22d8c41eb746}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-a12317d2ee44}
 
 readonly NEWLIB_REV=c6358617f3fd
 readonly BINUTILS_REV=fb93e69d9948
@@ -2923,6 +2923,10 @@ libs-support-bitcode() {
   StepBanner "LIBS-SUPPORT" "Install crt1.x (linker script)"
   cp crt1.x "${INSTALL_LIB}"/crt1.x
 
+  # Install pnacl_abi.bc
+  StepBanner "LIBS-SUPPORT" "Install pnacl_abi.bc (stub pso)"
+  ${PNACL_CC} ${flags} -Wno-builtin-requires-header -nostdlib -shared \
+              -Wl,-soname="" pnacl_abi.c -o "${INSTALL_LIB}"/pnacl_abi.bc
   spopd
 }
 
@@ -2941,10 +2945,6 @@ libs-support-native() {
   StepBanner "LIBS-SUPPORT" "Install crtbegin.o / crtend.o"
   ${PNACL_CC} ${flags} -c crtbegin.c -o "${destdir}"/crtbegin.o
   ${PNACL_CC} ${flags} -c crtend.c -o "${destdir}"/crtend.o
-
-  # Install pnacl_abi.o
-  StepBanner "LIBS-SUPPORT" "Install pnacl_abi.o"
-  ${PNACL_CC} ${flags} -c pnacl_abi.S -o "${destdir}"/pnacl_abi.o
 
   # TODO(pdox): Use this for shared objects when we build libgcc_s.so ourselves
   # Compile crtbeginS.o / crtendS.o

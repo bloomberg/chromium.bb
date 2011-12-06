@@ -253,10 +253,16 @@ def main(argv):
       Log.Fatal("-r and -shared may not be used together")
     env.set('STATIC', '0')
 
-  # Default to -static for newlib.
-  if env.getbool('LIBMODE_NEWLIB'):
-    if env.getbool('SHARED'):
+  if (env.getbool('LIBMODE_NEWLIB') and
+      env.getbool('STDLIB') and
+      env.getbool('SHARED')):
       Log.Fatal("Cannot generate shared objects with newlib-based toolchain")
+
+  # Default to -static for newlib.
+  if (env.getbool('LIBMODE_NEWLIB') and
+      not env.getbool('SHARED') and
+      not env.getbool('STATIC') and
+      not env.getbool('RELOCATABLE')):
     env.set('STATIC', '1')
 
   inputs = env.get('INPUTS')
@@ -291,7 +297,7 @@ def main(argv):
   # be compiled to bitcode or replaced by bitcode stubs, and this list
   # can go away.
   if env.getbool('STDLIB'):
-    native_objects = FilterStdLibs(native_objects)
+    native_objects = RemoveNativeStdLibs(native_objects)
 
   if env.getbool('SHARED'):
     bitcode_type = 'pso'
@@ -334,16 +340,17 @@ def main(argv):
   chain.run()
   return 0
 
-def FilterStdLibs(objs):
-  if env.getbool('LIBMODE_GLIBC'):
-    startfiles = ['crt1.o', 'crti.o', 'crtbegin.o', 'crtbeginS.o',
-                  'crtbeginT.o', 'crtend.o', 'crtendS.o', 'crtn.o']
-    defaultlibs = ['libc_nonshared.a', 'libpthread_nonshared.a',
-                   'libc.a', 'libstdc++.a', 'libgcc.a', 'libgcc_eh.a',
-                   'libm.a']
-  else:
-    startfiles = ['pnacl_abi.o']
-    defaultlibs = []
+def RemoveNativeStdLibs(objs):
+  # For newlib, all standard libraries are already bitcode.
+  if env.getbool('LIBMODE_NEWLIB'):
+    return objs
+
+  # GLibC standard libraries
+  startfiles = ['crt1.o', 'crti.o', 'crtbegin.o', 'crtbeginS.o',
+                'crtbeginT.o', 'crtend.o', 'crtendS.o', 'crtn.o']
+  defaultlibs = ['libc_nonshared.a', 'libpthread_nonshared.a',
+                 'libc.a', 'libstdc++.a', 'libgcc.a', 'libgcc_eh.a',
+                 'libm.a']
   filterobjs = startfiles + defaultlibs
   return [f for f in objs if pathtools.split(f)[1] not in filterobjs]
 
