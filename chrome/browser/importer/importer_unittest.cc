@@ -269,7 +269,7 @@ class TestObserver : public ProfileWriter,
   size_t password_count_;
 };
 
-bool CreateUrlFile(std::wstring file, std::wstring url) {
+bool CreateUrlFile(const string16& file, const string16& url) {
   base::win::ScopedComPtr<IUniformResourceLocator> locator;
   HRESULT result = locator.CreateInstance(CLSID_InternetShortcut, NULL,
                                           CLSCTX_INPROC_SERVER);
@@ -331,7 +331,7 @@ void WritePStore(IPStore* pstore, const GUID* type, const GUID* subtype) {
 TEST_F(ImporterTest, IEImporter) {
   // Sets up a favorites folder.
   base::win::ScopedCOMInitializer com_init;
-  std::wstring path = temp_dir_.path().AppendASCII("Favorites").value();
+  string16 path = temp_dir_.path().AppendASCII("Favorites").value();
   CreateDirectory(path.c_str(), NULL);
   CreateDirectory((path + L"\\SubFolder").c_str(), NULL);
   CreateDirectory((path + L"\\Links").c_str(), NULL);
@@ -424,8 +424,8 @@ TEST_F(ImporterTest, IE7Importer) {
   decrypted_data2.resize(arraysize(data2));
   memcpy(&decrypted_data2.front(), data2, sizeof(data2));
 
-  std::wstring password;
-  std::wstring username;
+  string16 password;
+  string16 username;
   ASSERT_TRUE(ie7_password::GetUserPassFromData(decrypted_data1, &username,
                                                 &password));
   EXPECT_EQ(L"abcdefgh", username);
@@ -542,7 +542,7 @@ class FirefoxObserver : public ProfileWriter,
     EXPECT_EQ(arraysize(kFirefox2Passwords), password_count_);
     EXPECT_EQ(arraysize(kFirefox2Keywords), keyword_count_);
     EXPECT_EQ(kFirefox2Keywords[kDefaultFirefox2KeywordIndex].keyword,
-              default_keyword_);
+              UTF16ToWideHack(default_keyword_));
     EXPECT_EQ(kFirefox2Keywords[kDefaultFirefox2KeywordIndex].url,
               default_keyword_url_);
   }
@@ -610,7 +610,7 @@ class FirefoxObserver : public ProfileWriter,
     if (default_keyword_index != -1) {
       EXPECT_LT(default_keyword_index, static_cast<int>(template_urls.size()));
       TemplateURL* default_turl = template_urls[default_keyword_index];
-      default_keyword_ = UTF16ToWideHack(default_turl->keyword());
+      default_keyword_ = default_turl->keyword();
       default_keyword_url_ = default_turl->url()->url();
     }
 
@@ -627,7 +627,7 @@ class FirefoxObserver : public ProfileWriter,
   size_t history_count_;
   size_t password_count_;
   size_t keyword_count_;
-  std::wstring default_keyword_;
+  string16 default_keyword_;
   std::string default_keyword_url_;
 };
 
@@ -745,7 +745,7 @@ class Firefox3Observer : public ProfileWriter,
     if (import_search_engines_) {
       EXPECT_EQ(arraysize(kFirefox3Keywords), keyword_count_);
       EXPECT_EQ(kFirefox3Keywords[kDefaultFirefox3KeywordIndex].keyword,
-                default_keyword_);
+                UTF16ToWideHack(default_keyword_));
       EXPECT_EQ(kFirefox3Keywords[kDefaultFirefox3KeywordIndex].url,
                 default_keyword_url_);
     }
@@ -819,7 +819,7 @@ class Firefox3Observer : public ProfileWriter,
     if (default_keyword_index != -1) {
       EXPECT_LT(default_keyword_index, static_cast<int>(template_urls.size()));
       TemplateURL* default_turl = template_urls[default_keyword_index];
-      default_keyword_ = UTF16ToWideHack(default_turl->keyword());
+      default_keyword_ = default_turl->keyword();
       default_keyword_url_ = default_turl->url()->url();
     }
 
@@ -837,7 +837,7 @@ class Firefox3Observer : public ProfileWriter,
   size_t password_count_;
   size_t keyword_count_;
   bool import_search_engines_;
-  std::wstring default_keyword_;
+  string16 default_keyword_;
   std::string default_keyword_url_;
 };
 
