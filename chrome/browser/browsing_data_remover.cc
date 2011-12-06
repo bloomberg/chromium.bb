@@ -73,8 +73,6 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       special_storage_policy_(profile->GetExtensionSpecialStoragePolicy()),
       delete_begin_(delete_begin),
       delete_end_(delete_end),
-      ALLOW_THIS_IN_INITIALIZER_LIST(old_cache_callback_(
-          this, &BrowsingDataRemover::DoClearCache)),
       ALLOW_THIS_IN_INITIALIZER_LIST(cache_callback_(
           base::Bind(&BrowsingDataRemover::DoClearCache,
                      base::Unretained(this)))),
@@ -99,8 +97,6 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       special_storage_policy_(profile->GetExtensionSpecialStoragePolicy()),
       delete_begin_(CalculateBeginDeleteTime(time_period)),
       delete_end_(delete_end),
-      ALLOW_THIS_IN_INITIALIZER_LIST(old_cache_callback_(
-          this, &BrowsingDataRemover::DoClearCache)),
       ALLOW_THIS_IN_INITIALIZER_LIST(cache_callback_(
           base::Bind(&BrowsingDataRemover::DoClearCache,
                      base::Unretained(this)))),
@@ -452,10 +448,10 @@ void BrowsingDataRemover::DoClearCache(int rv) {
         // |cache_| can be null if it cannot be initialized.
         if (cache_) {
           if (delete_begin_.is_null()) {
-            rv = cache_->DoomAllEntries(&old_cache_callback_);
+            rv = cache_->DoomAllEntries(cache_callback_);
           } else {
             rv = cache_->DoomEntriesBetween(delete_begin_, delete_end_,
-                                            &old_cache_callback_);
+                                            cache_callback_);
           }
           cache_ = NULL;
         }
