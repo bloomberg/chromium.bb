@@ -20,6 +20,10 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/views_delegate.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace {
 
 struct WordAndCursor {
@@ -137,7 +141,15 @@ TEST_F(TextfieldViewsModelTest, EditString_SimpleRTL) {
 }
 
 TEST_F(TextfieldViewsModelTest, EditString_ComplexScript) {
+  // TODO(asvitkine): Disable tests that fail on XP bots due to lack of complete
+  //                  font support for some scripts - http://crbug.com/106450
+  bool on_windows_xp = false;
+#if defined(OS_WIN)
+  on_windows_xp = base::win::GetVersion() < base::win::VERSION_VISTA;
+#endif
+
   TextfieldViewsModel model(NULL);
+
   // Append two Hindi strings.
   model.Append(WideToUTF16(L"\x0915\x093f\x0915\x094d\x0915"));
   EXPECT_EQ(WideToUTF16(L"\x0915\x093f\x0915\x094d\x0915"),
@@ -148,32 +160,31 @@ TEST_F(TextfieldViewsModelTest, EditString_ComplexScript) {
       model.GetText());
 
   // Check it is not able to place cursor in middle of a grapheme.
-  // TODO(xji): temporarily disable in platform Win since the complex script
-  // characters turned into empty square due to font regression. So, not able
-  // to test 2 characters belong to the same grapheme.
-#if defined(OS_LINUX)
   model.MoveCursorTo(gfx::SelectionModel(1U));
   EXPECT_EQ(0U, model.GetCursorPosition());
-#endif
 
-  model.MoveCursorTo(gfx::SelectionModel(2U));
-  EXPECT_EQ(2U, model.GetCursorPosition());
-  model.InsertChar('a');
-  EXPECT_EQ(WideToUTF16(
-      L"\x0915\x093f\x0061\x0915\x094d\x0915\x0915\x094d\x092e\x094d"),
-      model.GetText());
+  // TODO(asvitkine): Disable tests that fail on XP bots due to lack of complete
+  //                  font support for some scripts - http://crbug.com/106450
+  if (!on_windows_xp) {
+    model.MoveCursorTo(gfx::SelectionModel(2U));
+    EXPECT_EQ(2U, model.GetCursorPosition());
+    model.InsertChar('a');
+    EXPECT_EQ(WideToUTF16(
+        L"\x0915\x093f\x0061\x0915\x094d\x0915\x0915\x094d\x092e\x094d"),
+        model.GetText());
 
-  // ReplaceChar will replace the whole grapheme.
-  model.ReplaceChar('b');
-  // TODO(xji): temporarily disable in platform Win since the complex script
-  // characters turned into empty square due to font regression. So, not able
-  // to test 2 characters belong to the same grapheme.
+    // ReplaceChar will replace the whole grapheme.
+    model.ReplaceChar('b');
+    // TODO(xji): temporarily disable in platform Win since the complex script
+    // characters turned into empty square due to font regression. So, not able
+    // to test 2 characters belong to the same grapheme.
 #if defined(OS_LINUX)
-  EXPECT_EQ(WideToUTF16(
-      L"\x0915\x093f\x0061\x0062\x0915\x0915\x094d\x092e\x094d"),
-      model.GetText());
+    EXPECT_EQ(WideToUTF16(
+        L"\x0915\x093f\x0061\x0062\x0915\x0915\x094d\x092e\x094d"),
+        model.GetText());
 #endif
-  EXPECT_EQ(4U, model.GetCursorPosition());
+    EXPECT_EQ(4U, model.GetCursorPosition());
+  }
 
   // Delete should delete the whole grapheme.
   model.MoveCursorTo(gfx::SelectionModel(0U));
@@ -185,6 +196,7 @@ TEST_F(TextfieldViewsModelTest, EditString_ComplexScript) {
   EXPECT_EQ(WideToUTF16(L"\x0061\x0062\x0915\x0915\x094d\x092e\x094d"),
             model.GetText());
   model.MoveCursorTo(gfx::SelectionModel(model.GetText().length()));
+  EXPECT_EQ(model.GetText().length(), model.GetCursorPosition());
   EXPECT_TRUE(model.Backspace());
   EXPECT_EQ(WideToUTF16(L"\x0061\x0062\x0915\x0915\x094d\x092e"),
             model.GetText());
@@ -195,30 +207,25 @@ TEST_F(TextfieldViewsModelTest, EditString_ComplexScript) {
   model.MoveCursorTo(gfx::SelectionModel(0));
   EXPECT_EQ(0U, model.GetCursorPosition());
 
-  // TODO(xji): temporarily disable in platform Win since the complex script
-  // characters turned into empty square due to font regression. So, not able
-  // to test 2 characters belong to the same grapheme.
-#if defined(OS_LINUX)
   model.MoveCursorTo(gfx::SelectionModel(1));
   EXPECT_EQ(0U, model.GetCursorPosition());
-#endif
 
+  // TODO(asvitkine): Disable tests that fail on XP bots due to lack of complete
+  //                  font support for some scripts - http://crbug.com/106450
+  if (!on_windows_xp) {
+    model.MoveCursorTo(gfx::SelectionModel(3));
+    EXPECT_EQ(3U, model.GetCursorPosition());
+  }
+
+  // TODO(asvitkine): Temporarily disable the following check on Windows. It
+  // seems Windows treats "\x0D38\x0D4D\x0D15" as a single grapheme.
+#if !defined(OS_WIN)
   model.MoveCursorTo(gfx::SelectionModel(2));
   EXPECT_EQ(2U, model.GetCursorPosition());
-
-  model.MoveCursorTo(gfx::SelectionModel(3));
-  EXPECT_EQ(3U, model.GetCursorPosition());
-
-  model.MoveCursorTo(gfx::SelectionModel(2));
-
   EXPECT_TRUE(model.Backspace());
   EXPECT_EQ(WideToUTF16(L"\x0D38\x0D15\x0D16\x0D2E"), model.GetText());
+#endif
 
-  // Test Delete/Backspace on Hebrew with non-spacing marks.
-  // TODO(xji): temporarily disable in platform Win since the complex script
-  // characters turned into empty square due to font regression. So, not able
-  // to test 2 characters belong to the same grapheme.
-#if defined(OS_LINUX)
   model.SetText(WideToUTF16(L"\x05d5\x05b7\x05D9\x05B0\x05D4\x05B4\x05D9"));
   model.MoveCursorTo(gfx::SelectionModel(0));
   EXPECT_TRUE(model.Delete());
@@ -226,7 +233,6 @@ TEST_F(TextfieldViewsModelTest, EditString_ComplexScript) {
   EXPECT_TRUE(model.Delete());
   EXPECT_TRUE(model.Delete());
   EXPECT_EQ(WideToUTF16(L""), model.GetText());
-#endif
 
   // The first 2 characters are not strong directionality characters.
   model.SetText(WideToUTF16(L"\x002C\x0020\x05D1\x05BC\x05B7\x05E9\x05BC"));
@@ -561,7 +567,7 @@ TEST_F(TextfieldViewsModelTest, MAYBE_Clipboard) {
   EXPECT_EQ(29U, model.GetCursorPosition());
 }
 
-void SelectWordTestVerifier(TextfieldViewsModel &model,
+static void SelectWordTestVerifier(const TextfieldViewsModel& model,
     const string16 &expected_selected_string, size_t expected_cursor_pos) {
   EXPECT_EQ(expected_selected_string, model.GetSelectedText());
   EXPECT_EQ(expected_cursor_pos, model.GetCursorPosition());
