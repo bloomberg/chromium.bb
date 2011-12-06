@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_input_ime_api.h"
 
 #include "base/json/json_writer.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
@@ -422,6 +423,29 @@ bool ExtensionInputImeEventRouter::RegisterIme(
   observer_list[component.id] = observer;
 
   return true;
+}
+
+void ExtensionInputImeEventRouter::UnregisterAllImes(
+    Profile* profile, const std::string& extension_id) {
+  std::map<std::string,
+           std::map<std::string,
+                    chromeos::InputMethodEngine*> >::iterator engine_map =
+      engines_.find(extension_id);
+  if (engine_map != engines_.end()) {
+    STLDeleteContainerPairSecondPointers(engine_map->second.begin(),
+                                         engine_map->second.end());
+    engines_.erase(engine_map);
+  }
+
+  std::map<std::string,
+           std::map<std::string,
+                    chromeos::ImeObserver*> >::iterator observer_list =
+      observers_.find(extension_id);
+  if (observer_list != observers_.end()) {
+    STLDeleteContainerPairSecondPointers(observer_list->second.begin(),
+                                         observer_list->second.end());
+    observers_.erase(observer_list);
+  }
 }
 #endif
 

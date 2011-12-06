@@ -81,6 +81,10 @@ class IBusEngineControllerImpl : public IBusEngineController {
   }
 
   ~IBusEngineControllerImpl() {
+    for (std::set<IBusChromeOSEngine*>::iterator ix = engine_instances_.begin();
+         ix != engine_instances_.end(); ++ix) {
+      (*ix)->connection = NULL;
+    }
     if (preedit_text_) {
       g_object_unref(preedit_text_);
       preedit_text_ = NULL;
@@ -710,49 +714,61 @@ class IBusEngineControllerImpl : public IBusEngineController {
                                 GDBusMethodInvocation* key_data) {
     VLOG(1) << "OnProcessKeyEvent";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
-    engine->connection->observer_->OnKeyEvent(
-        !(modifiers & IBUS_RELEASE_MASK),
-        keyval, keycode,
-        modifiers & IBUS_MOD1_MASK,
-        modifiers & IBUS_CONTROL_MASK,
-        modifiers & IBUS_SHIFT_MASK,
-        reinterpret_cast<KeyEventHandle*>(key_data));
+    if (engine->connection) {
+      engine->connection->observer_->OnKeyEvent(
+          !(modifiers & IBUS_RELEASE_MASK),
+          keyval, keycode,
+          modifiers & IBUS_MOD1_MASK,
+          modifiers & IBUS_CONTROL_MASK,
+          modifiers & IBUS_SHIFT_MASK,
+          reinterpret_cast<KeyEventHandle*>(key_data));
+    }
   }
 
   static void OnReset(IBusEngine* ibus_engine) {
     VLOG(1) << "OnReset";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
-    engine->connection->observer_->OnReset();
+    if (engine->connection) {
+      engine->connection->observer_->OnReset();
+    }
   }
 
   static void OnEnable(IBusEngine* ibus_engine) {
     VLOG(1) << "OnEnable";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
-    engine->connection->active_engine_ = engine;
-    engine->connection->observer_->OnEnable();
-    engine->connection->SetProperties();
+    if (engine->connection) {
+      engine->connection->active_engine_ = engine;
+      engine->connection->observer_->OnEnable();
+      engine->connection->SetProperties();
+    }
   }
 
   static void OnDisable(IBusEngine* ibus_engine) {
     VLOG(1) << "OnDisable";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
-    engine->connection->observer_->OnDisable();
-    if (engine->connection->active_engine_ == engine) {
-      engine->connection->active_engine_ = NULL;
+    if (engine->connection) {
+      engine->connection->observer_->OnDisable();
+      if (engine->connection->active_engine_ == engine) {
+        engine->connection->active_engine_ = NULL;
+      }
     }
   }
 
   static void OnFocusIn(IBusEngine* ibus_engine) {
     VLOG(1) << "OnFocusIn";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
-    engine->connection->observer_->OnFocusIn();
-    engine->connection->SetProperties();
+    if (engine->connection) {
+      engine->connection->observer_->OnFocusIn();
+      engine->connection->SetProperties();
+    }
   }
 
   static void OnFocusOut(IBusEngine* ibus_engine) {
     VLOG(1) << "OnFocusOut";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
-    engine->connection->observer_->OnFocusOut();
+    if (engine->connection) {
+      engine->connection->observer_->OnFocusOut();
+    }
   }
 
   static void OnPageUp(IBusEngine* ibus_engine) {
@@ -775,25 +791,29 @@ class IBusEngineControllerImpl : public IBusEngineController {
                                  const gchar *prop_name, guint prop_state) {
     VLOG(1) << "OnPropertyActivate";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
-    engine->connection->observer_->OnPropertyActivate(prop_name, prop_state);
+    if (engine->connection) {
+      engine->connection->observer_->OnPropertyActivate(prop_name, prop_state);
+    }
   }
 
   static void OnCandidateClicked(IBusEngine* ibus_engine, guint index,
                                  guint button, guint state) {
     VLOG(1) << "OnCandidateClicked";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
-    int pressed_button = 0;
-    if (button & IBUS_BUTTON1_MASK) {
-      pressed_button |= MOUSE_BUTTON_1_MASK;
+    if (engine->connection) {
+      int pressed_button = 0;
+      if (button & IBUS_BUTTON1_MASK) {
+        pressed_button |= MOUSE_BUTTON_1_MASK;
+      }
+      if (button & IBUS_BUTTON2_MASK) {
+        pressed_button |= MOUSE_BUTTON_2_MASK;
+      }
+      if (button & IBUS_BUTTON3_MASK) {
+        pressed_button |= MOUSE_BUTTON_3_MASK;
+      }
+      engine->connection->observer_->OnCandidateClicked(index, pressed_button,
+                                                        state);
     }
-    if (button & IBUS_BUTTON2_MASK) {
-      pressed_button |= MOUSE_BUTTON_2_MASK;
-    }
-    if (button & IBUS_BUTTON3_MASK) {
-      pressed_button |= MOUSE_BUTTON_3_MASK;
-    }
-    engine->connection->observer_->OnCandidateClicked(index, pressed_button,
-                                                      state);
   }
 
   static GObject* EngineConstructor(GType type, guint n_construct_params,
@@ -805,6 +825,8 @@ class IBusEngineControllerImpl : public IBusEngineController {
     ConnectionMap::iterator connection = g_connections_->find(name);
     if (connection == g_connections_->end()) {
       LOG(ERROR) << "Connection never created: " << name;
+      engine->connection = NULL;
+      engine->table = NULL;
       return (GObject *) engine;
     }
 

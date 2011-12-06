@@ -1060,6 +1060,11 @@ void ExtensionService::NotifyExtensionUnloaded(
     profile_->GetFileSystemContext()->path_manager()->external_provider()->
         RevokeAccessForExtension(extension->id());
   }
+
+  if (extension->input_components().size() > 0) {
+    ExtensionInputImeEventRouter::GetInstance()->UnregisterAllImes(
+        profile_, extension->id());
+  }
 #endif
 
   UpdateActiveExtensionsInCrashReporter();
