@@ -126,7 +126,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       sent_button_down_(false),
       button_down_timeout_(0.0),
       tap_to_click_state_(kTtcIdle),
-      tap_enable_(prop_reg, "Tap Enable", true),
+      tap_enable_(prop_reg, "Tap Enable", false),
       tap_timeout_(prop_reg, "Tap Timeout", 0.2),
       tap_drag_timeout_(prop_reg, "Tap Drag Timeout", 0.7),
       drag_lock_enable_(prop_reg, "Tap Drag Lock Enable", 0),

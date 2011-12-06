@@ -965,6 +965,7 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
       ii->SetHardwareProperties(hwprops);
       ii->tap_timeout_.val_ = 0.05;
       ii->tap_drag_timeout_.val_ = 0.05;
+      ii->tap_enable_.val_ = 1;
       ii->tap_move_dist_.val_ = 1.0;
       ii->drag_lock_enable_.val_ = 1;
       EXPECT_EQ(kIdl, ii->tap_to_click_state_);
@@ -1068,6 +1069,7 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
         ii->SetHardwareProperties(hwprops);
         ii->tap_timeout_.val_ = 0.05;
         ii->tap_drag_timeout_.val_ = 0.05;
+        ii->tap_enable_.val_ = 1;
         ii->tap_move_dist_.val_ = 1.0;
         ii->drag_lock_enable_.val_ = 1;
         EXPECT_EQ(kIdl, ii->tap_to_click_state_);
