@@ -30,7 +30,9 @@ MACHINE_TYPE_AMD64 = 0x8664
 # Windows guru for advice.
 EXCLUDED_FILES = ['chrome_frame_mini_installer.exe',
                   'mini_installer.exe',
-                  'wow_helper.exe']
+                  'wow_helper.exe',
+                  'xinput1_3.dll' # Microsoft DirectX redistributable.
+                  ]
 
 def IsPEFile(path):
   return (os.path.isfile(path) and
