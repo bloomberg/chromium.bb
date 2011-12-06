@@ -2225,10 +2225,18 @@
       'desc': '''The name of the feature that indicates for a given policy that changes to it are respected by Chrome without a browser restart''',
       'text': '''Dynamic Policy Refresh'''
     },
+    'doc_feature_can_be_recommended': {
+      'desc': '''The name of the feature that indicates for a given policy that it can be recommended, instead of mandatory''',
+      'text': '''Can Be Recommended'''
+    },
     'doc_deprecated': {
-      'desc': '''Text appended in parentheses to the policy name to indicate t hat it has been deprecated''',
+      'desc': '''Text appended in parentheses to the policy name to indicate that it has been deprecated''',
       'text': 'deprecated',
-    }
+    },
+    'doc_recommended': {
+      'desc': '''Text appended in parentheses next to the policies top-level container to indicate that those policies are of the Recommended level''',
+      'text': 'Recommended',
+    },
   },
   'placeholders': [],
 }
