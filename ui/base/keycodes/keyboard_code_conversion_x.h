@@ -17,6 +17,7 @@ UI_EXPORT KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev);
 UI_EXPORT KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym);
 
 // Returns a key symbol on a standard US PC keyboard from an XEvent.
+// TODO(suzhe,yusukes): Rename this to GetCharacterFromXEvent().
 UI_EXPORT unsigned int DefaultSymbolFromXEvent(XEvent* xev);
 
 // Converts a KeyboardCode into an X KeySym.

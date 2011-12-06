@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
+#include "ui/base/ime/mock_input_method.h"
 
 using std::max;
 using std::min;
@@ -114,11 +115,15 @@ gfx::Size DesktopHost::GetNativeScreenSize() {
 
 DesktopHostWin::DesktopHostWin(const gfx::Rect& bounds)
     : desktop_(NULL),
+      // TODO(yusukes): implement and use ui::InputMethodWin.
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          input_method_(new ui::MockInputMethod(this))),
       fullscreen_(false),
       saved_window_style_(0),
       saved_window_ex_style_(0) {
   Init(NULL, bounds);
   SetWindowText(hwnd(), L"aura::Desktop!");
+  input_method_->Init(true);
 }
 
 DesktopHostWin::~DesktopHostWin() {
@@ -237,6 +242,25 @@ void DesktopHostWin::PostNativeEvent(const base::NativeEvent& native_event) {
       hwnd(), native_event.message, native_event.wParam, native_event.lParam);
 }
 
+void DesktopHostWin::SetInputMethod(ui::InputMethod* input_method) {
+  input_method_.reset(input_method);
+}
+
+ui::InputMethod* DesktopHostWin::GetInputMethod() const {
+  return input_method_.get();
+}
+
+void DesktopHostWin::DispatchKeyEventPostIME(const base::NativeEvent& event) {
+  // TODO(yusukes): Support input method.
+  NOTIMPLEMENTED();
+}
+
+void DesktopHostWin::DispatchFabricatedKeyEventPostIME(
+    ui::EventType type, ui::KeyboardCode key_code, int flags) {
+  // TODO(yusukes): Support input method.
+  NOTIMPLEMENTED();
+}
+
 void DesktopHostWin::OnClose() {
   // TODO: this obviously shouldn't be here.
   MessageLoopForUI::current()->Quit();
@@ -245,6 +269,7 @@ void DesktopHostWin::OnClose() {
 LRESULT DesktopHostWin::OnKeyEvent(UINT message,
                                    WPARAM w_param,
                                    LPARAM l_param) {
+  // TODO(yusukes): Support input method.
   MSG msg = { hwnd(), message, w_param, l_param };
   KeyEvent keyev(msg, message == WM_CHAR);
   SetMsgHandled(desktop_->DispatchKeyEvent(&keyev));

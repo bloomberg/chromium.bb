@@ -10,6 +10,7 @@
 #include "content/browser/renderer_host/web_input_event_aura.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "ui/aura/client/aura_constants.h"
@@ -19,6 +20,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_types.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
@@ -94,6 +96,8 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       is_fullscreen_(false),
       popup_parent_host_view_(NULL),
       is_loading_(false),
+      text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
+      has_composition_text_(false),
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
       current_surface_(gfx::kNullPluginWindow),
 #endif
@@ -234,13 +238,27 @@ void RenderWidgetHostViewAura::SetIsLoading(bool is_loading) {
 void RenderWidgetHostViewAura::TextInputStateChanged(
     ui::TextInputType type,
     bool can_compose_inline) {
-  // http://crbug.com/102569
-  NOTIMPLEMENTED();
+  // TODO(kinaba): currently, can_compose_inline is ignored and always treated
+  // as true. We need to support "can_compose_inline=false" for PPAPI plugins
+  // that may want to avoid drawing composition-text by themselves and pass
+  // the responsibility to the browser.
+  if (text_input_type_ != type) {
+    text_input_type_ = type;
+    GetInputMethod()->OnTextInputTypeChanged(this);
+  }
 }
 
 void RenderWidgetHostViewAura::ImeCancelComposition() {
-  // http://crbug.com/102569
-  NOTIMPLEMENTED();
+  GetInputMethod()->CancelComposition(this);
+  has_composition_text_ = false;
+}
+
+void RenderWidgetHostViewAura::FinishImeCompositionSession() {
+  if (!has_composition_text_)
+    return;
+  if (host_)
+    host_->ImeConfirmComposition();
+  ImeCancelComposition();
 }
 
 void RenderWidgetHostViewAura::DidUpdateBackingStore(
@@ -279,6 +297,18 @@ void RenderWidgetHostViewAura::SetTooltipText(const string16& tooltip_text) {
     aura::TooltipClient* tc = static_cast<aura::TooltipClient*>(property);
     tc->UpdateTooltip(window_);
   }
+}
+
+void RenderWidgetHostViewAura::SelectionBoundsChanged(
+    const gfx::Rect& start_rect,
+    const gfx::Rect& end_rect) {
+  if (selection_start_rect_ == start_rect && selection_end_rect_ == end_rect)
+    return;
+
+  selection_start_rect_ = start_rect;
+  selection_end_rect_ = end_rect;
+
+  GetInputMethod()->OnCaretBoundsChanged(this);
 }
 
 BackingStore* RenderWidgetHostViewAura::AllocBackingStore(
@@ -455,6 +485,164 @@ void RenderWidgetHostViewAura::UnlockMouse() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostViewAura, ui::TextInputClient implementation:
+void RenderWidgetHostViewAura::SetCompositionText(
+    const ui::CompositionText& composition) {
+  if (!host_)
+    return;
+
+  // ui::CompositionUnderline should be identical to
+  // WebKit::WebCompositionUnderline, so that we can do reinterpret_cast safely.
+  COMPILE_ASSERT(sizeof(ui::CompositionUnderline) ==
+                 sizeof(WebKit::WebCompositionUnderline),
+                 ui_CompositionUnderline__WebKit_WebCompositionUnderline_diff);
+
+  // TODO(suzhe): convert both renderer_host and renderer to use
+  // ui::CompositionText.
+  const std::vector<WebKit::WebCompositionUnderline>& underlines =
+      reinterpret_cast<const std::vector<WebKit::WebCompositionUnderline>&>(
+          composition.underlines);
+
+  // TODO(suzhe): due to a bug of webkit, we can't use selection range with
+  // composition string. See: https://bugs.webkit.org/show_bug.cgi?id=37788
+  host_->ImeSetComposition(composition.text, underlines,
+                           composition.selection.end(),
+                           composition.selection.end());
+
+  has_composition_text_ = !composition.text.empty();
+}
+
+void RenderWidgetHostViewAura::ConfirmCompositionText() {
+  if (host_ && has_composition_text_)
+    host_->ImeConfirmComposition();
+  has_composition_text_ = false;
+}
+
+void RenderWidgetHostViewAura::ClearCompositionText() {
+  if (host_ && has_composition_text_)
+    host_->ImeCancelComposition();
+  has_composition_text_ = false;
+}
+
+void RenderWidgetHostViewAura::InsertText(const string16& text) {
+  DCHECK(text_input_type_ != ui::TEXT_INPUT_TYPE_NONE);
+  if (host_)
+    host_->ImeConfirmComposition(text);
+  has_composition_text_ = false;
+}
+
+void RenderWidgetHostViewAura::InsertChar(char16 ch, int flags) {
+  if (host_) {
+    // Send a WebKit::WebInputEvent::Char event to |host_|.
+    NativeWebKeyboardEvent webkit_event(ui::ET_KEY_PRESSED,
+                                        true /* is_char */,
+                                        ch,
+                                        flags,
+                                        base::Time::Now().ToDoubleT());
+    host_->ForwardKeyboardEvent(webkit_event);
+  }
+}
+
+ui::TextInputType RenderWidgetHostViewAura::GetTextInputType() const {
+  return text_input_type_;
+}
+
+gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() {
+  const gfx::Rect rect = selection_start_rect_.Union(selection_end_rect_);
+  gfx::Point origin = rect.origin();
+  gfx::Point end = gfx::Point(rect.right(), rect.bottom());
+
+  aura::Desktop* desktop = aura::Desktop::GetInstance();
+  aura::Window::ConvertPointToWindow(window_, desktop, &origin);
+  aura::Window::ConvertPointToWindow(window_, desktop, &end);
+  // TODO(yusukes): Unlike Chrome OS, |desktop| origin might not be the same as
+  // the system screen origin on Windows and Linux. Probably we should
+  // (implement and) use something like ConvertPointToScreen().
+
+  return gfx::Rect(origin.x(),
+                   origin.y(),
+                   end.x() - origin.x(),
+                   end.y() - origin.y());
+}
+
+bool RenderWidgetHostViewAura::HasCompositionText() {
+  return has_composition_text_;
+}
+
+bool RenderWidgetHostViewAura::GetTextRange(ui::Range* range) {
+  range->set_start(selection_text_offset_);
+  range->set_end(selection_text_offset_ + selection_text_.length());
+  return true;
+}
+
+bool RenderWidgetHostViewAura::GetCompositionTextRange(ui::Range* range) {
+  // TODO(suzhe): implement this method when fixing http://crbug.com/55130.
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool RenderWidgetHostViewAura::GetSelectionRange(ui::Range* range) {
+  range->set_start(selection_range_.start());
+  range->set_end(selection_range_.end());
+  return true;
+}
+
+bool RenderWidgetHostViewAura::SetSelectionRange(const ui::Range& range) {
+  // TODO(suzhe): implement this method when fixing http://crbug.com/55130.
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool RenderWidgetHostViewAura::DeleteRange(const ui::Range& range) {
+  // TODO(suzhe): implement this method when fixing http://crbug.com/55130.
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool RenderWidgetHostViewAura::GetTextFromRange(
+    const ui::Range& range,
+    string16* text) {
+  ui::Range selection_text_range(selection_text_offset_,
+      selection_text_offset_ + selection_text_.length());
+
+  if (!selection_text_range.Contains(range)) {
+    text->clear();
+    return false;
+  }
+  if (selection_text_range.EqualsIgnoringDirection(range)) {
+    // Avoid calling substr whose performance is low.
+    *text = selection_text_;
+  } else {
+    *text = selection_text_.substr(
+        range.GetMin() - selection_text_offset_,
+        range.length());
+  }
+  return true;
+}
+
+void RenderWidgetHostViewAura::OnInputMethodChanged() {
+  if (!host_)
+    return;
+
+  host_->SetInputMethodActive(GetInputMethod()->IsActive());
+
+  // TODO(suzhe): implement the newly added “locale” property of HTML DOM
+  // TextEvent.
+}
+
+bool RenderWidgetHostViewAura::ChangeTextDirectionAndLayoutAlignment(
+      base::i18n::TextDirection direction) {
+  if (!host_)
+    return false;
+  host_->UpdateTextDirection(
+      direction == base::i18n::RIGHT_TO_LEFT ?
+      WebKit::WebTextDirectionRightToLeft :
+      WebKit::WebTextDirectionLeftToRight);
+  host_->NotifyTextDirection();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, aura::WindowDelegate implementation:
 
 gfx::Size RenderWidgetHostViewAura::GetMinimumSize() const {
@@ -469,10 +657,22 @@ void RenderWidgetHostViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
 
 void RenderWidgetHostViewAura::OnFocus() {
   host_->GotFocus();
+
+  ui::InputMethod* input_method = GetInputMethod();
+  // Ask the system-wide IME to send all TextInputClient messages to |this|
+  // object.
+  input_method->SetFocusedTextInputClient(this);
+
+  host_->SetInputMethodActive(input_method->IsActive());
 }
 
 void RenderWidgetHostViewAura::OnBlur() {
   host_->Blur();
+
+  ui::InputMethod* input_method = GetInputMethod();
+  if (input_method->GetTextInputClient() == this)
+    input_method->SetFocusedTextInputClient(NULL);
+  host_->SetInputMethodActive(false);
 }
 
 bool RenderWidgetHostViewAura::OnKeyEvent(aura::KeyEvent* event) {
@@ -480,8 +680,23 @@ bool RenderWidgetHostViewAura::OnKeyEvent(aura::KeyEvent* event) {
   if (is_fullscreen_ && event->key_code() == ui::VKEY_ESCAPE) {
     host_->Shutdown();
   } else {
-    NativeWebKeyboardEvent webkit_event(event);
-    host_->ForwardKeyboardEvent(webkit_event);
+    // We don't have to communicate with an input method here. It has already
+    // been done by ui/aura/desktop_host_<platform>.cc.
+#if defined(USE_X11)
+    if (!event->native_event()) {
+      // Send a fabricated event, which is usually a VKEY_PROCESSKEY IME event.
+      NativeWebKeyboardEvent webkit_event(event->type(),
+                                          false /* is_char */,
+                                          event->GetCharacter(),
+                                          event->flags(),
+                                          base::Time::Now().ToDoubleT());
+      host_->ForwardKeyboardEvent(webkit_event);
+    } else
+#endif
+    {
+      NativeWebKeyboardEvent webkit_event(event);
+      host_->ForwardKeyboardEvent(webkit_event);
+    }
   }
   return true;
 }
@@ -504,6 +719,9 @@ bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
       window_->SetCapture();
+      // Confirm existing composition text on mouse click events, to make sure
+      // the input caret won't be moved with an ongoing composition text.
+      FinishImeCompositionSession();
       break;
     case ui::ET_MOUSE_RELEASED:
       window_->ReleaseCapture();
@@ -618,4 +836,9 @@ void RenderWidgetHostView::GetDefaultScreenInfo(
   // TODO(derat): Don't hardcode this?
   results->depth = 24;
   results->depthPerComponent = 8;
+}
+
+ui::InputMethod* RenderWidgetHostViewAura::GetInputMethod() {
+  aura::Desktop* desktop = aura::Desktop::GetInstance();
+  return desktop->GetInputMethod();
 }

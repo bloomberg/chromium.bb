@@ -7,12 +7,18 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/aura/desktop_host.h"
 #include "ui/base/win/window_impl.h"
 
+namespace ui {
+class InputMethod;
+}  // namespace ui
+
 namespace aura {
 
-class DesktopHostWin : public DesktopHost, public ui::WindowImpl {
+class DesktopHostWin : public DesktopHost,
+                       public ui::WindowImpl {
  public:
   explicit DesktopHostWin(const gfx::Rect& bounds);
   virtual ~DesktopHostWin();
@@ -31,6 +37,14 @@ class DesktopHostWin : public DesktopHost, public ui::WindowImpl {
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
   virtual gfx::Point QueryMouseLocation() OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& native_event) OVERRIDE;
+
+  virtual void SetInputMethod(ui::InputMethod* input_method) OVERRIDE;
+  virtual ui::InputMethod* GetInputMethod() const OVERRIDE;
+
+  // ui::internal::InputMethodDelegate Override.
+  virtual void DispatchKeyEventPostIME(const base::NativeEvent& event) OVERRIDE;
+  virtual void DispatchFabricatedKeyEventPostIME(
+      ui::EventType type, ui::KeyboardCode key_code, int flags) OVERRIDE;
 
  private:
   BEGIN_MSG_MAP_EX(DesktopHostWin)
@@ -59,6 +73,8 @@ class DesktopHostWin : public DesktopHost, public ui::WindowImpl {
   void OnSize(UINT param, const CSize& size);
 
   Desktop* desktop_;
+
+  scoped_ptr<ui::InputMethod> input_method_;
 
   bool fullscreen_;
   RECT saved_window_rect_;

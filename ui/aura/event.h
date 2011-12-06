@@ -144,6 +144,7 @@ class AURA_EXPORT TouchEvent : public LocatedEvent {
 
 class AURA_EXPORT KeyEvent : public Event {
  public:
+  // TODO(yusukes): Remove |is_char| when IME support for Aura is submitted.
   KeyEvent(const base::NativeEvent& native_event, bool is_char);
 
   // Used for synthetic events in testing.

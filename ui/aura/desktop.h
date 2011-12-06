@@ -26,11 +26,16 @@ class Size;
 }
 
 namespace ui {
+class InputMethod;
 class LayerAnimationSequence;
 class Transform;
 }
 
 namespace aura {
+
+namespace test {
+class DesktopHostIMETest;
+}  // namespace test
 
 class DesktopHost;
 class DesktopObserver;
@@ -145,6 +150,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   // Overridden from Window:
   virtual void SetTransform(const ui::Transform& transform) OVERRIDE;
 
+  // Gets the input method for the desktop.
+  ui::InputMethod* GetInputMethod();
+
 #if !defined(NDEBUG)
   // Toggles the host's full screen state.
   void ToggleFullScreen();
@@ -154,6 +162,8 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   virtual void ScheduleDraw();
 
  private:
+  friend class aura::test::DesktopHostIMETest;  // need to access |host_|.
+
   Desktop();
   virtual ~Desktop();
 
