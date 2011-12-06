@@ -90,6 +90,11 @@ void NewTabPageHandler::HandlePageSelected(const ListValue* args) {
   int index = static_cast<int>(index_double);
 
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  int previous_shown_page =
+      prefs->GetInteger(prefs::kNTPShownPage) >> kPageIdOffset;
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.PreviousSelectedPageType",
+                            previous_shown_page, kHistogramEnumerationMax);
+
   prefs->SetInteger(prefs::kNTPShownPage, page_id | index);
 
   int shown_page_type = page_id >> kPageIdOffset;
