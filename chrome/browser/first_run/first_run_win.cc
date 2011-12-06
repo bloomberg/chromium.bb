@@ -110,6 +110,8 @@ bool CreateChromeDesktopShortcut() {
       dist->GetAppDescription(),
       L"",
       L"",
+      chrome_exe.value(),
+      dist->GetIconIndex(),
       ShellUtil::CURRENT_USER,
       false,
       true);  // create if doesn't exist.

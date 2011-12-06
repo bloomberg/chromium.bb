@@ -205,9 +205,14 @@ void ProfileInfoCache::AddProfileToCache(const FilePath& profile_path,
 
   sorted_keys_.insert(FindPositionForProfile(key, name), key);
 
+  gfx::Image& avatar_img =
+      ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+          GetDefaultAvatarIconResourceIDAtIndex(icon_index));
+
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                     observer_list_,
-                    OnProfileAdded(name, UTF8ToUTF16(key)));
+                    OnProfileAdded(name, UTF8ToUTF16(key),
+                                   profile_path, &avatar_img));
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
@@ -291,7 +296,7 @@ const gfx::Image& ProfileInfoCache::GetAvatarIconOfProfileAtIndex(
 
   int resource_id = GetDefaultAvatarIconResourceIDAtIndex(
       GetAvatarIconIndexOfProfileAtIndex(index));
-  return ResourceBundle::GetSharedInstance().GetImageNamed(resource_id);
+  return ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
 }
 
 bool ProfileInfoCache::GetBackgroundStatusOfProfileAtIndex(
@@ -425,9 +430,22 @@ void ProfileInfoCache::SetUserNameOfProfileAtIndex(size_t index,
 void ProfileInfoCache::SetAvatarIconOfProfileAtIndex(size_t index,
                                                      size_t icon_index) {
   scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  string16 name;
+  info->GetString(kNameKey, &name);
   info->SetString(kAvatarIconKey, GetDefaultAvatarIconUrl(icon_index));
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
+
+  FilePath profile_path = GetPathOfProfileAtIndex(index);
+  std::string key = CacheKeyFromProfilePath(profile_path);
+  gfx::Image& avatar_img =
+      ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+          GetDefaultAvatarIconResourceIDAtIndex(icon_index));
+
+  FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
+                    observer_list_,
+                    OnProfileAvatarChanged(name, UTF8ToUTF16(key),
+                                           profile_path, &avatar_img));
 }
 
 void ProfileInfoCache::SetBackgroundStatusOfProfileAtIndex(
@@ -516,9 +534,24 @@ void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
 void ProfileInfoCache::SetIsUsingGAIAPictureOfProfileAtIndex(size_t index,
                                                              bool value) {
   scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  string16 name;
+  info->GetString(kNameKey, &name);
   info->SetBoolean(kUseGAIAPictureKey, value);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
+
+  // Retrieve some info to update observers who care about avatar changes.
+  if (value) {
+    FilePath profile_path = GetPathOfProfileAtIndex(index);
+    std::string key = CacheKeyFromProfilePath(profile_path);
+    if (gaia_pictures_.find(key) != gaia_pictures_.end()) {
+      FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
+                        observer_list_,
+                        OnProfileAvatarChanged(name, UTF8ToUTF16(key),
+                                               profile_path,
+                                               gaia_pictures_[key]));
+    }
+  }
 }
 
 string16 ProfileInfoCache::ChooseNameForNewProfile(size_t icon_index) {

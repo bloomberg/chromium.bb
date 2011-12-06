@@ -243,7 +243,7 @@ bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
   base::win::ScopedHandle icon_file(::CreateFile(icon_path.value().c_str(),
        GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL));
 
-  if (icon_file.Get() == INVALID_HANDLE_VALUE)
+  if (!icon_file.IsValid())
     return false;
 
   // Creating a set of bitmaps corresponding to the icon images we'll end up

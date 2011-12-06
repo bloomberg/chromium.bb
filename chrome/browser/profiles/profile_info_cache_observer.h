@@ -6,6 +6,10 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_INFO_CACHE_OBSERVER_H_
 #pragma once
 
+#include "ui/gfx/image/image.h"
+
+class FilePath;
+
 // This class provides an Observer interface to watch for changes to the
 // ProfileInfoCache.
 class ProfileInfoCacheObserver {
@@ -14,12 +18,19 @@ class ProfileInfoCacheObserver {
 
   virtual void OnProfileAdded(
       const string16& profile_name,
-      const string16& profile_base_dir) = 0;
+      const string16& profile_base_dir,
+      const FilePath& profile_path,
+      const gfx::Image* avatar_image) = 0;
   virtual void OnProfileRemoved(
       const string16& profile_name) = 0;
   virtual void OnProfileNameChanged(
       const string16& old_profile_name,
       const string16& new_profile_name) = 0;
+  virtual void OnProfileAvatarChanged(
+      const string16& profile_name,
+      const string16& profile_base_dir,
+      const FilePath& profile_path,
+      const gfx::Image* avatar_image) = 0;
 
  protected:
   ProfileInfoCacheObserver() {}

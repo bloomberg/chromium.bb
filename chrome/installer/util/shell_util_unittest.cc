@@ -114,6 +114,8 @@ TEST_F(ShellUtilTest, UpdateChromeShortcutTest) {
                                               shortcut_path.value(),
                                               L"",
                                               description,
+                                              exe_path.value(),
+                                              dist->GetIconIndex(),
                                               true));
   EXPECT_TRUE(VerifyChromeShortcut(exe_path.value(),
                                    shortcut_path.value(),
@@ -138,6 +140,8 @@ TEST_F(ShellUtilTest, UpdateChromeShortcutTest) {
                                               shortcut_path.value(),
                                               L"",
                                               description,
+                                              exe_path.value(),
+                                              dist->GetIconIndex(),
                                               true));
   EXPECT_TRUE(VerifyChromeShortcut(exe_path.value(),
                                    shortcut_path.value(),
@@ -151,6 +155,8 @@ TEST_F(ShellUtilTest, UpdateChromeShortcutTest) {
                                               shortcut_path.value(),
                                               L"",
                                               description2,
+                                              exe_path.value(),
+                                              dist->GetIconIndex(),
                                               false));
   EXPECT_TRUE(VerifyChromeShortcut(exe_path.value(),
                                    shortcut_path.value(),
@@ -210,6 +216,8 @@ TEST_F(ShellUtilTest, CreateChromeDesktopShortcutTest) {
                                                      description,
                                                      L"",
                                                      L"",
+                                                     exe_path.value(),
+                                                     dist->GetIconIndex(),
                                                      ShellUtil::CURRENT_USER,
                                                      false,
                                                      true));
@@ -227,6 +235,8 @@ TEST_F(ShellUtilTest, CreateChromeDesktopShortcutTest) {
                                                      description,
                                                      L"",
                                                      L"",
+                                                     exe_path.value(),
+                                                     dist->GetIconIndex(),
                                                      ShellUtil::SYSTEM_LEVEL,
                                                      false,
                                                      true));
@@ -245,6 +255,8 @@ TEST_F(ShellUtilTest, CreateChromeDesktopShortcutTest) {
                                                      description,
                                                      L"",
                                                      L"",
+                                                     exe_path.value(),
+                                                     dist->GetIconIndex(),
                                                      ShellUtil::SYSTEM_LEVEL,
                                                      false,
                                                      true));
@@ -253,6 +265,8 @@ TEST_F(ShellUtilTest, CreateChromeDesktopShortcutTest) {
                                                       description,
                                                       L"",
                                                       L"",
+                                                      exe_path.value(),
+                                                      dist->GetIconIndex(),
                                                       ShellUtil::CURRENT_USER,
                                                       false,
                                                       true));
@@ -272,6 +286,8 @@ TEST_F(ShellUtilTest, CreateChromeDesktopShortcutTest) {
                                                      description,
                                                      L"",
                                                      L"",
+                                                     exe_path.value(),
+                                                     dist->GetIconIndex(),
                                                      ShellUtil::CURRENT_USER,
                                                      false,
                                                      true));
@@ -280,6 +296,8 @@ TEST_F(ShellUtilTest, CreateChromeDesktopShortcutTest) {
                                                      description,
                                                      L"",
                                                      L"",
+                                                     exe_path.value(),
+                                                     dist->GetIconIndex(),
                                                      ShellUtil::SYSTEM_LEVEL,
                                                      false,
                                                      true));
@@ -306,6 +324,8 @@ TEST_F(ShellUtilTest, CreateChromeDesktopShortcutTest) {
       description,
       default_profile_user_name,
       L"--profile-directory=\"Default\"",
+      exe_path.value(),
+      dist->GetIconIndex(),
       ShellUtil::CURRENT_USER,
       false,
       true));
@@ -319,6 +339,8 @@ TEST_F(ShellUtilTest, CreateChromeDesktopShortcutTest) {
       description,
       second_profile_user_name,
       L"--profile-directory=\"Profile 1\"",
+      exe_path.value(),
+      dist->GetIconIndex(),
       ShellUtil::CURRENT_USER,
       false,
       true));

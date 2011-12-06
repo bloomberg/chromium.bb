@@ -547,6 +547,8 @@ bool ShellUtil::CreateChromeDesktopShortcut(BrowserDistribution* dist,
                                             const std::wstring& description,
                                             const std::wstring& appended_name,
                                             const std::wstring& arguments,
+                                            const std::wstring& icon_path,
+                                            int icon_index,
                                             ShellChange shell_change,
                                             bool alternate,
                                             bool create_new) {
@@ -573,6 +575,8 @@ bool ShellUtil::CreateChromeDesktopShortcut(BrowserDistribution* dist,
                                               shortcut.value(),
                                               arguments,
                                               description,
+                                              icon_path,
+                                              icon_index,
                                               create_new);
       }
     }
@@ -585,6 +589,8 @@ bool ShellUtil::CreateChromeDesktopShortcut(BrowserDistribution* dist,
                                             shortcut.value(),
                                             arguments,
                                             description,
+                                            icon_path,
+                                            icon_index,
                                             create_new);
     }
   } else {
@@ -608,7 +614,9 @@ bool ShellUtil::CreateChromeQuickLaunchShortcut(BrowserDistribution* dist,
     if (ShellUtil::GetQuickLaunchPath(false, &user_ql_path)) {
       file_util::AppendToPath(&user_ql_path, shortcut_name);
       ret = ShellUtil::UpdateChromeShortcut(dist, chrome_exe, user_ql_path,
-                                            L"", L"", create_new);
+                                            L"", L"", chrome_exe,
+                                            dist->GetIconIndex(),
+                                            create_new);
     } else {
       ret = false;
     }
@@ -621,7 +629,9 @@ bool ShellUtil::CreateChromeQuickLaunchShortcut(BrowserDistribution* dist,
     if (ShellUtil::GetQuickLaunchPath(true, &default_ql_path)) {
       file_util::AppendToPath(&default_ql_path, shortcut_name);
       ret = ShellUtil::UpdateChromeShortcut(dist, chrome_exe, default_ql_path,
-                                            L"", L"", create_new) && ret;
+                                            L"", L"", chrome_exe,
+                                            dist->GetIconIndex(),
+                                            create_new) && ret;
     } else {
       ret = false;
     }
@@ -1052,15 +1062,18 @@ bool ShellUtil::UpdateChromeShortcut(BrowserDistribution* dist,
                                      const std::wstring& shortcut,
                                      const std::wstring& arguments,
                                      const std::wstring& description,
+                                     const std::wstring& icon_path,
+                                     int icon_index,
                                      bool create_new) {
   std::wstring chrome_path = FilePath(chrome_exe).DirName().value();
 
   FilePath prefs_path(chrome_path);
   prefs_path = prefs_path.AppendASCII(installer::kDefaultMasterPrefs);
   installer::MasterPreferences prefs(prefs_path);
-  int icon_index = dist->GetIconIndex();
-  prefs.GetInt(installer::master_preferences::kChromeShortcutIconIndex,
-               &icon_index);
+  if (FilePath::CompareEqualIgnoreCase(icon_path, chrome_exe)) {
+    prefs.GetInt(installer::master_preferences::kChromeShortcutIconIndex,
+                 &icon_index);
+  }
   if (create_new) {
     return file_util::CreateShortcutLink(
         chrome_exe.c_str(),                // target
@@ -1068,7 +1081,7 @@ bool ShellUtil::UpdateChromeShortcut(BrowserDistribution* dist,
         chrome_path.c_str(),               // working dir
         arguments.c_str(),                 // arguments
         description.c_str(),               // description
-        chrome_exe.c_str(),                // icon file
+        icon_path.c_str(),                 // icon file
         icon_index,                        // icon index
         dist->GetBrowserAppId().c_str());  // app id
   } else {
@@ -1078,7 +1091,7 @@ bool ShellUtil::UpdateChromeShortcut(BrowserDistribution* dist,
         chrome_path.c_str(),               // working dir
         arguments.c_str(),                 // arguments
         description.c_str(),               // description
-        chrome_exe.c_str(),                // icon file
+        icon_path.c_str(),                 // icon file
         icon_index,                        // icon index
         dist->GetBrowserAppId().c_str());  // app id
   }

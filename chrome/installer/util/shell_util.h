@@ -98,6 +98,8 @@ class ShellUtil {
   // |appended_name| provides a string to be appended to the distribution name,
   //     and can be the empty string.
   // |arguments| gives a set of arguments to be passed to the executable.
+  // |icon_path| provides the path to the icon file to use.
+  // |icon_index| provides the index of the icon within the provided icon file.
   // If |shell_change| is CURRENT_USER, the shortcut is created in the
   //     Desktop folder of current user's profile.
   // If |shell_change| is SYSTEM_LEVEL, the shortcut is created in the
@@ -111,6 +113,8 @@ class ShellUtil {
                                           const std::wstring& description,
                                           const std::wstring& appended_name,
                                           const std::wstring& arguments,
+                                          const std::wstring& icon_path,
+                                          int icon_index,
                                           ShellChange shell_change,
                                           bool alternate,
                                           bool create_new);
@@ -284,14 +288,16 @@ class ShellUtil {
 
   // Updates shortcut (or creates a new shortcut) at destination given by
   // shortcut to a target given by chrome_exe. The arguments are given by
-  // |arguments| for the target and icon is set as icon at index 0 from exe.
-  // If create_new is set to true, the function will create a new shortcut if
-  // if doesn't exist.
+  // |arguments| for the target and icon is set based on |icon_path| and
+  // |icon_index|. If create_new is set to true, the function will create a new
+  // shortcut if it doesn't exist.
   static bool UpdateChromeShortcut(BrowserDistribution* dist,
                                    const std::wstring& chrome_exe,
                                    const std::wstring& shortcut,
                                    const std::wstring& arguments,
                                    const std::wstring& description,
+                                   const std::wstring& icon_path,
+                                   int icon_index,
                                    bool create_new);
 
  private:
