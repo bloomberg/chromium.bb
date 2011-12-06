@@ -71,10 +71,12 @@ ImageEncoder.buildBlob = function(
 
   quality = quality || 0.5;
 
+  ImageUtil.trace.resetTimer('dataurl');
   // WebKit does not support canvas.toBlob yet so canvas.toDataURL is
   // the only way to use the Chrome built-in image encoder.
   var dataURL =
       canvas.toDataURL(metadataEncoder.getMetadata().mimeType, quality);
+  ImageUtil.trace.reportTimer('dataurl');
 
   var encodedImage = ImageEncoder.decodeDataURL(dataURL);
 

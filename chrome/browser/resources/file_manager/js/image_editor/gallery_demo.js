@@ -17,41 +17,31 @@ var mockActions = [
   }];
 
 
-var mockDisplayStrings = {
-  GALLERY_EDIT: 'Edit',
-  GALLERY_SHARE: 'Share',
-  GALLERY_ENTER_WHEN_DONE: 'Press Enter when done',
-  GALLERY_AUTOFIX: 'Auto-fix',
-  GALLERY_FIXED: 'Fixed',
-  GALLERY_CROP: 'Crop',
-  GALLERY_EXPOSURE: 'Brightness',
-  GALLERY_BRIGHTNESS: 'Brightness',
-  GALLERY_CONTRAST: 'Contrast',
-  GALLERY_ROTATE_LEFT: 'Left',
-  GALLERY_ROTATE_RIGHT: 'Right',
-  GALLERY_UNDO: 'Undo',
-  GALLERY_REDO: 'Redo'
-};
+// For quick access from JS console. Use trace.dump() to print all lines.
+var trace;
 
 function loadGallery(items) {
   if (!items) items = [createTestGrid()];
 
   var iframe = document.querySelector('.gallery-frame');
   var contentWindow = iframe.contentWindow;
+  trace = contentWindow.ImageUtil.trace;
+  trace.bindToDOM(document.querySelector('.debug-output'));
 
-  contentWindow.ImageUtil.trace.bindToDOM(
-      document.querySelector('.debug-output'));
+  contentWindow.ImageUtil.metrics = metrics;
 
-  contentWindow.Gallery.open(
-      null,  // No local file access
-      items,
-      items[0],
-      function() {},  // Do nothing on Close
-      metadataProvider,
-      mockActions,
-      function(id) { return mockDisplayStrings[id] || id } );
+  chrome.fileBrowserPrivate.getStrings(function(strings) {
+    contentWindow.Gallery.open(
+        null,  // No local file access
+        items,
+        items[0],
+        function() {},  // Do nothing on Close
+        metadataProvider,
+        mockActions,
+        function(id) { return strings[id] || id } );
 
-  iframe.focus();
+    iframe.focus();
+  });
 }
 
 function createTestGrid() {

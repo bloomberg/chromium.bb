@@ -499,12 +499,12 @@ FileManager.prototype = {
       self.filesystem_ = filesystem;
       util.installFileErrorToString();
 
-      metrics.recordTime('Load.FileSystem');
+      metrics.recordInterval('Load.FileSystem');
 
       var rootEntries = [];
 
       function onAllRootsFound() {
-        metrics.recordTime('Load.Roots');
+        metrics.recordInterval('Load.Roots');
         self.rootEntries_ = rootEntries;
         onDone();
       }
@@ -618,8 +618,8 @@ FileManager.prototype = {
     this.refocus();
 
     this.createMetadataProvider_();
-    metrics.recordTime('Load.DOM');
-    metrics.recordTime('Load.Total');
+    metrics.recordInterval('Load.DOM');
+    metrics.recordInterval('Load.Total');
   };
 
   /**
@@ -2373,6 +2373,7 @@ FileManager.prototype = {
 
     galleryFrame.onload = function() {
       self.document_.title = str('GALLERY');
+      galleryFrame.contentWindow.ImageUtil.metrics = metrics;
       galleryFrame.contentWindow.Gallery.open(
           self.currentDirEntry_,
           urls,
@@ -3185,9 +3186,9 @@ FileManager.prototype = {
 
       function onReadSome(entries) {
         if (entries.length == 0) {
-          metrics.recordTime('DirectoryScan');
+          metrics.recordInterval('DirectoryScan');
           if (self.currentDirEntry_.fullPath == DOWNLOADS_DIRECTORY) {
-            metrics.reportCount("DownloadsCount", self.dataModel_.length);
+            metrics.recordMediumCount("DownloadsCount", self.dataModel_.length);
           }
 
           if (self.pendingRescanQueue_.length > 0) {

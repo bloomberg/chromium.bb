@@ -69,6 +69,11 @@ ImageEditor.prototype.lockUI = function(on) {
   ImageUtil.setAttribute(this.rootContainer_, 'locked', on);
 };
 
+ImageEditor.prototype.recordToolUse = function(name) {
+  ImageUtil.metrics.recordEnum(
+      ImageUtil.getMetricName('Tool'), name, this.actionNames_);
+};
+
 ImageEditor.prototype.onContentUpdate_ = function() {
   for (var i = 0; i != this.modes_.length; i++) {
     var mode = this.modes_[i];
@@ -88,14 +93,14 @@ ImageEditor.prototype.openSession = function(
   this.lockUI(true);
 
   var self = this;
-  this.imageView_.load(id, source, metadata, slide, function(loadedInstantly) {
+  this.imageView_.load(id, source, metadata, slide, function() {
     self.lockUI(false);
     self.commandQueue_ = new CommandQueue(
         self.container_.ownerDocument, self.imageView_.getCanvas());
     self.commandQueue_.attachUI(
         self.getImageView(), self.getPrompt(), self.lockUI.bind(self));
     self.updateUndoRedo();
-    if (opt_callback) opt_callback(loadedInstantly);
+    if (opt_callback) opt_callback(arguments);
   });
 };
 
@@ -140,6 +145,7 @@ ImageEditor.prototype.requestImage = function(callback) {
 
 ImageEditor.prototype.undo = function() {
   if (this.isLocked()) return;
+  this.recordToolUse('undo');
 
   // First undo click should dismiss the uncommitted modifications.
   if (this.currentMode_ && this.currentMode_.isUpdated()) {
@@ -155,6 +161,7 @@ ImageEditor.prototype.undo = function() {
 
 ImageEditor.prototype.redo = function() {
   if (this.isLocked()) return;
+  this.recordToolUse('redo');
   this.getPrompt().hide();
   this.leaveMode(false);
   this.commandQueue_.redo();
@@ -234,6 +241,7 @@ ImageEditor.Mode.prototype.isApplicable = function() { return true };
  */
 ImageEditor.Mode.prototype.bind = function(editor, button) {
   this.editor_ = editor;
+  this.editor_.registerAction_(this.name);
   this.button_ = button;
   this.viewport_ = editor.getViewport();
   this.imageView_ = editor.getImageView();
@@ -303,18 +311,28 @@ ImageEditor.Mode.OneClick.prototype.getCommand = function() {
   return this.command_;
 };
 
+ImageEditor.prototype.registerAction_ = function(name) {
+  this.actionNames_.push(name);
+};
 
 ImageEditor.prototype.createToolButtons = function() {
   this.mainToolbar_.clear();
+  this.actionNames_ = [];
+
+  var self = this;
+  function createButton(name, handler) {
+    return self.mainToolbar_.addButton(name, handler, name);
+  }
+
   for (var i = 0; i != this.modes_.length; i++) {
     var mode = this.modes_[i];
-    mode.bind(this, this.mainToolbar_.
-        addButton(mode.name, this.enterMode.bind(this, mode), mode.name));
+    mode.bind(this, createButton(mode.name, this.enterMode.bind(this, mode)));
   }
-  this.undoButton_ = this.mainToolbar_.
-      addButton('undo', this.undo.bind(this), 'undo');
-  this.redoButton_ = this.mainToolbar_.
-      addButton('redo', this.redo.bind(this), 'redo');
+  this.undoButton_ = createButton('undo', this.undo.bind(this));
+  this.registerAction_('undo');
+
+  this.redoButton_ = createButton('redo', this.redo.bind(this));
+  this.registerAction_('redo');
 };
 
 ImageEditor.prototype.getMode = function() { return this.currentMode_ };
@@ -330,6 +348,8 @@ ImageEditor.prototype.enterMode = function(mode, event) {
     this.leaveMode(this.currentMode_.updated_);
     return;
   }
+
+  this.recordToolUse(mode.name);
 
   this.leaveModeGently();
   // The above call could have caused a commit which might have initiated

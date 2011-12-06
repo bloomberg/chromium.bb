@@ -19,12 +19,16 @@ ImageUtil.trace = (function() {
   };
 
   PerformanceTrace.prototype.report = function(key, value) {
-    if (!this.container_) return;
     if (!(key in this.lines_)) {
-      var div = this.lines_[key] = document.createElement('div');
-      this.container_.appendChild(div);
+      if (this.container_) {
+        var div = this.lines_[key] = document.createElement('div');
+        this.container_.appendChild(div);
+      } else {
+        this.lines_[key] = {};
+      }
     }
     this.lines_[key].textContent = key + ': ' + value;
+    if (localStorage.logTrace) this.dumpLine(key);
   };
 
   PerformanceTrace.prototype.resetTimer = function(key) {
@@ -33,6 +37,15 @@ ImageUtil.trace = (function() {
 
   PerformanceTrace.prototype.reportTimer = function(key) {
     this.report(key, (Date.now() - this.timers_[key]) + 'ms');
+  };
+
+  PerformanceTrace.prototype.dump = function() {
+    for (var key in this.lines_)
+      this.dumpLine(key);
+  };
+
+  PerformanceTrace.prototype.dumpLine = function(key) {
+    console.log('trace.' + this.lines_[key].textContent);
   };
 
   return new PerformanceTrace();
@@ -350,6 +363,7 @@ ImageUtil.ImageLoader.prototype.load = function(
 
   var self = this;
   function startLoad() {
+    ImageUtil.metrics.startInterval(ImageUtil.getMetricName('LoadTime'));
     self.timeout_ = null;
     // The clients of this class sometimes request the same url repeatedly.
     // The onload fires only if the src is different from the previous value.
@@ -404,8 +418,6 @@ ImageUtil.ImageLoader.prototype.convertImage_ = function(image) {
     canvas.height = image.height;
   }
 
-  ImageUtil.trace.resetTimer('load-convert');
-
   var context = canvas.getContext('2d');
   context.save();
   context.translate(canvas.width / 2, canvas.height / 2);
@@ -429,7 +441,9 @@ ImageUtil.ImageLoader.prototype.copyStrip_ = function(
 
   if (lastRow == image.height) {
     context.restore();
-    ImageUtil.trace.reportTimer('load-convert');
+    if (this.url_.substr(0, 5) != 'data:') {  // Ignore data urls.
+      ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('LoadTime'));
+    }
     var callback = this.callback_;
     this.callback_ = null;
     callback(context.canvas);
@@ -473,3 +487,11 @@ ImageUtil.replaceFileNameInFullName = function(fullName, name) {
   else
     return name;
 };
+
+ImageUtil.metrics = null;
+
+ImageUtil.getMetricName = function(name) { return 'PhotoEditor.' + name }
+
+// Used for metrics reporting, keep in sync with the histogram description.
+ImageUtil.FILE_TYPES = ['jpg', 'png', 'gif', 'bmp', 'webp'];
+

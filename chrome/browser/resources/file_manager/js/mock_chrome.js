@@ -397,8 +397,9 @@ chrome.tabs = {
 };
 
 chrome.metricsPrivate = {
-  recordValue: function() {},
   recordMediumCount: function() {},
+  recordSmallCount: function() {},
   recordTime: function() {},
-  recordUserAction: function() {}
+  recordUserAction: function() {},
+  recordValue: function() {}
 };

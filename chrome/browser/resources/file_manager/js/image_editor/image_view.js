@@ -35,6 +35,11 @@ ImageView.ANIMATION_DURATION = 180;
 ImageView.ANIMATION_WAIT_INTERVAL = ImageView.ANIMATION_DURATION * 2;
 ImageView.FAST_SCROLL_INTERVAL = 300;
 
+ImageView.LOAD_TYPE_CACHED_FULL = 0;
+ImageView.LOAD_TYPE_CACHED_SCREEN = 1;
+ImageView.LOAD_TYPE_FILE = 2;
+ImageView.LOAD_TYPE_TOTAL = 3;
+
 ImageView.prototype = {__proto__: ImageBuffer.Overlay.prototype};
 
 // Draw below overlays with the default zIndex.
@@ -153,7 +158,7 @@ ImageView.prototype.load = function(
 
   metadata = metadata|| {};
 
-  ImageUtil.trace.resetTimer('load');
+  ImageUtil.metrics.startInterval(ImageUtil.getMetricName('DisplayTime'));
 
   var self = this;
 
@@ -161,23 +166,26 @@ ImageView.prototype.load = function(
 
   var readyContent = this.getReadyContent(id, source);
   if (readyContent) {
-    displayMainImage(readyContent, true);
+    displayMainImage(ImageView.LOAD_TYPE_CACHED_FULL, readyContent);
   } else {
     var cachedScreen = this.screenCache_.getItem(id);
     if (cachedScreen) {
-      // We have a cached screen-scale canvas, use it as a thumbnail.
-      displayThumbnail(cachedScreen);
+      // We have a cached screen-scale canvas, use it instead of a thumbnail.
+      displayThumbnail(ImageView.LOAD_TYPE_CACHED_SCREEN, cachedScreen);
+      // As far as the user can tell the image is loaded. We still need to load
+      // the full res image to make editing possible, but we can report now.
+      ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('DisplayTime'));
     } else if (metadata.thumbnailURL) {
       this.imageLoader_.load(
           metadata.thumbnailURL,
           metadata.thumbnailTransform,
-          displayThumbnail);
+          displayThumbnail.bind(null, ImageView.LOAD_TYPE_FILE));
     } else {
-      loadMainImage(0);
+      loadMainImage(ImageView.LOAD_TYPE_FILE, 0);
     }
   }
 
-  function displayThumbnail(canvas) {
+  function displayThumbnail(loadType, canvas) {
     // The thumbnail may have different aspect ratio than the main image.
     // Force the main image proportions to avoid flicker.
     var time = Date.now();
@@ -194,14 +202,14 @@ ImageView.prototype.load = function(
     self.replace(canvas, slide, metadata.width, metadata.height);
     if (!slide) mainImageLoadDelay = 0;
     slide = 0;
-    loadMainImage(mainImageLoadDelay);
+    loadMainImage(loadType, mainImageLoadDelay);
   }
 
-  function loadMainImage(delay) {
+  function loadMainImage(loadType, delay) {
     if (self.prefetchLoader_.isLoading(source)) {
       // The image we need is already being prefetched. Initiating another load
       // would be a waste. Hijack the load instead by overriding the callback.
-      self.prefetchLoader_.setCallback(displayMainImage);
+      self.prefetchLoader_.setCallback(displayMainImage.bind(null, loadType));
 
       // Swap the loaders so that the self.isLoading works correctly.
       var temp = self.prefetchLoader_;
@@ -214,15 +222,18 @@ ImageView.prototype.load = function(
     self.imageLoader_.load(
         source,
         metadata.imageTransform,
-        displayMainImage,
+        displayMainImage.bind(null, loadType),
         delay);
   }
 
-  function displayMainImage(canvas, opt_fastLoad) {
+  function displayMainImage(loadType, canvas) {
     self.replace(canvas, slide);
-    ImageUtil.trace.reportTimer('load');
-    ImageUtil.trace.report('load-type', opt_fastLoad ? 'cached' : 'file');
-    if (opt_callback) opt_callback(opt_fastLoad);
+    ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('LoadMode'),
+        loadType, ImageView.LOAD_TYPE_TOTAL);
+    if (loadType != ImageView.LOAD_TYPE_CACHED_SCREEN) {
+      ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('DisplayTime'));
+    }
+    if (opt_callback) opt_callback(loadType);
   }
 };
 

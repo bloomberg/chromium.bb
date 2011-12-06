@@ -225,18 +225,16 @@ Gallery.prototype.load = function(parentDirEntry, items, selectedItem) {
   var selectedURL = urls[selectedIndex];
   // Initialize the ribbon only after the selected image is fully loaded.
   this.metadataProvider_.fetch(selectedURL, function (metadata) {
-    // The first change is load, we should not count it.
-    self.imageChanges_ = -1;
-    self.filenameEdit_.value = ImageUtil.getFileNameFromUrl(selectedURL);
-    self.editor_.openSession(
-        selectedIndex, selectedURL, metadata, 0, initRibbon);
+    self.openImage(selectedIndex, selectedURL, metadata, 0, initRibbon);
   });
 };
 
 Gallery.prototype.onImageContentChanged_ = function() {
   this.imageChanges_++;
-  if (this.imageChanges_ == 1)
+  if (this.imageChanges_ == 1) {  // First edit
     this.ribbon_.getSelectedItem().setCopyName();
+    ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('Edit'));
+  }
   this.updateFilename_();
 };
 
@@ -347,8 +345,38 @@ Gallery.prototype.prefetchImage = function(id, content, metadata) {
 Gallery.prototype.openImage = function(id, content, metadata, slide, callback) {
   // The first change is load, we should not count it.
   this.imageChanges_ = -1;
-  this.updateFilename_();
-  this.editor_.openSession(id, content, metadata, slide, callback);
+
+  var item = this.ribbon_.getSelectedItem();
+  if (item) {
+    this.updateFilename_();
+  } else {
+    this.filenameEdit_.value = ImageUtil.getFileNameFromUrl(content);
+  }
+
+  var self = this;
+  function loadDone() {
+    ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('View'));
+
+    function toMillions(number) { return Math.round(number / (1000 * 1000)) }
+
+    ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MB'),
+        toMillions(metadata.fileSize));
+
+    var canvas = self.imageView_.getCanvas();
+    ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MPix'),
+        toMillions(canvas.width * canvas.height));
+
+    var url = item ? item.getUrl() : content;
+    var extIndex = url.lastIndexOf('.');
+    var ext = extIndex < 0 ? '' : url.substr(extIndex + 1).toLowerCase();
+    if (ext == 'jpeg') ext = 'jpg';
+    ImageUtil.metrics.recordEnum(
+        ImageUtil.getMetricName('FileType'), ext, ImageUtil.FILE_TYPES);
+
+    callback(arguments);
+  }
+
+  this.editor_.openSession(id, content, metadata, slide, loadDone);
 };
 
 Gallery.prototype.closeImage = function(item) {
@@ -592,10 +620,11 @@ Ribbon.prototype.select = function(index, opt_forceStep, opt_callback) {
      if (!selectedItem.isSelected()) return;
      self.client_.openImage(
          selectedItem.getIndex(), selectedItem.getContent(), metadata, step,
-         function(loadedInstantly) {
+         function(loadType) {
            if (!selectedItem.isSelected()) return;
            if (Math.abs(step) != 1) return;
-           if (loadedInstantly || (self.sequenceLength_ >= 3)) {
+           if ((loadType == ImageView.LOAD_TYPE_CACHED_FULL) ||
+               (self.sequenceLength_ >= 3)) {
              // We can always afford to prefetch if the previous load was
              // instant. Even if it was not we should start prefetching
              // if we have been going in the same direction for long enough.
@@ -798,6 +827,9 @@ Ribbon.Item.prototype.updateThumbnail = function(canvas) {
 
 Ribbon.Item.prototype.save = function(
     dirEntry, metadataProvider, canvas, opt_callback) {
+
+  ImageUtil.metrics.startInterval(ImageUtil.getMetricName('SaveTime'));
+
   var metadataEncoder =
       ImageEncoder.encodeMetadata(this.getMetadata(), canvas, 1);
 
@@ -924,7 +956,7 @@ Ribbon.Item.prototype.getMetadata = function () {
 
 Ribbon.Item.prototype.fetchMetadata = function (metadataProvider, callback) {
   if (this.metadata_) {
-    setTimeout(callback.bind(null, this.metadata_), 0);
+    callback(this.metadata_);  // Every millisecond counts, call directly
   } else {
     metadataProvider.fetch(this.getUrl(), callback);
   }
@@ -934,6 +966,8 @@ Ribbon.Item.prototype.onSaveSuccess = function(url) {
   this.url_ = url;
   delete this.backupMetadata_;
   delete this.canvas_;
+  ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 1, 2);
+  ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('SaveTime'));
 };
 
 Ribbon.Item.prototype.onSaveError = function(error) {
@@ -943,6 +977,7 @@ Ribbon.Item.prototype.onSaveError = function(error) {
   this.setMetadata(this.backupMetadata_);
   delete this.backupMetadata_;
   delete this.canvas_;
+  ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 0, 2);
 };
 
 Ribbon.MAX_THUMBNAIL_PIXEL_COUNT = 1 << 21; // 2 MPix
