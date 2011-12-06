@@ -29,6 +29,7 @@ void DefaultOriginBoundCertStore::FlushStore(
 
 bool DefaultOriginBoundCertStore::GetOriginBoundCert(
     const std::string& origin,
+    SSLClientCertType* type,
     std::string* private_key_result,
     std::string* cert_result) {
   base::AutoLock autolock(lock_);
@@ -40,6 +41,7 @@ bool DefaultOriginBoundCertStore::GetOriginBoundCert(
     return false;
 
   OriginBoundCert* cert = it->second;
+  *type = cert->type();
   *private_key_result = cert->private_key();
   *cert_result = cert->cert();
 
@@ -48,14 +50,15 @@ bool DefaultOriginBoundCertStore::GetOriginBoundCert(
 
 void DefaultOriginBoundCertStore::SetOriginBoundCert(
     const std::string& origin,
+    SSLClientCertType type,
     const std::string& private_key,
     const std::string& cert) {
   base::AutoLock autolock(lock_);
   InitIfNecessary();
 
   InternalDeleteOriginBoundCert(origin);
-  InternalInsertOriginBoundCert(origin,
-                                new OriginBoundCert(origin, private_key, cert));
+  InternalInsertOriginBoundCert(
+      origin, new OriginBoundCert(origin, type, private_key, cert));
 }
 
 void DefaultOriginBoundCertStore::DeleteOriginBoundCert(
@@ -79,20 +82,12 @@ void DefaultOriginBoundCertStore::DeleteAll() {
 }
 
 void DefaultOriginBoundCertStore::GetAllOriginBoundCerts(
-    std::vector<OriginBoundCertInfo>* origin_bound_certs) {
+    std::vector<OriginBoundCert>* origin_bound_certs) {
   base::AutoLock autolock(lock_);
   InitIfNecessary();
   for (OriginBoundCertMap::iterator it = origin_bound_certs_.begin();
        it != origin_bound_certs_.end(); ++it) {
-    OriginBoundCertInfo cert_info = {
-      it->second->origin(),
-      it->second->private_key(),
-      it->second->cert()
-    };
-    // TODO(rkn): Make changes so we can simply write
-    // origin_bound_certs->push_back(*it->second). This is probably best done
-    // by unnesting the OriginBoundCert class.
-    origin_bound_certs->push_back(cert_info);
+    origin_bound_certs->push_back(*it->second);
   }
 }
 
@@ -159,16 +154,6 @@ void DefaultOriginBoundCertStore::InternalInsertOriginBoundCert(
     store_->AddOriginBoundCert(*cert);
   origin_bound_certs_[origin] = cert;
 }
-
-DefaultOriginBoundCertStore::OriginBoundCert::OriginBoundCert() {}
-
-DefaultOriginBoundCertStore::OriginBoundCert::OriginBoundCert(
-    const std::string& origin,
-    const std::string& private_key,
-    const std::string& cert)
-    : origin_(origin),
-      private_key_(private_key),
-      cert_(cert) {}
 
 DefaultOriginBoundCertStore::PersistentStore::PersistentStore() {}
 

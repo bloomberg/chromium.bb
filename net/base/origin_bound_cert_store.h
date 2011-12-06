@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "net/base/net_export.h"
+#include "net/base/ssl_client_cert_type.h"
 
 namespace net {
 
@@ -22,30 +23,55 @@ namespace net {
 
 class NET_EXPORT OriginBoundCertStore {
  public:
-  // Used by GetAllOriginBoundCerts.
-  struct OriginBoundCertInfo {
-    std::string origin;  // Origin, for instance "https://www.verisign.com:443".
-    std::string private_key;  // DER-encoded PrivateKeyInfo struct.
-    std::string cert;  // DER-encoded certificate.
+  // The OriginBoundCert class contains a private key in addition to the origin
+  // cert, and cert type.
+  class NET_EXPORT OriginBoundCert {
+   public:
+    OriginBoundCert();
+    OriginBoundCert(const std::string& origin,
+                    SSLClientCertType type,
+                    const std::string& private_key,
+                    const std::string& cert);
+    ~OriginBoundCert();
+
+    // Origin, for instance "https://www.verisign.com:443"
+    const std::string& origin() const { return origin_; }
+    // TLS ClientCertificateType.
+    SSLClientCertType type() const { return type_; }
+    // The encoding of the private key depends on the type.
+    // rsa_sign: DER-encoded PrivateKeyInfo struct.
+    // ecdsa_sign: DER-encoded EncryptedPrivateKeyInfo struct.
+    const std::string& private_key() const { return private_key_; }
+    // DER-encoded certificate.
+    const std::string& cert() const { return cert_; }
+
+   private:
+    std::string origin_;
+    SSLClientCertType type_;
+    std::string private_key_;
+    std::string cert_;
   };
 
   virtual ~OriginBoundCertStore() {}
 
-  // TODO(rkn): Specify certificate type (RSA or DSA).
   // TODO(rkn): File I/O may be required, so this should have an asynchronous
   // interface.
   // Returns true on success. |private_key_result| stores a DER-encoded
   // PrivateKeyInfo struct and |cert_result| stores a DER-encoded
   // certificate. Returns false if no origin bound cert exists for the
   // specified origin.
-  virtual bool GetOriginBoundCert(const std::string& origin,
-                                  std::string* private_key_result,
-                                  std::string* cert_result) = 0;
+  virtual bool GetOriginBoundCert(
+      const std::string& origin,
+      SSLClientCertType* type,
+      std::string* private_key_result,
+      std::string* cert_result) = 0;
 
   // Adds an origin bound cert and the corresponding private key to the store.
-  virtual void SetOriginBoundCert(const std::string& origin,
-                                  const std::string& private_key,
-                                  const std::string& cert) = 0;
+  virtual void SetOriginBoundCert(
+      const std::string& origin,
+      SSLClientCertType type,
+      const std::string& private_key,
+      const std::string& cert) = 0;
 
   // Removes an origin bound cert and the corresponding private key from the
   // store.
@@ -57,7 +83,7 @@ class NET_EXPORT OriginBoundCertStore {
 
   // Returns all origin bound certs and the corresponding private keys.
   virtual void GetAllOriginBoundCerts(
-      std::vector<OriginBoundCertInfo>* origin_bound_certs) = 0;
+      std::vector<OriginBoundCert>* origin_bound_certs) = 0;
 
   // Returns the number of certs in the store.
   // Public only for unit testing.

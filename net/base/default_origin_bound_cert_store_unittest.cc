@@ -77,33 +77,40 @@ TEST(DefaultOriginBoundCertStoreTest, TestLoading) {
 
   persistent_store->AddOriginBoundCert(
       DefaultOriginBoundCertStore::OriginBoundCert(
-          "https://encrypted.google.com/", "a", "b"));
+          "https://encrypted.google.com/", CLIENT_CERT_RSA_SIGN, "a", "b"));
   persistent_store->AddOriginBoundCert(
       DefaultOriginBoundCertStore::OriginBoundCert(
-          "https://www.verisign.com/", "c", "d"));
+          "https://www.verisign.com/", CLIENT_CERT_ECDSA_SIGN, "c", "d"));
 
   // Make sure certs load properly.
   DefaultOriginBoundCertStore store(persistent_store.get());
   EXPECT_EQ(2, store.GetCertCount());
-  store.SetOriginBoundCert("https://www.verisign.com/", "e", "f");
+  store.SetOriginBoundCert(
+      "https://www.verisign.com/", CLIENT_CERT_RSA_SIGN, "e", "f");
   EXPECT_EQ(2, store.GetCertCount());
-  store.SetOriginBoundCert("https://www.twitter.com/", "g", "h");
+  store.SetOriginBoundCert(
+      "https://www.twitter.com/", CLIENT_CERT_RSA_SIGN, "g", "h");
   EXPECT_EQ(3, store.GetCertCount());
 }
 
 TEST(DefaultOriginBoundCertStoreTest, TestSettingAndGetting) {
   DefaultOriginBoundCertStore store(NULL);
+  SSLClientCertType type;
   std::string private_key, cert;
   EXPECT_EQ(0, store.GetCertCount());
   EXPECT_FALSE(store.GetOriginBoundCert("https://www.verisign.com/",
-                                         &private_key,
-                                         &cert));
-  EXPECT_TRUE(private_key.empty());
-  EXPECT_TRUE(cert.empty());
-  store.SetOriginBoundCert("https://www.verisign.com/", "i", "j");
-  EXPECT_TRUE(store.GetOriginBoundCert("https://www.verisign.com/",
+                                        &type,
                                         &private_key,
                                         &cert));
+  EXPECT_TRUE(private_key.empty());
+  EXPECT_TRUE(cert.empty());
+  store.SetOriginBoundCert(
+      "https://www.verisign.com/", CLIENT_CERT_RSA_SIGN, "i", "j");
+  EXPECT_TRUE(store.GetOriginBoundCert("https://www.verisign.com/",
+                                       &type,
+                                       &private_key,
+                                       &cert));
+  EXPECT_EQ(CLIENT_CERT_RSA_SIGN, type);
   EXPECT_EQ("i", private_key);
   EXPECT_EQ("j", cert);
 }
@@ -112,15 +119,20 @@ TEST(DefaultOriginBoundCertStoreTest, TestDuplicateCerts) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   DefaultOriginBoundCertStore store(persistent_store.get());
 
+  SSLClientCertType type;
   std::string private_key, cert;
   EXPECT_EQ(0, store.GetCertCount());
-  store.SetOriginBoundCert("https://www.verisign.com/", "a", "b");
-  store.SetOriginBoundCert("https://www.verisign.com/", "c", "d");
+  store.SetOriginBoundCert(
+      "https://www.verisign.com/", CLIENT_CERT_RSA_SIGN, "a", "b");
+  store.SetOriginBoundCert(
+      "https://www.verisign.com/", CLIENT_CERT_ECDSA_SIGN, "c", "d");
 
   EXPECT_EQ(1, store.GetCertCount());
   EXPECT_TRUE(store.GetOriginBoundCert("https://www.verisign.com/",
-                                        &private_key,
-                                        &cert));
+                                       &type,
+                                       &private_key,
+                                       &cert));
+  EXPECT_EQ(CLIENT_CERT_ECDSA_SIGN, type);
   EXPECT_EQ("c", private_key);
   EXPECT_EQ("d", cert);
 }
@@ -130,9 +142,12 @@ TEST(DefaultOriginBoundCertStoreTest, TestDeleteAll) {
   DefaultOriginBoundCertStore store(persistent_store.get());
 
   EXPECT_EQ(0, store.GetCertCount());
-  store.SetOriginBoundCert("https://www.verisign.com/", "a", "b");
-  store.SetOriginBoundCert("https://www.google.com/", "c", "d");
-  store.SetOriginBoundCert("https://www.harvard.com/", "e", "f");
+  store.SetOriginBoundCert(
+      "https://www.verisign.com/", CLIENT_CERT_RSA_SIGN, "a", "b");
+  store.SetOriginBoundCert(
+      "https://www.google.com/", CLIENT_CERT_RSA_SIGN, "c", "d");
+  store.SetOriginBoundCert(
+      "https://www.harvard.com/", CLIENT_CERT_RSA_SIGN, "e", "f");
 
   EXPECT_EQ(3, store.GetCertCount());
   store.DeleteAll();
@@ -143,25 +158,31 @@ TEST(DefaultOriginBoundCertStoreTest, TestDelete) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   DefaultOriginBoundCertStore store(persistent_store.get());
 
+  SSLClientCertType type;
   std::string private_key, cert;
   EXPECT_EQ(0, store.GetCertCount());
-  store.SetOriginBoundCert("https://www.verisign.com/", "a", "b");
-  store.SetOriginBoundCert("https://www.google.com/", "c", "d");
+  store.SetOriginBoundCert(
+      "https://www.verisign.com/", CLIENT_CERT_RSA_SIGN, "a", "b");
+  store.SetOriginBoundCert(
+      "https://www.google.com/", CLIENT_CERT_ECDSA_SIGN, "c", "d");
 
   EXPECT_EQ(2, store.GetCertCount());
   store.DeleteOriginBoundCert("https://www.verisign.com/");
   EXPECT_EQ(1, store.GetCertCount());
   EXPECT_FALSE(store.GetOriginBoundCert("https://www.verisign.com/",
-                                         &private_key,
-                                         &cert));
-  EXPECT_TRUE(store.GetOriginBoundCert("https://www.google.com/",
+                                        &type,
                                         &private_key,
                                         &cert));
+  EXPECT_TRUE(store.GetOriginBoundCert("https://www.google.com/",
+                                       &type,
+                                       &private_key,
+                                       &cert));
   store.DeleteOriginBoundCert("https://www.google.com/");
   EXPECT_EQ(0, store.GetCertCount());
   EXPECT_FALSE(store.GetOriginBoundCert("https://www.google.com/",
-                                         &private_key,
-                                         &cert));
+                                        &type,
+                                        &private_key,
+                                        &cert));
 }
 
 TEST(DefaultOriginBoundCertStoreTest, TestGetAll) {
@@ -169,13 +190,17 @@ TEST(DefaultOriginBoundCertStoreTest, TestGetAll) {
   DefaultOriginBoundCertStore store(persistent_store.get());
 
   EXPECT_EQ(0, store.GetCertCount());
-  store.SetOriginBoundCert("https://www.verisign.com/", "a", "b");
-  store.SetOriginBoundCert("https://www.google.com/", "c", "d");
-  store.SetOriginBoundCert("https://www.harvard.com/", "e", "f");
-  store.SetOriginBoundCert("https://www.mit.com/", "g", "h");
+  store.SetOriginBoundCert(
+      "https://www.verisign.com/", CLIENT_CERT_RSA_SIGN, "a", "b");
+  store.SetOriginBoundCert(
+      "https://www.google.com/", CLIENT_CERT_ECDSA_SIGN, "c", "d");
+  store.SetOriginBoundCert(
+      "https://www.harvard.com/", CLIENT_CERT_RSA_SIGN, "e", "f");
+  store.SetOriginBoundCert(
+      "https://www.mit.com/", CLIENT_CERT_RSA_SIGN, "g", "h");
 
   EXPECT_EQ(4, store.GetCertCount());
-  std::vector<OriginBoundCertStore::OriginBoundCertInfo> certs;
+  std::vector<OriginBoundCertStore::OriginBoundCert> certs;
   store.GetAllOriginBoundCerts(&certs);
   EXPECT_EQ(4u, certs.size());
 }

@@ -17,6 +17,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/ssl_client_cert_type.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -116,7 +117,7 @@ class SQLiteOriginBoundCertStore::Backend
 };
 
 // Version number of the database.
-static const int kCurrentVersionNumber = 1;
+static const int kCurrentVersionNumber = 2;
 static const int kCompatibleVersionNumber = 1;
 
 namespace {
@@ -127,7 +128,8 @@ bool InitTable(sql::Connection* db) {
     if (!db->Execute("CREATE TABLE origin_bound_certs ("
                      "origin TEXT NOT NULL UNIQUE PRIMARY KEY,"
                      "private_key BLOB NOT NULL,"
-                     "cert BLOB NOT NULL)"))
+                     "cert BLOB NOT NULL,"
+                     "cert_type INTEGER)"))
       return false;
   }
 
@@ -169,7 +171,7 @@ bool SQLiteOriginBoundCertStore::Backend::Load(
 
   // Slurp all the certs into the out-vector.
   sql::Statement smt(db_->GetUniqueStatement(
-      "SELECT origin, private_key, cert FROM origin_bound_certs"));
+      "SELECT origin, private_key, cert, cert_type FROM origin_bound_certs"));
   if (!smt) {
     NOTREACHED() << "select statement prep failed";
     db_.reset();
@@ -183,6 +185,7 @@ bool SQLiteOriginBoundCertStore::Backend::Load(
     scoped_ptr<net::DefaultOriginBoundCertStore::OriginBoundCert> cert(
         new net::DefaultOriginBoundCertStore::OriginBoundCert(
             smt.ColumnString(0),  // origin
+            static_cast<net::SSLClientCertType>(smt.ColumnInt(3)),
             private_key_from_db,
             cert_from_db));
     certs->push_back(cert.release());
@@ -204,6 +207,28 @@ bool SQLiteOriginBoundCertStore::Backend::EnsureDatabaseVersion() {
   }
 
   int cur_version = meta_table_.GetVersionNumber();
+  if (cur_version == 1) {
+    sql::Transaction transaction(db_.get());
+    if (!transaction.Begin())
+      return false;
+    if (!db_->Execute("ALTER TABLE origin_bound_certs ADD COLUMN cert_type "
+                      "INTEGER")) {
+      LOG(WARNING) << "Unable to update origin bound cert database to "
+                   << "version 2.";
+      return false;
+    }
+    // All certs in version 1 database are rsa_sign, which has a value of 1.
+    if (!db_->Execute("UPDATE origin_bound_certs SET cert_type = 1")) {
+      LOG(WARNING) << "Unable to update origin bound cert database to "
+                   << "version 2.";
+      return false;
+    }
+    ++cur_version;
+    meta_table_.SetVersionNumber(cur_version);
+    meta_table_.SetCompatibleVersionNumber(
+        std::min(cur_version, kCompatibleVersionNumber));
+    transaction.Commit();
+  }
 
   // Put future migration cases here.
 
@@ -273,8 +298,8 @@ void SQLiteOriginBoundCertStore::Backend::Commit() {
     return;
 
   sql::Statement add_smt(db_->GetCachedStatement(SQL_FROM_HERE,
-      "INSERT INTO origin_bound_certs (origin, private_key, cert) "
-      "VALUES (?,?,?)"));
+      "INSERT INTO origin_bound_certs (origin, private_key, cert, cert_type) "
+      "VALUES (?,?,?,?)"));
   if (!add_smt) {
     NOTREACHED();
     return;
@@ -304,6 +329,7 @@ void SQLiteOriginBoundCertStore::Backend::Commit() {
         add_smt.BindBlob(1, private_key.data(), private_key.size());
         const std::string& cert = po->cert().cert();
         add_smt.BindBlob(2, cert.data(), cert.size());
+        add_smt.BindInt(3, po->cert().type());
         if (!add_smt.Run())
           NOTREACHED() << "Could not add an origin bound cert to the DB.";
         break;
