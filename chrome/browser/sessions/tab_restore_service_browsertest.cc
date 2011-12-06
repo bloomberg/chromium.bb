@@ -51,10 +51,10 @@ class TabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
  protected:
   // testing::Test overrides
   virtual void SetUp() {
+    WebKit::initialize(&webkit_platform_support_);
     ChromeRenderViewHostTestHarness::SetUp();
     time_factory_ = new TabRestoreTimeFactory();
     service_.reset(new TabRestoreService(profile(), time_factory_));
-    WebKit::initialize(&webkit_platform_support_);
   }
 
   virtual void TearDown() {

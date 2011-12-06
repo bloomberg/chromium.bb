@@ -39,6 +39,11 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/cld/languages/public/languages.h"
 
+#if defined(USE_WEBKIT_COMPOSITOR)
+#include "content/test/render_view_test.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#endif
+
 using content::BrowserThread;
 using testing::_;
 using testing::Pointee;
@@ -153,6 +158,9 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
 
  protected:
   virtual void SetUp() {
+#if defined(USE_WEBKIT_COMPOSITOR)
+    WebKit::initialize(&webkit_platform_support_);
+#endif
     // Access the TranslateManager singleton so it is created before we call
     // TabContentsWrapperTestHarness::SetUp() to match what's done in Chrome,
     // where the TranslateManager is created before the TabContents.  This
@@ -182,6 +190,9 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
             contents_wrapper()->infobar_tab_helper()));
 
     TabContentsWrapperTestHarness::TearDown();
+#if defined(USE_WEBKIT_COMPOSITOR)
+    WebKit::shutdown();
+#endif
   }
 
   void SimulateTranslateScriptURLFetch(bool success) {
@@ -239,6 +250,10 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
   content::NotificationRegistrar notification_registrar_;
   TestURLFetcherFactory url_fetcher_factory_;
   content::TestBrowserThread ui_thread_;
+#if defined(USE_WEBKIT_COMPOSITOR)
+  content::RenderViewTest::RendererWebKitPlatformSupportImplNoSandbox
+      webkit_platform_support_;
+#endif
 
   // The infobars that have been removed.
   // WARNING: the pointers point to deleted objects, use only for comparison.
