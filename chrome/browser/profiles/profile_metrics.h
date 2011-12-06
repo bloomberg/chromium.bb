@@ -14,37 +14,6 @@ class FilePath;
 
 class ProfileMetrics {
  public:
-  enum ProfileAvatar {
-    AVATAR_GENERIC = 0,       // The names for avatar icons
-    AVATAR_GENERIC_AQUA,
-    AVATAR_GENERIC_BLUE,
-    AVATAR_GENERIC_GREEN,
-    AVATAR_GENERIC_ORANGE,
-    AVATAR_GENERIC_PURPLE,
-    AVATAR_GENERIC_RED,
-    AVATAR_GENERIC_YELLOW,
-    AVATAR_SECRET_AGENT,
-    AVATAR_SUPERHERO,
-    AVATAR_VOLLEYBALL,
-    AVATAR_BUSINESSMAN,
-    AVATAR_NINJA,
-    AVATAR_ALIEN,
-    AVATAR_AWESOME,
-    AVATAR_FLOWER,
-    AVATAR_PIZZA,
-    AVATAR_SOCCER,
-    AVATAR_BURGER,
-    AVATAR_CAT,
-    AVATAR_CUPCAKE,
-    AVATAR_DOG,
-    AVATAR_HORSE,
-    AVATAR_MARGARITA,
-    AVATAR_NOTE,
-    AVATAR_SUN_CLOUD,
-    AVATAR_UNKNOWN,
-    NUM_PROFILE_AVATAR_METRICS
-  };
-
   // Enum for counting the ways users were added.
   enum ProfileAdd {
     ADD_NEW_USER_ICON = 0,    // User adds new user from icon menu
@@ -86,6 +55,12 @@ class ProfileMetrics {
     NUM_PROFILE_TYPE_METRICS
   };
 
+  enum ProfileGaia {
+    GAIA_OPT_IN = 0,           // User changed to GAIA photo as avatar
+    GAIA_OPT_OUT,              // User changed to not use GAIA photo as avatar
+    NUM_PROFILE_GAIA_METRICS
+  };
+
   static void LogProfileAvatarSelection(size_t icon_index);
   static void LogProfileOpenMethod(ProfileOpen metric);
   static void LogProfileAddNewUser(ProfileAdd metric);
@@ -94,6 +69,7 @@ class ProfileMetrics {
   static void LogProfileSyncInfo(ProfileSync metric);
   static void LogProfileUpdate(FilePath& profile_path);
   static void LogProfileSyncSignIn(FilePath& profile_path);
+  static void LogProfileSwitchGaia(ProfileGaia metric);
 };
 
 

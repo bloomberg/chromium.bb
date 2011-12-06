@@ -174,9 +174,19 @@ void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
   if (!args->GetString(2, &icon_url))
     return;
 
+  // Metrics logging variable.
+  bool previously_using_gaia_icon =
+      cache.IsUsingGAIANameOfProfileAtIndex(profile_index);
+
   size_t new_icon_index;
   if (icon_url == gaia_picture_url_) {
     cache.SetIsUsingGAIAPictureOfProfileAtIndex(profile_index, true);
+    if (!previously_using_gaia_icon) {
+      // Only log if they changed to the GAIA photo.
+      // Selection of GAIA photo as avatar is logged as part of the function
+      // below.
+      ProfileMetrics::LogProfileSwitchGaia(ProfileMetrics::GAIA_OPT_IN);
+    }
   } else if (cache.IsDefaultAvatarIconUrl(icon_url, &new_icon_index)) {
     ProfileMetrics::LogProfileAvatarSelection(new_icon_index);
     cache.SetAvatarIconOfProfileAtIndex(profile_index, new_icon_index);

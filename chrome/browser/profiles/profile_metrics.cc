@@ -31,9 +31,41 @@ ProfileMetrics::ProfileType GetProfileType(
 
 }  // namespace
 
+enum ProfileAvatar {
+  AVATAR_GENERIC = 0,       // The names for avatar icons
+  AVATAR_GENERIC_AQUA,
+  AVATAR_GENERIC_BLUE,
+  AVATAR_GENERIC_GREEN,
+  AVATAR_GENERIC_ORANGE,
+  AVATAR_GENERIC_PURPLE,
+  AVATAR_GENERIC_RED,
+  AVATAR_GENERIC_YELLOW,
+  AVATAR_SECRET_AGENT,
+  AVATAR_SUPERHERO,
+  AVATAR_VOLLEYBALL,        // 10
+  AVATAR_BUSINESSMAN,
+  AVATAR_NINJA,
+  AVATAR_ALIEN,
+  AVATAR_AWESOME,
+  AVATAR_FLOWER,
+  AVATAR_PIZZA,
+  AVATAR_SOCCER,
+  AVATAR_BURGER,
+  AVATAR_CAT,
+  AVATAR_CUPCAKE,           // 20
+  AVATAR_DOG,
+  AVATAR_HORSE,
+  AVATAR_MARGARITA,
+  AVATAR_NOTE,
+  AVATAR_SUN_CLOUD,
+  AVATAR_UNKNOWN,           // 26
+  AVATAR_GAIA,              // 27
+  NUM_PROFILE_AVATAR_METRICS
+};
+
 void ProfileMetrics::LogProfileAvatarSelection(size_t icon_index) {
   DCHECK(icon_index < NUM_PROFILE_AVATAR_METRICS);
-  ProfileAvatar icon_name;
+  ProfileAvatar icon_name = AVATAR_UNKNOWN;
   switch (icon_index) {
     case 0:
       icon_name = AVATAR_GENERIC;
@@ -113,8 +145,11 @@ void ProfileMetrics::LogProfileAvatarSelection(size_t icon_index) {
     case 25:
       icon_name = AVATAR_SUN_CLOUD;
       break;
-    default:  // We should never actually get here, but just in case
-      icon_name = AVATAR_UNKNOWN;
+    case 27:
+      icon_name = AVATAR_GAIA;
+      break;
+    default:  // We should never actually get here.
+      NOTREACHED();
       break;
   }
   UMA_HISTOGRAM_ENUMERATION("Profile.Avatar", icon_name,
@@ -163,4 +198,12 @@ void ProfileMetrics::LogProfileSyncSignIn(FilePath& profile_path) {
   UMA_HISTOGRAM_ENUMERATION("Profile.SyncSignIn",
                             GetProfileType(profile_path),
                             NUM_PROFILE_TYPE_METRICS);
+}
+
+void ProfileMetrics::LogProfileSwitchGaia(ProfileGaia metric) {
+  if (metric == GAIA_OPT_IN)
+    LogProfileAvatarSelection(AVATAR_GAIA);
+  UMA_HISTOGRAM_ENUMERATION("Profile.SwitchGaiaPhotoSettings",
+                            metric,
+                            NUM_PROFILE_GAIA_METRICS);
 }
