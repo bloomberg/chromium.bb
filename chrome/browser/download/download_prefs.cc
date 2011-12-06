@@ -14,12 +14,15 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_extensions.h"
+#include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/save_package.h"
 #include "content/public/browser/browser_thread.h"
+#include "chrome/browser/download/download_service_factory.h"
 
 using content::BrowserThread;
 
@@ -100,6 +103,15 @@ DownloadPrefs* DownloadPrefs::FromDownloadManager(
   ChromeDownloadManagerDelegate* delegate =
       static_cast<ChromeDownloadManagerDelegate*>(download_manager->delegate());
   return delegate->download_prefs();
+}
+
+// static
+DownloadPrefs* DownloadPrefs::FromBrowserContext(
+    content::BrowserContext* browser_context) {
+  Profile* profile = static_cast<Profile*>(browser_context);
+  DownloadService* download_service =
+      DownloadServiceFactory::GetForProfile(profile);
+  return FromDownloadManager(download_service->GetDownloadManager());
 }
 
 bool DownloadPrefs::PromptForDownload() const {

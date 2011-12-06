@@ -268,16 +268,10 @@ bool SavePackage::Init() {
     return false;
   }
 
-  // Create the download item, and add ourself as an observer.
-  download_ = new DownloadItemImpl(download_manager_,
-                                   saved_main_file_path_,
-                                   page_url_,
-                                   browser_context->IsOffTheRecord(),
-                                   download_manager_->GetNextId());
-  download_->AddObserver(this);
-
-  // Transfer ownership to the download manager.
-  download_manager_->SavePageDownloadStarted(download_);
+  // The download manager keeps ownership but adds us as an observer.
+  download_ = download_manager_->CreateSavePackageDownloadItem(
+      saved_main_file_path_, page_url_,
+      browser_context->IsOffTheRecord(), this);
 
   // Check save type and process the save page job.
   if (save_type_ == SAVE_AS_COMPLETE_HTML) {
