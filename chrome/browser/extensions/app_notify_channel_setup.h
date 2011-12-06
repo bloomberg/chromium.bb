@@ -149,6 +149,11 @@ class AppNotifyChannelSetup
   scoped_ptr<AppNotifyChannelUI> ui_;
   State state_;
   std::string oauth2_access_token_;
+  // Keeps track of whether we have encountered failure in OAuth2 access
+  // token generation already. We use this to prevent us from doing an
+  // infinite loop of trying to generate access token, if that fails, try
+  // to login the user and generate access token, etc.
+  bool oauth2_access_token_failure_;
 
   DISALLOW_COPY_AND_ASSIGN(AppNotifyChannelSetup);
 };

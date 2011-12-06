@@ -81,7 +81,8 @@ AppNotifyChannelSetup::AppNotifyChannelSetup(
       callback_id_(callback_id),
       delegate_(delegate),
       ui_(ui),
-      state_(INITIAL) {}
+      state_(INITIAL),
+      oauth2_access_token_failure_(false) {}
 
 AppNotifyChannelSetup::~AppNotifyChannelSetup() {}
 
@@ -147,12 +148,17 @@ URLFetcher* AppNotifyChannelSetup::CreateURLFetcher(
 bool AppNotifyChannelSetup::ShouldPromptForLogin() const {
   std::string username = profile_->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
-  // Prompt for login if either the user has not logged in at all or
-  // if the user is logged in but there is no OAuth2 login token.
-  // The latter happens for users who are already logged in before the
-  // code to generate OAuth2 login token is released.
+  // Prompt for login if either:
+  // 1. the user has not logged in at all or
+  // 2. if the user is logged in but there is no OAuth2 login token.
+  //    The latter happens for users who are already logged in before the
+  //    code to generate OAuth2 login token is released.
+  // 3. If the OAuth2 login token does not work anymore.
+  //    This can happen if the user explicitly revoked access to Google Chrome
+  //    from Google Accounts page.
   return username.empty() ||
-         !profile_->GetTokenService()->HasOAuthLoginToken();
+         !profile_->GetTokenService()->HasOAuthLoginToken() ||
+         oauth2_access_token_failure_;
 }
 
 void AppNotifyChannelSetup::BeginLogin() {
@@ -198,6 +204,16 @@ void AppNotifyChannelSetup::EndGetAccessToken(bool success) {
   if (success) {
     state_ = FETCH_ACCESS_TOKEN_DONE;
     BeginRecordGrant();
+  } else if (!oauth2_access_token_failure_) {
+    oauth2_access_token_failure_ = true;
+    // If access token generation fails, then it means somehow the
+    // OAuth2 login scoped token became invalid. One way this cna happen
+    // is if a user explicitly revoked access to Google Chrome from
+    // Google Accounts page. In such a case, we should try to show the
+    // login setup again to the user, but only if we have not already
+    // done so once (to avoid infinite loop).
+    state_ = INITIAL;
+    BeginLogin();
   } else {
     state_ = ERROR_STATE;
     ReportResult("", kChannelSetupInternalError);
