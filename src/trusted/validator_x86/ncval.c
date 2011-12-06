@@ -584,8 +584,8 @@ Bool NaClRunValidatorBytes(int argc,
   return results;
 }
 
-static void usage(int exit_code) {
-  printf(
+
+static const char usage_str[] =
       "usage: ncval [options] file\n"
       "\n"
       "\tValidates an x86-%d nexe file.\n"
@@ -718,8 +718,10 @@ static void usage(int exit_code) {
       "--write_sfi\n"
       "\tOnly check for memory write software fault isolation.\n"
 #endif
-      "\n",
-      NACL_TARGET_SUBARCH);
+      "\n";
+
+static void usage(int exit_code) {
+  printf(usage_str, NACL_TARGET_SUBARCH);
   exit(exit_code);
 }
 
