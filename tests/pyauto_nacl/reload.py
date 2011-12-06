@@ -140,7 +140,9 @@ class NaClTest(pyauto.PyUITest):
   def testReloadProgressEvents(self):
     self.reloader('ppapi_progress_events.html', 'PPAPI')
 
-  def testReloadPPBCore(self):
+  # TODO(ncbray): reenable
+  # http://code.google.com/p/nativeclient/issues/detail?id=2448
+  def disabledTestReloadPPBCore(self):
     self.reloader('ppapi_ppb_core.html', 'PPAPI')
 
   def testReloadPPBGraphics2D(self):

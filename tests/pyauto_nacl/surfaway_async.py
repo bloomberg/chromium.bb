@@ -132,7 +132,9 @@ class NaClTest(pyauto.PyUITest):
   def testSurfAwayAsyncExample2D(self):
     self.surfAwayAsync('ppapi_example_2d.html', 'PPAPI')
 
-  def testSurfAwayAsyncPPBCore(self):
+  # TODO(ncbray): reenable
+  # http://code.google.com/p/nativeclient/issues/detail?id=2448
+  def disableTestSurfAwayAsyncPPBCore(self):
     self.surfAwayAsync('ppapi_ppb_core.html', 'PPAPI')
 
   def testSurfAwayAsyncPPBGraphics2D(self):
