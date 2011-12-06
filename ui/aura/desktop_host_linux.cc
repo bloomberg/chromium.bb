@@ -341,8 +341,11 @@ DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
   XSelectInput(xdisplay_, root_window_, StructureNotifyMask);
   XFlush(xdisplay_);
 
+  // TODO(sad): Re-enable once crbug.com/106516 is fixed.
+#if 0
   if (base::MessagePumpForUI::HasXInput2())
     ui::TouchFactory::GetInstance()->SetupXI2ForXWindow(xwindow_);
+#endif
 
   base::MessagePumpX::SetDefaultDispatcher(this);
   MessageLoopForUI::current()->AddDestructionObserver(this);
