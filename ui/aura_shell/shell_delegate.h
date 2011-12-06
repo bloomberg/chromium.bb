@@ -9,6 +9,10 @@
 #include "base/callback.h"
 #include "ui/aura_shell/aura_shell_export.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace views {
 class Widget;
 }
@@ -35,7 +39,9 @@ class AURA_SHELL_EXPORT ShellDelegate {
 
   // Invoked to create app list widget. The Delegate calls the callback
   // when the widget is ready to show.
-  virtual void RequestAppListWidget(const SetWidgetCallback& callback) = 0;
+  virtual void RequestAppListWidget(
+      const gfx::Rect& bounds,
+      const SetWidgetCallback& callback) = 0;
 
   // Invoked when the user clicks on a window entry in the launcher.
   virtual void LauncherItemClicked(const LauncherItem& item) = 0;

@@ -17,42 +17,42 @@ body {
   padding: 0;
 }
 
+.tile-page-scrollbar {
+  background-color: #7f7f7f;
+}
+
 .app-contents > span {
   color: white;
   font-size: 14px;
   font-weight: bold;
+  padding: 2px;  /* Extra padding for text-shadow. */
   text-shadow: 0 0 2px black, 0 0 4px black;
 }
 
-#launcher-search-container {
-  position: relative;
-  z-index: 5;
-}
-
-#launcher-search,
-#launcher-search::-webkit-input-placeholder {
-  color: white;
-}
-
-#launcher-search {
-  -webkit-padding-start: 10px;
-  -webkit-box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.1);
-  background-color: rgba(0, 0, 0, 0.2);
-  border: none;
-  font-size: 14px;
-  height: 34px;
-  min-width: 384px;
-  outline: 1px solid rgba(0, 0, 0, 0.1);
+/*
+ * #container is used to host apps page in a fixed 900x550 area so that
+ * we don't have excessive space between app icons and nav dots. #container
+ * is center aligned with its parent. We use top:50% and left:50% to move it
+ * to parent's center and use negative margin-top and margin-left to align its
+ * center with parent's center. Because of this, margin-top must be half of
+ * the height and margin-left must be half of the width.
+ */
+#container {
+  height: 550px;
+  left: 50%;
+  margin-top: -225px;
+  margin-left: -450px;
+  position: absolute;
+  top: 50%;
+  width: 900px;
 }
 
 #card-slider-frame {
-  /* Must match #footer height. 0 because footer is hidden.*/
-  bottom: 0;
+  /* Must match #footer height. */
+  bottom: 50px;
   overflow: hidden;
-  /* We want this to fill the window except for the region used
-     by footer */
-  position: fixed;
-  top: 0;
+  position: absolute;
+  height: 500px;
   width: 100%;
 }
 
@@ -63,10 +63,9 @@ body {
 }
 
 #footer {
-  background-image: -webkit-linear-gradient(
-      rgba(242, 242, 242, 0.9), rgba(222, 222, 222, 0.9));
+  background: transparent;
   bottom: 0;
-  position: fixed;
+  position: absolute;
   width: 100%;
   z-index: 5;
 }
@@ -75,4 +74,31 @@ body {
   -webkit-box-align: center;
   display: -webkit-box;
   height: 49px;
+}
+
+.dot .selection-bar {
+  border-color: #7f7f7f;
+  opacity: 0.2;
+}
+
+.dot input {
+  color: #7f7f7f;
+  font-size: 12px;
+}
+
+.dot:focus input,
+.dot:hover input,
+.dot.selected input {
+  color: white;
+}
+
+.dot:focus .selection-bar,
+.dot:hover .selection-bar,
+.dot.drag-target .selection-bar {
+  border-color: #b2b2b2;
+  opacity: 1;
+}
+
+.dot.selected .selection-bar {
+  opacity: 1;
 }

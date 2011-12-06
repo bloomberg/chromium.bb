@@ -3642,6 +3642,7 @@
         'browser/ui/webui/about_ui.h',
         'browser/ui/webui/active_downloads_ui.cc',
         'browser/ui/webui/active_downloads_ui.h',
+        'browser/ui/webui/aura/app_list_ui_delegate.h',
         'browser/ui/webui/aura/app_list_ui.cc',
         'browser/ui/webui/aura/app_list_ui.h',
         'browser/ui/webui/bookmark_all_tabs_dialog.cc',

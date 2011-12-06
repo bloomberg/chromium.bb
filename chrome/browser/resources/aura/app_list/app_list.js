@@ -23,6 +23,21 @@ cr.define('appList', function() {
    */
   function load() {
     appsView = new appList.AppsView();
+
+    document.addEventListener('click', onDocClick);
+  }
+
+  /**
+   * Document click event handler.
+   */
+  function onDocClick(e) {
+    // Close if click is on body, or not on app, paging dot or its children.
+    if (e.target == document.body ||
+        (!e.target.classList.contains('app') &&
+         !e.target.classList.contains('dot') &&
+         !findAncestorByClass(e.target, 'dot'))) {
+      chrome.send('close');
+    }
   }
 
   /**
@@ -46,6 +61,7 @@ cr.define('appList', function() {
 
   function getAppsCallback(data) {
     appsView.getAppsCallback(data);
+    chrome.send('onAppsLoaded');
   }
 
   function getAppsPageIndex(page) {

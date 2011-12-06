@@ -28,11 +28,12 @@ class AppListWindow : public views::WidgetDelegateView {
   }
 
   // static
-  static views::Widget* Create() {
+  static views::Widget* Create(const gfx::Rect& bounds) {
     AppListWindow* app_list = new AppListWindow;
 
     views::Widget::InitParams widget_params(
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+    widget_params.bounds = bounds;
     widget_params.delegate = app_list;
     widget_params.keep_on_top = true;
     widget_params.transparent = true;
@@ -66,8 +67,9 @@ class ShellDelegateImpl : public aura_shell::ShellDelegate {
   }
 
   virtual void RequestAppListWidget(
+      const gfx::Rect& bounds,
       const SetWidgetCallback& callback) OVERRIDE {
-    callback.Run(AppListWindow::Create());
+    callback.Run(AppListWindow::Create(bounds));
   }
 
   virtual void LauncherItemClicked(

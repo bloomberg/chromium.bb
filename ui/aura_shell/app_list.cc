@@ -62,6 +62,7 @@ void AppList::SetVisible(bool visible) {
     ScheduleAnimation();
   } else if (is_visible_ && !set_widget_factory_.HasWeakPtrs()) {
     Shell::GetInstance()->delegate()->RequestAppListWidget(
+        GetPreferredBounds(false),
         base::Bind(&AppList::SetWidget, set_widget_factory_.GetWeakPtr()));
   }
 }
@@ -88,7 +89,6 @@ void AppList::SetWidget(views::Widget* widget) {
     ScheduleAnimation();
 
     widget_->Show();
-    widget_->Activate();
   } else {
     widget->Close();
   }
@@ -162,6 +162,8 @@ void AppList::OnLayerAnimationScheduled(
 
 void AppList::OnWidgetClosing(views::Widget* widget) {
   DCHECK(widget_ == widget);
+  if (is_visible_)
+    SetVisible(false);
   ResetWidget();
 }
 

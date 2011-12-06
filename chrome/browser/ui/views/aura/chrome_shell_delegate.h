@@ -38,7 +38,9 @@ class ChromeShellDelegate : public aura_shell::ShellDelegate {
   // aura_shell::ShellDelegate overrides;
   virtual void CreateNewWindow() OVERRIDE;
   virtual views::Widget* CreateStatusArea() OVERRIDE;
-  virtual void RequestAppListWidget(const SetWidgetCallback& callback) OVERRIDE;
+  virtual void RequestAppListWidget(
+      const gfx::Rect& bounds,
+      const SetWidgetCallback& callback) OVERRIDE;
   virtual void LauncherItemClicked(
       const aura_shell::LauncherItem& item) OVERRIDE;
   virtual bool ConfigureLauncherItem(aura_shell::LauncherItem* item) OVERRIDE;

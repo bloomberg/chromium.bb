@@ -8,11 +8,23 @@
 
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 
+class AppListUIDelegate;
+
 class AppListUI : public ChromeWebUI {
  public:
   explicit AppListUI(TabContents* contents);
 
+  AppListUIDelegate* delegate() const {
+    return delegate_;
+  }
+
+  void set_delegate(AppListUIDelegate* delegate) {
+    delegate_ = delegate;
+  }
+
  private:
+  AppListUIDelegate* delegate_;
+
   DISALLOW_COPY_AND_ASSIGN(AppListUI);
 };
 

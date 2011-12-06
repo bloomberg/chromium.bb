@@ -9,6 +9,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
+#include "chrome/browser/ui/webui/aura/app_list_ui_delegate.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -76,10 +77,49 @@ ChromeWebUIDataSource* CreateAppListUIHTMLSource(PrefService* prefs) {
   return source;
 }
 
+class AppListHandler : public WebUIMessageHandler {
+ public:
+  AppListHandler() {}
+  virtual ~AppListHandler() {}
+
+  // WebUIMessageHandler
+  virtual void RegisterMessages() OVERRIDE;
+
+ private:
+  AppListUI* app_list_ui() const {
+    return static_cast<AppListUI*>(web_ui_);
+  }
+
+  void HandleClose(const base::ListValue* args);
+  void HandleAppsLoaded(const base::ListValue* args);
+
+  DISALLOW_COPY_AND_ASSIGN(AppListHandler);
+};
+
+void AppListHandler::RegisterMessages() {
+  web_ui_->RegisterMessageCallback("close",
+      base::Bind(&AppListHandler::HandleClose, base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("onAppsLoaded",
+      base::Bind(&AppListHandler::HandleAppsLoaded, base::Unretained(this)));
+}
+
+void AppListHandler::HandleClose(const base::ListValue* args) {
+  if (app_list_ui()->delegate())
+    app_list_ui()->delegate()->Close();
+}
+
+void AppListHandler::HandleAppsLoaded(const base::ListValue* args) {
+  if (app_list_ui()->delegate())
+    app_list_ui()->delegate()->OnAppsLoaded();
+}
+
 }  // namespace
 
 AppListUI::AppListUI(TabContents* contents)
-    : ChromeWebUI(contents) {
+    : ChromeWebUI(contents),
+      delegate_(NULL) {
+  AddMessageHandler((new AppListHandler)->Attach(this));
+
   ExtensionService* service = GetProfile()->GetExtensionService();
   if (service)
     AddMessageHandler((new AppLauncherHandler(service))->Attach(this));

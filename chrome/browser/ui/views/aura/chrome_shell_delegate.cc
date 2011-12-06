@@ -58,8 +58,10 @@ views::Widget* ChromeShellDelegate::CreateStatusArea() {
 }
 
 void ChromeShellDelegate::RequestAppListWidget(
+    const gfx::Rect& bounds,
     const SetWidgetCallback& callback) {
-  new AppListWindow(callback);  // AppListWindow deletes itself when closed.
+  // AppListWindow deletes itself when closed.
+  new AppListWindow(bounds, callback);
 }
 
 void ChromeShellDelegate::LauncherItemClicked(
