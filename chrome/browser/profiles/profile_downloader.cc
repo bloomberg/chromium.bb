@@ -38,21 +38,21 @@ namespace {
 const char kAuthorizationHeader[] =
     "Authorization: Bearer %s";
 
-// URL requesting Picasa API for user info.
+// URL requesting user info.
 const char kUserEntryURL[] =
-    "http://picasaweb.google.com/data/entry/api/user/default?alt=json";
+    "https://www.googleapis.com/oauth2/v1/userinfo?alt=json";
 
-// OAuth scope for the Picasa API.
-const char kPicasaScope[] = "http://picasaweb.google.com/data/";
+// OAuth scope for the user info API.
+const char kAPIScope[] = "https://www.googleapis.com/auth/userinfo.profile";
 
 // Path in JSON dictionary to user's photo thumbnail URL.
-const char kPhotoThumbnailURLPath[] = "entry.gphoto$thumbnail.$t";
+const char kPhotoThumbnailURLPath[] = "picture";
 
-const char kNickNamePath[] = "entry.gphoto$nickname.$t";
+const char kNickNamePath[] = "name";
 
 // Path format for specifying thumbnail's size.
 const char kThumbnailSizeFormat[] = "s%d-c";
-// Default Picasa thumbnail size.
+// Default thumbnail size.
 const int kDefaultThumbnailSize = 64;
 
 // Separator of URL path components.
@@ -70,8 +70,8 @@ const char kGooglePlusPhotoId[] = "AAAAAAAAAAI";
 // Photo version of the default Google+ profile picture (base64 of 0).
 const char kDefaultGooglePlusPhotoVersion[] = "AAAAAAAAAAA";
 
-// Number of path components in profile picture URL.
-const size_t kProfileImageURLPathComponentsCount = 7;
+// The minimum number of path components in profile picture URL.
+const size_t kProfileImageURLPathComponentsCount = 6;
 
 // Index of path component with photo ID.
 const int kPhotoIdPathComponentIndex = 2;
@@ -79,11 +79,61 @@ const int kPhotoIdPathComponentIndex = 2;
 // Index of path component with photo version.
 const int kPhotoVersionPathComponentIndex = 3;
 
+// Given an image URL this function builds a new URL set to |size|.
+// For example, if |size| was set to 256 and |old_url| was either:
+//   https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/photo.jpg
+//   or
+//   https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s64-c/photo.jpg
+// then return value in |new_url| would be:
+//   https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s256-c/photo.jpg
+bool GetImageURLWithSize(const GURL& old_url, int size, GURL* new_url) {
+  DCHECK(new_url);
+  std::vector<std::string> components;
+  base::SplitString(old_url.path(), kURLPathSeparator, &components);
+  if (components.size() == 0)
+    return false;
+
+  const std::string& old_spec = old_url.spec();
+  std::string default_size_component(
+      base::StringPrintf(kThumbnailSizeFormat, kDefaultThumbnailSize));
+  std::string new_size_component(
+      base::StringPrintf(kThumbnailSizeFormat, size));
+
+  size_t pos = old_spec.find(default_size_component);
+  size_t end = std::string::npos;
+  if (pos != std::string::npos) {
+    // The default size is already specified in the URL so it needs to be
+    // replaced with the new size.
+    end = pos + default_size_component.size();
+  } else {
+    // The default size is not in the URL so try to insert it before the last
+    // component.
+    const std::string& file_name = old_url.ExtractFileName();
+    if (!file_name.empty()) {
+      pos = old_spec.find(file_name);
+      end = pos - 1;
+    }
+  }
+
+  if (pos != std::string::npos) {
+    std::string new_spec = old_spec.substr(0, pos) + new_size_component +
+                           old_spec.substr(end);
+    *new_url = GURL(new_spec);
+    return new_url->is_valid();
+  }
+
+  // We can't set the image size, just use the default size.
+  *new_url = old_url;
+  return true;
+}
+
 }  // namespace
 
-bool ProfileDownloader::GetProfileNickNameAndImageURL(const std::string& data,
-                                                      string16* nick_name,
-                                                      std::string* url) const {
+// static
+bool ProfileDownloader::GetProfileNameAndImageURL(const std::string& data,
+                                                  string16* nick_name,
+                                                  std::string* url,
+                                                  int image_size) {
   DCHECK(nick_name);
   DCHECK(url);
   *nick_name = string16();
@@ -94,7 +144,7 @@ bool ProfileDownloader::GetProfileNickNameAndImageURL(const std::string& data,
   scoped_ptr<base::Value> root_value(base::JSONReader::ReadAndReturnError(
       data, false, &error_code, &error_message));
   if (!root_value.get()) {
-    LOG(ERROR) << "Error while parsing Picasa user entry response: "
+    LOG(ERROR) << "Error while parsing user entry response: "
                << error_message;
     return false;
   }
@@ -106,55 +156,27 @@ bool ProfileDownloader::GetProfileNickNameAndImageURL(const std::string& data,
   base::DictionaryValue* root_dictionary =
       static_cast<base::DictionaryValue*>(root_value.get());
 
-  if (!root_dictionary->GetString(kNickNamePath, nick_name)) {
-    LOG(ERROR) << "Can't find nick name path in JSON data: "
-               << data;
-    return false;
+  root_dictionary->GetString(kNickNamePath, nick_name);
+
+  std::string url_string;
+  if (root_dictionary->GetString(kPhotoThumbnailURLPath, &url_string)) {
+    GURL new_url;
+    if (!GetImageURLWithSize(GURL(url_string), image_size, &new_url)) {
+      LOG(ERROR) << "GetImageURLWithSize failed for url: " << url_string;
+      return false;
+    }
+    *url = new_url.spec();
   }
 
-  std::string thumbnail_url_string;
-  if (!root_dictionary->GetString(
-          kPhotoThumbnailURLPath, &thumbnail_url_string)) {
-    LOG(ERROR) << "Can't find thumbnail path in JSON data: "
-               << data;
-    return false;
-  }
-
-  // Try to change the size of thumbnail we are going to get.
-  // Typical URL looks like this:
-  // http://lh0.ggpht.com/-abcd1aBCDEf/AAAA/AAA_A/abc12/s64-c/1234567890.jpg
-  std::string default_thumbnail_size_path_component(
-      base::StringPrintf(kThumbnailSizeFormat, kDefaultThumbnailSize));
-  int image_size = delegate_->GetDesiredImageSideLength();
-  std::string new_thumbnail_size_path_component(
-      base::StringPrintf(kThumbnailSizeFormat, image_size));
-  size_t thumbnail_size_pos =
-      thumbnail_url_string.find(default_thumbnail_size_path_component);
-  if (thumbnail_size_pos != std::string::npos) {
-    size_t thumbnail_size_end =
-        thumbnail_size_pos + default_thumbnail_size_path_component.size();
-   thumbnail_url_string =
-        thumbnail_url_string.substr(0, thumbnail_size_pos) +
-        new_thumbnail_size_path_component +
-        thumbnail_url_string.substr(
-            thumbnail_size_end,
-            thumbnail_url_string.size() - thumbnail_size_end);
-  } else {
-    LOG(WARNING) << "Hasn't found thumbnail size part in image URL: "
-                 << thumbnail_url_string;
-    // Use the thumbnail URL we have.
-  }
-
-  GURL thumbnail_url(thumbnail_url_string);
-  if (!thumbnail_url.is_valid()) {
-    LOG(ERROR) << "Thumbnail URL is not valid: " << thumbnail_url_string;
-    return false;
-  }
-  *url = thumbnail_url.spec();
-  return true;
+  // The profile data is considered valid as long as it has a name or a picture.
+  return !nick_name->empty() || !url->empty();
 }
 
-bool ProfileDownloader::IsDefaultProfileImageURL(const std::string& url) const {
+// static
+bool ProfileDownloader::IsDefaultProfileImageURL(const std::string& url) {
+  if (url.empty())
+    return true;
+
   GURL image_url_object(url);
   DCHECK(image_url_object.is_valid());
   VLOG(1) << "URL to check for default image: " << image_url_object.spec();
@@ -163,7 +185,7 @@ bool ProfileDownloader::IsDefaultProfileImageURL(const std::string& url) const {
                     kURLPathSeparator,
                     &path_components);
 
-  if (path_components.size() != kProfileImageURLPathComponentsCount)
+  if (path_components.size() < kProfileImageURLPathComponentsCount)
     return false;
 
   const std::string& photo_id = path_components[kPhotoIdPathComponentIndex];
@@ -243,7 +265,7 @@ void ProfileDownloader::StartFetchingOAuth2AccessToken() {
   DCHECK(!service->GetOAuth2LoginRefreshToken().empty());
 
   std::vector<std::string> scopes;
-  scopes.push_back(kPicasaScope);
+  scopes.push_back(kAPIScope);
   oauth2_access_token_fetcher_.reset(new OAuth2AccessTokenFetcher(
       this, delegate_->GetBrowserProfile()->GetRequestContext()));
   oauth2_access_token_fetcher_->Start(
@@ -269,7 +291,8 @@ void ProfileDownloader::OnURLFetchComplete(const content::URLFetcher* source) {
 
   if (source == user_entry_fetcher_.get()) {
     std::string image_url;
-    if (!GetProfileNickNameAndImageURL(data, &profile_full_name_, &image_url)) {
+    if (!GetProfileNameAndImageURL(data, &profile_full_name_, &image_url,
+        delegate_->GetDesiredImageSideLength())) {
       delegate_->OnDownloadComplete(this, false);
       return;
     }

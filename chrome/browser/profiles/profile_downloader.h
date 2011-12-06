@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/image_decoder.h"
@@ -62,6 +63,10 @@ class ProfileDownloader : public content::URLFetcherDelegate,
   virtual std::string GetProfilePictureURL() const;
 
  private:
+  friend class ProfileDownloaderTest;
+  FRIEND_TEST_ALL_PREFIXES(ProfileDownloaderTest, ParseData);
+  FRIEND_TEST_ALL_PREFIXES(ProfileDownloaderTest, DefaultURL);
+
   // Overriden from content::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
@@ -79,14 +84,16 @@ class ProfileDownloader : public content::URLFetcherDelegate,
   virtual void OnGetTokenSuccess(const std::string& access_token) OVERRIDE;
   virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
 
-  // Parses the entry response from Picasa and gets the nick name and
-  // and profile image URL. Returns false to indicate a parsing error.
-  bool GetProfileNickNameAndImageURL(const std::string& data,
-                                     string16* nick_name,
-                                     std::string* url) const;
+  // Parses the entry response and gets the name and and profile image URL.
+  // |data| should be the JSON formatted data return by the response.
+  // Returns false to indicate a parsing error.
+  static bool GetProfileNameAndImageURL(const std::string& data,
+                                        string16* nick_name,
+                                        std::string* url,
+                                        int image_size);
 
   // Returns true if the image url is url of the default profile picture.
-  bool IsDefaultProfileImageURL(const std::string& url) const;
+  static bool IsDefaultProfileImageURL(const std::string& url);
 
   // Issues the first request to get user profile image.
   void StartFetchingImage();
