@@ -67,9 +67,8 @@ void ApplyStyleRangeImpl(gfx::StyleRanges* style_ranges,
     } else if (i->range.end() > new_range.end()) {
       i->range.set_start(new_range.end());
       break;
-    } else {
+    } else
       NOTREACHED();
-    }
   }
   // Add the new range in its sorted location.
   style_ranges->insert(i, style_range);
@@ -189,8 +188,8 @@ void RenderText::MoveCursorRight(BreakType break_type, bool select) {
   MoveCursorTo(position);
 }
 
-bool RenderText::MoveCursorTo(const SelectionModel& model) {
-  SelectionModel sel(model);
+bool RenderText::MoveCursorTo(const SelectionModel& selection_model) {
+  SelectionModel sel(selection_model);
   size_t text_length = text().length();
   // Enforce valid selection model components.
   if (sel.selection_start() > text_length)
@@ -369,7 +368,7 @@ SelectionModel RenderText::FindCursorPosition(const Point& point) {
   // binary searching the cursor position.
   // TODO(oshima): use the center of character instead of edge.
   // Binary search may not work for language like Arabic.
-  while (std::abs(right_pos - left_pos) > 1) {
+  while (std::abs(static_cast<long>(right_pos - left_pos)) > 1) {
     int pivot_pos = left_pos + (right_pos - left_pos) / 2;
     int pivot = font.GetStringWidth(text().substr(0, pivot_pos));
     if (pivot < x) {
@@ -431,7 +430,8 @@ SelectionModel RenderText::GetLeftSelectionModel(const SelectionModel& current,
                                                  BreakType break_type) {
   if (break_type == LINE_BREAK)
     return LeftEndSelectionModel();
-  size_t pos = std::max<int>(current.selection_end() - 1, 0);
+  size_t pos = std::max(static_cast<long>(current.selection_end() - 1),
+                        static_cast<long>(0));
   if (break_type == CHARACTER_BREAK)
     return SelectionModel(pos, pos, SelectionModel::LEADING);
 
@@ -505,7 +505,8 @@ void RenderText::SetSelectionModel(const SelectionModel& model) {
   selection_model_.set_selection_start(model.selection_start());
   DCHECK_LE(model.selection_end(), text().length());
   selection_model_.set_selection_end(model.selection_end());
-  DCHECK_LT(model.caret_pos(), std::max<size_t>(text().length(), 1));
+  DCHECK_LT(model.caret_pos(),
+            std::max(text().length(), static_cast<size_t>(1)));
   selection_model_.set_caret_pos(model.caret_pos());
   selection_model_.set_caret_placement(model.caret_placement());
 
