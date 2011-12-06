@@ -9190,7 +9190,7 @@
           "bytes": {
             "type": "blob",
             "optional": true,
-            "description": "The data received, as a Blob."
+            "description": "The data received."
           },
           "errorCode": {
             "type": "integer",
@@ -9259,6 +9259,19 @@
         ]
       },
       {
+        "name": "destroy",
+        "type": "function",
+        "description": "Destroys the socket. Each socket created should be destroyed after use.",
+        "parameters": [
+          {
+	    "name": "socketId",
+            "type": "integer",
+            "description": "The socketId.",
+	    "minimum": 1
+          }
+        ]
+      },
+      {
         "name": "connect",
         "type": "function",
         "description": "Connects the socket to the given address. In the case of a UDP socket, this method merely associates the address with the socket for future sent data.",
@@ -9296,34 +9309,22 @@
         ]
       },
       {
-        "name": "disconnect",
+        "name": "close",
         "type": "function",
-        "description": "Disconnects the socket.",
+        "description": "Closes the socket.",
         "parameters": [
           {
 	    "name": "socketId",
             "type": "integer",
             "description": "The socketId.",
 	    "minimum": 1
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "description": "Called when the disconnection is complete.",
-            "parameters": [
-              {
-                "type": "boolean",
-                "name": "result",
-		"description": "True if successful, false otherwise."
-              }
-            ]
           }
         ]
       },
       {
-        "name": "send",
+        "name": "write",
         "type": "function",
-        "description": "Sends data on the connected socket.",
+        "description": "Writes data on the connected socket.",
         "parameters": [
           {
 	    "name": "socketId",
@@ -9332,18 +9333,22 @@
 	    "minimum": 1
           },
           {
+	    "name": "data",
+            "type": "string",
+            "description": "The data to write. Warning: will probably become a blob or other appropriate binary-friendly type."
+          },
+          {
             "name": "callback",
             "type": "function",
-            "description": "Called when the send is complete.",
+            "description": "Called when any of the following happens: the write operation completes, the write operation blocked before completion, or an error occurred.",
             "parameters": [
               {
                 "type": "object",
-                "name": "sendInfo",
+                "name": "writeInfo",
                 "properties": {
-                  "bytesSent": {
+                  "bytesWritten": {
                     "type": "integer",
-                    "minimum": 0,
-                    "description": "The number of bytes sent."
+                    "description": "The number of bytes sent, or a negative error code."
                   }
                 }
               }

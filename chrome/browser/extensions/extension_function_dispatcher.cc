@@ -15,6 +15,7 @@
 #include "chrome/browser/bookmarks/bookmark_extension_api.h"
 #include "chrome/browser/bookmarks/bookmark_manager_extension_api.h"
 #include "chrome/browser/download/download_extension_api.h"
+#include "chrome/browser/extensions/api/socket/socket_api.h"
 #include "chrome/browser/extensions/execute_code_in_tab_function.h"
 #include "chrome/browser/extensions/extension_app_api.h"
 #include "chrome/browser/extensions/extension_browser_actions_api.h"
@@ -51,7 +52,6 @@
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/extensions/settings/settings_api.h"
-#include "chrome/browser/extensions/socket_api.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/history/history_extension_api.h"
 #include "chrome/browser/history/top_sites_extension_api.h"
@@ -472,9 +472,10 @@ void FactoryRegistry::ResetFunctions() {
 
   // Sockets
   RegisterFunction<extensions::SocketCreateFunction>();
+  RegisterFunction<extensions::SocketDestroyFunction>();
   RegisterFunction<extensions::SocketConnectFunction>();
-  RegisterFunction<extensions::SocketDisconnectFunction>();
-  RegisterFunction<extensions::SocketSendFunction>();
+  RegisterFunction<extensions::SocketCloseFunction>();
+  RegisterFunction<extensions::SocketWriteFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

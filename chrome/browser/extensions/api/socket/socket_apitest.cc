@@ -5,7 +5,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/extensions/socket_api.h"
+#include "chrome/browser/extensions/api/socket/socket_api.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -15,15 +15,23 @@ using namespace extension_function_test_utils;
 namespace {
 
 class SocketApiTest : public InProcessBrowserTest {
+ public:
+  virtual void SetUpMyCommandLine() {
+    DoCommandLineSetup();
+  }
+
+  // Exposed as static method so that SocketExtension can easily get to it.
+  static void DoCommandLineSetup() {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableExperimentalExtensionApis);
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnablePlatformApps);
+  }
 };
 
 }
 
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketCreateGood) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnablePlatformApps);
   scoped_refptr<extensions::SocketCreateFunction> socket_create_function(
       new extensions::SocketCreateFunction());
   scoped_refptr<Extension> empty_extension(CreateEmptyExtension());
@@ -37,14 +45,10 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketCreateGood) {
   DictionaryValue *value = static_cast<DictionaryValue*>(result.get());
   int socketId = -1;
   EXPECT_TRUE(value->GetInteger("socketId", &socketId));
-  EXPECT_EQ(42, socketId);
+  EXPECT_TRUE(socketId > 0);
 }
 
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketCreateBad) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnablePlatformApps);
   scoped_refptr<extensions::SocketCreateFunction> socket_create_function(
       new extensions::SocketCreateFunction());
   scoped_refptr<Extension> empty_extension(CreateEmptyExtension());
@@ -59,10 +63,6 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketCreateBad) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SocketExtension) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnablePlatformApps);
-
+  SocketApiTest::DoCommandLineSetup();
   ASSERT_TRUE(RunExtensionTest("socket/api")) << message_;
 }

@@ -6,7 +6,7 @@ chrome.test.runTests([
   function testCreation() {
     chrome.experimental.socket.create("udp", {},
       function callback(socketInfo) {
-        chrome.test.assertEq(42, socketInfo.socketId);
+        chrome.test.assertTrue(socketInfo.socketId > 0);
         chrome.test.succeed();
       });
   }
