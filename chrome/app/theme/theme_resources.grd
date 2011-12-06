@@ -130,6 +130,9 @@
       <include name="IDR_FULLSCREEN_MENU_BUTTON" file="fullscreen_menu_button.png" type="BINDATA" />
       <include name="IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON" file="geolocation_allowed_locationbar_icon.png" type="BINDATA" />
       <include name="IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON" file="geolocation_denied_locationbar_icon.png" type="BINDATA" />
+      <include name="IDR_HOMEPAGE_CHANGE_ALERT" file="protector_home_alert.png" type="BINDATA" />
+      <include name="IDR_HOMEPAGE_CHANGE_BADGE" file="protector_home_badge.png" type="BINDATA" />
+      <include name="IDR_HOMEPAGE_CHANGE_MENU" file="protector_home_menu.png" type="BINDATA" />
       <if expr="is_win">
         <include name="IDR_INCOMPATIBILITY_DOT_ACTIVE" file="incompatibility_dot_active.png" type="BINDATA" />
         <include name="IDR_INCOMPATIBILITY_DOT_INACTIVE" file="incompatibility_dot_inactive.png" type="BINDATA" />
@@ -263,6 +266,9 @@
       <include name="IDR_PROFILE_EDIT_HOVER" file="profile_edit_hover.png" type="BINDATA" />
       <include name="IDR_PROFILE_EDIT_PRESSED" file="profile_edit_pressed.png" type="BINDATA" />
       <include name="IDR_PROFILE_SELECTED" file="profile_selected.png" type="BINDATA" />
+      <include name="IDR_SEARCH_ENGINE_CHANGE_ALERT" file="protector_search_alert.png" type="BINDATA" />
+      <include name="IDR_SEARCH_ENGINE_CHANGE_BADGE" file="protector_search_badge.png" type="BINDATA" />
+      <include name="IDR_SEARCH_ENGINE_CHANGE_MENU" file="protector_search_menu.png" type="BINDATA" />
       <include name="IDR_RESTORE_BUTTON_MASK" file="restore_button_mask.png" type="BINDATA" />
       <include name="IDR_SAD_TAB" file="sadtab.png" type="BINDATA" />
       <include name="IDR_SAFEBROWSING_WARNING" file="safebrowsing_warning.png" type="BINDATA" />
