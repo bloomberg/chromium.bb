@@ -40,8 +40,8 @@ DiskCacheBasedSSLHostInfo::DiskCacheBasedSSLHostInfo(
     HttpCache* http_cache)
     : SSLHostInfo(hostname, ssl_config, cert_verifier),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      callback_(new CallbackImpl(weak_ptr_factory_.GetWeakPtr(),
-                                 &DiskCacheBasedSSLHostInfo::OnIOComplete)),
+      callback_(base::Bind(&DiskCacheBasedSSLHostInfo::OnIOComplete,
+                           weak_ptr_factory_.GetWeakPtr())),
       state_(GET_BACKEND),
       ready_(false),
       found_entry_(false),
@@ -93,8 +93,6 @@ DiskCacheBasedSSLHostInfo::~DiskCacheBasedSSLHostInfo() {
   DCHECK(user_callback_.is_null());
   if (entry_)
     entry_->Close();
-  if (!IsCallbackPending())
-    delete callback_;
 }
 
 std::string DiskCacheBasedSSLHostInfo::key() const {
@@ -160,7 +158,6 @@ int DiskCacheBasedSSLHostInfo::DoLoop(int rv) {
 
 int DiskCacheBasedSSLHostInfo::DoGetBackendComplete(int rv) {
   if (rv == OK) {
-    backend_ = callback_->backend();
     state_ = OPEN;
   } else {
     state_ = WAIT_FOR_DATA_READY_DONE;
@@ -170,7 +167,6 @@ int DiskCacheBasedSSLHostInfo::DoGetBackendComplete(int rv) {
 
 int DiskCacheBasedSSLHostInfo::DoOpenComplete(int rv) {
   if (rv == OK) {
-    entry_ = callback_->entry();
     state_ = READ;
     found_entry_ = true;
   } else {
@@ -194,23 +190,22 @@ int DiskCacheBasedSSLHostInfo::DoWriteComplete(int rv) {
 }
 
 int DiskCacheBasedSSLHostInfo::DoCreateOrOpenComplete(int rv) {
-  if (rv != OK) {
+  if (rv != OK)
     state_ = SET_DONE;
-  } else {
-    entry_ = callback_->entry();
+  else
     state_ = WRITE;
-  }
+
   return OK;
 }
 
 int DiskCacheBasedSSLHostInfo::DoGetBackend() {
   state_ = GET_BACKEND_COMPLETE;
-  return http_cache_->GetBackend(callback_->backend_pointer(), callback_);
+  return http_cache_->GetBackend(&backend_, callback_);
 }
 
 int DiskCacheBasedSSLHostInfo::DoOpen() {
   state_ = OPEN_COMPLETE;
-  return backend_->OpenEntry(key(), callback_->entry_pointer(), callback_);
+  return backend_->OpenEntry(key(), &entry_, callback_);
 }
 
 int DiskCacheBasedSSLHostInfo::DoRead() {
@@ -232,16 +227,17 @@ int DiskCacheBasedSSLHostInfo::DoWrite() {
   state_ = WRITE_COMPLETE;
 
   return entry_->WriteData(0 /* index */, 0 /* offset */, write_buffer_,
-                           new_data_.size(), callback_, true /* truncate */);
+                           new_data_.size(), callback_,
+                           true /* truncate */);
 }
 
 int DiskCacheBasedSSLHostInfo::DoCreateOrOpen() {
   DCHECK(entry_ == NULL);
   state_ = CREATE_OR_OPEN_COMPLETE;
   if (found_entry_)
-    return backend_->OpenEntry(key(), callback_->entry_pointer(), callback_);
+    return backend_->OpenEntry(key(), &entry_, callback_);
 
-  return backend_->CreateEntry(key(), callback_->entry_pointer(), callback_);
+  return backend_->CreateEntry(key(), &entry_, callback_);
 }
 
 int DiskCacheBasedSSLHostInfo::DoWaitForDataReadyDone() {
