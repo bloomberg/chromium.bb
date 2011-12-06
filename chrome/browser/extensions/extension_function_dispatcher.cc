@@ -50,6 +50,7 @@
 #include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
+#include "chrome/browser/extensions/system/system_api.h"
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/extensions/settings/settings_api.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
@@ -476,6 +477,9 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<extensions::SocketConnectFunction>();
   RegisterFunction<extensions::SocketCloseFunction>();
   RegisterFunction<extensions::SocketWriteFunction>();
+
+  // System
+  RegisterFunction<extensions::GetIncognitoModeAvailabilityFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

@@ -1,0 +1,19 @@
+<script>
+// System API test
+// Run with browser_tests --gtest_filter=ExtensionApiTest.SystemApi
+
+function expect(expected, message) {
+  return chrome.test.callbackPass(function(value) {
+    chrome.test.assertEq(expected, value, message);
+  });
+}
+
+chrome.test.runTests([
+  function getIncognitoModeAvailabilityTest() {
+    chrome.systemPrivate.getIncognitoModeAvailability(expect(
+        'disabled',
+        "Pref `chrome.system.getIncognitoModeAvailability` is expected to " +
+        "return 'disabled'"));
+  },
+]);
+</script>

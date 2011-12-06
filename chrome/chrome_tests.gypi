@@ -2573,6 +2573,7 @@
         'browser/extensions/platform_app_browsertest.cc',
         'browser/extensions/settings/settings_apitest.cc',
         'browser/extensions/stubs_apitest.cc',
+        'browser/extensions/system/system_apitest.cc',
         'browser/extensions/webstore_inline_install_browsertest.cc',
         'browser/extensions/window_open_apitest.cc',
         'browser/first_run/first_run_browsertest.cc',

@@ -29,8 +29,15 @@
 namespace {
 
 struct PrefMappingEntry {
+  // Name of the preference referenced by extension_api.json.
   const char* extension_pref;
+
+  // Name of the preference in the PrefStores.
   const char* browser_pref;
+
+  // Permission required to access this preference.
+  // Use ExtensionAPIPermission::kInvalid for |permission| to express that no
+  // permission is necessary.
   ExtensionAPIPermission::ID permission;
 };
 

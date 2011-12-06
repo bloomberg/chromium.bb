@@ -1245,6 +1245,8 @@
         'browser/extensions/settings/syncable_settings_storage.h',
         'browser/extensions/settings/testing_settings_storage.cc',
         'browser/extensions/settings/testing_settings_storage.h',
+        'browser/extensions/system/system_api.cc',
+        'browser/extensions/system/system_api.h',
         'browser/extensions/theme_installed_infobar_delegate.cc',
         'browser/extensions/theme_installed_infobar_delegate.h',
         'browser/extensions/unpacked_installer.cc',

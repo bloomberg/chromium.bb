@@ -119,6 +119,7 @@ class ExtensionAPIPermission {
     kPlugin,
     kProxy,
     kSocket,
+    kSystemPrivate,
     kTab,
     kTts,
     kTtsEngine,

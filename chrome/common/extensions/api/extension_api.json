@@ -9359,5 +9359,32 @@
         ]
       }
     ]
+  },
+  {
+    "namespace": "systemPrivate",
+    "nodoc": true,
+    "types": [],
+    "functions": [
+      {
+        "name": "getIncognitoModeAvailability",
+        "type": "function",
+        "description": "Returns whether the incognito mode is enabled, disabled or forced",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Called with the result.",
+            "parameters": [
+              {
+                "name": "value",
+                "type": "string",
+                "enum": ["enabled", "disabled", "forced"],
+                "description": "Exposes whether the incognito mode is available to windows. One of 'enabled', 'disabled' (user cannot browse pages in Incognito mode), 'forced' (all pages/sessions are forced into Incognito mode)."
+              }
+            ]
+          }
+        ]
+      }
+    ]
   }
 ]
