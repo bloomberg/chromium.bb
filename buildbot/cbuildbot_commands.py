@@ -27,7 +27,7 @@ _FACTORY_HWID = 'hwid'
 _FULL_BINHOST = 'FULL_BINHOST'
 _PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-overlay/'
                              'chromeos/binhost')
-_GSUTIL_PATH = '/b/scripts/slave/gsutil'
+_GSUTIL_PATH = '/b/build/scripts/slave/gsutil'
 _GS_ACL = '/home/chrome-bot/slave_archive_acl'
 _BINHOST_PACKAGE_FILE = '/etc/portage/make.profile/package.installable'
 
