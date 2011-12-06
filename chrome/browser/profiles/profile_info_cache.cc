@@ -651,19 +651,14 @@ size_t ProfileInfoCache::GetDefaultAvatarIconCount() {
 
 // static
 int ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(size_t index) {
-  DCHECK(IsDefaultAvatarIconIndex(index));
+  DCHECK_LT(index, GetDefaultAvatarIconCount());
   return kDefaultAvatarIconResources[index];
 }
 
 // static
 std::string ProfileInfoCache::GetDefaultAvatarIconUrl(size_t index) {
-  DCHECK(IsDefaultAvatarIconIndex(index));
+  DCHECK_LT(index, kDefaultAvatarIconsCount);
   return StringPrintf("%s%" PRIuS, kDefaultUrlPrefix, index);
-}
-
-// static
-bool ProfileInfoCache::IsDefaultAvatarIconIndex(size_t index) {
-  return index < kDefaultAvatarIconsCount;
 }
 
 // static

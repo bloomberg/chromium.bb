@@ -57,18 +57,6 @@ std::vector<FilePath>& ProfilesToDelete() {
   return profiles_to_delete;
 }
 
-// Checks if any user prefs for |profile| have default values.
-bool HasAnyDefaultUserPrefs(Profile* profile) {
-  const PrefService::Preference* avatar_index =
-      profile->GetPrefs()->FindPreference(prefs::kProfileAvatarIndex);
-  DCHECK(avatar_index);
-  const PrefService::Preference* profile_name =
-    profile->GetPrefs()->FindPreference(prefs::kProfileName);
-  DCHECK(profile_name);
-  return avatar_index->IsDefaultValue() ||
-         profile_name->IsDefaultValue();
-}
-
 // Simple task to log the size of the current profile.
 class ProfileSizeTask : public Task {
  public:
@@ -481,7 +469,6 @@ void ProfileManager::OnBrowserSetLastActive(const Browser* browser) {
 
 void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
   DoFinalInitForServices(profile, go_off_the_record);
-  InitProfileUserPrefs(profile);
   AddProfileToCache(profile);
   DoFinalInitLogging(profile);
 }
@@ -633,49 +620,16 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
   string16 username = UTF8ToUTF16(profile->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername));
 
-  // Profile name and avatar are set by InitProfileUserPrefs and stored in the
-  // profile. Use those values to setup the cache entry.
-  string16 profile_name = UTF8ToUTF16(profile->GetPrefs()->GetString(
-      prefs::kProfileName));
-
-  size_t icon_index = profile->GetPrefs()->GetInteger(
-      prefs::kProfileAvatarIndex);
-
-  cache.AddProfileToCache(profile->GetPath(),
-                          profile_name,
-                          username,
-                          icon_index);
-}
-
-void ProfileManager::InitProfileUserPrefs(Profile* profile) {
-  ProfileInfoCache& cache = GetProfileInfoCache();
-
-  if (profile->GetPath().DirName() != cache.GetUserDataDir())
-    return;
-
-  // Initialize the user preferences (name and avatar) only if the profile
-  // doesn't have default preferenc values for them.
-  if (HasAnyDefaultUserPrefs(profile)) {
-    size_t profile_cache_index =
-        cache.GetIndexOfProfileWithPath(profile->GetPath());
-    // If the cache has an entry for this profile, use the cache data
-    if (profile_cache_index != std::string::npos) {
-      profile->GetPrefs()->SetInteger(prefs::kProfileAvatarIndex,
-          cache.GetAvatarIconIndexOfProfileAtIndex(profile_cache_index));
-      profile->GetPrefs()->SetString(prefs::kProfileName,
-          UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_cache_index)));
-    } else if (profile->GetPath() ==
-               GetDefaultProfileDir(cache.GetUserDataDir())) {
-      profile->GetPrefs()->SetInteger(prefs::kProfileAvatarIndex, 0);
-      profile->GetPrefs()->SetString(prefs::kProfileName,
-          l10n_util::GetStringUTF8(IDS_DEFAULT_PROFILE_NAME));
-    } else {
-      size_t icon_index = cache.ChooseAvatarIconIndexForNewProfile();
-      profile->GetPrefs()->SetInteger(prefs::kProfileAvatarIndex, icon_index);
-      profile->GetPrefs()->SetString(
-          prefs::kProfileName,
-          UTF16ToUTF8(cache.ChooseNameForNewProfile(icon_index)));
-    }
+  if (profile->GetPath() == GetDefaultProfileDir(cache.GetUserDataDir())) {
+    cache.AddProfileToCache(
+        profile->GetPath(),
+        l10n_util::GetStringUTF16(IDS_DEFAULT_PROFILE_NAME), username, 0);
+  } else {
+    size_t icon_index = cache.ChooseAvatarIconIndexForNewProfile();
+    cache.AddProfileToCache(profile->GetPath(),
+                            cache.ChooseNameForNewProfile(icon_index),
+                            username,
+                            icon_index);
   }
 }
 

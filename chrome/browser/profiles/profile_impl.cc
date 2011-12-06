@@ -209,12 +209,6 @@ void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kClearSiteDataOnExit,
                              false,
                              PrefService::SYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kProfileAvatarIndex,
-                             -1,
-                             PrefService::SYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kProfileName,
-                            "",
-                            PrefService::SYNCABLE_PREF);
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
   prefs->RegisterIntegerPref(prefs::kLocalProfileId,
                              kInvalidLocalProfileId,
@@ -290,8 +284,6 @@ void ProfileImpl::DoFinalInit() {
   pref_change_registrar_.Add(prefs::kClearSiteDataOnExit, this);
   pref_change_registrar_.Add(prefs::kGoogleServicesUsername, this);
   pref_change_registrar_.Add(prefs::kDefaultZoomLevel, this);
-  pref_change_registrar_.Add(prefs::kProfileAvatarIndex, this);
-  pref_change_registrar_.Add(prefs::kProfileName, this);
 
   // It would be nice to use PathService for fetching this directory, but
   // the cache directory depends on the profile directory, which isn't available
@@ -1313,10 +1305,6 @@ void ProfileImpl::Observe(int type,
         }
       } else if (*pref_name_in == prefs::kGoogleServicesUsername) {
         UpdateProfileUserNameCache();
-      } else if (*pref_name_in == prefs::kProfileAvatarIndex) {
-        UpdateProfileAvatarCache();
-      } else if (*pref_name_in == prefs::kProfileName) {
-        UpdateProfileNameCache();
       } else if (*pref_name_in == prefs::kDefaultZoomLevel) {
           GetHostZoomMap()->set_default_zoom_level(
               prefs->GetDouble(prefs::kDefaultZoomLevel));
@@ -1616,28 +1604,6 @@ void ProfileImpl::UpdateProfileUserNameCache() {
     std::string user_name =
         GetPrefs()->GetString(prefs::kGoogleServicesUsername);
     cache.SetUserNameOfProfileAtIndex(index, UTF8ToUTF16(user_name));
-  }
-}
-
-void ProfileImpl::UpdateProfileNameCache() {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
-  size_t index = cache.GetIndexOfProfileWithPath(GetPath());
-  if (index != std::string::npos) {
-    std::string profile_name =
-        GetPrefs()->GetString(prefs::kProfileName);
-    cache.SetNameOfProfileAtIndex(index, UTF8ToUTF16(profile_name));
-  }
-}
-
-void ProfileImpl::UpdateProfileAvatarCache() {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
-  size_t index = cache.GetIndexOfProfileWithPath(GetPath());
-  if (index != std::string::npos) {
-    size_t avatar_index =
-        GetPrefs()->GetInteger(prefs::kProfileAvatarIndex);
-    cache.SetAvatarIconOfProfileAtIndex(index, avatar_index);
   }
 }
 

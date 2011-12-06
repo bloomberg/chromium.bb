@@ -881,10 +881,6 @@ const char kPasswordsUseLocalProfileId[] =
     "profile.passwords_use_local_profile_id";
 #endif
 
-// Profile avatar and name
-const char kProfileAvatarIndex[] = "profile.avatar_index";
-const char kProfileName[] = "profile.name";
-
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 
