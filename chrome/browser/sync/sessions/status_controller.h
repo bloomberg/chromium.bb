@@ -83,10 +83,10 @@ class StatusController {
   ClientToServerResponse* mutable_commit_response() {
     return &shared_.commit_response;
   }
-  const syncable::ModelTypeBitSet& updates_request_types() const {
+  const syncable::ModelEnumSet updates_request_types() const {
     return shared_.updates_request_types;
   }
-  void set_updates_request_types(const syncable::ModelTypeBitSet& value) {
+  void set_updates_request_types(syncable::ModelEnumSet value) {
     shared_.updates_request_types = value;
   }
   const ClientToServerResponse& updates_response() const {

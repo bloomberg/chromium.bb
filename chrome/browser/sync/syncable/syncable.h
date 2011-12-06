@@ -773,7 +773,7 @@ class Directory {
     // Last sync timestamp fetched from the server.
     sync_pb::DataTypeProgressMarker download_progress[MODEL_TYPE_COUNT];
     // true iff we ever reached the end of the changelog.
-    ModelTypeBitSet initial_sync_ended;
+    ModelEnumSet initial_sync_ended;
     // The store birthday we were given by the server. Contents are opaque to
     // the client.
     std::string store_birthday;
@@ -1004,7 +1004,7 @@ class Directory {
   // entries, which means something different in the syncable namespace.
   // WARNING! This can be real slow, as it iterates over all entries.
   // WARNING! Performs synchronous I/O.
-  virtual void PurgeEntriesWithTypeIn(const std::set<ModelType>& types);
+  virtual void PurgeEntriesWithTypeIn(ModelEnumSet types);
 
  private:
   // Helper to prime ids_index, parent_id_and_names_index, unsynced_metahandles
@@ -1259,8 +1259,7 @@ class WriteTransaction : public BaseTransaction {
 
  protected:
   // Overridden by tests.
-  virtual void NotifyTransactionComplete(
-      ModelTypeBitSet models_with_changes);
+  virtual void NotifyTransactionComplete(ModelEnumSet models_with_changes);
 
  private:
   // Clears |mutations_|.
@@ -1268,7 +1267,7 @@ class WriteTransaction : public BaseTransaction {
 
   void UnlockAndNotify(const ImmutableEntryKernelMutationMap& mutations);
 
-  ModelTypeBitSet NotifyTransactionChangingAndEnding(
+  ModelEnumSet NotifyTransactionChangingAndEnding(
       const ImmutableEntryKernelMutationMap& mutations);
 
   // Only the original fields are filled in until |RecordMutations()|.

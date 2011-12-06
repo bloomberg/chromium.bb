@@ -144,10 +144,9 @@ class SyncerTest : public testing::Test,
   virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) OVERRIDE {
     // We're just testing the sync engine here, so we shunt everything to
     // the SyncerThread.  Datatypes which aren't enabled aren't in the map.
-    for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
-      if (enabled_datatypes_[i]) {
-        (*out)[syncable::ModelTypeFromInt(i)] = GROUP_PASSIVE;
-      }
+    for (syncable::ModelEnumSet::Iterator it = enabled_datatypes_.First();
+         it.Good(); it.Inc()) {
+      (*out)[it.Get()] = GROUP_PASSIVE;
     }
   }
 
@@ -417,12 +416,12 @@ class SyncerTest : public testing::Test,
   }
 
   void EnableDatatype(syncable::ModelType model_type) {
-    enabled_datatypes_[model_type] = true;
+    enabled_datatypes_.Put(model_type);
     mock_server_->ExpectGetUpdatesRequestTypes(enabled_datatypes_);
   }
 
   void DisableDatatype(syncable::ModelType model_type) {
-    enabled_datatypes_[model_type] = false;
+    enabled_datatypes_.Remove(model_type);
     mock_server_->ExpectGetUpdatesRequestTypes(enabled_datatypes_);
   }
 
@@ -496,7 +495,7 @@ class SyncerTest : public testing::Test,
   base::TimeDelta last_sessions_commit_delay_seconds_;
   scoped_refptr<ModelSafeWorker> worker_;
 
-  syncable::ModelTypeBitSet enabled_datatypes_;
+  syncable::ModelEnumSet enabled_datatypes_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncerTest);
 };
@@ -858,9 +857,7 @@ TEST_F(SyncerTest, TestPurgeWhileUnsynced) {
     parent2.Put(syncable::ID, pref_node_id);
   }
 
-  std::set<syncable::ModelType> types_to_purge;
-  types_to_purge.insert(syncable::PREFERENCES);
-  dir->PurgeEntriesWithTypeIn(types_to_purge);
+  dir->PurgeEntriesWithTypeIn(syncable::ModelEnumSet(syncable::PREFERENCES));
 
   const StatusController& status = session_->status_controller();
   syncer_->SyncShare(session_.get(), SYNCER_BEGIN, SYNCER_END);
@@ -898,9 +895,7 @@ TEST_F(SyncerTest, TestPurgeWhileUnapplied) {
     parent.Put(syncable::ID, parent_id_);
   }
 
-  std::set<syncable::ModelType> types_to_purge;
-  types_to_purge.insert(syncable::BOOKMARKS);
-  dir->PurgeEntriesWithTypeIn(types_to_purge);
+  dir->PurgeEntriesWithTypeIn(syncable::ModelEnumSet(syncable::BOOKMARKS));
 
   syncer_->SyncShare(session_.get(), SYNCER_BEGIN, SYNCER_END);
   dir->SaveChanges();

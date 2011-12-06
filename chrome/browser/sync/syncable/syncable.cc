@@ -819,13 +819,8 @@ void Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
   }
 }
 
-void Directory::PurgeEntriesWithTypeIn(const std::set<ModelType>& types) {
-  if (types.count(UNSPECIFIED) != 0U || types.count(TOP_LEVEL_FOLDER) != 0U) {
-    NOTREACHED() << "Don't support purging unspecified or top level entries.";
-    return;
-  }
-
-  if (types.empty())
+void Directory::PurgeEntriesWithTypeIn(ModelEnumSet types) {
+  if (types.Empty())
     return;
 
   {
@@ -841,7 +836,8 @@ void Directory::PurgeEntriesWithTypeIn(const std::set<ModelType>& types) {
         ModelType server_type = GetModelTypeFromSpecifics(server_specifics);
 
         // Note the dance around incrementing |it|, since we sometimes erase().
-        if (types.count(local_type) > 0 || types.count(server_type) > 0) {
+        if ((IsRealDataType(local_type) && types.Has(local_type)) ||
+            (IsRealDataType(server_type) && types.Has(server_type))) {
           UnlinkEntryFromOrder(*it, NULL, &lock);
           int64 handle = (*it)->ref(META_HANDLE);
           kernel_->metahandles_to_purge->insert(handle);
@@ -867,10 +863,10 @@ void Directory::PurgeEntriesWithTypeIn(const std::set<ModelType>& types) {
       }
 
       // Ensure meta tracking for these data types reflects the deleted state.
-      for (std::set<ModelType>::const_iterator it = types.begin();
-           it != types.end(); ++it) {
-        set_initial_sync_ended_for_type_unsafe(*it, false);
-        kernel_->persisted_info.reset_download_progress(*it);
+      for (syncable::ModelEnumSet::Iterator it = types.First();
+           it.Good(); it.Inc()) {
+        set_initial_sync_ended_for_type_unsafe(it.Get(), false);
+        kernel_->persisted_info.reset_download_progress(it.Get());
       }
     }
   }
@@ -930,7 +926,7 @@ void Directory::SetDownloadProgress(
 
 bool Directory::initial_sync_ended_for_type(ModelType type) const {
   ScopedKernelLock lock(this);
-  return kernel_->persisted_info.initial_sync_ended[type];
+  return kernel_->persisted_info.initial_sync_ended.Has(type);
 }
 
 template <class T> void Directory::TestAndSet(
@@ -948,9 +944,13 @@ void Directory::set_initial_sync_ended_for_type(ModelType type, bool x) {
 
 void Directory::set_initial_sync_ended_for_type_unsafe(ModelType type,
                                                        bool x) {
-  if (kernel_->persisted_info.initial_sync_ended[type] == x)
+  if (kernel_->persisted_info.initial_sync_ended.Has(type) == x)
     return;
-  kernel_->persisted_info.initial_sync_ended.set(type, x);
+  if (x) {
+    kernel_->persisted_info.initial_sync_ended.Put(type);
+  } else {
+    kernel_->persisted_info.initial_sync_ended.Remove(type);
+  }
   kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
 }
 
@@ -1308,7 +1308,7 @@ ImmutableEntryKernelMutationMap WriteTransaction::RecordMutations() {
 void WriteTransaction::UnlockAndNotify(
     const ImmutableEntryKernelMutationMap& mutations) {
   // Work while transaction mutex is held.
-  ModelTypeBitSet models_with_changes;
+  ModelEnumSet models_with_changes;
   bool has_mutations = !mutations.Get().empty();
   if (has_mutations) {
     models_with_changes = NotifyTransactionChangingAndEnding(mutations);
@@ -1321,7 +1321,7 @@ void WriteTransaction::UnlockAndNotify(
   }
 }
 
-ModelTypeBitSet WriteTransaction::NotifyTransactionChangingAndEnding(
+ModelEnumSet WriteTransaction::NotifyTransactionChangingAndEnding(
     const ImmutableEntryKernelMutationMap& mutations) {
   dirkernel_->transaction_mutex.AssertAcquired();
   DCHECK(!mutations.Get().empty());
@@ -1341,7 +1341,7 @@ ModelTypeBitSet WriteTransaction::NotifyTransactionChangingAndEnding(
         immutable_write_transaction_info, this);
   }
 
-  ModelTypeBitSet models_with_changes =
+  ModelEnumSet models_with_changes =
       delegate->HandleTransactionEndingChangeEvent(
           immutable_write_transaction_info, this);
 
@@ -1353,7 +1353,7 @@ ModelTypeBitSet WriteTransaction::NotifyTransactionChangingAndEnding(
 }
 
 void WriteTransaction::NotifyTransactionComplete(
-    ModelTypeBitSet models_with_changes) {
+    ModelEnumSet models_with_changes) {
   dirkernel_->delegate->HandleTransactionCompleteChangeEvent(
       models_with_changes);
 }

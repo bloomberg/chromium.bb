@@ -50,7 +50,7 @@ void StoreTimestampsCommand::ExecuteImpl(sessions::SyncSession* session) {
     DVLOG_IF(1, forward_progress_types.any())
         << "Get Updates got new progress marker for types: "
         << forward_progress_types.to_string() << " out of possible: "
-        << status->updates_request_types().to_string();
+        << syncable::ModelEnumSetToString(status->updates_request_types());
   }
   if (updates.has_changes_remaining()) {
     int64 changes_left = updates.changes_remaining();

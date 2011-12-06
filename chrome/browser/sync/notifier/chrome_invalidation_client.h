@@ -83,7 +83,7 @@ class ChromeInvalidationClient
 
   // Register the sync types that we're interested in getting
   // notifications for.  May be called at any time.
-  void RegisterTypes(const syncable::ModelTypeSet& types);
+  void RegisterTypes(syncable::ModelEnumSet types);
 
   virtual void WriteState(const std::string& state) OVERRIDE;
 
@@ -122,7 +122,7 @@ class ChromeInvalidationClient
   friend class ChromeInvalidationClientTest;
 
   void EmitInvalidation(
-      const syncable::ModelTypeSet& types, const std::string& payload);
+      syncable::ModelEnumSet types, const std::string& payload);
 
   base::NonThreadSafe non_thread_safe_;
   ChromeSystemResources chrome_system_resources_;
@@ -138,7 +138,7 @@ class ChromeInvalidationClient
       cache_invalidation_packet_handler_;
   scoped_ptr<RegistrationManager> registration_manager_;
   // Stored to pass to |registration_manager_| on start.
-  syncable::ModelTypeSet registered_types_;
+  syncable::ModelEnumSet registered_types_;
   bool ticl_ready_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeInvalidationClient);

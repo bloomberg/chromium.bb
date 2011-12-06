@@ -567,7 +567,7 @@ void SyncTest::EnableNotifications() {
 }
 
 void SyncTest::TriggerNotification(
-    const syncable::ModelTypeSet& changed_types) {
+    syncable::ModelEnumSet changed_types) {
   ASSERT_TRUE(ServerSupportsNotificationControl());
   const std::string& data =
       sync_notifier::P2PNotificationData("from_server",
@@ -589,14 +589,16 @@ bool SyncTest::ServerSupportsErrorTriggering() const {
 }
 
 void SyncTest::TriggerMigrationDoneError(
-    const syncable::ModelTypeSet& model_types) {
+    syncable::ModelEnumSet model_types) {
   ASSERT_TRUE(ServerSupportsErrorTriggering());
   std::string path = "chromiumsync/migrate";
   char joiner = '?';
-  for (syncable::ModelTypeSet::const_iterator it = model_types.begin();
-       it != model_types.end(); ++it) {
-    path.append(base::StringPrintf("%ctype=%d", joiner,
-        syncable::GetExtensionFieldNumberFromModelType(*it)));
+  for (syncable::ModelEnumSet::Iterator it = model_types.First();
+       it.Good(); it.Inc()) {
+    path.append(
+        base::StringPrintf(
+            "%ctype=%d", joiner,
+            syncable::GetExtensionFieldNumberFromModelType(it.Get())));
     joiner = '&';
   }
   ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));

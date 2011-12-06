@@ -26,13 +26,13 @@ typedef std::map<ModelType, std::string> ModelTypePayloadMap;
 
 // Helper functions for building ModelTypePayloadMaps.
 
-// Make a TypePayloadMap from all the types in a ModelTypeBitSet using
-// a default payload.
-ModelTypePayloadMap ModelTypePayloadMapFromBitSet(
-    const ModelTypeBitSet& model_types,
-    const std::string& payload);
+// Make a TypePayloadMap from all the types in a ModelEnumSet using a
+// default payload.
+ModelTypePayloadMap ModelTypePayloadMapFromEnumSet(
+    ModelEnumSet model_types, const std::string& payload);
 
-ModelTypeSet ModelTypePayloadMapToSet(const ModelTypePayloadMap& payload_map);
+ModelEnumSet ModelTypePayloadMapToEnumSet(
+    const ModelTypePayloadMap& payload_map);
 
 // Make a TypePayloadMap for all the enabled types in a
 // ModelSafeRoutingInfo using a default payload.

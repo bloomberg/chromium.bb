@@ -136,15 +136,8 @@ int main(int argc, char* argv[]) {
   sync_notifier->SetUniqueId(kUniqueId);
   sync_notifier->SetState("");
   sync_notifier->UpdateCredentials(email, token);
-  {
-    // Listen for notifications for all known types.
-    syncable::ModelTypeSet types;
-    for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-         i < syncable::MODEL_TYPE_COUNT; ++i) {
-      types.insert(syncable::ModelTypeFromInt(i));
-    }
-    sync_notifier->UpdateEnabledTypes(types);
-  }
+  // Listen for notifications for all known types.
+  sync_notifier->UpdateEnabledTypes(syncable::ModelEnumSet::All());
 
   ui_loop.Run();
 

@@ -647,8 +647,8 @@ class SyncNotifierMock : public sync_notifier::SyncNotifier {
   MOCK_METHOD2(UpdateCredentials,
                void(const std::string&, const std::string&));
   MOCK_METHOD1(UpdateEnabledTypes,
-               void(const syncable::ModelTypeSet&));
-  MOCK_METHOD1(SendNotification, void(const syncable::ModelTypeSet&));
+               void(syncable::ModelEnumSet));
+  MOCK_METHOD1(SendNotification, void(syncable::ModelEnumSet));
 };
 
 class SyncManagerTest : public testing::Test,
@@ -801,16 +801,12 @@ class SyncManagerTest : public testing::Test,
     sync_notifier_observer_ = NULL;
   }
 
-  void SyncNotifierUpdateEnabledTypes(
-      const syncable::ModelTypeSet& types) {
+  void SyncNotifierUpdateEnabledTypes(syncable::ModelEnumSet types) {
     ModelSafeRoutingInfo routes;
     GetModelSafeRoutingInfo(&routes);
-    syncable::ModelTypeSet expected_types;
-    for (ModelSafeRoutingInfo::const_iterator it = routes.begin();
-         it != routes.end(); ++it) {
-      expected_types.insert(it->first);
-    }
-    EXPECT_EQ(expected_types, types);
+    const syncable::ModelEnumSet expected_types =
+        GetRoutingInfoTypes(routes);
+    EXPECT_TRUE(types.Equals(expected_types));
     ++update_enabled_types_call_count_;
   }
 
@@ -858,8 +854,7 @@ TEST_F(SyncManagerTest, UpdateEnabledTypes) {
 }
 
 TEST_F(SyncManagerTest, DoNotSyncTabsInNigoriNode) {
-  syncable::ModelTypeSet encrypted_types;
-  encrypted_types.insert(syncable::TYPED_URLS);
+  syncable::ModelEnumSet encrypted_types(syncable::TYPED_URLS);
   sync_manager_.MaybeSetSyncTabsInNigoriNode(encrypted_types);
 
   ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -869,8 +864,7 @@ TEST_F(SyncManagerTest, DoNotSyncTabsInNigoriNode) {
 }
 
 TEST_F(SyncManagerTest, SyncTabsInNigoriNode) {
-  syncable::ModelTypeSet encrypted_types;
-  encrypted_types.insert(syncable::SESSIONS);
+  syncable::ModelEnumSet encrypted_types(syncable::SESSIONS);
   sync_manager_.MaybeSetSyncTabsInNigoriNode(encrypted_types);
 
   ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1164,10 +1158,8 @@ TEST_F(SyncManagerTest, OnNotificationStateChange) {
 TEST_F(SyncManagerTest, OnIncomingNotification) {
   StrictMock<MockJsEventHandler> event_handler;
 
-  const syncable::ModelTypeBitSet empty_model_types;
-  syncable::ModelTypeBitSet model_types;
-  model_types.set(syncable::BOOKMARKS);
-  model_types.set(syncable::THEMES);
+  const syncable::ModelEnumSet empty_model_types;
+  syncable::ModelEnumSet model_types(syncable::BOOKMARKS, syncable::THEMES);
 
   // Build expected_args to have a single argument with the string
   // equivalents of model_types.
@@ -1175,14 +1167,11 @@ TEST_F(SyncManagerTest, OnIncomingNotification) {
   {
     ListValue* model_type_list = new ListValue();
     expected_details.Set("changedTypes", model_type_list);
-    for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-         i < syncable::MODEL_TYPE_COUNT; ++i) {
-      if (model_types[i]) {
-        model_type_list->Append(
-            Value::CreateStringValue(
-                syncable::ModelTypeToString(
-                    syncable::ModelTypeFromInt(i))));
-      }
+    for (syncable::ModelEnumSet::Iterator it = model_types.First();
+         it.Good(); it.Inc()) {
+      model_type_list->Append(
+          Value::CreateStringValue(
+              syncable::ModelTypeToString(it.Get())));
     }
   }
 

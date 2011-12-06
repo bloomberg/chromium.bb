@@ -51,7 +51,7 @@ class JsMutationEventObserver
   // syncable::TransactionObserver implementation.
   virtual void OnTransactionWrite(
       const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
-      const syncable::ModelTypeBitSet& models_with_changes) OVERRIDE;
+      syncable::ModelEnumSet models_with_changes) OVERRIDE;
 
  private:
   base::NonThreadSafe non_thread_safe_;

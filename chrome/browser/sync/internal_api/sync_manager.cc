@@ -207,7 +207,7 @@ class SyncManager::SyncInternal
 
   // Conditionally sets the flag in the Nigori node which instructs other
   // clients to start syncing tabs.
-  void MaybeSetSyncTabsInNigoriNode(const syncable::ModelTypeSet enabled_types);
+  void MaybeSetSyncTabsInNigoriNode(syncable::ModelEnumSet enabled_types);
 
   // Tell the sync engine to start the syncing process.
   void StartSyncingNormally();
@@ -243,8 +243,8 @@ class SyncManager::SyncInternal
   // builds the list of sync-engine initiated changes that will be forwarded to
   // the SyncManager's Observers.
   virtual void HandleTransactionCompleteChangeEvent(
-      const ModelTypeBitSet& models_with_changes) OVERRIDE;
-  virtual ModelTypeBitSet HandleTransactionEndingChangeEvent(
+      syncable::ModelEnumSet models_with_changes) OVERRIDE;
+  virtual syncable::ModelEnumSet HandleTransactionEndingChangeEvent(
       const ImmutableWriteTransactionInfo& write_transaction_info,
       syncable::BaseTransaction* trans) OVERRIDE;
   virtual void HandleCalculateChangesChangeEventFromSyncApi(
@@ -642,7 +642,7 @@ void SyncManager::UpdateEnabledTypes() {
 }
 
 void SyncManager::MaybeSetSyncTabsInNigoriNode(
-    const syncable::ModelTypeSet enabled_types) {
+    syncable::ModelEnumSet enabled_types) {
   DCHECK(thread_checker_.CalledOnValidThread());
   data_->MaybeSetSyncTabsInNigoriNode(enabled_types);
 }
@@ -711,7 +711,9 @@ void SyncManager::RequestConfig(const syncable::ModelTypeBitSet& types,
     return;
   }
   StartConfigurationMode(base::Closure());
-  data_->scheduler()->ScheduleConfig(types, GetSourceFromReason(reason));
+  data_->scheduler()->ScheduleConfig(
+      syncable::ModelTypeBitSetToEnumSet(types),
+      GetSourceFromReason(reason));
 }
 
 void SyncManager::StartConfigurationMode(const base::Closure& callback) {
@@ -965,11 +967,7 @@ void SyncManager::SyncInternal::UpdateEnabledTypes() {
   DCHECK(thread_checker_.CalledOnValidThread());
   ModelSafeRoutingInfo routes;
   registrar_->GetModelSafeRoutingInfo(&routes);
-  syncable::ModelTypeSet enabled_types;
-  for (ModelSafeRoutingInfo::const_iterator it = routes.begin();
-       it != routes.end(); ++it) {
-    enabled_types.insert(it->first);
-  }
+  const syncable::ModelEnumSet enabled_types = GetRoutingInfoTypes(routes);
   sync_notifier_->UpdateEnabledTypes(enabled_types);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableSyncTabsForOtherClients)) {
@@ -978,11 +976,11 @@ void SyncManager::SyncInternal::UpdateEnabledTypes() {
 }
 
 void SyncManager::SyncInternal::MaybeSetSyncTabsInNigoriNode(
-    const syncable::ModelTypeSet enabled_types) {
+    const syncable::ModelEnumSet enabled_types) {
   // The initialized_ check is to ensure that we don't CHECK in GetUserShare
   // when this is called on start-up. It's ok to ignore that case, since
   // presumably this would've run when the user originally enabled sessions.
-  if (initialized_ && enabled_types.count(syncable::SESSIONS) > 0) {
+  if (initialized_ && enabled_types.Has(syncable::SESSIONS)) {
     WriteTransaction trans(FROM_HERE, GetUserShare());
     WriteNode node(&trans);
     if (!node.InitByTagLookup(kNigoriTag)) {
@@ -1353,7 +1351,7 @@ void SyncManager::SyncInternal::OnServerConnectionEvent(
 }
 
 void SyncManager::SyncInternal::HandleTransactionCompleteChangeEvent(
-    const syncable::ModelTypeBitSet& models_with_changes) {
+    syncable::ModelEnumSet models_with_changes) {
   // This notification happens immediately after the transaction mutex is
   // released. This allows work to be performed without blocking other threads
   // from acquiring a transaction.
@@ -1361,24 +1359,23 @@ void SyncManager::SyncInternal::HandleTransactionCompleteChangeEvent(
     return;
 
   // Call commit.
-  for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
-    const syncable::ModelType type = syncable::ModelTypeFromInt(i);
-    if (models_with_changes.test(type)) {
-      change_delegate_->OnChangesComplete(type);
-      change_observer_.Call(FROM_HERE,
-          &SyncManager::ChangeObserver::OnChangesComplete, type);
-    }
+  for (syncable::ModelEnumSet::Iterator it = models_with_changes.First();
+       it.Good(); it.Inc()) {
+    change_delegate_->OnChangesComplete(it.Get());
+    change_observer_.Call(
+        FROM_HERE, &SyncManager::ChangeObserver::OnChangesComplete, it.Get());
   }
 }
 
-ModelTypeBitSet SyncManager::SyncInternal::HandleTransactionEndingChangeEvent(
-    const ImmutableWriteTransactionInfo& write_transaction_info,
-    syncable::BaseTransaction* trans) {
+syncable::ModelEnumSet
+    SyncManager::SyncInternal::HandleTransactionEndingChangeEvent(
+        const ImmutableWriteTransactionInfo& write_transaction_info,
+        syncable::BaseTransaction* trans) {
   // This notification happens immediately before a syncable WriteTransaction
   // falls out of scope. It happens while the channel mutex is still held,
   // and while the transaction mutex is held, so it cannot be re-entrant.
   if (!change_delegate_ || ChangeBuffersAreEmpty())
-    return ModelTypeBitSet();
+    return syncable::ModelEnumSet();
 
   // This will continue the WriteTransaction using a read only wrapper.
   // This is the last chance for read to occur in the WriteTransaction
@@ -1386,7 +1383,7 @@ ModelTypeBitSet SyncManager::SyncInternal::HandleTransactionEndingChangeEvent(
   // underlying transaction.
   ReadTransaction read_trans(GetUserShare(), trans);
 
-  syncable::ModelTypeBitSet models_with_changes;
+  syncable::ModelEnumSet models_with_changes;
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
     const syncable::ModelType type = syncable::ModelTypeFromInt(i);
@@ -1404,7 +1401,7 @@ ModelTypeBitSet SyncManager::SyncInternal::HandleTransactionEndingChangeEvent(
       change_observer_.Call(FROM_HERE,
           &SyncManager::ChangeObserver::OnChangesApplied,
           type, write_transaction_info.Get().id, ordered_changes);
-      models_with_changes.set(i, true);
+      models_with_changes.Put(type);
     }
     change_buffers_[i].Clear();
   }
@@ -1541,7 +1538,7 @@ void SyncManager::SyncInternal::RequestNudge(
   if (scheduler())
      scheduler()->ScheduleNudge(
         TimeDelta::FromMilliseconds(0), browser_sync::NUDGE_SOURCE_LOCAL,
-        ModelTypeBitSet(), location);
+        syncable::ModelEnumSet(), location);
 }
 
 void SyncManager::SyncInternal::RequestNudgeForDataType(
@@ -1565,11 +1562,9 @@ void SyncManager::SyncInternal::RequestNudgeForDataType(
           TimeDelta::FromMilliseconds(kDefaultNudgeDelayMilliseconds);
       break;
   }
-  syncable::ModelTypeBitSet types;
-  types.set(type);
   scheduler()->ScheduleNudge(nudge_delay,
                              browser_sync::NUDGE_SOURCE_LOCAL,
-                             types,
+                             syncable::ModelEnumSet(type),
                              nudge_location);
 }
 
@@ -1631,8 +1626,9 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
     if (is_notifiable_commit) {
       allstatus_.IncrementNotifiableCommits();
       if (sync_notifier_.get()) {
-        const syncable::ModelTypeSet& changed_types =
-            syncable::ModelTypePayloadMapToSet(event.snapshot->source.types);
+        const syncable::ModelEnumSet changed_types =
+            syncable::ModelTypePayloadMapToEnumSet(
+                event.snapshot->source.types);
         sync_notifier_->SendNotification(changed_types);
       } else {
         DVLOG(1) << "Not sending notification: sync_notifier_ is NULL";
@@ -2019,10 +2015,10 @@ void SyncManager::TriggerOnNotificationStateChangeForTest(
 }
 
 void SyncManager::TriggerOnIncomingNotificationForTest(
-    const syncable::ModelTypeBitSet& model_types) {
+    syncable::ModelEnumSet model_types) {
   DCHECK(thread_checker_.CalledOnValidThread());
   syncable::ModelTypePayloadMap model_types_with_payloads =
-      syncable::ModelTypePayloadMapFromBitSet(model_types,
+      syncable::ModelTypePayloadMapFromEnumSet(model_types,
           std::string());
 
   data_->OnIncomingNotification(model_types_with_payloads);

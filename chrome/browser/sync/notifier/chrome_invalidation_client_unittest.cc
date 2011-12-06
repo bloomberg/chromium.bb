@@ -142,22 +142,15 @@ syncable::ModelTypePayloadMap MakeMap(syncable::ModelType model_type,
   return type_payloads;
 }
 
-syncable::ModelTypePayloadMap MakeMapFromSet(syncable::ModelTypeSet types,
+syncable::ModelTypePayloadMap MakeMapFromSet(syncable::ModelEnumSet types,
                                              const std::string& payload) {
-  syncable::ModelTypePayloadMap type_payloads;
-  for (syncable::ModelTypeSet::const_iterator it = types.begin();
-       it != types.end(); ++it) {
-    type_payloads[*it] = payload;
-  }
-  return type_payloads;
+  return syncable::ModelTypePayloadMapFromEnumSet(types, payload);
 }
 
 }  // namespace
 
 TEST_F(ChromeInvalidationClientTest, InvalidateBadObjectId) {
-  syncable::ModelTypeSet types;
-  types.insert(syncable::BOOKMARKS);
-  types.insert(syncable::APPS);
+  syncable::ModelEnumSet types(syncable::BOOKMARKS, syncable::APPS);
   client_.RegisterTypes(types);
   EXPECT_CALL(mock_listener_, OnInvalidate(MakeMapFromSet(types, "")));
   FireInvalidate("bad", 1, NULL);
@@ -210,9 +203,7 @@ TEST_F(ChromeInvalidationClientTest, InvalidateUnknownVersion) {
 TEST_F(ChromeInvalidationClientTest, InvalidateVersionMultipleTypes) {
   using ::testing::Mock;
 
-  syncable::ModelTypeSet types;
-  types.insert(syncable::BOOKMARKS);
-  types.insert(syncable::APPS);
+  syncable::ModelEnumSet types(syncable::BOOKMARKS, syncable::APPS);
   client_.RegisterTypes(types);
 
   EXPECT_CALL(mock_listener_,
@@ -267,18 +258,14 @@ TEST_F(ChromeInvalidationClientTest, InvalidateVersionMultipleTypes) {
 }
 
 TEST_F(ChromeInvalidationClientTest, InvalidateAll) {
-  syncable::ModelTypeSet types;
-  types.insert(syncable::PREFERENCES);
-  types.insert(syncable::EXTENSIONS);
+  syncable::ModelEnumSet types(syncable::PREFERENCES, syncable::EXTENSIONS);
   client_.RegisterTypes(types);
   EXPECT_CALL(mock_listener_, OnInvalidate(MakeMapFromSet(types, "")));
   FireInvalidateAll();
 }
 
 TEST_F(ChromeInvalidationClientTest, RegisterTypes) {
-  syncable::ModelTypeSet types;
-  types.insert(syncable::PREFERENCES);
-  types.insert(syncable::EXTENSIONS);
+  syncable::ModelEnumSet types(syncable::PREFERENCES, syncable::EXTENSIONS);
   client_.RegisterTypes(types);
   // Registered types should be preserved across Stop/Start.
   TearDown();

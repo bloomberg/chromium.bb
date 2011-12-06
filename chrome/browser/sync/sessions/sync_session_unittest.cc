@@ -108,17 +108,14 @@ class SyncSessionTest : public testing::Test,
       FAIL() << msg;
   }
 
-  syncable::ModelTypeBitSet ParamsMeaningAllEnabledTypes() {
-    syncable::ModelTypeBitSet request_params;
-    request_params[syncable::BOOKMARKS] = true;
-    request_params[syncable::AUTOFILL] = true;
+  syncable::ModelEnumSet ParamsMeaningAllEnabledTypes() {
+    syncable::ModelEnumSet request_params(
+        syncable::BOOKMARKS, syncable::AUTOFILL);
     return request_params;
   }
 
-  syncable::ModelTypeBitSet ParamsMeaningJustOneEnabledType() {
-    syncable::ModelTypeBitSet request_params;
-    request_params[syncable::AUTOFILL] = true;
-    return request_params;
+  syncable::ModelEnumSet ParamsMeaningJustOneEnabledType() {
+    return syncable::ModelEnumSet(syncable::AUTOFILL);
   }
 
   MessageLoop message_loop_;
@@ -337,11 +334,11 @@ TEST_F(SyncSessionTest, Coalesce) {
   std::vector<ModelSafeWorker*> workers_one, workers_two;
   ModelSafeRoutingInfo routes_one, routes_two;
   syncable::ModelTypePayloadMap one_type =
-      syncable::ModelTypePayloadMapFromBitSet(
+      syncable::ModelTypePayloadMapFromEnumSet(
           ParamsMeaningJustOneEnabledType(),
           std::string());
   syncable::ModelTypePayloadMap all_types =
-      syncable::ModelTypePayloadMapFromBitSet(
+      syncable::ModelTypePayloadMapFromEnumSet(
           ParamsMeaningAllEnabledTypes(),
           std::string());
   SyncSourceInfo source_one(sync_pb::GetUpdatesCallerInfo::PERIODIC, one_type);
@@ -394,11 +391,11 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestRemoveOneType) {
   std::vector<ModelSafeWorker*> workers_one, workers_two;
   ModelSafeRoutingInfo routes_one, routes_two;
   syncable::ModelTypePayloadMap one_type =
-      syncable::ModelTypePayloadMapFromBitSet(
+      syncable::ModelTypePayloadMapFromEnumSet(
           ParamsMeaningJustOneEnabledType(),
           std::string());
   syncable::ModelTypePayloadMap all_types =
-      syncable::ModelTypePayloadMapFromBitSet(
+      syncable::ModelTypePayloadMapFromEnumSet(
           ParamsMeaningAllEnabledTypes(),
           std::string());
   SyncSourceInfo source_one(sync_pb::GetUpdatesCallerInfo::PERIODIC, one_type);
@@ -464,7 +461,7 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestWithSameType) {
   std::vector<ModelSafeWorker*> workers_first, workers_second;
   ModelSafeRoutingInfo routes_first, routes_second;
   syncable::ModelTypePayloadMap all_types =
-      syncable::ModelTypePayloadMapFromBitSet(
+      syncable::ModelTypePayloadMapFromEnumSet(
           ParamsMeaningAllEnabledTypes(),
           std::string());
   SyncSourceInfo source_first(sync_pb::GetUpdatesCallerInfo::PERIODIC,
@@ -540,18 +537,18 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestWithSameType) {
 
 
 TEST_F(SyncSessionTest, MakeTypePayloadMapFromBitSet) {
-  syncable::ModelTypeBitSet types;
+  syncable::ModelEnumSet types;
   std::string payload = "test";
   syncable::ModelTypePayloadMap types_with_payloads =
-      syncable::ModelTypePayloadMapFromBitSet(types,
-                                              payload);
+      syncable::ModelTypePayloadMapFromEnumSet(types, payload);
   EXPECT_TRUE(types_with_payloads.empty());
 
-  types[syncable::BOOKMARKS] = true;
-  types[syncable::PASSWORDS] = true;
-  types[syncable::AUTOFILL] = true;
+  types.Put(syncable::BOOKMARKS);
+  types.Put(syncable::PASSWORDS);
+  types.Put(syncable::AUTOFILL);
   payload = "test2";
-  types_with_payloads = syncable::ModelTypePayloadMapFromBitSet(types, payload);
+  types_with_payloads =
+      syncable::ModelTypePayloadMapFromEnumSet(types, payload);
 
   ASSERT_EQ(3U, types_with_payloads.size());
   EXPECT_EQ(types_with_payloads[syncable::BOOKMARKS], payload);

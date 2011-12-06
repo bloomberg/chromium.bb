@@ -22,11 +22,11 @@ class NullDirectoryChangeDelegate : public DirectoryChangeDelegate {
   virtual void HandleCalculateChangesChangeEventFromSyncer(
       const ImmutableWriteTransactionInfo& write_transaction_info,
       BaseTransaction* trans) OVERRIDE;
-  virtual ModelTypeBitSet HandleTransactionEndingChangeEvent(
+  virtual ModelEnumSet HandleTransactionEndingChangeEvent(
       const ImmutableWriteTransactionInfo& write_transaction_info,
       BaseTransaction* trans) OVERRIDE;
   virtual void HandleTransactionCompleteChangeEvent(
-      const ModelTypeBitSet& models_with_changes) OVERRIDE;
+      ModelEnumSet models_with_changes) OVERRIDE;
 };
 
 }  // namespace syncable

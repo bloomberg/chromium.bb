@@ -363,6 +363,17 @@ std::string ModelTypeBitSetToString(const ModelTypeBitSet& model_types) {
   return result;
 }
 
+std::string ModelEnumSetToString(ModelEnumSet model_types) {
+  std::string result;
+  for (ModelEnumSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
+    if (!result.empty()) {
+      result += ", ";
+    }
+    result += ModelTypeToString(it.Get());
+  }
+  return result;
+}
+
 ModelTypeBitSet ModelTypeBitSetFromSet(const ModelTypeSet& set) {
   ModelTypeBitSet bitset;
   for (ModelTypeSet::const_iterator iter = set.begin(); iter != set.end();
@@ -383,6 +394,33 @@ ModelTypeSet ModelTypeBitSetToSet(const ModelTypeBitSet& bit_set) {
   return set;
 }
 
+ModelEnumSet ModelTypeBitSetToEnumSet(const ModelTypeBitSet& bitset) {
+  ModelEnumSet enum_set;
+  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+    if (bitset[i]) {
+      enum_set.Put(syncable::ModelTypeFromInt(i));
+    }
+  }
+  return enum_set;
+}
+
+ModelTypeSet ModelEnumSetToSet(ModelEnumSet enum_set) {
+  ModelTypeSet model_type_set;
+  for (ModelEnumSet::Iterator it = enum_set.First(); it.Good(); it.Inc()) {
+    model_type_set.insert(it.Get());
+  }
+  return model_type_set;
+}
+
+ModelEnumSet ModelTypeSetToEnumSet(const ModelTypeSet& model_type_set) {
+  ModelEnumSet enum_set;
+  for (ModelTypeSet::const_iterator it = model_type_set.begin();
+       it != model_type_set.end(); ++it) {
+    enum_set.Put(*it);
+  }
+  return enum_set;
+}
+
 ListValue* ModelTypeBitSetToValue(const ModelTypeBitSet& model_types) {
   ListValue* value = new ListValue();
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
@@ -390,6 +428,15 @@ ListValue* ModelTypeBitSetToValue(const ModelTypeBitSet& model_types) {
       value->Append(
           Value::CreateStringValue(ModelTypeToString(ModelTypeFromInt(i))));
     }
+  }
+  return value;
+}
+
+base::ListValue* ModelEnumSetToValue(ModelEnumSet model_types) {
+  ListValue* value = new ListValue();
+  for (ModelEnumSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
+    value->Append(
+        Value::CreateStringValue(ModelTypeToString(it.Get())));
   }
   return value;
 }
@@ -415,6 +462,14 @@ ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value) {
   ModelTypeSet result;
   for (ListValue::const_iterator i = value.begin(); i != value.end(); ++i) {
     result.insert(ModelTypeFromValue(**i));
+  }
+  return result;
+}
+
+ModelEnumSet ModelEnumSetFromValue(const base::ListValue& value) {
+  ModelEnumSet result;
+  for (ListValue::const_iterator i = value.begin(); i != value.end(); ++i) {
+    result.Put(ModelTypeFromValue(**i));
   }
   return result;
 }

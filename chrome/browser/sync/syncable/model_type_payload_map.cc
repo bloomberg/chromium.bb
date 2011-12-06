@@ -13,24 +13,23 @@
 using browser_sync::ModelSafeRoutingInfo;
 namespace syncable {
 
-ModelTypePayloadMap ModelTypePayloadMapFromBitSet(
-    const syncable::ModelTypeBitSet& types,
+ModelTypePayloadMap ModelTypePayloadMapFromEnumSet(
+    syncable::ModelEnumSet types,
     const std::string& payload) {
   ModelTypePayloadMap types_with_payloads;
-  for (size_t i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < types.size(); ++i) {
-    if (types[i]) {
-      types_with_payloads[syncable::ModelTypeFromInt(i)] = payload;
-    }
+  for (syncable::ModelEnumSet::Iterator it = types.First();
+       it.Good(); it.Inc()) {
+    types_with_payloads[it.Get()] = payload;
   }
   return types_with_payloads;
 }
 
-ModelTypeSet ModelTypePayloadMapToSet(const ModelTypePayloadMap& payload_map) {
-  ModelTypeSet types;
+ModelEnumSet ModelTypePayloadMapToEnumSet(
+    const ModelTypePayloadMap& payload_map) {
+  ModelEnumSet types;
   for (ModelTypePayloadMap::const_iterator it = payload_map.begin();
        it != payload_map.end(); ++it) {
-    types.insert(it->first);
+    types.Put(it->first);
   }
   return types;
 }

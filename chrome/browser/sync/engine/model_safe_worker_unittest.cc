@@ -44,11 +44,11 @@ TEST_F(ModelSafeWorkerTest, GetRoutingInfoTypes) {
   routing_info[syncable::BOOKMARKS] = GROUP_PASSIVE;
   routing_info[syncable::NIGORI] = GROUP_UI;
   routing_info[syncable::PREFERENCES] = GROUP_DB;
-  syncable::ModelTypeSet expected_types;
-  expected_types.insert(syncable::BOOKMARKS);
-  expected_types.insert(syncable::NIGORI);
-  expected_types.insert(syncable::PREFERENCES);
-  EXPECT_EQ(expected_types, GetRoutingInfoTypes(routing_info));
+  const syncable::ModelEnumSet expected_types(
+      syncable::BOOKMARKS,
+      syncable::NIGORI,
+      syncable::PREFERENCES);
+  EXPECT_TRUE(GetRoutingInfoTypes(routing_info).Equals(expected_types));
 }
 
 }  // namespace

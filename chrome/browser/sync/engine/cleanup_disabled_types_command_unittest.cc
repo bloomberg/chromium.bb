@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,22 +8,23 @@
 
 #include "chrome/browser/sync/engine/syncer_end_command.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
+#include "chrome/browser/sync/syncable/model_type_test_util.h"
 #include "chrome/browser/sync/test/engine/syncer_command_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using testing::_;
-
 namespace browser_sync {
+
+namespace {
+
+using syncable::HasModelTypes;
+using syncable::ModelEnumSet;
+using testing::_;
 
 class CleanupDisabledTypesCommandTest : public MockDirectorySyncerCommandTest {
  public:
-  CleanupDisabledTypesCommandTest() {
-    for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-         i < syncable::MODEL_TYPE_COUNT; i++) {
-      all_types_.insert(syncable::ModelTypeFromInt(i));
-    }
-  }
+  CleanupDisabledTypesCommandTest() {}
+
   virtual void SetUp() {
     mutable_routing_info()->clear();
     (*mutable_routing_info())[syncable::BOOKMARKS] = GROUP_PASSIVE;
@@ -34,19 +35,15 @@ class CleanupDisabledTypesCommandTest : public MockDirectorySyncerCommandTest {
   virtual bool IsSyncingCurrentlySilenced() {
     return false;
   }
-
-  const syncable::ModelTypeSet& all_types() { return all_types_; }
-
- private:
-  syncable::ModelTypeSet all_types_;
 };
 
 // TODO(tim): Add syncer test to verify previous routing info is set.
 TEST_F(CleanupDisabledTypesCommandTest, NoPreviousRoutingInfo) {
   CleanupDisabledTypesCommand command;
-  syncable::ModelTypeSet expected(all_types());
-  expected.erase(syncable::BOOKMARKS);
-  EXPECT_CALL(*mock_directory(), PurgeEntriesWithTypeIn(expected));
+  ModelEnumSet expected = ModelEnumSet::All();
+  expected.Remove(syncable::BOOKMARKS);
+  EXPECT_CALL(*mock_directory(),
+              PurgeEntriesWithTypeIn(HasModelTypes(expected)));
   command.ExecuteImpl(session());
 }
 
@@ -65,9 +62,6 @@ TEST_F(CleanupDisabledTypesCommandTest, NoPurge) {
 
 TEST_F(CleanupDisabledTypesCommandTest, TypeDisabled) {
   CleanupDisabledTypesCommand command;
-  syncable::ModelTypeSet expected;
-  expected.insert(syncable::PASSWORDS);
-  expected.insert(syncable::PREFERENCES);
 
   (*mutable_routing_info())[syncable::AUTOFILL] = GROUP_PASSIVE;
   (*mutable_routing_info())[syncable::THEMES] = GROUP_PASSIVE;
@@ -78,9 +72,12 @@ TEST_F(CleanupDisabledTypesCommandTest, TypeDisabled) {
   prev[syncable::PREFERENCES] = GROUP_PASSIVE;
   session()->context()->set_previous_session_routing_info(prev);
 
-  EXPECT_CALL(*mock_directory(), PurgeEntriesWithTypeIn(expected));
+  const ModelEnumSet expected(syncable::PASSWORDS, syncable::PREFERENCES);
+  EXPECT_CALL(*mock_directory(),
+              PurgeEntriesWithTypeIn(HasModelTypes(expected)));
   command.ExecuteImpl(session());
 }
 
-}  // namespace browser_sync
+}  // namespace
 
+}  // namespace browser_sync

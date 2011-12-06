@@ -123,7 +123,7 @@ class MockDirectorySetterUpper : public TestDirectorySetterUpper {
    public:
     explicit MockDirectory(const std::string& name);
     virtual ~MockDirectory();
-    MOCK_METHOD1(PurgeEntriesWithTypeIn, void(const syncable::ModelTypeSet&));
+    MOCK_METHOD1(PurgeEntriesWithTypeIn, void(syncable::ModelEnumSet));
 
    private:
     syncable::NullDirectoryChangeDelegate delegate_;

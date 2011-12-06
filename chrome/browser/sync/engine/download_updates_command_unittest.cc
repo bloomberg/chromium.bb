@@ -45,7 +45,7 @@ class DownloadUpdatesCommandTest : public SyncerCommandTest {
 TEST_F(DownloadUpdatesCommandTest, ExecuteNoPayloads) {
   ConfigureMockServerConnection();
   mock_server()->ExpectGetUpdatesRequestTypes(
-      ModelTypeBitSetFromSet(GetRoutingInfoTypes(routing_info())));
+      GetRoutingInfoTypes(routing_info()));
   command_.ExecuteImpl(session());
 }
 
@@ -56,7 +56,7 @@ TEST_F(DownloadUpdatesCommandTest, ExecuteWithPayloads) {
   source.types[syncable::BOOKMARKS] = "bookmark_payload";
   source.types[syncable::PREFERENCES] = "preferences_payload";
   mock_server()->ExpectGetUpdatesRequestTypes(
-      ModelTypeBitSetFromSet(GetRoutingInfoTypes(routing_info())));
+      GetRoutingInfoTypes(routing_info()));
   mock_server()->ExpectGetUpdatesRequestPayloads(source.types);
   command_.ExecuteImpl(session(source));
 }

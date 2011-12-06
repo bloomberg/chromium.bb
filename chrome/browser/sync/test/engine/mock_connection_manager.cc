@@ -364,7 +364,7 @@ void MockConnectionManager::ProcessGetUpdates(ClientToServerMessage* csm,
     ModelType model_type = syncable::ModelTypeFromInt(i);
     sync_pb::DataTypeProgressMarker const* progress_marker =
         GetProgressMarkerForType(gu.from_progress_marker(), model_type);
-    EXPECT_EQ(expected_filter_[i], (progress_marker != NULL))
+    EXPECT_EQ(expected_filter_.Has(model_type), (progress_marker != NULL))
         << "Syncer requested_types differs from test expectation.";
     if (progress_marker) {
       EXPECT_EQ((expected_payloads_.count(model_type) > 0 ?

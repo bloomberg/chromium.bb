@@ -446,7 +446,7 @@ class SyncableDirectoryTest : public testing::Test {
     return 1 == dir_->kernel_->metahandles_to_purge->count(metahandle);
   }
 
-  void CheckPurgeEntriesWithTypeInSucceeded(const ModelTypeSet& types_to_purge,
+  void CheckPurgeEntriesWithTypeInSucceeded(ModelEnumSet types_to_purge,
                                             bool before_reload) {
     SCOPED_TRACE(testing::Message("Before reload: ") << before_reload);
     {
@@ -459,15 +459,24 @@ class SyncableDirectoryTest : public testing::Test {
       for (MetahandleSet::iterator iter = all_set.begin();
            iter != all_set.end(); ++iter) {
         Entry e(&trans, GET_BY_HANDLE, *iter);
-        if ((types_to_purge.count(e.GetModelType()) ||
-             types_to_purge.count(e.GetServerModelType()))) {
+        const ModelType local_type = e.GetModelType();
+        const ModelType server_type = e.GetServerModelType();
+
+        // Note the dance around incrementing |it|, since we sometimes erase().
+        if ((IsRealDataType(local_type) &&
+             types_to_purge.Has(local_type)) ||
+            (IsRealDataType(server_type) &&
+             types_to_purge.Has(server_type))) {
           FAIL() << "Illegal type should have been deleted.";
         }
       }
     }
 
-    EXPECT_FALSE(dir_->initial_sync_ended_for_type(PREFERENCES));
-    EXPECT_FALSE(dir_->initial_sync_ended_for_type(AUTOFILL));
+    for (ModelEnumSet::Iterator it = types_to_purge.First();
+         it.Good(); it.Inc()) {
+      EXPECT_FALSE(dir_->initial_sync_ended_for_type(it.Get()));
+    }
+    EXPECT_FALSE(types_to_purge.Has(BOOKMARKS));
     EXPECT_TRUE(dir_->initial_sync_ended_for_type(BOOKMARKS));
   }
 
@@ -524,8 +533,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsMetahandlesToPurge) {
     }
   }
 
-  ModelTypeSet to_purge;
-  to_purge.insert(BOOKMARKS);
+  syncable::ModelEnumSet to_purge(BOOKMARKS);
   dir_->PurgeEntriesWithTypeIn(to_purge);
 
   Directory::SaveChangesSnapshot snapshot1;
@@ -533,8 +541,8 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsMetahandlesToPurge) {
   dir_->TakeSnapshotForSaveChanges(&snapshot1);
   EXPECT_TRUE(expected_purges == snapshot1.metahandles_to_purge);
 
-  to_purge.clear();
-  to_purge.insert(PREFERENCES);
+  to_purge.Clear();
+  to_purge.Put(PREFERENCES);
   dir_->PurgeEntriesWithTypeIn(to_purge);
 
   dir_->HandleSaveChangesFailure(snapshot1);
@@ -615,9 +623,7 @@ TEST_F(SyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
   dir_->set_initial_sync_ended_for_type(PREFERENCES, true);
   dir_->set_initial_sync_ended_for_type(AUTOFILL, true);
 
-  std::set<ModelType> types_to_purge;
-  types_to_purge.insert(PREFERENCES);
-  types_to_purge.insert(AUTOFILL);
+  syncable::ModelEnumSet types_to_purge(PREFERENCES, AUTOFILL);
 
   TestIdFactory id_factory;
   // Create some items for each type.
@@ -1373,8 +1379,7 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailureWithPurge) {
                                &delegate_, NullTransactionObserver()));
   ASSERT_TRUE(dir_->good());
 
-  ModelTypeSet set;
-  set.insert(BOOKMARKS);
+  syncable::ModelEnumSet set(BOOKMARKS);
   dir_->PurgeEntriesWithTypeIn(set);
   EXPECT_TRUE(IsInMetahandlesToPurge(handle1));
   ASSERT_FALSE(dir_->SaveChanges());

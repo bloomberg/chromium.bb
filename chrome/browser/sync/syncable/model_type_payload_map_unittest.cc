@@ -23,10 +23,8 @@ TEST_F(ModelTypePayloadMapTest, TypePayloadMapToSet) {
   payloads[BOOKMARKS] = "bookmarkpayload";
   payloads[APPS] = "";
 
-  ModelTypeSet types;
-  types.insert(BOOKMARKS);
-  types.insert(APPS);
-  EXPECT_EQ(types, ModelTypePayloadMapToSet(payloads));
+  const ModelEnumSet types(BOOKMARKS, APPS);
+  EXPECT_TRUE(ModelTypePayloadMapToEnumSet(payloads).Equals(types));
 }
 
 TEST_F(ModelTypePayloadMapTest, TypePayloadMapToValue) {

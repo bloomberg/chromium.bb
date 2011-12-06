@@ -50,9 +50,9 @@ class NonBlockingInvalidationNotifier
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
   virtual void UpdateEnabledTypes(
-      const syncable::ModelTypeSet& enabled_types) OVERRIDE;
+      syncable::ModelEnumSet enabled_types) OVERRIDE;
   virtual void SendNotification(
-      const syncable::ModelTypeSet& changed_types) OVERRIDE;
+      syncable::ModelEnumSet changed_types) OVERRIDE;
 
   // SyncNotifierObserver implementation.
   virtual void OnIncomingNotification(

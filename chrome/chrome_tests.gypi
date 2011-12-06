@@ -352,6 +352,8 @@
       'sources': [
         'browser/sync/js/js_test_util.cc',
         'browser/sync/js/js_test_util.h',
+        'browser/sync/syncable/model_type_test_util.cc',
+        'browser/sync/syncable/model_type_test_util.h',
         'browser/sync/test/null_directory_change_delegate.cc',
         'browser/sync/test/null_directory_change_delegate.h',
         'browser/sync/test/null_transaction_observer.cc',

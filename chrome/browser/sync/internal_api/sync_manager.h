@@ -457,7 +457,7 @@ class SyncManager {
 
   // Conditionally sets the flag in the Nigori node which instructs other
   // clients to start syncing tabs.
-  void MaybeSetSyncTabsInNigoriNode(const syncable::ModelTypeSet enabled_types);
+  void MaybeSetSyncTabsInNigoriNode(syncable::ModelEnumSet enabled_types);
 
   // Put the syncer in normal mode ready to perform nudges and polls.
   void StartSyncingNormally();
@@ -576,7 +576,7 @@ class SyncManager {
       bool notifications_enabled);
 
   void TriggerOnIncomingNotificationForTest(
-      const syncable::ModelTypeBitSet& model_types);
+      syncable::ModelEnumSet model_types);
 
  private:
   base::ThreadChecker thread_checker_;

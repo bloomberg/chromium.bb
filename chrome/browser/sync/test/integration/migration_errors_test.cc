@@ -27,33 +27,28 @@ namespace {
 // Utility functions to make a model type set out of a small number of
 // model types.
 
-syncable::ModelTypeSet MakeSet(syncable::ModelType type) {
-  syncable::ModelTypeSet model_types;
-  model_types.insert(type);
-  return model_types;
+syncable::ModelEnumSet MakeSet(syncable::ModelType type) {
+  return syncable::ModelEnumSet(type);
 }
 
-syncable::ModelTypeSet MakeSet(syncable::ModelType type1,
+syncable::ModelEnumSet MakeSet(syncable::ModelType type1,
                                syncable::ModelType type2) {
-  syncable::ModelTypeSet model_types;
-  model_types.insert(type1);
-  model_types.insert(type2);
-  return model_types;
+  return syncable::ModelEnumSet(type1, type2);
 }
 
 // An ordered list of model types sets to migrate.  Used by
 // RunMigrationTest().
-typedef std::deque<syncable::ModelTypeSet> MigrationList;
+typedef std::deque<syncable::ModelEnumSet> MigrationList;
 
 // Utility functions to make a MigrationList out of a small number of
 // model types / model type sets.
 
-MigrationList MakeList(const syncable::ModelTypeSet& model_types) {
+MigrationList MakeList(syncable::ModelEnumSet model_types) {
   return MigrationList(1, model_types);
 }
 
-MigrationList MakeList(const syncable::ModelTypeSet& model_types1,
-                       const syncable::ModelTypeSet& model_types2) {
+MigrationList MakeList(syncable::ModelEnumSet model_types1,
+                       syncable::ModelEnumSet model_types2) {
   MigrationList migration_list;
   migration_list.push_back(model_types1);
   migration_list.push_back(model_types2);
@@ -78,7 +73,7 @@ class MigrationTest : public SyncTest {
   // well as a poll-based trigger method.
   enum TriggerMethod { MODIFY_PREF, MODIFY_BOOKMARK, TRIGGER_NOTIFICATION };
 
-  syncable::ModelTypeSet GetPreferredDataTypes() {
+  syncable::ModelEnumSet GetPreferredDataTypes() {
     syncable::ModelTypeSet preferred_data_types;
     GetClient(0)->service()->GetPreferredDataTypes(&preferred_data_types);
     // Make sure all clients have the same preferred data types.
@@ -88,25 +83,24 @@ class MigrationTest : public SyncTest {
           &other_preferred_data_types);
       EXPECT_EQ(preferred_data_types, other_preferred_data_types);
     }
-    return preferred_data_types;
+    return syncable::ModelTypeSetToEnumSet(preferred_data_types);
   }
 
   // Returns a MigrationList with every enabled data type in its own
   // set.
   MigrationList GetPreferredDataTypesList() {
     MigrationList migration_list;
-    const syncable::ModelTypeSet& preferred_data_types =
+    const syncable::ModelEnumSet preferred_data_types =
         GetPreferredDataTypes();
-    for (syncable::ModelTypeSet::const_iterator it =
-             preferred_data_types.begin();
-         it != preferred_data_types.end(); ++it) {
-      migration_list.push_back(MakeSet(*it));
+    for (syncable::ModelEnumSet::Iterator it =
+             preferred_data_types.First(); it.Good(); it.Inc()) {
+      migration_list.push_back(MakeSet(it.Get()));
     }
     return migration_list;
   }
 
   // Trigger a migration for the given types with the given method.
-  void TriggerMigration(const syncable::ModelTypeSet& model_types,
+  void TriggerMigration(syncable::ModelEnumSet model_types,
                         TriggerMethod trigger_method) {
     switch (trigger_method) {
       case MODIFY_PREF:
@@ -131,9 +125,11 @@ class MigrationTest : public SyncTest {
 
   // Block until all clients have completed migration for the given
   // types.
-  void AwaitMigration(const syncable::ModelTypeSet& migrate_types) {
+  void AwaitMigration(syncable::ModelEnumSet migrate_types) {
+    const syncable::ModelTypeSet& migrate_types_set =
+        syncable::ModelEnumSetToSet(migrate_types);
     for (int i = 0; i < num_clients(); ++i) {
-      ASSERT_TRUE(GetClient(i)->AwaitMigration(migrate_types));
+      ASSERT_TRUE(GetClient(i)->AwaitMigration(migrate_types_set));
     }
   }
 
@@ -300,8 +296,8 @@ IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
 
 IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, AllTypesWithNigoriAtOnce) {
   ASSERT_TRUE(SetupClients());
-  syncable::ModelTypeSet all_types = GetPreferredDataTypes();
-  all_types.insert(syncable::NIGORI);
+  syncable::ModelEnumSet all_types = GetPreferredDataTypes();
+  all_types.Put(syncable::NIGORI);
   RunSingleClientMigrationTest(MakeList(all_types), MODIFY_PREF);
 }
 
@@ -378,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest, MigrationHellWithNigori) {
   // Pop off one so that we don't migrate all data types; the syncer
   // freaks out if we do that (see http://crbug.com/94882).
   ASSERT_GE(migration_list.size(), 2u);
-  ASSERT_NE(migration_list.back(), MakeSet(syncable::NIGORI));
+  ASSERT_FALSE(migration_list.back().Equals(MakeSet(syncable::NIGORI)));
   migration_list.back() = MakeSet(syncable::NIGORI);
   RunTwoClientMigrationTest(migration_list, MODIFY_BOOKMARK);
 }

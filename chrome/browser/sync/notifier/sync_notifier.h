@@ -40,14 +40,14 @@ class SyncNotifier {
       const std::string& email, const std::string& token) = 0;
 
   virtual void UpdateEnabledTypes(
-      const syncable::ModelTypeSet& enabled_types) = 0;
+      syncable::ModelEnumSet enabled_types) = 0;
 
   // This is here only to support the old p2p notification implementation,
   // which is still used by sync integration tests.
   // TODO(akalin): Remove this once we move the integration tests off p2p
   // notifications.
   virtual void SendNotification(
-      const syncable::ModelTypeSet& changed_types) = 0;
+      syncable::ModelEnumSet changed_types) = 0;
 };
 }  // namespace sync_notifier
 

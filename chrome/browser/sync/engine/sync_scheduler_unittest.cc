@@ -150,7 +150,7 @@ class SyncSchedulerTest : public testing::Test {
   }
 
   bool GetBackoffAndResetTest() {
-    syncable::ModelTypeBitSet nudge_types;
+    syncable::ModelEnumSet nudge_types;
     StartSyncScheduler(SyncScheduler::NORMAL_MODE);
     RunLoop();
 
@@ -178,18 +178,18 @@ class SyncSchedulerTest : public testing::Test {
     scheduler_->delay_provider_.reset(delay_);
   }
 
-  // Compare a ModelTypeBitSet to a ModelTypePayloadMap, ignoring
+  // Compare a ModelEnumSet to a ModelTypePayloadMap, ignoring
   // payload values.
-  bool CompareModelTypeBitSetToModelTypePayloadMap(
-      const syncable::ModelTypeBitSet& lhs,
+  bool CompareModelEnumSetToModelTypePayloadMap(
+      syncable::ModelEnumSet lhs,
       const syncable::ModelTypePayloadMap& rhs) {
     size_t count = 0;
     for (syncable::ModelTypePayloadMap::const_iterator i = rhs.begin();
          i != rhs.end(); ++i, ++count) {
-      if (!lhs.test(i->first))
+      if (!lhs.Has(i->first))
         return false;
     }
-    if (lhs.count() != count)
+    if (lhs.Size() != count)
       return false;
     return true;
   }
@@ -239,8 +239,7 @@ ACTION(QuitLoopNowAction) {
 // Test nudge scheduling.
 TEST_F(SyncSchedulerTest, Nudge) {
   SyncShareRecords records;
-  syncable::ModelTypeBitSet model_types;
-  model_types[syncable::BOOKMARKS] = true;
+  syncable::ModelEnumSet model_types(syncable::BOOKMARKS);
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
@@ -255,7 +254,7 @@ TEST_F(SyncSchedulerTest, Nudge) {
   RunLoop();
 
   ASSERT_EQ(1U, records.snapshots.size());
-  EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(model_types,
+  EXPECT_TRUE(CompareModelEnumSetToModelTypePayloadMap(model_types,
       records.snapshots[0]->source.types));
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             records.snapshots[0]->source.updates_source);
@@ -264,8 +263,8 @@ TEST_F(SyncSchedulerTest, Nudge) {
 
   // Make sure a second, later, nudge is unaffected by first (no coalescing).
   SyncShareRecords records2;
-  model_types[syncable::BOOKMARKS] = false;
-  model_types[syncable::AUTOFILL] = true;
+  model_types.Remove(syncable::BOOKMARKS);
+  model_types.Put(syncable::AUTOFILL);
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
                       WithArg<0>(RecordSyncShare(&records2))));
@@ -274,7 +273,7 @@ TEST_F(SyncSchedulerTest, Nudge) {
   RunLoop();
 
   ASSERT_EQ(1U, records2.snapshots.size());
-  EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(model_types,
+  EXPECT_TRUE(CompareModelEnumSetToModelTypePayloadMap(model_types,
       records2.snapshots[0]->source.types));
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             records2.snapshots[0]->source.updates_source);
@@ -284,8 +283,7 @@ TEST_F(SyncSchedulerTest, Nudge) {
 // errors.
 TEST_F(SyncSchedulerTest, Config) {
   SyncShareRecords records;
-  syncable::ModelTypeBitSet model_types;
-  model_types[syncable::BOOKMARKS] = true;
+  const syncable::ModelEnumSet model_types(syncable::BOOKMARKS);
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
@@ -299,7 +297,7 @@ TEST_F(SyncSchedulerTest, Config) {
   RunLoop();
 
   ASSERT_EQ(1U, records.snapshots.size());
-  EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(model_types,
+  EXPECT_TRUE(CompareModelEnumSetToModelTypePayloadMap(model_types,
       records.snapshots[0]->source.types));
   EXPECT_EQ(GetUpdatesCallerInfo::RECONFIGURATION,
             records.snapshots[0]->source.updates_source);
@@ -311,8 +309,7 @@ TEST_F(SyncSchedulerTest, ConfigWithBackingOff) {
   EXPECT_CALL(*delay(), GetDelay(_))
       .WillRepeatedly(Return(TimeDelta::FromMilliseconds(1)));
   SyncShareRecords records;
-  syncable::ModelTypeBitSet model_types;
-  model_types[syncable::BOOKMARKS] = true;
+  const syncable::ModelEnumSet model_types(syncable::BOOKMARKS);
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
@@ -332,7 +329,7 @@ TEST_F(SyncSchedulerTest, ConfigWithBackingOff) {
   RunLoop();
 
   ASSERT_EQ(2U, records.snapshots.size());
-  EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(model_types,
+  EXPECT_TRUE(CompareModelEnumSetToModelTypePayloadMap(model_types,
       records.snapshots[1]->source.types));
   EXPECT_EQ(GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION,
             records.snapshots[1]->source.updates_source);
@@ -341,9 +338,9 @@ TEST_F(SyncSchedulerTest, ConfigWithBackingOff) {
 // Issue 2 config commands. Second one right after the first has failed
 // and make sure LATEST is executed.
 TEST_F(SyncSchedulerTest, MultipleConfigWithBackingOff) {
-  syncable::ModelTypeBitSet model_types1, model_types2;
-  model_types1[syncable::BOOKMARKS] = true;
-  model_types2[syncable::AUTOFILL] = true;
+  const syncable::ModelEnumSet
+      model_types1(syncable::BOOKMARKS),
+      model_types2(syncable::AUTOFILL);
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
       .WillRepeatedly(Return(TimeDelta::FromMilliseconds(30)));
@@ -374,7 +371,7 @@ TEST_F(SyncSchedulerTest, MultipleConfigWithBackingOff) {
   RunLoop();
 
   ASSERT_EQ(3U, records.snapshots.size());
-  EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(model_types2,
+  EXPECT_TRUE(CompareModelEnumSetToModelTypePayloadMap(model_types2,
       records.snapshots[2]->source.types));
   EXPECT_EQ(GetUpdatesCallerInfo::RECONFIGURATION,
             records.snapshots[2]->source.updates_source);
@@ -383,8 +380,7 @@ TEST_F(SyncSchedulerTest, MultipleConfigWithBackingOff) {
 // Issue a nudge when the config has failed. Make sure both the config and
 // nudge are executed.
 TEST_F(SyncSchedulerTest, NudgeWithConfigWithBackingOff) {
-  syncable::ModelTypeBitSet model_types;
-  model_types[syncable::BOOKMARKS] = true;
+  const syncable::ModelEnumSet model_types(syncable::BOOKMARKS);
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
       .WillRepeatedly(Return(TimeDelta::FromMilliseconds(50)));
@@ -423,12 +419,12 @@ TEST_F(SyncSchedulerTest, NudgeWithConfigWithBackingOff) {
 
   ASSERT_EQ(4U, records.snapshots.size());
 
-  EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(model_types,
+  EXPECT_TRUE(CompareModelEnumSetToModelTypePayloadMap(model_types,
       records.snapshots[2]->source.types));
   EXPECT_EQ(GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION,
             records.snapshots[2]->source.updates_source);
 
-  EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(model_types,
+  EXPECT_TRUE(CompareModelEnumSetToModelTypePayloadMap(model_types,
       records.snapshots[3]->source.types));
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             records.snapshots[3]->source.updates_source);
@@ -444,10 +440,10 @@ TEST_F(SyncSchedulerTest, NudgeCoalescing) {
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
                       WithArg<0>(RecordSyncShare(&r))));
-  syncable::ModelTypeBitSet types1, types2, types3;
-  types1[syncable::BOOKMARKS] = true;
-  types2[syncable::AUTOFILL] = true;
-  types3[syncable::THEMES] = true;
+  const syncable::ModelEnumSet
+      types1(syncable::BOOKMARKS),
+      types2(syncable::AUTOFILL),
+      types3(syncable::THEMES);
   TimeDelta delay = zero();
   TimeTicks optimal_time = TimeTicks::Now() + delay;
   scheduler()->ScheduleNudge(
@@ -458,8 +454,8 @@ TEST_F(SyncSchedulerTest, NudgeCoalescing) {
 
   ASSERT_EQ(1U, r.snapshots.size());
   EXPECT_GE(r.times[0], optimal_time);
-  EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(
-      types1 | types2, r.snapshots[0]->source.types));
+  EXPECT_TRUE(CompareModelEnumSetToModelTypePayloadMap(
+      Union(types1, types2), r.snapshots[0]->source.types));
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             r.snapshots[0]->source.updates_source);
 
@@ -474,7 +470,7 @@ TEST_F(SyncSchedulerTest, NudgeCoalescing) {
   RunLoop();
 
   ASSERT_EQ(1U, r2.snapshots.size());
-  EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(types3,
+  EXPECT_TRUE(CompareModelEnumSetToModelTypePayloadMap(types3,
       r2.snapshots[0]->source.types));
   EXPECT_EQ(GetUpdatesCallerInfo::NOTIFICATION,
             r2.snapshots[0]->source.updates_source);
@@ -656,8 +652,7 @@ TEST_F(SyncSchedulerTest, SessionsCommitDelay) {
   RunLoop();
 
   EXPECT_EQ(delay1, scheduler()->sessions_commit_delay());
-  syncable::ModelTypeBitSet model_types;
-  model_types[syncable::BOOKMARKS] = true;
+  const syncable::ModelEnumSet model_types(syncable::BOOKMARKS);
   scheduler()->ScheduleNudge(
       zero(), NUDGE_SOURCE_LOCAL, model_types, FROM_HERE);
   RunLoop();
@@ -676,7 +671,7 @@ TEST_F(SyncSchedulerTest, HasMoreToSync) {
   RunLoop();
 
   scheduler()->ScheduleNudge(
-      zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet(), FROM_HERE);
+      zero(), NUDGE_SOURCE_LOCAL, syncable::ModelEnumSet(), FROM_HERE);
   RunLoop();
   // If more nudges are scheduled, they'll be waited on by TearDown, and would
   // cause our expectation to break.
@@ -684,8 +679,7 @@ TEST_F(SyncSchedulerTest, HasMoreToSync) {
 
 // Test that no syncing occurs when throttled.
 TEST_F(SyncSchedulerTest, ThrottlingDoesThrottle) {
-  syncable::ModelTypeBitSet types;
-  types[syncable::BOOKMARKS] = true;
+  const syncable::ModelEnumSet types(syncable::BOOKMARKS);
   TimeDelta poll(TimeDelta::FromMilliseconds(5));
   TimeDelta throttle(TimeDelta::FromMinutes(10));
   scheduler()->OnReceivedLongPollIntervalUpdate(poll);
@@ -746,22 +740,20 @@ TEST_F(SyncSchedulerTest, ConfigurationMode) {
   StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
   RunLoop();
 
-  syncable::ModelTypeBitSet nudge_types;
-  nudge_types[syncable::AUTOFILL] = true;
+  const syncable::ModelEnumSet nudge_types(syncable::AUTOFILL);
   scheduler()->ScheduleNudge(
       zero(), NUDGE_SOURCE_LOCAL, nudge_types, FROM_HERE);
   scheduler()->ScheduleNudge(
       zero(), NUDGE_SOURCE_LOCAL, nudge_types, FROM_HERE);
 
-  syncable::ModelTypeBitSet config_types;
-  config_types[syncable::BOOKMARKS] = true;
+  const syncable::ModelEnumSet config_types(syncable::BOOKMARKS);
 
   scheduler()->ScheduleConfig(
       config_types, GetUpdatesCallerInfo::RECONFIGURATION);
   RunLoop();
 
   ASSERT_EQ(1U, records.snapshots.size());
-  EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(config_types,
+  EXPECT_TRUE(CompareModelEnumSetToModelTypePayloadMap(config_types,
       records.snapshots[0]->source.types));
 }
 
@@ -809,8 +801,7 @@ TEST_F(SyncSchedulerTest, BackoffTriggers) {
 TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
   SyncShareRecords r;
   TimeDelta poll(TimeDelta::FromMilliseconds(5));
-  syncable::ModelTypeBitSet types;
-  types[syncable::BOOKMARKS] = true;
+  const syncable::ModelEnumSet types(syncable::BOOKMARKS);
   scheduler()->OnReceivedLongPollIntervalUpdate(poll);
   UseMockDelayProvider();
 
@@ -974,7 +965,7 @@ TEST_F(SyncSchedulerTest, SyncerSteps) {
   RunLoop();
 
   scheduler()->ScheduleNudge(
-      zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet(), FROM_HERE);
+      zero(), NUDGE_SOURCE_LOCAL, syncable::ModelEnumSet(), FROM_HERE);
   PumpLoop();
   // Pump again to run job.
   PumpLoop();
@@ -1001,7 +992,7 @@ TEST_F(SyncSchedulerTest, SyncerSteps) {
   RunLoop();
 
   scheduler()->ScheduleConfig(
-      ModelTypeBitSet(), GetUpdatesCallerInfo::RECONFIGURATION);
+      syncable::ModelEnumSet(), GetUpdatesCallerInfo::RECONFIGURATION);
   PumpLoop();
   PumpLoop();
 
@@ -1053,7 +1044,7 @@ TEST_F(SyncSchedulerTest, StartWhenNotConnected) {
   RunLoop();
 
   scheduler()->ScheduleNudge(
-      zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet(), FROM_HERE);
+      zero(), NUDGE_SOURCE_LOCAL, syncable::ModelEnumSet(), FROM_HERE);
   // Should save the nudge for until after the server is reachable.
   PumpLoop();
 
@@ -1073,7 +1064,7 @@ TEST_F(SyncSchedulerTest, SetsPreviousRoutingInfo) {
   RunLoop();
 
   scheduler()->ScheduleNudge(
-      zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet(), FROM_HERE);
+      zero(), NUDGE_SOURCE_LOCAL, syncable::ModelEnumSet(), FROM_HERE);
   PumpLoop();
   // Pump again to run job.
   PumpLoop();

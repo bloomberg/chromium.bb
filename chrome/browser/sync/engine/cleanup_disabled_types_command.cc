@@ -18,22 +18,8 @@ CleanupDisabledTypesCommand::CleanupDisabledTypesCommand() {}
 CleanupDisabledTypesCommand::~CleanupDisabledTypesCommand() {}
 
 void CleanupDisabledTypesCommand::ExecuteImpl(sessions::SyncSession* session) {
-  using syncable::ModelTypeSet;
-  using syncable::ModelTypeSetToString;
-
-  const ModelTypeSet& all_types = syncable::GetAllRealModelTypes();
-  const ModelTypeSet& enabled_types =
-      GetRoutingInfoTypes(session->routing_info());
-
-  // Initially set |to_cleanup| to |all_types| \setminus |enabled_types|.
-  ModelTypeSet to_cleanup;
-  std::set_difference(all_types.begin(), all_types.end(),
-                      enabled_types.begin(), enabled_types.end(),
-                      std::inserter(to_cleanup, to_cleanup.end()));
-
-  DVLOG(1) << "all_types = " << ModelTypeSetToString(all_types)
-           << ", enabled_types = " << ModelTypeSetToString(enabled_types)
-           << ", to_cleanup = " << ModelTypeSetToString(to_cleanup);
+  using syncable::ModelEnumSet;
+  using syncable::ModelEnumSetToString;
 
   // Because a full directory purge is slow, we avoid purging
   // undesired types unless we have reason to believe they were
@@ -53,27 +39,28 @@ void CleanupDisabledTypesCommand::ExecuteImpl(sessions::SyncSession* session) {
   //                                       |  (failure, browser restart
   //                                       |  before another sync session,..)
 
-  const ModelTypeSet& previous_enabled_types =
+  const ModelEnumSet enabled_types =
+      GetRoutingInfoTypes(session->routing_info());
+
+  const ModelEnumSet previous_enabled_types =
       GetRoutingInfoTypes(
           session->context()->previous_session_routing_info());
+
+  ModelEnumSet to_cleanup = Difference(ModelEnumSet::All(), enabled_types);
+
   // If |previous_enabled_types| is non-empty (i.e., not the first
   // sync session), set |to_cleanup| to its intersection with
   // |previous_enabled_types|.
-  if (!previous_enabled_types.empty()) {
-    using std::swap;
-    ModelTypeSet temp;
-    std::set_intersection(
-        to_cleanup.begin(), to_cleanup.end(),
-        previous_enabled_types.begin(), previous_enabled_types.end(),
-        std::inserter(temp, temp.end()));
-    swap(to_cleanup, temp);
+  if (!previous_enabled_types.Empty()) {
+    to_cleanup.RetainAll(previous_enabled_types);
   }
 
-  DVLOG(1) << "previous_enabled_types = "
-           << ModelTypeSetToString(previous_enabled_types)
-           << ", to_cleanup = " << ModelTypeSetToString(to_cleanup);
+  DVLOG(1) << "enabled_types = " << ModelEnumSetToString(enabled_types)
+           << ", previous_enabled_types = "
+           << ModelEnumSetToString(previous_enabled_types)
+           << ", to_cleanup = " << ModelEnumSetToString(to_cleanup);
 
-  if (to_cleanup.empty())
+  if (to_cleanup.Empty())
     return;
 
   syncable::ScopedDirLookup dir(session->context()->directory_manager(),

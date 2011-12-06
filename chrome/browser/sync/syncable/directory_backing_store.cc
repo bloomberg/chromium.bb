@@ -394,7 +394,7 @@ bool DirectoryBackingStore::SaveChanges(
       info.download_progress[i].SerializeToString(&progress_marker);
       op.bind_blob(0, model_id.data(), model_id.length());
       op.bind_blob(1, progress_marker.data(), progress_marker.length());
-      op.bind_bool(2, info.initial_sync_ended[i]);
+      op.bind_bool(2, info.initial_sync_ended.Has(ModelTypeFromInt(i)));
 
       if (!(SQLITE_DONE == op.step() &&
             SQLITE_OK == op.reset() &&
@@ -614,7 +614,9 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
       if (type != UNSPECIFIED && type != TOP_LEVEL_FOLDER) {
         info->kernel_info.download_progress[type].ParseFromArray(
             query.column_blob(1), query.column_bytes(1));
-        info->kernel_info.initial_sync_ended[type] = query.column_bool(2);
+        if (query.column_bool(2)) {
+          info->kernel_info.initial_sync_ended.Put(type);
+        }
       }
     }
   }

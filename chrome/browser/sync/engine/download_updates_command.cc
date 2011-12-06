@@ -24,6 +24,8 @@ using sessions::SyncSession;
 using std::string;
 using syncable::FIRST_REAL_MODEL_TYPE;
 using syncable::MODEL_TYPE_COUNT;
+using syncable::ModelEnumSet;
+using syncable::ModelEnumSetToString;
 
 DownloadUpdatesCommand::DownloadUpdatesCommand() {}
 DownloadUpdatesCommand::~DownloadUpdatesCommand() {}
@@ -50,27 +52,27 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
   }
 
   // Request updates for all enabled types.
-  syncable::ModelTypeBitSet enabled_types;
+  const ModelEnumSet enabled_types =
+      GetRoutingInfoTypes(session->routing_info());
+  DVLOG(1) << "Getting updates for types "
+           << ModelEnumSetToString(enabled_types);
+  DCHECK(!enabled_types.Empty());
+
   const syncable::ModelTypePayloadMap& type_payload_map =
       session->source().types;
-  for (ModelSafeRoutingInfo::const_iterator i = session->routing_info().begin();
-       i != session->routing_info().end(); ++i) {
-    syncable::ModelType model_type = syncable::ModelTypeFromInt(i->first);
-    enabled_types[i->first] = true;
+  for (ModelEnumSet::Iterator it = enabled_types.First();
+       it.Good(); it.Inc()) {
     sync_pb::DataTypeProgressMarker* progress_marker =
         get_updates->add_from_progress_marker();
-    dir->GetDownloadProgress(model_type, progress_marker);
+    dir->GetDownloadProgress(it.Get(), progress_marker);
 
     // Set notification hint if present.
     syncable::ModelTypePayloadMap::const_iterator type_payload =
-        type_payload_map.find(i->first);
+        type_payload_map.find(it.Get());
     if (type_payload != type_payload_map.end()) {
       progress_marker->set_notification_hint(type_payload->second);
     }
   }
-
-  DVLOG(1) << "Getting updates for types " << enabled_types.to_string();
-  DCHECK(enabled_types.any());
 
   // We want folders for our associated types, always.  If we were to set
   // this to false, the server would send just the non-container items

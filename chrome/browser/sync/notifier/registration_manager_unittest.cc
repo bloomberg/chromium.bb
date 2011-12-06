@@ -61,12 +61,12 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
   virtual ~FakeInvalidationClient() {}
 
   void LoseRegistration(syncable::ModelType model_type) {
-    EXPECT_GT(registered_types_.count(model_type), 0u);
-    registered_types_.erase(model_type);
+    EXPECT_TRUE(registered_types_.Has(model_type));
+    registered_types_.Remove(model_type);
   }
 
   void LoseAllRegistrations() {
-    registered_types_.clear();
+    registered_types_.Clear();
   }
 
   // invalidation::InvalidationClient implementation.
@@ -77,8 +77,8 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
 
   virtual void Register(const invalidation::ObjectId& oid) {
     syncable::ModelType model_type = ObjectIdToModelType(oid);
-    EXPECT_EQ(0u, registered_types_.count(model_type));
-    registered_types_.insert(model_type);
+    EXPECT_FALSE(registered_types_.Has(model_type));
+    registered_types_.Put(model_type);
   }
 
   virtual void Register(const std::vector<invalidation::ObjectId>& oids) {
@@ -87,20 +87,20 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
 
   virtual void Unregister(const invalidation::ObjectId& oid) {
     syncable::ModelType model_type = ObjectIdToModelType(oid);
-    EXPECT_GT(registered_types_.count(model_type), 0u);
-    registered_types_.erase(model_type);
+    EXPECT_TRUE(registered_types_.Has(model_type));
+    registered_types_.Remove(model_type);
   }
 
   virtual void Unregister(const std::vector<invalidation::ObjectId>& oids) {
     // Unused for now.
   }
 
-  const syncable::ModelTypeSet GetRegisteredTypes() const {
+  const syncable::ModelEnumSet GetRegisteredTypes() const {
     return registered_types_;
   }
 
  private:
-  syncable::ModelTypeSet registered_types_;
+  syncable::ModelEnumSet registered_types_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeInvalidationClient);
 };
@@ -114,16 +114,25 @@ const syncable::ModelType kModelTypes[] = {
 };
 const size_t kModelTypeCount = arraysize(kModelTypes);
 
+syncable::ModelEnumSet FromPtr(
+    const syncable::ModelType* types, size_t count) {
+  syncable::ModelEnumSet type_set;
+  for (size_t i = 0; i < count; ++i) {
+    type_set.Put(types[i]);
+  }
+  return type_set;
+}
+
 void ExpectPendingRegistrations(
-    const syncable::ModelTypeSet& expected_pending_types,
+    syncable::ModelEnumSet expected_pending_types,
     double expected_delay_seconds,
     const RegistrationManager::PendingRegistrationMap& pending_registrations) {
-  syncable::ModelTypeSet pending_types;
+  syncable::ModelEnumSet pending_types;
   for (RegistrationManager::PendingRegistrationMap::const_iterator it =
            pending_registrations.begin(); it != pending_registrations.end();
        ++it) {
     SCOPED_TRACE(syncable::ModelTypeToString(it->first));
-    pending_types.insert(it->first);
+    pending_types.Put(it->first);
     base::TimeDelta offset =
         it->second.last_registration_request -
         it->second.registration_attempt;
@@ -141,7 +150,7 @@ void ExpectPendingRegistrations(
       EXPECT_EQ(it->second.delay, it->second.actual_delay);
     }
   }
-  EXPECT_EQ(expected_pending_types, pending_types);
+  EXPECT_TRUE(pending_types.Equals(expected_pending_types));
 }
 
 class RegistrationManagerTest : public testing::Test {
@@ -151,30 +160,30 @@ class RegistrationManagerTest : public testing::Test {
 
   virtual ~RegistrationManagerTest() {}
 
-  void LoseRegistrations(const syncable::ModelTypeSet& types) {
-    for (syncable::ModelTypeSet::const_iterator it = types.begin();
-         it != types.end(); ++it) {
-      fake_invalidation_client_.LoseRegistration(*it);
-      fake_registration_manager_.MarkRegistrationLost(*it);
+  void LoseRegistrations(syncable::ModelEnumSet types) {
+    for (syncable::ModelEnumSet::Iterator it = types.First();
+         it.Good(); it.Inc()) {
+      fake_invalidation_client_.LoseRegistration(it.Get());
+      fake_registration_manager_.MarkRegistrationLost(it.Get());
     }
   }
 
-  void DisableTypes(const syncable::ModelTypeSet& types) {
-    for (syncable::ModelTypeSet::const_iterator it = types.begin();
-         it != types.end(); ++it) {
-      fake_invalidation_client_.LoseRegistration(*it);
-      fake_registration_manager_.DisableType(*it);
+  void DisableTypes(syncable::ModelEnumSet types) {
+    for (syncable::ModelEnumSet::Iterator it = types.First();
+         it.Good(); it.Inc()) {
+      fake_invalidation_client_.LoseRegistration(it.Get());
+      fake_registration_manager_.DisableType(it.Get());
     }
   }
 
   // Used by MarkRegistrationLostBackoff* tests.
   void RunBackoffTest(double jitter) {
     fake_registration_manager_.SetJitter(jitter);
-    syncable::ModelTypeSet types(kModelTypes, kModelTypes + kModelTypeCount);
+    syncable::ModelEnumSet types = FromPtr(kModelTypes, kModelTypeCount);
     fake_registration_manager_.SetRegisteredTypes(types);
 
     // Lose some types.
-    syncable::ModelTypeSet lost_types(kModelTypes, kModelTypes + 2);
+    syncable::ModelEnumSet lost_types = FromPtr(kModelTypes, 2);
     LoseRegistrations(lost_types);
     ExpectPendingRegistrations(
         lost_types, 0.0,
@@ -230,21 +239,20 @@ class RegistrationManagerTest : public testing::Test {
 };
 
 TEST_F(RegistrationManagerTest, SetRegisteredTypes) {
-  syncable::ModelTypeSet no_types;
-  syncable::ModelTypeSet types(kModelTypes, kModelTypes + kModelTypeCount);
+  syncable::ModelEnumSet types = FromPtr(kModelTypes, kModelTypeCount);
 
-  EXPECT_EQ(no_types, fake_registration_manager_.GetRegisteredTypes());
-  EXPECT_EQ(no_types, fake_invalidation_client_.GetRegisteredTypes());
+  EXPECT_TRUE(fake_registration_manager_.GetRegisteredTypes().Empty());
+  EXPECT_TRUE(fake_invalidation_client_.GetRegisteredTypes().Empty());
 
   fake_registration_manager_.SetRegisteredTypes(types);
-  EXPECT_EQ(types, fake_registration_manager_.GetRegisteredTypes());
-  EXPECT_EQ(types, fake_invalidation_client_.GetRegisteredTypes());
+  EXPECT_TRUE(fake_registration_manager_.GetRegisteredTypes().Equals(types));
+  EXPECT_TRUE(fake_invalidation_client_.GetRegisteredTypes().Equals(types));
 
-  types.insert(syncable::APPS);
-  types.erase(syncable::BOOKMARKS);
+  types.Put(syncable::APPS);
+  types.Remove(syncable::BOOKMARKS);
   fake_registration_manager_.SetRegisteredTypes(types);
-  EXPECT_EQ(types, fake_registration_manager_.GetRegisteredTypes());
-  EXPECT_EQ(types, fake_invalidation_client_.GetRegisteredTypes());
+  EXPECT_TRUE(fake_registration_manager_.GetRegisteredTypes().Equals(types));
+  EXPECT_TRUE(fake_invalidation_client_.GetRegisteredTypes().Equals(types));
 }
 
 int GetRoundedBackoff(double retry_interval, double jitter) {
@@ -286,27 +294,31 @@ TEST_F(RegistrationManagerTest, CalculateBackoff) {
 }
 
 TEST_F(RegistrationManagerTest, MarkRegistrationLost) {
-  syncable::ModelTypeSet types(kModelTypes, kModelTypes + kModelTypeCount);
+  syncable::ModelEnumSet types = FromPtr(kModelTypes, kModelTypeCount);
 
   fake_registration_manager_.SetRegisteredTypes(types);
   EXPECT_TRUE(fake_registration_manager_.GetPendingRegistrations().empty());
 
   // Lose some types.
-  syncable::ModelTypeSet lost_types(
-      kModelTypes, kModelTypes + 3);
-  syncable::ModelTypeSet non_lost_types(
-      kModelTypes + 3, kModelTypes + kModelTypeCount);
+  syncable::ModelEnumSet lost_types = FromPtr(
+      kModelTypes, 3);
+  syncable::ModelEnumSet non_lost_types = FromPtr(
+      kModelTypes + 3, kModelTypeCount - 3);
   LoseRegistrations(lost_types);
   ExpectPendingRegistrations(
       lost_types, 0.0,
       fake_registration_manager_.GetPendingRegistrations());
-  EXPECT_EQ(non_lost_types, fake_registration_manager_.GetRegisteredTypes());
-  EXPECT_EQ(non_lost_types, fake_invalidation_client_.GetRegisteredTypes());
+  EXPECT_TRUE(
+      fake_registration_manager_.GetRegisteredTypes().Equals(non_lost_types));
+  EXPECT_TRUE(
+      fake_invalidation_client_.GetRegisteredTypes().Equals(non_lost_types));
 
   // Pretend we waited long enough to re-register.
   fake_registration_manager_.FirePendingRegistrationsForTest();
-  EXPECT_EQ(types, fake_registration_manager_.GetRegisteredTypes());
-  EXPECT_EQ(types, fake_invalidation_client_.GetRegisteredTypes());
+  EXPECT_TRUE(
+      fake_registration_manager_.GetRegisteredTypes().Equals(types));
+  EXPECT_TRUE(
+      fake_invalidation_client_.GetRegisteredTypes().Equals(types));
 }
 
 TEST_F(RegistrationManagerTest, MarkRegistrationLostBackoffLow) {
@@ -322,12 +334,12 @@ TEST_F(RegistrationManagerTest, MarkRegistrationLostBackoffHigh) {
 }
 
 TEST_F(RegistrationManagerTest, MarkRegistrationLostBackoffReset) {
-  syncable::ModelTypeSet types(kModelTypes, kModelTypes + kModelTypeCount);
+  syncable::ModelEnumSet types = FromPtr(kModelTypes, kModelTypeCount);
 
   fake_registration_manager_.SetRegisteredTypes(types);
 
   // Lose some types.
-  syncable::ModelTypeSet lost_types(kModelTypes, kModelTypes + 2);
+  syncable::ModelEnumSet lost_types = FromPtr(kModelTypes, 2);
   LoseRegistrations(lost_types);
   ExpectPendingRegistrations(
       lost_types, 0.0,
@@ -345,21 +357,23 @@ TEST_F(RegistrationManagerTest, MarkRegistrationLostBackoffReset) {
   // Set types again.
   fake_registration_manager_.SetRegisteredTypes(types);
   ExpectPendingRegistrations(
-      syncable::ModelTypeSet(), 0.0,
+      syncable::ModelEnumSet(), 0.0,
       fake_registration_manager_.GetPendingRegistrations());
 }
 
 TEST_F(RegistrationManagerTest, MarkAllRegistrationsLost) {
-  syncable::ModelTypeSet types(kModelTypes, kModelTypes + kModelTypeCount);
+  syncable::ModelEnumSet types = FromPtr(kModelTypes, kModelTypeCount);
 
   fake_registration_manager_.SetRegisteredTypes(types);
 
   fake_invalidation_client_.LoseAllRegistrations();
   fake_registration_manager_.MarkAllRegistrationsLost();
 
-  syncable::ModelTypeSet expected_types;
-  EXPECT_EQ(expected_types, fake_registration_manager_.GetRegisteredTypes());
-  EXPECT_EQ(expected_types, fake_invalidation_client_.GetRegisteredTypes());
+  syncable::ModelEnumSet expected_types;
+  EXPECT_TRUE(
+      fake_registration_manager_.GetRegisteredTypes().Equals(expected_types));
+  EXPECT_TRUE(
+      fake_invalidation_client_.GetRegisteredTypes().Equals(expected_types));
 
   ExpectPendingRegistrations(
       types, 0.0,
@@ -377,34 +391,40 @@ TEST_F(RegistrationManagerTest, MarkAllRegistrationsLost) {
 
   // Pretend we waited long enough to re-register.
   fake_registration_manager_.FirePendingRegistrationsForTest();
-  EXPECT_EQ(types, fake_registration_manager_.GetRegisteredTypes());
-  EXPECT_EQ(types, fake_invalidation_client_.GetRegisteredTypes());
+  EXPECT_TRUE(
+      fake_registration_manager_.GetRegisteredTypes().Equals(types));
+  EXPECT_TRUE(
+      fake_invalidation_client_.GetRegisteredTypes().Equals(types));
 }
 
 TEST_F(RegistrationManagerTest, DisableType) {
-  syncable::ModelTypeSet types(kModelTypes, kModelTypes + kModelTypeCount);
+  syncable::ModelEnumSet types = FromPtr(kModelTypes, kModelTypeCount);
 
   fake_registration_manager_.SetRegisteredTypes(types);
   EXPECT_TRUE(fake_registration_manager_.GetPendingRegistrations().empty());
 
   // Disable some types.
-  syncable::ModelTypeSet disabled_types(
-      kModelTypes, kModelTypes + 3);
-  syncable::ModelTypeSet enabled_types(
-      kModelTypes + 3, kModelTypes + kModelTypeCount);
+  syncable::ModelEnumSet disabled_types = FromPtr(
+      kModelTypes, 3);
+  syncable::ModelEnumSet enabled_types = FromPtr(
+      kModelTypes + 3, kModelTypeCount - 3);
   DisableTypes(disabled_types);
   ExpectPendingRegistrations(
-      syncable::ModelTypeSet(), 0.0,
+      syncable::ModelEnumSet(), 0.0,
       fake_registration_manager_.GetPendingRegistrations());
-  EXPECT_EQ(enabled_types, fake_registration_manager_.GetRegisteredTypes());
-  EXPECT_EQ(enabled_types, fake_invalidation_client_.GetRegisteredTypes());
+  EXPECT_TRUE(
+      fake_registration_manager_.GetRegisteredTypes().Equals(enabled_types));
+  EXPECT_TRUE(
+      fake_invalidation_client_.GetRegisteredTypes().Equals(enabled_types));
 
   fake_registration_manager_.SetRegisteredTypes(types);
-  EXPECT_EQ(enabled_types, fake_registration_manager_.GetRegisteredTypes());
+  EXPECT_TRUE(
+      fake_registration_manager_.GetRegisteredTypes().Equals(enabled_types));
 
-  fake_registration_manager_.MarkRegistrationLost(*disabled_types.begin());
+  fake_registration_manager_.MarkRegistrationLost(
+      disabled_types.First().Get());
   ExpectPendingRegistrations(
-      syncable::ModelTypeSet(), 0.0,
+      syncable::ModelEnumSet(), 0.0,
       fake_registration_manager_.GetPendingRegistrations());
 
   fake_registration_manager_.MarkAllRegistrationsLost();

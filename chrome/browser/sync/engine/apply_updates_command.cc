@@ -93,13 +93,10 @@ void ApplyUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
   // some subset of the currently synced datatypes.
   const sessions::StatusController& status(session->status_controller());
   if (status.ServerSaysNothingMoreToDownload()) {
-    for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-         i < syncable::MODEL_TYPE_COUNT; ++i) {
-      syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
-      if (status.updates_request_types()[i]) {
-        // This gets persisted to the directory's backing store.
-        dir->set_initial_sync_ended_for_type(model_type, true);
-      }
+    for (syncable::ModelEnumSet::Iterator it =
+             status.updates_request_types().First(); it.Good(); it.Inc()) {
+      // This gets persisted to the directory's backing store.
+      dir->set_initial_sync_ended_for_type(it.Get(), true);
     }
   }
 }

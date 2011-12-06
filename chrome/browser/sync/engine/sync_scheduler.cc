@@ -459,16 +459,16 @@ void SyncScheduler::ScheduleCleanupDisabledTypes() {
 
 void SyncScheduler::ScheduleNudge(
     const TimeDelta& delay,
-    NudgeSource source, const ModelTypeBitSet& types,
+    NudgeSource source, syncable::ModelEnumSet types,
     const tracked_objects::Location& nudge_location) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   SDVLOG_LOC(nudge_location, 2)
       << "Nudge scheduled with delay " << delay.InMilliseconds() << " ms, "
       << "source " << GetNudgeSourceString(source) << ", "
-      << "types " << syncable::ModelTypeBitSetToString(types);
+      << "types " << syncable::ModelEnumSetToString(types);
 
   ModelTypePayloadMap types_with_payloads =
-      syncable::ModelTypePayloadMapFromBitSet(types, std::string());
+      syncable::ModelTypePayloadMapFromEnumSet(types, std::string());
   PostTask(nudge_location, "ScheduleNudgeImpl",
            base::Bind(&SyncScheduler::ScheduleNudgeImpl,
                       weak_ptr_factory_.GetWeakPtr(),
@@ -562,7 +562,7 @@ void SyncScheduler::ScheduleNudgeImpl(
 
 // Helper to extract the routing info and workers corresponding to types in
 // |types| from |registrar|.
-void GetModelSafeParamsForTypes(const ModelTypeBitSet& types,
+void GetModelSafeParamsForTypes(syncable::ModelEnumSet types,
     ModelSafeWorkerRegistrar* registrar, ModelSafeRoutingInfo* routes,
     std::vector<ModelSafeWorker*>* workers) {
   ModelSafeRoutingInfo r_tmp;
@@ -573,19 +573,18 @@ void GetModelSafeParamsForTypes(const ModelTypeBitSet& types,
   bool passive_group_added = false;
 
   typedef std::vector<ModelSafeWorker*>::const_iterator iter;
-  for (size_t i = syncable::FIRST_REAL_MODEL_TYPE; i < types.size(); ++i) {
-    if (!types.test(i))
-      continue;
-    syncable::ModelType t = syncable::ModelTypeFromInt(i);
+  for (syncable::ModelEnumSet::Iterator it = types.First();
+       it.Good(); it.Inc()) {
+    const syncable::ModelType t = it.Get();
     DCHECK_EQ(1U, r_tmp.count(t));
     (*routes)[t] = r_tmp[t];
-    iter it = std::find_if(w_tmp.begin(), w_tmp.end(),
-                           ModelSafeWorkerGroupIs(r_tmp[t]));
-    if (it != w_tmp.end()) {
-      iter it2 = std::find_if(workers->begin(), workers->end(),
-                              ModelSafeWorkerGroupIs(r_tmp[t]));
-      if (it2 == workers->end())
-        workers->push_back(*it);
+    iter w_tmp_it = std::find_if(w_tmp.begin(), w_tmp.end(),
+                                 ModelSafeWorkerGroupIs(r_tmp[t]));
+    if (w_tmp_it != w_tmp.end()) {
+      iter workers_it = std::find_if(workers->begin(), workers->end(),
+                                     ModelSafeWorkerGroupIs(r_tmp[t]));
+      if (workers_it == workers->end())
+        workers->push_back(*w_tmp_it);
 
       if (r_tmp[t] == GROUP_PASSIVE)
         passive_group_added = true;
@@ -606,7 +605,7 @@ void GetModelSafeParamsForTypes(const ModelTypeBitSet& types,
 }
 
 void SyncScheduler::ScheduleConfig(
-    const ModelTypeBitSet& types,
+    syncable::ModelEnumSet types,
     GetUpdatesCallerInfo::GetUpdatesSource source) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK(IsConfigRelatedUpdateSourceValue(source));

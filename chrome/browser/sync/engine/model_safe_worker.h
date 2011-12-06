@@ -78,7 +78,7 @@ base::DictionaryValue* ModelSafeRoutingInfoToValue(
 std::string ModelSafeRoutingInfoToString(
     const ModelSafeRoutingInfo& routing_info);
 
-syncable::ModelTypeSet GetRoutingInfoTypes(
+syncable::ModelEnumSet GetRoutingInfoTypes(
     const ModelSafeRoutingInfo& routing_info);
 
 ModelSafeGroup GetGroupForModelType(const syncable::ModelType type,

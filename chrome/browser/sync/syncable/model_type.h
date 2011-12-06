@@ -16,6 +16,7 @@
 
 #include "base/logging.h"
 #include "base/time.h"
+#include "chrome/browser/sync/util/enum_set.h"
 
 namespace base {
 class ListValue;
@@ -80,12 +81,15 @@ enum ModelType {
   EXTENSION_SETTINGS,
   // App notifications.
   APP_NOTIFICATIONS,
+  LAST_REAL_MODEL_TYPE = APP_NOTIFICATIONS,
 
   MODEL_TYPE_COUNT,
 };
 
 typedef std::bitset<MODEL_TYPE_COUNT> ModelTypeBitSet;
 typedef std::set<ModelType> ModelTypeSet;
+typedef browser_sync::EnumSet<
+  ModelType, FIRST_REAL_MODEL_TYPE, LAST_REAL_MODEL_TYPE> ModelEnumSet;
 
 inline ModelType ModelTypeFromInt(int i) {
   DCHECK_GE(i, 0);
@@ -140,14 +144,25 @@ ModelType ModelTypeFromString(const std::string& model_type_string);
 
 std::string ModelTypeBitSetToString(const ModelTypeBitSet& model_types);
 
+std::string ModelEnumSetToString(ModelEnumSet model_types);
+
 // Convert a ModelTypeSet to a ModelTypeBitSet.
 ModelTypeBitSet ModelTypeBitSetFromSet(const ModelTypeSet& set);
 
 // Convert a ModelTypeBitSet to a ModelTypeSet.
 ModelTypeSet ModelTypeBitSetToSet(const ModelTypeBitSet& bit_set);
 
+ModelEnumSet ModelTypeBitSetToEnumSet(const ModelTypeBitSet& bitset);
+
+ModelTypeSet ModelEnumSetToSet(ModelEnumSet enum_set);
+
+ModelEnumSet ModelTypeSetToEnumSet(const ModelTypeSet& model_type_set);
+
 // Caller takes ownership of returned list.
 base::ListValue* ModelTypeBitSetToValue(const ModelTypeBitSet& model_types);
+
+// Caller takes ownership of returned list.
+base::ListValue* ModelEnumSetToValue(ModelEnumSet model_types);
 
 ModelTypeBitSet ModelTypeBitSetFromValue(const base::ListValue& value);
 
@@ -155,6 +170,8 @@ ModelTypeBitSet ModelTypeBitSetFromValue(const base::ListValue& value);
 base::ListValue* ModelTypeSetToValue(const ModelTypeSet& model_types);
 
 ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value);
+
+ModelEnumSet ModelEnumSetFromValue(const base::ListValue& value);
 
 // Returns a string corresponding to the syncable tag for this datatype.
 std::string ModelTypeToRootTag(ModelType type);

@@ -319,7 +319,7 @@ struct AllModelTypeState {
   ClientToServerResponse commit_response;
   // We GetUpdates for some combination of types at once.
   // requested_update_types stores the set of types which were requested.
-  syncable::ModelTypeBitSet updates_request_types;
+  syncable::ModelEnumSet updates_request_types;
   ClientToServerResponse updates_response;
   // Used to build the shared commit message.
   DirtyOnWrite<std::vector<int64> > unsynced_handles;
