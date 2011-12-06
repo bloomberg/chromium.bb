@@ -38,6 +38,11 @@ void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
                         const GURL& url,
                         content::PageTransition transition_type);
 
+// Utility function to fake the ViewHostMsg_UpdateRect IPC arriving at a RWH.
+void SimulateUpdateRect(RenderWidgetHost* widget,
+                        TransportDIB::Id bitmap,
+                        const gfx::Rect& rect);
+
 // This file provides a testing framework for mocking out the RenderProcessHost
 // layer. It allows you to test RenderViewHost, TabContents,
 // NavigationController, and other layers above that without running an actual

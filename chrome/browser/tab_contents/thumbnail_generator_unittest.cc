@@ -94,12 +94,6 @@ class ThumbnailGeneratorTest : public testing::Test {
   enum TransportType { TRANSPORT_BLACK, TRANSPORT_WHITE, TRANSPORT_OTHER };
 
   void SendPaint(TransportType type) {
-    ViewHostMsg_UpdateRect_Params params;
-    params.bitmap_rect = gfx::Rect(0, 0, kBitmapWidth, kBitmapHeight);
-    params.view_size = params.bitmap_rect.size();
-    params.copy_rects.push_back(params.bitmap_rect);
-    params.flags = 0;
-
     scoped_ptr<skia::PlatformCanvas> canvas(
         transport_dib_->GetPlatformCanvas(kBitmapWidth, kBitmapHeight));
     switch (type) {
@@ -117,10 +111,8 @@ class ThumbnailGeneratorTest : public testing::Test {
         break;
     }
 
-    params.bitmap = transport_dib_->id();
-
-    ViewHostMsg_UpdateRect msg(1, params);
-    widget_->OnMessageReceived(msg);
+    gfx::Rect rect(0, 0, kBitmapWidth, kBitmapHeight);
+    SimulateUpdateRect(widget_.get(), transport_dib_->id(), rect);
   }
 
   TransportType ClassifyFirstPixel(const SkBitmap& bitmap) {

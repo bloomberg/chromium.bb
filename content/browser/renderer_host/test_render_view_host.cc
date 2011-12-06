@@ -40,6 +40,20 @@ void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
   params->content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
 }
 
+void SimulateUpdateRect(RenderWidgetHost* widget,
+                        TransportDIB::Id bitmap,
+                        const gfx::Rect& rect) {
+  ViewHostMsg_UpdateRect_Params params;
+  params.bitmap_rect = rect;
+  params.view_size = params.bitmap_rect.size();
+  params.copy_rects.push_back(params.bitmap_rect);
+  params.flags = 0;
+  params.bitmap = bitmap;
+
+  ViewHostMsg_UpdateRect msg(1, params);
+  widget->OnMessageReceived(msg);
+}
+
 TestRenderViewHost::TestRenderViewHost(SiteInstance* instance,
                                        RenderViewHostDelegate* delegate,
                                        int routing_id)
