@@ -9041,6 +9041,18 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
                desc="Text for the button that takes the user to the options of an app.">
         Options
       </message>
+      <message name="IDS_NEW_TAB_APP_DISABLE_NOTIFICATIONS"
+               desc="Text for the option to disable app notifications">
+        Disable notifications
+      </message>
+      <message name="IDS_NEW_TAB_APP_ENABLE_NOTIFICATIONS"
+               desc="Text for the option to enable app notifications">
+        Enable notifications
+      </message>
+      <message name="IDS_NEW_TAB_APP_ALLOW_NOTIFICATIONS"
+               desc="Text for the option to allow app notifications">
+        Allow notifications
+      </message>
       <message name="IDS_NEW_TAB_APP_CREATE_SHORTCUT"
                desc="Text for the button that creates an app shortcut.">
         Create shortcut
