@@ -100,176 +100,25 @@ input[type='submit'][disabled]:hover {
   padding-bottom: 8px;
 }
 
-/* Main part of the dialog between header and footer. */
-.dialog-container {
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
-  -webkit-box-align: stretch;
-  overflow: hidden;
-  -webkit-box-flex: 1;
-}
-
-/* List/grid and preview are inside this container. */
-.dialog-main {
-  -webkit-box-flex: 1;
-  display:-webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-box-align: stretch;
-}
-
-/* Roots list at the left. */
-.dialog-sidebar {
-  position: relative;
-  -webkit-box-flex: 0;
-  width: 200px;
-  margin-left: -200px;
-  background-color: rgba(240, 240, 240, 1);
-  margin-bottom: 15px;
-  margin-top: 15px;
-  -webkit-border-top-right-radius: 4px;
-  -webkit-border-top-left-radius: 4px;
-  -webkit-border-bottom-left-radius: 4px;
-  -webkit-transition: margin-left 180ms ease;
-  overflow: hidden;
-}
-
-.dialog-container[sidebar] .dialog-sidebar {
-  margin-left: 15px;
-}
-
-/* Roots list at the left. */
-list.roots-list {
-  width: 100%;
-}
-
-list.roots-list > * {
-  border: none;
-  border-radius: 0;
-  line-height: 35px;
-  margin: 0;
-  padding: 0 5px;
-  background-color: rgba(240,240,240,1);
-}
-
-list.roots-list > [lead],
-list.roots-list > [selected],
-list.roots-list > [anchor] {
-  background-color: hsl(214,91%,89%);
-}
-
-list.roots-list > [lead]:hover,
-list.roots-list > [selected]:hover,
-list.roots-list > [anchor]:hover {
-  background-color: hsl(214,91%,87%);
-}
-
-list.roots-list li.root-item {
-  display: -webkit-box;
-  -webkit-box-align: center;
-  -webkit-box-pack: start;
-}
-
-li.root-item > * {
-  display: block;
-  margin-right: 5px;
-}
-
-li.root-item > .text {
-  max-width: 130px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-li.root-item > .spacer {
-  -webkit-box-flex: 1;
-}
-
-img.root-eject {
-  opacity: 0.5;
-  cursor: pointer;
-  width: 15px;
-  height: 12px;
-}
-
-img.root-eject:hover {
-  opacity: 1;
-}
-
 /* Breadcrumbs and things under the title but above the list view. */
 .dialog-header {
   -webkit-box-orient: horizontal;
   -webkit-box-align: center;
   display: -webkit-box;
-  margin-top: 15px;
-  margin-right: 15px;
+  margin: 15px;
   margin-bottom: 4px;
-  margin-left: 15px;
-  -webkit-transition: all 180ms ease;
- }
+}
 
 /* Container for the detail and thumbnail (not implemented yet) list views. */
-.dialog-container[sidebar] .dialog-header {
-  margin-left: 0;
-}
-
-/* Close sidebar button. */
-div.close-sidebar {
-  cursor: pointer;
-  position: absolute;
-  right: 0;
-  top: 2px;
-  display: none;
-  z-index: 10;
-  background-color: white;
-  border: 1px solid rgba(200,200,200,1);
-  width: 13px;
-  height: 24px;
-}
-
-div.close-sidebar:hover {
-  background-color: rgba(240,240,240,1);
-}
-
-/* Open sidebar button. */
-div.open-sidebar {
-  cursor: pointer;
-  margin-right: 10px;
-  background-color: white;
-  width: 13px;
-  height: 24px;
-}
-
-div.open-sidebar:hover {
-  background-color: rgba(240,240,240,1);
-}
-
-.dialog-container[sidebar] div.open-sidebar {
-  display: none;;
-}
-
-.dialog-container[sidebar] div.close-sidebar {
-  display: block;
-}
-
-/* Container for the detail and thumbnail list views. */
 .dialog-body {
   -webkit-box-orient: vertical;
   -webkit-box-flex: 1;
   border: 1px #aaa solid;
   border-radius: 4px;
   display: -webkit-box;
-  margin-right: 15px;
-  margin-bottom: 15px;
-  margin-left: 15px;
+  margin: 15px;
+  margin-top: 0;
   overflow: hidden;
-  -webkit-transition: all 180ms ease;
-}
-
-.dialog-container[sidebar] .dialog-body {
-  -webkit-border-top-left-radius: 0;
-  -webkit-border-bottom-left-radius: 0;
-  margin-left: 0;
 }
 
 /* Container for the ok/cancel buttons. */
@@ -285,27 +134,12 @@ div.open-sidebar:hover {
   -webkit-box-orient: horizontal;
   -webkit-box-flex: 1;
   display: -webkit-box;
-  -webkit-box-align: center;
   font-size: 15px;
   line-height: 15px;
   height: 18px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.dialog-container[sidebar] .breadcrumbs {
-  margin-left: 10px;
-}
-
-/* Icon at the start of breadcrumb path. Corresponds to the root selected. */
-.breadcrumb-icon {
-  margin-right: 5px;
-  display: block;
-}
-
-.dialog-container[sidebar] .breadcrumb-icon {
-  display: none;
 }
 
 /* A single directory name in the list of path breadcrumbs. */
@@ -376,7 +210,10 @@ button.thumbnail-view > img {
 
 /* The cr.ui.Grid representing the detailed file list. */
 .thumbnail-grid {
-  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 0;
   overflow-y: scroll;
 }
 
@@ -431,7 +268,9 @@ div.img-container > img {
 
 /* The cr.ui.Table representing the detailed file list. */
 .detail-table {
-  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
   border: 0;
 }
 

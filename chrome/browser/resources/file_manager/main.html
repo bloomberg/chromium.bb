@@ -109,69 +109,59 @@
   <body i18n-values=".style.fontFamily:WEB_FONT_FAMILY;
                      .style.fontSize:WEB_FONT_SIZE">
     <commands>
-      <command id="cut" i18n-values="label:CUT_BUTTON_LABEL"></command>
-      <command id="copy" i18n-values="label:COPY_BUTTON_LABEL"></command>
-      <command id="paste" i18n-values="label:PASTE_BUTTON_LABEL"></command>
-      <command id="rename" i18n-values="label:RENAME_BUTTON_LABEL"></command>
-      <command id="delete" i18n-values="label:DELETE_BUTTON_LABEL"></command>
-      <command id="newfolder" i18n-values="label:NEW_FOLDER_BUTTON_LABEL"></command>
+      <command id="cut"></command>
+      <command id="copy"></command>
+      <command id="paste"></command>
+      <command id="rename"></command>
+      <command id="delete"></command>
     </commands>
 
     <menu class=file-context-menu>
-      <menuitem command='#cut'></menuitem>
-      <menuitem command='#copy'></menuitem>
-      <menuitem command='#paste'></menuitem>
+      <menuitem i18n-content=CUT_BUTTON_LABEL command='#cut'></menuitem>
+      <menuitem i18n-content=COPY_BUTTON_LABEL command='#copy'></menuitem>
+      <menuitem i18n-content=PASTE_BUTTON_LABEL command='#paste'></menuitem>
       <hr>
-      <menuitem command='#rename'></menuitem>
-      <menuitem command='#delete'></menuitem>
-      <hr visibleif='this.dialogType_ == "saveas-file" ||
-                     this.dialogType_ == "full-page"'>
-      <menuitem command='#newfolder'
-          visibleif='this.dialogType_ == "saveas-file" ||
-                     this.dialogType_ == "full-page"'></menuitem>
+      <menuitem i18n-content=RENAME_BUTTON_LABEL command='#rename'></menuitem>
+      <menuitem i18n-content=DELETE_BUTTON_LABEL command='#delete'></menuitem>
     </menu>
 
     <div class=dialog-title visibleif='this.dialogType_ != "full-page"'
          >[TITLE]</div>
-    <div class=dialog-container>
-      <div class=dialog-sidebar>
-        <div class=close-sidebar><img src='images/close_sidebar.png'></div>
-        <list class=roots-list></list>
-      </div>
-      <div class=dialog-main>
-        <div class=dialog-header>
-          <div class=open-sidebar><img src='images/open_sidebar.png'></div>
-          <div class=breadcrumbs></div>
-          <button class=detail-view tabindex=4
-                  ><img src='images/icon-detail-view.png'></button
-          ><button class=thumbnail-view tabindex=5
-                  ><img src='images/icon-thumb-view.png'></button>
-        </div>
-        <div class=dialog-body>
-          <div class=filelist-panel>
-            <div class=list-container>
-              <div class=detail-table tabindex=0></div>
-              <grid class=thumbnail-grid tabindex=0></grid>
-            </div>
-            <div class=downloads-warning hidden>
-              <img src=images/warning_icon_square_26x26.png>
-              <div></div>
-            </div>
-          </div>
-          <div class=preview-panel visibility=hidden>
-            <div><div class=preview-thumbnails></div></div>
-            <div><div class=preview-summary></div></div>
-            <div class=task-buttons></div>
-            <div>
-              <button class='delete-button task-button' command='#delete'
-                      onclick='fileManager.deleteEntries(
-                               fileManager.selection.entries, false)'
-                      visibleif='this.dialogType_ == "full-page"'
-                  ><img src='images/button-icon-delete.png'
-                  ><div i18n-content=DELETE_BUTTON_LABEL></div
+    <div class=dialog-header>
+      <div class=breadcrumbs></div>
+      <button class=detail-view tabindex=4
+              ><img src='images/icon-detail-view.png'></button
+      ><button class=thumbnail-view tabindex=5
+              ><img src='images/icon-thumb-view.png'></button>
+      <button i18n-content=NEW_FOLDER_BUTTON_LABEL class='new-folder'
+              tabindex=6
+              visibleif='this.dialogType_ == "saveas-file" ||
+                         this.dialogType_ == "full-page"'
               ></button>
-            </div>
-          </div>
+    </div>
+    <div class=dialog-body>
+      <div class=filelist-panel>
+        <div class=list-container>
+          <div class=detail-table tabindex=0></div>
+          <grid class=thumbnail-grid tabindex=0></grid>
+        </div>
+        <div class=downloads-warning hidden>
+          <img src=images/warning_icon_square_26x26.png>
+          <div></div>
+        </div>
+      </div>
+      <div class=preview-panel visibility=hidden>
+        <div><div class=preview-thumbnails></div></div>
+        <div><div class=preview-summary></div></div>
+        <div class=task-buttons></div>
+        <div>
+          <button class='delete-button task-button' command='#delete'
+                  onclick='fileManager.deleteEntries(
+                           fileManager.selection.entries, false)'
+                  visibleif='this.dialogType_ == "full-page"'
+             ><img src='images/button-icon-delete.png'
+              ><div i18n-content=DELETE_BUTTON_LABEL></div
+          ></button>
         </div>
       </div>
     </div>

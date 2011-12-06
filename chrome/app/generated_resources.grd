@@ -9704,6 +9704,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_ROOT_DIRECTORY_LABEL" desc="Root directory label.">
         Files
       </message>
+      <message name="IDS_FILE_BROWSER_DOWNLOADS_DIRECTORY_LABEL" desc="/Downloads directory label.">
+        File Shelf
+      </message>
       <message name="IDS_FILE_BROWSER_ARCHIVE_DIRECTORY_LABEL" desc="/archive directory label.">
         Archives
       </message>
