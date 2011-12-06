@@ -1679,15 +1679,8 @@ bool FileDialogStringsFunction::RunImpl() {
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(dict);
 
-  // TODO(serya): Create a new string in .grd file for this one in M13.
-  dict->SetString("PREVIEW_IMAGE",
-      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_VIEW_CERT_BUTTON));
   dict->SetString("PLAY_MEDIA",
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLAY));
-#if defined(OS_CHROMEOS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePhotoEditor))
-    dict->SetString("ENABLE_PHOTO_EDITOR", "true");
-#endif
 
   return true;
 }

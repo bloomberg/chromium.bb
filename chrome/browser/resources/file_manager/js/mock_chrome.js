@@ -247,7 +247,6 @@ chrome.fileBrowserPrivate = {
       UNMOUNT_ARCHIVE: 'Close archive',
       FORMAT_DEVICE: 'Format device',
 
-      ENABLE_PHOTO_EDITOR: 'true',
       GALLERY: 'View and Edit',
       GALLERY_EDIT: 'Edit',
       GALLERY_SHARE: 'Share',

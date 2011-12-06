@@ -399,15 +399,6 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableExtensionAlerts)
   },
-#if defined(OS_CHROMEOS)
-  {
-    "enable-photo-editor",
-    IDS_FLAGS_ENABLE_PHOTO_EDITOR_NAME,
-    IDS_FLAGS_ENABLE_PHOTO_EDITOR_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnablePhotoEditor)
-  },
-#endif
   {
     "enable-media-source",
     IDS_FLAGS_ENABLE_MEDIA_SOURCE_NAME,

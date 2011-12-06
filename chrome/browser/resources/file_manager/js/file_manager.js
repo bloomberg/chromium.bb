@@ -7,8 +7,6 @@
 const EMPTY_IMAGE_URI = 'data:image/gif;base64,'
         + 'R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw%3D%3D';
 
-var g_slideshow_data = null;
-
 // If directory files changes too often, don't rescan directory more than once
 // per specified interval
 const SIMULTANEOUS_RESCAN_INTERVAL = 1000;
@@ -2087,15 +2085,9 @@ FileManager.prototype = {
       var task_parts = task.taskId.split('|');
       if (task_parts[0] == this.getExtensionId_()) {
         task.internal = true;
-        if (task_parts[1] == 'preview') {
-          // TODO(serya): This hack needed until task.iconUrl get working
-          //              (see GetFileTasksFileBrowserFunction::RunImpl).
-          task.iconUrl =
-              chrome.extension.getURL('images/icon_preview_16x16.png');
-          task.title = str('PREVIEW_IMAGE');
-          // Do not create the Slideshow button if the Gallery is present.
-          if (str('ENABLE_PHOTO_EDITOR')) continue;
-        } else if (task_parts[1] == 'play') {
+        if (task_parts[1] == 'play') {
+          // TODO(serya): This hack needed until task.iconUrl is working
+          //             (see GetFileTasksFileBrowserFunction::RunImpl).
           task.iconUrl =
               chrome.extension.getURL('images/icon_play_16x16.png');
           task.title = str('PLAY_MEDIA').replace("&", "");
@@ -2112,9 +2104,6 @@ FileManager.prototype = {
               chrome.extension.getURL('images/icon_preview_16x16.png');
           task.title = str('GALLERY');
           task.allTasks = tasksList;
-
-          // Skip the button creation.
-          if (!str('ENABLE_PHOTO_EDITOR')) continue;
           this.galleryTask_ = task;
         }
       }
@@ -2303,10 +2292,7 @@ FileManager.prototype = {
    */
   FileManager.prototype.onFileTaskExecute_ = function(id, details) {
     var urls = details.urls;
-    if (id == 'preview') {
-      g_slideshow_data = urls;
-      chrome.tabs.create({url: "slideshow.html"});
-    } else if (id == 'play' || id == 'enqueue') {
+    if (id == 'play' || id == 'enqueue') {
       chrome.fileBrowserPrivate.viewFiles(urls, id);
     } else if (id == 'mount-archive') {
       for (var index = 0; index < urls.length; ++index) {

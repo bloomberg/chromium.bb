@@ -4933,11 +4933,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_EXTENSION_ALERTS_DESCRIPTION" desc="Description for the flag to enable extension alerts.">
         Enable various alerts about changes in extension state.
       </message>
-      <message name="IDS_FLAGS_ENABLE_PHOTO_EDITOR_NAME" desc="Title for the flag to enable the photo editor.">
-        Photo Editor
-      </message>
-      <message name="IDS_FLAGS_ENABLE_PHOTO_EDITOR_DESCRIPTION" desc="Description for the flag to enable the photo editor.">
-      </message>
       <message name="IDS_FLAGS_ENABLE_MEDIA_SOURCE_NAME" desc="Title for the flag to enable the Media Source API on &lt;video&gt; elements.">
         Enable Media Source API on &lt;video&gt; elements.
       </message>
