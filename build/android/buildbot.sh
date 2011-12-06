@@ -14,7 +14,22 @@
 set -e
 set -x
 
+# Options in this script.
+BUILD_EXPERIMENTAL_TARGETS=1
+RUN_TESTS=1
 NEED_CLOBBER=0
+JOBS=4   # make -j"${JOBS}"
+
+# If we are a trybot, disable experimental targets and tests.  We
+# eventually want tests on a trybot but emulator launch/restart is not
+# reliable enough yet.
+# TODO(jrg): when setting up a trybot, make sure to add TRYBOT=1 in
+# the environment.
+if [ "${TRYBOT:-0}" = 1 ] ; then
+  echo "Disabling experimental builds and tests since we are a trybot."
+  BUILD_EXPERIMENTAL_TARGETS=0
+  RUN_TESTS=0
+fi
 
 echo "@@@BUILD_STEP cd into source root@@@"
 SRC_ROOT=$(cd "$(dirname $0)/../.."; pwd)
@@ -49,22 +64,26 @@ echo "@@@BUILD_STEP android_gyp@@@"
 android_gyp
 
 echo "@@@BUILD_STEP Compile@@@"
-make -j4
+make -j${JOBS}
 
-# Linking DumpRenderTree appears to hang forever?
-# EXPERIMENTAL_TARGETS="DumpRenderTree webkit_unit_tests"
-EXPERIMENTAL_TARGETS="webkit_unit_tests"
-for target in ${EXPERIMENTAL_TARGETS} ; do
-  echo "@@@BUILD_STEP Experimental Compile $target @@@"
-  set +e
-  make -j4 "${target}"
-  if [ $? -ne 0 ] ; then
-    echo "@@@STEP_WARNINGS@@@"
-  fi
-  set -e
-done
+if [ "${BUILD_EXPERIMENTAL_TARGETS}" = 1 ] ; then
+  # Linking DumpRenderTree appears to hang forever?
+  # EXPERIMENTAL_TARGETS="DumpRenderTree webkit_unit_tests"
+  EXPERIMENTAL_TARGETS="webkit_unit_tests"
+  for target in ${EXPERIMENTAL_TARGETS} ; do
+    echo "@@@BUILD_STEP Experimental Compile $target @@@"
+    set +e
+    make -j4 "${target}"
+    if [ $? -ne 0 ] ; then
+      echo "@@@STEP_WARNINGS@@@"
+    fi
+    set -e
+  done
+fi
 
-echo "@@@BUILD_STEP Run Tests@@@"
-build/android/run_tests.py -e --xvfb --verbose
+if [ "${RUN_TESTS}" = 1 ] ; then
+  echo "@@@BUILD_STEP Run Tests@@@"
+  build/android/run_tests.py -e --xvfb --verbose
+fi
 
 exit 0
