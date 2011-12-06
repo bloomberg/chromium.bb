@@ -19,6 +19,7 @@
 #include "base/file_util.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/string16.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
@@ -44,13 +45,13 @@ namespace {
 
 // A struct that hosts the information of AutoComplete data in PStore.
 struct AutoCompleteInfo {
-  std::wstring key;
-  std::vector<std::wstring> data;
+  string16 key;
+  std::vector<string16> data;
   bool is_url;
 };
 
 // Gets the creation time of the given file or directory.
-base::Time GetFileCreationTime(const std::wstring& file) {
+base::Time GetFileCreationTime(const string16& file) {
   base::Time creation_time;
   base::win::ScopedHandle file_handle(
       CreateFile(file.c_str(), GENERIC_READ,
@@ -125,8 +126,6 @@ IEImporter::~IEImporter() {
 }
 
 void IEImporter::ImportFavorites() {
-  std::wstring path;
-
   FavoritesInfo info;
   if (!GetFavoritesInfo(&info))
     return;
@@ -161,12 +160,12 @@ void IEImporter::ImportHistory() {
     ULONG fetched;
     while (!cancelled() &&
            (result = enum_url->Next(1, &stat_url, &fetched)) == S_OK) {
-      std::wstring url_string;
-      std::wstring title_string;
+      string16 url_string;
       if (stat_url.pwcsUrl) {
         url_string = stat_url.pwcsUrl;
         CoTaskMemFree(stat_url.pwcsUrl);
       }
+      string16 title_string;
       if (stat_url.pwcsTitle) {
         title_string = stat_url.pwcsTitle;
         CoTaskMemFree(stat_url.pwcsTitle);
@@ -248,16 +247,16 @@ void IEImporter::ImportPasswordsIE6() {
     if (SUCCEEDED(result)) {
       AutoCompleteInfo ac;
       ac.key = item_name;
-      std::wstring data;
+      string16 data;
       data.insert(0, reinterpret_cast<wchar_t*>(buffer),
                   length / sizeof(wchar_t));
 
       // The key name is always ended with ":StringData".
       const wchar_t kDataSuffix[] = L":StringData";
       size_t i = ac.key.rfind(kDataSuffix);
-      if (i != std::wstring::npos && ac.key.substr(i) == kDataSuffix) {
+      if (i != string16::npos && ac.key.substr(i) == kDataSuffix) {
         ac.key.erase(i);
-        ac.is_url = (ac.key.find(L"://") != std::wstring::npos);
+        ac.is_url = (ac.key.find(L"://") != string16::npos);
         ac_list.push_back(ac);
         base::SplitString(data, L'\0', &ac_list[ac_list.size() - 1].data);
       }
@@ -361,18 +360,18 @@ void IEImporter::ImportSearchEngines() {
       L"Software\\Microsoft\\Internet Explorer\\SearchScopes";
 
   base::win::RegKey key(HKEY_CURRENT_USER, kSearchScopePath, KEY_READ);
-  std::wstring default_search_engine_name;
+  string16 default_search_engine_name;
   const TemplateURL* default_search_engine = NULL;
   std::map<std::string, TemplateURL*> search_engines_map;
   key.ReadValue(L"DefaultScope", &default_search_engine_name);
   base::win::RegistryKeyIterator key_iterator(HKEY_CURRENT_USER,
                                               kSearchScopePath);
   while (key_iterator.Valid()) {
-    std::wstring sub_key_name = kSearchScopePath;
+    string16 sub_key_name = kSearchScopePath;
     sub_key_name.append(L"\\").append(key_iterator.Name());
     base::win::RegKey sub_key(HKEY_CURRENT_USER, sub_key_name.c_str(),
                               KEY_READ);
-    std::wstring wide_url;
+    string16 wide_url;
     if ((sub_key.ReadValue(L"URL", &wide_url) != ERROR_SUCCESS) ||
         wide_url.empty()) {
       VLOG(1) << "No URL for IE search engine at " << key_iterator.Name();
@@ -382,7 +381,7 @@ void IEImporter::ImportSearchEngines() {
     // For the name, we try the default value first (as Live Search uses a
     // non displayable name in DisplayName, and the readable name under the
     // default value).
-    std::wstring name;
+    string16 name;
     if ((sub_key.ReadValue(NULL, &name) != ERROR_SUCCESS) || name.empty()) {
       // Try the displayable name.
       if ((sub_key.ReadValue(L"DisplayName", &name) != ERROR_SUCCESS) ||
@@ -441,7 +440,7 @@ void IEImporter::ImportHomepage() {
   const wchar_t* kIEDefaultHomepage = L"Default_Page_URL";
 
   base::win::RegKey key(HKEY_CURRENT_USER, kIESettingsMain, KEY_READ);
-  std::wstring homepage_url;
+  string16 homepage_url;
   if (key.ReadValue(kIEHomepage, &homepage_url) != ERROR_SUCCESS ||
       homepage_url.empty())
     return;
@@ -452,7 +451,7 @@ void IEImporter::ImportHomepage() {
 
   // Check to see if this is the default website and skip import.
   base::win::RegKey keyDefault(HKEY_LOCAL_MACHINE, kIESettingsMain, KEY_READ);
-  std::wstring default_homepage_url;
+  string16 default_homepage_url;
   LONG result = keyDefault.ReadValue(kIEDefaultHomepage, &default_homepage_url);
   if (result == ERROR_SUCCESS && !default_homepage_url.empty()) {
     if (homepage.spec() == GURL(default_homepage_url).spec())
