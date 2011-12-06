@@ -690,7 +690,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOnlineLogin) {
   RunResolve(auth_.get(), &message_loop_);
 }
 
-TEST_F(ParallelAuthenticatorTest, DriveNeedNewPassword) {
+TEST_F(ParallelAuthenticatorTest, FLAKY_DriveNeedNewPassword) {
   FailOnLoginSuccess();  // Set failing on success as the default...
   // ...but expect ONE successful login first.
   ExpectLoginSuccess(username_, password_, result_, true);
