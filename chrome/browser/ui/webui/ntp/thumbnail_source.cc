@@ -46,11 +46,5 @@ MessageLoop* ThumbnailSource::MessageLoopForRequestPath(
 }
 
 void ThumbnailSource::SendDefaultThumbnail(int request_id) {
-  // Use placeholder thumbnail.
-  if (!default_thumbnail_.get()) {
-    default_thumbnail_ =
-        ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-            IDR_DEFAULT_THUMBNAIL);
-  }
   SendResponse(request_id, default_thumbnail_);
 }
