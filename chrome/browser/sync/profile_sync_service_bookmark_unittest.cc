@@ -296,6 +296,8 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
   virtual void SetUp() {
     test_user_share_.SetUp();
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kCreateMobileBookmarksFolder);
   }
 
   virtual void TearDown() {

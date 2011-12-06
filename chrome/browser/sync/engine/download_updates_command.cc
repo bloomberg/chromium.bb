@@ -6,11 +6,13 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
+#include "chrome/common/chrome_switches.h"
 
 using syncable::ScopedDirLookup;
 
@@ -35,8 +37,10 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
       ClientToServerMessage::GET_UPDATES);
   GetUpdatesMessage* get_updates =
       client_to_server_message.mutable_get_updates();
-  // TODO: make this default to true.
-  get_updates->set_include_syncable_bookmarks(true);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kCreateMobileBookmarksFolder)) {
+    get_updates->set_include_syncable_bookmarks(true);
+  }
 
   ScopedDirLookup dir(session->context()->directory_manager(),
                       session->context()->account_name());
