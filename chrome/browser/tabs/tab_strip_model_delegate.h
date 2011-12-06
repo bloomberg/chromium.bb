@@ -15,6 +15,9 @@ class Profile;
 class SiteInstance;
 class TabContents;
 class TabContentsWrapper;
+namespace content {
+struct Referrer;
+}
 namespace gfx {
 class Rect;
 }
@@ -63,7 +66,7 @@ class TabStripModelDelegate {
   // If |instance| is not null, its process is used to render the tab.
   virtual TabContentsWrapper* CreateTabContentsForURL(
       const GURL& url,
-      const GURL& referrer,
+      const content::Referrer& referrer,
       Profile* profile,
       content::PageTransition transition,
       bool defer_load,

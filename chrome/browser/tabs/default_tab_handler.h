@@ -38,7 +38,7 @@ class DefaultTabHandler : public TabHandler,
   virtual int GetDragActions() const OVERRIDE;
   virtual TabContentsWrapper* CreateTabContentsForURL(
       const GURL& url,
-      const GURL& referrer,
+      const content::Referrer& referrer,
       Profile* profile,
       content::PageTransition transition,
       bool defer_load,

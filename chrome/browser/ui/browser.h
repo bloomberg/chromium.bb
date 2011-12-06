@@ -805,7 +805,7 @@ class Browser : public TabHandlerDelegate,
   // If instance is not null, its process will be used to render the tab.
   virtual TabContentsWrapper* CreateTabContentsForURL(
       const GURL& url,
-      const GURL& referrer,
+      const content::Referrer& referrer,
       Profile* profile,
       content::PageTransition transition,
       bool defer_load,

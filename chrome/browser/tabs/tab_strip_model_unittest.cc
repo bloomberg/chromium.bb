@@ -105,7 +105,7 @@ class TabStripDummyDelegate : public TabStripModelDelegate {
   virtual int GetDragActions() const { return 0; }
   virtual TabContentsWrapper* CreateTabContentsForURL(
       const GURL& url,
-      const GURL& referrer,
+      const content::Referrer& referrer,
       Profile* profile,
       content::PageTransition transition,
       bool defer_load,
