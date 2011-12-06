@@ -133,7 +133,9 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
     SetMaskAndKeycodeThenSend(&xevent, ShiftMask, XK_Shift_L);
   if (alt)
     SetMaskAndKeycodeThenSend(&xevent, Mod1Mask, XK_Alt_L);
-  xevent.xkey.keycode = ui::XKeysymForWindowsKeyCode(key, shift);
+  xevent.xkey.keycode =
+      XKeysymToKeycode(base::MessagePumpX::GetDefaultXDisplay(),
+                       ui::XKeysymForWindowsKeyCode(key, shift));
   aura::Desktop::GetInstance()->PostNativeEvent(&xevent);
 
   // Send key release events.
