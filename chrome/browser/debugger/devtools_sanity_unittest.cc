@@ -489,7 +489,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleOnNavigateBack) {
   RunTest("testConsoleOnNavigateBack", kNavigateBackTestPage);
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 // http://crbug.com/103539
 #define TestReattachAfterCrash FLAKY_TestReattachAfterCrash
 #endif
