@@ -106,6 +106,9 @@ class AppLauncherHandler : public WebUIMessageHandler,
   // Callback for "closeNotification" message.
   void HandleNotificationClose(const base::ListValue* args);
 
+  // Callback for "setNotificationsDisabled" message.
+  void HandleSetNotificationsDisabled(const base::ListValue* args);
+
   // Register app launcher preferences.
   static void RegisterUserPrefs(PrefService* pref_service);
 

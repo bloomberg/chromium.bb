@@ -63,9 +63,13 @@ cr.define('ntp4', function() {
 
       menu.appendChild(cr.ui.MenuItem.createSeparator());
       this.options_ = this.appendMenuItem_('appoptions');
+      this.disableNotifications_ =
+          this.appendMenuItem_('appdisablenotifications');
       this.uninstall_ = this.appendMenuItem_('appuninstall');
       this.options_.addEventListener('activate',
                                      this.onShowOptions_.bind(this));
+      this.disableNotifications_.addEventListener(
+          'activate', this.onDisableNotifications_.bind(this));
       this.uninstall_.addEventListener('activate',
                                        this.onUninstall_.bind(this));
 
@@ -115,7 +119,7 @@ cr.define('ntp4', function() {
     },
 
     /**
-     * Does all the necessary setup to show the menu for the give app.
+     * Does all the necessary setup to show the menu for the given app.
      * @param {App} app The App object that will be showing a context menu.
      */
     setupForApp: function(app) {
@@ -130,6 +134,13 @@ cr.define('ntp4', function() {
 
       this.options_.disabled = !app.appData.options_url || !app.appData.enabled;
       this.uninstall_.disabled = !app.appData.can_uninstall;
+
+      this.disableNotifications_.hidden = true;
+      var notificationsDisabled = app.appData.notifications_disabled;
+      if (typeof notificationsDisabled != 'undefined') {
+        this.disableNotifications_.hidden = false;
+        this.disableNotifications_.checked = notificationsDisabled;
+      }
     },
 
     /**
@@ -154,6 +165,14 @@ cr.define('ntp4', function() {
     },
     onShowOptions_: function(e) {
       window.location = this.app_.appData.options_url;
+    },
+    onDisableNotifications_: function(e) {
+      var app = this.app_;
+      app.removeBubble();
+      // Toggle the current disable setting.
+      var newSetting = !this.disableNotifications_.checked;
+      app.appData.notifications_disabled = newSetting;
+      chrome.send('setNotificationsDisabled', [app.appData.id, newSetting]);
     },
     onUninstall_: function(e) {
       chrome.send('uninstallApp', [this.app_.appData.id]);
@@ -222,7 +241,8 @@ cr.define('ntp4', function() {
       var notification = this.appData_.notification;
       var hasNotification = typeof notification != 'undefined' &&
                             typeof notification['title'] != 'undefined' &&
-                            typeof notification['body'] != 'undefined';
+                            typeof notification['body'] != 'undefined' &&
+                            !this.appData_.notifications_disabled;
       if (hasNotification)
         this.setupNotification_(notification);
 
@@ -352,6 +372,16 @@ cr.define('ntp4', function() {
         infoBubble.show();
 
         this.currentBubbleShowing_ = infoBubble;
+      }
+    },
+
+    /**
+     *  Removes the info bubble if there is one.
+     */
+    removeBubble: function() {
+      if (this.currentBubbleShowing_) {
+        this.currentBubbleShowing_.hide();
+        this.currentBubbleShowing_ = null;
       }
     },
 
@@ -784,7 +814,8 @@ cr.define('ntp4', function() {
 
   function appNotificationChanged(id, notification) {
     var app = $(id);
-    if (app)  // The app might have been uninstalled.
+    // The app might have been uninstalled, or notifications might be disabled.
+    if (app && !app.appData.notifications_disabled)
       app.setupNotification_(notification);
   };
 

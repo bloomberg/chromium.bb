@@ -149,6 +149,12 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   value->SetBoolean("is_webstore",
       extension->id() == extension_misc::kWebStoreAppId);
 
+  if (extension->HasAPIPermission(ExtensionAPIPermission::kAppNotifications)) {
+    ExtensionPrefs* prefs = service->extension_prefs();
+    value->SetBoolean("notifications_disabled",
+                      prefs->IsAppNotificationDisabled(extension->id()));
+  }
+
   if (notification)
     value->Set("notification", SerializeNotification(*notification));
 
@@ -221,6 +227,9 @@ void AppLauncherHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("closeNotification",
       base::Bind(&AppLauncherHandler::HandleNotificationClose,
                  base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("setNotificationsDisabled",
+      base::Bind(&AppLauncherHandler::HandleSetNotificationsDisabled,
+                 base::Unretained(this)));
 }
 
 void AppLauncherHandler::Observe(int type,
@@ -238,10 +247,6 @@ void AppLauncherHandler::Observe(int type,
 
   switch (type) {
     case chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED: {
-      Profile* profile = content::Source<Profile>(source).ptr();
-      if (!Profile::FromWebUI(web_ui_)->IsSameProfile(profile))
-        return;
-
       const std::string& id =
           *content::Details<const std::string>(details).ptr();
       const AppNotification* notification =
@@ -468,7 +473,7 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
     pref_change_registrar_.Add(prefs::kNTPAppPageNames, this);
 
     registrar_.Add(this, chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
-        content::NotificationService::AllSources());
+        content::Source<Profile>(profile));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
         content::Source<Profile>(profile));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -739,6 +744,20 @@ void AppLauncherHandler::HandleNotificationClose(const ListValue* args) {
   AppNotificationManager* notification_manager =
       extension_service_->app_notification_manager();
   notification_manager->ClearAll(extension_id);
+}
+
+void AppLauncherHandler::HandleSetNotificationsDisabled(
+    const ListValue* args) {
+  std::string extension_id;
+  bool disabled = false;
+  CHECK(args->GetString(0, &extension_id));
+  CHECK(args->GetBoolean(1, &disabled));
+
+  const Extension* extension = extension_service_->GetExtensionById(
+      extension_id, true);
+  if (!extension)
+    return;
+  extension_service_->SetAppNotificationDisabled(extension_id, disabled);
 }
 
 void AppLauncherHandler::OnFaviconForApp(FaviconService::Handle handle,

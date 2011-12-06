@@ -1442,6 +1442,11 @@ void ExtensionService::ProcessExtensionSyncData(
       bundle.pending_sync_data[extension_sync_data.id()] = extension_sync_data;
       CheckForUpdatesSoon();
     }
+    if (extension_sync_data.notifications_disabled() !=
+        extension_prefs_->IsAppNotificationDisabled(id)) {
+      extension_prefs_->SetAppNotificationDisabled(
+          id, extension_sync_data.notifications_disabled());
+    }
   } else {
     // TODO(akalin): Replace silent update with a list of enabled
     // permissions.

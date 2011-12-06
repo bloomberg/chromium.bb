@@ -316,6 +316,8 @@ void NTPResourceCache::CreateNewTabHTML() {
           l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
   localized_strings.SetString("appoptions",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_OPTIONS));
+  localized_strings.SetString("appdisablenotifications",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_DISABLE_NOTIFICATIONS));
   localized_strings.SetString("appcreateshortcut",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_CREATE_SHORTCUT));
   localized_strings.SetString("appDefaultPageName",
