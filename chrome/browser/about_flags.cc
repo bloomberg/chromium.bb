@@ -152,6 +152,17 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kShowCompositedLayerBorders)
   },
   {
+    "accelerated-drawing",
+    IDS_FLAGS_ACCELERATED_DRAWING_NAME,
+    IDS_FLAGS_ACCELERATED_DRAWING_DESCRIPTION,
+#if defined(USE_SKIA)
+    kOsAll,
+#else
+    0,
+#endif
+    SINGLE_VALUE_TYPE(switches::kEnableAcceleratedDrawing)
+  },
+  {
     "show-fps-counter",
     IDS_FLAGS_SHOW_FPS_COUNTER,
     IDS_FLAGS_SHOW_FPS_COUNTER_DESCRIPTION,
