@@ -281,6 +281,8 @@ div.img-container > img {
   height: 61px;
   background-color: #F0F0F0;
   padding: 0px 14px 0px 14px;
+  position: relative;
+  z-index: 3;
 
   opacity: 1;
   -webkit-transform: translate(0, 0);
