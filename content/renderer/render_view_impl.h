@@ -503,9 +503,6 @@ class RenderViewImpl : public RenderWidget,
   virtual void willReleaseScriptContext(WebKit::WebFrame* frame,
                                         v8::Handle<v8::Context>,
                                         int world_id);
-  // TODO(levin): Remove didUpdateLayout after it is moved from WebFrameClient
-  // to WebViewClient.
-  virtual void didUpdateLayout(WebKit::WebFrame* frame);
   virtual void didChangeScrollOffset(WebKit::WebFrame* frame);
   virtual void numberOfWheelEventHandlersChanged(unsigned num_handlers);
   virtual void didChangeContentsSize(WebKit::WebFrame* frame,

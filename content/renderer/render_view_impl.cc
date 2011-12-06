@@ -2917,10 +2917,6 @@ void RenderViewImpl::willReleaseScriptContext(WebFrame* frame,
       frame, context, world_id);
 }
 
-void RenderViewImpl::didUpdateLayout(WebFrame* frame) {
-  didUpdateLayout();
-}
-
 void RenderViewImpl::CheckPreferredSize() {
   // We don't always want to send the change messages over IPC, only if we've
   // been put in that mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
