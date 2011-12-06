@@ -37,7 +37,7 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
                   request_context_getter->GetURLRequestContext()->net_log(),
                   net::NetLog::SOURCE_SOCKET)),
           ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-          user_connect_callback_(NULL) {
+          old_user_connect_callback_(NULL) {
   DCHECK(request_context_getter);
   net::URLRequestContext* request_context =
       request_context_getter->GetURLRequestContext();
@@ -97,7 +97,35 @@ bool ProxyResolvingClientSocket::SetSendBufferSize(int32 size) {
 }
 
 int ProxyResolvingClientSocket::Connect(net::OldCompletionCallback* callback) {
-  DCHECK(!user_connect_callback_);
+  DCHECK(!old_user_connect_callback_ && user_connect_callback_.is_null());
+
+  tried_direct_connect_fallback_ = false;
+
+  // First we try and resolve the proxy.
+  GURL url("http://" + dest_host_port_pair_.ToString());
+  int status = network_session_->proxy_service()->ResolveProxy(
+      url,
+      &proxy_info_,
+      &proxy_resolve_callback_,
+      &pac_request_,
+      bound_net_log_);
+  if (status != net::ERR_IO_PENDING) {
+    // We defer execution of ProcessProxyResolveDone instead of calling it
+    // directly here for simplicity. From the caller's point of view,
+    // the connect always happens asynchronously.
+    MessageLoop* message_loop = MessageLoop::current();
+    CHECK(message_loop);
+    message_loop->PostTask(
+        FROM_HERE,
+        base::Bind(&ProxyResolvingClientSocket::ProcessProxyResolveDone,
+                   weak_factory_.GetWeakPtr(), status));
+  }
+  old_user_connect_callback_ = callback;
+  return net::ERR_IO_PENDING;
+}
+int ProxyResolvingClientSocket::Connect(
+    const net::CompletionCallback& callback) {
+  DCHECK(!old_user_connect_callback_ && user_connect_callback_.is_null());
 
   tried_direct_connect_fallback_ = false;
 
@@ -126,9 +154,16 @@ int ProxyResolvingClientSocket::Connect(net::OldCompletionCallback* callback) {
 
 void ProxyResolvingClientSocket::RunUserConnectCallback(int status) {
   DCHECK_LE(status, net::OK);
-  net::OldCompletionCallback* user_connect_callback = user_connect_callback_;
-  user_connect_callback_ = NULL;
-  user_connect_callback->Run(status);
+  if (old_user_connect_callback_) {
+    net::OldCompletionCallback* user_connect_callback =
+        old_user_connect_callback_;
+    old_user_connect_callback_ = NULL;
+    user_connect_callback->Run(status);
+  } else {
+    net::CompletionCallback user_connect_callback = user_connect_callback_;
+    user_connect_callback_.Reset();
+    user_connect_callback.Run(status);
+  }
 }
 
 // Always runs asynchronously.
@@ -287,7 +322,8 @@ void ProxyResolvingClientSocket::Disconnect() {
   CloseTransportSocket();
   if (pac_request_)
     network_session_->proxy_service()->CancelPacRequest(pac_request_);
-  user_connect_callback_ = NULL;
+  old_user_connect_callback_ = NULL;
+  user_connect_callback_.Reset();
 }
 
 bool ProxyResolvingClientSocket::IsConnected() const {

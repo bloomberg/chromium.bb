@@ -63,6 +63,7 @@ class FakeSocket : public net::StreamSocket {
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
   virtual bool SetSendBufferSize(int32 size) OVERRIDE;
   virtual int Connect(net::OldCompletionCallback* callback) OVERRIDE;
+  virtual int Connect(const net::CompletionCallback& callback) OVERRIDE;
   virtual void Disconnect() OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
   virtual bool IsConnectedAndIdle() const OVERRIDE;
@@ -164,6 +165,10 @@ bool FakeSocket::SetSendBufferSize(int32 size) {
 }
 
 int FakeSocket::Connect(net::OldCompletionCallback* callback) {
+  return 0;
+}
+
+int FakeSocket::Connect(const net::CompletionCallback& callback) {
   return 0;
 }
 

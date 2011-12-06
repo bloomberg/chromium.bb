@@ -25,8 +25,9 @@ class CurveCPClientSocket : public StreamSocket {
                       const net::NetLog::Source& source);
   virtual ~CurveCPClientSocket();
 
-  // ClientSocket methods:
+  // ClientSocket implementation.
   virtual int Connect(OldCompletionCallback* callback) OVERRIDE;
+  virtual int Connect(const net::CompletionCallback& callback) OVERRIDE;
   virtual void Disconnect() OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
   virtual bool IsConnectedAndIdle() const OVERRIDE;

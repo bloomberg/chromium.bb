@@ -34,6 +34,7 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
   int Write(net::IOBuffer* buffer, int buffer_size,
             net::OldCompletionCallback* callback);
   int Connect(net::OldCompletionCallback* callback);
+  int Connect(const net::CompletionCallback& callback);
   void Disconnect();
   bool IsConnected() const;
 
@@ -68,7 +69,8 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
   // This re-sets |timer| without triggering callbacks.
   void AdjustClock();
 
-  net::OldCompletionCallback* connect_callback_;
+  net::OldCompletionCallback* old_connect_callback_;
+  net::CompletionCallback connect_callback_;
   net::OldCompletionCallback* read_callback_;
   net::OldCompletionCallback* write_callback_;
 
@@ -93,7 +95,7 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
 
 
 PseudoTcpAdapter::Core::Core(net::Socket* socket)
-    : connect_callback_(NULL),
+    : old_connect_callback_(NULL),
       read_callback_(NULL),
       write_callback_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(pseudo_tcp_(this, 0)),
@@ -171,6 +173,27 @@ int PseudoTcpAdapter::Core::Connect(net::OldCompletionCallback* callback) {
 
   AdjustClock();
 
+  old_connect_callback_ = callback;
+  connect_callback_.Reset();
+  DoReadFromSocket();
+
+  return net::ERR_IO_PENDING;
+}
+
+int PseudoTcpAdapter::Core::Connect(const net::CompletionCallback& callback) {
+  DCHECK_EQ(pseudo_tcp_.State(), cricket::PseudoTcp::TCP_LISTEN);
+
+  // Reference the Core in case a callback deletes the adapter.
+  scoped_refptr<Core> core(this);
+
+  // Start the connection attempt.
+  int result = pseudo_tcp_.Connect();
+  if (result < 0)
+    return net::ERR_FAILED;
+
+  AdjustClock();
+
+  old_connect_callback_ = NULL;
   connect_callback_ = callback;
   DoReadFromSocket();
 
@@ -183,7 +206,8 @@ void PseudoTcpAdapter::Core::Disconnect() {
   read_buffer_ = NULL;
   write_callback_ = NULL;
   write_buffer_ = NULL;
-  connect_callback_ = NULL;
+  old_connect_callback_ = NULL;
+  connect_callback_.Reset();
 
   // TODO(wez): Connect should succeed if called after Disconnect, which
   // PseudoTcp doesn't support, so we need to teardown the internal PseudoTcp
@@ -202,10 +226,14 @@ bool PseudoTcpAdapter::Core::IsConnected() const {
 void PseudoTcpAdapter::Core::OnTcpOpen(PseudoTcp* tcp) {
   DCHECK(tcp == &pseudo_tcp_);
 
-  if (connect_callback_) {
-    net::OldCompletionCallback* callback = connect_callback_;
-    connect_callback_ = NULL;
+  if (old_connect_callback_) {
+    net::OldCompletionCallback* callback = old_connect_callback_;
+    old_connect_callback_ = NULL;
     callback->Run(net::OK);
+  } else if (!connect_callback_.is_null()) {
+    net::CompletionCallback callback = connect_callback_;
+    connect_callback_.Reset();
+    callback.Run(net::OK);
   }
 
   OnTcpReadable(tcp);
@@ -257,10 +285,14 @@ void PseudoTcpAdapter::Core::OnTcpWriteable(PseudoTcp* tcp) {
 void PseudoTcpAdapter::Core::OnTcpClosed(PseudoTcp* tcp, uint32 error) {
   DCHECK_EQ(tcp, &pseudo_tcp_);
 
-  if (connect_callback_) {
-    net::OldCompletionCallback* callback = connect_callback_;
-    connect_callback_ = NULL;
+  if (old_connect_callback_) {
+    net::OldCompletionCallback* callback = old_connect_callback_;
+    old_connect_callback_ = NULL;
     callback->Run(net::MapSystemError(error));
+  } else if (!connect_callback_.is_null()) {
+    net::CompletionCallback callback = connect_callback_;
+    connect_callback_.Reset();
+    callback.Run(net::MapSystemError(error));
   }
 
   if (read_callback_) {
@@ -421,6 +453,16 @@ bool PseudoTcpAdapter::SetSendBufferSize(int32 size) {
 }
 
 int PseudoTcpAdapter::Connect(net::OldCompletionCallback* callback) {
+  DCHECK(CalledOnValidThread());
+
+  // net::StreamSocket requires that Connect return OK if already connected.
+  if (IsConnected())
+    return net::OK;
+
+  return core_->Connect(callback);
+}
+
+int PseudoTcpAdapter::Connect(const net::CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
 
   // net::StreamSocket requires that Connect return OK if already connected.

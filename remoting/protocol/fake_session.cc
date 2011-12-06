@@ -80,6 +80,10 @@ int FakeSocket::Connect(net::OldCompletionCallback* callback) {
   EXPECT_EQ(message_loop_, MessageLoop::current());
   return net::OK;
 }
+int FakeSocket::Connect(const net::CompletionCallback& callback) {
+  EXPECT_EQ(message_loop_, MessageLoop::current());
+  return net::OK;
+}
 
 void FakeSocket::Disconnect() {
   NOTIMPLEMENTED();

@@ -39,6 +39,7 @@ class PseudoTcpAdapter : public net::StreamSocket, base::NonThreadSafe {
 
   // net::StreamSocket implementation.
   virtual int Connect(net::OldCompletionCallback* callback) OVERRIDE;
+  virtual int Connect(const net::CompletionCallback& callback) OVERRIDE;
   virtual void Disconnect() OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
   virtual bool IsConnectedAndIdle() const OVERRIDE;

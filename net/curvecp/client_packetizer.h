@@ -30,8 +30,11 @@ class ClientPacketizer : public Packetizer {
   int Connect(const AddressList& server,
               Packetizer::Listener* listener,
               OldCompletionCallback* callback);
+  int Connect(const AddressList& server,
+              Packetizer::Listener* listener,
+              const CompletionCallback& callback);
 
-  // Packetizer methods
+  // Packetizer implementation.
   virtual int SendMessage(ConnectionKey key,
                           const char* data,
                           size_t length,
@@ -83,13 +86,14 @@ class ClientPacketizer : public Packetizer {
   StateType next_state_;
   scoped_ptr<UDPClientSocket> socket_;
   Packetizer::Listener* listener_;
-  OldCompletionCallback* user_callback_;
+  OldCompletionCallback* old_user_callback_;
+  CompletionCallback user_callback_;
   AddressList addresses_;
   const struct addrinfo* current_address_;
   int hello_attempts_;  // Number of attempts to send a Hello Packet.
-  bool initiate_sent_;  // Indicates whether the Initialte Packet was sent.
+  bool initiate_sent_;  // Indicates whether the Initiate Packet was sent.
 
-  scoped_refptr<IOBuffer> read_buffer_;  // Buffer for interal reads.
+  scoped_refptr<IOBuffer> read_buffer_;  // Buffer for internal reads.
 
   uchar shortterm_public_key_[32];
 

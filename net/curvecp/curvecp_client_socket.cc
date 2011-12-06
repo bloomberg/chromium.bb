@@ -25,6 +25,10 @@ int CurveCPClientSocket::Connect(OldCompletionCallback* callback) {
   return packetizer_.Connect(addresses_, &messenger_, callback);
 }
 
+int CurveCPClientSocket::Connect(const net::CompletionCallback& callback) {
+  return packetizer_.Connect(addresses_, &messenger_, callback);
+}
+
 void CurveCPClientSocket::Disconnect() {
   // TODO(mbelshe): DCHECK that we're connected.
   // Record the ConnectionKey so that we can disconnect it properly.

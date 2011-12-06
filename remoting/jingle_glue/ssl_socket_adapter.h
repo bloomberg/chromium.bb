@@ -39,9 +39,9 @@ class TransportSocket : public net::StreamSocket, public sigslot::has_slots<> {
     addr_ = addr;
   }
 
-  // net::StreamSocket implementation
-
+  // net::StreamSocket implementation.
   virtual int Connect(net::OldCompletionCallback* callback) OVERRIDE;
+  virtual int Connect(const net::CompletionCallback& callback) OVERRIDE;
   virtual void Disconnect() OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
   virtual bool IsConnectedAndIdle() const OVERRIDE;

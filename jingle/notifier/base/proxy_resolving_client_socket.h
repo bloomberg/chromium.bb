@@ -53,6 +53,7 @@ class ProxyResolvingClientSocket : public net::StreamSocket {
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
   virtual bool SetSendBufferSize(int32 size) OVERRIDE;
   virtual int Connect(net::OldCompletionCallback* callback) OVERRIDE;
+  virtual int Connect(const net::CompletionCallback& callback) OVERRIDE;
   virtual void Disconnect() OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
   virtual bool IsConnectedAndIdle() const OVERRIDE;
@@ -95,7 +96,8 @@ class ProxyResolvingClientSocket : public net::StreamSocket {
   base::WeakPtrFactory<ProxyResolvingClientSocket> weak_factory_;
 
   // The callback passed to Connect().
-  net::OldCompletionCallback* user_connect_callback_;
+  net::OldCompletionCallback* old_user_connect_callback_;
+  net::CompletionCallback user_connect_callback_;
 };
 
 }  // namespace notifier

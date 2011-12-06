@@ -53,6 +53,7 @@ class FakeSSLClientSocket : public net::StreamSocket {
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
   virtual bool SetSendBufferSize(int32 size) OVERRIDE;
   virtual int Connect(net::OldCompletionCallback* callback) OVERRIDE;
+  virtual int Connect(const net::CompletionCallback& callback) OVERRIDE;
   virtual void Disconnect() OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
   virtual bool IsConnectedAndIdle() const OVERRIDE;
@@ -107,7 +108,8 @@ class FakeSSLClientSocket : public net::StreamSocket {
   bool handshake_completed_;
 
   // The callback passed to Connect().
-  net::OldCompletionCallback* user_connect_callback_;
+  net::OldCompletionCallback* old_user_connect_callback_;
+  net::CompletionCallback user_connect_callback_;
 
   scoped_refptr<net::DrainableIOBuffer> write_buf_;
   scoped_refptr<net::DrainableIOBuffer> read_buf_;

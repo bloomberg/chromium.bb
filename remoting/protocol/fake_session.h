@@ -37,7 +37,7 @@ class FakeSocket : public net::StreamSocket {
   int input_pos() const { return input_pos_; }
   bool read_pending() const { return read_pending_; }
 
-  // net::Socket interface.
+  // net::Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
                    net::OldCompletionCallback* callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buf, int buf_len,
@@ -46,8 +46,9 @@ class FakeSocket : public net::StreamSocket {
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
   virtual bool SetSendBufferSize(int32 size) OVERRIDE;
 
-  // net::StreamSocket interface.
+  // net::StreamSocket implementation.
   virtual int Connect(net::OldCompletionCallback* callback) OVERRIDE;
+  virtual int Connect(const net::CompletionCallback& callback) OVERRIDE;
   virtual void Disconnect() OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
   virtual bool IsConnectedAndIdle() const OVERRIDE;
@@ -93,7 +94,7 @@ class FakeUdpSocket : public net::Socket {
   void AppendInputPacket(const char* data, int data_size);
   int input_pos() const { return input_pos_; }
 
-  // net::Socket interface.
+  // net::Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
                    net::OldCompletionCallback* callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buf, int buf_len,
@@ -137,7 +138,7 @@ class FakeSession : public Session {
   FakeSocket* GetStreamChannel(const std::string& name);
   FakeUdpSocket* GetDatagramChannel(const std::string& name);
 
-  // Session interface.
+  // Session implementation.
   virtual void SetStateChangeCallback(
       const StateChangeCallback& callback) OVERRIDE;
 

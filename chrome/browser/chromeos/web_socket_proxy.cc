@@ -26,6 +26,7 @@
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -554,9 +555,11 @@ class SSLChan : public MessageLoopForIO::Watcher {
         read_pipe_(read_pipe),
         write_pipe_(write_pipe),
         method_factory_(this),
-        socket_connect_callback_(NewCallback(this, &SSLChan::OnSocketConnect)),
+        socket_connect_callback_(
+            base::Bind(&SSLChan::OnSocketConnect, base::Unretained(this))),
         ssl_handshake_callback_(
-            NewCallback(this, &SSLChan::OnSSLHandshakeCompleted)),
+            base::Bind(&SSLChan::OnSSLHandshakeCompleted,
+                       base::Unretained(this))),
         socket_read_callback_(NewCallback(this, &SSLChan::OnSocketRead)),
         socket_write_callback_(NewCallback(this, &SSLChan::OnSocketWrite)) {
     if (!SetNonBlock(read_pipe_) || !SetNonBlock(write_pipe_)) {
@@ -571,7 +574,7 @@ class SSLChan : public MessageLoopForIO::Watcher {
       Shut(net::ERR_FAILED);
       return;
     }
-    int result = socket_->Connect(socket_connect_callback_.get());
+    int result = socket_->Connect(socket_connect_callback_);
     if (result != net::ERR_IO_PENDING)
       OnSocketConnect(result);
   }
@@ -631,7 +634,7 @@ class SSLChan : public MessageLoopForIO::Watcher {
       OnSSLHandshakeCompleted(net::ERR_UNEXPECTED);
       return;
     }
-    result = socket_->Connect(ssl_handshake_callback_.get());
+    result = socket_->Connect(ssl_handshake_callback_);
     if (result != net::ERR_IO_PENDING)
       OnSSLHandshakeCompleted(result);
   }
@@ -792,8 +795,8 @@ class SSLChan : public MessageLoopForIO::Watcher {
   bool is_read_pipe_blocked_;
   bool is_write_pipe_blocked_;
   ScopedRunnableMethodFactory<SSLChan> method_factory_;
-  scoped_ptr<net::OldCompletionCallback> socket_connect_callback_;
-  scoped_ptr<net::OldCompletionCallback> ssl_handshake_callback_;
+  net::CompletionCallback socket_connect_callback_;
+  net::CompletionCallback ssl_handshake_callback_;
   scoped_ptr<net::OldCompletionCallback> socket_read_callback_;
   scoped_ptr<net::OldCompletionCallback> socket_write_callback_;
   MessageLoopForIO::FileDescriptorWatcher read_pipe_controller_;

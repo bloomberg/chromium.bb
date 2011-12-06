@@ -89,7 +89,7 @@ FakeSSLClientSocket::FakeSSLClientSocket(
       transport_socket_(transport_socket),
       next_handshake_state_(STATE_NONE),
       handshake_completed_(false),
-      user_connect_callback_(NULL),
+      old_user_connect_callback_(NULL),
       write_buf_(NewDrainableIOBufferWithSize(arraysize(kSslClientHello))),
       read_buf_(NewDrainableIOBufferWithSize(arraysize(kSslServerHello))) {
   CHECK(transport_socket_.get());
@@ -126,15 +126,32 @@ int FakeSSLClientSocket::Connect(net::OldCompletionCallback* callback) {
   DCHECK(callback);
   DCHECK_EQ(next_handshake_state_, STATE_NONE);
   DCHECK(!handshake_completed_);
-  DCHECK(!user_connect_callback_);
+  DCHECK(!old_user_connect_callback_);
   DCHECK_EQ(write_buf_->BytesConsumed(), 0);
   DCHECK_EQ(read_buf_->BytesConsumed(), 0);
 
   next_handshake_state_ = STATE_CONNECT;
   int status = DoHandshakeLoop();
   if (status == net::ERR_IO_PENDING) {
-    user_connect_callback_ = callback;
+    old_user_connect_callback_ = callback;
   }
+  return status;
+}
+int FakeSSLClientSocket::Connect(const net::CompletionCallback& callback) {
+  // We don't support synchronous operation, even if
+  // |transport_socket_| does.
+  DCHECK(!callback.is_null());
+  DCHECK_EQ(next_handshake_state_, STATE_NONE);
+  DCHECK(!handshake_completed_);
+  DCHECK(user_connect_callback_.is_null());
+  DCHECK_EQ(write_buf_->BytesConsumed(), 0);
+  DCHECK_EQ(read_buf_->BytesConsumed(), 0);
+
+  next_handshake_state_ = STATE_CONNECT;
+  int status = DoHandshakeLoop();
+  if (status == net::ERR_IO_PENDING)
+    user_connect_callback_ = callback;
+
   return status;
 }
 
@@ -167,9 +184,16 @@ int FakeSSLClientSocket::DoHandshakeLoop() {
 void FakeSSLClientSocket::RunUserConnectCallback(int status) {
   DCHECK_LE(status, net::OK);
   next_handshake_state_ = STATE_NONE;
-  net::OldCompletionCallback* user_connect_callback = user_connect_callback_;
-  user_connect_callback_ = NULL;
-  user_connect_callback->Run(status);
+  if (old_user_connect_callback_) {
+    net::OldCompletionCallback* user_connect_callback =
+        old_user_connect_callback_;
+    old_user_connect_callback_ = NULL;
+    user_connect_callback->Run(status);
+  } else {
+    net::CompletionCallback user_connect_callback = user_connect_callback_;
+    user_connect_callback_.Reset();
+    user_connect_callback.Run(status);
+  }
 }
 
 void FakeSSLClientSocket::DoHandshakeLoopWithUserConnectCallback() {
@@ -191,7 +215,7 @@ int FakeSSLClientSocket::DoConnect() {
 void FakeSSLClientSocket::OnConnectDone(int status) {
   DCHECK_NE(status, net::ERR_IO_PENDING);
   DCHECK_LE(status, net::OK);
-  DCHECK(user_connect_callback_);
+  DCHECK(old_user_connect_callback_ || !user_connect_callback_.is_null());
   if (status != net::OK) {
     RunUserConnectCallback(status);
     return;
@@ -219,7 +243,7 @@ int FakeSSLClientSocket::DoSendClientHello() {
 
 void FakeSSLClientSocket::OnSendClientHelloDone(int status) {
   DCHECK_NE(status, net::ERR_IO_PENDING);
-  DCHECK(user_connect_callback_);
+  DCHECK(old_user_connect_callback_ || !user_connect_callback_.is_null());
   if (status < net::OK) {
     RunUserConnectCallback(status);
     return;
@@ -252,7 +276,7 @@ int FakeSSLClientSocket::DoVerifyServerHello() {
 
 void FakeSSLClientSocket::OnVerifyServerHelloDone(int status) {
   DCHECK_NE(status, net::ERR_IO_PENDING);
-  DCHECK(user_connect_callback_);
+  DCHECK(old_user_connect_callback_ || !user_connect_callback_.is_null());
   if (status < net::OK) {
     RunUserConnectCallback(status);
     return;
@@ -295,7 +319,8 @@ void FakeSSLClientSocket::Disconnect() {
   transport_socket_->Disconnect();
   next_handshake_state_ = STATE_NONE;
   handshake_completed_ = false;
-  user_connect_callback_ = NULL;
+  old_user_connect_callback_ = NULL;
+  user_connect_callback_.Reset();
   write_buf_->SetOffset(0);
   read_buf_->SetOffset(0);
 }

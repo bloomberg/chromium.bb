@@ -33,7 +33,7 @@ ClientPacketizer::ClientPacketizer()
     : Packetizer(),
       next_state_(NONE),
       listener_(NULL),
-      user_callback_(NULL),
+      old_user_callback_(NULL),
       current_address_(NULL),
       hello_attempts_(0),
       initiate_sent_(false),
@@ -52,7 +52,23 @@ ClientPacketizer::~ClientPacketizer() {
 int ClientPacketizer::Connect(const AddressList& server,
                               Packetizer::Listener* listener,
                               OldCompletionCallback* callback) {
-  DCHECK(!user_callback_);
+  DCHECK(!old_user_callback_);
+  DCHECK(!socket_.get());
+  DCHECK(!listener_);
+
+  listener_ = listener;
+
+  addresses_ = server;
+
+  old_user_callback_ = callback;
+  next_state_ = LOOKUP_COOKIE;
+
+  return DoLoop(OK);
+}
+int ClientPacketizer::Connect(const AddressList& server,
+                              Packetizer::Listener* listener,
+                              const net::CompletionCallback& callback) {
+  DCHECK(user_callback_.is_null());
   DCHECK(!socket_.get());
   DCHECK(!listener_);
 
@@ -279,11 +295,17 @@ int ClientPacketizer::DoConnected(int rv) {
 
 void ClientPacketizer::DoCallback(int result) {
   DCHECK_NE(result, ERR_IO_PENDING);
-  DCHECK(user_callback_);
+  DCHECK(old_user_callback_ || !user_callback_.is_null());
 
-  OldCompletionCallback* callback = user_callback_;
-  user_callback_ = NULL;
-  callback->Run(result);
+  if (old_user_callback_) {
+    OldCompletionCallback* callback = old_user_callback_;
+    old_user_callback_ = NULL;
+    callback->Run(result);
+  } else {
+    CompletionCallback callback = user_callback_;
+    user_callback_.Reset();
+    callback.Run(result);
+  }
 }
 
 int ClientPacketizer::ConnectNextAddress() {

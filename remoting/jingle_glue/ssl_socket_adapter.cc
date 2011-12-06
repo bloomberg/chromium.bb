@@ -206,6 +206,12 @@ int TransportSocket::Connect(net::OldCompletionCallback* callback) {
   NOTREACHED();
   return false;
 }
+int TransportSocket::Connect(const net::CompletionCallback& callback) {
+  // Connect is never called by SSLClientSocket, instead SSLSocketAdapter
+  // calls Connect() on socket_ directly.
+  NOTREACHED();
+  return false;
+}
 
 void TransportSocket::Disconnect() {
   socket_->Close();

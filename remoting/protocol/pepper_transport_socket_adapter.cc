@@ -123,7 +123,31 @@ bool PepperTransportSocketAdapter::SetSendBufferSize(int32 size) {
   return false;
 }
 
-int PepperTransportSocketAdapter::Connect(net::OldCompletionCallback* callback) {
+int PepperTransportSocketAdapter::Connect(
+    net::OldCompletionCallback* callback) {
+  DCHECK(CalledOnValidThread());
+
+  if (!transport_.get())
+    return net::ERR_UNEXPECTED;
+
+  old_connect_callback_ = callback;
+
+  // This will return false when GetNextAddress() returns an
+  // error. This helps to detect when the P2P Transport API is not
+  // supported.
+  int result = ProcessCandidates();
+  if (result != net::OK)
+    return result;
+
+  result = transport_->Connect(
+      callback_factory_.NewRequiredCallback(
+          &PepperTransportSocketAdapter::OnConnect));
+  DCHECK_EQ(result, PP_OK_COMPLETIONPENDING);
+
+  return net::ERR_IO_PENDING;
+}
+int PepperTransportSocketAdapter::Connect(
+    const net::CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
 
   if (!transport_.get())
@@ -254,14 +278,20 @@ void PepperTransportSocketAdapter::OnNextAddress(int32_t result) {
 
 void PepperTransportSocketAdapter::OnConnect(int result) {
   DCHECK(CalledOnValidThread());
-  DCHECK(connect_callback_);
+  DCHECK(old_connect_callback_ || !connect_callback_.is_null());
 
   if (result == PP_OK)
     connected_ = true;
 
-  net::OldCompletionCallback* callback = connect_callback_;
-  connect_callback_ = NULL;
-  callback->Run(PPErrorToNetError(result));
+  if (old_connect_callback_) {
+    net::OldCompletionCallback* callback = old_connect_callback_;
+    old_connect_callback_ = NULL;
+    callback->Run(PPErrorToNetError(result));
+  } else {
+    net::CompletionCallback callback = connect_callback_;
+    connect_callback_.Reset();
+    callback.Run(PPErrorToNetError(result));
+  }
 }
 
 void PepperTransportSocketAdapter::OnRead(int32_t result) {
