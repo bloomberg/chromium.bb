@@ -272,6 +272,8 @@ class UpdateSDKManifestFile(sdk_update.SDKManifestFile):
       raise Error('Need to specify a bundle version')
     if options.bundle_revision is None:
       raise Error('Need to specify a bundle revision')
+    if options.bundle_name == 'pepper':
+      self.options.bundle_name = 'pepper_%s' % options.bundle_version
     if options.desc is None:
       options.desc = ('Chrome %s bundle, revision %s' %
                       (options.bundle_version, options.bundle_revision))

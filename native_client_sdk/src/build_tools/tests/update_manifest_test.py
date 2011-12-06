@@ -15,6 +15,7 @@ import sys
 import tempfile
 import threading
 import unittest
+import urllib
 import urlparse
 
 from build_tools.sdk_tools import sdk_update
@@ -73,7 +74,7 @@ class FakeOptions(object):
     self.manifest_file = os.path.join(TEST_DIR, 'naclsdk_manifest_test.json')
     self.manifest_version = None
     self.recommended = None
-    self.root_url = 'http://localhost/test_url'
+    self.root_url = 'file://%s' % urllib.pathname2url(TEST_DIR)
     self.stability = None
     self.upload = False
     self.win_arch_url = None
@@ -318,16 +319,24 @@ class TestUpdateManifest(unittest.TestCase):
     self.assertRaises(
         update_manifest.Error,
         update_manifest.UpdateSDKManifestFile(options).HandleBundles)
+    options.bundle_name = 'pepper'
     options.bundle_version = 1
     options.bundle_revision = None
     self.assertRaises(
         update_manifest.Error,
         update_manifest.UpdateSDKManifestFile(options).HandleBundles)
+    options.bundle_name = 'pepper'
     options.bundle_revision = 0
-    update_manifest.UpdateSDKManifestFile(options).HandleBundles()
+    manifest_object = update_manifest.UpdateSDKManifestFile(options)
+    manifest_object.HandleBundles()
+    manifest_object.UpdateWithOptions()
+
+    options = FakeOptions()
     options.bundle_name = 'pepper_1'
-    options.bundle_version = None
-    update_manifest.UpdateSDKManifestFile(options).HandleBundles()
+    options.bundle_revision = 0
+    manifest_object = update_manifest.UpdateSDKManifestFile(options)
+    manifest_object.HandleBundles()
+    manifest_object.UpdateWithOptions()
 
 
 def main():
