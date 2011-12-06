@@ -81,6 +81,10 @@ TEST_F(FeatureInfoTest, InitializeNoExtensions) {
               Not(HasSubstr("GL_CHROMIUM_texture_compression_dxt3")));
   EXPECT_THAT(info_.extensions(),
               Not(HasSubstr("GL_CHROMIUM_texture_compression_dxt5")));
+  EXPECT_THAT(info_.extensions(),
+              Not(HasSubstr("GL_ANGLE_texture_usage")));
+  EXPECT_THAT(info_.extensions(),
+              Not(HasSubstr("GL_EXT_texture_storage")));
   EXPECT_FALSE(info_.feature_flags().npot_ok);
   EXPECT_FALSE(info_.feature_flags().chromium_webglsl);
   EXPECT_FALSE(info_.validators()->compressed_texture_format.IsValid(
@@ -120,6 +124,8 @@ TEST_F(FeatureInfoTest, InitializeNoExtensions) {
       GL_UNSIGNED_INT_24_8));
   EXPECT_FALSE(info_.validators()->render_buffer_format.IsValid(
       GL_DEPTH_COMPONENT24));
+  EXPECT_FALSE(info_.validators()->texture_parameter.IsValid(
+      GL_TEXTURE_USAGE_ANGLE));
 }
 
 TEST_F(FeatureInfoTest, InitializeNPOTExtensionGLES) {

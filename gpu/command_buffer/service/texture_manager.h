@@ -40,6 +40,7 @@ class TextureManager {
           mag_filter_(GL_LINEAR),
           wrap_s_(GL_REPEAT),
           wrap_t_(GL_REPEAT),
+          usage_(GL_NONE),
           max_level_set_(-1),
           texture_complete_(false),
           cube_complete_(false),
@@ -47,7 +48,8 @@ class TextureManager {
           has_been_bound_(false),
           framebuffer_attachment_count_(0),
           owned_(true),
-          stream_texture_(false) {
+          stream_texture_(false),
+          immutable_(false) {
     }
 
     GLenum min_filter() const {
@@ -64,6 +66,10 @@ class TextureManager {
 
     GLenum wrap_t() const {
       return wrap_t_;
+    }
+
+    GLenum usage() const {
+      return usage_;
     }
 
     int num_uncleared_mips() const {
@@ -169,6 +175,15 @@ class TextureManager {
       return stream_texture_;
     }
 
+    void SetImmutable(bool immutable) {
+      DCHECK(!immutable_);
+      immutable_ = immutable;
+    }
+
+    bool IsImmutable() {
+      return immutable_;
+    }
+
     // Whether a particular level/face is cleared.
     bool IsLevelCleared(GLenum target, GLint level);
 
@@ -239,7 +254,7 @@ class TextureManager {
         const FeatureInfo* feature_info, GLenum pname, GLint param);
 
     // Makes each of the mip levels as though they were generated.
-    bool MarkMipmapsGenerated(const FeatureInfo* feature_info);
+    bool MarkMipmapsGenerated(const FeatureInfo* feature_info, bool cleared);
 
     void MarkAsDeleted() {
       service_id_ = 0;
@@ -282,6 +297,7 @@ class TextureManager {
     GLenum mag_filter_;
     GLenum wrap_s_;
     GLenum wrap_t_;
+    GLenum usage_;
 
     // The maximum level that has been set.
     GLint max_level_set_;
@@ -307,6 +323,10 @@ class TextureManager {
 
     // Whether this is a special streaming texture.
     bool stream_texture_;
+
+    // Whether the texture is immutable and no further changes to the format
+    // or dimensions of the texture object can be made.
+    bool immutable_;
 
     DISALLOW_COPY_AND_ASSIGN(TextureInfo);
   };
@@ -343,6 +363,10 @@ class TextureManager {
         return max_cube_map_texture_size_;
     }
   }
+
+  // Returns the maxium number of levels a texture of the given size can have.
+  static GLsizei ComputeMipMapCount(
+    GLsizei width, GLsizei height, GLsizei depth);
 
   // Checks if a dimensions are valid for a given target.
   bool ValidForTarget(
@@ -385,7 +409,8 @@ class TextureManager {
 
   // Makes each of the mip levels as though they were generated.
   // Returns false if that's not allowed for the given texture.
-  bool MarkMipmapsGenerated(const FeatureInfo* feature_info, TextureInfo* info);
+  bool MarkMipmapsGenerated(const FeatureInfo* feature_info, TextureInfo* info,
+                            bool cleared);
 
   // Clears any uncleared renderable levels.
   bool ClearRenderableLevels(GLES2Decoder* decoder, TextureInfo* info);

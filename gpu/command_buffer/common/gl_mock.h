@@ -364,6 +364,10 @@ class MockGLInterface : public GLInterface {
   MOCK_METHOD3(TexParameteriv, void(
       GLenum target, GLenum pname, const GLint* params));
 
+  MOCK_METHOD5(TexStorage2DEXT, void(
+      GLenum target, GLsizei levels, GLenum internalformat,
+      GLsizei width, GLsizei height));
+
   MOCK_METHOD9(TexSubImage2D, void(
       GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
       GLsizei height, GLenum format, GLenum type, const void* pixels));

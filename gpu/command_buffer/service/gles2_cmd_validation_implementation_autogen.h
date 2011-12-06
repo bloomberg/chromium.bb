@@ -382,6 +382,17 @@ static GLenum valid_texture_internal_format_table[] = {
   GL_RGBA,
 };
 
+static GLenum valid_texture_internal_format_storage_table[] = {
+  GL_RGB565,
+  GL_RGBA4,
+  GL_RGB5_A1,
+  GL_ALPHA8_EXT,
+  GL_LUMINANCE8_EXT,
+  GL_LUMINANCE8_ALPHA8_EXT,
+  GL_RGB8_OES,
+  GL_RGBA8_OES,
+};
+
 static GLenum valid_texture_mag_filter_mode_table[] = {
   GL_NEAREST,
   GL_LINEAR,
@@ -411,6 +422,11 @@ static GLenum valid_texture_target_table[] = {
   GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
   GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
   GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+};
+
+static GLenum valid_texture_usage_table[] = {
+  GL_NONE,
+  GL_FRAMEBUFFER_ATTACHMENT_ANGLE,
 };
 
 static GLenum valid_texture_wrap_mode_table[] = {
@@ -550,6 +566,9 @@ Validators::Validators()
       texture_internal_format(
           valid_texture_internal_format_table, arraysize(
               valid_texture_internal_format_table)),
+      texture_internal_format_storage(
+          valid_texture_internal_format_storage_table, arraysize(
+              valid_texture_internal_format_storage_table)),
       texture_mag_filter_mode(
           valid_texture_mag_filter_mode_table, arraysize(
               valid_texture_mag_filter_mode_table)),
@@ -561,6 +580,8 @@ Validators::Validators()
               valid_texture_parameter_table)),
       texture_target(
           valid_texture_target_table, arraysize(valid_texture_target_table)),
+      texture_usage(
+          valid_texture_usage_table, arraysize(valid_texture_usage_table)),
       texture_wrap_mode(
           valid_texture_wrap_mode_table, arraysize(
               valid_texture_wrap_mode_table)),

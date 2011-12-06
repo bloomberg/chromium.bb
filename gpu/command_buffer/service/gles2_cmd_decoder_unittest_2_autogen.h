@@ -1696,6 +1696,7 @@ TEST_F(GLES2DecoderTest2, ViewportInvalidArgs3_0) {
 }
 // TODO(gman): BlitFramebufferEXT
 // TODO(gman): RenderbufferStorageMultisampleEXT
+// TODO(gman): TexStorage2DEXT
 // TODO(gman): SwapBuffers
 // TODO(gman): GetMaxValueInBufferCHROMIUM
 // TODO(gman): GenSharedIdsCHROMIUM
@@ -1712,8 +1713,6 @@ TEST_F(GLES2DecoderTest2, ViewportInvalidArgs3_0) {
 // TODO(gman): RequestExtensionCHROMIUM
 
 // TODO(gman): GetMultipleIntegervCHROMIUM
-
-// TODO(gman): GetProgramInfoCHROMIUM
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 

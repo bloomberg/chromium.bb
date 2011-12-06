@@ -1143,6 +1143,9 @@ void WebGraphicsContext3DCommandBufferImpl::
 DELEGATE_TO_GL_5(texImageIOSurface2DCHROMIUM, TexImageIOSurface2DCHROMIUM,
                  WGC3Denum, WGC3Dint, WGC3Dint, WGC3Duint, WGC3Duint)
 
+DELEGATE_TO_GL_5(texStorage2DEXT, TexStorage2DEXT,
+                 WGC3Denum, WGC3Dint, WGC3Duint, WGC3Dint, WGC3Dint)
+
 #if WEBKIT_USING_SKIA
 GrGLInterface* WebGraphicsContext3DCommandBufferImpl::onCreateGrGLInterface() {
   return webkit_glue::CreateCommandBufferSkiaGLBinding();

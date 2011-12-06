@@ -225,6 +225,9 @@ GL_FUNCTIONS = [
 ['void', ['glTexParameteri'], 'GLenum target, GLenum pname, GLint param'],
 ['void', ['glTexParameteriv'],
     'GLenum target, GLenum pname, const GLint* params'],
+['void', ['glTexStorage2DEXT'],
+    'GLenum target, GLsizei levels, GLenum internalformat, '
+    'GLsizei width, GLsizei height'],
 ['void', ['glTexSubImage2D'],
     'GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, '
     'GLsizei height, GLenum format, GLenum type, const void* pixels'],

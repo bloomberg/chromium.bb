@@ -1619,6 +1619,9 @@ void WebGraphicsContext3DInProcessImpl::texImageIOSurface2DCHROMIUM(
     WGC3Duint ioSurfaceId, WGC3Duint plane) {
 }
 
+DELEGATE_TO_GL_5(texStorage2DEXT, TexStorage2DEXT,
+                 WGC3Denum, WGC3Dint, WGC3Duint, WGC3Dint, WGC3Dint)
+
 #if WEBKIT_USING_SKIA
 GrGLInterface* WebGraphicsContext3DInProcessImpl::onCreateGrGLInterface() {
   return gfx::CreateInProcessSkiaGLBinding();

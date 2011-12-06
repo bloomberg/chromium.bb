@@ -1151,6 +1151,13 @@
     c.Init(target, samples, internalformat, width, height);
   }
 
+  void TexStorage2DEXT(
+      GLenum target, GLsizei levels, GLint internalFormat, GLsizei width,
+      GLsizei height) {
+    gles2::TexStorage2DEXT& c = GetCmdSpace<gles2::TexStorage2DEXT>();
+    c.Init(target, levels, internalFormat, width, height);
+  }
+
   void SwapBuffers() {
     gles2::SwapBuffers& c = GetCmdSpace<gles2::SwapBuffers>();
     c.Init();

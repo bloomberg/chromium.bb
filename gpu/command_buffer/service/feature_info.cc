@@ -405,6 +405,36 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
     validators_.pixel_store.AddValue(GL_PACK_REVERSE_ROW_ORDER_ANGLE);
     validators_.g_l_state.AddValue(GL_PACK_REVERSE_ROW_ORDER_ANGLE);
   }
+
+  if (ext.HaveAndDesire("GL_ANGLE_texture_usage")) {
+    AddExtensionString("GL_ANGLE_texture_usage");
+    validators_.texture_parameter.AddValue(GL_TEXTURE_USAGE_ANGLE);
+  }
+
+  if (ext.HaveAndDesire("GL_EXT_texture_storage")) {
+    AddExtensionString("GL_EXT_texture_storage");
+    validators_.texture_parameter.AddValue(GL_TEXTURE_IMMUTABLE_FORMAT_EXT);
+    if (enable_texture_format_bgra8888)
+        validators_.texture_internal_format_storage.AddValue(GL_BGRA8_EXT);
+    if (enable_texture_float) {
+        validators_.texture_internal_format_storage.AddValue(GL_RGBA32F_EXT);
+        validators_.texture_internal_format_storage.AddValue(GL_RGB32F_EXT);
+        validators_.texture_internal_format_storage.AddValue(GL_ALPHA32F_EXT);
+        validators_.texture_internal_format_storage.AddValue(
+            GL_LUMINANCE32F_EXT);
+        validators_.texture_internal_format_storage.AddValue(
+            GL_LUMINANCE_ALPHA32F_EXT);
+    }
+    if (enable_texture_half_float) {
+        validators_.texture_internal_format_storage.AddValue(GL_RGBA16F_EXT);
+        validators_.texture_internal_format_storage.AddValue(GL_RGB16F_EXT);
+        validators_.texture_internal_format_storage.AddValue(GL_ALPHA16F_EXT);
+        validators_.texture_internal_format_storage.AddValue(
+            GL_LUMINANCE16F_EXT);
+        validators_.texture_internal_format_storage.AddValue(
+            GL_LUMINANCE_ALPHA16F_EXT);
+    }
+  }
 }
 
 void FeatureInfo::AddExtensionString(const std::string& str) {

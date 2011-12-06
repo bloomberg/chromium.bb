@@ -8468,6 +8468,61 @@ COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleEXT, width) == 16,
 COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleEXT, height) == 20,
                OffsetOf_RenderbufferStorageMultisampleEXT_height_not_20);
 
+struct TexStorage2DEXT {
+  typedef TexStorage2DEXT ValueType;
+  static const CommandId kCmdId = kTexStorage2DEXT;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(
+      GLenum _target, GLsizei _levels, GLint _internalFormat, GLsizei _width,
+      GLsizei _height) {
+    SetHeader();
+    target = _target;
+    levels = _levels;
+    internalFormat = _internalFormat;
+    width = _width;
+    height = _height;
+  }
+
+  void* Set(
+      void* cmd, GLenum _target, GLsizei _levels, GLint _internalFormat,
+      GLsizei _width, GLsizei _height) {
+    static_cast<ValueType*>(
+        cmd)->Init(_target, _levels, _internalFormat, _width, _height);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 target;
+  int32 levels;
+  int32 internalFormat;
+  int32 width;
+  int32 height;
+};
+
+COMPILE_ASSERT(sizeof(TexStorage2DEXT) == 24,
+               Sizeof_TexStorage2DEXT_is_not_24);
+COMPILE_ASSERT(offsetof(TexStorage2DEXT, header) == 0,
+               OffsetOf_TexStorage2DEXT_header_not_0);
+COMPILE_ASSERT(offsetof(TexStorage2DEXT, target) == 4,
+               OffsetOf_TexStorage2DEXT_target_not_4);
+COMPILE_ASSERT(offsetof(TexStorage2DEXT, levels) == 8,
+               OffsetOf_TexStorage2DEXT_levels_not_8);
+COMPILE_ASSERT(offsetof(TexStorage2DEXT, internalFormat) == 12,
+               OffsetOf_TexStorage2DEXT_internalFormat_not_12);
+COMPILE_ASSERT(offsetof(TexStorage2DEXT, width) == 16,
+               OffsetOf_TexStorage2DEXT_width_not_16);
+COMPILE_ASSERT(offsetof(TexStorage2DEXT, height) == 20,
+               OffsetOf_TexStorage2DEXT_height_not_20);
+
 struct SwapBuffers {
   typedef SwapBuffers ValueType;
   static const CommandId kCmdId = kSwapBuffers;

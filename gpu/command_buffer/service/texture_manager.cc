@@ -11,11 +11,6 @@
 namespace gpu {
 namespace gles2 {
 
-static GLsizei ComputeMipMapCount(
-    GLsizei width, GLsizei height, GLsizei depth) {
-  return 1 + base::bits::Log2Floor(std::max(std::max(width, height), depth));
-}
-
 static size_t GLTargetToFaceIndex(GLenum target) {
   switch (target) {
     case GL_TEXTURE_2D:
@@ -111,7 +106,8 @@ bool TextureManager::TextureInfo::CanRender(
 }
 
 bool TextureManager::TextureInfo::MarkMipmapsGenerated(
-    const FeatureInfo* feature_info) {
+    const FeatureInfo* feature_info,
+    bool cleared) {
   if (!CanGenerateMipmaps(feature_info)) {
     return false;
   }
@@ -137,7 +133,7 @@ bool TextureManager::TextureInfo::MarkMipmapsGenerated(
                    info1.border,
                    info1.format,
                    info1.type,
-                   true);
+                   cleared);
     }
   }
 
@@ -367,6 +363,12 @@ bool TextureManager::TextureInfo::SetParameter(
       break;
     case GL_TEXTURE_MAX_ANISOTROPY_EXT:
       // Nothing to do for this case at the moment.
+      break;
+    case GL_TEXTURE_USAGE_ANGLE:
+      if (!feature_info->validators()->texture_usage.IsValid(param)) {
+        return false;
+      }
+      usage_ = param;
       break;
     default:
       NOTREACHED();
@@ -789,7 +791,8 @@ bool TextureManager::SetParameter(
 
 bool TextureManager::MarkMipmapsGenerated(
     const FeatureInfo* feature_info,
-    TextureManager::TextureInfo* info) {
+    TextureManager::TextureInfo* info,
+    bool cleared) {
   DCHECK(info);
   if (!info->CanRender(feature_info)) {
     DCHECK_NE(0, num_unrenderable_textures_);
@@ -801,7 +804,7 @@ bool TextureManager::MarkMipmapsGenerated(
   }
   num_uncleared_mips_ -= info->num_uncleared_mips();
   DCHECK_GE(num_uncleared_mips_, 0);
-  bool result = info->MarkMipmapsGenerated(feature_info);
+  bool result = info->MarkMipmapsGenerated(feature_info, cleared);
   num_uncleared_mips_ += info->num_uncleared_mips();
   if (!info->CanRender(feature_info)) {
     ++num_unrenderable_textures_;
@@ -866,6 +869,12 @@ bool TextureManager::GetClientId(GLuint service_id, GLuint* client_id) const {
   }
   return false;
 }
+
+GLsizei TextureManager::ComputeMipMapCount(
+    GLsizei width, GLsizei height, GLsizei depth) {
+  return 1 + base::bits::Log2Floor(std::max(std::max(width, height), depth));
+}
+
 
 }  // namespace gles2
 }  // namespace gpu

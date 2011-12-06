@@ -201,6 +201,7 @@ GL_APICALL void         GL_APIENTRY glVertexAttribPointer (GLuint indx, GLintVer
 GL_APICALL void         GL_APIENTRY glViewport (GLint x, GLint y, GLsizei width, GLsizei height);
 GL_APICALL void         GL_APIENTRY glBlitFramebufferEXT (GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenumBlitFilter filter);
 GL_APICALL void         GL_APIENTRY glRenderbufferStorageMultisampleEXT (GLenumRenderBufferTarget target, GLsizei samples, GLenumRenderBufferFormat internalformat, GLsizei width, GLsizei height);
+GL_APICALL void         GL_APIENTRY glTexStorage2DEXT (GLenumTextureTarget target, GLsizei levels, GLintTextureInternalFormatStorage internalFormat, GLsizei width, GLsizei height);
 // Non-GL commands.
 GL_APICALL void         GL_APIENTRY glSwapBuffers (void);
 GL_APICALL GLuint       GL_APIENTRY glGetMaxValueInBufferCHROMIUM (GLidBuffer buffer_id, GLsizei count, GLenumGetMaxIndexType type, GLuint offset);
@@ -436,6 +437,7 @@ _CMD_ID_TABLE = {
   'GetTranslatedShaderSourceANGLE':                            456,
   'PostSubBufferCHROMIUM':                                     457,
   'TexImageIOSurface2DCHROMIUM':                               458,
+  'TexStorage2DEXT':                                           459,
 }
 
 # This is a list of enum names and their valid values. It is used to map
@@ -898,6 +900,13 @@ _ENUM_LISTS = {
       'GL_LINEAR',
     ],
   },
+  'TextureUsage': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_NONE',
+      'GL_FRAMEBUFFER_ATTACHMENT_ANGLE',
+    ],
+  },
   'VertexAttribute': {
     'type': 'GLenum',
     'valid': [
@@ -1034,6 +1043,19 @@ _ENUM_LISTS = {
     'invalid': [
       'GL_BGRA',
       'GL_BGR',
+    ],
+  },
+  'TextureInternalFormatStorage': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_RGB565',
+      'GL_RGBA4',
+      'GL_RGB5_A1',
+      'GL_ALPHA8_EXT',
+      'GL_LUMINANCE8_EXT',
+      'GL_LUMINANCE8_ALPHA8_EXT',
+      'GL_RGB8_OES',
+      'GL_RGBA8_OES',
     ],
   },
   'VertexAttribType': {
@@ -1801,6 +1823,12 @@ _FUNCTION_INFO = {
     'extension': True,
     'chromium': True,
   },
+  'TexStorage2DEXT': {
+    'unit_test': False,
+    'extension': True,
+    'decoder_func': 'DoTexStorage2DEXT',
+  },
+
 }
 
 

@@ -751,6 +751,14 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
     GLuint io_surface_id,
     GLuint plane);
 
+  // Wrapper for TexStorage2DEXT.
+  void DoTexStorage2DEXT(
+    GLenum target,
+    GLint levels,
+    GLenum internal_format,
+    GLsizei width,
+    GLsizei height);
+
   // Creates a ProgramInfo for the given program.
   ProgramManager::ProgramInfo* CreateProgramInfo(
       GLuint client_id, GLuint service_id) {
@@ -3229,7 +3237,8 @@ void GLES2DecoderImpl::DoEnableVertexAttribArray(GLuint index) {
 
 void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
-  if (!info || !texture_manager()->MarkMipmapsGenerated(feature_info_, info)) {
+  if (!info ||
+      !texture_manager()->MarkMipmapsGenerated(feature_info_, info, true)) {
     SetGLError(GL_INVALID_OPERATION,
                "glGenerateMipmaps: Can not generate mips for npot textures");
     return;
@@ -6185,6 +6194,11 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
                "glCompressedTexImage2D: unknown texture target");
     return error::kNoError;
   }
+  if (info->IsImmutable()) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glCompressedTexImage2D: texture is immutable");
+    return error::kNoError;
+  }
   scoped_array<int8> zero;
   if (!data) {
     zero.reset(new int8[image_size]);
@@ -6357,6 +6371,12 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
   if (!info) {
     SetGLError(GL_INVALID_OPERATION,
                "glTexImage2D: unknown texture for target");
+    return error::kNoError;
+  }
+
+  if (info->IsImmutable()) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glTexImage2D: texture is immutable");
     return error::kNoError;
   }
 
@@ -6533,6 +6553,10 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     SetGLError(GL_INVALID_OPERATION,
                "glCopyTexImage2D: unknown texture for target");
     return;
+  }
+  if (info->IsImmutable()) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glCopyTexImage2D: texture is immutable");
   }
   if (!texture_manager()->ValidForTarget(
         feature_info_, target, level, width, height, 1) ||
@@ -6729,7 +6753,8 @@ void GLES2DecoderImpl::DoTexSubImage2D(
   }
 
   // See if we can call glTexImage2D instead since it appears to be faster.
-  if (teximage2d_faster_than_texsubimage2d_ && xoffset == 0 && yoffset == 0) {
+  if (teximage2d_faster_than_texsubimage2d_ && xoffset == 0 && yoffset == 0 &&
+      !info->IsImmutable()) {
     GLsizei tex_width = 0;
     GLsizei tex_height = 0;
     bool ok = info->GetLevelSize(target, level, &tex_width, &tex_height);
@@ -7684,6 +7709,137 @@ void GLES2DecoderImpl::DoTexImageIOSurface2DCHROMIUM(
 #endif
 }
 
+static GLenum ExtractFormatFromStorageFormat(GLenum internalformat) {
+  switch (internalformat) {
+    case GL_RGB565:
+      return GL_RGB;
+    case GL_RGBA4:
+      return GL_RGBA;
+    case GL_RGB5_A1:
+      return GL_RGBA;
+    case GL_RGB8_OES:
+      return GL_RGB;
+    case GL_RGBA8_OES:
+      return GL_RGBA;
+    case GL_LUMINANCE8_ALPHA8_EXT:
+      return GL_LUMINANCE_ALPHA;
+    case GL_LUMINANCE8_EXT:
+      return GL_LUMINANCE;
+    case GL_ALPHA8_EXT:
+      return GL_ALPHA;
+    case GL_RGBA32F_EXT:
+      return GL_RGBA;
+    case GL_RGB32F_EXT:
+      return GL_RGB;
+    case GL_ALPHA32F_EXT:
+      return GL_ALPHA;
+    case GL_LUMINANCE32F_EXT:
+      return GL_LUMINANCE;
+    case GL_LUMINANCE_ALPHA32F_EXT:
+      return GL_LUMINANCE_ALPHA;
+    case GL_RGBA16F_EXT:
+      return GL_RGBA;
+    case GL_RGB16F_EXT:
+      return GL_RGB;
+    case GL_ALPHA16F_EXT:
+      return GL_ALPHA;
+    case GL_LUMINANCE16F_EXT:
+      return GL_LUMINANCE;
+    case GL_LUMINANCE_ALPHA16F_EXT:
+      return GL_LUMINANCE_ALPHA;
+    case GL_BGRA8_EXT:
+      return GL_BGRA_EXT;
+    default:
+      return GL_NONE;
+  }
+}
+
+static GLenum ExtractTypeFromStorageFormat(GLenum internalformat) {
+  switch (internalformat) {
+    case GL_RGB565:
+      return GL_UNSIGNED_SHORT_5_6_5;
+    case GL_RGBA4:
+      return GL_UNSIGNED_SHORT_4_4_4_4;
+    case GL_RGB5_A1:
+      return GL_UNSIGNED_SHORT_5_5_5_1;
+    case GL_RGB8_OES:
+      return GL_UNSIGNED_BYTE;
+    case GL_RGBA8_OES:
+      return GL_UNSIGNED_BYTE;
+    case GL_LUMINANCE8_ALPHA8_EXT:
+      return GL_UNSIGNED_BYTE;
+    case GL_LUMINANCE8_EXT:
+      return GL_UNSIGNED_BYTE;
+    case GL_ALPHA8_EXT:
+      return GL_UNSIGNED_BYTE;
+    case GL_RGBA32F_EXT:
+      return GL_FLOAT;
+    case GL_RGB32F_EXT:
+      return GL_FLOAT;
+    case GL_ALPHA32F_EXT:
+      return GL_FLOAT;
+    case GL_LUMINANCE32F_EXT:
+      return GL_FLOAT;
+    case GL_LUMINANCE_ALPHA32F_EXT:
+      return GL_FLOAT;
+    case GL_RGBA16F_EXT:
+      return GL_HALF_FLOAT_OES;
+    case GL_RGB16F_EXT:
+      return GL_HALF_FLOAT_OES;
+    case GL_ALPHA16F_EXT:
+      return GL_HALF_FLOAT_OES;
+    case GL_LUMINANCE16F_EXT:
+      return GL_HALF_FLOAT_OES;
+    case GL_LUMINANCE_ALPHA16F_EXT:
+      return GL_HALF_FLOAT_OES;
+    case GL_BGRA8_EXT:
+      return GL_UNSIGNED_BYTE;
+    default:
+      return GL_NONE;
+  }
+}
+
+void GLES2DecoderImpl::DoTexStorage2DEXT(
+  GLenum target,
+  GLint levels,
+  GLenum internal_format,
+  GLsizei width,
+  GLsizei height) {
+  if (!texture_manager()->ValidForTarget(
+        feature_info_, target, 0, width, height, 1) ||
+      TextureManager::ComputeMipMapCount(width, height, 1) < levels) {
+    SetGLError(GL_INVALID_VALUE, "glTexStorage2DEXT: dimensions out of range");
+    return;
+  }
+  TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
+  if (!info) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glTexStorage2DEXT: unknown texture for target");
+    return;
+  }
+  if (info->IsAttachedToFramebuffer()) {
+    state_dirty_ = true;
+  }
+  if (info->IsImmutable()) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glTexStorage2DEXT: texture is immutable");
+    return;
+  }
+  CopyRealGLErrorsToWrapper();
+  glTexStorage2DEXT(target, levels, internal_format, width, height);
+  GLenum error = PeekGLError();
+  if (error == GL_NO_ERROR) {
+    GLenum format = ExtractFormatFromStorageFormat(internal_format);
+    GLenum type = ExtractTypeFromStorageFormat(internal_format);
+    texture_manager()->SetLevelInfo(
+        feature_info_, info,
+        target, 0, format, width, height, 1, 0, format, type,
+        false);
+    texture_manager()->MarkMipmapsGenerated(feature_info_, info, false);
+    info->SetImmutable(true);
+  }
+
+}
 
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file

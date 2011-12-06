@@ -1224,6 +1224,25 @@ void RenderbufferStorageMultisampleEXT(
       target, samples, internalformat, width, height);
 }
 
+void TexStorage2DEXT(
+    GLenum target, GLsizei levels, GLint internalFormat, GLsizei width,
+    GLsizei height) {
+  GPU_CLIENT_LOG("[" << this << "] glTexStorage2DEXT(" << GLES2Util::GetStringTextureTarget(target) << ", " << levels << ", " << internalFormat << ", " << width << ", " << height << ")");  // NOLINT
+  if (levels < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexStorage2DEXT: levels < 0");
+    return;
+  }
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexStorage2DEXT: width < 0");
+    return;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexStorage2DEXT: height < 0");
+    return;
+  }
+  helper_->TexStorage2DEXT(target, levels, internalFormat, width, height);
+}
+
 void SwapBuffers();
 
 GLuint GetMaxValueInBufferCHROMIUM(

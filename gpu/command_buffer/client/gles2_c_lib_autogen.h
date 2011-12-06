@@ -514,6 +514,12 @@ void GLES2RenderbufferStorageMultisampleEXT(
   gles2::GetGLContext()->RenderbufferStorageMultisampleEXT(
       target, samples, internalformat, width, height);
 }
+void GLES2TexStorage2DEXT(
+    GLenum target, GLsizei levels, GLint internalFormat, GLsizei width,
+    GLsizei height) {
+  gles2::GetGLContext()->TexStorage2DEXT(
+      target, levels, internalFormat, width, height);
+}
 void GLES2SwapBuffers() {
   gles2::GetGLContext()->SwapBuffers();
 }

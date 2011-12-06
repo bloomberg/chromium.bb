@@ -119,13 +119,19 @@ static GLES2Util::EnumToString enum_to_string_table[] = {
   { 1, "GL_ES_VERSION_2_0", },
   { 0x84F9, "GL_DEPTH_STENCIL_OES", },
   { 0x8368, "GL_UNSIGNED_INT_2_10_10_10_REV_EXT", },
+  { 0x8819, "GL_LUMINANCE_ALPHA32F_EXT", },
+  { 0x8818, "GL_LUMINANCE32F_EXT", },
   { 0x8363, "GL_UNSIGNED_SHORT_5_6_5", },
+  { 0x8814, "GL_RGBA32F_EXT", },
   { 0x84F2, "GL_ALL_COMPLETED_NV", },
-  { 0x84F3, "GL_FENCE_STATUS_NV", },
+  { 0x8816, "GL_ALPHA32F_EXT", },
   { 0x84F4, "GL_FENCE_CONDITION_NV", },
   { 0x8366, "GL_UNSIGNED_SHORT_1_5_5_5_REV_EXT", },
   { 0x8365, "GL_UNSIGNED_SHORT_4_4_4_4_REV_EXT", },
+  { 0x881E, "GL_LUMINANCE16F_EXT", },
   { 0x84FA, "GL_UNSIGNED_INT_24_8_OES", },
+  { 0x881F, "GL_LUMINANCE_ALPHA16F_EXT", },
+  { 0x881A, "GL_RGBA16F_EXT", },
   { 0x84FE, "GL_TEXTURE_MAX_ANISOTROPY_EXT", },
   { 0x0901, "GL_CCW", },
   { 0x0900, "GL_CW", },
@@ -162,9 +168,12 @@ static GLES2Util::EnumToString enum_to_string_table[] = {
   { 0x00020000, "GL_STENCIL_BUFFER_BIT1_QCOM", },
   { 0x8D00, "GL_DEPTH_ATTACHMENT", },
   { 0x8FA0, "GL_PERFMON_GLOBAL_MODE_QCOM", },
+  { 0x8815, "GL_RGB32F_EXT", },
   { 0x813D, "GL_TEXTURE_MAX_LEVEL_APPLE", },
+  { 0x84F3, "GL_FENCE_STATUS_NV", },
   { 0x8CDD, "GL_FRAMEBUFFER_UNSUPPORTED", },
   { 0x8CDF, "GL_MAX_COLOR_ATTACHMENTS_NV", },
+  { 0x803C, "GL_ALPHA8_EXT", },
   { 0x84F5, "GL_TEXTURE_RECTANGLE_ARB", },
   { 0x882A, "GL_DRAW_BUFFER5_NV", },
   { 0x80AA, "GL_SAMPLE_COVERAGE_VALUE", },
@@ -174,6 +183,7 @@ static GLES2Util::EnumToString enum_to_string_table[] = {
   { 0x882C, "GL_DRAW_BUFFER7_NV", },
   { 0x84FF, "GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT", },
   { 0x0B74, "GL_DEPTH_FUNC", },
+  { 0x881B, "GL_RGB16F_EXT", },
   { 0x0B71, "GL_DEPTH_TEST", },
   { 0x0B70, "GL_DEPTH_RANGE", },
   { 0x0B73, "GL_DEPTH_CLEAR_VALUE", },
@@ -195,7 +205,7 @@ static GLES2Util::EnumToString enum_to_string_table[] = {
   { 0x00000400, "GL_STENCIL_BUFFER_BIT", },
   { 0x800A, "GL_FUNC_SUBTRACT", },
   { 0x8E2C, "GL_DEPTH_COMPONENT16_NONLINEAR_NV", },
-  { 0x889F, "GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING", },
+  { 0x8508, "GL_DECR_WRAP", },
   { 0x8006, "GL_FUNC_ADD", },
   { 0x8007, "GL_MIN_EXT", },
   { 0x8004, "GL_ONE_MINUS_CONSTANT_ALPHA", },
@@ -281,12 +291,15 @@ static GLES2Util::EnumToString enum_to_string_table[] = {
   { 0x1405, "GL_UNSIGNED_INT", },
   { 0x1404, "GL_INT", },
   { 0x1406, "GL_FLOAT", },
+  { 0x8040, "GL_LUMINANCE8_EXT", },
+  { 0x8045, "GL_LUMINANCE8_ALPHA8_EXT", },
   { 0x8CD1, "GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME", },
   { 0x00040000, "GL_STENCIL_BUFFER_BIT2_QCOM", },
   { 0x8CD0, "GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE", },
   { 0x8CD3, "GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE", },
   { 0x0B90, "GL_STENCIL_TEST", },
   { 0x8CD2, "GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL", },
+  { 0x881C, "GL_ALPHA16F_EXT", },
   { 0x8CD4, "GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_3D_ZOFFSET_OES", },
   { 0x8CD7, "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT", },
   { 0x08000000, "GL_MULTISAMPLE_BUFFER_BIT3_QCOM", },
@@ -307,7 +320,11 @@ static GLES2Util::EnumToString enum_to_string_table[] = {
   { 0x8C0A, "GL_SGX_BINARY_IMG", },
   { 0x846D, "GL_ALIASED_POINT_SIZE_RANGE", },
   { 0x846E, "GL_ALIASED_LINE_WIDTH_RANGE", },
+  { 0x93A4, "GL_PACK_REVERSE_ROW_ORDER_ANGLE", },
+  { 0x93A1, "GL_BGRA8_EXT", },
   { 0x93A0, "GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE", },
+  { 0x93A3, "GL_FRAMEBUFFER_ATTACHMENT_ANGLE", },
+  { 0x93A2, "GL_TEXTURE_USAGE_ANGLE", },
   { 0x8802, "GL_STENCIL_BACK_PASS_DEPTH_FAIL", },
   { 0x8C01, "GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG", },
   { 0x8C00, "GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG", },
@@ -416,13 +433,16 @@ static GLES2Util::EnumToString enum_to_string_table[] = {
   { 0x0B95, "GL_STENCIL_PASS_DEPTH_FAIL", },
   { 0x2700, "GL_NEAREST_MIPMAP_NEAREST", },
   { 0x0B98, "GL_STENCIL_WRITEMASK", },
+  { 0x912F, "GL_TEXTURE_IMMUTABLE_FORMAT_EXT", },
   { 0x20000000, "GL_MULTISAMPLE_BUFFER_BIT5_QCOM", },
   { 0x0DE1, "GL_TEXTURE_2D", },
   { 0x80C9, "GL_BLEND_SRC_RGB", },
   { 0x80C8, "GL_BLEND_DST_RGB", },
+  { 0x8059, "GL_RGB10_A2_EXT", },
   { 0x8058, "GL_RGBA8_OES", },
   { 0x00002000, "GL_DEPTH_BUFFER_BIT5_QCOM", },
   { 0x8051, "GL_RGB8_OES", },
+  { 0x8052, "GL_RGB10_EXT", },
   { 0x8CAB, "GL_RENDERBUFFER_SAMPLES_ANGLE", },
   { 0x8057, "GL_RGB5_A1", },
   { 0x8056, "GL_RGBA4", },
@@ -445,7 +465,7 @@ static GLES2Util::EnumToString enum_to_string_table[] = {
   { 0x8CE4, "GL_COLOR_ATTACHMENT4_NV", },
   { 0x8CD6, "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT", },
   { 0x8872, "GL_MAX_TEXTURE_IMAGE_UNITS", },
-  { 0x8508, "GL_DECR_WRAP", },
+  { 0x889F, "GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING", },
   { 0x8507, "GL_INCR_WRAP", },
   { 0x8895, "GL_ELEMENT_ARRAY_BUFFER_BINDING", },
   { 0x8894, "GL_ARRAY_BUFFER_BINDING", },
@@ -1031,6 +1051,21 @@ std::string GLES2Util::GetStringTextureInternalFormat(uint32 value) {
       string_table, arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringTextureInternalFormatStorage(uint32 value) {
+  static EnumToString string_table[] = {
+    { GL_RGB565, "GL_RGB565" },
+    { GL_RGBA4, "GL_RGBA4" },
+    { GL_RGB5_A1, "GL_RGB5_A1" },
+    { GL_ALPHA8_EXT, "GL_ALPHA8_EXT" },
+    { GL_LUMINANCE8_EXT, "GL_LUMINANCE8_EXT" },
+    { GL_LUMINANCE8_ALPHA8_EXT, "GL_LUMINANCE8_ALPHA8_EXT" },
+    { GL_RGB8_OES, "GL_RGB8_OES" },
+    { GL_RGBA8_OES, "GL_RGBA8_OES" },
+  };
+  return GLES2Util::GetQualifiedEnumString(
+      string_table, arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringTextureMagFilterMode(uint32 value) {
   static EnumToString string_table[] = {
     { GL_NEAREST, "GL_NEAREST" },
@@ -1073,6 +1108,15 @@ std::string GLES2Util::GetStringTextureTarget(uint32 value) {
     { GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, "GL_TEXTURE_CUBE_MAP_NEGATIVE_Y" },
     { GL_TEXTURE_CUBE_MAP_POSITIVE_Z, "GL_TEXTURE_CUBE_MAP_POSITIVE_Z" },
     { GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, "GL_TEXTURE_CUBE_MAP_NEGATIVE_Z" },
+  };
+  return GLES2Util::GetQualifiedEnumString(
+      string_table, arraysize(string_table), value);
+}
+
+std::string GLES2Util::GetStringTextureUsage(uint32 value) {
+  static EnumToString string_table[] = {
+    { GL_NONE, "GL_NONE" },
+    { GL_FRAMEBUFFER_ATTACHMENT_ANGLE, "GL_FRAMEBUFFER_ATTACHMENT_ANGLE" },
   };
   return GLES2Util::GetQualifiedEnumString(
       string_table, arraysize(string_table), value);

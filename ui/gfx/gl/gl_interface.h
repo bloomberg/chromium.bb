@@ -461,6 +461,12 @@ class GL_EXPORT GLInterface {
                               GLenum pname,
                               const GLint* params) = 0;
 
+  virtual void TexStorage2DEXT(GLenum target,
+                               GLsizei levels,
+                               GLenum internalformat,
+                               GLsizei width,
+                               GLsizei height) = 0;
+
   virtual void TexSubImage2D(GLenum target,
                              GLint level,
                              GLint xoffset, GLint yoffset,

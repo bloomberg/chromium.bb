@@ -5599,6 +5599,17 @@ TEST_F(GLES2DecoderTest, DrawArraysClearsAfterTexImage2DNULLCubemap) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
+TEST_F(GLES2DecoderTest, TextureUsageAngleExtNotEnabledByDefault) {
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+
+  TexParameteri cmd;
+  cmd.Init(GL_TEXTURE_2D,
+           GL_TEXTURE_USAGE_ANGLE,
+           GL_FRAMEBUFFER_ATTACHMENT_ANGLE);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
 TEST_F(GLES2DecoderWithShaderTest,
        DrawClearsAfterRenderbuffersWithMultipleAttachments) {
   const GLuint kFBOClientTextureId = 4100;
