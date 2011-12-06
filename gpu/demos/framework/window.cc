@@ -54,7 +54,7 @@ void Window::OnPaint() {
 
 bool Window::CreateRenderContext(gfx::PluginWindowHandle hwnd) {
   command_buffer_.reset(new CommandBufferService);
-  if (!command_buffer_->Initialize(kCommandBufferSize)) {
+  if (!command_buffer_->Initialize()) {
     return false;
   }
 

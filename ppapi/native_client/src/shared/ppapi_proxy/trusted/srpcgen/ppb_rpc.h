@@ -590,14 +590,12 @@ class PpbGraphics3DRpcServer {
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       PP_Resource resource_id,
-      int32_t size,
       int32_t* success);
-  static void PPB_Graphics3DTrusted_GetRingBuffer(
+  static void PPB_Graphics3DTrusted_SetGetBuffer(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       PP_Resource resource_id,
-      NaClSrpcImcDescType* shm_desc,
-      int32_t* shm_size);
+      int32_t shm_id);
   static void PPB_Graphics3DTrusted_GetState(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,

@@ -14,7 +14,8 @@ using ::base::SharedMemory;
 namespace gpu {
 
 CommandBufferService::CommandBufferService()
-    : num_entries_(0),
+    : ring_buffer_id_(-1),
+      num_entries_(0),
       get_offset_(0),
       put_offset_(0),
       token_(0),
@@ -25,69 +26,14 @@ CommandBufferService::CommandBufferService()
 }
 
 CommandBufferService::~CommandBufferService() {
-  delete ring_buffer_.shared_memory;
-
   for (size_t i = 0; i < registered_objects_.size(); ++i) {
     if (registered_objects_[i].shared_memory)
       delete registered_objects_[i].shared_memory;
   }
 }
 
-bool CommandBufferService::Initialize(int32 size) {
-  // Fail if already initialized.
-  if (ring_buffer_.shared_memory) {
-    LOG(ERROR) << "Failed because already initialized.";
-    return false;
-  }
-
-  if (size <= 0 || size > kMaxCommandBufferSize) {
-    LOG(ERROR) << "Failed because command buffer size was invalid.";
-    return false;
-  }
-
-  num_entries_ = size / sizeof(CommandBufferEntry);
-
-  SharedMemory shared_memory;
-  if (!shared_memory.CreateAnonymous(size)) {
-    LOG(ERROR) << "Failed to create shared memory for command buffer.";
-    return true;
-  }
-
-  return Initialize(&shared_memory, size);
-}
-
-bool CommandBufferService::Initialize(base::SharedMemory* buffer, int32 size) {
-  // Fail if already initialized.
-  if (ring_buffer_.shared_memory) {
-    LOG(ERROR) << "Failed because already initialized.";
-    return false;
-  }
-
-  base::SharedMemoryHandle shared_memory_handle;
-  if (!buffer->ShareToProcess(base::GetCurrentProcessHandle(),
-                              &shared_memory_handle)) {
-    LOG(ERROR) << "Failed to duplicate command buffer shared memory handle.";
-    return false;
-  }
-
-  ring_buffer_.shared_memory = new base::SharedMemory(shared_memory_handle,
-                                                      false);
-  if (!ring_buffer_.shared_memory->Map(size)) {
-    LOG(ERROR) << "Failed because ring buffer could not be created or mapped ";
-    delete ring_buffer_.shared_memory;
-    ring_buffer_.shared_memory = NULL;
-    return false;
-  }
-
-  ring_buffer_.ptr = ring_buffer_.shared_memory->memory();
-  ring_buffer_.size = size;
-  num_entries_ = size / sizeof(CommandBufferEntry);
-
+bool CommandBufferService::Initialize() {
   return true;
-}
-
-Buffer CommandBufferService::GetRingBuffer() {
-  return ring_buffer_;
 }
 
 CommandBufferService::State CommandBufferService::GetState() {
@@ -132,6 +78,17 @@ void CommandBufferService::Flush(int32 put_offset) {
 
   if (!put_offset_change_callback_.is_null())
     put_offset_change_callback_.Run();
+}
+
+void CommandBufferService::SetGetBuffer(int32 transfer_buffer_id) {
+  DCHECK_EQ(-1, ring_buffer_id_);
+  DCHECK_EQ(put_offset_, get_offset_);  // Only if it's empty.
+  ring_buffer_ = GetTransferBuffer(transfer_buffer_id);
+  DCHECK(ring_buffer_.ptr);
+  ring_buffer_id_ = transfer_buffer_id;
+  num_entries_ = ring_buffer_.size / sizeof(CommandBufferEntry);
+  put_offset_ = 0;
+  SetGetOffset(0);
 }
 
 void CommandBufferService::SetGetOffset(int32 get_offset) {
@@ -222,6 +179,14 @@ void CommandBufferService::DestroyTransferBuffer(int32 handle) {
   delete registered_objects_[handle].shared_memory;
   registered_objects_[handle] = Buffer();
   unused_registered_object_elements_.insert(handle);
+
+  if (handle == ring_buffer_id_) {
+    ring_buffer_id_ = -1;
+    ring_buffer_ = Buffer();
+    num_entries_ = 0;
+    get_offset_ = 0;
+    put_offset_ = 0;
+  }
 
   // Remove all null objects from the end of the vector. This allows the vector
   // to shrink when, for example, all objects are unregistered. Note that this

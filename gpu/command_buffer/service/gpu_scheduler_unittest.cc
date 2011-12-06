@@ -30,6 +30,8 @@ const size_t kRingBufferEntries = kRingBufferSize / sizeof(CommandBufferEntry);
 
 class GpuSchedulerTest : public testing::Test {
  protected:
+  static const int32 kTransferBufferId = 123;
+
   virtual void SetUp() {
     shared_memory_.reset(new ::base::SharedMemory);
     shared_memory_->CreateAndMapAnonymous(kRingBufferSize);
@@ -39,28 +41,21 @@ class GpuSchedulerTest : public testing::Test {
     memset(buffer_, 0, kRingBufferSize);
 
     command_buffer_.reset(new MockCommandBuffer);
-    ON_CALL(*command_buffer_.get(), GetRingBuffer())
-      .WillByDefault(Return(shared_memory_buffer_));
 
     CommandBuffer::State default_state;
     default_state.num_entries = kRingBufferEntries;
     ON_CALL(*command_buffer_.get(), GetState())
       .WillByDefault(Return(default_state));
 
-    async_api_.reset(new StrictMock<AsyncAPIMock>);
-
     decoder_.reset(new gles2::MockGLES2Decoder());
-
-    parser_ = new CommandParser(buffer_,
-                                kRingBufferEntries,
-                                0,
-                                kRingBufferEntries,
-                                0,
-                                async_api_.get());
-
     scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(),
                                            decoder_.get(),
-                                           parser_));
+                                           NULL));
+    EXPECT_CALL(*command_buffer_, GetTransferBuffer(kTransferBufferId))
+       .WillOnce(Return(shared_memory_buffer_));
+    EXPECT_CALL(*command_buffer_, SetGetBuffer(kTransferBufferId));
+    EXPECT_CALL(*command_buffer_, SetGetOffset(0));
+    EXPECT_TRUE(scheduler_->SetGetBuffer(kTransferBufferId));
   }
 
   virtual void TearDown() {
@@ -82,8 +77,6 @@ class GpuSchedulerTest : public testing::Test {
   Buffer shared_memory_buffer_;
   int32* buffer_;
   scoped_ptr<gles2::MockGLES2Decoder> decoder_;
-  CommandParser* parser_;
-  scoped_ptr<AsyncAPIMock> async_api_;
   scoped_ptr<GpuScheduler> scheduler_;
 };
 
@@ -100,6 +93,25 @@ TEST_F(GpuSchedulerTest, SchedulerDoesNothingIfRingBufferIsEmpty) {
   scheduler_->PutChanged();
 }
 
+TEST_F(GpuSchedulerTest, GetSetBuffer) {
+  CommandBuffer::State state;
+
+  // Set the get offset to something not 0.
+  EXPECT_CALL(*command_buffer_, SetGetOffset(2));
+  scheduler_->SetGetOffset(2);
+  EXPECT_EQ(2, scheduler_->GetGetOffset());
+
+  // Set the buffer.
+  EXPECT_CALL(*command_buffer_, GetTransferBuffer(kTransferBufferId))
+     .WillOnce(Return(shared_memory_buffer_));
+  EXPECT_CALL(*command_buffer_, SetGetBuffer(kTransferBufferId));
+  EXPECT_CALL(*command_buffer_, SetGetOffset(0));
+  EXPECT_TRUE(scheduler_->SetGetBuffer(kTransferBufferId));
+
+  // Check the get offset was reset.
+  EXPECT_EQ(0, scheduler_->GetGetOffset());
+}
+
 TEST_F(GpuSchedulerTest, ProcessesOneCommand) {
   CommandHeader* header = reinterpret_cast<CommandHeader*>(&buffer_[0]);
   header[0].command = 7;
@@ -113,7 +125,7 @@ TEST_F(GpuSchedulerTest, ProcessesOneCommand) {
     .WillRepeatedly(Return(state));
   EXPECT_CALL(*command_buffer_, SetGetOffset(2));
 
-  EXPECT_CALL(*async_api_, DoCommand(7, 1, &buffer_[0]))
+  EXPECT_CALL(*decoder_, DoCommand(7, 1, &buffer_[0]))
     .WillOnce(Return(error::kNoError));
 
   EXPECT_CALL(*command_buffer_, SetParseError(_))
@@ -136,11 +148,11 @@ TEST_F(GpuSchedulerTest, ProcessesTwoCommands) {
   EXPECT_CALL(*command_buffer_, GetState())
     .WillRepeatedly(Return(state));
 
-  EXPECT_CALL(*async_api_, DoCommand(7, 1, &buffer_[0]))
+  EXPECT_CALL(*decoder_, DoCommand(7, 1, &buffer_[0]))
     .WillOnce(Return(error::kNoError));
   EXPECT_CALL(*command_buffer_, SetGetOffset(2));
 
-  EXPECT_CALL(*async_api_, DoCommand(8, 0, &buffer_[2]))
+  EXPECT_CALL(*decoder_, DoCommand(8, 0, &buffer_[2]))
     .WillOnce(Return(error::kNoError));
   EXPECT_CALL(*command_buffer_, SetGetOffset(3));
 
@@ -158,11 +170,12 @@ TEST_F(GpuSchedulerTest, SetsErrorCodeOnCommandBuffer) {
   EXPECT_CALL(*command_buffer_, GetState())
     .WillRepeatedly(Return(state));
 
-  EXPECT_CALL(*async_api_, DoCommand(7, 0, &buffer_[0]))
+  EXPECT_CALL(*decoder_, DoCommand(7, 0, &buffer_[0]))
     .WillOnce(Return(
         error::kUnknownCommand));
   EXPECT_CALL(*command_buffer_, SetGetOffset(1));
 
+  EXPECT_CALL(*command_buffer_, SetContextLostReason(_));
   EXPECT_CALL(*decoder_, GetContextLostReason())
     .WillOnce(Return(error::kUnknown));
   EXPECT_CALL(*command_buffer_,

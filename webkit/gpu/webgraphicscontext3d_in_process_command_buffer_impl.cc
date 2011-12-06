@@ -457,7 +457,7 @@ bool GLInProcessContext::Initialize(bool onscreen,
   }
 
   command_buffer_.reset(new CommandBufferService);
-  if (!command_buffer_->Initialize(kCommandBufferSize)) {
+  if (!command_buffer_->Initialize()) {
     LOG(ERROR) << "Could not initialize command buffer.";
     Destroy();
     return false;

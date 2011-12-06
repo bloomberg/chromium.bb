@@ -66,15 +66,9 @@ class CommandBufferHelperTest : public testing::Test {
         .WillRepeatedly(Return(error::kNoError));
 
     command_buffer_.reset(new CommandBufferService);
-    command_buffer_->Initialize(kCommandBufferSizeBytes);
-    Buffer ring_buffer = command_buffer_->GetRingBuffer();
+    command_buffer_->Initialize();
 
-    parser_ = new CommandParser(ring_buffer.ptr,
-                                ring_buffer.size,
-                                0,
-                                ring_buffer.size,
-                                0,
-                                api_mock_.get());
+    parser_ = new CommandParser(api_mock_.get());
 
     do_jump_command_.reset(new DoJumpCommand(parser_));
     EXPECT_CALL(*api_mock_, DoCommand(cmd::kJump, _, _))
@@ -90,6 +84,12 @@ class CommandBufferHelperTest : public testing::Test {
 
     helper_.reset(new CommandBufferHelper(command_buffer_.get()));
     helper_->Initialize(kCommandBufferSizeBytes);
+
+    // Note: parser->SetBuffer would normally be called through
+    // helper_->Initialize but currently it needs a GpuCommandBufferStub as the
+    // CommandBuffer instead of the CommandBufferService for that to happen.
+    Buffer ring_buffer = helper_->get_ring_buffer();
+    parser_->SetBuffer(ring_buffer.ptr, ring_buffer.size, 0, ring_buffer.size);
   }
 
   virtual void TearDown() {
