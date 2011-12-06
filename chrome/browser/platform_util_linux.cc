@@ -4,8 +4,6 @@
 
 #include "chrome/browser/platform_util.h"
 
-#include <gtk/gtk.h>
-
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/process_util.h"

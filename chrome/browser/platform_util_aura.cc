@@ -9,21 +9,6 @@
 
 namespace platform_util {
 
-void ShowItemInFolder(const FilePath& full_path) {
-  // TODO(beng):
-  NOTIMPLEMENTED();
-}
-
-void OpenItem(const FilePath& full_path) {
-  // TODO(beng):
-  NOTIMPLEMENTED();
-}
-
-void OpenExternal(const GURL& url) {
-  // TODO(beng):
-  NOTIMPLEMENTED();
-}
-
 gfx::NativeWindow GetTopLevel(gfx::NativeView view) {
   return view->GetToplevelWindow();
 }
