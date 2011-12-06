@@ -6,17 +6,26 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
+#include "base/stl_util.h"
 #include "net/base/host_cache.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_log.h"
-#include "net/base/rand_callback.h"
 #include "net/base/sys_addrinfo.h"
+#include "net/base/test_completion_callback.h"
+#include "net/dns/dns_client.h"
+#include "net/dns/dns_query.h"
+#include "net/dns/dns_response.h"
 #include "net/dns/dns_test_util.h"
-#include "net/socket/socket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 
 namespace {
+
+const int kPortNum = 80;
+const size_t kMaxTransactions = 2;
+const size_t kMaxPendingRequests = 1;
 
 void VerifyAddressList(const std::vector<const char*>& ip_addresses,
                        int port,
@@ -39,12 +48,64 @@ void VerifyAddressList(const std::vector<const char*>& ip_addresses,
   ASSERT_EQ(static_cast<addrinfo*>(NULL), ainfo);
 }
 
+class MockDnsClient : public DnsClient,
+                      public base::SupportsWeakPtr<MockDnsClient> {
+ public:
+  // Using WeakPtr to support cancellation.
+  // All MockRequests succeed unless canceled or MockDnsClient is destroyed.
+  class MockRequest : public DnsClient::Request,
+                      public base::SupportsWeakPtr<MockRequest> {
+   public:
+    MockRequest(const base::StringPiece& qname,
+                uint16 qtype,
+                const RequestCallback& callback,
+                const base::WeakPtr<MockDnsClient>& client)
+        : Request(qname, qtype, callback), started_(false), client_(client) {
+    }
+
+    virtual int Start() OVERRIDE {
+      EXPECT_FALSE(started_);
+      started_ = true;
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&MockRequest::Finish, AsWeakPtr()));
+      return ERR_IO_PENDING;
+    }
+
+   private:
+    void Finish() {
+      if (!client_) {
+        DoCallback(ERR_DNS_SERVER_FAILED, NULL);
+        return;
+      }
+      DoCallback(OK, client_->responses[Key(qname(), qtype())]);
+    }
+
+    bool started_;
+    base::WeakPtr<MockDnsClient> client_;
+  };
+
+  typedef std::pair<std::string, uint16> Key;
+
+  MockDnsClient() : num_requests(0) {}
+  ~MockDnsClient() {
+    STLDeleteValues(&responses);
+  }
+
+  Request* CreateRequest(const base::StringPiece& qname,
+                         uint16 qtype,
+                         const RequestCallback& callback,
+                         const BoundNetLog&) {
+    ++num_requests;
+    return new MockRequest(qname, qtype, callback, AsWeakPtr());
+  }
+
+  int num_requests;
+  std::map<Key, DnsResponse*> responses;
+};
+
 }  // namespace
 
-static const int kPortNum = 80;
-static const size_t kMaxTransactions = 2;
-static const size_t kMaxPendingRequests = 1;
-static int transaction_ids[] = {0, 1, 2, 3};
 
 // The following fixture sets up an environment for four different lookups
 // with their data defined in dns_test_util.h.  All tests make use of these
@@ -69,84 +130,52 @@ class AsyncHostResolverTest : public testing::Test {
         ip_addresses2_(kT2IpAddresses,
             kT2IpAddresses + arraysize(kT2IpAddresses)),
         ip_addresses3_(kT3IpAddresses,
-            kT3IpAddresses + arraysize(kT3IpAddresses)),
-        test_prng_(std::deque<int>(
-            transaction_ids, transaction_ids + arraysize(transaction_ids))) {
-    rand_int_cb_ = base::Bind(&TestPrng::GetNext,
-                              base::Unretained(&test_prng_));
+            kT3IpAddresses + arraysize(kT3IpAddresses)) {
     // AF_INET only for now.
     info0_.set_address_family(ADDRESS_FAMILY_IPV4);
     info1_.set_address_family(ADDRESS_FAMILY_IPV4);
     info2_.set_address_family(ADDRESS_FAMILY_IPV4);
     info3_.set_address_family(ADDRESS_FAMILY_IPV4);
 
-    // Setup socket read/writes for transaction 0.
-    writes0_.push_back(
-        MockWrite(true, reinterpret_cast<const char*>(kT0QueryDatagram),
-                  arraysize(kT0QueryDatagram)));
-    reads0_.push_back(
-         MockRead(true, reinterpret_cast<const char*>(kT0ResponseDatagram),
-                  arraysize(kT0ResponseDatagram)));
-    data0_.reset(new StaticSocketDataProvider(&reads0_[0], reads0_.size(),
-                                              &writes0_[0], writes0_.size()));
+    client_.reset(new MockDnsClient());
 
-    // Setup socket read/writes for transaction 1.
-    writes1_.push_back(
-        MockWrite(true, reinterpret_cast<const char*>(kT1QueryDatagram),
-                  arraysize(kT1QueryDatagram)));
-    reads1_.push_back(
-         MockRead(true, reinterpret_cast<const char*>(kT1ResponseDatagram),
-                  arraysize(kT1ResponseDatagram)));
-    data1_.reset(new StaticSocketDataProvider(&reads1_[0], reads1_.size(),
-                                              &writes1_[0], writes1_.size()));
+    AddResponse(std::string(kT0DnsName, arraysize(kT0DnsName)), kT0Qtype,
+        new DnsResponse(reinterpret_cast<const char*>(kT0ResponseDatagram),
+                        arraysize(kT0ResponseDatagram),
+                        arraysize(kT0QueryDatagram)));
 
-    // Setup socket read/writes for transaction 2.
-    writes2_.push_back(
-        MockWrite(true, reinterpret_cast<const char*>(kT2QueryDatagram),
-                  arraysize(kT2QueryDatagram)));
-    reads2_.push_back(
-         MockRead(true, reinterpret_cast<const char*>(kT2ResponseDatagram),
-                  arraysize(kT2ResponseDatagram)));
-    data2_.reset(new StaticSocketDataProvider(&reads2_[0], reads2_.size(),
-                                              &writes2_[0], writes2_.size()));
+    AddResponse(std::string(kT1DnsName, arraysize(kT1DnsName)), kT1Qtype,
+        new DnsResponse(reinterpret_cast<const char*>(kT1ResponseDatagram),
+                        arraysize(kT1ResponseDatagram),
+                        arraysize(kT1QueryDatagram)));
 
-    // Setup socket read/writes for transaction 3.
-    writes3_.push_back(
-        MockWrite(true, reinterpret_cast<const char*>(kT3QueryDatagram),
-                  arraysize(kT3QueryDatagram)));
-    reads3_.push_back(
-         MockRead(true, reinterpret_cast<const char*>(kT3ResponseDatagram),
-                  arraysize(kT3ResponseDatagram)));
-    data3_.reset(new StaticSocketDataProvider(&reads3_[0], reads3_.size(),
-                                              &writes3_[0], writes3_.size()));
+    AddResponse(std::string(kT2DnsName, arraysize(kT2DnsName)), kT2Qtype,
+        new DnsResponse(reinterpret_cast<const char*>(kT2ResponseDatagram),
+                        arraysize(kT2ResponseDatagram),
+                        arraysize(kT2QueryDatagram)));
 
-    factory_.AddSocketDataProvider(data0_.get());
-    factory_.AddSocketDataProvider(data1_.get());
-    factory_.AddSocketDataProvider(data2_.get());
-    factory_.AddSocketDataProvider(data3_.get());
-
-    IPEndPoint dns_server;
-    bool rv0 = CreateDnsAddress(kDnsIp, kDnsPort, &dns_server);
-    DCHECK(rv0);
+    AddResponse(std::string(kT3DnsName, arraysize(kT3DnsName)), kT3Qtype,
+        new DnsResponse(reinterpret_cast<const char*>(kT3ResponseDatagram),
+                        arraysize(kT3ResponseDatagram),
+                        arraysize(kT3QueryDatagram)));
 
     resolver_.reset(
-        new AsyncHostResolver(
-            dns_server, kMaxTransactions, kMaxPendingRequests, rand_int_cb_,
-            HostCache::CreateDefaultCache(), &factory_, NULL));
+        new AsyncHostResolver(kMaxTransactions, kMaxPendingRequests,
+              HostCache::CreateDefaultCache(),
+              client_.get(), NULL));
+  }
+
+  void AddResponse(const std::string& name, uint8 type, DnsResponse* response) {
+    client_->responses[MockDnsClient::Key(name, type)] = response;
   }
 
  protected:
   AddressList addrlist0_, addrlist1_, addrlist2_, addrlist3_;
   HostResolver::RequestInfo info0_, info1_, info2_, info3_;
-  std::vector<MockWrite> writes0_, writes1_, writes2_, writes3_;
-  std::vector<MockRead> reads0_, reads1_, reads2_, reads3_;
-  scoped_ptr<StaticSocketDataProvider> data0_, data1_, data2_, data3_;
   std::vector<const char*> ip_addresses0_, ip_addresses1_,
     ip_addresses2_, ip_addresses3_;
-  MockClientSocketFactory factory_;
-  TestPrng test_prng_;
-  RandIntCallback rand_int_cb_;
   scoped_ptr<HostResolver> resolver_;
+  scoped_ptr<MockDnsClient> client_;
   TestCompletionCallback callback0_, callback1_, callback2_, callback3_;
 };
 
@@ -242,7 +271,7 @@ TEST_F(AsyncHostResolverTest, ConcurrentLookup) {
   EXPECT_EQ(OK, rv2);
   VerifyAddressList(ip_addresses2_, kPortNum, addrlist2_);
 
-  EXPECT_EQ(3u, factory_.udp_client_sockets().size());
+  EXPECT_EQ(3, client_->num_requests);
 }
 
 TEST_F(AsyncHostResolverTest, SameHostLookupsConsumeSingleTransaction) {
@@ -270,7 +299,7 @@ TEST_F(AsyncHostResolverTest, SameHostLookupsConsumeSingleTransaction) {
   VerifyAddressList(ip_addresses0_, kPortNum, addrlist2_);
 
   // Although we have three lookups, a single UDP socket was used.
-  EXPECT_EQ(1u, factory_.udp_client_sockets().size());
+  EXPECT_EQ(1, client_->num_requests);
 }
 
 TEST_F(AsyncHostResolverTest, CancelLookup) {
@@ -319,7 +348,7 @@ TEST_F(AsyncHostResolverTest, CancelSameHostLookup) {
   EXPECT_EQ(OK, rv1);
   VerifyAddressList(ip_addresses0_, kPortNum, addrlist1_);
 
-  EXPECT_EQ(1u, factory_.udp_client_sockets().size());
+  EXPECT_EQ(1, client_->num_requests);
 }
 
 // Test that a queued lookup completes.

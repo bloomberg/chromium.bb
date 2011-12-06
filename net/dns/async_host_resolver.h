@@ -8,6 +8,8 @@
 
 #include <list>
 #include <map>
+#include <string>
+#include <utility>
 
 #include "base/threading/non_thread_safe.h"
 #include "net/base/address_family.h"
@@ -15,24 +17,18 @@
 #include "net/base/host_resolver.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_log.h"
-#include "net/base/rand_callback.h"
-#include "net/dns/dns_transaction.h"
+#include "net/dns/dns_client.h"
 
 namespace net {
 
-class ClientSocketFactory;
-
 class NET_EXPORT AsyncHostResolver
     : public HostResolver,
-      public DnsTransaction::Delegate,
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
-  AsyncHostResolver(const IPEndPoint& dns_server,
-                    size_t max_transactions,
-                    size_t max_pending_requests_,
-                    const RandIntCallback& rand_int,
+  AsyncHostResolver(size_t max_dns_requests,
+                    size_t max_pending_requests,
                     HostCache* cache,
-                    ClientSocketFactory* factory,
+                    DnsClient* client,
                     NetLog* net_log);
   virtual ~AsyncHostResolver();
 
@@ -50,11 +46,9 @@ class NET_EXPORT AsyncHostResolver
   virtual AddressFamily GetDefaultAddressFamily() const OVERRIDE;
   virtual HostCache* GetHostCache() OVERRIDE;
 
-  // DnsTransaction::Delegate interface
-  virtual void OnTransactionComplete(
-      int result,
-      const DnsTransaction* transaction,
-      const IPAddressList& ip_addresses) OVERRIDE;
+  void OnDnsRequestComplete(DnsClient::Request* request,
+                            int result,
+                            const DnsResponse* transaction);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AsyncHostResolverTest, QueuedLookup);
@@ -68,9 +62,9 @@ class NET_EXPORT AsyncHostResolver
 
   class Request;
 
-  typedef DnsTransaction::Key Key;
+  typedef std::pair<std::string, uint16> Key;
   typedef std::list<Request*> RequestList;
-  typedef std::list<const DnsTransaction*> TransactionList;
+  typedef std::list<const DnsClient::Request*> DnsRequestList;
   typedef std::map<Key, RequestList> KeyRequestListMap;
 
   // Create a new request for the incoming Resolve() call.
@@ -92,9 +86,9 @@ class NET_EXPORT AsyncHostResolver
   // attach |request| to the respective list.
   bool AttachToRequestList(Request* request);
 
-  // Will start a new transaction for |request|, will insert a new key in
+  // Will start a new DNS request for |request|, will insert a new key in
   // |requestlist_map_| and append |request| to the respective list.
-  int StartNewTransactionFor(Request* request);
+  int StartNewDnsRequestFor(Request* request);
 
   // Will enqueue |request| in |pending_requests_|.
   int Enqueue(Request* request);
@@ -114,11 +108,11 @@ class NET_EXPORT AsyncHostResolver
   // there are pending requests.
   void ProcessPending();
 
-  // Maximum number of concurrent transactions.
-  size_t max_transactions_;
+  // Maximum number of concurrent DNS requests.
+  size_t max_dns_requests_;
 
-  // List of current transactions.
-  TransactionList transactions_;
+  // List of current DNS requests.
+  DnsRequestList dns_requests_;
 
   // A map from Key to a list of requests waiting for the Key to resolve.
   KeyRequestListMap requestlist_map_;
@@ -129,18 +123,10 @@ class NET_EXPORT AsyncHostResolver
   // Queues based on priority for putting pending requests.
   RequestList pending_requests_[NUM_PRIORITIES];
 
-  // DNS server to which queries will be setn.
-  IPEndPoint dns_server_;
-
-  // Callback to be passed to DnsTransaction for generating DNS query ids.
-  RandIntCallback rand_int_cb_;
-
   // Cache of host resolution results.
   scoped_ptr<HostCache> cache_;
 
-  // Also passed to DnsTransaction; it's a dependency injection to aid
-  // testing, outside of unit tests, its value is always NULL.
-  ClientSocketFactory* factory_;
+  DnsClient* client_;
 
   NetLog* net_log_;
 
