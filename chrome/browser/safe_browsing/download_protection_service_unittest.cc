@@ -24,7 +24,6 @@
 #include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
-#include "crypto/rsa_private_key.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/x509_certificate.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -202,6 +201,23 @@ class DownloadProtectionServiceTest : public testing::Test {
       std::vector<std::string>* whitelist_strings) {
     DownloadProtectionService::GetCertificateWhitelistStrings(
         certificate, issuer, whitelist_strings);
+  }
+
+  // Reads a single PEM-encoded certificate from the testdata directory.
+  // Returns NULL on failure.
+  scoped_refptr<net::X509Certificate> ReadTestCertificate(
+      const std::string& filename) {
+    std::string cert_data;
+    if (!file_util::ReadFileToString(testdata_path_.AppendASCII(filename),
+                                     &cert_data)) {
+      return NULL;
+    }
+    net::CertificateList certs =
+        net::X509Certificate::CreateCertificateListFromBytes(
+            cert_data.data(),
+            cert_data.size(),
+            net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
+    return certs.empty() ? NULL : certs[0];
   }
 
  private:
@@ -760,45 +776,18 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadRequestTimeout) {
   ExpectResult(DownloadProtectionService::SAFE);
 }
 
-TEST_F(DownloadProtectionServiceTest,
-       GetCertificateWhitelistStrings_TestCert) {
-  std::string cert_data;
-  ASSERT_TRUE(file_util::ReadFileToString(testdata_path_.AppendASCII(
-      "signature_util_test.cer"), &cert_data));
-
-  scoped_refptr<net::X509Certificate> cert(
-      net::X509Certificate::CreateFromBytes(cert_data.data(),
-                                            cert_data.size()));
-  ASSERT_TRUE(cert.get());
-
-  std::vector<std::string> whitelist_strings;
-  GetCertificateWhitelistStrings(*cert, *cert, &whitelist_strings);
-
-  EXPECT_THAT(whitelist_strings, ElementsAre(
-      "cert/58AFF702772EB67BDD412571BA40AAC07F0D936C"
-      "/CN=Joe's-Software-Emporium"));
-}
-
-// Only some implementations have the ability to generate self-signed certs.
-#if defined(USE_NSS) || defined(OS_WIN) || defined(OS_MACOSX)
-TEST_F(DownloadProtectionServiceTest,
-       GetCertificateWhitelistStrings_SelfSigned) {
-  scoped_ptr<crypto::RSAPrivateKey> private_key(
-      crypto::RSAPrivateKey::Create(1024));
+TEST_F(DownloadProtectionServiceTest, GetCertificateWhitelistStrings) {
   // We'll pass this cert in as the "issuer", even though it isn't really
   // used to sign the certs below.  GetCertificateWhitelistStirngs doesn't care
   // about this.
-  scoped_refptr<net::X509Certificate> issuer_cert =
-      net::X509Certificate::CreateSelfSigned(
-          private_key.get(), "CN=issuer", 1, base::TimeDelta::FromDays(1));
+  scoped_refptr<net::X509Certificate> issuer_cert(
+      ReadTestCertificate("issuer.pem"));
   ASSERT_TRUE(issuer_cert.get());
   std::string cert_base = "cert/" + base::HexEncode(
       issuer_cert->fingerprint().data,
       sizeof(issuer_cert->fingerprint().data));
 
-  scoped_refptr<net::X509Certificate> cert =
-      net::X509Certificate::CreateSelfSigned(
-          private_key.get(), "CN=subject/%1", 1, base::TimeDelta::FromDays(1));
+  scoped_refptr<net::X509Certificate> cert(ReadTestCertificate("test_cn.pem"));
   ASSERT_TRUE(cert.get());
   std::vector<std::string> whitelist_strings;
   GetCertificateWhitelistStrings(*cert, *issuer_cert, &whitelist_strings);
@@ -806,8 +795,7 @@ TEST_F(DownloadProtectionServiceTest,
   EXPECT_THAT(whitelist_strings, ElementsAre(
       cert_base + "/CN=subject%2F%251"));
 
-  cert = net::X509Certificate::CreateSelfSigned(
-      private_key.get(), "CN=subject,O=org", 1, base::TimeDelta::FromDays(1));
+  cert = ReadTestCertificate("test_cn_o.pem");
   ASSERT_TRUE(cert.get());
   whitelist_strings.clear();
   GetCertificateWhitelistStrings(*cert, *issuer_cert, &whitelist_strings);
@@ -816,9 +804,7 @@ TEST_F(DownloadProtectionServiceTest,
       cert_base + "/CN=subject/O=org",
       cert_base + "/O=org"));
 
-  cert = net::X509Certificate::CreateSelfSigned(
-      private_key.get(), "CN=subject,O=org,OU=unit", 1,
-      base::TimeDelta::FromDays(1));
+  cert = ReadTestCertificate("test_cn_o_ou.pem");
   ASSERT_TRUE(cert.get());
   whitelist_strings.clear();
   GetCertificateWhitelistStrings(*cert, *issuer_cert, &whitelist_strings);
@@ -831,9 +817,7 @@ TEST_F(DownloadProtectionServiceTest,
       cert_base + "/O=org/OU=unit",
       cert_base + "/OU=unit"));
 
-  cert = net::X509Certificate::CreateSelfSigned(
-      private_key.get(), "CN=subject,OU=unit", 1,
-      base::TimeDelta::FromDays(1));
+  cert = ReadTestCertificate("test_cn_ou.pem");
   ASSERT_TRUE(cert.get());
   whitelist_strings.clear();
   GetCertificateWhitelistStrings(*cert, *issuer_cert, &whitelist_strings);
@@ -842,15 +826,13 @@ TEST_F(DownloadProtectionServiceTest,
       cert_base + "/CN=subject/OU=unit",
       cert_base + "/OU=unit"));
 
-  cert = net::X509Certificate::CreateSelfSigned(
-      private_key.get(), "O=org,", 1, base::TimeDelta::FromDays(1));
+  cert = ReadTestCertificate("test_o.pem");
   ASSERT_TRUE(cert.get());
   whitelist_strings.clear();
   GetCertificateWhitelistStrings(*cert, *issuer_cert, &whitelist_strings);
   EXPECT_THAT(whitelist_strings, ElementsAre(cert_base + "/O=org"));
 
-  cert = net::X509Certificate::CreateSelfSigned(
-      private_key.get(), "O=org,OU=unit", 1, base::TimeDelta::FromDays(1));
+  cert = ReadTestCertificate("test_o_ou.pem");
   ASSERT_TRUE(cert.get());
   whitelist_strings.clear();
   GetCertificateWhitelistStrings(*cert, *issuer_cert, &whitelist_strings);
@@ -859,19 +841,16 @@ TEST_F(DownloadProtectionServiceTest,
       cert_base + "/O=org/OU=unit",
       cert_base + "/OU=unit"));
 
-  cert = net::X509Certificate::CreateSelfSigned(
-      private_key.get(), "OU=unit", 1, base::TimeDelta::FromDays(1));
+  cert = ReadTestCertificate("test_ou.pem");
   ASSERT_TRUE(cert.get());
   whitelist_strings.clear();
   GetCertificateWhitelistStrings(*cert, *issuer_cert, &whitelist_strings);
   EXPECT_THAT(whitelist_strings, ElementsAre(cert_base + "/OU=unit"));
 
-  cert = net::X509Certificate::CreateSelfSigned(
-      private_key.get(), "C=US", 1, base::TimeDelta::FromDays(1));
+  cert = ReadTestCertificate("test_c.pem");
   ASSERT_TRUE(cert.get());
   whitelist_strings.clear();
   GetCertificateWhitelistStrings(*cert, *issuer_cert, &whitelist_strings);
   EXPECT_THAT(whitelist_strings, ElementsAre());
 }
-#endif
 }  // namespace safe_browsing
