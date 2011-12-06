@@ -744,11 +744,11 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppTabLaunchType", launch_type, 100);
 
   static bool default_apps_trial_exists =
-      base::FieldTrialList::TrialExists(kDefaultAppsTrial_Name);
+      base::FieldTrialList::TrialExists(kDefaultAppsTrialName);
   if (default_apps_trial_exists) {
     UMA_HISTOGRAM_ENUMERATION(
         base::FieldTrial::MakeName("Extensions.AppTabLaunchType",
-                                   kDefaultAppsTrial_Name),
+                                   kDefaultAppsTrialName),
         launch_type, 100);
   }
 

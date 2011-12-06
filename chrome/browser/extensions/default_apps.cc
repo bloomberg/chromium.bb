@@ -77,9 +77,9 @@ static bool ShouldInstallInProfile(Profile* profile) {
     install_apps = false;
   }
 
-  if (base::FieldTrialList::TrialExists(kDefaultAppsTrial_Name)) {
+  if (base::FieldTrialList::TrialExists(kDefaultAppsTrialName)) {
     install_apps = base::FieldTrialList::Find(
-        kDefaultAppsTrial_Name)->group_name() != kDefaultAppsTrial_NoAppsGroup;
+        kDefaultAppsTrialName)->group_name() != kDefaultAppsTrialNoAppsGroup;
   }
 
   // Save the state if needed.

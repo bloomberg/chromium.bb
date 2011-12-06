@@ -128,11 +128,11 @@ void ProfileSizeTask::Run() {
     UMA_HISTOGRAM_COUNTS_10000("Profile.AppCount", extension_count_);
 
     static bool default_apps_trial_exists = base::FieldTrialList::TrialExists(
-        kDefaultAppsTrial_Name);
+        kDefaultAppsTrialName);
     if (default_apps_trial_exists) {
       UMA_HISTOGRAM_COUNTS_10000(
           base::FieldTrial::MakeName("Profile.AppCount",
-                                     kDefaultAppsTrial_Name),
+                                     kDefaultAppsTrialName),
           extension_count_);
     }
   }

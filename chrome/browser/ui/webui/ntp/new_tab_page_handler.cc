@@ -37,11 +37,11 @@ WebUIMessageHandler* NewTabPageHandler::Attach(WebUI* web_ui) {
                             shown_page_type, kHistogramEnumerationMax);
 
   static bool default_apps_trial_exists =
-      base::FieldTrialList::TrialExists(kDefaultAppsTrial_Name);
+      base::FieldTrialList::TrialExists(kDefaultAppsTrialName);
   if (default_apps_trial_exists) {
     UMA_HISTOGRAM_ENUMERATION(
         base::FieldTrial::MakeName("NewTabPage.DefaultPageType",
-                                   kDefaultAppsTrial_Name),
+                                   kDefaultAppsTrialName),
         shown_page_type, kHistogramEnumerationMax);
   }
 
@@ -102,11 +102,11 @@ void NewTabPageHandler::HandlePageSelected(const ListValue* args) {
                             shown_page_type, kHistogramEnumerationMax);
 
   static bool default_apps_trial_exists =
-      base::FieldTrialList::TrialExists(kDefaultAppsTrial_Name);
+      base::FieldTrialList::TrialExists(kDefaultAppsTrialName);
   if (default_apps_trial_exists) {
     UMA_HISTOGRAM_ENUMERATION(
         base::FieldTrial::MakeName("NewTabPage.SelectedPageType",
-                                   kDefaultAppsTrial_Name),
+                                   kDefaultAppsTrialName),
         shown_page_type, kHistogramEnumerationMax);
   }
 }

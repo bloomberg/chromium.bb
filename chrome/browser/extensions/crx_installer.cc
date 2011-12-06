@@ -551,11 +551,11 @@ void CrxInstaller::ReportSuccessFromFileThread() {
     UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionInstalled", 1, 2);
 
     static bool default_apps_trial_exists =
-        base::FieldTrialList::TrialExists(kDefaultAppsTrial_Name);
+        base::FieldTrialList::TrialExists(kDefaultAppsTrialName);
     if (default_apps_trial_exists) {
       UMA_HISTOGRAM_ENUMERATION(
           base::FieldTrial::MakeName("Extensions.ExtensionInstalled",
-                                     kDefaultAppsTrial_Name),
+                                     kDefaultAppsTrialName),
           1, 2);
     }
   }

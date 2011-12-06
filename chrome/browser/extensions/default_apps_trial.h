@@ -21,8 +21,8 @@
 //   - any other brand code get default apps, but they are not part of the
 //     trial
 
-extern const char kDefaultAppsTrial_Name[];
-extern const char kDefaultAppsTrial_NoAppsGroup[];
-extern const char kDefaultAppsTrial_WithAppsGroup[];
+extern const char kDefaultAppsTrialName[];
+extern const char kDefaultAppsTrialNoAppsGroup[];
+extern const char kDefaultAppsTrialWithAppsGroup[];
 
 #endif  // CHROME_BROWSER_EXTENSIONS_DEFAULT_APPS_TRIAL_H_

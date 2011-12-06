@@ -1085,11 +1085,11 @@ void ChromeBrowserMainParts::DefaultAppsFieldTrial() {
 
   // Create a 100% field trial based on the brand code.
   if (LowerCaseEqualsASCII(brand, "ecdb")) {
-    base::FieldTrialList::CreateFieldTrial(kDefaultAppsTrial_Name,
-                                           kDefaultAppsTrial_NoAppsGroup);
+    base::FieldTrialList::CreateFieldTrial(kDefaultAppsTrialName,
+                                           kDefaultAppsTrialNoAppsGroup);
   } else if (LowerCaseEqualsASCII(brand, "ecda")) {
-    base::FieldTrialList::CreateFieldTrial(kDefaultAppsTrial_Name,
-                                           kDefaultAppsTrial_WithAppsGroup);
+    base::FieldTrialList::CreateFieldTrial(kDefaultAppsTrialName,
+                                           kDefaultAppsTrialWithAppsGroup);
   }
 }
 

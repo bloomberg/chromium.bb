@@ -4,6 +4,6 @@
 
 #include "chrome/browser/extensions/default_apps_trial.h"
 
-const char kDefaultAppsTrial_Name[] = "DefaultAppsExperiment";
-const char kDefaultAppsTrial_NoAppsGroup[] = "NoDefaultApps";
-const char kDefaultAppsTrial_WithAppsGroup[] = "WithDefaultApps";
+const char kDefaultAppsTrialName[] = "DefaultAppsExperiment";
+const char kDefaultAppsTrialNoAppsGroup[] = "NoDefaultApps";
+const char kDefaultAppsTrialWithAppsGroup[] = "WithDefaultApps";
