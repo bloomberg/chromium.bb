@@ -32,6 +32,7 @@
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/pango_util.h"
 #include "ui/gfx/platform_font_pango.h"
@@ -483,9 +484,8 @@ void TabRendererGtk::PaintFaviconArea(GtkWidget* widget, cairo_t* cr) {
   }
 
   // Paint the background behind the favicon.
-  gfx::CairoCachedSurface* tab_bg =
-      theme_service_->GetSurfaceNamed(theme_id, widget);
-  tab_bg->SetSource(cr, widget, -x(), -offset_y);
+  const gfx::Image* tab_bg = theme_service_->GetImageNamed(theme_id);
+  tab_bg->ToCairo()->SetSource(cr, widget, -x(), -offset_y);
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr,
                   favicon_bounds_.x(), favicon_bounds_.y(),
@@ -496,9 +496,9 @@ void TabRendererGtk::PaintFaviconArea(GtkWidget* widget, cairo_t* cr) {
     double throb_value = GetThrobValue();
     if (throb_value > 0) {
       cairo_push_group(cr);
-      gfx::CairoCachedSurface* active_bg = theme_service_->GetSurfaceNamed(
-          IDR_THEME_TOOLBAR, widget);
-      active_bg->SetSource(cr, widget, -x(), 0);
+      const gfx::Image* active_bg =
+          theme_service_->GetImageNamed(IDR_THEME_TOOLBAR);
+      active_bg->ToCairo()->SetSource(cr, widget, -x(), 0);
       cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
 
       cairo_rectangle(cr,
@@ -861,7 +861,7 @@ void TabRendererGtk::PaintIcon(GtkWidget* widget, cairo_t* cr) {
 
   gfx::CairoCachedSurface* to_display = NULL;
   if (should_display_crashed_favicon_) {
-    to_display = theme_service_->GetSurfaceNamed(IDR_SAD_FAVICON, widget);
+    to_display = theme_service_->GetImageNamed(IDR_SAD_FAVICON)->ToCairo();
   } else if (!data_.favicon.isNull()) {
     if (data_.is_default_favicon && theme_service_->UsingNativeTheme()) {
       to_display = theme_service_->GetCairoIcon(
@@ -899,16 +899,17 @@ void TabRendererGtk::PaintTabBackground(GtkWidget* widget, cairo_t* cr) {
 void TabRendererGtk::DrawTabBackground(
     cairo_t* cr,
     GtkWidget* widget,
-    gfx::CairoCachedSurface* tab_bg,
+    const gfx::Image* tab_bg,
     int offset_x,
     int offset_y) {
-  tab_bg->SetSource(cr, widget, -offset_x, -offset_y);
+  tab_bg->ToCairo()->SetSource(cr, widget, -offset_x, -offset_y);
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
 
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+
   // Draw left edge
-  gfx::CairoCachedSurface* tab_l_mask =
-      theme_service_->GetSurfaceNamed(IDR_TAB_ALPHA_LEFT, widget);
-  tab_l_mask->MaskSource(cr, widget, 0, 0);
+  gfx::Image& tab_l_mask = rb.GetNativeImageNamed(IDR_TAB_ALPHA_LEFT);
+  tab_l_mask.ToCairo()->MaskSource(cr, widget, 0, 0);
 
   // Draw center
   cairo_rectangle(cr,
@@ -918,9 +919,9 @@ void TabRendererGtk::DrawTabBackground(
   cairo_fill(cr);
 
   // Draw right edge
-  gfx::CairoCachedSurface* tab_r_mask =
-      theme_service_->GetSurfaceNamed(IDR_TAB_ALPHA_RIGHT, widget);
-  tab_r_mask->MaskSource(cr, widget, width() - tab_active_l_width_, 0);
+  gfx::Image& tab_r_mask = rb.GetNativeImageNamed(IDR_TAB_ALPHA_RIGHT);
+  tab_r_mask.ToCairo()->MaskSource(cr, widget,
+                                    width() - tab_active_l_width_, 0);
 }
 
 void TabRendererGtk::DrawTabShadow(
@@ -929,16 +930,17 @@ void TabRendererGtk::DrawTabShadow(
     int left_idr,
     int center_idr,
     int right_idr) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  gfx::Image& active_image_l = rb.GetNativeImageNamed(left_idr);
+  gfx::Image& active_image_c = rb.GetNativeImageNamed(center_idr);
+  gfx::Image& active_image_r = rb.GetNativeImageNamed(right_idr);
+
   // Draw left drop shadow
-  gfx::CairoCachedSurface* active_image_l =
-      theme_service_->GetSurfaceNamed(left_idr, widget);
-  active_image_l->SetSource(cr, widget, 0, 0);
+  active_image_l.ToCairo()->SetSource(cr, widget, 0, 0);
   cairo_paint(cr);
 
   // Draw the center shadow
-  gfx::CairoCachedSurface* active_image_c =
-      theme_service_->GetSurfaceNamed(center_idr, widget);
-  active_image_c->SetSource(cr, widget, 0, 0);
+  active_image_c.ToCairo()->SetSource(cr, widget, 0, 0);
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr, tab_active_l_width_, 0,
                   width() - (2 * tab_active_l_width_),
@@ -946,19 +948,17 @@ void TabRendererGtk::DrawTabShadow(
   cairo_fill(cr);
 
   // Draw right drop shadow
-  gfx::CairoCachedSurface* active_image_r =
-      theme_service_->GetSurfaceNamed(right_idr, widget);
-  active_image_r->SetSource(cr, widget, width() - active_image_r->Width(), 0);
+  active_image_r.ToCairo()->SetSource(
+      cr, widget, width() - active_image_r.ToCairo()->Width(), 0);
   cairo_paint(cr);
 }
 
 void TabRendererGtk::PaintInactiveTabBackground(GtkWidget* widget,
-                                                     cairo_t* cr) {
+                                                cairo_t* cr) {
   int theme_id = data_.incognito ?
       IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
 
-  gfx::CairoCachedSurface* tab_bg =
-      theme_service_->GetSurfaceNamed(theme_id, widget);
+  const gfx::Image* tab_bg = theme_service_->GetImageNamed(theme_id);
 
   // If the theme is providing a custom background image, then its top edge
   // should be at the top of the tab. Otherwise, we assume that the background
@@ -974,8 +974,7 @@ void TabRendererGtk::PaintInactiveTabBackground(GtkWidget* widget,
 
 void TabRendererGtk::PaintActiveTabBackground(GtkWidget* widget,
                                               cairo_t* cr) {
-  gfx::CairoCachedSurface* tab_bg =
-      theme_service_->GetSurfaceNamed(IDR_THEME_TOOLBAR, widget);
+  const gfx::Image* tab_bg = theme_service_->GetImageNamed(IDR_THEME_TOOLBAR);
 
   DrawTabBackground(cr, widget, tab_bg, background_offset_x_, 0);
   DrawTabShadow(cr, widget, IDR_TAB_ACTIVE_LEFT, IDR_TAB_ACTIVE_CENTER,
@@ -986,16 +985,15 @@ void TabRendererGtk::PaintLoadingAnimation(GtkWidget* widget,
                                            cairo_t* cr) {
   int id = loading_animation_.animation_state() == ANIMATION_WAITING ?
            IDR_THROBBER_WAITING : IDR_THROBBER;
-  gfx::CairoCachedSurface* throbber =
-      theme_service_->GetSurfaceNamed(id, widget);
+  const gfx::Image* throbber = theme_service_->GetImageNamed(id);
 
-  const int image_size = throbber->Height();
+  const int image_size = throbber->ToCairo()->Height();
   const int image_offset = loading_animation_.animation_frame() * image_size;
   DCHECK(image_size == favicon_bounds_.height());
   DCHECK(image_size == favicon_bounds_.width());
 
-  throbber->SetSource(cr, widget, favicon_bounds_.x() - image_offset,
-                      favicon_bounds_.y());
+  throbber->ToCairo()->SetSource(cr, widget, favicon_bounds_.x() - image_offset,
+                                 favicon_bounds_.y());
   cairo_rectangle(cr, favicon_bounds_.x(), favicon_bounds_.y(),
                   image_size, image_size);
   cairo_fill(cr);
@@ -1110,12 +1108,12 @@ void TabRendererGtk::InitResources() {
 
   // Grab the pixel sizes of our masking images.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SkBitmap* tab_active_l = rb.GetBitmapNamed(IDR_TAB_ACTIVE_LEFT);
-  tab_active_l_width_ = tab_active_l->width();
-  tab_active_l_height_ = tab_active_l->height();
+  GdkPixbuf* tab_active_l = rb.GetNativeImageNamed(IDR_TAB_ACTIVE_LEFT);
+  tab_active_l_width_ = gdk_pixbuf_get_width(tab_active_l);
+  tab_active_l_height_ = gdk_pixbuf_get_height(tab_active_l);
 
-  SkBitmap* tab_inactive_l = rb.GetBitmapNamed(IDR_TAB_INACTIVE_LEFT);
-  tab_inactive_l_height_ = tab_inactive_l->height();
+  GdkPixbuf* tab_inactive_l = rb.GetNativeImageNamed(IDR_TAB_INACTIVE_LEFT);
+  tab_inactive_l_height_ = gdk_pixbuf_get_height(tab_inactive_l);
 
   close_button_width_ = rb.GetBitmapNamed(IDR_TAB_CLOSE)->width();
   close_button_height_ = rb.GetBitmapNamed(IDR_TAB_CLOSE)->height();
