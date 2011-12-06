@@ -54,7 +54,7 @@ class DownloadManagerDelegate {
   // Allows the delegate to override completion of the download.  If this
   // function returns false, the download completion is delayed and the
   // delegate is responsible for making sure that
-  // DownloadItem::MaybeCompleteDownload is called at some point in the
+  // DownloadManager::MaybeCompleteDownload is called at some point in the
   // future.  Note that at that point this function will be called again,
   // and is responsible for returning true when it really is ok for the
   // download to complete.

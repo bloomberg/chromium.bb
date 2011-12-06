@@ -33,7 +33,6 @@ class MockDownloadItem : public DownloadItem {
   MOCK_METHOD0(DelayedDownloadOpened, void());
   MOCK_METHOD2(OnAllDataSaved, void(int64, const std::string&));
   MOCK_METHOD0(OnDownloadedFileRemoved, void());
-  MOCK_METHOD0(MaybeCompleteDownload, void());
   MOCK_METHOD2(Interrupted, void(int64, InterruptReason));
   MOCK_METHOD1(Delete, void(DeleteReason));
   MOCK_METHOD0(Remove, void());
@@ -97,7 +96,6 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(GetLastReason, InterruptReason());
   MOCK_CONST_METHOD0(GetPersistentStoreInfo, DownloadPersistentStoreInfo());
   MOCK_CONST_METHOD0(GetStateInfo, DownloadStateInfo());
-  MOCK_CONST_METHOD0(BrowserContext, content::BrowserContext*());
   MOCK_CONST_METHOD0(GetTabContents, TabContents*());
   MOCK_CONST_METHOD0(GetTargetFilePath, FilePath());
   MOCK_CONST_METHOD0(GetFileNameToReportUser, FilePath());

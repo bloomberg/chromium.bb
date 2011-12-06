@@ -14,10 +14,6 @@
 class DownloadManager;
 class PrefService;
 
-namespace content {
-class BrowserContext;
-}
-
 // Stores all download-related preferences.
 class DownloadPrefs {
  public:
@@ -26,11 +22,8 @@ class DownloadPrefs {
 
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // Returns the DownloadPrefs corresponding to the given DownloadManager
-  // or BrowserContext.
+  // Returns the DownloadPrefs corresponding to the given DownloadManager.
   static DownloadPrefs* FromDownloadManager(DownloadManager* download_manager);
-  static DownloadPrefs* FromBrowserContext(
-      content::BrowserContext* browser_context);
 
   FilePath download_path() const { return *download_path_; }
   int save_file_type() const { return *save_file_type_; }
