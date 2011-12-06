@@ -467,6 +467,12 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
       handled = true;
       break;
     }
+    case MappingNotify: {
+      if (xev->xmapping.request == MappingModifier ||
+          xev->xmapping.request == MappingKeyboard)
+        XRefreshKeyboardMapping(&xev->xmapping);
+      break;
+    }
     case MotionNotify: {
       // Discard all but the most recent motion event that targets the same
       // window with unchanged state.
