@@ -6,9 +6,11 @@
 
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/string_split.h"
 #include "base/time.h"
+#include "ui/aura/aura_switches.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
@@ -26,14 +28,19 @@
 
 namespace {
 
-SkColor kTooltipBackground = 0xFFFFFFCC;
-SkColor kTooltipBorder = 0xFF000000;
-int kTooltipBorderWidth = 1;
-int kTooltipTimeoutMs = 500;
+const SkColor kTooltipBackground = 0xFFFFFFCC;
+const SkColor kTooltipBorder = 0xFF646450;
+const int kTooltipBorderWidth = 1;
+const int kTooltipHorizontalPadding = 3;
+// TODO(derat): This padding is needed on Chrome OS devices but seems excessive
+// when running the same binary on a Linux workstation; presumably there's a
+// difference in font metrics.  Rationalize this.
+const int kTooltipVerticalPadding = 2;
+const int kTooltipTimeoutMs = 500;
 
 // FIXME: get cursor offset from actual cursor size.
-int kCursorOffsetX = 10;
-int kCursorOffsetY = 15;
+const int kCursorOffsetX = 10;
+const int kCursorOffsetY = 15;
 
 // Maximum number of characters we allow in a tooltip.
 const size_t kMaxTooltipLength = 1024;
@@ -107,8 +114,11 @@ class ShellTooltipManager::Tooltip {
   Tooltip() {
     label_.set_background(
         views::Background::CreateSolidBackground(kTooltipBackground));
-    label_.set_border(
-        views::Border::CreateSolidBorder(kTooltipBorderWidth, kTooltipBorder));
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraNoShadows)) {
+      label_.set_border(
+          views::Border::CreateSolidBorder(kTooltipBorderWidth,
+                                           kTooltipBorder));
+    }
     label_.set_parent_owned(false);
     widget_.reset(CreateTooltip());
     widget_->SetContentsView(&label_);
@@ -126,8 +136,14 @@ class ShellTooltipManager::Tooltip {
                      location.x(), location.y());
     label_.SetText(tooltip_text);
 
-    SetTooltipBounds(location, max_width + 2 * kTooltipBorderWidth,
-                     label_.GetPreferredSize().height());
+    int width = max_width + 2 * kTooltipHorizontalPadding;
+    int height = label_.GetPreferredSize().height() +
+        2 * kTooltipVerticalPadding;
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraNoShadows)) {
+      width += 2 * kTooltipBorderWidth;
+      height += 2 * kTooltipBorderWidth;
+    }
+    SetTooltipBounds(location, width, height);
   }
 
   // Shows the tooltip.
@@ -167,9 +183,10 @@ class ShellTooltipManager::Tooltip {
 ////////////////////////////////////////////////////////////////////////////////
 // ShellTooltipManager public:
 
-ShellTooltipManager::ShellTooltipManager() : aura::EventFilter(NULL),
-                                             tooltip_window_(NULL),
-                                             tooltip_(new Tooltip) {
+ShellTooltipManager::ShellTooltipManager()
+    : aura::EventFilter(NULL),
+      tooltip_window_(NULL),
+      tooltip_(new Tooltip) {
   tooltip_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(kTooltipTimeoutMs),
       this, &ShellTooltipManager::TooltipTimerFired);

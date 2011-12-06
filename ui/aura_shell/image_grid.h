@@ -78,6 +78,19 @@ class AURA_SHELL_EXPORT ImageGrid {
       return grid_->bottom_right_layer_.get();
     }
 
+    gfx::Rect top_left_clip_rect() const {
+      return grid_->top_left_painter_->clip_rect_;
+    }
+    gfx::Rect top_right_clip_rect() const {
+      return grid_->top_right_painter_->clip_rect_;
+    }
+    gfx::Rect bottom_left_clip_rect() const {
+      return grid_->bottom_left_painter_->clip_rect_;
+    }
+    gfx::Rect bottom_right_clip_rect() const {
+      return grid_->bottom_right_painter_->clip_rect_;
+    }
+
     // Returns |layer|'s bounds after applying the layer's current transform.
     gfx::Rect GetTransformedLayerBounds(const ui::Layer& layer);
 
@@ -117,17 +130,28 @@ class AURA_SHELL_EXPORT ImageGrid {
     ImagePainter(const gfx::Image* image) : image_(image) {}
     virtual ~ImagePainter() {}
 
+    // Clips |layer| to |clip_rect|.  Triggers a repaint if the clipping
+    // rectangle has changed.  An empty rectangle disables clipping.
+    void SetClipRect(const gfx::Rect& clip_rect, ui::Layer* layer);
+
     // ui::LayerDelegate implementation:
     virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
 
    private:
+    friend class TestAPI;
+
     const gfx::Image* image_;  // not owned
+
+    gfx::Rect clip_rect_;
 
     DISALLOW_COPY_AND_ASSIGN(ImagePainter);
   };
 
   // Returns the dimensions of |image| if non-NULL or gfx::Size(0, 0) otherwise.
   static gfx::Size GetImageSize(const gfx::Image* image);
+
+  // Returns true if |layer|'s bounds don't fit within |size|.
+  static bool LayerExceedsSize(const ui::Layer* layer, const gfx::Size& size);
 
   // Initializes |layer_ptr| and |painter_ptr| to display |image|.
   // Also adds the passed-in layer to |layer_|.

@@ -180,7 +180,6 @@ TEST_F(ImageGridTest, SmallerSides) {
             test_api.GetTransformedLayerBounds(
                 *test_api.top_layer()).ToString());
 
-
   // The left layer should be flush with the left edge and stretched vertically
   // between the top left corner and the bottom.
   EXPECT_EQ(gfx::Rect(
@@ -195,6 +194,78 @@ TEST_F(ImageGridTest, SmallerSides) {
                 kEdge, kSize.height() - kCorner).ToString(),
             test_api.GetTransformedLayerBounds(
                 *test_api.right_layer()).ToString());
+}
+
+// Test that we hide or clip layers as needed when the grid is assigned a small
+// size.
+TEST_F(ImageGridTest, TooSmall) {
+  const int kCorner = 5;
+  const int kCenter = 3;
+  const int kEdge = 3;
+
+  scoped_ptr<gfx::Image> top_left_image(
+      CreateImage(gfx::Size(kCorner, kCorner)));
+  scoped_ptr<gfx::Image> top_image(CreateImage(gfx::Size(kEdge, kEdge)));
+  scoped_ptr<gfx::Image> top_right_image(
+      CreateImage(gfx::Size(kCorner, kCorner)));
+  scoped_ptr<gfx::Image> left_image(CreateImage(gfx::Size(kEdge, kEdge)));
+  scoped_ptr<gfx::Image> center_image(CreateImage(gfx::Size(kCenter, kCenter)));
+  scoped_ptr<gfx::Image> right_image(CreateImage(gfx::Size(kEdge, kEdge)));
+  scoped_ptr<gfx::Image> bottom_left_image(
+      CreateImage(gfx::Size(kCorner, kCorner)));
+  scoped_ptr<gfx::Image> bottom_image(CreateImage(gfx::Size(kEdge, kEdge)));
+  scoped_ptr<gfx::Image> bottom_right_image(
+      CreateImage(gfx::Size(kCorner, kCorner)));
+
+  ImageGrid grid;
+  grid.Init(
+      top_left_image.get(), top_image.get(), top_right_image.get(),
+      left_image.get(), center_image.get(), right_image.get(),
+      bottom_left_image.get(), bottom_image.get(), bottom_right_image.get());
+  ImageGrid::TestAPI test_api(&grid);
+
+  // Set a size that's smaller than the combined (unscaled) corner images.
+  const gfx::Size kSmallSize(kCorner + kCorner - 3, kCorner + kCorner - 5);
+  grid.SetSize(kSmallSize);
+
+  // The scalable images around the sides and in the center should be hidden.
+  EXPECT_FALSE(test_api.top_layer()->visible());
+  EXPECT_FALSE(test_api.bottom_layer()->visible());
+  EXPECT_FALSE(test_api.left_layer()->visible());
+  EXPECT_FALSE(test_api.right_layer()->visible());
+  EXPECT_FALSE(test_api.center_layer()->visible());
+
+  // The corner images' clip rects should sum to the expected size.
+  EXPECT_EQ(kSmallSize.width(),
+            test_api.top_left_clip_rect().width() +
+            test_api.top_right_clip_rect().width());
+  EXPECT_EQ(kSmallSize.width(),
+            test_api.bottom_left_clip_rect().width() +
+            test_api.bottom_right_clip_rect().width());
+  EXPECT_EQ(kSmallSize.height(),
+            test_api.top_left_clip_rect().height() +
+            test_api.bottom_left_clip_rect().height());
+  EXPECT_EQ(kSmallSize.height(),
+            test_api.top_right_clip_rect().height() +
+            test_api.bottom_right_clip_rect().height());
+
+  // Resize the grid to be large enough to show all images.
+  const gfx::Size kLargeSize(kCorner + kCorner + kCenter,
+                             kCorner + kCorner + kCenter);
+  grid.SetSize(kLargeSize);
+
+  // The scalable images should be visible now.
+  EXPECT_TRUE(test_api.top_layer()->visible());
+  EXPECT_TRUE(test_api.bottom_layer()->visible());
+  EXPECT_TRUE(test_api.left_layer()->visible());
+  EXPECT_TRUE(test_api.right_layer()->visible());
+  EXPECT_TRUE(test_api.center_layer()->visible());
+
+  // We shouldn't be clipping the corner images anymore.
+  EXPECT_TRUE(test_api.top_left_clip_rect().IsEmpty());
+  EXPECT_TRUE(test_api.top_right_clip_rect().IsEmpty());
+  EXPECT_TRUE(test_api.bottom_left_clip_rect().IsEmpty());
+  EXPECT_TRUE(test_api.bottom_right_clip_rect().IsEmpty());
 }
 
 }  // namespace test

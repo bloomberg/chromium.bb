@@ -168,7 +168,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
         static_cast<aura::WindowDragDropDelegate*>(this));
   }
 
-  if (window_type == Widget::InitParams::TYPE_MENU)
+  if (window_type == Widget::InitParams::TYPE_MENU ||
+      window_type == Widget::InitParams::TYPE_TOOLTIP)
     window_->SetIntProperty(aura::kShadowTypeKey,
                             aura::SHADOW_TYPE_RECTANGULAR);
 }
