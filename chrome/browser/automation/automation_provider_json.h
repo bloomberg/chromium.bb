@@ -15,6 +15,7 @@
 class AutomationId;
 class AutomationProvider;
 class Browser;
+class Extension;
 class Profile;
 class RenderViewHost;
 class TabContents;
@@ -80,7 +81,7 @@ bool GetBrowserAndTabFromJSONArgs(base::DictionaryValue* args,
 // Returns true on success and sets |id|. Otherwise, |error| will be set.
 bool GetAutomationIdFromJSONArgs(
     base::DictionaryValue* args,
-    const std::string& key_name,
+    const std::string& key,
     AutomationId* id,
     std::string* error) WARN_UNUSED_RESULT;
 
@@ -92,6 +93,28 @@ bool GetRenderViewFromJSONArgs(
     base::DictionaryValue* args,
     Profile* profile,
     RenderViewHost** rvh,
+    std::string* error) WARN_UNUSED_RESULT;
+
+// Gets the extension specified by the given dictionary |args|. |args|
+// should contain the given key which refers to an extension ID. Returns
+// true on success and sets |extension|. Otherwise, |error| will be set.
+// The retrieved extension may be disabled or crashed.
+bool GetExtensionFromJSONArgs(
+    base::DictionaryValue* args,
+    const std::string& key,
+    Profile* profile,
+    const Extension** extension,
+    std::string* error) WARN_UNUSED_RESULT;
+
+// Gets the enabled extension specified by the given dictionary |args|. |args|
+// should contain the given key which refers to an extension ID. Returns
+// true on success and sets |extension|. Otherwise, |error| will be set.
+// The retrieved extension will not be disabled or crashed.
+bool GetEnabledExtensionFromJSONArgs(
+    base::DictionaryValue* args,
+    const std::string& key,
+    Profile* profile,
+    const Extension** extension,
     std::string* error) WARN_UNUSED_RESULT;
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_JSON_H_

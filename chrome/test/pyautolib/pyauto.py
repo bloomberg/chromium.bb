@@ -1822,7 +1822,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'command': 'UninstallExtensionById',
       'id': id,
     }
-    return self._GetResultFromJSONRequest(cmd_dict)['success']
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)['success']
 
   def SetExtensionStateById(self, id, enable, allow_in_incognito):
     """Set extension state: enable/disable, allow/disallow in incognito mode.
@@ -1838,15 +1838,16 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'enable': enable,
       'allow_in_incognito': allow_in_incognito,
     }
-    self._GetResultFromJSONRequest(cmd_dict)
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
-  def TriggerPageActionById(self, id, windex=0):
+  def TriggerPageActionById(self, id, tab_index=0, windex=0):
     """Trigger page action asynchronously in the active tab.
 
     The page action icon must be displayed before invoking this function.
 
     Args:
       id: The string id of the extension.
+      tab_index: Integer index of the tab to use; defaults to 0 (first tab).
       windex: Integer index of the browser window to use; defaults to 0
               (first window).
     """
@@ -1854,14 +1855,16 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'command': 'TriggerPageActionById',
       'id': id,
       'windex': windex,
+      'tab_index': tab_index,
     }
-    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
-  def TriggerBrowserActionById(self, id, windex=0):
+  def TriggerBrowserActionById(self, id, tab_index=0, windex=0):
     """Trigger browser action asynchronously in the active tab.
 
     Args:
       id: The string id of the extension.
+      tab_index: Integer index of the tab to use; defaults to 0 (first tab).
       windex: Integer index of the browser window to use; defaults to 0
               (first window).
     """
@@ -1869,8 +1872,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'command': 'TriggerBrowserActionById',
       'id': id,
       'windex': windex,
+      'tab_index': tab_index,
     }
-    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
   def UpdateExtensionsNow(self):
     """Auto-updates installed extensions.

@@ -1644,16 +1644,18 @@ class InputEventAckNotificationObserver : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(InputEventAckNotificationObserver);
 };
 
-// Allows the automation provider to wait for all the tabs to finish any
-// pending loads. This only waits for tabs that exist at the observer's
-// creation. Will send a message on construction if no tabs are loading
-// currently.
-class AllTabsStoppedLoadingObserver : public TabEventObserver,
-                                      public content::NotificationObserver {
+// Allows the automation provider to wait for all render views to finish any
+// pending loads. This wait is only guaranteed for views that exist at the
+// observer's creation. Will send a message on construction if no views are
+// currently loading.
+class AllViewsStoppedLoadingObserver : public TabEventObserver,
+                                       public content::NotificationObserver {
  public:
-  AllTabsStoppedLoadingObserver(AutomationProvider* automation,
-                                IPC::Message* reply_message);
-  virtual ~AllTabsStoppedLoadingObserver();
+  AllViewsStoppedLoadingObserver(
+      AutomationProvider* automation,
+      IPC::Message* reply_message,
+      ExtensionProcessManager* extension_process_manager);
+  virtual ~AllViewsStoppedLoadingObserver();
 
   // TabEventObserver implementation.
   virtual void OnFirstPendingLoad(TabContents* tab_contents) OVERRIDE;
@@ -1671,12 +1673,13 @@ class AllTabsStoppedLoadingObserver : public TabEventObserver,
   // relpy and delete itself.
   void CheckIfNoMorePendingLoads();
 
-  TabSet pending_tabs_;
-  content::NotificationRegistrar registrar_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
+  ExtensionProcessManager* extension_process_manager_;
+  content::NotificationRegistrar registrar_;
+  TabSet pending_tabs_;
 
-  DISALLOW_COPY_AND_ASSIGN(AllTabsStoppedLoadingObserver);
+  DISALLOW_COPY_AND_ASSIGN(AllViewsStoppedLoadingObserver);
 };
 
 // Observer used to listen for new tab creation to complete.
@@ -1838,5 +1841,27 @@ class PolicyUpdatesObserver
 };
 
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
+
+// Waits for an extension popup to appear and load.
+class ExtensionPopupObserver : public content::NotificationObserver {
+ public:
+  ExtensionPopupObserver(
+      AutomationProvider* automation,
+      IPC::Message* reply_message,
+      const std::string& extension_id);
+  ~ExtensionPopupObserver();
+
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+ private:
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+  std::string extension_id_;
+  content::NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionPopupObserver);
+};
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

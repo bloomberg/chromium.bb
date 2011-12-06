@@ -10,6 +10,8 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_util.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/automation_id.h"
 #include "chrome/common/automation_messages.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -135,12 +137,12 @@ bool GetBrowserAndTabFromJSONArgs(
 
 bool GetAutomationIdFromJSONArgs(
     DictionaryValue* args,
-    const std::string& key_name,
+    const std::string& key,
     AutomationId* id,
     std::string* error) {
   Value* id_value;
-  if (!args->Get(key_name, &id_value)) {
-    *error = base::StringPrintf("Missing parameter '%s'", key_name.c_str());
+  if (!args->Get(key, &id_value)) {
+    *error = base::StringPrintf("Missing parameter '%s'", key.c_str());
     return false;
   }
   return AutomationId::FromValue(id_value, id, error);
@@ -168,4 +170,62 @@ bool GetRenderViewFromJSONArgs(
     *rvh = tab->render_view_host();
   }
   return true;
+}
+
+namespace {
+
+bool GetExtensionFromJSONArgsHelper(
+    base::DictionaryValue* args,
+    const std::string& key,
+    Profile* profile,
+    bool include_disabled,
+    const Extension** extension,
+    std::string* error) {
+  std::string id;
+  if (!args->GetString(key, &id)) {
+    *error = base::StringPrintf("Missing or invalid key: %s", key.c_str());
+    return false;
+  }
+  ExtensionService* service = profile->GetExtensionService();
+  if (!service) {
+    *error = "No extensions service.";
+    return false;
+  }
+  if (!service->GetInstalledExtension(id)) {
+    // The extension ID does not correspond to any extension, whether crashed
+    // or not.
+    *error = base::StringPrintf("Extension %s is not installed.",
+                                id.c_str());
+    return false;
+  }
+  const Extension* installed_extension =
+      service->GetExtensionById(id, include_disabled);
+  if (!installed_extension) {
+    *error = "Extension is disabled or has crashed.";
+    return false;
+  }
+  *extension = installed_extension;
+  return true;
+}
+
+}  // namespace
+
+bool GetExtensionFromJSONArgs(
+    base::DictionaryValue* args,
+    const std::string& key,
+    Profile* profile,
+    const Extension** extension,
+    std::string* error) {
+  return GetExtensionFromJSONArgsHelper(
+      args, key, profile, true /* include_disabled */, extension, error);
+}
+
+bool GetEnabledExtensionFromJSONArgs(
+    base::DictionaryValue* args,
+    const std::string& key,
+    Profile* profile,
+    const Extension** extension,
+    std::string* error) {
+  return GetExtensionFromJSONArgsHelper(
+      args, key, profile, false /* include_disabled */, extension, error);
 }

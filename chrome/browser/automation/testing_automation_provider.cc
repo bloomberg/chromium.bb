@@ -2242,7 +2242,7 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   // Map json commands to their handlers.
   std::map<std::string, JsonHandler> handler_map;
   handler_map["WaitForAllTabsToStopLoading"] =
-      &TestingAutomationProvider::WaitForAllTabsToStopLoading;
+      &TestingAutomationProvider::WaitForAllViewsToStopLoading;
   handler_map["GetIndicesFromTab"] =
       &TestingAutomationProvider::GetIndicesFromTab;
   handler_map["NavigateToURL"] =
@@ -2307,6 +2307,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::GetChromeDriverAutomationVersion;
   handler_map["UpdateExtensionsNow"] =
       &TestingAutomationProvider::UpdateExtensionsNow;
+  handler_map["IsPageActionVisible"] =
+      &TestingAutomationProvider::IsPageActionVisible;
   handler_map["CreateNewAutomationProvider"] =
       &TestingAutomationProvider::CreateNewAutomationProvider;
   handler_map["GetBrowserInfo"] =
@@ -4416,6 +4418,8 @@ void TestingAutomationProvider::GetExtensionsInfo(
     extension_value->SetBoolean("is_enabled", service->IsExtensionEnabled(id));
     extension_value->SetBoolean("allowed_in_incognito",
                                 service->IsIncognitoEnabled(id));
+    extension_value->SetBoolean("has_page_action",
+                                extension->page_action() != NULL);
     extensions_values->Append(extension_value);
   }
   return_value->Set("extensions", extensions_values);
@@ -4428,10 +4432,10 @@ void TestingAutomationProvider::GetExtensionsInfo(
 void TestingAutomationProvider::UninstallExtensionById(
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  std::string id;
-  if (!args->GetString("id", &id)) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "Must include string id.");
+  const Extension* extension;
+  std::string error;
+  if (!GetExtensionFromJSONArgs(args, "id", profile(), &extension, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
   ExtensionService* service = profile()->GetExtensionService();
@@ -4441,19 +4445,10 @@ void TestingAutomationProvider::UninstallExtensionById(
     return;
   }
 
-  if (!service->GetExtensionById(id, true) &&
-      !service->GetTerminatedExtension(id)) {
-    // The extension ID does not correspond to any extension, whether crashed
-    // or not.
-    AutomationJSONReply(this, reply_message).SendError(base::StringPrintf(
-        "Extension does not exist: %s.", id.c_str()));
-    return;
-  }
-
   // Wait for a notification indicating that the extension with the given ID
   // has been uninstalled.  This observer will delete itself.
-  new ExtensionUninstallObserver(this, reply_message, id);
-  service->UninstallExtension(id, false, NULL);
+  new ExtensionUninstallObserver(this, reply_message, extension->id());
+  service->UninstallExtension(extension->id(), false, NULL);
 }
 
 // See SetExtensionStateById() in chrome/test/pyautolib/pyauto.py
@@ -4461,10 +4456,10 @@ void TestingAutomationProvider::UninstallExtensionById(
 void TestingAutomationProvider::SetExtensionStateById(
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  std::string id;
-  if (!args->GetString("id", &id)) {
-    AutomationJSONReply(this, reply_message)
-        .SendError("Missing or invalid key: id");
+  const Extension* extension;
+  std::string error;
+  if (!GetExtensionFromJSONArgs(args, "id", profile(), &extension, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
 
@@ -4497,86 +4492,91 @@ void TestingAutomationProvider::SetExtensionStateById(
     return;
   }
 
-  if (!service->GetExtensionById(id, true) &&
-      !service->GetTerminatedExtension(id)) {
-    // The extension ID does not correspond to any extension, whether crashed
-    // or not.
-    AutomationJSONReply(this, reply_message).SendError(
-        base::StringPrintf("Extension does not exist: %s.", id.c_str()));
-    return;
-  }
-
-  service->SetIsIncognitoEnabled(id, allow_in_incognito);
-
   if (enable) {
-    if (!service->IsExtensionEnabled(id)) {
+    if (!service->IsExtensionEnabled(extension->id())) {
       new ExtensionReadyNotificationObserver(
           manager,
           service,
           this,
           reply_message);
-      service->EnableExtension(id);
+      service->EnableExtension(extension->id());
     } else {
       AutomationJSONReply(this, reply_message).SendSuccess(NULL);
     }
   } else {
-    service->DisableExtension(id);
+    service->DisableExtension(extension->id());
     AutomationJSONReply(this, reply_message).SendSuccess(NULL);
   }
+
+  service->SetIsIncognitoEnabled(extension->id(), allow_in_incognito);
 }
+
+namespace {
+
+// Selects the given |browser| and |tab| if not selected already.
+void EnsureTabSelected(Browser* browser, TabContents* tab) {
+  TabContentsWrapper* active =
+      browser->tabstrip_model()->GetActiveTabContents();
+  if (!active || active->tab_contents() != tab ||
+      browser != BrowserList::GetLastActive()) {
+    browser->ActivateTabAt(
+        browser->tabstrip_model()->GetIndexOfController(&tab->controller()),
+        true /* user_gesture */);
+  }
+}
+
+}  // namespace
 
 // See TriggerPageActionById() in chrome/test/pyautolib/pyauto.py
 // for sample json input.
 void TestingAutomationProvider::TriggerPageActionById(
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-
   std::string error;
   Browser* browser;
-  if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
-    reply.SendError(error);
+  TabContents* tab;
+  if (!GetBrowserAndTabFromJSONArgs(args, &browser, &tab, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
-  std::string id;
-  if (!args->GetString("id", &id)) {
-    reply.SendError("Missing or invalid key: id");
+  const Extension* extension;
+  if (!GetEnabledExtensionFromJSONArgs(
+          args, "id", profile(), &extension, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
+  ExtensionAction* page_action = extension->page_action();
+  if (!page_action) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Extension doesn't have any page action.");
+    return;
+  }
+  EnsureTabSelected(browser, tab);
 
-  ExtensionService* service = browser->profile()->GetExtensionService();
-  if (!service) {
-    reply.SendError("No extensions service.");
-    return;
-  }
-  if (!service->GetInstalledExtension(id)) {
-    // The extension ID does not correspond to any extension, whether crashed
-    // or not.
-    reply.SendError(base::StringPrintf("Extension %s is not installed.",
-                                       id.c_str()));
-    return;
-  }
-  const Extension* extension = service->GetExtensionById(id, false);
-  if (!extension) {
-    reply.SendError("Extension is disabled or has crashed.");
-    return;
-  }
-
-  if (ExtensionAction* page_action = extension->page_action()) {
-    LocationBarTesting* loc_bar =
-        browser->window()->GetLocationBar()->GetLocationBarForTesting();
-    size_t page_action_visible_count =
-        static_cast<size_t>(loc_bar->PageActionVisibleCount());
-    for (size_t i = 0; i < page_action_visible_count; ++i) {
-      if (loc_bar->GetVisiblePageAction(i) == page_action) {
-        loc_bar->TestPageActionPressed(i);
-        reply.SendSuccess(NULL);
-        return;
-      }
+  bool pressed = false;
+  LocationBarTesting* loc_bar =
+      browser->window()->GetLocationBar()->GetLocationBarForTesting();
+  size_t page_action_visible_count =
+      static_cast<size_t>(loc_bar->PageActionVisibleCount());
+  for (size_t i = 0; i < page_action_visible_count; ++i) {
+    if (loc_bar->GetVisiblePageAction(i) == page_action) {
+      loc_bar->TestPageActionPressed(i);
+      pressed = true;
+      break;
     }
-    reply.SendError("Extension doesn't have any visible page action icon.");
+  }
+  if (!pressed) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Extension's page action is not visible.");
+    return;
+  }
+
+  if (page_action->HasPopup(ExtensionTabUtil::GetTabId(tab))) {
+    // This observer will delete itself.
+    new ExtensionPopupObserver(
+        this, reply_message, extension->id());
   } else {
-    reply.SendError("Extension doesn't have any page action.");
+    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
   }
 }
 
@@ -4585,55 +4585,63 @@ void TestingAutomationProvider::TriggerPageActionById(
 void TestingAutomationProvider::TriggerBrowserActionById(
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-
   std::string error;
   Browser* browser;
-  if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
-    reply.SendError(error);
+  TabContents* tab;
+  if (!GetBrowserAndTabFromJSONArgs(args, &browser, &tab, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
-  std::string id;
-  if (!args->GetString("id", &id)) {
-    reply.SendError("Missing or invalid key: id");
+  const Extension* extension;
+  if (!GetEnabledExtensionFromJSONArgs(
+          args, "id", profile(), &extension, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
+  ExtensionAction* action = extension->browser_action();
+  if (!action) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Extension doesn't have any browser action.");
+    return;
+  }
+  EnsureTabSelected(browser, tab);
 
-  ExtensionService* service = browser->profile()->GetExtensionService();
-  if (!service) {
-    reply.SendError("No extensions service.");
-    return;
-  }
-  if (!service->GetInstalledExtension(id)) {
-    // The extension ID does not correspond to any extension, whether crashed
-    // or not.
-    reply.SendError(base::StringPrintf("Extension %s is not installed.",
-                                       id.c_str()));
-    return;
-  }
-  const Extension* extension = service->GetExtensionById(id, false);
-  if (!extension) {
-    reply.SendError("Extension is disabled or has crashed.");
-    return;
-  }
-
-  if (extension->browser_action()) {
-    BrowserActionTestUtil browser_actions(browser);
-    int num_browser_actions = browser_actions.NumberOfBrowserActions();
-    // TODO: Implement the platform-specific GetExtensionId() in
-    // BrowserActionTestUtil.
-    if (num_browser_actions != 1) {
-      reply.SendError(StringPrintf(
-          "Found %d browser actions. Only one browser action must be active.",
-          num_browser_actions));
-      return;
+  BrowserActionTestUtil browser_actions(browser);
+  int num_browser_actions = browser_actions.NumberOfBrowserActions();
+  int action_index = -1;
+#if defined(TOOLKIT_VIEWS)
+  for (int i = 0; i < num_browser_actions; ++i) {
+    if (extension->id() == browser_actions.GetExtensionId(i)) {
+      action_index = i;
+      break;
     }
-    browser_actions.Press(0);
-    reply.SendSuccess(NULL);
+  }
+#else
+  // TODO(kkania): Implement the platform-specific GetExtensionId() in
+  // BrowserActionTestUtil.
+  if (num_browser_actions != 1) {
+    AutomationJSONReply(this, reply_message).SendError(StringPrintf(
+        "Found %d browser actions. Only one browser action must be active.",
+        num_browser_actions));
     return;
+  }
+  // This extension has a browser action, and there's only one action, so this
+  // must be the first one.
+  action_index = 0;
+#endif
+  if (action_index == -1) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Extension's browser action is not visible.");
+    return;
+  }
+  browser_actions.Press(action_index);
+
+  if (action->HasPopup(ExtensionTabUtil::GetTabId(tab))) {
+    // This observer will delete itself.
+    new ExtensionPopupObserver(
+        this, reply_message, extension->id());
   } else {
-    reply.SendError("Extension doesn't have any browser action.");
-    return;
+    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
   }
 }
 
@@ -5878,7 +5886,7 @@ void TestingAutomationProvider::SetAppLaunchType(
   reply.SendSuccess(NULL);
 }
 
-void TestingAutomationProvider::WaitForAllTabsToStopLoading(
+void TestingAutomationProvider::WaitForAllViewsToStopLoading(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   if (AppModalDialogQueue::GetInstance()->HasActiveDialog()) {
@@ -5887,7 +5895,8 @@ void TestingAutomationProvider::WaitForAllTabsToStopLoading(
   }
 
   // This class will send the message immediately if no tab is loading.
-  new AllTabsStoppedLoadingObserver(this, reply_message);
+  new AllViewsStoppedLoadingObserver(
+      this, reply_message, profile()->GetExtensionProcessManager());
 }
 
 void TestingAutomationProvider::SetPolicies(
@@ -6296,8 +6305,7 @@ void TestingAutomationProvider::GetViews(
     if (!id.is_valid())
       continue;
     dict->Set("auto_id", id.ToValue());
-    dict->Set("extension_id", automation_util::GetIdForExtension(
-        host->extension()).ToValue());
+    dict->SetString("extension_id", host->extension_id());
     view_list->Append(dict);
   }
   DictionaryValue dict;
@@ -6409,6 +6417,51 @@ void TestingAutomationProvider::UpdateExtensionsNow(
   // been updated).  This observer will delete itself.
   new ExtensionsUpdatedObserver(manager, this, reply_message);
   updater->CheckNow();
+}
+
+void TestingAutomationProvider::IsPageActionVisible(
+    base::DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+
+  TabContents* tab;
+  std::string error;
+  if (!GetTabFromJSONArgs(args, &tab, &error)) {
+    reply.SendError(error);
+    return;
+  }
+  const Extension* extension;
+  if (!GetEnabledExtensionFromJSONArgs(
+          args, "extension_id", profile(), &extension, &error)) {
+    reply.SendError(error);
+    return;
+  }
+  ExtensionAction* page_action = extension->page_action();
+  if (!page_action) {
+    reply.SendError("Extension doesn't have any page action");
+    return;
+  }
+  Browser* browser = automation_util::GetBrowserForTab(tab);
+  if (!browser) {
+    reply.SendError("Tab does not belong to an open browser");
+    return;
+  }
+  EnsureTabSelected(browser, tab);
+
+  bool is_visible = false;
+  LocationBarTesting* loc_bar =
+      browser->window()->GetLocationBar()->GetLocationBarForTesting();
+  size_t page_action_visible_count =
+      static_cast<size_t>(loc_bar->PageActionVisibleCount());
+  for (size_t i = 0; i < page_action_visible_count; ++i) {
+    if (loc_bar->GetVisiblePageAction(i) == page_action) {
+      is_visible = true;
+      break;
+    }
+  }
+  DictionaryValue dict;
+  dict.SetBoolean("is_visible", is_visible);
+  reply.SendSuccess(&dict);
 }
 
 void TestingAutomationProvider::GetChromeDriverAutomationVersion(

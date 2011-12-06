@@ -71,6 +71,7 @@
 #include "chrome/browser/ui/webui/ntp/recently_closed_tabs_handler.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_view_type.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/download/save_package.h"
@@ -2648,13 +2649,18 @@ void InputEventAckNotificationObserver::Observe(
   }
 }
 
-AllTabsStoppedLoadingObserver::AllTabsStoppedLoadingObserver(
+AllViewsStoppedLoadingObserver::AllViewsStoppedLoadingObserver(
     AutomationProvider* automation,
-    IPC::Message* reply_message)
+    IPC::Message* reply_message,
+    ExtensionProcessManager* extension_process_manager)
     : automation_(automation->AsWeakPtr()),
-      reply_message_(reply_message) {
+      reply_message_(reply_message),
+      extension_process_manager_(extension_process_manager) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                  content::NotificationService::AllSources());
   for (BrowserList::const_iterator iter = BrowserList::begin();
        iter != BrowserList::end();
@@ -2671,15 +2677,15 @@ AllTabsStoppedLoadingObserver::AllTabsStoppedLoadingObserver(
   CheckIfNoMorePendingLoads();
 }
 
-AllTabsStoppedLoadingObserver::~AllTabsStoppedLoadingObserver() {
+AllViewsStoppedLoadingObserver::~AllViewsStoppedLoadingObserver() {
 }
 
-void AllTabsStoppedLoadingObserver::OnFirstPendingLoad(
+void AllViewsStoppedLoadingObserver::OnFirstPendingLoad(
     TabContents* tab_contents) {
   pending_tabs_.insert(tab_contents);
 }
 
-void AllTabsStoppedLoadingObserver::OnNoMorePendingLoads(
+void AllViewsStoppedLoadingObserver::OnNoMorePendingLoads(
     TabContents* tab_contents) {
   if (!automation_) {
     delete this;
@@ -2696,24 +2702,31 @@ void AllTabsStoppedLoadingObserver::OnNoMorePendingLoads(
   CheckIfNoMorePendingLoads();
 }
 
-void AllTabsStoppedLoadingObserver::Observe(
+void AllViewsStoppedLoadingObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (!automation_) {
+    delete this;
+    return;
+  }
+  if (type == chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING) {
+    CheckIfNoMorePendingLoads();
+  } else if (type == chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN) {
     AutomationJSONReply(automation_,
                         reply_message_.release()).SendSuccess(NULL);
     delete this;
   }
 }
 
-void AllTabsStoppedLoadingObserver::CheckIfNoMorePendingLoads() {
+void AllViewsStoppedLoadingObserver::CheckIfNoMorePendingLoads() {
   if (!automation_) {
     delete this;
     return;
   }
 
-  if (pending_tabs_.empty()) {
+  if (pending_tabs_.empty() &&
+      DidExtensionHostsStopLoading(extension_process_manager_)) {
     AutomationJSONReply(automation_,
                         reply_message_.release()).SendSuccess(NULL);
     delete this;
@@ -3054,3 +3067,35 @@ void PolicyUpdatesObserver::PostTask(content::BrowserThread::ID id,
 }
 
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
+
+ExtensionPopupObserver::ExtensionPopupObserver(
+    AutomationProvider* automation,
+    IPC::Message* reply_message,
+    const std::string& extension_id)
+    : automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message),
+      extension_id_(extension_id) {
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+                 content::NotificationService::AllSources());
+}
+
+ExtensionPopupObserver::~ExtensionPopupObserver() {
+}
+
+void ExtensionPopupObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (!automation_) {
+    delete this;
+    return;
+  }
+
+  ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
+  if (host->extension_id() == extension_id_ &&
+      host->extension_host_type() == chrome::VIEW_TYPE_EXTENSION_POPUP) {
+    AutomationJSONReply(automation_, reply_message_.release())
+        .SendSuccess(NULL);
+    delete this;
+  }
+}

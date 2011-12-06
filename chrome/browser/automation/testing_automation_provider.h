@@ -871,9 +871,9 @@ class TestingAutomationProvider : public AutomationProvider,
                         base::DictionaryValue* args,
                         IPC::Message* reply_message);
 
-  // Waits for all tabs to stop loading or a modal dialog to become active.
-  void WaitForAllTabsToStopLoading(base::DictionaryValue* args,
-                                   IPC::Message* reply_message);
+  // Waits for all views to stop loading or a modal dialog to become active.
+  void WaitForAllViewsToStopLoading(base::DictionaryValue* args,
+                                    IPC::Message* reply_message);
 
   // Gets the browser and tab index of the given tab. Uses the JSON interface.
   // Either "tab_id" or "tab_handle" must be specified, but not both. "tab_id"
@@ -1265,6 +1265,15 @@ class TestingAutomationProvider : public AutomationProvider,
   // Auto-updates installed extensions.
   // Uses the JSON interface for input/output.
   void UpdateExtensionsNow(base::DictionaryValue* args,
+                           IPC::Message* reply_message);
+
+  // Determines whether the extension page action is visible in the given tab.
+  // Example:
+  //   input: { "auto_id": { "type": 0, "id": "awoein" },
+  //            "extension_id": "byzaaoiea",
+  //          }
+  //   output: none
+  void IsPageActionVisible(base::DictionaryValue* args,
                            IPC::Message* reply_message);
 
   // Creates a new |TestingAutomationProvider| that opens a server channel
