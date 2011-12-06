@@ -259,8 +259,11 @@ class Builder(object):
 
   def _ShouldReExecuteInBuildRoot(self):
     """Returns True if this build should be re-executed in the buildroot."""
-    return not os.path.abspath(
-        __file__).startswith(os.path.abspath(self.options.buildroot))
+    # TODO(sosa): Re-enable re-execution in buildroot on the commit queue once
+    # http://crosbug.com/23813 is fixed.
+    abs_buildroot = os.path.abspath(self.options.buildroot)
+    return (self.build_config['build_type'] != constants.COMMIT_QUEUE_TYPE and
+      not os.path.abspath( __file__).startswith(abs_buildroot))
 
   def _ReExecuteInBuildroot(self):
     """Reexecutes self in buildroot and returns True if build succeeds.
