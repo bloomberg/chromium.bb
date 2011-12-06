@@ -17,18 +17,23 @@
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
-static const char kEchoServerURL[] =
+const char kEchoServerURL[] =
     "ws://localhost:8880/websocket/tests/hybi/echo";
 
-static const char kProtocolTestServerURL[] =
+const char kProtocolTestServerURL[] =
     "ws://localhost:8880/websocket/tests/hybi/protocol-test?protocol=";
 
-static const char* kInvalidURLs[] = {
+const char* const kInvalidURLs[] = {
   "http://www.google.com/invalid_scheme",
   "ws://www.google.com/invalid#fragment",
   "ws://www.google.com:65535/invalid_port",
   NULL
 };
+
+// Connection close code is defined in WebSocket protocol specification.
+// The magic number 1000 means gracefull closure without any error.
+// See section 7.4.1. of RFC 6455.
+const uint16_t kCloseCodeNormalClosure = 1000;
 
 REGISTER_TEST_CASE(WebSocket);
 
@@ -51,6 +56,8 @@ void TestWebSocket::RunTests(const std::string& filter) {
   RUN_TEST(InvalidConnect, filter);
   RUN_TEST(GetURL, filter);
   RUN_TEST(ValidConnect, filter);
+  RUN_TEST(InvalidClose, filter);
+  RUN_TEST(ValidClose, filter);
   RUN_TEST(GetProtocol, filter);
   RUN_TEST(TextSendReceive, filter);
 }
@@ -205,6 +212,109 @@ std::string TestWebSocket::TestValidConnect() {
   ASSERT_TRUE(ws);
   ASSERT_EQ(PP_OK, result);
   core_interface_->ReleaseResource(ws);
+
+  PASS();
+}
+
+std::string TestWebSocket::TestInvalidClose() {
+  PP_Var reason = CreateVar("close for test");
+  TestCompletionCallback callback(instance_->pp_instance());
+
+  // Close before connect.
+  PP_Resource ws = websocket_interface_->Create(instance_->pp_instance());
+  int32_t result = websocket_interface_->Close(
+      ws, kCloseCodeNormalClosure, reason,
+      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+  ASSERT_EQ(PP_ERROR_FAILED, result);
+  core_interface_->ReleaseResource(ws);
+
+  // Close with bad arguments.
+  ws = Connect(kEchoServerURL, &result, NULL);
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, result);
+  result = websocket_interface_->Close(ws, 1, reason,
+      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+  ASSERT_EQ(PP_ERROR_NOACCESS, result);
+  core_interface_->ReleaseResource(ws);
+
+  ReleaseVar(reason);
+
+  PASS();
+}
+
+std::string TestWebSocket::TestValidClose() {
+  PP_Var reason = CreateVar("close for test");
+  PP_Var url = CreateVar(kEchoServerURL);
+  PP_Var protocols[] = { PP_MakeUndefined() };
+  TestCompletionCallback callback(instance_->pp_instance());
+  TestCompletionCallback another_callback(instance_->pp_instance());
+
+  // Close.
+  int32_t result;
+  PP_Resource ws = Connect(kEchoServerURL, &result, NULL);
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, result);
+  result = websocket_interface_->Close(ws, kCloseCodeNormalClosure, reason,
+      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  result = callback.WaitForResult();
+  ASSERT_EQ(PP_OK, result);
+  core_interface_->ReleaseResource(ws);
+
+  // Close in connecting.
+  // The ongoing connect failed with PP_ERROR_ABORTED, then the close is done
+  // successfully.
+  ws = websocket_interface_->Create(instance_->pp_instance());
+  result = websocket_interface_->Connect(ws, url, protocols, 0,
+      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  result = websocket_interface_->Close(ws, kCloseCodeNormalClosure, reason,
+      static_cast<pp::CompletionCallback>(
+          another_callback).pp_completion_callback());
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  result = callback.WaitForResult();
+  ASSERT_EQ(PP_ERROR_ABORTED, result);
+  result = another_callback.WaitForResult();
+  ASSERT_EQ(PP_OK, result);
+  core_interface_->ReleaseResource(ws);
+
+  // Close in closing.
+  // The first close will be done successfully, then the second one failed with
+  // with PP_ERROR_INPROGRESS immediately.
+  ws = Connect(kEchoServerURL, &result, NULL);
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, result);
+  result = websocket_interface_->Close(ws, kCloseCodeNormalClosure, reason,
+      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  result = websocket_interface_->Close(ws, kCloseCodeNormalClosure, reason,
+      static_cast<pp::CompletionCallback>(
+          another_callback).pp_completion_callback());
+  ASSERT_EQ(PP_ERROR_INPROGRESS, result);
+  result = callback.WaitForResult();
+  ASSERT_EQ(PP_OK, result);
+  core_interface_->ReleaseResource(ws);
+
+  // Close with ongoing receive message.
+  ws = Connect(kEchoServerURL, &result, NULL);
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, result);
+  PP_Var receive_message_var;
+  result = websocket_interface_->ReceiveMessage(ws, &receive_message_var,
+      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  result = websocket_interface_->Close(ws, kCloseCodeNormalClosure, reason,
+      static_cast<pp::CompletionCallback>(
+          another_callback).pp_completion_callback());
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  result = callback.WaitForResult();
+  ASSERT_EQ(PP_ERROR_ABORTED, result);
+  result = another_callback.WaitForResult();
+  ASSERT_EQ(PP_OK, result);
+  core_interface_->ReleaseResource(ws);
+
+  ReleaseVar(reason);
+  ReleaseVar(url);
 
   PASS();
 }

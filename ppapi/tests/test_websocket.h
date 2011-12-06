@@ -33,6 +33,8 @@ class TestWebSocket : public TestCase {
   std::string TestInvalidConnect();
   std::string TestGetURL();
   std::string TestValidConnect();
+  std::string TestInvalidClose();
+  std::string TestValidClose();
   std::string TestGetProtocol();
   std::string TestTextSendReceive();
 

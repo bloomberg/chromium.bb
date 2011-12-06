@@ -212,6 +212,9 @@ int32_t PPB_WebSocket_Impl::Close(uint16_t code,
     if (!(code == WebSocket::CloseEventCodeNormalClosure ||
         (WebSocket::CloseEventCodeMinimumUserDefined <= code &&
         code <= WebSocket::CloseEventCodeMaximumUserDefined)))
+    // RFC 6455 limits applications to use reserved connection close code in
+    // section 7.4.2.. The WebSocket API (http://www.w3.org/TR/websockets/)
+    // defines this out of range error as InvalidAccessError in JavaScript.
     return PP_ERROR_NOACCESS;
   }
 
@@ -234,12 +237,20 @@ int32_t PPB_WebSocket_Impl::Close(uint16_t code,
   // Install |callback|.
   close_callback_ = callback;
 
+  // Abort ongoing connect.
   if (state_ == PP_WEBSOCKETREADYSTATE_CONNECTING_DEV) {
     state_ = PP_WEBSOCKETREADYSTATE_CLOSING_DEV;
     PP_RunAndClearCompletionCallback(&connect_callback_, PP_ERROR_ABORTED);
     websocket_->fail(
         "WebSocket was closed before the connection was established.");
     return PP_OK_COMPLETIONPENDING;
+  }
+
+  // Abort ongoing receive.
+  if (wait_for_receive_) {
+    wait_for_receive_ = false;
+    receive_callback_var_ = NULL;
+    PP_RunAndClearCompletionCallback(&receive_callback_, PP_ERROR_ABORTED);
   }
 
   // Close connection.
@@ -260,6 +271,10 @@ int32_t PPB_WebSocket_Impl::ReceiveMessage(PP_Var* message,
   // Just return received message if any received message is queued.
   if (!received_messages_.empty())
     return DoReceive();
+
+  // Check state again. In CLOSED state, no more messages will be received.
+  if (state_ == PP_WEBSOCKETREADYSTATE_CLOSED_DEV)
+    return PP_ERROR_BADARGUMENT;
 
   // Returns PP_ERROR_FAILED after an error is received and received messages
   // is exhausted.
@@ -414,6 +429,7 @@ void PPB_WebSocket_Impl::didReceiveMessageError() {
   // But, if no messages are queued and ReceiveMessage() is now on going.
   // We must invoke the callback with error code here.
   wait_for_receive_ = false;
+  receive_callback_var_ = NULL;
   PP_RunAndClearCompletionCallback(&receive_callback_, PP_ERROR_FAILED);
 }
 
@@ -454,7 +470,13 @@ void PPB_WebSocket_Impl::didClose(unsigned long unhandled_buffered_amount,
   state_ = PP_WEBSOCKETREADYSTATE_CLOSED_DEV;
 
   if (state == PP_WEBSOCKETREADYSTATE_CONNECTING_DEV)
-    PP_RunAndClearCompletionCallback(&connect_callback_, PP_OK);
+    PP_RunAndClearCompletionCallback(&connect_callback_, PP_ERROR_FAILED);
+
+  if (wait_for_receive_) {
+    wait_for_receive_ = false;
+    receive_callback_var_ = NULL;
+    PP_RunAndClearCompletionCallback(&receive_callback_, PP_ERROR_ABORTED);
+  }
 
   if (state == PP_WEBSOCKETREADYSTATE_CLOSING_DEV)
     PP_RunAndClearCompletionCallback(&close_callback_, PP_OK);
