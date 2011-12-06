@@ -1,11 +1,14 @@
 vars = {
   "pnacl_gcc_rev": "c82efd890c8684cf33d277947a703657811bc22c",
+  "glibc_rev": "9e33f48e2ff5d4cfcdae4fb146cc726b37616394",
 
-  "pnacl_base_readonly": "http://git.chromium.org/native_client",
-  "pnacl_base_readwrite": "ssh://gerrit.chromium.org:29418/native_client",
+  "nacl_base_readonly": "http://git.chromium.org/native_client",
+  "nacl_base_readwrite": "ssh://gerrit.chromium.org:29418/native_client",
 }
 
 deps = {
   "gcc":
-    Var("pnacl_base_readonly") + "/pnacl-gcc.git@" + Var("pnacl_gcc_rev"),
+    Var("nacl_base_readonly") + "/pnacl-gcc.git@" + Var("pnacl_gcc_rev"),
+  "glibc":
+    Var("nacl_base_readonly") + "/nacl-glibc.git@" + Var("glibc_rev"),
 }

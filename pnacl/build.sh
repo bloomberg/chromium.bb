@@ -123,6 +123,7 @@ readonly TC_SRC_DRAGONEGG="${TC_SRC}/dragonegg"
 # Git sources
 readonly PNACL_GIT_ROOT="${PNACL_ROOT}/git"
 readonly TC_SRC_GCC="${PNACL_GIT_ROOT}/gcc"
+readonly TC_SRC_GLIBC="${PNACL_GIT_ROOT}/glibc"
 readonly TC_SRC_GMP="${PNACL_ROOT}/third_party/gmp"
 readonly TC_SRC_MPFR="${PNACL_ROOT}/third_party/mpfr"
 readonly TC_SRC_MPC="${PNACL_ROOT}/third_party/mpc"
@@ -723,18 +724,28 @@ hg-checkout-compiler-rt() {
   hg-checkout ${REPO_COMPILER_RT} "${TC_SRC_COMPILER_RT}" ${COMPILER_RT_REV}
 }
 
-git-sync-no-gclient() {
-  if ! [ -d "${TC_SRC_GCC}" ]; then
+git-grab() {
+  local baseurl="http://git.chromium.org/native_client/"
+  local srcdir=$1
+  local repo=$2
+  local label=$3
+  local rev=$(cat "${PNACL_ROOT}"/DEPS | tr -d '",' |
+              grep ${label}: | awk '{print $2}')
+  StepBanner "GIT-SYNC" "Checking out ${repo} at ${rev}"
+  if ! [ -d "${srcdir}" ]; then
     mkdir -p "${PNACL_GIT_ROOT}"
-    git clone http://git.chromium.org/native_client/pnacl-gcc.git \
-              "${TC_SRC_GCC}"
+    git clone ${baseurl}/${repo} "${srcdir}"
   fi
-  local gccrev=$(cat ${PNACL_ROOT}/DEPS | tr -d '",' |
-                 grep pnacl_gcc_rev: | awk '{print $2}')
-  spushd "${TC_SRC_GCC}"
+  spushd "${srcdir}"
   git fetch
-  git reset --hard "${gccrev}"
+  git reset --hard "${rev}"
   spopd
+}
+
+# Used for grabbing git repositories in CrOS sandbox
+git-sync-no-gclient() {
+  git-grab "${TC_SRC_GCC}" pnacl-gcc.git pnacl_gcc_rev
+  git-grab "${TC_SRC_GLIBC}" nacl-glibc.git glibc_rev
 }
 
 git-sync() {
@@ -799,31 +810,24 @@ download-toolchains() {
 
 libc() {
   if ${LIBMODE_NEWLIB} ; then
-    # TODO(pdox): Why is sysroot needed? What uses it?
+    # TODO(pdox): Why is this step needed?
     sysroot
     newlib
   elif ${LIBMODE_GLIBC} ; then
+    # NOTE: glibc steals libc, libstdc++ from the other toolchain
     glibc
   fi
 }
-
 
 #@ libs            - install native libs and build bitcode libs
 libs() {
   libs-clean
   libs-support
-  if ${LIBMODE_NEWLIB} ; then
-    # TODO(pdox): Why is this step needed?
-    sysroot
-    newlib
-    compiler-rt-all
-    libgcc_eh-all
+  libc
+  compiler-rt-all
+  libgcc_eh-all
+  if ${LIBMODE_NEWLIB}; then
     libstdcpp
-  elif ${LIBMODE_GLIBC} ; then
-    # NOTE: glibc() steals libc, libgcc, libstdc++ from the other toolchain
-    glibc
-    compiler-rt-all
-    libgcc_eh-all
   fi
 }
 
@@ -889,7 +893,29 @@ everything-translator() {
   fi
 }
 
+# Builds crt1.bc for GlibC, which is just sysdeps/nacl/start.c and csu/init.c
+glibc-crt1() {
+  StepBanner "GLIBC" "Building crt1.bc"
+  local tmpdir="${TC_BUILD}/glibc-crt1"
+  local flags="-no-save-temps -DUSE_IN_LIBIO -I${TC_SRC_GLIBC}/sysdeps/gnu"
+
+  rm -rf "${tmpdir}"
+  mkdir -p "${tmpdir}"
+  spushd "${tmpdir}"
+  ${PNACL_CC} ${flags} -c "${TC_SRC_GLIBC}"/sysdeps/nacl/start.c -o start.bc
+  ${PNACL_CC} ${flags} -c "${TC_SRC_GLIBC}"/csu/init.c -o init.bc
+  ${PNACL_LD} -r -nostdlib -no-save-temps start.bc init.bc -o crt1.bc
+  mkdir -p "${INSTALL_LIB}"
+  cp crt1.bc "${INSTALL_LIB}"
+  spopd
+}
+
 glibc() {
+  glibc-copy
+  glibc-crt1
+}
+
+glibc-copy() {
   StepBanner "GLIBC" "Copying glibc from NNaCl toolchain"
 
   mkdir -p "${INSTALL_LIB_X8632}"
@@ -900,7 +926,7 @@ glibc() {
   local LIBS1="crtbegin.o crtbeginT.o crtbeginS.o crtend.o crtendS.o"
 
   # Files in: ${NACL64_TARGET}/lib[32]/
-  local LIBS2="crt1.o crti.o crtn.o \
+  local LIBS2="crti.o crtn.o \
                libstdc++.a libstdc++.so* \
                libc.a libc_nonshared.a \
                libc-2.9.so libc.so libc.so.* \

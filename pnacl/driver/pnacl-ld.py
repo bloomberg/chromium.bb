@@ -346,7 +346,7 @@ def RemoveNativeStdLibs(objs):
     return objs
 
   # GLibC standard libraries
-  startfiles = ['crt1.o', 'crti.o', 'crtbegin.o', 'crtbeginS.o',
+  startfiles = ['crti.o', 'crtbegin.o', 'crtbeginS.o',
                 'crtbeginT.o', 'crtend.o', 'crtendS.o', 'crtn.o']
   defaultlibs = ['libc_nonshared.a', 'libpthread_nonshared.a',
                  'libc.a', 'libstdc++.a', 'libgcc.a', 'libgcc_eh.a',

@@ -50,7 +50,7 @@ EXTRA_ENV = {
     '-l:libcrt_platform.a -l:crtend.o',
 
   'LD_ARGS_glibc_static' :
-     '${LD_ARGS_IRT_SHIM} -l:crt1.o -l:crti.o -l:crtbeginT.o ${ld_inputs} ' +
+     '${LD_ARGS_IRT_SHIM} -l:crti.o -l:crtbeginT.o ${ld_inputs} ' +
      '${DEFAULTLIBS ? ${GLIBC_HACK} --start-group -lgcc -lgcc_eh -lc ' +
      '--end-group} -l:crtend.o -l:crtn.o',
 
@@ -60,7 +60,7 @@ EXTRA_ENV = {
      '-lgcc -lgcc_s} -l:crtendS.o -l:crtn.o',
 
   'LD_ARGS_glibc_dynamic':
-    '--eh-frame-hdr ${LD_ARGS_IRT_SHIM} -l:crt1.o -l:crti.o -l:crtbegin.o ' +
+    '--eh-frame-hdr ${LD_ARGS_IRT_SHIM} -l:crti.o -l:crtbegin.o ' +
     '${ld_inputs} ${DEFAULTLIBS ? ${SDK_HACK} ${GLIBC_HACK} ${DSO_HACK} ' +
     '-lgcc -lgcc_s} -l:crtend.o -l:crtn.o',
 

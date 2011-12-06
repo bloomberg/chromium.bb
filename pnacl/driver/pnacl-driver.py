@@ -117,7 +117,7 @@ EXTRA_ENV = {
 
   # The next three are copied verbatim from nacl-gcc
   'LD_ARGS_glibc_static':
-    '-l:crt1.o -l:crti.o -l:crtbeginT.o ' +
+    '-l:crt1.bc -l:crti.o -l:crtbeginT.o ' +
     '${ld_inputs} ${DEFAULTLIBS ? ${LIBSTDCPP} -lc ' +
     # Replace with pnacl_abi.bc
     '--start-group -lgcc_eh -lc -lgcc --end-group} ' +
@@ -131,7 +131,7 @@ EXTRA_ENV = {
     '-l:crtendS.o -l:crtn.o',
 
   'LD_ARGS_glibc_dynamic':
-    '-l:crt1.o -l:crti.o ' +
+    '-l:crt1.bc -l:crti.o ' +
     '-l:crtbegin.o ${ld_inputs} ${DEFAULTLIBS ? ${LIBSTDCPP} -lc ' +
     # Replace with pnacl_abi.bc
     '-lgcc_s} ' +
