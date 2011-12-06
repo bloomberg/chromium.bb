@@ -924,7 +924,10 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.refocus = function() {
-    this.document_.querySelector('[tabindex="0"]').focus();
+    if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE)
+      this.filenameInput_.focus();
+    else
+      this.document_.querySelector('[tabindex="0"]').focus();
   };
 
   FileManager.prototype.showButter = function(message, opt_options) {
