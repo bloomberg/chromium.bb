@@ -16,92 +16,8 @@
 #include "net/base/crypto_module.h"
 #include "net/base/x509_certificate.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
-
-const char kNetworkConfigurationOpenVPN[] =
-      "    {"
-      "      \"GUID\": \"{408290ea-9299-4757-ab04-8957d55f0f13}\","
-      "      \"Type\": \"VPN\","
-      "      \"Name\": \"MyVPN\","
-      "      \"VPN\": {"
-      "        \"Host\": \"vpn.acme.org\","
-      "        \"Type\": \"OpenVPN\","
-      "        \"OpenVPN\": {"
-      "          \"AuthRetry\": \"interact\","
-      "          \"CompLZO\": \"true\","
-      "          \"KeyDirection\": \"1\","
-      "          \"Port\": 443,"
-      "          \"Proto\": \"udp\","
-      "          \"PushPeerInfo\": true,"
-      "          \"RemoteCertEKU\": \"TLS Web Server Authentication\","
-      "          \"RemoteCertKU\": ["
-      "            \"eo\""
-      "          ],"
-      "          \"RemoteCertTLS\": \"server\","
-      "          \"RenegSec\": 0,"
-      "          \"ServerPollTimeout\": 10,"
-      "          \"StaticChallenge\": \"My static challenge\","
-      "          \"TLSAuthContents\": \""
-      "-----BEGIN OpenVPN Static key V1-----\n"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-      "END OpenVPN Static key V1-----\n\","
-      "          \"TLSRemote\": \"MyOpenVPNServer\","
-      "          \"SaveCredentials\": false,"
-      "          \"ServerCARef\": \"{55ca78f6-0842-4e1b-96a3-09a9e1a26ef5}\","
-      "          \"ClientCertType\": \"Pattern\","
-      "          \"ClientCertPattern\": {"
-      "            \"IssuerRef\": \"{68a2ed90-13a1-4120-a1fe-282508320e18}\","
-      "            \"EnrollmentURI\": ["
-      "              \"chrome-extension://abc/keygen-cert.html\""
-      "            ]"
-      "          },"
-      "        }"
-      "      }"
-      "    }";
-
-const char kCertificateWebAuthority[] =
-      "        {"
-      "            \"GUID\": \"{f998f760-272b-6939-4c2beffe428697ab}\","
-      "            \"Type\": \"Authority\","
-      "            \"Trust\": [\"Web\"],"
-      "            \"X509\": \"MIIDojCCAwugAwIBAgIJAKGvi5ZgEWDVMA0GCSqGSIb3D"
-      "QEBBAUAMIGTMRUwEwYDVQQKEwxHb29nbGUsIEluYy4xETAPBgNVBAsTCENocm9tZU9TMS"
-      "IwIAYJKoZIhvcNAQkBFhNnc3BlbmNlckBnb29nbGUuY29tMRowGAYDVQQHExFNb3VudGF"
-      "pbiBWaWV3LCBDQTELMAkGA1UECBMCQ0ExCzAJBgNVBAYTAlVTMQ0wCwYDVQQDEwRsbWFv"
-      "MB4XDTExMDMxNjIzNDcxMFoXDTEyMDMxNTIzNDcxMFowgZMxFTATBgNVBAoTDEdvb2dsZ"
-      "SwgSW5jLjERMA8GA1UECxMIQ2hyb21lT1MxIjAgBgkqhkiG9w0BCQEWE2dzcGVuY2VyQG"
-      "dvb2dsZS5jb20xGjAYBgNVBAcTEU1vdW50YWluIFZpZXcsIENBMQswCQYDVQQIEwJDQTE"
-      "LMAkGA1UEBhMCVVMxDTALBgNVBAMTBGxtYW8wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJ"
-      "AoGBAMDX6BQz2JUzIAVjetiXxDznd2wdqVqVHfNkbSRW+xBywgqUaIXmFEGUol7VzPfme"
-      "FV8o8ok/eFlQB0h6ycqgwwMd0KjtJs2ys/k0F5GuN0G7fsgr+NRnhVgxj21yF6gYTN/8a"
-      "9kscla/svdmp8ekexbALFnghbLBx3CgcqUxT+tAgMBAAGjgfswgfgwDAYDVR0TBAUwAwE"
-      "B/zAdBgNVHQ4EFgQUbYygbSkl4kpjCNuxoezFGupA97UwgcgGA1UdIwSBwDCBvYAUbYyg"
-      "bSkl4kpjCNuxoezFGupA97WhgZmkgZYwgZMxFTATBgNVBAoTDEdvb2dsZSwgSW5jLjERM"
-      "A8GA1UECxMIQ2hyb21lT1MxIjAgBgkqhkiG9w0BCQEWE2dzcGVuY2VyQGdvb2dsZS5jb2"
-      "0xGjAYBgNVBAcTEU1vdW50YWluIFZpZXcsIENBMQswCQYDVQQIEwJDQTELMAkGA1UEBhM"
-      "CVVMxDTALBgNVBAMTBGxtYW+CCQChr4uWYBFg1TANBgkqhkiG9w0BAQQFAAOBgQCDq9wi"
-      "Q4uVuf1CQU3sXfXCy1yqi5m8AsO9FxHvah5/SVFNwKllqTfedpCaWEswJ55YAojW9e+pY"
-      "2Fh3Fo/Y9YkF88KCtLuBjjqDKCRLxF4LycjHODKyQQ7mN/t5AtP9yKOsNvWF+M4IfReg5"
-      "1kohau6FauQx87by5NIRPdkNPvkQ==\""
-      "        }";
-
 
 class OncNetworkParserTest : public testing::Test {
  public:
@@ -135,16 +51,6 @@ class OncNetworkParserTest : public testing::Test {
     EXPECT_TRUE(CleanupSlotContents(slot_->os_module_handle()));
     EXPECT_EQ(0U, ListCertsInSlot(slot_->os_module_handle()).size());
   }
-
-  const base::Value* GetExpectedProperty(const Network* network,
-                                         PropertyIndex index,
-                                         base::Value::Type expected_type);
-  void CheckStringProperty(const Network* network,
-                           PropertyIndex index,
-                           const char* expected);
-  void CheckBooleanProperty(const Network* network,
-                            PropertyIndex index,
-                            bool expected);
 
  protected:
   scoped_refptr<net::CryptoModule> slot_;
@@ -180,48 +86,6 @@ class OncNetworkParserTest : public testing::Test {
   static base::LazyInstance<ScopedTempDir> temp_db_dir_;
 };
 
-const base::Value* OncNetworkParserTest::GetExpectedProperty(
-    const Network* network,
-    PropertyIndex index,
-    base::Value::Type expected_type) {
-  const base::Value* value;
-  if (!network->GetProperty(index, &value)) {
-    ADD_FAILURE() << "Property " << index << " does not exist";
-    return NULL;
-  }
-  if (!value->IsType(expected_type)) {
-    ADD_FAILURE() << "Property " << index << " expected type "
-                  << expected_type << " actual type "
-                  << value->GetType();
-    return NULL;
-  }
-  return value;
-}
-
-void OncNetworkParserTest::CheckStringProperty(const Network* network,
-                                               PropertyIndex index,
-                                               const char* expected) {
-  const base::Value* value =
-    GetExpectedProperty(network, index, base::Value::TYPE_STRING);
-  if (!value)
-    return;
-  std::string string_value;
-  value->GetAsString(&string_value);
-  EXPECT_EQ(expected, string_value);
-}
-
-void OncNetworkParserTest::CheckBooleanProperty(const Network* network,
-                                                PropertyIndex index,
-                                                bool expected) {
-  const base::Value* value =
-    GetExpectedProperty(network, index, base::Value::TYPE_BOOLEAN);
-  if (!value)
-    return;
-  bool bool_value = false;
-  value->GetAsBoolean(&bool_value);
-  EXPECT_EQ(expected, bool_value);
-}
-
 // static
 base::LazyInstance<ScopedTempDir> OncNetworkParserTest::temp_db_dir_ =
     LAZY_INSTANCE_INITIALIZER;
@@ -233,7 +97,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifi1) {
       "    \"GUID\": \"{485d6076-dd44-6b6d-69787465725f5045}\","
       "    \"Type\": \"WiFi\","
       "    \"WiFi\": {"
-      "      \"Security\": \"WEP-PSK\","
+      "      \"Security\": \"WEP\","
       "      \"SSID\": \"ssid\","
       "      \"Passphrase\": \"pass\","
       "    }"
@@ -244,18 +108,15 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifi1) {
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   EXPECT_EQ(0, parser.GetCertificatesSize());
   EXPECT_FALSE(parser.ParseNetwork(1));
-  scoped_ptr<Network> network(parser.ParseNetwork(0));
-  ASSERT_TRUE(network.get());
+  Network* network = parser.ParseNetwork(0);
+  ASSERT_TRUE(network);
 
   EXPECT_EQ(network->type(), chromeos::TYPE_WIFI);
-  WifiNetwork* wifi = static_cast<WifiNetwork*>(network.get());
+  WifiNetwork* wifi = static_cast<WifiNetwork*>(network);
   EXPECT_EQ(wifi->encryption(), chromeos::SECURITY_WEP);
-  CheckStringProperty(wifi, PROPERTY_INDEX_SECURITY, flimflam::kSecurityWep);
   EXPECT_EQ(wifi->name(), "ssid");
-  CheckStringProperty(wifi, PROPERTY_INDEX_SSID, "ssid");
   EXPECT_EQ(wifi->auto_connect(), false);
   EXPECT_EQ(wifi->passphrase(), "pass");
-  CheckStringProperty(wifi, PROPERTY_INDEX_PASSPHRASE, "pass");
 }
 
 TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP1) {
@@ -265,7 +126,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP1) {
       "    \"GUID\": \"{485d6076-dd44-6b6d-69787465725f5045}\","
       "    \"Type\": \"WiFi\","
       "    \"WiFi\": {"
-      "      \"Security\": \"WPA-EAP\","
+      "      \"Security\": \"WPA2\","
       "      \"SSID\": \"ssid\","
       "      \"AutoConnect\": true,"
       "      \"EAP\": {"
@@ -280,19 +141,15 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP1) {
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   EXPECT_EQ(0, parser.GetCertificatesSize());
   EXPECT_FALSE(parser.ParseNetwork(1));
-  scoped_ptr<Network> network(parser.ParseNetwork(0));
-  ASSERT_TRUE(network.get());
+  Network* network = parser.ParseNetwork(0);
+  ASSERT_TRUE(network);
 
   EXPECT_EQ(network->type(), chromeos::TYPE_WIFI);
-  WifiNetwork* wifi = static_cast<WifiNetwork*>(network.get());
+  WifiNetwork* wifi = static_cast<WifiNetwork*>(network);
   EXPECT_EQ(wifi->encryption(), chromeos::SECURITY_8021X);
-  CheckStringProperty(wifi, PROPERTY_INDEX_SECURITY, flimflam::kSecurity8021x);
   EXPECT_EQ(wifi->name(), "ssid");
   EXPECT_EQ(wifi->auto_connect(), true);
-  CheckBooleanProperty(wifi, PROPERTY_INDEX_AUTO_CONNECT, true);
   EXPECT_EQ(wifi->eap_method(), EAP_METHOD_PEAP);
-  CheckStringProperty(wifi, PROPERTY_INDEX_EAP_METHOD,
-                      flimflam::kEapMethodPEAP);
   EXPECT_EQ(wifi->eap_use_system_cas(), false);
 }
 
@@ -303,7 +160,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP2) {
       "    \"GUID\": \"{485d6076-dd44-6b6d-69787465725f5045}\","
       "    \"Type\": \"WiFi\","
       "    \"WiFi\": {"
-      "      \"Security\": \"WPA-EAP\","
+      "      \"Security\": \"WPA2\","
       "      \"SSID\": \"ssid\","
       "      \"AutoConnect\": false,"
       "      \"EAP\": {"
@@ -320,130 +177,19 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP2) {
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   EXPECT_EQ(0, parser.GetCertificatesSize());
   EXPECT_FALSE(parser.ParseNetwork(1));
-  scoped_ptr<Network> network(parser.ParseNetwork(0));
-  ASSERT_TRUE(network.get());
+  Network* network = parser.ParseNetwork(0);
+  ASSERT_TRUE(network);
 
   EXPECT_EQ(network->type(), chromeos::TYPE_WIFI);
-  WifiNetwork* wifi = static_cast<WifiNetwork*>(network.get());
+  WifiNetwork* wifi = static_cast<WifiNetwork*>(network);
   EXPECT_EQ(wifi->encryption(), chromeos::SECURITY_8021X);
   EXPECT_EQ(wifi->name(), "ssid");
   EXPECT_EQ(wifi->auto_connect(), false);
   EXPECT_EQ(wifi->eap_method(), EAP_METHOD_LEAP);
   EXPECT_EQ(wifi->eap_use_system_cas(), true);
   EXPECT_EQ(wifi->eap_identity(), "user");
-  CheckStringProperty(wifi, PROPERTY_INDEX_EAP_IDENTITY, "user");
   EXPECT_EQ(wifi->eap_passphrase(), "pass");
-  CheckStringProperty(wifi, PROPERTY_INDEX_EAP_PASSWORD, "pass");
   EXPECT_EQ(wifi->eap_anonymous_identity(), "anon");
-  CheckStringProperty(wifi, PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY, "anon");
-}
-
-TEST_F(OncNetworkParserTest, TestCreateNetworkOpenVPN) {
-  std::string test_blob(std::string(
-      "{"
-      "  \"NetworkConfigurations\": [") +
-      std::string(kNetworkConfigurationOpenVPN) + std::string(
-      "  ]}"));
-  OncNetworkParser parser(test_blob);
-
-  EXPECT_EQ(1, parser.GetNetworkConfigsSize());
-  EXPECT_EQ(0, parser.GetCertificatesSize());
-  scoped_ptr<Network> network(parser.ParseNetwork(0));
-  ASSERT_TRUE(network.get() != NULL);
-
-  EXPECT_EQ(network->type(), chromeos::TYPE_VPN);
-  CheckStringProperty(network.get(), PROPERTY_INDEX_TYPE, flimflam::kTypeVPN);
-  VirtualNetwork* vpn = static_cast<VirtualNetwork*>(network.get());
-  EXPECT_EQ("MyVPN", vpn->name());
-  EXPECT_EQ(PROVIDER_TYPE_OPEN_VPN, vpn->provider_type());
-  CheckStringProperty(vpn, PROPERTY_INDEX_PROVIDER_TYPE,
-                      flimflam::kProviderOpenVpn);
-  EXPECT_EQ("vpn.acme.org", vpn->server_hostname());
-  CheckStringProperty(vpn, PROPERTY_INDEX_PROVIDER_HOST, "vpn.acme.org");
-  CheckStringProperty(vpn, PROPERTY_INDEX_VPN_DOMAIN, "");
-  CheckStringProperty(vpn, PROPERTY_INDEX_OPEN_VPN_AUTHRETRY, "interact");
-  CheckStringProperty(vpn, PROPERTY_INDEX_OPEN_VPN_CACERT,
-                      "{55ca78f6-0842-4e1b-96a3-09a9e1a26ef5}");
-  CheckStringProperty(vpn, PROPERTY_INDEX_OPEN_VPN_COMPLZO, "true");
-  CheckStringProperty(vpn, PROPERTY_INDEX_OPEN_VPN_KEYDIRECTION, "1");
-  CheckStringProperty(vpn, PROPERTY_INDEX_OPEN_VPN_PORT, "443");
-  CheckStringProperty(vpn, PROPERTY_INDEX_OPEN_VPN_PROTO, "udp");
-  CheckStringProperty(vpn, PROPERTY_INDEX_OPEN_VPN_PUSHPEERINFO, "true");
-  CheckStringProperty(vpn, PROPERTY_INDEX_OPEN_VPN_REMOTECERTEKU,
-                      "TLS Web Server Authentication");
-  CheckStringProperty(vpn, PROPERTY_INDEX_OPEN_VPN_REMOTECERTKU, "eo");
-  CheckStringProperty(vpn, PROPERTY_INDEX_OPEN_VPN_REMOTECERTTLS, "server");
-  CheckStringProperty(vpn, PROPERTY_INDEX_OPEN_VPN_RENEGSEC, "0");
-  CheckStringProperty(vpn, PROPERTY_INDEX_OPEN_VPN_SERVERPOLLTIMEOUT, "10");
-  CheckStringProperty(vpn, PROPERTY_INDEX_OPEN_VPN_STATICCHALLENGE,
-                      "My static challenge");
-  // Check the default properties are set.
-  CheckStringProperty(vpn, PROPERTY_INDEX_OPEN_VPN_AUTHUSERPASS, "");
-  CheckStringProperty(vpn, PROPERTY_INDEX_OPEN_VPN_MGMT_ENABLE, "");
-
-  std::string tls_auth_contents;
-  const Value* tls_auth_value =
-    GetExpectedProperty(vpn, PROPERTY_INDEX_OPEN_VPN_TLSAUTHCONTENTS,
-                        base::Value::TYPE_STRING);
-  if (tls_auth_value != NULL) {
-    tls_auth_value->GetAsString(&tls_auth_contents);
-    EXPECT_NE(std::string::npos,
-              tls_auth_contents.find("END OpenVPN Static key V1-----\n"));
-    EXPECT_NE(std::string::npos,
-              tls_auth_contents.find(
-                  "-----BEGIN OpenVPN Static key V1-----\n"));
-  }
-  CheckStringProperty(vpn, PROPERTY_INDEX_OPEN_VPN_TLSREMOTE,
-                      "MyOpenVPNServer");
-  EXPECT_FALSE(vpn->save_credentials());
-  EXPECT_EQ("{55ca78f6-0842-4e1b-96a3-09a9e1a26ef5}", vpn->ca_cert_nss());
-}
-
-TEST_F(OncNetworkParserTest, TestCreateNetworkL2TPIPsec) {
-  std::string test_blob(
-      "{"
-      "  \"NetworkConfigurations\": ["
-      "    {"
-      "      \"GUID\": \"{926b84e4-f2c5-0972-b9bbb8f44c4316f5}\","
-      "      \"Name\": \"MyL2TPVPN\","
-      "      \"Type\": \"VPN\","
-      "      \"VPN\": {"
-      "        \"Host\": \"l2tp.acme.org\","
-      "        \"Type\": \"L2TP-IPsec\","
-      "        \"IPsec\": {"
-      "          \"IKEVersion\": 1,"
-      "          \"AuthenticationType\": \"PSK\","
-      "          \"PSK\": \"passphrase\""
-      "        },"
-      "        \"L2TP\": {"
-      "          \"SaveCredentials\": false"
-      "        }"
-      "      }"
-      "    }"
-      "  ],"
-      "  \"Certificates\": []"
-      "}");
-  OncNetworkParser parser(test_blob);
-
-  EXPECT_EQ(1, parser.GetNetworkConfigsSize());
-  EXPECT_EQ(0, parser.GetCertificatesSize());
-  scoped_ptr<Network> network(parser.ParseNetwork(0));
-  ASSERT_TRUE(network != NULL);
-
-  EXPECT_EQ(network->type(), chromeos::TYPE_VPN);
-  CheckStringProperty(network.get(), PROPERTY_INDEX_TYPE, flimflam::kTypeVPN);
-  VirtualNetwork* vpn = static_cast<VirtualNetwork*>(network.get());
-  EXPECT_EQ("MyL2TPVPN", vpn->name());
-  EXPECT_EQ(PROVIDER_TYPE_L2TP_IPSEC_PSK, vpn->provider_type());
-  CheckStringProperty(vpn, PROPERTY_INDEX_PROVIDER_TYPE,
-                      flimflam::kProviderL2tpIpsec);
-  EXPECT_EQ("l2tp.acme.org", vpn->server_hostname());
-  CheckStringProperty(vpn, PROPERTY_INDEX_PROVIDER_HOST, "l2tp.acme.org");
-  CheckStringProperty(vpn, PROPERTY_INDEX_VPN_DOMAIN, "");
-  EXPECT_EQ("passphrase", vpn->psk_passphrase());
-  CheckStringProperty(vpn, PROPERTY_INDEX_L2TPIPSEC_PSK, "passphrase");
-  CheckStringProperty(vpn, PROPERTY_INDEX_IPSEC_IKEVERSION, "1");
-  EXPECT_FALSE(vpn->save_credentials());
 }
 
 TEST_F(OncNetworkParserTest, TestAddServerCertificate) {
@@ -476,11 +222,34 @@ TEST_F(OncNetworkParserTest, TestAddServerCertificate) {
 }
 
 TEST_F(OncNetworkParserTest, TestAddAuthorityCertificate) {
-  const std::string test_blob(std::string("{"
-      "    \"Certificates\": [") +
-      std::string(kCertificateWebAuthority) + std::string(
+  const std::string test_blob("{"
+      "    \"Certificates\": ["
+      "        {"
+      "            \"GUID\": \"{f998f760-272b-6939-4c2beffe428697ab}\","
+      "            \"Type\": \"Authority\","
+      "            \"Trust\": [\"Web\"],"
+      "            \"X509\": \"MIIDojCCAwugAwIBAgIJAKGvi5ZgEWDVMA0GCSqGSIb3D"
+      "QEBBAUAMIGTMRUwEwYDVQQKEwxHb29nbGUsIEluYy4xETAPBgNVBAsTCENocm9tZU9TMS"
+      "IwIAYJKoZIhvcNAQkBFhNnc3BlbmNlckBnb29nbGUuY29tMRowGAYDVQQHExFNb3VudGF"
+      "pbiBWaWV3LCBDQTELMAkGA1UECBMCQ0ExCzAJBgNVBAYTAlVTMQ0wCwYDVQQDEwRsbWFv"
+      "MB4XDTExMDMxNjIzNDcxMFoXDTEyMDMxNTIzNDcxMFowgZMxFTATBgNVBAoTDEdvb2dsZ"
+      "SwgSW5jLjERMA8GA1UECxMIQ2hyb21lT1MxIjAgBgkqhkiG9w0BCQEWE2dzcGVuY2VyQG"
+      "dvb2dsZS5jb20xGjAYBgNVBAcTEU1vdW50YWluIFZpZXcsIENBMQswCQYDVQQIEwJDQTE"
+      "LMAkGA1UEBhMCVVMxDTALBgNVBAMTBGxtYW8wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJ"
+      "AoGBAMDX6BQz2JUzIAVjetiXxDznd2wdqVqVHfNkbSRW+xBywgqUaIXmFEGUol7VzPfme"
+      "FV8o8ok/eFlQB0h6ycqgwwMd0KjtJs2ys/k0F5GuN0G7fsgr+NRnhVgxj21yF6gYTN/8a"
+      "9kscla/svdmp8ekexbALFnghbLBx3CgcqUxT+tAgMBAAGjgfswgfgwDAYDVR0TBAUwAwE"
+      "B/zAdBgNVHQ4EFgQUbYygbSkl4kpjCNuxoezFGupA97UwgcgGA1UdIwSBwDCBvYAUbYyg"
+      "bSkl4kpjCNuxoezFGupA97WhgZmkgZYwgZMxFTATBgNVBAoTDEdvb2dsZSwgSW5jLjERM"
+      "A8GA1UECxMIQ2hyb21lT1MxIjAgBgkqhkiG9w0BCQEWE2dzcGVuY2VyQGdvb2dsZS5jb2"
+      "0xGjAYBgNVBAcTEU1vdW50YWluIFZpZXcsIENBMQswCQYDVQQIEwJDQTELMAkGA1UEBhM"
+      "CVVMxDTALBgNVBAMTBGxtYW+CCQChr4uWYBFg1TANBgkqhkiG9w0BAQQFAAOBgQCDq9wi"
+      "Q4uVuf1CQU3sXfXCy1yqi5m8AsO9FxHvah5/SVFNwKllqTfedpCaWEswJ55YAojW9e+pY"
+      "2Fh3Fo/Y9YkF88KCtLuBjjqDKCRLxF4LycjHODKyQQ7mN/t5AtP9yKOsNvWF+M4IfReg5"
+      "1kohau6FauQx87by5NIRPdkNPvkQ==\""
+      "        }"
       "    ],"
-      "}"));
+      "}");
   OncNetworkParser parser(test_blob);
 
   EXPECT_EQ(1, parser.GetCertificatesSize());
@@ -533,29 +302,6 @@ TEST_F(OncNetworkParserTest, TestAddClientCertificate) {
 
   EXPECT_EQ(1, parser.GetCertificatesSize());
   EXPECT_TRUE(parser.ParseCertificate(0));
-}
-
-TEST_F(OncNetworkParserTest, TestNetworkAndCertificate) {
-  std::string test_blob(std::string(
-      "{"
-      "  \"NetworkConfigurations\": [") +
-      std::string(kNetworkConfigurationOpenVPN) + std::string(
-      "  ],"
-      "  \"Certificates\": [") +
-      std::string(kCertificateWebAuthority) + std::string(
-      "  ],"
-      "}"));
-  OncNetworkParser parser(test_blob);
-
-  EXPECT_EQ(1, parser.GetCertificatesSize());
-  EXPECT_TRUE(parser.ParseCertificate(0));
-
-  EXPECT_EQ(1, parser.GetNetworkConfigsSize());
-  scoped_ptr<Network> network(parser.ParseNetwork(0));
-  ASSERT_TRUE(network.get() != NULL);
-  EXPECT_EQ(network->type(), chromeos::TYPE_VPN);
-  VirtualNetwork* vpn = static_cast<VirtualNetwork*>(network.get());
-  EXPECT_EQ(PROVIDER_TYPE_OPEN_VPN, vpn->provider_type());
 }
 
 }  // namespace chromeos

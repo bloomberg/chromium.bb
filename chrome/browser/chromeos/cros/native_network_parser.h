@@ -148,7 +148,6 @@ class NativeVirtualNetworkParser : public NativeNetworkParser {
                           Network* network) OVERRIDE;
   virtual bool UpdateNetworkFromInfo(const base::DictionaryValue& info,
                                      Network* network) OVERRIDE;
-  static const EnumMapper<ProviderType>* provider_type_mapper();
  protected:
   bool ParseProviderValue(PropertyIndex index,
                           const base::Value& value,
