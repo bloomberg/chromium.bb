@@ -62,19 +62,22 @@ fi
 
 if [ "$NEEDS_DRMEMORY" == "1" ]
 then
-  export DRMEMORY_PATH=$THISDIR/../../third_party/drmemory
-  export DRMEMORY_SFX=$DRMEMORY_PATH/drmemory-windows-sfx.exe
-  if [ ! -f "$DRMEMORY_SFX" ]
+  if [ -z "$DRMEMORY_COMMAND" ]
   then
-    echo "Can't find Dr. Memory executables."
-    echo "See http://www.chromium.org/developers/how-tos/using-valgrind/dr-memory"
-    echo "for the instructions on how to get them."
-    exit 1
-  fi
+    DRMEMORY_PATH="$THISDIR/../../third_party/drmemory"
+    DRMEMORY_SFX="$DRMEMORY_PATH/drmemory-windows-sfx.exe"
+    if [ ! -f "$DRMEMORY_SFX" ]
+    then
+      echo "Can't find Dr. Memory executables."
+      echo "See http://www.chromium.org/developers/how-tos/using-valgrind/dr-memory"
+      echo "for the instructions on how to get them."
+      exit 1
+    fi
 
-  chmod +x "$DRMEMORY_SFX"  # Cygwin won't run it without +x.
-  "$DRMEMORY_SFX" -o"$DRMEMORY_PATH/unpacked" -y
-  export DRMEMORY_COMMAND=$DRMEMORY_PATH/unpacked/bin/drmemory.exe
+    chmod +x "$DRMEMORY_SFX"  # Cygwin won't run it without +x.
+    "$DRMEMORY_SFX" -o"$DRMEMORY_PATH/unpacked" -y
+    export DRMEMORY_COMMAND="$DRMEMORY_PATH/unpacked/bin/drmemory.exe"
+  fi
 fi
 
 PYTHONPATH=$THISDIR/../python/google python \

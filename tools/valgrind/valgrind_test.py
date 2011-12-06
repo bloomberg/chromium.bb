@@ -861,7 +861,7 @@ class DrMemory(BaseTool):
         except OSError:
           logging.warning("Can't create symcache dir?")
       if os.path.exists(symcache_dir):
-        proc += ["-symcache_dir", symcache_dir]
+        proc += ["-symcache_dir", common.NormalizeWindowsPath(symcache_dir)]
 
     # Use -no_summary to suppress DrMemory's summary and init-time
     # notifications.  We generate our own with drmemory_analyze.py.
