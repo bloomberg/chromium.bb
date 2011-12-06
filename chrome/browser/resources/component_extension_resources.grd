@@ -47,6 +47,12 @@
         <include name="IDR_FILE_MANAGER_MEDIA_ENQUEUE_ICON" file="file_manager/images/icon_add_to_queue_16x16.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ARCHIVE_MOUNT_ICON" file="file_manager/images/icon_mount_archive_16x16.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ARCHIVE_UNMOUNT_ICON" file="file_manager/images/icon_unmount_archive_16x16.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_OPEN_SIDEBAR_ICON" file="file_manager/images/open_sidebar.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_CLOSE_SIDEBAR_ICON" file="file_manager/images/close_sidebar.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_EJECT_ICON" file="file_manager/images/eject.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ADD_DRIVE_ICON" file="file_manager/images/add_drive.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_CHROMEBOOK_24_ICON" file="file_manager/images/chromebook_24x24.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_CHROMEBOOK_28_ICON" file="file_manager/images/chromebook_28x28.png" type="BINDATA" />
 
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_AUDIO" file="file_manager/images/filetype_audio.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_DEVICE" file="file_manager/images/filetype_device.png" type="BINDATA" />

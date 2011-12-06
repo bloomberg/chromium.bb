@@ -89,14 +89,6 @@
       ]
     },
     {
-      "id": "unmount-archive",
-      "default_title": "__MSG_UNMOUNT_ARCHIVE__",
-      "default_icon": "images/icon_unmount_archive_16x16.png",
-      "file_filters": [
-        "filesystem:*.mounted_zip"
-      ]
-    },
-    {
       "id": "gallery",
       "default_title": "__MSG_GALLERY__",
       "default_icon": "images/icon_preview_16x16.png",
