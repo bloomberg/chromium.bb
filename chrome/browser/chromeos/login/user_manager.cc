@@ -838,10 +838,6 @@ Profile* UserManager::GetBrowserProfile() {
   return ProfileManager::GetDefaultProfile();
 }
 
-bool UserManager::ShouldUseOAuthRefreshToken() const {
-  return false;
-}
-
 std::string UserManager::GetCachedPictureURL() const {
   // Currently the profile picture URL is not cached on ChromeOS.
   return std::string();

@@ -82,10 +82,6 @@ Profile* GAIAInfoUpdateService::GetBrowserProfile() {
   return profile_;
 }
 
-bool GAIAInfoUpdateService::ShouldUseOAuthRefreshToken() const {
-  return true;
-}
-
 std::string GAIAInfoUpdateService::GetCachedPictureURL() const {
   return profile_->GetPrefs()->GetString(prefs::kProfileGAIAInfoPictureURL);
 }
