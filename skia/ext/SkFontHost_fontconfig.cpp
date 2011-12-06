@@ -244,6 +244,11 @@ class SkFileDescriptorStream : public SkStream {
         memory_ = NULL;
         offset_ = 0;
 
+        // this ensures that if we fail in the constructor, we will safely
+        // ignore all subsequent calls to read() because we will always trim
+        // the requested size down to 0
+        length_ = 0;
+
         struct stat st;
         if (fstat(fd, &st))
             return;
@@ -273,20 +278,12 @@ class SkFileDescriptorStream : public SkStream {
             return length_;
         }
 
-        if (!buffer) {
-            // This is a request to skip bytes.
-            if (offset_ + size < offset_)
-                return offset_;
-            offset_ += size;
-            if (offset_ > length_)
-                offset_ = length_;
-            return offset_;
-        }
-
         size_t remaining = length_ - offset_;
         if (size > remaining)
             size = remaining;
-        memcpy(buffer, memory_ + offset_, size);
+        if (buffer)
+            memcpy(buffer, memory_ + offset_, size);
+
         offset_ += size;
         return size;
     }
