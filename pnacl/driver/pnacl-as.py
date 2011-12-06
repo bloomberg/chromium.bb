@@ -9,7 +9,9 @@
 # updates the copy in the toolchain/ tree.
 #
 
-from driver_tools import *
+import driver_tools
+
+env = driver_tools.env
 
 EXTRA_ENV = {
   'INPUTS'      : '',
@@ -17,6 +19,7 @@ EXTRA_ENV = {
 
   # Options
   'DIAGNOSTIC'  : '0',
+  'ASPP_FLAGS': '-DNACL_LINUX=1',
 
   'AS_FLAGS_ARM'  : '-mfpu=vfp -march=armv7-a',
   # once we can use llvm's ARM assembler we should use these flags
@@ -26,6 +29,9 @@ EXTRA_ENV = {
 
   'RUN_BITCODE_AS' : '${LLVM_AS} ${input} -o ${output}',
   'RUN_NATIVE_AS' : '${AS_%ARCH%} ${AS_FLAGS_%ARCH%} ${input} -o ${output}',
+
+  # NOTE: should we run the vanilla preprocessor instead?
+  'RUN_PP' : '${CLANG} -E ${ASPP_FLAGS} ${input} -o ${output}'
 }
 env.update(EXTRA_ENV)
 
@@ -47,7 +53,15 @@ ASPatterns = [
   ( '(-mfpu=.*)',             ""),
   ( '(-march=.*)',            ""),
 
-  ( '(-.*)',  UnrecognizedOption),
+  ( '-c',                     ""),
+
+  ( ('-I', '(.+)'),    "env.append('ASPP_FLAGS', '-I'+pathtools.normalize($0))"),
+  ( '-I(.+)',          "env.append('ASPP_FLAGS', '-I'+pathtools.normalize($0))"),
+
+  ( ('(-D)','(.*)'),          "env.append('ASPP_FLAGS', $0, $1)"),
+  ( '(-D.+)',                 "env.append('ASPP_FLAGS', $0)"),
+
+  ( '(-.*)',  driver_tools.UnrecognizedOption),
 
   # Unmatched parameters should be treated as
   # assembly inputs by the "as" incarnation.
@@ -55,14 +69,14 @@ ASPatterns = [
 ]
 
 def main(argv):
-  ParseArgs(argv, ASPatterns)
-  arch = GetArch()
+  driver_tools.ParseArgs(argv, ASPatterns)
+  arch = driver_tools.GetArch()
 
   if env.getbool('DIAGNOSTIC'):
-    GetArch(required=True)
+    driver_tools.GetArch(required=True)
     env.set('ARGV', *argv)
     # NOTE: we could probably just print a canned string out instead.
-    RunWithLog('${AS_%ARCH%} ${ARGV}')
+    driver_tools.RunWithLog('${AS_%ARCH%} ${ARGV}')
     return 0
 
   inputs = env.get('INPUTS')
@@ -70,6 +84,8 @@ def main(argv):
 
   if len(inputs) != 1:
     Log.Fatal('Expecting exactly one input file')
+  the_input = inputs[0]
+
 
   if arch:
     output_type = 'o'
@@ -79,19 +95,29 @@ def main(argv):
   if output == '':
     output = 'a.out'
 
+  if the_input.endswith('.S'):
+    tmp_output = output + ".s"
+    driver_tools.TempFiles.add(tmp_output)
+    env.push()
+    env.set('input', the_input)
+    env.set('output', tmp_output)
+    driver_tools.RunWithLog("${RUN_PP}")
+    env.pop()
+    the_input = tmp_output
+
   env.push()
-  env.set('input', inputs[0])
+  env.set('input', the_input)
   env.set('output', output)
 
   if output_type == 'po':
     # .ll to .po
-    RunWithLog("${RUN_BITCODE_AS}")
+    driver_tools.RunWithLog("${RUN_BITCODE_AS}")
   else:
     # .s to .o
-    RunWithLog("${RUN_NATIVE_AS}")
+    driver_tools.RunWithLog("${RUN_NATIVE_AS}")
   env.pop()
   return 0
 
 
 if __name__ == "__main__":
-  DriverMain(main)
+  driver_tools.DriverMain(main)
