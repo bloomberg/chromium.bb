@@ -82,14 +82,16 @@ function status(s) {
 <div id="status_panel" style="border: 1px solid red; width: 100%">
 Test running....
 </div>
-<object id="ChromeFrame" width="300" height="60" tabindex="0"
-        codebase="http://www.google.com"
-        classid="CLSID:E0A900DF-9611-4446-86BD-4B1D47E7DB2A">
-  <param name="onload" value="return OnChromeFrameLoaded();">
-  <embed width="300" height="60" name="ChromeFrame"
-         onload="return OnChromeFrameLoaded();"
-         type="application/chromeframe">
-  </embed>
-</object>
+<span id="ChromeFrameSpan"></span>
+<script type="text/javascript">
+insertControl(
+    "ChromeFrameSpan",
+    { "width": "300",
+      "height": "60",
+      "eventHandlers": { "onload": "return OnChromeFrameLoaded();" },
+      "objectAttributes": { "tabindex": "0" },
+      "embedAttributes": {"id": null }
+    });
+</script>
 </body>
 </html>

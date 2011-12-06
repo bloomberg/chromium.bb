@@ -189,3 +189,128 @@ function buildURL(pageName, queryString) {
   url += ((queryString == "") ? "" : "?" + queryString);
   return url;
 }
+
+// Helper function for insertControl.
+function generateControlHtml(configuration) {
+  var objectAttributes = new Object();
+  var params = new Array();
+  var embedAttributes = new Object();
+  var param;
+  var html;
+
+  function stringifyAttributes(attributeCollection) {
+    var result = new String();
+    for (var attributeName in attributeCollection) {
+      result += ' ' + attributeName + '="' +
+           attributeCollection[attributeName] + '"';
+    }
+    return result;
+  }
+
+  function applyAttribute(attributeCollection, name, value, defaultValue) {
+    if (value === undefined)
+      value = defaultValue;
+    if (value !== null)
+      attributeCollection[name] = value;
+  }
+
+  objectAttributes.classid="CLSID:E0A900DF-9611-4446-86BD-4B1D47E7DB2A";
+  objectAttributes.codebase="http://www.google.com";
+  applyAttribute(objectAttributes, "id", configuration.id, "ChromeFrame");
+  applyAttribute(objectAttributes, "width", configuration.width, "500");
+  applyAttribute(objectAttributes, "height", configuration.height, "500");
+
+  // Attributes provided by the caller override any defaults.
+  for (var attribute in configuration.objectAttributes) {
+    if (configuration.objectAttributes[attribute] === null)
+      delete objectAttributes[attribute];
+    else
+      objectAttributes[attribute] = configuration.objectAttributes[attribute];
+  }
+
+  embedAttributes.type = "application/chromeframe";
+
+  // By default, embed id = object.id + "Plugin".  null id means omit id.
+  if (embedAttributes.id === null)
+    delete embedAttributes.id;
+  else if (embedAttributes.id === undefined && objectAttributes.id !== null)
+    embedAttributes.id = objectAttributes.id + "Plugin";
+
+  // By default, embed name = object.id.  null name means omit name.
+  if (embedAttributes.name === null)
+    delete embedAttributes.name;
+  else if (embedAttributes.name === undefined && objectAttributes.id !== null)
+    embedAttributes.name = objectAttributes.id;
+
+  applyAttribute(embedAttributes, "width", configuration.width, "500");
+  applyAttribute(embedAttributes, "height", configuration.height, "500");
+  applyAttribute(embedAttributes, "src", configuration.src, null);
+
+  for (var attribute in configuration.embedAttributes) {
+    if (configuration.embedAttributes[attribute] === null)
+      delete embedAttributes[attribute];
+    else
+      embedAttributes[attribute] = configuration.embedAttributes[attribute];
+  }
+
+  if (embedAttributes.src !== undefined) {
+    param = new Object();
+    param.name = "src";
+    param.value = embedAttributes.src;
+    params.push(param);
+  }
+
+  // All event handlers are params and attributes of the embed object.
+  for (var eventName in configuration.eventHandlers) {
+    param = new Object();
+    param.name = eventName;
+    param.value = configuration.eventHandlers[eventName];
+    params.push(param);
+    embedAttributes[eventName] = configuration.eventHandlers[eventName];
+  }
+
+  html = "<object" + stringifyAttributes(objectAttributes) + ">\r\n";
+  for (var i = 0; i < params.length; ++i) {
+    html += "  <param" + stringifyAttributes(params[i]) + ">\r\n";
+  }
+  html += "  <embed" + stringifyAttributes(embedAttributes) + "></embed>\r\n"
+
+  html += "</object>";
+
+  return html;
+}
+
+// Write the text for the Chrome Frame ActiveX control into an element.
+// This works around a "feature" of IE versions released between April, 2006
+// and April, 2008 that required the user to click on an ActiveX control to
+// "activate" it.  See http://msdn.microsoft.com/en-us/library/ms537508.aspx.
+//
+// |elementId| identifies the element in the current document into which the
+// control markup will be inserted.  |configuration| is an Object used to
+// configure the control as below.  Values shown are defaults, which may be
+// overridden by supplying null values.
+// {
+//   "id": "ChromeFrame", // id of object tag, name of the embed tag, and
+//                        // basis of id of the embed tag.
+//   "width": "500", // width of both object and embed tags.
+//   "height": "500", // height of both object and embed tags.
+//   "src": "url", // src of embed tag and of param to object tag.
+//   "eventHandlers": { // Applied to embed tag and params to object tag.
+//     "onclose": "...",
+//     "onload": "...",
+//     "onloaderror": "..."
+//   }
+//   "objectAttributes": { // Custom attributes for the object tag. Any
+//     "tabindex": "...",  // properties explicitly set to null will override
+//     "border": "...",    // defaults.
+//     "style": "..."
+//   },
+//   "embedAttributes": {        // Custom attributes for the embed tag;
+//     "privileged_mode": "...", // similar to above.
+//     "style": "..."
+//   }
+// }
+function insertControl(elementId, configuration) {
+  var e = document.getElementById(elementId);
+  e.innerHTML = generateControlHtml(configuration);
+}

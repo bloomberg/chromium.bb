@@ -41,22 +41,17 @@
   </head>
 
   <body>
-    <object id="ChromeFrame" width="500" height ="300"
-        codebase="http://www.google.com"
-        classid="CLSID:E0A900DF-9611-4446-86BD-4B1D47E7DB2A">
-        <param name="src" value="postmessage_basic_frame.html">
-        <param name="onload" value="onChromeFrameLoaded();">
-        <param name="onloaderror" value="onNavigationFailed();">
-        <param name="onmessage" value="onChromeFrameMessage(arguments[0]);">
-        <embed id="ChromeFramePlugin" name="ChromeFrame"
-            width="500" height="500"
-            src="postmessage_basic_frame.html"
-            type="application/chromeframe"
-            onload="onChromeFrameLoaded();"
-            onloaderror="onNavigationFailed();"
-            onmessage="onChromeFrameMessage(arguments[0]);">
-        </embed>
-    </object>
+    <span id="ChromeFrameSpan"></span>
+    <script type="text/javascript">
+insertControl(
+    "ChromeFrameSpan",
+    { "src": "postmessage_basic_frame.html",
+      "eventHandlers": { "onload": "onChromeFrameLoaded();",
+                         "onloaderror": "onNavigationFailed();",
+                         "onmessage": "onChromeFrameMessage(arguments[0]);" },
+      "objectAttributes": { "height": "300" }
+    });
+    </script>
     <br>
     <br>
     <p>Test for PostMessage from the host browser to ChromeFrame and back</p>

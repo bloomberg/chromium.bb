@@ -28,21 +28,18 @@
       Test running....
       </div>
 
-      <object id="ChromeFrame" width="500" height="500"
-          codebase="http://www.google.com"
-          classid="CLSID:E0A900DF-9611-4446-86BD-4B1D47E7DB2A">
-          <param name="src" value="window_close_frame.html">
-          <param name="onload" value="return OnChromeFrameLoaded(arguments[0]);">
-          <param name="onloaderror" value="return OnNavigationFailed(arguments[0]);">
-          <param name="onclose" value="return OnCloseWindow();">
-          <embed id="ChromeFramePlugin" width="500" height="500" name="ChromeFrame"
-              src="window_close_frame.html"
-              type="application/chromeframe"
-              onload="return OnChromeFrameLoaded(arguments[0]);"
-              onloaderror="return OnNavigationFailed(arguments[0]);"
-              onclose="return OnCloseWindow();">
-          </embed>
-      </object>
+      <span id="ChromeFrameSpan"></span>
+      <script type="text/javascript">
+insertControl(
+    "ChromeFrameSpan",
+    { "src": "window_close_frame.html",
+      "eventHandlers": {
+        "onload": "return OnChromeFrameLoaded(arguments[0]);",
+        "onloaderror": "return OnNavigationFailed(arguments[0]);",
+        "onclose": "return OnCloseWindow();"
+      }
+    });
+      </script>
       <p>Tests window.close notification from ChromeFrame to its container</p>
   </body>
 </html>

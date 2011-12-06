@@ -69,23 +69,20 @@
       Test running....
       </div>
 
+      <span id='ChromeFrameSpan'></span>
       <!-- TODO(siggi): Test setting onprivatemessage in these params -->
-      <object id='ChromeFrame' width='500' height='500'
-          codebase='http://www.google.com'
-          classid='CLSID:E0A900DF-9611-4446-86BD-4B1D47E7DB2A'>
-          <param name='src' value='privileged_apis_frame.html'>
-          <param name='onload' value='OnChromeFrameLoaded(arguments[0]);'>
-          <param name='onloaderror' value='OnNavigationFailed();'>
-          <param name='onmessage' value='OnChromeFrameMessage(arguments[0]);'>
-          <embed id='ChromeFramePlugin' width='500' height='500' name='ChromeFrame'
-              src='privileged_apis_frame.html'
-              type='application/chromeframe'
-              onload='OnChromeFrameLoaded(arguments[0]);'
-              onloaderror='OnNavigationFailed();'
-              onmessage='return OnChromeFrameMessage(arguments[0]);'
-              privileged_mode='1'
-          </embed>
-      </object>
+      <script type='text/javascript'>
+insertControl(
+    'ChromeFrameSpan',
+    { "src": "privileged_apis_frame.html",
+      "eventHandlers": {
+        "onload": "OnChromeFrameLoaded(arguments[0]);",
+        "onloaderror": "OnNavigationFailed();",
+        "onmessage": "return OnChromeFrameMessage(arguments[0]);"
+      },
+      "embedAttributes": { "privileged_mode": "1" }
+    });
+      </script>
       <p>Tests that privileged apis are unavailable from regular pages</p>
   </body>
 </html>

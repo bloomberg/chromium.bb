@@ -28,13 +28,10 @@
   </script>
 </head>
 <body onload="onDocumentLoad();">
-  <object id="ChromeFrame" width="500" height ="300"
-      codebase="http://www.google.com"
-      classid="CLSID:E0A900DF-9611-4446-86BD-4B1D47E7DB2A">
-    <embed id="ChromeFramePlugin" name="ChromeFrame" width="500"
-        height="500" type="application/chromeframe">
-    </embed>
-  </object>
+<span id="ChromeFrameSpan"></span>
+<script type="text/javascript">
+insertControl("ChromeFrameSpan", { "objectAttributes": { "height": "300" } });
+</script>
   <div id="statusPanel" style="border: 1px solid red; width: 100%">
     Test running....
   </div>

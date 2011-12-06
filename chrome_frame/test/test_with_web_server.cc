@@ -115,12 +115,12 @@ void ChromeFrameTestWithWebServer::SetUp() {
   CFInstance_src_path = chrome_frame_source_path.AppendASCII("CFInstance.js");
   CFInstance_path_ = test_file_path_.AppendASCII("CFInstance.js");
 
-  file_util::CopyFileW(CFInstance_src_path, CFInstance_path_);
+  ASSERT_TRUE(file_util::CopyFile(CFInstance_src_path, CFInstance_path_));
 
   CFInstall_src_path = chrome_frame_source_path.AppendASCII("CFInstall.js");
   CFInstall_path_ = test_file_path_.AppendASCII("CFInstall.js");
 
-  file_util::CopyFileW(CFInstall_src_path, CFInstall_path_);
+  ASSERT_TRUE(file_util::CopyFile(CFInstall_src_path, CFInstall_path_));
 
   server_mock_.ExpectAndServeAnyRequests(CFInvocation(CFInvocation::NONE));
   server_mock_.set_expected_result("OK");

@@ -85,40 +85,34 @@
     </script>
   </head>
   <body>
-    <div id="CFDiv1" style="visibility: hidden;">
-      <object id="ChromeFrame1" width="300" height="80" tabindex="0"
-              codebase="http://www.google.com"
-              classid="CLSID:E0A900DF-9611-4446-86BD-4B1D47E7DB2A">
-        <param name="src" value="simple_object_focus_cf.html">
-        <param name="onload" value="OnCF1Loaded();">
-        <param name="onloaderror" value="OnNavigationFailed();">
-        <param name="onmessage" value="OnCF1Message(arguments[0]);">
-        <embed width="300" height="80" name="ChromeFrame1"
-               type="application/chromeframe"
-               src="simple_object_focus_cf.html"
-               onload="OnCF1Loaded();"
-               onloaderror="OnNavigationFailed();"
-               onmessage="OnCF1Message(arguments[0]);">
-        </embed>
-      </object>
-    </div>
-    <div id="CFDiv2" style="display: none;">
-      <object id="ChromeFrame2" width="300" height="80" tabindex="1"
-              codebase="http://www.google.com"
-              classid="CLSID:E0A900DF-9611-4446-86BD-4B1D47E7DB2A">
-        <param name="src" value="simple_object_focus_cf.html">
-        <param name="onload" value="OnCF2Loaded();">
-        <param name="onloaderror" value="OnNavigationFailed();">
-        <param name="onmessage" value="OnCF2Message(arguments[0]);">
-        <embed width="300" height="80" name="ChromeFrame2"
-               type="application/chromeframe"
-               src="simple_object_focus_cf.html"
-               onload="OnCF2Loaded();"
-               onloaderror="OnNavigationFailed();"
-               onmessage="OnCF2Message(arguments[0]);">
-        </embed>
-      </object>
-    </div>
+    <div id="CFDiv1" style="visibility: hidden;"></div>
+    <script type="text/javascript">
+insertControl("CFDiv1",
+    { "id": "ChromeFrame1",
+      "width": "300",
+      "height": "80",
+      "src": "simple_object_focus_cf.html",
+      "eventHandlers": { "onload": "OnCF1Loaded();",
+                         "onloaderror": "OnNavigationFailed();",
+                         "onmessage": "OnCF1Message(arguments[0]);" },
+      "objectAttributes": { "tabindex": "0" },
+      "embedAttributes": {"id": null}
+    });
+    </script>
+    <div id="CFDiv2" style="display: none;"></div>
+    <script type="text/javascript">
+insertControl("CFDiv2",
+    { "id": "ChromeFrame2",
+      "width": "300",
+      "height": "80",
+      "src": "simple_object_focus_cf.html",
+      "eventHandlers": { "onload": "OnCF2Loaded();",
+                         "onloaderror": "OnNavigationFailed();",
+                         "onmessage": "OnCF2Message(arguments[0]);" },
+      "objectAttributes": { "tabindex": "1" },
+      "embedAttributes": { "id": null}
+    });
+    </script>
     <div id="statusPanel" style="border: 1px solid red; width: 100%">
     Test running....
     </div>

@@ -12,13 +12,10 @@
   </head>
 
   <body onload="onLoad();">
-    <object id="ChromeFrame"
-        codebase="http://www.google.com"
-        classid="CLSID:E0A900DF-9611-4446-86BD-4B1D47E7DB2A">
-        <embed id="ChromeFramePlugin" name="ChromeFrame"
-            type="application/chromeframe"
-        </embed>
-    </object>
+    <span id="ChromeFrameSpan"></span>
+    <script type="text/javascript">
+insertControl("ChromeFrameSpan", { "width": null, "height": null });
+    </script>
     <br>
     <br>
     <p>Test for Chrome frame version</p>

@@ -117,16 +117,16 @@ function DebugResizeChromeFrame(delta) {
 Test running....
 </div>
 
-<object id="ChromeFrame" codebase="http://www.google.com"
-        classid="CLSID:E0A900DF-9611-4446-86BD-4B1D47E7DB2A"
-        style="border: 1px solid blue">
-  <param name="onload" value="return OnNavigationSucceeded();" />
-    <embed id="ChromeFramePlugin" name="ChromeFrame"
-        onload="return OnNavigationSucceeded();"
-        type="application/chromeframe"
-        style="border: 1px solid green">
-    </embed>
-</object>
+<span id="ChromeFrameSpan"></span>
+<script type="text/javascript">
+insertControl("ChromeFrameSpan",
+    { "width": null,
+      "height": null,
+      "objectAttributes": { "style": "border: 1px solid blue" },
+      "eventHandlers": { "onload": "return OnNavigationSucceeded();" },
+      "embedAttributes": { "style": "border: 1px solid green" }
+    });
+</script>
 <br />
 <br />
 
@@ -135,4 +135,3 @@ Test running....
 
 </body>
 </html>
-

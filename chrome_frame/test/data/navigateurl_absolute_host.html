@@ -46,15 +46,11 @@
     <div id="statusPanel" style="border: 1px solid red; width: 100%">
     Test running....
     </div>
-    <object id="ChromeFrame" width="500" height="500"
-        codebase="http://www.google.com"
-        classid="CLSID:E0A900DF-9611-4446-86BD-4B1D47E7DB2A">
-        <param name="onload" value="return OnChromeFrameLoaded();">
-        <embed id="ChromeFramePlugin" width="500" height="500"
-               name="ChromeFrame" onload="return OnChromeFrameLoaded();"
-               type="application/chromeframe">
-        </embed>
-    </OBJECT>
+    <span id="ChromeFrameSpan"></span>
+<script type="text/javascript">
+insertControl("ChromeFrameSpan",
+    { "eventHandlers": { "onload": "return OnChromeFrameLoaded();" } });
+</script>
     <br />
     <br />
 
