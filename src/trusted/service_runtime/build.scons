@@ -75,7 +75,6 @@ ldr_inputs = [
     'name_service/name_service.c',
     'sel_addrspace.c',
     'sel_ldr.c',
-    'sel_ldr-inl.c',
     'sel_ldr_standard.c',
     'sel_ldr_thread_interface.c',
     # sel_main_chrome.c is compile-tested here but not otherwise used
@@ -83,7 +82,6 @@ ldr_inputs = [
     'sel_main_chrome.c',
     'sel_mem.c',
     'sel_qualify.c',
-    'sel_util-inl.c',
     'sel_validate_image.c',
 ]
 

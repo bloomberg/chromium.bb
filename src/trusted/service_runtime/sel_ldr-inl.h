@@ -6,10 +6,7 @@
 
 /*******************************************************************************
  *
- * DO NOT INCLUDE EXCEPT FROM sel_ldr.h and sel_ldr-inl.c
- *
- * THERE CANNOT BE ANY MULTIPLE INCLUSION GUARDS IN ORDER FOR
- * sel_ldr-inl.c TO WORK.
+ * DO NOT INCLUDE EXCEPT FROM sel_ldr.h
  *
  ******************************************************************************/
 
