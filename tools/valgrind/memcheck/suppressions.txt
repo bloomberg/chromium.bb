@@ -5332,6 +5332,14 @@
    fun:_ZN5ppapi5proxy38EnterHostFromHostResourceForceCallbackINS_5thunk18PPB_Graphics2D_APIEEC1IN2pp25CompletionCallbackFactoryINS0_20PPB_Graphics2D_ProxyENS0_26ProxyNonThreadSafeRefCountEEEMS8_FviRKNS_12HostResourceEESB_EESD_RT_T0_RKT1_
    fun:_ZN5ppapi5proxy20PPB_Graphics2D_Proxy14OnHostMsgFlushERKNS_12HostResourceE
 }
+{
+   bug_106529
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN10extensions6SocketC?EPK7ProfileRKSsRK4GURL
+   fun:_ZN10extensions16SocketController9CreateUdpEPK7ProfileRKSsRK4GURL
+   fun:_ZN10extensions57SocketApiControllerTest_TestSocketControllerLifetime_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
