@@ -264,9 +264,6 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'naclsdk_validate', default=True,
     desc='Verify the presence of the SDK')
 
-  BitFromArgument(env, 'nocpp', default=False,
-    desc='Skip the compilation of C++ code')
-
   BitFromArgument(env, 'running_on_valgrind', default=False,
     desc='Compile and test using valgrind')
 
