@@ -212,29 +212,30 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionRefreshCrash) {
   FilePath base_path = test_data_dir_.AppendASCII("browsertest")
                                      .AppendASCII("crash_44415");
   // Load extension A.
-  ASSERT_TRUE(LoadExtension(base_path.AppendASCII("ExtA")));
+  const Extension* extensionA = LoadExtension(base_path.AppendASCII("ExtA"));
+  ASSERT_TRUE(extensionA);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
   ASSERT_EQ(size_before + 1, service->extensions()->size());
-  const Extension* extensionA = service->extensions()->at(size_before);
 
   LOG(INFO) << "Load extension A done  : "
             << (base::TimeTicks::Now() - start_time).InMilliseconds()
             << " ms" << std::flush;
 
   // Load extension B.
-  ASSERT_TRUE(LoadExtension(base_path.AppendASCII("ExtB")));
+  const Extension* extensionB = LoadExtension(base_path.AppendASCII("ExtB"));
+  ASSERT_TRUE(extensionB);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(2));
   ASSERT_EQ(size_before + 2, service->extensions()->size());
-  const Extension* extensionB = service->extensions()->at(size_before + 1);
 
   LOG(INFO) << "Load extension B done  : "
             << (base::TimeTicks::Now() - start_time).InMilliseconds()
             << " ms" << std::flush;
 
+  std::string idA = extensionA->id();
   ReloadExtension(extensionA->id());
   // ExtensionA has changed, so refetch it.
   ASSERT_EQ(size_before + 2, service->extensions()->size());
-  extensionA = service->extensions()->at(size_before + 1);
+  extensionA = service->extensions()->GetByID(idA);
 
   LOG(INFO) << "Reload extension A done: "
             << (base::TimeTicks::Now() - start_time).InMilliseconds()
@@ -278,10 +279,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
   const size_t size_before = service->extensions()->size();
   FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
                                         .AppendASCII("title_localized"));
-  ASSERT_TRUE(LoadExtension(extension_path));
+  const Extension* extension = LoadExtension(extension_path);
+  ASSERT_TRUE(extension);
 
   ASSERT_EQ(size_before + 1, service->extensions()->size());
-  const Extension* extension = service->extensions()->at(size_before);
 
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur: l10n browser action").c_str(),
                extension->description().c_str());
@@ -302,7 +303,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
 
   FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
                                         .AppendASCII("title_localized_pa"));
-  ASSERT_TRUE(LoadExtension(extension_path));
+  const Extension* extension = LoadExtension(extension_path);
+  ASSERT_TRUE(extension);
 
   // Any navigation prompts the location bar to load the page action.
   GURL url = test_server()->GetURL(kLocalization);
@@ -310,7 +312,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 
   ASSERT_EQ(size_before + 1, service->extensions()->size());
-  const Extension* extension = service->extensions()->at(size_before);
 
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur: l10n page action").c_str(),
                extension->description().c_str());
@@ -387,6 +388,7 @@ bool ValidatePageElement(TabContents* tab,
 void NavigateToFeedAndValidate(net::TestServer* server,
                                const std::string& url,
                                Browser* browser,
+                               std::string extension_id,
                                bool sniff_xml_type,
                                const std::string& expected_feed_title,
                                const std::string& expected_item_title,
@@ -396,12 +398,9 @@ void NavigateToFeedAndValidate(net::TestServer* server,
     // TODO(finnur): Implement this is a non-flaky way.
   }
 
-  ExtensionService* service = browser->profile()->GetExtensionService();
-  const Extension* extension = service->extensions()->back();
-  std::string id = extension->id();
-
   // Navigate to the subscribe page directly.
-  ui_test_utils::NavigateToURL(browser, GetFeedUrl(server, url, true, id));
+  ui_test_utils::NavigateToURL(browser,
+                               GetFeedUrl(server, url, true, extension_id));
 
   TabContents* tab = browser->GetSelectedTabContents();
   ASSERT_TRUE(ValidatePageElement(tab,
@@ -425,10 +424,12 @@ void NavigateToFeedAndValidate(net::TestServer* server,
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed1) {
   ASSERT_TRUE(test_server()->Start());
 
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action")));
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action"));
+  ASSERT_TRUE(extension);
+  std::string id = extension->id();
 
-  NavigateToFeedAndValidate(test_server(), kValidFeed1, browser(), true,
+  NavigateToFeedAndValidate(test_server(), kValidFeed1, browser(), id, true,
                             "Feed for MyFeedTitle",
                             "Title 1",
                             "Desc",
@@ -438,10 +439,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed1) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed2) {
   ASSERT_TRUE(test_server()->Start());
 
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action")));
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action"));
+  ASSERT_TRUE(extension);
+  std::string id = extension->id();
 
-  NavigateToFeedAndValidate(test_server(), kValidFeed2, browser(), true,
+  NavigateToFeedAndValidate(test_server(), kValidFeed2, browser(), id, true,
                             "Feed for MyFeed2",
                             "My item title1",
                             "This is a summary.",
@@ -451,10 +454,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed2) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed3) {
   ASSERT_TRUE(test_server()->Start());
 
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action")));
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action"));
+  ASSERT_TRUE(extension);
+  std::string id = extension->id();
 
-  NavigateToFeedAndValidate(test_server(), kValidFeed3, browser(), true,
+  NavigateToFeedAndValidate(test_server(), kValidFeed3, browser(), id, true,
                             "Feed for Google Code buglist rss feed",
                             "My dear title",
                             "My dear content",
@@ -464,10 +469,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed3) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed4) {
   ASSERT_TRUE(test_server()->Start());
 
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action")));
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action"));
+  ASSERT_TRUE(extension);
+  std::string id = extension->id();
 
-  NavigateToFeedAndValidate(test_server(), kValidFeed4, browser(), true,
+  NavigateToFeedAndValidate(test_server(), kValidFeed4, browser(), id, true,
                             "Feed for Title chars <script> %23 stop",
                             "Title chars  %23 stop",
                             "My dear content %23 stop",
@@ -477,12 +484,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed4) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed0) {
   ASSERT_TRUE(test_server()->Start());
 
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action")));
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action"));
+  ASSERT_TRUE(extension);
+  std::string id = extension->id();
 
   // Try a feed with a link with an onclick handler (before r27440 this would
   // trigger a NOTREACHED).
-  NavigateToFeedAndValidate(test_server(), kValidFeed0, browser(), true,
+  NavigateToFeedAndValidate(test_server(), kValidFeed0, browser(), id, true,
                             "Feed for MyFeedTitle",
                             "Title 1",
                             "Desc VIDEO",
@@ -492,11 +501,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed0) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed5) {
   ASSERT_TRUE(test_server()->Start());
 
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action")));
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action"));
+  ASSERT_TRUE(extension);
+  std::string id = extension->id();
 
   // Feed with valid but mostly empty xml.
-  NavigateToFeedAndValidate(test_server(), kValidFeed5, browser(), true,
+  NavigateToFeedAndValidate(test_server(), kValidFeed5, browser(), id, true,
                             "Feed for Unknown feed name",
                             "element 'anchor_0' not found",
                             "element 'desc_0' not found",
@@ -506,11 +517,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed5) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed6) {
   ASSERT_TRUE(test_server()->Start());
 
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action")));
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action"));
+  ASSERT_TRUE(extension);
+  std::string id = extension->id();
 
   // Feed that is technically invalid but still parseable.
-  NavigateToFeedAndValidate(test_server(), kValidFeed6, browser(), true,
+  NavigateToFeedAndValidate(test_server(), kValidFeed6, browser(), id, true,
                             "Feed for MyFeedTitle",
                             "Title 1",
                             "Desc",
@@ -520,11 +533,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed6) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed1) {
   ASSERT_TRUE(test_server()->Start());
 
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action")));
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action"));
+  ASSERT_TRUE(extension);
+  std::string id = extension->id();
 
   // Try an empty feed.
-  NavigateToFeedAndValidate(test_server(), kInvalidFeed1, browser(), false,
+  NavigateToFeedAndValidate(test_server(), kInvalidFeed1, browser(), id, false,
                             "Feed for Unknown feed name",
                             "element 'anchor_0' not found",
                             "element 'desc_0' not found",
@@ -534,11 +549,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed1) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed2) {
   ASSERT_TRUE(test_server()->Start());
 
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action")));
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action"));
+  ASSERT_TRUE(extension);
+  std::string id = extension->id();
 
   // Try a garbage feed.
-  NavigateToFeedAndValidate(test_server(), kInvalidFeed2, browser(), false,
+  NavigateToFeedAndValidate(test_server(), kInvalidFeed2, browser(), id, false,
                             "Feed for Unknown feed name",
                             "element 'anchor_0' not found",
                             "element 'desc_0' not found",
@@ -548,11 +565,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed2) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed3) {
   ASSERT_TRUE(test_server()->Start());
 
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action")));
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action"));
+  ASSERT_TRUE(extension);
+  std::string id = extension->id();
 
   // Try a feed that doesn't exist.
-  NavigateToFeedAndValidate(test_server(), "foo.xml", browser(), false,
+  NavigateToFeedAndValidate(test_server(), "foo.xml", browser(), id, false,
                             "Feed for Unknown feed name",
                             "element 'anchor_0' not found",
                             "element 'desc_0' not found",
@@ -562,8 +581,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed3) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed4) {
   ASSERT_TRUE(test_server()->Start());
 
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action")));
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action"));
+  ASSERT_TRUE(extension);
+  std::string id = extension->id();
 
   // subscribe.js shouldn't double-decode the URL passed in. Otherwise feed
   // links such as http://search.twitter.com/search.atom?lang=en&q=%23chrome
@@ -572,25 +593,29 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed4) {
   // uses an underscore instead of a hash, but the principle is the same. If
   // we start erroneously double decoding again, the path (and the feed) will
   // become valid resulting in a failure for this test.
-  NavigateToFeedAndValidate(test_server(), kFeedTripleEncoded, browser(), true,
-                            "Feed for Unknown feed name",
-                            "element 'anchor_0' not found",
-                            "element 'desc_0' not found",
-                            "This feed contains no entries.");
+  NavigateToFeedAndValidate(
+      test_server(), kFeedTripleEncoded, browser(), id, true,
+      "Feed for Unknown feed name",
+      "element 'anchor_0' not found",
+      "element 'desc_0' not found",
+      "This feed contains no entries.");
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeedNoLinks) {
   ASSERT_TRUE(test_server()->Start());
 
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action")));
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action"));
+  ASSERT_TRUE(extension);
+  std::string id = extension->id();
 
   // Valid feed but containing no links.
-  NavigateToFeedAndValidate(test_server(), kValidFeedNoLinks, browser(), true,
-                            "Feed for MyFeedTitle",
-                            "Title with no link",
-                            "Desc",
-                            "No error");
+  NavigateToFeedAndValidate(
+      test_server(), kValidFeedNoLinks, browser(), id, true,
+      "Feed for MyFeedTitle",
+      "Title with no link",
+      "Desc",
+      "No error");
 }
 
 // Tests that an error raised during an async function still fires
@@ -722,7 +747,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
   service->set_show_extensions_prompts(false);
   const size_t size_before = service->extensions()->size();
-  ASSERT_TRUE(LoadExtension(extension_dir));
+  const Extension* extension = LoadExtension(extension_dir);
+  ASSERT_TRUE(extension);
   EXPECT_EQ(size_before + 1, service->extensions()->size());
   // Now the plugin should be in the cache, but we have to reload the page for
   // it to work.
@@ -742,7 +768,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   EXPECT_TRUE(result);
 
   EXPECT_EQ(size_before + 1, service->extensions()->size());
-  UnloadExtension(service->extensions()->at(size_before)->id());
+  UnloadExtension(extension->id());
   EXPECT_EQ(size_before, service->extensions()->size());
 
   // Now the plugin should be unloaded, and the page should be broken.
@@ -784,11 +810,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginPrivate) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
   service->set_show_extensions_prompts(false);
   const size_t size_before = service->extensions()->size();
-  ASSERT_TRUE(LoadExtension(extension_dir));
+  const Extension* extension = LoadExtension(extension_dir);
+  ASSERT_TRUE(extension);
   EXPECT_EQ(size_before + 1, service->extensions()->size());
 
   // Load the test page through the extension URL, and the plugin should work.
-  const Extension* extension = service->extensions()->back();
   ui_test_utils::NavigateToURL(browser(),
       extension->GetResourceURL("test.html"));
   TabContents* tab = browser()->GetSelectedTabContents();
@@ -825,11 +851,11 @@ static const wchar_t* jscript_click_option_button =
 // Disabled.  See http://crbug.com/26948 for details.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_OptionsPage) {
   // Install an extension with an options page.
-  ASSERT_TRUE(InstallExtension(test_data_dir_.AppendASCII("options.crx"), 1));
+  const Extension* extension =
+      InstallExtension(test_data_dir_.AppendASCII("options.crx"), 1);
+  ASSERT_TRUE(extension);
   ExtensionService* service = browser()->profile()->GetExtensionService();
-  const ExtensionList* extensions = service->extensions();
-  ASSERT_EQ(1u, extensions->size());
-  const Extension* extension = extensions->at(0);
+  ASSERT_EQ(1u, service->extensions()->size());
 
   // Go to the Extension Settings page and click the Options button.
   ui_test_utils::NavigateToURL(

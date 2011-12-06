@@ -200,7 +200,7 @@ void UserScriptListener::Observe(int type,
       // Clear all our patterns and reregister all the still-loaded extensions.
       URLPatterns new_patterns;
       ExtensionService* service = profile->GetExtensionService();
-      for (ExtensionList::const_iterator it = service->extensions()->begin();
+      for (ExtensionSet::const_iterator it = service->extensions()->begin();
            it != service->extensions()->end(); ++it) {
         if (*it != unloaded_extension)
           CollectURLPatterns(*it, &new_patterns);

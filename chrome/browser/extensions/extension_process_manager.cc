@@ -74,8 +74,8 @@ static void CreateBackgroundHostForExtensionLoad(
 }
 
 static void CreateBackgroundHostsForProfileStartup(
-    ExtensionProcessManager* manager, const ExtensionList* extensions) {
-  for (ExtensionList::const_iterator extension = extensions->begin();
+    ExtensionProcessManager* manager, const ExtensionSet* extensions) {
+  for (ExtensionSet::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
     CreateBackgroundHostForExtensionLoad(manager, *extension);
   }

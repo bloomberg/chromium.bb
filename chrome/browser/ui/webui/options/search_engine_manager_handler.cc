@@ -143,8 +143,8 @@ void SearchEngineManagerHandler::OnModelChanged() {
   ExtensionService* extension_service =
       Profile::FromWebUI(web_ui_)->GetExtensionService();
   if (extension_service) {
-    const ExtensionList* extensions = extension_service->extensions();
-    for (ExtensionList::const_iterator it = extensions->begin();
+    const ExtensionSet* extensions = extension_service->extensions();
+    for (ExtensionSet::const_iterator it = extensions->begin();
          it != extensions->end(); ++it) {
       if ((*it)->omnibox_keyword().size() > 0)
         keyword_list.Append(CreateDictionaryForExtension(*(*it)));

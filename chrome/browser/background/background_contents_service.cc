@@ -418,9 +418,9 @@ void BackgroundContentsService::LoadBackgroundContentsFromDictionary(
 
 void BackgroundContentsService::LoadBackgroundContentsFromManifests(
     Profile* profile) {
-  const ExtensionList* extensions =
+  const ExtensionSet* extensions =
       profile->GetExtensionService()->extensions();
-  ExtensionList::const_iterator iter = extensions->begin();
+  ExtensionSet::const_iterator iter = extensions->begin();
   for (; iter != extensions->end(); ++iter) {
     const Extension* extension = *iter;
     if (extension->is_hosted_app() &&

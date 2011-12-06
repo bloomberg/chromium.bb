@@ -78,22 +78,22 @@ std::vector<std::string> SyncExtensionHelper::GetInstalledExtensionNames(
   std::vector<std::string> names;
   ExtensionService* extension_service = profile->GetExtensionService();
 
-  const ExtensionList* extensions = extension_service->extensions();
-  for (ExtensionList::const_iterator it = extensions->begin();
+  const ExtensionSet* extensions = extension_service->extensions();
+  for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
     names.push_back((*it)->name());
   }
 
-  const ExtensionList* disabled_extensions =
+  const ExtensionSet* disabled_extensions =
       extension_service->disabled_extensions();
-  for (ExtensionList::const_iterator it = disabled_extensions->begin();
+  for (ExtensionSet::const_iterator it = disabled_extensions->begin();
        it != disabled_extensions->end(); ++it) {
     names.push_back((*it)->name());
   }
 
-  const ExtensionList* terminated_extensions =
+  const ExtensionSet* terminated_extensions =
       extension_service->terminated_extensions();
-  for (ExtensionList::const_iterator it = terminated_extensions->begin();
+  for (ExtensionSet::const_iterator it = terminated_extensions->begin();
        it != terminated_extensions->end(); ++it) {
     names.push_back((*it)->name());
   }
@@ -180,8 +180,8 @@ SyncExtensionHelper::ExtensionStateMap
 
   ExtensionService* extension_service = profile->GetExtensionService();
 
-  const ExtensionList* extensions = extension_service->extensions();
-  for (ExtensionList::const_iterator it = extensions->begin();
+  const ExtensionSet* extensions = extension_service->extensions();
+  for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
     const std::string& id = (*it)->id();
     extension_state_map[id].enabled_state = ExtensionState::ENABLED;
@@ -191,9 +191,9 @@ SyncExtensionHelper::ExtensionStateMap
              << profile_debug_name << " is enabled";
   }
 
-  const ExtensionList* disabled_extensions =
+  const ExtensionSet* disabled_extensions =
       extension_service->disabled_extensions();
-  for (ExtensionList::const_iterator it = disabled_extensions->begin();
+  for (ExtensionSet::const_iterator it = disabled_extensions->begin();
        it != disabled_extensions->end(); ++it) {
     const std::string& id = (*it)->id();
     extension_state_map[id].enabled_state = ExtensionState::DISABLED;

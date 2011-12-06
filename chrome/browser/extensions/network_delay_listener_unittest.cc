@@ -127,9 +127,9 @@ class NetworkDelayListenerTest
 
   void LoadTestExtension1() {
     LoadTestExtension(kTestExtensionId1);
-    ASSERT_FALSE(service_->extensions()->empty());
-    extension1_ = service_->extensions()->at(0).get();
-    ASSERT_FALSE(extension1_ == NULL);
+    ASSERT_FALSE(service_->extensions()->is_empty());
+    extension1_ = service_->extensions()->GetByID(kTestExtensionId1);
+    ASSERT_TRUE(extension1_);
   }
 
   void SendExtensionLoadedNotification(const Extension* extension) {
@@ -197,8 +197,9 @@ TEST_F(NetworkDelayListenerTest, TwoBlockingExtensions) {
   LoadTestExtension1();
   LoadTestExtension(kTestExtensionId2);
   ASSERT_EQ(2u, service_->extensions()->size());
-  const Extension* extension2 = service_->extensions()->at(1).get();
-  ASSERT_FALSE(extension2 == NULL);
+  const Extension* extension2 =
+      service_->extensions()->GetByID(kTestExtensionId2);
+  ASSERT_TRUE(extension2);
 
   TestDelegate delegate;
   scoped_ptr<TestURLRequest> request(StartTestRequest(&delegate, kTestUrl));
@@ -231,7 +232,7 @@ TEST_F(NetworkDelayListenerTest, ExtensionReadyTwice) {
 // Tests that there's no delay if no loaded extension needs one.
 TEST_F(NetworkDelayListenerTest, NoDelayNoWebRequest) {
   LoadTestExtension(kTestExtensionNoNetworkDelay);
-  ASSERT_FALSE(service_->extensions()->empty());
+  ASSERT_FALSE(service_->extensions()->is_empty());
 
   TestDelegate delegate;
   scoped_ptr<TestURLRequest> request(StartTestRequest(&delegate, kTestUrl));

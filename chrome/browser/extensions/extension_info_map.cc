@@ -138,11 +138,11 @@ bool ExtensionInfoMap::SecurityOriginHasAPIPermission(
         process_map_.Contains(id, process_id);
   }
 
-  ExtensionSet::ExtensionMap::const_iterator i = extensions_.begin();
+  ExtensionSet::const_iterator i = extensions_.begin();
   for (; i != extensions_.end(); ++i) {
-    if (i->second->web_extent().MatchesSecurityOrigin(origin) &&
-        process_map_.Contains(i->first, process_id) &&
-        i->second->HasAPIPermission(permission)) {
+    if ((*i)->web_extent().MatchesSecurityOrigin(origin) &&
+        process_map_.Contains((*i)->id(), process_id) &&
+        (*i)->HasAPIPermission(permission)) {
       return true;
     }
   }

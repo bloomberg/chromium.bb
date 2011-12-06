@@ -28,8 +28,8 @@ void GetExtensionVoices(Profile* profile, ListValue* result_voices) {
   ExtensionEventRouter* event_router = profile->GetExtensionEventRouter();
   DCHECK(event_router);
 
-  const ExtensionList* extensions = service->extensions();
-  ExtensionList::const_iterator iter;
+  const ExtensionSet* extensions = service->extensions();
+  ExtensionSet::const_iterator iter;
   for (iter = extensions->begin(); iter != extensions->end(); ++iter) {
     const Extension* extension = *iter;
 
@@ -93,8 +93,8 @@ bool GetMatchingExtensionVoice(
 
   *matching_extension = NULL;
   *voice_index = -1;
-  const ExtensionList* extensions = service->extensions();
-  ExtensionList::const_iterator iter;
+  const ExtensionSet* extensions = service->extensions();
+  ExtensionSet::const_iterator iter;
   for (iter = extensions->begin(); iter != extensions->end(); ++iter) {
     const Extension* extension = *iter;
 

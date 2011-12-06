@@ -414,9 +414,9 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
   if (!extension_service)
     return;
 
-  const ExtensionList* extensions = extension_service->extensions();
+  const ExtensionSet* extensions = extension_service->extensions();
 
-  for (ExtensionList::const_iterator extension = extensions->begin();
+  for (ExtensionSet::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
     if ((*extension)->devtools_url().is_empty())
       continue;

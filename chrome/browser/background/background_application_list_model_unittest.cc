@@ -60,8 +60,11 @@ static scoped_refptr<Extension> CreateExtension(const std::string& name,
   }
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(
-      bogus_file_path().AppendASCII(name), Extension::INVALID, manifest,
-      Extension::STRICT_ERROR_CHECKS, &error);
+      bogus_file_path().AppendASCII(name),
+      Extension::INVALID,
+      manifest,
+      Extension::STRICT_ERROR_CHECKS,
+      &error);
   // Cannot ASSERT_* here because that attempts an illegitimate return.
   // Cannot EXPECT_NE here because that assumes non-pointers unlike EXPECT_EQ
   EXPECT_TRUE(extension.get() != NULL) << error;
@@ -105,7 +108,7 @@ TEST_F(BackgroundApplicationListModelTest, ExplicitTest) {
   ASSERT_TRUE(service);
   ASSERT_TRUE(service->is_ready());
   ASSERT_TRUE(service->extensions());
-  ASSERT_TRUE(service->extensions()->empty());
+  ASSERT_TRUE(service->extensions()->is_empty());
   scoped_ptr<BackgroundApplicationListModel> model(
       new BackgroundApplicationListModel(profile_.get()));
   ASSERT_EQ(0U, model->size());
@@ -171,7 +174,7 @@ TEST_F(BackgroundApplicationListModelTest, AddRemovePermissionsTest) {
   ASSERT_TRUE(service);
   ASSERT_TRUE(service->is_ready());
   ASSERT_TRUE(service->extensions());
-  ASSERT_TRUE(service->extensions()->empty());
+  ASSERT_TRUE(service->extensions()->is_empty());
   scoped_ptr<BackgroundApplicationListModel> model(
       new BackgroundApplicationListModel(profile_.get()));
   ASSERT_EQ(0U, model->size());
@@ -310,7 +313,7 @@ TEST_F(BackgroundApplicationListModelTest, RandomTest) {
   ASSERT_TRUE(service);
   ASSERT_TRUE(service->is_ready());
   ASSERT_TRUE(service->extensions());
-  ASSERT_TRUE(service->extensions()->empty());
+  ASSERT_TRUE(service->extensions()->is_empty());
   scoped_ptr<BackgroundApplicationListModel> model(
       new BackgroundApplicationListModel(profile_.get()));
   ASSERT_EQ(0U, model->size());

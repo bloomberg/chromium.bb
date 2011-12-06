@@ -29,6 +29,10 @@ size_t ExtensionSet::size() const {
   return extensions_.size();
 }
 
+bool ExtensionSet::is_empty() const {
+  return extensions_.empty();
+}
+
 bool ExtensionSet::Contains(const std::string& extension_id) const {
   return extensions_.find(extension_id) != extensions_.end();
 }
@@ -41,7 +45,11 @@ void ExtensionSet::Remove(const std::string& id) {
   extensions_.erase(id);
 }
 
-std::string ExtensionSet::GetIdByURL(const ExtensionURLInfo& info) const {
+void ExtensionSet::Clear() {
+  extensions_.clear();
+}
+
+std::string ExtensionSet::GetIDByURL(const ExtensionURLInfo& info) const {
   DCHECK(!info.origin().isNull());
 
   if (info.url().SchemeIs(chrome::kExtensionScheme))

@@ -114,15 +114,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, MAYBE_OverrideHistory) {
 
 // Regression test for http://crbug.com/41442.
 IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, ShouldNotCreateDuplicateEntries) {
-  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("override/history")));
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("override/history"));
+  ASSERT_TRUE(extension);
 
   // Simulate several LoadExtension() calls happening over the lifetime of
   // a preferences file without corresponding UnloadExtension() calls.
   for (size_t i = 0; i < 3; ++i) {
     ExtensionWebUI::RegisterChromeURLOverrides(
         browser()->profile(),
-        browser()->profile()->GetExtensionService()->extensions()->back()->
-            GetChromeURLOverrides());
+        extension->GetChromeURLOverrides());
   }
 
   ASSERT_TRUE(CheckHistoryOverridesContainsNoDupes());
@@ -160,8 +161,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideKeyboard) {
   }
 
   // Load the failing version.  This should take precedence.
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("override").AppendASCII("keyboard_fails")));
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("override").AppendASCII("keyboard_fails"));
+  ASSERT_TRUE(extension);
   {
     ResultCatcher catcher;
     NavigateToKeyboard();
@@ -169,9 +171,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideKeyboard) {
   }
 
   // Unload the failing version.  We should be back to passing now.
-  const ExtensionList *extensions =
-      browser()->profile()->GetExtensionService()->extensions();
-  UnloadExtension((*extensions->rbegin())->id());
+  UnloadExtension(extension->id());
   {
     ResultCatcher catcher;
     NavigateToKeyboard();

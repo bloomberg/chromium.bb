@@ -72,13 +72,13 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
     ui_test_utils::RunMessageLoop();
   }
 
-  // Find the extension by iterating backwards since it is likely last.
+  // Find the loaded extension by its path. See crbug.com/59531 for why
+  // we cannot just use last_loaded_extension_id_.
   FilePath extension_path = path;
   file_util::AbsolutePath(&extension_path);
   const Extension* extension = NULL;
-  for (ExtensionList::const_reverse_iterator iter =
-           service->extensions()->rbegin();
-       iter != service->extensions()->rend(); ++iter) {
+  for (ExtensionSet::const_iterator iter = service->extensions()->begin();
+       iter != service->extensions()->end(); ++iter) {
     if ((*iter)->path() == extension_path) {
       extension = *iter;
       break;
@@ -296,8 +296,9 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
             << " num after: " << base::IntToString(num_after)
             << " Installed extensions follow:";
 
-    for (size_t i = 0; i < service->extensions()->size(); ++i)
-      VLOG(1) << "  " << (*service->extensions())[i]->id();
+    for (ExtensionSet::const_iterator it = service->extensions()->begin();
+         it != service->extensions()->end(); ++it)
+      VLOG(1) << "  " << (*it)->id();
 
     VLOG(1) << "Errors follow:";
     const std::vector<std::string>* errors =

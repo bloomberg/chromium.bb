@@ -164,11 +164,12 @@ class BrowserTest : public ExtensionBrowserTest {
 
   // Returns the app extension aptly named "App Test".
   const Extension* GetExtension() {
-    const ExtensionList* extensions =
+    const ExtensionSet* extensions =
         browser()->profile()->GetExtensionService()->extensions();
-    for (size_t i = 0; i < extensions->size(); ++i) {
-      if ((*extensions)[i]->name() == "App Test")
-        return (*extensions)[i];
+    for (ExtensionSet::const_iterator it = extensions->begin();
+         it != extensions->end(); ++it) {
+      if ((*it)->name() == "App Test")
+        return *it;
     }
     NOTREACHED();
     return NULL;

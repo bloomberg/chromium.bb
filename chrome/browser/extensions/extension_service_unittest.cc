@@ -1875,7 +1875,7 @@ TEST_F(ExtensionServiceTest, UpdateApps) {
 TEST_F(ExtensionServiceTest, InstallAppsWithUnlimitedStorage) {
   InitializeEmptyExtensionService();
   InitializeRequestContext();
-  EXPECT_TRUE(service_->extensions()->empty());
+  EXPECT_TRUE(service_->extensions()->is_empty());
 
   int pref_count = 0;
 
@@ -1926,7 +1926,7 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimitedStorage) {
 TEST_F(ExtensionServiceTest, InstallAppsAndCheckStorageProtection) {
   InitializeEmptyExtensionService();
   InitializeRequestContext();
-  EXPECT_TRUE(service_->extensions()->empty());
+  EXPECT_TRUE(service_->extensions()->is_empty());
 
   int pref_count = 0;
 
@@ -1955,7 +1955,7 @@ TEST_F(ExtensionServiceTest, InstallAppsAndCheckStorageProtection) {
 
   UninstallExtension(id2, false);
 
-  EXPECT_TRUE(service_->extensions()->empty());
+  EXPECT_TRUE(service_->extensions()->is_empty());
   EXPECT_FALSE(profile_->GetExtensionSpecialStoragePolicy()->
       IsStorageProtected(origin1));
   EXPECT_FALSE(profile_->GetExtensionSpecialStoragePolicy()->
@@ -2676,18 +2676,18 @@ TEST_F(ExtensionServiceTest, DisableExtension) {
   InitializeEmptyExtensionService();
 
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
-  EXPECT_FALSE(service_->extensions()->empty());
+  EXPECT_FALSE(service_->extensions()->is_empty());
   EXPECT_TRUE(service_->GetExtensionById(good_crx, true));
   EXPECT_TRUE(service_->GetExtensionById(good_crx, false));
-  EXPECT_TRUE(service_->disabled_extensions()->empty());
+  EXPECT_TRUE(service_->disabled_extensions()->is_empty());
 
   // Disable it.
   service_->DisableExtension(good_crx);
 
-  EXPECT_TRUE(service_->extensions()->empty());
+  EXPECT_TRUE(service_->extensions()->is_empty());
   EXPECT_TRUE(service_->GetExtensionById(good_crx, true));
   EXPECT_FALSE(service_->GetExtensionById(good_crx, false));
-  EXPECT_FALSE(service_->disabled_extensions()->empty());
+  EXPECT_FALSE(service_->disabled_extensions()->is_empty());
 }
 
 TEST_F(ExtensionServiceTest, DisableTerminatedExtension) {
@@ -2702,7 +2702,7 @@ TEST_F(ExtensionServiceTest, DisableTerminatedExtension) {
 
   EXPECT_FALSE(service_->GetTerminatedExtension(good_crx));
   EXPECT_TRUE(service_->GetExtensionById(good_crx, true));
-  EXPECT_FALSE(service_->disabled_extensions()->empty());
+  EXPECT_FALSE(service_->disabled_extensions()->is_empty());
 }
 
 // Tests disabling all extensions (simulating --disable-extensions flag).
