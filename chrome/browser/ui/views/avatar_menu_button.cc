@@ -151,6 +151,7 @@ void AvatarMenuButton::SetAvatarIcon(const gfx::Image& icon,
   is_gaia_picture_ = is_gaia_picture;
   // If the icon changes, we need to set the taskbar decoration again.
   set_taskbar_decoration_ = true;
+  SchedulePaint();
 }
 
 // views::ViewMenuDelegate implementation
