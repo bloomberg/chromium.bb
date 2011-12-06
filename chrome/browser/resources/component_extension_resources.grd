@@ -25,7 +25,6 @@
 
       <if expr="pp_ifdef('file_manager_extension')">
         <include name="IDR_FILE_MANAGER_MAIN" file="file_manager/main.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_SLIDESHOW" file="file_manager/slideshow.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_MEDIAPLAYER" file="file_manager/mediaplayer.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_PLAYLIST" file="file_manager/playlist.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMAGE_EDITOR" file="file_manager/js/image_editor/gallery.html" flattenhtml="true" type="BINDATA" />
