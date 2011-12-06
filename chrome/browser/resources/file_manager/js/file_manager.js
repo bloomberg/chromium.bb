@@ -1411,7 +1411,9 @@ FileManager.prototype = {
         }
 
         // Leaf is an existing file, cd to its parent directory and select it.
-        self.changeDirectoryEntry(baseDirEntry, CD_NO_HISTORY, leafEntry.name);
+        self.changeDirectoryEntry(baseDirEntry, CD_NO_HISTORY, function() {
+          self.selectEntry(leafEntry.name);
+        });
       }
 
       function onLeafError(err) {
@@ -1513,29 +1515,24 @@ FileManager.prototype = {
       return;
     }
 
-    function checkCount() {
-      if (uncachedCount == 0) {
-        // Callback via a setTimeout so the sync/async semantics don't change
-        // based on whether or not the value is cached.
-        setTimeout(callback, 0);
-      }
-    }
-
-    var uncachedCount = entries.length;
-
-    for (var i = uncachedCount - 1; i >= 0 ; i--) {
+    // Start one fake wait to prevent calling the callback twice.
+    var waitCount = 1;
+    for (var i = 0; i < entries.length ; i++) {
       var entry = entries[i];
-      if (field in entry) {
-        uncachedCount--;
-      } else {
-        cacheFunction(entry, function() {
-          uncachedCount--;
-          checkCount();
-        });
+      if (!(field in entry)) {
+        waitCount++;
+        cacheFunction(entry, onCacheDone)
       }
     }
+    onCacheDone();  // Finish the fake callback.
 
-    checkCount();
+    function onCacheDone() {
+      waitCount--;
+      // If all caching functions finished synchronously or entries.length = 0
+      // call the callback synchronously.
+      if (waitCount == 0)
+        setTimeout(callback, 0);
+    }
   }
 
   /**
@@ -2633,18 +2630,22 @@ FileManager.prototype = {
    * @param {string} path The absolute path to the new directory.
    * @param {bool} opt_saveHistory Save this in the history stack (defaults
    *     to true).
-   * @param {string} opt_selectedEntry The name of the file to select after
-   *     changing directories.
+   * @param {function} opt_action Action executed when the directory loaded.
+   *                              By default selects the first item
+   *                              (unless it's a save dialog).
    */
   FileManager.prototype.changeDirectoryEntry = function(dirEntry,
                                                         opt_saveHistory,
-                                                        opt_selectedEntry,
-                                                        opt_callback) {
+                                                        opt_action) {
     if (typeof opt_saveHistory == 'undefined') {
       opt_saveHistory = true;
     } else {
       opt_saveHistory = !!opt_saveHistory;
     }
+
+    var action = opt_action ||
+        (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE ?
+            undefined : this.selectIndex.bind(this, 0));
 
     var location = document.location.origin + document.location.pathname + '#' +
                    encodeURI(dirEntry.fullPath);
@@ -2661,10 +2662,8 @@ FileManager.prototype = {
     if (this.currentDirEntry_ &&
         this.currentDirEntry_.fullPath == dirEntry.fullPath) {
       // Directory didn't actually change.
-      if (opt_selectedEntry)
-        this.selectEntry(opt_selectedEntry);
-      else
-        this.selectIndex(0);
+      if (opt_action)
+        opt_action();
       return;
     }
 
@@ -2672,8 +2671,7 @@ FileManager.prototype = {
     e.previousDirEntry = this.currentDirEntry_;
     e.newDirEntry = dirEntry;
     e.saveHistory = opt_saveHistory;
-    e.selectedEntry = opt_selectedEntry;
-    e.opt_callback = opt_callback;
+    e.opt_callback = action;
     this.currentDirEntry_ = dirEntry;
     this.dispatchEvent(e);
   }
@@ -2692,22 +2690,16 @@ FileManager.prototype = {
    *     changing directories.
    */
   FileManager.prototype.changeDirectory = function(path,
-                                                   opt_saveHistory,
-                                                   opt_selectedEntry,
-                                                   opt_callback) {
+                                                   opt_saveHistory) {
     if (path == '/')
       return this.changeDirectoryEntry(this.filesystem_.root,
-                                       opt_saveHistory,
-                                       opt_selectedEntry,
-                                       opt_callback);
+                                       opt_saveHistory);
 
     var self = this;
-
     this.filesystem_.root.getDirectory(
         path, {create: false},
         function(dirEntry) {
-          self.changeDirectoryEntry(
-              dirEntry, opt_saveHistory, opt_selectedEntry, opt_callback);
+          self.changeDirectoryEntry(dirEntry, opt_saveHistory);
         },
         function(err) {
           console.error('Error changing directory to: ' + path + ', ' + err);
@@ -2719,7 +2711,7 @@ FileManager.prototype = {
           } else {
             // If we've never successfully changed to a directory, force them
             // to the root.
-            self.changeDirectory('/', false);
+            self.changeDirectory('/', CD_NO_HISTORY);
           }
         });
   };
@@ -3080,10 +3072,6 @@ FileManager.prototype = {
     }
 
     this.rescanDirectory_(function() {
-        if (event.selectedEntry)
-          self.selectEntry(event.selectedEntry);
-        else
-          self.selectIndex(0);
         if (event.opt_callback) {
           try {
             event.opt_callback();
