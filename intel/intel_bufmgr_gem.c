@@ -98,7 +98,7 @@ typedef struct _drm_intel_bufmgr_gem {
 
 	drmMMListHead named;
 	drmMMListHead vma_cache;
-	int vma_count, vma_max;
+	int vma_count, vma_open, vma_max;
 
 	uint64_t gtt_size;
 	int available_fences;
@@ -938,13 +938,20 @@ drm_intel_gem_cleanup_bo_cache(drm_intel_bufmgr_gem *bufmgr_gem, time_t time)
 
 static void drm_intel_gem_bo_purge_vma_cache(drm_intel_bufmgr_gem *bufmgr_gem)
 {
-	DBG("%s: count=%d, limit=%d\n", __FUNCTION__,
-	    bufmgr_gem->vma_count, bufmgr_gem->vma_max);
+	int limit;
+
+	DBG("%s: cached=%d, open=%d, limit=%d\n", __FUNCTION__,
+	    bufmgr_gem->vma_count, bufmgr_gem->vma_open, bufmgr_gem->vma_max);
 
 	if (bufmgr_gem->vma_max < 0)
 		return;
 
-	while (bufmgr_gem->vma_count > bufmgr_gem->vma_max) {
+	/* We may need to evict a few entries in order to create new mmaps */
+	limit = bufmgr_gem->vma_max - 2*bufmgr_gem->vma_open;
+	if (limit < 0)
+		limit = 0;
+
+	while (bufmgr_gem->vma_count > limit) {
 		drm_intel_bo_gem *bo_gem;
 
 		bo_gem = DRMLISTENTRY(drm_intel_bo_gem,
@@ -966,9 +973,10 @@ static void drm_intel_gem_bo_purge_vma_cache(drm_intel_bufmgr_gem *bufmgr_gem)
 	}
 }
 
-static void drm_intel_gem_bo_add_to_vma_cache(drm_intel_bufmgr_gem *bufmgr_gem,
-					      drm_intel_bo_gem *bo_gem)
+static void drm_intel_gem_bo_close_vma(drm_intel_bufmgr_gem *bufmgr_gem,
+				       drm_intel_bo_gem *bo_gem)
 {
+	bufmgr_gem->vma_open--;
 	DRMLISTADDTAIL(&bo_gem->vma_list, &bufmgr_gem->vma_cache);
 	if (bo_gem->mem_virtual)
 		bufmgr_gem->vma_count++;
@@ -977,14 +985,16 @@ static void drm_intel_gem_bo_add_to_vma_cache(drm_intel_bufmgr_gem *bufmgr_gem,
 	drm_intel_gem_bo_purge_vma_cache(bufmgr_gem);
 }
 
-static void drm_intel_gem_bo_remove_from_vma_cache(drm_intel_bufmgr_gem *bufmgr_gem,
-						   drm_intel_bo_gem *bo_gem)
+static void drm_intel_gem_bo_open_vma(drm_intel_bufmgr_gem *bufmgr_gem,
+				      drm_intel_bo_gem *bo_gem)
 {
+	bufmgr_gem->vma_open++;
 	DRMLISTDEL(&bo_gem->vma_list);
 	if (bo_gem->mem_virtual)
 		bufmgr_gem->vma_count--;
 	if (bo_gem->gtt_virtual)
 		bufmgr_gem->vma_count--;
+	drm_intel_gem_bo_purge_vma_cache(bufmgr_gem);
 }
 
 static void
@@ -1023,6 +1033,7 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 	if (bo_gem->map_count) {
 		DBG("bo freed with non-zero map-count %d\n", bo_gem->map_count);
 		bo_gem->map_count = 0;
+		drm_intel_gem_bo_close_vma(bufmgr_gem, bo_gem);
 	}
 
 	DRMLISTDEL(&bo_gem->name_list);
@@ -1036,9 +1047,6 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 
 		bo_gem->name = NULL;
 		bo_gem->validate_index = -1;
-
-		if (bo_gem->mem_virtual || bo_gem->gtt_virtual)
-			drm_intel_gem_bo_add_to_vma_cache(bufmgr_gem, bo_gem);
 
 		DRMLISTADDTAIL(&bo_gem->head, &bucket->head);
 	} else {
@@ -1085,7 +1093,7 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 	pthread_mutex_lock(&bufmgr_gem->lock);
 
 	if (bo_gem->map_count++ == 0)
-		drm_intel_gem_bo_remove_from_vma_cache(bufmgr_gem, bo_gem);
+		drm_intel_gem_bo_open_vma(bufmgr_gem, bo_gem);
 
 	if (!bo_gem->mem_virtual) {
 		struct drm_i915_gem_mmap mmap_arg;
@@ -1106,7 +1114,7 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 			    __FILE__, __LINE__, bo_gem->gem_handle,
 			    bo_gem->name, strerror(errno));
 			if (--bo_gem->map_count == 0)
-				drm_intel_gem_bo_add_to_vma_cache(bufmgr_gem, bo_gem);
+				drm_intel_gem_bo_close_vma(bufmgr_gem, bo_gem);
 			pthread_mutex_unlock(&bufmgr_gem->lock);
 			return ret;
 		}
@@ -1149,7 +1157,7 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 	pthread_mutex_lock(&bufmgr_gem->lock);
 
 	if (bo_gem->map_count++ == 0)
-		drm_intel_gem_bo_remove_from_vma_cache(bufmgr_gem, bo_gem);
+		drm_intel_gem_bo_open_vma(bufmgr_gem, bo_gem);
 
 	/* Get a mapping of the buffer if we haven't before. */
 	if (bo_gem->gtt_virtual == NULL) {
@@ -1188,7 +1196,7 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 			    bo_gem->gem_handle, bo_gem->name,
 			    strerror(errno));
 			if (--bo_gem->map_count == 0)
-				drm_intel_gem_bo_add_to_vma_cache(bufmgr_gem, bo_gem);
+				drm_intel_gem_bo_close_vma(bufmgr_gem, bo_gem);
 			pthread_mutex_unlock(&bufmgr_gem->lock);
 			return ret;
 		}
@@ -1251,7 +1259,7 @@ static int drm_intel_gem_bo_unmap(drm_intel_bo *bo)
 	 * limits and cause later failures.
 	 */
 	if (--bo_gem->map_count == 0) {
-		drm_intel_gem_bo_add_to_vma_cache(bufmgr_gem, bo_gem);
+		drm_intel_gem_bo_close_vma(bufmgr_gem, bo_gem);
 		bo->virtual = NULL;
 	}
 	pthread_mutex_unlock(&bufmgr_gem->lock);
