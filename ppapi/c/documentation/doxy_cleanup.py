@@ -4,11 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-'''This utility converts the html files as emitted by doxygen into ezt files
-that are suitable for inclusion into Google code site.
-
-EZT stands for "EaZy Templating (for Python)".  For more information, see
-http://code.google.com/p/ezt/
+'''This utility cleans up the html files as emitted by doxygen so
+that they are suitable for publication on a Google documentation site.
 '''
 
 import optparse
@@ -27,16 +24,15 @@ except (ImportError, NotImplementedError):
   raise
 
 
-class EZTFixer(object):
-  '''This class converts the html strings as produced by Doxygen into ezt
-  strings as used by the Google code site tools
+class HTMLFixer(object):
+  '''This class cleans up the html strings as produced by Doxygen
   '''
 
   def __init__(self, html):
     self.soup = BeautifulSoup(html)
 
   def FixTableHeadings(self):
-    '''Fixes the doxygen table headings to EZT's liking.
+    '''Fixes the doxygen table headings.
 
     This includes using <th> instead of <h2> for the heading, and putting
     the "name" attribute into the "id" attribute of the <tr> tag.
@@ -91,12 +87,9 @@ class EZTFixer(object):
 
 
 def main():
-  '''Main entry for the html2ezt utility
+  '''Main entry for the doxy_cleanup utility
 
-  html2ezt takes a list of html files and creates a set of ezt files with
-  the same basename and in the same directory as the original html files.
-  Each new ezt file contains a file that is suitable for presentation
-  on Google Codesite using the EZT tool.'''
+  doxy_cleanup takes a list of html files and modifies them in place.'''
 
   parser = optparse.OptionParser(usage='Usage: %prog [options] files...')
 
@@ -114,10 +107,9 @@ def main():
       with open(filename, 'r') as file:
         html = file.read()
 
-      fixer = EZTFixer(html)
+      fixer = HTMLFixer(html)
       fixer.FixAll()
-      new_name = re.sub(re.compile('\.html$'), '.ezt', filename)
-      with open(new_name, 'w') as file:
+      with open(filename, 'w') as file:
         file.write(str(fixer))
       if options.move:
         new_directory = os.path.join(
