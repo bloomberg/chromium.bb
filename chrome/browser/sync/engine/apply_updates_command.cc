@@ -18,8 +18,7 @@ ApplyUpdatesCommand::ApplyUpdatesCommand() {}
 ApplyUpdatesCommand::~ApplyUpdatesCommand() {}
 
 bool ApplyUpdatesCommand::HasCustomGroupsToChange() const {
-  // TODO(akalin): Set to true.
-  return false;
+  return true;
 }
 
 std::set<ModelSafeGroup> ApplyUpdatesCommand::GetGroupsToChange(
