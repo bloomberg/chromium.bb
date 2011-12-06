@@ -61,8 +61,7 @@ ProcessCommitResponseCommand::ProcessCommitResponseCommand() {}
 ProcessCommitResponseCommand::~ProcessCommitResponseCommand() {}
 
 bool ProcessCommitResponseCommand::HasCustomGroupsToChange() const {
-  // TODO(akalin): Set to true.
-  return false;
+  return true;
 }
 
 std::set<ModelSafeGroup> ProcessCommitResponseCommand::GetGroupsToChange(
