@@ -147,6 +147,10 @@ TEST_F(SessionHistoryTest, MAYBE_BasicBackForward) {
 }
 
 // Test that back/forward works when navigating in subframes.
+#if defined(OS_WIN)
+// http://crbug.com/48833
+#define FrameBackForward FLAKY_FrameBackForward
+#endif
 TEST_F(SessionHistoryTest, FrameBackForward) {
   ASSERT_TRUE(test_server_.Start());
 
