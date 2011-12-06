@@ -310,4 +310,13 @@ void MoveMouseToCenterAndPress(GtkWidget* widget,
 }
 #endif
 
+#if defined(TOOLKIT_VIEWS)
+void RunClosureAfterAllPendingUIEvents(const base::Closure& task) {
+  // Send noop event and run task.
+  int x, y;
+  gdk_window_at_pointer(&x, &y);
+  SendMouseMoveNotifyWhenDone(x, y, task);
+}
+#endif
+
 }  // namespace ui_controls
