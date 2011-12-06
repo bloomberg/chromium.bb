@@ -60,9 +60,15 @@ class UI_EXPORT TextInputClient {
   // TEXT_INPUT_TYPE_NONE at runtime.
   virtual ui::TextInputType GetTextInputType() const = 0;
 
-  // Returns current caret (insertion point) bounds relative to the View’s
+  // Returns current caret (insertion point) bounds relative to the screen
   // coordinates. If there is selection, then the selection bounds will be
   // returned.
+  // TODO(yusukes): Currently views::NativeTextfieldViews which implements this
+  // interface returns its view's coordinates. We should to do the following:
+  // 1) Modify NativeTextfieldViews so it returns screen coordinates.
+  // 2) Remove view-to-screen coordinates conversion code in InputMethodBridge.
+  // 3) Modify InputMethodWin. It requires a rect in toplevel window's
+  //    coordinates instead of screen.
   virtual gfx::Rect GetCaretBounds() = 0;
 
   // Returns true if there is composition text.
