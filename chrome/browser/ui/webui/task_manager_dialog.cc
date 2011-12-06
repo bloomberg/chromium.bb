@@ -7,12 +7,16 @@
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -57,6 +61,21 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
       std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE {
   }
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE {
+    // If dialog's bounds are previously saved, use them.
+    if (g_browser_process->local_state()) {
+      const DictionaryValue* placement_pref =
+          g_browser_process->local_state()->GetDictionary(
+          prefs::kTaskManagerWindowPlacement);
+      int width, height;
+      if (placement_pref &&
+          placement_pref->GetInteger("width", &width) &&
+          placement_pref->GetInteger("height", &height)) {
+        size->SetSize(std::max(1, width), std::max(1, height));
+        return;
+      }
+    }
+
+    // Otherwise set default size.
     size->SetSize(640, 480);
   }
   virtual std::string GetDialogArgs() const OVERRIDE {
@@ -75,6 +94,17 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE {
     return true;
   }
+  virtual void StoreDialogSize(const gfx::Rect dialog_bounds) OVERRIDE {
+   // Store the dialog's bounds so that it can be restored with the same bounds
+   // the next time it's opened.
+   if (g_browser_process->local_state()) {
+     DictionaryPrefUpdate update(g_browser_process->local_state(),
+                                 prefs::kTaskManagerWindowPlacement);
+     DictionaryValue* placement_pref = update.Get();
+     placement_pref->SetInteger("width", dialog_bounds.width());
+     placement_pref->SetInteger("height", dialog_bounds.height());
+   }
+ }
 
  private:
   void ShowDialog(bool is_background_page_mode);

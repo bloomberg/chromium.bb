@@ -12,6 +12,7 @@
 #include "base/string16.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/rect.h"
 
 struct ContextMenuParams;
 
@@ -68,6 +69,9 @@ class HtmlDialogUIDelegate {
   // A callback to allow the delegate to inhibit context menu or show
   // customized menu.
   virtual bool HandleContextMenu(const ContextMenuParams& params);
+
+  // Stores the dialog bounds.
+  virtual void StoreDialogSize(const gfx::Rect dialog_bounds) {}
 
  protected:
   virtual ~HtmlDialogUIDelegate() {}

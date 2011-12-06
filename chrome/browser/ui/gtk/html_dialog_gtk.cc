@@ -119,8 +119,14 @@ void HtmlDialogGtk::OnDialogClosed(const std::string& json_retval) {
   if (delegate_) {
     HtmlDialogUIDelegate* dialog_delegate = delegate_;
     delegate_ = NULL;  // We will not communicate further with the delegate.
+
+    // Store the dialog bounds.
+    gfx::Rect dialog_bounds = gtk_util::GetDialogBounds(GTK_WIDGET(dialog_));
+    dialog_delegate->StoreDialogSize(dialog_bounds);
+
     dialog_delegate->OnDialogClosed(json_retval);
   }
+
   gtk_widget_destroy(dialog_);
   delete this;
 }
