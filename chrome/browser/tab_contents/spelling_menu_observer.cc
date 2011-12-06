@@ -141,9 +141,9 @@ void SpellingMenuObserver::InitMenu(const ContextMenuParams& params) {
                           l10n_util::GetStringUTF16(spelling_message));
     }
 #endif
-  }
 
-  proxy_->AddSeparator();
+    proxy_->AddSeparator();
+  }
 }
 
 bool SpellingMenuObserver::IsCommandIdSupported(int command_id) {
