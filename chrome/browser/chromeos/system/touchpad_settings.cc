@@ -31,7 +31,9 @@ void LaunchTpControl(const std::vector<std::string>& argv) {
   if (!TPCtrlExists())
     return;
 
-  base::LaunchProcess(CommandLine(argv), base::LaunchOptions(), NULL);
+  base::LaunchOptions options;
+  options.wait = true;
+  base::LaunchProcess(CommandLine(argv), options, NULL);
 }
 
 }  // namespace
