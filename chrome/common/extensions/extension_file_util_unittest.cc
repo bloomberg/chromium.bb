@@ -17,7 +17,8 @@
 
 namespace keys = extension_manifest_keys;
 
-TEST(ExtensionFileUtil, InstallUninstallGarbageCollect) {
+// http://crbug.com/106381
+TEST(ExtensionFileUtil, DISABLED_InstallUninstallGarbageCollect) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
