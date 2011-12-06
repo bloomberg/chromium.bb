@@ -35,7 +35,11 @@ class BuildAndProcessConflictSetsCommand : public ModelChangingSyncerCommand {
   BuildAndProcessConflictSetsCommand();
   virtual ~BuildAndProcessConflictSetsCommand();
 
+ protected:
   // ModelChangingSyncerCommand implementation.
+  virtual bool HasCustomGroupsToChange() const OVERRIDE;
+  virtual std::set<ModelSafeGroup> GetGroupsToChange(
+      const sessions::SyncSession& session) const OVERRIDE;
   virtual void ModelChangingExecuteImpl(
       sessions::SyncSession* session) OVERRIDE;
 

@@ -30,6 +30,16 @@ using std::vector;
 BuildAndProcessConflictSetsCommand::BuildAndProcessConflictSetsCommand() {}
 BuildAndProcessConflictSetsCommand::~BuildAndProcessConflictSetsCommand() {}
 
+bool BuildAndProcessConflictSetsCommand::HasCustomGroupsToChange() const {
+  // TODO(akalin): Set to true.
+  return false;
+}
+
+std::set<ModelSafeGroup> BuildAndProcessConflictSetsCommand::GetGroupsToChange(
+    const sessions::SyncSession& session) const {
+  return session.GetEnabledGroupsWithConflicts();
+}
+
 void BuildAndProcessConflictSetsCommand::ModelChangingExecuteImpl(
     SyncSession* session) {
   session->mutable_status_controller()->update_conflict_sets_built(

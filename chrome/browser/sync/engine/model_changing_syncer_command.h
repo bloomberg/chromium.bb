@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/syncer_command.h"
 #include "chrome/browser/sync/util/unrecoverable_error_info.h"
 
@@ -40,6 +41,31 @@ class ModelChangingSyncerCommand : public SyncerCommand {
     ModelChangingExecuteImpl(work_session_);
     return UnrecoverableErrorInfo();
   }
+
+  std::set<ModelSafeGroup> GetGroupsToChangeForTest(
+      const sessions::SyncSession& session) const {
+    return GetGroupsToChange(session);
+  }
+
+ protected:
+  // Hack to track down which subclass triggers the perf regression.
+  // (See comments in http://codereview.chromium.org/8637006/ for
+  // details.)  If this returns false (the default),
+  // GetGroupsToChange() is not used and session.GetEnabledGroups()
+  // is used instead.
+  //
+  // TODO(akalin): Remove this when we track down the perf regression.
+  virtual bool HasCustomGroupsToChange() const = 0;
+
+  // This should return the set of groups in |session| that need to be
+  // changed.  The returned set should be a subset of
+  // session.GetEnabledGroups().  Subclasses can guarantee this either
+  // by calling one of the session.GetEnabledGroups*() functions and
+  // filtering that, or using GetGroupForModelType() (which handles
+  // top-level/unspecified nodes) to project from model types to
+  // groups.
+  virtual std::set<ModelSafeGroup> GetGroupsToChange(
+      const sessions::SyncSession& session) const = 0;
 
   // Sometimes, a command has work to do that needs to touch global state
   // belonging to multiple ModelSafeGroups, but in a way that is known to be
