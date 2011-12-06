@@ -737,7 +737,14 @@ void DownloadProtectionService::CheckDownloadUrl(
 
 bool DownloadProtectionService::IsSupportedFileType(
     const FilePath& filename) const {
+  // Currently, the UI only works on Windows.  On Linux and Mac we still
+  // want to show the dangerous file type warning if the file is possibly
+  // dangerous which means we have to always return false here.
+#if defined(OS_WIN)
   return IsBinaryFile(filename);
+#else
+  return false;
+#endif
 }
 
 void DownloadProtectionService::CancelPendingRequests() {
