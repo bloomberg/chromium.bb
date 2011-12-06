@@ -80,7 +80,9 @@
         '-fno-pie', '-fno-PIE',
       ],
       'cflags!': [
+        # TODO(glider): -fasan is deprecated.
         '-fasan',
+        '-faddress-sanitizer',
         '-w',
       ],
       'conditions': [
