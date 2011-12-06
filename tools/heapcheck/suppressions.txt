@@ -1786,9 +1786,16 @@
    fun:AccessibilityEventRouterViewsTest_TestFocusNotification_Test::TestBody
 }
 {
-   bug_106529
+   bug_106529_a
    Heapcheck:Leak
    ...
    fun:extensions::SocketController::ConnectUdp
+   fun:extensions::SocketApiControllerTest_TestSocketControllerLifetime_Test::TestBody
+}
+{
+   bug_106529_b
+   Heapcheck:Leak
+   ...
+   fun:extensions::SocketController::CreateUdp
    fun:extensions::SocketApiControllerTest_TestSocketControllerLifetime_Test::TestBody
 }
