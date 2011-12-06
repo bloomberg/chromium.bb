@@ -293,7 +293,7 @@ void ExtensionDispatcher::DidCreateScriptContext(
     extension_id = user_script_slave_->GetExtensionIdForIsolatedWorld(world_id);
   } else {
     GURL frame_url = UserScriptSlave::GetDataSourceURLForFrame(frame);
-    extension_id = extensions_.GetIDByURL(
+    extension_id = extensions_.GetIdByURL(
       ExtensionURLInfo(frame->document().securityOrigin(), frame_url));
   }
 

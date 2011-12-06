@@ -194,12 +194,15 @@ void UnpackedInstaller::OnLoaded(
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!service_weak_.get())
     return;
-  const ExtensionSet* disabled_extensions =
+  const ExtensionList* disabled_extensions =
       service_weak_->disabled_extensions();
   if (service_weak_->show_extensions_prompts() &&
       prompt_for_plugins_ &&
       !extension->plugins().empty() &&
-      disabled_extensions->Contains(extension->id())) {
+      std::find(disabled_extensions->begin(),
+                disabled_extensions->end(),
+                extension) !=
+      disabled_extensions->end()) {
     SimpleExtensionLoadPrompt* prompt = new SimpleExtensionLoadPrompt(
         service_weak_->profile(),
         service_weak_,

@@ -11,7 +11,6 @@
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,17 +21,37 @@ using webkit_glue::WebIntentServiceData;
 class MockExtensionService: public TestExtensionService {
  public:
   virtual ~MockExtensionService() {}
-  MOCK_CONST_METHOD0(extensions, const ExtensionSet*());
+  MOCK_CONST_METHOD0(extensions, const ExtensionList*());
 };
+
+// TODO(groby): Unify loading functions with extension_manifest_unittest code.
+DictionaryValue* LoadManifestFile(const std::string& filename,
+                                  std::string* error) {
+  FilePath path;
+  PathService::Get(chrome::DIR_TEST_DATA, &path);
+  path = path.AppendASCII("extensions")
+      .AppendASCII("manifest_tests")
+      .AppendASCII(filename.c_str());
+  EXPECT_TRUE(file_util::PathExists(path));
+
+  JSONFileValueSerializer serializer(path);
+  return static_cast<DictionaryValue*>(serializer.Deserialize(NULL, error));
+}
 
 namespace {
 
-// TODO(groby): Unify loading functions with extension_manifest_unittest code.
-DictionaryValue* LoadManifestFile(const FilePath& path,
-                                  std::string* error) {
-  EXPECT_TRUE(file_util::PathExists(path));
-  JSONFileValueSerializer serializer(path);
-  return static_cast<DictionaryValue*>(serializer.Deserialize(NULL, error));
+scoped_refptr<Extension> LoadExtensionWithLocation(
+    DictionaryValue* value,
+    Extension::Location location,
+    bool strict_error_checks,
+    std::string* error) {
+  FilePath path;
+  PathService::Get(chrome::DIR_TEST_DATA, &path);
+  path = path.AppendASCII("extensions").AppendASCII("manifest_tests");
+  int flags = Extension::NO_FLAGS;
+  if (strict_error_checks)
+    flags |= Extension::STRICT_ERROR_CHECKS;
+  return Extension::Create(path.DirName(), location, *value, flags, error);
 }
 
 scoped_refptr<Extension> LoadExtensionWithLocation(
@@ -40,23 +59,11 @@ scoped_refptr<Extension> LoadExtensionWithLocation(
     Extension::Location location,
     bool strict_error_checks,
     std::string* error) {
-  FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
-  path = path.AppendASCII("extensions")
-      .AppendASCII("manifest_tests")
-      .AppendASCII(name.c_str());
-  scoped_ptr<DictionaryValue> value(LoadManifestFile(path, error));
+  scoped_ptr<DictionaryValue> value(LoadManifestFile(name, error));
   if (!value.get())
     return NULL;
-  int flags = Extension::NO_FLAGS;
-  if (strict_error_checks)
-    flags |= Extension::STRICT_ERROR_CHECKS;
-  return Extension::CreateWithId(path.DirName(),
-                                 location,
-                                 *value,
-                                 flags,
-                                 Extension::GenerateIdForPath(path),
-                                 error);
+  return LoadExtensionWithLocation(value.get(), location,
+                                   strict_error_checks, error);
 }
 
 scoped_refptr<Extension> LoadExtension(const std::string& name,
@@ -107,7 +114,7 @@ class WebIntentsRegistryTest : public testing::Test {
   content::TestBrowserThread db_thread_;
   scoped_refptr<WebDataService> wds_;
   MockExtensionService extension_service_;
-  ExtensionSet extensions_;
+  ExtensionList extensions_;
   WebIntentsRegistry registry_;
   ScopedTempDir temp_dir_;
 };
@@ -206,9 +213,8 @@ TEST_F(WebIntentsRegistryTest, GetAllIntents) {
 }
 
 TEST_F(WebIntentsRegistryTest, GetExtensionIntents) {
-  extensions_.Insert(LoadAndExpectSuccess("intent_valid.json"));
-  extensions_.Insert(LoadAndExpectSuccess("intent_valid_2.json"));
-  ASSERT_EQ(2U, extensions_.size());
+  extensions_.push_back(LoadAndExpectSuccess("intent_valid.json"));
+  extensions_.push_back(LoadAndExpectSuccess("intent_valid_2.json"));
 
   TestConsumer consumer;
   consumer.expected_id_ = registry_.GetAllIntentProviders(&consumer);
@@ -217,9 +223,8 @@ TEST_F(WebIntentsRegistryTest, GetExtensionIntents) {
 }
 
 TEST_F(WebIntentsRegistryTest, GetSomeExtensionIntents) {
-  extensions_.Insert(LoadAndExpectSuccess("intent_valid.json"));
-  extensions_.Insert(LoadAndExpectSuccess("intent_valid_2.json"));
-  ASSERT_EQ(2U, extensions_.size());
+  extensions_.push_back(LoadAndExpectSuccess("intent_valid.json"));
+  extensions_.push_back(LoadAndExpectSuccess("intent_valid_2.json"));
 
   TestConsumer consumer;
   consumer.expected_id_ = registry_.GetIntentProviders(
@@ -230,9 +235,8 @@ TEST_F(WebIntentsRegistryTest, GetSomeExtensionIntents) {
 }
 
 TEST_F(WebIntentsRegistryTest, GetIntentsFromMixedSources) {
-  extensions_.Insert(LoadAndExpectSuccess("intent_valid.json"));
-  extensions_.Insert(LoadAndExpectSuccess("intent_valid_2.json"));
-  ASSERT_EQ(2U, extensions_.size());
+  extensions_.push_back(LoadAndExpectSuccess("intent_valid.json"));
+  extensions_.push_back(LoadAndExpectSuccess("intent_valid_2.json"));
 
   webkit_glue::WebIntentServiceData service;
   service.service_url = GURL("http://somewhere.com/intent/edit.html");

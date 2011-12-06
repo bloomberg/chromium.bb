@@ -6,9 +6,9 @@
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_SET_H_
 #pragma once
 
-#include <iterator>
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -44,39 +44,17 @@ class ExtensionSet {
  public:
   typedef std::pair<FilePath, std::string> ExtensionPathAndDefaultLocale;
   typedef std::map<std::string, scoped_refptr<const Extension> > ExtensionMap;
-
-  // Iteration over the values of the map (given that it's an ExtensionSet,
-  // it should iterate like a set iterator).
-  class const_iterator :
-      public std::iterator<std::input_iterator_tag,
-                           scoped_refptr<const Extension> > {
-   public:
-    const_iterator() {}
-    explicit const_iterator(ExtensionMap::const_iterator it) :
-        it_(it) {}
-    const_iterator& operator++() {
-      ++it_;
-      return *this;
-    }
-    const scoped_refptr<const Extension> operator*() {
-      return it_->second;
-    }
-    bool operator!=(const const_iterator& other) { return it_ != other.it_; }
-    bool operator==(const const_iterator& other) { return it_ == other.it_; }
-
-   private:
-    ExtensionMap::const_iterator it_;
-  };
+  typedef ExtensionMap::const_iterator const_iterator;
 
   ExtensionSet();
   ~ExtensionSet();
 
+  // Gets the number of extensions contained.
   size_t size() const;
-  bool is_empty() const;
 
   // Iteration support.
-  const_iterator begin() const { return const_iterator(extensions_.begin()); }
-  const_iterator end() const { return const_iterator(extensions_.end()); }
+  const_iterator begin() const { return extensions_.begin(); }
+  const_iterator end() const { return extensions_.end(); }
 
   // Returns true if the set contains the specified extension.
   bool Contains(const std::string& id) const;
@@ -88,12 +66,9 @@ class ExtensionSet {
   // Removes the specified extension.
   void Remove(const std::string& id);
 
-  // Removes all extensions.
-  void Clear();
-
   // Returns the extension ID, or empty if none. This includes web URLs that
   // are part of an extension's web extent.
-  std::string GetIDByURL(const ExtensionURLInfo& info) const;
+  std::string GetIdByURL(const ExtensionURLInfo& info) const;
 
   // Returns the Extension, or NULL if none.  This includes web URLs that are
   // part of an extension's web extent.

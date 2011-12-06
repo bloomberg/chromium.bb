@@ -98,9 +98,9 @@ void ExtensionAppProvider::RefreshAppList() {
   ExtensionService* extension_service = profile_->GetExtensionService();
   if (!extension_service)
     return;  // During testing, there is no extension service.
-  const ExtensionSet* extensions = extension_service->extensions();
+  const ExtensionList* extensions = extension_service->extensions();
   extension_apps_.clear();
-  for (ExtensionSet::const_iterator app = extensions->begin();
+  for (ExtensionList::const_iterator app = extensions->begin();
        app != extensions->end(); ++app) {
     if ((*app)->is_app() && (*app)->GetFullLaunchURL().is_valid()) {
       if (profile_->IsOffTheRecord() &&

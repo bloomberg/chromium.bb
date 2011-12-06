@@ -156,9 +156,9 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
   // Returns a pointer to the currently loaded extension with |name|, or null
   // if not found.
   const Extension* GetExtensionNamed(std::string name) {
-    const ExtensionSet* extensions =
+    const ExtensionList* extensions =
         browser()->profile()->GetExtensionService()->extensions();
-    ExtensionSet::const_iterator i;
+    ExtensionList::const_iterator i;
     for (i = extensions->begin(); i != extensions->end(); ++i) {
       if ((*i)->name() == name) {
         return *i;

@@ -9,7 +9,7 @@
 
 TestExtensionService::~TestExtensionService() {}
 
-const ExtensionSet* TestExtensionService::extensions() const {
+const ExtensionList* TestExtensionService::extensions() const {
   ADD_FAILURE();
   return NULL;
 }

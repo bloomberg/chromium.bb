@@ -1697,9 +1697,9 @@ void SendExtensionWebRequestStatusToHost(content::RenderProcessHost* host) {
   bool adblock = false;
   bool adblock_plus = false;
   bool other = false;
-  const ExtensionSet* extensions =
+  const ExtensionList* extensions =
       profile->GetExtensionService()->extensions();
-  for (ExtensionSet::const_iterator it = extensions->begin();
+  for (ExtensionList::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
     if (profile->GetExtensionService()->HasUsedWebRequest(*it)) {
       if ((*it)->name().find("Adblock Plus") != std::string::npos) {

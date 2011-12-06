@@ -138,8 +138,8 @@ class UserScriptListenerTest
   }
 
   void UnloadTestExtension() {
-    ASSERT_FALSE(service_->extensions()->is_empty());
-    service_->UnloadExtension((*service_->extensions()->begin())->id(),
+    ASSERT_FALSE(service_->extensions()->empty());
+    service_->UnloadExtension(service_->extensions()->at(0)->id(),
                               extension_misc::UNLOAD_REASON_DISABLE);
   }
 

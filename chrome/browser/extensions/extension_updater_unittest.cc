@@ -153,10 +153,16 @@ class ServiceForManifestTests : public MockService {
 
   virtual const Extension* GetExtensionById(
       const std::string& id, bool include_disabled) const OVERRIDE {
-    return extensions_.GetByID(id);
+    for (ExtensionList::const_iterator iter = extensions_.begin();
+        iter != extensions_.end(); ++iter) {
+      if ((*iter)->id() == id) {
+        return *iter;
+      }
+    }
+    return NULL;
   }
 
-  virtual const ExtensionSet* extensions() const OVERRIDE {
+  virtual const ExtensionList* extensions() const OVERRIDE {
     return &extensions_;
   }
 
@@ -165,14 +171,11 @@ class ServiceForManifestTests : public MockService {
   }
 
   void set_extensions(ExtensionList extensions) {
-    for (ExtensionList::const_iterator it = extensions.begin();
-         it != extensions.end(); ++it) {
-      extensions_.Insert(*it);
-    }
+    extensions_ = extensions;
   }
 
  private:
-  ExtensionSet extensions_;
+  ExtensionList extensions_;
 };
 
 class ServiceForDownloadTests : public MockService {

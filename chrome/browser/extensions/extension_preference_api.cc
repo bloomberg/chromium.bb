@@ -309,8 +309,8 @@ void ExtensionPreferenceEventRouter::OnPrefChanged(
   ExtensionEventRouter* router = profile_->GetExtensionEventRouter();
   if (!router || !router->HasEventListener(event_name))
     return;
-  const ExtensionSet* extensions = extension_service->extensions();
-  for (ExtensionSet::const_iterator it = extensions->begin();
+  const ExtensionList* extensions = extension_service->extensions();
+  for (ExtensionList::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
     std::string extension_id = (*it)->id();
     // TODO(bauerb): Only iterate over registered event listeners.

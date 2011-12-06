@@ -150,8 +150,8 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
 
   ExtensionWarningSet* warnings = extension_service_->extension_warnings();
 
-  const ExtensionSet* extensions = extension_service_->extensions();
-  for (ExtensionSet::const_iterator extension = extensions->begin();
+  const ExtensionList* extensions = extension_service_->extensions();
+  for (ExtensionList::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
     if (ShouldShowExtension(*extension)) {
       extensions_list->Append(CreateExtensionDetailValue(
@@ -163,7 +163,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
     }
   }
   extensions = extension_service_->disabled_extensions();
-  for (ExtensionSet::const_iterator extension = extensions->begin();
+  for (ExtensionList::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
     if (ShouldShowExtension(*extension)) {
       extensions_list->Append(CreateExtensionDetailValue(
@@ -176,7 +176,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   }
   extensions = extension_service_->terminated_extensions();
   std::vector<ExtensionPage> empty_pages;
-  for (ExtensionSet::const_iterator extension = extensions->begin();
+  for (ExtensionList::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
     if (ShouldShowExtension(*extension)) {
       extensions_list->Append(CreateExtensionDetailValue(

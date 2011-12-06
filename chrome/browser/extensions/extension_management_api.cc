@@ -123,10 +123,10 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
 }
 
 static void AddExtensionInfo(ListValue* list,
-                             const ExtensionSet& extensions,
+                             const ExtensionList& extensions,
                              bool enabled,
                              ExtensionPrefs* prefs) {
-  for (ExtensionSet::const_iterator i = extensions.begin();
+  for (ExtensionList::const_iterator i = extensions.begin();
        i != extensions.end(); ++i) {
     const Extension& extension = **i;
 

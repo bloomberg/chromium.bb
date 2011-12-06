@@ -81,9 +81,9 @@ void WebIntentsRegistry::OnWebDataServiceRequestDone(
 
   // Loop over all intents in all extensions, collect ones matching the query.
   if (extension_service_) {
-    const ExtensionSet* extensions = extension_service_->extensions();
+    const ExtensionList* extensions = extension_service_->extensions();
     if (extensions) {
-      for (ExtensionSet::const_iterator i(extensions->begin());
+      for (ExtensionList::const_iterator i(extensions->begin());
            i != extensions->end(); ++i) {
         const IntentServiceList& intents((*i)->intents_services());
         for (IntentServiceList::const_iterator j(intents.begin());

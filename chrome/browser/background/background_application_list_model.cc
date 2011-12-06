@@ -71,9 +71,9 @@ class BackgroundApplicationListModel::Application
 namespace {
 void GetServiceApplications(ExtensionService* service,
                             ExtensionList* applications_result) {
-  const ExtensionSet* extensions = service->extensions();
+  const ExtensionList* extensions = service->extensions();
 
-  for (ExtensionSet::const_iterator cursor = extensions->begin();
+  for (ExtensionList::const_iterator cursor = extensions->begin();
        cursor != extensions->end();
        ++cursor) {
     const Extension* extension = *cursor;
@@ -84,7 +84,7 @@ void GetServiceApplications(ExtensionService* service,
   // Walk the list of terminated extensions also (just because an extension
   // crashed doesn't mean we should ignore it).
   extensions = service->terminated_extensions();
-  for (ExtensionSet::const_iterator cursor = extensions->begin();
+  for (ExtensionList::const_iterator cursor = extensions->begin();
        cursor != extensions->end();
        ++cursor) {
     const Extension* extension = *cursor;

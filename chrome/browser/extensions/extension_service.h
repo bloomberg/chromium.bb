@@ -41,7 +41,6 @@
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -87,7 +86,7 @@ class ExtensionServiceInterface : public SyncableService {
   typedef bool (*ExtensionFilter)(const Extension&);
 
   virtual ~ExtensionServiceInterface() {}
-  virtual const ExtensionSet* extensions() const = 0;
+  virtual const ExtensionList* extensions() const = 0;
   virtual PendingExtensionManager* pending_extension_manager() = 0;
 
   // Install an update.  Return true if the install can be started.
@@ -193,9 +192,9 @@ class ExtensionService
   virtual ~ExtensionService();
 
   // Gets the list of currently installed extensions.
-  virtual const ExtensionSet* extensions() const OVERRIDE;
-  const ExtensionSet* disabled_extensions() const;
-  const ExtensionSet* terminated_extensions() const;
+  virtual const ExtensionList* extensions() const OVERRIDE;
+  const ExtensionList* disabled_extensions() const;
+  const ExtensionList* terminated_extensions() const;
 
   // Gets the object managing the set of pending extensions.
   virtual PendingExtensionManager* pending_extension_manager() OVERRIDE;
@@ -631,7 +630,7 @@ class ExtensionService
   // Appends sync data objects for every extension in |extensions|
   // that passes |filter|.
   void GetSyncDataListHelper(
-      const ExtensionSet& extensions,
+      const ExtensionList& extensions,
       const SyncBundle& bundle,
       std::vector<ExtensionSyncData>* sync_data_list) const;
 
@@ -691,13 +690,16 @@ class ExtensionService
 
   // The current list of installed extensions.
   // TODO(aa): This should use chrome/common/extensions/extension_set.h.
-  ExtensionSet extensions_;
+  ExtensionList extensions_;
 
   // The list of installed extensions that have been disabled.
-  ExtensionSet disabled_extensions_;
+  ExtensionList disabled_extensions_;
 
   // The list of installed extensions that have been terminated.
-  ExtensionSet terminated_extensions_;
+  ExtensionList terminated_extensions_;
+
+  // Used to quickly check if an extension was terminated.
+  std::set<std::string> terminated_extension_ids_;
 
   // Hold the set of pending extensions.
   PendingExtensionManager pending_extension_manager_;

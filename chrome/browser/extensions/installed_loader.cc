@@ -181,8 +181,8 @@ void InstalledLoader::LoadAllExtensions() {
   int theme_count = 0;
   int page_action_count = 0;
   int browser_action_count = 0;
-  const ExtensionSet* extensions = extension_service_->extensions();
-  ExtensionSet::const_iterator ex;
+  const ExtensionList* extensions = extension_service_->extensions();
+  ExtensionList::const_iterator ex;
   for (ex = extensions->begin(); ex != extensions->end(); ++ex) {
     Extension::Location location = (*ex)->location();
     Extension::Type type = (*ex)->GetType();
@@ -246,7 +246,7 @@ void InstalledLoader::LoadAllExtensions() {
       ++browser_action_count;
 
     extension_service_->RecordPermissionMessagesHistogram(
-        *ex, "Extensions.Permissions_Load");
+        ex->get(), "Extensions.Permissions_Load");
   }
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadApp",
                            app_user_count + app_external_count);

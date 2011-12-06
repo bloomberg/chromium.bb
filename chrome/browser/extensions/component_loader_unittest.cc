@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,7 +20,7 @@ namespace {
 class MockExtensionService : public TestExtensionService {
  private:
   bool ready_;
-  ExtensionSet extension_set_;
+  ExtensionList extension_list_;
 
  public:
   MockExtensionService() : ready_(false) {
@@ -29,30 +28,37 @@ class MockExtensionService : public TestExtensionService {
 
   virtual void AddExtension(const Extension* extension) OVERRIDE {
     // ExtensionService must become the owner of the extension object.
-    extension_set_.Insert(extension);
+    extension_list_.push_back(extension);
   }
 
   virtual void UnloadExtension(
       const std::string& extension_id,
       extension_misc::UnloadedExtensionReason reason) OVERRIDE {
     // Remove the extension with the matching id.
-    extension_set_.Remove(extension_id);
+    for (ExtensionList::iterator it = extension_list_.begin();
+         it != extension_list_.end();
+         ++it) {
+      if ((*it)->id() == extension_id) {
+        extension_list_.erase(it);
+        return;
+      }
+    }
   }
 
   virtual bool is_ready() OVERRIDE {
     return ready_;
   }
 
-  virtual const ExtensionSet* extensions() const OVERRIDE {
-    return &extension_set_;
+  virtual const ExtensionList* extensions() const OVERRIDE {
+    return &extension_list_;
   }
 
   void set_ready(bool ready) {
     ready_ = ready;
   }
 
-  void clear_extensions() {
-    extension_set_.Clear();
+  void clear_extension_list() {
+    extension_list_.clear();
   }
 };
 
@@ -211,7 +217,7 @@ TEST_F(ComponentLoaderTest, LoadAll) {
   unsigned int default_count = extension_service_.extensions()->size();
 
   // Clear the list of loaded extensions, and reload with one more.
-  extension_service_.clear_extensions();
+  extension_service_.clear_extension_list();
   component_loader_.Add(manifest_contents_, extension_path_);
   component_loader_.LoadAll();
 
@@ -231,7 +237,7 @@ TEST_F(ComponentLoaderTest, EnterpriseWebStore) {
 
   // Now that the pref is set, check if it's added by default.
   extension_service_.set_ready(false);
-  extension_service_.clear_extensions();
+  extension_service_.clear_extension_list();
   component_loader_.ClearAllRegistered();
   component_loader_.AddDefaultComponentExtensions();
   component_loader_.LoadAll();
