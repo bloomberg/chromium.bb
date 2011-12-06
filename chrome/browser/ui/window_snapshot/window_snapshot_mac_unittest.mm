@@ -8,7 +8,6 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/test/mock_chrome_application_mac.h"
 #include "testing/platform_test.h"
 #include "ui/gfx/rect.h"
 

@@ -9,14 +9,14 @@
 #import "chrome/common/cloud_print/cloud_print_class_mac.h"
 #include "chrome/common/chrome_switches.h"
 
-@interface ServiceCrApplication ()
+@interface ServiceApplication ()
 - (void)setCloudPrintHandler;
 - (void)submitPrint:(NSAppleEventDescriptor*)event;
 @end
 
-@implementation ServiceCrApplication
+@implementation ServiceApplication
 
--(void)setCloudPrintHandler {
+- (void)setCloudPrintHandler {
   NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
   [em setEventHandler:self
           andSelector:@selector(submitPrint:)
@@ -90,10 +90,10 @@
 
 namespace chrome_service_application_mac {
 
-void RegisterServiceCrApp() {
-  ServiceCrApplication* var =
-      static_cast<ServiceCrApplication*>
-          ([ServiceCrApplication sharedApplication]);
+void RegisterServiceApp() {
+  ServiceApplication* var =
+      base::mac::ObjCCastStrict<ServiceApplication>(
+          [ServiceApplication sharedApplication]);
   [var setCloudPrintHandler];
 }
 

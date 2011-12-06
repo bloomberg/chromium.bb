@@ -18,6 +18,10 @@
 
 // Mainline routine for running as the service process.
 int ServiceProcessMain(const content::MainFunctionParams& parameters) {
+#if defined(OS_MACOSX)
+  chrome_service_application_mac::RegisterServiceApp();
+#endif
+
   MessageLoopForUI main_message_loop;
   main_message_loop.set_thread_name("MainThread");
   if (parameters.command_line.HasSwitch(switches::kWaitForDebugger)) {
@@ -26,10 +30,6 @@ int ServiceProcessMain(const content::MainFunctionParams& parameters) {
 
   VLOG(1) << "Service process launched: "
           << parameters.command_line.GetCommandLineString();
-
-#if defined(OS_MACOSX)
-  chrome_service_application_mac::RegisterServiceCrApp();
-#endif
 
   base::PlatformThread::SetName("CrServiceMain");
 

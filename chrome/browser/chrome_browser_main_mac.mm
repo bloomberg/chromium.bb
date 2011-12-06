@@ -71,7 +71,7 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   // CFRunLoop.
 
   // Initialize NSApplication using the custom subclass.
-  [BrowserCrApplication sharedApplication];
+  chrome_browser_application_mac::RegisterBrowserCrApp();
 
   // If ui_task is not NULL, the app is actually a browser_test, so startup is
   // handled outside of BrowserMain (which is what called this).

@@ -8,15 +8,22 @@
 
 #ifdef __OBJC__
 
-#import "content/common/chrome_application_mac.h"
+#import <AppKit/AppKit.h>
+
+#import "base/mac/scoped_sending_event.h"
+#import "base/memory/scoped_nsobject.h"
+#import "base/message_pump_mac.h"
 
 // Event hooks must implement this protocol.
 @protocol CrApplicationEventHookProtocol
 - (void)hookForEvent:(NSEvent*)theEvent;
 @end
 
-@interface BrowserCrApplication : CrApplication {
+@interface BrowserCrApplication : NSApplication<CrAppProtocol,
+                                                CrAppControlProtocol> {
  @private
+  BOOL handlingSendEvent_;
+
   // Array of objects implementing CrApplicationEventHookProtocol.
   scoped_nsobject<NSMutableArray> eventHooks_;
 }

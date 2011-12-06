@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/test/security_tests/renderer_sandbox_tests_mac.h"
-#import "content/common/chrome_application_mac.h"
 #include "content/common/sandbox_mac.h"
 #include "content/public/common/content_switches.h"
 #include "content/common/sandbox_init_mac.h"
@@ -29,9 +28,9 @@ RendererMainPlatformDelegate::~RendererMainPlatformDelegate() {
 // running a renderer needs to also be reflected in chrome_main.cc for
 // --single-process support.
 void RendererMainPlatformDelegate::PlatformInitialize() {
-  // Initialize NSApplication using the custom subclass. Without this call,
-  // drawing of native UI elements (e.g. buttons) in WebKit will explode.
-  [CrApplication sharedApplication];
+  // Initialize NSApplication up front.  Without this call, drawing of
+  // native UI elements (e.g. buttons) in WebKit will explode.
+  [NSApplication sharedApplication];
 
   // Load WebKit system interfaces.
   InitWebCoreSystemInterface();

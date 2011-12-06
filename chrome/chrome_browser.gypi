@@ -4428,9 +4428,6 @@
             '../third_party/mozilla/NSURL+Utils.m',
             '../third_party/mozilla/NSWorkspace+Utils.h',
             '../third_party/mozilla/NSWorkspace+Utils.m',
-            # Headers so that IB can find classes it needs to resolve classes
-            # in XIB files.
-            'common/chrome_application_mac.h',
           ],
           'include_dirs': [
             '../third_party/apple',

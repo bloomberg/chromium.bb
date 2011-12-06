@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <AppKit/AppKit.h>
+
 #include "base/environment.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
-#include "content/common/chrome_application_mac.h"
 #include "content/common/plugin_carbon_interpose_constants_mac.h"
 #include "content/plugin/plugin_interpose_util_mac.h"
 
@@ -44,7 +45,6 @@ void TrimInterposeEnvironment() {
 #endif
 
 void InitializeChromeApplication() {
-  [CrApplication sharedApplication];
-
+  [NSApplication sharedApplication];
   mac_plugin_interposing::SetUpCocoaInterposing();
 }

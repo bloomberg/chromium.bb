@@ -8,10 +8,10 @@
 
 #ifdef __OBJC__
 
-#import "content/common/chrome_application_mac.h"
+#import <AppKit/AppKit.h>
 
 // Top level Mac Application for the service process.
-@interface ServiceCrApplication : CrApplication
+@interface ServiceApplication : NSApplication
 
 @end
 
@@ -19,9 +19,9 @@
 
 namespace chrome_service_application_mac {
 
-// To be used to instantiate ServiceCrApplication from C++ code.
-void RegisterServiceCrApp();
+// To be used to instantiate ServiceApplication from C++ code.
+void RegisterServiceApp();
+
 }  // namespace chrome_service_application_mac
 
 #endif  // CHROME_SERVICE_CHROME_SERVICE_APPLICATION_MAC_H_
-

@@ -22,9 +22,7 @@
 #include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/gl/gl_switches.h"
 
-#if defined(OS_MACOSX)
-#include "content/common/chrome_application_mac.h"
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 #include "sandbox/src/sandbox.h"
 #endif
 
@@ -83,10 +81,6 @@ int GpuMain(const content::MainFunctionParams& parameters) {
   // content.
   if (target_services)
     target_services->LowerToken();
-#endif
-
-#if defined(OS_MACOSX)
-  chrome_application_mac::RegisterCrApp();
 #endif
 
   MessageLoop::Type message_loop_type = MessageLoop::TYPE_UI;

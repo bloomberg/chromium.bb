@@ -669,8 +669,6 @@
         'host/it2me_host_user_interface.cc',
         'host/it2me_host_user_interface.h',
         'host/simple_host_process.cc',
-        '../base/test/mock_chrome_application_mac.mm',
-        '../base/test/mock_chrome_application_mac.h',
       ],
     },  # end of target 'remoting_simple_host'
 

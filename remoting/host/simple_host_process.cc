@@ -28,7 +28,6 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/test/mock_chrome_application_mac.h"
 #include "base/threading/thread.h"
 #include "crypto/nss_util.h"
 #include "remoting/base/constants.h"
@@ -262,7 +261,6 @@ int main(int argc, char** argv) {
 #if defined(OS_MACOSX)
   // Needed so we don't leak objects when threads are created.
   base::mac::ScopedNSAutoreleasePool pool;
-  mock_cr_app::RegisterMockCrApp();
 #endif
 
   CommandLine::Init(argc, argv);

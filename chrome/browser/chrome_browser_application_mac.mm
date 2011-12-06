@@ -221,6 +221,30 @@ void SwizzleInit() {
   return self;
 }
 
+// Initialize NSApplication using the custom subclass.  Check whether NSApp
+// was already initialized using another class, because that would break
+// some things.
++ (NSApplication*)sharedApplication {
+  NSApplication* app = [super sharedApplication];
+
+  // +sharedApplication initializes the global NSApp, so if a specific
+  // NSApplication subclass is requested, require that to be the one
+  // delivered.  The practical effect is to require a consistent NSApp
+  // across the executable.
+  CHECK([NSApp isKindOfClass:self])
+      << "NSApp must be of type " << [[self className] UTF8String]
+      << ", not " << [[NSApp className] UTF8String];
+
+  // If the message loop was initialized before NSApp is setup, the
+  // message pump will be setup incorrectly.  Failing this implies
+  // that RegisterBrowserCrApp() should be called earlier.
+  CHECK(base::MessagePumpMac::UsingCrApp())
+      << "MessagePumpMac::Create() is using the wrong pump implementation"
+      << " for " << [[self className] UTF8String];
+
+  return app;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // HISTORICAL COMMENT (by viettrungluu, from
 // http://codereview.chromium.org/1520006 with mild editing):
@@ -368,6 +392,14 @@ void SwizzleInit() {
   [eventHooks_ removeObject:handler];
 }
 
+- (BOOL)isHandlingSendEvent {
+  return handlingSendEvent_;
+}
+
+- (void)setHandlingSendEvent:(BOOL)handlingSendEvent {
+  handlingSendEvent_ = handlingSendEvent;
+}
+
 - (void)sendEvent:(NSEvent*)event {
   base::mac::ScopedSendingEvent sendingEventScoper;
   for (id<CrApplicationEventHookProtocol> handler in eventHooks_.get()) {
@@ -396,7 +428,7 @@ void SwizzleInit() {
     // sidestep scopers is setjmp/longjmp (see above).  The following
     // is to "fix" this while the more fundamental concern is
     // addressed elsewhere.
-    [self clearIsHandlingSendEvent];
+    [self setHandlingSendEvent:NO];
 
     // If |ScopedNSExceptionEnabler| is used to allow exceptions, and an
     // uncaught exception is thrown, it will throw past all of the scopers.
