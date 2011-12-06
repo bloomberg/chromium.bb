@@ -354,9 +354,13 @@ nacl::string ResourceBaseUrl() {
   return base_url;
 }
 
-string_vector LinkResources(bool withGenerated) {
+string_vector LinkResources(const nacl::string& sandbox_isa,
+                            bool withGenerated) {
   string_vector results;
   // NOTE: order of items == link order.
+  if (sandbox_isa.compare("x86-64") == 0) {
+    results.push_back("libpnacl_irt_shim.a");
+  }
   results.push_back("crtbegin.o");
   if (withGenerated) {
     results.push_back(GeneratedObjectFileName());
@@ -404,6 +408,7 @@ void WINAPI DoLinkThread(void* arg) {
     flags.push_back("elf_nacl");
   } else if (sandbox_isa.compare("x86-64") == 0) {
     flags.push_back("elf64_nacl");
+    flags.push_back("-entry=_pnacl_wrapper_start");
   } else if (sandbox_isa.compare("arm") == 0) {
     flags.push_back("armelf_nacl");
   } else {
@@ -432,7 +437,7 @@ void WINAPI DoLinkThread(void* arg) {
   }
 
   //// Files.
-  string_vector files = LinkResources(true);
+  string_vector files = LinkResources(sandbox_isa, true);
   PnaclResources* resources = coordinator->resources();
   for (string_vector::iterator i = files.begin(), e = files.end();
        i != e; ++i) {
@@ -619,7 +624,7 @@ void PnaclCoordinator::BitcodeToNative(
                                     translation_unit_.get());
   resources_->AddResourceUrl(llc_url_);
   resources_->AddResourceUrl(ld_url_);
-  string_vector link_resources = LinkResources(false);
+  string_vector link_resources = LinkResources(GetSandboxISA(), false);
   for (string_vector::iterator
            i = link_resources.begin(), e = link_resources.end();
        i != e;
