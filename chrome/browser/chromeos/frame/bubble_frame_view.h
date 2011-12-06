@@ -31,8 +31,7 @@ namespace chromeos {
 class BubbleFrameView : public views::NonClientFrameView,
                         public views::ButtonListener {
  public:
-  BubbleFrameView(views::Widget* frame,
-                  views::WidgetDelegate* widget_delegate,
+  BubbleFrameView(views::WidgetDelegate* widget_delegate,
                   DialogStyle style);
   virtual ~BubbleFrameView();
 
@@ -60,9 +59,6 @@ class BubbleFrameView : public views::NonClientFrameView,
   void StopThrobber();
 
  private:
-  // The window that owns this view.
-  views::Widget* frame_;
-
   // Allows to tweak appearance of the view.
   DialogStyle style_;
 

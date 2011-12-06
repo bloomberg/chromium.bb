@@ -17,11 +17,6 @@ class ExtensionHost;
 class GURL;
 class TabContents;
 
-namespace views {
-class View;
-class Widget;
-}
-
 // Modal dialog containing contents provided by an extension.
 // Dialog is automatically centered in the browser window and has fixed size.
 // For example, used by the Chrome OS file browser.

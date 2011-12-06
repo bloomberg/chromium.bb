@@ -484,9 +484,7 @@
         'browser/chromeos/frame/bubble_frame_view.cc',
         'browser/chromeos/frame/bubble_frame_view.h',
         'browser/chromeos/frame/bubble_window.h',
-        'browser/chromeos/frame/bubble_window_gtk.cc',
-        'browser/chromeos/frame/bubble_window_style.cc',
-        'browser/chromeos/frame/bubble_window_style.h',
+        'browser/chromeos/frame/bubble_window.cc',
         'browser/chromeos/frame/layout_mode_button.cc',
         'browser/chromeos/frame/layout_mode_button.h',
         'browser/chromeos/frame/panel_browser_view.cc',
@@ -5128,7 +5126,12 @@
         # Build Aura with ChromeOS.
         ['use_aura==1 and chromeos==1', {
           'sources/': [
-            ['exclude', '^browser/chromeos/frame/'],
+            ['exclude', '^browser/chromeos/frame/panel_controller.cc'],
+            ['exclude', '^browser/chromeos/frame/panel_controller.h'],
+            ['exclude', '^browser/chromeos/frame/browser_view.cc'],
+            ['exclude', '^browser/chromeos/frame/browser_view.h'],
+            ['exclude', '^browser/chromeos/frame/panel_browser_view.cc'],
+            ['exclude', '^browser/chromeos/frame/panel_browser_view.h'],
             ['exclude', '^browser/chromeos/legacy_window_manager/wm_ipc.cc'],
             ['exclude', '^browser/chromeos/legacy_window_manager/wm_message_listener.cc'],
             ['exclude', '^browser/chromeos/login/background_view.cc'],
