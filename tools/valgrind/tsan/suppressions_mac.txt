@@ -219,3 +219,15 @@
   fun:DVSignalSync
   fun:DVDeviceTerminate
 }
+{
+  bug_106197
+  ThreadSanitizer:Race
+  ...
+  fun:__sfp
+  fun:fopen
+  fun:file_util::OpenFile
+  fun:base::SharedMemory::Create
+  fun:base::SharedMemory::CreateNamed
+  fun:base::::MultipleThreadMain::ThreadMain
+  fun:base::::ThreadFunc
+}
