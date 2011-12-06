@@ -9,7 +9,6 @@
 namespace printing {
 
 bool Image::LoadMetafile(const Metafile& metafile) {
-  NOTIMPLEMENTED();
   return false;
 }
 

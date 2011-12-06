@@ -35,8 +35,7 @@
         'emf_win.cc',
         'emf_win.h',
         'image.cc',
-        'image_aura.cc',
-        'image_cairo.cc',
+        'image_linux.cc',
         'image_mac.cc',
         'image_win.cc',
         'image.h',
@@ -56,8 +55,7 @@
         'pdf_metafile_cg_mac.h',
         'pdf_metafile_skia.h',
         'pdf_metafile_skia.cc',
-        'printed_document_aura.cc',
-        'printed_document_cairo.cc',
+        'printed_document_gtk.cc',
         'printed_document.cc',
         'printed_document.h',
         'printed_document_mac.cc',
@@ -127,12 +125,7 @@
         }],
         ['OS=="win"', {
           'conditions': [
-            ['use_aura==1', {
-              'sources!': [
-                'image_aura.cc',
-                'printed_document_aura.cc',
-              ],
-            }, {  #else: use_aura==0
+            ['use_aura==0', {
               'sources': [
                 'printing_context_win.cc',
                 'printing_context_win.h',
