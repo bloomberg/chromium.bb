@@ -254,7 +254,9 @@ def BuildScript(status, context):
       SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
             args=['medium_tests_irt'])
 
-  if context.Mac():
+  # TODO(eugenis): reenable this on clang/opt once the LLVM issue is fixed
+  # http://code.google.com/p/nativeclient/issues/detail?id=2473
+  if context.Mac() and not (context['clang'] and context['mode'] == 'opt'):
     # x86-64 is not fully supported on Mac.  Not everything works, but we
     # want to stop x86-64 sel_ldr from regressing, so do a minimal test here.
     with Step('minimal x86-64 test', status, halt_on_fail=False):
