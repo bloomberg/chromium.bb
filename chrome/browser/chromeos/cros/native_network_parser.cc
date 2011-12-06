@@ -76,12 +76,15 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
   { flimflam::kImeiProperty, PROPERTY_INDEX_IMEI },
   { flimflam::kImsiProperty, PROPERTY_INDEX_IMSI },
   { flimflam::kIsActiveProperty, PROPERTY_INDEX_IS_ACTIVE },
+  { flimflam::kL2tpIpsecAuthenticationType,
+    PROPERTY_INDEX_IPSEC_AUTHENTICATIONTYPE },
   { flimflam::kL2tpIpsecCaCertNssProperty,
     PROPERTY_INDEX_L2TPIPSEC_CA_CERT_NSS },
   { flimflam::kL2tpIpsecClientCertIdProperty,
     PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_ID },
   { flimflam::kL2tpIpsecClientCertSlotProp,
     PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_SLOT },
+  { flimflam::kL2tpIpsecIkeVersion, PROPERTY_INDEX_IPSEC_IKEVERSION },
   { flimflam::kL2tpIpsecPinProperty, PROPERTY_INDEX_L2TPIPSEC_PIN },
   { flimflam::kL2tpIpsecPskProperty, PROPERTY_INDEX_L2TPIPSEC_PSK },
   { flimflam::kL2tpIpsecPasswordProperty, PROPERTY_INDEX_L2TPIPSEC_PASSWORD },
@@ -108,7 +111,9 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
   { flimflam::kPriorityProperty, PROPERTY_INDEX_PRIORITY },
   { flimflam::kProfileProperty, PROPERTY_INDEX_PROFILE },
   { flimflam::kProfilesProperty, PROPERTY_INDEX_PROFILES },
+  { flimflam::kProviderHostProperty, PROPERTY_INDEX_PROVIDER_HOST },
   { flimflam::kProviderProperty, PROPERTY_INDEX_PROVIDER },
+  { flimflam::kProviderTypeProperty, PROPERTY_INDEX_PROVIDER_TYPE },
   { flimflam::kProxyConfigProperty, PROPERTY_INDEX_PROXY_CONFIG },
   { flimflam::kRoamingStateProperty, PROPERTY_INDEX_ROAMING_STATE },
   { flimflam::kSIMLockStatusProperty, PROPERTY_INDEX_SIM_LOCK },
@@ -132,7 +137,51 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
   { flimflam::kOpenVPNPasswordProperty, PROPERTY_INDEX_OPEN_VPN_PASSWORD },
   { flimflam::kOpenVPNClientCertIdProperty,
     PROPERTY_INDEX_OPEN_VPN_CLIENT_CERT_ID },
+  { flimflam::kOpenVPNAuthProperty, PROPERTY_INDEX_OPEN_VPN_AUTH },
+  { flimflam::kOpenVPNAuthRetryProperty, PROPERTY_INDEX_OPEN_VPN_AUTHRETRY },
+  { flimflam::kOpenVPNAuthNoCacheProperty,
+    PROPERTY_INDEX_OPEN_VPN_AUTHNOCACHE },
+  { flimflam::kOpenVPNAuthUserPassProperty,
+    PROPERTY_INDEX_OPEN_VPN_AUTHUSERPASS },
+  { flimflam::kOpenVPNCaCertNSSProperty, PROPERTY_INDEX_OPEN_VPN_CACERT },
+  { flimflam::kOpenVPNClientCertSlotProperty,
+    PROPERTY_INDEX_OPEN_VPN_CLIENT_CERT_SLOT },
+  { flimflam::kOpenVPNCipherProperty, PROPERTY_INDEX_OPEN_VPN_CIPHER },
+  { flimflam::kOpenVPNCompLZOProperty, PROPERTY_INDEX_OPEN_VPN_COMPLZO },
+  { flimflam::kOpenVPNCompNoAdaptProperty,
+    PROPERTY_INDEX_OPEN_VPN_COMPNOADAPT },
+  { flimflam::kOpenVPNKeyDirectionProperty,
+    PROPERTY_INDEX_OPEN_VPN_KEYDIRECTION },
+  { flimflam::kOpenVPNMgmtEnableProperty,
+    PROPERTY_INDEX_OPEN_VPN_MGMT_ENABLE },
+  { flimflam::kOpenVPNNsCertTypeProperty, PROPERTY_INDEX_OPEN_VPN_NSCERTTYPE },
+  { flimflam::kOpenVPNOTPProperty, PROPERTY_INDEX_OPEN_VPN_OTP },
+  { flimflam::kOpenVPNPasswordProperty, PROPERTY_INDEX_OPEN_VPN_PASSWORD },
+  { flimflam::kOpenVPNPinProperty, PROPERTY_INDEX_OPEN_VPN_PIN },
+  { flimflam::kOpenVPNPortProperty, PROPERTY_INDEX_OPEN_VPN_PORT },
+  { flimflam::kOpenVPNProtoProperty, PROPERTY_INDEX_OPEN_VPN_PROTO },
+  { flimflam::kOpenVPNProviderProperty,
+    PROPERTY_INDEX_OPEN_VPN_PKCS11_PROVIDER },
+  { flimflam::kOpenVPNPushPeerInfoProperty,
+    PROPERTY_INDEX_OPEN_VPN_PUSHPEERINFO },
+  { flimflam::kOpenVPNRemoteCertEKUProperty,
+    PROPERTY_INDEX_OPEN_VPN_REMOTECERTEKU },
+  { flimflam::kOpenVPNRemoteCertKUProperty,
+    PROPERTY_INDEX_OPEN_VPN_REMOTECERTKU },
+  { flimflam::kOpenVPNRemoteCertTLSProperty,
+    PROPERTY_INDEX_OPEN_VPN_REMOTECERTTLS },
+  { flimflam::kOpenVPNRenegSecProperty, PROPERTY_INDEX_OPEN_VPN_RENEGSEC },
+  { flimflam::kOpenVPNServerPollTimeoutProperty,
+    PROPERTY_INDEX_OPEN_VPN_SERVERPOLLTIMEOUT },
+  { flimflam::kOpenVPNShaperProperty, PROPERTY_INDEX_OPEN_VPN_SHAPER },
+  { flimflam::kOpenVPNStaticChallengeProperty,
+    PROPERTY_INDEX_OPEN_VPN_STATICCHALLENGE },
+  { flimflam::kOpenVPNTLSAuthContentsProperty,
+    PROPERTY_INDEX_OPEN_VPN_TLSAUTHCONTENTS },
+  { flimflam::kOpenVPNTLSRemoteProperty, PROPERTY_INDEX_OPEN_VPN_TLSREMOTE },
+  { flimflam::kOpenVPNUserProperty, PROPERTY_INDEX_OPEN_VPN_USER },
   { flimflam::kPaymentPortalProperty, PROPERTY_INDEX_OLP },
+  { flimflam::kVPNDomainProperty, PROPERTY_INDEX_VPN_DOMAIN },
   { flimflam::kWifiAuthMode, PROPERTY_INDEX_WIFI_AUTH_MODE },
   { flimflam::kWifiFrequency, PROPERTY_INDEX_WIFI_FREQUENCY },
   { flimflam::kWifiHexSsid, PROPERTY_INDEX_WIFI_HEX_SSID },
@@ -173,6 +222,11 @@ EnumMapper<EAPPhase2Auth>::Pair network_eap_auth_table[] = {
   { flimflam::kEapPhase2AuthTTLSMSCHAP, EAP_PHASE_2_AUTH_MSCHAP },
   { flimflam::kEapPhase2AuthTTLSPAP, EAP_PHASE_2_AUTH_PAP },
   { flimflam::kEapPhase2AuthTTLSCHAP, EAP_PHASE_2_AUTH_CHAP },
+};
+
+EnumMapper<ProviderType>::Pair provider_type_table[] = {
+  { flimflam::kProviderL2tpIpsec, PROVIDER_TYPE_L2TP_IPSEC_PSK },
+  { flimflam::kProviderOpenVpn, PROVIDER_TYPE_OPEN_VPN },
 };
 
 // Serve the singleton mapper instance.
@@ -1189,7 +1243,8 @@ bool NativeVirtualNetworkParser::ParseProviderValue(PropertyIndex index,
       network->set_provider_type(ParseProviderType(provider_type_string));
       return true;
     }
-    case PROPERTY_INDEX_L2TPIPSEC_CA_CERT_NSS: {
+    case PROPERTY_INDEX_L2TPIPSEC_CA_CERT_NSS:
+    case PROPERTY_INDEX_OPEN_VPN_CACERT: {
       std::string ca_cert_nss;
       if (!value.GetAsString(&ca_cert_nss))
         break;
@@ -1240,15 +1295,18 @@ bool NativeVirtualNetworkParser::ParseProviderValue(PropertyIndex index,
   return false;
 }
 
+// static
+const EnumMapper<ProviderType>*
+    NativeVirtualNetworkParser::provider_type_mapper() {
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<ProviderType>, parser,
+      (provider_type_table, arraysize(provider_type_table),
+       PROVIDER_TYPE_MAX));
+  return &parser;
+}
+
 ProviderType NativeVirtualNetworkParser::ParseProviderType(
     const std::string& type) {
-  static EnumMapper<ProviderType>::Pair table[] = {
-    { flimflam::kProviderL2tpIpsec, PROVIDER_TYPE_L2TP_IPSEC_PSK },
-    { flimflam::kProviderOpenVpn, PROVIDER_TYPE_OPEN_VPN },
-  };
-  CR_DEFINE_STATIC_LOCAL(EnumMapper<ProviderType>, parser,
-      (table, arraysize(table), PROVIDER_TYPE_MAX));
-  return parser.Get(type);
+  return provider_type_mapper()->Get(type);
 }
 
 }  // namespace chromeos

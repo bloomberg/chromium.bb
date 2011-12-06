@@ -324,10 +324,12 @@ GHashTable* ConvertDictionaryValueToGValueMap(const DictionaryValue* dict) {
        it != dict->end_keys(); ++it) {
     std::string key = *it;
     Value* val = NULL;
-    if (dict->Get(key, &val)) {
+    if (dict->GetWithoutPathExpansion(key, &val)) {
       g_hash_table_insert(ghash,
                           g_strdup(const_cast<char*>(key.c_str())),
                           ConvertValueToGValue(val));
+    } else {
+      VLOG(2) << "Could not insert key " << key << " into hash";
     }
   }
   return ghash;
@@ -420,6 +422,16 @@ void Network::UpdatePropertyMap(PropertyIndex index, const base::Value& value) {
     VLOG(2) << "Updated property map on network: "
             << unique_id() << "[" << index << "] = " << value_json;
   }
+}
+
+bool Network::GetProperty(PropertyIndex index,
+                          const base::Value** value) const {
+  PropertyMap::const_iterator i = property_map_.find(index);
+  if (i == property_map_.end())
+    return false;
+  if (value != NULL)
+    *value = i->second;
+  return true;
 }
 
 void Network::SetState(ConnectionState new_state) {
@@ -807,6 +819,7 @@ void VirtualNetwork::SetOpenVPNCredentials(
     const std::string& username,
     const std::string& user_passphrase,
     const std::string& otp) {
+  // TODO(kmixter): Are we missing setting the CaCert property?
   SetStringProperty(flimflam::kOpenVPNClientCertIdProperty,
                     client_cert_id, &client_cert_id_);
   SetStringProperty(flimflam::kOpenVPNUserProperty, username, &username_);
@@ -2836,7 +2849,7 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
     // Parse Open Network Configuration blob into a temporary Network object.
     scoped_ptr<Network> network(parser.ParseNetwork(i));
     if (!network.get()) {
-      DLOG(WARNING) << "Cannot parse networks in ONC file";
+      DLOG(WARNING) << "Cannot parse network in ONC file";
       return false;
     }
 
@@ -2848,6 +2861,8 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
           NativeNetworkParser::property_mapper()->GetKey(props->first);
       if (!key.empty())
         dict.SetWithoutPathExpansion(key, props->second->DeepCopy());
+      else
+        VLOG(2) << "Property " << props->first << " will not be sent";
     }
 
     CallConfigureService(network->unique_id(), &dict);
@@ -3692,6 +3707,12 @@ void NetworkLibraryImplCros::ConfigureServiceCallback(
 void NetworkLibraryImplCros::CallConfigureService(const std::string& identifier,
                                                   const DictionaryValue* info) {
   GHashTable* ghash = ConvertDictionaryValueToGValueMap(info);
+  if (VLOG_IS_ON(2)) {
+    scoped_ptr<DictionaryValue> dict(ConvertGHashTable(ghash));
+    std::string dict_json;
+    base::JSONWriter::Write(static_cast<Value*>(dict.get()), true, &dict_json);
+    VLOG(2) << "ConfigureService will be called on:" << dict_json;
+  }
   chromeos::ConfigureService(identifier.c_str(), ghash,
                              ConfigureServiceCallback, this);
 }
