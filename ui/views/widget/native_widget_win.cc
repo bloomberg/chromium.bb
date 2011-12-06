@@ -2225,18 +2225,11 @@ void NativeWidgetWin::LockUpdates() {
   //    attempting to present a child window's backbuffer onscreen. When these
   //    two actions race with one another, the child window will either flicker
   //    or will simply stop updating entirely.
-  if (!IsAeroGlassEnabled() && ++lock_updates_count_ == 1) {
+  if (!IsAeroGlassEnabled() && ++lock_updates_count_ == 1)
     SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) & ~WS_VISIBLE);
-  }
-  // TODO(msw): Remove nested LockUpdates VLOG info for crbug.com/93530.
-  VLOG_IF(1, (lock_updates_count_ > 1)) << "Nested LockUpdates call: "
-      << lock_updates_count_ << " locks for widget " << this;
 }
 
 void NativeWidgetWin::UnlockUpdates() {
-  // TODO(msw): Remove nested LockUpdates VLOG info for crbug.com/93530.
-  VLOG_IF(1, (lock_updates_count_ > 1)) << "Nested UnlockUpdates call: "
-      << lock_updates_count_ << " locks for widget " << this;
   if (!IsAeroGlassEnabled() && --lock_updates_count_ <= 0) {
     SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) | WS_VISIBLE);
     lock_updates_count_ = 0;
