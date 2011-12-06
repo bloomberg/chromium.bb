@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_SHELF_LAYOUT_CONTROLLER_H_
-#define UI_AURA_SHELL_SHELF_LAYOUT_CONTROLLER_H_
+#ifndef UI_AURA_SHELL_SHELF_LAYOUT_MANAGER_H_
+#define UI_AURA_SHELL_SHELF_LAYOUT_MANAGER_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/aura/layout_manager.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
@@ -19,13 +20,17 @@ class Widget;
 namespace aura_shell {
 namespace internal {
 
-// ShelfLayoutController is responsible for showing and hiding the launcher and
-// status area as well as positioning them.
-class ShelfLayoutController : public ui::LayerAnimationObserver {
+// ShelfLayoutManager is a layout manager responsible for the launcher.
+// Also supports showing and hiding the launcher/status area
+// as well as positioning them.
+class ShelfLayoutManager : public aura::LayoutManager,
+                           public ui::LayerAnimationObserver {
  public:
-  ShelfLayoutController(views::Widget* launcher,
-                        views::Widget* status);
-  virtual ~ShelfLayoutController();
+  ShelfLayoutManager(views::Widget* launcher,
+                     views::Widget* status);
+  virtual ~ShelfLayoutManager();
+
+  bool in_layout() const { return in_layout_; }
 
   // Stops any animations and sets the bounds of the launcher and status
   // widgets.
@@ -33,6 +38,15 @@ class ShelfLayoutController : public ui::LayerAnimationObserver {
 
   // Sets the visbility of the shelf to |visible|.
   void SetVisible(bool visible);
+
+  // Overridden from aura::LayoutManager:
+  virtual void OnWindowResized() OVERRIDE;
+  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;
+  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE;
+  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
+                                              bool visible) OVERRIDE;
+  virtual void SetChildBounds(aura::Window* child,
+                              const gfx::Rect& requested_bounds) OVERRIDE;
 
  private:
   struct TargetBounds {
@@ -64,6 +78,10 @@ class ShelfLayoutController : public ui::LayerAnimationObserver {
   // Are we animating?
   bool animating_;
 
+  // True when inside LayoutShelf method. Used to prevent calling LayoutShelf
+  // again from SetChildBounds().
+  bool in_layout_;
+
   // Current visibility. When the visibility changes this field is reset once
   // the animation completes.
   bool visible_;
@@ -74,10 +92,10 @@ class ShelfLayoutController : public ui::LayerAnimationObserver {
   views::Widget* launcher_;
   views::Widget* status_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShelfLayoutController);
+  DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };
 
 }  // namespace internal
 }  // namespace aura_shell
 
-#endif  // UI_AURA_SHELL_SHELF_LAYOUT_CONTROLLER_H_
+#endif  // UI_AURA_SHELL_SHELF_LAYOUT_MANAGER_H_

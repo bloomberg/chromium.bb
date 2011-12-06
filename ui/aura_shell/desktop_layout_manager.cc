@@ -5,7 +5,6 @@
 #include "ui/aura_shell/desktop_layout_manager.h"
 
 #include "ui/aura/window.h"
-#include "ui/aura_shell/shelf_layout_controller.h"
 #include "ui/views/widget/widget.h"
 
 namespace aura_shell {
@@ -16,8 +15,7 @@ namespace internal {
 
 DesktopLayoutManager::DesktopLayoutManager(aura::Window* owner)
     : owner_(owner),
-      background_widget_(NULL),
-      shelf_(NULL) {
+      background_widget_(NULL) {
 }
 
 DesktopLayoutManager::~DesktopLayoutManager() {
@@ -35,9 +33,6 @@ void DesktopLayoutManager::OnWindowResized() {
     (*i)->SetBounds(fullscreen_bounds);
 
   background_widget_->SetBounds(fullscreen_bounds);
-
-  if (shelf_)
-    shelf_->LayoutShelf();
 }
 
 void DesktopLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
@@ -54,7 +49,6 @@ void DesktopLayoutManager::SetChildBounds(aura::Window* child,
                                           const gfx::Rect& requested_bounds) {
   SetChildBoundsDirect(child, requested_bounds);
 }
-
 
 }  // namespace internal
 }  // namespace aura_shell

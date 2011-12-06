@@ -7,7 +7,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/property_util.h"
-#include "ui/aura_shell/shelf_layout_controller.h"
+#include "ui/aura_shell/shelf_layout_manager.h"
 #include "ui/aura_shell/workspace/workspace.h"
 #include "ui/aura_shell/workspace/workspace_manager.h"
 #include "ui/base/ui_base_types.h"

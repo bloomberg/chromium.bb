@@ -2,37 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_DESKTOP_LAYOUT_MANAGER_H_
-#define UI_AURA_SHELL_DESKTOP_LAYOUT_MANAGER_H_
+#ifndef UI_AURA_SHELL_STATUS_AREA_LAYOUT_MANAGER_H_
+#define UI_AURA_SHELL_STATUS_AREA_LAYOUT_MANAGER_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/layout_manager.h"
 
-namespace aura {
-class Window;
-}
-namespace gfx {
-class Rect;
-}
-namespace views {
-class Widget;
-}
-
 namespace aura_shell {
 namespace internal {
 
-// A layout manager for the root window.
-// Resizes all of its immediate children to fill the bounds of the root window.
-class DesktopLayoutManager : public aura::LayoutManager {
- public:
-  explicit DesktopLayoutManager(aura::Window* owner);
-  virtual ~DesktopLayoutManager();
+class ShelfLayoutManager;
 
-  void set_background_widget(views::Widget* background_widget) {
-    background_widget_ = background_widget;
-  }
+// StatusAreaLayoutManager is a layout manager responsible for the status area.
+// In any case when status area needs relayout it redirects this call to
+// ShelfLayoutManager.
+class StatusAreaLayoutManager : public aura::LayoutManager {
+ public:
+  explicit StatusAreaLayoutManager(ShelfLayoutManager* shelf);
+  virtual ~StatusAreaLayoutManager();
 
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;
@@ -44,14 +33,20 @@ class DesktopLayoutManager : public aura::LayoutManager {
                               const gfx::Rect& requested_bounds) OVERRIDE;
 
  private:
-  aura::Window* owner_;
+  // Updates layout of the status area. Effectively calls ShelfLayoutManager
+  // to update layout of the shelf.
+  void LayoutStatusArea();
 
-  views::Widget* background_widget_;
+  // True when inside LayoutStatusArea method.
+  // Used to prevent calling itself again from SetChildBounds().
+  bool in_layout_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopLayoutManager);
+  ShelfLayoutManager* shelf_;
+
+  DISALLOW_COPY_AND_ASSIGN(StatusAreaLayoutManager);
 };
 
 }  // namespace internal
 }  // namespace aura_shell
 
-#endif  // UI_AURA_SHELL_DESKTOP_LAYOUT_MANAGER_H_
+#endif  // UI_AURA_SHELL_STATUS_AREA_LAYOUT_MANAGER_H_

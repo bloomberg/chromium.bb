@@ -35,7 +35,6 @@ namespace internal {
 class AppList;
 class DragDropController;
 class ShadowController;
-class ShelfLayoutController;
 class ShellAcceleratorFilter;
 class WorkspaceController;
 }
@@ -112,7 +111,6 @@ class AURA_SHELL_EXPORT Shell {
 
   scoped_ptr<internal::DragDropController> drag_drop_controller_;
   scoped_ptr<internal::WorkspaceController> workspace_controller_;
-  scoped_ptr<internal::ShelfLayoutController> shelf_layout_controller_;
   scoped_ptr<internal::ShadowController> shadow_controller_;
 
   // An event filter that pre-handles global accelerators.

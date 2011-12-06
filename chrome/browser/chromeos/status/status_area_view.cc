@@ -13,6 +13,10 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/border.h"
 
+#if defined(USE_AURA)
+#include "ui/views/widget/widget.h"
+#endif
+
 // Number of pixels to separate each icon.
 #if defined(TOUCH_UI)
 const int kSeparation = 25;
@@ -92,6 +96,10 @@ void StatusAreaView::ChildPreferredSizeChanged(View* child) {
   // BrowserView know to relayout, which will reset the bounds of this view.
   Layout();
   PreferredSizeChanged();
+#if defined(USE_AURA)
+  if (GetWidget())
+    GetWidget()->SetSize(GetPreferredSize());
+#endif
 }
 
 void StatusAreaView::MakeButtonsActive(bool active) {
