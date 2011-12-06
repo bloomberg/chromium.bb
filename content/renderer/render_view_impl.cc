@@ -776,7 +776,7 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
     WebURLRequest request(params.url);
 
     // A session history navigation should have been accompanied by state.
-    DCHECK_EQ(params.page_id, -1);
+    CHECK_EQ(params.page_id, -1);
 
     if (main_frame->isViewSourceModeEnabled())
       request.setCachePolicy(WebURLRequest::ReturnCacheDataElseLoad);
