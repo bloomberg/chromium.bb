@@ -10,6 +10,7 @@
 // contains a few HTTP return codes. Add more HTTP return codes.
 enum HTTPReturnCode {
   RC_REQUEST_OK = 200,
+  RC_REQUEST_OK_EMPTY_BODY = 204,
   RC_BAD_REQUEST = 400,
   RC_UNAUTHORIZED = 401,
   RC_FORBIDDEN = 403,
