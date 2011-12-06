@@ -23,12 +23,16 @@ class Widget;
 namespace aura_shell {
 namespace internal {
 
+class ShelfLayoutController;
+
 // A layout manager for the root window.
 // Resizes all of its immediate children to fill the bounds of the root window.
 class DesktopLayoutManager : public aura::LayoutManager {
  public:
   explicit DesktopLayoutManager(aura::Window* owner);
   virtual ~DesktopLayoutManager();
+
+  void set_shelf(ShelfLayoutController* shelf) { shelf_ = shelf; }
 
   void set_background_widget(views::Widget* background_widget) {
     background_widget_ = background_widget;
@@ -47,6 +51,8 @@ class DesktopLayoutManager : public aura::LayoutManager {
   aura::Window* owner_;
 
   views::Widget* background_widget_;
+
+  ShelfLayoutController* shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopLayoutManager);
 };

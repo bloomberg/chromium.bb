@@ -10,7 +10,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/desktop.h"
-#include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_types.h"
 #include "ui/aura_shell/app_list.h"
@@ -22,7 +21,7 @@
 #include "ui/aura_shell/launcher/launcher.h"
 #include "ui/aura_shell/modal_container_layout_manager.h"
 #include "ui/aura_shell/shadow_controller.h"
-#include "ui/aura_shell/shelf_layout_manager.h"
+#include "ui/aura_shell/shelf_layout_controller.h"
 #include "ui/aura_shell/shell_accelerator_controller.h"
 #include "ui/aura_shell/shell_accelerator_filter.h"
 #include "ui/aura_shell/shell_delegate.h"
@@ -30,7 +29,6 @@
 #include "ui/aura_shell/shell_tooltip_manager.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/aura_shell/stacking_controller.h"
-#include "ui/aura_shell/status_area_layout_manager.h"
 #include "ui/aura_shell/toplevel_layout_manager.h"
 #include "ui/aura_shell/toplevel_window_event_filter.h"
 #include "ui/aura_shell/workspace_controller.h"
@@ -206,15 +204,9 @@ void Shell::Init() {
   if (!status_widget)
     status_widget = internal::CreateStatusArea();
 
-  internal::ShelfLayoutManager* shelf_layout_manager =
-      new internal::ShelfLayoutManager(launcher_->widget(), status_widget);
-  GetContainer(aura_shell::internal::kShellWindowId_LauncherContainer)->
-      SetLayoutManager(shelf_layout_manager);
-
-  internal::StatusAreaLayoutManager* status_area_layout_manager =
-      new internal::StatusAreaLayoutManager(shelf_layout_manager);
-  GetContainer(aura_shell::internal::kShellWindowId_StatusContainer)->
-      SetLayoutManager(status_area_layout_manager);
+  shelf_layout_controller_.reset(new internal::ShelfLayoutController(
+      launcher_->widget(), status_widget));
+  desktop_layout->set_shelf(shelf_layout_controller_.get());
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraNoShadows))
     shadow_controller_.reset(new internal::ShadowController());
@@ -225,7 +217,7 @@ void Shell::Init() {
     internal::ToplevelLayoutManager* toplevel_layout_manager =
         new internal::ToplevelLayoutManager();
     default_container->SetLayoutManager(toplevel_layout_manager);
-    toplevel_layout_manager->set_shelf(shelf_layout_manager);
+    toplevel_layout_manager->set_shelf(shelf_layout_controller_.get());
   }
 
   // Force a layout.

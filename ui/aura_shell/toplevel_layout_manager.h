@@ -17,7 +17,7 @@
 namespace aura_shell {
 namespace internal {
 
-class ShelfLayoutManager;
+class ShelfLayoutController;
 
 // ToplevelLayoutManager is the LayoutManager installed on a container that
 // hosts what the shell considers to be top-level windows. It is used if the
@@ -29,7 +29,7 @@ class AURA_SHELL_EXPORT ToplevelLayoutManager : public aura::LayoutManager,
   ToplevelLayoutManager();
   virtual ~ToplevelLayoutManager();
 
-  void set_shelf(ShelfLayoutManager* shelf) { shelf_ = shelf; }
+  void set_shelf(ShelfLayoutController* shelf) { shelf_ = shelf; }
 
   // LayoutManager overrides:
   virtual void OnWindowResized() OVERRIDE;
@@ -58,7 +58,7 @@ class AURA_SHELL_EXPORT ToplevelLayoutManager : public aura::LayoutManager,
   // Set of windows we're listening to.
   Windows windows_;
 
-  ShelfLayoutManager* shelf_;
+  ShelfLayoutController* shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(ToplevelLayoutManager);
 };
