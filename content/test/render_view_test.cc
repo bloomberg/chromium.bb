@@ -24,6 +24,19 @@
 #include "ui/base/gtk/event_synthesis_gtk.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/event.h"
+#endif
+
+#if defined(USE_AURA) && defined(USE_X11)
+#include <X11/Xlib.h>
+#include <X11/keysym.h>
+#include "ui/base/events.h"
+#include "ui/base/keycodes/keyboard_code_conversion.h"
+#include "ui/base/keycodes/keyboard_code_conversion_x.h"
+#include "ui/base/x/x11_util.h"
+#endif
+
 using WebKit::WebFrame;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
@@ -35,6 +48,89 @@ using WebKit::WebURLRequest;
 namespace {
 const int32 kOpenerId = 7;
 const int32 kRouteId = 5;
+
+#if defined(USE_AURA) && defined(USE_X11)
+// Converts ui::EventType to XKeyEvent state.
+unsigned int XKeyEventState(int flags) {
+  return
+      ((flags & ui::EF_SHIFT_DOWN) ? ShiftMask : 0) |
+      ((flags & ui::EF_CONTROL_DOWN) ? ControlMask : 0) |
+      ((flags & ui::EF_CAPS_LOCK_DOWN) ? LockMask : 0);
+}
+
+// Converts ui::EventType to XKeyEvent type.
+int XKeyEventType(ui::EventType type) {
+  switch (type) {
+    case ui::ET_KEY_PRESSED:
+      return KeyPress;
+    case ui::ET_KEY_RELEASED:
+      return KeyRelease;
+    default:
+      return 0;
+  }
+}
+
+// Converts ui::KeyboardCode to XKeyEvent keycode.
+unsigned int XKeyEventKeyCode(ui::KeyboardCode key_code,
+                              int flags,
+                              Display* display) {
+  const int keysym = ui::XKeysymForWindowsKeyCode(key_code,
+                                                  flags & ui::EF_SHIFT_DOWN);
+  // The test assumes the keycode for XK_less is equal to the one of XK_comma,
+  // but XKeysymToKeycode returns 94 for XK_less while it returns 59 for
+  // XK_comma. Here we convert the value for XK_less to the value for XK_comma.
+  return (keysym == XK_less) ? 59 : XKeysymToKeycode(display, keysym);
+}
+
+// Creates a fake XEvent for testing.
+XEvent* CreateFakeXEvent(ui::EventType type,
+                         ui::KeyboardCode key_code,
+                         int flags) {
+  Display* display = ui::GetXDisplay();
+  XKeyEvent key_event;
+  key_event.type = XKeyEventType(type);
+  key_event.serial = 0;
+  key_event.send_event = 0;
+  key_event.display = display;
+  key_event.time = 0;
+  key_event.window = 0;
+  key_event.root = 0;
+  key_event.subwindow = 0;
+  key_event.x = 0;
+  key_event.y = 0;
+  key_event.x_root = 0;
+  key_event.y_root = 0;
+  key_event.state = XKeyEventState(flags);
+  key_event.keycode = XKeyEventKeyCode(key_code, flags, display);
+  key_event.same_screen = 1;
+  XEvent* event = new XEvent;
+  event->type = key_event.type;
+  event->xkey = key_event;
+  return event;
+}
+
+// Converts MockKeyboard::Modifiers to ui::EventFlags.
+int ConvertMockKeyboardModifier(MockKeyboard::Modifiers modifiers) {
+  static struct ModifierMap {
+    MockKeyboard::Modifiers src;
+    int dst;
+  } kModifierMap[] = {
+    { MockKeyboard::LEFT_SHIFT, ui::EF_SHIFT_DOWN },
+    { MockKeyboard::RIGHT_SHIFT, ui::EF_SHIFT_DOWN },
+    { MockKeyboard::LEFT_CONTROL, ui::EF_CONTROL_DOWN },
+    { MockKeyboard::RIGHT_CONTROL, ui::EF_CONTROL_DOWN },
+    { MockKeyboard::LEFT_ALT,  ui::EF_ALT_DOWN },
+    { MockKeyboard::RIGHT_ALT, ui::EF_ALT_DOWN },
+  };
+  int flags = 0;
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kModifierMap); ++i) {
+    if (kModifierMap[i].src & modifiers) {
+      flags |= kModifierMap[i].dst;
+    }
+  }
+  return flags;
+}
+#endif
 }  // namespace
 
 namespace content {
@@ -157,11 +253,8 @@ void RenderViewTest::TearDown() {
 int RenderViewTest::SendKeyEvent(MockKeyboard::Layout layout,
                                  int key_code,
                                  MockKeyboard::Modifiers modifiers,
-                                 std::wstring* output) {
-#if defined(USE_AURA)
-  NOTIMPLEMENTED();
-  return L'\0';
-#elif defined(OS_WIN)
+                                 string16* output) {
+#if defined(OS_WIN)
   // Retrieve the Unicode character for the given tuple (keyboard-layout,
   // key-code, and modifiers).
   // Exit when a keyboard-layout driver cannot assign a Unicode character to
@@ -180,18 +273,67 @@ int RenderViewTest::SendKeyEvent(MockKeyboard::Layout layout,
   // WM_KEYDOWN and WM_KEYUP sends virtual-key codes. On the other hand,
   // WM_CHAR sends a composed Unicode character.
   MSG msg1 = { NULL, WM_KEYDOWN, key_code, 0 };
+#if defined(USE_AURA)
+  aura::KeyEvent evt1(msg1, false);
+  NativeWebKeyboardEvent keydown_event(&evt1);
+#else
   NativeWebKeyboardEvent keydown_event(msg1);
+#endif
   SendNativeKeyEvent(keydown_event);
 
   MSG msg2 = { NULL, WM_CHAR, (*output)[0], 0 };
+#if defined(USE_AURA)
+  aura::KeyEvent evt2(msg2, true);
+  NativeWebKeyboardEvent char_event(&evt2);
+#else
   NativeWebKeyboardEvent char_event(msg2);
+#endif
   SendNativeKeyEvent(char_event);
 
   MSG msg3 = { NULL, WM_KEYUP, key_code, 0 };
+#if defined(USE_AURA)
+  aura::KeyEvent evt3(msg3, false);
+  NativeWebKeyboardEvent keyup_event(&evt3);
+#else
   NativeWebKeyboardEvent keyup_event(msg3);
+#endif
   SendNativeKeyEvent(keyup_event);
 
   return length;
+#elif defined(USE_AURA) && defined(USE_X11)
+  // We ignore |layout|, which means we are only testing the layout of the
+  // current locale. TODO(mazda): fix this to respect |layout|.
+  CHECK(output);
+  const int flags = ConvertMockKeyboardModifier(modifiers);
+
+  scoped_ptr<XEvent> xevent1(CreateFakeXEvent(
+      ui::ET_KEY_PRESSED,
+      static_cast<ui::KeyboardCode>(key_code),
+      flags));
+  aura::KeyEvent event1(xevent1.get(), false);
+  NativeWebKeyboardEvent keydown_event(&event1);
+  SendNativeKeyEvent(keydown_event);
+
+  scoped_ptr<XEvent> xevent2(CreateFakeXEvent(
+      ui::ET_KEY_PRESSED,
+      static_cast<ui::KeyboardCode>(key_code),
+      flags));
+  aura::KeyEvent event2(xevent2.get(), true);
+  NativeWebKeyboardEvent char_event(&event2);
+  SendNativeKeyEvent(char_event);
+
+  scoped_ptr<XEvent> xevent3(CreateFakeXEvent(
+      ui::ET_KEY_RELEASED,
+      static_cast<ui::KeyboardCode>(key_code),
+      flags));
+  aura::KeyEvent event3(xevent3.get(), false);
+  NativeWebKeyboardEvent keyup_event(&event3);
+  SendNativeKeyEvent(keyup_event);
+
+  long c = GetCharacterFromKeyCode(static_cast<ui::KeyboardCode>(key_code),
+                                   flags);
+  output->assign(1, static_cast<char16>(c));
+  return 1;
 #elif defined(OS_LINUX)
   // We ignore |layout|, which means we are only testing the layout of the
   // current locale. TODO(estade): fix this to respect |layout|.
@@ -223,7 +365,7 @@ int RenderViewTest::SendKeyEvent(MockKeyboard::Layout layout,
     gdk_event_free(events[i]);
   }
 
-  *output = std::wstring(1, unicode_key);
+  output->assign(1, static_cast<char16>(unicode_key));
   return 1;
 #else
   NOTIMPLEMENTED();

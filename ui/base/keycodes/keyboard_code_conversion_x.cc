@@ -170,6 +170,27 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
     case XK_9:
       return static_cast<KeyboardCode>(VKEY_0 + (keysym - XK_0));
 
+    case XK_parenright:
+      return VKEY_0;
+    case XK_exclam:
+      return VKEY_1;
+    case XK_at:
+      return VKEY_2;
+    case XK_numbersign:
+      return VKEY_3;
+    case XK_dollar:
+      return VKEY_4;
+    case XK_percent:
+      return VKEY_5;
+    case XK_asciicircum:
+      return VKEY_6;
+    case XK_ampersand:
+      return VKEY_7;
+    case XK_asterisk:
+      return VKEY_8;
+    case XK_parenleft:
+      return VKEY_9;
+
     case XK_KP_0:
     case XK_KP_1:
     case XK_KP_2:

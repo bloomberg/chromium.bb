@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/string16.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/main_function_params.h"
 #include "content/renderer/mock_content_renderer_client.h"
@@ -76,7 +77,7 @@ class RenderViewTest : public testing::Test {
   int SendKeyEvent(MockKeyboard::Layout layout,
                    int key_code,
                    MockKeyboard::Modifiers key_modifiers,
-                   std::wstring* output);
+                   string16* output);
 
   // Sends one native key event over IPC.
   void SendNativeKeyEvent(const NativeWebKeyboardEvent& key_event);
