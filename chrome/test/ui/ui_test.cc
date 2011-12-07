@@ -56,9 +56,6 @@
 #include "base/win/windows_version.h"
 #endif
 
-#if defined(USE_AURA)
-#include "ui/gfx/compositor/compositor_switches.h"
-#endif
 
 using base::Time;
 using base::TimeDelta;
@@ -202,12 +199,6 @@ void UITestBase::SetLaunchSwitches() {
     launch_arguments_.AppendSwitchASCII(switches::kHomePage, homepage_);
   if (!test_name_.empty())
     launch_arguments_.AppendSwitchASCII(switches::kTestName, test_name_);
-#if defined(USE_AURA)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableTestCompositor)) {
-    launch_arguments_.AppendSwitch(switches::kTestCompositor);
-  }
-#endif
 }
 
 void UITestBase::SetUpProfile() {

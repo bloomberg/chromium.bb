@@ -21,6 +21,7 @@
         '../third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
         '../third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
         '../third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
+        '../ui/gfx/compositor/compositor.gyp:test_compositor',
         '../ui/gfx/surface/surface.gyp:surface',
         '../ui/ui.gyp:ui_test_support',
         '../webkit/support/webkit_support.gyp:appcache',
@@ -118,15 +119,6 @@
         ['use_glib == 1', {
           'dependencies': [
             '../build/linux/system.gyp:glib',
-          ],
-        }],
-        ['use_webkit_compositor==1', {
-          'dependencies': [
-            '../ui/gfx/compositor/compositor.gyp:compositor',
-          ],
-        }, {
-          'dependencies': [
-            '../ui/gfx/compositor/compositor.gyp:test_compositor',
           ],
         }],
       ],

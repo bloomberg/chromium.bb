@@ -13,14 +13,10 @@
 #include "content/test/test_content_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/gfx/test/gfx_test_utils.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
-#endif
-#if defined(USE_WEBKIT_COMPOSITOR)
-#include "ui/gfx/compositor/compositor_setup.h"
-#else
-#include "ui/gfx/test/gfx_test_utils.h"
 #endif
 
 namespace {
@@ -79,11 +75,7 @@ void ContentTestSuite::Initialize() {
   ui::RegisterPathProvider();
 
   // Mock out the compositor on platforms that use it.
-#if defined(USE_WEBKIT_COMPOSITOR)
-  ui::SetupTestCompositor();
-#else
   ui::gfx_test_utils::SetupTestCompositor();
-#endif
 
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();

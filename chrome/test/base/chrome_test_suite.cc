@@ -26,6 +26,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/gfx/test/gfx_test_utils.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -35,12 +36,6 @@
 
 #if defined(OS_POSIX)
 #include "base/shared_memory.h"
-#endif
-
-#if defined(USE_WEBKIT_COMPOSITOR)
-#include "ui/gfx/compositor/compositor_setup.h"
-#else
-#include "ui/gfx/test/gfx_test_utils.h"
 #endif
 
 namespace {
@@ -198,11 +193,7 @@ void ChromeTestSuite::Initialize() {
   ResourceBundle::AddDataPackToSharedInstance(resources_pack_path);
 
   // Mock out the compositor on platforms that use it.
-#if defined(USE_WEBKIT_COMPOSITOR)
-  ui::SetupTestCompositor();
-#else
   ui::gfx_test_utils::SetupTestCompositor();
-#endif
 
   stats_filename_ = base::StringPrintf("unit_tests-%d",
                                        base::GetCurrentProcId());
