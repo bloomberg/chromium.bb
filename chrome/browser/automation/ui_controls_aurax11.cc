@@ -90,20 +90,24 @@ bool SendKeyPress(gfx::NativeWindow window,
       window, key, control, shift, alt, command, base::Closure());
 }
 
-void SetMaskAndKeycodeThenSend(XEvent* xevent,
-                               unsigned int mask,
-                               unsigned int keycode) {
-  xevent->xkey.state |= mask;
-  xevent->xkey.keycode = keycode;
+void SetKeycodeAndSendThenMask(XEvent* xevent,
+                               KeySym keysym,
+                               unsigned int mask) {
+  xevent->xkey.keycode =
+      XKeysymToKeycode(base::MessagePumpX::GetDefaultXDisplay(),
+                       keysym);
   aura::RootWindow::GetInstance()->PostNativeEvent(xevent);
+  xevent->xkey.state |= mask;
 }
 
-void SetKeycodeAndSendThenUnmask(XEvent* xevent,
+void UnmaskAndSetKeycodeThenSend(XEvent* xevent,
                                  unsigned int mask,
-                                 unsigned int keycode) {
-  xevent->xkey.keycode = keycode;
-  aura::RootWindow::GetInstance()->PostNativeEvent(xevent);
+                                 KeySym keysym) {
   xevent->xkey.state ^= mask;
+  xevent->xkey.keycode =
+      XKeysymToKeycode(base::MessagePumpX::GetDefaultXDisplay(),
+                       keysym);
+  aura::RootWindow::GetInstance()->PostNativeEvent(xevent);
 }
 
 bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
@@ -117,11 +121,11 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
   XEvent xevent = {0};
   xevent.xkey.type = KeyPress;
   if (control)
-    SetMaskAndKeycodeThenSend(&xevent, ControlMask, XK_Control_L);
+    SetKeycodeAndSendThenMask(&xevent, XK_Control_L, ControlMask);
   if (shift)
-    SetMaskAndKeycodeThenSend(&xevent, ShiftMask, XK_Shift_L);
+    SetKeycodeAndSendThenMask(&xevent, XK_Shift_L, ShiftMask);
   if (alt)
-    SetMaskAndKeycodeThenSend(&xevent, Mod1Mask, XK_Alt_L);
+    SetKeycodeAndSendThenMask(&xevent, XK_Alt_L, Mod1Mask);
   xevent.xkey.keycode =
       XKeysymToKeycode(base::MessagePumpX::GetDefaultXDisplay(),
                        ui::XKeysymForWindowsKeyCode(key, shift));
@@ -131,11 +135,11 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
   xevent.xkey.type = KeyRelease;
   aura::RootWindow::GetInstance()->PostNativeEvent(&xevent);
   if (alt)
-    SetKeycodeAndSendThenUnmask(&xevent, Mod1Mask, XK_Alt_L);
+    UnmaskAndSetKeycodeThenSend(&xevent, Mod1Mask, XK_Alt_L);
   if (shift)
-    SetKeycodeAndSendThenUnmask(&xevent, ShiftMask, XK_Shift_L);
+    UnmaskAndSetKeycodeThenSend(&xevent, ShiftMask, XK_Shift_L);
   if (control)
-    SetKeycodeAndSendThenUnmask(&xevent, ControlMask, XK_Control_L);
+    UnmaskAndSetKeycodeThenSend(&xevent, ControlMask, XK_Control_L);
   DCHECK(!xevent.xkey.state);
   RunClosureAfterAllPendingUIEvents(closure);
   return true;

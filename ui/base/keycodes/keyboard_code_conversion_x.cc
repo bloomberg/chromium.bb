@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 
 namespace ui {
@@ -43,6 +44,7 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
       return VKEY_DELETE;
     case XK_Tab:
     case XK_KP_Tab:
+    case XK_ISO_Left_Tab:
       return VKEY_TAB;
     case XK_Linefeed:
     case XK_Return:
@@ -313,8 +315,7 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
 
     // TODO(sad): some keycodes are still missing.
   }
-
-  DLOG(WARNING) << "Unknown keycode: " << keysym;
+  DLOG(WARNING) << "Unknown keysym: " << StringPrintf("0x%x", keysym);
   return VKEY_UNKNOWN;
 }
 
@@ -616,6 +617,7 @@ int XKeysymForWindowsKeyCode(KeyboardCode keycode, bool shift) {
       return XK_F1 + (keycode - VKEY_F1);
 
     default:
+      LOG(WARNING) << "Unknown keycode:" << keycode;
       return 0;
     }
 }
