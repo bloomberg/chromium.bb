@@ -850,6 +850,13 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       rv = NPERR_NO_ERROR;
       break;
     }
+    case NPNVsupportsCompositingCoreAnimationPluginsBool: {
+      NPBool* supports_compositing = reinterpret_cast<NPBool*>(value);
+      *supports_compositing =
+          webkit::npapi::UsingCompositedCoreAnimationPlugins();
+      rv = NPERR_NO_ERROR;
+      break;
+    }
     case NPNVsupportsUpdatedCocoaTextInputBool: {
       // We support the clarifications to the Cocoa IME event spec, but since
       // IME currently only works on 10.6, only answer true there.

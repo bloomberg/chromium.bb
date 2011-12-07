@@ -403,7 +403,7 @@ typedef enum {
   , NPPVpluginCoreAnimationLayer = 1003
 #endif
 
-#if (MOZ_PLATFORM_MAEMO == 5) || (MOZ_PLATFORM_MAEMO == 6)
+#if defined(MOZ_PLATFORM_MAEMO) && ((MOZ_PLATFORM_MAEMO == 5) || (MOZ_PLATFORM_MAEMO == 6))
   , NPPVpluginWindowlessLocalBool = 2002
 #endif
 } NPPVariable;
@@ -435,7 +435,9 @@ typedef enum {
 
   NPNVprivateModeBool = 18,
 
-  NPNVsupportsAdvancedKeyHandling = 21
+  NPNVsupportsAdvancedKeyHandling = 21,
+
+  NPNVdocumentOrigin = 22
 
 #if defined(XP_MACOSX)
   /* Used for negotiating drawing models */
@@ -453,8 +455,10 @@ typedef enum {
   , NPNVsupportsCocoaBool = 3001 /* TRUE if the browser supports the Cocoa event model */
   , NPNVsupportsUpdatedCocoaTextInputBool = 3002 /* TRUE if the browser supports the updated
                                                     Cocoa text input specification. */
+  , NPNVsupportsCompositingCoreAnimationPluginsBool = 74656 /* TRUE if the browser supports
+                                                               CA model compositing */
 #endif
-#if (MOZ_PLATFORM_MAEMO == 5) || (MOZ_PLATFORM_MAEMO == 6)
+#if defined(MOZ_PLATFORM_MAEMO) && ((MOZ_PLATFORM_MAEMO == 5) || (MOZ_PLATFORM_MAEMO == 6))
   , NPNVSupportsWindowlessLocal = 2002
 #endif
 } NPNVariable;
