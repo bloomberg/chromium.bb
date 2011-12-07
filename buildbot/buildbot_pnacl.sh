@@ -255,20 +255,20 @@ mode-buildbot-x8664() {
 # These names were originally botnames
 # TOOD(robertm): describe what needs to done when those change
 # Thunk them to allow non-bots to run without specifying BUILDBOT_GOT_REVISION.
-NAME_ARM_OPT() {
-  echo "hardy64-marm-narm-opt/rev_${BUILDBOT_GOT_REVISION}"
+NAME_ARM_UPLOAD() {
+  echo "${BUILDBOT_BUILDERNAME}/${BUILDBOT_GOT_REVISION}"
 }
-NAME_ARM_DBG() {
-  echo "hardy64-marm-narm-dbg/rev_${BUILDBOT_GOT_REVISION}"
+
+NAME_ARM_DOWNLOAD() {
+  echo "${BUILDBOT_TRIGGERED_BY_BUILDERNAME}/${BUILDBOT_GOT_REVISION}"
 }
+
 NAME_ARM_TRY_UPLOAD() {
-  echo -n "arm/"
   echo -n "${BUILDBOT_BUILDERNAME}/"
   echo -n "${BUILDBOT_SLAVENAME}/"
   echo -n "${BUILDBOT_BUILDNUMBER}"
 }
 NAME_ARM_TRY_DOWNLOAD() {
-  echo -n "arm/"
   echo -n "${BUILDBOT_TRIGGERED_BY_BUILDERNAME}/"
   echo -n "${BUILDBOT_TRIGGERED_BY_SLAVENAME}/"
   echo -n "${BUILDBOT_TRIGGERED_BY_BUILDNUMBER}"
@@ -294,13 +294,13 @@ mode-buildbot-arm() {
 mode-buildbot-arm-dbg() {
   mode-buildbot-arm "--mode=dbg-host,nacl"
   archive-for-hw-bots \
-      nativeclient-archive2/between_builders/$(NAME_ARM_DBG)/build.tgz
+      nativeclient-archive2/between_builders/$(NAME_ARM_UPLOAD)/build.tgz
 }
 
 mode-buildbot-arm-opt() {
   mode-buildbot-arm "--mode=opt-host,nacl"
   archive-for-hw-bots \
-      nativeclient-archive2/between_builders/$(NAME_ARM_OPT)/build.tgz
+      nativeclient-archive2/between_builders/$(NAME_ARM_UPLOAD)/build.tgz
 }
 
 mode-buildbot-arm-try() {
@@ -322,13 +322,13 @@ mode-buildbot-arm-hw() {
 #       use pre-built executables
 mode-buildbot-arm-hw-dbg() {
   unarchive-for-hw-bots \
-      nativeclient-archive2/between_builders/$(NAME_ARM_DBG)/build.tgz
+      nativeclient-archive2/between_builders/$(NAME_ARM_DOWNLOAD)/build.tgz
   mode-buildbot-arm-hw "--mode=dbg-host,nacl"
 }
 
 mode-buildbot-arm-hw-opt() {
   unarchive-for-hw-bots \
-      nativeclient-archive2/between_builders/$(NAME_ARM_OPT)/build.tgz
+      nativeclient-archive2/between_builders/$(NAME_ARM_DOWNLOAD)/build.tgz
   mode-buildbot-arm-hw "--mode=opt-host,nacl"
 }
 
