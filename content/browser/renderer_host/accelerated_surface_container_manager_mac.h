@@ -14,6 +14,10 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/surface/transport_dib.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace webkit {
 namespace npapi {
 struct WebPluginGeometry;
@@ -79,6 +83,9 @@ class AcceleratedSurfaceContainerManagerMac {
 
   // Notifies a surface that it has been painted to.
   void SetSurfaceWasPaintedTo(gfx::PluginWindowHandle id, uint64 surface_id);
+  void SetSurfaceWasPaintedTo(gfx::PluginWindowHandle id,
+                              uint64 surface_id,
+                              const gfx::Rect& update_rect);
 
   // Notifies the root container that its surface is invalid.
   void SetRootSurfaceInvalid();

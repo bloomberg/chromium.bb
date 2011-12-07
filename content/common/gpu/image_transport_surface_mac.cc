@@ -234,14 +234,25 @@ bool IOSurfaceImageTransportSurface::SwapBuffers() {
 
 bool IOSurfaceImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
-  NOTREACHED();
-  return false;
+  glFlush();
+
+  GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
+  params.surface_id = io_surface_id_;
+  params.x = x;
+  params.y = y;
+  params.width = width;
+  params.height = height;
+  helper_->SendAcceleratedSurfacePostSubBuffer(params);
+
+  helper_->SetScheduled(false);
+  return true;
 }
 
 std::string IOSurfaceImageTransportSurface::GetExtensions() {
   std::string extensions = gfx::GLSurface::GetExtensions();
   extensions += extensions.empty() ? "" : " ";
-  extensions += "GL_CHROMIUM_front_buffer_cached";
+  extensions += "GL_CHROMIUM_front_buffer_cached ";
+  extensions += "GL_CHROMIUM_post_sub_buffer";
   return extensions;
 }
 
@@ -254,7 +265,7 @@ void IOSurfaceImageTransportSurface::OnBuffersSwappedACK() {
 }
 
 void IOSurfaceImageTransportSurface::OnPostSubBufferACK() {
-  NOTREACHED();
+  helper_->SetScheduled(true);
 }
 
 void IOSurfaceImageTransportSurface::OnNewSurfaceACK(
@@ -457,14 +468,50 @@ bool TransportDIBImageTransportSurface::SwapBuffers() {
 
 bool TransportDIBImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
-  NOTREACHED();
-  return false;
+  DCHECK_NE(shared_mem_.get(), static_cast<void*>(NULL));
+
+  GLint previous_fbo_id = 0;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &previous_fbo_id);
+
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_id_);
+
+  GLint current_alignment = 0, current_pack_row_length = 0;
+  glGetIntegerv(GL_PACK_ALIGNMENT, &current_alignment);
+  glGetIntegerv(GL_PACK_ROW_LENGTH, &current_pack_row_length);
+
+  glPixelStorei(GL_PACK_ALIGNMENT, 4);
+  glPixelStorei(GL_PACK_ROW_LENGTH, size_.width());
+
+  unsigned char* buffer =
+      static_cast<unsigned char*>(shared_mem_->memory());
+  glReadPixels(x, y,
+               width, height,
+               GL_BGRA,  // This pixel format should have no conversion.
+               GL_UNSIGNED_INT_8_8_8_8_REV,
+               &buffer[(x + y * size_.width()) * 4]);
+
+  glPixelStorei(GL_PACK_ALIGNMENT, current_alignment);
+  glPixelStorei(GL_PACK_ROW_LENGTH, current_pack_row_length);
+
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previous_fbo_id);
+
+  GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
+  params.surface_id = next_id_;
+  params.x = x;
+  params.y = y;
+  params.width = width;
+  params.height = height;
+  helper_->SendAcceleratedSurfacePostSubBuffer(params);
+
+  helper_->SetScheduled(false);
+  return true;
 }
 
 std::string TransportDIBImageTransportSurface::GetExtensions() {
   std::string extensions = gfx::GLSurface::GetExtensions();
   extensions += extensions.empty() ? "" : " ";
-  extensions += "GL_CHROMIUM_front_buffer_cached";
+  extensions += "GL_CHROMIUM_front_buffer_cached ";
+  extensions += "GL_CHROMIUM_post_sub_buffer";
   return extensions;
 }
 
@@ -477,7 +524,7 @@ void TransportDIBImageTransportSurface::OnBuffersSwappedACK() {
 }
 
 void TransportDIBImageTransportSurface::OnPostSubBufferACK() {
-  NOTREACHED();
+  helper_->SetScheduled(true);
 }
 
 void TransportDIBImageTransportSurface::OnNewSurfaceACK(

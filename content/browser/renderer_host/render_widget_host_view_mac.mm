@@ -879,7 +879,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
     plugin_container_manager_.SetSurfaceWasPaintedTo(params.window,
                                                      params.surface_id);
 
-    // The surface is hidden until its first paint, to not show gargabe.
+    // The surface is hidden until its first paint, to not show garbage.
     if (plugin_container_manager_.SurfaceShouldBeVisible(params.window))
       [view setHidden:NO];
     [view drawView];
@@ -893,7 +893,28 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
 void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
     const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
     int gpu_host_id) {
-  NOTIMPLEMENTED();
+  TRACE_EVENT0("browser",
+      "RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer");
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  AcceleratedPluginView* view = ViewForPluginWindowHandle(params.window);
+  DCHECK(view);
+  if (view) {
+    last_frame_was_accelerated_ = (params.window ==
+        plugin_container_manager_.root_container_handle());
+    plugin_container_manager_.SetSurfaceWasPaintedTo(
+        params.window,
+        params.surface_id,
+        gfx::Rect(params.x, params.y, params.width, params.height));
+
+    // The surface is hidden until its first paint, to not show garbage.
+    if (plugin_container_manager_.SurfaceShouldBeVisible(params.window))
+      [view setHidden:NO];
+    [view drawView];
+  }
+
+  if (params.route_id != 0) {
+    RenderWidgetHost::AcknowledgePostSubBuffer(params.route_id, gpu_host_id);
+  }
 }
 
 void RenderWidgetHostViewMac::UpdateRootGpuViewVisibility(

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "content/browser/renderer_host/accelerated_surface_container_mac.h"
 #include "webkit/plugins/npapi/webplugin.h"
+#include "ui/gfx/rect.h"
 
 AcceleratedSurfaceContainerManagerMac::AcceleratedSurfaceContainerManagerMac()
     : current_id_(0),
@@ -143,6 +144,17 @@ void AcceleratedSurfaceContainerManagerMac::SetSurfaceWasPaintedTo(
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
   if (container)
     container->set_was_painted_to(surface_id);
+}
+
+void AcceleratedSurfaceContainerManagerMac::SetSurfaceWasPaintedTo(
+    gfx::PluginWindowHandle id,
+    uint64 surface_id,
+    const gfx::Rect& update_rect) {
+  base::AutoLock lock(lock_);
+
+  AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
+  if (container)
+    container->set_was_painted_to(surface_id, update_rect);
 }
 
 void AcceleratedSurfaceContainerManagerMac::SetRootSurfaceInvalid() {
