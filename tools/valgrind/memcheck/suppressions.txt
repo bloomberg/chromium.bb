@@ -5238,12 +5238,6 @@
    fun:_ZN7WebCore15HTMLTreeBuilder16processCharacterERNS_15AtomicHTMLTokenE
 }
 {
-   bug_106067
-   Memcheck:Uninitialized
-   fun:_ZN16RenderThreadImpl26IdleHandlerInForegroundTabEv
-   fun:_ZN16RenderThreadImpl11IdleHandlerEv
-}
-{
    bug_106104
    Memcheck:Unaddressable
    ...

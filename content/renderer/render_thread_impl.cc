@@ -622,7 +622,7 @@ void RenderThreadImpl::IdleHandlerInForegroundTab() {
   if (idle_notifications_to_skip_ > 0) {
     idle_notifications_to_skip_--;
   } else  {
-    int cpu_usage;
+    int cpu_usage = 0;
     Send(new ViewHostMsg_GetCPUUsage(&cpu_usage));
     if (cpu_usage < kIdleCPUUsageThresholdInPercents &&
         v8::V8::IdleNotification()) {
