@@ -458,7 +458,9 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
   if (initialized_) {
-    return true;
+    // Return false if we were previously initialized but the DB has since been
+    // closed.
+    return db_.get() ? true : false;
   }
 
   base::Time start = base::Time::Now();
@@ -540,7 +542,10 @@ void SQLitePersistentCookieStore::Backend::ChainLoadCookies(
 
   bool load_success = true;
 
-  if (keys_to_load_.size() > 0) {
+  if (!db_.get()) {
+    // Close() has been called on this store.
+    load_success = false;
+  } else if (keys_to_load_.size() > 0) {
     // Load cookies for the first domain key.
     std::map<std::string, std::set<std::string> >::iterator
       it = keys_to_load_.begin();
@@ -871,7 +876,7 @@ void SQLitePersistentCookieStore::Backend::Flush(Task* completion_task) {
 }
 
 // Fire off a close message to the background thread.  We could still have a
-// pending commit timer that will be holding a reference on us, but if/when
+// pending commit timer or Load operations holding references on us, but if/when
 // this fires we will already have been cleaned up and it will be ignored.
 void SQLitePersistentCookieStore::Backend::Close() {
   if (BrowserThread::CurrentlyOn(BrowserThread::DB)) {
