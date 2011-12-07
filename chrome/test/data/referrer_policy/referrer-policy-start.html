@@ -1,0 +1,17 @@
+<html>
+<head>
+<script>
+function runTest() {
+    var matches = RegExp(/\?(.*)&port=(.*)/).exec(document.location.search);
+    var meta = document.createElement("meta");
+    meta.name = "referrer";
+    meta.content = matches[1];
+    document.head.appendChild(meta);
+    document.location =
+        "http://127.0.0.1:" + matches[2] + "/files/referrer-policy-log.html";
+}
+</script>
+</head>
+<body onload="runTest()">
+</body>
+</html>

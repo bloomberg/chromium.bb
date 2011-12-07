@@ -2604,6 +2604,7 @@
         'browser/printing/print_preview_tab_controller_browsertest.cc',
         'browser/profiles/profile_manager_browsertest.cc',
         'browser/rlz/rlz_extension_apitest.cc',
+        'browser/referrer_policy_browsertest.cc',
         'browser/renderer_host/render_process_host_chrome_browsertest.cc',
         'browser/renderer_host/web_cache_manager_browsertest.cc',
         'browser/safe_browsing/safe_browsing_blocking_page_test.cc',
