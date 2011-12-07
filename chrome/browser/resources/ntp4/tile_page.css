@@ -23,7 +23,8 @@
 
 .tile-page-content {
   overflow-y: scroll;
-  padding-top: 100px;
+  /* This value is mirrored in TilePage.updateTopMargin_ */
+  padding-top: 60px;
   position: relative;
   text-align: center;
   width: 100%;

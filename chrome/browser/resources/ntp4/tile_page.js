@@ -897,9 +897,9 @@ cr.define('ntp4', function() {
           (this.isCurrentDragTarget && !this.withinPageDrag_ ? 1 : 0);
       var numRows = Math.ceil(numTiles / layout.numRowTiles);
       var usedHeight = layout.rowHeight * numRows;
-      // 100 matches the top padding of tile-page.
+      // 60 matches the top padding of tile-page (which acts as the minimum).
       var newMargin = document.documentElement.clientHeight / 3 -
-          usedHeight / 2 - 100 - this.content_.offsetTop;
+          usedHeight / 3 - 60;
       newMargin = Math.max(newMargin, 0);
 
       // |newMargin| is the final margin we actually want to show. However,
