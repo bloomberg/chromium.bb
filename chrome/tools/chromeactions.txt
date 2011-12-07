@@ -262,6 +262,8 @@
 0x08566bf746b7f665	Extensions.IDChangedError
 0xa295e3ad39bbacc0	Extensions.WebStoreLaunch
 0x4268aeb48d5c0d1e	FileBrowser.CreateNewFolder
+0x604a1468d08b7c7b	FileBrowser.PhotoEditor.Edit
+0xca74d47b273dd801	FileBrowser.PhotoEditor.View
 0x4cfa6c981549e990	Find
 0x058404d575478e31	FindNext
 0xca56592cf013fc40	FindPrevious
@@ -828,6 +830,7 @@
 0xd93d87f83683d666	LanguageOptions_UiLanguageChange_zu
 0x384a6609143bbcae	LoadURL
 0xe009e92f3909009c	LoadURLFromKeyword
+0x795fc04747be6afa	LockScreen
 0xfb40450c5de92998	Login_Failure
 0x31374d163aec5a5e	Login_GuestLoginSuccess
 0x47421e3d3406b4e1	Login_OffTheRecordLoginSuccess
@@ -901,6 +904,8 @@
 0x5e3bd4e3535ecc38	OpenAllBookmarksNewWindow
 0x4b858349a1b8bb15	OpenFile
 0xedaa8487de2a33c6	OpenFileManager
+0xb3c3e8d99702cf70	OpenFileSystemPersistent
+0x1e6740b4b7fda686	OpenFileSystemTemporary
 0x4928347f9423c013	OpenInternetOptionsDialog
 0x83af6accb98b9954	OpenLanguageOptionsDialog
 0xe7147544a7db079d	OpenSystemOptionsDialog
@@ -1215,8 +1220,10 @@
 0x6932875212d36f57	WP_EditImage
 0x34a770eb3bbf5632	WP_Gallery
 0x554103fbf5582ee0	ZoomMinus
+0x82d278b1f2e78bcd	ZoomMinus_AtMinimum
 0x4344cd22d03f6800	ZoomNormal
 0x860db3714d502e03	ZoomPlus
+0x644dbac8a6242f3f	ZoomPlus_AtMaximum
 0xbfb6af70a0626dcd	justifyFull
 0x2768e36e23ebef80	mceAddControl
 0xfe4c8898ac25e705	mceBeginUndoLevel
