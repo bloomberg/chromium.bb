@@ -413,6 +413,10 @@ html[dir='rtl'] #decrement {
   display: -webkit-box;
 }
 
-html[toolkit=views] .button-strip {
+html:not([toolkit=views]) .button-strip {
   -webkit-box-direction: reverse;
+}
+
+.button-strip button {
+  display: block;
 }
