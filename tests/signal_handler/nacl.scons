@@ -26,7 +26,7 @@ nodes.append(env.CommandSelLdrTestNacl(
         crash_test_nexe,
         sel_ldr_flags=['-S'],
         exit_status='untrusted_segfault',
-        using_nacl_signal_handler='1'))
+        using_nacl_signal_handler=True))
 
 # Test that crashes in trusted code are recognised as such.
 # This test covers crashes that occur outside of a syscall handler,
@@ -37,7 +37,7 @@ nodes.append(env.CommandSelLdrTestNacl(
         sel_ldr_flags=['-S'],
         osenv='NACL_CRASH_TEST=1',
         exit_status='trusted_segfault',
-        using_nacl_signal_handler='1'))
+        using_nacl_signal_handler=True))
 
 # This tests a crash that occurs inside a syscall handler.
 nodes.append(env.CommandSelLdrTestNacl(
@@ -48,7 +48,7 @@ nodes.append(env.CommandSelLdrTestNacl(
         # untrusted code.
         # See http://code.google.com/p/nativeclient/issues/detail?id=579
         exit_status='trusted_segfault',
-        using_nacl_signal_handler='1'))
+        using_nacl_signal_handler=True))
 
 # For both Valgrind and Coverage instrumented tests, we ignore signal handler
 # tests which can produce strange or flaky results.

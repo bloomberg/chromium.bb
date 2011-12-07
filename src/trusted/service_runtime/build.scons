@@ -588,7 +588,7 @@ if (not env.Bit('coverage_enabled') and
   node = env.CommandTest('nacl_signal_unittest.out',
                          command=[nacl_signal_exe],
                          exit_status='trusted_sigsegv_or_equivalent',
-                         using_nacl_signal_handler='1')
+                         using_nacl_signal_handler=True)
 
   env.Requires(nacl_signal_exe, crt)
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_signal_test')
@@ -606,7 +606,7 @@ if env.Bit('posix'):
   node = env.CommandTest('nacl_signal_frame_test.out',
                          command=[test_prog],
                          exit_status='trusted_segfault',
-                         using_nacl_signal_handler='1')
+                         using_nacl_signal_handler=True)
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_signal_frame_test')
 
 if env.Bit('windows') and env.Bit('target_x86_64'):

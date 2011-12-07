@@ -14,7 +14,7 @@ nexe = prog_env.ComponentProgram('execute_data', ['execute_data.c'],
                                  EXTRA_LIBS=['${NONIRT_LIBS}'])
 
 node = prog_env.CommandSelLdrTestNacl(
-    'execute_data.out', nexe, declares_exit_status=1)
+    'execute_data.out', nexe, declares_exit_status=True)
 
 # This test does not work under qemu-arm because qemu-arm does not
 # support the NX page protection bit.
