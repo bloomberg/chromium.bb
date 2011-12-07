@@ -11,7 +11,6 @@
 #include "base/file_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -142,28 +141,19 @@ void QueueProfileDirectoryForDeletion(const FilePath& path) {
   ProfilesToDelete().push_back(path);
 }
 
-} // namespace
-
-bool ProfileManagerObserver::DeleteAfter() {
-  return false;
+// Called upon completion of profile creation. This function takes care of
+// launching a new browser window and signing the user in to their Google
+// account.
+void OnOpenWindowForNewProfile(Profile* profile,
+                               Profile::CreateStatus status) {
+  if (status == Profile::CREATE_STATUS_INITIALIZED) {
+    ProfileManager::NewWindowWithProfile(profile,
+                                         BrowserInit::IS_PROCESS_STARTUP,
+                                         BrowserInit::IS_FIRST_RUN);
+  }
 }
 
-// The NewProfileLauncher class is created when to wait for a multi-profile
-// to be created asynchronously. Upon completion of profile creation, the
-// NPL takes care of launching a new browser window and signing the user
-// in to their Google account.
-class NewProfileLauncher : public ProfileManagerObserver {
- public:
-  virtual void OnProfileCreated(Profile* profile, Status status) {
-    if (status == STATUS_INITIALIZED) {
-      ProfileManager::NewWindowWithProfile(profile,
-                                           BrowserInit::IS_PROCESS_STARTUP,
-                                           BrowserInit::IS_FIRST_RUN);
-    }
-  }
-
-  virtual bool DeleteAfter() OVERRIDE { return true; }
-};
+} // namespace
 
 // static
 void ProfileManager::ShutdownSessionServices() {
@@ -332,34 +322,29 @@ Profile* ProfileManager::GetProfile(const FilePath& profile_dir) {
   return profile;
 }
 
-void ProfileManager::CreateProfileAsync(const FilePath& user_data_dir,
-                                        ProfileManagerObserver* observer) {
+void ProfileManager::CreateProfileAsync(const FilePath& profile_path,
+                                        const CreateCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ProfilesInfoMap::iterator iter = profiles_info_.find(user_data_dir);
+  ProfilesInfoMap::iterator iter = profiles_info_.find(profile_path);
   if (iter != profiles_info_.end()) {
     ProfileInfo* info = iter->second.get();
     if (info->created) {
-      // Profile has already been created. Call observer immediately.
-      observer->OnProfileCreated(
-          info->profile.get(), ProfileManagerObserver::STATUS_INITIALIZED);
-      if (observer->DeleteAfter())
-        delete observer;
+      // Profile has already been created. Run callback immediately.
+      callback.Run(info->profile.get(), Profile::CREATE_STATUS_INITIALIZED);
     } else {
-      // Profile is being created. Add observer to list.
-      info->observers.push_back(observer);
+      // Profile is being created. Add callback to list.
+      info->callbacks.push_back(callback);
     }
   } else {
     // Initiate asynchronous creation process.
     ProfileInfo* info =
-        RegisterProfile(CreateProfileAsyncHelper(user_data_dir, this),
-                        false);
-    info->observers.push_back(observer);
+        RegisterProfile(CreateProfileAsyncHelper(profile_path, this), false);
+    info->callbacks.push_back(callback);
   }
 }
 
 // static
-void ProfileManager::CreateDefaultProfileAsync(
-    ProfileManagerObserver* observer) {
+void ProfileManager::CreateDefaultProfileAsync(const CreateCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
@@ -368,8 +353,7 @@ void ProfileManager::CreateDefaultProfileAsync(
   default_profile_dir = default_profile_dir.Append(
       profile_manager->GetInitialProfileDir());
 
-  profile_manager->CreateProfileAsync(default_profile_dir,
-                                      observer);
+  profile_manager->CreateProfileAsync(default_profile_dir, callback);
 }
 
 bool ProfileManager::AddProfile(Profile* profile) {
@@ -503,41 +487,33 @@ void ProfileManager::OnProfileCreated(Profile* profile, bool success) {
   DCHECK(iter != profiles_info_.end());
   ProfileInfo* info = iter->second.get();
 
-  std::vector<ProfileManagerObserver*> observers;
-  info->observers.swap(observers);
+  std::vector<CreateCallback> callbacks;
+  info->callbacks.swap(callbacks);
 
+  // Invoke CREATED callback for normal profiles.
   bool go_off_the_record = ShouldGoOffTheRecord();
+  if (success && !go_off_the_record)
+    RunCallbacks(callbacks, profile, Profile::CREATE_STATUS_CREATED);
+
+  // Perform initialization.
   if (success) {
-    if (!go_off_the_record) {
-      for (size_t i = 0; i < observers.size(); ++i) {
-        observers[i]->OnProfileCreated(
-            profile, ProfileManagerObserver::STATUS_CREATED);
-      }
-    }
     DoFinalInit(profile, go_off_the_record);
+    if (go_off_the_record)
+      profile = profile->GetOffTheRecordProfile();
     info->created = true;
   } else {
     profile = NULL;
     profiles_info_.erase(iter);
   }
 
-  std::vector<ProfileManagerObserver*> observers_to_delete;
+  // Invoke CREATED callback for incognito profiles.
+  if (profile && go_off_the_record)
+    RunCallbacks(callbacks, profile, Profile::CREATE_STATUS_CREATED);
 
-  for (size_t i = 0; i < observers.size(); ++i) {
-    if (profile && go_off_the_record) {
-      profile = profile->GetOffTheRecordProfile();
-      DCHECK(profile);
-      observers[i]->OnProfileCreated(
-          profile, ProfileManagerObserver::STATUS_CREATED);
-    }
-    observers[i]->OnProfileCreated(
-        profile, profile ? ProfileManagerObserver::STATUS_INITIALIZED :
-            ProfileManagerObserver::STATUS_FAIL);
-    if (observers[i]->DeleteAfter())
-      observers_to_delete.push_back(observers[i]);
-  }
-
-  STLDeleteElements(&observers_to_delete);
+  // Invoke INITIALIZED or FAIL for all profiles.
+  RunCallbacks(callbacks, profile,
+               profile ? Profile::CREATE_STATUS_INITIALIZED :
+                         Profile::CREATE_STATUS_FAIL);
 }
 
 FilePath ProfileManager::GenerateNextProfileDirectoryPath() {
@@ -566,9 +542,8 @@ void ProfileManager::CreateMultiProfileAsync() {
 
   FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
 
-  // The launcher is deleted by the manager when profile creation is finished.
-  NewProfileLauncher* launcher = new NewProfileLauncher();
-  profile_manager->CreateProfileAsync(new_path, launcher);
+  profile_manager->CreateProfileAsync(new_path,
+                                      base::Bind(&OnOpenWindowForNewProfile));
 }
 
 // static
@@ -653,9 +628,7 @@ void ProfileManager::ScheduleProfileForDeletion(const FilePath& profile_dir) {
   if (cache.GetNumberOfProfiles() == 1) {
     FilePath new_path = GenerateNextProfileDirectoryPath();
 
-    // The launcher is deleted by the manager when profile creation is finished.
-    NewProfileLauncher* launcher = new NewProfileLauncher();
-    CreateProfileAsync(new_path, launcher);
+    CreateProfileAsync(new_path, base::Bind(&OnOpenWindowForNewProfile));
   }
 
   // Update the last used profile pref before closing browser windows. This way
@@ -726,3 +699,10 @@ void ProfileManager::RemoveProfileShortcutManagerForTesting() {
   profile_info_cache_->RemoveObserver(profile_shortcut_manager_.get());
 }
 #endif
+
+void ProfileManager::RunCallbacks(const std::vector<CreateCallback>& callbacks,
+                                  Profile* profile,
+                                  Profile::CreateStatus status) {
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i].Run(profile, status);
+}

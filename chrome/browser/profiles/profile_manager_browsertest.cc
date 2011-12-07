@@ -2,11 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
+
+namespace {
+
+// An observer that returns back to test code after a new profile is
+// initialized.
+void OnUnblockOnProfileCreation(Profile* profile,
+                                Profile::CreateStatus status) {
+  if (status == Profile::CREATE_STATUS_INITIALIZED)
+    MessageLoop::current()->Quit();
+}
+
+} // namespace
 
 // This file contains tests for the ProfileManager that require a heavyweight
 // InProcessBrowserTest.  These include tests involving profile deletion.
@@ -15,17 +28,6 @@
 // platforms.
 #if defined(OS_MACOSX)
 class ProfileManagerBrowserTest : public InProcessBrowserTest {
- protected:
-  // An observer that returns back to test code after a new profile
-  // is initialized.
-  class BlockOnProfileInitObserver : public ProfileManagerObserver {
-   public:
-    void OnProfileCreated(Profile* profile, Status status) {
-      if (status == ProfileManagerObserver::STATUS_INITIALIZED) {
-        MessageLoop::current()->Quit();
-      }
-    }
-  };
 };
 
 // Delete single profile and make sure a new one is created.
@@ -69,12 +71,12 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteAllProfiles) {
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
 
   // Create an additional profile.
-  BlockOnProfileInitObserver observer;
   FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
-  profile_manager->CreateProfileAsync(new_path, &observer);
+  profile_manager->CreateProfileAsync(new_path,
+                                      base::Bind(&OnUnblockOnProfileCreation));
 
   // Spin to allow profile creation to take place, loop is terminated
-  // by BlockOnProfileInitObserver when the profile is created.
+  // by OnUnblockOnProfileCreation when the profile is created.
   ui_test_utils::RunMessageLoop();
 
   ASSERT_EQ(cache.GetNumberOfProfiles(), 2U);

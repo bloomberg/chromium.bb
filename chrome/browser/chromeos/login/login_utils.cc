@@ -521,10 +521,10 @@ class JobRestartRequest
 };
 
 class LoginUtilsImpl : public LoginUtils,
-                       public ProfileManagerObserver,
                        public GaiaOAuthConsumer,
                        public OAuthLoginVerifier::Delegate,
-                       public net::NetworkChangeNotifier::OnlineStateObserver {
+                       public net::NetworkChangeNotifier::OnlineStateObserver,
+                       public base::SupportsWeakPtr<LoginUtilsImpl> {
  public:
   LoginUtilsImpl()
       : background_view_(NULL),
@@ -568,9 +568,6 @@ class LoginUtilsImpl : public LoginUtils,
                                       Profile* new_profile) OVERRIDE;
   virtual void TransferDefaultAuthCache(Profile* default_profile,
                                         Profile* new_profile) OVERRIDE;
-
-  // ProfileManagerObserver implementation:
-  virtual void OnProfileCreated(Profile* profile, Status status) OVERRIDE;
 
   // GaiaOAuthConsumer overrides.
   virtual void OnGetOAuthTokenSuccess(const std::string& oauth_token) OVERRIDE;
@@ -638,6 +635,10 @@ class LoginUtilsImpl : public LoginUtils,
 
   // Check user's profile for kApplicationLocale setting.
   void RespectLocalePreference(Profile* pref);
+
+  // Callback for asynchronous profile creation.
+  void OnProfileCreated(Profile* profile,
+                        Profile::CreateStatus status);
 
   // The current background view.
   chromeos::BackgroundView* background_view_;
@@ -758,7 +759,8 @@ void LoginUtilsImpl::PrepareProfile(
 
   // The default profile will have been changed because the ProfileManager
   // will process the notification that the UserManager sends out.
-  ProfileManager::CreateDefaultProfileAsync(this);
+  ProfileManager::CreateDefaultProfileAsync(
+      base::Bind(&LoginUtilsImpl::OnProfileCreated, AsWeakPtr()));
 }
 
 void LoginUtilsImpl::DelegateDeleted(LoginUtils::Delegate* delegate) {
@@ -766,17 +768,19 @@ void LoginUtilsImpl::DelegateDeleted(LoginUtils::Delegate* delegate) {
     delegate_ = NULL;
 }
 
-void LoginUtilsImpl::OnProfileCreated(Profile* user_profile, Status status) {
+void LoginUtilsImpl::OnProfileCreated(
+    Profile* user_profile,
+    Profile::CreateStatus status) {
   CHECK(user_profile);
   switch (status) {
-    case STATUS_INITIALIZED:
+    case Profile::CREATE_STATUS_INITIALIZED:
       break;
-    case STATUS_CREATED:
+    case Profile::CREATE_STATUS_CREATED:
       if (UserManager::Get()->current_user_is_new())
         SetFirstLoginPrefs(user_profile->GetPrefs());
       RespectLocalePreference(user_profile);
       return;
-    case STATUS_FAIL:
+    case Profile::CREATE_STATUS_FAIL:
     default:
       NOTREACHED();
       return;

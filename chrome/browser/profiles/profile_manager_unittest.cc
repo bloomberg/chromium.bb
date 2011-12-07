@@ -115,9 +115,10 @@ class ProfileManagerTest : public testing::Test {
     message_loop_.RunAllPending();
   }
 
-  class MockObserver : public ProfileManagerObserver {
+  class MockObserver {
    public:
-    MOCK_METHOD2(OnProfileCreated, void(Profile* profile, Status status));
+    MOCK_METHOD2(OnProfileCreated,
+        void(Profile* profile, Profile::CreateStatus status));
   };
 
 #if defined(OS_CHROMEOS)
@@ -228,8 +229,8 @@ TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
 }
 
 MATCHER(NotFail, "Profile creation failure status is not reported.") {
-  return arg == ProfileManagerObserver::STATUS_CREATED ||
-      arg == ProfileManagerObserver::STATUS_INITIALIZED;
+  return arg == Profile::CREATE_STATUS_CREATED ||
+         arg == Profile::CREATE_STATUS_INITIALIZED;
 }
 
 // Tests asynchronous profile creation mechanism.
@@ -241,7 +242,9 @@ TEST_F(ProfileManagerTest, DISABLED_CreateProfileAsync) {
   EXPECT_CALL(mock_observer, OnProfileCreated(
       testing::NotNull(), NotFail())).Times(testing::AtLeast(1));
 
-  profile_manager_->CreateProfileAsync(dest_path, &mock_observer);
+  profile_manager_->CreateProfileAsync(dest_path,
+      base::Bind(&MockObserver::OnProfileCreated,
+                 base::Unretained(&mock_observer)));
 
   message_loop_.RunAllPending();
 }
@@ -268,9 +271,15 @@ TEST_F(ProfileManagerTest, CreateProfileAsyncMultipleRequests) {
   EXPECT_CALL(mock_observer3, OnProfileCreated(
       SameNotNull(), NotFail())).Times(testing::AtLeast(1));
 
-  profile_manager_->CreateProfileAsync(dest_path, &mock_observer1);
-  profile_manager_->CreateProfileAsync(dest_path, &mock_observer2);
-  profile_manager_->CreateProfileAsync(dest_path, &mock_observer3);
+  profile_manager_->CreateProfileAsync(dest_path,
+      base::Bind(&MockObserver::OnProfileCreated,
+                 base::Unretained(&mock_observer1)));
+  profile_manager_->CreateProfileAsync(dest_path,
+      base::Bind(&MockObserver::OnProfileCreated,
+                 base::Unretained(&mock_observer2)));
+  profile_manager_->CreateProfileAsync(dest_path,
+      base::Bind(&MockObserver::OnProfileCreated,
+                 base::Unretained(&mock_observer3)));
 
   message_loop_.RunAllPending();
 }
@@ -285,8 +294,12 @@ TEST_F(ProfileManagerTest, CreateProfilesAsync) {
   EXPECT_CALL(mock_observer, OnProfileCreated(
       testing::NotNull(), NotFail())).Times(testing::AtLeast(3));
 
-  profile_manager_->CreateProfileAsync(dest_path1, &mock_observer);
-  profile_manager_->CreateProfileAsync(dest_path2, &mock_observer);
+  profile_manager_->CreateProfileAsync(dest_path1,
+      base::Bind(&MockObserver::OnProfileCreated,
+                 base::Unretained(&mock_observer)));
+  profile_manager_->CreateProfileAsync(dest_path2,
+      base::Bind(&MockObserver::OnProfileCreated,
+                 base::Unretained(&mock_observer)));
 
   message_loop_.RunAllPending();
 }

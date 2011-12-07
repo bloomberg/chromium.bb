@@ -112,6 +112,15 @@ class Profile : public content::BrowserContext {
     IMPLICIT_ACCESS
   };
 
+  enum CreateStatus {
+    // Profile services were not created.
+    CREATE_STATUS_FAIL,
+    // Profile created but before initializing extensions and promo resources.
+    CREATE_STATUS_CREATED,
+    // Profile is created, extensions and promo resources are initialized.
+    CREATE_STATUS_INITIALIZED,
+  };
+
   class Delegate {
    public:
     // Called when creation of the profile is finished.

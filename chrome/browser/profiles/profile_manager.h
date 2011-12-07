@@ -32,37 +32,13 @@
 class NewProfileLauncher;
 class ProfileInfoCache;
 
-class ProfileManagerObserver {
- public:
-  enum Status {
-    // Asynchronous Profile services were not created.
-    STATUS_FAIL,
-    // Profile created but before initializing extensions and promo resources.
-    STATUS_CREATED,
-    // Profile is created, extensions and promo resources are initialized.
-    STATUS_INITIALIZED
-  };
-
-  // This method is called when profile is ready. If profile already exists,
-  // method is called with pointer to that profile and STATUS_INITIALIZED.
-  // If profile creation has failed, method is called with |profile| equal to
-  // NULL and |status| equal to STATUS_FAIL. If profile has been created
-  // successfully, method is called twice: first with STATUS_CREATED status
-  // (before extensions are initialized) and eventually with STATUS_INITIALIZED.
-  virtual void OnProfileCreated(Profile* profile, Status status) = 0;
-
-  // If true, delete the observer after no more OnProfileCreated calls are
-  // expected. Default is false.
-  virtual bool DeleteAfter();
-
-  virtual ~ProfileManagerObserver() {}
-};
-
 class ProfileManager : public base::NonThreadSafe,
                        public BrowserList::Observer,
                        public content::NotificationObserver,
                        public Profile::Delegate {
  public:
+  typedef base::Callback<void(Profile*, Profile::CreateStatus)> CreateCallback;
+
   explicit ProfileManager(const FilePath& user_data_dir);
   virtual ~ProfileManager();
 
@@ -91,15 +67,16 @@ class ProfileManager : public base::NonThreadSafe,
   // Returns total number of profiles available on this machine.
   size_t GetNumberOfProfiles();
 
-  // Explicit asynchronous creation of the profile. |observer| is called
-  // when profile is created. If profile has already been created, observer
-  // is called immediately. Should be called on the UI thread.
-  void CreateProfileAsync(const FilePath& user_data_dir,
-                          ProfileManagerObserver* observer);
+  // Explicit asynchronous creation of a profile located at |profile_path|.
+  // If the profile has already been created then callback is called
+  // immediately. Should be called on the UI thread.
+  void CreateProfileAsync(const FilePath& profile_path,
+                          const CreateCallback& callback);
 
   // Initiates default profile creation. If default profile has already been
-  // created, observer is called immediately. Should be called on the UI thread.
-  static void CreateDefaultProfileAsync(ProfileManagerObserver* observer);
+  // created then the callback is called immediately. Should be called on the
+  // UI thread.
+  static void CreateDefaultProfileAsync(const CreateCallback& callback);
 
   // Returns true if the profile pointer is known to point to an existing
   // profile.
@@ -235,9 +212,9 @@ class ProfileManager : public base::NonThreadSafe,
     scoped_ptr<Profile> profile;
     // Whether profile has been fully loaded (created and initialized).
     bool created;
-    // List of observers which should be notified when profile initialization is
-    // done. Note, when profile is fully loaded this vector will be empty.
-    std::vector<ProfileManagerObserver*> observers;
+    // List of callbacks to run when profile initialization is done. Note, when
+    // profile is fully loaded this vector will be empty.
+    std::vector<CreateCallback> callbacks;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ProfileInfo);
@@ -273,6 +250,10 @@ class ProfileManager : public base::NonThreadSafe,
   // This function doesn't actually create the directory or touch the file
   // system.
   FilePath GenerateNextProfileDirectoryPath();
+
+  void RunCallbacks(const std::vector<CreateCallback>& callbacks,
+                    Profile* profile,
+                    Profile::CreateStatus status);
 
   content::NotificationRegistrar registrar_;
 

@@ -51,8 +51,7 @@ namespace chromeos {
 // 1. ScreenLock active (pending correct new password input)
 // 2. Pending online auth request.
 class LoginPerformer : public LoginStatusConsumer,
-                       public content::NotificationObserver,
-                       public ProfileManagerObserver {
+                       public content::NotificationObserver {
  public:
   // Delegate class to get notifications from the LoginPerformer.
   class Delegate : public LoginStatusConsumer {
@@ -126,8 +125,9 @@ class LoginPerformer : public LoginStatusConsumer,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // ProfileManagerObserver implementation:
-  virtual void OnProfileCreated(Profile* profile, Status status) OVERRIDE;
+  // Callback for asynchronous profile creation.
+  void OnProfileCreated(Profile* profile,
+                        Profile::CreateStatus status);
 
   // Requests screen lock and subscribes to screen lock notifications.
   void RequestScreenLock();

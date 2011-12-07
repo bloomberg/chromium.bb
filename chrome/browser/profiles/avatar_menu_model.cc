@@ -4,6 +4,7 @@
 
 #include "chrome/browser/profiles/avatar_menu_model.h"
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -27,20 +28,16 @@ using content::BrowserThread;
 
 namespace {
 
-class ProfileSwitchObserver : public ProfileManagerObserver {
- public:
-  virtual void OnProfileCreated(Profile* profile, Status status) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+void OnProfileCreated(Profile* profile,
+                      Profile::CreateStatus status) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    if (status == STATUS_INITIALIZED) {
-      ProfileManager::NewWindowWithProfile(profile,
-                                           BrowserInit::IS_NOT_PROCESS_STARTUP,
-                                           BrowserInit::IS_NOT_FIRST_RUN);
-    }
+  if (status == Profile::CREATE_STATUS_INITIALIZED) {
+    ProfileManager::NewWindowWithProfile(profile,
+                                         BrowserInit::IS_NOT_PROCESS_STARTUP,
+                                         BrowserInit::IS_NOT_FIRST_RUN);
   }
-
-  virtual bool DeleteAfter() OVERRIDE { return true; }
-};
+}
 
 }  // namespace
 
@@ -78,11 +75,9 @@ AvatarMenuModel::Item::~Item() {
 void AvatarMenuModel::SwitchToProfile(size_t index) {
   const Item& item = GetItemAt(index);
   FilePath path = profile_info_->GetPathOfProfileAtIndex(item.model_index);
-
-  // This will be deleted by the manager after the profile is ready.
-  ProfileSwitchObserver* observer = new ProfileSwitchObserver();
   g_browser_process->profile_manager()->CreateProfileAsync(
-      path, observer);
+      path, base::Bind(&OnProfileCreated));
+
   ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_ICON);
 }
 

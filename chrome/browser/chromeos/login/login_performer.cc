@@ -157,18 +157,22 @@ void LoginPerformer::OnLoginSuccess(
     // It is not guaranted, that profile creation has been finished yet. So use
     // async version here.
     credentials_ = credentials;
-    ProfileManager::CreateDefaultProfileAsync(this);
+    ProfileManager::CreateDefaultProfileAsync(
+        base::Bind(&LoginPerformer::OnProfileCreated,
+                   weak_factory_.GetWeakPtr()));
   }
 }
 
-void LoginPerformer::OnProfileCreated(Profile* profile, Status status) {
+void LoginPerformer::OnProfileCreated(
+    Profile* profile,
+    Profile::CreateStatus status) {
   CHECK(profile);
   switch (status) {
-    case STATUS_INITIALIZED:
+    case Profile::CREATE_STATUS_INITIALIZED:
       break;
-    case STATUS_CREATED:
+    case Profile::CREATE_STATUS_CREATED:
       return;
-    case STATUS_FAIL:
+    case Profile::CREATE_STATUS_FAIL:
     default:
       NOTREACHED();
       return;
