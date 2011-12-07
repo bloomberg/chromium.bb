@@ -104,8 +104,6 @@ class PluginTest : public UITest {
 
     launch_arguments_.AppendSwitch(switches::kAllowOutdatedPlugins);
     launch_arguments_.AppendSwitch(switches::kAlwaysAuthorizePlugins);
-    // TODO(rsesek): Remove after done debugging.
-    launch_arguments_.AppendSwitch(switches::kDebugPluginLoading);
 
     UITest::SetUp();
   }
