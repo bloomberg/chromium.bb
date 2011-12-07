@@ -462,21 +462,6 @@ bool GetExtensionRenderViewForId(
     const AutomationId& id,
     Profile* profile,
     RenderViewHost** rvh) {
-  content::ViewType view_type;
-  switch (id.type()) {
-    case AutomationId::kTypeExtensionPopup:
-      view_type = chrome::VIEW_TYPE_EXTENSION_POPUP;
-      break;
-    case AutomationId::kTypeExtensionBgPage:
-      view_type = chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
-      break;
-    case AutomationId::kTypeExtensionInfobar:
-      view_type = chrome::VIEW_TYPE_EXTENSION_INFOBAR;
-      break;
-    default:
-      return false;
-  }
-
   ExtensionProcessManager* extension_mgr =
       profile->GetExtensionProcessManager();
   ExtensionProcessManager::const_iterator iter;
