@@ -4,10 +4,7 @@
 
 #include "chrome/browser/chrome_benchmarking_message_filter.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,17 +19,18 @@
 
 namespace {
 
-class ClearCacheHelper {
+class ClearCacheCompletion : public net::OldCompletionCallback {
  public:
-  ClearCacheHelper(ChromeBenchmarkingMessageFilter* filter,
-                   IPC::Message* reply_msg)
+  ClearCacheCompletion(ChromeBenchmarkingMessageFilter* filter,
+                       IPC::Message* reply_msg)
       : filter_(filter),
         reply_msg_(reply_msg) {
   }
 
-  void Run(int result) {
-    ChromeViewHostMsg_ClearCache::WriteReplyParams(reply_msg_, result);
+  virtual void RunWithParams(const Tuple1<int>& params) {
+    ChromeViewHostMsg_ClearCache::WriteReplyParams(reply_msg_, params.a);
     filter_->Send(reply_msg_);
+    delete this;
   }
 
  private:
@@ -48,25 +46,21 @@ class DoomEntriesHelper {
       : backend_(backend),
         entry_(NULL),
         iter_(NULL),
-        ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-            base::Bind(&DoomEntriesHelper::CacheCallback,
-                       base::Unretained(this)))),
-        clear_cache_helper_(NULL) {
+        ALLOW_THIS_IN_INITIALIZER_LIST(callback_(this,
+            &DoomEntriesHelper::CacheCallback)),
+        user_callback_(NULL) {
   }
 
-  // Takes ownership of |callback|.
-  void ClearCache(ClearCacheHelper* helper) {
-    clear_cache_helper_.reset(helper);
+  void ClearCache(ClearCacheCompletion* callback) {
+    user_callback_ = callback;
     return CacheCallback(net::OK);  // Start clearing the cache.
   }
-
-  const net::CompletionCallback& callback() { return callback_; }
 
  private:
   void CacheCallback(int result) {
     do {
       if (result != net::OK) {
-        clear_cache_helper_->Run(result);
+        user_callback_->RunWithParams(Tuple1<int>(result));
         delete this;
         return;
       }
@@ -82,15 +76,15 @@ class DoomEntriesHelper {
         entry_->Close();
         entry_ = NULL;
       }
-      result = backend_->OpenNextEntry(&iter_, &entry_, callback_);
+      result = backend_->OpenNextEntry(&iter_, &entry_, &callback_);
     } while (result != net::ERR_IO_PENDING);
   }
 
   disk_cache::Backend* backend_;
   disk_cache::Entry* entry_;
   void* iter_;
-  net::CompletionCallback callback_;
-  scoped_ptr<ClearCacheHelper> clear_cache_helper_;
+  net::OldCompletionCallbackImpl<DoomEntriesHelper> callback_;
+  ClearCacheCompletion* user_callback_;
 };
 
 }  // namespace
@@ -138,20 +132,20 @@ void ChromeBenchmarkingMessageFilter::OnClearCache(bool preserve_ssl_host_info,
   disk_cache::Backend* backend = request_context_->GetURLRequestContext()->
       http_transaction_factory()->GetCache()->GetCurrentBackend();
   if (backend) {
-    scoped_ptr<ClearCacheHelper> clear_cache_helper(
-        new ClearCacheHelper(this, reply_msg));
+    ClearCacheCompletion* callback =
+        new ClearCacheCompletion(this, reply_msg);
     if (preserve_ssl_host_info) {
       DoomEntriesHelper* helper = new DoomEntriesHelper(backend);
-      helper->ClearCache(clear_cache_helper.release());  // Will self clean.
+      helper->ClearCache(callback);  // Will self clean.
       return;
     } else {
-      rv = backend->DoomAllEntries(
-          base::Bind(&ClearCacheHelper::Run,
-                     base::Owned(clear_cache_helper.release())));
+      rv = backend->DoomAllEntries(callback);
       if (rv == net::ERR_IO_PENDING) {
         // The callback will send the reply.
         return;
       }
+      // Completed synchronously, no need for the callback.
+      delete callback;
     }
   }
   ChromeViewHostMsg_ClearCache::WriteReplyParams(reply_msg, rv);

@@ -106,7 +106,7 @@ class NET_EXPORT_PRIVATE DiskCacheBasedSSLHostInfo
   bool IsCallbackPending() const;
 
   base::WeakPtrFactory<DiskCacheBasedSSLHostInfo> weak_ptr_factory_;
-  CompletionCallback callback_;
+  CallbackImpl* callback_;
   State state_;
   bool ready_;
   bool found_entry_;  // Controls the behavior of DoCreateOrOpen.

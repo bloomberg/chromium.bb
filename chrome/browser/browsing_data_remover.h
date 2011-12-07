@@ -229,7 +229,7 @@ class BrowsingDataRemover : public content::NotificationObserver,
   static bool removing_;
 
   // Used to delete data from the HTTP caches.
-  net::CompletionCallback cache_callback_;
+  net::OldCompletionCallbackImpl<BrowsingDataRemover> cache_callback_;
   CacheState next_cache_state_;
   disk_cache::Backend* cache_;
 

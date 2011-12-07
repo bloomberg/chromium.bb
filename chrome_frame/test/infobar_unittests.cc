@@ -97,7 +97,7 @@ template<typename T> class MockDelegate
   virtual ~MockDelegate() { Die(); }
   MOCK_METHOD0(Die, void());
   MOCK_METHOD1(AdjustDisplacedWindowDimensions, void(RECT* rect));
-};  // class MockDelegate
+};  // clas MockDelegate
 
 template<typename T> T* Initialize(T* t,
                                    HWND hwnd,
