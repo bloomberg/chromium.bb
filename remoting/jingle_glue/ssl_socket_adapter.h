@@ -55,10 +55,11 @@ class TransportSocket : public net::StreamSocket, public sigslot::has_slots<> {
   virtual int64 NumBytesRead() const OVERRIDE;
   virtual base::TimeDelta GetConnectTimeMicros() const OVERRIDE;
 
-  // net::Socket implementation
-
+  // net::Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
                    net::OldCompletionCallback* callback) OVERRIDE;
+  virtual int Read(net::IOBuffer* buf, int buf_len,
+                   const net::CompletionCallback& callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buf, int buf_len,
                     net::OldCompletionCallback* callback) OVERRIDE;
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
@@ -70,7 +71,8 @@ class TransportSocket : public net::StreamSocket, public sigslot::has_slots<> {
   void OnReadEvent(talk_base::AsyncSocket* socket);
   void OnWriteEvent(talk_base::AsyncSocket* socket);
 
-  net::OldCompletionCallback* read_callback_;
+  net::OldCompletionCallback* old_read_callback_;
+  net::CompletionCallback read_callback_;
   net::OldCompletionCallback* write_callback_;
 
   scoped_refptr<net::IOBuffer> read_buffer_;

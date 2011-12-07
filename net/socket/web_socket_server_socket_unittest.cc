@@ -79,16 +79,22 @@ class TestingTransportSocket : public net::Socket {
       net::DrainableIOBuffer* sample, net::DrainableIOBuffer* answer)
       : sample_(sample),
         answer_(answer),
-        final_read_callback_(NULL),
+        old_final_read_callback_(NULL),
         method_factory_(this) {
   }
 
   ~TestingTransportSocket() {
-    if (final_read_callback_) {
+    if (old_final_read_callback_) {
       MessageLoop::current()->PostTask(FROM_HERE,
           method_factory_.NewRunnableMethod(
+              &TestingTransportSocket::DoOldReadCallback,
+                  old_final_read_callback_, 0));
+    } else if (!final_read_callback_.is_null()) {
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          method_factory_.NewRunnableMethod(
               &TestingTransportSocket::DoReadCallback,
-                  final_read_callback_, 0));
+              final_read_callback_, 0));
     }
   }
 
@@ -98,7 +104,28 @@ class TestingTransportSocket : public net::Socket {
     CHECK_GT(buf_len, 0);
     int remaining = sample_->BytesRemaining();
     if (remaining < 1) {
-      if (final_read_callback_)
+      if (old_final_read_callback_ || !final_read_callback_.is_null())
+        return 0;
+      old_final_read_callback_ = callback;
+      return net::ERR_IO_PENDING;
+    }
+    int lot = GetRand(1, std::min(remaining, buf_len));
+    std::copy(sample_->data(), sample_->data() + lot, buf->data());
+    sample_->DidConsume(lot);
+    if (GetRand(0, 1)) {
+      return lot;
+    }
+    MessageLoop::current()->PostTask(FROM_HERE,
+        method_factory_.NewRunnableMethod(
+            &TestingTransportSocket::DoOldReadCallback, callback, lot));
+    return net::ERR_IO_PENDING;
+  }
+  virtual int Read(net::IOBuffer* buf, int buf_len,
+                   const net::CompletionCallback& callback) {
+    CHECK_GT(buf_len, 0);
+    int remaining = sample_->BytesRemaining();
+    if (remaining < 1) {
+      if (old_final_read_callback_ || !final_read_callback_.is_null())
         return 0;
       final_read_callback_ = callback;
       return net::ERR_IO_PENDING;
@@ -144,14 +171,24 @@ class TestingTransportSocket : public net::Socket {
 
   net::DrainableIOBuffer* answer() { return answer_.get(); }
 
-  void DoReadCallback(net::OldCompletionCallback* callback, int result) {
+  void DoOldReadCallback(net::OldCompletionCallback* callback, int result) {
+    if (result == 0 && !is_closed_) {
+      MessageLoop::current()->PostTask(FROM_HERE,
+          method_factory_.NewRunnableMethod(
+              &TestingTransportSocket::DoOldReadCallback, callback, 0));
+    } else {
+      if (callback)
+        callback->Run(result);
+    }
+  }
+  void DoReadCallback(const net::CompletionCallback& callback, int result) {
     if (result == 0 && !is_closed_) {
       MessageLoop::current()->PostTask(FROM_HERE,
           method_factory_.NewRunnableMethod(
               &TestingTransportSocket::DoReadCallback, callback, 0));
     } else {
-      if (callback)
-        callback->Run(result);
+      if (!callback.is_null())
+        callback.Run(result);
     }
   }
 
@@ -169,7 +206,8 @@ class TestingTransportSocket : public net::Socket {
   scoped_refptr<net::DrainableIOBuffer> answer_;
 
   // Final read callback to report zero (zero stands for EOF).
-  net::OldCompletionCallback* final_read_callback_;
+  net::OldCompletionCallback* old_final_read_callback_;
+  net::CompletionCallback final_read_callback_;
 
   ScopedRunnableMethodFactory<TestingTransportSocket> method_factory_;
 };

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "net/base/completion_callback.h"
 #include "net/base/net_log.h"
 #include "net/socket/stream_socket.h"
 #include "ppapi/c/pp_stdint.h"
@@ -50,6 +51,8 @@ class PepperTransportSocketAdapter : public base::NonThreadSafe,
   // net::Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
                    net::OldCompletionCallback* callback) OVERRIDE;
+  virtual int Read(net::IOBuffer* buf, int buf_len,
+                   const net::CompletionCallback& callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buf, int buf_len,
                     net::OldCompletionCallback* callback) OVERRIDE;
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
@@ -91,7 +94,8 @@ class PepperTransportSocketAdapter : public base::NonThreadSafe,
 
   bool get_address_pending_;
 
-  net::OldCompletionCallback* read_callback_;
+  net::OldCompletionCallback* old_read_callback_;
+  net::CompletionCallback read_callback_;
   scoped_refptr<net::IOBuffer> read_buffer_;
 
   net::OldCompletionCallback* write_callback_;

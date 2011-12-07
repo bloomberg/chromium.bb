@@ -105,6 +105,11 @@ int CurveCPClientSocket::Read(IOBuffer* buf,
                               OldCompletionCallback* callback) {
   return messenger_.Read(buf, buf_len, callback);
 }
+int CurveCPClientSocket::Read(IOBuffer* buf,
+                              int buf_len,
+                              const CompletionCallback& callback) {
+  return messenger_.Read(buf, buf_len, callback);
+}
 
 int CurveCPClientSocket::Write(IOBuffer* buf,
                                int buf_len,

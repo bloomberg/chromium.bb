@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "net/base/completion_callback.h"
 #include "net/socket/socket.h"
 #include "net/socket/stream_socket.h"
 #include "remoting/protocol/session.h"
@@ -40,6 +41,8 @@ class FakeSocket : public net::StreamSocket {
   // net::Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
                    net::OldCompletionCallback* callback) OVERRIDE;
+  virtual int Read(net::IOBuffer* buf, int buf_len,
+                   const net::CompletionCallback& callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buf, int buf_len,
                     net::OldCompletionCallback* callback) OVERRIDE;
 
@@ -66,7 +69,8 @@ class FakeSocket : public net::StreamSocket {
   bool read_pending_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
-  net::OldCompletionCallback* read_callback_;
+  net::OldCompletionCallback* old_read_callback_;
+  net::CompletionCallback read_callback_;
 
   std::string written_data_;
   std::string input_data_;
@@ -97,6 +101,8 @@ class FakeUdpSocket : public net::Socket {
   // net::Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
                    net::OldCompletionCallback* callback) OVERRIDE;
+  virtual int Read(net::IOBuffer* buf, int buf_len,
+                   const net::CompletionCallback& callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buf, int buf_len,
                     net::OldCompletionCallback* callback) OVERRIDE;
 
@@ -107,7 +113,8 @@ class FakeUdpSocket : public net::Socket {
   bool read_pending_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
-  net::OldCompletionCallback* read_callback_;
+  net::OldCompletionCallback* old_read_callback_;
+  net::CompletionCallback read_callback_;
 
   std::vector<std::string> written_packets_;
   std::vector<std::string> input_packets_;

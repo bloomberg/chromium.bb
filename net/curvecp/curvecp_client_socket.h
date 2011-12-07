@@ -41,10 +41,13 @@ class CurveCPClientSocket : public StreamSocket {
   virtual int64 NumBytesRead() const OVERRIDE;
   virtual base::TimeDelta GetConnectTimeMicros() const OVERRIDE;
 
-  // Socket methods:
+  // Socket implementation.
   virtual int Read(IOBuffer* buf,
                    int buf_len,
                    OldCompletionCallback* callback) OVERRIDE;
+  virtual int Read(IOBuffer* buf,
+                   int buf_len,
+                   const CompletionCallback& callback) OVERRIDE;
   virtual int Write(IOBuffer* buf,
                     int buf_len,
                     OldCompletionCallback* callback) OVERRIDE;

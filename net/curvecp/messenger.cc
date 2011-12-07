@@ -59,7 +59,7 @@ Messenger::Messenger(Packetizer* packetizer)
     : packetizer_(packetizer),
       send_buffer_(kSendBufferSize),
       send_complete_callback_(NULL),
-      receive_complete_callback_(NULL),
+      old_receive_complete_callback_(NULL),
       pending_receive_length_(0),
       send_message_in_progress_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -72,7 +72,25 @@ Messenger::~Messenger() {
 
 int Messenger::Read(IOBuffer* buf, int buf_len, OldCompletionCallback* callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK(!receive_complete_callback_);
+  DCHECK(!old_receive_complete_callback_ &&
+         receive_complete_callback_.is_null());
+
+  if (!received_list_.bytes_available()) {
+    old_receive_complete_callback_ = callback;
+    pending_receive_ = buf;
+    pending_receive_length_ = buf_len;
+    return ERR_IO_PENDING;
+  }
+
+  int bytes_read = InternalRead(buf, buf_len);
+  DCHECK_LT(0, bytes_read);
+  return bytes_read;
+}
+int Messenger::Read(IOBuffer* buf, int buf_len,
+                    const CompletionCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!old_receive_complete_callback_ &&
+         receive_complete_callback_.is_null());
 
   if (!received_list_.bytes_available()) {
     receive_complete_callback_ = callback;
@@ -338,12 +356,20 @@ void Messenger::RecvMessage() {
   }
 
   // If we have data available, and a read is pending, notify the callback.
-  if (received_list_.bytes_available() && receive_complete_callback_) {
+  if (received_list_.bytes_available() &&
+      (old_receive_complete_callback_ ||
+       !receive_complete_callback_.is_null())) {
     // Pass the data up to the caller.
     int bytes_read = InternalRead(pending_receive_, pending_receive_length_);
-    OldCompletionCallback* callback = receive_complete_callback_;
-    receive_complete_callback_ = NULL;
-    callback->Run(bytes_read);
+    if (old_receive_complete_callback_) {
+      OldCompletionCallback* callback = old_receive_complete_callback_;
+      old_receive_complete_callback_ = NULL;
+      callback->Run(bytes_read);
+    } else {
+      CompletionCallback callback = receive_complete_callback_;
+      receive_complete_callback_.Reset();
+      callback.Run(bytes_read);
+    }
   }
 }
 

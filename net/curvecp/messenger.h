@@ -34,9 +34,10 @@ class Messenger : public base::NonThreadSafe,
   virtual ~Messenger();
 
   int Read(IOBuffer* buf, int buf_len, OldCompletionCallback* callback);
+  int Read(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
   int Write(IOBuffer* buf, int buf_len, OldCompletionCallback* callback);
 
-  // Packetizer::Listener methods:
+  // Packetizer::Listener implementation.
   virtual void OnConnection(ConnectionKey key) OVERRIDE;
   virtual void OnClose(Packetizer* packetizer, ConnectionKey key);
   virtual void OnMessage(Packetizer* packetizer,
@@ -76,7 +77,8 @@ class Messenger : public base::NonThreadSafe,
 
   // The read_buffer is a list of pending data which has been unpacked from
   // messages and is awaiting delivery to the application.
-  OldCompletionCallback* receive_complete_callback_;
+  OldCompletionCallback* old_receive_complete_callback_;
+  CompletionCallback receive_complete_callback_;
   scoped_refptr<IOBuffer> pending_receive_;
   int pending_receive_length_;
 

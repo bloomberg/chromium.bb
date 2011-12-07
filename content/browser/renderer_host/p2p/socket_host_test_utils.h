@@ -55,9 +55,11 @@ class FakeSocket : public net::StreamSocket {
   void SetPeerAddress(const net::IPEndPoint& peer_address);
   void SetLocalAddress(const net::IPEndPoint& local_address);
 
-  // net::Socket interface.
+  // net::Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-           net::OldCompletionCallback* callback) OVERRIDE;
+                   net::OldCompletionCallback* callback) OVERRIDE;
+  virtual int Read(net::IOBuffer* buf, int buf_len,
+                   const net::CompletionCallback& callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buf, int buf_len,
                     net::OldCompletionCallback* callback) OVERRIDE;
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
@@ -81,7 +83,8 @@ class FakeSocket : public net::StreamSocket {
   bool read_pending_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
-  net::OldCompletionCallback* read_callback_;
+  net::OldCompletionCallback* old_read_callback_;
+  net::CompletionCallback read_callback_;
 
   std::string* written_data_;
   std::string input_data_;
@@ -112,9 +115,15 @@ void FakeSocket::AppendInputData(const char* data, int data_size) {
     memcpy(read_buffer_->data(), &input_data_[0] + input_pos_, result);
     input_pos_ += result;
     read_buffer_ = NULL;
-    net::OldCompletionCallback* cb = read_callback_;
-    read_callback_ = NULL;
-    cb->Run(result);
+    if (old_read_callback_) {
+      net::OldCompletionCallback* cb = old_read_callback_;
+      old_read_callback_ = NULL;
+      cb->Run(result);
+    } else {
+      net::CompletionCallback cb = read_callback_;
+      read_callback_.Reset();
+      cb.Run(result);
+    }
   }
 }
 
@@ -128,6 +137,23 @@ void FakeSocket::SetLocalAddress(const net::IPEndPoint& local_address) {
 
 int FakeSocket::Read(net::IOBuffer* buf, int buf_len,
                      net::OldCompletionCallback* callback) {
+  DCHECK(buf);
+  if (input_pos_ < static_cast<int>(input_data_.size())){
+    int result = std::min(buf_len,
+                          static_cast<int>(input_data_.size()) - input_pos_);
+    memcpy(buf->data(), &(*input_data_.begin()) + input_pos_, result);
+    input_pos_ += result;
+    return result;
+  } else {
+    read_pending_ = true;
+    read_buffer_ = buf;
+    read_buffer_size_ = buf_len;
+    old_read_callback_ = callback;
+    return net::ERR_IO_PENDING;
+  }
+}
+int FakeSocket::Read(net::IOBuffer* buf, int buf_len,
+                     const net::CompletionCallback& callback) {
   DCHECK(buf);
   if (input_pos_ < static_cast<int>(input_data_.size())){
     int result = std::min(buf_len,

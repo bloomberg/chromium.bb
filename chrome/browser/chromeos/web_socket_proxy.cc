@@ -49,6 +49,7 @@
 #include "googleurl/src/url_parse.h"
 #include "net/base/address_list.h"
 #include "net/base/cert_verifier.h"
+#include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -555,12 +556,13 @@ class SSLChan : public MessageLoopForIO::Watcher {
         read_pipe_(read_pipe),
         write_pipe_(write_pipe),
         method_factory_(this),
-        socket_connect_callback_(
-            base::Bind(&SSLChan::OnSocketConnect, base::Unretained(this))),
-        ssl_handshake_callback_(
+        ALLOW_THIS_IN_INITIALIZER_LIST(socket_connect_callback_(
+            base::Bind(&SSLChan::OnSocketConnect, base::Unretained(this)))),
+        ALLOW_THIS_IN_INITIALIZER_LIST(ssl_handshake_callback_(
             base::Bind(&SSLChan::OnSSLHandshakeCompleted,
-                       base::Unretained(this))),
-        socket_read_callback_(NewCallback(this, &SSLChan::OnSocketRead)),
+                       base::Unretained(this)))),
+        ALLOW_THIS_IN_INITIALIZER_LIST(socket_read_callback_(
+            base::Bind(&SSLChan::OnSocketRead, base::Unretained(this)))),
         socket_write_callback_(NewCallback(this, &SSLChan::OnSocketWrite)) {
     if (!SetNonBlock(read_pipe_) || !SetNonBlock(write_pipe_)) {
       Shut(net::ERR_UNEXPECTED);
@@ -732,7 +734,7 @@ class SSLChan : public MessageLoopForIO::Watcher {
         scoped_refptr<net::IOBufferWithSize> buf =
             inbound_stream_.GetIOBufferToFill();
         if (buf && buf->size() > 0) {
-          int rv = socket_->Read(buf, buf->size(), socket_read_callback_.get());
+          int rv = socket_->Read(buf, buf->size(), socket_read_callback_);
           is_socket_read_pending_ = true;
           if (rv != net::ERR_IO_PENDING) {
             MessageLoop::current()->PostTask(FROM_HERE,
@@ -797,7 +799,7 @@ class SSLChan : public MessageLoopForIO::Watcher {
   ScopedRunnableMethodFactory<SSLChan> method_factory_;
   net::CompletionCallback socket_connect_callback_;
   net::CompletionCallback ssl_handshake_callback_;
-  scoped_ptr<net::OldCompletionCallback> socket_read_callback_;
+  net::CompletionCallback socket_read_callback_;
   scoped_ptr<net::OldCompletionCallback> socket_write_callback_;
   MessageLoopForIO::FileDescriptorWatcher read_pipe_controller_;
   MessageLoopForIO::FileDescriptorWatcher write_pipe_controller_;

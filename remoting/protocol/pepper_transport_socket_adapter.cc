@@ -49,7 +49,7 @@ PepperTransportSocketAdapter::PepperTransportSocketAdapter(
       transport_(transport),
       connected_(false),
       get_address_pending_(false),
-      read_callback_(NULL),
+      old_read_callback_(NULL),
       write_callback_(NULL) {
   callback_factory_.Initialize(this);
 }
@@ -68,7 +68,29 @@ void PepperTransportSocketAdapter::AddRemoteCandidate(
 int PepperTransportSocketAdapter::Read(net::IOBuffer* buf, int buf_len,
                                        net::OldCompletionCallback* callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK(!read_callback_);
+  DCHECK(!old_read_callback_ && read_callback_.is_null());
+  DCHECK(!read_buffer_);
+
+  if (!transport_.get())
+    return net::ERR_SOCKET_NOT_CONNECTED;
+
+  int result = PPErrorToNetError(transport_->Recv(
+      buf->data(), buf_len,
+      callback_factory_.NewOptionalCallback(
+          &PepperTransportSocketAdapter::OnRead)));
+
+  if (result == net::ERR_IO_PENDING) {
+    old_read_callback_ = callback;
+    read_buffer_ = buf;
+  }
+
+  return result;
+}
+int PepperTransportSocketAdapter::Read(
+    net::IOBuffer* buf, int buf_len,
+    const net::CompletionCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!old_read_callback_ && read_callback_.is_null());
   DCHECK(!read_buffer_);
 
   if (!transport_.get())
@@ -296,13 +318,20 @@ void PepperTransportSocketAdapter::OnConnect(int result) {
 
 void PepperTransportSocketAdapter::OnRead(int32_t result) {
   DCHECK(CalledOnValidThread());
-  DCHECK(read_callback_);
+  DCHECK(old_read_callback_ || read_callback_.is_null());
   DCHECK(read_buffer_);
 
-  net::OldCompletionCallback* callback = read_callback_;
-  read_callback_ = NULL;
-  read_buffer_ = NULL;
-  callback->Run(PPErrorToNetError(result));
+  if (old_read_callback_) {
+    net::OldCompletionCallback* callback = old_read_callback_;
+    old_read_callback_ = NULL;
+    read_buffer_ = NULL;
+    callback->Run(PPErrorToNetError(result));
+  } else {
+    net::CompletionCallback callback = read_callback_;
+    read_callback_.Reset();
+    read_buffer_ = NULL;
+    callback.Run(PPErrorToNetError(result));
+  }
 }
 
 void PepperTransportSocketAdapter::OnWrite(int32_t result) {

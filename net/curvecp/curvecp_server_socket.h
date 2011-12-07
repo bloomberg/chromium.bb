@@ -33,17 +33,20 @@ class CurveCPServerSocket : public Socket,
   int Listen(const IPEndPoint& endpoint, Acceptor* acceptor);
   void Close();
 
-  // Socket methods:
+  // Socket implementation.
   virtual int Read(IOBuffer* buf,
                    int buf_len,
                    OldCompletionCallback* callback) OVERRIDE;
+  virtual int Read(IOBuffer* buf,
+                   int buf_len,
+                   const CompletionCallback& callback) OVERRIDE;
   virtual int Write(IOBuffer* buf,
                     int buf_len,
                     OldCompletionCallback* callback) OVERRIDE;
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
   virtual bool SetSendBufferSize(int32 size) OVERRIDE;
 
-  // ServerMessenger::Acceptor methods:
+  // ServerMessenger::Acceptor implementation.
   virtual void OnAccept(ConnectionKey key) OVERRIDE;
 
  private:

@@ -73,6 +73,13 @@ int ProxyResolvingClientSocket::Read(net::IOBuffer* buf, int buf_len,
   NOTREACHED();
   return net::ERR_SOCKET_NOT_CONNECTED;
 }
+int ProxyResolvingClientSocket::Read(net::IOBuffer* buf, int buf_len,
+                                     const net::CompletionCallback& callback) {
+  if (transport_.get() && transport_->socket())
+    return transport_->socket()->Read(buf, buf_len, callback);
+  NOTREACHED();
+  return net::ERR_SOCKET_NOT_CONNECTED;
+}
 
 int ProxyResolvingClientSocket::Write(net::IOBuffer* buf, int buf_len,
                                       net::OldCompletionCallback* callback) {

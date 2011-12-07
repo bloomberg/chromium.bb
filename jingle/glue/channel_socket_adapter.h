@@ -6,6 +6,7 @@
 #define JINGLE_GLUE_CHANNEL_SOCKET_ADAPTER_H_
 
 #include "base/compiler_specific.h"
+#include "net/base/completion_callback.h"
 #include "net/socket/socket.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
@@ -33,9 +34,11 @@ class TransportChannelSocketAdapter : public net::Socket,
   // Must be called before the session and the channel are destroyed.
   void Close(int error_code);
 
-  // Socket interface.
+  // Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
                    net::OldCompletionCallback* callback) OVERRIDE;
+  virtual int Read(net::IOBuffer* buf, int buf_len,
+                   const net::CompletionCallback& callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buf, int buf_len,
                     net::OldCompletionCallback* callback) OVERRIDE;
 
@@ -52,7 +55,8 @@ class TransportChannelSocketAdapter : public net::Socket,
 
   cricket::TransportChannel* channel_;
 
-  net::OldCompletionCallback* read_callback_;  // Not owned.
+  net::OldCompletionCallback* old_read_callback_;  // Not owned.
+  net::CompletionCallback read_callback_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
 

@@ -36,13 +36,33 @@ void FakeSocket::AppendInputData(const char* data, int data_size) {
     memcpy(read_buffer_->data(),
            &(*input_data_.begin()) + input_pos_, result);
     input_pos_ += result;
-    read_callback_->Run(result);
+    if (old_read_callback_)
+      old_read_callback_->Run(result);
+    else
+      read_callback_.Run(result);
     read_buffer_ = NULL;
   }
 }
 
 int FakeSocket::Read(net::IOBuffer* buf, int buf_len,
                      net::OldCompletionCallback* callback) {
+  EXPECT_EQ(message_loop_, MessageLoop::current());
+  if (input_pos_ < static_cast<int>(input_data_.size())) {
+    int result = std::min(buf_len,
+                          static_cast<int>(input_data_.size()) - input_pos_);
+    memcpy(buf->data(), &(*input_data_.begin()) + input_pos_, result);
+    input_pos_ += result;
+    return result;
+  } else {
+    read_pending_ = true;
+    read_buffer_ = buf;
+    read_buffer_size_ = buf_len;
+    old_read_callback_ = callback;
+    return net::ERR_IO_PENDING;
+  }
+}
+int FakeSocket::Read(net::IOBuffer* buf, int buf_len,
+                     const net::CompletionCallback& callback) {
   EXPECT_EQ(message_loop_, MessageLoop::current());
   if (input_pos_ < static_cast<int>(input_data_.size())) {
     int result = std::min(buf_len,
@@ -146,6 +166,7 @@ base::TimeDelta FakeSocket::GetConnectTimeMicros() const {
 
 FakeUdpSocket::FakeUdpSocket()
     : read_pending_(false),
+      old_read_callback_(NULL),
       input_pos_(0),
       message_loop_(MessageLoop::current()) {
 }
@@ -165,13 +186,33 @@ void FakeUdpSocket::AppendInputPacket(const char* data, int data_size) {
     int result = std::min(data_size, read_buffer_size_);
     memcpy(read_buffer_->data(), data, result);
     input_pos_ = input_packets_.size();
-    read_callback_->Run(result);
+    if (old_read_callback_)
+      old_read_callback_->Run(result);
+    else
+      old_read_callback_->Run(result);
     read_buffer_ = NULL;
   }
 }
 
 int FakeUdpSocket::Read(net::IOBuffer* buf, int buf_len,
                         net::OldCompletionCallback* callback) {
+  EXPECT_EQ(message_loop_, MessageLoop::current());
+  if (input_pos_ < static_cast<int>(input_packets_.size())) {
+    int result = std::min(
+        buf_len, static_cast<int>(input_packets_[input_pos_].size()));
+    memcpy(buf->data(), &(*input_packets_[input_pos_].begin()), result);
+    ++input_pos_;
+    return result;
+  } else {
+    read_pending_ = true;
+    read_buffer_ = buf;
+    read_buffer_size_ = buf_len;
+    old_read_callback_ = callback;
+    return net::ERR_IO_PENDING;
+  }
+}
+int FakeUdpSocket::Read(net::IOBuffer* buf, int buf_len,
+                        const net::CompletionCallback& callback) {
   EXPECT_EQ(message_loop_, MessageLoop::current());
   if (input_pos_ < static_cast<int>(input_packets_.size())) {
     int result = std::min(

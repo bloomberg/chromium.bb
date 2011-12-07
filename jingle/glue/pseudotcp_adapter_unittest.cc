@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "jingle/glue/thread_wrapper.h"
+#include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -80,7 +81,7 @@ class LeakyBucket : public RateLimiter {
 class FakeSocket : public net::Socket {
  public:
   FakeSocket()
-      : read_callback_(NULL),
+      : old_read_callback_(NULL),
         rate_limiter_(NULL),
         latency_ms_(0) {
   }
@@ -90,13 +91,20 @@ class FakeSocket : public net::Socket {
     if (rate_limiter_ && rate_limiter_->DropNextPacket())
       return;  // Lose the packet.
 
-    if (read_callback_) {
+    if (old_read_callback_ || !read_callback_.is_null()) {
       int size = std::min(read_buffer_size_, static_cast<int>(data.size()));
       memcpy(read_buffer_->data(), &data[0], data.size());
-      net::OldCompletionCallback* cb = read_callback_;
-      read_callback_ = NULL;
-      read_buffer_ = NULL;
-      cb->Run(size);
+      if (old_read_callback_) {
+        net::OldCompletionCallback* cb = old_read_callback_;
+        old_read_callback_ = NULL;
+        read_buffer_ = NULL;
+        cb->Run(size);
+      } else {
+        net::CompletionCallback cb = read_callback_;
+        read_callback_.Reset();
+        read_buffer_ = NULL;
+        cb.Run(size);
+      }
     } else {
       incoming_packets_.push_back(data);
     }
@@ -112,10 +120,29 @@ class FakeSocket : public net::Socket {
 
   void set_latency(int latency_ms) { latency_ms_ = latency_ms; };
 
-  // net::Socket interface.
+  // net::Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
                    net::OldCompletionCallback* callback) {
-    CHECK(!read_callback_);
+    CHECK(!old_read_callback_ && read_callback_.is_null());
+    CHECK(buf);
+
+    if (incoming_packets_.size() > 0) {
+      scoped_refptr<net::IOBuffer> buffer(buf);
+      int size = std::min(
+          static_cast<int>(incoming_packets_.front().size()), buf_len);
+      memcpy(buffer->data(), &*incoming_packets_.front().begin(), size);
+      incoming_packets_.pop_front();
+      return size;
+    } else {
+      old_read_callback_ = callback;
+      read_buffer_ = buf;
+      read_buffer_size_ = buf_len;
+      return net::ERR_IO_PENDING;
+    }
+  }
+  virtual int Read(net::IOBuffer* buf, int buf_len,
+                   const net::CompletionCallback& callback) {
+    CHECK(!old_read_callback_ && read_callback_.is_null());
     CHECK(buf);
 
     if (incoming_packets_.size() > 0) {
@@ -160,7 +187,8 @@ class FakeSocket : public net::Socket {
  private:
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
-  net::OldCompletionCallback* read_callback_;
+  net::OldCompletionCallback* old_read_callback_;
+  net::CompletionCallback read_callback_;
 
   std::deque<std::vector<char> > incoming_packets_;
 
