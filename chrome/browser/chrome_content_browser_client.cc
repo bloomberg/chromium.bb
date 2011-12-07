@@ -950,10 +950,9 @@ void ChromeContentBrowserClient::SelectClientCertificate(
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
   if (!wrapper) {
-    LOG(ERROR) << " *** No TabcontentsWrapper for: " << tab->GetURL().spec();
     // If there is no TabContentsWrapper for the given TabContents then we can't
     // show the user a dialog to select a client certificate. So we simply
-    // cancel the request.
+    // proceed with no client certificate.
     handler->CertificateSelected(NULL);
     return;
   }
