@@ -216,18 +216,11 @@ def MakeSelUniversalScriptForLD(ld_flags,
       other input files. The output will be written to outfile.  """
   script = []
 
-  # Join all the arguments.
-  # Based on the format of RUN_LD, the order of arguments is:
-  # ld_flags, then input files (which are more sensitive to order).
-  kTerminator = '\0'
-  command_line = kTerminator.join(ld_flags) + kTerminator
-
   # Open the output file.
   script.append('readwrite_file nexefile %s' % outfile)
   # Start the pnacl lookup service.
   script.append('pnacl_emu_initialize')
   script.append('install_upcalls lookup_service_string dummy_channel')
-  script.append('rpc StartLookupService s("${lookup_service_string}") *')
   # Create a mapping for each input file and add it to the command line.
   for f in files:
     basename = pathtools.basename(f)
@@ -236,11 +229,32 @@ def MakeSelUniversalScriptForLD(ld_flags,
     nicename = basename.replace('.','_').replace('-','_')
     script.append('readonly_file %s %s' % (nicename, f))
     script.append('pnacl_emu_add_varname_mapping %s %s' % (basename, nicename))
-    command_line = command_line + basename + kTerminator
 
-  command_line_escaped = command_line.replace(kTerminator, '\\x00')
-  script.append('rpc Run C(%d,%s) h(nexefile) i(0) s("") s("") *' %
-                (len(command_line), command_line_escaped))
+  use_default = env.getbool('USE_DEFAULT_CMD_LINE')
+  if use_default:
+    basename = pathtools.basename(main_input)
+    # A nice name for making a sel_universal variable.
+    # Hopefully this does not clash...
+    nicename = basename.replace('.','_').replace('-','_')
+    script.append('readonly_file %s %s' % (nicename, main_input))
+    contract_name = '___PNACL_GENERATED'
+    script.append('pnacl_emu_add_varname_mapping %s %s' %
+                  (contract_name, nicename))
+    script.append('rpc RunWithDefaultCommandLine s("${lookup_service_string}")'
+                  ' h(nexefile) i(0) s("") s("") *')
+  else:
+    # Join all the arguments.
+    # Based on the format of RUN_LD, the order of arguments is:
+    # ld_flags, then input files (which are more sensitive to order).
+    kTerminator = '\0'
+    command_line = kTerminator.join(ld_flags) + kTerminator
+    for f in files:
+      basename = pathtools.basename(f)
+      command_line = command_line + basename + kTerminator
+    command_line_escaped = command_line.replace(kTerminator, '\\x00')
+    script.append('rpc Run s("${lookup_service_string}") h(nexefile) i(0)'
+                  ' s("") s("") C(%d,%s) *' %
+                  (len(command_line), command_line_escaped))
   script.append('echo "ld complete"')
   script.append('')
   return '\n'.join(script)

@@ -4,7 +4,7 @@
 # found in the LICENSE file.
 #
 # IMPORTANT NOTE: If you make local mods to this file, you must run:
-#   %  tools/llvm/utman.sh driver
+#   %  pnacl/build.sh driver
 # in order for them to take effect in the scons build.  This command
 # updates the copy in the toolchain/ tree.
 #
@@ -321,25 +321,27 @@ def RunLLCSRPC():
   infile = env.getone("input")
   outfile = env.getone("output")
   flags = env.get("LLC_FLAGS")
-  script = MakeSelUniversalScriptForLLC(infile, outfile, flags)
+  use_default = env.getbool("USE_DEFAULT_CMD_LINE")
+  script = MakeSelUniversalScriptForLLC(infile, outfile, flags, use_default)
 
   RunWithLog('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ' +
              '${SEL_UNIVERSAL_FLAGS} -- ${LLC_SRPC}',
              stdin=script, echo_stdout = False, echo_stderr = False)
 
-def MakeSelUniversalScriptForLLC(infile, outfile, flags):
+def MakeSelUniversalScriptForLLC(infile, outfile, flags, use_default):
   script = []
   script.append('readonly_file myfile %s' % infile)
   script.append('readwrite_file objfile %s' % outfile)
-  script.append('pnacl_emu_initialize')
-  script.append('install_upcalls lookup_service_string dummy_channel')
-  script.append('rpc StartLookupService s("${lookup_service_string}") *')
-  # command_line is a NUL (\x00) terminated sequence.
-  kTerminator = '\0'
-  command_line = kTerminator.join(['llc'] + flags) + kTerminator
-  command_line_escaped = command_line.replace(kTerminator, '\\x00')
-  script.append('rpc Run C(%d,%s) h(myfile) h(objfile) * i() s() s()' %
-                (len(command_line), command_line_escaped))
+  if use_default:
+    script.append('rpc RunWithDefaultCommandLine  h(myfile) h(objfile) *'
+                  ' i() s() s()');
+  else:
+    # command_line is a NUL (\x00) terminated sequence.
+    kTerminator = '\0'
+    command_line = kTerminator.join(['llc'] + flags) + kTerminator
+    command_line_escaped = command_line.replace(kTerminator, '\\x00')
+    script.append('rpc Run h(myfile) h(objfile) C(%d,%s) * i() s() s()' %
+                  (len(command_line), command_line_escaped))
   script.append('echo "llc complete"')
   script.append('')
   return '\n'.join(script)

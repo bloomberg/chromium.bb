@@ -241,10 +241,10 @@ else
 fi
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-ae2b9bfebfdf}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-86b90e0b9a25}
 
 readonly NEWLIB_REV=c6358617f3fd
-readonly BINUTILS_REV=fb93e69d9948
+readonly BINUTILS_REV=ed4cebe8076c
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 
 readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-145883}
