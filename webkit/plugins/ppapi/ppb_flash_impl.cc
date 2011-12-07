@@ -50,7 +50,7 @@ PP_Var GetProxyForURL(PP_Instance pp_instance, const char* url) {
   std::string proxy_host = instance->delegate()->ResolveProxy(gurl);
   if (proxy_host.empty())
     return PP_MakeUndefined();  // No proxy.
-  return StringVar::StringToPPVar(instance->module()->pp_module(), proxy_host);
+  return StringVar::StringToPPVar(proxy_host);
 }
 
 int32_t Navigate(PP_Resource request_id,
@@ -110,7 +110,7 @@ PP_Var GetCommandLineArgs(PP_Module pp_module) {
     return PP_MakeUndefined();
 
   std::string args = instance->delegate()->GetFlashCommandLineArgs();
-  return StringVar::StringToPPVar(pp_module, args);
+  return StringVar::StringToPPVar(args);
 }
 
 const PPB_Flash ppb_flash = {

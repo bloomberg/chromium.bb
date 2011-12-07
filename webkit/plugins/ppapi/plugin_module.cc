@@ -85,6 +85,7 @@
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/ppb_opengles2_shared.h"
+#include "ppapi/shared_impl/ppb_var_impl.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
@@ -109,7 +110,7 @@
 #include "webkit/plugins/ppapi/ppb_proxy_impl.h"
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
 #include "webkit/plugins/ppapi/ppb_uma_private_impl.h"
-#include "webkit/plugins/ppapi/ppb_var_impl.h"
+#include "webkit/plugins/ppapi/ppb_var_deprecated_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_capture_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_layer_impl.h"
@@ -322,9 +323,11 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_URLLOADERTRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_URLLoaderTrusted_Thunk();
   if (strcmp(name, PPB_VAR_DEPRECATED_INTERFACE) == 0)
-    return PPB_Var_Impl::GetVarDeprecatedInterface();
+    return PPB_Var_Deprecated_Impl::GetVarDeprecatedInterface();
   if (strcmp(name, PPB_VAR_INTERFACE_1_0) == 0)
-    return PPB_Var_Impl::GetVarInterface();
+    return ::ppapi::PPB_Var_Impl::GetVarInterface1_0();
+  if (strcmp(name, PPB_VAR_INTERFACE_1_1) == 0)
+    return ::ppapi::PPB_Var_Impl::GetVarInterface();
 
 #ifdef ENABLE_FLAPPER_HACKS
   if (strcmp(name, PPB_FLASH_NETCONNECTOR_INTERFACE) == 0)

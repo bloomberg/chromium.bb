@@ -82,7 +82,6 @@
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
 #include "ppapi/proxy/ppb_url_response_info_proxy.h"
 #include "ppapi/proxy/ppb_var_deprecated_proxy.h"
-#include "ppapi/proxy/ppb_var_proxy.h"
 #include "ppapi/proxy/ppb_video_capture_proxy.h"
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
@@ -95,6 +94,7 @@
 #include "ppapi/proxy/ppp_video_decoder_proxy.h"
 #include "ppapi/proxy/resource_creation_proxy.h"
 #include "ppapi/shared_impl/ppb_opengles2_shared.h"
+#include "ppapi/shared_impl/ppb_var_impl.h"
 #include "ppapi/thunk/thunk.h"
 
 // Helper to get the proxy name PPB_Foo_Proxy given the API name PPB_Foo.
@@ -166,7 +166,9 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_OPENGLES2_INTERFACE, API_ID_NONE,
          PPB_OpenGLES2_Shared::GetInterface());
   AddPPB(PPB_VAR_INTERFACE, API_ID_NONE,
-         GetPPB_Var_Interface());
+         PPB_Var_Impl::GetVarInterface());
+  AddPPB(PPB_VAR_INTERFACE_1_0, API_ID_NONE,
+         PPB_Var_Impl::GetVarInterface1_0());
 
   AddFlashInterfaces();
 

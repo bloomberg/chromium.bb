@@ -217,7 +217,7 @@ void PpbPdfRpcServer::PPB_PDF_UserMetricsRecordAction(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   PP_Var pp_action = PP_MakeUndefined();
-  if (!DeserializeTo(rpc->channel, action, action_size, 1, &pp_action))
+  if (!DeserializeTo(action, action_size, 1, &pp_action))
     return;
   PPBPDFInterface()->UserMetricsRecordAction(pp_action);
 

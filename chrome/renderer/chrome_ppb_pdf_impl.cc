@@ -31,7 +31,6 @@
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/host_resource_tracker.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 
@@ -142,7 +141,7 @@ PP_Var GetLocalizedString(PP_Instance instance_id,
     NOTREACHED();
   }
 
-  return ppapi::StringVar::StringToPPVar(instance->module()->pp_module(), rv);
+  return ppapi::StringVar::StringToPPVar(rv);
 }
 
 PP_Resource GetResourceImage(PP_Instance instance_id,

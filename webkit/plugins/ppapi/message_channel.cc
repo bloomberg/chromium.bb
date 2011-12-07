@@ -111,7 +111,7 @@ PP_Var CopyPPVar(const PP_Var& var) {
     StringVar* string = StringVar::FromPPVar(var);
     if (!string)
       return PP_MakeUndefined();
-    return StringVar::StringToPPVar(string->pp_module(), string->value());
+    return StringVar::StringToPPVar(string->value());
   } else {
     return var;
   }

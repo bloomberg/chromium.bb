@@ -57,8 +57,7 @@ void PpbFontRpcServer::PPB_Font_Create(
     return;
   struct PP_FontDescription_Dev* pp_description =
       reinterpret_cast<struct PP_FontDescription_Dev*>(description);
-  if (!DeserializeTo(
-      rpc->channel, face, face_size, 1, &pp_description->face)) {
+  if (!DeserializeTo(face, face_size, 1, &pp_description->face)) {
     return;
   }
   *font = PPBFontInterface()->Create(instance, pp_description);
@@ -137,7 +136,7 @@ void PpbFontRpcServer::PPB_Font_DrawTextAt(
     return;
   struct PP_TextRun_Dev* pp_text_run =
       reinterpret_cast<struct PP_TextRun_Dev*>(text_run);
-  if (!DeserializeTo(rpc->channel, text, text_size, 1, &pp_text_run->text))
+  if (!DeserializeTo(text, text_size, 1, &pp_text_run->text))
     return;
   struct PP_Point* pp_position =
       reinterpret_cast<struct PP_Point*>(position);
@@ -170,7 +169,7 @@ void PpbFontRpcServer::PPB_Font_MeasureText(
     return;
   struct PP_TextRun_Dev* pp_text_run =
       reinterpret_cast<struct PP_TextRun_Dev*>(text_run);
-  if (!DeserializeTo(rpc->channel, text, text_size, 1, &pp_text_run->text))
+  if (!DeserializeTo(text, text_size, 1, &pp_text_run->text))
     return;
   *width = PPBFontInterface()->MeasureText(font, pp_text_run);
 
@@ -193,7 +192,7 @@ void PpbFontRpcServer::PPB_Font_CharacterOffsetForPixel(
     return;
   struct PP_TextRun_Dev* pp_text_run =
       reinterpret_cast<struct PP_TextRun_Dev*>(text_run);
-  if (!DeserializeTo(rpc->channel, text, text_size, 1, &pp_text_run->text))
+  if (!DeserializeTo(text, text_size, 1, &pp_text_run->text))
     return;
   *offset = PPBFontInterface()->CharacterOffsetForPixel(font,
                                                         pp_text_run,
@@ -219,7 +218,7 @@ void PpbFontRpcServer::PPB_Font_PixelOffsetForCharacter(
     return;
   struct PP_TextRun_Dev* pp_text_run =
       reinterpret_cast<struct PP_TextRun_Dev*>(text_run);
-  if (!DeserializeTo(rpc->channel, text, text_size, 1, &pp_text_run->text))
+  if (!DeserializeTo(text, text_size, 1, &pp_text_run->text))
     return;
   *offset = PPBFontInterface()->PixelOffsetForCharacter(font,
                                                         pp_text_run,

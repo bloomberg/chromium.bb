@@ -92,6 +92,7 @@ InterfaceMapElement interface_map[] = {
   { PPB_URLRESPONSEINFO_INTERFACE, PluginURLResponseInfo::GetInterface(),
     true },
   { PPB_VAR_INTERFACE, PluginVar::GetInterface(), true },
+  { PPB_VAR_INTERFACE_1_0, PluginVar::GetInterface1_0(), true },
   { PPB_WHEEL_INPUT_EVENT_INTERFACE, PluginInputEvent::GetWheelInterface(),
     true },
   { PPB_WIDGET_DEV_INTERFACE, PluginWidget::GetInterface(), true },

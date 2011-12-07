@@ -46,8 +46,7 @@ std::string TestVar::TestBasicString() {
   {
     const char kStr[] = "Hello";
     const uint32_t kStrLen(sizeof(kStr) - 1);
-    PP_Var str = var_interface_->VarFromUtf8(pp::Module::Get()->pp_module(),
-                                             kStr, kStrLen);
+    PP_Var str = var_interface_->VarFromUtf8(kStr, kStrLen);
     ASSERT_EQ(PP_VARTYPE_STRING, str.type);
 
     // Reading back the string should work.
@@ -122,8 +121,7 @@ std::string TestVar::TestNullInputInUtf8Conversion() {
 
   // 0-length string should not dereference input string, and should produce
   // an empty string.
-  converted_string = var_interface_->VarFromUtf8(
-      pp::Module::Get()->pp_module(), NULL, 0);
+  converted_string = var_interface_->VarFromUtf8(NULL, 0);
   if (converted_string.type != PP_VARTYPE_STRING) {
     return "Expected 0 length to return empty string.";
   }

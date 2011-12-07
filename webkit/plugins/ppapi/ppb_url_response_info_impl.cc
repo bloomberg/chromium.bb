@@ -12,7 +12,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLResponse.h"
 #include "webkit/plugins/ppapi/common.h"
-#include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
@@ -85,27 +84,23 @@ PPB_URLResponseInfo_API* PPB_URLResponseInfo_Impl::AsPPB_URLResponseInfo_API() {
 }
 
 PP_Var PPB_URLResponseInfo_Impl::GetProperty(PP_URLResponseProperty property) {
-  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
-  if (!plugin_module)
-    return PP_MakeUndefined();
-  PP_Module pp_module = plugin_module->pp_module();
   switch (property) {
     case PP_URLRESPONSEPROPERTY_URL:
-      return StringVar::StringToPPVar(pp_module, url_);
+      return StringVar::StringToPPVar(url_);
     case PP_URLRESPONSEPROPERTY_REDIRECTURL:
       if (IsRedirect(status_code_))
-        return StringVar::StringToPPVar(pp_module, redirect_url_);
+        return StringVar::StringToPPVar(redirect_url_);
       break;
     case PP_URLRESPONSEPROPERTY_REDIRECTMETHOD:
       if (IsRedirect(status_code_))
-        return StringVar::StringToPPVar(pp_module, status_text_);
+        return StringVar::StringToPPVar(status_text_);
       break;
     case PP_URLRESPONSEPROPERTY_STATUSCODE:
       return PP_MakeInt32(status_code_);
     case PP_URLRESPONSEPROPERTY_STATUSLINE:
-      return StringVar::StringToPPVar(pp_module, status_text_);
+      return StringVar::StringToPPVar(status_text_);
     case PP_URLRESPONSEPROPERTY_HEADERS:
-      return StringVar::StringToPPVar(pp_module, headers_);
+      return StringVar::StringToPPVar(headers_);
   }
   // The default is to return an undefined PP_Var.
   return PP_MakeUndefined();

@@ -53,8 +53,7 @@ PP_Var GetFontFamilies(PP_Instance instance) {
               NaClSrpcErrorString(srpc_result));
 
   if (srpc_result == NACL_SRPC_RESULT_OK)
-    (void) DeserializeTo(
-        channel, var_bytes.get(), var_size, 1, &font_families);
+    (void) DeserializeTo(var_bytes.get(), var_size, 1, &font_families);
   return font_families;
 }
 
@@ -130,8 +129,7 @@ PP_Bool Describe(PP_Resource font,
 
   description->face = PP_MakeUndefined();
   if (srpc_result == NACL_SRPC_RESULT_OK && success) {
-    (void) DeserializeTo(
-        channel, face_bytes.get(), face_size, 1, &description->face);
+    (void) DeserializeTo(face_bytes.get(), face_size, 1, &description->face);
     return PP_TRUE;
   }
   return PP_FALSE;

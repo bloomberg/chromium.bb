@@ -19,7 +19,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/host_globals.h"
-#include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 using ppapi::StringVar;
@@ -98,7 +97,7 @@ PP_Var PPB_Flash_Clipboard_Impl::ReadPlainText(
   }
   WebKit::WebCString s =
       web_clipboard->readPlainText(ConvertClipboardType(clipboard_type)).utf8();
-  return StringVar::StringToPPVar(instance_->module()->pp_module(), s);
+  return StringVar::StringToPPVar(s);
 }
 
 int32_t PPB_Flash_Clipboard_Impl::WritePlainText(

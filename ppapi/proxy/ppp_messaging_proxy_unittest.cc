@@ -46,7 +46,7 @@ void AddRef(PP_Var /*var*/) {
 }
 void Release(PP_Var /*var*/) {
 }
-PP_Var VarFromUtf8(PP_Module /*module*/, const char* /*data*/, uint32_t len) {
+PP_Var VarFromUtf8(const char* /*data*/, uint32_t len) {
   return PP_MakeUndefined();
 }
 // No matter what id we're given, always provide kTestString and its length.

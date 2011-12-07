@@ -44,7 +44,7 @@ PP_Var PluginVarSerializationRules::BeginReceiveCallerOwned(
     const std::string* str_val,
     Dispatcher* dispatcher) {
   if (var.type == PP_VARTYPE_STRING)
-    return StringVar::StringToPPVar(0, *str_val);
+    return StringVar::StringToPPVar(*str_val);
 
   if (var.type == PP_VARTYPE_OBJECT) {
     DCHECK(dispatcher->IsPlugin());
@@ -68,7 +68,7 @@ PP_Var PluginVarSerializationRules::ReceivePassRef(const PP_Var& var,
                                                    const std::string& str_val,
                                                    Dispatcher* dispatcher) {
   if (var.type == PP_VARTYPE_STRING)
-    return StringVar::StringToPPVar(0, str_val);
+    return StringVar::StringToPPVar(str_val);
 
   // Overview of sending an object with "pass ref" from the browser to the
   // plugin:

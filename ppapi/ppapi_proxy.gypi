@@ -110,8 +110,6 @@
         'proxy/ppb_url_response_info_proxy.h',
         'proxy/ppb_var_deprecated_proxy.cc',
         'proxy/ppb_var_deprecated_proxy.h',
-        'proxy/ppb_var_proxy.cc',
-        'proxy/ppb_var_proxy.h',
         'proxy/ppb_video_capture_proxy.cc',
         'proxy/ppb_video_capture_proxy.h',
         'proxy/ppb_video_decoder_proxy.cc',

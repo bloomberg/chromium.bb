@@ -33,7 +33,7 @@ PP_Var HostVarSerializationRules::BeginReceiveCallerOwned(
     Dispatcher* /* dispatcher */) {
   if (var.type == PP_VARTYPE_STRING) {
     // Convert the string to the context of the current process.
-    return var_interface_->VarFromUtf8(pp_module_, str_val->c_str(),
+    return var_interface_->VarFromUtf8(str_val->c_str(),
                                        static_cast<uint32_t>(str_val->size()));
   }
   return var;
@@ -51,7 +51,7 @@ PP_Var HostVarSerializationRules::ReceivePassRef(const PP_Var& var,
                                                  Dispatcher* /* dispatcher */) {
   if (var.type == PP_VARTYPE_STRING) {
     // Convert the string to the context of the current process.
-    return var_interface_->VarFromUtf8(pp_module_, str_val.c_str(),
+    return var_interface_->VarFromUtf8(str_val.c_str(),
                                        static_cast<uint32_t>(str_val.size()));
   }
 

@@ -195,7 +195,7 @@ std::string ConvertIPv6AddressToString(const sockaddr_in6* a,
 }
 #endif  // OS_WIN || OS_MAC
 
-PP_Var Describe(PP_Module module,
+PP_Var Describe(PP_Module /*module*/,
                 const struct PP_NetAddress_Private* addr,
                 PP_Bool include_port) {
   if (!NetAddressPrivateImpl::ValidateNetAddress(*addr))
@@ -211,12 +211,12 @@ PP_Var Describe(PP_Module module,
     case AF_INET: {
       const sockaddr_in* a = reinterpret_cast<const sockaddr_in*>(addr->data);
       return StringVar::StringToPPVar(
-          module, ConvertIPv4AddressToString(a, !!include_port));
+          ConvertIPv4AddressToString(a, !!include_port));
     }
     case AF_INET6: {
       const sockaddr_in6* a = reinterpret_cast<const sockaddr_in6*>(addr->data);
       return StringVar::StringToPPVar(
-          module, ConvertIPv6AddressToString(a, !!include_port));
+          ConvertIPv6AddressToString(a, !!include_port));
     }
     default:
       NOTREACHED();
@@ -229,7 +229,7 @@ PP_Var Describe(PP_Module module,
   std::string description =
       include_port ? net::NetAddressToStringWithPort(a, l) :
                      net::NetAddressToString(a, l);
-  return StringVar::StringToPPVar(module, description);
+  return StringVar::StringToPPVar(description);
 #endif
 }
 

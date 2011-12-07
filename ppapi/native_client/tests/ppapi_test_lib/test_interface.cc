@@ -30,15 +30,14 @@ void PostTestMessage(nacl::string test_name, nacl::string message) {
   nacl::string test_message = test_name;
   test_message += ":";
   test_message += message;
-  PP_Var post_var = PPBVar()->VarFromUtf8(pp_instance(),
-                                          test_message.c_str(),
+  PP_Var post_var = PPBVar()->VarFromUtf8(test_message.c_str(),
                                           test_message.size());
   PPBMessaging()->PostMessage(pp_instance(), post_var);
   PPBVar()->Release(post_var);
 }
 
 PP_Var PP_MakeString(const char* s) {
-  return PPBVar()->VarFromUtf8(pp_module(), s, strlen(s));
+  return PPBVar()->VarFromUtf8(s, strlen(s));
 }
 
 nacl::string StringifyVar(const PP_Var& var) {
@@ -120,8 +119,7 @@ struct CallbackInfo {
 };
 
 void ReportCallbackInvocationToJS(const char* callback_name) {
-  PP_Var callback_var = PPBVar()->VarFromUtf8(pp_module(),
-                                              callback_name,
+  PP_Var callback_var = PPBVar()->VarFromUtf8(callback_name,
                                               strlen(callback_name));
   // Report using postmessage for async tests.
   PPBMessaging()->PostMessage(pp_instance(), callback_var);

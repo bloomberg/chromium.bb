@@ -49,11 +49,9 @@ void BrowserInterface::AddToConsole(pp::InstancePrivate* instance,
           module->GetBrowserInterface(PPB_VAR_INTERFACE));
   nacl::string prefix_string("NativeClient");
   PP_Var prefix =
-      var_interface->VarFromUtf8(module->pp_module(),
-                                 prefix_string.c_str(),
+      var_interface->VarFromUtf8(prefix_string.c_str(),
                                  static_cast<uint32_t>(prefix_string.size()));
-  PP_Var str = var_interface->VarFromUtf8(module->pp_module(),
-                                          text.c_str(),
+  PP_Var str = var_interface->VarFromUtf8(text.c_str(),
                                           static_cast<uint32_t>(text.size()));
   const PPB_Console_Dev* console_interface =
       static_cast<const struct PPB_Console_Dev*>(

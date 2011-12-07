@@ -153,9 +153,9 @@ double GetLocalTimeZoneOffset(PP_Instance instance, PP_Time t) {
   return result;
 }
 
-PP_Var GetCommandLineArgs(PP_Module pp_module) {
+PP_Var GetCommandLineArgs(PP_Module /*pp_module*/) {
   std::string args = ProxyModule::GetInstance()->GetFlashCommandLineArgs();
-  return StringVar::StringToPPVar(pp_module, args);
+  return StringVar::StringToPPVar(args);
 }
 
 const PPB_Flash flash_interface = {

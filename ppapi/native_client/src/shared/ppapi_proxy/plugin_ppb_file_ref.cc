@@ -99,9 +99,7 @@ PP_Var GetName(PP_Resource file_ref) {
   DebugPrintf("PPB_FileRef::GetName: %s\n", NaClSrpcErrorString(srpc_result));
 
   if (srpc_result == NACL_SRPC_RESULT_OK) {
-    if (DeserializeTo(GetMainSrpcChannel(), name_bytes.get(), length,
-                      1,  // argc
-                      &name))
+    if (DeserializeTo(name_bytes.get(), length, 1 /* argc */, &name))
       return name;
   }
   return PP_MakeUndefined();
@@ -122,10 +120,8 @@ PP_Var GetPath(PP_Resource file_ref) {
               NaClSrpcErrorString(srpc_result));
 
   if (srpc_result == NACL_SRPC_RESULT_OK &&
-    DeserializeTo(GetMainSrpcChannel(), path_bytes.get(), length,
-                  1,  // argc
-                  &path)) {
-      return path;
+      DeserializeTo(path_bytes.get(), length, 1 /* argc */, &path)) {
+    return path;
   }
   return PP_MakeUndefined();
 }

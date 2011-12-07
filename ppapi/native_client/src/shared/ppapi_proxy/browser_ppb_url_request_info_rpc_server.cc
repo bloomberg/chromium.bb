@@ -1,6 +1,6 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 //
 // SRPC-abstraction wrappers around PPB_URLRequestInfo functions.
 
@@ -63,7 +63,7 @@ void PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_SetProperty(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   PP_Var value;
-  if (!DeserializeTo(rpc->channel, value_bytes, value_size, 1, &value))
+  if (!DeserializeTo(value_bytes, value_size, 1, &value))
     return;
 
   PP_Bool pp_success = PPBURLRequestInfoInterface()->SetProperty(

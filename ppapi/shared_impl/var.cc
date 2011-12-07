@@ -17,7 +17,7 @@ namespace ppapi {
 
 // Var -------------------------------------------------------------------------
 
-Var::Var(PP_Module module) : pp_module_(module), var_id_(0) {
+Var::Var() : var_id_(0) {
 }
 
 Var::~Var() {
@@ -97,14 +97,12 @@ void Var::AssignVarID(int32 id) {
 
 // StringVar -------------------------------------------------------------------
 
-StringVar::StringVar(PP_Module module, const std::string& str)
-    : Var(module),
-      value_(str) {
+StringVar::StringVar(const std::string& str)
+    : value_(str) {
 }
 
-StringVar::StringVar(PP_Module module, const char* str, uint32 len)
-    : Var(module),
-      value_(str, len) {
+StringVar::StringVar(const char* str, uint32 len)
+    : value_(str, len) {
 }
 
 StringVar::~StringVar() {
@@ -131,14 +129,13 @@ PP_VarType StringVar::GetType() const {
 }
 
 // static
-PP_Var StringVar::StringToPPVar(PP_Module module, const std::string& var) {
-  return StringToPPVar(module, var.c_str(), var.size());
+PP_Var StringVar::StringToPPVar(const std::string& var) {
+  return StringToPPVar(var.c_str(), var.size());
 }
 
 // static
-PP_Var StringVar::StringToPPVar(PP_Module module,
-                                const char* data, uint32 len) {
-  scoped_refptr<StringVar> str(new StringVar(module, data, len));
+PP_Var StringVar::StringToPPVar(const char* data, uint32 len) {
+  scoped_refptr<StringVar> str(new StringVar(data, len));
   if (!str || !IsStringUTF8(str->value()))
     return PP_MakeNull();
   return str->GetPPVar();

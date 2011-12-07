@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "googleurl/src/url_parse.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
-#include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
@@ -32,8 +31,7 @@ class PPAPI_SHARED_EXPORT PPB_URLUtil_Shared {
 
   // Used for returning the given GURL from a PPAPI function, with an optional
   // out param indicating the components.
-  static PP_Var GenerateURLReturn(PP_Module pp_module,
-                                  const GURL& url,
+  static PP_Var GenerateURLReturn(const GURL& url,
                                   PP_URLComponents_Dev* components);
 
   // Helper function that optionally take a components structure and fills it

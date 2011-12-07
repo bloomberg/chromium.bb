@@ -327,22 +327,19 @@ uint32_t DeserializePpVarSize(char* p,
 // there are enough bytes at p.
 //
 bool DeserializeString(char* p,
-                       PP_Var* var,
-                       NaClSrpcChannel* channel) {
+                       PP_Var* var) {
   SerializedString* ss = reinterpret_cast<SerializedString*>(p);
   uint32_t string_length = ss->fixed.u.string_length;
   // VarFromUtf8 creates a buffer of size string_length using the browser-side
   // memory allocation function, and copies string_length bytes from
   // ss->string_bytes in to that buffer.  The ref count of the returned var is
   // 1.
-  *var = PPBVarInterface()->VarFromUtf8(LookupModuleIdForSrpcChannel(channel),
-                                        ss->string_bytes,
+  *var = PPBVarInterface()->VarFromUtf8(ss->string_bytes,
                                         string_length);
   return true;
 }
 
-bool DeserializePpVar(NaClSrpcChannel* channel,
-                      char* bytes,
+bool DeserializePpVar(char* bytes,
                       uint32_t length,
                       PP_Var* vars,
                       uint32_t argc) {
@@ -373,7 +370,7 @@ bool DeserializePpVar(NaClSrpcChannel* channel,
         break;
       }
       case PP_VARTYPE_STRING:
-        if (!DeserializeString(p, &vars[i], channel)) {
+        if (!DeserializeString(p, &vars[i])) {
           return false;
         }
         break;
@@ -445,8 +442,7 @@ char* Serialize(const PP_Var* vars, uint32_t argc, uint32_t* length) {
   return bytes;
 }
 
-bool DeserializeTo(NaClSrpcChannel* channel,
-                   char* bytes,
+bool DeserializeTo(char* bytes,
                    uint32_t length,
                    uint32_t argc,
                    PP_Var* vars) {
@@ -463,7 +459,7 @@ bool DeserializeTo(NaClSrpcChannel* channel,
     return false;
   }
   // Read the serialized PP_Vars into the allocated memory.
-  if (!DeserializePpVar(channel, bytes, length, vars, argc)) {
+  if (!DeserializePpVar(bytes, length, vars, argc)) {
     return false;
   }
   return true;

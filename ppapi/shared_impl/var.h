@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
@@ -21,9 +20,7 @@ class StringVar;
 
 // Var -------------------------------------------------------------------------
 
-// Represents a non-POD var. This is derived from a resource even though it
-// isn't a resource from the plugin's perspective. This allows us to re-use
-// the refcounting and the association with the module from the resource code.
+// Represents a non-POD var.
 class PPAPI_SHARED_EXPORT Var : public base::RefCounted<Var> {
  public:
   virtual ~Var();
@@ -50,11 +47,8 @@ class PPAPI_SHARED_EXPORT Var : public base::RefCounted<Var> {
   // the plugin.
   int32 GetExistingVarID() const;
 
-  PP_Module pp_module() const { return pp_module_; }
-
  protected:
-  // This can only be constructed as a StringVar or an ObjectVar.
-  explicit Var(PP_Module module);
+  Var();
 
   // Returns the unique ID associated with this string or object, creating it
   // if necessary. The return value will be 0 if the string or object is
@@ -69,8 +63,6 @@ class PPAPI_SHARED_EXPORT Var : public base::RefCounted<Var> {
   void AssignVarID(int32 id);
 
  private:
-  PP_Module pp_module_;
-
   // This will be 0 if no ID has been assigned (this happens lazily).
   int32 var_id_;
 
@@ -82,7 +74,7 @@ class PPAPI_SHARED_EXPORT Var : public base::RefCounted<Var> {
 // Represents a string-based Var.
 //
 // Returning a given string as a PP_Var:
-//   return StringVar::StringToPPVar(module, my_string);
+//   return StringVar::StringToPPVar(my_string);
 //
 // Converting a PP_Var to a string:
 //   StringVar* string = StringVar::FromPPVar(var);
@@ -91,8 +83,8 @@ class PPAPI_SHARED_EXPORT Var : public base::RefCounted<Var> {
 //   DoSomethingWithTheString(string->value());
 class PPAPI_SHARED_EXPORT StringVar : public Var {
  public:
-  StringVar(PP_Module module, const std::string& str);
-  StringVar(PP_Module module, const char* str, uint32 len);
+  StringVar(const std::string& str);
+  StringVar(const char* str, uint32 len);
   virtual ~StringVar();
 
   const std::string& value() const { return value_; }
@@ -107,10 +99,9 @@ class PPAPI_SHARED_EXPORT StringVar : public Var {
   // is not valid UTF-8, a NULL var will be returned.
   //
   // The return value will have a reference count of 1. Internally, this will
-  // create a StringVar, associate it with a module, and return the reference
-  // to it in the var.
-  static PP_Var StringToPPVar(PP_Module module, const std::string& str);
-  static PP_Var StringToPPVar(PP_Module module, const char* str, uint32 len);
+  // create a StringVar and return the reference to it in the var.
+  static PP_Var StringToPPVar(const std::string& str);
+  static PP_Var StringToPPVar(const char* str, uint32 len);
 
   // Helper function that converts a PP_Var to a string. This will return NULL
   // if the PP_Var is not of string type or the string is invalid.

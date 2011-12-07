@@ -221,7 +221,7 @@ PP_Var Module::StrToVar(const char* str) {
     return PP_MakeUndefined();
   const PPB_Var* ppb_var = module->ppb_var_interface();
   if (NULL != ppb_var)
-    return ppb_var->VarFromUtf8(module->module_id(), str, strlen(str));
+    return ppb_var->VarFromUtf8(str, strlen(str));
   return PP_MakeUndefined();
 }
 

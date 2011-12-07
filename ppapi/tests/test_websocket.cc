@@ -63,8 +63,7 @@ void TestWebSocket::RunTests(const std::string& filter) {
 }
 
 PP_Var TestWebSocket::CreateVar(const char* string) {
-  return var_interface_->VarFromUtf8(
-      pp::Module::Get()->pp_module(), string, strlen(string));
+  return var_interface_->VarFromUtf8(string, strlen(string));
 }
 
 void TestWebSocket::ReleaseVar(const PP_Var& var) {

@@ -5,7 +5,6 @@
 #include "ppapi/shared_impl/ppb_file_ref_shared.h"
 
 #include "base/logging.h"
-#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
@@ -42,9 +41,7 @@ PP_FileSystemType PPB_FileRef_Shared::GetFileSystemType() const {
 
 PP_Var PPB_FileRef_Shared::GetName() const {
   if (!name_var_.get()) {
-    name_var_ = new StringVar(
-        PpapiGlobals::Get()->GetModuleForInstance(pp_instance()),
-        create_info_.name);
+    name_var_ = new StringVar(create_info_.name);
   }
   return name_var_->GetPPVar();
 }
@@ -53,9 +50,7 @@ PP_Var PPB_FileRef_Shared::GetPath() const {
   if (create_info_.file_system_type == PP_FILESYSTEMTYPE_EXTERNAL)
     return PP_MakeUndefined();
   if (!path_var_.get()) {
-    path_var_ = new StringVar(
-        PpapiGlobals::Get()->GetModuleForInstance(pp_instance()),
-        create_info_.path);
+    path_var_ = new StringVar(create_info_.path);
   }
   return path_var_->GetPPVar();
 }

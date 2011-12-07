@@ -41,8 +41,7 @@ struct PP_Var GetSelectedText(PP_Instance instance, PP_Bool html) {
 
   PP_Var selected_text = PP_MakeUndefined();
   if (srpc_result == NACL_SRPC_RESULT_OK) {
-    (void) DeserializeTo(
-        channel, text_bytes.get(), text_size, 1, &selected_text);
+    (void) DeserializeTo(text_bytes.get(), text_size, 1, &selected_text);
   }
   return selected_text;
 }

@@ -281,8 +281,7 @@ int32_t PPB_Transport_Impl::GetNextAddress(PP_Var* address,
     return PP_ERROR_FAILED;
 
   if (!local_candidates_.empty()) {
-    *address = StringVar::StringToPPVar(plugin_module->pp_module(),
-                                        local_candidates_.front());
+    *address = StringVar::StringToPPVar(local_candidates_.front());
     local_candidates_.pop_front();
     return PP_OK;
   }

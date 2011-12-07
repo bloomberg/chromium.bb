@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/proxy/ppb_var_proxy.h"
+#include "ppapi/shared_impl/ppb_var_impl.h"
 
-#include "ppapi/c/pp_var.h"
+#include <limits>
+
 #include "ppapi/c/ppb_var.h"
+#include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
 
+using ppapi::PpapiGlobals;
+using ppapi::StringVar;
+
 namespace ppapi {
-namespace proxy {
-
-namespace {
-
-// PPP_Var plugin --------------------------------------------------------------
 
 void AddRefVar(PP_Var var) {
   ppapi::ProxyAutoLock lock;
@@ -28,9 +28,13 @@ void ReleaseVar(PP_Var var) {
   PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(var);
 }
 
-PP_Var VarFromUtf8(PP_Module module, const char* data, uint32_t len) {
+PP_Var VarFromUtf8(const char* data, uint32_t len) {
   ppapi::ProxyAutoLock lock;
-  return StringVar::StringToPPVar(module, data, len);
+  return StringVar::StringToPPVar(data, len);
+}
+
+PP_Var VarFromUtf8_1_0(PP_Module /*module*/, const char* data, uint32_t len) {
+  return VarFromUtf8(data, len);
 }
 
 const char* VarToUtf8(PP_Var var, uint32_t* len) {
@@ -44,6 +48,7 @@ const char* VarToUtf8(PP_Var var, uint32_t* len) {
   return NULL;
 }
 
+namespace {
 const PPB_Var var_interface = {
   &AddRefVar,
   &ReleaseVar,
@@ -51,11 +56,23 @@ const PPB_Var var_interface = {
   &VarToUtf8
 };
 
+const PPB_Var_1_0 var_interface1_0 = {
+  &AddRefVar,
+  &ReleaseVar,
+  &VarFromUtf8_1_0,
+  &VarToUtf8
+};
 }  // namespace
 
-const PPB_Var* GetPPB_Var_Interface() {
+// static
+const PPB_Var* PPB_Var_Impl::GetVarInterface() {
   return &var_interface;
 }
 
-}  // namespace proxy
+// static
+const PPB_Var_1_0* PPB_Var_Impl::GetVarInterface1_0() {
+  return &var_interface1_0;
+}
+
 }  // namespace ppapi
+

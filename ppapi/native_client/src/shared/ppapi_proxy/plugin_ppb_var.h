@@ -21,9 +21,11 @@ class PluginVar {
  public:
   // Returns an interface pointer suitable to the PPAPI client.
   static const PPB_Var* GetInterface();
+  // Returns the 1.0 interface to support backwards-compatibility.
+  static const PPB_Var_1_0* GetInterface1_0();
 
   // String helpers.
-  static PP_Var StringToPPVar(PP_Module module_id, const std::string& str);
+  static PP_Var StringToPPVar(const std::string& str);
   static std::string PPVarToString(const PP_Var& var);
 
   // Printing and debugging.

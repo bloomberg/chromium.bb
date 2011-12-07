@@ -35,9 +35,8 @@ void Release(PP_Var var) {
   ProxyVarCache::GetInstance().ReleaseProxyVar(var);
 }
 
-PP_Var VarFromUtf8(PP_Module module_id, const char* data, uint32_t len) {
+PP_Var VarFromUtf8(const char* data, uint32_t len) {
   DebugPrintf("PPB_Var::VarFromUtf8: data='%.*s'\n", len, data);
-  UNREFERENCED_PARAMETER(module_id);
   if (!StringIsUtf8(data, len)) {
     DebugPrintf("PPB_Var::VarFromUtf8: not UTF8\n");
     return PP_MakeNull();
@@ -51,6 +50,10 @@ PP_Var VarFromUtf8(PP_Module module_id, const char* data, uint32_t len) {
   AddRef(var);
   DebugPrintf("PPB_Var::VarFromUtf8: as_id=%"NACL_PRId64"\n", var.value.as_id);
   return var;
+}
+
+PP_Var VarFromUtf8_1_0(PP_Module /*module*/, const char* data, uint32_t len) {
+  return VarFromUtf8(data, len);
 }
 
 const char* VarToUtf8(PP_Var var, uint32_t* len) {
@@ -87,6 +90,16 @@ const PPB_Var* PluginVar::GetInterface() {
     AddRef,
     Release,
     VarFromUtf8,
+    VarToUtf8
+  };
+  return &var_interface;
+}
+
+const PPB_Var_1_0* PluginVar::GetInterface1_0() {
+  static const PPB_Var_1_0 var_interface = {
+    AddRef,
+    Release,
+    VarFromUtf8_1_0,
     VarToUtf8
   };
   return &var_interface;
@@ -137,7 +150,7 @@ std::string PluginVar::DebugString(const PP_Var& var) {
   return "##ERROR##";
 }
 
-PP_Var PluginVar::StringToPPVar(PP_Module module_id, const std::string& str) {
+PP_Var PluginVar::StringToPPVar(const std::string& str) {
   static const PPB_Var* ppb_var = NULL;
   if (ppb_var == NULL) {
     ppb_var = static_cast<const PPB_Var*>(
@@ -146,8 +159,8 @@ PP_Var PluginVar::StringToPPVar(PP_Module module_id, const std::string& str) {
   if (ppb_var == NULL) {
     return PP_MakeUndefined();
   }
-  return ppb_var->VarFromUtf8(
-      module_id, str.c_str(), nacl::assert_cast<uint32_t>(str.size()));
+  return ppb_var->VarFromUtf8(str.c_str(),
+                              nacl::assert_cast<uint32_t>(str.size()));
 }
 
 std::string PluginVar::PPVarToString(const PP_Var& var) {

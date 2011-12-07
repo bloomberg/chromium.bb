@@ -1692,7 +1692,7 @@ PP_Var PluginInstance::ExecuteScript(PP_Instance instance,
   // a reference to ourselves so that we can still process the result after the
   // WebBindings::evaluate() below.
   scoped_refptr<PluginInstance> ref(this);
-  TryCatch try_catch(module()->pp_module(), exception);
+  TryCatch try_catch(exception);
   if (try_catch.has_exception())
     return PP_MakeUndefined();
 
@@ -1731,7 +1731,7 @@ PP_Var PluginInstance::ExecuteScript(PP_Instance instance,
 
 PP_Var PluginInstance::GetDefaultCharSet(PP_Instance instance) {
   std::string encoding = delegate()->GetDefaultEncoding();
-  return StringVar::StringToPPVar(module()->pp_module(), encoding);
+  return StringVar::StringToPPVar(encoding);
 }
 
 void PluginInstance::Log(PP_Instance instance,
@@ -1896,7 +1896,6 @@ PP_Var PluginInstance::ResolveRelativeToDocument(
   WebElement plugin_element = container()->element();
   GURL document_url = plugin_element.document().baseURL();
   return ::ppapi::PPB_URLUtil_Shared::GenerateURLReturn(
-      module()->pp_module(),
       document_url.Resolve(relative_string->value()),
       components);
 }
@@ -1933,15 +1932,14 @@ PP_Bool PluginInstance::DocumentCanAccessDocument(PP_Instance instance,
 PP_Var PluginInstance::GetDocumentURL(PP_Instance instance,
                                       PP_URLComponents_Dev* components) {
   WebKit::WebDocument document = container()->element().document();
-  return ::ppapi::PPB_URLUtil_Shared::GenerateURLReturn(
-      module()->pp_module(), document.url(), components);
+  return ::ppapi::PPB_URLUtil_Shared::GenerateURLReturn(document.url(),
+                                                        components);
 }
 
 PP_Var PluginInstance::GetPluginInstanceURL(
     PP_Instance instance,
     PP_URLComponents_Dev* components) {
-  return ::ppapi::PPB_URLUtil_Shared::GenerateURLReturn(module()->pp_module(),
-                                                        plugin_url_,
+  return ::ppapi::PPB_URLUtil_Shared::GenerateURLReturn(plugin_url_,
                                                         components);
 }
 

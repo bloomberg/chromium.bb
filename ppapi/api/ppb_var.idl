@@ -8,7 +8,8 @@
  */
 
 label Chrome {
-  M14 = 1.0
+  M14 = 1.0,
+  M18 = 1.1
 };
 
 /**
@@ -22,8 +23,8 @@ interface PPB_Var {
    *
    * @param[in] var A <code>PP_Var</code> that will have a reference added.
    */
-  void AddRef(
-      [in] PP_Var var);
+  [version=1.0]
+  void AddRef([in] PP_Var var);
 
   /**
    * Release() removes a reference to given var, deleting it if the internal
@@ -33,8 +34,8 @@ interface PPB_Var {
    *
    * @param[in] var A <code>PP_Var</code> that will have a reference removed.
    */
-  void Release(
-      [in] PP_Var var);
+  [version=1.0]
+  void Release([in] PP_Var var);
 
   /**
    * VarFromUtf8() creates a string var from a string. The string must be
@@ -61,10 +62,35 @@ interface PPB_Var {
    * @return A <code>PP_Var</code> structure containing a reference counted
    * string object.
    */
-  PP_Var VarFromUtf8(
-      [in] PP_Module module,
-      [in] str_t data,
-      [in] uint32_t len);
+  [version=1.0]
+  PP_Var VarFromUtf8([in] PP_Module module, [in] str_t data, [in] uint32_t len);
+
+  /**
+   * VarFromUtf8() creates a string var from a string. The string must be
+   * encoded in valid UTF-8 and is NOT NULL-terminated, the length must be
+   * specified in <code>len</code>. It is an error if the string is not
+   * valid UTF-8.
+   *
+   * If the length is 0, the <code>*data</code> pointer will not be dereferenced
+   * and may be <code>NULL</code>. Note, however if length is 0, the
+   * "NULL-ness" will not be preserved, as <code>VarToUtf8</code> will never
+   * return <code>NULL</code> on success, even for empty strings.
+   *
+   * The resulting object will be a refcounted string object. It will be
+   * AddRef'ed for the caller. When the caller is done with it, it should be
+   * Released.
+   *
+   * On error (basically out of memory to allocate the string, or input that
+   * is not valid UTF-8), this function will return a Null var.
+   *
+   * @param[in] data A string
+   * @param[in] len The length of the string.
+   *
+   * @return A <code>PP_Var</code> structure containing a reference counted
+   * string object.
+   */
+  [version=1.1]
+  PP_Var VarFromUtf8([in] str_t data, [in] uint32_t len);
 
   /**
    * VarToUtf8() converts a string-type var to a char* encoded in UTF-8. This
@@ -84,8 +110,7 @@ interface PPB_Var {
    *
    * @return A char* encoded in UTF-8.
    */
-  str_t VarToUtf8(
-      [in] PP_Var var,
-      [out] uint32_t len);
+  [version=1.0]
+  str_t VarToUtf8([in] PP_Var var, [out] uint32_t len);
 };
 

@@ -28,12 +28,30 @@ namespace {
 template <> const char* interface_name<PPB_Var>() {
   return PPB_VAR_INTERFACE;
 }
+template <> const char* interface_name<PPB_Var_1_0>() {
+  return PPB_VAR_INTERFACE_1_0;
+}
 
 // Technically you can call AddRef and Release on any Var, but it may involve
 // cross-process calls depending on the plugin. This is an optimization so we
 // only do refcounting on the necessary objects.
 inline bool NeedsRefcounting(const PP_Var& var) {
   return var.type > PP_VARTYPE_DOUBLE;
+}
+
+// This helper function detects whether PPB_Var version 1.1 is available. If so,
+// it uses it to create a PP_Var for the given string. Otherwise it falls back
+// to PPB_Var version 1.0.
+PP_Var VarFromUtf8Helper(const char* utf8_str, uint32_t len) {
+  if (has_interface<PPB_Var>()) {
+    return get_interface<PPB_Var>()->VarFromUtf8(utf8_str, len);
+  } else if (has_interface<PPB_Var_1_0>()) {
+    return get_interface<PPB_Var_1_0>()->VarFromUtf8(Module::Get()->pp_module(),
+                                                     utf8_str,
+                                                     len);
+  } else {
+    return PP_MakeNull();
+  }
 }
 
 }  // namespace
@@ -72,27 +90,14 @@ Var::Var(double d) {
 }
 
 Var::Var(const char* utf8_str) {
-  if (has_interface<PPB_Var>()) {
-    uint32_t len = utf8_str ? static_cast<uint32_t>(strlen(utf8_str)) : 0;
-    var_ = get_interface<PPB_Var>()->VarFromUtf8(Module::Get()->pp_module(),
-                                                 utf8_str, len);
-  } else {
-    var_.type = PP_VARTYPE_NULL;
-    var_.padding = 0;
-  }
+  uint32_t len = utf8_str ? static_cast<uint32_t>(strlen(utf8_str)) : 0;
+  var_ = VarFromUtf8Helper(utf8_str, len);
   needs_release_ = (var_.type == PP_VARTYPE_STRING);
 }
 
 Var::Var(const std::string& utf8_str) {
-  if (has_interface<PPB_Var>()) {
-    var_ = get_interface<PPB_Var>()->VarFromUtf8(
-        Module::Get()->pp_module(),
-        utf8_str.c_str(),
-        static_cast<uint32_t>(utf8_str.size()));
-  } else {
-    var_.type = PP_VARTYPE_NULL;
-    var_.padding = 0;
-  }
+  var_ = VarFromUtf8Helper(utf8_str.c_str(),
+                            static_cast<uint32_t>(utf8_str.size()));
   needs_release_ = (var_.type == PP_VARTYPE_STRING);
 }
 
@@ -101,7 +106,7 @@ Var::Var(const Var& other) {
   if (NeedsRefcounting(var_)) {
     if (has_interface<PPB_Var>()) {
       needs_release_ = true;
-      get_interface<PPB_Var>()->AddRef(var_);
+      get_interface<PPB_Var_1_0>()->AddRef(var_);
     } else {
       var_.type = PP_VARTYPE_NULL;
       needs_release_ = false;
@@ -113,7 +118,7 @@ Var::Var(const Var& other) {
 
 Var::~Var() {
   if (needs_release_ && has_interface<PPB_Var>())
-    get_interface<PPB_Var>()->Release(var_);
+    get_interface<PPB_Var_1_0>()->Release(var_);
 }
 
 Var& Var::operator=(const Var& other) {
@@ -130,12 +135,12 @@ Var& Var::operator=(const Var& other) {
     // Assume we already has_interface<PPB_Var> for refcounted vars or else we
     // couldn't have created them in the first place.
     needs_release_ = true;
-    get_interface<PPB_Var>()->AddRef(other.var_);
+    get_interface<PPB_Var_1_0>()->AddRef(other.var_);
   } else {
     needs_release_ = false;
   }
   if (old_needs_release)
-    get_interface<PPB_Var>()->Release(var_);
+    get_interface<PPB_Var_1_0>()->Release(var_);
 
   var_ = other.var_;
   return *this;
@@ -201,7 +206,7 @@ std::string Var::AsString() const {
   if (!has_interface<PPB_Var>())
     return std::string();
   uint32_t len;
-  const char* str = get_interface<PPB_Var>()->VarToUtf8(var_, &len);
+  const char* str = get_interface<PPB_Var_1_0>()->VarToUtf8(var_, &len);
   return std::string(str, len);
 }
 

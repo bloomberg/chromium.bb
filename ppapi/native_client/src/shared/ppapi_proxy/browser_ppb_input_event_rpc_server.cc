@@ -131,8 +131,7 @@ void PpbInputEventRpcServer::PPB_InputEvent_CreateKeyboardInputEvent(
     return;
   }
   PP_Var character_text;
-  if (!DeserializeTo(rpc->channel, character_bytes, character_size, 1,
-                     &character_text)) {
+  if (!DeserializeTo(character_bytes, character_size, 1, &character_text)) {
     return;
   }
 

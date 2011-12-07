@@ -26,7 +26,7 @@ void PpbMessagingRpcServer::PPB_Messaging_PostMessage(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   PP_Var message;
-  if (!DeserializeTo(rpc->channel, message_bytes, message_size, 1, &message))
+  if (!DeserializeTo(message_bytes, message_size, 1, &message))
     return;
 
   PPBMessagingInterface()->PostMessage(instance, message);

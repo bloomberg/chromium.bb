@@ -86,8 +86,7 @@ PP_Bool PPB_Font_Impl::Describe(PP_FontDescription_Dev* description,
     return PP_FALSE;
 
   // Convert the string.
-  description->face = StringVar::StringToPPVar(plugin_module->pp_module(),
-                                               face);
+  description->face = StringVar::StringToPPVar(face);
   return PP_TRUE;
 }
 

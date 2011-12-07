@@ -49,8 +49,7 @@ PP_Var GetLocalizedString(
 
   PP_Var string = PP_MakeUndefined();
   if (srpc_result == NACL_SRPC_RESULT_OK) {
-    (void) DeserializeTo(
-        channel, string_bytes.get(), string_size, 1, &string);
+    (void) DeserializeTo(string_bytes.get(), string_size, 1, &string);
   }
 
   DebugPrintf("PPB_PDF::GetLocalizedString: %s\n",

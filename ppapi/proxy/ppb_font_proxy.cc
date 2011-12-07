@@ -65,7 +65,7 @@ PP_Var PPB_Font_Proxy::GetFontFamilies(PP_Instance instance) {
         new PpapiHostMsg_PPBFont_GetFontFamilies(&families));
   }
 
-  return StringVar::StringToPPVar(0, families);
+  return StringVar::StringToPPVar(families);
 }
 
 bool PPB_Font_Proxy::OnMessageReceived(const IPC::Message& msg) {
@@ -121,7 +121,7 @@ PP_Bool Font::Describe(PP_FontDescription_Dev* description,
   }
 
   if (PP_ToBool(result))
-    description->face = StringVar::StringToPPVar(0, face);
+    description->face = StringVar::StringToPPVar(face);
   else
     description->face = PP_MakeUndefined();
   return result;

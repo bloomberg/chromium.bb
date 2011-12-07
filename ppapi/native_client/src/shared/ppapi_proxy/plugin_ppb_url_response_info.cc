@@ -1,6 +1,6 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_response_info.h"
 
@@ -56,7 +56,7 @@ PP_Var GetProperty(PP_Resource response, PP_URLResponseProperty property) {
               NaClSrpcErrorString(srpc_result));
 
   if (srpc_result == NACL_SRPC_RESULT_OK)
-    (void) DeserializeTo(channel, value_bytes.get(), value_size, 1, &value);
+    (void) DeserializeTo(value_bytes.get(), value_size, 1, &value);
   return value;
 }
 

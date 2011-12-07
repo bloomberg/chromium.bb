@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/ppapi/ppb_var_impl.h"
+#include "webkit/plugins/ppapi/ppb_var_deprecated_impl.h"
 
 #include <limits>
 
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/shared_impl/ppb_var_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/host_globals.h"
@@ -17,7 +18,6 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/plugin_object.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "v8/include/v8.h"
 
 using ppapi::NPObjectVar;
 using ppapi::PpapiGlobals;
@@ -109,16 +109,10 @@ bool PPVarToNPVariantNoCopy(PP_Var var, NPVariant* result) {
 class ObjectAccessorTryCatch : public TryCatch {
  public:
   ObjectAccessorTryCatch(PP_Var object, PP_Var* exception)
-      : TryCatch(0, exception),
+      : TryCatch(exception),
         object_(NPObjectVar::FromPPVar(object)) {
     if (!object_) {
-      // No object or an invalid object was given. This means we have no module
-      // to associated with the exception text, so use the magic invalid object
-      // exception.
-      SetInvalidObjectException();
-    } else {
-      // When the object is valid, we have a valid module to associate
-      set_pp_module(object_->pp_module());
+      SetException(kInvalidObjectException);
     }
   }
 
@@ -167,32 +161,6 @@ class ObjectAccessorWithIdentifierTryCatch : public ObjectAccessorTryCatch {
 
   DISALLOW_COPY_AND_ASSIGN(ObjectAccessorWithIdentifierTryCatch);
 };
-
-// PPB_Var methods -------------------------------------------------------------
-
-void AddRefVar(PP_Var var) {
-  PpapiGlobals::Get()->GetVarTracker()->AddRefVar(var);
-}
-
-void ReleaseVar(PP_Var var) {
-  PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(var);
-}
-
-PP_Var VarFromUtf8(PP_Module module, const char* data, uint32_t len) {
-  return StringVar::StringToPPVar(module, data, len);
-}
-
-const char* VarToUtf8(PP_Var var, uint32_t* len) {
-  StringVar* str = StringVar::FromPPVar(var);
-  if (!str) {
-    *len = 0;
-    return NULL;
-  }
-  *len = static_cast<uint32_t>(str->value().size());
-  if (str->value().empty())
-    return "";  // Don't return NULL on success.
-  return str->value().data();
-}
 
 PP_Bool HasProperty(PP_Var var,
                     PP_Var name,
@@ -266,9 +234,7 @@ void EnumerateProperties(PP_Var var,
   *property_count = count;
   *properties = static_cast<PP_Var*>(malloc(sizeof(PP_Var) * count));
   for (uint32_t i = 0; i < count; ++i) {
-    (*properties)[i] = NPIdentifierToPPVar(
-        accessor.GetPluginInstance()->module()->pp_module(),
-        identifiers[i]);
+    (*properties)[i] = NPIdentifierToPPVar(identifiers[i]);
   }
   free(identifiers);
 }
@@ -426,40 +392,28 @@ PP_Var CreateObjectWithModuleDeprecated(PP_Module pp_module,
                               ppp_class, ppp_class_data);
 }
 
-const PPB_Var_Deprecated var_deprecated_interface = {
-  &AddRefVar,
-  &ReleaseVar,
-  &VarFromUtf8,
-  &VarToUtf8,
-  &HasPropertyDeprecated,
-  &HasMethodDeprecated,
-  &GetProperty,
-  &EnumerateProperties,
-  &SetPropertyDeprecated,
-  &DeletePropertyDeprecated,
-  &CallDeprecated,
-  &Construct,
-  &IsInstanceOfDeprecated,
-  &CreateObjectDeprecated,
-  &CreateObjectWithModuleDeprecated,
-};
-
-const PPB_Var var_interface = {
-  &AddRefVar,
-  &ReleaseVar,
-  &VarFromUtf8,
-  &VarToUtf8
-};
-
 }  // namespace
 
 // static
-const PPB_Var* PPB_Var_Impl::GetVarInterface() {
-  return &var_interface;
-}
+const PPB_Var_Deprecated* PPB_Var_Deprecated_Impl::GetVarDeprecatedInterface() {
+  static const PPB_Var_Deprecated var_deprecated_interface = {
+    ::ppapi::PPB_Var_Impl::GetVarInterface1_0()->AddRef,
+    ::ppapi::PPB_Var_Impl::GetVarInterface1_0()->Release,
+    ::ppapi::PPB_Var_Impl::GetVarInterface1_0()->VarFromUtf8,
+    ::ppapi::PPB_Var_Impl::GetVarInterface1_0()->VarToUtf8,
+    &HasPropertyDeprecated,
+    &HasMethodDeprecated,
+    &GetProperty,
+    &EnumerateProperties,
+    &SetPropertyDeprecated,
+    &DeletePropertyDeprecated,
+    &CallDeprecated,
+    &Construct,
+    &IsInstanceOfDeprecated,
+    &CreateObjectDeprecated,
+    &CreateObjectWithModuleDeprecated,
+  };
 
-// static
-const PPB_Var_Deprecated* PPB_Var_Impl::GetVarDeprecatedInterface() {
   return &var_deprecated_interface;
 }
 

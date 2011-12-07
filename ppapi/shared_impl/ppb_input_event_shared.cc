@@ -4,7 +4,6 @@
 
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 
-#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var.h"
 
 using ppapi::thunk::PPB_InputEvent_API;
@@ -100,9 +99,7 @@ uint32_t PPB_InputEvent_Shared::GetKeyCode() {
 }
 
 PP_Var PPB_InputEvent_Shared::GetCharacterText() {
-  return StringVar::StringToPPVar(
-      PpapiGlobals::Get()->GetModuleForInstance(pp_instance()),
-      data_.character_text);
+  return StringVar::StringToPPVar(data_.character_text);
 }
 
 uint32_t PPB_InputEvent_Shared::GetIMESegmentNumber() {

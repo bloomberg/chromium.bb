@@ -84,8 +84,7 @@ PPB_WebSocket_Impl::PPB_WebSocket_Impl(PP_Instance instance)
       close_was_clean_(PP_FALSE),
       buffered_amount_(0),
       buffered_amount_after_close_(0) {
-  empty_string_ = new StringVar(
-      PpapiGlobals::Get()->GetModuleForInstance(instance), "", 0);
+  empty_string_ = new StringVar("", 0);
 }
 
 PPB_WebSocket_Impl::~PPB_WebSocket_Impl() {
@@ -133,8 +132,7 @@ int32_t PPB_WebSocket_Impl::Connect(PP_Var url,
   if (!url_string)
     return PP_ERROR_BADARGUMENT;
   GURL gurl(url_string->value());
-  url_ = new StringVar(
-      PpapiGlobals::Get()->GetModuleForInstance(pp_instance()), gurl.spec());
+  url_ = new StringVar(gurl.spec());
   if (!gurl.is_valid())
     return PP_ERROR_BADARGUMENT;
   if (!gurl.SchemeIs("ws") && !gurl.SchemeIs("wss"))
@@ -368,8 +366,7 @@ PP_Var PPB_WebSocket_Impl::GetProtocol() {
     return empty_string_->GetPPVar();
 
   std::string protocol = websocket_->subprotocol().utf8();
-  return StringVar::StringToPPVar(
-      PpapiGlobals::Get()->GetModuleForInstance(pp_instance()), protocol);
+  return StringVar::StringToPPVar(protocol);
 }
 
 PP_WebSocketReadyState_Dev PPB_WebSocket_Impl::GetReadyState() {
@@ -395,8 +392,7 @@ void PPB_WebSocket_Impl::didReceiveMessage(const WebString& message) {
 
   // Append received data to queue.
   std::string string = message.utf8();
-  PP_Var var = StringVar::StringToPPVar(
-      PpapiGlobals::Get()->GetModuleForInstance(pp_instance()), string);
+  PP_Var var = StringVar::StringToPPVar(string);
   received_messages_.push(var);
 
   if (!wait_for_receive_)
@@ -451,8 +447,7 @@ void PPB_WebSocket_Impl::didClose(unsigned long unhandled_buffered_amount,
   // Store code and reason.
   close_code_ = code;
   std::string reason_string = reason.utf8();
-  close_reason_ = new StringVar(
-      PpapiGlobals::Get()->GetModuleForInstance(pp_instance()), reason_string);
+  close_reason_ = new StringVar(reason_string);
 
   // Set close_was_clean_.
   bool was_clean =

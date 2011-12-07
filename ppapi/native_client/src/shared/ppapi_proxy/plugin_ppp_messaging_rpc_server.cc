@@ -23,7 +23,7 @@ void PppMessagingRpcServer::PPP_Messaging_HandleMessage(
   NaClSrpcClosureRunner runner(done);
 
   PP_Var message;
-  if (!DeserializeTo(rpc->channel, message_bytes, message_size, 1, &message))
+  if (!DeserializeTo(message_bytes, message_size, 1, &message))
     return;
   PPPMessagingInterface()->HandleMessage(instance, message);
   DebugPrintf("PPP_Messaging::HandleMessage\n");
