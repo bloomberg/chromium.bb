@@ -38,24 +38,28 @@
 
 namespace test_launcher {
 
-namespace {
-
 // The environment variable name for the total number of test shards.
-static const char kTestTotalShards[] = "GTEST_TOTAL_SHARDS";
+const char kTestTotalShards[] = "GTEST_TOTAL_SHARDS";
 // The environment variable name for the test shard index.
-static const char kTestShardIndex[] = "GTEST_SHARD_INDEX";
+const char kTestShardIndex[] = "GTEST_SHARD_INDEX";
 
 // The default output file for XML output.
-static const FilePath::CharType kDefaultOutputFile[] = FILE_PATH_LITERAL(
+const FilePath::CharType kDefaultOutputFile[] = FILE_PATH_LITERAL(
     "test_detail.xml");
 
 // Name of the empty test below.
-static const char kEmptyTestName[] = "InProcessBrowserTest.Empty";
+const char kEmptyTestName[] = "InProcessBrowserTest.Empty";
+
+// Quit test execution after this number of tests has timed out.
+const int kMaxTimeouts = 5;  // 45s timeout * (5 + 1) = 270s max run time.
+
+namespace {
 
 // An empty test (it starts up and shuts down the browser as part of its
 // setup and teardown) used to prefetch all of the browser code into memory.
 IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, Empty) {
-}
+
+}  // namespace
 
 // Parses the environment variable var as an Int32.  If it is unset, returns
 // default_val.  If it is set, unsets it then converts it to Int32 before
@@ -302,7 +306,11 @@ int GetTestTerminationTimeout(const std::string& test_name,
 // and returns the exit code.
 int RunTest(TestLauncherDelegate* launcher_delegate,
             const std::string& test_name,
-            int default_timeout_ms) {
+            int default_timeout_ms,
+            bool* was_timeout) {
+  if (was_timeout)
+    *was_timeout = false;
+
 #if defined(OS_MACOSX)
   // Some of the below method calls will leak objects if there is no
   // autorelease pool in place.
@@ -375,6 +383,8 @@ int RunTest(TestLauncherDelegate* launcher_delegate,
     LOG(ERROR) << "Test timeout (" << timeout_ms
                << " ms) exceeded for " << test_name;
 
+    if (was_timeout)
+      *was_timeout = true;
     exit_code = -1;  // Set a non-zero exit code to signal a failure.
 
     // Ensure that the process terminates.
@@ -421,6 +431,7 @@ bool RunTests(TestLauncherDelegate* launcher_delegate,
   int num_runnable_tests = 0;
   int test_run_count = 0;
   int ignored_failure_count = 0;
+  int timeout_count = 0;
   std::vector<std::string> failed_tests;
 
   ResultsPrinter printer(*command_line);
@@ -470,9 +481,11 @@ bool RunTests(TestLauncherDelegate* launcher_delegate,
 
       base::Time start_time = base::Time::Now();
       ++test_run_count;
+      bool was_timeout = false;
       int exit_code = RunTest(launcher_delegate,
                               test_name,
-                              TestTimeouts::action_max_timeout_ms());
+                              TestTimeouts::action_max_timeout_ms(),
+                              &was_timeout);
       if (exit_code == 0) {
         // Test passed.
         printer.OnTestEnd(test_info->name(), test_case->name(), true, false,
@@ -493,7 +506,19 @@ bool RunTests(TestLauncherDelegate* launcher_delegate,
                           (base::Time::Now() - start_time).InMillisecondsF());
         if (ignore_failure)
           ++ignored_failure_count;
+
+        if (was_timeout)
+          ++timeout_count;
       }
+
+      if (timeout_count > kMaxTimeouts) {
+        printf("More than %d timeouts, aborting test case\n", kMaxTimeouts);
+        break;
+      }
+    }
+    if (timeout_count > kMaxTimeouts) {
+      printf("More than %d timeouts, aborting test\n", kMaxTimeouts);
+      break;
     }
   }
 
@@ -615,7 +640,8 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   // and closes a browser with a long timeout to avoid those problems.
   int exit_code = RunTest(launcher_delegate,
                           kEmptyTestName,
-                          TestTimeouts::large_test_timeout_ms());
+                          TestTimeouts::large_test_timeout_ms(),
+                          NULL);
   if (exit_code != 0)
     return exit_code;
 
