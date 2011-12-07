@@ -36,7 +36,6 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/browser_resources.h"
@@ -379,7 +378,6 @@ void NTPResourceCache::CreateNewTabHTML() {
   if (PromoResourceService::CanShowNotificationPromo(profile_)) {
     localized_strings.SetString("serverpromo",
         profile_->GetPrefs()->GetString(prefs::kNTPPromoLine));
-    UserMetrics::RecordAction(UserMetricsAction("NTPPromoShown"));
   }
 
   // Load the new tab page appropriate for this build
