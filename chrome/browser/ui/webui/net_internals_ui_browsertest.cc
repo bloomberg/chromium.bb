@@ -403,6 +403,11 @@ IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsDnsViewAddTwoTwice) {
 // Makes sure that openning and then closing an incognito window clears the
 // DNS cache.  To keep things simple, we add a fake cache entry ourselves,
 // rather than having the incognito browser create one.
+#if defined(OS_CHROMEOS)
+// http://crbug.com/106707
+#define NetInternalsDnsViewIncognitoClears \
+    FLAKY_NetInternalsDnsViewIncognitoClears
+#endif
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsDnsViewIncognitoClears) {
   EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsDnsViewIncognitoClears"));
 }
