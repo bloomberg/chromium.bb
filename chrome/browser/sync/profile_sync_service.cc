@@ -165,7 +165,7 @@ bool ProfileSyncService::AreCredentialsAvailable(
   }
 
   // CrOS user is always logged in. Chrome uses signin_ to check logged in.
-  if (cros_user_.empty() && signin_->GetUsername().empty())
+  if (cros_user_.empty() && signin_->GetAuthenticatedUsername().empty())
     return false;
 
   TokenService* token_service = profile()->GetTokenService();
@@ -199,17 +199,7 @@ void ProfileSyncService::Initialize() {
   if (!HasSyncSetupCompleted())
     DisableForUser();  // Clean up in case of previous crash / setup abort.
 
-  // In Chrome, we integrate a SigninManager which works with the sync
-  // setup wizard to kick off the TokenService. CrOS does its own plumbing
-  // for the TokenService in login and does not normally rely on signin_,
-  // so only initialize this if the token service has not been initialized
-  // (e.g. the browser crashed or is being debugged).
-  if (cros_user_.empty() ||
-      !profile_->GetTokenService()->Initialized()) {
-    // Will load tokens from DB and broadcast Token events after.
-    // Note: We rely on signin_ != NULL unless !cros_user_.empty().
-    signin_->Initialize(profile_);
-  }
+  signin_->Initialize(profile_);
 
   TryStart();
 }
@@ -302,7 +292,8 @@ void ProfileSyncService::InitSettings() {
 
 SyncCredentials ProfileSyncService::GetCredentials() {
   SyncCredentials credentials;
-  credentials.email = cros_user_.empty() ? signin_->GetUsername() : cros_user_;
+  credentials.email = cros_user_.empty() ?
+      signin_->GetAuthenticatedUsername() : cros_user_;
   DCHECK(!credentials.email.empty());
   TokenService* service = profile_->GetTokenService();
   credentials.sync_token = service->GetTokenForService(
@@ -1089,20 +1080,9 @@ void ProfileSyncService::OnUserSubmittedAuth(
 
   auth_start_time_ = base::TimeTicks::Now();
 
-  if (!signin_->IsInitialized()) {
-    // In ChromeOS we sign in during login, so we do not initialize signin_.
-    // If this function gets called, we need to re-authenticate (e.g. for
-    // two factor signin), so initialize signin_ here.
-    signin_->Initialize(profile_);
-  }
-
   if (!access_code.empty()) {
     signin_->ProvideSecondFactorAccessCode(access_code);
     return;
-  }
-
-  if (!signin_->GetUsername().empty()) {
-    signin_->ClearInMemoryData();
   }
 
   // The user has submitted credentials, which indicates they don't
@@ -1510,10 +1490,13 @@ void ProfileSyncService::Observe(int type,
         }
         if (!sync_prefs_.IsStartSuppressed())
           StartUp();
-      } else if (cros_user_.empty() && !signin_->GetUsername().empty()) {
-        // If not in Chrome OS, and we have a username without tokens,
-        // the user will need to signin again, so sign out.
-        DisableForUser();
+      } else if (cros_user_.empty() &&
+                 !signin_->GetAuthenticatedUsername().empty()) {
+        // If not in auto-start / Chrome OS mode, and we have a username
+        // without tokens, the user will need to signin again. NotifyObservers
+        // to trigger errors in the UI that will allow the user to re-login.
+        UpdateAuthErrorState(GoogleServiceAuthError(
+            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
       }
       break;
     }
@@ -1577,8 +1560,9 @@ void ProfileSyncService::UnsuppressAndStart() {
   sync_prefs_.SetStartSuppressed(false);
   // Set username in SigninManager, as SigninManager::OnGetUserInfoSuccess
   // is never called for some clients.
-  if (signin_->GetUsername().empty()) {
-    signin_->SetUsername(sync_prefs_.GetGoogleServicesUsername());
+  if (signin_->GetAuthenticatedUsername().empty()) {
+    signin_->SetAuthenticatedUsername(
+        sync_prefs_.GetGoogleServicesUsername());
   }
   TryStart();
 }

@@ -306,7 +306,7 @@ void AutoLoginPrompter::ShowInfoBarUIThread(const std::string& account,
 
   // Make sure that |account|, if specified, matches the logged in user.
   // However, |account| is usually empty.
-  const std::string& username = signin_manager->GetUsername();
+  const std::string& username = signin_manager->GetAuthenticatedUsername();
   if (!account.empty() && (username != account))
     return;
 

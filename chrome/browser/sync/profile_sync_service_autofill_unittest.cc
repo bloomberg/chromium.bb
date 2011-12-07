@@ -185,6 +185,18 @@ class WebDataServiceFake : public WebDataService {
     return web_database_;
   }
 
+  virtual WebDataService::Handle GetAllTokens(
+      WebDataServiceConsumer* consumer) OVERRIDE {
+    // TODO(tim): It would be nice if WebDataService was injected on
+    // construction of TokenService rather than fetched by Initialize so that
+    // this isn't necessary (we could pass a NULL service). We currently do
+    // return it via EXPECT_CALLs, but without depending on order-of-
+    // initialization (which seems way more fragile) we can't tell which
+    // component is asking at what time, and some components in these Autofill
+    // tests require a WebDataService.
+    return NULL;
+  }
+
   virtual AutocompleteSyncableService*
       GetAutocompleteSyncableService() const OVERRIDE {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));

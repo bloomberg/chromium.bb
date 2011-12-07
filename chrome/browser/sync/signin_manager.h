@@ -6,6 +6,13 @@
 // which user is signed in. When a user is signed in, a ClientLogin
 // request is run on their behalf. Auth tokens are fetched from Google
 // and the results are stored in the TokenService.
+//
+// **NOTE** on semantics of SigninManager:
+//
+// Once a signin is successful, the username becomes "established" and will not
+// be cleared until a SignOut operation is performed (persists across
+// restarts). Until that happens, the signin manager can still be used to
+// refresh credentials, but changing the username is not permitted.
 
 #ifndef CHROME_BROWSER_SYNC_SIGNIN_MANAGER_H_
 #define CHROME_BROWSER_SYNC_SIGNIN_MANAGER_H_
@@ -52,12 +59,16 @@ class SigninManager : public GaiaAuthConsumer,
   void Initialize(Profile* profile);
   bool IsInitialized() const;
 
-  // If a user is signed in, this will return their name.
+  // If a user has previously established a username and SignOut has not been
+  // called, this will return the username.
   // Otherwise, it will return an empty string.
-  const std::string& GetUsername();
+  const std::string& GetAuthenticatedUsername();
 
-  // Sets the user name.  Used for migrating credentials from previous system.
-  void SetUsername(const std::string& username);
+  // Sets the user name.  Note: |username| should be already authenticated as
+  // this is a sticky operation (in contrast to StartSignIn).
+  // TODO(tim): Remove this in favor of passing username on construction by
+  // (by platform / depending on StartBehavior). Bug 88109.
+  void SetAuthenticatedUsername(const std::string& username);
 
   // Attempt to sign in this user with OAuth. If successful, set a preference
   // indicating the signed in user and send out a notification, then start
@@ -81,11 +92,6 @@ class SigninManager : public GaiaAuthConsumer,
   // Sign a user out, removing the preference, erasing all keys
   // associated with the user, and canceling all auth in progress.
   void SignOut();
-
-  // Called when a new request to re-authenticate a user is in progress.
-  // Will clear in memory data but leaves the db as such so when the browser
-  // restarts we can use the old token(which might throw a password error).
-  void ClearInMemoryData();
 
   // GaiaAuthConsumer
   virtual void OnClientLoginSuccess(const ClientLoginResult& result) OVERRIDE;
@@ -118,18 +124,25 @@ class SigninManager : public GaiaAuthConsumer,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ClearTransientSigninData);
+  FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ProvideSecondFactorSuccess);
+  FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ProvideSecondFactorFailure);
   void PrepareForSignin();
   void PrepareForOAuthSignin();
+
+  // Called when a new request to re-authenticate a user is in progress.
+  // Will clear in memory data but leaves the db as such so when the browser
+  // restarts we can use the old token(which might throw a password error).
+  void ClearTransientSigninData();
 
   Profile* profile_;
 
   // ClientLogin identity.
-  std::string username_;
+  std::string possibly_invalid_username_;
   std::string password_;  // This is kept empty whenever possible.
   bool had_two_factor_error_;
 
   // OAuth identity.
-  std::string oauth_username_;
   std::string oauth1_request_token_;
 
   void CleanupNotificationRegistration();
@@ -146,6 +159,8 @@ class SigninManager : public GaiaAuthConsumer,
 
   // Register for notifications from the TokenService.
   content::NotificationRegistrar registrar_;
+
+  std::string authenticated_username_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninManager);
 };

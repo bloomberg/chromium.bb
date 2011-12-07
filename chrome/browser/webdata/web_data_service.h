@@ -398,7 +398,7 @@ class WebDataService
   void RemoveAllTokens();
 
   // Null on failure. Success is WDResult<std::vector<std::string> >
-  Handle GetAllTokens(WebDataServiceConsumer* consumer);
+  virtual Handle GetAllTokens(WebDataServiceConsumer* consumer);
 
   //////////////////////////////////////////////////////////////////////////////
   //

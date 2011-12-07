@@ -38,7 +38,7 @@ class FakeSigninManager : public SigninManager {
                            const std::string& password,
                            const std::string& login_token,
                            const std::string& login_captcha) OVERRIDE {
-    SetUsername(username);
+    SetAuthenticatedUsername(username);
   }
 };
 
@@ -148,6 +148,7 @@ TestProfileSyncService::TestProfileSyncService(
       set_initial_sync_ended_on_init_(true),
       fail_initial_download_(false) {
   SetSyncSetupCompleted();
+  signin_->SetAuthenticatedUsername(test_user);
 }
 
 TestProfileSyncService::~TestProfileSyncService() {}
