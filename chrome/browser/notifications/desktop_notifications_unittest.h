@@ -20,6 +20,10 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(USE_AURA) && defined(USE_WEBKIT_COMPOSITOR)
+#include "content/test/render_view_test.h"
+#endif
+
 class DesktopNotificationsTest;
 typedef LoggingNotificationDelegate<DesktopNotificationsTest>
     LoggingNotificationProxy;
@@ -112,6 +116,11 @@ class DesktopNotificationsTest : public testing::Test {
 
   // Real DesktopNotificationService
   scoped_ptr<DesktopNotificationService> service_;
+
+#if defined(USE_AURA) && defined(USE_WEBKIT_COMPOSITOR)
+  content::RenderViewTest::RendererWebKitPlatformSupportImplNoSandbox
+      webkit_platform_support_;
+#endif
 
   // Contains the cumulative output of the unit test.
   static std::string log_output_;
