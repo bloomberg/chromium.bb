@@ -88,8 +88,8 @@ class CONTENT_EXPORT AudioDevice
   // Starts audio playback.
   void Start();
 
-  // Stops audio playback. Returns |true| on success.
-  bool Stop();
+  // Stops audio playback.
+  void Stop();
 
   // Sets the playback volume, with range [0.0, 1.0] inclusive.
   // Returns |true| on success.
@@ -127,7 +127,7 @@ class CONTENT_EXPORT AudioDevice
   // Method called on the audio thread (+ one call on the IO thread) ----------
   // Calls the client's callback for rendering audio. There will also be one
   // initial call on the IO thread before the audio thread has been created.
-  void FireRenderCallback();
+  void FireRenderCallback(int16* data);
 
   // DelegateSimpleThread::Delegate implementation.
   virtual void Run() OVERRIDE;
@@ -154,11 +154,6 @@ class CONTENT_EXPORT AudioDevice
   // Callbacks for rendering audio occur on this thread.
   scoped_ptr<base::DelegateSimpleThread> audio_thread_;
 
-  // IPC message stuff.
-  base::SharedMemory* shared_memory() { return shared_memory_.get(); }
-  base::SyncSocket* socket() { return socket_.get(); }
-  void* shared_memory_data() { return shared_memory()->memory(); }
-
   // Cached audio message filter (lives on the main render thread).
   scoped_refptr<AudioMessageFilter> filter_;
 
@@ -167,8 +162,9 @@ class CONTENT_EXPORT AudioDevice
 
   // Data transfer between browser and render process uses a combination
   // of sync sockets and shared memory to provide lowest possible latency.
-  scoped_ptr<base::SharedMemory> shared_memory_;
-  scoped_ptr<base::SyncSocket> socket_;
+  base::SharedMemoryHandle shared_memory_handle_;
+  base::SyncSocket::Handle socket_handle_;
+  int memory_length_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioDevice);
 };

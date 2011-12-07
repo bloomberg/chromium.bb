@@ -131,9 +131,8 @@ class CONTENT_EXPORT AudioInputDevice
   void Start();
 
   // Stops audio capturing. This method is synchronous/blocking.
-  // Returns |true| on success.
   // TODO(henrika): add support for notification when recording has stopped.
-  bool Stop();
+  void Stop();
 
   // Sets the capture volume scaling, with range [0.0, 1.0] inclusive.
   // Returns |true| on success.
@@ -170,7 +169,7 @@ class CONTENT_EXPORT AudioInputDevice
 
   // Method called on the audio thread ----------------------------------------
   // Calls the client's callback for capturing audio.
-  void FireCaptureCallback();
+  void FireCaptureCallback(int16* input_audio);
 
   // DelegateSimpleThread::Delegate implementation.
   virtual void Run() OVERRIDE;
@@ -195,11 +194,6 @@ class CONTENT_EXPORT AudioInputDevice
   // Callbacks for capturing audio occur on this thread.
   scoped_ptr<base::DelegateSimpleThread> audio_thread_;
 
-  // IPC message stuff.
-  base::SharedMemory* shared_memory() { return shared_memory_.get(); }
-  base::SyncSocket* socket() { return socket_.get(); }
-  void* shared_memory_data() { return shared_memory()->memory(); }
-
   // Cached audio input message filter (lives on the main render thread).
   scoped_refptr<AudioInputMessageFilter> filter_;
 
@@ -214,8 +208,9 @@ class CONTENT_EXPORT AudioInputDevice
   // callback. Only modified on the IO thread.
   bool pending_device_ready_;
 
-  scoped_ptr<base::SharedMemory> shared_memory_;
-  scoped_ptr<base::SyncSocket> socket_;
+  base::SharedMemoryHandle shared_memory_handle_;
+  base::SyncSocket::Handle socket_handle_;
+  int memory_length_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioInputDevice);
 };

@@ -25,7 +25,8 @@ AudioDevice::AudioDevice(size_t buffer_size,
       callback_(callback),
       audio_delay_milliseconds_(0),
       volume_(1.0),
-      stream_id_(0) {
+      stream_id_(0),
+      memory_length_(0) {
   filter_ = RenderThreadImpl::current()->audio_message_filter();
   audio_data_.reserve(channels);
   for (int i = 0; i < channels; ++i) {
@@ -55,7 +56,8 @@ void AudioDevice::Start() {
       base::Bind(&AudioDevice::InitializeOnIOThread, this, params));
 }
 
-bool AudioDevice::Stop() {
+void AudioDevice::Stop() {
+  DCHECK(MessageLoop::current() != ChildProcess::current()->io_message_loop());
   // Max waiting time for Stop() to complete. If this time limit is passed,
   // we will stop waiting and return false. It ensures that Stop() can't block
   // the calling thread forever.
@@ -70,18 +72,19 @@ bool AudioDevice::Stop() {
   // We wait here for the IO task to be completed to remove race conflicts
   // with OnLowLatencyCreated() and to ensure that Stop() acts as a synchronous
   // function call.
-  if (completion.TimedWait(kMaxTimeOut)) {
-    if (audio_thread_.get()) {
-      socket_->Close();
-      audio_thread_->Join();
-      audio_thread_.reset(NULL);
-    }
-  } else {
+  if (!completion.TimedWait(kMaxTimeOut)) {
     LOG(ERROR) << "Failed to shut down audio output on IO thread";
-    return false;
   }
 
-  return true;
+  if (audio_thread_.get()) {
+    // Close the socket handler to terminate the main thread function in the
+    // audio thread.
+    {
+      base::SyncSocket socket(socket_handle_);
+    }
+    audio_thread_->Join();
+    audio_thread_.reset(NULL);
+  }
 }
 
 bool AudioDevice::SetVolume(double volume) {
@@ -167,6 +170,7 @@ void AudioDevice::OnLowLatencyCreated(
   DCHECK_GE(socket_handle, 0);
 #endif
   DCHECK(length);
+  DCHECK(!audio_thread_.get());
 
   // Takes care of the case when Stop() is called before OnLowLatencyCreated().
   if (!stream_id_) {
@@ -176,14 +180,12 @@ void AudioDevice::OnLowLatencyCreated(
     return;
   }
 
-  shared_memory_.reset(new base::SharedMemory(handle, false));
-  shared_memory_->Map(length);
+  shared_memory_handle_ = handle;
+  memory_length_ = length;
 
   DCHECK_GE(length, buffer_size_ * sizeof(int16) * channels_);
 
-  socket_.reset(new base::SyncSocket(socket_handle));
-  // Allow the client to pre-populate the buffer.
-  FireRenderCallback();
+  socket_handle_ = socket_handle;
 
   audio_thread_.reset(
       new base::DelegateSimpleThread(this, "renderer_audio_thread"));
@@ -206,21 +208,28 @@ void AudioDevice::Send(IPC::Message* message) {
 void AudioDevice::Run() {
   audio_thread_->SetThreadPriority(base::kThreadPriority_RealtimeAudio);
 
+  base::SharedMemory shared_memory(shared_memory_handle_, false);
+  shared_memory.Map(memory_length_);
+  // Allow the client to pre-populate the buffer.
+  FireRenderCallback(reinterpret_cast<int16*>(shared_memory.memory()));
+
+  base::SyncSocket socket(socket_handle_);
+
   int pending_data;
   const int samples_per_ms = static_cast<int>(sample_rate_) / 1000;
   const int bytes_per_ms = channels_ * (bits_per_sample_ / 8) * samples_per_ms;
 
-  while ((sizeof(pending_data) == socket_->Receive(&pending_data,
-                                                   sizeof(pending_data))) &&
+  while ((sizeof(pending_data) == socket.Receive(&pending_data,
+                                                 sizeof(pending_data))) &&
          (pending_data >= 0)) {
     // Convert the number of pending bytes in the render buffer
     // into milliseconds.
     audio_delay_milliseconds_ = pending_data / bytes_per_ms;
-    FireRenderCallback();
+    FireRenderCallback(reinterpret_cast<int16*>(shared_memory.memory()));
   }
 }
 
-void AudioDevice::FireRenderCallback() {
+void AudioDevice::FireRenderCallback(int16* data) {
   TRACE_EVENT0("audio", "AudioDevice::FireRenderCallback");
 
   if (callback_) {
@@ -229,7 +238,7 @@ void AudioDevice::FireRenderCallback() {
 
     // Interleave, scale, and clip to int16.
     media::InterleaveFloatToInt16(audio_data_,
-                                  static_cast<int16*>(shared_memory_data()),
+                                  data,
                                   buffer_size_);
   }
 }

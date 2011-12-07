@@ -597,8 +597,9 @@ int32_t WebRtcAudioDeviceImpl::StopPlayout() {
     // webrtc::VoiceEngine assumes that it is OK to call Stop() just in case.
     return 0;
   }
-  playing_ = !audio_output_device_->Stop();
-  return (!playing_ ? 0 : -1);
+  audio_output_device_->Stop();
+  playing_ = false;
+  return 0;
 }
 
 bool WebRtcAudioDeviceImpl::Playing() const {
@@ -646,8 +647,9 @@ int32_t WebRtcAudioDeviceImpl::StopRecording() {
     // webrtc::VoiceEngine assumes that it is OK to call Stop() just in case.
     return 0;
   }
-  recording_ = !audio_input_device_->Stop();
-  return (!recording_ ? 0 : -1);
+  audio_input_device_->Stop();
+  recording_ = false;
+  return 0;
 }
 
 bool WebRtcAudioDeviceImpl::Recording() const {

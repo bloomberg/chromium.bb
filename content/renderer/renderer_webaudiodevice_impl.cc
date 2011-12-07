@@ -27,8 +27,8 @@ void RendererWebAudioDeviceImpl::start() {
 
 void RendererWebAudioDeviceImpl::stop() {
   if (is_running_) {
-    if (audio_device_->Stop())
-      is_running_ = false;
+    audio_device_->Stop();
+    is_running_ = false;
   }
 }
 
