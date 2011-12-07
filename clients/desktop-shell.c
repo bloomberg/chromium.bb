@@ -606,9 +606,6 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	/* The fd is our private, do not confuse our children with it. */
-	unsetenv("WAYLAND_SOCKET");
-
 	wl_display_add_global_listener(display_get_display(desktop.display),
 				       global_handler, &desktop);
 
