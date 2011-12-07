@@ -33,6 +33,7 @@
 #include <wayland-server.h>
 #include "compositor.h"
 #include "desktop-shell-server-protocol.h"
+#include "../shared/config-parser.h"
 
 struct shell_surface;
 
@@ -57,6 +58,7 @@ struct wl_shell {
 	struct wl_list panels;
 
 	struct {
+		const char *path;
 		struct wl_resource *binding;
 		struct wl_list surfaces;
 		struct wlsc_process process;
@@ -94,6 +96,28 @@ struct wlsc_move_grab {
 	struct wlsc_surface *surface;
 	int32_t dx, dy;
 };
+
+static int
+shell_configuration(struct wl_shell *shell)
+{
+	int ret;
+	char *config_file;
+
+	struct config_key saver_keys[] = {
+		{ "path", CONFIG_KEY_STRING, &shell->screensaver.path },
+	};
+
+	struct config_section cs[] = {
+		{ "screensaver", saver_keys, ARRAY_LENGTH(saver_keys), NULL },
+	};
+
+	config_file = config_file_path("wayland-desktop-shell.ini");
+	ret = parse_config_file(config_file, cs, ARRAY_LENGTH(cs), shell);
+	free(config_file);
+
+	return ret;
+	/* FIXME: free(shell->screensaver.path) on plugin fini */
+}
 
 static void
 move_grab_motion(struct wl_grab *grab,
@@ -503,9 +527,12 @@ launch_screensaver(struct wl_shell *shell)
 	if (shell->screensaver.binding)
 		return;
 
+	if (!shell->screensaver.path)
+		return;
+
 	wlsc_client_launch(shell->compositor,
 			   &shell->screensaver.process,
-			   "./clients/wscreensaver",
+			   shell->screensaver.path,
 			   handle_screensaver_sigchld);
 }
 
@@ -1213,6 +1240,9 @@ shell_init(struct wlsc_compositor *ec)
 	wl_list_init(&shell->backgrounds);
 	wl_list_init(&shell->panels);
 	wl_list_init(&shell->screensaver.surfaces);
+
+	if (shell_configuration(shell) < 0)
+		return -1;
 
 	if (wl_display_add_global(ec->wl_display, &wl_shell_interface,
 				  shell, bind_shell) == NULL)

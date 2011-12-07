@@ -74,7 +74,8 @@ endif
 if ENABLE_DESKTOP_SHELL
 desktop_shell = desktop-shell.la
 desktop_shell_la_LDFLAGS = -module -avoid-version
-desktop_shell_la_LIBADD = $(COMPOSITOR_LIBS)
+desktop_shell_la_LIBADD = $(COMPOSITOR_LIBS)	\
+	../shared/libconfig-parser.la
 desktop_shell_la_CFLAGS = $(GCC_CFLAGS)
 desktop_shell_la_SOURCES =			\
 	shell.c					\
