@@ -262,17 +262,15 @@ gfx::Rect ScrollView::GetVisibleRect() const {
     return gfx::Rect();
 
   const int x =
-      (horiz_sb_ && horiz_sb_->IsVisible()) ? horiz_sb_->GetPosition() : 0;
+      horiz_sb_->IsVisible() ? horiz_sb_->GetPosition() : 0;
   const int y =
-      (vert_sb_ && vert_sb_->IsVisible()) ? vert_sb_->GetPosition() : 0;
+      vert_sb_->IsVisible() ? vert_sb_->GetPosition() : 0;
   return gfx::Rect(x, y, viewport_->width(), viewport_->height());
 }
 
 void ScrollView::ScrollContentsRegionToBeVisible(const gfx::Rect& rect) {
-  if (!contents_ || ((!horiz_sb_ || !horiz_sb_->IsVisible()) &&
-                     (!vert_sb_ || !vert_sb_->IsVisible()))) {
+  if (!contents_ || (!horiz_sb_->IsVisible() && !vert_sb_->IsVisible()))
     return;
-  }
 
   // Figure out the maximums for this scroll view.
   const int contents_max_x =
