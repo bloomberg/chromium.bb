@@ -7,11 +7,16 @@
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 
+// X macro fail.
+#if defined(RootWindow)
+#undef RootWindow
+#endif
+
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/message_pump_x.h"
 #include "chrome/browser/automation/ui_controls_internal.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/views/view.h"
 
@@ -90,14 +95,14 @@ void SetMaskAndKeycodeThenSend(XEvent* xevent,
                                unsigned int keycode) {
   xevent->xkey.state |= mask;
   xevent->xkey.keycode = keycode;
-  aura::Desktop::GetInstance()->PostNativeEvent(xevent);
+  aura::RootWindow::GetInstance()->PostNativeEvent(xevent);
 }
 
 void SetKeycodeAndSendThenUnmask(XEvent* xevent,
                                  unsigned int mask,
                                  unsigned int keycode) {
   xevent->xkey.keycode = keycode;
-  aura::Desktop::GetInstance()->PostNativeEvent(xevent);
+  aura::RootWindow::GetInstance()->PostNativeEvent(xevent);
   xevent->xkey.state ^= mask;
 }
 
@@ -120,11 +125,11 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
   xevent.xkey.keycode =
       XKeysymToKeycode(base::MessagePumpX::GetDefaultXDisplay(),
                        ui::XKeysymForWindowsKeyCode(key, shift));
-  aura::Desktop::GetInstance()->PostNativeEvent(&xevent);
+  aura::RootWindow::GetInstance()->PostNativeEvent(&xevent);
 
   // Send key release events.
   xevent.xkey.type = KeyRelease;
-  aura::Desktop::GetInstance()->PostNativeEvent(&xevent);
+  aura::RootWindow::GetInstance()->PostNativeEvent(&xevent);
   if (alt)
     SetKeycodeAndSendThenUnmask(&xevent, Mod1Mask, XK_Alt_L);
   if (shift)
@@ -147,8 +152,8 @@ bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& closure) {
   g_current_x = xmotion->x = x;
   g_current_y = xmotion->y = y;
   xmotion->same_screen = True;
-  // Desktop will take care of other necessary fields.
-  aura::Desktop::GetInstance()->PostNativeEvent(&xevent);
+  // RootWindow will take care of other necessary fields.
+  aura::RootWindow::GetInstance()->PostNativeEvent(&xevent);
   RunClosureAfterAllPendingUIEvents(closure);
   return true;
 }
@@ -181,16 +186,16 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type,
       xbutton->state = Button3Mask;
       break;
   }
-  // Desktop will take care of other necessary fields.
+  // RootWindow will take care of other necessary fields.
 
-  aura::Desktop* desktop = aura::Desktop::GetInstance();
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
   if (state & DOWN) {
     xevent.xbutton.type = ButtonPress;
-    desktop->PostNativeEvent(&xevent);
+    root_window->PostNativeEvent(&xevent);
   }
   if (state & UP) {
     xevent.xbutton.type = ButtonRelease;
-    desktop->PostNativeEvent(&xevent);
+    root_window->PostNativeEvent(&xevent);
   }
   RunClosureAfterAllPendingUIEvents(closure);
   return true;
@@ -222,7 +227,7 @@ void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
     marker_event->xclient.format = 8;
   }
   marker_event->xclient.message_type = MarkerEventAtom();
-  aura::Desktop::GetInstance()->PostNativeEvent(marker_event);
+  aura::RootWindow::GetInstance()->PostNativeEvent(marker_event);
   new EventWaiter(closure, &Matcher);
 }
 

@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/shadow_types.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/shadow.h"
 
@@ -19,7 +19,7 @@ namespace aura_shell {
 namespace internal {
 
 ShadowController::ShadowController() {
-  aura::Desktop::GetInstance()->AddObserver(this);
+  aura::RootWindow::GetInstance()->AddObserver(this);
 }
 
 ShadowController::~ShadowController() {
@@ -27,7 +27,7 @@ ShadowController::~ShadowController() {
        it != window_shadows_.end(); ++it) {
     it->first->RemoveObserver(this);
   }
-  aura::Desktop::GetInstance()->RemoveObserver(this);
+  aura::RootWindow::GetInstance()->RemoveObserver(this);
 }
 
 void ShadowController::OnWindowInitialized(aura::Window* window) {

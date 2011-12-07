@@ -5,8 +5,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_stacking_client.h"
@@ -69,7 +69,7 @@ class ToplevelWindowEventFilterTest : public aura::test::AuraTestBase {
     aura::test::AuraTestBase::SetUp();
     aura::Window* default_container =
         static_cast<aura::test::TestStackingClient*>(
-            aura::Desktop::GetInstance()->stacking_client())->
+            aura::RootWindow::GetInstance()->stacking_client())->
                 default_container();
     default_container->SetEventFilter(
         new ToplevelWindowEventFilter(default_container));

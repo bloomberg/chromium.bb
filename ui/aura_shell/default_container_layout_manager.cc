@@ -5,8 +5,8 @@
 #include "ui/aura_shell/default_container_layout_manager.h"
 
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -91,7 +91,7 @@ void DefaultContainerLayoutManager::EndResize(
 // DefaultContainerLayoutManager, aura::LayoutManager implementation:
 
 void DefaultContainerLayoutManager::OnWindowResized() {
-  // Workspace is updated via DesktopObserver::OnDesktopResized.
+  // Workspace is updated via RootWindowObserver::OnRootWindowResized.
 }
 
 void DefaultContainerLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
@@ -105,7 +105,7 @@ void DefaultContainerLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 
   Workspace* workspace = workspace_manager_->GetActiveWorkspace();
   if (workspace) {
-    aura::Window* active = aura::Desktop::GetInstance()->active_window();
+    aura::Window* active = aura::RootWindow::GetInstance()->active_window();
     // Active window may not be in the default container layer.
     if (!workspace->Contains(active))
       active = NULL;

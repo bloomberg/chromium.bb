@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 
 #include <string>
 #include <vector>
@@ -15,8 +15,8 @@
 #include "base/string_split.h"
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/client/stacking_client.h"
-#include "ui/aura/desktop_host.h"
-#include "ui/aura/desktop_observer.h"
+#include "ui/aura/root_window_host.h"
+#include "ui/aura/root_window_observer.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/focus_manager.h"
@@ -56,22 +56,23 @@ bool IsNonClientLocation(Window* target, const gfx::Point& location) {
 
 class DefaultStackingClient : public StackingClient {
  public:
-  explicit DefaultStackingClient(Desktop* desktop) : desktop_(desktop) {}
+  explicit DefaultStackingClient(RootWindow* root_window)
+      : root_window_(root_window) {}
   virtual ~DefaultStackingClient() {}
 
  private:
 
   // Overridden from StackingClient:
   virtual void AddChildToDefaultParent(Window* window) OVERRIDE {
-    desktop_->AddChild(window);
+    root_window_->AddChild(window);
   }
   virtual bool CanActivateWindow(Window* window) const OVERRIDE {
-    return window->parent() == desktop_;
+    return window->parent() == root_window_;
   }
   virtual Window* GetTopmostWindowToActivate(Window* ignore) const OVERRIDE {
     Window::Windows::const_reverse_iterator i;
-    for (i = desktop_->children().rbegin();
-         i != desktop_->children().rend();
+    for (i = root_window_->children().rbegin();
+         i != root_window_->children().rend();
          ++i) {
       if (*i == ignore)
         continue;
@@ -80,7 +81,7 @@ class DefaultStackingClient : public StackingClient {
     return NULL;
   }
 
-  Desktop* desktop_;
+  RootWindow* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultStackingClient);
 };
@@ -98,64 +99,64 @@ void GetEventFiltersToNotify(Window* target, EventFilters* filters) {
 
 }  // namespace
 
-Desktop* Desktop::instance_ = NULL;
-bool Desktop::use_fullscreen_host_window_ = false;
+RootWindow* RootWindow::instance_ = NULL;
+bool RootWindow::use_fullscreen_host_window_ = false;
 
 ////////////////////////////////////////////////////////////////////////////////
-// Desktop, public:
+// RootWindow, public:
 
 // static
-Desktop* Desktop::GetInstance() {
+RootWindow* RootWindow::GetInstance() {
   if (!instance_) {
-    instance_ = new Desktop;
+    instance_ = new RootWindow;
     instance_->Init();
   }
   return instance_;
 }
 
 // static
-void Desktop::DeleteInstance() {
+void RootWindow::DeleteInstance() {
   delete instance_;
   instance_ = NULL;
 }
 
-void Desktop::SetStackingClient(StackingClient* stacking_client) {
+void RootWindow::SetStackingClient(StackingClient* stacking_client) {
   stacking_client_.reset(stacking_client);
 }
 
-void Desktop::ShowDesktop() {
+void RootWindow::ShowRootWindow() {
   host_->Show();
 }
 
-void Desktop::SetHostSize(const gfx::Size& size) {
+void RootWindow::SetHostSize(const gfx::Size& size) {
   host_->SetSize(size);
-  // Requery the location to constrain it within the new desktop size.
+  // Requery the location to constrain it within the new root window size.
   last_mouse_location_ = host_->QueryMouseLocation();
 }
 
-gfx::Size Desktop::GetHostSize() const {
+gfx::Size RootWindow::GetHostSize() const {
   gfx::Rect rect(host_->GetSize());
   layer()->transform().TransformRect(&rect);
   return rect.size();
 }
 
-void Desktop::SetCursor(gfx::NativeCursor cursor) {
+void RootWindow::SetCursor(gfx::NativeCursor cursor) {
   last_cursor_ = cursor;
   // A lot of code seems to depend on NULL cursors actually showing an arrow,
   // so just pass everything along to the host.
   host_->SetCursor(cursor);
 }
 
-void Desktop::Run() {
-  ShowDesktop();
+void RootWindow::Run() {
+  ShowRootWindow();
   MessageLoopForUI::current()->Run();
 }
 
-void Desktop::Draw() {
+void RootWindow::Draw() {
   compositor_->Draw(false);
 }
 
-bool Desktop::DispatchMouseEvent(MouseEvent* event) {
+bool RootWindow::DispatchMouseEvent(MouseEvent* event) {
   static const int kMouseButtonFlagMask =
       ui::EF_LEFT_BUTTON_DOWN |
       ui::EF_MIDDLE_BUTTON_DOWN |
@@ -197,7 +198,7 @@ bool Desktop::DispatchMouseEvent(MouseEvent* event) {
   return false;
 }
 
-bool Desktop::DispatchKeyEvent(KeyEvent* event) {
+bool RootWindow::DispatchKeyEvent(KeyEvent* event) {
   if (focused_window_) {
     KeyEvent translated_event(*event);
     return ProcessKeyEvent(focused_window_, &translated_event);
@@ -205,7 +206,7 @@ bool Desktop::DispatchKeyEvent(KeyEvent* event) {
   return false;
 }
 
-bool Desktop::DispatchTouchEvent(TouchEvent* event) {
+bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
   event->UpdateForTransform(layer()->transform());
   bool handled = false;
   Window* target =
@@ -225,25 +226,25 @@ bool Desktop::DispatchTouchEvent(TouchEvent* event) {
   return handled;
 }
 
-void Desktop::OnHostResized(const gfx::Size& size) {
-  // The compositor should have the same size as the native desktop host.
+void RootWindow::OnHostResized(const gfx::Size& size) {
+  // The compositor should have the same size as the native root window host.
   compositor_->WidgetSizeChanged(size);
 
   // The layer, and all the observers should be notified of the
-  // transformed size of the desktop.
+  // transformed size of the root window.
   gfx::Rect bounds(size);
   layer()->transform().TransformRect(&bounds);
   SetBounds(gfx::Rect(bounds.size()));
-  FOR_EACH_OBSERVER(DesktopObserver, observers_,
-                    OnDesktopResized(bounds.size()));
+  FOR_EACH_OBSERVER(RootWindowObserver, observers_,
+                    OnRootWindowResized(bounds.size()));
 }
 
-void Desktop::OnNativeScreenResized(const gfx::Size& size) {
+void RootWindow::OnNativeScreenResized(const gfx::Size& size) {
   if (use_fullscreen_host_window_)
     SetHostSize(size);
 }
 
-void Desktop::SetActiveWindow(Window* window, Window* to_focus) {
+void RootWindow::SetActiveWindow(Window* window, Window* to_focus) {
   if (!window)
     return;
   // The stacking client may impose rules on what window configurations can be
@@ -271,15 +272,15 @@ void Desktop::SetActiveWindow(Window* window, Window* to_focus) {
     active_window_->GetFocusManager()->SetFocusedWindow(
         to_focus ? to_focus : active_window_);
   }
-  FOR_EACH_OBSERVER(DesktopObserver, observers_,
+  FOR_EACH_OBSERVER(RootWindowObserver, observers_,
                     OnActiveWindowChanged(active_window_));
 }
 
-void Desktop::ActivateTopmostWindow() {
+void RootWindow::ActivateTopmostWindow() {
   SetActiveWindow(stacking_client_->GetTopmostWindowToActivate(NULL), NULL);
 }
 
-void Desktop::Deactivate(Window* window) {
+void RootWindow::Deactivate(Window* window) {
   // The stacking client may impose rules on what window configurations can be
   // activated or deactivated.
   if (!window || !stacking_client_->CanActivateWindow(window))
@@ -292,11 +293,12 @@ void Desktop::Deactivate(Window* window) {
     SetActiveWindow(to_activate, NULL);
 }
 
-void Desktop::WindowInitialized(Window* window) {
-  FOR_EACH_OBSERVER(DesktopObserver, observers_, OnWindowInitialized(window));
+void RootWindow::WindowInitialized(Window* window) {
+  FOR_EACH_OBSERVER(RootWindowObserver, observers_,
+                    OnWindowInitialized(window));
 }
 
-void Desktop::WindowDestroying(Window* window) {
+void RootWindow::WindowDestroying(Window* window) {
   // Update the focused window state if the window was focused.
   if (focused_window_ == window)
     SetFocusedWindow(NULL);
@@ -322,32 +324,32 @@ void Desktop::WindowDestroying(Window* window) {
   SetActiveWindow(stacking_client_->GetTopmostWindowToActivate(window), NULL);
 }
 
-MessageLoop::Dispatcher* Desktop::GetDispatcher() {
+MessageLoop::Dispatcher* RootWindow::GetDispatcher() {
   return host_.get();
 }
 
-void Desktop::AddObserver(DesktopObserver* observer) {
+void RootWindow::AddObserver(RootWindowObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void Desktop::RemoveObserver(DesktopObserver* observer) {
+void RootWindow::RemoveObserver(RootWindowObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool Desktop::IsMouseButtonDown() const {
+bool RootWindow::IsMouseButtonDown() const {
   return mouse_button_flags_ != 0;
 }
 
-void Desktop::PostNativeEvent(const base::NativeEvent& native_event) {
+void RootWindow::PostNativeEvent(const base::NativeEvent& native_event) {
   host_->PostNativeEvent(native_event);
 }
 
-void Desktop::ConvertPointToNativeScreen(gfx::Point* point) const {
+void RootWindow::ConvertPointToNativeScreen(gfx::Point* point) const {
   gfx::Point location = host_->GetLocationOnNativeScreen();
   point->Offset(location.x(), location.y());
 }
 
-void Desktop::SetCapture(Window* window) {
+void RootWindow::SetCapture(Window* window) {
   if (capture_window_ == window)
     return;
 
@@ -370,13 +372,13 @@ void Desktop::SetCapture(Window* window) {
   }
 }
 
-void Desktop::ReleaseCapture(Window* window) {
+void RootWindow::ReleaseCapture(Window* window) {
   if (capture_window_ != window)
     return;
   SetCapture(NULL);
 }
 
-void Desktop::SetTransform(const ui::Transform& transform) {
+void RootWindow::SetTransform(const ui::Transform& transform) {
   Window::SetTransform(transform);
 
   // If the layer is not animating, then we need to update the host size
@@ -386,17 +388,17 @@ void Desktop::SetTransform(const ui::Transform& transform) {
 }
 
 #if !defined(NDEBUG)
-void Desktop::ToggleFullScreen() {
+void RootWindow::ToggleFullScreen() {
   host_->ToggleFullScreen();
 }
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
-// Desktop, private:
+// RootWindow, private:
 
-Desktop::Desktop()
+RootWindow::RootWindow()
     : Window(NULL),
-      host_(aura::DesktopHost::Create(GetInitialHostWindowBounds())),
+      host_(aura::RootWindowHost::Create(GetInitialHostWindowBounds())),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           stacking_client_(new DefaultStackingClient(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
@@ -412,7 +414,7 @@ Desktop::Desktop()
       touch_event_handler_(NULL) {
   SetName("RootWindow");
   gfx::Screen::SetInstance(screen_);
-  host_->SetDesktop(this);
+  host_->SetRootWindow(this);
   last_mouse_location_ = host_->QueryMouseLocation();
 
   if (ui::Compositor::compositor_factory()) {
@@ -427,7 +429,7 @@ Desktop::Desktop()
   DCHECK(compositor_.get());
 }
 
-Desktop::~Desktop() {
+RootWindow::~RootWindow() {
   in_destructor_ = true;
   // Make sure to destroy the compositor before terminating so that state is
   // cleared and we don't hit asserts.
@@ -440,7 +442,7 @@ Desktop::~Desktop() {
     instance_ = NULL;
 }
 
-void Desktop::HandleMouseMoved(const MouseEvent& event, Window* target) {
+void RootWindow::HandleMouseMoved(const MouseEvent& event, Window* target) {
   if (target == mouse_moved_handler_)
     return;
 
@@ -459,7 +461,7 @@ void Desktop::HandleMouseMoved(const MouseEvent& event, Window* target) {
   }
 }
 
-bool Desktop::ProcessMouseEvent(Window* target, MouseEvent* event) {
+bool RootWindow::ProcessMouseEvent(Window* target, MouseEvent* event) {
   if (!target->IsVisible())
     return false;
 
@@ -474,7 +476,7 @@ bool Desktop::ProcessMouseEvent(Window* target, MouseEvent* event) {
   return target->delegate()->OnMouseEvent(event);
 }
 
-bool Desktop::ProcessKeyEvent(Window* target, KeyEvent* event) {
+bool RootWindow::ProcessKeyEvent(Window* target, KeyEvent* event) {
   if (!target->IsVisible())
     return false;
 
@@ -489,7 +491,8 @@ bool Desktop::ProcessKeyEvent(Window* target, KeyEvent* event) {
   return target->delegate()->OnKeyEvent(event);
 }
 
-ui::TouchStatus Desktop::ProcessTouchEvent(Window* target, TouchEvent* event) {
+ui::TouchStatus RootWindow::ProcessTouchEvent(Window* target,
+                                              TouchEvent* event) {
   if (!target->IsVisible())
     return ui::TOUCH_STATUS_UNKNOWN;
 
@@ -505,27 +508,27 @@ ui::TouchStatus Desktop::ProcessTouchEvent(Window* target, TouchEvent* event) {
   return target->delegate()->OnTouchEvent(event);
 }
 
-void Desktop::ScheduleDraw() {
+void RootWindow::ScheduleDraw() {
   if (!schedule_paint_factory_.HasWeakPtrs()) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&Desktop::Draw, schedule_paint_factory_.GetWeakPtr()));
+        base::Bind(&RootWindow::Draw, schedule_paint_factory_.GetWeakPtr()));
   }
 }
 
-bool Desktop::CanFocus() const {
+bool RootWindow::CanFocus() const {
   return IsVisible();
 }
 
-internal::FocusManager* Desktop::GetFocusManager() {
+internal::FocusManager* RootWindow::GetFocusManager() {
   return this;
 }
 
-Desktop* Desktop::GetDesktop() {
+RootWindow* RootWindow::GetRootWindow() {
   return this;
 }
 
-void Desktop::WindowDetachedFromDesktop(Window* detached) {
+void RootWindow::WindowDetachedFromRootWindow(Window* detached) {
   DCHECK(capture_window_ != this);
 
   // If the ancestor of the capture window is detached,
@@ -548,20 +551,20 @@ void Desktop::WindowDetachedFromDesktop(Window* detached) {
     touch_event_handler_ = NULL;
 }
 
-void Desktop::OnLayerAnimationEnded(
+void RootWindow::OnLayerAnimationEnded(
     const ui::LayerAnimationSequence* animation) {
   OnHostResized(host_->GetSize());
 }
 
-void Desktop::OnLayerAnimationScheduled(
+void RootWindow::OnLayerAnimationScheduled(
     const ui::LayerAnimationSequence* animation) {
 }
 
-void Desktop::OnLayerAnimationAborted(
+void RootWindow::OnLayerAnimationAborted(
     const ui::LayerAnimationSequence* animation) {
 }
 
-void Desktop::SetFocusedWindow(Window* focused_window) {
+void RootWindow::SetFocusedWindow(Window* focused_window) {
   if (focused_window == focused_window_ ||
       (focused_window && !focused_window->CanFocus())) {
     return;
@@ -573,22 +576,22 @@ void Desktop::SetFocusedWindow(Window* focused_window) {
     focused_window_->delegate()->OnFocus();
 }
 
-Window* Desktop::GetFocusedWindow() {
+Window* RootWindow::GetFocusedWindow() {
   return focused_window_;
 }
 
-bool Desktop::IsFocusedWindow(const Window* window) const {
+bool RootWindow::IsFocusedWindow(const Window* window) const {
   return focused_window_ == window;
 }
 
-void Desktop::Init() {
+void RootWindow::Init() {
   Window::Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
   SetBounds(gfx::Rect(host_->GetSize()));
   Show();
   compositor()->SetRootLayer(layer());
 }
 
-gfx::Rect Desktop::GetInitialHostWindowBounds() const {
+gfx::Rect RootWindow::GetInitialHostWindowBounds() const {
   gfx::Rect bounds(kDefaultHostWindowX, kDefaultHostWindowY,
                    kDefaultHostWindowWidth, kDefaultHostWindowHeight);
 
@@ -602,7 +605,7 @@ gfx::Rect Desktop::GetInitialHostWindowBounds() const {
       base::StringToInt(parts[1], &parsed_height) && parsed_height > 0) {
     bounds.set_size(gfx::Size(parsed_width, parsed_height));
   } else if (use_fullscreen_host_window_) {
-    bounds = gfx::Rect(DesktopHost::GetNativeScreenSize());
+    bounds = gfx::Rect(RootWindowHost::GetNativeScreenSize());
   }
 
   return bounds;

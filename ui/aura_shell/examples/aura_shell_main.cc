@@ -7,7 +7,7 @@
 #include "base/i18n/icu_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura_shell/examples/toplevel_window.h"
 #include "ui/aura_shell/launcher/launcher_types.h"
 #include "ui/aura_shell/shell.h"
@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
   icu_util::Initialize();
   ResourceBundle::InitSharedInstance("en-US");
 
-  // Create the message-loop here before creating the desktop.
+  // Create the message-loop here before creating the root window.
   MessageLoop message_loop(MessageLoop::TYPE_UI);
   ui::CompositorTestSupport::Initialize();
 
@@ -121,9 +121,9 @@ int main(int argc, char** argv) {
 
   aura_shell::examples::InitWindowTypeLauncher();
 
-  aura::Desktop::GetInstance()->Run();
+  aura::RootWindow::GetInstance()->Run();
 
-  aura::Desktop::DeleteInstance();
+  aura::RootWindow::DeleteInstance();
 
   ui::CompositorTestSupport::Terminate();
 

@@ -8,12 +8,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "third_party/skia/include/core/SkXfermode.h"
-#include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/aura/root_window.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/test/compositor_test_support.h"
@@ -84,11 +84,11 @@ int main(int argc, char** argv) {
   icu_util::Initialize();
   ResourceBundle::InitSharedInstance("en-US");
 
-  // Create the message-loop here before creating the desktop.
+  // Create the message-loop here before creating the root window.
   MessageLoop message_loop(MessageLoop::TYPE_UI);
   ui::CompositorTestSupport::Initialize();
 
-  aura::Desktop::GetInstance();
+  aura::RootWindow::GetInstance();
 
   // Create a hierarchy of test windows.
   DemoWindowDelegate window_delegate1(SK_ColorBLUE);
@@ -115,7 +115,7 @@ int main(int argc, char** argv) {
   window3.Show();
   window3.SetParent(&window2);
 
-  aura::Desktop::GetInstance()->Run();
+  aura::RootWindow::GetInstance()->Run();
 
   ui::CompositorTestSupport::Terminate();
 

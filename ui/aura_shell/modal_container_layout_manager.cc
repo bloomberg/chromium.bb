@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/modality_event_filter.h"
 #include "ui/aura_shell/shell.h"
@@ -166,7 +166,7 @@ void ModalContainerLayoutManager::CreateModalScreen() {
   modal_screen_->GetNativeView()->layer()->SetOpacity(0.0f);
   modal_screen_->GetNativeView()->layer()->GetAnimator()->AddObserver(this);
 
-  Shell::GetInstance()->AddDesktopEventFilter(modality_filter_.get());
+  Shell::GetInstance()->AddRootWindowEventFilter(modality_filter_.get());
 
   ui::LayerAnimator::ScopedSettings settings(
       modal_screen_->GetNativeView()->layer()->GetAnimator());
@@ -182,7 +182,7 @@ void ModalContainerLayoutManager::DestroyModalScreen() {
 }
 
 void ModalContainerLayoutManager::HideModalScreen() {
-  Shell::GetInstance()->RemoveDesktopEventFilter(modality_filter_.get());
+  Shell::GetInstance()->RemoveRootWindowEventFilter(modality_filter_.get());
   ui::LayerAnimator::ScopedSettings settings(
       modal_screen_->GetNativeView()->layer()->GetAnimator());
   modal_screen_->GetNativeView()->layer()->SetOpacity(0.0f);

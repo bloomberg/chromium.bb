@@ -33,17 +33,17 @@ AURA_EXPORT extern const char kModalKey[];
 // that should be displayed under the window.  If unset, no shadow is displayed.
 AURA_EXPORT extern const char kShadowTypeKey[];
 
-// A property key to store the drag and drop client for the desktop. The type of
-// the value is |aura::DragDropClient*|.
-AURA_EXPORT extern const char kDesktopDragDropClientKey[];
+// A property key to store the drag and drop client for the root window. The
+// type of the value is |aura::DragDropClient*|.
+AURA_EXPORT extern const char kRootWindowDragDropClientKey[];
 
 // A property key to store the drag and drop delegate for a window. The type of
 // the value is |aura::WindowDragDropDelegate*|.
 AURA_EXPORT extern const char kDragDropDelegateKey[];
 
-// A property key to store the tooltip client for the desktop. The type of
+// A property key to store the tooltip client for the root window. The type of
 // the value is |aura::TooltipClient*|.
-AURA_EXPORT extern const char kDesktopTooltipClientKey[];
+AURA_EXPORT extern const char kRootWindowTooltipClientKey[];
 }  // namespace aura
 
 #endif  // UI_AURA_CLIENT_AURA_CONSTANTS_H_

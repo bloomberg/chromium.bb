@@ -4,18 +4,18 @@
 
 #include "ui/aura/test/test_stacking_client.h"
 
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 
 namespace aura {
 namespace test {
 
 TestStackingClient::TestStackingClient()
     : default_container_(new Window(NULL)) {
-  Desktop::GetInstance()->SetStackingClient(this);
+  RootWindow::GetInstance()->SetStackingClient(this);
   default_container_->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
   default_container_->SetBounds(
-      gfx::Rect(gfx::Point(), Desktop::GetInstance()->GetHostSize()));
-  Desktop::GetInstance()->AddChild(default_container_.get());
+      gfx::Rect(gfx::Point(), RootWindow::GetInstance()->GetHostSize()));
+  RootWindow::GetInstance()->AddChild(default_container_.get());
   default_container_->Show();
 }
 

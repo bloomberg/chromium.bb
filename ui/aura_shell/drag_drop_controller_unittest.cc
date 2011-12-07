@@ -7,9 +7,9 @@
 #include "base/location.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
-#include "ui/aura_shell/desktop_event_filter.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura_shell/root_window_event_filter.h"
 #include "ui/aura_shell/test/aura_shell_test_base.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -146,7 +146,7 @@ views::Widget* CreateNewWidget() {
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.accept_events = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent = aura::Desktop::GetInstance();
+  params.parent = aura::RootWindow::GetInstance();
   params.child = true;
   widget->Init(params);
   widget->Show();
@@ -176,7 +176,8 @@ class DragDropControllerTest : public AuraShellTestBase {
   }
 
   virtual ~DragDropControllerTest() {
-    aura::Desktop::GetInstance()->SetProperty(aura::kDesktopDragDropClientKey,
+    aura::RootWindow::GetInstance()->SetProperty(
+        aura::kRootWindowDragDropClientKey,
         NULL);
   }
 
@@ -184,7 +185,8 @@ class DragDropControllerTest : public AuraShellTestBase {
     AuraShellTestBase::SetUp();
     drag_drop_controller_ = new TestDragDropController;
     drag_drop_controller_->set_should_block_during_drag_drop(false);
-    aura::Desktop::GetInstance()->SetProperty(aura::kDesktopDragDropClientKey,
+    aura::RootWindow::GetInstance()->SetProperty(
+        aura::kRootWindowDragDropClientKey,
         drag_drop_controller_);
   }
 
@@ -214,7 +216,7 @@ TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
   data.SetString(UTF8ToUTF16("I am being dragged"));
 
   aura::MouseEvent event1(ui::ET_MOUSE_PRESSED, point, ui::EF_LEFT_BUTTON_DOWN);
-  aura::Desktop::GetInstance()->DispatchMouseEvent(&event1);
+  aura::RootWindow::GetInstance()->DispatchMouseEvent(&event1);
 
   int num_drags = 17;
   for (int i = 0; i < num_drags; ++i) {
@@ -227,11 +229,11 @@ TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
     point.Offset(0, 1);
     aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, point,
         ui::EF_LEFT_BUTTON_DOWN);
-    aura::Desktop::GetInstance()->DispatchMouseEvent(&drag_event);
+    aura::RootWindow::GetInstance()->DispatchMouseEvent(&drag_event);
   }
 
   aura::MouseEvent event2(ui::ET_MOUSE_RELEASED, point, 0);
-  aura::Desktop::GetInstance()->DispatchMouseEvent(&event2);
+  aura::RootWindow::GetInstance()->DispatchMouseEvent(&event2);
 
   EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
   EXPECT_EQ(num_drags - 1 - drag_view->VerticalDragThreshold(),
@@ -261,7 +263,7 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsSingleWidgetTest) {
   data.SetString(UTF8ToUTF16("I am being dragged"));
 
   aura::MouseEvent event1(ui::ET_MOUSE_PRESSED, point, ui::EF_LEFT_BUTTON_DOWN);
-  aura::Desktop::GetInstance()->DispatchMouseEvent(&event1);
+  aura::RootWindow::GetInstance()->DispatchMouseEvent(&event1);
 
   int num_drags = drag_view1->width();
   for (int i = 0; i < num_drags; ++i) {
@@ -274,11 +276,11 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsSingleWidgetTest) {
     point.Offset(1, 0);
     aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, point,
         ui::EF_LEFT_BUTTON_DOWN);
-    aura::Desktop::GetInstance()->DispatchMouseEvent(&drag_event);
+    aura::RootWindow::GetInstance()->DispatchMouseEvent(&drag_event);
   }
 
   aura::MouseEvent event2(ui::ET_MOUSE_RELEASED, point, 0);
-  aura::Desktop::GetInstance()->DispatchMouseEvent(&event2);
+  aura::RootWindow::GetInstance()->DispatchMouseEvent(&event2);
 
   EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
   EXPECT_EQ(num_drags - 1 - drag_view1->HorizontalDragThreshold(),
@@ -322,7 +324,7 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
   data.SetString(UTF8ToUTF16("I am being dragged"));
 
   aura::MouseEvent event1(ui::ET_MOUSE_PRESSED, point, ui::EF_LEFT_BUTTON_DOWN);
-  aura::Desktop::GetInstance()->DispatchMouseEvent(&event1);
+  aura::RootWindow::GetInstance()->DispatchMouseEvent(&event1);
 
   int num_drags = drag_view1->width();
   for (int i = 0; i < num_drags; ++i) {
@@ -335,11 +337,11 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
     point.Offset(1, 0);
     aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, point,
         ui::EF_LEFT_BUTTON_DOWN);
-    aura::Desktop::GetInstance()->DispatchMouseEvent(&drag_event);
+    aura::RootWindow::GetInstance()->DispatchMouseEvent(&drag_event);
   }
 
   aura::MouseEvent event2(ui::ET_MOUSE_RELEASED, point, 0);
-  aura::Desktop::GetInstance()->DispatchMouseEvent(&event2);
+  aura::RootWindow::GetInstance()->DispatchMouseEvent(&event2);
 
   EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
   EXPECT_EQ(num_drags - 1 - drag_view1->HorizontalDragThreshold(),
@@ -376,7 +378,7 @@ TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
   data.SetString(UTF8ToUTF16("I am being dragged"));
 
   aura::MouseEvent event1(ui::ET_MOUSE_PRESSED, point, ui::EF_LEFT_BUTTON_DOWN);
-  aura::Desktop::GetInstance()->DispatchMouseEvent(&event1);
+  aura::RootWindow::GetInstance()->DispatchMouseEvent(&event1);
 
   int num_drags_1 = 17;
   for (int i = 0; i < num_drags_1; ++i) {
@@ -389,7 +391,7 @@ TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
     point.Offset(0, 1);
     aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, point,
         ui::EF_LEFT_BUTTON_DOWN);
-    aura::Desktop::GetInstance()->DispatchMouseEvent(&drag_event);
+    aura::RootWindow::GetInstance()->DispatchMouseEvent(&drag_event);
   }
 
   drag_view->parent()->RemoveChildView(drag_view);
@@ -400,11 +402,11 @@ TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
     point.Offset(0, 1);
     aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, point,
         ui::EF_LEFT_BUTTON_DOWN);
-    aura::Desktop::GetInstance()->DispatchMouseEvent(&drag_event);
+    aura::RootWindow::GetInstance()->DispatchMouseEvent(&drag_event);
   }
 
   aura::MouseEvent event2(ui::ET_MOUSE_RELEASED, point, 0);
-  aura::Desktop::GetInstance()->DispatchMouseEvent(&event2);
+  aura::RootWindow::GetInstance()->DispatchMouseEvent(&event2);
 
   EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
   EXPECT_EQ(num_drags_1 + num_drags_2 - 1 - drag_view->VerticalDragThreshold(),

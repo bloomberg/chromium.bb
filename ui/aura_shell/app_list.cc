@@ -82,7 +82,7 @@ void AppList::SetWidget(views::Widget* widget) {
     widget_ = widget;
     widget_->AddObserver(this);
     GetLayer(widget_)->GetAnimator()->AddObserver(this);
-    Shell::GetInstance()->AddDesktopEventFilter(this);
+    Shell::GetInstance()->AddRootWindowEventFilter(this);
 
     widget_->SetBounds(GetPreferredBounds(false));
     widget_->SetOpacity(0);
@@ -100,7 +100,7 @@ void AppList::ResetWidget() {
 
   widget_->RemoveObserver(this);
   GetLayer(widget_)->GetAnimator()->RemoveObserver(this);
-  Shell::GetInstance()->RemoveDesktopEventFilter(this);
+  Shell::GetInstance()->RemoveRootWindowEventFilter(this);
   widget_ = NULL;
 }
 

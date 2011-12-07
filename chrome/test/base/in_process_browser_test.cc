@@ -45,7 +45,7 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #endif
 
 namespace {

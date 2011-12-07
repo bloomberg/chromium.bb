@@ -5,7 +5,7 @@
 #include "chrome/browser/chrome_browser_main_extra_parts_aura.h"
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/aura/screen_orientation_listener.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura_shell/shell.h"
 
 #if defined(OS_CHROMEOS)
@@ -19,7 +19,7 @@ ChromeBrowserMainExtraPartsAura::ChromeBrowserMainExtraPartsAura()
 void ChromeBrowserMainExtraPartsAura::PostBrowserProcessInit() {
 #if defined(OS_CHROMEOS)
   if (chromeos::system::runtime_environment::IsRunningOnChromeOS())
-    aura::Desktop::set_use_fullscreen_host_window(true);
+    aura::RootWindow::set_use_fullscreen_host_window(true);
 #endif
 
   // Shell takes ownership of ChromeShellDelegate.
@@ -31,5 +31,5 @@ void ChromeBrowserMainExtraPartsAura::PostBrowserProcessInit() {
 
 void ChromeBrowserMainExtraPartsAura::PostMainMessageLoopRun() {
   aura_shell::Shell::DeleteInstance();
-  aura::Desktop::DeleteInstance();
+  aura::RootWindow::DeleteInstance();
 }

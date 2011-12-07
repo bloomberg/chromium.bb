@@ -43,14 +43,14 @@ class TextInputClient;
 // - Keeps track of the focused TextInputClient to see which client can call
 //   APIs, OnTextInputTypeChanged, OnCaretBoundsChanged, and CancelComposition,
 //   that change the state of the input method.
-// In Aura environment, aura::DesktopHost creates an instance of ui::InputMethod
-// and owns it.
+// In Aura environment, aura::RootWindowHost creates an instance of
+// ui::InputMethod and owns it.
 class UI_EXPORT InputMethod {
  public:
   virtual ~InputMethod() {}
 
   // Sets the delegate used by this InputMethod instance. It should only be
-  // called by an object which manages the whole UI (e.g. aura::DesktopHost).
+  // called by an object which manages the whole UI (e.g. aura::RootWindowHost).
   virtual void SetDelegate(internal::InputMethodDelegate* delegate) = 0;
 
   // Initializes the InputMethod object. Pass true if the system toplevel window

@@ -14,8 +14,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/tooltip_client.h"
-#include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_types.h"
 #include "ui/base/hit_test.h"
@@ -125,11 +125,11 @@ void RenderWidgetHostViewAura::InitAsPopup(
   window_->SetParent(NULL);
   Show();
 
-  // |pos| is in desktop coordinates. So convert it to
+  // |pos| is in root window coordinates. So convert it to
   // |popup_parent_host_view_|'s coordinates first.
   gfx::Point origin = pos.origin();
   aura::Window::ConvertPointToWindow(
-      aura::Desktop::GetInstance(),
+      aura::RootWindow::GetInstance(),
       popup_parent_host_view_->window_, &origin);
   SetBounds(gfx::Rect(origin, pos.size()));
 }
@@ -273,8 +273,8 @@ void RenderWidgetHostViewAura::Destroy() {
 
 void RenderWidgetHostViewAura::SetTooltipText(const string16& tooltip_text) {
   tooltip_ = tooltip_text;
-  void* property = aura::Desktop::GetInstance()->GetProperty(
-      aura::kDesktopTooltipClientKey);
+  void* property = aura::RootWindow::GetInstance()->GetProperty(
+      aura::kRootWindowTooltipClientKey);
   if (property) {
     aura::TooltipClient* tc = static_cast<aura::TooltipClient*>(property);
     tc->UpdateTooltip(window_);
@@ -595,15 +595,15 @@ void RenderWidgetHostViewAura::OnCompositingEnded(ui::Compositor* compositor) {
 
 void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
   const gfx::Point screen_point = gfx::Screen::GetCursorScreenPoint();
-  aura::Desktop* desktop = aura::Desktop::GetInstance();
-  if (desktop->GetEventHandlerForPoint(screen_point) != window_)
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  if (root_window->GetEventHandlerForPoint(screen_point) != window_)
     return;
 
   gfx::NativeCursor cursor = current_cursor_.GetNativeCursor();
   if (is_loading_ && cursor == aura::kCursorPointer)
     cursor = aura::kCursorProgress;
 
-  aura::Desktop::GetInstance()->SetCursor(cursor);
+  aura::RootWindow::GetInstance()->SetCursor(cursor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

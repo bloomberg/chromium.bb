@@ -4,8 +4,8 @@
 
 #include "ui/aura_shell/shell_accelerator_filter.h"
 
-#include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_accelerator_controller.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -24,7 +24,7 @@ namespace internal {
 // ShellAcceleratorFilter, public:
 
 ShellAcceleratorFilter::ShellAcceleratorFilter()
-    : EventFilter(aura::Desktop::GetInstance()) {
+    : EventFilter(aura::RootWindow::GetInstance()) {
 }
 
 ShellAcceleratorFilter::~ShellAcceleratorFilter() {

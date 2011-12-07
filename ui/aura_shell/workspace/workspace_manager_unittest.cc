@@ -5,7 +5,7 @@
 #include "ui/aura_shell/workspace/workspace_manager.h"
 
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_stacking_client.h"
@@ -173,7 +173,7 @@ TEST_F(WorkspaceManagerTest, ResizeDuringLayout) {
 }
 
 TEST_F(WorkspaceManagerTest, WorkspaceManagerDragArea) {
-  aura::Desktop::GetInstance()->screen()->set_work_area_insets(
+  aura::RootWindow::GetInstance()->screen()->set_work_area_insets(
       gfx::Insets(10, 10, 10, 10));
   viewport()->SetBounds(gfx::Rect(0, 0, 200, 200));
   EXPECT_EQ("10,10 180x180", manager_->GetDragAreaBounds().ToString());

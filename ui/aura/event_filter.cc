@@ -4,9 +4,9 @@
 
 #include "ui/aura/event_filter.h"
 
-#include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 

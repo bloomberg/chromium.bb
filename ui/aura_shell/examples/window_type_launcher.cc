@@ -5,7 +5,7 @@
 #include "ui/aura_shell/examples/window_type_launcher.h"
 
 #include "base/utf_string_conversions.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/examples/example_factory.h"
 #include "ui/aura_shell/examples/toplevel_window.h"

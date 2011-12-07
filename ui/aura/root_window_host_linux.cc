@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/desktop_host.h"
+#include "ui/aura/root_window_host.h"
 
 #include <X11/cursorfont.h>
 #include <X11/Xlib.h>
@@ -15,8 +15,8 @@
 #include "base/message_loop.h"
 #include "base/message_pump_x.h"
 #include "ui/aura/cursor.h"
-#include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
+#include "ui/aura/root_window.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/x/x11_util.h"
@@ -271,18 +271,18 @@ bool ShouldSendCharEventForKeyboardCode(ui::KeyboardCode keycode) {
   }
 }
 
-class DesktopHostLinux : public DesktopHost,
-                         public MessageLoop::DestructionObserver {
+class RootWindowHostLinux : public RootWindowHost,
+                            public MessageLoop::DestructionObserver {
  public:
-  explicit DesktopHostLinux(const gfx::Rect& bounds);
-  virtual ~DesktopHostLinux();
+  explicit RootWindowHostLinux(const gfx::Rect& bounds);
+  virtual ~RootWindowHostLinux();
 
  private:
   // MessageLoop::Dispatcher Override.
   virtual DispatchStatus Dispatch(XEvent* xev) OVERRIDE;
 
-  // DesktopHost Overrides.
-  virtual void SetDesktop(Desktop* desktop) OVERRIDE;
+  // RootWindowHost Overrides.
+  virtual void SetRootWindow(RootWindow* root_window) OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void ToggleFullScreen() OVERRIDE;
@@ -301,14 +301,14 @@ class DesktopHostLinux : public DesktopHost,
   // detect that they're there.
   bool IsWindowManagerPresent();
 
-  Desktop* desktop_;
+  RootWindow* root_window_;
 
-  // The display and the native X window hosting the desktop.
+  // The display and the native X window hosting the root window.
   Display* xdisplay_;
   ::Window xwindow_;
 
   // The native root window.
-  ::Window root_window_;
+  ::Window x_root_window_;
 
   // Current Aura cursor.
   gfx::NativeCursor current_cursor_;
@@ -316,17 +316,17 @@ class DesktopHostLinux : public DesktopHost,
   // The bounds of |xwindow_|.
   gfx::Rect bounds_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopHostLinux);
+  DISALLOW_COPY_AND_ASSIGN(RootWindowHostLinux);
 };
 
-DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
-    : desktop_(NULL),
+RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
+    : root_window_(NULL),
       xdisplay_(base::MessagePumpX::GetDefaultXDisplay()),
       xwindow_(0),
-      root_window_(DefaultRootWindow(xdisplay_)),
+      x_root_window_(DefaultRootWindow(xdisplay_)),
       current_cursor_(aura::kCursorNull),
       bounds_(bounds) {
-  xwindow_ = XCreateSimpleWindow(xdisplay_, root_window_,
+  xwindow_ = XCreateSimpleWindow(xdisplay_, x_root_window_,
                                  bounds.x(), bounds.y(),
                                  bounds.width(), bounds.height(),
                                  0, 0, 0);
@@ -338,7 +338,7 @@ DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
                     StructureNotifyMask | PropertyChangeMask |
                     PointerMotionMask;
   XSelectInput(xdisplay_, xwindow_, event_mask);
-  XSelectInput(xdisplay_, root_window_, StructureNotifyMask);
+  XSelectInput(xdisplay_, x_root_window_, StructureNotifyMask);
   XFlush(xdisplay_);
 
   // TODO(sad): Re-enable once crbug.com/106516 is fixed.
@@ -351,7 +351,7 @@ DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
   MessageLoopForUI::current()->AddDestructionObserver(this);
 }
 
-DesktopHostLinux::~DesktopHostLinux() {
+RootWindowHostLinux::~RootWindowHostLinux() {
   XDestroyWindow(xdisplay_, xwindow_);
 
   // Clears XCursorCache.
@@ -361,7 +361,7 @@ DesktopHostLinux::~DesktopHostLinux() {
   base::MessagePumpX::SetDefaultDispatcher(NULL);
 }
 
-base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
+base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
     XEvent* xev) {
   bool handled = false;
 
@@ -369,32 +369,32 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
 
   switch (xev->type) {
     case Expose:
-      desktop_->ScheduleDraw();
+      root_window_->ScheduleDraw();
       handled = true;
       break;
     case KeyPress: {
       KeyEvent keydown_event(xev, false);
-      handled = desktop_->DispatchKeyEvent(&keydown_event);
+      handled = root_window_->DispatchKeyEvent(&keydown_event);
       if (ShouldSendCharEventForKeyboardCode(keydown_event.key_code())) {
         KeyEvent char_event(xev, true);
-        handled |= desktop_->DispatchKeyEvent(&char_event);
+        handled |= root_window_->DispatchKeyEvent(&char_event);
       }
       break;
     }
     case KeyRelease: {
       KeyEvent keyup_event(xev, false);
-      handled = desktop_->DispatchKeyEvent(&keyup_event);
+      handled = root_window_->DispatchKeyEvent(&keyup_event);
       break;
     }
     case ButtonPress:
     case ButtonRelease: {
       MouseEvent mouseev(xev);
-      handled = desktop_->DispatchMouseEvent(&mouseev);
+      handled = root_window_->DispatchMouseEvent(&mouseev);
       break;
     }
     case ConfigureNotify: {
-      if (xev->xconfigure.window == root_window_) {
-        desktop_->OnNativeScreenResized(
+      if (xev->xconfigure.window == x_root_window_) {
+        root_window_->OnNativeScreenResized(
             gfx::Size(xev->xconfigure.width, xev->xconfigure.height));
         handled = true;
         break;
@@ -405,13 +405,13 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
 
       // It's possible that the X window may be resized by some other means than
       // from within aura (e.g. the X window manager can change the size). Make
-      // sure the desktop size is maintained properly.
+      // sure the root window size is maintained properly.
       gfx::Rect bounds(xev->xconfigure.x, xev->xconfigure.y,
                        xev->xconfigure.width, xev->xconfigure.height);
       bool size_changed = bounds_.size() != bounds.size();
       bounds_ = bounds;
       if (size_changed)
-        desktop_->OnHostResized(bounds.size());
+        root_window_->OnHostResized(bounds.size());
       handled = true;
       break;
     }
@@ -436,7 +436,7 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
         case ui::ET_TOUCH_RELEASED:
         case ui::ET_TOUCH_MOVED: {
           TouchEvent touchev(xev);
-          handled = desktop_->DispatchTouchEvent(&touchev);
+          handled = root_window_->DispatchTouchEvent(&touchev);
           break;
         }
         case ui::ET_MOUSE_PRESSED:
@@ -447,7 +447,7 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
         case ui::ET_MOUSE_ENTERED:
         case ui::ET_MOUSE_EXITED: {
           MouseEvent mouseev(xev);
-          handled = desktop_->DispatchMouseEvent(&mouseev);
+          handled = root_window_->DispatchMouseEvent(&mouseev);
           break;
         }
         case ui::ET_UNKNOWN:
@@ -495,34 +495,34 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
       }
 
       MouseEvent mouseev(xev);
-      handled = desktop_->DispatchMouseEvent(&mouseev);
+      handled = root_window_->DispatchMouseEvent(&mouseev);
       break;
     }
   }
   return handled ? EVENT_PROCESSED : EVENT_IGNORED;
 }
 
-void DesktopHostLinux::SetDesktop(Desktop* desktop) {
-  desktop_ = desktop;
+void RootWindowHostLinux::SetRootWindow(RootWindow* root_window) {
+  root_window_ = root_window;
 }
 
-gfx::AcceleratedWidget DesktopHostLinux::GetAcceleratedWidget() {
+gfx::AcceleratedWidget RootWindowHostLinux::GetAcceleratedWidget() {
   return xwindow_;
 }
 
-void DesktopHostLinux::Show() {
+void RootWindowHostLinux::Show() {
   XMapWindow(xdisplay_, xwindow_);
 }
 
-void DesktopHostLinux::ToggleFullScreen() {
+void RootWindowHostLinux::ToggleFullScreen() {
   NOTIMPLEMENTED();
 }
 
-gfx::Size DesktopHostLinux::GetSize() const {
+gfx::Size RootWindowHostLinux::GetSize() const {
   return bounds_.size();
 }
 
-void DesktopHostLinux::SetSize(const gfx::Size& size) {
+void RootWindowHostLinux::SetSize(const gfx::Size& size) {
   if (size == bounds_.size())
     return;
 
@@ -534,14 +534,14 @@ void DesktopHostLinux::SetSize(const gfx::Size& size) {
   // (possibly synthetic) ConfigureNotify about the actual size and correct
   // |bounds_| later.
   bounds_.set_size(size);
-  desktop_->OnHostResized(size);
+  root_window_->OnHostResized(size);
 }
 
-gfx::Point DesktopHostLinux::GetLocationOnNativeScreen() const {
+gfx::Point RootWindowHostLinux::GetLocationOnNativeScreen() const {
   return bounds_.origin();
 }
 
-void DesktopHostLinux::SetCursor(gfx::NativeCursor cursor) {
+void RootWindowHostLinux::SetCursor(gfx::NativeCursor cursor) {
   if (current_cursor_ == cursor)
     return;
   current_cursor_ = cursor;
@@ -553,7 +553,7 @@ void DesktopHostLinux::SetCursor(gfx::NativeCursor cursor) {
   XDefineCursor(xdisplay_, xwindow_, xcursor);
 }
 
-gfx::Point DesktopHostLinux::QueryMouseLocation() {
+gfx::Point RootWindowHostLinux::QueryMouseLocation() {
   ::Window root_return, child_return;
   int root_x_return, root_y_return, win_x_return, win_y_return;
   unsigned int mask_return;
@@ -568,7 +568,8 @@ gfx::Point DesktopHostLinux::QueryMouseLocation() {
                     max(0, min(bounds_.height(), win_y_return)));
 }
 
-void DesktopHostLinux::PostNativeEvent(const base::NativeEvent& native_event) {
+void RootWindowHostLinux::PostNativeEvent(
+    const base::NativeEvent& native_event) {
   DCHECK(xwindow_);
   DCHECK(xdisplay_);
   XEvent xevent = *native_event;
@@ -586,11 +587,11 @@ void DesktopHostLinux::PostNativeEvent(const base::NativeEvent& native_event) {
       // The fields used below are in the same place for all of events
       // above. Using xmotion from XEvent's unions to avoid repeating
       // the code.
-      xevent.xmotion.root = root_window_;
+      xevent.xmotion.root = x_root_window_;
       xevent.xmotion.time = CurrentTime;
 
       gfx::Point point(xevent.xmotion.x, xevent.xmotion.y);
-      desktop_->ConvertPointToNativeScreen(&point);
+      root_window_->ConvertPointToNativeScreen(&point);
       xevent.xmotion.x_root = point.x();
       xevent.xmotion.y_root = point.y();
     }
@@ -600,11 +601,11 @@ void DesktopHostLinux::PostNativeEvent(const base::NativeEvent& native_event) {
   XSendEvent(xdisplay_, xwindow_, False, 0, &xevent);
 }
 
-void DesktopHostLinux::WillDestroyCurrentMessageLoop() {
-  aura::Desktop::DeleteInstance();
+void RootWindowHostLinux::WillDestroyCurrentMessageLoop() {
+  aura::RootWindow::DeleteInstance();
 }
 
-bool DesktopHostLinux::IsWindowManagerPresent() {
+bool RootWindowHostLinux::IsWindowManagerPresent() {
   // Per ICCCM 2.8, "Manager Selections", window managers should take ownership
   // of WM_Sn selections (where n is a screen number).
   ::Atom wm_s0_atom = XInternAtom(xdisplay_, "WM_S0", False);
@@ -614,12 +615,12 @@ bool DesktopHostLinux::IsWindowManagerPresent() {
 }  // namespace
 
 // static
-DesktopHost* DesktopHost::Create(const gfx::Rect& bounds) {
-  return new DesktopHostLinux(bounds);
+RootWindowHost* RootWindowHost::Create(const gfx::Rect& bounds) {
+  return new RootWindowHostLinux(bounds);
 }
 
 // static
-gfx::Size DesktopHost::GetNativeScreenSize() {
+gfx::Size RootWindowHost::GetNativeScreenSize() {
   ::Display* xdisplay = base::MessagePumpX::GetDefaultXDisplay();
   return gfx::Size(DisplayWidth(xdisplay, 0), DisplayHeight(xdisplay, 0));
 }

@@ -4,7 +4,7 @@
 
 #include "ui/aura_shell/workspace_controller.h"
 
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/default_container_layout_manager.h"
 #include "ui/aura_shell/launcher/launcher.h"
@@ -21,14 +21,14 @@ WorkspaceController::WorkspaceController(aura::Window* viewport)
       launcher_model_(NULL),
       ignore_move_event_(false) {
   workspace_manager_->AddObserver(this);
-  aura::Desktop::GetInstance()->AddObserver(this);
+  aura::RootWindow::GetInstance()->AddObserver(this);
 }
 
 WorkspaceController::~WorkspaceController() {
   workspace_manager_->RemoveObserver(this);
   if (launcher_model_)
     launcher_model_->RemoveObserver(this);
-  aura::Desktop::GetInstance()->RemoveObserver(this);
+  aura::RootWindow::GetInstance()->RemoveObserver(this);
 }
 
 void WorkspaceController::ToggleOverview() {
@@ -42,9 +42,9 @@ void WorkspaceController::SetLauncherModel(LauncherModel* launcher_model) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WorkspaceController, aura::DesktopObserver overrides:
+// WorkspaceController, aura::RootWindowObserver overrides:
 
-void WorkspaceController::OnDesktopResized(const gfx::Size& new_size) {
+void WorkspaceController::OnRootWindowResized(const gfx::Size& new_size) {
   workspace_manager_->SetWorkspaceSize(new_size);
 }
 

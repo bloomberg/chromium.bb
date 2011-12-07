@@ -9,7 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/workspace/workspace.h"
@@ -238,7 +238,7 @@ gfx::Rect WorkspaceManager::GetWorkAreaBounds(
     const gfx::Rect& workspace_bounds) {
   gfx::Rect bounds = workspace_bounds;
   bounds.Inset(
-      aura::Desktop::GetInstance()->screen()->work_area_insets());
+      aura::RootWindow::GetInstance()->screen()->work_area_insets());
   return bounds;
 }
 

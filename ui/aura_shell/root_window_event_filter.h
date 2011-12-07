@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_DESKTOP_EVENT_FILTER_H_
-#define UI_AURA_SHELL_DESKTOP_EVENT_FILTER_H_
+#ifndef UI_AURA_SHELL_ROOT_WINDOW_EVENT_FILTER_H_
+#define UI_AURA_SHELL_ROOT_WINDOW_EVENT_FILTER_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -14,17 +14,18 @@
 namespace aura_shell {
 namespace internal {
 
-// DesktopEventFilter gets all desktop events first and can provide actions to
-// those events. It implements desktop features such as click to activate a
-// window and cursor change when moving mouse.
-// Additional event filters can be added to DesktopEventFilter. Events will
+// RootWindowEventFilter gets all root window events first and can provide
+// actions to those events. It implements root window features such as click to
+// activate a window and cursor change when moving mouse.
+// Additional event filters can be added to RootWIndowEventFilter. Events will
 // pass through those additional filters in their addition order and could be
 // consumed by any of those filters. If an event is consumed by a filter, the
-// rest of the filter(s) and DesktopEventFilter will not see the consumed event.
-class AURA_SHELL_EXPORT DesktopEventFilter : public aura::EventFilter {
+// rest of the filter(s) and RootWindowEventFilter will not see the consumed
+// event.
+class AURA_SHELL_EXPORT RootWindowEventFilter : public aura::EventFilter {
  public:
-  DesktopEventFilter();
-  virtual ~DesktopEventFilter();
+  RootWindowEventFilter();
+  virtual ~RootWindowEventFilter();
 
   // Adds/removes additional event filters.
   void AddFilter(aura::EventFilter* filter);
@@ -56,10 +57,10 @@ class AURA_SHELL_EXPORT DesktopEventFilter : public aura::EventFilter {
   // Additional event filters that pre-handles events.
   ObserverList<aura::EventFilter, true> filters_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopEventFilter);
+  DISALLOW_COPY_AND_ASSIGN(RootWindowEventFilter);
 };
 
 }  // namespace internal
 }  // namespace aura_shell
 
-#endif  // UI_AURA_SHELL_DESKTOP_EVENT_FILTER_H_
+#endif  // UI_AURA_SHELL_ROOT_WINDOW_EVENT_FILTER_H_

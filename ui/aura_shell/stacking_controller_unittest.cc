@@ -4,7 +4,7 @@
 
 #include "ui/aura_shell/stacking_controller.h"
 
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -25,7 +25,7 @@ TEST_F(StackingControllerTest, GetTopmostWindowToActivate) {
       &activate, 2, gfx::Rect(), NULL));
   scoped_ptr<aura::Window> w3(aura::test::CreateTestWindowWithDelegate(
       &non_activate, 3, gfx::Rect(), NULL));
-  EXPECT_EQ(w2.get(), aura::Desktop::GetInstance()->stacking_client()->
+  EXPECT_EQ(w2.get(), aura::RootWindow::GetInstance()->stacking_client()->
       GetTopmostWindowToActivate(NULL));
 }
 
@@ -37,12 +37,12 @@ TEST_F(StackingControllerTest, ClickOnMenu) {
 
   scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
       &activate, 1, gfx::Rect(100, 100), NULL));
-  EXPECT_EQ(NULL, aura::Desktop::GetInstance()->active_window());
+  EXPECT_EQ(NULL, aura::RootWindow::GetInstance()->active_window());
 
   // Clicking on an activatable window activtes the window.
   aura::test::EventGenerator generator(w1.get());
   generator.ClickLeftButton();
-  EXPECT_EQ(w1.get(), aura::Desktop::GetInstance()->active_window());
+  EXPECT_EQ(w1.get(), aura::RootWindow::GetInstance()->active_window());
 
   // Creates a menu that covers the transient parent.
   scoped_ptr<aura::Window> menu(aura::test::CreateTestWindowWithDelegateAndType(
@@ -52,7 +52,7 @@ TEST_F(StackingControllerTest, ClickOnMenu) {
   // Clicking on a menu whose transient parent is active window shouldn't
   // change the active window.
   generator.ClickLeftButton();
-  EXPECT_EQ(w1.get(), aura::Desktop::GetInstance()->active_window());
+  EXPECT_EQ(w1.get(), aura::RootWindow::GetInstance()->active_window());
 }
 
 }  // namespace test

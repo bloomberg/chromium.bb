@@ -5,7 +5,7 @@
 #include "base/logging.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/tooltip_client.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
@@ -50,11 +50,12 @@ TooltipManagerAura::~TooltipManagerAura() {
 // TooltipManagerAura, TooltipManager implementation:
 
 void TooltipManagerAura::UpdateTooltip() {
-  void* property = aura::Desktop::GetInstance()->GetProperty(
-      aura::kDesktopTooltipClientKey);
+  void* property = aura::RootWindow::GetInstance()->GetProperty(
+      aura::kRootWindowTooltipClientKey);
   if (property) {
-    gfx::Point view_point = aura::Desktop::GetInstance()->last_mouse_location();
-    aura::Window::ConvertPointToWindow(aura::Desktop::GetInstance(),
+    gfx::Point view_point =
+        aura::RootWindow::GetInstance()->last_mouse_location();
+    aura::Window::ConvertPointToWindow(aura::RootWindow::GetInstance(),
         native_widget_aura_->GetNativeView(), &view_point);
     View* view = GetViewUnderPoint(view_point);
     if (view) {
@@ -70,11 +71,12 @@ void TooltipManagerAura::UpdateTooltip() {
 }
 
 void TooltipManagerAura::TooltipTextChanged(View* view)  {
-  void* property = aura::Desktop::GetInstance()->GetProperty(
-      aura::kDesktopTooltipClientKey);
+  void* property = aura::RootWindow::GetInstance()->GetProperty(
+      aura::kRootWindowTooltipClientKey);
   if (property) {
-    gfx::Point view_point = aura::Desktop::GetInstance()->last_mouse_location();
-    aura::Window::ConvertPointToWindow(aura::Desktop::GetInstance(),
+    gfx::Point view_point =
+        aura::RootWindow::GetInstance()->last_mouse_location();
+    aura::Window::ConvertPointToWindow(aura::RootWindow::GetInstance(),
         native_widget_aura_->GetNativeView(), &view_point);
     View* target = GetViewUnderPoint(view_point);
     if (target != view)

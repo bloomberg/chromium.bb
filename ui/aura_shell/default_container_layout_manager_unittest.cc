@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
@@ -33,16 +33,16 @@ class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
 
   virtual void SetUp() OVERRIDE {
     aura::test::AuraTestBase::SetUp();
-    aura::Desktop* desktop = aura::Desktop::GetInstance();
+    aura::RootWindow* root_window = aura::RootWindow::GetInstance();
     container_.reset(
-        CreateTestWindow(gfx::Rect(0, 0, 500, 400), desktop));
+        CreateTestWindow(gfx::Rect(0, 0, 500, 400), root_window));
     workspace_controller_.reset(
         new aura_shell::internal::WorkspaceController(container_.get()));
     layout_manager_ = new DefaultContainerLayoutManager(
         workspace_controller_->workspace_manager());
     container_->SetLayoutManager(layout_manager_);
 
-    desktop->SetHostSize(gfx::Size(500, 400));
+    root_window->SetHostSize(gfx::Size(500, 400));
   }
 
   aura::Window* CreateTestWindowWithType(const gfx::Rect& bounds,
@@ -166,7 +166,7 @@ TEST_F(DefaultContainerLayoutManagerTest, IgnoreTransient) {
   scoped_ptr<aura::Window> window(new aura::Window(NULL));
   window->SetType(aura::WINDOW_TYPE_NORMAL);
   window->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
-  aura::Desktop::GetInstance()->AddTransientChild(window.get());
+  aura::RootWindow::GetInstance()->AddTransientChild(window.get());
   window->SetBounds(gfx::Rect(0, 0, 200, 200));
   window->Show();
   window->SetParent(container());
@@ -265,8 +265,8 @@ TEST_F(DefaultContainerLayoutManagerTest, Maximized) {
   EXPECT_EQ(50, w->bounds().height());
 }
 
-// Tests that fullscreen windows get resized after desktop is resized.
-TEST_F(DefaultContainerLayoutManagerTest, FullscreenAfterDesktopResize) {
+// Tests that fullscreen windows get resized after root window is resized.
+TEST_F(DefaultContainerLayoutManagerTest, FullscreenAfterRootWindowResize) {
   scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(300, 400),
                                                container()));
   gfx::Rect window_bounds = w1->GetTargetBounds();
@@ -279,11 +279,11 @@ TEST_F(DefaultContainerLayoutManagerTest, FullscreenAfterDesktopResize) {
   Fullscreen(w1.get());
   EXPECT_EQ(fullscreen_bounds.ToString(), w1->bounds().ToString());
 
-  // Resize the desktop.
-  aura::Desktop* desktop = aura::Desktop::GetInstance();
-  gfx::Size new_desktop_size = desktop->GetHostSize();
-  new_desktop_size.Enlarge(100, 200);
-  desktop->OnHostResized(new_desktop_size);
+  // Resize the root window.
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  gfx::Size new_root_window_size = root_window->GetHostSize();
+  new_root_window_size.Enlarge(100, 200);
+  root_window->OnHostResized(new_root_window_size);
 
   gfx::Rect new_fullscreen_bounds =
       workspace_manager()->FindBy(w1.get())->bounds();
@@ -301,8 +301,8 @@ TEST_F(DefaultContainerLayoutManagerTest, FullscreenAfterDesktopResize) {
   //           w1->GetTargetBounds().size().ToString());
 }
 
-// Tests that maximized windows get resized after desktop is resized.
-TEST_F(DefaultContainerLayoutManagerTest, MaximizeAfterDesktopResize) {
+// Tests that maximized windows get resized after root_window is resized.
+TEST_F(DefaultContainerLayoutManagerTest, MaximizeAfterRootWindowResize) {
   scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(300, 400),
                                                container()));
   gfx::Rect window_bounds = w1->GetTargetBounds();
@@ -315,11 +315,11 @@ TEST_F(DefaultContainerLayoutManagerTest, MaximizeAfterDesktopResize) {
   Maximize(w1.get());
   EXPECT_EQ(work_area_bounds.ToString(), w1->bounds().ToString());
 
-  // Resize the desktop.
-  aura::Desktop* desktop = aura::Desktop::GetInstance();
-  gfx::Size new_desktop_size = desktop->GetHostSize();
-  new_desktop_size.Enlarge(100, 200);
-  desktop->OnHostResized(new_desktop_size);
+  // Resize the root window.
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  gfx::Size new_root_window_size = root_window->GetHostSize();
+  new_root_window_size.Enlarge(100, 200);
+  root_window->OnHostResized(new_root_window_size);
 
   gfx::Rect new_work_area_bounds =
       workspace_manager()->FindBy(w1.get())->bounds();

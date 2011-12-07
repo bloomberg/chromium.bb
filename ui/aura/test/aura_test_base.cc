@@ -8,7 +8,7 @@
 #include <ole2.h>
 #endif
 
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/test/test_stacking_client.h"
 
 namespace aura {
@@ -21,10 +21,10 @@ AuraTestBase::AuraTestBase()
   OleInitialize(NULL);
 #endif
 
-  // TestStackingClient is owned by the desktop.
+  // TestStackingClient is owned by the root window.
   new TestStackingClient();
-  Desktop::GetInstance()->Show();
-  Desktop::GetInstance()->SetHostSize(gfx::Size(600, 600));
+  RootWindow::GetInstance()->Show();
+  RootWindow::GetInstance()->SetHostSize(gfx::Size(600, 600));
 }
 
 AuraTestBase::~AuraTestBase() {
@@ -40,14 +40,14 @@ AuraTestBase::~AuraTestBase() {
   // and these tasks if un-executed would upset Valgrind.
   RunAllPendingInMessageLoop();
 
-  // Ensure that we don't use the previously-allocated static Desktop object
+  // Ensure that we don't use the previously-allocated static RootWindow object
   // later -- on Linux, it holds a reference to our message loop's X connection.
-  aura::Desktop::DeleteInstance();
+  aura::RootWindow::DeleteInstance();
 }
 
 TestStackingClient* AuraTestBase::GetTestStackingClient() {
   return static_cast<TestStackingClient*>(
-      aura::Desktop::GetInstance()->stacking_client());
+      aura::RootWindow::GetInstance()->stacking_client());
 }
 
 void AuraTestBase::SetUp() {
@@ -62,7 +62,7 @@ void AuraTestBase::TearDown() {
 
 void AuraTestBase::RunAllPendingInMessageLoop() {
   message_loop_.RunAllPendingWithDispatcher(
-      Desktop::GetInstance()->GetDispatcher());
+      RootWindow::GetInstance()->GetDispatcher());
 }
 
 }  // namespace test

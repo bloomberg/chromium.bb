@@ -32,9 +32,9 @@ class Transform;
 
 namespace aura {
 
-class Desktop;
 class EventFilter;
 class LayoutManager;
+class RootWindow;
 class WindowDelegate;
 class WindowObserver;
 
@@ -125,7 +125,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   void SetCanvas(const SkCanvas& canvas, const gfx::Point& origin);
 
   // Sets the parent window of the window. If NULL, the window is parented to
-  // the desktop's window.
+  // the root window.
   void SetParent(Window* parent);
 
   // Stacks the specified child of this Window at the front of the z-order.
@@ -261,12 +261,13 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   int GetIntProperty(const char* name) const;
 
  protected:
-  // Returns the desktop or NULL if we aren't yet attached to a desktop.
-  virtual Desktop* GetDesktop();
+  // Returns the root window or NULL if we aren't yet attached to the root
+  // window.
+  virtual RootWindow* GetRootWindow();
 
-  // Called when the |window| is detached from the desktop by being
-  // removed from its parent.
-  virtual void WindowDetachedFromDesktop(aura::Window* window);
+  // Called when the |window| is detached from the root window by being removed
+  // from its parent.
+  virtual void WindowDetachedFromRootWindow(aura::Window* window);
 
  private:
   friend class LayoutManager;

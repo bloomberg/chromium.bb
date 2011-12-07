@@ -40,11 +40,11 @@ class WorkspaceController;
 }
 
 // Shell is a singleton object that presents the Shell API and implements the
-// Desktop's delegate interface.
+// RootWindow's delegate interface.
 class AURA_SHELL_EXPORT Shell {
  public:
-  // Upon creation, the Shell sets itself as the Desktop's delegate, which takes
-  // ownership of the Shell.
+  // Upon creation, the Shell sets itself as the RootWindow's delegate, which
+  // takes ownership of the Shell.
 
   // A shell must be explicitly created so that it can call |Init()| with the
   // delegate set. |delegate| can be NULL (if not required for initialization).
@@ -58,9 +58,9 @@ class AURA_SHELL_EXPORT Shell {
   aura::Window* GetContainer(int container_id);
   const aura::Window* GetContainer(int container_id) const;
 
-  // Adds or removes |filter| from the DesktopEventFilter.
-  void AddDesktopEventFilter(aura::EventFilter* filter);
-  void RemoveDesktopEventFilter(aura::EventFilter* filter);
+  // Adds or removes |filter| from the RootWindowEventFilter.
+  void AddRootWindowEventFilter(aura::EventFilter* filter);
+  void RemoveRootWindowEventFilter(aura::EventFilter* filter);
 
   // Toggles between overview mode and normal mode.
   void ToggleOverview();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/event.h"
@@ -57,9 +57,9 @@ class NonClientDelegate : public TestWindowDelegate {
 
 }  // namespace
 
-typedef AuraTestBase DesktopTest;
+typedef AuraTestBase RootWindowTest;
 
-TEST_F(DesktopTest, DispatchMouseEvent) {
+TEST_F(RootWindowTest, DispatchMouseEvent) {
   // Create two non-overlapping windows so we don't have to worry about which
   // is on top.
   scoped_ptr<NonClientDelegate> delegate1(new NonClientDelegate());
@@ -76,7 +76,7 @@ TEST_F(DesktopTest, DispatchMouseEvent) {
   // Send a mouse event to window1.
   gfx::Point point(101, 201);
   MouseEvent event1(ui::ET_MOUSE_PRESSED, point, ui::EF_LEFT_BUTTON_DOWN);
-  Desktop::GetInstance()->DispatchMouseEvent(&event1);
+  RootWindow::GetInstance()->DispatchMouseEvent(&event1);
 
   // Event was tested for non-client area for the target window.
   EXPECT_EQ(1, delegate1->non_client_count());
@@ -94,9 +94,9 @@ TEST_F(DesktopTest, DispatchMouseEvent) {
 
 // Check that we correctly track the state of the mouse buttons in response to
 // button press and release events.
-TEST_F(DesktopTest, MouseButtonState) {
-  Desktop* desktop = Desktop::GetInstance();
-  EXPECT_FALSE(desktop->IsMouseButtonDown());
+TEST_F(RootWindowTest, MouseButtonState) {
+  RootWindow* root_window = RootWindow::GetInstance();
+  EXPECT_FALSE(root_window->IsMouseButtonDown());
 
   gfx::Point location;
   scoped_ptr<MouseEvent> event;
@@ -106,40 +106,40 @@ TEST_F(DesktopTest, MouseButtonState) {
       ui::ET_MOUSE_PRESSED,
       location,
       ui::EF_LEFT_BUTTON_DOWN));
-  desktop->DispatchMouseEvent(event.get());
-  EXPECT_TRUE(desktop->IsMouseButtonDown());
+  root_window->DispatchMouseEvent(event.get());
+  EXPECT_TRUE(root_window->IsMouseButtonDown());
 
   // Additionally press the right.
   event.reset(new MouseEvent(
       ui::ET_MOUSE_PRESSED,
       location,
       ui::EF_LEFT_BUTTON_DOWN | ui::EF_RIGHT_BUTTON_DOWN));
-  desktop->DispatchMouseEvent(event.get());
-  EXPECT_TRUE(desktop->IsMouseButtonDown());
+  root_window->DispatchMouseEvent(event.get());
+  EXPECT_TRUE(root_window->IsMouseButtonDown());
 
   // Release the left button.
   event.reset(new MouseEvent(
       ui::ET_MOUSE_RELEASED,
       location,
       ui::EF_RIGHT_BUTTON_DOWN));
-  desktop->DispatchMouseEvent(event.get());
-  EXPECT_TRUE(desktop->IsMouseButtonDown());
+  root_window->DispatchMouseEvent(event.get());
+  EXPECT_TRUE(root_window->IsMouseButtonDown());
 
   // Release the right button.  We should ignore the Shift-is-down flag.
   event.reset(new MouseEvent(
       ui::ET_MOUSE_RELEASED,
       location,
       ui::EF_SHIFT_DOWN));
-  desktop->DispatchMouseEvent(event.get());
-  EXPECT_FALSE(desktop->IsMouseButtonDown());
+  root_window->DispatchMouseEvent(event.get());
+  EXPECT_FALSE(root_window->IsMouseButtonDown());
 
   // Press the middle button.
   event.reset(new MouseEvent(
       ui::ET_MOUSE_PRESSED,
       location,
       ui::EF_MIDDLE_BUTTON_DOWN));
-  desktop->DispatchMouseEvent(event.get());
-  EXPECT_TRUE(desktop->IsMouseButtonDown());
+  root_window->DispatchMouseEvent(event.get());
+  EXPECT_TRUE(root_window->IsMouseButtonDown());
 }
 
 }  // namespace test

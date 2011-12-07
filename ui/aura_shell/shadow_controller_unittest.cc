@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/shadow_types.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/shadow.h"
 #include "ui/aura_shell/shell.h"

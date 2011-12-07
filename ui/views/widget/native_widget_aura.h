@@ -151,7 +151,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
 
  private:
-  class DesktopObserverImpl;
+  class RootWindowObserverImpl;
 
   internal::NativeWidgetDelegate* delegate_;
 
@@ -171,7 +171,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
 
   scoped_ptr<TooltipManagerAura> tooltip_manager_;
 
-  scoped_ptr<DesktopObserverImpl> desktop_observer_;
+  scoped_ptr<RootWindowObserverImpl> root_window_observer_;
 
   scoped_ptr<DropHelper> drop_helper_;
 

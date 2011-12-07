@@ -10,10 +10,10 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "ui/aura/client/stacking_client.h"
-#include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_types.h"
@@ -41,9 +41,9 @@ Window::~Window() {
     delegate_->OnWindowDestroying();
 
   // Let the root know so that it can remove any references to us.
-  Desktop* desktop = GetDesktop();
-  if (desktop)
-    desktop->WindowDestroying(this);
+  RootWindow* root_window = GetRootWindow();
+  if (root_window)
+    root_window->WindowDestroying(this);
 
   // Then destroy the children.
   while (!children_.empty()) {
@@ -80,7 +80,7 @@ void Window::Init(ui::Layer::LayerType layer_type) {
   layer_->set_delegate(this);
   UpdateLayerName(name_);
 
-  Desktop::GetInstance()->WindowInitialized(this);
+  RootWindow::GetInstance()->WindowInitialized(this);
 }
 
 void Window::SetType(WindowType type) {
@@ -103,9 +103,9 @@ void Window::Show() {
 void Window::Hide() {
   SetVisible(false);
   ReleaseCapture();
-  if (Desktop::GetInstance()->active_window() == this ||
-      !Desktop::GetInstance()->active_window()) {
-    Desktop::GetInstance()->ActivateTopmostWindow();
+  if (RootWindow::GetInstance()->active_window() == this ||
+      !RootWindow::GetInstance()->active_window()) {
+    RootWindow::GetInstance()->ActivateTopmostWindow();
   }
 }
 
@@ -116,22 +116,22 @@ bool Window::IsVisible() const {
 gfx::Rect Window::GetScreenBounds() const {
   gfx::Point origin = bounds().origin();
   Window::ConvertPointToWindow(parent_,
-                               aura::Desktop::GetInstance(),
+                               aura::RootWindow::GetInstance(),
                                &origin);
   return gfx::Rect(origin, bounds().size());
 }
 
 void Window::Activate() {
   // If we support minimization need to ensure this restores the window first.
-  aura::Desktop::GetInstance()->SetActiveWindow(this, this);
+  aura::RootWindow::GetInstance()->SetActiveWindow(this, this);
 }
 
 void Window::Deactivate() {
-  aura::Desktop::GetInstance()->Deactivate(this);
+  aura::RootWindow::GetInstance()->Deactivate(this);
 }
 
 bool Window::IsActive() const {
-  return aura::Desktop::GetInstance()->active_window() == this;
+  return aura::RootWindow::GetInstance()->active_window() == this;
 }
 
 void Window::SetTransform(const ui::Transform& transform) {
@@ -172,8 +172,8 @@ void Window::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
 void Window::SetParent(Window* parent) {
   if (parent)
     parent->AddChild(this);
-  else if (Desktop::GetInstance()->stacking_client())
-    Desktop::GetInstance()->stacking_client()->AddChildToDefaultParent(this);
+  else if (RootWindow::GetInstance()->stacking_client())
+    RootWindow::GetInstance()->stacking_client()->AddChildToDefaultParent(this);
   else
     NOTREACHED();
 }
@@ -263,10 +263,10 @@ void Window::RemoveChild(Window* child) {
   if (layout_manager_.get())
     layout_manager_->OnWillRemoveWindowFromLayout(child);
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWillRemoveWindow(child));
-  aura::Window* desktop = child->GetDesktop();
+  aura::Window* root_window = child->GetRootWindow();
   child->parent_ = NULL;
-  if (desktop)
-    desktop->WindowDetachedFromDesktop(child);
+  if (root_window)
+    root_window->WindowDetachedFromRootWindow(child);
   layer_->Remove(child->layer_.get());
   children_.erase(i);
   child->OnParentChanged();
@@ -394,24 +394,24 @@ void Window::SetCapture() {
   if (!IsVisible())
     return;
 
-  Desktop* desktop = GetDesktop();
-  if (!desktop)
+  RootWindow* root_window = GetRootWindow();
+  if (!root_window)
     return;
 
-  desktop->SetCapture(this);
+  root_window->SetCapture(this);
 }
 
 void Window::ReleaseCapture() {
-  Desktop* desktop = GetDesktop();
-  if (!desktop)
+  RootWindow* root_window = GetRootWindow();
+  if (!root_window)
     return;
 
-  desktop->ReleaseCapture(this);
+  root_window->ReleaseCapture(this);
 }
 
 bool Window::HasCapture() {
-  Desktop* desktop = GetDesktop();
-  return desktop && desktop->capture_window() == this;
+  RootWindow* root_window = GetRootWindow();
+  return root_window && root_window->capture_window() == this;
 }
 
 void Window::SetProperty(const char* name, void* value) {
@@ -440,11 +440,11 @@ int Window::GetIntProperty(const char* name) const {
       GetProperty(name)));
 }
 
-Desktop* Window::GetDesktop() {
-  return parent_ ? parent_->GetDesktop() : NULL;
+RootWindow* Window::GetRootWindow() {
+  return parent_ ? parent_->GetRootWindow() : NULL;
 }
 
-void Window::WindowDetachedFromDesktop(aura::Window* window) {
+void Window::WindowDetachedFromRootWindow(aura::Window* window) {
 }
 
 void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {

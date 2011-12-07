@@ -9,10 +9,10 @@
 #include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/stacking_client.h"
-#include "ui/aura/desktop.h"
-#include "ui/aura/desktop_observer.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/root_window_observer.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
@@ -202,7 +202,7 @@ TEST_F(WindowTest, GetEventHandlerForPoint) {
   scoped_ptr<Window> w13(
       CreateTestWindow(SK_ColorGRAY, 13, gfx::Rect(5, 470, 50, 50), w1.get()));
 
-  Window* root = Desktop::GetInstance();
+  Window* root = RootWindow::GetInstance();
   w1->parent()->SetBounds(gfx::Rect(500, 500));
   EXPECT_EQ(NULL, root->GetEventHandlerForPoint(gfx::Point(5, 5)));
   EXPECT_EQ(w1.get(), root->GetEventHandlerForPoint(gfx::Point(11, 11)));
@@ -215,7 +215,7 @@ TEST_F(WindowTest, GetEventHandlerForPoint) {
 }
 
 TEST_F(WindowTest, GetTopWindowContainingPoint) {
-  Window* root = Desktop::GetInstance();
+  Window* root = RootWindow::GetInstance();
   root->SetBounds(gfx::Rect(0, 0, 300, 300));
 
   scoped_ptr<Window> w1(
@@ -254,7 +254,7 @@ TEST_F(WindowTest, GetToplevelWindow) {
   const gfx::Rect kBounds(0, 0, 10, 10);
   TestWindowDelegate delegate;
 
-  Window* root = aura::Desktop::GetInstance();
+  Window* root = aura::RootWindow::GetInstance();
   scoped_ptr<Window> w1(CreateTestWindowWithId(1, root));
   scoped_ptr<Window> w11(
       CreateTestWindowWithDelegate(&delegate, 11, kBounds, w1.get()));
@@ -373,7 +373,7 @@ TEST_F(WindowTest, StackChildAbove) {
 
 // Various destruction assertions.
 TEST_F(WindowTest, CaptureTests) {
-  aura::Desktop* desktop = aura::Desktop::GetInstance();
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
   CaptureWindowDelegateImpl delegate;
   scoped_ptr<Window> window(CreateTestWindowWithDelegate(
       &delegate, 0, gfx::Rect(0, 0, 20, 20), NULL));
@@ -392,7 +392,7 @@ TEST_F(WindowTest, CaptureTests) {
   delegate.set_mouse_event_count(0);
 
   TouchEvent touchev(ui::ET_TOUCH_PRESSED, gfx::Point(50, 50), 0);
-  desktop->DispatchTouchEvent(&touchev);
+  root_window->DispatchTouchEvent(&touchev);
   EXPECT_EQ(1, delegate.touch_event_count());
   delegate.set_touch_event_count(0);
 
@@ -403,21 +403,21 @@ TEST_F(WindowTest, CaptureTests) {
   generator.PressLeftButton();
   EXPECT_EQ(0, delegate.mouse_event_count());
 
-  desktop->DispatchTouchEvent(&touchev);
+  root_window->DispatchTouchEvent(&touchev);
   EXPECT_EQ(0, delegate.touch_event_count());
 
   // Removing the capture window from parent should reset the capture window
-  // in the desktop.
+  // in the root window.
   window->SetCapture();
-  EXPECT_EQ(window.get(), desktop->capture_window());
+  EXPECT_EQ(window.get(), root_window->capture_window());
   window->parent()->RemoveChild(window.get());
   EXPECT_FALSE(window->HasCapture());
-  EXPECT_EQ(NULL, desktop->capture_window());
+  EXPECT_EQ(NULL, root_window->capture_window());
 }
 
 // Verifies capture is reset when a window is destroyed.
 TEST_F(WindowTest, ReleaseCaptureOnDestroy) {
-  Desktop* desktop = Desktop::GetInstance();
+  RootWindow* root_window = RootWindow::GetInstance();
   CaptureWindowDelegateImpl delegate;
   scoped_ptr<Window> window(CreateTestWindowWithDelegate(
       &delegate, 0, gfx::Rect(0, 0, 20, 20), NULL));
@@ -430,9 +430,9 @@ TEST_F(WindowTest, ReleaseCaptureOnDestroy) {
   // Destroy the window.
   window.reset();
 
-  // Make sure the desktop doesn't reference the window anymore.
-  EXPECT_EQ(NULL, desktop->mouse_pressed_handler());
-  EXPECT_EQ(NULL, desktop->capture_window());
+  // Make sure the root window doesn't reference the window anymore.
+  EXPECT_EQ(NULL, root_window->mouse_pressed_handler());
+  EXPECT_EQ(NULL, root_window->capture_window());
 }
 
 TEST_F(WindowTest, GetScreenBounds) {
@@ -485,7 +485,7 @@ class MouseEnterExitWindowDelegate : public TestWindowDelegate {
 // Verifies that the WindowDelegate receives MouseExit and MouseEnter events for
 // mouse transitions from window to window.
 TEST_F(WindowTest, MouseEnterExit) {
-  Desktop* desktop = Desktop::GetInstance();
+  RootWindow* root_window = RootWindow::GetInstance();
 
   MouseEnterExitWindowDelegate d1;
   scoped_ptr<Window> w1(
@@ -495,9 +495,9 @@ TEST_F(WindowTest, MouseEnterExit) {
       CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(70, 70, 50, 50), NULL));
 
   gfx::Point move_point = w1->bounds().CenterPoint();
-  Window::ConvertPointToWindow(w1->parent(), desktop, &move_point);
+  Window::ConvertPointToWindow(w1->parent(), root_window, &move_point);
   MouseEvent mouseev1(ui::ET_MOUSE_MOVED, move_point, 0);
-  desktop->DispatchMouseEvent(&mouseev1);
+  root_window->DispatchMouseEvent(&mouseev1);
 
   EXPECT_TRUE(d1.entered());
   EXPECT_FALSE(d1.exited());
@@ -505,9 +505,9 @@ TEST_F(WindowTest, MouseEnterExit) {
   EXPECT_FALSE(d2.exited());
 
   move_point = w2->bounds().CenterPoint();
-  Window::ConvertPointToWindow(w2->parent(), desktop, &move_point);
+  Window::ConvertPointToWindow(w2->parent(), root_window, &move_point);
   MouseEvent mouseev2(ui::ET_MOUSE_MOVED, move_point, 0);
-  desktop->DispatchMouseEvent(&mouseev2);
+  root_window->DispatchMouseEvent(&mouseev2);
 
   EXPECT_TRUE(d1.entered());
   EXPECT_TRUE(d1.exited());
@@ -550,7 +550,7 @@ class ActiveWindowDelegate : public TestWindowDelegate {
 // Verifies that when WindowDelegate::OnLostActive is invoked the window is not
 // active.
 TEST_F(WindowTest, NotActiveInLostActive) {
-  Desktop* desktop = Desktop::GetInstance();
+  RootWindow* root_window = RootWindow::GetInstance();
 
   ActiveWindowDelegate d1;
   scoped_ptr<Window> w1(
@@ -560,18 +560,18 @@ TEST_F(WindowTest, NotActiveInLostActive) {
       CreateTestWindowWithDelegate(NULL, 1, gfx::Rect(10, 10, 50, 50), NULL));
 
   // Activate w1.
-  desktop->SetActiveWindow(w1.get(), NULL);
-  EXPECT_EQ(w1.get(), desktop->active_window());
+  root_window->SetActiveWindow(w1.get(), NULL);
+  EXPECT_EQ(w1.get(), root_window->active_window());
 
   // Should not have gotten a OnLostActive yet.
   EXPECT_EQ(0, d1.hit_count());
 
   // SetActiveWindow(NULL) should not change the active window.
-  desktop->SetActiveWindow(NULL, NULL);
-  EXPECT_TRUE(desktop->active_window() == w1.get());
+  root_window->SetActiveWindow(NULL, NULL);
+  EXPECT_TRUE(root_window->active_window() == w1.get());
 
   // Now activate another window.
-  desktop->SetActiveWindow(w2.get(), NULL);
+  root_window->SetActiveWindow(w2.get(), NULL);
 
   // Should have gotten OnLostActive and w1 should not have been active at that
   // time.
@@ -777,10 +777,10 @@ TEST_F(WindowTest, Deactivate) {
   EXPECT_EQ(w2.get(), parent->children()[1]);
 }
 
-// Tests transformation on the desktop.
+// Tests transformation on the root window.
 TEST_F(WindowTest, Transform) {
-  Desktop* desktop = Desktop::GetInstance();
-  gfx::Size size = desktop->GetHostSize();
+  RootWindow* root_window = RootWindow::GetInstance();
+  gfx::Size size = root_window->GetHostSize();
   EXPECT_EQ(gfx::Rect(size),
             gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()));
 
@@ -788,13 +788,13 @@ TEST_F(WindowTest, Transform) {
   ui::Transform transform;
   transform.SetRotate(90.0f);
   transform.ConcatTranslate(size.width(), 0);
-  desktop->SetTransform(transform);
+  root_window->SetTransform(transform);
 
   // The size should be the transformed size.
   gfx::Size transformed_size(size.height(), size.width());
-  EXPECT_EQ(transformed_size.ToString(), desktop->GetHostSize().ToString());
+  EXPECT_EQ(transformed_size.ToString(), root_window->GetHostSize().ToString());
   EXPECT_EQ(gfx::Rect(transformed_size).ToString(),
-            desktop->bounds().ToString());
+            root_window->bounds().ToString());
   EXPECT_EQ(gfx::Rect(transformed_size).ToString(),
             gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()).ToString());
 }
@@ -1092,13 +1092,13 @@ TEST_F(WindowObserverTest, PropertyChanged) {
   EXPECT_EQ("name= old=0 new=0", PropertyChangeInfoAndClear());
 }
 
-class DesktopObserverTest : public WindowTest,
-                            public DesktopObserver {
+class RootWindowObserverTest : public WindowTest,
+                               public RootWindowObserver {
  public:
-  DesktopObserverTest() : active_(NULL) {
+  RootWindowObserverTest() : active_(NULL) {
   }
 
-  virtual ~DesktopObserverTest() {}
+  virtual ~RootWindowObserverTest() {}
 
   Window* active() const { return active_; }
 
@@ -1109,11 +1109,11 @@ class DesktopObserverTest : public WindowTest,
  private:
   virtual void SetUp() OVERRIDE {
     WindowTest::SetUp();
-    Desktop::GetInstance()->AddObserver(this);
+    RootWindow::GetInstance()->AddObserver(this);
   }
 
   virtual void TearDown() OVERRIDE {
-    Desktop::GetInstance()->RemoveObserver(this);
+    RootWindow::GetInstance()->RemoveObserver(this);
     WindowTest::TearDown();
   }
 
@@ -1123,10 +1123,10 @@ class DesktopObserverTest : public WindowTest,
 
   Window* active_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopObserverTest);
+  DISALLOW_COPY_AND_ASSIGN(RootWindowObserverTest);
 };
 
-TEST_F(DesktopObserverTest, WindowActivationObserve) {
+TEST_F(RootWindowObserverTest, WindowActivationObserve) {
   scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
   scoped_ptr<Window> w2(CreateTestWindowWithId(2, NULL));
   scoped_ptr<Window> w3(CreateTestWindowWithId(3, w1.get()));

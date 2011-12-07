@@ -6,8 +6,8 @@
 
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/cursor.h"
-#include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura_shell/window_util.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/login/lock_window_aura.h"
 
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_window_ids.h"
@@ -40,7 +40,7 @@ LockWindowAura::~LockWindowAura() {
 void LockWindowAura::Init() {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.bounds = gfx::Rect(aura::Desktop::GetInstance()->GetHostSize());
+  params.bounds = gfx::Rect(aura::RootWindow::GetInstance()->GetHostSize());
   // TODO(flackr): Use a property to specify this container rather than
   // depending on shell implementation.
   params.parent = aura_shell::Shell::GetInstance()->GetContainer(

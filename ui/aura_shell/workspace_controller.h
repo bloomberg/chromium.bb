@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/desktop_observer.h"
+#include "ui/aura/root_window_observer.h"
 #include "ui/aura_shell/aura_shell_export.h"
 #include "ui/aura_shell/launcher/launcher_model_observer.h"
 #include "ui/aura_shell/workspace/workspace_observer.h"
@@ -29,10 +29,10 @@ namespace internal {
 class WorkspaceManager;
 
 // WorkspaceControlls owns a WorkspaceManager. WorkspaceControlls bridges
-// events From DesktopObserver translating them to WorkspaceManager, and
+// events From RootWindowObserver translating them to WorkspaceManager, and
 // a move event between Laucher and Workspace.
 class AURA_SHELL_EXPORT WorkspaceController :
-      public aura::DesktopObserver,
+      public aura::RootWindowObserver,
       public aura_shell::internal::WorkspaceObserver,
       public aura_shell::LauncherModelObserver {
  public:
@@ -48,8 +48,8 @@ class AURA_SHELL_EXPORT WorkspaceController :
     return workspace_manager_.get();
   }
 
-  // DesktopObserver overrides:
-  virtual void OnDesktopResized(const gfx::Size& new_size) OVERRIDE;
+  // RootWindowObserver overrides:
+  virtual void OnRootWindowResized(const gfx::Size& new_size) OVERRIDE;
   virtual void OnActiveWindowChanged(aura::Window* active) OVERRIDE;
 
   // WorkspaceObserver overrides:

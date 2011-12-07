@@ -9,9 +9,9 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/shadow_types.h"
-#include "ui/aura/desktop.h"
-#include "ui/aura/desktop_observer.h"
 #include "ui/aura/event.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -64,18 +64,19 @@ aura::WindowType GetAuraWindowTypeForWidgetType(Widget::InitParams::Type type) {
 
 // Used when SetInactiveRenderingDisabled() is invoked to track when active
 // status changes in such a way that we should enable inactive rendering.
-class NativeWidgetAura::DesktopObserverImpl : public aura::DesktopObserver {
+class NativeWidgetAura::RootWindowObserverImpl
+    : public aura::RootWindowObserver {
  public:
-  explicit DesktopObserverImpl(NativeWidgetAura* host)
+  explicit RootWindowObserverImpl(NativeWidgetAura* host)
       : host_(host) {
-    aura::Desktop::GetInstance()->AddObserver(this);
+    aura::RootWindow::GetInstance()->AddObserver(this);
   }
 
-  virtual ~DesktopObserverImpl() {
-    aura::Desktop::GetInstance()->RemoveObserver(this);
+  virtual ~RootWindowObserverImpl() {
+    aura::RootWindow::GetInstance()->RemoveObserver(this);
   }
 
-  // DesktopObserver overrides:
+  // RootWindowObserver overrides:
   virtual void OnActiveWindowChanged(aura::Window* active) OVERRIDE {
     if (!active || (active != host_->window_ &&
                     active->transient_parent() != host_->window_)) {
@@ -86,7 +87,7 @@ class NativeWidgetAura::DesktopObserverImpl : public aura::DesktopObserver {
  private:
   NativeWidgetAura* host_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopObserverImpl);
+  DISALLOW_COPY_AND_ASSIGN(RootWindowObserverImpl);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -429,7 +430,7 @@ void NativeWidgetAura::Deactivate() {
 }
 
 bool NativeWidgetAura::IsActive() const {
-  return aura::Desktop::GetInstance()->active_window() == window_;
+  return aura::RootWindow::GetInstance()->active_window() == window_;
 }
 
 void NativeWidgetAura::SetAlwaysOnTop(bool on_top) {
@@ -488,8 +489,8 @@ void NativeWidgetAura::RunShellDrag(View* view,
                                    const ui::OSExchangeData& data,
                                    int operation) {
   aura::DragDropClient* client = static_cast<aura::DragDropClient*>(
-      aura::Desktop::GetInstance()->GetProperty(
-          aura::kDesktopDragDropClientKey));
+      aura::RootWindow::GetInstance()->GetProperty(
+          aura::kRootWindowDragDropClientKey));
   if (client)
     client->StartDragAndDrop(data, operation);
 }
@@ -501,7 +502,7 @@ void NativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
 
 void NativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
   cursor_ = cursor;
-  aura::Desktop::GetInstance()->SetCursor(cursor);
+  aura::RootWindow::GetInstance()->SetCursor(cursor);
 }
 
 void NativeWidgetAura::ClearNativeFocus() {
@@ -519,9 +520,9 @@ gfx::Rect NativeWidgetAura::GetWorkAreaBoundsInScreen() const {
 
 void NativeWidgetAura::SetInactiveRenderingDisabled(bool value) {
   if (!value)
-    desktop_observer_.reset();
+    root_window_observer_.reset();
   else
-    desktop_observer_.reset(new DesktopObserverImpl(this));
+    root_window_observer_.reset(new RootWindowObserverImpl(this));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -792,7 +793,7 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
 
 // static
 bool NativeWidgetPrivate::IsMouseButtonDown() {
-  return aura::Desktop::GetInstance()->IsMouseButtonDown();
+  return aura::RootWindow::GetInstance()->IsMouseButtonDown();
 }
 
 }  // namespace internal

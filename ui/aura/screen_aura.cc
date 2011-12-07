@@ -5,7 +5,7 @@
 #include "ui/aura/screen_aura.h"
 
 #include "base/logging.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -18,7 +18,7 @@ ScreenAura::~ScreenAura() {
 }
 
 gfx::Point ScreenAura::GetCursorScreenPointImpl() {
-  return Desktop::GetInstance()->last_mouse_location();
+  return RootWindow::GetInstance()->last_mouse_location();
 }
 
 gfx::Rect ScreenAura::GetMonitorWorkAreaNearestWindowImpl(
@@ -42,11 +42,11 @@ gfx::Rect ScreenAura::GetMonitorAreaNearestPointImpl(const gfx::Point& point) {
 
 gfx::NativeWindow ScreenAura::GetWindowAtCursorScreenPointImpl() {
   const gfx::Point point = GetCursorScreenPoint();
-  return Desktop::GetInstance()->GetTopWindowContainingPoint(point);
+  return RootWindow::GetInstance()->GetTopWindowContainingPoint(point);
 }
 
 gfx::Rect ScreenAura::GetBounds() {
-  return gfx::Rect(aura::Desktop::GetInstance()->GetHostSize());
+  return gfx::Rect(aura::RootWindow::GetInstance()->GetHostSize());
 }
 
 gfx::Rect ScreenAura::GetWorkAreaBounds() {

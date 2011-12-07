@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_DESKTOP_HOST_WIN_H_
-#define UI_AURA_DESKTOP_HOST_WIN_H_
+#ifndef UI_AURA_ROOT_WINDOW_HOST_WIN_H_
+#define UI_AURA_ROOT_WINDOW_HOST_WIN_H_
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "ui/aura/desktop_host.h"
+#include "ui/aura/root_window_host.h"
 #include "ui/base/win/window_impl.h"
 
 namespace aura {
 
-class DesktopHostWin : public DesktopHost, public ui::WindowImpl {
+class RootWindowHostWin : public RootWindowHost, public ui::WindowImpl {
  public:
-  explicit DesktopHostWin(const gfx::Rect& bounds);
-  virtual ~DesktopHostWin();
+  explicit RootWindowHostWin(const gfx::Rect& bounds);
+  virtual ~RootWindowHostWin();
 
   // MessageLoop::Dispatcher:
   virtual bool Dispatch(const MSG& msg);
 
-  // DesktopHost:
-  virtual void SetDesktop(Desktop* desktop) OVERRIDE;
+  // RootWindowHost:
+  virtual void SetRootWindow(RootWindow* root_window) OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void ToggleFullScreen() OVERRIDE;
@@ -33,7 +33,7 @@ class DesktopHostWin : public DesktopHost, public ui::WindowImpl {
   virtual void PostNativeEvent(const base::NativeEvent& native_event) OVERRIDE;
 
  private:
-  BEGIN_MSG_MAP_EX(DesktopHostWin)
+  BEGIN_MSG_MAP_EX(RootWindowHostWin)
     // Range handlers must go first!
     MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
     MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE, WM_NCXBUTTONDBLCLK, OnMouseRange)
@@ -58,16 +58,16 @@ class DesktopHostWin : public DesktopHost, public ui::WindowImpl {
   void OnPaint(HDC dc);
   void OnSize(UINT param, const CSize& size);
 
-  Desktop* desktop_;
+  RootWindow* root_window_;
 
   bool fullscreen_;
   RECT saved_window_rect_;
   DWORD saved_window_style_;
   DWORD saved_window_ex_style_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopHostWin);
+  DISALLOW_COPY_AND_ASSIGN(RootWindowHostWin);
 };
 
 }  // namespace aura
 
-#endif  // UI_AURA_DESKTOP_HOST_WIN_H_
+#endif  // UI_AURA_ROOT_WINDOW_HOST_WIN_H_

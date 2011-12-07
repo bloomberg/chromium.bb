@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/examples/example_factory.h"
 #include "ui/aura_shell/shell.h"
@@ -54,9 +54,9 @@ void CreateLockScreen() {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   gfx::Size ps = lock_view->GetPreferredSize();
 
-  gfx::Size desktop_size  = aura::Desktop::GetInstance()->GetHostSize();
-  params.bounds = gfx::Rect((desktop_size.width() - ps.width()) / 2,
-                            (desktop_size.height() - ps.height()) / 2,
+  gfx::Size root_window_size = aura::RootWindow::GetInstance()->GetHostSize();
+  params.bounds = gfx::Rect((root_window_size.width() - ps.width()) / 2,
+                            (root_window_size.height() - ps.height()) / 2,
                             ps.width(), ps.height());
   params.delegate = lock_view;
   widget->Init(params);

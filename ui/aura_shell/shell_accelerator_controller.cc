@@ -5,8 +5,8 @@
 #include "ui/aura_shell/shell_accelerator_controller.h"
 
 #include "base/logging.h"
-#include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
@@ -24,7 +24,7 @@ enum AcceleratorAction {
 #if !defined(NDEBUG)
   ROTATE_SCREEN,
   PRINT_LAYER_HIERARCHY,
-  TOGGLE_DESKTOP_FULL_SCREEN,
+  TOGGLE_ROOT_WINDOW_FULL_SCREEN,
 #endif
 };
 
@@ -42,7 +42,7 @@ struct AcceleratorData {
   { ui::VKEY_PRINT, false, false, false, TAKE_SCREENSHOT },
 #if !defined(NDEBUG)
   { ui::VKEY_HOME, false, true, false, ROTATE_SCREEN },
-  { ui::VKEY_F11, false, true, false, TOGGLE_DESKTOP_FULL_SCREEN },
+  { ui::VKEY_F11, false, true, false, TOGGLE_ROOT_WINDOW_FULL_SCREEN },
   { ui::VKEY_L, false, false, true, PRINT_LAYER_HIERARCHY },
 #endif
 };
@@ -87,23 +87,23 @@ bool HandleRotateScreen() {
     case 13: delta = 180; break;
   }
   i = (i + 1) % 14;
-  aura::Desktop::GetInstance()->layer()->GetAnimator()->set_preemption_strategy(
-      ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+  aura::RootWindow::GetInstance()->layer()->GetAnimator()->
+      set_preemption_strategy(ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
   scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
       new ui::LayerAnimationSequence(new ui::ScreenRotation(delta)));
-  screen_rotation->AddObserver(aura::Desktop::GetInstance());
-  aura::Desktop::GetInstance()->layer()->GetAnimator()->StartAnimation(
+  screen_rotation->AddObserver(aura::RootWindow::GetInstance());
+  aura::RootWindow::GetInstance()->layer()->GetAnimator()->StartAnimation(
       screen_rotation.release());
   return true;
 }
 
-bool HandleToggleDesktopFullScreen() {
-  aura::Desktop::GetInstance()->ToggleFullScreen();
+bool HandleToggleRootWindowFullScreen() {
+  aura::RootWindow::GetInstance()->ToggleFullScreen();
   return true;
 }
 
 bool HandlePrintLayerHierarchy() {
-  ui::PrintLayerHierarchy(aura::Desktop::GetInstance()->layer());
+  ui::PrintLayerHierarchy(aura::RootWindow::GetInstance()->layer());
   return true;
 }
 #endif
@@ -174,8 +174,8 @@ bool ShellAcceleratorController::AcceleratorPressed(
 #if !defined(NDEBUG)
     case ROTATE_SCREEN:
       return HandleRotateScreen();
-    case TOGGLE_DESKTOP_FULL_SCREEN:
-      return HandleToggleDesktopFullScreen();
+    case TOGGLE_ROOT_WINDOW_FULL_SCREEN:
+      return HandleToggleRootWindowFullScreen();
     case PRINT_LAYER_HIERARCHY:
       return HandlePrintLayerHierarchy();
 #endif

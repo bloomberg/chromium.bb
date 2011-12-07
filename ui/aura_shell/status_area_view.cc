@@ -6,7 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura_shell/aura_shell_export.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_window_ids.h"

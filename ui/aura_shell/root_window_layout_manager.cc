@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/desktop_layout_manager.h"
+#include "ui/aura_shell/root_window_layout_manager.h"
 
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
@@ -11,20 +11,20 @@ namespace aura_shell {
 namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopLayoutManager, public:
+// RootWindowLayoutManager, public:
 
-DesktopLayoutManager::DesktopLayoutManager(aura::Window* owner)
+RootWindowLayoutManager::RootWindowLayoutManager(aura::Window* owner)
     : owner_(owner),
       background_widget_(NULL) {
 }
 
-DesktopLayoutManager::~DesktopLayoutManager() {
+RootWindowLayoutManager::~RootWindowLayoutManager() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopLayoutManager, aura::LayoutManager implementation:
+// RootWindowLayoutManager, aura::LayoutManager implementation:
 
-void DesktopLayoutManager::OnWindowResized() {
+void RootWindowLayoutManager::OnWindowResized() {
   gfx::Rect fullscreen_bounds =
       gfx::Rect(owner_->bounds().width(), owner_->bounds().height());
 
@@ -35,18 +35,21 @@ void DesktopLayoutManager::OnWindowResized() {
   background_widget_->SetBounds(fullscreen_bounds);
 }
 
-void DesktopLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
+void RootWindowLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 }
 
-void DesktopLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
+void RootWindowLayoutManager::OnWillRemoveWindowFromLayout(
+    aura::Window* child) {
 }
 
-void DesktopLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
-                                                          bool visible) {
+void RootWindowLayoutManager::OnChildWindowVisibilityChanged(
+    aura::Window* child,
+    bool visible) {
 }
 
-void DesktopLayoutManager::SetChildBounds(aura::Window* child,
-                                          const gfx::Rect& requested_bounds) {
+void RootWindowLayoutManager::SetChildBounds(
+    aura::Window* child,
+    const gfx::Rect& requested_bounds) {
   SetChildBoundsDirect(child, requested_bounds);
 }
 

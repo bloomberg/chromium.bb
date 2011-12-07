@@ -25,7 +25,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #endif
@@ -884,7 +884,7 @@ base::MessagePumpDispatcher::DispatchStatus
 base::MessagePumpDispatcher::DispatchStatus
     MenuController::Dispatch(XEvent* xev) {
   if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED) {
-    aura::Desktop::GetInstance()->GetDispatcher()->Dispatch(xev);
+    aura::RootWindow::GetInstance()->GetDispatcher()->Dispatch(xev);
     return base::MessagePumpDispatcher::EVENT_QUIT;
   }
   switch (ui::EventTypeFromNative(xev)) {
@@ -904,7 +904,7 @@ base::MessagePumpDispatcher::DispatchStatus
 
   // TODO(oshima): Update Windows' Dispatcher to return DispatchStatus
   // instead of bool.
-  if (aura::Desktop::GetInstance()->GetDispatcher()->Dispatch(xev) ==
+  if (aura::RootWindow::GetInstance()->GetDispatcher()->Dispatch(xev) ==
       base::MessagePumpDispatcher::EVENT_IGNORED)
     return EVENT_IGNORED;
   return exit_type_ != EXIT_NONE ?
@@ -1947,7 +1947,7 @@ void MenuController::SetExitType(ExitType type) {
   // Send non-op event so that Dispatch method will always be called.
   // crbug.com/104684.
   if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED)
-    aura::Desktop::GetInstance()->PostNativeEvent(ui::CreateNoopEvent());
+    aura::RootWindow::GetInstance()->PostNativeEvent(ui::CreateNoopEvent());
 #endif
 }
 

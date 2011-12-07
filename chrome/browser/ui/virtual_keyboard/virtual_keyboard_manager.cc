@@ -37,8 +37,8 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/aura/desktop.h"
-#include "ui/aura/desktop_observer.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/root_window_observer.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #endif
@@ -51,7 +51,7 @@ const char kOnTextInputTypeChanged[] =
     "experimental.input.virtualKeyboard.onTextInputTypeChanged";
 
 // The default position of the keyboard widget should be at the bottom,
-// spanning the entire width of the desktop.
+// spanning the entire width of the root window.
 gfx::Rect GetKeyboardPosition(int height) {
   gfx::Rect area = gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point());
   return gfx::Rect(area.x(), area.y() + area.height() - height,
@@ -71,7 +71,7 @@ class KeyboardWidget
       public chromeos::input_method::InputMethodManager::VirtualKeyboardObserver,
 #endif
 #if defined(USE_AURA)
-      public aura::DesktopObserver,
+      public aura::RootWindowObserver,
 #endif
       public content::NotificationObserver,
       public views::Widget::Observer,
@@ -84,7 +84,7 @@ class KeyboardWidget
   // be sent to |widget|.
   void ShowKeyboardForWidget(views::Widget* widget);
 
-  // Updates the bounds to reflect the current screen/desktop bounds.
+  // Updates the bounds to reflect the current screen/root window bounds.
   void ResetBounds();
 
   // Overridden from views::Widget
@@ -131,8 +131,8 @@ class KeyboardWidget
 #endif
 
 #if defined(USE_AURA)
-  // Overridden from aura::DesktopObserver.
-  virtual void OnDesktopResized(const gfx::Size& new_size) OVERRIDE;
+  // Overridden from aura::RootWindowObserver.
+  virtual void OnRootWindowResized(const gfx::Size& new_size) OVERRIDE;
 #endif
 
   // Overridden from NotificationObserver.
@@ -227,7 +227,7 @@ KeyboardWidget::KeyboardWidget()
 #endif
 
 #if defined(USE_AURA)
-  aura::Desktop::GetInstance()->AddObserver(this);
+  aura::RootWindow::GetInstance()->AddObserver(this);
 #endif
 }
 
@@ -242,7 +242,7 @@ KeyboardWidget::~KeyboardWidget() {
 #endif
 
 #if defined(USE_AURA)
-  aura::Desktop::GetInstance()->RemoveObserver(this);
+  aura::RootWindow::GetInstance()->RemoveObserver(this);
 #endif
   // TODO(sad): Do anything else?
 }
@@ -442,7 +442,7 @@ void KeyboardWidget::VirtualKeyboardChanged(
 #endif
 
 #if defined(USE_AURA)
-void KeyboardWidget::OnDesktopResized(const gfx::Size& new_size) {
+void KeyboardWidget::OnRootWindowResized(const gfx::Size& new_size) {
   ResetBounds();
 }
 #endif

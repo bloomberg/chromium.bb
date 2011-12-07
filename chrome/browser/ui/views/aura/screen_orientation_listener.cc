@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/sensors/sensors_provider.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animation_sequence.h"
 #include "ui/gfx/compositor/layer_animator.h"
@@ -43,10 +43,11 @@ void ScreenOrientationListener::OnScreenOrientationChanged(
     content::ScreenOrientation change) {
   ui::Layer* to_rotate = NULL;
   ui::LayerAnimationObserver* observer = NULL;
-  // Desktop is initialized before the listener, so this will not return NULL.
-  aura::Desktop* aura_desktop = aura::Desktop::GetInstance();
-  to_rotate = aura_desktop->layer();
-  observer = aura_desktop;
+  // RootWindow is initialized before the listener, so this will not return
+  // NULL.
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  to_rotate = root_window->layer();
+  observer = root_window;
 
   if (!to_rotate)
     return;

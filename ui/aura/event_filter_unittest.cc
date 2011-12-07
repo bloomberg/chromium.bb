@@ -6,8 +6,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_event_filter.h"
@@ -77,22 +77,23 @@ Window* CreateWindow(int id, Window* parent, WindowDelegate* delegate) {
 
 // Creates this hierarchy:
 //
-// Desktop Window (EF)
+// RootWindow (EF)
 //  +- w1 (EF)
 //    +- w11
 //      +- w111 (EF)
 //        +- w1111 <-- target window
 TEST_F(EventFilterTest, Basic) {
-  scoped_ptr<Window> w1(CreateWindow(1, Desktop::GetInstance(), NULL));
+  scoped_ptr<Window> w1(CreateWindow(1, RootWindow::GetInstance(), NULL));
   scoped_ptr<Window> w11(CreateWindow(11, w1.get(), NULL));
   scoped_ptr<Window> w111(CreateWindow(111, w11.get(), NULL));
   TestEventFilterWindowDelegate* d1111 = new TestEventFilterWindowDelegate;
   scoped_ptr<Window> w1111(CreateWindow(1111, w111.get(), d1111));
 
-  TestEventFilter* desktop_filter = new TestEventFilter(Desktop::GetInstance());
+  TestEventFilter* root_window_filter =
+      new TestEventFilter(RootWindow::GetInstance());
   TestEventFilter* w1_filter = new TestEventFilter(w1.get());
   TestEventFilter* w111_filter = new TestEventFilter(w111.get());
-  Desktop::GetInstance()->SetEventFilter(desktop_filter);
+  RootWindow::GetInstance()->SetEventFilter(root_window_filter);
   w1->SetEventFilter(w1_filter);
   w111->SetEventFilter(w111_filter);
 
@@ -103,24 +104,24 @@ TEST_F(EventFilterTest, Basic) {
   EventGenerator generator(w1111.get());
   generator.PressLeftButton();
   KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
-  Desktop::GetInstance()->DispatchKeyEvent(&key_event);
+  RootWindow::GetInstance()->DispatchKeyEvent(&key_event);
 
   // TODO(sadrul): TouchEvent!
-  EXPECT_EQ(1, desktop_filter->key_event_count());
+  EXPECT_EQ(1, root_window_filter->key_event_count());
   EXPECT_EQ(1, w1_filter->key_event_count());
   EXPECT_EQ(1, w111_filter->key_event_count());
   EXPECT_EQ(1, d1111->key_event_count());
-  EXPECT_EQ(1, desktop_filter->mouse_event_count());
+  EXPECT_EQ(1, root_window_filter->mouse_event_count());
   EXPECT_EQ(1, w1_filter->mouse_event_count());
   EXPECT_EQ(1, w111_filter->mouse_event_count());
   EXPECT_EQ(1, d1111->mouse_event_count());
-  EXPECT_EQ(0, desktop_filter->touch_event_count());
+  EXPECT_EQ(0, root_window_filter->touch_event_count());
   EXPECT_EQ(0, w1_filter->touch_event_count());
   EXPECT_EQ(0, w111_filter->touch_event_count());
   EXPECT_EQ(0, d1111->touch_event_count());
 
   d1111->ResetCounts();
-  desktop_filter->ResetCounts();
+  root_window_filter->ResetCounts();
   w1_filter->ResetCounts();
   w111_filter->ResetCounts();
 
@@ -129,18 +130,18 @@ TEST_F(EventFilterTest, Basic) {
   w1_filter->set_consumes_mouse_events(true);
 
   generator.ReleaseLeftButton();
-  Desktop::GetInstance()->DispatchKeyEvent(&key_event);
+  RootWindow::GetInstance()->DispatchKeyEvent(&key_event);
 
   // TODO(sadrul): TouchEvent!
-  EXPECT_EQ(1, desktop_filter->key_event_count());
+  EXPECT_EQ(1, root_window_filter->key_event_count());
   EXPECT_EQ(1, w1_filter->key_event_count());
   EXPECT_EQ(0, w111_filter->key_event_count());
   EXPECT_EQ(0, d1111->key_event_count());
-  EXPECT_EQ(1, desktop_filter->mouse_event_count());
+  EXPECT_EQ(1, root_window_filter->mouse_event_count());
   EXPECT_EQ(1, w1_filter->mouse_event_count());
   EXPECT_EQ(0, w111_filter->mouse_event_count());
   EXPECT_EQ(0, d1111->mouse_event_count());
-  EXPECT_EQ(0, desktop_filter->touch_event_count());
+  EXPECT_EQ(0, root_window_filter->touch_event_count());
   EXPECT_EQ(0, w1_filter->touch_event_count());
   EXPECT_EQ(0, w111_filter->touch_event_count());
   EXPECT_EQ(0, d1111->touch_event_count());

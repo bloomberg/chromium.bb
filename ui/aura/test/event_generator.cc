@@ -4,15 +4,15 @@
 
 #include "ui/aura/test/event_generator.h"
 
-#include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
+#include "ui/aura/root_window.h"
 
 namespace {
 
-gfx::Point CenterOfWindowInDesktopCoordinate(aura::Window* window) {
+gfx::Point CenterOfWindowInRootWindowCoordinate(aura::Window* window) {
   gfx::Point center = window->bounds().CenterPoint();
-  aura::Desktop* desktop = aura::Desktop::GetInstance();
-  aura::Window::ConvertPointToWindow(window->parent(), desktop, &center);
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  aura::Window::ConvertPointToWindow(window->parent(), root_window, &center);
   return center;
 }
 
@@ -31,7 +31,7 @@ EventGenerator::EventGenerator(const gfx::Point& point)
 
 EventGenerator::EventGenerator(Window* window)
     : flags_(0),
-      current_location_(CenterOfWindowInDesktopCoordinate(window)) {
+      current_location_(CenterOfWindowInRootWindowCoordinate(window)) {
 }
 
 EventGenerator::~EventGenerator() {
@@ -94,7 +94,7 @@ void EventGenerator::Dispatch(Event& event) {
   switch (event.type()) {
     case ui::ET_KEY_PRESSED:
     case ui::ET_KEY_RELEASED:
-      aura::Desktop::GetInstance()->DispatchKeyEvent(
+      aura::RootWindow::GetInstance()->DispatchKeyEvent(
           static_cast<KeyEvent*>(&event));
       break;
     case ui::ET_MOUSE_PRESSED:
@@ -104,7 +104,7 @@ void EventGenerator::Dispatch(Event& event) {
     case ui::ET_MOUSE_ENTERED:
     case ui::ET_MOUSE_EXITED:
     case ui::ET_MOUSEWHEEL:
-      aura::Desktop::GetInstance()->DispatchMouseEvent(
+      aura::RootWindow::GetInstance()->DispatchMouseEvent(
           static_cast<MouseEvent*>(&event));
       break;
     default:
@@ -114,7 +114,7 @@ void EventGenerator::Dispatch(Event& event) {
 }
 
 void EventGenerator::MoveMouseToCenterOf(Window* window) {
-  MoveMouseTo(CenterOfWindowInDesktopCoordinate(window));
+  MoveMouseTo(CenterOfWindowInRootWindowCoordinate(window));
 }
 
 }  // namespace test

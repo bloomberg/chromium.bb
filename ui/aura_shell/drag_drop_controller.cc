@@ -7,7 +7,7 @@
 #include "base/message_loop.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_drag_drop_delegate.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/drag_image_view.h"
 #include "ui/aura_shell/shell.h"
@@ -20,7 +20,7 @@
 namespace aura_shell {
 namespace internal {
 
-using aura::Desktop;
+using aura::RootWindow;
 
 namespace {
 aura::WindowDragDropDelegate* GetDragDropDelegate(aura::Window* window) {
@@ -40,32 +40,32 @@ const gfx::Point kDragDropWidgetOffset(0, 0);
 // DragDropController, public:
 
 DragDropController::DragDropController()
-    : aura::EventFilter(Desktop::GetInstance()),
+    : aura::EventFilter(RootWindow::GetInstance()),
       drag_image_(NULL),
       drag_data_(NULL),
       drag_operation_(0),
       dragged_window_(NULL),
       drag_drop_in_progress_(false),
       should_block_during_drag_drop_(true) {
-  Shell::GetInstance()->AddDesktopEventFilter(this);
+  Shell::GetInstance()->AddRootWindowEventFilter(this);
 }
 
 DragDropController::~DragDropController() {
-  Shell::GetInstance()->RemoveDesktopEventFilter(this);
+  Shell::GetInstance()->RemoveRootWindowEventFilter(this);
   Cleanup();
 }
 
 int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
                                           int operation) {
   DCHECK(!drag_drop_in_progress_);
-  aura::Window* capture_window = Desktop::GetInstance()->capture_window();
+  aura::Window* capture_window = RootWindow::GetInstance()->capture_window();
   if (capture_window)
-    Desktop::GetInstance()->ReleaseCapture(capture_window);
+    RootWindow::GetInstance()->ReleaseCapture(capture_window);
   drag_drop_in_progress_ = true;
 
   drag_data_ = &data;
   drag_operation_ = operation;
-  gfx::Point location = Desktop::GetInstance()->last_mouse_location();
+  gfx::Point location = RootWindow::GetInstance()->last_mouse_location();
   const ui::OSExchangeDataProviderAura& provider =
       static_cast<const ui::OSExchangeDataProviderAura&>(data.provider());
 
@@ -79,7 +79,7 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
 
   if (should_block_during_drag_drop_) {
     MessageLoopForUI::current()->RunWithDispatcher(
-        Desktop::GetInstance()->GetDispatcher());
+        RootWindow::GetInstance()->GetDispatcher());
   }
   return drag_operation_;
 }
@@ -101,13 +101,13 @@ void DragDropController::DragUpdate(aura::Window* target,
       int op = delegate->OnDragUpdated(e);
        gfx::NativeCursor cursor = (op == ui::DragDropTypes::DRAG_NONE)?
            aura::kCursorMove : aura::kCursorHand;
-       Desktop::GetInstance()->SetCursor(cursor);
+       RootWindow::GetInstance()->SetCursor(cursor);
     }
   }
 
   DCHECK(drag_image_.get());
   if (drag_image_->IsVisible()) {
-    drag_image_->SetScreenPosition(Desktop::GetInstance()->
+    drag_image_->SetScreenPosition(RootWindow::GetInstance()->
         last_mouse_location().Add(kDragDropWidgetOffset));
   }
 }

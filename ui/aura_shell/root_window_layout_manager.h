@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_DESKTOP_LAYOUT_MANAGER_H_
-#define UI_AURA_SHELL_DESKTOP_LAYOUT_MANAGER_H_
+#ifndef UI_AURA_SHELL_ROOT_WINDOW_LAYOUT_MANAGER_H_
+#define UI_AURA_SHELL_ROOT_WINDOW_LAYOUT_MANAGER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -25,10 +25,10 @@ namespace internal {
 
 // A layout manager for the root window.
 // Resizes all of its immediate children to fill the bounds of the root window.
-class DesktopLayoutManager : public aura::LayoutManager {
+class RootWindowLayoutManager : public aura::LayoutManager {
  public:
-  explicit DesktopLayoutManager(aura::Window* owner);
-  virtual ~DesktopLayoutManager();
+  explicit RootWindowLayoutManager(aura::Window* owner);
+  virtual ~RootWindowLayoutManager();
 
   void set_background_widget(views::Widget* background_widget) {
     background_widget_ = background_widget;
@@ -48,10 +48,10 @@ class DesktopLayoutManager : public aura::LayoutManager {
 
   views::Widget* background_widget_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopLayoutManager);
+  DISALLOW_COPY_AND_ASSIGN(RootWindowLayoutManager);
 };
 
 }  // namespace internal
 }  // namespace aura_shell
 
-#endif  // UI_AURA_SHELL_DESKTOP_LAYOUT_MANAGER_H_
+#endif  // UI_AURA_SHELL_ROOT_WINDOW_LAYOUT_MANAGER_H_

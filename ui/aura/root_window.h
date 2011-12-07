@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_DESKTOP_H_
-#define UI_AURA_DESKTOP_H_
+#ifndef UI_AURA_ROOT_WINDOW_H_
+#define UI_AURA_ROOT_WINDOW_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -32,21 +32,21 @@ class Transform;
 
 namespace aura {
 
-class DesktopHost;
-class DesktopObserver;
+class RootWindowHost;
+class RootWindowObserver;
 class KeyEvent;
 class MouseEvent;
 class ScreenAura;
 class StackingClient;
 class TouchEvent;
 
-// Desktop is responsible for hosting a set of windows.
-class AURA_EXPORT Desktop : public ui::CompositorDelegate,
-                            public Window,
-                            public internal::FocusManager,
-                            public ui::LayerAnimationObserver {
+// RootWindow is responsible for hosting a set of windows.
+class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
+                               public Window,
+                               public internal::FocusManager,
+                               public ui::LayerAnimationObserver {
  public:
-  static Desktop* GetInstance();
+  static RootWindow* GetInstance();
   static void DeleteInstance();
 
   static void set_use_fullscreen_host_window(bool use_fullscreen) {
@@ -64,17 +64,17 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
 
   void SetStackingClient(StackingClient* stacking_client);
 
-  // Shows the desktop host.
-  void ShowDesktop();
+  // Shows the root window host.
+  void ShowRootWindow();
 
-  // Sets the size of the desktop.
+  // Sets the size of the root window.
   void SetHostSize(const gfx::Size& size);
   gfx::Size GetHostSize() const;
 
   // Shows the specified cursor.
   void SetCursor(gfx::NativeCursor cursor);
 
-  // Shows the desktop host and runs an event loop for it.
+  // Shows the root window host and runs an event loop for it.
   void Run();
 
   // Draws the necessary set of windows.
@@ -115,15 +115,15 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   // Invoked when |window| is being destroyed.
   void WindowDestroying(Window* window);
 
-  // Returns the desktop's dispatcher. The result should only be passed to
+  // Returns the root window's dispatcher. The result should only be passed to
   // MessageLoopForUI::RunWithDispatcher() or
   // MessageLoopForUI::RunAllPendingWithDispatcher(), or used to dispatch
   // an event by |Dispatch(const NativeEvent&)| on it. It must never be stored.
   MessageLoop::Dispatcher* GetDispatcher();
 
   // Add/remove observer.
-  void AddObserver(DesktopObserver* observer);
-  void RemoveObserver(DesktopObserver* observer);
+  void AddObserver(RootWindowObserver* observer);
+  void RemoveObserver(RootWindowObserver* observer);
 
   // Are any mouse buttons currently down?
   bool IsMouseButtonDown() const;
@@ -131,7 +131,8 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   // Posts |native_event| to the platform's event queue.
   void PostNativeEvent(const base::NativeEvent& native_event);
 
-  // Converts |point| from the desktop's coordinate system to native screen's.
+  // Converts |point| from the root window's coordinate system to native
+  // screen's.
   void ConvertPointToNativeScreen(gfx::Point* point) const;
 
   // Capture -------------------------------------------------------------------
@@ -154,8 +155,8 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   virtual void ScheduleDraw();
 
  private:
-  Desktop();
-  virtual ~Desktop();
+  RootWindow();
+  virtual ~RootWindow();
 
   // Called whenever the mouse moves, tracks the current |mouse_moved_handler_|,
   // sending exited and entered events as its value changes.
@@ -168,8 +169,8 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   // Overridden from Window:
   virtual bool CanFocus() const OVERRIDE;
   virtual internal::FocusManager* GetFocusManager() OVERRIDE;
-  virtual Desktop* GetDesktop() OVERRIDE;
-  virtual void WindowDetachedFromDesktop(Window* window) OVERRIDE;
+  virtual RootWindow* GetRootWindow() OVERRIDE;
+  virtual void WindowDetachedFromRootWindow(Window* window) OVERRIDE;
 
   // Overridden from ui::LayerAnimationObserver:
   virtual void OnLayerAnimationEnded(
@@ -184,7 +185,7 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   virtual Window* GetFocusedWindow() OVERRIDE;
   virtual bool IsFocusedWindow(const Window* window) const OVERRIDE;
 
-  // Initializes the desktop.
+  // Initializes the root window.
   void Init();
 
   // Parses the switch describing the initial size for the host window and
@@ -193,19 +194,19 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
 
   scoped_refptr<ui::Compositor> compositor_;
 
-  scoped_ptr<DesktopHost> host_;
+  scoped_ptr<RootWindowHost> host_;
 
   scoped_ptr<StackingClient> stacking_client_;
 
-  static Desktop* instance_;
+  static RootWindow* instance_;
 
-  // If set before the Desktop is created, the host window will cover the entire
-  // screen.  Note that this can still be overridden via the
+  // If set before the RootWindow is created, the host window will cover the
+  // entire screen.  Note that this can still be overridden via the
   // switches::kAuraHostWindowSize flag.
   static bool use_fullscreen_host_window_;
 
   // Used to schedule painting.
-  base::WeakPtrFactory<Desktop> schedule_paint_factory_;
+  base::WeakPtrFactory<RootWindow> schedule_paint_factory_;
 
   Window* active_window_;
 
@@ -222,7 +223,7 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   // destruction.
   bool in_destructor_;
 
-  ObserverList<DesktopObserver> observers_;
+  ObserverList<RootWindowObserver> observers_;
 
   ScreenAura* screen_;
 
@@ -235,9 +236,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   Window* focused_window_;
   Window* touch_event_handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(Desktop);
+  DISALLOW_COPY_AND_ASSIGN(RootWindow);
 };
 
 }  // namespace aura
 
-#endif  // UI_AURA_DESKTOP_H_
+#endif  // UI_AURA_ROOT_WINDOW_H_

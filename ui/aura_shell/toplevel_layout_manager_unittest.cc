@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/base/ui_base_types.h"
@@ -24,9 +24,9 @@ class ToplevelLayoutManagerTest : public aura::test::AuraTestBase {
 
   virtual void SetUp() OVERRIDE {
     aura::test::AuraTestBase::SetUp();
-    aura::Desktop::GetInstance()->screen()->set_work_area_insets(
+    aura::RootWindow::GetInstance()->screen()->set_work_area_insets(
         gfx::Insets(1, 2, 3, 4));
-    aura::Desktop::GetInstance()->SetHostSize(gfx::Size(500, 400));
+    aura::RootWindow::GetInstance()->SetHostSize(gfx::Size(500, 400));
     container_.reset(new aura::Window(NULL));
     container_->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
     container_->SetBounds(gfx::Rect(0, 0, 500, 500));

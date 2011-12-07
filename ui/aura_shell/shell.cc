@@ -9,15 +9,15 @@
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_types.h"
 #include "ui/aura_shell/app_list.h"
 #include "ui/aura_shell/default_container_event_filter.h"
 #include "ui/aura_shell/default_container_layout_manager.h"
-#include "ui/aura_shell/desktop_event_filter.h"
-#include "ui/aura_shell/desktop_layout_manager.h"
+#include "ui/aura_shell/root_window_event_filter.h"
+#include "ui/aura_shell/root_window_layout_manager.h"
 #include "ui/aura_shell/drag_drop_controller.h"
 #include "ui/aura_shell/launcher/launcher.h"
 #include "ui/aura_shell/modal_container_layout_manager.h"
@@ -115,19 +115,20 @@ Shell::Shell(ShellDelegate* delegate)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       accelerator_controller_(new ShellAcceleratorController),
       delegate_(delegate) {
-  aura::Desktop::GetInstance()->SetEventFilter(
-      new internal::DesktopEventFilter);
-  aura::Desktop::GetInstance()->SetStackingClient(
+  aura::RootWindow::GetInstance()->SetEventFilter(
+      new internal::RootWindowEventFilter);
+  aura::RootWindow::GetInstance()->SetStackingClient(
       new internal::StackingController);
 }
 
 Shell::~Shell() {
-  RemoveDesktopEventFilter(accelerator_filter_.get());
+  RemoveRootWindowEventFilter(accelerator_filter_.get());
 
   // ShellTooltipManager needs a valid shell instance. We delete it before
   // deleting the shell |instance_|.
-  RemoveDesktopEventFilter(tooltip_manager_.get());
-  aura::Desktop::GetInstance()->SetProperty(aura::kDesktopTooltipClientKey,
+  RemoveRootWindowEventFilter(tooltip_manager_.get());
+  aura::RootWindow::GetInstance()->SetProperty(
+      aura::kRootWindowTooltipClientKey,
       NULL);
 
   // Make sure we delete WorkspaceController before launcher is
@@ -138,9 +139,9 @@ Shell::~Shell() {
   // Delete containers now so that child windows does not access
   // observers when they are destructed. This has to be after launcher
   // is destructed because launcher closes the widget in its destructor.
-  aura::Desktop* desktop_window = aura::Desktop::GetInstance();
-  while (!desktop_window->children().empty()) {
-    aura::Window* child = desktop_window->children()[0];
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  while (!root_window->children().empty()) {
+    aura::Window* child = root_window->children()[0];
     delete child;
   }
 
@@ -174,28 +175,29 @@ void Shell::DeleteInstance() {
 }
 
 void Shell::Init() {
-  aura::Desktop* desktop_window = aura::Desktop::GetInstance();
-  desktop_window->SetCursor(aura::kCursorPointer);
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  root_window->SetCursor(aura::kCursorPointer);
 
   aura::Window::Windows containers;
   CreateSpecialContainers(&containers);
   aura::Window::Windows::const_iterator i;
   for (i = containers.begin(); i != containers.end(); ++i) {
     (*i)->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
-    desktop_window->AddChild(*i);
+    root_window->AddChild(*i);
     (*i)->Show();
   }
 
   internal::StackingController* stacking_controller =
       static_cast<internal::StackingController*>(
-          desktop_window->stacking_client());
+          root_window->stacking_client());
   stacking_controller->Init();
 
-  internal::DesktopLayoutManager* desktop_layout =
-      new internal::DesktopLayoutManager(desktop_window);
-  desktop_window->SetLayoutManager(desktop_layout);
+  internal::RootWindowLayoutManager* root_window_layout =
+      new internal::RootWindowLayoutManager(root_window);
+  root_window->SetLayoutManager(root_window_layout);
 
-  desktop_layout->set_background_widget(internal::CreateDesktopBackground());
+  root_window_layout->set_background_widget(
+      internal::CreateDesktopBackground());
   aura::Window* default_container =
       GetContainer(internal::kShellWindowId_DefaultContainer);
   launcher_.reset(new Launcher(default_container));
@@ -229,21 +231,23 @@ void Shell::Init() {
   }
 
   // Force a layout.
-  desktop_layout->OnWindowResized();
+  root_window_layout->OnWindowResized();
 
   // Initialize ShellAcceleratorFilter
   accelerator_filter_.reset(new internal::ShellAcceleratorFilter);
-  AddDesktopEventFilter(accelerator_filter_.get());
+  AddRootWindowEventFilter(accelerator_filter_.get());
 
   // Initialize ShellTooltipManager
   tooltip_manager_.reset(new ShellTooltipManager);
-  aura::Desktop::GetInstance()->SetProperty(aura::kDesktopTooltipClientKey,
+  aura::RootWindow::GetInstance()->SetProperty(
+      aura::kRootWindowTooltipClientKey,
       static_cast<aura::TooltipClient*>(tooltip_manager_.get()));
-  AddDesktopEventFilter(tooltip_manager_.get());
+  AddRootWindowEventFilter(tooltip_manager_.get());
 
   // Initialize drag drop controller.
   drag_drop_controller_.reset(new internal::DragDropController);
-  aura::Desktop::GetInstance()->SetProperty(aura::kDesktopDragDropClientKey,
+  aura::RootWindow::GetInstance()->SetProperty(
+      aura::kRootWindowDragDropClientKey,
       static_cast<aura::DragDropClient*>(drag_drop_controller_.get()));
 }
 
@@ -253,17 +257,17 @@ aura::Window* Shell::GetContainer(int container_id) {
 }
 
 const aura::Window* Shell::GetContainer(int container_id) const {
-  return aura::Desktop::GetInstance()->GetChildById(container_id);
+  return aura::RootWindow::GetInstance()->GetChildById(container_id);
 }
 
-void Shell::AddDesktopEventFilter(aura::EventFilter* filter) {
-  static_cast<internal::DesktopEventFilter*>(
-      aura::Desktop::GetInstance()->event_filter())->AddFilter(filter);
+void Shell::AddRootWindowEventFilter(aura::EventFilter* filter) {
+  static_cast<internal::RootWindowEventFilter*>(
+      aura::RootWindow::GetInstance()->event_filter())->AddFilter(filter);
 }
 
-void Shell::RemoveDesktopEventFilter(aura::EventFilter* filter) {
-  static_cast<internal::DesktopEventFilter*>(
-      aura::Desktop::GetInstance()->event_filter())->RemoveFilter(filter);
+void Shell::RemoveRootWindowEventFilter(aura::EventFilter* filter) {
+  static_cast<internal::RootWindowEventFilter*>(
+      aura::RootWindow::GetInstance()->event_filter())->RemoveFilter(filter);
 }
 
 void Shell::ToggleOverview() {

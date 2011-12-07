@@ -5,7 +5,7 @@
 #include "ui/aura_shell/shelf_layout_manager.h"
 
 #include "base/auto_reset.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
@@ -55,7 +55,7 @@ void ShelfLayoutManager::LayoutShelf() {
   GetLayer(status_)->SetOpacity(target_opacity);
   launcher_->SetBounds(target_bounds.launcher_bounds);
   status_->SetBounds(target_bounds.status_bounds);
-  aura::Desktop::GetInstance()->screen()->set_work_area_insets(
+  aura::RootWindow::GetInstance()->screen()->set_work_area_insets(
       target_bounds.work_area_insets);
 }
 
@@ -112,7 +112,7 @@ void ShelfLayoutManager::StopAnimating() {
 
 void ShelfLayoutManager::CalculateTargetBounds(bool visible,
                                                TargetBounds* target_bounds) {
-  const gfx::Rect& available_bounds(aura::Desktop::GetInstance()->bounds());
+  const gfx::Rect& available_bounds(aura::RootWindow::GetInstance()->bounds());
   int y = available_bounds.bottom() - (visible ? max_height_ : 0);
   gfx::Rect status_bounds(status_->GetWindowScreenBounds());
   target_bounds->status_bounds = gfx::Rect(
@@ -145,7 +145,7 @@ void ShelfLayoutManager::OnLayerAnimationEnded(
   visible_ = !visible_;
   TargetBounds target_bounds;
   CalculateTargetBounds(visible_, &target_bounds);
-  aura::Desktop::GetInstance()->screen()->set_work_area_insets(
+  aura::RootWindow::GetInstance()->screen()->set_work_area_insets(
       target_bounds.work_area_insets);
 }
 

@@ -64,7 +64,7 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #endif
 
 static const int kDefaultWsPort = 8880;
@@ -253,7 +253,7 @@ void RunMessageLoop() {
   loop->SetNestableTasksAllowed(true);
   if (ui_loop) {
 #if defined(USE_AURA)
-    aura::Desktop::GetInstance()->Run();
+    aura::RootWindow::GetInstance()->Run();
 #elif defined(TOOLKIT_VIEWS)
     views::AcceleratorHandler handler;
     ui_loop->RunWithDispatcher(&handler);

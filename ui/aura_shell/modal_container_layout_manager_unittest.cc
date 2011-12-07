@@ -5,7 +5,7 @@
 #include "ui/aura_shell/modal_container_layout_manager.h"
 
 #include "base/compiler_specific.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/shell.h"
@@ -100,7 +100,7 @@ TEST_F(ModalContainerLayoutManagerTest, NonModalTransient) {
 TEST_F(ModalContainerLayoutManagerTest, ModalTransient) {
   scoped_ptr<aura::Window> parent(TestWindow::OpenTestWindow(NULL, false));
   // parent should be active.
-  EXPECT_EQ(parent.get(), aura::Desktop::GetInstance()->active_window());
+  EXPECT_EQ(parent.get(), aura::RootWindow::GetInstance()->active_window());
 
   aura::Window* t1 = TestWindow::OpenTestWindow(parent.get(), true);
   TransientWindowObserver do1;
@@ -110,19 +110,19 @@ TEST_F(ModalContainerLayoutManagerTest, ModalTransient) {
   EXPECT_EQ(GetModalContainer(), t1->parent());
 
   // t1 should now be active.
-  EXPECT_EQ(t1, aura::Desktop::GetInstance()->active_window());
+  EXPECT_EQ(t1, aura::RootWindow::GetInstance()->active_window());
 
   // Attempting to click the parent should result in no activation change.
   aura::test::EventGenerator e1(parent.get());
   e1.ClickLeftButton();
-  EXPECT_EQ(t1, aura::Desktop::GetInstance()->active_window());
+  EXPECT_EQ(t1, aura::RootWindow::GetInstance()->active_window());
 
   // Now open another modal transient parented to the original modal transient.
   aura::Window* t2 = TestWindow::OpenTestWindow(t1, true);
   TransientWindowObserver do2;
   t2->AddObserver(&do2);
 
-  EXPECT_EQ(t2, aura::Desktop::GetInstance()->active_window());
+  EXPECT_EQ(t2, aura::RootWindow::GetInstance()->active_window());
 
   EXPECT_EQ(t1, t2->transient_parent());
   EXPECT_EQ(GetModalContainer(), t2->parent());
@@ -130,7 +130,7 @@ TEST_F(ModalContainerLayoutManagerTest, ModalTransient) {
   // t2 should still be active, even after clicking on t1.
   aura::test::EventGenerator e2(t1);
   e2.ClickLeftButton();
-  EXPECT_EQ(t2, aura::Desktop::GetInstance()->active_window());
+  EXPECT_EQ(t2, aura::RootWindow::GetInstance()->active_window());
 
   // Both transients should be destroyed with parent.
   parent.reset();
@@ -145,28 +145,28 @@ TEST_F(ModalContainerLayoutManagerTest, CanActivateAfterEndModalSession) {
   unrelated->SetBounds(gfx::Rect(100, 100, 50, 50));
   scoped_ptr<aura::Window> parent(TestWindow::OpenTestWindow(NULL, false));
   // parent should be active.
-  EXPECT_EQ(parent.get(), aura::Desktop::GetInstance()->active_window());
+  EXPECT_EQ(parent.get(), aura::RootWindow::GetInstance()->active_window());
 
   scoped_ptr<aura::Window> transient(
       TestWindow::OpenTestWindow(parent.get(), true));
   // t1 should now be active.
-  EXPECT_EQ(transient.get(), aura::Desktop::GetInstance()->active_window());
+  EXPECT_EQ(transient.get(), aura::RootWindow::GetInstance()->active_window());
 
   // Attempting to click the parent should result in no activation change.
   aura::test::EventGenerator e1(parent.get());
   e1.ClickLeftButton();
-  EXPECT_EQ(transient.get(), aura::Desktop::GetInstance()->active_window());
+  EXPECT_EQ(transient.get(), aura::RootWindow::GetInstance()->active_window());
 
   // Now close the transient.
   transient.reset();
 
   // parent should now be active again.
-  EXPECT_EQ(parent.get(), aura::Desktop::GetInstance()->active_window());
+  EXPECT_EQ(parent.get(), aura::RootWindow::GetInstance()->active_window());
 
   // Attempting to click unrelated should activate it.
   aura::test::EventGenerator e2(unrelated.get());
   e2.ClickLeftButton();
-  EXPECT_EQ(unrelated.get(), aura::Desktop::GetInstance()->active_window());
+  EXPECT_EQ(unrelated.get(), aura::RootWindow::GetInstance()->active_window());
 }
 
 }  // namespace test

@@ -5,7 +5,7 @@
 #include "ui/aura_shell/stacking_controller.h"
 
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/always_on_top_controller.h"
 #include "ui/aura_shell/shell.h"
@@ -37,7 +37,7 @@ bool IsWindowModal(aura::Window* window) {
 // StackingController, public:
 
 StackingController::StackingController() {
-  aura::Desktop::GetInstance()->SetStackingClient(this);
+  aura::RootWindow::GetInstance()->SetStackingClient(this);
 }
 
 StackingController::~StackingController() {
