@@ -252,7 +252,9 @@ class EBuild(object):
     project, srcdir = self.GetSourcePath(srcroot)
 
     if not os.path.isdir(srcdir):
-      cros_build_lib.Die('Cannot find commit id for %s' % self.ebuild_path)
+      cros_build_lib.Die('Source repository %s '
+                         'for package %s does not exist.' % (
+                            srcdir, self.package))
 
     # Verify that we're grabbing the commit id from the right project name.
     # NOTE: chromeos-kernel has the wrong project name, so it fails this
@@ -262,13 +264,14 @@ class EBuild(object):
            'git config --get remote.cros-internal.projectname )') % srcdir
     actual_project = self._RunCommand(cmd).rstrip()
     if project not in (actual_project, 'chromeos-kernel'):
-      cros_build_lib.Die('Project name mismatch for %s (%s != %s)' % (
-          self._unstable_ebuild_path, project, actual_project))
+      cros_build_lib.Die('Project name mismatch for %s '
+                         '(found %s, expected %s)' % (
+                             srcdir, actual_project, project))
 
     # Get commit id.
     output = self._RunCommand('cd %s && git rev-parse HEAD' % srcdir)
     if not output:
-      cros_build_lib.Die('Missing commit id for %s' % self.ebuild_path)
+      cros_build_lib.Die('Cannot determine HEAD commit for %s' % srcdir)
     return output.rstrip()
 
   def RevWorkOnEBuild(self, srcroot, redirect_file=None):
