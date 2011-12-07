@@ -28,8 +28,7 @@ VerifyUpdatesCommand::VerifyUpdatesCommand() {}
 VerifyUpdatesCommand::~VerifyUpdatesCommand() {}
 
 bool VerifyUpdatesCommand::HasCustomGroupsToChange() const {
-  // TODO(akalin): Set to true.
-  return false;
+  return true;
 }
 
 std::set<ModelSafeGroup> VerifyUpdatesCommand::GetGroupsToChange(
