@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chrome_browser_main_extra_parts_aura.h"
+
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/aura/screen_orientation_listener.h"
 #include "ui/aura/root_window.h"
@@ -12,11 +15,25 @@
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #endif
 
+#if defined(USE_WEBKIT_COMPOSITOR)
+#include "ui/gfx/compositor/compositor_setup.h"
+#else
+#include "ui/gfx/test/gfx_test_utils.h"
+#endif
+
 ChromeBrowserMainExtraPartsAura::ChromeBrowserMainExtraPartsAura()
     : ChromeBrowserMainExtraParts() {
 }
 
 void ChromeBrowserMainExtraPartsAura::PostBrowserProcessInit() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestCompositor)) {
+#if defined(USE_WEBKIT_COMPOSITOR)
+    ui::SetupTestCompositor();
+#else
+    ui::gfx_test_utils::SetupTestCompositor();
+#endif
+  }
+
 #if defined(OS_CHROMEOS)
   if (chromeos::system::runtime_environment::IsRunningOnChromeOS())
     aura::RootWindow::set_use_fullscreen_host_window(true);

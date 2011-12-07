@@ -15,9 +15,14 @@
 #include "ui/gfx/compositor/compositor_observer.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animation_sequence.h"
-#include "ui/gfx/compositor/test/test_compositor.h"
 #include "ui/gfx/compositor/test/test_compositor_host.h"
 #include "ui/gfx/gfx_paths.h"
+
+#if defined(USE_WEBKIT_COMPOSITOR)
+#include "ui/gfx/compositor/compositor_setup.h"
+#else
+#include "ui/gfx/compositor/test/test_compositor.h"
+#endif
 
 namespace ui {
 
@@ -106,10 +111,9 @@ std::string GetLayerChildrenNames(const Layer& layer) {
 
 // There are three test classes in here that configure the Compositor and
 // Layer's slightly differently:
-// - LayerWithNullDelegateTest uses TestCompositor and NullLayerDelegate as the
-//   LayerDelegate. This is typically the base class you want to use.
-// - LayerWithDelegateTest uses TestCompositor and does not set a LayerDelegate
-//   on the delegates.
+// - LayerWithNullDelegateTest uses NullLayerDelegate as the LayerDelegate. This
+//   is typically the base class you want to use.
+// - LayerWithDelegateTest uses LayerDelegate on the delegates.
 // - LayerWithRealCompositorTest when a real compositor is required for testing.
 //    - Slow because they bring up a window and run the real compositor. This
 //      is typically not what you want.
@@ -146,6 +150,9 @@ class LayerWithRealCompositorTest : public testing::Test {
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
+#if defined(USE_WEBKIT_COMPOSITOR)
+    ui::DisableTestCompositor();
+#endif
     const gfx::Rect host_bounds(10, 10, 500, 500);
     window_.reset(TestCompositorHost::Create(host_bounds));
     window_->Show();
@@ -359,7 +366,12 @@ class LayerWithDelegateTest : public testing::Test, public CompositorDelegate {
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
+#if defined(USE_WEBKIT_COMPOSITOR)
+    ui::SetupTestCompositor();
+    compositor_ = ui::Compositor::Create(this, NULL, gfx::Size(1000, 1000));
+#else
     compositor_ = new TestCompositor(this);
+#endif
   }
 
   virtual void TearDown() OVERRIDE {
@@ -413,7 +425,7 @@ class LayerWithDelegateTest : public testing::Test, public CompositorDelegate {
   bool schedule_draw_invoked_;
 
  private:
-  scoped_refptr<TestCompositor> compositor_;
+  scoped_refptr<ui::Compositor> compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerWithDelegateTest);
 };

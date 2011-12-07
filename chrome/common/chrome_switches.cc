@@ -1287,6 +1287,11 @@ const char kEnablePrintPreview[]            = "enable-print-preview";
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 
+#if defined(USE_AURA)
+// Forces usage of the test compositor. Needed to run ui tests on bots.
+extern const char kTestCompositor[]         = "test-compositor";
+#endif
+
 bool IsPrintPreviewEnabled() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(kDisablePrintPreview))
     return false;
