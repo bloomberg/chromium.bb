@@ -40,7 +40,8 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
     GLSurface* compatible_surface,
     GpuPreference gpu_preference) {
   switch (GetGLImplementation()) {
-    case kGLImplementationDesktopGL: {
+    case kGLImplementationDesktopGL:
+    case kGLImplementationAppleGL: {
       scoped_refptr<GLContext> context;
 #if defined(USE_AURA)
       if (compatible_surface->IsOffscreen())

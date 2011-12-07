@@ -22,6 +22,7 @@ namespace gfx {
 bool GLSurface::InitializeOneOffInternal() {
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
+    case kGLImplementationAppleGL:
       if (!GLSurfaceCGL::InitializeOneOff()) {
         LOG(ERROR) << "GLSurfaceCGL::InitializeOneOff failed.";
         return false;
@@ -41,7 +42,8 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
     return NULL;
 
   switch (GetGLImplementation()) {
-    case kGLImplementationDesktopGL: {
+    case kGLImplementationDesktopGL:
+    case kGLImplementationAppleGL: {
       scoped_refptr<GLSurface> surface(new GLSurfaceNSView(window));
       if (!surface->Initialize())
         return NULL;
@@ -74,7 +76,8 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
 
       return surface;
     }
-    case kGLImplementationDesktopGL: {
+    case kGLImplementationDesktopGL:
+    case kGLImplementationAppleGL: {
       scoped_refptr<GLSurface> surface(new PbufferGLSurfaceCGL(size));
       if (!surface->Initialize())
         return NULL;

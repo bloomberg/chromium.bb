@@ -76,6 +76,7 @@ bool GLContext::LosesAllContextsOnContextLost() {
     case kGLImplementationEGLGLES2:
       return true;
     case kGLImplementationOSMesaGL:
+    case kGLImplementationAppleGL:
       return false;
     case kGLImplementationMockGL:
       return false;

@@ -23,6 +23,7 @@ enum GLImplementation {
   kGLImplementationNone,
   kGLImplementationDesktopGL,
   kGLImplementationOSMesaGL,
+  kGLImplementationAppleGL,
   kGLImplementationEGLGLES2,
   kGLImplementationMockGL
 };

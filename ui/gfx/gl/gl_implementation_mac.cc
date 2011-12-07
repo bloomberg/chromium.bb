@@ -20,6 +20,7 @@ const char kOpenGLFrameworkPath[] =
 
 void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
   impls->push_back(kGLImplementationDesktopGL);
+  impls->push_back(kGLImplementationAppleGL);
   impls->push_back(kGLImplementationOSMesaGL);
 }
 
@@ -74,7 +75,8 @@ bool InitializeGLBindings(GLImplementation implementation) {
       InitializeGLBindingsOSMESA();
       break;
     }
-    case kGLImplementationDesktopGL: {
+    case kGLImplementationDesktopGL:
+    case kGLImplementationAppleGL: {
       base::NativeLibrary library = base::LoadNativeLibrary(
           FilePath(kOpenGLFrameworkPath), NULL);
       if (!library) {
@@ -83,7 +85,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       }
 
       AddGLNativeLibrary(library);
-      SetGLImplementation(kGLImplementationDesktopGL);
+      SetGLImplementation(implementation);
 
       InitializeGLBindingsGL();
       break;
@@ -109,6 +111,7 @@ bool InitializeGLExtensionBindings(GLImplementation implementation,
       InitializeGLExtensionBindingsOSMESA(context);
       break;
     case kGLImplementationDesktopGL:
+    case kGLImplementationAppleGL:
       InitializeGLExtensionBindingsGL(context);
       break;
     case kGLImplementationMockGL:

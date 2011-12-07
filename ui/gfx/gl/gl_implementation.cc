@@ -21,6 +21,9 @@ const struct {
 } kGLImplementationNamePairs[] = {
   { kGLImplementationDesktopName, kGLImplementationDesktopGL },
   { kGLImplementationOSMesaName, kGLImplementationOSMesaGL },
+#if defined(OS_MACOSX)
+  { kGLImplementationAppleName, kGLImplementationAppleGL },
+#endif
   { kGLImplementationEGLName, kGLImplementationEGLGLES2 },
   { kGLImplementationMockName, kGLImplementationMockGL }
 };
@@ -46,6 +49,7 @@ bool ExportsCoreFunctionsFromGetProcAddress(GLImplementation implementation) {
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
     case kGLImplementationOSMesaGL:
+    case kGLImplementationAppleGL:
     case kGLImplementationMockGL:
       return true;
     case kGLImplementationEGLGLES2:
@@ -86,7 +90,8 @@ GLImplementation GetGLImplementation() {
 
 bool HasDesktopGLFeatures() {
   return kGLImplementationDesktopGL == g_gl_implementation ||
-         kGLImplementationOSMesaGL == g_gl_implementation;
+         kGLImplementationOSMesaGL == g_gl_implementation ||
+         kGLImplementationAppleGL == g_gl_implementation;
 }
 
 void AddGLNativeLibrary(base::NativeLibrary library) {

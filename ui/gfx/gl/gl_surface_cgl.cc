@@ -4,11 +4,14 @@
 
 #include "ui/gfx/gl/gl_surface_cgl.h"
 
+#include <OpenGL/CGLRenderers.h>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_context.h"
+#include "ui/gfx/gl/gl_implementation.h"
 
 namespace gfx {
 
@@ -35,6 +38,11 @@ bool GLSurfaceCGL::InitializeOneOff() {
     // Avoid switching to the discrete GPU just for this pixel
     // format selection.
     attribs.push_back(kCGLPFAAllowOfflineRenderers);
+  }
+  if (GetGLImplementation() == kGLImplementationAppleGL) {
+    attribs.push_back(kCGLPFARendererID);
+    attribs.push_back(static_cast<CGLPixelFormatAttribute>(
+      kCGLRendererGenericFloatID));
   }
   attribs.push_back(static_cast<CGLPixelFormatAttribute>(0));
 

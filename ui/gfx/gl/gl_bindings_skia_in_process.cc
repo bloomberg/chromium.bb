@@ -528,6 +528,7 @@ GrGLInterface* CreateInProcessSkiaGLBinding() {
       NOTREACHED();
       return NULL;
     case gfx::kGLImplementationDesktopGL:
+    case gfx::kGLImplementationAppleGL:
       binding = kDesktop_GrGLBinding;
       break;
     case gfx::kGLImplementationOSMesaGL:
