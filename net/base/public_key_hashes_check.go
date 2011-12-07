@@ -53,6 +53,12 @@ func matchNames(name, v string) error {
 	if strings.HasSuffix(firstWord, ",") {
 		firstWord = firstWord[:len(firstWord)-1]
 	}
+	if pos := strings.Index(firstWord, "."); pos != -1 {
+		firstWord = firstWord[:pos]
+	}
+	if pos := strings.Index(firstWord, "-"); pos != -1 {
+		firstWord = firstWord[:pos]
+	}
 	if !strings.HasPrefix(v, firstWord) {
 		return errors.New("The first word of the certificate name isn't a prefix of the variable name")
 	}
@@ -135,7 +141,7 @@ func main() {
 			trimmed = trimmed[6 : len(trimmed)-2]
 			h := sha1.New()
 			h.Write(x509Cert.RawSubjectPublicKeyInfo)
-			shouldBe := base64.StdEncoding.EncodeToString(h.Sum())
+			shouldBe := base64.StdEncoding.EncodeToString(h.Sum(nil))
 			if shouldBe != string(trimmed) {
 				fmt.Fprintf(os.Stderr, "Line %d: hash should be %s, but found %s\n", lineNo, shouldBe, trimmed)
 				return
