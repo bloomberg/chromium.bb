@@ -31,19 +31,8 @@ size_t GetConstrainedWindowCount(TabContentsWrapper* tab) {
 
 typedef BrowserWithTestWindowTest PrintPreviewUIUnitTest;
 
-// Test crashes on Aura due to initiator tab's native view having no parent.
-// http://crbug.com/104284
-#if defined(USE_AURA)
-#define MAYBE_PrintPreviewDraftPages DISABLED_PrintPreviewDraftPages
-#define MAYBE_PrintPreviewData DISABLED_PrintPreviewData
-#define MAYBE_GetCurrentPrintPreviewStatus DISABLED_GetCurrentPrintPreviewStatus
-#else
-#define MAYBE_PrintPreviewData PrintPreviewData
-#define MAYBE_PrintPreviewDraftPages PrintPreviewDraftPages
-#define MAYBE_GetCurrentPrintPreviewStatus GetCurrentPrintPreviewStatus
-#endif
 // Create/Get a preview tab for initiator tab.
-TEST_F(PrintPreviewUIUnitTest, MAYBE_PrintPreviewData) {
+TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePrintPreview);
   ASSERT_TRUE(browser());
   BrowserList::SetLastActive(browser());
@@ -104,7 +93,7 @@ TEST_F(PrintPreviewUIUnitTest, MAYBE_PrintPreviewData) {
 }
 
 // Set and get the individual draft pages.
-TEST_F(PrintPreviewUIUnitTest, MAYBE_PrintPreviewDraftPages) {
+TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
 #if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePrintPreview);
 #endif
@@ -173,7 +162,7 @@ TEST_F(PrintPreviewUIUnitTest, MAYBE_PrintPreviewDraftPages) {
 }
 
 // Test the browser-side print preview cancellation functionality.
-TEST_F(PrintPreviewUIUnitTest, MAYBE_GetCurrentPrintPreviewStatus) {
+TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
 #if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePrintPreview);
 #endif

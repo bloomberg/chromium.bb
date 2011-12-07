@@ -18,25 +18,6 @@
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 
-// Test crashes on Aura due to initiator tab's native view having no parent.
-// http://crbug.com/104284
-#if defined(USE_AURA)
-#define MAYBE_StickyMarginsCustom DISABLED_StickyMarginsCustom
-#define MAYBE_StickyMarginsDefault DISABLED_StickyMarginsDefault
-#define MAYBE_StickyMarginsCustomThenDefault \
-    DISABLED_StickyMarginsCustomThenDefault
-#define MAYBE_GetLastUsedMarginSettingsCustom \
-    DISABLED_GetLastUsedMarginSettingsCustom
-#define MAYBE_GetLastUsedMarginSettingsDefault \
-    DISABLED_GetLastUsedMarginSettingsDefault
-#else
-#define MAYBE_StickyMarginsCustom StickyMarginsCustom
-#define MAYBE_StickyMarginsDefault StickyMarginsDefault
-#define MAYBE_StickyMarginsCustomThenDefault StickyMarginsCustomThenDefault
-#define MAYBE_GetLastUsedMarginSettingsCustom GetLastUsedMarginSettingsCustom
-#define MAYBE_GetLastUsedMarginSettingsDefault GetLastUsedMarginSettingsDefault
-#endif
-
 namespace {
 
 DictionaryValue* GetCustomMarginsDictionary(
@@ -170,7 +151,7 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
 
 // Tests that margin settings are saved correctly when printing with custom
 // margins selected.
-TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsCustom) {
+TEST_F(PrintPreviewHandlerTest, StickyMarginsCustom) {
   const double kMarginTop = 25.5;
   const double kMarginRight = 26.5;
   const double kMarginBottom = 27.5;
@@ -189,7 +170,7 @@ TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsCustom) {
 
 // Tests that margin settings are saved correctly when printing with default
 // margins selected.
-TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsDefault) {
+TEST_F(PrintPreviewHandlerTest, StickyMarginsDefault) {
   RequestPrintWithDefaultMargins();
   EXPECT_EQ(1, browser()->tab_count());
 
@@ -202,7 +183,7 @@ TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsDefault) {
 
 // Tests that margin settings are saved correctly when printing with custom
 // margins selected and then again with default margins selected.
-TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsCustomThenDefault) {
+TEST_F(PrintPreviewHandlerTest, StickyMarginsCustomThenDefault) {
   const double kMarginTop = 125.5;
   const double kMarginRight = 126.5;
   const double kMarginBottom = 127.5;
@@ -229,7 +210,7 @@ TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsCustomThenDefault) {
 
 // Tests that margin settings are retrieved correctly after printing with custom
 // margins.
-TEST_F(PrintPreviewHandlerTest, MAYBE_GetLastUsedMarginSettingsCustom) {
+TEST_F(PrintPreviewHandlerTest, GetLastUsedMarginSettingsCustom) {
   const double kMarginTop = 125.5;
   const double kMarginRight = 126.5;
   const double kMarginBottom = 127.5;
@@ -259,7 +240,7 @@ TEST_F(PrintPreviewHandlerTest, MAYBE_GetLastUsedMarginSettingsCustom) {
 
 // Tests that margin settings are retrieved correctly after printing with
 // default margins.
-TEST_F(PrintPreviewHandlerTest, MAYBE_GetLastUsedMarginSettingsDefault) {
+TEST_F(PrintPreviewHandlerTest, GetLastUsedMarginSettingsDefault) {
   RequestPrintWithDefaultMargins();
   base::DictionaryValue initial_settings;
   preview_ui_->handler_->GetLastUsedMarginSettings(&initial_settings);

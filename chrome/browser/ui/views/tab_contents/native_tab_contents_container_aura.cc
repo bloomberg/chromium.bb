@@ -113,7 +113,7 @@ void NativeTabContentsContainerAura::RequestFocus() {
   // that should also have focus, RequestFocus() is invoked one the
   // TabContentsContainer.  In order to make sure OnFocus() is invoked we need
   // to clear the focus before hands.
-  {
+  if (GetFocusManager()) {
     // Disable notifications.  Clear focus will assign the focus to the main
     // browser window.  Because this change of focus was not user requested,
     // don't send it to listeners.
