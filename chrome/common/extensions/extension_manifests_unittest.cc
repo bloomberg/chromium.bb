@@ -380,7 +380,6 @@ TEST_F(ExtensionManifestTest, AppWebUrls) {
 
 TEST_F(ExtensionManifestTest, AppLaunchContainer) {
   scoped_refptr<Extension> extension;
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePlatformApps);
 
   extension = LoadAndExpectSuccess("launch_tab.json");
   EXPECT_EQ(extension_misc::LAUNCH_TAB, extension->launch_container());
@@ -401,8 +400,6 @@ TEST_F(ExtensionManifestTest, AppLaunchContainer) {
                      errors::kInvalidLaunchContainer);
   LoadAndExpectError("launch_container_invalid_type.json",
                      errors::kInvalidLaunchContainer);
-  LoadAndExpectError("launch_container_invalid_type_for_platform.json",
-                     errors::kInvalidLaunchContainerForPlatform);
   LoadAndExpectError("launch_container_invalid_value.json",
                      errors::kInvalidLaunchContainer);
   LoadAndExpectError("launch_container_without_launch_url.json",
@@ -415,6 +412,13 @@ TEST_F(ExtensionManifestTest, AppLaunchContainer) {
                      errors::kInvalidLaunchHeightContainer);
   LoadAndExpectError("launch_height_negative.json",
                      errors::kInvalidLaunchHeight);
+}
+
+TEST_F(ExtensionManifestTest, PlatformAppLaunchContainer) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePlatformApps);
+
+  LoadAndExpectError("launch_container_invalid_type_for_platform.json",
+                     errors::kInvalidLaunchContainerForPlatform);
 }
 
 TEST_F(ExtensionManifestTest, AppLaunchURL) {
