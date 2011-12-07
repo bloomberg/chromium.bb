@@ -1742,27 +1742,6 @@
    fun:_ZN5media51FFmpegVideoDecodeEngineTest_DecodeFrame_Normal_TestD0Ev
 }
 {
-   bug_95718
-   Memcheck:Leak
-   fun:calloc
-   ...
-   fun:error_get_my_stack
-   fun:nss_ClearErrorStack
-   fun:NSSArena_Destroy
-   fun:nssList_Destroy
-   fun:remove_subject_entry
-   ...
-   fun:nssCertificate_Destroy
-   fun:NSSCertificate_Destroy
-   fun:CERT_DestroyCertificate
-   ...
-   fun:SSL_ClearSessionCache
-   ...
-   fun:_ZN3net19NSSSSLInitSingletonD1Ev
-   ...
-   fun:_ZN4base12LazyInstanceIN3net19NSSSSLInitSingletonENS_25DefaultLazyInstanceTraitsIS2_EEE6OnExitEPv
-}
-{
    bug_95718_b
    Memcheck:Leak
    fun:calloc
