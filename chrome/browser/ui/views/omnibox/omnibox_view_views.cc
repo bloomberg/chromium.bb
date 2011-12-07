@@ -12,6 +12,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -47,6 +48,7 @@ class AutocompleteTextfield : public views::Textfield {
         omnibox_view_(omnibox_view) {
     DCHECK(omnibox_view_);
     RemoveBorder();
+    set_id(VIEW_ID_OMNIBOX);
   }
 
   // views::View implementation

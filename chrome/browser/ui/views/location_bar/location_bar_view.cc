@@ -342,7 +342,10 @@ void LocationBarView::InvalidatePageActions() {
 }
 
 void LocationBarView::OnFocus() {
-  // Focus the view widget first which implements accessibility for Chrome OS.
+  // Focus the view widget first which implements accessibility for
+  // Chrome OS.  It is noop on Win. This should be removed once
+  // Chrome OS migrates to aura, which uses Views' textfield that receives
+  // focus. See crbug.com/106428.
   GetWidget()->NotifyAccessibilityEvent(
       this, ui::AccessibilityTypes::EVENT_FOCUS, false);
 

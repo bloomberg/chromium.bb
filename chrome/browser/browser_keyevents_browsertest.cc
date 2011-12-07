@@ -614,8 +614,11 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
   // TODO(isherman): This is an experimental change to help diagnose
   // http://crbug.com/55713
   ui_test_utils::RunAllPendingInMessageLoop();
-
+#if defined(USE_AURA)
+  EXPECT_TRUE(IsViewFocused(VIEW_ID_OMNIBOX));
+#else
   EXPECT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
+#endif
   // No element should be focused, as Alt+D was handled by the browser.
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L""));
 

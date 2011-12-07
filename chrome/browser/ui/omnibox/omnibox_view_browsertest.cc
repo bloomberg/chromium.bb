@@ -149,7 +149,8 @@ const int kCtrlOrCmdMask = ui::EF_CONTROL_DOWN;
 class OmniboxViewTest : public InProcessBrowserTest,
                         public content::NotificationObserver {
  protected:
-  OmniboxViewTest() {
+  OmniboxViewTest()
+      : location_bar_focus_view_id_(VIEW_ID_LOCATION_BAR) {
     set_show_window(true);
     // TODO(mrossetti): HQP does not yet support DeleteMatch.
     // http://crbug.com/82335
@@ -160,12 +161,13 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
     ASSERT_NO_FATAL_FAILURE(SetupComponents());
     browser()->FocusLocationBar();
+    // Use Textfield's view id on pure views. See crbug.com/71144.
 #if defined(TOOLKIT_VIEWS)
     if (views::Widget::IsPureViews())
-      return;
+      location_bar_focus_view_id_ = VIEW_ID_OMNIBOX;
 #endif
     ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(),
-                                             VIEW_ID_LOCATION_BAR));
+                                             location_bar_focus_view_id_));
   }
 
   static void GetOmniboxViewForBrowser(
@@ -1038,7 +1040,8 @@ class OmniboxViewTest : public InProcessBrowserTest,
     EXPECT_EQ(omnibox_view->GetText().size(), end);
 
     // The location bar should still have focus.
-    ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_LOCATION_BAR));
+    ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                             location_bar_focus_view_id_));
 
     // Select all text.
     omnibox_view->SelectAll(true);
@@ -1055,12 +1058,14 @@ class OmniboxViewTest : public InProcessBrowserTest,
     EXPECT_EQ(omnibox_view->GetText().size(), end);
 
     // The location bar should still have focus.
-    ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_LOCATION_BAR));
+    ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                             location_bar_focus_view_id_));
 
     // Pressing tab when cursor is at the end should change focus.
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
 
-    ASSERT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_LOCATION_BAR));
+    ASSERT_FALSE(ui_test_utils::IsViewFocused(browser(),
+                                              location_bar_focus_view_id_));
   }
 
   void PersistKeywordModeOnTabSwitch() {
@@ -1113,6 +1118,8 @@ class OmniboxViewTest : public InProcessBrowserTest,
     EXPECT_EQ(old_text, omnibox_view->GetText());
   }
 
+ private:
+  ViewID location_bar_focus_view_id_;
 };
 
 // Test if ctrl-* accelerators are workable in omnibox.
@@ -1329,7 +1336,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, FLAKY_PasteReplacingAll) {
 #endif
 
 // TODO(beng): enable on windows once it actually works.
-#if defined(TOOLKIT_VIEWS) && !defined(OS_WIN)
+// No need to run extra pure views tests on aura.
+#if defined(TOOLKIT_VIEWS) && !defined(OS_WIN) && !defined(USE_AURA)
 class OmniboxViewViewsTest : public OmniboxViewTest {
  public:
   OmniboxViewViewsTest() {
@@ -1387,10 +1395,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, DeleteItem) {
   DeleteItemTest();
 }
 
-// TODO(suzhe): This test is broken because of broken ViewID support when
-// enabling OmniboxViewViews.
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
-                       DISABLED_TabMoveCursorToEnd) {
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, TabMoveCursorToEnd) {
   TabMoveCursorToEndTest();
 }
 
