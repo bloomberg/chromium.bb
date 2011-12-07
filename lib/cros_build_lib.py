@@ -178,7 +178,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   if isinstance(cmd, basestring):
     if not shell:
       raise Exception('Cannot run a string command without a shell')
-    cmd = ['/bin/sh', '-c', cmd]
+    cmd = ['/bin/bash', '-c', cmd]
     shell = False
   elif shell:
     raise Exception('Cannot run an array command with a shell')

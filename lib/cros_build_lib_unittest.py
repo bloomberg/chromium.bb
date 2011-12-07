@@ -154,7 +154,7 @@ class TestRunCommand(unittest.TestCase):
     if ignore_sigint:
       signal.signal(signal.SIGINT, signal.SIG_IGN).AndReturn(self._old_sigint)
 
-    subprocess.Popen(['/bin/sh', '-c', cmd ], cwd=None, env=None,
+    subprocess.Popen(['/bin/bash', '-c', cmd ], cwd=None, env=None,
                      stdin=None, stdout=None, stderr=None,
                      shell=False, close_fds=True).AndReturn(self.proc_mock)
     self.proc_mock.communicate(None).AndReturn((self.output, self.error))
