@@ -886,6 +886,12 @@ Ribbon.Item.prototype.save = function(
 // TODO: Localize?
 Ribbon.Item.COPY_SIGNATURE = 'Copy of ';
 
+Ribbon.Item.REGEXP_COPY_N =
+    new RegExp('^' + Ribbon.Item.COPY_SIGNATURE + '(.+) \\((\\d+)\\)$');
+
+Ribbon.Item.REGEXP_COPY_0 =
+    new RegExp('^' + Ribbon.Item.COPY_SIGNATURE + '(.+)$');
+
 Ribbon.Item.prototype.createCopyName_ = function () {
   // When saving a modified image we never overwrite the original file (the one
   // that existed prior to opening the Gallery. Instead we save to a file named
@@ -905,25 +911,25 @@ Ribbon.Item.prototype.createCopyName_ = function () {
     name = name.substr(0, index);
   }
 
-  if (name.indexOf(Ribbon.Item.COPY_SIGNATURE) == 0) {
-    // TODO(dgozman): add a number to form 'Copy (X) of File.jpg'.
-    name = name.substr(Ribbon.Item.COPY_SIGNATURE.length);
+  // If the file name contains the copy signature add/advance the sequential
+  // number.
+  // TODO(kaznacheev): Check if the name is already taken.
+  var match = Ribbon.Item.REGEXP_COPY_N.exec(name);
+  if (match && match[1] && match[2]) {
+    var copyNumber = parseInt(match[2], 10) + 1;
+    name = match[1] + ' (' + copyNumber + ')';
+  } else {
+    match = Ribbon.Item.REGEXP_COPY_0.exec(name);
+    if (match && match[1]) {
+      name = match[1] + ' (1)';
+    }
   }
 
   var mimeType = this.metadata_.mimeType.toLowerCase();
   if (mimeType != 'image/jpeg') {
     // Chrome can natively encode only two formats: JPEG and PNG.
     // All non-JPEG images are saved in PNG, hence forcing the file extension.
-    if (mimeType == 'image/png') {
-      ext = '.png';
-    } else {
-      // All non-JPEG images get 'image/png' mimeType (see
-      // ImageEncoder.MetadataEncoder constructor).
-      // This code can be reached only if someone has added a metadata parser
-      // for a format other than JPEG or PNG. The message below is to remind
-      // that one must also come up with the way to encode the image data.
-      console.error('Image encoding for ' + mimeType + ' is not supported');
-    }
+    ext = '.png';
   }
 
   return Ribbon.Item.COPY_SIGNATURE + name + ext;
