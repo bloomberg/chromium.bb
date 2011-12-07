@@ -35,6 +35,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/scoped_temp_dir.h"
+#include "base/string_piece.h"
 #if defined(OS_MACOSX)
 #include "base/lazy_instance.h"
 #endif
@@ -56,10 +57,6 @@ class TestNotificationPresenter;
 class TestShellDevToolsAgent;
 class TestShellDevToolsClient;
 class TestWebViewDelegate;
-
-namespace base {
-class StringPiece;
-}
 
 namespace WebKit {
 class WebDeviceOrientationClientMock;

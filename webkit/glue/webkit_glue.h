@@ -24,10 +24,6 @@
 class GURL;
 class SkBitmap;
 
-namespace base {
-class StringPiece;
-}
-
 namespace skia {
 class PlatformCanvas;
 }
