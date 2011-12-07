@@ -17,7 +17,6 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 #include "net/base/host_port_pair.h"
-#include "net/http/http_pipelined_host_capability.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_server_properties_impl.h"
 
@@ -123,17 +122,6 @@ class HttpServerPropertiesManager
   // Returns all SpdySettings mappings.
   virtual const net::SpdySettingsMap& spdy_settings_map() const OVERRIDE;
 
-  virtual net::HttpPipelinedHostCapability GetPipelineCapability(
-      const net::HostPortPair& origin) OVERRIDE;
-
-  virtual void SetPipelineCapability(
-      const net::HostPortPair& origin,
-      net::HttpPipelinedHostCapability capability) OVERRIDE;
-
-  virtual void ClearPipelineCapabilities() OVERRIDE;
-
-  virtual net::PipelineCapabilityMap GetPipelineCapabilityMap() const OVERRIDE;
-
  protected:
   // --------------------
   // SPDY related methods
@@ -157,8 +145,7 @@ class HttpServerPropertiesManager
   void UpdateCacheFromPrefsOnIO(
       std::vector<std::string>* spdy_servers,
       net::SpdySettingsMap* spdy_settings_map,
-      net::AlternateProtocolMap* alternate_protocol_map,
-      net::PipelineCapabilityMap* pipeline_capability_map);
+      net::AlternateProtocolMap* alternate_protocol_map);
 
   // These are used to delay updating the preferences when cached data in
   // |http_server_properties_impl_| is changing, and execute only one update per
@@ -180,8 +167,7 @@ class HttpServerPropertiesManager
   void UpdatePrefsOnUI(
       base::ListValue* spdy_server_list,
       net::SpdySettingsMap* spdy_settings_map,
-      net::AlternateProtocolMap* alternate_protocol_map,
-      net::PipelineCapabilityMap* pipeline_capability_map);
+      net::AlternateProtocolMap* alternate_protocol_map);
 
  private:
   // Callback for preference changes.
