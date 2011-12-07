@@ -123,6 +123,8 @@ int main(int argc, char** argv) {
 
   aura::RootWindow::GetInstance()->Run();
 
+  aura_shell::Shell::DeleteInstance();
+
   aura::RootWindow::DeleteInstance();
 
   ui::CompositorTestSupport::Terminate();
