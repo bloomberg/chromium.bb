@@ -15,8 +15,7 @@ ResolveConflictsCommand::ResolveConflictsCommand() {}
 ResolveConflictsCommand::~ResolveConflictsCommand() {}
 
 bool ResolveConflictsCommand::HasCustomGroupsToChange() const {
-  // TODO(akalin): Set to true.
-  return false;
+  return true;
 }
 
 std::set<ModelSafeGroup> ResolveConflictsCommand::GetGroupsToChange(
