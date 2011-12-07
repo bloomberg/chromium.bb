@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/background/background_application_list_model.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "content/public/browser/notification_observer.h"
@@ -43,6 +44,7 @@ class StatusTray;
 class BackgroundModeManager
     : public content::NotificationObserver,
       public BackgroundApplicationListModel::Observer,
+      public ProfileInfoCacheObserver,
       public ProfileKeyedService,
       public ui::SimpleMenuModel::Delegate {
  public:
@@ -62,6 +64,9 @@ class BackgroundModeManager
   static void LaunchBackgroundApplication(Profile* profile,
                                           const Extension* extension);
 
+  // For testing purposes.
+  int NumberOfBackgroundModeData();
+
  private:
   friend class TestBackgroundModeManager;
   friend class BackgroundModeManagerTest;
@@ -77,13 +82,14 @@ class BackgroundModeManager
                            MultiProfile);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            ProfileInfoCacheStorage);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
+                           ProfileInfoCacheObserver);
 
   class BackgroundModeData : public ui::SimpleMenuModel::Delegate {
    public:
     explicit BackgroundModeData(
         int command_id,
-        Profile* profile,
-        BackgroundModeManager* background_mode_manager);
+        Profile* profile);
     virtual ~BackgroundModeData();
 
     // The cached list of BackgroundApplications.
@@ -112,6 +118,14 @@ class BackgroundModeManager
     void BuildProfileMenu(ui::SimpleMenuModel* menu,
                           ui::SimpleMenuModel* containing_menu);
 
+    // Set the name associated with this background mode data for displaying in
+    // the status tray.
+    void SetName(const string16& new_profile_name);
+
+    // The name associated with this background mode data. This should match
+    // the name in the ProfileInfoCache for this profile.
+    string16 name();
+
     // Used for sorting BackgroundModeData*s.
     static bool BackgroundModeDataCompare(const BackgroundModeData* bmd1,
                                           const BackgroundModeData* bmd2);
@@ -125,9 +139,6 @@ class BackgroundModeManager
 
     // The profile associated with this background app data.
     Profile* profile_;
-
-    // The background mode manager which owns this BackgroundModeData.
-    BackgroundModeManager* background_mode_manager_;
   };
 
   // Ideally we would want our BackgroundModeData to be scoped_ptrs,
@@ -139,6 +150,8 @@ class BackgroundModeManager
   // which is similar to a shared_ptr.
   typedef linked_ptr<BackgroundModeData> BackgroundModeInfo;
 
+  typedef std::map<Profile*, BackgroundModeInfo> BackgroundModeInfoMap;
+
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -148,6 +161,19 @@ class BackgroundModeManager
   virtual void OnApplicationDataChanged(const Extension* extension,
                                         Profile* profile) OVERRIDE;
   virtual void OnApplicationListChanged(Profile* profile) OVERRIDE;
+
+  // Overrides from ProfileInfoCacheObserver
+  virtual void OnProfileAdded(const string16& profile_name,
+                              const string16& profile_base_dir,
+                              const FilePath& profile_path,
+                              const gfx::Image* avatar_image) OVERRIDE;
+  virtual void OnProfileRemoved(const string16& profile_name) OVERRIDE;
+  virtual void OnProfileNameChanged(const string16& old_profile_name,
+                                    const string16& new_profile_name) OVERRIDE;
+  virtual void OnProfileAvatarChanged(const string16& profile_name,
+                                      const string16& profile_base_dir,
+                                      const FilePath& profile_path,
+                                      const gfx::Image* avatar_image) OVERRIDE;
 
   // Overrides from SimpleMenuModel::Delegate implementation.
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
@@ -211,6 +237,12 @@ class BackgroundModeManager
   BackgroundModeManager::BackgroundModeData* GetBackgroundModeData(
       Profile* const profile) const;
 
+  // Returns the iterator associated with a particular profile name.
+  // This should not be used to iterate over the background mode data. It is
+  // used to efficiently delete an item from the background mode data map.
+  BackgroundModeInfoMap::iterator GetBackgroundModeIterator(
+      const string16& profile_name);
+
   // Returns true if the "Let chrome run in the background" pref is checked.
   // (virtual to allow overriding in tests).
   virtual bool IsBackgroundModePrefEnabled() const;
@@ -237,7 +269,7 @@ class BackgroundModeManager
   PrefChangeRegistrar pref_registrar_;
 
   // The profile-keyed data for this background mode manager. Keyed on profile.
-  std::map<Profile*, BackgroundModeInfo> background_mode_data_;
+  BackgroundModeInfoMap background_mode_data_;
 
   // Reference to our status tray. If null, the platform doesn't support status
   // icons.

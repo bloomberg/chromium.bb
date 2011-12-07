@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -12,6 +13,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_unittest_util.h"
 
 class BackgroundModeManagerTest : public testing::Test {
  public:
@@ -247,4 +250,44 @@ TEST_F(BackgroundModeManagerTest, ProfileInfoCacheStorage) {
   // Even though neither has background status on, there should still be two
   // profiles in the cache.
   EXPECT_EQ(2u, cache->GetNumberOfProfiles());
+}
+TEST_F(BackgroundModeManagerTest, ProfileInfoCacheObserver) {
+  TestingProfile* profile1 = profile_manager_.CreateTestingProfile("p1");
+  TestBackgroundModeManager manager(
+      command_line_.get(), profile_manager_.profile_info_cache());
+  manager.RegisterProfile(profile1);
+  EXPECT_FALSE(BrowserList::WillKeepAlive());
+
+  ProfileInfoCache* cache = profile_manager_.profile_info_cache();
+
+  // Install app, should show status tray icon.
+  manager.OnBackgroundAppInstalled(NULL);
+  manager.SetBackgroundAppCount(1);
+  manager.SetBackgroundAppCountForProfile(1);
+  manager.OnApplicationListChanged(profile1);
+
+  string16 p1name = cache->GetNameOfProfileAtIndex(0);
+  manager.OnProfileNameChanged(p1name, UTF8ToUTF16("p1new"));
+
+  EXPECT_EQ(UTF8ToUTF16("p1new"),
+            manager.GetBackgroundModeData(profile1)->name());
+
+  TestingProfile* profile2 = profile_manager_.CreateTestingProfile("p2");
+  manager.RegisterProfile(profile2);
+  EXPECT_EQ(2, manager.NumberOfBackgroundModeData());
+
+  gfx::Image gaia_image(gfx::test::CreateImage());
+  manager.OnProfileAdded(UTF8ToUTF16("p2new"),
+                         profile2->GetPath().BaseName().LossyDisplayName(),
+                         profile2->GetPath(),
+                         &gaia_image);
+  EXPECT_EQ(UTF8ToUTF16("p2new"),
+            manager.GetBackgroundModeData(profile2)->name());
+
+  manager.OnProfileRemoved(UTF8ToUTF16("p2new"));
+  EXPECT_EQ(1, manager.NumberOfBackgroundModeData());
+
+  // Check that the background mode data we think is in the map actually is.
+  EXPECT_EQ(UTF8ToUTF16("p1new"),
+            manager.GetBackgroundModeData(profile1)->name());
 }
