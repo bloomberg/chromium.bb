@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/ppb_image_data.h"
-#include "ppapi/shared_impl/ppb_image_data_shared.h"
+#include "ppapi/shared_impl/image_data_impl.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -24,7 +24,7 @@ namespace webkit {
 namespace ppapi {
 
 class PPB_ImageData_Impl : public ::ppapi::Resource,
-                           public ::ppapi::PPB_ImageData_Shared,
+                           public ::ppapi::ImageDataImpl,
                            public ::ppapi::thunk::PPB_ImageData_API {
  public:
   // If you call this constructor, you must also call Init before use. Normally

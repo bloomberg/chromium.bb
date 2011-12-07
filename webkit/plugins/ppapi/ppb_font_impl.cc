@@ -5,8 +5,8 @@
 #include "webkit/plugins/ppapi/ppb_font_impl.h"
 
 #include "ppapi/c/dev/ppb_font_dev.h"
+#include "ppapi/shared_impl/font_impl.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
-#include "ppapi/shared_impl/ppb_font_shared.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
@@ -64,7 +64,7 @@ PPB_Font_Impl::~PPB_Font_Impl() {
 // static
 PP_Resource PPB_Font_Impl::Create(PP_Instance instance,
                                   const PP_FontDescription_Dev& description) {
-  if (!::ppapi::PPB_Font_Shared::IsPPFontDescriptionValid(description))
+  if (!::ppapi::FontImpl::IsPPFontDescriptionValid(description))
     return 0;
   return (new PPB_Font_Impl(instance, description))->GetReference();
 }

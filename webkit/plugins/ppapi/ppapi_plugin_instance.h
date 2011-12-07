@@ -26,7 +26,7 @@
 #include "ppapi/c/ppp_graphics_3d.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/shared_impl/function_group_base.h"
-#include "ppapi/shared_impl/ppb_instance_shared.h"
+#include "ppapi/shared_impl/instance_impl.h"
 #include "ppapi/shared_impl/ppp_instance_combined.h"
 #include "ppapi/thunk/ppb_instance_api.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -86,7 +86,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
     public base::RefCounted<PluginInstance>,
     public ::ppapi::FunctionGroupBase,
     NON_EXPORTED_BASE(public ::ppapi::thunk::PPB_Instance_FunctionAPI),
-    public ::ppapi::PPB_Instance_Shared {
+    public ::ppapi::InstanceImpl {
  public:
   // Create and return a PluginInstance object which supports the
   // PPP_Instance_1_0 interface.

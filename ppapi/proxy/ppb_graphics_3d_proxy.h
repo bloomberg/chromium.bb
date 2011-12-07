@@ -14,7 +14,7 @@
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
-#include "ppapi/shared_impl/ppb_graphics_3d_shared.h"
+#include "ppapi/shared_impl/graphics_3d_impl.h"
 #include "ppapi/shared_impl/resource.h"
 
 namespace ppapi {
@@ -23,7 +23,7 @@ class HostResource;
 
 namespace proxy {
 
-class Graphics3D : public Resource, public PPB_Graphics3D_Shared {
+class Graphics3D : public Resource, public Graphics3DImpl {
  public:
   explicit Graphics3D(const HostResource& resource);
   virtual ~Graphics3D();

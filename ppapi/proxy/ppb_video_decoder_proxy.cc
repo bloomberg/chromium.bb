@@ -23,7 +23,7 @@ using ppapi::thunk::PPB_VideoDecoder_API;
 namespace ppapi {
 namespace proxy {
 
-class VideoDecoder : public Resource, public PPB_VideoDecoder_Shared {
+class VideoDecoder : public Resource, public VideoDecoderImpl {
  public:
   // You must call Init() before using this class.
   explicit VideoDecoder(const HostResource& resource);
@@ -132,7 +132,7 @@ void VideoDecoder::Destroy() {
   FlushCommandBuffer();
   GetDispatcher()->Send(new PpapiHostMsg_PPBVideoDecoder_Destroy(
       API_ID_PPB_VIDEO_DECODER_DEV, host_resource()));
-  PPB_VideoDecoder_Shared::Destroy();
+  VideoDecoderImpl::Destroy();
 }
 
 PluginDispatcher* VideoDecoder::GetDispatcher() const {

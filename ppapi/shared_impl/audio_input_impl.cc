@@ -2,60 +2,60 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/shared_impl/ppb_audio_shared.h"
+#include "ppapi/shared_impl/audio_input_impl.h"
 
 #include "base/logging.h"
 
 namespace ppapi {
 
-PPB_Audio_Shared::PPB_Audio_Shared()
-    : playing_(false),
+AudioInputImpl::AudioInputImpl()
+    : capturing_(false),
       shared_memory_size_(0),
       callback_(NULL),
       user_data_(NULL) {
 }
 
-PPB_Audio_Shared::~PPB_Audio_Shared() {
+AudioInputImpl::~AudioInputImpl() {
   // Closing the socket causes the thread to exit - wait for it.
   if (socket_.get())
     socket_->Close();
-  if (audio_thread_.get()) {
-    audio_thread_->Join();
-    audio_thread_.reset();
+  if (audio_input_thread_.get()) {
+    audio_input_thread_->Join();
+    audio_input_thread_.reset();
   }
 }
 
-void PPB_Audio_Shared::SetCallback(PPB_Audio_Callback callback,
-                                   void* user_data) {
+void AudioInputImpl::SetCallback(PPB_AudioInput_Callback callback,
+                                 void* user_data) {
   callback_ = callback;
   user_data_ = user_data;
 }
 
-void PPB_Audio_Shared::SetStartPlaybackState() {
-  DCHECK(!playing_);
-  DCHECK(!audio_thread_.get());
+void AudioInputImpl::SetStartCaptureState() {
+  DCHECK(!capturing_);
+  DCHECK(!audio_input_thread_.get());
 
   // If the socket doesn't exist, that means that the plugin has started before
   // the browser has had a chance to create all the shared memory info and
   // notify us. This is a common case. In this case, we just set the playing_
-  // flag and the playback will automatically start when that data is available
+  // flag and the capture will automatically start when that data is available
   // in SetStreamInfo.
-  if (callback_ && socket_.get())
+  if (socket_.get())
     StartThread();
-  playing_ = true;
+  capturing_ = true;
 }
 
-void PPB_Audio_Shared::SetStopPlaybackState() {
-  DCHECK(playing_);
+void AudioInputImpl::SetStopCaptureState() {
+  DCHECK(capturing_);
 
-  if (audio_thread_.get()) {
-    audio_thread_->Join();
-    audio_thread_.reset();
+  if (audio_input_thread_.get()) {
+    audio_input_thread_->Join();
+    audio_input_thread_.reset();
   }
-  playing_ = false;
+  capturing_ = false;
 }
 
-void PPB_Audio_Shared::SetStreamInfo(
+void AudioInputImpl::SetStreamInfo(
     base::SharedMemoryHandle shared_memory_handle,
     size_t shared_memory_size,
     base::SyncSocket::Handle socket_handle) {
@@ -66,27 +66,27 @@ void PPB_Audio_Shared::SetStreamInfo(
   if (callback_) {
     shared_memory_->Map(shared_memory_size_);
 
-    // In common case StartPlayback() was called before StreamCreated().
-    if (playing_)
+    // In common case StartCapture() was called before StreamCreated().
+    if (capturing_)
       StartThread();
   }
 }
 
-void PPB_Audio_Shared::StartThread() {
+void AudioInputImpl::StartThread() {
   DCHECK(callback_);
-  DCHECK(!audio_thread_.get());
-  audio_thread_.reset(new base::DelegateSimpleThread(
-      this, "plugin_audio_thread"));
-  audio_thread_->Start();
+  DCHECK(!audio_input_thread_.get());
+  audio_input_thread_.reset(new base::DelegateSimpleThread(
+      this, "plugin_audio_input_thread"));
+  audio_input_thread_->Start();
 }
 
-void PPB_Audio_Shared::Run() {
+void AudioInputImpl::Run() {
   int pending_data;
   void* buffer = shared_memory_->memory();
 
-  while (sizeof(pending_data) ==
-      socket_->Receive(&pending_data, sizeof(pending_data)) &&
-      pending_data >= 0) {
+  while (sizeof(pending_data) == socket_->Receive(&pending_data,
+                                                  sizeof(pending_data)) &&
+         pending_data >= 0) {
     callback_(buffer, shared_memory_size_, user_data_);
   }
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_SHARED_IMPL_PPB_FONT_SHARED_H_
-#define PPAPI_SHARED_IMPL_PPB_FONT_SHARED_H_
+#ifndef PPAPI_SHARED_IMPL_FONT_IMPL_H_
+#define PPAPI_SHARED_IMPL_FONT_IMPL_H_
 #pragma once
 
 #include <string>
@@ -18,15 +18,15 @@ struct PP_FontDescription_Dev;
 
 namespace ppapi {
 
-class PPAPI_SHARED_EXPORT PPB_Font_Shared {
+class PPAPI_SHARED_EXPORT FontImpl {
  public:
   // Validates the parameters in thee description. Can be called on any thread.
   static bool IsPPFontDescriptionValid(const PP_FontDescription_Dev& desc);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PPB_Font_Shared);
+  DISALLOW_COPY_AND_ASSIGN(FontImpl);
 };
 
 }  // namespace ppapi
 
-#endif  // PPAPI_SHARED_IMPL_PPB_FONT_SHARED_H_
+#endif  // PPAPI_SHARED_IMPL_FONT_IMPL_H_

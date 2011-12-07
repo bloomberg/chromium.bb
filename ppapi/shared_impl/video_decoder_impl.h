@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_SHARED_IMPL_PPB_VIDEO_DECODER_SHARED_H_
-#define PPAPI_SHARED_IMPL_PPB_VIDEO_DECODER_SHARED_H_
+#ifndef PPAPI_SHARED_IMPL_VIDEO_DECODER_IMPL_H_
+#define PPAPI_SHARED_IMPL_VIDEO_DECODER_IMPL_H_
 
 #include <map>
 #include <vector>
@@ -24,11 +24,11 @@ namespace ppapi {
 
 // Implements the logic to set and run callbacks for various video decoder
 // events. Both the proxy and the renderer implementation share this code.
-class PPAPI_SHARED_EXPORT PPB_VideoDecoder_Shared
+class PPAPI_SHARED_EXPORT VideoDecoderImpl
     : NON_EXPORTED_BASE(public thunk::PPB_VideoDecoder_API) {
  public:
-  PPB_VideoDecoder_Shared();
-  virtual ~PPB_VideoDecoder_Shared();
+  VideoDecoderImpl();
+  virtual ~VideoDecoderImpl();
 
   // PPB_VideoDecoder_API implementation.
   virtual void Destroy() OVERRIDE;
@@ -69,9 +69,9 @@ class PPAPI_SHARED_EXPORT PPB_VideoDecoder_Shared
   // process only, so gles2_impl_ is NULL in that case.
   gpu::gles2::GLES2Implementation* gles2_impl_;
 
-  DISALLOW_COPY_AND_ASSIGN(PPB_VideoDecoder_Shared);
+  DISALLOW_COPY_AND_ASSIGN(VideoDecoderImpl);
 };
 
 }  // namespace ppapi
 
-#endif  // PPAPI_SHARED_IMPL_PPB_VIDEO_DECODER_SHARED_H_
+#endif  // PPAPI_SHARED_IMPL_VIDEO_DECODER_IMPL_H_

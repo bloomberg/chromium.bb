@@ -5805,10 +5805,10 @@ const size_t GLES2Util::enum_to_string_table_len_ =
     file.Write(_LICENSE)
     file.Write(_DO_NOT_EDIT_WARNING)
 
-    file.Write("#include \"ppapi/shared_impl/ppb_opengles2_shared.h\"\n\n")
+    file.Write("#include \"ppapi/shared_impl/opengles2_impl.h\"\n\n")
     file.Write("#include \"base/logging.h\"\n")
     file.Write("#include \"gpu/command_buffer/client/gles2_implementation.h\"\n")
-    file.Write("#include \"ppapi/shared_impl/ppb_graphics_3d_shared.h\"\n")
+    file.Write("#include \"ppapi/shared_impl/graphics_3d_impl.h\"\n")
     file.Write("#include \"ppapi/thunk/enter.h\"\n\n")
 
     file.Write("namespace ppapi {\n\n")
@@ -5819,7 +5819,7 @@ const size_t GLES2Util::enum_to_string_table_len_ =
     file.Write("  thunk::EnterResource<thunk::PPB_Graphics3D_API>"
                " enter_g3d(context, false);\n")
     file.Write("  DCHECK(enter_g3d.succeeded());\n")
-    file.Write("  return static_cast<PPB_Graphics3D_Shared*>"
+    file.Write("  return static_cast<Graphics3DImpl*>"
                "(enter_g3d.object())->gles2_impl();\n")
     file.Write("}\n\n")
 
@@ -5851,7 +5851,7 @@ const size_t GLES2Util::enum_to_string_table_len_ =
     file.Write("}  // namespace\n")
 
     file.Write("""
-const PPB_OpenGLES2* PPB_OpenGLES2_Shared::GetInterface() {
+const PPB_OpenGLES2* OpenGLES2Impl::GetInterface() {
   return &ppb_opengles2;
 }
 
@@ -5989,8 +5989,7 @@ def main(argv):
 
   elif options.alternate_mode == "chrome_ppapi":
     # To trigger this action, do "make ppapi_gles_implementation"
-    gen.WritePepperGLES2Implementation(
-        "ppapi/shared_impl/ppb_opengles2_shared.cc")
+    gen.WritePepperGLES2Implementation("ppapi/shared_impl/opengles2_impl.cc")
 
   elif options.alternate_mode == "nacl_ppapi":
     gen.WritePepperGLES2NaClProxy(

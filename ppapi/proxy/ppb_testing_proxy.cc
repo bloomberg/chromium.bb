@@ -165,10 +165,10 @@ void PPB_Testing_Proxy::OnMsgGetLiveObjectsForInstance(PP_Instance instance,
 void PPB_Testing_Proxy::OnMsgSimulateInputEvent(
     PP_Instance instance,
     const InputEventData& input_event) {
-  scoped_refptr<PPB_InputEvent_Shared> input_event_impl(
-      new PPB_InputEvent_Shared(PPB_InputEvent_Shared::InitAsProxy(),
-                                instance,
-                                input_event));
+  scoped_refptr<InputEventImpl> input_event_impl(
+      new InputEventImpl(InputEventImpl::InitAsProxy(),
+                         instance,
+                         input_event));
   ppb_testing_impl_->SimulateInputEvent(instance,
                                         input_event_impl->pp_resource());
 }

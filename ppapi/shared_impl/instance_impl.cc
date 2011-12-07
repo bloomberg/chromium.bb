@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/shared_impl/ppb_instance_shared.h"
+#include "ppapi/shared_impl/instance_impl.h"
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_input_event.h"
 
 namespace ppapi {
 
-PPB_Instance_Shared::~PPB_Instance_Shared() {
+InstanceImpl::~InstanceImpl() {
 }
 
-int32_t PPB_Instance_Shared::ValidateRequestInputEvents(
-    bool is_filtering,
-    uint32_t event_classes) {
+int32_t InstanceImpl::ValidateRequestInputEvents(bool is_filtering,
+                                                 uint32_t event_classes) {
   // See if any bits are set we don't know about.
   if (event_classes &
       ~static_cast<uint32_t>(PP_INPUTEVENT_CLASS_MOUSE |

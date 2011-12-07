@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_SHARED_IMPL_PPB_AUDIO_CONFIG_SHARED_H_
-#define PPAPI_SHARED_IMPL_PPB_AUDIO_CONFIG_SHARED_H_
+#ifndef PPAPI_SHARED_IMPL_AUDIO_CONFIG_IMPL_H_
+#define PPAPI_SHARED_IMPL_AUDIO_CONFIG_IMPL_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -12,11 +12,11 @@
 
 namespace ppapi {
 
-class PPAPI_SHARED_EXPORT PPB_AudioConfig_Shared
+class PPAPI_SHARED_EXPORT AudioConfigImpl
     : public Resource,
       public thunk::PPB_AudioConfig_API {
  public:
-  virtual ~PPB_AudioConfig_Shared();
+  virtual ~AudioConfigImpl();
 
   static PP_Resource CreateAsImpl(PP_Instance instance,
                                   PP_AudioSampleRate sample_rate,
@@ -34,10 +34,8 @@ class PPAPI_SHARED_EXPORT PPB_AudioConfig_Shared
 
  private:
   // You must call Init before using this object.
-  // Construct as implementation.
-  explicit PPB_AudioConfig_Shared(PP_Instance instance);
-  // Construct as proxy.
-  explicit PPB_AudioConfig_Shared(const HostResource& host_resource);
+  explicit AudioConfigImpl(PP_Instance instance);               // Impl c'tor.
+  explicit AudioConfigImpl(const HostResource& host_resource);  // Proxy c'tor.
 
   // Returns false if the arguments are invalid, the object should not be
   // used in this case.
@@ -46,9 +44,9 @@ class PPAPI_SHARED_EXPORT PPB_AudioConfig_Shared
   PP_AudioSampleRate sample_rate_;
   uint32_t sample_frame_count_;
 
-  DISALLOW_COPY_AND_ASSIGN(PPB_AudioConfig_Shared);
+  DISALLOW_COPY_AND_ASSIGN(AudioConfigImpl);
 };
 
 }  // namespace ppapi
 
-#endif  // PPAPI_SHARED_IMPL_PPB_AUDIO_CONFIG_SHARED_H_
+#endif  // PPAPI_SHARED_IMPL_AUDIO_CONFIG_IMPL_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_SHARED_IMPL_PPB_CHAR_SET_SHARED_H_
-#define PPAPI_SHARED_IMPL_PPB_CHAR_SET_SHARED_H_
+#ifndef PPAPI_SHARED_IMPL_CHAR_SET_IMPL_H_
+#define PPAPI_SHARED_IMPL_CHAR_SET_IMPL_H_
 
 #include "base/basictypes.h"
 #include "ppapi/c/dev/ppb_char_set_dev.h"
@@ -13,7 +13,7 @@ namespace ppapi {
 
 // Contains the implementation of character set conversion that is shared
 // between the proxy and the renderer.
-class PPAPI_SHARED_EXPORT PPB_CharSet_Shared {
+class PPAPI_SHARED_EXPORT CharSetImpl {
  public:
   static char* UTF16ToCharSet(const uint16_t* utf16,
                               uint32_t utf16_len,
@@ -30,4 +30,4 @@ class PPAPI_SHARED_EXPORT PPB_CharSet_Shared {
 
 }  // namespace ppapi
 
-#endif  // PPAPI_SHARED_IMPL_PPB_CHAR_SET_SHARED_H_
+#endif  // PPAPI_SHARED_IMPL_CHAR_SET_IMPL_H_

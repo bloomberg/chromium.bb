@@ -94,7 +94,7 @@
 #include "ppapi/proxy/ppp_mouse_lock_proxy.h"
 #include "ppapi/proxy/ppp_video_decoder_proxy.h"
 #include "ppapi/proxy/resource_creation_proxy.h"
-#include "ppapi/shared_impl/ppb_opengles2_shared.h"
+#include "ppapi/shared_impl/opengles2_impl.h"
 #include "ppapi/thunk/thunk.h"
 
 // Helper to get the proxy name PPB_Foo_Proxy given the API name PPB_Foo.
@@ -164,7 +164,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_CORE_INTERFACE, API_ID_PPB_CORE,
          PPB_Core_Proxy::GetPPB_Core_Interface());
   AddPPB(PPB_OPENGLES2_INTERFACE, API_ID_NONE,
-         PPB_OpenGLES2_Shared::GetInterface());
+         OpenGLES2Impl::GetInterface());
   AddPPB(PPB_VAR_INTERFACE, API_ID_NONE,
          GetPPB_Var_Interface());
 

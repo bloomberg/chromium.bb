@@ -21,8 +21,7 @@ class GLES2Implementation;
 
 namespace ppapi {
 
-class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
-    : public thunk::PPB_Graphics3D_API {
+class PPAPI_SHARED_EXPORT Graphics3DImpl : public thunk::PPB_Graphics3D_API {
  public:
   // PPB_Graphics3D_API implementation.
   virtual int32_t GetAttribs(int32_t* attrib_list) OVERRIDE;
@@ -49,8 +48,8 @@ class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
   void SwapBuffersACK(int32_t pp_error);
 
  protected:
-  PPB_Graphics3D_Shared();
-  virtual ~PPB_Graphics3D_Shared();
+  Graphics3DImpl();
+  virtual ~Graphics3DImpl();
 
   virtual gpu::CommandBuffer* GetCommandBuffer() = 0;
   virtual int32 DoSwapBuffers() = 0;
@@ -68,7 +67,7 @@ class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
   // Callback that needs to be executed when swap-buffers is completed.
   PP_CompletionCallback swap_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(PPB_Graphics3D_Shared);
+  DISALLOW_COPY_AND_ASSIGN(Graphics3DImpl);
 };
 
 }  // namespace ppapi

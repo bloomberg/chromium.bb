@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_SHARED_IMPL_PPB_IMAGE_DATA_SHARED_H_
-#define PPAPI_SHARED_IMPL_PPB_IMAGE_DATA_SHARED_H_
+#ifndef PPAPI_SHARED_IMPL_IMAGE_DATA_IMPL_H_
+#define PPAPI_SHARED_IMPL_IMAGE_DATA_IMPL_H_
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/ppb_image_data.h"
@@ -20,7 +20,7 @@ namespace ppapi {
 // probably best to have some kind of "configuration" message that the renderer
 // sends to the plugin process on startup that contains all of these kind of
 // settings.
-class PPAPI_SHARED_EXPORT PPB_ImageData_Shared {
+class PPAPI_SHARED_EXPORT ImageDataImpl {
  public:
   static PP_ImageDataFormat GetNativeImageDataFormat();
   static bool IsImageDataFormatSupported(PP_ImageDataFormat format);
@@ -28,4 +28,4 @@ class PPAPI_SHARED_EXPORT PPB_ImageData_Shared {
 
 }  // namespace ppapi
 
-#endif  // PPAPI_SHARED_IMPL_PPB_IMAGE_DATA_SHARED_H_
+#endif  // PPAPI_SHARED_IMPL_IMAGE_DATA_IMPL_H_

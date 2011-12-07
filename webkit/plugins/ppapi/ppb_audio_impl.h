@@ -13,10 +13,10 @@
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
-#include "ppapi/shared_impl/ppb_audio_config_shared.h"
-#include "ppapi/shared_impl/ppb_audio_shared.h"
-#include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/audio_config_impl.h"
+#include "ppapi/shared_impl/audio_impl.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
+#include "ppapi/shared_impl/resource.h"
 #include "webkit/plugins/ppapi/audio_helper.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -25,9 +25,9 @@ namespace webkit {
 namespace ppapi {
 
 // Some of the backend functionality of this class is implemented by the
-// PPB_Audio_Shared so it can be shared with the proxy.
+// AudioImpl so it can be shared with the proxy.
 class PPB_Audio_Impl : public ::ppapi::Resource,
-                       public ::ppapi::PPB_Audio_Shared,
+                       public ::ppapi::AudioImpl,
                        public AudioHelper {
  public:
   // Trusted initialization. You must call Init after this.

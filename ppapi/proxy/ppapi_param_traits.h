@@ -14,7 +14,7 @@
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
-#include "ppapi/shared_impl/ppb_file_ref_shared.h"
+#include "ppapi/shared_impl/file_ref_impl.h"
 
 struct PP_FileInfo;
 struct PP_ObjectProperty;

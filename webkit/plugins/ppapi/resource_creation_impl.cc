@@ -5,8 +5,8 @@
 #include "webkit/plugins/ppapi/resource_creation_impl.h"
 
 #include "ppapi/c/pp_size.h"
-#include "ppapi/shared_impl/ppb_audio_config_shared.h"
-#include "ppapi/shared_impl/ppb_input_event_shared.h"
+#include "ppapi/shared_impl/audio_config_impl.h"
+#include "ppapi/shared_impl/input_event_impl.h"
 #include "ppapi/shared_impl/var.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppb_audio_impl.h"
@@ -36,7 +36,7 @@
 #include "webkit/plugins/ppapi/ppb_websocket_impl.h"
 
 using ppapi::InputEventData;
-using ppapi::PPB_InputEvent_Shared;
+using ppapi::InputEventImpl;
 using ppapi::StringVar;
 
 namespace webkit {
@@ -66,8 +66,8 @@ PP_Resource ResourceCreationImpl::CreateAudioConfig(
     PP_Instance instance,
     PP_AudioSampleRate sample_rate,
     uint32_t sample_frame_count) {
-  return ::ppapi::PPB_AudioConfig_Shared::CreateAsImpl(instance, sample_rate,
-                                                       sample_frame_count);
+  return ::ppapi::AudioConfigImpl::CreateAsImpl(instance, sample_rate,
+                                                sample_frame_count);
 }
 
 PP_Resource ResourceCreationImpl::CreateAudioTrusted(
@@ -196,8 +196,8 @@ PP_Resource ResourceCreationImpl::CreateKeyboardInputEvent(
     data.character_text = string_var->value();
   }
 
-  return (new PPB_InputEvent_Shared(PPB_InputEvent_Shared::InitAsImpl(),
-                                    instance, data))->GetReference();
+  return (new InputEventImpl(InputEventImpl::InitAsImpl(),
+                             instance, data))->GetReference();
 }
 
 PP_Resource ResourceCreationImpl::CreateMouseInputEvent(
@@ -225,8 +225,8 @@ PP_Resource ResourceCreationImpl::CreateMouseInputEvent(
   data.mouse_click_count = click_count;
   data.mouse_movement = *mouse_movement;
 
-  return (new PPB_InputEvent_Shared(PPB_InputEvent_Shared::InitAsImpl(),
-                                    instance, data))->GetReference();
+  return (new InputEventImpl(InputEventImpl::InitAsImpl(),
+                             instance, data))->GetReference();
 }
 
 PP_Resource ResourceCreationImpl::CreateScrollbar(PP_Instance instance,
@@ -299,8 +299,8 @@ PP_Resource ResourceCreationImpl::CreateWheelInputEvent(
   data.wheel_ticks = *wheel_ticks;
   data.wheel_scroll_by_page = PP_ToBool(scroll_by_page);
 
-  return (new PPB_InputEvent_Shared(PPB_InputEvent_Shared::InitAsImpl(),
-                                    instance, data))->GetReference();
+  return (new InputEventImpl(InputEventImpl::InitAsImpl(),
+                             instance, data))->GetReference();
 }
 
 }  // namespace ppapi

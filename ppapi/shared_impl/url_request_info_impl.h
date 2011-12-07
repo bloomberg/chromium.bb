@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_SHARED_IMPL_PPB_URL_REQUEST_INFO_SHARED_H_
-#define PPAPI_SHARED_IMPL_PPB_URL_REQUEST_INFO_SHARED_H_
+#ifndef PPAPI_SHARED_IMPL_URL_REQUEST_INFO_IMPL_H_
+#define PPAPI_SHARED_IMPL_URL_REQUEST_INFO_IMPL_H_
 
 #include <string>
 #include <vector>
@@ -86,16 +86,16 @@ struct PPAPI_SHARED_EXPORT PPB_URLRequestInfo_Data {
   // ppapi_messages.h
 };
 
-class PPAPI_SHARED_EXPORT PPB_URLRequestInfo_Shared
+class PPAPI_SHARED_EXPORT URLRequestInfoImpl
     : public ::ppapi::Resource,
       public ::ppapi::thunk::PPB_URLRequestInfo_API {
  public:
   // This constructor initializes the object as a proxy object with the given
   // host resource.
-  PPB_URLRequestInfo_Shared(const HostResource& host_resource,
+  URLRequestInfoImpl(const HostResource& host_resource,
                      const PPB_URLRequestInfo_Data& data);
 
-  ~PPB_URLRequestInfo_Shared();
+  ~URLRequestInfoImpl();
 
   // Resource overrides.
   virtual thunk::PPB_URLRequestInfo_API* AsPPB_URLRequestInfo_API() OVERRIDE;
@@ -113,7 +113,7 @@ class PPAPI_SHARED_EXPORT PPB_URLRequestInfo_Shared
 
  protected:
   // Constructor used by the webkit implementation.
-  PPB_URLRequestInfo_Shared(PP_Instance instance,
+  URLRequestInfoImpl(PP_Instance instance,
                      const PPB_URLRequestInfo_Data& data);
 
   bool SetUndefinedProperty(PP_URLRequestProperty property);
@@ -128,9 +128,9 @@ class PPAPI_SHARED_EXPORT PPB_URLRequestInfo_Shared
  private:
   PPB_URLRequestInfo_Data data_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(PPB_URLRequestInfo_Shared);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(URLRequestInfoImpl);
 };
 
 }  // namespace ppapi
 
-#endif  // PPAPI_SHARED_IMPL_PPB_URL_REQUEST_INFO_SHARED_H_
+#endif  // PPAPI_SHARED_IMPL_URL_REQUEST_INFO_IMPL_H_

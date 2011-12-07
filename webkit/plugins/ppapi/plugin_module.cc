@@ -83,8 +83,7 @@
 #include "ppapi/c/trusted/ppb_graphics_3d_trusted.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
-#include "ppapi/shared_impl/ppb_input_event_shared.h"
-#include "ppapi/shared_impl/ppb_opengles2_shared.h"
+#include "ppapi/shared_impl/input_event_impl.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
@@ -106,6 +105,7 @@
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppb_layer_compositor_impl.h"
+#include "webkit/plugins/ppapi/ppb_opengles_impl.h"
 #include "webkit/plugins/ppapi/ppb_proxy_impl.h"
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
 #include "webkit/plugins/ppapi/ppb_uma_private_impl.h"
@@ -314,7 +314,7 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_INSTANCE_PRIVATE_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Instance_Private_Thunk();
   if (strcmp(name, PPB_OPENGLES2_INTERFACE) == 0)
-    return ::ppapi::PPB_OpenGLES2_Shared::GetInterface();
+    return PPB_OpenGLES_Impl::GetInterface();
   if (strcmp(name, PPB_PROXY_PRIVATE_INTERFACE) == 0)
     return PPB_Proxy_Impl::GetInterface();
   if (strcmp(name, PPB_UMA_PRIVATE_INTERFACE) == 0)

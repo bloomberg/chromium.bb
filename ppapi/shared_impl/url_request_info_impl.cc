@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/shared_impl/ppb_url_request_info_shared.h"
+#include "ppapi/shared_impl/url_request_info_impl.h"
 
 #include "base/string_util.h"
 #include "ppapi/shared_impl/var.h"
@@ -70,30 +70,27 @@ PPB_URLRequestInfo_Data::PPB_URLRequestInfo_Data()
 PPB_URLRequestInfo_Data::~PPB_URLRequestInfo_Data() {
 }
 
-PPB_URLRequestInfo_Shared::PPB_URLRequestInfo_Shared(
-    PP_Instance instance,
-    const PPB_URLRequestInfo_Data& data)
+URLRequestInfoImpl::URLRequestInfoImpl(PP_Instance instance,
+                                       const PPB_URLRequestInfo_Data& data)
     : Resource(instance),
       data_(data) {
 }
 
-PPB_URLRequestInfo_Shared::PPB_URLRequestInfo_Shared(
-    const HostResource& host_resource,
-    const PPB_URLRequestInfo_Data& data)
+URLRequestInfoImpl::URLRequestInfoImpl(const HostResource& host_resource,
+                                       const PPB_URLRequestInfo_Data& data)
     : Resource(host_resource),
       data_(data) {
 }
 
-PPB_URLRequestInfo_Shared::~PPB_URLRequestInfo_Shared() {
+URLRequestInfoImpl::~URLRequestInfoImpl() {
 }
 
-thunk::PPB_URLRequestInfo_API*
-PPB_URLRequestInfo_Shared::AsPPB_URLRequestInfo_API() {
+thunk::PPB_URLRequestInfo_API* URLRequestInfoImpl::AsPPB_URLRequestInfo_API() {
   return this;
 }
 
-PP_Bool PPB_URLRequestInfo_Shared::SetProperty(PP_URLRequestProperty property,
-                                               PP_Var var) {
+PP_Bool URLRequestInfoImpl::SetProperty(PP_URLRequestProperty property,
+                                        PP_Var var) {
   // IMPORTANT: Do not do security validation of parameters at this level
   // without also adding them to PPB_URLRequestInfo_Impl::ValidateData. This
   // code is used both in the plugin (which we don't trust) and in the renderer
@@ -135,8 +132,7 @@ PP_Bool PPB_URLRequestInfo_Shared::SetProperty(PP_URLRequestProperty property,
   return result;
 }
 
-PP_Bool PPB_URLRequestInfo_Shared::AppendDataToBody(const void* data,
-                                                    uint32_t len) {
+PP_Bool URLRequestInfoImpl::AppendDataToBody(const void* data, uint32_t len) {
   if (len > 0) {
     data_.body.push_back(PPB_URLRequestInfo_Data::BodyItem(
         std::string(static_cast<const char*>(data), len)));
@@ -144,7 +140,7 @@ PP_Bool PPB_URLRequestInfo_Shared::AppendDataToBody(const void* data,
   return PP_TRUE;
 }
 
-PP_Bool PPB_URLRequestInfo_Shared::AppendFileToBody(
+PP_Bool URLRequestInfoImpl::AppendFileToBody(
     PP_Resource file_ref,
     int64_t start_offset,
     int64_t number_of_bytes,
@@ -169,12 +165,11 @@ PP_Bool PPB_URLRequestInfo_Shared::AppendFileToBody(
   return PP_TRUE;
 }
 
-const PPB_URLRequestInfo_Data& PPB_URLRequestInfo_Shared::GetData() const {
+const PPB_URLRequestInfo_Data& URLRequestInfoImpl::GetData() const {
   return data_;
 }
 
-bool PPB_URLRequestInfo_Shared::SetUndefinedProperty(
-    PP_URLRequestProperty property) {
+bool URLRequestInfoImpl::SetUndefinedProperty(PP_URLRequestProperty property) {
   // IMPORTANT: Do not do security validation of parameters at this level
   // without also adding them to PPB_URLRequestInfo_Impl::ValidateData. See
   // SetProperty() above for why.
@@ -192,9 +187,8 @@ bool PPB_URLRequestInfo_Shared::SetUndefinedProperty(
   }
 }
 
-bool PPB_URLRequestInfo_Shared::SetBooleanProperty(
-    PP_URLRequestProperty property,
-    bool value) {
+bool URLRequestInfoImpl::SetBooleanProperty(PP_URLRequestProperty property,
+                                            bool value) {
   // IMPORTANT: Do not do security validation of parameters at this level
   // without also adding them to PPB_URLRequestInfo_Impl::ValidateData. See
   // SetProperty() above for why.
@@ -222,9 +216,8 @@ bool PPB_URLRequestInfo_Shared::SetBooleanProperty(
   }
 }
 
-bool PPB_URLRequestInfo_Shared::SetIntegerProperty(
-    PP_URLRequestProperty property,
-    int32_t value) {
+bool URLRequestInfoImpl::SetIntegerProperty(PP_URLRequestProperty property,
+                                            int32_t value) {
   // IMPORTANT: Do not do security validation of parameters at this level
   // without also adding them to PPB_URLRequestInfo_Impl::ValidateData. See
   // SetProperty() above for why.
@@ -240,9 +233,8 @@ bool PPB_URLRequestInfo_Shared::SetIntegerProperty(
   }
 }
 
-bool PPB_URLRequestInfo_Shared::SetStringProperty(
-    PP_URLRequestProperty property,
-    const std::string& value) {
+bool URLRequestInfoImpl::SetStringProperty(PP_URLRequestProperty property,
+                                           const std::string& value) {
   // IMPORTANT: Do not do security validation of parameters at this level
   // without also adding them to PPB_URLRequestInfo_Impl::ValidateData. See
   // SetProperty() above for why.

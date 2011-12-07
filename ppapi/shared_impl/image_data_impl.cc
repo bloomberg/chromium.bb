@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/shared_impl/ppb_image_data_shared.h"
+#include "ppapi/shared_impl/image_data_impl.h"
 
 #include "third_party/skia/include/core/SkTypes.h"
 
 namespace ppapi {
 
 // static
-PP_ImageDataFormat PPB_ImageData_Shared::GetNativeImageDataFormat() {
+PP_ImageDataFormat ImageDataImpl::GetNativeImageDataFormat() {
   if (SK_B32_SHIFT == 0)
     return PP_IMAGEDATAFORMAT_BGRA_PREMUL;
   else if (SK_R32_SHIFT == 0)
@@ -19,8 +19,7 @@ PP_ImageDataFormat PPB_ImageData_Shared::GetNativeImageDataFormat() {
 }
 
 // static
-bool PPB_ImageData_Shared::IsImageDataFormatSupported(
-    PP_ImageDataFormat format) {
+bool ImageDataImpl::IsImageDataFormatSupported(PP_ImageDataFormat format) {
   return format == PP_IMAGEDATAFORMAT_BGRA_PREMUL ||
          format == PP_IMAGEDATAFORMAT_RGBA_PREMUL;
 }

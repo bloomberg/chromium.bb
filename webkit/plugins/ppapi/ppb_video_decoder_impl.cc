@@ -190,7 +190,7 @@ void PPB_VideoDecoder_Impl::Destroy() {
 
   FlushCommandBuffer();
   platform_video_decoder_->Destroy();
-  ::ppapi::PPB_VideoDecoder_Shared::Destroy();
+  ::ppapi::VideoDecoderImpl::Destroy();
   platform_video_decoder_ = NULL;
   ppp_videodecoder_ = NULL;
 }

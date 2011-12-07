@@ -13,7 +13,7 @@
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/host_resource.h"
-#include "ppapi/shared_impl/ppb_instance_shared.h"
+#include "ppapi/shared_impl/instance_impl.h"
 #include "ppapi/thunk/ppb_instance_api.h"
 
 // Windows headers interfere with this file.
@@ -29,8 +29,8 @@ class SerializedVarOutParam;
 class SerializedVarReturnValue;
 
 class PPB_Instance_Proxy : public InterfaceProxy,
-                           public PPB_Instance_Shared,
-                           public thunk::PPB_Instance_FunctionAPI {
+                           public ppapi::InstanceImpl,
+                           public ppapi::thunk::PPB_Instance_FunctionAPI {
  public:
   PPB_Instance_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Instance_Proxy();

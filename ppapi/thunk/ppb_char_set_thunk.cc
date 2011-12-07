@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ppapi/c/pp_var.h"
-#include "ppapi/shared_impl/ppb_char_set_shared.h"
+#include "ppapi/shared_impl/char_set_impl.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/enter.h"
 
@@ -34,8 +34,8 @@ char* UTF16ToCharSet(PP_Instance instance,
   if (enter.failed())
     return NULL;
 
-  return PPB_CharSet_Shared::UTF16ToCharSet(utf16, utf16_len, output_char_set,
-                                            on_error, output_length);
+  return CharSetImpl::UTF16ToCharSet(utf16, utf16_len, output_char_set,
+                                     on_error, output_length);
 }
 
 uint16_t* CharSetToUTF16(PP_Instance instance,
@@ -49,8 +49,8 @@ uint16_t* CharSetToUTF16(PP_Instance instance,
   if (enter.failed())
     return NULL;
 
-  return PPB_CharSet_Shared::CharSetToUTF16(input, input_len, input_char_set,
-                                            on_error, output_length);
+  return CharSetImpl::CharSetToUTF16(input, input_len, input_char_set,
+                                     on_error, output_length);
 }
 
 PP_Var GetDefaultCharSet(PP_Instance instance) {

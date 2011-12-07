@@ -15,7 +15,7 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/serialized_structs.h"
-#include "ppapi/shared_impl/ppb_image_data_shared.h"
+#include "ppapi/shared_impl/image_data_impl.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 
@@ -36,7 +36,7 @@ namespace proxy {
 // public in the header since a number of other resources need to access it.
 class ImageData : public ppapi::Resource,
                   public ppapi::thunk::PPB_ImageData_API,
-                  public ppapi::PPB_ImageData_Shared {
+                  public ppapi::ImageDataImpl {
  public:
   ImageData(const ppapi::HostResource& resource,
             const PP_ImageDataDesc& desc,

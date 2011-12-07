@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/shared_impl/ppb_font_shared.h"
+#include "ppapi/shared_impl/font_impl.h"
 
 #include "ppapi/c/dev/ppb_font_dev.h"
 
 namespace ppapi {
 
 // static
-bool PPB_Font_Shared::IsPPFontDescriptionValid(
-    const PP_FontDescription_Dev& desc) {
+bool FontImpl::IsPPFontDescriptionValid(const PP_FontDescription_Dev& desc) {
   // Check validity of string. We can't check the actual text since we could
   // be on the wrong thread and don't know if we're in the plugin or the host.
   if (desc.face.type != PP_VARTYPE_STRING &&

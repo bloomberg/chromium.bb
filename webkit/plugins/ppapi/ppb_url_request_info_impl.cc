@@ -49,7 +49,7 @@ const int32_t kDefaultPrefetchBufferLowerThreshold = 50 * 1000 * 1000;
 PPB_URLRequestInfo_Impl::PPB_URLRequestInfo_Impl(
     PP_Instance instance,
     const PPB_URLRequestInfo_Data& data)
-    : PPB_URLRequestInfo_Shared(instance, data) {
+    : URLRequestInfoImpl(instance, data) {
 }
 
 PPB_URLRequestInfo_Impl::~PPB_URLRequestInfo_Impl() {

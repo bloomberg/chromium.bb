@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/shared_impl/ppb_graphics_3d_shared.h"
+#include "ppapi/shared_impl/graphics_3d_impl.h"
 
 #include "base/logging.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
@@ -11,34 +11,34 @@
 
 namespace ppapi {
 
-PPB_Graphics3D_Shared::PPB_Graphics3D_Shared()
+Graphics3DImpl::Graphics3DImpl()
     : transfer_buffer_id_(-1),
       swap_callback_(PP_BlockUntilComplete()) {
 }
 
-PPB_Graphics3D_Shared::~PPB_Graphics3D_Shared() {
+Graphics3DImpl::~Graphics3DImpl() {
   // Make sure that GLES2 implementation has already been destroyed.
   DCHECK_EQ(transfer_buffer_id_, -1);
   DCHECK(!gles2_helper_.get());
   DCHECK(!gles2_impl_.get());
 }
 
-int32_t PPB_Graphics3D_Shared::GetAttribs(int32_t* attrib_list) {
+int32_t Graphics3DImpl::GetAttribs(int32_t* attrib_list) {
   // TODO(alokp): Implement me.
   return PP_ERROR_FAILED;
 }
 
-int32_t PPB_Graphics3D_Shared::SetAttribs(int32_t* attrib_list) {
+int32_t Graphics3DImpl::SetAttribs(int32_t* attrib_list) {
   // TODO(alokp): Implement me.
   return PP_ERROR_FAILED;
 }
 
-int32_t PPB_Graphics3D_Shared::GetError() {
+int32_t Graphics3DImpl::GetError() {
   // TODO(alokp): Implement me.
   return PP_ERROR_FAILED;
 }
 
-int32_t PPB_Graphics3D_Shared::ResizeBuffers(int32_t width, int32_t height) {
+int32_t Graphics3DImpl::ResizeBuffers(int32_t width, int32_t height) {
   if ((width < 0) || (height < 0))
     return PP_ERROR_BADARGUMENT;
 
@@ -47,7 +47,7 @@ int32_t PPB_Graphics3D_Shared::ResizeBuffers(int32_t width, int32_t height) {
   return PP_OK;
 }
 
-int32_t PPB_Graphics3D_Shared::SwapBuffers(PP_CompletionCallback callback) {
+int32_t Graphics3DImpl::SwapBuffers(PP_CompletionCallback callback) {
   if (!callback.func) {
     // Blocking SwapBuffers isn't supported (since we have to be on the main
     // thread).
@@ -63,30 +63,30 @@ int32_t PPB_Graphics3D_Shared::SwapBuffers(PP_CompletionCallback callback) {
   return DoSwapBuffers();
 }
 
-void* PPB_Graphics3D_Shared::MapTexSubImage2DCHROMIUM(GLenum target,
-                                                      GLint level,
-                                                      GLint xoffset,
-                                                      GLint yoffset,
-                                                      GLsizei width,
-                                                      GLsizei height,
-                                                      GLenum format,
-                                                      GLenum type,
-                                                      GLenum access) {
+void* Graphics3DImpl::MapTexSubImage2DCHROMIUM(GLenum target,
+                                               GLint level,
+                                               GLint xoffset,
+                                               GLint yoffset,
+                                               GLsizei width,
+                                               GLsizei height,
+                                               GLenum format,
+                                               GLenum type,
+                                               GLenum access) {
   return gles2_impl_->MapTexSubImage2DCHROMIUM(
       target, level, xoffset, yoffset, width, height, format, type, access);
 }
 
-void PPB_Graphics3D_Shared::UnmapTexSubImage2DCHROMIUM(const void* mem) {
+void Graphics3DImpl::UnmapTexSubImage2DCHROMIUM(const void* mem) {
   gles2_impl_->UnmapTexSubImage2DCHROMIUM(mem);
 }
 
-void PPB_Graphics3D_Shared::SwapBuffersACK(int32_t pp_error) {
+void Graphics3DImpl::SwapBuffersACK(int32_t pp_error) {
   DCHECK(HasPendingSwap());
   PP_RunAndClearCompletionCallback(&swap_callback_, pp_error);
 }
 
-bool PPB_Graphics3D_Shared::CreateGLES2Impl(int32 command_buffer_size,
-                                            int32 transfer_buffer_size) {
+bool Graphics3DImpl::CreateGLES2Impl(int32 command_buffer_size,
+                                     int32 transfer_buffer_size) {
   gpu::CommandBuffer* command_buffer = GetCommandBuffer();
   DCHECK(command_buffer);
 
@@ -120,7 +120,7 @@ bool PPB_Graphics3D_Shared::CreateGLES2Impl(int32 command_buffer_size,
   return true;
 }
 
-void PPB_Graphics3D_Shared::DestroyGLES2Impl() {
+void Graphics3DImpl::DestroyGLES2Impl() {
   gles2_impl_.reset();
 
   if (transfer_buffer_id_ != -1) {

@@ -13,8 +13,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/shared_impl/ppb_video_decoder_shared.h"
 #include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/video_decoder_impl.h"
 #include "ppapi/thunk/ppb_video_decoder_api.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
@@ -33,7 +33,7 @@ namespace webkit {
 namespace ppapi {
 
 class PPB_VideoDecoder_Impl : public ::ppapi::Resource,
-                              public ::ppapi::PPB_VideoDecoder_Shared,
+                              public ::ppapi::VideoDecoderImpl,
                               public media::VideoDecodeAccelerator::Client {
  public:
   virtual ~PPB_VideoDecoder_Impl();

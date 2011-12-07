@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "ppapi/thunk/ppb_url_request_info_api.h"
-#include "ppapi/shared_impl/ppb_url_request_info_shared.h"
+#include "ppapi/shared_impl/url_request_info_impl.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
 namespace WebKit {
@@ -20,7 +20,7 @@ namespace webkit {
 namespace ppapi {
 
 class WEBKIT_PLUGINS_EXPORT PPB_URLRequestInfo_Impl :
-    public ::ppapi::PPB_URLRequestInfo_Shared {
+    public ::ppapi::URLRequestInfoImpl {
  public:
   explicit PPB_URLRequestInfo_Impl(
       PP_Instance instance,
