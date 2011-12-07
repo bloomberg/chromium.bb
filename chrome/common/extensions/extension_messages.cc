@@ -41,6 +41,7 @@ ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
     extension_manifest_keys::kApp,
     extension_manifest_keys::kContentScripts,
     extension_manifest_keys::kIcons,
+    extension_manifest_keys::kManifestVersion,
     extension_manifest_keys::kName,
     extension_manifest_keys::kPageAction,
     extension_manifest_keys::kPageActions,
