@@ -60,6 +60,7 @@ class ProfilerWebUIDataSource : public ChromeURLDataManager::DataSource {
     base_path = base_path.AppendASCII("chrome");
     base_path = base_path.AppendASCII("browser");
     base_path = base_path.AppendASCII("resources");
+    base_path = base_path.AppendASCII("profiler");
 
     // If no resource was specified, default to profiler.html.
     std::string filename = path.empty() ? "profiler.html" : path;
