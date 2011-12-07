@@ -4809,37 +4809,7 @@
    fun:_ZN3net44X509CertificateTest_GoogleDigiNotarTest_Test8TestBodyEv
 }
 {
-   bug_101781_a
-   Memcheck:Uninitialized
-   fun:encode_one_block
-   fun:encode_mcu_huff
-   fun:compress_data
-   fun:process_data_simple_main
-   fun:chromium_jpeg_write_scanlines
-   fun:_ZN3gfx9JPEGCodec6EncodeEPKhNS0_11ColorFormatEiiiiPSt6vectorIhSaIhEE
-   fun:_ZN3gfx24JPEGEncodedDataFromImageERKNS_5ImageE?PSt6vectorIhSaIhEE
-   fun:_ZN7history8TopSites12EncodeBitmapEPN3gfx5ImageEP13scoped_refptrI15RefCountedBytesE
-   fun:_ZN7history8TopSites16SetPageThumbnailERK4GURLPN3gfx5ImageERK14ThumbnailScore
-   fun:_ZN7history17ExpireHistoryTest14AddExampleDataEP?PN4base4TimeE
-   fun:_ZN7history*ExpireHistoryTest_*
-}
-{
-   bug_101781_b
-   Memcheck:Uninitialized
-   fun:encode_one_block
-   fun:encode_mcu_huff
-   fun:compress_data
-   fun:process_data_simple_main
-   fun:chromium_jpeg_write_scanlines
-   fun:_ZN3gfx9JPEGCodec6EncodeEPKhNS0_11ColorFormatEiiiiPSt6vectorIhSaIhEE
-   fun:_ZN3gfx24JPEGEncodedDataFromImageERKNS_5ImageE?PSt6vectorIhSaIhEE
-   fun:_ZN7history8TopSites12EncodeBitmapEPN3gfx5ImageEP13scoped_refptrI15RefCountedBytesE
-   fun:_ZN7history8TopSites16SetPageThumbnailERK4GURLPN3gfx5ImageERK14ThumbnailScore
-   fun:_ZN7history17ExpireHistoryTest14AddExampleDataEP?PN4base4TimeE
-   fun:_ZN7history*ExpireHistoryTest_*
-}
-{
-   bug_101781_c
+   bug_101781
    Memcheck:Uninitialized
    fun:encode_one_block
    fun:encode_mcu_huff
