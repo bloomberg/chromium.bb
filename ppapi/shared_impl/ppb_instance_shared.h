@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_SHARED_IMPL_INSTANCE_IMPL_H_
-#define PPAPI_SHARED_IMPL_INSTANCE_IMPL_H_
+#ifndef PPAPI_SHARED_IMPL_PPB_INSTANCE_SHARED_H_
+#define PPAPI_SHARED_IMPL_PPB_INSTANCE_SHARED_H_
 
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
 
-class PPAPI_SHARED_EXPORT InstanceImpl {
+class PPAPI_SHARED_EXPORT PPB_Instance_Shared {
  public:
-  virtual ~InstanceImpl();
+  virtual ~PPB_Instance_Shared();
 
   // Error checks the given resquest to Request[Filtering]InputEvents. Returns
   // PP_OK if the given classes are all valid, PP_ERROR_NOTSUPPORTED if not.
@@ -21,4 +21,4 @@ class PPAPI_SHARED_EXPORT InstanceImpl {
 
 }  // namespace ppapi
 
-#endif  // PPAPI_SHARED_IMPL_INSTANCE_IMPL_H_
+#endif  // PPAPI_SHARED_IMPL_PPB_INSTANCE_SHARED_H_

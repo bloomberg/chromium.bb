@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_SHARED_IMPL_INPUT_EVENT_IMPL_H_
-#define PPAPI_SHARED_IMPL_INPUT_EVENT_IMPL_H_
+#ifndef PPAPI_SHARED_IMPL_PPB_INPUT_EVENT_SHARED_H_
+#define PPAPI_SHARED_IMPL_PPB_INPUT_EVENT_SHARED_H_
 
 #include <string>
 #include <vector>
@@ -51,7 +51,7 @@ struct PPAPI_SHARED_EXPORT InputEventData {
 
 // This simple class implements the PPB_InputEvent_API in terms of the
 // shared InputEventData structure
-class PPAPI_SHARED_EXPORT InputEventImpl
+class PPAPI_SHARED_EXPORT PPB_InputEvent_Shared
     : public Resource,
       public thunk::PPB_InputEvent_API {
  public:
@@ -60,12 +60,12 @@ class PPAPI_SHARED_EXPORT InputEventImpl
 
   // The dummy arguments control which version of Resource's constructor is
   // called for this base class.
-  InputEventImpl(const InitAsImpl&,
-                 PP_Instance instance,
-                 const InputEventData& data);
-  InputEventImpl(const InitAsProxy&,
-                 PP_Instance instance,
-                 const InputEventData& data);
+  PPB_InputEvent_Shared(const InitAsImpl&,
+                        PP_Instance instance,
+                        const InputEventData& data);
+  PPB_InputEvent_Shared(const InitAsProxy&,
+                        PP_Instance instance,
+                        const InputEventData& data);
 
   // Resource overrides.
   virtual PPB_InputEvent_API* AsPPB_InputEvent_API() OVERRIDE;
@@ -92,9 +92,9 @@ class PPAPI_SHARED_EXPORT InputEventImpl
  private:
   InputEventData data_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(InputEventImpl);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(PPB_InputEvent_Shared);
 };
 
 }  // namespace ppapi
 
-#endif  // PPAPI_SHARED_IMPL_INPUT_EVENT_IMPL_H_
+#endif  // PPAPI_SHARED_IMPL_PPB_INPUT_EVENT_SHARED_H_

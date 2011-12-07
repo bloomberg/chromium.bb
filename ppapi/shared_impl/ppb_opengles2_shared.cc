@@ -6,11 +6,11 @@
 // gpu/command_buffer/build_gles2_cmd_buffer.py
 // DO NOT EDIT!
 
-#include "ppapi/shared_impl/opengles2_impl.h"
+#include "ppapi/shared_impl/ppb_opengles2_shared.h"
 
 #include "base/logging.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "ppapi/shared_impl/graphics_3d_impl.h"
+#include "ppapi/shared_impl/ppb_graphics_3d_shared.h"
 #include "ppapi/thunk/enter.h"
 
 namespace ppapi {
@@ -20,7 +20,7 @@ namespace {
 gpu::gles2::GLES2Implementation* GetGLES(PP_Resource context) {
   thunk::EnterResource<thunk::PPB_Graphics3D_API> enter_g3d(context, false);
   DCHECK(enter_g3d.succeeded());
-  return static_cast<Graphics3DImpl*>(enter_g3d.object())->gles2_impl();
+  return static_cast<PPB_Graphics3D_Shared*>(enter_g3d.object())->gles2_impl();
 }
 
 void ActiveTexture(PP_Resource context_id, GLenum texture) {
@@ -891,7 +891,7 @@ const struct PPB_OpenGLES2 ppb_opengles2 = {
 
 }  // namespace
 
-const PPB_OpenGLES2* OpenGLES2Impl::GetInterface() {
+const PPB_OpenGLES2* PPB_OpenGLES2_Shared::GetInterface() {
   return &ppb_opengles2;
 }
 

@@ -34,10 +34,10 @@
 #include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppp_instance_private.h"
-#include "ppapi/shared_impl/input_event_impl.h"
+#include "ppapi/shared_impl/ppb_input_event_shared.h"
+#include "ppapi/shared_impl/ppb_url_util_shared.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/time_conversion.h"
-#include "ppapi/shared_impl/url_util_impl.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
@@ -101,7 +101,7 @@
 
 using base::StringPrintf;
 using ppapi::InputEventData;
-using ppapi::InputEventImpl;
+using ppapi::PPB_InputEvent_Shared;
 using ppapi::PpapiGlobals;
 using ppapi::StringVar;
 using ppapi::thunk::EnterResourceNoLock;
@@ -588,9 +588,9 @@ bool PluginInstance::SendCompositionEventWithUnderlineInformationToPlugin(
     event.is_filtered = true;
   else
     handled = true; // Unfiltered events are assumed to be handled.
-  scoped_refptr<InputEventImpl> event_resource(
-      new InputEventImpl(InputEventImpl::InitAsImpl(),
-                         pp_instance(), event));
+  scoped_refptr<PPB_InputEvent_Shared> event_resource(
+      new PPB_InputEvent_Shared(PPB_InputEvent_Shared::InitAsImpl(),
+                                pp_instance(), event));
   handled |= PP_ToBool(plugin_input_event_interface_->HandleInputEvent(
       pp_instance(), event_resource->pp_resource()));
   return handled;
@@ -687,9 +687,9 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
           events[i].is_filtered = true;
         else
           rv = true;  // Unfiltered events are assumed to be handled.
-        scoped_refptr<InputEventImpl> event_resource(
-            new InputEventImpl(InputEventImpl::InitAsImpl(),
-                               pp_instance(), events[i]));
+        scoped_refptr<PPB_InputEvent_Shared> event_resource(
+            new PPB_InputEvent_Shared(PPB_InputEvent_Shared::InitAsImpl(),
+                                      pp_instance(), events[i]));
 
         rv |= PP_ToBool(plugin_input_event_interface_->HandleInputEvent(
             pp_instance(), event_resource->pp_resource()));
@@ -1895,7 +1895,7 @@ PP_Var PluginInstance::ResolveRelativeToDocument(
 
   WebElement plugin_element = container()->element();
   GURL document_url = plugin_element.document().baseURL();
-  return ::ppapi::URLUtilImpl::GenerateURLReturn(
+  return ::ppapi::PPB_URLUtil_Shared::GenerateURLReturn(
       module()->pp_module(),
       document_url.Resolve(relative_string->value()),
       components);
@@ -1933,15 +1933,16 @@ PP_Bool PluginInstance::DocumentCanAccessDocument(PP_Instance instance,
 PP_Var PluginInstance::GetDocumentURL(PP_Instance instance,
                                       PP_URLComponents_Dev* components) {
   WebKit::WebDocument document = container()->element().document();
-  return ::ppapi::URLUtilImpl::GenerateURLReturn(module()->pp_module(),
-                                                 document.url(), components);
+  return ::ppapi::PPB_URLUtil_Shared::GenerateURLReturn(
+      module()->pp_module(), document.url(), components);
 }
 
 PP_Var PluginInstance::GetPluginInstanceURL(
     PP_Instance instance,
     PP_URLComponents_Dev* components) {
-  return ::ppapi::URLUtilImpl::GenerateURLReturn(module()->pp_module(),
-                                                 plugin_url_, components);
+  return ::ppapi::PPB_URLUtil_Shared::GenerateURLReturn(module()->pp_module(),
+                                                        plugin_url_,
+                                                        components);
 }
 
 void PluginInstance::DoSetCursor(WebCursorInfo* cursor) {

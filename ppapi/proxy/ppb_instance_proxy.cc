@@ -15,7 +15,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
-#include "ppapi/shared_impl/url_util_impl.h"
+#include "ppapi/shared_impl/ppb_url_util_shared.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 
@@ -317,8 +317,9 @@ PP_Var PPB_Instance_Proxy::ResolveRelativeToDocument(
       API_ID_PPB_INSTANCE, instance,
       SerializedVarSendInput(dispatcher(), relative),
       &result));
-  return URLUtilImpl::ConvertComponentsAndReturnURL(result.Return(dispatcher()),
-                                                    components);
+  return PPB_URLUtil_Shared::ConvertComponentsAndReturnURL(
+      result.Return(dispatcher()),
+      components);
 }
 
 PP_Bool PPB_Instance_Proxy::DocumentCanRequest(PP_Instance instance,
@@ -344,8 +345,9 @@ PP_Var PPB_Instance_Proxy::GetDocumentURL(PP_Instance instance,
   ReceiveSerializedVarReturnValue result;
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_GetDocumentURL(
       API_ID_PPB_INSTANCE, instance, &result));
-  return URLUtilImpl::ConvertComponentsAndReturnURL(result.Return(dispatcher()),
-                                                    components);
+  return PPB_URLUtil_Shared::ConvertComponentsAndReturnURL(
+      result.Return(dispatcher()),
+      components);
 }
 
 PP_Var PPB_Instance_Proxy::GetPluginInstanceURL(
@@ -354,8 +356,9 @@ PP_Var PPB_Instance_Proxy::GetPluginInstanceURL(
   ReceiveSerializedVarReturnValue result;
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_GetPluginInstanceURL(
       API_ID_PPB_INSTANCE, instance, &result));
-  return URLUtilImpl::ConvertComponentsAndReturnURL(result.Return(dispatcher()),
-                                                    components);
+  return PPB_URLUtil_Shared::ConvertComponentsAndReturnURL(
+      result.Return(dispatcher()),
+      components);
 }
 
 void PPB_Instance_Proxy::PostMessage(PP_Instance instance,

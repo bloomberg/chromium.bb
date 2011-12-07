@@ -34,9 +34,9 @@
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/proxy/serialized_flash_menu.h"
 #include "ppapi/proxy/serialized_structs.h"
-#include "ppapi/shared_impl/input_event_impl.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
-#include "ppapi/shared_impl/url_request_info_impl.h"
+#include "ppapi/shared_impl/ppb_input_event_shared.h"
+#include "ppapi/shared_impl/ppb_url_request_info_shared.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT PPAPI_PROXY_EXPORT

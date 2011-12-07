@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_SHARED_IMPL_URL_UTIL_IMPL_H_
-#define PPAPI_SHARED_IMPL_URL_UTIL_IMPL_H_
+#ifndef PPAPI_SHARED_IMPL_PPB_URL_UTIL_SHARED_H_
+#define PPAPI_SHARED_IMPL_PPB_URL_UTIL_SHARED_H_
 
 #include <string>
 
@@ -20,7 +20,7 @@ namespace ppapi {
 
 // Contains the implementation of PPB_URLUtil that is shared between the proxy
 // and the renderer.
-class PPAPI_SHARED_EXPORT URLUtilImpl {
+class PPAPI_SHARED_EXPORT PPB_URLUtil_Shared {
  public:
   // PPB_URLUtil shared functions.
   static PP_Var Canonicalize(PP_Var url,
@@ -50,4 +50,4 @@ class PPAPI_SHARED_EXPORT URLUtilImpl {
 
 }  // namespace ppapi
 
-#endif
+#endif  // PPAPI_SHARED_IMPL_PPB_URL_UTIL_SHARED_H_

@@ -6,7 +6,7 @@
 #define WEBKIT_PLUGINS_PPAPI_PPB_GRAPHICS_3D_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
-#include "ppapi/shared_impl/graphics_3d_impl.h"
+#include "ppapi/shared_impl/ppb_graphics_3d_shared.h"
 #include "ppapi/shared_impl/resource.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
@@ -14,7 +14,7 @@ namespace webkit {
 namespace ppapi {
 
 class PPB_Graphics3D_Impl : public ::ppapi::Resource,
-                            public ::ppapi::Graphics3DImpl {
+                            public ::ppapi::PPB_Graphics3D_Shared {
  public:
   virtual ~PPB_Graphics3D_Impl();
 
@@ -62,7 +62,7 @@ class PPB_Graphics3D_Impl : public ::ppapi::Resource,
   }
 
  protected:
-  // ppapi::Graphics3DImpl overrides.
+  // ppapi::PPB_Graphics3D_Shared overrides.
   virtual gpu::CommandBuffer* GetCommandBuffer() OVERRIDE;
   virtual int32 DoSwapBuffers() OVERRIDE;
 

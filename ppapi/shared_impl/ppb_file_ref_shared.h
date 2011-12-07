@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_SHARED_IMPL_FILE_REF_IMPL_H_
-#define PPAPI_SHARED_IMPL_FILE_REF_IMPL_H_
+#ifndef PPAPI_SHARED_IMPL_PPB_FILE_REF_SHARED_H_
+#define PPAPI_SHARED_IMPL_PPB_FILE_REF_SHARED_H_
 
 #include <string>
 
@@ -29,15 +29,16 @@ struct PPB_FileRef_CreateInfo {
 // This class provides the shared implementation of a FileRef. The functions
 // that actually "do stuff" like Touch and MakeDirectory are implemented
 // differently for the proxied and non-proxied derived classes.
-class PPAPI_SHARED_EXPORT FileRefImpl : public Resource,
-                                        public thunk::PPB_FileRef_API {
+class PPAPI_SHARED_EXPORT PPB_FileRef_Shared
+    : public Resource,
+      public thunk::PPB_FileRef_API {
  public:
   struct InitAsImpl {};
   struct InitAsProxy {};
 
-  FileRefImpl(const InitAsImpl&, const PPB_FileRef_CreateInfo& info);
-  FileRefImpl(const InitAsProxy&, const PPB_FileRef_CreateInfo& info);
-  virtual ~FileRefImpl();
+  PPB_FileRef_Shared(const InitAsImpl&, const PPB_FileRef_CreateInfo& info);
+  PPB_FileRef_Shared(const InitAsProxy&, const PPB_FileRef_CreateInfo& info);
+  virtual ~PPB_FileRef_Shared();
 
   // Resource overrides.
   virtual thunk::PPB_FileRef_API* AsPPB_FileRef_API() OVERRIDE;
@@ -57,9 +58,9 @@ class PPAPI_SHARED_EXPORT FileRefImpl : public Resource,
   mutable scoped_refptr<StringVar> name_var_;
   mutable scoped_refptr<StringVar> path_var_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(FileRefImpl);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(PPB_FileRef_Shared);
 };
 
 }  // namespace ppapi
 
-#endif  // PPAPI_SHARED_IMPL_FILE_REF_IMPL_H_
+#endif  // PPAPI_SHARED_IMPL_PPB_FILE_REF_SHARED_H_

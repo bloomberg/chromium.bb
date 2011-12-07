@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/shared_impl/input_event_impl.h"
+#include "ppapi/shared_impl/ppb_input_event_shared.h"
 
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var.h"
@@ -33,95 +33,95 @@ InputEventData::InputEventData()
 InputEventData::~InputEventData() {
 }
 
-InputEventImpl::InputEventImpl(const InitAsImpl&,
-                               PP_Instance instance,
-                               const InputEventData& data)
+PPB_InputEvent_Shared::PPB_InputEvent_Shared(const InitAsImpl&,
+                                             PP_Instance instance,
+                                             const InputEventData& data)
     : Resource(instance),
       data_(data) {
 }
 
-InputEventImpl::InputEventImpl(const InitAsProxy&,
-                               PP_Instance instance,
-                               const InputEventData& data)
+PPB_InputEvent_Shared::PPB_InputEvent_Shared(const InitAsProxy&,
+                                             PP_Instance instance,
+                                             const InputEventData& data)
     : Resource(HostResource::MakeInstanceOnly(instance)),
       data_(data) {
 }
 
-PPB_InputEvent_API* InputEventImpl::AsPPB_InputEvent_API() {
+PPB_InputEvent_API* PPB_InputEvent_Shared::AsPPB_InputEvent_API() {
   return this;
 }
 
-const InputEventData& InputEventImpl::GetInputEventData() const {
+const InputEventData& PPB_InputEvent_Shared::GetInputEventData() const {
   return data_;
 }
 
-PP_InputEvent_Type InputEventImpl::GetType() {
+PP_InputEvent_Type PPB_InputEvent_Shared::GetType() {
   return data_.event_type;
 }
 
-PP_TimeTicks InputEventImpl::GetTimeStamp() {
+PP_TimeTicks PPB_InputEvent_Shared::GetTimeStamp() {
   return data_.event_time_stamp;
 }
 
-uint32_t InputEventImpl::GetModifiers() {
+uint32_t PPB_InputEvent_Shared::GetModifiers() {
   return data_.event_modifiers;
 }
 
-PP_InputEvent_MouseButton InputEventImpl::GetMouseButton() {
+PP_InputEvent_MouseButton PPB_InputEvent_Shared::GetMouseButton() {
   return data_.mouse_button;
 }
 
-PP_Point InputEventImpl::GetMousePosition() {
+PP_Point PPB_InputEvent_Shared::GetMousePosition() {
   return data_.mouse_position;
 }
 
-int32_t InputEventImpl::GetMouseClickCount() {
+int32_t PPB_InputEvent_Shared::GetMouseClickCount() {
   return data_.mouse_click_count;
 }
 
-PP_Point InputEventImpl::GetMouseMovement() {
+PP_Point PPB_InputEvent_Shared::GetMouseMovement() {
   return data_.mouse_movement;
 }
 
-PP_FloatPoint InputEventImpl::GetWheelDelta() {
+PP_FloatPoint PPB_InputEvent_Shared::GetWheelDelta() {
   return data_.wheel_delta;
 }
 
-PP_FloatPoint InputEventImpl::GetWheelTicks() {
+PP_FloatPoint PPB_InputEvent_Shared::GetWheelTicks() {
   return data_.wheel_ticks;
 }
 
-PP_Bool InputEventImpl::GetWheelScrollByPage() {
+PP_Bool PPB_InputEvent_Shared::GetWheelScrollByPage() {
   return PP_FromBool(data_.wheel_scroll_by_page);
 }
 
-uint32_t InputEventImpl::GetKeyCode() {
+uint32_t PPB_InputEvent_Shared::GetKeyCode() {
   return data_.key_code;
 }
 
-PP_Var InputEventImpl::GetCharacterText() {
+PP_Var PPB_InputEvent_Shared::GetCharacterText() {
   return StringVar::StringToPPVar(
       PpapiGlobals::Get()->GetModuleForInstance(pp_instance()),
       data_.character_text);
 }
 
-uint32_t InputEventImpl::GetIMESegmentNumber() {
+uint32_t PPB_InputEvent_Shared::GetIMESegmentNumber() {
   if (data_.composition_segment_offsets.empty())
     return 0;
   return data_.composition_segment_offsets.size() - 1;
 }
 
-uint32_t InputEventImpl::GetIMESegmentOffset(uint32_t index) {
+uint32_t PPB_InputEvent_Shared::GetIMESegmentOffset(uint32_t index) {
   if (index >= data_.composition_segment_offsets.size())
     return 0;
   return data_.composition_segment_offsets[index];
 }
 
-int32_t InputEventImpl::GetIMETargetSegment() {
+int32_t PPB_InputEvent_Shared::GetIMETargetSegment() {
   return data_.composition_target_segment;
 }
 
-void InputEventImpl::GetIMESelection(uint32_t* start, uint32_t* end) {
+void PPB_InputEvent_Shared::GetIMESelection(uint32_t* start, uint32_t* end) {
   if (start)
     *start = data_.composition_selection_start;
   if (end)
