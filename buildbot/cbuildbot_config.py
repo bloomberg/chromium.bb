@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -562,11 +562,11 @@ add_config('x86-mario-pre-flight-queue', [internal, pfq, {
 
 add_config('x86-alex-pre-flight-branch', [internal, pfq_branch, {
   'board' : 'x86-alex',
+  'master' : True,
 }])
 
 add_config('x86-mario-pre-flight-branch', [internal, pfq_branch, {
   'board' : 'x86-mario',
-  'master' : True,
 }])
 
 add_config('arm-tegra2_seaboard-private-bin', [internal, arm, binary, {
