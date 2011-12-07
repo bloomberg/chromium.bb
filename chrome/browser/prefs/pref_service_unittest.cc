@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
@@ -19,11 +20,17 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/data/resource.h"
 
+using content::BrowserThread;
 using testing::_;
 using testing::Mock;
 
@@ -229,4 +236,60 @@ TEST_F(PrefServiceSetValueTest, SetListValue) {
   observer_.Expect(&prefs_, kName, &empty);
   prefs_.Set(kName, empty);
   Mock::VerifyAndClearExpectations(&observer_);
+}
+
+class PrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
+ protected:
+  PrefServiceWebKitPrefs() : ui_thread_(BrowserThread::UI, &message_loop_) {
+  }
+
+  virtual void SetUp() {
+    ChromeRenderViewHostTestHarness::SetUp();
+
+    // Supply our own profile so we use the correct profile data. The test
+    // harness is not supposed to overwrite a profile if it's already created.
+
+    // Set some (WebKit) user preferences.
+    TestingPrefService* pref_services = profile()->GetTestingPrefService();
+#if defined(TOOLKIT_USES_GTK)
+    pref_services->SetUserPref(prefs::kUsesSystemTheme,
+                               Value::CreateBooleanValue(false));
+#endif
+    pref_services->SetUserPref(prefs::kDefaultCharset,
+                               Value::CreateStringValue("utf8"));
+    pref_services->SetUserPref(prefs::kWebKitDefaultFontSize,
+                               Value::CreateIntegerValue(20));
+    pref_services->SetUserPref(prefs::kWebKitTextAreasAreResizable,
+                               Value::CreateBooleanValue(false));
+    pref_services->SetUserPref(prefs::kWebKitUsesUniversalDetector,
+                               Value::CreateBooleanValue(true));
+    pref_services->SetUserPref("webkit.webprefs.foo",
+                               Value::CreateStringValue("bar"));
+  }
+
+ private:
+  content::TestBrowserThread ui_thread_;
+};
+
+// Tests to see that webkit preferences are properly loaded and copied over
+// to a WebPreferences object.
+TEST_F(PrefServiceWebKitPrefs, PrefsCopied) {
+  WebPreferences webkit_prefs = contents()->TestGetWebkitPrefs();
+
+  // These values have been overridden by the profile preferences.
+  EXPECT_EQ("UTF-8", webkit_prefs.default_encoding);
+  EXPECT_EQ(20, webkit_prefs.default_font_size);
+  EXPECT_FALSE(webkit_prefs.text_areas_are_resizable);
+  EXPECT_TRUE(webkit_prefs.uses_universal_detector);
+
+  // These should still be the default values.
+#if defined(OS_MACOSX)
+  const char kDefaultFont[] = "Times";
+#elif defined(OS_CHROMEOS)
+  const char kDefaultFont[] = "Tinos";
+#else
+  const char kDefaultFont[] = "Times New Roman";
+#endif
+  EXPECT_EQ(ASCIIToUTF16(kDefaultFont), webkit_prefs.standard_font_family);
+  EXPECT_TRUE(webkit_prefs.javascript_enabled);
 }

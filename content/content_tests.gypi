@@ -224,6 +224,7 @@
         'browser/tab_contents/navigation_entry_unittest.cc',
         'browser/tab_contents/render_view_host_manager_unittest.cc',
         'browser/tab_contents/tab_contents_delegate_unittest.cc',
+        'browser/tab_contents/tab_contents_unittest.cc',
         'browser/tab_contents/web_drag_dest_mac_unittest.mm',
         'browser/trace_subscriber_stdio_unittest.cc',
         'common/mac/attributed_string_coder_unittest.mm',

@@ -4,18 +4,16 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "chrome/test/base/testing_pref_service.h"
-#include "chrome/test/base/testing_profile.h"
+#include "content/browser/mock_content_browser_client.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/browser/webui/empty_web_ui_factory.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -29,6 +27,47 @@
 
 using content::BrowserThread;
 using webkit_glue::PasswordForm;
+
+namespace {
+
+class TabContentsTestWebUIFactory : public content::EmptyWebUIFactory {
+ public:
+  virtual WebUI* CreateWebUIForURL(TabContents* source,
+                                   const GURL& url) const OVERRIDE {
+   if (!HasWebUIScheme(url))
+     return NULL;
+
+   return new WebUI(source);
+  }
+
+  virtual bool UseWebUIForURL(content::BrowserContext* browser_context,
+                              const GURL& url) const OVERRIDE {
+    return HasWebUIScheme(url);
+  }
+
+  virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE {
+    return url.SchemeIs("tabcontentstest");
+  }
+
+  virtual bool IsURLAcceptableForWebUI(content::BrowserContext* browser_context,
+      const GURL& url) const {
+    return HasWebUIScheme(url);
+  }
+
+};
+
+class TabContentsTestBrowserClient : public content::MockContentBrowserClient {
+ public:
+  TabContentsTestBrowserClient() {
+  }
+
+  virtual content::WebUIFactory* GetWebUIFactory() OVERRIDE {
+    return &factory_;
+  }
+
+ private:
+  TabContentsTestWebUIFactory factory_;
+};
 
 class TestInterstitialPage : public InterstitialPage {
  public:
@@ -165,37 +204,31 @@ class TestInterstitialPageStateGuard : public TestInterstitialPage::Delegate {
   TestInterstitialPage* interstitial_page_;
 };
 
-class TabContentsTest : public ChromeRenderViewHostTestHarness {
+class TabContentsTest : public RenderViewHostTestHarness {
  public:
-  TabContentsTest() : ui_thread_(BrowserThread::UI, &message_loop_) {
+  TabContentsTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        old_browser_client_(NULL) {
+  }
+
+  virtual void SetUp() {
+    old_browser_client_ = content::GetContentClient()->browser();
+    content::GetContentClient()->set_browser(&browser_client_);
+    RenderViewHostTestHarness::SetUp();
+  }
+
+  virtual void TearDown() {
+    content::GetContentClient()->set_browser(old_browser_client_);
+    RenderViewHostTestHarness::TearDown();
   }
 
  private:
-  // Supply our own profile so we use the correct profile data. The test harness
-  // is not supposed to overwrite a profile if it's already created.
-  virtual void SetUp() {
-    ChromeRenderViewHostTestHarness::SetUp();
-
-    // Set some (WebKit) user preferences.
-    TestingPrefService* pref_services = profile()->GetTestingPrefService();
-#if defined(TOOLKIT_USES_GTK)
-    pref_services->SetUserPref(prefs::kUsesSystemTheme,
-                               Value::CreateBooleanValue(false));
-#endif
-    pref_services->SetUserPref(prefs::kDefaultCharset,
-                               Value::CreateStringValue("utf8"));
-    pref_services->SetUserPref(prefs::kWebKitDefaultFontSize,
-                               Value::CreateIntegerValue(20));
-    pref_services->SetUserPref(prefs::kWebKitTextAreasAreResizable,
-                               Value::CreateBooleanValue(false));
-    pref_services->SetUserPref(prefs::kWebKitUsesUniversalDetector,
-                               Value::CreateBooleanValue(true));
-    pref_services->SetUserPref("webkit.webprefs.foo",
-                               Value::CreateStringValue("bar"));
-  }
-
+  TabContentsTestBrowserClient browser_client_;
   content::TestBrowserThread ui_thread_;
+  content::ContentBrowserClient* old_browser_client_;
 };
+
+}  // namespace
 
 // Test to make sure that title updates get stripped of whitespace.
 TEST_F(TabContentsTest, UpdateTitle) {
@@ -211,9 +244,9 @@ TEST_F(TabContentsTest, UpdateTitle) {
   EXPECT_EQ(ASCIIToUTF16("Lots O' Whitespace"), contents()->GetTitle());
 }
 
-// Test view source mode for the new tabs page.
+// Test view source mode for a webui page.
 TEST_F(TabContentsTest, NTPViewSource) {
-  const char kUrl[] = "view-source:chrome://newtab";
+  const char kUrl[] = "view-source:tabcontentstest://blah";
   const GURL kGURL(kUrl);
 
   process()->sink().ClearMessages();
@@ -406,7 +439,7 @@ TEST_F(TabContentsTest, NavigateTwoTabsCrossSite) {
   contents()->TestDidNavigate(orig_rvh, 1, url, content::PAGE_TRANSITION_TYPED);
 
   // Open a new tab with the same SiteInstance, navigated to the same site.
-  TestTabContents contents2(profile(), instance1);
+  TestTabContents contents2(browser_context_.get(), instance1);
   contents2.transition_cross_site = true;
   contents2.controller().LoadURL(url, content::Referrer(),
                                  content::PAGE_TRANSITION_TYPED,
@@ -467,7 +500,7 @@ TEST_F(TabContentsTest, CrossSiteComparesAgainstCurrentPage) {
       orig_rvh, 1, url, content::PAGE_TRANSITION_TYPED);
 
   // Open a related tab to a second site.
-  TestTabContents contents2(profile(), instance1);
+  TestTabContents contents2(browser_context_.get(), instance1);
   contents2.transition_cross_site = true;
   const GURL url2("http://www.yahoo.com");
   contents2.controller().LoadURL(url2, content::Referrer(),
@@ -591,8 +624,8 @@ TEST_F(TabContentsTest, CrossSiteNavigationPreempted) {
 TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
   contents()->transition_cross_site = true;
 
-  // Start with NTP, which gets a new RVH with WebUI bindings.
-  const GURL url1("chrome://newtab");
+  // Start with a web ui page, which gets a new RVH with WebUI bindings.
+  const GURL url1("tabcontentstest://blah");
   controller().LoadURL(
       url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   TestRenderViewHost* ntp_rvh = rvh();
@@ -721,7 +754,7 @@ TEST_F(TabContentsTest, CrossSiteNotPreemptedDuringBeforeUnload) {
   contents()->transition_cross_site = true;
 
   // Navigate to NTP URL.
-  const GURL url("chrome://newtab");
+  const GURL url("tabcontentstest://blah");
   controller().LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   TestRenderViewHost* orig_rvh = rvh();
@@ -738,7 +771,7 @@ TEST_F(TabContentsTest, CrossSiteNotPreemptedDuringBeforeUnload) {
   // Suppose the first navigation tries to commit now, with a
   // ViewMsg_Stop in flight.  This should not cancel the pending navigation,
   // but it should act as if the beforeunload ack arrived.
-  orig_rvh->SendNavigate(1, GURL("chrome://newtab"));
+  orig_rvh->SendNavigate(1, GURL("tabcontentstest://blah"));
   EXPECT_TRUE(contents()->cross_navigation_pending());
   EXPECT_EQ(orig_rvh, contents()->render_view_host());
   EXPECT_FALSE(orig_rvh->is_waiting_for_beforeunload_ack());
@@ -896,29 +929,6 @@ TEST_F(TabContentsTest, NavigationEntryContentStateNewWindow) {
   // Should have a content state here.
   NavigationEntry* entry = controller().GetLastCommittedEntry();
   EXPECT_FALSE(entry->content_state().empty());
-}
-
-// Tests to see that webkit preferences are properly loaded and copied over
-// to a WebPreferences object.
-TEST_F(TabContentsTest, WebKitPrefs) {
-  WebPreferences webkit_prefs = contents()->TestGetWebkitPrefs();
-
-  // These values have been overridden by the profile preferences.
-  EXPECT_EQ("UTF-8", webkit_prefs.default_encoding);
-  EXPECT_EQ(20, webkit_prefs.default_font_size);
-  EXPECT_FALSE(webkit_prefs.text_areas_are_resizable);
-  EXPECT_TRUE(webkit_prefs.uses_universal_detector);
-
-  // These should still be the default values.
-#if defined(OS_MACOSX)
-  const char kDefaultFont[] = "Times";
-#elif defined(OS_CHROMEOS)
-  const char kDefaultFont[] = "Tinos";
-#else
-  const char kDefaultFont[] = "Times New Roman";
-#endif
-  EXPECT_EQ(ASCIIToUTF16(kDefaultFont), webkit_prefs.standard_font_family);
-  EXPECT_TRUE(webkit_prefs.javascript_enabled);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
