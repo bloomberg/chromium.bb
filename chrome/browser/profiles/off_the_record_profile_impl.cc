@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
+#include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -154,6 +155,10 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
     ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
     extension_prefs->ClearIncognitoSessionOnlyContentSettings();
   }
+
+  // Clears any data the network stack contains that may be related to the
+  // OTR session.
+  g_browser_process->io_thread()->ChangedToOnTheRecord();
 }
 
 std::string OffTheRecordProfileImpl::GetProfileName() {

@@ -73,97 +73,6 @@ void AddCacheEntryOnIOThread(net::URLRequestContextGetter* context_getter,
              expires);
 }
 
-// Class to handle messages from the renderer needed by certain tests.
-class NetInternalsTestMessageHandler : public WebUIMessageHandler {
- public:
-  NetInternalsTestMessageHandler();
-
-  void set_browser(Browser* browser) {
-    ASSERT_TRUE(browser);
-    browser_ = browser;
-  }
-
- private:
-  virtual void RegisterMessages() OVERRIDE;
-
-  // Opens the given URL in a new background tab.
-  void OpenNewTab(const ListValue* list_value);
-
-  // Adds a new entry to the host cache.  Takes in hostname, ip address,
-  // net error code, and expiration time (as number of days from now).
-  void AddCacheEntry(const ListValue* list_value);
-
-  // Navigates to the prerender in the background tab. This assumes that
-  // there is a "Click()" function in the background tab which will navigate
-  // there, and that the background tab exists at slot 1.
-  void NavigateToPrerender(const ListValue* list_value);
-
-  Browser* browser_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetInternalsTestMessageHandler);
-};
-
-NetInternalsTestMessageHandler::NetInternalsTestMessageHandler()
-    : browser_(NULL) {
-}
-
-void NetInternalsTestMessageHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback(
-      "openNewTab",
-      base::Bind(&NetInternalsTestMessageHandler::OpenNewTab,
-                 base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
-      "addCacheEntry",
-      base::Bind(&NetInternalsTestMessageHandler::AddCacheEntry,
-                 base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("navigateToPrerender",
-       base::Bind(&NetInternalsTestMessageHandler::NavigateToPrerender,
-                  base::Unretained(this)));
-}
-
-void NetInternalsTestMessageHandler::OpenNewTab(const ListValue* list_value) {
-  std::string url;
-  ASSERT_TRUE(list_value->GetString(0, &url));
-  ASSERT_TRUE(browser_);
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser_,
-      GURL(url),
-      NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
-}
-
-// Called on UI thread.  Adds an entry to the cache for the specified hostname
-// by posting a task to the IO thread.  Takes the host name, ip address, net
-// error code, and expiration time in days from now as parameters.  If the error
-// code indicates failure, the ip address must be an empty string.
-void NetInternalsTestMessageHandler::AddCacheEntry(
-    const ListValue* list_value) {
-  std::string hostname;
-  std::string ip_literal;
-  double net_error;
-  double expire_days_from_now;
-  ASSERT_TRUE(list_value->GetString(0, &hostname));
-  ASSERT_TRUE(list_value->GetString(1, &ip_literal));
-  ASSERT_TRUE(list_value->GetDouble(2, &net_error));
-  ASSERT_TRUE(list_value->GetDouble(3, &expire_days_from_now));
-  ASSERT_TRUE(browser_);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&AddCacheEntryOnIOThread,
-                 make_scoped_refptr(browser_->profile()->GetRequestContext()),
-                 hostname,
-                 ip_literal,
-                 static_cast<int>(net_error),
-                 static_cast<int>(expire_days_from_now)));
-}
-
-void NetInternalsTestMessageHandler::NavigateToPrerender(
-    const ListValue* list_value) {
-  RenderViewHost* host = browser_->GetTabContentsAt(1)->render_view_host();
-  host->ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16("Click()"));
-}
-
 class NetInternalsTest : public WebUIBrowserTest {
  public:
   NetInternalsTest();
@@ -189,17 +98,56 @@ class NetInternalsTest : public WebUIBrowserTest {
   }
 
  private:
+  // Class to handle messages from the renderer needed by certain tests.
+  class MessageHandler : public WebUIMessageHandler {
+   public:
+    explicit MessageHandler(NetInternalsTest* net_internals_test);
+
+   private:
+    virtual void RegisterMessages() OVERRIDE;
+
+    // Opens the given URL in a new background tab.
+    void OpenNewTab(const ListValue* list_value);
+
+    // Called on UI thread.  Adds an entry to the cache for the specified
+    // hostname by posting a task to the IO thread.  Takes the host name,
+    // ip address, net error code, and expiration time in days from now
+    // as parameters.  If the error code indicates failure, the ip address
+    // must be an empty string.
+    void AddCacheEntry(const ListValue* list_value);
+
+    // Navigates to the prerender in the background tab. This assumes that
+    // there is a "Click()" function in the background tab which will navigate
+    // there, and that the background tab exists at slot 1.
+    void NavigateToPrerender(const ListValue* list_value);
+
+    // Creates an incognito browser.
+    void CreateIncognitoBrowser(const ListValue* list_value);
+
+    // Closes an incognito browser created with CreateIncognitoBrowser.
+    void CloseIncognitoBrowser(const ListValue* list_value);
+
+    Browser* browser() {
+      return net_internals_test_->browser();
+    }
+
+    NetInternalsTest* net_internals_test_;
+    Browser* incognito_browser_;
+
+    DISALLOW_COPY_AND_ASSIGN(MessageHandler);
+  };
+
   virtual WebUIMessageHandler* GetMockMessageHandler() OVERRIDE {
-    message_handler_.set_browser(browser());
     return &message_handler_;
   }
 
-  NetInternalsTestMessageHandler message_handler_;
+  MessageHandler message_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(NetInternalsTest);
 };
 
-NetInternalsTest::NetInternalsTest() {
+NetInternalsTest::NetInternalsTest()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(message_handler_(this)) {
 }
 
 NetInternalsTest::~NetInternalsTest() {
@@ -241,6 +189,90 @@ void NetInternalsTest::SetUpOnMainThread() {
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(profile);
   prerender_manager->mutable_config().max_bytes = 1000 * 1024 * 1024;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetInternalsTest::MessageHandler
+////////////////////////////////////////////////////////////////////////////////
+
+NetInternalsTest::MessageHandler::MessageHandler(
+    NetInternalsTest* net_internals_test)
+    : net_internals_test_(net_internals_test),
+      incognito_browser_(NULL) {
+}
+
+void NetInternalsTest::MessageHandler::RegisterMessages() {
+  web_ui_->RegisterMessageCallback(
+      "openNewTab",
+      base::Bind(&NetInternalsTest::MessageHandler::OpenNewTab,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback(
+      "addCacheEntry",
+      base::Bind(&NetInternalsTest::MessageHandler::AddCacheEntry,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("navigateToPrerender",
+       base::Bind(&NetInternalsTest::MessageHandler::NavigateToPrerender,
+                  base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("createIncognitoBrowser",
+       base::Bind(&NetInternalsTest::MessageHandler::CreateIncognitoBrowser,
+                  base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("closeIncognitoBrowser",
+       base::Bind(&NetInternalsTest::MessageHandler::CloseIncognitoBrowser,
+                  base::Unretained(this)));
+}
+
+void NetInternalsTest::MessageHandler::OpenNewTab(
+    const ListValue* list_value) {
+  std::string url;
+  ASSERT_TRUE(list_value->GetString(0, &url));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(url),
+      NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+}
+
+void NetInternalsTest::MessageHandler::AddCacheEntry(
+    const ListValue* list_value) {
+  std::string hostname;
+  std::string ip_literal;
+  double net_error;
+  double expire_days_from_now;
+  ASSERT_TRUE(list_value->GetString(0, &hostname));
+  ASSERT_TRUE(list_value->GetString(1, &ip_literal));
+  ASSERT_TRUE(list_value->GetDouble(2, &net_error));
+  ASSERT_TRUE(list_value->GetDouble(3, &expire_days_from_now));
+  ASSERT_TRUE(browser());
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&AddCacheEntryOnIOThread,
+                 make_scoped_refptr(browser()->profile()->GetRequestContext()),
+                 hostname,
+                 ip_literal,
+                 static_cast<int>(net_error),
+                 static_cast<int>(expire_days_from_now)));
+}
+
+void NetInternalsTest::MessageHandler::NavigateToPrerender(
+    const ListValue* list_value) {
+  RenderViewHost* host = browser()->GetTabContentsAt(1)->render_view_host();
+  host->ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16("Click()"));
+}
+
+void NetInternalsTest::MessageHandler::CreateIncognitoBrowser(
+    const ListValue* list_value) {
+  ASSERT_FALSE(incognito_browser_);
+  incognito_browser_ = net_internals_test_->CreateIncognitoBrowser();
+}
+
+void NetInternalsTest::MessageHandler::CloseIncognitoBrowser(
+    const ListValue* list_value) {
+  ASSERT_TRUE(incognito_browser_);
+  incognito_browser_->CloseAllTabs();
+  // Closing all a Browser's tabs will ultimately result in its destruction,
+  // thought it may not have been destroyed yet.
+  incognito_browser_ = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -366,6 +398,13 @@ IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsDnsViewExpired) {
 // Adds two entries to the DNS cache, clears the cache, and then repeats.
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsDnsViewAddTwoTwice) {
   EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsDnsViewAddTwoTwice"));
+}
+
+// Makes sure that openning and then closing an incognito window clears the
+// DNS cache.  To keep things simple, we add a fake cache entry ourselves,
+// rather than having the incognito browser create one.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsDnsViewIncognitoClears) {
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsDnsViewIncognitoClears"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

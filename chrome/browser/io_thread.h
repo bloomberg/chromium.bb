@@ -106,6 +106,9 @@ class IOThread : public content::BrowserThreadDelegate {
 
   ChromeNetLog* net_log();
 
+  // Handles changing to On The Record mode, discarding confidential data.
+  void ChangedToOnTheRecord();
+
   // Returns a getter for the URLRequestContext.  Only called on the UI thread.
   net::URLRequestContextGetter* system_url_request_context_getter();
 
@@ -142,6 +145,8 @@ class IOThread : public content::BrowserThreadDelegate {
 
   // Returns an SSLConfigService instance.
   net::SSLConfigService* GetSSLConfigService();
+
+  void ChangedToOnTheRecordOnIOThread();
 
   // The NetLog is owned by the browser process, to allow logging from other
   // threads during shutdown, but is used most frequently on the IOThread.

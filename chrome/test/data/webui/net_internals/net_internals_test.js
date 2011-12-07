@@ -424,6 +424,25 @@ var netInternalsTest = (function() {
     }
   };
 
+  // Creates an incognito window.  May not be called if there already is an
+  // incognito in exitence.  Returns immediately.
+  function getCreateIncognitoBrowserTask() {
+    return new CallFunctionTask(
+        function() {
+          chrome.send('createIncognitoBrowser');
+        });
+  };
+
+  // Closes an incognito window created with the task above.  May only be
+  // called if there's an incognito window created by the above function
+  // that has yet to be closed.  Returns immediately.
+  function getCloseIncognitoBrowserTask() {
+    return new CallFunctionTask(
+        function() {
+          chrome.send('closeIncognitoBrowser');
+        });
+  };
+
   /**
    * Returns true if a node does not have a 'display' property of 'none'.
    * @param {node}: node The node to check.
@@ -510,6 +529,9 @@ var netInternalsTest = (function() {
     switchToView: switchToView,
     TaskQueue: TaskQueue,
     Task: Task,
+    CallFunctionTask: CallFunctionTask,
+    getCreateIncognitoBrowserTask: getCreateIncognitoBrowserTask,
+    getCloseIncognitoBrowserTask: getCloseIncognitoBrowserTask,
     Source: Source,
     Event: Event,
     CreateBeginEvent: CreateBeginEvent,

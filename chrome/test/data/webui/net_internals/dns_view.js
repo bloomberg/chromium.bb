@@ -255,4 +255,15 @@ netInternalsTest.test('netInternalsDnsViewAddTwoTwice', function() {
   taskQueue.run(true);
 });
 
+netInternalsTest.test('netInternalsDnsViewIncognitoClears', function() {
+  netInternalsTest.switchToView('dns');
+  var taskQueue = new netInternalsTest.TaskQueue(true);
+  taskQueue.addTask(netInternalsTest.getCreateIncognitoBrowserTask());
+  taskQueue.addTask(new AddCacheEntryTask(
+                        'somewhere.com', '1.2.3.4', 0, true));
+  taskQueue.addTask(netInternalsTest.getCloseIncognitoBrowserTask());
+  taskQueue.addTask(new WaitForEntryDestructionTask('somewhere.com'));
+  taskQueue.run(true);
+});
+
 })();  // Anonymous namespace

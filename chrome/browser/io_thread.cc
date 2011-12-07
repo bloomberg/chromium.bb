@@ -395,6 +395,15 @@ ChromeNetLog* IOThread::net_log() {
   return net_log_;
 }
 
+void IOThread::ChangedToOnTheRecord() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&IOThread::ChangedToOnTheRecordOnIOThread,
+                 base::Unretained(this)));
+}
+
 net::URLRequestContextGetter* IOThread::system_url_request_context_getter() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!system_url_request_context_getter_) {
@@ -591,6 +600,19 @@ void IOThread::ClearHostCache() {
 
 net::SSLConfigService* IOThread::GetSSLConfigService() {
   return ssl_config_service_manager_->Get();
+}
+
+void IOThread::ChangedToOnTheRecordOnIOThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // Clear the host cache to avoid showing entries from the OTR session
+  // in about:net-internals.
+  ClearHostCache();
+
+  // Clear all of the passively logged data.
+  // TODO(eroman): this is a bit heavy handed, really all we need to do is
+  //               clear the data pertaining to incognito context.
+  net_log_->ClearAllPassivelyCapturedEvents();
 }
 
 void IOThread::InitSystemRequestContext() {
