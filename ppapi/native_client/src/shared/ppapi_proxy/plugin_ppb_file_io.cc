@@ -159,8 +159,8 @@ int32_t Read(PP_Resource file_io,
               offset, bytes_to_read);
 
   if (bytes_to_read < 0)
-    bytes_to_read = 0;
-  nacl_abi_size_t buffer_size = bytes_to_read;
+    return PP_ERROR_FAILED;
+  nacl_abi_size_t buffer_size = static_cast<nacl_abi_size_t>(bytes_to_read);
 
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback, buffer);
@@ -196,7 +196,7 @@ int32_t Write(PP_Resource file_io,
               offset, bytes_to_write);
 
   if (bytes_to_write < 0)
-    bytes_to_write = 0;
+    return PP_ERROR_FAILED;
   nacl_abi_size_t buffer_size = static_cast<nacl_abi_size_t>(bytes_to_write);
 
   int32_t callback_id =

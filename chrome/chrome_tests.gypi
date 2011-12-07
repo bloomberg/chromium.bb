@@ -720,6 +720,7 @@
         {
           'destination': '<(PRODUCT_DIR)',
           'files': [
+            # Keep 'test_case.html.mock-http-headers' with 'test_case.html'.
             '../ppapi/tests/test_case.html',
             '../ppapi/tests/test_case.html.mock-http-headers',
             '../ppapi/tests/test_page.css',

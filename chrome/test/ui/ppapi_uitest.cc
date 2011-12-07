@@ -117,6 +117,14 @@ class PPAPITestBase : public UITest {
     RunTest(test_case);
   }
 
+  std::string StripPrefixes(const std::string& test_name) {
+    const char* const prefixes[] = { "FAILS_", "FLAKY_", "DISABLED_" };
+    for (size_t i = 0; i < sizeof(prefixes)/sizeof(prefixes[0]); ++i)
+      if (test_name.find(prefixes[i]) == 0)
+        return test_name.substr(strlen(prefixes[i]));
+    return test_name;
+  }
+
  private:
   void RunTestURL(const GURL& test_url) {
     scoped_refptr<TabProxy> tab(GetActiveTab());
@@ -213,36 +221,38 @@ class PPAPINaClTest : public PPAPITestBase {
   }
 };
 
+// This macro finesses macro expansion to do what we want.
+#define STRIP_PREFIXES(test_name) StripPrefixes(#test_name)
 
 // Use these macros to run the tests for a specific interface.
 // Most interfaces should be tested with both macros.
 #define TEST_PPAPI_IN_PROCESS(test_name) \
     TEST_F(PPAPITest, test_name) { \
-      RunTest(#test_name); \
+      RunTest(STRIP_PREFIXES(test_name)); \
     }
 #define TEST_PPAPI_OUT_OF_PROCESS(test_name) \
     TEST_F(OutOfProcessPPAPITest, test_name) { \
-      RunTest(#test_name); \
+      RunTest(STRIP_PREFIXES(test_name)); \
     }
 
 // Similar macros that test over HTTP.
 #define TEST_PPAPI_IN_PROCESS_VIA_HTTP(test_name) \
     TEST_F(PPAPITest, test_name) { \
-      RunTestViaHTTP(#test_name); \
+      RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
     }
 #define TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(test_name) \
     TEST_F(OutOfProcessPPAPITest, test_name) { \
-      RunTestViaHTTP(#test_name); \
+      RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
     }
 
 // Similar macros that test with WebSocket server
 #define TEST_PPAPI_IN_PROCESS_WITH_WS(test_name) \
     TEST_F(PPAPITest, test_name) { \
-      RunTestWithWebSocketServer(#test_name); \
+      RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
     }
 #define TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(test_name) \
     TEST_F(OutOfProcessPPAPITest, test_name) { \
-      RunTestWithWebSocketServer(#test_name); \
+      RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
     }
 
 
@@ -253,7 +263,7 @@ class PPAPINaClTest : public PPAPITestBase {
 // NaCl based PPAPI tests
 #define TEST_PPAPI_NACL_VIA_HTTP(test_name) \
     TEST_F(PPAPINaClTest, test_name) { \
-  RunTestViaHTTP(#test_name); \
+  RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
 }
 #endif
 
@@ -309,9 +319,92 @@ TEST_PPAPI_IN_PROCESS_VIA_HTTP(UDPSocketPrivateShared)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivateShared)
 TEST_PPAPI_NACL_VIA_HTTP(UDPSocketPrivateShared)
 
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader)
-TEST_PPAPI_NACL_VIA_HTTP(URLLoader)
+// URLLoader tests.
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_BasicGET)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_BasicPOST)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_BasicFilePOST)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_BasicFileRangePOST)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_CompoundBodyPOST)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_EmptyDataPOST)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_BinaryDataPOST)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_CustomRequestHeader)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_FailsBogusContentLength)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_StreamToFile)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_UntrustedSameOriginRestriction)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_TrustedSameOriginRestriction)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_UntrustedCrossOriginRequest)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_TrustedCrossOriginRequest)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_UntrustedJavascriptURLRestriction)
+// TODO(bbudge) Fix Javascript URLs for trusted loaders.
+// http://crbug.com/103062
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(FAILS_URLLoader_TrustedJavascriptURLRestriction)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_UntrustedMethodRestriction)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_TrustedMethodRestriction)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_UntrustedHeaderRestriction)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_TrustedHeaderRestriction)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_UntrustedCustomReferrer)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_TrustedCustomReferrer)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_UntrustedCustomContentTransferEncoding)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_TrustedCustomContentTransferEncoding)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_AuditURLRedirect)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_AbortCalls)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_UntendedLoad)
+
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_BasicGET)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_BasicPOST)
+// TODO(bbudge) Enable these when PPB_FileIO is proxied.
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DISABLED_URLLoader_BasicFilePOST)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DISABLED_URLLoader_BasicFileRangePOST)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_CompoundBodyPOST)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_EmptyDataPOST)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_BinaryDataPOST)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_CustomRequestHeader)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_FailsBogusContentLength)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_StreamToFile)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_UntrustedSameOriginRestriction)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_TrustedSameOriginRestriction)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_UntrustedCrossOriginRequest)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_TrustedCrossOriginRequest)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_UntrustedJavascriptURLRestriction)
+// TODO(bbudge) Fix Javascript URLs for trusted loaders.
+// http://crbug.com/103062
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(
+    FAILS_URLLoader_TrustedJavascriptURLRestriction)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_UntrustedMethodRestriction)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_TrustedMethodRestriction)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_UntrustedHeaderRestriction)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_TrustedHeaderRestriction)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_UntrustedCustomReferrer)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_TrustedCustomReferrer)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(
+    URLLoader_UntrustedCustomContentTransferEncoding)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(
+    URLLoader_TrustedCustomContentTransferEncoding)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_AuditURLRedirect)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_AbortCalls)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_UntendedLoad)
+
+TEST_PPAPI_NACL_VIA_HTTP(URLLoader_BasicGET)
+TEST_PPAPI_NACL_VIA_HTTP(URLLoader_BasicPOST)
+TEST_PPAPI_NACL_VIA_HTTP(URLLoader_BasicFilePOST)
+TEST_PPAPI_NACL_VIA_HTTP(URLLoader_BasicFileRangePOST)
+TEST_PPAPI_NACL_VIA_HTTP(URLLoader_CompoundBodyPOST)
+TEST_PPAPI_NACL_VIA_HTTP(URLLoader_EmptyDataPOST)
+TEST_PPAPI_NACL_VIA_HTTP(URLLoader_BinaryDataPOST)
+TEST_PPAPI_NACL_VIA_HTTP(URLLoader_CustomRequestHeader)
+TEST_PPAPI_NACL_VIA_HTTP(URLLoader_FailsBogusContentLength)
+TEST_PPAPI_NACL_VIA_HTTP(URLLoader_StreamToFile)
+// TODO(bbudge) Enable these when we can get the document URL in NaCl.
+TEST_PPAPI_NACL_VIA_HTTP(DISABLED_URLLoader_UntrustedSameOriginRestriction)
+TEST_PPAPI_NACL_VIA_HTTP(DISABLED_URLLoader_UntrustedCrossOriginRequest)
+TEST_PPAPI_NACL_VIA_HTTP(URLLoader_UntrustedJavascriptURLRestriction)
+TEST_PPAPI_NACL_VIA_HTTP(URLLoader_UntrustedMethodRestriction)
+TEST_PPAPI_NACL_VIA_HTTP(URLLoader_UntrustedHeaderRestriction)
+TEST_PPAPI_NACL_VIA_HTTP(URLLoader_UntrustedCustomReferrer)
+TEST_PPAPI_NACL_VIA_HTTP(URLLoader_UntrustedCustomContentTransferEncoding)
+TEST_PPAPI_NACL_VIA_HTTP(URLLoader_AuditURLRedirect)
+TEST_PPAPI_NACL_VIA_HTTP(URLLoader_AbortCalls)
+TEST_PPAPI_NACL_VIA_HTTP(URLLoader_UntendedLoad)
 
 TEST_PPAPI_IN_PROCESS(PaintAggregator)
 TEST_PPAPI_OUT_OF_PROCESS(PaintAggregator)
@@ -339,7 +432,7 @@ TEST_PPAPI_NACL_VIA_HTTP(Var)
 
 TEST_PPAPI_IN_PROCESS(VarDeprecated)
 // Disabled because it times out: http://crbug.com/89961
-//TEST_PPAPI_OUT_OF_PROCESS(VarDeprecated)
+// TEST_PPAPI_OUT_OF_PROCESS(VarDeprecated)
 
 // Windows defines 'PostMessage', so we have to undef it.
 #ifdef PostMessage
@@ -367,20 +460,52 @@ TEST_PPAPI_NACL_VIA_HTTP(Memory)
 TEST_PPAPI_IN_PROCESS(VideoDecoder)
 TEST_PPAPI_OUT_OF_PROCESS(VideoDecoder)
 
-// http://crbug.com/90039 and http://crbug.com/83443 (Mac)
-TEST_F(PPAPITest, FAILS_FileIO) {
-  RunTestViaHTTP("FileIO");
-}
-// http://crbug.com/101154
-TEST_F(OutOfProcessPPAPITest, DISABLED_FileIO) {
-  RunTestViaHTTP("FileIO");
-}
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_FileIO)
+// Touch and SetLength fail on Mac and Linux due to sandbox restrictions.
+// http://crbug.com/101128
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+#define MAYBE_FileIO_ReadWriteSetLength DISABLED_FileIO_ReadWriteSetLength
+#define MAYBE_FileIO_TouchQuery DISABLED_FileIO_TouchQuery
+#define MAYBE_FileIO_WillWriteWillSetLength \
+    DISABLED_FileIO_WillWriteWillSetLength
+#else
+#define MAYBE_FileIO_ReadWriteSetLength FileIO_ReadWriteSetLength
+#define MAYBE_FileIO_TouchQuery FileIO_TouchQuery
+#define MAYBE_FileIO_WillWriteWillSetLength FileIO_WillWriteWillSetLength
+#endif
 
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_Open)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_AbortCalls)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_ParallelReads)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_ParallelWrites)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_NotAllowMixedReadWrite)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(MAYBE_FileIO_ReadWriteSetLength)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(MAYBE_FileIO_TouchQuery)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(MAYBE_FileIO_WillWriteWillSetLength)
+
+// http://crbug.com/101154
+// TODO(bbudge) Enable these tests when PPB_FileIO is proxied.
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DISABLED_FileIO_Open)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DISABLED_FileIO_AbortCalls)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DISABLED_FileIO_ParallelReads)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DISABLED_FileIO_ParallelWrites)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DISABLED_FileIO_NotAllowMixedReadWrite)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DISABLED_FileIO_ReadWriteSetLength)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DISABLED_FileIO_TouchQuery)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DISABLED_FileIO_WillWriteWillSetLength)
+
+TEST_PPAPI_NACL_VIA_HTTP(FileIO_Open)
+TEST_PPAPI_NACL_VIA_HTTP(FileIO_AbortCalls)
+TEST_PPAPI_NACL_VIA_HTTP(FileIO_ParallelReads)
+TEST_PPAPI_NACL_VIA_HTTP(FileIO_ParallelWrites)
+TEST_PPAPI_NACL_VIA_HTTP(FileIO_NotAllowMixedReadWrite)
+TEST_PPAPI_NACL_VIA_HTTP(MAYBE_FileIO_TouchQuery)
+TEST_PPAPI_NACL_VIA_HTTP(MAYBE_FileIO_ReadWriteSetLength)
+// The following test requires PPB_FileIO_Trusted, not available in NaCl.
+TEST_PPAPI_NACL_VIA_HTTP(DISABLED_FileIO_WillWriteWillSetLength)
 
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileRef)
 // Disabled because it times out: http://crbug.com/89961
-//TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileRef)
+// TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileRef)
 TEST_PPAPI_NACL_VIA_HTTP(FileRef)
 
 
