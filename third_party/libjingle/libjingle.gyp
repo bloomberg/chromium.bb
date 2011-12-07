@@ -94,6 +94,16 @@
             'BSD',
           ],
         }],
+        ['OS=="openbsd"', {
+          'defines': [
+            'OPENBSD',
+          ],
+        }],
+        ['OS=="freebsd"', {
+          'defines': [
+            'FREEBSD',
+          ],
+        }],
         ['no_libjingle_logging==1', {
           'defines': [
             'NO_LIBJINGLE_LOGGING',
@@ -136,6 +146,16 @@
       ['os_bsd==1', {
         'defines': [
           'BSD',
+        ],
+      }],
+      ['OS=="openbsd"', {
+        'defines': [
+          'OPENBSD',
+        ],
+      }],
+      ['OS=="freebsd"', {
+        'defines': [
+          'FREEBSD',
         ],
       }],
     ],
