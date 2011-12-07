@@ -2168,6 +2168,7 @@ TEST_F(ExtensionServiceTest, LoadExtensionsCanDowngrade) {
   DictionaryValue manifest;
   manifest.SetString("version", "2.0");
   manifest.SetString("name", "LOAD Downgrade Test");
+  manifest.SetInteger("manifest_version", 2);
 
   JSONFileValueSerializer serializer(manifest_path);
   ASSERT_TRUE(serializer.Serialize(manifest));
