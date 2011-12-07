@@ -85,7 +85,6 @@ uint64 WebClipboardImpl::sequenceNumber(Buffer buffer) {
 }
 
 bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
-  ui::Clipboard::FormatType format_type;
   ui::Clipboard::Buffer buffer_type;
 
   if (!ConvertBufferType(buffer, &buffer_type))
@@ -98,22 +97,21 @@ bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
           client_->IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
                                      buffer_type);
     case FormatHTML:
-      format_type = ui::Clipboard::GetHtmlFormatType();
-      break;
+      return client_->IsFormatAvailable(ui::Clipboard::GetHtmlFormatType(),
+                                        buffer_type);
     case FormatSmartPaste:
-      format_type = ui::Clipboard::GetWebKitSmartPasteFormatType();
-      break;
+      return client_->IsFormatAvailable(
+          ui::Clipboard::GetWebKitSmartPasteFormatType(), buffer_type);
     case FormatBookmark:
 #if defined(OS_WIN) || defined(OS_MACOSX)
-      format_type = ui::Clipboard::GetUrlWFormatType();
-      break;
+      return client_->IsFormatAvailable(ui::Clipboard::GetUrlWFormatType(),
+                                        buffer_type);
 #endif
     default:
       NOTREACHED();
-      return false;
   }
 
-  return client_->IsFormatAvailable(format_type, buffer_type);
+  return false;
 }
 
 WebVector<WebString> WebClipboardImpl::readAvailableTypes(

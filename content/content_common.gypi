@@ -94,6 +94,7 @@
     'common/child_trace_message_filter.cc',
     'common/child_trace_message_filter.h',
     'common/chrome_descriptors.h',
+    'common/clipboard_messages.cc',
     'common/clipboard_messages.h',
     'common/content_message_generator.cc',
     'common/content_message_generator.h',

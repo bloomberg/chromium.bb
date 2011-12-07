@@ -15,6 +15,23 @@
 
 #define IPC_MESSAGE_START ClipboardMsgStart
 
+#ifndef CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
+#define CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
+
+namespace IPC {
+
+template<>
+struct ParamTraits<ui::Clipboard::FormatType> {
+  typedef ui::Clipboard::FormatType param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+}  // namespace IPC
+
+#endif  // CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
+
 IPC_ENUM_TRAITS(ui::Clipboard::Buffer)
 
 // Clipboard IPC messages sent from the renderer to the browser.
@@ -32,7 +49,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_GetSequenceNumber,
                             ui::Clipboard::Buffer /* buffer */,
                             uint64 /* result */)
 IPC_SYNC_MESSAGE_CONTROL2_1(ClipboardHostMsg_IsFormatAvailable,
-                            std::string /* format */,
+                            ui::Clipboard::FormatType /* format */,
                             ui::Clipboard::Buffer /* buffer */,
                             bool /* result */)
 IPC_SYNC_MESSAGE_CONTROL1_2(ClipboardHostMsg_ReadAvailableTypes,

@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 
+#include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -180,11 +181,37 @@ void GdkPixbufFree(guchar* pixels, gpointer data) {
 
 }  // namespace
 
+Clipboard::FormatType::FormatType() {
+}
+
+Clipboard::FormatType::FormatType(const std::string& format_string)
+    : data_(StringToGdkAtom(format_string)) {
+}
+
+Clipboard::FormatType::FormatType(const GdkAtom& native_format)
+    : data_(native_format) {
+}
+
+Clipboard::FormatType::~FormatType() {
+}
+
+std::string Clipboard::FormatType::Serialize() const {
+  return GdkAtomToString(data_);
+}
+
+// static
+Clipboard::FormatType Clipboard::FormatType::Deserialize(
+    const std::string& serialization) {
+  return FormatType(serialization);
+}
+
+bool Clipboard::FormatType::Equals(const FormatType& other) const {
+  return data_ == other.data_;
+}
+
 Clipboard::Clipboard() : clipboard_data_(NULL) {
-#if !defined(USE_AURA)
   clipboard_ = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
   primary_selection_ = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
-#endif
 }
 
 Clipboard::~Clipboard() {
@@ -302,16 +329,17 @@ void Clipboard::WriteBookmark(const char* title_data, size_t title_len,
   InsertMapping(kMimeTypeMozillaURL, data, data_len);
 }
 
-void Clipboard::WriteData(const char* format_name, size_t format_len,
-                          const char* data_data, size_t data_len) {
-  std::string format(format_name, format_len);
+void Clipboard::WriteData(const FormatType& format,
+                          const char* data_data,
+                          size_t data_len) {
   // We assume that certain mapping types are only written by trusted code.
   // Therefore we must upkeep their integrity.
-  if (format == kMimeTypeBitmap)
+  if (format.Equals(GetBitmapFormatType()))
     return;
   char* data = new char[data_len];
   memcpy(data, data_data, data_len);
-  InsertMapping(format.c_str(), data, data_len);
+  // TODO(dcheng): Maybe this map should use GdkAtoms...
+  InsertMapping(GdkAtomToString(format.ToGdkAtom()).c_str(), data, data_len);
 }
 
 // We do not use gtk_clipboard_wait_is_target_available because of
@@ -323,7 +351,7 @@ bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
   if (clipboard == NULL)
     return false;
 
-  bool format_is_plain_text = GetPlainTextFormatType() == format;
+  bool format_is_plain_text = GetPlainTextFormatType().Equals(format);
   if (format_is_plain_text) {
     // This tries a number of common text targets.
     if (gtk_clipboard_wait_is_text_available(clipboard))
@@ -357,10 +385,8 @@ bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
     }
   }
 
-  GdkAtom format_atom = StringToGdkAtom(format);
-
   for (int i = 0; i < num; i++) {
-    if (targets[i] == format_atom) {
+    if (targets[i] == format.ToGdkAtom()) {
       retval = true;
       break;
     }
@@ -370,11 +396,6 @@ bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
   gtk_selection_data_free(data);
 
   return retval;
-}
-
-bool Clipboard::IsFormatAvailableByString(const std::string& format,
-                                          Clipboard::Buffer buffer) const {
-  return IsFormatAvailable(format, buffer);
 }
 
 void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
@@ -399,7 +420,7 @@ void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
     return;
 
   GtkSelectionData* data = gtk_clipboard_wait_for_contents(
-      clipboard, StringToGdkAtom(GetWebCustomDataFormatType()));
+      clipboard, GetWebCustomDataFormatType().ToGdkAtom());
   if (!data)
     return;
   ReadCustomDataTypes(data->data, data->length, types);
@@ -458,7 +479,7 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
   if (clipboard == NULL)
     return;
   GtkSelectionData* data = gtk_clipboard_wait_for_contents(clipboard,
-      StringToGdkAtom(GetHtmlFormatType()));
+      GetHtmlFormatType().ToGdkAtom());
 
   if (!data)
     return;
@@ -510,7 +531,7 @@ void Clipboard::ReadCustomData(Buffer buffer,
     return;
 
   GtkSelectionData* data = gtk_clipboard_wait_for_contents(
-      clipboard, StringToGdkAtom(GetWebCustomDataFormatType()));
+      clipboard, GetWebCustomDataFormatType().ToGdkAtom());
   if (!data)
     return;
   ReadCustomDataForType(data->data, data->length, type, result);
@@ -522,9 +543,9 @@ void Clipboard::ReadBookmark(string16* title, std::string* url) const {
   NOTIMPLEMENTED();
 }
 
-void Clipboard::ReadData(const std::string& format, std::string* result) const {
+void Clipboard::ReadData(const FormatType& format, std::string* result) const {
   GtkSelectionData* data =
-      gtk_clipboard_wait_for_contents(clipboard_, StringToGdkAtom(format));
+      gtk_clipboard_wait_for_contents(clipboard_, format.ToGdkAtom());
   if (!data)
     return;
   result->assign(reinterpret_cast<char*>(data->data), data->length);
@@ -538,34 +559,46 @@ uint64 Clipboard::GetSequenceNumber(Buffer buffer) {
     return SelectionChangeObserver::GetInstance()->primary_sequence_number();
 }
 
-// static
-Clipboard::FormatType Clipboard::GetPlainTextFormatType() {
-  return GdkAtomToString(GDK_TARGET_STRING);
+//static
+Clipboard::FormatType Clipboard::GetFormatType(
+    const std::string& format_string) {
+  return FormatType::Deserialize(format_string);
 }
 
 // static
-Clipboard::FormatType Clipboard::GetPlainTextWFormatType() {
+const Clipboard::FormatType& Clipboard::GetPlainTextFormatType() {
+  CR_DEFINE_STATIC_LOCAL(
+      FormatType, type, (GDK_TARGET_STRING));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType() {
   return GetPlainTextFormatType();
 }
 
 // static
-Clipboard::FormatType Clipboard::GetHtmlFormatType() {
-  return std::string(kMimeTypeHTML);
+const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeHTML));
+  return type;
 }
 
 // static
-Clipboard::FormatType Clipboard::GetBitmapFormatType() {
-  return std::string(kMimeTypeBitmap);
+const Clipboard::FormatType& Clipboard::GetBitmapFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeBitmap));
+  return type;
 }
 
 // static
-Clipboard::FormatType Clipboard::GetWebKitSmartPasteFormatType() {
-  return std::string(kMimeTypeWebkitSmartPaste);
+const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebkitSmartPaste));
+  return type;
 }
 
 // static
-Clipboard::FormatType Clipboard::GetWebCustomDataFormatType() {
-  return std::string(kMimeTypeWebCustomData);
+const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebCustomData));
+  return type;
 }
 
 void Clipboard::InsertMapping(const char* key,

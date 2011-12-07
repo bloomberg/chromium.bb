@@ -60,7 +60,8 @@ class UI_EXPORT ScopedClipboardWriter {
   void WriteBitmapFromPixels(const void* pixels, const gfx::Size& size);
 
   // Adds arbitrary data to clipboard.
-  void WritePickledData(const Pickle& pickle, Clipboard::FormatType format);
+  void WritePickledData(const Pickle& pickle,
+                        const Clipboard::FormatType& format);
 
  protected:
   // Converts |text| to UTF-8 and adds it to the clipboard.  If it's a URL, we

@@ -6,11 +6,13 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_nsobject.h"
+#include "base/stl_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
@@ -44,6 +46,40 @@ NSPasteboard* GetPasteboard() {
 }
 
 }  // namespace
+
+Clipboard::FormatType::FormatType() : data_(nil) {
+}
+
+Clipboard::FormatType::FormatType(NSString* native_format)
+    : data_([native_format retain]) {
+}
+
+Clipboard::FormatType::FormatType(const FormatType& other)
+    : data_([other.data_ retain]) {
+}
+
+Clipboard::FormatType& Clipboard::FormatType::operator=(
+    const FormatType& other) {
+  if (this != &other) {
+    [data_ release];
+    data_ = [other.data_ retain];
+  }
+  return *this;
+}
+
+Clipboard::FormatType::~FormatType() {
+  [data_ release];
+}
+
+std::string Clipboard::FormatType::Serialize() const {
+  return base::SysNSStringToUTF8(data_);
+}
+
+// static
+Clipboard::FormatType Clipboard::FormatType::Deserialize(
+    const std::string& serialization) {
+  return FormatType(base::SysUTF8ToNSString(serialization));
+}
 
 Clipboard::Clipboard() {
 }
@@ -157,23 +193,20 @@ void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
   }
 }
 
-void Clipboard::WriteData(const char* format_name, size_t format_len,
-                          const char* data_data, size_t data_len) {
+void Clipboard::WriteData(const FormatType& format,
+                          const char* data_data,
+                          size_t data_len) {
   NSPasteboard* pb = GetPasteboard();
-  scoped_nsobject<NSString> format(
-      [[NSString alloc] initWithBytes:format_name
-                               length:format_len
-                             encoding:NSUTF8StringEncoding]);
-  [pb addTypes:[NSArray arrayWithObject:format] owner:nil];
+  [pb addTypes:[NSArray arrayWithObject:format.ToNSString()] owner:nil];
   [pb setData:[NSData dataWithBytes:data_data length:data_len]
-      forType:format];
+      forType:format.ToNSString()];
 }
 
 // Write an extra flavor that signifies WebKit was the last to modify the
 // pasteboard. This flavor has no data.
 void Clipboard::WriteWebSmartPaste() {
   NSPasteboard* pb = GetPasteboard();
-  NSString* format = base::SysUTF8ToNSString(GetWebKitSmartPasteFormatType());
+  NSString* format = GetWebKitSmartPasteFormatType().ToNSString();
   [pb addTypes:[NSArray arrayWithObject:format] owner:nil];
   [pb setData:nil forType:format];
 }
@@ -185,42 +218,25 @@ uint64 Clipboard::GetSequenceNumber(Buffer buffer) {
   return [pb changeCount];
 }
 
-bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
+bool Clipboard::IsFormatAvailable(const FormatType& format,
                                   Buffer buffer) const {
   DCHECK_EQ(buffer, BUFFER_STANDARD);
-  NSString* format_ns = base::SysUTF8ToNSString(format);
 
   NSPasteboard* pb = GetPasteboard();
   NSArray* types = [pb types];
 
   // Safari only places RTF on the pasteboard, never HTML. We can convert RTF
   // to HTML, so the presence of either indicates success when looking for HTML.
-  if ([format_ns isEqualToString:NSHTMLPboardType]) {
+  if ([format.ToNSString() isEqualToString:NSHTMLPboardType]) {
     return [types containsObject:NSHTMLPboardType] ||
            [types containsObject:NSRTFPboardType];
   }
-  return [types containsObject:format_ns];
-}
-
-bool Clipboard::IsFormatAvailableByString(const std::string& format,
-                                          Buffer buffer) const {
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
-  NSString* format_ns = base::SysUTF8ToNSString(format);
-
-  NSPasteboard* pb = GetPasteboard();
-  NSArray* types = [pb types];
-
-  return [types containsObject:format_ns];
+  return [types containsObject:format.ToNSString()];
 }
 
 void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
                                    std::vector<string16>* types,
                                    bool* contains_filenames) const {
-  if (!types || !contains_filenames) {
-    NOTREACHED();
-    return;
-  }
-
   types->clear();
   if (IsFormatAvailable(Clipboard::GetPlainTextFormatType(), buffer))
     types->push_back(UTF8ToUTF16(kMimeTypeText));
@@ -382,61 +398,74 @@ void Clipboard::ReadFiles(std::vector<FilePath>* files) const {
   }
 }
 
-void Clipboard::ReadData(const std::string& format, std::string* result) const {
+void Clipboard::ReadData(const FormatType& format, std::string* result) const {
   NSPasteboard* pb = GetPasteboard();
-  NSData* data = [pb dataForType:base::SysUTF8ToNSString(format)];
+  NSData* data = [pb dataForType:format.ToNSString()];
   if ([data length])
     result->assign(static_cast<const char*>([data bytes]), [data length]);
 }
 
 // static
-Clipboard::FormatType Clipboard::GetUrlFormatType() {
-  return base::SysNSStringToUTF8(NSURLPboardType);
+Clipboard::FormatType Clipboard::GetFormatType(
+    const std::string& format_string) {
+  return FormatType::Deserialize(format_string);
 }
 
 // static
-Clipboard::FormatType Clipboard::GetUrlWFormatType() {
-  return base::SysNSStringToUTF8(NSURLPboardType);
+const Clipboard::FormatType& Clipboard::GetUrlFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSURLPboardType));
+  return type;
 }
 
 // static
-Clipboard::FormatType Clipboard::GetPlainTextFormatType() {
-  return base::SysNSStringToUTF8(NSStringPboardType);
+const Clipboard::FormatType& Clipboard::GetUrlWFormatType() {
+  return GetUrlFormatType();
 }
 
 // static
-Clipboard::FormatType Clipboard::GetPlainTextWFormatType() {
-  return base::SysNSStringToUTF8(NSStringPboardType);
+const Clipboard::FormatType& Clipboard::GetPlainTextFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSStringPboardType));
+  return type;
 }
 
 // static
-Clipboard::FormatType Clipboard::GetFilenameFormatType() {
-  return base::SysNSStringToUTF8(NSFilenamesPboardType);
+const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType() {
+  return GetPlainTextFormatType();
 }
 
 // static
-Clipboard::FormatType Clipboard::GetFilenameWFormatType() {
-  return base::SysNSStringToUTF8(NSFilenamesPboardType);
+const Clipboard::FormatType& Clipboard::GetFilenameFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSFilenamesPboardType));
+  return type;
 }
 
 // static
-Clipboard::FormatType Clipboard::GetHtmlFormatType() {
-  return base::SysNSStringToUTF8(NSHTMLPboardType);
+const Clipboard::FormatType& Clipboard::GetFilenameWFormatType() {
+  return GetFilenameFormatType();
 }
 
 // static
-Clipboard::FormatType Clipboard::GetBitmapFormatType() {
-  return base::SysNSStringToUTF8(NSTIFFPboardType);
+const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSHTMLPboardType));
+  return type;
 }
 
 // static
-Clipboard::FormatType Clipboard::GetWebKitSmartPasteFormatType() {
-  return base::SysNSStringToUTF8(kWebSmartPastePboardType);
+const Clipboard::FormatType& Clipboard::GetBitmapFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSTIFFPboardType));
+  return type;
 }
 
 // static
-Clipboard::FormatType Clipboard::GetWebCustomDataFormatType() {
-  return base::SysNSStringToUTF8(kWebCustomDataType);
+const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kWebSmartPastePboardType));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kWebCustomDataType));
+  return type;
 }
 
 }  // namespace ui

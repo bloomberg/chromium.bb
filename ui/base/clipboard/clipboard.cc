@@ -142,8 +142,11 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
     }
 
     case CBF_DATA:
-      WriteData(&(params[0].front()), params[0].size(),
-                &(params[1].front()), params[1].size());
+      WriteData(
+          FormatType::Deserialize(
+              std::string(&(params[0].front()), params[0].size())),
+          &(params[1].front()),
+          params[1].size());
       break;
 
     default:

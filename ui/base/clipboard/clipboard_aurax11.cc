@@ -4,6 +4,7 @@
 
 #include "ui/base/clipboard/clipboard.h"
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -135,6 +136,30 @@ void DeleteClipboardData() {
 // 3. Implement File types.
 // 4. Handle conversion between types.
 
+Clipboard::FormatType::FormatType() {
+}
+
+Clipboard::FormatType::FormatType(const std::string& native_format)
+    : data_(native_format) {
+}
+
+Clipboard::FormatType::~FormatType() {
+}
+
+std::string Clipboard::FormatType::Serialize() const {
+  return data_;
+}
+
+// static
+Clipboard::FormatType Clipboard::FormatType::Deserialize(
+    const std::string& serialization) {
+  return FormatType(serialization);
+}
+
+bool Clipboard::FormatType::Equals(const FormatType& other) const {
+  return data_ == other.data_;
+}
+
 Clipboard::Clipboard() {
   // Make sure clipboard is created.
   GetClipboardData();
@@ -156,22 +181,17 @@ void Clipboard::WriteObjects(const ObjectMap& objects) {
 bool Clipboard::IsFormatAvailable(const FormatType& format,
                                   Buffer buffer) const {
   ClipboardData* data = GetClipboardData();
-  if (GetPlainTextFormatType() == format)
+  if (GetPlainTextFormatType().Equals(format))
     return !data->text().empty();
-  else if (GetHtmlFormatType() == format)
+  else if (GetHtmlFormatType().Equals(format))
     return !data->markup_data().empty() || !data->url().empty();
-  else if (GetBitmapFormatType() == format)
+  else if (GetBitmapFormatType().Equals(format))
     return !!data->bitmap_data();
-  else if (GetWebKitSmartPasteFormatType() == format)
+  else if (GetWebKitSmartPasteFormatType().Equals(format))
     return data->web_smart_paste();
-  else if (data->custom_data_format() == format)
+  else if (data->custom_data_format() == format.ToString())
     return true;
   return false;
-}
-
-bool Clipboard::IsFormatAvailableByString(const std::string& format,
-                                          Buffer buffer) const {
-  return IsFormatAvailable(format, buffer);
 }
 
 void Clipboard::ReadAvailableTypes(Buffer buffer, std::vector<string16>* types,
@@ -183,13 +203,11 @@ void Clipboard::ReadAvailableTypes(Buffer buffer, std::vector<string16>* types,
 
   types->clear();
   if (IsFormatAvailable(GetPlainTextFormatType(), buffer))
-    types->push_back(UTF8ToUTF16(GetPlainTextFormatType()));
+    types->push_back(UTF8ToUTF16(GetPlainTextFormatType().ToString()));
   if (IsFormatAvailable(GetHtmlFormatType(), buffer))
-    types->push_back(UTF8ToUTF16(GetHtmlFormatType()));
+    types->push_back(UTF8ToUTF16(GetHtmlFormatType().ToString()));
   if (IsFormatAvailable(GetBitmapFormatType(), buffer))
-    types->push_back(UTF8ToUTF16(GetBitmapFormatType()));
-  if (IsFormatAvailable(GetWebKitSmartPasteFormatType(), buffer))
-    types->push_back(UTF8ToUTF16(GetWebKitSmartPasteFormatType()));
+    types->push_back(UTF8ToUTF16(GetBitmapFormatType().ToString()));
   *contains_filenames = false;
 }
 
@@ -262,10 +280,10 @@ void Clipboard::ReadFiles(std::vector<FilePath>* files) const {
   NOTIMPLEMENTED();
 }
 
-void Clipboard::ReadData(const std::string& format, std::string* result) const {
+void Clipboard::ReadData(const FormatType& format, std::string* result) const {
   result->clear();
   ClipboardData* data = GetClipboardData();
-  if (data->custom_data_format() == format)
+  if (data->custom_data_format() == format.ToString())
     *result = std::string(data->custom_data_data(), data->custom_data_len());
 }
 
@@ -302,40 +320,51 @@ void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
   GetClipboardData()->SetBitmapData(pixel_data, size_data);
 }
 
-void Clipboard::WriteData(const char* format_name, size_t format_len,
-                          const char* data_data, size_t data_len) {
-  GetClipboardData()->SetCustomData(std::string(format_name, format_len),
-      data_data, data_len);
+void Clipboard::WriteData(const FormatType& format,
+                          const char* data_data,
+                          size_t data_len) {
+  GetClipboardData()->SetCustomData(format.ToString(), data_data, data_len);
 }
 
 // static
-Clipboard::FormatType Clipboard::GetPlainTextFormatType() {
-  return std::string(kMimeTypeText);
+Clipboard::FormatType Clipboard::GetFormatType(
+    const std::string& format_string) {
+  return FormatType::Deserialize(format_string);
 }
 
 // static
-Clipboard::FormatType Clipboard::GetPlainTextWFormatType() {
+const Clipboard::FormatType& Clipboard::GetPlainTextFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeText));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType() {
   return GetPlainTextFormatType();
 }
 
 // static
-Clipboard::FormatType Clipboard::GetHtmlFormatType() {
-  return std::string(kMimeTypeHTML);
+const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeHTML));
+  return type;
 }
 
 // static
-Clipboard::FormatType Clipboard::GetBitmapFormatType() {
-  return std::string(kMimeTypeBitmap);
+const Clipboard::FormatType& Clipboard::GetBitmapFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeBitmap));
+  return type;
 }
 
 // static
-Clipboard::FormatType Clipboard::GetWebKitSmartPasteFormatType() {
-  return std::string(kMimeTypeWebkitSmartPaste);
+const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebkitSmartPaste));
+  return type;
 }
 
 // static
-Clipboard::FormatType Clipboard::GetWebCustomDataFormatType() {
-  return std::string(kMimeTypeWebCustomData);
+const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebCustomData));
+  return type;
 }
 
 }  // namespace ui

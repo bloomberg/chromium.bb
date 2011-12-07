@@ -161,13 +161,15 @@ void BookmarkNodeData::WriteToClipboard(Profile* profile) const {
 
   Pickle pickle;
   WriteToPickle(profile, &pickle);
-  scw.WritePickledData(pickle, kClipboardFormatString);
+  scw.WritePickledData(
+      pickle, ui::Clipboard::GetFormatType(kClipboardFormatString));
 }
 
 bool BookmarkNodeData::ReadFromClipboard() {
   std::string data;
   ui::Clipboard* clipboard = g_browser_process->clipboard();
-  clipboard->ReadData(kClipboardFormatString, &data);
+  clipboard->ReadData(ui::Clipboard::GetFormatType(kClipboardFormatString),
+                      &data);
 
   if (!data.empty()) {
     Pickle pickle(data.data(), data.size());
@@ -193,8 +195,9 @@ bool BookmarkNodeData::ReadFromClipboard() {
 }
 
 bool BookmarkNodeData::ClipboardContainsBookmarks() {
-  return g_browser_process->clipboard()->IsFormatAvailableByString(
-      BookmarkNodeData::kClipboardFormatString, ui::Clipboard::BUFFER_STANDARD);
+  return g_browser_process->clipboard()->IsFormatAvailable(
+      ui::Clipboard::GetFormatType(kClipboardFormatString),
+      ui::Clipboard::BUFFER_STANDARD);
 }
 #else
 void BookmarkNodeData::WriteToClipboard(Profile* profile) const {

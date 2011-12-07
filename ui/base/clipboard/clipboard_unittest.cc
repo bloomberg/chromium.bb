@@ -379,7 +379,8 @@ TEST_F(ClipboardTest, MultipleBitmapReadWriteTest) {
 
 TEST_F(ClipboardTest, DataTest) {
   Clipboard clipboard;
-  const char* kFormat = "chromium/x-test-format";
+  const ui::Clipboard::FormatType kFormat =
+      ui::Clipboard::GetFormatType("chromium/x-test-format");
   std::string payload("test string");
   Pickle write_pickle;
   write_pickle.WriteString(payload);
@@ -389,7 +390,7 @@ TEST_F(ClipboardTest, DataTest) {
     clipboard_writer.WritePickledData(write_pickle, kFormat);
   }
 
-  ASSERT_TRUE(clipboard.IsFormatAvailableByString(
+  ASSERT_TRUE(clipboard.IsFormatAvailable(
       kFormat, Clipboard::BUFFER_STANDARD));
   std::string output;
   clipboard.ReadData(kFormat, &output);
@@ -404,12 +405,14 @@ TEST_F(ClipboardTest, DataTest) {
 
 TEST_F(ClipboardTest, MultipleDataTest) {
   Clipboard clipboard;
-  const char* kFormat1 = "chromium/x-test-format1";
+  const ui::Clipboard::FormatType kFormat1 =
+      ui::Clipboard::GetFormatType("chromium/x-test-format1");
   std::string payload1("test string1");
   Pickle write_pickle1;
   write_pickle1.WriteString(payload1);
 
-  const char* kFormat2 = "chromium/x-test-format2";
+  const ui::Clipboard::FormatType kFormat2 =
+      ui::Clipboard::GetFormatType("chromium/x-test-format2");
   std::string payload2("test string2");
   Pickle write_pickle2;
   write_pickle2.WriteString(payload2);
@@ -421,7 +424,7 @@ TEST_F(ClipboardTest, MultipleDataTest) {
     clipboard_writer.WritePickledData(write_pickle2, kFormat2);
   }
 
-  ASSERT_TRUE(clipboard.IsFormatAvailableByString(
+  ASSERT_TRUE(clipboard.IsFormatAvailable(
       kFormat2, Clipboard::BUFFER_STANDARD));
 
   // Check string 2.
@@ -442,7 +445,7 @@ TEST_F(ClipboardTest, MultipleDataTest) {
     clipboard_writer.WritePickledData(write_pickle1, kFormat1);
   }
 
-  ASSERT_TRUE(clipboard.IsFormatAvailableByString(
+  ASSERT_TRUE(clipboard.IsFormatAvailable(
       kFormat1, Clipboard::BUFFER_STANDARD));
 
   // Check string 1.
