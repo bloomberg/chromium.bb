@@ -1143,7 +1143,7 @@
    fun:_ZN11BrowserInit17LaunchWithProfile17OpenURLsInBrowserEP7BrowserbRKSt6vectorI4GURLSaIS4_EE
    fun:_ZN11BrowserInit17LaunchWithProfile17ProcessLaunchURLsEbRKSt6vectorI4GURLSaIS2_EE
    fun:_ZN11BrowserInit17LaunchWithProfile6LaunchEP7Profileb
-   fun:_ZN11BrowserInit13LaunchBrowserERK11CommandLineP7ProfileRK8FilePathbPi
+   fun:_ZN11BrowserInit13LaunchBrowserERK11CommandLineP7ProfileRK8FilePathNS_16IsProcessStartupENS_10IsFirstRunEPi
    fun:_ZN11BrowserInit18ProcessCmdLineImplERK11CommandLineRK8FilePathbP7ProfilePiPS_
    fun:_ZN11BrowserInit5StartERK11CommandLineRK8FilePathP7ProfilePi
 }
@@ -1565,7 +1565,6 @@
    ...
    fun:_ZN15StatusBubbleMac6CreateEv
    fun:_ZN15StatusBubbleMacC2EP8NSWindowP11objc_object
-   fun:_ZN15StatusBubbleMacC1EP8NSWindowP11objc_object
    fun:-[BrowserWindowController initWithBrowser:takeOwnership:]
    fun:-[BrowserWindowController initWithBrowser:]
    fun:_ZN13BrowserWindow19CreateBrowserWindowEP7Browser
@@ -1576,7 +1575,7 @@
    fun:_ZN11BrowserInit17LaunchWithProfile17OpenURLsInBrowserEP7BrowserbRKSt6vectorI4GURLSaIS4_EE
    fun:_ZN11BrowserInit17LaunchWithProfile17ProcessLaunchURLsEbRKSt6vectorI4GURLSaIS2_EE
    fun:_ZN11BrowserInit17LaunchWithProfile6LaunchEP7ProfileRKSt6vectorI4GURLSaIS4_EEb
-   fun:_ZN11BrowserInit13LaunchBrowserERK11CommandLineP7ProfileRK8FilePathbPi
+   fun:_ZN11BrowserInit13LaunchBrowserERK11CommandLineP7ProfileRK8FilePathNS_16IsProcessStartupENS_10IsFirstRunEPi
    fun:_ZN11BrowserInit18ProcessCmdLineImplERK11CommandLineRK8FilePathbP7ProfilePiPS_
    fun:_ZN11BrowserInit5StartERK11CommandLineRK8FilePathP7ProfilePi
 }
