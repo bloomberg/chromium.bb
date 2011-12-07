@@ -97,6 +97,8 @@ namespace syncable {
 class Id;
 }
 
+class HistoryService;
+
 class AutofillTableMock : public AutofillTable {
  public:
   AutofillTableMock() : AutofillTable(NULL, NULL) {}
@@ -132,7 +134,6 @@ class WebDatabaseFake : public WebDatabase {
  private:
   AutofillTable* autofill_table_;
 };
-
 
 class ProfileSyncServiceAutofillTest;
 
@@ -1093,10 +1094,18 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
   ASSERT_EQ(0U, new_sync_profiles.size());
 }
 
-// Crashy, http://crbug.com/57884
-TEST_F(ProfileSyncServiceAutofillTest, DISABLED_ServerChangeRace) {
-  EXPECT_CALL(autofill_table_, GetAllAutofillEntries(_)).WillOnce(Return(true));
-  EXPECT_CALL(autofill_table_, GetAutofillProfiles(_)).WillOnce(Return(true));
+TEST_F(ProfileSyncServiceAutofillTest, ServerChangeRace) {
+  // GetHistoryService() gets called indirectly, but the result is ignored, so
+  // it is safe to return NULL.
+  EXPECT_CALL(profile_, GetHistoryService(_)).
+      WillRepeatedly(Return(static_cast<HistoryService*>(NULL)));
+  // Once for MergeDataAndStartSyncing() and twice for ProcessSyncChanges(), via
+  // LoadAutofillData().
+  EXPECT_CALL(autofill_table_, GetAllAutofillEntries(_)).
+      Times(3).WillRepeatedly(Return(true));
+  // On the other hand Autofill and Autocomplete are separated now, so
+  // GetAutofillProfiles() should not be called.
+  EXPECT_CALL(autofill_table_, GetAutofillProfiles(_)).Times(0);
   EXPECT_CALL(autofill_table_, UpdateAutofillEntries(_)).
       WillRepeatedly(Return(true));
   EXPECT_CALL(*personal_data_manager_, Refresh()).Times(3);
