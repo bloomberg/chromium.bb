@@ -33,6 +33,8 @@ class DescWrapperFactory {
   DescWrapper* MakeFileDesc(int host_os_desc, int mode);
   // Create a DescWrapper from opening a host file.
   DescWrapper* OpenHostFile(const char* fname, int flags, int mode);
+  // Create a DescWrapper for a random number generator.
+  DescWrapper* OpenRng();
   // Create a DescWrapper for the designated invalid descriptor
   DescWrapper* MakeInvalid();
 

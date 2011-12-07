@@ -21,6 +21,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
+#include "native_client/src/trusted/desc/nacl_desc_rng.h"
 #include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
@@ -383,6 +384,20 @@ DescWrapper* DescWrapperFactory::OpenHostFile(const char* fname,
   }
 
   return MakeGenericCleanup(reinterpret_cast<struct NaClDesc*>(ndiodp));
+}
+
+DescWrapper* DescWrapperFactory::OpenRng() {
+  struct NaClDescRng* nhrp =
+    reinterpret_cast<struct NaClDescRng*>(calloc(1, sizeof(*nhrp)));
+  if (NULL == nhrp) {
+    return NULL;
+  }
+  if (0 != NaClDescRngCtor(nhrp)) {
+    free(nhrp);
+    return NULL;
+  }
+
+  return MakeGenericCleanup(reinterpret_cast<struct NaClDesc*>(nhrp));
 }
 
 DescWrapper* DescWrapperFactory::MakeInvalid() {
