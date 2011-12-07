@@ -81,7 +81,7 @@ void NetworkDropdownHandler::HandleNetworkDropdownShow(
   if (!args->GetDouble(2, &last_network_type))
     NOTREACHED();
 
-  dropdown_.reset(new NetworkDropdown(web_ui_, GetNativeWindow(), oobe));
+  dropdown_.reset(new NetworkDropdown(web_ui_, oobe));
 
   if (last_network_type >= 0) {
     dropdown_->SetLastNetworkType(

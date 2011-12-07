@@ -22,7 +22,7 @@ class NetworkDropdown : public NetworkMenu::Delegate,
                         NetworkLibrary::NetworkManagerObserver,
                         public LoginHtmlDialog::Delegate {
  public:
-  NetworkDropdown(WebUI* web_ui, gfx::NativeWindow parent_window, bool oobe);
+  NetworkDropdown(WebUI* web_ui, bool oobe);
   virtual ~NetworkDropdown();
 
   // Sets last active network type. Used to show correct disconnected icon.
@@ -54,8 +54,6 @@ class NetworkDropdown : public NetworkMenu::Delegate,
 
  private:
   void SetNetworkIconAndText();
-
-  gfx::NativeWindow parent_window_;
 
   // The Network menu.
   scoped_ptr<NetworkMenuWebUI> network_menu_;

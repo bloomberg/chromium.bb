@@ -8,6 +8,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "content/browser/webui/web_ui.h"
@@ -93,10 +94,8 @@ base::ListValue* NetworkMenuWebUI::ConvertMenuModel(ui::MenuModel* model) {
 // NetworkDropdown -------------------------------------------------------------
 
 NetworkDropdown::NetworkDropdown(WebUI* web_ui,
-                                 gfx::NativeWindow parent_window,
                                  bool oobe)
-    : parent_window_(parent_window),
-      web_ui_(web_ui),
+    : web_ui_(web_ui),
       oobe_(oobe) {
   network_menu_.reset(new NetworkMenuWebUI(this, web_ui));
   network_icon_.reset(
@@ -123,7 +122,7 @@ views::MenuButton* NetworkDropdown::GetMenuButton() {
 }
 
 gfx::NativeWindow NetworkDropdown::GetNativeWindow() const {
-  return parent_window_;
+  return BaseLoginDisplayHost::default_host()->GetNativeWindow();
 }
 
 void NetworkDropdown::OpenButtonOptions() {
