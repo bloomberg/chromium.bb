@@ -794,11 +794,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   EXPECT_TRUE(result);
 }
 
-#if !defined(USE_AURA) && (defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS))
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #define MAYBE_PluginPrivate PluginPrivate
 #else
 // TODO(mpcomplete): http://crbug.com/29900 need cross platform plugin support.
-// crbug.com/105627 for AURA.
+// crbug.com/105627 for chromeos.
 #define MAYBE_PluginPrivate DISABLED_PluginPrivate
 #endif
 
