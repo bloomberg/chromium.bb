@@ -10,3 +10,5 @@ setup.pdb
 gcp_portmon.pdb
 gcp_portmon64.pdb
 virtual_driver_setup.pdb
+syzygy/chrome_dll.pdb
+syzygy/mini_installer.pdb
