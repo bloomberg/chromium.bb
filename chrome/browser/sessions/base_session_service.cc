@@ -14,7 +14,7 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/navigation_entry.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebReferrerPolicy.h"
+#include "content/public/common/referrer.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebReferrerPolicy;

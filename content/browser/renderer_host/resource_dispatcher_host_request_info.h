@@ -13,9 +13,9 @@
 #include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/process_type.h"
+#include "content/public/common/referrer.h"
 #include "net/base/load_states.h"
 #include "net/url_request/url_request.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebReferrerPolicy.h"
 #include "webkit/glue/resource_type.h"
 
 class CrossSiteResourceHandler;
