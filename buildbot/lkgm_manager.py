@@ -68,29 +68,25 @@ class _LKGMCandidateInfo(manifest_version.VersionInfo):
   """
   LKGM_RE = '(\d+\.\d+\.\d+)(?:-rc(\d+))?'
 
-  def __init__(self, version_string=None, chrome_branch=None,
+  def __init__(self, version_string=None, chrome_branch=None, incr_type=None,
                version_file=None):
     self.revision_number = 1
     if version_string:
       match = re.search(self.LKGM_RE, version_string)
       assert match, 'LKGM did not re %s' % self.LKGM_RE
       super(_LKGMCandidateInfo, self).__init__(match.group(1), chrome_branch,
-                                               incr_type='branch')
+                                               incr_type=incr_type)
       if match.group(2):
         self.revision_number = int(match.group(2))
 
     else:
       super(_LKGMCandidateInfo, self).__init__(version_file=version_file,
-                                               incr_type='branch')
+                                               incr_type=incr_type)
 
   def VersionString(self):
     """returns the full version string of the lkgm candidate"""
     return '%s.%s.%s-rc%s' % (self.build_number, self.branch_build_number,
                               self.patch_number, self.revision_number)
-
-  def BuildPrefix(self):
-    """Returns the build prefix to match the buildspecs in manifest-versions"""
-    return super(_LKGMCandidateInfo, self).VersionString()
 
   @classmethod
   def VersionCompare(cls, version_string):
@@ -141,7 +137,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     return version
 
   def __init__(self, source_repo, manifest_repo, build_name,
-               build_type, dry_run=True):
+               build_type, incr_type, dry_run=True):
     """Initialize an LKGM Manager.
 
     Args:
@@ -150,7 +146,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     """
     super(LKGMManager, self).__init__(
         source_repo=source_repo, manifest_repo=manifest_repo,
-        build_name=build_name, incr_type='branch', dry_run=dry_run)
+        build_name=build_name, incr_type=incr_type, dry_run=dry_run)
 
     self.compare_versions_fn = _LKGMCandidateInfo.VersionCompare
     self.build_type = build_type
@@ -190,7 +186,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     """
     version_info = super(LKGMManager, self)._GetCurrentVersionInfo(sync)
     return _LKGMCandidateInfo(version_info.VersionString(),
-                              chrome_branch=version_info.chrome_branch)
+                              chrome_branch=version_info.chrome_branch,
+                              incr_type=self.incr_type)
 
   def AddPatchesToManifest(self, manifest, patches):
     """Adds list of patches to given manifest specified by manifest_path."""
@@ -226,7 +223,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         # Otherwise, we default to 'rc1'.
         if self.latest:
           version_info = _LKGMCandidateInfo(self.latest,
-              chrome_branch=version_info.chrome_branch)
+              chrome_branch=version_info.chrome_branch,
+              incr_type=self.incr_type)
         self._PrepSpecChanges()
         self.current_version = self._CreateNewBuildSpec(version_info)
         path_to_new_build_spec = self.GetLocalManifest(self.current_version)
@@ -300,7 +298,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       """Helper function that iterates through current statuses."""
       num_complete = 0
       _SyncGitRepo(self._TMP_MANIFEST_DIR)
-      version_info = _LKGMCandidateInfo(version_file=version_file)
+      version_info = _LKGMCandidateInfo(version_file=version_file,
+                                        incr_type=self.incr_type)
       for builder in builders_array:
         if builder_statuses.get(builder) not in LKGMManager.STATUS_COMPLETED:
           logging.debug("Checking for builder %s's status" % builder)

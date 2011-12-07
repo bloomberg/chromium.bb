@@ -213,11 +213,13 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
     source_repo = repository.RepoRepository(
         self._build_config['git_url'], self._build_root,
         branch=self._tracking_branch)
+    increment = 'build' if self._tracking_branch == 'master' else 'branch'
     ManifestVersionedSyncStage.manifest_manager = lkgm_manager.LKGMManager(
         source_repo=source_repo,
         manifest_repo=self._GetManifestVersionsRepoUrl(read_only=dry_run),
         build_name=self._bot_id,
         build_type=self._build_config['build_type'],
+        incr_type=increment,
         dry_run=dry_run)
 
   def GetNextManifest(self):

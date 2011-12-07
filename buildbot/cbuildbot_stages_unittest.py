@@ -240,7 +240,7 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
       self.source_repo, self.tmpdir, self.branch)
     self.manager = lkgm_manager.LKGMManager(
       repo, self.manifest_version_url, self.build_name,
-      self.build_type, dry_run=True)
+      self.build_type, incr_type='branch', dry_run=True)
 
   def ConstructStage(self):
     return stages.LKGMCandidateSyncCompletionStage(self.bot_id, self.options,
