@@ -380,28 +380,30 @@ void Firefox3Importer::GetSearchEnginesXMLFiles(
   // user has added a engine. So we get search engines from sqlite db as well
   // as from the file system.
   if (s.Step()) {
-    const std::wstring kAppPrefix = L"[app]/";
-    const std::wstring kProfilePrefix = L"[profile]/";
+    const std::string kAppPrefix("[app]/");
+    const std::string kProfilePrefix("[profile]/");
     do {
       FilePath file;
-      std::wstring engine = UTF8ToWide(s.ColumnString(0));
+      std::string engine(s.ColumnString(0));
 
       // The string contains [app]/<name>.xml or [profile]/<name>.xml where
       // the [app] and [profile] need to be replaced with the actual app or
       // profile path.
       size_t index = engine.find(kAppPrefix);
-      if (index != std::wstring::npos) {
+      if (index != std::string::npos) {
         // Remove '[app]/'.
-        file = app_path.Append(FilePath::FromWStringHack(
-                                   engine.substr(index + kAppPrefix.length())));
-      } else if ((index = engine.find(kProfilePrefix)) != std::wstring::npos) {
+        file = app_path.AppendASCII(engine.substr(index + kAppPrefix.length()));
+      } else if ((index = engine.find(kProfilePrefix)) != std::string::npos) {
         // Remove '[profile]/'.
-          file = profile_path.Append(
-              FilePath::FromWStringHack(
-                  engine.substr(index + kProfilePrefix.length())));
+          file = profile_path.AppendASCII(
+              engine.substr(index + kProfilePrefix.length()));
       } else {
         // Looks like absolute path to the file.
-        file = FilePath::FromWStringHack(engine);
+#if defined(OS_WIN)
+        file = FilePath(UTF8ToWide(engine));
+#else
+        file = FilePath(engine);
+#endif
       }
       files->push_back(file);
     } while (s.Step() && !cancelled());
