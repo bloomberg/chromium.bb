@@ -517,15 +517,6 @@ are declared in build/common.gypi.
         <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="The name of the Language Settings command in the content area context menu">
           &amp;Language settings...
         </message>
-        <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_OF_THIS_FIELD" desc="The name of the Check the spelling of this field command in the content area context menu">
-          &amp;Check the spelling of this field
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SHOW_SPELLING_PANEL" desc="The name of the Show Spelling Panel command in the content area context menu">
-          &amp;Show spelling panel
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_HIDE_SPELLING_PANEL" desc="The name of the Hide Spelling Panel command in the content area context menu">
-          &amp;Hide spelling panel
-        </message>
         <message name="IDS_CONTENT_CONTEXT_SELECTALL" desc="The name of the Select All command in the content area context menu">
           Select &amp;all
         </message>
@@ -779,6 +770,30 @@ are declared in build/common.gypi.
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT" desc="In Title Case: The name of the Speech input About command in the content area context menu">
           About Voice Recognition
+        </message>
+      </if>
+
+      <!-- Spelling submenu -->
+      <if expr="is_macosx">
+        <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="In Title Case: The name of the Spellcheck Options submenu in the spelling context menu">
+          Spelling and Grammar
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_WHILE_TYPING" desc="The name of the Check Spelling while Typing field command in the spelling context menu">
+          Check Spelling While Typing
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SHOW_SPELLING_PANEL" desc="The name of the Show Spelling Panel command in the spelling context menu">
+          Show Spelling and Grammar
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_HIDE_SPELLING_PANEL" desc="The name of the Hide Spelling Panel command in the spelling context menu">
+          Hide Spelling and Grammar
+        </message>
+      </if>
+      <if expr="not is_macosx">
+        <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="In Title Case: The name of the Spellcheck Options submenu in the spelling context menu">
+          &amp;Spell-checker Options
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_OF_THIS_FIELD" desc="The name of the Check the spelling of this field command in the spelling context menu">
+          &amp;Check the spelling of this field
         </message>
       </if>
 

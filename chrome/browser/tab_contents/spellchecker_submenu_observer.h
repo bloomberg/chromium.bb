@@ -41,6 +41,13 @@ class SpellCheckerSubMenuObserver : public RenderViewContextMenuObserver {
   // submenu and add it to the parent menu.
   ui::SimpleMenuModel submenu_model_;
 
+#if defined(OS_MACOSX)
+  // On OS X we use the Cocoa spellchecker and try to match the native context
+  // menu.
+  bool check_spelling_while_typing_;
+#else
+  // Hunspell spelling submenu.
+
   // Whether spellchecking is enabled in the focused element or not.
   bool spellcheck_enabled_;
 
@@ -51,6 +58,7 @@ class SpellCheckerSubMenuObserver : public RenderViewContextMenuObserver {
   int language_group_;
   int language_selected_;
   std::vector<std::string> languages_;
+#endif  // !OS_MACOSX
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheckerSubMenuObserver);
 };

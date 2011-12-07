@@ -11,7 +11,6 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/spellchecker/spellcheck_host.h"
-#include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/tab_contents/spelling_bubble_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -72,18 +71,6 @@ void SpellCheckerSubMenuObserver::InitMenu(const ContextMenuParams& params) {
       IDC_CHECK_SPELLING_OF_THIS_FIELD,
       l10n_util::GetStringUTF16(
           IDS_CONTENT_CONTEXT_CHECK_SPELLING_OF_THIS_FIELD));
-
-  // Add an item that shows the spelling panel if the platform spellchecker
-  // supports it.
-  if (SpellCheckerPlatform::SpellCheckerAvailable() &&
-      SpellCheckerPlatform::SpellCheckerProvidesPanel()) {
-    submenu_model_.AddCheckItem(
-        IDC_SPELLPANEL_TOGGLE,
-        l10n_util::GetStringUTF16(
-            SpellCheckerPlatform::SpellingPanelVisible() ?
-                IDS_CONTENT_CONTEXT_HIDE_SPELLING_PANEL :
-                IDS_CONTENT_CONTEXT_SHOW_SPELLING_PANEL));
-  }
 
 #if defined(OS_WIN)
   // If we have not integrated the spelling service, we show an "Ask Google for
@@ -200,11 +187,6 @@ void SpellCheckerSubMenuObserver::ExecuteCommand(int command_id) {
   switch (command_id) {
     case IDC_CHECK_SPELLING_OF_THIS_FIELD:
       rvh->Send(new SpellCheckMsg_ToggleSpellCheck(rvh->routing_id()));
-      break;
-
-    case IDC_SPELLPANEL_TOGGLE:
-      rvh->Send(new SpellCheckMsg_ToggleSpellPanel(
-          rvh->routing_id(), SpellCheckerPlatform::SpellingPanelVisible()));
       break;
 
 #if defined(OS_WIN)
