@@ -44,9 +44,9 @@ bool DecodeAudioFileData(
   // Apply sanity checks to make sure crazy values aren't coming out of
   // FFmpeg.
   if (!number_of_channels ||
-      number_of_channels > static_cast<size_t>(media::Limits::kMaxChannels) ||
-      file_sample_rate < media::Limits::kMinSampleRate ||
-      file_sample_rate > media::Limits::kMaxSampleRate)
+      number_of_channels > static_cast<size_t>(media::limits::kMaxChannels) ||
+      file_sample_rate < media::limits::kMinSampleRate ||
+      file_sample_rate > media::limits::kMaxSampleRate)
     return false;
 
   // TODO(crogers) : do sample-rate conversion with FFmpeg.

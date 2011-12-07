@@ -30,7 +30,6 @@ using ::testing::SetArgumentPointee;
 using ::testing::StrictMock;
 using ::testing::WithArg;
 using ::testing::Invoke;
-using media::Limits;
 using media::MockStatisticsCallback;
 using media::MockVideoRenderer;
 using media::MockFilterHost;
@@ -205,7 +204,7 @@ TEST_F(RTCVideoDecoderTest, DoRenderFrame) {
 
   NullVideoFrame video_frame;
 
-  for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
+  for (size_t i = 0; i < media::limits::kMaxVideoFrames; ++i) {
     decoder_->RenderFrame(&video_frame);
   }
 

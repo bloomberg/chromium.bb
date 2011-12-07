@@ -22,7 +22,6 @@ using media::CopyYPlane;
 using media::DemuxerStream;
 using media::FilterStatusCB;
 using media::kNoTimestamp;
-using media::Limits;
 using media::PIPELINE_OK;
 using media::StatisticsCallback;
 using media::VideoDecoder;

@@ -498,8 +498,12 @@ float WebMediaPlayerImpl::duration() const {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
   base::TimeDelta duration = pipeline_->GetMediaDuration();
-  if (duration.InMicroseconds() == media::Limits::kMaxTimeInMicroseconds)
+
+  // Return positive infinity if the resource is unbounded.
+  // http://www.whatwg.org/specs/web-apps/current-work/multipage/video.html#dom-media-duration
+  if (duration == media::kInfiniteDuration)
     return std::numeric_limits<float>::infinity();
+
   return static_cast<float>(duration.InSecondsF());
 }
 
@@ -588,10 +592,10 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
 
   // Make sure we don't create a huge canvas.
   // TODO(hclam): Respect the aspect ratio.
-  if (scaled_width > static_cast<int>(media::Limits::kMaxCanvas))
-    scaled_width = media::Limits::kMaxCanvas;
-  if (scaled_height > static_cast<int>(media::Limits::kMaxCanvas))
-    scaled_height = media::Limits::kMaxCanvas;
+  if (scaled_width > static_cast<int>(media::limits::kMaxCanvas))
+    scaled_width = media::limits::kMaxCanvas;
+  if (scaled_height > static_cast<int>(media::limits::kMaxCanvas))
+    scaled_height = media::limits::kMaxCanvas;
 
   // If there is no preexisting platform canvas, or if the size has
   // changed, recreate the canvas.  This is to avoid recreating the bitmap
