@@ -2818,9 +2818,18 @@ TEST_F(ViewLayerTest, ToggleVisibilityWithLayer) {
   EXPECT_TRUE(v1->layer()->IsDrawn());
 }
 
+// We don't set the hole in the webkit compositor, so disable tests that rely on
+// it.
+#if defined(USE_WEBKIT_COMPOSITOR)
+#define NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(X) DISABLED_ ## X
+#else
+#define NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(X) X
+#endif
+
 // Test that a hole in a layer is correctly created regardless of whether
 // the opacity attribute is set before or after the layer is created.
-TEST_F(ViewLayerTest, ToggleOpacityWithLayer) {
+TEST_F(ViewLayerTest,
+       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(ToggleOpacityWithLayer)) {
   View* content_view = new View;
   widget()->SetContentsView(content_view);
 
@@ -2850,7 +2859,8 @@ TEST_F(ViewLayerTest, ToggleOpacityWithLayer) {
 
 // Test that a hole in a layer always corresponds to the bounds of opaque
 // layers.
-TEST_F(ViewLayerTest, MultipleOpaqueLayers) {
+TEST_F(ViewLayerTest,
+       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(MultipleOpaqueLayers)) {
   View* content_view = new View;
   widget()->SetContentsView(content_view);
 
@@ -2891,7 +2901,8 @@ TEST_F(ViewLayerTest, MultipleOpaqueLayers) {
 }
 
 // Makes sure that opacity of layer persists after toggling visibilty.
-TEST_F(ViewLayerTest, ToggleVisibilityWithOpaqueLayer) {
+TEST_F(ViewLayerTest,
+       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(ToggleVisibilityWithOpaqueLayer)) {
   View* content_view = new View;
   widget()->SetContentsView(content_view);
 
