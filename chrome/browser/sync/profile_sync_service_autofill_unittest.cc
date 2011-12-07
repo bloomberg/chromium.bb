@@ -1094,7 +1094,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
   ASSERT_EQ(0U, new_sync_profiles.size());
 }
 
-TEST_F(ProfileSyncServiceAutofillTest, ServerChangeRace) {
+TEST_F(ProfileSyncServiceAutofillTest, FLAKY_ServerChangeRace) {
   // GetHistoryService() gets called indirectly, but the result is ignored, so
   // it is safe to return NULL.
   EXPECT_CALL(profile_, GetHistoryService(_)).
