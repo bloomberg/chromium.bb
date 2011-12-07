@@ -22,8 +22,8 @@ namespace extensions {
 // we need to manage it in the context of an extension.
 class Socket {
  public:
-  Socket(const Profile* profile, const std::string& src_extension_id,
-         const GURL& src_url);
+  explicit Socket(const Profile* profile, const std::string& src_extension_id,
+                  const GURL& src_url);
   ~Socket();
 
   bool Connect(const net::IPEndPoint& ip_end_point);
@@ -38,7 +38,7 @@ class Socket {
   std::string src_extension_id_;
   GURL src_url_;
 
-  scoped_ptr<net::UDPClientSocket> udp_client_socket_;
+  net::UDPClientSocket* udp_client_socket_;
   bool is_connected_;
   net::OldCompletionCallbackImpl<Socket> io_callback_;
 
