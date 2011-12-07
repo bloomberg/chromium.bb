@@ -65,6 +65,7 @@ CONTENT_EXPORT extern const char kDisableWebAudio[];
 extern const char kDisableWebSockets[];
 extern const char kEnableAccelerated2dCanvas[];
 CONTENT_EXPORT extern const char kEnableAcceleratedDrawing[];
+CONTENT_EXPORT extern const char kEnableAcceleratedFilters[];
 extern const char kEnableAccessibility[];
 extern const char kEnableAccessibilityLogging[];
 CONTENT_EXPORT extern const char kEnableCompositingForFixedPosition[];

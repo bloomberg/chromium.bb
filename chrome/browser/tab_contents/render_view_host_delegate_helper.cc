@@ -460,6 +460,9 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.accelerated_drawing_enabled =
         GpuProcessHost::gpu_enabled() &&
         command_line.HasSwitch(switches::kEnableAcceleratedDrawing);
+    web_prefs.accelerated_filters_enabled =
+        GpuProcessHost::gpu_enabled() &&
+        command_line.HasSwitch(switches::kEnableAcceleratedFilters);
     web_prefs.accelerated_layers_enabled =
         !command_line.HasSwitch(switches::kDisableAcceleratedLayers);
     web_prefs.composite_to_texture_enabled =

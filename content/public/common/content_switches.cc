@@ -172,6 +172,9 @@ const char kEnableAccelerated2dCanvas[]     = "enable-accelerated-2d-canvas";
 // in build/features_override.gypi.
 const char kEnableAcceleratedDrawing[]      = "enable-accelerated-drawing";
 
+// Enable gpu-accelerated SVG/W3C filters.
+const char kEnableAcceleratedFilters[]      = "enable-accelerated-filters";
+
 // Enables WebKit accessibility within the renderer process.
 const char kEnableAccessibility[]           = "enable-accessibility";
 
