@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_var.idl modified Fri Nov 11 19:57:17 2011. */
+/* From pp_var.idl modified Fri Dec  2 16:45:08 2011. */
 
 #ifndef PPAPI_C_PP_VAR_H_
 #define PPAPI_C_PP_VAR_H_
@@ -68,7 +68,15 @@ typedef enum {
    * module will continue to work with future versions of the API.
    */
   PP_VARTYPE_ARRAY = 7,
-  PP_VARTYPE_DICTIONARY = 8
+  PP_VARTYPE_DICTIONARY = 8,
+  /**
+   * ArrayBuffer represents a JavaScript ArrayBuffer. This is the type which
+   * represents Typed Arrays in JavaScript. Unlike JavaScript 'Array', it is
+   * only meant to contain basic numeric types, and is always stored
+   * contiguously. See PPB_VarArrayBuffer_Dev for functions special to
+   * ArrayBuffer vars.
+   */
+  PP_VARTYPE_ARRAY_BUFFER = 9
 } PP_VarType;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VarType, 4);
 /**

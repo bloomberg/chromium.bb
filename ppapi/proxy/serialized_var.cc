@@ -157,6 +157,7 @@ void SerializedVar::Inner::WriteToMessage(IPC::Message* m) const {
       break;
     case PP_VARTYPE_ARRAY:
     case PP_VARTYPE_DICTIONARY:
+    case PP_VARTYPE_ARRAY_BUFFER:
       // TODO(brettw) when these are supported, implement this.
       NOTIMPLEMENTED();
       break;

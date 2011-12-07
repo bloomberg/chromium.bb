@@ -131,6 +131,7 @@ uint32_t PpVarSize(const PP_Var& var) {
     case PP_VARTYPE_OBJECT:
     case PP_VARTYPE_ARRAY:
     case PP_VARTYPE_DICTIONARY:
+    case PP_VARTYPE_ARRAY_BUFFER:
       NACL_NOTREACHED();
       break;
   }
@@ -215,6 +216,7 @@ bool SerializePpVar(const PP_Var* vars,
       case PP_VARTYPE_OBJECT:
       case PP_VARTYPE_ARRAY:
       case PP_VARTYPE_DICTIONARY:
+      case PP_VARTYPE_ARRAY_BUFFER:
         NACL_NOTREACHED();
       default:
         return false;
@@ -306,6 +308,7 @@ uint32_t DeserializePpVarSize(char* p,
     case PP_VARTYPE_OBJECT:
     case PP_VARTYPE_ARRAY:
     case PP_VARTYPE_DICTIONARY:
+    case PP_VARTYPE_ARRAY_BUFFER:
       NACL_NOTREACHED();
       break;
   }
@@ -377,6 +380,7 @@ bool DeserializePpVar(NaClSrpcChannel* channel,
       case PP_VARTYPE_OBJECT:
       case PP_VARTYPE_ARRAY:
       case PP_VARTYPE_DICTIONARY:
+      case PP_VARTYPE_ARRAY_BUFFER:
         NACL_NOTREACHED();
       default:
         return false;

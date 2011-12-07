@@ -85,11 +85,11 @@ bool PPVarToV8Value(PP_Var var, v8::Handle<v8::Value>* result) {
       break;
     }
     case PP_VARTYPE_OBJECT:
-      // Objects are not currently supported.
+    case PP_VARTYPE_ARRAY:
+    case PP_VARTYPE_DICTIONARY:
+    case PP_VARTYPE_ARRAY_BUFFER:
+      // These are not currently supported.
       NOTIMPLEMENTED();
-      result->Clear();
-      return false;
-    default:
       result->Clear();
       return false;
   }

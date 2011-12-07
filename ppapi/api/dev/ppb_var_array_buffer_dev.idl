@@ -1,0 +1,47 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/**
+ * This file defines the <code>PPB_VarArrayBuffer_Dev</code> struct.
+ */
+
+label Chrome {
+  M17 = 0.1
+};
+
+/**
+ * PPB_VarArrayBuffer_Dev API. This provides a way to interact with JavaScript
+ * ArrayBuffers, which represent a contiguous sequence of bytes. To manage the
+ * reference count for a VarArrayBuffer, please see PPB_Var. Note that
+ * these Vars are not part of the embedding page's DOM, and can only be shared
+ * with JavaScript via pp::Instance's PostMessage and HandleMessage functions.
+ */
+[macro="PPB_VAR_ARRAY_BUFFER_DEV_INTERFACE"]
+interface PPB_VarArrayBuffer_Dev {
+  /**
+   * Create a zero-initialized VarArrayBuffer.
+   *
+   * @param[in] size_in_bytes The size of the array buffer that will be created.
+   *
+   * @return A PP_Var which represents an VarArrayBuffer of the requested size
+   *         with a reference count of 1.
+   */
+  PP_Var Create([in] uint32_t size_in_bytes);
+  /**
+   * Returns the length of the VarArrayBuffer in bytes.
+   *
+   * @return The length of the VarArrayBuffer in bytes.
+   */
+  uint32_t ByteLength([in] PP_Var array);
+  /**
+   * Returns a pointer to the beginning of the buffer for the given array.
+   *
+   * @param[in] array The array whose buffer should be returned.
+   *
+   * @return A pointer to the buffer for this array.
+   */
+  mem_t Map([in] PP_Var array);
+};
+

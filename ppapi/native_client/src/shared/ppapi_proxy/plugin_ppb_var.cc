@@ -129,6 +129,7 @@ std::string PluginVar::DebugString(const PP_Var& var) {
       }
     case PP_VARTYPE_ARRAY:
     case PP_VARTYPE_DICTIONARY:
+    case PP_VARTYPE_ARRAY_BUFFER:
       NACL_NOTREACHED();
       break;
   }
@@ -191,6 +192,7 @@ void PluginVar::Print(const PP_Var& var) {
       break;
     case PP_VARTYPE_ARRAY:
     case PP_VARTYPE_DICTIONARY:
+    case PP_VARTYPE_ARRAY_BUFFER:
       NACL_NOTREACHED();
       break;
   }

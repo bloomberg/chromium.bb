@@ -75,6 +75,7 @@ bool PPVarToNPVariant(PP_Var var, NPVariant* result) {
     }
     case PP_VARTYPE_ARRAY:
     case PP_VARTYPE_DICTIONARY:
+    case PP_VARTYPE_ARRAY_BUFFER:
       VOID_TO_NPVARIANT(*result);
       break;
   }

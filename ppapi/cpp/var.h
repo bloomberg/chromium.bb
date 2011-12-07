@@ -158,6 +158,9 @@ class Var {
            var_.type == PP_VARTYPE_DOUBLE;
   }
 
+  /// This function determines if this <code>Var</code> is an ArrayBuffer.
+  bool is_array_buffer() const { return var_.type == PP_VARTYPE_ARRAY_BUFFER; }
+
   /// AsBool() converts this <code>Var</code> to a bool. Assumes the
   /// internal representation is_bool(). If it's not, it will assert in debug
   /// mode, and return false.
