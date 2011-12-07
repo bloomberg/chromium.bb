@@ -72,11 +72,10 @@ void WrenchMenuModel::Build() {
 
   AddSeparator();
 
-  AddItemWithStringId(IDC_LOCK_SCREEN, IDS_LOCK_SCREEN);
-
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
     AddItemWithStringId(IDC_EXIT, IDS_EXIT_GUEST_MODE);
   } else {
+    AddItemWithStringId(IDC_LOCK_SCREEN, IDS_LOCK_SCREEN);
     AddItemWithStringId(IDC_EXIT, IDS_SIGN_OUT);
   }
 

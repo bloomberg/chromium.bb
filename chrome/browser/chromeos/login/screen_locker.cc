@@ -347,9 +347,18 @@ void ScreenLocker::SetLoginStatusConsumer(
 
 // static
 void ScreenLocker::Show() {
-  VLOG(1) << "In ScreenLocker::Show";
+  DVLOG(1) << "In ScreenLocker::Show";
   UserMetrics::RecordAction(UserMetricsAction("ScreenLocker_Show"));
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
+
+  // Check whether the currently logged in user is a guest account and if so,
+  // refuse to lock the screen (crosbug.com/23764).
+  // TODO(flackr): We can allow lock screen for guest accounts when
+  // unlock_on_input is supported by the WebUI screen locker.
+  if (UserManager::Get()->logged_in_user().email().empty()) {
+    DVLOG(1) << "Show: Refusing to lock screen for guest account.";
+    return;
+  }
 
   // Exit fullscreen.
   Browser* browser = BrowserList::GetLastActive();
@@ -360,7 +369,7 @@ void ScreenLocker::Show() {
   }
 
   if (!screen_locker_) {
-    VLOG(1) << "Show: Locking screen";
+    DVLOG(1) << "Show: Locking screen";
     ScreenLocker* locker =
         new ScreenLocker(UserManager::Get()->logged_in_user());
     locker->Init();
@@ -368,7 +377,7 @@ void ScreenLocker::Show() {
     // PowerManager re-sends lock screen signal if it doesn't
     // receive the response within timeout. Just send complete
     // signal.
-    VLOG(1) << "Show: locker already exists. Just sending completion event.";
+    DVLOG(1) << "Show: locker already exists. Just sending completion event.";
     CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenLockCompleted();
   }
 }
