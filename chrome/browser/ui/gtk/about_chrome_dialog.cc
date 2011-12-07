@@ -87,7 +87,7 @@ gboolean OnEventBoxExpose(GtkWidget* event_box,
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   gfx::CairoCachedSurface* background =
-      rb.GetNativeImageNamed(IDR_ABOUT_BACKGROUND).ToCairo();
+      rb.GetNativeImageNamed(IDR_ABOUT_BACKGROUND_COLOR).ToCairo();
   background->SetSource(cr, event_box, 0, 0);
 
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
