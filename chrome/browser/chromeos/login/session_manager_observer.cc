@@ -53,19 +53,18 @@ void SessionManagerObserver::OwnerKeySet(bool success) {
   if (!success)
     result = chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_FAILED;
 
+  // We stored some settings in transient storage before owner was assigned.
+  // Now owner is assigned and key is generated and we should persist
+  // those settings into signed storage.
+  if (success && g_browser_process && g_browser_process->local_state())
+    signed_settings_cache::Finalize(g_browser_process->local_state());
+
   // Whether we exported the public key or not, send a notification
   // indicating that we're done with this attempt.
   content::NotificationService::current()->Notify(
       result,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
-
-  // We stored some settings in transient storage before owner was assigned.
-  // Now owner is assigned and key is generated and we should persist
-  // those settings into signed storage.
-  if (g_browser_process && g_browser_process->local_state()) {
-    signed_settings_cache::Finalize(g_browser_process->local_state());
-  }
 }
 
 void SessionManagerObserver::PropertyChangeComplete(bool success) {

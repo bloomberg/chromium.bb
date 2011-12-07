@@ -300,6 +300,10 @@ void DeviceSettingsProvider::FinishSetInPolicy(
     Reload();
     return;
   }
+  // Update the internal caches and set the trusted flag to true so that we
+  // can pass the trustedness check in the second call to SetInPolicy.
+  OnRetrievePolicyCompleted(code, policy);
+
   SetInPolicy(prop, *value);
 }
 

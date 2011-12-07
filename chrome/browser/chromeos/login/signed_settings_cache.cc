@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -22,6 +23,8 @@ namespace {
 void OnStorePolicyCompleted(SignedSettings::ReturnCode code) {
   if (code != SignedSettings::SUCCESS)
     LOG(ERROR) << "Couldn't save temp store to the policy blob. code: " << code;
+  else
+    CrosSettings::Get()->ReloadProviders();
 }
 
 void FinishFinalize(PrefService* local_state,
