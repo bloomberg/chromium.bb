@@ -391,11 +391,6 @@ add_config('x86-generic-pre-flight-queue', [pfq, {
   'description' : 'x86-generic PFQ',
 }])
 
-add_config('arm-generic-bin', [arm, pfq, {
-  'board' : 'arm-generic',
-  'description' : 'arm-generic PFQ',
-}])
-
 add_config('arm-tegra2-bin', [arm, pfq, {
   'board' : 'tegra2',
   'description' : 'arm-tegra2 PFQ',
@@ -411,11 +406,6 @@ add_config('x86-generic-commit-queue', [commit_queue, {
   'board' : 'x86-generic',
   'master' : True,
   'paladin_builder_name': 'x86%20generic%20commit%20queue',
-}])
-
-add_config('arm-generic-commit-queue', [arm, commit_queue, {
-  'board' : 'arm-generic',
-  'paladin_builder_name': 'arm%20generic%20commit%20queue',
 }])
 
 add_config('arm-tegra2-commit-queue', [arm, commit_queue, {
@@ -454,18 +444,13 @@ add_config('aura-chrome-pre-flight-queue', [chrome_pfq, {
   'chrome_tests' : False
 }])
 
-add_config('arm-generic-chrome-pre-flight-queue', [chrome_pfq, arm, {
-  'board' : 'arm-generic',
-  'chrome_rev': constants.CHROME_REV_LATEST,
-}])
-
 add_config('arm-tegra2-chrome-pre-flight-queue', [chrome_pfq, arm, {
   'board' : 'tegra2',
   'chrome_rev': constants.CHROME_REV_LATEST,
 }])
 
 add_config('amd64-corei7-chrome-pre-flight-queue', [chrome_pfq, amd64, {
-  'board' : 'arm-generic',
+  'board' : 'amd64-corei7',
   'chrome_rev' : constants.CHROME_REV_LATEST,
   'important' : False, # TODO(mtennant): remove when stable
 }])
