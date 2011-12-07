@@ -39,6 +39,7 @@ void CheckXEventForConsistency(XEvent* xevent) {
   static bool expect_master_event = false;
   static XIDeviceEvent slave_event;
   static gfx::Point slave_location;
+  static int slave_button;
 
   // Note: If an event comes from a slave pointer device, then it will be
   // followed by the same event, but reported from its master pointer device.
@@ -62,6 +63,7 @@ void CheckXEventForConsistency(XEvent* xevent) {
   if (xievent->sourceid == xievent->deviceid) {
     slave_event = *xievent;
     slave_location = ui::EventLocationFromNative(xevent);
+    slave_button = ui::EventButtonFromNative(xevent);
     expect_master_event = true;
   } else if (was_expecting_master_event) {
     CHECK_EQ(slave_location.x(), ui::EventLocationFromNative(xevent).x());
@@ -69,7 +71,7 @@ void CheckXEventForConsistency(XEvent* xevent) {
 
     CHECK_EQ(slave_event.type, xievent->type);
     CHECK_EQ(slave_event.evtype, xievent->evtype);
-    CHECK_EQ(slave_event.detail, xievent->detail);
+    CHECK_EQ(slave_button, ui::EventButtonFromNative(xevent));
     CHECK_EQ(slave_event.flags, xievent->flags);
     CHECK_EQ(slave_event.buttons.mask_len, xievent->buttons.mask_len);
     CHECK_EQ(slave_event.valuators.mask_len, xievent->valuators.mask_len);
@@ -471,9 +473,18 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
       break;
     }
     case MappingNotify: {
-      if (xev->xmapping.request == MappingModifier ||
-          xev->xmapping.request == MappingKeyboard)
-        XRefreshKeyboardMapping(&xev->xmapping);
+      switch (xev->xmapping.request) {
+        case MappingModifier:
+        case MappingKeyboard:
+          XRefreshKeyboardMapping(&xev->xmapping);
+          break;
+        case MappingPointer:
+          ui::UpdateButtonMap();
+          break;
+        default:
+          NOTIMPLEMENTED() << " Unknown request: " << xev->xmapping.request;
+          break;
+      }
       break;
     }
     case MotionNotify: {

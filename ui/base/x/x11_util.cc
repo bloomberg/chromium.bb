@@ -18,6 +18,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -136,6 +137,36 @@ class XCursorCache {
   std::map<int, Cursor> cache_;
 
   DISALLOW_COPY_AND_ASSIGN(XCursorCache);
+};
+
+// A singleton object that remembers remappings of mouse buttons.
+class XButtonMap {
+ public:
+  static XButtonMap* GetInstance() {
+    return Singleton<XButtonMap>::get();
+  }
+
+  void UpdateMapping() {
+    count_ = XGetPointerMapping(ui::GetXDisplay(), map_, arraysize(map_));
+  }
+
+  int GetMappedButton(int button) {
+    return button > 0 && button <= count_ ? map_[button - 1] : button;
+  }
+
+ private:
+  friend struct DefaultSingletonTraits<XButtonMap>;
+
+  XButtonMap() {
+    UpdateMapping();
+  }
+
+  ~XButtonMap() {}
+
+  unsigned char map_[256];
+  int count_;
+
+  DISALLOW_COPY_AND_ASSIGN(XButtonMap);
 };
 
 }  // namespace
@@ -831,6 +862,14 @@ bool IsX11WindowFullScreen(XID window) {
   NOTIMPLEMENTED();
   return false;
 #endif
+}
+
+int GetMappedButton(int button) {
+  return XButtonMap::GetInstance()->GetMappedButton(button);
+}
+
+void UpdateButtonMap() {
+  XButtonMap::GetInstance()->UpdateMapping();
 }
 
 // ----------------------------------------------------------------------------

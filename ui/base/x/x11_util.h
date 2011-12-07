@@ -228,6 +228,13 @@ UI_EXPORT void SetDefaultX11ErrorHandlers();
 // Return true if a given window is in full-screen mode.
 UI_EXPORT bool IsX11WindowFullScreen(XID window);
 
+// Returns the mapped button.
+int GetMappedButton(int button);
+
+// Updates button mapping. This is usually called when a MappingNotify event is
+// received.
+UI_EXPORT void UpdateButtonMap();
+
 }  // namespace ui
 
 #endif  // UI_BASE_X_X11_UTIL_H_

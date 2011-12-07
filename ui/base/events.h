@@ -80,6 +80,14 @@ UI_EXPORT int EventFlagsFromNative(const base::NativeEvent& native_event);
 UI_EXPORT gfx::Point EventLocationFromNative(
     const base::NativeEvent& native_event);
 
+#if defined(USE_X11)
+// Returns the 'real' button for an event. The button reported in slave events
+// does not take into account any remapping (e.g. using xmodmap), while the
+// button reported in master events do. This is a utility function to always
+// return the mapped button.
+UI_EXPORT int EventButtonFromNative(const base::NativeEvent& native_event);
+#endif
+
 // Returns the KeyboardCode from a native event.
 UI_EXPORT KeyboardCode KeyboardCodeFromNative(
     const base::NativeEvent& native_event);

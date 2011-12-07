@@ -151,30 +151,6 @@ WebKit::WebUChar GetControlCharacter(int windows_key_code, bool shift) {
   return 0;
 }
 
-WebKit::WebMouseEvent::Button ButtonFromXButton(int button) {
-  switch (button) {
-    case 1:
-      return WebKit::WebMouseEvent::ButtonLeft;
-    case 2:
-      return WebKit::WebMouseEvent::ButtonMiddle;
-    case 3:
-      return WebKit::WebMouseEvent::ButtonRight;
-    default:
-      break;
-  }
-  return WebKit::WebMouseEvent::ButtonNone;
-}
-
-WebKit::WebMouseEvent::Button ButtonFromXState(int state) {
-  if (state & Button1MotionMask)
-    return WebKit::WebMouseEvent::ButtonLeft;
-  if (state & Button2MotionMask)
-    return WebKit::WebMouseEvent::ButtonMiddle;
-  if (state & Button3MotionMask)
-    return WebKit::WebMouseEvent::ButtonRight;
-  return WebKit::WebMouseEvent::ButtonNone;
-}
-
 // We have to count clicks (for double-clicks) manually.
 unsigned int g_num_clicks = 0;
 double g_last_click_time = 0.0;

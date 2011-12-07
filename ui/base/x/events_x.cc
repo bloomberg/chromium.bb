@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/touch/touch_factory.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/gfx/point.h"
 
 #if !defined(TOOLKIT_USES_GTK)
@@ -78,7 +79,9 @@ int GetButtonMaskForX2Event(XIDeviceEvent* xievent) {
   int buttonflags = 0;
   for (int i = 0; i < 8 * xievent->buttons.mask_len; i++) {
     if (XIMaskIsSet(xievent->buttons.mask, i)) {
-      buttonflags |= GetEventFlagsForButton(i);
+      int button = (xievent->sourceid == xievent->deviceid) ?
+                   ui::GetMappedButton(i) : i;
+      buttonflags |= GetEventFlagsForButton(button);
     }
   }
   return buttonflags;
@@ -189,15 +192,16 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
           static_cast<XIDeviceEvent*>(native_event->xcookie.data);
       if (TouchFactory::GetInstance()->IsTouchDevice(xievent->sourceid))
         return GetTouchEventType(native_event);
+      int button = EventButtonFromNative(native_event);
       switch (xievent->evtype) {
         case XI_ButtonPress:
-          if (xievent->detail >= kMinWheelButton &&
-              xievent->detail <= kMaxWheelButton)
+          if (button >= kMinWheelButton &&
+              button <= kMaxWheelButton)
             return ET_MOUSEWHEEL;
           return ET_MOUSE_PRESSED;
         case XI_ButtonRelease:
-          if (xievent->detail >= kMinWheelButton &&
-              xievent->detail <= kMaxWheelButton)
+          if (button >= kMinWheelButton &&
+              button <= kMaxWheelButton)
             return ET_MOUSEWHEEL;
           return ET_MOUSE_RELEASED;
         case XI_Motion:
@@ -237,8 +241,9 @@ int EventFlagsFromNative(const base::NativeEvent& native_event) {
           int flags = GetButtonMaskForX2Event(xievent) |
               GetEventFlagsFromXState(xievent->mods.effective);
           const EventType type = EventTypeFromNative(native_event);
+          int button = EventButtonFromNative(native_event);
           if ((type == ET_MOUSE_PRESSED || type == ET_MOUSE_RELEASED) && !touch)
-            flags |= GetEventFlagsForButton(xievent->detail);
+            flags |= GetEventFlagsForButton(button);
           return flags;
         }
         case XI_Motion:
@@ -285,6 +290,16 @@ gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
   return gfx::Point();
 }
 
+int EventButtonFromNative(const base::NativeEvent& native_event) {
+  CHECK_EQ(GenericEvent, native_event->type);
+  XIDeviceEvent* xievent =
+      static_cast<XIDeviceEvent*>(native_event->xcookie.data);
+  int button = xievent->detail;
+
+  return (xievent->sourceid == xievent->deviceid) ?
+         ui::GetMappedButton(button) : button;
+}
+
 KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
   return KeyboardCodeFromXKeyEvent(native_event);
 }
@@ -306,13 +321,10 @@ bool IsMouseEvent(const base::NativeEvent& native_event) {
 
 int GetMouseWheelOffset(const base::NativeEvent& native_event) {
   int button;
-  if (native_event->type == GenericEvent) {
-    XIDeviceEvent* xiev =
-        static_cast<XIDeviceEvent*>(native_event->xcookie.data);
-    button = xiev->detail;
-  } else {
+  if (native_event->type == GenericEvent)
+    button = EventButtonFromNative(native_event);
+  else
     button = native_event->xbutton.button;
-  }
   switch (button) {
     case 4:
 #if defined(OS_CHROMEOS)
