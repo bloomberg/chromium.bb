@@ -17,8 +17,11 @@
 
 namespace keys = extension_manifest_keys;
 
+#if defined(OS_WIN)
 // http://crbug.com/106381
-TEST(ExtensionFileUtil, DISABLED_InstallUninstallGarbageCollect) {
+#define InstallUninstallGarbageCollect DISABLED_InstallUninstallGarbageCollect
+#endif
+TEST(ExtensionFileUtil, InstallUninstallGarbageCollect) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
@@ -103,6 +106,11 @@ TEST(ExtensionFileUtil, LoadExtensionWithoutLocalesFolder) {
   EXPECT_TRUE(error.empty());
 }
 
+#if defined(OS_WIN)
+// http://crbug.com/106381
+#define CheckIllegalFilenamesNoUnderscores \
+    DISABLED_CheckIllegalFilenamesNoUnderscores
+#endif
 TEST(ExtensionFileUtil, CheckIllegalFilenamesNoUnderscores) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
