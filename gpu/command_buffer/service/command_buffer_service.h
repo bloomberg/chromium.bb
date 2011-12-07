@@ -21,17 +21,17 @@ namespace gpu {
 // API to manage the put and get pointers.
 class CommandBufferService : public CommandBuffer {
  public:
+  typedef base::Callback<bool(int32)> GetBufferChangedCallback;
   CommandBufferService();
   virtual ~CommandBufferService();
 
   // CommandBuffer implementation:
-  virtual bool Initialize(int32 size) OVERRIDE;
-  virtual bool Initialize(base::SharedMemory* buffer, int32 size) OVERRIDE;
-  virtual Buffer GetRingBuffer() OVERRIDE;
+  virtual bool Initialize() OVERRIDE;
   virtual State GetState() OVERRIDE;
   virtual State GetLastState() OVERRIDE;
   virtual void Flush(int32 put_offset) OVERRIDE;
   virtual State FlushSync(int32 put_offset, int32 last_known_get) OVERRIDE;
+  virtual void SetGetBuffer(int32 transfer_buffer_id) OVERRIDE;
   virtual void SetGetOffset(int32 get_offset) OVERRIDE;
   virtual int32 CreateTransferBuffer(size_t size, int32 id_request) OVERRIDE;
   virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
@@ -52,14 +52,19 @@ class CommandBufferService : public CommandBuffer {
   // attempting to write more to the command buffer. Takes ownership of
   // callback.
   virtual void SetPutOffsetChangeCallback(const base::Closure& callback);
+  // Sets a callback that is called whenever the get buffer is changed.
+  virtual void SetGetBufferChangeCallback(
+      const GetBufferChangedCallback& callback);
   virtual void SetParseErrorCallback(const base::Closure& callback);
 
  private:
+  int32 ring_buffer_id_;
   Buffer ring_buffer_;
   int32 num_entries_;
   int32 get_offset_;
   int32 put_offset_;
   base::Closure put_offset_change_callback_;
+  GetBufferChangedCallback get_buffer_change_callback_;
   base::Closure parse_error_callback_;
   std::vector<Buffer> registered_objects_;
   std::set<int32> unused_registered_object_elements_;

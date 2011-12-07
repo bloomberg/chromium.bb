@@ -515,13 +515,11 @@ class PpbGraphics3DRpcClient {
   static NaClSrpcError PPB_Graphics3DTrusted_InitCommandBuffer(
       NaClSrpcChannel* channel,
       PP_Resource resource_id,
-      int32_t size,
       int32_t* success);
-  static NaClSrpcError PPB_Graphics3DTrusted_GetRingBuffer(
+  static NaClSrpcError PPB_Graphics3DTrusted_SetGetBuffer(
       NaClSrpcChannel* channel,
       PP_Resource resource_id,
-      NaClSrpcImcDescType* shm_desc,
-      int32_t* shm_size);
+      int32_t shm_id);
   static NaClSrpcError PPB_Graphics3DTrusted_GetState(
       NaClSrpcChannel* channel,
       PP_Resource resource_id,

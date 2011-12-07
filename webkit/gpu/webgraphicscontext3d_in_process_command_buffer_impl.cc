@@ -86,6 +86,7 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
   ~GLInProcessContext();
 
   void PumpCommands();
+  bool GetBufferChanged(int32 transfer_buffer_id);
 
   // Create a GLInProcessContext that renders directly to a view. The view and
   // the associated window must not be destroyed until the returned
@@ -311,6 +312,10 @@ void GLInProcessContext::PumpCommands() {
   CHECK(state.error == ::gpu::error::kNoError);
 }
 
+bool GLInProcessContext::GetBufferChanged(int32 transfer_buffer_id) {
+  return gpu_scheduler_->SetGetBuffer(transfer_buffer_id);
+}
+
 uint32 GLInProcessContext::GetParentTextureId() {
   return parent_texture_id_;
 }
@@ -457,7 +462,7 @@ bool GLInProcessContext::Initialize(bool onscreen,
   }
 
   command_buffer_.reset(new CommandBufferService);
-  if (!command_buffer_->Initialize(kCommandBufferSize)) {
+  if (!command_buffer_->Initialize()) {
     LOG(ERROR) << "Could not initialize command buffer.";
     Destroy();
     return false;
@@ -523,6 +528,9 @@ bool GLInProcessContext::Initialize(bool onscreen,
 
   command_buffer_->SetPutOffsetChangeCallback(
       base::Bind(&GLInProcessContext::PumpCommands, base::Unretained(this)));
+  command_buffer_->SetGetBufferChangeCallback(
+      base::Bind(
+          &GLInProcessContext::GetBufferChanged, base::Unretained(this)));
 
   // Create the GLES2 helper, which writes the command buffer protocol.
   gles2_helper_.reset(new GLES2CmdHelper(command_buffer_.get()));

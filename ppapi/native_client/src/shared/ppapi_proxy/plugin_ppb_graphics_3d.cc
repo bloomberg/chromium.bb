@@ -212,12 +212,9 @@ bool PluginGraphics3D::InitFromBrowserResource(PP_Resource res) {
 
   // Create and initialize the objects required to issue GLES2 calls.
   command_buffer_.reset(new CommandBufferNacl(res, PluginCore::GetInterface()));
-  if (command_buffer_->Initialize(kRingBufferSize)) {
+  if (command_buffer_->Initialize()) {
     gles2_helper_.reset(new gpu::gles2::GLES2CmdHelper(command_buffer_.get()));
-    gpu::Buffer buffer = command_buffer_->GetRingBuffer();
-    DebugPrintf("PluginGraphics3D::InitFromBrowserResource: buffer size: %d\n",
-        buffer.size);
-    if (gles2_helper_->Initialize(buffer.size)) {
+    if (gles2_helper_->Initialize(kRingBufferSize)) {
       // Request id -1 to signify 'don't care'
       int32 transfer_buffer_id =
           command_buffer_->CreateTransferBuffer(kTransferBufferSize, -1);
