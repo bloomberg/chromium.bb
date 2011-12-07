@@ -41,6 +41,7 @@ class ProxyConfigService;
 class ProxyService;
 class SdchManager;
 class SSLConfigService;
+class TransportSecurityState;
 class URLRequestContext;
 class URLRequestContextGetter;
 class URLSecurityManager;
@@ -65,6 +66,10 @@ class IOThread : public content::BrowserThreadDelegate {
     scoped_ptr<net::NetworkDelegate> system_network_delegate;
     scoped_ptr<net::HostResolver> host_resolver;
     scoped_ptr<net::CertVerifier> cert_verifier;
+    // This TransportSecurityState doesn't load or save any state. It's only
+    // used to enforce pinning for system requests and will only use built-in
+    // pins.
+    scoped_ptr<net::TransportSecurityState> transport_security_state;
     scoped_ptr<net::DnsRRResolver> dnsrr_resolver;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
     scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;

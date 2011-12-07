@@ -10,7 +10,6 @@
 #include "net/base/cert_verifier.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/default_origin_bound_cert_store.h"
-#include "net/base/dnsrr_resolver.h"
 #include "net/base/host_resolver.h"
 #include "net/base/origin_bound_cert_service.h"
 #include "net/base/ssl_config_service_defaults.h"
@@ -77,13 +76,11 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
             BrowserThread::GetMessageLoopProxyForThread(
                 BrowserThread::CACHE));
 
-    storage_->set_dnsrr_resolver(new net::DnsRRResolver());
-
     net::HttpCache* main_cache = new net::HttpCache(
         url_request_context_->host_resolver(),
         url_request_context_->cert_verifier(),
         url_request_context_->origin_bound_cert_service(),
-        url_request_context_->dnsrr_resolver(),
+        NULL, //tranport_security_state
         NULL, //dns_cert_checker
         url_request_context_->proxy_service(),
         url_request_context_->ssl_config_service(),

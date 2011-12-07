@@ -256,7 +256,8 @@ ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
   context->set_net_log(net_log);
   context->set_host_resolver(globals->host_resolver.get());
   context->set_cert_verifier(globals->cert_verifier.get());
-  context->set_dnsrr_resolver(globals->dnsrr_resolver.get());
+  context->set_transport_security_state(
+      globals->transport_security_state.get());
   context->set_http_auth_handler_factory(
       globals->http_auth_handler_factory.get());
   context->set_proxy_service(globals->proxy_script_fetcher_proxy_service.get());
@@ -282,7 +283,8 @@ ConstructSystemRequestContext(IOThread::Globals* globals,
   context->set_net_log(net_log);
   context->set_host_resolver(globals->host_resolver.get());
   context->set_cert_verifier(globals->cert_verifier.get());
-  context->set_dnsrr_resolver(globals->dnsrr_resolver.get());
+  context->set_transport_security_state(
+      globals->transport_security_state.get());
   context->set_http_auth_handler_factory(
       globals->http_auth_handler_factory.get());
   context->set_proxy_service(globals->system_proxy_service.get());
@@ -446,6 +448,7 @@ void IOThread::Init() {
       CreateGlobalHostResolver(net_log_));
   globals_->cert_verifier.reset(new net::CertVerifier);
   globals_->dnsrr_resolver.reset(new net::DnsRRResolver);
+  globals_->transport_security_state.reset(new net::TransportSecurityState(""));
   globals_->ssl_config_service = GetSSLConfigService();
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
       globals_->host_resolver.get()));
@@ -464,6 +467,8 @@ void IOThread::Init() {
   session_params.cert_verifier = globals_->cert_verifier.get();
   session_params.origin_bound_cert_service =
       globals_->system_origin_bound_cert_service.get();
+  session_params.transport_security_state =
+      globals_->transport_security_state.get();
   session_params.proxy_service =
       globals_->proxy_script_fetcher_proxy_service.get();
   session_params.http_auth_handler_factory =
@@ -656,7 +661,8 @@ void IOThread::InitSystemRequestContextOnIOThread() {
   system_params.cert_verifier = globals_->cert_verifier.get();
   system_params.origin_bound_cert_service =
       globals_->system_origin_bound_cert_service.get();
-  system_params.dnsrr_resolver = globals_->dnsrr_resolver.get();
+  system_params.transport_security_state =
+      globals_->transport_security_state.get();
   system_params.dns_cert_checker = NULL;
   system_params.ssl_host_info_factory = NULL;
   system_params.proxy_service = globals_->system_proxy_service.get();

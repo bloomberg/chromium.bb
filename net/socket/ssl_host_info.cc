@@ -8,8 +8,6 @@
 #include "base/metrics/histogram.h"
 #include "base/pickle.h"
 #include "base/string_piece.h"
-#include "net/base/dns_util.h"
-#include "net/base/dnsrr_resolver.h"
 #include "net/base/ssl_config_service.h"
 #include "net/base/x509_certificate.h"
 #include "net/socket/ssl_client_socket.h"
@@ -35,22 +33,10 @@ SSLHostInfo::SSLHostInfo(
       rev_checking_enabled_(ssl_config.rev_checking_enabled),
       verify_ev_cert_(ssl_config.verify_ev_cert),
       verifier_(cert_verifier),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      dnsrr_resolver_(NULL),
-      dns_callback_(NULL),
-      dns_handle_(DnsRRResolver::kInvalidHandle) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 SSLHostInfo::~SSLHostInfo() {
-  if (dns_handle_ != DnsRRResolver::kInvalidHandle) {
-    dnsrr_resolver_->CancelResolve(dns_handle_);
-    delete dns_callback_;
-  }
-}
-
-void SSLHostInfo::StartDnsLookup(DnsRRResolver* dnsrr_resolver) {
-  dnsrr_resolver_ = dnsrr_resolver;
-  // Note: currently disabled.
 }
 
 const SSLHostInfo::State& SSLHostInfo::state() const {

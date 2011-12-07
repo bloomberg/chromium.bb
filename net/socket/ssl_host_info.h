@@ -15,7 +15,6 @@
 #include "net/base/cert_verifier.h"
 #include "net/base/cert_verify_result.h"
 #include "net/base/completion_callback.h"
-#include "net/base/dnsrr_resolver.h"
 #include "net/base/net_export.h"
 #include "net/socket/ssl_client_socket.h"
 
@@ -59,9 +58,6 @@ class NET_EXPORT_PRIVATE SSLHostInfo {
   // only be called once WaitForDataReady has returned OK or called its
   // callback.
   virtual void Persist() = 0;
-
-  // StartDnsLookup triggers a DNS lookup for the host.
-  void StartDnsLookup(DnsRRResolver* dnsrr_resolver);
 
   struct State {
     State();
@@ -132,12 +128,6 @@ class NET_EXPORT_PRIVATE SSLHostInfo {
   SingleRequestCertVerifier verifier_;
   scoped_refptr<X509Certificate> cert_;
   base::WeakPtrFactory<SSLHostInfo> weak_factory_;
-
-  DnsRRResolver* dnsrr_resolver_;
-  OldCompletionCallback* dns_callback_;
-  DnsRRResolver::Handle dns_handle_;
-  RRResponse dns_response_;
-  base::TimeTicks dns_lookup_start_time_;
   base::TimeTicks cert_verification_finished_time_;
 };
 

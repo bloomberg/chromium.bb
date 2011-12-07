@@ -16,7 +16,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/cookie_monster.h"
-#include "net/base/dnsrr_resolver.h"
 #include "net/base/host_resolver.h"
 #include "net/base/host_resolver_impl.h"
 #include "net/base/io_buffer.h"
@@ -72,7 +71,6 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
     // The rest of the dependencies are standard, and don't depend on the
     // experiment being run.
     storage_.set_cert_verifier(new net::CertVerifier);
-    storage_.set_dnsrr_resolver(new net::DnsRRResolver);
     storage_.set_ftp_transaction_factory(
         new net::FtpNetworkLayer(host_resolver()));
     storage_.set_ssl_config_service(new net::SSLConfigServiceDefaults);
@@ -82,7 +80,6 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
 
     net::HttpNetworkSession::Params session_params;
     session_params.host_resolver = host_resolver();
-    session_params.dnsrr_resolver = dnsrr_resolver();
     session_params.cert_verifier = cert_verifier();
     session_params.proxy_service = proxy_service();
     session_params.http_auth_handler_factory = http_auth_handler_factory();
