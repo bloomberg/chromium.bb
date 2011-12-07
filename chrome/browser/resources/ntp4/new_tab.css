@@ -242,7 +242,7 @@ html[dir='rtl'] .login-status-icon {
 #trash {
   -webkit-transition: top 200ms, opacity 0;
   -webkit-transition-delay: 0, 200ms;
-  color: #7F7F7F;
+  color: #222;
   height: 100%;
   position: absolute;
   opacity: 0;
