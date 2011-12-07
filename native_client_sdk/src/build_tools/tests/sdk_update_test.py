@@ -84,7 +84,7 @@ class TestSDKUpdate(unittest.TestCase):
     self.assertEqual(bundle_list.count('sdk_tools'), 2)
     self.assertEqual(bundle_list.count('test_1'), 2)
     self.assertEqual(bundle_list.count('test_2'), 1)
-    self.assertEqual(bundle_list.count('description:'), 6)
+    self.assertEqual(bundle_list.count('description:'), 7)
 
   def testUpdateHelp(self):
     '''Test the help for the update command'''
@@ -115,7 +115,7 @@ class TestSDKUpdate(unittest.TestCase):
     tools = sdk_update.ManifestTools(self._options)
     tools.LoadManifest()
     bundles = tools.GetBundles()
-    self.assertEqual(3, len(bundles))
+    self.assertEqual(4, len(bundles))
     local_manifest = sdk_update.SDKManifestFile(
         os.path.join(self._options.user_data_dir,
                      sdk_update.MANIFEST_FILENAME))
@@ -123,9 +123,7 @@ class TestSDKUpdate(unittest.TestCase):
     for bundle in bundles:
       bundle_name = bundle['name']
       self.assertTrue('revision' in bundle)
-      if bundle_name == 'test_1':
-        self.assertTrue(local_manifest.BundleNeedsUpdate(bundle))
-      elif bundle_name == 'test_2':
+      if bundle_name in ['test_1', 'test_2', 'pepper_1']:
         self.assertTrue(local_manifest.BundleNeedsUpdate(bundle))
       else:
         self.assertFalse(local_manifest.BundleNeedsUpdate(bundle))
@@ -135,7 +133,7 @@ class TestSDKUpdate(unittest.TestCase):
     tools = sdk_update.ManifestTools(self._options)
     tools.LoadManifest()
     bundles = tools.GetBundles()
-    self.assertEqual(3, len(bundles))
+    self.assertEqual(4, len(bundles))
     local_manifest = sdk_update.SDKManifestFile(
         os.path.join(self._options.user_data_dir,
                      sdk_update.MANIFEST_FILENAME))
@@ -151,7 +149,7 @@ class TestSDKUpdate(unittest.TestCase):
     tools = sdk_update.ManifestTools(self._options)
     tools.LoadManifest()
     bundles = tools.GetBundles()
-    self.assertEqual(3, len(bundles))
+    self.assertEqual(4, len(bundles))
     local_manifest = sdk_update.SDKManifestFile(
         os.path.join(self._options.user_data_dir,
                      sdk_update.MANIFEST_FILENAME))
@@ -159,7 +157,7 @@ class TestSDKUpdate(unittest.TestCase):
     # Test the | operator.
     for bundle in bundles:
       bundle_name = bundle['name']
-      if bundle_name == 'test_2':
+      if bundle_name in ['pepper_1', 'test_2']:
         continue
       local_test_bundle = local_manifest.GetBundleNamed(bundle_name)
       merged_bundle = local_test_bundle.MergeWithBundle(bundle)
