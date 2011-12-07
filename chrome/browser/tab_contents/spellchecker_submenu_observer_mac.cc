@@ -54,12 +54,6 @@ void SpellCheckerSubMenuObserver::InitMenu(const ContextMenuParams& params) {
       l10n_util::GetStringUTF16(
           IDS_CONTENT_CONTEXT_CHECK_SPELLING_WHILE_TYPING));
 
-  // Add an item that opens the 'fonts and languages options' page.
-  submenu_model_.AddSeparator();
-  submenu_model_.AddItemWithStringId(
-      IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS,
-      IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS);
-
   proxy_->AddSubMenu(
       IDC_SPELLCHECK_MENU,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLCHECK_MENU),

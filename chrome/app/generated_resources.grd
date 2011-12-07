@@ -514,9 +514,6 @@ are declared in build/common.gypi.
         <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="The name of the Spellcheck Options submenu in the content area context menu">
           &amp;Spell-checker options
         </message>
-        <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="The name of the Language Settings command in the content area context menu">
-          &amp;Language settings...
-        </message>
         <message name="IDS_CONTENT_CONTEXT_SELECTALL" desc="The name of the Select All command in the content area context menu">
           Select &amp;all
         </message>
@@ -794,6 +791,9 @@ are declared in build/common.gypi.
         </message>
         <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_OF_THIS_FIELD" desc="The name of the Check the spelling of this field command in the spelling context menu">
           &amp;Check the spelling of this field
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="The name of the Language Settings command in the content area context menu">
+          &amp;Language settings...
         </message>
       </if>
 
