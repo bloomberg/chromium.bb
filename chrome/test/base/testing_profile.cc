@@ -204,6 +204,7 @@ void TestingProfile::Init() {
 }
 
 void TestingProfile::FinishInit() {
+  DCHECK(content::NotificationService::current());
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_CREATED,
       content::Source<Profile>(static_cast<Profile*>(this)),
@@ -214,6 +215,7 @@ void TestingProfile::FinishInit() {
 }
 
 TestingProfile::~TestingProfile() {
+  DCHECK(content::NotificationService::current());
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_DESTROYED,
       content::Source<Profile>(static_cast<Profile*>(this)),
