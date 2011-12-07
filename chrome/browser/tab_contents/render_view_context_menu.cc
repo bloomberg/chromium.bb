@@ -1205,21 +1205,12 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDC_CONTENT_CONTEXT_GOTOURL:
     case IDC_SPELLPANEL_TOGGLE:
-#if !defined(OS_MACOSX)
-    // TODO(jeremy): re-enable - http://crbug.com/34512 .
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
-#endif
     case IDC_CONTENT_CONTEXT_VIEWFRAMEINFO:
       return true;
 
     case IDC_CHECK_SPELLING_OF_THIS_FIELD:
       return profile_->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck);
-
-#if defined(OS_MACOSX)
-    // TODO(jeremy): re-enable - http://crbug.com/34512 .
-    case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
-      return false;
-#endif
 
 #if defined(OS_MACOSX)
     case IDC_WRITING_DIRECTION_DEFAULT:  // Provided to match OS defaults.
