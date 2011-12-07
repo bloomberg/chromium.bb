@@ -13,7 +13,6 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/message_box_flags.h"
 #include "ui/base/ui_base_types.h"
 
 namespace {
@@ -56,13 +55,13 @@ JSModalDialogGtk::JSModalDialogGtk(JavaScriptAppModalDialog* dialog,
 
   // We add in the OK button manually later because we want to focus it
   // explicitly.
-  switch (dialog_->dialog_flags()) {
-    case ui::MessageBoxFlags::kIsJavascriptAlert:
+  switch (dialog_->javascript_message_type()) {
+    case ui::JAVASCRIPT_MESSAGE_TYPE_ALERT:
       buttons = GTK_BUTTONS_NONE;
       message_type = GTK_MESSAGE_WARNING;
       break;
 
-    case ui::MessageBoxFlags::kIsJavascriptConfirm:
+    case ui::JAVASCRIPT_MESSAGE_TYPE_CONFIRM:
       if (dialog_->is_before_unload_dialog()) {
         // onbeforeunload also uses a confirm prompt, it just has custom
         // buttons.  We add the buttons using gtk_dialog_add_button below.
@@ -73,7 +72,7 @@ JSModalDialogGtk::JSModalDialogGtk(JavaScriptAppModalDialog* dialog,
       message_type = GTK_MESSAGE_QUESTION;
       break;
 
-    case ui::MessageBoxFlags::kIsJavascriptPrompt:
+    case ui::JAVASCRIPT_MESSAGE_TYPE_PROMPT:
       buttons = GTK_BUTTONS_CANCEL;
       message_type = GTK_MESSAGE_QUESTION;
       break;
@@ -97,7 +96,8 @@ JSModalDialogGtk::JSModalDialogGtk(JavaScriptAppModalDialog* dialog,
 
   // Adjust content area as needed.  Set up the prompt text entry or
   // suppression check box.
-  if (ui::MessageBoxFlags::kIsJavascriptPrompt == dialog_->dialog_flags()) {
+  if (dialog_->javascript_message_type() ==
+          ui::JAVASCRIPT_MESSAGE_TYPE_PROMPT) {
     GtkWidget* content_area =
         gtk_dialog_get_content_area(GTK_DIALOG(gtk_dialog_));
     GtkWidget* text_box = gtk_entry_new();
@@ -133,7 +133,8 @@ JSModalDialogGtk::JSModalDialogGtk(JavaScriptAppModalDialog* dialog,
     // Add the OK button and focus it.
     GtkWidget* ok_button = gtk_dialog_add_button(GTK_DIALOG(gtk_dialog_),
         GTK_STOCK_OK, GTK_RESPONSE_OK);
-    if (ui::MessageBoxFlags::kIsJavascriptPrompt != dialog_->dialog_flags())
+    if (dialog_->javascript_message_type() !=
+            ui::JAVASCRIPT_MESSAGE_TYPE_PROMPT)
       gtk_widget_grab_focus(ok_button);
   }
 
@@ -148,14 +149,14 @@ JSModalDialogGtk::~JSModalDialogGtk() {
 // JSModalDialogGtk, NativeAppModalDialog implementation:
 
 int JSModalDialogGtk::GetAppModalDialogButtons() const {
-  switch (dialog_->dialog_flags()) {
-    case ui::MessageBoxFlags::kIsJavascriptAlert:
+  switch (dialog_->javascript_message_type()) {
+    case ui::JAVASCRIPT_MESSAGE_TYPE_ALERT:
       return ui::DIALOG_BUTTON_OK;
 
-    case ui::MessageBoxFlags::kIsJavascriptConfirm:
+    case ui::JAVASCRIPT_MESSAGE_TYPE_CONFIRM:
       return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 
-    case ui::MessageBoxFlags::kIsJavascriptPrompt:
+    case ui::JAVASCRIPT_MESSAGE_TYPE_PROMPT:
       return ui::DIALOG_BUTTON_OK;
 
     default:

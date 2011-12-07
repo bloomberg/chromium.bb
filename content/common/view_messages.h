@@ -34,6 +34,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebReferrerPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/base/javascript_message_type.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/context_menu.h"
@@ -70,6 +71,7 @@ IPC_ENUM_TRAITS(content::RendererPreferencesSubpixelRenderingEnum)
 IPC_ENUM_TRAITS(content::StopFindAction)
 IPC_ENUM_TRAITS(media::MediaLogEvent::Type)
 IPC_ENUM_TRAITS(ui::TextInputType)
+IPC_ENUM_TRAITS(ui::JavascriptMessageType)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::BoolAttribute)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::FloatAttribute)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::IntAttribute)
@@ -1582,7 +1584,7 @@ IPC_SYNC_MESSAGE_ROUTED4_2(ViewHostMsg_RunJavaScriptMessage,
                            string16     /* in - alert message */,
                            string16     /* in - default prompt */,
                            GURL         /* in - originating page URL */,
-                           int          /* in - dialog flags */,
+                           ui::JavascriptMessageType /* in - type */,
                            bool         /* out - success */,
                            string16     /* out - user_input field */)
 

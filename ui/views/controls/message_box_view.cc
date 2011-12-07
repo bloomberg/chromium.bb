@@ -10,7 +10,6 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
-#include "ui/base/message_box_flags.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -28,7 +27,7 @@ namespace views {
 ///////////////////////////////////////////////////////////////////////////////
 // MessageBoxView, public:
 
-MessageBoxView::MessageBoxView(int dialog_flags,
+MessageBoxView::MessageBoxView(int options,
                                const string16& message,
                                const string16& default_prompt,
                                int message_width)
@@ -37,10 +36,10 @@ MessageBoxView::MessageBoxView(int dialog_flags,
       icon_(NULL),
       checkbox_(NULL),
       message_width_(message_width) {
-  Init(dialog_flags, default_prompt);
+  Init(options, default_prompt);
 }
 
-MessageBoxView::MessageBoxView(int dialog_flags,
+MessageBoxView::MessageBoxView(int options,
                                const string16& message,
                                const string16& default_prompt)
     : message_label_(new Label(message)),
@@ -48,7 +47,7 @@ MessageBoxView::MessageBoxView(int dialog_flags,
       icon_(NULL),
       checkbox_(NULL),
       message_width_(kDefaultMessageWidth) {
-  Init(dialog_flags, default_prompt);
+  Init(options, default_prompt);
 }
 
 MessageBoxView::~MessageBoxView() {}
@@ -125,11 +124,11 @@ bool MessageBoxView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 ///////////////////////////////////////////////////////////////////////////////
 // MessageBoxView, private:
 
-void MessageBoxView::Init(int dialog_flags,
+void MessageBoxView::Init(int options,
                           const string16& default_prompt) {
   message_label_->SetMultiLine(true);
   message_label_->SetAllowCharacterBreak(true);
-  if (dialog_flags & ui::MessageBoxFlags::kAutoDetectAlignment) {
+  if (options & DETECT_ALIGNMENT) {
     // Determine the alignment and directionality based on the first character
     // with strong directionality.
     base::i18n::TextDirection direction =
@@ -149,7 +148,7 @@ void MessageBoxView::Init(int dialog_flags,
     message_label_->SetHorizontalAlignment(Label::ALIGN_LEFT);
   }
 
-  if (dialog_flags & ui::MessageBoxFlags::kFlagHasPromptField) {
+  if (options & HAS_PROMPT_FIELD) {
     prompt_field_ = new Textfield;
     prompt_field_->SetText(default_prompt);
   }

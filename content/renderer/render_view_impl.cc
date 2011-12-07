@@ -131,7 +131,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWindowFeatures.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/message_box_flags.h"
+#include "ui/base/javascript_message_type.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -1283,7 +1283,7 @@ void RenderViewImpl::LoadNavigationErrorPage(
                         replace);
 }
 
-bool RenderViewImpl::RunJavaScriptMessage(int type,
+bool RenderViewImpl::RunJavaScriptMessage(ui::JavascriptMessageType type,
                                           const string16& message,
                                           const string16& default_value,
                                           const GURL& frame_url,
@@ -1584,29 +1584,30 @@ bool RenderViewImpl::runFileChooser(
   return ScheduleFileChooser(ipc_params, chooser_completion);
 }
 
-void RenderViewImpl::runModalAlertDialog(
-    WebFrame* frame, const WebString& message) {
-  RunJavaScriptMessage(ui::MessageBoxFlags::kIsJavascriptAlert,
+void RenderViewImpl::runModalAlertDialog(WebFrame* frame,
+                                         const WebString& message) {
+  RunJavaScriptMessage(ui::JAVASCRIPT_MESSAGE_TYPE_ALERT,
                        message,
                        string16(),
                        frame->document().url(),
                        NULL);
 }
 
-bool RenderViewImpl::runModalConfirmDialog(
-    WebFrame* frame, const WebString& message) {
-  return RunJavaScriptMessage(ui::MessageBoxFlags::kIsJavascriptConfirm,
+bool RenderViewImpl::runModalConfirmDialog(WebFrame* frame,
+                                           const WebString& message) {
+  return RunJavaScriptMessage(ui::JAVASCRIPT_MESSAGE_TYPE_CONFIRM,
                               message,
                               string16(),
                               frame->document().url(),
                               NULL);
 }
 
-bool RenderViewImpl::runModalPromptDialog(
-    WebFrame* frame, const WebString& message, const WebString& default_value,
-    WebString* actual_value) {
+bool RenderViewImpl::runModalPromptDialog(WebFrame* frame,
+                                          const WebString& message,
+                                          const WebString& default_value,
+                                          WebString* actual_value) {
   string16 result;
-  bool ok = RunJavaScriptMessage(ui::MessageBoxFlags::kIsJavascriptPrompt,
+  bool ok = RunJavaScriptMessage(ui::JAVASCRIPT_MESSAGE_TYPE_PROMPT,
                                  message,
                                  default_value,
                                  frame->document().url(),

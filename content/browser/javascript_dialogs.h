@@ -8,6 +8,7 @@
 
 #include "base/string16.h"
 #include "content/common/content_export.h"
+#include "ui/base/javascript_message_type.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace IPC {
@@ -53,14 +54,15 @@ class JavaScriptDialogCreator {
 
   // Displays a JavaScript dialog. |did_suppress_message| will not be nil; if
   // |true| is returned in it, the caller will handle faking the reply.
-  virtual void RunJavaScriptDialog(JavaScriptDialogDelegate* delegate,
-                                   TitleType title_type,
-                                   const string16& title,
-                                   int dialog_flags,
-                                   const string16& message_text,
-                                   const string16& default_prompt_text,
-                                   IPC::Message* reply_message,
-                                   bool* did_suppress_message) = 0;
+  virtual void RunJavaScriptDialog(
+      JavaScriptDialogDelegate* delegate,
+      TitleType title_type,
+      const string16& title,
+      ui::JavascriptMessageType javascript_message_type,
+      const string16& message_text,
+      const string16& default_prompt_text,
+      IPC::Message* reply_message,
+      bool* did_suppress_message) = 0;
 
   // Displays a dialog asking the user if they want to leave a page.
   virtual void RunBeforeUnloadDialog(JavaScriptDialogDelegate* delegate,

@@ -1061,14 +1061,14 @@ void RenderViewHost::OnMsgRunJavaScriptMessage(
     const string16& message,
     const string16& default_prompt,
     const GURL& frame_url,
-    const int flags,
+    ui::JavascriptMessageType type,
     IPC::Message* reply_msg) {
   // While a JS message dialog is showing, tabs in the same process shouldn't
   // process input events.
   process()->SetIgnoreInputEvents(true);
   StopHangMonitorTimeout();
   delegate_->RunJavaScriptMessage(this, message, default_prompt, frame_url,
-                                  flags, reply_msg,
+                                  type, reply_msg,
                                   &are_javascript_messages_suppressed_);
 }
 

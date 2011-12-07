@@ -23,12 +23,18 @@ class Textfield;
 // and Cancel buttons.
 class VIEWS_EXPORT MessageBoxView : public View {
  public:
-  MessageBoxView(int dialog_flags,
+  enum Options {
+    NO_OPTIONS = 0,
+    DETECT_ALIGNMENT = 1 << 0,
+    HAS_PROMPT_FIELD = 1 << 1,
+  };
+
+  MessageBoxView(int options,
                  const string16& message,
                  const string16& default_prompt,
                  int message_width);
 
-  MessageBoxView(int dialog_flags,
+  MessageBoxView(int options,
                  const string16& message,
                  const string16& default_prompt);
 
@@ -70,7 +76,7 @@ class VIEWS_EXPORT MessageBoxView : public View {
  private:
   // Sets up the layout manager and initializes the prompt field. This should
   // only be called once, from the constructor.
-  void Init(int dialog_flags, const string16& default_prompt);
+  void Init(int options, const string16& default_prompt);
 
   // Sets up the layout manager based on currently initialized views. Should be
   // called when a view is initialized or changed.

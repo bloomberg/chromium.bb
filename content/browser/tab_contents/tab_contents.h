@@ -523,7 +523,7 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
                                     const string16& message,
                                     const string16& default_prompt,
                                     const GURL& frame_url,
-                                    const int flags,
+                                    ui::JavascriptMessageType type,
                                     IPC::Message* reply_msg,
                                     bool* did_suppress_message) OVERRIDE;
   virtual void RunBeforeUnloadConfirm(const RenderViewHost* rvh,

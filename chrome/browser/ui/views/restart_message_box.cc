@@ -8,7 +8,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/message_box_flags.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -62,8 +61,7 @@ RestartMessageBox::RestartMessageBox(gfx::NativeWindow parent_window) {
   const int kDialogWidth = 400;
   // Also deleted when the window closes.
   message_box_view_ = new views::MessageBoxView(
-      ui::MessageBoxFlags::kFlagHasMessage |
-          ui::MessageBoxFlags::kFlagHasOKButton,
+      views::MessageBoxView::NO_OPTIONS,
       l10n_util::GetStringUTF16(IDS_OPTIONS_RELAUNCH_REQUIRED),
       string16(),
       kDialogWidth);

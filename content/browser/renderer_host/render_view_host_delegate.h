@@ -19,6 +19,7 @@
 #include "net/base/load_states.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
+#include "ui/base/javascript_message_type.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class GURL;
@@ -290,7 +291,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
                                     const string16& message,
                                     const string16& default_prompt,
                                     const GURL& frame_url,
-                                    const int flags,
+                                    ui::JavascriptMessageType type,
                                     IPC::Message* reply_msg,
                                     bool* did_suppress_message) {}
 

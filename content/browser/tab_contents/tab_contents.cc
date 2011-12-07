@@ -1797,7 +1797,7 @@ void TabContents::RunJavaScriptMessage(
     const string16& message,
     const string16& default_prompt,
     const GURL& frame_url,
-    const int flags,
+    ui::JavascriptMessageType javascript_message_type,
     IPC::Message* reply_msg,
     bool* did_suppress_message) {
   // Suppress JavaScript dialogs when requested. Also suppress messages when
@@ -1827,7 +1827,7 @@ void TabContents::RunJavaScriptMessage(
     dialog_creator_->RunJavaScriptDialog(this,
                                          title_type,
                                          title,
-                                         flags,
+                                         javascript_message_type,
                                          message,
                                          default_prompt,
                                          reply_msg,

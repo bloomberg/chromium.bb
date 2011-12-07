@@ -20,7 +20,7 @@ MessageBoxExample::~MessageBoxExample() {
 
 void MessageBoxExample::CreateExampleView(View* container) {
   message_box_view_ = new MessageBoxView(
-      0,
+      views::MessageBoxView::NO_OPTIONS,
       ASCIIToUTF16("Message Box Message"),
       ASCIIToUTF16("Default Prompt"));
   status_ = new TextButton(this, ASCIIToUTF16("Show Status"));

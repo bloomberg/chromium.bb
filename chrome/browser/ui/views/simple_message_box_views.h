@@ -62,8 +62,13 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
  private:
+  enum DialogType {
+    DIALOG_ERROR,
+    DIALOG_YES_NO,
+  };
+
   SimpleMessageBoxViews(gfx::NativeWindow parent_window,
-                        int dialog_flags,
+                        DialogType type,
                         const string16& title,
                         const string16& message);
   virtual ~SimpleMessageBoxViews();
@@ -80,7 +85,7 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   virtual bool Dispatch(GdkEvent* event) OVERRIDE;
 #endif
 
-  int dialog_flags_;
+  const DialogType type_;
   string16 message_box_title_;
   views::MessageBoxView* message_box_view_;
   DispositionType disposition_;

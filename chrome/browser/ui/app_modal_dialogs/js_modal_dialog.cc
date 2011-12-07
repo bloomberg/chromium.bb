@@ -50,7 +50,7 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
     content::JavaScriptDialogDelegate* delegate,
     ChromeJavaScriptDialogExtraData* extra_data,
     const string16& title,
-    int dialog_flags,
+    ui::JavascriptMessageType javascript_message_type,
     const string16& message_text,
     const string16& default_prompt_text,
     bool display_suppress_checkbox,
@@ -58,7 +58,7 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
     IPC::Message* reply_msg)
     : AppModalDialog(delegate, title),
       extra_data_(extra_data),
-      dialog_flags_(dialog_flags),
+      javascript_message_type_(javascript_message_type),
       display_suppress_checkbox_(display_suppress_checkbox),
       is_before_unload_dialog_(is_before_unload_dialog),
       reply_msg_(reply_msg),

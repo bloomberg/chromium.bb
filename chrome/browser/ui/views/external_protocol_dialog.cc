@@ -16,7 +16,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/message_box_flags.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"
@@ -147,7 +146,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
   message_text += l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_WARNING);
 
   message_box_view_ = new views::MessageBoxView(
-      ui::MessageBoxFlags::kIsConfirmMessageBox,
+      views::MessageBoxView::NO_OPTIONS,
       message_text,
       string16(),
       kMessageWidth);

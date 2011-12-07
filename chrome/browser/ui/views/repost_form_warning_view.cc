@@ -14,7 +14,6 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/message_box_flags.h"
 #include "ui/views/controls/message_box_view.h"
 
 namespace browser {
@@ -36,7 +35,7 @@ RepostFormWarningView::RepostFormWarningView(
       : controller_(new RepostFormWarningController(tab_contents)),
         message_box_view_(NULL) {
   message_box_view_ = new views::MessageBoxView(
-      ui::MessageBoxFlags::kIsConfirmMessageBox,
+      views::MessageBoxView::NO_OPTIONS,
       l10n_util::GetStringUTF16(IDS_HTTP_POST_WARNING),
       string16());
   TabContentsWrapper* wrapper =

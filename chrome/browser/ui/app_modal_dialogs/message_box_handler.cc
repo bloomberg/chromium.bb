@@ -15,21 +15,22 @@
 #include "chrome/common/chrome_constants.h"
 #include "content/browser/javascript_dialogs.h"
 #include "grit/generated_resources.h"
+#include "ui/base/javascript_message_type.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/message_box_flags.h"
 
 class ChromeJavaScriptDialogCreator : public content::JavaScriptDialogCreator {
  public:
   static ChromeJavaScriptDialogCreator* GetInstance();
 
-  virtual void RunJavaScriptDialog(content::JavaScriptDialogDelegate* delegate,
-                                   TitleType title_type,
-                                   const string16& title,
-                                   int dialog_flags,
-                                   const string16& message_text,
-                                   const string16& default_prompt_text,
-                                   IPC::Message* reply_message,
-                                   bool* did_suppress_message) OVERRIDE;
+  virtual void RunJavaScriptDialog(
+      content::JavaScriptDialogDelegate* delegate,
+      TitleType title_type,
+      const string16& title,
+      ui::JavascriptMessageType javascript_message_type,
+      const string16& message_text,
+      const string16& default_prompt_text,
+      IPC::Message* reply_message,
+      bool* did_suppress_message) OVERRIDE;
 
   virtual void RunBeforeUnloadDialog(
       content::JavaScriptDialogDelegate* delegate,
@@ -75,7 +76,7 @@ void ChromeJavaScriptDialogCreator::RunJavaScriptDialog(
     content::JavaScriptDialogDelegate* delegate,
     TitleType title_type,
     const string16& title,
-    int dialog_flags,
+    ui::JavascriptMessageType javascript_message_type,
     const string16& message_text,
     const string16& default_prompt_text,
     IPC::Message* reply_message,
@@ -101,14 +102,14 @@ void ChromeJavaScriptDialogCreator::RunJavaScriptDialog(
     display_suppress_checkbox = true;
   }
 
-  bool is_alert = dialog_flags == ui::MessageBoxFlags::kIsJavascriptAlert;
+  bool is_alert = javascript_message_type == ui::JAVASCRIPT_MESSAGE_TYPE_ALERT;
   string16 dialog_title = GetTitle(title_type, title, is_alert);
 
   AppModalDialogQueue::GetInstance()->AddDialog(new JavaScriptAppModalDialog(
       delegate,
       extra_data,
       dialog_title,
-      dialog_flags,
+      javascript_message_type,
       message_text,
       default_prompt_text,
       display_suppress_checkbox,
@@ -130,7 +131,7 @@ void ChromeJavaScriptDialogCreator::RunBeforeUnloadDialog(
       delegate,
       extra_data,
       l10n_util::GetStringUTF16(IDS_BEFOREUNLOAD_MESSAGEBOX_TITLE),
-      ui::MessageBoxFlags::kIsJavascriptConfirm,
+      ui::JAVASCRIPT_MESSAGE_TYPE_CONFIRM,
       full_message,
       string16(),  // default_prompt_text
       false,       // display_suppress_checkbox

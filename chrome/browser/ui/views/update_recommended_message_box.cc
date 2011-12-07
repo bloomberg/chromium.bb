@@ -12,7 +12,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/message_box_flags.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -99,8 +98,7 @@ UpdateRecommendedMessageBox::UpdateRecommendedMessageBox(
   const string16 product_name = l10n_util::GetStringUTF16(kProductNameId);
   // Also deleted when the window closes.
   message_box_view_ = new views::MessageBoxView(
-      ui::MessageBoxFlags::kFlagHasMessage |
-          ui::MessageBoxFlags::kFlagHasOKButton,
+      views::MessageBoxView::NO_OPTIONS,
       l10n_util::GetStringFUTF16(IDS_UPDATE_RECOMMENDED, product_name),
       string16(),
       kDialogWidth);

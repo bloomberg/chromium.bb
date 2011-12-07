@@ -44,6 +44,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationType.h"
+#include "ui/base/javascript_message_type.h"
 #include "ui/gfx/surface/transport_dib.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/media/webmediaplayer_delegate.h"
@@ -715,7 +716,7 @@ class RenderViewImpl : public RenderWidget,
                const content::Referrer& referrer,
                WebKit::WebNavigationPolicy policy);
 
-  bool RunJavaScriptMessage(int type,
+  bool RunJavaScriptMessage(ui::JavascriptMessageType type,
                             const string16& message,
                             const string16& default_value,
                             const GURL& frame_url,

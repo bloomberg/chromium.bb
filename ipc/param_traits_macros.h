@@ -27,7 +27,7 @@
 #define IPC_ENUM_TRAITS(enum_name) \
   namespace IPC { \
     template <> \
-    struct ParamTraits<enum_name> { \
+    struct IPC_MESSAGE_EXPORT ParamTraits<enum_name> { \
       typedef enum_name param_type; \
       static void Write(Message* m, const param_type& p); \
       static bool Read(const Message* m, void** iter, param_type* p); \

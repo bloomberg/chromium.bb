@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/views/window.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/message_box_flags.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -42,24 +41,19 @@ bool ShowYesNoBox(gfx::NativeWindow parent,
 void SimpleMessageBoxViews::ShowErrorBox(gfx::NativeWindow parent_window,
                                          const string16& title,
                                          const string16& message) {
-  int dialog_flags = ui::MessageBoxFlags::kFlagHasMessage |
-      ui::MessageBoxFlags::kFlagHasOKButton;
-
   // This is a reference counted object so it is given an initial increment
   // in the constructor with a corresponding decrement in DeleteDelegate().
-  new SimpleMessageBoxViews(parent_window, dialog_flags, title, message);
+  new SimpleMessageBoxViews(parent_window, DIALOG_ERROR, title, message);
 }
 
 bool SimpleMessageBoxViews::ShowYesNoBox(gfx::NativeWindow parent_window,
                                          const string16& title,
                                          const string16& message) {
-  int dialog_flags = ui::MessageBoxFlags::kIsConfirmMessageBox;
-
   // This is a reference counted object so it is given an initial increment
   // in the constructor plus an extra one below to ensure the dialog persists
   // until we retrieve the user response..
   scoped_refptr<SimpleMessageBoxViews> dialog =
-      new SimpleMessageBoxViews(parent_window, dialog_flags, title, message);
+      new SimpleMessageBoxViews(parent_window, DIALOG_YES_NO, title, message);
 
   // Make sure Chrome doesn't attempt to shut down with the dialog up.
   g_browser_process->AddRefModule();
@@ -85,16 +79,9 @@ bool SimpleMessageBoxViews::Accept() {
 }
 
 int SimpleMessageBoxViews::GetDialogButtons() const {
-  // NOTE: It seems unsafe to assume that the flags for OK/cancel will always
-  // have the same value as the button ids.
-  int dialog_buttons = ui::DIALOG_BUTTON_NONE;
-  if (dialog_flags_ & ui::MessageBoxFlags::kFlagHasOKButton)
-    dialog_buttons = ui::DIALOG_BUTTON_OK;
-
-  if (dialog_flags_ & ui::MessageBoxFlags::kFlagHasCancelButton)
-    dialog_buttons |= ui::DIALOG_BUTTON_CANCEL;
-
-  return dialog_buttons;
+  if (type_ == DIALOG_ERROR)
+    return ui::DIALOG_BUTTON_OK;
+  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
 string16 SimpleMessageBoxViews::GetDialogButtonLabel(
@@ -135,15 +122,16 @@ const views::Widget* SimpleMessageBoxViews::GetWidget() const {
 // SimpleMessageBoxViews, private:
 
 SimpleMessageBoxViews::SimpleMessageBoxViews(gfx::NativeWindow parent_window,
-                                             int dialog_flags,
+                                             DialogType type,
                                              const string16& title,
                                              const string16& message)
-    : dialog_flags_(dialog_flags),
+    : type_(type),
       disposition_(DISPOSITION_UNKNOWN) {
   message_box_title_ = title;
-  message_box_view_ = new views::MessageBoxView(dialog_flags,
-                                                message,
-                                                string16());
+  message_box_view_ = new views::MessageBoxView(
+      views::MessageBoxView::NO_OPTIONS,
+      message,
+      string16());
   browser::CreateViewsWindow(parent_window, this, STYLE_GENERIC)->Show();
 
   // Add reference to be released in DeleteDelegate().

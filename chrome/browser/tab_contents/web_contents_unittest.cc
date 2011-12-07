@@ -25,7 +25,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/message_box_flags.h"
 #include "webkit/glue/webkit_glue.h"
 
 using content::BrowserThread;
@@ -1677,7 +1676,7 @@ TEST_F(TabContentsTest, NoJSMessageOnInterstitials) {
   bool did_suppress_message = false;
   contents()->RunJavaScriptMessage(contents()->render_view_host(),
       ASCIIToUTF16("This is an informative message"), ASCIIToUTF16("OK"),
-      kGURL, ui::MessageBoxFlags::kIsJavascriptAlert, dummy_message,
+      kGURL, ui::JAVASCRIPT_MESSAGE_TYPE_ALERT, dummy_message,
       &did_suppress_message);
   EXPECT_TRUE(did_suppress_message);
 }

@@ -41,7 +41,7 @@ class JavaScriptAppModalDialog : public AppModalDialog {
   JavaScriptAppModalDialog(content::JavaScriptDialogDelegate* delegate,
                            ChromeJavaScriptDialogExtraData* extra_data,
                            const string16& title,
-                           int dialog_flags,
+                           ui::JavascriptMessageType javascript_message_type,
                            const string16& message_text,
                            const string16& default_prompt_text,
                            bool display_suppress_checkbox,
@@ -68,7 +68,9 @@ class JavaScriptAppModalDialog : public AppModalDialog {
   void SetOverridePromptText(const string16& prompt_text);
 
   // Accessors
-  int dialog_flags() const { return dialog_flags_; }
+  ui::JavascriptMessageType javascript_message_type() const {
+    return javascript_message_type_;
+  }
   string16 message_text() const { return message_text_; }
   string16 default_prompt_text() const { return default_prompt_text_; }
   bool display_suppress_checkbox() const { return display_suppress_checkbox_; }
@@ -83,7 +85,7 @@ class JavaScriptAppModalDialog : public AppModalDialog {
   ChromeJavaScriptDialogExtraData* extra_data_;
 
   // Information about the message box is held in the following variables.
-  int dialog_flags_;
+  const ui::JavascriptMessageType javascript_message_type_;
   string16 message_text_;
   string16 default_prompt_text_;
   bool display_suppress_checkbox_;

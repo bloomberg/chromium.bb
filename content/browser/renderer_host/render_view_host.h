@@ -25,6 +25,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
+#include "ui/base/javascript_message_type.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -552,7 +553,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   void OnMsgRunJavaScriptMessage(const string16& message,
                                  const string16& default_prompt,
                                  const GURL& frame_url,
-                                 const int flags,
+                                 ui::JavascriptMessageType type,
                                  IPC::Message* reply_msg);
   void OnMsgRunBeforeUnloadConfirm(const GURL& frame_url,
                                    const string16& message,

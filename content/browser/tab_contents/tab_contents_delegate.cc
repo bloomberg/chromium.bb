@@ -234,14 +234,15 @@ class JavaScriptDialogCreatorStub : public content::JavaScriptDialogCreator {
     return Singleton<JavaScriptDialogCreatorStub>::get();
   }
 
-  virtual void RunJavaScriptDialog(content::JavaScriptDialogDelegate* delegate,
-                                   TitleType title_type,
-                                   const string16& title,
-                                   int dialog_flags,
-                                   const string16& message_text,
-                                   const string16& default_prompt_text,
-                                   IPC::Message* reply_message,
-                                   bool* did_suppress_message) OVERRIDE {
+  virtual void RunJavaScriptDialog(
+      content::JavaScriptDialogDelegate* delegate,
+      TitleType title_type,
+      const string16& title,
+      ui::JavascriptMessageType javascript_message_type,
+      const string16& message_text,
+      const string16& default_prompt_text,
+      IPC::Message* reply_message,
+      bool* did_suppress_message) OVERRIDE {
     *did_suppress_message = true;
   }
 
