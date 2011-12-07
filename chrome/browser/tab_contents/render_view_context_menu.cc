@@ -45,8 +45,8 @@
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/per_tab_prefs_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -1779,7 +1779,7 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
     if (!tab_contents_wrapper)
       return false;
     // Don't enable the web inspector if JavaScript is disabled.
-    if (!tab_contents_wrapper->per_tab_prefs_tab_helper()->prefs()->GetBoolean(
+    if (!tab_contents_wrapper->prefs_tab_helper()->per_tab_prefs()->GetBoolean(
             prefs::kWebKitJavascriptEnabled) ||
         command_line.HasSwitch(switches::kDisableJavaScript))
       return false;

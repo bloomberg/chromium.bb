@@ -26,21 +26,19 @@ class BlockedContentTabHelper;
 class BookmarkTabHelper;
 class ConstrainedWindowTabHelper;
 class DownloadRequestLimiterObserver;
-class Extension;
 class ExtensionTabHelper;
 class ExtensionWebNavigationTabObserver;
 class ExternalProtocolObserver;
 class FaviconTabHelper;
 class FindTabHelper;
-class InfoBarTabHelper;
 class HistoryTabHelper;
-class NavigationController;
+class InfoBarTabHelper;
 class OmniboxSearchHint;
 class PasswordManager;
 class PasswordManagerDelegate;
-class PerTabPrefsTabHelper;
 class PluginObserver;
 class PrefService;
+class PrefsTabHelper;
 class Profile;
 class RestoreTabHelper;
 class SadTabObserver;
@@ -52,10 +50,6 @@ class TabSpecificContentSettings;
 class ThumbnailGenerator;
 class TranslateTabHelper;
 class WebIntentPickerController;
-
-namespace browser_sync {
-class SyncedTabDelegate;
-}
 
 namespace IPC {
 class Message;
@@ -174,10 +168,7 @@ class TabContentsWrapper : public TabContentsObserver,
   HistoryTabHelper* history_tab_helper() { return history_tab_helper_.get(); }
   InfoBarTabHelper* infobar_tab_helper() { return infobar_tab_helper_.get(); }
   PasswordManager* password_manager() { return password_manager_.get(); }
-
-  PerTabPrefsTabHelper* per_tab_prefs_tab_helper() {
-    return per_tab_prefs_tab_helper_.get();
-  }
+  PrefsTabHelper* prefs_tab_helper() { return prefs_tab_helper_.get(); }
 
   prerender::PrerenderTabHelper* prerender_tab_helper() {
     return prerender_tab_helper_.get();
@@ -235,9 +226,8 @@ class TabContentsWrapper : public TabContentsObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  friend class PerTabPrefsTabHelper;  // for UpdateWebPreferences
   FRIEND_TEST_ALL_PREFIXES(
-      PerTabPrefsTabHelperTest, OverridePrefsOnViewCreation);
+      PrefsTabHelperTest, OverridePrefsOnViewCreation);
 
   // Internal helpers ----------------------------------------------------------
 
@@ -251,12 +241,6 @@ class TabContentsWrapper : public TabContentsObserver,
 
   // Send the alternate error page URL to the renderer.
   void UpdateAlternateErrorPageURL(RenderViewHost* rvh);
-
-  // Update the RenderView's WebPreferences.
-  void UpdateWebPreferences();
-
-  // Update the TabContents's RendererPreferences.
-  void UpdateRendererPreferences();
 
   // Create or destroy SafebrowsingDetectionHost as needed if the user's
   // safe browsing preference has changed.
@@ -298,7 +282,7 @@ class TabContentsWrapper : public TabContentsObserver,
   scoped_ptr<PasswordManagerDelegate> password_manager_delegate_;
   scoped_ptr<PasswordManager> password_manager_;
 
-  scoped_ptr<PerTabPrefsTabHelper> per_tab_prefs_tab_helper_;
+  scoped_ptr<PrefsTabHelper> prefs_tab_helper_;
   scoped_ptr<prerender::PrerenderTabHelper> prerender_tab_helper_;
 
   // Handles print job for this contents.
