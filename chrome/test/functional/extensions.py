@@ -200,6 +200,10 @@ class ExtensionsTest(pyauto.PyUITest):
 
   def testTriggerBrowserActionWithPopup(self):
     """Test triggering browser action that shows a popup."""
+    # Fails on Vista Chromium bot only.  crbug.com/106620
+    if (self.IsWinVista() and
+        self.GetBrowserInfo()['properties']['branding'] == 'Chromium'):
+      return
     dir_path = os.path.abspath(
         os.path.join(self.DataDir(), 'extensions', 'trigger_actions',
                      'browser_action_popup'))
@@ -240,6 +244,10 @@ class ExtensionsTest(pyauto.PyUITest):
 
   def testTriggerPageActionWithPopup(self):
     """Test triggering page action that shows a popup."""
+    # Fails on Vista Chromium bot only.  crbug.com/106620
+    if (self.IsWinVista() and
+        self.GetBrowserInfo()['properties']['branding'] == 'Chromium'):
+      return
     dir_path = os.path.abspath(
         os.path.join(self.DataDir(), 'extensions', 'trigger_actions',
                      'page_action_popup'))
