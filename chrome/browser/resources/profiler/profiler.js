@@ -866,8 +866,13 @@ var MainView = (function() {
    * If |mergeSimilarThreads| is true, then threads with a similar name will be
    * considered equivalent. For instance, "WorkerThread-1" and "WorkerThread-2"
    * will be remapped to "WorkerThread-*".
+   *
+   * If |outputAsDictionary| is false then the merged rows will be returned as a
+   * flat list. Otherwise the result will be a dictionary, where each row
+   * has a unique key.
    */
-  function mergeRows(origRows, mergeKeys, mergeSimilarThreads) {
+  function mergeRows(origRows, mergeKeys, mergeSimilarThreads,
+                     outputAsDictionary) {
     // Define a translation function for each property. Normally we copy over
     // properties as-is, but if we have been asked to "merge similar threads" we
     // we will remap the thread names that end in a numeric suffix.
@@ -897,12 +902,13 @@ var MainView = (function() {
     // their value as part of the merge.
     var aggregateKeys = ALL_KEYS.slice(0);
     deleteValuesFromArray(aggregateKeys, IDENTITY_KEYS);
+    deleteValuesFromArray(aggregateKeys, mergeKeys);
 
     // Group all the identical rows together, bucketed into |identicalRows|.
     var identicalRows =
         bucketIdenticalRows(origRows, identityKeys, propertyGetterFunc);
 
-    var mergedRows = [];
+    var mergedRows = outputAsDictionary ? {} : [];
 
     // Merge the rows and save the results to |mergedRows|.
     for (var k in identicalRows) {
@@ -910,7 +916,12 @@ var MainView = (function() {
       var l = identicalRows[k];
 
       var newRow = [];
-      mergedRows.push(newRow);
+
+      if (outputAsDictionary) {
+        mergedRows[k] = newRow;
+      } else {
+        mergedRows.push(newRow);
+      }
 
       // Copy over all the identity columns to the new row (since they
       // were the same for each row matched).
@@ -933,14 +944,15 @@ var MainView = (function() {
   }
 
   /**
-   * Takes two flat lists data1 and data2, and returns a new flat list which
+   * Takes two dictionaries data1 and data2, and returns a new flat list which
    * represents the difference between them. The exact meaning of "difference"
    * is column specific, but for most numeric fields (like the count, or total
    * time), it is found by subtracting.
    *
-   * TODO(eroman): Some of this code is duplicated from mergeRows().
+   * Rows in data1 and data2 are expected to use the same scheme for the keys.
+   * In other words, data1[k] is considered the analagous row to data2[k].
    */
-  function subtractSnapshots(data1, data2) {
+  function subtractSnapshots(data1, data2, columnsToExclude) {
     // These columns are computed from the other columns. We won't bother
     // diffing/aggregating these, but rather will derive them again from the
     // final row.
@@ -949,51 +961,45 @@ var MainView = (function() {
     // These are the keys which determine row equality. Since we are not doing
     // any merging yet at this point, it is simply the list of all identity
     // columns.
-    var identityKeys = IDENTITY_KEYS;
+    var identityKeys = IDENTITY_KEYS.slice(0);
+    deleteValuesFromArray(identityKeys, columnsToExclude);
 
     // The columns to compute via aggregation is everything else.
     var aggregateKeys = ALL_KEYS.slice(0);
     deleteValuesFromArray(aggregateKeys, IDENTITY_KEYS);
     deleteValuesFromArray(aggregateKeys, COMPUTED_AGGREGATE_KEYS);
-
-    // Group all the identical rows for each list together.
-    var propertyGetterFunc = function(row, key) { return row[key]; };
-    var identicalRows1 =
-        bucketIdenticalRows(data1, identityKeys, propertyGetterFunc);
-    var identicalRows2 =
-        bucketIdenticalRows(data2, identityKeys, propertyGetterFunc);
+    deleteValuesFromArray(aggregateKeys, columnsToExclude);
 
     var diffedRows = [];
 
-    for (var k in identicalRows2) {
-      var rows2 = identicalRows2[k];
-      var rows1 = identicalRows1[k];
-      if (rows1 == undefined)
-        rows1 = [];
+    for (var rowId in data2) {
+      var row1 = data1[rowId];
+      var row2 = data2[rowId];
 
       var newRow = [];
 
       // Copy over all the identity columns to the new row (since they
       // were the same for each row matched).
       for (var i = 0; i < identityKeys.length; ++i)
-        newRow[identityKeys[i]] = propertyGetterFunc(rows2[0], identityKeys[i]);
+        newRow[identityKeys[i]] = row2[identityKeys[i]];
 
-      // The raw data for each snapshot *may* have contained duplicate rows, so
-      // smash them down into a single row using our aggregation functions.
-      var aggregates1 = initializeAggregates(aggregateKeys);
-      var aggregates2 = initializeAggregates(aggregateKeys);
-      for (var i = 0; i < rows1.length; ++i)
-        consumeAggregates(aggregates1, rows1[i]);
-      for (var i = 0; i < rows2.length; ++i)
-        consumeAggregates(aggregates2, rows2[i]);
+      // Diff the two rows.
+      if (row1) {
+        for (var i = 0; i < aggregateKeys.length; ++i) {
+          var aggregateKey = aggregateKeys[i];
+          var a = row1[aggregateKey];
+          var b = row2[aggregateKey];
 
-      // Finally, diff the two merged rows.
-      for (var aggregateKey in aggregates2) {
-        var a = aggregates1[aggregateKey].getValue();
-        var b = aggregates2[aggregateKey].getValue();
-
-        var diffFunc =  KEY_PROPERTIES[aggregateKey].diff;
-        newRow[aggregateKey] = diffFunc(a, b);
+          var diffFunc =  KEY_PROPERTIES[aggregateKey].diff;
+          newRow[aggregateKey] = diffFunc(a, b);
+        }
+      } else {
+        // If the the row doesn't appear in snapshot1, then there is nothing to
+        // diff, so just copy row2 as is.
+        for (var i = 0; i < aggregateKeys.length; ++i) {
+          var aggregateKey = aggregateKeys[i];
+          newRow[aggregateKey] = row2[aggregateKey];
+        }
       }
 
       if (newRow[KEY_COUNT] == 0) {
@@ -1002,8 +1008,8 @@ var MainView = (function() {
         continue;
       }
 
-      // Since we excluded the averages during diffing phase, re-compute them
-      // using the diffed totals.
+      // Since we excluded the averages during the diffing phase, re-compute
+      // them using the diffed totals.
       computeDataRowAverages(newRow);
       diffedRows.push(newRow);
     }
@@ -1239,34 +1245,35 @@ var MainView = (function() {
       // We may end up calling addDataToSnapshot_() repeatedly (once for each
       // process). To avoid this from slowing us down we do bulk updates on a
       // timer.
-      this.updateFlatDataSoon_();
+      this.updateMergedDataSoon_();
     },
 
-    updateFlatDataSoon_: function() {
-      if (this.updateFlatDataPending_) {
+    updateMergedDataSoon_: function() {
+      if (this.updateMergedDataPending_) {
         // If a delayed task has already been posted to re-merge the data,
         // then we don't need to do anything extra.
         return;
       }
 
-      // Otherwise schedule updateFlatData_() to be called later. We want it to
-      // be called no more than once every PROCESS_DATA_DELAY_MS milliseconds.
+      // Otherwise schedule updateMergedData_() to be called later. We want it
+      // to be called no more than once every PROCESS_DATA_DELAY_MS
+      // milliseconds.
 
-      if (this.lastUpdateFlatDataTime_ == undefined)
-        this.lastUpdateFlatDataTime_ = 0;
+      if (this.lastUpdateMergedDataTime_ == undefined)
+        this.lastUpdateMergedDataTime_ = 0;
 
-      var timeSinceLastMerge = getTimeMillis() - this.lastUpdateFlatDataTime_;
+      var timeSinceLastMerge = getTimeMillis() - this.lastUpdateMergedDataTime_;
       var timeToWait = Math.max(0, PROCESS_DATA_DELAY_MS - timeSinceLastMerge);
 
       var functionToRun = function() {
         // Do the actual update.
-        this.updateFlatData_();
+        this.updateMergedData_();
         // Keep track of when we last ran.
-        this.lastUpdateFlatDataTime_ = getTimeMillis();
-        this.updateFlatDataPending_ = false;
+        this.lastUpdateMergedDataTime_ = getTimeMillis();
+        this.updateMergedDataPending_ = false;
       }.bind(this);
 
-      this.updateFlatDataPending_ = true;
+      this.updateMergedDataPending_ = true;
       window.setTimeout(functionToRun, timeToWait);
     },
 
@@ -1297,19 +1304,15 @@ var MainView = (function() {
     },
 
     /**
-     * This function should be called any time a snapshot dependency for what is
-     * being displayed on the screen has changed. It will re-calculate the
-     * difference between the two snapshots and update flatData_.
+     * Re-draw the description that explains which snapshots are currently
+     * selected (if two snapshots were selected we explain that the *difference*
+     * between them is being displayed).
      */
-    updateFlatData_: function() {
+    updateSnapshotSelectionSummaryDiv_: function() {
       var summaryDiv = $(SNAPSHOT_SELECTION_SUMMARY_ID);
 
       var selectedSnapshots = this.getSelectedSnapshotIndexes_();
       if (selectedSnapshots.length == 1) {
-        // If only one snapshot is chosen then we will display that snapshot's
-        // data in its entirety.
-        this.flatData_ = this.snapshots_[selectedSnapshots[0]].flatData;
-
         // Don't bother displaying any text when just 1 snapshot is selected,
         // since it is obvious what this should do.
         summaryDiv.innerText = '';
@@ -1318,9 +1321,6 @@ var MainView = (function() {
         // them.
         var snapshot1 = this.snapshots_[selectedSnapshots[0]];
         var snapshot2 = this.snapshots_[selectedSnapshots[1]];
-
-        this.flatData_ =
-            subtractSnapshots(snapshot1.flatData, snapshot2.flatData);
 
         var timeDeltaInSeconds =
             ((snapshot2.time - snapshot1.time) / 1000).toFixed(0);
@@ -1336,16 +1336,47 @@ var MainView = (function() {
         // This shouldn't be possible...
         throw 'Unexpected number of selected snapshots';
       }
-
-      // Recompute mergedData_ (since it is derived from flatData_)
-      this.updateMergedData_();
     },
 
     updateMergedData_: function() {
-      // Recompute mergedData_.
-      this.mergedData_ = mergeRows(this.flatData_,
-                                   this.getMergeColumns_(),
-                                   this.shouldMergeSimilarThreads_());
+      // Retrieve the merge options.
+      var mergeColumns = this.getMergeColumns_();
+      var shouldMergeSimilarThreads = this.shouldMergeSimilarThreads_();
+
+      var selectedSnapshots = this.getSelectedSnapshotIndexes_();
+
+      // We do merges a bit differently depending if we are displaying the diffs
+      // between two snapshots, or just displaying a single snapshot.
+      if (selectedSnapshots.length == 1) {
+        var snapshot = this.snapshots_[selectedSnapshots[0]];
+        this.mergedData_ = mergeRows(snapshot.flatData,
+                                     mergeColumns,
+                                     shouldMergeSimilarThreads,
+                                     false);
+
+      } else if (selectedSnapshots.length == 2) {
+        var snapshot1 = this.snapshots_[selectedSnapshots[0]];
+        var snapshot2 = this.snapshots_[selectedSnapshots[1]];
+
+        // Merge the data for snapshot1.
+        var mergedRows1 = mergeRows(snapshot1.flatData,
+                                    mergeColumns,
+                                    shouldMergeSimilarThreads,
+                                    true);
+
+        // Merge the data for snapshot2.
+        var mergedRows2 = mergeRows(snapshot2.flatData,
+                                    mergeColumns,
+                                    shouldMergeSimilarThreads,
+                                    true);
+
+        // Do a diff between the two snapshots.
+        this.mergedData_ = subtractSnapshots(mergedRows1,
+                                             mergedRows2,
+                                             mergeColumns);
+      } else {
+        throw 'Unexpected number of selected snapshots';
+      }
 
       // Recompute filteredData_ (since it is derived from mergedData_)
       this.updateFilteredData_();
@@ -1677,7 +1708,6 @@ var MainView = (function() {
       //     and aggregate values are computed for each resulting group.
       // (6) The rows within each group are sorted using current settings.
       // (7) The grouped rows are drawn to the screen.
-      this.flatData_ = [];
       this.mergedData_ = [];
       this.filteredData_ = [];
       this.groupedData_ = {};
@@ -1793,9 +1823,10 @@ var MainView = (function() {
         event.target.checked = true;
 
       this.updateSnapshotCheckboxStyling_();
+      this.updateSnapshotSelectionSummaryDiv_();
 
-      // Recompute flatData_ (since it is derived from selected snapshots).
-      this.updateFlatData_();
+      // Recompute mergedData_ (since it is derived from selected snapshots).
+      this.updateMergedData_();
     },
 
     fillSelectionCheckboxes_: function(parent) {
