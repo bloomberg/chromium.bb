@@ -393,6 +393,11 @@ content::RendererPreferences InterstitialPage::GetRendererPrefs(
   return renderer_preferences_;
 }
 
+WebPreferences InterstitialPage::GetWebkitPrefs() {
+  return content::GetContentClient()->browser()->GetWebkitPrefs(
+      render_view_host());
+}
+
 RenderViewHost* InterstitialPage::CreateRenderViewHost() {
   RenderViewHost* render_view_host = new RenderViewHost(
       SiteInstance::CreateSiteInstance(tab()->browser_context()),

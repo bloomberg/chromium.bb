@@ -131,6 +131,7 @@ class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
                            base::i18n::TextDirection title_direction) OVERRIDE;
   virtual content::RendererPreferences GetRendererPrefs(
       content::BrowserContext* browser_context) const OVERRIDE;
+  virtual WebPreferences GetWebkitPrefs() OVERRIDE;
 
   // Invoked with the NavigationEntry that is going to be added to the
   // navigation controller.
