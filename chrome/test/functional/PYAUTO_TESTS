@@ -253,9 +253,6 @@
       '-instant',
       # crbug.com/91033
       '-omnibox.OmniboxTest.testOmniboxSearchHistory',
-      # crbug.com/102767
-      '-process_count.ProcessCountTest.testProcessCountExtensionProcess',
-      '-process_count.ProcessCountTest.testProcessCountFlashProcess',
       # Gnome / kwallet popups on linux break sync tests.  crbug.com/80329
       '-sync',
       # crbug.com/87837
