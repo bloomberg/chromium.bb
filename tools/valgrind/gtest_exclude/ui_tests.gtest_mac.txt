@@ -125,31 +125,6 @@ IFrameTest.InEmptyFrame
 LoginPromptTest.SupplyRedundantAuths
 LoginPromptTest.TestCancelAuth
 MetricsServiceTest.CrashRenderers
-OutOfProcessPPAPITest.Broker
-OutOfProcessPPAPITest.Buffer
-OutOfProcessPPAPITest.CharSet
-OutOfProcessPPAPITest.Core
-OutOfProcessPPAPITest.ImageData
-OutOfProcessPPAPITest.Memory
-OutOfProcessPPAPITest.PaintAggregator
-OutOfProcessPPAPITest.URLUtil
-OutOfProcessPPAPITest.VideoDecoder
-PPAPITest.Buffer
-PPAPITest.CharSet
-PPAPITest.FileIO
-PPAPITest.FileRef
-PPAPITest.FileSystem
-PPAPITest.Graphics2D
-PPAPITest.Graphics2SD
-PPAPITest.ImageData
-PPAPITest.Instance
-PPAPITest.PaintAggregator
-PPAPITest.QueryPolicy
-PPAPITest.Scrollbar
-PPAPITest.UMA
-PPAPITest.URLUtil
-PPAPITest.VarDeprecated
-PPAPITest.VideoDecoder
 PreferenceServiceTest.PreservedWindowPlacementIsLoaded
 RedirectTest.Server
 RedirectTest.ServerReference
@@ -224,12 +199,6 @@ HistoryTester.VerifyHistoryLength2
 RedirectTest.ClientServerServer
 DomCheckerTest.File
 OptionsUITest.LoadOptionsByURL
-OutOfProcessPPAPITest.FileSystem
-OutOfProcessPPAPITest.Graphics2D
-PPAPITest.Broker
-PPAPITest.Core
-PPAPITest.Memory
-PPAPITest.PostMessage*
 PreferenceServiceTest.PreservedWindowPlacementIsMigrated
 RedirectTest.Client
 RedirectTest.ClientFragments
@@ -243,9 +212,6 @@ WorkerFileSystemTest.SyncTemporary
 
 # Fails with valgrind assertion, see http://crbug.com/75396
 ViewSourceTest.ViewSourceInMenuEnabledOnANormalPage
-
-# Fails, see http://crbug.com/79784
-PPAPITest.Transport
 
 # Fails, see http://crbug.com/79803
 RepostFormWarningTest.TestLoginAfterRepost
@@ -271,13 +237,6 @@ NPAPIAutomationEnabledTest.LoadAllBlockedPlugins
 AutomatedUITestBase.RestoreTab
 AutomationProxyTest4.BooleanValueIsEchoedByDomAutomationController
 
-# http://crbug.com/87625
-PPAPITest.Var
-OutOfProcessPPAPITest.Var
-
-# http://crbug.com/87766
-PPAPITest.URLLoader
-
 # http://crbug.com/88068
 LocaleTestsHe.TestStart
 
@@ -286,9 +245,6 @@ NewTabUITest.ChromeHangInNTP
 
 # http://crbug.com/88244
 RunInBackgroundTest.RunInBackgroundBasicTest
-
-# http://crbug.com/88254
-PPAPITest.CursorControl
 
 # Flakiness leading to leak reports. http://crbug.com/31739
 SessionHistoryTest.BasicBackForward
@@ -300,72 +256,17 @@ AutomatedUITestBase.OpenCloseBrowserWindowWithAccelerator
 CustomHandlerMailStartupTest.CustomHandlerMailStartup
 CustomHandlerWebcalStartupTest.CustomHandlerWebcalStartup
 
-# http://crbug.com/99828
+# Crash when loading plugin. http://crbug.com/99828
 OutOfProcessPPAPITest.Crypto
 PPAPITest.Crypto
-
-# PPAPITests fail with Valgrind WARNING, http://crbug.com/104022
-PPAPITest.NetAddressPrivate
-PPAPITest.FlashClipboard
-OutOfProcessPPAPITest.NetAddressPrivate
-OutOfProcessPPAPITest.FlashClipboard
 
 # Fails intermittently. http://crbug.com/104534.
 PrintPreviewUITest.PrintCommands
 
-# Fails consistently. http://crbug.com/104535.
-OutOfProcessPPAPITest.Audio_Creation
-OutOfProcessPPAPITest.Audio_DestroyNoStop
-OutOfProcessPPAPITest.Audio_Failures
-OutOfProcessPPAPITest.AudioConfig_InvalidConfigs
-OutOfProcessPPAPITest.AudioConfig_ValidConfigs
-OutOfProcessPPAPITest.Flash_GetCommandLineArgs
-OutOfProcessPPAPITest.Flash_GetLocalTimeZoneOffset
-OutOfProcessPPAPITest.Flash_GetProxyForURL
-OutOfProcessPPAPITest.Flash_MessageLoop
-OutOfProcessPPAPITest.Flash_SetInstanceAlwaysOnTop
-OutOfProcessPPAPITest.InputEvent
-OutOfProcessPPAPITest.TCPSocketPrivate
-OutOfProcessPPAPITest.URLLoader
-PPAPITest.AudioConfig_InvalidConfigs
-PPAPITest.AudioConfig_ValidConfigs
-PPAPITest.Flash_GetCommandLineArgs
-PPAPITest.Flash_GetLocalTimeZoneOffset
-PPAPITest.Flash_GetProxyForURL
-PPAPITest.Flash_MessageLoop
-PPAPITest.Flash_SetInstanceAlwaysOnTop
-PPAPITest.InputEvent
-
-# Fails consistently.  http://crbug.com/105080.
-OutOfProcessPPAPITest.NetAddressPrivate_AreEqual
-OutOfProcessPPAPITest.NetAddressPrivate_AreHostsEqual
-OutOfProcessPPAPITest.NetAddressPrivate_Describe
-OutOfProcessPPAPITest.NetAddressPrivate_DescribeIPv6
-OutOfProcessPPAPITest.NetAddressPrivate_GetAnyAddress
-OutOfProcessPPAPITest.NetAddressPrivate_ReplacePort
-PPAPITest.NetAddressPrivate_AreEqual
-PPAPITest.NetAddressPrivate_AreHostsEqual
-PPAPITest.NetAddressPrivate_Describe
-PPAPITest.NetAddressPrivate_DescribeIPv6
-PPAPITest.NetAddressPrivate_GetAnyAddress
-PPAPITest.NetAddressPrivate_ReplacePort
-
-# http://crbug.com/105551
-PPAPITest.WebSocket_IsWebSocket
-PPAPITest.WebSocket_UninitializedPropertiesAccess
-PPAPITest.WebSocket_InvalidConnect
-PPAPITest.WebSocket_GetURL
-PPAPITest.WebSocket_ValidConnect
-PPAPITest.WebSocket_InvalidClose
-PPAPITest.WebSocket_ValidClose
-PPAPITest.WebSocket_GetProtocol
-PPAPITest.WebSocket_TextSendReceive
-
-# More PPAPI crashes under Valgrind.  http://crbug.com/105080
-PPAPITest.UDPSocketPrivateShared
-PPAPITest.TCPSocketPrivateShared
-OutOfProcessPPAPITest.UDPSocketPrivateShared
-OutOfProcessPPAPITest.TCPSocketPrivateShared
+# PPAPI and OutOfProcessPPAPPI tests fail on Mac WebKit.
+# Doing a blanket exclusion for all of them.
+PPAPITest.*
+OutOfProcessPPAPITest.*
 
 # Crashes intermittently.
 LoadtimesExtensionBindingsUITest.LoadTimesSameAfterClientInDocNavigation
