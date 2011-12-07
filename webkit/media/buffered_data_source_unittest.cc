@@ -221,7 +221,7 @@ TEST_F(BufferedDataSourceTest, Range_NotSupported) {
 
   // It'll try again.
   //
-  // TODO(scherkus): try to reuse existing connection http://crbug.com/105231
+  // TODO(scherkus): try to reuse existing connection http://crbug.com/104783
   ExpectCreateResourceLoader();
   Respond(response_generator_.Generate200());
 
