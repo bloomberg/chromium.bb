@@ -184,8 +184,7 @@ static bool HostIsValid(int host_id, GpuProcessHost* host) {
     return true;
   }
 
-  host->Send(new GpuMsg_Crash());
-  g_hosts_by_id.Pointer()->Remove(host_id);
+  host->ForceShutdown();
   return false;
 }
 
@@ -542,6 +541,11 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
 
 bool GpuProcessHost::software_rendering() {
   return software_rendering_;
+}
+
+void GpuProcessHost::ForceShutdown() {
+  g_hosts_by_id.Pointer()->Remove(host_id_);
+  BrowserChildProcessHost::ForceShutdown();
 }
 
 bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {

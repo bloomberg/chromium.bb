@@ -83,6 +83,8 @@ class GpuProcessHost : public BrowserChildProcessHost,
   // Whether this GPU process is set up to use software rendering.
   bool software_rendering();
 
+  void ForceShutdown();
+
  private:
   GpuProcessHost(int host_id);
   virtual ~GpuProcessHost();
