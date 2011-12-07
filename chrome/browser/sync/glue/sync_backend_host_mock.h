@@ -25,7 +25,7 @@ class SyncBackendHostMock : public SyncBackendHost {
                void(const std::set<syncable::ModelType>&,
                     const std::set<syncable::ModelType>&,
                     sync_api::ConfigureReason,
-                    base::Callback<void(const syncable::ModelTypeSet&)>,
+                    base::Callback<void(syncable::ModelEnumSet)>,
                     bool));
   MOCK_METHOD0(StartSyncingWithServer, void());
 };

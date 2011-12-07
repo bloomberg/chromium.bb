@@ -250,7 +250,7 @@ void SyncBackendHost::ConfigureDataTypes(
     const syncable::ModelTypeSet& types_to_add,
     const syncable::ModelTypeSet& types_to_remove,
     sync_api::ConfigureReason reason,
-    base::Callback<void(const syncable::ModelTypeSet&)> ready_task,
+    base::Callback<void(syncable::ModelEnumSet)> ready_task,
     bool enable_nigori) {
   syncable::ModelTypeSet types_to_add_with_nigori = types_to_add;
   syncable::ModelTypeSet types_to_remove_with_nigori = types_to_remove;
@@ -720,11 +720,11 @@ void SyncBackendHost::Core::HandleInitializationCompletedOnFrontendLoop(
 
 void SyncBackendHost::Core::HandleNigoriConfigurationCompletedOnFrontendLoop(
     const WeakHandle<JsBackend>& js_backend,
-    const syncable::ModelTypeSet& failed_configuration_types) {
+    const syncable::ModelEnumSet failed_configuration_types) {
   if (!host_)
     return;
   host_->HandleInitializationCompletedOnFrontendLoop(
-      js_backend, failed_configuration_types.empty());
+      js_backend, failed_configuration_types.Empty());
 }
 
 void SyncBackendHost::Core::StartSavingChanges() {
@@ -820,10 +820,11 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
 
   SVLOG(1) << "Got snapshot " << snapshot->ToString();
 
-  const syncable::ModelTypeSet& to_migrate =
+  const syncable::ModelEnumSet to_migrate =
       snapshot->syncer_status.types_needing_local_migration;
-  if (!to_migrate.empty())
-    host_->frontend_->OnMigrationNeededForTypes(to_migrate);
+  if (!to_migrate.Empty())
+    host_->frontend_->OnMigrationNeededForTypes(
+        syncable::ModelEnumSetToSet(to_migrate));
 
   // Process any changes to the datatypes we're syncing.
   // TODO(sync): add support for removing types.
@@ -836,26 +837,24 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
   if (host_->pending_download_state_.get()) {
     scoped_ptr<PendingConfigureDataTypesState> state(
         host_->pending_download_state_.release());
-    DCHECK(
-        std::includes(state->types_to_add.begin(), state->types_to_add.end(),
-                      state->added_types.begin(), state->added_types.end()));
-    syncable::ModelTypeSet initial_sync_ended =
-        syncable::ModelTypeBitSetToSet(snapshot->initial_sync_ended);
-    syncable::ModelTypeSet failed_configuration_types;
-    std::set_difference(
-        state->added_types.begin(), state->added_types.end(),
-        initial_sync_ended.begin(), initial_sync_ended.end(),
-        std::inserter(failed_configuration_types,
-                      failed_configuration_types.end()));
+    const syncable::ModelEnumSet types_to_add =
+        syncable::ModelTypeSetToEnumSet(state->types_to_add);
+    const syncable::ModelEnumSet added_types =
+        syncable::ModelTypeSetToEnumSet(state->added_types);
+    DCHECK(types_to_add.HasAll(added_types));
+    const syncable::ModelEnumSet initial_sync_ended =
+        snapshot->initial_sync_ended;
+    const syncable::ModelEnumSet failed_configuration_types =
+        Difference(added_types, initial_sync_ended);
     SVLOG(1)
         << "Added types: "
-        << syncable::ModelTypeSetToString(state->added_types)
+        << syncable::ModelEnumSetToString(added_types)
         << ", configured types: "
-        << syncable::ModelTypeSetToString(initial_sync_ended)
+        << syncable::ModelEnumSetToString(initial_sync_ended)
         << ", failed configuration types: "
-        << syncable::ModelTypeSetToString(failed_configuration_types);
+        << syncable::ModelEnumSetToString(failed_configuration_types);
     state->ready_task.Run(failed_configuration_types);
-    if (!failed_configuration_types.empty())
+    if (!failed_configuration_types.Empty())
       return;
   }
 
@@ -1006,7 +1005,7 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
   if (pending_config_mode_state_->added_types.empty()) {
     SVLOG(1) << "No new types added; calling ready_task directly";
     // No new types - just notify the caller that the types are available.
-    const syncable::ModelTypeSet failed_configuration_types;
+    const syncable::ModelEnumSet failed_configuration_types;
     pending_config_mode_state_->ready_task.Run(failed_configuration_types);
   } else {
     pending_download_state_.reset(pending_config_mode_state_.release());

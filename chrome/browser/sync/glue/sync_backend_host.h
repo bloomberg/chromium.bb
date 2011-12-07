@@ -196,7 +196,7 @@ class SyncBackendHost {
       const syncable::ModelTypeSet& types_to_add,
       const syncable::ModelTypeSet& types_to_remove,
       sync_api::ConfigureReason reason,
-      base::Callback<void(const syncable::ModelTypeSet&)> ready_task,
+      base::Callback<void(syncable::ModelEnumSet)> ready_task,
       bool enable_nigori);
 
   // Makes an asynchronous call to syncer to switch to config mode. When done
@@ -417,7 +417,7 @@ class SyncBackendHost {
     // part of the initialization process.
     void HandleNigoriConfigurationCompletedOnFrontendLoop(
         const WeakHandle<JsBackend>& js_backend,
-        const syncable::ModelTypeSet& failed_configuration_types);
+        syncable::ModelEnumSet failed_configuration_types);
 
    private:
     friend class base::RefCountedThreadSafe<SyncBackendHost::Core>;
@@ -546,7 +546,7 @@ class SyncBackendHost {
     // The ready_task will be run when configuration is done with the
     // set of all types that failed configuration (i.e., if its
     // argument is non-empty, then an error was encountered).
-    base::Callback<void(const syncable::ModelTypeSet&)> ready_task;
+    base::Callback<void(syncable::ModelEnumSet)> ready_task;
 
     // The set of types that we are waiting to be initially synced in a
     // configuration cycle.

@@ -272,7 +272,7 @@ bool DataTypeManagerImpl::ProcessReconfigure() {
 }
 
 void DataTypeManagerImpl::DownloadReady(
-    const syncable::ModelTypeSet& failed_configuration_types) {
+    syncable::ModelEnumSet failed_configuration_types) {
   DCHECK_EQ(state_, DOWNLOAD_PENDING);
 
   // Ignore |failed_configuration_types| if we need to reconfigure
@@ -281,12 +281,12 @@ void DataTypeManagerImpl::DownloadReady(
     return;
   }
 
-  if (!failed_configuration_types.empty()) {
+  if (!failed_configuration_types.Empty()) {
     std::string error_msg =
         "Configuration failed for types " +
-        syncable::ModelTypeSetToString(failed_configuration_types);
+        syncable::ModelEnumSetToString(failed_configuration_types);
     SyncError error(FROM_HERE, error_msg,
-                    *failed_configuration_types.begin());
+                    failed_configuration_types.First().Get());
     Abort(UNRECOVERABLE_ERROR, error);
     return;
   }

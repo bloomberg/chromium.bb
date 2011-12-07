@@ -66,8 +66,7 @@ class DataTypeManagerImpl : public DataTypeManager {
   bool ProcessReconfigure();
 
   void Restart(sync_api::ConfigureReason reason, bool enable_nigori);
-  void DownloadReady(
-      const syncable::ModelTypeSet& failed_configuration_types);
+  void DownloadReady(syncable::ModelEnumSet failed_configuration_types);
   void NotifyStart();
   void NotifyDone(const ConfigureResult& result);
   void SetBlockedAndNotify();

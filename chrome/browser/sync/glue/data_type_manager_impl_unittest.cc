@@ -58,9 +58,9 @@ void DoConfigureDataTypes(
     const syncable::ModelTypeSet& types_to_add,
     const syncable::ModelTypeSet& types_to_remove,
     sync_api::ConfigureReason reason,
-    base::Callback<void(const syncable::ModelTypeSet&)> ready_task,
+    base::Callback<void(syncable::ModelEnumSet)> ready_task,
     bool enable_nigori) {
-  ready_task.Run(syncable::ModelTypeSet());
+  ready_task.Run(syncable::ModelEnumSet());
 }
 
 void QuitMessageLoop() {
@@ -243,7 +243,7 @@ class DataTypeManagerImplTest : public testing::Test {
 
   void RunConfigureWhileDownloadPendingTest(
       bool enable_nigori,
-      const syncable::ModelTypeSet& first_configure_result) {
+      syncable::ModelEnumSet first_configure_result) {
     DataTypeControllerMock* bookmark_dtc = MakeBookmarkDTC();
     SetStartStopExpectations(bookmark_dtc);
     controllers_[syncable::BOOKMARKS] = bookmark_dtc;
@@ -255,7 +255,7 @@ class DataTypeManagerImplTest : public testing::Test {
     DataTypeManagerImpl dtm(&backend_, &controllers_);
     SetConfigureStartExpectation();
     SetConfigureDoneExpectation(DataTypeManager::OK);
-    base::Callback<void(const syncable::ModelTypeSet&)> task;
+    base::Callback<void(syncable::ModelEnumSet)> task;
     // Grab the task the first time this is called so we can configure
     // before it is finished.
     EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, enable_nigori)).
@@ -565,28 +565,28 @@ TEST_F(DataTypeManagerImplTest, OneControllerFailsAssociation) {
 TEST_F(DataTypeManagerImplTest, ConfigureWhileDownloadPending) {
   RunConfigureWhileDownloadPendingTest(
       true /* enable_nigori */,
-      syncable::ModelTypeSet() /* first_configure_result */);
+      syncable::ModelEnumSet() /* first_configure_result */);
 }
 
 TEST_F(DataTypeManagerImplTest, ConfigureWhileDownloadPendingWithoutNigori) {
   RunConfigureWhileDownloadPendingTest(
       false /* enable_nigori */,
-      syncable::ModelTypeSet() /* first_configure_result */);
+      syncable::ModelEnumSet() /* first_configure_result */);
 }
 
 TEST_F(DataTypeManagerImplTest, ConfigureWhileDownloadPendingFail) {
-  syncable::ModelTypeSet first_configure_result;
-  first_configure_result.insert(syncable::BOOKMARKS);
   RunConfigureWhileDownloadPendingTest(
-      true /* enable_nigori */, first_configure_result);
+      true /* enable_nigori */,
+      /* first_configure_result */
+      syncable::ModelEnumSet(syncable::BOOKMARKS));
 }
 
 TEST_F(DataTypeManagerImplTest,
        ConfigureWhileDownloadPendingFailWithoutNigori) {
-  syncable::ModelTypeSet first_configure_result;
-  first_configure_result.insert(syncable::BOOKMARKS);
   RunConfigureWhileDownloadPendingTest(
-      false /* enable_nigori */, first_configure_result);
+      false /* enable_nigori */,
+      /* first_configure_result */
+      syncable::ModelEnumSet(syncable::BOOKMARKS));
 }
 
 TEST_F(DataTypeManagerImplTest, StopWhileDownloadPending) {
@@ -597,7 +597,7 @@ TEST_F(DataTypeManagerImplTest, StopWhileDownloadPending) {
   DataTypeManagerImpl dtm(&backend_, &controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::ABORTED);
-  base::Callback<void(const syncable::ModelTypeSet&)> task;
+  base::Callback<void(syncable::ModelEnumSet)> task;
   // Grab the task the first time this is called so we can stop
   // before it is finished.
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, true)).
@@ -614,5 +614,5 @@ TEST_F(DataTypeManagerImplTest, StopWhileDownloadPending) {
 
   // It should be perfectly safe to run this task even though the DTM
   // has been stopped.
-  task.Run(syncable::ModelTypeSet());
+  task.Run(syncable::ModelEnumSet());
 }

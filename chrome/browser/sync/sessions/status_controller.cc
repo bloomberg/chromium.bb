@@ -112,7 +112,7 @@ void StatusController::increment_num_updates_downloaded_by(int value) {
 }
 
 void StatusController::set_types_needing_local_migration(
-    const syncable::ModelTypeSet& types) {
+    syncable::ModelEnumSet types) {
   shared_.syncer_status.mutate()->types_needing_local_migration = types;
 }
 

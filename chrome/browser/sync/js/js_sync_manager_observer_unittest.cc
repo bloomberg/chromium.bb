@@ -77,7 +77,7 @@ TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
                                          sessions::ErrorCounters(),
                                          100,
                                          false,
-                                         syncable::ModelTypeBitSet(),
+                                         syncable::ModelEnumSet(),
                                          download_progress_markers,
                                          false,
                                          true,

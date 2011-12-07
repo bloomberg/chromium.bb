@@ -1593,7 +1593,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
         FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                           OnPassphraseRequired(sync_api::REASON_DECRYPTION));
       } else if (!cryptographer->is_ready() &&
-                 event.snapshot->initial_sync_ended.test(syncable::NIGORI)) {
+                 event.snapshot->initial_sync_ended.Has(syncable::NIGORI)) {
         DVLOG(1) << "OnPassphraseRequired sent because cryptographer is not "
                  << "ready";
         FOR_EACH_OBSERVER(SyncManager::Observer, observers_,

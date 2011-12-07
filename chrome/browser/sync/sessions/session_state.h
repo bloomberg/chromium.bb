@@ -78,7 +78,7 @@ struct SyncerStatus {
 
   // If the syncer encountered a MIGRATION_DONE code, these are the types that
   // the client must now "migrate", by purging and re-downloading all updates.
-  syncable::ModelTypeSet types_needing_local_migration;
+  syncable::ModelEnumSet types_needing_local_migration;
 
   // Overwrites due to conflict resolution counters.
   int num_local_overwrites;
@@ -121,7 +121,7 @@ struct SyncSessionSnapshot {
       const ErrorCounters& errors,
       int64 num_server_changes_remaining,
       bool is_share_usable,
-      const syncable::ModelTypeBitSet& initial_sync_ended,
+      syncable::ModelEnumSet initial_sync_ended,
       const std::string
           (&download_progress_markers)[syncable::MODEL_TYPE_COUNT],
       bool more_to_sync,
@@ -144,7 +144,7 @@ struct SyncSessionSnapshot {
   const ErrorCounters errors;
   const int64 num_server_changes_remaining;
   const bool is_share_usable;
-  const syncable::ModelTypeBitSet initial_sync_ended;
+  const syncable::ModelEnumSet initial_sync_ended;
   const std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
   const bool has_more_to_sync;
   const bool is_silenced;
