@@ -25,7 +25,8 @@ WebViewColorOverlay::WebViewColorOverlay(content::RenderView* render_view,
 }
 
 WebViewColorOverlay::~WebViewColorOverlay() {
-  render_view_->GetWebView()->removePageOverlay(this);
+  if (render_view_->GetWebView())
+    render_view_->GetWebView()->removePageOverlay(this);
 }
 
 void WebViewColorOverlay::paintPageOverlay(WebKit::WebCanvas* canvas) {
