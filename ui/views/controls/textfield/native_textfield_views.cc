@@ -323,6 +323,8 @@ void NativeTextfieldViews::UpdateText() {
   model_->SetText(textfield_->text());
   OnCaretBoundsChanged();
   SchedulePaint();
+  textfield_->GetWidget()->NotifyAccessibilityEvent(
+      textfield_, ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
 }
 
 void NativeTextfieldViews::AppendText(const string16& text) {
@@ -458,6 +460,8 @@ void NativeTextfieldViews::SelectRange(const ui::Range& range) {
   model_->SelectRange(range);
   OnCaretBoundsChanged();
   SchedulePaint();
+  textfield_->GetWidget()->NotifyAccessibilityEvent(
+      textfield_, ui::AccessibilityTypes::EVENT_SELECTION_CHANGED, true);
 }
 
 void NativeTextfieldViews::GetSelectionModel(gfx::SelectionModel* sel) const {
@@ -937,11 +941,20 @@ void NativeTextfieldViews::PropagateTextChange() {
 
 void NativeTextfieldViews::UpdateAfterChange(bool text_changed,
                                              bool cursor_changed) {
-  if (text_changed)
+  if (text_changed) {
     PropagateTextChange();
+    textfield_->GetWidget()->NotifyAccessibilityEvent(
+        textfield_, ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
+  }
   if (cursor_changed) {
     is_cursor_visible_ = true;
     RepaintCursor();
+    if (!text_changed) {
+      // TEXT_CHANGED implies SELECTION_CHANGED, so we only need to fire
+      // this if only the selection changed.
+      textfield_->GetWidget()->NotifyAccessibilityEvent(
+          textfield_, ui::AccessibilityTypes::EVENT_SELECTION_CHANGED, true);
+    }
   }
   if (text_changed || cursor_changed) {
     OnCaretBoundsChanged();
