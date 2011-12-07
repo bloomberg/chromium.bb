@@ -22,6 +22,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "base/string_piece.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -30,7 +31,6 @@ typedef uint32 SkColor;
 
 namespace base {
 class Lock;
-class StringPiece;
 }
 
 namespace gfx {

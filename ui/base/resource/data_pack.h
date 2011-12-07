@@ -14,14 +14,11 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_piece.h"
 #include "ui/base/ui_export.h"
 
 class FilePath;
 class RefCountedStaticMemory;
-
-namespace base {
-class StringPiece;
-}
 
 namespace file_util {
 class MemoryMappedFile;
