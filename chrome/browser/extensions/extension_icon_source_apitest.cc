@@ -8,12 +8,18 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mock_host_resolver.h"
 
 class ExtensionIconSourceTest : public ExtensionApiTest {
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kAllowLegacyExtensionManifests);
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoaded) {

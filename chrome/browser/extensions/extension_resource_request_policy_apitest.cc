@@ -5,12 +5,18 @@
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mock_host_resolver.h"
 
 class ExtensionResourceRequestPolicyTest : public ExtensionApiTest {
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kAllowLegacyExtensionManifests);
+  }
 };
 
 // Note, this mostly tests the logic of chrome/renderer/extensions/

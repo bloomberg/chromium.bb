@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -134,6 +135,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebKitPrefsBackgroundPage) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
   ASSERT_TRUE(test_server()->Start());
 
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
+
   // This page action will not show an icon, since it doesn't specify one but
   // is included here to test for a crash (http://crbug.com/25562).
   ASSERT_TRUE(LoadExtension(
@@ -186,6 +190,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionInPageNavigation) {
 // Tests that the location bar forgets about unloaded page actions.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
   ASSERT_TRUE(test_server()->Start());
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
 
   FilePath extension_path(test_data_dir_.AppendASCII("subscribe_page_action"));
   ASSERT_TRUE(LoadExtension(extension_path));
@@ -259,6 +266,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionRefreshCrash) {
 // more than just "alternate".
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSMultiRelLink) {
   ASSERT_TRUE(test_server()->Start());
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
 
   ASSERT_TRUE(LoadExtension(
     test_data_dir_.AppendASCII("subscribe_page_action")));
@@ -424,6 +434,9 @@ void NavigateToFeedAndValidate(net::TestServer* server,
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed1) {
   ASSERT_TRUE(test_server()->Start());
 
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
+
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action"));
   ASSERT_TRUE(extension);
@@ -438,6 +451,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed1) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed2) {
   ASSERT_TRUE(test_server()->Start());
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
 
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action"));
@@ -454,6 +470,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed2) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed3) {
   ASSERT_TRUE(test_server()->Start());
 
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
+
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action"));
   ASSERT_TRUE(extension);
@@ -469,6 +488,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed3) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed4) {
   ASSERT_TRUE(test_server()->Start());
 
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
+
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action"));
   ASSERT_TRUE(extension);
@@ -483,6 +505,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed4) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed0) {
   ASSERT_TRUE(test_server()->Start());
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
 
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action"));
@@ -501,6 +526,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed0) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed5) {
   ASSERT_TRUE(test_server()->Start());
 
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
+
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action"));
   ASSERT_TRUE(extension);
@@ -516,6 +544,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed5) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed6) {
   ASSERT_TRUE(test_server()->Start());
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
 
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action"));
@@ -533,6 +564,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed6) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed1) {
   ASSERT_TRUE(test_server()->Start());
 
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
+
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action"));
   ASSERT_TRUE(extension);
@@ -548,6 +582,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed1) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed2) {
   ASSERT_TRUE(test_server()->Start());
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
 
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action"));
@@ -565,6 +602,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed2) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed3) {
   ASSERT_TRUE(test_server()->Start());
 
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
+
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action"));
   ASSERT_TRUE(extension);
@@ -580,6 +620,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed3) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed4) {
   ASSERT_TRUE(test_server()->Start());
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
 
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action"));
@@ -603,6 +646,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed4) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeedNoLinks) {
   ASSERT_TRUE(test_server()->Start());
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
 
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action"));
