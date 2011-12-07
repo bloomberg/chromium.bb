@@ -107,5 +107,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_METHOD1(OffThreadCancel, void(DownloadFileManager* file_manager));
   MOCK_CONST_METHOD1(DebugString, std::string(bool));
   MOCK_METHOD0(MockDownloadOpenForTesting, void());
+  MOCK_METHOD1(GetExternalData, ExternalData*(const void*));
+  MOCK_METHOD2(SetExternalData, void(const void*, ExternalData*));
 };
 #endif  // CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_ITEM_H_

@@ -43,6 +43,22 @@
 using content::BrowserThread;
 using safe_browsing::DownloadProtectionService;
 
+namespace {
+
+// String pointer used for identifying safebrowing data associated with
+// a download item.
+static const char safe_browsing_id[] = "Safe Browsing ID";
+
+// The state of a safebrowsing check.
+struct SafeBrowsingState : public DownloadItem::ExternalData {
+  // If true the SafeBrowsing check is not done yet.
+  bool pending;
+  // The verdict that we got from calling CheckClientDownload.
+  safe_browsing::DownloadProtectionService::DownloadCheckResult verdict;
+};
+
+}
+
 ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
     : profile_(profile),
       download_prefs_(new DownloadPrefs(profile->GetPrefs())) {
@@ -153,29 +169,27 @@ bool ChromeDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
 bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(DownloadItem* item) {
 #if defined(ENABLE_SAFE_BROWSING)
   // See if there is already a pending SafeBrowsing check for that download.
-  SafeBrowsingStateMap::iterator it = safe_browsing_state_.find(item->GetId());
-  if (it != safe_browsing_state_.end()) {
-    SafeBrowsingState state = it->second;
-    if (!state.pending) {
-      safe_browsing_state_.erase(it);
-    }
-    return !state.pending;
-  }
+  SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
+      item->GetExternalData(&safe_browsing_id));
+  if (state)
+    // Don't complete the download until we have an answer.
+    return !state->pending;
+
   // Begin the safe browsing download protection check.
   DownloadProtectionService* service = GetDownloadProtectionService();
   if (service) {
     VLOG(2) << __FUNCTION__ << "() Start SB download check for download = "
             << item->DebugString(false);
+    state = new SafeBrowsingState();
+    state->pending = true;
+    state->verdict = DownloadProtectionService::SAFE;
+    item->SetExternalData(&safe_browsing_id, state);
     service->CheckClientDownload(
         DownloadProtectionService::DownloadInfo::FromDownloadItem(*item),
         base::Bind(
             &ChromeDownloadManagerDelegate::CheckClientDownloadDone,
             this,
             item->GetId()));
-    SafeBrowsingState state;
-    state.pending = true;
-    state.verdict = DownloadProtectionService::SAFE;
-    safe_browsing_state_[item->GetId()] = state;
     return false;
   }
 #endif
@@ -331,10 +345,8 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
     int32 download_id,
     DownloadProtectionService::DownloadCheckResult result) {
   DownloadItem* item = download_manager_->GetActiveDownloadItem(download_id);
-  if (!item) {
-    safe_browsing_state_.erase(download_id);  // Just in case.
+  if (!item)
     return;
-  }
 
   VLOG(2) << __FUNCTION__ << "() download = " << item->DebugString(false)
           << " verdict = " << result;
@@ -344,11 +356,12 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
       item->GetSafetyState() == DownloadItem::SAFE)
     item->MarkContentDangerous();
 
-  SafeBrowsingStateMap::iterator it = safe_browsing_state_.find(item->GetId());
-  DCHECK(it != safe_browsing_state_.end() && it->second.pending);
-  if (it != safe_browsing_state_.end()) {
-    it->second.pending = false;
-    it->second.verdict = result;
+  SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
+      item->GetExternalData(&safe_browsing_id));
+  DCHECK(state);
+  if (state) {
+    state->pending = false;
+    state->verdict = result;
   }
   item->MaybeCompleteDownload();
 }

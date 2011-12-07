@@ -14,6 +14,7 @@
 #include "base/i18n/string_search.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/download/download_create_info.h"
@@ -260,6 +261,8 @@ DownloadItemImpl::~DownloadItemImpl() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   TransitionTo(REMOVING);
+  STLDeleteContainerPairSecondPointers(
+      external_data_map_.begin(), external_data_map_.end());
   delegate_->AssertStateConsistent(this);
   delegate_->Detach();
 }
@@ -928,3 +931,23 @@ bool DownloadItemImpl::NeedsRename() const {
   return state_info_.target_name != full_path_.BaseName();
 }
 void DownloadItemImpl::MockDownloadOpenForTesting() { open_enabled_ = false; }
+
+DownloadItem::ExternalData*
+DownloadItemImpl::GetExternalData(const void* key) {
+  if (!ContainsKey(external_data_map_, key))
+    return NULL;
+  return external_data_map_[key];
+}
+
+void DownloadItemImpl::SetExternalData(
+    const void* key, DownloadItem::ExternalData* data) {
+  std::map<const void*, ExternalData*>::iterator it =
+      external_data_map_.find(key);
+
+  if (it == external_data_map_.end()) {
+    external_data_map_[key] = data;
+  } else if (it->second != data) {
+    delete it->second;
+    it->second = data;
+  }
+}

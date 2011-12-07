@@ -91,7 +91,8 @@ class DownloadItemTest : public testing::Test {
   }
 
   // This class keeps ownership of the created download item; it will
-  // be torn down at the end of the test.
+  // be torn down at the end of the test unless DestroyDownloadItem is
+  // called.
   DownloadItem* CreateDownloadItem(DownloadItem::DownloadState state) {
     // Normally, the download system takes ownership of info, and is
     // responsible for deleting it.  In these unit tests, however, we
@@ -109,8 +110,14 @@ class DownloadItemTest : public testing::Test {
     DownloadItem* download =
         new DownloadItemImpl(&delegate_, *(info_.get()),
                              request_handle, false);
-    allocated_downloads_.push_back(download);
+    allocated_downloads_.insert(download);
     return download;
+  }
+
+  // Destroy a previously created download item.
+  void DestroyDownloadItem(DownloadItem* item) {
+    allocated_downloads_.erase(item);
+    delete item;
   }
 
  protected:
@@ -122,7 +129,7 @@ class DownloadItemTest : public testing::Test {
   // UI thread.
   content::TestBrowserThread ui_thread_;
   testing::NiceMock<MockDelegate> delegate_;
-  std::vector<DownloadItem*> allocated_downloads_;
+  std::set<DownloadItem*> allocated_downloads_;
 };
 
 namespace {
@@ -272,6 +279,64 @@ TEST_F(DownloadItemTest, NotificationAfterTogglePause) {
 
   item->TogglePause();
   ASSERT_TRUE(observer.CheckUpdated());
+}
+
+static char external_data_test_string[] = "External data test";
+static int destructor_called = 0;
+
+class TestExternalData : public DownloadItem::ExternalData {
+ public:
+  int value;
+  virtual ~TestExternalData() {
+    destructor_called++;
+  }
+};
+
+TEST_F(DownloadItemTest, ExternalData) {
+  DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+
+  // Shouldn't be anything there before set.
+  EXPECT_EQ(NULL, item->GetExternalData(&external_data_test_string));
+
+  TestExternalData* test1(new TestExternalData());
+  test1->value = 2;
+
+  // Should be able to get back what you set.
+  item->SetExternalData(&external_data_test_string, test1);
+  TestExternalData* test_result =
+      static_cast<TestExternalData*>(
+          item->GetExternalData(&external_data_test_string));
+  EXPECT_EQ(test1, test_result);
+
+  // Destructor should be called if value overwritten.  New value
+  // should then be retrievable.
+  TestExternalData* test2(new TestExternalData());
+  test2->value = 3;
+  EXPECT_EQ(0, destructor_called);
+  item->SetExternalData(&external_data_test_string, test2);
+  EXPECT_EQ(1, destructor_called);
+  EXPECT_EQ(static_cast<DownloadItem::ExternalData*>(test2),
+            item->GetExternalData(&external_data_test_string));
+
+  // Overwriting with the same value shouldn't do anything.
+  EXPECT_EQ(1, destructor_called);
+  item->SetExternalData(&external_data_test_string, test2);
+  EXPECT_EQ(1, destructor_called);
+  EXPECT_EQ(static_cast<DownloadItem::ExternalData*>(test2),
+            item->GetExternalData(&external_data_test_string));
+
+  // Overwriting with NULL should result in destruction.
+  item->SetExternalData(&external_data_test_string, NULL);
+  EXPECT_EQ(2, destructor_called);
+
+  // Destroying the download item should destroy the external data.
+
+  TestExternalData* test3(new TestExternalData());
+  item->SetExternalData(&external_data_test_string, test3);
+  EXPECT_EQ(static_cast<DownloadItem::ExternalData*>(test3),
+            item->GetExternalData(&external_data_test_string));
+  DestroyDownloadItem(item);
+  EXPECT_EQ(3, destructor_called);
 }
 
 TEST(MockDownloadItem, Compiles) {

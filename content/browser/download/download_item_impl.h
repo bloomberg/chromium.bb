@@ -202,6 +202,8 @@ class CONTENT_EXPORT DownloadItemImpl : public DownloadItem {
   virtual void OffThreadCancel(DownloadFileManager* file_manager) OVERRIDE;
   virtual std::string DebugString(bool verbose) const OVERRIDE;
   virtual void MockDownloadOpenForTesting() OVERRIDE;
+  virtual ExternalData* GetExternalData(const void* key) OVERRIDE;
+  virtual void SetExternalData(const void* key, ExternalData* data) OVERRIDE;
 
  private:
   // Construction common to all constructors. |active| should be true for new
@@ -351,6 +353,10 @@ class CONTENT_EXPORT DownloadItemImpl : public DownloadItem {
 
   // Did the delegate delay calling Complete on this download?
   bool delegate_delayed_complete_;
+
+  // External Data storage.  All objects in the store
+  // are owned by the DownloadItemImpl.
+  std::map<const void*, ExternalData*> external_data_map_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemImpl);
 };

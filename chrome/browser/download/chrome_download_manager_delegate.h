@@ -149,16 +149,6 @@ class ChromeDownloadManagerDelegate
   typedef base::hash_map<CrxInstaller*, int> CrxInstallerMap;
   CrxInstallerMap crx_installers_;
 
-  // Maps the SafeBrowsing download check state to a DownloadItem ID.
-  struct SafeBrowsingState {
-    // If true the SafeBrowsing check is not done yet.
-    bool pending;
-    // The verdict that we got from calling CheckClientDownload.
-    safe_browsing::DownloadProtectionService::DownloadCheckResult verdict;
-  };
-  typedef base::hash_map<int, SafeBrowsingState> SafeBrowsingStateMap;
-  SafeBrowsingStateMap safe_browsing_state_;
-
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDownloadManagerDelegate);

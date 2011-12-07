@@ -18,6 +18,7 @@
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_H_
 #pragma once
 
+#include <map>
 #include <string>
 
 #include "base/string16.h"
@@ -98,6 +99,13 @@ class CONTENT_EXPORT DownloadItem {
 
    protected:
     virtual ~Observer() {}
+  };
+
+  // Interface for data that can be stored associated with (and owned
+  // by) an object of this class via GetExternalData/SetExternalData.
+  class ExternalData {
+   public:
+    virtual ~ExternalData() {};
   };
 
   virtual ~DownloadItem();
@@ -307,6 +315,21 @@ class CONTENT_EXPORT DownloadItem {
   // DownloadManager::FileSelectionCancelled() without doing some
   // rewrites of the DownloadManager queues.
   virtual void OffThreadCancel(DownloadFileManager* file_manager) = 0;
+
+  // Manage data owned by other subsystems associated with the
+  // DownloadItem.  By custom, key is the address of a
+  // static char subsystem_specific_string[] = ".."; defined
+  // in the subsystem, but the only requirement of this interface
+  // is that the key be unique over all data stored with this
+  // DownloadItem.
+  //
+  // Note that SetExternalData takes ownership of the
+  // passed object; it will be destroyed when the DownloadItem is.
+  // If an object is already held by the DownloadItem associated with
+  // the passed key, it will be destroyed if overwriten by a new pointer
+  // (overwrites by the same pointer are ignored).
+  virtual ExternalData* GetExternalData(const void* key) = 0;
+  virtual void SetExternalData(const void* key, ExternalData* data) = 0;
 
   virtual std::string DebugString(bool verbose) const = 0;
 
