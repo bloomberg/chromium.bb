@@ -121,6 +121,13 @@ html[dir=rtl] .most-visited .close-button {
                                       rgba(255, 255, 255, 0.9));
 }
 
+/* TODO(dbeam): Remove this when printing of -webkit-linear-gradient() works. */
+@media print {
+  .thumbnail-shield {
+    background: none;
+  }
+}
+
 .most-visited:focus .thumbnail,
 .most-visited:hover .thumbnail {
   opacity: 0.95;
