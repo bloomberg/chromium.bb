@@ -488,15 +488,13 @@ class LiveWebappLoadTest(BasePerfTest):
     Timing starts right before the new tab is opened, and stops as soon as the
     webpage displays the calendar print button (title 'Print my calendar').
     """
-    EXPECTED_SUBSTRING = 'Print my calendar'
+    EXPECTED_SUBSTRING = 'Month'
 
     def _DivTitleStartsWith():
       js = """
           var divs = document.getElementsByTagName("div");
           for (var i = 0; i < divs.length; ++i) {
-            if (divs[i].hasOwnProperty("dataset") &&
-                divs[i].dataset.hasOwnProperty("tooltip") &&
-                divs[i].dataset.tooltip.indexOf("%s") == 0)
+            if (divs[i].innerHTML == "%s")
               window.domAutomationController.send("true");
           }
           window.domAutomationController.send("false");
@@ -1068,7 +1066,7 @@ class MemoryBloatTest(BasePerfTest):
 
       compose_button = wait.until(lambda _: _GetElement(
                                       driver.find_element_by_xpath,
-                                      '//div[text()="Compose mail"]'))
+                                      '//div[text()="COMPOSE"]'))
       compose_button.click()
 
       to_field = wait.until(lambda _: _GetElement(
