@@ -131,10 +131,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # Some download test fails on win official builder, only thru buildbot
-      # when downloading the small zip file.
-      # crbug.com/91225
-      '-find_in_page.FindMatchTests.testSearchInPDF',
       # Disabled on vista in the actual test. crbug.com/89767
       # -imports.ImportsTest.testImportFirefoxDataTwice
       # Disabled on vista in the actual test. crbug.com/89767
@@ -244,8 +240,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/91225
-      '-find_in_page.FindMatchTests.testSearchInPDF',
       # crbug.com/85310
       '-instant',
       # crbug.com/91033
