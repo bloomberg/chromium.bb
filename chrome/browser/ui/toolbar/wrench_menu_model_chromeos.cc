@@ -79,5 +79,7 @@ void WrenchMenuModel::Build() {
   } else {
     AddItemWithStringId(IDC_EXIT, IDS_SIGN_OUT);
   }
+
+  AddItemWithStringId(IDC_SHUTDOWN, IDS_SHUTDOWN_BUTTON);
 }
 

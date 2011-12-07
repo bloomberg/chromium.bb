@@ -640,6 +640,7 @@ class Browser : public TabHandlerDelegate,
 #endif
 #if defined(OS_CHROMEOS)
   void LockScreen();
+  void Shutdown();
   void OpenSystemOptionsDialog();
   void OpenInternetOptionsDialog();
   void OpenLanguageOptionsDialog();

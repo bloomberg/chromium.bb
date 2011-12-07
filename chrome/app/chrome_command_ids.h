@@ -218,6 +218,7 @@
 #define IDC_INTERNET_OPTIONS            45100     // ChromeOS only
 #define IDC_LANGUAGE_OPTIONS            45200     // ChromeOS only
 #define IDC_LOCK_SCREEN                 45300     // ChromeOS only
+#define IDC_SHUTDOWN                    45400     // ChromeOS only
 #define IDC_HISTORY_MENU                46000     // OSX only
 #define IDC_PROFILE_MAIN_MENU           46100     // OSX only
 #define IDC_INPUT_METHODS_MENU          46300     // Linux only
