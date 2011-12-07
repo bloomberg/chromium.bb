@@ -45,7 +45,7 @@ extern const char kDisableGpuDriverBugWorkarounds[];
 extern const char kDisableGpuSandbox[];
 extern const char kDisableGpuWatchdog[];
 CONTENT_EXPORT extern const char kDisableHangMonitor[];
-extern const char kDisableIndexedDatabase[];
+extern const char kEnableIndexedDBForWorkers[];
 CONTENT_EXPORT extern const char kDisableJava[];
 CONTENT_EXPORT extern const char kDisableJavaScript[];
 extern const char kDisableJavaScriptI18NAPI[];
