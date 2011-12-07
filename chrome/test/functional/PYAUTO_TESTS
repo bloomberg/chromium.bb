@@ -128,9 +128,6 @@
       # which contains the sync protobufs.
       #'sync.SyncIntegrationTest',
 
-      # crbug.com/104886 - cannot trigger dangerous download.
-      '-downloads.DownloadsTest.testSaveDangerousFile',
-
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
