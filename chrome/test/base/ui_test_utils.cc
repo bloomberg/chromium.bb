@@ -50,6 +50,7 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "googleurl/src/gurl.h"
@@ -73,10 +74,12 @@ namespace ui_test_utils {
 
 namespace {
 
-class DOMOperationObserver : public content::NotificationObserver {
+class DOMOperationObserver : public content::NotificationObserver,
+                             public TabContentsObserver {
  public:
   explicit DOMOperationObserver(RenderViewHost* render_view_host)
-      : did_respond_(false) {
+      : TabContentsObserver(render_view_host->delegate()->GetAsTabContents()),
+        did_respond_(false) {
     registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
                    content::Source<RenderViewHost>(render_view_host));
     ui_test_utils::RunMessageLoop();
@@ -84,11 +87,16 @@ class DOMOperationObserver : public content::NotificationObserver {
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
     DCHECK(type == chrome::NOTIFICATION_DOM_OPERATION_RESPONSE);
     content::Details<DomOperationNotificationDetails> dom_op_details(details);
     response_ = dom_op_details->json();
     did_respond_ = true;
+    MessageLoopForUI::current()->Quit();
+  }
+
+  // Overridden from content::TabContentsObserver:
+  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE {
     MessageLoopForUI::current()->Quit();
   }
 
