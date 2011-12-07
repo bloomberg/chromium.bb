@@ -90,8 +90,8 @@ TEST_F(ProfileDownloaderTest, DefaultURL) {
   // Picasa default photo
   EXPECT_TRUE(ProfileDownloader::IsDefaultProfileImageURL(
       "https://example.com/-4/AAAAAAAAAAA/AAAAAAAAAAE/G/s64-c/photo.jpg"));
-  // G+ default photo
-  EXPECT_TRUE(ProfileDownloader::IsDefaultProfileImageURL(
+  // Not default G+ photo
+  EXPECT_FALSE(ProfileDownloader::IsDefaultProfileImageURL(
       "https://example.com/-4/AAAAAAAAAAI/AAAAAAAAAAA/G/photo.jpg"));
   // Not default with 6 components
   EXPECT_FALSE(ProfileDownloader::IsDefaultProfileImageURL(

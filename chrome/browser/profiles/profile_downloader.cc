@@ -64,12 +64,6 @@ const char kPicasaPhotoId[] = "AAAAAAAAAAA";
 // Photo version of the default PWA profile picture (base64 of 1).
 const char kDefaultPicasaPhotoVersion[] = "AAAAAAAAAAE";
 
-// Photo ID of the Google+ profile picture (base64 of 2).
-const char kGooglePlusPhotoId[] = "AAAAAAAAAAI";
-
-// Photo version of the default Google+ profile picture (base64 of 0).
-const char kDefaultGooglePlusPhotoVersion[] = "AAAAAAAAAAA";
-
 // The minimum number of path components in profile picture URL.
 const size_t kProfileImageURLPathComponentsCount = 6;
 
@@ -192,12 +186,9 @@ bool ProfileDownloader::IsDefaultProfileImageURL(const std::string& url) {
   const std::string& photo_version =
       path_components[kPhotoVersionPathComponentIndex];
 
-  // There are at least two pairs of (ID, version) for the default photo:
-  // the default Google+ profile photo and the default Picasa profile photo.
-  return ((photo_id == kPicasaPhotoId &&
-           photo_version == kDefaultPicasaPhotoVersion) ||
-          (photo_id == kGooglePlusPhotoId &&
-           photo_version == kDefaultGooglePlusPhotoVersion));
+  // Check that the ID and version match the default Picasa profile photo.
+  return photo_id == kPicasaPhotoId &&
+         photo_version == kDefaultPicasaPhotoVersion;
 }
 
 ProfileDownloader::ProfileDownloader(ProfileDownloaderDelegate* delegate)
