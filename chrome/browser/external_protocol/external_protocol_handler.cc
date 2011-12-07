@@ -17,8 +17,11 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
+
+using content::BrowserThread;
 
 // Whether we accept requests for launching external protocols. This is set to
 // false every time an external protocol is requested, and set back to true on
@@ -283,12 +286,10 @@ void ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(const GURL& url) {
 #else
   // Otherwise put this work on the file thread. On Windows ShellExecute may
   // block for a significant amount of time, and it shouldn't hurt on Linux.
-  MessageLoop* loop = g_browser_process->file_thread()->message_loop();
-  if (loop == NULL) {
-    return;
-  }
-
-  loop->PostTask(FROM_HERE, base::Bind(&platform_util::OpenExternal, url));
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&platform_util::OpenExternal, url));
 #endif
 }
 

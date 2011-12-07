@@ -291,6 +291,10 @@ void BrowserProcessImpl::PostStopThread(BrowserThread::ID thread_id) {
       // Reset associated state right after actual thread is stopped,
       // as io_thread_.global_ cleanup happens in CleanUp on the IO
       // thread, i.e. as the thread exits its message loop.
+      //
+      // This is important also because in various places, the
+      // IOThread object being NULL is considered synonymous with the
+      // IO thread having stopped.
       io_thread_.reset();
       break;
     default:
@@ -414,16 +418,6 @@ IOThread* BrowserProcessImpl::io_thread() {
   return io_thread_.get();
 }
 
-base::Thread* BrowserProcessImpl::file_thread() {
-  DCHECK(CalledOnValidThread());
-  return BrowserThread::UnsafeGetBrowserThread(BrowserThread::FILE);
-}
-
-base::Thread* BrowserProcessImpl::db_thread() {
-  DCHECK(CalledOnValidThread());
-  return BrowserThread::UnsafeGetBrowserThread(BrowserThread::DB);
-}
-
 WatchDogThread* BrowserProcessImpl::watchdog_thread() {
   DCHECK(CalledOnValidThread());
   if (!created_watchdog_thread_)
@@ -431,13 +425,6 @@ WatchDogThread* BrowserProcessImpl::watchdog_thread() {
   DCHECK(watchdog_thread_.get() != NULL);
   return watchdog_thread_.get();
 }
-
-#if defined(OS_CHROMEOS)
-base::Thread* BrowserProcessImpl::web_socket_proxy_thread() {
-  DCHECK(CalledOnValidThread());
-  return BrowserThread::UnsafeGetBrowserThread(BrowserThread::WEB_SOCKET_PROXY);
-}
-#endif
 
 ProfileManager* BrowserProcessImpl::profile_manager() {
   DCHECK(CalledOnValidThread());

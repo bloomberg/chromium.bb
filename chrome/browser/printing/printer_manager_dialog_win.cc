@@ -12,6 +12,9 @@
 #include "base/path_service.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_process.h"
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
 
 namespace printing {
 
@@ -29,8 +32,10 @@ void OpenPrintersDialogCallback() {
 }
 
 void PrinterManagerDialog::ShowPrinterManagerDialog() {
-  g_browser_process->file_thread()->message_loop()->PostTask(
-      FROM_HERE, base::Bind(OpenPrintersDialogCallback));
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(OpenPrintersDialogCallback));
 }
 
 }  // namespace printing

@@ -182,13 +182,9 @@ void SessionService::MoveCurrentSessionToLastSession() {
 
   Save();
 
-  if (!backend_thread()) {
-    backend()->MoveCurrentSessionToLastSession();
-  } else {
-    backend_thread()->message_loop()->PostTask(
-        FROM_HERE, base::Bind(&SessionBackend::MoveCurrentSessionToLastSession,
-                              backend()));
-  }
+  RunTaskOnBackendThread(
+      FROM_HERE, base::Bind(&SessionBackend::MoveCurrentSessionToLastSession,
+                            backend()));
 }
 
 void SessionService::SetTabWindow(const SessionID& window_id,

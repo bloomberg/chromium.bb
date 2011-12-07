@@ -118,8 +118,7 @@ class FactoryForMedia : public ChromeURLRequestContextFactory {
 ChromeURLRequestContextGetter::ChromeURLRequestContextGetter(
     Profile* profile,
     ChromeURLRequestContextFactory* factory)
-    : io_thread_(g_browser_process->io_thread()),
-      factory_(factory) {
+    : factory_(factory) {
   DCHECK(factory);
   DCHECK(profile);
   RegisterPrefsObserver(profile);

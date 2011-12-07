@@ -177,39 +177,15 @@ class CONTENT_EXPORT BrowserThread {
   static scoped_refptr<base::MessageLoopProxy> GetMessageLoopProxyForThread(
       ID identifier);
 
-  // Gets the Thread object for the specified thread, or NULL if the
-  // thread has not been created (or has been destroyed during
-  // shutdown).
+  // Returns a pointer to the thread's message loop, which will become
+  // invalid during shutdown, so you probably shouldn't hold onto it.
   //
-  // Before calling this, you must have called content::ContentMain
-  // with a command-line that would specify a browser process (e.g. an
-  // empty command line).
+  // This must not be called before the thread is started, or after
+  // the thread is stopped, or it will DCHECK.
   //
-  // It is unsafe to store this pointer as it may become invalid close
-  // to shutdown.
-  //
-  // TODO(joi): Remove this once clients such as BrowserProcessImpl
-  // (and classes that call things like
-  // g_browser_process->file_thread()) are switched to using
-  // MessageLoopProxy.
-  static base::Thread* UnsafeGetBrowserThread(ID identifier);
-
-  // Gets the MessageLoop for the specified thread, or NULL if the
-  // thread has not been created (or has been destroyed during
-  // shutdown).
-  //
-  // Before calling this, you must have called content::ContentMain
-  // with a command-line that would specify a browser process (e.g. an
-  // empty command line).
-  //
-  // It is unsafe to store this pointer as it may become invalid close
-  // to shutdown.
-  //
-  // TODO(joi): Remove this once clients such as BrowserProcessImpl
-  // (and classes that call things like
-  // g_browser_process->file_thread()) are switched to using
-  // MessageLoopProxy.
-  static MessageLoop* UnsafeGetMessageLoop(ID identifier);
+  // Ownership remains with the BrowserThread implementation, so you
+  // must not delete the pointer.
+  static MessageLoop* UnsafeGetMessageLoopForThread(ID identifier);
 
   // Sets the delegate for the specified BrowserThread.
   //

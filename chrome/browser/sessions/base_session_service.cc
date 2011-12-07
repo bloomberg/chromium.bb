@@ -14,9 +14,11 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/navigation_entry.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/referrer.h"
 #include "webkit/glue/webkit_glue.h"
 
+using content::BrowserThread;
 using WebKit::WebReferrerPolicy;
 
 // InternalGetCommandsRequest -------------------------------------------------
@@ -69,7 +71,6 @@ BaseSessionService::BaseSessionService(SessionType type,
                                        const FilePath& path)
     : profile_(profile),
       path_(path),
-      backend_thread_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       pending_reset_(false),
       commands_since_reset_(0) {
@@ -80,22 +81,18 @@ BaseSessionService::BaseSessionService(SessionType type,
   backend_ = new SessionBackend(type,
       profile_ ? profile_->GetPath() : path_);
   DCHECK(backend_.get());
-  backend_thread_ = g_browser_process->file_thread();
-  if (!backend_thread_)
-    backend_->Init();
-  // If backend_thread is non-null, backend will init itself as appropriate.
+
+  RunTaskOnBackendThread(FROM_HERE,
+                         base::Bind(&SessionBackend::Init, backend_));
 }
 
 BaseSessionService::~BaseSessionService() {
 }
 
 void BaseSessionService::DeleteLastSession() {
-  if (!backend_thread()) {
-    backend()->DeleteLastSession();
-  } else {
-    backend_thread()->message_loop()->PostTask(
-        FROM_HERE, base::Bind(&SessionBackend::DeleteLastSession, backend()));
-  }
+  RunTaskOnBackendThread(
+      FROM_HERE,
+      base::Bind(&SessionBackend::DeleteLastSession, backend()));
 }
 
 void BaseSessionService::ScheduleCommand(SessionCommand* command) {
@@ -122,16 +119,12 @@ void BaseSessionService::Save() {
   if (pending_commands_.empty())
     return;
 
-  if (!backend_thread()) {
-    backend()->AppendCommands(
-        new std::vector<SessionCommand*>(pending_commands_), pending_reset_);
-  } else {
-    backend_thread()->message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&SessionBackend::AppendCommands, backend(),
-                   new std::vector<SessionCommand*>(pending_commands_),
-                   pending_reset_));
-  }
+  RunTaskOnBackendThread(
+      FROM_HERE,
+      base::Bind(&SessionBackend::AppendCommands, backend(),
+                 new std::vector<SessionCommand*>(pending_commands_),
+                 pending_reset_));
+
   // Backend took ownership of commands.
   pending_commands_.clear();
 
@@ -275,14 +268,10 @@ BaseSessionService::Handle BaseSessionService::ScheduleGetLastSessionCommands(
     CancelableRequestConsumerBase* consumer) {
   scoped_refptr<InternalGetCommandsRequest> request_wrapper(request);
   AddRequest(request, consumer);
-  if (backend_thread()) {
-    backend_thread()->message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&SessionBackend::ReadLastSessionCommands, backend(),
-                   request_wrapper));
-  } else {
-    backend()->ReadLastSessionCommands(request);
-  }
+  RunTaskOnBackendThread(
+      FROM_HERE,
+      base::Bind(&SessionBackend::ReadLastSessionCommands, backend(),
+                 request_wrapper));
   return request->handle();
 }
 
@@ -292,13 +281,23 @@ BaseSessionService::Handle
         CancelableRequestConsumerBase* consumer) {
   scoped_refptr<InternalGetCommandsRequest> request_wrapper(request);
   AddRequest(request, consumer);
-  if (backend_thread()) {
-    backend_thread()->message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&SessionBackend::ReadCurrentSessionCommands, backend(),
-                   request_wrapper));
-  } else {
-    backend()->ReadCurrentSessionCommands(request);
-  }
+  RunTaskOnBackendThread(
+      FROM_HERE,
+      base::Bind(&SessionBackend::ReadCurrentSessionCommands, backend(),
+                 request_wrapper));
   return request->handle();
+}
+
+bool BaseSessionService::RunTaskOnBackendThread(
+    const tracked_objects::Location& from_here,
+    const base::Closure& task) {
+  if (profile_ && BrowserThread::IsMessageLoopValid(BrowserThread::FILE)) {
+    return BrowserThread::PostTask(BrowserThread::FILE, from_here, task);
+  } else {
+    // Fall back to executing on the main thread if the file thread
+    // has gone away (around shutdown time) or if we're running as
+    // part of a unit test that does not set profile_.
+    task.Run();
+    return true;
+  }
 }

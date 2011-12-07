@@ -1426,8 +1426,9 @@ void ChromeBrowserMainParts::PostStartThread(
 #if defined(USE_LINUX_BREAKPAD)
       // Needs to be called after we have chrome::DIR_USER_DATA and
       // g_browser_process.  This happens in PreCreateThreads.
-      g_browser_process->file_thread()->message_loop()->PostTask(
-          FROM_HERE, base::Bind(&GetLinuxDistroCallback));
+      BrowserThread::PostTask(BrowserThread::FILE,
+                              FROM_HERE,
+                              base::Bind(&GetLinuxDistroCallback));
 
       if (IsCrashReportingEnabled(local_state_))
         InitCrashReporter();

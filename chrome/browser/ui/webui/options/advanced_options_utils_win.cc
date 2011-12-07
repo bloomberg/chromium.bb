@@ -16,6 +16,9 @@
 #include "chrome/browser/browser_process.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
 
 // Callback that opens the Internet Options control panel dialog with the
 // Connections tab selected.
@@ -45,10 +48,10 @@ void OpenConnectionDialogCallback() {
 
 void AdvancedOptionsUtilities::ShowNetworkProxySettings(
       TabContents* tab_contents) {
-  base::Thread* thread = g_browser_process->file_thread();
-  DCHECK(thread);
-  thread->message_loop()->PostTask(FROM_HERE,
-                                   base::Bind(&OpenConnectionDialogCallback));
+  DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::FILE));
+  BrowserThread::PostTask(BrowserThread::FILE,
+                          FROM_HERE,
+                          base::Bind(&OpenConnectionDialogCallback));
 }
 
 void AdvancedOptionsUtilities::ShowManageSSLCertificates(

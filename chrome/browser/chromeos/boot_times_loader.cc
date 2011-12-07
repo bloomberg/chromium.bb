@@ -121,7 +121,7 @@ BootTimesLoader* BootTimesLoader::Get() {
 BootTimesLoader::Handle BootTimesLoader::GetBootTimes(
     CancelableRequestConsumerBase* consumer,
     BootTimesLoader::GetBootTimesCallback* callback) {
-  if (!g_browser_process->file_thread()) {
+  if (!BrowserThread::IsMessageLoopValid(BrowserThread::FILE)) {
     // This should only happen if Chrome is shutting down, so we don't do
     // anything.
     return 0;

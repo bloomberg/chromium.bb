@@ -395,17 +395,16 @@ BrowserThread::GetMessageLoopProxyForThread(
   return proxy;
 }
 
-base::Thread* BrowserThread::UnsafeGetBrowserThread(ID identifier) {
+// static
+MessageLoop* BrowserThread::UnsafeGetMessageLoopForThread(ID identifier) {
   base::AutoLock lock(g_lock.Get());
   base::Thread* thread = g_browser_threads[identifier];
   DCHECK(thread);
-  return thread;
+  MessageLoop* loop = thread->message_loop();
+  return loop;
 }
 
-MessageLoop* BrowserThread::UnsafeGetMessageLoop(ID identifier) {
-  return UnsafeGetBrowserThread(identifier)->message_loop();
-}
-
+// static
 void BrowserThread::SetDelegate(ID identifier,
                                 BrowserThreadDelegate* delegate) {
   using base::subtle::AtomicWord;

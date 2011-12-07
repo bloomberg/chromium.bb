@@ -204,7 +204,8 @@ bool DefaultBrowserInfoBarDelegate::NeedElevation(InfoBarButton button) const {
 bool DefaultBrowserInfoBarDelegate::Accept() {
   action_taken_ = true;
   UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.SetAsDefault", 1);
-  g_browser_process->file_thread()->message_loop()->PostTask(
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
       FROM_HERE,
       base::IgnoreReturn<bool>(
           base::Bind(&ShellIntegration::SetAsDefaultBrowser)));

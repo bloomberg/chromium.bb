@@ -44,10 +44,6 @@ class TabCloseableStateWatcher;
 class ThumbnailGenerator;
 class WatchDogThread;
 
-namespace base {
-class Thread;
-}
-
 #if defined(OS_CHROMEOS)
 namespace browser {
 class OomPriorityManager;
@@ -114,34 +110,18 @@ class BrowserProcess {
   // Returns the manager for desktop notifications.
   virtual NotificationUIManager* notification_ui_manager() = 0;
 
-  // Returns the thread that we perform I/O coordination on (network requests,
-  // communication with renderers, etc.
-  // NOTE: You should ONLY use this to pass to IPC or other objects which must
-  // need a MessageLoop*.  If you just want to post a task, use
-  // BrowserThread::PostTask (or other variants) as they take care of checking
-  // that a thread is still alive, race conditions, lifetime differences etc.
-  // If you still must use this check the return value for NULL.
+  // Returns the state object for the thread that we perform I/O
+  // coordination on (network requests, communication with renderers,
+  // etc.
+  //
+  // Can be NULL close to startup and shutdown.
+  //
+  // NOTE: If you want to post a task to the IO thread, use
+  // BrowserThread::PostTask (or other variants).
   virtual IOThread* io_thread() = 0;
-
-  // Returns the thread that we perform random file operations on. For code
-  // that wants to do I/O operations (not network requests or even file: URL
-  // requests), this is the thread to use to avoid blocking the UI thread.
-  // It might be nicer to have a thread pool for this kind of thing.
-  virtual base::Thread* file_thread() = 0;
-
-  // Returns the thread that is used for database operations such as the web
-  // database. History has its own thread since it has much higher traffic.
-  virtual base::Thread* db_thread() = 0;
 
   // Returns the thread that is used for health check of all browser threads.
   virtual WatchDogThread* watchdog_thread() = 0;
-
-#if defined(OS_CHROMEOS)
-  // Returns thread for websocket to TCP proxy.
-  // TODO(dilmah): remove this thread.  Instead provide this functionality via
-  // hooks into websocket bridge layer.
-  virtual base::Thread* web_socket_proxy_thread() = 0;
-#endif
 
   virtual policy::BrowserPolicyConnector* browser_policy_connector() = 0;
 

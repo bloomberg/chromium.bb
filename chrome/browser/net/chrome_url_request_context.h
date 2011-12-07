@@ -182,10 +182,6 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter,
 
   PrefChangeRegistrar registrar_;
 
-  // |io_thread_| is always valid during the lifetime of |this| since |this| is
-  // deleted on the IO thread.
-  IOThread* const io_thread_;
-
   // Deferred logic for creating a ChromeURLRequestContext.
   // Access only from the IO thread.
   scoped_ptr<ChromeURLRequestContextFactory> factory_;

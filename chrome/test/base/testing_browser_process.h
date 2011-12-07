@@ -48,15 +48,7 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual ResourceDispatcherHost* resource_dispatcher_host() OVERRIDE;
   virtual MetricsService* metrics_service() OVERRIDE;
   virtual IOThread* io_thread() OVERRIDE;
-
-  virtual base::Thread* file_thread() OVERRIDE;
-  virtual base::Thread* db_thread() OVERRIDE;
   virtual WatchDogThread* watchdog_thread() OVERRIDE;
-
-#if defined(OS_CHROMEOS)
-  virtual base::Thread* web_socket_proxy_thread() OVERRIDE;
-#endif
-
   virtual ProfileManager* profile_manager() OVERRIDE;
   virtual PrefService* local_state() OVERRIDE;
   virtual policy::BrowserPolicyConnector* browser_policy_connector() OVERRIDE;

@@ -142,10 +142,8 @@ net::URLRequestContextGetter* ShellBrowserContext::GetRequestContext()  {
   if (!url_request_getter_) {
     url_request_getter_ = new ShellURLRequestContextGetter(
         GetPath(),
-        BrowserThread::UnsafeGetBrowserThread(
-            BrowserThread::IO)->message_loop(),
-        BrowserThread::UnsafeGetBrowserThread(
-            BrowserThread::FILE)->message_loop());
+        BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO),
+        BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::FILE));
   }
   return url_request_getter_;
 }
