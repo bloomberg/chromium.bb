@@ -171,6 +171,33 @@ HttpServerPropertiesManager::spdy_settings_map() const {
   return http_server_properties_impl_->spdy_settings_map();
 }
 
+net::HttpPipelinedHostCapability
+HttpServerPropertiesManager::GetPipelineCapability(
+    const net::HostPortPair& origin) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return http_server_properties_impl_->GetPipelineCapability(origin);
+}
+
+void HttpServerPropertiesManager::SetPipelineCapability(
+    const net::HostPortPair& origin,
+    net::HttpPipelinedHostCapability capability) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  http_server_properties_impl_->SetPipelineCapability(origin, capability);
+  ScheduleUpdatePrefsOnIO();
+}
+
+void HttpServerPropertiesManager::ClearPipelineCapabilities() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  http_server_properties_impl_->ClearPipelineCapabilities();
+  ScheduleUpdatePrefsOnIO();
+}
+
+net::PipelineCapabilityMap
+HttpServerPropertiesManager::GetPipelineCapabilityMap() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return http_server_properties_impl_->GetPipelineCapabilityMap();
+}
+
 //
 // Update the HttpServerPropertiesImpl's cache with data from preferences.
 //
@@ -206,6 +233,9 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
   // Parse the preferences into a AlternateProtocolMap.
   net::AlternateProtocolMap* alternate_protocol_map =
       new net::AlternateProtocolMap;
+
+  net::PipelineCapabilityMap* pipeline_capability_map =
+      new net::PipelineCapabilityMap;
 
   const base::DictionaryValue& http_server_properties_dict =
       *pref_service_->GetDictionary(prefs::kHttpServerProperties);
@@ -281,6 +311,14 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
       (*spdy_settings_map)[server] = spdy_settings;
     }
 
+    int pipeline_capability = net::PIPELINE_UNKNOWN;
+    if ((server_pref_dict->GetInteger(
+         "pipeline_capability", &pipeline_capability)) &&
+        pipeline_capability != net::PIPELINE_UNKNOWN) {
+      (*pipeline_capability_map)[server] =
+          static_cast<net::HttpPipelinedHostCapability>(pipeline_capability);
+    }
+
     // Get alternate_protocol server.
     DCHECK(!ContainsKey(*alternate_protocol_map, server));
     base::DictionaryValue* port_alternate_protocol_dict = NULL;
@@ -323,13 +361,15 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
                  base::Unretained(this),
                  base::Owned(spdy_servers),
                  base::Owned(spdy_settings_map),
-                 base::Owned(alternate_protocol_map)));
+                 base::Owned(alternate_protocol_map),
+                 base::Owned(pipeline_capability_map)));
 }
 
 void HttpServerPropertiesManager::UpdateCacheFromPrefsOnIO(
     StringVector* spdy_servers,
     net::SpdySettingsMap* spdy_settings_map,
-    net::AlternateProtocolMap* alternate_protocol_map) {
+    net::AlternateProtocolMap* alternate_protocol_map,
+    net::PipelineCapabilityMap* pipeline_capability_map) {
   // Preferences have the master data because admins might have pushed new
   // preferences. Update the cached data with new data from preferences.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -344,6 +384,9 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnIO(
   // preferences.
   http_server_properties_impl_->InitializeAlternateProtocolServers(
       alternate_protocol_map);
+
+  http_server_properties_impl_->InitializePipelineCapabilities(
+      pipeline_capability_map);
 }
 
 
@@ -381,6 +424,11 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnIO() {
   *alternate_protocol_map =
       http_server_properties_impl_->alternate_protocol_map();
 
+  net::PipelineCapabilityMap* pipeline_capability_map =
+      new net::PipelineCapabilityMap;
+  *pipeline_capability_map =
+      http_server_properties_impl_->GetPipelineCapabilityMap();
+
   // Update the preferences on the UI thread.
   BrowserThread::PostTask(
       BrowserThread::UI,
@@ -389,34 +437,39 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnIO() {
                  ui_weak_ptr_,
                  base::Owned(spdy_server_list),
                  base::Owned(spdy_settings_map),
-                 base::Owned(alternate_protocol_map)));
+                 base::Owned(alternate_protocol_map),
+                 base::Owned(pipeline_capability_map)));
 }
 
-// A local or temporary data structure to hold supports_spdy, SpdySettings and
-// PortAlternateProtocolPair preferences for a server. This is used only in
-// UpdatePrefsOnUI.
+// A local or temporary data structure to hold |supports_spdy|, SpdySettings,
+// PortAlternateProtocolPair, and |pipeline_capability| preferences for a
+// server. This is used only in UpdatePrefsOnUI.
 struct ServerPref {
   ServerPref()
       : supports_spdy(false),
         settings(NULL),
-        alternate_protocol(NULL) {
+        alternate_protocol(NULL),
+        pipeline_capability(net::PIPELINE_UNKNOWN) {
   }
   ServerPref(bool supports_spdy,
              const spdy::SpdySettings* settings,
              const net::PortAlternateProtocolPair* alternate_protocol)
       : supports_spdy(supports_spdy),
         settings(settings),
-        alternate_protocol(alternate_protocol) {
+        alternate_protocol(alternate_protocol),
+        pipeline_capability(net::PIPELINE_UNKNOWN) {
   }
   bool supports_spdy;
   const spdy::SpdySettings* settings;
   const net::PortAlternateProtocolPair* alternate_protocol;
+  net::HttpPipelinedHostCapability pipeline_capability;
 };
 
 void HttpServerPropertiesManager::UpdatePrefsOnUI(
     base::ListValue* spdy_server_list,
     net::SpdySettingsMap* spdy_settings_map,
-    net::AlternateProtocolMap* alternate_protocol_map) {
+    net::AlternateProtocolMap* alternate_protocol_map,
+    net::PipelineCapabilityMap* pipeline_capability_map) {
 
   typedef std::map<net::HostPortPair, ServerPref> ServerPrefMap;
   ServerPrefMap server_pref_map;
@@ -476,6 +529,23 @@ void HttpServerPropertiesManager::UpdatePrefsOnUI(
     }
   }
 
+  for (net::PipelineCapabilityMap::const_iterator map_it =
+           pipeline_capability_map->begin();
+       map_it != pipeline_capability_map->end(); ++map_it) {
+    const net::HostPortPair& server = map_it->first;
+    const net::HttpPipelinedHostCapability& pipeline_capability =
+        map_it->second;
+
+    ServerPrefMap::iterator it = server_pref_map.find(server);
+    if (it == server_pref_map.end()) {
+      ServerPref server_pref;
+      server_pref.pipeline_capability = pipeline_capability;
+      server_pref_map[server] = server_pref;
+    } else {
+      it->second.pipeline_capability = pipeline_capability;
+    }
+  }
+
   // Persist the prefs::kHttpServerProperties.
   base::DictionaryValue http_server_properties_dict;
   for (ServerPrefMap::const_iterator map_it =
@@ -518,8 +588,14 @@ void HttpServerPropertiesManager::UpdatePrefsOnUI(
       server_pref_dict->SetWithoutPathExpansion(
           "alternate_protocol", port_alternate_protocol_dict);
     }
-    http_server_properties_dict.SetWithoutPathExpansion(
-          server.ToString(), server_pref_dict);
+
+    if (server_pref.pipeline_capability != net::PIPELINE_UNKNOWN) {
+      server_pref_dict->SetInteger("pipeline_capability",
+                                   server_pref.pipeline_capability);
+    }
+
+    http_server_properties_dict.SetWithoutPathExpansion(server.ToString(),
+                                                        server_pref_dict);
   }
 
   setting_prefs_ = true;

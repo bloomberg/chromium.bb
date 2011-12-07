@@ -181,12 +181,12 @@ class MRUCacheBase {
   // can keep them as you insert or delete things (as long as you don't delete
   // the one you are pointing to) and they will still be valid.
   iterator begin() { return ordering_.begin(); }
-  const_iterator begin() const { ordering_.begin(); }
+  const_iterator begin() const { return ordering_.begin(); }
   iterator end() { return ordering_.end(); }
   const_iterator end() const { return ordering_.end(); }
 
   reverse_iterator rbegin() { return ordering_.rbegin(); }
-  const_reverse_iterator rbegin() const { ordering_.rbegin(); }
+  const_reverse_iterator rbegin() const { return ordering_.rbegin(); }
   reverse_iterator rend() { return ordering_.rend(); }
   const_reverse_iterator rend() const { return ordering_.rend(); }
 
