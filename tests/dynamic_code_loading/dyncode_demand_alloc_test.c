@@ -55,6 +55,7 @@ int main() {
 
   printf("Attempting to read from unallocated dyncode page.  "
          "This should fault...\n");
+  fprintf(stderr, "** intended_exit_status=untrusted_segfault\n");
   value = dyncode[DYNAMIC_CODE_PAGE_SIZE];
   printf("Failed: Dynamic code page was readable and contained the "
          "byte 0x%x.\n", value);

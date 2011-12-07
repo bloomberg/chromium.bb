@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdio.h>
@@ -13,9 +13,9 @@
 const char buf[] = "x";
 
 int main() {
-  fprintf(stdout, "This should fault...\n");
-  fflush(stdout);
+  fprintf(stderr, "** intended_exit_status=untrusted_segfault\n");
+  /* This should fault. */
   *(char *) buf = 'y';
-  fprintf(stdout, "We're still running. This is not good.\n");
+  fprintf(stderr, "We're still running. This is not good.\n");
   return 1;
 }

@@ -605,7 +605,7 @@ if env.Bit('posix'):
                                                ])
   node = env.CommandTest('nacl_signal_frame_test.out',
                          command=[test_prog],
-                         exit_status='trusted_segfault',
+                         declares_exit_status=True,
                          using_nacl_signal_handler=True)
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_signal_frame_test')
 
@@ -616,11 +616,8 @@ if env.Bit('windows') and env.Bit('target_x86_64'):
                                                'nacl_fault_inject',
                                                'platform',
                                                ])
-  node = env.CommandTest(
-      'patch_ntdll_test.out',
-      command=[test_prog],
-      exit_status='trusted_segfault',
-      stdout_golden=env.File('win/exception_patch/ntdll_test.stdout'))
+  node = env.CommandTest('patch_ntdll_test.out',
+                         command=[test_prog], declares_exit_status=True)
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_patch_ntdll_test')
 
   intercept_test_prog = env.ComponentProgram(

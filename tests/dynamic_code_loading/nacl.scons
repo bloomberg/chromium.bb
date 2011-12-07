@@ -129,9 +129,7 @@ env.AddNodeToTestSuite(node, test_suites, 'run_dyncode_debug_mode_test')
 # before they are allocated.
 node = env.CommandSelLdrTestNacl(
     'dyncode_demand_alloc_test.out',
-    dyncode_demand_alloc_test_nexe,
-    exit_status='untrusted_segfault',
-    stdout_golden=env.File('dyncode_demand_alloc_test.stdout'))
+    dyncode_demand_alloc_test_nexe, declares_exit_status=True)
 env.AddNodeToTestSuite(node, test_suites, 'run_dyncode_demand_alloc_test')
 
 # The IRT itself counts as dynamic code loading, so we cannot disable

@@ -35,7 +35,7 @@ void ReplacementHandler() {
      */
     void (*exit_fast)(void)
       = (void (*)(void)) NaCl_exception_dispatcher_exit_fast;
-    printf("Should exit now...\n");
+    fprintf(stderr, "** intended_exit_status=trusted_segfault\n");
     exit_fast();
   }
 }

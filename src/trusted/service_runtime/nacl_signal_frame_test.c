@@ -58,8 +58,9 @@ int main() {
    * Trigger a signal.  This should produce a "** Signal X from
    * trusted code" message, which the test runner checks for.
    */
+  fprintf(stderr, "** intended_exit_status=trusted_segfault\n");
   *(volatile int *) 0 = 0;
 
-  printf("Should never reach here.\n");
+  fprintf(stderr, "Should never reach here.\n");
   return 1;
 }

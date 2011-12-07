@@ -49,18 +49,9 @@ runner = trusted_env.ComponentProgram(
                 'dbghelp.lib', # Windows library
                 ] + VALIDATOR_LIBS + DEBUG_LIBS)
 
-STATUS_ACCESS_VIOLATION = 0xc0000005
-
-# Python's wrapper for GetExitCodeProcess() treats the STATUS_* values
-# as negative, although the unsigned values are used in headers and
-# are more widely recognised.
-def MungeWindowsErrorExit(num):
-  return num - 0x100000000
-
 node = env.CommandTest(
     'windows_crash_in_syscall_test.out', [runner, test_prog],
-    stdout_golden=env.File('test.stdout'),
-    exit_status=str(MungeWindowsErrorExit(STATUS_ACCESS_VIOLATION)))
+    declares_exit_status=True)
 env.AddNodeToTestSuite(node, ['small_tests'],
                        'run_windows_crash_in_syscall_test',
                        is_broken=not env.Bit('nacl_static_link'))

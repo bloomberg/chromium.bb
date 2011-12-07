@@ -188,7 +188,14 @@ static LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS *exc_info) {
    * type of exception.  We want to test that ExceptionHandler() does
    * not get called twice, since that does not work with Chrome's
    * embedding of Breakpad.
+   *
+   * STATUS_ACCESS_VIOLATION is 0xc0000005 but we deliberately convert
+   * this to a signed number since Python's wrapper for
+   * GetExitCodeProcess() treats the STATUS_* values as negative,
+   * although the unsigned values are used in headers and are more
+   * widely recognised
    */
+  fprintf(stderr, "** intended_exit_status=%i\n", STATUS_ACCESS_VIOLATION);
   return EXCEPTION_CONTINUE_SEARCH;
 }
 
