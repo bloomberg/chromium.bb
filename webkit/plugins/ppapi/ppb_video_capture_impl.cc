@@ -209,24 +209,25 @@ void PPB_VideoCapture_Impl::OnRemoved(media::VideoCapture* capture) {
 void PPB_VideoCapture_Impl::OnBufferReady(
     media::VideoCapture* capture,
     scoped_refptr<media::VideoCapture::VideoFrameBuffer> buffer) {
-  if (is_dead_)
-    return;
-
-  DCHECK(buffer.get());
-  for (uint32_t i = 0; i < buffers_.size(); ++i) {
-    if (!buffers_[i].in_use) {
-      // TODO(piman): it looks like stride isn't actually used/filled.
-      DCHECK(buffer->stride == 0);
-      size_t size = std::min(static_cast<size_t>(buffers_[i].buffer->size()),
-          buffer->buffer_size);
-      memcpy(buffers_[i].data, buffer->memory_pointer, size);
-      buffers_[i].in_use = true;
-      platform_video_capture_->FeedBuffer(buffer);
-      ppp_videocapture_->OnBufferReady(pp_instance(), pp_resource(), i);
-      return;
+  if (!is_dead_) {
+    DCHECK(buffer.get());
+    for (uint32_t i = 0; i < buffers_.size(); ++i) {
+      if (!buffers_[i].in_use) {
+        // TODO(ihf): Switch to a size calculation based on stride.
+        // Stride is filled out now but not more meaningful than size
+        // until wjia unifies VideoFrameBuffer and media::VideoFrame.
+        size_t size = std::min(static_cast<size_t>(buffers_[i].buffer->size()),
+            buffer->buffer_size);
+        memcpy(buffers_[i].data, buffer->memory_pointer, size);
+        buffers_[i].in_use = true;
+        platform_video_capture_->FeedBuffer(buffer);
+        ppp_videocapture_->OnBufferReady(pp_instance(), pp_resource(), i);
+        return;
+      }
     }
   }
-  // TODO(piman): signal dropped buffers ?
+  // Even after we have stopped and are dead we have to return buffers that
+  // are in flight to us. Otherwise VideoCaptureController will not tear down.
   platform_video_capture_->FeedBuffer(buffer);
 }
 

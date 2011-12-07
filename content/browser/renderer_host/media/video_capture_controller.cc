@@ -222,6 +222,14 @@ void VideoCaptureController::ReturnBuffer(
     client->event_handler->OnReadyToDelete(client->controller_id);
     delete client;
     controller_clients_.remove(client);
+
+    if (controller_clients_.empty()) {
+       // No more clients. Stop device.
+       video_capture_manager_->Stop(current_params_.session_id,
+          base::Bind(&VideoCaptureController::OnDeviceStopped, this));
+      frame_info_available_ = false;
+      state_ = video_capture::kStopping;
+    }
   }
   {
     base::AutoLock lock(lock_);
