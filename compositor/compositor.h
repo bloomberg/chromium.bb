@@ -219,6 +219,8 @@ struct wlsc_compositor {
 	uint32_t state;
 	struct wl_event_source *idle_source;
 	uint32_t idle_inhibit;
+	int option_idle_time;		/* default timeout, s */
+	int idle_time;			/* effective timeout, s */
 
 	/* Repaint state. */
 	struct timespec previous_swap;

@@ -48,7 +48,6 @@
 #include "compositor.h"
 
 static const char *option_socket_name = NULL;
-static int option_idle_time = 300;
 
 static struct wl_list child_process_list;
 
@@ -1299,7 +1298,7 @@ wlsc_compositor_wake(struct wlsc_compositor *compositor)
 	wlsc_compositor_fade(compositor, 0.0);
 
 	wl_event_source_timer_update(compositor->idle_source,
-				     option_idle_time * 1000);
+				     compositor->idle_time * 1000);
 }
 
 WL_EXPORT void
@@ -2070,7 +2069,7 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 
 	loop = wl_display_get_event_loop(ec->wl_display);
 	ec->idle_source = wl_event_loop_add_timer(loop, idle_handler, ec);
-	wl_event_source_timer_update(ec->idle_source, option_idle_time * 1000);
+	wl_event_source_timer_update(ec->idle_source, ec->idle_time * 1000);
 
 	wlsc_compositor_schedule_repaint(ec);
 
@@ -2139,6 +2138,7 @@ int main(int argc, char *argv[])
 	char *backend_options = "";
 	char *shell = NULL;
 	char *p;
+	int option_idle_time = 300;
 
 	static const char opts[] = "B:b:o:S:i:s:x";
 	static const struct option longopts[ ] = {
@@ -2217,6 +2217,9 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "failed to create compositor\n");
 		exit(EXIT_FAILURE);
 	}
+
+	ec->option_idle_time = option_idle_time;
+	ec->idle_time = option_idle_time;
 
 	if (shell_init(ec) < 0)
 		exit(EXIT_FAILURE);

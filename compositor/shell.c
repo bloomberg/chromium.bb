@@ -59,6 +59,7 @@ struct wl_shell {
 
 	struct {
 		const char *path;
+		int duration;
 		struct wl_resource *binding;
 		struct wl_list surfaces;
 		struct wlsc_process process;
@@ -102,9 +103,12 @@ shell_configuration(struct wl_shell *shell)
 {
 	int ret;
 	char *config_file;
+	char *path = NULL;
+	int duration = 60;
 
 	struct config_key saver_keys[] = {
-		{ "path", CONFIG_KEY_STRING, &shell->screensaver.path },
+		{ "path",       CONFIG_KEY_STRING,  &path },
+		{ "duration",   CONFIG_KEY_INTEGER, &duration },
 	};
 
 	struct config_section cs[] = {
@@ -114,6 +118,9 @@ shell_configuration(struct wl_shell *shell)
 	config_file = config_file_path("wayland-desktop-shell.ini");
 	ret = parse_config_file(config_file, cs, ARRAY_LENGTH(cs), shell);
 	free(config_file);
+
+	shell->screensaver.path = path;
+	shell->screensaver.duration = duration;
 
 	return ret;
 	/* FIXME: free(shell->screensaver.path) on plugin fini */
@@ -716,6 +723,7 @@ resume_desktop(struct wl_shell *shell)
 
 	shell->locked = false;
 	wlsc_compositor_repick(shell->compositor);
+	shell->compositor->idle_time = shell->compositor->option_idle_time;
 	wlsc_compositor_wake(shell->compositor);
 }
 
@@ -907,6 +915,7 @@ lock(struct wlsc_shell *base)
 		show_screensaver(shell, shsurf);
 
 	if (!wl_list_empty(&shell->screensaver.surfaces)) {
+		shell->compositor->idle_time = shell->screensaver.duration;
 		wlsc_compositor_wake(shell->compositor);
 		shell->compositor->state = WLSC_COMPOSITOR_IDLE;
 	}
@@ -1025,6 +1034,7 @@ map(struct wlsc_shell *base,
 		/* If locked, show it. */
 		if (shell->locked) {
 			show_screensaver(shell, shsurf);
+			compositor->idle_time = shell->screensaver.duration;
 			wlsc_compositor_wake(compositor);
 			if (!shell->lock_surface)
 				compositor->state = WLSC_COMPOSITOR_IDLE;
