@@ -99,7 +99,8 @@ hr.bottom {
 
 #header span,
 #user-image-screen-curtain p,
-.label {
+.label,
+.menu-control {
   cursor: default;
 }
 
