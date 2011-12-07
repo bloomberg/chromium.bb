@@ -33,9 +33,11 @@ void ChromeAppCacheService::InitializeOnIOThread(
       content::NotificationService::AllSources());
 
   // Init our base class.
-  Initialize(cache_path_,
-             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
+  Initialize(
+      cache_path_,
+      BrowserThread::GetMessageLoopProxyForThread(
+          BrowserThread::FILE_USER_BLOCKING),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
   set_appcache_policy(this);
   set_special_storage_policy(special_storage_policy);
 }

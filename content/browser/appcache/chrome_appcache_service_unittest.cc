@@ -40,8 +40,9 @@ class ChromeAppCacheServiceTest : public testing::Test {
         kProtectedManifestURL(kProtectedManifest),
         kNormalManifestURL(kNormalManifest),
         kSessionOnlyManifestURL(kSessionOnlyManifest),
-        db_thread_(BrowserThread::DB, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
+        file_user_blocking_thread_(
+            BrowserThread::FILE_USER_BLOCKING, &message_loop_),
         cache_thread_(BrowserThread::CACHE, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
   }
@@ -59,8 +60,8 @@ class ChromeAppCacheServiceTest : public testing::Test {
   const GURL kSessionOnlyManifestURL;
 
  private:
-  BrowserThreadImpl db_thread_;
   BrowserThreadImpl file_thread_;
+  BrowserThreadImpl file_user_blocking_thread_;
   BrowserThreadImpl cache_thread_;
   BrowserThreadImpl io_thread_;
 };

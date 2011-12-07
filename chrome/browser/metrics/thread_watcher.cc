@@ -55,6 +55,10 @@ void ThreadUnresponsive_FILE() {
   CHECK(false);
 }
 
+void ThreadUnresponsive_FILE_USER_BLOCKING() {
+  CHECK(false);
+}
+
 void ThreadUnresponsive_PROCESS_LAUNCHER() {
   CHECK(false);
 }
@@ -88,6 +92,8 @@ void CrashBecauseThreadWasUnresponsive(BrowserThread::ID thread_id) {
       return ThreadUnresponsive_WEBKIT();
     case BrowserThread::FILE:
       return ThreadUnresponsive_FILE();
+    case BrowserThread::FILE_USER_BLOCKING:
+      return ThreadUnresponsive_FILE_USER_BLOCKING();
     case BrowserThread::PROCESS_LAUNCHER:
       return ThreadUnresponsive_PROCESS_LAUNCHER();
     case BrowserThread::CACHE:
@@ -581,6 +587,10 @@ void ThreadWatcherList::InitializeAndStartWatching(
                 unresponsive_threshold, crash_on_hang_thread_names,
                 live_threads_threshold);
   StartWatching(BrowserThread::FILE, "FILE", kSleepTime, kUnresponsiveTime,
+                unresponsive_threshold, crash_on_hang_thread_names,
+                live_threads_threshold);
+  StartWatching(BrowserThread::FILE_USER_BLOCKING, "FILE_USER_BLOCKING",
+                kSleepTime, kUnresponsiveTime,
                 unresponsive_threshold, crash_on_hang_thread_names,
                 live_threads_threshold);
   StartWatching(BrowserThread::CACHE, "CACHE", kSleepTime, kUnresponsiveTime,

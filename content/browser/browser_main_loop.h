@@ -81,6 +81,7 @@ class BrowserMainLoop {
   scoped_ptr<BrowserThreadImpl> main_thread_;
   scoped_ptr<BrowserProcessSubThread> db_thread_;
   scoped_ptr<WebKitThread> webkit_thread_;
+  scoped_ptr<BrowserProcessSubThread> file_user_blocking_thread_;
   scoped_ptr<BrowserProcessSubThread> file_thread_;
   scoped_ptr<BrowserProcessSubThread> process_launcher_thread_;
   scoped_ptr<BrowserProcessSubThread> cache_thread_;

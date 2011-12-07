@@ -62,6 +62,7 @@ class ExtensionServiceTestBase : public testing::Test {
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread webkit_thread_;
   content::TestBrowserThread file_thread_;
+  content::TestBrowserThread file_user_blocking_thread_;
   content::TestBrowserThread io_thread_;
 };
 

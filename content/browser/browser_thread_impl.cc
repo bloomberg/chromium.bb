@@ -21,6 +21,7 @@ static const char* g_browser_thread_names[BrowserThread::ID_COUNT] = {
   "Chrome_DBThread",  // DB
   "Chrome_WebKitThread",  // WEBKIT
   "Chrome_FileThread",  // FILE
+  "Chrome_FileUserBlockingThread",  // FILE_USER_BLOCKING
   "Chrome_ProcessLauncherThread",  // PROCESS_LAUNCHER
   "Chrome_CacheThread",  // CACHE
   "Chrome_IOThread",  // IO

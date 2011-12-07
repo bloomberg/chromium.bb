@@ -387,6 +387,7 @@ ExtensionServiceTestBase::ExtensionServiceTestBase()
       db_thread_(BrowserThread::DB, &loop_),
       webkit_thread_(BrowserThread::WEBKIT, &loop_),
       file_thread_(BrowserThread::FILE, &loop_),
+      file_user_blocking_thread_(BrowserThread::FILE_USER_BLOCKING, &loop_),
       io_thread_(BrowserThread::IO, &loop_) {
   FilePath test_data_dir;
   if (!PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir)) {

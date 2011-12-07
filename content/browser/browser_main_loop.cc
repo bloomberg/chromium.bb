@@ -322,6 +322,9 @@ void BrowserMainLoop::RunMainMessageLoopParts(
         // Special case as WebKitThread is a separate
         // type.  |thread_to_start| is not used in this case.
         break;
+      case BrowserThread::FILE_USER_BLOCKING:
+        thread_to_start = &file_user_blocking_thread_;
+        break;
       case BrowserThread::FILE:
         thread_to_start = &file_thread_;
 #if defined(OS_WIN)
@@ -447,6 +450,9 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       case BrowserThread::WEBKIT:
         // Special case as WebKitThread is a separate
         // type.  |thread_to_stop| is not used in this case.
+        break;
+      case BrowserThread::FILE_USER_BLOCKING:
+        thread_to_stop = &file_user_blocking_thread_;
         break;
       case BrowserThread::FILE:
         thread_to_stop = &file_thread_;

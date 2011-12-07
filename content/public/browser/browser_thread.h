@@ -69,6 +69,10 @@ class CONTENT_EXPORT BrowserThread {
     // This is the thread that interacts with the file system.
     FILE,
 
+    // Used for file system operations that block user interactions.
+    // Responsiveness of this thread affect users.
+    FILE_USER_BLOCKING,
+
     // Used to launch and terminate Chrome processes.
     PROCESS_LAUNCHER,
 
