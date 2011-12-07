@@ -293,7 +293,7 @@ INSTANTIATE_TEST_CASE_P(, FrameRateGpuCanvasInternalTest, ::testing::Values(
     kUseReferenceBuild | kInternal | kHasRedirect | kUseGpu | kDisableVsync));
 
 INTERNAL_FRAME_RATE_TEST_CANVAS_GPU(DISABLED_fireflies)
-INTERNAL_FRAME_RATE_TEST_CANVAS_GPU(FishIE)
-INTERNAL_FRAME_RATE_TEST_CANVAS_GPU(speedreading)
+INTERNAL_FRAME_RATE_TEST_CANVAS_GPU(DISABLED_FishIE)
+INTERNAL_FRAME_RATE_TEST_CANVAS_GPU(DISABLED_speedreading)
 
 }  // namespace
