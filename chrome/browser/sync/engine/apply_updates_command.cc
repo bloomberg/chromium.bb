@@ -25,7 +25,7 @@ std::set<ModelSafeGroup> ApplyUpdatesCommand::GetGroupsToChange(
     const sessions::SyncSession& session) const {
   std::set<ModelSafeGroup> groups_with_unapplied_updates;
 
-  syncable::ModelTypeBitSet server_types_with_unapplied_updates;
+  syncable::FullModelEnumSet server_types_with_unapplied_updates;
   {
     syncable::ScopedDirLookup dir(session.context()->directory_manager(),
                                   session.context()->account_name());
@@ -39,12 +39,10 @@ std::set<ModelSafeGroup> ApplyUpdatesCommand::GetGroupsToChange(
         dir->GetServerTypesWithUnappliedUpdates(&trans);
   }
 
-  for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
-    const syncable::ModelType type = syncable::ModelTypeFromInt(i);
-    if (server_types_with_unapplied_updates.test(type)) {
-      groups_with_unapplied_updates.insert(
-          GetGroupForModelType(type, session.routing_info()));
-    }
+  for (syncable::FullModelEnumSet::Iterator it =
+           server_types_with_unapplied_updates.First(); it.Good(); it.Inc()) {
+    groups_with_unapplied_updates.insert(
+        GetGroupForModelType(it.Get(), session.routing_info()));
   }
 
   return groups_with_unapplied_updates;
@@ -62,16 +60,14 @@ void ApplyUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
 
   // Compute server types with unapplied updates that fall under our
   // group restriction.
-  const syncable::ModelTypeBitSet server_types_with_unapplied_updates =
+  const syncable::FullModelEnumSet server_types_with_unapplied_updates =
       dir->GetServerTypesWithUnappliedUpdates(&trans);
-  syncable::ModelTypeBitSet server_type_restriction;
-  for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
-    const syncable::ModelType server_type = syncable::ModelTypeFromInt(i);
-    if (server_types_with_unapplied_updates.test(server_type)) {
-      if (GetGroupForModelType(server_type, session->routing_info()) ==
-          session->status_controller().group_restriction()) {
-        server_type_restriction.set(server_type);
-      }
+  syncable::FullModelEnumSet server_type_restriction;
+  for (syncable::FullModelEnumSet::Iterator it =
+           server_types_with_unapplied_updates.First(); it.Good(); it.Inc()) {
+    if (GetGroupForModelType(it.Get(), session->routing_info()) ==
+        session->status_controller().group_restriction()) {
+      server_type_restriction.Put(it.Get());
     }
   }
 

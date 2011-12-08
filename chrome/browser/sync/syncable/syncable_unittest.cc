@@ -885,8 +885,8 @@ TEST_F(SyncableDirectoryTest, TestGetUnsynced) {
 TEST_F(SyncableDirectoryTest, TestGetUnappliedUpdates) {
   Directory::UnappliedUpdateMetaHandles handles;
   int64 handle1, handle2;
-  syncable::ModelTypeBitSet all_types;
-  all_types.set();
+  const syncable::FullModelEnumSet all_types =
+      syncable::FullModelEnumSet::All();
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
 

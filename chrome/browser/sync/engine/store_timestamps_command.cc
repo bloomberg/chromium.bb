@@ -32,7 +32,7 @@ void StoreTimestampsCommand::ExecuteImpl(sessions::SyncSession* session) {
   // Update the progress marker tokens from the server result.  If a marker
   // was omitted for any one type, that indicates no change from the previous
   // state.
-  syncable::ModelTypeBitSet forward_progress_types;
+  syncable::ModelEnumSet forward_progress_types;
   for (int i = 0; i < updates.new_progress_marker_size(); ++i) {
     syncable::ModelType model =
         syncable::GetModelTypeFromExtensionFieldNumber(
@@ -41,15 +41,16 @@ void StoreTimestampsCommand::ExecuteImpl(sessions::SyncSession* session) {
       NOTREACHED() << "Unintelligible server response.";
       continue;
     }
-    forward_progress_types[model] = true;
+    forward_progress_types.Put(model);
     dir->SetDownloadProgress(model, updates.new_progress_marker(i));
   }
-  DCHECK(forward_progress_types.any() ||
+  DCHECK(!forward_progress_types.Empty() ||
          updates.changes_remaining() == 0);
   if (VLOG_IS_ON(1)) {
-    DVLOG_IF(1, forward_progress_types.any())
+    DVLOG_IF(1, !forward_progress_types.Empty())
         << "Get Updates got new progress marker for types: "
-        << forward_progress_types.to_string() << " out of possible: "
+        << syncable::ModelEnumSetToString(forward_progress_types)
+        << " out of possible: "
         << syncable::ModelEnumSetToString(status->updates_request_types());
   }
   if (updates.has_changes_remaining()) {

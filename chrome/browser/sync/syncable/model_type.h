@@ -10,7 +10,6 @@
 #define CHROME_BROWSER_SYNC_SYNCABLE_MODEL_TYPE_H_
 #pragma once
 
-#include <bitset>
 #include <set>
 #include <string>
 
@@ -86,10 +85,11 @@ enum ModelType {
   MODEL_TYPE_COUNT,
 };
 
-typedef std::bitset<MODEL_TYPE_COUNT> ModelTypeBitSet;
 typedef std::set<ModelType> ModelTypeSet;
 typedef browser_sync::EnumSet<
   ModelType, FIRST_REAL_MODEL_TYPE, LAST_REAL_MODEL_TYPE> ModelEnumSet;
+typedef browser_sync::EnumSet<
+  ModelType, UNSPECIFIED, LAST_REAL_MODEL_TYPE> FullModelEnumSet;
 
 inline ModelType ModelTypeFromInt(int i) {
   DCHECK_GE(i, 0);
@@ -142,29 +142,14 @@ std::string ModelTypeSetToString(const ModelTypeSet& model_types);
 // Returns the ModelType corresponding to the name |model_type_string|.
 ModelType ModelTypeFromString(const std::string& model_type_string);
 
-std::string ModelTypeBitSetToString(const ModelTypeBitSet& model_types);
-
 std::string ModelEnumSetToString(ModelEnumSet model_types);
-
-// Convert a ModelTypeSet to a ModelTypeBitSet.
-ModelTypeBitSet ModelTypeBitSetFromSet(const ModelTypeSet& set);
-
-// Convert a ModelTypeBitSet to a ModelTypeSet.
-ModelTypeSet ModelTypeBitSetToSet(const ModelTypeBitSet& bit_set);
-
-ModelEnumSet ModelTypeBitSetToEnumSet(const ModelTypeBitSet& bitset);
 
 ModelTypeSet ModelEnumSetToSet(ModelEnumSet enum_set);
 
 ModelEnumSet ModelTypeSetToEnumSet(const ModelTypeSet& model_type_set);
 
 // Caller takes ownership of returned list.
-base::ListValue* ModelTypeBitSetToValue(const ModelTypeBitSet& model_types);
-
-// Caller takes ownership of returned list.
 base::ListValue* ModelEnumSetToValue(ModelEnumSet model_types);
-
-ModelTypeBitSet ModelTypeBitSetFromValue(const base::ListValue& value);
 
 // Caller takes ownership of returned list.
 base::ListValue* ModelTypeSetToValue(const ModelTypeSet& model_types);

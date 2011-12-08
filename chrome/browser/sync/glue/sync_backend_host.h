@@ -386,7 +386,7 @@ class SyncBackendHost {
     void DoShutdown(bool stopping_sync);
 
     virtual void DoRequestConfig(
-        const syncable::ModelTypeBitSet& types_to_config,
+        syncable::ModelEnumSet types_to_config,
         sync_api::ConfigureReason reason);
 
     // Start the configuration mode.  |callback| is called on the sync

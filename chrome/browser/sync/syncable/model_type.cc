@@ -350,19 +350,6 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
   return UNSPECIFIED;
 }
 
-std::string ModelTypeBitSetToString(const ModelTypeBitSet& model_types) {
-  std::string result;
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
-    if (model_types[i]) {
-      if (!result.empty()) {
-        result += ", ";
-      }
-      result += ModelTypeToString(ModelTypeFromInt(i));
-    }
-  }
-  return result;
-}
-
 std::string ModelEnumSetToString(ModelEnumSet model_types) {
   std::string result;
   for (ModelEnumSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
@@ -372,36 +359,6 @@ std::string ModelEnumSetToString(ModelEnumSet model_types) {
     result += ModelTypeToString(it.Get());
   }
   return result;
-}
-
-ModelTypeBitSet ModelTypeBitSetFromSet(const ModelTypeSet& set) {
-  ModelTypeBitSet bitset;
-  for (ModelTypeSet::const_iterator iter = set.begin(); iter != set.end();
-       ++iter) {
-    bitset.set(*iter);
-  }
-  return bitset;
-}
-
-ModelTypeSet ModelTypeBitSetToSet(const ModelTypeBitSet& bit_set) {
-  ModelTypeSet set;
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
-    syncable::ModelType type = syncable::ModelTypeFromInt(i);
-    if (bit_set[type]) {
-      set.insert(type);
-    }
-  }
-  return set;
-}
-
-ModelEnumSet ModelTypeBitSetToEnumSet(const ModelTypeBitSet& bitset) {
-  ModelEnumSet enum_set;
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
-    if (bitset[i]) {
-      enum_set.Put(syncable::ModelTypeFromInt(i));
-    }
-  }
-  return enum_set;
 }
 
 ModelTypeSet ModelEnumSetToSet(ModelEnumSet enum_set) {
@@ -421,17 +378,6 @@ ModelEnumSet ModelTypeSetToEnumSet(const ModelTypeSet& model_type_set) {
   return enum_set;
 }
 
-ListValue* ModelTypeBitSetToValue(const ModelTypeBitSet& model_types) {
-  ListValue* value = new ListValue();
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
-    if (model_types[i]) {
-      value->Append(
-          Value::CreateStringValue(ModelTypeToString(ModelTypeFromInt(i))));
-    }
-  }
-  return value;
-}
-
 base::ListValue* ModelEnumSetToValue(ModelEnumSet model_types) {
   ListValue* value = new ListValue();
   for (ModelEnumSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
@@ -439,14 +385,6 @@ base::ListValue* ModelEnumSetToValue(ModelEnumSet model_types) {
         Value::CreateStringValue(ModelTypeToString(it.Get())));
   }
   return value;
-}
-
-ModelTypeBitSet ModelTypeBitSetFromValue(const base::ListValue& value) {
-  ModelTypeBitSet result;
-  for (ListValue::const_iterator i = value.begin(); i != value.end(); ++i) {
-    result.set(ModelTypeFromValue(**i));
-  }
-  return result;
 }
 
 ListValue* ModelTypeSetToValue(const ModelTypeSet& model_types) {

@@ -971,14 +971,14 @@ class Directory {
   // Returns all server types with unapplied updates.  A subset of
   // those types can then be passed into
   // GetUnappliedUpdateMetaHandles() below.
-  syncable::ModelTypeBitSet GetServerTypesWithUnappliedUpdates(
+  FullModelEnumSet GetServerTypesWithUnappliedUpdates(
       BaseTransaction* trans) const;
 
   // Get all the metahandles for unapplied updates for a given set of
   // server types.
   typedef std::vector<int64> UnappliedUpdateMetaHandles;
   void GetUnappliedUpdateMetaHandles(BaseTransaction* trans,
-                                     syncable::ModelTypeBitSet server_types,
+                                     FullModelEnumSet server_types,
                                      UnappliedUpdateMetaHandles* result);
 
   // Checks tree metadata consistency.

@@ -2157,8 +2157,8 @@ TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
 }
 
 TEST_F(SyncerTest, ParentAndChildBothMatch) {
-  syncable::ModelTypeBitSet all_types;
-  all_types.set();
+  const syncable::FullModelEnumSet all_types =
+      syncable::FullModelEnumSet::All();
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
   syncable::Id parent_id = ids_.NewServerId();

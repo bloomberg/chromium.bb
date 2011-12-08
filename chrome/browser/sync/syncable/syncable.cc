@@ -1025,14 +1025,14 @@ int64 Directory::unsynced_entity_count() const {
   return kernel_->unsynced_metahandles->size();
 }
 
-syncable::ModelTypeBitSet
-    Directory::GetServerTypesWithUnappliedUpdates(
-        BaseTransaction* trans) const {
-  syncable::ModelTypeBitSet server_types;
+FullModelEnumSet Directory::GetServerTypesWithUnappliedUpdates(
+    BaseTransaction* trans) const {
+  syncable::FullModelEnumSet server_types;
   ScopedKernelLock lock(this);
-  for (int i = 0; i < MODEL_TYPE_COUNT; ++i) {
-    if (!kernel_->unapplied_update_metahandles[i].empty()) {
-      server_types.set(i);
+  for (int i = UNSPECIFIED; i < MODEL_TYPE_COUNT; ++i) {
+    const ModelType type = ModelTypeFromInt(i);
+    if (!kernel_->unapplied_update_metahandles[type].empty()) {
+      server_types.Put(type);
     }
   }
   return server_types;
@@ -1040,13 +1040,13 @@ syncable::ModelTypeBitSet
 
 void Directory::GetUnappliedUpdateMetaHandles(
     BaseTransaction* trans,
-    syncable::ModelTypeBitSet server_types,
+    FullModelEnumSet server_types,
     UnappliedUpdateMetaHandles* result) {
   result->clear();
   ScopedKernelLock lock(this);
-  for (int i = 0; i < MODEL_TYPE_COUNT; ++i) {
+  for (int i = UNSPECIFIED; i < MODEL_TYPE_COUNT; ++i) {
     const ModelType type = ModelTypeFromInt(i);
-    if (server_types.test(type)) {
+    if (server_types.Has(type)) {
       std::copy(kernel_->unapplied_update_metahandles[type].begin(),
                 kernel_->unapplied_update_metahandles[type].end(),
                 back_inserter(*result));

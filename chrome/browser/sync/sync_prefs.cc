@@ -468,21 +468,21 @@ void SyncPrefs::RegisterPreferences() {
   // We will start prompting people about new data types after the launch of
   // SESSIONS - all previously launched data types are treated as if they are
   // already acknowledged.
-  syncable::ModelTypeBitSet model_set;
-  model_set.set(syncable::BOOKMARKS);
-  model_set.set(syncable::PREFERENCES);
-  model_set.set(syncable::PASSWORDS);
-  model_set.set(syncable::AUTOFILL_PROFILE);
-  model_set.set(syncable::AUTOFILL);
-  model_set.set(syncable::THEMES);
-  model_set.set(syncable::EXTENSIONS);
-  model_set.set(syncable::NIGORI);
-  model_set.set(syncable::SEARCH_ENGINES);
-  model_set.set(syncable::APPS);
-  model_set.set(syncable::TYPED_URLS);
-  model_set.set(syncable::SESSIONS);
+  syncable::ModelEnumSet model_set;
+  model_set.Put(syncable::BOOKMARKS);
+  model_set.Put(syncable::PREFERENCES);
+  model_set.Put(syncable::PASSWORDS);
+  model_set.Put(syncable::AUTOFILL_PROFILE);
+  model_set.Put(syncable::AUTOFILL);
+  model_set.Put(syncable::THEMES);
+  model_set.Put(syncable::EXTENSIONS);
+  model_set.Put(syncable::NIGORI);
+  model_set.Put(syncable::SEARCH_ENGINES);
+  model_set.Put(syncable::APPS);
+  model_set.Put(syncable::TYPED_URLS);
+  model_set.Put(syncable::SESSIONS);
   pref_service_->RegisterListPref(prefs::kSyncAcknowledgedSyncTypes,
-                                  syncable::ModelTypeBitSetToValue(model_set),
+                                  syncable::ModelEnumSetToValue(model_set),
                                   PrefService::UNSYNCABLE_PREF);
 
   pref_service_->RegisterDictionaryPref(prefs::kSyncMaxInvalidationVersions,

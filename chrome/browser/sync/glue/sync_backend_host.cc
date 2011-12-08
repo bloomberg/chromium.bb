@@ -684,7 +684,7 @@ void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
 }
 
 void SyncBackendHost::Core::DoRequestConfig(
-    const syncable::ModelTypeBitSet& types_to_config,
+    syncable::ModelEnumSet types_to_config,
     sync_api::ConfigureReason reason) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   sync_manager_->RequestConfig(types_to_config, reason);
@@ -1011,22 +1011,24 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
     pending_download_state_.reset(pending_config_mode_state_.release());
 
     // Always configure nigori if it's enabled.
-    syncable::ModelTypeSet types_to_config =
-        pending_download_state_->added_types;
+    syncable::ModelEnumSet types_to_config =
+        syncable::ModelTypeSetToEnumSet(
+            pending_download_state_->added_types);
     if (IsNigoriEnabled()) {
       // Note: Nigori is the only type that gets added with a nonempty
       // progress marker during config. If the server returns a migration
       // error then we will go into unrecoverable error. We dont handle it
       // explicitly because server might help us out here by not sending a
       // migraiton error for nigori during config.
-      types_to_config.insert(syncable::NIGORI);
+      types_to_config.Put(syncable::NIGORI);
     }
-    SVLOG(1) << "Types " << ModelTypeSetToString(types_to_config)
+    SVLOG(1) << "Types "
+             << syncable::ModelEnumSetToString(types_to_config)
             << " added; calling DoRequestConfig";
     sync_thread_.message_loop()->PostTask(FROM_HERE,
          base::Bind(&SyncBackendHost::Core::DoRequestConfig,
                     core_.get(),
-                    syncable::ModelTypeBitSetFromSet(types_to_config),
+                    types_to_config,
                     pending_download_state_->reason));
   }
 

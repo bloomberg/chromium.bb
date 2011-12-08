@@ -26,8 +26,9 @@ namespace browser_sync {
 using sessions::SyncSession;
 using sessions::SyncSessionSnapshot;
 using sessions::SyncSourceInfo;
+using syncable::ModelEnumSet;
+using syncable::ModelEnumSetToString;
 using syncable::ModelTypePayloadMap;
-using syncable::ModelTypeBitSet;
 using sync_pb::GetUpdatesCallerInfo;
 
 namespace {
@@ -459,13 +460,13 @@ void SyncScheduler::ScheduleCleanupDisabledTypes() {
 
 void SyncScheduler::ScheduleNudge(
     const TimeDelta& delay,
-    NudgeSource source, syncable::ModelEnumSet types,
+    NudgeSource source, ModelEnumSet types,
     const tracked_objects::Location& nudge_location) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   SDVLOG_LOC(nudge_location, 2)
       << "Nudge scheduled with delay " << delay.InMilliseconds() << " ms, "
       << "source " << GetNudgeSourceString(source) << ", "
-      << "types " << syncable::ModelEnumSetToString(types);
+      << "types " << ModelEnumSetToString(types);
 
   ModelTypePayloadMap types_with_payloads =
       syncable::ModelTypePayloadMapFromEnumSet(types, std::string());
@@ -562,7 +563,7 @@ void SyncScheduler::ScheduleNudgeImpl(
 
 // Helper to extract the routing info and workers corresponding to types in
 // |types| from |registrar|.
-void GetModelSafeParamsForTypes(syncable::ModelEnumSet types,
+void GetModelSafeParamsForTypes(ModelEnumSet types,
     ModelSafeWorkerRegistrar* registrar, ModelSafeRoutingInfo* routes,
     std::vector<ModelSafeWorker*>* workers) {
   ModelSafeRoutingInfo r_tmp;
@@ -573,7 +574,7 @@ void GetModelSafeParamsForTypes(syncable::ModelEnumSet types,
   bool passive_group_added = false;
 
   typedef std::vector<ModelSafeWorker*>::const_iterator iter;
-  for (syncable::ModelEnumSet::Iterator it = types.First();
+  for (ModelEnumSet::Iterator it = types.First();
        it.Good(); it.Inc()) {
     const syncable::ModelType t = it.Get();
     DCHECK_EQ(1U, r_tmp.count(t));
@@ -605,7 +606,7 @@ void GetModelSafeParamsForTypes(syncable::ModelEnumSet types,
 }
 
 void SyncScheduler::ScheduleConfig(
-    syncable::ModelEnumSet types,
+    ModelEnumSet types,
     GetUpdatesCallerInfo::GetUpdatesSource source) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK(IsConfigRelatedUpdateSourceValue(source));

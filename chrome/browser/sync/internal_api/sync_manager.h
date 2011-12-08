@@ -483,8 +483,8 @@ class SyncManager {
 
   // Switches the mode of operation to CONFIGURATION_MODE and
   // schedules a config task to fetch updates for |types|.
-  void RequestConfig(const syncable::ModelTypeBitSet& types,
-     sync_api::ConfigureReason reason);
+  void RequestConfig(syncable::ModelEnumSet types,
+                     sync_api::ConfigureReason reason);
 
   void RequestCleanupDisabledTypes();
 

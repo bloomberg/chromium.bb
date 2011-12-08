@@ -32,7 +32,7 @@ namespace browser_sync {
 using sessions::SyncSession;
 using sessions::SyncSessionContext;
 using sessions::SyncSessionSnapshot;
-using syncable::ModelTypeBitSet;
+using syncable::ModelEnumSet;
 using sync_pb::GetUpdatesCallerInfo;
 
 class MockSyncer : public Syncer {
@@ -150,7 +150,7 @@ class SyncSchedulerTest : public testing::Test {
   }
 
   bool GetBackoffAndResetTest() {
-    syncable::ModelEnumSet nudge_types;
+    ModelEnumSet nudge_types;
     StartSyncScheduler(SyncScheduler::NORMAL_MODE);
     RunLoop();
 
@@ -181,7 +181,7 @@ class SyncSchedulerTest : public testing::Test {
   // Compare a ModelEnumSet to a ModelTypePayloadMap, ignoring
   // payload values.
   bool CompareModelEnumSetToModelTypePayloadMap(
-      syncable::ModelEnumSet lhs,
+      ModelEnumSet lhs,
       const syncable::ModelTypePayloadMap& rhs) {
     size_t count = 0;
     for (syncable::ModelTypePayloadMap::const_iterator i = rhs.begin();
@@ -239,7 +239,7 @@ ACTION(QuitLoopNowAction) {
 // Test nudge scheduling.
 TEST_F(SyncSchedulerTest, Nudge) {
   SyncShareRecords records;
-  syncable::ModelEnumSet model_types(syncable::BOOKMARKS);
+  ModelEnumSet model_types(syncable::BOOKMARKS);
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
@@ -283,7 +283,7 @@ TEST_F(SyncSchedulerTest, Nudge) {
 // errors.
 TEST_F(SyncSchedulerTest, Config) {
   SyncShareRecords records;
-  const syncable::ModelEnumSet model_types(syncable::BOOKMARKS);
+  const ModelEnumSet model_types(syncable::BOOKMARKS);
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
@@ -309,7 +309,7 @@ TEST_F(SyncSchedulerTest, ConfigWithBackingOff) {
   EXPECT_CALL(*delay(), GetDelay(_))
       .WillRepeatedly(Return(TimeDelta::FromMilliseconds(1)));
   SyncShareRecords records;
-  const syncable::ModelEnumSet model_types(syncable::BOOKMARKS);
+  const ModelEnumSet model_types(syncable::BOOKMARKS);
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
@@ -338,7 +338,7 @@ TEST_F(SyncSchedulerTest, ConfigWithBackingOff) {
 // Issue 2 config commands. Second one right after the first has failed
 // and make sure LATEST is executed.
 TEST_F(SyncSchedulerTest, MultipleConfigWithBackingOff) {
-  const syncable::ModelEnumSet
+  const ModelEnumSet
       model_types1(syncable::BOOKMARKS),
       model_types2(syncable::AUTOFILL);
   UseMockDelayProvider();
@@ -380,7 +380,7 @@ TEST_F(SyncSchedulerTest, MultipleConfigWithBackingOff) {
 // Issue a nudge when the config has failed. Make sure both the config and
 // nudge are executed.
 TEST_F(SyncSchedulerTest, NudgeWithConfigWithBackingOff) {
-  const syncable::ModelEnumSet model_types(syncable::BOOKMARKS);
+  const ModelEnumSet model_types(syncable::BOOKMARKS);
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
       .WillRepeatedly(Return(TimeDelta::FromMilliseconds(50)));
@@ -440,7 +440,7 @@ TEST_F(SyncSchedulerTest, NudgeCoalescing) {
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
                       WithArg<0>(RecordSyncShare(&r))));
-  const syncable::ModelEnumSet
+  const ModelEnumSet
       types1(syncable::BOOKMARKS),
       types2(syncable::AUTOFILL),
       types3(syncable::THEMES);
@@ -652,7 +652,7 @@ TEST_F(SyncSchedulerTest, SessionsCommitDelay) {
   RunLoop();
 
   EXPECT_EQ(delay1, scheduler()->sessions_commit_delay());
-  const syncable::ModelEnumSet model_types(syncable::BOOKMARKS);
+  const ModelEnumSet model_types(syncable::BOOKMARKS);
   scheduler()->ScheduleNudge(
       zero(), NUDGE_SOURCE_LOCAL, model_types, FROM_HERE);
   RunLoop();
@@ -671,7 +671,7 @@ TEST_F(SyncSchedulerTest, HasMoreToSync) {
   RunLoop();
 
   scheduler()->ScheduleNudge(
-      zero(), NUDGE_SOURCE_LOCAL, syncable::ModelEnumSet(), FROM_HERE);
+      zero(), NUDGE_SOURCE_LOCAL, ModelEnumSet(), FROM_HERE);
   RunLoop();
   // If more nudges are scheduled, they'll be waited on by TearDown, and would
   // cause our expectation to break.
@@ -679,7 +679,7 @@ TEST_F(SyncSchedulerTest, HasMoreToSync) {
 
 // Test that no syncing occurs when throttled.
 TEST_F(SyncSchedulerTest, ThrottlingDoesThrottle) {
-  const syncable::ModelEnumSet types(syncable::BOOKMARKS);
+  const ModelEnumSet types(syncable::BOOKMARKS);
   TimeDelta poll(TimeDelta::FromMilliseconds(5));
   TimeDelta throttle(TimeDelta::FromMinutes(10));
   scheduler()->OnReceivedLongPollIntervalUpdate(poll);
@@ -740,13 +740,13 @@ TEST_F(SyncSchedulerTest, ConfigurationMode) {
   StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
   RunLoop();
 
-  const syncable::ModelEnumSet nudge_types(syncable::AUTOFILL);
+  const ModelEnumSet nudge_types(syncable::AUTOFILL);
   scheduler()->ScheduleNudge(
       zero(), NUDGE_SOURCE_LOCAL, nudge_types, FROM_HERE);
   scheduler()->ScheduleNudge(
       zero(), NUDGE_SOURCE_LOCAL, nudge_types, FROM_HERE);
 
-  const syncable::ModelEnumSet config_types(syncable::BOOKMARKS);
+  const ModelEnumSet config_types(syncable::BOOKMARKS);
 
   scheduler()->ScheduleConfig(
       config_types, GetUpdatesCallerInfo::RECONFIGURATION);
@@ -801,7 +801,7 @@ TEST_F(SyncSchedulerTest, BackoffTriggers) {
 TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
   SyncShareRecords r;
   TimeDelta poll(TimeDelta::FromMilliseconds(5));
-  const syncable::ModelEnumSet types(syncable::BOOKMARKS);
+  const ModelEnumSet types(syncable::BOOKMARKS);
   scheduler()->OnReceivedLongPollIntervalUpdate(poll);
   UseMockDelayProvider();
 
@@ -965,7 +965,7 @@ TEST_F(SyncSchedulerTest, SyncerSteps) {
   RunLoop();
 
   scheduler()->ScheduleNudge(
-      zero(), NUDGE_SOURCE_LOCAL, syncable::ModelEnumSet(), FROM_HERE);
+      zero(), NUDGE_SOURCE_LOCAL, ModelEnumSet(), FROM_HERE);
   PumpLoop();
   // Pump again to run job.
   PumpLoop();
@@ -992,7 +992,7 @@ TEST_F(SyncSchedulerTest, SyncerSteps) {
   RunLoop();
 
   scheduler()->ScheduleConfig(
-      syncable::ModelEnumSet(), GetUpdatesCallerInfo::RECONFIGURATION);
+      ModelEnumSet(), GetUpdatesCallerInfo::RECONFIGURATION);
   PumpLoop();
   PumpLoop();
 
@@ -1044,7 +1044,7 @@ TEST_F(SyncSchedulerTest, StartWhenNotConnected) {
   RunLoop();
 
   scheduler()->ScheduleNudge(
-      zero(), NUDGE_SOURCE_LOCAL, syncable::ModelEnumSet(), FROM_HERE);
+      zero(), NUDGE_SOURCE_LOCAL, ModelEnumSet(), FROM_HERE);
   // Should save the nudge for until after the server is reachable.
   PumpLoop();
 
@@ -1064,7 +1064,7 @@ TEST_F(SyncSchedulerTest, SetsPreviousRoutingInfo) {
   RunLoop();
 
   scheduler()->ScheduleNudge(
-      zero(), NUDGE_SOURCE_LOCAL, syncable::ModelEnumSet(), FROM_HERE);
+      zero(), NUDGE_SOURCE_LOCAL, ModelEnumSet(), FROM_HERE);
   PumpLoop();
   // Pump again to run job.
   PumpLoop();

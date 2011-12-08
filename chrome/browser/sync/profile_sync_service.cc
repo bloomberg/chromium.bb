@@ -345,12 +345,14 @@ bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
   GetPreferredDataTypes(&preferred_types);
   syncable::ModelTypeSet encrypted_types;
   GetEncryptedDataTypes(&encrypted_types);
-  syncable::ModelTypeBitSet preferred_types_bitset =
-      syncable::ModelTypeBitSetFromSet(preferred_types);
-  syncable::ModelTypeBitSet encrypted_types_bitset =
-      syncable::ModelTypeBitSetFromSet(encrypted_types);
+  const syncable::ModelEnumSet preferred_types_enum_set =
+      syncable::ModelTypeSetToEnumSet(preferred_types);
+  const syncable::ModelEnumSet encrypted_types_enum_set =
+      syncable::ModelTypeSetToEnumSet(encrypted_types);
   DCHECK(encrypted_types.count(syncable::PASSWORDS));
-  return (preferred_types_bitset & encrypted_types_bitset).any();
+  return
+      !Intersection(preferred_types_enum_set,
+                    encrypted_types_enum_set).Empty();
 }
 
 void ProfileSyncService::OnSyncConfigureDone(
