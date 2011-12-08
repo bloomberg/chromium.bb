@@ -312,7 +312,8 @@ shell_surface_set_transient(struct wl_client *client,
 {
 	struct shell_surface *shsurf = resource->data;
 	struct wlsc_surface *es = shsurf->surface;
-	struct wlsc_surface *pes = parent_resource->data;
+	struct shell_surface *pshsurf = parent_resource->data;
+	struct wlsc_surface *pes = pshsurf->surface;
 
 	/* assign to parents output  */
 	es->output = pes->output;
