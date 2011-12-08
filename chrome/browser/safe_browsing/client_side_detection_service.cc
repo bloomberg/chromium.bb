@@ -18,7 +18,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
@@ -383,8 +382,7 @@ void ClientSideDetectionService::HandlePhishingVerdict(
     // Cache response, possibly flushing an old one.
     cache_[info->phishing_url] =
         make_linked_ptr(new CacheState(response.phishy(), base::Time::Now()));
-    is_phishing = (response.phishy() &&
-                   !IsFalsePositiveResponse(info->phishing_url, response));
+    is_phishing = response.phishy();
   } else {
     DLOG(ERROR) << "Unable to get the server verdict for URL: "
                 << info->phishing_url << " status: " << status.status() << " "
@@ -533,51 +531,5 @@ bool ClientSideDetectionService::ModelHasValidHashIds(
     }
   }
   return true;
-}
-
-// static
-bool ClientSideDetectionService::IsFalsePositiveResponse(
-    const GURL& url,
-    const ClientPhishingResponse& response) {
-  if (!response.phishy() || response.whitelist_expression_size() == 0) {
-    return false;
-  }
-  // This whitelist is special.  A particular URL gets whitelisted if it
-  // matches any of the expressions on the whitelist or if any of the whitelist
-  // entries matches the URL.
-
-  std::string host, path, query;
-  safe_browsing_util::CanonicalizeUrl(url, &host, &path, &query);
-  std::string canonical_url_as_pattern = host + path + query;
-
-  std::vector<std::string> url_patterns;
-  safe_browsing_util::GeneratePatternsToCheck(url, &url_patterns);
-
-  for (int i = 0; i < response.whitelist_expression_size(); ++i) {
-    GURL whitelisted_url(std::string("http://") +
-                         response.whitelist_expression(i));
-    if (!whitelisted_url.is_valid()) {
-      UMA_HISTOGRAM_COUNTS("SBClientPhishing.InvalidWhitelistExpression", 1);
-      continue;  // Skip invalid whitelist expressions.
-    }
-    // First, we check whether the canonical URL matches any of the whitelisted
-    // expressions.
-    for (size_t j = 0; j < url_patterns.size(); ++j) {
-      if (url_patterns[j] == response.whitelist_expression(i)) {
-        return true;
-      }
-    }
-    // Second, we consider the canonical URL as an expression and we check
-    // whether any of the whitelist entries matches that expression.
-    std::vector<std::string> whitelist_patterns;
-    safe_browsing_util::GeneratePatternsToCheck(whitelisted_url,
-                                                &whitelist_patterns);
-    for (size_t j = 0; j < whitelist_patterns.size(); ++j) {
-      if (whitelist_patterns[j] == canonical_url_as_pattern) {
-        return true;
-      }
-    }
-  }
-  return false;
 }
 }  // namespace safe_browsing

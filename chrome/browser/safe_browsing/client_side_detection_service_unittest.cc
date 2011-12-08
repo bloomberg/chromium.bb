@@ -354,19 +354,11 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
                                   false /* success */);
   EXPECT_FALSE(SendClientReportPhishingRequest(second_url, score));
 
-  // This is a false positive.
-  response.set_phishy(true);
-  response.add_whitelist_expression("c.com/a.html");
-  SetClientReportPhishingResponse(response.SerializeAsString(),
-                                  true /* success */);
-  GURL third_url("http://c.com/");
-  EXPECT_FALSE(SendClientReportPhishingRequest(third_url, score));
-
   base::Time after = base::Time::Now();
 
-  // Check that we have recorded all 4 requests within the correct time range.
+  // Check that we have recorded all 3 requests within the correct time range.
   std::queue<base::Time>& report_times = GetPhishingReportTimes();
-  EXPECT_EQ(4U, report_times.size());
+  EXPECT_EQ(3U, report_times.size());
   while (!report_times.empty()) {
     base::Time time = report_times.back();
     report_times.pop();
@@ -662,38 +654,5 @@ TEST_F(ClientSideDetectionServiceTest, SetEnabledAndRefreshState) {
   csd_service_->SetEnabledAndRefreshState(true);
   EXPECT_FALSE(SendClientReportPhishingRequest(GURL("http://a.com/"), 0.4f));
   Mock::VerifyAndClearExpectations(service);
-}
-
-TEST_F(ClientSideDetectionServiceTest, IsFalsePositiveResponse) {
-  GURL url("http://www.google.com/");
-  ClientPhishingResponse response;
-
-  // If the response is not phishing is should never be a false positive.
-  response.set_phishy(false);
-  response.add_whitelist_expression("www.google.com/");
-  EXPECT_FALSE(ClientSideDetectionService::IsFalsePositiveResponse(
-      url, response));
-
-  // If there are no entries in the whitelist it should always return false.
-  response.clear_whitelist_expression();
-  response.set_phishy(true);
-  EXPECT_FALSE(ClientSideDetectionService::IsFalsePositiveResponse(
-      url, response));
-
-  // If the URL doesn't match any whitelist entries it whould return false.
-  response.add_whitelist_expression("www.yahoo.com/");
-  EXPECT_FALSE(ClientSideDetectionService::IsFalsePositiveResponse(
-      url, response));
-
-  // If the URL matches the whitelist it should return true.
-  response.add_whitelist_expression("google.com/");
-  EXPECT_TRUE(ClientSideDetectionService::IsFalsePositiveResponse(
-      url, response));
-
-  // If an entry in the whitelist matches the URL it should return true.
-  response.clear_whitelist_expression();
-  response.add_whitelist_expression("www.google.com/a/b.html");
-  EXPECT_TRUE(ClientSideDetectionService::IsFalsePositiveResponse(
-      url, response));
 }
 }  // namespace safe_browsing

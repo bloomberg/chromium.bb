@@ -23,8 +23,10 @@ message ClientPhishingRequest {
   // A 5-byte SHA-256 hash prefix of the URL.  Before hashing the URL is
   // canonicalized, converted to a suffix-prefix expression and broadened
   // (www prefix is removed and everything past the last '/' is stripped).
-  // Unlike "url", this is sent for all users.
-  optional bytes hash_prefix = 10;
+  //
+  // Marked OBSOLETE because the URL is sent for all users, making the hash
+  // prefix unnecessary.
+  optional bytes OBSOLETE_hash_prefix = 10;
 
   // Score that was computed on the client.  Value is between 0.0 and 1.0.
   // The larger the value the more likely the url is phishing.
@@ -77,7 +79,10 @@ message ClientPhishingResponse {
   // expressions.  This whitelist will be empty for the vast majority
   // of the responses but might contain up to 100 entries in emergency
   // situations.
-  repeated string whitelist_expression = 2;
+  //
+  // Marked OBSOLETE because the URL is sent for all users, so the server
+  // can do whitelist matching.
+  repeated string OBSOLETE_whitelist_expression = 2;
 }
 
 message ClientDownloadRequest {

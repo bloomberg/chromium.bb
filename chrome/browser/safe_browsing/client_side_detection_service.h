@@ -169,8 +169,6 @@ class ClientSideDetectionService : public content::URLFetcherDelegate,
                            SetEnabledAndRefreshState);
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, IsBadIpAddress);
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest,
-                           IsFalsePositiveResponse);
-  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest,
                            ModelHasValidHashIds);
 
   // CacheState holds all information necessary to respond to a caller without
@@ -252,12 +250,6 @@ class ClientSideDetectionService : public content::URLFetcherDelegate,
   // Returns true iff all the hash id's in the client-side model point to
   // valid hashes in the model.
   static bool ModelHasValidHashIds(const ClientSideModel& model);
-
-  // Returns true iff the response is phishing (phishy() is true) and if the
-  // given URL matches one of the whitelisted expressions in the given
-  // ClientPhishingResponse.
-  static bool IsFalsePositiveResponse(const GURL& url,
-                                      const ClientPhishingResponse& response);
 
   // Whether the service is running or not.  When the service is not running,
   // it won't download the model nor report detected phishing URLs.
