@@ -221,6 +221,9 @@ static void
 evdev_flush_motion(struct wl_input_device *device, uint32_t time,
 		   struct evdev_motion_accumulator *accum)
 {
+	if (!accum->type)
+		return;
+
 	if (accum->type == EVDEV_RELATIVE_MOTION)
 		notify_motion(device, time,
 			      device->x + accum->dx, device->y + accum->dy);
