@@ -342,9 +342,9 @@ void WebUILoginView::InitStatusArea() {
                           widget_size.width(), widget_size.height());
   // TODO(nkostylev|oshima): Make status area in the same window as
   // |webui_login_| once RenderWidgetHostViewViews and compositor are
-  // ready.
-  views::Widget::InitParams widget_params(
-      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  // ready. This will also avoid having to override the status area
+  // widget type for the lock screen.
+  views::Widget::InitParams widget_params(GetStatusAreaWidgetType());
   widget_params.bounds = widget_bounds;
   widget_params.transparent = true;
   widget_params.parent_widget = login_window_;
@@ -352,16 +352,22 @@ void WebUILoginView::InitStatusArea() {
   status_window_->Init(widget_params);
 
 #if defined(TOOLKIT_USES_GTK)
+  std::vector<int> params;
+  params.push_back(1);  // Show while screen is locked.
   chromeos::WmIpc::instance()->SetWindowType(
       status_window_->GetNativeView(),
       chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
-      NULL);
+      &params);
 #endif
 
   views::View* contents_view = new RightAlignedView;
   contents_view->AddChildView(status_area_);
   status_window_->SetContentsView(contents_view);
   status_window_->Show();
+}
+
+views::Widget::InitParams::Type WebUILoginView::GetStatusAreaWidgetType() {
+  return views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
 }
 
 // WebUILoginView private: -----------------------------------------------------

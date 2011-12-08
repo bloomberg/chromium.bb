@@ -14,6 +14,7 @@
 #include "chrome/browser/tab_first_render_watcher.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
 class DOMView;
@@ -93,6 +94,9 @@ class WebUILoginView : public views::WidgetDelegateView,
 
   // Creates and adds the status area (separate window).
   virtual void InitStatusArea();
+
+  // Returns the type to use for the status area widget.
+  virtual views::Widget::InitParams::Type GetStatusAreaWidgetType();
 
   StatusAreaView* status_area_;
 

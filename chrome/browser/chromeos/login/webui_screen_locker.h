@@ -68,6 +68,7 @@ class WebUIScreenLocker : public WebUILoginView,
 
   // Overridden from WebUILoginView.
   virtual void OnTabMainFrameFirstRender() OVERRIDE;
+  virtual views::Widget::InitParams::Type GetStatusAreaWidgetType() OVERRIDE;
 
  private:
   virtual ~WebUIScreenLocker();

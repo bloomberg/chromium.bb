@@ -192,4 +192,8 @@ void WebUIScreenLocker::OnTabMainFrameFirstRender() {
     ScreenLockReady();
 }
 
+views::Widget::InitParams::Type WebUIScreenLocker::GetStatusAreaWidgetType() {
+  return views::Widget::InitParams::TYPE_POPUP;
+}
+
 }  // namespace chromeos
