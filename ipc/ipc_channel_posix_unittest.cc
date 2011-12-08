@@ -177,7 +177,7 @@ void IPCChannelPosixTest::SpinRunLoop(int milliseconds) {
   // in the case of a bad test. Usually, the run loop will quit sooner than
   // that because all tests use a IPCChannelPosixTestListener which quits the
   // current run loop on any channel activity.
-  loop->PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask(), milliseconds);
+  loop->PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(), milliseconds);
   loop->Run();
 }
 
