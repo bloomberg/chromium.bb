@@ -5,6 +5,7 @@
 #include "ui/views/bubble/bubble_delegate.h"
 
 #include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -71,8 +72,13 @@ Widget* CreateBorderWidget(BubbleDelegateView* bubble, Widget* parent) {
 
 }  // namespace
 
-// TODO(msw): Use NativeTheme/color_helper (crbug.com/105023).
-const SkColor BubbleDelegateView::kBackgroundColor = SK_ColorWHITE;
+#if defined(OS_WIN) && !defined(USE_AURA)
+const SkColor BubbleDelegateView::kBackgroundColor =
+    color_utils::GetSysSkColor(COLOR_WINDOW);
+#else
+// TODO(beng): source from theme provider.
+const SkColor Bubble::kBackgroundColor = SK_ColorWHITE;
+#endif
 
 BubbleDelegateView::BubbleDelegateView()
     : close_on_esc_(true),
