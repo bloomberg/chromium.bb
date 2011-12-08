@@ -347,9 +347,6 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_JavaScriptStressTestControl,
 // Asks the renderer to send back FPS.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_GetFPS)
 
-// Tells the view it is displaying an interstitial page.
-IPC_MESSAGE_ROUTED0(ChromeViewMsg_SetAsInterstitial)
-
 //-----------------------------------------------------------------------------
 // TabContents messages
 // These are messages sent from the renderer to the browser process.

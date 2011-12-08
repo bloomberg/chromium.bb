@@ -68,8 +68,7 @@ ContentSettingsObserver::ContentSettingsObserver(
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<ContentSettingsObserver>(render_view),
       content_setting_rules_(NULL),
-      plugins_temporarily_allowed_(false),
-      is_interstitial_page_(false) {
+      plugins_temporarily_allowed_(false) {
   ClearBlockedContentSettings();
 }
 
@@ -163,8 +162,6 @@ bool ContentSettingsObserver::AllowFileSystem(WebFrame* frame) {
 bool ContentSettingsObserver::AllowImage(WebFrame* frame,
                                          bool enabled_per_settings,
                                          const WebURL& image_url) {
-  if (is_interstitial_page_)
-    return true;
   if (IsWhitelistedForContentSettings(frame))
     return true;
 
@@ -203,8 +200,6 @@ bool ContentSettingsObserver::AllowPlugins(WebFrame* frame,
 
 bool ContentSettingsObserver::AllowScript(WebFrame* frame,
                                           bool enabled_per_settings) {
-  if (is_interstitial_page_)
-    return true;
   if (!enabled_per_settings)
     return false;
 
@@ -234,8 +229,6 @@ bool ContentSettingsObserver::AllowScriptFromSource(
     WebFrame* frame,
     bool enabled_per_settings,
     const WebKit::WebURL& script_url) {
-  if (is_interstitial_page_)
-    return true;
   if (!enabled_per_settings)
     return false;
 
@@ -277,10 +270,6 @@ void ContentSettingsObserver::DidNotAllowPlugins(WebFrame* frame) {
 
 void ContentSettingsObserver::DidNotAllowScript(WebFrame* frame) {
   DidBlockContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string());
-}
-
-void ContentSettingsObserver::SetAsInterstitial() {
-  is_interstitial_page_ = true;
 }
 
 void ContentSettingsObserver::OnLoadBlockedPlugins() {
