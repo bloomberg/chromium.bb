@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -24,80 +25,67 @@ namespace {
 
 const int kDefaultCommitIntervalMs = 10000;
 
-class WriteToDiskTask : public Task {
- public:
-  WriteToDiskTask(const FilePath& path, const std::string& data)
-      : path_(path),
-        data_(data) {
-  }
-
-  virtual void Run() {
-    // Write the data to a temp file then rename to avoid data loss if we crash
-    // while writing the file. Ensure that the temp file is on the same volume
-    // as target file, so it can be moved in one step, and that the temp file
-    // is securely created.
-    FilePath tmp_file_path;
-    if (!file_util::CreateTemporaryFileInDir(path_.DirName(), &tmp_file_path)) {
-      LogFailure(FAILED_CREATING, "could not create temporary file");
-      return;
-    }
-
-    int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE;
-    base::PlatformFile tmp_file =
-        base::CreatePlatformFile(tmp_file_path, flags, NULL, NULL);
-    if (tmp_file == base::kInvalidPlatformFileValue) {
-      LogFailure(FAILED_OPENING, "could not open temporary file");
-      return;
-    }
-
-    // If this happens in the wild something really bad is going on.
-    CHECK_LE(data_.length(), static_cast<size_t>(kint32max));
-    int bytes_written = base::WritePlatformFile(
-        tmp_file, 0, data_.data(), static_cast<int>(data_.length()));
-    base::FlushPlatformFile(tmp_file);  // Ignore return value.
-
-    if (!base::ClosePlatformFile(tmp_file)) {
-      LogFailure(FAILED_CLOSING, "failed to close temporary file");
-      file_util::Delete(tmp_file_path, false);
-      return;
-    }
-
-    if (bytes_written < static_cast<int>(data_.length())) {
-      LogFailure(FAILED_WRITING, "error writing, bytes_written=" +
-                 base::IntToString(bytes_written));
-      file_util::Delete(tmp_file_path, false);
-      return;
-    }
-
-    if (!file_util::ReplaceFile(tmp_file_path, path_)) {
-      LogFailure(FAILED_RENAMING, "could not rename temporary file");
-      file_util::Delete(tmp_file_path, false);
-      return;
-    }
-  }
-
- private:
-  enum TempFileFailure {
-    FAILED_CREATING,
-    FAILED_OPENING,
-    FAILED_CLOSING,
-    FAILED_WRITING,
-    FAILED_RENAMING,
-    TEMP_FILE_FAILURE_MAX
-  };
-
-  void LogFailure(TempFileFailure failure_code, const std::string& message) {
-    UMA_HISTOGRAM_ENUMERATION("ImportantFile.TempFileFailures", failure_code,
-                              TEMP_FILE_FAILURE_MAX);
-    DPLOG(WARNING) << "temp file failure: " << path_.value()
-                   << " : " << message;
-  }
-
-  const FilePath path_;
-  const std::string data_;
-
-  DISALLOW_COPY_AND_ASSIGN(WriteToDiskTask);
+enum TempFileFailure {
+  FAILED_CREATING,
+  FAILED_OPENING,
+  FAILED_CLOSING,
+  FAILED_WRITING,
+  FAILED_RENAMING,
+  TEMP_FILE_FAILURE_MAX
 };
+
+void LogFailure(const FilePath& path, TempFileFailure failure_code,
+                const std::string& message) {
+  UMA_HISTOGRAM_ENUMERATION("ImportantFile.TempFileFailures", failure_code,
+                            TEMP_FILE_FAILURE_MAX);
+  DPLOG(WARNING) << "temp file failure: " << path.value()
+                 << " : " << message;
+}
+
+void WriteToDiskTask(const FilePath& path, const std::string& data) {
+  // Write the data to a temp file then rename to avoid data loss if we crash
+  // while writing the file. Ensure that the temp file is on the same volume
+  // as target file, so it can be moved in one step, and that the temp file
+  // is securely created.
+  FilePath tmp_file_path;
+  if (!file_util::CreateTemporaryFileInDir(path.DirName(), &tmp_file_path)) {
+    LogFailure(path, FAILED_CREATING, "could not create temporary file");
+    return;
+  }
+
+  int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE;
+  base::PlatformFile tmp_file =
+      base::CreatePlatformFile(tmp_file_path, flags, NULL, NULL);
+  if (tmp_file == base::kInvalidPlatformFileValue) {
+    LogFailure(path, FAILED_OPENING, "could not open temporary file");
+    return;
+  }
+
+  // If this happens in the wild something really bad is going on.
+  CHECK_LE(data.length(), static_cast<size_t>(kint32max));
+  int bytes_written = base::WritePlatformFile(
+      tmp_file, 0, data.data(), static_cast<int>(data.length()));
+  base::FlushPlatformFile(tmp_file);  // Ignore return value.
+
+  if (!base::ClosePlatformFile(tmp_file)) {
+    LogFailure(path, FAILED_CLOSING, "failed to close temporary file");
+    file_util::Delete(tmp_file_path, false);
+    return;
+  }
+
+  if (bytes_written < static_cast<int>(data.length())) {
+    LogFailure(path, FAILED_WRITING, "error writing, bytes_written=" +
+               base::IntToString(bytes_written));
+    file_util::Delete(tmp_file_path, false);
+    return;
+  }
+
+  if (!file_util::ReplaceFile(tmp_file_path, path)) {
+    LogFailure(path, FAILED_RENAMING, "could not rename temporary file");
+    file_util::Delete(tmp_file_path, false);
+    return;
+  }
+}
 
 }  // namespace
 
@@ -135,14 +123,13 @@ void ImportantFileWriter::WriteNow(const std::string& data) {
     timer_.Stop();
 
   if (!file_message_loop_proxy_->PostTask(
-      FROM_HERE, new WriteToDiskTask(path_, data))) {
+      FROM_HERE, base::Bind(&WriteToDiskTask, path_, data))) {
     // Posting the task to background message loop is not expected
     // to fail, but if it does, avoid losing data and just hit the disk
     // on the current thread.
     NOTREACHED();
 
-    WriteToDiskTask write_task(path_, data);
-    write_task.Run();
+    WriteToDiskTask(path_, data);
   }
 }
 

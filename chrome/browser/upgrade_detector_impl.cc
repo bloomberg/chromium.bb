@@ -14,7 +14,6 @@
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
@@ -66,102 +65,87 @@ int GetCheckForUpgradeEveryMs() {
 // This task checks the currently running version of Chrome against the
 // installed version. If the installed version is newer, it runs the passed
 // callback task. Otherwise it just deletes the task.
-class DetectUpgradeTask : public Task {
- public:
-  DetectUpgradeTask(const base::Closure& upgrade_detected_task,
-                    bool* is_unstable_channel,
-                    bool* is_critical_upgrade)
-      : upgrade_detected_task_(upgrade_detected_task),
-        is_unstable_channel_(is_unstable_channel),
-        is_critical_upgrade_(is_critical_upgrade) {
-  }
+void DetectUpgradeTask(const base::Closure& upgrade_detected_task,
+                       bool* is_unstable_channel,
+                       bool* is_critical_upgrade) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  virtual void Run() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-    scoped_ptr<Version> installed_version;
-    scoped_ptr<Version> critical_update;
+  scoped_ptr<Version> installed_version;
+  scoped_ptr<Version> critical_update;
 
 #if defined(OS_WIN)
-    // Get the version of the currently *installed* instance of Chrome,
-    // which might be newer than the *running* instance if we have been
-    // upgraded in the background.
-    FilePath exe_path;
-    if (!PathService::Get(base::DIR_EXE, &exe_path)) {
-      NOTREACHED() << "Failed to find executable path";
-      return;
-    }
-
-    bool system_install =
-        !InstallUtil::IsPerUserInstall(exe_path.value().c_str());
-
-    // TODO(tommi): Check if using the default distribution is always the right
-    // thing to do.
-    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    installed_version.reset(InstallUtil::GetChromeVersion(dist,
-                                                          system_install));
-
-    if (installed_version.get()) {
-      critical_update.reset(
-          InstallUtil::GetCriticalUpdateVersion(dist, system_install));
-    }
-#elif defined(OS_MACOSX)
-    installed_version.reset(
-        Version::GetVersionFromString(UTF16ToASCII(
-            keystone_glue::CurrentlyInstalledVersion())));
-#elif defined(OS_POSIX)
-    // POSIX but not Mac OS X: Linux, etc.
-    CommandLine command_line(*CommandLine::ForCurrentProcess());
-    command_line.AppendSwitch(switches::kProductVersion);
-    std::string reply;
-    if (!base::GetAppOutput(command_line, &reply)) {
-      DLOG(ERROR) << "Failed to get current file version";
-      return;
-    }
-
-    installed_version.reset(Version::GetVersionFromString(reply));
-#endif
-
-    chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-    *is_unstable_channel_ = channel == chrome::VersionInfo::CHANNEL_DEV ||
-                            channel == chrome::VersionInfo::CHANNEL_CANARY;
-
-    // Get the version of the currently *running* instance of Chrome.
-    chrome::VersionInfo version_info;
-    if (!version_info.is_valid()) {
-      NOTREACHED() << "Failed to get current file version";
-      return;
-    }
-    scoped_ptr<Version> running_version(
-        Version::GetVersionFromString(version_info.Version()));
-    if (running_version.get() == NULL) {
-      NOTREACHED() << "Failed to parse version info";
-      return;
-    }
-
-    // |installed_version| may be NULL when the user downgrades on Linux (by
-    // switching from dev to beta channel, for example). The user needs a
-    // restart in this case as well. See http://crbug.com/46547
-    if (!installed_version.get() ||
-        (installed_version->CompareTo(*running_version) > 0)) {
-      // If a more recent version is available, it might be that we are lacking
-      // a critical update, such as a zero-day fix.
-      *is_critical_upgrade_ =
-          critical_update.get() &&
-          (critical_update->CompareTo(*running_version) > 0);
-
-      // Fire off the upgrade detected task.
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              upgrade_detected_task_);
-      upgrade_detected_task_.Reset();
-    }
+  // Get the version of the currently *installed* instance of Chrome,
+  // which might be newer than the *running* instance if we have been
+  // upgraded in the background.
+  FilePath exe_path;
+  if (!PathService::Get(base::DIR_EXE, &exe_path)) {
+    NOTREACHED() << "Failed to find executable path";
+    return;
   }
 
- private:
-  base::Closure upgrade_detected_task_;
-  bool* is_unstable_channel_;
-  bool* is_critical_upgrade_;
-};
+  bool system_install =
+      !InstallUtil::IsPerUserInstall(exe_path.value().c_str());
+
+  // TODO(tommi): Check if using the default distribution is always the right
+  // thing to do.
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  installed_version.reset(InstallUtil::GetChromeVersion(dist,
+                                                        system_install));
+
+  if (installed_version.get()) {
+    critical_update.reset(
+        InstallUtil::GetCriticalUpdateVersion(dist, system_install));
+  }
+#elif defined(OS_MACOSX)
+  installed_version.reset(
+      Version::GetVersionFromString(UTF16ToASCII(
+          keystone_glue::CurrentlyInstalledVersion())));
+#elif defined(OS_POSIX)
+  // POSIX but not Mac OS X: Linux, etc.
+  CommandLine command_line(*CommandLine::ForCurrentProcess());
+  command_line.AppendSwitch(switches::kProductVersion);
+  std::string reply;
+  if (!base::GetAppOutput(command_line, &reply)) {
+    DLOG(ERROR) << "Failed to get current file version";
+    return;
+  }
+
+  installed_version.reset(Version::GetVersionFromString(reply));
+#endif
+
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  *is_unstable_channel = channel == chrome::VersionInfo::CHANNEL_DEV ||
+                         channel == chrome::VersionInfo::CHANNEL_CANARY;
+
+  // Get the version of the currently *running* instance of Chrome.
+  chrome::VersionInfo version_info;
+  if (!version_info.is_valid()) {
+    NOTREACHED() << "Failed to get current file version";
+    return;
+  }
+  scoped_ptr<Version> running_version(
+      Version::GetVersionFromString(version_info.Version()));
+  if (running_version.get() == NULL) {
+    NOTREACHED() << "Failed to parse version info";
+    return;
+  }
+
+  // |installed_version| may be NULL when the user downgrades on Linux (by
+  // switching from dev to beta channel, for example). The user needs a
+  // restart in this case as well. See http://crbug.com/46547
+  if (!installed_version.get() ||
+      (installed_version->CompareTo(*running_version) > 0)) {
+    // If a more recent version is available, it might be that we are lacking
+    // a critical update, such as a zero-day fix.
+    *is_critical_upgrade =
+        critical_update.get() &&
+        (critical_update->CompareTo(*running_version) > 0);
+
+    // Fire off the upgrade detected task.
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            upgrade_detected_task);
+  }
+}
 
 }  // namespace
 
@@ -199,9 +183,10 @@ void UpgradeDetectorImpl::CheckForUpgrade() {
   // while launching a background process and reading its output; on the Mac and
   // on Windows checking for an upgrade requires reading a file.
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          new DetectUpgradeTask(callback_task,
-                                                &is_unstable_channel_,
-                                                &is_critical_upgrade_));
+                          base::Bind(&DetectUpgradeTask,
+                                     callback_task,
+                                     &is_unstable_channel_,
+                                     &is_critical_upgrade_));
 }
 
 void UpgradeDetectorImpl::UpgradeDetected() {

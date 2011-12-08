@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,31 +6,12 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
-
-class WorkerThreadTicker::TimerTask : public Task {
- public:
-  explicit TimerTask(WorkerThreadTicker* ticker) : ticker_(ticker) {
-  }
-
-  virtual void Run() {
-    // When the ticker is running, the handler list CANNOT be modified.
-    // So we can do the enumeration safely without a lock
-    TickHandlerListType* handlers = &ticker_->tick_handler_list_;
-    for (TickHandlerListType::const_iterator i = handlers->begin();
-         i != handlers->end(); ++i) {
-      (*i)->OnTick();
-    }
-
-    ticker_->ScheduleTimerTask();
-  }
-
- private:
-  WorkerThreadTicker* ticker_;
-};
 
 WorkerThreadTicker::WorkerThreadTicker(int tick_interval)
     : timer_thread_("worker_thread_ticker"),
@@ -96,6 +77,21 @@ bool WorkerThreadTicker::Stop() {
 }
 
 void WorkerThreadTicker::ScheduleTimerTask() {
-  timer_thread_.message_loop()->PostDelayedTask(FROM_HERE, new TimerTask(this),
-                                                tick_interval_);
+  timer_thread_.message_loop()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&WorkerThreadTicker::TimerTask, base::Unretained(this)),
+      tick_interval_);
 }
+
+void WorkerThreadTicker::TimerTask() {
+  // When the ticker is running, the handler list CANNOT be modified.
+  // So we can do the enumeration safely without a lock
+  const TickHandlerListType& handlers = tick_handler_list_;
+  for (TickHandlerListType::const_iterator i = handlers.begin();
+       i != handlers.end(); ++i) {
+    (*i)->OnTick();
+  }
+
+  ScheduleTimerTask();
+}
+
