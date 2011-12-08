@@ -18,7 +18,7 @@
 #include "ui/gfx/screen.h"
 
 namespace {
-const int kOverflowStripThickness = 24;
+const int kOverflowStripThickness = 26;
 
 // Width of spacing around panel strip and the left/right edges of the screen.
 const int kPanelStripLeftMargin = kOverflowStripThickness + 6;

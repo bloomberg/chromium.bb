@@ -102,7 +102,7 @@ void PanelOverflowStrip::Refresh() {
 }
 
 void PanelOverflowStrip::DoRefresh(size_t start_index, size_t end_index) {
-  if (panels_.empty())
+  if (panels_.empty() || start_index == panels_.size())
     return;
 
   DCHECK(start_index < panels_.size());
@@ -112,7 +112,6 @@ void PanelOverflowStrip::DoRefresh(size_t start_index, size_t end_index) {
     Panel* panel = panels_[index];
     gfx::Rect new_bounds = ComputeLayout(index,
                                          panel->IconOnlySize());
-    DCHECK(!new_bounds.IsEmpty());
     panel->SetPanelBounds(new_bounds);
   }
 }
@@ -155,10 +154,18 @@ bool PanelOverflowStrip::ShouldShowOverflowTitles(
   if (panels_.empty())
     return false;
 
-  int width = are_overflow_titles_shown_ ? kOverflowAreaHoverWidth
-                                         : display_area_.width();
+  int width;
+  Panel* top_visible_panel;
+  if (are_overflow_titles_shown_) {
+    width = kOverflowAreaHoverWidth;
+    top_visible_panel = panels_.back();
+  } else {
+    width = display_area_.width();
+    top_visible_panel = panels_.size() >= kMaxVisibleOverflowPanelsAllowed ?
+        panels_[kMaxVisibleOverflowPanelsAllowed - 1] : panels_.back();
+  }
   return mouse_position.x() <= display_area_.x() + width &&
-         panels_.back()->GetBounds().y() <= mouse_position.y() &&
+         top_visible_panel->GetBounds().y() <= mouse_position.y() &&
          mouse_position.y() <= display_area_.bottom();
 }
 
@@ -166,6 +173,9 @@ void PanelOverflowStrip::ShowOverflowTitles(bool show_overflow_titles) {
   if (show_overflow_titles == are_overflow_titles_shown_)
     return;
   are_overflow_titles_shown_ = show_overflow_titles;
+
+  if (panels_.empty())
+    return;
 
   if (show_overflow_titles) {
     overflow_hover_animator_start_width_ = display_area_.width();
