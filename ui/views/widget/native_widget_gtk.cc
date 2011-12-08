@@ -949,8 +949,17 @@ bool NativeWidgetGtk::HasMouseCapture() const {
 
 InputMethod* NativeWidgetGtk::CreateInputMethod() {
   // Create input method when pure views is enabled but not on views desktop.
+  // TODO(suzhe): Always enable input method when we start to use
+  // RenderWidgetHostViewViews in normal ChromeOS.
   if (views::Widget::IsPureViews()) {
+#if defined(HAVE_IBUS)
+    InputMethod* input_method =
+        InputMethodIBus::IsInputMethodIBusEnabled() ?
+        static_cast<InputMethod*>(new InputMethodIBus(this)) :
+        static_cast<InputMethod*>(new InputMethodGtk(this));
+#else
     InputMethod* input_method = new InputMethodGtk(this);
+#endif
     input_method->Init(GetWidget());
     return input_method;
   }
