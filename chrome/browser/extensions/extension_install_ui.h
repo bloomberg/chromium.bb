@@ -53,7 +53,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
     PromptType type() const { return type_; }
 
     // Getters for UI element labels.
-    string16 GetDialogTitle(const Extension* extension) const;
+    string16 GetDialogTitle() const;
     string16 GetHeading(std::string extension_name) const;
     string16 GetAcceptButtonLabel() const;
     bool HasAbortButtonLabel() const;

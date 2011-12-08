@@ -29,9 +29,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 // A class that loads the extension icon on the I/O thread before showing the
@@ -170,9 +168,7 @@ int CurrentTabId() {
         [NSMenuItem separatorItem],
         l10n_util::GetNSStringWithFixup(IDS_EXTENSIONS_OPTIONS),
         l10n_util::GetNSStringWithFixup(IDS_EXTENSIONS_DISABLE),
-        l10n_util::GetNSStringFWithFixup(
-            IDS_EXTENSIONS_UNINSTALL,
-            l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)),
+        l10n_util::GetNSStringWithFixup(IDS_EXTENSIONS_UNINSTALL),
         l10n_util::GetNSStringWithFixup(IDS_EXTENSIONS_HIDE_BUTTON),
         [NSMenuItem separatorItem],
         l10n_util::GetNSStringWithFixup(IDS_MANAGE_EXTENSIONS),

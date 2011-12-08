@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
-#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -27,8 +26,7 @@ PanelSettingsMenuModel::PanelSettingsMenuModel(Panel* panel)
   AddItem(COMMAND_CONFIGURE, l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPTIONS));
   AddItem(COMMAND_DISABLE, l10n_util::GetStringUTF16(IDS_EXTENSIONS_DISABLE));
   AddItem(COMMAND_UNINSTALL,
-      l10n_util::GetStringFUTF16(IDS_EXTENSIONS_UNINSTALL,
-          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+          l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
   AddSeparator();
   AddItem(COMMAND_MANAGE, l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSIONS));
 }

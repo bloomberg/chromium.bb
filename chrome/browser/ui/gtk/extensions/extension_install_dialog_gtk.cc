@@ -76,7 +76,7 @@ ExtensionInstallDialog::ExtensionInstallDialog(
 
   // Build the dialog.
   dialog_ = gtk_dialog_new_with_buttons(
-      UTF16ToUTF8(prompt.GetDialogTitle(extension)).c_str(),
+      UTF16ToUTF8(prompt.GetDialogTitle()).c_str(),
       parent,
       GTK_DIALOG_MODAL,
       NULL);

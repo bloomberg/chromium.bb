@@ -110,7 +110,8 @@ var tests = [
       chrome.management.getPermissionWarningsById(extension.id,
                                                   callback(function(warnings) {
         chrome.test.assertEq(1, warnings.length);
-        chrome.test.assertEq("Your list of apps, extensions, and themes",
+        chrome.test.assertEq("Your list of installed apps, extensions, " +
+                             "and themes",
                              warnings[0]);
       }));
     }));

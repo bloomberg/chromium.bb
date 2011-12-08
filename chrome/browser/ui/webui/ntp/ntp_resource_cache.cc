@@ -311,7 +311,7 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_NEW_TAB_REMOVE_THUMBNAIL_TOOLTIP));
   localized_strings.SetString("appuninstall",
       l10n_util::GetStringFUTF16(
-          IDS_EXTENSIONS_UNINSTALL,
+          IDS_NEW_TAB_APP_UNINSTALL,
           l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
   localized_strings.SetString("appoptions",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_OPTIONS));

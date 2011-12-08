@@ -24,7 +24,6 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -223,8 +222,7 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
   string16 extension_name = UTF8ToUTF16(extension_->name());
   base::i18n::AdjustStringForLocaleDirection(&extension_name);
   std::string heading_text = l10n_util::GetStringFUTF8(
-      IDS_EXTENSION_INSTALLED_HEADING, extension_name,
-      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+      IDS_EXTENSION_INSTALLED_HEADING, extension_name);
   char* markup = g_markup_printf_escaped("<span size=\"larger\">%s</span>",
       heading_text.c_str());
   gtk_label_set_markup(GTK_LABEL(heading_label), markup);
