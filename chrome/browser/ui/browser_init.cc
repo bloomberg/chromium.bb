@@ -47,6 +47,7 @@
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -1496,4 +1497,37 @@ bool BrowserInit::CreateAutomationProvider(const std::string& channel_id,
   list->AddProvider(automation);
 
   return true;
+}
+
+// static
+void BrowserInit::ProcessCommandLineOnProfileCreated(
+    const CommandLine& cmd_line,
+    const FilePath& cur_dir,
+    Profile* profile,
+    Profile::CreateStatus status) {
+  if (status == Profile::CREATE_STATUS_INITIALIZED)
+    ProcessCmdLineImpl(cmd_line, cur_dir, false, profile, NULL, NULL);
+}
+
+// static
+void BrowserInit::ProcessCommandLineAlreadyRunning(const CommandLine& cmd_line,
+                                                   const FilePath& cur_dir) {
+  if (cmd_line.HasSwitch(switches::kProfileDirectory)) {
+    ProfileManager* profile_manager = g_browser_process->profile_manager();
+    FilePath path = cmd_line.GetSwitchValuePath(switches::kProfileDirectory);
+    path = profile_manager->user_data_dir().Append(path);
+    profile_manager->CreateProfileAsync(path,
+        base::Bind(&BrowserInit::ProcessCommandLineOnProfileCreated,
+                   cmd_line, cur_dir));
+    return;
+  }
+
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  if (!profile) {
+    // We should only be able to get here if the profile already exists and
+    // has been created.
+    NOTREACHED();
+    return;
+  }
+  ProcessCmdLineImpl(cmd_line, cur_dir, false, profile, NULL, NULL);
 }

@@ -641,15 +641,6 @@ void ProcessSingleton::LinuxWatcher::HandleMessage(
   PrefService* prefs = g_browser_process->local_state();
   DCHECK(prefs);
 
-  Profile* profile = ProfileManager::GetLastUsedProfile();
-
-  if (!profile) {
-    // We should only be able to get here if the profile already exists and
-    // has been created.
-    NOTREACHED();
-    return;
-  }
-
   // Ignore the request if the process was passed the --product-version flag.
   // Normally we wouldn't get here if that flag had been passed, but it can
   // happen if it is passed to an older version of chrome. Since newer versions
@@ -661,10 +652,8 @@ void ProcessSingleton::LinuxWatcher::HandleMessage(
   } else {
     // Run the browser startup sequence again, with the command line of the
     // signalling process.
-    FilePath current_dir_file_path(current_dir);
-    BrowserInit::ProcessCommandLine(parsed_command_line, current_dir_file_path,
-                                    false /* not process startup */, profile,
-                                    NULL);
+    BrowserInit::ProcessCommandLineAlreadyRunning(
+        parsed_command_line, FilePath(current_dir));
   }
 
   // Send back "ACK" message to prevent the client process from starting up.

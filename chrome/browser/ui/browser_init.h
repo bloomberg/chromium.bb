@@ -12,12 +12,12 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "googleurl/src/gurl.h"
 
 class Browser;
 class CommandLine;
 class GURL;
-class Profile;
 class TabContentsWrapper;
 
 // class containing helpers for BrowserMain to spin up a new instance and
@@ -48,18 +48,11 @@ class BrowserInit {
                               this);
   }
 
-  // This function performs command-line handling and is invoked when process
-  // starts as well as when we get a start request from another process (via the
-  // WM_COPYDATA message). |command_line| holds the command line we need to
-  // process - either from this process or from some other one (if
-  // |process_startup| is true and we are being called from
-  // ProcessSingleton::OnCopyData).
-  static bool ProcessCommandLine(const CommandLine& cmd_line,
-                                 const FilePath& cur_dir, bool process_startup,
-                                 Profile* profile, int* return_code) {
-    return ProcessCmdLineImpl(cmd_line, cur_dir, process_startup, profile,
-                              return_code, NULL);
-  }
+  // This function performs command-line handling and is invoked only after
+  // start up (for example when we get a start request for another process).
+  // |command_line| holds the command line we need to process
+  static void ProcessCommandLineAlreadyRunning(const CommandLine& cmd_line,
+                                               const FilePath& cur_dir);
 
   template <class AutomationProviderClass>
   static bool CreateAutomationProvider(const std::string& channel_id,
@@ -246,6 +239,13 @@ class BrowserInit {
                                  const FilePath& cur_dir, bool process_startup,
                                  Profile* profile, int* return_code,
                                  BrowserInit* browser_init);
+
+  // Callback after a profile has been created.
+  static void ProcessCommandLineOnProfileCreated(
+      const CommandLine& cmd_line,
+      const FilePath& cur_dir,
+      Profile* profile,
+      Profile::CreateStatus status);
 
   // Additional tabs to open during first run.
   std::vector<GURL> first_run_tabs_;

@@ -311,18 +311,22 @@ LRESULT ProcessSingleton::OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds) {
     PrefService* prefs = g_browser_process->local_state();
     DCHECK(prefs);
 
-    Profile* profile = ProfileManager::GetLastUsedProfile();
-    if (!profile) {
-      // We should only be able to get here if the profile already exists and
-      // has been created.
-      NOTREACHED();
-      return TRUE;
-    }
-
     // Handle the --uninstall-extension startup action. This needs to done here
     // in the process that is running with the target profile, otherwise the
     // uninstall will fail to unload and remove all components.
     if (parsed_command_line.HasSwitch(switches::kUninstallExtension)) {
+      // The uninstall extension switch can't be combined with the profile
+      // directory switch.
+      DCHECK(!parsed_command_line.HasSwitch(switches::kProfileDirectory));
+
+      Profile* profile = ProfileManager::GetLastUsedProfile();
+      if (!profile) {
+        // We should only be able to get here if the profile already exists and
+        // has been created.
+        NOTREACHED();
+        return TRUE;
+      }
+
       ExtensionsStartupUtil ext_startup_util;
       ext_startup_util.UninstallExtension(parsed_command_line, profile);
       return TRUE;
@@ -330,8 +334,7 @@ LRESULT ProcessSingleton::OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds) {
 
     // Run the browser startup sequence again, with the command line of the
     // signalling process.
-    BrowserInit::ProcessCommandLine(parsed_command_line, cur_dir, false,
-                                    profile, NULL);
+    BrowserInit::ProcessCommandLineAlreadyRunning(parsed_command_line, cur_dir);
     return TRUE;
   }
   return TRUE;
