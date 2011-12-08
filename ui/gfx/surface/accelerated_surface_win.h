@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
+#include "base/scoped_native_library.h"
 #include "base/synchronization/lock.h"
 #include "base/win/scoped_comptr.h"
 #include "ui/gfx/native_widget_types.h"
@@ -48,6 +49,7 @@ class SURFACE_EXPORT AcceleratedSurface
   // Immutable and accessible from any thread without the lock.
   const int thread_affinity_;
   const gfx::NativeWindow window_;
+  base::ScopedNativeLibrary d3d_module_;
 
   // The size of the swap chain once any pending resizes have been processed.
   // Only accessed on the UI thread so the lock is unnecessary.

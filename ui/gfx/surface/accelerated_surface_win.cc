@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -23,49 +24,13 @@
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/gl/gl_switches.h"
 
-#pragma comment(lib, "d3d9.lib")
-
 namespace {
 
 typedef HRESULT (WINAPI *Direct3DCreate9ExFunc)(UINT sdk_version,
                                                 IDirect3D9Ex **d3d);
 
-const int64 kPollQueryInterval = 1;
-
 const wchar_t kD3D9ModuleName[] = L"d3d9.dll";
 const char kCreate3D9DeviceExName[] = "Direct3DCreate9Ex";
-
-class QuerySyncThread
-    : public base::Thread,
-      public base::RefCounted<QuerySyncThread> {
- public:
-  explicit QuerySyncThread(const char* name);
-  virtual ~QuerySyncThread();
-
-  // Invoke the completion task when the query completes.
-  void AcknowledgeQuery(const base::win::ScopedComPtr<IDirect3DQuery9>& query,
-                        const base::Closure& completion_task);
-
-  // Acknowledge all pending queries for the given device early then invoke
-  // the given task.
-  void AcknowledgeEarly(
-      const base::win::ScopedComPtr<IDirect3DDevice9Ex>& device,
-      const base::Closure& completion_task);
-
- private:
-  void PollQueries();
-
-  struct PendingQuery {
-    base::win::ScopedComPtr<IDirect3DQuery9> query;
-    base::Closure completion_task;
-  };
-
-  typedef std::list<PendingQuery> PendingQueries;
-  PendingQueries pending_queries_;
-  base::WeakPtrFactory<QuerySyncThread> poll_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuerySyncThread);
-};
 
 class PresentThreadPool {
  public:
@@ -79,19 +44,9 @@ class PresentThreadPool {
                 const tracked_objects::Location& from_here,
                 const base::Closure& task);
 
-  void AcknowledgeQuery(const tracked_objects::Location& from_here,
-                        const base::win::ScopedComPtr<IDirect3DQuery9>& query,
-                        const base::Closure& completion_task);
-
-  void AcknowledgeEarly(
-      const tracked_objects::Location& from_here,
-      const base::win::ScopedComPtr<IDirect3DDevice9Ex>& device,
-      const base::Closure& completion_task);
-
  private:
   int next_thread_;
   scoped_ptr<base::Thread> present_threads_[kNumPresentThreads];
-  scoped_refptr<QuerySyncThread> query_sync_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(PresentThreadPool);
 };
@@ -99,92 +54,12 @@ class PresentThreadPool {
 base::LazyInstance<PresentThreadPool>
     g_present_thread_pool = LAZY_INSTANCE_INITIALIZER;
 
-QuerySyncThread::QuerySyncThread(const char* name)
-    : base::Thread(name),
-      poll_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-}
-
-QuerySyncThread::~QuerySyncThread() {
-}
-
-void QuerySyncThread::AcknowledgeQuery(
-    const base::win::ScopedComPtr<IDirect3DQuery9>& query,
-    const base::Closure& completion_task) {
-  PendingQuery pending_query;
-  pending_query.query = query;
-  pending_query.completion_task = completion_task;
-  pending_queries_.push_back(pending_query);
-
-  // Cancel any pending poll tasks. There should only ever be one pending at a
-  // time.
-  poll_factory_.InvalidateWeakPtrs();
-
-  PollQueries();
-}
-
-void QuerySyncThread::AcknowledgeEarly(
-    const base::win::ScopedComPtr<IDirect3DDevice9Ex>& device,
-    const base::Closure& completion_task) {
-  TRACE_EVENT0("surface", "AcknowledgeEarly");
-
-  PendingQueries::iterator it = pending_queries_.begin();
-  while (it != pending_queries_.end()) {
-    const PendingQuery& pending_query = *it;
-
-    base::win::ScopedComPtr<IDirect3DDevice9> query_device;
-    pending_query.query->GetDevice(query_device.Receive());
-
-    base::win::ScopedComPtr<IDirect3DDevice9Ex> query_device_ex;
-    query_device_ex.QueryFrom(query_device.get());
-
-    if (query_device_ex.get() != device.get()) {
-      ++it;
-    } else {
-      pending_query.completion_task.Run();
-      it = pending_queries_.erase(it);
-    }
-  }
-
-  if (!completion_task.is_null())
-    completion_task.Run();
-}
-
-
-void QuerySyncThread::PollQueries() {
-  TRACE_EVENT0("surface", "PollQueries");
-
-  PendingQueries::iterator it = pending_queries_.begin();
-  while (it != pending_queries_.end()) {
-    const PendingQuery& pending_query = *it;
-
-    HRESULT hr = pending_query.query->GetData(NULL, 0, D3DGETDATA_FLUSH);
-    if (hr == S_FALSE) {
-      ++it;
-    } else {
-      pending_query.completion_task.Run();
-      it = pending_queries_.erase(it);
-    }
-  }
-
-  // Try again later if there are incomplete queries. Otherwise don't poll again
-  // until AcknowledgeQuery is called with a new query.
-  if (!pending_queries_.empty()) {
-    message_loop()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&QuerySyncThread::PollQueries, poll_factory_.GetWeakPtr()),
-        kPollQueryInterval);
-  }
-}
-
 PresentThreadPool::PresentThreadPool() : next_thread_(0) {
   for (int i = 0; i < kNumPresentThreads; ++i) {
     present_threads_[i].reset(new base::Thread(
         base::StringPrintf("PresentThread #%d", i).c_str()));
     present_threads_[i]->Start();
   }
-
-  query_sync_thread_ = new QuerySyncThread("QuerySyncThread");
-  query_sync_thread_->Start();
 }
 
 int PresentThreadPool::NextThread() {
@@ -199,30 +74,6 @@ void PresentThreadPool::PostTask(int thread,
   DCHECK_LT(thread, kNumPresentThreads);
 
   present_threads_[thread]->message_loop()->PostTask(from_here, task);
-}
-
-void PresentThreadPool::AcknowledgeQuery(
-    const tracked_objects::Location& from_here,
-    const base::win::ScopedComPtr<IDirect3DQuery9>& query,
-    const base::Closure& completion_task) {
-  query_sync_thread_->message_loop()->PostTask(
-      from_here,
-      base::Bind(&QuerySyncThread::AcknowledgeQuery,
-                 query_sync_thread_,
-                 query,
-                 completion_task));
-}
-
-void PresentThreadPool::AcknowledgeEarly(
-    const tracked_objects::Location& from_here,
-    const base::win::ScopedComPtr<IDirect3DDevice9Ex>& device,
-    const base::Closure& completion_task) {
-  query_sync_thread_->message_loop()->PostTask(
-      from_here,
-      base::Bind(&QuerySyncThread::AcknowledgeEarly,
-                 query_sync_thread_,
-                 device,
-                 completion_task));
 }
 
 UINT GetPresentationInterval() {
@@ -253,10 +104,10 @@ void AcceleratedSurface::Initialize() {
 }
 
 void AcceleratedSurface::Destroy() {
-  g_present_thread_pool.Pointer()->AcknowledgeEarly(
+  g_present_thread_pool.Pointer()->PostTask(
+      thread_affinity_,
       FROM_HERE,
-      device_,
-      base::Bind(&AcceleratedSurface::QueriesDestroyed, this));
+      base::Bind(&AcceleratedSurface::DoDestroy, this));
 }
 
 void AcceleratedSurface::AsyncPresentAndAcknowledge(
@@ -336,12 +187,10 @@ void AcceleratedSurface::DoInitialize() {
 
   HRESULT hr;
 
-  HMODULE module = GetModuleHandle(kD3D9ModuleName);
-  if (!module)
-    return;
+  d3d_module_.Reset(base::LoadNativeLibrary(FilePath(kD3D9ModuleName), NULL));
 
   Direct3DCreate9ExFunc create_func = reinterpret_cast<Direct3DCreate9ExFunc>(
-      GetProcAddress(module, kCreate3D9DeviceExName));
+      d3d_module_.GetFunctionPointer(kCreate3D9DeviceExName));
   if (!create_func)
     return;
 
@@ -406,6 +255,11 @@ void AcceleratedSurface::DoResize(const gfx::Size& size) {
 
   base::AtomicRefCountDec(&num_pending_resizes_);
 
+  base::AutoLock locked(lock_);
+
+  if (!device_)
+    return;
+
   D3DPRESENT_PARAMETERS parameters = { 0 };
   parameters.BackBufferWidth = size.width();
   parameters.BackBufferHeight = size.height();
@@ -438,6 +292,9 @@ void AcceleratedSurface::DoPresentAndAcknowledge(
 
   // Ensure the task is always run and while the lock is taken.
   base::ScopedClosureRunner scoped_completion_runner(completion_task);
+
+  if (!device_)
+    return;
 
   if (!window_)
     return;
@@ -504,12 +361,21 @@ void AcceleratedSurface::DoPresentAndAcknowledge(
           SWP_NOREDRAW | SWP_NOSENDCHANGING | SWP_NOSENDCHANGING |
           SWP_ASYNCWINDOWPOS);
 
-  scoped_completion_runner.Release();
-  if (!completion_task.is_null()) {
-    g_present_thread_pool.Pointer()->AcknowledgeQuery(FROM_HERE,
-                                                      query_,
-                                                      completion_task);
+  // Wait for the StretchRect to complete before notifying the GPU process
+  // that it is safe to write to its backing store again.
+  {
+    TRACE_EVENT0("surface", "spin");
+    do {
+      hr = query_->GetData(NULL, 0, D3DGETDATA_FLUSH);
+
+      if (hr == S_FALSE)
+        Sleep(0);
+    } while (hr == S_FALSE);
   }
+
+  scoped_completion_runner.Release();
+  if (!completion_task.is_null())
+    completion_task.Run();
 
   {
     TRACE_EVENT0("surface", "Present");
