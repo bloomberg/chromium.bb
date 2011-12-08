@@ -4,17 +4,11 @@
 
 #include "content/ppapi_plugin/broker_process_dispatcher.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "content/common/child_process.h"
 
 namespace {
-
-class BrokerReleaseTask : public Task {
- public:
-  void Run() {
-    DVLOG(1) << "BrokerReleaseTask::Run()";
-    ChildProcess::current()->ReleaseProcess();
-  }
-};
 
 // How long we wait before releasing the broker process.
 const int kBrokerReleaseTimeMs = 30 * 1000;  // 30 seconds.
@@ -36,6 +30,9 @@ BrokerProcessDispatcher::~BrokerProcessDispatcher() {
   // plugin. This is the case for common plugins where they may be used on a
   // source and destination page of a navigation. We don't want to tear down
   // and re-start processes each time in these cases.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, new BrokerReleaseTask(),
-                                          kBrokerReleaseTimeMs);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&ChildProcess::ReleaseProcess,
+                 base::Unretained(ChildProcess::current())),
+      kBrokerReleaseTimeMs);
 }
