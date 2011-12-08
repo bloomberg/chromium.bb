@@ -2235,3 +2235,10 @@
    fun:_ZN7WebCore23V8AbstractEventListener11handleEventEPNS_22ScriptExecutionContextEPNS_5EventE
    fun:_ZN7WebCore11EventTarget18fireEventListenersEPNS_5EventEPNS_15EventTargetDataERN3WTF6VectorINS_23RegisteredEventListenerELm1EEE
 }
+{
+   bug_106912
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN15tracked_objects10ThreadData23InitializeThreadContextERKSs
+   fun:_ZN4base14PlatformThread7SetNameEPKc
+}
