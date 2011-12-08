@@ -26,6 +26,9 @@ class CandidateWindowView : public views::View {
     // See comments at NotifyCandidateClicked() in chromeos_input_method_ui.h
     // for details about the parameters.
     virtual void OnCandidateCommitted(int index, int button, int flag) = 0;
+
+    virtual void OnCandidateWindowOpened() = 0;
+    virtual void OnCandidateWindowClosed() = 0;
   };
 
   explicit CandidateWindowView(views::Widget* parent_frame);
@@ -136,6 +139,8 @@ class CandidateWindowView : public views::View {
 
   // Returns the appropriate area (header or footer) to put auxiliary texts.
   InformationTextArea* GetAuxiliaryTextArea();
+
+  bool IsCandidateWindowOpen() const;
 
   // The lookup table (candidates).
   InputMethodLookupTable lookup_table_;

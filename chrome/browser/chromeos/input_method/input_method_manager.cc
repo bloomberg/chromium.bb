@@ -129,10 +129,14 @@ namespace chromeos {
 namespace input_method {
 
 // The implementation of InputMethodManager.
-class InputMethodManagerImpl : public HotkeyManager::Observer,
-                               public InputMethodManager,
-                               public content::NotificationObserver,
-                               public IBusController::Observer {
+class InputMethodManagerImpl
+    : public HotkeyManager::Observer,
+      public InputMethodManager,
+      public content::NotificationObserver,
+#if !defined(USE_VIRTUAL_KEYBOARD)
+      public CandidateWindowController::Observer,
+#endif
+      public IBusController::Observer {
  public:
   InputMethodManagerImpl()
       : ibus_controller_(IBusController::Create()),
@@ -178,6 +182,10 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
   virtual ~InputMethodManagerImpl() {
     hotkey_manager_.RemoveObserver(this);
     ibus_controller_->RemoveObserver(this);
+#if !defined(USE_VIRTUAL_KEYBOARD)
+    if (candidate_window_controller_.get())
+      candidate_window_controller_->RemoveObserver(this);
+#endif
   }
 
   virtual void AddObserver(InputMethodManager::Observer* observer) {
@@ -186,6 +194,16 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
 
   virtual void RemoveObserver(InputMethodManager::Observer* observer) {
     observers_.RemoveObserver(observer);
+  }
+
+  virtual void AddCandidateWindowObserver(
+      InputMethodManager::CandidateWindowObserver* observer) {
+    candidate_window_observers_.AddObserver(observer);
+  }
+
+  virtual void RemoveCandidateWindowObserver(
+      InputMethodManager::CandidateWindowObserver* observer) {
+    candidate_window_observers_.RemoveObserver(observer);
   }
 
   virtual void AddPreLoginPreferenceObserver(
@@ -527,6 +545,18 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
         SwitchToInputMethod(event);
         break;
     }
+  }
+
+  virtual void CandidateWindowOpened() {
+    FOR_EACH_OBSERVER(InputMethodManager::CandidateWindowObserver,
+                      candidate_window_observers_,
+                      CandidateWindowOpened(this));
+  }
+
+  virtual void CandidateWindowClosed() {
+    FOR_EACH_OBSERVER(InputMethodManager::CandidateWindowObserver,
+                      candidate_window_observers_,
+                      CandidateWindowClosed(this));
   }
 
   virtual void SwitchToNextInputMethod() {
@@ -1105,7 +1135,9 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
 #if !defined(USE_VIRTUAL_KEYBOARD)
     if (!candidate_window_controller_.get()) {
       candidate_window_controller_.reset(new CandidateWindowController);
-      if (!candidate_window_controller_->Init()) {
+      if (candidate_window_controller_->Init()) {
+        candidate_window_controller_->AddObserver(this);
+      } else {
         LOG(WARNING) << "Failed to initialize the candidate window controller";
       }
     }
@@ -1181,6 +1213,8 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
       notification_registrar_.RemoveAll();
       StopInputMethodDaemon();
 #if !defined(USE_VIRTUAL_KEYBOARD)
+      if (candidate_window_controller_.get())
+        candidate_window_controller_->RemoveObserver(this);
       candidate_window_controller_.reset(NULL);
 #endif
     }
@@ -1301,6 +1335,8 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
   // allow allow callbacks when the input method status changes.
   scoped_ptr<IBusController> ibus_controller_;
   ObserverList<InputMethodManager::Observer> observers_;
+  ObserverList<InputMethodManager::CandidateWindowObserver>
+      candidate_window_observers_;
   ObserverList<PreferenceObserver> pre_login_preference_observers_;
   ObserverList<PreferenceObserver> post_login_preference_observers_;
   ObserverList<VirtualKeyboardObserver> virtual_keyboard_observers_;

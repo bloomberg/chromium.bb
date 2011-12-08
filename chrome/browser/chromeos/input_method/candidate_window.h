@@ -21,11 +21,22 @@ namespace input_method {
 // rendering the candidate view is deleted.
 class CandidateWindowController {
  public:
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    virtual void CandidateWindowOpened() = 0;
+    virtual void CandidateWindowClosed() = 0;
+  };
+
   CandidateWindowController();
   virtual ~CandidateWindowController();
 
   // Initializes the candidate window. Returns true on success.
   bool Init();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
  private:
   class Impl;

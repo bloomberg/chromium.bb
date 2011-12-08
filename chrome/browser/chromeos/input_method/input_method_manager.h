@@ -54,6 +54,20 @@ class InputMethodManager {
         const ImePropertyList& current_ime_properties) = 0;
   };
 
+  // CandidateWindowObserver is notified of events related to the candidate
+  // window.  These events won't occur when the virtual keyboard is used,
+  // since it controls its own candidate window.
+  class CandidateWindowObserver {
+   public:
+    virtual ~CandidateWindowObserver() {}
+
+    // Called when the candidate window is opened.
+    virtual void CandidateWindowOpened(InputMethodManager* manager) = 0;
+
+    // Called when the candidate window is closed.
+    virtual void CandidateWindowClosed(InputMethodManager* manager) = 0;
+  };
+
   class PreferenceObserver {
    public:
     virtual ~PreferenceObserver() {}
@@ -85,11 +99,15 @@ class InputMethodManager {
   // Adds an observer to receive notifications of input method related
   // changes as desribed in the Observer class above.
   virtual void AddObserver(Observer* observer) = 0;
+  virtual void AddCandidateWindowObserver(
+      CandidateWindowObserver* observer) = 0;
   virtual void AddPreLoginPreferenceObserver(PreferenceObserver* observer) = 0;
   virtual void AddPostLoginPreferenceObserver(PreferenceObserver* observer) = 0;
   virtual void AddVirtualKeyboardObserver(
       VirtualKeyboardObserver* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
+  virtual void RemoveCandidateWindowObserver(
+      CandidateWindowObserver* observer) = 0;
   virtual void RemovePreLoginPreferenceObserver(
       PreferenceObserver* observer) = 0;
   virtual void RemovePostLoginPreferenceObserver(

@@ -602,11 +602,16 @@ class CandidateWindowController::Impl : public CandidateWindowView::Observer,
   // Initializes the candidate window. Returns true on success.
   bool Init();
 
+  void AddObserver(CandidateWindowController::Observer* observer);
+  void RemoveObserver(CandidateWindowController::Observer* observer);
+
  private:
   // CandidateWindowView::Observer implementation.
   virtual void OnCandidateCommitted(int index,
                                     int button,
                                     int flags);
+  virtual void OnCandidateWindowOpened();
+  virtual void OnCandidateWindowClosed();
 
   // Creates the candidate window view.
   void CreateView();
@@ -639,6 +644,8 @@ class CandidateWindowController::Impl : public CandidateWindowView::Observer,
   // This is the outer frame of the infolist window view. The frame will
   // own |infolist_window_|.
   scoped_ptr<views::Widget> infolist_frame_;
+
+  ObserverList<CandidateWindowController::Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(Impl);
 };
@@ -879,15 +886,23 @@ void CandidateWindowView::Init() {
 }
 
 void CandidateWindowView::HideAll() {
+  bool was_visible = IsCandidateWindowOpen();
   parent_frame_->Hide();
+  if (was_visible) {
+    FOR_EACH_OBSERVER(Observer, observers_, OnCandidateWindowClosed());
+  }
 }
 
 void CandidateWindowView::HideLookupTable() {
+  bool was_visible = IsCandidateWindowOpen();
   candidate_area_->Hide();
   if (preedit_area_->IsShown())
     ResizeAndMoveParentFrame();
   else
     parent_frame_->Hide();
+  if (was_visible) {
+    FOR_EACH_OBSERVER(Observer, observers_, OnCandidateWindowClosed());
+  }
 }
 
 InformationTextArea* CandidateWindowView::GetAuxiliaryTextArea() {
@@ -928,9 +943,13 @@ void CandidateWindowView::UpdatePreeditText(const std::string& utf8_text) {
 }
 
 void CandidateWindowView::ShowLookupTable() {
+  bool was_visible = IsCandidateWindowOpen();
   candidate_area_->Show();
   ResizeAndMoveParentFrame();
   parent_frame_->Show();
+  if (!was_visible) {
+    FOR_EACH_OBSERVER(Observer, observers_, OnCandidateWindowOpened());
+  }
 }
 
 bool CandidateWindowView::ShouldUpdateCandidateViews(
@@ -1166,6 +1185,10 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
   // TODO(nhiroki): Figure out why it returns invalid value.
   // It seems that the x-position of the candidate labels is not set.
   layout->Layout(candidate_area_contents);
+}
+
+bool CandidateWindowView::IsCandidateWindowOpen() const {
+  return candidate_area_->IsVisible() && candidate_area_->IsShown();
 }
 
 void CandidateWindowView::SelectCandidateAt(int index_in_page) {
@@ -1709,6 +1732,26 @@ void CandidateWindowController::Impl::OnCandidateCommitted(int index,
   ibus_ui_controller_->NotifyCandidateClicked(index, button, flags);
 }
 
+void CandidateWindowController::Impl::OnCandidateWindowOpened() {
+  FOR_EACH_OBSERVER(CandidateWindowController::Observer, observers_,
+                    CandidateWindowOpened());
+}
+
+void CandidateWindowController::Impl::OnCandidateWindowClosed() {
+  FOR_EACH_OBSERVER(CandidateWindowController::Observer, observers_,
+                    CandidateWindowClosed());
+}
+
+void CandidateWindowController::Impl::AddObserver(
+    CandidateWindowController::Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void CandidateWindowController::Impl::RemoveObserver(
+    CandidateWindowController::Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void CandidateWindowController::Impl::OnConnectionChange(bool connected) {
   if (!connected) {
     candidate_window_->HideAll();
@@ -1726,6 +1769,16 @@ CandidateWindowController::~CandidateWindowController() {
 
 bool CandidateWindowController::Init() {
   return impl_->Init();
+}
+
+void CandidateWindowController::AddObserver(
+    CandidateWindowController::Observer* observer) {
+  impl_->AddObserver(observer);
+}
+
+void CandidateWindowController::RemoveObserver(
+    CandidateWindowController::Observer* observer) {
+  impl_->RemoveObserver(observer);
 }
 
 }  // namespace input_method
