@@ -1799,3 +1799,20 @@
    fun:extensions::SocketController::CreateUdp
    fun:extensions::SocketApiControllerTest_TestSocketControllerLifetime_Test::TestBody
 }
+{
+   bug_106850_a
+   Heapcheck:Leak
+   ...
+   fun:::DefaultFocusManagerFactory::CreateFocusManager
+   fun:views::FocusManagerFactory::Create
+   fun:views::Widget::OnNativeWidgetCreated
+   fun:views::NativeWidgetGtk::InitNativeWidget
+   fun:views::Widget::Init
+   fun:chromeos::input_method::CandidateWindowViewTest_MozcUpdateCandidateTest_Test::TestBody
+}
+{
+   bug_106850_b
+   Heapcheck:Leak
+   fun:views::Widget::Init
+   fun:chromeos::input_method::CandidateWindowViewTest_MozcUpdateCandidateTest_Test::TestBody
+}
