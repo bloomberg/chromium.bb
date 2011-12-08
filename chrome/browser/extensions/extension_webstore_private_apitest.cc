@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -17,10 +18,15 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/browser/gpu/gpu_blacklist.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "net/base/mock_host_resolver.h"
+#include "ui/gfx/gl/gl_switches.h"
+
+using namespace extension_function_test_utils;
 
 namespace {
 
@@ -170,6 +176,34 @@ class ExtensionWebstorePrivateBundleTest
   std::vector<FilePath> test_crx_;
 };
 
+class ExtensionWebstoreGetWebGLStatusTest : public InProcessBrowserTest {
+ public:
+  void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    // In linux, we need to launch GPU process to decide if WebGL is allowed.
+    // Run it on top of osmesa to avoid bot driver issues.
+#if defined(OS_LINUX)
+    CHECK(test_launcher_utils::OverrideGLImplementation(
+        command_line, gfx::kGLImplementationOSMesaName)) <<
+        "kUseGL must not be set multiple times!";
+#endif
+  }
+
+ protected:
+  void RunTest(bool webgl_allowed) {
+    static const char kEmptyArgs[] = "[]";
+    static const char kWebGLStatusAllowed[] = "webgl_allowed";
+    static const char kWebGLStatusBlocked[] = "webgl_blocked";
+    scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+            new GetWebGLStatusFunction(), kEmptyArgs, browser()));
+    EXPECT_EQ(base::Value::TYPE_STRING, result->GetType());
+    StringValue* value = static_cast<StringValue*>(result.get());
+    std::string webgl_status = "";
+    EXPECT_TRUE(value && value->GetAsString(&webgl_status));
+    EXPECT_STREQ(webgl_allowed ? kWebGLStatusAllowed : kWebGLStatusBlocked,
+                 webgl_status.c_str());
+  }
+};
+
 // Test cases where the user accepts the install confirmation dialog.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallAccepted) {
   ASSERT_TRUE(RunInstallTest("accepted.html", "extension.crx"));
@@ -229,3 +263,39 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBundleTest, SilentlyInstall) {
   WebstorePrivateApi::SetTrustTestIDsForTesting(true);
   ASSERT_TRUE(RunPageTest(GetTestServerURL("silently_install.html").spec()));
 }
+
+// Tests getWebGLStatus function when WebGL is allowed.
+IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Allowed) {
+  bool webgl_allowed = true;
+  RunTest(webgl_allowed);
+}
+
+// Tests getWebGLStatus function when WebGL is blacklisted.
+IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Blocked) {
+  static const std::string json_blacklist =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"1.0\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"blacklist\": [\n"
+      "        \"webgl\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+  scoped_ptr<Version> os_version(Version::GetVersionFromString("1.0"));
+  GpuBlacklist* blacklist = new GpuBlacklist("1.0");
+
+  ASSERT_TRUE(blacklist->LoadGpuBlacklist(
+      json_blacklist, GpuBlacklist::kAllOs));
+  GpuDataManager::GetInstance()->SetGpuBlacklist(blacklist);
+  GpuFeatureFlags flags = GpuDataManager::GetInstance()->GetGpuFeatureFlags();
+  EXPECT_EQ(
+      flags.flags(), static_cast<uint32>(GpuFeatureFlags::kGpuFeatureWebgl));
+
+  bool webgl_allowed = false;
+  RunTest(webgl_allowed);
+}
+

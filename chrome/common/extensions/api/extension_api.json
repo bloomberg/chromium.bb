@@ -8088,6 +8088,24 @@
             ]
           }
         ]
+      },
+      {
+        "name": "getWebGLStatus",
+        "description": "Invokes a callback that returns whether WebGL is blacklisted or not.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              {
+                "name": "webgl_status",
+                "type": "string",
+                "enum": ["webgl_allowed", "webgl_blocked"]
+              }
+            ]
+          }
+        ]
       }
     ]
   },

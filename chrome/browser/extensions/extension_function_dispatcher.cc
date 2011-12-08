@@ -362,6 +362,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<BeginInstallWithManifestFunction>();
   RegisterFunction<CompleteInstallFunction>();
   RegisterFunction<SilentlyInstallFunction>();
+  RegisterFunction<GetWebGLStatusFunction>();
 
   // WebNavigation.
   RegisterFunction<GetFrameFunction>();

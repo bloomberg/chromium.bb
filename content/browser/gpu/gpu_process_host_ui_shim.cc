@@ -197,6 +197,8 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
                         OnAcceleratedSurfaceBuffersSwapped)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfacePostSubBuffer,
                         OnAcceleratedSurfacePostSubBuffer)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
+                        OnGraphicsInfoCollected)
 
 #if defined(TOOLKIT_USES_GTK) || defined(OS_WIN)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ResizeView, OnResizeView)
@@ -227,6 +229,15 @@ void GpuProcessHostUIShim::OnLogMessage(
   dict->SetString("header", header);
   dict->SetString("message", message);
   GpuDataManager::GetInstance()->AddLogMessage(dict);
+}
+
+void GpuProcessHostUIShim::OnGraphicsInfoCollected(
+    const content::GPUInfo& gpu_info) {
+  // OnGraphicsInfoCollected is sent back after the GPU process successfully
+  // initializes GL.
+  TRACE_EVENT0("test_gpu", "OnGraphicsInfoCollected");
+
+  GpuDataManager::GetInstance()->UpdateGpuInfo(gpu_info);
 }
 
 #if defined(TOOLKIT_USES_GTK) || defined(OS_WIN)

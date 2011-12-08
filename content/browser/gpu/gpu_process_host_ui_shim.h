@@ -21,6 +21,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 #include "content/common/message_router.h"
+#include "content/public/common/gpu_info.h"
 
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
@@ -99,6 +100,8 @@ class GpuProcessHostUIShim
                     int32 route_id,
                     gfx::Size size);
 #endif
+
+  void OnGraphicsInfoCollected(const content::GPUInfo& gpu_info);
 
   void OnAcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);

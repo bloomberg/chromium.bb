@@ -372,8 +372,6 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuHostMsg_ChannelEstablished, OnChannelEstablished)
     IPC_MESSAGE_HANDLER(GpuHostMsg_CommandBufferCreated, OnCommandBufferCreated)
     IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyCommandBuffer, OnDestroyCommandBuffer)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
-                        OnGraphicsInfoCollected)
     IPC_MESSAGE_UNHANDLED(RouteOnUIThread(message))
   IPC_END_MESSAGE_MAP()
 
@@ -499,14 +497,6 @@ void GpuProcessHost::OnDestroyCommandBuffer(
   if (it != surface_refs_.end())
     surface_refs_.erase(it);
 #endif  // defined(TOOLKIT_USES_GTK)
-}
-
-void GpuProcessHost::OnGraphicsInfoCollected(const content::GPUInfo& gpu_info) {
-  // OnGraphicsInfoCollected is sent back after the GPU process successfully
-  // initializes GL.
-  TRACE_EVENT0("test_gpu", "OnGraphicsInfoCollected");
-
-  GpuDataManager::GetInstance()->UpdateGpuInfo(gpu_info);
 }
 
 void GpuProcessHost::OnProcessLaunched() {

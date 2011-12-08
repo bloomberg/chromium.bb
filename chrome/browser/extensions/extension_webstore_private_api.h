@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "content/browser/gpu/gpu_data_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -157,6 +158,28 @@ class GetStoreLoginFunction : public SyncExtensionFunction {
 class SetStoreLoginFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.setStoreLogin");
+};
+
+class GetWebGLStatusFunction : public AsyncExtensionFunction,
+                               public GpuDataManager::Observer {
+ public:
+  GetWebGLStatusFunction();
+
+  // Implementing GpuDataManager::Observer interface.
+  virtual void OnGpuInfoUpdate() OVERRIDE;
+
+ protected:
+  virtual ~GetWebGLStatusFunction();
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  void CreateResult(bool webgl_allowed);
+
+  // A false return value is always valid, but a true one is only valid if full
+  // GPU info has been collected in a GPU process.
+  static bool IsWebGLAllowed(GpuDataManager* manager);
+
+  DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.getWebGLStatus");
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBSTORE_PRIVATE_API_H_

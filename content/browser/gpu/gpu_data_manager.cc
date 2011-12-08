@@ -196,6 +196,7 @@ void GpuDataManager::UserFlags::ApplyPolicies() {
 
 GpuDataManager::GpuDataManager()
     : complete_gpu_info_already_requested_(false),
+      complete_gpu_info_available_(false),
       observer_list_(new GpuDataManagerObserverList),
       software_rendering_(false) {
   Initialize();
@@ -208,7 +209,10 @@ void GpuDataManager::Initialize() {
   if (!user_flags_.skip_gpu_data_loading()) {
     content::GPUInfo gpu_info;
     gpu_info_collector::CollectPreliminaryGraphicsInfo(&gpu_info);
-    UpdateGpuInfo(gpu_info);
+    {
+      base::AutoLock auto_lock(gpu_info_lock_);
+      gpu_info_ = gpu_info;
+    }
   }
 
 #if defined(OS_MACOSX)
@@ -229,7 +233,8 @@ GpuDataManager* GpuDataManager::GetInstance() {
 
 void GpuDataManager::RequestCompleteGpuInfoIfNeeded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (complete_gpu_info_already_requested_)
+
+  if (complete_gpu_info_already_requested_ || complete_gpu_info_available_)
     return;
   complete_gpu_info_already_requested_ = true;
 
@@ -240,20 +245,20 @@ void GpuDataManager::RequestCompleteGpuInfoIfNeeded() {
 }
 
 void GpuDataManager::UpdateGpuInfo(const content::GPUInfo& gpu_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  complete_gpu_info_available_ = true;
+  complete_gpu_info_already_requested_ = true;
   {
     base::AutoLock auto_lock(gpu_info_lock_);
     if (!Merge(&gpu_info_, gpu_info))
       return;
-  }
-
-  NotifyGpuInfoUpdate();
-
-  {
-    base::AutoLock auto_lock(gpu_info_lock_);
     content::GetContentClient()->SetGpuInfo(gpu_info_);
   }
 
   UpdateGpuFeatureFlags();
+  // We have to update GpuFeatureFlags before notify all the observers.
+  NotifyGpuInfoUpdate();
 }
 
 const content::GPUInfo& GpuDataManager::gpu_info() const {
@@ -555,13 +560,7 @@ void GpuDataManager::NotifyGpuInfoUpdate() {
 }
 
 void GpuDataManager::UpdateGpuFeatureFlags() {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&GpuDataManager::UpdateGpuFeatureFlags,
-                   base::Unretained(this)));
-    return;
-  }
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   GpuBlacklist* gpu_blacklist = GetGpuBlacklist();
   // We don't set a lock around modifying gpu_feature_flags_ since it's just an
@@ -576,9 +575,6 @@ void GpuDataManager::UpdateGpuFeatureFlags() {
     gpu_feature_flags_ = gpu_blacklist->DetermineGpuFeatureFlags(
         GpuBlacklist::kOsAny, NULL, gpu_info_);
   }
-
-  // Notify clients that GpuInfo state has changed
-  NotifyGpuInfoUpdate();
 
   uint32 flags = gpu_feature_flags_.flags();
   uint32 max_entry_id = gpu_blacklist->max_entry_id();

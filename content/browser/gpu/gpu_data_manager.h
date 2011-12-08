@@ -47,6 +47,10 @@ class CONTENT_EXPORT GpuDataManager {
 
   const content::GPUInfo& gpu_info() const;
 
+  bool complete_gpu_info_available() const {
+    return complete_gpu_info_available_;
+  }
+
   // Returns status of various GPU features. This is two parted:
   // {
   //    featureStatus: []
@@ -216,6 +220,7 @@ class CONTENT_EXPORT GpuDataManager {
   void EnableSoftwareRenderingIfNecessary();
 
   bool complete_gpu_info_already_requested_;
+  bool complete_gpu_info_available_;
 
   GpuFeatureFlags gpu_feature_flags_;
   GpuFeatureFlags preliminary_gpu_feature_flags_;
