@@ -123,6 +123,10 @@ bool GpuCommandBufferStub::IsScheduled() {
   return !scheduler_.get() || scheduler_->IsScheduled();
 }
 
+bool GpuCommandBufferStub::HasMoreWork() {
+  return scheduler_.get() && scheduler_->HasMoreWork();
+}
+
 void GpuCommandBufferStub::SetSwapInterval() {
 #if !defined(OS_MACOSX) && !defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   // Set up swap interval for onscreen contexts.
@@ -360,10 +364,12 @@ void GpuCommandBufferStub::OnAsyncFlush(int32 put_offset,
 }
 
 void GpuCommandBufferStub::OnRescheduled() {
-  gpu::CommandBuffer::State state = command_buffer_->GetLastState();
-  command_buffer_->Flush(state.put_offset);
+  gpu::CommandBuffer::State pre_state = command_buffer_->GetLastState();
+  command_buffer_->Flush(pre_state.put_offset);
+  gpu::CommandBuffer::State post_state = command_buffer_->GetLastState();
 
-  ReportState();
+  if (pre_state.get_offset != post_state.get_offset)
+    ReportState();
 }
 
 void GpuCommandBufferStub::OnCreateTransferBuffer(int32 size,

@@ -41,8 +41,11 @@ class GpuScheduler
   // false must eventually be paired by a call with true.
   void SetScheduled(bool is_scheduled);
 
-  // Returns whether the scheduler is currently scheduled to process commands.
+  // Returns whether the scheduler is currently able to process more commands.
   bool IsScheduled();
+
+  // Returns whether the scheduler needs to be polled again in the future.
+  bool HasMoreWork();
 
   // Sets a callback that is invoked just before scheduler is rescheduled.
   // Takes ownership of callback object.
@@ -59,6 +62,9 @@ class GpuScheduler
   void DeferToFence(base::Closure task);
 
  private:
+  // Polls the fences, invoking callbacks that were waiting to be triggered
+  // by them and returns whether all fences were complete.
+  bool PollUnscheduleFences();
 
   // The GpuScheduler holds a weak reference to the CommandBuffer. The
   // CommandBuffer owns the GpuScheduler and holds a strong reference to it

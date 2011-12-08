@@ -26,6 +26,10 @@
 #include "ipc/ipc_channel_posix.h"
 #endif
 
+namespace {
+const int64 kHandleMoreWorkPeriod = 1;
+}
+
 GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
                        GpuWatchdog* watchdog,
                        int renderer_id,
@@ -154,7 +158,7 @@ void GpuChannel::OnScheduled() {
   // Post a task to handle any deferred messages. The deferred message queue is
   // not emptied here, which ensures that OnMessageReceived will continue to
   // defer newly received messages until the ones in the queue have all been
-  // handled by HandleDeferredMessages. HandleDeferredMessages is invoked as a
+  // handled by HandleMessage. HandleMessage is invoked as a
   // task to prevent reentrancy.
   MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -256,17 +260,27 @@ void GpuChannel::HandleMessage() {
         Send(reply);
       }
     } else {
-      // If the channel becomes unscheduled as a result of handling the message,
-      // synthesize an IPC message to flush the command buffer that became
-      // unscheduled.
+      // If the channel becomes unscheduled as a result of handling the message
+      // or has more work to do, synthesize an IPC message to flush the command
+      // buffer that became unscheduled.
+      bool has_more_work = false;
       for (StubMap::Iterator<GpuCommandBufferStub> it(&stubs_);
            !it.IsAtEnd();
            it.Advance()) {
         GpuCommandBufferStub* stub = it.GetCurrentValue();
-        if (!stub->IsScheduled()) {
+
+        if (!stub->IsScheduled() || stub->HasMoreWork()) {
+          has_more_work = true;
           deferred_messages_.push_front(new GpuCommandBufferMsg_Rescheduled(
               stub->route_id()));
         }
+      }
+
+      if (has_more_work) {
+        MessageLoop::current()->PostDelayedTask(
+            FROM_HERE,
+            base::Bind(&GpuChannel::HandleMessage, weak_factory_.GetWeakPtr()),
+            kHandleMoreWorkPeriod);
       }
     }
   }

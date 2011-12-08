@@ -65,6 +65,9 @@ class GpuCommandBufferStub
   // Whether this command buffer can currently handle IPC messages.
   bool IsScheduled();
 
+  // Whether this command buffer needs to be polled again in the future.
+  bool HasMoreWork();
+
   // Set the swap interval according to the command line.
   void SetSwapInterval();
 

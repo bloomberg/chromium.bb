@@ -10,17 +10,12 @@
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "base/time.h"
-#include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_bindings.h"
-#include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/gl/gl_switches.h"
 
 using ::base::SharedMemory;
 
 namespace gpu {
-namespace {
-const uint64 kPollFencePeriod = 1;
-}
 
 GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
                            gles2::GLES2Decoder* decoder,
@@ -52,41 +47,14 @@ GpuScheduler::~GpuScheduler() {
 void GpuScheduler::PutChanged() {
   TRACE_EVENT1("gpu", "GpuScheduler:PutChanged", "this", this);
 
-  DCHECK(IsScheduled());
-
   CommandBuffer::State state = command_buffer_->GetState();
   parser_->set_put(state.put_offset);
   if (state.error != error::kNoError)
     return;
 
   // Check that the GPU has passed all fences.
-  if (!unschedule_fences_.empty()) {
-    if (gfx::g_GL_NV_fence) {
-      while (!unschedule_fences_.empty()) {
-        if (glTestFenceNV(unschedule_fences_.front().fence)) {
-          glDeleteFencesNV(1, &unschedule_fences_.front().fence);
-          unschedule_fences_.front().task.Run();
-          unschedule_fences_.pop();
-        } else {
-          SetScheduled(false);
-          MessageLoop::current()->PostDelayedTask(
-              FROM_HERE,
-              base::Bind(&GpuScheduler::SetScheduled, AsWeakPtr(), true),
-              kPollFencePeriod);
-          return;
-        }
-      }
-    } else {
-      // Hopefully no recent drivers don't support GL_NV_fence and this will
-      // not happen in practice.
-      glFinish();
-
-      while (!unschedule_fences_.empty()) {
-        unschedule_fences_.front().task.Run();
-        unschedule_fences_.pop();
-      }
-    }
-  }
+  if (!PollUnscheduleFences())
+    return;
 
   // One of the unschedule fence tasks might have unscheduled us.
   if (!IsScheduled())
@@ -135,6 +103,10 @@ void GpuScheduler::SetScheduled(bool scheduled) {
 
 bool GpuScheduler::IsScheduled() {
   return unscheduled_count_ == 0;
+}
+
+bool GpuScheduler::HasMoreWork() {
+  return !unschedule_fences_.empty();
 }
 
 void GpuScheduler::SetScheduledCallback(
@@ -191,6 +163,30 @@ void GpuScheduler::DeferToFence(base::Closure task) {
   fence.task = task;
 
   unschedule_fences_.push(fence);
+}
+
+bool GpuScheduler::PollUnscheduleFences() {
+  if (gfx::g_GL_NV_fence) {
+    while (!unschedule_fences_.empty()) {
+      if (glTestFenceNV(unschedule_fences_.front().fence)) {
+        glDeleteFencesNV(1, &unschedule_fences_.front().fence);
+        unschedule_fences_.front().task.Run();
+        unschedule_fences_.pop();
+      } else {
+        return false;
+      }
+    }
+  } else {
+    if (!unschedule_fences_.empty())
+      glFinish();
+
+    while (!unschedule_fences_.empty()) {
+      unschedule_fences_.front().task.Run();
+      unschedule_fences_.pop();
+    }
+  }
+
+  return true;
 }
 
 GpuScheduler::UnscheduleFence::UnscheduleFence() : fence(0) {
