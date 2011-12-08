@@ -452,6 +452,12 @@ class DistributedBuilder(SimpleBuilder):
     was_build_successful = False
     try:
       was_build_successful = super(DistributedBuilder, self).RunStages()
+    except SystemExit as ex:
+      # If a stage calls sys.exit(0), it's exiting with success, so that means
+      # we should mark ourselves as successful.
+      if ex.code == 0:
+        was_build_successful = True
+      raise
     finally:
       self.Publish(was_build_successful)
 
