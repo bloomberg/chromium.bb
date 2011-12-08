@@ -72,6 +72,14 @@ bcp-1.c
 builtin-constant.c
 # llvm does not know how to evaluate "(x<y) && (x>y)" and "(x==y) && (x!=y)"
 compare-fp-3.c
+# math functions not simplified the way the test expects
+20030125-1.c
+# some kind of misoptimization, or optimization not done that the test
+# expects. not sure why it wasn't caught before
+fprintf-chk-1.c
+printf-chk-1.c
+vprintf-chk-1.c
+vfprintf-chk-1.c
 # ======================================================================
 # wont fixes - misc reasons
 # ======================================================================

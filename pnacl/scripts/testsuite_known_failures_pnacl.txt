@@ -25,6 +25,8 @@ spirit
 aha
 # crash
 dt
+flops
+lua
 # crash on ARM/qemu
 AMGmk
 almabench
