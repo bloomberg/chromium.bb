@@ -4,11 +4,11 @@
 
 #include "ppapi/tests/test_flash.h"
 
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
-#include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
 REGISTER_TEST_CASE(Flash);

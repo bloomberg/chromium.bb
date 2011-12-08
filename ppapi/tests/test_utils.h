@@ -79,20 +79,4 @@ class TestCompletionCallback {
 #define PPAPI_POSIX 1
 #endif
 
-// This is roughly copied from base/compiler_specific.h, and makes it possible
-// to pass 'this' in a constructor initializer list, when you really mean it.
-//
-// Example usage:
-// Foo::Foo(MyInstance* instance)
-//     : ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {}
-#if defined(COMPILER_MSVC)
-#define PP_ALLOW_THIS_IN_INITIALIZER_LIST(code) \
-    __pragma(warning(push)) \
-    __pragma(warning(disable:4355)) \
-    code \
-    __pragma(warning(pop))
-#else
-#define PP_ALLOW_THIS_IN_INITIALIZER_LIST(code) code
-#endif
-
 #endif  // PPAPI_TESTS_TEST_UTILS_H_

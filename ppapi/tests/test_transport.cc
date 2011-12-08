@@ -12,6 +12,7 @@
 
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/transport_dev.h"
 #include "ppapi/cpp/instance.h"
