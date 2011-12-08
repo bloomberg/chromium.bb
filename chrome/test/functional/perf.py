@@ -113,32 +113,46 @@ class BasePerfTest(pyauto.PyUITest):
         std_dev = math.sqrt(sum(temp_vals) / (len(temp_vals) - 1))
     return avg, std_dev
 
-  def _OutputPerfGraphValue(self, description, value):
+  def _OutputPerfGraphValue(self, description, value, units,
+                            graph_name='Default-Graph'):
     """Outputs a performance value to have it graphed on the performance bots.
 
-    Only used for ChromeOS.  The performance bots have a 30-character limit on
-    the length of the description for a performance value.  Any characters
-    beyond that are truncated before results are stored in the autotest
+    The output format differs, depending on whether the current platform is
+    Chrome desktop or ChromeOS.
+
+    For ChromeOS, the performance bots have a 30-character limit on the length
+    of the key associated with a performance value.  A key on ChromeOS is
+    considered to be of the form "units_description" (for example,
+    "milliseconds_NewTabPage"), and is created from the |units| and
+    |description| passed as input to this function.  Any characters beyond the
+    length 30 limit are truncated before results are stored in the autotest
     database.
 
     Args:
-      description: A string description of the performance value.  The string
-                   should be of the form "units_identifier" (for example,
-                   "milliseconds_NewTabPage").  This description will be
-                   truncated to 30 characters when stored in the autotest
-                   database.
+      description: A string description of the performance value.  Should not
+                   include spaces.
       value: A numeric value representing a single performance measurement.
+      units: A string representing the units of the performance value.  Should
+             not include spaces.
+      graph_name: A string name for the graph associated with this performance
+                  value.  Only used on Chrome desktop.
+
     """
     if self.IsChromeOS():
-      if len(description) > 30:
+      perf_key = '%s_%s' % (units, description)
+      if len(perf_key) > 30:
         logging.warning('The description "%s" will be truncated to "%s" '
                         '(length 30) when added to the autotest database.',
-                        description, description[:30])
-      print '\n%s(\'%s\', %.2f)%s' % (self._PERF_OUTPUT_MARKER_PRE, description,
-                                      value, self._PERF_OUTPUT_MARKER_POST)
+                        perf_key, perf_key[:30])
+      print '\n%s(\'%s\', %.2f)%s' % (self._PERF_OUTPUT_MARKER_PRE,
+                                      perf_key, value,
+                                      self._PERF_OUTPUT_MARKER_POST)
       sys.stdout.flush()
+    else:
+      pyauto_utils.PrintPerfResult(graph_name, description, value, units)
 
-  def _PrintSummaryResults(self, description, values, units):
+  def _PrintSummaryResults(self, description, values, units,
+                           graph_name='Default-Graph'):
     """Logs summary measurement information.
 
     This function computes and outputs the average and standard deviation of
@@ -150,6 +164,8 @@ class BasePerfTest(pyauto.PyUITest):
       description: A string description for the specified results.
       values: A list of numeric value measurements.
       units: A string specifying the units for the specified measurements.
+      graph_name: A string name for the graph associated with this performance
+                  value.  Only used on Chrome desktop.
     """
     logging.info('Results for: ' + description)
     if values:
@@ -160,7 +176,8 @@ class BasePerfTest(pyauto.PyUITest):
       logging.info('  --------------------------')
       logging.info('  Average: %.2f %s', avg, units)
       logging.info('  Std dev: %.2f %s', std_dev, units)
-      self._OutputPerfGraphValue('%s_%s' % (units, description), avg)
+      self._OutputPerfGraphValue(description, avg, units,
+                                 graph_name=graph_name)
     else:
       logging.info('No results to report.')
 
@@ -194,7 +211,8 @@ class BasePerfTest(pyauto.PyUITest):
       for _ in range(num_tabs):
         self.GetBrowserWindow(0).GetTab(1).Close(True)
 
-    self._PrintSummaryResults(description, timings, 'milliseconds')
+    self._PrintSummaryResults(description, timings, 'milliseconds',
+                              description)
 
   def _LoginToGoogleAccount(self):
     """Logs in to a testing Google account."""
@@ -327,9 +345,11 @@ class BenchmarkPerfTest(BasePerfTest):
     for key, val in timings.items():
       print
       if key == 'final_score':
-        self._PrintSummaryResults('V8Benchmark', val, 'score')
+        self._PrintSummaryResults('V8Benchmark', val, 'score',
+                                  'V8Benchmark-final')
       else:
-        self._PrintSummaryResults('V8Benchmark-%s' % key, val, 'score')
+        self._PrintSummaryResults('V8Benchmark-%s' % key, val, 'score',
+                                  'V8Benchmark-individual')
 
   def testSunSpider(self):
     """Runs the SunSpider javascript benchmark suite."""
@@ -357,7 +377,8 @@ class BenchmarkPerfTest(BasePerfTest):
     results = self.ExecuteJavascript(js_get_results, tab_index=1) + '<br>'
     total = re.search('Total:\s*([\d.]+)ms', results).group(1)
     logging.info('Total: %.2f ms' % float(total))
-    self._OutputPerfGraphValue('ms_SunSpider-total', float(total))
+    self._OutputPerfGraphValue('SunSpider-total', float(total), 'ms',
+                               graph_name='SunSpider-total')
 
     for match_category in re.finditer('\s\s(\w+):\s*([\d.]+)ms.+?<br><br>',
                                       results):
@@ -365,8 +386,10 @@ class BenchmarkPerfTest(BasePerfTest):
       category_result = match_category.group(2)
       logging.info('Benchmark "%s": %.2f ms', category_name,
                    float(category_result))
-      self._OutputPerfGraphValue('ms_SunSpider-%s' % category_name,
-                                 float(category_result))
+      self._OutputPerfGraphValue('SunSpider-' + category_name,
+                                 float(category_result), 'ms',
+                                 graph_name='SunSpider-individual')
+
       for match_result in re.finditer('<br>\s\s\s\s([\w-]+):\s*([\d.]+)ms',
                                       match_category.group(0)):
         result_name = match_result.group(1)
@@ -374,8 +397,9 @@ class BenchmarkPerfTest(BasePerfTest):
         logging.info('  Result "%s-%s": %.2f ms', category_name, result_name,
                      float(result_value))
         self._OutputPerfGraphValue(
-            'ms_SunSpider-%s-%s' % (category_name, result_name),
-            float(result_value))
+            'SunSpider-%s-%s' % (category_name, result_name),
+            float(result_value), 'ms',
+            graph_name='SunSpider-individual')
 
   def testDromaeoSuite(self):
     """Measures results from Dromaeo benchmark suite."""
@@ -432,14 +456,17 @@ class BenchmarkPerfTest(BasePerfTest):
     results = eval(self.ExecuteJavascript(js_get_results, tab_index=1))
     total_result = results['total_result']
     logging.info('Total result: ' + total_result)
-    self._OutputPerfGraphValue('runsPerSec_Dromaeo-total', float(total_result))
+    self._OutputPerfGraphValue(
+        'Dromaeo-total',
+        float(total_result), 'runsPerSec',
+        graph_name='Dromaeo-total')
 
     for group_name, group in results['all_results'].iteritems():
       logging.info('Benchmark "%s": %s', group_name, group['result'])
       self._OutputPerfGraphValue(
-          'runsPerSec_Dromaeo-%s' % group_name.replace(' ', ''),
-          float(group['result']))
-
+          'Dromaeo-' + group_name.replace(' ', ''),
+          float(group['result']), 'runsPerSec',
+          graph_name='Dromaeo-individual')
       for benchmark_name, benchmark_score in group['sub_groups'].iteritems():
         logging.info('  Result "%s": %s', benchmark_name, benchmark_score)
 
@@ -587,8 +614,10 @@ class NetflixPerfTest(BasePerfTest, NetflixTestHelper):
     extrapolation_value = fraction_non_idle_time * \
         (total_video_frames + total_dropped_frames) / total_video_frames
     logging.info('Netflix CPU extrapolation: %.2f' % extrapolation_value)
-    self._OutputPerfGraphValue('extrapolation_NetflixCPUExtrapolation',
-                               extrapolation_value)
+    self._OutputPerfGraphValue(
+        'NetflixCPUExtrapolation',
+        extrapolation_value, 'extrapolation',
+        graph_name='NetflixCPUExtrapolation')
 
 
 class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
@@ -681,8 +710,10 @@ class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
     extrapolation_value = (fraction_non_idle_time *
                            (total_frames / total_shown_frames))
     logging.info('Youtube CPU extrapolation: %.2f' % extrapolation_value)
-    self._OutputPerfGraphValue('extrapolation_YoutubeCPUExtrapolation',
-                               extrapolation_value)
+    self._OutputPerfGraphValue(
+        'YoutubeCPUExtrapolation',
+        extrapolation_value, 'extrapolation',
+        graph_name='YoutubeCPUExtrapolation')
 
 
 class WebGLTest(BasePerfTest):
@@ -1129,7 +1160,10 @@ class FlashTest(BasePerfTest):
         msg='Timed out when waiting for test result.')
     result = float(self.ExecuteJavascript(js, tab_index=1))
     logging.info('Result for %s: %.2f FPS (average)', description, result)
-    self._OutputPerfGraphValue('%s_%s' % ('FPS', description), result)
+    self._OutputPerfGraphValue(
+        description,
+        result, 'FPS',
+        graph_name=description)
 
   def testFlashGaming(self):
     """Runs a simple flash gaming benchmark test."""
@@ -1177,9 +1211,13 @@ class FlashTest(BasePerfTest):
       logging.info('  %.2f MFLOPS', mflops)
       logging.info('  %.2f MB', mem)
       self._OutputPerfGraphValue(
-          '%s_ScimarkGui-%s-MFLOPS' % ('MFLOPS', benchmark), mflops)
+          'ScimarkGui-%s-MFLOPS' % benchmark,
+          mflops, 'MFLOPS',
+          graph_name='ScimarkGui')
       self._OutputPerfGraphValue(
-          '%s_ScimarkGui-%s-Mem' % ('MB', benchmark), mem)
+          'ScimarkGui-%s-Mem' % benchmark,
+          mem, 'MB',
+          graph_name='ScimarkGui')
 
 
 class LiveGamePerfTest(BasePerfTest):
@@ -1228,13 +1266,18 @@ class LiveGamePerfTest(BasePerfTest):
 
     logging.info('Fraction of CPU time spent non-idle: %.2f' %
                  fraction_non_idle_time)
-    self._OutputPerfGraphValue('Fraction_%sCpuBusy' % description,
-                               fraction_non_idle_time)
+    self._OutputPerfGraphValue(
+        description + 'CpuBusy',
+        fraction_non_idle_time, 'Fraction',
+        graph_name='CpuBusy')
     snapshotter = perf_snapshot.PerformanceSnapshotter()
     snapshot = snapshotter.HeapSnapshot()[0]
     v8_heap_size = snapshot['total_heap_size'] / (1024.0 * 1024.0)
     logging.info('Total v8 heap size: %.2f MB' % v8_heap_size)
-    self._OutputPerfGraphValue('MB_%sV8HeapSize' % description, v8_heap_size)
+    self._OutputPerfGraphValue(
+        description + 'V8HeapSize',
+        v8_heap_size, 'MB',
+        graph_name='V8HeapSize')
 
   def testAngryBirds(self):
     """Measures performance for Angry Birds."""
