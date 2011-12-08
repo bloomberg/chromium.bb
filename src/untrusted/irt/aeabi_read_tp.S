@@ -20,13 +20,12 @@
         .p2align NACL_BLOCK_SHIFT
 __aeabi_read_tp:
         push {r1, r2, r3, lr}
-
-        /*
-         * Insert enough nops so the call is the last instruction in the bundle.
-         */
-        .rept ((NACL_BLOCK_SIZE - (. - __aeabi_read_tp)) / 4) - 1
         nop
-        .endr
+        nop
+        /* NOTE: The call must be last slot in the bundle.
+         *       Consider using the pnacl specifc pseudo opcodes
+         *       once we build this with llvm-mc only.
+         */
         bl __nacl_read_tp
 
         pop {r1, r2, r3, lr}

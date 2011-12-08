@@ -44,8 +44,10 @@ def NewAsmEnv(env, defines, rodata_address, rwdata_address):
   if asm_env.Bit('bitcode'):
     asm_env.PNaClForceNative()
     # NOTE: "PNACL_AS" controls small code adaptions needed for  the
-    # pnacl assembler
-    asm_env.Append(ASFLAGS='-DPNACL_AS=1')
+    # pnacl assembler but we do not use the pnacl assembler for ARM yet
+    # BUG: http://code.google.com/p/nativeclient/issues/detail?id=1968
+    if not env.Bit('target_arm'):
+      asm_env.Append(ASFLAGS='-DPNACL_AS=1')
     # Windows uses CC for assembling
     asm_env.Append(CFLAGS='-DPNACL_AS=1')
   link_cmd = ('${LD} -e _start ${TEXT_START} ${RO_START} ${RW_START}' +

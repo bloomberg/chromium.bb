@@ -6,6 +6,8 @@
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
+#define halt 0xe1266676
+
         /*
          * Code to test various address layout boundary conditions.
          * This is a translation from the x86-{32,64} code, and is
@@ -13,8 +15,6 @@
          * print out the values that are designed, while maintaining
          * strict control over the address space layout.
          */
-
-        .cpu cortex-a8
 
         .text
 start_of_text:
@@ -64,8 +64,8 @@ do_digit_not_upper:
         bne do_digit_16
 
         mov r1, r3
-        movw r3, #:lower16:NACL_SYSCALL_ADDR(NACL_sys_write)
-        movt r3, #:upper16:NACL_SYSCALL_ADDR(NACL_sys_write)
+        movw r3, :lower16:(NACL_SYSCALL_ADDR(NACL_sys_write))
+        movt r3, :upper16:(NACL_SYSCALL_ADDR(NACL_sys_write))
         nop
 
         nop
@@ -93,8 +93,8 @@ write_char:
 
         mov r1, sp
         mov r2, #1
-        movw r3, #:lower16:NACL_SYSCALL_ADDR(NACL_sys_write)
-        movt r3, #:upper16:NACL_SYSCALL_ADDR(NACL_sys_write)
+        movw r3, :lower16:(NACL_SYSCALL_ADDR(NACL_sys_write))
+        movt r3, :upper16:(NACL_SYSCALL_ADDR(NACL_sys_write))
 
         nop
         nop
@@ -123,8 +123,8 @@ _start:
         nop
         bl write_char
 
-        movw r1, #:lower16:end_of_text
-        movt r1, #:upper16:end_of_text
+        movw r1, :lower16:(end_of_text)
+        movt r1, :upper16:(end_of_text)
         mov r0, #1
         bl write_num_16
 
@@ -134,8 +134,8 @@ _start:
         bl write_char
 
         mov r0, #0
-        movw r3, #:lower16:NACL_SYSCALL_ADDR(NACL_sys_sysbrk)
-        movt r3, #:upper16:NACL_SYSCALL_ADDR(NACL_sys_sysbrk)
+        movw r3, :lower16:(NACL_SYSCALL_ADDR(NACL_sys_sysbrk))
+        movt r3, :upper16:(NACL_SYSCALL_ADDR(NACL_sys_sysbrk))
         nop
 
         nop
@@ -154,8 +154,8 @@ _start:
         bl write_char
 
         mov r5, #0  /* r5 holds eventual exit status */
-        movw r1, #:lower16:EXPECTED_BREAK
-        movt r1, #:upper16:EXPECTED_BREAK
+        movw r1, :lower16:(EXPECTED_BREAK)
+        movt r1, :upper16:(EXPECTED_BREAK)
         cmp r1, r4
 
         movne r5, #1
@@ -170,17 +170,17 @@ _start:
 
 #if EXPECTED_RODATA != 0
         mov r2, #12
-        movw r1, #:lower16:ro_str
-        movt r1, #:upper16:ro_str
+        movw r1, :lower16:(ro_str)
+        movt r1, :upper16:(ro_str)
         mov r0, #1
 
-        movw r3, #:lower16:NACL_SYSCALL_ADDR(NACL_sys_write)
-        movt r3, #:upper16:NACL_SYSCALL_ADDR(NACL_sys_write)
+        movw r3, :lower16:(NACL_SYSCALL_ADDR(NACL_sys_write))
+        movt r3, :upper16:(NACL_SYSCALL_ADDR(NACL_sys_write))
         bic r3, r3, #0xc000000f
         blx r3
 
-        movw r1, #:lower16:ro_str
-        movt r1, #:upper16:ro_str
+        movw r1, :lower16:(ro_str)
+        movt r1, :upper16:(ro_str)
         mov r0, #1
         bl write_num_16
 
@@ -189,10 +189,10 @@ _start:
         nop
         bl write_char
 
-        movw r1, #:lower16:EXPECTED_RODATA
-        movt r1, #:upper16:EXPECTED_RODATA
-        movw r2, #:lower16:ro_str
-        movt r2, #:upper16:ro_str
+        movw r1, :lower16:(EXPECTED_RODATA)
+        movt r1, :upper16:(EXPECTED_RODATA)
+        movw r2, :lower16:(ro_str)
+        movt r2, :upper16:(ro_str)
 
         cmp r1, r2
         movne r5, #1
@@ -205,8 +205,8 @@ _start:
         bl write_char
 #endif
 
-        movw r3, #:lower16:NACL_SYSCALL_ADDR(NACL_sys_exit)
-        movt r3, #:upper16:NACL_SYSCALL_ADDR(NACL_sys_exit)
+        movw r3, :lower16:(NACL_SYSCALL_ADDR(NACL_sys_exit))
+        movt r3, :upper16:(NACL_SYSCALL_ADDR(NACL_sys_exit))
         mov r0, #0
         nop
 
@@ -214,9 +214,16 @@ _start:
         nop
         bic r3, r3, #0xc000000f
         blx r3
+#if defined(PNACL_AS)
+/* NOTE: unlike x86 the alignment directive on ARM takes
+   the logarithm of the alignment */
+#define POW2_BIGGER_THAN_DOT 14
+        .align32 POW2_BIGGER_THAN_DOT, halt
+        .fill (TEXT_EXTEND - (1 << POW2_BIGGER_THAN_DOT))/4, 4, halt
+#else
+        .fill (TEXT_EXTEND - (. - start_of_text))/4, 4, halt
+#endif
 
-        /* use new proper halt */
-        .fill (TEXT_EXTEND - (. - start_of_text))/4, 4, 0xe1266676
 end_of_text:
 
 #if EXPECTED_RODATA != 0
