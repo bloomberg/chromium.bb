@@ -113,6 +113,7 @@ void WebUILoginDisplayHost::StartSignInScreen() {
     LoadURL(GURL(kLoginURL));
 
   BaseLoginDisplayHost::StartSignInScreen();
+  CHECK(webui_login_display_);
   GetOobeUI()->ShowSigninScreen(webui_login_display_);
 }
 

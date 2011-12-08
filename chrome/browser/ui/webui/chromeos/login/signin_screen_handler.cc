@@ -301,6 +301,8 @@ void SigninScreenHandler::GetLocalizedStrings(
 }
 
 void SigninScreenHandler::Show(bool oobe_ui) {
+  CHECK(delegate_);
+
   oobe_ui_ = oobe_ui;
   if (!page_is_ready()) {
     show_on_init_ = true;
@@ -324,8 +326,8 @@ void SigninScreenHandler::Show(bool oobe_ui) {
 }
 
 void SigninScreenHandler::SetDelegate(SigninScreenHandlerDelegate* delegate) {
+  CHECK(delegate);
   delegate_ = delegate;
-  DCHECK(delegate_);
   delegate_->SetWebUIHandler(this);
 }
 
