@@ -236,7 +236,9 @@ remoting.OAuth2.prototype.doAuthRedirect = function() {
           'client_id': this.CLIENT_ID_,
           'redirect_uri': this.REDIRECT_URI_,
           'scope': this.SCOPE_,
-          'response_type': 'code'
+          'response_type': 'code',
+          'access_type': 'offline',
+          'approval_prompt': 'force'
         });
   window.location.replace(GET_CODE_URL);
 };
