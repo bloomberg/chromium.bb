@@ -9,7 +9,7 @@
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/shared_impl/ppb_var_impl.h"
+#include "ppapi/shared_impl/ppb_var_shared.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/host_globals.h"
@@ -397,10 +397,10 @@ PP_Var CreateObjectWithModuleDeprecated(PP_Module pp_module,
 // static
 const PPB_Var_Deprecated* PPB_Var_Deprecated_Impl::GetVarDeprecatedInterface() {
   static const PPB_Var_Deprecated var_deprecated_interface = {
-    ::ppapi::PPB_Var_Impl::GetVarInterface1_0()->AddRef,
-    ::ppapi::PPB_Var_Impl::GetVarInterface1_0()->Release,
-    ::ppapi::PPB_Var_Impl::GetVarInterface1_0()->VarFromUtf8,
-    ::ppapi::PPB_Var_Impl::GetVarInterface1_0()->VarToUtf8,
+    ::ppapi::PPB_Var_Shared::GetVarInterface1_0()->AddRef,
+    ::ppapi::PPB_Var_Shared::GetVarInterface1_0()->Release,
+    ::ppapi::PPB_Var_Shared::GetVarInterface1_0()->VarFromUtf8,
+    ::ppapi::PPB_Var_Shared::GetVarInterface1_0()->VarToUtf8,
     &HasPropertyDeprecated,
     &HasMethodDeprecated,
     &GetProperty,

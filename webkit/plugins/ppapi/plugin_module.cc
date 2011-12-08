@@ -85,7 +85,7 @@
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/ppb_opengles2_shared.h"
-#include "ppapi/shared_impl/ppb_var_impl.h"
+#include "ppapi/shared_impl/ppb_var_shared.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
@@ -325,9 +325,9 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_VAR_DEPRECATED_INTERFACE) == 0)
     return PPB_Var_Deprecated_Impl::GetVarDeprecatedInterface();
   if (strcmp(name, PPB_VAR_INTERFACE_1_0) == 0)
-    return ::ppapi::PPB_Var_Impl::GetVarInterface1_0();
+    return ::ppapi::PPB_Var_Shared::GetVarInterface1_0();
   if (strcmp(name, PPB_VAR_INTERFACE_1_1) == 0)
-    return ::ppapi::PPB_Var_Impl::GetVarInterface();
+    return ::ppapi::PPB_Var_Shared::GetVarInterface();
 
 #ifdef ENABLE_FLAPPER_HACKS
   if (strcmp(name, PPB_FLASH_NETCONNECTOR_INTERFACE) == 0)

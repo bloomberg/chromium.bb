@@ -22,7 +22,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
-#include "ppapi/shared_impl/ppb_var_impl.h"
+#include "ppapi/shared_impl/ppb_var_shared.h"
 #include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
@@ -277,10 +277,10 @@ PPB_Var_Deprecated_Proxy::~PPB_Var_Deprecated_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_Var_Deprecated_Proxy::GetInfo() {
   static const PPB_Var_Deprecated var_deprecated_interface = {
-    ppapi::PPB_Var_Impl::GetVarInterface1_0()->AddRef,
-    ppapi::PPB_Var_Impl::GetVarInterface1_0()->Release,
-    ppapi::PPB_Var_Impl::GetVarInterface1_0()->VarFromUtf8,
-    ppapi::PPB_Var_Impl::GetVarInterface1_0()->VarToUtf8,
+    ppapi::PPB_Var_Shared::GetVarInterface1_0()->AddRef,
+    ppapi::PPB_Var_Shared::GetVarInterface1_0()->Release,
+    ppapi::PPB_Var_Shared::GetVarInterface1_0()->VarFromUtf8,
+    ppapi::PPB_Var_Shared::GetVarInterface1_0()->VarToUtf8,
     &HasProperty,
     &HasMethod,
     &GetProperty,

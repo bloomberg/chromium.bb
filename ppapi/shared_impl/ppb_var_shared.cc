@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/shared_impl/ppb_var_impl.h"
+#include "ppapi/shared_impl/ppb_var_shared.h"
 
 #include <limits>
 
@@ -65,12 +65,12 @@ const PPB_Var_1_0 var_interface1_0 = {
 }  // namespace
 
 // static
-const PPB_Var* PPB_Var_Impl::GetVarInterface() {
+const PPB_Var* PPB_Var_Shared::GetVarInterface() {
   return &var_interface;
 }
 
 // static
-const PPB_Var_1_0* PPB_Var_Impl::GetVarInterface1_0() {
+const PPB_Var_1_0* PPB_Var_Shared::GetVarInterface1_0() {
   return &var_interface1_0;
 }
 

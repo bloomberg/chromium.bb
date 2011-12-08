@@ -10,7 +10,7 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
-#include "ppapi/shared_impl/ppb_var_impl.h"
+#include "ppapi/shared_impl/ppb_var_shared.h"
 
 namespace {
 std::string VarToString(const PP_Var& var, const PPB_Var* ppb_var) {
@@ -30,7 +30,7 @@ class PPB_VarTest : public PluginProxyTest {
  public:
   PPB_VarTest()
       : test_strings_(kNumStrings), vars_(kNumStrings),
-        ppb_var_(ppapi::PPB_Var_Impl::GetVarInterface()) {
+        ppb_var_(ppapi::PPB_Var_Shared::GetVarInterface()) {
     // Set the value of test_strings_[i] to "i".
     for (size_t i = 0; i < kNumStrings; ++i)
       test_strings_[i] = base::IntToString(i);
@@ -102,7 +102,7 @@ class CreateVarThreadDelegate : public base::PlatformThread::Delegate {
   }
   virtual ~CreateVarThreadDelegate() {}
   virtual void ThreadMain() {
-    const PPB_Var* ppb_var = ppapi::PPB_Var_Impl::GetVarInterface();
+    const PPB_Var* ppb_var = ppapi::PPB_Var_Shared::GetVarInterface();
     for (size_t i = 0; i < size_; ++i) {
       vars_out_[i] = ppb_var->VarFromUtf8(strings_in_[i].c_str(),
                                           strings_in_[i].length());
@@ -125,7 +125,7 @@ class ChangeRefVarThreadDelegate : public base::PlatformThread::Delegate {
   }
   virtual ~ChangeRefVarThreadDelegate() {}
   virtual void ThreadMain() {
-    const PPB_Var* ppb_var = ppapi::PPB_Var_Impl::GetVarInterface();
+    const PPB_Var* ppb_var = ppapi::PPB_Var_Shared::GetVarInterface();
     // Increment and decrement the reference count for each var kRefsToAdd
     // times. Note that we always AddRef once before doing the matching Release,
     // to ensure that we never accidentally release the last reference.
@@ -153,7 +153,7 @@ class RemoveRefVarThreadDelegate : public base::PlatformThread::Delegate {
   }
   virtual ~RemoveRefVarThreadDelegate() {}
   virtual void ThreadMain() {
-    const PPB_Var* ppb_var = ppapi::PPB_Var_Impl::GetVarInterface();
+    const PPB_Var* ppb_var = ppapi::PPB_Var_Shared::GetVarInterface();
     for (size_t i = 0; i < kNumStrings; ++i) {
       ppb_var->Release(vars_[i]);
     }
