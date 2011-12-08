@@ -96,10 +96,12 @@ static uint32_t key_panel_color;
 static char *key_launcher_icon;
 static char *key_launcher_path;
 static void launcher_section_done(void *data);
+static int key_locking = 1;
 
 static const struct config_key shell_config_keys[] = {
 	{ "background-image", CONFIG_KEY_STRING, &key_background_image },
 	{ "panel-color", CONFIG_KEY_INTEGER, &key_panel_color },
+	{ "locking", CONFIG_KEY_BOOLEAN, &key_locking },
 };
 
 static const struct config_key launcher_config_keys[] = {
@@ -512,6 +514,11 @@ desktop_shell_prepare_lock_surface(void *data,
 				   struct desktop_shell *desktop_shell)
 {
 	struct desktop *desktop = data;
+
+	if (!key_locking) {
+		desktop_shell_unlock(desktop->shell);
+		return;
+	}
 
 	if (!desktop->unlock_dialog) {
 		desktop->unlock_dialog = unlock_dialog_create(desktop);
