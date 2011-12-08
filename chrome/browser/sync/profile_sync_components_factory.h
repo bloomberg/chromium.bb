@@ -9,7 +9,7 @@
 #include <string>
 
 #include "chrome/browser/sync/glue/data_type_controller.h"
-#include "chrome/browser/sync/unrecoverable_error_handler.h"
+#include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
 
 class PasswordStore;
 class ProfileSyncService;

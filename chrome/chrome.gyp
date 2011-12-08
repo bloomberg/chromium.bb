@@ -250,6 +250,7 @@
       'sources': [
         'browser/sync/engine/syncapi_internal.cc',
         'browser/sync/engine/syncapi_internal.h',
+        'browser/sync/internal_api/includes/unrecoverable_error_handler.h',
         'browser/sync/internal_api/base_node.cc',
         'browser/sync/internal_api/base_node.h',
         'browser/sync/internal_api/base_transaction.cc',

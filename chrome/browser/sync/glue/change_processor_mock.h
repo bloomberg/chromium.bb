@@ -7,8 +7,8 @@
 #pragma once
 
 #include "chrome/browser/sync/glue/change_processor.h"
+#include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace browser_sync {

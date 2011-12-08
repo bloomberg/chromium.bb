@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/task.h"
-#include "chrome/browser/sync/unrecoverable_error_handler.h"
+#include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 
 class BookmarkModel;
