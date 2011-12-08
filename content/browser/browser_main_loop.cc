@@ -523,6 +523,10 @@ void BrowserMainLoop::InitializeToolkit() {
   // requirement for gconf.
   g_type_init();
 
+#if defined(USE_AURA)
+  setlocale(LC_ALL, "");
+#endif
+
 #if !defined(USE_AURA)
   gfx::GtkInitFromCommandLine(parameters_.command_line);
 #endif
