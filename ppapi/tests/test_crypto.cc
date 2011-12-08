@@ -16,7 +16,7 @@ TestCrypto::TestCrypto(TestingInstance* instance)
 }
 
 bool TestCrypto::Init() {
-  crypto_interface_ = static_cast<PPB_Crypto_Dev const*>(
+  crypto_interface_ = static_cast<const PPB_Crypto_Dev*>(
       pp::Module::Get()->GetBrowserInterface(PPB_CRYPTO_DEV_INTERFACE));
   return !!crypto_interface_;
 }

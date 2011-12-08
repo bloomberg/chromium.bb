@@ -13,7 +13,7 @@
 REGISTER_TEST_CASE(ImageData);
 
 bool TestImageData::Init() {
-  image_data_interface_ = reinterpret_cast<PPB_ImageData const*>(
+  image_data_interface_ = static_cast<const PPB_ImageData*>(
       pp::Module::Get()->GetBrowserInterface(PPB_IMAGEDATA_INTERFACE));
   return !!image_data_interface_;
 }

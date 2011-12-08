@@ -57,15 +57,15 @@ TestInputEvent::~TestInputEvent() {
 }
 
 bool TestInputEvent::Init() {
-  input_event_interface_ = static_cast<PPB_InputEvent const*>(
+  input_event_interface_ = static_cast<const PPB_InputEvent*>(
       pp::Module::Get()->GetBrowserInterface(PPB_INPUT_EVENT_INTERFACE));
-  mouse_input_event_interface_ = static_cast<PPB_MouseInputEvent const*>(
+  mouse_input_event_interface_ = static_cast<const PPB_MouseInputEvent*>(
       pp::Module::Get()->GetBrowserInterface(
           PPB_MOUSE_INPUT_EVENT_INTERFACE));
-  wheel_input_event_interface_ = static_cast<PPB_WheelInputEvent const*>(
+  wheel_input_event_interface_ = static_cast<const PPB_WheelInputEvent*>(
       pp::Module::Get()->GetBrowserInterface(
           PPB_WHEEL_INPUT_EVENT_INTERFACE));
-  keyboard_input_event_interface_ = static_cast<PPB_KeyboardInputEvent const*>(
+  keyboard_input_event_interface_ = static_cast<const PPB_KeyboardInputEvent*>(
       pp::Module::Get()->GetBrowserInterface(
           PPB_KEYBOARD_INPUT_EVENT_INTERFACE));
 

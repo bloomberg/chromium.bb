@@ -27,15 +27,15 @@ void FlushCallbackNOP(void* data, int32_t result) {
 }
 
 void FlushCallbackQuitMessageLoop(void* data, int32_t result) {
-  reinterpret_cast<TestGraphics2D*>(data)->QuitMessageLoop();
+  static_cast<TestGraphics2D*>(data)->QuitMessageLoop();
 }
 
 }  // namespace
 
 bool TestGraphics2D::Init() {
-  graphics_2d_interface_ = reinterpret_cast<PPB_Graphics2D const*>(
+  graphics_2d_interface_ = static_cast<const PPB_Graphics2D*>(
       pp::Module::Get()->GetBrowserInterface(PPB_GRAPHICS_2D_INTERFACE));
-  image_data_interface_ = reinterpret_cast<PPB_ImageData const*>(
+  image_data_interface_ = static_cast<const PPB_ImageData*>(
       pp::Module::Get()->GetBrowserInterface(PPB_IMAGEDATA_INTERFACE));
   return graphics_2d_interface_ && image_data_interface_ &&
          InitTestingInterface();

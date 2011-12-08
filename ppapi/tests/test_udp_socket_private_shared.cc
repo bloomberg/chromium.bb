@@ -23,17 +23,13 @@ TestUDPSocketPrivateShared::TestUDPSocketPrivateShared(
 }
 
 bool TestUDPSocketPrivateShared::Init() {
-  tcp_socket_private_interface_ =
-      reinterpret_cast<PPB_TCPSocket_Private const*>(
-          pp::Module::Get()->GetBrowserInterface(
-              PPB_TCPSOCKET_PRIVATE_INTERFACE));
+  tcp_socket_private_interface_ = static_cast<const PPB_TCPSocket_Private*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_TCPSOCKET_PRIVATE_INTERFACE));
   if (!tcp_socket_private_interface_)
     instance_->AppendError("TCPSocketPrivate interface not available");
 
-  udp_socket_private_interface_ =
-      reinterpret_cast<PPB_UDPSocket_Private const*>(
-          pp::Module::Get()->GetBrowserInterface(
-              PPB_UDPSOCKET_PRIVATE_INTERFACE));
+  udp_socket_private_interface_ = static_cast<const PPB_UDPSocket_Private*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_UDPSOCKET_PRIVATE_INTERFACE));
   if (!udp_socket_private_interface_)
     instance_->AppendError("UDPSocketPrivate interface not available");
 

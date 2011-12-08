@@ -13,7 +13,7 @@
 REGISTER_TEST_CASE(VideoDecoder);
 
 bool TestVideoDecoder::Init() {
-  video_decoder_interface_ = reinterpret_cast<PPB_VideoDecoder_Dev const*>(
+  video_decoder_interface_ = static_cast<const PPB_VideoDecoder_Dev*>(
       pp::Module::Get()->GetBrowserInterface(PPB_VIDEODECODER_DEV_INTERFACE));
   return video_decoder_interface_ && InitTestingInterface();
 }

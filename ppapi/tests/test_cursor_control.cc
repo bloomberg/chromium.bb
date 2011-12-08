@@ -16,7 +16,7 @@ TestCursorControl::TestCursorControl(TestingInstance* instance)
 }
 
 bool TestCursorControl::Init() {
-  cursor_control_interface_ = static_cast<PPB_CursorControl_Dev const*>(
+  cursor_control_interface_ = static_cast<const PPB_CursorControl_Dev*>(
       pp::Module::Get()->GetBrowserInterface(PPB_CURSOR_CONTROL_DEV_INTERFACE));
   return !!cursor_control_interface_;
 }

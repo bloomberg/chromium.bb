@@ -14,7 +14,7 @@
 REGISTER_TEST_CASE(Buffer);
 
 bool TestBuffer::Init() {
-  buffer_interface_ = reinterpret_cast<PPB_Buffer_Dev const*>(
+  buffer_interface_ = static_cast<const PPB_Buffer_Dev*>(
       pp::Module::Get()->GetBrowserInterface(PPB_BUFFER_DEV_INTERFACE));
   return !!buffer_interface_;
 }

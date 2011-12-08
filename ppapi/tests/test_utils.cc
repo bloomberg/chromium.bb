@@ -18,7 +18,7 @@ const int kActionTimeoutMs = 10000;
 
 const PPB_Testing_Dev* GetTestingInterface() {
   static const PPB_Testing_Dev* g_testing_interface =
-      reinterpret_cast<PPB_Testing_Dev const*>(
+      static_cast<const PPB_Testing_Dev*>(
           pp::Module::Get()->GetBrowserInterface(PPB_TESTING_DEV_INTERFACE));
   return g_testing_interface;
 }

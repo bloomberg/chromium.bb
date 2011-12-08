@@ -202,7 +202,7 @@ TestBroker::TestBroker(TestingInstance* instance)
 }
 
 bool TestBroker::Init() {
-  broker_interface_ = static_cast<PPB_BrokerTrusted const*>(
+  broker_interface_ = static_cast<const PPB_BrokerTrusted*>(
       pp::Module::Get()->GetBrowserInterface(PPB_BROKER_TRUSTED_INTERFACE));
   return !!broker_interface_;
 }

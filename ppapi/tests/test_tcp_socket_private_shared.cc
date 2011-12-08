@@ -25,10 +25,8 @@ TestTCPSocketPrivateShared::TestTCPSocketPrivateShared(
 }
 
 bool TestTCPSocketPrivateShared::Init() {
-  tcp_socket_private_interface_ =
-      reinterpret_cast<PPB_TCPSocket_Private const*>(
-          pp::Module::Get()->GetBrowserInterface(
-              PPB_TCPSOCKET_PRIVATE_INTERFACE));
+  tcp_socket_private_interface_ = static_cast<const PPB_TCPSocket_Private*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_TCPSOCKET_PRIVATE_INTERFACE));
   if (!tcp_socket_private_interface_)
     instance_->AppendError("TCPSocketPrivate interface not available");
   return tcp_socket_private_interface_ && InitTestingInterface();

@@ -17,7 +17,7 @@ TestCharSet::TestCharSet(TestingInstance* instance)
 }
 
 bool TestCharSet::Init() {
-  char_set_interface_ = static_cast<PPB_CharSet_Dev const*>(
+  char_set_interface_ = static_cast<const PPB_CharSet_Dev*>(
       pp::Module::Get()->GetBrowserInterface(PPB_CHAR_SET_DEV_INTERFACE));
   return !!char_set_interface_;
 }

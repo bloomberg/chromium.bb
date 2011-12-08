@@ -25,7 +25,7 @@ uint32_t kInvalidLength = static_cast<uint32_t>(-1);
 REGISTER_TEST_CASE(Var);
 
 bool TestVar::Init() {
-  var_interface_ = reinterpret_cast<const PPB_Var*>(
+  var_interface_ = static_cast<const PPB_Var*>(
       pp::Module::Get()->GetBrowserInterface(PPB_VAR_INTERFACE));
   return var_interface_ && InitTestingInterface();
 }

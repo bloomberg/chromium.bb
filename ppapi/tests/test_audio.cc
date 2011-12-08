@@ -18,9 +18,9 @@
 REGISTER_TEST_CASE(Audio);
 
 bool TestAudio::Init() {
-  audio_interface_ = static_cast<PPB_Audio const*>(
+  audio_interface_ = static_cast<const PPB_Audio*>(
       pp::Module::Get()->GetBrowserInterface(PPB_AUDIO_INTERFACE));
-  audio_config_interface_ = static_cast<PPB_AudioConfig const*>(
+  audio_config_interface_ = static_cast<const PPB_AudioConfig*>(
       pp::Module::Get()->GetBrowserInterface(PPB_AUDIO_CONFIG_INTERFACE));
   core_interface_ = static_cast<const PPB_Core*>(
       pp::Module::Get()->GetBrowserInterface(PPB_CORE_INTERFACE));
