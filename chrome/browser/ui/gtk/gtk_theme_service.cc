@@ -303,19 +303,25 @@ void GtkThemeService::Init(Profile* profile) {
 }
 
 SkBitmap* GtkThemeService::GetBitmapNamed(int id) const {
+  // TODO(erg): Remove this const cast. The gfx::Image interface returns its
+  // images const. GetBitmapNamed() also should but doesn't and has a million
+  // callsites.
+  return const_cast<SkBitmap*>(GetImageNamed(id)->ToSkBitmap());
+}
+
+const gfx::Image* GtkThemeService::GetImageNamed(int id) const {
   // Try to get our cached version:
   ImageCache::const_iterator it = gtk_images_.find(id);
   if (it != gtk_images_.end())
     return it->second;
 
   if (use_gtk_ && IsOverridableImage(id)) {
-    // We haven't built this image yet:
-    SkBitmap* bitmap = GenerateGtkThemeBitmap(id);
-    gtk_images_[id] = bitmap;
-    return bitmap;
+    gfx::Image* image = new gfx::Image(GenerateGtkThemeBitmap(id));
+    gtk_images_[id] = image;
+    return image;
   }
 
-  return ThemeService::GetBitmapNamed(id);
+  return ThemeService::GetImageNamed(id);
 }
 
 SkColor GtkThemeService::GetColor(int id) const {

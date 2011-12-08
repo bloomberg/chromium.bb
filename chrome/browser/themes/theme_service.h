@@ -146,10 +146,9 @@ class ThemeService : public base::NonThreadSafe,
 
   // Returns a cross platform image for an id.
   //
-  // TODO(erg): Make this a virtual, exposed through ui::ThemeProvider and the
-  // main way to get theme properties out of the theme provider since it's
-  // cross platform.
-  const gfx::Image* GetImageNamed(int id) const;
+  // TODO(erg): Make this part of the ui::ThemeProvider and the main way to get
+  // theme properties out of the theme provider since it's cross platform.
+  virtual const gfx::Image* GetImageNamed(int id) const;
 
   // ui::ThemeProvider implementation.
   virtual void Init(Profile* profile) OVERRIDE;
