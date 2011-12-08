@@ -174,7 +174,7 @@ void ConfigurePrerenderFromOmnibox() {
   enabled_trial->AppendGroup("OmniboxPrerenderEnabled", kEnabledProbability);
 
   // Field trial to see which heuristic to use.
-  const base::FieldTrial::Probability kExactFullProbability = 50;
+  const base::FieldTrial::Probability kExactFullProbability = 90;
   scoped_refptr<base::FieldTrial> heuristic_trial(
       new base::FieldTrial(kPrerenderFromOmniboxHeuristicTrialName, kDivisor,
                            "OriginalAlgorithm", 2012, 8, 30));
