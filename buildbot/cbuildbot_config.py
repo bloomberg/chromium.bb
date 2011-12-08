@@ -752,7 +752,7 @@ add_config('aura-tot-chrome-pfq-informational', [chrome_pfq_info, {
 }])
 
 add_config('aura-release', [internal, full, official, release, {
-  'board' : 'alex',
+  'board' : 'stumpy',
   'profile' : 'aura',
   'vm_tests' : None,
   'chrome_tests' : False
