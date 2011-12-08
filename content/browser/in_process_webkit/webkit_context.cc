@@ -68,17 +68,6 @@ void WebKitContext::DeleteDataModifiedSince(const base::Time& cutoff) {
   dom_storage_context_->DeleteDataModifiedSince(cutoff);
 }
 
-void WebKitContext::DeleteSessionOnlyData() {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
-    BrowserThread::PostTask(
-        BrowserThread::WEBKIT, FROM_HERE,
-        base::Bind(&WebKitContext::DeleteSessionOnlyData, this));
-    return;
-  }
-
-  dom_storage_context_->DeleteSessionOnlyData();
-}
-
 void WebKitContext::DeleteSessionStorageNamespace(
     int64 session_storage_namespace_id) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
@@ -91,4 +80,15 @@ void WebKitContext::DeleteSessionStorageNamespace(
 
   dom_storage_context_->DeleteSessionStorageNamespace(
       session_storage_namespace_id);
+}
+
+void WebKitContext::SaveSessionState() {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
+    BrowserThread::PostTask(
+        BrowserThread::WEBKIT, FROM_HERE,
+        base::Bind(&WebKitContext::SaveSessionState, this));
+    return;
+  }
+  dom_storage_context_->SaveSessionState();
+  indexed_db_context_->SaveSessionState();
 }

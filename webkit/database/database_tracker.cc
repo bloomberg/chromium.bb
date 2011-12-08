@@ -100,6 +100,7 @@ DatabaseTracker::DatabaseTracker(
     : is_initialized_(false),
       is_incognito_(is_incognito),
       clear_local_state_on_exit_(clear_local_state_on_exit),
+      save_session_state_(false),
       shutting_down_(false),
       profile_path_(profile_path),
       db_dir_(is_incognito_ ?
@@ -857,7 +858,7 @@ void DatabaseTracker::Shutdown() {
   }
   if (is_incognito_)
     DeleteIncognitoDBDirectory();
-  else
+  else if (!save_session_state_)
     ClearLocalState(clear_local_state_on_exit_);
 }
 
@@ -875,6 +876,17 @@ void DatabaseTracker::SetClearLocalStateOnExit(bool clear_local_state_on_exit) {
     return;
   }
   clear_local_state_on_exit_ = clear_local_state_on_exit;
+}
+
+void DatabaseTracker::SaveSessionState() {
+  DCHECK(db_tracker_thread_.get());
+  if (!db_tracker_thread_->BelongsToCurrentThread()) {
+    db_tracker_thread_->PostTask(
+        FROM_HERE,
+        base::Bind(&DatabaseTracker::SaveSessionState, this));
+    return;
+  }
+  save_session_state_ = true;
 }
 
 }  // namespace webkit_database

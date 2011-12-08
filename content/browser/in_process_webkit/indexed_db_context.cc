@@ -95,6 +95,7 @@ IndexedDBContext::IndexedDBContext(
     quota::QuotaManagerProxy* quota_manager_proxy,
     base::MessageLoopProxy* webkit_thread_loop)
     : clear_local_state_on_exit_(false),
+      save_session_state_(false),
       special_storage_policy_(special_storage_policy),
       quota_manager_proxy_(quota_manager_proxy) {
   if (!webkit_context->is_incognito())
@@ -114,13 +115,15 @@ IndexedDBContext::~IndexedDBContext() {
   if (data_path_.empty())
     return;
 
+  if (save_session_state_)
+    return;
+
   bool has_session_only_databases =
       special_storage_policy_.get() &&
       special_storage_policy_->HasSessionOnlyOrigins();
 
   // Clearning only session-only databases, and there are none.
-  if (!clear_local_state_on_exit_ &&
-      !has_session_only_databases)
+  if (!clear_local_state_on_exit_ && !has_session_only_databases)
     return;
 
   // No WEBKIT thread here means we are running in a unit test where no clean

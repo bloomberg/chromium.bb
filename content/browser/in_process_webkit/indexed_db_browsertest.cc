@@ -218,6 +218,56 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ClearSessionOnlyDatabases) {
   EXPECT_FALSE(file_util::DirectoryExists(session_only_path));
 }
 
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, SaveSessionState) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  FilePath normal_path;
+  FilePath session_only_path;
+
+  // Create the scope which will ensure we run the destructor of the webkit
+  // context.
+  {
+    TestingProfile profile;
+
+    const GURL kNormalOrigin("http://normal/");
+    const GURL kSessionOnlyOrigin("http://session-only/");
+    scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy =
+        new quota::MockSpecialStoragePolicy;
+    special_storage_policy->AddSessionOnly(kSessionOnlyOrigin);
+
+    // Create some indexedDB paths.
+    // With the levelDB backend, these are directories.
+    WebKitContext *webkit_context = profile.GetWebKitContext();
+    IndexedDBContext* idb_context = webkit_context->indexed_db_context();
+
+    // Override the storage policy with our own.
+    idb_context->special_storage_policy_ = special_storage_policy;
+    idb_context->set_clear_local_state_on_exit(true);
+    idb_context->set_data_path_for_testing(temp_dir.path());
+
+    // Save session state. This should bypass the destruction-time deletion.
+    idb_context->SaveSessionState();
+
+    normal_path = idb_context->GetIndexedDBFilePath(
+        DatabaseUtil::GetOriginIdentifier(kNormalOrigin));
+    session_only_path = idb_context->GetIndexedDBFilePath(
+        DatabaseUtil::GetOriginIdentifier(kSessionOnlyOrigin));
+    ASSERT_TRUE(file_util::CreateDirectory(normal_path));
+    ASSERT_TRUE(file_util::CreateDirectory(session_only_path));
+  }
+
+  // Make sure we wait until the destructor has run.
+  scoped_refptr<base::ThreadTestHelper> helper(
+      new base::ThreadTestHelper(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::WEBKIT)));
+  ASSERT_TRUE(helper->Run());
+
+  // No data was cleared because of SaveSessionState.
+  EXPECT_TRUE(file_util::DirectoryExists(normal_path));
+  EXPECT_TRUE(file_util::DirectoryExists(session_only_path));
+}
+
 class IndexedDBBrowserTestWithLowQuota : public IndexedDBBrowserTest {
  public:
   virtual void SetUpOnMainThread() {

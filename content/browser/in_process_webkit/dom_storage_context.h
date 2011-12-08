@@ -109,6 +109,11 @@ class CONTENT_EXPORT DOMStorageContext {
     clear_local_state_on_exit_ = clear_local_state;
   }
 
+  // Disables the exit-time deletion for all data (also session-only data).
+  void SaveSessionState() {
+    save_session_state_ = true;
+  }
+
   void set_data_path_for_testing(const FilePath& data_path) {
     data_path_ = data_path;
   }
@@ -116,6 +121,7 @@ class CONTENT_EXPORT DOMStorageContext {
  private:
 
   FRIEND_TEST_ALL_PREFIXES(DOMStorageTest, SessionOnly);
+  FRIEND_TEST_ALL_PREFIXES(DOMStorageTest, SaveSessionState);
 
   // Get the local storage instance.  The object is owned by this class.
   DOMStorageNamespace* CreateLocalStorage();
@@ -144,6 +150,9 @@ class CONTENT_EXPORT DOMStorageContext {
 
   // True if the destructor should delete its files.
   bool clear_local_state_on_exit_;
+
+  // If true, nothing (not even session-only data) should be deleted on exit.
+  bool save_session_state_;
 
   // Path where the browser context data is stored.
   // TODO(pastarmovj): Keep in mind that unlike indexed db data_path_ variable

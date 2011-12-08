@@ -27,7 +27,8 @@ using WebKit::WebSecurityOrigin;
 namespace {
 
 void ClearLocalState(const FilePath& domstorage_path,
-                     quota::SpecialStoragePolicy* special_storage_policy) {
+                     quota::SpecialStoragePolicy* special_storage_policy,
+                     bool clear_all_databases) {
   file_util::FileEnumerator file_enumerator(
       domstorage_path, false, file_util::FileEnumerator::FILES);
   for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
@@ -35,8 +36,13 @@ void ClearLocalState(const FilePath& domstorage_path,
     if (file_path.Extension() == DOMStorageContext::kLocalStorageExtension) {
       GURL origin(WebSecurityOrigin::createFromDatabaseIdentifier(
           webkit_glue::FilePathToWebString(file_path.BaseName())).toString());
-      if (!special_storage_policy->IsStorageProtected(origin))
-        file_util::Delete(file_path, false);
+      if (special_storage_policy->IsStorageProtected(origin))
+        continue;
+      if (!clear_all_databases &&
+          !special_storage_policy->IsStorageSessionOnly(origin)) {
+        continue;
+      }
+      file_util::Delete(file_path, false);
     }
   }
 }
@@ -56,6 +62,7 @@ DOMStorageContext::DOMStorageContext(
       last_session_storage_namespace_id_on_ui_thread_(kLocalStorageNamespaceId),
       last_session_storage_namespace_id_on_io_thread_(kLocalStorageNamespaceId),
       clear_local_state_on_exit_(false),
+      save_session_state_(false),
       special_storage_policy_(special_storage_policy) {
   data_path_ = webkit_context->data_path();
 }
@@ -70,12 +77,23 @@ DOMStorageContext::~DOMStorageContext() {
     delete iter->second;
   }
 
+  if (save_session_state_)
+    return;
+
+  bool has_session_only_databases =
+      special_storage_policy_.get() &&
+      special_storage_policy_->HasSessionOnlyOrigins();
+
+  // Clearning only session-only databases, and there are none.
+  if (!clear_local_state_on_exit_ && !has_session_only_databases)
+    return;
+
   // Not being on the WEBKIT thread here means we are running in a unit test
   // where no clean up is needed.
-  if (clear_local_state_on_exit_ &&
-      BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
     ClearLocalState(data_path_.Append(kLocalStorageDirectory),
-                    special_storage_policy_);
+                    special_storage_policy_,
+                    clear_local_state_on_exit_);
   }
 }
 
@@ -198,29 +216,6 @@ void DOMStorageContext::DeleteDataModifiedSince(const base::Time& cutoff) {
     file_enumerator.GetFindInfo(&find_info);
     if (file_util::HasFileBeenModifiedSince(find_info, cutoff))
       file_util::Delete(path, false);
-  }
-}
-
-void DOMStorageContext::DeleteSessionOnlyData() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
-
-  // Make sure that we don't delete a database that's currently being accessed
-  // by unloading all of the databases temporarily.
-  PurgeMemory();
-
-  file_util::FileEnumerator file_enumerator(
-      data_path_.Append(kLocalStorageDirectory), false,
-      file_util::FileEnumerator::FILES);
-  for (FilePath path = file_enumerator.Next(); !path.value().empty();
-       path = file_enumerator.Next()) {
-    GURL origin(WebSecurityOrigin::createFromDatabaseIdentifier(
-        webkit_glue::FilePathToWebString(path.BaseName())).toString());
-    if (!special_storage_policy_->IsStorageSessionOnly(origin))
-      continue;
-    if (special_storage_policy_->IsStorageProtected(origin))
-      continue;
-
-    file_util::Delete(path, false);
   }
 }
 

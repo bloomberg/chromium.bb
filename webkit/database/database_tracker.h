@@ -164,6 +164,8 @@ class DatabaseTracker
   // used for an incognito profile or |clear_local_state_on_exit_| is true.
   void Shutdown();
   void SetClearLocalStateOnExit(bool clear_local_state_on_exit);
+  // Disables the exit-time deletion for all data (also session-only data).
+  void SaveSessionState();
 
  private:
   friend class base::RefCountedThreadSafe<DatabaseTracker>;
@@ -255,6 +257,7 @@ class DatabaseTracker
   bool is_initialized_;
   const bool is_incognito_;
   bool clear_local_state_on_exit_;
+  bool save_session_state_;
   bool shutting_down_;
   const FilePath profile_path_;
   const FilePath db_dir_;

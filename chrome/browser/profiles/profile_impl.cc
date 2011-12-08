@@ -170,10 +170,13 @@ FilePath GetMediaCachePath(const FilePath& base) {
 }
 
 void SaveSessionStateOnIOThread(
-    net::URLRequestContextGetter* url_request_context_getter) {
+    net::URLRequestContextGetter* url_request_context_getter,
+    ChromeAppCacheService* appcache_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   url_request_context_getter->GetURLRequestContext()->cookie_store()->
       GetCookieMonster()->SaveSessionCookies();
+  if (appcache_service)
+    appcache_service->set_save_session_state(true);
 }
 
 }  // namespace
@@ -526,9 +529,6 @@ ProfileImpl::~ProfileImpl() {
         base::Bind(&appcache::AppCacheService::set_clear_local_state_on_exit,
                    appcache_service_.get(), true));
   }
-
-  if (webkit_context_.get())
-    webkit_context_->DeleteSessionOnlyData();
 
   StopCreateSessionServiceTimer();
 
@@ -1600,10 +1600,16 @@ NetworkActionPredictor* ProfileImpl::GetNetworkActionPredictor() {
 void ProfileImpl::SaveSessionState() {
   if (!session_restore_enabled_)
     return;
+  if (webkit_context_.get())
+    webkit_context_->SaveSessionState();
+  if (db_tracker_.get())
+    db_tracker_->SaveSessionState();
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&SaveSessionStateOnIOThread,
-                 make_scoped_refptr(GetRequestContext())));
+                 make_scoped_refptr(GetRequestContext()),
+                 make_scoped_refptr(appcache_service_.get())));
 }
 
 SpellCheckProfile* ProfileImpl::GetSpellCheckProfile() {

@@ -59,6 +59,11 @@ class CONTENT_EXPORT IndexedDBContext
     clear_local_state_on_exit_ = clear_local_state;
   }
 
+  // Disables the exit-time deletion for all data (also session-only data).
+  void SaveSessionState() {
+    save_session_state_ = true;
+  }
+
   // Deletes all indexed db files for the given origin.
   void DeleteIndexedDBForOrigin(const GURL& origin_url);
 
@@ -86,6 +91,7 @@ class CONTENT_EXPORT IndexedDBContext
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, ClearAppData);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBBrowserTest, ClearLocalState);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBBrowserTest, ClearSessionOnlyDatabases);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBBrowserTest, SaveSessionState);
   friend class IndexedDBQuotaClientTest;
 
   typedef std::map<GURL, int64> OriginToSizeMap;
@@ -118,6 +124,8 @@ class CONTENT_EXPORT IndexedDBContext
   scoped_ptr<WebKit::WebIDBFactory> idb_factory_;
   FilePath data_path_;
   bool clear_local_state_on_exit_;
+  // If true, nothing (not even session-only data) should be deleted on exit.
+  bool save_session_state_;
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
   scoped_ptr<std::set<GURL> > origin_set_;

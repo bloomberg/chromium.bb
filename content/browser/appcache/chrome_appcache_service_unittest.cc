@@ -189,4 +189,44 @@ TEST_F(ChromeAppCacheServiceTest, RemoveOnDestruction) {
   message_loop_.RunAllPending();
 }
 
+TEST_F(ChromeAppCacheServiceTest, SaveSessionState) {
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  FilePath appcache_path = temp_dir_.path().Append(kTestingAppCacheDirname);
+
+  // Create a ChromeAppCacheService and insert data into it
+  scoped_refptr<ChromeAppCacheService> appcache_service =
+      CreateAppCacheService(appcache_path, true);
+  ASSERT_TRUE(file_util::PathExists(appcache_path));
+  ASSERT_TRUE(file_util::PathExists(appcache_path.AppendASCII("Index")));
+  InsertDataIntoAppCache(appcache_service);
+
+  appcache_service->set_clear_local_state_on_exit(true);
+  // Save session state. This should bypass the destruction-time deletion.
+  appcache_service->set_save_session_state(true);
+
+  // Test: delete the ChromeAppCacheService
+  appcache_service = NULL;
+  message_loop_.RunAllPending();
+
+  // Recreate the appcache (for reading the data back)
+  appcache_service = CreateAppCacheService(appcache_path, false);
+
+  // The directory is still there
+  ASSERT_TRUE(file_util::PathExists(appcache_path));
+
+  // No appcache data was deleted.
+  AppCacheTestHelper appcache_helper;
+  std::set<GURL> origins;
+  appcache_helper.GetOriginsWithCaches(appcache_service, &origins);
+  EXPECT_EQ(3UL, origins.size());
+  EXPECT_TRUE(origins.find(kProtectedManifestURL.GetOrigin()) != origins.end());
+  EXPECT_TRUE(origins.find(kNormalManifestURL.GetOrigin()) != origins.end());
+  EXPECT_TRUE(origins.find(kSessionOnlyManifestURL.GetOrigin()) !=
+              origins.end());
+
+  // Delete and let cleanup tasks run prior to returning.
+  appcache_service = NULL;
+  message_loop_.RunAllPending();
+}
+
 }  // namespace appcache

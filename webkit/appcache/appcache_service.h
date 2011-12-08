@@ -144,6 +144,13 @@ class APPCACHE_EXPORT AppCacheService {
   void set_clear_local_state_on_exit(bool clear_local_state_on_exit) {
     clear_local_state_on_exit_ = clear_local_state_on_exit; }
 
+  bool save_session_state() const { return save_session_state_; }
+  // If |save_session_state| is true, disables the exit-time deletion for all
+  // data (also session-only data).
+  void set_save_session_state(bool save_session_state) {
+    save_session_state_ = save_session_state;
+  }
+
  protected:
   friend class AppCacheStorageImplTest;
   friend class AppCacheServiceTest;
@@ -171,6 +178,8 @@ class APPCACHE_EXPORT AppCacheService {
   // Context for use during cache updates.
   net::URLRequestContext* request_context_;
   bool clear_local_state_on_exit_;
+  // If true, nothing (not even session-only data) should be deleted on exit.
+  bool save_session_state_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheService);
 };

@@ -72,13 +72,19 @@ bool DeleteGroupAndRelatedRecords(AppCacheDatabase* database,
   return success;
 }
 
-// Deletes all appcache data (if clear_all_data is true), or session-only
-// appcache data. Also, schedules the database to be destroyed.
+// Destroys |database|. If there is appcache data to be deleted
+// (|save_session_state| is false), deletes all appcache data (if
+// |clear_all_data| is true), or session-only appcache data (otherwise).
 void CleanUpOnDatabaseThread(
     AppCacheDatabase* database,
     scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
-    bool clear_all_appcaches) {
+    bool clear_all_appcaches,
+    bool save_session_state) {
   scoped_ptr<AppCacheDatabase> database_to_delete(database);
+
+  // If saving session state, only delete the database.
+  if (save_session_state)
+    return;
 
   bool has_session_only_appcaches =
       special_storage_policy.get() &&
@@ -1191,7 +1197,8 @@ AppCacheStorageImpl::~AppCacheStorageImpl() {
         FROM_HERE,
         base::Bind(&CleanUpOnDatabaseThread, database_,
                    make_scoped_refptr(service_->special_storage_policy()),
-                   service()->clear_local_state_on_exit()));
+                   service()->clear_local_state_on_exit(),
+                   service()->save_session_state()));
   }
 }
 
