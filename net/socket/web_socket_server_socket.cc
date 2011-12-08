@@ -397,6 +397,53 @@ class WebSocketServerSocketImpl : public net::WebSocketServerSocket {
     ConsiderTransportWrite();
     return net::ERR_IO_PENDING;
   }
+  virtual int Write(net::IOBuffer* buf, int buf_len,
+                    const net::CompletionCallback& callback) OVERRIDE {
+    if (buf_len == 0)
+      return 0;
+    if (buf == NULL || buf_len < 0) {
+      NOTREACHED();
+      return net::ERR_INVALID_ARGUMENT;
+    }
+    DCHECK_EQ(std::find(buf->data(), buf->data() + buf_len, '\xff'),
+              buf->data() + buf_len);
+    switch (phase_) {
+      case PHASE_FRAME_OUTSIDE:
+      case PHASE_FRAME_INSIDE:
+      case PHASE_FRAME_LENGTH:
+      case PHASE_FRAME_SKIP: {
+        break;
+      }
+      case PHASE_SHUT: {
+        return net::ERR_SOCKET_NOT_CONNECTED;
+      }
+      case PHASE_NYMPH:
+      case PHASE_HANDSHAKE:
+      default: {
+        NOTREACHED();
+        return net::ERR_UNEXPECTED;
+      }
+    }
+
+    net::IOBuffer* frame_start = new net::IOBuffer(1);
+    frame_start->data()[0] = '\x00';
+    pending_reqs_.push_back(PendingReq(PendingReq::TYPE_WRITE_METADATA,
+                            new net::DrainableIOBuffer(frame_start, 1),
+                            NULL));
+
+    pending_reqs_.push_back(PendingReq(PendingReq::TYPE_WRITE,
+                            new net::DrainableIOBuffer(buf, buf_len),
+                            callback));
+
+    net::IOBuffer* frame_end = new net::IOBuffer(1);
+    frame_end->data()[0] = '\xff';
+    pending_reqs_.push_back(PendingReq(PendingReq::TYPE_WRITE_METADATA,
+                            new net::DrainableIOBuffer(frame_end, 1),
+                            NULL));
+
+    ConsiderTransportWrite();
+    return net::ERR_IO_PENDING;
+  }
 
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE {
     return transport_socket_->SetReceiveBufferSize(size);

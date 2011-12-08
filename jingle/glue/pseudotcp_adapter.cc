@@ -35,6 +35,8 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
            const net::CompletionCallback& callback);
   int Write(net::IOBuffer* buffer, int buffer_size,
             net::OldCompletionCallback* callback);
+  int Write(net::IOBuffer* buffer, int buffer_size,
+            const net::CompletionCallback& callback);
   int Connect(net::OldCompletionCallback* callback);
   int Connect(const net::CompletionCallback& callback);
   void Disconnect();
@@ -75,7 +77,8 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
   net::CompletionCallback connect_callback_;
   net::OldCompletionCallback* old_read_callback_;
   net::CompletionCallback read_callback_;
-  net::OldCompletionCallback* write_callback_;
+  net::OldCompletionCallback* old_write_callback_;
+  net::CompletionCallback write_callback_;
 
   cricket::PseudoTcp pseudo_tcp_;
   scoped_ptr<net::Socket> socket_;
@@ -100,7 +103,7 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
 PseudoTcpAdapter::Core::Core(net::Socket* socket)
     : old_connect_callback_(NULL),
       old_read_callback_(NULL),
-      write_callback_(NULL),
+      old_write_callback_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(pseudo_tcp_(this, 0)),
       socket_(socket),
       socket_write_pending_(false),
@@ -164,7 +167,30 @@ int PseudoTcpAdapter::Core::Read(net::IOBuffer* buffer, int buffer_size,
 
 int PseudoTcpAdapter::Core::Write(net::IOBuffer* buffer, int buffer_size,
                                   net::OldCompletionCallback* callback) {
-  DCHECK(!write_callback_);
+  DCHECK(!old_write_callback_ && write_callback_.is_null());
+
+  // Reference the Core in case a callback deletes the adapter.
+  scoped_refptr<Core> core(this);
+
+  int result = pseudo_tcp_.Send(buffer->data(), buffer_size);
+  if (result < 0) {
+    result = net::MapSystemError(pseudo_tcp_.GetError());
+    DCHECK(result < 0);
+  }
+
+  if (result == net::ERR_IO_PENDING) {
+    write_buffer_ = buffer;
+    write_buffer_size_ = buffer_size;
+    old_write_callback_ = callback;
+  }
+
+  AdjustClock();
+
+  return result;
+}
+int PseudoTcpAdapter::Core::Write(net::IOBuffer* buffer, int buffer_size,
+                                  const net::CompletionCallback& callback) {
+  DCHECK(!old_write_callback_ && write_callback_.is_null());
 
   // Reference the Core in case a callback deletes the adapter.
   scoped_refptr<Core> core(this);
@@ -231,7 +257,8 @@ void PseudoTcpAdapter::Core::Disconnect() {
   old_read_callback_ = NULL;
   read_callback_.Reset();
   read_buffer_ = NULL;
-  write_callback_ = NULL;
+  old_write_callback_ = NULL;
+  write_callback_.Reset();
   write_buffer_ = NULL;
   old_connect_callback_ = NULL;
   connect_callback_.Reset();
@@ -297,7 +324,7 @@ void PseudoTcpAdapter::Core::OnTcpReadable(PseudoTcp* tcp) {
 
 void PseudoTcpAdapter::Core::OnTcpWriteable(PseudoTcp* tcp) {
   DCHECK_EQ(tcp, &pseudo_tcp_);
-  if (!write_callback_)
+  if (!old_write_callback_ && write_callback_.is_null())
     return;
 
   int result = pseudo_tcp_.Send(write_buffer_->data(), write_buffer_size_);
@@ -310,10 +337,17 @@ void PseudoTcpAdapter::Core::OnTcpWriteable(PseudoTcp* tcp) {
 
   AdjustClock();
 
-  net::OldCompletionCallback* callback = write_callback_;
-  write_callback_ = NULL;
-  write_buffer_ = NULL;
-  callback->Run(result);
+  if (old_write_callback_) {
+    net::OldCompletionCallback* callback = old_write_callback_;
+    old_write_callback_ = NULL;
+    write_buffer_ = NULL;
+    callback->Run(result);
+  } else {
+    net::CompletionCallback callback = write_callback_;
+    write_callback_.Reset();
+    write_buffer_ = NULL;
+    callback.Run(result);
+  }
 }
 
 void PseudoTcpAdapter::Core::OnTcpClosed(PseudoTcp* tcp, uint32 error) {
@@ -339,10 +373,14 @@ void PseudoTcpAdapter::Core::OnTcpClosed(PseudoTcp* tcp, uint32 error) {
     callback.Run(net::MapSystemError(error));
   }
 
-  if (write_callback_) {
-    net::OldCompletionCallback* callback = write_callback_;
-    write_callback_ = NULL;
+  if (old_write_callback_) {
+    net::OldCompletionCallback* callback = old_write_callback_;
+    old_write_callback_ = NULL;
     callback->Run(net::MapSystemError(error));
+  } else if (!write_callback_.is_null()) {
+    net::CompletionCallback callback = write_callback_;
+    write_callback_.Reset();
+    callback.Run(net::MapSystemError(error));
   }
 }
 
@@ -477,6 +515,11 @@ int PseudoTcpAdapter::Read(net::IOBuffer* buffer, int buffer_size,
 
 int PseudoTcpAdapter::Write(net::IOBuffer* buffer, int buffer_size,
                             net::OldCompletionCallback* callback) {
+  DCHECK(CalledOnValidThread());
+  return core_->Write(buffer, buffer_size, callback);
+}
+int PseudoTcpAdapter::Write(net::IOBuffer* buffer, int buffer_size,
+                            const net::CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
   return core_->Write(buffer, buffer_size, callback);
 }

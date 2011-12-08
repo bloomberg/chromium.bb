@@ -116,6 +116,11 @@ int CurveCPClientSocket::Write(IOBuffer* buf,
                                OldCompletionCallback* callback) {
   return messenger_.Write(buf, buf_len, callback);
 }
+int CurveCPClientSocket::Write(IOBuffer* buf,
+                               int buf_len,
+                               const CompletionCallback& callback) {
+  return messenger_.Write(buf, buf_len, callback);
+}
 
 bool CurveCPClientSocket::SetReceiveBufferSize(int32 size) {
   return true;

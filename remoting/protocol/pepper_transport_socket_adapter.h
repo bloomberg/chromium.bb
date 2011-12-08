@@ -55,6 +55,8 @@ class PepperTransportSocketAdapter : public base::NonThreadSafe,
                    const net::CompletionCallback& callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buf, int buf_len,
                     net::OldCompletionCallback* callback) OVERRIDE;
+  virtual int Write(net::IOBuffer* buf, int buf_len,
+                    const net::CompletionCallback& callback) OVERRIDE;
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
   virtual bool SetSendBufferSize(int32 size) OVERRIDE;
 
@@ -98,7 +100,8 @@ class PepperTransportSocketAdapter : public base::NonThreadSafe,
   net::CompletionCallback read_callback_;
   scoped_refptr<net::IOBuffer> read_buffer_;
 
-  net::OldCompletionCallback* write_callback_;
+  net::OldCompletionCallback* old_write_callback_;
+  net::CompletionCallback write_callback_;
   scoped_refptr<net::IOBuffer> write_buffer_;
 
   net::BoundNetLog net_log_;

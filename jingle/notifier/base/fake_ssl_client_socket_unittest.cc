@@ -51,6 +51,8 @@ class MockClientSocket : public net::StreamSocket {
   MOCK_METHOD3(Read, int(net::IOBuffer*, int,
                          const net::CompletionCallback&));
   MOCK_METHOD3(Write, int(net::IOBuffer*, int, net::OldCompletionCallback*));
+  MOCK_METHOD3(Write, int(net::IOBuffer*, int,
+                          const net::CompletionCallback&));
   MOCK_METHOD1(SetReceiveBufferSize, bool(int32));
   MOCK_METHOD1(SetSendBufferSize, bool(int32));
   MOCK_METHOD1(Connect, int(net::OldCompletionCallback*));

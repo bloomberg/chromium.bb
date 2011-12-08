@@ -157,6 +157,24 @@ class TestingTransportSocket : public net::Socket {
     }
     MessageLoop::current()->PostTask(FROM_HERE,
         method_factory_.NewRunnableMethod(
+            &TestingTransportSocket::DoOldWriteCallback, callback, lot));
+    return net::ERR_IO_PENDING;
+  }
+  virtual int Write(net::IOBuffer* buf, int buf_len,
+                    const net::CompletionCallback& callback) {
+    CHECK_GT(buf_len, 0);
+    int remaining = answer_->BytesRemaining();
+    CHECK_GE(remaining, buf_len);
+    int lot = std::min(remaining, buf_len);
+    if (GetRand(0, 1))
+      lot = GetRand(1, lot);
+    std::copy(buf->data(), buf->data() + lot, answer_->data());
+    answer_->DidConsume(lot);
+    if (GetRand(0, 1)) {
+      return lot;
+    }
+    MessageLoop::current()->PostTask(FROM_HERE,
+        method_factory_.NewRunnableMethod(
             &TestingTransportSocket::DoWriteCallback, callback, lot));
     return net::ERR_IO_PENDING;
   }
@@ -192,9 +210,13 @@ class TestingTransportSocket : public net::Socket {
     }
   }
 
-  void DoWriteCallback(net::OldCompletionCallback* callback, int result) {
+  void DoOldWriteCallback(net::OldCompletionCallback* callback, int result) {
     if (callback)
       callback->Run(result);
+  }
+  void DoWriteCallback(const net::CompletionCallback& callback, int result) {
+    if (!callback.is_null())
+      callback.Run(result);
   }
 
   bool is_closed_;

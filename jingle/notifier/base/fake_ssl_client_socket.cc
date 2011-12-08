@@ -112,7 +112,13 @@ int FakeSSLClientSocket::Read(net::IOBuffer* buf, int buf_len,
 }
 
 int FakeSSLClientSocket::Write(net::IOBuffer* buf, int buf_len,
-                              net::OldCompletionCallback* callback) {
+                               net::OldCompletionCallback* callback) {
+  DCHECK_EQ(next_handshake_state_, STATE_NONE);
+  DCHECK(handshake_completed_);
+  return transport_socket_->Write(buf, buf_len, callback);
+}
+int FakeSSLClientSocket::Write(net::IOBuffer* buf, int buf_len,
+                               const net::CompletionCallback& callback) {
   DCHECK_EQ(next_handshake_state_, STATE_NONE);
   DCHECK(handshake_completed_);
   return transport_socket_->Write(buf, buf_len, callback);
