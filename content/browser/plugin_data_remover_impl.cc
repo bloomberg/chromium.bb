@@ -60,25 +60,26 @@ bool PluginDataRemover::IsSupported(webkit::WebPluginInfo* plugin) {
 class PluginDataRemoverImpl::Context
     : public PluginProcessHost::Client,
       public IPC::Channel::Listener,
-      public base::RefCountedThreadSafe<Context> {
+      public base::RefCountedThreadSafe<Context,
+                                        BrowserThread::DeleteOnIOThread> {
  public:
-  Context(const std::string& mime_type,
-          base::Time begin_time,
+  Context(base::Time begin_time,
           const content::ResourceContext& resource_context)
       : event_(new base::WaitableEvent(true, false)),
         begin_time_(begin_time),
         is_removing_(false),
         resource_context_(resource_context),
         channel_(NULL) {
-    // Balanced in OnChannelOpened or OnError. Exactly one them will eventually
-    // be called, so we need to keep this object around until then.
-    AddRef();
-    remove_start_time_ = base::Time::Now();
+  }
+
+  virtual ~Context() {
+  }
+
+  void Init(const std::string& mime_type) {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
-        base::Bind(&Context::Init, this, mime_type));
-
+        base::Bind(&Context::InitOnIOThread, this, mime_type));
     BrowserThread::PostDelayedTask(
         BrowserThread::IO,
         FROM_HERE,
@@ -86,9 +87,23 @@ class PluginDataRemoverImpl::Context
         kRemovalTimeoutMs);
   }
 
-  virtual ~Context() {
-    if (channel_)
-      BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, channel_);
+  // Initialize on the IO thread.
+  void InitOnIOThread(const std::string& mime_type) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    remove_start_time_ = base::Time::Now();
+    is_removing_ = true;
+    // Balanced in OnChannelOpened or OnError. Exactly one them will eventually
+    // be called, so we need to keep this object around until then.
+    AddRef();
+    PluginService::GetInstance()->OpenChannelToNpapiPlugin(
+        0, 0, GURL(), GURL(), mime_type, this);
+  }
+
+  // Called when a timeout happens in order not to block the client
+  // indefinitely.
+  void OnTimeout() {
+    LOG_IF(ERROR, is_removing_) << "Timed out";
+    SignalDone();
   }
 
   // PluginProcessHost::Client methods.
@@ -145,18 +160,9 @@ class PluginDataRemoverImpl::Context
     }
   }
 
-
   base::WaitableEvent* event() { return event_.get(); }
 
  private:
-  // Initialize on the IO thread.
-  void Init(const std::string& mime_type) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    is_removing_ = true;
-    PluginService::GetInstance()->OpenChannelToNpapiPlugin(
-        0, 0, GURL(), GURL(), mime_type, this);
-  }
-
   // Connects the client side of a newly opened plug-in channel.
   void ConnectToChannel(const IPC::ChannelHandle& handle) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -165,8 +171,8 @@ class PluginDataRemoverImpl::Context
     if (!is_removing_)
       return;
 
-    DCHECK(!channel_);
-    channel_ = new IPC::Channel(handle, IPC::Channel::MODE_CLIENT, this);
+    DCHECK(!channel_.get());
+    channel_.reset(new IPC::Channel(handle, IPC::Channel::MODE_CLIENT, this));
     if (!channel_->Connect()) {
       NOTREACHED() << "Couldn't connect to plugin";
       SignalDone();
@@ -190,13 +196,6 @@ class PluginDataRemoverImpl::Context
     SignalDone();
   }
 
-  // Called when a timeout happens in order not to block the client
-  // indefinitely.
-  void OnTimeout() {
-    LOG_IF(ERROR, is_removing_) << "Timed out";
-    SignalDone();
-  }
-
   // Signals that we are finished with removing data (successful or not). This
   // method is safe to call multiple times.
   void SignalDone() {
@@ -217,10 +216,9 @@ class PluginDataRemoverImpl::Context
   // The resource context for the profile.
   const content::ResourceContext& resource_context_;
 
-  // We own the channel, but it's used on the IO thread, so it needs to be
-  // deleted there. It's NULL until we have opened a connection to the plug-in
+  // The channel is NULL until we have opened a connection to the plug-in
   // process.
-  IPC::Channel* channel_;
+  scoped_ptr<IPC::Channel> channel_;
 };
 
 
@@ -236,6 +234,7 @@ PluginDataRemoverImpl::~PluginDataRemoverImpl() {
 base::WaitableEvent* PluginDataRemoverImpl::StartRemoving(
     base::Time begin_time) {
   DCHECK(!context_.get());
-  context_ = new Context(mime_type_, begin_time, resource_context_);
+  context_ = new Context(begin_time, resource_context_);
+  context_->Init(mime_type_);
   return context_->event();
 }
