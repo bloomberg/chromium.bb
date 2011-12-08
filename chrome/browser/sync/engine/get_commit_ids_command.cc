@@ -94,7 +94,11 @@ bool IsEntryReadyForCommit(const syncable::ModelTypeSet& encrypted_types,
   }
 
   syncable::ModelType type = entry.GetModelType();
-  if (encrypted_types.count(type) > 0 &&
+  // We special case the nigori node because even though it is considered an
+  // "encrypted type", not all nigori node changes require valid encryption
+  // (ex: sync_tabs).
+  if (type != syncable::NIGORI &&
+      encrypted_types.count(type) > 0 &&
       (passphrase_missing ||
        syncable::EntryNeedsEncryption(encrypted_types, entry))) {
     // This entry requires encryption but is not properly encrypted (possibly
