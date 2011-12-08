@@ -574,19 +574,20 @@ bool SQLitePersistentCookieStore::Backend::LoadCookiesForDomains(
   const std::set<std::string>& domains) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
-  const char* sql;
+  sql::Statement smt;
   if (restore_old_session_cookies_) {
-    sql =
-        "SELECT creation_utc, host_key, name, value, path, expires_utc, "
-        "secure, httponly, last_access_utc, has_expires, persistent "
-        "FROM cookies WHERE host_key = ?";
+    smt.Assign(db_->GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT creation_utc, host_key, name, value, path, expires_utc, "
+      "secure, httponly, last_access_utc, has_expires, persistent "
+      "FROM cookies WHERE host_key = ?"));
   } else {
-    sql =
-        "SELECT creation_utc, host_key, name, value, path, expires_utc, "
-        "secure, httponly, last_access_utc, has_expires, persistent "
-        "FROM cookies WHERE host_key = ? AND persistent == 1";
+    smt.Assign(db_->GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT creation_utc, host_key, name, value, path, expires_utc, "
+      "secure, httponly, last_access_utc, has_expires, persistent "
+      "FROM cookies WHERE host_key = ? AND persistent = 1"));
   }
-  sql::Statement smt(db_->GetCachedStatement(SQL_FROM_HERE, sql));
   if (!smt) {
     NOTREACHED() << "select statement prep failed";
     db_.reset();
