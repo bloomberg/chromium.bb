@@ -782,6 +782,40 @@ class WebGLTest(BasePerfTest):
         'WebGLSpaceRocks')
 
 
+class HTML5BenchmarkTest(BasePerfTest):
+  """Tests for HTML5 performance."""
+
+  def testHTML5Benchmark(self):
+    """Measures performance using the benchmark at html5-benchmark.com."""
+    self.NavigateToURL('http://html5-benchmark.com')
+
+    start_benchmark_js = """
+      benchmark();
+      window.domAutomationController.send("done");
+    """
+    self.ExecuteJavascript(start_benchmark_js)
+
+    js_final_score = """
+      var score = "-1";
+      var elem = document.getElementById("score");
+      if (elem)
+        score = elem.innerHTML;
+      window.domAutomationController.send(score);
+    """
+    # Wait for the benchmark to complete, which is assumed to be when the value
+    # of the 'score' DOM element changes to something other than '87485'.
+    self.assertTrue(
+        self.WaitUntil(
+            lambda: self.ExecuteJavascript(js_final_score) != '87485',
+            timeout=900, retry_sleep=1),
+        msg='Timed out when waiting for final score to be available.')
+
+    score = self.ExecuteJavascript(js_final_score)
+    logging.info('HTML5 Benchmark final score: %.2f' % float(score))
+    self._OutputPerfGraphValue('HTML5Benchmark', float(score), 'score',
+                               graph_name='HTML5Benchmark')
+
+
 class FileUploadDownloadTest(BasePerfTest):
   """Tests that involve measuring performance of upload and download."""
 
