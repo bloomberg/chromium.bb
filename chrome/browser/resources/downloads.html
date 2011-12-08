@@ -10,11 +10,11 @@
 <style>
 
 #downloads-summary {
-  margin-top: 12px;
-  border-top: 1px solid #9cc2ef;
-  background-color: #ebeff9;
-  padding: 3px;
+  background-color: rgb(235, 239, 249);
+  border-top: 1px solid rgb(156, 194, 239);
   margin-bottom: 6px;
+  margin-top: 12px;
+  padding: 3px;
 }
 
 #downloads-summary-text {
@@ -42,16 +42,16 @@ html[dir=rtl] #downloads-actions {
 }
 
 .download {
-  position: relative;
-  margin-top: 6px;
   -webkit-margin-start: 114px;
   -webkit-padding-start: 56px;
   margin-bottom: 15px;
+  margin-top: 6px;
+  position: relative;
 }
 
 .date-container {
-  position: absolute;
   left: -110px;
+  position: absolute;
   width: 110px;
 }
 
@@ -69,11 +69,11 @@ html[dir=rtl] .date-container {
 }
 
 .download .icon {
+  height: 32px;
+  left: 9px;
   position: absolute;
   top: 2px;
-  left: 9px;
   width: 32px;
-  height: 32px;
 }
 
 html[dir=rtl] .icon {
@@ -83,9 +83,9 @@ html[dir=rtl] .icon {
 
 .download.otr > .safe,
 .download.otr > .show-dangerous {
+  -webkit-transition: opacity 150ms;
   background: url('shared/images/otr_icon_standalone.png') no-repeat 100% 100%;
   opacity: .66;
-  -webkit-transition: opacity .15s;
 }
 
 html[dir=rtl] .download.otr > .safe,
@@ -99,16 +99,16 @@ html[dir=rtl] .download.otr > .show-dangerous {
 }
 
 .progress {
+  height: 48px;
+  left: 0;
   position: absolute;
   top: -6px;
-  left: 0px;
   width: 48px;
-  height: 48px;
 }
 
 html[dir=rtl] .progress {
   left: auto;
-  right: 0px;
+  right: 0;
 }
 
 .progress.background {
@@ -120,8 +120,8 @@ html[dir=rtl] .progress {
 }
 
 .name {
-  display: none;
   -webkit-padding-end: 16px;
+  display: none;
   max-width: 450px;
   word-break: break-all;
 }
@@ -133,15 +133,15 @@ html[dir=rtl] .progress {
 }
 
 .download .src-url {
+  color: rgb(85, 102, 221);
   display: inline-block;
-  color: #5566DD;
   max-width: 500px;
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
-  text-decoration: none;
-  padding-top: 4px;
   padding-bottom: 1px;
+  padding-top: 4px;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .controls a {
