@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "ui/base/events.h"
 #include "ui/base/ui_export.h"
 
 typedef unsigned long Atom;
@@ -234,6 +235,12 @@ int GetMappedButton(int button);
 // Updates button mapping. This is usually called when a MappingNotify event is
 // received.
 UI_EXPORT void UpdateButtonMap();
+
+// Initializes a XEvent that holds XKeyEvent for testing.
+UI_EXPORT void InitXKeyEventForTesting(EventType type,
+                                       KeyboardCode key_code,
+                                       int flags,
+                                       XEvent* event);
 
 }  // namespace ui
 
