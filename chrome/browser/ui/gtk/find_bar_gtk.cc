@@ -422,8 +422,11 @@ gfx::Rect FindBarGtk::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
   // The height is not used.
   // At very low browser widths we can wind up with a negative |dialog_bounds|
   // width, so clamp it to 0.
+  GtkAllocation parent_allocation;
+  gtk_widget_get_allocation(gtk_widget_get_parent(widget()),
+                            &parent_allocation);
   gfx::Rect dialog_bounds = gfx::Rect(ltr ? 0 : 15, 0,
-      std::max(0, widget()->parent->allocation.width - (ltr ? 15 : 0)), 0);
+      std::max(0, parent_allocation.width - (ltr ? 15 : 0)), 0);
 
   GtkRequisition req;
   gtk_widget_size_request(container_, &req);
@@ -575,7 +578,9 @@ string16 FindBarGtk::GetMatchCountText() {
 }
 
 int FindBarGtk::GetWidth() {
-  return container_->allocation.width;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(container_, &allocation);
+  return allocation.width;
 }
 
 void FindBarGtk::FindEntryTextInContents(bool forward_search) {

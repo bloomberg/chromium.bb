@@ -121,8 +121,10 @@ void NineBox::RenderToWidget(GtkWidget* dst) const {
 }
 
 void NineBox::RenderToWidgetWithOpacity(GtkWidget* dst, double opacity) const {
-  int dst_width = dst->allocation.width;
-  int dst_height = dst->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(dst, &allocation);
+  int dst_width = allocation.width;
+  int dst_height = allocation.height;
 
   // The upper-left and lower-right corners of the center square in the
   // rendering of the ninebox.
@@ -142,7 +144,7 @@ void NineBox::RenderToWidgetWithOpacity(GtkWidget* dst, double opacity) const {
   // to their container.
   if (GTK_WIDGET_NO_WINDOW(dst)) {
     // Transform our cairo from window to widget coordinates.
-    cairo_translate(cr, dst->allocation.x, dst->allocation.y);
+    cairo_translate(cr, allocation.x, allocation.y);
   }
 
   if (base::i18n::IsRTL()) {

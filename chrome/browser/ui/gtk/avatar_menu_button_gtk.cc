@@ -67,7 +67,9 @@ void AvatarMenuButtonGtk::UpdateButtonIcon() {
   if (!icon_.get())
     return;
 
-  old_height_ = widget()->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget(), &allocation);
+  old_height_ = allocation.height;
   gfx::Image icon = profiles::GetAvatarIconForTitleBar(*icon_, is_gaia_picture_,
       profiles::kAvatarIconWidth, old_height_);
   gtk_image_set_from_pixbuf(GTK_IMAGE(image_), icon.ToGdkPixbuf());

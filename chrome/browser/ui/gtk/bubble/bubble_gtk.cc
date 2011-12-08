@@ -277,10 +277,12 @@ bool BubbleGtk::UpdateArrowLocation(bool force_move_and_reshape) {
                                    rect_.x(), rect_.y(), &offset_x, &offset_y);
 
   ArrowLocationGtk old_location = current_arrow_location_;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(window_, &allocation);
   current_arrow_location_ = GetArrowLocation(
       preferred_arrow_location_,
       toplevel_x + offset_x + (rect_.width() / 2),  // arrow_x
-      window_->allocation.width);
+      allocation.width);
 
   if (force_move_and_reshape || current_arrow_location_ != old_location) {
     UpdateWindowShape();
@@ -297,9 +299,10 @@ void BubbleGtk::UpdateWindowShape() {
     gdk_region_destroy(mask_region_);
     mask_region_ = NULL;
   }
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(window_, &allocation);
   std::vector<GdkPoint> points = MakeFramePolygonPoints(
-      current_arrow_location_,
-      window_->allocation.width, window_->allocation.height,
+      current_arrow_location_, allocation.width, allocation.height,
       FRAME_MASK);
   mask_region_ = gdk_region_polygon(&points[0],
                                     points.size(),
@@ -324,8 +327,10 @@ void BubbleGtk::MoveWindow() {
   if (current_arrow_location_ == ARROW_LOCATION_TOP_LEFT) {
     screen_x = toplevel_x + offset_x + (rect_.width() / 2) - kArrowX;
   } else if (current_arrow_location_ == ARROW_LOCATION_TOP_RIGHT) {
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(window_, &allocation);
     screen_x = toplevel_x + offset_x + (rect_.width() / 2) -
-               window_->allocation.width + kArrowX;
+               allocation.width + kArrowX;
   } else {
     NOTREACHED();
   }
@@ -456,9 +461,10 @@ gboolean BubbleGtk::OnExpose(GtkWidget* widget, GdkEventExpose* expose) {
   gdk_gc_set_rgb_fg_color(gc, &kFrameColor);
 
   // Stroke the frame border.
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(window_, &allocation);
   std::vector<GdkPoint> points = MakeFramePolygonPoints(
-      current_arrow_location_,
-      window_->allocation.width, window_->allocation.height,
+      current_arrow_location_, allocation.width, allocation.height,
       FRAME_STROKE);
   gdk_draw_polygon(drawable, gc, FALSE, &points[0], points.size());
 
