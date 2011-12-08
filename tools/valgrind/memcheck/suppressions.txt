@@ -4664,7 +4664,7 @@
    fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
    fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
    fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
-   fun:_ZN20NavigationController7LoadURLERK4GURLS2_N7content14PageTransitionERKSs
+   fun:_ZN20NavigationController7LoadURLERK4GURLRKN7content8ReferrerENS3_14PageTransitionERKSs
    fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
 }
 {
@@ -5085,7 +5085,7 @@
    fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
    fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
    fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
-   fun:_ZN20NavigationController7LoadURLERK4GURLS2_N7content14PageTransitionERKSs
+   fun:_ZN20NavigationController7LoadURLERK4GURLRKN7content8ReferrerENS3_14PageTransitionERKSs
    fun:_ZN11BalloonHost4InitEv
 }
 {
