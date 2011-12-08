@@ -18,14 +18,12 @@ class AsyncAPIInterface;
 // buffer, to implement some asynchronous RPC mechanism.
 class CommandParser {
  public:
-  explicit CommandParser(AsyncAPIInterface* handler);
-
-  // Sets the buffer to read commands from.
-  void SetBuffer(
-      void* shm_address,
-      size_t shm_size,
-      ptrdiff_t offset,
-      size_t size);
+  CommandParser(void *shm_address,
+                size_t shm_size,
+                ptrdiff_t offset,
+                size_t size,
+                CommandBufferOffset start_get,
+                AsyncAPIInterface *handler);
 
   // Gets the "get" pointer. The get pointer is an index into the command
   // buffer considered as an array of CommandBufferEntry.
@@ -65,9 +63,9 @@ class CommandParser {
  private:
   CommandBufferOffset get_;
   CommandBufferOffset put_;
-  CommandBufferEntry* buffer_;
+  CommandBufferEntry *buffer_;
   int32 entry_count_;
-  AsyncAPIInterface* handler_;
+  AsyncAPIInterface *handler_;
 };
 
 // This class defines the interface for an asynchronous API handler, that

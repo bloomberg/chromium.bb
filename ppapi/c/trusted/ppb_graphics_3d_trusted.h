@@ -59,10 +59,12 @@ struct PPB_Graphics3DTrusted {
                            const int32_t* attrib_list);
 
   // Initializes the command buffer with the given size.
-  PP_Bool (*InitCommandBuffer)(PP_Resource context_id);
+  PP_Bool (*InitCommandBuffer)(PP_Resource context_id, int32_t size);
 
-  // Sets the buffer used for commands.
-  PP_Bool (*SetGetBuffer)(PP_Resource context, int32_t transfer_buffer_id);
+  // Gets the ring buffer for the command buffer.
+  PP_Bool (*GetRingBuffer)(PP_Resource context_id,
+                           int* shm_handle,
+                           uint32_t* shm_size);
 
   // Returns the current state.
   struct PP_Graphics3DTrustedState (*GetState)(PP_Resource context);

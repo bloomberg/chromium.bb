@@ -380,7 +380,7 @@ bool RendererGLContext::Initialize(bool onscreen,
     TRACE_EVENT0("gpu",
                  "RendererGLContext::Initialize::InitializeCommandBuffer");
     // Initiaize the command buffer.
-    if (!command_buffer_->Initialize()) {
+    if (!command_buffer_->Initialize(kCommandBufferSize)) {
       Destroy();
       return false;
     }

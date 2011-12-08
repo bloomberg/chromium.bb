@@ -431,11 +431,6 @@ class GLES2DecoderTestBase : public testing::Test {
       DCHECK(false);
     }
 
-    virtual bool SetGetBuffer(int32 /* transfer_buffer_id */) OVERRIDE {
-      DCHECK(false);
-      return false;
-    }
-
     // Overridden from CommandBufferEngine.
     virtual bool SetGetOffset(int32 offset) OVERRIDE {
       DCHECK(false);

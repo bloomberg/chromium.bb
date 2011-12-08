@@ -244,26 +244,40 @@ void PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_InitCommandBuffer(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     PP_Resource resource_id,
+    int32_t size,
     int32_t* success) {
   DebugPrintf("PPB_Graphics3DTrusted_InitCommandBuffer(...) resource_id: %d\n",
       resource_id);
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  if ((size > kMaxAllowedBufferSize) || (size < 0))
+    return;
   *success = ppapi_proxy::PPBGraphics3DTrustedInterface()->InitCommandBuffer(
-      resource_id);
+      resource_id, size);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-void PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_SetGetBuffer(
+
+void PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_GetRingBuffer(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     PP_Resource resource_id,
-    int32_t transfer_buffer_id) {
-  DebugPrintf("PPB_Graphics3DTrusted_SetGetBuffer\n");
+    NaClSrpcImcDescType* shm_desc,
+    int32_t* shm_size) {
+  DebugPrintf("PPB_Graphics3DTrusted_GetRingBuffer\n");
+  nacl::DescWrapperFactory factory;
+  nacl::scoped_ptr<nacl::DescWrapper> desc_wrapper;
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  ppapi_proxy::PPBGraphics3DTrustedInterface()->SetGetBuffer(
-      resource_id, transfer_buffer_id);
+
+  int native_handle = 0;
+  uint32_t native_size = 0;
+  ppapi_proxy::PPBGraphics3DTrustedInterface()->GetRingBuffer(
+      resource_id, &native_handle, &native_size);
+  desc_wrapper.reset(factory.ImportShmHandle(
+      (NaClHandle)native_handle, native_size));
+  *shm_desc = desc_wrapper->desc();
+  *shm_size = native_size;
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 

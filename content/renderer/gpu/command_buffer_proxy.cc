@@ -25,7 +25,8 @@ using gpu::Buffer;
 CommandBufferProxy::CommandBufferProxy(
     GpuChannelHost* channel,
     int route_id)
-    : channel_(channel),
+    : num_entries_(0),
+      channel_(channel),
       route_id_(route_id),
       flush_count_(0) {
 }
@@ -92,13 +93,41 @@ void CommandBufferProxy::SetChannelErrorCallback(
   channel_error_callback_ = callback;
 }
 
-bool CommandBufferProxy::Initialize() {
+bool CommandBufferProxy::Initialize(int32 size) {
+  DCHECK(!ring_buffer_.get());
+
   ChildThread* child_thread = ChildThread::current();
   if (!child_thread)
     return false;
 
+  base::SharedMemoryHandle handle;
+  if (!child_thread->Send(new ChildProcessHostMsg_SyncAllocateSharedMemory(
+      size,
+      &handle))) {
+    return false;
+  }
+
+  if (!base::SharedMemory::IsHandleValid(handle))
+    return false;
+
+#if defined(OS_POSIX)
+  handle.auto_close = false;
+#endif
+
+  // Take ownership of shared memory. This will close the handle if Send below
+  // fails. Otherwise, callee takes ownership before this variable
+  // goes out of scope.
+  base::SharedMemory shared_memory(handle, false);
+
+  return Initialize(&shared_memory, size);
+}
+
+bool CommandBufferProxy::Initialize(base::SharedMemory* buffer, int32 size) {
   bool result;
-  if (!Send(new GpuCommandBufferMsg_Initialize(route_id_, &result))) {
+  if (!Send(new GpuCommandBufferMsg_Initialize(route_id_,
+                                               buffer->handle(),
+                                               size,
+                                               &result))) {
     LOG(ERROR) << "Could not send GpuCommandBufferMsg_Initialize.";
     return false;
   }
@@ -108,7 +137,37 @@ bool CommandBufferProxy::Initialize() {
     return false;
   }
 
+  base::SharedMemoryHandle handle;
+  if (!buffer->GiveToProcess(base::GetCurrentProcessHandle(), &handle)) {
+    LOG(ERROR) << "Failed to duplicate command buffer handle.";
+    return false;
+  }
+
+  ring_buffer_.reset(new base::SharedMemory(handle, false));
+  if (!ring_buffer_->Map(size)) {
+    LOG(ERROR) << "Failed to map shared memory for command buffer.";
+    ring_buffer_.reset();
+    return false;
+  }
+
+  num_entries_ = size / sizeof(gpu::CommandBufferEntry);
   return true;
+}
+
+Buffer CommandBufferProxy::GetRingBuffer() {
+  DCHECK(ring_buffer_.get());
+  // Return locally cached ring buffer.
+  Buffer buffer;
+  if (ring_buffer_.get()) {
+    buffer.ptr = ring_buffer_->memory();
+    buffer.size = num_entries_ * sizeof(gpu::CommandBufferEntry);
+    buffer.shared_memory = ring_buffer_.get();
+  } else {
+    buffer.ptr = NULL;
+    buffer.size = 0;
+    buffer.shared_memory = NULL;
+  }
+  return buffer;
 }
 
 gpu::CommandBuffer::State CommandBufferProxy::GetState() {
@@ -153,13 +212,6 @@ gpu::CommandBuffer::State CommandBufferProxy::FlushSync(int32 put_offset,
   }
 
   return last_state_;
-}
-
-void CommandBufferProxy::SetGetBuffer(int32 shm_id) {
-  if (last_state_.error != gpu::error::kNoError)
-    return;
-
-  Send(new GpuCommandBufferMsg_SetGetBuffer(route_id_, shm_id));
 }
 
 void CommandBufferProxy::SetGetOffset(int32 get_offset) {

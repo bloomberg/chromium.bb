@@ -77,15 +77,16 @@
           # Initialize the command buffer.
           {'name': 'PPB_Graphics3DTrusted_InitCommandBuffer',
            'inputs': [['resource_id', 'PP_Resource'],
+                      ['size', 'int32_t']
                       ],
            'outputs': [['success', 'int32_t']]  # PP_Bool
           },
-          # Set the buffer used for commands.
-          {'name': 'PPB_Graphics3DTrusted_SetGetBuffer',
-           'inputs': [['resource_id', 'PP_Resource'],
-                      ['shm_id', 'int32_t'],
-                     ],
-           'outputs': []
+          # Get the ring buffer.
+          {'name': 'PPB_Graphics3DTrusted_GetRingBuffer',
+           'inputs': [['resource_id', 'PP_Resource']],
+           'outputs': [['shm_desc', 'handle'],
+                       ['shm_size', 'int32_t']
+                      ]
           },
           # Get command buffer state.
           {'name': 'PPB_Graphics3DTrusted_GetState',
@@ -141,6 +142,6 @@
                        ['shm_size', 'int32_t']
                       ]
           },
-          # End of PPB_Graphics3DTrusted
+          # End of PPB_Graphics3DTrusted 
         ]
 }

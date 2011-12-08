@@ -29,8 +29,9 @@ class PPB_Graphics3D_Impl : public ::ppapi::Resource,
   virtual ::ppapi::thunk::PPB_Graphics3D_API* AsPPB_Graphics3D_API() OVERRIDE;
 
   // PPB_Graphics3D_API trusted implementation.
-  virtual PP_Bool InitCommandBuffer() OVERRIDE;
-  virtual PP_Bool SetGetBuffer(int32_t transfer_buffer_id) OVERRIDE;
+  virtual PP_Bool InitCommandBuffer(int32_t size) OVERRIDE;
+  virtual PP_Bool GetRingBuffer(int* shm_handle,
+                                uint32_t* shm_size) OVERRIDE;
   virtual PP_Graphics3DTrustedState GetState() OVERRIDE;
   virtual int32_t CreateTransferBuffer(uint32_t size) OVERRIDE;
   virtual PP_Bool DestroyTransferBuffer(int32_t id) OVERRIDE;

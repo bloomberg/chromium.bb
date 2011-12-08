@@ -67,7 +67,13 @@ class CommandBuffer {
   }
 
   // Initialize the command buffer with the given size.
-  virtual bool Initialize() = 0;
+  virtual bool Initialize(int32 size) = 0;
+
+  // Initialize the command buffer using the given preallocated buffer.
+  virtual bool Initialize(base::SharedMemory* buffer, int32 size) = 0;
+
+  // Gets the ring buffer for the command buffer.
+  virtual Buffer GetRingBuffer() = 0;
 
   // Returns the current status.
   virtual State GetState() = 0;
@@ -85,10 +91,6 @@ class CommandBuffer {
   // reader's most recent get offset. Does not return until all pending commands
   // have been executed.
   virtual State FlushSync(int32 put_offset, int32 last_known_get) = 0;
-
-  // Sets the buffer commands are read from.
-  // Also resets the get and put offsets to 0.
-  virtual void SetGetBuffer(int32 transfer_buffer_id) = 0;
 
   // Sets the current get offset. This can be called from any thread.
   virtual void SetGetOffset(int32 get_offset) = 0;
