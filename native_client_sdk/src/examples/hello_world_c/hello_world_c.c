@@ -70,7 +70,7 @@ static char* VarToCStr(struct PP_Var var) {
  */
 static struct PP_Var CStrToVar(const char* str) {
   if (ppb_var_interface != NULL) {
-    return ppb_var_interface->VarFromUtf8(module_id, str, strlen(str));
+    return ppb_var_interface->VarFromUtf8(str, strlen(str));
   }
   return PP_MakeUndefined();
 }
