@@ -188,6 +188,7 @@ class BuilderStage(object):
     """Have the builder execute the stage."""
     if self.option_name and not getattr(self._options, self.option_name):
       self._PrintLoudly('Not running Stage %s' % self.name)
+      self.HandleSkip()
       return
 
     record = results_lib.Results.PreviouslyCompletedRecord(self.name)

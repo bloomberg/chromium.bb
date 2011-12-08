@@ -514,7 +514,7 @@ class BuildTargetStage(bs.BuilderStage):
 
   option_name = 'build'
 
-  def __init__(self, bot_id, options, build_config):
+  def __init__(self, bot_id, options, build_config, archive_stage):
     super(BuildTargetStage, self).__init__(bot_id, options, build_config)
     self._env = {}
     if self._build_config.get('useflags'):
@@ -527,6 +527,18 @@ class BuildTargetStage(bs.BuilderStage):
       self._env['IGNORE_PREFLIGHT_BINHOST'] = '1'
 
     self._autotest_tarball = None
+    self._archive_stage = archive_stage
+
+  def _CommunicateImagePath(self):
+    """Communicates to archive_stage the image path of this stage."""
+    image_path = self.GetImageDirSymlink()
+    if os.path.isdir(image_path):
+      self._archive_stage.SetVersion(image_path)
+    else:
+      self._archive_stage.SetVersion(None)
+
+  def HandleSkip(self):
+    self._CommunicateImagePath()
 
   def _BuildImages(self):
     # We only build base, dev, and test images from this stage.
@@ -549,8 +561,9 @@ class BuildTargetStage(bs.BuilderStage):
     cbuildbot_image_link = self.GetImageDirSymlink()
     if os.path.lexists(cbuildbot_image_link):
       os.remove(cbuildbot_image_link)
-    os.symlink(latest_image, cbuildbot_image_link)
 
+    os.symlink(latest_image, cbuildbot_image_link)
+    self._CommunicateImagePath()
 
   def _BuildAutotestTarball(self):
     # Build autotest tarball, which is used in archive step. This is generated
@@ -559,6 +572,7 @@ class BuildTargetStage(bs.BuilderStage):
     commands.BuildAutotestTarball(self._build_root,
                                   self._build_config['board'],
                                   self._autotest_tarball)
+    self._archive_stage.AutotestTarballReady(self._autotest_tarball)
 
   def _PerformStage(self):
     build_autotest = (self._build_config['build_tests'] and
@@ -580,16 +594,18 @@ class BuildTargetStage(bs.BuilderStage):
     # Build images and autotest tarball in parallel.
     steps = []
     if build_autotest and self._build_config['archive_build_debug']:
-      self._autotest_tarball = os.path.join(self._build_root,
-                                            'autotest.tar.bz2')
+      tarball_dir = tempfile.mkdtemp(prefix='autotest')
+      self._autotest_tarball = os.path.join(tarball_dir, 'autotest.tar.bz2')
       steps.append(self._BuildAutotestTarball)
+
     steps.append(self._BuildImages)
     background.RunParallelSteps(steps)
 
-    # Rename autotest tarball into place.
+    # TODO(sosa): Remove copy once crosbug.com/23690 is closed.
     if build_autotest and self._build_config['archive_build_debug']:
-      os.rename(self._autotest_tarball,
-                os.path.join(self.GetImageDirSymlink(), 'autotest.tar.bz2'))
+      shutil.copyfile(self._autotest_tarball,
+                      os.path.join(self.GetImageDirSymlink(),
+                                   'autotest.tar.bz2'))
 
 
 class ChromeTestStage(bs.BuilderStage):
@@ -760,6 +776,13 @@ class ArchiveStage(NonHaltingBuilderStage):
   """Archives build and test artifacts for developer consumption."""
 
   option_name = 'archive'
+  _VERSION_NOT_SET = '_not_set_version_'
+
+  class NothingToArchiveException(Exception):
+    """Thrown if this stage found nothing to archive."""
+    def __init__(self):
+      super(ArchiveStage.NothingToArchiveException, self).__init__(
+          'No images found to archive.')
 
   # This stage is intended to run in the background, in parallel with tests.
   # When the tests have completed, TestStageComplete method must be
@@ -772,8 +795,9 @@ class ArchiveStage(NonHaltingBuilderStage):
     else:
       self._gsutil_archive = build_config['gs_path']
 
-    image_id = os.readlink(self.GetImageDirSymlink())
-    self._set_version = '%s-b%s' % (image_id, self._options.buildnumber)
+    # Set version is dependent on setting external to class.  Do not use
+    # directly.  Use GetVersion() instead.
+    self._set_version = ArchiveStage._VERSION_NOT_SET
     if self._options.buildbot:
       self._archive_root = '/var/www/archive'
     else:
@@ -781,10 +805,32 @@ class ArchiveStage(NonHaltingBuilderStage):
                                         'trybot_archive')
 
     self._bot_archive_root = os.path.join(self._archive_root, self._bot_id)
+    self._version_queue = multiprocessing.Queue()
     self._autotest_tarball_queue = multiprocessing.Queue()
     self._test_results_queue = multiprocessing.Queue()
     self._update_payloads_queue = multiprocessing.Queue()
     self._breakpad_symbols_queue = multiprocessing.Queue()
+
+  def SetVersion(self, path_to_image):
+    """Sets the cros version for the given built path to an image.
+
+    Args:
+      path_to_image: Path to latest image.""
+    """
+    self._version_queue.put(path_to_image)
+
+  def GetVersion(self):
+    """Gets the version for the archive stage."""
+    if self._set_version == ArchiveStage._VERSION_NOT_SET:
+      version = self._version_queue.get()
+      # Put the version right back on the queue in case anyone else is waiting.
+      self._version_queue.put(version)
+      if version:
+        self._set_version = os.readlink(version)
+      else:
+        self._set_version = None
+
+    return self._set_version
 
   def AutotestTarballReady(self, autotest_tarball):
     """Tell Archive Stage that autotest tarball is ready.
@@ -848,6 +894,10 @@ class ArchiveStage(NonHaltingBuilderStage):
 
   def GetDownloadUrl(self):
     """Get the URL where we can download artifacts."""
+    version = self.GetVersion()
+    if not version:
+      return None
+
     if not self._options.buildbot:
       return self._GetArchivePath()
     elif self._gsutil_archive:
@@ -857,17 +907,18 @@ class ArchiveStage(NonHaltingBuilderStage):
     else:
       # 'http://botname/archive/bot_id/version'
       return 'http://%s/archive/%s/%s' % (socket.getfqdn(), self._bot_id,
-                                          self._set_version)
+                                          version)
 
   def _GetGSUploadLocation(self):
     """Get the Google Storage location where we should upload artifacts."""
-    if self._gsutil_archive:
-      return '%s/%s' % (self._gsutil_archive, self._set_version)
-    else:
-      return None
+    version = self.GetVersion()
+    if version and self._gsutil_archive:
+      return '%s/%s' % (self._gsutil_archive, version)
 
   def _GetArchivePath(self):
-    return os.path.join(self._bot_archive_root, self._set_version)
+    version = self.GetVersion()
+    if version:
+      return os.path.join(self._bot_archive_root, version)
 
   def _GetAutotestTarball(self):
     """Get the path to the autotest tarball."""
@@ -877,6 +928,7 @@ class ArchiveStage(NonHaltingBuilderStage):
       cros_lib.Info('Found autotest tarball at %s...' % autotest_tarball)
     else:
       cros_lib.Info('No autotest tarball.')
+
     return autotest_tarball
 
   def _GetUpdatePayloads(self):
@@ -906,6 +958,9 @@ class ArchiveStage(NonHaltingBuilderStage):
   def _SetupArchivePath(self):
     """Create a fresh directory for archiving a build."""
     archive_path = self._GetArchivePath()
+    if not archive_path:
+      return None
+
     if not self._options.buildbot:
       # Trybot: Clear artifacts from all previous runs.
       shutil.rmtree(self._archive_root, ignore_errors=True)
@@ -932,9 +987,13 @@ class ArchiveStage(NonHaltingBuilderStage):
     if config['useflags']:
       extra_env['USE'] = ' '.join(config['useflags'])
 
+    if not archive_path:
+      raise ArchiveStage.NothingToArchiveException()
+
     # The following functions are run in parallel (except where indicated
     # otherwise)
     # \- BuildAndArchiveArtifacts
+    #    \- ArchiveAutotestTarball
     #    \- ArchivePayloads
     #    \- ArchiveTestResults
     #    \- ArchiveDebugSymbols
@@ -944,6 +1003,12 @@ class ArchiveStage(NonHaltingBuilderStage):
     #       \- ArchiveRegularImages
     # \- UploadDebugSymbols
     # \- UploadArtifacts
+
+    def ArchiveAutotestTarball():
+      """Archives the autotest tarball produced in BuildTarget."""
+      autotest_tarball = self._GetAutotestTarball()
+      if autotest_tarball:
+        upload_queue.put(commands.ArchiveFile(autotest_tarball, archive_path))
 
     def ArchivePayloads():
       """Archives update payloads when they are ready."""
@@ -1058,10 +1123,10 @@ class ArchiveStage(NonHaltingBuilderStage):
     def BuildAndArchiveArtifacts():
       try:
         # Run archiving steps in parallel.
-        steps = []
+        steps = [ArchiveDebugSymbols, BuildAndArchiveAllImages]
         if self._options.tests:
-          steps += [ArchivePayloads, ArchiveTestResults]
-        steps += [ArchiveDebugSymbols, BuildAndArchiveAllImages]
+          steps += [ArchiveAutotestTarball, ArchivePayloads, ArchiveTestResults]
+
         background.RunParallelSteps(steps)
       finally:
         # Shut down upload queues.
@@ -1087,7 +1152,10 @@ class ArchiveStage(NonHaltingBuilderStage):
                             self._build_config['profile'])
 
     # Update and upload LATEST file.
-    commands.UpdateLatestFile(self._bot_archive_root, self._set_version)
+    version = self.GetVersion()
+    if version:
+      commands.UpdateLatestFile(self._bot_archive_root, version)
+
     commands.UploadArchivedFile(self._bot_archive_root, self._gsutil_archive,
                                 'LATEST', debug)
 
