@@ -20,6 +20,7 @@
 #include "chrome/browser/content_settings/content_settings_observer.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/content_settings_types.h"
 #include "chrome/common/content_settings_pattern.h"
 
 namespace base {

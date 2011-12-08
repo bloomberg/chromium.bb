@@ -12,6 +12,7 @@
 #include "chrome/browser/content_settings/content_settings_observable_provider.h"
 #include "chrome/browser/content_settings/content_settings_origin_identifier_value_map.h"
 #include "chrome/common/content_settings_pattern.h"
+#include "chrome/common/content_settings_types.h"
 
 namespace content_settings {
 
@@ -19,13 +20,7 @@ namespace content_settings {
 class MockProvider : public ObservableProvider {
  public:
   MockProvider();
-  MockProvider(ContentSettingsPattern requesting_url_pattern,
-               ContentSettingsPattern embedding_url_pattern,
-               ContentSettingsType content_type,
-               ResourceIdentifier resource_identifier,
-               ContentSetting setting,
-               bool read_only,
-               bool is_managed);
+  explicit MockProvider(bool read_only);
   virtual ~MockProvider();
 
   virtual RuleIterator* GetRuleIterator(

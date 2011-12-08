@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "base/values.h"
-#include "chrome/common/content_settings.h"
+#include "chrome/common/content_settings_types.h"
 
 class ContentSettingsPattern;
 

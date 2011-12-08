@@ -28,10 +28,6 @@ typedef std::pair<ContentSettingsPattern, ContentSettingsPattern> PatternPair;
 
 std::string GetTypeName(ContentSettingsType type);
 
-// Returns true if the |content_type| supports a resource identifier.
-// Resource identifiers are supported (but not required) for plug-ins.
-bool SupportsResourceIdentifier(ContentSettingsType content_type);
-
 // Maps CONTENT_SETTING_ASK for the CONTENT_SETTINGS_TYPE_PLUGINS to
 // CONTENT_SETTING_BLOCK if click-to-play is not enabled.
 ContentSetting ClickToPlayFixup(ContentSettingsType content_type,

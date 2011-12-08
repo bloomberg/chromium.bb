@@ -9,19 +9,8 @@ namespace content_settings {
 MockProvider::MockProvider()
     : read_only_(false) {}
 
-MockProvider::MockProvider(ContentSettingsPattern requesting_url_pattern,
-                           ContentSettingsPattern embedding_url_pattern,
-                           ContentSettingsType content_type,
-                           ResourceIdentifier resource_identifier,
-                           ContentSetting setting,
-                           bool read_only,
-                           bool is_managed)
+MockProvider::MockProvider(bool read_only)
     : read_only_(read_only) {
-  value_map_.SetValue(requesting_url_pattern,
-                      embedding_url_pattern,
-                      content_type,
-                      resource_identifier,
-                      Value::CreateIntegerValue(setting));
 }
 
 MockProvider::~MockProvider() {}

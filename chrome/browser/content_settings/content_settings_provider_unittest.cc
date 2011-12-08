@@ -16,14 +16,14 @@ TEST(ContentSettingsProviderTest, Mock) {
       ContentSettingsPattern::FromString("[*.]youtube.com");
   GURL url("http://www.youtube.com");
 
-  MockProvider mock_provider(
+  MockProvider mock_provider(false);
+  mock_provider.SetWebsiteSetting(
       pattern,
       pattern,
       CONTENT_SETTINGS_TYPE_PLUGINS,
       "java_plugin",
-      CONTENT_SETTING_BLOCK,
-      false,
-      false);
+      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(&mock_provider, url, url,

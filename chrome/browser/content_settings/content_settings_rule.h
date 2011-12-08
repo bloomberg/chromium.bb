@@ -14,7 +14,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
-#include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
 
 namespace content_settings {
