@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "configparser.h"
+#include "config-parser.h"
 
 static int
 handle_key(const struct config_key *key, const char *value)

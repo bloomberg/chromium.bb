@@ -27,7 +27,7 @@
 
 #include "window.h"
 #include "cairo-util.h"
-#include "../shared/configparser.h"
+#include "../shared/config-parser.h"
 
 #include "tablet-shell-client-protocol.h"
 
