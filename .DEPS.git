@@ -111,7 +111,7 @@ deps = {
     'src/third_party/webgl_conformance':
         Var('git_url') + '/chromium/deps/webgl/sdk/tests.git@1639567ef629c3e078bccde2a0e7c6092a23c8d6',
     'src/third_party/webrtc':
-        Var('git_url') + '/external/webrtc/src.git@cf0e246ec7562280c7f1a1a1898b2981997e7bc2',
+        Var('git_url') + '/external/webrtc/src.git@57dcc987c054b098b94775e09480f75fbc9dce22',
     'src/third_party/yasm/source/patched-yasm':
         Var('git_url') + '/chromium/deps/yasm/patched-yasm.git@44efe151b6960bab3db0c85354cc4cce1024219d',
     'src/tools/grit':
