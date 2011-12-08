@@ -161,6 +161,10 @@ BOOL ThePasteboardIsTooDamnBig() {
   }
 }
 
+- (void)pasteAndMatchStyle:(id)sender {
+  [self paste:sender];
+}
+
 - (void)pasteAndGo:sender {
   if (ThePasteboardIsTooDamnBig()) {
     NSBeep();
