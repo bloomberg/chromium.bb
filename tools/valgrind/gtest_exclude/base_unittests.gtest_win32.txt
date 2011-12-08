@@ -5,3 +5,8 @@ TimeTicks.WinRollover
 TimeTicks.Deltas
 TimeTicks.HighResNow
 TimerTest.RepeatingTimer*
+
+# This Windows-native sampling profiler test does not
+# work under valgrind because it assumes the original
+# code runs, not the modified version under valgrind.
+SamplingProfileTest.Sample
