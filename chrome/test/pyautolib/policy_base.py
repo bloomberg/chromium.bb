@@ -208,8 +208,28 @@ class PolicyTestBase(pyauto.PyUITest):
     cros_ui.stop()
     logging.debug('Writing device policy cache')
     self._WriteDevicePolicy(policy)
+
+    # Ugly hack: session manager won't spawn chrome if this file exists. That's
+    # usually a good thing (to keep the automation channel open), but in this
+    # case we really want to restart chrome. PyUITest.setUp() will be called
+    # after session manager and chrome have restarted, and will setup the
+    # automation channel.
+    restore_magic_file = False
+    if os.path.exists(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE):
+      logging.debug('DISABLE_BROWSER_RESTART_MAGIC_FILE found. '
+                    'Removing temporarily for the next restart.')
+      restore_magic_file = True
+      os.path.remove(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE)
+      assert not os.path.exists(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE)
+
     logging.debug('Starting session manager again')
     cros_ui.start()
+
+    # cros_ui.start() waits for the login prompt to be visible, so chrome has
+    # already started once it returns.
+    if restore_magic_file:
+      open(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE, 'w').close()
+      assert os.path.exists(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE)
 
   def ExtraChromeFlags(self):
     """Sets up Chrome to use cloud policies on ChromeOS."""

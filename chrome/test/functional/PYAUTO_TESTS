@@ -281,6 +281,10 @@
       '-imports',
       # Multi-profile doesn't apply to chromeos yet.
       '-multiprofile',
+      # These require a custom setup on ChromeOS and have their own suite for
+      # this platform.
+      '-policy',
+      '-policy_prefs_ui',
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
@@ -572,6 +576,15 @@
   'CHROMEOS_LOGIN': {
     'chromeos': [
       'chromeos_login',
+    ],
+  },
+
+  # ChromeOS policy tests. These are shared with Desktop Chrome tests, but
+  # require custom setup on ChromeOS.
+  'CHROMEOS_POLICY': {
+    'chromeos': [
+      'policy',
+      'policy_prefs_ui',
     ],
   },
 
