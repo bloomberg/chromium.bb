@@ -93,6 +93,30 @@ scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
                                        Extension::Location location,
                                        int flags,
                                        std::string* error) {
+  scoped_ptr<DictionaryValue> manifest(LoadManifest(extension_path, error));
+  if (!manifest.get())
+    return NULL;
+  if (!extension_l10n_util::LocalizeExtension(extension_path, manifest.get(),
+                                              error))
+    return NULL;
+
+  scoped_refptr<Extension> extension(Extension::Create(
+      extension_path,
+      location,
+      *manifest,
+      flags,
+      error));
+  if (!extension.get())
+    return NULL;
+
+  if (!ValidateExtension(extension.get(), error))
+    return NULL;
+
+  return extension;
+}
+
+DictionaryValue* LoadManifest(const FilePath& extension_path,
+                              std::string* error) {
   FilePath manifest_path =
       extension_path.Append(Extension::kManifestFilename);
   if (!file_util::PathExists(manifest_path)) {
@@ -122,23 +146,7 @@ scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
     return NULL;
   }
 
-  DictionaryValue* manifest = static_cast<DictionaryValue*>(root.get());
-  if (!extension_l10n_util::LocalizeExtension(extension_path, manifest, error))
-    return NULL;
-
-  scoped_refptr<Extension> extension(Extension::Create(
-      extension_path,
-      location,
-      *manifest,
-      flags,
-      error));
-  if (!extension.get())
-    return NULL;
-
-  if (!ValidateExtension(extension.get(), error))
-    return NULL;
-
-  return extension;
+  return static_cast<DictionaryValue*>(root.release());
 }
 
 bool ValidateExtension(const Extension* extension, std::string* error) {

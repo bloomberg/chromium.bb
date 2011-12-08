@@ -1999,7 +1999,7 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
            page != chrome::kChromeUIHistoryHost
 #if defined(FILE_MANAGER_EXTENSION)
                &&
-           !(location() ==  COMPONENT &&
+           !(location() == COMPONENT &&
              page == chrome::kChromeUIFileManagerHost)
 #endif
           ) ||
@@ -2828,17 +2828,7 @@ bool Extension::CanSpecifyComponentOnlyPermission() const {
   // Only COMPONENT extensions can use private APIs.
   // TODO(asargent) - We want a more general purpose mechanism for this,
   // and better error messages. (http://crbug.com/54013)
-  if (location_ == Extension::COMPONENT)
-    return true;
-
-#ifndef NDEBUG
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kExposePrivateExtensionApi)) {
-    return true;
-  }
-#endif
-
-  return false;
+  return location_ == Extension::COMPONENT;
 }
 
 bool Extension::CanSpecifyExperimentalPermission() const {
@@ -2860,12 +2850,7 @@ bool Extension::CanSpecifyExperimentalPermission() const {
 }
 
 bool Extension::CanExecuteScriptEverywhere() const {
-  if (location() == Extension::COMPONENT
-#ifndef NDEBUG
-      || CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kExposePrivateExtensionApi)
-#endif
-      )
+  if (location() == Extension::COMPONENT)
     return true;
 
   ScriptingWhitelist* whitelist =

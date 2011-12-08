@@ -203,6 +203,7 @@ extern const char kInstantFieldTrialSilent[];
 extern const char kInstantFieldTrialSuggest[];
 extern const char kInstantURL[];
 extern const char kKeepAliveForTest[];
+extern const char kLoadComponentExtension[];
 extern const char kLoadExtension[];
 extern const char kLoadOpencryptoki[];
 extern const char kUninstallExtension[];
@@ -366,7 +367,6 @@ extern const char kOAuthHostUrl[];
 extern const char kClearTokenService[];
 extern const char kSetToken[];
 extern const char kWebSocketLiveExperimentHost[];
-extern const char kExposePrivateExtensionApi[];
 extern const char kFileManagerExtensionPath[];
 #endif
 

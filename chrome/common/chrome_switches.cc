@@ -731,6 +731,9 @@ const char kInstantURL[]                    = "instant-url";
 // Used for testing - keeps browser alive after last browser window closes.
 const char kKeepAliveForTest[]              = "keep-alive-for-test";
 
+// Comma-separated list of directories with component extensions to load.
+const char kLoadComponentExtension[]        = "load-component-extension";
+
 // Loads an extension from the specified directory.
 const char kLoadExtension[]                 = "load-extension";
 
@@ -1268,10 +1271,6 @@ const char kSetToken[]                      = "set-token";
 // used. If host is specified, it also makes initial delay shorter (5 min to 5
 // sec) to make it faster to test websocket live experiment code.
 const char kWebSocketLiveExperimentHost[]   = "websocket-live-experiment-host";
-
-// Debug only switch to give access to all private extension APIs to any
-// non-component extension that is requesting it.
-const char kExposePrivateExtensionApi[]   = "expose-private-extension-api";
 
 // Enables overriding the path of file manager extension.
 const char kFileManagerExtensionPath[]      = "filemgr-ext-path";

@@ -12,6 +12,7 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
@@ -436,6 +437,21 @@ void ProfileImpl::InitExtensions(bool extensions_enabled) {
       extensions_enabled));
 
   extension_service_->component_loader()->AddDefaultComponentExtensions();
+  if (command_line->HasSwitch(switches::kLoadComponentExtension)) {
+    CommandLine::StringType path_list = command_line->GetSwitchValueNative(
+        switches::kLoadComponentExtension);
+    StringTokenizerT<CommandLine::StringType,
+        CommandLine::StringType::const_iterator> t(path_list,
+                                                   FILE_PATH_LITERAL(","));
+    while (t.GetNext()) {
+      // Load the component extension manifest synchronously.
+      // Blocking the UI thread is acceptable here since
+      // this flag designated for developers.
+      base::ThreadRestrictions::ScopedAllowIO allow_io;
+      extension_service_->component_loader()->AddOrReplace(
+          FilePath(t.token()));
+    }
+  }
   extension_service_->Init();
 
   if (extensions_enabled) {

@@ -349,7 +349,8 @@ void ExtensionPrefs::MakePathsAbsolute(DictionaryValue* dict) {
     if (!extension_dict->GetString(kPrefPath, &path_string))
       continue;
 
-    DCHECK(!FilePath(path_string).IsAbsolute());
+    DCHECK(location_value == Extension::COMPONENT ||
+           !FilePath(path_string).IsAbsolute());
     extension_dict->SetString(
         kPrefPath, install_directory_.Append(path_string).value());
   }

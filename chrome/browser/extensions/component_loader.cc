@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/component_loader.h"
 
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/json/json_value_serializer.h"
 #include "chrome/browser/browser_process.h"
@@ -16,6 +17,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -99,21 +101,28 @@ const Extension* ComponentLoader::Add(
 const Extension* ComponentLoader::Add(
     const DictionaryValue* parsed_manifest,
     const FilePath& root_directory) {
-  // Get the absolute path to the extension.
-  FilePath absolute_path(root_directory);
-  if (!absolute_path.IsAbsolute()) {
-    if (PathService::Get(chrome::DIR_RESOURCES, &absolute_path)) {
-      absolute_path = absolute_path.Append(root_directory);
-    } else {
-      NOTREACHED();
-    }
-  }
-
-  ComponentExtensionInfo info(parsed_manifest, absolute_path);
+  CHECK(!Exists(GenerateId(parsed_manifest)));
+  ComponentExtensionInfo info(parsed_manifest, root_directory);
   component_extensions_.push_back(info);
   if (extension_service_->is_ready())
     return Load(info);
   return NULL;
+}
+
+const Extension* ComponentLoader::AddOrReplace(const FilePath& path) {
+  FilePath absolute_path = path;
+  file_util::AbsolutePath(&absolute_path);
+  std::string error;
+  scoped_ptr<DictionaryValue> manifest(
+      extension_file_util::LoadManifest(absolute_path, &error));
+  if (!manifest.get()) {
+    LOG(ERROR) << "Could not load extension from '" <<
+                  absolute_path.value() << "'. " << error;
+    return NULL;
+  }
+  Remove(GenerateId(manifest.get()));
+
+  return Add(manifest.release(), absolute_path);
 }
 
 const Extension* ComponentLoader::Load(const ComponentExtensionInfo& info) {
@@ -123,8 +132,19 @@ const Extension* ComponentLoader::Load(const ComponentExtensionInfo& info) {
   if (Extension::ShouldDoStrictErrorChecking(Extension::COMPONENT))
     flags |= Extension::STRICT_ERROR_CHECKS;
   std::string error;
+
+  // Get the absolute path to the extension.
+  FilePath absolute_path(info.root_directory);
+  if (!absolute_path.IsAbsolute()) {
+    if (PathService::Get(chrome::DIR_RESOURCES, &absolute_path)) {
+      absolute_path = absolute_path.Append(info.root_directory);
+    } else {
+      NOTREACHED();
+    }
+  }
+
   scoped_refptr<const Extension> extension(Extension::Create(
-      info.root_directory,
+      absolute_path,
       Extension::COMPONENT,
       *info.manifest,
       flags,
@@ -141,21 +161,37 @@ void ComponentLoader::Remove(const FilePath& root_directory) {
   // Find the ComponentExtensionInfo for the extension.
   RegisteredComponentExtensions::iterator it = component_extensions_.begin();
   for (; it != component_extensions_.end(); ++it) {
-    if (it->root_directory == root_directory)
+    if (it->root_directory == root_directory) {
+      Remove(GenerateId(it->manifest));
       break;
+    }
   }
-  // If the extension is not in the list, there's nothing to do.
-  if (it == component_extensions_.end())
-    return;
+}
 
-  // The list owns the dictionary, so it must be deleted after removal.
-  scoped_ptr<const DictionaryValue> manifest(it->manifest);
+void ComponentLoader::Remove(const std::string& id) {
+  RegisteredComponentExtensions::iterator it = component_extensions_.begin();
+  for (; it != component_extensions_.end(); ++it) {
+    if (GenerateId(it->manifest) == id) {
+      delete it->manifest;
+      it = component_extensions_.erase(it);
+      if (extension_service_->is_ready())
+        extension_service_->
+            UnloadExtension(id, extension_misc::UNLOAD_REASON_DISABLE);
+      break;
+    }
+  }
+}
 
-  // Remove the extension from the list of registered extensions.
-  *it = component_extensions_.back();
-  component_extensions_.pop_back();
+bool ComponentLoader::Exists(const std::string& id) const {
+  RegisteredComponentExtensions::const_iterator it =
+      component_extensions_.begin();
+  for (; it != component_extensions_.end(); ++it)
+    if (GenerateId(it->manifest) == id)
+      return true;
+  return false;
+}
 
-  // Determine the extension id and unload the extension.
+std::string ComponentLoader::GenerateId(const DictionaryValue* manifest) {
   std::string public_key;
   std::string public_key_bytes;
   std::string id;
@@ -163,11 +199,9 @@ void ComponentLoader::Remove(const FilePath& root_directory) {
           extension_manifest_keys::kPublicKey, &public_key) ||
       !Extension::ParsePEMKeyBytes(public_key, &public_key_bytes) ||
       !Extension::GenerateId(public_key_bytes, &id)) {
-    LOG(ERROR) << "Failed to get extension id";
-    return;
+    return std::string();
   }
-  extension_service_->
-      UnloadExtension(id, extension_misc::UNLOAD_REASON_DISABLE);
+  return id;
 }
 
 void ComponentLoader::AddFileManagerExtension() {

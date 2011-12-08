@@ -28,6 +28,10 @@ class ComponentLoader : public content::NotificationObserver {
                   PrefService* local_state);
   virtual ~ComponentLoader();
 
+  size_t registered_extensions_count() const {
+    return component_extensions_.size();
+  }
+
   // Loads any registered component extensions.
   void LoadAll();
 
@@ -41,9 +45,14 @@ class ComponentLoader : public content::NotificationObserver {
   const Extension* Add(int manifest_resource_id,
                        const FilePath& root_directory);
 
+  // Loads a component extension from file system. Replaces previously added
+  // extension with the same ID.
+  const Extension* AddOrReplace(const FilePath& path);
+
   // Unloads a component extension and removes it from the list of component
   // extensions to be loaded.
   void Remove(const FilePath& root_directory);
+  void Remove(const std::string& id);
 
   // Adds the default component extensions.
   //
@@ -95,6 +104,12 @@ class ComponentLoader : public content::NotificationObserver {
 
   // Add the enterprise webstore extension, or reload it if already loaded.
   void AddOrReloadEnterpriseWebStore();
+
+  // Returns true if an extension with the specified id has been added.
+  bool Exists(const std::string& id) const;
+
+  // Determine the extension id.
+  static std::string GenerateId(const base::DictionaryValue* manifest);
 
   PrefService* prefs_;
   PrefService* local_state_;

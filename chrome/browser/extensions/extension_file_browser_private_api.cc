@@ -375,12 +375,7 @@ class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher
 
     // Make sure that only component extension can access the entire
     // local file system.
-    if (extension_->location() != Extension::COMPONENT
-#ifndef NDEBUG
-      && !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kExposePrivateExtensionApi)
-#endif
-        ) {
+    if (extension_->location() != Extension::COMPONENT) {
       NOTREACHED() << "Private method access by non-component extension "
                    << extension_->id();
       return false;
