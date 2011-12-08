@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/global_error.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -97,8 +98,10 @@ string16 ExtensionGlobalError::GenerateMessageSection(
   for (ExtensionIdSet::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {
     const Extension* e = extension_service_->GetExtensionById(*iter, true);
-    message += l10n_util::GetStringFUTF16(template_message_id,
-                                          string16(ASCIIToUTF16(e->name())));
+    message += l10n_util::GetStringFUTF16(
+        template_message_id,
+        string16(ASCIIToUTF16(e->name())),
+        l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
   }
   return message;
 }

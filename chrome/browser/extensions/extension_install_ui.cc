@@ -42,7 +42,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 static const int kTitleIds[ExtensionInstallUI::NUM_PROMPT_TYPES] = {
-  IDS_EXTENSION_INSTALL_PROMPT_TITLE,
+  0,
   IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE,
   IDS_EXTENSION_RE_ENABLE_PROMPT_TITLE,
   IDS_EXTENSION_PERMISSIONS_PROMPT_TITLE
@@ -55,7 +55,7 @@ static const int kHeadingIds[ExtensionInstallUI::NUM_PROMPT_TYPES] = {
 };
 static const int kAcceptButtonIds[ExtensionInstallUI::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
-  IDS_EXTENSION_PROMPT_INLINE_INSTALL_BUTTON,
+  IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
   IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON,
   IDS_EXTENSION_PROMPT_PERMISSIONS_BUTTON
 };
@@ -103,8 +103,13 @@ void ExtensionInstallUI::Prompt::SetInlineInstallWebstoreData(
   rating_count_ = rating_count;
 }
 
-string16 ExtensionInstallUI::Prompt::GetDialogTitle() const {
-  if (type_ == INLINE_INSTALL_PROMPT) {
+string16 ExtensionInstallUI::Prompt::GetDialogTitle(
+    const Extension* extension) const {
+  if (type_ == INSTALL_PROMPT) {
+    return l10n_util::GetStringUTF16(extension->is_app() ?
+        IDS_EXTENSION_INSTALL_APP_PROMPT_TITLE :
+        IDS_EXTENSION_INSTALL_EXTENSION_PROMPT_TITLE);
+  } else if (type_ == INLINE_INSTALL_PROMPT) {
     return l10n_util::GetStringFUTF16(
       kTitleIds[type_], l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
   } else {

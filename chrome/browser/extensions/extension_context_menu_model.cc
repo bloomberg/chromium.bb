@@ -15,7 +15,9 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 enum MenuEntries {
   NAME = 0,
@@ -63,7 +65,8 @@ void ExtensionContextMenuModel::InitCommonCommands() {
   AddSeparator();
   AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS);
   AddItemWithStringId(DISABLE, IDS_EXTENSIONS_DISABLE);
-  AddItemWithStringId(UNINSTALL, IDS_EXTENSIONS_UNINSTALL);
+  AddItem(UNINSTALL, l10n_util::GetStringFUTF16(IDS_EXTENSIONS_UNINSTALL,
+      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
   if (extension->browser_action())
     AddItemWithStringId(HIDE, IDS_EXTENSIONS_HIDE_BUTTON);
   AddSeparator();

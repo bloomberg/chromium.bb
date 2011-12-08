@@ -12,6 +12,7 @@
 #include "chrome/common/time_format.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/save_package.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
@@ -62,8 +63,9 @@ string16 DownloadItemModel::GetStatusText() {
           download_->GetState() == DownloadItem::IN_PROGRESS) {
         // The download is a CRX (app, extension, theme, ...) and it is
         // being unpacked and validated.
-        status_text = l10n_util::GetStringUTF16(
-            IDS_DOWNLOAD_STATUS_CRX_INSTALL_RUNNING);
+        status_text = l10n_util::GetStringFUTF16(
+            IDS_DOWNLOAD_STATUS_CRX_INSTALL_RUNNING,
+            l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
       } else if (download_->GetOpenWhenComplete()) {
         if (simple_time.empty()) {
           status_text =

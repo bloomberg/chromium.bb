@@ -559,7 +559,7 @@ TEST(ExtensionTest, GetPermissionMessages_ManyApiPermissions) {
   EXPECT_EQ("Your physical location", UTF16ToUTF8(warnings[2]));
   EXPECT_EQ("Your browsing history", UTF16ToUTF8(warnings[3]));
   EXPECT_EQ("Your tabs and browsing activity", UTF16ToUTF8(warnings[4]));
-  EXPECT_EQ("Your list of installed apps, extensions, and themes",
+  EXPECT_EQ("Your list of apps, extensions, and themes",
             UTF16ToUTF8(warnings[5]));
 }
 
