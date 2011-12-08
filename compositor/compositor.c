@@ -88,7 +88,7 @@ wlsc_watch_process(struct wlsc_process *process)
 static void
 child_client_exec(int sockfd, const char *path)
 {
-	int flags;
+	int clientfd;
 	char s[32];
 	sigset_t allsigs;
 
@@ -96,13 +96,15 @@ child_client_exec(int sockfd, const char *path)
 	sigfillset(&allsigs);
 	sigprocmask(SIG_UNBLOCK, &allsigs, NULL);
 
-	/* SOCK_CLOEXEC closes both ends, so we need to unset
-	 * the flag on the client fd. */
-	flags = fcntl(sockfd, F_GETFD);
-	if (flags != -1)
-		fcntl(sockfd, F_SETFD, flags & ~FD_CLOEXEC);
+	/* SOCK_CLOEXEC closes both ends, so we dup the fd to get a
+	 * non-CLOEXEC fd to pass through exec. */
+	clientfd = dup(sockfd);
+	if (clientfd == -1) {
+		fprintf(stderr, "compositor: dup failed: %m\n");
+		return;
+	}
 
-	snprintf(s, sizeof s, "%d", sockfd);
+	snprintf(s, sizeof s, "%d", clientfd);
 	setenv("WAYLAND_SOCKET", s, 1);
 
 	if (execl(path, path, NULL) < 0)
