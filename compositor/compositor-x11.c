@@ -453,6 +453,40 @@ x11_compositor_find_output(struct x11_compositor *c, xcb_window_t window)
 	return NULL;
 }
 
+static void
+x11_compositor_deliver_button_event(struct x11_compositor *c,
+				    xcb_generic_event_t *event, int state)
+{
+	xcb_button_press_event_t *button_event =
+		(xcb_button_press_event_t *) event;
+	int button;
+
+	switch (button_event->detail) {
+	default:
+		button = button_event->detail + BTN_LEFT - 1;
+		break;
+	case 2:
+		button = BTN_MIDDLE;
+		break;
+	case 3:
+		button = BTN_RIGHT;
+		break;
+	case 4:
+	case 5:
+	case 6:
+	case 7:
+		/* X11 sends wheel events as buttons events.  But
+		 * linux input treats as REL_WHEEL, therefore not
+		 * button type at all. When we update the input
+		 * protocol and get the 'axis' event, we'll send
+		 * scroll events as axis events. */
+		return;
+	}
+
+	notify_button(c->base.input_device,
+		      wlsc_compositor_get_time(), button, state);
+}
+
 static int
 x11_compositor_next_event(struct x11_compositor *c,
 			  xcb_generic_event_t **event, uint32_t mask)
@@ -480,7 +514,6 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	xcb_motion_notify_event_t *motion_notify;
 	xcb_enter_notify_event_t *enter_notify;
 	xcb_key_press_event_t *key_press, *key_release;
-	xcb_button_press_event_t *button_press;
 	xcb_keymap_notify_event_t *keymap_notify;
 	xcb_focus_in_event_t *focus_in;
 	xcb_atom_t atom;
@@ -553,18 +586,11 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			prev = event;
 			break;
 		case XCB_BUTTON_PRESS:
-			button_press = (xcb_button_press_event_t *) event;
-			notify_button(c->base.input_device,
-				      wlsc_compositor_get_time(),
-				      button_press->detail + BTN_LEFT - 1, 1);
+			x11_compositor_deliver_button_event(c, event, 1);
 			break;
 		case XCB_BUTTON_RELEASE:
-			button_press = (xcb_button_press_event_t *) event;
-			notify_button(c->base.input_device,
-				      wlsc_compositor_get_time(),
-				      button_press->detail + BTN_LEFT - 1, 0);
+			x11_compositor_deliver_button_event(c, event, 0);
 			break;
-
 		case XCB_MOTION_NOTIFY:
 			motion_notify = (xcb_motion_notify_event_t *) event;
 			output = x11_compositor_find_output(c, motion_notify->event);
