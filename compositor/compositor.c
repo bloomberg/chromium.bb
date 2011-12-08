@@ -47,9 +47,6 @@
 #include <wayland-server.h>
 #include "compositor.h"
 
-/* The plan here is to generate a random anonymous socket name and
- * advertise that through a service on the session dbus.
- */
 static const char *option_socket_name = NULL;
 static int option_idle_time = 300;
 
