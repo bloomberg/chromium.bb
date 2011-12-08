@@ -319,7 +319,7 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
   return VKEY_UNKNOWN;
 }
 
-unsigned int DefaultSymbolFromXEvent(XEvent* xev) {
+uint16 GetCharacterFromXEvent(XEvent* xev) {
   char buf[6];
   int bytes_written = XLookupString(&xev->xkey, buf, 6, NULL, NULL);
   DCHECK_LE(bytes_written, 6);

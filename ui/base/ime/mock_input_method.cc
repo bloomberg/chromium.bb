@@ -73,7 +73,7 @@ void MockInputMethod::DispatchKeyEvent(const base::NativeEvent& native_event) {
       if (text_input_client_) {
         // then send a Char event via ui::TextInputClient.
         const KeyboardCode key_code = ui::KeyboardCodeFromNative(native_event);
-        uint16 ch = ui::DefaultSymbolFromXEvent(native_event);
+        uint16 ch = ui::GetCharacterFromXEvent(native_event);
         if (!ch)
           ch = ui::GetCharacterFromKeyCode(key_code, state);
         if (ch)

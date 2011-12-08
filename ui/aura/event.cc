@@ -211,7 +211,7 @@ uint16 KeyEvent::GetCharacter() const {
   DCHECK(native_event()->type == KeyPress ||
          native_event()->type == KeyRelease);
 
-  uint16 ch = ui::DefaultSymbolFromXEvent(native_event());
+  uint16 ch = ui::GetCharacterFromXEvent(native_event());
   return ch ? ch : ui::GetCharacterFromKeyCode(key_code_, flags());
 #else
   NOTIMPLEMENTED();
@@ -242,7 +242,7 @@ uint16 KeyEvent::GetUnmodifiedCharacter() const {
   // We can't use things like (key.state & ShiftMask), as it may mask out bits
   // used by X11 internally.
   key->state &= ~kIgnoredModifiers;
-  uint16 ch = ui::DefaultSymbolFromXEvent(native_event());
+  uint16 ch = ui::GetCharacterFromXEvent(native_event());
   return ch ? ch :
       ui::GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
 #else

@@ -304,7 +304,7 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
   if (webkit_event.windowsKeyCode == ui::VKEY_RETURN)
     webkit_event.unmodifiedText[0] = '\r';
   else
-    webkit_event.unmodifiedText[0] = ui::DefaultSymbolFromXEvent(native_event);
+    webkit_event.unmodifiedText[0] = ui::GetCharacterFromXEvent(native_event);
 
   if (webkit_event.modifiers & WebKit::WebInputEvent::ControlKey) {
     webkit_event.text[0] =

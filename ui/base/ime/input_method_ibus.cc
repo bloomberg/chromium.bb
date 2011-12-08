@@ -653,7 +653,7 @@ void InputMethodIBus::ProcessUnfilteredKeyPressEvent(
 
   const uint32 state =
       EventFlagsFromXFlags(GetKeyEvent(native_event)->state);
-  uint16 ch = ui::DefaultSymbolFromXEvent(native_event);
+  uint16 ch = ui::GetCharacterFromXEvent(native_event);
   if (!ch) {
     ch = ui::GetCharacterFromKeyCode(
         ui::KeyboardCodeFromNative(native_event), state);
