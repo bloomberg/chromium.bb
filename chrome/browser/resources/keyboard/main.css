@@ -5,7 +5,7 @@ found in the LICENSE file.
 */
 
 body {
-  background: -webkit-linear-gradient(#bababa, #868686);
+  background: -webkit-linear-gradient(#bababa, #868686) no-repeat;
   color: white;
   margin: 0;
   overflow: hidden;
@@ -28,6 +28,7 @@ div.keyboard {
 
 div.rows {
   display: -webkit-box;
+  margin-bottom: 5px;
   text-align: center;
   -webkit-box-orient: vertical;
   -webkit-box-flex: 1;
@@ -36,6 +37,7 @@ div.rows {
 div.row {
   display: -webkit-box;
   margin-top: 5px;
+  margin-right: 5px;
   -webkit-box-flex: 1;
 }
 
@@ -176,8 +178,8 @@ div.moddown {
   background-image: url("shift.svg");
 }
 
-.moddownshift > div {
-  background-image: url("shift.svg");
+.moddown.shift > div.image-key {
+  background-image: url("shift-down.svg");
 }
 
 .hide > div {
