@@ -32,6 +32,8 @@ class TestFullscreen : public TestCase {
   std::string TestGetScreenSize();
   std::string TestNormalToFullscreenToNormal();
 
+  void SimulateUserGesture();
+
   void FailFullscreenTest(const std::string& error);
 
   bool GotError();

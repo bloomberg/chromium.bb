@@ -85,6 +85,7 @@ std::string TestFullscreen::TestNormalToFullscreenToNormal() {
   // The transition is asynchronous and ends at the next DidChangeView().
   // No graphics devices can be bound while in transition.
   instance_->RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
+  SimulateUserGesture();
   // HandleInputEvent() will call SetFullscreen(true).
   // DidChangeView() will call the callback once in fullscreen mode.
   fullscreen_callback_.WaitForResult();
@@ -134,6 +135,25 @@ std::string TestFullscreen::TestNormalToFullscreenToNormal() {
     return ReportError("IsFullscreen() in normal^2", true);
 
   PASS();
+}
+
+void TestFullscreen::SimulateUserGesture() {
+  pp::Point plugin_center(
+      normal_position_.x() + normal_position_.width() / 2,
+      normal_position_.y() + normal_position_.height() / 2);
+  pp::Point mouse_movement;
+  pp::MouseInputEvent input_event(
+      instance_,
+      PP_INPUTEVENT_TYPE_MOUSEDOWN,
+      0,  // time_stamp
+      0,  // modifiers
+      PP_INPUTEVENT_MOUSEBUTTON_LEFT,
+      plugin_center,
+      1,  // click_count
+      mouse_movement);
+
+  testing_interface_->SimulateInputEvent(instance_->pp_instance(),
+                                         input_event.pp_resource());
 }
 
 void TestFullscreen::FailFullscreenTest(const std::string& error) {

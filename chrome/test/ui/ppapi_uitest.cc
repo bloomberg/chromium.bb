@@ -511,19 +511,20 @@ TEST_F(PPAPITest, MAYBE_FlashFullscreen) {
 TEST_F(OutOfProcessPPAPITest, MAYBE_FlashFullscreen) {
   RunTestViaHTTP("FlashFullscreen");
 }
-// New implementation only honors fullscreen requests within a context of
-// a user gesture. Since we do not yet have an infrastructure for testing
-// those under ppapi_tests, the tests below time out when run automtically.
-// To test the code, run them manually following the directions here:
-//   www.chromium.org/developers/design-documents/pepper-plugin-implementation
-// and click on the plugin area (gray square) to force fullscreen mode and
-// get the test unstuck.
-TEST_F(PPAPITest, DISABLED_Fullscreen) {
-  RunTestViaHTTP("Fullscreen");
-}
-TEST_F(OutOfProcessPPAPITest, DISABLED_Fullscreen) {
-  RunTestViaHTTP("Fullscreen");
-}
+
+// Fullscreen test fails on Mac.
+#if defined(OS_MACOSX)
+#define MAYBE_Fullscreen FAILS_Fullscreen
+#else
+#define MAYBE_Fullscreen Fullscreen
+#endif
+
+// TODO(bbudge) Fix fullscreen on Mac.
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(MAYBE_Fullscreen)
+// TODO(bbudge) Will fail until we add an ACK message to extend user gesture.
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FAILS_Fullscreen)
+// TODO(bbudge) Enable when PPB_Testing_Dev SimulateInputEvent is proxied.
+TEST_PPAPI_NACL_VIA_HTTP(DISABLED_Fullscreen)
 
 TEST_PPAPI_IN_PROCESS(FlashClipboard)
 TEST_PPAPI_OUT_OF_PROCESS(FlashClipboard)
