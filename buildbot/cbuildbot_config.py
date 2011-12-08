@@ -399,7 +399,6 @@ add_config('arm-tegra2-bin', [arm, pfq, {
 add_config('amd64-corei7-bin', [amd64, pfq, {
   'board' : 'amd64-corei7',
   'description' : 'amd64-corei7 PFQ',
-  'important' : False, # TODO(mtennant): remove when stable
 }])
 
 add_config('x86-generic-commit-queue', [commit_queue, {
@@ -415,7 +414,6 @@ add_config('arm-tegra2-commit-queue', [arm, commit_queue, {
 
 add_config('amd64-corei7-commit-queue', [amd64, commit_queue, {
   'board' : 'amd64-corei7',
-  'important' : False, # TODO(mtennant): remove when stable
 }])
 
 add_config('x86-mario-commit-queue', [commit_queue, internal, {
@@ -451,7 +449,6 @@ add_config('arm-tegra2-chrome-pre-flight-queue', [chrome_pfq, arm, {
 add_config('amd64-corei7-chrome-pre-flight-queue', [chrome_pfq, amd64, {
   'board' : 'amd64-corei7',
   'chrome_rev' : constants.CHROME_REV_LATEST,
-  'important' : False, # TODO(mtennant): remove when stable
 }])
 
 add_config('x86-generic-tot-chrome-pfq-informational', [chrome_pfq_info, {
