@@ -273,6 +273,7 @@ cr.define('options', function() {
       var disable = !this.shouldEnableCustomStartupPageControls();
       var startupPagesList = $('startupPagesList');
       startupPagesList.disabled = disable;
+      startupPagesList.setAttribute('tabindex', disable ? -1 : 0);
       // Explicitly set disabled state for input text elements.
       var inputs = startupPagesList.querySelectorAll("input[type='text']");
       for (var i = 0; i < inputs.length; i++)
