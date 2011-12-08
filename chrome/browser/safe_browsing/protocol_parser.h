@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -115,11 +115,11 @@ class SafeBrowsingProtocolParser {
                      std::deque<SBChunkHost>* hosts);
 
   // Helper functions used by ParseAddChunk and ParseSubChunk.
-  static void ReadHostAndPrefixCount(const char** data,
+  static bool ReadHostAndPrefixCount(const char** data,
                                      int* remaining,
                                      SBPrefix* host,
                                      int* count);
-  static int ReadChunkId(const char** data, int* remaining);
+  static bool ReadChunkId(const char** data, int* remaining, int* chunk_id);
   static bool ReadPrefixes(
       const char** data, int* remaining, SBEntry* entry, int count);
 

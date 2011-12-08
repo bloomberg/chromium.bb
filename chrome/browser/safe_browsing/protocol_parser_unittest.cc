@@ -964,3 +964,33 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddDownloadWhitelistChunk) {
   memcpy(full.full_hash, "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz", 32);
   EXPECT_TRUE(entry->FullHashAt(1) == full);
 }
+
+// Test parsing one sub chunk.
+TEST(SafeBrowsingProtocolParsingTest, TestSubDownloadWhitelistChunk) {
+  std::string sub_chunk("s:1:32:36\n1111xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+
+  // Run the parser.
+  SafeBrowsingProtocolParser parser;
+  bool re_key = false;
+  SBChunkList chunks;
+  bool result = parser.ParseChunk(
+      safe_browsing_util::kDownloadWhiteList,
+      sub_chunk.data(),
+      static_cast<int>(sub_chunk.length()),
+      "", "", &re_key, &chunks);
+  ASSERT_TRUE(result);
+  EXPECT_FALSE(re_key);
+  ASSERT_EQ(chunks.size(), 1U);
+  EXPECT_EQ(chunks[0].chunk_number, 1);
+  EXPECT_EQ(chunks[0].hosts.size(), 1U);
+
+  EXPECT_EQ(chunks[0].hosts[0].host, 0);
+  SBEntry* entry = chunks[0].hosts[0].entry;
+  EXPECT_TRUE(entry->IsSub());
+  ASSERT_FALSE(entry->IsPrefix());
+  ASSERT_EQ(entry->prefix_count(), 1);
+  EXPECT_EQ(entry->ChunkIdAtPrefix(0), 0x31313131);
+  SBFullHash full;
+  memcpy(full.full_hash, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 32);
+  EXPECT_TRUE(entry->FullHashAt(0) == full);
+}
