@@ -454,6 +454,8 @@ create_output_for_connector(struct drm_compositor *ec,
 		drmModeFreeEncoder(encoder);
 		return -1;
 	}
+	output->fb_id[0] = -1;
+	output->fb_id[1] = -1;
 
 	memset(output, 0, sizeof *output);
 	output->base.subpixel = drm_subpixel_to_wayland(connector->subpixel);
@@ -498,11 +500,15 @@ create_output_for_connector(struct drm_compositor *ec,
 				      GBM_BO_FORMAT_XRGB8888,
 				      GBM_BO_USE_SCANOUT |
 				      GBM_BO_USE_RENDERING);
+		if (!output->bo[i])
+			goto err_bufs;
+
 		output->image[i] = ec->base.create_image(ec->base.display,
 							 NULL,
 							 EGL_NATIVE_PIXMAP_KHR,
 							 output->bo[i], NULL);
-
+		if (!output->image[i])
+			goto err_bufs;
 
 		ec->base.image_target_renderbuffer_storage(GL_RENDERBUFFER,
 							   output->image[i]);
@@ -515,7 +521,7 @@ create_output_for_connector(struct drm_compositor *ec,
 				   24, 32, stride, handle, &output->fb_id[i]);
 		if (ret) {
 			fprintf(stderr, "failed to add fb %d: %m\n", i);
-			return -1;
+			goto err_bufs;
 		}
 	}
 
@@ -530,7 +536,7 @@ create_output_for_connector(struct drm_compositor *ec,
 			     &drm_mode->mode_info);
 	if (ret) {
 		fprintf(stderr, "failed to set mode: %m\n");
-		return -1;
+		goto err_fb;
 	}
 
 	wlsc_output_init(&output->base, &ec->base, x, y,
@@ -548,6 +554,23 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	return 0;
 
+err_fb:
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+				  GL_COLOR_ATTACHMENT0,
+				  GL_RENDERBUFFER,
+				  0);
+err_bufs:
+	for (i = 0; i < 2; i++) {
+		if (output->fb_id[i] != -1)
+			drmModeRmFB(ec->drm.fd, output->fb_id[i]);
+		if (output->image[i])
+			ec->base.destroy_image(ec->base.display,
+							output->image[i]);
+		if (output->bo[i])
+			gbm_bo_destroy(output->bo[i]);
+	}
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	glDeleteRenderbuffers(2, output->rbo);
 err_free:
 	wl_list_for_each_safe(drm_mode, next, &output->base.mode_list,
 							base.link) {
