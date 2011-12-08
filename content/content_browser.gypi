@@ -4,6 +4,7 @@
 
 {
   'dependencies': [
+    '../base/base.gyp:base_static',
     '../crypto/crypto.gyp:crypto',
     '../net/net.gyp:http_server',
     '../net/net.gyp:net',

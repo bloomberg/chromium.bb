@@ -28,6 +28,7 @@
         'chromium_code': 1,
       },
       'dependencies': [
+        '../build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:base_i18n',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
@@ -49,6 +50,7 @@
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_media',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support_common',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_user_agent',
       ],
       'sources': [
         'mac/test_shell_webview.h',
@@ -345,17 +347,20 @@
         'chromium_code': 1,
       },
       'dependencies': [
+        '../build/temp_gyp/googleurl.gyp:googleurl',
         'test_shell_common',
         'test_shell_test_support',
         '<(DEPTH)/base/base.gyp:test_support_base',
         '<(DEPTH)/media/media.gyp:media_test_support',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/net/net.gyp:net_test_support',
+        '<(DEPTH)/ppapi/ppapi_internal.gyp:ppapi_shared',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_user_agent',
       ],
       'sources': [
         '../../../skia/ext/convolver_unittest.cc',

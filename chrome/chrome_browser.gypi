@@ -54,6 +54,7 @@
         '../ui/ui.gyp:ui_resources',
         '../ui/ui.gyp:ui_resources_large',
         '../ui/ui.gyp:ui_resources_standard',
+        '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/support/webkit_support.gyp:appcache',
         '../webkit/support/webkit_support.gyp:blob',
         '../webkit/support/webkit_support.gyp:database',
@@ -61,6 +62,7 @@
         '../webkit/support/webkit_support.gyp:glue',
         '../webkit/support/webkit_support.gyp:quota',
         '../webkit/support/webkit_support.gyp:webkit_resources',
+        '../webkit/support/webkit_support.gyp:webkit_user_agent',
       ],
       'include_dirs': [
         '..',

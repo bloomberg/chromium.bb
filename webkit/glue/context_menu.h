@@ -25,7 +25,7 @@ struct CustomContextMenuContext {
   // It could also be |kCurrentRenderWidget|, which means the render widget that
   // the corresponding ViewHostMsg_ContextMenu is sent to.
   int32 render_widget_id;
-  static const int32 kCurrentRenderWidget;
+  WEBKIT_GLUE_EXPORT static const int32 kCurrentRenderWidget;
 
   WEBKIT_GLUE_EXPORT CustomContextMenuContext();
 };

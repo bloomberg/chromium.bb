@@ -6,7 +6,7 @@
 #define WEBKIT_EXTENSIONS_WEBKIT_EXTENSIONS_EXPORT_H_
 #pragma once
 
-#if 0 // defined(COMPONENT_BUILD)
+#if defined(COMPONENT_BUILD)
 #if defined(WIN32)
 
 #if defined(WEBKIT_EXTENSIONS_IMPLEMENTATION)
