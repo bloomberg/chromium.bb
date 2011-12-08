@@ -1,5 +1,6 @@
 {
   "version": "1.0.0.0",
+  "manifest_version": 2,
   "name": "NPAPI plugin test",
   "description": "An extension for an extension UITest.",
   "plugins": [
