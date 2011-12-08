@@ -81,7 +81,7 @@ void WizardAccessibilityHelper::UnregisterNotifications() {
 bool WizardAccessibilityHelper::IsAccessibilityEnabled() {
   return g_browser_process &&
       g_browser_process->local_state()->GetBoolean(
-      prefs::kAccessibilityEnabled);
+      prefs::kSpokenFeedbackEnabled);
 }
 
 void WizardAccessibilityHelper::MaybeSpeak(const char* str, bool queue,

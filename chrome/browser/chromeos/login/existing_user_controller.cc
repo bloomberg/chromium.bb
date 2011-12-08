@@ -424,7 +424,7 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
     const std::string current_locale =
         StringToLowerASCII(prefs->GetString(prefs::kApplicationLocale));
     std::string start_url;
-    if (prefs->GetBoolean(prefs::kAccessibilityEnabled) &&
+    if (prefs->GetBoolean(prefs::kSpokenFeedbackEnabled) &&
         current_locale.find("en") != std::string::npos) {
       start_url = kChromeVoxTutorialURL;
     } else {

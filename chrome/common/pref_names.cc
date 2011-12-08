@@ -577,8 +577,8 @@ const char kLanguageXkbAutoRepeatInterval[] =
 const char kLanguagePreferredVirtualKeyboard[] =
     "settings.language.preferred_virtual_keyboard";
 
-// A boolean pref which determines whether accessibility is enabled.
-const char kAccessibilityEnabled[] = "settings.accessibility";
+// A boolean pref which determines whether spoken feedback is enabled.
+const char kSpokenFeedbackEnabled[] = "settings.accessibility";
 
 // A boolean pref which turns on Advanced Filesystem
 // (USB support, SD card, etc).

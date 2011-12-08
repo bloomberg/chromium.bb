@@ -334,8 +334,8 @@ void WizardController::RegisterPrefs(PrefService* local_state) {
                                   PrefService::UNSYNCABLE_PREF);
   // Check if the pref is already registered in case
   // Preferences::RegisterUserPrefs runs before this code in the future.
-  if (local_state->FindPreference(prefs::kAccessibilityEnabled) == NULL) {
-    local_state->RegisterBooleanPref(prefs::kAccessibilityEnabled,
+  if (local_state->FindPreference(prefs::kSpokenFeedbackEnabled) == NULL) {
+    local_state->RegisterBooleanPref(prefs::kSpokenFeedbackEnabled,
                                      false,
                                      PrefService::UNSYNCABLE_PREF);
   }

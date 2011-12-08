@@ -253,7 +253,7 @@ void ComponentLoader::AddDefaultComponentExtensions() {
 
 #if defined(OS_CHROMEOS)
   // Register access extensions only if accessibility is enabled.
-  if (local_state_->GetBoolean(prefs::kAccessibilityEnabled)) {
+  if (local_state_->GetBoolean(prefs::kSpokenFeedbackEnabled)) {
     FilePath path = FilePath(extension_misc::kAccessExtensionPath)
         .AppendASCII(extension_misc::kChromeVoxDirectoryName);
     Add(IDR_CHROMEVOX_MANIFEST, path);

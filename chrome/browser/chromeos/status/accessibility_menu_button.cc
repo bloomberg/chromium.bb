@@ -41,7 +41,7 @@ AccessibilityMenuButton::AccessibilityMenuButton(
     StatusAreaButton::Delegate* delegate)
     : StatusAreaButton(delegate, this) {
   set_id(VIEW_ID_STATUS_BUTTON_ACCESSIBILITY);
-  accessibility_enabled_.Init(prefs::kAccessibilityEnabled,
+  accessibility_enabled_.Init(prefs::kSpokenFeedbackEnabled,
                               g_browser_process->local_state(), this);
   SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_STATUSBAR_ACCESSIBILITY));
@@ -92,7 +92,7 @@ void AccessibilityMenuButton::Observe(
     const std::string path =
         *static_cast<content::Details<std::string> >(details).ptr();
     // Show a bubble when accessibility is turned on at the login screen.
-    if (path == prefs::kAccessibilityEnabled) {
+    if (path == prefs::kSpokenFeedbackEnabled) {
       if (accessibility_enabled_.GetValue() &&
           StatusAreaViewChromeos::IsLoginMode()) {
         views::ImageView* icon_view = new views::ImageView;

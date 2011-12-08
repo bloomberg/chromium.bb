@@ -86,7 +86,7 @@ class ContentScriptLoader {
 void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
   bool accessibility_enabled = g_browser_process &&
       g_browser_process->local_state()->GetBoolean(
-          prefs::kAccessibilityEnabled);
+          prefs::kSpokenFeedbackEnabled);
   if (accessibility_enabled == enabled) {
     LOG(INFO) << "Accessibility is already " <<
         (enabled ? "enabled" : "disabled") << ".  Going to do nothing.";
@@ -94,7 +94,7 @@ void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
   }
 
   g_browser_process->local_state()->SetBoolean(
-      prefs::kAccessibilityEnabled, enabled);
+      prefs::kSpokenFeedbackEnabled, enabled);
   g_browser_process->local_state()->ScheduleSavePersistentPrefs();
   ExtensionAccessibilityEventRouter::GetInstance()->
       SetAccessibilityEnabled(enabled);
@@ -143,7 +143,7 @@ void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
 void ToggleAccessibility(WebUI* login_web_ui) {
   bool accessibility_enabled = g_browser_process &&
       g_browser_process->local_state()->GetBoolean(
-          prefs::kAccessibilityEnabled);
+          prefs::kSpokenFeedbackEnabled);
   accessibility_enabled = !accessibility_enabled;
   EnableAccessibility(accessibility_enabled, login_web_ui);
 };
@@ -163,7 +163,7 @@ bool IsAccessibilityEnabled() {
   }
   PrefService* prefs = g_browser_process->local_state();
   bool accessibility_enabled = prefs &&
-      prefs->GetBoolean(prefs::kAccessibilityEnabled);
+      prefs->GetBoolean(prefs::kSpokenFeedbackEnabled);
   return accessibility_enabled;
 }
 

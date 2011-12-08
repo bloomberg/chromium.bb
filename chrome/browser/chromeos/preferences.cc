@@ -53,8 +53,8 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   // Check if the accessibility pref is already registered, which can happen
   // in WizardController::RegisterPrefs. We still want to try to register
   // the pref here in case of Chrome/Linux with ChromeOS=1.
-  if (prefs->FindPreference(prefs::kAccessibilityEnabled) == NULL) {
-    prefs->RegisterBooleanPref(prefs::kAccessibilityEnabled,
+  if (prefs->FindPreference(prefs::kSpokenFeedbackEnabled) == NULL) {
+    prefs->RegisterBooleanPref(prefs::kSpokenFeedbackEnabled,
                                false,
                                PrefService::UNSYNCABLE_PREF);
   }
@@ -205,7 +205,7 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
 
 void Preferences::Init(PrefService* prefs) {
   tap_to_click_enabled_.Init(prefs::kTapToClickEnabled, prefs, this);
-  accessibility_enabled_.Init(prefs::kAccessibilityEnabled, prefs, this);
+  accessibility_enabled_.Init(prefs::kSpokenFeedbackEnabled, prefs, this);
   sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, this);
   use_24hour_clock_.Init(prefs::kUse24HourClock, prefs, this);
   language_hotkey_next_engine_in_menu_.Init(

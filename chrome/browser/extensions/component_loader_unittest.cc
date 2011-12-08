@@ -89,7 +89,7 @@ class ComponentLoaderTest : public testing::Test {
 
     // Register the local state prefs.
 #if defined(OS_CHROMEOS)
-    prefs_.RegisterBooleanPref(prefs::kAccessibilityEnabled, false);
+    prefs_.RegisterBooleanPref(prefs::kSpokenFeedbackEnabled, false);
 #endif
   }
 
