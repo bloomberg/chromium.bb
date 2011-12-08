@@ -22,7 +22,7 @@ class FirstRunBubble : public views::BubbleDelegateView,
       FirstRun::BubbleType bubble_type);
 
   // views::BubbleDelegateView overrides:
-  virtual gfx::Point GetAnchorPoint() OVERRIDE;
+  virtual gfx::Rect GetAnchorRect() OVERRIDE;
 
  protected:
   // views::BubbleDelegateView overrides:

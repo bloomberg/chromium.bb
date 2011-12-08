@@ -45,7 +45,7 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
 
   // views::BubbleDelegateView methods.
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
-  virtual gfx::Point GetAnchorPoint() OVERRIDE;
+  virtual gfx::Rect GetAnchorRect() OVERRIDE;
 
   // views::WidgetDelegate method.
   virtual void WindowClosing() OVERRIDE;

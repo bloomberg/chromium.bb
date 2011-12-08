@@ -72,8 +72,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
     use_focusless_ = use_focusless;
   }
 
-  // Get the arrow's anchor point in screen space.
-  virtual gfx::Point GetAnchorPoint();
+  // Get the arrow's anchor rect in screen space.
+  virtual gfx::Rect GetAnchorRect();
 
   // Get the arrow's location on the bubble.
   virtual BubbleBorder::ArrowLocation GetArrowLocation() const;
@@ -88,6 +88,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Reset fade and opacity of bubble. Restore the opacity of the
   // bubble to the setting before StartFade() was called.
   void ResetFade();
+
+  // Sets the bubble alignment relative to the anchor.
+  void SetAlignment(BubbleBorder::BubbleAlignment alignment);
 
  protected:
   // View overrides:

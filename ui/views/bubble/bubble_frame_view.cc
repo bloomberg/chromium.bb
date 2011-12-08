@@ -26,8 +26,8 @@ BubbleFrameView::BubbleFrameView(BubbleBorder::ArrowLocation location,
   bubble_border()->set_background_color(color);
   SetLayoutManager(new views::FillLayout());
   AddChildView(border_contents_);
-  gfx::Rect bounds(gfx::Point(), client_size);
-  gfx::Rect windows_bounds = GetWindowBoundsForClientBounds(bounds);
+  gfx::Rect windows_bounds =
+      GetWindowBoundsForAnchorAndClientSize(gfx::Rect(), client_size);
   border_contents_->SetBoundsRect(
       gfx::Rect(gfx::Point(), windows_bounds.size()));
   SetBoundsRect(windows_bounds);
@@ -48,14 +48,20 @@ gfx::Rect BubbleFrameView::GetBoundsForClientView() const {
 gfx::Rect BubbleFrameView::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
   // The |client_bounds| origin is the bubble arrow anchor point.
-  gfx::Rect position_relative_to(client_bounds.origin(), gfx::Size());
+  gfx::Rect anchor(client_bounds.origin(), gfx::Size());
   // The |client_bounds| size is the bubble client view size.
+  return GetWindowBoundsForAnchorAndClientSize(anchor, client_bounds.size());
+}
+
+gfx::Rect BubbleFrameView::GetWindowBoundsForAnchorAndClientSize(
+    const gfx::Rect& anchor,
+    const gfx::Size& client_size) const {
   gfx::Rect content_bounds;
   gfx::Rect window_bounds;
-  border_contents_->SizeAndGetBounds(position_relative_to,
+  border_contents_->SizeAndGetBounds(anchor,
                                      location_,
                                      allow_bubble_offscreen_,
-                                     client_bounds.size(),
+                                     client_size,
                                      &content_bounds,
                                      &window_bounds);
   return window_bounds;

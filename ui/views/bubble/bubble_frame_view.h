@@ -41,6 +41,10 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView {
   // Accessor for bubble border inside border contents.
   BubbleBorder* bubble_border() const;
 
+  gfx::Rect GetWindowBoundsForAnchorAndClientSize(
+      const gfx::Rect& anchor,
+      const gfx::Size& client_size) const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewBasicTest, GetBoundsForClientView);
 

@@ -395,16 +395,17 @@ void ExtensionInstalledBubble::ShowInternal() {
   StartFade(true);
 }
 
-gfx::Point ExtensionInstalledBubble::GetAnchorPoint() {
+gfx::Rect ExtensionInstalledBubble::GetAnchorRect() {
   // For omnibox keyword bubbles, move the arrow to point to the left edge
   // of the omnibox, just to the right of the icon.
   if (type_ == OMNIBOX_KEYWORD) {
     LocationBarView* location_bar_view =
         BrowserView::GetBrowserViewForBrowser(browser_)->GetLocationBarView();
-    return location_bar_view->GetLocationEntryOrigin().Add(
-        gfx::Point(0, location_bar_view->location_entry_view()->height()));
+    return gfx::Rect(location_bar_view->GetLocationEntryOrigin().Add(
+        gfx::Point(0, location_bar_view->location_entry_view()->height())),
+        gfx::Size());
   }
-  return views::BubbleDelegateView::GetAnchorPoint();
+  return views::BubbleDelegateView::GetAnchorRect();
 }
 
 views::BubbleBorder::ArrowLocation

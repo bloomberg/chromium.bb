@@ -48,8 +48,8 @@ void ConfirmBubbleView::LinkClicked(views::Link* source, int event_flags) {
   model_->LinkClicked();
 }
 
-gfx::Point ConfirmBubbleView::GetAnchorPoint() {
-  return anchor_point_;
+gfx::Rect ConfirmBubbleView::GetAnchorRect() {
+  return gfx::Rect(anchor_point_, gfx::Size());
 }
 
 void ConfirmBubbleView::Init() {

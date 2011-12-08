@@ -51,7 +51,7 @@ class ConfirmBubbleView : public views::BubbleDelegateView,
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // views::BubbleDelegateView implementation.
-  virtual gfx::Point GetAnchorPoint() OVERRIDE;
+  virtual gfx::Rect GetAnchorRect() OVERRIDE;
   virtual void Init() OVERRIDE;
 
  private:

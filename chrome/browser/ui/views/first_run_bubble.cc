@@ -97,10 +97,11 @@ void FirstRunBubble::Init() {
   layout->AddView(label2);
 }
 
-gfx::Point FirstRunBubble::GetAnchorPoint() {
+gfx::Rect FirstRunBubble::GetAnchorRect() {
   // Compensate for padding in anchor.
-  return BubbleDelegateView::GetAnchorPoint().Add(
-      gfx::Point(0, anchor_view() ? kAnchorVerticalOffset : 0));
+  gfx::Rect rect(BubbleDelegateView::GetAnchorRect());
+  rect.Offset(0, anchor_view() ? kAnchorVerticalOffset : 0);
+  return rect;
 }
 
 FirstRunBubble::FirstRunBubble(

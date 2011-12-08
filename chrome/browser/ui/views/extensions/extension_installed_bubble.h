@@ -64,7 +64,7 @@ class ExtensionInstalledBubble
   virtual void WindowClosing() OVERRIDE;
 
   // views::BubbleDelegate
-  virtual gfx::Point GetAnchorPoint() OVERRIDE;
+  virtual gfx::Rect GetAnchorRect() OVERRIDE;
   virtual views::BubbleBorder::ArrowLocation GetArrowLocation() const OVERRIDE;
 
   const Extension* extension_;

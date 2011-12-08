@@ -133,8 +133,10 @@ gfx::Size ContentSettingBubbleContents::GetPreferredSize() {
   return preferred_size;
 }
 
-gfx::Point ContentSettingBubbleContents::GetAnchorPoint() {
-  return BubbleDelegateView::GetAnchorPoint().Subtract(gfx::Point(0, 5));
+gfx::Rect ContentSettingBubbleContents::GetAnchorRect() {
+  gfx::Rect rect(BubbleDelegateView::GetAnchorRect());
+  rect.Offset(0, -5);
+  return rect;
 }
 
 void ContentSettingBubbleContents::Init() {

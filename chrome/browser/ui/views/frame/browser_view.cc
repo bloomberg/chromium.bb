@@ -2633,10 +2633,10 @@ void BrowserView::ShowAvatarBubble(TabContents* tab_contents,
   views::View::ConvertPointToScreen(GetTabContentsContainerView(), &origin);
   gfx::Rect bounds(origin, rect.size());
 
-  // TODO(msw): Set and support views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE.
   AvatarMenuBubbleView* bubble = new AvatarMenuBubbleView(this,
       views::BubbleBorder::TOP_RIGHT, bounds, browser_.get());
   browser::CreateViewsBubble(bubble);
+  bubble->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   bubble->Show();
 }
 

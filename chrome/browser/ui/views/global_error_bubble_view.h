@@ -22,7 +22,7 @@ class GlobalErrorBubbleView : public views::ButtonListener,
   virtual ~GlobalErrorBubbleView();
 
   // views::BubbleDelegateView implementation.
-  virtual gfx::Point GetAnchorPoint() OVERRIDE;
+  virtual gfx::Rect GetAnchorRect() OVERRIDE;
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender,

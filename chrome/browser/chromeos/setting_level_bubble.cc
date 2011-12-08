@@ -59,7 +59,7 @@ namespace chromeos {
 class SettingLevelBubbleDelegateView : public views::BubbleDelegateView {
  public:
   // BubbleDelegate overrides:
-  virtual gfx::Point GetAnchorPoint() OVERRIDE;
+  virtual gfx::Rect GetAnchorRect() OVERRIDE;
 
   // Create the bubble delegate view.
   SettingLevelBubbleDelegateView();
@@ -77,15 +77,15 @@ class SettingLevelBubbleDelegateView : public views::BubbleDelegateView {
   DISALLOW_COPY_AND_ASSIGN(SettingLevelBubbleDelegateView);
 };
 
-gfx::Point SettingLevelBubbleDelegateView::GetAnchorPoint() {
+gfx::Rect SettingLevelBubbleDelegateView::GetAnchorRect() {
   gfx::Size view_size = GetPreferredSize();
   // Calculate the position in screen coordinates that the bubble should
   // "point" at (since we use BubbleBorder::FLOAT, this position actually
   // specifies the center of the bubble).
   gfx::Rect monitor_area = gfx::Screen::GetMonitorAreaNearestWindow(NULL);
-  return (gfx::Point(
+  return (gfx::Rect(
       monitor_area.x() + kBubbleXRatio * monitor_area.width(),
-      monitor_area.bottom() - view_size.height() / 2 - kBubbleBottomGap));
+      monitor_area.bottom() - view_size.height() / 2 - kBubbleBottomGap, 0, 0));
 }
 
 SettingLevelBubbleDelegateView::SettingLevelBubbleDelegateView()

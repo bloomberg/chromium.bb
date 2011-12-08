@@ -459,8 +459,8 @@ void AvatarMenuBubbleView::LinkClicked(views::Link* source, int event_flags) {
   }
 }
 
-gfx::Point AvatarMenuBubbleView::GetAnchorPoint() {
-  return gfx::Point(anchor_rect_.CenterPoint().x(), anchor_rect_.bottom());
+gfx::Rect AvatarMenuBubbleView::GetAnchorRect() {
+  return anchor_rect_;
 }
 
 void AvatarMenuBubbleView::Init() {

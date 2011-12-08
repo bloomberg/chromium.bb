@@ -54,7 +54,7 @@ class SpeechInputBubbleView
   // views::BubbleDelegateView methods.
   virtual void OnWidgetActivationChanged(views::Widget* widget,
                                          bool active) OVERRIDE;
-  virtual gfx::Point GetAnchorPoint() OVERRIDE;
+  virtual gfx::Rect GetAnchorRect() OVERRIDE;
   virtual void Init() OVERRIDE;
 
   // views::ButtonListener methods.
@@ -108,14 +108,14 @@ void SpeechInputBubbleView::OnWidgetActivationChanged(views::Widget* widget,
   BubbleDelegateView::OnWidgetActivationChanged(widget, active);
 }
 
-gfx::Point SpeechInputBubbleView::GetAnchorPoint() {
+gfx::Rect SpeechInputBubbleView::GetAnchorRect() {
   gfx::Rect container_rect;
   tab_contents_->GetContainerBounds(&container_rect);
   gfx::Point anchor(container_rect.x() + element_rect_.CenterPoint().x(),
                     container_rect.y() + element_rect_.bottom());
   if (!container_rect.Contains(anchor))
-    return BubbleDelegateView::GetAnchorPoint();
-  return anchor;
+    return BubbleDelegateView::GetAnchorRect();
+  return gfx::Rect(anchor, gfx::Size());
 }
 
 void SpeechInputBubbleView::Init() {

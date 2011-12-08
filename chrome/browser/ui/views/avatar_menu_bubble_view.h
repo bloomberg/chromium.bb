@@ -50,7 +50,7 @@ class AvatarMenuBubbleView : public views::BubbleDelegateView,
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // BubbleDelegate implementation.
-  virtual gfx::Point GetAnchorPoint() OVERRIDE;
+  virtual gfx::Rect GetAnchorRect() OVERRIDE;
   virtual void Init() OVERRIDE;
 
   // AvatarMenuModelObserver implementation.

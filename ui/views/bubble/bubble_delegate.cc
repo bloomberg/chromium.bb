@@ -160,12 +160,12 @@ void BubbleDelegateView::OnWidgetActivationChanged(Widget* widget,
   }
 }
 
-gfx::Point BubbleDelegateView::GetAnchorPoint() {
+gfx::Rect BubbleDelegateView::GetAnchorRect() {
   if (!anchor_view())
-    return gfx::Point();
+    return gfx::Rect();
 
   BubbleBorder::ArrowLocation location = GetArrowLocation();
-  gfx::Point anchor(anchor_view()->bounds().CenterPoint());
+  gfx::Point anchor;
   // By default, pick the middle of |anchor_view_|'s edge opposite the arrow.
   if (BubbleBorder::is_arrow_on_horizontal(location)) {
     anchor.SetPoint(anchor_view()->width() / 2,
@@ -174,9 +174,11 @@ gfx::Point BubbleDelegateView::GetAnchorPoint() {
     anchor.SetPoint(
         BubbleBorder::is_arrow_on_left(location) ? anchor_view()->width() : 0,
         anchor_view_->height() / 2);
+  } else {
+    anchor = anchor_view()->bounds().CenterPoint();
   }
   View::ConvertPointToScreen(anchor_view(), &anchor);
-  return anchor;
+  return gfx::Rect(anchor, gfx::Size());
 }
 
 BubbleBorder::ArrowLocation BubbleDelegateView::GetArrowLocation() const {
@@ -215,6 +217,11 @@ void BubbleDelegateView::ResetFade() {
   if (border_widget_)
     border_widget_->SetOpacity(original_opacity_);
   GetWidget()->SetOpacity(original_opacity_);
+}
+
+void BubbleDelegateView::SetAlignment(BubbleBorder::BubbleAlignment alignment) {
+  GetBubbleFrameView()->bubble_border()->set_alignment(alignment);
+  SizeToContents();
 }
 
 bool BubbleDelegateView::AcceleratorPressed(
@@ -278,8 +285,8 @@ BubbleFrameView* BubbleDelegateView::GetBubbleFrameView() const {
 gfx::Rect BubbleDelegateView::GetBubbleBounds() {
   // The argument rect has its origin at the bubble's arrow anchor point;
   // its size is the preferred size of the bubble's client view (this view).
-  return GetBubbleFrameView()->GetWindowBoundsForClientBounds(
-      gfx::Rect(GetAnchorPoint(), GetPreferredSize()));
+  return GetBubbleFrameView()->GetWindowBoundsForAnchorAndClientSize(
+      GetAnchorRect(), GetPreferredSize());
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)

@@ -123,9 +123,10 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
 GlobalErrorBubbleView::~GlobalErrorBubbleView() {
 }
 
-gfx::Point GlobalErrorBubbleView::GetAnchorPoint() {
-  return (views::BubbleDelegateView::GetAnchorPoint().Add(
-      gfx::Point(0, anchor_view() ? kWrenchBubblePointOffsetY : 0)));
+gfx::Rect GlobalErrorBubbleView::GetAnchorRect() {
+  gfx::Rect rect(views::BubbleDelegateView::GetAnchorRect());
+  rect.Offset(0, anchor_view() ? kWrenchBubblePointOffsetY : 0);
+  return rect;
 }
 
 void GlobalErrorBubbleView::ButtonPressed(views::Button* sender,
