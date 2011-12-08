@@ -15,7 +15,6 @@
 #include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/proxy/ppb_broker_proxy.h"
 #include "ppapi/proxy/ppb_file_chooser_proxy.h"
-#include "ppapi/proxy/ppb_file_io_proxy.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/ppb_file_system_proxy.h"
 #include "ppapi/proxy/ppb_flash_menu_proxy.h"
@@ -123,7 +122,8 @@ PP_Resource ResourceCreationProxy::CreateFileChooser(
 }
 
 PP_Resource ResourceCreationProxy::CreateFileIO(PP_Instance instance) {
-  return PPB_FileIO_Proxy::CreateProxyResource(instance);
+  NOTIMPLEMENTED();  // Not proxied yet.
+  return 0;
 }
 
 PP_Resource ResourceCreationProxy::CreateFileRef(PP_Resource file_system,

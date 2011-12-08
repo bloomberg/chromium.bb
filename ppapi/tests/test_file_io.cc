@@ -903,31 +903,6 @@ std::string TestFileIO::TestNotAllowMixedReadWrite() {
   if (rv_2 != PP_ERROR_INPROGRESS)
     return ReportError("FileIO::Read", rv_2);
 
-  // Cannot query while the write is pending.
-  TestCompletionCallback callback_3(instance_->pp_instance(), force_async_);
-  PP_FileInfo info;
-  int32_t rv_3 = file_io.Query(&info, callback_3);
-  if (rv_3 == PP_OK_COMPLETIONPENDING)
-    rv_3 = callback_3.WaitForResult();
-  if (rv_3 != PP_ERROR_INPROGRESS)
-    return ReportError("FileIO::Query", rv_3);
-
-  // Cannot touch while the write is pending.
-  TestCompletionCallback callback_4(instance_->pp_instance(), force_async_);
-  int32_t rv_4 = file_io.Touch(1234.0, 5678.0, callback_4);
-  if (rv_4 == PP_OK_COMPLETIONPENDING)
-    rv_4 = callback_4.WaitForResult();
-  if (rv_4 != PP_ERROR_INPROGRESS)
-    return ReportError("FileIO::Touch", rv_4);
-
-  // Cannot set length while the write is pending.
-  TestCompletionCallback callback_5(instance_->pp_instance(), force_async_);
-  int32_t rv_5 = file_io.SetLength(123, callback_5);
-  if (rv_5 == PP_OK_COMPLETIONPENDING)
-    rv_5 = callback_5.WaitForResult();
-  if (rv_5 != PP_ERROR_INPROGRESS)
-    return ReportError("FileIO::SetLength", rv_5);
-
   callback_1.WaitForResult();
 
   PASS();
@@ -965,14 +940,10 @@ std::string TestFileIO::TestWillWriteWillSetLength() {
   if (!trusted)
     return ReportError("FileIOTrusted", PP_ERROR_FAILED);
 
-  // Get file descriptor. This is only supported in-process for now, so don't
-  // test out of process.
-  const PPB_Testing_Dev* testing_interface = GetTestingInterface();
-  if (testing_interface && !testing_interface->IsOutOfProcess()) {
-    int32_t fd = trusted->GetOSFileDescriptor(file_io.pp_resource());
-    if (fd < 0)
-      return "FileIO::GetOSFileDescriptor() returned a bad file descriptor.";
-  }
+  // Get file descriptor.
+  int32_t fd = trusted->GetOSFileDescriptor(file_io.pp_resource());
+  if (fd < 0)
+    return "FileIO::GetOSFileDescriptor() returned a bad file descriptor.";
 
   // Calling WillWrite.
   rv = trusted->WillWrite(

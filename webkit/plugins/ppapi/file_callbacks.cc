@@ -8,10 +8,10 @@
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_system.h"
-#include "ppapi/shared_impl/file_type_conversion.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/plugins/ppapi/callbacks.h"
+#include "webkit/plugins/ppapi/file_type_conversions.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
@@ -101,7 +101,7 @@ void FileCallbacks::RunCallback(base::PlatformFileError error_code) {
   if (callback_->completed())
     return;
 
-  callback_->Run(::ppapi::PlatformFileErrorToPepperError(error_code));
+  callback_->Run(PlatformFileErrorToPepperError(error_code));
 }
 
 }  // namespace ppapi
