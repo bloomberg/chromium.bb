@@ -41,27 +41,25 @@ void PanelOverflowStrip::SetDisplayArea(const gfx::Rect& display_area) {
   Refresh();
 }
 
-void PanelOverflowStrip::AddPanel(Panel* panel, bool is_new) {
+void PanelOverflowStrip::AddPanel(Panel* panel) {
   // TODO(jianli): consider using other container to improve the perf for
   // inserting to the front. http://crbug.com/106222
-  if (is_new)
+  DCHECK_EQ(Panel::IN_OVERFLOW, panel->expansion_state());
+  // Newly created panels that were temporarily in the panel strip
+  // are added to the back of the overflow, whereas panels that are
+  // bumped from the panel strip by other panels go to the front
+  // of overflow.
+  if (panel->has_temporary_layout()) {
+    panel->set_has_temporary_layout(false);
     panels_.push_back(panel);
-  else
+    DoRefresh(panels_.size() - 1, panels_.size() - 1);
+  } else {
     panels_.insert(panels_.begin(), panel);
+    Refresh();
+  }
 
   if (panels_.size() == 1)
     panel_manager_->mouse_watcher()->AddObserver(this);
-
-  panel->SetExpansionState(Panel::IN_OVERFLOW);
-
-  if (is_new) {
-    // When the overflow panel is added to the back, only need to refresh
-    // itself.
-    DoRefresh(panels_.size() - 1, panels_.size() - 1);
-  } else {
-    // When the overflow panel is added to the front, refresh all.
-    Refresh();
-  }
 }
 
 bool PanelOverflowStrip::Remove(Panel* panel) {
@@ -93,6 +91,9 @@ void PanelOverflowStrip::RemoveAll() {
 void PanelOverflowStrip::OnPanelExpansionStateChanged(
     Panel* panel, Panel::ExpansionState old_state) {
   DCHECK(panel->expansion_state() == Panel::IN_OVERFLOW);
+  panel_manager_->panel_strip()->Remove(panel);
+  AddPanel(panel);
+  panel->SetAppIconVisibility(false);
 }
 
 void PanelOverflowStrip::Refresh() {

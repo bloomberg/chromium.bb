@@ -9,9 +9,7 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/panel_overflow_strip.h"
 #include "chrome/browser/ui/panels/panel_slide_animation.h"
-#include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/webui/task_manager_dialog.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -126,15 +124,6 @@ void PanelBrowserView::SetBoundsInternal(const gfx::Rect& new_bounds,
                                          bool animate) {
   if (bounds_ == new_bounds)
     return;
-
-  // TODO(jianli): this is just a temporary hack to check if we need to show
-  // or hide the panel app icon in the taskbar. http://crbug.com/106227
-  int panel_strip_area_left =
-      panel()->manager()->panel_strip()->display_area().x();
-  bool app_icon_shown = bounds_.x() >= panel_strip_area_left;
-  bool app_icon_to_show = new_bounds.x() >= panel_strip_area_left;
-  if (app_icon_shown != app_icon_to_show)
-    ShowOrHidePanelAppIcon(app_icon_to_show);
 
   bounds_ = new_bounds;
 
@@ -489,12 +478,6 @@ bool PanelBrowserView::OnTitlebarMouseReleased() {
   if (mouse_dragging_state_ != NO_DRAGGING)
     return true;
 
-  // If the panel is in overflow, move it to the normal strip.
-  if (panel_->expansion_state() == Panel::IN_OVERFLOW) {
-    panel_->MoveOutOfOverflow();
-    return true;
-  }
-
   // Do not minimize the panel when we just clear the attention state. This is
   // a hack to prevent the panel from being minimized when the user clicks on
   // the title-bar to clear the attention.
@@ -504,7 +487,7 @@ bool PanelBrowserView::OnTitlebarMouseReleased() {
     return true;
   }
 
-  // Do not minimize the panel if it is long click.
+  // Ignore long clicks. Treated as a canceled click to be consistent with Mac.
   if (base::TimeTicks::Now() - mouse_pressed_time_ >
       base::TimeDelta::FromMilliseconds(kShortClickThresholdMs))
     return true;
@@ -533,12 +516,12 @@ bool PanelBrowserView::EndDragging(bool cancelled) {
   return true;
 }
 
-void PanelBrowserView::ShowOrHidePanelAppIcon(bool show) {
+void PanelBrowserView::SetPanelAppIconVisibility(bool visible) {
 #if defined(OS_WIN) && !defined(USE_AURA)
   gfx::NativeWindow native_window = GetNativeHandle();
   ::ShowWindow(native_window, SW_HIDE);
   int style = ::GetWindowLong(native_window, GWL_EXSTYLE);
-  if (show)
+  if (visible)
     style &= (~WS_EX_TOOLWINDOW);
   else
     style |= WS_EX_TOOLWINDOW;

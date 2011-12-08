@@ -30,9 +30,8 @@ class PanelOverflowStrip : public PanelMouseWatcherObserver,
   // |display_area| is in screen coordinates.
   void SetDisplayArea(const gfx::Rect& display_area);
 
-  // Adds a panel to the strip. |is_new| indicates if the panel is a newly
-  // created panel or one that is transitioning from another grouping of panels.
-  void AddPanel(Panel* panel, bool is_new);
+  // Adds a panel to the strip.
+  void AddPanel(Panel* panel);
 
   // Returns |false| if the panel is not in the strip.
   bool Remove(Panel* panel);

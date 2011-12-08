@@ -15,13 +15,6 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "ui/gfx/rect.h"
 
-// TODO(jennb): Clean up by removing functions below that cause this
-// to be required.
-#ifdef UNIT_TEST
-#include "chrome/browser/ui/panels/panel_strip.h"
-#include "chrome/browser/ui/panels/panel_mouse_watcher.h"
-#endif
-
 class Browser;
 class PanelMouseWatcher;
 class PanelOverflowStrip;
@@ -75,7 +68,6 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
   BrowserWindow* GetNextBrowserWindowToActivate(Panel* panel) const;
 
   int num_panels() const;
-  bool is_dragging_panel() const;
   int StartingRightPosition() const;
   const Panels& panels() const;
 
@@ -97,35 +89,25 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
   }
 
 #ifdef UNIT_TEST
-  static int horizontal_spacing() { return PanelStrip::horizontal_spacing(); }
-
-  const gfx::Rect& work_area() const {
-    return work_area_;
-  }
-
   void set_auto_hiding_desktop_bar(
       AutoHidingDesktopBar* auto_hiding_desktop_bar) {
     auto_hiding_desktop_bar_ = auto_hiding_desktop_bar;
-  }
-
-  void set_mouse_watcher(PanelMouseWatcher* watcher) {
-    panel_mouse_watcher_.reset(watcher);
   }
 
   void enable_auto_sizing(bool enabled) {
     auto_sizing_enabled_ = enabled;
   }
 
+  const gfx::Rect& work_area() const {
+    return work_area_;
+  }
+
   void SetWorkAreaForTesting(const gfx::Rect& work_area) {
     SetWorkArea(work_area);
   }
 
-  void remove_delays_for_testing() {
-    panel_strip_->remove_delays_for_testing();
-  }
-
-  int minimized_panel_count() {
-    return panel_strip_->minimized_panel_count();
+  void SetMouseWatcherForTesting(PanelMouseWatcher* watcher) {
+    SetMouseWatcher(watcher);
   }
 #endif
 
@@ -153,6 +135,9 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
 
   // Tests if the current active app is in full screen mode.
   void CheckFullScreenMode();
+
+  // Tests may want to use a mock panel mouse watcher.
+  void SetMouseWatcher(PanelMouseWatcher* watcher);
 
   scoped_ptr<PanelStrip> panel_strip_;
   scoped_ptr<PanelOverflowStrip> panel_overflow_strip_;

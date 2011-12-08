@@ -230,10 +230,10 @@ int PanelManager::num_panels() const {
   return panel_strip_->num_panels() + panel_overflow_strip_->num_panels();
 }
 
-bool PanelManager::is_dragging_panel() const {
-  return panel_strip_->is_dragging_panel();
-}
-
 const PanelManager::Panels& PanelManager::panels() const {
   return panel_strip_->panels();
+}
+
+void PanelManager::SetMouseWatcher(PanelMouseWatcher* watcher) {
+  panel_mouse_watcher_.reset(watcher);
 }

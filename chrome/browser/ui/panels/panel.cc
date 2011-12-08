@@ -12,8 +12,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/panel_overflow_strip.h"
-#include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -38,9 +36,11 @@ const Extension* Panel::GetExtensionFromBrowser(Browser* browser) {
 Panel::Panel(Browser* browser, const gfx::Size& requested_size)
     : browser_(browser),
       initialized_(false),
+      has_temporary_layout_(false),
       restored_size_(requested_size),
       auto_resizable_(false),
-      expansion_state_(EXPANDED) {
+      expansion_state_(EXPANDED),
+      app_icon_visible_(true) {
 }
 
 Panel::~Panel() {
@@ -120,6 +120,13 @@ void Panel::SetSizeRange(const gfx::Size& min_size, const gfx::Size& max_size) {
   ConfigureAutoResize(browser()->GetSelectedTabContents());
 }
 
+void Panel::SetAppIconVisibility(bool visible) {
+  if (app_icon_visible_ == visible)
+    return;
+  app_icon_visible_ = visible;
+  native_panel_->SetPanelAppIconVisibility(visible);
+}
+
 void Panel::SetExpansionState(ExpansionState new_state) {
   if (expansion_state_ == new_state)
     return;
@@ -136,26 +143,6 @@ void Panel::SetExpansionState(ExpansionState new_state) {
       chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
       content::Source<Panel>(this),
       content::NotificationService::NoDetails());
-}
-
-bool Panel::ShouldBringUpTitlebar(int mouse_x, int mouse_y) const {
-  // Skip the expanded panel.
-  if (expansion_state_ == EXPANDED)
-    return false;
-
-  // If the panel is showing titlebar only, we want to keep it up when it is
-  // being dragged.
-  if (expansion_state_ == TITLE_ONLY && manager()->is_dragging_panel())
-    return true;
-
-  // We do not want to bring up other minimized panels if the mouse is over the
-  // panel that pops up the title-bar to attract attention.
-  if (native_panel_->IsDrawingAttention())
-    return false;
-
-  gfx::Rect bounds = native_panel_->GetPanelBounds();
-  return bounds.x() <= mouse_x && mouse_x <= bounds.right() &&
-         mouse_y >= bounds.y();
 }
 
 bool Panel::IsDrawingAttention() const {
@@ -189,16 +176,7 @@ void Panel::Close() {
   native_panel_->ClosePanel();
 }
 
-void Panel::MoveOutOfOverflow() {
-  if (expansion_state_ != Panel::IN_OVERFLOW)
-    return;
-  manager()->panel_overflow_strip()->Remove(this);
-  manager()->panel_strip()->AddPanel(this);
-}
-
 void Panel::Activate() {
-  MoveOutOfOverflow();
-
   // Make sure the panel is expanded when activated programmatically,
   // so the user input does not go into collapsed window.
   SetExpansionState(Panel::EXPANDED);

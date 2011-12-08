@@ -164,10 +164,6 @@ class PanelBrowserTest : public BasePanelBrowserTest {
     panel5->Close();
   }
 
-  int horizontal_spacing() {
-    return PanelManager::horizontal_spacing();
-  }
-
   // Helper function for debugging.
   void PrintAllPanelBounds() {
     const std::vector<Panel*>& panels = PanelManager::GetInstance()->panels();
@@ -561,292 +557,326 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_CreatePanelOnOverflow) {
   TestCreatePanelOnOverflow();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DragPanels) {
-  static const int max_panels = 3;
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DragOnePanel) {
+  static const int num_panels = 1;
+  static const int zero_delta = 0;
+  static const int big_delta = 70;
+
+  static const std::vector<int> zero_deltas(num_panels, zero_delta);
+  std::vector<int> expected_delta_x_after_drag(num_panels, zero_delta);
+  std::vector<int> expected_delta_x_after_finish(num_panels, zero_delta);
+
+  Panel* panel1 =
+      CreatePanelWithBounds("PanelTest1", gfx::Rect(0, 0, 100, 100));
+
+  // Drag left.
+  expected_delta_x_after_drag[0] = -big_delta;
+  expected_delta_x_after_finish = zero_deltas;
+  TestDragging(-big_delta, zero_delta, 0, expected_delta_x_after_drag,
+               zero_deltas, GetAllPanelBounds(),
+               DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
+
+  // Drag left and cancel.
+  expected_delta_x_after_drag[0] = -big_delta;
+  expected_delta_x_after_finish = zero_deltas;
+  TestDragging(-big_delta, zero_delta, 0, expected_delta_x_after_drag,
+               zero_deltas, GetAllPanelBounds(),
+               DRAG_ACTION_BEGIN | DRAG_ACTION_CANCEL);
+
+  // Drag right.
+  expected_delta_x_after_drag[0] = big_delta;
+  TestDragging(big_delta, zero_delta, 0, expected_delta_x_after_drag,
+               zero_deltas, GetAllPanelBounds(),
+               DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
+
+  // Drag right and up.  Expect no vertical movement.
+  TestDragging(big_delta, big_delta, 0, expected_delta_x_after_drag,
+               zero_deltas, GetAllPanelBounds(),
+               DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
+
+  // Drag up.  Expect no movement on drag.
+  TestDragging(0, -big_delta, 0, zero_deltas, zero_deltas,
+               GetAllPanelBounds(), DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
+
+  // Drag down.  Expect no movement on drag.
+  TestDragging(0, big_delta, 0, zero_deltas, zero_deltas,
+               GetAllPanelBounds(), DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
+
+  panel1->Close();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DragTwoPanels) {
+  static const int num_panels = 2;
   static const int zero_delta = 0;
   static const int small_delta = 10;
   static const int big_delta = 70;
+
+  static const std::vector<int> zero_deltas(num_panels, zero_delta);
+  std::vector<int> expected_delta_x_after_drag(num_panels, zero_delta);
+  std::vector<int> expected_delta_x_after_finish(num_panels, zero_delta);
+  std::vector<gfx::Rect> initial_bounds;
+
+  Panel* panel1 =
+      CreatePanelWithBounds("PanelTest1", gfx::Rect(0, 0, 100, 100));
+  Panel* panel2 =
+      CreatePanelWithBounds("PanelTest2", gfx::Rect(0, 0, 120, 120));
+
+  int horizontal_spacing =
+      panel1->GetBounds().x() - panel2->GetBounds().right();
+
+  // Drag left, small delta, expect no shuffle.
+  {
+    expected_delta_x_after_drag = zero_deltas;
+    expected_delta_x_after_drag[0] = -small_delta;
+    TestDragging(-small_delta, zero_delta, 0, expected_delta_x_after_drag,
+                 zero_deltas, GetAllPanelBounds(),
+                 DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
+
+    // Drag right panel i.e index 0, towards left, big delta, expect shuffle.
+    initial_bounds = GetAllPanelBounds();
+    expected_delta_x_after_drag = zero_deltas;
+
+    // Deltas for panel being dragged.
+    expected_delta_x_after_drag[0] = -big_delta;
+    expected_delta_x_after_finish[0] =
+        -(initial_bounds[1].width() + horizontal_spacing);
+
+    // Deltas for panel being shuffled.
+    expected_delta_x_after_drag[1] =
+        initial_bounds[0].width() + horizontal_spacing;
+    expected_delta_x_after_finish[1] = expected_delta_x_after_drag[1];
+
+    TestDragging(-big_delta, zero_delta, 0, expected_delta_x_after_drag,
+                 expected_delta_x_after_finish, initial_bounds,
+                 DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
+  }
+
+  // Drag left panel i.e index 1, towards right, big delta, expect shuffle.
+  {
+    initial_bounds = GetAllPanelBounds();
+    expected_delta_x_after_drag = zero_deltas;
+    expected_delta_x_after_finish = zero_deltas;
+
+    // Deltas for panel being dragged.
+    expected_delta_x_after_drag[1] = big_delta;
+    expected_delta_x_after_finish[1] =
+        initial_bounds[0].width() + horizontal_spacing;
+
+    // Deltas for panel being shuffled.
+    expected_delta_x_after_drag[0] =
+        -(initial_bounds[1].width() + horizontal_spacing);
+    expected_delta_x_after_finish[0] = expected_delta_x_after_drag[0];
+
+    TestDragging(big_delta, zero_delta, 1, expected_delta_x_after_drag,
+                 expected_delta_x_after_finish, initial_bounds,
+                 DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
+  }
+
+  // Drag left panel i.e index 1, towards right, big delta, expect shuffle.
+  // Cancel drag.
+  {
+    initial_bounds = GetAllPanelBounds();
+    expected_delta_x_after_drag = zero_deltas;
+
+    // Delta for panel being dragged.
+    expected_delta_x_after_drag[1] = big_delta;
+
+    // Delta for panel being shuffled.
+    expected_delta_x_after_drag[0] =
+        -(initial_bounds[1].width() + horizontal_spacing);
+
+    // As the drag is being canceled, we don't need expected_delta_x_after
+    // finish.  Instead initial_bounds will be used.
+    TestDragging(big_delta, zero_delta, 1, expected_delta_x_after_drag,
+                 zero_deltas, initial_bounds,
+                 DRAG_ACTION_BEGIN | DRAG_ACTION_CANCEL);
+  }
+
+  panel1->Close();
+  panel2->Close();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DragThreePanels) {
+  static const int num_panels = 3;
+  static const int zero_delta = 0;
+  static const int big_delta = 70;
   static const int bigger_delta = 120;
   static const int biggest_delta = 200;
-  static const std::vector<int> zero_deltas(max_panels, zero_delta);
 
-  std::vector<int> expected_delta_x_after_drag(max_panels, zero_delta);
-  std::vector<int> expected_delta_x_after_finish(max_panels, zero_delta);
+  static const std::vector<int> zero_deltas(num_panels, zero_delta);
+  std::vector<int> expected_delta_x_after_drag(num_panels, zero_delta);
+  std::vector<int> expected_delta_x_after_finish(num_panels, zero_delta);
   std::vector<gfx::Rect> current_bounds;
   std::vector<gfx::Rect> initial_bounds;
 
-  // Tests with a single panel.
-  {
-    CreatePanelWithBounds("PanelTest1", gfx::Rect(0, 0, 100, 100));
-
-    // Drag left.
-    expected_delta_x_after_drag[0] = -big_delta;
-    expected_delta_x_after_finish = zero_deltas;
-    TestDragging(-big_delta, zero_delta, 0, expected_delta_x_after_drag,
-                 zero_deltas, GetAllPanelBounds(),
-                 DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
-
-    // Drag left and cancel.
-    expected_delta_x_after_drag[0] = -big_delta;
-    expected_delta_x_after_finish = zero_deltas;
-    TestDragging(-big_delta, zero_delta, 0, expected_delta_x_after_drag,
-                 zero_deltas, GetAllPanelBounds(),
-                 DRAG_ACTION_BEGIN | DRAG_ACTION_CANCEL);
-
-    // Drag right.
-    expected_delta_x_after_drag[0] = big_delta;
-    TestDragging(big_delta, zero_delta, 0, expected_delta_x_after_drag,
-                 zero_deltas, GetAllPanelBounds(),
-                 DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
-
-    // Drag right and up.  Expect no vertical movement.
-    TestDragging(big_delta, big_delta, 0, expected_delta_x_after_drag,
-                 zero_deltas, GetAllPanelBounds(),
-                 DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
-
-    // Drag up.  Expect no movement on drag.
-    TestDragging(0, -big_delta, 0, zero_deltas, zero_deltas,
-                 GetAllPanelBounds(), DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
-
-    // Drag down.  Expect no movement on drag.
-    TestDragging(0, big_delta, 0, zero_deltas, zero_deltas,
-                 GetAllPanelBounds(), DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
-  }
-
-  // Tests with two panels.
-  {
-    CreatePanelWithBounds("PanelTest2", gfx::Rect(0, 0, 120, 120));
-
-    // Drag left, small delta, expect no shuffle.
-    {
-      expected_delta_x_after_drag = zero_deltas;
-      expected_delta_x_after_drag[0] = -small_delta;
-      TestDragging(-small_delta, zero_delta, 0, expected_delta_x_after_drag,
-                   zero_deltas, GetAllPanelBounds(),
-                   DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
-
-      // Drag right panel i.e index 0, towards left, big delta, expect shuffle.
-      initial_bounds = GetAllPanelBounds();
-      expected_delta_x_after_drag = zero_deltas;
-
-      // Deltas for panel being dragged.
-      expected_delta_x_after_drag[0] = -big_delta;
-      expected_delta_x_after_finish[0] =
-          -(initial_bounds[1].width() + horizontal_spacing());
-
-      // Deltas for panel being shuffled.
-      expected_delta_x_after_drag[1] =
-          initial_bounds[0].width() + horizontal_spacing();
-      expected_delta_x_after_finish[1] = expected_delta_x_after_drag[1];
-
-      TestDragging(-big_delta, zero_delta, 0, expected_delta_x_after_drag,
-                   expected_delta_x_after_finish, initial_bounds,
-                   DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
-    }
-
-    // Drag left panel i.e index 1, towards right, big delta, expect shuffle.
-    {
-      initial_bounds = GetAllPanelBounds();
-      expected_delta_x_after_drag = zero_deltas;
-      expected_delta_x_after_finish = zero_deltas;
-
-      // Deltas for panel being dragged.
-      expected_delta_x_after_drag[1] = big_delta;
-      expected_delta_x_after_finish[1] =
-          initial_bounds[0].width() + horizontal_spacing();
-
-      // Deltas for panel being shuffled.
-      expected_delta_x_after_drag[0] =
-          -(initial_bounds[1].width() + horizontal_spacing());
-      expected_delta_x_after_finish[0] = expected_delta_x_after_drag[0];
-
-      TestDragging(big_delta, zero_delta, 1, expected_delta_x_after_drag,
-                   expected_delta_x_after_finish, initial_bounds,
-                   DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
-    }
-
-    // Drag left panel i.e index 1, towards right, big delta, expect shuffle.
-    // Cancel drag.
-    {
-      initial_bounds = GetAllPanelBounds();
-      expected_delta_x_after_drag = zero_deltas;
-
-      // Delta for panel being dragged.
-      expected_delta_x_after_drag[1] = big_delta;
-
-      // Delta for panel being shuffled.
-      expected_delta_x_after_drag[0] =
-          -(initial_bounds[1].width() + horizontal_spacing());
-
-      // As the drag is being canceled, we don't need expected_delta_x_after
-      // finish.  Instead initial_bounds will be used.
-      TestDragging(big_delta, zero_delta, 1, expected_delta_x_after_drag,
-                   zero_deltas, initial_bounds,
-                   DRAG_ACTION_BEGIN | DRAG_ACTION_CANCEL);
-    }
-  }
-
-  // Tests with three panels.
-  {
+  Panel* panel1 =
+      CreatePanelWithBounds("PanelTest1", gfx::Rect(0, 0, 100, 100));
+  Panel* panel2 =
+      CreatePanelWithBounds("PanelTest2", gfx::Rect(0, 0, 120, 120));
+  Panel* panel3 =
     CreatePanelWithBounds("PanelTest3", gfx::Rect(0, 0, 110, 110));
 
-    // Drag leftmost panel to become rightmost with two shuffles.
-    // We test both shuffles.
-    {
-      // Drag the left-most panel towards right without ending or cancelling it.
-      // Expect shuffle.
-      initial_bounds = GetAllPanelBounds();
-      expected_delta_x_after_drag = zero_deltas;
+  int horizontal_spacing =
+      panel1->GetBounds().x() - panel2->GetBounds().right();
 
-      // Delta for panel being dragged.
-      expected_delta_x_after_drag[2] = big_delta;
+  // Drag leftmost panel to become rightmost with two shuffles.
+  // We test both shuffles.
+  {
+    // Drag the left-most panel towards right without ending or cancelling it.
+    // Expect shuffle.
+    initial_bounds = GetAllPanelBounds();
+    expected_delta_x_after_drag = zero_deltas;
 
-      // Delta for panel being shuffled.
-      expected_delta_x_after_drag[1] =
-          -(initial_bounds[2].width() + horizontal_spacing());
+    // Delta for panel being dragged.
+    expected_delta_x_after_drag[2] = big_delta;
 
-      // There is no delta after finish as drag is not done yet.
-      TestDragging(big_delta, zero_delta, 2, expected_delta_x_after_drag,
-                   zero_deltas, initial_bounds, DRAG_ACTION_BEGIN);
+    // Delta for panel being shuffled.
+    expected_delta_x_after_drag[1] =
+        -(initial_bounds[2].width() + horizontal_spacing);
 
-      // The drag index changes from 2 to 1 because of the first shuffle above.
-      // Drag the panel further enough to the right to trigger a another
-      // shuffle.  We finish the drag here.
-      current_bounds = GetAllPanelBounds();
-      expected_delta_x_after_drag = zero_deltas;
-      expected_delta_x_after_finish = zero_deltas;
+    // There is no delta after finish as drag is not done yet.
+    TestDragging(big_delta, zero_delta, 2, expected_delta_x_after_drag,
+                 zero_deltas, initial_bounds, DRAG_ACTION_BEGIN);
 
-      // big_delta is not enough to cause the second shuffle as the panel being
-      // dragged is in the middle of a drag and big_delta won't go far enough.
-      // So we use bigger_delta.
+    // The drag index changes from 2 to 1 because of the first shuffle above.
+    // Drag the panel further enough to the right to trigger a another
+    // shuffle.  We finish the drag here.
+    current_bounds = GetAllPanelBounds();
+    expected_delta_x_after_drag = zero_deltas;
+    expected_delta_x_after_finish = zero_deltas;
 
-      // Deltas for panel being dragged.
-      expected_delta_x_after_drag[1] = bigger_delta;
-      int x_after_finish = current_bounds[0].x() +
-          (current_bounds[0].width() - current_bounds[1].width());
-      expected_delta_x_after_finish[1] = x_after_finish - current_bounds[1].x();
+    // big_delta is not enough to cause the second shuffle as the panel being
+    // dragged is in the middle of a drag and big_delta won't go far enough.
+    // So we use bigger_delta.
 
-      // Deltas for panel being shuffled.
-      expected_delta_x_after_drag[0] =
-          -(current_bounds[1].width() + horizontal_spacing());
-      expected_delta_x_after_finish[0] = expected_delta_x_after_drag[0];
+    // Deltas for panel being dragged.
+    expected_delta_x_after_drag[1] = bigger_delta;
+    int x_after_finish = current_bounds[0].x() +
+        (current_bounds[0].width() - current_bounds[1].width());
+    expected_delta_x_after_finish[1] = x_after_finish - current_bounds[1].x();
 
-      TestDragging(bigger_delta, zero_delta, 1, expected_delta_x_after_drag,
-                   expected_delta_x_after_finish, initial_bounds,
-                   DRAG_ACTION_FINISH);
-    }
+    // Deltas for panel being shuffled.
+    expected_delta_x_after_drag[0] =
+        -(current_bounds[1].width() + horizontal_spacing);
+    expected_delta_x_after_finish[0] = expected_delta_x_after_drag[0];
 
-    // Drag rightmost panel to become leftmost with two shuffles.
-    // And then cancel the drag.
-    {
-      // First drag and shuffle.
-      initial_bounds = GetAllPanelBounds();
-      expected_delta_x_after_drag = zero_deltas;
-
-      // Delta for panel being dragged.
-      expected_delta_x_after_drag[0] = -big_delta;
-
-      // Delta for panel being shuffled.
-      expected_delta_x_after_drag[1] =
-          (initial_bounds[0].width() + horizontal_spacing());
-
-      // There is no delta after finish as drag is done yet.
-      TestDragging(-big_delta, zero_delta, 0, expected_delta_x_after_drag,
-                   zero_deltas, initial_bounds, DRAG_ACTION_BEGIN);
-
-      // Second drag and shuffle.  We cancel the drag here.  The drag index
-      // changes from 0 to 1 because of the first shuffle above.
-      current_bounds = GetAllPanelBounds();
-      expected_delta_x_after_drag = zero_deltas;
-
-      // Delta for panel being dragged.
-      expected_delta_x_after_drag[1] = -bigger_delta;
-
-      // Deltas for panel being shuffled.
-      int x_after_shuffle = current_bounds[0].x() - horizontal_spacing()
-          - current_bounds[2].width();
-      expected_delta_x_after_drag[2] = x_after_shuffle - current_bounds[2].x();
-
-      // There is no delta after finish as drag canceled.
-      TestDragging(-bigger_delta, zero_delta, 1, expected_delta_x_after_drag,
-                   zero_deltas, initial_bounds, DRAG_ACTION_CANCEL);
-    }
-
-    // Drag leftmost panel to become the rightmost in a single drag.  This
-    // will shuffle middle panel to leftmost and rightmost to middle.
-    {
-      initial_bounds = GetAllPanelBounds();
-      expected_delta_x_after_drag = zero_deltas;
-      expected_delta_x_after_finish = zero_deltas;
-
-      // Use a delta big enough to go across two panels.
-      // Deltas for panel being dragged.
-      expected_delta_x_after_drag[2] = biggest_delta;
-      expected_delta_x_after_finish[2] =
-          initial_bounds[1].width() + horizontal_spacing() +
-          initial_bounds[0].width() + horizontal_spacing();
-
-      // Deltas for middle panels being shuffled.
-      expected_delta_x_after_drag[1] =
-          -(initial_bounds[2].width() + horizontal_spacing());
-      expected_delta_x_after_finish[1] = expected_delta_x_after_drag[1];
-
-      expected_delta_x_after_drag[0] =  expected_delta_x_after_drag[1];
-      expected_delta_x_after_finish[0] = expected_delta_x_after_drag[0];
-
-      TestDragging(biggest_delta, zero_delta, 2, expected_delta_x_after_drag,
-                   expected_delta_x_after_finish, initial_bounds,
-                   DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
-    }
-
-    // Drag rightmost panel to become the leftmost in a single drag.  This
-    // will shuffle middle panel to rightmost and leftmost to middle.
-    {
-      initial_bounds = GetAllPanelBounds();
-      expected_delta_x_after_drag = zero_deltas;
-      expected_delta_x_after_finish = zero_deltas;
-
-      // Deltas for panel being dragged.
-      expected_delta_x_after_drag[0] = -biggest_delta;
-      expected_delta_x_after_finish[0] =
-          -(initial_bounds[1].width() + horizontal_spacing() +
-            initial_bounds[2].width() + horizontal_spacing());
-
-      // Deltas for panels being shuffled.
-      expected_delta_x_after_drag[1] =
-          initial_bounds[0].width() + horizontal_spacing();
-      expected_delta_x_after_finish[1] = expected_delta_x_after_drag[1];
-
-      expected_delta_x_after_drag[2] = expected_delta_x_after_drag[1];
-      expected_delta_x_after_finish[2] = expected_delta_x_after_drag[2];
-
-      TestDragging(-biggest_delta, zero_delta, 0, expected_delta_x_after_drag,
-                   expected_delta_x_after_finish, initial_bounds,
-                   DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
-    }
-
-    // Drag rightmost panel to become the leftmost in a single drag.  Then
-    // cancel the drag.
-    {
-      initial_bounds = GetAllPanelBounds();
-      expected_delta_x_after_drag = zero_deltas;
-
-      // Deltas for panel being dragged.
-      expected_delta_x_after_drag[0] = -biggest_delta;
-
-      // Deltas for panels being shuffled.
-      expected_delta_x_after_drag[1] =
-          initial_bounds[0].width() + horizontal_spacing();
-      expected_delta_x_after_drag[2] = expected_delta_x_after_drag[1];
-
-      // No delta after finish as drag is canceled.
-      TestDragging(-biggest_delta, zero_delta, 0, expected_delta_x_after_drag,
-                   zero_deltas, initial_bounds,
-                   DRAG_ACTION_BEGIN | DRAG_ACTION_CANCEL);
-    }
+    TestDragging(bigger_delta, zero_delta, 1, expected_delta_x_after_drag,
+                 expected_delta_x_after_finish, initial_bounds,
+                 DRAG_ACTION_FINISH);
   }
 
-  PanelManager::GetInstance()->RemoveAll();
+  // Drag rightmost panel to become leftmost with two shuffles.
+  // And then cancel the drag.
+  {
+    // First drag and shuffle.
+    initial_bounds = GetAllPanelBounds();
+    expected_delta_x_after_drag = zero_deltas;
+
+    // Delta for panel being dragged.
+    expected_delta_x_after_drag[0] = -big_delta;
+
+    // Delta for panel being shuffled.
+    expected_delta_x_after_drag[1] =
+        (initial_bounds[0].width() + horizontal_spacing);
+
+    // There is no delta after finish as drag is done yet.
+    TestDragging(-big_delta, zero_delta, 0, expected_delta_x_after_drag,
+                 zero_deltas, initial_bounds, DRAG_ACTION_BEGIN);
+
+    // Second drag and shuffle.  We cancel the drag here.  The drag index
+    // changes from 0 to 1 because of the first shuffle above.
+    current_bounds = GetAllPanelBounds();
+    expected_delta_x_after_drag = zero_deltas;
+
+    // Delta for panel being dragged.
+    expected_delta_x_after_drag[1] = -bigger_delta;
+
+    // Deltas for panel being shuffled.
+    int x_after_shuffle = current_bounds[0].x() - horizontal_spacing
+        - current_bounds[2].width();
+    expected_delta_x_after_drag[2] = x_after_shuffle - current_bounds[2].x();
+
+    // There is no delta after finish as drag canceled.
+    TestDragging(-bigger_delta, zero_delta, 1, expected_delta_x_after_drag,
+                 zero_deltas, initial_bounds, DRAG_ACTION_CANCEL);
+  }
+
+  // Drag leftmost panel to become the rightmost in a single drag.  This
+  // will shuffle middle panel to leftmost and rightmost to middle.
+  {
+    initial_bounds = GetAllPanelBounds();
+    expected_delta_x_after_drag = zero_deltas;
+    expected_delta_x_after_finish = zero_deltas;
+
+    // Use a delta big enough to go across two panels.
+    // Deltas for panel being dragged.
+    expected_delta_x_after_drag[2] = biggest_delta;
+    expected_delta_x_after_finish[2] =
+        initial_bounds[1].width() + horizontal_spacing +
+        initial_bounds[0].width() + horizontal_spacing;
+
+    // Deltas for middle panels being shuffled.
+    expected_delta_x_after_drag[1] =
+        -(initial_bounds[2].width() + horizontal_spacing);
+    expected_delta_x_after_finish[1] = expected_delta_x_after_drag[1];
+
+    expected_delta_x_after_drag[0] = expected_delta_x_after_drag[1];
+    expected_delta_x_after_finish[0] = expected_delta_x_after_drag[0];
+
+    TestDragging(biggest_delta, zero_delta, 2, expected_delta_x_after_drag,
+                 expected_delta_x_after_finish, initial_bounds,
+                 DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
+  }
+
+  // Drag rightmost panel to become the leftmost in a single drag.  This
+  // will shuffle middle panel to rightmost and leftmost to middle.
+  {
+    initial_bounds = GetAllPanelBounds();
+    expected_delta_x_after_drag = zero_deltas;
+    expected_delta_x_after_finish = zero_deltas;
+
+    // Deltas for panel being dragged.
+    expected_delta_x_after_drag[0] = -biggest_delta;
+    expected_delta_x_after_finish[0] =
+        -(initial_bounds[1].width() + horizontal_spacing +
+          initial_bounds[2].width() + horizontal_spacing);
+
+    // Deltas for panels being shuffled.
+    expected_delta_x_after_drag[1] =
+        initial_bounds[0].width() + horizontal_spacing;
+    expected_delta_x_after_finish[1] = expected_delta_x_after_drag[1];
+
+    expected_delta_x_after_drag[2] = expected_delta_x_after_drag[1];
+    expected_delta_x_after_finish[2] = expected_delta_x_after_drag[2];
+
+    TestDragging(-biggest_delta, zero_delta, 0, expected_delta_x_after_drag,
+                 expected_delta_x_after_finish, initial_bounds,
+                 DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
+  }
+
+  // Drag rightmost panel to become the leftmost in a single drag.  Then
+  // cancel the drag.
+  {
+    initial_bounds = GetAllPanelBounds();
+    expected_delta_x_after_drag = zero_deltas;
+
+    // Deltas for panel being dragged.
+    expected_delta_x_after_drag[0] = -biggest_delta;
+
+    // Deltas for panels being shuffled.
+    expected_delta_x_after_drag[1] =
+        initial_bounds[0].width() + horizontal_spacing;
+    expected_delta_x_after_drag[2] = expected_delta_x_after_drag[1];
+
+    // No delta after finish as drag is canceled.
+    TestDragging(-biggest_delta, zero_delta, 0, expected_delta_x_after_drag,
+                 zero_deltas, initial_bounds,
+                 DRAG_ACTION_BEGIN | DRAG_ACTION_CANCEL);
+  }
+
+  panel1->Close();
+  panel2->Close();
+  panel3->Close();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateSettingsMenu) {
@@ -929,11 +959,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoredBounds) {
   // Disable mouse watcher. We don't care about mouse movements in this test.
   PanelManager* panel_manager = PanelManager::GetInstance();
   PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
-  panel_manager->set_mouse_watcher(mouse_watcher);
+  panel_manager->SetMouseWatcherForTesting(mouse_watcher);
   Panel* panel = CreatePanelWithBounds("PanelTest", gfx::Rect(0, 0, 100, 100));
   EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
   EXPECT_EQ(panel->GetBounds(), panel->GetRestoredBounds());
-  EXPECT_EQ(0, panel_manager->minimized_panel_count());
 
   panel->SetExpansionState(Panel::MINIMIZED);
   EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
@@ -943,7 +972,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoredBounds) {
   EXPECT_GT(bounds.y(), restored.y());
   EXPECT_EQ(bounds.width(), restored.width());
   EXPECT_LT(bounds.height(), restored.height());
-  EXPECT_EQ(1, panel_manager->minimized_panel_count());
 
   panel->SetExpansionState(Panel::TITLE_ONLY);
   EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
@@ -953,7 +981,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoredBounds) {
   EXPECT_GT(bounds.y(), restored.y());
   EXPECT_EQ(bounds.width(), restored.width());
   EXPECT_LT(bounds.height(), restored.height());
-  EXPECT_EQ(1, panel_manager->minimized_panel_count());
 
   panel->SetExpansionState(Panel::MINIMIZED);
   EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
@@ -963,11 +990,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoredBounds) {
   EXPECT_GT(bounds.y(), restored.y());
   EXPECT_EQ(bounds.width(), restored.width());
   EXPECT_LT(bounds.height(), restored.height());
-  EXPECT_EQ(1, panel_manager->minimized_panel_count());
 
   panel->SetExpansionState(Panel::EXPANDED);
   EXPECT_EQ(panel->GetBounds(), panel->GetRestoredBounds());
-  EXPECT_EQ(0, panel_manager->minimized_panel_count());
 
   // Verify that changing the panel bounds only affects restored height
   // when panel is expanded.
@@ -976,19 +1001,16 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoredBounds) {
   bounds = gfx::Rect(10, 20, 300, 400);
   panel->SetPanelBounds(bounds);
   EXPECT_EQ(saved_restored_height, panel->GetRestoredBounds().height());
-  EXPECT_EQ(1, panel_manager->minimized_panel_count());
 
   panel->SetExpansionState(Panel::TITLE_ONLY);
   bounds = gfx::Rect(20, 30, 100, 200);
   panel->SetPanelBounds(bounds);
   EXPECT_EQ(saved_restored_height, panel->GetRestoredBounds().height());
-  EXPECT_EQ(1, panel_manager->minimized_panel_count());
 
   panel->SetExpansionState(Panel::EXPANDED);
   bounds = gfx::Rect(40, 60, 300, 400);
   panel->SetPanelBounds(bounds);
   EXPECT_NE(saved_restored_height, panel->GetRestoredBounds().height());
-  EXPECT_EQ(0, panel_manager->minimized_panel_count());
 
   panel->Close();
 }
@@ -996,7 +1018,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoredBounds) {
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestore) {
   // We'll simulate mouse movements for test.
   PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
-  PanelManager::GetInstance()->set_mouse_watcher(mouse_watcher);
+  PanelManager::GetInstance()->SetMouseWatcherForTesting(mouse_watcher);
 
   // Test with one panel.
   CreatePanelWithBounds("PanelTest1", gfx::Rect(0, 0, 100, 100));
@@ -1008,7 +1030,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestore) {
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestoreTwoPanels) {
   // We'll simulate mouse movements for test.
   PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
-  PanelManager::GetInstance()->set_mouse_watcher(mouse_watcher);
+  PanelManager::GetInstance()->SetMouseWatcherForTesting(mouse_watcher);
 
   // Test with two panels.
   CreatePanelWithBounds("PanelTest1", gfx::Rect(0, 0, 100, 100));
@@ -1021,7 +1043,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestoreTwoPanels) {
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestoreThreePanels) {
   // We'll simulate mouse movements for test.
   PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
-  PanelManager::GetInstance()->set_mouse_watcher(mouse_watcher);
+  PanelManager::GetInstance()->SetMouseWatcherForTesting(mouse_watcher);
 
   // Test with three panels.
   CreatePanelWithBounds("PanelTest1", gfx::Rect(0, 0, 100, 100));
@@ -1185,7 +1207,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionBasic) {
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhileMinimized) {
   // We'll simulate mouse movements for test.
   PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
-  PanelManager::GetInstance()->set_mouse_watcher(mouse_watcher);
+  PanelManager::GetInstance()->SetMouseWatcherForTesting(mouse_watcher);
 
   CreatePanelParams params("Initially Active", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel = CreatePanelWithParams(params);

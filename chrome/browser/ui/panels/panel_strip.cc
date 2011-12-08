@@ -57,7 +57,6 @@ PanelStrip::PanelStrip(PanelManager* panel_manager)
       dragging_panel_index_(kInvalidPanelIndex),
       dragging_panel_original_x_(0),
       delayed_titlebar_action_(NO_ACTION),
-      remove_delays_for_testing_(false),
       titlebar_action_factory_(this) {
 }
 
@@ -81,6 +80,8 @@ void PanelStrip::SetDisplayArea(const gfx::Rect& new_area) {
 }
 
 void PanelStrip::AddPanel(Panel* panel) {
+  DCHECK_EQ(Panel::EXPANDED, panel->expansion_state());
+
   // Always update limits, even for exiting panels, in case the maximums changed
   // while panel was out of the strip.
   int max_panel_width = GetMaxPanelWidth();
@@ -97,11 +98,10 @@ void PanelStrip::AddPanel(Panel* panel) {
     int x;
     while ((x = GetRightMostAvailablePosition() - width) < display_area_.x()) {
       DCHECK(!panels_.empty());
-      MovePanelToOverflow(panels_.back(), false);
+      panels_.back()->SetExpansionState(Panel::IN_OVERFLOW);
     }
     int y = display_area_.bottom() - height;
     panel->SetPanelBounds(gfx::Rect(x, y, width, height));
-    panel->SetExpansionState(Panel::EXPANDED);
   } else {
     // Initialize the newly created panel. Does not bump any panels from strip.
     if (height == 0 && width == 0) {
@@ -136,21 +136,18 @@ void PanelStrip::AddPanel(Panel* panel) {
 #if defined(OS_WIN)
     if (x < display_area_.x()) {
       x = display_area_.x();
-      int delay_ms = remove_delays_for_testing_ ? 0 :
-          kMoveNewPanelToOverflowDelayMilliseconds;
+      panel->set_has_temporary_layout(true);
       MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&PanelStrip::MovePanelToOverflow,
+          base::Bind(&PanelStrip::DelayedMovePanelToOverflow,
                      base::Unretained(this),
-                     panel,
-                     true),  // new panel
-          delay_ms);
+                     panel),
+          kMoveNewPanelToOverflowDelayMilliseconds);
     }
 #endif
     panel->Initialize(gfx::Rect(x, y, width, height));
   }
 
-  DCHECK(panel->expansion_state() == Panel::EXPANDED);
   panels_.push_back(panel);
 }
 
@@ -198,7 +195,8 @@ bool PanelStrip::DoRemove(Panel* panel) {
   if (iter == panels_.end())
     return false;
 
-  if (panel->expansion_state() != Panel::EXPANDED)
+  if (panel->expansion_state() == Panel::TITLE_ONLY ||
+      panel->expansion_state() == Panel::MINIMIZED)
     DecrementMinimizedPanels();
 
   panels_.erase(iter);
@@ -343,8 +341,13 @@ void PanelStrip::OnPanelExpansionStateChanged(
   Panel::ExpansionState expansion_state = panel->expansion_state();
   switch (expansion_state) {
     case Panel::EXPANDED:
-      if (old_state == Panel::TITLE_ONLY || old_state == Panel::MINIMIZED)
+      if (old_state == Panel::TITLE_ONLY || old_state == Panel::MINIMIZED) {
         DecrementMinimizedPanels();
+      } else if (old_state == Panel::IN_OVERFLOW) {
+        panel_manager_->panel_overflow_strip()->Remove(panel);
+        AddPanel(panel);
+        panel->SetAppIconVisibility(true);
+      }
       break;
     case Panel::TITLE_ONLY:
       size.set_height(panel->TitleOnlyHeight());
@@ -440,9 +443,28 @@ bool PanelStrip::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
       mouse_y >= display_area_.bottom())
     return true;
 
+  // Bring up titlebars if any panel needs the titlebar up.
   for (Panels::const_iterator iter = panels_.begin();
        iter != panels_.end(); ++iter) {
-    if ((*iter)->ShouldBringUpTitlebar(mouse_x, mouse_y))
+    Panel* panel = *iter;
+    Panel::ExpansionState state = panel->expansion_state();
+    // Skip the expanded panel.
+    if (state == Panel::EXPANDED)
+      continue;
+
+    // If the panel is showing titlebar only, we want to keep it up when it is
+    // being dragged.
+    if (state == Panel::TITLE_ONLY && is_dragging_panel())
+      return true;
+
+    // We do not want to bring up other minimized panels if the mouse is over
+    // the panel that pops up the titlebar to attract attention.
+    if (panel->IsDrawingAttention())
+      continue;
+
+    gfx::Rect bounds = panel->GetBounds();
+    if (bounds.x() <= mouse_x && mouse_x <= bounds.right() &&
+        mouse_y >= bounds.y())
       return true;
   }
   return false;
@@ -491,8 +513,6 @@ void PanelStrip::BringUpOrDownTitlebars(bool bring_up) {
 
   // OnAutoHidingDesktopBarVisibilityChanged will handle this.
   delayed_titlebar_action_ = bring_up ? BRING_UP : BRING_DOWN;
-  if (remove_delays_for_testing_)
-    task_delay_milliseconds = 0;
 
   // If user moves the mouse in and out of mouse tracking area, we might have
   // previously posted but not yet dispatched task in the queue. New action
@@ -596,10 +616,8 @@ void PanelStrip::Rearrange() {
   // TODO(jianli): remove the guard when overflow support is enabled on other
   // platforms. http://crbug.com/105073
 #if defined(OS_WIN)
-    if (x < display_area_.x()) {
-      MovePanelsToOverflow(panel_index);
+    if (x < display_area_.x())
       break;
-    }
 #endif
 
     new_bounds.set_x(x);
@@ -614,33 +632,37 @@ void PanelStrip::Rearrange() {
   // TODO(jianli): remove the guard when overflow support is enabled on other
   // platforms. http://crbug.com/105073
 #if defined(OS_WIN)
-  if (panel_index == panels_.size())
-    MovePanelsFromOverflowIfNeeded();
+  // Add/remove panels from/to overflow. A change in work area or the
+  // resize/removal of a panel may affect how many panels fit in the strip.
+  if (panel_index < panels_.size()) {
+    DCHECK(panel_index >= 0);
+    // Move panels to overflow in reverse to maintain their order.
+    for (size_t overflow_index = panels_.size() - 1;
+         overflow_index >= panel_index; --overflow_index)
+      panels_[overflow_index]->SetExpansionState(Panel::IN_OVERFLOW);
+  } else {
+    // Attempt to add more panels from overflow to the strip.
+    PanelOverflowStrip* overflow_strip = panel_manager_->panel_overflow_strip();
+    Panel* overflow_panel;
+    while ((overflow_panel = overflow_strip->first_panel()) &&
+           GetRightMostAvailablePosition() >=
+               display_area_.x() + overflow_panel->restored_size().width()) {
+      overflow_panel->SetExpansionState(Panel::EXPANDED);
+    }
+  }
 #endif
 }
 
-void PanelStrip::MovePanelsToOverflow(size_t overflow_point) {
-  DCHECK(overflow_point >= 0);
-  // Move panels in reverse to maintain their order.
-  for (size_t i = panels_.size() - 1; i >= overflow_point; --i)
-    MovePanelToOverflow(panels_[i], false);
-}
-
-void PanelStrip::MovePanelToOverflow(Panel* panel, bool is_new) {
-  if (!DoRemove(panel))
-    return;
-
-  panel_manager_->panel_overflow_strip()->AddPanel(panel, is_new);
-}
-
-void PanelStrip::MovePanelsFromOverflowIfNeeded() {
-  PanelOverflowStrip* overflow_strip = panel_manager_->panel_overflow_strip();
-  Panel* overflow_panel;
-  while ((overflow_panel = overflow_strip->first_panel()) &&
-          GetRightMostAvailablePosition() -
-              overflow_panel->restored_size().width() >= display_area_.x()) {
-    overflow_strip->Remove(overflow_panel);
-    AddPanel(overflow_panel);
+void PanelStrip::DelayedMovePanelToOverflow(Panel* panel) {
+  // Make sure panel still exists in the strip.
+  // Search in reverse as new panels are at the end of the strip.
+  for (Panels::reverse_iterator iter = panels_.rbegin();
+       iter != panels_.rend(); ++iter) {
+    if (*iter == panel) {
+      DCHECK(panel->has_temporary_layout());
+      panel->SetExpansionState(Panel::IN_OVERFLOW);
+      break;
+    }
   }
 }
 

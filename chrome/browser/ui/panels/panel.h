@@ -58,8 +58,6 @@ class Panel : public BrowserWindow,
 
   void SetExpansionState(ExpansionState new_expansion_state);
 
-  bool ShouldBringUpTitlebar(int mouse_x, int mouse_y) const;
-
   bool IsDrawingAttention() const;
 
   // This function will only get called by PanelManager when full screen mode
@@ -68,8 +66,6 @@ class Panel : public BrowserWindow,
   // a) it does not go on top when some app enters full screen mode.
   // b) it remains on top when an app exits full screen mode.
   void FullScreenModeChanged(bool is_full_screen);
-
-  void MoveOutOfOverflow();
 
   // Ensures that the panel is fully visible, that is, not obscured by other
   // top-most windows.
@@ -248,6 +244,16 @@ class Panel : public BrowserWindow,
   // Sets minimum and maximum size for the panel.
   void SetSizeRange(const gfx::Size& min_size, const gfx::Size& max_size);
 
+  // Sets whether the panel app icon is visible in the taskbar.
+  void SetAppIconVisibility(bool visible);
+
+  // Newly created panels may be placed in a temporary layout until their
+  // final position is determined.
+  bool has_temporary_layout() const { return has_temporary_layout_; }
+  void set_has_temporary_layout(bool temporary) {
+    has_temporary_layout_ = temporary;
+  }
+
  protected:
   virtual void DestroyBrowser() OVERRIDE;
 
@@ -272,6 +278,10 @@ class Panel : public BrowserWindow,
 
   bool initialized_;
 
+  // Newly created panels may be placed in a temporary layout until their
+  // final position is determined.
+  bool has_temporary_layout_;
+
   // Stores the full size of the panel so we can restore it after it's
   // been minimized.
   gfx::Size restored_size_;
@@ -291,6 +301,9 @@ class Panel : public BrowserWindow,
   NativePanel* native_panel_;  // Weak, owns us.
 
   ExpansionState expansion_state_;
+
+  // Indicates whether the panel app icon is visible in the taskbar.
+  bool app_icon_visible_;
 
   content::NotificationRegistrar registrar_;
 

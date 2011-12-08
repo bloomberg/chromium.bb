@@ -190,7 +190,7 @@ void BasePanelBrowserTest::SetUpOnMainThread() {
   if (!testing_work_area_.IsEmpty())
     panel_manager->SetWorkAreaForTesting(testing_work_area_);
   panel_manager->enable_auto_sizing(false);
-  panel_manager->remove_delays_for_testing();
+
   // This is needed so the subsequently created panels can be activated.
   // On a Mac, it transforms background-only test process into foreground one.
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));

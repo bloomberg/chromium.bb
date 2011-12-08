@@ -398,6 +398,10 @@ void PanelBrowserWindowGtk::EnsurePanelFullyVisible() {
   // TODO(prasdt): to be implemented.
 }
 
+void PanelBrowserWindowGtk::SetPanelAppIconVisibility(bool visible) {
+  // TODO(prasdt): to be implemented.
+}
+
 gfx::Size PanelBrowserWindowGtk::WindowSizeFromContentSize(
     const gfx::Size& content_size) const {
   gfx::Size frame = GetNonClientFrameSize();

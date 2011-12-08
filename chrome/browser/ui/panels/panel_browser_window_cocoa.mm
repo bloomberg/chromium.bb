@@ -269,6 +269,10 @@ void PanelBrowserWindowCocoa::EnsurePanelFullyVisible() {
   // TODO(dimich): to be implemented.
 }
 
+void PanelBrowserWindowCocoa::SetPanelAppIconVisibility(bool visible) {
+  // TODO(dimich): to be implemented.
+}
+
 void PanelBrowserWindowCocoa::DidCloseNativeWindow() {
   DCHECK(!isClosed());
   panel_->OnNativePanelClosed();

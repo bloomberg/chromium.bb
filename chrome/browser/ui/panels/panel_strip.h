@@ -82,18 +82,6 @@ class PanelStrip : public PanelMouseWatcherObserver {
 
   void OnFullScreenModeChanged(bool is_full_screen);
 
-#ifdef UNIT_TEST
-  static int horizontal_spacing() { return kPanelsHorizontalSpacing; }
-
-  void remove_delays_for_testing() {
-    remove_delays_for_testing_ = true;
-  }
-
-  int minimized_panel_count() {
-    return minimized_panel_count_;
-  }
-#endif
-
  private:
   enum TitlebarAction {
     NO_ACTION,
@@ -134,19 +122,12 @@ class PanelStrip : public PanelMouseWatcherObserver {
 
   int GetRightMostAvailablePosition() const;
 
-  // Moves the panel from the panel strip to the overflow area because
-  // the panel will not fit within the bounds of the panel strip.
-  // Overflow may occur when new panels are added, the bounds of the strip
-  // changes, a panel's size grows, a panel is moved from overflow into
-  // the strip, etc.
-  void MovePanelToOverflow(Panel* panel, bool is_new);
-
-  // Moves panels to the overflow area, starting from the last panel.
-  // |overflow_point| is the index of the first panel to oveflow.
-  void MovePanelsToOverflow(size_t overflow_point);
-
-  // Adds zero or more panels from overflow as will fit in the panel strip.
-  void MovePanelsFromOverflowIfNeeded();
+  // Called by AddPanel() after a delay to move a newly created panel from
+  // the panel strip to overflow because the panel could not fit
+  // within the bounds of the panel strip. New panels are first displayed
+  // in the panel strip, then moved to overflow so that all created
+  // panels are (at least briefly) visible before entering overflow.
+  void DelayedMovePanelToOverflow(Panel* panel);
 
   PanelManager* panel_manager_;  // Weak, owns us.
 
@@ -177,7 +158,7 @@ class PanelStrip : public PanelMouseWatcherObserver {
   // Delayed transitions support. Sometimes transitions between minimized and
   // title-only states are delayed, for better usability with Taskbars/Docks.
   TitlebarAction delayed_titlebar_action_;
-  bool remove_delays_for_testing_;
+
   // Owned by MessageLoop after posting.
   base::WeakPtrFactory<PanelStrip> titlebar_action_factory_;
 
