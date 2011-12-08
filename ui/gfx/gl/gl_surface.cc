@@ -190,6 +190,10 @@ bool GLSurfaceAdapter::OnMakeCurrent(GLContext* context) {
   return surface_->OnMakeCurrent(context);
 }
 
+void GLSurfaceAdapter::SetVisible(bool visible) {
+  surface_->SetVisible(visible);
+}
+
 void* GLSurfaceAdapter::GetShareHandle() {
   return surface_->GetShareHandle();
 }
