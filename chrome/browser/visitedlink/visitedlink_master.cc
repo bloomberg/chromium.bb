@@ -14,6 +14,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -62,86 +63,30 @@ void GenerateSalt(uint8 salt[LINK_SALT_LENGTH]) {
   memcpy(salt, &randval, 8);
 }
 
-// AsyncWriter ----------------------------------------------------------------
+// Returns true if the write was complete.
+static bool WriteToFile(FILE* file,
+                        off_t offset,
+                        const void* data,
+                        size_t data_len) {
+  if (fseek(file, offset, SEEK_SET) != 0)
+    return false;  // Don't write to an invalid part of the file.
+
+  size_t num_written = fwrite(data, 1, data_len, file);
+
+  // The write may not make it to the kernel (stdlib may buffer the write)
+  // until the next fseek/fclose call.  If we crash, it's easy for our used
+  // item count to be out of sync with the number of hashes we write.
+  // Protect against this by calling fflush.
+  int ret = fflush(file);
+  DCHECK_EQ(0, ret);
+  return num_written == data_len;
+}
 
 // This task executes on a background thread and executes a write. This
 // prevents us from blocking the UI thread doing I/O.
-class AsyncWriter : public Task {
- public:
-  AsyncWriter(FILE* file, int32 offset, const void* data, size_t data_len)
-      : file_(file),
-        offset_(offset) {
-    data_->resize(data_len);
-    memcpy(&*data_->begin(), data, data_len);
-  }
-
-  virtual void Run() {
-    WriteToFile(file_, offset_,
-                &*data_->begin(), static_cast<int32>(data_->size()));
-  }
-
-  // Exposed as a static so it can be called directly from the Master to
-  // reduce the number of platform-specific I/O sites we have. Returns true if
-  // the write was complete.
-  static bool WriteToFile(FILE* file,
-                          off_t offset,
-                          const void* data,
-                          size_t data_len) {
-    if (fseek(file, offset, SEEK_SET) != 0)
-      return false;  // Don't write to an invalid part of the file.
-
-    size_t num_written = fwrite(data, 1, data_len, file);
-
-    // The write may not make it to the kernel (stdlib may buffer the write)
-    // until the next fseek/fclose call.  If we crash, it's easy for our used
-    // item count to be out of sync with the number of hashes we write.
-    // Protect against this by calling fflush.
-    int ret = fflush(file);
-    DCHECK_EQ(0, ret);
-    return num_written == data_len;
-  }
-
- private:
-  // The data to write and where to write it.
-  FILE* file_;
-  int32 offset_;  // Offset from the beginning of the file.
-
-  // Most writes are just a single fingerprint, so we reserve that much in this
-  // object to avoid mallocs in that case.
-  StackVector<char, sizeof(VisitedLinkCommon::Fingerprint)> data_;
-
-  DISALLOW_COPY_AND_ASSIGN(AsyncWriter);
-};
-
-// Used to asynchronously set the end of the file. This must be done on the
-// same thread as the writing to keep things synchronized.
-class AsyncSetEndOfFile : public Task {
- public:
-  explicit AsyncSetEndOfFile(FILE* file) : file_(file) {}
-
-  virtual void Run() {
-    TruncateFile(file_);
-  }
-
- private:
-  FILE* file_;
-  DISALLOW_COPY_AND_ASSIGN(AsyncSetEndOfFile);
-};
-
-// Used to asynchronously close a file. This must be done on the same thread as
-// the writing to keep things synchronized.
-class AsyncCloseHandle : public Task {
- public:
-  explicit AsyncCloseHandle(FILE* file) : file_(file) {}
-
-  virtual void Run() {
-    fclose(file_);
-  }
-
- private:
-  FILE* file_;
-  DISALLOW_COPY_AND_ASSIGN(AsyncCloseHandle);
-};
+void AsyncWrite(FILE* file, int32 offset, const std::string& data) {
+  WriteToFile(file, offset, data.data(), data.size());
+}
 
 }  // namespace
 
@@ -536,7 +481,9 @@ bool VisitedLinkMaster::WriteFullTable() {
 
   // The hash table may have shrunk, so make sure this is the end.
   BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE, new AsyncSetEndOfFile(file_));
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&TruncateFile), file_));
   return true;
 }
 
@@ -728,7 +675,9 @@ void VisitedLinkMaster::FreeURLTable() {
     return;
 
   BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE, new AsyncCloseHandle(file_));
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&fclose), file_));
 }
 
 bool VisitedLinkMaster::ResizeTableIfNecessary() {
@@ -914,7 +863,8 @@ void VisitedLinkMaster::WriteToFile(FILE* file,
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      new AsyncWriter(file, offset, data, data_size));
+      base::Bind(&AsyncWrite, file, offset,
+                 std::string(static_cast<const char*>(data), data_size)));
 }
 
 void VisitedLinkMaster::WriteUsedItemCountToFile() {

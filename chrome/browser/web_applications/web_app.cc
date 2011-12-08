@@ -8,6 +8,7 @@
 #include <shlobj.h>
 #endif  // defined(OS_WIN)
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/i18n/file_util_icu.h"
@@ -148,79 +149,9 @@ bool ShouldUpdateIcon(const FilePath& icon_file, const SkBitmap& image) {
 
 #endif  // defined(OS_WIN)
 
-// Represents a task that creates web application shortcut. This runs on
-// file thread and schedules the callback (if any) on the calling thread
-// when finished (either success or failure).
-class CreateShortcutTask : public Task {
- public:
-  CreateShortcutTask(const FilePath& profile_path,
-                     const ShellIntegration::ShortcutInfo& shortcut_info,
-                     web_app::CreateShortcutCallback* callback);
-
- private:
-  class CreateShortcutCallbackTask : public Task {
-   public:
-    CreateShortcutCallbackTask(web_app::CreateShortcutCallback* callback,
-        bool success)
-        : callback_(callback),
-          success_(success) {
-    }
-
-    // Overridden from Task:
-    virtual void Run() {
-      callback_->Run(success_);
-    }
-
-   private:
-    web_app::CreateShortcutCallback* callback_;
-    bool success_;
-  };
-
-  // Overridden from Task:
-  virtual void Run();
-
-  // Returns true if shortcut is created successfully.
-  bool CreateShortcut();
-
-  // Path to store persisted data for web app.
-  FilePath web_app_path_;
-
-  // Out copy of profile path.
-  FilePath profile_path_;
-
-  // Our copy of short cut data.
-  ShellIntegration::ShortcutInfo shortcut_info_;
-
-  // Callback when task is finished.
-  web_app::CreateShortcutCallback* callback_;
-  MessageLoop* message_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(CreateShortcutTask);
-};
-
-CreateShortcutTask::CreateShortcutTask(
-    const FilePath& profile_path,
-    const ShellIntegration::ShortcutInfo& shortcut_info,
-    web_app::CreateShortcutCallback* callback)
-    : web_app_path_(web_app::internals::GetWebAppDataDirectory(
-        web_app::GetDataDir(profile_path),
-        shortcut_info)),
-      profile_path_(profile_path),
-      shortcut_info_(shortcut_info),
-      callback_(callback),
-      message_loop_(MessageLoop::current()) {
-  DCHECK(message_loop_ != NULL);
-}
-
-void CreateShortcutTask::Run() {
-  bool success = CreateShortcut();
-
-  if (callback_ != NULL)
-    message_loop_->PostTask(FROM_HERE,
-      new CreateShortcutCallbackTask(callback_, success));
-}
-
-bool CreateShortcutTask::CreateShortcut() {
+void CreateShortcutTask(const FilePath& web_app_path,
+                        const FilePath& profile_path,
+                        const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -229,10 +160,10 @@ bool CreateShortcutTask::CreateShortcut() {
   std::string shortcut_template;
   if (!ShellIntegration::GetDesktopShortcutTemplate(env.get(),
                                                     &shortcut_template)) {
-    return false;
+    return;
   }
-  ShellIntegration::CreateDesktopShortcut(shortcut_info_, shortcut_template);
-  return true;  // assuming always success.
+  ShellIntegration::CreateDesktopShortcut(shortcut_info, shortcut_template);
+  return;  // assuming always success.
 #elif defined(OS_WIN)
   // Shortcut paths under which to create shortcuts.
   std::vector<FilePath> shortcut_paths;
@@ -244,15 +175,15 @@ bool CreateShortcutTask::CreateShortcut() {
     const wchar_t* sub_dir;
   } locations[] = {
     {
-      shortcut_info_.create_on_desktop,
+      shortcut_info.create_on_desktop,
       chrome::DIR_USER_DESKTOP,
       NULL
     }, {
-      shortcut_info_.create_in_applications_menu,
+      shortcut_info.create_in_applications_menu,
       base::DIR_START_MENU,
       NULL
     }, {
-      shortcut_info_.create_in_quick_launch_bar,
+      shortcut_info.create_in_quick_launch_bar,
       // For Win7, create_in_quick_launch_bar means pinning to taskbar. Use
       // base::PATH_START as a flag for this case.
       (base::win::GetVersion() >= base::win::VERSION_WIN7) ?
@@ -272,8 +203,7 @@ bool CreateShortcutTask::CreateShortcut() {
         continue;
 
       if (!PathService::Get(locations[i].location_id, &path)) {
-        NOTREACHED();
-        return false;
+        return;
       }
 
       if (locations[i].sub_dir != NULL)
@@ -284,69 +214,66 @@ bool CreateShortcutTask::CreateShortcut() {
   }
 
   bool pin_to_taskbar =
-      shortcut_info_.create_in_quick_launch_bar &&
+      shortcut_info.create_in_quick_launch_bar &&
       (base::win::GetVersion() >= base::win::VERSION_WIN7);
 
   // For Win7's pinning support, any shortcut could be used. So we only create
   // the shortcut file when there is no shortcut file will be created. That is,
   // user only selects "Pin to taskbar".
   if (pin_to_taskbar && shortcut_paths.empty()) {
-    // Creates the shortcut in web_app_path_ in this case.
-    shortcut_paths.push_back(web_app_path_);
+    // Creates the shortcut in web_app_path in this case.
+    shortcut_paths.push_back(web_app_path);
   }
 
   if (shortcut_paths.empty()) {
-    NOTREACHED();
-    return false;
+    return;
   }
 
-  // Ensure web_app_path_ exists.
-  if (!file_util::PathExists(web_app_path_) &&
-      !file_util::CreateDirectory(web_app_path_)) {
-    NOTREACHED();
-    return false;
+  // Ensure web_app_path exists.
+  if (!file_util::PathExists(web_app_path) &&
+      !file_util::CreateDirectory(web_app_path)) {
+    return;
   }
 
   // Generates file name to use with persisted ico and shortcut file.
   FilePath file_name =
-      web_app::internals::GetSanitizedFileName(shortcut_info_.title);
+      web_app::internals::GetSanitizedFileName(shortcut_info.title);
 
   // Creates an ico file to use with shortcut.
-  FilePath icon_file = web_app_path_.Append(file_name).ReplaceExtension(
+  FilePath icon_file = web_app_path.Append(file_name).ReplaceExtension(
       FILE_PATH_LITERAL(".ico"));
   if (!web_app::internals::CheckAndSaveIcon(icon_file,
-                                            shortcut_info_.favicon)) {
-    NOTREACHED();
-    return false;
+                                            shortcut_info.favicon)) {
+    return;
   }
 
   FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED();
-    return false;
+    return;
   }
 
   // Working directory.
   FilePath chrome_folder = chrome_exe.DirName();
 
   CommandLine cmd_line =
-     ShellIntegration::CommandLineArgsForLauncher(shortcut_info_.url,
-                                                  shortcut_info_.extension_id);
+     ShellIntegration::CommandLineArgsForLauncher(shortcut_info.url,
+                                                  shortcut_info.extension_id);
   // TODO(evan): we rely on the fact that command_line_string() is
   // properly quoted for a Windows command line.  The method on
   // CommandLine should probably be renamed to better reflect that
   // fact.
-  std::wstring wide_switches(cmd_line.GetCommandLineString());
+  string16 wide_switches(cmd_line.GetCommandLineString());
 
   // Sanitize description
-  if (shortcut_info_.description.length() >= MAX_PATH)
-    shortcut_info_.description.resize(MAX_PATH - 1);
+  string16 description = shortcut_info.description;
+  if (description.length() >= MAX_PATH)
+    description.resize(MAX_PATH - 1);
 
   // Generates app id from web app url and profile path.
   std::string app_name =
-      web_app::GenerateApplicationNameFromInfo(shortcut_info_);
+      web_app::GenerateApplicationNameFromInfo(shortcut_info);
   std::wstring app_id = ShellIntegration::GetAppId(
-      UTF8ToWide(app_name), profile_path_);
+      UTF8ToWide(app_name), profile_path);
 
   FilePath shortcut_to_pin;
 
@@ -367,7 +294,7 @@ bool CreateShortcutTask::CreateShortcut() {
         shortcut_file.value().c_str(),
         chrome_folder.value().c_str(),
         wide_switches.c_str(),
-        shortcut_info_.description.c_str(),
+        description.c_str(),
         icon_file.value().c_str(),
         0,
         app_id.c_str());
@@ -382,15 +309,11 @@ bool CreateShortcutTask::CreateShortcut() {
       success &= file_util::TaskbarPinShortcutLink(
           shortcut_to_pin.value().c_str());
     } else {
-      NOTREACHED();
       success = false;
     }
   }
-
-  return success;
 #else
   NOTIMPLEMENTED();
-  return false;
 #endif
 }
 
@@ -486,10 +409,16 @@ std::string GetExtensionIdFromApplicationName(const std::string& app_name) {
 
 void CreateShortcut(
     const FilePath& data_dir,
-    const ShellIntegration::ShortcutInfo& shortcut_info,
-    CreateShortcutCallback* callback) {
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      new CreateShortcutTask(data_dir, shortcut_info, callback));
+    const ShellIntegration::ShortcutInfo& shortcut_info) {
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&CreateShortcutTask,
+                 web_app::internals::GetWebAppDataDirectory(
+                    web_app::GetDataDir(data_dir),
+                    shortcut_info),
+                 data_dir,
+                 shortcut_info));
 }
 
 bool IsValidUrl(const GURL& url) {

@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_old.h"
 #include "base/file_path.h"
 #include "build/build_config.h"
 #include "chrome/browser/shell_integration.h"
@@ -32,10 +31,6 @@ std::string GenerateApplicationNameFromExtensionId(const std::string& id);
 // Extracts the extension id from the app name.
 std::string GetExtensionIdFromApplicationName(const std::string& app_name);
 
-// Callback after user dismisses CreateShortcutView. "true" indicates
-// shortcut is created successfully. Otherwise, it is false.
-typedef Callback1<bool>::Type CreateShortcutCallback;
-
 // Creates a shortcut for web application based on given shortcut data.
 // |profile_path| is used as root directory for persisted data such as icon.
 // Directory layout is similar to what Gears has, i.e. an web application's
@@ -43,8 +38,7 @@ typedef Callback1<bool>::Type CreateShortcutCallback;
 // |root_dir|.  A crx based app uses a directory named _crx_<app id>.
 void CreateShortcut(
     const FilePath& profile_path,
-    const ShellIntegration::ShortcutInfo& shortcut_info,
-    CreateShortcutCallback* callback);
+    const ShellIntegration::ShortcutInfo& shortcut_info);
 
 // Returns true if given url is a valid web app url.
 bool IsValidUrl(const GURL& url);
