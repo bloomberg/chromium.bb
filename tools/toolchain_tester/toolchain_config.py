@@ -51,16 +51,19 @@ LOCAL_GCC = '/usr/bin/gcc'
 EMU_SCRIPT = 'toolchain/linux_arm-trusted/qemu_tool.sh'
 
 BOOTSTRAP_ARM = 'scons-out/opt-linux-arm/staging/nacl_helper_bootstrap'
-SEL_LDR_ARM = BOOTSTRAP_ARM + ' scons-out/opt-linux-arm/staging/sel_ldr'
+SEL_LDR_ARM = 'scons-out/opt-linux-arm/staging/sel_ldr'
 IRT_ARM = 'scons-out/nacl_irt-arm/obj/src/untrusted/irt/irt_core.nexe'
+RUN_SEL_LDR_ARM = BOOTSTRAP_ARM + ' ' + SEL_LDR_ARM
 
 BOOTSTRAP_X32 = 'scons-out/opt-linux-x86-32/staging/nacl_helper_bootstrap'
-SEL_LDR_X32 = BOOTSTRAP_X32 + ' scons-out/opt-linux-x86-32/staging/sel_ldr'
+SEL_LDR_X32 = 'scons-out/opt-linux-x86-32/staging/sel_ldr'
 IRT_X32 = 'scons-out/nacl_irt-x86-32/obj/src/untrusted/irt/irt_core.nexe'
+RUN_SEL_LDR_X32 = BOOTSTRAP_X32 + ' ' + SEL_LDR_X32
 
 BOOTSTRAP_X64 = 'scons-out/opt-linux-x86-64/staging/nacl_helper_bootstrap'
-SEL_LDR_X64 = BOOTSTRAP_X64 + ' scons-out/opt-linux-x86-64/staging/sel_ldr'
+SEL_LDR_X64 = 'scons-out/opt-linux-x86-64/staging/sel_ldr'
 IRT_X64 = 'scons-out/nacl_irt-x86-64/obj/src/untrusted/irt/irt_core.nexe'
+RUN_SEL_LDR_X64 = BOOTSTRAP_X64 + ' ' + SEL_LDR_X64
 
 NACL_GCC_X32 = 'toolchain/linux_x86_newlib/bin/i686-nacl-gcc'
 
@@ -167,36 +170,36 @@ COMMANDS_nacl_gcc = [
 TOOLCHAIN_CONFIGS['nacl_gcc_x8632_O0'] = ToolchainConfig(
     desc='nacl gcc [x86-32]',
     commands=COMMANDS_nacl_gcc,
-    tools_needed=[NACL_GCC_X32, SEL_LDR_X32],
+    tools_needed=[NACL_GCC_X32, BOOTSTRAP_X32, SEL_LDR_X32],
     CC = NACL_GCC_X32,
-    SEL_LDR = SEL_LDR_X32,
+    SEL_LDR = RUN_SEL_LDR_X32,
     IRT = IRT_X32,
     CFLAGS = '-O0 -static -Bscons-out/nacl-x86-32/lib/ ' + GLOBAL_CFLAGS)
 
 TOOLCHAIN_CONFIGS['nacl_gcc_x8632_O3'] = ToolchainConfig(
     desc='nacl gcc with optimizations [x86-32]',
     commands=COMMANDS_nacl_gcc,
-    tools_needed=[NACL_GCC_X32, SEL_LDR_X32],
+    tools_needed=[NACL_GCC_X32, BOOTSTRAP_X32, SEL_LDR_X32],
     CC = NACL_GCC_X32,
-    SEL_LDR = SEL_LDR_X32,
+    SEL_LDR = RUN_SEL_LDR_X32,
     IRT = IRT_X32,
     CFLAGS = '-O3 -static -Bscons-out/nacl-x86-32/lib/ ' + GLOBAL_CFLAGS)
 
 TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O0'] = ToolchainConfig(
     desc='nacl gcc [x86-64]',
     commands=COMMANDS_nacl_gcc,
-    tools_needed=[NACL_GCC_X64, SEL_LDR_X64],
+    tools_needed=[NACL_GCC_X64, BOOTSTRAP_X64, SEL_LDR_X64],
     CC = NACL_GCC_X64,
-    SEL_LDR = SEL_LDR_X64,
+    SEL_LDR = RUN_SEL_LDR_X64,
     IRT = IRT_X64,
     CFLAGS = '-O0 -static -Bscons-out/nacl-x86-64/lib/ ' + GLOBAL_CFLAGS)
 
 TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O3'] = ToolchainConfig(
     desc='nacl gcc with optimizations [x86-64]',
     commands=COMMANDS_nacl_gcc,
-    tools_needed=[NACL_GCC_X64, SEL_LDR_X64],
+    tools_needed=[NACL_GCC_X64, BOOTSTRAP_X64, SEL_LDR_X64],
     CC = NACL_GCC_X64,
-    SEL_LDR = SEL_LDR_X64,
+    SEL_LDR = RUN_SEL_LDR_X64,
     IRT = IRT_X64,
     CFLAGS = '-O3 -static -Bscons-out/nacl-x86-64/lib/ ' + GLOBAL_CFLAGS)
 
@@ -228,11 +231,12 @@ COMMANDS_llvm_pnacl_arm = [
 TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0'] = ToolchainConfig(
     desc='pnacl llvm [arm]',
     commands=COMMANDS_llvm_pnacl_arm,
-    tools_needed=[PNACL_FRONTEND, PNACL_LD, EMU_SCRIPT, SEL_LDR_ARM],
+    tools_needed=[PNACL_FRONTEND, PNACL_LD, EMU_SCRIPT, BOOTSTRAP_ARM,
+                  SEL_LDR_ARM],
     CC = PNACL_FRONTEND,
     LD = PNACL_LD + ' -arch arm',
     EMU = EMU_SCRIPT,
-    SEL_LDR = SEL_LDR_ARM,
+    SEL_LDR = RUN_SEL_LDR_ARM,
     IRT = IRT_ARM,
     CFLAGS = '-O0 -static ' + CLANG_CFLAGS + ' ' + GLOBAL_CFLAGS)
 
@@ -240,11 +244,12 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0'] = ToolchainConfig(
 TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O3'] = ToolchainConfig(
     desc='pnacl llvm with optimizations [arm]',
     commands=COMMANDS_llvm_pnacl_arm,
-    tools_needed=[PNACL_FRONTEND, PNACL_LD, EMU_SCRIPT, SEL_LDR_ARM],
+    tools_needed=[PNACL_FRONTEND, PNACL_LD, EMU_SCRIPT, BOOTSTRAP_ARM,
+                  SEL_LDR_ARM],
     CC = PNACL_FRONTEND,
     LD = PNACL_LD  + ' -arch arm',
     EMU = EMU_SCRIPT,
-    SEL_LDR = SEL_LDR_ARM,
+    SEL_LDR = RUN_SEL_LDR_ARM,
     IRT = IRT_ARM,
     CFLAGS = '-O3 -D__OPTIMIZE__ -static ' + CLANG_CFLAGS  + ' '
               + GLOBAL_CFLAGS)
@@ -270,20 +275,20 @@ COMMANDS_llvm_pnacl_x86_O0 = [
 TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O0'] = ToolchainConfig(
     desc='pnacl llvm [x8632]',
     commands=COMMANDS_llvm_pnacl_x86_O0,
-    tools_needed=[PNACL_FRONTEND, PNACL_LD, SEL_LDR_X32],
+    tools_needed=[PNACL_FRONTEND, PNACL_LD, BOOTSTRAP_X32, SEL_LDR_X32],
     CC = PNACL_FRONTEND,
     LD = PNACL_LD + ' -arch x86-32',
-    SEL_LDR = SEL_LDR_X32,
+    SEL_LDR = RUN_SEL_LDR_X32,
     IRT = IRT_X32,
     CFLAGS = '-O0  -static ' + CLANG_CFLAGS + ' ' + GLOBAL_CFLAGS)
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O3'] = ToolchainConfig(
     desc='pnacl llvm [x8632]',
     commands=COMMANDS_llvm_pnacl_x86_O0,
-    tools_needed=[PNACL_FRONTEND, PNACL_LD, SEL_LDR_X32],
+    tools_needed=[PNACL_FRONTEND, PNACL_LD, BOOTSTRAP_X32, SEL_LDR_X32],
     CC = PNACL_FRONTEND,
     LD = PNACL_LD + ' -arch x86-32',
-    SEL_LDR = SEL_LDR_X32,
+    SEL_LDR = RUN_SEL_LDR_X32,
     IRT = IRT_X32,
     CFLAGS = '-O3 -D__OPTIMIZE__ -static ' + CLANG_CFLAGS + ' '
              + GLOBAL_CFLAGS)
@@ -295,20 +300,20 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O3'] = ToolchainConfig(
 TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O0'] = ToolchainConfig(
     desc='pnacl llvm [x8664]',
     commands=COMMANDS_llvm_pnacl_x86_O0,
-    tools_needed=[PNACL_FRONTEND, PNACL_LD, SEL_LDR_X64],
+    tools_needed=[PNACL_FRONTEND, PNACL_LD, BOOTSTRAP_X64, SEL_LDR_X64],
     CC = PNACL_FRONTEND,
     LD = PNACL_LD + ' -arch x86-64',
-    SEL_LDR = SEL_LDR_X64,
+    SEL_LDR = RUN_SEL_LDR_X64,
     IRT = IRT_X64,
     CFLAGS = '-O0 -static ' + CLANG_CFLAGS + ' ' + GLOBAL_CFLAGS)
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O3'] = ToolchainConfig(
     desc='pnacl llvm [x8664]',
     commands=COMMANDS_llvm_pnacl_x86_O0,
-    tools_needed=[PNACL_FRONTEND, PNACL_LD, SEL_LDR_X64],
+    tools_needed=[PNACL_FRONTEND, PNACL_LD, BOOTSTRAP_X64, SEL_LDR_X64],
     CC = PNACL_FRONTEND,
     LD = PNACL_LD + ' -arch x86-64',
-    SEL_LDR = SEL_LDR_X64,
+    SEL_LDR = RUN_SEL_LDR_X64,
     IRT = IRT_X64,
     CFLAGS = '-O3 -D__OPTIMIZE__ -static ' + CLANG_CFLAGS + ' '
              + GLOBAL_CFLAGS)
