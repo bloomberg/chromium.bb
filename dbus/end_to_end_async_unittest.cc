@@ -295,7 +295,8 @@ TEST_F(EndToEndAsyncTest, TestSignal) {
   ASSERT_EQ(kMessage, test_signal_string_);
 }
 
-TEST_F(EndToEndAsyncTest, TestSignalFromRoot) {
+// Flaky, http://crbug.com/106796
+TEST_F(EndToEndAsyncTest, FLAKY_TestSignalFromRoot) {
   const char kMessage[] = "hello, world";
   // Send the test signal from the root object path, to see if we can
   // handle signals sent from "/", like dbus-send does.
