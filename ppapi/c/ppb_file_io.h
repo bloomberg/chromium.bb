@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_file_io.idl modified Mon Aug 29 10:11:34 2011. */
+/* From ppb_file_io.idl modified Thu Dec  1 10:47:02 2011. */
 
 #ifndef PPAPI_C_PPB_FILE_IO_H_
 #define PPAPI_C_PPB_FILE_IO_H_
@@ -117,8 +117,9 @@ struct PPB_FileIO {
                   int32_t open_flags,
                   struct PP_CompletionCallback callback);
   /**
-   * Query() queries info about the file opened by this FileIO object. This
-   * function will fail if the FileIO object has not been opened.
+   * Query() queries info about the file opened by this FileIO object. The
+   * FileIO object must be opened, and there must be no other operations
+   * pending.
    *
    * @param[in] file_io A <code>PP_Resource</code> corresponding to a
    * FileIO.
@@ -128,13 +129,17 @@ struct PPB_FileIO {
    * completion of Query().
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
+   * PP_ERROR_FAILED will be returned if the file isn't opened, and
+   * PP_ERROR_INPROGRESS will be returned if there is another operation pending.
    */
   int32_t (*Query)(PP_Resource file_io,
                    struct PP_FileInfo* info,
                    struct PP_CompletionCallback callback);
   /**
    * Touch() Updates time stamps for the file opened by this FileIO object.
-   * This function will fail if the FileIO object has not been opened.
+   * This function will fail if the FileIO object has not been opened. The
+   * FileIO object must be opened, and there must be no other operations
+   * pending.
    *
    * @param[in] file_io A <code>PP_Resource</code> corresponding to a file
    * FileIO.
@@ -144,6 +149,8 @@ struct PPB_FileIO {
    * completion of Touch().
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
+   * PP_ERROR_FAILED will be returned if the file isn't opened, and
+   * PP_ERROR_INPROGRESS will be returned if there is another operation pending.
    */
   int32_t (*Touch)(PP_Resource file_io,
                    PP_Time last_access_time,
@@ -166,7 +173,8 @@ struct PPB_FileIO {
    * @return An The number of bytes read an error code from
    * <code>pp_errors.h</code>. If the return value is 0, then end-of-file was
    * reached. It is valid to call Read() multiple times with a completion
-   * callback to queue up parallel reads from the file at different offsets.
+   * callback to queue up parallel reads from the file, but pending reads
+   * cannot be interleaved with other operations.
    */
   int32_t (*Read)(PP_Resource file_io,
                   int64_t offset,
@@ -189,7 +197,8 @@ struct PPB_FileIO {
    * @return An The number of bytes written or an error code from
    * <code>pp_errors.h</code>. If the return value is 0, then end-of-file was
    * reached. It is valid to call Write() multiple times with a completion
-   * callback to queue up parallel writes to the file at different offsets.
+   * callback to queue up parallel writes to the file, but pending writes
+   * cannot be interleaved with other operations.
    */
   int32_t (*Write)(PP_Resource file_io,
                    int64_t offset,
@@ -198,8 +207,9 @@ struct PPB_FileIO {
                    struct PP_CompletionCallback callback);
   /**
    * SetLength() sets the length of the file.  If the file size is extended,
-   * then the extended area of the file is zero-filled.  The FileIO object must
-   * have been opened with write access.
+   * then the extended area of the file is zero-filled. The FileIO object must
+   * have been opened with write access and there must be no other operations
+   * pending.
    *
    * @param[in] file_io A <code>PP_Resource</code> corresponding to a file
    * FileIO.
@@ -208,12 +218,16 @@ struct PPB_FileIO {
    * completion of SetLength().
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
+   * PP_ERROR_FAILED will be returned if the file isn't opened, and
+   * PP_ERROR_INPROGRESS will be returned if there is another operation pending.
    */
   int32_t (*SetLength)(PP_Resource file_io,
                        int64_t length,
                        struct PP_CompletionCallback callback);
   /**
-   * Flush() flushes changes to disk.  This call can be very expensive!
+   * Flush() flushes changes to disk.  This call can be very expensive! The
+   * FileIO object must have been opened with write access and there must be no
+   * other operations pending.
    *
    * @param[in] file_io A <code>PP_Resource</code> corresponding to a file
    * FileIO.
@@ -221,6 +235,8 @@ struct PPB_FileIO {
    * completion of Flush().
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
+   * PP_ERROR_FAILED will be returned if the file isn't opened, and
+   * PP_ERROR_INPROGRESS will be returned if there is another operation pending.
    */
   int32_t (*Flush)(PP_Resource file_io, struct PP_CompletionCallback callback);
   /**

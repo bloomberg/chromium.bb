@@ -30,6 +30,8 @@
         '../base/base.gyp:base',
       ],
       'sources': [
+        'shared_impl/file_type_conversion.cc',
+        'shared_impl/file_type_conversion.h',
         'shared_impl/function_group_base.cc',
         'shared_impl/function_group_base.h',
         'shared_impl/host_resource.h',
@@ -50,6 +52,8 @@
         'shared_impl/ppb_char_set_shared.cc',
         'shared_impl/ppb_char_set_shared.h',
         'shared_impl/ppb_crypto_shared.cc',
+        'shared_impl/ppb_file_io_shared.cc',
+        'shared_impl/ppb_file_io_shared.h',
         'shared_impl/ppb_file_ref_shared.cc',
         'shared_impl/ppb_file_ref_shared.h',
         'shared_impl/ppb_font_shared.cc',

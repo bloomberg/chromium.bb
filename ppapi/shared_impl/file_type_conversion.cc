@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/ppapi/file_type_conversions.h"
+#include "ppapi/shared_impl/file_type_conversion.h"
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
 
-namespace webkit {
 namespace ppapi {
 
 int PlatformFileErrorToPepperError(base::PlatformFileError error_code) {
@@ -73,4 +72,3 @@ bool PepperFileOpenFlagsToPlatformFileFlags(int32_t pp_open_flags,
 }
 
 }  // namespace ppapi
-}  // namespace webkit

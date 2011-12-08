@@ -238,6 +238,22 @@ IPC_MESSAGE_ROUTED3(
     int32_t /* result_code (will be != PP_OK on failure */,
     std::vector<ppapi::PPB_FileRef_CreateInfo> /* chosen_files */)
 
+// PPB_FileIO.
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPBFileIO_GeneralComplete,
+                    ppapi::HostResource /* file_io */,
+                    int32_t /* result */)
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPBFileIO_OpenFileComplete,
+                    ppapi::HostResource /* file_io */,
+                    int32_t /* result */)
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPBFileIO_QueryComplete,
+                    ppapi::HostResource /* file_io */,
+                    int32_t /* result */,
+                    PP_FileInfo /* info */)
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPBFileIO_ReadComplete,
+                    ppapi::HostResource /* file_io */,
+                    int32_t /* result */,
+                    std::string /* data */)
+
 // PPB_FileRef.
 IPC_MESSAGE_ROUTED3(
     PpapiMsg_PPBFileRef_CallbackComplete,
@@ -554,6 +570,43 @@ IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBFileChooser_Show,
                     bool /* save_as */,
                     std::string /* suggested_file_name */,
                     bool /* require_user_gesture */)
+
+// PPB_FileIO.
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFileIO_Create,
+                           PP_Instance /* instance */,
+                           ppapi::HostResource /* result */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFileIO_Open,
+                    ppapi::HostResource /* host_resource */,
+                    ppapi::HostResource /* file_ref_resource */,
+                    int32_t /* open_flags */)
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBFileIO_Close,
+                    ppapi::HostResource /* host_resource */)
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBFileIO_Query,
+                    ppapi::HostResource /* host_resource */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFileIO_Touch,
+                    ppapi::HostResource /* host_resource */,
+                    PP_Time /* last_access_time */,
+                    PP_Time /* last_modified_time */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFileIO_Read,
+                    ppapi::HostResource /* host_resource */,
+                    int64_t /* offset */,
+                    int32_t /* bytes_to_read */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFileIO_Write,
+                    ppapi::HostResource /* host_resource */,
+                    int64_t /* offset */,
+                    std::string /* data */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFileIO_SetLength,
+                    ppapi::HostResource /* host_resource */,
+                    int64_t /* length */)
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBFileIO_Flush,
+                    ppapi::HostResource /* host_resource */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFileIO_WillWrite,
+                    ppapi::HostResource /* host_resource */,
+                    int64_t /* offset */,
+                    int32_t /* bytes_to_write */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFileIO_WillSetLength,
+                    ppapi::HostResource /* host_resource */,
+                    int64_t /* length */)
 
 // PPB_FileRef.
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFileRef_Create,
