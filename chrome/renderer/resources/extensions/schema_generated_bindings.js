@@ -472,11 +472,13 @@ var chrome = chrome || {};
 
   // Remove invalid characters from |text| so that it is suitable to use
   // for |AutocompleteMatch::contents|.
-  function sanitizeString(text) {
+  function sanitizeString(text, shouldTrim) {
     // NOTE: This logic mirrors |AutocompleteMatch::SanitizeString()|.
     // 0x2028 = line separator; 0x2029 = paragraph separator.
     var kRemoveChars = /(\r|\n|\t|\u2028|\u2029)/gm;
-    return text.trimLeft().replace(kRemoveChars, '');
+    if (shouldTrim)
+      text = text.trimLeft();
+    return text.replace(kRemoveChars, '');
   }
 
   // Parses the xml syntax supported by omnibox suggestion results. Returns an
@@ -510,7 +512,8 @@ var chrome = chrome || {};
       for (var i = 0, child; child = node.childNodes[i]; i++) {
         // Append text nodes to our description.
         if (child.nodeType == Node.TEXT_NODE) {
-          result.description += sanitizeString(child.nodeValue);
+          var shouldTrim = result.description.length == 0;
+          result.description += sanitizeString(child.nodeValue, shouldTrim);
           continue;
         }
 
