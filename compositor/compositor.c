@@ -90,6 +90,11 @@ child_client_exec(int sockfd, const char *path)
 {
 	int flags;
 	char s[32];
+	sigset_t allsigs;
+
+	/* do not give our signal mask to the new process */
+	sigfillset(&allsigs);
+	sigprocmask(SIG_UNBLOCK, &allsigs, NULL);
 
 	/* SOCK_CLOEXEC closes both ends, so we need to unset
 	 * the flag on the client fd. */
