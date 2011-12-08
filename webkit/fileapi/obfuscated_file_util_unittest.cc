@@ -476,6 +476,66 @@ class ObfuscatedFileUtilTest : public testing::Test {
         ofu()->DeleteFile(context.get(), dest_path));
   }
 
+  void ClearTimestamp(const FilePath& path) {
+    scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
+    EXPECT_EQ(base::PLATFORM_FILE_OK,
+              ofu()->Touch(context.get(), path, base::Time(), base::Time()));
+    EXPECT_EQ(base::Time(), GetModifiedTime(path));
+  }
+
+  base::Time GetModifiedTime(const FilePath& path) {
+    scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
+    FilePath data_path;
+    base::PlatformFileInfo file_info;
+    context.reset(NewContext(NULL));
+    EXPECT_EQ(base::PLATFORM_FILE_OK,
+              ofu()->GetFileInfo(context.get(), path, &file_info, &data_path));
+    return file_info.last_modified;
+  }
+
+  void TestDirectoryTimestampHelper(const FilePath& base_dir,
+                                    bool copy,
+                                    bool overwrite) {
+    scoped_ptr<FileSystemOperationContext> context;
+    const FilePath src_dir_path(base_dir.AppendASCII("foo_dir"));
+    const FilePath dest_dir_path(base_dir.AppendASCII("bar_dir"));
+
+    const FilePath src_file_path(src_dir_path.AppendASCII("hoge"));
+    const FilePath dest_file_path(dest_dir_path.AppendASCII("fuga"));
+
+    context.reset(NewContext(NULL));
+    EXPECT_EQ(base::PLATFORM_FILE_OK,
+              ofu()->CreateDirectory(context.get(), src_dir_path, true, true));
+    context.reset(NewContext(NULL));
+    EXPECT_EQ(base::PLATFORM_FILE_OK,
+              ofu()->CreateDirectory(context.get(), dest_dir_path, true, true));
+
+    bool created = false;
+    context.reset(NewContext(NULL));
+    EXPECT_EQ(base::PLATFORM_FILE_OK,
+              ofu()->EnsureFileExists(context.get(), src_file_path, &created));
+    if (overwrite) {
+      context.reset(NewContext(NULL));
+      EXPECT_EQ(base::PLATFORM_FILE_OK,
+                ofu()->EnsureFileExists(context.get(),
+                                        dest_file_path, &created));
+    }
+
+    ClearTimestamp(src_dir_path);
+    ClearTimestamp(dest_dir_path);
+    context.reset(NewContext(NULL));
+    EXPECT_EQ(base::PLATFORM_FILE_OK,
+              ofu()->CopyOrMoveFile(context.get(),
+                                    src_file_path, dest_file_path,
+                                    copy));
+
+    if (copy)
+      EXPECT_EQ(base::Time(), GetModifiedTime(src_dir_path));
+    else
+      EXPECT_NE(base::Time(), GetModifiedTime(src_dir_path));
+    EXPECT_NE(base::Time(), GetModifiedTime(dest_dir_path));
+  }
+
  private:
   ScopedTempDir data_dir_;
   scoped_refptr<ObfuscatedFileUtil> obfuscated_file_util_;
@@ -1439,4 +1499,207 @@ TEST_F(ObfuscatedFileUtilTest, TestIncompleteDirectoryReading) {
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             ofu()->ReadDirectory(context.get(), FilePath(), &entries));
   EXPECT_EQ(ARRAYSIZE_UNSAFE(kPath) - 1, entries.size());
+}
+
+TEST_F(ObfuscatedFileUtilTest, TestDirectoryTimestampForCreation) {
+  scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
+  const FilePath dir_path(FILE_PATH_LITERAL("foo_dir"));
+
+  // Create working directory.
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->CreateDirectory(context.get(), dir_path, false, false));
+
+  // EnsureFileExists, create case.
+  FilePath path(dir_path.AppendASCII("EnsureFileExists_file"));
+  bool created = false;
+  ClearTimestamp(dir_path);
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->EnsureFileExists(context.get(), path, &created));
+  EXPECT_TRUE(created);
+  EXPECT_NE(base::Time(), GetModifiedTime(dir_path));
+
+  // non create case.
+  created = true;
+  ClearTimestamp(dir_path);
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->EnsureFileExists(context.get(), path, &created));
+  EXPECT_FALSE(created);
+  EXPECT_EQ(base::Time(), GetModifiedTime(dir_path));
+
+  // fail case.
+  path = dir_path.AppendASCII("EnsureFileExists_dir");
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->CreateDirectory(context.get(), path, false, false));
+
+  ClearTimestamp(dir_path);
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_FILE,
+            ofu()->EnsureFileExists(context.get(), path, &created));
+  EXPECT_EQ(base::Time(), GetModifiedTime(dir_path));
+
+  // CreateOrOpen, create case.
+  path = dir_path.AppendASCII("CreateOrOpen_file");
+  PlatformFile file_handle = base::kInvalidPlatformFileValue;
+  created = false;
+  ClearTimestamp(dir_path);
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->CreateOrOpen(
+                context.get(), path,
+                base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
+                &file_handle, &created));
+  EXPECT_NE(base::kInvalidPlatformFileValue, file_handle);
+  EXPECT_TRUE(created);
+  EXPECT_TRUE(base::ClosePlatformFile(file_handle));
+  EXPECT_NE(base::Time(), GetModifiedTime(dir_path));
+
+  // open case.
+  file_handle = base::kInvalidPlatformFileValue;
+  created = true;
+  ClearTimestamp(dir_path);
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->CreateOrOpen(
+                context.get(), path,
+                base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE,
+                &file_handle, &created));
+  EXPECT_NE(base::kInvalidPlatformFileValue, file_handle);
+  EXPECT_FALSE(created);
+  EXPECT_TRUE(base::ClosePlatformFile(file_handle));
+  EXPECT_EQ(base::Time(), GetModifiedTime(dir_path));
+
+  // fail case
+  file_handle = base::kInvalidPlatformFileValue;
+  ClearTimestamp(dir_path);
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS,
+            ofu()->CreateOrOpen(
+                context.get(), path,
+                base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
+                &file_handle, &created));
+  EXPECT_EQ(base::kInvalidPlatformFileValue, file_handle);
+  EXPECT_EQ(base::Time(), GetModifiedTime(dir_path));
+
+  // CreateDirectory, create case.
+  // Creating CreateDirectory_dir and CreateDirectory_dir/subdir.
+  path = dir_path.AppendASCII("CreateDirectory_dir");
+  FilePath subdir_path(path.AppendASCII("subdir"));
+  ClearTimestamp(dir_path);
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->CreateDirectory(context.get(), subdir_path,
+                                   true /* exclusive */, true /* recursive */));
+  EXPECT_NE(base::Time(), GetModifiedTime(dir_path));
+
+  // create subdir case.
+  // Creating CreateDirectory_dir/subdir2.
+  subdir_path = path.AppendASCII("subdir2");
+  ClearTimestamp(dir_path);
+  ClearTimestamp(path);
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->CreateDirectory(context.get(), subdir_path,
+                                   true /* exclusive */, true /* recursive */));
+  EXPECT_EQ(base::Time(), GetModifiedTime(dir_path));
+  EXPECT_NE(base::Time(), GetModifiedTime(path));
+
+  // fail case.
+  path = dir_path.AppendASCII("CreateDirectory_dir");
+  ClearTimestamp(dir_path);
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS,
+            ofu()->CreateDirectory(context.get(), path,
+                                   true /* exclusive */, true /* recursive */));
+  EXPECT_EQ(base::Time(), GetModifiedTime(dir_path));
+
+  // CopyInForeignFile, create case.
+  path = dir_path.AppendASCII("CopyInForeignFile_file");
+  FilePath src_path = dir_path.AppendASCII("CopyInForeignFile_src_file");
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->EnsureFileExists(context.get(), src_path, &created));
+  EXPECT_TRUE(created);
+  FilePath src_local_path;
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->GetLocalFilePath(context.get(), src_path, &src_local_path));
+
+  ClearTimestamp(dir_path);
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->CopyInForeignFile(context.get(), src_local_path, path));
+  EXPECT_NE(base::Time(), GetModifiedTime(dir_path));
+}
+
+TEST_F(ObfuscatedFileUtilTest, TestDirectoryTimestampForDeletion) {
+  scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
+  const FilePath dir_path(FILE_PATH_LITERAL("foo_dir"));
+
+  // Create working directory.
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->CreateDirectory(context.get(), dir_path, false, false));
+
+  // DeleteFile, delete case.
+  FilePath path = dir_path.AppendASCII("DeleteFile_file");
+  bool created = false;
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->EnsureFileExists(context.get(), path, &created));
+  EXPECT_TRUE(created);
+
+  ClearTimestamp(dir_path);
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->DeleteFile(context.get(), path));
+  EXPECT_NE(base::Time(), GetModifiedTime(dir_path));
+
+  // fail case.
+  ClearTimestamp(dir_path);
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+            ofu()->DeleteFile(context.get(), path));
+  EXPECT_EQ(base::Time(), GetModifiedTime(dir_path));
+
+  // DeleteSingleDirectory, fail case.
+  path = dir_path.AppendASCII("DeleteSingleDirectory_dir");
+  FilePath file_path(path.AppendASCII("pakeratta"));
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->CreateDirectory(context.get(), path, true, true));
+  created = false;
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->EnsureFileExists(context.get(), file_path, &created));
+  EXPECT_TRUE(created);
+
+  ClearTimestamp(dir_path);
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_EMPTY,
+            ofu()->DeleteSingleDirectory(context.get(), path));
+  EXPECT_EQ(base::Time(), GetModifiedTime(dir_path));
+
+  // delete case.
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->DeleteFile(context.get(), file_path));
+
+  ClearTimestamp(dir_path);
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->DeleteSingleDirectory(context.get(), path));
+  EXPECT_NE(base::Time(), GetModifiedTime(dir_path));
+}
+
+TEST_F(ObfuscatedFileUtilTest, TestDirectoryTimestampForCopyAndMove) {
+  TestDirectoryTimestampHelper(
+      FilePath(FILE_PATH_LITERAL("copy overwrite")), true, true);
+  TestDirectoryTimestampHelper(
+      FilePath(FILE_PATH_LITERAL("copy non-overwrite")), true, false);
+  TestDirectoryTimestampHelper(
+      FilePath(FILE_PATH_LITERAL("move overwrite")), false, true);
+  TestDirectoryTimestampHelper(
+      FilePath(FILE_PATH_LITERAL("move non-overwrite")), false, false);
 }

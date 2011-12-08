@@ -42,9 +42,6 @@ class FileSystemOperationContext;
 // SandboxMountPointProvider [and the task it uses to drop the reference] and
 // SandboxMountPointProvider::GetFileSystemRootPathTask.  Without that last one,
 // we wouldn't need ref counting.
-//
-// TODO(ericu): We don't ever update directory mtimes; which operations should
-// do that?
 class ObfuscatedFileUtil : public FileSystemFileUtil,
     public base::RefCountedThreadSafe<ObfuscatedFileUtil> {
  public:
