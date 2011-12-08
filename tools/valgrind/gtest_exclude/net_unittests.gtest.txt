@@ -8,6 +8,3 @@ DirectoryListerTest.BigDirRecursiveTest
 # http://crbug.com/88228
 SSLClientSocketTest.Connect
 SSLClientSocketTest.ConnectClientAuthSendNullCert
-
-# Crashes, http://crbug.com/106688
-DnsTransactionTest.NormalQueryResponseTest

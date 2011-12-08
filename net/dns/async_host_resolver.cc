@@ -8,12 +8,16 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "net/base/address_list.h"
 #include "net/base/dns_util.h"
 #include "net/base/net_errors.h"
+#include "net/dns/dns_protocol.h"
+#include "net/dns/dns_response.h"
+#include "net/dns/dns_session.h"
 #include "net/socket/client_socket_factory.h"
 
 namespace net {
@@ -22,7 +26,7 @@ namespace {
 
 // TODO(agayev): fix this when IPv6 support is added.
 uint16 QueryTypeFromAddressFamily(AddressFamily address_family) {
-  return kDNS_A;
+  return dns_protocol::kTypeA;
 }
 
 class RequestParameters : public NetLog::EventParameters {
@@ -56,17 +60,22 @@ class RequestParameters : public NetLog::EventParameters {
 HostResolver* CreateAsyncHostResolver(size_t max_concurrent_resolves,
                                       const IPAddressNumber& dns_ip,
                                       NetLog* net_log) {
-  size_t max_transactions = max_concurrent_resolves;
-  if (max_transactions == 0)
-    max_transactions = 20;
-  size_t max_pending_requests = max_transactions * 100;
-  HostResolver* resolver = new AsyncHostResolver(
-      IPEndPoint(dns_ip, 53),
-      max_transactions,
-      max_pending_requests,
+  size_t max_dns_requests = max_concurrent_resolves;
+  if (max_dns_requests == 0)
+    max_dns_requests = 20;
+  size_t max_pending_requests = max_dns_requests * 100;
+  DnsConfig config;
+  config.nameservers.push_back(IPEndPoint(dns_ip, 53));
+  DnsSession* session = new DnsSession(
+      config,
+      ClientSocketFactory::GetDefaultFactory(),
       base::Bind(&base::RandInt),
+      net_log);
+  HostResolver* resolver = new AsyncHostResolver(
+      max_dns_requests,
+      max_pending_requests,
       HostCache::CreateDefaultCache(),
-      NULL,
+      DnsClient::CreateClient(session),
       net_log);
   return resolver;
 }
@@ -193,19 +202,15 @@ class AsyncHostResolver::Request {
 };
 
 //-----------------------------------------------------------------------------
-AsyncHostResolver::AsyncHostResolver(const IPEndPoint& dns_server,
-                                     size_t max_transactions,
+AsyncHostResolver::AsyncHostResolver(size_t max_dns_requests,
                                      size_t max_pending_requests,
-                                     const RandIntCallback& rand_int_cb,
                                      HostCache* cache,
-                                     ClientSocketFactory* factory,
+                                     DnsClient* client,
                                      NetLog* net_log)
-    : max_transactions_(max_transactions),
+    : max_dns_requests_(max_dns_requests),
       max_pending_requests_(max_pending_requests),
-      dns_server_(dns_server),
-      rand_int_cb_(rand_int_cb),
       cache_(cache),
-      factory_(factory),
+      client_(client),
       net_log_(net_log) {
 }
 
@@ -215,8 +220,8 @@ AsyncHostResolver::~AsyncHostResolver() {
        it != requestlist_map_.end(); ++it)
     STLDeleteElements(&it->second);
 
-  // Destroy transactions.
-  STLDeleteElements(&transactions_);
+  // Destroy DNS requests.
+  STLDeleteElements(&dns_requests_);
 
   // Destroy pending requests.
   for (size_t i = 0; i < arraysize(pending_requests_); ++i)
@@ -240,8 +245,8 @@ int AsyncHostResolver::Resolve(const RequestInfo& info,
     rv = request->result();
   else if (AttachToRequestList(request.get()))
     rv = ERR_IO_PENDING;
-  else if (transactions_.size() < max_transactions_)
-    rv = StartNewTransactionFor(request.get());
+  else if (dns_requests_.size() < max_dns_requests_)
+    rv = StartNewDnsRequestFor(request.get());
   else
     rv = Enqueue(request.get());
 
@@ -327,39 +332,56 @@ HostCache* AsyncHostResolver::GetHostCache() {
   return cache_.get();
 }
 
-void AsyncHostResolver::OnTransactionComplete(
+void AsyncHostResolver::OnDnsRequestComplete(
+    DnsClient::Request* dns_req,
     int result,
-    const DnsTransaction* transaction,
-    const IPAddressList& ip_addresses) {
-  DCHECK(std::find(transactions_.begin(), transactions_.end(), transaction)
-         != transactions_.end());
-  DCHECK(requestlist_map_.find(transaction->key()) != requestlist_map_.end());
+    const DnsResponse* response) {
+  DCHECK(std::find(dns_requests_.begin(), dns_requests_.end(), dns_req)
+         != dns_requests_.end());
 
-  // If by the time requests that caused |transaction| are cancelled, we do
+  // If by the time requests that caused |dns_req| are cancelled, we do
   // not have a port number to associate with the result, therefore, we
   // assume the most common port, otherwise we use the port number of the
   // first request.
-  RequestList& requests = requestlist_map_[transaction->key()];
+  KeyRequestListMap::iterator rit = requestlist_map_.find(
+      std::make_pair(dns_req->qname(), dns_req->qtype()));
+  DCHECK(rit != requestlist_map_.end());
+  RequestList& requests = rit->second;
   int port = requests.empty() ? 80 : requests.front()->info().port();
 
-  // Run callback of every request that was depending on this transaction,
-  // also notify observers.
-  AddressList addrlist;
-  if (result == OK)
-    addrlist = AddressList::CreateFromIPAddressList(ip_addresses, port);
-  for (RequestList::iterator it = requests.begin(); it != requests.end();
-       ++it)
-    (*it)->OnAsyncComplete(result, addrlist);
+  // Extract AddressList out of DnsResponse.
+  AddressList addr_list;
+  if (result == OK) {
+    IPAddressList ip_addresses;
+    DnsRecordParser parser = response->Parser();
+    DnsResourceRecord record;
+    // TODO(szym): Add stricter checking of names, aliases and address lengths.
+    while (parser.ParseRecord(&record)) {
+      if (record.type == dns_req->qtype() &&
+          (record.rdata.size() == kIPv4AddressSize ||
+           record.rdata.size() == kIPv6AddressSize)) {
+        ip_addresses.push_back(IPAddressNumber(record.rdata.begin(),
+                                               record.rdata.end()));
+      }
+    }
+    if (!ip_addresses.empty())
+      addr_list = AddressList::CreateFromIPAddressList(ip_addresses, port);
+    else
+      result = ERR_NAME_NOT_RESOLVED;
+  }
 
-  // It is possible that the requests that caused |transaction| to be
-  // created are cancelled by the time |transaction| completes.  In that
+  // Run callback of every request that was depending on this DNS request,
+  // also notify observers.
+  for (RequestList::iterator it = requests.begin(); it != requests.end(); ++it)
+    (*it)->OnAsyncComplete(result, addr_list);
+
+  // It is possible that the requests that caused |dns_req| to be
+  // created are cancelled by the time |dns_req| completes.  In that
   // case |requests| would be empty.  We are knowingly throwing away the
   // result of a DNS resolution in that case, because (a) if there are no
   // requests, we do not have info to obtain a key from, (b) DnsTransaction
   // does not have info(), adding one into it just temporarily doesn't make
-  // sense, since HostCache will be replaced with RR cache soon, (c)
-  // recreating info from DnsTransaction::Key adds a lot of temporary
-  // code/functions (like converting back from qtype to AddressFamily.)
+  // sense, since HostCache will be replaced with RR cache soon.
   // Also, we only cache positive results.  All of this will change when RR
   // cache is added.
   if (result == OK && cache_.get() && !requests.empty()) {
@@ -367,16 +389,16 @@ void AsyncHostResolver::OnTransactionComplete(
     HostResolver::RequestInfo info = request->info();
     HostCache::Key key(
         info.hostname(), info.address_family(), info.host_resolver_flags());
-    cache_->Set(key, result, addrlist, base::TimeTicks::Now());
+    cache_->Set(key, result, addr_list, base::TimeTicks::Now());
   }
 
   // Cleanup requests.
   STLDeleteElements(&requests);
-  requestlist_map_.erase(transaction->key());
+  requestlist_map_.erase(rit);
 
-  // Cleanup transaction and start a new one if there are pending requests.
-  delete transaction;
-  transactions_.remove(transaction);
+  // Cleanup |dns_req| and start a new one if there are pending requests.
+  delete dns_req;
+  dns_requests_.remove(dns_req);
   ProcessPending();
 }
 
@@ -399,25 +421,22 @@ bool AsyncHostResolver::AttachToRequestList(Request* request) {
   return true;
 }
 
-int AsyncHostResolver::StartNewTransactionFor(Request* request) {
+int AsyncHostResolver::StartNewDnsRequestFor(Request* request) {
   DCHECK(requestlist_map_.find(request->key()) == requestlist_map_.end());
-  DCHECK(transactions_.size() < max_transactions_);
+  DCHECK(dns_requests_.size() < max_dns_requests_);
 
   request->request_net_log().AddEvent(
       NetLog::TYPE_ASYNC_HOST_RESOLVER_CREATE_DNS_TRANSACTION, NULL);
 
   requestlist_map_[request->key()].push_back(request);
-  DnsTransaction* transaction = new DnsTransaction(
-      dns_server_,
+  DnsClient::Request* dns_req = client_->CreateRequest(
       request->key().first,
       request->key().second,
-      rand_int_cb_,
-      factory_,
-      request->request_net_log(),
-      net_log_);
-  transaction->SetDelegate(this);
-  transactions_.push_back(transaction);
-  return transaction->Start();
+      base::Bind(&AsyncHostResolver::OnDnsRequestComplete,
+                 base::Unretained(this)),
+      request->request_net_log());
+  dns_requests_.push_back(dns_req);
+  return dns_req->Start();
 }
 
 int AsyncHostResolver::Enqueue(Request* request) {
@@ -490,7 +509,7 @@ void AsyncHostResolver::ProcessPending() {
       }
     }
   }
-  StartNewTransactionFor(request);
+  StartNewDnsRequestFor(request);
 }
 
 }  // namespace net
