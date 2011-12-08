@@ -609,9 +609,13 @@ update_outputs(struct drm_compositor *ec)
 		int connector_id = resources->connectors[i];
 
 		connector = drmModeGetConnector(ec->drm.fd, connector_id);
-		if (connector == NULL ||
-		    connector->connection != DRM_MODE_CONNECTED)
+		if (connector == NULL)
 			continue;
+
+		if (connector->connection != DRM_MODE_CONNECTED) {
+			drmModeFreeConnector(connector);
+			continue;
+		}
 
 		connected |= (1 << connector_id);
 
