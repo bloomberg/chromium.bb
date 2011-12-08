@@ -67,6 +67,7 @@ class TsanAnalyzer(object):
     '''
 
     self._use_gdb = use_gdb
+    self._cur_testcase = None
 
   def ReadLine(self):
     self.line_ = self.cur_fd_.readline()

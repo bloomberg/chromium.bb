@@ -966,7 +966,6 @@ class ThreadSanitizerRV1Analyzer(tsan_analyze.TsanAnalyzer):
     self.out = open(self.TMP_FILE, "w")
 
   def Report(self, files, testcase, check_sanity=False):
-    # TODO(timurrrr): handle testcase?
     reports = self.GetReports(files)
     for report in reports:
       print >>self.out, report
