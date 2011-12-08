@@ -66,6 +66,7 @@
         '../testing/gtest.gyp:gtest',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../ui/gfx/compositor/compositor.gyp:test_compositor',
+        '../ui/gfx/compositor/compositor.gyp:compositor_test_support',
       ],
       'export_dependent_settings': [
         'renderer',

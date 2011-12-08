@@ -15,8 +15,13 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "ui/gfx/compositor/test/compositor_test_support.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+
+#if defined(USE_AURA)
+#include "ui/aura/root_window.h"
+#endif
 
 namespace {
 
@@ -81,6 +86,10 @@ void ViewEventTestBase::SetUp() {
 #if defined(OS_WIN)
   OleInitialize(NULL);
 #endif
+  ui::CompositorTestSupport::Initialize();
+#if defined(USE_AURA)
+  aura::RootWindow::GetInstance();
+#endif
   window_ = views::Widget::CreateWindow(this);
 }
 
@@ -94,6 +103,10 @@ void ViewEventTestBase::TearDown() {
 #endif
     window_ = NULL;
   }
+#if defined(USE_AURA)
+  aura::RootWindow::DeleteInstance();
+#endif
+  ui::CompositorTestSupport::Terminate();
 #if defined(OS_WIN)
   OleUninitialize();
 #endif
