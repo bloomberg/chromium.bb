@@ -568,7 +568,7 @@ LRESULT CALLBACK TestShell::WndProc(HWND hwnd, UINT message, WPARAM wParam,
 
       if (TestShell::windowList()->empty() || shell->is_modal()) {
         MessageLoop::current()->PostTask(FROM_HERE,
-                                         new MessageLoop::QuitTask());
+                                         MessageLoop::QuitClosure());
       }
       delete shell;
     }

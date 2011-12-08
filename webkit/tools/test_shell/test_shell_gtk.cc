@@ -59,7 +59,7 @@ gboolean MainWindowDestroyed(GtkWindow* window, TestShell* shell) {
 
   if (TestShell::windowList()->empty() || shell->is_modal()) {
     MessageLoop::current()->PostTask(FROM_HERE,
-                                     new MessageLoop::QuitTask());
+                                     MessageLoop::QuitClosure());
   }
 
   delete shell;
