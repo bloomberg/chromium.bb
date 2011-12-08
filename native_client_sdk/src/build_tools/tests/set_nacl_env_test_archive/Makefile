@@ -10,7 +10,7 @@ all : $(EXAMPLE)
 clean :
 	rm -f $(EXAMPLE) hello_world_c.o hello_world_c.nexe
 
-SRCS_ = $(EXAMPLE_DIR)/*.c
+SRCS_ = $(EXAMPLE_DIR)/hello_world_c.c
 
 hello_world_c.o : $(SRCS_)
 	$(CXX) $(CPPFLAGS) -I$(EXAMPLE_DIR) $(CXXFLAGS) -c \
