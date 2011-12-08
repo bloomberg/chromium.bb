@@ -133,6 +133,7 @@ bool CrosMountPointProvider::IsAccessAllowed(const GURL& origin_url,
 
 void CrosMountPointProvider::AddMountPoint(FilePath mount_point) {
   base::AutoLock locker(lock_);
+  mount_point_map_.erase(mount_point.BaseName().value());
   mount_point_map_.insert(std::pair<std::string, FilePath>(
       mount_point.BaseName().value(), mount_point.DirName()));
 }
