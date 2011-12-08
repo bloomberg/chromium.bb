@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
+#include "chrome/browser/ui/panels/panel_slide_animation.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -475,31 +476,8 @@ enum {
 
 - (float)animation:(NSAnimation*)animation
   valueForProgress:(NSAnimationProgress)progress {
-  if (!playingMinimizeAnimation_) {
-    // Cubic easing out.
-    float value = 1.0 - progress;
-    return 1.0 - value * value * value;
-  }
-
-  // Minimize animation:
-  // 1. Quickly (0 -> 0.15) make only titlebar visible.
-  // 2. Stay a little bit (0.15->0.6) in place, just showing titlebar.
-  // 3. Slowly minimize to thin strip (0.6->1.0)
-  const float kAnimationStopAfterQuickDecrease = 0.15;
-  const float kAnimationStopAfterShowingTitlebar = 0.6;
-  float value;
-  if (progress <= kAnimationStopAfterQuickDecrease) {
-      value = progress * animationStopToShowTitlebarOnly_ /
-              kAnimationStopAfterQuickDecrease;
-  } else if (progress <= kAnimationStopAfterShowingTitlebar) {
-      value = animationStopToShowTitlebarOnly_;
-  } else {
-      value = animationStopToShowTitlebarOnly_ +
-          (progress - kAnimationStopAfterShowingTitlebar) *
-          (1.0 - animationStopToShowTitlebarOnly_) /
-          (1.0 - kAnimationStopAfterShowingTitlebar);
-  }
-  return value;
+  return PanelSlideAnimation::ComputeAnimationValue(
+      progress, playingMinimizeAnimation_, animationStopToShowTitlebarOnly_);
 }
 
 - (void)animationDidEnd:(NSAnimation*)animation {

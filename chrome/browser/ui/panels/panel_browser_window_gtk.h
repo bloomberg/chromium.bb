@@ -104,7 +104,8 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void EnsurePanelFullyVisible() OVERRIDE;
 
  private:
-  void StartBoundsAnimation(const gfx::Rect& current_bounds);
+  void StartBoundsAnimation(const gfx::Rect& from_bounds,
+                            const gfx::Rect& to_bounds);
   bool IsAnimatingBounds() const;
 
   // MessageLoop::Observer implementation:

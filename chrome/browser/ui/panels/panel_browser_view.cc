@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_overflow_strip.h"
+#include "chrome/browser/ui/panels/panel_slide_animation.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/webui/task_manager_dialog.h"
@@ -22,46 +23,12 @@
 #include "ui/views/widget/widget.h"
 
 namespace {
-// This value is experimental and subjective.
-const int kSetBoundsAnimationMs = 180;
-const int kSetBoundsAnimationMinimizeMs = 1500;
-
 // The threshold to differentiate the short click and long click.
 const int kShortClickThresholdMs = 200;
 
 // Delay before click-to-minimize is allowed after the attention has been
 // cleared.
 const int kSuspendMinimizeOnClickIntervalMs = 500;
-
-}
-
-double PanelSlideAnimation::GetCurrentValue() const {
-  double progress = ui::SlideAnimation::GetCurrentValue();
-  if (!for_minimize_) {
-    // Cubic easing out.
-    float value = 1.0 - progress;
-    return 1.0 - value * value * value;
-  }
-
-  // Minimize animation:
-  // 1. Quickly (0 -> 0.15) make only titlebar visible.
-  // 2. Stay a little bit (0.15->0.6) in place, just showing titlebar.
-  // 3. Slowly minimize to thin strip (0.6->1.0)
-  const double kAnimationStopAfterQuickDecrease = 0.15;
-  const double kAnimationStopAfterShowingTitlebar = 0.6;
-  double value;
-  if (progress <= kAnimationStopAfterQuickDecrease) {
-      value = progress * animation_stop_to_show_titlebar_ /
-          kAnimationStopAfterQuickDecrease;
-  } else if (progress <= kAnimationStopAfterShowingTitlebar) {
-      value = animation_stop_to_show_titlebar_;
-  } else {
-      value = animation_stop_to_show_titlebar_ +
-          (progress - kAnimationStopAfterShowingTitlebar) *
-          (1.0 - animation_stop_to_show_titlebar_) /
-          (1.0 - kAnimationStopAfterShowingTitlebar);
-  }
-  return value;
 }
 
 NativePanel* Panel::CreateNativePanel(Browser* browser, Panel* panel,
@@ -169,26 +136,8 @@ void PanelBrowserView::SetBoundsInternal(const gfx::Rect& new_bounds,
 
   animation_start_bounds_ = GetBounds();
 
-  // Detect animation that happens when expansion state is set to MINIMIZED
-  // and there is relatively big portion of the panel to hide from view.
-  // Initialize animation differently in this case, using fast-pause-slow
-  // method, see below for more details.
-  double animation_stop_to_show_titlebar = 0;
-  bool for_minimize = false;
-  int duration = kSetBoundsAnimationMs;
-  if (panel_->expansion_state() == Panel::MINIMIZED) {
-    animation_stop_to_show_titlebar =
-        1.0 - static_cast<double>((TitleOnlyHeight() - new_bounds.height())) /
-        (GetBounds().height() - new_bounds.height());
-    if (animation_stop_to_show_titlebar > 0.7) {  // Relatively big movement.
-      for_minimize = true;
-      duration = kSetBoundsAnimationMinimizeMs;
-    }
-  }
-
   bounds_animator_.reset(new PanelSlideAnimation(
-      this, for_minimize, animation_stop_to_show_titlebar));
-  bounds_animator_->SetSlideDuration(duration);
+      this, panel(), animation_start_bounds_, new_bounds));
   bounds_animator_->Show();
 }
 

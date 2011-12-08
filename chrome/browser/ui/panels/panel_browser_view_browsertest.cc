@@ -12,13 +12,13 @@
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 #include "chrome/browser/ui/panels/panel_browser_view.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/panels/panel_slide_animation.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -79,7 +79,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     return GetBrowserView(panel)->GetNativeHandle();
   }
 
-  ui::SlideAnimation* GetBoundsAnimator(Panel* panel) const {
+  PanelSlideAnimation* GetBoundsAnimator(Panel* panel) const {
     return GetBrowserView(panel)->bounds_animator_.get();
   }
 

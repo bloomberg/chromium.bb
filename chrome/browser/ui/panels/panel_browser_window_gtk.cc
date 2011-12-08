@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
+#include "chrome/browser/ui/panels/panel_slide_animation.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/base/animation/slide_animation.h"
@@ -16,9 +17,6 @@
 #include "ui/base/x/work_area_watcher_x.h"
 
 namespace {
-
-// This value is experimental and subjective.
-const int kSetBoundsAnimationMs = 180;
 
 // RGB values for titlebar in draw attention state. A shade of orange.
 const int kDrawAttentionR = 0xfa;
@@ -149,7 +147,7 @@ void PanelBrowserWindowGtk::OnSizeChanged(int width, int height) {
   int left = bounds_.right() - width;
 
   gtk_window_move(window_, left, top);
-  StartBoundsAnimation(gfx::Rect(left, top, width, height));
+  StartBoundsAnimation(bounds_, gfx::Rect(left, top, width, height));
   panel_->OnWindowSizeAvailable();
 
   content::NotificationService::current()->Notify(
@@ -262,7 +260,7 @@ void PanelBrowserWindowGtk::SetBoundsInternal(const gfx::Rect& bounds,
     // user drag, we should not animate.
     gtk_window_move(window(), bounds.x(), bounds.y());
   } else if (window_size_known_) {
-    StartBoundsAnimation(bounds_);
+    StartBoundsAnimation(bounds_, bounds);
   }
   // If window size is not known, wait till the size is known before starting
   // the animation.
@@ -412,16 +410,11 @@ int PanelBrowserWindowGtk::TitleOnlyHeight() const {
 }
 
 void PanelBrowserWindowGtk::StartBoundsAnimation(
-    const gfx::Rect& current_bounds) {
-  animation_start_bounds_ = current_bounds;
+    const gfx::Rect& from_bounds, const gfx::Rect& to_bounds) {
+  animation_start_bounds_ = from_bounds;
 
-  if (!bounds_animator_.get()) {
-    bounds_animator_.reset(new ui::SlideAnimation(this));
-    bounds_animator_->SetSlideDuration(kSetBoundsAnimationMs);
-  }
-
-  if (bounds_animator_->IsShowing())
-    bounds_animator_->Reset();
+  bounds_animator_.reset(new PanelSlideAnimation(
+      this, panel_.get(), from_bounds, to_bounds));
   bounds_animator_->Show();
 }
 
