@@ -4518,7 +4518,7 @@
    bug_100777
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN12_GLOBAL__N_119MakeContextDelegateI16CrxUpdateServiceNS1_13UpdateContextEEEPN10URLFetcher8DelegateEPT_PT0_
+   fun:_ZN12_GLOBAL__N_119MakeContextDelegateI16CrxUpdateServiceNS1_13UpdateContextEEEPN7content18URLFetcherDelegateEPT_PT0_
    fun:_ZN16CrxUpdateService19ProcessPendingItemsEv
 }
 {
