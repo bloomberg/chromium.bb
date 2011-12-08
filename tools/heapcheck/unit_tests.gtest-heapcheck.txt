@@ -16,6 +16,9 @@ ServiceProcessStateTest.ForceShutdown
 ServiceProcessStateTest.ReadyState
 ServiceProcessStateTest.Singleton
 
+# http://crbug.com/88221
+ConnectionTesterTest.DeleteWhileInProgress
+
 # Failing on Chromium OS. http://crbug.com/104826
 GViewRequestInterceptorTest.DoNotInterceptDownload
 
