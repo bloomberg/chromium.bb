@@ -427,7 +427,7 @@ create_output_for_connector(struct drm_compositor *ec,
 			    int x, int y)
 {
 	struct drm_output *output;
-	struct drm_mode *drm_mode;
+	struct drm_mode *drm_mode, *next;
 	drmModeEncoder *encoder;
 	int i, ret;
 	unsigned handle, stride;
@@ -467,19 +467,25 @@ create_output_for_connector(struct drm_compositor *ec,
 	ec->connector_allocator |= (1 << output->connector_id);
 
 	output->original_crtc = drmModeGetCrtc(ec->drm.fd, output->crtc_id);
+	drmModeFreeEncoder(encoder);
 
-	for (i = 0; i < connector->count_modes; i++)
-		drm_output_add_mode(output, &connector->modes[i]);
-	if (connector->count_modes == 0)
-		drm_output_add_mode(output, &builtin_1024x768);
+	for (i = 0; i < connector->count_modes; i++) {
+		ret = drm_output_add_mode(output, &connector->modes[i]);
+		if (ret)
+			goto err_free;
+	}
+
+	if (connector->count_modes == 0) {
+		ret = drm_output_add_mode(output, &builtin_1024x768);
+		if (ret)
+			goto err_free;
+	}
 
 	drm_mode = container_of(output->base.mode_list.next,
 				struct drm_mode, base.link);
 	output->base.current = &drm_mode->base;
 	drm_mode->base.flags =
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
-
-	drmModeFreeEncoder(encoder);
 
 	glGenRenderbuffers(2, output->rbo);
 	for (i = 0; i < 2; i++) {
@@ -541,6 +547,20 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->base.destroy = drm_output_destroy;
 
 	return 0;
+
+err_free:
+	wl_list_for_each_safe(drm_mode, next, &output->base.mode_list,
+							base.link) {
+		wl_list_remove(&drm_mode->base.link);
+		free(drm_mode);
+	}
+
+	drmModeFreeCrtc(output->original_crtc);
+	ec->crtc_allocator &= ~(1 << output->crtc_id);
+	ec->connector_allocator &= ~(1 << output->connector_id);
+
+	free(output);
+	return -1;
 }
 
 static int
