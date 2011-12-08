@@ -57,6 +57,7 @@
 #endif
 
 using content::BrowserThread;
+using printing::Metafile;
 
 namespace {
 
@@ -173,12 +174,15 @@ void ReportPrintSettingsStats(const DictionaryValue& settings) {
   }
 }
 
-}  // namespace
-
 // Callback that stores a PDF file on disk.
-void PrintToPdfCallback(printing::Metafile* metafile, const FilePath& path) {
+void PrintToPdfCallback(Metafile* metafile, const FilePath& path) {
   metafile->SaveTo(path);
+  // |metafile| must be deleted on the UI thread.
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&DeletePointer<Metafile>, metafile));
 }
+
+}  // namespace
 
 // static
 FilePath* PrintPreviewHandler::last_saved_path_ = NULL;
@@ -814,8 +818,9 @@ void PrintPreviewHandler::PostPrintToPdfTask() {
   DCHECK(data.get());
   printing::PreviewMetafile* metafile = new printing::PreviewMetafile;
   metafile->InitFromData(static_cast<const void*>(data->front()), data->size());
+  // PrintToPdfCallback takes ownership of |metafile|.
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&PrintToPdfCallback, base::Owned(metafile),
+                          base::Bind(&PrintToPdfCallback, metafile,
                                      *print_to_pdf_path_));
   print_to_pdf_path_.reset();
   ActivateInitiatorTabAndClosePreviewTab();
