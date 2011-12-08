@@ -288,11 +288,6 @@ void ProfileItemView::OnBlur() {
 void ProfileItemView::OnHighlightStateChanged() {
   set_background(IsHighlighted() ? views::Background::CreateSolidBackground(
       SkColorSetRGB(0xe3, 0xed, 0xf6)) : NULL);
-  SkColor background_color = background() ?
-      background()->get_color() : views::BubbleDelegateView::kBackgroundColor;
-  name_label_->SetBackgroundColor(background_color);
-  sync_state_label_->SetBackgroundColor(background_color);
-  edit_link_->SetBackgroundColor(background_color);
 
   bool show_edit = IsHighlighted() && item_.active;
   sync_state_label_->SetVisible(!show_edit);
@@ -493,7 +488,6 @@ void AvatarMenuBubbleView::OnAvatarMenuModelChanged(
       l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_NEW_PROFILE_LINK));
   add_profile_link_->set_listener(this);
   add_profile_link_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  add_profile_link_->SetBackgroundColor(color());
   add_profile_link_->SetEnabledColor(SkColorSetRGB(0xe3, 0xed, 0xf6));
   AddChildView(add_profile_link_);
 
