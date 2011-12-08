@@ -263,7 +263,9 @@ void DownloadShelfGtk::Observe(int type,
 }
 
 int DownloadShelfGtk::GetHeight() const {
-  return slide_widget_->widget()->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(slide_widget_->widget(), &allocation);
+  return allocation.height;
 }
 
 void DownloadShelfGtk::RemoveDownloadItem(DownloadItemGtk* download_item) {
@@ -363,9 +365,11 @@ void DownloadShelfGtk::DidProcessEvent(GdkEvent* event) {
 
 bool DownloadShelfGtk::IsCursorInShelfZone(
     const gfx::Point& cursor_screen_coords) {
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(shelf_.get(), &allocation);
+
   gfx::Rect bounds(gtk_util::GetWidgetScreenPosition(shelf_.get()),
-                   gfx::Size(shelf_.get()->allocation.width,
-                             shelf_.get()->allocation.height));
+                   gfx::Size(allocation.width, allocation.height));
 
   // Negative insets expand the rectangle. We only expand the top.
   bounds.Inset(gfx::Insets(-kShelfAuraSize, 0, 0, 0));

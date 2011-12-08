@@ -212,7 +212,9 @@ void InfoBarGtk::OnCloseButton(GtkWidget* button) {
 
 gboolean InfoBarGtk::OnBackgroundExpose(GtkWidget* sender,
                                         GdkEventExpose* event) {
-  const int height = sender->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(sender, &allocation);
+  const int height = allocation.height;
 
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(sender->window));
   gdk_cairo_rectangle(cr, &event->area);
@@ -238,9 +240,8 @@ gboolean InfoBarGtk::OnBackgroundExpose(GtkWidget* sender,
                        border_color.green / 65535.0,
                        border_color.blue / 65535.0);
   cairo_set_line_width(cr, 1.0);
-  int y = sender->allocation.height;
-  cairo_move_to(cr, 0, y - 0.5);
-  cairo_rel_line_to(cr, sender->allocation.width, 0);
+  cairo_move_to(cr, 0, allocation.height - 0.5);
+  cairo_rel_line_to(cr, allocation.width, 0);
   cairo_stroke(cr);
 
   cairo_destroy(cr);

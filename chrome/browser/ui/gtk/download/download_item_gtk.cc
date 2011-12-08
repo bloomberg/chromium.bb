@@ -700,11 +700,13 @@ void DownloadItemGtk::InitNineBoxes() {
 
 gboolean DownloadItemGtk::OnHboxExpose(GtkWidget* widget, GdkEventExpose* e) {
   if (theme_service_->UsingNativeTheme()) {
-    int border_width = GTK_CONTAINER(widget)->border_width;
-    int x = widget->allocation.x + border_width;
-    int y = widget->allocation.y + border_width;
-    int width = widget->allocation.width - border_width * 2;
-    int height = widget->allocation.height - border_width * 2;
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
+    int border_width = gtk_container_get_border_width(GTK_CONTAINER(widget));
+    int x = allocation.x + border_width;
+    int y = allocation.y + border_width;
+    int width = allocation.width - border_width * 2;
+    int height = allocation.height - border_width * 2;
 
     if (IsDangerous()) {
       // Draw a simple frame around the area when we're displaying the warning.
@@ -723,17 +725,11 @@ gboolean DownloadItemGtk::OnHboxExpose(GtkWidget* widget, GdkEventExpose* e) {
       // separator. We then repeat this for the right button.
       GtkStyle* style = body_.get()->style;
 
-      GtkAllocation left_allocation = body_.get()->allocation;
-      GdkRectangle left_clip = {
-        left_allocation.x, left_allocation.y,
-        left_allocation.width, left_allocation.height
-      };
+      GtkAllocation left_clip;
+      gtk_widget_get_allocation(body_.get(), &left_clip);
 
-      GtkAllocation right_allocation = menu_button_->allocation;
-      GdkRectangle right_clip = {
-        right_allocation.x, right_allocation.y,
-        right_allocation.width, right_allocation.height
-      };
+      GtkAllocation right_clip;
+      gtk_widget_get_allocation(menu_button_, &right_clip);
 
       GtkShadowType body_shadow =
           GTK_BUTTON(body_.get())->depressed ? GTK_SHADOW_IN : GTK_SHADOW_OUT;
@@ -755,13 +751,14 @@ gboolean DownloadItemGtk::OnHboxExpose(GtkWidget* widget, GdkEventExpose* e) {
       // is hard and relies on copying GTK internals, so instead steal the
       // allocation of the gtk arrow which is close enough (and will error on
       // the conservative side).
-      GtkAllocation arrow_allocation = arrow_->allocation;
+      GtkAllocation arrow_allocation;
+      gtk_widget_get_allocation(arrow_, &arrow_allocation);
       gtk_paint_vline(style, widget->window,
                       gtk_widget_get_state(widget),
                       &e->area, widget, "button",
                       arrow_allocation.y,
                       arrow_allocation.y + arrow_allocation.height,
-                      left_allocation.x + left_allocation.width);
+                      left_clip.x + left_clip.width);
     }
   }
   return FALSE;
@@ -814,23 +811,26 @@ gboolean DownloadItemGtk::OnButtonPress(GtkWidget* button,
 
 gboolean DownloadItemGtk::OnProgressAreaExpose(GtkWidget* widget,
                                                GdkEventExpose* event) {
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+
   // Create a transparent canvas.
   gfx::CanvasSkiaPaint canvas(event, false);
   if (complete_animation_.is_animating()) {
     if (get_download()->IsInterrupted()) {
       download_util::PaintDownloadInterrupted(&canvas,
-          widget->allocation.x, widget->allocation.y,
+          allocation.x, allocation.y,
           complete_animation_.GetCurrentValue(),
           download_util::SMALL);
     } else {
       download_util::PaintDownloadComplete(&canvas,
-          widget->allocation.x, widget->allocation.y,
+          allocation.x, allocation.y,
           complete_animation_.GetCurrentValue(),
           download_util::SMALL);
     }
   } else if (get_download()->IsInProgress()) {
     download_util::PaintDownloadProgress(&canvas,
-        widget->allocation.x, widget->allocation.y,
+        allocation.x, allocation.y,
         progress_angle_,
         get_download()->PercentComplete(),
         download_util::SMALL);
@@ -842,7 +842,7 @@ gboolean DownloadItemGtk::OnProgressAreaExpose(GtkWidget* widget,
   if (icon_small_) {
     const int offset = download_util::kSmallProgressIconOffset;
     canvas.DrawBitmapInt(*icon_small_,
-        widget->allocation.x + offset, widget->allocation.y + offset);
+        allocation.x + offset, allocation.y + offset);
   }
 
   return TRUE;

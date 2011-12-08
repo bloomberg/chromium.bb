@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/rect.h"
@@ -133,8 +134,11 @@ void InfoBarContainerGtk::PaintInfobarBitsOn(GtkWidget* sender,
     gtk_widget_translate_coordinates((*it)->widget(), sender,
                                      0, 0,
                                      NULL, &y);
-    if (GTK_WIDGET_NO_WINDOW(sender))
-      y += sender->allocation.y;
+    if (!gtk_widget_get_has_window(sender)) {
+      GtkAllocation allocation;
+      gtk_widget_get_allocation(sender, &allocation);
+      y += allocation.y;
+    }
 
     // We rely on the +1 in the y calculation so we hide the bottom of the drawn
     // triangle just right outside the view bounds.

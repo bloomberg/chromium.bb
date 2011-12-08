@@ -915,8 +915,12 @@ void LocationBarViewGtk::UpdateEVCertificateLabelSize() {
   // The EV label should never take up more than half the hbox. We try to
   // correct our inaccurate measurement units ("the average character width")
   // by dividing more than an even 2.
-  int text_area = security_info_label_->allocation.width +
-                  entry_box_->allocation.width;
+  GtkAllocation security_label_allocation;
+  gtk_widget_get_allocation(security_info_label_, &security_label_allocation);
+  GtkAllocation entry_box_allocation;
+  gtk_widget_get_allocation(entry_box_, &entry_box_allocation);
+  int text_area = security_label_allocation.width +
+                  entry_box_allocation.width;
   int max_chars = static_cast<int>(static_cast<float>(text_area) /
                                    static_cast<float>(char_width) / 2.75);
   // Don't let the label be smaller than 10 characters so that the country
