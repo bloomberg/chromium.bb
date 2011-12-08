@@ -53,7 +53,7 @@ handle_key(const struct config_key *key, const char *value)
 		*(char **)key->data = s;
 		return 0;
 
-	case CONFIG_KEY_BOOL:
+	case CONFIG_KEY_BOOLEAN:
 		if (strcmp(value, "false\n") == 0)
 			*(int *)key->data = 0;
 		else if (strcmp(value, "true\n") == 0)

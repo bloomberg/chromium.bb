@@ -23,15 +23,15 @@
 #ifndef CONFIGPARSER_H
 #define CONFIGPARSER_H
 
-enum {
-	CONFIG_KEY_INTEGER,
-	CONFIG_KEY_STRING,
-	CONFIG_KEY_BOOL
+enum config_key_type {
+	CONFIG_KEY_INTEGER,	/* typeof data = int */
+	CONFIG_KEY_STRING,	/* typeof data = char* */
+	CONFIG_KEY_BOOLEAN	/* typeof data = int */
 };
 
 struct config_key {
 	const char *name;
-	int type;
+	enum config_key_type type;
 	void *data;
 };
 
