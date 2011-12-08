@@ -271,7 +271,7 @@ class Desktop:
 def main():
   atexit.register(cleanup)
 
-  for s in [signal.SIGINT, signal.SIGTERM]:
+  for s in [signal.SIGHUP, signal.SIGINT, signal.SIGTERM]:
     signal.signal(s, signal_handler)
 
   # Ensure full path to config directory exists.
