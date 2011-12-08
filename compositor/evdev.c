@@ -204,6 +204,20 @@ is_motion_event(struct input_event *e)
 }
 
 static void
+evdev_reset_accum(struct wl_input_device *device,
+		  struct evdev_motion_accumulator *accum)
+{
+	memset(accum, 0, sizeof *accum);
+
+	/* There are cases where only one axis on ts devices can be sent
+	 * through the bytestream whereas the other could be omitted. For
+	 * this, we have to save the old value that will be forwarded without
+	 * modifications to the compositor. */
+	accum->x = device->x;
+	accum->y = device->y;
+}
+
+static void
 evdev_flush_motion(struct wl_input_device *device, uint32_t time,
 		   struct evdev_motion_accumulator *accum)
 {
@@ -213,7 +227,7 @@ evdev_flush_motion(struct wl_input_device *device, uint32_t time,
 	if (accum->type == EVDEV_ABSOLUTE_MOTION)
 		notify_motion(device, time, accum->x, accum->y);
 
-	memset(accum, 0, sizeof *accum);
+	evdev_reset_accum(device, accum);
 }
 
 static int
@@ -236,7 +250,7 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 		return 1;
 	}
 
-	memset(&accumulator, 0, sizeof accumulator);
+	evdev_reset_accum(&device->master->base.input_device, &accumulator);
 
 	e = ev;
 	end = (void *) ev + len;
