@@ -133,6 +133,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   void OnStartFrameSniffer(const string16& frame_name);
   void OnGetFPS();
   void OnAddStrictSecurityHost(const std::string& host);
+  void OnSetAsInterstitial();
 
   // Captures the thumbnail and text contents for indexing for the given load
   // ID. If the view's load ID is different than the parameter, this call is

@@ -322,3 +322,55 @@ TEST_F(ChromeRenderViewTest, ContentSettingsAllowScripts) {
   }
   EXPECT_FALSE(was_blocked);
 }
+
+TEST_F(ChromeRenderViewTest, ContentSettingsInterstitialPages) {
+  MockContentSettingsObserver mock_observer(view_);
+  // Block scripts.
+  RendererContentSettingRules content_setting_rules;
+  ContentSettingsForOneType& script_setting_rules =
+      content_setting_rules.script_rules;
+  script_setting_rules.push_back(
+      ContentSettingPatternSource(
+          ContentSettingsPattern::Wildcard(),
+          ContentSettingsPattern::Wildcard(),
+          CONTENT_SETTING_BLOCK, "", false));
+  // Block images.
+  ContentSettingsForOneType& image_setting_rules =
+      content_setting_rules.image_rules;
+  image_setting_rules.push_back(
+      ContentSettingPatternSource(
+          ContentSettingsPattern::Wildcard(),
+          ContentSettingsPattern::Wildcard(),
+          CONTENT_SETTING_BLOCK, "", false));
+
+  ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
+  observer->SetContentSettingRules(&content_setting_rules);
+  observer->SetAsInterstitial();
+
+  // Load a page which contains a script.
+  std::string html = "<html>"
+                     "<head>"
+                     "<script src='data:foo'></script>"
+                     "</head>"
+                     "<body>"
+                     "</body>"
+                     "</html>";
+  LoadHTML(html.c_str());
+
+  // Verify that the script was allowed.
+  bool was_blocked = false;
+  for (size_t i = 0; i < render_thread_->sink().message_count(); ++i) {
+    const IPC::Message* msg = render_thread_->sink().GetMessageAt(i);
+    if (msg->type() == ChromeViewHostMsg_ContentBlocked::ID)
+      was_blocked = true;
+  }
+  EXPECT_FALSE(was_blocked);
+
+  // Verify that images are allowed.
+  EXPECT_CALL(
+      mock_observer,
+      OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES, std::string())).Times(0);
+  EXPECT_TRUE(observer->AllowImage(GetMainFrame(), true,
+                                   mock_observer.image_url_));
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
+}

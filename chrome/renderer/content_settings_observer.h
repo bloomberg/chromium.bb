@@ -65,6 +65,10 @@ class ContentSettingsObserver
   void DidNotAllowPlugins(WebKit::WebFrame* frame);
   void DidNotAllowScript(WebKit::WebFrame* frame);
 
+  // Used for allowing scripts and images on views displaying interstitial
+  // pages.
+  void SetAsInterstitial();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSettingsObserverTest, WhitelistedSchemes);
 
@@ -103,6 +107,7 @@ class ContentSettingsObserver
   std::map<WebKit::WebFrame*, bool> cached_script_permissions_;
 
   bool plugins_temporarily_allowed_;
+  bool is_interstitial_page_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsObserver);
 };
