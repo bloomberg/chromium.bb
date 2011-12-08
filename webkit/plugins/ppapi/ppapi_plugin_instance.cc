@@ -1717,8 +1717,8 @@ PP_Var PluginInstance::ExecuteScript(PP_Instance instance,
   bool ok = WebBindings::evaluate(NULL, frame->windowObject(), &np_script,
                                   &result);
   if (!ok) {
-    // TODO(brettw) bug 54011: The TryCatch isn't working properly and
-    // doesn't actually catch this exception.
+    // TryCatch doesn't catch the exceptions properly. Since this is only for
+    // a trusted API, just set to a general exception message.
     try_catch.SetException("Exception caught");
     WebBindings::releaseVariantValue(&result);
     return PP_MakeUndefined();

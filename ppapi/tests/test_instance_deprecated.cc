@@ -108,9 +108,9 @@ std::string TestInstance::TestExecuteScript() {
       &exception);
   ASSERT_TRUE(ret.is_undefined());
   ASSERT_TRUE(exception.is_string());
-  // TODO(brettw) bug 54011: The TryCatch isn't working properly and
-  // doesn't actually pass the exception text up.
-  //ASSERT_TRUE(exception.AsString() == "plugin exception");
+  // Due to a limitation in the implementation of TryCatch, it doesn't actually
+  // pass the strings up. Since this is a trusted only interface, we've decided
+  // not to bother fixing this for now.
 
   // Exception caused by string evaluation should be caught.
   exception = pp::Var();
