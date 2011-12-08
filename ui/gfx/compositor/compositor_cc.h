@@ -90,6 +90,10 @@ class COMPOSITOR_EXPORT CompositorCC
   static void Initialize(bool useThread);
   static void Terminate();
 
+  // If necessary enables the test context. If the test context is enabled the
+  // compositor does not render anything to screen.
+  static void EnableTestContextIfNecessary();
+
  protected:
   // Compositor implementation.
   virtual Texture* CreateTexture() OVERRIDE;
@@ -118,6 +122,9 @@ class COMPOSITOR_EXPORT CompositorCC
   gfx::AcceleratedWidget widget_;
   WebKit::WebLayer root_web_layer_;
   WebKit::WebLayerTreeView host_;
+
+  // See description above SetTestContextEnabled.
+  static bool test_context_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorCC);
 };

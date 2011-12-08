@@ -42,7 +42,6 @@
         'compositor_cc.cc',
         'compositor_cc.h',
         'compositor_observer.h',
-        'compositor_setup.h',
         'compositor_stub.cc',
         'compositor_switches.cc',
         'compositor_switches.h',
@@ -108,7 +107,6 @@
             'sources!': [
               'compositor_cc.cc',
               'compositor_cc.h',
-              'compositor_setup.h',
               'test_web_graphics_context_3d.cc',
               'test_web_graphics_context_3d.h',
             ],
@@ -159,6 +157,7 @@
         '<(DEPTH)/ui/ui.gyp:ui_resources',
         'compositor',
         'compositor_test_support',
+        'test_compositor',
       ],
       'sources': [
         'layer_animation_element_unittest.cc',
@@ -186,11 +185,6 @@
         ['OS=="linux"', {
           'dependencies': [
             '<(DEPTH)/third_party/mesa/mesa.gyp:osmesa',
-          ],
-        }],
-        ['use_webkit_compositor==0', {
-          'dependencies': [
-            'test_compositor',
           ],
         }],
       ],

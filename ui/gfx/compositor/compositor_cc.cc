@@ -22,12 +22,7 @@
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 
 namespace {
-
 webkit_glue::WebThreadImpl* g_compositor_thread = NULL;
-
-// If true a context is used that results in no rendering to the screen.
-bool test_context_enabled = false;
-
 }  // anonymous namespace
 
 namespace ui {
@@ -126,6 +121,9 @@ void TextureCC::Draw(const ui::TextureDrawParams& params,
   NOTREACHED();
 }
 
+// static
+bool CompositorCC::test_context_enabled_ = false;
+
 CompositorCC::CompositorCC(CompositorDelegate* delegate,
                            gfx::AcceleratedWidget widget,
                            const gfx::Size& size)
@@ -172,6 +170,12 @@ void CompositorCC::Terminate() {
     delete g_compositor_thread;
     g_compositor_thread = NULL;
   }
+}
+
+// static
+void CompositorCC::EnableTestContextIfNecessary() {
+  // TODO: only do this if command line param not set.
+  test_context_enabled_ = true;
 }
 
 Texture* CompositorCC::CreateTexture() {
@@ -243,7 +247,7 @@ void CompositorCC::applyScrollDelta(const WebKit::WebSize&) {
 
 WebKit::WebGraphicsContext3D* CompositorCC::createContext3D() {
   WebKit::WebGraphicsContext3D* context;
-  if (test_context_enabled) {
+  if (test_context_enabled_) {
     context = new TestWebGraphicsContext3D();
   } else {
     gfx::GLShareGroup* share_group =
@@ -280,17 +284,6 @@ Compositor* Compositor::Create(CompositorDelegate* owner,
                                gfx::AcceleratedWidget widget,
                                const gfx::Size& size) {
   return new CompositorCC(owner, widget, size);
-}
-
-COMPOSITOR_EXPORT void SetupTestCompositor() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableTestCompositor)) {
-    test_context_enabled = true;
-  }
-}
-
-COMPOSITOR_EXPORT void DisableTestCompositor() {
-  test_context_enabled = false;
 }
 
 }  // namespace ui

@@ -374,10 +374,6 @@ extern const char kDisablePrintPreview[];
 extern const char kEnablePrintPreview[];
 extern const char kEnableBenchmarking[];
 
-#if defined(USE_AURA)
-extern const char kTestCompositor[];
-#endif
-
 bool IsPrintPreviewEnabled();
 
 bool IsInBrowserThumbnailingEnabled();

@@ -16,15 +16,6 @@
             'app/policy/cloud_policy_codegen.gyp:policy',
           ],
           'conditions': [
-            ['use_webkit_compositor==1', {
-              'dependencies': [
-                '../ui/gfx/compositor/compositor.gyp:compositor',
-              ],
-            }, { # use_webkit_compositor!=1
-              'dependencies': [
-                '../ui/gfx/compositor/compositor.gyp:test_compositor',
-              ],
-            }],
             ['OS=="win"', {
               'product_name': 'chrome',
               'dependencies': [
