@@ -43,6 +43,17 @@ class UI_EXPORT Screen {
   // the monitor nearest the specified point.
   static gfx::Rect GetMonitorAreaNearestPoint(const gfx::Point& point);
 
+  // Returns the bounds of the work area of the primary monitor.
+  static gfx::Rect GetPrimaryMonitorWorkArea();
+
+  // Returns the bounds of the primary monitor.
+  static gfx::Rect GetPrimaryMonitorBounds();
+
+  // Returns the bounds of the work area of the monitor that most closely
+  // intersects the provided bounds.
+  static gfx::Rect GetMonitorWorkAreaMatching(
+      const gfx::Rect& match_rect);
+
   // Returns the window under the cursor.
   static gfx::NativeWindow GetWindowAtCursorScreenPoint();
 

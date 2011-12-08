@@ -48,6 +48,21 @@ gfx::Rect Screen::GetMonitorAreaNearestPoint(const gfx::Point& point) {
 }
 
 // static
+gfx::Rect Screen::GetPrimaryMonitorWorkArea() {
+  return instance_->GetMonitorWorkAreaNearestPoint(gfx::Point());
+}
+
+// static
+gfx::Rect Screen::GetPrimaryMonitorBounds() {
+  return instance_->GetMonitorAreaNearestPoint(gfx::Point());
+}
+
+// static
+gfx::Rect Screen::GetMonitorWorkAreaMatching(const gfx::Rect& match_rect) {
+  return instance_->GetMonitorWorkAreaNearestPoint(gfx::Point());
+}
+
+// static
 gfx::NativeWindow Screen::GetWindowAtCursorScreenPoint() {
   return instance_->GetWindowAtCursorScreenPointImpl();
 }

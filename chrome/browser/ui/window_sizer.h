@@ -6,13 +6,29 @@
 #define CHROME_BROWSER_UI_WINDOW_SIZER_H_
 #pragma once
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/rect.h"
 
 class Browser;
+
+// An interface implemented by an object that can retrieve information about
+// the monitors on the system.
+class MonitorInfoProvider {
+ public:
+  virtual ~MonitorInfoProvider() {}
+
+  // Returns the bounds of the work area of the primary monitor.
+  virtual gfx::Rect GetPrimaryMonitorWorkArea() const = 0;
+
+  // Returns the bounds of the primary monitor.
+  virtual gfx::Rect GetPrimaryMonitorBounds() const = 0;
+
+  // Returns the bounds of the work area of the monitor that most closely
+  // intersects the provided bounds.
+  virtual gfx::Rect GetMonitorWorkAreaMatching(
+      const gfx::Rect& match_rect) const = 0;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // WindowSizer
@@ -27,55 +43,18 @@ class Browser;
 //
 class WindowSizer {
  public:
-  class MonitorInfoProvider;
   class StateProvider;
 
-  // The WindowSizer assumes ownership of these objects.
+  // WindowSizer owns |state_provider| and will create a default
+  // MonitorInfoProvider using the physical screen.
+  explicit WindowSizer(StateProvider* state_provider);
+
+  // WindowSizer owns |state_provider| and |monitor_info_provider|.
+  // It will use the supplied monitor info provider. Used only for testing.
   WindowSizer(StateProvider* state_provider,
               MonitorInfoProvider* monitor_info_provider);
+
   virtual ~WindowSizer();
-
-  // Static factory methods to create default MonitorInfoProvider
-  // instances.  The returned object is owned by the caller.
-  static MonitorInfoProvider* CreateDefaultMonitorInfoProvider();
-
-  // An interface implemented by an object that can retrieve information about
-  // the monitors on the system.
-  class MonitorInfoProvider {
-   public:
-    MonitorInfoProvider() {}
-    virtual ~MonitorInfoProvider() {}
-
-    // Returns the bounds of the work area of the primary monitor.
-    virtual gfx::Rect GetPrimaryMonitorWorkArea() const = 0;
-
-    // Returns the bounds of the primary monitor.
-    virtual gfx::Rect GetPrimaryMonitorBounds() const = 0;
-
-    // Returns the bounds of the work area of the monitor that most closely
-    // intersects the provided bounds.
-    virtual gfx::Rect GetMonitorWorkAreaMatching(
-        const gfx::Rect& match_rect) const = 0;
-
-    // Ensures number and coordinates of work areas are up-to-date.  You must
-    // call this before calling either of the below functions, as work areas can
-    // change while the program is running.
-    virtual void UpdateWorkAreas() = 0;
-
-    // Returns the number of monitors on the system.
-    size_t GetMonitorCount() const {
-      return work_areas_.size();
-    }
-
-    // Returns the bounds of the work area of the monitor at the specified
-    // index.
-    gfx::Rect GetWorkAreaAt(size_t index) const {
-      return work_areas_[index];
-    }
-
-   protected:
-    std::vector<gfx::Rect> work_areas_;
-  };
 
   // An interface implemented by an object that can retrieve state from either a
   // persistent store or an existing window.
@@ -139,10 +118,6 @@ class WindowSizer {
   // no saved window placement in prefs. This function determines the default
   // size based on monitor size, etc.
   void GetDefaultWindowBounds(gfx::Rect* default_bounds) const;
-
-  // Returns true if the specified position is "offscreen" for the given edge,
-  // meaning that it's outside all work areas in the direction of that edge.
-  bool PositionIsOffscreen(int position, Edge edge) const;
 
   // Adjusts |bounds| to be visible onscreen, biased toward the work area of the
   // monitor containing |other_bounds|.  Despite the name, this doesn't

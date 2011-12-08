@@ -6,6 +6,17 @@
 
 #include <windows.h>
 
+namespace {
+
+MONITORINFO GetMonitorInfoForMonitor(HMONITOR monitor) {
+  MONITORINFO monitor_info = { 0 };
+  monitor_info.cbSize = sizeof(monitor_info);
+  GetMonitorInfo(monitor, &monitor_info);
+  return monitor_info;
+}
+
+}  // namespace
+
 namespace gfx {
 
 // static
@@ -52,6 +63,26 @@ gfx::Rect Screen::GetMonitorWorkAreaNearestPoint(const gfx::Point& point) {
 // static
 gfx::Rect Screen::GetMonitorAreaNearestPoint(const gfx::Point& point) {
   return GetMonitorAreaOrWorkAreaNearestPoint(point, false);
+}
+
+// static
+gfx::Rect Screen::GetPrimaryMonitorWorkArea() {
+  return gfx::Rect(GetMonitorInfoForMonitor(MonitorFromWindow(NULL,
+      MONITOR_DEFAULTTOPRIMARY)).rcWork);
+}
+
+// static
+gfx::Rect Screen::GetPrimaryMonitorBounds() {
+  return gfx::Rect(GetMonitorInfoForMonitor(MonitorFromWindow(NULL,
+      MONITOR_DEFAULTTOPRIMARY)).rcMonitor);
+}
+
+// static
+gfx::Rect Screen::GetMonitorWorkAreaMatching(const gfx::Rect& match_rect) {
+  RECT other_bounds_rect = match_rect.ToRECT();
+  MONITORINFO monitor_info = GetMonitorInfoForMonitor(MonitorFromRect(
+      &other_bounds_rect, MONITOR_DEFAULTTONEAREST));
+  return gfx::Rect(monitor_info.rcWork);
 }
 
 // static

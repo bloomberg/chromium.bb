@@ -12,10 +12,10 @@
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/browser/ui/panels/panel_overflow_strip.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
-#include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "ui/gfx/screen.h"
 
 namespace {
 const int kOverflowStripThickness = 24;
@@ -51,14 +51,12 @@ PanelManager::~PanelManager() {
 }
 
 void PanelManager::OnDisplayChanged() {
-  scoped_ptr<WindowSizer::MonitorInfoProvider> info_provider(
-      WindowSizer::CreateDefaultMonitorInfoProvider());
 #if defined(OS_MACOSX)
   // On OSX, panels should be dropped all the way to the bottom edge of the
   // screen (and overlap Dock).
-  gfx::Rect work_area = info_provider->GetPrimaryMonitorBounds();
+  gfx::Rect work_area = gfx::Screen::GetPrimaryMonitorBounds();
 #else
-  gfx::Rect work_area = info_provider->GetPrimaryMonitorWorkArea();
+  gfx::Rect work_area = gfx::Screen::GetPrimaryMonitorWorkArea();
 #endif
   SetWorkArea(work_area);
 }

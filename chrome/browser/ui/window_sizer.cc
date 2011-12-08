@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/window_sizer.h"
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -11,6 +12,27 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/pref_names.h"
+#include "ui/gfx/screen.h"
+
+// Minimum height of the visible part of a window.
+const int kMinVisibleHeight = 30;
+// Minimum width of the visible part of a window.
+const int kMinVisibleWidth = 30;
+
+class DefaultMonitorInfoProvider : public MonitorInfoProvider {
+ public:
+  // Overridden from MonitorInfoProvider:
+  virtual gfx::Rect GetPrimaryMonitorWorkArea() const OVERRIDE {
+    return gfx::Screen::GetPrimaryMonitorWorkArea();
+  }
+  virtual gfx::Rect GetPrimaryMonitorBounds() const OVERRIDE {
+    return gfx::Screen::GetPrimaryMonitorBounds();
+  }
+  virtual gfx::Rect GetMonitorWorkAreaMatching(
+      const gfx::Rect& match_rect) const OVERRIDE {
+    return gfx::Screen::GetMonitorWorkAreaMatching(match_rect);
+  }
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // An implementation of WindowSizer::StateProvider that gets the last active
@@ -102,6 +124,11 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
 ///////////////////////////////////////////////////////////////////////////////
 // WindowSizer, public:
 
+WindowSizer::WindowSizer(StateProvider* state_provider)
+    : state_provider_(state_provider),
+      monitor_info_provider_(new DefaultMonitorInfoProvider) {
+}
+
 WindowSizer::WindowSizer(StateProvider* state_provider,
                          MonitorInfoProvider* monitor_info_provider)
     : state_provider_(state_provider),
@@ -116,8 +143,7 @@ void WindowSizer::GetBrowserWindowBounds(const std::string& app_name,
                                          const gfx::Rect& specified_bounds,
                                          const Browser* browser,
                                          gfx::Rect* window_bounds) {
-  const WindowSizer sizer(new DefaultStateProvider(app_name, browser),
-                          CreateDefaultMonitorInfoProvider());
+  const WindowSizer sizer(new DefaultStateProvider(app_name, browser));
   sizer.DetermineWindowBounds(specified_bounds, window_bounds);
 }
 
@@ -194,40 +220,6 @@ void WindowSizer::GetDefaultWindowBounds(gfx::Rect* default_bounds) const {
   default_bounds->SetRect(kWindowTilePixels + work_area.x(),
                           kWindowTilePixels + work_area.y(),
                           default_width, default_height);
-}
-
-bool WindowSizer::PositionIsOffscreen(int position, Edge edge) const {
-  DCHECK(monitor_info_provider_.get());
-  size_t monitor_count = monitor_info_provider_->GetMonitorCount();
-  for (size_t i = 0; i < monitor_count; ++i) {
-    gfx::Rect work_area = monitor_info_provider_->GetWorkAreaAt(i);
-    switch (edge) {
-      case TOP:
-        if (position >= work_area.y())
-          return false;
-        break;
-      case LEFT:
-        if (position >= work_area.x())
-          return false;
-        break;
-      case BOTTOM:
-        if (position <= work_area.bottom())
-          return false;
-        break;
-      case RIGHT:
-        if (position <= work_area.right())
-          return false;
-        break;
-    }
-  }
-  return true;
-}
-
-namespace {
-  // Minimum height of the visible part of a window.
-  static const int kMinVisibleHeight = 30;
-  // Minimum width of the visible part of a window.
-  static const int kMinVisibleWidth = 30;
 }
 
 void WindowSizer::AdjustBoundsToBeVisibleOnMonitorContaining(

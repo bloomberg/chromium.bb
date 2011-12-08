@@ -9,6 +9,45 @@
 
 #include "base/logging.h"
 
+namespace {
+
+bool GetScreenWorkArea(gfx::Rect* out_rect) {
+  gboolean ok;
+  guchar* raw_data = NULL;
+  gint data_len = 0;
+  ok = gdk_property_get(gdk_get_default_root_window(),  // a gdk window
+                        gdk_atom_intern("_NET_WORKAREA", FALSE),  // property
+                        gdk_atom_intern("CARDINAL", FALSE),  // property type
+                        0,  // byte offset into property
+                        0xff,  // property length to retrieve
+                        false,  // delete property after retrieval?
+                        NULL,  // returned property type
+                        NULL,  // returned data format
+                        &data_len,  // returned data len
+                        &raw_data);  // returned data
+  if (!ok)
+    return false;
+
+  // We expect to get four longs back: x, y, width, height.
+  if (data_len < static_cast<gint>(4 * sizeof(glong))) {
+    NOTREACHED();
+    g_free(raw_data);
+    return false;
+  }
+
+  glong* data = reinterpret_cast<glong*>(raw_data);
+  gint x = data[0];
+  gint y = data[1];
+  gint width = data[2];
+  gint height = data[3];
+  g_free(raw_data);
+
+  out_rect->SetRect(x, y, width, height);
+  return true;
+}
+
+}  // namespace
+
 namespace gfx {
 
 // static
@@ -61,6 +100,30 @@ gfx::Rect Screen::GetMonitorAreaNearestPoint(const gfx::Point& point) {
   GdkRectangle bounds;
   gdk_screen_get_monitor_geometry(screen, monitor, &bounds);
   return gfx::Rect(bounds);
+}
+
+// static
+gfx::Rect Screen::GetPrimaryMonitorWorkArea() {
+  gfx::Rect rect;
+  if (GetScreenWorkArea(&rect))
+    return rect.Intersect(GetPrimaryMonitorBounds());
+
+  // Return the best we've got.
+  return GetPrimaryMonitorBounds();
+}
+
+// static
+gfx::Rect Screen::GetPrimaryMonitorBounds() {
+  GdkScreen* screen = gdk_screen_get_default();
+  GdkRectangle rect;
+  gdk_screen_get_monitor_geometry(screen, 0, &rect);
+  return gfx::Rect(rect);
+}
+
+// static
+gfx::Rect Screen::GetMonitorWorkAreaMatching(const gfx::Rect& match_rect) {
+  // TODO(thestig) Implement multi-monitor support.
+  return GetPrimaryMonitorWorkArea();
 }
 
 // static

@@ -11,13 +11,13 @@
 #include "chrome/browser/notifications/balloon_host.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel.h"
-#include "chrome/browser/ui/window_sizer.h"
+#include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 
 namespace {
@@ -465,9 +465,7 @@ bool BalloonCollectionImpl::Layout::RefreshSystemMetrics() {
 #if defined(OS_MACOSX)
   gfx::Rect new_work_area = GetMacWorkArea();
 #else
-  scoped_ptr<WindowSizer::MonitorInfoProvider> info_provider(
-      WindowSizer::CreateDefaultMonitorInfoProvider());
-  gfx::Rect new_work_area = info_provider->GetPrimaryMonitorWorkArea();
+  gfx::Rect new_work_area = gfx::Screen::GetPrimaryMonitorWorkArea();
 #endif
   if (!work_area_.Equals(new_work_area)) {
     work_area_.SetRect(new_work_area.x(), new_work_area.y(),

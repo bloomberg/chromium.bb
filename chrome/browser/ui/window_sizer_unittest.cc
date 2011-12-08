@@ -43,7 +43,7 @@ static int kWindowTilePixels = WindowSizer::kWindowTilePixels;
 
 // Testing implementation of WindowSizer::MonitorInfoProvider that we can use
 // to fake various monitor layouts and sizes.
-class TestMonitorInfoProvider : public WindowSizer::MonitorInfoProvider {
+class TestMonitorInfoProvider : public MonitorInfoProvider {
  public:
   TestMonitorInfoProvider() {}
   virtual ~TestMonitorInfoProvider() {}
@@ -68,8 +68,6 @@ class TestMonitorInfoProvider : public WindowSizer::MonitorInfoProvider {
     return work_areas_[GetMonitorIndexMatchingBounds(match_rect)];
   }
 
-  virtual void UpdateWorkAreas() OVERRIDE {}
-
  private:
   size_t GetMonitorIndexMatchingBounds(const gfx::Rect& match_rect) const {
     int max_area = 0;
@@ -88,6 +86,7 @@ class TestMonitorInfoProvider : public WindowSizer::MonitorInfoProvider {
   }
 
   std::vector<gfx::Rect> monitor_bounds_;
+  std::vector<gfx::Rect> work_areas_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMonitorInfoProvider);
 };

@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -21,6 +20,7 @@
 #include "net/test/test_server.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/screen.h"
 
 namespace {
 
@@ -62,9 +62,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
     // to a smaller window and then expanding leads to slight anti-aliasing
     // differences of the text and the pixel comparison fails.
     gfx::Rect bounds(gfx::Rect(0, 0, kBrowserWidth, kBrowserHeight));
-    scoped_ptr<WindowSizer::MonitorInfoProvider> monitor_info(
-        WindowSizer::CreateDefaultMonitorInfoProvider());
-    gfx::Rect screen_bounds = monitor_info->GetPrimaryMonitorBounds();
+    gfx::Rect screen_bounds = gfx::Screen::GetPrimaryMonitorBounds();
     ASSERT_GT(screen_bounds.width(), kBrowserWidth);
     ASSERT_GT(screen_bounds.height(), kBrowserHeight);
     browser()->window()->SetBounds(bounds);

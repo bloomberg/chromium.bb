@@ -41,8 +41,8 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/gtk/about_chrome_dialog.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
-#include "chrome/browser/ui/gtk/avatar_menu_button_gtk.h"
 #include "chrome/browser/ui/gtk/avatar_menu_bubble_gtk.h"
+#include "chrome/browser/ui/gtk/avatar_menu_button_gtk.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_bar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_titlebar.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
@@ -72,7 +72,6 @@
 #include "chrome/browser/ui/page_info_bubble.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/task_manager_dialog.h"
-#include "chrome/browser/ui/window_sizer.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -82,8 +81,8 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -97,6 +96,7 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/skia_utils_gtk.h"
 
 namespace {
@@ -1960,10 +1960,8 @@ void BrowserWindowGtk::SaveWindowPosition() {
   window_preferences->SetInteger("bottom", restored_bounds_.bottom());
   window_preferences->SetBoolean("maximized", IsMaximized());
 
-  scoped_ptr<WindowSizer::MonitorInfoProvider> monitor_info_provider(
-      WindowSizer::CreateDefaultMonitorInfoProvider());
   gfx::Rect work_area(
-      monitor_info_provider->GetMonitorWorkAreaMatching(restored_bounds_));
+      gfx::Screen::GetMonitorWorkAreaMatching(restored_bounds_));
   window_preferences->SetInteger("work_area_left", work_area.x());
   window_preferences->SetInteger("work_area_top", work_area.y());
   window_preferences->SetInteger("work_area_right", work_area.right());
