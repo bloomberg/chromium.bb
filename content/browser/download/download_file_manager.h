@@ -47,6 +47,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/interrupt_reasons.h"
@@ -69,7 +70,21 @@ class DownloadBuffer;
 class CONTENT_EXPORT DownloadFileManager
     : public base::RefCountedThreadSafe<DownloadFileManager> {
  public:
-  explicit DownloadFileManager(ResourceDispatcherHost* rdh);
+  class DownloadFileFactory {
+   public:
+    virtual ~DownloadFileFactory() {}
+
+    virtual DownloadFile* CreateFile(
+        DownloadCreateInfo* info,
+        const DownloadRequestHandle& request_handle,
+        DownloadManager* download_manager) = 0;
+  };
+
+  // Takes ownership of the factory.
+  // Passing in a NULL for |factory| will cause a default
+  // |DownloadFileFactory| to be used.
+  DownloadFileManager(ResourceDispatcherHost* rdh,
+                      DownloadFileFactory* factory);
 
   // Called on shutdown on the UI thread.
   void Shutdown();
@@ -165,6 +180,7 @@ class CONTENT_EXPORT DownloadFileManager
   base::RepeatingTimer<DownloadFileManager> update_timer_;
 
   ResourceDispatcherHost* resource_dispatcher_host_;
+  scoped_ptr<DownloadFileFactory> download_file_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileManager);
 };

@@ -292,7 +292,7 @@ void OnSwapOutACKHelper(int render_process_id, int render_view_id) {
 ResourceDispatcherHost::ResourceDispatcherHost(
     const ResourceQueue::DelegateSet& resource_queue_delegates)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
-          download_file_manager_(new DownloadFileManager(this))),
+          download_file_manager_(new DownloadFileManager(this, NULL))),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           save_file_manager_(new SaveFileManager(this))),
       request_id_(-1),

@@ -34,10 +34,32 @@ namespace {
 // cause it to become unresponsive (in milliseconds).
 const int kUpdatePeriodMs = 500;
 
+class DownloadFileFactoryImpl
+    : public DownloadFileManager::DownloadFileFactory {
+ public:
+  DownloadFileFactoryImpl() {}
+
+  virtual DownloadFile* CreateFile(DownloadCreateInfo* info,
+                                   const DownloadRequestHandle& request_handle,
+                                   DownloadManager* download_manager) OVERRIDE;
+};
+
+DownloadFile* DownloadFileFactoryImpl::CreateFile(
+    DownloadCreateInfo* info,
+    const DownloadRequestHandle& request_handle,
+    DownloadManager* download_manager) {
+  return new DownloadFileImpl(info,
+                              new DownloadRequestHandle(request_handle),
+                              download_manager);
+}
+
 }  // namespace
 
-DownloadFileManager::DownloadFileManager(ResourceDispatcherHost* rdh)
-    : resource_dispatcher_host_(rdh) {
+DownloadFileManager::DownloadFileManager(ResourceDispatcherHost* rdh,
+                                         DownloadFileFactory* factory)
+    : resource_dispatcher_host_(rdh), download_file_factory_(factory) {
+  if (download_file_factory_ == NULL)
+    download_file_factory_.reset(new DownloadFileFactoryImpl);
 }
 
 DownloadFileManager::~DownloadFileManager() {
@@ -67,10 +89,8 @@ void DownloadFileManager::CreateDownloadFile(
   // Life of |info| ends here. No more references to it after this method.
   scoped_ptr<DownloadCreateInfo> infop(info);
 
-  scoped_ptr<DownloadFile> download_file(
-      new DownloadFileImpl(info,
-                           new DownloadRequestHandle(request_handle),
-                           download_manager));
+  scoped_ptr<DownloadFile> download_file(download_file_factory_->CreateFile(
+      info, request_handle, download_manager));
   if (net::OK != download_file->Initialize(get_hash)) {
     request_handle.CancelRequest();
     return;

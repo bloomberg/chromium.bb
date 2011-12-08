@@ -55,6 +55,28 @@
 #define MAYBE_DownloadRemoveTest DownloadRemoveTest
 #endif
 
+namespace {
+
+class MockDownloadFileFactory
+    : public DownloadFileManager::DownloadFileFactory {
+ public:
+  MockDownloadFileFactory() {}
+
+  virtual DownloadFile* CreateFile(DownloadCreateInfo* info,
+                                   const DownloadRequestHandle& request_handle,
+                                   DownloadManager* download_manager) OVERRIDE;
+};
+
+DownloadFile* MockDownloadFileFactory::CreateFile(
+    DownloadCreateInfo* info,
+    const DownloadRequestHandle& request_handle,
+    DownloadManager* download_manager) {
+  NOTREACHED();
+  return NULL;
+}
+
+}  // namespace
+
 using content::BrowserThread;
 
 DownloadId::Domain kValidIdDomain = "valid DownloadId::Domain";
@@ -149,7 +171,8 @@ class DownloadManagerTest : public testing::Test {
 
   DownloadFileManager* file_manager() {
     if (!file_manager_) {
-      file_manager_ = new DownloadFileManager(NULL);
+      file_manager_ = new DownloadFileManager(NULL,
+                                              new MockDownloadFileFactory);
       download_manager_->SetFileManager(file_manager_);
     }
     return file_manager_;
