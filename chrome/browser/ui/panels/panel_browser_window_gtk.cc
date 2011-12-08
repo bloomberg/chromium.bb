@@ -367,6 +367,9 @@ bool PanelBrowserWindowGtk::PreHandlePanelKeyboardEvent(
 void PanelBrowserWindowGtk::FullScreenModeChanged(bool is_full_screen) {
   // Nothing to do here as z-order rules for panels ensures that they're below
   // any app running in full screen mode.
+
+  // Full screen detection should not have been enabled for Linux.
+  NOTREACHED();
 }
 
 void PanelBrowserWindowGtk::HandlePanelKeyboardEvent(

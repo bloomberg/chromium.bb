@@ -67,6 +67,16 @@ void PanelBrowserView::Init() {
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 }
 
+void PanelBrowserView::Show() {
+  if (!panel_->manager()->is_full_screen())
+    BrowserView::Show();
+}
+
+void PanelBrowserView::ShowInactive() {
+  if (!panel_->manager()->is_full_screen())
+    BrowserView::ShowInactive();
+}
+
 void PanelBrowserView::Close() {
   GetWidget()->RemoveObserver(this);
   closed_ = true;
@@ -362,11 +372,13 @@ bool PanelBrowserView::PreHandlePanelKeyboardEvent(
 }
 
 void PanelBrowserView::FullScreenModeChanged(bool is_full_screen) {
-  // TODO(prasadt): Enable this code.
-  // if (is_full_screen)
-  //   HideThePanel.
-  // else
-  //   ShowThePanel.
+  if (is_full_screen) {
+    if (frame()->IsVisible()) {
+        frame()->Hide();
+    }
+  } else {
+    ShowInactive();
+  }
 }
 
 void PanelBrowserView::HandlePanelKeyboardEvent(

@@ -52,6 +52,8 @@ class PanelBrowserView : public BrowserView,
 
   // Overridden from BrowserView:
   virtual void Init() OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void ShowInactive() OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void Deactivate() OVERRIDE;
   virtual bool CanResize() const OVERRIDE;
