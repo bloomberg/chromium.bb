@@ -57,7 +57,7 @@ using extensions::csp_validator::ContentSecurityPolicyIsSecure;
 
 namespace {
 
-const int kModernManifestVersion = 1;
+const int kModernManifestVersion = 2;
 const int kPEMOutputColumns = 65;
 
 // KEY MARKERS
