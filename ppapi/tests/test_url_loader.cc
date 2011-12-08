@@ -120,14 +120,8 @@ void TestURLLoader::RunTests(const std::string& filter) {
   RUN_TEST_FORCEASYNC_AND_NOT(TrustedCrossOriginRequest, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(UntrustedJavascriptURLRestriction, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(TrustedJavascriptURLRestriction, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(UntrustedMethodRestriction, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(TrustedMethodRestriction, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(UntrustedHeaderRestriction, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(TrustedHeaderRestriction, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(UntrustedCustomReferrer, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(TrustedCustomReferrer, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(UntrustedCustomContentTransferEncoding, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(TrustedCustomContentTransferEncoding, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(UntrustedHttpRequests, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(TrustedHttpRequests, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(AuditURLRedirect, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(AbortCalls, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(UntendedLoad, filter);
@@ -592,133 +586,122 @@ std::string TestURLLoader::TestTrustedJavascriptURLRestriction() {
   PASS();
 }
 
-// HTTP methods are restricted only for untrusted loaders. Forbidden
-// methods are CONNECT, TRACE, and TRACK, and any string that is not a valid
-// token (containing special characters like CR, LF).
-// http://www.w3.org/TR/XMLHttpRequest/
-std::string TestURLLoader::TestUntrustedMethodRestriction() {
-  ASSERT_EQ(OpenUntrusted("cOnNeCt", ""), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted("tRaCk", ""), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted("tRaCe", ""), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted("POST\x0d\x0ax-csrf-token:\x20test1234", ""),
-                          PP_ERROR_NOACCESS);
-  PASS();
-}
+std::string TestURLLoader::TestUntrustedHttpRequests() {
+  // HTTP methods are restricted only for untrusted loaders. Forbidden
+  // methods are CONNECT, TRACE, and TRACK, and any string that is not a
+  // valid token (containing special characters like CR, LF).
+  // http://www.w3.org/TR/XMLHttpRequest/
+  {
+    ASSERT_EQ(OpenUntrusted("cOnNeCt", ""), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("tRaCk", ""), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("tRaCe", ""), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("POST\x0d\x0ax-csrf-token:\x20test1234", ""),
+                            PP_ERROR_NOACCESS);
+  }
+  // HTTP methods are restricted only for untrusted loaders. Try all headers
+  // that are forbidden by http://www.w3.org/TR/XMLHttpRequest/.
+  {
+    ASSERT_EQ(OpenUntrusted("GET", "Accept-Charset:\n"), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("GET", "Accept-Encoding:\n"), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("GET", "Connection:\n"), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("GET", "Content-Length:\n"), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("GET", "Cookie:\n"), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("GET", "Cookie2:\n"), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted(
+        "GET", "Content-Transfer-Encoding:\n"), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("GET", "Date:\n"), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("GET", "Expect:\n"), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("GET", "Host:\n"), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("GET", "Keep-Alive:\n"), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("GET", "Referer:\n"), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("GET", "TE:\n"), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("GET", "Trailer:\n"), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted(
+        "GET", "Transfer-Encoding:\n"), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("GET", "Upgrade:\n"), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("GET", "User-Agent:\n"), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("GET", "Via:\n"), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted(
+        "GET", "Proxy-Authorization: Basic dXNlcjpwYXNzd29yZA==:\n"),
+            PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("GET", "Sec-foo:\n"), PP_ERROR_NOACCESS);
+  }
+  // Untrusted requests with custom referrer should fail.
+  {
+    pp::URLRequestInfo request(instance_);
+    request.SetCustomReferrerURL("http://www.google.com/");
 
-// Trusted requests can use restricted methods.
-std::string TestURLLoader::TestTrustedMethodRestriction() {
-  ASSERT_EQ(OpenTrusted("cOnNeCt", ""), PP_OK);
-  ASSERT_EQ(OpenTrusted("tRaCk", ""), PP_OK);
-  ASSERT_EQ(OpenTrusted("tRaCe", ""), PP_OK);
+    int32_t rv = OpenUntrusted(request);
+    if (rv != PP_ERROR_NOACCESS)
+      return ReportError(
+          "Untrusted request with custom referrer restriction", rv);
+  }
+  // Untrusted requests with custom transfer encodings should fail.
+  {
+    pp::URLRequestInfo request(instance_);
+    request.SetCustomContentTransferEncoding("foo");
 
-  PASS();
-}
-
-// HTTP methods are restricted only for untrusted loaders. Try all headers
-// that are forbidden by http://www.w3.org/TR/XMLHttpRequest/.
-std::string TestURLLoader::TestUntrustedHeaderRestriction() {
-  ASSERT_EQ(OpenUntrusted("GET", "Accept-Charset:\n"), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted("GET", "Accept-Encoding:\n"), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted("GET", "Connection:\n"), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted("GET", "Content-Length:\n"), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted("GET", "Cookie:\n"), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted("GET", "Cookie2:\n"), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted(
-      "GET", "Content-Transfer-Encoding:\n"), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted("GET", "Date:\n"), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted("GET", "Expect:\n"), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted("GET", "Host:\n"), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted("GET", "Keep-Alive:\n"), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted("GET", "Referer:\n"), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted("GET", "TE:\n"), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted("GET", "Trailer:\n"), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted("GET", "Transfer-Encoding:\n"), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted("GET", "Upgrade:\n"), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted("GET", "User-Agent:\n"), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted("GET", "Via:\n"), PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted(
-      "GET", "Proxy-Authorization: Basic dXNlcjpwYXNzd29yZA==:\n"),
-          PP_ERROR_NOACCESS);
-  ASSERT_EQ(OpenUntrusted("GET", "Sec-foo:\n"), PP_ERROR_NOACCESS);
-
-  PASS();
-}
-
-// Trusted requests can use restricted headers.
-std::string TestURLLoader::TestTrustedHeaderRestriction() {
-  ASSERT_EQ(OpenTrusted("GET", "Accept-Charset:\n"), PP_OK);
-  ASSERT_EQ(OpenTrusted("GET", "Accept-Encoding:\n"), PP_OK);
-  ASSERT_EQ(OpenTrusted("GET", "Connection:\n"), PP_OK);
-  ASSERT_EQ(OpenTrusted("GET", "Content-Length:\n"), PP_OK);
-  ASSERT_EQ(OpenTrusted("GET", "Cookie:\n"), PP_OK);
-  ASSERT_EQ(OpenTrusted("GET", "Cookie2:\n"), PP_OK);
-  ASSERT_EQ(OpenTrusted(
-      "GET", "Content-Transfer-Encoding:\n"), PP_OK);
-  ASSERT_EQ(OpenTrusted("GET", "Date:\n"), PP_OK);
-  ASSERT_EQ(OpenTrusted("GET", "Expect:\n"), PP_OK);
-  ASSERT_EQ(OpenTrusted("GET", "Host:\n"), PP_OK);
-  ASSERT_EQ(OpenTrusted("GET", "Keep-Alive:\n"), PP_OK);
-  ASSERT_EQ(OpenTrusted("GET", "Referer:\n"), PP_OK);
-  ASSERT_EQ(OpenTrusted("GET", "TE:\n"), PP_OK);
-  ASSERT_EQ(OpenTrusted("GET", "Trailer:\n"), PP_OK);
-  ASSERT_EQ(OpenTrusted("GET", "Transfer-Encoding:\n"), PP_OK);
-  ASSERT_EQ(OpenTrusted("GET", "Upgrade:\n"), PP_OK);
-  ASSERT_EQ(OpenTrusted("GET", "User-Agent:\n"), PP_OK);
-  ASSERT_EQ(OpenTrusted("GET", "Via:\n"), PP_OK);
-  ASSERT_EQ(OpenTrusted(
-      "GET", "Proxy-Authorization: Basic dXNlcjpwYXNzd29yZA==:\n"), PP_OK);
-  ASSERT_EQ(OpenTrusted("GET", "Sec-foo:\n"), PP_OK);
+    int32_t rv = OpenUntrusted(request);
+    if (rv != PP_ERROR_NOACCESS)
+      return ReportError(
+          "Untrusted request with content-transfer-encoding restriction", rv);
+  }
 
   PASS();
 }
 
-// Untrusted requests with custom referrer should fail.
-std::string TestURLLoader::TestUntrustedCustomReferrer() {
-  pp::URLRequestInfo request(instance_);
-  request.SetCustomReferrerURL("http://www.google.com/");
+std::string TestURLLoader::TestTrustedHttpRequests() {
+  // Trusted requests can use restricted methods.
+  {
+    ASSERT_EQ(OpenTrusted("cOnNeCt", ""), PP_OK);
+    ASSERT_EQ(OpenTrusted("tRaCk", ""), PP_OK);
+    ASSERT_EQ(OpenTrusted("tRaCe", ""), PP_OK);
+  }
+  // Trusted requests can use restricted headers.
+  {
+    ASSERT_EQ(OpenTrusted("GET", "Accept-Charset:\n"), PP_OK);
+    ASSERT_EQ(OpenTrusted("GET", "Accept-Encoding:\n"), PP_OK);
+    ASSERT_EQ(OpenTrusted("GET", "Connection:\n"), PP_OK);
+    ASSERT_EQ(OpenTrusted("GET", "Content-Length:\n"), PP_OK);
+    ASSERT_EQ(OpenTrusted("GET", "Cookie:\n"), PP_OK);
+    ASSERT_EQ(OpenTrusted("GET", "Cookie2:\n"), PP_OK);
+    ASSERT_EQ(OpenTrusted(
+        "GET", "Content-Transfer-Encoding:\n"), PP_OK);
+    ASSERT_EQ(OpenTrusted("GET", "Date:\n"), PP_OK);
+    ASSERT_EQ(OpenTrusted("GET", "Expect:\n"), PP_OK);
+    ASSERT_EQ(OpenTrusted("GET", "Host:\n"), PP_OK);
+    ASSERT_EQ(OpenTrusted("GET", "Keep-Alive:\n"), PP_OK);
+    ASSERT_EQ(OpenTrusted("GET", "Referer:\n"), PP_OK);
+    ASSERT_EQ(OpenTrusted("GET", "TE:\n"), PP_OK);
+    ASSERT_EQ(OpenTrusted("GET", "Trailer:\n"), PP_OK);
+    ASSERT_EQ(OpenTrusted("GET", "Transfer-Encoding:\n"), PP_OK);
+    ASSERT_EQ(OpenTrusted("GET", "Upgrade:\n"), PP_OK);
+    ASSERT_EQ(OpenTrusted("GET", "User-Agent:\n"), PP_OK);
+    ASSERT_EQ(OpenTrusted("GET", "Via:\n"), PP_OK);
+    ASSERT_EQ(OpenTrusted(
+        "GET", "Proxy-Authorization: Basic dXNlcjpwYXNzd29yZA==:\n"), PP_OK);
+    ASSERT_EQ(OpenTrusted("GET", "Sec-foo:\n"), PP_OK);
+  }
+  // Trusted requests with custom referrer should succeed.
+  {
+    pp::URLRequestInfo request(instance_);
+    request.SetCustomReferrerURL("http://www.google.com/");
 
-  int32_t rv = OpenUntrusted(request);
-  if (rv != PP_ERROR_NOACCESS)
-    return ReportError(
-        "Untrusted request with custom referrer restriction", rv);
+    int32_t rv = OpenTrusted(request);
+    if (rv != PP_OK)
+      return ReportError("Trusted request with custom referrer", rv);
+  }
+  // Trusted requests with custom transfer encodings should succeed.
+  {
+    pp::URLRequestInfo request(instance_);
+    request.SetCustomContentTransferEncoding("foo");
 
-  PASS();
-}
+    int32_t rv = OpenTrusted(request);
+    if (rv != PP_OK)
+      return ReportError(
+          "Trusted request with content-transfer-encoding failed", rv);
+  }
 
-// Trusted requests with custom referrer should succeed.
-std::string TestURLLoader::TestTrustedCustomReferrer() {
-  pp::URLRequestInfo request(instance_);
-  request.SetCustomReferrerURL("http://www.google.com/");
-
-  int32_t rv = OpenTrusted(request);
-  if (rv != PP_OK)
-    return ReportError("Trusted request with custom referrer", rv);
-
-  PASS();
-}
-
-// Untrusted requests with custom transfer encodings should fail.
-std::string TestURLLoader::TestUntrustedCustomContentTransferEncoding() {
-  pp::URLRequestInfo request(instance_);
-  request.SetCustomContentTransferEncoding("foo");
-
-  int32_t rv = OpenUntrusted(request);
-  if (rv != PP_ERROR_NOACCESS)
-    return ReportError(
-        "Untrusted request with content-transfer-encoding restriction", rv);
-
-  PASS();
-}
-
-// Trusted requests with custom transfer encodings should succeed.
-std::string TestURLLoader::TestTrustedCustomContentTransferEncoding() {
-  pp::URLRequestInfo request(instance_);
-  request.SetCustomContentTransferEncoding("foo");
-
-  int32_t rv = OpenTrusted(request);
-  if (rv != PP_OK)
-    return ReportError("Trusted request with content-transfer-encoding failed",
-                       rv);
   PASS();
 }
 

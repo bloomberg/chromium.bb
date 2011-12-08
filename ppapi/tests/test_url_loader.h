@@ -64,14 +64,8 @@ class TestURLLoader : public TestCase {
   std::string TestTrustedCrossOriginRequest();
   std::string TestUntrustedJavascriptURLRestriction();
   std::string TestTrustedJavascriptURLRestriction();
-  std::string TestUntrustedMethodRestriction();
-  std::string TestTrustedMethodRestriction();
-  std::string TestUntrustedHeaderRestriction();
-  std::string TestTrustedHeaderRestriction();
-  std::string TestUntrustedCustomReferrer();
-  std::string TestTrustedCustomReferrer();
-  std::string TestUntrustedCustomContentTransferEncoding();
-  std::string TestTrustedCustomContentTransferEncoding();
+  std::string TestUntrustedHttpRequests();
+  std::string TestTrustedHttpRequests();
   std::string TestAuditURLRedirect();
   std::string TestAbortCalls();
   std::string TestUntendedLoad();
