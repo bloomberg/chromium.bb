@@ -5,6 +5,7 @@
 #include "ui/gfx/gl/gl_surface_osmesa.h"
 #include "base/logging.h"
 #include "ui/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_context.h"
 
 namespace gfx {
 
@@ -20,6 +21,11 @@ GLSurfaceOSMesa::~GLSurfaceOSMesa() {
 bool GLSurfaceOSMesa::Resize(const gfx::Size& new_size) {
   if (new_size == size_)
     return true;
+
+  GLContext* current_context = GLContext::GetCurrent();
+  bool was_current = current_context && current_context->IsCurrent(this);
+  if (was_current)
+    current_context->ReleaseCurrent(this);
 
   // Preserve the old buffer.
   scoped_array<int32> old_buffer(buffer_.release());
@@ -37,6 +43,10 @@ bool GLSurfaceOSMesa::Resize(const gfx::Size& new_size) {
   }
 
   size_ = new_size;
+
+  if (was_current)
+    return current_context->MakeCurrent(this);
+
   return true;
 }
 

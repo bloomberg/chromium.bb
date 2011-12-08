@@ -12,6 +12,7 @@
 #include "third_party/angle/include/EGL/eglext.h"
 #endif
 #include "ui/gfx/gl/egl_util.h"
+#include "ui/gfx/gl/gl_context.h"
 
 #if defined(OS_ANDROID)
 #include <EGL/egl.h>
@@ -357,9 +358,22 @@ bool PbufferGLSurfaceEGL::Resize(const gfx::Size& size) {
   if (size == size_)
     return true;
 
+  GLContext* current_context = GLContext::GetCurrent();
+  bool was_current = current_context && current_context->IsCurrent(this);
+  if (was_current)
+    current_context->ReleaseCurrent(this);
+
   Destroy();
+
   size_ = size;
-  return Initialize();
+
+  if (!Initialize())
+    return false;
+
+  if (was_current)
+    return current_context->MakeCurrent(this);
+
+  return true;
 }
 
 EGLSurface PbufferGLSurfaceEGL::GetHandle() {
