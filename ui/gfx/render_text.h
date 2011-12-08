@@ -234,9 +234,6 @@ class UI_EXPORT RenderText {
   virtual void DrawVisualText(Canvas* canvas) = 0;
 
   // Get the logical index of the grapheme preceding the argument |position|.
-  // If |IsCursorablePosition(position)| is true, the result will be the start
-  // of the previous grapheme, if any. Otherwise, the result will be the start
-  // of the grapheme containing |position|.
   size_t GetIndexOfPreviousGrapheme(size_t position);
 
   // Apply composition style (underline) to composition range and selection
@@ -255,13 +252,8 @@ class UI_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, CustomDefaultStyle);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ApplyStyleRange);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, StyleRangesAdjust);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GraphemePositions);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, SelectionModels);
 
   // Return an index belonging to the |next| or previous logical grapheme.
-  // If |next| is false and |IsCursorablePosition(index)| is true, the result
-  // will be the start of the previous grapheme, if any. Otherwise, the result
-  // will be the start of the grapheme containing |index|.
   // The return value is bounded by 0 and the text length, inclusive.
   virtual size_t IndexOfAdjacentGrapheme(size_t index, bool next) = 0;
 

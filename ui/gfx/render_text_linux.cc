@@ -284,8 +284,6 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
 }
 
 size_t RenderTextLinux::IndexOfAdjacentGrapheme(size_t index, bool next) {
-  if (index > text().length())
-    return text().length();
   EnsureLayout();
   return Utf16IndexOfAdjacentGrapheme(Utf16IndexToUtf8Index(index), next);
 }
