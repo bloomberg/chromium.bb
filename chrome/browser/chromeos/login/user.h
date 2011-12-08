@@ -53,6 +53,9 @@ class User {
   const SkBitmap& image() const { return image_; }
   int image_index() const { return image_index_; }
 
+  // True if user image is a stub (while real image is being loaded from file).
+  bool image_is_stub() const { return image_is_stub_; }
+
   // OAuth token status for this user.
   OAuthTokenStatus oauth_token_status() const { return oauth_token_status_; }
 
@@ -68,6 +71,9 @@ class User {
 
   // Setters are private so only UserManager can call them.
   void SetImage(const SkBitmap& image, int image_index);
+  // Sets a stub image until the next |SetImage| call. |image_index| may be
+  // one of |kExternalImageIndex| or |kProfileImageIndex|.
+  void SetStubImage(int image_index);
 
   void set_oauth_token_status(OAuthTokenStatus status) {
     oauth_token_status_ = status;
@@ -86,6 +92,9 @@ class User {
   // Either index of a default image for the user, |kExternalImageIndex| or
   // |kProfileImageIndex|.
   int image_index_;
+
+  // True if current user image is a stub set by a |SetStubImage| call.
+  bool image_is_stub_;
 
   DISALLOW_COPY_AND_ASSIGN(User);
 };

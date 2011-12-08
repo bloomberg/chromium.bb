@@ -186,6 +186,7 @@ class UserManager : public ProfileDownloaderDelegate,
 
   // Sets image for user |username| and sends LOGIN_USER_IMAGE_CHANGED
   // notification unless this is a new user and image is set for the first time.
+  // If |image| is empty, sets a stub image for the user.
   void SetUserImage(const std::string& username,
                     int image_index,
                     const SkBitmap& image);
@@ -211,6 +212,10 @@ class UserManager : public ProfileDownloaderDelegate,
                              const std::string& image_path,
                              int image_index,
                              bool is_async);
+
+  // Initializes |downloaded_profile_picture_| with the picture of the logged-in
+  // user.
+  void InitDownloadedProfileImage();
 
   // Deletes user's image file. Runs on FILE thread.
   void DeleteUserImage(const FilePath& image_path);

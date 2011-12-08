@@ -7,15 +7,24 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace chromeos {
+
+namespace {
+
+// Resource ID of the image to use as stub image.
+const int kStubImageResourceID = IDR_PROFILE_PICTURE_LOADING;
+
+}  // namespace
 
 User::User(const std::string& email)
     : email_(email),
       display_email_(email),
       oauth_token_status_(OAUTH_TOKEN_STATUS_UNKNOWN),
-      image_index_(kInvalidImageIndex) {
+      image_index_(kInvalidImageIndex),
+      image_is_stub_(false) {
   image_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
       kDefaultImageResources[0]);
 }
@@ -25,6 +34,14 @@ User::~User() {}
 void User::SetImage(const SkBitmap& image, int image_index) {
   image_ = image;
   image_index_ = image_index;
+  image_is_stub_ = false;
+}
+
+void User::SetStubImage(int image_index) {
+  image_ = *ResourceBundle::GetSharedInstance().
+      GetBitmapNamed(kStubImageResourceID);
+  image_index_ = image_index;
+  image_is_stub_ = true;
 }
 
 std::string User::GetDisplayName() const {
