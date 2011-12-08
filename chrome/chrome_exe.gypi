@@ -42,6 +42,11 @@
         'INFOPLIST_FILE': 'app/app-Info.plist',
       },
       'conditions': [
+        ['use_aura==1 and use_webkit_compositor==0', {
+          'dependencies': [
+            '../ui/gfx/compositor/compositor.gyp:test_compositor',
+          ],
+        }],
         ['OS == "android"', {
           # Don't put the 'chrome' target in 'all' on android
           'suppress_wildcard': 1,

@@ -17,8 +17,6 @@
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
-#include "ui/gfx/compositor/test/test_compositor.h"
-#include "ui/gfx/compositor/test/test_texture.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/background.h"
@@ -43,6 +41,9 @@
 #endif
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
+#endif
+#if !defined(USE_WEBKIT_COMPOSITOR)
+#include "ui/gfx/compositor/test/test_texture.h"
 #endif
 
 using ::testing::_;
@@ -2531,7 +2532,9 @@ class ViewLayerTest : public ViewsTestBase {
     old_use_acceleration_ = View::get_use_acceleration_when_possible();
     View::set_use_acceleration_when_possible(true);
 
+#if !defined(USE_WEBKIT_COMPOSITOR)
     ui::TestTexture::reset_live_count();
+#endif
 
     widget_ = new Widget;
     Widget::InitParams params(Widget::InitParams::TYPE_POPUP);

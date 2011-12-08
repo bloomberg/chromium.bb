@@ -60,7 +60,6 @@
       'dependencies': [
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
-        '../gfx/compositor/compositor.gyp:test_compositor',
         '../ui.gyp:ui',
         'aura',
       ],
@@ -80,6 +79,13 @@
         'test/test_windows.h',
         'test/test_window_delegate.cc',
         'test/test_window_delegate.h',
+      ],
+      'conditions': [
+        ['use_webkit_compositor==0', {
+          'dependencies': [
+            '../gfx/compositor/compositor.gyp:test_compositor',
+          ],
+        }],
       ],
     },
     {
@@ -116,7 +122,6 @@
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
         '../gfx/compositor/compositor.gyp:compositor_test_support',
-        '../gfx/compositor/compositor.gyp:test_compositor',
         '../gfx/gl/gl.gyp:gl',
         '../ui.gyp:gfx_resources',
         '../ui.gyp:ui',
@@ -142,6 +147,15 @@
         ['OS=="linux"', {
           'dependencies': [
             '<(DEPTH)/third_party/mesa/mesa.gyp:osmesa',
+          ],
+        }],
+        ['use_webkit_compositor==1', {
+          'dependencies': [
+            '../gfx/compositor/compositor.gyp:compositor',
+          ],
+        }, { # use_webkit_compositor!=1
+          'dependencies': [
+            '../gfx/compositor/compositor.gyp:test_compositor',
           ],
         }],
       ],

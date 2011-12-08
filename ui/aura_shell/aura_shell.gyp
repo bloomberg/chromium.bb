@@ -135,7 +135,6 @@
         '../aura/aura.gyp:aura',
         '../aura/aura.gyp:test_support_aura',
         '../gfx/compositor/compositor.gyp:compositor_test_support',
-        '../gfx/compositor/compositor.gyp:test_compositor',
         '../ui.gyp:gfx_resources',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
@@ -169,6 +168,17 @@
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
+      ],
+      'conditions': [
+        ['use_webkit_compositor==1', {
+          'dependencies': [
+            '../gfx/compositor/compositor.gyp:compositor',
+          ],
+        }, { # use_webkit_compositor!=1
+          'dependencies': [
+            '../gfx/compositor/compositor.gyp:test_compositor',
+          ],
+        }],
       ],
     },
     {
