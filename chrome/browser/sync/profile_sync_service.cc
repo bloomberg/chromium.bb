@@ -606,6 +606,7 @@ void ProfileSyncService::OnBackendInitialized(
       return;
     } else {
       SetSyncSetupCompleted();
+      NotifyObservers();
     }
   }
 
