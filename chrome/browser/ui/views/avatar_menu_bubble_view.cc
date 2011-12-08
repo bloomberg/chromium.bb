@@ -30,9 +30,6 @@
 
 namespace {
 
-// TODO(msw): Get color from theme/window color.
-const SkColor kColor = SK_ColorWHITE;
-
 const int kItemHeight = 44;
 const int kItemMarginY = 4;
 const int kIconMarginX = 6;
@@ -342,7 +339,7 @@ AvatarMenuBubbleView::AvatarMenuBubbleView(
     views::BubbleBorder::ArrowLocation arrow_location,
     const gfx::Rect& anchor_rect,
     Browser* browser)
-    : BubbleDelegateView(anchor_view, arrow_location, kColor),
+    : BubbleDelegateView(anchor_view, arrow_location),
       add_profile_link_(NULL),
       anchor_rect_(anchor_rect),
       browser_(browser) {

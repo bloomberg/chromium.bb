@@ -30,9 +30,6 @@
 
 namespace {
 
-// TODO(msw): Get color from theme/window color.
-const SkColor kColor = SK_ColorWHITE;
-
 // Layout constants.
 const int kHGapToBorder = 11;
 const int kVerticalSectionPadding = 8;
@@ -106,7 +103,7 @@ PageInfoBubbleView::PageInfoBubbleView(views::View* anchor_view,
                                        const GURL& url,
                                        const NavigationEntry::SSLStatus& ssl,
                                        bool show_history)
-    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT, kColor),
+    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
       ALLOW_THIS_IN_INITIALIZER_LIST(model_(profile, url, ssl,
                                             show_history, this)),
       cert_id_(ssl.cert_id()),

@@ -14,7 +14,6 @@ namespace examples {
 
 struct BubbleConfig {
   string16 label;
-  SkColor color;
   views::View* anchor_view;
   views::BubbleBorder::ArrowLocation arrow;
 };
@@ -22,7 +21,7 @@ struct BubbleConfig {
 class ExampleBubbleDelegateView : public views::BubbleDelegateView {
  public:
   ExampleBubbleDelegateView(const BubbleConfig& config)
-      : BubbleDelegateView(config.anchor_view, config.arrow, config.color),
+      : BubbleDelegateView(config.anchor_view, config.arrow),
         label_(config.label) {}
 
   virtual void Init() OVERRIDE {
@@ -38,7 +37,6 @@ class ExampleBubbleDelegateView : public views::BubbleDelegateView {
 void CreatePointyBubble(views::View* anchor_view) {
   BubbleConfig config;
   config.label = ASCIIToUTF16("PointyBubble");
-  config.color = SK_ColorWHITE;
   config.anchor_view = anchor_view;
   config.arrow = views::BubbleBorder::TOP_LEFT;
   ExampleBubbleDelegateView* bubble = new ExampleBubbleDelegateView(config);

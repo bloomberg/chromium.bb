@@ -28,10 +28,12 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
                                         public ui::AnimationDelegate,
                                         public Widget::Observer {
  public:
+  // The default bubble background color.
+  static const SkColor kBackgroundColor;
+
   BubbleDelegateView();
   BubbleDelegateView(View* anchor_view,
-                     BubbleBorder::ArrowLocation arrow_location,
-                     const SkColor& color);
+                     BubbleBorder::ArrowLocation arrow_location);
   virtual ~BubbleDelegateView();
 
   // Create and initialize the bubble Widget(s) with proper bounds.
@@ -62,6 +64,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   View* anchor_view() const { return anchor_view_; }
   void set_anchor_view(View* anchor_view) { anchor_view_ = anchor_view; }
 
+  SkColor color() const { return color_; }
+  void set_color(SkColor color) { color_ = color; }
+
   bool use_focusless() const { return use_focusless_; }
   void set_use_focusless(bool use_focusless) {
     use_focusless_ = use_focusless;
@@ -73,9 +78,6 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Get the arrow's location on the bubble.
   virtual BubbleBorder::ArrowLocation GetArrowLocation() const;
 
-  // Get the color used for the background and border.
-  virtual SkColor GetColor() const;
-
   // Show the bubble's widget (and |border_widget_| on Windows).
   void Show();
 
@@ -86,9 +88,6 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Reset fade and opacity of bubble. Restore the opacity of the
   // bubble to the setting before StartFade() was called.
   void ResetFade();
-
-  // The default bubble background color.
-  static const SkColor kBackgroundColor;
 
  protected:
   // View overrides:

@@ -29,9 +29,6 @@
 
 namespace {
 
-// TODO(msw): Get color from theme/window color.
-const SkColor kColor = SK_ColorWHITE;
-
 const int kBubbleHorizMargin = 6;
 const int kBubbleVertMargin = 4;
 const int kBubbleHeadingVertMargin = 6;
@@ -91,7 +88,7 @@ SpeechInputBubbleView::SpeechInputBubbleView(
     views::View* anchor_view,
     const gfx::Rect& element_rect,
     TabContents* tab_contents)
-    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT, kColor),
+    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
       delegate_(delegate),
       element_rect_(element_rect),
       tab_contents_(tab_contents),

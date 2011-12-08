@@ -39,10 +39,9 @@ const int kLayoutBottomPadding = 2;
 GlobalErrorBubbleView::GlobalErrorBubbleView(
     views::View* anchor_view,
     views::BubbleBorder::ArrowLocation location,
-    const SkColor& color,
     Browser* browser,
     GlobalError* error)
-    : BubbleDelegateView(anchor_view, location, color),
+    : BubbleDelegateView(anchor_view, location),
       browser_(browser),
       error_(error) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -150,7 +149,6 @@ void GlobalError::ShowBubbleView(Browser* browser, GlobalError* error) {
   GlobalErrorBubbleView* bubble_view =
       new GlobalErrorBubbleView(wrench_button,
                                 views::BubbleBorder::TOP_RIGHT,
-                                SK_ColorWHITE,
                                 browser,
                                 error);
   browser::CreateViewsBubble(bubble_view);

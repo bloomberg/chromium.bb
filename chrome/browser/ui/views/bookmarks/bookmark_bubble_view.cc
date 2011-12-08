@@ -45,9 +45,6 @@ static const int kTitlePadding = 4;
 // of the field's left edge.
 static const int kMinimumFieldSize = 180;
 
-// TODO(msw): Get color from theme/window color.
-static const SkColor kColor = SK_ColorWHITE;
-
 // Declared in browser_dialogs.h so callers don't have to depend on our header.
 
 namespace browser {
@@ -244,7 +241,7 @@ BookmarkBubbleView::BookmarkBubbleView(views::View* anchor_view,
                                        Profile* profile,
                                        const GURL& url,
                                        bool newly_bookmarked)
-    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT, kColor),
+    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       profile_(profile),
       url_(url),
       newly_bookmarked_(newly_bookmarked),

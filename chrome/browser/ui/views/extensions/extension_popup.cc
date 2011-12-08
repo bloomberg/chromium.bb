@@ -33,7 +33,7 @@ ExtensionPopup::ExtensionPopup(
     views::View* anchor_view,
     views::BubbleBorder::ArrowLocation arrow_location,
     bool inspect_with_devtools)
-    : BubbleDelegateView(anchor_view, arrow_location, SK_ColorWHITE),
+    : BubbleDelegateView(anchor_view, arrow_location),
       extension_host_(host),
       inspect_with_devtools_(inspect_with_devtools) {
   SetLayoutManager(new views::FillLayout());

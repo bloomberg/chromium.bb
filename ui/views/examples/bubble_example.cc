@@ -38,8 +38,10 @@ BubbleConfig kFadeOutConfig = { ASCIIToUTF16("FadeOut"), SK_ColorWHITE, NULL,
 class ExampleBubbleDelegateView : public BubbleDelegateView {
  public:
   ExampleBubbleDelegateView(const BubbleConfig& config)
-      : BubbleDelegateView(config.anchor_view, config.arrow, config.color),
-        label_(config.label) {}
+      : BubbleDelegateView(config.anchor_view, config.arrow),
+        label_(config.label) {
+    set_color(config.color);
+  }
 
  protected:
   virtual void Init() OVERRIDE {

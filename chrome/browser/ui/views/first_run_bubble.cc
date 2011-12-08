@@ -108,9 +108,7 @@ FirstRunBubble::FirstRunBubble(
     views::View* anchor_view,
     views::BubbleBorder::ArrowLocation arrow_location,
     FirstRun::BubbleType bubble_type)
-    : views::BubbleDelegateView(anchor_view,
-                                arrow_location,
-                                SK_ColorWHITE),
+    : views::BubbleDelegateView(anchor_view, arrow_location),
       profile_(profile),
       bubble_type_(bubble_type) {
 }

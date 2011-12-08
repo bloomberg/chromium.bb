@@ -146,9 +146,7 @@ WebIntentPicker* WebIntentPicker::Create(Browser* browser,
 WebIntentPickerView::WebIntentPickerView(views::View* anchor_view,
                                          TabContentsWrapper* wrapper,
                                          WebIntentPickerDelegate* delegate)
-    : BubbleDelegateView(anchor_view,
-                         views::BubbleBorder::TOP_LEFT,
-                         SK_ColorWHITE),
+    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
       delegate_(delegate),
       button_hbox_(NULL) {}
 

@@ -17,7 +17,6 @@ class GlobalErrorBubbleView : public views::ButtonListener,
  public:
   GlobalErrorBubbleView(views::View* anchor_view,
                         views::BubbleBorder::ArrowLocation location,
-                        const SkColor& color,
                         Browser* browser,
                         GlobalError* error);
   virtual ~GlobalErrorBubbleView();

@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
+#include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -36,7 +37,6 @@
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_constants.h"
-#include "ui/views/view.h"
 
 namespace {
 
@@ -391,7 +391,7 @@ void ExtensionInstalledBubble::ShowInternal() {
   SetLayoutManager(new views::FillLayout());
   AddChildView(
       new InstalledBubbleContent(browser_, extension_, type_, &icon_, this));
-  views::BubbleDelegateView::CreateBubble(this);
+  browser::CreateViewsBubble(this);
   StartFade(true);
 }
 

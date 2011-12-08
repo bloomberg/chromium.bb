@@ -12,8 +12,9 @@ namespace views {
 typedef ViewsTestBase BubbleDelegateTest;
 
 TEST_F(BubbleDelegateTest, CreateDelegate) {
-  BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
-      NULL, BubbleBorder::NONE, SK_ColorGREEN);
+  BubbleDelegateView* bubble_delegate =
+      new BubbleDelegateView(NULL, BubbleBorder::NONE);
+  bubble_delegate->set_color(SK_ColorGREEN);
   Widget* bubble_widget(
       BubbleDelegateView::CreateBubble(bubble_delegate));
   EXPECT_EQ(bubble_delegate, bubble_widget->widget_delegate());
@@ -22,7 +23,7 @@ TEST_F(BubbleDelegateTest, CreateDelegate) {
   BubbleBorder* border =
       bubble_delegate->GetBubbleFrameView()->bubble_border();
   EXPECT_EQ(bubble_delegate->GetArrowLocation(), border->arrow_location());
-  EXPECT_EQ(bubble_delegate->GetColor(), border->background_color());
+  EXPECT_EQ(bubble_delegate->color(), border->background_color());
 
   bubble_widget->CloseNow();
   RunPendingMessages();

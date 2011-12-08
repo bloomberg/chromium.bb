@@ -32,7 +32,7 @@ MessageBubble::MessageBubble(views::View* anchor_view,
                              SkBitmap* image,
                              const string16& text,
                              const std::vector<string16>& links)
-    : BubbleDelegateView(anchor_view, arrow_location, kBackgroundColor),
+    : BubbleDelegateView(anchor_view, arrow_location),
       image_(image),
       text_(text),
       close_button_(NULL),

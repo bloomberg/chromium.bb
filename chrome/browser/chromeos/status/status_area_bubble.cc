@@ -11,9 +11,6 @@
 
 namespace {
 
-// TODO(msw): Get color from theme/window color.
-const SkColor kColor = SK_ColorWHITE;
-
 const size_t kCloseBubbleTimerInSec = 5;
 
 }  // namespace
@@ -24,7 +21,7 @@ StatusAreaBubbleContentView::StatusAreaBubbleContentView(
     views::View* anchor_view,
     views::View* icon_view,
     const string16& message)
-    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT, kColor),
+    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       icon_view_(icon_view),
       message_view_(new views::Label(message)) {
   // Padding around status.

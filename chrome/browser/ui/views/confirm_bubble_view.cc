@@ -26,7 +26,7 @@ const int kMaxMessageWidth = 400;
 
 ConfirmBubbleView::ConfirmBubbleView(const gfx::Point& anchor_point,
                                      ConfirmBubbleModel* model)
-    : BubbleDelegateView(NULL, views::BubbleBorder::NONE, SK_ColorWHITE),
+    : BubbleDelegateView(NULL, views::BubbleBorder::NONE),
       anchor_point_(anchor_point),
       model_(model) {
   DCHECK(model);

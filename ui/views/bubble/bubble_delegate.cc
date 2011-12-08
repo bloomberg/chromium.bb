@@ -80,7 +80,8 @@ BubbleDelegateView::BubbleDelegateView()
       allow_bubble_offscreen_(false),
       anchor_view_(NULL),
       arrow_location_(BubbleBorder::TOP_LEFT),
-      color_(SK_ColorWHITE),
+      color_(kBackgroundColor),
+      original_opacity_(255),
       border_widget_(NULL),
       use_focusless_(false) {
   set_background(views::Background::CreateSolidBackground(color_));
@@ -89,14 +90,13 @@ BubbleDelegateView::BubbleDelegateView()
 
 BubbleDelegateView::BubbleDelegateView(
     View* anchor_view,
-    BubbleBorder::ArrowLocation arrow_location,
-    const SkColor& color)
+    BubbleBorder::ArrowLocation arrow_location)
     : close_on_esc_(true),
       close_on_deactivate_(true),
       allow_bubble_offscreen_(false),
       anchor_view_(anchor_view),
       arrow_location_(arrow_location),
-      color_(color),
+      color_(kBackgroundColor),
       original_opacity_(255),
       border_widget_(NULL),
       use_focusless_(false) {
@@ -142,8 +142,8 @@ View* BubbleDelegateView::GetContentsView() {
 NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView() {
   return new BubbleFrameView(GetArrowLocation(),
                              GetPreferredSize(),
-                             GetColor(),
-                             allow_bubble_offscreen_);
+                             color(),
+                             allow_bubble_offscreen());
 }
 
 void BubbleDelegateView::OnWidgetActivationChanged(Widget* widget,
@@ -175,10 +175,6 @@ gfx::Point BubbleDelegateView::GetAnchorPoint() {
 
 BubbleBorder::ArrowLocation BubbleDelegateView::GetArrowLocation() const {
   return arrow_location_;
-}
-
-SkColor BubbleDelegateView::GetColor() const {
-  return color_;
 }
 
 void BubbleDelegateView::Show() {

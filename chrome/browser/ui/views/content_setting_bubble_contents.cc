@@ -109,7 +109,7 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
     TabContents* tab_contents,
     views::View* anchor_view,
     views::BubbleBorder::ArrowLocation arrow_location)
-    : BubbleDelegateView(anchor_view, arrow_location, SK_ColorWHITE),
+    : BubbleDelegateView(anchor_view, arrow_location),
       content_setting_bubble_model_(content_setting_bubble_model),
       profile_(profile),
       tab_contents_(tab_contents),
