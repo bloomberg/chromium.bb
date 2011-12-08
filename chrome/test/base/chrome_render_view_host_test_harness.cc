@@ -6,6 +6,11 @@
 
 #include "chrome/test/base/testing_profile.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/root_window.h"
+#include "ui/aura_shell/shell.h"
+#endif
+
 ChromeRenderViewHostTestHarness::ChromeRenderViewHostTestHarness()
     : RenderViewHostTestHarness() {
 }
@@ -25,4 +30,8 @@ void ChromeRenderViewHostTestHarness::SetUp() {
 
 void ChromeRenderViewHostTestHarness::TearDown() {
   RenderViewHostTestHarness::TearDown();
+#if defined(USE_AURA)
+  aura_shell::Shell::DeleteInstance();
+  aura::RootWindow::DeleteInstance();
+#endif
 }

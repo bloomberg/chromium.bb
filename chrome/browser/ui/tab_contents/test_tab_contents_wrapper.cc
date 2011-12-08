@@ -44,4 +44,6 @@ void TabContentsWrapperTestHarness::TearDown() {
   // Release the browser context on the UI thread.
   message_loop_.DeleteSoon(FROM_HERE, browser_context_.release());
   message_loop_.RunAllPending();
+
+  ChromeRenderViewHostTestHarness::TearDown();
 }
