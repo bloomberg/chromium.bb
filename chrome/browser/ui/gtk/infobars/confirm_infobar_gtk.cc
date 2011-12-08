@@ -75,10 +75,10 @@ void ConfirmInfoBarGtk::AddButton(ConfirmInfoBarDelegate::InfoBarButton type) {
     gtk_size_group_add_widget(size_group_, button);
 
     gtk_util::CenterWidgetInHBox(confirm_hbox_, button, true, 0);
-    g_signal_connect(button, "clicked",
-                     G_CALLBACK(type == ConfirmInfoBarDelegate::BUTTON_OK ?
-                                OnOkButtonThunk : OnCancelButtonThunk),
-                     this);
+    Signals()->Connect(button, "clicked",
+                       G_CALLBACK(type == ConfirmInfoBarDelegate::BUTTON_OK ?
+                                  OnOkButtonThunk : OnCancelButtonThunk),
+                       this);
   }
 }
 
