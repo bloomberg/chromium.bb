@@ -580,6 +580,11 @@ const char kErrorPinRequiredMsg[] = "org.chromium.flimflam.Error.PinRequired";
 const char kUnknownString[] = "UNKNOWN";
 }  // namespace flimflam
 
+namespace shill {
+// Service property names.
+const char kHTTPProxyPortProperty[] = "HTTPProxyPort";
+}  // namespace shill
+
 namespace cashew {
 // Cashew D-Bus service identifiers.
 const char kCashewServiceName[] = "org.chromium.Cashew";
