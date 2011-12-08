@@ -11,6 +11,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/bookmarks_ui.h"
 #include "chrome/browser/ui/webui/bug_report_ui.h"
@@ -95,13 +96,7 @@ ChromeWebUI* NewWebUI(TabContents* contents, const GURL& url) {
 // Special case for extensions.
 template<>
 ChromeWebUI* NewWebUI<ExtensionWebUI>(TabContents* contents, const GURL& url) {
-  // Don't use a WebUI for incognito tabs because we require extensions to run
-  // within a single process.
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
-  ExtensionService* service = profile->GetExtensionService();
-  if (service && service->ExtensionBindingsAllowed(url))
-    return new ExtensionWebUI(contents, url);
-  return NULL;
+  return new ExtensionWebUI(contents, url);
 }
 
 // Special case for older about: handlers.
@@ -112,16 +107,21 @@ ChromeWebUI* NewWebUI<AboutUI>(TabContents* contents, const GURL& url) {
 
 // Returns a function that can be used to create the right type of WebUI for a
 // tab, based on its URL. Returns NULL if the URL doesn't have WebUI associated
-// with it. Even if the factory function is valid, it may yield a NULL WebUI
-// when invoked for a particular tab - see NewWebUI<ExtensionWebUI>.
-WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
+// with it.
+WebUIFactoryFunction GetWebUIFactoryFunction(TabContents* tab_contents,
+                                             Profile* profile,
                                              const GURL& url) {
   if (url.host() == chrome::kChromeUIDialogHost)
     return &NewWebUI<ConstrainedHtmlUI>;
 
+  // Only create ExtensionWebUI for URLs that are allowed extension bindings,
+  // hosted by actual tabs. If tab_contents has no wrapper, it likely refers
+  // to another container type, like an extension background page.
   ExtensionService* service = profile ? profile->GetExtensionService() : NULL;
-  if (service && service->ExtensionBindingsAllowed(url))
-    return &NewWebUI<ExtensionWebUI>;
+  if (service && service->ExtensionBindingsAllowed(url) &&
+      (!tab_contents ||
+        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents)))
+  return &NewWebUI<ExtensionWebUI>;
 
   // All platform builds of Chrome will need to have a cloud printing
   // dialog as backup.  It's just that on Chrome OS, it's the only
@@ -322,7 +322,7 @@ struct PossibleTestSingletonTraits : public DefaultSingletonTraits<Type> {
 WebUI::TypeID ChromeWebUIFactory::GetWebUIType(
       content::BrowserContext* browser_context, const GURL& url) const {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  WebUIFactoryFunction function = GetWebUIFactoryFunction(profile, url);
+  WebUIFactoryFunction function = GetWebUIFactoryFunction(NULL, profile, url);
   return function ? reinterpret_cast<WebUI::TypeID>(function) : WebUI::kNoWebUI;
 }
 
@@ -358,7 +358,8 @@ WebUI* ChromeWebUIFactory::CreateWebUIForURL(
     const GURL& url) const {
   Profile* profile =
       Profile::FromBrowserContext(tab_contents->browser_context());
-  WebUIFactoryFunction function = GetWebUIFactoryFunction(profile, url);
+  WebUIFactoryFunction function = GetWebUIFactoryFunction(tab_contents,
+                                                          profile, url);
   if (!function)
     return NULL;
   return (*function)(tab_contents, url);
