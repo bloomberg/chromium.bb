@@ -445,12 +445,15 @@ create_output_for_connector(struct drm_compositor *ec,
 	}
 	if (i == resources->count_crtcs) {
 		fprintf(stderr, "No usable crtc for encoder.\n");
+		drmModeFreeEncoder(encoder);
 		return -1;
 	}
 
 	output = malloc(sizeof *output);
-	if (output == NULL)
+	if (output == NULL) {
+		drmModeFreeEncoder(encoder);
 		return -1;
+	}
 
 	memset(output, 0, sizeof *output);
 	output->base.subpixel = drm_subpixel_to_wayland(connector->subpixel);
