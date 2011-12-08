@@ -209,6 +209,8 @@
     'browser/font_list_async.cc',
     'browser/font_list_async.h',
     'browser/gamepad/data_fetcher.h',
+    'browser/gamepad/data_fetcher_mac.mm',
+    'browser/gamepad/data_fetcher_mac.h',
     'browser/gamepad/data_fetcher_win.cc',
     'browser/gamepad/data_fetcher_win.h',
     'browser/gamepad/gamepad_provider.cc',

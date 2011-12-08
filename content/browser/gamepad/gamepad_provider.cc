@@ -19,6 +19,8 @@
 
 #if defined(OS_WIN)
 #include "content/browser/gamepad/data_fetcher_win.h"
+#elif defined(OS_MACOSX)
+#include "content/browser/gamepad/data_fetcher_mac.h"
 #endif
 
 namespace content {
@@ -28,6 +30,10 @@ namespace content {
 #if defined(OS_WIN)
 
 typedef GamepadDataFetcherWindows GamepadPlatformDataFetcher;
+
+#elif defined(OS_MACOSX)
+
+typedef GamepadDataFetcherMac GamepadPlatformDataFetcher;
 
 #else
 
@@ -80,8 +86,12 @@ base::SharedMemoryHandle GamepadProvider::GetRendererSharedMemoryHandle(
 }
 
 void GamepadProvider::Pause() {
-  base::AutoLock lock(is_paused_lock_);
-  is_paused_ = true;
+  {
+    base::AutoLock lock(is_paused_lock_);
+    is_paused_ = true;
+  }
+  if (data_fetcher_.get())
+    data_fetcher_->PauseHint(true);
 }
 
 void GamepadProvider::Resume() {
@@ -91,6 +101,8 @@ void GamepadProvider::Resume() {
         return;
     is_paused_ = false;
   }
+  if (data_fetcher_.get())
+    data_fetcher_->PauseHint(false);
 
   MessageLoop* polling_loop = polling_thread_->message_loop();
   polling_loop->PostTask(

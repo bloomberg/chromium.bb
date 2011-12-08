@@ -16,6 +16,7 @@ class GamepadDataFetcher {
   virtual ~GamepadDataFetcher() {}
   virtual void GetGamepadData(WebKit::WebGamepads* pads,
                               bool devices_changed_hint) = 0;
+  virtual void PauseHint(bool paused) {}
 };
 
 } // namespace content
