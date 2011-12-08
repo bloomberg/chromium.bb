@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/gtk/avatar_menu_item_gtk.h"
 
+#include <gdk/gdkkeysyms.h>
+
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
@@ -82,16 +84,66 @@ gboolean AvatarMenuItemGtk::OnProfileClick(GtkWidget* widget,
   return FALSE;
 }
 
+gboolean AvatarMenuItemGtk::OnProfileKeyPress(GtkWidget* widget,
+                                              GdkEventKey* event) {
+  // delegate_->EditProfile() will close the avatar bubble which in turn
+  // try to destroy this AvatarMenuItemGtk.
+  // This is not OK to do this from the signal handler, so we'll
+  // defer it.
+  if (event->keyval == GDK_Return ||
+      event->keyval == GDK_ISO_Enter ||
+      event->keyval == GDK_KP_Enter) {
+    if (item_.active)
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&AvatarMenuItemGtk::EditProfile,
+                     weak_factory_.GetWeakPtr()));
+    else
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&AvatarMenuItemGtk::OpenProfile,
+                     weak_factory_.GetWeakPtr()));
+  }
+
+  return FALSE;
+}
+
+void AvatarMenuItemGtk::ShowStatusLabel() {
+  gtk_widget_show(status_label_);
+  gtk_widget_hide(link_alignment_);
+}
+
+void AvatarMenuItemGtk::ShowEditLink() {
+  gtk_widget_hide(status_label_);
+  gtk_widget_show(link_alignment_);
+}
+
+gboolean AvatarMenuItemGtk::OnProfileFocusIn(GtkWidget* widget,
+                                             GdkEventFocus* event) {
+  gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, &highlighted_color_);
+  if (item_.active)
+    ShowEditLink();
+
+  return FALSE;
+}
+
+gboolean AvatarMenuItemGtk::OnProfileFocusOut(GtkWidget* widget,
+                                              GdkEventFocus* event) {
+  gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, unhighlighted_color_);
+  if (item_.active)
+    ShowStatusLabel();
+
+  return FALSE;
+}
+
 gboolean AvatarMenuItemGtk::OnProfileEnter(GtkWidget* widget,
                                            GdkEventCrossing* event) {
   if (event->detail == GDK_NOTIFY_INFERIOR)
     return FALSE;
 
   gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, &highlighted_color_);
-  if (item_.active) {
-    gtk_widget_hide(status_label_);
-    gtk_widget_show(link_alignment_);
-  }
+  if (item_.active)
+    ShowEditLink();
 
   return FALSE;
 }
@@ -102,10 +154,8 @@ gboolean AvatarMenuItemGtk::OnProfileLeave(GtkWidget* widget,
     return FALSE;
 
   gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, unhighlighted_color_);
-  if (item_.active) {
-    gtk_widget_show(status_label_);
-    gtk_widget_hide(link_alignment_);
-  }
+  if (item_.active)
+    ShowStatusLabel();
 
   return FALSE;
 }
@@ -160,6 +210,12 @@ void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
       G_CALLBACK(OnProfileEnterThunk), this);
   g_signal_connect(widget_.get(), "leave-notify-event",
       G_CALLBACK(OnProfileLeaveThunk), this);
+  g_signal_connect(widget_.get(), "focus-in-event",
+      G_CALLBACK(OnProfileFocusInThunk), this);
+  g_signal_connect(widget_.get(), "focus-out-event",
+      G_CALLBACK(OnProfileFocusOutThunk), this);
+  g_signal_connect(widget_.get(), "key-press-event",
+      G_CALLBACK(OnProfileKeyPressThunk), this);
 
   GtkWidget* item_hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
   GdkPixbuf* avatar_pixbuf = NULL;

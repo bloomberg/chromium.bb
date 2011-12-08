@@ -133,12 +133,16 @@ void AvatarMenuBubbleGtk::InitContents() {
   GtkWidget* items_vbox = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);
 
   for (size_t i = 0; i < profile_count; ++i) {
+    AvatarMenuModel::Item menu_item = avatar_menu_model_->GetItemAt(i);
     AvatarMenuItemGtk* item = new AvatarMenuItemGtk(
-        this, avatar_menu_model_->GetItemAt(i), i, theme_service_);
+        this, menu_item, i, theme_service_);
 
     items_.push_back(item);
 
     gtk_box_pack_start(GTK_BOX(items_vbox), item->widget(), TRUE, TRUE, 0);
+    gtk_widget_set_can_focus(item->widget(), TRUE);
+    if (menu_item.active)
+      gtk_container_set_focus_child(GTK_CONTAINER(items_vbox), item->widget());
   }
 
   gtk_box_pack_start(GTK_BOX(contents_), items_vbox, TRUE, TRUE, 0);
