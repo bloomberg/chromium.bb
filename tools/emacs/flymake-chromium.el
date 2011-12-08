@@ -18,9 +18,17 @@
 (defcustom cr-flymake-ninja-executable "ninja"
   "Ninja executable location; either in $PATH or explicitly given.")
 
+(defun cr-flymake-absbufferpath ()
+  "Return the absolute path to the current buffer, or nil if the
+  current buffer has no path."
+  (when buffer-file-truename
+      (expand-file-name buffer-file-truename)))
+
 (defun cr-flymake-chromium-src ()
   "Return chromium's src/ directory, or nil on failure."
-  (locate-dominating-file buffer-file-truename cr-flymake-ninja-build-file))
+  (let ((srcdir (locate-dominating-file
+                 (cr-flymake-absbufferpath) cr-flymake-ninja-build-file)))
+    (when srcdir (expand-file-name srcdir))))
 
 (defun cr-flymake-string-prefix-p (prefix str)
   "Return non-nil if PREFIX is a prefix of STR (23.2 has string-prefix-p but
@@ -33,8 +41,8 @@
   we're under chromium/src/."
   (when (and (cr-flymake-chromium-src)
              (cr-flymake-string-prefix-p
-              (cr-flymake-chromium-src) buffer-file-truename))
-    (substring buffer-file-truename (length (cr-flymake-chromium-src)))))
+              (cr-flymake-chromium-src) (cr-flymake-absbufferpath)))
+    (substring (cr-flymake-absbufferpath) (length (cr-flymake-chromium-src)))))
 
 (defun cr-flymake-from-build-to-src-root ()
   "Return a path fragment for getting from the build.ninja file to src/."
