@@ -269,6 +269,7 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewMsg_GetFPS, OnGetFPS)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_AddStrictSecurityHost,
                         OnAddStrictSecurityHost)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetAsInterstitial, OnSetAsInterstitial)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -364,6 +365,10 @@ void ChromeRenderViewObserver::OnSetAllowRunningInsecureContent(bool allow) {
 void ChromeRenderViewObserver::OnAddStrictSecurityHost(
     const std::string& host) {
   strict_security_hosts_.insert(host);
+}
+
+void ChromeRenderViewObserver::OnSetAsInterstitial() {
+  content_settings_->SetAsInterstitial();
 }
 
 void ChromeRenderViewObserver::Navigate(const GURL& url) {
