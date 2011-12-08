@@ -29,6 +29,14 @@ readonly PNACL_BIN=${NACL_ROOT}/toolchain/pnacl_linux_x86_64_newlib/bin
 readonly PNACL_SCRIPTS=${NACL_ROOT}/pnacl/scripts
 readonly PARSE_REPORT=${PNACL_SCRIPTS}/parse_llvm_testsuite_report.py
 
+testsuite-prereq() {
+  if [ $# -ne 1 ]; then
+    echo "Please specify arch"
+    exit 1
+  fi
+  ./scons platform=$1 irt_core sel_ldr
+}
+
 testsuite-run() {
   if [ $# -ne 1 ]; then
     echo "Please specify arch"
@@ -82,6 +90,7 @@ testsuite-report() {
 }
 
 all() {
+  testsuite-prereq
   testsuite-clean
   testsuite-configure
   testsuite-run "$@"

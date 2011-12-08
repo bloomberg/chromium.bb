@@ -50,13 +50,16 @@ LOCAL_GCC = '/usr/bin/gcc'
 
 EMU_SCRIPT = 'toolchain/linux_arm-trusted/qemu_tool.sh'
 
-SEL_LDR_ARM = 'scons-out/opt-linux-arm/staging/sel_ldr'
+BOOTSTRAP_ARM = 'scons-out/opt-linux-arm/staging/nacl_helper_bootstrap'
+SEL_LDR_ARM = BOOTSTRAP_ARM + ' scons-out/opt-linux-arm/staging/sel_ldr'
 IRT_ARM = 'scons-out/nacl_irt-arm/obj/src/untrusted/irt/irt_core.nexe'
 
-SEL_LDR_X32 = 'scons-out/opt-linux-x86-32/staging/sel_ldr'
+BOOTSTRAP_X32 = 'scons-out/opt-linux-x86-32/staging/nacl_helper_bootstrap'
+SEL_LDR_X32 = BOOTSTRAP_X32 + ' scons-out/opt-linux-x86-32/staging/sel_ldr'
 IRT_X32 = 'scons-out/nacl_irt-x86-32/obj/src/untrusted/irt/irt_core.nexe'
 
-SEL_LDR_X64 = 'scons-out/opt-linux-x86-64/staging/sel_ldr'
+BOOTSTRAP_X64 = 'scons-out/opt-linux-x86-64/staging/nacl_helper_bootstrap'
+SEL_LDR_X64 = BOOTSTRAP_X64 + ' scons-out/opt-linux-x86-64/staging/sel_ldr'
 IRT_X64 = 'scons-out/nacl_irt-x86-64/obj/src/untrusted/irt/irt_core.nexe'
 
 NACL_GCC_X32 = 'toolchain/linux_x86_newlib/bin/i686-nacl-gcc'

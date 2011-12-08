@@ -81,10 +81,7 @@ def SetupEnvironment():
   # QEMU
   env.arm_root = os.path.join(env.nacl_root,
                               'toolchain', 'linux_arm-trusted')
-  env.qemu = os.path.join(env.arm_root, 'qemu-arm')
-
-  env.arm_libc = os.path.join(env.arm_root, 'arm-2009q3',
-                              'arm-none-linux-gnueabi' , 'libc')
+  env.qemu = os.path.join(env.arm_root, 'run_under_qemu_arm')
 
   # Path to 'readelf'
   env.readelf = FindReadElf()
@@ -234,11 +231,13 @@ def main(argv):
 def RunSelLdr(args):
   # TODO(pdox): If we are running this script on ARM, skip the emulator.
   prefix = []
+  bootstrap = os.path.join(os.path.dirname(env.sel_ldr),
+                           'nacl_helper_bootstrap')
   if env.arch == 'arm':
-    prefix = [ env.qemu, '-cpu', 'cortex-a8', '-L', env.arm_libc ]
+    prefix = [ env.qemu, '-cpu', 'cortex-a8']
     args = ['-Q'] + args
 
-  Run(prefix + [env.sel_ldr] + args)
+  Run(prefix + [bootstrap, env.sel_ldr] + args)
 
 def FindOrBuildIRT(allow_build = True):
   if env.force_irt:

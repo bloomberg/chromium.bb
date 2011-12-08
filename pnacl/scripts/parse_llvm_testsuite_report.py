@@ -21,6 +21,7 @@ EXCLUDES = {}
 def ParseCommandLine(argv):
   parser = optparse.OptionParser()
   parser.add_option('-x', '--exclude', action='append', dest='excludes',
+                    default=[],
                     help='Add list of excluded tests (expected fails)')
   parser.add_option('-c', '--check-excludes', action='store_true',
                     default=False, dest='check_excludes',
@@ -142,7 +143,9 @@ def PrintCompilationResult(path, test):
   DumpFileContents(os.path.join(outputdir, testname + '.nexe.translate'))
 
   print 'EXECUTION phase'
+  print 'native output:'
   DumpFileContents(os.path.join(outputdir, testname + '.out-nat'))
+  print 'pnacl output:'
   DumpFileContents(os.path.join(outputdir, testname + '.out-pnacl'))
 
 def main(argv):
@@ -167,20 +170,23 @@ def main(argv):
     ParseExcludeFile(f, alltests)
 
   # intersect them and check for unexpected fails/passes
-  unexpected_results = 0
+  unexpected_failures = 0
+  unexpected_passes = 0
   for tests in alltests.itervalues():
     for test in tests:
       if test in failures:
         if test not in EXCLUDES:
-          unexpected_results += 1
+          unexpected_failures += 1
           print test + ': ' + failures[test] + ' failure'
           if options.verbose:
             PrintCompilationResult(options.buildpath, test)
       elif test in EXCLUDES and options.check_excludes:
-        unexpected_results += 1
+        unexpected_passes += 1
         print test + ': ' + ' unexpected success'
 
-  return unexpected_results
+  print unexpected_failures, 'unexpected failures',
+  print unexpected_passes, 'unexpected pases'
+  return unexpected_failures + unexpected_passes
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
