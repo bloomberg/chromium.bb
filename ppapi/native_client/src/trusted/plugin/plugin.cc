@@ -67,6 +67,7 @@
 #include "ppapi/cpp/dev/printing_dev.h"
 #include "ppapi/cpp/dev/scrollbar_dev.h"
 #include "ppapi/cpp/dev/selection_dev.h"
+#include "ppapi/cpp/dev/text_input_dev.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/dev/widget_client_dev.h"
 #include "ppapi/cpp/dev/zoom_dev.h"
@@ -578,6 +579,16 @@ bool Plugin::Init(BrowserInterface* browser_interface,
                   char* argn[],
                   char* argv[]) {
   PLUGIN_PRINTF(("Plugin::Init (instance=%p)\n", static_cast<void*>(this)));
+
+#ifdef NACL_OSX
+  // TODO(kochi): For crbug.com/102808, this is a stopgap solution for Lion
+  // until we expose IME API to .nexe. This disables any IME interference
+  // against key inputs, so you cannot use off-the-spot IME input for NaCl apps.
+  // This makes discrepancy among platforms and therefore we should remove
+  // this hack when IME API is made available.
+  // The default for non-Mac platforms is still off-the-spot IME mode.
+  pp::TextInput_Dev(this).SetTextInputType(PP_TEXTINPUT_TYPE_NONE);
+#endif
 
   browser_interface_ = browser_interface;
   // Remember the embed/object argn/argv pairs.
