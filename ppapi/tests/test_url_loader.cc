@@ -9,7 +9,6 @@
 #include <string>
 
 #include "ppapi/c/dev/ppb_testing_dev.h"
-#include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/c/ppb_url_loader.h"
@@ -122,6 +121,7 @@ void TestURLLoader::RunTests(const std::string& filter) {
   RUN_TEST_FORCEASYNC_AND_NOT(TrustedJavascriptURLRestriction, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(UntrustedHttpRequests, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(TrustedHttpRequests, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(FollowURLRedirect, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(AuditURLRedirect, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(AbortCalls, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(UntendedLoad, filter);
@@ -253,29 +253,39 @@ int32_t TestURLLoader::PrepareFileForPost(
   return rv;
 }
 
-std::string TestURLLoader::GetReachableCrossOriginURL() {
-  // Get the document URL and use it to construct a URL that will be
-  // considered cross-origin by the WebKit access control code, and yet be
+std::string TestURLLoader::GetReachableAbsoluteURL(
+    const std::string& file_name) {
+  // Request the test page and scrape the absolute URL that the server returns
+  // as part of the response. Using the test page allows us to test redirected
+  // and cross-origin requests since we have a mock headers file.
+  pp::URLRequestInfo request(instance_);
+  request.SetURL(file_name);
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
+
+  pp::URLLoader loader(*instance_);
+  int32_t rv = loader.Open(request, callback);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  ASSERT_EQ(rv, PP_OK);
+
+  pp::URLResponseInfo response_info(loader.GetResponseInfo());
+  ASSERT_FALSE(response_info.is_null());
+  ASSERT_EQ(response_info.GetStatusCode(), 200);
+  return response_info.GetURL().AsString();
+}
+
+std::string TestURLLoader::GetReachableCrossOriginURL(
+    const std::string& file_name) {
+  // Get an absolute URL and use it to construct a URL that will be
+  // considered cross-origin by the CORS access control code, and yet be
   // reachable by the test server.
-  PP_URLComponents_Dev components;
-  pp::Var pp_document_url = pp::URLUtil_Dev::Get()->GetDocumentURL(
-      *instance_, &components);
-  std::string document_url = pp_document_url.AsString();
-  // Replace "127.0.0.1" with "localhost". Or vice versa.
-  bool changedHost = false;
-  if (document_url.find("127.0.0.1") != std::string::npos) {
-    document_url.replace(components.host.begin,
-                         components.host.len,
-                         "localhost");
-    changedHost = true;
-  } else if (document_url.find("localhost") != std::string::npos) {
-    document_url.replace(components.host.begin,
-                         components.host.len,
-                         "127.0.0.1");
-    changedHost = true;
-  }
-  ASSERT_TRUE(changedHost);
-  return document_url;
+  std::string url = GetReachableAbsoluteURL(file_name);
+  // Replace '127.0.0.1' with 'localhost'.
+  std::string host("127.0.0.1");
+  size_t index = url.find(host);
+  ASSERT_NE(index, std::string::npos);
+  url.replace(index, host.length(), "localhost");
+  return url;
 }
 
 int32_t TestURLLoader::OpenUntrusted(const std::string& method,
@@ -507,7 +517,7 @@ std::string TestURLLoader::TestStreamToFile() {
 // Untrusted, unintended cross-origin requests should fail.
 std::string TestURLLoader::TestUntrustedSameOriginRestriction() {
   pp::URLRequestInfo request(instance_);
-  std::string cross_origin_url = GetReachableCrossOriginURL();
+  std::string cross_origin_url = GetReachableCrossOriginURL("test_case.html");
   request.SetURL(cross_origin_url);
 
   int32_t rv = OpenUntrusted(request);
@@ -521,7 +531,7 @@ std::string TestURLLoader::TestUntrustedSameOriginRestriction() {
 // Trusted, unintended cross-origin requests should succeed.
 std::string TestURLLoader::TestTrustedSameOriginRestriction() {
   pp::URLRequestInfo request(instance_);
-  std::string cross_origin_url = GetReachableCrossOriginURL();
+  std::string cross_origin_url = GetReachableCrossOriginURL("test_case.html");
   request.SetURL(cross_origin_url);
 
   int32_t rv = OpenTrusted(request);
@@ -534,7 +544,7 @@ std::string TestURLLoader::TestTrustedSameOriginRestriction() {
 // Untrusted, intended cross-origin requests should use CORS and succeed.
 std::string TestURLLoader::TestUntrustedCrossOriginRequest() {
   pp::URLRequestInfo request(instance_);
-  std::string cross_origin_url = GetReachableCrossOriginURL();
+  std::string cross_origin_url = GetReachableCrossOriginURL("test_case.html");
   request.SetURL(cross_origin_url);
   request.SetAllowCrossOriginRequests(true);
 
@@ -549,7 +559,7 @@ std::string TestURLLoader::TestUntrustedCrossOriginRequest() {
 // Trusted, intended cross-origin requests should use CORS and succeed.
 std::string TestURLLoader::TestTrustedCrossOriginRequest() {
   pp::URLRequestInfo request(instance_);
-  std::string cross_origin_url = GetReachableCrossOriginURL();
+  std::string cross_origin_url = GetReachableCrossOriginURL("test_case.html");
   request.SetURL(cross_origin_url);
   request.SetAllowCrossOriginRequests(true);
 
@@ -705,12 +715,29 @@ std::string TestURLLoader::TestTrustedHttpRequests() {
   PASS();
 }
 
+// This test should cause a redirect and ensure that the loader follows it.
+std::string TestURLLoader::TestFollowURLRedirect() {
+  pp::URLRequestInfo request(instance_);
+  // This prefix causes the test server to return a 301 redirect.
+  std::string redirect_prefix("/server-redirect?");
+  // We need an absolute path for the redirect to actually work.
+  std::string redirect_url =
+      GetReachableAbsoluteURL("test_url_loader_data/hello.txt");
+  request.SetURL(redirect_prefix.append(redirect_url));
+  return LoadAndCompareBody(request, "hello\n");
+}
+
 // This test should cause a redirect and ensure that the loader runs
 // the callback, rather than following the redirect.
 std::string TestURLLoader::TestAuditURLRedirect() {
   pp::URLRequestInfo request(instance_);
   // This path will cause the server to return a 301 redirect.
-  request.SetURL("/server-redirect?www.google.com");
+  // This prefix causes the test server to return a 301 redirect.
+  std::string redirect_prefix("/server-redirect?");
+  // We need an absolute path for the redirect to actually work.
+  std::string redirect_url =
+      GetReachableAbsoluteURL("test_url_loader_data/hello.txt");
+  request.SetURL(redirect_prefix.append(redirect_url));
   request.SetFollowRedirects(false);
 
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
@@ -732,8 +759,24 @@ std::string TestURLLoader::TestAuditURLRedirect() {
   int32_t status_code = response_info.GetStatusCode();
   if (status_code != 301)
     return "Response status should be 301";
-  if (response_info.GetRedirectURL().AsString() != "www.google.com")
-    return "Redirect URL should be www.google.com";
+
+  // Test that the paused loader can be resumed.
+  TestCompletionCallback redirect_callback(instance_->pp_instance(),
+                                           force_async_);
+  rv = loader.FollowRedirect(redirect_callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("URLLoader::FollowRedirect force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = redirect_callback.WaitForResult();
+  if (rv != PP_OK)
+    return ReportError("URLLoader::FollowRedirect", rv);
+  std::string body;
+  std::string error = ReadEntireResponseBody(&loader, &body);
+  if (!error.empty())
+    return error;
+
+  if (body != "hello\n")
+    return "URLLoader::FollowRedirect failed";
 
   PASS();
 }
@@ -843,5 +886,6 @@ std::string TestURLLoader::TestUntendedLoad() {
   PASS();
 }
 
-// TODO(viettrungluu): Add tests for FollowRedirect,
-// Get{Upload,Download}Progress, Close (including abort tests if applicable).
+// TODO(viettrungluu): Add tests for  Get{Upload,Download}Progress, Close
+// (including abort tests if applicable).
+

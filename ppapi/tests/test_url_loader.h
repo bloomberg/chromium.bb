@@ -38,7 +38,8 @@ class TestURLLoader : public TestCase {
   int32_t PrepareFileForPost(const pp::FileRef& file_ref,
                              const std::string& data,
                              std::string* message);
-  std::string GetReachableCrossOriginURL();
+  std::string GetReachableAbsoluteURL(const std::string& file_name);
+  std::string GetReachableCrossOriginURL(const std::string& file_name);
   int32_t OpenUntrusted(const pp::URLRequestInfo& request);
   int32_t OpenTrusted(const pp::URLRequestInfo& request);
   int32_t OpenUntrusted(const std::string& method,
@@ -66,6 +67,7 @@ class TestURLLoader : public TestCase {
   std::string TestTrustedJavascriptURLRestriction();
   std::string TestUntrustedHttpRequests();
   std::string TestTrustedHttpRequests();
+  std::string TestFollowURLRedirect();
   std::string TestAuditURLRedirect();
   std::string TestAbortCalls();
   std::string TestUntendedLoad();
