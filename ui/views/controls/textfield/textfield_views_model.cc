@@ -58,8 +58,12 @@ class Edit {
   // successful, or false otherwise. Merged edit will be deleted after
   // redo and should not be reused.
   bool Merge(const Edit* edit) {
-    if (edit->merge_with_previous()) {
-      MergeSet(edit);
+    // Don't merge if previous edit is DELETE. This happens when a
+    // user deletes characters then hits return. In this case, the
+    // delete should be treated as separate edit that can be undone
+    // and should not be merged with the replace edit.
+    if (type_ != DELETE_EDIT && edit->merge_with_previous()) {
+      MergeReplace(edit);
       return true;
     }
     return mergeable() && edit->mergeable() && DoMerge(edit);
@@ -113,10 +117,10 @@ class Edit {
   // Returns the end index of the |new_text_|.
   size_t new_text_end() const { return new_text_start_ + new_text_.length(); }
 
-  // Merge the Set edit into the current edit. This is a special case to
+  // Merge the replace edit into the current edit. This is a special case to
   // handle an omnibox setting autocomplete string after new character is
   // typed in.
-  void MergeSet(const Edit* edit) {
+  void MergeReplace(const Edit* edit) {
     CHECK_EQ(REPLACE_EDIT, edit->type_);
     CHECK_EQ(0U, edit->old_text_start_);
     CHECK_EQ(0U, edit->new_text_start_);

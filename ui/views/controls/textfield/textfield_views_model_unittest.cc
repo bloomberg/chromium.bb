@@ -1179,14 +1179,31 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_SetText) {
   EXPECT_FALSE(model.Redo());
 }
 
-#if defined(USE_AURA) && defined(OS_LINUX)
-// This can be re-enabled when aura on linux has clipboard support.
-// http://crbug.com/97845
-#define MAYBE_UndoRedo_CutCopyPasteTest DISABLED_UndoRedo_CutCopyPasteTest
-#else
-#define MAYBE_UndoRedo_CutCopyPasteTest UndoRedo_CutCopyPasteTest
-#endif
-TEST_F(TextfieldViewsModelTest, MAYBE_UndoRedo_CutCopyPasteTest) {
+TEST_F(TextfieldViewsModelTest, UndoRedo_BackspaceThenSetText) {
+  // This is to test the undo/redo behavior of omnibox.
+  TextfieldViewsModel model(NULL);
+  model.InsertChar('w');
+  EXPECT_STR_EQ("w", model.GetText());
+  EXPECT_EQ(1U, model.GetCursorPosition());
+  model.SetText(ASCIIToUTF16("www.google.com"));
+  EXPECT_EQ(1U, model.GetCursorPosition());
+  EXPECT_STR_EQ("www.google.com", model.GetText());
+  model.SetText(ASCIIToUTF16("www.google.com"));  // Confirm the text.
+  model.MoveCursorRight(gfx::LINE_BREAK, false);
+  EXPECT_EQ(14U, model.GetCursorPosition());
+  EXPECT_TRUE(model.Backspace());
+  EXPECT_TRUE(model.Backspace());
+  EXPECT_STR_EQ("www.google.c", model.GetText());
+  // Autocomplete sets the text
+  model.SetText(ASCIIToUTF16("www.google.com/search=www.google.c"));
+  EXPECT_STR_EQ("www.google.com/search=www.google.c", model.GetText());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("www.google.c", model.GetText());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("www.google.com", model.GetText());
+}
+
+TEST_F(TextfieldViewsModelTest, UndoRedo_CutCopyPasteTest) {
   TextfieldViewsModel model(NULL);
   model.SetText(ASCIIToUTF16("ABCDE"));
   EXPECT_FALSE(model.Redo());  // nothing to redo
