@@ -100,8 +100,8 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
 
   DCHECK(!window_);
   anchor_widget_ = anchor_widget;
-  toplevel_window_ = GTK_WINDOW(gtk_widget_get_toplevel(anchor_widget_));
-  DCHECK(gtk_widget_is_toplevel(GTK_WIDGET(toplevel_window_)));
+  toplevel_window_ = gtk_widget_get_toplevel(anchor_widget_);
+  DCHECK(gtk_widget_is_toplevel(toplevel_window_));
   rect_ = rect ? *rect : gtk_util::WidgetBounds(anchor_widget);
   preferred_arrow_location_ = arrow_location;
 
@@ -156,7 +156,7 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
 
   // If the toplevel window is being used as the anchor, then the signals below
   // are enough to keep us positioned correctly.
-  if (anchor_widget_ != GTK_WIDGET(toplevel_window_)) {
+  if (anchor_widget_ != toplevel_window_) {
     signals_.Connect(anchor_widget_, "size-allocate",
                      G_CALLBACK(OnAnchorAllocateThunk), this);
     signals_.Connect(anchor_widget_, "destroy",
@@ -270,10 +270,10 @@ bool BubbleGtk::UpdateArrowLocation(bool force_move_and_reshape) {
     return false;
 
   gint toplevel_x = 0, toplevel_y = 0;
-  gdk_window_get_position(
-      GTK_WIDGET(toplevel_window_)->window, &toplevel_x, &toplevel_y);
+  gdk_window_get_position(gtk_widget_get_window(toplevel_window_),
+                          &toplevel_x, &toplevel_y);
   int offset_x, offset_y;
-  gtk_widget_translate_coordinates(anchor_widget_, GTK_WIDGET(toplevel_window_),
+  gtk_widget_translate_coordinates(anchor_widget_, toplevel_window_,
                                    rect_.x(), rect_.y(), &offset_x, &offset_y);
 
   ArrowLocationGtk old_location = current_arrow_location_;
@@ -316,11 +316,11 @@ void BubbleGtk::MoveWindow() {
     return;
 
   gint toplevel_x = 0, toplevel_y = 0;
-  gdk_window_get_position(
-      GTK_WIDGET(toplevel_window_)->window, &toplevel_x, &toplevel_y);
+  gdk_window_get_position(gtk_widget_get_window(toplevel_window_),
+                          &toplevel_x, &toplevel_y);
 
   int offset_x, offset_y;
-  gtk_widget_translate_coordinates(anchor_widget_, GTK_WIDGET(toplevel_window_),
+  gtk_widget_translate_coordinates(anchor_widget_, toplevel_window_,
                                    rect_.x(), rect_.y(), &offset_x, &offset_y);
 
   gint screen_x = 0;
@@ -344,7 +344,7 @@ void BubbleGtk::MoveWindow() {
 void BubbleGtk::StackWindow() {
   // Stack our window directly above the toplevel window.
   if (toplevel_window_)
-    ui::StackPopupWindow(window_, GTK_WIDGET(toplevel_window_));
+    ui::StackPopupWindow(window_, toplevel_window_);
 }
 
 void BubbleGtk::Observe(int type,
@@ -423,7 +423,7 @@ gboolean BubbleGtk::OnGtkAccelerator(GtkAccelGroup* group,
           // Forward the accelerator to root window the bubble is anchored
           // to for further processing
           msg.type = GDK_KEY_PRESS;
-          msg.window = GTK_WIDGET(toplevel_window_)->window;
+          msg.window = gtk_widget_get_window(toplevel_window_);
           msg.send_event = TRUE;
           msg.time = GDK_CURRENT_TIME;
           msg.state = modifier | GDK_MOD2_MASK;

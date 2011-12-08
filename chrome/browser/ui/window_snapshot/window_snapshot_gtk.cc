@@ -27,7 +27,7 @@ static cairo_status_t SnapshotCallback(
 bool GrabWindowSnapshot(gfx::NativeWindow window_handle,
                         std::vector<unsigned char>* png_representation,
                         const gfx::Rect& snapshot_bounds) {
-  GdkWindow* gdk_window = GTK_WIDGET(window_handle)->window;
+  GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(window_handle));
   Display* display = GDK_WINDOW_XDISPLAY(gdk_window);
   XID win = GDK_WINDOW_XID(gdk_window);
 

@@ -277,7 +277,8 @@ void PanelBrowserWindowGtk::ClosePanel() {
 }
 
 void PanelBrowserWindowGtk::ActivatePanel() {
-  gdk_window_set_accept_focus(GTK_WIDGET(window())->window, TRUE);
+  gdk_window_set_accept_focus(
+      gtk_widget_get_window(GTK_WIDGET(window())), TRUE);
   Activate();
 }
 
@@ -290,8 +291,10 @@ void PanelBrowserWindowGtk::DeactivatePanel() {
     Deactivate();
   }
 
-  if (panel_->expansion_state() == Panel::MINIMIZED)
-    gdk_window_set_accept_focus(GTK_WIDGET(window())->window, FALSE);
+  if (panel_->expansion_state() == Panel::MINIMIZED) {
+    gdk_window_set_accept_focus(
+        gtk_widget_get_window(GTK_WIDGET(window())), FALSE);
+  }
 }
 
 bool PanelBrowserWindowGtk::IsPanelActive() const {
@@ -349,7 +352,8 @@ void PanelBrowserWindowGtk::DrawAttention() {
     panel_->SetExpansionState(Panel::TITLE_ONLY);
 
   GdkRectangle rect = GetTitlebarRectForDrawAttention();
-  gdk_window_invalidate_rect(GTK_WIDGET(window())->window, &rect, TRUE);
+  gdk_window_invalidate_rect(
+      gtk_widget_get_window(GTK_WIDGET(window())), &rect, TRUE);
 
   UpdateTitleBar();
 }

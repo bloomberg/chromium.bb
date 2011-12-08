@@ -92,12 +92,6 @@ void GetWidgetSizeFromResources(GtkWidget* widget,
 void SetWindowSizeFromResources(GtkWindow* window,
                                 int width_id, int height_id, bool resizable);
 
-// Places |window| approximately over center of |parent|, it also moves window
-// to parent's desktop. Use this only for non-modal dialogs, such as the
-// options window and content settings window; otherwise you should be using
-// transient_for.
-void CenterOverWindow(GtkWindow* window, GtkWindow* parent);
-
 // Puts all browser windows in one window group; this will make any dialog
 // spawned app modal.
 void MakeAppModalWindowGroup();

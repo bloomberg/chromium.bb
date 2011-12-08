@@ -346,47 +346,6 @@ void SetWindowSizeFromResources(GtkWindow* window,
   gtk_window_set_resizable(window, resizable ? TRUE : FALSE);
 }
 
-void CenterOverWindow(GtkWindow* window, GtkWindow* parent) {
-  gfx::Rect frame_bounds = gtk_util::GetWidgetScreenBounds(GTK_WIDGET(parent));
-  gfx::Point origin = frame_bounds.origin();
-  gfx::Size size = gtk_util::GetWidgetSize(GTK_WIDGET(window));
-  origin.Offset(
-      (frame_bounds.width() - size.width()) / 2,
-      (frame_bounds.height() - size.height()) / 2);
-
-  // Prevent moving window out of monitor bounds.
-  GdkScreen* screen = gtk_window_get_screen(parent);
-  if (screen) {
-    // It would be better to check against workarea for given monitor
-    // but getting workarea for particular monitor is tricky.
-    gint monitor = gdk_screen_get_monitor_at_window(screen,
-        GTK_WIDGET(parent)->window);
-    GdkRectangle rect;
-    gdk_screen_get_monitor_geometry(screen, monitor, &rect);
-
-    // Check the right bottom corner.
-    if (origin.x() > rect.x + rect.width - size.width())
-      origin.set_x(rect.x + rect.width - size.width());
-    if (origin.y() > rect.y + rect.height - size.height())
-      origin.set_y(rect.y + rect.height - size.height());
-
-    // Check the left top corner.
-    if (origin.x() < rect.x)
-      origin.set_x(rect.x);
-    if (origin.y() < rect.y)
-      origin.set_y(rect.y);
-  }
-
-  gtk_window_move(window, origin.x(), origin.y());
-
-  // Move to user expected desktop if window is already visible.
-  if (GTK_WIDGET(window)->window) {
-    ui::ChangeWindowDesktop(
-        ui::GetX11WindowFromGtkWidget(GTK_WIDGET(window)),
-        ui::GetX11WindowFromGtkWidget(GTK_WIDGET(parent)));
-  }
-}
-
 void MakeAppModalWindowGroup() {
   // Older versions of GTK+ don't give us gtk_window_group_list() which is what
   // we need to add current non-browser modal dialogs to the list. If
@@ -914,7 +873,8 @@ gfx::Rect WidgetBounds(GtkWidget* widget) {
 }
 
 void SetWMLastUserActionTime(GtkWindow* window) {
-  gdk_x11_window_set_user_time(GTK_WIDGET(window)->window, XTimeNow());
+  gdk_x11_window_set_user_time(gtk_widget_get_window(GTK_WIDGET(window)),
+                               XTimeNow());
 }
 
 guint32 XTimeNow() {

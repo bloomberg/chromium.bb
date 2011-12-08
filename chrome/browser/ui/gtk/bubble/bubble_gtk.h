@@ -176,7 +176,7 @@ class BubbleGtk : public content::NotificationObserver {
   // Note that it's possible for |toplevel_window_| to be NULL if the
   // window is destroyed before this object is destroyed, so it's important
   // to check for that case.
-  GtkWindow* toplevel_window_;
+  GtkWidget* toplevel_window_;
 
   // The widget that we use to relatively position the popup window.
   GtkWidget* anchor_widget_;
