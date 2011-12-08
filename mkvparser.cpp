@@ -914,9 +914,13 @@ long long EBMLHeader::Parse(
 
 Segment::Segment(
     IMkvReader* pReader,
+    long long elem_start,
+    //long long elem_size,
     long long start,
     long long size) :
     m_pReader(pReader),
+    m_element_start(elem_start),
+    //m_element_size(elem_size),
     m_start(start),
     m_size(size),
     m_pos(start),
@@ -1016,6 +1020,7 @@ long long Segment::CreateInstance(
         if ((pos + len) > available)
             return pos + len;
 
+        const long long idpos = pos;
         const long long id = ReadUInt(pReader, pos, len);
 
         if (id < 0)  //error
@@ -1056,15 +1061,15 @@ long long Segment::CreateInstance(
             else if (total < 0)
                 size = -1;
 
-#if 0  //this turned out to be too conservative:
-            else if ((pos + size) > end)
-                return E_FILE_FORMAT_INVALID;
-#else  //so do this instead
             else if ((pos + size) > total)
                 size = -1;
-#endif
 
-            pSegment = new (std::nothrow) Segment(pReader, pos, size);
+            pSegment = new (std::nothrow) Segment(
+                                            pReader,
+                                            idpos,
+                                            //elem_size
+                                            pos,
+                                            size);
 
             if (pSegment == 0)
                 return -1;  //generic error
@@ -2550,7 +2555,14 @@ SeekHead::SeekHead(
         assert((pos + size) <= stop);
 
         if (id == 0x0DBB)  //SeekEntry ID
-            ParseEntry(pReader, pos, size, pEntry);
+        {
+            if (ParseEntry(pReader, pos, size, pEntry))
+            {
+                Entry& e = *pEntry++;
+                e.element_start = idpos;
+                e.element_size = (pos + size) - idpos;
+            }
+        }
         else if (id == 0x6C)  //Void ID
         {
             VoidElement& e = *pVoidElement++;
@@ -2853,11 +2865,11 @@ void Segment::ParseSeekEntry(
         ParseCues(seekOff);
 }
 #else
-void SeekHead::ParseEntry(
+bool SeekHead::ParseEntry(
     IMkvReader* pReader,
     long long start,
     long long size_,
-    Entry*& pEntry)
+    Entry* pEntry)
 {
     long long pos = start;
     const long long stop = start + size_;
@@ -2870,75 +2882,81 @@ void SeekHead::ParseEntry(
     //seekIdId;
 
     if (seekIdId != 0x13AB)  //SeekID ID
-        return;
+        return false;
 
     if ((pos + len) > stop)
-        return;
+        return false;
 
     pos += len;  //consume SeekID id
 
     const long long seekIdSize = ReadUInt(pReader, pos, len);
 
     if (seekIdSize <= 0)
-        return;
+        return false;
 
     if ((pos + len) > stop)
-        return;
+        return false;
 
     pos += len;  //consume size of field
 
     if ((pos + seekIdSize) > stop)
-        return;
+        return false;
 
-    //TODO: it's not clear whether this is correct
-    //It seems as if the payload here is "binary" which
-    //means the value of the ID should be unserialized,
-    //not parsed as an uint.
+    //Note that the SeekId payload really is serialized
+    //as a "Matroska integer", not as a plain binary value.
+    //In fact, Matroska requires that ID values in the
+    //stream exactly match the binary representation as listed
+    //in the Matroska specification.
     //
+    //This parser is more liberal, and permits IDs to have
+    //any width.  (This could make the representation in the stream
+    //different from what's in the spec, but it doesn't matter here,
+    //since we always normalize "Matroska integer" values.)
+
     pEntry->id = ReadUInt(pReader, pos, len);  //payload
 
     if (pEntry->id <= 0)
-        return;
+        return false;
 
     if (len != seekIdSize)
-        return;
+        return false;
 
     pos += seekIdSize;  //consume SeekID payload
 
     const long long seekPosId = ReadUInt(pReader, pos, len);
 
     if (seekPosId != 0x13AC)  //SeekPos ID
-        return;
+        return false;
 
     if ((pos + len) > stop)
-        return;
+        return false;
 
     pos += len;  //consume id
 
     const long long seekPosSize = ReadUInt(pReader, pos, len);
 
     if (seekPosSize <= 0)
-        return;
+        return false;
 
     if ((pos + len) > stop)
-        return;
+        return false;
 
     pos += len;  //consume size
 
     if ((pos + seekPosSize) > stop)
-        return;
+        return false;
 
     pEntry->pos = UnserializeUInt(pReader, pos, seekPosSize);
 
     if (pEntry->pos < 0)
-        return;
+        return false;
 
     pos += seekPosSize;  //consume payload
 
     if (pos != stop)
-        return;
+        return false;
 
-    ++pEntry;  //success
+    return true;
 }
 #endif
 

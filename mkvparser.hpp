@@ -508,8 +508,15 @@ public:
 
     struct Entry
     {
+        //the SeekHead entry payload
         long long id;
         long long pos;
+
+        //absolute pos of SeekEntry ID
+        long long element_start;
+
+        //SeekEntry ID size + size size + payload
+        long long element_size;
     };
 
     int GetCount() const;
@@ -534,11 +541,11 @@ private:
     VoidElement* m_void_elements;
     int m_void_element_count;
 
-    static void ParseEntry(
+    static bool ParseEntry(
         IMkvReader*,
-        long long pos,
+        long long pos,  //payload
         long long size,
-        Entry*&);
+        Entry*);
 
 };
 
@@ -744,10 +751,17 @@ class Segment
     Segment& operator=(const Segment&);
 
 private:
-    Segment(IMkvReader*, long long pos, long long size);
+    Segment(
+        IMkvReader*,
+        long long elem_start,
+        //long long elem_size,
+        long long pos,
+        long long size);
 
 public:
     IMkvReader* const m_pReader;
+    const long long m_element_start;
+    //const long long m_element_size;
     const long long m_start;  //posn of segment payload
     const long long m_size;   //size of segment payload
     Cluster m_eos;  //TODO: make private?
