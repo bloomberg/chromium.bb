@@ -280,8 +280,6 @@
         'ime/input_method_gtk.cc',
         'ime/input_method_gtk.h',
         'ime/input_method.h',
-        'ime/input_method_ibus.cc',
-        'ime/input_method_ibus.h',
         'ime/input_method_win.cc',
         'ime/input_method_win.h',
         'ime/mock_input_method.cc',
