@@ -567,6 +567,9 @@ void NativeWidgetAura::OnFocus() {
   if (widget->is_top_level()) {
     InputMethod* input_method = widget->GetInputMethod();
     input_method->OnFocus();
+    // See description of got_initial_focus_in_ for details on this.
+    // TODO(mazda): Investigate this is actually necessary.
+    // widget->GetFocusManager()->RestoreFocusedView();
   }
   delegate_->OnNativeFocus(window_);
 }
@@ -576,6 +579,7 @@ void NativeWidgetAura::OnBlur() {
   if (widget->is_top_level()) {
     InputMethod* input_method = widget->GetInputMethod();
     input_method->OnBlur();
+    widget->GetFocusManager()->StoreFocusedView();
   }
   delegate_->OnNativeBlur(NULL);
 }
@@ -630,14 +634,12 @@ bool NativeWidgetAura::ShouldActivate(aura::Event* event) {
 }
 
 void NativeWidgetAura::OnActivated() {
-  GetWidget()->GetFocusManager()->RestoreFocusedView();
   delegate_->OnNativeWidgetActivationChanged(true);
   if (IsVisible() && GetWidget()->non_client_view())
     GetWidget()->non_client_view()->SchedulePaint();
 }
 
 void NativeWidgetAura::OnLostActive() {
-  GetWidget()->GetFocusManager()->StoreFocusedView();
   delegate_->OnNativeWidgetActivationChanged(false);
   if (IsVisible() && GetWidget()->non_client_view())
     GetWidget()->non_client_view()->SchedulePaint();
