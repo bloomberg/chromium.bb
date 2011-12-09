@@ -43,6 +43,7 @@
 #import "client/mac/crash_generation/ConfigFile.h"
 #import "client/mac/sender/uploader.h"
 #import "client/mac/handler/exception_handler.h"
+#import "client/mac/handler/minidump_generator.h"
 #import "client/ios/Breakpad.h"
 #import "client/mac/handler/protected_memory_allocator.h"
 
@@ -154,6 +155,7 @@ class Breakpad {
   void UploadNextReport();
   void UploadData(NSData *data, NSString *name,
                   NSDictionary *server_parameters);
+  NSDictionary *GenerateReport(NSDictionary *server_parameters);
 
  private:
   Breakpad()
@@ -418,9 +420,9 @@ NSString *Breakpad::NextCrashReportToUpload() {
 
 //=============================================================================
 void Breakpad::UploadNextReport() {
-  NSString* configFile = NextCrashReportToUpload();
+  NSString *configFile = NextCrashReportToUpload();
   if (configFile) {
-    Uploader* uploader = [[[Uploader alloc]
+    Uploader *uploader = [[[Uploader alloc]
         initWithConfigFile:[configFile UTF8String]] autorelease];
     if (uploader)
       [uploader report];
@@ -445,6 +447,40 @@ void Breakpad::UploadData(NSData *data, NSString *name,
                           forKey:key];
   }
   [uploader uploadData:data name:name];
+}
+
+//=============================================================================
+NSDictionary *Breakpad::GenerateReport(NSDictionary *server_parameters) {
+  NSString *dumpDirAsNSString = KeyValue(@BREAKPAD_DUMP_DIRECTORY);
+  if (!dumpDirAsNSString)
+    return nil;
+  const char *dumpDir = [dumpDirAsNSString UTF8String];
+
+  google_breakpad::MinidumpGenerator generator(mach_task_self(),
+                                               MACH_PORT_NULL);
+  std::string dumpId;
+  std::string dumpFilename = generator.UniqueNameInDirectory(dumpDir, &dumpId);
+  bool success = generator.Write(dumpFilename.c_str());
+  if (!success)
+    return nil;
+
+  SimpleStringDictionary params = *config_params_;
+  for (NSString *key in server_parameters) {
+    params.SetKeyValue([key UTF8String],
+                       [[server_parameters objectForKey:key] UTF8String]);
+  }
+  ConfigFile config_file;
+  config_file.WriteFile(dumpDir, &params, dumpDir, dumpId.c_str());
+
+  // Handle results.
+  NSMutableDictionary *result = [NSMutableDictionary dictionary];
+  NSString *dumpFullPath = [dumpDirAsNSString stringByAppendingPathComponent:
+      [NSString stringWithUTF8String:dumpFilename.c_str()]];
+  [result setValue:dumpFullPath
+            forKey:@BREAKPAD_OUTPUT_DUMP_FILE];
+  [result setValue:[NSString stringWithUTF8String:config_file.GetFilePath()]
+            forKey:@BREAKPAD_OUTPUT_CONFIG_FILE];
+  return result;
 }
 
 //=============================================================================
@@ -716,5 +752,22 @@ void BreakpadUploadData(BreakpadRef ref, NSData *data, NSString *name,
     }
   } catch(...) {    // don't let exceptions leave this C API
     fprintf(stderr, "BreakpadUploadData() : error\n");
+  }
+}
+
+//=============================================================================
+NSDictionary *BreakpadGenerateReport(BreakpadRef ref,
+                                     NSDictionary *server_parameters) {
+  try {
+    // Not called at exception time
+    Breakpad *breakpad = (Breakpad *)ref;
+
+    if (breakpad) {
+      return breakpad->GenerateReport(server_parameters);
+    } else {
+      return nil;
+    }
+  } catch(...) {    // don't let exceptions leave this C API
+    fprintf(stderr, "BreakpadGenerateReport() : error\n");
   }
 }
