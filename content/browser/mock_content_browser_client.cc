@@ -89,6 +89,10 @@ bool MockContentBrowserClient::IsURLSameAsAnySiteInstance(const GURL& url) {
   return false;
 }
 
+bool MockContentBrowserClient::IsHandledURL(const GURL& url) {
+  return false;
+}
+
 bool MockContentBrowserClient::IsSuitableHost(
     RenderProcessHost* process_host,
     const GURL& site_url) {

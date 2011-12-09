@@ -428,6 +428,10 @@ bool ChromeContentBrowserClient::IsURLSameAsAnySiteInstance(const GURL& url) {
          url == GURL(chrome::kChromeUIShorthangURL);
 }
 
+bool ChromeContentBrowserClient::IsHandledURL(const GURL& url) {
+  return ProfileIOData::IsHandledURL(url);
+}
+
 bool ChromeContentBrowserClient::IsSuitableHost(
     content::RenderProcessHost* process_host,
     const GURL& site_url) {

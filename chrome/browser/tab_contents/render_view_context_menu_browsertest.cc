@@ -34,15 +34,15 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
   }
 };
 
-class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
+class ContextMenuBrowserTest : public InProcessBrowserTest {
  public:
-  RegisterProtocolHandlerBrowserTest() { }
+  ContextMenuBrowserTest() { }
 
-  TestRenderViewContextMenu* CreateContextMenu(GURL url) {
+  TestRenderViewContextMenu* CreateContextMenu(GURL unfiltered_url, GURL url) {
     ContextMenuParams params;
     params.media_type = WebKit::WebContextMenuData::MediaTypeNone;
+    params.unfiltered_link_url = unfiltered_url;
     params.link_url = url;
-    params.unfiltered_link_url = url;
     TabContents* tab_contents = browser()->GetSelectedTabContents();
     params.page_url = tab_contents->controller().GetActiveEntry()->url();
 #if defined(OS_MACOSX)
@@ -57,25 +57,26 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
-    ContextMenuEntryAppearsForHandledUrls) {
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       OpenEntryPresentForNormalURLs) {
   scoped_ptr<TestRenderViewContextMenu> menu(
-      CreateContextMenu(GURL("http://www.google.com/")));
-  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
+      CreateContextMenu(GURL("http://www.google.com/"),
+                        GURL("http://www.google.com/")));
 
-  ProtocolHandler handler = ProtocolHandler::CreateProtocolHandler(
-        std::string("web+search"),
-        GURL("http://www.google.com/%s"),
-        UTF8ToUTF16(std::string("Test handler")));
-  ProtocolHandlerRegistry* registry =
-      browser()->profile()->GetProtocolHandlerRegistry();
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
+}
 
-  GURL url("web+search:testing");
-  registry->OnAcceptRegisterProtocolHandler(handler);
-  ASSERT_TRUE(registry->IsHandledProtocol("web+search"));
-  ASSERT_EQ(registry->GetHandlersFor(url.scheme()).size(), (size_t) 1);
-  menu.reset(CreateContextMenu(url));
-  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       OpenEntryAbsentForFilteredURLs) {
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      CreateContextMenu(GURL("chrome://history"),
+                        GURL()));
+
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
 }
 
 }  // namespace

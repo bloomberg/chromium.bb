@@ -82,6 +82,10 @@ bool ShellContentBrowserClient::IsURLSameAsAnySiteInstance(const GURL& url) {
   return false;
 }
 
+bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
+  return false;
+}
+
 bool ShellContentBrowserClient::IsSuitableHost(
     RenderProcessHost* process_host,
     const GURL& site_url) {

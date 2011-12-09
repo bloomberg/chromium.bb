@@ -507,7 +507,7 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
 }
 
 void RenderViewContextMenu::InitMenu() {
-  bool has_link = !params_.link_url.is_empty();
+  bool has_link = !params_.unfiltered_link_url.is_empty();
   bool has_selection = !params_.selection_text.empty();
 
   if (AppendCustomItems()) {
@@ -667,19 +667,22 @@ void RenderViewContextMenu::AppendDeveloperItems() {
 }
 
 void RenderViewContextMenu::AppendLinkItems() {
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
-                                  IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW,
-                                  IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW);
-  if (params_.link_url.is_valid()) {
-    AppendProtocolHandlerSubMenu();
+  if (!params_.link_url.is_empty()) {
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
+                                    IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW,
+                                    IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW);
+    if (params_.link_url.is_valid()) {
+      AppendProtocolHandlerSubMenu();
+    }
+
+    if (!external_) {
+      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD,
+                                      IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
+    }
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVELINKAS,
+                                    IDS_CONTENT_CONTEXT_SAVELINKAS);
   }
-  if (!external_) {
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD,
-                                    IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
-  }
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVELINKAS,
-                                  IDS_CONTENT_CONTEXT_SAVELINKAS);
 
   menu_model_.AddItemWithStringId(
       IDC_CONTENT_CONTEXT_COPYLINKLOCATION,

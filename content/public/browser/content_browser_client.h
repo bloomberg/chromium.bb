@@ -133,6 +133,10 @@ class ContentBrowserClient {
   // SiteInstance.
   virtual bool IsURLSameAsAnySiteInstance(const GURL& url) = 0;
 
+  // Returns whether a specified URL is handled by the embedder's internal
+  // protocol handlers.
+  virtual bool IsHandledURL(const GURL& url) = 0;
+
   // Returns whether a new view for a given |site_url| can be launched in a
   // given |process_host|.
   virtual bool IsSuitableHost(content::RenderProcessHost* process_host,

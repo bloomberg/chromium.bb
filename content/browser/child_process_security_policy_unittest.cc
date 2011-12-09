@@ -2,40 +2,75 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/platform_file.h"
 #include "content/browser/child_process_security_policy.h"
+#include "content/browser/mock_content_browser_client.h"
 #include "content/common/test_url_constants.h"
 #include "content/public/common/url_constants.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_test_job.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class ChildProcessSecurityPolicyTest : public testing::Test {
- protected:
-  // testing::Test
-  virtual void SetUp() {
-    // In the real world, "chrome:" is a handled scheme.
-    RegisterProtocolFactory(chrome::kChromeUIScheme,
-                            &net::URLRequestTestJob::Factory);
-  }
-  virtual void TearDown() {
-    RegisterProtocolFactory(chrome::kChromeUIScheme, NULL);
+namespace {
+
+const int kRendererID = 42;
+const int kWorkerRendererID = kRendererID + 1;
+
+class ChildProcessSecurityPolicyTestBrowserClient
+    : public content::MockContentBrowserClient {
+ public:
+  ChildProcessSecurityPolicyTestBrowserClient() {}
+
+  virtual bool IsHandledURL(const GURL& url) {
+    return schemes_.find(url.scheme()) != schemes_.end();
   }
 
-  static net::URLRequest::ProtocolFactory* RegisterProtocolFactory(
-      const std::string& scheme,
-      net::URLRequest::ProtocolFactory* factory) {
-    return net::URLRequest::Deprecated::RegisterProtocolFactory(
-        scheme, factory);
+  void ClearSchemes() {
+    schemes_.clear();
   }
+
+  void AddScheme(const std::string& scheme) {
+    schemes_.insert(scheme);
+  }
+
+ private:
+  std::set<std::string> schemes_;
 };
 
-static int kRendererID = 42;
-static int kWorkerRendererID = kRendererID + 1;
+}  // namespace
+
+class ChildProcessSecurityPolicyTest : public testing::Test {
+ public:
+  ChildProcessSecurityPolicyTest() : old_browser_client_(NULL) {
+  }
+
+  virtual void SetUp() {
+    old_browser_client_ = content::GetContentClient()->browser();
+    content::GetContentClient()->set_browser(&test_browser_client_);
+
+    // Claim to always handle chrome:// URLs because the CPSP's notion of
+    // allowing WebUI bindings is hard-wired to this particular scheme.
+    test_browser_client_.AddScheme("chrome");
+  }
+
+  virtual void TearDown() {
+    test_browser_client_.ClearSchemes();
+    content::GetContentClient()->set_browser(old_browser_client_);
+  }
+
+ protected:
+  void RegisterTestScheme(const std::string& scheme) {
+    test_browser_client_.AddScheme(scheme);
+  }
+
+ private:
+  ChildProcessSecurityPolicyTestBrowserClient test_browser_client_;
+  content::ContentBrowserClient* old_browser_client_;
+};
 
 TEST_F(ChildProcessSecurityPolicyTest, IsWebSafeSchemeTest) {
   ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
@@ -174,8 +209,8 @@ TEST_F(ChildProcessSecurityPolicyTest, RegisterWebSafeSchemeTest) {
   // Currently, "asdf" is destined for ShellExecute, so it is allowed.
   EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("asdf:rockers")));
 
-  // Once we register a ProtocolFactory for "asdf", we default to deny.
-  RegisterProtocolFactory("asdf", &net::URLRequestTestJob::Factory);
+  // Once we register "asdf", we default to deny.
+  RegisterTestScheme("asdf");
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("asdf:rockers")));
 
   // We can allow new schemes by adding them to the whitelist.
@@ -183,9 +218,6 @@ TEST_F(ChildProcessSecurityPolicyTest, RegisterWebSafeSchemeTest) {
   EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("asdf:rockers")));
 
   // Cleanup.
-  RegisterProtocolFactory("asdf", NULL);
-  EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("asdf:rockers")));
-
   p->Remove(kRendererID);
 }
 
