@@ -267,6 +267,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
   scoped_ptr<NetworkActionPredictor> network_action_predictor_;
+  bool profile_sync_service_created_;
   bool history_service_created_;
   bool favicon_service_created_;
   bool created_web_data_service_;

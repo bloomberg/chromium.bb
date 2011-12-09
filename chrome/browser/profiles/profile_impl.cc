@@ -232,6 +232,7 @@ ProfileImpl::ProfileImpl(const FilePath& path,
       extension_devtools_manager_(NULL),
       host_content_settings_map_(NULL),
       host_zoom_map_(NULL),
+      profile_sync_service_created_(false),
       history_service_created_(false),
       favicon_service_created_(false),
       created_web_data_service_(false),
@@ -1387,8 +1388,10 @@ ProfileSyncService* ProfileImpl::GetProfileSyncService(
 
   if (!ProfileSyncService::IsSyncEnabled())
     return NULL;
-  if (!sync_service_.get())
+  if (!profile_sync_service_created_) {
+    profile_sync_service_created_ = true;
     InitSyncService(cros_user);
+  }
   return sync_service_.get();
 }
 
