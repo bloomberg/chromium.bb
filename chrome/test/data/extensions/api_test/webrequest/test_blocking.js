@@ -126,9 +126,6 @@ runTests([
 
   // Navigates to a page with a blocking handler that redirects to a different
   // page.
-  // TODO(mpcomplete): We should see an onBeforeRedirect as well, but our
-  // process switching logic cancels the original redirect request and
-  // starts a new one instead. See http://crbug.com/79520.
   function complexLoadRedirected() {
     expect(
       [  // events
@@ -140,13 +137,14 @@ runTests([
           },
           retval: {redirectUrl: getURL("simpleLoad/a.html")}
         },
-        { label: "onErrorOccurred-1",
-          event: "onErrorOccurred",
+        { label: "onBeforeRedirect",
+          event: "onBeforeRedirect",
           details: {
             url: getURL("complexLoad/a.html"),
+            redirectUrl: getURL("simpleLoad/a.html"),
+            statusLine: "",
+            statusCode: -1,
             fromCache: false,
-            error: "net::ERR_ABORTED"
-            // Request to chrome-extension:// url has no IP.
           }
         },
         { label: "onBeforeRequest-2",
@@ -178,7 +176,7 @@ runTests([
         },
       ],
       [  // event order
-        ["onBeforeRequest-1", "onErrorOccurred-1", "onBeforeRequest-2",
+        ["onBeforeRequest-1", "onBeforeRedirect", "onBeforeRequest-2",
          "onResponseStarted", "onCompleted"],
       ],
       {urls: ["<all_urls>"]}, // filter
@@ -459,7 +457,6 @@ runTests([
             responseHeadersExist: true,
           },
           retval_function: function(name, details) {
-            console.log(JSON.stringify(details));
             responseHeaders = details.responseHeaders;
             var found = false;
             var expectedValue = [

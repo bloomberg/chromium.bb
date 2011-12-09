@@ -2074,9 +2074,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
   // issue a special POST navigation in WebKit (via
   // FrameLoader::loadFrameRequest). See ResourceDispatcher and WebURLLoaderImpl
   // for examples of how to send the httpBody data.
-  // TODO(mpcomplete): remove is_redirect clause when http://crbug.com/79520 is
-  // fixed.
-  if (!frame->parent() && (is_content_initiated || is_redirect) &&
+  if (!frame->parent() && is_content_initiated &&
       default_policy == WebKit::WebNavigationPolicyCurrentTab &&
       request.httpMethod() == "GET" && !url.SchemeIs(chrome::kAboutScheme)) {
     bool send_referrer = false;
