@@ -1,5 +1,6 @@
 {
   "name": "Page action extension",
+  "manifest_version": 2,
   "version": "1.0",
   "background_page": "bg.html",
   "page_action": {
