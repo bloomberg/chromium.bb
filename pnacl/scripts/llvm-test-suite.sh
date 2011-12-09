@@ -90,7 +90,7 @@ testsuite-report() {
 }
 
 all() {
-  testsuite-prereq
+  testsuite-prereq "$@"
   testsuite-clean
   testsuite-configure
   testsuite-run "$@"
