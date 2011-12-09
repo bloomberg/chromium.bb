@@ -142,6 +142,9 @@ void DownloadTestObserver::ModelChanged() {
   // (done by |OnDownloadUpdated()|).
   std::vector<DownloadItem*> downloads;
   download_manager_->GetAllDownloads(FilePath(), &downloads);
+  // As a test class, we're generally interested in whatever's there,
+  // so we include temporary downloads.
+  download_manager_->GetTemporaryDownloads(FilePath(), &downloads);
 
   for (std::vector<DownloadItem*>::iterator it = downloads.begin();
        it != downloads.end(); ++it) {

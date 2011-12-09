@@ -158,9 +158,6 @@ void DownloadFileManager::StartDownload(
     return;
   }
 
-  // TODO(phajdan.jr): fix the duplication of path info below.
-  info->path = info->save_info.file_path;
-
   manager->CreateDownloadItem(info, request_handle);
   bool hash_needed = manager->delegate()->GenerateFileHash();
 

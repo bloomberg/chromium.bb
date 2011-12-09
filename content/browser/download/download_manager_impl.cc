@@ -183,7 +183,7 @@ void DownloadManagerImpl::GetTemporaryDownloads(
   for (DownloadMap::iterator it = history_downloads_.begin();
        it != history_downloads_.end(); ++it) {
     if (it->second->IsTemporary() &&
-        it->second->GetFullPath().DirName() == dir_path)
+        (dir_path.empty() || it->second->GetFullPath().DirName() == dir_path))
       result->push_back(it->second);
   }
 }
@@ -383,6 +383,7 @@ void DownloadManagerImpl::ContinueDownloadWithPath(
   DCHECK(ContainsKey(active_downloads_, download_id));
 
   // Make sure the initial file name is set only once.
+  DCHECK(download->GetFullPath().empty());
   download->OnPathDetermined(chosen_file);
 
   VLOG(20) << __FUNCTION__ << "()"

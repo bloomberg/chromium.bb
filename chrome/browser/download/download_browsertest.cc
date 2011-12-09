@@ -467,6 +467,13 @@ class DownloadTest : public InProcessBrowserTest {
 
     // Find the origin path (from which the data comes).
     FilePath origin_file(OriginFile(origin_filename));
+    return CheckDownloadFullPaths(browser, downloaded_file, origin_file);
+  }
+
+  // A version of CheckDownload that allows complete path specification.
+  bool CheckDownloadFullPaths(Browser* browser,
+                              const FilePath& downloaded_file,
+                              const FilePath& origin_file) {
     bool origin_file_exists = file_util::PathExists(origin_file);
     EXPECT_TRUE(origin_file_exists);
     if (!origin_file_exists)
@@ -1669,4 +1676,67 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SearchDownloads) {
   EXPECT_EQ(2, search_results[0]->GetDbHandle());
   EXPECT_EQ(3, search_results[1]->GetDbHandle());
   search_results.clear();
+}
+
+// Tests for download initiation functions.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
+  ASSERT_TRUE(InitialSetup(false));
+  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
+
+  // DownloadUrl always prompts; return acceptance of whatever it prompts.
+  NullSelectFile(browser());
+
+  TabContents* tab_contents = browser()->GetSelectedTabContents();
+  ASSERT_TRUE(tab_contents);
+
+  DownloadTestObserver* observer(
+    new DownloadTestObserver(
+        DownloadManagerForBrowser(browser()), 1,
+        DownloadItem::COMPLETE,  // Really done
+        false,                   // Ignore select file.
+        DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+  DownloadManagerForBrowser(browser())->DownloadUrl(
+      url, GURL(""), "", tab_contents);
+  observer->WaitForFinished();
+  EXPECT_TRUE(observer->select_file_dialog_seen());
+
+  // Check state.
+  EXPECT_EQ(1, browser()->tab_count());
+  ASSERT_TRUE(CheckDownload(browser(), file, file));
+  CheckDownloadUI(browser(), true, true, file);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToFile) {
+  ASSERT_TRUE(InitialSetup(false));
+  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
+
+  TabContents* tab_contents = browser()->GetSelectedTabContents();
+  ASSERT_TRUE(tab_contents);
+
+  ScopedTempDir other_directory;
+  ASSERT_TRUE(other_directory.CreateUniqueTempDir());
+  FilePath target_file_full_path
+      = other_directory.path().Append(file.BaseName());
+  DownloadSaveInfo save_info;
+  save_info.file_path = target_file_full_path;
+
+  DownloadTestObserver* observer(CreateWaiter(browser(), 1));
+  DownloadManagerForBrowser(browser())->DownloadUrlToFile(
+      url, GURL(""), "", save_info, tab_contents);
+  observer->WaitForFinished();
+
+  // Check state.
+  EXPECT_EQ(1, browser()->tab_count());
+  ASSERT_TRUE(CheckDownloadFullPaths(browser(),
+                                     target_file_full_path,
+                                     OriginFile(file)));
+#if !defined(OS_CHROMEOS)
+  // TODO(rdsmith/achuith): Re-enable on ChromeOS when
+  // http://crbug.com/106856 is fixed.
+
+  // Temporary downloads won't be visible.
+  CheckDownloadUI(browser(), false, false, file);
+#endif
 }
