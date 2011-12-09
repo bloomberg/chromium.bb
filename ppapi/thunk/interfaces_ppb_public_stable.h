@@ -22,7 +22,7 @@ PROXIED_API(PPB_Audio)
 // serialize it to a struct when we need it on the host side.
 UNPROXIED_API(PPB_AudioConfig)
 PROXIED_API(PPB_Core)
-PROXIED_API(PPB_FileIO)
+UNPROXIED_API(PPB_FileIO)
 PROXIED_API(PPB_FileRef)
 PROXIED_API(PPB_FileSystem)
 PROXIED_API(PPB_Graphics2D)
@@ -50,7 +50,7 @@ PROXIED_IFACE(PPB_Audio, PPB_AUDIO_INTERFACE_1_0, PPB_Audio)
 // This has no corresponding _Proxy object since it does no IPC.
 PROXIED_IFACE(NoAPIName, PPB_AUDIO_CONFIG_INTERFACE_1_0, PPB_AudioConfig)
 // Note: Core is special and is registered manually.
-PROXIED_IFACE(PPB_FileIO, PPB_FILEIO_INTERFACE_1_0, PPB_FileIO)
+UNPROXIED_IFACE(PPB_FileIO, PPB_FILEIO_INTERFACE_1_0, PPB_FileIO)
 PROXIED_IFACE(PPB_FileRef, PPB_FILEREF_INTERFACE_1_0, PPB_FileRef)
 PROXIED_IFACE(PPB_FileSystem, PPB_FILESYSTEM_INTERFACE_1_0, PPB_FileSystem)
 PROXIED_IFACE(PPB_Graphics2D, PPB_GRAPHICS_2D_INTERFACE_1_0, PPB_Graphics2D)

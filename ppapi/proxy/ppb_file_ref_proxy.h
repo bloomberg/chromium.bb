@@ -31,8 +31,6 @@ class PPB_FileRef_Proxy : public InterfaceProxy {
 
   static PP_Resource CreateProxyResource(PP_Resource file_system,
                                          const char* path);
-  static PP_Resource CreateProxyResource(
-      const PPB_FileRef_CreateInfo& serialized);
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -62,7 +60,7 @@ class PPB_FileRef_Proxy : public InterfaceProxy {
   static const ApiID kApiID = API_ID_PPB_FILE_REF;
 
  private:
-  // Plugin -> host message handlers.
+  // Message handlers.
   void OnMsgCreate(const HostResource& file_system,
                    const std::string& path,
                    PPB_FileRef_CreateInfo* result);

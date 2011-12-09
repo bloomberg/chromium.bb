@@ -124,8 +124,7 @@ bool ParamTraits<PP_FileInfo>::Read(const Message* m, void** iter,
       type != PP_FILETYPE_OTHER)
     return false;
   r->type = static_cast<PP_FileType>(type);
-  if (system_type != PP_FILESYSTEMTYPE_INVALID &&
-      system_type != PP_FILESYSTEMTYPE_EXTERNAL &&
+  if (system_type != PP_FILESYSTEMTYPE_EXTERNAL &&
       system_type != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
       system_type != PP_FILESYSTEMTYPE_LOCALTEMPORARY)
     return false;

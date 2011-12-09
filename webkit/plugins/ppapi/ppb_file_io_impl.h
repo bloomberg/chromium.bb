@@ -5,12 +5,19 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_PPB_FILE_IO_IMPL_H_
 #define WEBKIT_PLUGINS_PPAPI_PPB_FILE_IO_IMPL_H_
 
+#include <queue>
+
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "ppapi/shared_impl/ppb_file_io_shared.h"
+#include "base/platform_file.h"
+#include "ppapi/c/pp_file_info.h"
+#include "ppapi/c/pp_time.h"
+#include "ppapi/shared_impl/resource.h"
+#include "ppapi/thunk/ppb_file_io_api.h"
+#include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
 struct PP_CompletionCallback;
@@ -21,13 +28,35 @@ namespace ppapi {
 
 class QuotaFileIO;
 
-class PPB_FileIO_Impl : public ::ppapi::PPB_FileIO_Shared {
+class PPB_FileIO_Impl : public ::ppapi::Resource,
+                        public ::ppapi::thunk::PPB_FileIO_API {
  public:
   explicit PPB_FileIO_Impl(PP_Instance instance);
   virtual ~PPB_FileIO_Impl();
 
-  // PPB_FileIO_API implementation (most of the operations are implemented
-  // as the "Validated" versions below).
+  // Resource overrides.
+  virtual ::ppapi::thunk::PPB_FileIO_API* AsPPB_FileIO_API() OVERRIDE;
+
+  // PPB_FileIO_API implementation.
+  virtual int32_t Open(PP_Resource file_ref,
+                       int32_t open_flags,
+                       PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Query(PP_FileInfo* info,
+                        PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Touch(PP_Time last_access_time,
+                        PP_Time last_modified_time,
+                        PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Read(int64_t offset,
+                       char* buffer,
+                       int32_t bytes_to_read,
+                       PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Write(int64_t offset,
+                        const char* buffer,
+                        int32_t bytes_to_write,
+                        PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t SetLength(int64_t length,
+                            PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Flush(PP_CompletionCallback callback) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual int32_t GetOSFileDescriptor() OVERRIDE;
   virtual int32_t WillWrite(int64_t offset,
@@ -37,50 +66,73 @@ class PPB_FileIO_Impl : public ::ppapi::PPB_FileIO_Shared {
                                 PP_CompletionCallback callback) OVERRIDE;
 
  private:
-  // FileIOImpl overrides.
-  virtual int32_t OpenValidated(PP_Resource file_ref_resource,
-                                ::ppapi::thunk::PPB_FileRef_API* file_ref_api,
-                                int32_t open_flags,
-                                PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t QueryValidated(PP_FileInfo* info,
-                                 PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t TouchValidated(PP_Time last_access_time,
-                                 PP_Time last_modified_time,
-                                 PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t ReadValidated(int64_t offset,
-                                char* buffer,
-                                int32_t bytes_to_read,
-                                PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t WriteValidated(int64_t offset,
-                                 const char* buffer,
-                                 int32_t bytes_to_write,
-                                 PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t SetLengthValidated(int64_t length,
-                                     PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t FlushValidated(PP_CompletionCallback callback) OVERRIDE;
+  struct CallbackEntry {
+    CallbackEntry();
+    CallbackEntry(const CallbackEntry& entry);
+    ~CallbackEntry();
 
-  // Returns the plugin delegate for this resource if it exists, or NULL if it
-  // doesn't. Calling code should always check for NULL.
-  PluginDelegate* GetPluginDelegate();
+    scoped_refptr<TrackedCompletionCallback> callback;
 
-  // Callback handlers. These mostly convert the PlatformFileError to the
-  // PP_Error code and call the shared (non-"Platform") version.
-  void ExecutePlatformGeneralCallback(base::PlatformFileError error_code);
-  void ExecutePlatformOpenFileCallback(base::PlatformFileError error_code,
-                                       base::PassPlatformFile file);
-  void ExecutePlatformQueryCallback(base::PlatformFileError error_code,
-                                    const base::PlatformFileInfo& file_info);
-  void ExecutePlatformReadCallback(base::PlatformFileError error_code,
-                                   const char* data, int bytes_read);
-  void ExecutePlatformWriteCallback(base::PlatformFileError error_code,
-                                    int bytes_written);
-  void ExecutePlatformWillWriteCallback(base::PlatformFileError error_code,
-                                        int bytes_written);
+    // Pointer back to the caller's read buffer; only used by |Read()|.
+    // Not owned.
+    char* read_buffer;
+  };
+
+  enum OperationType {
+    // If there are pending reads, any other kind of async operation is not
+    // allowed.
+    OPERATION_READ,
+    // If there are pending writes, any other kind of async operation is not
+    // allowed.
+    OPERATION_WRITE,
+    // If there is a pending operation that is neither read nor write, no
+    // further async operation is allowed.
+    OPERATION_EXCLUSIVE,
+    // There is no pending operation right now.
+    OPERATION_NONE,
+  };
+
+  // Verifies:
+  //  - that |callback| is valid (only nonblocking operation supported);
+  //  - that the file is already open or not, depending on |should_be_open|; and
+  //  - that no callback is already pending, or it is a read(write) request
+  //    and currently the pending operations are reads(writes).
+  // Returns |PP_OK| to indicate that everything is valid or |PP_ERROR_...| if
+  // the call should be aborted and that code returned to the plugin.
+  int32_t CommonCallValidation(bool should_be_open,
+                               OperationType new_op,
+                               PP_CompletionCallback callback);
+
+  // Sets up a pending callback. This should only be called once it is certain
+  // that |PP_OK_COMPLETIONPENDING| will be returned.
+  // |read_buffer| is only used by read operations.
+  void RegisterCallback(OperationType op,
+                        PP_CompletionCallback callback,
+                        char* read_buffer);
+  void RunAndRemoveFirstPendingCallback(int32_t result);
+
+  void StatusCallback(base::PlatformFileError error_code);
+  void AsyncOpenFileCallback(base::PlatformFileError error_code,
+                             base::PassPlatformFile file);
+  void QueryInfoCallback(base::PlatformFileError error_code,
+                         const base::PlatformFileInfo& file_info);
+  void ReadCallback(base::PlatformFileError error_code,
+                    const char* data, int bytes_read);
+  void WriteCallback(base::PlatformFileError error_code, int bytes_written);
+  void WillWriteCallback(base::PlatformFileError error_code, int bytes_written);
 
   base::PlatformFile file_;
+  PP_FileSystemType file_system_type_;
 
   // Valid only for PP_FILESYSTEMTYPE_LOCAL{PERSISTENT,TEMPORARY}.
   GURL file_system_url_;
+
+  std::queue<CallbackEntry> callbacks_;
+  OperationType pending_op_;
+
+  // Output buffer pointer for |Query()|; only non-null when a callback is
+  // pending for it.
+  PP_FileInfo* info_;
 
   // Pointer to a QuotaFileIO instance, which is valid only while a file
   // of type PP_FILESYSTEMTYPE_LOCAL{PERSISTENT,TEMPORARY} is opened.

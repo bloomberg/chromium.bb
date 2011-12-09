@@ -33,9 +33,6 @@ class FileRef : public PPB_FileRef_Shared {
   explicit FileRef(const PPB_FileRef_CreateInfo& info);
   virtual ~FileRef();
 
-  // Resource overrides.
-  virtual void LastPluginRefWasDeleted() OVERRIDE;
-
   // PPB_FileRef_API implementation (not provided by PPB_FileRef_Shared).
   virtual PP_Resource GetParent() OVERRIDE;
   virtual int32_t MakeDirectory(PP_Bool make_ancestors,
@@ -80,11 +77,6 @@ FileRef::FileRef(const PPB_FileRef_CreateInfo& info)
 }
 
 FileRef::~FileRef() {
-  // The callbacks map should have been cleared by LastPluginRefWasDeleted.
-  DCHECK(pending_callbacks_.empty());
-}
-
-void FileRef::LastPluginRefWasDeleted() {
   // Abort all pending callbacks. Do this by posting a task to avoid reentering
   // the plugin's Release() call that probably deleted this object.
   for (PendingCallbackMap::iterator i = pending_callbacks_.begin();
@@ -93,7 +85,6 @@ void FileRef::LastPluginRefWasDeleted() {
         i->second.func, i->second.user_data,
         static_cast<int32_t>(PP_ERROR_ABORTED)));
   }
-  pending_callbacks_.clear();
 }
 
 PP_Resource FileRef::GetParent() {

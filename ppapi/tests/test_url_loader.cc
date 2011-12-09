@@ -70,14 +70,22 @@ bool TestURLLoader::Init() {
 
   const PPB_FileIO* file_io_interface = static_cast<const PPB_FileIO*>(
       pp::Module::Get()->GetBrowserInterface(PPB_FILEIO_INTERFACE));
-  if (!file_io_interface)
+  if (testing_interface_->IsOutOfProcess() && file_io_interface) {
+    instance_->AppendError(
+        "FileIO interface is now supported by ppapi proxy: update this test!");
+  } else if (!testing_interface_->IsOutOfProcess() && !file_io_interface) {
     instance_->AppendError("FileIO interface not available");
+  }
 
   file_io_trusted_interface_ = static_cast<const PPB_FileIOTrusted*>(
       pp::Module::Get()->GetBrowserInterface(PPB_FILEIOTRUSTED_INTERFACE));
   url_loader_trusted_interface_ = static_cast<const PPB_URLLoaderTrusted*>(
       pp::Module::Get()->GetBrowserInterface(PPB_URLLOADERTRUSTED_INTERFACE));
-  if (!testing_interface_->IsOutOfProcess()) {
+  if  (testing_interface_->IsOutOfProcess() && file_io_trusted_interface_) {
+    instance_->AppendError(
+        "FileIOTrusted interface is now supported by ppapi proxy: "
+        "update this test!");
+  } else if (!testing_interface_->IsOutOfProcess()) {
     // Trusted interfaces are not supported under NaCl.
 #if !(defined __native_client__)
     if (!file_io_trusted_interface_)
@@ -472,34 +480,36 @@ std::string TestURLLoader::TestStreamToFile() {
     return ReportError("URLLoader::FinishStreamingToFile", rv);
 
   // FileIO is not yet supported by ppapi/proxy.
-  pp::FileIO reader(instance_);
-  rv = reader.Open(body, PP_FILEOPENFLAG_READ, callback);
-  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-    return ReportError("FileIO::Open force_async", rv);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (rv != PP_OK)
-    return ReportError("FileIO::Open", rv);
-
-  std::string data;
-  std::string error = ReadEntireFile(&reader, &data);
-  if (!error.empty())
-    return error;
-
-  std::string expected_body = "hello\n";
-  if (data.size() != expected_body.size())
-    return "ReadEntireFile returned unexpected content length";
-  if (data != expected_body)
-    return "ReadEntireFile returned unexpected content";
-
-  // FileIOTrusted is not supported by NaCl or ppapi/proxy.
   if (!testing_interface_->IsOutOfProcess()) {
+    pp::FileIO reader(instance_);
+    rv = reader.Open(body, PP_FILEOPENFLAG_READ, callback);
+    if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+      return ReportError("FileIO::Open force_async", rv);
+    if (rv == PP_OK_COMPLETIONPENDING)
+      rv = callback.WaitForResult();
+    if (rv != PP_OK)
+      return ReportError("FileIO::Open", rv);
+
+    std::string data;
+    std::string error = ReadEntireFile(&reader, &data);
+    if (!error.empty())
+      return error;
+
+    std::string expected_body = "hello\n";
+    if (data.size() != expected_body.size())
+      return "ReadEntireFile returned unexpected content length";
+    if (data != expected_body)
+      return "ReadEntireFile returned unexpected content";
+
+    // FileIOTrusted is not supported by NaCl or ppapi/proxy.
+    if (!testing_interface_->IsOutOfProcess()) {
 #if !(defined __native_client__)
-    int32_t file_descriptor = file_io_trusted_interface_->GetOSFileDescriptor(
-        reader.pp_resource());
-    if (file_descriptor < 0)
-      return "FileIO::GetOSFileDescriptor() returned a bad file descriptor.";
+      int32_t file_descriptor = file_io_trusted_interface_->GetOSFileDescriptor(
+          reader.pp_resource());
+      if (file_descriptor < 0)
+        return "FileIO::GetOSFileDescriptor() returned a bad file descriptor.";
 #endif
+    }
   }
   PASS();
 }

@@ -11,11 +11,11 @@
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/c/private/ppb_flash_file.h"
-#include "ppapi/shared_impl/file_type_conversion.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/thunk/enter.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/file_path.h"
+#include "webkit/plugins/ppapi/file_type_conversions.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
@@ -63,9 +63,7 @@ int32_t OpenModuleLocalFile(PP_Instance pp_instance,
                             int32_t mode,
                             PP_FileHandle* file) {
   int flags = 0;
-  if (!path ||
-      !::ppapi::PepperFileOpenFlagsToPlatformFileFlags(mode, &flags) ||
-      !file)
+  if (!path || !PepperFileOpenFlagsToPlatformFileFlags(mode, &flags) || !file)
     return PP_ERROR_BADARGUMENT;
 
   PluginInstance* instance = HostGlobals::Get()->GetInstance(pp_instance);
@@ -78,7 +76,7 @@ int32_t OpenModuleLocalFile(PP_Instance pp_instance,
       flags,
       &base_file);
   *file = base_file;
-  return ::ppapi::PlatformFileErrorToPepperError(result);
+  return PlatformFileErrorToPepperError(result);
 }
 
 int32_t RenameModuleLocalFile(PP_Instance pp_instance,
@@ -94,7 +92,7 @@ int32_t RenameModuleLocalFile(PP_Instance pp_instance,
   base::PlatformFileError result = instance->delegate()->RenameFile(
       PepperFilePath::MakeModuleLocal(instance->module(), from_path),
       PepperFilePath::MakeModuleLocal(instance->module(), to_path));
-  return ::ppapi::PlatformFileErrorToPepperError(result);
+  return PlatformFileErrorToPepperError(result);
 }
 
 int32_t DeleteModuleLocalFileOrDir(PP_Instance pp_instance,
@@ -110,7 +108,7 @@ int32_t DeleteModuleLocalFileOrDir(PP_Instance pp_instance,
   base::PlatformFileError result = instance->delegate()->DeleteFileOrDir(
       PepperFilePath::MakeModuleLocal(instance->module(), path),
       PPBoolToBool(recursive));
-  return ::ppapi::PlatformFileErrorToPepperError(result);
+  return PlatformFileErrorToPepperError(result);
 }
 
 int32_t CreateModuleLocalDir(PP_Instance pp_instance, const char* path) {
@@ -123,7 +121,7 @@ int32_t CreateModuleLocalDir(PP_Instance pp_instance, const char* path) {
 
   base::PlatformFileError result = instance->delegate()->CreateDir(
       PepperFilePath::MakeModuleLocal(instance->module(), path));
-  return ::ppapi::PlatformFileErrorToPepperError(result);
+  return PlatformFileErrorToPepperError(result);
 }
 
 int32_t QueryModuleLocalFile(PP_Instance pp_instance,
@@ -151,7 +149,7 @@ int32_t QueryModuleLocalFile(PP_Instance pp_instance,
     else
       info->type = PP_FILETYPE_REGULAR;
   }
-  return ::ppapi::PlatformFileErrorToPepperError(result);
+  return PlatformFileErrorToPepperError(result);
 }
 
 int32_t GetModuleLocalDirContents(PP_Instance pp_instance,
@@ -170,7 +168,7 @@ int32_t GetModuleLocalDirContents(PP_Instance pp_instance,
       &pepper_contents);
 
   if (result != base::PLATFORM_FILE_OK)
-    return ::ppapi::PlatformFileErrorToPepperError(result);
+    return PlatformFileErrorToPepperError(result);
 
   *contents = new PP_DirContents_Dev;
   size_t count = pepper_contents.size();
@@ -220,7 +218,7 @@ int32_t OpenFileRefFile(PP_Resource file_ref_id,
                         int32_t mode,
                         PP_FileHandle* file) {
   int flags = 0;
-  if (!::ppapi::PepperFileOpenFlagsToPlatformFileFlags(mode, &flags) || !file)
+  if (!PepperFileOpenFlagsToPlatformFileFlags(mode, &flags) || !file)
     return PP_ERROR_BADARGUMENT;
 
   EnterResource<PPB_FileRef_API> enter(file_ref_id, true);
@@ -238,7 +236,7 @@ int32_t OpenFileRefFile(PP_Resource file_ref_id,
       flags,
       &base_file);
   *file = base_file;
-  return ::ppapi::PlatformFileErrorToPepperError(result);
+  return PlatformFileErrorToPepperError(result);
 }
 
 int32_t QueryFileRefFile(PP_Resource file_ref_id,
@@ -267,7 +265,7 @@ int32_t QueryFileRefFile(PP_Resource file_ref_id,
     else
       info->type = PP_FILETYPE_REGULAR;
   }
-  return ::ppapi::PlatformFileErrorToPepperError(result);
+  return PlatformFileErrorToPepperError(result);
 }
 
 const PPB_Flash_File_FileRef ppb_flash_file_fileref = {
