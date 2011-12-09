@@ -13,6 +13,8 @@ input[type='checkbox'] {
   border-radius: 3px;
   border: 1px solid #a0a0a0;
   display: inline-block;
+  font: inherit;  /* TODO(csilv): investigate why this is required on the
+                     Windows platform. http://crbug.com/105811 */
   height: 16px;
   margin-bottom: 0;
   margin-top: 0;
