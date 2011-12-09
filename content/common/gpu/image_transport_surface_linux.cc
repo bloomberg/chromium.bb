@@ -513,6 +513,11 @@ void GLXImageTransportSurface::OnResize(gfx::Size size) {
   Display* dpy = static_cast<Display*>(GetDisplay());
   XResizeWindow(dpy, window_, size_.width(), size_.height());
   glXWaitX();
+  // Seems necessary to perform a swap after a resize
+  // in order to resize the front and back buffers (Intel driver bug).
+  // This doesn't always happen with scissoring enabled, so do it now.
+  if (gfx::g_GLX_MESA_copy_sub_buffer)
+    gfx::NativeViewGLSurfaceGLX::SwapBuffers();
   needs_resize_ = true;
 }
 

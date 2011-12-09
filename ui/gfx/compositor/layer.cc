@@ -324,12 +324,15 @@ void Layer::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
 
 void Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
 #if defined(USE_WEBKIT_COMPOSITOR)
-  WebKit::WebFloatRect web_rect(invalid_rect.x(),
+  WebKit::WebFloatRect web_rect(
+      invalid_rect.x(),
       invalid_rect.y(),
       invalid_rect.width(),
       invalid_rect.height());
   if (!web_layer_is_accelerated_)
     web_layer_.to<WebKit::WebContentLayer>().invalidateRect(web_rect);
+  else
+    web_layer_.to<WebKit::WebExternalTextureLayer>().invalidateRect(web_rect);
 #else
   invalid_rect_ = invalid_rect_.Union(invalid_rect);
   ScheduleDraw();

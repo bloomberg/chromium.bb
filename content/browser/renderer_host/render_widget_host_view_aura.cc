@@ -334,8 +334,9 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
     int gpu_host_id) {
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-  window_->layer()->SetExternalTexture(
-      accelerated_surface_containers_[params.surface_id]->GetTexture());
+  scoped_refptr<AcceleratedSurfaceContainerLinux> container =
+      accelerated_surface_containers_[params.surface_id];
+    window_->layer()->SetExternalTexture(container->GetTexture());
   glFlush();
 
   if (!window_->layer()->GetCompositor()) {
@@ -343,9 +344,13 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     // Must still send the ACK
     RenderWidgetHost::AcknowledgePostSubBuffer(params.route_id, gpu_host_id);
   } else {
-    // TODO(backer): Plumb the damage rect to the ui compositor so that we
-    // can do a partial swap to display.
-    window_->layer()->ScheduleDraw();
+    // Co-ordinates come in OpenGL co-ordinate space.
+    // We need to convert to layer space.
+    window_->SchedulePaintInRect(gfx::Rect(
+       params.x,
+       container->GetSize().height() - params.y - params.height,
+       params.width,
+       params.height));
 
     // Add sending an ACK to the list of things to do OnCompositingEnded
     on_compositing_ended_callbacks_.push_back(

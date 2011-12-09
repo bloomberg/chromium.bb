@@ -31,6 +31,8 @@ class AcceleratedSurfaceContainerLinux {
 
   virtual ui::Texture* GetTexture() = 0;
 
+  virtual const gfx::Size& GetSize() = 0;
+
   static AcceleratedSurfaceContainerLinux* Create(const gfx::Size& size);
 };
 

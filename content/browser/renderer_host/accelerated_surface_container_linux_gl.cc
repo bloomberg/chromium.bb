@@ -39,6 +39,10 @@ class AcceleratedSurfaceContainerLinuxGL
     return true;
   }
 
+  virtual const gfx::Size& GetSize() {
+    return ui::TextureGL::size();
+  }
+
   // TextureGL implementation
   virtual void SetCanvas(const SkCanvas& canvas,
                          const gfx::Point& origin,

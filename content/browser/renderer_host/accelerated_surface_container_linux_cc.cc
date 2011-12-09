@@ -54,6 +54,10 @@ class AcceleratedSurfaceContainerLinuxCC
     return true;
   }
 
+  virtual const gfx::Size& GetSize() {
+    return ui::TextureCC::size();
+  }
+
   // TextureCC implementation
   virtual void Update() OVERRIDE {
     ui::SharedResourcesCC* instance = ui::SharedResourcesCC::GetInstance();

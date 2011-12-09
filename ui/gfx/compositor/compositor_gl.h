@@ -77,6 +77,8 @@ class COMPOSITOR_EXPORT TextureGL : public Texture {
   virtual void Draw(const ui::TextureDrawParams& params,
                     const gfx::Rect& clip_bounds_in_texture) OVERRIDE;
 
+  const gfx::Size& size() const { return size_; }
+
  protected:
   explicit TextureGL(const gfx::Size& size);
   virtual ~TextureGL();
