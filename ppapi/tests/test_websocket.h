@@ -31,6 +31,7 @@ class TestWebSocket : public TestCase {
   std::string TestIsWebSocket();
   std::string TestUninitializedPropertiesAccess();
   std::string TestInvalidConnect();
+  std::string TestProtocols();
   std::string TestGetURL();
   std::string TestValidConnect();
   std::string TestInvalidClose();

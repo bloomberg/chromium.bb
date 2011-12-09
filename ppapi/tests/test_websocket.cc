@@ -33,7 +33,7 @@ const char* const kInvalidURLs[] = {
 // Connection close code is defined in WebSocket protocol specification.
 // The magic number 1000 means gracefull closure without any error.
 // See section 7.4.1. of RFC 6455.
-const uint16_t kCloseCodeNormalClosure = 1000;
+const uint16_t kCloseCodeNormalClosure = 1000U;
 
 REGISTER_TEST_CASE(WebSocket);
 
@@ -54,6 +54,7 @@ void TestWebSocket::RunTests(const std::string& filter) {
   RUN_TEST(IsWebSocket, filter);
   RUN_TEST(UninitializedPropertiesAccess, filter);
   RUN_TEST(InvalidConnect, filter);
+  RUN_TEST(Protocols, filter);
   RUN_TEST(GetURL, filter);
   RUN_TEST(ValidConnect, filter);
   RUN_TEST(InvalidClose, filter);
@@ -91,10 +92,10 @@ PP_Resource TestWebSocket::Connect(
     return 0;
   PP_Var url_var = CreateVar(url);
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-  int protocol_count = 0;
+  uint32_t protocol_count = 0U;
   if (protocol) {
     protocols[0] = CreateVar(protocol);
-    protocol_count = 1;
+    protocol_count = 1U;
   }
   *result = websocket_interface_->Connect(
       ws, url_var, protocols, protocol_count,
@@ -130,10 +131,10 @@ std::string TestWebSocket::TestUninitializedPropertiesAccess() {
   ASSERT_TRUE(ws);
 
   uint64_t bufferedAmount = websocket_interface_->GetBufferedAmount(ws);
-  ASSERT_EQ(0, bufferedAmount);
+  ASSERT_EQ(0U, bufferedAmount);
 
   uint16_t close_code = websocket_interface_->GetCloseCode(ws);
-  ASSERT_EQ(0, close_code);
+  ASSERT_EQ(0U, close_code);
 
   PP_Var close_reason = websocket_interface_->GetCloseReason(ws);
   ASSERT_TRUE(AreEqual(close_reason, ""));
@@ -165,12 +166,12 @@ std::string TestWebSocket::TestInvalidConnect() {
 
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
   int32_t result = websocket_interface_->Connect(
-      ws, PP_MakeUndefined(), protocols, 1,
+      ws, PP_MakeUndefined(), protocols, 1U,
       static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
   ASSERT_EQ(PP_ERROR_BADARGUMENT, result);
 
   result = websocket_interface_->Connect(
-      ws, PP_MakeUndefined(), protocols, 1,
+      ws, PP_MakeUndefined(), protocols, 1U,
       static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
   ASSERT_EQ(PP_ERROR_INPROGRESS, result);
 
@@ -184,7 +185,34 @@ std::string TestWebSocket::TestInvalidConnect() {
     core_interface_->ReleaseResource(ws);
   }
 
-  // TODO(toyoshim): Add invalid protocols tests
+  PASS();
+}
+
+std::string TestWebSocket::TestProtocols() {
+  PP_Var url = CreateVar(kEchoServerURL);
+  PP_Var bad_protocols[] = { CreateVar("x-test"), CreateVar("x-test") };
+  PP_Var good_protocols[] = { CreateVar("x-test"), CreateVar("x-yatest") };
+
+  PP_Resource ws = websocket_interface_->Create(instance_->pp_instance());
+  ASSERT_TRUE(ws);
+  int32_t result = websocket_interface_->Connect(
+      ws, url, bad_protocols, 2U, PP_BlockUntilComplete());
+  ASSERT_EQ(PP_ERROR_BADARGUMENT, result);
+  core_interface_->ReleaseResource(ws);
+
+  ws = websocket_interface_->Create(instance_->pp_instance());
+  ASSERT_TRUE(ws);
+  result = websocket_interface_->Connect(
+      ws, url, good_protocols, 2U, PP_BlockUntilComplete());
+  ASSERT_EQ(PP_ERROR_BLOCKS_MAIN_THREAD, result);
+  core_interface_->ReleaseResource(ws);
+
+  ReleaseVar(url);
+  for (int i = 0; i < 2; ++i) {
+    ReleaseVar(bad_protocols[i]);
+    ReleaseVar(good_protocols[i]);
+  }
+  core_interface_->ReleaseResource(ws);
 
   PASS();
 }
@@ -231,7 +259,7 @@ std::string TestWebSocket::TestInvalidClose() {
   ws = Connect(kEchoServerURL, &result, NULL);
   ASSERT_TRUE(ws);
   ASSERT_EQ(PP_OK, result);
-  result = websocket_interface_->Close(ws, 1, reason,
+  result = websocket_interface_->Close(ws, 1U, reason,
       static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
   ASSERT_EQ(PP_ERROR_NOACCESS, result);
   core_interface_->ReleaseResource(ws);
@@ -264,7 +292,7 @@ std::string TestWebSocket::TestValidClose() {
   // The ongoing connect failed with PP_ERROR_ABORTED, then the close is done
   // successfully.
   ws = websocket_interface_->Create(instance_->pp_instance());
-  result = websocket_interface_->Connect(ws, url, protocols, 0,
+  result = websocket_interface_->Connect(ws, url, protocols, 0U,
       static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   result = websocket_interface_->Close(ws, kCloseCodeNormalClosure, reason,

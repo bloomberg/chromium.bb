@@ -4,6 +4,7 @@
 
 #include "webkit/plugins/ppapi/ppb_websocket_impl.h"
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -144,16 +145,25 @@ int32_t PPB_WebSocket_Impl::Connect(PP_Var url,
   WebURL web_url(gurl);
 
   // Validate protocols and convert it to WebString.
-  // TODO(toyoshim): Detect duplicated protocols as error.
   std::string protocol_string;
+  std::set<std::string> protocol_set;
   for (uint32_t i = 0; i < protocol_count; i++) {
     // TODO(toyoshim): Similar function exist in WebKit::WebSocket.
     // We must rearrange them into WebKit::WebChannel and share its protocol
     // related implementation via WebKit API.
     scoped_refptr<StringVar> string_var;
     string_var = StringVar::FromPPVar(protocols[i]);
+
+    // Check duplicated protocol entries.
+    if (protocol_set.find(string_var->value()) != protocol_set.end())
+      return PP_ERROR_BADARGUMENT;
+    protocol_set.insert(string_var->value());
+
+    // Check invalid and empty entries.
     if (!string_var || !string_var->value().length())
       return PP_ERROR_BADARGUMENT;
+
+    // Check containing characters.
     for (std::string::const_iterator it = string_var->value().begin();
         it != string_var->value().end();
         ++it) {
@@ -172,6 +182,7 @@ int32_t PPB_WebSocket_Impl::Connect(PP_Var url,
           character == '{' || character == '}')
         return PP_ERROR_BADARGUMENT;
     }
+    // Join protocols with the comma separator.
     if (i != 0)
       protocol_string.append(",");
     protocol_string.append(string_var->value());
