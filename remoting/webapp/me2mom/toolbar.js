@@ -22,6 +22,16 @@ remoting.Toolbar = function(toolbar) {
    * @private
    */
   this.toolbar_ = toolbar;
+  /**
+   * @type {boolean} False if the tool-bar is currently hidden, or should be
+   *      hidden once the over-shoot timer expires; true otherwise.
+   */
+  this.visible = false;
+  /**
+   * @type {number?} The id of the current timer, if any.
+   */
+  this.timerId = null;
+
   /** @type {remoting.Toolbar} */
   var that = this;
 
@@ -44,15 +54,7 @@ remoting.Toolbar = function(toolbar) {
     that.showForAtLeast_(1000);
   };
 
-  /**
-   * @type {boolean} False if the tool-bar is currently hidden, or should be
-   *      hidden once the over-shoot timer expires; true otherwise.
-   */
-  this.visible = false;
-  /**
-   * @type {number?} The id of the current timer, if any.
-   */
-  this.timerId = null;
+  window.addEventListener('resize', function() { that.center(); }, false);
 };
 
 /**

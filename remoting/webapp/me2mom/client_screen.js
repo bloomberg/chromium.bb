@@ -122,8 +122,7 @@ remoting.toggleScaleToFit = function(button) {
  */
 remoting.onResize = function() {
   if (remoting.clientSession)
-    remoting.clientSession.onWindowSizeChanged();
-  remoting.toolbar.center();
+    remoting.clientSession.onResize();
 }
 
 /**

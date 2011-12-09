@@ -354,7 +354,7 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
  *
  * @return {void} Nothing.
  */
-remoting.ClientSession.prototype.onWindowSizeChanged = function() {
+remoting.ClientSession.prototype.onResize = function() {
   this.updateDimensions();
 };
 
