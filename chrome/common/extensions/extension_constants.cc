@@ -276,7 +276,7 @@ const char kInvalidLaunchWidthContainer[] =
 const char kInvalidManifest[] =
     "Manifest file is invalid.";
 const char kInvalidManifestVersion[] =
-    "Invalid value for 'manifest_version'.";
+    "The 'manifest_version' key must be present and set to 2 (without quotes).";
 const char kInvalidMatch[] =
     "Invalid value for 'content_scripts[*].matches[*]': *";
 const char kInvalidMatchCount[] =
