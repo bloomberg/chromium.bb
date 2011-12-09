@@ -389,8 +389,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ASSERT_EQ(E_FAIL, hr);
 }
 
+// Disabled, see http://crbug.com/106957 .
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationActiveDescendantChanged) {
+                       DISABLED_TestNotificationActiveDescendantChanged) {
   ui_test_utils::WindowedNotificationObserver tree_updated_observer1(
       content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
       content::NotificationService::AllSources());
@@ -443,8 +444,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 
+// Disabled, see http://crbug.com/106957 .
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationCheckedStateChanged) {
+                       DISABLED_TestNotificationCheckedStateChanged) {
   ui_test_utils::WindowedNotificationObserver tree_updated_observer1(
       content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
       content::NotificationService::AllSources());
@@ -476,8 +478,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 
+// Disabled, see http://crbug.com/106957 .
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationChildrenChanged) {
+                       DISABLED_TestNotificationChildrenChanged) {
   ui_test_utils::WindowedNotificationObserver tree_updated_observer1(
       content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
       content::NotificationService::AllSources());
@@ -508,8 +511,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 
+// Disabled, see http://crbug.com/106957 .
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationChildrenChanged2) {
+                       DISABLED_TestNotificationChildrenChanged2) {
   ui_test_utils::WindowedNotificationObserver tree_updated_observer1(
       content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
       content::NotificationService::AllSources());
@@ -541,8 +545,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 
+// Disabled, see http://crbug.com/106957 .
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationFocusChanged) {
+                       DISABLED_TestNotificationFocusChanged) {
   ui_test_utils::WindowedNotificationObserver tree_updated_observer1(
       content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
       content::NotificationService::AllSources());
