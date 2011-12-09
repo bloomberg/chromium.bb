@@ -1802,3 +1802,10 @@
    fun:views::Widget::Init
    fun:chromeos::input_method::CandidateWindowViewTest_MozcUpdateCandidateTest_Test::TestBody
 }
+{
+   bug_106969
+   Heapcheck:Leak
+   fun:ExtensionService*
+   fun:TestingProfile::CreateExtensionService
+   fun:ExtensionServiceTestSimple_Enabledness_Test::TestBody
+}
