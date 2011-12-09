@@ -459,10 +459,6 @@ bool BrowserView::IsOffTheRecord() const {
   return browser_->profile()->IsOffTheRecord();
 }
 
-bool BrowserView::IsGuestSession() const {
-  return browser_->profile()->IsGuestSession();
-}
-
 bool BrowserView::ShouldShowAvatar() const {
   if (!IsBrowserTypeNormal())
     return false;
@@ -549,7 +545,7 @@ TabContentsWrapper* BrowserView::GetSelectedTabContentsWrapper() const {
   return browser_->GetSelectedTabContentsWrapper();
 }
 
-SkBitmap BrowserView::GetOTRAvatarIcon() const {
+SkBitmap BrowserView::GetOTRAvatarIcon() {
   static SkBitmap* otr_avatar_ = new SkBitmap();
 
   if (otr_avatar_->isNull()) {
@@ -557,21 +553,6 @@ SkBitmap BrowserView::GetOTRAvatarIcon() const {
     *otr_avatar_ = *rb.GetBitmapNamed(IDR_OTR_ICON);
   }
   return *otr_avatar_;
-}
-
-SkBitmap BrowserView::GetGuestAvatarIcon() const {
-#if defined(OS_CHROMEOS)
-  static SkBitmap* guest_avatar_ = new SkBitmap();
-
-  if (guest_avatar_->isNull()) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    *guest_avatar_ = *rb.GetBitmapNamed(IDR_GUEST_ICON);
-  }
-  return *guest_avatar_;
-#else
-  NOTREACHED();
-  return SkBitmap();
-#endif
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)
