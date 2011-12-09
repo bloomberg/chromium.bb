@@ -404,7 +404,7 @@ def getBranchForMilestone(milestone):
 
   # The following returns a sorted list of the keys of |branch_dict|.
   sorted_branches = sorted(branch_dict)
-  branch = sorted_branches[len(sorted_branches) - 1]
+  branch = sorted_branches[-1]
 
   # If all keys match, the branch is the same for all platforms given
   # |milestone|. This is the safe case, so return the branch.
