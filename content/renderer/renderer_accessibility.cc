@@ -86,8 +86,7 @@ RendererAccessibility::RendererAccessibility(RenderViewImpl* render_view)
       browser_root_(NULL),
       last_scroll_offset_(gfx::Size()),
       ack_pending_(false),
-      logging_(false),
-      sent_load_complete_(false) {
+      logging_(false) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableAccessibility))
     WebAccessibilityObject::enableAccessibility();
@@ -149,7 +148,7 @@ void RendererAccessibility::DidFinishLoad(WebKit::WebFrame* frame) {
   if (!browser_root_ || new_root.axID() != browser_root_->id) {
     PostAccessibilityNotification(
         new_root,
-        WebKit::WebAccessibilityNotificationLoadComplete);
+        WebKit::WebAccessibilityNotificationLayoutComplete);
   }
 }
 
@@ -163,15 +162,6 @@ void RendererAccessibility::PostAccessibilityNotification(
   if (document.isNull())
     return;
 
-  if (notification != WebKit::WebAccessibilityNotificationLoadComplete &&
-      !sent_load_complete_) {
-    // Load complete should be our first notification sent. Send it manually
-    // in cases where we don't get it first to avoid focus problems.
-    PostAccessibilityNotification(
-        document.accessibilityObject(),
-        WebKit::WebAccessibilityNotificationLoadComplete);
-  }
-
   gfx::Size scroll_offset = document.frame()->scrollOffset();
   if (scroll_offset != last_scroll_offset_) {
     // Make sure the browser is always aware of the scroll position of
@@ -184,9 +174,6 @@ void RendererAccessibility::PostAccessibilityNotification(
         document.accessibilityObject(),
         WebKit::WebAccessibilityNotificationLayoutComplete);
   }
-
-  if (notification == WebKit::WebAccessibilityNotificationLoadComplete)
-    sent_load_complete_ = true;
 
   // Add the accessibility object to our cache and ensure it's valid.
   Notification acc_notification;
@@ -230,7 +217,10 @@ void RendererAccessibility::SendPendingAccessibilityNotifications() {
   for (size_t i = 0; i < pending_notifications_.size(); ++i) {
     Notification& notification = pending_notifications_[i];
 
-    bool includes_children = ShouldIncludeChildren(notification);
+    // TODO(dtseng): Come up with a cleaner way of deciding to include children.
+    int root_id = document.accessibilityObject().axID();
+    bool includes_children = ShouldIncludeChildren(notification) ||
+        root_id == notification.id;
     WebAccessibilityObject obj = document.accessibilityObjectFromID(
         notification.id);
 
@@ -239,7 +229,6 @@ void RendererAccessibility::SendPendingAccessibilityNotifications() {
     // notification on a node before the page has loaded. Work our way
     // up the parent chain until we find a node the browser has, or until
     // we reach the root.
-    int root_id = document.accessibilityObject().axID();
     while (browser_id_map_.find(obj.axID()) == browser_id_map_.end() &&
            obj.isValid() &&
            obj.axID() != root_id) {
@@ -468,7 +457,7 @@ void RendererAccessibility::OnEnableAccessibility() {
     // accessibility tree by sending it a 'load complete' notification.
     PostAccessibilityNotification(
         document.accessibilityObject(),
-        WebKit::WebAccessibilityNotificationLoadComplete);
+        WebKit::WebAccessibilityNotificationLayoutComplete);
   }
 }
 

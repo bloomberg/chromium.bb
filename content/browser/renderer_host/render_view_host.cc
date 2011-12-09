@@ -1400,13 +1400,12 @@ void RenderViewHost::OnAccessibilityNotifications(
       if (param.notification_type == ViewHostMsg_AccEvent::LOAD_COMPLETE &&
           save_accessibility_tree_for_testing_) {
         accessibility_tree_ = param.acc_tree;
+        content::NotificationService::current()->Notify(
+            content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
+            content::Source<RenderViewHost>(this),
+            content::NotificationService::NoDetails());
       }
     }
-
-    content::NotificationService::current()->Notify(
-        content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
-        content::Source<RenderViewHost>(this),
-        content::NotificationService::NoDetails());
   }
 
   Send(new ViewMsg_AccessibilityNotifications_ACK(routing_id()));

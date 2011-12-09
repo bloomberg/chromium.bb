@@ -120,9 +120,6 @@ class RendererAccessibility : public content::RenderViewObserver {
   // True if verbose logging of accessibility events is on.
   bool logging_;
 
-  // True if we've sent a load complete notification for this page already.
-  bool sent_load_complete_;
-
   DISALLOW_COPY_AND_ASSIGN(RendererAccessibility);
 };
 
