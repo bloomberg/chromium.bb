@@ -109,7 +109,7 @@
       "version": 1,
       "archives": [
         {
-          "url": "file:///usr/local/google/users/mball/wrk/chromium/src/native_client_sdk/src/build_tools/tests/pepper_1_0/naclsdk_mac.tgz",
+          "url": "file:///Users/dspringer/Source/chromium/src/native_client_sdk/src/build_tools/tests/pepper_1_0/naclsdk_mac.tgz",
           "checksum": {
             "sha1": "db66a0bba015f481995648ed022fcd78c9da0539"
           },
@@ -117,7 +117,7 @@
           "size": 133
         },
         {
-          "url": "file:///usr/local/google/users/mball/wrk/chromium/src/native_client_sdk/src/build_tools/tests/pepper_1_0/naclsdk_linux.tgz",
+          "url": "file:///Users/dspringer/Source/chromium/src/native_client_sdk/src/build_tools/tests/pepper_1_0/naclsdk_linux.tgz",
           "checksum": {
             "sha1": "7137917e08e8403e8a92354e69d5ff649a022c39"
           },
@@ -125,7 +125,7 @@
           "size": 138
         },
         {
-          "url": "file:///usr/local/google/users/mball/wrk/chromium/src/native_client_sdk/src/build_tools/tests/pepper_1_0/naclsdk_win.exe",
+          "url": "file:///Users/dspringer/Source/chromium/src/native_client_sdk/src/build_tools/tests/pepper_1_0/naclsdk_win.exe",
           "checksum": {
             "sha1": "fd5cecf2c5cb990829fe42a14fb8e1efbb35bf8f"
           },
@@ -135,6 +135,40 @@
       ],
       "revision": 0,
       "name": "pepper_1"
+    },
+    {
+      "name": "pepper_phony",
+      "description": "Chrome -1 bundle, revision -1",
+      "stability": "dev",
+      "recommended": "no",
+      "version": -1,
+      "archives": [
+        {
+          "url": "file:///Users/dspringer/Source/chromium/src/native_client_sdk/src/build_tools/tests/pepper_1_0/naclsdk_mac.tgz",
+          "checksum": {
+            "sha1": "db66a0bba015f481995648ed022fcd78c9da0539"
+          },
+          "host_os": "mac",
+          "size": 133
+        },
+        {
+          "url": "file:///Users/dspringer/Source/chromium/src/native_client_sdk/src/build_tools/tests/pepper_1_0/naclsdk_linux.tgz",
+          "checksum": {
+            "sha1": "7137917e08e8403e8a92354e69d5ff649a022c39"
+          },
+          "host_os": "linux",
+          "size": 138
+        },
+        {
+          "url": "file:///Users/dspringer/Source/chromium/src/native_client_sdk/src/build_tools/tests/pepper_1_0/naclsdk_win.exe",
+          "checksum": {
+            "sha1": "fd5cecf2c5cb990829fe42a14fb8e1efbb35bf8f"
+          },
+          "host_os": "win",
+          "size": 138
+        }
+      ],
+      "revision": -1
     }
   ],
   "manifest_version": 1
