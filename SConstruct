@@ -1011,15 +1011,8 @@ def CrossToolsBuild(env):
 
 pre_base_env.AddMethod(CrossToolsBuild, 'CrossToolsBuild')
 
-# This has to appear after the "platform logic" steps above so it
-# can test target_x86_64.
-def IrtIsBroken(env):
-  return False
-
-pre_base_env.AddMethod(IrtIsBroken)
-
 BitFromArgument(pre_base_env, 'irt',
-                default=not MakeArchSpecificEnv().IrtIsBroken(),
+                default=True,
                 desc='Use the integrated runtime (IRT) untrusted blob library '
                 'when running tests')
 
