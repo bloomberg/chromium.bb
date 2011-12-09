@@ -72,7 +72,7 @@ AvatarMenuBubbleGtk::~AvatarMenuBubbleGtk() {
 void AvatarMenuBubbleGtk::OnDestroy(GtkWidget* widget) {
   // We are self deleting, we have a destroy signal setup to catch when we
   // destroyed (via the BubbleGtk being destroyed), and delete ourself.
-  delete this;
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void AvatarMenuBubbleGtk::BubbleClosing(BubbleGtk* bubble,
