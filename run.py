@@ -36,8 +36,6 @@ run.py options:
   --irt=<path>           Path to IRT nexe
   Default: Uses whichever IRT already exists. Otherwise, builds irt_core.
 
-  --use_pnacl_irt        Use IRT built by PNaCl (only meaningful for X86-64)
-
   -n | --dry-run         Just print commands, don't execute them
   -h | --help            Display this information
   -q | --quiet           Don't print nexe information
@@ -103,9 +101,6 @@ def SetupEnvironment():
 
   # Force a specific IRT
   env.force_irt = None
-
-  # Use PNaCl-built IRT
-  env.use_pnacl_irt = False
 
   # Don't print nexe information
   env.quiet = False
@@ -261,18 +256,12 @@ def FindOrBuildIRT(allow_build = True):
                         'nacl_irt-%s/staging/%s.nexe' % (env.arch, flavor))
     irt_paths.append(path)
 
-  if env.use_pnacl_irt:
-    # We always have to invoke scons for pnacl IRT build, to
-    # guarantee that the IRT was built with bitcode=1.
-    assert(allow_build)
-  else:
-    for path in irt_paths:
-      if os.path.exists(path):
-        return path
+  for path in irt_paths:
+    if os.path.exists(path):
+      return path
 
   if allow_build:
-    if not env.use_pnacl_irt:
-      PrintBanner('irt not found. Building it with scons.')
+    PrintBanner('irt not found. Building it with scons.')
     irt = irt_paths[0]
     BuildIRT(flavors[0])
     assert(env.dry_run or os.path.exists(irt))
@@ -283,8 +272,6 @@ def FindOrBuildIRT(allow_build = True):
 def BuildIRT(flavor):
   args = ('platform=%s naclsdk_validate=0 ' +
           'sysinfo=0 -j8 %s') % (env.arch, flavor)
-  if env.use_pnacl_irt:
-    args += ' bitcode=1'
   args = args.split()
   Run([env.scons] + args, cwd=env.nacl_root)
 
@@ -438,8 +425,6 @@ def ArgSplit(argv):
       env.force_sel_ldr = arg[len('--loader='):]
     elif arg.startswith('--irt='):
       env.force_irt = arg[len('--irt='):]
-    elif arg == '--use_pnacl_irt':
-      env.use_pnacl_irt = True
     elif arg in ('-n', '--dry-run'):
       env.dry_run = True
     elif arg in ('-h', '--help'):
