@@ -6,6 +6,8 @@
 
 namespace switches {
 
+const char kDisableTestCompositor[] = "disable-test-compositor";
+
 const char kDisableUIVsync[] = "disable-ui-vsync";
 
 const char kEnableCompositorOverdrawDebugging[] =

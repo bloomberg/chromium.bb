@@ -65,7 +65,6 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-        '../ui/gfx/compositor/compositor.gyp:test_compositor',
         '../ui/gfx/compositor/compositor.gyp:compositor_test_support',
       ],
       'export_dependent_settings': [
@@ -277,6 +276,11 @@
         ['OS=="win" and use_aura==1', {
           'sources/': [
             ['exclude', 'test/base/ui_test_utils_win.cc'],
+          ],
+        }],
+        ['use_webkit_compositor==0', {
+          'dependencies': [
+            '../ui/gfx/compositor/compositor.gyp:test_compositor',
           ],
         }],
       ],
