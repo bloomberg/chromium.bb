@@ -1223,7 +1223,7 @@ are declared in build/common.gypi.
       </if>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_LOCK_SCREEN" desc="The text label of the Lock Screen menu item">
-          Lock Screen
+          Lock screen
         </message>
         <message name="IDS_SIGN_OUT" desc="The text label of the Sign Out menu item">
           Sign out
