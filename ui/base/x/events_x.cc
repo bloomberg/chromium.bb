@@ -359,10 +359,16 @@ int GetTouchId(const base::NativeEvent& xev) {
 #if defined(USE_XI2_MT)
   float tracking_id;
   if (!factory->ExtractTouchParam(
-         *xev, ui::TouchFactory::TP_TRACKING_ID, &tracking_id))
+         *xev, ui::TouchFactory::TP_TRACKING_ID, &tracking_id)) {
     LOG(ERROR) << "Could not get the slot ID for the event. Using 0.";
-  else
+  } else {
     slot = factory->GetSlotForTrackingID(tracking_id);
+    ui::EventType type = ui::EventTypeFromNative(xev);
+    if (type == ui::ET_TOUCH_CANCELLED ||
+        type == ui::ET_TOUCH_RELEASED) {
+      factory->ReleaseSlotForTrackingID(tracking_id);
+    }
+  }
 #else
   if (!factory->ExtractTouchParam(
          *xev, ui::TouchFactory::TP_SLOT_ID, &slot))
