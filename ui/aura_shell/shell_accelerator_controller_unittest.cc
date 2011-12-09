@@ -154,11 +154,9 @@ TEST_F(ShellAcceleratorControllerTest, GlobalAccelerators) {
   // EXPECT_TRUE(GetController()->Process(
   //     ui::Accelerator(ui::VKEY_PRINT, false, false, false)));
 #if !defined(NDEBUG)
-  // TODO(mazda): Callig RotateScreen in unit test causes a crash because of
-  // "pure virtual method called" for some reasons. Need to investigate.
   // RotateScreen
-  // EXPECT_TRUE(GetController()->Process(
-  //     ui::Accelerator(ui::VKEY_HOME, false, true, false)));
+  EXPECT_TRUE(GetController()->Process(
+      ui::Accelerator(ui::VKEY_HOME, false, true, false)));
 #if !defined(OS_LINUX)
   // ToggleDesktopFullScreen (not implemented yet on Linux)
   EXPECT_TRUE(GetController()->Process(

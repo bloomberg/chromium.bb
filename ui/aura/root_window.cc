@@ -434,6 +434,8 @@ RootWindow::~RootWindow() {
   // Make sure to destroy the compositor before terminating so that state is
   // cleared and we don't hit asserts.
   compositor_ = NULL;
+  // An observer may have been added by an animation on the RootWindow.
+  layer()->GetAnimator()->RemoveObserver(this);
 #ifdef USE_WEBKIT_COMPOSITOR
   if (!ui::Compositor::compositor_factory())
     ui::CompositorCC::Terminate();
