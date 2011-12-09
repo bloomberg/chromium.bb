@@ -12,9 +12,31 @@
 
 namespace extensions {
 
+class SocketController;
+
 extern const char kBytesWrittenKey[];
 extern const char kSocketIdKey[];
 extern const char kUdpSocketType[];
+
+class SocketApiFunction : public AsyncExtensionFunction {
+ protected:
+  // Set up for work. Guaranteed to happen on UI thread.
+  virtual bool Prepare() = 0;
+
+  // Do actual work. Guaranteed to happen on IO thread.
+  virtual void Work() = 0;
+
+  // Respond. Guaranteed to happen on UI thread.
+  virtual bool Respond() = 0;
+
+  virtual bool RunImpl() OVERRIDE;
+
+  SocketController* controller();
+
+ private:
+  void WorkOnIOThread();
+  void RespondOnUIThread();
+};
 
 // Many of these socket functions are synchronous in the sense that
 // they don't involve blocking operations, but we've made them all
@@ -22,28 +44,20 @@ extern const char kUdpSocketType[];
 // library wants all operations to happen on the same thread as the
 // one that created the socket. Too bad.
 
-class SocketCreateFunction : public AsyncExtensionFunction {
- public:
-  SocketCreateFunction();
-  virtual ~SocketCreateFunction();
-  virtual bool RunImpl() OVERRIDE;
-
+class SocketCreateFunction : public SocketApiFunction {
  protected:
-  void WorkOnIOThread();
-  void RespondOnUIThread();
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
 
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.create")
 };
 
-class SocketDestroyFunction : public AsyncExtensionFunction {
- public:
-  SocketDestroyFunction();
-  virtual ~SocketDestroyFunction();
-  virtual bool RunImpl() OVERRIDE;
-
+class SocketDestroyFunction : public SocketApiFunction {
  protected:
-  void WorkOnIOThread();
-  void RespondOnUIThread();
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
 
  private:
   int socket_id_;
@@ -51,15 +65,11 @@ class SocketDestroyFunction : public AsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.destroy")
 };
 
-class SocketConnectFunction : public AsyncExtensionFunction {
- public:
-  SocketConnectFunction();
-  virtual ~SocketConnectFunction();
-  virtual bool RunImpl() OVERRIDE;
-
+class SocketConnectFunction : public SocketApiFunction {
  protected:
-  void WorkOnIOThread();
-  void RespondOnUIThread();
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
 
  private:
   int socket_id_;
@@ -69,15 +79,11 @@ class SocketConnectFunction : public AsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.connect")
 };
 
-class SocketCloseFunction : public AsyncExtensionFunction {
- public:
-  SocketCloseFunction();
-  virtual ~SocketCloseFunction();
-  virtual bool RunImpl() OVERRIDE;
-
+class SocketCloseFunction : public SocketApiFunction {
  protected:
-  void WorkOnIOThread();
-  void RespondOnUIThread();
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
 
  private:
   int socket_id_;
@@ -85,16 +91,13 @@ class SocketCloseFunction : public AsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.close")
 };
 
-class SocketWriteFunction : public AsyncExtensionFunction {
- public:
-  SocketWriteFunction();
-  virtual ~SocketWriteFunction();
-  virtual bool RunImpl() OVERRIDE;
-
+class SocketWriteFunction : public SocketApiFunction {
  protected:
-  void WorkOnIOThread();
-  void RespondOnUIThread();
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
 
+ private:
   int socket_id_;
   std::string message_;
 

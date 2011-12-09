@@ -9,8 +9,8 @@
 #include <string>
 #include <map>
 
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/singleton.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 
@@ -30,25 +30,19 @@ namespace extensions {
 
 class Socket;
 
-// The SocketController singleton keeps track of all our Sockets, and provides
-// a convenient set of methods to manipulate them.
+// SocketController keeps track of a collection of Sockets and provides a
+// convenient set of methods to manipulate them.
 class SocketController {
  public:
-  static SocketController* GetInstance();
-
   SocketController();
   virtual ~SocketController();
 
   // Create/Destroy are a pair. They represent the allocation and deallocation
   // of the Socket object in memory.
   //
-  // TODO(miket): we currently require the app developer to remember to call
-  // Destroy, which is a buzzkill in JavaScript. I believe that to solve this,
-  // we'll have to associate each Socket with a creator extension, and then
-  // clean up when the extension goes out of scope. As the API is defined
-  // today, we're exposing only primitive socketIds to JavaScript, which seems
-  // to imply that we won't be able to garbage-collect when individual sockets
-  // "go out of scope" (in quotes because they never do).
+  // TODO(miket): aa's suggestion to track lifetime of callbacks associated
+  // with each socket, which will then let us clean up when we go out of scope
+  // rather than requiring that the app developer remember to call Destroy.
   int CreateUdp(const Profile* profile, const std::string& extension_id,
                 const GURL& src_url);
   bool DestroyUdp(int socket_id);
@@ -68,13 +62,11 @@ class SocketController {
 
  private:
   int next_socket_id_;
-  typedef std::map<int, Socket*> SocketMap;
+  typedef std::map<int, linked_ptr<Socket> > SocketMap;
   SocketMap socket_map_;
 
   // Convenience method for accessing SocketMap.
   Socket* GetSocket(int socket_id);
-
-  friend struct DefaultSingletonTraits<SocketController>;
 
   DISALLOW_COPY_AND_ASSIGN(SocketController);
 };

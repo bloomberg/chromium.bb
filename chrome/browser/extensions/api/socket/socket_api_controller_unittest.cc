@@ -4,6 +4,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/socket/socket_api.h"
 #include "chrome/browser/extensions/api/socket/socket_api_controller.h"
@@ -16,7 +17,7 @@ class SocketApiControllerTest : public testing::Test {
 TEST_F(SocketApiControllerTest, TestSocketControllerLifetime) {
   // We want to make sure that killing the controller while a bunch of
   // sockets are alive doesn't crash.
-  SocketController* controller = SocketController::GetInstance();
+  scoped_ptr<SocketController> controller(new SocketController());
 
   // Create some sockets but don't do anything with them.
   Profile* profile = NULL;
@@ -36,16 +37,6 @@ TEST_F(SocketApiControllerTest, TestSocketControllerLifetime) {
     ASSERT_TRUE(socket_id != 0);
     ASSERT_TRUE(controller->ConnectUdp(socket_id, address, kPort));
   }
-
-  // At this point, we're done, and we're relying on the RAE mechanism
-  // of the Singleton class to delete the controller at process exit.
-  // We'd have to jump through some icky hoops to turn off RAE and
-  // manually delete in this test method, so we'll instead take it on
-  // faith that the singleton will indeed delete itself, and that if
-  // we had any heap management problems in the controller, they'd
-  // show up later in this test process. I (miket) hereby confirm that
-  // I manually added a temporary double-free in the controller
-  // destructor and verified that the unit_tests process segfaulted.
 }
 
 }  // namespace extensions

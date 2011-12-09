@@ -22,8 +22,8 @@ namespace extensions {
 // we need to manage it in the context of an extension.
 class Socket {
  public:
-  explicit Socket(const Profile* profile, const std::string& src_extension_id,
-                  const GURL& src_url);
+  Socket(const Profile* profile, const std::string& src_extension_id,
+         const GURL& src_url);
   ~Socket();
 
   bool Connect(const net::IPEndPoint& ip_end_point);
@@ -38,7 +38,7 @@ class Socket {
   std::string src_extension_id_;
   GURL src_url_;
 
-  net::UDPClientSocket* udp_client_socket_;
+  scoped_ptr<net::UDPClientSocket> udp_client_socket_;
   bool is_connected_;
   net::OldCompletionCallbackImpl<Socket> io_callback_;
 
@@ -101,30 +101,25 @@ int Socket::Write(const std::string message) {
   return bytes_sent;
 }
 
-SocketController* SocketController::GetInstance() {
-  return Singleton<SocketController>::get();
+SocketController::SocketController() : next_socket_id_(1) {
 }
 
-SocketController::SocketController() : next_socket_id_(1) {}
-
-SocketController::~SocketController() {
-  STLDeleteValues(&socket_map_);
-}
+SocketController::~SocketController() {}
 
 Socket* SocketController::GetSocket(int socket_id) {
   // TODO(miket): we should verify that the extension asking for the
   // socket is the same one that created it.
   SocketMap::iterator i = socket_map_.find(socket_id);
   if (i != socket_map_.end())
-    return i->second;
+    return i->second.get();
   return NULL;
 }
 
 int SocketController::CreateUdp(const Profile* profile,
                                 const std::string& extension_id,
                                 const GURL& src_url) {
-  Socket* socket = new Socket(profile, extension_id, src_url);
-  CHECK(socket);
+  linked_ptr<Socket> socket(new Socket(profile, extension_id, src_url));
+  CHECK(socket.get());
   socket_map_[next_socket_id_] = socket;
   return next_socket_id_++;
 }

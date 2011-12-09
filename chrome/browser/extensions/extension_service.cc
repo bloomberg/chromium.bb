@@ -21,6 +21,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/download/download_extension_api.h"
+#include "chrome/browser/extensions/api/socket/socket_api_controller.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -386,7 +388,8 @@ ExtensionService::ExtensionService(Profile* profile,
       permissions_manager_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       apps_promo_(profile->GetPrefs()),
       event_routers_initialized_(false),
-      extension_warnings_(profile) {
+      extension_warnings_(profile),
+      socket_controller_(new extensions::SocketController()) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Figure out if extension installation should be enabled.
@@ -470,6 +473,13 @@ ExtensionService::~ExtensionService() {
     ExternalExtensionProviderInterface* provider = i->get();
     provider->ServiceShutdown();
   }
+
+  // TODO(miket): if we find ourselves adding more and more per-API
+  // controllers, we should manage them all with an
+  // APIControllerController (still working on that name).
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      new DeleteTask<extensions::SocketController>(socket_controller_));
 }
 
 void ExtensionService::InitEventRoutersAfterImport() {

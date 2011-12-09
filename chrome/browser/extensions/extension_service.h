@@ -75,6 +75,7 @@ class ExtensionInputMethodEventRouter;
 namespace extensions {
 class ComponentLoader;
 class SettingsFrontend;
+class SocketController;
 }
 
 // This is an interface class to encapsulate the dependencies that
@@ -569,6 +570,10 @@ class ExtensionService
     return &extension_warnings_;
   }
 
+  extensions::SocketController* socket_controller() {
+    return socket_controller_;
+  }
+
  private:
   // Bundle of type (app or extension)-specific sync stuff.
   struct SyncBundle {
@@ -818,6 +823,10 @@ class ExtensionService
 
   // Contains an entry for each warning that shall be currently shown.
   ExtensionWarningSet extension_warnings_;
+
+  // We need to control destruction of this object (it needs to happen on the
+  // IO thread), so we don't get to use any RAII devices with it.
+  extensions::SocketController* socket_controller_;
 
   extensions::ProcessMap process_map_;
 
