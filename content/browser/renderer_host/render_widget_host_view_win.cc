@@ -182,21 +182,6 @@ LRESULT CALLBACK PluginWrapperWindowProc(HWND window, unsigned int message,
   return ::DefWindowProc(window, message, wparam, lparam);
 }
 
-void SendToGpuProcessHost(int gpu_host_id, IPC::Message* message) {
-  GpuProcessHost* gpu_process_host = GpuProcessHost::FromID(gpu_host_id);
-  if (!gpu_process_host) {
-    delete message;
-    return;
-  }
-
-  gpu_process_host->Send(message);
-}
-
-void PostTaskOnIOThread(const tracked_objects::Location& from_here,
-                        base::Closure task) {
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, task);
-}
-
 bool DecodeZoomGesture(HWND hwnd, const GESTUREINFO& gi,
                        content::PageZoom* zoom,
                        POINT* zoom_center) {
@@ -2044,28 +2029,27 @@ void RenderWidgetHostViewWin::OnAcceleratedCompositingStateChange() {
 void RenderWidgetHostViewWin::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
-  if (!accelerated_surface_.get() && compositor_host_window_) {
-    accelerated_surface_ = new AcceleratedSurface(compositor_host_window_);
-    accelerated_surface_->Initialize();
+  if (params.surface_id) {
+    if (!accelerated_surface_.get() && compositor_host_window_) {
+      accelerated_surface_ = new AcceleratedSurface(compositor_host_window_);
+      accelerated_surface_->Initialize();
+    }
+
+    accelerated_surface_->AsyncPresentAndAcknowledge(
+        params.size,
+        params.surface_id,
+        base::Bind(&RenderWidgetHost::AcknowledgeSwapBuffers,
+                   gpu_host_id,
+                   params.route_id));
+  } else {
+    RenderWidgetHost::AcknowledgeSwapBuffers(params.route_id, gpu_host_id);
   }
-
-  base::Closure acknowledge_task =
-      base::Bind(SendToGpuProcessHost,
-                 gpu_host_id,
-                 new AcceleratedSurfaceMsg_BuffersSwappedACK(params.route_id));
-
-  accelerated_surface_->AsyncPresentAndAcknowledge(
-      params.size,
-      params.surface_id,
-      base::Bind(PostTaskOnIOThread,
-                 FROM_HERE,
-                 acknowledge_task));
 }
 
 void RenderWidgetHostViewWin::AcceleratedSurfacePostSubBuffer(
     const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
     int gpu_host_id) {
-  NOTREACHED();
+  RenderWidgetHost::AcknowledgePostSubBuffer(params.route_id, gpu_host_id);
 }
 
 void RenderWidgetHostViewWin::SetAccessibilityFocus(int acc_obj_id) {

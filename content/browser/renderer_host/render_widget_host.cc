@@ -197,6 +197,7 @@ bool RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnMsgSetTooltipText)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PaintAtSize_ACK, OnMsgPaintAtSizeAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnMsgUpdateRect)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateIsDelayed, OnMsgUpdateIsDelayed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnMsgInputEventAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnMsgFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnMsgBlur)
@@ -1065,17 +1066,23 @@ void RenderWidgetHost::OnMsgUpdateRect(
   UMA_HISTOGRAM_TIMES("MPArch.RWH_OnMsgUpdateRect", delta);
 }
 
+void RenderWidgetHost::OnMsgUpdateIsDelayed() {
+  // Nothing to do, this message was just to unblock the UI thread.
+}
+
 void RenderWidgetHost::DidUpdateBackingStore(
     const ViewHostMsg_UpdateRect_Params& params,
     const TimeTicks& paint_start) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHost::DidUpdateBackingStore");
   TimeTicks update_start = TimeTicks::Now();
 
-  // ACK early so we can prefetch the next PaintRect if there is a next one.
-  // This must be done AFTER we're done painting with the bitmap supplied by the
-  // renderer. This ACK is a signal to the renderer that the backing store can
-  // be re-used, so the bitmap may be invalid after this call.
-  Send(new ViewMsg_UpdateRect_ACK(routing_id_));
+  if (params.needs_ack) {
+    // ACK early so we can prefetch the next PaintRect if there is a next one.
+    // This must be done AFTER we're done painting with the bitmap supplied by
+    // the renderer. This ACK is a signal to the renderer that the backing store
+    // can be re-used, so the bitmap may be invalid after this call.
+    Send(new ViewMsg_UpdateRect_ACK(routing_id_));
+  }
 
   // Move the plugins if the view hasn't already been destroyed.  Plugin moves
   // will not be re-issued, so must move them now, regardless of whether we
@@ -1511,7 +1518,6 @@ bool RenderWidgetHost::GotResponseToLockMouseRequest(bool allowed) {
   }
 }
 
-#if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 // static
 void RenderWidgetHost::AcknowledgeSwapBuffers(int32 route_id, int gpu_host_id) {
   GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(gpu_host_id);
@@ -1526,4 +1532,3 @@ void RenderWidgetHost::AcknowledgePostSubBuffer(int32 route_id,
   if (ui_shim)
     ui_shim->Send(new AcceleratedSurfaceMsg_PostSubBufferACK(route_id));
 }
-#endif

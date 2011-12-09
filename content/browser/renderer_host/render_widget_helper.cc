@@ -109,13 +109,17 @@ bool RenderWidgetHelper::WaitForUpdateMsg(int render_widget_id,
 
       UpdateMsgProxyMap::iterator it = pending_paints_.find(render_widget_id);
       if (it != pending_paints_.end()) {
-        proxy = it->second;
+        UpdateMsgProxyQueue &queue = it->second;
+        DCHECK(!queue.empty());
+        proxy = queue.front();
 
         // Flag the proxy as cancelled so that when it is run as a task it will
         // do nothing.
         proxy->cancelled = true;
 
-        pending_paints_.erase(it);
+        queue.pop_front();
+        if (queue.empty())
+          pending_paints_.erase(it);
       }
     }
 
@@ -140,30 +144,11 @@ bool RenderWidgetHelper::WaitForUpdateMsg(int render_widget_id,
 void RenderWidgetHelper::DidReceiveUpdateMsg(const IPC::Message& msg) {
   int render_widget_id = msg.routing_id();
 
-  UpdateMsgProxy* proxy = NULL;
+  UpdateMsgProxy* proxy = new UpdateMsgProxy(this, msg);
   {
     base::AutoLock lock(pending_paints_lock_);
 
-    // Visual Studio 2010 has problems converting NULL to the null pointer for
-    // std::pair.  See http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
-    // It will work if we pass nullptr.
-#if defined(_MSC_VER) && _MSC_VER >= 1600
-    RenderWidgetHelper::UpdateMsgProxy* null_proxy = nullptr;
-#else
-    RenderWidgetHelper::UpdateMsgProxy* null_proxy = NULL;
-#endif
-    UpdateMsgProxyMap::value_type new_value(render_widget_id, null_proxy);
-
-    // We expect only a single PaintRect message at a time.  Optimize for the
-    // case that we don't already have an entry by using the 'insert' method.
-    std::pair<UpdateMsgProxyMap::iterator, bool> result =
-        pending_paints_.insert(new_value);
-    if (!result.second) {
-      NOTREACHED() << "Unexpected PaintRect message!";
-      return;
-    }
-
-    result.first->second = (proxy = new UpdateMsgProxy(this, msg));
+    pending_paints_[render_widget_id].push_back(proxy);
   }
 
   // Notify anyone waiting on the UI thread that there is a new entry in the
@@ -184,9 +169,12 @@ void RenderWidgetHelper::OnDiscardUpdateMsg(UpdateMsgProxy* proxy) {
 
     UpdateMsgProxyMap::iterator it = pending_paints_.find(msg.routing_id());
     DCHECK(it != pending_paints_.end());
-    DCHECK(it->second == proxy);
+    UpdateMsgProxyQueue &queue = it->second;
+    DCHECK(queue.front() == proxy);
 
-    pending_paints_.erase(it);
+    queue.pop_front();
+    if (queue.empty())
+      pending_paints_.erase(it);
   }
 }
 

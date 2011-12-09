@@ -245,12 +245,46 @@ void PassThroughImageTransportSurface::OnNewSurfaceACK(
     uint64 surface_id, TransportDIB::Handle surface_handle) {
 }
 
+bool PassThroughImageTransportSurface::SwapBuffers() {
+  bool result = gfx::GLSurfaceAdapter::SwapBuffers();
+
+  // Round trip to the browser UI thread, for throttling, by sending a dummy
+  // SwapBuffers message.
+  GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
+  params.surface_id = 0;
+#if defined(OS_WIN)
+  params.size = GetSize();
+#endif
+  helper_->SendAcceleratedSurfaceBuffersSwapped(params);
+
+  helper_->SetScheduled(false);
+  return result;
+}
+
+bool PassThroughImageTransportSurface::PostSubBuffer(
+    int x, int y, int width, int height) {
+  bool result = gfx::GLSurfaceAdapter::PostSubBuffer(x, y, width, height);
+
+  // Round trip to the browser UI thread, for throttling, by sending a dummy
+  // PostSubBuffer message.
+  GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
+  params.surface_id = 0;
+  params.x = x;
+  params.y = y;
+  params.width = width;
+  params.height = height;
+  helper_->SendAcceleratedSurfacePostSubBuffer(params);
+
+  helper_->SetScheduled(false);
+  return result;
+}
+
 void PassThroughImageTransportSurface::OnBuffersSwappedACK() {
-  NOTREACHED();
+  helper_->SetScheduled(true);
 }
 
 void PassThroughImageTransportSurface::OnPostSubBufferACK() {
-  NOTREACHED();
+  helper_->SetScheduled(true);
 }
 
 void PassThroughImageTransportSurface::OnResizeViewACK() {

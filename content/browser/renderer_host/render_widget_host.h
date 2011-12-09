@@ -449,11 +449,9 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   // locked.
   bool GotResponseToLockMouseRequest(bool allowed);
 
-#if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   // Called by the view in response to AcceleratedSurfaceBuffersSwapped.
   static void AcknowledgeSwapBuffers(int32 route_id, int gpu_host_id);
   static void AcknowledgePostSubBuffer(int32 route_id, int gpu_host_id);
-#endif
 
  protected:
   // Internal implementation of the public Forward*Event() methods.
@@ -557,6 +555,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
                            WebKit::WebTextDirection text_direction_hint);
   void OnMsgPaintAtSizeAck(int tag, const gfx::Size& size);
   void OnMsgUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
+  void OnMsgUpdateIsDelayed();
   void OnMsgInputEventAck(WebKit::WebInputEvent::Type event_type,
                           bool processed);
   virtual void OnMsgFocus();

@@ -96,6 +96,7 @@ void RenderWidgetHostProcess::InitUpdateRectParams(
   params->copy_rects.push_back(params->bitmap_rect);
   params->view_size = gfx::Size(w, h);
   params->flags = update_msg_reply_flags_;
+  params->needs_ack = true;
 }
 
 bool RenderWidgetHostProcess::WaitForUpdateMsg(int render_widget_id,

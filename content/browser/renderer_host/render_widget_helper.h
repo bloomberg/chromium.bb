@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HELPER_H_
 #pragma once
 
+#include <deque>
 #include <map>
 
 #include "base/atomic_sequence_num.h"
@@ -160,8 +161,9 @@ class RenderWidgetHelper
   friend class UpdateMsgProxy;
   friend class base::RefCountedThreadSafe<RenderWidgetHelper>;
 
-  // Map from render_widget_id to live PaintMsgProxy instance.
-  typedef base::hash_map<int, UpdateMsgProxy*> UpdateMsgProxyMap;
+  typedef std::deque<UpdateMsgProxy*> UpdateMsgProxyQueue;
+  // Map from render_widget_id to a queue of live PaintMsgProxy instances.
+  typedef base::hash_map<int, UpdateMsgProxyQueue > UpdateMsgProxyMap;
 
   ~RenderWidgetHelper();
 

@@ -522,6 +522,10 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   // which would indicate that this paint message is an ACK for multiple
   // request messages.
   IPC_STRUCT_MEMBER(int, flags)
+
+  // Whether or not the renderer expects a ViewMsg_UpdateRect_ACK for this
+  // update. True for 2D painting, but false for accelerated compositing.
+  IPC_STRUCT_MEMBER(bool, needs_ack)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_DidFailProvisionalLoadWithError_Params)
@@ -1430,6 +1434,10 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_PaintAtSize_ACK,
 // generates a ViewMsg_UpdateRect_ACK message.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateRect,
                     ViewHostMsg_UpdateRect_Params)
+
+// Sent to unblock the browser's UI thread if it is waiting on an UpdateRect,
+// which may get delayed until the browser's UI unblocks.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_UpdateIsDelayed)
 
 // Sent by the renderer when accelerated compositing is enabled or disabled to
 // notify the browser whether or not is should do painting.

@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_RENDER_WIDGET_H_
 #pragma once
 
+#include <deque>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -28,6 +29,9 @@
 #include "ui/gfx/size.h"
 #include "ui/gfx/surface/transport_dib.h"
 #include "webkit/glue/webcursor.h"
+
+struct ViewHostMsg_UpdateRect_Params;
+class ViewHostMsg_UpdateRect;
 
 namespace IPC {
 class SyncMessage;
@@ -274,11 +278,6 @@ class CONTENT_EXPORT RenderWidget
   void WillToggleFullscreen();
   void DidToggleFullscreen();
 
-  // True if an UpdateRect_ACK message is pending.
-  bool update_reply_pending() const {
-    return update_reply_pending_;
-  }
-
   bool next_paint_is_resize_ack() const;
   bool next_paint_is_restore_ack() const;
   void set_next_paint_is_resize_ack();
@@ -473,6 +472,17 @@ class CONTENT_EXPORT RenderWidget
 
   bool has_disable_gpu_vsync_switch_;
   base::TimeTicks last_do_deferred_update_time_;
+
+  // UpdateRect parameters for the current compositing pass. This is used to
+  // pass state between DoDeferredUpdate and OnSwapBuffersPosted.
+  scoped_ptr<ViewHostMsg_UpdateRect_Params> pending_update_params_;
+
+  // Queue of UpdateRect messages corresponding to a SwapBuffers. We want to
+  // delay sending of UpdateRect until the corresponding SwapBuffers has been
+  // executed. Since we can have several in flight, we need to keep them in a
+  // queue. Note: some SwapBuffers may not correspond to an update, in which
+  // case NULL is added to the queue.
+  std::deque<ViewHostMsg_UpdateRect*> updates_pending_swap_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

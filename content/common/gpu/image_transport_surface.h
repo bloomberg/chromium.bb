@@ -156,6 +156,8 @@ class PassThroughImageTransportSurface
   // GLSurface implementation.
   virtual bool Initialize() OVERRIDE;
   virtual void Destroy() OVERRIDE;
+  virtual bool SwapBuffers() OVERRIDE;
+  virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
 
   // ImageTransportSurface implementation.
   virtual void OnNewSurfaceACK(

@@ -357,6 +357,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnOpenChannelToPpapiBroker)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_UpdateRect,
         render_widget_helper_->DidReceiveUpdateMsg(message))
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateIsDelayed, OnUpdateIsDelayed)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_CheckPermission,
                         OnCheckNotificationPermission)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateSharedMemory,
@@ -888,4 +889,17 @@ void RenderMessageFilter::OnCompletedOpenChannelToNpapiPlugin(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(ContainsKey(plugin_host_clients_, client));
   plugin_host_clients_.erase(client);
+}
+
+void RenderMessageFilter::OnUpdateIsDelayed(const IPC::Message& msg) {
+  // When not in accelerated compositing mode, in certain cases (e.g. waiting
+  // for a resize or if no backing store) the RenderWidgetHost is blocking the
+  // UI thread for some time, waiting for an UpdateRect from the renderer. If we
+  // are going to switch to accelerated compositing, the GPU process may need
+  // round-trips to the UI thread before finishing the frame, causing deadlocks
+  // if we delay the UpdateRect until we receive the OnSwapBuffersComplete. So
+  // the renderer sent us this message, so that we can unblock the UI thread.
+  // We will simply re-use the UpdateRect unblock mechanism, just with a
+  // different message.
+  render_widget_helper_->DidReceiveUpdateMsg(msg);
 }
