@@ -26,10 +26,6 @@
 // FAILING TESTS
 // -----------------------------------------------------------------------------
 
-103573 WIN : conformance_glsl_functions_glsl_function_atan = FAIL
-103573 WIN : conformance_glsl_functions_glsl_function_atan_xy = FAIL
-103573 WIN : conformance_glsl_functions_glsl_function_mod_gentype = FAIL
-
 103759 MAC WIN LINUX : conformance_more_functions_readPixelsBadArgs = FAIL
 103759 MAC WIN LINUX : conformance_more_functions_texImage2DHTML = FAIL
 103759 MAC WIN LINUX : conformance_more_functions_texSubImage2DHTML = FAIL
