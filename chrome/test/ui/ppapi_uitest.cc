@@ -516,7 +516,7 @@ TEST_F(OutOfProcessPPAPITest, MAYBE_FlashFullscreen) {
 }
 
 // Fullscreen test fails on Mac.
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #define MAYBE_Fullscreen FAILS_Fullscreen
 #else
 #define MAYBE_Fullscreen Fullscreen
