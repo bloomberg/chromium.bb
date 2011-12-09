@@ -10,7 +10,6 @@
 #include "base/time.h"
 #include "content/common/child_process.h"
 #include "content/common/child_thread.h"
-#include "content/common/media/audio_messages.h"
 #include "content/renderer/media/audio_renderer_impl.h"
 #include "content/renderer/mock_content_renderer_client.h"
 #include "content/renderer/render_process.h"
@@ -44,41 +43,6 @@ class MockRenderProcess : public RenderProcess {
 };
 }
 
-// This class defines a set of methods which will be used in combination
-// with NewRunnableMethod to form tasks which will be posted on the
-// IO thread. All methods emulate AudioMessageFilter::Delegate calls.
-class DelegateCaller : public base::RefCountedThreadSafe<DelegateCaller> {
- public:
-  explicit DelegateCaller(AudioRendererImpl* renderer)
-      : renderer_(renderer) {}
-
-  void OnCreated(base::SharedMemoryHandle handle, uint32 length) {
-    if (renderer_->latency_type() == AudioRendererImpl::kHighLatency) {
-      renderer_->OnCreated(handle, length);
-    } else {
-      renderer_->OnLowLatencyCreated(handle, 0, length);
-    }
-  }
-  void OnStateChanged(AudioStreamState state) {
-    renderer_->OnStateChanged(state);
-  }
-  void OnRequestPacket(AudioBuffersState buffers_state) {
-    renderer_->OnRequestPacket(buffers_state);
-  }
-  void OnVolume(double volume) {
-    renderer_->OnVolume(volume);
-  }
-  void DestroyCurrentMessageLoop() {
-    renderer_->WillDestroyCurrentMessageLoop();
-  }
- private:
-  friend class base::RefCountedThreadSafe<DelegateCaller>;
-  virtual ~DelegateCaller() {}
-
-  scoped_refptr<AudioRendererImpl> renderer_;
-  DISALLOW_COPY_AND_ASSIGN(DelegateCaller);
-};
-
 // This task can be posted on the IO thread and will signal an event when
 // done. The caller can then wait for this signal to ensure that no
 // additional tasks remain in the task queue.
@@ -96,32 +60,18 @@ class WaitTask : public Task {
   DISALLOW_COPY_AND_ASSIGN(WaitTask);
 };
 
-// Class we would be testing. The only difference between it and "real" one
-// is that test class does not open sockets and launch audio thread.
+// Class we would be testing.
 class TestAudioRendererImpl : public AudioRendererImpl {
  public:
   explicit TestAudioRendererImpl()
       : AudioRendererImpl() {
   }
- private:
-  virtual void CreateSocket(base::SyncSocket::Handle socket_handle) {}
-  virtual void CreateAudioThread() {}
 };
 
 class AudioRendererImplTest
     : public ::testing::Test,
       public IPC::Channel::Listener {
  public:
-  static void SetUpTestCase() {
-    // Set low latency mode, as it soon would be on by default.
-    if (AudioRendererImpl::latency_type() ==
-        AudioRendererImpl::kUninitializedLatency) {
-      AudioRendererImpl::set_latency_type(AudioRendererImpl::kLowLatency);
-    }
-    DCHECK_EQ(AudioRendererImpl::kLowLatency,
-              AudioRendererImpl::latency_type());
-  }
-
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) {
       NOTIMPLEMENTED();
@@ -149,9 +99,6 @@ class AudioRendererImplTest
     render_thread_ = new RenderThreadImpl(kThreadName);
     mock_process_->set_main_thread(render_thread_);
 
-    // Create temporary shared memory.
-    CHECK(shared_mem_.CreateAnonymous(kSize));
-
     // Setup expectations for initialization.
     decoder_ = new media::MockAudioDecoder();
 
@@ -164,30 +111,12 @@ class AudioRendererImplTest
 
     // Create and initialize the audio renderer.
     renderer_ = new TestAudioRendererImpl();
-    renderer_->set_host(&host_);
     renderer_->Initialize(decoder_, media::NewExpectedClosure(),
                           NewUnderflowClosure());
-
-    // Wraps delegate calls into tasks.
-    delegate_caller_ = new DelegateCaller(renderer_);
 
     // We need an event to verify that all tasks are done before leaving
     // our tests.
     event_.reset(new base::WaitableEvent(false, false));
-
-    // Duplicate the shared memory handle so both the test and the callee can
-    // close their copy.
-    base::SharedMemoryHandle duplicated_handle;
-    EXPECT_TRUE(shared_mem_.ShareToProcess(base::GetCurrentProcessHandle(),
-      &duplicated_handle));
-
-    // Set things up and ensure that the call comes from the IO thread
-    // as all AudioMessageFilter::Delegate methods.
-    ChildProcess::current()->io_message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&DelegateCaller::OnCreated, delegate_caller_.get(),
-                   duplicated_handle, kSize));
-    WaitForIOThreadCompletion();
   }
 
   virtual void TearDown() {
@@ -215,12 +144,9 @@ class AudioRendererImplTest
   scoped_ptr<IPC::Channel> channel_;
   RenderThreadImpl* render_thread_;  // owned by mock_process_
   scoped_ptr<MockRenderProcess> mock_process_;
-  base::SharedMemory shared_mem_;
-  media::MockFilterHost host_;
   scoped_refptr<media::MockAudioDecoder> decoder_;
   scoped_refptr<AudioRendererImpl> renderer_;
   scoped_ptr<base::WaitableEvent> event_;
-  scoped_refptr<DelegateCaller> delegate_caller_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioRendererImplTest);
@@ -256,90 +182,11 @@ TEST_F(AudioRendererImplTest, Stop) {
   // Tasks will be posted internally on the IO thread.
   renderer_->Stop(media::NewExpectedClosure());
 
-  // Run AudioMessageFilter::Delegate methods, which can be executed after being
-  // stopped. AudioRendererImpl shouldn't create any messages in this state.
-  // All delegate method calls are posted on the IO thread since it is
-  // a requirement.
-  if (renderer_->latency_type() == AudioRendererImpl::kHighLatency) {
-    ChildProcess::current()->io_message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&DelegateCaller::OnRequestPacket,
-                   delegate_caller_.get(), AudioBuffersState(kSize, 0)));
-  }
-  ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&DelegateCaller::OnStateChanged,
-                 delegate_caller_.get(), kAudioStreamError));
-  ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&DelegateCaller::OnStateChanged,
-                 delegate_caller_.get(), kAudioStreamPlaying));
-  ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&DelegateCaller::OnStateChanged,
-                 delegate_caller_.get(), kAudioStreamPaused));
-  ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&DelegateCaller::OnCreated,
-                 delegate_caller_.get(), shared_mem_.handle(), kSize));
-  ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&DelegateCaller::OnVolume,
-                 delegate_caller_.get(), 0.5));
-
   WaitForIOThreadCompletion();
 
   // It's possible that the upstream decoder replies right after being stopped.
   scoped_refptr<media::Buffer> buffer(new media::DataBuffer(kSize));
   renderer_->ConsumeAudioSamples(buffer);
-}
-
-TEST_F(AudioRendererImplTest, DestroyedMessageLoop_SetPlaybackRate) {
-  // Emulate "killing the message loop" and verify that SetPlaybackRate()
-  // still works.
-  ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&DelegateCaller::DestroyCurrentMessageLoop,
-                 delegate_caller_.get()));
-  WaitForIOThreadCompletion();
-
-  // No tasks will be posted on the IO thread here since we are in
-  // a "stopped" state.
-  renderer_->SetPlaybackRate(0.0f);
-  renderer_->SetPlaybackRate(1.0f);
-  renderer_->SetPlaybackRate(0.0f);
-  renderer_->Stop(media::NewExpectedClosure());
-}
-
-TEST_F(AudioRendererImplTest, DestroyedMessageLoop_SetVolume) {
-  // Emulate "killing the message loop" and verify that SetVolume()
-  // still works.
-  ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&DelegateCaller::DestroyCurrentMessageLoop,
-                 delegate_caller_.get()));
-  WaitForIOThreadCompletion();
-
-  // No tasks will be posted on the IO thread here since we are in
-  // a "stopped" state.
-  renderer_->SetVolume(0.5f);
-  renderer_->Stop(media::NewExpectedClosure());
-}
-
-TEST_F(AudioRendererImplTest, DestroyedMessageLoop_ConsumeAudioSamples) {
-  // Emulate "killing the message loop" and verify that OnReadComplete()
-  // still works.
-  ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&DelegateCaller::DestroyCurrentMessageLoop,
-                 delegate_caller_.get()));
-  WaitForIOThreadCompletion();
-
-  // No tasks will be posted on the IO thread here since we are in
-  // a "stopped" state.
-  scoped_refptr<media::Buffer> buffer(new media::DataBuffer(kSize));
-  renderer_->ConsumeAudioSamples(buffer);
-  renderer_->Stop(media::NewExpectedClosure());
 }
 
 TEST_F(AudioRendererImplTest, UpdateEarliestEndTime) {

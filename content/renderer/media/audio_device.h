@@ -25,21 +25,29 @@
 //
 // Start -> InitializeOnIOThread ------> AudioHostMsg_CreateStream -------->
 //       <- OnLowLatencyCreated <- AudioMsg_NotifyLowLatencyStreamCreated <-
-//       ---> StartOnIOThread -----------> AudioHostMsg_PlayStream -------->
+//       ---> PlayOnIOThread -----------> AudioHostMsg_PlayStream -------->
+//
+// Optionally Play() / Pause() sequences may occur:
+// Play -> PlayOnIOThread --------------> AudioHostMsg_PlayStream --------->
+// Pause -> PauseOnIOThread ------------> AudioHostMsg_PauseStream -------->
+// (note that Play() / Pause() sequences before OnLowLatencyCreated are
+//  deferred until OnLowLatencyCreated, with the last valid state being used)
 //
 // AudioDevice::Render => audio transport on audio thread with low latency =>
 //                               |
 // Stop --> ShutDownOnIOThread -------->  AudioHostMsg_CloseStream -> Close
 //
-// This class utilizes three threads during its lifetime, namely:
+// This class utilizes several threads during its lifetime, namely:
 // 1. Creating thread.
-//    Must be the main render thread. Start and Stop should be called on
-//    this thread.
-// 2. IO thread.
+//    Must be the main render thread.
+// 2. Control thread (may be the main render thread or another thread).
+//    The methods: Start(), Stop(), Play(), Pause(), SetVolume()
+//    must be called on the same thread.
+// 3. IO thread (internal implementation detail - not exposed to public API)
 //    The thread within which this class receives all the IPC messages and
 //    IPC communications can only happen in this thread.
-// 3. Audio transport thread.
-//    Responsible for calling the RenderCallback and feed audio samples to
+// 4. Audio transport thread.
+//    Responsible for calling the RenderCallback and feeding audio samples to
 //    the audio layer in the browser process using sync sockets and shared
 //    memory.
 //
@@ -47,6 +55,8 @@
 //
 // - Start() is asynchronous/non-blocking.
 // - Stop() is synchronous/blocking.
+// - Play() is asynchronous/non-blocking.
+// - Pause() is asynchronous/non-blocking.
 // - The user must call Stop() before deleting the class instance.
 
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_H_
@@ -58,11 +68,11 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/simple_thread.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/audio_message_filter.h"
-
-struct AudioParameters;
+#include "media/audio/audio_parameters.h"
 
 class CONTENT_EXPORT AudioDevice
     : public AudioMessageFilter::Delegate,
@@ -79,17 +89,41 @@ class CONTENT_EXPORT AudioDevice
   };
 
   // Methods called on main render thread -------------------------------------
+
+  // Minimal constructor where Initialize() must be called later.
+  AudioDevice();
+
   AudioDevice(size_t buffer_size,
               int channels,
               double sample_rate,
               RenderCallback* callback);
   virtual ~AudioDevice();
 
+  void Initialize(size_t buffer_size,
+                  int channels,
+                  double sample_rate,
+                  AudioParameters::Format latency_format,
+                  RenderCallback* callback);
+  bool IsInitialized();
+
   // Starts audio playback.
   void Start();
 
   // Stops audio playback.
   void Stop();
+
+  // Resumes playback if currently paused.
+  // TODO(crogers): it should be possible to remove the extra complexity
+  // of Play() and Pause() with additional re-factoring work in
+  // AudioRendererImpl.
+  void Play();
+
+  // Pauses playback.
+  // If |flush| is true then any pending audio that is in the pipeline
+  // (has not yet reached the hardware) will be discarded.  In this case,
+  // when Play() is later called, no previous pending audio will be
+  // rendered.
+  void Pause(bool flush);
 
   // Sets the playback volume, with range [0.0, 1.0] inclusive.
   // Returns |true| on success.
@@ -118,7 +152,8 @@ class CONTENT_EXPORT AudioDevice
   // be executed on that thread. They interact with AudioMessageFilter and
   // sends IPC messages on that thread.
   void InitializeOnIOThread(const AudioParameters& params);
-  void StartOnIOThread();
+  void PlayOnIOThread();
+  void PauseOnIOThread(bool flush);
   void ShutDownOnIOThread(base::WaitableEvent* completion);
   void SetVolumeOnIOThread(double volume);
 
@@ -132,16 +167,23 @@ class CONTENT_EXPORT AudioDevice
   // DelegateSimpleThread::Delegate implementation.
   virtual void Run() OVERRIDE;
 
+  // Closes socket and joins with the audio thread.
+  void ShutDownAudioThread();
+
   // Format
   size_t buffer_size_;  // in sample-frames
   int channels_;
   int bits_per_sample_;
   double sample_rate_;
+  AudioParameters::Format latency_format_;
 
   RenderCallback* callback_;
 
   // The client callback renders audio into here.
   std::vector<float*> audio_data_;
+
+  // Set to |true| once Initialize() has been called.
+  bool is_initialized_;
 
   // The client stores the last reported audio delay in this member.
   // The delay shall reflect the amount of audio which still resides in
@@ -160,13 +202,26 @@ class CONTENT_EXPORT AudioDevice
   // Our stream ID on the message filter. Only accessed on the IO thread.
   int32 stream_id_;
 
+  // State of Play() / Pause() calls before OnLowLatencyCreated() is called.
+  bool play_on_start_;
+
+  // Set to |true| when OnLowLatencyCreated() is called.
+  // Set to |false| when ShutDownOnIOThread() is called.
+  // This is for use with play_on_start_ to track Play() / Pause() state.
+  bool is_started_;
+
   // Data transfer between browser and render process uses a combination
   // of sync sockets and shared memory to provide lowest possible latency.
   base::SharedMemoryHandle shared_memory_handle_;
   base::SyncSocket::Handle socket_handle_;
   int memory_length_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(AudioDevice);
+  // Protects lifetime of:
+  // socket_handle_
+  // audio_thread_
+  base::Lock lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(AudioDevice);
 };
 
 #endif  // CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_H_

@@ -147,8 +147,11 @@ void AudioRendererBase::ResumeAfterUnderflow(bool buffer_more_audio) {
 void AudioRendererBase::ConsumeAudioSamples(scoped_refptr<Buffer> buffer_in) {
   base::AutoLock auto_lock(lock_);
   DCHECK(state_ == kPaused || state_ == kSeeking || state_ == kPlaying ||
-         state_ == kUnderflow || state_ == kRebuffering);
-  DCHECK_GT(pending_reads_, 0u);
+         state_ == kUnderflow || state_ == kRebuffering ||
+         state_ == kStopped);
+  if (!pending_reads_)
+    return;
+
   --pending_reads_;
 
   // TODO(scherkus): this happens due to a race, primarily because Stop() is a

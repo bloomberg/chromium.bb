@@ -2,77 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Audio rendering unit utilizing audio output stream provided by browser
-// process through IPC.
-//
-// Relationship of classes.
-//
-//    AudioRendererHost                AudioRendererImpl
-//           ^                                ^
-//           |                                |
-//           v                 IPC            v
-//   RenderMessageFilter   <---------> AudioMessageFilter
-//
-// Implementation of interface with audio device is in AudioRendererHost and
-// it provides services and entry points in RenderMessageFilter, allowing
-// usage of IPC calls to interact with audio device. AudioMessageFilter acts
-// as a portal for IPC calls and does no more than delegation.
-//
-// Transportation of audio buffer is done by using shared memory, after
-// OnCreateStream is executed, OnCreated would be called along with a
-// SharedMemoryHandle upon successful creation of audio output stream in the
-// browser process. The same piece of shared memory would be used during the
-// lifetime of this unit.
+// Audio rendering unit utilizing AudioDevice.
 //
 // This class lives inside three threads during it's lifetime, namely:
-// 1. IO thread.
-//    The thread within which this class receives all the IPC messages and
-//    IPC communications can only happen in this thread.
+// 1. Render thread.
+//    This object is created on the render thread.
 // 2. Pipeline thread
-//    Initialization of filter and proper stopping of filters happens here.
-//    Properties of this filter is also set in this thread.
-// 3. Audio decoder thread (If there's one.)
-//    Responsible for decoding audio data and gives raw PCM data to this object.
+//    OnInitialize() is called here with the audio format.
+//    Play/Pause/Seek also happens here.
+// 3. Audio thread created by the AudioDevice.
+//    Render() is called here where audio data is decoded into raw PCM data.
 
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_RENDERER_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_AUDIO_RENDERER_IMPL_H_
 #pragma once
 
+#include <vector>
+
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
-#include "base/shared_memory.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/simple_thread.h"
-#include "content/common/content_export.h"
-#include "content/renderer/media/audio_message_filter.h"
+#include "content/renderer/media/audio_device.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_manager.h"
-#include "media/base/filters.h"
+#include "media/audio/audio_parameters.h"
 #include "media/filters/audio_renderer_base.h"
 
 class AudioMessageFilter;
 
 class CONTENT_EXPORT AudioRendererImpl
     : public media::AudioRendererBase,
-      public AudioMessageFilter::Delegate,
-      public base::DelegateSimpleThread::Delegate,
-      public MessageLoop::DestructionObserver {
+      public AudioDevice::RenderCallback {
  public:
   // Methods called on Render thread ------------------------------------------
   AudioRendererImpl();
   virtual ~AudioRendererImpl();
-
-  // Methods called on IO thread ----------------------------------------------
-  // AudioMessageFilter::Delegate methods, called by AudioMessageFilter.
-  virtual void OnRequestPacket(AudioBuffersState buffers_state) OVERRIDE;
-  virtual void OnStateChanged(AudioStreamState state) OVERRIDE;
-  virtual void OnCreated(base::SharedMemoryHandle handle,
-                         uint32 length) OVERRIDE;
-  virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
-                                   base::SyncSocket::Handle socket_handle,
-                                   uint32 length) OVERRIDE;
-  virtual void OnVolume(double volume) OVERRIDE;
 
   // Methods called on pipeline thread ----------------------------------------
   // media::Filter implementation.
@@ -86,26 +49,14 @@ class CONTENT_EXPORT AudioRendererImpl
   virtual void SetVolume(float volume) OVERRIDE;
 
  protected:
-  // Methods called on audio renderer thread ----------------------------------
+  // Methods called on pipeline thread ----------------------------------------
   // These methods are called from AudioRendererBase.
   virtual bool OnInitialize(int bits_per_channel,
                             ChannelLayout channel_layout,
                             int sample_rate) OVERRIDE;
   virtual void OnStop() OVERRIDE;
 
-  // Called when the decoder completes a Read().
-  virtual void ConsumeAudioSamples(
-      scoped_refptr<media::Buffer> buffer_in) OVERRIDE;
-
  private:
-  // We are using either low- or high-latency code path.
-  enum LatencyType {
-    kUninitializedLatency = 0,
-    kLowLatency,
-    kHighLatency
-  };
-  static LatencyType latency_type_;
-
   // For access to constructor and IO thread methods.
   friend class AudioRendererImplTest;
   friend class DelegateCaller;
@@ -118,38 +69,17 @@ class CONTENT_EXPORT AudioRendererImpl
   // number of channels, sample rate and sample bits.
   base::TimeDelta ConvertToDuration(int bytes);
 
-  // Methods call on IO thread ------------------------------------------------
-  // The following methods are tasks posted on the IO thread that needs to
-  // be executed on that thread. They interact with AudioMessageFilter and
-  // sends IPC messages on that thread.
-  void CreateStreamTask(const AudioParameters& params);
-  void PlayTask();
-  void PauseTask();
-  void SeekTask();
-  void SetVolumeTask(double volume);
-  void NotifyPacketReadyTask();
-  void DestroyTask();
+  // Methods called on pipeline thread ----------------------------------------
+  void DoPlay();
+  void DoPause();
+  void DoSeek();
 
-  // Called on IO thread when message loop is dying.
-  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
-
-  // DelegateSimpleThread::Delegate implementation.
-  virtual void Run() OVERRIDE;
-
-  // (Re-)starts playback.
-  void NotifyDataAvailableIfNecessary();
-
-  // Creates socket. Virtual so tests can override.
-  virtual void CreateSocket(base::SyncSocket::Handle socket_handle);
-
-  // Launching audio thread. Virtual so tests can override.
-  virtual void CreateAudioThread();
+  // AudioDevice::RenderCallback implementation.
+  virtual void Render(const std::vector<float*>& audio_data,
+                      size_t number_of_frames,
+                      size_t audio_delay_milliseconds) OVERRIDE;
 
   // Accessors used by tests.
-  static LatencyType latency_type() {
-    return latency_type_;
-  }
-
   base::Time earliest_end_time() const {
     return earliest_end_time_;
   }
@@ -162,12 +92,6 @@ class CONTENT_EXPORT AudioRendererImpl
     return bytes_per_second_;
   }
 
-  // Should be called before any class instance is created.
-  static void set_latency_type(LatencyType latency_type);
-
-  // Helper method for IPC send calls.
-  void Send(IPC::Message* message);
-
   // Estimate earliest time when current buffer can stop playing.
   void UpdateEarliestEndTime(int bytes_filled,
                              base::TimeDelta request_delay,
@@ -176,39 +100,11 @@ class CONTENT_EXPORT AudioRendererImpl
   // Used to calculate audio delay given bytes.
   uint32 bytes_per_second_;
 
-  // Whether the stream has been created yet.
-  bool stream_created_;
-
-  // ID of the stream created in the browser process.
-  int32 stream_id_;
-
-  // Memory shared by the browser process for audio buffer.
-  scoped_ptr<base::SharedMemory> shared_memory_;
-  uint32 shared_memory_size_;
-
-  // Cached audio message filter (lives on the main render thread).
-  scoped_refptr<AudioMessageFilter> filter_;
-
-  // Low latency IPC stuff.
-  scoped_ptr<base::SyncSocket> socket_;
-
-  // That thread waits for audio input.
-  scoped_ptr<base::DelegateSimpleThread> audio_thread_;
-
-  // Protects:
-  // - |stopped_|
-  // - |pending_request_|
-  // - |request_buffers_state_|
-  base::Lock lock_;
-
   // A flag that indicates this filter is called to stop.
   bool stopped_;
 
-  // A flag that indicates an outstanding packet request.
-  bool pending_request_;
-
-  // State of the audio buffers at time of the last request.
-  AudioBuffersState request_buffers_state_;
+  // audio_device_ is the sink (destination) for rendered audio.
+  scoped_refptr<AudioDevice> audio_device_;
 
   // We're supposed to know amount of audio data OS or hardware buffered, but
   // that is not always so -- on my Linux box
@@ -225,6 +121,8 @@ class CONTENT_EXPORT AudioRendererImpl
   // know when that particular data would start playing, but it is much better
   // than nothing.
   base::Time earliest_end_time_;
+
+  AudioParameters audio_parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererImpl);
 };

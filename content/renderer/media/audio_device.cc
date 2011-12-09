@@ -12,27 +12,75 @@
 #include "content/common/media/audio_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread_impl.h"
+#include "media/audio/audio_output_controller.h"
 #include "media/audio/audio_util.h"
+
+AudioDevice::AudioDevice()
+    : buffer_size_(0),
+      channels_(0),
+      bits_per_sample_(16),
+      sample_rate_(0),
+      latency_format_(AudioParameters::AUDIO_PCM_LOW_LATENCY),
+      callback_(0),
+      is_initialized_(false),
+      audio_delay_milliseconds_(0),
+      volume_(1.0),
+      stream_id_(0),
+      play_on_start_(true),
+      is_started_(false),
+      memory_length_(0) {
+  filter_ = RenderThreadImpl::current()->audio_message_filter();
+}
 
 AudioDevice::AudioDevice(size_t buffer_size,
                          int channels,
                          double sample_rate,
                          RenderCallback* callback)
-    : buffer_size_(buffer_size),
-      channels_(channels),
-      bits_per_sample_(16),
-      sample_rate_(sample_rate),
-      callback_(callback),
+    : bits_per_sample_(16),
+      is_initialized_(false),
       audio_delay_milliseconds_(0),
       volume_(1.0),
       stream_id_(0),
+      play_on_start_(true),
+      is_started_(false),
       memory_length_(0) {
   filter_ = RenderThreadImpl::current()->audio_message_filter();
+  Initialize(buffer_size,
+             channels,
+             sample_rate,
+             AudioParameters::AUDIO_PCM_LOW_LATENCY,
+             callback);
+}
+
+void AudioDevice::Initialize(size_t buffer_size,
+                             int channels,
+                             double sample_rate,
+                             AudioParameters::Format latency_format,
+                             RenderCallback* callback) {
+  CHECK_EQ(0, stream_id_) <<
+      "AudioDevice::Initialize() must be called before Start()";
+
+  buffer_size_ = buffer_size;
+  channels_ = channels;
+  sample_rate_ = sample_rate;
+  latency_format_ = latency_format;
+  callback_ = callback;
+
+  // Cleanup from any previous initialization.
+  for (size_t i = 0; i < audio_data_.size(); ++i)
+    delete [] audio_data_[i];
+
   audio_data_.reserve(channels);
   for (int i = 0; i < channels; ++i) {
     float* channel_data = new float[buffer_size];
     audio_data_.push_back(channel_data);
   }
+
+  is_initialized_ = true;
+}
+
+bool AudioDevice::IsInitialized() {
+  return is_initialized_;
 }
 
 AudioDevice::~AudioDevice() {
@@ -45,7 +93,7 @@ AudioDevice::~AudioDevice() {
 
 void AudioDevice::Start() {
   AudioParameters params;
-  params.format = AudioParameters::AUDIO_PCM_LOW_LATENCY;
+  params.format = latency_format_;
   params.channels = channels_;
   params.sample_rate = static_cast<int>(sample_rate_);
   params.bits_per_sample = bits_per_sample_;
@@ -75,16 +123,19 @@ void AudioDevice::Stop() {
   if (!completion.TimedWait(kMaxTimeOut)) {
     LOG(ERROR) << "Failed to shut down audio output on IO thread";
   }
+  ShutDownAudioThread();
+}
 
-  if (audio_thread_.get()) {
-    // Close the socket handler to terminate the main thread function in the
-    // audio thread.
-    {
-      base::SyncSocket socket(socket_handle_);
-    }
-    audio_thread_->Join();
-    audio_thread_.reset(NULL);
-  }
+void AudioDevice::Play() {
+  ChildProcess::current()->io_message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&AudioDevice::PlayOnIOThread, this));
+}
+
+void AudioDevice::Pause(bool flush) {
+  ChildProcess::current()->io_message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&AudioDevice::PauseOnIOThread, this, flush));
 }
 
 bool AudioDevice::SetVolume(double volume) {
@@ -106,7 +157,8 @@ void AudioDevice::GetVolume(double* volume) {
 }
 
 void AudioDevice::InitializeOnIOThread(const AudioParameters& params) {
-  // Make sure we don't call Start() more than once.
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
+  // Make sure we don't create the stream more than once.
   DCHECK_EQ(0, stream_id_);
   if (stream_id_)
     return;
@@ -115,15 +167,35 @@ void AudioDevice::InitializeOnIOThread(const AudioParameters& params) {
   Send(new AudioHostMsg_CreateStream(stream_id_, params, true));
 }
 
-void AudioDevice::StartOnIOThread() {
-  if (stream_id_)
+void AudioDevice::PlayOnIOThread() {
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
+  if (stream_id_ && is_started_)
     Send(new AudioHostMsg_PlayStream(stream_id_));
+  else
+    play_on_start_ = true;
+}
+
+void AudioDevice::PauseOnIOThread(bool flush) {
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
+  if (stream_id_ && is_started_) {
+    Send(new AudioHostMsg_PauseStream(stream_id_));
+    if (flush)
+      Send(new AudioHostMsg_FlushStream(stream_id_));
+  } else {
+    // Note that |flush| isn't relevant here since this is the case where
+    // the stream is first starting.
+    play_on_start_ = false;
+  }
 }
 
 void AudioDevice::ShutDownOnIOThread(base::WaitableEvent* completion) {
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
+  is_started_ = false;
+
   // Make sure we don't call shutdown more than once.
   if (!stream_id_) {
-    completion->Signal();
+    if (completion)
+      completion->Signal();
     return;
   }
 
@@ -131,30 +203,29 @@ void AudioDevice::ShutDownOnIOThread(base::WaitableEvent* completion) {
   Send(new AudioHostMsg_CloseStream(stream_id_));
   stream_id_ = 0;
 
-  completion->Signal();
+  if (completion)
+    completion->Signal();
 }
 
 void AudioDevice::SetVolumeOnIOThread(double volume) {
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
   if (stream_id_)
     Send(new AudioHostMsg_SetVolume(stream_id_, volume));
 }
 
 void AudioDevice::OnRequestPacket(AudioBuffersState buffers_state) {
   // This method does not apply to the low-latency system.
-  NOTIMPLEMENTED();
 }
 
 void AudioDevice::OnStateChanged(AudioStreamState state) {
   if (state == kAudioStreamError) {
     DLOG(WARNING) << "AudioDevice::OnStateChanged(kError)";
   }
-  NOTIMPLEMENTED();
 }
 
 void AudioDevice::OnCreated(
     base::SharedMemoryHandle handle, uint32 length) {
   // Not needed in this simple implementation.
-  NOTIMPLEMENTED();
 }
 
 void AudioDevice::OnLowLatencyCreated(
@@ -186,14 +257,21 @@ void AudioDevice::OnLowLatencyCreated(
   DCHECK_GE(length, buffer_size_ * sizeof(int16) * channels_);
 
   socket_handle_ = socket_handle;
+  {
+    // Synchronize with ShutDownAudioThread().
+    base::AutoLock auto_lock(lock_);
 
-  audio_thread_.reset(
-      new base::DelegateSimpleThread(this, "renderer_audio_thread"));
-  audio_thread_->Start();
+    DCHECK(!audio_thread_.get());
+    audio_thread_.reset(
+        new base::DelegateSimpleThread(this, "renderer_audio_thread"));
+    audio_thread_->Start();
+  }
 
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&AudioDevice::StartOnIOThread, this));
+  // We handle the case where Play() and/or Pause() may have been called
+  // multiple times before OnLowLatencyCreated() gets called.
+  is_started_ = true;
+  if (play_on_start_)
+    PlayOnIOThread();
 }
 
 void AudioDevice::OnVolume(double volume) {
@@ -219,9 +297,14 @@ void AudioDevice::Run() {
   const int samples_per_ms = static_cast<int>(sample_rate_) / 1000;
   const int bytes_per_ms = channels_ * (bits_per_sample_ / 8) * samples_per_ms;
 
-  while ((sizeof(pending_data) == socket.Receive(&pending_data,
-                                                 sizeof(pending_data))) &&
-         (pending_data >= 0)) {
+  while (sizeof(pending_data) ==
+      socket.Receive(&pending_data, sizeof(pending_data))) {
+    if (pending_data == media::AudioOutputController::kPauseMark) {
+      memset(shared_memory.memory(), 0, memory_length_);
+      continue;
+    } else if (pending_data < 0) {
+      break;
+    }
     // Convert the number of pending bytes in the render buffer
     // into milliseconds.
     audio_delay_milliseconds_ = pending_data / bytes_per_ms;
@@ -237,8 +320,25 @@ void AudioDevice::FireRenderCallback(int16* data) {
     callback_->Render(audio_data_, buffer_size_, audio_delay_milliseconds_);
 
     // Interleave, scale, and clip to int16.
+    // TODO(crogers): avoid converting to integer here, and pass the data
+    // to the browser process as float, so we don't lose precision for
+    // audio hardware which has better than 16bit precision.
     media::InterleaveFloatToInt16(audio_data_,
                                   data,
                                   buffer_size_);
+  }
+}
+
+void AudioDevice::ShutDownAudioThread() {
+  // Synchronize with OnLowLatencyCreated().
+  base::AutoLock auto_lock(lock_);
+  if (audio_thread_.get()) {
+    // Close the socket handler to terminate the main thread function in the
+    // audio thread.
+    {
+      base::SyncSocket socket(socket_handle_);
+    }
+    audio_thread_->Join();
+    audio_thread_.reset(NULL);
   }
 }
