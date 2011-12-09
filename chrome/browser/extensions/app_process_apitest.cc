@@ -361,8 +361,13 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessRedirectBack) {
   //    cancelled, and counts as a load stop
   // 8. Renderer navigates to empty.html, and finishes loading, counting as the
   //    third load stop
+#if defined(TRANSFER_REDIRECTS_BUG79520)
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), base_url.Resolve("path1/redirect.html"), 3);
+#else
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), base_url.Resolve("path1/redirect.html"), 2);
+#endif
 
   // 3 tabs, including the initial about:blank. The last 2 should be the same
   // process.
