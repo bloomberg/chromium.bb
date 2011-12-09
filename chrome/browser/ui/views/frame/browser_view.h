@@ -158,6 +158,10 @@ class BrowserView : public BrowserWindow,
   // incognito.
   bool IsOffTheRecord() const;
 
+  // Returns true if the profile associated with this Browser window is
+  // a guest session.
+  bool IsGuestSession() const;
+
   // Returns true if the non-client view should render an avatar icon.
   virtual bool ShouldShowAvatar() const;
 
@@ -185,7 +189,10 @@ class BrowserView : public BrowserWindow,
   TabContentsWrapper* GetSelectedTabContentsWrapper() const;
 
   // Retrieves the icon to use in the frame to indicate an OTR window.
-  SkBitmap GetOTRAvatarIcon();
+  SkBitmap GetOTRAvatarIcon() const;
+
+  // Retrieves the icon to use in the frame to indicate guest session.
+  SkBitmap GetGuestAvatarIcon() const;
 
 #if defined(OS_WIN)
   // Called right before displaying the system menu to allow the BrowserView
