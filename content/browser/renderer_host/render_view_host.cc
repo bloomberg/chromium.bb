@@ -1309,8 +1309,6 @@ void RenderViewHost::SetAltErrorPageURL(const GURL& url) {
 
 void RenderViewHost::ExitFullscreen() {
   RejectMouseLockOrUnlockIfNecessary();
-
-  Send(new ViewMsg_ExitFullscreen(routing_id()));
 }
 
 void RenderViewHost::UpdateWebkitPreferences(const WebPreferences& prefs) {

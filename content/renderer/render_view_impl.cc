@@ -627,7 +627,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ZoomFactor, OnZoomFactor)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForLoadingURL,
                         OnSetZoomLevelForLoadingURL)
-    IPC_MESSAGE_HANDLER(ViewMsg_ExitFullscreen, OnExitFullscreen)
     IPC_MESSAGE_HANDLER(ViewMsg_SetPageEncoding, OnSetPageEncoding)
     IPC_MESSAGE_HANDLER(ViewMsg_ResetPageEncodingToDefault,
                         OnResetPageEncodingToDefault)
@@ -3719,13 +3718,6 @@ void RenderViewImpl::OnSetZoomLevel(double zoom_level) {
 void RenderViewImpl::OnSetZoomLevelForLoadingURL(const GURL& url,
                                                  double zoom_level) {
   host_zoom_levels_[url] = zoom_level;
-}
-
-void RenderViewImpl::OnExitFullscreen() {
-  // TODO(darin): Remove this IPC once WebKit has been updated.
-#ifndef WEBKIT_HAS_NEW_FULLSCREEN_API
-  webview()->exitFullscreen();
-#endif
 }
 
 void RenderViewImpl::OnSetPageEncoding(const std::string& encoding_name) {

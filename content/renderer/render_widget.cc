@@ -1320,7 +1320,6 @@ void RenderWidget::SetHidden(bool hidden) {
 }
 
 void RenderWidget::WillToggleFullscreen() {
-#ifdef WEBKIT_HAS_NEW_FULLSCREEN_API
   if (!webwidget_)
     return;
 
@@ -1329,11 +1328,9 @@ void RenderWidget::WillToggleFullscreen() {
   } else {
     webwidget_->willEnterFullScreen();
   }
-#endif
 }
 
 void RenderWidget::DidToggleFullscreen() {
-#ifdef WEBKIT_HAS_NEW_FULLSCREEN_API
   if (!webwidget_)
     return;
 
@@ -1342,7 +1339,6 @@ void RenderWidget::DidToggleFullscreen() {
   } else {
     webwidget_->didExitFullScreen();
   }
-#endif
 }
 
 void RenderWidget::SetBackground(const SkBitmap& background) {
