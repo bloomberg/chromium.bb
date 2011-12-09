@@ -16,9 +16,18 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 JavaBridgeDispatcher::JavaBridgeDispatcher(
-    content::RenderView* render_view,
-    const IPC::ChannelHandle& channel_handle)
+    content::RenderView* render_view)
     : RenderViewObserver(render_view) {
+}
+
+void JavaBridgeDispatcher::EnsureChannelIsSetUp() {
+  if (channel_.get()) {
+    return;
+  }
+
+  IPC::ChannelHandle channel_handle;
+  Send(new JavaBridgeHostMsg_GetChannelHandle(routing_id(), &channel_handle));
+
   channel_.reset(JavaBridgeChannel::GetJavaBridgeChannel(
       channel_handle, ChildProcess::current()->io_message_loop_proxy()));
 }
@@ -62,6 +71,9 @@ void JavaBridgeDispatcher::OnAddNamedObject(
     const string16& name,
     const NPVariant_Param& variant_param) {
   DCHECK_EQ(variant_param.type, NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID);
+
+  EnsureChannelIsSetUp();
+
   // This creates an NPObject, wrapped as an NPVariant. We don't need the
   // containing window or the page URL, as we don't do re-entrant sync IPC.
   NPVariant variant;

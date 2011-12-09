@@ -4791,10 +4791,9 @@ bool RenderViewImpl::WebWidgetHandlesCompositorScheduling() const {
   return !!RenderThreadImpl::current()->compositor_thread();
 }
 
-void RenderViewImpl::OnJavaBridgeInit(
-    const IPC::ChannelHandle& channel_handle) {
+void RenderViewImpl::OnJavaBridgeInit() {
   DCHECK(!java_bridge_dispatcher_.get());
 #if defined(ENABLE_JAVA_BRIDGE)
-  java_bridge_dispatcher_.reset(new JavaBridgeDispatcher(this, channel_handle));
+  java_bridge_dispatcher_.reset(new JavaBridgeDispatcher(this));
 #endif
 }

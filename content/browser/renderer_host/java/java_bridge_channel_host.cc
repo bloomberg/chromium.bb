@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/java/java_bridge_channel_host.h"
 
+#include "base/atomicops.h"
 #include "base/lazy_instance.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
@@ -21,10 +22,13 @@ struct WaitableEventLazyInstanceTraits
 };
 base::LazyInstance<WaitableEvent, WaitableEventLazyInstanceTraits> dummy_event =
     LAZY_INSTANCE_INITIALIZER;
+
+base::subtle::AtomicWord g_last_id = 0;
 }
 
 JavaBridgeChannelHost* JavaBridgeChannelHost::GetJavaBridgeChannelHost(
-    int renderer_id, base::MessageLoopProxy* ipc_message_loop) {
+    int renderer_id,
+    base::MessageLoopProxy* ipc_message_loop) {
   std::string channel_name(StringPrintf("r%d.javabridge", renderer_id));
   // We don't use a shutdown event because the Java Bridge only sends messages
   // from renderer to browser, so we'll never be waiting for a sync IPC to
@@ -38,9 +42,12 @@ JavaBridgeChannelHost* JavaBridgeChannelHost::GetJavaBridgeChannelHost(
       dummy_event.Pointer()));
 }
 
+int JavaBridgeChannelHost::ThreadsafeGenerateRouteID() {
+  return base::subtle::NoBarrier_AtomicIncrement(&g_last_id, 1);
+}
+
 int JavaBridgeChannelHost::GenerateRouteID() {
-  static int last_id = 0;
-  return ++last_id;
+  return ThreadsafeGenerateRouteID();
 }
 
 bool JavaBridgeChannelHost::Init(base::MessageLoopProxy* ipc_message_loop,

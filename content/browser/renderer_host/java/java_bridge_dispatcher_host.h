@@ -8,17 +8,21 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
+#include "content/browser/renderer_host/render_view_host_observer.h"
 
-class JavaBridgeChannelHost;
+class NPChannelBase;
 class RenderViewHost;
+class RouteIDGenerator;
 struct NPObject;
+struct NPVariant_Param;
 
 // This class handles injecting Java objects into a single RenderView. The Java
 // object itself lives on the browser's WEBKIT thread, while a proxy object is
 // created in the renderer. An instance of this class exists for each
 // RenderViewHost.
 class JavaBridgeDispatcherHost :
-    public base::RefCountedThreadSafe<JavaBridgeDispatcherHost> {
+    : public base::RefCountedThreadSafe<JavaBridgeDispatcherHost>,
+      public RenderViewHostObserver {
  public:
   // We hold a weak pointer to the RenderViewhost. It must outlive this object.
   JavaBridgeDispatcherHost(RenderViewHost* render_view_host);
@@ -35,15 +39,26 @@ class JavaBridgeDispatcherHost :
   void AddNamedObject(const string16& name, NPObject* object);
   void RemoveNamedObject(const string16& name);
 
+  // RenderViewHostObserver override:
+  // The IPC macros require this to be public.
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
+
  private:
   friend class base::RefCountedThreadSafe<JavaBridgeDispatcherHost>;
   ~JavaBridgeDispatcherHost();
 
-  void DoAddNamedObject(const string16& name, NPObject* object);
-  void EnsureChannelIsSetUp();
+  // RenderViewHostObserver override:
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  RenderViewHost* render_view_host_;
-  scoped_refptr<JavaBridgeChannelHost> channel_;
+  // Message handlers
+  void OnGetChannelHandle(IPC::Message* reply_msg);
+
+  void GetChannelHandle(IPC::Message* reply_msg);
+  void CreateNPVariantParam(NPObject* object, NPVariant_Param* param);
+  void CreateObjectStub(NPObject* object, int route_id);
+
+  scoped_refptr<NPChannelBase> channel_;
+  bool is_renderer_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaBridgeDispatcherHost);
 };

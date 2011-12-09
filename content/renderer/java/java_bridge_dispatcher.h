@@ -19,8 +19,7 @@ class JavaBridgeChannel;
 // again.
 class JavaBridgeDispatcher : public content::RenderViewObserver {
  public:
-  JavaBridgeDispatcher(content::RenderView* render_view,
-                       const IPC::ChannelHandle& channel_handle);
+  JavaBridgeDispatcher(content::RenderView* render_view);
   virtual ~JavaBridgeDispatcher();
 
  private:
@@ -32,6 +31,8 @@ class JavaBridgeDispatcher : public content::RenderViewObserver {
   void OnAddNamedObject(const string16& name,
                         const NPVariant_Param& variant_param);
   void OnRemoveNamedObject(const string16& name);
+
+  void EnsureChannelIsSetUp();
 
   // Objects that will be bound to the window when the window object is next
   // cleared. We hold a ref to these.
