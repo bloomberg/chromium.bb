@@ -73,15 +73,15 @@ AC_ARG_ENABLE(radeon,
 	      [Enable support for radeon's KMS API (default: auto)]),
 	      [RADEON=$enableval], [RADEON=auto])
 
+AC_ARG_ENABLE(nouveau,
+	      AS_HELP_STRING([--disable-nouveau],
+	      [Enable support for nouveau's KMS API (default: auto)]),
+	      [NOUVEAU=$enableval], [NOUVEAU=auto])
+
 AC_ARG_ENABLE(vmwgfx-experimental-api,
 	      AS_HELP_STRING([--enable-vmwgfx-experimental-api],
 	      [Install vmwgfx's experimental kernel API header (default: disabled)]),
 	      [VMWGFX=$enableval], [VMWGFX=no])
-
-AC_ARG_ENABLE(nouveau-experimental-api,
-	      AS_HELP_STRING([--enable-nouveau-experimental-api],
-	      [Enable support for nouveau's experimental API (default: disabled)]),
-	      [NOUVEAU=$enableval], [NOUVEAU=no])
 
 AC_ARG_ENABLE(omap-experimental-api,
 	      AS_HELP_STRING([--enable-omap-experimental-api],
@@ -204,7 +204,7 @@ if test "x$HAVE_LIBUDEV" = xyes; then
 fi
 AM_CONDITIONAL(HAVE_LIBUDEV, [test "x$HAVE_LIBUDEV" = xyes])
 
-if test "x$INTEL" != "xno" -o "x$RADEON" != "xno"; then
+if test "x$INTEL" != "xno" -o "x$RADEON" != "xno" -o "x$NOUVEAU" != "xno"; then
     # Check for atomic intrinsics
     AC_CACHE_CHECK([for native atomic primitives], drm_cv_atomic_primitives,
     [
@@ -252,7 +252,14 @@ if test "x$INTEL" != "xno" -o "x$RADEON" != "xno"; then
                    AC_MSG_WARN([Disabling libdrm_radeon. It depends on atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package.])
                    RADEON=no
            fi
-
+           if test "x$NOUVEAU" != "xauto"; then
+                   if test "x$NOUVEAU" != "xno"; then
+                        AC_MSG_ERROR([libdrm_nouveau depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package, or, failing both of those, disable support for NVIDIA GPUs by passing --disable-nouveau to ./configure])
+                   fi
+           else
+                   AC_MSG_WARN([Disabling libdrm_nouveau. It depends on atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package.])
+                   NOUVEAU=no
+           fi
     else
            if test "x$INTEL" != "xno"; then
                    case $host_cpu in
@@ -262,6 +269,9 @@ if test "x$INTEL" != "xno" -o "x$RADEON" != "xno"; then
            fi
            if test "x$RADEON" != "xno"; then
                    RADEON=yes
+           fi
+           if test "x$NOUVEAU" != "xno"; then
+                   NOUVEAU=yes
            fi
     fi
 fi
@@ -279,6 +289,7 @@ fi
 
 AM_CONDITIONAL(HAVE_INTEL, [test "x$INTEL" != "xno"])
 AM_CONDITIONAL(HAVE_RADEON, [test "x$RADEON" != "xno"])
+AM_CONDITIONAL(HAVE_NOUVEAU, [test "x$NOUVEAU" != "xno"])
 if test "x$RADEON" = xyes; then
 	AC_DEFINE(HAVE_RADEON, 1, [Have radeon support])
 fi
