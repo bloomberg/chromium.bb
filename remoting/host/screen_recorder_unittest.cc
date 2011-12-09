@@ -52,7 +52,7 @@ ACTION(FinishSend) {
 
 // Helper method to quit the main message loop.
 void QuitMessageLoop(MessageLoop* message_loop) {
-  message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 ACTION_P2(StopScreenRecorder, recorder, task) {

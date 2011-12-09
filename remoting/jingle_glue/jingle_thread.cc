@@ -171,7 +171,7 @@ void JingleThread::Run() {
 }
 
 void JingleThread::Stop() {
-  message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   stopped_event_.Wait();
 
   // This will wait until the thread is actually finished.

@@ -21,7 +21,7 @@ namespace remoting {
 namespace {
 
 ACTION_P(QuitMainMessageLoop, message_loop) {
-  message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 }  // namespace

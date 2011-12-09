@@ -77,7 +77,7 @@ const char kTestSharedSecret[] = "1234-1234-5678";
 const char kTestSharedSecretBad[] = "0000-0000-0001";
 
 void QuitCurrentThread() {
-  MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 void OnTimeoutTerminateThread(bool* timeout) {

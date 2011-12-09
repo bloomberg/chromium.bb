@@ -45,7 +45,7 @@ namespace remoting {
 namespace {
 
 void PostQuitTask(MessageLoop* message_loop) {
-  message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 // Run the task and delete it afterwards. This action is used to deal with
