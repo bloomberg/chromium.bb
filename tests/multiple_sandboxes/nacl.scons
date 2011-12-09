@@ -61,17 +61,12 @@ node = env.CommandTest('multidomain_test.out', [runner, test_prog],
 #    process, so this test is disabled for ARM.
 #  * This test currently fails on Mac because service_runtime tries to
 #    enable the Mac outer sandbox twice, which does not work.
-#  * We disable this on Windows because the test has failed
-#    non-deterministically on the Buildbots "xp-bare-m32-n32-opt",
-#    "xp-m32-n32-opt", "win7-bare-m32-n32-op" and
-#    "win7-bare-m64-n64-opt".
 #  * multidomain_test_host assumes it is given a statically linked
 #    executable.  Furthermore, statically-linked nacl-glibc does not
 #    work here because of validation failures which require stubout
 #    mode.
 is_broken = (env.Bit('build_arm')
              or env.Bit('host_mac')
-             or env.Bit('host_windows')
              or env.Bit('nacl_glibc'))
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_multidomain_test',
