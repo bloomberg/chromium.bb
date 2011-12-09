@@ -386,8 +386,7 @@ runTests([
         ["onBeforeRequest-1", "onBeforeSendHeaders-1", "onSendHeaders-1",
          "onHeadersReceived-1", "onResponseStarted-1", "onCompleted-1",
          "onBeforeRequest-2", "onBeforeSendHeaders-2", "onSendHeaders-2",
-         "onHeadersReceived-2", "onResponseStarted-2", "onCompleted-2"] ],
-      {}, []);
+         "onHeadersReceived-2", "onResponseStarted-2", "onCompleted-2"] ]);
     navigateAndWait(getURLHttpXHR());
   },
 ]);

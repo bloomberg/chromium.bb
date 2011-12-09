@@ -84,7 +84,7 @@ runTests([
          "onHeadersReceived", "onAuthRequired", "onResponseStarted",
          "onCompleted"]
       ],
-      {}, ["responseHeaders"]);
+      {urls: ["<all_urls>"]}, ["responseHeaders"]);
     navigateAndWait(url);
   },
 
@@ -162,7 +162,7 @@ runTests([
          "onHeadersReceived", "onAuthRequired", "onResponseStarted",
          "onCompleted"]
       ],
-      {}, ["blocking", "responseHeaders"]);
+      {urls: ["<all_urls>"]}, ["blocking", "responseHeaders"]);
     navigateAndWait(url);
   },
 
@@ -243,7 +243,7 @@ runTests([
          "onHeadersReceived", "onAuthRequired", "onResponseStarted",
          "onCompleted"]
       ],
-      {},
+      {urls: ["<all_urls>"]},
       ["responseHeaders", "blocking"]);
     navigateAndWait(url);
   },
@@ -325,7 +325,7 @@ runTests([
          "onHeadersReceived", "onAuthRequired", "onResponseStarted",
          "onCompleted"]
       ],
-      {},
+      {urls: ["<all_urls>"]},
       ["responseHeaders", "blocking"]);
     navigateAndWait(url);
   },
@@ -404,7 +404,7 @@ runTests([
          "onHeadersReceived", "onAuthRequired", "onResponseStarted",
          "onCompleted"]
       ],
-      {}, ["asyncBlocking", "responseHeaders"]);
+      {urls: ["<all_urls>"]}, ["asyncBlocking", "responseHeaders"]);
     navigateAndWait(url);
   },
 
@@ -485,7 +485,7 @@ runTests([
          "onHeadersReceived", "onAuthRequired", "onResponseStarted",
          "onCompleted"]
       ],
-      {},
+      {urls: ["<all_urls>"]},
       ["responseHeaders", "asyncBlocking"]);
     navigateAndWait(url);
   },
@@ -567,7 +567,7 @@ runTests([
          "onHeadersReceived", "onAuthRequired", "onResponseStarted",
          "onCompleted"]
       ],
-      {},
+      {urls: ["<all_urls>"]},
       ["responseHeaders", "asyncBlocking"]);
     navigateAndWait(url);
   },

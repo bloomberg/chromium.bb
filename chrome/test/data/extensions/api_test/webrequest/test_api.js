@@ -5,23 +5,23 @@
 chrome.test.runTests([
   function addListeners() {
     chrome.webRequest.onBeforeRequest.addListener(
-        function(details) {});
+        function(details) {}, {urls: ["<all_urls>"]});
     chrome.webRequest.onBeforeSendHeaders.addListener(
-        function(details) {});
+        function(details) {}, {urls: ["<all_urls>"]});
     chrome.webRequest.onSendHeaders.addListener(
-        function(details) {});
+        function(details) {}, {urls: ["<all_urls>"]});
     chrome.webRequest.onHeadersReceived.addListener(
-        function(details) {});
+        function(details) {}, {urls: ["<all_urls>"]});
     chrome.webRequest.onBeforeRedirect.addListener(
-        function(details) {});
+        function(details) {}, {urls: ["<all_urls>"]});
     chrome.webRequest.onResponseStarted.addListener(
-        function(details) {});
+        function(details) {}, {urls: ["<all_urls>"]});
     chrome.webRequest.onCompleted.addListener(
-        function(details) {});
+        function(details) {}, {urls: ["<all_urls>"]});
     chrome.webRequest.onErrorOccurred.addListener(
-        function(details) {});
+        function(details) {}, {urls: ["<all_urls>"]});
     chrome.webRequest.onAuthRequired.addListener(
-        function(details) {});
+        function(details) {}, {urls: ["<all_urls>"]});
     chrome.test.succeed();
   },
 
@@ -34,8 +34,8 @@ chrome.test.runTests([
     var cb1 = newCallback(1);
     var cb2 = newCallback(2);
     var event = chrome.webRequest.onBeforeRequest;
-    event.addListener(cb1);
-    event.addListener(cb2);
+    event.addListener(cb1, {urls: ["<all_urls>"]});
+    event.addListener(cb2, {urls: ["<all_urls>"]});
     chrome.test.assertTrue(event.hasListener(cb1));
     chrome.test.assertTrue(event.hasListener(cb2));
     event.removeListener(cb1);
@@ -60,7 +60,7 @@ chrome.test.runTests([
     try {
       chrome.webRequest.onBeforeRequest.addListener(
           function(details) {},
-          {badFilter: 42}, goodExtraInfo);
+          {badFilter: 42, urls: ["<all_urls>"]}, goodExtraInfo);
       chrome.test.fail();
     } catch (e) {
       chrome.test.assertTrue(e.message.search("Invalid value") >= 0);

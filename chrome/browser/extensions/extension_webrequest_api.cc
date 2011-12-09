@@ -412,6 +412,9 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
 
 bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
     const DictionaryValue& value, std::string* error) {
+  if (!value.HasKey("urls"))
+    return false;
+
   for (DictionaryValue::key_iterator key = value.begin_keys();
        key != value.end_keys(); ++key) {
     if (*key == "urls") {
@@ -1488,16 +1491,14 @@ bool WebRequestAddEventListener::RunImpl() {
   // Argument 0 is the callback, which we don't use here.
 
   ExtensionWebRequestEventRouter::RequestFilter filter;
-  if (HasOptionalArgument(1)) {
-    DictionaryValue* value = NULL;
-    error_.clear();
-    EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &value));
-    // Failure + an empty error string means a fatal error.
-    EXTENSION_FUNCTION_VALIDATE(filter.InitFromValue(*value, &error_) ||
-                                !error_.empty());
-    if (!error_.empty())
-      return false;
-  }
+  DictionaryValue* value = NULL;
+  error_.clear();
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &value));
+  // Failure + an empty error string means a fatal error.
+  EXTENSION_FUNCTION_VALIDATE(filter.InitFromValue(*value, &error_) ||
+                              !error_.empty());
+  if (!error_.empty())
+    return false;
 
   int extra_info_spec = 0;
   if (HasOptionalArgument(2)) {

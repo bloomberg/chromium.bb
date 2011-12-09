@@ -158,7 +158,7 @@ runTests([
          "onHeadersReceived-1", "onBeforeRedirect",
          "onBeforeRequest-2", "onBeforeSendHeaders-2", "onSendHeaders-2",
          "onHeadersReceived-2", "onResponseStarted", "onCompleted"] ],
-      {},  // filter
+      {urls: ["<all_urls>"]},  // filter
       ["requestHeaders", "responseHeaders"]);
     navigateAndWait(getURLHttpSimpleLoadRedirect());
   },

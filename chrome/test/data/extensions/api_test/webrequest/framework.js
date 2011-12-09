@@ -69,7 +69,7 @@ function expect(data, order, filter, extraInfoSpec) {
   tabAndFrameUrls = {};  // Maps "{tabId}-{frameId}" to the URL of the frame.
   frameIdMap = {"-1": -1};
   removeListeners();
-  initListeners(filter || {}, extraInfoSpec || []);
+  initListeners(filter || {urls: ["<all_urls>"]}, extraInfoSpec || []);
   // Fill in default values.
   for (var i = 0; i < expectedEventData.length; ++i) {
     if (!('method' in expectedEventData[i].details)) {

@@ -62,7 +62,7 @@ runTests([
       [  // event order
         ["onBeforeRequest", "onErrorOccurred"]
       ],
-      {},  // filter
+      {urls: ["<all_urls>"]},  // filter
       ["blocking"]);
     navigateAndWait(getURL("complexLoad/b.html"));
   },
@@ -119,7 +119,7 @@ runTests([
         ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
          "onHeadersReceived", "onErrorOccurred"]
       ],
-      {},  // filter
+      {urls: ["<all_urls>"]},  // filter
       ["blocking"]);
     navigateAndWait(getURLHttpSimpleLoad());
   },
@@ -181,7 +181,7 @@ runTests([
         ["onBeforeRequest-1", "onErrorOccurred-1", "onBeforeRequest-2",
          "onResponseStarted", "onCompleted"],
       ],
-      {}, // filter
+      {urls: ["<all_urls>"]}, // filter
       ["blocking"]);
     navigateAndWait(getURL("complexLoad/a.html"));
   },
@@ -245,7 +245,7 @@ runTests([
         ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
          "onHeadersReceived", "onResponseStarted", "onCompleted"]
       ],
-      {}, ["blocking"]);
+      {urls: ["<all_urls>"]}, ["blocking"]);
     // Check the page content for our modified User-Agent string.
     navigateAndWait(getURLEchoUserAgent(), function() {
       chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
@@ -320,7 +320,7 @@ runTests([
         ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
          "onHeadersReceived", "onResponseStarted", "onCompleted"]
       ],
-      {}, ["blocking"]);
+      {urls: ["<all_urls>"]}, ["blocking"]);
     // Check the page content for our modified User-Agent string.
     navigateAndWait(getURLEchoUserAgent(), function() {
       chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
@@ -410,7 +410,7 @@ runTests([
         ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
          "onHeadersReceived", "onResponseStarted", "onCompleted"]
       ],
-      {}, ["blocking", "responseHeaders"]);
+      {urls: ["<all_urls>"]}, ["blocking", "responseHeaders"]);
     // Check that the cookie was really removed.
     navigateAndWait(getURLSetCookie(), function() {
       chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
@@ -508,7 +508,7 @@ runTests([
         ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
          "onHeadersReceived", "onResponseStarted", "onCompleted"]
       ],
-      {}, ["blocking", "responseHeaders"]);
+      {urls: ["<all_urls>"]}, ["blocking", "responseHeaders"]);
     // Check that the cookie was really removed.
     navigateAndWait(getURLNonUTF8SetCookie(), function() {
       chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
@@ -621,7 +621,7 @@ runTests([
          "x-onSendHeaders", "x-onResponseStarted", "x-onCompleted",
          "b-onBeforeRequest", "b-onResponseStarted", "b-onCompleted"]
       ],
-      {}, ["blocking"]);
+      {urls: ["<all_urls>"]}, ["blocking"]);
     // Check the page content for our modified User-Agent string.
     navigateAndWait(getURL("simpleLoad/a.html"), function() {
         var req = new XMLHttpRequest();

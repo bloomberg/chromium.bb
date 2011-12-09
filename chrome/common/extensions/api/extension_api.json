@@ -5820,7 +5820,6 @@
         "properties": {
           "urls": {
             "type": "array",
-            "optional": true,
             "description": "A list of URLs or URL patterns. Requests that cannot match any of the URLs will be filtered out.",
             "items": { "type": "string" }
           },
@@ -5899,7 +5898,6 @@
           {"type": "function", "name": "callback"},
           {
             "$ref": "RequestFilter",
-            "optional": true,
             "name": "filter",
             "description": "A set of filters that restricts the events that will be sent to this listener."
           },
@@ -5966,7 +5964,6 @@
         "extraParameters": [
           {
             "$ref": "RequestFilter",
-            "optional": true,
             "name": "filter",
             "description": "A set of filters that restricts the events that will be sent to this listener."
           },
@@ -6011,7 +6008,6 @@
         "extraParameters": [
           {
             "$ref": "RequestFilter",
-            "optional": true,
             "name": "filter",
             "description": "A set of filters that restricts the events that will be sent to this listener."
           },
@@ -6056,7 +6052,6 @@
         "extraParameters": [
           {
             "$ref": "RequestFilter",
-            "optional": true,
             "name": "filter",
             "description": "A set of filters that restricts the events that will be sent to this listener."
           },
@@ -6097,7 +6092,6 @@
         "extraParameters": [
           {
             "$ref": "RequestFilter",
-            "optional": true,
             "name": "filter",
             "description": "A set of filters that restricts the events that will be sent to this listener."
           },
@@ -6155,7 +6149,6 @@
         "extraParameters": [
           {
             "$ref": "RequestFilter",
-            "optional": true,
             "name": "filter",
             "description": "A set of filters that restricts the events that will be sent to this listener."
           },
@@ -6204,7 +6197,6 @@
         "extraParameters": [
           {
             "$ref": "RequestFilter",
-            "optional": true,
             "name": "filter",
             "description": "A set of filters that restricts the events that will be sent to this listener."
           },
@@ -6249,7 +6241,6 @@
         "extraParameters": [
           {
             "$ref": "RequestFilter",
-            "optional": true,
             "name": "filter",
             "description": "A set of filters that restricts the events that will be sent to this listener."
           },
@@ -6293,7 +6284,6 @@
         "extraParameters": [
           {
             "$ref": "RequestFilter",
-            "optional": true,
             "name": "filter",
             "description": "A set of filters that restricts the events that will be sent to this listener."
           },
@@ -6335,7 +6325,6 @@
         "extraParameters": [
           {
             "$ref": "RequestFilter",
-            "optional": true,
             "name": "filter",
             "description": "A set of filters that restricts the events that will be sent to this listener."
           }
