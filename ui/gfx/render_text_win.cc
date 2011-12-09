@@ -11,7 +11,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_hdc.h"
-#include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/platform_font.h"
@@ -26,42 +25,6 @@ const int kMaxItems = 10000;
 // The maximum supported number of Uniscribe glyphs; a glyph is 1 word.
 // TODO(msw): Review memory use/failure? Max string length? Alternate approach?
 const int kMaxGlyphs = 100000;
-
-// Draw underline and strike through text decorations.
-// Based on |SkCanvas::DrawTextDecorations()| and constants from:
-//   third_party/skia/src/core/SkTextFormatParams.h
-void DrawTextRunDecorations(SkCanvas* canvas_skia,
-                            const SkPaint& paint,
-                            const gfx::internal::TextRun& run,
-                            SkScalar x,
-                            SkScalar y) {
-  // Fraction of the text size to lower a strike through below the baseline.
-  const SkScalar kStrikeThroughOffset = (-SK_Scalar1 * 6 / 21);
-  // Fraction of the text size to lower an underline below the baseline.
-  const SkScalar kUnderlineOffset = (SK_Scalar1 / 9);
-  // Fraction of the text size to use for a strike through or under-line.
-  const SkScalar kLineThickness = (SK_Scalar1 / 18);
-
-  SkScalar text_size = paint.getTextSize();
-  SkScalar height = SkScalarMul(text_size, kLineThickness);
-  SkRect r;
-
-  r.fLeft = x;
-  r.fRight = x + run.width;
-
-  if (run.underline) {
-    SkScalar offset = SkScalarMulAdd(text_size, kUnderlineOffset, y);
-    r.fTop = offset;
-    r.fBottom = offset + height;
-    canvas_skia->drawRect(r, paint);
-  }
-  if (run.strike) {
-    SkScalar offset = SkScalarMulAdd(text_size, kStrikeThroughOffset, y);
-    r.fTop = offset;
-    r.fBottom = offset + height;
-    canvas_skia->drawRect(r, paint);
-  }
-}
 
 // Callback to |EnumEnhMetaFile()| to intercept font creation.
 int CALLBACK MetaFileEnumProc(HDC hdc,
@@ -414,58 +377,36 @@ void RenderTextWin::EnsureLayout() {
 }
 
 void RenderTextWin::DrawVisualText(Canvas* canvas) {
-  SkCanvas* canvas_skia = canvas->GetSkCanvas();
+  DCHECK(!needs_layout_);
 
-  Point offset(ToViewPoint(Point()));
-  // TODO(msw): Establish a vertical baseline for strings of mixed font heights.
-  size_t height = default_style().font.GetHeight();
-
+  Point offset(GetOriginForSkiaDrawing());
   SkScalar x = SkIntToScalar(offset.x());
   SkScalar y = SkIntToScalar(offset.y());
-  // Center the text vertically in the display area.
-  y += (display_rect().height() - height) / 2;
-  // Offset by the font size to account for Skia expecting y to be the bottom.
-  y += default_style().font.GetFontSize();
-
-  SkPaint paint;
-  paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setAntiAlias(true);
-  paint.setSubpixelText(true);
-  paint.setLCDRenderText(true);
 
   std::vector<SkPoint> pos;
+
+  internal::SkiaTextRenderer renderer(canvas);
   for (size_t i = 0; i < runs_.size(); ++i) {
     // Get the run specified by the visual-to-logical map.
     internal::TextRun* run = runs_[visual_to_logical_[i]];
 
-    // TODO(msw): Font default/fallback and style integration.
-    SkTypeface::Style style = SkTypeface::kNormal;
-    SkTypeface* typeface =
-        SkTypeface::CreateFromName(run->font.GetFontName().c_str(), style);
-    if (typeface) {
-      paint.setTypeface(typeface);
-      // |paint| adds its own ref. Release the ref from CreateFromName.
-      typeface->unref();
-    }
-    paint.setTextSize(run->font.GetFontSize());
-    paint.setColor(run->foreground);
-
-    SkScalar run_x = x;
-
     // Based on WebCore::skiaDrawText.
     pos.resize(run->glyph_count);
+    SkScalar glyph_x = x;
     for (int glyph = 0; glyph < run->glyph_count; glyph++) {
-        pos[glyph].set(x + run->offsets[glyph].du,
+        pos[glyph].set(glyph_x + run->offsets[glyph].du,
                        y + run->offsets[glyph].dv);
-        x += SkIntToScalar(run->advance_widths[glyph]);
+        glyph_x += SkIntToScalar(run->advance_widths[glyph]);
     }
 
-    size_t byte_length = run->glyph_count * sizeof(WORD);
-    canvas_skia->drawPosText(run->glyphs.get(), byte_length, &pos[0], paint);
+    renderer.SetFont(run->font);
+    renderer.SetForegroundColor(run->foreground);
+    renderer.DrawPosText(&pos[0], run->glyphs.get(), run->glyph_count);
 
     if (run->strike || run->underline)
-      DrawTextRunDecorations(canvas_skia, paint, *run, run_x, y);
+      renderer.DrawDecorations(x, y, run->width, run->underline, run->strike);
+
+    x = glyph_x;
   }
 }
 
@@ -550,8 +491,9 @@ void RenderTextWin::ItemizeLogicalText() {
 
   // Build the list of runs, merge font/underline styles.
   // TODO(msw): Only break for font changes, not color etc. See TextRun comment.
-  // TODO(msw): Apply the overriding selection and composition styles.
-  StyleRanges::const_iterator style = style_ranges().begin();
+  StyleRanges styles(style_ranges());
+  ApplyCompositionAndSelectionStyles(&styles);
+  StyleRanges::const_iterator style = styles.begin();
   SCRIPT_ITEM* script_item = &script_items[0];
   for (int run_break = 0; run_break < text_length;) {
     internal::TextRun* run = new internal::TextRun();

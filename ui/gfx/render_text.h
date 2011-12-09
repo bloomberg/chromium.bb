@@ -13,13 +13,46 @@
 #include "base/i18n/rtl.h"
 #include "base/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/selection_model.h"
 
+class SkCanvas;
+struct SkPoint;
+
 namespace gfx {
+
+class Canvas;
+class RenderTextTest;
+
+namespace internal {
+
+// Internal helper class used by derived classes to draw text through Skia.
+class SkiaTextRenderer {
+ public:
+  explicit SkiaTextRenderer(Canvas* canvas);
+  ~SkiaTextRenderer();
+
+  void SetFont(const gfx::Font& font);
+  void SetForegroundColor(SkColor foreground);
+  void DrawSelection(const std::vector<Rect>& selection, SkColor color);
+  void DrawPosText(const SkPoint* pos,
+                   const uint16* glyphs,
+                   size_t glyph_count);
+  void DrawDecorations(int x, int y, int width, bool underline, bool strike);
+  void DrawCursor(const gfx::Rect& bounds);
+
+ private:
+  SkCanvas* canvas_skia_;
+  SkPaint paint_;
+
+  DISALLOW_COPY_AND_ASSIGN(SkiaTextRenderer);
+};
+
+}  // namespace internal
 
 // Color settings for text, backgrounds and cursor.
 // These are tentative, and should be derived from theme, system
@@ -30,9 +63,6 @@ const SkColor kSelectedTextColor = SK_ColorWHITE;
 const SkColor kFocusedSelectionColor = SkColorSetRGB(30, 144, 255);
 const SkColor kUnfocusedSelectionColor = SK_ColorLTGRAY;
 const SkColor kCursorColor = SK_ColorBLACK;
-
-class Canvas;
-class RenderTextTest;
 
 // A visual style applicable to a range of text.
 struct UI_EXPORT StyleRange {
@@ -247,6 +277,9 @@ class UI_EXPORT RenderText {
   // Handles the display area, display offset, and the application LTR/RTL mode.
   Point ToTextPoint(const Point& point);
   Point ToViewPoint(const Point& point);
+
+  // Returns the origin point for drawing text via Skia.
+  Point GetOriginForSkiaDrawing();
 
  private:
   friend class RenderTextTest;

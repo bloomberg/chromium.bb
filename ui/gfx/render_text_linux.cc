@@ -6,10 +6,12 @@
 
 #include <pango/pangocairo.h>
 #include <algorithm>
+#include <vector>
 
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/pango_util.h"
 #include "unicode/uchar.h"
 #include "unicode/ustring.h"
@@ -20,6 +22,18 @@ namespace {
 // it should also massage A in the conversion.
 int ConvertColorFrom8BitTo16Bit(int c) {
   return (c << 8) + c;
+}
+
+// Returns whether the given Pango item is Left to Right.
+bool IsRunLTR(const PangoItem* item) {
+  return (item->analysis.level & 1) == 0;
+}
+
+// Checks whether |range| contains |index|. This is not the same as calling
+// |range.Contains(ui::Range(index))| - as that would return true when
+// |index| == |range.end()|.
+bool IndexInRange(const ui::Range& range, size_t index) {
+  return index >= range.start() && index < range.end();
 }
 
 }  // namespace
@@ -154,7 +168,7 @@ SelectionModel RenderTextLinux::LeftEndSelectionModel() {
       PangoLayoutRun* first_visual_run =
           reinterpret_cast<PangoLayoutRun*>(current_line_->runs->data);
       PangoItem* item = first_visual_run->item;
-      if (item->analysis.level % 2 == 0) {  // LTR.
+      if (IsRunLTR(item)) {
         size_t caret = Utf8IndexToUtf16Index(item->offset);
         return SelectionModel(text().length(), caret, SelectionModel::LEADING);
       } else {  // RTL.
@@ -172,7 +186,7 @@ SelectionModel RenderTextLinux::RightEndSelectionModel() {
     PangoLayoutRun* last_visual_run = GetLastRun();
     if (last_visual_run) {
       PangoItem* item = last_visual_run->item;
-      if (item->analysis.level % 2 == 0) {  // LTR.
+      if (IsRunLTR(item)) {
         size_t caret = Utf16IndexOfAdjacentGrapheme(item->offset + item->length,
                                                     false);
         return SelectionModel(text().length(), caret, SelectionModel::TRAILING);
@@ -260,27 +274,109 @@ void RenderTextLinux::EnsureLayout() {
 }
 
 void RenderTextLinux::DrawVisualText(Canvas* canvas) {
-  Rect bounds(display_rect());
+  DCHECK(layout_);
 
-  // Clip the canvas to the text display area.
-  SkCanvas* canvas_skia = canvas->GetSkCanvas();
+  Point offset(GetOriginForSkiaDrawing());
+  SkScalar x = SkIntToScalar(offset.x());
+  SkScalar y = SkIntToScalar(offset.y());
 
-  skia::ScopedPlatformPaint scoped_platform_paint(canvas_skia);
-  cairo_t* cr = scoped_platform_paint.GetPlatformSurface();
-  cairo_save(cr);
-  cairo_rectangle(cr, bounds.x(), bounds.y(), bounds.width(), bounds.height());
-  cairo_clip(cr);
+  std::vector<SkPoint> pos;
+  std::vector<uint16> glyphs;
 
-  int text_width, text_height;
-  pango_layout_get_pixel_size(layout_, &text_width, &text_height);
-  Point offset(ToViewPoint(Point()));
-  // Vertically centered.
-  int text_y = offset.y() + ((bounds.height() - text_height) / 2);
-  // TODO(xji): need to use SkCanvas->drawPosText() for gpu acceleration.
-  cairo_move_to(cr, offset.x(), text_y);
-  pango_cairo_show_layout(cr, layout_);
+  StyleRanges styles(style_ranges());
+  ApplyCompositionAndSelectionStyles(&styles);
 
-  cairo_restore(cr);
+  // Pre-calculate UTF8 indices from UTF16 indices.
+  // TODO(asvitkine): Can we cache these?
+  std::vector<ui::Range> style_ranges_utf8;
+  style_ranges_utf8.reserve(styles.size());
+  size_t start_index = 0;
+  for (size_t i = 0; i < styles.size(); ++i) {
+    size_t end_index = Utf16IndexToUtf8Index(styles[i].range.end());
+    style_ranges_utf8.push_back(ui::Range(start_index, end_index));
+    start_index = end_index;
+  }
+
+  internal::SkiaTextRenderer renderer(canvas);
+  for (GSList* it = current_line_->runs; it; it = it->next) {
+    PangoLayoutRun* run = reinterpret_cast<PangoLayoutRun*>(it->data);
+    int glyph_count = run->glyphs->num_glyphs;
+    if (glyph_count == 0)
+      continue;
+
+    size_t run_start = run->item->offset;
+    size_t first_glyph_byte_index = run_start + run->glyphs->log_clusters[0];
+    size_t style_increment = IsRunLTR(run->item) ? 1 : -1;
+
+    // Find the initial style for this run.
+    // TODO(asvitkine): Can we avoid looping here, e.g. by caching this per run?
+    int style = -1;
+    for (size_t i = 0; i < style_ranges_utf8.size(); ++i) {
+      if (IndexInRange(style_ranges_utf8[i], first_glyph_byte_index)) {
+        style = i;
+        break;
+      }
+    }
+    DCHECK_GE(style, 0);
+
+    PangoFontDescription* native_font =
+        pango_font_describe(run->item->analysis.font);
+    renderer.SetFont(gfx::Font(native_font));
+    pango_font_description_free(native_font);
+
+    SkScalar glyph_x = x;
+    SkScalar start_x = x;
+    int start = 0;
+
+    glyphs.resize(glyph_count);
+    pos.resize(glyph_count);
+
+    for (int i = 0; i < glyph_count; ++i) {
+      const PangoGlyphInfo& glyph = run->glyphs->glyphs[i];
+      glyphs[i] = static_cast<uint16>(glyph.glyph);
+      pos[i].set(glyph_x + PANGO_PIXELS(glyph.geometry.x_offset),
+                 y + PANGO_PIXELS(glyph.geometry.y_offset));
+      glyph_x += PANGO_PIXELS(glyph.geometry.width);
+
+      // If this glyph is beyond the current style, draw the glyphs so far and
+      // advance to the next style.
+      size_t glyph_byte_index = run_start + run->glyphs->log_clusters[i];
+      DCHECK_GE(style, 0);
+      DCHECK_LT(style, static_cast<int>(styles.size()));
+      if (!IndexInRange(style_ranges_utf8[style], glyph_byte_index)) {
+        // TODO(asvitkine): For cases like "fi", where "fi" is a single glyph
+        //                  but can span multiple styles, Pango splits the
+        //                  styles evenly over the glyph. We can do this too by
+        //                  clipping and drawing the glyph several times.
+        renderer.SetForegroundColor(styles[style].foreground);
+        renderer.DrawPosText(&pos[start], &glyphs[start], i - start);
+        if (styles[style].underline || styles[style].strike) {
+          renderer.DrawDecorations(start_x, y, glyph_x - start_x,
+                                   styles[style].underline,
+                                   styles[style].strike);
+        }
+
+        start = i;
+        start_x = glyph_x;
+        // Loop to find the next style, in case the glyph spans multiple styles.
+        do {
+          style += style_increment;
+        } while (style >= 0 && style < static_cast<int>(styles.size()) &&
+                 !IndexInRange(style_ranges_utf8[style], glyph_byte_index));
+      }
+    }
+
+    // Draw the remaining glyphs.
+    renderer.SetForegroundColor(styles[style].foreground);
+    renderer.DrawPosText(&pos[start], &glyphs[start], glyph_count - start);
+    if (styles[style].underline || styles[style].strike) {
+       renderer.DrawDecorations(start_x, y, glyph_x - start_x,
+                                styles[style].underline,
+                                styles[style].strike);
+    }
+
+    x = glyph_x;
+  }
 }
 
 size_t RenderTextLinux::IndexOfAdjacentGrapheme(size_t index, bool next) {
@@ -382,7 +478,7 @@ SelectionModel RenderTextLinux::LeftSelectionModel(
   size_t run_start = Utf8IndexToUtf16Index(item->offset);
   size_t run_end = Utf8IndexToUtf16Index(item->offset + item->length);
 
-  if (item->analysis.level % 2 == 0) {  // LTR run.
+  if (IsRunLTR(item)) {
     if (caret_placement == SelectionModel::TRAILING)
       return SelectionModel(caret, caret, SelectionModel::LEADING);
     else if (caret > run_start) {
@@ -407,8 +503,8 @@ SelectionModel RenderTextLinux::LeftSelectionModel(
     return LeftEndSelectionModel();
 
   item = prev_run->item;
-  return (item->analysis.level % 2) ? FirstSelectionModelInsideRun(item) :
-                                      LastSelectionModelInsideRun(item);
+  return IsRunLTR(item) ? LastSelectionModelInsideRun(item) :
+                          FirstSelectionModelInsideRun(item);
 }
 
 // Assume caret_pos in |current| is n, 'l' represents leading in
@@ -440,7 +536,7 @@ SelectionModel RenderTextLinux::RightSelectionModel(
   size_t run_start = Utf8IndexToUtf16Index(item->offset);
   size_t run_end = Utf8IndexToUtf16Index(item->offset + item->length);
 
-  if (item->analysis.level % 2 == 0) {  // LTR run.
+  if (IsRunLTR(item)) {
     if (caret_placement == SelectionModel::LEADING) {
       size_t cursor = GetIndexOfNextGrapheme(caret);
       return SelectionModel(cursor, caret, SelectionModel::TRAILING);
@@ -464,8 +560,8 @@ SelectionModel RenderTextLinux::RightSelectionModel(
     return RightEndSelectionModel();
 
   item = reinterpret_cast<PangoLayoutRun*>(next_run->data)->item;
-  return (item->analysis.level % 2) ? LastSelectionModelInsideRun(item) :
-                                      FirstSelectionModelInsideRun(item);
+  return IsRunLTR(item) ? FirstSelectionModelInsideRun(item) :
+                          LastSelectionModelInsideRun(item);
 }
 
 SelectionModel RenderTextLinux::LeftSelectionModelByWord(
@@ -485,7 +581,7 @@ SelectionModel RenderTextLinux::LeftSelectionModelByWord(
     DCHECK(run);
     PangoItem* item = reinterpret_cast<PangoLayoutRun*>(run->data)->item;
     size_t cursor = left.selection_end();
-    if (item->analysis.level % 2 == 0) {  // LTR run.
+    if (IsRunLTR(item)) {
       if (iter.IsStartOfWord(cursor))
         return left;
     } else {  // RTL run.
@@ -514,7 +610,7 @@ SelectionModel RenderTextLinux::RightSelectionModelByWord(
     DCHECK(run);
     PangoItem* item = reinterpret_cast<PangoLayoutRun*>(run->data)->item;
     size_t cursor = right.selection_end();
-    if (item->analysis.level % 2 == 0) {  // LTR run.
+    if (IsRunLTR(item)) {
       if (iter.IsEndOfWord(cursor))
         return right;
     } else {  // RTL run.

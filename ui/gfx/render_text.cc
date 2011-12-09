@@ -9,6 +9,7 @@
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "unicode/uchar.h"
@@ -78,6 +79,79 @@ void ApplyStyleRangeImpl(gfx::StyleRanges* style_ranges,
 }  // namespace
 
 namespace gfx {
+
+namespace internal {
+
+SkiaTextRenderer::SkiaTextRenderer(Canvas* canvas)
+    : canvas_skia_(canvas->GetSkCanvas()) {
+  DCHECK(canvas_skia_);
+  paint_.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+  paint_.setStyle(SkPaint::kFill_Style);
+  paint_.setAntiAlias(true);
+  paint_.setSubpixelText(true);
+  paint_.setLCDRenderText(true);
+}
+
+SkiaTextRenderer::~SkiaTextRenderer() {
+}
+
+void SkiaTextRenderer::SetFont(const gfx::Font& font) {
+  SkAutoTUnref<SkTypeface> typeface(
+      SkTypeface::CreateFromName(font.GetFontName().c_str(),
+                                 SkTypeface::kNormal));
+  if (typeface.get()) {
+    // |paint_| adds its own ref. So don't |release()| it from the ref ptr here.
+    paint_.setTypeface(typeface.get());
+  }
+  paint_.setTextSize(font.GetFontSize());
+}
+
+void SkiaTextRenderer::SetForegroundColor(SkColor foreground) {
+  paint_.setColor(foreground);
+}
+
+void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
+                                   const uint16* glyphs,
+                                   size_t glyph_count) {
+  size_t byte_length = glyph_count * sizeof(glyphs[0]);
+  canvas_skia_->drawPosText(&glyphs[0], byte_length, &pos[0], paint_);
+}
+
+// Draw underline and strike through text decorations.
+// Based on |SkCanvas::DrawTextDecorations()| and constants from:
+//   third_party/skia/src/core/SkTextFormatParams.h
+void SkiaTextRenderer::DrawDecorations(int x, int y, int width,
+                                       bool underline, bool strike) {
+  // Fraction of the text size to lower a strike through below the baseline.
+  const SkScalar kStrikeThroughOffset = (-SK_Scalar1 * 6 / 21);
+  // Fraction of the text size to lower an underline below the baseline.
+  const SkScalar kUnderlineOffset = (SK_Scalar1 / 9);
+  // Fraction of the text size to use for a strike through or under-line.
+  const SkScalar kLineThickness = (SK_Scalar1 / 18);
+
+  SkScalar text_size = paint_.getTextSize();
+  SkScalar height = SkScalarMul(text_size, kLineThickness);
+  SkRect r;
+
+  r.fLeft = x;
+  r.fRight = x + width;
+
+  if (underline) {
+    SkScalar offset = SkScalarMulAdd(text_size, kUnderlineOffset, y);
+    r.fTop = offset;
+    r.fBottom = offset + height;
+    canvas_skia_->drawRect(r, paint_);
+  }
+  if (strike) {
+    SkScalar offset = SkScalarMulAdd(text_size, kStrikeThroughOffset, y);
+    r.fTop = offset;
+    r.fBottom = offset + height;
+    canvas_skia_->drawRect(r, paint_);
+  }
+}
+
+}  // namespace internal
+
 
 StyleRange::StyleRange()
     : font(),
@@ -553,6 +627,18 @@ Point RenderText::ToViewPoint(const Point& point) {
   if (base::i18n::IsRTL())
     p.Offset(display_rect().width() - GetStringWidth() - 1, 0);
   return p;
+}
+
+Point RenderText::GetOriginForSkiaDrawing() {
+  Point origin(ToViewPoint(Point()));
+  // TODO(msw): Establish a vertical baseline for strings of mixed font heights.
+  const Font& font = default_style().font;
+  size_t height = font.GetHeight();
+  // Center the text vertically in the display area.
+  origin.Offset(0, (display_rect().height() - height) / 2);
+  // Offset by the font size to account for Skia expecting y to be the bottom.
+  origin.Offset(0, font.GetFontSize());
+  return origin;
 }
 
 void RenderText::MoveCursorTo(size_t position, bool select) {
