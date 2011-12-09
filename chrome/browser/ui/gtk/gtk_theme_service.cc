@@ -569,16 +569,6 @@ void GtkThemeService::GetScrollbarColors(GdkColor* thumb_active_color,
     *track_color = *theme_trough_color;
 }
 
-gfx::CairoCachedSurface* GtkThemeService::GetSurfaceNamed(
-    int id,
-    GtkWidget* widget_on_display) {
-  return GetSurfaceNamedImpl(
-      id,
-      &per_display_surfaces_,
-      &GtkThemeService::GetPixbufNamed,
-      widget_on_display);
-}
-
 gfx::CairoCachedSurface* GtkThemeService::GetRTLEnabledSurfaceNamed(
     int id,
     GtkWidget* widget_on_display) {
@@ -591,15 +581,6 @@ gfx::CairoCachedSurface* GtkThemeService::GetRTLEnabledSurfaceNamed(
       -id,
       &per_display_surfaces_,
       &GtkThemeService::GetRTLEnabledPixbufNamedWrapper,
-      widget_on_display);
-}
-
-gfx::CairoCachedSurface* GtkThemeService::GetUnthemedSurfaceNamed(
-    int id,
-    GtkWidget* widget_on_display) {
-  return GetSurfaceNamedImpl(id,
-      &per_display_unthemed_surfaces_,
-      &GtkThemeService::GetUnthemedNativePixbuf,
       widget_on_display);
 }
 

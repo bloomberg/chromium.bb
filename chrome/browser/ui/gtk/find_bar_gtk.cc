@@ -43,6 +43,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
+#include "ui/gfx/image/image.h"
 
 namespace {
 
@@ -906,8 +907,9 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
     cairo_fill(cr);
 
     // Blit the center part of the background image in all the space between.
-    gfx::CairoCachedSurface* background = bar->theme_service_->GetSurfaceNamed(
-        IDR_FIND_BOX_BACKGROUND, widget);
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    gfx::CairoCachedSurface* background =
+        rb.GetNativeImageNamed(IDR_FIND_BOX_BACKGROUND).ToCairo();
     background->SetSource(cr, widget,
                           border_allocation.x + background_left->Width(),
                           border_allocation.y);

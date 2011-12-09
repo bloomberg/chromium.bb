@@ -117,22 +117,8 @@ class GtkThemeService : public ThemeService {
   // Expose the inner label. Only used for testing.
   GtkWidget* fake_label() { return fake_label_.get(); }
 
-  // Returns a CairoCachedSurface for a particular Display. CairoCachedSurfaces
-  // (hopefully) live on the X server, instead of the client so we don't have
-  // to send the image to the server on each expose.
-  gfx::CairoCachedSurface* GetSurfaceNamed(
-      int id, GtkWidget* widget_on_display);
-
   // Same as above, but auto-mirrors the underlying pixbuf in RTL mode.
   gfx::CairoCachedSurface* GetRTLEnabledSurfaceNamed(
-      int id, GtkWidget* widget_on_display);
-
-  // Same as above, but gets the resource from the ResourceBundle instead of the
-  // ThemeService.
-  // NOTE: Never call this with resource IDs that are ever passed to the above
-  // two functions!  Depending on which call comes first, all callers will
-  // either get the themed or the unthemed version.
-  gfx::CairoCachedSurface* GetUnthemedSurfaceNamed(
       int id, GtkWidget* widget_on_display);
 
   // A way to get a cached cairo surface for the equivalent of GetFolderIcon()

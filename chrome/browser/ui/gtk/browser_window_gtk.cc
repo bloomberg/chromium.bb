@@ -92,9 +92,11 @@
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/x/active_window_watcher_x.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_utils_gtk.h"
@@ -444,20 +446,19 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
 
 void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
   // Draw the shadow above the toolbar. Tabs on the tabstrip will draw over us.
-  GtkThemeService* theme_provider = GtkThemeService::GetFrom(
-      browser()->profile());
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int left_x, top_y;
   gtk_widget_translate_coordinates(toolbar_->widget(),
       GTK_WIDGET(window_), 0, 0, &left_x,
       &top_y);
   int center_width = window_vbox_->allocation.width;
 
-  gfx::CairoCachedSurface* top_center = theme_provider->GetSurfaceNamed(
-      IDR_CONTENT_TOP_CENTER, GTK_WIDGET(window_));
-  gfx::CairoCachedSurface* top_right = theme_provider->GetSurfaceNamed(
-      IDR_CONTENT_TOP_RIGHT_CORNER, GTK_WIDGET(window_));
-  gfx::CairoCachedSurface* top_left = theme_provider->GetSurfaceNamed(
-      IDR_CONTENT_TOP_LEFT_CORNER, GTK_WIDGET(window_));
+  gfx::CairoCachedSurface* top_center =
+      rb.GetNativeImageNamed(IDR_CONTENT_TOP_CENTER).ToCairo();
+  gfx::CairoCachedSurface* top_right =
+      rb.GetNativeImageNamed(IDR_CONTENT_TOP_RIGHT_CORNER).ToCairo();
+  gfx::CairoCachedSurface* top_left =
+      rb.GetNativeImageNamed(IDR_CONTENT_TOP_LEFT_CORNER).ToCairo();
 
   int center_left_x = left_x;
   if (ShouldDrawContentDropShadow()) {
@@ -519,8 +520,8 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
   // drawn by the bottom corners.
   int side_height = bottom_y - side_y - 1;
   if (side_height > 0) {
-    gfx::CairoCachedSurface* left = theme_provider->GetSurfaceNamed(
-        IDR_CONTENT_LEFT_SIDE, GTK_WIDGET(window_));
+    gfx::CairoCachedSurface* left =
+        rb.GetNativeImageNamed(IDR_CONTENT_LEFT_SIDE).ToCairo();
     left->SetSource(cr, GTK_WIDGET(window_),
                     left_x - kContentShadowThickness, side_y);
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
@@ -531,8 +532,8 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
         side_height);
     cairo_fill(cr);
 
-    gfx::CairoCachedSurface* right = theme_provider->GetSurfaceNamed(
-        IDR_CONTENT_RIGHT_SIDE, GTK_WIDGET(window_));
+    gfx::CairoCachedSurface* right =
+        rb.GetNativeImageNamed(IDR_CONTENT_RIGHT_SIDE).ToCairo();
     int right_side_x =
         right_x + top_right->Width() - kContentShadowThickness - 1;
     right->SetSource(cr, GTK_WIDGET(window_), right_side_x, side_y);
@@ -547,21 +548,21 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
 
   // Draw the bottom corners.  The bottom corners also draw the bottom row of
   // pixels of the side shadows.
-  gfx::CairoCachedSurface* bottom_left = theme_provider->GetSurfaceNamed(
-      IDR_CONTENT_BOTTOM_LEFT_CORNER, GTK_WIDGET(window_));
+  gfx::CairoCachedSurface* bottom_left =
+      rb.GetNativeImageNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER).ToCairo();
   bottom_left->SetSource(cr, GTK_WIDGET(window_),
                          left_x - kContentShadowThickness, bottom_y - 1);
   cairo_paint(cr);
 
-  gfx::CairoCachedSurface* bottom_right = theme_provider->GetSurfaceNamed(
-      IDR_CONTENT_BOTTOM_RIGHT_CORNER, GTK_WIDGET(window_));
+  gfx::CairoCachedSurface* bottom_right =
+      rb.GetNativeImageNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER).ToCairo();
   bottom_right->SetSource(cr, GTK_WIDGET(window_), right_x - 1, bottom_y - 1);
   cairo_paint(cr);
 
   // Finally, draw the bottom row. Since we don't overlap the contents, we clip
   // the top row of pixels.
-  gfx::CairoCachedSurface* bottom = theme_provider->GetSurfaceNamed(
-      IDR_CONTENT_BOTTOM_CENTER, GTK_WIDGET(window_));
+  gfx::CairoCachedSurface* bottom =
+      rb.GetNativeImageNamed(IDR_CONTENT_BOTTOM_CENTER).ToCairo();
   bottom->SetSource(cr, GTK_WIDGET(window_), left_x + 1, bottom_y - 1);
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr,
@@ -575,16 +576,15 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
 void BrowserWindowGtk::DrawPopupFrame(cairo_t* cr,
                                       GtkWidget* widget,
                                       GdkEventExpose* event) {
-  GtkThemeService* theme_provider = GtkThemeService::GetFrom(
-      browser()->profile());
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   // Like DrawCustomFrame(), except that we use the unthemed resources to draw
   // the background. We do this because we can't rely on sane images in the
   // theme that we can draw text on. (We tried using the tab background, but
   // that has inverse saturation from what the user usually expects).
   int image_name = GetThemeFrameResource();
-  gfx::CairoCachedSurface* surface = theme_provider->GetUnthemedSurfaceNamed(
-      image_name, widget);
+  gfx::CairoCachedSurface* surface =
+      rb.GetNativeImageNamed(image_name).ToCairo();
   surface->SetSource(cr, widget, 0, GetVerticalOffset());
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REFLECT);
   cairo_rectangle(cr, event->area.x, event->area.y,
@@ -600,8 +600,8 @@ void BrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
 
   int image_name = GetThemeFrameResource();
 
-  gfx::CairoCachedSurface* surface = theme_provider->GetSurfaceNamed(
-      image_name, widget);
+  gfx::CairoCachedSurface* surface = theme_provider->GetImageNamed(
+      image_name)->ToCairo();
   if (event->area.y < surface->Height()) {
     surface->SetSource(cr, widget, 0, GetVerticalOffset());
 
@@ -614,9 +614,9 @@ void BrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
 
   if (theme_provider->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
       !browser()->profile()->IsOffTheRecord()) {
-    gfx::CairoCachedSurface* theme_overlay = theme_provider->GetSurfaceNamed(
+    gfx::CairoCachedSurface* theme_overlay = theme_provider->GetImageNamed(
         IsActive() ? IDR_THEME_FRAME_OVERLAY
-        : IDR_THEME_FRAME_OVERLAY_INACTIVE, widget);
+        : IDR_THEME_FRAME_OVERLAY_INACTIVE)->ToCairo();
     theme_overlay->SetSource(cr, widget, 0, GetVerticalOffset());
     cairo_paint(cr);
   }
