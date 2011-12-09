@@ -70,6 +70,8 @@
         'proxy/ppb_cursor_control_proxy.h',
         'proxy/ppb_file_chooser_proxy.cc',
         'proxy/ppb_file_chooser_proxy.h',
+        'proxy/ppb_file_io_proxy.cc',
+        'proxy/ppb_file_io_proxy.h',
         'proxy/ppb_file_ref_proxy.cc',
         'proxy/ppb_file_ref_proxy.h',
         'proxy/ppb_file_system_proxy.cc',
