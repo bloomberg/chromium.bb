@@ -133,7 +133,8 @@ Widget::InitParams::InitParams(Type type)
       transient(type == TYPE_BUBBLE || type == TYPE_POPUP || type == TYPE_MENU),
       transparent(false),
       accept_events(true),
-      can_activate(type != TYPE_POPUP && type != TYPE_MENU),
+      can_activate(
+          type != TYPE_POPUP && type != TYPE_MENU && type != TYPE_CONTROL),
       keep_on_top(type == TYPE_MENU),
       ownership(NATIVE_WIDGET_OWNS_WIDGET),
       mirror_origin_in_rtl(false),
