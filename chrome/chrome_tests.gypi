@@ -691,7 +691,8 @@
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
 
-            'browser/accessibility/accessibility_win_browsertest.cc',
+            # TODO(sergeyu): Disabled because of crbug.com/106988 .
+            # 'browser/accessibility/accessibility_win_browsertest.cc',
             'browser/accessibility/browser_views_accessibility_browsertest.cc',
           ],
           'conditions': [
