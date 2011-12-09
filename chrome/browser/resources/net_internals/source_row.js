@@ -36,7 +36,7 @@ var SourceRow = (function() {
     createRow_: function() {
       // Create a row.
       var tr = addNode(this.parentView_.tableBody_, 'tr');
-      tr._id = this.sourceEntry_.getSourceId();
+      tr._id = this.getSourceId();
       tr.style.display = 'none';
       this.row_ = tr;
 
@@ -63,8 +63,8 @@ var SourceRow = (function() {
       tr.onmouseout = this.onMouseout_.bind(this);
 
       // Set the cell values to match this source's data.
-      if (this.sourceEntry_.getSourceId() >= 0) {
-        addTextNode(idCell, this.sourceEntry_.getSourceId());
+      if (this.getSourceId() >= 0) {
+        addTextNode(idCell, this.getSourceId());
       } else {
         addTextNode(idCell, '-');
       }
@@ -179,17 +179,19 @@ var SourceRow = (function() {
 
       // Check source ID, if needed.
       if (filter.id) {
-        if (filter.id.indexOf(this.sourceEntry_.getSourceId() + '') == -1)
+        if (filter.id.indexOf(this.getSourceId() + '') == -1)
           return false;
       }
 
       if (filter.text == '')
         return true;
 
-      var filterText = filter.text;
-      var entryText = this.sourceEntry_.printAsText().toLowerCase();
+      // The description is not always contained in one of the log entries.
+      if (this.description_.toLowerCase().indexOf(filter.text) != -1)
+        return true;
 
-      return entryText.indexOf(filterText) != -1;
+      var entryText = JSON.stringify(this.sourceEntry_.getLogEntries());
+      return entryText.toLowerCase().indexOf(filter.text) != -1;
     },
 
     isSelected: function() {
@@ -203,7 +205,7 @@ var SourceRow = (function() {
       this.isSelected_ = isSelected;
 
       this.setSelectedStyles(isSelected);
-      this.parentView_.modifySelectionArray(this, isSelected);
+      this.parentView_.modifySelectionArray(this.getSourceId(), isSelected);
       this.parentView_.onSelectionChanged();
     },
 
@@ -243,6 +245,10 @@ var SourceRow = (function() {
 
     getSelectionCheckbox: function() {
       return this.row_.childNodes[0].firstChild;
+    },
+
+    getSourceId: function() {
+      return this.sourceEntry_.getSourceId();
     },
 
     /**

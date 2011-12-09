@@ -528,12 +528,19 @@ var EventsView = (function() {
 
     /**
      * If |params| includes a query, replaces the current filter and unselects.
-     * all items.
+     * all items.  If it includes a selection, tries to select the relevant
+     * item.
      */
     setParameters: function(params) {
       if (params.q) {
         this.unselectAll_();
         this.setFilterText_(params.q);
+      }
+
+      if (params.s) {
+        var sourceRow = this.sourceIdToRowMap_[params.s];
+        if (sourceRow)
+          sourceRow.setSelected(true);
       }
     },
 
@@ -566,7 +573,16 @@ var EventsView = (function() {
       this.toggleSortMethod_('desc');
     },
 
-    modifySelectionArray: function(sourceRow, addToSelection) {
+    /**
+     * Modifies the map of selected rows to include/exclude the one with
+     * |sourceId|, if present.  Does not modify checkboxes or the LogView.
+     * Should only be called by a SourceRow in response to its selection
+     * state changing.
+     */
+    modifySelectionArray: function(sourceId, addToSelection) {
+      var sourceRow = this.sourceIdToRowMap_[sourceId];
+      if (!sourceRow)
+        return;
       // Find the index for |sourceEntry| in the current selection list.
       var index = -1;
       for (var i = 0; i < this.currentSelectedRows_.length; ++i) {
@@ -588,8 +604,8 @@ var EventsView = (function() {
 
     getSelectedSourceEntries_: function() {
       var sourceEntries = [];
-      for (var id in this.currentSelectedRows_) {
-        sourceEntries.push(this.currentSelectedRows_[id].getSourceEntry());
+      for (var i = 0; i < this.currentSelectedRows_.length; ++i) {
+        sourceEntries.push(this.currentSelectedRows_[i].getSourceEntry());
       }
       return sourceEntries;
     },

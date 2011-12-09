@@ -8,9 +8,8 @@
  *               the old net-internals is replaced.
  */
 
-// TODO(eroman): these functions should use lower-case names.
-var PaintLogView;
-var PrintSourceEntriesAsText;
+var paintLogView;
+var printLogEntriesAsText;
 var proxySettingsToString;
 var stripCookiesAndLoginInfo;
 
@@ -18,7 +17,7 @@ var stripCookiesAndLoginInfo;
 (function() {
 'use strict';
 
-PaintLogView = function(sourceEntries, node) {
+paintLogView = function(sourceEntries, node) {
   for (var i = 0; i < sourceEntries.length; ++i) {
     if (i != 0)
       addNode(node, 'hr');
@@ -26,24 +25,26 @@ PaintLogView = function(sourceEntries, node) {
   }
 }
 
+/**
+ * Outputs descriptive text for |sourceEntry| and its events to |node|.
+ */
 function addSourceEntry_(node, sourceEntry) {
   var div = addNode(node, 'div');
   div.className = 'logSourceEntry';
 
   var p = addNode(div, 'p');
-  var nobr = addNode(p, 'nobr');
+  addNodeWithText(p, 'h4',
+                  sourceEntry.getSourceId() + ': ' +
+                      sourceEntry.getSourceTypeString());
 
-  addTextNode(nobr, sourceEntry.getDescription());
-
-  var p2 = addNode(div, 'p');
-  var nobr2 = addNode(p2, 'nobr');
+  if (sourceEntry.getDescription())
+    addNodeWithText(p, 'h4', sourceEntry.getDescription());
 
   var logEntries = sourceEntry.getLogEntries();
   var startDate = timeutil.convertTimeTicksToDate(logEntries[0].time);
-  addTextNode(nobr2, 'Start Time: ' + startDate.toLocaleString());
+  addNodeWithText(p, 'div', 'Start Time: ' + startDate.toLocaleString());
 
-  var pre = addNode(div, 'pre');
-  addTextNode(pre, PrintSourceEntriesAsText(logEntries));
+  sourceEntry.printAsText(div);
 }
 
 function canCollapseBeginWithEnd(beginEntry) {
@@ -56,15 +57,19 @@ function canCollapseBeginWithEnd(beginEntry) {
              beginEntry.end.orig.wasPassivelyCaptured;
 }
 
-PrintSourceEntriesAsText = function(sourceEntries) {
-  var entries = LogGroupEntry.createArrayFrom(sourceEntries);
+/**
+ * Adds a child pre element to the end of |parent|, and writes the
+ * formatted contents of |logEntries| to it.
+ */
+printLogEntriesAsText = function(logEntries, parent) {
+  var entries = LogGroupEntry.createArrayFrom(logEntries);
+  var tablePrinter = new TablePrinter();
+
   if (entries.length == 0)
-    return '';
+    return;
 
   var startDate = timeutil.convertTimeTicksToDate(entries[0].orig.time);
   var startTime = startDate.getTime();
-
-  var tablePrinter = new TablePrinter();
 
   for (var i = 0; i < entries.length; ++i) {
     var entry = entries[i];
@@ -86,54 +91,38 @@ PrintSourceEntriesAsText = function(sourceEntries) {
       stCell.alignRight = true;
       tablePrinter.addCell('] ');
 
-      var indentationStr = makeRepeatedString(' ', entry.getDepth() * 3);
-      var mainCell =
-          tablePrinter.addCell(indentationStr + getTextForEvent(entry));
-      tablePrinter.addCell('  ');
+      for (var j = entry.getDepth(); j > 0; --j)
+        tablePrinter.addCell('  ');
 
-      // Get the elapsed time.
+      var eventText = getTextForEvent(entry);
+      // Get the elapsed time, and append it to the event text.
       if (entry.isBegin()) {
-        tablePrinter.addCell('[dt=');
         var dt = '?';
         // Definite time.
         if (entry.end) {
           dt = entry.end.orig.time - entry.orig.time;
         }
-        var dtCell = tablePrinter.addCell(dt);
-        dtCell.alignRight = true;
-
-        tablePrinter.addCell(']');
-      } else {
-        mainCell.allowOverflow = true;
+        eventText += '  [dt=' + dt + ']';
       }
+
+      var mainCell = tablePrinter.addCell(eventText);
+      mainCell.allowOverflow = true;
     }
 
     // Output the extra parameters.
     if (entry.orig.params != undefined) {
-      // Add a continuation row for each line of text from the extra parameters.
-      var extraParamsText = getTextForExtraParams(
-          entry.orig,
-          g_browser.sourceTracker.getSecurityStripping());
-      var extraParamsTextLines = extraParamsText.split('\n');
-
-      for (var j = 0; j < extraParamsTextLines.length; ++j) {
-        tablePrinter.addRow();
-        tablePrinter.addCell('');  // Empty passive annotation.
-        tablePrinter.addCell('');  // No t=.
-        tablePrinter.addCell('');
-        tablePrinter.addCell('');  // No st=.
-        tablePrinter.addCell('');
-        tablePrinter.addCell('  ');
-
-        var mainExtraCell =
-            tablePrinter.addCell(indentationStr + extraParamsTextLines[j]);
-        mainExtraCell.allowOverflow = true;
-      }
+      // Those 6 skipped cells are: passive annotation, two for "t=", and
+      // three for "st=".
+      tablePrinter.setNewRowCellIndent(6 + entry.getDepth());
+      addRowsForExtraParams(tablePrinter,
+                            entry.orig,
+                            g_browser.sourceTracker.getSecurityStripping());
+      tablePrinter.setNewRowCellIndent(0);
     }
   }
 
   // Format the table for fixed-width text.
-  return tablePrinter.toText(0);
+  tablePrinter.toText(0, parent);
 }
 
 /**
@@ -177,7 +166,26 @@ function formatHexString(hexString, asciiCharsPerLine) {
   return out.join('\n');
 }
 
-function getTextForExtraParams(entry, enableSecurityStripping) {
+/**
+ * Splits |text| in shorter strings around linebreaks.  For each of the
+ * resulting strings, adds a row to |tablePrinter| with a cell containing
+ * that text, linking to |link|.  |link| may be null.
+ */
+function addTextRows(tablePrinter, text, link) {
+  var textLines = text.split('\n');
+
+  for (var i = 0; i < textLines.length; ++i) {
+    tablePrinter.addRow();
+    var cell = tablePrinter.addCell(textLines[i]);
+    cell.link = link;
+    cell.allowOverflow = true;
+  }
+}
+
+/**
+ * Returns a list of FormattedTextInfo objects for |entry|'s |params|.
+ */
+function addRowsForExtraParams(tablePrinter, entry, enableSecurityStripping) {
   // Format the extra parameters (use a custom formatter for certain types,
   // but default to displaying as JSON).
 
@@ -188,27 +196,37 @@ function getTextForExtraParams(entry, enableSecurityStripping) {
   switch (entry.type) {
     case LogEventType.HTTP_TRANSACTION_SEND_REQUEST_HEADERS:
     case LogEventType.HTTP_TRANSACTION_SEND_TUNNEL_HEADERS:
-      return getTextForRequestHeadersExtraParam(entry);
+      addTextRows(tablePrinter,
+                  getTextForRequestHeadersExtraParam(entry),
+                  null);
+      return;
 
     case LogEventType.HTTP_TRANSACTION_READ_RESPONSE_HEADERS:
     case LogEventType.HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS:
-      return getTextForResponseHeadersExtraParam(entry);
+      addTextRows(tablePrinter,
+                  getTextForResponseHeadersExtraParam(entry),
+                  null);
+      return;
 
     case LogEventType.PROXY_CONFIG_CHANGED:
-      return getTextForProxyConfigChangedExtraParam(entry);
+      addTextRows(tablePrinter,
+                  getTextForProxyConfigChangedExtraParam(entry),
+                  null);
+      return;
 
     default:
-      var out = [];
       for (var k in entry.params) {
         if (k == 'headers' && entry.params[k] instanceof Array) {
-          out.push(getTextForResponseHeadersExtraParam(entry));
+          addTextRows(tablePrinter,
+                      getTextForResponseHeadersExtraParam(entry),
+                      null);
           continue;
         }
         var value = entry.params[k];
         // For transferred bytes, display the bytes in hex and ASCII.
         if (k == 'hex_encoded_bytes') {
-          out.push(' --> ' + k + ' =');
-          out.push(formatHexString(value, 20));
+          addTextRows(tablePrinter, ' --> ' + k + ' =');
+          addTextRows(tablePrinter, formatHexString(value, 20));
           continue;
         }
 
@@ -224,9 +242,13 @@ function getTextForExtraParams(entry, enableSecurityStripping) {
           }
         }
 
-        out.push(paramStr);
+        var link = null;
+        // Add link to source_dependency entries.
+        if (k == 'source_dependency' && typeof value == 'object')
+          link = '#events&s=' + value.id;
+
+        addTextRows(tablePrinter, paramStr, link);
       }
-      return out.join('\n');
   }
 }
 

@@ -50,7 +50,7 @@ var ProxyView = (function() {
   ProxyView.RELOAD_SETTINGS_BUTTON_ID = 'proxy-view-reload-settings';
   ProxyView.BAD_PROXIES_TBODY_ID = 'proxy-view-bad-proxies-tbody';
   ProxyView.CLEAR_BAD_PROXIES_BUTTON_ID = 'proxy-view-clear-bad-proxies';
-  ProxyView.PROXY_RESOLVER_LOG_PRE_ID = 'proxy-view-resolver-log';
+  ProxyView.PROXY_RESOLVER_LOG_DIV_ID = 'proxy-view-resolver-log';
 
   cr.addSingletonGetter(ProxyView);
 
@@ -141,8 +141,8 @@ var ProxyView = (function() {
 
         this.latestProxySourceId_ = sourceEntry.getSourceId();
 
-        $(ProxyView.PROXY_RESOLVER_LOG_PRE_ID).innerText =
-            sourceEntry.printAsText();
+        $(ProxyView.PROXY_RESOLVER_LOG_DIV_ID).innerHTML = '';
+        sourceEntry.printAsText($(ProxyView.PROXY_RESOLVER_LOG_DIV_ID));
       }
     },
 
@@ -153,8 +153,8 @@ var ProxyView = (function() {
       // Prevents display of partial logs.
       ++this.latestProxySourceId_;
 
-      $(ProxyView.PROXY_RESOLVER_LOG_PRE_ID).innerHTML = '';
-      $(ProxyView.PROXY_RESOLVER_LOG_PRE_ID).innerText = 'Deleted.';
+      $(ProxyView.PROXY_RESOLVER_LOG_DIV_ID).innerHTML = '';
+      $(ProxyView.PROXY_RESOLVER_LOG_DIV_ID).innerText = 'Deleted.';
     },
 
     onSourceEntriesDeleted: function(sourceIds) {

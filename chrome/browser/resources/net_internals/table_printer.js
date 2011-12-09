@@ -29,14 +29,25 @@ var TablePrinter = (function() {
     this.rows_ = [];
     this.hasHeaderRow_ = false;
     this.title_ = null;
+    // Number of cells automatically added at the start of new rows.
+    this.newRowCellIndent_ = 0;
   }
 
   TablePrinter.prototype = {
+    /**
+     * Sets the number of blank cells to add after each call to addRow.
+     */
+    setNewRowCellIndent: function(newRowCellIndent) {
+      this.newRowCellIndent_ = newRowCellIndent;
+    },
+
     /**
      * Starts a new row.
      */
     addRow: function() {
       this.rows_.push([]);
+      for (var i = 0; i < this.newRowCellIndent_; ++i)
+        this.addCell('');
     },
 
     /**
@@ -100,11 +111,12 @@ var TablePrinter = (function() {
     },
 
     /**
-     * Returns a formatted text representation of the table data.
-     * |spacing| indicates number of extra spaces, if any, to add between
-     * columns.
+     * Prints a formatted text representation of the table data to the
+     * node |parent|.  |spacing| indicates number of extra spaces, if any,
+     * to add between columns.
      */
-    toText: function(spacing) {
+    toText: function(spacing, parent) {
+      var pre = addNode(parent, 'pre');
       var numColumns = this.getNumColumns();
 
       // Figure out the maximum width of each column.
@@ -159,13 +171,20 @@ var TablePrinter = (function() {
             var padding = columnWidths[c] - cell.text.length;
             var paddingStr = makeRepeatedString(' ', padding);
 
-            if (cell.alignRight) {
+            if (cell.alignRight)
               out.push(paddingStr);
-              out.push(cell.text);
+            if (cell.link) {
+              // Output all previous text, and clear |out|.
+              addTextNode(pre, out.join(''));
+              out = [];
+
+              var linkNode = addNodeWithText(pre, 'a', cell.text);
+              linkNode.href = cell.link;
             } else {
               out.push(cell.text);
-              out.push(paddingStr);
             }
+            if (!cell.alignRight)
+              out.push(paddingStr);
             out.push(spacingStr);
           }
         }
@@ -176,7 +195,7 @@ var TablePrinter = (function() {
       if (this.hasHeaderRow_)
         this.rows_.splice(1, 1);
 
-      return out.join('');
+      addTextNode(pre, out.join(''));
     },
 
     /**

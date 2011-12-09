@@ -42,7 +42,7 @@ var DetailsView = (function() {
     repaint: function() {
       this.outstandingRepaint_ = false;
       this.getNode().innerHTML = '';
-      PaintLogView(this.sourceEntries_, this.getNode());
+      paintLogView(this.sourceEntries_, this.getNode());
     },
 
     show: function(isVisible) {

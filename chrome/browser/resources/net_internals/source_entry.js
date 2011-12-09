@@ -217,8 +217,12 @@ var SourceEntry = (function() {
       return endTime - startTime;
     },
 
-    printAsText: function() {
-      return PrintSourceEntriesAsText(this.entries_);
+    /**
+     * Prints descriptive text about |entries_| to a new node added to the end
+     * of |parent|.
+     */
+    printAsText: function(parent) {
+      printLogEntriesAsText(this.entries_, parent);
     }
   };
 

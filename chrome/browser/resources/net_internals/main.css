@@ -88,6 +88,22 @@ table.styledTable,
 }
 
 /**
+ * Styling for event logs.
+ */
+.event-log p {
+  white-space: nowrap;
+}
+
+.event-log h4 {
+  margin: 0;
+}
+
+.event-log a {
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/**
  * Styling for an emphasized button.
  */
 .bigButton {
