@@ -314,7 +314,6 @@ chrome_pfq_info = {
 internal = {
   'overlays' : 'both',
   'git_url' : constants.MANIFEST_INT_URL,
-  'vm_tests' : constants.FULL_AU_TEST_TYPE,
 }
 
 #
@@ -341,6 +340,7 @@ release = {
     'https://commondatastorage.googleapis.com/chromeos-dev-installer',
   'use_binhost_package_file' : True,
   'git_sync' : False,
+  'vm_tests' : constants.FULL_AU_TEST_TYPE,
   # --official
   # --officialversion
 }
@@ -419,8 +419,6 @@ add_config('amd64-corei7-commit-queue', [amd64, commit_queue, {
 add_config('x86-mario-commit-queue', [commit_queue, internal, {
   'board' : 'x86-mario',
   'master': True,
-
-  'vm_tests': constants.SIMPLE_AU_TEST_TYPE,
   'overlays': 'private',
   'paladin_builder_name': 'TOT%20Commit%20Queue',
 }])
@@ -533,8 +531,6 @@ add_config('x86-generic-asan', [{
 add_config('x86-mario-pre-flight-queue', [internal, pfq, {
   'board' : 'x86-mario',
   'master' : True,
-
-  'vm_tests': constants.SIMPLE_AU_TEST_TYPE,
   'overlays': 'private',
   'push_overlays': 'private',
   'gs_path': 'gs://chromeos-x86-mario/pre-flight-master',
