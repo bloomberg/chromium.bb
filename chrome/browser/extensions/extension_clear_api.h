@@ -4,8 +4,7 @@
 
 // Defines the Chrome Extensions Clear API functions, which entail
 // clearing browsing data, and clearing the browser's cache (which, let's be
-// honest, are the same thing), as specified in
-// chrome/common/extensions/api/extension_api.json.
+// honest, are the same thing), as specified in the extension API JSON.
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_CLEAR_API_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_CLEAR_API_H_

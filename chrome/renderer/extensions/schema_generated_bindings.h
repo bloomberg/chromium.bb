@@ -17,8 +17,8 @@ class Extension;
 
 namespace extensions {
 
-// Generates JavaScript bindings for the extension system from the declarations
-// in the extension_api.json file.
+// Generates JavaScript bindings for the extension system from the JSON
+// declarations in chrome/common/extensions/api/.
 class SchemaGeneratedBindings {
  public:
   static v8::Extension* Get(ExtensionDispatcher* extension_dispatcher);

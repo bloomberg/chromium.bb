@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Defines the Chrome Extensions Proxy Settings API relevant classes to realize
-// the API as specified in chrome/common/extensions/api/extension_api.json.
+// the API as specified in the extension API JSON.
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PROXY_API_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_PROXY_API_H_

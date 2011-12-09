@@ -272,7 +272,7 @@ DictionaryValue* ToHeaderDictionary(const std::string& name,
   return header;
 }
 
-// Creates a list of HttpHeaders (see extension_api.json). If |headers| is
+// Creates a list of HttpHeaders (see the extension API JSON). If |headers| is
 // NULL, the list is empty. Ownership is passed to the caller.
 ListValue* GetResponseHeadersList(const net::HttpResponseHeaders* headers) {
   ListValue* headers_value = new ListValue();

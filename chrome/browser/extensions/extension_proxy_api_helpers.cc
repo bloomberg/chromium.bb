@@ -64,7 +64,7 @@ bool GetProxyModeFromExtensionPref(const DictionaryValue* proxy_config,
   std::string proxy_mode;
 
   // We can safely assume that this is ASCII due to the allowed enumeration
-  // values specified in extension_api.json.
+  // values specified in the extension API JSON.
   proxy_config->GetStringASCII(keys::kProxyConfigMode, &proxy_mode);
   if (!ProxyPrefs::StringToProxyMode(proxy_mode, out)) {
     LOG(ERROR) << "Invalid mode for proxy settings: " << proxy_mode;
@@ -154,7 +154,7 @@ bool GetProxyServer(const DictionaryValue* proxy_server,
   std::string scheme_string;  // optional.
 
   // We can safely assume that this is ASCII due to the allowed enumeration
-  // values specified in extension_api.json.
+  // values specified in the extension API JSON.
   proxy_server->GetStringASCII(keys::kProxyConfigRuleScheme, &scheme_string);
 
   net::ProxyServer::Scheme scheme =

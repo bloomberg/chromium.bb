@@ -862,38 +862,6 @@
     },
     {
       "api_calls": [
-        "chrome.omnibox.onInputChanged",
-        "chrome.omnibox.onInputEntered",
-        "chrome.tabs.create",
-        "chrome.tabs.get",
-        "chrome.tabs.onRemoved",
-        "chrome.tabs.update"
-      ],
-      "crx_path": null,
-      "description": "Search the Chrome Extensions documentation.  To use, type 'crdoc' plus a search term into the Omnibox.",
-      "features": [
-        "background_page",
-        "tabs"
-      ],
-      "icon": "icon-128.png",
-      "id": "e3df888a89e35bdeb9c8bc8d03be5e1851b97c68",
-      "name": "Extension Docs Search",
-      "packaged_app": false,
-      "path": "examples\/api\/omnibox\/extension-docs\/",
-      "protocols": [
-        "https:\/\/"
-      ],
-      "search_string": "EXTENSION DOCS SEARCH SEARCH THE CHROME EXTENSIONS DOCUMENTATION.  TO USE, TYPE CRDOC PLUS A SEARCH TERM INTO THE OMNIBOX. BACKGROUND_PAGE TABS CHROME.OMNIBOX.ONINPUTCHANGED CHROME.OMNIBOX.ONINPUTENTERED CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.ONREMOVED CHROME.TABS.UPDATE",
-      "source_files": [
-        "background.html",
-        "background.js",
-        "manifest.json"
-      ],
-      "source_hash": "c294cbd813e4a59b3ee8270892f10c68aa3f53b3",
-      "zip_path": "examples\/api\/omnibox\/extension-docs.zip"
-    },
-    {
-      "api_calls": [
         "chrome.experimental.devtools.network.getHAR",
         "chrome.experimental.devtools.network.onRequestFinished",
         "chrome.extension.onRequest",

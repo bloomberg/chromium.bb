@@ -57,7 +57,7 @@ def parse_json_file(path, encoding="utf-8"):
   return json_obj
 
 class ApiManifest(object):
-  """ Represents the list of API methods contained in extension_api.json """
+  """ Represents the list of API methods contained in the extension API JSON """
 
   _MODULE_DOC_KEYS = ['functions', 'events']
   """ Keys which may be passed to the _parseModuleDocLinksByKey method."""
@@ -66,7 +66,7 @@ class ApiManifest(object):
     """ Read the supplied manifest file and parse its contents.
 
     Args:
-      manifest_paths: Array of paths to API schemas (extension_api.json etc).
+      manifest_paths: Array of paths to API schemas.
     """
     self._manifest = [];
     for path in manifest_paths:
@@ -95,7 +95,7 @@ class ApiManifest(object):
     documentation URLs.
 
     Args:
-      module: The data in extension_api.json corresponding to a single module.
+      module: The data in the extension API JSON for a single module.
       key: A key belonging to _MODULE_DOC_KEYS to determine which set of
           methods to parse, and what kind of documentation URL to generate.
 
@@ -139,7 +139,7 @@ class ApiManifest(object):
                if "nodoc" not in module)
 
   def getDocumentationLinks(self):
-    """ Parses the extension_api.json manifest and returns a dict of all
+    """ Parses the extension API JSON manifest and returns a dict of all
     events and methods for every module, mapped to relative documentation links.
 
     Returns:

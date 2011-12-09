@@ -97,7 +97,7 @@ Value* ProxyPrefTransformer::ExtensionToBrowserPref(const Value* extension_pref,
                                                     bool* bad_message) {
   // When ExtensionToBrowserPref is called, the format of |extension_pref|
   // has been verified already by the extension API to match the schema
-  // defined in chrome/common/extensions/api/extension_api.json.
+  // defined in the extension API JSON.
   CHECK(extension_pref->IsType(Value::TYPE_DICTIONARY));
   const DictionaryValue* config =
       static_cast<const DictionaryValue*>(extension_pref);

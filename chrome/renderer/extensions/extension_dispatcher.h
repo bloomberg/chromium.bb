@@ -152,7 +152,7 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   // The v8 extensions which are restricted to extension-related contexts.
   std::set<std::string> restricted_v8_extensions_;
 
-  // All declared function names from extension_api.json.
+  // All declared function names.
   std::set<std::string> function_names_;
 
   // The extensions that are active in this process.

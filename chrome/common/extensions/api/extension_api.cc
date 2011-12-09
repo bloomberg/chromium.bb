@@ -22,21 +22,32 @@ ExtensionAPI* ExtensionAPI::GetInstance() {
   return Singleton<ExtensionAPI>::get();
 }
 
-ExtensionAPI::ExtensionAPI() {
+static base::ListValue* LoadSchemaList(int resource_id) {
   const bool kAllowTrailingCommas = false;
   std::string error_message;
-  scoped_ptr<Value> temp_value(
+  Value* result =
       base::JSONReader::ReadAndReturnError(
           ResourceBundle::GetSharedInstance().GetRawDataResource(
-              IDR_EXTENSION_API_JSON).as_string(),
+              resource_id).as_string(),
           kAllowTrailingCommas,
           NULL,  // error code
-          &error_message));
-  CHECK(temp_value.get()) << error_message;
-  CHECK(temp_value->IsType(base::Value::TYPE_LIST))
-      << "Top-level node in extension API is not dictionary";
+          &error_message);
+  CHECK(result) << error_message;
+  CHECK(result->IsType(base::Value::TYPE_LIST));
+  return static_cast<base::ListValue*>(result);
+}
 
-  value_.reset(static_cast<base::ListValue*>(temp_value.release()));
+static void AppendExtraSchemaList(base::ListValue* list, int resource_id) {
+  Value* value;
+  scoped_ptr<base::ListValue> to_append(LoadSchemaList(resource_id));
+  while (to_append->Remove(0, &value)) {
+    list->Append(value);
+  }
+}
+
+ExtensionAPI::ExtensionAPI() {
+  value_.reset(LoadSchemaList(IDR_EXTENSION_API_JSON));
+  AppendExtraSchemaList(value_.get(), IDR_EXTENSION_API_JSON_EXTENSION);
 }
 
 ExtensionAPI::~ExtensionAPI() {

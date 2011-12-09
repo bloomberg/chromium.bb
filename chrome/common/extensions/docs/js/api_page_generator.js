@@ -20,6 +20,7 @@
 
 var API_TEMPLATE = 'template/api_template.html';
 var SCHEMA = '../api/extension_api.json';
+var MODULE_SCHEMAS = ['../api/extension.json'];
 var DEVTOOLS_SCHEMA = '../api/devtools_api.json';
 var USE_DEVTOOLS_SCHEMA =
   /\.devtools[^/]*\.html/.test(location.pathname);
@@ -116,8 +117,10 @@ function fetchSchema() {
   var is_experimental_index = /\/experimental\.html$/.test(location.pathname);
 
   var schemas_to_retrieve = [];
-  if (!USE_DEVTOOLS_SCHEMA || is_experimental_index)
+  if (!USE_DEVTOOLS_SCHEMA || is_experimental_index) {
     schemas_to_retrieve.push(SCHEMA);
+    schemas_to_retrieve = schemas_to_retrieve.concat(MODULE_SCHEMAS);
+  }
   if (USE_DEVTOOLS_SCHEMA || is_experimental_index)
     schemas_to_retrieve.push(DEVTOOLS_SCHEMA);
 

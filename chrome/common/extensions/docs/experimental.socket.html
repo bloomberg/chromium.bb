@@ -323,13 +323,15 @@
             <a href="#global-methods">Methods</a>
             <ol>
               <li>
+                <a href="#method-close">close</a>
+              </li><li>
                 <a href="#method-connect">connect</a>
               </li><li>
                 <a href="#method-create">create</a>
               </li><li>
-                <a href="#method-disconnect">disconnect</a>
+                <a href="#method-destroy">destroy</a>
               </li><li>
-                <a href="#method-send">send</a>
+                <a href="#method-write">write</a>
               </li>
             </ol>
           </li>
@@ -411,6 +413,135 @@
 
             <!-- iterates over all functions -->
             <div class="apiItem">
+              <a name="method-close"></a> <!-- method-anchor -->
+              <h4>close</h4>
+
+              <div class="summary"><span style="display: none; ">void</span>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.socket.close</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
+                      <var><span>socketId</span></var></span>)</div>
+
+              <div class="description">
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Closes the socket.</p>
+
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>socketId</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The socketId.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+                  </div>
+                </dl>
+
+                <!-- RETURNS -->
+                <h4 style="display: none; ">Returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+                <!-- CALLBACK -->
+                <div style="display: none; ">
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    The callback <em>parameter</em> should specify a function
+                    that looks like this:
+                  </p>
+                  <p>
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
+                  </p>
+
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+
+                <!-- MIN_VERSION -->
+                <p style="display: none; ">
+                  This function was added in version <b><span></span></b>.
+                  If you require this function, the manifest key
+                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+                  can ensure that your extension won't be run in an earlier browser version.
+                </p>
+              </div> <!-- /description -->
+
+            </div><div class="apiItem">
               <a name="method-connect"></a> <!-- method-anchor -->
               <h4>connect</h4>
 
@@ -1349,18 +1480,17 @@
               </div> <!-- /description -->
 
             </div><div class="apiItem">
-              <a name="method-disconnect"></a> <!-- method-anchor -->
-              <h4>disconnect</h4>
+              <a name="method-destroy"></a> <!-- method-anchor -->
+              <h4>destroy</h4>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.socket.disconnect</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
-                      <var><span>socketId</span></var></span><span class="null"><span>, </span><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
+                  <span>chrome.experimental.socket.destroy</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
+                      <var><span>socketId</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Disconnects the socket.</p>
+                <p>Destroys the socket. Each socket created should be destroyed after use.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -1433,74 +1563,6 @@
           </dd>
 
         </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>callback</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>function</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>Called when the disconnection is complete.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
                   </div>
                 </dl>
 
@@ -1514,89 +1576,24 @@
                 </dl>
 
                 <!-- CALLBACK -->
-                <div>
+                <div style="display: none; ">
                   <div>
                   <h4>Callback function</h4>
                   <p>
                     The callback <em>parameter</em> should specify a function
                     that looks like this:
                   </p>
-                  <p style="display: none; ">
+                  <p>
                     If you specify the <em>callback</em> parameter, it should
                     specify a function that looks like this:
                   </p>
 
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>boolean result</span>) <span class="subdued">{...}</span>;</pre>
+                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
-          <dt>
-            <var>result</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>boolean</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>True if successful, false otherwise.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
+                      </div>
                     </div>
                   </dl>
                   </div>
@@ -1612,19 +1609,19 @@
               </div> <!-- /description -->
 
             </div><div class="apiItem">
-              <a name="method-send"></a> <!-- method-anchor -->
-              <h4>send</h4>
+              <a name="method-write"></a> <!-- method-anchor -->
+              <h4>write</h4>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.socket.send</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
+                  <span>chrome.experimental.socket.write</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
                       <var><span>socketId</span></var></span><span class="null"><span>, </span><span>string</span>
                       <var><span>data</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Sends data on the connected socket.</p>
+                <p>Writes data on the connected socket.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -1728,7 +1725,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The data to send.</dd>
+          <dd>The data to write. Warning: will probably become a blob or other appropriate binary-friendly type.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1796,7 +1793,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Called when the send is complete.</dd>
+          <dd>Called when any of the following happens: the write operation completes, the write operation blocked before completion, or an error occurred.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1859,12 +1856,12 @@
                   </p>
 
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>object sendInfo</span>) <span class="subdued">{...}</span>;</pre>
+                  <pre>function(<span>object writeInfo</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
           <dt>
-            <var>sendInfo</var>
+            <var>writeInfo</var>
               <em>
 
                 <!-- TYPE -->
@@ -1911,7 +1908,7 @@
               <div>
                 <div>
           <dt>
-            <var>bytesSent</var>
+            <var>bytesWritten</var>
               <em>
 
                 <!-- TYPE -->
@@ -1939,7 +1936,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The number of bytes sent.</dd>
+          <dd>The number of bytes sent, or a negative error code.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2291,7 +2288,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The data received, as a Blob.</dd>
+          <dd>The data received.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.

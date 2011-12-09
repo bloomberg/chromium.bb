@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Defines the Chrome Extensions Cookies API functions for accessing internet
-// cookies, as specified in chrome/common/extensions/api/extension_api.json.
+// cookies, as specified in the extension API JSON.
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_COOKIES_API_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_COOKIES_API_H_

@@ -629,9 +629,9 @@ class ExtensionImpl : public ChromeV8Extension {
     return v8::Integer::New(renderview->GetRoutingId());
   }
 
-  // Cached JS Array representation of extension_api.json. We store this so that
-  // we don't have to parse it over and over again for every context that uses
-  // it.
+  // Cached JS Array representation of the extensions API JSON. We store this
+  // so that we don't have to parse it over and over again for every context
+  // that uses it.
   v8::Persistent<v8::Array> extension_api_;
 };
 

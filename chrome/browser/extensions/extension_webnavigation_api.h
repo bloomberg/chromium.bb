@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 // Defines the Chrome Extensions WebNavigation API functions for observing and
-// intercepting navigation events, as specified in
-// chrome/common/extensions/api/extension_api.json.
+// intercepting navigation events, as specified in the extension JSON API.
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBNAVIGATION_API_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBNAVIGATION_API_H_

@@ -43,7 +43,7 @@ class BeginInstallWithManifestFunction
 
   // Result codes for the return value. If you change this, make sure to
   // update the description for the beginInstallWithManifest3 callback in
-  // extension_api.json.
+  // the extension API JSON.
   enum ResultCode {
     ERROR_NONE = 0,
 

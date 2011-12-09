@@ -351,7 +351,6 @@
   "4daa6becd0899a54776d9cf7f09613ed1a9f4d77": "COOKIE API TEST EXTENSION TESTING COOKIE API BACKGROUND_PAGE BROWSER_ACTION COOKIES TABS CHROME.BROWSERACTION.ONCLICKED CHROME.COOKIES.GET CHROME.COOKIES.GETALL CHROME.COOKIES.ONCHANGED CHROME.COOKIES.REMOVE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL",
   "028eb5364924344029bcbe1d527f132fc72b34e5": "EMAIL THIS PAGE (BY GOOGLE) THIS EXTENSION ADDS AN EMAIL BUTTON TO THE TOOLBAR WHICH ALLOWS YOU TO EMAIL THE PAGE LINK USING YOUR DEFAULT MAIL CLIENT OR GMAIL. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.CONNECT CHROME.EXTENSION.ONCONNECT CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.UPDATE",
   "763a08e9b06595d785568a8d392b95a2f3700258": "EVENT TRACKING WITH GOOGLE ANALYTICS A SAMPLE EXTENSION WHICH USES GOOGLE ANALYTICS TO TRACK USAGE. BACKGROUND_PAGE BROWSER_ACTION POPUP",
-  "e3df888a89e35bdeb9c8bc8d03be5e1851b97c68": "EXTENSION DOCS SEARCH SEARCH THE CHROME EXTENSIONS DOCUMENTATION.  TO USE, TYPE CRDOC PLUS A SEARCH TERM INTO THE OMNIBOX. BACKGROUND_PAGE TABS CHROME.OMNIBOX.ONINPUTCHANGED CHROME.OMNIBOX.ONINPUTENTERED CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.ONREMOVED CHROME.TABS.UPDATE",
   "4efa12eaaa442b6b7c880e7a38ceeb0cff7e8b77": "FIREPHP FOR CHROME EXTENDS THE DEVELOPER TOOLS, ADDING SUPPORT FOR PARSING FIREPHP MESSAGES FROM SERVER BACKGROUND_PAGE DEVTOOLS_PAGE EXPERIMENTAL TABS CHROME.EXPERIMENTAL.DEVTOOLS.NETWORK.GETHAR CHROME.EXPERIMENTAL.DEVTOOLS.NETWORK.ONREQUESTFINISHED CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.EXECUTESCRIPT",
   "8b0dd31216235941bdd8eb33fda915ef5cf79a82": "GOOGLE CALENDAR CHECKER (BY GOOGLE) QUICKLY SEE THE TIME UNTIL YOUR NEXT MEETING FROM ANY OF YOUR CALENDARS. CLICK ON THE BUTTON TO BE TAKEN TO YOUR CALENDAR. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETICON CHROME.BROWSERACTION.SETTITLE CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETALLINWINDOW CHROME.TABS.ONUPDATED CHROME.TABS.UPDATE",
   "4e35caa9742fb82dbd628892d23a781614f6eff6": "GOOGLE DOCUMENT LIST VIEWER DEMONSTRATES HOW TO USE OAUTH TO CONNECT THE GOOGLE DOCUMENTS LIST DATA API. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE POPUP TABS CHROME.BROWSERACTION.SETBADGETEXT CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE",
@@ -1611,59 +1610,6 @@
   <div>
     <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/tutorials/analytics/">Browse source</a>
     - <a href="examples/tutorials/analytics.zip">Download source</a>
-    <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
-  </div>
-</div><div class="sample" id="e3df888a89e35bdeb9c8bc8d03be5e1851b97c68">
-  <img class="icon" src="examples/api/omnibox/extension-docs/icon-128.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
-  <h2 class="name">
-    <a href="#e3df888a89e35bdeb9c8bc8d03be5e1851b97c68">Extension Docs Search</a>
-    <span style="display: none; ">(packaged app)</span>
-  </h2>
-  <p class="metadata features">Uses
-    <span>
-      <strong>background_page</strong><span style="display: none; ">, </span>
-      <span> and</span>
-    </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
-    </span>
-  </p>
-  <p>Search the Chrome Extensions documentation.  To use, type 'crdoc' plus a search term into the Omnibox.</p>
-  <div class="apicalls"><strong>Calls:</strong>
-    <ul>
-      <li>
-        <code><a href="omnibox.html#event-onInputChanged">chrome.omnibox.onInputChanged</a></code>
-      </li><li>
-        <code><a href="omnibox.html#event-onInputEntered">chrome.omnibox.onInputEntered</a></code>
-      </li><li>
-        <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
-      </li><li>
-        <code><a href="tabs.html#method-get">chrome.tabs.get</a></code>
-      </li><li>
-        <code><a href="tabs.html#event-onRemoved">chrome.tabs.onRemoved</a></code>
-      </li><li>
-        <code><a href="tabs.html#method-update">chrome.tabs.update</a></code>
-      </li>
-    </ul>
-  </div>
-  <div class="sourcefiles"><strong>Source files:</strong>
-    <ul>
-      <li>
-        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/omnibox/extension-docs/background.html?content-type=text/plain">background.html</a></code>
-      </li><li>
-        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/omnibox/extension-docs/background.js?content-type=text/plain">background.js</a></code>
-      </li><li>
-        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/omnibox/extension-docs/manifest.json?content-type=text/plain">manifest.json</a></code>
-      </li>
-    </ul>
-  </div>
-  <div>
-    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/omnibox/extension-docs/">Browse source</a>
-    - <a href="examples/api/omnibox/extension-docs.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
     <span style="display: none; ">
     - <a>Install extension</a>

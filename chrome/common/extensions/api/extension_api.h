@@ -19,7 +19,7 @@ class ListValue;
 
 namespace extensions {
 
-// C++ Wrapper for the extension_api.json file.
+// C++ Wrapper for the JSON API definitions in chrome/common/extensions/api/.
 class ExtensionAPI {
  public:
   // Returns the single instance of this class.
