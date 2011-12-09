@@ -22,6 +22,7 @@ are <b>name</b> and <b>version</b>.
   <em>// Required</em>
   "<a href="#name">name</a>": "<em>My Extension</em>",
   "<a href="#version">version</a>": "<em>versionString</em>",
+  "<a href="#manifest_version">manifest_version</a>": 2,
 
   <em>// Recommended</em>
   "<a href="#description">description</a>": "<em>A plain text description</em>",
@@ -112,11 +113,18 @@ see <a href="i18n.html">Internationalization</a> for details.
 <h3 id="content_security_policy">content_security_policy</h3>
 
 <p>
-A security policy to apply to resources in your extension.
-You can use this policy to help prevent cross-site scripting
-vulnerabilities in your extension.
-To specify that your extension loads resources
-only from its own package, use the following policy:
+A security policy to apply to resources in your extension. You can use this
+policy to help prevent cross-site scripting vulnerabilities in your extension.
+By default, the extension system enforces the following policy:
+</p>
+
+<pre>script-src 'self'; object-src 'self'</pre>
+
+<p>
+Extensions can tighten their policy using the
+<code>content_security_policy</code> manifest attribute. For example, to
+specify that your extension loads resources only from its own package, use the
+following policy:
 </p>
 
 <pre>"content_security_policy": "default-src 'self' " </pre>
@@ -129,6 +137,13 @@ you might use the following policy:
 </p>
 
 <pre>"content_security_policy": "default-src 'self' https://ssl.google-analytics.com"</pre>
+
+<p>
+The extension system will prevent you including insecure resources
+for <code>script-src</code> or <code>object-src</code>.  If you are using
+<code>eval</code> to parse JSON, please consider using <code>JSON.parse</code>
+instead.
+</p>
 
 <p>
 For details, see the
@@ -654,5 +669,21 @@ For example, 1.1.9.9999 is newer than 1.1.
 For more information, see
 <a href="autoupdate.html">Autoupdating</a>.
 </p>
+
+
+<h3 id="manifest_version">manifest_version</h3>
+
+<p>
+The version of the manifest format that this extension uses. Currently,
+extensions should use the value <code>2</code> (without quotes):
+</p>
+
+<pre>"manifest_version": 2</pre>
+
+<p>
+Future breaking changes to the extension system may require a new version
+number.
+</p>
+
 
 <!-- [PENDING: Possibly: point to the store/dashboard and make a big deal of the fact that autoupdating is free if you use them.] -->
