@@ -532,7 +532,6 @@
         'focus/focus_traversal_unittest.cc',
         'layout/box_layout_unittest.cc',
         'layout/grid_layout_unittest.cc',
-        'test/test_tooltip_client.cc',
         'test/test_tooltip_client.h',
         'test/test_views_delegate.cc',
         'test/test_views_delegate.h',
@@ -590,7 +589,6 @@
           'sources/': [
             ['exclude', '../aura/test/test_desktop_delegate.cc'],
             ['exclude', '../aura/test/test_desktop_delegate.h'],
-            ['exclude', 'test/test_tooltip_client.cc'],
           ],
         }],
         ['use_webkit_compositor==1', {

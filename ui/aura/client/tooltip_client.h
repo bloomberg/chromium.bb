@@ -16,13 +16,6 @@ class Window;
 
 class AURA_EXPORT TooltipClient {
  public:
-  // Returns the default font used by tooltips.
-  static gfx::Font GetDefaultFont();
-
-  // Returns the maximum width of the tooltip. |x| and |y| give the location
-  // the tooltip is to be displayed on in screen coordinates.
-  static int GetMaxWidth(int x, int y);
-
   // Informs the shell tooltip manager of change in tooltip for window |target|.
   virtual void UpdateTooltip(Window* target) = 0;
 };

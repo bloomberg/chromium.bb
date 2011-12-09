@@ -24,12 +24,15 @@ int TooltipManager::GetTooltipHeight() {
 
 // static
 gfx::Font TooltipManager::GetDefaultFont() {
-  return aura::TooltipClient::GetDefaultFont();
+  return ui::ResourceBundle::GetSharedInstance().GetFont(
+      ui::ResourceBundle::BaseFont);
 }
 
 // static
 int TooltipManager::GetMaxWidth(int x, int y) {
-  return aura::TooltipClient::GetMaxWidth(x, y);
+  gfx::Rect monitor_bounds =
+      gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point(x, y));
+  return (monitor_bounds.width() + 1) / 2;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

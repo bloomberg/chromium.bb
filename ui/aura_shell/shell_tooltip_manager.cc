@@ -48,6 +48,21 @@ const size_t kMaxTooltipLength = 1024;
 // Maximum number of lines we allow in the tooltip.
 const size_t kMaxLines = 6;
 
+gfx::Font GetDefaultFont() {
+  // TODO(varunjain): implementation duplicated in tooltip_manager_aura. Figure
+  // out a way to merge.
+  return ui::ResourceBundle::GetSharedInstance().GetFont(
+      ui::ResourceBundle::BaseFont);
+}
+
+int GetMaxWidth(int x, int y) {
+  // TODO(varunjain): implementation duplicated in tooltip_manager_aura. Figure
+  // out a way to merge.
+  gfx::Rect monitor_bounds =
+      gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point(x, y));
+  return (monitor_bounds.width() + 1) / 2;
+}
+
 // Trims the tooltip to fit, setting |text| to the clipped result,
 // |max_width| to the width (in pixels) of the clipped text and |line_count|
 // to the number of lines of text in the tooltip. |x| and |y| give the
@@ -66,7 +81,7 @@ void TrimTooltipToFit(string16* text,
     *text = text->substr(0, kMaxTooltipLength);
 
   // Determine the available width for the tooltip.
-  int available_width = aura::TooltipClient::GetMaxWidth(x, y);
+  int available_width = GetMaxWidth(x, y);
 
   // Split the string into at most kMaxLines lines.
   std::vector<string16> lines;
@@ -76,7 +91,7 @@ void TrimTooltipToFit(string16* text,
   *line_count = static_cast<int>(lines.size());
 
   // Format each line to fit.
-  gfx::Font font = aura::TooltipClient::GetDefaultFont();
+  gfx::Font font = GetDefaultFont();
   string16 result;
   for (std::vector<string16>::iterator i = lines.begin(); i != lines.end();
        ++i) {
@@ -279,20 +294,3 @@ void ShellTooltipManager::UpdateIfRequired() {
 }
 
 }  // namespace aura_shell
-
-namespace aura {
-
-// static
-gfx::Font TooltipClient::GetDefaultFont() {
-  return ui::ResourceBundle::GetSharedInstance().GetFont(
-      ui::ResourceBundle::BaseFont);
-}
-
-// static
-int TooltipClient::GetMaxWidth(int x, int y) {
-  gfx::Rect monitor_bounds =
-      gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point(x, y));
-  return (monitor_bounds.width() + 1) / 2;
-}
-
-}  // namespace aura
