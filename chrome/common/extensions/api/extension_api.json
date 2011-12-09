@@ -9191,6 +9191,7 @@
   },
   {
     "namespace": "experimental.socket",
+    "nodoc": true,
     "types": [
       {
         "id": "SocketEvent",
