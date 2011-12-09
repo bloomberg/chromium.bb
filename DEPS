@@ -35,7 +35,7 @@ vars = {
   "libvpx_revision": "109236",
   "lss_revision": "9",
   "ffmpeg_revision": "112050",
-  "sfntly_revision": "111",
+  "sfntly_revision": "117",
   "skia_revision": "2824",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
