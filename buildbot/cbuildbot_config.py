@@ -578,7 +578,6 @@ add_config('link-private-bin', [internal, pfq, {
   'overlays': 'private',
   'description' : 'link PFQ',
   'prebuilts' : False,
-  'vm_tests' : None,
 }])
 
 add_config('x86-alex-toolchain', [internal, full, official, {
