@@ -31,8 +31,7 @@ void* StringCreateDeleteThreadFunc(void* thread_argument) {
   static const char* kTestString = "A test string";
   const uint32_t kTestStringLen = strlen(kTestString);
   for (int i = 0; i < kNumTriesPerThread; ++i) {
-    vars[i] =
-        var_interface->VarFromUtf8(pp_module(), kTestString, kTestStringLen);
+    vars[i] = var_interface->VarFromUtf8(kTestString, kTestStringLen);
   }
   for (int i = 0; i < kNumTriesPerThread; ++i) {
     var_interface->Release(vars[i]);
@@ -88,8 +87,7 @@ void TestStringVarRefCount() {
   pthread_t tid[kNumThreads];
   static const char* kTestString = "A test string";
   const uint32_t kTestStringLen = strlen(kTestString);
-  PP_Var test_var =
-      var_interface->VarFromUtf8(pp_module(), kTestString, kTestStringLen);
+  PP_Var test_var = var_interface->VarFromUtf8(kTestString, kTestStringLen);
   for (int i = 0; i < kNumThreads; ++i) {
     EXPECT(pthread_create(&tid[i],
                           NULL,
