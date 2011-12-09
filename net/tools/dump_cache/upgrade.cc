@@ -549,7 +549,7 @@ void MasterSM::SendQuit() {
 
 void MasterSM::DoEnd() {
   DEBUGMSG("Master DoEnd\n");
-  MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 void MasterSM::Fail() {
@@ -865,7 +865,7 @@ void SlaveSM::DoReadDataComplete(int ret) {
 
 void SlaveSM::DoEnd() {
   DEBUGMSG("\t\t\tSlave DoEnd\n");
-  MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 void SlaveSM::Fail() {

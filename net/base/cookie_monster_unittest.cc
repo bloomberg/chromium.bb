@@ -108,7 +108,7 @@ class CookieCallback {
 
     did_run_ = true;
     EXPECT_EQ(expected_loop, MessageLoop::current());
-    loop_to_quit_->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+    loop_to_quit_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
  private:
@@ -953,7 +953,7 @@ class MockDeleteCookieCallback
 };
 
 ACTION(QuitCurrentMessageLoop) {
-  MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 // TODO(erikwright): When the synchronous helpers 'GetCookies' etc. are removed,
