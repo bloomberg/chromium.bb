@@ -977,12 +977,6 @@
    fun:PR_CallOnce
    fun:ssl_InitSessionCacheLocks
    fun:lock_cache
-   fun:ssl_LookupSID
-   fun:ssl2_BeginClientHandshake
-   fun:ssl_Do1stHandshake
-   fun:SSL_ForceHandshake
-   fun:_ZN3net18SSLClientSocketNSS11DoHandshakeEv
-   fun:_ZN3net18SSLClientSocketNSS15DoHandshakeLoopEi
 }
 {
    # Intentionally leaking NSS to prevent shutdown crashes
