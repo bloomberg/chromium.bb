@@ -255,7 +255,9 @@ void ProfileShortcutManagerWin::OnProfileAdded(
         // icon for the original profile here and update it with that.
         BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
             base::Bind(&UpdateChromeDesktopShortcutForProfile,
-                       new_shortcut, UTF8ToUTF16(chrome::kInitialProfile),
+                       new_shortcut,
+                       CreateProfileShortcutSwitch(
+                           UTF8ToUTF16(chrome::kInitialProfile)),
                        profile_path, static_cast<gfx::Image*>(NULL)));
       }
     }
