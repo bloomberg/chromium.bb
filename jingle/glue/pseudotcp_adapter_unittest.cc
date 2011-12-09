@@ -174,20 +174,6 @@ class FakeSocket : public net::Socket {
 
     return buf_len;
   }
-  virtual int Write(net::IOBuffer* buf, int buf_len,
-                    const net::CompletionCallback& callback) OVERRIDE {
-    DCHECK(buf);
-    if (peer_socket_) {
-      MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&FakeSocket::AppendInputPacket,
-                     base::Unretained(peer_socket_),
-                     std::vector<char>(buf->data(), buf->data() + buf_len)),
-          latency_ms_);
-    }
-
-    return buf_len;
-  }
 
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE {
     NOTIMPLEMENTED();

@@ -52,8 +52,6 @@ class FakeSSLClientSocket : public net::StreamSocket {
                    const net::CompletionCallback& callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buf, int buf_len,
                     net::OldCompletionCallback* callback) OVERRIDE;
-  virtual int Write(net::IOBuffer* buf, int buf_len,
-                    const net::CompletionCallback& callback) OVERRIDE;
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
   virtual bool SetSendBufferSize(int32 size) OVERRIDE;
   virtual int Connect(net::OldCompletionCallback* callback) OVERRIDE;

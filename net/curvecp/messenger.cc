@@ -58,7 +58,7 @@ static const size_t kReceiveBufferSize = (128 * 1024);
 Messenger::Messenger(Packetizer* packetizer)
     : packetizer_(packetizer),
       send_buffer_(kSendBufferSize),
-      old_send_complete_callback_(NULL),
+      send_complete_callback_(NULL),
       old_receive_complete_callback_(NULL),
       pending_receive_length_(0),
       send_message_in_progress_(false),
@@ -104,31 +104,10 @@ int Messenger::Read(IOBuffer* buf, int buf_len,
   return bytes_read;
 }
 
-int Messenger::Write(
-    IOBuffer* buf, int buf_len, OldCompletionCallback* callback) {
+int Messenger::Write(IOBuffer* buf, int buf_len, OldCompletionCallback* callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!pending_send_.get());   // Already a write pending!
-  DCHECK(!old_send_complete_callback_ && send_complete_callback_.is_null());
-  DCHECK_LT(0, buf_len);
-
-  int len = send_buffer_.write(buf->data(), buf_len);
-  if (!send_timer_.IsRunning())
-    send_timer_.Start(FROM_HERE, base::TimeDelta(),
-                      this, &Messenger::OnSendTimer);
-  if (len)
-    return len;
-
-  // We couldn't add data to the send buffer, so block the application.
-  pending_send_ = buf;
-  pending_send_length_ = buf_len;
-  old_send_complete_callback_ = callback;
-  return ERR_IO_PENDING;
-}
-int Messenger::Write(
-    IOBuffer* buf, int buf_len, const CompletionCallback& callback) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(!pending_send_.get());   // Already a write pending!
-  DCHECK(!old_send_complete_callback_ && send_complete_callback_.is_null());
+  DCHECK(!send_complete_callback_);
   DCHECK_LT(0, buf_len);
 
   int len = send_buffer_.write(buf->data(), buf_len);
@@ -189,21 +168,15 @@ IOBufferWithSize* Messenger::CreateBufferFromSendQueue() {
   DCHECK_EQ(bytes, length);
 
   // We consumed data, check to see if someone is waiting to write more data.
-  if (old_send_complete_callback_ || !send_complete_callback_.is_null()) {
+  if (send_complete_callback_) {
     DCHECK(pending_send_.get());
 
     int len = send_buffer_.write(pending_send_->data(), pending_send_length_);
     if (len) {
       pending_send_ = NULL;
-      if (old_send_complete_callback_) {
-        OldCompletionCallback* callback = old_send_complete_callback_;
-        old_send_complete_callback_ = NULL;
-        callback->Run(len);
-      } else {
-        CompletionCallback callback = send_complete_callback_;
-        send_complete_callback_.Reset();
-        callback.Run(len);
-      }
+      OldCompletionCallback* callback = send_complete_callback_;
+      send_complete_callback_ = NULL;
+      callback->Run(len);
     }
   }
 

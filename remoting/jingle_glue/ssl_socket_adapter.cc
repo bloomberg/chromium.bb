@@ -188,7 +188,7 @@ void SSLSocketAdapter::OnConnectEvent(talk_base::AsyncSocket* socket) {
 TransportSocket::TransportSocket(talk_base::AsyncSocket* socket,
                                  SSLSocketAdapter *ssl_adapter)
     : old_read_callback_(NULL),
-      old_write_callback_(NULL),
+      write_callback_(NULL),
       read_buffer_len_(0),
       write_buffer_len_(0),
       socket_(socket),
@@ -327,25 +327,7 @@ int TransportSocket::Read(net::IOBuffer* buf, int buf_len,
 int TransportSocket::Write(net::IOBuffer* buf, int buf_len,
                            net::OldCompletionCallback* callback) {
   DCHECK(buf);
-  DCHECK(!old_write_callback_ && write_callback_.is_null());
-  DCHECK(!write_buffer_.get());
-  int result = socket_->Send(buf->data(), buf_len);
-  if (result < 0) {
-    result = net::MapSystemError(socket_->GetError());
-    if (result == net::ERR_IO_PENDING) {
-      old_write_callback_ = callback;
-      write_buffer_ = buf;
-      write_buffer_len_ = buf_len;
-    }
-  }
-  if (result != net::ERR_IO_PENDING)
-    was_used_to_convey_data_ = true;
-  return result;
-}
-int TransportSocket::Write(net::IOBuffer* buf, int buf_len,
-                           const net::CompletionCallback& callback) {
-  DCHECK(buf);
-  DCHECK(!old_write_callback_ && write_callback_.is_null());
+  DCHECK(!write_callback_);
   DCHECK(!write_buffer_.get());
   int result = socket_->Send(buf->data(), buf_len);
   if (result < 0) {
@@ -404,15 +386,13 @@ void TransportSocket::OnReadEvent(talk_base::AsyncSocket* socket) {
 }
 
 void TransportSocket::OnWriteEvent(talk_base::AsyncSocket* socket) {
-  if (old_write_callback_ || !write_callback_.is_null()) {
+  if (write_callback_) {
     DCHECK(write_buffer_.get());
-    net::OldCompletionCallback* old_callback = old_write_callback_;
-    net::CompletionCallback callback = write_callback_;
+    net::OldCompletionCallback* callback = write_callback_;
     scoped_refptr<net::IOBuffer> buffer = write_buffer_;
     int buffer_len = write_buffer_len_;
 
-    old_write_callback_ = NULL;
-    write_callback_.Reset();
+    write_callback_ = NULL;
     write_buffer_ = NULL;
     write_buffer_len_ = 0;
 
@@ -420,7 +400,6 @@ void TransportSocket::OnWriteEvent(talk_base::AsyncSocket* socket) {
     if (result < 0) {
       result = net::MapSystemError(socket_->GetError());
       if (result == net::ERR_IO_PENDING) {
-        old_write_callback_ = old_callback;
         write_callback_ = callback;
         write_buffer_ = buffer;
         write_buffer_len_ = buffer_len;
@@ -428,10 +407,7 @@ void TransportSocket::OnWriteEvent(talk_base::AsyncSocket* socket) {
       }
     }
     was_used_to_convey_data_ = true;
-    if (old_callback)
-      old_callback->RunWithParams(Tuple1<int>(result));
-    else
-      callback.Run(result);
+    callback->RunWithParams(Tuple1<int>(result));
   }
 }
 

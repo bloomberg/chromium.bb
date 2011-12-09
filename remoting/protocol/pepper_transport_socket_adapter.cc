@@ -50,7 +50,7 @@ PepperTransportSocketAdapter::PepperTransportSocketAdapter(
       connected_(false),
       get_address_pending_(false),
       old_read_callback_(NULL),
-      old_write_callback_(NULL) {
+      write_callback_(NULL) {
   callback_factory_.Initialize(this);
 }
 
@@ -112,28 +112,7 @@ int PepperTransportSocketAdapter::Read(
 int PepperTransportSocketAdapter::Write(net::IOBuffer* buf, int buf_len,
                                         net::OldCompletionCallback* callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK(!old_write_callback_ && write_callback_.is_null());
-  DCHECK(!write_buffer_);
-
-  if (!transport_.get())
-    return net::ERR_SOCKET_NOT_CONNECTED;
-
-  int result = PPErrorToNetError(transport_->Send(
-      buf->data(), buf_len,
-      callback_factory_.NewOptionalCallback(
-          &PepperTransportSocketAdapter::OnWrite)));
-
-  if (result == net::ERR_IO_PENDING) {
-    old_write_callback_ = callback;
-    write_buffer_ = buf;
-  }
-
-  return result;
-}
-int PepperTransportSocketAdapter::Write(
-    net::IOBuffer* buf, int buf_len, const net::CompletionCallback& callback) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(!old_write_callback_ && write_callback_.is_null());
+  DCHECK(!write_callback_);
   DCHECK(!write_buffer_);
 
   if (!transport_.get())
@@ -357,20 +336,13 @@ void PepperTransportSocketAdapter::OnRead(int32_t result) {
 
 void PepperTransportSocketAdapter::OnWrite(int32_t result) {
   DCHECK(CalledOnValidThread());
-  DCHECK(old_write_callback_ || !write_callback_.is_null());
+  DCHECK(write_callback_);
   DCHECK(write_buffer_);
 
-  if (old_write_callback_) {
-    net::OldCompletionCallback* callback = old_write_callback_;
-    old_write_callback_ = NULL;
-    write_buffer_ = NULL;
-    callback->Run(PPErrorToNetError(result));
-  } else {
-    net::CompletionCallback callback = write_callback_;
-    write_callback_.Reset();
-    write_buffer_ = NULL;
-    callback.Run(PPErrorToNetError(result));
-  }
+  net::OldCompletionCallback* callback = write_callback_;
+  write_callback_ = NULL;
+  write_buffer_ = NULL;
+  callback->Run(PPErrorToNetError(result));
 }
 
 }  // namespace protocol

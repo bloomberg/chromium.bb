@@ -36,7 +36,6 @@ class Messenger : public base::NonThreadSafe,
   int Read(IOBuffer* buf, int buf_len, OldCompletionCallback* callback);
   int Read(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
   int Write(IOBuffer* buf, int buf_len, OldCompletionCallback* callback);
-  int Write(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
 
   // Packetizer::Listener implementation.
   virtual void OnConnection(ConnectionKey key) OVERRIDE;
@@ -72,8 +71,7 @@ class Messenger : public base::NonThreadSafe,
   // The send_buffer is a list of pending data to pack into messages and send
   // to the remote.
   CircularBuffer send_buffer_;
-  OldCompletionCallback* old_send_complete_callback_;
-  CompletionCallback send_complete_callback_;
+  OldCompletionCallback* send_complete_callback_;
   scoped_refptr<IOBuffer> pending_send_;
   int pending_send_length_;
 

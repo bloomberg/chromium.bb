@@ -86,13 +86,6 @@ int FakeSocket::Write(net::IOBuffer* buf, int buf_len,
                        buf->data(), buf->data() + buf_len);
   return buf_len;
 }
-int FakeSocket::Write(net::IOBuffer* buf, int buf_len,
-                      const net::CompletionCallback& callback) {
-  EXPECT_EQ(message_loop_, MessageLoop::current());
-  written_data_.insert(written_data_.end(),
-                       buf->data(), buf->data() + buf_len);
-  return buf_len;
-}
 
 bool FakeSocket::SetReceiveBufferSize(int32 size) {
   NOTIMPLEMENTED();
@@ -238,13 +231,6 @@ int FakeUdpSocket::Read(net::IOBuffer* buf, int buf_len,
 
 int FakeUdpSocket::Write(net::IOBuffer* buf, int buf_len,
                          net::OldCompletionCallback* callback) {
-  EXPECT_EQ(message_loop_, MessageLoop::current());
-  written_packets_.push_back(std::string());
-  written_packets_.back().assign(buf->data(), buf->data() + buf_len);
-  return buf_len;
-}
-int FakeUdpSocket::Write(net::IOBuffer* buf, int buf_len,
-                         const net::CompletionCallback& callback) {
   EXPECT_EQ(message_loop_, MessageLoop::current());
   written_packets_.push_back(std::string());
   written_packets_.back().assign(buf->data(), buf->data() + buf_len);
