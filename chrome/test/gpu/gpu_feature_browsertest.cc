@@ -196,15 +196,10 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
   GpuFeatureFlags flags = GpuDataManager::GetInstance()->GetGpuFeatureFlags();
   EXPECT_EQ(flags.flags(), 0u);
 
-#if defined(OS_MACOSX)
-  // TODO(zmo): enabling Mac when skia backend is enabled.
-  const GpuResultFlags expectations = EXPECT_NO_GPU_PROCESS;
-#else
   num_contexts_ = 2;
   const GpuResultFlags expectations = EXPECT_GPU_PROCESS |
                                       EXPECT_GPU_SWAP_BUFFERS |
                                       EXPECT_GPU_CONTEXTS;
-#endif
   const FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
   RunTest(url, expectations);
 }
