@@ -505,6 +505,9 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
 
     web_prefs.visual_word_movement_enabled =
         command_line.HasSwitch(switches::kEnableVisualWordMovement);
+
+    web_prefs.unified_textchecker_enabled =
+        command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures);
   }
 
   {  // Certain GPU features might have been blacklisted.

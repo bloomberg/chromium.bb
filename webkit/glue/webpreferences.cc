@@ -75,6 +75,7 @@ WebPreferences::WebPreferences()
       show_composited_layer_tree(false),
       show_fps_counter(false),
       asynchronous_spell_checking_enabled(true),
+      unified_textchecker_enabled(false),
       accelerated_compositing_enabled(false),
       threaded_compositing_enabled(false),
       force_compositing_mode(false),
@@ -306,6 +307,7 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   settings->setAsynchronousSpellCheckingEnabled(
       asynchronous_spell_checking_enabled);
+  settings->setUnifiedTextCheckerEnabled(unified_textchecker_enabled);
 
   for (WebInspectorPreferences::const_iterator it = inspector_settings.begin();
        it != inspector_settings.end(); ++it)
