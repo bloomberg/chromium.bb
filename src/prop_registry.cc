@@ -71,11 +71,14 @@ void Property::DestroyProp() {
 }
 
 void BoolProperty::CreatePropImpl() {
+  GesturesPropBool orig_val = val_;
   gprop_ = parent_->PropProvider()->create_bool_fn(
       parent_->PropProviderData(),
       name(),
       &val_,
       val_);
+  if (delegate_ && orig_val != val_)
+    delegate_->BoolWasWritten(this);
 }
 
 ::Value* BoolProperty::NewValue() const {
@@ -107,11 +110,14 @@ void BoolProperty::HandleGesturesPropWritten() {
 }
 
 void DoubleProperty::CreatePropImpl() {
+  double orig_val = val_;
   gprop_ = parent_->PropProvider()->create_real_fn(
       parent_->PropProviderData(),
       name(),
       &val_,
       val_);
+  if (delegate_ && orig_val != val_)
+    delegate_->DoubleWasWritten(this);
 }
 
 ::Value* DoubleProperty::NewValue() const {
@@ -139,11 +145,14 @@ void DoubleProperty::HandleGesturesPropWritten() {
 }
 
 void IntProperty::CreatePropImpl() {
+  int orig_val = val_;
   gprop_ = parent_->PropProvider()->create_int_fn(
       parent_->PropProviderData(),
       name(),
       &val_,
       val_);
+  if (delegate_ && orig_val != val_)
+    delegate_->IntWasWritten(this);
 }
 
 ::Value* IntProperty::NewValue() const {
@@ -171,11 +180,14 @@ void IntProperty::HandleGesturesPropWritten() {
 }
 
 void ShortProperty::CreatePropImpl() {
+  short orig_val = val_;
   gprop_ = parent_->PropProvider()->create_short_fn(
       parent_->PropProviderData(),
       name(),
       &val_,
       val_);
+  if (delegate_ && orig_val != val_)
+    delegate_->ShortWasWritten(this);
 }
 
 ::Value* ShortProperty::NewValue() const {
@@ -207,11 +219,14 @@ void ShortProperty::HandleGesturesPropWritten() {
 }
 
 void StringProperty::CreatePropImpl() {
+  const char* orig_val = val_;
   gprop_ = parent_->PropProvider()->create_string_fn(
       parent_->PropProviderData(),
       name(),
       &val_,
       val_);
+  if (delegate_ && strcmp(orig_val, val_) == 0)
+    delegate_->StringWasWritten(this);
 }
 
 ::Value* StringProperty::NewValue() const {

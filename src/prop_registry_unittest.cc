@@ -106,4 +106,72 @@ TEST(PropRegistryTest, PropChangeTest) {
   EXPECT_EQ(1, log.size());
 }
 
+// Mock GesturesPropProvider
+GesturesProp* MockGesturesPropCreateBool(void* data, const char* name,
+                                         GesturesPropBool* loc,
+                                         const GesturesPropBool init) {
+  *loc = true;
+  return NULL;
+}
+
+GesturesProp* MockGesturesPropCreateInt(void* data, const char* name,
+                                        int* loc, const int init) {
+  *loc = 1;
+  return NULL;
+}
+
+GesturesProp* MockGesturesPropCreateReal(void* data, const char* name,
+                                         double* loc, const double init) {
+  *loc = 1.0;
+  return NULL;
+}
+
+GesturesProp* MockGesturesPropCreateShort(void* data, const char* name,
+                                          short* loc,
+                                          const short init) {
+  *loc = 1;
+  return NULL;
+}
+
+GesturesProp* MockGesturesPropCreateString(void* data, const char* name,
+                                           const char** loc,
+                                           const char* const init) {
+  *loc = "1";
+  return NULL;
+}
+
+void MockGesturesPropRegisterHandlers(void* data, GesturesProp* prop,
+                                      void* handler_data,
+                                      GesturesPropGetHandler getter,
+                                      GesturesPropSetHandler setter) {}
+
+void MockGesturesPropFree(void* data, GesturesProp* prop) {}
+
+// This tests that if we create a prop, then set the prop provider, and the
+// prop provider changes the value at that time, that we notify the prop
+// delegate that the value was changed.
+TEST(PropRegistryTest, SetAtCreateShouldNotifyTest) {
+  GesturesPropProvider mock_gestures_props_provider = {
+    MockGesturesPropCreateInt,
+    MockGesturesPropCreateShort,
+    MockGesturesPropCreateBool,
+    MockGesturesPropCreateString,
+    MockGesturesPropCreateReal,
+    MockGesturesPropRegisterHandlers,
+    MockGesturesPropFree
+  };
+
+  PropRegistry reg;
+  PropRegistryTestDelegate delegate;
+  BoolProperty my_bool(&reg, "MyBool", 0, &delegate);
+  DoubleProperty my_double(&reg, "MyDouble", 0.0, &delegate);
+  IntProperty my_int(&reg, "MyInt", 0, &delegate);
+  ShortProperty my_short(&reg, "MyShort", 0, &delegate);
+  ShortProperty my_short_no_change(&reg, "MyShortNoChange", 1, &delegate);
+  EXPECT_EQ(0, delegate.call_cnt_);
+
+  reg.SetPropProvider(&mock_gestures_props_provider, NULL);
+  EXPECT_EQ(4, delegate.call_cnt_);
+}
+
 }  // namespace gestures
