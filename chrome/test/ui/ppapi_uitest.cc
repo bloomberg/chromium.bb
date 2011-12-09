@@ -291,8 +291,9 @@ TEST_PPAPI_IN_PROCESS(InputEvent)
 TEST_PPAPI_OUT_OF_PROCESS(InputEvent)
 
 TEST_PPAPI_IN_PROCESS(Instance)
-// http://crbug.com/91729
-TEST_PPAPI_OUT_OF_PROCESS(DISABLED_Instance)
+TEST_PPAPI_OUT_OF_PROCESS(Instance)
+// The Instance test is actually InstanceDeprecated which isn't supported
+// by NaCl.
 
 TEST_PPAPI_IN_PROCESS(Graphics2D)
 TEST_PPAPI_OUT_OF_PROCESS(Graphics2D)
