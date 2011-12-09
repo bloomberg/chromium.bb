@@ -11,6 +11,7 @@ extern "C" {
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/process_util.h"
 #include "third_party/mesa/MesaLib/include/GL/osmesa.h"
 #include "ui/base/x/x11_util.h"
@@ -48,7 +49,7 @@ bool GLSurfaceGLX::InitializeOneOff() {
   if (initialized)
     return true;
 
-  g_display = XOpenDisplay(NULL);
+  g_display = base::MessagePumpForUI::GetDefaultXDisplay();
   if (!g_display) {
     LOG(ERROR) << "XOpenDisplay failed.";
     return false;

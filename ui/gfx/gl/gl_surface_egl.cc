@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #if !defined(OS_ANDROID)
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
@@ -57,7 +58,7 @@ bool GLSurfaceEGL::InitializeOneOff() {
 #if defined(USE_WAYLAND)
   g_native_display = ui::WaylandDisplay::Connect(NULL)->display();
 #elif defined(USE_X11)
-  g_native_display = XOpenDisplay(NULL);
+  g_native_display = base::MessagePumpForUI::GetDefaultXDisplay();
 #else
   g_native_display = EGL_DEFAULT_DISPLAY;
 #endif

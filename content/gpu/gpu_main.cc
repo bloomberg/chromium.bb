@@ -30,6 +30,10 @@
 #include "ui/base/x/x11_util.h"
 #endif
 
+#if defined(TOOLKIT_USES_GTK)
+#include "ui/gfx/gtk_util.h"
+#endif
+
 // Main function for starting the Gpu process.
 int GpuMain(const content::MainFunctionParams& parameters) {
   base::Time start_time = base::Time::Now();
@@ -49,6 +53,9 @@ int GpuMain(const content::MainFunctionParams& parameters) {
         SEM_NOOPENFILEERRORBOX);
 #elif defined(USE_X11)
     ui::SetDefaultX11ErrorHandlers();
+#endif
+#if defined(TOOLKIT_USES_GTK)
+    gfx::GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
 #endif
   }
 

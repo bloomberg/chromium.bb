@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #if !defined(USE_WAYLAND)
 #include "third_party/mesa/MesaLib/include/GL/osmesa.h"
 #endif
@@ -108,7 +109,7 @@ bool NativeViewGLSurfaceOSMesa::InitializeOneOff() {
   if (initialized)
     return true;
 
-  g_osmesa_display = XOpenDisplay(NULL);
+  g_osmesa_display = base::MessagePumpForUI::GetDefaultXDisplay();
   if (!g_osmesa_display) {
     LOG(ERROR) << "XOpenDisplay failed.";
     return false;

@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/rect.h"
@@ -45,8 +46,6 @@ class TestCompositorHostLinux : public TestCompositorHost,
 
   scoped_refptr<ui::Compositor> compositor_;
 
-  Display* display_;
-
   XID window_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCompositorHostLinux);
@@ -57,28 +56,27 @@ TestCompositorHostLinux::TestCompositorHostLinux(const gfx::Rect& bounds)
 }
 
 TestCompositorHostLinux::~TestCompositorHostLinux() {
-  XDestroyWindow(display_, window_);
 }
 
 void TestCompositorHostLinux::Show() {
-  display_ = XOpenDisplay(NULL);
+  Display* display = base::MessagePumpForUI::GetDefaultXDisplay();
   XSetWindowAttributes swa;
   swa.event_mask = StructureNotifyMask | ExposureMask;
   swa.override_redirect = True;
   window_ = XCreateWindow(
-      display_,
-      RootWindow(display_, DefaultScreen(display_)),  // parent
+      display,
+      RootWindow(display, DefaultScreen(display)),  // parent
       bounds_.x(), bounds_.y(), bounds_.width(), bounds_.height(),
       0,  // border width
       CopyFromParent,  // depth
       InputOutput,
       CopyFromParent,  // visual
       CWEventMask | CWOverrideRedirect, &swa);
-  XMapWindow(display_, window_);
+  XMapWindow(display, window_);
 
   while (1) {
     XEvent event;
-    XNextEvent(display_, &event);
+    XNextEvent(display, &event);
     if (event.type == MapNotify && event.xmap.window == window_)
       break;
   }

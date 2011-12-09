@@ -167,7 +167,7 @@ bool MessagePumpX::RunOnce(GMainContext* context, bool block) {
   MessagePumpDispatcher* dispatcher =
       GetDispatcher() ? GetDispatcher() : g_default_dispatcher;
 
-  if (!display || !dispatcher)
+  if (!display)
     return g_main_context_iteration(context, block);
 
   // In the general case, we want to handle all pending events before running
@@ -175,7 +175,7 @@ bool MessagePumpX::RunOnce(GMainContext* context, bool block) {
   while (XPending(display)) {
     XEvent xev;
     XNextEvent(display, &xev);
-    if (ProcessXEvent(dispatcher, &xev))
+    if (dispatcher && ProcessXEvent(dispatcher, &xev))
       return true;
   }
 
