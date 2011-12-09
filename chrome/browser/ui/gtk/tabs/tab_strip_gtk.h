@@ -30,6 +30,10 @@ class CustomDrawButton;
 class DraggedTabControllerGtk;
 class GtkThemeService;
 
+namespace gfx {
+class Image;
+}
+
 class TabStripGtk : public TabStripModelObserver,
                     public TabGtk::TabDelegate,
                     public MessageLoopForUI::Observer,
@@ -234,7 +238,7 @@ class TabStripGtk : public TabStripModelObserver,
     GtkWidget* container;
 
     // The drop indicator image.
-    GdkPixbuf* drop_arrow;
+    gfx::Image* drop_arrow;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(DropInfo);
@@ -395,7 +399,7 @@ class TabStripGtk : public TabStripModelObserver,
 
   // Returns the image to use for indicating a drop on a tab. If is_down is
   // true, this returns an arrow pointing down.
-  static GdkPixbuf* GetDropArrowImage(bool is_down);
+  static gfx::Image* GetDropArrowImage(bool is_down);
 
   // -- Animations -------------------------------------------------------------
 

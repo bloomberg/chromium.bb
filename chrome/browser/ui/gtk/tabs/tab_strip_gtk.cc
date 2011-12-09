@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 
 #include <algorithm>
+#include <gtk/gtk.h>
 
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
@@ -780,7 +781,7 @@ void TabStripGtk::Init() {
 
   if (drop_indicator_width == 0) {
     // Direction doesn't matter, both images are the same size.
-    GdkPixbuf* drop_image = GetDropArrowImage(true);
+    GdkPixbuf* drop_image = GetDropArrowImage(true)->ToGdkPixbuf();
     drop_indicator_width = gdk_pixbuf_get_width(drop_image);
     drop_indicator_height = gdk_pixbuf_get_height(drop_image);
   }
@@ -1724,7 +1725,7 @@ void TabStripGtk::SetDropIndex(int index, bool drop_before) {
     drop_info_->drop_before = drop_before;
     if (is_beneath == drop_info_->point_down) {
       drop_info_->point_down = !is_beneath;
-      drop_info_->drop_arrow= GetDropArrowImage(drop_info_->point_down);
+      drop_info_->drop_arrow = GetDropArrowImage(drop_info_->point_down);
     }
   }
 
@@ -1778,8 +1779,8 @@ bool TabStripGtk::CompleteDrop(guchar* data, bool is_plain_text) {
 }
 
 // static
-GdkPixbuf* TabStripGtk::GetDropArrowImage(bool is_down) {
-  return ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+gfx::Image* TabStripGtk::GetDropArrowImage(bool is_down) {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       is_down ? IDR_TAB_DROP_DOWN : IDR_TAB_DROP_UP);
 }
 
@@ -1806,13 +1807,14 @@ gboolean TabStripGtk::DropInfo::OnExposeEvent(GtkWidget* widget,
     SetContainerShapeMask();
   }
 
-  gdk_pixbuf_render_to_drawable(drop_arrow,
-                                container->window,
-                                0, 0, 0,
-                                0, 0,
-                                drop_indicator_width,
-                                drop_indicator_height,
-                                GDK_RGB_DITHER_NONE, 0, 0);
+  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+  gdk_cairo_rectangle(cr, &event->area);
+  cairo_clip(cr);
+
+  drop_arrow->ToCairo()->SetSource(cr, widget, 0, 0);
+  cairo_paint(cr);
+
+  cairo_destroy(cr);
 
   return FALSE;
 }
@@ -1864,7 +1866,9 @@ void TabStripGtk::DropInfo::SetContainerShapeMask() {
   // Blit the rendered bitmap into a pixmap.  Any pixel set in the pixmap will
   // be opaque in the container window.
   cairo_set_operator(cairo_context, CAIRO_OPERATOR_SOURCE);
-  gdk_cairo_set_source_pixbuf(cairo_context, drop_arrow, 0, 0);
+  // We don't use CairoCachedSurface::SetSource() here because we're not
+  // rendering on a display server.
+  gdk_cairo_set_source_pixbuf(cairo_context, drop_arrow->ToGdkPixbuf(), 0, 0);
   cairo_paint(cairo_context);
   cairo_destroy(cairo_context);
 
