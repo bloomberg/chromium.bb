@@ -7,11 +7,13 @@
 #include "content/common/gpu/image_transport_surface.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/win/windows_version.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/public/common/content_switches.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
@@ -39,6 +41,7 @@ class PbufferImageTransportSurface
   virtual bool SwapBuffers() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
   virtual std::string GetExtensions() OVERRIDE;
+  virtual void SetVisible(bool visible) OVERRIDE;
 
  protected:
   // ImageTransportSurface implementation
@@ -53,6 +56,12 @@ class PbufferImageTransportSurface
   virtual ~PbufferImageTransportSurface();
   void SendBuffersSwapped();
 
+  // Whether the surface is currently visible.
+  bool is_visible_;
+
+  // Size to resize to when the surface becomes visible.
+  gfx::Size visible_size_;
+
   scoped_ptr<ImageTransportHelper> helper_;
 
   DISALLOW_COPY_AND_ASSIGN(PbufferImageTransportSurface);
@@ -64,7 +73,8 @@ PbufferImageTransportSurface::PbufferImageTransportSurface(
     int32 renderer_id,
     int32 command_buffer_id)
         : GLSurfaceAdapter(new gfx::PbufferGLSurfaceEGL(false,
-                                                        gfx::Size(1, 1))) {
+                                                        gfx::Size(1, 1))),
+          is_visible_(true) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          render_view_id,
@@ -117,6 +127,18 @@ bool PbufferImageTransportSurface::PostSubBuffer(
   return false;
 }
 
+void PbufferImageTransportSurface::SetVisible(bool visible) {
+  if (visible == is_visible_)
+    return;
+
+  is_visible_ = visible;
+
+  if (visible)
+    Resize(visible_size_);
+  else
+    Resize(gfx::Size(1, 1));
+}
+
 std::string PbufferImageTransportSurface::GetExtensions() {
   std::string extensions = gfx::GLSurface::GetExtensions();
   extensions += extensions.empty() ? "" : " ";
@@ -152,7 +174,10 @@ void PbufferImageTransportSurface::OnResizeViewACK() {
 }
 
 void PbufferImageTransportSurface::OnResize(gfx::Size size) {
-  Resize(size);
+  if (is_visible_)
+    Resize(size);
+
+  visible_size_ = size;
 }
 
 }  // namespace anonymous
@@ -168,9 +193,10 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
 
   base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
 
-  // TODO(apatrick): Enable this once it has settled in the tree.
-  if (false && gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
-      os_info->version() >= base::win::VERSION_VISTA) {
+  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
+      os_info->version() >= base::win::VERSION_VISTA &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableImageTransportSurface)) {
     surface = new PbufferImageTransportSurface(manager,
                                                render_view_id,
                                                renderer_id,

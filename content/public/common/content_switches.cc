@@ -107,6 +107,10 @@ const char kDisableGpuSandbox[]             = "disable-gpu-sandbox";
 // Manager can be used to terminate the offending process in this case.
 const char kDisableHangMonitor[]            = "disable-hang-monitor";
 
+// Disable the use of an ImageTransportSurface. This means the GPU process
+// will present the rendered page rather than the browser process.
+const char kDisableImageTransportSurface[]  = "disable-image-transport-surface";
+
 // Disable the thread that crashes the GPU process if it stops responding to
 // messages.
 const char kDisableGpuWatchdog[]            = "disable-gpu-watchdog";
