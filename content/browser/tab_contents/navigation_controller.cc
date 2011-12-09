@@ -103,9 +103,11 @@ bool AreURLsInPageNavigation(const GURL& existing_url, const GURL& new_url) {
 
 // NavigationController ---------------------------------------------------
 
+const size_t kMaxEntryCountForTestingNotSet = -1;
+
 // static
-size_t NavigationController::max_entry_count_ =
-    content::kMaxSessionHistoryEntries;
+size_t NavigationController::max_entry_count_for_testing_ =
+    kMaxEntryCountForTestingNotSet;
 
 // static
 bool NavigationController::check_for_repost_ = true;
@@ -1125,7 +1127,7 @@ void NavigationController::InsertOrReplaceEntry(NavigationEntry* entry,
       NotifyPrunedEntries(this, false, num_pruned);
   }
 
-  if (entries_.size() >= max_entry_count_) {
+  if (entries_.size() >= max_entry_count()) {
     RemoveEntryAtIndex(0, GURL());
     NotifyPrunedEntries(this, true, 1);
   }
@@ -1202,6 +1204,13 @@ void NavigationController::NotifyNavigationEntryCommitted(
 // static
 void NavigationController::DisablePromptOnRepost() {
   check_for_repost_ = false;
+}
+
+// static
+size_t NavigationController::max_entry_count() {
+  if (max_entry_count_for_testing_ != kMaxEntryCountForTestingNotSet)
+     return max_entry_count_for_testing_;
+  return content::kMaxSessionHistoryEntries;
 }
 
 void NavigationController::SetActive(bool is_active) {
