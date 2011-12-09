@@ -183,12 +183,8 @@ ResourceHandler* ChromeResourceDispatcherHostDelegate::RequestBeginning(
       resource_context.appcache_service());
 #endif
 
-  // TODO(mpcomplete): Leaving disabled for now, since I'm checking this in
-  // close to the branch point.
-#if defined(TRANSFER_REDIRECTS_BUG79520)
   handler = new TransferNavigationResourceHandler(
       handler, resource_dispatcher_host_, request);
-#endif
 
   return handler;
 }
