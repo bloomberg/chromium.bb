@@ -37,7 +37,7 @@ class MessageLoopQuitter {
  public:
   explicit MessageLoopQuitter(MessageLoop* loop) : loop_(loop) {}
   void Quit(media::PipelineStatus status) {
-    loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     delete this;
   }
  private:
