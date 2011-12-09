@@ -145,17 +145,16 @@ TaskManager.prototype = {
 
     this.opt_ = opt;
 
+    this.initialized_ = true;
     this.enableTaskManager();
 
     this.dialogDom_ = dialogDom;
     this.document_ = dialogDom.ownerDocument;
 
-    var ary = this.dialogDom_.querySelectorAll('[visibleif]');
-    for (var i = 0; i < ary.length; i++) {
-      var expr = ary[i].getAttribute('visibleif');
-      if (!eval(expr))
-        ary[i].hidden = true;
-    }
+    $('close-window').addEventListener('click', this.close.bind(this));
+    $('kill-process').addEventListener('click', this.killProcess.bind(this));
+    $('about-memory-link').addEventListener('click',
+                                            this.openAboutMemory.bind(this));
 
     this.is_column_shown_ = [];
     for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
@@ -204,31 +203,17 @@ TaskManager.prototype = {
       dm.setCompareFunction(column_id, compare_func);
     }
 
-    this.initTable_();
-    this.initialized_ = true;
-
-    loadDelayedIncludes(this);
-  },
-
-  /**
-   * Additional initialization of taskmanager. This function is called when
-   * the loading of delayed scripts finished.
-   * @public
-   */
-  delayedInitialize: function () {
-    $('close-window').addEventListener('click', this.close.bind(this));
-    $('kill-process').addEventListener('click', this.killProcess.bind(this));
-    $('about-memory-link').addEventListener('click',
-                                            this.openAboutMemory.bind(this));
-    this.initColumnMenu_();
-    this.initTableMenu_();
-
-    if (this.delayedInitLabels_) {
-      while (this.delayedInitLabels_.length > 0)
-        this.delayedInitLabels_.pop().call();
+    var ary = this.dialogDom_.querySelectorAll('[visibleif]');
+    for (var i = 0; i < ary.length; i++) {
+      var expr = ary[i].getAttribute('visibleif');
+      if (!eval(expr))
+        ary[i].hidden = true;
     }
 
-    this.isFinishedInitDelayed_ = true;
+    this.initTable_();
+    this.initColumnMenu_();
+    this.initTableMenu_();
+    this.table_.redraw();
   },
 
   initColumnModel_: function () {
@@ -367,8 +352,6 @@ TaskManager.prototype = {
   },
 
   renderColumn_: function(entry, columnId, table) {
-    this.delayedInitLabels_ = [];
-
     var container = this.document_.createElement('div');
     container.className = 'detail-container-' + columnId;
 
@@ -387,15 +370,8 @@ TaskManager.prototype = {
           text.textContent = entry['title'][i];
           label.appendChild(text);
 
-          var addContextMenu = function() {
-            cr.ui.contextMenuHandler.addContextMenuProperty(label);
-            label.contextMenu = this.tableContextMenu_;
-          };
-
-          if (this.isFinishedInitDelayed_)
-            addContextMenu.call(this);
-          else
-            this.delayedInitLabels_.push(addContextMenu.bind(this));
+          cr.ui.contextMenuHandler.addContextMenuProperty(label);
+          label.contextMenu = this.tableContextMenu_;
 
           label.addEventListener('dblclick', (function(uniqueId) {
               this.activatePage(uniqueId);

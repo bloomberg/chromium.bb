@@ -60,6 +60,8 @@ ChromeWebUIDataSource* CreateTaskManagerUIHTMLSource() {
   source->AddLocalizedString("inspect", IDS_TASK_MANAGER_INSPECT);
   source->AddLocalizedString("activate", IDS_TASK_MANAGER_ACTIVATE);
   source->set_json_path("strings.js");
+  source->add_resource_path("main.js", IDR_TASK_MANAGER_JS);
+  source->add_resource_path("includes.js", IDR_TASK_MANAGER_INCLUDES_JS);
   source->set_default_resource(IDR_TASK_MANAGER_HTML);
 
   return source;

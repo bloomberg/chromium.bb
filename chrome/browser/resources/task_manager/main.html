@@ -8,47 +8,10 @@
   <head>
     <meta charset="utf-8">
     <title i18n-content="title"></title>
-
-    <link rel="stylesheet" href="../shared/css/chrome_shared.css"></link>
-    <link rel="stylesheet" href="../shared/css/list.css"></link>
-    <link rel="stylesheet" href="../shared/css/table.css"></link>
-    <link rel="stylesheet" href="../shared/css/menu.css"></link>
-    <link rel="stylesheet" href="../shared/css/button.css"></link>
-    <link rel="stylesheet" href="task_manager.css"></link>
-
-    <!-- strings.js must be specified as full path, since it will be genereted
-      -- in chrome/browser/ui/webui/task_manager_ui.cc dynamically.
-      -->
+    <script src="chrome://tasks/includes.js"></script>
+    <script src="chrome://tasks/main.js"></script>
     <script src="chrome://tasks/strings.js"></script>
-
-    <script src="../shared/js/local_strings.js"></script>
-    <script src="../shared/js/i18n_template.js"></script>
-
-    <script src="../shared/js/util.js"></script>
-    <script src="../shared/js/cr.js"></script>
-    <script src="../shared/js/cr/ui.js"></script>
-    <script src="../shared/js/cr/event_target.js"></script>
-    <script src="../shared/js/cr/ui/array_data_model.js"></script>
-    <script src="../shared/js/cr/ui/list_item.js"></script>
-    <script src="../shared/js/cr/ui/list_selection_model.js"></script>
-    <script src="../shared/js/cr/ui/list_selection_controller.js"></script>
-    <script src="../shared/js/cr/ui/list.js"></script>
-
-    <script src="../shared/js/cr/ui/splitter.js"></script>
-    <script src="../shared/js/cr/ui/table/table_splitter.js"></script>
-
-    <script src="../shared/js/cr/ui/table/table_column.js"></script>
-    <script src="../shared/js/cr/ui/table/table_column_model.js"></script>
-    <script src="../shared/js/cr/ui/table/table_header.js"></script>
-    <script src="../shared/js/cr/ui/table/table_list.js"></script>
-    <script src="../shared/js/cr/ui/table.js"></script>
-
-    <script src="main.js"></script>
-
-    <!-- Loads the other scripts. -->
-    <script src="includes.js"></script>
-
-  </head>
+    <link rel="stylesheet" href="task_manager.css">
   </head>
   <body>
     <div class="dialog-title" i18n-content="title"
@@ -69,6 +32,8 @@
                 visibleif='this.opt_.isShowCloseButton'></button>
       </div>
     </div>
-    <script src="../shared/js/i18n_process.js"></script>
+    <script src="chrome://resources/js/i18n_template.js"></script>
+    <script src="chrome://resources/js/i18n_process.js"></script>
   </body>
 </html>
+
