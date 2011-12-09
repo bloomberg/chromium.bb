@@ -19,11 +19,7 @@ var harness = {
       console.log('Filesystem found.');
       self.filesystem = filesystem;
       util.getOrCreateDirectory(filesystem.root, '/Downloads', function () {});
-      util.getOrCreateDirectory(filesystem.root, '/removable', function () {});
-      util.getOrCreateDirectory(filesystem.root, '/removable/disk1',
-          function () {});
-      util.getOrCreateDirectory(filesystem.root, '/removable/disk2',
-          function () {});
+      util.getOrCreateDirectory(filesystem.root, '/media', function () {});
     };
 
     window.webkitRequestFileSystem(window.PERSISTENT, 16 * 1024 * 1024,
