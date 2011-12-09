@@ -262,6 +262,7 @@ void CloudPolicyController::SendPolicyRequest() {
   DCHECK(!data_store_->device_token().empty());
   em::DevicePolicyRequest policy_request;
   em::PolicyFetchRequest* fetch_request = policy_request.add_request();
+  em::DeviceStatusReportRequest device_status;
   fetch_request->set_signature_type(em::PolicyFetchRequest::SHA1_RSA);
   fetch_request->set_policy_type(data_store_->policy_type());
   if (!cache_->is_unmanaged() &&
@@ -274,10 +275,13 @@ void CloudPolicyController::SendPolicyRequest() {
   if (cache_->GetPublicKeyVersion(&key_version))
     fetch_request->set_public_key_version(key_version);
 
+  if (data_store_->device_status_collector())
+    data_store_->device_status_collector()->GetStatus(&device_status);
+
   backend_->ProcessPolicyRequest(data_store_->device_token(),
                                  data_store_->device_id(),
                                  data_store_->user_affiliation(),
-                                 policy_request, this);
+                                 policy_request, &device_status, this);
 }
 
 void CloudPolicyController::DoWork() {

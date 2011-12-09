@@ -41,6 +41,7 @@ class ProxyDeviceManagementBackend : public DeviceManagementBackend {
       const std::string& device_id,
       CloudPolicyDataStore::UserAffiliation affiliation,
       const em::DevicePolicyRequest& request,
+      const em::DeviceStatusReportRequest* device_status,
       DevicePolicyResponseDelegate* delegate) OVERRIDE;
   virtual void ProcessAutoEnrollmentRequest(
       const std::string& device_id,

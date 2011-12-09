@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
     setting_request->set_key(kChromeDevicePolicySettingKey);
     backend->ProcessPolicyRequest(token_, "testid",
                                   CloudPolicyDataStore::USER_AFFILIATION_NONE,
-                                  request, &delegate);
+                                  request, NULL, &delegate);
 
     MessageLoop::current()->Run();
   }
@@ -190,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
     fetch_request->set_policy_type(kChromeUserPolicyType);
     backend->ProcessPolicyRequest(token_, "testid",
                                   CloudPolicyDataStore::USER_AFFILIATION_NONE,
-                                  request, &delegate);
+                                  request, NULL, &delegate);
 
     MessageLoop::current()->Run();
   }

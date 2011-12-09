@@ -151,6 +151,16 @@ CloudPolicyDataStore::UserAffiliation
   return user_affiliation_;
 }
 
+DeviceStatusCollector*
+    CloudPolicyDataStore::device_status_collector() {
+  return device_status_collector_.get();
+}
+
+void CloudPolicyDataStore::set_device_status_collector(
+    DeviceStatusCollector* collector) {
+  device_status_collector_.reset(collector);
+}
+
 void CloudPolicyDataStore::AddObserver(
     CloudPolicyDataStore::Observer* observer) {
   observer_list_.AddObserver(observer);

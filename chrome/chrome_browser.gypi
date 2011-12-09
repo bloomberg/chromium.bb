@@ -1809,6 +1809,8 @@
         'browser/policy/device_policy_cache.h',
         'browser/policy/device_token_fetcher.cc',
         'browser/policy/device_token_fetcher.h',
+        'browser/policy/device_status_collector.cc',
+        'browser/policy/device_status_collector.h',
         'browser/policy/enterprise_install_attributes.cc',
         'browser/policy/enterprise_install_attributes.h',
         'browser/policy/enterprise_metrics.cc',

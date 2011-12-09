@@ -139,10 +139,9 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // Initializes the device cloud policy infrasturcture.
   void InitializeDevicePolicy();
 
-  // Activates the device cloud policy subsystem. This will be posted as a task
-  // from InitializeDevicePolicy since it needs to wait for the message loops to
-  // be running.
-  void InitializeDevicePolicySubsystem();
+  // Complete initialization once the message loops are running and the
+  // local_state is initialized.
+  void CompleteInitialization();
 
   static ConfigurationPolicyProvider* CreateManagedPlatformProvider();
   static ConfigurationPolicyProvider* CreateRecommendedPlatformProvider();

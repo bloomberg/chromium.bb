@@ -36,9 +36,11 @@ void ProxyDeviceManagementBackend::ProcessPolicyRequest(
     const std::string& device_id,
     CloudPolicyDataStore::UserAffiliation affiliation,
     const em::DevicePolicyRequest& request,
+    const em::DeviceStatusReportRequest* device_status,
     DevicePolicyResponseDelegate* delegate) {
   backend_->ProcessPolicyRequest(device_management_token, device_id,
-                                 affiliation, request, delegate);
+                                 affiliation, request, device_status,
+                                 delegate);
 }
 
 void ProxyDeviceManagementBackend::ProcessAutoEnrollmentRequest(

@@ -154,7 +154,7 @@ TEST_P(DeviceManagementServiceFailedRequestTest, PolicyRequest) {
   setting_request->set_key(kChromeDevicePolicySettingKey);
   backend_->ProcessPolicyRequest(kDMToken, kDeviceId,
                                  CloudPolicyDataStore::USER_AFFILIATION_NONE,
-                                 request, &mock);
+                                 request, NULL, &mock);
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
@@ -448,7 +448,7 @@ TEST_F(DeviceManagementServiceTest, CancelPolicyRequest) {
   setting_request->set_watermark("stale");
   backend_->ProcessPolicyRequest(kDMToken, kDeviceId,
                                  CloudPolicyDataStore::USER_AFFILIATION_NONE,
-                                 request, &mock);
+                                 request, NULL, &mock);
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
@@ -501,7 +501,7 @@ TEST_F(DeviceManagementServiceTest, CancelRequestAfterShutdown) {
   setting_request->set_watermark("stale");
   backend_->ProcessPolicyRequest(kDMToken, kDeviceId,
                                  CloudPolicyDataStore::USER_AFFILIATION_NONE,
-                                 request, &mock);
+                                 request, NULL, &mock);
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 

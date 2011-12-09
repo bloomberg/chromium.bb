@@ -117,7 +117,7 @@ class CloudPolicyControllerTest : public testing::Test {
 TEST_F(CloudPolicyControllerTest, StartupWithDeviceToken) {
   data_store_->SetupForTesting("fake_device_token", "device_id", "", "",
                                true);
-  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _)).WillOnce(DoAll(
+  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _, _)).WillOnce(DoAll(
       InvokeWithoutArgs(this, &CloudPolicyControllerTest::StopMessageLoop),
       MockDeviceManagementBackendSucceedSpdyCloudPolicy()));
   CreateNewController();
@@ -153,9 +153,10 @@ TEST_F(CloudPolicyControllerTest, RefreshAfterSuccessfulPolicy) {
                                "auth_token", true);
   {
     InSequence s;
-    EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _)).WillOnce(
+    EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _, _)).WillOnce(
         MockDeviceManagementBackendSucceedSpdyCloudPolicy());
-    EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _)).WillOnce(DoAll(
+    EXPECT_CALL(backend_,
+                ProcessPolicyRequest(_, _, _, _, _, _)).WillOnce(DoAll(
         InvokeWithoutArgs(this, &CloudPolicyControllerTest::StopMessageLoop),
         MockDeviceManagementBackendFailPolicy(
             DeviceManagementBackend::kErrorRequestFailed)));
@@ -172,10 +173,11 @@ TEST_F(CloudPolicyControllerTest, RefreshAfterError) {
                                "auth_token", true);
   {
     InSequence s;
-    EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _)).WillOnce(
+    EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _, _)).WillOnce(
         MockDeviceManagementBackendFailPolicy(
             DeviceManagementBackend::kErrorRequestFailed));
-    EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _)).WillOnce(DoAll(
+    EXPECT_CALL(backend_,
+                ProcessPolicyRequest(_, _, _, _, _, _)).WillOnce(DoAll(
         InvokeWithoutArgs(this,
                           &CloudPolicyControllerTest::StopMessageLoop),
         MockDeviceManagementBackendSucceedSpdyCloudPolicy()));
@@ -190,7 +192,7 @@ TEST_F(CloudPolicyControllerTest, RefreshAfterError) {
 TEST_F(CloudPolicyControllerTest, InvalidToken) {
   data_store_->SetupForTesting("device_token", "device_id",
                                "standup@ten.am", "auth", true);
-  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _)).WillOnce(
+  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _, _)).WillOnce(
       MockDeviceManagementBackendFailPolicy(
           DeviceManagementBackend::kErrorServiceManagementTokenInvalid));
   EXPECT_CALL(*token_fetcher_.get(), FetchToken()).Times(1);
@@ -203,7 +205,7 @@ TEST_F(CloudPolicyControllerTest, InvalidToken) {
 TEST_F(CloudPolicyControllerTest, DeviceNotFound) {
   data_store_->SetupForTesting("device_token", "device_id",
                                "me@you.com", "auth", true);
-  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _)).WillOnce(
+  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _, _)).WillOnce(
       MockDeviceManagementBackendFailPolicy(
           DeviceManagementBackend::kErrorServiceDeviceNotFound));
   EXPECT_CALL(*token_fetcher_.get(), FetchToken()).Times(1);
@@ -216,7 +218,7 @@ TEST_F(CloudPolicyControllerTest, DeviceNotFound) {
 TEST_F(CloudPolicyControllerTest, DeviceIdConflict) {
   data_store_->SetupForTesting("device_token", "device_id",
                                "me@you.com", "auth", true);
-  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _)).WillOnce(
+  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _, _)).WillOnce(
       MockDeviceManagementBackendFailPolicy(
           DeviceManagementBackend::kErrorServiceDeviceIdConflict));
   EXPECT_CALL(*token_fetcher_.get(), FetchToken()).Times(1);
@@ -230,7 +232,7 @@ TEST_F(CloudPolicyControllerTest, DeviceIdConflict) {
 TEST_F(CloudPolicyControllerTest, NoLongerManaged) {
   data_store_->SetupForTesting("device_token", "device_id",
                                "who@what.com", "auth", true);
-  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _)).WillOnce(
+  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _, _)).WillOnce(
       MockDeviceManagementBackendFailPolicy(
           DeviceManagementBackend::kErrorServiceManagementNotSupported));
   EXPECT_CALL(*token_fetcher_.get(), SetUnmanagedState()).Times(1);
@@ -244,7 +246,7 @@ TEST_F(CloudPolicyControllerTest, NoLongerManaged) {
 TEST_F(CloudPolicyControllerTest, InvalidSerialNumber) {
   data_store_->SetupForTesting("device_token", "device_id",
                                "who@what.com", "auth", true);
-  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _)).WillOnce(
+  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _, _)).WillOnce(
       MockDeviceManagementBackendFailPolicy(
           DeviceManagementBackend::kErrorServiceInvalidSerialNumber));
   EXPECT_CALL(*token_fetcher_.get(), SetSerialNumberInvalidState()).Times(1);
@@ -286,7 +288,7 @@ TEST_F(CloudPolicyControllerTest, SetFetchingDoneAfterPolicyFetch) {
   CreateNewWaitingCache();
   data_store_->SetupForTesting("device_token", "device_id",
                                "user@enterprise.com", "auth", true);
-  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _)).WillOnce(DoAll(
+  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _, _)).WillOnce(DoAll(
       InvokeWithoutArgs(this, &CloudPolicyControllerTest::StopMessageLoop),
       MockDeviceManagementBackendSucceedSpdyCloudPolicy()));
   CreateNewController();
@@ -299,7 +301,7 @@ TEST_F(CloudPolicyControllerTest, SetFetchingDoneAfterPolicyFetchFails) {
   CreateNewWaitingCache();
   data_store_->SetupForTesting("device_token", "device_id",
                                "user@enterprise.com", "auth", true);
-  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _)).WillOnce(DoAll(
+  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _, _, _)).WillOnce(DoAll(
       InvokeWithoutArgs(this, &CloudPolicyControllerTest::StopMessageLoop),
       MockDeviceManagementBackendFailPolicy(
           DeviceManagementBackend::kErrorRequestFailed)));

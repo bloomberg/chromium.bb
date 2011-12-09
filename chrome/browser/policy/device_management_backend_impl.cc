@@ -407,6 +407,7 @@ class DeviceManagementPolicyJob : public DeviceManagementJobBase {
       const std::string& device_id,
       const std::string& user_affiliation,
       const em::DevicePolicyRequest& request,
+      const em::DeviceStatusReportRequest* device_status,
       DeviceManagementBackend::DevicePolicyResponseDelegate* delegate)
       : DeviceManagementJobBase(
           backend_impl,
@@ -418,6 +419,10 @@ class DeviceManagementPolicyJob : public DeviceManagementJobBase {
                   user_affiliation);
     em::DeviceManagementRequest request_wrapper;
     request_wrapper.mutable_policy_request()->CopyFrom(request);
+    if (device_status != NULL) {
+      request_wrapper.mutable_device_status_report_request()->CopyFrom(
+          *device_status);
+    }
     SetPayload(request_wrapper);
   }
   virtual ~DeviceManagementPolicyJob() {}
@@ -602,12 +607,13 @@ void DeviceManagementBackendImpl::ProcessPolicyRequest(
     const std::string& device_id,
     CloudPolicyDataStore::UserAffiliation affiliation,
     const em::DevicePolicyRequest& request,
+    const em::DeviceStatusReportRequest* device_status,
     DevicePolicyResponseDelegate* delegate) {
   UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchRequested,
                             kMetricPolicySize);
   AddJob(new DeviceManagementPolicyJob(this, device_management_token, device_id,
                                        UserAffiliationToString(affiliation),
-                                       request, delegate));
+                                       request, device_status, delegate));
 }
 
 void DeviceManagementBackendImpl::ProcessAutoEnrollmentRequest(

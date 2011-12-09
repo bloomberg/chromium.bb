@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/policy/cloud_policy_provider.h"
 #include "chrome/browser/policy/cloud_policy_provider_impl.h"
@@ -422,19 +423,21 @@ void BrowserPolicyConnector::InitializeDevicePolicy() {
     // Initialize the subsystem once the message loops are spinning.
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&BrowserPolicyConnector::InitializeDevicePolicySubsystem,
+        base::Bind(&BrowserPolicyConnector::CompleteInitialization,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 #endif
 }
 
-void BrowserPolicyConnector::InitializeDevicePolicySubsystem() {
+void BrowserPolicyConnector::CompleteInitialization() {
 #if defined(OS_CHROMEOS)
   if (device_cloud_policy_subsystem_.get()) {
     device_cloud_policy_subsystem_->CompleteInitialization(
         prefs::kDevicePolicyRefreshRate,
         kServiceInitializationStartupDelay);
   }
+  device_data_store_->set_device_status_collector(
+      new DeviceStatusCollector(g_browser_process->local_state()));
 #endif
 }
 

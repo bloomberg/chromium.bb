@@ -10,7 +10,7 @@
 
 enum IdleState {
   IDLE_STATE_ACTIVE = 0,
-  IDLE_STATE_IDLE = 1,   // No activity within threshold.
+  IDLE_STATE_IDLE = 1,    // No activity within threshold.
   IDLE_STATE_LOCKED = 2,  // Only available on supported systems.
   IDLE_STATE_UNKNOWN = 3  // Used when waiting for the Idle state or in error
                           // conditions

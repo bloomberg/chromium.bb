@@ -1530,6 +1530,7 @@
         'browser/policy/device_management_backend_mock.h',
         'browser/policy/device_management_service_unittest.cc',
         'browser/policy/device_policy_cache_unittest.cc',
+        'browser/policy/device_status_collector_unittest.cc',
         'browser/policy/device_token_fetcher_unittest.cc',
         'browser/policy/enterprise_install_attributes_unittest.cc',
         'browser/policy/file_based_policy_provider_unittest.cc',

@@ -134,6 +134,7 @@ class DeviceManagementBackend : base::NonThreadSafe {
       const std::string& device_id,
       CloudPolicyDataStore::UserAffiliation user_affiliation,
       const em::DevicePolicyRequest& request,
+      const em::DeviceStatusReportRequest* device_status,
       DevicePolicyResponseDelegate* delegate) = 0;
 
   virtual void ProcessAutoEnrollmentRequest(

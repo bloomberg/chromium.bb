@@ -35,6 +35,7 @@
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
+#include "chrome/browser/policy/device_status_collector.h"
 #include "chrome/browser/policy/url_blacklist_manager.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -129,6 +130,7 @@ void RegisterLocalState(PrefService* local_state) {
   SSLConfigServiceManager::RegisterPrefs(local_state);
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::CloudPolicySubsystem::RegisterPrefs(local_state);
+  policy::DeviceStatusCollector::RegisterPrefs(local_state);
 #endif
   ProfileInfoCache::RegisterPrefs(local_state);
   ProfileManager::RegisterPrefs(local_state);
