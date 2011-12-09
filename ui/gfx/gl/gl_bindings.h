@@ -41,6 +41,11 @@
 #endif
 
 #define GL_SERVICE_LOG(args) DLOG(INFO) << args;
+#if !defined(NDEBUG)
+  #define GL_SERVICE_LOG_CODE_BLOCK(code)
+#else
+  #define GL_SERVICE_LOG_CODE_BLOCK(code) code
+#endif
 
 // Forward declare OSMesa types.
 typedef struct osmesa_context *OSMesaContext;
