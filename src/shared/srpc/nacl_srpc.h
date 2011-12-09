@@ -423,8 +423,6 @@ extern NaClSrpcMethod NaClSrpcServiceMethod(const NaClSrpcService* service,
 struct NaClSrpcChannel {
   /** A pointer to the message channel used to send and receive RPCs */
   struct NaClSrpcMessageChannel *message_channel;
-  /** The id of the next rpc request message sent over this channel */
-  uint32_t                      next_outgoing_request_id;
   /**
    * The services implemented by this server.
    */

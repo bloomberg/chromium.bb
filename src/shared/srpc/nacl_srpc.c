@@ -125,7 +125,6 @@ static NaClSrpcService* BuildClientService(NaClSrpcChannel* channel) {
 
 void NaClSrpcChannelInitialize(NaClSrpcChannel* channel) {
   channel->message_channel = NULL;
-  channel->next_outgoing_request_id = 0;
   channel->server = NULL;
   channel->client = NULL;
   channel->server_instance_data = NULL;
@@ -154,7 +153,6 @@ static int NaClSrpcChannelCtorHelper(NaClSrpcChannel* channel,
 static void NaClSrpcChannelDtorHelper(NaClSrpcChannel* channel) {
   NaClSrpcLog(1, "NaClSrpcChannelDtorHelper(channel=%p)\n", (void*) channel);
   channel->server_instance_data = NULL;
-  channel->next_outgoing_request_id = 0;
   NaClSrpcMessageChannelDelete(channel->message_channel);
   channel->message_channel = NULL;
 }

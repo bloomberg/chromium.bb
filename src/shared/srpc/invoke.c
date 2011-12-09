@@ -132,7 +132,7 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
    */
   rpc.protocol_version = kNaClSrpcProtocolVersion;
   rpc.rpc_number = rpc_number;
-  rpc.request_id = channel->next_outgoing_request_id;
+  rpc.request_id = 0;
   rpc.result = NACL_SRPC_RESULT_OK;
   rpc.rets = rets;
   rpc.ret_types = ret_types;
