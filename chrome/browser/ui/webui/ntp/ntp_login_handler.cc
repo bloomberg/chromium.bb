@@ -36,6 +36,7 @@
 #include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "net/base/escape.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas_skia.h"
@@ -184,21 +185,27 @@ void NTPLoginHandler::UpdateLogin() {
       // case. In the multi-profile case the profile picture is visible in the
       // title bar and the full name can be ambiguous.
       if (cache.GetNumberOfProfiles() == 1) {
-        header = cache.GetGAIANameOfProfileAtIndex(profile_index);
+        string16 name = cache.GetGAIANameOfProfileAtIndex(profile_index);
+        header = ASCIIToUTF16("<span class='profile-name'>") +
+                 net::EscapeForHTML(name) +
+                 ASCIIToUTF16("</span>");
         const gfx::Image* image =
             cache.GetGAIAPictureOfProfileAtIndex(profile_index);
         if (image)
           icon_url = web_ui_util::GetImageDataUrl(GetGAIAPictureForNTP(*image));
       }
-      if (header.empty())
-        header = UTF8ToUTF16(username);
+      if (header.empty()) {
+        header = UTF8ToUTF16("<span class='profile-name'>" +
+                             net::EscapeForHTML(username) + "</span>");
+      }
     }
   } else if (SyncPromoUI::ShouldShowSyncPromo(profile) &&
              (SyncPromoUI::UserHasSeenSyncPromoAtStartup(profile) ||
               PromoResourceService::CanShowNTPSignInPromo(profile))) {
     string16 signed_in_link = l10n_util::GetStringUTF16(
         IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK);
-    signed_in_link = ASCIIToUTF16("<span class='link-span'>") + signed_in_link +
+    signed_in_link = ASCIIToUTF16("<span class='link-span'>") +
+                     net::EscapeForHTML(signed_in_link) +
                      ASCIIToUTF16("</span>");
     header = l10n_util::GetStringFUTF16(
         IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_HEADER,

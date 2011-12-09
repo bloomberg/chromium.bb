@@ -184,7 +184,6 @@ html[dir='rtl'] #attribution {
   position: fixed;
   right: 0;
   text-align: right;
-  text-decoration: none;
   top: 0;
   z-index: 100;
   -webkit-box-shadow: none;
@@ -204,6 +203,10 @@ html[dir='rtl'] #login-container {
 
 html[dir='rtl'] .login-status-icon {
   background-position-x: left;
+}
+
+.profile-name:hover {
+  text-decoration: underline;
 }
 
 .link-span {
