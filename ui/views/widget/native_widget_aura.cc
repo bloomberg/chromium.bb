@@ -60,6 +60,18 @@ aura::WindowType GetAuraWindowTypeForWidgetType(Widget::InitParams::Type type) {
   }
 }
 
+void NotifyLocaleChangedInternal(aura::Window* window) {
+  Widget* widget = Widget::GetWidgetForNativeWindow(window);
+  if (widget)
+    widget->LocaleChanged();
+
+  const aura::Window::Windows& children = window->children();
+  for (aura::Window::Windows::const_iterator it = children.begin();
+       it != children.end(); ++it) {
+    NotifyLocaleChangedInternal(*it);
+  }
+}
+
 }  // namespace
 
 // Used when SetInactiveRenderingDisabled() is invoked to track when active
@@ -687,8 +699,7 @@ int NativeWidgetAura::OnPerformDrop(const aura::DropTargetEvent& event) {
 
 // static
 void Widget::NotifyLocaleChanged() {
-  // http://crbug.com/102574
-  NOTIMPLEMENTED();
+  NotifyLocaleChangedInternal(aura::RootWindow::GetInstance());
 }
 
 // static
