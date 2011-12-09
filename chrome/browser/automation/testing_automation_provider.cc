@@ -6300,10 +6300,10 @@ void TestingAutomationProvider::GetViews(
   for (iter = extension_mgr->begin(); iter != extension_mgr->end();
        ++iter) {
     ExtensionHost* host = *iter;
-    DictionaryValue* dict = new DictionaryValue();
     AutomationId id = automation_util::GetIdForExtensionView(host);
     if (!id.is_valid())
       continue;
+    DictionaryValue* dict = new DictionaryValue();
     dict->Set("auto_id", id.ToValue());
     dict->SetString("extension_id", host->extension_id());
     view_list->Append(dict);
