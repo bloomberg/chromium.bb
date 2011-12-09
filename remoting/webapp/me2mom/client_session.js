@@ -68,6 +68,15 @@ remoting.ClientSession.ConnectionError = {
   NETWORK_FAILURE: 4
 };
 
+// Keys for connection statistics.
+remoting.ClientSession.STATS_KEY_VIDEO_BANDWIDTH = 'video_bandwidth';
+remoting.ClientSession.STATS_KEY_VIDEO_FRAME_RATE = 'video_frame_rate';
+remoting.ClientSession.STATS_KEY_CAPTURE_LATENCY = 'capture_latency';
+remoting.ClientSession.STATS_KEY_ENCODE_LATENCY = 'encode_latency';
+remoting.ClientSession.STATS_KEY_DECODE_LATENCY = 'decode_latency';
+remoting.ClientSession.STATS_KEY_RENDER_LATENCY = 'render_latency';
+remoting.ClientSession.STATS_KEY_ROUNDTRIP_LATENCY = 'roundtrip_latency';
+
 /**
  * The current state of the session.
  * @type {remoting.ClientSession.State}
@@ -413,13 +422,29 @@ remoting.ClientSession.prototype.updateDimensions = function() {
  * @return {Object.<string, number>} The connection statistics.
  */
 remoting.ClientSession.prototype.stats = function() {
-  return {
-    'video_bandwidth': this.plugin.videoBandwidth,
-    'video_frame_rate': this.plugin.videoFrameRate,
-    'capture_latency': this.plugin.videoCaptureLatency,
-    'encode_latency': this.plugin.videoEncodeLatency,
-    'decode_latency': this.plugin.videoDecodeLatency,
-    'render_latency': this.plugin.videoRenderLatency,
-    'roundtrip_latency': this.plugin.roundTripLatency
-  };
+  var dict = {};
+  dict[remoting.ClientSession.STATS_KEY_VIDEO_BANDWIDTH] =
+      this.plugin.videoBandwidth;
+  dict[remoting.ClientSession.STATS_KEY_VIDEO_FRAME_RATE] =
+      this.plugin.videoFrameRate;
+  dict[remoting.ClientSession.STATS_KEY_CAPTURE_LATENCY] =
+      this.plugin.videoCaptureLatency;
+  dict[remoting.ClientSession.STATS_KEY_ENCODE_LATENCY] =
+      this.plugin.videoEncodeLatency;
+  dict[remoting.ClientSession.STATS_KEY_DECODE_LATENCY] =
+      this.plugin.videoDecodeLatency;
+  dict[remoting.ClientSession.STATS_KEY_RENDER_LATENCY] =
+      this.plugin.videoRenderLatency;
+  dict[remoting.ClientSession.STATS_KEY_ROUNDTRIP_LATENCY] =
+      this.plugin.roundTripLatency;
+  return dict;
+};
+
+/**
+ * Logs statistics.
+ *
+ * @param {Object.<string, number>} stats
+ */
+remoting.ClientSession.prototype.logStatistics = function(stats) {
+  this.logToServer.logStatistics(stats);
 };

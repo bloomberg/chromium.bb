@@ -127,6 +127,7 @@
       'webapp/me2mom/scale-to-fit.png',
       'webapp/me2mom/server_log_entry.js',
       'webapp/me2mom/spinner.gif',
+      'webapp/me2mom/stats_accumulator.js',
       'webapp/me2mom/toolbar.css',
       'webapp/me2mom/toolbar.js',
       'webapp/me2mom/ui_mode.js',

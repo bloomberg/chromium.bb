@@ -388,7 +388,9 @@ function updateStatistics_() {
       remoting.clientSession.state != remoting.ClientSession.State.CONNECTED) {
     return;
   }
-  remoting.debug.updateStatistics(remoting.clientSession.stats());
+  var stats = remoting.clientSession.stats();
+  remoting.debug.updateStatistics(stats);
+  remoting.clientSession.logStatistics(stats);
   // Update the stats once per second.
   window.setTimeout(updateStatistics_, 1000);
 }

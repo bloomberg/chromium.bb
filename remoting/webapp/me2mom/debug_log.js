@@ -90,7 +90,7 @@ remoting.DebugLog.prototype.toggle = function() {
  */
 remoting.DebugLog.prototype.updateStatistics = function(stats) {
   var units = '';
-  var videoBandwidth = stats['video_bandwidth'];
+  var videoBandwidth = stats[remoting.ClientSession.STATS_KEY_VIDEO_BANDWIDTH];
   if (videoBandwidth < 1024) {
     units = 'Bps';
   } else if (videoBandwidth < 1048576) {
@@ -108,13 +108,24 @@ remoting.DebugLog.prototype.updateStatistics = function(stats) {
   this.statsElement.innerText =
       'Bandwidth: ' + videoBandwidth.toFixed(2) + units +
       ', Frame Rate: ' +
-          (stats['video_frame_rate'] ?
-           stats['video_frame_rate'].toFixed(2) + ' fps' : 'n/a') +
-      ', Capture: ' + stats['capture_latency'].toFixed(2) + 'ms' +
-      ', Encode: ' + stats['encode_latency'].toFixed(2) + 'ms' +
-      ', Decode: ' + stats['decode_latency'].toFixed(2) + 'ms' +
-      ', Render: ' + stats['render_latency'].toFixed(2) + 'ms' +
-      ', Latency: ' + stats['roundtrip_latency'].toFixed(2) + 'ms';
+          (stats[remoting.ClientSession.STATS_KEY_VIDEO_FRAME_RATE] ?
+           stats[remoting.ClientSession.STATS_KEY_VIDEO_FRAME_RATE].toFixed(2)
+              + ' fps' : 'n/a') +
+      ', Capture: ' +
+      stats[remoting.ClientSession.STATS_KEY_CAPTURE_LATENCY].toFixed(2) +
+      'ms' +
+      ', Encode: ' +
+      stats[remoting.ClientSession.STATS_KEY_ENCODE_LATENCY].toFixed(2) +
+      'ms' +
+      ', Decode: ' +
+      stats[remoting.ClientSession.STATS_KEY_DECODE_LATENCY].toFixed(2) +
+      'ms' +
+      ', Render: ' +
+      stats[remoting.ClientSession.STATS_KEY_RENDER_LATENCY].toFixed(2) +
+      'ms' +
+      ', Latency: ' +
+      stats[remoting.ClientSession.STATS_KEY_ROUNDTRIP_LATENCY].toFixed(2) +
+      'ms';
 };
 
 /**
@@ -652,48 +663,10 @@ remoting.DebugLog.prototype.prettyIqSet = function(action, iq_list) {
           return true;
         }
       }
-    } else if (child.nodeName == 'gr:log') {
-      var log = child;
-      if (log.childNodes.length != 1) {
-        return false;
-      }
-      if (!this.verifyAttributes(log, 'xmlns:gr')) {
-        return false;
-      }
-
-      /** @type {Node} */
-      var entry = log.childNodes[0];
-      if (!this.verifyAttributes(entry, 'role,event-name,session-state,cpu,' +
-                                 'os-name,browser-version,webapp-version,id')) {
-        return false;
-      }
-      var role = entry.getAttribute('role');
-      if (role != 'client') {
-        return false;
-      }
-      var event_name = entry.getAttribute('event-name');
-      if (event_name != 'session-state') {
-        return false;
-      }
-      var session_state = entry.getAttribute('session-state');
-      this.prettyIqHeading(action, '?', 'log session-state ' + session_state,
-                           null);
-
-      var os_name = entry.getAttribute('os-name');
-      var cpu = entry.getAttribute('cpu');
-      var browser_version = entry.getAttribute('browser-version');
-      var webapp_version = entry.getAttribute('webapp-version');
-      this.logIndent(1, os_name + ' ' + cpu + ' Chromium_v' + browser_version +
-                     ' Chromoting_v' + webapp_version);
-      var remoting_id = entry.getAttribute('id');
-      if (remoting_id) {
-        this.logIndent(1, 'id: ' + remoting_id);
-      }
-      return true;
     }
   }
   return false;
-}
+};
 
 /**
  * Print out an iq 'error'-type node.

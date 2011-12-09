@@ -21,28 +21,28 @@ remoting.ServerLogEntry = function() {
 };
 
 /** @private */
-remoting.ServerLogEntry.prototype.KEY_EVENT_NAME_ = 'event-name';
+remoting.ServerLogEntry.KEY_EVENT_NAME_ = 'event-name';
 /** @private */
-remoting.ServerLogEntry.prototype.VALUE_EVENT_NAME_SESSION_STATE_ =
+remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_STATE_ =
     'session-state';
 
 /** @private */
-remoting.ServerLogEntry.prototype.KEY_ID_ = 'id';
+remoting.ServerLogEntry.KEY_ID_ = 'id';
 
 /** @private */
-remoting.ServerLogEntry.prototype.KEY_ROLE_ = 'role';
+remoting.ServerLogEntry.KEY_ROLE_ = 'role';
 /** @private */
-remoting.ServerLogEntry.prototype.VALUE_ROLE_CLIENT_ = 'client';
+remoting.ServerLogEntry.VALUE_ROLE_CLIENT_ = 'client';
 
 /** @private */
-remoting.ServerLogEntry.prototype.KEY_SESSION_STATE_ = 'session-state';
+remoting.ServerLogEntry.KEY_SESSION_STATE_ = 'session-state';
 
 /**
  * @private
  * @param {remoting.ClientSession.State} state
  * @return {string}
  */
-remoting.ServerLogEntry.prototype.getValueForSessionState = function(state) {
+remoting.ServerLogEntry.getValueForSessionState = function(state) {
   switch(state) {
     case remoting.ClientSession.State.UNKNOWN:
       return 'unknown';
@@ -68,14 +68,14 @@ remoting.ServerLogEntry.prototype.getValueForSessionState = function(state) {
 };
 
 /** @private */
-remoting.ServerLogEntry.prototype.KEY_CONNECTION_ERROR_ = 'connection-error';
+remoting.ServerLogEntry.KEY_CONNECTION_ERROR_ = 'connection-error';
 
 /**
  * @private
  * @param {remoting.ClientSession.ConnectionError} connectionError
  * @return {string}
  */
-remoting.ServerLogEntry.prototype.getValueForConnectionError =
+remoting.ServerLogEntry.getValueForConnectionError =
     function(connectionError) {
   switch(connectionError) {
     case remoting.ClientSession.ConnectionError.NONE:
@@ -94,27 +94,43 @@ remoting.ServerLogEntry.prototype.getValueForConnectionError =
 }
 
 /** @private */
-remoting.ServerLogEntry.prototype.KEY_OS_NAME_ = 'os-name';
+remoting.ServerLogEntry.VALUE_EVENT_NAME_CONNECTION_STATISTICS_ =
+    "connection-statistics";
 /** @private */
-remoting.ServerLogEntry.prototype.VALUE_OS_NAME_WINDOWS_ = 'Windows';
+remoting.ServerLogEntry.KEY_VIDEO_BANDWIDTH_ = "video-bandwidth";
 /** @private */
-remoting.ServerLogEntry.prototype.VALUE_OS_NAME_LINUX_ = 'Linux';
+remoting.ServerLogEntry.KEY_CAPTURE_LATENCY_ = "capture-latency";
 /** @private */
-remoting.ServerLogEntry.prototype.VALUE_OS_NAME_MAC_ = 'Mac';
+remoting.ServerLogEntry.KEY_ENCODE_LATENCY_ = "encode-latency";
 /** @private */
-remoting.ServerLogEntry.prototype.VALUE_OS_NAME_CHROMEOS_ = 'ChromeOS';
+remoting.ServerLogEntry.KEY_DECODE_LATENCY_ = "decode-latency";
+/** @private */
+remoting.ServerLogEntry.KEY_RENDER_LATENCY_ = "render-latency";
+/** @private */
+remoting.ServerLogEntry.KEY_ROUNDTRIP_LATENCY_ = "roundtrip-latency";
 
 /** @private */
-remoting.ServerLogEntry.prototype.KEY_OS_VERSION_ = 'os-version';
+remoting.ServerLogEntry.KEY_OS_NAME_ = 'os-name';
+/** @private */
+remoting.ServerLogEntry.VALUE_OS_NAME_WINDOWS_ = 'Windows';
+/** @private */
+remoting.ServerLogEntry.VALUE_OS_NAME_LINUX_ = 'Linux';
+/** @private */
+remoting.ServerLogEntry.VALUE_OS_NAME_MAC_ = 'Mac';
+/** @private */
+remoting.ServerLogEntry.VALUE_OS_NAME_CHROMEOS_ = 'ChromeOS';
 
 /** @private */
-remoting.ServerLogEntry.prototype.KEY_CPU_ = 'cpu';
+remoting.ServerLogEntry.KEY_OS_VERSION_ = 'os-version';
 
 /** @private */
-remoting.ServerLogEntry.prototype.KEY_BROWSER_VERSION_ = 'browser-version';
+remoting.ServerLogEntry.KEY_CPU_ = 'cpu';
 
 /** @private */
-remoting.ServerLogEntry.prototype.KEY_WEBAPP_VERSION_ = 'webapp-version';
+remoting.ServerLogEntry.KEY_BROWSER_VERSION_ = 'browser-version';
+
+/** @private */
+remoting.ServerLogEntry.KEY_WEBAPP_VERSION_ = 'webapp-version';
 
 /**
  * Sets one field in this log entry.
@@ -142,23 +158,94 @@ remoting.ServerLogEntry.prototype.toStanza = function() {
 };
 
 /**
+ * Prints this object on the debug log.
+ *
+ * @param {number} indentLevel the indentation level
+ */
+remoting.ServerLogEntry.prototype.toDebugLog = function(indentLevel) {
+  /** @type Array.<string> */ var fields = [];
+  for (var key in this.dict) {
+    fields.push(key + ': ' + this.dict[key]);
+  }
+  remoting.debug.logIndent(indentLevel, fields.join(', '));
+};
+
+/**
  * Makes a log entry for a change of client session state.
  *
  * @param {remoting.ClientSession.State} state
  * @param {remoting.ClientSession.ConnectionError} connectionError
  * @return {remoting.ServerLogEntry}
  */
-remoting.ServerLogEntry.prototype.makeClientSessionStateChange =
-    function(state, connectionError) {
+remoting.ServerLogEntry.makeClientSessionStateChange = function(state,
+    connectionError) {
   var entry = new remoting.ServerLogEntry();
-  entry.set(this.KEY_ROLE_, this.VALUE_ROLE_CLIENT_);
-  entry.set(this.KEY_EVENT_NAME_, this.VALUE_EVENT_NAME_SESSION_STATE_);
-  entry.set(this.KEY_SESSION_STATE_, this.getValueForSessionState(state));
+  entry.set(remoting.ServerLogEntry.KEY_ROLE_,
+            remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
+  entry.set(remoting.ServerLogEntry.KEY_EVENT_NAME_,
+            remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_STATE_);
+  entry.set(remoting.ServerLogEntry.KEY_SESSION_STATE_,
+            remoting.ServerLogEntry.getValueForSessionState(state));
   if (connectionError != remoting.ClientSession.ConnectionError.NONE) {
-    entry.set(this.KEY_CONNECTION_ERROR_,
-              this.getValueForConnectionError(connectionError));
+    entry.set(remoting.ServerLogEntry.KEY_CONNECTION_ERROR_,
+              remoting.ServerLogEntry.getValueForConnectionError(
+                  connectionError));
   }
   return entry;
+};
+
+/**
+ * Makes a log entry for a set of connection statistics.
+ * Returns null if all the statistics were zero.
+ *
+ * @param {remoting.StatsAccumulator} statsAccumulator
+ * @return {?remoting.ServerLogEntry}
+ */
+remoting.ServerLogEntry.makeStats = function(statsAccumulator) {
+  var entry = new remoting.ServerLogEntry();
+  entry.set(remoting.ServerLogEntry.KEY_ROLE_,
+            remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
+  entry.set(remoting.ServerLogEntry.KEY_EVENT_NAME_,
+            remoting.ServerLogEntry.VALUE_EVENT_NAME_CONNECTION_STATISTICS_);
+  var nonZero = false;
+  nonZero |= entry.addStatsField(
+      remoting.ServerLogEntry.KEY_VIDEO_BANDWIDTH_,
+      remoting.ClientSession.STATS_KEY_VIDEO_BANDWIDTH, statsAccumulator);
+  nonZero |= entry.addStatsField(
+      remoting.ServerLogEntry.KEY_CAPTURE_LATENCY_,
+      remoting.ClientSession.STATS_KEY_CAPTURE_LATENCY, statsAccumulator);
+  nonZero |= entry.addStatsField(
+      remoting.ServerLogEntry.KEY_ENCODE_LATENCY_,
+      remoting.ClientSession.STATS_KEY_ENCODE_LATENCY, statsAccumulator);
+  nonZero |= entry.addStatsField(
+      remoting.ServerLogEntry.KEY_DECODE_LATENCY_,
+      remoting.ClientSession.STATS_KEY_DECODE_LATENCY, statsAccumulator);
+  nonZero |= entry.addStatsField(
+      remoting.ServerLogEntry.KEY_RENDER_LATENCY_,
+      remoting.ClientSession.STATS_KEY_RENDER_LATENCY, statsAccumulator);
+  nonZero |= entry.addStatsField(
+      remoting.ServerLogEntry.KEY_ROUNDTRIP_LATENCY_,
+      remoting.ClientSession.STATS_KEY_ROUNDTRIP_LATENCY, statsAccumulator);
+  if (nonZero) {
+    return entry;
+  }
+  return null;
+};
+
+/**
+ * Adds one connection statistic to a log entry.
+ *
+ * @private
+ * @param {string} entryKey
+ * @param {string} statsKey
+ * @param {remoting.StatsAccumulator} statsAccumulator
+ * @return {boolean} whether the statistic is non-zero
+ */
+remoting.ServerLogEntry.prototype.addStatsField = function(
+    entryKey, statsKey, statsAccumulator) {
+  var val = statsAccumulator.calcMean(statsKey);
+  this.set(entryKey, val.toString());
+  return (val != 0);
 };
 
 /**
@@ -167,23 +254,23 @@ remoting.ServerLogEntry.prototype.makeClientSessionStateChange =
  * @param {string} id
  */
 remoting.ServerLogEntry.prototype.addIdField = function(id) {
-  this.set(this.KEY_ID_, id);
+  this.set(remoting.ServerLogEntry.KEY_ID_, id);
 }
 
 /**
  * Adds fields describing the host to this log entry.
  */
 remoting.ServerLogEntry.prototype.addHostFields = function() {
-  var host = this.getHostData();
+  var host = remoting.ServerLogEntry.getHostData();
   if (host) {
     if (host.os_name.length > 0) {
-      this.set(this.KEY_OS_NAME_, host.os_name);
+      this.set(remoting.ServerLogEntry.KEY_OS_NAME_, host.os_name);
     }
     if (host.os_version.length > 0) {
-      this.set(this.KEY_OS_VERSION_, host.os_version);
+      this.set(remoting.ServerLogEntry.KEY_OS_VERSION_, host.os_version);
     }
     if (host.cpu.length > 0) {
-      this.set(this.KEY_CPU_, host.cpu);
+      this.set(remoting.ServerLogEntry.KEY_CPU_, host.cpu);
     }
   }
 };
@@ -194,8 +281,8 @@ remoting.ServerLogEntry.prototype.addHostFields = function() {
  * @private
  * @return {{os_name:string, os_version:string, cpu:string} | null}
  */
-remoting.ServerLogEntry.prototype.getHostData = function() {
-  return this.extractHostDataFrom(navigator.userAgent);
+remoting.ServerLogEntry.getHostData = function() {
+  return remoting.ServerLogEntry.extractHostDataFrom(navigator.userAgent);
 };
 
 /**
@@ -205,7 +292,7 @@ remoting.ServerLogEntry.prototype.getHostData = function() {
  * @param {string} s
  * @return {{os_name:string, os_version:string, cpu:string} | null}
  */
-remoting.ServerLogEntry.prototype.extractHostDataFrom = function(s) {
+remoting.ServerLogEntry.extractHostDataFrom = function(s) {
   // Sample userAgent strings:
   // 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.2 ' +
   //   '(KHTML, like Gecko) Chrome/15.0.874.106 Safari/535.2'
@@ -218,7 +305,7 @@ remoting.ServerLogEntry.prototype.extractHostDataFrom = function(s) {
   var match = new RegExp('Windows NT ([0-9\\.]*)').exec(s);
   if (match && (match.length >= 2)) {
     return {
-        'os_name': this.VALUE_OS_NAME_WINDOWS_,
+        'os_name': remoting.ServerLogEntry.VALUE_OS_NAME_WINDOWS_,
         'os_version': match[1],
         'cpu': ''
     };
@@ -226,7 +313,7 @@ remoting.ServerLogEntry.prototype.extractHostDataFrom = function(s) {
   match = new RegExp('Linux ([a-zA-Z0-9_]*)').exec(s);
   if (match && (match.length >= 2)) {
     return {
-        'os_name': this.VALUE_OS_NAME_LINUX_,
+        'os_name': remoting.ServerLogEntry.VALUE_OS_NAME_LINUX_,
         'os_version' : '',
         'cpu': match[1]
     };
@@ -234,7 +321,7 @@ remoting.ServerLogEntry.prototype.extractHostDataFrom = function(s) {
   match = new RegExp('([a-zA-Z]*) Mac OS X ([0-9_]*)').exec(s);
   if (match && (match.length >= 3)) {
     return {
-        'os_name': this.VALUE_OS_NAME_MAC_,
+        'os_name': remoting.ServerLogEntry.VALUE_OS_NAME_MAC_,
         'os_version': match[2].replace(/_/g, '.'),
         'cpu': match[1]
     };
@@ -242,7 +329,7 @@ remoting.ServerLogEntry.prototype.extractHostDataFrom = function(s) {
   match = new RegExp('CrOS ([a-zA-Z0-9]*) ([0-9.]*)').exec(s);
   if (match && (match.length >= 3)) {
     return {
-        'os_name': this.VALUE_OS_NAME_CHROMEOS_,
+        'os_name': remoting.ServerLogEntry.VALUE_OS_NAME_CHROMEOS_,
         'os_version': match[2],
         'cpu': match[1]
     };
@@ -254,9 +341,9 @@ remoting.ServerLogEntry.prototype.extractHostDataFrom = function(s) {
  * Adds a field specifying the browser version to this log entry.
  */
 remoting.ServerLogEntry.prototype.addChromeVersionField = function() {
-  var version = this.getChromeVersion();
+  var version = remoting.ServerLogEntry.getChromeVersion();
   if (version != null) {
-    this.set(this.KEY_BROWSER_VERSION_, version);
+    this.set(remoting.ServerLogEntry.KEY_BROWSER_VERSION_, version);
   }
 };
 
@@ -266,8 +353,8 @@ remoting.ServerLogEntry.prototype.addChromeVersionField = function() {
  * @private
  * @return {string | null}
  */
-remoting.ServerLogEntry.prototype.getChromeVersion = function() {
-  return this.extractChromeVersionFrom(navigator.userAgent);
+remoting.ServerLogEntry.getChromeVersion = function() {
+  return remoting.ServerLogEntry.extractChromeVersionFrom(navigator.userAgent);
 };
 
 /**
@@ -277,7 +364,7 @@ remoting.ServerLogEntry.prototype.getChromeVersion = function() {
  * @param {string} s
  * @return {string | null}
  */
-remoting.ServerLogEntry.prototype.extractChromeVersionFrom = function(s) {
+remoting.ServerLogEntry.extractChromeVersionFrom = function(s) {
   var match = new RegExp('Chrome/([0-9.]*)').exec(s);
   if (match && (match.length >= 2)) {
     return match[1];
@@ -289,5 +376,6 @@ remoting.ServerLogEntry.prototype.extractChromeVersionFrom = function(s) {
  * Adds a field specifying the webapp version to this log entry.
  */
 remoting.ServerLogEntry.prototype.addWebappVersionField = function() {
-  this.set(this.KEY_WEBAPP_VERSION_, chrome.app.getDetails().version);
+  this.set(remoting.ServerLogEntry.KEY_WEBAPP_VERSION_,
+      chrome.app.getDetails().version);
 };

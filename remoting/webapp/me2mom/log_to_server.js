@@ -16,7 +16,10 @@ var remoting = remoting || {};
  * @constructor
  */
 remoting.LogToServer = function() {
-  /** @type Array.<string> */ this.pendingEntries = [];
+  /** @type Array.<string> */
+  this.pendingEntries = [];
+  /** @type {remoting.StatsAccumulator} */
+  this.statsAccumulator = new remoting.StatsAccumulator();
 };
 
 // Local storage keys.
@@ -49,13 +52,50 @@ remoting.LogToServer.prototype.setEnabled = function(enabled) {
  */
 remoting.LogToServer.prototype.logClientSessionStateChange =
     function(state, connectionError) {
-  var entry = remoting.ServerLogEntry.prototype.makeClientSessionStateChange(
+  var entry = remoting.ServerLogEntry.makeClientSessionStateChange(
       state, connectionError);
   entry.addHostFields();
   entry.addChromeVersionField();
   entry.addWebappVersionField();
   entry.addIdField(this.getId());
   this.log(entry);
+  // Don't accumulate connection statistics across state changes.
+  this.logAccumulatedStatistics();
+  this.statsAccumulator.empty();
+};
+
+/**
+ * Logs connection statistics.
+ * @param {Object.<string, number>} stats the connection statistics
+ */
+remoting.LogToServer.prototype.logStatistics = function(stats) {
+  // Store the statistics.
+  this.statsAccumulator.add(stats);
+  // Send statistics to the server if they've been accumulating for at least
+  // 60 seconds.
+  if (this.statsAccumulator.getTimeSinceFirstValue() >= 60 * 1000) {
+    this.logAccumulatedStatistics();
+  }
+};
+
+/**
+ * Moves connection statistics from the accumulator to the log server.
+ *
+ * If all the statistics are zero, then the accumulator is still emptied,
+ * but the statistics are not sent to the log server.
+ *
+ * @private
+ */
+remoting.LogToServer.prototype.logAccumulatedStatistics = function() {
+  var entry = remoting.ServerLogEntry.makeStats(this.statsAccumulator);
+  if (entry) {
+    entry.addHostFields();
+    entry.addChromeVersionField();
+    entry.addWebappVersionField();
+    entry.addIdField(this.getId());
+    this.log(entry);
+  }
+  this.statsAccumulator.empty();
 };
 
 /**
@@ -68,20 +108,25 @@ remoting.LogToServer.prototype.log = function(entry) {
   if (!this.isEnabled()) {
     return;
   }
-  // Store a stanza for the entry
+  // Send the stanza to the debug log.
+  remoting.debug.log('Enqueueing log entry:');
+  entry.toDebugLog(1);
+  // Store a stanza for the entry.
   this.pendingEntries.push(entry.toStanza());
   // Stop if there's no connection to the server.
   if (!remoting.wcs) {
     return;
   }
   // Send all pending entries to the server.
+  remoting.debug.log('Sending ' + this.pendingEntries.length + ' log ' +
+      ((this.pendingEntries.length == 1) ? 'entry' : 'entries') +
+      '  to the server.');
   var stanza = '<cli:iq to="remoting@bot.talk.google.com" type="set" ' +
       'xmlns:cli="jabber:client"><gr:log xmlns:gr="google:remoting">';
   while (this.pendingEntries.length > 0) {
     stanza += /** @type string */ this.pendingEntries.shift();
   }
   stanza += '</gr:log></cli:iq>';
-  remoting.debug.logIq(true, stanza);
   remoting.wcs.sendIq(stanza);
 };
 
