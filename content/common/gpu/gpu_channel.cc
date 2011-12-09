@@ -431,8 +431,11 @@ void GpuChannel::OnCloseChannel() {
 bool GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
                       base::WaitableEvent* shutdown_event) {
   // Check whether we're already initialized.
-  if (channel_.get())
+  if (channel_.get()) {
+    // TODO(xhwang): Added to investigate crbug.com/95732. Clean up after fixed.
+    CHECK(false);
     return true;
+  }
 
   // Map renderer ID to a (single) channel to that process.
   std::string channel_name = GetChannelName();

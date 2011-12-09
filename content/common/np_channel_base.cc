@@ -131,6 +131,14 @@ bool NPChannelBase::Init(base::MessageLoopProxy* ipc_message_loop,
   channel_.reset(new IPC::SyncChannel(
       channel_handle_, mode_, this, ipc_message_loop, create_pipe_now,
       shutdown_event));
+
+#if defined(OS_POSIX)
+  // Check the validity of fd for bug investigation.  Remove after fixed.
+  // See for details: crbug.com/95129, crbug.com/97285.
+  if (mode_ == IPC::Channel::MODE_SERVER)
+    CHECK_NE(-1, channel_->GetClientFileDescriptor());
+#endif
+
   channel_valid_ = true;
   return true;
 }

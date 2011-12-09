@@ -77,10 +77,13 @@ void GpuChannelManager::OnEstablishChannel(int renderer_id) {
   content::GPUInfo gpu_info;
 
   GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
-  if (iter == gpu_channels_.end())
+  if (iter == gpu_channels_.end()) {
     channel = new GpuChannel(this, watchdog_, renderer_id, false);
-  else
+  } else {
+    // TODO(xhwang): Added to investigate crbug.com/95732. Clean up after fixed.
+    CHECK(false);
     channel = iter->second;
+  }
 
   DCHECK(channel != NULL);
 
