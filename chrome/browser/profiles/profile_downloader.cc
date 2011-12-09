@@ -273,9 +273,9 @@ void ProfileDownloader::OnURLFetchComplete(const content::URLFetcher* source) {
   std::string data;
   source->GetResponseAsString(&data);
   if (source->GetResponseCode() != 200) {
-    LOG(ERROR) << "Response code is " << source->GetResponseCode();
-    LOG(ERROR) << "Url is " << source->GetURL().spec();
-    LOG(ERROR) << "Data is " << data;
+    DVLOG(1) << "Response code is " << source->GetResponseCode();
+    DVLOG(1) << "Url is " << source->GetURL().spec();
+    DVLOG(1) << "Data is " << data;
     delegate_->OnDownloadComplete(this, false);
     return;
   }
