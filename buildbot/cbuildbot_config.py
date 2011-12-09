@@ -495,20 +495,6 @@ add_config('x86-pineview-full', [full, {
   'board' : 'x86-pineview',
 }])
 
-add_config('x86-generic-gcc_46', [full, {
-  'board' : 'x86-generic',
-  'latest_toolchain' : True,
-  'gcc_46' : True,
-  'prebuilts' : False,
-}])
-
-add_config('arm-tegra2-seaboard-gcc_46', [arm, full, {
-  'board' : 'tegra2_seaboard',
-  'latest_toolchain' : True,
-  'gcc_46' : True,
-  'prebuilts' : False,
-}])
-
 add_config('x86-generic-toolchain', [full, {
   'board' : 'x86-generic',
   'latest_toolchain' : True,
@@ -565,12 +551,6 @@ add_config('x86-mario-pre-flight-branch', [internal, pfq_branch, {
   'board' : 'x86-mario',
 }])
 
-add_config('arm-tegra2_seaboard-private-bin', [internal, arm, binary, {
-  'board' : 'tegra2_seaboard',
-  'prebuilts' : False,
-  'usepkg_build_packages' : False,
-}])
-
 add_config('arm-tegra2_kaen-private-bin', [internal, arm, pfq, {
   'board' : 'tegra2_kaen',
   'overlays': 'private',
@@ -582,39 +562,12 @@ add_config('arm-tegra2_kaen-aura-private-bin', [internal, arm, binary, {
   'profile' : 'aura',
 }])
 
-add_config('arm-tegra2_arthur-private-bin', [internal, arm, binary, {
-  'board' : 'tegra2_arthur',
-}])
-
-add_config('arm-tegra2_asymptote-private-bin', [internal, arm, binary, {
-  'board' : 'tegra2_asymptote',
-  'prebuilts': False,
-}])
-
-add_config('arm-tegra2_dev-board-private-bin', [internal, arm, binary, {
-  'board' : 'tegra2_dev-board',
-  'prebuilts' : False,
-  'usepkg_build_packages' : False,
-}])
-
 add_config('x86-zgb-private-bin', [internal, binary, {
   'board' : 'x86-zgb',
 }])
 
-add_config('x86-zgb_he-private-bin', [internal, binary, {
-  'board' : 'x86-zgb_he',
-}])
-
-add_config('x86-mario-private-bin', [internal, binary, {
-  'board' : 'x86-mario',
-}])
-
 add_config('x86-alex-private-bin', [internal, binary, {
   'board' : 'x86-alex',
-}])
-
-add_config('x86-alex_he-private-bin', [internal, binary, {
-  'board' : 'x86-alex_he',
 }])
 
 add_config('stumpy-private-bin', [internal, binary, {
@@ -658,22 +611,6 @@ add_config('arm-tegra2_seaboard-toolchain', [internal, arm, full, official, {
   'gs_path': GS_PATH_DEFAULT,
 }])
 
-add_config('arm-tegra2_seaboard-tangent-private-release',
-  [internal, arm, full, {
-    'board' : 'tegra2_seaboard',
-    'profile' : 'cosine',
-    'prebuilts' : False,
-    'gs_path': None,
-}])
-
-add_config('arm-tegra2_seaboard-tangent-private-bin',
-  [internal, arm, binary, {
-    'board' : 'tegra2_seaboard',
-    'profile' : 'cosine',
-    'prebuilts' : False,
-    'gs_path': None,
-}])
-
 add_config('x86-mario-release', [internal, full, official, release, {
   'board' : 'x86-mario',
 }])
@@ -711,23 +648,6 @@ add_config('link-release', [internal, full, official, release, {
 add_config('arm-tegra2_seaboard-release', [
     internal, arm, full, official, release, {
   'board' : 'tegra2_seaboard',
-}])
-
-add_config('arm-tegra2_seaboard-tangent-release',
-  [internal, arm, full, official, release, {
-    'board' : 'tegra2_seaboard',
-    'profile' : 'cosine',
-    'prebuilts' : False,
-}])
-
-add_config('arm-tegra2_arthur-release', [
-    internal, arm, full, official, release, {
-  'board' : 'tegra2_arthur',
-}])
-
-add_config('arm-tegra2_asymptote-release', [
-    internal, arm, full, official, release, {
-  'board' : 'tegra2_asymptote',
 }])
 
 add_config('arm-tegra2_kaen-release', [
