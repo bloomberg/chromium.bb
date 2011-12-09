@@ -5,10 +5,10 @@
 """Factory that creates ChromeDriver instances."""
 
 import copy
-from selenium.webdriver.remote.webdriver import WebDriver
+import chromedriver
 
 
-class WebDriverWrapper(WebDriver):
+class WebDriverWrapper(chromedriver.WebDriver):
   def __init__(self, executor, capabilities):
     super(WebDriverWrapper, self).__init__(executor, capabilities)
     self._did_quit = False

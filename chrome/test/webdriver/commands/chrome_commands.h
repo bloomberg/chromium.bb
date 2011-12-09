@@ -19,6 +19,7 @@ namespace webdriver {
 
 class Response;
 
+// Commands dealing with the extensions system.
 class ExtensionsCommand : public WebDriverCommand {
  public:
   ExtensionsCommand(const std::vector<std::string>& path_segments,
@@ -28,11 +29,58 @@ class ExtensionsCommand : public WebDriverCommand {
   virtual bool DoesGet() OVERRIDE;
   virtual bool DoesPost() OVERRIDE;
 
+  // Returns all installed extensions.
   virtual void ExecuteGet(Response* const response) OVERRIDE;
+
+  // Installs an extension.
   virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionsCommand);
+};
+
+// Commands dealing with a particular extension.
+class ExtensionCommand : public WebDriverCommand {
+ public:
+  ExtensionCommand(const std::vector<std::string>& path_segments,
+                   const base::DictionaryValue* const parameters);
+  virtual ~ExtensionCommand();
+
+  virtual bool Init(Response* const response) OVERRIDE;
+
+  virtual bool DoesGet() OVERRIDE;
+  virtual bool DoesPost() OVERRIDE;
+  virtual bool DoesDelete() OVERRIDE;
+
+  // Returns information about the extension.
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
+
+  // Modifies the extension.
+  virtual void ExecutePost(Response* const response) OVERRIDE;
+
+  // Uninstalls the extension.
+  virtual void ExecuteDelete(Response* const response) OVERRIDE;
+
+ private:
+  std::string extension_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionCommand);
+};
+
+// Commands dealing with targeting non-tab views.
+class ViewsCommand : public WebDriverCommand {
+ public:
+  ViewsCommand(const std::vector<std::string>& path_segments,
+               const base::DictionaryValue* const parameters);
+  virtual ~ViewsCommand();
+
+  virtual bool DoesGet() OVERRIDE;
+
+  // Returns all open views.
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ViewsCommand);
 };
 
 }  // namespace webdriver

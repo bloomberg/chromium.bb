@@ -10,6 +10,9 @@
 #include "chrome/test/webdriver/webdriver_element_id.h"
 #include "chrome/test/webdriver/webdriver_error.h"
 #include "chrome/test/webdriver/webdriver_session.h"
+#include "chrome/test/webdriver/webdriver_util.h"
+
+using base::Value;
 
 namespace webdriver {
 
@@ -25,8 +28,8 @@ bool WindowHandleCommand::DoesGet() {
 }
 
 void WindowHandleCommand::ExecuteGet(Response* const response) {
-  response->SetValue(new StringValue(
-      base::IntToString(session_->current_target().window_id)));
+  response->SetValue(Value::CreateStringValue(
+      WebViewIdToString(session_->current_target().view_id)));
 }
 
 WindowHandlesCommand::WindowHandlesCommand(
@@ -41,15 +44,19 @@ bool WindowHandlesCommand::DoesGet() {
 }
 
 void WindowHandlesCommand::ExecuteGet(Response* const response) {
-  std::vector<int> window_ids;
-  Error* error = session_->GetWindowIds(&window_ids);
+  std::vector<WebViewInfo> views;
+  Error* error = session_->GetViews(&views);
   if (error) {
     response->SetError(error);
     return;
   }
-  ListValue* id_list = new ListValue();
-  for (size_t i = 0; i < window_ids.size(); ++i)
-    id_list->Append(new StringValue(base::IntToString(window_ids[i])));
+  base::ListValue* id_list = new base::ListValue();
+  for (size_t i = 0; i < views.size(); ++i) {
+    if (!views[i].view_id.IsTab())
+      continue;
+    id_list->Append(Value::CreateStringValue(
+        WebViewIdToString(views[i].view_id)));
+  }
   response->SetValue(id_list);
 }
 
@@ -76,7 +83,7 @@ void WindowCommand::ExecutePost(Response* const response) {
     return;
   }
 
-  Error* error = session_->SwitchToWindow(name);
+  Error* error = session_->SwitchToView(name);
   if (error)
     response->SetError(error);
 }

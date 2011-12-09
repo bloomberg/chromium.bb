@@ -729,8 +729,9 @@ bool TabProxy::CaptureEntirePageAsPNG(const FilePath& path) {
     return false;
   }
 
-  return SendCaptureEntirePageJSONRequest(sender_, browser_index,
-                                          tab_index, path, &error_msg);
+  return SendCaptureEntirePageJSONRequest(
+      sender_, WebViewLocator::ForIndexPair(browser_index, tab_index),
+      path, &error_msg);
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)

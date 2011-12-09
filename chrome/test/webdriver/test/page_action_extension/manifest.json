@@ -1,0 +1,9 @@
+{
+  "name": "Page action extension",
+  "version": "1.0",
+  "background_page": "bg.html",
+  "page_action": {
+    "default_popup": "view_checks.html"
+  },
+  "permissions": [ "tabs" ]
+}

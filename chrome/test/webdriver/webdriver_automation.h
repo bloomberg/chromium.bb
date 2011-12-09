@@ -17,9 +17,13 @@
 #include "chrome/common/automation_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
+class AutomationId;
 class AutomationProxy;
 class ProxyLauncher;
 struct WebKeyEvent;
+class WebViewId;
+struct WebViewInfo;
+class WebViewLocator;
 
 namespace base {
 class DictionaryValue;
@@ -72,7 +76,7 @@ class Automation {
 
   // Executes the given |script| in the specified frame of the current
   // tab. |result| will be set to the JSON result. Returns true on success.
-  void ExecuteScript(int tab_id,
+  void ExecuteScript(const WebViewId& view_id,
                      const FramePath& frame_path,
                      const std::string& script,
                      std::string* result,
@@ -80,19 +84,19 @@ class Automation {
 
   // Sends a webkit key event to the current browser. Waits until the key has
   // been processed by the web page.
-  void SendWebKeyEvent(int tab_id,
+  void SendWebKeyEvent(const WebViewId& view_id,
                        const WebKeyEvent& key_event,
                        Error** error);
 
   // Sends an OS level key event to the current browser. Waits until the key
   // has been processed by the browser.
-  void SendNativeKeyEvent(int tab_id,
+  void SendNativeKeyEvent(const WebViewId& view_id,
                           ui::KeyboardCode key_code,
                           int modifiers,
                           Error** error);
 
   // Drag and drop the file paths to the given location.
-  void DragAndDropFilePaths(int tab_id,
+  void DragAndDropFilePaths(const WebViewId& view_id,
                             const Point& location,
                             const std::vector<FilePath::StringType>& paths,
                             Error** error);
@@ -100,13 +104,16 @@ class Automation {
   // Captures a snapshot of the tab to the specified path.  The  PNG will
   // contain the entire page, including what is not in the current view
   // on the  screen.
-  void CaptureEntirePageAsPNG(int tab_id, const FilePath& path, Error** error);
+  void CaptureEntirePageAsPNG(
+      const WebViewId& view_id, const FilePath& path, Error** error);
 
-  void NavigateToURL(int tab_id, const std::string& url, Error** error);
-  void NavigateToURLAsync(int tab_id, const std::string& url, Error** error);
-  void GoForward(int tab_id, Error** error);
-  void GoBack(int tab_id, Error** error);
-  void Reload(int tab_id, Error** error);
+  void NavigateToURL(
+      const WebViewId& view_id, const std::string& url, Error** error);
+  void NavigateToURLAsync(
+      const WebViewId& view_id, const std::string& url, Error** error);
+  void GoForward(const WebViewId& view_id, Error** error);
+  void GoBack(const WebViewId& view_id, Error** error);
+  void Reload(const WebViewId& view_id, Error** error);
 
   void GetCookies(const std::string& url,
                   base::ListValue** cookies,
@@ -118,27 +125,33 @@ class Automation {
                  base::DictionaryValue* cookie_dict,
                  Error** error);
 
-  void MouseMove(int tab_id, const Point& p, Error** error);
-  void MouseClick(int tab_id,
+  void MouseMove(const WebViewId& view_id, const Point& p, Error** error);
+  void MouseClick(const WebViewId& view_id,
                   const Point& p,
                   automation::MouseButton button,
                   Error** error);
-  void MouseDrag(int tab_id,
+  void MouseDrag(const WebViewId& view_id,
                  const Point& start,
                  const Point& end,
                  Error** error);
-  void MouseButtonDown(int tab_id, const Point& p, Error** error);
-  void MouseButtonUp(int tab_id, const Point& p, Error** error);
-  void MouseDoubleClick(int tab_id, const Point& p, Error** error);
+  void MouseButtonDown(const WebViewId& view_id,
+                       const Point& p,
+                       Error** error);
+  void MouseButtonUp(const WebViewId& view_id,
+                     const Point& p,
+                     Error** error);
+  void MouseDoubleClick(const WebViewId& view_id,
+                        const Point& p,
+                        Error** error);
 
-  // Get persistent IDs for all the tabs currently open. These IDs can be used
-  // to identify the tab as long as the tab exists.
-  void GetTabIds(std::vector<int>* tab_ids, Error** error);
+  // Get info for all views currently open.
+  void GetViews(std::vector<WebViewInfo>* views, Error** error);
 
-  // Check if the given tab exists currently.
-  void DoesTabExist(int tab_id, bool* does_exist, Error** error);
+  // Check if the given view exists currently.
+  void DoesViewExist(const WebViewId& view_id, bool* does_exist, Error** error);
 
-  void CloseTab(int tab_id, Error** error);
+  // Closes the given view.
+  void CloseView(const WebViewId& view_id, Error** error);
 
   // Gets the active JavaScript modal dialog's message.
   void GetAppModalDialogMessage(std::string* message, Error** error);
@@ -158,24 +171,45 @@ class Automation {
   // server.
   void GetChromeDriverAutomationVersion(int* version, Error** error);
 
-  // Waits for all tabs to stop loading.
-  void WaitForAllTabsToStopLoading(Error** error);
+  // Waits for all views to stop loading.
+  void WaitForAllViewsToStopLoading(Error** error);
 
   // Install packed extension.
   void InstallExtensionDeprecated(const FilePath& path, Error** error);
-
-  // Gets all installed extension IDs.
-  void GetInstalledExtensions(std::vector<std::string>* extension_ids,
-                              Error** error);
 
   // Install a packed or unpacked extension. If the path ends with '.crx',
   // the extension is assumed to be packed.
   void InstallExtension(const FilePath& path, std::string* extension_id,
                         Error** error);
 
+  // Gets a list of dictionary information about all installed extensions.
+  void GetExtensionsInfo(base::ListValue* extensions_list, Error** error);
+
+  // Gets a list of dictionary information about all installed extensions.
+  void IsPageActionVisible(const WebViewId& tab_id,
+                           const std::string& extension_id,
+                           bool* is_visible,
+                           Error** error);
+
+  // Sets whether the extension is enabled or not.
+  void SetExtensionState(const std::string& extension_id,
+                         bool enable,
+                         Error** error);
+
+  // Clicks the extension action button. If |browser_action| is false, the
+  // page action will be clicked.
+  void ClickExtensionButton(const std::string& extension_id,
+                            bool browser_action,
+                            Error** error);
+
+  // Uninstalls the given extension.
+  void UninstallExtension(const std::string& extension_id, Error** error);
+
+
  private:
   AutomationProxy* automation() const;
-  Error* GetIndicesForTab(int tab_id, int* browser_index, int* tab_index);
+  Error* ConvertViewIdToLocator(const WebViewId& view_id,
+                                WebViewLocator* view_locator);
   Error* CompareVersion(int client_build_no,
                         int client_patch_no,
                         bool* is_newer_or_equal);

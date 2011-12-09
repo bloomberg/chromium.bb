@@ -142,8 +142,10 @@ void InitCallbacks(Dispatcher* dispatcher,
   dispatcher->Add<BrowserConnectionCommand>("/session/*/browser_connection");
   dispatcher->Add<AppCacheStatusCommand>("/session/*/application_cache/status");
 
-  // Chrome-specific command.
+  // Chrome-specific commands.
   dispatcher->Add<ExtensionsCommand>("/session/*/chrome/extensions");
+  dispatcher->Add<ExtensionCommand>("/session/*/chrome/extension/*");
+  dispatcher->Add<ViewsCommand>("/session/*/chrome/views");
 
   // Since the /session/* is a wild card that would match the above URIs, this
   // line MUST be after all other webdriver command callbacks.

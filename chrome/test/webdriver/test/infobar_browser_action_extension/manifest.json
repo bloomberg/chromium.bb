@@ -1,0 +1,12 @@
+{
+  "name": "Infobar extension",
+  "version": "1.0",
+  "background_page": "bg.html",
+  "browser_action": {
+    "popup": "view_checks.html"
+  },
+  "permissions": [
+    "tabs",
+    "experimental"
+  ]
+}

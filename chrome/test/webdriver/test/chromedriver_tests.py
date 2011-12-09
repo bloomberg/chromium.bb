@@ -37,10 +37,11 @@ except ImportError:
   import json
 
 from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.remote.command import Command
-from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.remote.command import Command
+from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 class Request(urllib2.Request):
@@ -751,7 +752,10 @@ class FrameSwitchingTest(ChromeDriverTest):
     driver = self.GetNewDriver({'chrome.switches': ['disable-popup-blocking']})
     driver.get(self.GetTestDataUrl() + '/test_page.html')
     driver.execute_script('window.open("about:blank")')
+    old_window = driver.current_window_handle
     driver.close()
+    WebDriverWait(driver, 10).until(
+        lambda x: old_window not in driver.window_handles)
     driver.switch_to_window(driver.window_handles[0])
     self.assertEquals('about:blank', driver.current_url)
 
@@ -822,3 +826,77 @@ class AlertTest(ChromeDriverTest):
     driver.switch_to_frame('subframe')
     driver.execute_async_script('arguments[0](); window.alert("ok")')
     driver.switch_to_alert().accept()
+
+class ExtensionTest(ChromeDriverTest):
+
+  INFOBAR_BROWSER_ACTION_EXTENSION = test_paths.TEST_DATA_PATH + \
+      '/infobar_browser_action_extension'
+  PAGE_ACTION_EXTENSION = test_paths.TEST_DATA_PATH + \
+      '/page_action_extension'
+
+  def testExtensionInstallAndUninstall(self):
+    driver = self.GetNewDriver()
+    self.assertEquals(0, len(driver.get_installed_extensions()))
+    ext = driver.install_extension(self.PAGE_ACTION_EXTENSION)
+    extensions = driver.get_installed_extensions()
+    self.assertEquals(1, len(extensions))
+    self.assertEquals(ext.id, extensions[0].id)
+    ext.uninstall()
+    self.assertEquals(0, len(driver.get_installed_extensions()))
+
+  def testExtensionInfo(self):
+    driver = self.GetNewDriver()
+    ext = driver.install_extension(self.PAGE_ACTION_EXTENSION)
+    self.assertEquals('Page action extension', ext.get_name())
+    self.assertEquals('1.0', ext.get_version())
+    self.assertEquals(32, len(ext.id))
+    self.assertTrue(ext.is_enabled())
+    ext.set_enabled(True)
+    ext.set_enabled(False)
+    self.assertFalse(ext.is_enabled())
+    ext.set_enabled(True)
+    self.assertTrue(ext.is_enabled())
+
+  def _testExtensionView(self, driver, view_handle, extension):
+    """Tests that the given view supports basic WebDriver functionality."""
+    driver.switch_to_window(view_handle)
+    self.assertTrue(driver.execute_script('return true'))
+    checkbox = driver.find_element_by_id('checkbox')
+    checkbox.click()
+    self.assertTrue(checkbox.is_selected())
+    textfield = driver.find_element_by_id('textfield')
+    textfield.send_keys('test')
+    self.assertEquals('test', textfield.get_attribute('value'))
+    self.assertEquals('test', driver.title)
+    self.assertTrue(driver.current_url.endswith('view_checks.html'))
+    self.assertTrue('shouldBeInPageSource' in driver.page_source)
+    driver.close()
+    def is_view_closed(driver):
+      return len(filter(lambda view: view['handle'] == view_handle,
+                        extension._get_views())) == 0
+    WebDriverWait(driver, 10).until(is_view_closed)
+
+  def testInfobarView(self):
+    driver = self.GetNewDriver({'chrome.switches':
+                                ['enable-experimental-extension-apis']})
+    ext = driver.install_extension(self.INFOBAR_BROWSER_ACTION_EXTENSION)
+    driver.switch_to_window(ext.get_bg_page_handle())
+    driver.set_script_timeout(10)
+    driver.execute_async_script('waitForInfobar(arguments[0])')
+    self._testExtensionView(driver, ext.get_infobar_handles()[0], ext)
+
+  def testBrowserActionPopupView(self):
+    driver = self.GetNewDriver({'chrome.switches':
+                                ['enable-experimental-extension-apis']})
+    ext = driver.install_extension(self.INFOBAR_BROWSER_ACTION_EXTENSION)
+    ext.click_browser_action()
+    self._testExtensionView(driver, ext.get_popup_handle(), ext)
+
+  def testPageActionPopupView(self):
+    driver = self.GetNewDriver()
+    ext = driver.install_extension(self.PAGE_ACTION_EXTENSION)
+    def is_page_action_visible(driver):
+      return ext.is_page_action_visible()
+    WebDriverWait(driver, 10).until(is_page_action_visible)
+    ext.click_page_action()
+    self._testExtensionView(driver, ext.get_popup_handle(), ext)

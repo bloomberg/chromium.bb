@@ -15,6 +15,7 @@
 #include "base/string16.h"
 #include "base/threading/thread.h"
 #include "chrome/common/automation_constants.h"
+#include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/webdriver/frame_path.h"
 #include "chrome/test/webdriver/webdriver_automation.h"
 #include "chrome/test/webdriver/webdriver_basic_types.h"
@@ -34,12 +35,13 @@ namespace webdriver {
 class Error;
 class ValueParser;
 
-// A window ID and frame path combination that uniquely identifies a specific
+// A view ID and frame path combination that uniquely identifies a specific
 // frame within a session.
 struct FrameId {
-  FrameId(int window_id, const FramePath& frame_path);
-  FrameId& operator=(const FrameId& other);
-  int window_id;
+  FrameId();
+  FrameId(const WebViewId& view_id, const FramePath& frame_path);
+
+  WebViewId view_id;
   FramePath frame_path;
 };
 
@@ -150,12 +152,13 @@ class Session {
   Error* DeleteCookie(const std::string& url, const std::string& cookie_name);
   Error* SetCookie(const std::string& url, base::DictionaryValue* cookie_dict);
 
-  // Gets all the currently existing window IDs. Returns true on success.
-  Error* GetWindowIds(std::vector<int>* window_ids);
+  // Gets all the currently open views.
+  Error* GetViews(std::vector<WebViewInfo>* views);
 
-  // Switches the window used by default. |name| is either an ID returned by
-  // |GetWindowIds| or the name attribute of a DOM window.
-  Error* SwitchToWindow(const std::string& name);
+  // Switches the view used by default. |id_or_name| is either a view ID
+  // returned by |GetViews| or the name attribute of a DOM window.
+  // Only tabs are considered when searching by name.
+  Error* SwitchToView(const std::string& id_or_name);
 
   // Switches the frame used by default. |name_or_id| is either the name or id
   // of a frame element.
@@ -304,17 +307,28 @@ class Session {
   Error* GetAttribute(const ElementId& element, const std::string& key,
                       base::Value** value);
 
-  // Waits for all tabs to stop loading. Returns true on success.
-  Error* WaitForAllTabsToStopLoading();
+  // Waits for all views to stop loading. Returns true on success.
+  Error* WaitForAllViewsToStopLoading();
 
   // Install packed extension at |path|.
   Error* InstallExtensionDeprecated(const FilePath& path);
 
-  // Get installed extensions IDs.
-  Error* GetInstalledExtensions(std::vector<std::string>* extension_ids);
-
   // Install extension at |path|.
   Error* InstallExtension(const FilePath& path, std::string* extension_id);
+
+  Error* GetExtensionsInfo(base::ListValue* extension_ids);
+
+  Error* IsPageActionVisible(const WebViewId& tab_id,
+                             const std::string& extension_id,
+                             bool* is_visible);
+
+  Error* SetExtensionState(const std::string& extension_id,
+                           bool enable);
+
+  Error* ClickExtensionButton(const std::string& extension_id,
+                              bool browser_action);
+
+  Error* UninstallExtension(const std::string& extension_id);
 
   const std::string& id() const;
 

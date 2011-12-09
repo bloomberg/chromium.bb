@@ -43,15 +43,11 @@
 
 namespace webdriver {
 
-FrameId::FrameId(int window_id, const FramePath& frame_path)
-    : window_id(window_id),
-      frame_path(frame_path) {
-}
+FrameId::FrameId() {}
 
-FrameId& FrameId::operator=(const FrameId& other) {
-  window_id = other.window_id;
-  frame_path = other.frame_path;
-  return *this;
+FrameId::FrameId(const WebViewId& view_id, const FramePath& frame_path)
+    : view_id(view_id),
+      frame_path(frame_path) {
 }
 
 Session::Options::Options()
@@ -64,7 +60,7 @@ Session::Options::~Options() {
 
 Session::Session(const Options& options)
     : id_(GenerateRandomID()),
-      current_target_(FrameId(0, FramePath())),
+      current_target_(FrameId(WebViewId(), FramePath())),
       thread_(id_.c_str()),
       async_script_timeout_(0),
       implicit_wait_(0),
@@ -115,7 +111,7 @@ Error* Session::AfterExecuteCommand() {
   Error* error = NULL;
   if (!options_.load_async) {
     LOG(INFO) << "Waiting for the page to stop loading";
-    error = WaitForAllTabsToStopLoading();
+    error = WaitForAllViewsToStopLoading();
     LOG(INFO) << "Done waiting for the page to stop loading";
   }
   return error;
@@ -277,7 +273,7 @@ Error* Session::DragAndDropFilePaths(
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::DragAndDropFilePaths,
-      current_target_.window_id,
+      current_target_.view_id,
       location,
       paths,
       &error));
@@ -285,19 +281,23 @@ Error* Session::DragAndDropFilePaths(
 }
 
 Error* Session::NavigateToURL(const std::string& url) {
+  if (!current_target_.view_id.IsTab()) {
+    return new Error(kUnknownError,
+                     "The current target does not support navigation");
+  }
   Error* error = NULL;
   if (options_.load_async) {
     RunSessionTask(NewRunnableMethod(
         automation_.get(),
         &Automation::NavigateToURLAsync,
-        current_target_.window_id,
+        current_target_.view_id,
         url,
         &error));
   } else {
     RunSessionTask(NewRunnableMethod(
         automation_.get(),
         &Automation::NavigateToURL,
-        current_target_.window_id,
+        current_target_.view_id,
         url,
         &error));
   }
@@ -305,31 +305,43 @@ Error* Session::NavigateToURL(const std::string& url) {
 }
 
 Error* Session::GoForward() {
+  if (!current_target_.view_id.IsTab()) {
+    return new Error(kUnknownError,
+                     "The current target does not support navigation");
+  }
   Error* error = NULL;
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::GoForward,
-      current_target_.window_id,
+      current_target_.view_id,
       &error));
   return error;
 }
 
 Error* Session::GoBack() {
+  if (!current_target_.view_id.IsTab()) {
+    return new Error(kUnknownError,
+                     "The current target does not support navigation");
+  }
   Error* error = NULL;
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::GoBack,
-      current_target_.window_id,
+      current_target_.view_id,
       &error));
   return error;
 }
 
 Error* Session::Reload() {
+  if (!current_target_.view_id.IsTab()) {
+    return new Error(kUnknownError,
+                     "The current target does not support navigation");
+  }
   Error* error = NULL;
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::Reload,
-      current_target_.window_id,
+      current_target_.view_id,
       &error));
   return error;
 }
@@ -350,7 +362,7 @@ Error* Session::GetTitle(std::string* tab_title) {
       "  else"
       "    return document.URL;"
       "}";
-  return ExecuteScriptAndParse(FrameId(current_target_.window_id, FramePath()),
+  return ExecuteScriptAndParse(FrameId(current_target_.view_id, FramePath()),
                                kGetTitleScript,
                                "getTitle",
                                new ListValue(),
@@ -363,7 +375,7 @@ Error* Session::MouseMoveAndClick(const Point& location,
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::MouseClick,
-      current_target_.window_id,
+      current_target_.view_id,
       location,
       button,
       &error));
@@ -377,7 +389,7 @@ Error* Session::MouseMove(const Point& location) {
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::MouseMove,
-      current_target_.window_id,
+      current_target_.view_id,
       location,
       &error));
   if (!error)
@@ -391,7 +403,7 @@ Error* Session::MouseDrag(const Point& start,
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::MouseDrag,
-      current_target_.window_id,
+      current_target_.view_id,
       start,
       end,
       &error));
@@ -409,7 +421,7 @@ Error* Session::MouseButtonDown() {
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::MouseButtonDown,
-      current_target_.window_id,
+      current_target_.view_id,
       mouse_position_,
       &error));
   return error;
@@ -420,7 +432,7 @@ Error* Session::MouseButtonUp() {
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::MouseButtonUp,
-      current_target_.window_id,
+      current_target_.view_id,
       mouse_position_,
       &error));
   return error;
@@ -431,7 +443,7 @@ Error* Session::MouseDoubleClick() {
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::MouseDoubleClick,
-      current_target_.window_id,
+      current_target_.view_id,
       mouse_position_,
       &error));
   return error;
@@ -472,61 +484,63 @@ Error* Session::SetCookie(const std::string& url,
   return error;
 }
 
-Error* Session::GetWindowIds(std::vector<int>* window_ids) {
+Error* Session::GetViews(std::vector<WebViewInfo>* views) {
   Error* error = NULL;
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
-      &Automation::GetTabIds,
-      window_ids,
+      &Automation::GetViews,
+      views,
       &error));
   return error;
 }
 
-Error* Session::SwitchToWindow(const std::string& name) {
-  int switch_to_id = 0;
-  int name_no = 0;
-  if (base::StringToInt(name, &name_no)) {
-    Error* error = NULL;
-    bool does_exist = false;
+Error* Session::SwitchToView(const std::string& id_or_name) {
+  Error* error = NULL;
+  bool does_exist = false;
+
+  WebViewId new_view;
+  StringToWebViewId(id_or_name, &new_view);
+  if (new_view.IsValid()) {
     RunSessionTask(NewRunnableMethod(
         automation_.get(),
-        &Automation::DoesTabExist,
-        name_no,
+        &Automation::DoesViewExist,
+        new_view,
         &does_exist,
         &error));
     if (error)
       return error;
-    if (does_exist)
-      switch_to_id = name_no;
   }
 
-  if (!switch_to_id) {
-    std::vector<int> window_ids;
-    Error* error = GetWindowIds(&window_ids);
+  if (!does_exist) {
+    // See if any of the tab window names match |name|.
+    std::vector<WebViewInfo> views;
+    Error* error = GetViews(&views);
     if (error)
       return error;
-    // See if any of the window names match |name|.
-    for (size_t i = 0; i < window_ids.size(); ++i) {
+    for (size_t i = 0; i < views.size(); ++i) {
+      if (!views[i].view_id.IsTab())
+        continue;
       std::string window_name;
       Error* error = ExecuteScriptAndParse(
-          FrameId(window_ids[i], FramePath()),
+          FrameId(views[i].view_id, FramePath()),
           "function() { return window.name; }",
           "getWindowName",
           new ListValue(),
           CreateDirectValueParser(&window_name));
       if (error)
         return error;
-      if (name == window_name) {
-        switch_to_id = window_ids[i];
+      if (id_or_name == window_name) {
+        new_view = views[i].view_id;
+        does_exist = true;
         break;
       }
     }
   }
 
-  if (!switch_to_id)
+  if (!does_exist)
     return new Error(kNoSuchWindow);
   frame_elements_.clear();
-  current_target_ = FrameId(switch_to_id, FramePath());
+  current_target_ = FrameId(new_view, FramePath());
   return NULL;
 }
 
@@ -611,7 +625,7 @@ Error* Session::SwitchToTopFrameIfCurrentFrameInvalid() {
   // This code should not execute script in any frame before making sure the
   // frame element is valid, otherwise the automation hangs until a timeout.
   for (size_t i = 0; i < frame_elements_.size(); ++i) {
-    FrameId frame_id(current_target_.window_id, frame_path);
+    FrameId frame_id(current_target_.view_id, frame_path);
     scoped_ptr<Error> error(ExecuteScriptAndParse(
         frame_id,
         "function(){ }",
@@ -632,14 +646,14 @@ Error* Session::CloseWindow() {
   Error* error = NULL;
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
-      &Automation::CloseTab,
-      current_target_.window_id,
+      &Automation::CloseView,
+      current_target_.view_id,
       &error));
 
   if (!error) {
-    std::vector<int> window_ids;
-    scoped_ptr<Error> error(GetWindowIds(&window_ids));
-    if (error.get() || window_ids.empty()) {
+    std::vector<WebViewInfo> views;
+    scoped_ptr<Error> error(GetViews(&views));
+    if (error.get() || views.empty()) {
       // The automation connection will soon be closed, if not already,
       // because we supposedly just closed the last window. Terminate the
       // session.
@@ -780,7 +794,7 @@ Error* Session::GetElementRegionInView(
        frame_path.IsSubframe();
        frame_path = frame_path.Parent()) {
     // Find the frame element for the current frame path.
-    FrameId frame_id(current_target_.window_id, frame_path.Parent());
+    FrameId frame_id(current_target_.view_id, frame_path.Parent());
     ElementId frame_element;
     error = FindElement(
         frame_id, ElementId(""),
@@ -988,13 +1002,13 @@ Error* Session::GetAttribute(const ElementId& element,
       CreateDirectValueParser(value));
 }
 
-Error* Session::WaitForAllTabsToStopLoading() {
+Error* Session::WaitForAllViewsToStopLoading() {
   if (!automation_.get())
     return NULL;
   Error* error = NULL;
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
-      &Automation::WaitForAllTabsToStopLoading,
+      &Automation::WaitForAllViewsToStopLoading,
       &error));
   return error;
 }
@@ -1009,17 +1023,6 @@ Error* Session::InstallExtensionDeprecated(const FilePath& path) {
   return error;
 }
 
-Error* Session::GetInstalledExtensions(
-    std::vector<std::string>* extension_ids) {
-  Error* error = NULL;
-  RunSessionTask(base::Bind(
-      &Automation::GetInstalledExtensions,
-      base::Unretained(automation_.get()),
-      extension_ids,
-      &error));
-  return error;
-}
-
 Error* Session::InstallExtension(
     const FilePath& path, std::string* extension_id) {
   Error* error = NULL;
@@ -1027,6 +1030,70 @@ Error* Session::InstallExtension(
       &Automation::InstallExtension,
       base::Unretained(automation_.get()),
       path,
+      extension_id,
+      &error));
+  return error;
+}
+
+Error* Session::GetExtensionsInfo(base::ListValue* extensions_list) {
+  Error* error = NULL;
+  RunSessionTask(base::Bind(
+      &Automation::GetExtensionsInfo,
+      base::Unretained(automation_.get()),
+      extensions_list,
+      &error));
+  return error;
+}
+
+Error* Session::IsPageActionVisible(
+    const WebViewId& tab_id,
+    const std::string& extension_id,
+    bool* is_visible) {
+  if (!tab_id.IsTab()) {
+    return new Error(
+        kUnknownError,
+        "The current target does not support page actions. Switch to a tab.");
+  }
+  Error* error = NULL;
+  RunSessionTask(base::Bind(
+      &Automation::IsPageActionVisible,
+      base::Unretained(automation_.get()),
+      tab_id,
+      extension_id,
+      is_visible,
+      &error));
+  return error;
+}
+
+Error* Session::SetExtensionState(
+    const std::string& extension_id, bool enable) {
+  Error* error = NULL;
+  RunSessionTask(base::Bind(
+      &Automation::SetExtensionState,
+      base::Unretained(automation_.get()),
+      extension_id,
+      enable,
+      &error));
+  return error;
+}
+
+Error* Session::ClickExtensionButton(
+    const std::string& extension_id, bool browser_action) {
+  Error* error = NULL;
+  RunSessionTask(base::Bind(
+      &Automation::ClickExtensionButton,
+      base::Unretained(automation_.get()),
+      extension_id,
+      browser_action,
+      &error));
+  return error;
+}
+
+Error* Session::UninstallExtension(const std::string& extension_id) {
+  Error* error = NULL;
+  RunSessionTask(base::Bind(
+      &Automation::UninstallExtension,
+      base::Unretained(automation_.get()),
       extension_id,
       &error));
   return error;
@@ -1104,15 +1171,15 @@ void Session::InitOnSessionThread(const Automation::BrowserOptions& options,
   if (*error)
     return;
 
-  std::vector<int> tab_ids;
-  automation_->GetTabIds(&tab_ids, error);
+  std::vector<WebViewInfo> views;
+  automation_->GetViews(&views, error);
   if (*error)
     return;
-  if (tab_ids.empty()) {
-    *error = new Error(kUnknownError, "No tab ids after initialization");
+  if (views.empty()) {
+    *error = new Error(kUnknownError, "No view ids after initialization");
     return;
   }
-  current_target_ = FrameId(tab_ids[0], FramePath());
+  current_target_ = FrameId(views[0].view_id, FramePath());
 }
 
 void Session::TerminateOnSessionThread() {
@@ -1129,7 +1196,7 @@ Error* Session::ExecuteScriptAndParseValue(const FrameId& frame_id,
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::ExecuteScript,
-      frame_id.window_id,
+      frame_id.view_id,
       frame_id.frame_path,
       script,
       &response_json,
@@ -1186,13 +1253,14 @@ void Session::SendKeysOnSessionThread(const string16& keys, Error** error) {
       if (key_events[i].type != automation::kRawKeyDownType)
         continue;
       automation_->SendNativeKeyEvent(
-          current_target_.window_id,
+          current_target_.view_id,
           key_events[i].key_code,
           key_events[i].modifiers,
           error);
     } else {
       automation_->SendWebKeyEvent(
-          current_target_.window_id, key_events[i], error);
+          current_target_.view_id,
+          key_events[i], error);
     }
     if (*error) {
       std::string details = base::StringPrintf(
@@ -1437,6 +1505,10 @@ Error* Session::GetElementRegionInViewHelper(
 }
 
 Error* Session::GetScreenShot(std::string* png) {
+  if (!current_target_.view_id.IsTab()) {
+    return new Error(kUnknownError,
+                     "The current target does not support screenshot");
+  }
   Error* error = NULL;
   ScopedTempDir screenshots_dir;
   if (!screenshots_dir.CreateUniqueTempDir()) {
@@ -1448,7 +1520,7 @@ Error* Session::GetScreenShot(std::string* png) {
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::CaptureEntirePageAsPNG,
-      current_target_.window_id,
+      current_target_.view_id,
       path,
       &error));
   if (error)

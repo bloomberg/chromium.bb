@@ -14,7 +14,9 @@
 #include "base/values.h"
 #include "chrome/test/automation/value_conversion_traits.h"
 
+class AutomationId;
 class FilePath;
+class WebViewId;
 
 namespace webdriver {
 
@@ -30,6 +32,15 @@ std::string JsonStringifyForDisplay(const base::Value* value);
 
 // Returns the string representation of the given type, for display purposes.
 const char* GetJsonTypeName(base::Value::Type type);
+
+// Converts the string to an automation ID and returns true on success.
+bool StringToAutomationId(const std::string& string_id, AutomationId* id);
+
+// Converts the web view ID to a string.
+std::string WebViewIdToString(const WebViewId& view_id);
+
+// Converts the string to a web view ID and returns true on success.
+bool StringToWebViewId(const std::string& string_id, WebViewId* view_id);
 
 #if defined(OS_MACOSX)
 // Gets the paths to the user and local application directory.

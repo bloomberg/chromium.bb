@@ -6,10 +6,14 @@
 
 #include "base/basictypes.h"
 #include "base/format_macros.h"
+#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
+#include "base/string_number_conversions.h"
+#include "chrome/common/automation_id.h"
+#include "chrome/test/automation/automation_json_requests.h"
 
 using base::DictionaryValue;
 using base::ListValue;
@@ -114,6 +118,42 @@ const char* GetJsonTypeName(Value::Type type) {
       return "list";
   }
   return "unknown";
+}
+
+bool StringToAutomationId(const std::string& string_id, AutomationId* id) {
+  scoped_ptr<Value> value(base::JSONReader::Read(string_id, false));
+  std::string error_msg;
+  return value.get() && AutomationId::FromValue(value.get(), id, &error_msg);
+}
+
+std::string WebViewIdToString(const WebViewId& view_id) {
+  DictionaryValue* dict = view_id.GetId().ToValue();
+  if (view_id.old_style())
+    dict->SetBoolean("old_style", true);
+  return JsonStringify(dict);
+}
+
+bool StringToWebViewId(const std::string& string_id, WebViewId* view_id) {
+  scoped_ptr<Value> value(base::JSONReader::Read(string_id, false));
+  AutomationId id;
+  std::string error_msg;
+  DictionaryValue* dict;
+  if (!value.get() || !AutomationId::FromValue(value.get(), &id, &error_msg) ||
+      !value->GetAsDictionary(&dict))
+    return false;
+
+  bool old_style = false;
+  dict->GetBoolean("old_style", &old_style);
+
+  if (old_style) {
+    int tab_id;
+    if (!base::StringToInt(id.id(), &tab_id))
+      return false;
+    *view_id = WebViewId::ForOldStyleTab(tab_id);
+  } else {
+    *view_id = WebViewId::ForView(id);
+  }
+  return true;
 }
 
 ValueParser::ValueParser() { }
