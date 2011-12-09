@@ -204,7 +204,7 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
  protected:
   void Done() {
     done_ = true;
-    message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
   void DoStart() {
@@ -386,7 +386,7 @@ class DeleteOnConnected {
       : message_loop_(message_loop), adapter_(adapter) {}
   void OnConnected(int error) {
     adapter_->reset();
-    message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
   MessageLoop* message_loop_;
   scoped_ptr<PseudoTcpAdapter>* adapter_;

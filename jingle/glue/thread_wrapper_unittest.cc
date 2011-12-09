@@ -147,7 +147,7 @@ TEST_F(ThreadWrapperTest, PostDelayed) {
       MatchMessage(&handler2_, kTestMessage1, data4)))
       .WillOnce(DeleteMessageData());
 
-  message_loop_.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask(),
+  message_loop_.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(),
                                 kMaxTestDelay);
   message_loop_.Run();
 }
@@ -197,7 +197,7 @@ TEST_F(ThreadWrapperTest, ClearDelayed) {
       MatchMessage(&handler2_, kTestMessage1, null_data)))
       .WillOnce(DeleteMessageData());
 
-  message_loop_.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask(),
+  message_loop_.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(),
                                 kMaxTestDelay);
   message_loop_.Run();
 }
