@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/snapshot_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/window_sizer.h"
@@ -462,13 +463,11 @@ bool CreateWindowFunction::RunImpl() {
         window_type = Browser::TYPE_POPUP;
         extension_id = GetExtension()->id();
       } else if (type_str == keys::kWindowTypeValuePanel) {
-        if (CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kDisablePanels)) {
-          window_type = Browser::TYPE_POPUP;
-        } else {
-          window_type = Browser::TYPE_PANEL;
-        }
         extension_id = GetExtension()->id();
+        if (PanelManager::ShouldUsePanels(extension_id))
+          window_type = Browser::TYPE_PANEL;
+        else
+          window_type = Browser::TYPE_POPUP;
       } else if (type_str != keys::kWindowTypeValueNormal) {
         error_ = keys::kInvalidWindowTypeError;
         return false;

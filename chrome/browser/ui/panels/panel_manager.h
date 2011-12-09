@@ -28,6 +28,9 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
   // Returns a single instance.
   static PanelManager* GetInstance();
 
+  // Returns true if panels should be used for the extension.
+  static bool ShouldUsePanels(const std::string& extension_id);
+
   // Called when the display is changed, i.e. work area is updated.
   void OnDisplayChanged();
 

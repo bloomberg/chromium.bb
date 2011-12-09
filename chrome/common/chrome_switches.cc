@@ -300,9 +300,6 @@ const char kDisableIPv6[]                   = "disable-ipv6";
 // attempt to use the existing connection.
 const char kDisableIPPooling[]              = "disable-ip-pooling";
 
-// Disables panels (always on-top docked pop-up windows).
-const char kDisablePanels[]                 = "disable-panels";
-
 // Disable speculative TCP/IP preconnection.
 const char kDisablePreconnect[]             = "disable-preconnect";
 
@@ -522,6 +519,9 @@ const char kEnableNaCl[]                    = "enable-nacl";
 
 // Enables debugging via RSP over a socket.
 const char kEnableNaClDebug[]               = "enable-nacl-debug";
+
+// Enables panels (always on-top docked pop-up windows).
+const char kEnablePanels[]                 = "enable-panels";
 
 // Enables advanced app capabilities.
 const char kEnablePlatformApps[]            = "enable-platform-apps";

@@ -475,8 +475,10 @@ Browser* Browser::CreateForApp(Type type,
 
   RegisterAppPrefs(app_name, profile);
 
+#if !defined(OS_CHROMEOS) || defined(USE_AURA)
   if (type == TYPE_PANEL &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisablePanels)) {
+      !PanelManager::ShouldUsePanels(
+          web_app::GetExtensionIdFromApplicationName(app_name))) {
     type = TYPE_POPUP;
   }
 #if defined(TOOLKIT_GTK)
@@ -492,6 +494,7 @@ Browser* Browser::CreateForApp(Type type,
     }
   }
 #endif  // TOOLKIT_GTK
+#endif  // !OS_CHROMEOS || USE_AURA
 
   CreateParams params(type, profile);
   params.app_name = app_name;
@@ -4287,8 +4290,6 @@ gfx::Rect Browser::GetInstantBounds() {
 BrowserWindow* Browser::CreateBrowserWindow() {
 #if !defined(OS_CHROMEOS) || defined(USE_AURA)
   if (type_ == TYPE_PANEL) {
-    DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDisablePanels));
     return PanelManager::GetInstance()->CreatePanel(this);
   }
 #endif

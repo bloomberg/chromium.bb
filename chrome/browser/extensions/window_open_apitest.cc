@@ -175,11 +175,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowArgumentsOverflow) {
 class WindowOpenPanelDisabledTest : public ExtensionApiTest {
   virtual void SetUpCommandLine(CommandLine* command_line) {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kDisablePanels);
+    // TODO(jennb): Re-enable when panels are enabled by default.
+    // command_line->AppendSwitch(switches::kDisablePanels);
   }
 };
 
-IN_PROC_BROWSER_TEST_F(WindowOpenPanelDisabledTest, WindowOpenPanelNotEnabled) {
+IN_PROC_BROWSER_TEST_F(WindowOpenPanelDisabledTest,
+                       DISABLED_WindowOpenPanelNotEnabled) {
   ASSERT_TRUE(RunExtensionTest("window_open/panel_not_enabled")) << message_;
 }
 

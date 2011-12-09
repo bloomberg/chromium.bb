@@ -4906,11 +4906,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_ADDITIONAL_AUTOFILL_FEEDBACK_DESCRIPTION" desc="Description for the flag to enable prompts for Autofill feedback">
         Help improve Autofill.  With this enabled, Chrome will occasionally prompt you to send additional feedback to the Autofill team.
       </message>
-      <message name="IDS_FLAGS_DISABLE_PANELS_NAME" desc="Name of the 'Disable Panels' lab.">
-        Disable Panels
+      <message name="IDS_FLAGS_ENABLE_PANELS_NAME" desc="Name of the 'Enable Panels' lab.">
+        Enable Panels
       </message>
-      <message name="IDS_FLAGS_DISABLE_PANELS_DESCRIPTION" desc="Description for the flag to disable Panel windows.">
-        Disable Panel windows that open outside of the browser frame. Attempts to open a Panel will open a popup instead.
+      <message name="IDS_FLAGS_ENABLE_PANELS_DESCRIPTION" desc="Description for the flag to enable Panel windows.">
+        Enable Panel windows that open outside of the browser frame. Attempts to open a Panel will open a popup instead if not enabled.
       </message>
       <message name="IDS_FLAGS_DISABLE_WEBGL_NAME" desc="Name of the 'Disable WebGL' lab.">
         WebGL

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/panels/panel_manager.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/fullscreen.h"
@@ -13,6 +14,8 @@
 #include "chrome/browser/ui/panels/panel_overflow_strip.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/gfx/screen.h"
@@ -35,6 +38,22 @@ static const int kFullScreenModeCheckIntervalMs = 1000;
 PanelManager* PanelManager::GetInstance() {
   static base::LazyInstance<PanelManager> instance = LAZY_INSTANCE_INITIALIZER;
   return instance.Pointer();
+}
+
+// static
+bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
+      channel == chrome::VersionInfo::CHANNEL_BETA) {
+    return CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnablePanels) ||
+        extension_id == std::string("nckgahadagoaajjgafhacjanaoiihapd") ||
+        extension_id == std::string("ljclpkphhpbpinifbeabbhlfddcpfdde") ||
+        extension_id == std::string("ppleadejekpmccmnpjdimmlfljlkdfej") ||
+        extension_id == std::string("eggnbpckecmjlblplehfpjjdhhidfdoj");
+  }
+
+  return true;
 }
 
 PanelManager::PanelManager()
