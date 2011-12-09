@@ -12,6 +12,7 @@ import sdk_update
 import string
 import subprocess
 import sys
+import urllib2
 
 HELP='''"Usage: %prog [-b bundle] [options]"
 
@@ -164,6 +165,27 @@ class UpdateSDKManifest(sdk_update.SDKManifest):
     self._VerifyAllOptionsConsumed(options, bundle_name)
     self._ValidateManifest()
 
+  def ValidateManifestLinks(self):
+    '''Validates all the links in the manifest file and throws if one is bad'''
+    valid = True
+    for bundle in self._manifest_data[sdk_update.BUNDLES_KEY]:
+      for archive in bundle.GetArchives():
+        stream = None
+        try:
+          print "Checking size of data at link: %s" % archive.GetUrl()
+          stream = urllib2.urlopen(archive.GetUrl())
+          server_size = int(stream.info()[sdk_update.HTTP_CONTENT_LENGTH])
+          if server_size != archive.GetSize():
+            sys.stderr.write('Size mismatch for %s. Expected %s but got %s\n' %
+                             (archive.GetUrl(), archive.GetSize(), server_size))
+            sys.stderr.flush()
+            valid = False
+        finally:
+          if stream:
+            stream.close()
+    if not valid:
+      raise Error('Files on server do not match the manifest file')
+
 
 class GsUtil(object):
   def __init__(self, gsutil):
@@ -311,6 +333,17 @@ class UpdateSDKManifestFile(sdk_update.SDKManifestFile):
     self.WriteFile()
 
 
+def CommandPush(options, args, manifest_file):
+  '''Check the manifest file and push it to the server if it's okay'''
+  print 'Running Push with options=%s and args=%s' % (options, args)
+  manifest = manifest_file._manifest
+  manifest.UpdateManifest(options)
+  print 'Validating links within manifest file'
+  manifest.ValidateManifestLinks()
+  print 'Copying manifest file to server'
+  manifest_file.gsutil.Copy(options.manifest_file, 'naclsdk_manifest.json')
+
+
 def main(argv):
   '''Main entry for update_manifest.py'''
 
@@ -395,13 +428,22 @@ def main(argv):
 
   # Parse options and arguments and check.
   (options, args) = parser.parse_args(argv)
-  if len(args) > 0:
-    parser.error('These arguments were not understood: %s' % args)
-
   manifest_file = UpdateSDKManifestFile(options)
-  manifest_file.HandleBundles()
-  manifest_file.UpdateWithOptions()
+  if len(args) == 0:
+    manifest_file.HandleBundles()
+    manifest_file.UpdateWithOptions()
+    return 0
 
+  COMMANDS = {
+      'push': CommandPush
+      }
+  def CommandUnknown(options, args, manifest_file):
+    raise Error("Unknown command %s" % args[0])
+  try:
+    COMMANDS.get(args[0], CommandUnknown)(options, args, manifest_file)
+  except Error as error:
+    print "Error: %s" % error
+    return 1
   return 0
 
 

@@ -27,7 +27,7 @@ import urlparse
 
 # Bump the MINOR_REV every time you check this file in.
 MAJOR_REV = 1
-MINOR_REV = 12
+MINOR_REV = 13
 
 GLOBAL_HELP = '''Usage: naclsdk [options] command [command_options]
 
@@ -476,6 +476,18 @@ class Archive(dict):
     self['size'] = size
     self['checksum'] = {'sha1': sha1}
 
+  def GetUrl(self):
+    '''Returns the URL of this Archive'''
+    return self['url']
+
+  def GetSize(self):
+    '''Returns the size of this archive, in bytes'''
+    return int(self['size'])
+
+  def GetChecksum(self, type='sha1'):
+    '''Returns a given cryptographic checksum of the archive'''
+    return self['checksum'][type]
+
 
 class Bundle(dict):
   ''' A placeholder for sdk bundle information. We derive Bundle from
@@ -581,6 +593,10 @@ class Bundle(dict):
       archive = Archive(host_os_name=host_os)
       self[ARCHIVES_KEY].append(archive)
     archive.Update(url)
+
+  def GetArchives(self):
+    '''Returns all the archives in this bundle'''
+    return self[ARCHIVES_KEY]
 
 
 class SDKManifest(object):

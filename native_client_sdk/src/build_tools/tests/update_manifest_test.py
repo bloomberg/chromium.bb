@@ -295,6 +295,12 @@ class TestUpdateManifest(unittest.TestCase):
     finally:
       RemoveFile(temp_filename)
 
+  def testPush(self):
+    '''Test whether the push function does the right thing'''
+    options = FakeOptions()
+    argv = ['-g', options.gsutil, 'push']
+    update_manifest.main(argv)
+
   def testHandleSDKTools(self):
     '''Test the handling of the sdk_tools bundle'''
     options = FakeOptions()
