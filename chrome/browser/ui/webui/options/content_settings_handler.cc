@@ -691,40 +691,40 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
   }
   switch (content_type) {
     case CONTENT_SETTINGS_TYPE_COOKIES:
-      UserMetrics::RecordAction(UserMetricsAction(
-          "ContentSetting_DefaultCookieSettingChanged"));
+      UserMetrics::RecordAction(
+          UserMetricsAction("Options_DefaultCookieSettingChanged"));
       break;
     case CONTENT_SETTINGS_TYPE_IMAGES:
-      UserMetrics::RecordAction(UserMetricsAction(
-          "ContentSetting_DefaultImagesSettingChanged"));
+      UserMetrics::RecordAction(
+          UserMetricsAction("Options_DefaultImagesSettingChanged"));
       break;
     case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
-      UserMetrics::RecordAction(UserMetricsAction(
-          "ContentSetting_DefaultJavaScriptSettingChanged"));
+      UserMetrics::RecordAction(
+          UserMetricsAction("Options_DefaultJavaScriptSettingChanged"));
       break;
     case CONTENT_SETTINGS_TYPE_PLUGINS:
-      UserMetrics::RecordAction(UserMetricsAction(
-          "ContentSetting_DefaultPluginsSettingChanged"));
+      UserMetrics::RecordAction(
+          UserMetricsAction("Options_DefaultPluginsSettingChanged"));
       break;
     case CONTENT_SETTINGS_TYPE_POPUPS:
-      UserMetrics::RecordAction(UserMetricsAction(
-          "ContentSettings_DefaultPopupsSettingChanged"));
+      UserMetrics::RecordAction(
+          UserMetricsAction("Options_DefaultPopupsSettingChanged"));
       break;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      UserMetrics::RecordAction(UserMetricsAction(
-          "ContentSettings_DefaultNotificationsSettingChanged"));
+      UserMetrics::RecordAction(
+          UserMetricsAction("Options_DefaultNotificationsSettingChanged"));
       break;
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      UserMetrics::RecordAction(UserMetricsAction(
-          "ContentSetting_DefaultGeolocationSettingChanged"));
+      UserMetrics::RecordAction(
+          UserMetricsAction("Options_DefaultGeolocationSettingChanged"));
       break;
     case CONTENT_SETTINGS_TYPE_INTENTS:
-      UserMetrics::RecordAction(UserMetricsAction(
-          "ContentSetting_DefaultHandlersSettingChanged"));
+      UserMetrics::RecordAction(
+          UserMetricsAction("Options_DefaultHandlersSettingChanged"));
       break;
     case CONTENT_SETTINGS_TYPE_MOUSELOCK:
-      UserMetrics::RecordAction(UserMetricsAction(
-          "ContentSettings_DefaultMouseLockSettingChanged"));
+      UserMetrics::RecordAction(
+          UserMetricsAction("Options_DefaultMouseLockSettingChanged"));
       break;
     default:
       break;
