@@ -556,25 +556,35 @@ add_config('arm-tegra2_kaen-private-bin', internal, arm, pfq,
   description='tegra2_kaen PFQ'
 )
 
-add_config('arm-tegra2_kaen-aura-private-bin', internal, arm, binary,
+add_config('arm-tegra2_kaen-aura-private-bin', internal, arm, pfq,
   board='tegra2_kaen',
   profile='aura',
+  overlays='private',
+  description='tegra2_kaen Aura PFQ',
 )
 
-add_config('x86-zgb-private-bin', internal, binary,
+add_config('x86-zgb-private-bin', internal, pfq,
   board='x86-zgb',
+  overlays='private',
+  description='ZGB PFQ',
 )
 
-add_config('x86-alex-private-bin', internal, binary,
+add_config('x86-alex-private-bin', internal, pfq,
   board='x86-alex',
+  overlays='private',
+  description='Alex PFQ',
 )
 
-add_config('stumpy-private-bin', internal, binary,
+add_config('stumpy-private-bin', internal, pfq,
   board='stumpy',
+  overlays='private',
+  description='Stumpy PFQ',
 )
 
-add_config('lumpy-private-bin', internal, binary,
+add_config('lumpy-private-bin', internal, pfq,
   board='lumpy',
+  overlays='private',
+  description='Lumpy PFQ',
 )
 
 add_config('link-private-bin', internal, pfq,
