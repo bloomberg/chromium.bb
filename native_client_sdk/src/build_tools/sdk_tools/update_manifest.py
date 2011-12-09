@@ -52,7 +52,8 @@ BUILD_TOOLS_OUT = os.path.join(NACL_SDK_ROOT, 'scons-out', 'build', 'obj',
 
 BUNDLE_SDK_TOOLS = 'sdk_tools'
 BUNDLE_PEPPER_MATCHER = re.compile('^pepper_([0-9]+)$')
-IGNORE_OPTIONS = set(['gsutil', 'manifest_file', 'upload', 'root_url'])
+IGNORE_OPTIONS = set([
+    'archive_id', 'gsutil', 'manifest_file', 'upload', 'root_url'])
 
 
 class Error(Exception):
@@ -133,7 +134,7 @@ class UpdateSDKManifest(sdk_update.SDKManifest):
 
     Args:
       options: the object containing the remaining unused options attributes.
-      bundl_name: The name of the bundle, or None if it's missing.'''
+      bundle_name: The name of the bundle, or None if it's missing.'''
     # Any option left in the list should have value = None
     for key, val in options.__dict__.items():
       if val != None and key not in IGNORE_OPTIONS:
@@ -277,8 +278,15 @@ class UpdateSDKManifestFile(sdk_update.SDKManifestFile):
     if options.desc is None:
       options.desc = ('Chrome %s bundle, revision %s' %
                       (options.bundle_version, options.bundle_revision))
-    root_url = '%s/pepper_%s_%s' % (options.root_url, options.bundle_version,
-                                    options.bundle_revision)
+    root_url = options.root_url
+    if options.archive_id:
+      # Support archive names like trunk.113440 or 17.0.963.3, which is how
+      # the Chrome builders archive things.
+      root_url = '/'.join([root_url, options.archive_id])
+    else:
+      # This is the old archive naming scheme
+      root_url = '%s/pepper_%s_%s' % (root_url, options.bundle_version,
+                                      options.bundle_revision)
     options.mac_arch_url = '/'.join([root_url, 'naclsdk_mac.tgz'])
     options.linux_arch_url = '/'.join([root_url, 'naclsdk_linux.tgz'])
     options.win_arch_url = '/'.join([root_url, 'naclsdk_win.exe'])
@@ -310,6 +318,13 @@ def main(argv):
   parser = optparse.OptionParser(usage=HELP)
 
   # Setup options
+  parser.add_option(
+      '-a', '--archive-id', dest='archive_id',
+      default=None,
+      help='Archive identifier, produced by the Chromium builders; string '
+           'like "trunk.113440" or "17.0.963.3".  Used with --root-url to '
+           'build the full archive URL. If not set the archive id defaults to '
+           '"pepper_<version>_<revision>"')
   parser.add_option(
       '-b', '--bundle-version', dest='bundle_version',
       type='int',
@@ -348,7 +363,7 @@ def main(argv):
       '-r', '--recommended', dest='recommended',
       choices=sdk_update.YES_NO_LITERALS,
       default=None,
-      help='Required: whether this bundle is recommended. one of "yes" or "no"')
+      help='Required: whether this bundle is recommended. One of "yes" or "no"')
   parser.add_option(
       '-R', '--root-url', dest='root_url',
       default='http://commondatastorage.googleapis.com/nativeclient-mirror/'

@@ -62,6 +62,7 @@ def GetHTTPHandler(path, length=None):
 class FakeOptions(object):
   ''' Just a place holder for options '''
   def __init__(self):
+    self.archive_id = None
     self.bundle_desc_url = None
     self.bundle_name = None
     self.bundle_version = None
@@ -334,6 +335,18 @@ class TestUpdateManifest(unittest.TestCase):
     options = FakeOptions()
     options.bundle_name = 'pepper_1'
     options.bundle_revision = 0
+    manifest_object = update_manifest.UpdateSDKManifestFile(options)
+    manifest_object.HandleBundles()
+    manifest_object.UpdateWithOptions()
+
+    # Verify that the bundle can be found via the --archive-id option.
+    options = FakeOptions()
+    options.archive_id = 'pepper_1_0'
+    options.bundle_name = 'pepper_phony'
+    options.bundle_version = -1
+    options.bundle_revision = -1
+    options.stability = 'dev'
+    options.recommended = 'no'
     manifest_object = update_manifest.UpdateSDKManifestFile(options)
     manifest_object.HandleBundles()
     manifest_object.UpdateWithOptions()
