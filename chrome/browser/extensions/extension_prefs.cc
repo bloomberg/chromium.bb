@@ -433,9 +433,8 @@ bool ExtensionPrefs::ReadExtensionPrefURLPatternSet(
     std::string item;
     if (!value->GetString(i, &item))
       return false;
-    URLPattern pattern(valid_schemes);
-    if (pattern.Parse(item, URLPattern::IGNORE_PORTS) !=
-        URLPattern::PARSE_SUCCESS) {
+    URLPattern pattern(URLPattern::IGNORE_PORTS, valid_schemes);
+    if (pattern.Parse(item) != URLPattern::PARSE_SUCCESS) {
       NOTREACHED();
       return false;
     }

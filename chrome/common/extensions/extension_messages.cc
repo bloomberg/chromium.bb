@@ -117,8 +117,9 @@ bool ParamTraits<URLPattern>::Read(const Message* m, void** iter,
   // match the invalid patterns. We get around this by setting the valid
   // schemes after parsing the pattern. Update these method calls once we can
   // ignore scheme validation with URLPattern parse options. crbug.com/90544
+  p->SetParseOption(URLPattern::IGNORE_PORTS);
   p->SetValidSchemes(URLPattern::SCHEME_ALL);
-  URLPattern::ParseResult result = p->Parse(spec, URLPattern::IGNORE_PORTS);
+  URLPattern::ParseResult result = p->Parse(spec);
   p->SetValidSchemes(valid_schemes);
   return URLPattern::PARSE_SUCCESS == result;
 }

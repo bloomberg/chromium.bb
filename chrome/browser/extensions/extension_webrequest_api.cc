@@ -420,10 +420,9 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
         return false;
       for (size_t i = 0; i < urls_value->GetSize(); ++i) {
         std::string url;
-        URLPattern pattern(URLPattern::SCHEME_ALL);
+        URLPattern pattern(URLPattern::ERROR_ON_PORTS, URLPattern::SCHEME_ALL);
         if (!urls_value->GetString(i, &url) ||
-            pattern.Parse(url, URLPattern::ERROR_ON_PORTS) !=
-                URLPattern::PARSE_SUCCESS) {
+            pattern.Parse(url) != URLPattern::PARSE_SUCCESS) {
           *error = ExtensionErrorUtils::FormatErrorMessage(
               keys::kInvalidRequestFilterUrl, url);
           return false;

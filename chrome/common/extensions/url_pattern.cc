@@ -98,26 +98,28 @@ bool IsValidPortForScheme(const std::string scheme, const std::string& port) {
 }  // namespace
 
 URLPattern::URLPattern()
-    : valid_schemes_(SCHEME_NONE),
+    : parse_option_(ERROR_ON_PORTS),
+      valid_schemes_(SCHEME_NONE),
       match_all_urls_(false),
       match_subdomains_(false),
       port_("*") {}
 
-URLPattern::URLPattern(int valid_schemes)
-    : valid_schemes_(valid_schemes),
+URLPattern::URLPattern(URLPattern::ParseOption parse_option, int valid_schemes)
+    : parse_option_(parse_option),
+      valid_schemes_(valid_schemes),
       match_all_urls_(false),
       match_subdomains_(false),
       port_("*") {}
 
 URLPattern::URLPattern(int valid_schemes, const std::string& pattern)
-    : valid_schemes_(valid_schemes),
+    // Strict error checking is used, because this constructor is only
+    // appropriate when we know |pattern| is valid.
+    : parse_option_(ERROR_ON_PORTS),
+      valid_schemes_(valid_schemes),
       match_all_urls_(false),
       match_subdomains_(false),
       port_("*") {
-
-  // Strict error checking is used, because this constructor is only
-  // appropriate when we know |pattern| is valid.
-  if (PARSE_SUCCESS != Parse(pattern, ERROR_ON_PORTS))
+  if (PARSE_SUCCESS != Parse(pattern))
     NOTREACHED() << "URLPattern is invalid: " << pattern;
 }
 
@@ -132,8 +134,7 @@ bool URLPattern::operator==(const URLPattern& other) const {
   return GetAsString() == other.GetAsString();
 }
 
-URLPattern::ParseResult URLPattern::Parse(const std::string& pattern,
-                                          ParseOption strictness) {
+URLPattern::ParseResult URLPattern::Parse(const std::string& pattern) {
   spec_.clear();
 
   // Special case pattern to match every valid URL.
@@ -215,7 +216,7 @@ URLPattern::ParseResult URLPattern::Parse(const std::string& pattern,
 
   size_t port_pos = host_.find(':');
   if (port_pos != std::string::npos) {
-    switch (strictness) {
+    switch (parse_option_) {
       case USE_PORTS: {
         if (!SetPort(host_.substr(port_pos + 1)))
           return PARSE_ERROR_INVALID_PORT;
@@ -243,6 +244,11 @@ URLPattern::ParseResult URLPattern::Parse(const std::string& pattern,
 void URLPattern::SetValidSchemes(int valid_schemes) {
   spec_.clear();
   valid_schemes_ = valid_schemes;
+}
+
+void URLPattern::SetParseOption(URLPattern::ParseOption parse_option) {
+  spec_.clear();
+  parse_option_ = parse_option;
 }
 
 void URLPattern::SetHost(const std::string& host) {

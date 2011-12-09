@@ -123,17 +123,13 @@ class URLPattern {
   // The <all_urls> string pattern.
   static const char kAllUrlsPattern[];
 
-  // Construct an URLPattern with the given set of allowable schemes. See
-  // valid_schemes_ for more info.
-  explicit URLPattern(int valid_schemes);
+  explicit URLPattern(ParseOption parse_option, int valid_schemes);
 
   // Convenience to construct a URLPattern from a string. The string is expected
-  // to be a valid pattern. If the string is not known ahead of time, use
-  // Parse() instead, which returns success or failure.
+  // to be a valid pattern when parsed with USE_PORTS. If the string is not
+  // known ahead of time, use Parse() instead, which returns success or failure.
   URLPattern(int valid_schemes, const std::string& pattern);
 
-  // Note: don't use this directly. This exists so URLPattern can be used
-  // with STL containers.
   URLPattern();
   ~URLPattern();
 
@@ -143,20 +139,16 @@ class URLPattern {
   // Initializes this instance by parsing the provided string. Returns
   // URLPattern::PARSE_SUCCESS on success, or an error code otherwise. On
   // failure, this instance will have some intermediate values and is in an
-  // invalid state.  Adding error checks to URLPattern::Parse() can cause
-  // patterns in installed extensions to fail.  If an installed extension
-  // uses a pattern that was valid but fails a new error check, the
-  // extension will fail to load when chrome is auto-updated.  To avoid
-  // this, new parse checks are enabled only when |strictness| is
-  // OPTION_STRICT.  OPTION_STRICT should be used when loading in developer
-  // mode, or when an extension's patterns are controlled by chrome (such
-  // as component extensions).
-  ParseResult Parse(const std::string& pattern_str,
-                    ParseOption strictness);
+  // invalid state.
+  ParseResult Parse(const std::string& pattern_str);
 
   // Gets the bitmask of valid schemes.
   int valid_schemes() const { return valid_schemes_; }
   void SetValidSchemes(int valid_schemes);
+
+  // Gets or sets the parse option used with Parse().
+  ParseOption parse_option() const { return parse_option_; }
+  void SetParseOption(ParseOption parse_option);
 
   // Gets the host the pattern matches. This can be an empty string if the
   // pattern matches all hosts (the input was <scheme>://*/<whatever>).
@@ -251,6 +243,9 @@ class URLPattern {
   // If the URLPattern contains a wildcard scheme, returns a list of
   // equivalent literal schemes, otherwise returns the current scheme.
   std::vector<std::string> GetExplicitSchemes() const;
+
+  // Controls how to interpret the input to Parse().
+  ParseOption parse_option_;
 
   // A bitmask containing the schemes which are considered valid for this
   // pattern. Parse() uses this to decide whether a pattern contains a valid

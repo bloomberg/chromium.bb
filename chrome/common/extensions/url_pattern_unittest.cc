@@ -35,10 +35,9 @@ TEST(ExtensionURLPatternTest, ParseInvalid) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kInvalidPatterns); ++i) {
-    URLPattern pattern(URLPattern::SCHEME_ALL);
+    URLPattern pattern(URLPattern::IGNORE_PORTS, URLPattern::SCHEME_ALL);
     EXPECT_EQ(kInvalidPatterns[i].expected_result,
-              pattern.Parse(kInvalidPatterns[i].pattern,
-                            URLPattern::IGNORE_PORTS))
+              pattern.Parse(kInvalidPatterns[i].pattern))
         << kInvalidPatterns[i].pattern;
   }
 };
@@ -103,31 +102,30 @@ TEST(ExtensionURLPatternTest, Ports) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestPatterns); ++i) {
-    URLPattern use_ports_pattern(URLPattern::SCHEME_ALL);
+    URLPattern use_ports_pattern(URLPattern::USE_PORTS, URLPattern::SCHEME_ALL);
     // Check results with |USE_PORTS|.
     EXPECT_EQ(kTestPatterns[i].expected_result_use_ports,
-              use_ports_pattern.Parse(kTestPatterns[i].pattern,
-                                      URLPattern::USE_PORTS))
+              use_ports_pattern.Parse(kTestPatterns[i].pattern))
         << "Got unexpected result for URL pattern: "
         << kTestPatterns[i].pattern;
     EXPECT_EQ(kTestPatterns[i].expected_port, use_ports_pattern.port())
         << "Got unexpected port for URL pattern: " << kTestPatterns[i].pattern;
 
-    URLPattern ignore_ports_pattern(URLPattern::SCHEME_ALL);
+    URLPattern ignore_ports_pattern(URLPattern::IGNORE_PORTS,
+                                    URLPattern::SCHEME_ALL);
     // Check results with |IGNORE_PORTS|.
     EXPECT_EQ(kTestPatterns[i].expected_result_ignore_ports,
-              ignore_ports_pattern.Parse(kTestPatterns[i].pattern,
-                                         URLPattern::IGNORE_PORTS))
+              ignore_ports_pattern.Parse(kTestPatterns[i].pattern))
         << "Got unexpected result for URL pattern: "
         << kTestPatterns[i].pattern;
     EXPECT_EQ("*", ignore_ports_pattern.port())
         << "Got unexpected port for URL pattern: " << kTestPatterns[i].pattern;
 
-    URLPattern error_on_ports_pattern(URLPattern::SCHEME_ALL);
+    URLPattern error_on_ports_pattern(URLPattern::ERROR_ON_PORTS,
+                                      URLPattern::SCHEME_ALL);
     // Check results with |ERROR_ON_PORTS|.
     EXPECT_EQ(kTestPatterns[i].expected_result_error_on_ports,
-              error_on_ports_pattern.Parse(kTestPatterns[i].pattern,
-                                           URLPattern::ERROR_ON_PORTS))
+              error_on_ports_pattern.Parse(kTestPatterns[i].pattern))
         << "Got unexpected result for URL pattern: "
         << kTestPatterns[i].pattern;
   }
@@ -135,9 +133,8 @@ TEST(ExtensionURLPatternTest, Ports) {
 
 // all pages for a given scheme
 TEST(ExtensionURLPatternTest, Match1) {
-  URLPattern pattern(kAllSchemes);
-  EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("http://*/*", URLPattern::ERROR_ON_PORTS));
+  URLPattern pattern(URLPattern::ERROR_ON_PORTS, kAllSchemes);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("http://*/*"));
   EXPECT_EQ("http", pattern.scheme());
   EXPECT_EQ("", pattern.host());
   EXPECT_TRUE(pattern.match_subdomains());
@@ -152,9 +149,8 @@ TEST(ExtensionURLPatternTest, Match1) {
 
 // all domains
 TEST(ExtensionURLPatternTest, Match2) {
-  URLPattern pattern(kAllSchemes);
-  EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("https://*/foo*", URLPattern::ERROR_ON_PORTS));
+  URLPattern pattern(URLPattern::ERROR_ON_PORTS, kAllSchemes);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("https://*/foo*"));
   EXPECT_EQ("https", pattern.scheme());
   EXPECT_EQ("", pattern.host());
   EXPECT_TRUE(pattern.match_subdomains());
@@ -168,10 +164,9 @@ TEST(ExtensionURLPatternTest, Match2) {
 
 // subdomains
 TEST(URLPatternTest, Match3) {
-  URLPattern pattern(kAllSchemes);
+  URLPattern pattern(URLPattern::ERROR_ON_PORTS, kAllSchemes);
   EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("http://*.google.com/foo*bar",
-                          URLPattern::ERROR_ON_PORTS));
+            pattern.Parse("http://*.google.com/foo*bar"));
   EXPECT_EQ("http", pattern.scheme());
   EXPECT_EQ("google.com", pattern.host());
   EXPECT_TRUE(pattern.match_subdomains());
@@ -186,9 +181,8 @@ TEST(URLPatternTest, Match3) {
 
 // glob escaping
 TEST(ExtensionURLPatternTest, Match5) {
-  URLPattern pattern(kAllSchemes);
-  EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("file:///foo?bar\\*baz", URLPattern::ERROR_ON_PORTS));
+  URLPattern pattern(URLPattern::ERROR_ON_PORTS, kAllSchemes);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("file:///foo?bar\\*baz"));
   EXPECT_EQ("file", pattern.scheme());
   EXPECT_EQ("", pattern.host());
   EXPECT_FALSE(pattern.match_subdomains());
@@ -200,9 +194,8 @@ TEST(ExtensionURLPatternTest, Match5) {
 
 // ip addresses
 TEST(ExtensionURLPatternTest, Match6) {
-  URLPattern pattern(kAllSchemes);
-  EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("http://127.0.0.1/*", URLPattern::ERROR_ON_PORTS));
+  URLPattern pattern(URLPattern::ERROR_ON_PORTS, kAllSchemes);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("http://127.0.0.1/*"));
   EXPECT_EQ("http", pattern.scheme());
   EXPECT_EQ("127.0.0.1", pattern.host());
   EXPECT_FALSE(pattern.match_subdomains());
@@ -213,10 +206,9 @@ TEST(ExtensionURLPatternTest, Match6) {
 
 // subdomain matching with ip addresses
 TEST(ExtensionURLPatternTest, Match7) {
-  URLPattern pattern(kAllSchemes);
-  EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("http://*.0.0.1/*",
-                          URLPattern::ERROR_ON_PORTS)); // allowed, but useless
+  URLPattern pattern(URLPattern::ERROR_ON_PORTS, kAllSchemes);
+  // allowed, but useless
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("http://*.0.0.1/*"));
   EXPECT_EQ("http", pattern.scheme());
   EXPECT_EQ("0.0.1", pattern.host());
   EXPECT_TRUE(pattern.match_subdomains());
@@ -228,12 +220,11 @@ TEST(ExtensionURLPatternTest, Match7) {
 
 // unicode
 TEST(ExtensionURLPatternTest, Match8) {
-  URLPattern pattern(kAllSchemes);
+  URLPattern pattern(URLPattern::ERROR_ON_PORTS, kAllSchemes);
   // The below is the ASCII encoding of the following URL:
   // http://*.\xe1\x80\xbf/a\xc2\x81\xe1*
   EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("http://*.xn--gkd/a%C2%81%E1*",
-                          URLPattern::ERROR_ON_PORTS));
+            pattern.Parse("http://*.xn--gkd/a%C2%81%E1*"));
   EXPECT_EQ("http", pattern.scheme());
   EXPECT_EQ("xn--gkd", pattern.host());
   EXPECT_TRUE(pattern.match_subdomains());
@@ -247,9 +238,8 @@ TEST(ExtensionURLPatternTest, Match8) {
 
 // chrome://
 TEST(ExtensionURLPatternTest, Match9) {
-  URLPattern pattern(kAllSchemes);
-  EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("chrome://favicon/*", URLPattern::ERROR_ON_PORTS));
+  URLPattern pattern(URLPattern::ERROR_ON_PORTS, kAllSchemes);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("chrome://favicon/*"));
   EXPECT_EQ("chrome", pattern.scheme());
   EXPECT_EQ("favicon", pattern.host());
   EXPECT_FALSE(pattern.match_subdomains());
@@ -262,9 +252,8 @@ TEST(ExtensionURLPatternTest, Match9) {
 
 // *://
 TEST(ExtensionURLPatternTest, Match10) {
-  URLPattern pattern(kAllSchemes);
-  EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("*://*/*", URLPattern::ERROR_ON_PORTS));
+  URLPattern pattern(URLPattern::ERROR_ON_PORTS, kAllSchemes);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("*://*/*"));
   EXPECT_TRUE(pattern.MatchesScheme("http"));
   EXPECT_TRUE(pattern.MatchesScheme("https"));
   EXPECT_FALSE(pattern.MatchesScheme("chrome"));
@@ -281,9 +270,8 @@ TEST(ExtensionURLPatternTest, Match10) {
 
 // <all_urls>
 TEST(ExtensionURLPatternTest, Match11) {
-  URLPattern pattern(kAllSchemes);
-  EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("<all_urls>", URLPattern::ERROR_ON_PORTS));
+  URLPattern pattern(URLPattern::ERROR_ON_PORTS, kAllSchemes);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("<all_urls>"));
   EXPECT_TRUE(pattern.MatchesScheme("chrome"));
   EXPECT_TRUE(pattern.MatchesScheme("http"));
   EXPECT_TRUE(pattern.MatchesScheme("https"));
@@ -298,7 +286,7 @@ TEST(ExtensionURLPatternTest, Match11) {
 
   // Make sure the properties are the same when creating an <all_urls> pattern
   // via SetMatchAllURLs and by parsing <all_urls>.
-  URLPattern pattern2(kAllSchemes);
+  URLPattern pattern2(URLPattern::ERROR_ON_PORTS, kAllSchemes);
   pattern2.SetMatchAllURLs(true);
 
   EXPECT_EQ(pattern.valid_schemes(), pattern2.valid_schemes());
@@ -312,9 +300,8 @@ TEST(ExtensionURLPatternTest, Match11) {
 
 // SCHEME_ALL matches all schemes.
 TEST(ExtensionURLPatternTest, Match12) {
-  URLPattern pattern(URLPattern::SCHEME_ALL);
-  EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("<all_urls>", URLPattern::ERROR_ON_PORTS));
+  URLPattern pattern(URLPattern::ERROR_ON_PORTS, URLPattern::SCHEME_ALL);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("<all_urls>"));
   EXPECT_TRUE(pattern.MatchesScheme("chrome"));
   EXPECT_TRUE(pattern.MatchesScheme("http"));
   EXPECT_TRUE(pattern.MatchesScheme("https"));
@@ -352,10 +339,9 @@ static const struct MatchPatterns {
 // SCHEME_ALL and specific schemes.
 TEST(ExtensionURLPatternTest, Match13) {
   for (size_t i = 0; i < arraysize(kMatch13UrlPatternTestCases); ++i) {
-    URLPattern pattern(URLPattern::SCHEME_ALL);
+    URLPattern pattern(URLPattern::ERROR_ON_PORTS, URLPattern::SCHEME_ALL);
     EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-              pattern.Parse(kMatch13UrlPatternTestCases[i].pattern,
-                            URLPattern::ERROR_ON_PORTS))
+              pattern.Parse(kMatch13UrlPatternTestCases[i].pattern))
         << " while parsing " << kMatch13UrlPatternTestCases[i].pattern;
     EXPECT_TRUE(pattern.MatchesURL(
         GURL(kMatch13UrlPatternTestCases[i].matches)))
@@ -363,17 +349,15 @@ TEST(ExtensionURLPatternTest, Match13) {
   }
 
   // Negative test.
-  URLPattern pattern(URLPattern::SCHEME_ALL);
-  EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("data:*", URLPattern::ERROR_ON_PORTS));
+  URLPattern pattern(URLPattern::ERROR_ON_PORTS, URLPattern::SCHEME_ALL);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("data:*"));
   EXPECT_FALSE(pattern.MatchesURL(GURL("about:blank")));
 };
 
 // file scheme with empty hostname
 TEST(ExtensionURLPatternTest, Match14) {
-  URLPattern pattern(kAllSchemes);
-  EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("file:///foo*", URLPattern::ERROR_ON_PORTS));
+  URLPattern pattern(URLPattern::ERROR_ON_PORTS, kAllSchemes);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("file:///foo*"));
   EXPECT_EQ("file", pattern.scheme());
   EXPECT_EQ("", pattern.host());
   EXPECT_FALSE(pattern.match_subdomains());
@@ -388,9 +372,8 @@ TEST(ExtensionURLPatternTest, Match14) {
 
 // file scheme without hostname part
 TEST(ExtensionURLPatternTest, Match15) {
-  URLPattern pattern(kAllSchemes);
-  EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("file://foo*", URLPattern::ERROR_ON_PORTS));
+  URLPattern pattern(URLPattern::ERROR_ON_PORTS, kAllSchemes);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("file://foo*"));
   EXPECT_EQ("file", pattern.scheme());
   EXPECT_EQ("", pattern.host());
   EXPECT_FALSE(pattern.match_subdomains());
@@ -405,9 +388,8 @@ TEST(ExtensionURLPatternTest, Match15) {
 
 // file scheme with hostname
 TEST(ExtensionURLPatternTest, Match16) {
-  URLPattern pattern(kAllSchemes);
-  EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("file://localhost/foo*", URLPattern::ERROR_ON_PORTS));
+  URLPattern pattern(URLPattern::ERROR_ON_PORTS, kAllSchemes);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("file://localhost/foo*"));
   EXPECT_EQ("file", pattern.scheme());
   // Since hostname is ignored for file://.
   EXPECT_EQ("", pattern.host());
@@ -423,10 +405,9 @@ TEST(ExtensionURLPatternTest, Match16) {
 
 // Specific port
 TEST(ExtensionURLPatternTest, Match17) {
-  URLPattern pattern(kAllSchemes);
+  URLPattern pattern(URLPattern::USE_PORTS, kAllSchemes);
   EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("http://www.example.com:80/foo",
-                          URLPattern::USE_PORTS));
+            pattern.Parse("http://www.example.com:80/foo"));
   EXPECT_EQ("http", pattern.scheme());
   EXPECT_EQ("www.example.com", pattern.host());
   EXPECT_FALSE(pattern.match_subdomains());
@@ -440,10 +421,9 @@ TEST(ExtensionURLPatternTest, Match17) {
 
 // Explicit port wildcard
 TEST(ExtensionURLPatternTest, Match18) {
-  URLPattern pattern(kAllSchemes);
+  URLPattern pattern(URLPattern::USE_PORTS, kAllSchemes);
   EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("http://www.example.com:*/foo",
-                          URLPattern::USE_PORTS));
+            pattern.Parse("http://www.example.com:*/foo"));
   EXPECT_EQ("http", pattern.scheme());
   EXPECT_EQ("www.example.com", pattern.host());
   EXPECT_FALSE(pattern.match_subdomains());
@@ -475,18 +455,16 @@ static const struct GetAsStringPatterns {
 
 TEST(ExtensionURLPatternTest, GetAsString) {
   for (size_t i = 0; i < arraysize(kGetAsStringTestCases); ++i) {
-    URLPattern pattern1(URLPattern::SCHEME_ALL);
+    URLPattern pattern1(URLPattern::USE_PORTS, URLPattern::SCHEME_ALL);
     EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-              pattern1.Parse(kGetAsStringTestCases[i].pattern,
-                             URLPattern::USE_PORTS))
+              pattern1.Parse(kGetAsStringTestCases[i].pattern))
         << "Error parsing " << kGetAsStringTestCases[i].pattern;
     EXPECT_EQ(kGetAsStringTestCases[i].pattern,
               pattern1.GetAsString());
-    URLPattern pattern2(URLPattern::SCHEME_ALL);
 
+    URLPattern pattern2(URLPattern::IGNORE_PORTS, URLPattern::SCHEME_ALL);
     EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-              pattern2.Parse(kGetAsStringTestCases[i].pattern,
-                             URLPattern::IGNORE_PORTS))
+              pattern2.Parse(kGetAsStringTestCases[i].pattern))
         << "Error parsing " << kGetAsStringTestCases[i].pattern;
     EXPECT_EQ(kGetAsStringTestCases[i].pattern,
               pattern2.GetAsString());
@@ -581,12 +559,11 @@ TEST(ExtensionURLPatternTest, IgnorePorts) {
   std::string pattern_str = "http://www.example.com:8080/foo";
   GURL url("http://www.example.com:1234/foo");
 
-  URLPattern pattern1(kAllSchemes);
-  URLPattern pattern2(kAllSchemes);
-  EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern1.Parse(pattern_str, URLPattern::IGNORE_PORTS));
-  EXPECT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern2.Parse(pattern_str, URLPattern::USE_PORTS));
+  URLPattern pattern1(URLPattern::IGNORE_PORTS, kAllSchemes);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern1.Parse(pattern_str));
+
+  URLPattern pattern2(URLPattern::USE_PORTS, kAllSchemes);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern2.Parse(pattern_str));
 
   EXPECT_EQ(pattern_str, pattern1.GetAsString());
   EXPECT_EQ(pattern_str, pattern2.GetAsString());
@@ -678,11 +655,11 @@ TEST(ExtensionURLPatternTest, Equals) {
     message += " ";
     message += kEqualsTestCases[i].pattern2;
 
-    URLPattern pattern1(URLPattern::SCHEME_ALL);
-    URLPattern pattern2(URLPattern::SCHEME_ALL);
+    URLPattern pattern1(URLPattern::USE_PORTS, URLPattern::SCHEME_ALL);
+    URLPattern pattern2(URLPattern::USE_PORTS, URLPattern::SCHEME_ALL);
 
-    pattern1.Parse(kEqualsTestCases[i].pattern1, URLPattern::USE_PORTS);
-    pattern2.Parse(kEqualsTestCases[i].pattern2, URLPattern::USE_PORTS);
+    pattern1.Parse(kEqualsTestCases[i].pattern1);
+    pattern2.Parse(kEqualsTestCases[i].pattern2);
     EXPECT_EQ(kEqualsTestCases[i].expected_equal, pattern1 == pattern2)
         << message;
   }

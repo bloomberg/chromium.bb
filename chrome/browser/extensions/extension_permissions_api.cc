@@ -115,9 +115,9 @@ bool UnpackPermissionsFromValue(DictionaryValue* value,
         return false;
       }
 
-      URLPattern origin(Extension::kValidHostPermissionSchemes);
-      URLPattern::ParseResult parse_result =
-          origin.Parse(pattern, URLPattern::IGNORE_PORTS);
+      URLPattern origin(URLPattern::IGNORE_PORTS,
+                        Extension::kValidHostPermissionSchemes);
+      URLPattern::ParseResult parse_result = origin.Parse(pattern);
       if (URLPattern::PARSE_SUCCESS != parse_result) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
             kInvalidOrigin,

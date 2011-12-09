@@ -57,11 +57,11 @@ namespace extension_content_settings_helpers {
 
 ContentSettingsPattern ParseExtensionPattern(const std::string& pattern_str,
                                              std::string* error) {
-  URLPattern url_pattern(URLPattern::SCHEME_HTTP |
-                         URLPattern::SCHEME_HTTPS |
-                         URLPattern::SCHEME_FILE);
-  URLPattern::ParseResult result =
-      url_pattern.Parse(pattern_str, URLPattern::USE_PORTS);
+  const int kAllowedSchemes =
+      URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS |
+      URLPattern::SCHEME_FILE;
+  URLPattern url_pattern(URLPattern::USE_PORTS, kAllowedSchemes);
+  URLPattern::ParseResult result = url_pattern.Parse(pattern_str);
   if (result != URLPattern::PARSE_SUCCESS) {
     *error = URLPattern::GetParseResultString(result);
     return ContentSettingsPattern();

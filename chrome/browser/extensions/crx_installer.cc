@@ -292,7 +292,8 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
       // For self-hosted apps, verify that the entire extent is on the same
       // host (or a subdomain of the host) the download happened from.  There's
       // no way for us to verify that the app controls any other hosts.
-      URLPattern pattern(UserScript::kValidUserScriptSchemes);
+      URLPattern pattern(URLPattern::ERROR_ON_PORTS,
+                         UserScript::kValidUserScriptSchemes);
       pattern.SetHost(download_url_.host());
       pattern.SetMatchSubdomains(true);
 

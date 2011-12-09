@@ -183,7 +183,7 @@ void UserScript::Unpickle(const ::Pickle& pickle, void** iter) {
     int valid_schemes;
     CHECK(pickle.ReadInt(iter, &valid_schemes));
     std::string pattern_str;
-    URLPattern pattern(valid_schemes);
+    URLPattern pattern(URLPattern::IGNORE_PORTS, valid_schemes);
     CHECK(pickle.ReadString(iter, &pattern_str));
 
     // We remove the file scheme if it's not actually allowed (see Extension::
@@ -192,8 +192,7 @@ void UserScript::Unpickle(const ::Pickle& pickle, void** iter) {
     bool had_file_scheme = (valid_schemes & URLPattern::SCHEME_FILE) != 0;
     if (!had_file_scheme)
       pattern.SetValidSchemes(valid_schemes | URLPattern::SCHEME_FILE);
-    CHECK(URLPattern::PARSE_SUCCESS ==
-          pattern.Parse(pattern_str, URLPattern::IGNORE_PORTS));
+    CHECK(URLPattern::PARSE_SUCCESS == pattern.Parse(pattern_str));
     if (!had_file_scheme)
       pattern.SetValidSchemes(valid_schemes);
 
