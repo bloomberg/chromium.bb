@@ -204,12 +204,6 @@ name=NPAPITesterBase.NoHangIfInitCrashes deliberate crash
 # TODO(bruening): switch to annotation once have support for that
 npapi_test_plugin.dll!NPAPIClient::PluginClient::Initialize
 
-# This test has a death test at the end that derefences a NULL pointer.
-UNADDRESSABLE ACCESS
-name=BrowserAboutHandlerTest.WillHandleBrowserAboutURL deliberate crash
-...
-unit_tests.exe!BrowserAboutHandlerTest_WillHandleBrowserAboutURL_Test::TestBody
-
 # Deliberate NULL deref to crash the child process
 UNADDRESSABLE ACCESS
 name=CrashingChildProcess deliberate crash
