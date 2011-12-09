@@ -19,7 +19,6 @@
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/reverse_service/reverse_service.h"
 #include "native_client/src/trusted/plugin/utility.h"
-#include "native_client/src/trusted/plugin/file_downloader.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/weak_ref/weak_ref.h"
 
@@ -43,6 +42,13 @@ class ServiceRuntime;
 struct LogToJavaScriptConsoleResource {
  public:
   explicit LogToJavaScriptConsoleResource(std::string msg)
+      : message(msg) {}
+  std::string message;
+};
+
+struct PostMessageResource {
+ public:
+  explicit PostMessageResource(std::string msg)
       : message(msg) {}
   std::string message;
 };
@@ -100,6 +106,8 @@ class PluginReverseInterface: public nacl::ReverseInterface {
 
   virtual void Log(nacl::string message);
 
+  virtual void DoPostMessage(nacl::string message);
+
   virtual void StartupInitializationComplete();
 
   virtual bool EnumerateManifestKeys(std::set<nacl::string>* out_keys);
@@ -115,6 +123,9 @@ class PluginReverseInterface: public nacl::ReverseInterface {
  protected:
   virtual void Log_MainThreadContinuation(LogToJavaScriptConsoleResource* p,
                                           int32_t err);
+
+  virtual void PostMessage_MainThreadContinuation(PostMessageResource* p,
+                                                  int32_t err);
 
   virtual void OpenManifestEntry_MainThreadContinuation(
       OpenManifestEntryResource* p,

@@ -34,8 +34,19 @@
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
+// browser_interface includes portability.h for uintptr_t etc, but it
+// also transitively includes windows.h, where PostMessage gets
+// defined as a preprocessor symbol
 #include "native_client/src/trusted/plugin/browser_interface.h"
+
 #include "native_client/src/trusted/plugin/manifest.h"
+
+// This is here due to a Windows API collision; plugin.h through
+// file_downloader.h transitively includes Instance.h which defines a
+// PostMessage method, so this undef must appear before any of those.
+#ifdef PostMessage
+#undef PostMessage
+#endif
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
@@ -97,6 +108,18 @@ void PluginReverseInterface::Log(nacl::string message) {
       continuation);
 }
 
+void PluginReverseInterface::DoPostMessage(nacl::string message) {
+  PostMessageResource* continuation = new PostMessageResource(message);
+  CHECK(continuation != NULL);
+  NaClLog(4, "PluginReverseInterface::DoPostMessage(%s)\n", message.c_str());
+  plugin::WeakRefCallOnMainThread(
+      anchor_,
+      0,  /* delay in ms */
+      ALLOW_THIS_IN_INITIALIZER_LIST(this),
+      &plugin::PluginReverseInterface::PostMessage_MainThreadContinuation,
+      continuation);
+}
+
 void PluginReverseInterface::StartupInitializationComplete() {
   NaClLog(0, "PluginReverseInterface::StartupInitializationComplete\n");
   if (init_done_cb_.pp_completion_callback().func != NULL) {
@@ -120,6 +143,15 @@ void PluginReverseInterface::Log_MainThreadContinuation(
           p->message.c_str());
   plugin_->browser_interface()->AddToConsole(static_cast<Plugin*>(plugin_),
                                              p->message);
+}
+void PluginReverseInterface::PostMessage_MainThreadContinuation(
+    PostMessageResource* p,
+    int32_t err) {
+  UNREFERENCED_PARAMETER(err);
+  NaClLog(4,
+          "PluginReverseInterface::PostMessage_MainThreadContinuation(%s)\n",
+          p->message.c_str());
+  plugin_->PostMessage(std::string("DEBUG_POSTMESSAGE:") + p->message);
 }
 
 bool PluginReverseInterface::EnumerateManifestKeys(
