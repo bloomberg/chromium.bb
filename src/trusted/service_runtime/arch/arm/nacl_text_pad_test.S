@@ -1,12 +1,18 @@
 /*
- * Copyright 2010 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 #define halt 0xe1266676
+/* the macros below are used with movw/movt and absolute values */
+/* llvm-mc does not like the use of :lower16:/:upper16: with absolute values */
+/* c.f.: http://llvm.org/bugs/show_bug.cgi?id=8721 */
+#define lower_16(x) ((x) & 0xffff)
+#define upper_16(x) (((x) >> 16) & 0xffff)
+
 
         /*
          * Code to test various address layout boundary conditions.
@@ -64,8 +70,8 @@ do_digit_not_upper:
         bne do_digit_16
 
         mov r1, r3
-        movw r3, :lower16:(NACL_SYSCALL_ADDR(NACL_sys_write))
-        movt r3, :upper16:(NACL_SYSCALL_ADDR(NACL_sys_write))
+        movw r3, lower_16(NACL_SYSCALL_ADDR(NACL_sys_write))
+        movt r3, upper_16(NACL_SYSCALL_ADDR(NACL_sys_write))
         nop
 
         nop
@@ -93,8 +99,8 @@ write_char:
 
         mov r1, sp
         mov r2, #1
-        movw r3, :lower16:(NACL_SYSCALL_ADDR(NACL_sys_write))
-        movt r3, :upper16:(NACL_SYSCALL_ADDR(NACL_sys_write))
+        movw r3, lower_16(NACL_SYSCALL_ADDR(NACL_sys_write))
+        movt r3, upper_16(NACL_SYSCALL_ADDR(NACL_sys_write))
 
         nop
         nop
@@ -134,8 +140,8 @@ _start:
         bl write_char
 
         mov r0, #0
-        movw r3, :lower16:(NACL_SYSCALL_ADDR(NACL_sys_sysbrk))
-        movt r3, :upper16:(NACL_SYSCALL_ADDR(NACL_sys_sysbrk))
+        movw r3, lower_16(NACL_SYSCALL_ADDR(NACL_sys_sysbrk))
+        movt r3, upper_16(NACL_SYSCALL_ADDR(NACL_sys_sysbrk))
         nop
 
         nop
@@ -154,8 +160,8 @@ _start:
         bl write_char
 
         mov r5, #0  /* r5 holds eventual exit status */
-        movw r1, :lower16:(EXPECTED_BREAK)
-        movt r1, :upper16:(EXPECTED_BREAK)
+        movw r1, lower_16(EXPECTED_BREAK)
+        movt r1, upper_16(EXPECTED_BREAK)
         cmp r1, r4
 
         movne r5, #1
@@ -174,8 +180,8 @@ _start:
         movt r1, :upper16:(ro_str)
         mov r0, #1
 
-        movw r3, :lower16:(NACL_SYSCALL_ADDR(NACL_sys_write))
-        movt r3, :upper16:(NACL_SYSCALL_ADDR(NACL_sys_write))
+        movw r3, lower_16(NACL_SYSCALL_ADDR(NACL_sys_write))
+        movt r3, upper_16(NACL_SYSCALL_ADDR(NACL_sys_write))
         bic r3, r3, #0xc000000f
         blx r3
 
@@ -189,8 +195,8 @@ _start:
         nop
         bl write_char
 
-        movw r1, :lower16:(EXPECTED_RODATA)
-        movt r1, :upper16:(EXPECTED_RODATA)
+        movw r1, lower_16(EXPECTED_RODATA)
+        movt r1, upper_16(EXPECTED_RODATA)
         movw r2, :lower16:(ro_str)
         movt r2, :upper16:(ro_str)
 
@@ -205,8 +211,8 @@ _start:
         bl write_char
 #endif
 
-        movw r3, :lower16:(NACL_SYSCALL_ADDR(NACL_sys_exit))
-        movt r3, :upper16:(NACL_SYSCALL_ADDR(NACL_sys_exit))
+        movw r3, lower_16(NACL_SYSCALL_ADDR(NACL_sys_exit))
+        movt r3, upper_16(NACL_SYSCALL_ADDR(NACL_sys_exit))
         mov r0, #0
         nop
 
