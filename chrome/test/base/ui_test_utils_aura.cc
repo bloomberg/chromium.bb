@@ -25,6 +25,7 @@ bool IsViewFocused(const Browser* browser, ViewID vid) {
   DCHECK(widget);
   const views::FocusManager* focus_manager = widget->GetFocusManager();
   DCHECK(focus_manager);
+  DCHECK(focus_manager->GetFocusedView());
   return focus_manager->GetFocusedView()->id() == vid;
 }
 

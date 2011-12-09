@@ -50,22 +50,20 @@
 #include "base/string_util.h"
 #endif
 
-#if defined(OS_LINUX)
-#define MAYBE_FocusTraversal FocusTraversal
-#define MAYBE_FocusTraversalOnInterstitial FocusTraversalOnInterstitial
-// TODO(jcampan): http://crbug.com/23683
-#define MAYBE_TabsRememberFocusFindInPage FAILS_TabsRememberFocusFindInPage
-#elif defined(OS_MACOSX)
-// TODO(suzhe): http://crbug.com/60973 (following two tests)
+#if defined(OS_MACOSX)
+// TODO(suzhe): http://crbug.com/60973
 #define MAYBE_FocusTraversal DISABLED_FocusTraversal
 #define MAYBE_FocusTraversalOnInterstitial DISABLED_FocusTraversalOnInterstitial
-// TODO(suzhe): http://crbug.com/49737
+#else
+#define MAYBE_FocusTraversal FocusTraversal
+#define MAYBE_FocusTraversalOnInterstitial FocusTraversalOnInterstitial
+#endif
+
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+// TODO(jcampan): http://crbug.com/23683 for linux.
+// TODO(suzhe): http://crbug.com/49737 for mac.
 #define MAYBE_TabsRememberFocusFindInPage FAILS_TabsRememberFocusFindInPage
 #elif defined(OS_WIN)
-// Disabled, http://crbug.com/62543.
-#define MAYBE_FocusTraversal FocusTraversal
-// Disabled, http://crbug.com/62544.
-#define MAYBE_FocusTraversalOnInterstitial FocusTraversalOnInterstitial
 // Flaky, http://crbug.com/62537.
 #define MAYBE_TabsRememberFocusFindInPage FLAKY_TabsRememberFocusFindInPage
 #endif

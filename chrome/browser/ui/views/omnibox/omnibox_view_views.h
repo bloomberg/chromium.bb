@@ -68,6 +68,13 @@ class OmniboxViewViews : public views::View,
   void HandleFocusIn();
   void HandleFocusOut();
 
+  // Sets whether the location entry can accept focus.
+  void SetLocationEntryFocusable(bool focusable);
+
+  // Returns true if the location entry is focusable and visible in
+  // the root view.
+  bool IsLocationEntryFocusableInRootView() const;
+
   // Implements views::View
   virtual void Layout() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;

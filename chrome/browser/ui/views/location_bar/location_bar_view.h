@@ -168,6 +168,13 @@ class LocationBarView : public LocationBar,
   string16 GetInstantSuggestion() const;
 #endif
 
+  // Sets whether the location entry can accept focus.
+  void SetLocationEntryFocusable(bool focusable);
+
+  // Returns true if the location entry is focusable and visible in
+  // the root view.
+  bool IsLocationEntryFocusableInRootView() const;
+
   // Sizing functions
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 

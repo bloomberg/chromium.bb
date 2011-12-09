@@ -293,6 +293,14 @@ void OmniboxViewViews::HandleFocusOut() {
   controller_->OnKillFocus();
 }
 
+void OmniboxViewViews::SetLocationEntryFocusable(bool focusable) {
+  textfield_->set_focusable(focusable);
+}
+
+bool OmniboxViewViews::IsLocationEntryFocusableInRootView() const {
+  return textfield_->IsFocusableInRootView();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxViewViews, views::View implementation:
 void OmniboxViewViews::Layout() {

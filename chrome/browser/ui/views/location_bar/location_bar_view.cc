@@ -57,7 +57,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/textfield/native_textfield_views.h"
 #include "ui/views/drag_utils.h"
 
 #if !defined(OS_CHROMEOS)
@@ -75,6 +74,12 @@ namespace {
 TabContents* GetTabContentsFromDelegate(LocationBarView::Delegate* delegate) {
   const TabContentsWrapper* wrapper = delegate->GetTabContentsWrapper();
   return wrapper ? wrapper->tab_contents() : NULL;
+}
+
+// A utility function to cast OmniboxView to OmniboxViewViews.
+OmniboxViewViews* AsViews(OmniboxView* view) {
+  DCHECK(views::Widget::IsPureViews());
+  return static_cast<OmniboxViewViews*>(view);
 }
 
 }  // namespace
@@ -134,7 +139,6 @@ LocationBarView::LocationBarView(Browser* browser,
       template_url_service_(NULL),
       animation_offset_(0) {
   set_id(VIEW_ID_LOCATION_BAR);
-  set_focusable(true);
 
   if (mode_ == NORMAL) {
     painter_.reset(
@@ -193,6 +197,7 @@ void LocationBarView::Init() {
       browser_->command_updater(),
       mode_ == POPUP,
       this));
+  SetLocationEntryFocusable(true);
 
   location_entry_view_ = location_entry_->AddToView(this);
   location_entry_view_->set_id(VIEW_ID_AUTOCOMPLETE);
@@ -443,6 +448,19 @@ string16 LocationBarView::GetInstantSuggestion() const {
   return HasValidSuggestText() ? suggested_text_view_->GetText() : string16();
 }
 #endif
+
+void LocationBarView::SetLocationEntryFocusable(bool focusable) {
+  if (views::Widget::IsPureViews())
+    AsViews(location_entry_.get())->SetLocationEntryFocusable(focusable);
+  else
+    set_focusable(focusable);
+}
+
+bool LocationBarView::IsLocationEntryFocusableInRootView() const {
+  return views::Widget::IsPureViews() ?
+      AsViews(location_entry_.get())->IsLocationEntryFocusableInRootView() :
+      views::View::IsFocusableInRootView();
+}
 
 gfx::Size LocationBarView::GetPreferredSize() {
   return gfx::Size(0, GetThemeProvider()->GetBitmapNamed(mode_ == POPUP ?
