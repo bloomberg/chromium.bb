@@ -221,7 +221,7 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   PostKeyDown(ui::VKEY_9);
   PostKeyUp(ui::VKEY_9);
   AcceleratorHandler accelerator_handler;
-  MessageLoopForUI::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  MessageLoopForUI::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
   // Make sure we get a key-up and key-down.
   ASSERT_EQ(1U, mtv->keys_pressed().size());
@@ -240,7 +240,7 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   PostKeyUp(ui::VKEY_9);
   PostKeyUp(ui::VKEY_7);
   PostKeyUp(ui::VKEY_8);
-  MessageLoopForUI::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  MessageLoopForUI::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
   // Make sure we get a key-up and key-down.
   ASSERT_EQ(5U, mtv->keys_pressed().size());
@@ -259,7 +259,7 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   // Now send an accelerator key sequence.
   PostKeyDown(ui::VKEY_0);
   PostKeyUp(ui::VKEY_0);
-  MessageLoopForUI::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  MessageLoopForUI::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
   EXPECT_TRUE(mtv->keys_pressed().empty());
   EXPECT_TRUE(mtv->keys_released().empty());
@@ -274,7 +274,7 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   PostKeyDown(ui::VKEY_0);
   PostKeyUp(ui::VKEY_1);
   PostKeyUp(ui::VKEY_0);
-  MessageLoopForUI::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  MessageLoopForUI::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
   EXPECT_TRUE(mtv->keys_pressed().empty());
   EXPECT_TRUE(mtv->keys_released().empty());
