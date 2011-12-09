@@ -67,9 +67,6 @@ class PepperStreamChannel : public PepperChannel,
   // Indicates that we've finished connecting.
   bool connected_;
 
-  // Callback called by the TCP layer.
-  net::OldCompletionCallbackImpl<PepperStreamChannel> p2p_connect_callback_;
-
   DISALLOW_COPY_AND_ASSIGN(PepperStreamChannel);
 };
 

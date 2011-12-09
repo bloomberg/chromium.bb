@@ -50,9 +50,6 @@ class PepperUDPSocket {
   uint32 plugin_dispatcher_id_;
   uint32 socket_id_;
 
-  net::OldCompletionCallbackImpl<PepperUDPSocket> recvfrom_callback_;
-  net::OldCompletionCallbackImpl<PepperUDPSocket> sendto_callback_;
-
   scoped_ptr<net::UDPServerSocket> socket_;
 
   scoped_refptr<net::IOBuffer> recvfrom_buffer_;

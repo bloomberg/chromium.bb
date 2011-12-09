@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,9 +17,7 @@ int kReadBufferSize = 4096;
 
 SocketReaderBase::SocketReaderBase()
     : socket_(NULL),
-      closed_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          read_callback_(this, &SocketReaderBase::OnRead)) {
+      closed_(false) {
 }
 
 SocketReaderBase::~SocketReaderBase() { }
@@ -34,7 +32,8 @@ void SocketReaderBase::DoRead() {
   while (true) {
     read_buffer_ = new net::IOBuffer(kReadBufferSize);
     int result = socket_->Read(
-        read_buffer_, kReadBufferSize, &read_callback_);
+        read_buffer_, kReadBufferSize, base::Bind(&SocketReaderBase::OnRead,
+                                                  base::Unretained(this)));
     HandleReadResult(result);
     if (result < 0)
       break;

@@ -32,15 +32,7 @@ ChromeAsyncSocket::ChromeAsyncSocket(
     ResolvingClientSocketFactory* client_socket_factory,
     size_t read_buf_size,
     size_t write_buf_size)
-    : connect_callback_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
-                        &ChromeAsyncSocket::ProcessConnectDone),
-      read_callback_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
-                     &ChromeAsyncSocket::ProcessReadDone),
-      write_callback_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
-                     &ChromeAsyncSocket::ProcessWriteDone),
-      ssl_connect_callback_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
-                            &ChromeAsyncSocket::ProcessSSLConnectDone),
-      client_socket_factory_(client_socket_factory),
+    : client_socket_factory_(client_socket_factory),
       state_(STATE_CLOSED),
       error_(ERROR_NONE),
       net_error_(net::OK),
@@ -119,7 +111,9 @@ bool ChromeAsyncSocket::Connect(const talk_base::SocketAddress& address) {
   transport_socket_.reset(
       client_socket_factory_->CreateTransportClientSocket(
           dest_host_port_pair));
-  int status = transport_socket_->Connect(&connect_callback_);
+  int status = transport_socket_->Connect(
+      base::Bind(&ChromeAsyncSocket::ProcessConnectDone,
+                 base::Unretained(this)));
   if (status != net::ERR_IO_PENDING) {
     // We defer execution of ProcessConnectDone instead of calling it
     // directly here as the caller may not expect an error/close to
@@ -182,7 +176,9 @@ void ChromeAsyncSocket::DoRead() {
   // done).
   int status =
       transport_socket_->Read(
-          read_buf_.get(), read_buf_->size(), &read_callback_);
+          read_buf_.get(), read_buf_->size(),
+          base::Bind(&ChromeAsyncSocket::ProcessReadDone,
+                     base::Unretained(this)));
   read_state_ = PENDING;
   if (status != net::ERR_IO_PENDING) {
     ProcessReadDone(status);
@@ -312,7 +308,9 @@ void ChromeAsyncSocket::DoWrite() {
   // before we send the next message.
   int status =
       transport_socket_->Write(
-          write_buf_.get(), write_end_, &write_callback_);
+          write_buf_.get(), write_end_,
+          base::Bind(&ChromeAsyncSocket::ProcessWriteDone,
+                     base::Unretained(this)));
   write_state_ = PENDING;
   if (status != net::ERR_IO_PENDING) {
     ProcessWriteDone(status);
@@ -408,7 +406,9 @@ bool ChromeAsyncSocket::StartTls(const std::string& domain_name) {
   transport_socket_.reset(
       client_socket_factory_->CreateSSLClientSocket(
           socket_handle, net::HostPortPair(domain_name, 443)));
-  int status = transport_socket_->Connect(&ssl_connect_callback_);
+  int status = transport_socket_->Connect(
+      base::Bind(&ChromeAsyncSocket::ProcessSSLConnectDone,
+                 base::Unretained(this)));
   if (status != net::ERR_IO_PENDING) {
     MessageLoop* message_loop = MessageLoop::current();
     CHECK(message_loop);

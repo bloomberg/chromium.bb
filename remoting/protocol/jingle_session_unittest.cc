@@ -463,10 +463,6 @@ class TCPChannelTester : public ChannelTesterBase {
                    int message_size,
                    int message_count)
       : ChannelTesterBase(host_session, client_session),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            write_cb_(this, &TCPChannelTester::OnWritten)),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            read_cb_(this, &TCPChannelTester::OnRead)),
         write_errors_(0),
         read_errors_(0),
         message_size_(message_size),
@@ -540,7 +536,9 @@ class TCPChannelTester : public ChannelTesterBase {
         break;
       int bytes_to_write = std::min(output_buffer_->BytesRemaining(),
                                     message_size_);
-      result = sockets_[0]->Write(output_buffer_, bytes_to_write, &write_cb_);
+      result = sockets_[0]->Write(output_buffer_, bytes_to_write,
+                                  base::Bind(&TCPChannelTester::OnWritten,
+                                             base::Unretained(this)));
       HandleWriteResult(result);
     };
   }
@@ -564,7 +562,9 @@ class TCPChannelTester : public ChannelTesterBase {
     int result = 1;
     while (result > 0) {
       input_buffer_->SetCapacity(input_buffer_->offset() + message_size_);
-      result = sockets_[1]->Read(input_buffer_, message_size_, &read_cb_);
+      result = sockets_[1]->Read(input_buffer_, message_size_,
+                                 base::Bind(&TCPChannelTester::OnRead,
+                                            base::Unretained(this)));
       HandleReadResult(result);
     };
   }
@@ -593,8 +593,6 @@ class TCPChannelTester : public ChannelTesterBase {
   scoped_refptr<net::DrainableIOBuffer> output_buffer_;
   scoped_refptr<net::GrowableIOBuffer> input_buffer_;
 
-  net::OldCompletionCallbackImpl<TCPChannelTester> write_cb_;
-  net::OldCompletionCallbackImpl<TCPChannelTester> read_cb_;
   int write_errors_;
   int read_errors_;
   int message_size_;
@@ -635,10 +633,6 @@ class UDPChannelTester : public ChannelTesterBase {
   UDPChannelTester(Session* host_session,
                    Session* client_session)
       : ChannelTesterBase(host_session, client_session),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            write_cb_(this, &UDPChannelTester::OnWritten)),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            read_cb_(this, &UDPChannelTester::OnRead)),
         write_errors_(0),
         read_errors_(0),
         packets_sent_(0),
@@ -705,7 +699,9 @@ class UDPChannelTester : public ChannelTesterBase {
     // Put index of this packet in the beginning of the packet body.
     memcpy(packet->data(), &packets_sent_, sizeof(packets_sent_));
 
-    int result = sockets_[0]->Write(packet, kMessageSize, &write_cb_);
+    int result = sockets_[0]->Write(packet, kMessageSize,
+                                    base::Bind(&UDPChannelTester::OnWritten,
+                                               base::Unretained(this)));
     HandleWriteResult(result);
   }
 
@@ -733,7 +729,9 @@ class UDPChannelTester : public ChannelTesterBase {
       int kReadSize = kMessageSize * 2;
       read_buffer_ = new net::IOBuffer(kReadSize);
 
-      result = sockets_[1]->Read(read_buffer_, kReadSize, &read_cb_);
+      result = sockets_[1]->Read(read_buffer_, kReadSize,
+                                 base::Bind(&UDPChannelTester::OnRead,
+                                            base::Unretained(this)));
       HandleReadResult(result);
     };
   }
@@ -775,8 +773,6 @@ class UDPChannelTester : public ChannelTesterBase {
   scoped_refptr<net::IOBuffer> sent_packets_[kMessages];
   scoped_refptr<net::IOBuffer> read_buffer_;
 
-  net::OldCompletionCallbackImpl<UDPChannelTester> write_cb_;
-  net::OldCompletionCallbackImpl<UDPChannelTester> read_cb_;
   int write_errors_;
   int read_errors_;
   int packets_sent_;

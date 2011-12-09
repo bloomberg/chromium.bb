@@ -25,9 +25,8 @@ class CurveCPClientSocket : public StreamSocket {
                       const net::NetLog::Source& source);
   virtual ~CurveCPClientSocket();
 
-  // ClientSocket implementation.
-  virtual int Connect(OldCompletionCallback* callback) OVERRIDE;
-  virtual int Connect(const net::CompletionCallback& callback) OVERRIDE;
+  // ClientSocket methods:
+  virtual int Connect(const CompletionCallback& callback) OVERRIDE;
   virtual void Disconnect() OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
   virtual bool IsConnectedAndIdle() const OVERRIDE;
@@ -41,16 +40,13 @@ class CurveCPClientSocket : public StreamSocket {
   virtual int64 NumBytesRead() const OVERRIDE;
   virtual base::TimeDelta GetConnectTimeMicros() const OVERRIDE;
 
-  // Socket implementation.
-  virtual int Read(IOBuffer* buf,
-                   int buf_len,
-                   OldCompletionCallback* callback) OVERRIDE;
+  // Socket methods:
   virtual int Read(IOBuffer* buf,
                    int buf_len,
                    const CompletionCallback& callback) OVERRIDE;
   virtual int Write(IOBuffer* buf,
                     int buf_len,
-                    OldCompletionCallback* callback) OVERRIDE;
+                    const CompletionCallback& callback) OVERRIDE;
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
   virtual bool SetSendBufferSize(int32 size) OVERRIDE;
 

@@ -79,53 +79,25 @@ class TestingTransportSocket : public net::Socket {
       net::DrainableIOBuffer* sample, net::DrainableIOBuffer* answer)
       : sample_(sample),
         answer_(answer),
-        old_final_read_callback_(NULL),
-        method_factory_(this) {
+        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   }
 
   ~TestingTransportSocket() {
-    if (old_final_read_callback_) {
+    if (!final_read_callback_.is_null()) {
       MessageLoop::current()->PostTask(FROM_HERE,
-          method_factory_.NewRunnableMethod(
-              &TestingTransportSocket::DoOldReadCallback,
-                  old_final_read_callback_, 0));
-    } else if (!final_read_callback_.is_null()) {
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          method_factory_.NewRunnableMethod(
-              &TestingTransportSocket::DoReadCallback,
-              final_read_callback_, 0));
+          base::Bind(&TestingTransportSocket::DoReadCallback,
+                     weak_factory_.GetWeakPtr(),
+                     final_read_callback_, 0));
     }
   }
 
   // Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   net::OldCompletionCallback* callback) {
-    CHECK_GT(buf_len, 0);
-    int remaining = sample_->BytesRemaining();
-    if (remaining < 1) {
-      if (old_final_read_callback_ || !final_read_callback_.is_null())
-        return 0;
-      old_final_read_callback_ = callback;
-      return net::ERR_IO_PENDING;
-    }
-    int lot = GetRand(1, std::min(remaining, buf_len));
-    std::copy(sample_->data(), sample_->data() + lot, buf->data());
-    sample_->DidConsume(lot);
-    if (GetRand(0, 1)) {
-      return lot;
-    }
-    MessageLoop::current()->PostTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &TestingTransportSocket::DoOldReadCallback, callback, lot));
-    return net::ERR_IO_PENDING;
-  }
-  virtual int Read(net::IOBuffer* buf, int buf_len,
                    const net::CompletionCallback& callback) {
     CHECK_GT(buf_len, 0);
     int remaining = sample_->BytesRemaining();
     if (remaining < 1) {
-      if (old_final_read_callback_ || !final_read_callback_.is_null())
+      if (!final_read_callback_.is_null())
         return 0;
       final_read_callback_ = callback;
       return net::ERR_IO_PENDING;
@@ -136,14 +108,15 @@ class TestingTransportSocket : public net::Socket {
     if (GetRand(0, 1)) {
       return lot;
     }
-    MessageLoop::current()->PostTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &TestingTransportSocket::DoReadCallback, callback, lot));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&TestingTransportSocket::DoReadCallback,
+                   weak_factory_.GetWeakPtr(), callback, lot));
     return net::ERR_IO_PENDING;
   }
 
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    net::OldCompletionCallback* callback) {
+                    const net::CompletionCallback& callback) {
     CHECK_GT(buf_len, 0);
     int remaining = answer_->BytesRemaining();
     CHECK_GE(remaining, buf_len);
@@ -155,9 +128,10 @@ class TestingTransportSocket : public net::Socket {
     if (GetRand(0, 1)) {
       return lot;
     }
-    MessageLoop::current()->PostTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &TestingTransportSocket::DoWriteCallback, callback, lot));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&TestingTransportSocket::DoWriteCallback,
+                   weak_factory_.GetWeakPtr(), callback, lot));
     return net::ERR_IO_PENDING;
   }
 
@@ -171,30 +145,22 @@ class TestingTransportSocket : public net::Socket {
 
   net::DrainableIOBuffer* answer() { return answer_.get(); }
 
-  void DoOldReadCallback(net::OldCompletionCallback* callback, int result) {
-    if (result == 0 && !is_closed_) {
-      MessageLoop::current()->PostTask(FROM_HERE,
-          method_factory_.NewRunnableMethod(
-              &TestingTransportSocket::DoOldReadCallback, callback, 0));
-    } else {
-      if (callback)
-        callback->Run(result);
-    }
-  }
   void DoReadCallback(const net::CompletionCallback& callback, int result) {
     if (result == 0 && !is_closed_) {
-      MessageLoop::current()->PostTask(FROM_HERE,
-          method_factory_.NewRunnableMethod(
-              &TestingTransportSocket::DoReadCallback, callback, 0));
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(
+              &TestingTransportSocket::DoReadCallback,
+              weak_factory_.GetWeakPtr(), callback, 0));
     } else {
       if (!callback.is_null())
         callback.Run(result);
     }
   }
 
-  void DoWriteCallback(net::OldCompletionCallback* callback, int result) {
-    if (callback)
-      callback->Run(result);
+  void DoWriteCallback(const net::CompletionCallback& callback, int result) {
+    if (!callback.is_null())
+      callback.Run(result);
   }
 
   bool is_closed_;
@@ -206,10 +172,9 @@ class TestingTransportSocket : public net::Socket {
   scoped_refptr<net::DrainableIOBuffer> answer_;
 
   // Final read callback to report zero (zero stands for EOF).
-  net::OldCompletionCallback* old_final_read_callback_;
   net::CompletionCallback final_read_callback_;
 
-  ScopedRunnableMethodFactory<TestingTransportSocket> method_factory_;
+  base::WeakPtrFactory<TestingTransportSocket> weak_factory_;
 };
 
 class Validator : public net::WebSocketServerSocket::Delegate {
@@ -256,9 +221,8 @@ class ReadWriteTracker {
       net::WebSocketServerSocket* ws, int bytes_to_read, int bytes_to_write)
       : ws_(ws),
         buf_size_(1 << 14),
-        accept_callback_(NewCallback(this, &ReadWriteTracker::OnAccept)),
-        read_callback_(NewCallback(this, &ReadWriteTracker::OnRead)),
-        write_callback_(NewCallback(this, &ReadWriteTracker::OnWrite)),
+        ALLOW_THIS_IN_INITIALIZER_LIST(
+            accept_callback_(this, &ReadWriteTracker::OnAccept)),
         read_buf_(new net::IOBuffer(buf_size_)),
         write_buf_(new net::IOBuffer(buf_size_)),
         bytes_remaining_to_read_(bytes_to_read),
@@ -266,7 +230,7 @@ class ReadWriteTracker {
         read_initiated_(false),
         write_initiated_(false),
         got_final_zero_(false) {
-    int rv = ws_->Accept(accept_callback_.get());
+    int rv = ws_->Accept(&accept_callback_);
     if (rv != net::ERR_IO_PENDING)
       OnAccept(rv);
   }
@@ -295,7 +259,8 @@ class ReadWriteTracker {
     for (int i = 0; i < lot; ++i)
       write_buf_->data()[i] = ReferenceSeq(
           bytes_remaining_to_write_ - i - 1, kWriteSalt);
-    int rv = ws_->Write(write_buf_, lot, write_callback_.get());
+    int rv = ws_->Write(write_buf_, lot, base::Bind(&ReadWriteTracker::OnWrite,
+                                                    base::Unretained(this)));
     if (rv != net::ERR_IO_PENDING)
       OnWrite(rv);
   }
@@ -309,7 +274,8 @@ class ReadWriteTracker {
       lot = GetRand(1, bytes_remaining_to_read_);
       lot = std::min(lot, buf_size_);
     }
-    int rv = ws_->Read(read_buf_, lot, read_callback_.get());
+    int rv = ws_->Read(read_buf_, lot, base::Bind(&ReadWriteTracker::OnRead,
+                                                  base::Unretained(this)));
     if (rv != net::ERR_IO_PENDING)
       OnRead(rv);
   }
@@ -340,9 +306,7 @@ class ReadWriteTracker {
  private:
   net::WebSocketServerSocket* const ws_;
   int const buf_size_;
-  scoped_ptr<net::OldCompletionCallback> accept_callback_;
-  scoped_ptr<net::OldCompletionCallback> read_callback_;
-  scoped_ptr<net::OldCompletionCallback> write_callback_;
+  net::OldCompletionCallbackImpl<ReadWriteTracker> accept_callback_;
   scoped_refptr<net::IOBuffer> read_buf_;
   scoped_refptr<net::IOBuffer> write_buf_;
   int bytes_remaining_to_read_;

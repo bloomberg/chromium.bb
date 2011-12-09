@@ -47,13 +47,12 @@ class MockClientSocket : public net::StreamSocket {
  public:
   virtual ~MockClientSocket() {}
 
-  MOCK_METHOD3(Read, int(net::IOBuffer*, int, net::OldCompletionCallback*));
   MOCK_METHOD3(Read, int(net::IOBuffer*, int,
                          const net::CompletionCallback&));
-  MOCK_METHOD3(Write, int(net::IOBuffer*, int, net::OldCompletionCallback*));
+  MOCK_METHOD3(Write, int(net::IOBuffer*, int,
+                          const net::CompletionCallback&));
   MOCK_METHOD1(SetReceiveBufferSize, bool(int32));
   MOCK_METHOD1(SetSendBufferSize, bool(int32));
-  MOCK_METHOD1(Connect, int(net::OldCompletionCallback*));
   MOCK_METHOD1(Connect, int(const net::CompletionCallback&));
   MOCK_METHOD0(Disconnect, void());
   MOCK_CONST_METHOD0(IsConnected, bool());
@@ -111,7 +110,7 @@ class FakeSSLClientSocketTest : public testing::Test {
 
   void ExpectStatus(
       bool async, int expected_status, int immediate_status,
-      TestOldCompletionCallback* test_completion_callback) {
+      net::TestCompletionCallback* test_completion_callback) {
     if (async) {
       EXPECT_EQ(net::ERR_IO_PENDING, immediate_status);
       int status = test_completion_callback->WaitForResult();
@@ -152,8 +151,9 @@ class FakeSSLClientSocketTest : public testing::Test {
 
     for (int i = 0; i < num_resets + 1; ++i) {
       SCOPED_TRACE(i);
-      TestOldCompletionCallback test_completion_callback;
-      int status = fake_ssl_client_socket.Connect(&test_completion_callback);
+      net::TestCompletionCallback test_completion_callback;
+      int status = fake_ssl_client_socket.Connect(
+          test_completion_callback.callback());
       if (async) {
         EXPECT_FALSE(fake_ssl_client_socket.IsConnected());
       }
@@ -164,13 +164,14 @@ class FakeSSLClientSocketTest : public testing::Test {
         scoped_refptr<net::IOBuffer> read_buf(
             new net::IOBuffer(read_buf_len));
         int read_status = fake_ssl_client_socket.Read(
-            read_buf, read_buf_len, &test_completion_callback);
+            read_buf, read_buf_len, test_completion_callback.callback());
         ExpectStatus(async, read_len, read_status, &test_completion_callback);
 
         scoped_refptr<net::IOBuffer> write_buf(
             new net::StringIOBuffer(kWriteTestData));
         int write_status = fake_ssl_client_socket.Write(
-            write_buf, arraysize(kWriteTestData), &test_completion_callback);
+            write_buf, arraysize(kWriteTestData),
+            test_completion_callback.callback());
         ExpectStatus(async, arraysize(kWriteTestData), write_status,
                      &test_completion_callback);
       } else {
@@ -245,8 +246,9 @@ class FakeSSLClientSocketTest : public testing::Test {
          (error == ERR_MALFORMED_SERVER_HELLO)) ?
         net::ERR_UNEXPECTED : error;
 
-    TestOldCompletionCallback test_completion_callback;
-    int status = fake_ssl_client_socket.Connect(&test_completion_callback);
+    net::TestCompletionCallback test_completion_callback;
+    int status = fake_ssl_client_socket.Connect(
+        test_completion_callback.callback());
     EXPECT_FALSE(fake_ssl_client_socket.IsConnected());
     ExpectStatus(async, expected_status, status, &test_completion_callback);
     EXPECT_FALSE(fake_ssl_client_socket.IsConnected());

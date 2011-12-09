@@ -15,11 +15,7 @@ ServerPacketizer::ServerPacketizer()
     : Packetizer(),
       state_(NONE),
       listener_(NULL),
-      read_buffer_(new IOBuffer(kMaxPacketLength)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          read_callback_(this, &ServerPacketizer::OnReadComplete)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          write_callback_(this, &ServerPacketizer::OnWriteComplete)) {
+      read_buffer_(new IOBuffer(kMaxPacketLength)) {
 }
 
 ServerPacketizer::~ServerPacketizer() {
@@ -46,7 +42,7 @@ bool ServerPacketizer::Open(ConnectionKey key, Packetizer::Listener* listener) {
 int ServerPacketizer::SendMessage(ConnectionKey key,
                                   const char* data,
                                   size_t length,
-                                  OldCompletionCallback* callback) {
+                                  const CompletionCallback& callback) {
   DCHECK(socket_.get());
   DCHECK_LT(0u, length);
   DCHECK_GT(kMaxPacketLength - sizeof(ServerMessagePacket), length);
@@ -137,7 +133,8 @@ void ServerPacketizer::HandleHelloPacket(Packet* packet, int length) {
 
   // XXXMB - Can't have two pending writes at the same time...
   int rv = socket_->SendTo(buffer, sizeof(struct CookiePacket), recv_address_,
-                           &write_callback_);
+                           base::Bind(&ServerPacketizer::OnWriteComplete,
+                                      base::Unretained(this)));
   DCHECK(rv == ERR_IO_PENDING || rv == sizeof(struct CookiePacket));
 }
 
@@ -220,7 +217,8 @@ int ServerPacketizer::ReadPackets() {
     rv = socket_->RecvFrom(read_buffer_,
                            kMaxPacketLength,
                            &recv_address_,
-                           &read_callback_);
+                           base::Bind(&ServerPacketizer::OnReadComplete,
+                                      base::Unretained(this)));
     if (rv <= 0) {
       if (rv != ERR_IO_PENDING)
         LOG(ERROR) << "Error reading listen socket: " << rv;

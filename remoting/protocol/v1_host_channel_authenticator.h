@@ -55,8 +55,6 @@ class V1HostChannelAuthenticator : public ChannelAuthenticator,
 
   net::OldCompletionCallbackImpl<V1HostChannelAuthenticator>
       connect_callback_;
-  net::OldCompletionCallbackImpl<V1HostChannelAuthenticator>
-      auth_read_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(V1HostChannelAuthenticator);
 };

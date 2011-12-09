@@ -32,7 +32,6 @@ class SocketReaderBase {
   net::Socket* socket_;
   bool closed_;
   scoped_refptr<net::IOBuffer> read_buffer_;
-  net::OldCompletionCallbackImpl<SocketReaderBase> read_callback_;
 };
 
 }  // namespace remoting

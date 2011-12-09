@@ -66,8 +66,6 @@ class EchoServer {
   scoped_refptr<DrainableIOBuffer> write_buffer_;
   TestDataStream received_stream_;
   int bytes_received_;
-  OldCompletionCallbackImpl<EchoServer> read_callback_;
-  OldCompletionCallbackImpl<EchoServer> write_callback_;
 };
 
 }  // namespace net

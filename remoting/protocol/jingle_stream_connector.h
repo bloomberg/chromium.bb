@@ -63,9 +63,6 @@ class JingleStreamConnector : public JingleChannelConnector {
 
   scoped_ptr<ChannelAuthenticator> authenticator_;
 
-  // Callback called by the TCP and SSL layers.
-  net::OldCompletionCallbackImpl<JingleStreamConnector> tcp_connect_callback_;
-
   DISALLOW_COPY_AND_ASSIGN(JingleStreamConnector);
 };
 

@@ -40,17 +40,14 @@ class FakeSocket : public net::StreamSocket {
 
   // net::Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   net::OldCompletionCallback* callback) OVERRIDE;
-  virtual int Read(net::IOBuffer* buf, int buf_len,
                    const net::CompletionCallback& callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    net::OldCompletionCallback* callback) OVERRIDE;
+                    const net::CompletionCallback& callback) OVERRIDE;
 
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
   virtual bool SetSendBufferSize(int32 size) OVERRIDE;
 
   // net::StreamSocket implementation.
-  virtual int Connect(net::OldCompletionCallback* callback) OVERRIDE;
   virtual int Connect(const net::CompletionCallback& callback) OVERRIDE;
   virtual void Disconnect() OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
@@ -69,7 +66,6 @@ class FakeSocket : public net::StreamSocket {
   bool read_pending_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
-  net::OldCompletionCallback* old_read_callback_;
   net::CompletionCallback read_callback_;
 
   std::string written_data_;
@@ -100,11 +96,9 @@ class FakeUdpSocket : public net::Socket {
 
   // net::Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   net::OldCompletionCallback* callback) OVERRIDE;
-  virtual int Read(net::IOBuffer* buf, int buf_len,
                    const net::CompletionCallback& callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    net::OldCompletionCallback* callback) OVERRIDE;
+                    const net::CompletionCallback& callback) OVERRIDE;
 
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
   virtual bool SetSendBufferSize(int32 size) OVERRIDE;
@@ -113,7 +107,6 @@ class FakeUdpSocket : public net::Socket {
   bool read_pending_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
-  net::OldCompletionCallback* old_read_callback_;
   net::CompletionCallback read_callback_;
 
   std::vector<std::string> written_packets_;

@@ -23,14 +23,7 @@ namespace net {
 TestClient::TestClient()
     : socket_(NULL),
       errors_(0),
-      bytes_to_send_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          connect_callback_(this, &TestClient::OnConnectComplete)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          read_callback_(this, &TestClient::OnReadComplete)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          write_callback_(this, &TestClient::OnWriteComplete)),
-      finished_callback_(NULL) {
+      bytes_to_send_(0) {
 }
 
 TestClient::~TestClient() {
@@ -45,9 +38,9 @@ TestClient::~TestClient() {
 
 bool TestClient::Start(const HostPortPair& server_host_port_pair,
                        int bytes_to_send,
-                       OldCompletionCallback* callback) {
+                       const CompletionCallback& callback) {
   DCHECK(!socket_);
-  DCHECK(!finished_callback_);
+  DCHECK(finished_callback_.is_null());
 
   finished_callback_ = callback;
   bytes_to_read_ = bytes_to_send_ = bytes_to_send;
@@ -65,7 +58,8 @@ bool TestClient::Start(const HostPortPair& server_host_port_pair,
   }
 
   socket_ = new CurveCPClientSocket(addresses, NULL, NetLog::Source());
-  rv = socket_->Connect(&connect_callback_);
+  rv = socket_->Connect(
+      base::Bind(&TestClient::OnConnectComplete, base::Unretained(this)));
   if (rv == ERR_IO_PENDING)
     return true;
   OnConnectComplete(rv);
@@ -136,7 +130,9 @@ void TestClient::ReadData() {
 
   int rv;
   do {
-    rv = socket_->Read(read_buffer_, kMaxMessage, &read_callback_);
+    rv = socket_->Read(read_buffer_, kMaxMessage,
+                       base::Bind(&TestClient::OnReadComplete,
+                                  base::Unretained(this)));
     if (rv == ERR_IO_PENDING)
       return;
     OnReadComplete(rv);  // Complete the read manually
@@ -157,7 +153,8 @@ void TestClient::SendData() {
 
     int rv = socket_->Write(write_buffer_,
                             write_buffer_->BytesRemaining(),
-                            &write_callback_);
+                            base::Bind(&TestClient::OnWriteComplete,
+                                       base::Unretained(this)));
     if (rv == ERR_IO_PENDING)
       return;
 
@@ -169,12 +166,12 @@ void TestClient::SendData() {
 }
 
 void TestClient::Finish(int result) {
-  DCHECK(finished_callback_);
+  DCHECK(!finished_callback_.is_null());
 
   LOG(ERROR) << "TestClient Done!";
-  OldCompletionCallback* callback = finished_callback_;
-  finished_callback_ = NULL;
-  callback->Run(result);
+  CompletionCallback callback = finished_callback_;
+  finished_callback_.Reset();
+  callback.Run(result);
 }
 
 }  // namespace net

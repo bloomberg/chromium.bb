@@ -40,15 +40,7 @@ PepperTCPSocket::PepperTCPSocket(
       plugin_dispatcher_id_(plugin_dispatcher_id),
       socket_id_(socket_id),
       connection_state_(BEFORE_CONNECT),
-      end_of_file_reached_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(connect_callback_(
-          this, &PepperTCPSocket::OnConnectCompleted)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(ssl_handshake_callback_(
-          this, &PepperTCPSocket::OnSSLHandshakeCompleted)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          read_callback_(this, &PepperTCPSocket::OnReadCompleted)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          write_callback_(this, &PepperTCPSocket::OnWriteCompleted)) {
+      end_of_file_reached_(false) {
   DCHECK(manager);
 }
 
@@ -123,7 +115,9 @@ void PepperTCPSocket::SSLHandshake(const std::string& server_name,
     return;
   }
 
-  int result = socket_->Connect(&ssl_handshake_callback_);
+  int result = socket_->Connect(
+      base::Bind(&PepperTCPSocket::OnSSLHandshakeCompleted,
+                 base::Unretained(this)));
   if (result != net::ERR_IO_PENDING)
     OnSSLHandshakeCompleted(result);
 }
@@ -143,7 +137,9 @@ void PepperTCPSocket::Read(int32 bytes_to_read) {
   }
 
   read_buffer_ = new net::IOBuffer(bytes_to_read);
-  int result = socket_->Read(read_buffer_, bytes_to_read, &read_callback_);
+  int result = socket_->Read(read_buffer_, bytes_to_read,
+                             base::Bind(&PepperTCPSocket::OnReadCompleted,
+                                        base::Unretained(this)));
   if (result != net::ERR_IO_PENDING)
     OnReadCompleted(result);
 }
@@ -164,7 +160,9 @@ void PepperTCPSocket::Write(const std::string& data) {
 
   write_buffer_ = new net::IOBuffer(data_size);
   memcpy(write_buffer_->data(), data.c_str(), data_size);
-  int result = socket_->Write(write_buffer_, data.size(), &write_callback_);
+  int result = socket_->Write(write_buffer_, data.size(),
+                              base::Bind(&PepperTCPSocket::OnWriteCompleted,
+                                         base::Unretained(this)));
   if (result != net::ERR_IO_PENDING)
     OnWriteCompleted(result);
 }
@@ -174,7 +172,9 @@ void PepperTCPSocket::StartConnect(const net::AddressList& addresses) {
 
   socket_.reset(
       new net::TCPClientSocket(addresses, NULL, net::NetLog::Source()));
-  int result = socket_->Connect(&connect_callback_);
+  int result = socket_->Connect(
+      base::Bind(&PepperTCPSocket::OnConnectCompleted,
+                 base::Unretained(this)));
   if (result != net::ERR_IO_PENDING)
     OnConnectCompleted(result);
 }

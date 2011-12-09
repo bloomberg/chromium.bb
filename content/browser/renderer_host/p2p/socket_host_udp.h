@@ -69,9 +69,6 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
   // response or relay allocation request or response.
   ConnectedPeerSet connected_peers_;
 
-  net::OldCompletionCallbackImpl<P2PSocketHostUdp> recv_callback_;
-  net::OldCompletionCallbackImpl<P2PSocketHostUdp> send_callback_;
-
   DISALLOW_COPY_AND_ASSIGN(P2PSocketHostUdp);
 };
 

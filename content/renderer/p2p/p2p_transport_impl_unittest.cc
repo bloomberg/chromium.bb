@@ -51,10 +51,6 @@ class UdpChannelTester : public base::RefCountedThreadSafe<UdpChannelTester> {
         write_socket_(write_socket),
         read_socket_(read_socket),
         done_(false),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            write_cb_(this, &UdpChannelTester::OnWritten)),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            read_cb_(this, &UdpChannelTester::OnRead)),
         write_errors_(0),
         read_errors_(0),
         packets_sent_(0),
@@ -104,7 +100,9 @@ class UdpChannelTester : public base::RefCountedThreadSafe<UdpChannelTester> {
     // Put index of this packet in the beginning of the packet body.
     memcpy(packet->data(), &packets_sent_, sizeof(packets_sent_));
 
-    int result = write_socket_->Write(packet, kMessageSize, &write_cb_);
+    int result = write_socket_->Write(packet, kMessageSize,
+                                      base::Bind(&UdpChannelTester::OnWritten,
+                                                 base::Unretained(this)));
     HandleWriteResult(result);
   }
 
@@ -132,7 +130,9 @@ class UdpChannelTester : public base::RefCountedThreadSafe<UdpChannelTester> {
       int kReadSize = kMessageSize * 2;
       read_buffer_ = new net::IOBuffer(kReadSize);
 
-      result = read_socket_->Read(read_buffer_, kReadSize, &read_cb_);
+      result = read_socket_->Read(read_buffer_, kReadSize,
+                                      base::Bind(&UdpChannelTester::OnRead,
+                                                 base::Unretained(this)));
       HandleReadResult(result);
     };
   }
@@ -179,8 +179,6 @@ class UdpChannelTester : public base::RefCountedThreadSafe<UdpChannelTester> {
   scoped_refptr<net::IOBuffer> sent_packets_[kMessages];
   scoped_refptr<net::IOBuffer> read_buffer_;
 
-  net::OldCompletionCallbackImpl<UdpChannelTester> write_cb_;
-  net::OldCompletionCallbackImpl<UdpChannelTester> read_cb_;
   int write_errors_;
   int read_errors_;
   int packets_sent_;
@@ -197,10 +195,6 @@ class TcpChannelTester : public base::RefCountedThreadSafe<TcpChannelTester> {
         write_socket_(write_socket),
         read_socket_(read_socket),
         done_(false),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            write_cb_(this, &TcpChannelTester::OnWritten)),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            read_cb_(this, &TcpChannelTester::OnRead)),
         write_errors_(0),
         read_errors_(0) {
   }
@@ -250,7 +244,8 @@ class TcpChannelTester : public base::RefCountedThreadSafe<TcpChannelTester> {
     }
 
     int result = write_socket_->Write(
-        send_buffer_, send_buffer_->BytesRemaining(), &write_cb_);
+        send_buffer_, send_buffer_->BytesRemaining(),
+        base::Bind(&TcpChannelTester::OnWritten, base::Unretained(this)));
     HandleWriteResult(result);
   }
 
@@ -277,7 +272,9 @@ class TcpChannelTester : public base::RefCountedThreadSafe<TcpChannelTester> {
       int kReadSize = kMessageSize * 2;
       read_buffer_ = new net::IOBuffer(kReadSize);
 
-      result = read_socket_->Read(read_buffer_, kReadSize, &read_cb_);
+      result = read_socket_->Read(
+          read_buffer_, kReadSize,
+          base::Bind(&TcpChannelTester::OnRead, base::Unretained(this)));
       HandleReadResult(result);
     };
   }
@@ -315,8 +312,6 @@ class TcpChannelTester : public base::RefCountedThreadSafe<TcpChannelTester> {
   std::vector<char> sent_data_;
   std::vector<char> received_data_;
 
-  net::OldCompletionCallbackImpl<TcpChannelTester> write_cb_;
-  net::OldCompletionCallbackImpl<TcpChannelTester> read_cb_;
   int write_errors_;
   int read_errors_;
 };

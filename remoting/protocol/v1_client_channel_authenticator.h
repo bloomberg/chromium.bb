@@ -49,11 +49,6 @@ class V1ClientChannelAuthenticator : public ChannelAuthenticator,
   scoped_ptr<net::CertVerifier> cert_verifier_;
   scoped_refptr<net::DrainableIOBuffer> auth_write_buf_;
 
-  net::OldCompletionCallbackImpl<V1ClientChannelAuthenticator>
-      connect_callback_;
-  net::OldCompletionCallbackImpl<V1ClientChannelAuthenticator>
-      auth_write_callback_;
-
   DISALLOW_COPY_AND_ASSIGN(V1ClientChannelAuthenticator);
 };
 

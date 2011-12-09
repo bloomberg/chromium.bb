@@ -22,9 +22,7 @@ MessageReader::MessageReader()
     : socket_(NULL),
       read_pending_(false),
       pending_messages_(0),
-      closed_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          read_callback_(this, &MessageReader::OnRead)) {
+      closed_(false) {
 }
 
 MessageReader::~MessageReader() {
@@ -45,7 +43,8 @@ void MessageReader::DoRead() {
   while (!closed_ && !read_pending_ && pending_messages_ == 0) {
     read_buffer_ = new net::IOBuffer(kReadBufferSize);
     int result = socket_->Read(
-        read_buffer_, kReadBufferSize, &read_callback_);
+        read_buffer_, kReadBufferSize, base::Bind(&MessageReader::OnRead,
+                                                  base::Unretained(this)));
     HandleReadResult(result);
   }
 }

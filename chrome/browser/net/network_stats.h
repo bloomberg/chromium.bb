@@ -177,12 +177,6 @@ class NetworkStats {
   // HostResolver fills out the |addresses_| after host resolution is completed.
   net::AddressList addresses_;
 
-  // Callback to call when data is read from the server.
-  net::OldCompletionCallbackImpl<NetworkStats> read_callback_;
-
-  // Callback to call when data is sent to the server.
-  net::OldCompletionCallbackImpl<NetworkStats> write_callback_;
-
   // Callback to call when echo protocol is successefully finished or whenever
   // there is an error (this allows unittests to wait until echo protocol's
   // round trip is finished).
@@ -248,9 +242,6 @@ class TCPStatsClient : public NetworkStats {
   // Callback that is called when connect is completed and calls
   // ConnectComplete() to start the echo protocol.
   void OnConnectComplete(int result);
-
-  // Callback to call when connect is completed.
-  net::OldCompletionCallbackImpl<TCPStatsClient> connect_callback_;
 };
 
 // This collects the network connectivity stats for UDP and TCP for small

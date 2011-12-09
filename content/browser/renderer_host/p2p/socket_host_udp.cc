@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/p2p/socket_host_udp.h"
 
+#include "base/bind.h"
 #include "content/common/p2p_messages.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -34,11 +35,7 @@ P2PSocketHostUdp::P2PSocketHostUdp(IPC::Message::Sender* message_sender,
     : P2PSocketHost(message_sender, routing_id, id),
       socket_(new net::UDPServerSocket(NULL, net::NetLog::Source())),
       send_queue_bytes_(0),
-      send_pending_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          recv_callback_(this, &P2PSocketHostUdp::OnRecv)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          send_callback_(this, &P2PSocketHostUdp::OnSend)) {
+      send_pending_(false) {
 }
 
 P2PSocketHostUdp::~P2PSocketHostUdp() {
@@ -93,7 +90,8 @@ void P2PSocketHostUdp::DoRead() {
   int result;
   do {
     result = socket_->RecvFrom(recv_buffer_, kReadBufferSize, &recv_address_,
-                               &recv_callback_);
+                               base::Bind(&P2PSocketHostUdp::OnRecv,
+                                          base::Unretained(this)));
     DidCompleteRead(result);
   } while (result > 0);
 }
@@ -167,7 +165,8 @@ void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
 
 void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
   int result = socket_->SendTo(packet.data, packet.size, packet.to,
-                               &send_callback_);
+                               base::Bind(&P2PSocketHostUdp::OnSend,
+                                          base::Unretained(this)));
   if (result == net::ERR_IO_PENDING) {
     send_pending_ = true;
   } else if (result < 0) {

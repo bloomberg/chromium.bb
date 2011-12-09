@@ -24,9 +24,7 @@ P2PTransportImpl::P2PTransportImpl(
       event_handler_(NULL),
       state_(STATE_NONE),
       network_manager_(network_manager),
-      socket_factory_(socket_factory),
-      ALLOW_THIS_IN_INITIALIZER_LIST(connect_callback_(
-          this, &P2PTransportImpl::OnTcpConnected)) {
+      socket_factory_(socket_factory) {
 }
 
 P2PTransportImpl::P2PTransportImpl(P2PSocketDispatcher* socket_dispatcher)
@@ -34,9 +32,7 @@ P2PTransportImpl::P2PTransportImpl(P2PSocketDispatcher* socket_dispatcher)
       event_handler_(NULL),
       state_(STATE_NONE),
       network_manager_(new IpcNetworkManager(socket_dispatcher)),
-      socket_factory_(new IpcPacketSocketFactory(socket_dispatcher)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(connect_callback_(
-          this, &P2PTransportImpl::OnTcpConnected)) {
+      socket_factory_(new IpcPacketSocketFactory(socket_dispatcher)) {
   DCHECK(socket_dispatcher);
 }
 
@@ -101,7 +97,8 @@ bool P2PTransportImpl::Init(WebKit::WebFrame* web_frame,
     if (config.tcp_ack_delay_ms > 0)
       pseudo_tcp_adapter_->SetAckDelay(config.tcp_ack_delay_ms);
 
-    int result = pseudo_tcp_adapter_->Connect(&connect_callback_);
+    int result = pseudo_tcp_adapter_->Connect(
+        base::Bind(&P2PTransportImpl::OnTcpConnected, base::Unretained(this)));
     if (result != net::ERR_IO_PENDING)
       OnTcpConnected(result);
   }

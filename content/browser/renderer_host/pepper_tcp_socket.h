@@ -80,11 +80,6 @@ class PepperTCPSocket {
   ConnectionState connection_state_;
   bool end_of_file_reached_;
 
-  net::OldCompletionCallbackImpl<PepperTCPSocket> connect_callback_;
-  net::OldCompletionCallbackImpl<PepperTCPSocket> ssl_handshake_callback_;
-  net::OldCompletionCallbackImpl<PepperTCPSocket> read_callback_;
-  net::OldCompletionCallbackImpl<PepperTCPSocket> write_callback_;
-
   scoped_ptr<net::SingleRequestHostResolver> resolver_;
   net::AddressList address_list_;
 

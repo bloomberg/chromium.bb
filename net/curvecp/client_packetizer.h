@@ -29,16 +29,13 @@ class ClientPacketizer : public Packetizer {
 
   int Connect(const AddressList& server,
               Packetizer::Listener* listener,
-              OldCompletionCallback* callback);
-  int Connect(const AddressList& server,
-              Packetizer::Listener* listener,
               const CompletionCallback& callback);
 
   // Packetizer implementation.
   virtual int SendMessage(ConnectionKey key,
                           const char* data,
                           size_t length,
-                          OldCompletionCallback* callback) OVERRIDE;
+                          const CompletionCallback& callback) OVERRIDE;
   virtual void Close(ConnectionKey key) OVERRIDE;
   virtual int GetPeerAddress(IPEndPoint* endpoint) const OVERRIDE;
   virtual int max_message_payload() const OVERRIDE;
@@ -86,7 +83,6 @@ class ClientPacketizer : public Packetizer {
   StateType next_state_;
   scoped_ptr<UDPClientSocket> socket_;
   Packetizer::Listener* listener_;
-  OldCompletionCallback* old_user_callback_;
   CompletionCallback user_callback_;
   AddressList addresses_;
   const struct addrinfo* current_address_;
@@ -97,7 +93,7 @@ class ClientPacketizer : public Packetizer {
 
   uchar shortterm_public_key_[32];
 
-  OldCompletionCallbackImpl<ClientPacketizer> io_callback_;
+  CompletionCallback io_callback_;
   base::WeakPtrFactory<ClientPacketizer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientPacketizer);

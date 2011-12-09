@@ -82,10 +82,6 @@ NetworkStats::NetworkStats()
       bytes_to_read_(0),
       bytes_to_send_(0),
       encoded_message_(""),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          read_callback_(this, &NetworkStats::OnReadComplete)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          write_callback_(this, &NetworkStats::OnWriteComplete)),
       finished_callback_(NULL),
       start_time_(base::TimeTicks::Now()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
@@ -246,7 +242,9 @@ void NetworkStats::ReadData() {
     // We release the read_buffer_ in the destructor if there is an error.
     read_buffer_ = new net::IOBuffer(kMaxMessage);
 
-    rv = socket_->Read(read_buffer_, kMaxMessage, &read_callback_);
+    rv = socket_->Read(read_buffer_, kMaxMessage,
+                       base::Bind(&NetworkStats::OnReadComplete,
+                                  base::Unretained(this)));
     if (rv == net::ERR_IO_PENDING)
       return;
     // If we have read all the data then return.
@@ -268,7 +266,8 @@ int NetworkStats::SendData() {
       return net::ERR_UNEXPECTED;
     int rv = socket_->Write(write_buffer_,
                             write_buffer_->BytesRemaining(),
-                            &write_callback_);
+                            base::Bind(&NetworkStats::OnWriteComplete,
+                                       base::Unretained(this)));
     if (rv < 0)
       return rv;
     write_buffer_->DidConsume(rv);
@@ -443,10 +442,7 @@ void UDPStatsClient::Finish(Status status, int result) {
 }
 
 // TCPStatsClient methods and members.
-TCPStatsClient::TCPStatsClient()
-    : NetworkStats(),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          connect_callback_(this, &TCPStatsClient::OnConnectComplete)) {
+TCPStatsClient::TCPStatsClient() {
 }
 
 TCPStatsClient::~TCPStatsClient() {
@@ -466,7 +462,8 @@ bool TCPStatsClient::DoConnect(int result) {
   }
   set_socket(tcp_socket);
 
-  int rv = tcp_socket->Connect(&connect_callback_);
+  int rv = tcp_socket->Connect(base::Bind(&TCPStatsClient::OnConnectComplete,
+                                          base::Unretained(this)));
   if (rv == net::ERR_IO_PENDING)
     return true;
 

@@ -36,8 +36,7 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
               net::BoundNetLog::Make(
                   request_context_getter->GetURLRequestContext()->net_log(),
                   net::NetLog::SOURCE_SOCKET)),
-          ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-          old_user_connect_callback_(NULL) {
+          ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(request_context_getter);
   net::URLRequestContext* request_context =
       request_context_getter->GetURLRequestContext();
@@ -68,13 +67,6 @@ ProxyResolvingClientSocket::~ProxyResolvingClientSocket() {
 }
 
 int ProxyResolvingClientSocket::Read(net::IOBuffer* buf, int buf_len,
-                                     net::OldCompletionCallback* callback) {
-  if (transport_.get() && transport_->socket())
-    return transport_->socket()->Read(buf, buf_len, callback);
-  NOTREACHED();
-  return net::ERR_SOCKET_NOT_CONNECTED;
-}
-int ProxyResolvingClientSocket::Read(net::IOBuffer* buf, int buf_len,
                                      const net::CompletionCallback& callback) {
   if (transport_.get() && transport_->socket())
     return transport_->socket()->Read(buf, buf_len, callback);
@@ -82,8 +74,10 @@ int ProxyResolvingClientSocket::Read(net::IOBuffer* buf, int buf_len,
   return net::ERR_SOCKET_NOT_CONNECTED;
 }
 
-int ProxyResolvingClientSocket::Write(net::IOBuffer* buf, int buf_len,
-                                      net::OldCompletionCallback* callback) {
+int ProxyResolvingClientSocket::Write(
+    net::IOBuffer* buf,
+    int buf_len,
+    const net::CompletionCallback& callback) {
   if (transport_.get() && transport_->socket())
     return transport_->socket()->Write(buf, buf_len, callback);
   NOTREACHED();
@@ -104,36 +98,9 @@ bool ProxyResolvingClientSocket::SetSendBufferSize(int32 size) {
   return false;
 }
 
-int ProxyResolvingClientSocket::Connect(net::OldCompletionCallback* callback) {
-  DCHECK(!old_user_connect_callback_ && user_connect_callback_.is_null());
-
-  tried_direct_connect_fallback_ = false;
-
-  // First we try and resolve the proxy.
-  GURL url("http://" + dest_host_port_pair_.ToString());
-  int status = network_session_->proxy_service()->ResolveProxy(
-      url,
-      &proxy_info_,
-      &proxy_resolve_callback_,
-      &pac_request_,
-      bound_net_log_);
-  if (status != net::ERR_IO_PENDING) {
-    // We defer execution of ProcessProxyResolveDone instead of calling it
-    // directly here for simplicity. From the caller's point of view,
-    // the connect always happens asynchronously.
-    MessageLoop* message_loop = MessageLoop::current();
-    CHECK(message_loop);
-    message_loop->PostTask(
-        FROM_HERE,
-        base::Bind(&ProxyResolvingClientSocket::ProcessProxyResolveDone,
-                   weak_factory_.GetWeakPtr(), status));
-  }
-  old_user_connect_callback_ = callback;
-  return net::ERR_IO_PENDING;
-}
 int ProxyResolvingClientSocket::Connect(
     const net::CompletionCallback& callback) {
-  DCHECK(!old_user_connect_callback_ && user_connect_callback_.is_null());
+  DCHECK(user_connect_callback_.is_null());
 
   tried_direct_connect_fallback_ = false;
 
@@ -162,16 +129,9 @@ int ProxyResolvingClientSocket::Connect(
 
 void ProxyResolvingClientSocket::RunUserConnectCallback(int status) {
   DCHECK_LE(status, net::OK);
-  if (old_user_connect_callback_) {
-    net::OldCompletionCallback* user_connect_callback =
-        old_user_connect_callback_;
-    old_user_connect_callback_ = NULL;
-    user_connect_callback->Run(status);
-  } else {
-    net::CompletionCallback user_connect_callback = user_connect_callback_;
-    user_connect_callback_.Reset();
-    user_connect_callback.Run(status);
-  }
+  net::CompletionCallback user_connect_callback = user_connect_callback_;
+  user_connect_callback_.Reset();
+  user_connect_callback.Run(status);
 }
 
 // Always runs asynchronously.
@@ -330,7 +290,6 @@ void ProxyResolvingClientSocket::Disconnect() {
   CloseTransportSocket();
   if (pac_request_)
     network_session_->proxy_service()->CancelPacRequest(pac_request_);
-  old_user_connect_callback_ = NULL;
   user_connect_callback_.Reset();
 }
 

@@ -21,11 +21,7 @@ V1ClientChannelAuthenticator::V1ClientChannelAuthenticator(
     const std::string& shared_secret)
     : host_cert_(host_cert),
       shared_secret_(shared_secret),
-      socket_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(connect_callback_(
-          this, &V1ClientChannelAuthenticator::OnConnected)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(auth_write_callback_(
-          this, &V1ClientChannelAuthenticator::OnAuthBytesWritten)) {
+      socket_(NULL) {
 }
 
 V1ClientChannelAuthenticator::~V1ClientChannelAuthenticator() {
@@ -59,7 +55,9 @@ void V1ClientChannelAuthenticator::SecureAndAuthenticate(
       net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
           socket, host_and_port, ssl_config, NULL, context));
 
-  int result = socket_->Connect(&connect_callback_);
+  int result = socket_->Connect(
+      base::Bind(&V1ClientChannelAuthenticator::OnConnected,
+                 base::Unretained(this)));
   if (result == net::ERR_IO_PENDING)
     return;
   OnConnected(result);
@@ -99,9 +97,10 @@ void V1ClientChannelAuthenticator::OnConnected(int result) {
 
 void V1ClientChannelAuthenticator::WriteAuthenticationBytes() {
   while (true) {
-    int result = socket_->Write(auth_write_buf_,
-                                auth_write_buf_->BytesRemaining(),
-                                &auth_write_callback_);
+    int result = socket_->Write(
+        auth_write_buf_, auth_write_buf_->BytesRemaining(),
+        base::Bind(&V1ClientChannelAuthenticator::OnAuthBytesWritten,
+                   base::Unretained(this)));
     if (result == net::ERR_IO_PENDING)
       break;
     if (!HandleAuthBytesWritten(result))

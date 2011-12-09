@@ -74,8 +74,8 @@ TEST_F(ProxyResolvingClientSocketTest, DISABLED_ConnectError) {
       url_request_context_getter_,
       net::SSLConfig(),
       dest);
-  TestOldCompletionCallback callback;
-  int status = proxy_resolving_socket.Connect(&callback);
+  net::TestCompletionCallback callback;
+  int status = proxy_resolving_socket.Connect(callback.callback());
   // Connect always returns ERR_IO_PENDING because it is always asynchronous.
   EXPECT_EQ(net::ERR_IO_PENDING, status);
   status = callback.WaitForResult();
@@ -112,8 +112,8 @@ TEST_F(ProxyResolvingClientSocketTest, ReportsBadProxies) {
       net::SSLConfig(),
       dest);
 
-  TestOldCompletionCallback callback;
-  int status = proxy_resolving_socket.Connect(&callback);
+  net::TestCompletionCallback callback;
+  int status = proxy_resolving_socket.Connect(callback.callback());
   EXPECT_EQ(net::ERR_IO_PENDING, status);
   status = callback.WaitForResult();
   EXPECT_EQ(net::OK, status);

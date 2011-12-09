@@ -25,9 +25,7 @@ V1HostChannelAuthenticator::V1HostChannelAuthenticator(
       shared_secret_(shared_secret),
       socket_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(connect_callback_(
-          this, &V1HostChannelAuthenticator::OnConnected)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(auth_read_callback_(
-          this, &V1HostChannelAuthenticator::OnAuthBytesRead)) {
+          this, &V1HostChannelAuthenticator::OnConnected)) {
 }
 
 V1HostChannelAuthenticator::~V1HostChannelAuthenticator() {
@@ -74,9 +72,11 @@ void V1HostChannelAuthenticator::OnConnected(int result) {
 
 void V1HostChannelAuthenticator::DoAuthRead(){
   while (true) {
-    int result = socket_->Read(auth_read_buf_,
-                               auth_read_buf_->RemainingCapacity(),
-                               &auth_read_callback_);
+    int result = socket_->Read(
+        auth_read_buf_,
+        auth_read_buf_->RemainingCapacity(),
+        base::Bind(&V1HostChannelAuthenticator::OnAuthBytesRead,
+                   base::Unretained(this)));
     if (result == net::ERR_IO_PENDING)
       break;
     if (!HandleAuthBytesRead(result))

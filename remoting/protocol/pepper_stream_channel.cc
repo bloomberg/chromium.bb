@@ -45,9 +45,7 @@ PepperStreamChannel::PepperStreamChannel(
       name_(name),
       callback_(callback),
       channel_(NULL),
-      connected_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(p2p_connect_callback_(
-          this, &PepperStreamChannel::OnP2PConnect)) {
+      connected_(false) {
 }
 
 PepperStreamChannel::~PepperStreamChannel() {
@@ -122,7 +120,8 @@ void PepperStreamChannel::Connect(pp::Instance* pp_instance,
   channel_ = new PepperTransportSocketAdapter(transport, name_, this);
   owned_channel_.reset(channel_);
 
-  int result = channel_->Connect(&p2p_connect_callback_);
+  int result = channel_->Connect(base::Bind(&PepperStreamChannel::OnP2PConnect,
+                                            base::Unretained(this)));
   if (result != net::ERR_IO_PENDING)
     OnP2PConnect(result);
 }

@@ -34,7 +34,7 @@ class Packetizer {
   virtual int SendMessage(ConnectionKey key,
                           const char* data,
                           size_t length,
-                          OldCompletionCallback* callback) = 0;
+                          const CompletionCallback& callback) = 0;
 
   // Close an existing connection.
   virtual void Close(ConnectionKey key) = 0;

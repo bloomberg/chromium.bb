@@ -40,7 +40,6 @@ class Socket {
 
   scoped_ptr<net::UDPClientSocket> udp_client_socket_;
   bool is_connected_;
-  net::OldCompletionCallbackImpl<Socket> io_callback_;
 
   // A callback required by UDPClientSocket::Write().
   void OnIOComplete(int result);
@@ -56,9 +55,7 @@ Socket::Socket(const Profile* profile, const std::string& src_extension_id,
           RandIntCallback(),
           NULL,
           NetLog::Source())),
-      is_connected_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          io_callback_(this, &Socket::OnIOComplete)) {}
+      is_connected_(false) {}
 
 Socket::~Socket() {
   if (is_connected_) {
@@ -88,9 +85,9 @@ int Socket::Write(const std::string message) {
 
   int bytes_sent = 0;
   while (buffer->BytesRemaining()) {
-    int rv = udp_client_socket_->Write(buffer,
-                                       buffer->BytesRemaining(),
-                                       &io_callback_);
+    int rv = udp_client_socket_->Write(
+        buffer, buffer->BytesRemaining(),
+        base::Bind(&Socket::OnIOComplete, base::Unretained(this)));
     if (rv <= 0) {
       // We pass all errors, including ERROR_IO_PENDING, back to the caller.
       return bytes_sent > 0 ? bytes_sent : rv;

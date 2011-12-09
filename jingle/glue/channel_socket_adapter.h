@@ -6,7 +6,6 @@
 #define JINGLE_GLUE_CHANNEL_SOCKET_ADAPTER_H_
 
 #include "base/compiler_specific.h"
-#include "net/base/completion_callback.h"
 #include "net/socket/socket.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
@@ -36,11 +35,9 @@ class TransportChannelSocketAdapter : public net::Socket,
 
   // Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   net::OldCompletionCallback* callback) OVERRIDE;
-  virtual int Read(net::IOBuffer* buf, int buf_len,
                    const net::CompletionCallback& callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    net::OldCompletionCallback* callback) OVERRIDE;
+                    const net::CompletionCallback& callback) OVERRIDE;
 
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
   virtual bool SetSendBufferSize(int32 size) OVERRIDE;
@@ -55,12 +52,11 @@ class TransportChannelSocketAdapter : public net::Socket,
 
   cricket::TransportChannel* channel_;
 
-  net::OldCompletionCallback* old_read_callback_;  // Not owned.
   net::CompletionCallback read_callback_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
 
-  net::OldCompletionCallback* write_callback_;  // Not owned.
+  net::CompletionCallback write_callback_;
   scoped_refptr<net::IOBuffer> write_buffer_;
   int write_buffer_size_;
 

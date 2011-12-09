@@ -41,9 +41,7 @@ JingleStreamConnector::JingleStreamConnector(
     : session_(session),
       name_(name),
       callback_(callback),
-      raw_channel_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(tcp_connect_callback_(
-          this, &JingleStreamConnector::OnTCPConnect)) {
+      raw_channel_(NULL) {
 }
 
 JingleStreamConnector::~JingleStreamConnector() {
@@ -83,11 +81,13 @@ bool JingleStreamConnector::EstablishTCPConnection(net::Socket* socket) {
   adapter->SetSendBufferSize(kTcpSendBufferSize);
 
   tcp_socket_.reset(adapter);
-  int result = tcp_socket_->Connect(&tcp_connect_callback_);
+  int result = tcp_socket_->Connect(
+      base::Bind(&JingleStreamConnector::OnTCPConnect,
+                 base::Unretained(this)));
   if (result == net::ERR_IO_PENDING) {
     return true;
   } else if (result == net::OK) {
-    tcp_connect_callback_.Run(result);
+    OnTCPConnect(result);
     return true;
   }
 

@@ -68,11 +68,7 @@ WebKit::WebFrame* GetFrameForResource(const ::ppapi::Resource* resource) {
 PPB_Transport_Impl::PPB_Transport_Impl(PP_Instance instance)
     : Resource(instance),
       started_(false),
-      writable_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          channel_write_callback_(this, &PPB_Transport_Impl::OnWritten)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          channel_read_callback_(this, &PPB_Transport_Impl::OnRead)) {
+      writable_(false) {
 }
 
 PPB_Transport_Impl::~PPB_Transport_Impl() {
@@ -323,7 +319,9 @@ int32_t PPB_Transport_Impl::Recv(void* data, uint32_t len,
 
   scoped_refptr<net::IOBuffer> buffer =
       new net::WrappedIOBuffer(static_cast<const char*>(data));
-  int result = MapNetError(channel->Read(buffer, len, &channel_read_callback_));
+  int result = MapNetError(
+      channel->Read(buffer, len, base::Bind(&PPB_Transport_Impl::OnRead,
+                                            base::Unretained(this))));
   if (result == PP_OK_COMPLETIONPENDING) {
     recv_callback_ = new TrackedCompletionCallback(
         plugin_module->GetCallbackTracker(), pp_resource(), callback);
@@ -352,8 +350,9 @@ int32_t PPB_Transport_Impl::Send(const void* data, uint32_t len,
 
   scoped_refptr<net::IOBuffer> buffer =
       new net::WrappedIOBuffer(static_cast<const char*>(data));
-  int result = MapNetError(channel->Write(buffer, len,
-                                          &channel_write_callback_));
+  int result = MapNetError(
+      channel->Write(buffer, len, base::Bind(&PPB_Transport_Impl::OnWritten,
+                                             base::Unretained(this))));
   if (result == PP_OK_COMPLETIONPENDING) {
     send_callback_ = new TrackedCompletionCallback(
         plugin_module->GetCallbackTracker(), pp_resource(), callback);

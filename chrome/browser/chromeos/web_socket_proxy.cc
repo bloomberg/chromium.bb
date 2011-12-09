@@ -49,7 +49,6 @@
 #include "googleurl/src/url_parse.h"
 #include "net/base/address_list.h"
 #include "net/base/cert_verifier.h"
-#include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -555,15 +554,7 @@ class SSLChan : public MessageLoopForIO::Watcher {
         outbound_stream_(WebSocketProxy::kBufferLimit),
         read_pipe_(read_pipe),
         write_pipe_(write_pipe),
-        method_factory_(this),
-        ALLOW_THIS_IN_INITIALIZER_LIST(socket_connect_callback_(
-            base::Bind(&SSLChan::OnSocketConnect, base::Unretained(this)))),
-        ALLOW_THIS_IN_INITIALIZER_LIST(ssl_handshake_callback_(
-            base::Bind(&SSLChan::OnSSLHandshakeCompleted,
-                       base::Unretained(this)))),
-        ALLOW_THIS_IN_INITIALIZER_LIST(socket_read_callback_(
-            base::Bind(&SSLChan::OnSocketRead, base::Unretained(this)))),
-        socket_write_callback_(NewCallback(this, &SSLChan::OnSocketWrite)) {
+        method_factory_(this) {
     if (!SetNonBlock(read_pipe_) || !SetNonBlock(write_pipe_)) {
       Shut(net::ERR_UNEXPECTED);
       return;
@@ -576,7 +567,8 @@ class SSLChan : public MessageLoopForIO::Watcher {
       Shut(net::ERR_FAILED);
       return;
     }
-    int result = socket_->Connect(socket_connect_callback_);
+    int result = socket_->Connect(base::Bind(&SSLChan::OnSocketConnect,
+                                             base::Unretained(this)));
     if (result != net::ERR_IO_PENDING)
       OnSocketConnect(result);
   }
@@ -636,7 +628,8 @@ class SSLChan : public MessageLoopForIO::Watcher {
       OnSSLHandshakeCompleted(net::ERR_UNEXPECTED);
       return;
     }
-    result = socket_->Connect(ssl_handshake_callback_);
+    result = socket_->Connect(base::Bind(&SSLChan::OnSSLHandshakeCompleted,
+                                         base::Unretained(this)));
     if (result != net::ERR_IO_PENDING)
       OnSSLHandshakeCompleted(result);
   }
@@ -734,7 +727,9 @@ class SSLChan : public MessageLoopForIO::Watcher {
         scoped_refptr<net::IOBufferWithSize> buf =
             inbound_stream_.GetIOBufferToFill();
         if (buf && buf->size() > 0) {
-          int rv = socket_->Read(buf, buf->size(), socket_read_callback_);
+          int rv = socket_->Read(
+              buf, buf->size(),
+              base::Bind(&SSLChan::OnSocketRead, base::Unretained(this)));
           is_socket_read_pending_ = true;
           if (rv != net::ERR_IO_PENDING) {
             MessageLoop::current()->PostTask(FROM_HERE,
@@ -747,7 +742,8 @@ class SSLChan : public MessageLoopForIO::Watcher {
             outbound_stream_.GetIOBufferToProcess();
         if (buf && buf->size() > 0) {
           int rv = socket_->Write(
-              buf, buf->size(), socket_write_callback_.get());
+              buf, buf->size(),
+              base::Bind(&SSLChan::OnSocketWrite, base::Unretained(this)));
           is_socket_write_pending_ = true;
           if (rv != net::ERR_IO_PENDING) {
             MessageLoop::current()->PostTask(FROM_HERE,
@@ -797,10 +793,6 @@ class SSLChan : public MessageLoopForIO::Watcher {
   bool is_read_pipe_blocked_;
   bool is_write_pipe_blocked_;
   ScopedRunnableMethodFactory<SSLChan> method_factory_;
-  net::CompletionCallback socket_connect_callback_;
-  net::CompletionCallback ssl_handshake_callback_;
-  net::CompletionCallback socket_read_callback_;
-  scoped_ptr<net::OldCompletionCallback> socket_write_callback_;
   MessageLoopForIO::FileDescriptorWatcher read_pipe_controller_;
   MessageLoopForIO::FileDescriptorWatcher write_pipe_controller_;
 

@@ -33,12 +33,12 @@ ClientPacketizer::ClientPacketizer()
     : Packetizer(),
       next_state_(NONE),
       listener_(NULL),
-      old_user_callback_(NULL),
       current_address_(NULL),
       hello_attempts_(0),
       initiate_sent_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          io_callback_(this, &ClientPacketizer::OnIOComplete)),
+          io_callback_(base::Bind(&ClientPacketizer::OnIOComplete,
+                                  base::Unretained(this)))),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   // TODO(mbelshe): Initialize our keys and such properly.
   //     for now we use random values to keep them unique.
@@ -51,23 +51,7 @@ ClientPacketizer::~ClientPacketizer() {
 
 int ClientPacketizer::Connect(const AddressList& server,
                               Packetizer::Listener* listener,
-                              OldCompletionCallback* callback) {
-  DCHECK(!old_user_callback_);
-  DCHECK(!socket_.get());
-  DCHECK(!listener_);
-
-  listener_ = listener;
-
-  addresses_ = server;
-
-  old_user_callback_ = callback;
-  next_state_ = LOOKUP_COOKIE;
-
-  return DoLoop(OK);
-}
-int ClientPacketizer::Connect(const AddressList& server,
-                              Packetizer::Listener* listener,
-                              const net::CompletionCallback& callback) {
+                              const CompletionCallback& callback) {
   DCHECK(user_callback_.is_null());
   DCHECK(!socket_.get());
   DCHECK(!listener_);
@@ -85,7 +69,7 @@ int ClientPacketizer::Connect(const AddressList& server,
 int ClientPacketizer::SendMessage(ConnectionKey key,
                                   const char* data,
                                   size_t length,
-                                  OldCompletionCallback* callback) {
+                                  const CompletionCallback& callback) {
   // We can't send messages smaller than 16 bytes.
   if (length < 16)
     return ERR_UNEXPECTED;
@@ -114,7 +98,7 @@ int ClientPacketizer::SendMessage(ConnectionKey key,
     // TODO(mbelshe) - this is just broken to make it work with cleartext
     memcpy(&buffer->data()[sizeof(InitiatePacket)], data, length);
     int packet_length = sizeof(InitiatePacket) + length;
-    int rv = socket_->Write(buffer, packet_length, &io_callback_);
+    int rv = socket_->Write(buffer, packet_length, io_callback_);
     if (rv <= 0)
       return rv;
     CHECK_EQ(packet_length, rv);  // We must send all data.
@@ -138,7 +122,7 @@ int ClientPacketizer::SendMessage(ConnectionKey key,
   // TODO(mbelshe): Fill in rest of message
   memcpy(&buffer->data()[sizeof(ClientMessagePacket)], data, length);
   int packet_length = sizeof(ClientMessagePacket) + length;
-  int rv = socket_->Write(buffer, packet_length, &io_callback_);
+  int rv = socket_->Write(buffer, packet_length, io_callback_);
   if (rv <= 0)
     return rv;
   CHECK_EQ(packet_length, rv);  // We must send all data.
@@ -231,7 +215,7 @@ int ClientPacketizer::DoSendingHello() {
          sizeof(shortterm_public_key_));
   // TODO(mbelshe): populate all other fields of the HelloPacket.
 
-  return socket_->Write(buffer, sizeof(struct HelloPacket), &io_callback_);
+  return socket_->Write(buffer, sizeof(struct HelloPacket), io_callback_);
 }
 
 int ClientPacketizer::DoSendingHelloComplete(int rv) {
@@ -254,7 +238,7 @@ int ClientPacketizer::DoWaitingCookie() {
   StartHelloTimer(kHelloTimeoutMs[hello_attempts_++]);
 
   read_buffer_ = new IOBuffer(kMaxPacketLength);
-  return socket_->Read(read_buffer_, kMaxPacketLength, &io_callback_);
+  return socket_->Read(read_buffer_, kMaxPacketLength, io_callback_);
 }
 
 int ClientPacketizer::DoWaitingCookieComplete(int rv) {
@@ -295,17 +279,11 @@ int ClientPacketizer::DoConnected(int rv) {
 
 void ClientPacketizer::DoCallback(int result) {
   DCHECK_NE(result, ERR_IO_PENDING);
-  DCHECK(old_user_callback_ || !user_callback_.is_null());
+  DCHECK(!user_callback_.is_null());
 
-  if (old_user_callback_) {
-    OldCompletionCallback* callback = old_user_callback_;
-    old_user_callback_ = NULL;
-    callback->Run(result);
-  } else {
-    CompletionCallback callback = user_callback_;
-    user_callback_.Reset();
-    callback.Run(result);
-  }
+  CompletionCallback callback = user_callback_;
+  user_callback_.Reset();
+  callback.Run(result);
 }
 
 int ClientPacketizer::ConnectNextAddress() {
@@ -391,7 +369,7 @@ int ClientPacketizer::ReadPackets() {
   while (true) {
     rv = socket_->Read(read_buffer_,
                        kMaxPacketLength,
-                       &io_callback_);
+                       io_callback_);
     if (rv <= 0) {
       if (rv != ERR_IO_PENDING)
         LOG(ERROR) << "Error reading socket:" << rv;

@@ -42,8 +42,6 @@ BufferedSocketWriterBase::BufferedSocketWriterBase(
       socket_(NULL),
       message_loop_(message_loop),
       write_pending_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          written_callback_(this, &BufferedSocketWriterBase::OnWritten)),
       closed_(false) {
 }
 
@@ -93,8 +91,10 @@ void BufferedSocketWriterBase::DoWrite() {
     if (!current_packet)
       return;
 
-    int result = socket_->Write(current_packet, current_packet_size,
-                                &written_callback_);
+    int result = socket_->Write(
+        current_packet, current_packet_size,
+        base::Bind(&BufferedSocketWriterBase::OnWritten,
+                   base::Unretained(this)));
     if (result >= 0) {
       base::AutoLock auto_lock(lock_);
       AdvanceBufferPosition_Locked(result);

@@ -27,11 +27,7 @@ PepperUDPSocket::PepperUDPSocket(
     : manager_(manager),
       routing_id_(routing_id),
       plugin_dispatcher_id_(plugin_dispatcher_id),
-      socket_id_(socket_id),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          recvfrom_callback_(this, &PepperUDPSocket::OnRecvFromCompleted)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          sendto_callback_(this, &PepperUDPSocket::OnSendToCompleted)) {
+      socket_id_(socket_id) {
   DCHECK(manager);
 }
 
@@ -63,10 +59,10 @@ void PepperUDPSocket::RecvFrom(int32_t num_bytes) {
   }
 
   recvfrom_buffer_ = new net::IOBuffer(num_bytes);
-  int result = socket_->RecvFrom(recvfrom_buffer_,
-                                 num_bytes,
-                                 &recvfrom_address_,
-                                 &recvfrom_callback_);
+  int result = socket_->RecvFrom(
+      recvfrom_buffer_, num_bytes, &recvfrom_address_,
+      base::Bind(&PepperUDPSocket::OnRecvFromCompleted,
+                 base::Unretained(this)));
 
   if (result != net::ERR_IO_PENDING)
     OnRecvFromCompleted(result);
@@ -89,10 +85,9 @@ void PepperUDPSocket::SendTo(const std::string& data,
 
   sendto_buffer_ = new net::IOBuffer(data_size);
   memcpy(sendto_buffer_->data(), data.data(), data_size);
-  int result = socket_->SendTo(sendto_buffer_,
-                               data_size,
-                               address,
-                               &sendto_callback_);
+  int result = socket_->SendTo(
+      sendto_buffer_, data_size, address,
+      base::Bind(&PepperUDPSocket::OnSendToCompleted, base::Unretained(this)));
 
   if (result != net::ERR_IO_PENDING)
     OnSendToCompleted(result);
