@@ -79,7 +79,7 @@ class CONTENT_EXPORT AudioDevice
       public base::DelegateSimpleThread::Delegate,
       public base::RefCountedThreadSafe<AudioDevice> {
  public:
-  class RenderCallback {
+  class CONTENT_EXPORT RenderCallback {
    public:
     virtual void Render(const std::vector<float*>& audio_data,
                         size_t number_of_frames,
