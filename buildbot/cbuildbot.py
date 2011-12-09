@@ -11,6 +11,8 @@ full and pre-flight-queue builds.
 """
 
 import constants
+import distutils.version
+import glob
 import multiprocessing
 import Queue
 import optparse
@@ -34,6 +36,7 @@ from chromite.buildbot import tee
 from chromite.lib import cros_build_lib as cros_lib
 
 
+_DEFAULT_LOG_DIR = 'cbuildbot_logs'
 _BUILDBOT_LOG_FILE = 'cbuildbot.log'
 _DEFAULT_EXT_BUILDROOT = 'trybot'
 _DEFAULT_INT_BUILDROOT = 'trybot-internal'
@@ -494,6 +497,26 @@ def _DetermineDefaultBuildRoot(internal_build):
   return buildroot
 
 
+def _BackupPreviousLog(log_file, backup_limit=25):
+  """Rename previous log.
+
+  Args:
+    log_file: The absolute path to the previous log.
+  """
+  if os.path.exists(log_file):
+    old_logs = sorted(glob.glob(log_file + '.*'),
+                      key=distutils.version.LooseVersion)
+
+    if len(old_logs) >= backup_limit:
+      os.remove(old_logs[0])
+
+    last = 0
+    if old_logs:
+      last = int(old_logs.pop().rpartition('.')[2])
+
+    os.rename(log_file, log_file + '.' + str(last + 1))
+
+
 def _RunBuildStagesWrapper(bot_id, options, build_config):
   """Helper function that wraps RunBuildStages()."""
   def IsDistributedBuilder():
@@ -513,12 +536,18 @@ def _RunBuildStagesWrapper(bot_id, options, build_config):
     return False
 
   # Start tee-ing output to file.
-  log_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                          _BUILDBOT_LOG_FILE)
-  cros_lib.Info('Saving output to %s' % log_file)
+  default_dir = os.path.join(options.buildroot, _DEFAULT_LOG_DIR)
+  dirname = options.log_dir or default_dir
+  log_file = os.path.join(dirname, _BUILDBOT_LOG_FILE)
+  if not os.path.isdir(dirname):
+    os.mkdir(dirname)
+
+  _BackupPreviousLog(log_file)
   tee_proc = tee.Tee(log_file)
   tee_proc.start()
 
+  cros_lib.Info("cbuildbot executed with args %s"
+                % ' '.join(map(repr, sys.argv)))
   try:
     if IsDistributedBuilder():
       buildbot = DistributedBuilder(bot_id, options, build_config)
@@ -529,6 +558,7 @@ def _RunBuildStagesWrapper(bot_id, options, build_config):
       sys.exit(1)
   finally:
     tee_proc.stop()
+    cros_lib.Info('Output saved to %s' % log_file)
 
 
 def _RunBuildStagesWithSudoProcess(bot_id, options, build_config,
@@ -600,6 +630,11 @@ def _CheckBuildRootOption(_option, _opt_str, value, parser):
     raise optparse.OptionValueError('Invalid buildroot specified')
 
   parser.values.buildroot = os.path.realpath(os.path.expanduser(value))
+
+
+def _CheckLogDirOption(_option, _opt_str, value, parser):
+  """Validate and convert buildroot to full-path form."""
+  parser.values.log_dir = os.path.abspath(os.path.expanduser(value))
 
 
 def _CheckChromeVersionOption(_option, _opt_str, value, parser):
@@ -702,6 +737,9 @@ def _CreateParser():
                     help='Run tests on remote machine')
   group.add_option('--lkgm', action='store_true', dest='lkgm', default=False,
                     help='Sync to last known good manifest blessed by PFQ')
+  parser.add_option('--log_dir', action='callback', dest='log_dir',
+                    type='string', callback=_CheckLogDirOption,
+                    help=('Directory where logs are stored.'))
   group.add_option('--maxarchives', dest='max_archive_builds',
                     default=3, type='int',
                     help="Change the local saved build count limit.")

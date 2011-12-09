@@ -6,6 +6,7 @@
 
 """Unittests for build stages."""
 
+import glob
 import mox
 import os
 import shutil
@@ -19,7 +20,7 @@ import chromite.buildbot.cbuildbot as cbuildbot
 import chromite.buildbot.cbuildbot_commands as commands
 import chromite.buildbot.cbuildbot_config as config
 import chromite.lib.cros_build_lib as cros_lib
-
+import chromite.lib.cros_test_lib as test_lib
 
 # pylint: disable=W0212,R0904
 class TestExitedException(Exception):
@@ -126,6 +127,49 @@ class RunBuildStagesTest(mox.MoxTestBase):
     # Clean up after the test
     if 'CHROMEOS_OFFICIAL' in os.environ:
       del os.environ['CHROMEOS_OFFICIAL']
+
+
+class LogTest(mox.MoxTestBase):
+
+  def _generateLogs(self, num):
+    """Generates cbuildbot.log and num backups."""
+    with open(os.path.join(self.tempdir, 'cbuildbot.log'), 'w') as f:
+      f.write(str(num+1))
+
+    for i in range(1, num+1):
+      with open(os.path.join(self.tempdir, 'cbuildbot.log.' + str(i)),
+                'w') as f:
+        f.write(str(i))
+
+  @test_lib.tempdir_decorator
+  def testZeroToOneLogs(self):
+    """Test beginning corner case."""
+    self._generateLogs(0)
+    cbuildbot._BackupPreviousLog(os.path.join(self.tempdir, 'cbuildbot.log'),
+                                 backup_limit=25)
+    with open(os.path.join(self.tempdir, 'cbuildbot.log.1')) as f:
+      self.assertEquals(f.readline(), '1')
+
+  @test_lib.tempdir_decorator
+  def testNineToTenLogs(self):
+    """Test handling *.log.9 to *.log.10 (correct sorting)."""
+    self._generateLogs(9)
+    cbuildbot._BackupPreviousLog(os.path.join(self.tempdir, 'cbuildbot.log'),
+                                 backup_limit=25)
+    with open(os.path.join(self.tempdir, 'cbuildbot.log.10')) as f:
+      self.assertEquals(f.readline(), '10')
+
+  @test_lib.tempdir_decorator
+  def testOverLimit(self):
+    """Test going over the limit and having to purge old logs."""
+    self._generateLogs(25)
+    cbuildbot._BackupPreviousLog(os.path.join(self.tempdir, 'cbuildbot.log'),
+                                 backup_limit=25)
+    with open(os.path.join(self.tempdir, 'cbuildbot.log.26')) as f:
+      self.assertEquals(f.readline(), '26')
+
+    self.assertEquals(len(glob.glob(os.path.join(self.tempdir, 'cbuildbot*'))),
+                      25)
 
 
 class InterfaceTest(mox.MoxTestBase):
