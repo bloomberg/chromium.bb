@@ -72,7 +72,7 @@ var CrosView = (function() {
   function setParseStatus_(success) {
     var parseStatus = $(CrosView.PARSE_STATUS_ID);
     parseStatus.hidden = false;
-    parseStatus.textContent = status ?
+    parseStatus.textContent = success ?
         "ONC file successfully parsed" : "ONC file parse failed";
     reset_();
   }

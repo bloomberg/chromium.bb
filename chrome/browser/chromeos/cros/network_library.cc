@@ -2867,7 +2867,8 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
 
     CallConfigureService(network->unique_id(), &dict);
   }
-  return parser.GetNetworkConfigsSize() != 0;
+  return (parser.GetNetworkConfigsSize() != 0 ||
+          parser.GetCertificatesSize() != 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////
