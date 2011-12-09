@@ -1399,6 +1399,8 @@ void Browser::ShowSingletonTabOverwritingNTP(
 
 void Browser::WindowFullscreenStateChanged() {
   fullscreen_controller_->WindowFullscreenStateChanged();
+  UpdateCommandsForFullscreenMode(window_->IsFullscreen());
+  UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TOGGLE_FULLSCREEN);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4191,11 +4193,6 @@ void Browser::Observe(int type,
 
     case content::NOTIFICATION_INTERSTITIAL_ATTACHED:
       UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
-      break;
-
-    case chrome::NOTIFICATION_FULLSCREEN_CHANGED:
-      UpdateCommandsForFullscreenMode(window_->IsFullscreen());
-      UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TOGGLE_FULLSCREEN);
       break;
 
     default:
