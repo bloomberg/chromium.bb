@@ -3285,8 +3285,9 @@ nonvariant_tests = [
     'tests/ppapi_geturl/nacl.scons',
     'tests/ppapi_gles_book/nacl.scons',
     'tests/ppapi_messaging/nacl.scons',
-
-    'tests/ppapi_simple_tests/nacl.scons',
+    # Broken by Chrome change
+    # http://code.google.com/p/nativeclient/issues/detail?id=2480
+    #'tests/ppapi_simple_tests/nacl.scons',
     'tests/ppapi_test_example/nacl.scons',
     'tests/ppapi_test_lib/nacl.scons',
     'tests/ppapi_tests/nacl.scons',
