@@ -155,6 +155,10 @@ void SettingsChangeGlobalError::Show() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
   browser_ = BrowserList::GetLastActiveWithProfile(profile_);
+  if (!browser_ && profile_->HasOffTheRecordProfile()) {
+    browser_ = BrowserList::GetLastActiveWithProfile(
+        profile_->GetOffTheRecordProfile());
+  }
   if (browser_)
     ShowBubbleView(browser_);
 }
