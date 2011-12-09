@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/snapshot_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -77,7 +78,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
     snapshot_different_ = true;
     expected_filename_ = expected_filename;
     TabContentsWrapper* wrapper =  browser()->GetSelectedTabContentsWrapper();
-    wrapper->CaptureSnapshot();
+    wrapper->snapshot_tab_helper()->CaptureSnapshot();
     ui_test_utils::RegisterAndWait(
         this,
         chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,

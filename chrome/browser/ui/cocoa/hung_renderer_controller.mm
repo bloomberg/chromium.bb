@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/multi_key_equivalent_button.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/logging_chrome.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -173,7 +174,7 @@ class TabContentsObserverBridge : public TabContentsObserver {
         hungContents_->GetRenderProcessHost()) {
       string16 title = (*it)->tab_contents()->GetTitle();
       if (title.empty())
-        title = TabContentsWrapper::GetDefaultTitle();
+        title = CoreTabHelper::GetDefaultTitle();
       [titles addObject:base::SysUTF16ToNSString(title)];
       [favicons addObject:mac::FaviconForTabContents(*it)];
     }

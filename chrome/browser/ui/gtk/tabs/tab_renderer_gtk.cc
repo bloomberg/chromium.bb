@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -835,7 +836,7 @@ void TabRendererGtk::PaintTitle(GtkWidget* widget, cairo_t* cr) {
   if (title.empty()) {
     title = data_.loading ?
         l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE) :
-        TabContentsWrapper::GetDefaultTitle();
+        CoreTabHelper::GetDefaultTitle();
   } else {
     Browser::FormatTitleForDisplay(&title);
   }

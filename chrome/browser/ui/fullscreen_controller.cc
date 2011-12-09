@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
 
@@ -276,10 +277,12 @@ bool FullscreenController::HandleUserPressedEscape() {
 }
 
 void FullscreenController::NotifyTabOfFullscreenExitIfNecessary() {
-  if (fullscreened_tab_)
-    fullscreened_tab_->ExitFullscreenMode();
-  else
+  if (fullscreened_tab_ &&
+      fullscreened_tab_->tab_contents()->render_view_host()) {
+    fullscreened_tab_->tab_contents()->render_view_host()->ExitFullscreen();
+  } else {
     DCHECK_EQ(mouse_lock_state_, MOUSELOCK_NOT_REQUESTED);
+  }
 
   fullscreened_tab_ = NULL;
   tab_caused_fullscreen_ = false;

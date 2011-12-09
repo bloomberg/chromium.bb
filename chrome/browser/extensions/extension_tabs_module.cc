@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/snapshot_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -1447,7 +1448,7 @@ bool CaptureVisibleTabFunction::RunImpl() {
 
   // Ask the renderer for a snapshot of the tab.
   TabContentsWrapper* wrapper = browser->GetSelectedTabContentsWrapper();
-  wrapper->CaptureSnapshot();
+  wrapper->snapshot_tab_helper()->CaptureSnapshot();
   registrar_.Add(this,
                  chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,
                  content::Source<TabContentsWrapper>(wrapper));

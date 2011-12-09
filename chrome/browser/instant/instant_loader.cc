@@ -25,8 +25,9 @@
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
@@ -163,7 +164,7 @@ void InstantLoader::FrameLoadObserver::Observe(
 
 class InstantLoader::TabContentsDelegateImpl
     : public TabContentsDelegate,
-      public TabContentsWrapperDelegate,
+      public CoreTabHelperDelegate,
       public ConstrainedWindowTabHelperDelegate,
       public content::NotificationObserver,
       public TabContentsObserver {
@@ -222,7 +223,7 @@ class InstantLoader::TabContentsDelegateImpl
       const history::HistoryAddPageArgs& add_page_args,
       content::NavigationType navigation_type) OVERRIDE;
 
-  // TabContentsWrapperDelegate:
+  // CoreTabHelperDelegate:
   virtual void SwapTabContents(TabContentsWrapper* old_tc,
                                TabContentsWrapper* new_tc) OVERRIDE;
 
@@ -980,8 +981,8 @@ void InstantLoader::ReplacePreviewContents(TabContentsWrapper* old_tc,
 
   // Cleanup the old preview contents.
   old_tc->constrained_window_tab_helper()->set_delegate(NULL);
+  old_tc->core_tab_helper()->set_delegate(NULL);
   old_tc->tab_contents()->set_delegate(NULL);
-  old_tc->set_delegate(NULL);
 
 #if defined(OS_MACOSX)
   registrar_.Remove(
@@ -1002,11 +1003,12 @@ void InstantLoader::ReplacePreviewContents(TabContentsWrapper* old_tc,
 }
 
 void InstantLoader::SetupPreviewContents(TabContentsWrapper* tab_contents) {
-  preview_contents_->set_delegate(preview_tab_contents_delegate_.get());
   preview_contents_->tab_contents()->set_delegate(
       preview_tab_contents_delegate_.get());
   preview_contents_->blocked_content_tab_helper()->SetAllContentsBlocked(true);
   preview_contents_->constrained_window_tab_helper()->set_delegate(
+      preview_tab_contents_delegate_.get());
+  preview_contents_->core_tab_helper()->set_delegate(
       preview_tab_contents_delegate_.get());
 
   // Propagate the max page id. That way if we end up merging the two

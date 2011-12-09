@@ -10,6 +10,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
@@ -183,7 +184,7 @@ void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(
   RecordPageviewEvent(PAGEVIEW_EVENT_NEW_URL);
   if (IsTopSite(url))
     RecordPageviewEvent(PAGEVIEW_EVENT_TOP_SITE_NEW_URL);
-  if (!tab_->delegate())
+  if (!tab_->core_tab_helper()->delegate())
     return;  // PrerenderManager needs a delegate to handle the swap.
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)

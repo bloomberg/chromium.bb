@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/dialog_style.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/logging_chrome.h"
@@ -229,7 +230,7 @@ void HungRendererDialogHandler::RequestTabContentsList(
         contents_->GetRenderProcessHost()) {
       string16 title = it->tab_contents()->GetTitle();
       if (title.empty())
-        title = TabContentsWrapper::GetDefaultTitle();
+        title = CoreTabHelper::GetDefaultTitle();
       // Add details for |url| and |title|.
       DictionaryValue* dict = new DictionaryValue();
       dict->SetString("url", it->tab_contents()->GetURL().spec());

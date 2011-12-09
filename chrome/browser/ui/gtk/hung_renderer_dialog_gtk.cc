@@ -11,6 +11,7 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/logging_chrome.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -185,7 +186,7 @@ void HungRendererDialogGtk::ShowForTabContents(TabContents* hung_contents) {
       gtk_list_store_append(model_, &tree_iter);
       std::string title = UTF16ToUTF8(it->tab_contents()->GetTitle());
       if (title.empty())
-        title = UTF16ToUTF8(TabContentsWrapper::GetDefaultTitle());
+        title = UTF16ToUTF8(CoreTabHelper::GetDefaultTitle());
       SkBitmap favicon = it->favicon_tab_helper()->GetFavicon();
 
       GdkPixbuf* pixbuf = NULL;

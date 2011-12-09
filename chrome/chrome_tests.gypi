@@ -2853,7 +2853,7 @@
         }],
         ['internal_pdf', {
           'sources': [
-            'browser/pdf_browsertest.cc',
+            'browser/ui/pdf/pdf_browsertest.cc',
           ],
         }],
         ['OS!="linux" or toolkit_views==1', {

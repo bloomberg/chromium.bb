@@ -114,6 +114,7 @@
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/sync/browser_synced_window_delegate.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
@@ -960,7 +961,7 @@ string16 Browser::GetWindowTitleForCurrentTab() const {
     FormatTitleForDisplay(&title);
   }
   if (title.empty())
-    title = TabContentsWrapper::GetDefaultTitle();
+    title = CoreTabHelper::GetDefaultTitle();
 
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
   // On Mac or ChromeOS, we don't want to suffix the page title with
@@ -3306,7 +3307,8 @@ void Browser::ActiveTabChanged(TabContentsWrapper* old_contents,
     status_bubble->Hide();
 
     // Show the loading state (if any).
-    status_bubble->SetStatus(GetSelectedTabContentsWrapper()->GetStatusText());
+    status_bubble->SetStatus(
+        GetSelectedTabContentsWrapper()->core_tab_helper()->GetStatusText());
   }
 
   if (HasFindBarController()) {
@@ -3505,7 +3507,7 @@ void Browser::LoadingStateChanged(TabContents* source) {
     UpdateReloadStopState(is_loading, false);
     if (GetStatusBubble()) {
       GetStatusBubble()->SetStatus(
-          GetSelectedTabContentsWrapper()->GetStatusText());
+          GetSelectedTabContentsWrapper()->core_tab_helper()->GetStatusText());
     }
 
     if (!is_loading && pending_web_app_action_ == UPDATE_SHORTCUT) {
@@ -3953,7 +3955,7 @@ void Browser::OnDenyFullscreenPermission(FullscreenExitBubbleType bubble_type) {
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Browser, TabContentsWrapperDelegate implementation:
+// Browser, CoreTabHelperDelegate implementation:
 
 void Browser::OnDidGetApplicationInfo(TabContentsWrapper* source,
                                       int32 page_id) {
@@ -4790,7 +4792,8 @@ void Browser::ProcessPendingUIUpdates() {
       // Updating the URL happens synchronously in ScheduleUIUpdate.
       if (flags & TabContents::INVALIDATE_LOAD && GetStatusBubble()) {
         GetStatusBubble()->SetStatus(
-            GetSelectedTabContentsWrapper()->GetStatusText());
+            GetSelectedTabContentsWrapper()->
+                core_tab_helper()->GetStatusText());
       }
 
       if (flags & (TabContents::INVALIDATE_TAB |
@@ -5005,12 +5008,12 @@ Browser* Browser::GetOrCreateTabbedBrowser(Profile* profile) {
 void Browser::SetAsDelegate(TabContentsWrapper* tab, Browser* delegate) {
   // TabContents...
   tab->tab_contents()->set_delegate(delegate);
-  tab->set_delegate(delegate);
 
   // ...and all the helpers.
   tab->blocked_content_tab_helper()->set_delegate(delegate);
   tab->bookmark_tab_helper()->set_delegate(delegate);
   tab->constrained_window_tab_helper()->set_delegate(delegate);
+  tab->core_tab_helper()->set_delegate(delegate);
   tab->extension_tab_helper()->set_delegate(delegate);
   tab->search_engine_tab_helper()->set_delegate(delegate);
 }

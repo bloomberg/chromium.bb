@@ -29,8 +29,9 @@
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
@@ -663,8 +664,8 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
   // Merge the browsing history.
   new_tab_contents->controller().CopyStateFromAndPrune(
       &old_tab_contents->controller());
-  old_tab_contents->delegate()->SwapTabContents(old_tab_contents,
-                                                new_tab_contents);
+  old_tab_contents->core_tab_helper()->delegate()->
+      SwapTabContents(old_tab_contents, new_tab_contents);
   prerender_contents->CommitHistory(new_tab_contents);
 
   GURL icon_url = prerender_contents->icon_url();

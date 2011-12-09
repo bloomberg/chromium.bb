@@ -13,11 +13,10 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
+class AlternateErrorPageTabObserver;
 class AutocompleteHistoryManager;
 class AutofillManager;
 class AutofillExternalDelegate;
@@ -25,6 +24,7 @@ class AutomationTabHelper;
 class BlockedContentTabHelper;
 class BookmarkTabHelper;
 class ConstrainedWindowTabHelper;
+class CoreTabHelper;
 class DownloadRequestLimiterObserver;
 class ExtensionTabHelper;
 class ExtensionWebNavigationTabObserver;
@@ -36,6 +36,7 @@ class InfoBarTabHelper;
 class OmniboxSearchHint;
 class PasswordManager;
 class PasswordManagerDelegate;
+class PDFTabObserver;
 class PluginObserver;
 class PrefService;
 class PrefsTabHelper;
@@ -43,8 +44,8 @@ class Profile;
 class RestoreTabHelper;
 class SadTabObserver;
 class SearchEngineTabHelper;
+class SnapshotTabHelper;
 class TabContentsSSLHelper;
-class TabContentsWrapperDelegate;
 class TabContentsWrapperSyncedTabDelegate;
 class TabSpecificContentSettings;
 class ThumbnailGenerator;
@@ -65,7 +66,7 @@ class PrintPreviewMessageHandler;
 }
 
 namespace safe_browsing {
-class ClientSideDetectionHost;
+class SafeBrowsingTabObserver;
 }
 
 // Wraps TabContents and all of its supporting objects in order to control
@@ -74,8 +75,7 @@ class ClientSideDetectionHost;
 // TODO(pinkerton): Eventually, this class will become TabContents as far as
 // the browser front-end is concerned, and the current TabContents will be
 // renamed to something like WebPage or WebView (ben's suggestions).
-class TabContentsWrapper : public TabContentsObserver,
-                           public content::NotificationObserver {
+class TabContentsWrapper : public TabContentsObserver {
  public:
   // Takes ownership of |contents|, which must be heap-allocated (as it lives
   // in a scoped_ptr) and can not be NULL.
@@ -86,23 +86,9 @@ class TabContentsWrapper : public TabContentsObserver,
   // its property bag to avoid adding additional interfaces.
   static base::PropertyAccessor<TabContentsWrapper*>* property_accessor();
 
-  static void RegisterUserPrefs(PrefService* prefs);
-
-  // Initial title assigned to NavigationEntries from Navigate.
-  static string16 GetDefaultTitle();
-
-  // Returns a human-readable description the tab's loading state.
-  string16 GetStatusText() const;
-
   // Create a TabContentsWrapper with the same state as this one. The returned
   // heap-allocated pointer is owned by the caller.
   TabContentsWrapper* Clone();
-
-  // Captures a snapshot of the page.
-  void CaptureSnapshot();
-
-  // Stop this tab rendering in fullscreen mode.
-  void ExitFullscreenMode();
 
   // Helper to retrieve the existing instance that wraps a given TabContents.
   // Returns NULL if there is no such existing instance.
@@ -114,9 +100,6 @@ class TabContentsWrapper : public TabContentsObserver,
       TabContents* contents);
   static const TabContentsWrapper* GetCurrentWrapperForContents(
       const TabContents* contents);
-
-  TabContentsWrapperDelegate* delegate() const { return delegate_; }
-  void set_delegate(TabContentsWrapperDelegate* d) { delegate_ = d; }
 
   TabContents* tab_contents() const { return tab_contents_.get(); }
   NavigationController& controller() const {
@@ -155,6 +138,8 @@ class TabContentsWrapper : public TabContentsObserver,
     return constrained_window_tab_helper_.get();
   }
 
+  CoreTabHelper* core_tab_helper() { return core_tab_helper_.get(); }
+
   ExtensionTabHelper* extension_tab_helper() {
     return extension_tab_helper_.get();
   }
@@ -186,12 +171,12 @@ class TabContentsWrapper : public TabContentsObserver,
     return restore_tab_helper_.get();
   }
 
-  safe_browsing::ClientSideDetectionHost* safebrowsing_detection_host() {
-    return safebrowsing_detection_host_.get();
-  }
-
   SearchEngineTabHelper* search_engine_tab_helper() {
     return search_engine_tab_helper_.get();
+  }
+
+  SnapshotTabHelper* snapshot_tab_helper() {
+    return snapshot_tab_helper_.get();
   }
 
   TabContentsSSLHelper* ssl_helper() { return ssl_helper_.get(); }
@@ -215,50 +200,11 @@ class TabContentsWrapper : public TabContentsObserver,
   // Overrides -----------------------------------------------------------------
 
   // TabContentsObserver overrides:
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidBecomeSelected() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
-
-  // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(
       PrefsTabHelperTest, OverridePrefsOnViewCreation);
-
-  // Internal helpers ----------------------------------------------------------
-
-  // Message handlers.
-  void OnSnapshot(const SkBitmap& bitmap);
-  void OnPDFHasUnsupportedFeature();
-
-  // Returns the server that can provide alternate error pages.  If the returned
-  // URL is empty, the default error page built into WebKit will be used.
-  GURL GetAlternateErrorPageURL() const;
-
-  // Send the alternate error page URL to the renderer.
-  void UpdateAlternateErrorPageURL(RenderViewHost* rvh);
-
-  // Create or destroy SafebrowsingDetectionHost as needed if the user's
-  // safe browsing preference has changed.
-  void UpdateSafebrowsingDetectionHost();
-
-  // Data for core operation ---------------------------------------------------
-
-  // Delegate for notifying our owner about stuff. Not owned by us.
-  TabContentsWrapperDelegate* delegate_;
-
-  content::NotificationRegistrar registrar_;
-  PrefChangeRegistrar pref_change_registrar_;
-
-  // Data for current page -----------------------------------------------------
-
-  // Shows an info-bar to users when they search from a known search engine and
-  // have never used the omnibox for search before.
-  scoped_ptr<OmniboxSearchHint> omnibox_search_hint_;
 
   // Tab Helpers ---------------------------------------------------------------
   // (These provide API for callers and have a getter function listed in the
@@ -271,6 +217,7 @@ class TabContentsWrapper : public TabContentsObserver,
   scoped_ptr<BlockedContentTabHelper> blocked_content_tab_helper_;
   scoped_ptr<BookmarkTabHelper> bookmark_tab_helper_;
   scoped_ptr<ConstrainedWindowTabHelper> constrained_window_tab_helper_;
+  scoped_ptr<CoreTabHelper> core_tab_helper_;
   scoped_ptr<ExtensionTabHelper> extension_tab_helper_;
   scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
   scoped_ptr<FindTabHelper> find_tab_helper_;
@@ -293,11 +240,8 @@ class TabContentsWrapper : public TabContentsObserver,
   // Handles displaying a web intents picker to the user.
   scoped_ptr<WebIntentPickerController> web_intent_picker_controller_;
 
-  // Handles IPCs related to SafeBrowsing client-side phishing detection.
-  scoped_ptr<safe_browsing::ClientSideDetectionHost>
-      safebrowsing_detection_host_;
-
   scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
+  scoped_ptr<SnapshotTabHelper> snapshot_tab_helper_;
   scoped_ptr<TabContentsSSLHelper> ssl_helper_;
   scoped_ptr<TabContentsWrapperSyncedTabDelegate> synced_tab_delegate_;
 
@@ -311,12 +255,17 @@ class TabContentsWrapper : public TabContentsObserver,
   // (These provide no API for callers; objects that need to exist 1:1 with tabs
   // and silently do their thing live here.)
 
+  scoped_ptr<AlternateErrorPageTabObserver> alternate_error_page_tab_observer_;
   scoped_ptr<DownloadRequestLimiterObserver> download_request_limiter_observer_;
   scoped_ptr<ExtensionWebNavigationTabObserver> webnavigation_observer_;
   scoped_ptr<ExternalProtocolObserver> external_protocol_observer_;
+  scoped_ptr<OmniboxSearchHint> omnibox_search_hint_;
+  scoped_ptr<PDFTabObserver> pdf_tab_observer_;
   scoped_ptr<PluginObserver> plugin_observer_;
   scoped_ptr<printing::PrintPreviewMessageHandler> print_preview_;
   scoped_ptr<SadTabObserver> sad_tab_observer_;
+  scoped_ptr<safe_browsing::SafeBrowsingTabObserver>
+      safe_browsing_tab_observer_;
   scoped_ptr<ThumbnailGenerator> thumbnail_generation_observer_;
 
   // TabContents (MUST BE LAST) ------------------------------------------------
