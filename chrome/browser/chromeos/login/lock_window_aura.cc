@@ -41,11 +41,12 @@ void LockWindowAura::Init() {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.bounds = gfx::Rect(aura::RootWindow::GetInstance()->GetHostSize());
+  views::Widget::Init(params);
   // TODO(flackr): Use a property to specify this container rather than
   // depending on shell implementation.
-  params.parent = aura_shell::Shell::GetInstance()->GetContainer(
-      aura_shell::internal::kShellWindowId_LockScreenContainer);
-  views::Widget::Init(params);
+  aura_shell::Shell::GetInstance()->GetContainer(
+      aura_shell::internal::kShellWindowId_LockScreenContainer)->
+      AddChild(GetNativeView());
 }
 
 }  // namespace chromeos
