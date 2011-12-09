@@ -124,6 +124,13 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, Bug84933Test) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 1);
 }
 
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, Bug106883Test) {
+  const GURL url = testUrl(FilePath(FILE_PATH_LITERAL("bug_106883.html")));
+
+  // Just navigate to the URL. Test will crash if it fails.
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 1);
+}
+
 // In proc browser test is needed here because ClearLocalState indirectly calls
 // WebKit's isMainThread through WebSecurityOrigin->SecurityOrigin.
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ClearLocalState) {

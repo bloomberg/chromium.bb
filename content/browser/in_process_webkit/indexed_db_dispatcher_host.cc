@@ -259,14 +259,11 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
         IndexedDBContext::kIndexedDBDirectory);
   }
 
-  WebSecurityOrigin origin(
-      WebSecurityOrigin::createFromDatabaseIdentifier(params.origin));
-  GURL url(origin.toString());
-
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   Context()->GetIDBFactory()->deleteDatabase(
       params.name,
-      new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id, url),
+      new IndexedDBCallbacks<WebSerializedScriptValue>(this,
+                                                       params.response_id),
       WebSecurityOrigin::createFromDatabaseIdentifier(params.origin), NULL,
       webkit_glue::FilePathToWebString(indexed_db_path));
 }
