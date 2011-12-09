@@ -7,7 +7,6 @@ import datetime
 import multiprocessing
 import optparse
 import os
-import re
 import sys
 import tempfile
 
@@ -46,12 +45,10 @@ _GSUTIL_BIN = '/b/build/third_party/gsutil/gsutil'
 _HOST_PACKAGES_PATH = 'chroot/var/lib/portage/pkgs'
 _CATEGORIES_PATH = 'chroot/etc/portage/categories'
 _PYM_PATH = 'chroot/usr/lib/portage/pym'
-_HOST_TARGET = 'amd64'
+_HOST_ARCH = 'amd64'
 _BOARD_PATH = 'chroot/build/%(board)s'
-# board/board-target/version/'
-_REL_BOARD_PATH = 'board/%(board)s/%(version)s'
-# host/host-target/version/'
-_REL_HOST_PATH = 'host/%(target)s/%(board)s/%(version)s'
+_REL_BOARD_PATH = 'board/%(target)s/%(version)s'
+_REL_HOST_PATH = 'host/%(host_arch)s/%(target)s/%(version)s'
 # Private overlays to look at for builds to filter
 # relative to build path
 _PRIVATE_OVERLAY_DIR = 'src/private-overlays'
@@ -71,6 +68,27 @@ class UploadFailed(Exception):
 class UnknownBoardFormat(Exception):
   """Raised when a function finds an unknown board format."""
   pass
+
+
+class BuildTarget(object):
+  """A board/variant/profile tuple."""
+
+  def __init__(self, board_variant, profile=None):
+    self.board_variant = board_variant
+    self.board, _, self.variant = board_variant.partition('_')
+    self.profile = profile
+
+  def __str__(self):
+    if self.profile:
+      return '%s_%s' % (self.board_variant, self.profile)
+    else:
+      return self.board_variant
+
+  def __eq__(self, other):
+    return str(other) == str(self)
+
+  def __hash__(self):
+    return hash(str(self))
 
 
 def UpdateLocalFile(filename, value, key='PORTAGE_BINHOST'):
@@ -293,12 +311,9 @@ def GetBoardPathFromCrosOverlayList(build_path, target):
      The last line from cros_overlay_list as a string
   """
   script_dir = os.path.join(build_path, 'src/platform/dev/host')
-  cmd = ['./cros_overlay_list']
-  if re.match('.*?_.*', target):
-    (board, variant) = target.split('_')
-    cmd += ['--board', board, '--variant', variant]
-  else:
-    cmd += ['--board', target]
+  cmd = ['./cros_overlay_list', '--board', target.board]
+  if target.variant:
+    cmd += ['--variant', target.variant]
 
   cmd_output = cros_build_lib.RunCommand(cmd, redirect_stdout=True,
                                          cwd=script_dir)
@@ -317,7 +332,7 @@ def DeterminePrebuiltConfFile(build_path, target):
     Returns
       A string path to a prebuilt.conf file to be updated.
   """
-  if _HOST_TARGET == target:
+  if _HOST_ARCH == target:
     # We are host.
     # Without more examples of hosts this is a kludge for now.
     # TODO(Scottz): as new host targets come online expand this to
@@ -376,7 +391,7 @@ class PrebuiltUploader(object):
 
   def __init__(self, upload_location, acl, binhost_base_url,
                pkg_indexes, build_path, packages, skip_upload,
-               binhost_conf_dir, debug, board, slave_boards):
+               binhost_conf_dir, debug, target, slave_targets):
     """Constructor for prebuilt uploader object.
 
     This object can upload host or prebuilt files to Google Storage.
@@ -395,8 +410,8 @@ class PrebuiltUploader(object):
       skip_upload: Don't actually upload the tarballs.
       binhost_conf_dir: Directory where to store binhost.conf files.
       debug: Don't push or upload prebuilts.
-      board: Boards managed by this builder.
-      slave_boards: Boards managed by slave builders.
+      target: BuildTarget managed by this builder.
+      slave_targets: List of BuildTargets managed by slave builders.
     """
     self._upload_location = upload_location
     self._acl = acl
@@ -407,8 +422,8 @@ class PrebuiltUploader(object):
     self._skip_upload = skip_upload
     self._binhost_conf_dir = binhost_conf_dir
     self._debug = debug
-    self._board = board
-    self._slave_boards = slave_boards
+    self._target = target
+    self._slave_targets = slave_targets
 
   def _ShouldFilterPackage(self, pkg):
     if not self._packages:
@@ -522,12 +537,13 @@ class PrebuiltUploader(object):
     # takes priority (i.e. x86-generic preflight host prebuilts takes priority
     # over preflight host prebuilts from other builders.)
     binhost_urls = []
-    for board in self._slave_boards + [self._board]:
-      url_suffix = _REL_HOST_PATH % {'version': version, 'target': _HOST_TARGET,
-                                     'board': board}
+    for target in self._slave_targets + [self._target]:
+      url_suffix = _REL_HOST_PATH % {'version': version,
+                                     'host_arch': _HOST_ARCH,
+                                     'target': target}
       packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
 
-      if board == self._board and not self._skip_upload and not self._debug:
+      if self._target == target and not self._skip_upload and not self._debug:
         # Upload prebuilts.
         package_path = os.path.join(self._build_path, _HOST_PACKAGES_PATH)
         self._UploadPrebuilt(package_path, packages_url_suffix)
@@ -539,11 +555,11 @@ class PrebuiltUploader(object):
     binhost = ' '.join(binhost_urls)
     if git_sync:
       git_file = os.path.join(self._build_path,
-          _PREBUILT_MAKE_CONF[_HOST_TARGET])
+          _PREBUILT_MAKE_CONF[_HOST_ARCH])
       RevGitFile(git_file, binhost, key=key, dryrun=self._debug)
     if sync_binhost_conf:
       binhost_conf = os.path.join(self._build_path, self._binhost_conf_dir,
-          'host', '%s-%s.conf' % (_HOST_TARGET, key))
+          'host', '%s-%s.conf' % (_HOST_ARCH, key))
       UpdateBinhostConfFile(binhost_conf, key, binhost)
 
   def _SyncBoardPrebuilts(self, version, key, git_sync, sync_binhost_conf,
@@ -551,7 +567,6 @@ class PrebuiltUploader(object):
     """Synchronize board prebuilt files.
 
     Args:
-      board: The board to upload to Google Storage.
       version: A unique string, intended to be included in the upload path,
           which identifies the version number of the uploaded prebuilts.
       key: The variable key to update in the git file.
@@ -561,14 +576,14 @@ class PrebuiltUploader(object):
           chromiumos-overlay for the current board.
       upload_board_tarball: Include a tarball of the board in our upload.
     """
-    for board in self._slave_boards + [self._board]:
+    for target in self._slave_targets + [self._target]:
       board_path = os.path.join(self._build_path,
-                                _BOARD_PATH % {'board': board})
+                                _BOARD_PATH % {'board': target.board_variant})
       package_path = os.path.join(board_path, 'packages')
-      url_suffix = _REL_BOARD_PATH % {'board': board, 'version': version}
+      url_suffix = _REL_BOARD_PATH % {'target': target, 'version': version}
       packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
 
-      if board == self._board and not self._skip_upload and not self._debug:
+      if self._target == target and not self._skip_upload and not self._debug:
         # Upload board tarballs in the background.
         if upload_board_tarball:
           tar_process = multiprocessing.Process(target=self._UploadBoardTarball,
@@ -584,7 +599,7 @@ class PrebuiltUploader(object):
           tar_process.join()
           assert tar_process.exitcode == 0
           # TODO(zbehan): This should be done cleaner.
-          if board == 'amd64-host':
+          if target.board == 'amd64-host':
             sdk_conf = os.path.join(self._build_path, self._binhost_conf_dir,
                                   'host/sdk_version.conf')
             RevGitFile(sdk_conf, version.strip('chroot-'),
@@ -595,11 +610,11 @@ class PrebuiltUploader(object):
                               packages_url_suffix.rstrip('/'))
 
       if git_sync:
-        git_file = DeterminePrebuiltConfFile(self._build_path, board)
+        git_file = DeterminePrebuiltConfFile(self._build_path, target)
         RevGitFile(git_file, url_value, key=key, dryrun=self._debug)
       if sync_binhost_conf:
         binhost_conf = os.path.join(self._build_path, self._binhost_conf_dir,
-            'target', '%s-%s.conf' % (board, key))
+            'target', '%s-%s.conf' % (target, key))
         UpdateBinhostConfFile(binhost_conf, key, url_value)
 
 
@@ -608,6 +623,19 @@ def usage(parser, msg):
   print >> sys.stderr, msg
   parser.print_help()
   sys.exit(1)
+
+
+def add_slave_board(_option, _opt_str, value, parser):
+  parser.values.slave_targets.append(BuildTarget(value))
+
+
+def add_slave_profile(_option, _opt_str, value, parser):
+  if not parser.values.slave_targets:
+    usage(parser, 'Must specify --slave-board before --slave-profile')
+  if parser.values.slave_targets[-1].profile is not None:
+    usage(parser, 'Cannot specify --slave-profile twice for same board')
+  parser.values.slave_targets[-1].profile = value
+
 
 def ParseOptions():
   parser = optparse.OptionParser()
@@ -619,9 +647,17 @@ def ParseOptions():
                     help='Previous binhost URL')
   parser.add_option('-b', '--board', dest='board', default=None,
                     help='Board type that was built on this machine')
-  parser.add_option('', '--slave-board', action='append', default=[],
-                    dest='slave_boards',
-                    help='Board type that was built on a slave machine')
+  parser.add_option('', '--profile', dest='profile', default=None,
+                    help='Profile that was built on this machine')
+  parser.add_option('', '--slave-board', default=[], action='callback',
+                    dest='slave_targets', type='string',
+                    callback=add_slave_board,
+                    help='Board type that was built on a slave machine. To '
+                         'add a profile to this board, use --slave-profile.')
+  parser.add_option('', '--slave-profile', action='callback', type='string',
+                    callback=add_slave_profile,
+                    help='Board profile that was built on a slave machine. '
+                         'Applies to previous slave board.')
   parser.add_option('-p', '--build-path', dest='build_path',
                     help='Path to the directory containing the chroot')
   parser.add_option('', '--packages', action='append',
@@ -683,13 +719,14 @@ def ParseOptions():
   if args:
     usage(parser, 'Error: invalid arguments passed to prebuilt.py: %r' % args)
 
-  if options.board in options.slave_boards:
-    usage(parser, 'Error: --board must not also be a slave board.')
+  options.target = BuildTarget(options.board, options.profile)
+  if options.target in options.slave_targets:
+    usage(parser, 'Error: --board/--profile must not also be a slave target.')
 
-  if len(set(options.slave_boards)) != len(options.slave_boards):
+  if len(set(options.slave_targets)) != len(options.slave_targets):
     usage(parser, 'Error: --slave-boards must not have duplicates.')
 
-  if options.slave_boards and options.git_sync:
+  if options.slave_targets and options.git_sync:
     usage(parser, 'Error: --slave-boards is not compatible with --git-sync')
 
   if (options.upload_board_tarball and options.skip_upload and
@@ -742,14 +779,14 @@ def main():
   if options.private:
     binhost_base_url = options.upload
     board_path = GetBoardPathFromCrosOverlayList(options.build_path,
-                                                 options.board)
+                                                 options.target)
     acl = os.path.join(board_path, _GOOGLESTORAGE_ACL_FILE)
 
   uploader = PrebuiltUploader(options.upload, acl, binhost_base_url,
                               pkg_indexes, options.build_path,
                               options.packages, options.skip_upload,
                               options.binhost_conf_dir, options.debug,
-                              options.board, options.slave_boards)
+                              options.target, options.slave_targets)
 
   if options.sync_host:
     uploader._SyncHostPrebuilts(version, options.key, options.git_sync,

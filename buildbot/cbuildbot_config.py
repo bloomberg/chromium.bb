@@ -433,7 +433,6 @@ add_config('x86-generic-chrome-pre-flight-queue', [chrome_pfq, {
 add_config('aura-chrome-pre-flight-queue', [chrome_pfq, {
   'board' : 'x86-generic',
   'profile' : 'aura',
-  'prebuilts' : False,
   'chrome_rev': constants.CHROME_REV_LATEST,
   'vm_tests' : None,
   'chrome_tests' : False

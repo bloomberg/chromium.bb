@@ -1139,6 +1139,9 @@ class UploadPrebuiltsStage(bs.BuilderStage):
             if not builder_config['master'] and builder_config['prebuilts']:
               slave_board = builder_config['board']
               extra_args.extend(['--slave-board', slave_board])
+              slave_profile = builder_config.get('profile')
+              if slave_profile:
+                extra_args.extend(['--slave-profile', slave_profile])
 
       # Pre-flight queues should upload host preflight prebuilts.
       if prebuilt_type == constants.PFQ_TYPE and overlays == 'public':
@@ -1154,6 +1157,10 @@ class UploadPrebuiltsStage(bs.BuilderStage):
 
     if self._options.debug:
       extra_args.append('--debug')
+
+    profile = self._options.profile or self._build_config['profile']
+    if profile:
+      extra_args.extend(['--profile', profile])
 
     # Upload prebuilts.
     commands.UploadPrebuilts(
