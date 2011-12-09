@@ -608,8 +608,7 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
                                const string16& href,
                                const string16& title,
                                const string16& disposition);
-  void OnWebIntentDispatch(const IPC::Message& message,
-                           const webkit_glue::WebIntentData& intent,
+  void OnWebIntentDispatch(const webkit_glue::WebIntentData& intent,
                            int intent_id);
   void OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                          bool main_frame,

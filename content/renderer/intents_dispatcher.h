@@ -48,7 +48,7 @@ class IntentsDispatcher : public content::RenderViewObserver {
 
   // On the service page, handler method for the IntentsMsg_SetWebIntent
   // message.
-  void OnSetIntent(const webkit_glue::WebIntentData& intent, int intent_id);
+  void OnSetIntent(const webkit_glue::WebIntentData& intent);
 
   // On the client page, handler method for the IntentsMsg_WebIntentReply
   // message.
@@ -58,8 +58,6 @@ class IntentsDispatcher : public content::RenderViewObserver {
 
   // Delivered intent data from the caller.
   scoped_ptr<webkit_glue::WebIntentData> intent_;
-  // Delivered intent id from the caller.
-  int intent_id_;
 
   // Representation of the intent data as a C++ bound NPAPI object to be
   // injected into the Javascript context.

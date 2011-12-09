@@ -8,6 +8,10 @@
 #include "base/string16.h"
 #include "webkit/glue/webkit_glue_export.h"
 
+namespace WebKit {
+class WebIntent;
+}
+
 namespace webkit_glue {
 
 // Representation of the Web Intent data being initiated or delivered.
@@ -21,7 +25,7 @@ struct WEBKIT_GLUE_EXPORT WebIntentData {
   string16 data;
 
   WebIntentData();
-  WebIntentData(const WebIntentData& other);
+  WebIntentData(const WebKit::WebIntent& intent);
   ~WebIntentData();
 };
 

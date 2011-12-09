@@ -918,8 +918,7 @@ void TabContents::OnRegisterIntentService(const string16& action,
       this, action, type, href, title, disposition);
 }
 
-void TabContents::OnWebIntentDispatch(const IPC::Message& message,
-                                      const webkit_glue::WebIntentData& intent,
+void TabContents::OnWebIntentDispatch(const webkit_glue::WebIntentData& intent,
                                       int intent_id) {
   IntentsHostImpl* intents_host = new IntentsHostImpl(this, intent, intent_id);
   delegate()->WebIntentDispatch(this, intents_host);

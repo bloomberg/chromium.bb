@@ -3104,10 +3104,7 @@ void RenderViewImpl::registerIntentService(
 
 void RenderViewImpl::dispatchIntent(WebKit::WebFrame* frame,
                                     const WebKit::WebIntent& intent) {
-  webkit_glue::WebIntentData intent_data;
-  intent_data.action = intent.action();
-  intent_data.type = intent.type();
-  intent_data.data = intent.data();
+  webkit_glue::WebIntentData intent_data(intent);
   Send(new IntentsHostMsg_WebIntentDispatch(
       routing_id_, intent_data, intent.identifier()));
 }

@@ -32,7 +32,7 @@ class IntentsHostImpl : public content::IntentsHost,
 
   // IntentsHost implementation
   virtual const webkit_glue::WebIntentData& GetIntent() OVERRIDE;
-  virtual void DispatchIntent(TabContents* tab_contents) OVERRIDE;
+  virtual void DispatchIntent(TabContents* destination_tab) OVERRIDE;
   virtual void SendReplyMessage(webkit_glue::WebIntentReplyType reply_type,
                                 const string16& data) OVERRIDE;
   virtual void RegisterReplyNotification(const base::Closure& closure) OVERRIDE;

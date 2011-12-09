@@ -10,14 +10,14 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/intents_messages.h"
+#include "content/public/browser/intents_host.h"
 #include "content/public/common/content_switches.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
 IntentInjector::IntentInjector(TabContents* tab_contents)
     : TabContentsObserver(tab_contents),
-      source_tab_(NULL),
-      intent_id_(0) {
+      source_tab_(NULL) {
   DCHECK(tab_contents);
 }
 
@@ -26,8 +26,8 @@ IntentInjector::~IntentInjector() {
 
 void IntentInjector::TabContentsDestroyed(TabContents* tab) {
   if (source_tab_) {
-    source_tab_->Send(new IntentsMsg_WebIntentReply(
-        0, webkit_glue::WEB_INTENT_SERVICE_TAB_CLOSED, string16(), intent_id_));
+    source_tab_->SendReplyMessage(webkit_glue::WEB_INTENT_SERVICE_TAB_CLOSED,
+                                  string16());
   }
 
   delete this;
@@ -37,12 +37,10 @@ void IntentInjector::SourceTabContentsDestroyed(TabContents* tab) {
   source_tab_ = NULL;
 }
 
-void IntentInjector::SetIntent(IPC::Message::Sender* source_tab,
-                               const webkit_glue::WebIntentData& intent,
-                               int intent_id) {
+void IntentInjector::SetIntent(content::IntentsHost* source_tab,
+                               const webkit_glue::WebIntentData& intent) {
   source_tab_ = source_tab;
   source_intent_.reset(new webkit_glue::WebIntentData(intent));
-  intent_id_ = intent_id;
 
   SendIntent();
 }
@@ -74,29 +72,25 @@ void IntentInjector::SendIntent() {
   // Send intent data through to renderer.
   tab_contents()->render_view_host()->Send(new IntentsMsg_SetWebIntentData(
       tab_contents()->render_view_host()->routing_id(),
-      *(source_intent_.get()),
-      intent_id_));
+      *(source_intent_.get())));
   source_intent_.reset(NULL);
 }
 
 bool IntentInjector::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(IntentInjector, message)
-    IPC_MESSAGE_HANDLER(IntentsMsg_WebIntentReply, OnReply);
+    IPC_MESSAGE_HANDLER(IntentsHostMsg_WebIntentReply, OnReply);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void IntentInjector::OnReply(const IPC::Message& message,
-                             webkit_glue::WebIntentReplyType reply_type,
-                             const string16& data,
-                             int intent_id) {
+void IntentInjector::OnReply(webkit_glue::WebIntentReplyType reply_type,
+                             const string16& data) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
     NOTREACHED();
 
   if (source_tab_) {
-    source_tab_->Send(new IntentsMsg_WebIntentReply(
-        0, reply_type, data, intent_id));
+    source_tab_->SendReplyMessage(reply_type, data);
   }
 }

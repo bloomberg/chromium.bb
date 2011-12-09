@@ -4,6 +4,8 @@
 
 #include "webkit/glue/web_intent_data.h"
 
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIntent.h"
+
 namespace webkit_glue {
 
 WebIntentData::WebIntentData() {
@@ -12,10 +14,10 @@ WebIntentData::WebIntentData() {
 WebIntentData::~WebIntentData() {
 }
 
-WebIntentData::WebIntentData(const WebIntentData& other)
-    : action(other.action),
-      type(other.type),
-      data(other.data) {
+WebIntentData::WebIntentData(const WebKit::WebIntent& intent)
+    : action(intent.action()),
+      type(intent.type()),
+      data(intent.data()) {
 }
 
 }  // namespace webkit_glue

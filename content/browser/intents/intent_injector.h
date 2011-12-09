@@ -12,6 +12,10 @@
 #include "content/common/content_export.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
+namespace content {
+class IntentsHost;
+}
+
 namespace webkit_glue {
 struct WebIntentData;
 }
@@ -44,30 +48,22 @@ class CONTENT_EXPORT IntentInjector : public TabContentsObserver {
   // caller must ensure that SourceTabContentsDestroyed is called when this
   // object becomes unusable.
   // |intent| is the intent data from the source
-  // |intent_id| is the ID assigned to the intent invocation from the source
-  // context.
-  void SetIntent(IPC::Message::Sender* source_tab,
-                 const webkit_glue::WebIntentData& intent,
-                 int intent_id);
+  void SetIntent(content::IntentsHost* source_tab,
+                 const webkit_glue::WebIntentData& intent);
 
  private:
   // Delivers the intent data to the renderer.
   void SendIntent();
 
   // Handles receiving a reply from the intent delivery page.
-  void OnReply(const IPC::Message& message,
-               webkit_glue::WebIntentReplyType reply_type,
-               const string16& data,
-               int intent_id);
+  void OnReply(webkit_glue::WebIntentReplyType reply_type,
+               const string16& data);
 
   // Source intent data provided by caller.
   scoped_ptr<webkit_glue::WebIntentData> source_intent_;
 
   // Weak pointer to the message forwarder to the tab invoking the intent.
-  IPC::Message::Sender* source_tab_;
-
-  // Unique ID assigned to the intent by the source tab.
-  int intent_id_;
+  content::IntentsHost* source_tab_;
 
   DISALLOW_COPY_AND_ASSIGN(IntentInjector);
 };

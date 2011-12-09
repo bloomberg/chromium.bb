@@ -128,8 +128,7 @@ class IntentsDispatcher::BoundDeliveredIntent : public CppBoundClass {
 };
 
 IntentsDispatcher::IntentsDispatcher(RenderViewImpl* render_view)
-    : content::RenderViewObserver(render_view),
-      intent_id_(0) {
+    : content::RenderViewObserver(render_view) {
 }
 
 IntentsDispatcher::~IntentsDispatcher() {}
@@ -144,17 +143,14 @@ bool IntentsDispatcher::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void IntentsDispatcher::OnSetIntent(const webkit_glue::WebIntentData& intent,
-                                    int intent_id) {
+void IntentsDispatcher::OnSetIntent(const webkit_glue::WebIntentData& intent) {
   intent_.reset(new webkit_glue::WebIntentData(intent));
-  intent_id_ = intent_id;
 }
 
 void IntentsDispatcher::OnWebIntentReply(
     webkit_glue::WebIntentReplyType reply_type,
     const WebKit::WebString& data,
     int intent_id) {
-  LOG(INFO) << "RenderView got reply to intent type " << reply_type;
 
   if (reply_type == webkit_glue::WEB_INTENT_REPLY_SUCCESS) {
     render_view()->GetWebView()->mainFrame()->handleIntentResult(
@@ -166,19 +162,13 @@ void IntentsDispatcher::OnWebIntentReply(
 }
 
 void IntentsDispatcher::OnResult(const WebKit::WebString& data) {
-  Send(new IntentsMsg_WebIntentReply(
-      routing_id(),
-      webkit_glue::WEB_INTENT_REPLY_SUCCESS,
-      data,
-      intent_id_));
+  Send(new IntentsHostMsg_WebIntentReply(
+      routing_id(), webkit_glue::WEB_INTENT_REPLY_SUCCESS, data));
 }
 
 void IntentsDispatcher::OnFailure(const WebKit::WebString& data) {
-  Send(new IntentsMsg_WebIntentReply(
-      routing_id(),
-      webkit_glue::WEB_INTENT_REPLY_FAILURE,
-      data,
-      intent_id_));
+  Send(new IntentsHostMsg_WebIntentReply(
+      routing_id(), webkit_glue::WEB_INTENT_REPLY_FAILURE, data));
 }
 
 // We set the intent payload into all top-level frame window objects. This

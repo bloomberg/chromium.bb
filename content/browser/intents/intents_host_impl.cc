@@ -23,10 +23,10 @@ const webkit_glue::WebIntentData& IntentsHostImpl::GetIntent() {
   return intent_;
 }
 
-void IntentsHostImpl::DispatchIntent(TabContents* tab_contents) {
+void IntentsHostImpl::DispatchIntent(TabContents* destination_tab) {
   DCHECK(!intent_injector_);
-  intent_injector_ = new IntentInjector(tab_contents);
-  intent_injector_->SetIntent(this, intent_, intent_id_);
+  intent_injector_ = new IntentInjector(destination_tab);
+  intent_injector_->SetIntent(this, intent_);
 }
 
 void IntentsHostImpl::SendReplyMessage(
@@ -37,7 +37,8 @@ void IntentsHostImpl::SendReplyMessage(
   if (!tab_contents())
     return;
 
-  Send(new IntentsMsg_WebIntentReply(0, reply_type, data, intent_id_));
+  Send(new IntentsMsg_WebIntentReply(
+      routing_id(), reply_type, data, intent_id_));
   if (!reply_notifier_.is_null())
     reply_notifier_.Run();
 }
