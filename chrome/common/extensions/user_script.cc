@@ -25,11 +25,6 @@ bool UrlMatchesGlobs(const std::vector<std::string>* globs,
 // static
 const char UserScript::kFileExtension[] = ".user.js";
 
-// static
-const int UserScript::kValidUserScriptSchemes =
-    URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS |
-    URLPattern::SCHEME_FILE | URLPattern::SCHEME_FTP;
-
 bool UserScript::IsURLUserScript(const GURL& url,
                                  const std::string& mime_type) {
   return EndsWith(url.ExtractFileName(), kFileExtension, false) &&

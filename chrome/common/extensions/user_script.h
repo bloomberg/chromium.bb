@@ -16,7 +16,6 @@
 #include "chrome/common/extensions/url_pattern_set.h"
 
 class Pickle;
-class URLPattern;
 
 // Represents a user script, either a standalone one, or one that is part of an
 // extension.
@@ -26,7 +25,12 @@ class UserScript {
   static const char kFileExtension[];
 
   // The bitmask for valid user script injectable schemes used by URLPattern.
-  static const int kValidUserScriptSchemes;
+  enum {
+    kValidUserScriptSchemes = URLPattern::SCHEME_HTTP |
+                              URLPattern::SCHEME_HTTPS |
+                              URLPattern::SCHEME_FILE |
+                              URLPattern::SCHEME_FTP
+  };
 
   // Check if a URL should be treated as a user script and converted to an
   // extension.
