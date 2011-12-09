@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <algorithm>
+
 // Indicate the direction of the mouse location relative to the center of the
 // view.  These values are used to determine which 2D quadrant the needle lies
 // in.
@@ -217,12 +219,14 @@ void MouseLockInstance::DrawCenterSpot(pp::ImageData* image,
   int center_y = image->size().height() / 2;
   int region_of_interest_radius = kCentralSpotRadius + 1;
 
-  for (int y = center_y - region_of_interest_radius;
-       y < center_y + region_of_interest_radius;
-       ++y) {
-    for (int x = center_x - region_of_interest_radius;
-         x < center_x + region_of_interest_radius;
-         ++x) {
+  pp::Point left_top(std::max(0, center_x - region_of_interest_radius),
+                     std::max(0, center_y - region_of_interest_radius));
+  pp::Point right_bottom(std::min(image->size().width(),
+                                  center_x + region_of_interest_radius),
+                         std::min(image->size().height(),
+                                  center_y + region_of_interest_radius));
+  for (int y = left_top.y(); y < right_bottom.y(); ++y) {
+    for (int x = left_top.x(); x < right_bottom.x(); ++x) {
       if (GetDistance(x, y, center_x, center_y) < kCentralSpotRadius) {
         *image->GetAddr32(pp::Point(x, y)) = spot_color;
       }
@@ -269,8 +273,14 @@ void MouseLockInstance::DrawNeedle(pp::ImageData* image,
        anchor_1.swap(anchor_2);
   }
 
-  for (int y = center_y - abs_mouse_y; y < center_y + abs_mouse_y; ++y) {
-    for (int x = center_x - abs_mouse_x; x < center_x + abs_mouse_x; ++x) {
+  pp::Point left_top(std::max(0, center_x - abs_mouse_x),
+                     std::max(0, center_y - abs_mouse_y));
+  pp::Point right_bottom(std::min(image->size().width(),
+                                  center_x + abs_mouse_x),
+                         std::min(image->size().height(),
+                                  center_y + abs_mouse_y));
+  for (int y = left_top.y(); y < right_bottom.y(); ++y) {
+    for (int x = left_top.x(); x < right_bottom.x(); ++x) {
       bool within_bound_1 =
           ((y - anchor_1.y()) * (vertex.x() - anchor_1.x())) >
           ((vertex.y() - anchor_1.y()) * (x - anchor_1.x()));

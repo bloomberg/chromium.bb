@@ -140,6 +140,10 @@ PluginImageData::PluginImageData()
       addr_(NULL) {
 }
 
+PluginImageData::~PluginImageData() {
+  Unmap();
+}
+
 bool PluginImageData::InitFromBrowserResource(PP_Resource resource) {
   nacl_abi_size_t desc_size = static_cast<nacl_abi_size_t>(sizeof(desc_));
   int32_t success = PP_FALSE;

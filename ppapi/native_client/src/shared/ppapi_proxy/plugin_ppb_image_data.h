@@ -15,6 +15,8 @@ namespace ppapi_proxy {
 class PluginImageData : public PluginResource {
  public:
   PluginImageData();
+  virtual ~PluginImageData();
+
   static const PPB_ImageData* GetInterface();
 
   bool InitFromBrowserResource(PP_Resource resource);
