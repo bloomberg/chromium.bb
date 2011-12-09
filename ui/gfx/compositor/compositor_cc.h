@@ -11,10 +11,10 @@
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/size.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebLayer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebLayerClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebLayerTreeView.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebLayerTreeViewClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebLayer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebLayerClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebLayerTreeView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebLayerTreeViewClient.h"
 
 namespace gfx {
 class Rect;
