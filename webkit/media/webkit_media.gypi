@@ -18,6 +18,7 @@
         'active_loader.h',
         'audio_decoder.cc',
         'audio_decoder.h',
+        'audio_decoder_android.cc',
         'buffered_data_source.cc',
         'buffered_data_source.h',
         'buffered_resource_loader.cc',
@@ -43,6 +44,11 @@
         ['inside_chromium_build==0', {
           'dependencies': [
             '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
+          ],
+        }],
+        ['OS=="android"', {
+          'sources!': [
+            'audio_decoder.cc',
           ],
         }],
       ],
