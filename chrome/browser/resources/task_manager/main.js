@@ -334,7 +334,7 @@ TaskManager.prototype = {
     this.table_.columnModel = this.columnModel_;
 
     // Expands height of row when a process has some tasks.
-    this.table_.autoExpands = true;
+    this.table_.fixedHeight = false;
 
     this.table_.list.addEventListener('contextmenu',
                                       this.onTableContextMenuOpened_.bind(this),
@@ -370,10 +370,11 @@ TaskManager.prototype = {
     this.delayedInitLabels_ = [];
 
     var container = this.document_.createElement('div');
-    container.id = 'detail-container-' + columnId + '-pid' + entry.processId;
     container.className = 'detail-container-' + columnId;
 
-    if (entry[columnId]) {
+    if (entry && entry[columnId]) {
+      container.id = 'detail-container-' + columnId + '-pid' + entry.processId;
+
       for (var i = 0; i < entry[columnId].length; i++) {
         var label = document.createElement('div');
         if (columnId == 'title') {
@@ -419,14 +420,20 @@ TaskManager.prototype = {
     if (!dm || !sm)
       return;
 
+    this.table_.list.startBatchUpdates();
     // Splice takes the to-be-spliced-in array as individual parameters,
     // rather than as an array, so we need to perform some acrobatics...
     var args = [].slice.call(tasks);
-    args.unshift(start, length);
+    args.unshift(start, dm.length);
 
+    sm.beginChange();
     var oldSelectedIndexes = sm.selectedIndexes;
+
     dm.splice.apply(dm, args);
+
     sm.selectedIndexes = oldSelectedIndexes;
+    sm.endChange();
+    this.table_.list.endBatchUpdates();
   },
 
   onTaskAdd: function (start, length, tasks) {

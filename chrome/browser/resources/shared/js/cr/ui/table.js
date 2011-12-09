@@ -109,6 +109,13 @@ cr.define('cr.ui', function() {
       this.list_.autoExpands = autoExpands;
     },
 
+    get fixedHeight() {
+      return this.list_.fixedHeight;
+    },
+    set fixedHeight(fixedHeight) {
+      this.list_.fixedHeight = fixedHeight;
+    },
+
     /**
      * Returns render function for row.
      * @return {Function(*, cr.ui.Table): HTMLElement} Render function.

@@ -69,16 +69,16 @@ cr.define('cr.ui', function() {
     itemConstructor_: GridItem,
 
     /**
-     * In the case of multiple columns lead item must have the same height
-     * as a regular item.
-     * @type {number}
-     * @override
+     * Whether or not the rows on list have various heights.
+     * Shows a warning at the setter because cr.ui.Grid does not support this.
+     * @type {boolean}
      */
-    get leadItemHeight() {
-      return this.getItemHeight_();
+    get fixedHeight() {
+      return true;
     },
-    set leadItemHeight(height) {
-      // Lead item height cannot be set.
+    set fixedHeight(fixedHeight) {
+      if (!fixedHeight)
+        console.warn('cr.ui.Grid does not support fixedHeight = false');
     },
 
     /**
@@ -87,7 +87,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     getColumnCount_: function() {
-      var size = this.getItemSize_();
+      var size = this.getDefaultItemSize_();
       var width = size.width + size.marginHorizontal; // Uncollapse margin.
       return width ? Math.floor(this.clientWidth / width) : 0;
     },
@@ -117,7 +117,7 @@ cr.define('cr.ui', function() {
      * @override
      */
     getItemTop: function(index) {
-      return Math.floor(index / this.columns) * this.getItemHeight_();
+      return Math.floor(index / this.columns) * this.getDefaultItemHeight_();
     },
 
     /**
@@ -151,17 +151,18 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Calculates the number of items fitting in viewport given the index of
-     * first item and heights.
-     * @param {number} itemHeight The height of the item.
-     * @param {number} firstIndex Index of the first item in viewport.
+     * Calculates the number of items fitting in the given viewport.
      * @param {number} scrollTop The scroll top position.
-     * @return {number} The number of items in view port.
+     * @param {number} clientHeight The height of viewport.
+     * @return {{first: number, length: number, last: number}} The index of
+     *     first item in view port, The number of items, The item past the last.
      * @override
      */
-    getItemsInViewPort: function(itemHeight, firstIndex, scrollTop) {
+    getItemsInViewPort: function(scrollTop, clientHeight) {
+      var itemHeight = this.getDefaultItemHeight_();
+      var firstIndex =
+          this.autoExpands ? 0 : this.getIndexForListOffset_(scrollTop);
       var columns = this.columns;
-      var clientHeight = this.clientHeight;
       var count = this.autoExpands_ ? this.dataModel.length : Math.max(
           columns * (Math.ceil(clientHeight / itemHeight) + 1),
           this.countItemsInRange_(firstIndex, scrollTop + clientHeight));

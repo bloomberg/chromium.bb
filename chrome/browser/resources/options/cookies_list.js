@@ -160,7 +160,6 @@ cr.define('options', function() {
         this.classList.add('show-items');
       } else {
         if (this.list.expandedItem == this) {
-          this.list.leadItemHeight = 0;
           this.list.expandedItem = null;
         }
         this.style.height = '';
@@ -213,8 +212,6 @@ cr.define('options', function() {
       this.classList.remove('measure-items');
       this.itemsChild.style.height = itemsHeight + 'px';
       this.style.height = fixedHeight + 'px';
-      if (this.expanded)
-        this.list.leadItemHeight = fixedHeight;
     },
 
     /**
@@ -623,6 +620,7 @@ cr.define('options', function() {
       sm.addEventListener('leadIndexChange', this.cookieLeadChange_.bind(this));
       this.selectionModel = sm;
       this.infoNodes = {};
+      this.fixedHeight = false;
       var doc = this.ownerDocument;
       // Create a table for each type of site data (e.g. cookies, databases,
       // etc.) and save it so that we can reuse it for all origins.

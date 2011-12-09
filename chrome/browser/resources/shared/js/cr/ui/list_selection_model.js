@@ -143,12 +143,7 @@ cr.define('cr.ui', function() {
 
       this.beginChange();
 
-      // Changing back?
-      if (index in this.changedIndexes_ && this.changedIndexes_[index] == !b) {
-        delete this.changedIndexes_[index];
-      } else {
-        this.changedIndexes_[index] = b;
-      }
+      this.changedIndexes_[index] = b;
 
       // End change dispatches an event which in turn may update the view.
       this.endChange();
@@ -182,6 +177,20 @@ cr.define('cr.ui', function() {
     endChange: function() {
       this.changeCount_--;
       if (!this.changeCount_) {
+        // Calls delayed |dispatchPropertyChange|s, only when |leadIndex| or
+        // |anchorIndex| has been actually changed in the batch.
+        if (this.oldLeadIndex_ != null) {
+          cr.dispatchPropertyChange(this, 'leadIndex',
+                                    this.leadIndex_, this.oldLeadIndex_);
+          this.oldLeadIndex_ = null;
+        }
+
+        if (this.oldAnchorIndex_ != null) {
+          cr.dispatchPropertyChange(this, 'anchorIndex',
+                                    this.anchorIndex_, this.oldAnchorIndex_);
+          this.oldAnchorIndex_ = null;
+        }
+
         var indexes = Object.keys(this.changedIndexes_);
         if (indexes.length) {
           var e = new Event('change');
@@ -198,6 +207,7 @@ cr.define('cr.ui', function() {
     },
 
     leadIndex_: -1,
+    oldLeadIndex_: null,
 
     /**
      * The leadIndex is used with multiple selection and it is the index that
@@ -212,11 +222,19 @@ cr.define('cr.ui', function() {
       if (li != this.leadIndex_) {
         var oldLeadIndex = this.leadIndex_;
         this.leadIndex_ = li;
-        cr.dispatchPropertyChange(this, 'leadIndex', li, oldLeadIndex);
+
+        // Delays the call of dispatchPropertyChange if batch is running.
+        if (this.changeCount_) {
+          if (this.oldLeadIndex_ == null)
+            this.oldLeadIndex_ = oldLeadIndex;
+        } else {
+          cr.dispatchPropertyChange(this, 'leadIndex', li, oldLeadIndex);
+        }
       }
     },
 
     anchorIndex_: -1,
+    oldAnchorIndex_: null,
 
     /**
      * The anchorIndex is used with multiple selection.
@@ -230,7 +248,14 @@ cr.define('cr.ui', function() {
       if (ai != this.anchorIndex_) {
         var oldAnchorIndex = this.anchorIndex_;
         this.anchorIndex_ = ai;
-        cr.dispatchPropertyChange(this, 'anchorIndex', ai, oldAnchorIndex);
+
+        // Delays the call of dispatchPropertyChange if batch is running.
+        if (this.changeCount_) {
+          if (this.oldAnchorIndex_ == null)
+            this.oldAnchorIndex_ = oldAnchorIndex;
+        } else {
+          cr.dispatchPropertyChange(this, 'anchorIndex', ai, oldAnchorIndex);
+        }
       }
     },
 
