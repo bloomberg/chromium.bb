@@ -147,7 +147,7 @@ void PanelBrowserWindowGtk::OnSizeChanged(int width, int height) {
   int left = bounds_.right() - width;
 
   gtk_window_move(window_, left, top);
-  StartBoundsAnimation(bounds_, gfx::Rect(left, top, width, height));
+  StartBoundsAnimation(gfx::Rect(left, top, width, height), bounds_);
   panel_->OnWindowSizeAvailable();
 
   content::NotificationService::current()->Notify(
@@ -422,11 +422,17 @@ int PanelBrowserWindowGtk::TitleOnlyHeight() const {
 
 void PanelBrowserWindowGtk::StartBoundsAnimation(
     const gfx::Rect& from_bounds, const gfx::Rect& to_bounds) {
-  animation_start_bounds_ = from_bounds;
+  if (bounds_animator_.get() && bounds_animator_->is_animating()) {
+    animation_start_bounds_ = last_animation_progressed_bounds_;
+  } else {
+    animation_start_bounds_ = from_bounds;
+  }
 
   bounds_animator_.reset(new PanelSlideAnimation(
       this, panel_.get(), from_bounds, to_bounds));
+
   bounds_animator_->Show();
+  last_animation_progressed_bounds_ = animation_start_bounds_;
 }
 
 bool PanelBrowserWindowGtk::IsAnimatingBounds() const {
@@ -506,6 +512,8 @@ void PanelBrowserWindowGtk::AnimationProgressed(
               (animation_start_bounds_.right() != bounds_.right());
   if (move)
     gtk_window_move(window_, new_bounds.x(), new_bounds.y());
+
+  last_animation_progressed_bounds_ = new_bounds;
 }
 
 void PanelBrowserWindowGtk::CreateDragWidget() {

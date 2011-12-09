@@ -193,6 +193,12 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   scoped_ptr<ui::SlideAnimation> bounds_animator_;
   gfx::Rect animation_start_bounds_;
 
+  // This records the bounds set on the last animation progress notification.
+  // We need this for the case where a new bounds animation starts before the
+  // current one completes. In this case, we want to start the new animation
+  // from where the last one left.
+  gfx::Rect last_animation_progressed_bounds_;
+
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserWindowGtk);
 };
 
