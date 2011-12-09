@@ -474,9 +474,11 @@ void RenderWidgetHostViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
 
 void RenderWidgetHostViewAura::OnFocus() {
   host_->GotFocus();
+  host_->SetActive(true);
 }
 
 void RenderWidgetHostViewAura::OnBlur() {
+  host_->SetActive(false);
   host_->Blur();
 }
 
