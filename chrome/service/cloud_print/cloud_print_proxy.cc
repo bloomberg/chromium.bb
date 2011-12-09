@@ -171,10 +171,10 @@ void CloudPrintProxy::DisableForUser() {
   DCHECK(CalledOnValidThread());
   user_email_.clear();
   enabled_ = false;
-  Shutdown();
   if (client_) {
     client_->OnCloudPrintProxyDisabled(true);
   }
+  Shutdown();
 }
 
 void CloudPrintProxy::GetProxyInfo(cloud_print::CloudPrintProxyInfo* info) {
