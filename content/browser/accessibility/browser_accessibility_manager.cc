@@ -232,15 +232,12 @@ void BrowserAccessibilityManager::UpdateNode(
     const WebAccessibility& src,
     bool include_children) {
   BrowserAccessibility* current = NULL;
+
+  // Look for the node to replace. Either we're replacing the whole tree
+  // (role is ROOT_WEB_AREA) or we look it up based on its renderer ID.
   if (src.role == WebAccessibility::ROLE_ROOT_WEB_AREA) {
-    // As an exceptional case, there can only be one root of the tree, so
-    // if we get a new root, replace the current root no matter what the
-    // current root's renderer ID is.
     current = root_;
-    renderer_id_to_child_id_map_.erase(current->renderer_id());
-    renderer_id_to_child_id_map_[src.id] = current->child_id();
   } else {
-    // Otherwise, replace the node based on its renderer ID.
     base::hash_map<int32, int32>::iterator iter =
         renderer_id_to_child_id_map_.find(src.id);
     if (iter != renderer_id_to_child_id_map_.end()) {
@@ -249,9 +246,14 @@ void BrowserAccessibilityManager::UpdateNode(
     }
   }
 
+  // If we can't find the node to replace, we're out of sync with the
+  // renderer (this would be a bug).
+  DCHECK(current);
   if (!current)
     return;
 
+  // If this update is just for a single node (|include_children| is false),
+  // modify |current| directly and return - no tree changes are needed.
   if (!include_children) {
     DCHECK_EQ(0U, src.children.size());
     current->Initialize(
@@ -282,8 +284,13 @@ void BrowserAccessibilityManager::UpdateNode(
   for (int i = 0; i < static_cast<int>(old_tree_nodes.size()); i++)
     old_tree_nodes[i]->InternalReleaseReference(false);
 
-  if (!focus_ || !focus_->instance_active())
-    SetFocus(root_, false);
+  // If the only reference to the focused node is focus_ itself, then the
+  // focused node is no longer in the tree, so set the focus to the root.
+  if (focus_ && focus_->ref_count() == 1) {
+    SetFocus(root_, true);
+    if (!delegate_ || delegate_->HasFocus())
+      NotifyAccessibilityEvent(ViewHostMsg_AccEvent::FOCUS_CHANGED, focus_);
+  }
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
@@ -333,6 +340,10 @@ BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
   instance->Initialize(this, parent, child_id, index_in_parent, src);
   child_id_map_[child_id] = instance;
   renderer_id_to_child_id_map_[src.id] = child_id;
+
+  if (src.role == WebAccessibility::ROLE_ROOT_WEB_AREA)
+    root_ = instance;
+
   if ((src.state >> WebAccessibility::STATE_FOCUSED) & 1)
     SetFocus(instance, false);
   for (int i = 0; i < static_cast<int>(src.children.size()); ++i) {
