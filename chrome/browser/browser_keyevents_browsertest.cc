@@ -509,8 +509,9 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FLAKY_CommandKeyEvents) {
 }
 #endif
 
-// http://crbug.com/81451
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(USE_AURA)
+// http://crbug.com/81451 for mac
+// http://crbug.com/107026 for aura
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_AccessKeys) {
 #else
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
