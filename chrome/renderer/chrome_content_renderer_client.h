@@ -59,6 +59,15 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       const WebKit::WebURLError& error,
       std::string* error_html,
       string16* error_description) OVERRIDE;
+  virtual bool OverrideCreateWebMediaPlayer(
+      content::RenderView* render_view,
+      WebKit::WebMediaPlayerClient* client,
+      base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate,
+      media::FilterCollection* collection,
+      media::MessageLoopFactory* message_loop_factory,
+      webkit_media::MediaStreamClient* media_stream_client,
+      media::MediaLog* media_log,
+      webkit_media::WebMediaPlayerImpl** player) OVERRIDE;
   virtual bool RunIdleHandlerWhenWidgetsHidden() OVERRIDE;
   virtual bool AllowPopup(const GURL& creator) OVERRIDE;
   virtual bool ShouldFork(WebKit::WebFrame* frame,

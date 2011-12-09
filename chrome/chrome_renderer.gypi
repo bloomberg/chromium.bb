@@ -143,6 +143,8 @@
         'renderer/plugins/plugin_uma.h',
         'renderer/prerender/prerender_helper.cc',
         'renderer/prerender/prerender_helper.h',
+        'renderer/prerender/prerender_webmediaplayer.cc',
+        'renderer/prerender/prerender_webmediaplayer.h',
         'renderer/print_web_view_helper.cc',
         'renderer/print_web_view_helper.h',
         'renderer/print_web_view_helper_linux.cc',

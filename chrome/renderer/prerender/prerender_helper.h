@@ -39,9 +39,6 @@ class PrerenderHelper
  private:
   // RenderViewObserver implementation
   virtual void DidStartProvisionalLoad(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void WillCreateMediaPlayer(
-      WebKit::WebFrame* frame,
-      WebKit::WebMediaPlayerClient* client) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnSetIsPrerendering(bool is_prerendering);

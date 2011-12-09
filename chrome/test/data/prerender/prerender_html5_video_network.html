@@ -8,24 +8,19 @@
 </head>
 
 <body>
-<div id="vid">
-</div>
+<video id="mediaEl" controls>
+</video>
 
 <script>
-  var videoTag = document.createElement("video");
-  videoTag.src = "bear.ogv"
-  videoTag.id = "mediaEl";
-  var element = document.getElementById("vid");
-  element.appendChild(videoTag);
-
   var willPlay = true;
-  var testNetworkEvents = false;
+  var testNetworkEvents = true;
 </script>
 
 <script src="prerender_html5_common.js"></script>
 
 <script>
-  document.getElementById("mediaEl").play();
+  mediaEl.src = 'bear.ogv'
+  mediaEl.play();
 </script>
 
 </body>

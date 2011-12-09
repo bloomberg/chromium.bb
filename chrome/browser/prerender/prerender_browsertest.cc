@@ -550,6 +550,15 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
         test_server()->GetURL("files/prerender/prerender_page.html"));
   }
 
+  void NavigateToDestUrlAndWaitForPassTitle() {
+    string16 expected_title = ASCIIToUTF16("PASS");
+    ui_test_utils::TitleWatcher title_watcher(
+        GetPrerenderContents()->prerender_contents()->tab_contents(),
+        expected_title);
+    NavigateToDestURL();
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  }
+
   // Called after the prerendered page has been navigated to and then away from.
   // Navigates back through the history to the prerendered page.
   void GoBackToPrerender(Browser* browser) {
@@ -1269,26 +1278,57 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTaskManager) {
   EXPECT_LE(num_tabs_with_prerender_page_title, 2);
 }
 
-// Checks that prerenderers will terminate when an audio tag is encountered.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5Audio) {
-  PrerenderTestURL("files/prerender/prerender_html5_audio.html",
-                   FINAL_STATUS_HTML5_MEDIA,
+// Checks that audio loads are deferred on prerendering.
+// Commentted out due to upload issue with CL: 8095007.
+// TODO(shishir): Fix this.
+// IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5Audio) {
+//   PrerenderTestURL("files/prerender/prerender_html5_audio.html",
+//                   FINAL_STATUS_USED,
+//                   1);
+//  NavigateToDestUrlAndWaitForPassTitle();
+// }
+
+// Checks that audio loads are deferred on prerendering and played back when
+// the prerender is swapped in if autoplay is set.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5AudioAutoplay) {
+  PrerenderTestURL("files/prerender/prerender_html5_audio_autoplay.html",
+                   FINAL_STATUS_USED,
                    1);
+  NavigateToDestUrlAndWaitForPassTitle();
 }
 
-// Checks that prerenderers will terminate when a video tag is encountered.
+// Checks that audio loads are deferred on prerendering and played back when
+// the prerender is swapped in if js starts playing.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5AudioJsplay) {
+  PrerenderTestURL("files/prerender/prerender_html5_audio_jsplay.html",
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestUrlAndWaitForPassTitle();
+}
+
+// Checks that video loads are deferred on prerendering.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5Video) {
   PrerenderTestURL("files/prerender/prerender_html5_video.html",
-                   FINAL_STATUS_HTML5_MEDIA,
+                   FINAL_STATUS_USED,
                    1);
+  NavigateToDestUrlAndWaitForPassTitle();
 }
 
-// Checks that prerenderers will terminate when a video tag is inserted via
-// javascript.
+// Checks that video tags inserted by javascript are deferred and played
+// correctly on swap in.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5VideoJs) {
   PrerenderTestURL("files/prerender/prerender_html5_video_script.html",
-                   FINAL_STATUS_HTML5_MEDIA,
+                   FINAL_STATUS_USED,
                    1);
+  NavigateToDestUrlAndWaitForPassTitle();
+}
+
+// Checks for correct network events by using a busy sleep the javascript.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5VideoNetwork) {
+  PrerenderTestURL("files/prerender/prerender_html5_video_network.html",
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestUrlAndWaitForPassTitle();
 }
 
 // Checks that scripts can retrieve the correct window size while prerendering.

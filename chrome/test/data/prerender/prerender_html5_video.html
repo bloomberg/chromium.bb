@@ -1,13 +1,21 @@
 <html>
   <!--
-  This test checks that prerender is cancelled when an video tag is
-  encountered.
+  This test checks that video tags are deferred during prerendering.
   -->
-  <head>
-    <title>Prerender cancellation for HTML5 video.</title>
-  </head>
-  <body>
-    <video src="nonexistant.mp4" width="320" height="240" controls="controls">
-    </video>
-  </body>
+<head>
+<title>Prerender for HTML5 video.</title>
+</head>
+
+<body>
+<video id="mediaEl" src="bear.ogv" controls>
+</video>
+
+<script>
+  var willPlay = false;
+  var testNetworkEvents = false;
+</script>
+
+<script src="prerender_html5_common.js"></script>
+
+</body>
 </html>

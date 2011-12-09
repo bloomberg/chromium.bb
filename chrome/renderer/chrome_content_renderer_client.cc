@@ -50,6 +50,7 @@
 #include "chrome/renderer/plugins/missing_plugin.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
+#include "chrome/renderer/prerender/prerender_webmediaplayer.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "chrome/renderer/safe_browsing/malware_dom_details.h"
@@ -286,6 +287,24 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
     const WebPluginParams& params,
     WebKit::WebPlugin** plugin) {
   *plugin = CreatePlugin(render_view, frame, params);
+  return true;
+}
+
+bool ChromeContentRendererClient::OverrideCreateWebMediaPlayer(
+    content::RenderView* render_view,
+    WebKit::WebMediaPlayerClient* client,
+    base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate,
+    media::FilterCollection* collection,
+    media::MessageLoopFactory* message_loop_factory,
+    webkit_media::MediaStreamClient* media_stream_client,
+    media::MediaLog* media_log,
+    webkit_media::WebMediaPlayerImpl** player) {
+  if (!prerender::PrerenderHelper::IsPrerendering(render_view))
+    return false;
+
+  *player = new prerender::PrerenderWebMediaPlayer(render_view, client,
+      delegate, collection, message_loop_factory, media_stream_client,
+      media_log);
   return true;
 }
 

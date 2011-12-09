@@ -42,6 +42,18 @@ bool MockContentRendererClient::HasErrorPage(int http_status_code,
   return false;
 }
 
+bool MockContentRendererClient::OverrideCreateWebMediaPlayer(
+    RenderView* render_view,
+    WebKit::WebMediaPlayerClient* client,
+    base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate,
+    media::FilterCollection* collection,
+    media::MessageLoopFactory* message_loop_factory,
+    webkit_media::MediaStreamClient* media_stream_client,
+    media::MediaLog* media_log,
+    webkit_media::WebMediaPlayerImpl** player) {
+  return false;
+}
+
 void MockContentRendererClient::GetNavigationErrorStrings(
     const WebKit::WebURLRequest& failed_request,
     const WebKit::WebURLError& error,

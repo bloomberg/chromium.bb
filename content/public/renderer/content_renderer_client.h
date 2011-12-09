@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/string16.h"
+#include "base/memory/weak_ptr.h"
 #include "ipc/ipc_message.h"
 #include "content/public/common/content_client.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageVisibilityState.h"
@@ -18,6 +19,7 @@ class SkBitmap;
 
 namespace WebKit {
 class WebFrame;
+class WebMediaPlayerClient;
 class WebPlugin;
 class WebURLRequest;
 struct WebPluginParams;
@@ -28,6 +30,18 @@ namespace webkit {
 namespace ppapi {
 class PpapiInterfaceFactoryManager;
 }
+}
+
+namespace media {
+class FilterCollection;
+class MediaLog;
+class MessageLoopFactory;
+}
+
+namespace webkit_media {
+class MediaStreamClient;
+class WebMediaPlayerDelegate;
+class WebMediaPlayerImpl;
 }
 
 namespace v8 {
@@ -88,6 +102,19 @@ class ContentRendererClient {
       const WebKit::WebURLError& error,
       std::string* error_html,
       string16* error_description) = 0;
+
+  // Allows embedder to override creating a WebMediaPlayer. If it returns
+  // true, then |player| will contain the created player. Else the content
+  // layer should create the media player.
+  virtual bool OverrideCreateWebMediaPlayer(
+      RenderView* render_view,
+      WebKit::WebMediaPlayerClient* client,
+      base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate,
+      media::FilterCollection* collection,
+      media::MessageLoopFactory* message_loop_factory,
+      webkit_media::MediaStreamClient* media_stream_client,
+      media::MediaLog* media_log,
+      webkit_media::WebMediaPlayerImpl** player) = 0;
 
   // Returns true if the renderer process should schedule the idle handler when
   // all widgets are hidden.

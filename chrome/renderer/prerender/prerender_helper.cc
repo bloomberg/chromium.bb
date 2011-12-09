@@ -110,17 +110,6 @@ void PrerenderHelper::RecordHistograms(
   delete prerender_helper;
 }
 
-void PrerenderHelper::WillCreateMediaPlayer(
-    WebKit::WebFrame* frame,
-    WebKit::WebMediaPlayerClient* client) {
-  if (is_prerendering_) {
-    // Cancel prerendering in the case of HTML5 media, to avoid playing sounds
-    // in the background.
-    Send(new ChromeViewHostMsg_MaybeCancelPrerenderForHTML5Media(
-        render_view()->GetRoutingId()));
-  }
-}
-
 void PrerenderHelper::DidStartProvisionalLoad(WebKit::WebFrame* frame) {
   // If this is the first provisional load since prerendering started, get its
   // request time.

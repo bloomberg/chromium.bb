@@ -1932,10 +1932,10 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, WillCreateMediaPlayer(frame, client));
 
-  scoped_ptr<media::MessageLoopFactory> message_loop_factory(
-      new media::MessageLoopFactoryImpl());
-  scoped_ptr<media::FilterCollection> collection(
-      new media::FilterCollection());
+  media::MessageLoopFactory* message_loop_factory =
+      new media::MessageLoopFactoryImpl();
+  media::FilterCollection* collection = new media::FilterCollection();
+  RenderMediaLog* render_media_log = new RenderMediaLog();
 
   // Add in any custom filter factories first.
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
@@ -1944,13 +1944,19 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     collection->AddAudioRenderer(new AudioRendererImpl());
   }
 
-  scoped_ptr<webkit_media::WebMediaPlayerImpl> result(
-      new webkit_media::WebMediaPlayerImpl(client,
-                                          AsWeakPtr(),
-                                          collection.release(),
-                                          message_loop_factory.release(),
-                                          media_stream_impl_.get(),
-                                          new RenderMediaLog()));
+  webkit_media::WebMediaPlayerImpl* result_ptr;
+  if (!content::GetContentClient()->renderer()->OverrideCreateWebMediaPlayer(
+      this, client, AsWeakPtr(), collection, message_loop_factory,
+      media_stream_impl_.get(), render_media_log, &result_ptr)) {
+    result_ptr = new webkit_media::WebMediaPlayerImpl(
+        client, AsWeakPtr(), collection, message_loop_factory,
+        media_stream_impl_.get(), render_media_log);
+  }
+
+  DCHECK(result_ptr);
+  scoped_ptr<webkit_media::WebMediaPlayerImpl> result;
+  result.reset(result_ptr);
+
   if (!result->Initialize(frame,
                           cmd_line->HasSwitch(switches::kSimpleDataSource))) {
     return NULL;
