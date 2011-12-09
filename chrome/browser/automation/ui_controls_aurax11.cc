@@ -22,6 +22,9 @@
 
 namespace {
 
+// Mask of the buttons currently down.
+unsigned button_down_mask = 0;
+
 // Event waiter executes the specified closure|when a matching event
 // is found.
 // TODO(oshima): Move this to base.
@@ -155,6 +158,7 @@ bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& closure) {
   xmotion->type = MotionNotify;
   g_current_x = xmotion->x = x;
   g_current_y = xmotion->y = y;
+  xmotion->state = button_down_mask;
   xmotion->same_screen = True;
   // RootWindow will take care of other necessary fields.
   aura::RootWindow::GetInstance()->PostNativeEvent(&xevent);
@@ -196,10 +200,12 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type,
   if (state & DOWN) {
     xevent.xbutton.type = ButtonPress;
     root_window->PostNativeEvent(&xevent);
+    button_down_mask |= xbutton->state;
   }
   if (state & UP) {
     xevent.xbutton.type = ButtonRelease;
     root_window->PostNativeEvent(&xevent);
+    button_down_mask = (button_down_mask | xbutton->state) ^ xbutton->state;
   }
   RunClosureAfterAllPendingUIEvents(closure);
   return true;
