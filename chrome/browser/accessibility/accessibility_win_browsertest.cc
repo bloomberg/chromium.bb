@@ -326,9 +326,9 @@ void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
   }
 }
 
-// See http://crbug.com/102725
+// See http://crbug.com/102725 and http://crbug.com/106957.
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       FAILS_TestRendererAccessibilityTree) {
+                       DISABLED_TestRendererAccessibilityTree) {
   ui_test_utils::WindowedNotificationObserver tree_updated_observer1(
       content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
       content::NotificationService::AllSources());
@@ -597,8 +597,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 
+// Disabled, see http://crbug.com/106957 .
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationValueChanged) {
+                       DISABLED_TestNotificationValueChanged) {
   ui_test_utils::WindowedNotificationObserver tree_updated_observer1(
       content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
       content::NotificationService::AllSources());
@@ -639,8 +640,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 // If you made a change and this test now fails, check that the NativeViewHost
 // that wraps the tab contents returns the IAccessible implementation
 // provided by RenderWidgetHostViewWin in GetNativeViewAccessible().
+// Disabled, see http://crbug.com/106957 .
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       ContainsRendererAccessibilityTree) {
+                       DISABLED_ContainsRendererAccessibilityTree) {
   ui_test_utils::WindowedNotificationObserver tree_updated_observer1(
       content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
       content::NotificationService::AllSources());
@@ -667,8 +669,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ASSERT_EQ(found, true);
 }
 
+// Disabled, see http://crbug.com/106957 .
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       SupportsISimpleDOM) {
+                       DISABLED_SupportsISimpleDOM) {
   ui_test_utils::WindowedNotificationObserver tree_updated_observer1(
       content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
       content::NotificationService::AllSources());
