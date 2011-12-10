@@ -75,20 +75,6 @@ EXTERN_C_BEGIN
 #define EM_ARM          40  /* arm */
 #define EM_X86_64       62  /* x86-64 */
 
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
-# if NACL_BUILD_SUBARCH == 32
-#  define EM_EXPECTED_BY_NACL EM_386
-# elif NACL_BUILD_SUBARCH == 64
-#  define EM_EXPECTED_BY_NACL EM_X86_64
-# else
-#  error "No NACL_BUILD_SUBARCH for x86 -- are we on x86-128?"
-# endif
-#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-# define EM_EXPECTED_BY_NACL EM_ARM
-#else
-# error "Unknown platform!"
-#endif
-
 #define EV_NONE         0   /* invalid version */
 #define EV_CURRENT      1   /* current version */
 
