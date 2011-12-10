@@ -19,7 +19,7 @@ class TestCallback : public WorkerThreadTicker::Callback {
     counter_++;
 
     // Finish the test faster.
-    message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
   int counter() const { return counter_; }
@@ -38,7 +38,7 @@ class LongCallback : public WorkerThreadTicker::Callback {
 
 void RunMessageLoopForAWhile() {
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          new MessageLoop::QuitTask(), 500);
+                                          MessageLoop::QuitClosure(), 500);
   MessageLoop::current()->Run();
 }
 

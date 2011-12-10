@@ -229,7 +229,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     bb_view_.reset();
     browser_.reset();
     profile_.reset();
-    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();
 
     ViewEventTestBase::TearDown();

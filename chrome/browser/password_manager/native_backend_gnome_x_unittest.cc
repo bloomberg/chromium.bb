@@ -307,7 +307,7 @@ class NativeBackendGnomeTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();
     db_thread_.Stop();
   }
@@ -324,7 +324,7 @@ class NativeBackendGnomeTest : public testing::Test {
   }
 
   static void PostQuitTask(MessageLoop* loop) {
-    loop->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+    loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
   void CheckUint32Attribute(const MockKeyringItem* item,

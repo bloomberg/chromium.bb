@@ -297,6 +297,6 @@ void DownloadTestFlushObserver::PingIOThread(int cycle) {
                           cycle));
   } else {
     BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, new MessageLoop::QuitTask());
+        BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
   }
 }

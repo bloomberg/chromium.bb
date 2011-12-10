@@ -65,7 +65,7 @@ class HttpBridgeTest : public testing::Test {
               http_bridge->GetRequestContextGetter()->
                   GetURLRequestContext()->
                   http_transaction_factory()->GetSession());
-    main_message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+    main_message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
   MessageLoop* GetIOThreadLoop() {

@@ -61,7 +61,7 @@ class GetPrefValueCallback
   void GetPrefValueOnIOThread() {
     value_ = pref_.GetValue();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            new MessageLoop::QuitTask());
+                            MessageLoop::QuitClosure());
   }
 
   BooleanPrefMember pref_;

@@ -141,7 +141,7 @@ void QuitUIMessageLoopFromIO() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
-                          new MessageLoop::QuitTask());
+                          MessageLoop::QuitClosure());
 }
 }  // namespace
 

@@ -188,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, ClickingMovesFocus) {
   // It seems we have to wait a little bit for the widgets to spin up before
   // we can start clicking on them.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          new MessageLoop::QuitTask(),
+                                          MessageLoop::QuitClosure(),
                                           kActionDelayMs);
   ui_test_utils::RunMessageLoop();
 #endif  // defined(OS_POSIX)
@@ -589,7 +589,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
   interstitial_page->Show();
   // Give some time for the interstitial to show.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          new MessageLoop::QuitTask(),
+                                          MessageLoop::QuitClosure(),
                                           1000);
   ui_test_utils::RunMessageLoop();
 
@@ -715,7 +715,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
   interstitial_page->Show();
   // Give some time for the interstitial to show.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          new MessageLoop::QuitTask(),
+                                          MessageLoop::QuitClosure(),
                                           1000);
   ui_test_utils::RunMessageLoop();
 
@@ -763,7 +763,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
   // - creating a factory used to create the delegate
   // - making the test a private and overwriting the delegate member directly.
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, new MessageLoop::QuitTask(), kActionDelayMs);
+      FROM_HERE, MessageLoop::QuitClosure(), kActionDelayMs);
   ui_test_utils::RunMessageLoop();
 
   ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
@@ -796,7 +796,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 
   // See remark above on why we wait.
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, new MessageLoop::QuitTask(), kActionDelayMs);
+      FROM_HERE, MessageLoop::QuitClosure(), kActionDelayMs);
   ui_test_utils::RunMessageLoop();
   ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 }

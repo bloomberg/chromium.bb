@@ -99,14 +99,14 @@ class SpeechInputBubbleControllerTest
     } else if (button == SpeechInputBubble::BUTTON_TRY_AGAIN) {
       try_again_clicked_ = true;
     }
-    message_loop()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    message_loop()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
   virtual void InfoBubbleFocusChanged(int caller_id) {
     VLOG(1) << "Received InfoBubbleFocusChanged";
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     focus_changed_ = true;
-    message_loop()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    message_loop()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
   // testing::Test methods.

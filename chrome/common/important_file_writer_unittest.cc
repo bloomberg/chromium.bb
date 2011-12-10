@@ -76,7 +76,7 @@ TEST_F(ImportantFileWriterTest, ScheduleWrite) {
   writer.ScheduleWrite(&serializer);
   EXPECT_TRUE(writer.HasPendingWrite());
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          new MessageLoop::QuitTask(), 100);
+                                          MessageLoop::QuitClosure(), 100);
   MessageLoop::current()->Run();
   EXPECT_FALSE(writer.HasPendingWrite());
   ASSERT_TRUE(file_util::PathExists(writer.path()));
@@ -92,7 +92,7 @@ TEST_F(ImportantFileWriterTest, DoScheduledWrite) {
   EXPECT_TRUE(writer.HasPendingWrite());
   writer.DoScheduledWrite();
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          new MessageLoop::QuitTask(), 100);
+                                          MessageLoop::QuitClosure(), 100);
   MessageLoop::current()->Run();
   EXPECT_FALSE(writer.HasPendingWrite());
   ASSERT_TRUE(file_util::PathExists(writer.path()));
@@ -108,7 +108,7 @@ TEST_F(ImportantFileWriterTest, BatchingWrites) {
   writer.ScheduleWrite(&bar);
   writer.ScheduleWrite(&baz);
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          new MessageLoop::QuitTask(), 100);
+                                          MessageLoop::QuitClosure(), 100);
   MessageLoop::current()->Run();
   ASSERT_TRUE(file_util::PathExists(writer.path()));
   EXPECT_EQ("baz", GetFileContent(writer.path()));

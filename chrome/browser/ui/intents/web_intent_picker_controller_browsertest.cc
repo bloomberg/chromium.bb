@@ -60,7 +60,7 @@ class WebIntentPickerMock : public WebIntentPicker {
   virtual void WaitFor(int target_num_urls, int target_num_default_icons) {
     while (num_urls_ != target_num_urls ||
            num_default_icons_ != target_num_default_icons) {
-      MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+      MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
       ui_test_utils::RunAllPendingInMessageLoop();
     }
   }

@@ -128,7 +128,7 @@ TEST_F(PredictorTest, ShutdownWhenResolutionIsPendingTest) {
   testing_master.ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
 
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          new MessageLoop::QuitTask(), 500);
+                                          MessageLoop::QuitClosure(), 500);
   MessageLoop::current()->Run();
 
   EXPECT_FALSE(testing_master.WasFound(localhost));

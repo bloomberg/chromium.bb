@@ -124,7 +124,7 @@ class PasswordStoreDefaultTest : public testing::Test {
 
   virtual void TearDown() {
     wds_->Shutdown();
-    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();
     db_thread_.Stop();
   }

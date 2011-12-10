@@ -132,7 +132,7 @@ class CancelTestDataCollector
   void FileInfoCollector() {
     dfm_pending_downloads_ = download_file_manager_->NumberOfActiveDownloads();
     BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, new MessageLoop::QuitTask());
+        BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
   }
 
   ResourceDispatcherHost* resource_dispatcher_host_;

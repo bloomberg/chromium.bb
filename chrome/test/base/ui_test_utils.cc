@@ -244,10 +244,10 @@ bool ExecuteJavaScriptHelper(RenderViewHost* render_view_host,
 }
 
 void RunAllPendingMessageAndSendQuit(content::BrowserThread::ID thread_id) {
-  MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   RunMessageLoop();
   content::BrowserThread::PostTask(thread_id, FROM_HERE,
-                                   new MessageLoop::QuitTask());
+                                   MessageLoop::QuitClosure());
 }
 
 }  // namespace
@@ -277,7 +277,7 @@ void RunMessageLoop() {
 }
 
 void RunAllPendingInMessageLoop() {
-  MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   ui_test_utils::RunMessageLoop();
 }
 
@@ -691,12 +691,12 @@ void TimedMessageLoopRunner::RunFor(int ms) {
 
 void TimedMessageLoopRunner::Quit() {
   quit_loop_invoked_ = true;
-  loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+  loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 void TimedMessageLoopRunner::QuitAfter(int ms) {
   quit_loop_invoked_ = true;
-  loop_->PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask, ms);
+  loop_->PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(), ms);
 }
 
 namespace {

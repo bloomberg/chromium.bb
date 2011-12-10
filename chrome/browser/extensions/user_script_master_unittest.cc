@@ -91,7 +91,7 @@ TEST_F(UserScriptMasterTest, NoScripts) {
   TestingProfile profile;
   scoped_refptr<UserScriptMaster> master(new UserScriptMaster(&profile));
   master->StartLoad();
-  message_loop_.PostTask(FROM_HERE, new MessageLoop::QuitTask);
+  message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
   message_loop_.Run();
 
   ASSERT_TRUE(shared_memory_ != NULL);

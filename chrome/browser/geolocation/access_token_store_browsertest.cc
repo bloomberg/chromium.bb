@@ -95,7 +95,7 @@ void RunCancelTestInClientTread() {
   EXPECT_EQ(0u, consumer.PendingRequestCount());
 
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, new MessageLoop::QuitTask);
+      BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
 }
 
 void GeolocationAccessTokenStoreTest::DoTestStepAndWaitForResults(
@@ -135,7 +135,7 @@ void GeolocationAccessTokenStoreTest::OnAccessTokenStoresLoaded(
     store->SaveAccessToken(ref_url_, *token_to_set_);
   }
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, new MessageLoop::QuitTask);
+      BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, SetAcrossInstances) {

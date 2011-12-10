@@ -258,7 +258,7 @@ void ServiceProcess::Shutdown() {
 }
 
 void ServiceProcess::Terminate() {
-  main_message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  main_message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 bool ServiceProcess::HandleClientDisconnect() {

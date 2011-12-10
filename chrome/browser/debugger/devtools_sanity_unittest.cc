@@ -283,7 +283,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
       worker_data_->worker_route_id = instance.worker_route_id();
       WorkerService::GetInstance()->RemoveObserver(this);
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          new MessageLoop::QuitTask);
+          MessageLoop::QuitClosure());
       delete this;
     }
     virtual void WorkerDestroyed(
@@ -314,7 +314,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
       ASSERT_EQ(worker_data_->worker_route_id, worker_route_id);
       WorkerService::GetInstance()->RemoveObserver(this);
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          new MessageLoop::QuitTask);
+          MessageLoop::QuitClosure());
       delete this;
     }
     virtual void WorkerContextStarted(
@@ -368,7 +368,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
         worker_data->worker_process_id = worker->id();
         worker_data->worker_route_id = i->worker_route_id();
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-            new MessageLoop::QuitTask);
+            MessageLoop::QuitClosure());
         return;
       }
     }

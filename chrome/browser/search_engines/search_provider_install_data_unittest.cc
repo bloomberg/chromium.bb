@@ -138,7 +138,7 @@ void TestGetInstallState::DoInstallStateTests() {
   }
 
   // All done.
-  main_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  main_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 void TestGetInstallState::VerifyInstallState(

@@ -57,7 +57,7 @@ class BrowserThreadModelWorkerTest : public testing::Test {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     timer_.Stop();  // Stop the failure timer so the test succeeds.
     BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, new MessageLoop::QuitTask());
+        BrowserThread::IO, FROM_HERE, MessageLoop::QuitClosure());
     did_do_work_ = true;
     return UnrecoverableErrorInfo();
   }
@@ -67,7 +67,7 @@ class BrowserThreadModelWorkerTest : public testing::Test {
   void Timeout() {
     ADD_FAILURE() << "Timed out waiting for work to be done on the DB thread.";
     BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, new MessageLoop::QuitTask());
+        BrowserThread::IO, FROM_HERE, MessageLoop::QuitClosure());
   }
 
  protected:

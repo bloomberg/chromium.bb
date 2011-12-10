@@ -70,7 +70,7 @@ class FastShutdown : public UITest {
       std::vector<net::CookieMonster::CanonicalCookie*>* cookies,
       const std::vector<net::CookieMonster::CanonicalCookie*>& cookies_get) {
     *cookies = cookies_get;
-    to_notify->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    to_notify->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
   content::TestBrowserThread db_thread_;

@@ -154,7 +154,7 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
 
     virtual void OnResponseCompleted(net::URLRequest* request) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              new MessageLoop::QuitTask());
+                              MessageLoop::QuitClosure());
     }
   };
 

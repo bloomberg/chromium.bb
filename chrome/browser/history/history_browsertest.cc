@@ -69,7 +69,7 @@ class HistoryEnumerator : public HistoryService::URLEnumerator {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        new MessageLoop::QuitTask());
+        MessageLoop::QuitClosure());
   }
 
   std::vector<GURL>& urls() { return urls_; }

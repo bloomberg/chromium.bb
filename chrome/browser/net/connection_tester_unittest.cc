@@ -194,7 +194,7 @@ TEST_F(ConnectionTesterTest, DeleteWhileInProgress) {
   // |backup_task| that it will try to deref during the destructor, but
   // depending on the order that pending tasks were deleted in, it might
   // already be invalid! See http://crbug.com/43291.
-  MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
 }
 

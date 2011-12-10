@@ -51,7 +51,7 @@ void ShutdownTask(MessageLoop* loop) {
   // Quit the main message loop.
   ASSERT_FALSE(g_good_shutdown);
   g_good_shutdown = true;
-  loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 }  // namespace
@@ -227,7 +227,7 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
                                 base::Bind(&ShutdownTask,
                                            MessageLoop::current())));
   message_loop.PostDelayedTask(FROM_HERE,
-                               new MessageLoop::QuitTask(),
+                               MessageLoop::QuitClosure(),
                                TestTimeouts::action_max_timeout_ms());
   EXPECT_FALSE(g_good_shutdown);
   message_loop.Run();
@@ -305,7 +305,7 @@ class MockLaunchd : public Launchd {
 
   virtual bool RemoveJob(CFStringRef label, CFErrorRef* error) OVERRIDE {
     remove_called_ = true;
-    message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+    message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     return true;
   }
 
@@ -314,7 +314,7 @@ class MockLaunchd : public Launchd {
                           CFStringRef name,
                           CFStringRef session_type) OVERRIDE {
     restart_called_ = true;
-    message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+    message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     return true;
   }
 
@@ -382,7 +382,7 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
         io_thread_.message_loop_proxy(),
         base::Closure()));
     loop_.PostDelayedTask(FROM_HERE,
-                          new MessageLoop::QuitTask,
+                          MessageLoop::QuitClosure(),
                           TestTimeouts::action_max_timeout_ms());
   }
 

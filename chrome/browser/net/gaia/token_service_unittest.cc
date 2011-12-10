@@ -89,7 +89,7 @@ void TokenServiceTestHarness::TearDown() {
   }
 
   db_thread_.Stop();
-  MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
 }
 

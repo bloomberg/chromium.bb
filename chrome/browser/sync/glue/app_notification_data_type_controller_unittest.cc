@@ -97,7 +97,7 @@ class AppNotificationDataTypeControllerTest
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
-                            new MessageLoop::QuitTask());
+                            MessageLoop::QuitClosure());
   }
 
   void InitAndLoadManager() {

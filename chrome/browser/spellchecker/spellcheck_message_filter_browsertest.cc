@@ -34,7 +34,7 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilter {
 
   virtual bool Send(IPC::Message* message) {
     sent_messages_.push_back(message);
-    loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     return true;
   }
 

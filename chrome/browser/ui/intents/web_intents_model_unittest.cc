@@ -37,7 +37,7 @@ class WebIntentsModelTest : public testing::Test {
       wds_->Shutdown();
 
     db_thread_.Stop();
-    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();
   }
 

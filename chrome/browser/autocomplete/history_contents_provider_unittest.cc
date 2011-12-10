@@ -99,7 +99,7 @@ class HistoryContentsProviderTest : public testing::Test,
     // We must quit the message loop (if running) to return control to the test.
     // Note, calling Quit() directly will checkfail if the loop isn't running,
     // so we post a task, which is safe for either case.
-    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
   MessageLoopForUI message_loop_;

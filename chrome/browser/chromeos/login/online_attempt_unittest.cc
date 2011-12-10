@@ -88,7 +88,7 @@ class OnlineAttemptTest : public testing::Test {
 
   static void Quit() {
     BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, new MessageLoop::QuitTask());
+        BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
   }
 
   static void RunThreadTest() {

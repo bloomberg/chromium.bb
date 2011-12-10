@@ -45,7 +45,7 @@ BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {
   DestroyBrowser();
   profile_.reset(NULL);
 
-  MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
 
 #if defined(OS_WIN)

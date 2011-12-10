@@ -298,7 +298,7 @@ class PluginInstallerDownloadTest
                                        context_getter->GetIOMessageLoopProxy());
 
     MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, new MessageLoop::QuitTask,
+        FROM_HERE, MessageLoop::QuitClosure(),
         TestTimeouts::action_max_timeout_ms());
   }
 

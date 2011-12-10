@@ -915,7 +915,7 @@ class PasswordStoreMacTest : public testing::Test {
 
   virtual void TearDown() {
     store_->Shutdown();
-    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();
   }
 

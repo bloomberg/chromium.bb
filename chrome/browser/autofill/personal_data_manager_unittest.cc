@@ -66,7 +66,7 @@ class PersonalDataManagerTest : public testing::Test {
     profile_.reset(NULL);
 
     db_thread_.Stop();
-    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();
   }
 

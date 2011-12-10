@@ -148,7 +148,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     // The timer for the animation will only kick in as async task.
     while (GetBoundsAnimator(panel)->is_animating()) {
       MessageLoopForUI::current()->PostTask(FROM_HERE,
-                                            new MessageLoop::QuitTask());
+                                            MessageLoop::QuitClosure());
       MessageLoopForUI::current()->RunAllPending();
     }
   }
@@ -157,7 +157,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     // The timer for the animation will only kick in as async task.
     while (GetSettingsButtonAnimator(panel)->is_animating()) {
       MessageLoopForUI::current()->PostTask(FROM_HERE,
-                                            new MessageLoop::QuitTask());
+                                            MessageLoop::QuitClosure());
       MessageLoopForUI::current()->RunAllPending();
     }
   }

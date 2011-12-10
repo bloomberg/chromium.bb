@@ -93,7 +93,7 @@ class AppNotificationManagerSyncTest : public testing::Test {
   static void PostQuitToUIThread() {
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
-                            new MessageLoop::QuitTask());
+                            MessageLoop::QuitClosure());
   }
 
   static void WaitForFileThread() {

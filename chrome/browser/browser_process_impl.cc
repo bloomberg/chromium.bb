@@ -309,7 +309,7 @@ void BrowserProcessImpl::PostStopThread(BrowserThread::ID thread_id) {
 // send the QuitTask that terminated the message loop.
 static void PostQuit(MessageLoop* message_loop) {
   g_end_session_file_thread_has_completed = true;
-  message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 #elif defined(USE_X11)
 static void Signal(base::WaitableEvent* event) {
@@ -392,7 +392,7 @@ void BrowserProcessImpl::EndSession() {
   } while (!g_end_session_file_thread_has_completed);
   // If we did get extra quits, then we should re-post them to the message loop.
   while (--quits_received > 0)
-    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 #else
   NOTIMPLEMENTED();
 #endif
