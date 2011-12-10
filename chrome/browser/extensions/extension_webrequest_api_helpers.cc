@@ -140,23 +140,27 @@ EventResponseDelta* CalculateOnBeforeSendHeadersDelta(
       new EventResponseDelta(extension_id, extension_install_time);
   result->cancel = cancel;
 
-  // Find deleted headers.
-  {
-    net::HttpRequestHeaders::Iterator i(*old_headers);
-    while (i.GetNext()) {
-      if (!new_headers->HasHeader(i.name())) {
-        result->deleted_request_headers.push_back(i.name());
+  // The event listener might not have passed any new headers if he
+  // just wanted to cancel the request.
+  if (new_headers) {
+    // Find deleted headers.
+    {
+      net::HttpRequestHeaders::Iterator i(*old_headers);
+      while (i.GetNext()) {
+        if (!new_headers->HasHeader(i.name())) {
+          result->deleted_request_headers.push_back(i.name());
+        }
       }
     }
-  }
 
-  // Find modified headers.
-  {
-    net::HttpRequestHeaders::Iterator i(*new_headers);
-    while (i.GetNext()) {
-      std::string value;
-      if (!old_headers->GetHeader(i.name(), &value) || i.value() != value) {
-        result->modified_request_headers.SetHeader(i.name(), i.value());
+    // Find modified headers.
+    {
+      net::HttpRequestHeaders::Iterator i(*new_headers);
+      while (i.GetNext()) {
+        std::string value;
+        if (!old_headers->GetHeader(i.name(), &value) || i.value() != value) {
+          result->modified_request_headers.SetHeader(i.name(), i.value());
+        }
       }
     }
   }
