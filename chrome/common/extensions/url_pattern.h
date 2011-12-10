@@ -15,7 +15,8 @@ class GURL;
 // subset of URL syntax:
 //
 // <url-pattern> := <scheme>://<host><port><path> | '<all_urls>'
-// <scheme> := '*' | 'http' | 'https' | 'file' | 'ftp' | 'chrome'
+// <scheme> := '*' | 'http' | 'https' | 'file' | 'ftp' | 'chrome' |
+//             'chrome-extension' | 'filesystem'
 // <host> := '*' | '*.' <anychar except '/' and '*'>+
 // <port> := [':' ('*' | <port number between 0 and 65535>)]
 // <path> := '/' <any chars>
@@ -90,12 +91,15 @@ class URLPattern {
     SCHEME_FILE       = 1 << 2,
     SCHEME_FTP        = 1 << 3,
     SCHEME_CHROMEUI   = 1 << 4,
-    SCHEME_FILESYSTEM = 1 << 5,
+    SCHEME_EXTENSION  = 1 << 5,
+    SCHEME_FILESYSTEM = 1 << 6,
+
+    // IMPORTANT!
     // SCHEME_ALL will match every scheme, including chrome://, chrome-
     // extension://, about:, etc. Because this has lots of security
-    // implications, third-party extensions should never be able to get access
-    // to URL patterns initialized this way. It should only be used for internal
-    // Chrome code.
+    // implications, third-party extensions should usually not be able to get
+    // access to URL patterns initialized this way. If there is a reason
+    // for violating this general rule, document why this it safe.
     SCHEME_ALL      = -1,
   };
 

@@ -727,6 +727,9 @@ bool QueryTabsFunction::RunImpl() {
     loading = (status == keys::kStatusValueLoading) ? MATCH_TRUE : MATCH_FALSE;
   }
 
+  // It is o.k. to use URLPattern::SCHEME_ALL here because this function does
+  // not grant access to the content of the tabs, only to seeing their URLs and
+  // meta data.
   URLPattern url_pattern(URLPattern::SCHEME_ALL, "<all_urls>");
   if (query->HasKey(keys::kUrlKey)) {
     std::string value;

@@ -14,7 +14,9 @@ static const int kAllSchemes =
     URLPattern::SCHEME_HTTPS |
     URLPattern::SCHEME_FILE |
     URLPattern::SCHEME_FTP |
-    URLPattern::SCHEME_CHROMEUI;
+    URLPattern::SCHEME_CHROMEUI |
+    URLPattern::SCHEME_EXTENSION |
+    URLPattern::SCHEME_FILESYSTEM;
 
 TEST(ExtensionURLPatternTest, ParseInvalid) {
   const struct {
@@ -276,6 +278,7 @@ TEST(ExtensionURLPatternTest, Match11) {
   EXPECT_TRUE(pattern.MatchesScheme("http"));
   EXPECT_TRUE(pattern.MatchesScheme("https"));
   EXPECT_TRUE(pattern.MatchesScheme("file"));
+  EXPECT_TRUE(pattern.MatchesScheme("chrome-extension"));
   EXPECT_TRUE(pattern.match_subdomains());
   EXPECT_TRUE(pattern.match_all_urls());
   EXPECT_EQ("/*", pattern.path());
@@ -435,6 +438,24 @@ TEST(ExtensionURLPatternTest, Match18) {
   EXPECT_TRUE(pattern.MatchesURL(GURL("http://www.example.com:8080/foo")));
 }
 
+// chrome-extension://
+TEST(ExtensionURLPatternTest, Match19) {
+  URLPattern pattern(URLPattern::ERROR_ON_PORTS, URLPattern::SCHEME_EXTENSION);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS,
+            pattern.Parse("chrome-extension://ftw/*"));
+  EXPECT_EQ("chrome-extension", pattern.scheme());
+  EXPECT_EQ("ftw", pattern.host());
+  EXPECT_FALSE(pattern.match_subdomains());
+  EXPECT_FALSE(pattern.match_all_urls());
+  EXPECT_EQ("/*", pattern.path());
+  EXPECT_TRUE(pattern.MatchesURL(GURL("chrome-extension://ftw")));
+  EXPECT_TRUE(pattern.MatchesURL(
+      GURL("chrome-extension://ftw/http://google.com")));
+  EXPECT_TRUE(pattern.MatchesURL(
+      GURL("chrome-extension://ftw/https://google.com")));
+  EXPECT_FALSE(pattern.MatchesURL(GURL("chrome-extension://foobar")));
+};
+
 static const struct GetAsStringPatterns {
   const char* pattern;
 } kGetAsStringTestCases[] = {
@@ -539,7 +560,7 @@ TEST(ExtensionURLPatternTest, ConvertToExplicitSchemes) {
       URLPattern::SCHEME_FTP,
       "http://google.com/monkey").ConvertToExplicitSchemes());
 
-  ASSERT_EQ(5u, all_urls.size());
+  ASSERT_EQ(7u, all_urls.size());
   ASSERT_EQ(2u, all_schemes.size());
   ASSERT_EQ(1u, monkey.size());
 

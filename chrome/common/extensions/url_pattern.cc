@@ -16,8 +16,7 @@ const char URLPattern::kAllUrlsPattern[] = "<all_urls>";
 
 namespace {
 
-// TODO(aa): Consider adding chrome-extension? What about more obscure ones
-// like data: and javascript: ?
+// TODO(aa): What about more obscure schemes like data: and javascript: ?
 // Note: keep this array in sync with kValidSchemeMasks.
 const char* kValidSchemes[] = {
   chrome::kHttpScheme,
@@ -25,6 +24,7 @@ const char* kValidSchemes[] = {
   chrome::kFileScheme,
   chrome::kFtpScheme,
   chrome::kChromeUIScheme,
+  chrome::kExtensionScheme,
   chrome::kFileSystemScheme,
 };
 
@@ -34,6 +34,7 @@ const int kValidSchemeMasks[] = {
   URLPattern::SCHEME_FILE,
   URLPattern::SCHEME_FTP,
   URLPattern::SCHEME_CHROMEUI,
+  URLPattern::SCHEME_EXTENSION,
   URLPattern::SCHEME_FILESYSTEM,
 };
 
