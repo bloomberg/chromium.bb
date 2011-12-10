@@ -69,6 +69,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/renderer_accessibility.h"
+#include "content/renderer/renderer_gpu_video_decoder_factories.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/renderer_webstoragenamespace_impl.h"
 #include "content/renderer/speech_input_dispatcher.h"
@@ -80,6 +81,7 @@
 #include "media/base/filter_collection.h"
 #include "media/base/media_switches.h"
 #include "media/base/message_loop_factory_impl.h"
+#include "media/filters/gpu_video_decoder.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
@@ -147,7 +149,6 @@
 #include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/weburlloader_impl.h"
-#include "webkit/media/video_renderer_impl.h"
 #include "webkit/media/webmediaplayer_impl.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin_delegate.h"
@@ -1942,6 +1943,25 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     // Add the chrome specific audio renderer.
     collection->AddAudioRenderer(new AudioRendererImpl());
   }
+
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+  // Currently only cros/arm has any HW video decode support in
+  // GpuVideoDecodeAccelerator so we don't even try to use it on other
+  // platforms.  This is a startup-time optimization.  When new VDA
+  // implementations are added, relax the #if above.
+  WebKit::WebGraphicsContext3D* wk_context3d = webview()->graphicsContext3D();
+  if (wk_context3d) {
+    WebGraphicsContext3DCommandBufferImpl* context3d =
+        static_cast<WebGraphicsContext3DCommandBufferImpl*>(wk_context3d);
+    GpuChannelHost* gpu_channel_host =
+        RenderThreadImpl::current()->EstablishGpuChannelSync(
+            content::CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
+    collection->AddVideoDecoder(new media::GpuVideoDecoder(
+        MessageLoop::current(),
+        new RendererGpuVideoDecoderFactories(
+            gpu_channel_host, context3d->context()->AsWeakPtr())));
+  }
+#endif
 
   webkit_media::WebMediaPlayerImpl* result_ptr;
   if (!content::GetContentClient()->renderer()->OverrideCreateWebMediaPlayer(

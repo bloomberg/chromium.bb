@@ -202,9 +202,6 @@ void AudioRendererImpl::Render(const std::vector<float*>& audio_data,
     return;
   }
 
-  // Adjust the playback delay.
-  base::Time current_time = base::Time::Now();
-
   base::TimeDelta request_delay =
       base::TimeDelta::FromMilliseconds(audio_delay_milliseconds);
 

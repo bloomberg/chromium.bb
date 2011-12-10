@@ -26,12 +26,12 @@ GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
       client_(client) {
   DCHECK(channel_);
   DCHECK(client_);
-  DCHECK(RenderThreadImpl::current());
 }
 
 GpuVideoDecodeAcceleratorHost::~GpuVideoDecodeAcceleratorHost() {}
 
 void GpuVideoDecodeAcceleratorHost::OnChannelError() {
+  OnErrorNotification(PLATFORM_FAILURE);
   channel_ = NULL;
 }
 

@@ -149,6 +149,8 @@
     'renderer/renderer_accessibility.h',
     'renderer/renderer_clipboard_client.cc',
     'renderer/renderer_clipboard_client.h',
+    'renderer/renderer_gpu_video_decoder_factories.cc',
+    'renderer/renderer_gpu_video_decoder_factories.h',
     'renderer/renderer_main.cc',
     'renderer/renderer_main_platform_delegate.h',
     'renderer/renderer_main_platform_delegate_linux.cc',

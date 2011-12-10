@@ -62,8 +62,8 @@ enum Preload {
 // Used for completing asynchronous methods.
 typedef base::Callback<void(PipelineStatus)> FilterStatusCB;
 
-// This function copies |*cb|, calls Reset() on |*cb|, and then calls Run()
-// on the copy. This is used in the common case where you need to clear
+// These functions copy |*cb|, call Reset() on |*cb|, and then call Run()
+// on the copy.  This is used in the common case where you need to clear
 // a callback member variable before running the callback.
 MEDIA_EXPORT void ResetAndRunCB(FilterStatusCB* cb, PipelineStatus status);
 MEDIA_EXPORT void ResetAndRunCB(base::Closure* cb);
@@ -80,6 +80,10 @@ class MEDIA_EXPORT Filter : public base::RefCountedThreadSafe<Filter> {
   // reference to the filter.  The reference held by the host is guaranteed
   // to be released before the host object is destroyed by the pipeline.
   virtual void set_host(FilterHost* host);
+
+  // Clear |host_| to signal abandonment.  Must be called after set_host() and
+  // before any state-changing method below.
+  virtual void clear_host();
 
   virtual FilterHost* host();
 
@@ -164,9 +168,8 @@ class MEDIA_EXPORT VideoDecoder : public Filter {
   // Initialize a VideoDecoder with the given DemuxerStream, executing the
   // callback upon completion.
   // stats_callback is used to update global pipeline statistics.
-  //
-  // TODO(scherkus): switch to PipelineStatus callback.
-  virtual void Initialize(DemuxerStream* stream, const base::Closure& callback,
+  virtual void Initialize(DemuxerStream* stream,
+                          const PipelineStatusCB& callback,
                           const StatisticsCallback& stats_callback) = 0;
 
   // Request a frame to be decoded and returned via the provided callback.
