@@ -46,6 +46,7 @@ UtilityProcessHost::UtilityProcessHost(Client* client,
 #else
       child_flags_(ChildProcessHost::CHILD_NORMAL),
 #endif
+      use_linux_zygote_(false),
       started_(false) {
 }
 
@@ -129,11 +130,17 @@ bool UtilityProcessHost::StartProcess() {
   cmd_line->AppendSwitchPath(switches::kUtilityProcessAllowedDir, exposed_dir_);
 #endif
 
+  bool use_zygote = false;
+
+#if defined(OS_LINUX)
+  use_zygote = !no_sandbox_ && use_linux_zygote_;
+#endif
+
   Launch(
 #if defined(OS_WIN)
       exposed_dir_,
 #elif defined(OS_POSIX)
-      false,
+      use_zygote,
       env_,
 #endif
       cmd_line);
