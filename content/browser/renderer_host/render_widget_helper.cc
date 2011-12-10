@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_widget_helper.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/eintr_wrapper.h"
 #include "base/threading/thread.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -15,36 +16,45 @@
 
 using content::BrowserThread;
 
-// A Task used with InvokeLater that we hold a pointer to in pending_paints_.
-// Instances are deleted by MessageLoop after it calls their Run method.
-class RenderWidgetHelper::UpdateMsgProxy : public Task {
+// A helper used with DidReceiveUpdateMsg that we hold a pointer to in
+// pending_paints_.
+class RenderWidgetHelper::UpdateMsgProxy {
  public:
-  UpdateMsgProxy(RenderWidgetHelper* h, const IPC::Message& m)
-      : helper(h),
-        message(m),
-        cancelled(false) {
-  }
+  UpdateMsgProxy(RenderWidgetHelper* h, const IPC::Message& m);
+  ~UpdateMsgProxy();
+  void Run();
+  void Cancel() { cancelled_ = true; }
 
-  ~UpdateMsgProxy() {
-    // If the paint message was never dispatched, then we need to let the
-    // helper know that we are going away.
-    if (!cancelled && helper)
-      helper->OnDiscardUpdateMsg(this);
-  }
+  const IPC::Message& message() const { return message_; }
 
-  virtual void Run() {
-    if (!cancelled) {
-      helper->OnDispatchUpdateMsg(this);
-      helper = NULL;
-    }
-  }
-
-  scoped_refptr<RenderWidgetHelper> helper;
-  IPC::Message message;
-  bool cancelled;  // If true, then the message will not be dispatched.
+ private:
+  scoped_refptr<RenderWidgetHelper> helper_;
+  IPC::Message message_;
+  bool cancelled_;  // If true, then the message will not be dispatched.
 
   DISALLOW_COPY_AND_ASSIGN(UpdateMsgProxy);
 };
+
+RenderWidgetHelper::UpdateMsgProxy::UpdateMsgProxy(
+    RenderWidgetHelper* h, const IPC::Message& m)
+    : helper_(h),
+      message_(m),
+      cancelled_(false) {
+}
+
+RenderWidgetHelper::UpdateMsgProxy::~UpdateMsgProxy() {
+  // If the paint message was never dispatched, then we need to let the
+  // helper know that we are going away.
+  if (!cancelled_ && helper_)
+    helper_->OnDiscardUpdateMsg(this);
+}
+
+void RenderWidgetHelper::UpdateMsgProxy::Run() {
+  if (!cancelled_) {
+    helper_->OnDispatchUpdateMsg(this);
+    helper_ = NULL;
+  }
+}
 
 RenderWidgetHelper::RenderWidgetHelper()
     : render_process_id_(-1),
@@ -115,7 +125,7 @@ bool RenderWidgetHelper::WaitForUpdateMsg(int render_widget_id,
 
         // Flag the proxy as cancelled so that when it is run as a task it will
         // do nothing.
-        proxy->cancelled = true;
+        proxy->Cancel();
 
         queue.pop_front();
         if (queue.empty())
@@ -124,7 +134,7 @@ bool RenderWidgetHelper::WaitForUpdateMsg(int render_widget_id,
     }
 
     if (proxy) {
-      *msg = proxy->message;
+      *msg = proxy->message();
       DCHECK(msg->routing_id() == render_widget_id);
       return true;
     }
@@ -156,12 +166,12 @@ void RenderWidgetHelper::DidReceiveUpdateMsg(const IPC::Message& msg) {
   // will just continue waiting.
   event_.Signal();
 
-  // The proxy will be deleted when it is run as a task.
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, proxy);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&UpdateMsgProxy::Run, base::Owned(proxy)));
 }
 
 void RenderWidgetHelper::OnDiscardUpdateMsg(UpdateMsgProxy* proxy) {
-  const IPC::Message& msg = proxy->message;
+  const IPC::Message& msg = proxy->message();
 
   // Remove the proxy from the map now that we are going to handle it normally.
   {
@@ -185,7 +195,7 @@ void RenderWidgetHelper::OnDispatchUpdateMsg(UpdateMsgProxy* proxy) {
   content::RenderProcessHost* host =
       content::RenderProcessHost::FromID(render_process_id_);
   if (host)
-    host->OnMessageReceived(proxy->message);
+    host->OnMessageReceived(proxy->message());
 }
 
 void RenderWidgetHelper::OnCancelResourceRequests(
