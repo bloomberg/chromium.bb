@@ -10,6 +10,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
+class SkBitmap;
 namespace gfx {
 class Canvas;
 class Font;
@@ -19,6 +20,8 @@ class Point;
 }
 
 namespace views {
+
+class FrameBackground;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -91,6 +94,10 @@ class CustomFrameView : public NonClientFrameView,
   void PaintTitleBar(gfx::Canvas* canvas);
   void PaintRestoredClientEdge(gfx::Canvas* canvas);
 
+  // Compute aspects of the frame needed to paint the frame background.
+  SkColor GetFrameColor() const;
+  SkBitmap* GetFrameBitmap() const;
+
   // Layout various sub-components of this view.
   void LayoutWindowControls();
   void LayoutTitleBar();
@@ -113,6 +120,9 @@ class CustomFrameView : public NonClientFrameView,
 
   // The window that owns this view.
   Widget* frame_;
+
+  // Background painter for the window frame.
+  scoped_ptr<FrameBackground> frame_background_;
 
   // Initialize various static resources.
   static void InitClass();

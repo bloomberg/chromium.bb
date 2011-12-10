@@ -27,7 +27,9 @@
 #include "ui/gfx/native_widget_types.h"
 
 class SkBitmap;
-typedef uint32 SkColor;
+// Don't use uint32 or uint32_t here because Eclipse's indexer gets confused.
+// This can be removed when the static colors are moved to ThemeProvider.
+typedef unsigned int SkColor;
 
 namespace base {
 class Lock;

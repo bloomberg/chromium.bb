@@ -378,6 +378,8 @@
         'window/dialog_client_view.h',
         'window/dialog_delegate.cc',
         'window/dialog_delegate.h',
+        'window/frame_background.cc',
+        'window/frame_background.h',
         'window/native_frame_view.cc',
         'window/native_frame_view.h',
         'window/non_client_view.cc',

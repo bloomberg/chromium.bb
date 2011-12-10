@@ -18,6 +18,7 @@
 class BrowserView;
 namespace views {
 class ImageButton;
+class FrameBackground;
 }
 
 class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
@@ -131,10 +132,11 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   void PaintToolbarBackground(gfx::Canvas* canvas);
   void PaintRestoredClientEdge(gfx::Canvas* canvas);
 
-  // Returns the properly themed bitmap and frame color, given various
-  // attributes of this view (normal browser or not, OTR or not, active or not).
-  SkBitmap* GetFrameBitmap() const;
+  // Compute aspects of the frame needed to paint the frame background.
   SkColor GetFrameColor() const;
+  SkBitmap* GetFrameBitmap() const;
+  SkBitmap* GetFrameOverlayBitmap() const;
+  int GetTopAreaHeight() const;
 
   // Layout various sub-components of this view.
   void LayoutWindowControls();
@@ -163,6 +165,9 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   gfx::Rect client_view_bounds_;
 
   content::NotificationRegistrar registrar_;
+
+  // Background painter for the window frame.
+  scoped_ptr<views::FrameBackground> frame_background_;
 
   DISALLOW_COPY_AND_ASSIGN(OpaqueBrowserFrameView);
 };

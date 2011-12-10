@@ -17,6 +17,7 @@
 #include "ui/gfx/path.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
+#include "ui/views/window/frame_background.h"
 #include "ui/views/window/window_resources.h"
 #include "ui/views/window/window_shape.h"
 
@@ -73,7 +74,8 @@ CustomFrameView::CustomFrameView(Widget* frame)
       window_icon_(NULL),
       should_show_minmax_buttons_(false),
       should_show_client_edge_(false),
-      frame_(frame) {
+      frame_(frame),
+      frame_background_(new FrameBackground()) {
   InitClass();
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -314,108 +316,46 @@ void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   // Window frame mode.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
-  SkBitmap* frame_image;
-  SkColor frame_color;
-  if (frame_->IsActive()) {
-    frame_image = rb.GetBitmapNamed(IDR_FRAME);
-    frame_color = ResourceBundle::frame_color;
-  } else {
-    frame_image = rb.GetBitmapNamed(IDR_FRAME_INACTIVE);
-    frame_color = ResourceBundle::frame_color_inactive;
-  }
+  frame_background_->set_frame_color(GetFrameColor());
+  SkBitmap* frame_image = GetFrameBitmap();
+  frame_background_->set_theme_bitmap(frame_image);
+  frame_background_->set_top_area_height(frame_image->height());
 
 #if defined(USE_AURA)
   // TODO(jamescook): Remove this when Aura defaults to its own window frame,
   // BrowserNonClientFrameViewAura.  Until then, use custom square corners to
   // avoid performance penalties associated with transparent layers.
-  SkBitmap* top_left_corner = rb.GetBitmapNamed(IDR_AURA_WINDOW_TOP_LEFT);
-  SkBitmap* top_right_corner = rb.GetBitmapNamed(IDR_AURA_WINDOW_TOP_RIGHT);
-  SkBitmap* bottom_left_corner =
-      rb.GetBitmapNamed(IDR_AURA_WINDOW_BOTTOM_LEFT);
-  SkBitmap* bottom_right_corner =
-      rb.GetBitmapNamed(IDR_AURA_WINDOW_BOTTOM_RIGHT);
+  frame_background_->SetCornerImages(
+      rb.GetBitmapNamed(IDR_AURA_WINDOW_TOP_LEFT),
+      rb.GetBitmapNamed(IDR_AURA_WINDOW_TOP_RIGHT),
+      rb.GetBitmapNamed(IDR_AURA_WINDOW_BOTTOM_LEFT),
+      rb.GetBitmapNamed(IDR_AURA_WINDOW_BOTTOM_RIGHT));
 #else
-  SkBitmap* top_left_corner = rb.GetBitmapNamed(IDR_WINDOW_TOP_LEFT_CORNER);
-  SkBitmap* top_right_corner =
-      rb.GetBitmapNamed(IDR_WINDOW_TOP_RIGHT_CORNER);
-  SkBitmap* bottom_left_corner =
-      rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_LEFT_CORNER);
-  SkBitmap* bottom_right_corner =
-      rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_RIGHT_CORNER);
+  frame_background_->SetCornerImages(
+      rb.GetBitmapNamed(IDR_WINDOW_TOP_LEFT_CORNER),
+      rb.GetBitmapNamed(IDR_WINDOW_TOP_RIGHT_CORNER),
+      rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_LEFT_CORNER),
+      rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_RIGHT_CORNER));
 #endif
-  SkBitmap* top_edge = rb.GetBitmapNamed(IDR_WINDOW_TOP_CENTER);
-  SkBitmap* right_edge = rb.GetBitmapNamed(IDR_WINDOW_RIGHT_SIDE);
-  SkBitmap* left_edge = rb.GetBitmapNamed(IDR_WINDOW_LEFT_SIDE);
-  SkBitmap* bottom_edge = rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_CENTER);
+  frame_background_->SetSideImages(
+      rb.GetBitmapNamed(IDR_WINDOW_LEFT_SIDE),
+      rb.GetBitmapNamed(IDR_WINDOW_TOP_CENTER),
+      rb.GetBitmapNamed(IDR_WINDOW_RIGHT_SIDE),
+      rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_CENTER));
 
-  // Fill with the frame color first so we have a constant background for
-  // areas not covered by the theme image.
-  canvas->FillRect(frame_color,
-                   gfx::Rect(0, 0, width(), frame_image->height()));
-
-  int remaining_height = height() - frame_image->height();
-  if (remaining_height > 0) {
-    // Now fill down the sides.
-    canvas->FillRect(frame_color,
-                     gfx::Rect(0, frame_image->height(), left_edge->width(),
-                               remaining_height));
-    canvas->FillRect(frame_color,
-                     gfx::Rect(width() - right_edge->width(),
-                               frame_image->height(), right_edge->width(),
-                               remaining_height));
-    int center_width = width() - left_edge->width() - right_edge->width();
-    if (center_width > 0) {
-      // Now fill the bottom area.
-      canvas->FillRect(frame_color,
-                       gfx::Rect(left_edge->width(),
-                                 height() - bottom_edge->height(),
-                                 center_width, bottom_edge->height()));
-    }
-  }
-
-  // Don't draw the colored frame on Aura, just the frame color.
-#if !defined(USE_AURA)
-  // Draw the theme frame.
-  canvas->TileImageInt(*frame_image, 0, 0, width(), frame_image->height());
-#endif
-
-  // Top.
-  canvas->DrawBitmapInt(*top_left_corner, 0, 0);
-  canvas->TileImageInt(*top_edge, top_left_corner->width(), 0,
-                       width() - top_right_corner->width(), top_edge->height());
-  canvas->DrawBitmapInt(*top_right_corner,
-                        width() - top_right_corner->width(), 0);
-
-  // Right.
-  canvas->TileImageInt(*right_edge, width() - right_edge->width(),
-      top_right_corner->height(), right_edge->width(),
-      height() - top_right_corner->height() - bottom_right_corner->height());
-
-  // Bottom.
-  canvas->DrawBitmapInt(*bottom_right_corner,
-                        width() - bottom_right_corner->width(),
-                        height() - bottom_right_corner->height());
-  canvas->TileImageInt(*bottom_edge, bottom_left_corner->width(),
-      height() - bottom_edge->height(),
-      width() - bottom_left_corner->width() - bottom_right_corner->width(),
-      bottom_edge->height());
-  canvas->DrawBitmapInt(*bottom_left_corner, 0,
-                        height() - bottom_left_corner->height());
-
-  // Left.
-  canvas->TileImageInt(*left_edge, 0, top_left_corner->height(),
-      left_edge->width(),
-      height() - top_left_corner->height() - bottom_left_corner->height());
+  frame_background_->PaintRestored(canvas, this);
 }
 
 void CustomFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
-  SkBitmap* frame_image = rb.GetBitmapNamed(frame_->IsActive() ?
-      IDR_FRAME : IDR_FRAME_INACTIVE);
-  canvas->TileImageInt(*frame_image, 0, FrameBorderThickness(), width(),
-                       frame_image->height());
+  SkBitmap* frame_image = GetFrameBitmap();
+  frame_background_->set_theme_bitmap(frame_image);
+  frame_background_->set_top_area_height(frame_image->height());
 
+  frame_background_->PaintMaximized(canvas, this);
+
+  // TODO(jamescook): Migrate this into FrameBackground.
   // The bottom of the titlebar actually comes from the top of the Client Edge
   // graphic, with the actual client edge clipped off the bottom.
   SkBitmap* titlebar_bottom = rb.GetBitmapNamed(IDR_APP_TOP_CENTER);
@@ -487,6 +427,17 @@ void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   canvas->DrawRectInt(ResourceBundle::toolbar_color,
     client_area_bounds.x() - 1, client_area_top - 1,
     client_area_bounds.width() + 1, client_area_bottom - client_area_top + 1);
+}
+
+SkColor CustomFrameView::GetFrameColor() const {
+  return frame_->IsActive() ?
+      ResourceBundle::frame_color :
+      ResourceBundle::frame_color_inactive;
+}
+
+SkBitmap* CustomFrameView::GetFrameBitmap() const {
+  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      frame_->IsActive() ? IDR_FRAME : IDR_FRAME_INACTIVE);
 }
 
 void CustomFrameView::LayoutWindowControls() {

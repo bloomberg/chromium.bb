@@ -14,7 +14,7 @@
 
 class BrowserFrame;
 class BrowserView;
-class FrameBackground;
+class FrameBackgroundView;
 class WindowControlButton;
 
 class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
@@ -83,7 +83,7 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
   int last_hittest_code_;
   WindowControlButton* maximize_button_;
   WindowControlButton* close_button_;
-  FrameBackground* frame_background_;
+  FrameBackgroundView* frame_background_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewAura);
 };

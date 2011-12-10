@@ -36,6 +36,7 @@
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
+#include "ui/views/window/frame_background.h"
 #include "ui/views/window/non_client_view.h"
 #include "ui/views/window/window_resources.h"
 #include "ui/views/window/window_shape.h"
@@ -229,6 +230,9 @@ class ConstrainedWindowFrameView
   // The bounds of the ClientView.
   gfx::Rect client_view_bounds_;
 
+  // Background painter for the frame.
+  scoped_ptr<views::FrameBackground> frame_background_;
+
   static void InitClass();
 
   // The font to be used to render the titlebar text.
@@ -271,7 +275,8 @@ ConstrainedWindowFrameView::ConstrainedWindowFrameView(
     ConstrainedWindowViews* container)
         : NonClientFrameView(),
           container_(container),
-          close_button_(new views::ImageButton(this)) {
+          close_button_(new views::ImageButton(this)),
+          frame_background_(new views::FrameBackground()) {
   InitClass();
   InitWindowResources();
 
@@ -425,92 +430,40 @@ gfx::Rect ConstrainedWindowFrameView::IconBounds() const {
 
 void ConstrainedWindowFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  frame_background_->set_frame_color(ResourceBundle::frame_color);
+  SkBitmap* theme_frame = rb.GetBitmapNamed(IDR_THEME_FRAME);
+  frame_background_->set_theme_bitmap(theme_frame);
+  frame_background_->set_theme_overlay_bitmap(NULL);
+  frame_background_->set_top_area_height(theme_frame->height());
+
 #if defined(USE_AURA)
   // TODO(jamescook): Remove this when Aura defaults to its own window frame,
   // BrowserNonClientFrameViewAura.  Until then, use custom square corners to
   // avoid performance penalties associated with transparent layers.
-  SkBitmap* top_left_corner = rb.GetBitmapNamed(IDR_AURA_WINDOW_TOP_LEFT);
-  SkBitmap* top_right_corner = rb.GetBitmapNamed(IDR_AURA_WINDOW_TOP_RIGHT);
-  SkBitmap* bottom_left_corner =
-      rb.GetBitmapNamed(IDR_AURA_WINDOW_BOTTOM_LEFT);
-  SkBitmap* bottom_right_corner =
-      rb.GetBitmapNamed(IDR_AURA_WINDOW_BOTTOM_RIGHT);
-  SkBitmap* top_edge = rb.GetBitmapNamed(IDR_WINDOW_TOP_CENTER);
-  SkBitmap* right_edge = rb.GetBitmapNamed(IDR_WINDOW_RIGHT_SIDE);
-  SkBitmap* left_edge = rb.GetBitmapNamed(IDR_WINDOW_LEFT_SIDE);
-  SkBitmap* bottom_edge = rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_CENTER);
+  frame_background_->SetCornerImages(
+      rb.GetBitmapNamed(IDR_AURA_WINDOW_TOP_LEFT),
+      rb.GetBitmapNamed(IDR_AURA_WINDOW_TOP_RIGHT),
+      rb.GetBitmapNamed(IDR_AURA_WINDOW_BOTTOM_LEFT),
+      rb.GetBitmapNamed(IDR_AURA_WINDOW_BOTTOM_RIGHT));
+  frame_background_->SetSideImages(
+      rb.GetBitmapNamed(IDR_WINDOW_LEFT_SIDE),
+      rb.GetBitmapNamed(IDR_WINDOW_TOP_CENTER),
+      rb.GetBitmapNamed(IDR_WINDOW_RIGHT_SIDE),
+      rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_CENTER));
 #else
-  SkBitmap* top_left_corner = resources_->GetPartBitmap(FRAME_TOP_LEFT_CORNER);
-  SkBitmap* top_right_corner =
-      resources_->GetPartBitmap(FRAME_TOP_RIGHT_CORNER);
-  SkBitmap* bottom_left_corner =
-      resources_->GetPartBitmap(FRAME_BOTTOM_LEFT_CORNER);
-  SkBitmap* bottom_right_corner =
-      resources_->GetPartBitmap(FRAME_BOTTOM_RIGHT_CORNER);
-  SkBitmap* top_edge = resources_->GetPartBitmap(FRAME_TOP_EDGE);
-  SkBitmap* right_edge = resources_->GetPartBitmap(FRAME_RIGHT_EDGE);
-  SkBitmap* left_edge = resources_->GetPartBitmap(FRAME_LEFT_EDGE);
-  SkBitmap* bottom_edge = resources_->GetPartBitmap(FRAME_BOTTOM_EDGE);
+  frame_background_->SetCornerImages(
+      resources_->GetPartBitmap(FRAME_TOP_LEFT_CORNER),
+      resources_->GetPartBitmap(FRAME_TOP_RIGHT_CORNER),
+      resources_->GetPartBitmap(FRAME_BOTTOM_LEFT_CORNER),
+      resources_->GetPartBitmap(FRAME_BOTTOM_RIGHT_CORNER));
+  frame_background_->SetSideImages(
+      resources_->GetPartBitmap(FRAME_LEFT_EDGE),
+      resources_->GetPartBitmap(FRAME_TOP_EDGE),
+      resources_->GetPartBitmap(FRAME_RIGHT_EDGE),
+      resources_->GetPartBitmap(FRAME_BOTTOM_EDGE));
 #endif
 
-  SkBitmap* theme_frame = rb.GetBitmapNamed(IDR_THEME_FRAME);
-  SkColor frame_color = ResourceBundle::frame_color;
-
-  // Fill with the frame color first so we have a constant background for
-  // areas not covered by the theme image.
-  canvas->FillRect(frame_color,
-                   gfx::Rect(0, 0, width(), theme_frame->height()));
-
-  int remaining_height = height() - theme_frame->height();
-  if (remaining_height > 0) {
-    // Now fill down the sides.
-    canvas->FillRect(frame_color, gfx::Rect(0, theme_frame->height(),
-                                            left_edge->width(),
-                                            remaining_height));
-    canvas->FillRect(frame_color, gfx::Rect(width() - right_edge->width(),
-                                            theme_frame->height(),
-                                            right_edge->width(),
-                                            remaining_height));
-    int center_width = width() - left_edge->width() - right_edge->width();
-    if (center_width > 0) {
-      // Now fill the bottom area.
-      canvas->FillRect(frame_color,
-                       gfx::Rect(left_edge->width(),
-                                 height() - bottom_edge->height(),
-                                 center_width, bottom_edge->height()));
-    }
-  }
-
-  // Draw the theme frame.
-  canvas->TileImageInt(*theme_frame, 0, 0, width(), theme_frame->height());
-
-  // Top.
-  canvas->DrawBitmapInt(*top_left_corner, 0, 0);
-  canvas->TileImageInt(*top_edge, top_left_corner->width(), 0,
-                       width() - top_right_corner->width(), top_edge->height());
-  canvas->DrawBitmapInt(*top_right_corner,
-                        width() - top_right_corner->width(), 0);
-
-  // Right.
-  canvas->TileImageInt(*right_edge, width() - right_edge->width(),
-      top_right_corner->height(), right_edge->width(),
-      height() - top_right_corner->height() - bottom_right_corner->height());
-
-  // Bottom.
-  canvas->DrawBitmapInt(*bottom_right_corner,
-                        width() - bottom_right_corner->width(),
-                        height() - bottom_right_corner->height());
-  canvas->TileImageInt(*bottom_edge, bottom_left_corner->width(),
-      height() - bottom_edge->height(),
-      width() - bottom_left_corner->width() - bottom_right_corner->width(),
-      bottom_edge->height());
-  canvas->DrawBitmapInt(*bottom_left_corner, 0,
-                        height() - bottom_left_corner->height());
-
-  // Left.
-  canvas->TileImageInt(*left_edge, 0, top_left_corner->height(),
-      left_edge->width(),
-      height() - top_left_corner->height() - bottom_left_corner->height());
+  frame_background_->PaintRestored(canvas, this);
 }
 
 void ConstrainedWindowFrameView::PaintTitleBar(gfx::Canvas* canvas) {
