@@ -27,23 +27,18 @@ class SyncPrefsTest : public testing::Test {
 };
 
 // Get all types with a user-facing component.
-syncable::ModelTypeSet GetNonPassiveTypes() {
-  syncable::ModelTypeSet all_types;
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
-    const syncable::ModelType type = syncable::ModelTypeFromInt(i);
-    all_types.insert(type);
-  }
-  all_types.erase(syncable::NIGORI);
-  return all_types;
+syncable::ModelEnumSet GetNonPassiveTypes() {
+  syncable::ModelEnumSet non_passive_types = syncable::ModelEnumSet::All();
+  non_passive_types.Remove(syncable::NIGORI);
+  return non_passive_types;
 }
 
 // Returns all types visible from the setup UI.
-syncable::ModelTypeSet GetUserVisibleTypes() {
-  syncable::ModelTypeSet user_visible_types(GetNonPassiveTypes());
-  user_visible_types.erase(syncable::AUTOFILL_PROFILE);
-  user_visible_types.erase(syncable::SEARCH_ENGINES);
-  user_visible_types.erase(syncable::APP_NOTIFICATIONS);
+syncable::ModelEnumSet GetUserVisibleTypes() {
+  syncable::ModelEnumSet user_visible_types(GetNonPassiveTypes());
+  user_visible_types.Remove(syncable::AUTOFILL_PROFILE);
+  user_visible_types.Remove(syncable::SEARCH_ENGINES);
+  user_visible_types.Remove(syncable::APP_NOTIFICATIONS);
   return user_visible_types;
 }
 
@@ -81,17 +76,17 @@ TEST_F(SyncPrefsTest, PreferredTypesKeepEverythingSynced) {
 
   EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
 
-  const syncable::ModelTypeSet& non_passive_types = GetNonPassiveTypes();
-  EXPECT_EQ(non_passive_types,
-            sync_prefs.GetPreferredDataTypes(non_passive_types));
-  const syncable::ModelTypeSet& user_visible_types = GetUserVisibleTypes();
-  for (syncable::ModelTypeSet::const_iterator it = user_visible_types.begin();
-       it != user_visible_types.end(); ++it) {
-    syncable::ModelTypeSet preferred_types;
-    preferred_types.insert(*it);
+  const syncable::ModelEnumSet non_passive_types = GetNonPassiveTypes();
+  EXPECT_TRUE(non_passive_types.Equals(
+      sync_prefs.GetPreferredDataTypes(non_passive_types)));
+  const syncable::ModelEnumSet user_visible_types = GetUserVisibleTypes();
+  for (syncable::ModelEnumSet::Iterator it = user_visible_types.First();
+       it.Good(); it.Inc()) {
+    syncable::ModelEnumSet preferred_types;
+    preferred_types.Put(it.Get());
     sync_prefs.SetPreferredDataTypes(non_passive_types, preferred_types);
-    EXPECT_EQ(non_passive_types,
-              sync_prefs.GetPreferredDataTypes(non_passive_types));
+    EXPECT_TRUE(non_passive_types.Equals(
+        sync_prefs.GetPreferredDataTypes(non_passive_types)));
   }
 }
 
@@ -100,27 +95,27 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
 
   sync_prefs.SetKeepEverythingSynced(false);
 
-  const syncable::ModelTypeSet& non_passive_types = GetNonPassiveTypes();
-  EXPECT_EQ(non_passive_types,
-            sync_prefs.GetPreferredDataTypes(non_passive_types));
-  const syncable::ModelTypeSet& user_visible_types = GetUserVisibleTypes();
-  for (syncable::ModelTypeSet::const_iterator it = user_visible_types.begin();
-       it != user_visible_types.end(); ++it) {
-    syncable::ModelTypeSet preferred_types;
-    preferred_types.insert(*it);
-    syncable::ModelTypeSet expected_preferred_types(preferred_types);
-    if (*it == syncable::AUTOFILL) {
-      expected_preferred_types.insert(syncable::AUTOFILL_PROFILE);
+  const syncable::ModelEnumSet non_passive_types = GetNonPassiveTypes();
+  EXPECT_TRUE(non_passive_types.Equals(
+      sync_prefs.GetPreferredDataTypes(non_passive_types)));
+  const syncable::ModelEnumSet user_visible_types = GetUserVisibleTypes();
+  for (syncable::ModelEnumSet::Iterator it = user_visible_types.First();
+       it.Good(); it.Inc()) {
+    syncable::ModelEnumSet preferred_types;
+    preferred_types.Put(it.Get());
+    syncable::ModelEnumSet expected_preferred_types(preferred_types);
+    if (it.Get() == syncable::AUTOFILL) {
+      expected_preferred_types.Put(syncable::AUTOFILL_PROFILE);
     }
-    if (*it == syncable::PREFERENCES) {
-      expected_preferred_types.insert(syncable::SEARCH_ENGINES);
+    if (it.Get() == syncable::PREFERENCES) {
+      expected_preferred_types.Put(syncable::SEARCH_ENGINES);
     }
-    if (*it == syncable::APPS) {
-      expected_preferred_types.insert(syncable::APP_NOTIFICATIONS);
+    if (it.Get() == syncable::APPS) {
+      expected_preferred_types.Put(syncable::APP_NOTIFICATIONS);
     }
     sync_prefs.SetPreferredDataTypes(non_passive_types, preferred_types);
-    EXPECT_EQ(expected_preferred_types,
-              sync_prefs.GetPreferredDataTypes(non_passive_types));
+    EXPECT_TRUE(expected_preferred_types.Equals(
+        sync_prefs.GetPreferredDataTypes(non_passive_types)));
   }
 }
 
@@ -175,17 +170,16 @@ TEST_F(SyncPrefsTest, ObservedPrefs) {
 TEST_F(SyncPrefsTest, AcknowledgeSyncedTypes) {
   SyncPrefs sync_prefs(&pref_service_);
 
-  syncable::ModelTypeSet expected_acknowledge_synced_types =
+  syncable::ModelEnumSet expected_acknowledge_synced_types =
       sync_prefs.GetAcknowledgeSyncedTypesForTest();
   for (int i = syncable::EXTENSION_SETTINGS;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
     const syncable::ModelType type = syncable::ModelTypeFromInt(i);
-    syncable::ModelTypeSet acknowledge_synced_types;
-    acknowledge_synced_types.insert(type);
-    expected_acknowledge_synced_types.insert(type);
+    syncable::ModelEnumSet acknowledge_synced_types(type);
+    expected_acknowledge_synced_types.Put(type);
     sync_prefs.AcknowledgeSyncedTypes(acknowledge_synced_types);
-    EXPECT_EQ(expected_acknowledge_synced_types,
-              sync_prefs.GetAcknowledgeSyncedTypesForTest());
+    EXPECT_TRUE(expected_acknowledge_synced_types.Equals(
+        sync_prefs.GetAcknowledgeSyncedTypesForTest()));
   }
 }
 
@@ -226,8 +220,8 @@ TEST_F(SyncPrefsTest, NullPrefService) {
   EXPECT_FALSE(sync_prefs.IsStartSuppressed());
   EXPECT_EQ(base::Time(), sync_prefs.GetLastSyncedTime());
   EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
-  const syncable::ModelTypeSet& non_passive_types = GetNonPassiveTypes();
-  EXPECT_TRUE(sync_prefs.GetPreferredDataTypes(non_passive_types).empty());
+  const syncable::ModelEnumSet non_passive_types = GetNonPassiveTypes();
+  EXPECT_TRUE(sync_prefs.GetPreferredDataTypes(non_passive_types).Empty());
   EXPECT_FALSE(sync_prefs.IsManaged());
   EXPECT_TRUE(sync_prefs.GetEncryptionBootstrapToken().empty());
   EXPECT_TRUE(sync_prefs.GetAllMaxVersions().empty());

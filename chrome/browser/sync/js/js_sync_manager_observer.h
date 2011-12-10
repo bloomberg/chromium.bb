@@ -41,7 +41,7 @@ class JsSyncManagerObserver : public sync_api::SyncManager::Observer {
   virtual void OnPassphraseAccepted(
       const std::string& bootstrap_token) OVERRIDE;
   virtual void OnEncryptedTypesChanged(
-      const syncable::ModelTypeSet& encrypted_types,
+      syncable::ModelEnumSet encrypted_types,
       bool encrypt_everything) OVERRIDE;
   virtual void OnEncryptionComplete() OVERRIDE;
   virtual void OnInitializationComplete(

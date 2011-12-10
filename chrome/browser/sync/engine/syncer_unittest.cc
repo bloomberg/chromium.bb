@@ -370,7 +370,7 @@ class SyncerTest : public testing::Test,
       GetCommitIdsCommand command(limit);
       command.BuildCommitIds(
           session_->status_controller().unsynced_handles(),
-          session_->write_transaction(), routes, syncable::ModelTypeSet());
+          session_->write_transaction(), routes, syncable::ModelEnumSet());
       vector<syncable::Id> output =
           command.ordered_commit_set_->GetAllCommitIds();
       size_t truncated_size = std::min(limit, expected_id_order.size());
@@ -558,8 +558,7 @@ TEST_F(SyncerTest, GetCommitIdsCommandTruncates) {
 TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());
-  syncable::ModelTypeSet throttled_types;
-  throttled_types.insert(syncable::BOOKMARKS);
+  const syncable::ModelEnumSet throttled_types(syncable::BOOKMARKS);
   KeyParams key_params = {"localhost", "dummy", "foobar"};
   sync_pb::EntitySpecifics bookmark_data;
   AddDefaultExtensionValue(syncable::BOOKMARKS, &bookmark_data);

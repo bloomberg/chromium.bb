@@ -1247,9 +1247,9 @@ void SessionModelAssociator::PopulateSessionSpecificsTab(
 bool SessionModelAssociator::CryptoReadyIfNecessary() {
   // We only access the cryptographer while holding a transaction.
   sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-  syncable::ModelTypeSet encrypted_types;
-  encrypted_types = sync_api::GetEncryptedTypes(&trans);
-  return encrypted_types.count(SESSIONS) == 0 ||
+  const syncable::ModelEnumSet encrypted_types =
+      sync_api::GetEncryptedTypes(&trans);
+  return !encrypted_types.Has(SESSIONS) ||
          sync_service_->IsCryptographerReady(&trans);
 }
 

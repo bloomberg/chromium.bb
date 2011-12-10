@@ -252,9 +252,8 @@ bool GenericChangeProcessor::CryptoReadyIfNecessary(syncable::ModelType type) {
   DCHECK_NE(type, syncable::UNSPECIFIED);
   // We only access the cryptographer while holding a transaction.
   sync_api::ReadTransaction trans(FROM_HERE, share_handle());
-  const syncable::ModelTypeSet& encrypted_types =
-      GetEncryptedTypes(&trans);
-  return encrypted_types.count(type) == 0 ||
+  const syncable::ModelEnumSet encrypted_types = GetEncryptedTypes(&trans);
+  return !encrypted_types.Has(type) ||
          trans.GetCryptographer()->is_ready();
 }
 

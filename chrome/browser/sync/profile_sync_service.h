@@ -212,13 +212,13 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
       sync_api::PassphraseRequiredReason reason) OVERRIDE;
   virtual void OnPassphraseAccepted() OVERRIDE;
   virtual void OnEncryptedTypesChanged(
-      const syncable::ModelTypeSet& enncrypted_types,
+      syncable::ModelEnumSet encrypted_types,
       bool encrypt_everything) OVERRIDE;
   virtual void OnEncryptionComplete() OVERRIDE;
   virtual void OnMigrationNeededForTypes(
-      const syncable::ModelTypeSet& types) OVERRIDE;
+      syncable::ModelEnumSet types) OVERRIDE;
   virtual void OnDataTypesChanged(
-      const syncable::ModelTypeSet& to_add) OVERRIDE;
+      syncable::ModelEnumSet to_add) OVERRIDE;
   virtual void OnActionableError(
       const browser_sync::SyncProtocolError& error) OVERRIDE;
 
@@ -242,7 +242,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // and all data types will be synced.  |sync_everything| means "sync all
   // current and future data types."
   virtual void OnUserChoseDatatypes(bool sync_everything,
-      const syncable::ModelTypeSet& chosen_types);
+      syncable::ModelEnumSet chosen_types);
 
   // Called when a user cancels any setup dialog (login, etc).
   virtual void OnUserCancelledDialog();
@@ -410,20 +410,18 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // the sync backend so that exactly these datatypes are actively synced.  See
   // class comment for more on what it means for a datatype to be Preferred.
   virtual void ChangePreferredDataTypes(
-      const syncable::ModelTypeSet& preferred_types);
+      syncable::ModelEnumSet preferred_types);
 
   // Get the set of currently enabled data types (as chosen or configured by
   // the user).  See class comment for more on what it means for a datatype
   // to be Preferred.
-  virtual void GetPreferredDataTypes(
-      syncable::ModelTypeSet* preferred_types) const;
+  virtual syncable::ModelEnumSet GetPreferredDataTypes() const;
 
   // Gets the set of all data types that could be allowed (the set that
   // should be advertised to the user).  These will typically only change
   // via a command-line option.  See class comment for more on what it means
   // for a datatype to be Registered.
-  virtual void GetRegisteredDataTypes(
-      syncable::ModelTypeSet* registered_types) const;
+  virtual syncable::ModelEnumSet GetRegisteredDataTypes() const;
 
   // Checks whether the Cryptographer is ready to encrypt and decrypt updates
   // for sensitive data types. Caller must be holding a
@@ -458,8 +456,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Fills |encrypted_types| with the set of currently encrypted types. Does
   // not account for types pending encryption.
-  virtual void GetEncryptedDataTypes(
-      syncable::ModelTypeSet* encrypted_types) const;
+  virtual syncable::ModelEnumSet GetEncryptedDataTypes() const;
 
   // Returns true if the syncer is waiting for new datatypes to be encrypted.
   virtual bool encryption_pending() const;
@@ -679,7 +676,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // The current set of encrypted types.  Always a superset of
   // Cryptographer::SensitiveTypes().
-  syncable::ModelTypeSet encrypted_types_;
+  syncable::ModelEnumSet encrypted_types_;
 
   // Whether we want to encrypt everything.
   bool encrypt_everything_;

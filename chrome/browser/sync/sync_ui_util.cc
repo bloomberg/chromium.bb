@@ -613,7 +613,7 @@ void ConstructAboutInformation(ProfileSyncService* service,
                                     full_status.crypto_has_pending_keys);
     sync_ui_util::AddStringSyncDetails(details,
         "Encrypted Types",
-        syncable::ModelTypeSetToString(full_status.encrypted_types));
+        syncable::ModelEnumSetToString(full_status.encrypted_types));
 
     const browser_sync::sessions::SyncSessionSnapshot* snapshot =
         service->sync_initialized() ?

@@ -98,9 +98,10 @@ bool DataTypeManagerImpl::GetControllersNeedingStart(
   // Add any data type controllers into the needs_start_ list that are
   // currently NOT_RUNNING or STOPPING.
   bool found_any = false;
-  for (TypeSet::const_iterator it = last_requested_types_.begin();
-       it != last_requested_types_.end(); ++it) {
-    DataTypeController::TypeMap::const_iterator dtc = controllers_->find(*it);
+  for (TypeSet::Iterator it = last_requested_types_.First();
+       it.Good(); it.Inc()) {
+    DataTypeController::TypeMap::const_iterator dtc =
+        controllers_->find(it.Get());
     if (dtc != controllers_->end() &&
         (dtc->second->state() == DataTypeController::NOT_RUNNING ||
          dtc->second->state() == DataTypeController::STOPPING)) {
@@ -116,17 +117,17 @@ bool DataTypeManagerImpl::GetControllersNeedingStart(
   return found_any;
 }
 
-void DataTypeManagerImpl::Configure(const TypeSet& desired_types,
+void DataTypeManagerImpl::Configure(TypeSet desired_types,
                                     sync_api::ConfigureReason reason) {
   ConfigureImpl(desired_types, reason, true);
 }
 
-void DataTypeManagerImpl::ConfigureWithoutNigori(const TypeSet& desired_types,
+void DataTypeManagerImpl::ConfigureWithoutNigori(TypeSet desired_types,
     sync_api::ConfigureReason reason) {
   ConfigureImpl(desired_types, reason, false);
 }
 
-void DataTypeManagerImpl::ConfigureImpl(const TypeSet& desired_types,
+void DataTypeManagerImpl::ConfigureImpl(TypeSet desired_types,
                                         sync_api::ConfigureReason reason,
                                         bool enable_nigori) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -137,7 +138,7 @@ void DataTypeManagerImpl::ConfigureImpl(const TypeSet& desired_types,
   }
 
   if (state_ == CONFIGURED &&
-      last_requested_types_ == desired_types &&
+      last_requested_types_.Equals(desired_types) &&
       reason == sync_api::CONFIGURE_REASON_RECONFIGURATION) {
     // If we're already configured and the types haven't changed, we can exit
     // out early.
@@ -171,7 +172,7 @@ void DataTypeManagerImpl::ConfigureImpl(const TypeSet& desired_types,
   for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();
        it != controllers_->end(); ++it) {
     DataTypeController* dtc = (*it).second;
-    if (desired_types.count(dtc->type()) == 0 && (
+    if (!desired_types.Has(dtc->type()) && (
             dtc->state() == DataTypeController::MODEL_STARTING ||
             dtc->state() == DataTypeController::ASSOCIATING ||
             dtc->state() == DataTypeController::RUNNING ||
@@ -216,22 +217,17 @@ void DataTypeManagerImpl::Restart(sync_api::ConfigureReason reason,
   // The task will be invoked when updates are downloaded.
   state_ = DOWNLOAD_PENDING;
   // Hopefully http://crbug.com/79970 will make this less verbose.
-  syncable::ModelTypeSet all_types;
-  const syncable::ModelTypeSet& types_to_add = last_requested_types_;
-  syncable::ModelTypeSet types_to_remove;
+  syncable::ModelEnumSet all_types;
   for (DataTypeController::TypeMap::const_iterator it =
            controllers_->begin(); it != controllers_->end(); ++it) {
-    all_types.insert(it->first);
+    all_types.Put(it->first);
   }
+  const syncable::ModelEnumSet types_to_add = last_requested_types_;
   // Check that types_to_add \subseteq all_types.
-  DCHECK(std::includes(all_types.begin(), all_types.end(),
-                       types_to_add.begin(), types_to_add.end()));
+  DCHECK(all_types.HasAll(types_to_add));
   // Set types_to_remove to all_types \setminus types_to_add.
-  ignore_result(
-      std::set_difference(
-          all_types.begin(), all_types.end(),
-          types_to_add.begin(), types_to_add.end(),
-          std::inserter(types_to_remove, types_to_remove.end())));
+  const syncable::ModelEnumSet types_to_remove =
+      Difference(all_types, types_to_add);
   backend_->ConfigureDataTypes(
       types_to_add,
       types_to_remove,

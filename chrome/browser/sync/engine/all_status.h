@@ -44,7 +44,7 @@ class AllStatus : public SyncEngineEventListener {
 
   void IncrementNotificationsReceived();
 
-  void SetEncryptedTypes(const syncable::ModelTypeSet& types);
+  void SetEncryptedTypes(syncable::ModelEnumSet types);
   void SetCryptographerReady(bool ready);
   void SetCryptoHasPendingKeys(bool has_pending_keys);
 

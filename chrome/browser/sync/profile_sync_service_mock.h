@@ -57,11 +57,9 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_CONST_METHOD0(HasSyncSetupCompleted, bool());
 
   MOCK_METHOD1(ChangePreferredDataTypes,
-               void(const syncable::ModelTypeSet& preferred_types));
-  MOCK_CONST_METHOD1(GetPreferredDataTypes,
-                     void(syncable::ModelTypeSet* preferred_types));
-  MOCK_CONST_METHOD1(GetRegisteredDataTypes,
-                     void(syncable::ModelTypeSet* registered_types));
+               void(syncable::ModelEnumSet preferred_types));
+  MOCK_CONST_METHOD0(GetPreferredDataTypes, syncable::ModelEnumSet());
+  MOCK_CONST_METHOD0(GetRegisteredDataTypes, syncable::ModelEnumSet());
   MOCK_CONST_METHOD0(GetLastSessionSnapshot,
                      const browser_sync::sessions::SyncSessionSnapshot*());
 

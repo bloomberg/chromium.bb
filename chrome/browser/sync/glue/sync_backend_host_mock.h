@@ -22,8 +22,8 @@ class SyncBackendHostMock : public SyncBackendHost {
   virtual ~SyncBackendHostMock();
 
   MOCK_METHOD5(ConfigureDataTypes,
-               void(const std::set<syncable::ModelType>&,
-                    const std::set<syncable::ModelType>&,
+               void(syncable::ModelEnumSet,
+                    syncable::ModelEnumSet,
                     sync_api::ConfigureReason,
                     base::Callback<void(syncable::ModelEnumSet)>,
                     bool));

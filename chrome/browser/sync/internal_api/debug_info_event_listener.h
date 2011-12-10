@@ -46,7 +46,7 @@ class DebugInfoEventListener : public sync_api::SyncManager::Observer,
   virtual void OnClearServerDataFailed() OVERRIDE;
   virtual void OnClearServerDataSucceeded() OVERRIDE;
   virtual void OnEncryptedTypesChanged(
-      const syncable::ModelTypeSet& encrypted_types,
+      syncable::ModelEnumSet encrypted_types,
       bool encrypt_everything) OVERRIDE;
   virtual void OnEncryptionComplete() OVERRIDE;
   virtual void OnActionableError(

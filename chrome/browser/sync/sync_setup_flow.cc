@@ -29,9 +29,8 @@ namespace {
 
 // Helper function to disable password sync.
 void DisablePasswordSync(ProfileSyncService* service) {
-  syncable::ModelTypeSet types;
-  service->GetPreferredDataTypes(&types);
-  types.erase(syncable::PASSWORDS);
+  syncable::ModelEnumSet types = service->GetPreferredDataTypes();
+  types.Remove(syncable::PASSWORDS);
   service->OnUserChoseDatatypes(false, types);
 }
 
@@ -124,40 +123,40 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
 
   // Bookmarks, Preferences, and Themes are launched for good, there's no
   // going back now.  Check if the other data types are registered though.
-  syncable::ModelTypeSet registered_types;
-  service->GetRegisteredDataTypes(&registered_types);
-  syncable::ModelTypeSet preferred_types;
-  service->GetPreferredDataTypes(&preferred_types);
+  const syncable::ModelEnumSet registered_types =
+      service->GetRegisteredDataTypes();
+  const syncable::ModelEnumSet preferred_types =
+      service->GetPreferredDataTypes();
   args->SetBoolean("passwordsRegistered",
-      registered_types.count(syncable::PASSWORDS) > 0);
+      registered_types.Has(syncable::PASSWORDS));
   args->SetBoolean("autofillRegistered",
-      registered_types.count(syncable::AUTOFILL) > 0);
+      registered_types.Has(syncable::AUTOFILL));
   args->SetBoolean("extensionsRegistered",
-      registered_types.count(syncable::EXTENSIONS) > 0);
+      registered_types.Has(syncable::EXTENSIONS));
   args->SetBoolean("typedUrlsRegistered",
-      registered_types.count(syncable::TYPED_URLS) > 0);
+      registered_types.Has(syncable::TYPED_URLS));
   args->SetBoolean("appsRegistered",
-      registered_types.count(syncable::APPS) > 0);
+      registered_types.Has(syncable::APPS));
   args->SetBoolean("sessionsRegistered",
-      registered_types.count(syncable::SESSIONS) > 0);
+      registered_types.Has(syncable::SESSIONS));
   args->SetBoolean("syncBookmarks",
-                   preferred_types.count(syncable::BOOKMARKS) > 0);
+                   preferred_types.Has(syncable::BOOKMARKS));
   args->SetBoolean("syncPreferences",
-                   preferred_types.count(syncable::PREFERENCES) > 0);
+                   preferred_types.Has(syncable::PREFERENCES));
   args->SetBoolean("syncThemes",
-                   preferred_types.count(syncable::THEMES) > 0);
+                   preferred_types.Has(syncable::THEMES));
   args->SetBoolean("syncPasswords",
-                   preferred_types.count(syncable::PASSWORDS) > 0);
+                   preferred_types.Has(syncable::PASSWORDS));
   args->SetBoolean("syncAutofill",
-                   preferred_types.count(syncable::AUTOFILL) > 0);
+                   preferred_types.Has(syncable::AUTOFILL));
   args->SetBoolean("syncExtensions",
-                   preferred_types.count(syncable::EXTENSIONS) > 0);
+                   preferred_types.Has(syncable::EXTENSIONS));
   args->SetBoolean("syncSessions",
-                   preferred_types.count(syncable::SESSIONS) > 0);
+                   preferred_types.Has(syncable::SESSIONS));
   args->SetBoolean("syncTypedUrls",
-                   preferred_types.count(syncable::TYPED_URLS) > 0);
+                   preferred_types.Has(syncable::TYPED_URLS));
   args->SetBoolean("syncApps",
-                   preferred_types.count(syncable::APPS) > 0);
+                   preferred_types.Has(syncable::APPS));
 
   args->SetBoolean("encryptionEnabled",
       !CommandLine::ForCurrentProcess()->HasSwitch(

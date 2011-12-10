@@ -38,7 +38,8 @@ bool WriteNode::UpdateEntryWithEncryption(
     syncable::MutableEntry* entry) {
   syncable::ModelType type = syncable::GetModelTypeFromSpecifics(new_specifics);
   DCHECK_GE(type, syncable::FIRST_REAL_MODEL_TYPE);
-  syncable::ModelTypeSet encrypted_types = cryptographer->GetEncryptedTypes();
+  const syncable::ModelEnumSet encrypted_types =
+      cryptographer->GetEncryptedTypes();
   sync_pb::EntitySpecifics generated_specifics;
   if (!SpecificsNeedsEncryption(encrypted_types, new_specifics) ||
       !cryptographer->is_initialized()) {
@@ -119,7 +120,7 @@ void WriteNode::SetTitle(const std::wstring& title) {
 
   // Only set NON_UNIQUE_NAME to the title if we're not encrypted.
   Cryptographer* cryptographer = GetTransaction()->GetCryptographer();
-  if (cryptographer->GetEncryptedTypes().count(GetModelType()) > 0) {
+  if (cryptographer->GetEncryptedTypes().Has(GetModelType())) {
     if (old_name != kEncryptedString)
       entry_->Put(syncable::NON_UNIQUE_NAME, kEncryptedString);
   } else {

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
 
-#include <algorithm>
 #include <cstddef>
 
 #include "base/compiler_specific.h"
@@ -52,7 +51,7 @@ bool IsOnThreadForGroup(ModelSafeGroup group) {
 }  // namespace
 
 SyncBackendRegistrar::SyncBackendRegistrar(
-    const syncable::ModelTypeSet& initial_types,
+    syncable::ModelEnumSet initial_types,
     const std::string& name, Profile* profile,
     MessageLoop* sync_loop) :
     name_(name),
@@ -72,9 +71,9 @@ SyncBackendRegistrar::SyncBackendRegistrar(
   // routing_info map.  We set them to group passive, meaning that
   // updates will be applied to sync, but not dispatched to the native
   // models.
-  for (syncable::ModelTypeSet::const_iterator it = initial_types.begin();
-      it != initial_types.end(); ++it) {
-    routing_info_[*it] = GROUP_PASSIVE;
+  for (syncable::ModelEnumSet::Iterator it = initial_types.First();
+       it.Good(); it.Inc()) {
+    routing_info_[it.Get()] = GROUP_PASSIVE;
   }
 
   HistoryService* history_service = profile->GetHistoryService(
@@ -82,7 +81,7 @@ SyncBackendRegistrar::SyncBackendRegistrar(
   if (history_service) {
     workers_[GROUP_HISTORY] = new HistoryModelWorker(history_service);
   } else {
-    LOG_IF(WARNING, initial_types.count(syncable::TYPED_URLS) > 0)
+    LOG_IF(WARNING, initial_types.Has(syncable::TYPED_URLS))
         << "History store disabled, cannot sync Omnibox History";
     routing_info_.erase(syncable::TYPED_URLS);
   }
@@ -92,7 +91,7 @@ SyncBackendRegistrar::SyncBackendRegistrar(
   if (password_store) {
     workers_[GROUP_PASSWORD] = new PasswordModelWorker(password_store);
   } else {
-    LOG_IF(WARNING, initial_types.count(syncable::PASSWORDS) > 0)
+    LOG_IF(WARNING, initial_types.Has(syncable::PASSWORDS))
         << "Password store not initialized, cannot sync passwords";
     routing_info_.erase(syncable::PASSWORDS);
   }
@@ -109,51 +108,45 @@ bool SyncBackendRegistrar::IsNigoriEnabled() const {
   return routing_info_.find(syncable::NIGORI) != routing_info_.end();
 }
 
-syncable::ModelTypeSet SyncBackendRegistrar::ConfigureDataTypes(
-    const syncable::ModelTypeSet& types_to_add,
-    const syncable::ModelTypeSet& types_to_remove) {
+syncable::ModelEnumSet SyncBackendRegistrar::ConfigureDataTypes(
+    syncable::ModelEnumSet types_to_add,
+    syncable::ModelEnumSet types_to_remove) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (DCHECK_IS_ON()) {
-    syncable::ModelTypeSet intersection;
-    std::set_intersection(types_to_add.begin(), types_to_add.end(),
-                          types_to_remove.begin(), types_to_remove.end(),
-                          std::inserter(intersection, intersection.end()));
-    DCHECK(intersection.empty());
-  }
-  syncable::ModelTypeSet filtered_types_to_add = types_to_add;
+  DCHECK(Intersection(types_to_add, types_to_remove).Empty());
+  syncable::ModelEnumSet filtered_types_to_add = types_to_add;
   if (workers_.count(GROUP_HISTORY) == 0) {
     LOG(WARNING) << "No history worker -- removing TYPED_URLS";
-    filtered_types_to_add.erase(syncable::TYPED_URLS);
+    filtered_types_to_add.Remove(syncable::TYPED_URLS);
   }
   if (workers_.count(GROUP_PASSWORD) == 0) {
     LOG(WARNING) << "No password worker -- removing PASSWORDS";
-    filtered_types_to_add.erase(syncable::PASSWORDS);
+    filtered_types_to_add.Remove(syncable::PASSWORDS);
   }
 
   base::AutoLock lock(lock_);
-  syncable::ModelTypeSet newly_added_types;
-  for (syncable::ModelTypeSet::const_iterator it =
-           filtered_types_to_add.begin();
-       it != filtered_types_to_add.end(); ++it) {
+  syncable::ModelEnumSet newly_added_types;
+  for (syncable::ModelEnumSet::Iterator it =
+           filtered_types_to_add.First();
+       it.Good(); it.Inc()) {
     // Add a newly specified data type as GROUP_PASSIVE into the
     // routing_info, if it does not already exist.
-    if (routing_info_.count(*it) == 0) {
-      routing_info_[*it] = GROUP_PASSIVE;
-      newly_added_types.insert(*it);
+    if (routing_info_.count(it.Get()) == 0) {
+      routing_info_[it.Get()] = GROUP_PASSIVE;
+      newly_added_types.Put(it.Get());
     }
   }
-  for (syncable::ModelTypeSet::const_iterator it = types_to_remove.begin();
-       it != types_to_remove.end(); ++it) {
-    routing_info_.erase(*it);
+  for (syncable::ModelEnumSet::Iterator it = types_to_remove.First();
+       it.Good(); it.Inc()) {
+    routing_info_.erase(it.Get());
   }
 
   // TODO(akalin): Use SVLOG/SLOG if we add any more logging.
   DVLOG(1) << name_ << ": Adding types "
-           << syncable::ModelTypeSetToString(types_to_add)
+           << syncable::ModelEnumSetToString(types_to_add)
            << " (with newly-added types "
-           << syncable::ModelTypeSetToString(newly_added_types)
+           << syncable::ModelEnumSetToString(newly_added_types)
            << ") and removing types "
-           << syncable::ModelTypeSetToString(types_to_remove)
+           << syncable::ModelEnumSetToString(types_to_remove)
            << " to get new routing info "
            << ModelSafeRoutingInfoToString(routing_info_);
 

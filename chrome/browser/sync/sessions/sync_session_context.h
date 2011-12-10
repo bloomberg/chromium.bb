@@ -110,7 +110,7 @@ class SyncSessionContext {
   }
 
   // This is virtual for unit tests.
-  virtual void SetUnthrottleTime(const syncable::ModelTypeSet& types,
+  virtual void SetUnthrottleTime(syncable::ModelEnumSet types,
                                  const base::TimeTicks& time);
 
   // This prunes the |unthrottle_time_| map based on the |time| passed in. This
@@ -119,7 +119,7 @@ class SyncSessionContext {
 
   // This returns the list of currently throttled types. Unless server returns
   // new throttled types this will remain constant through out the sync cycle.
-  syncable::ModelTypeSet GetThrottledTypes() const;
+  syncable::ModelEnumSet GetThrottledTypes() const;
 
  private:
   typedef std::map<syncable::ModelType, base::TimeTicks> UnthrottleTimes;

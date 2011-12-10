@@ -262,7 +262,7 @@ class SyncManager::SyncInternal
 
   // Cryptographer::Observer implementation.
   virtual void OnEncryptedTypesChanged(
-      const syncable::ModelTypeSet& encrypted_types,
+      syncable::ModelEnumSet encrypted_types,
       bool encrypt_everything) OVERRIDE;
 
   // SyncNotifierObserver implementation.
@@ -321,12 +321,12 @@ class SyncManager::SyncInternal
   virtual void OnIPAddressChanged() OVERRIDE;
 
   bool InitialSyncEndedForAllEnabledTypes() {
-    syncable::ModelTypeSet types;
+    syncable::ModelEnumSet types;
     ModelSafeRoutingInfo enabled_types;
     registrar_->GetModelSafeRoutingInfo(&enabled_types);
     for (ModelSafeRoutingInfo::const_iterator i = enabled_types.begin();
         i != enabled_types.end(); ++i) {
-      types.insert(i->first);
+      types.Put(i->first);
     }
 
     return InitialSyncEndedForTypes(types, &share_);
@@ -1135,18 +1135,18 @@ void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
   Cryptographer* cryptographer = trans->GetCryptographer();
   if (!cryptographer || !cryptographer->is_ready())
     return;
-  syncable::ModelTypeSet encrypted_types = GetEncryptedTypes(trans);
+  syncable::ModelEnumSet encrypted_types = GetEncryptedTypes(trans);
   ModelSafeRoutingInfo routes;
   registrar_->GetModelSafeRoutingInfo(&routes);
   std::string tag;
-  for (syncable::ModelTypeSet::iterator iter = encrypted_types.begin();
-       iter != encrypted_types.end(); ++iter) {
-    if (*iter == syncable::PASSWORDS ||
-        *iter == syncable::NIGORI ||
-        routes.count(*iter) == 0)
+  for (syncable::ModelEnumSet::Iterator iter = encrypted_types.First();
+       iter.Good(); iter.Inc()) {
+    if (iter.Get() == syncable::PASSWORDS ||
+        iter.Get() == syncable::NIGORI ||
+        routes.count(iter.Get()) == 0)
       continue;
     ReadNode type_root(trans);
-    tag = syncable::ModelTypeToRootTag(*iter);
+    tag = syncable::ModelTypeToRootTag(iter.Get());
     if (!type_root.InitByTagLookup(tag)) {
       // This can happen when we enable a datatype for the first time on restart
       // (for example when we upgrade) and therefore haven't done the initial
@@ -1852,7 +1852,7 @@ JsArgList SyncManager::SyncInternal::FindNodesContainingString(
 }
 
 void SyncManager::SyncInternal::OnEncryptedTypesChanged(
-    const syncable::ModelTypeSet& encrypted_types,
+    syncable::ModelEnumSet encrypted_types,
     bool encrypt_everything) {
   // NOTE: We're in a transaction.
   FOR_EACH_OBSERVER(
@@ -1981,12 +1981,12 @@ void SyncManager::RefreshEncryption() {
     data_->RefreshEncryption();
 }
 
-syncable::ModelTypeSet SyncManager::GetEncryptedDataTypesForTest() const {
+syncable::ModelEnumSet SyncManager::GetEncryptedDataTypesForTest() const {
   ReadTransaction trans(FROM_HERE, GetUserShare());
   return GetEncryptedTypes(&trans);
 }
 
-bool SyncManager::ReceivedExperimentalTypes(syncable::ModelTypeSet* to_add)
+bool SyncManager::ReceivedExperimentalTypes(syncable::ModelEnumSet* to_add)
     const {
   ReadTransaction trans(FROM_HERE, GetUserShare());
   ReadNode node(&trans);
@@ -1995,7 +1995,7 @@ bool SyncManager::ReceivedExperimentalTypes(syncable::ModelTypeSet* to_add)
     return false;
   }
   if (node.GetNigoriSpecifics().sync_tabs()) {
-    to_add->insert(syncable::SESSIONS);
+    to_add->Put(syncable::SESSIONS);
     return true;
   }
   return false;
@@ -2041,7 +2041,7 @@ std::string PassphraseRequiredReasonToString(
 }
 
 // Helper function to determine if initial sync had ended for types.
-bool InitialSyncEndedForTypes(syncable::ModelTypeSet types,
+bool InitialSyncEndedForTypes(syncable::ModelEnumSet types,
                               sync_api::UserShare* share) {
   syncable::ScopedDirLookup lookup(share->dir_manager.get(),
                                    share->name);
@@ -2050,33 +2050,33 @@ bool InitialSyncEndedForTypes(syncable::ModelTypeSet types,
     return false;
   }
 
-  for (syncable::ModelTypeSet::const_iterator i = types.begin();
-       i != types.end(); ++i) {
-    if (!lookup->initial_sync_ended_for_type(*i))
+  for (syncable::ModelEnumSet::Iterator i = types.First();
+       i.Good(); i.Inc()) {
+    if (!lookup->initial_sync_ended_for_type(i.Get()))
       return false;
   }
   return true;
 }
 
-syncable::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
-    const syncable::ModelTypeSet types,
+syncable::ModelEnumSet GetTypesWithEmptyProgressMarkerToken(
+    syncable::ModelEnumSet types,
     sync_api::UserShare* share) {
   syncable::ScopedDirLookup lookup(share->dir_manager.get(),
                                    share->name);
   if (!lookup.good()) {
     NOTREACHED() << "ScopedDirLookup failed for "
                   << "GetTypesWithEmptyProgressMarkerToken";
-    return syncable::ModelTypeSet();
+    return syncable::ModelEnumSet();
   }
 
-  syncable::ModelTypeSet result;
-  for (syncable::ModelTypeSet::const_iterator i = types.begin();
-       i != types.end(); ++i) {
+  syncable::ModelEnumSet result;
+  for (syncable::ModelEnumSet::Iterator i = types.First();
+       i.Good(); i.Inc()) {
     sync_pb::DataTypeProgressMarker marker;
-    lookup->GetDownloadProgress(*i, &marker);
+    lookup->GetDownloadProgress(i.Get(), &marker);
 
     if (marker.token().empty())
-      result.insert(*i);
+      result.Put(i.Get());
 
   }
   return result;

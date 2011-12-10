@@ -74,16 +74,15 @@ class MigrationTest : public SyncTest {
   enum TriggerMethod { MODIFY_PREF, MODIFY_BOOKMARK, TRIGGER_NOTIFICATION };
 
   syncable::ModelEnumSet GetPreferredDataTypes() {
-    syncable::ModelTypeSet preferred_data_types;
-    GetClient(0)->service()->GetPreferredDataTypes(&preferred_data_types);
+    const syncable::ModelEnumSet preferred_data_types =
+        GetClient(0)->service()->GetPreferredDataTypes();
     // Make sure all clients have the same preferred data types.
     for (int i = 1; i < num_clients(); ++i) {
-      syncable::ModelTypeSet other_preferred_data_types;
-      GetClient(i)->service()->GetPreferredDataTypes(
-          &other_preferred_data_types);
-      EXPECT_EQ(preferred_data_types, other_preferred_data_types);
+      const syncable::ModelEnumSet other_preferred_data_types =
+          GetClient(i)->service()->GetPreferredDataTypes();
+      EXPECT_TRUE(preferred_data_types.Equals(other_preferred_data_types));
     }
-    return syncable::ModelTypeSetToEnumSet(preferred_data_types);
+    return preferred_data_types;
   }
 
   // Returns a MigrationList with every enabled data type in its own
@@ -126,10 +125,8 @@ class MigrationTest : public SyncTest {
   // Block until all clients have completed migration for the given
   // types.
   void AwaitMigration(syncable::ModelEnumSet migrate_types) {
-    const syncable::ModelTypeSet& migrate_types_set =
-        syncable::ModelEnumSetToSet(migrate_types);
     for (int i = 0; i < num_clients(); ++i) {
-      ASSERT_TRUE(GetClient(i)->AwaitMigration(migrate_types_set));
+      ASSERT_TRUE(GetClient(i)->AwaitMigration(migrate_types));
     }
   }
 

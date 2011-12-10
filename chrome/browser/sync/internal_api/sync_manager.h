@@ -158,7 +158,7 @@ class SyncManager {
     int useful_sync_cycles;
 
     // Encryption related.
-    syncable::ModelTypeSet encrypted_types;
+    syncable::ModelEnumSet encrypted_types;
     bool cryptographer_ready;
     bool crypto_has_pending_keys;
 
@@ -390,7 +390,7 @@ class SyncManager {
     //
     // Called from within a transaction.
     virtual void OnEncryptedTypesChanged(
-        const syncable::ModelTypeSet& encrypted_types,
+        syncable::ModelEnumSet encrypted_types,
         bool encrypt_everything) = 0;
 
     // Called after we finish encrypting the current set of encrypted
@@ -559,12 +559,12 @@ class SyncManager {
 
   // Gets the set of encrypted types from the cryptographer
   // Note: opens a transaction.  May be called from any thread.
-  syncable::ModelTypeSet GetEncryptedDataTypesForTest() const;
+  syncable::ModelEnumSet GetEncryptedDataTypesForTest() const;
 
   // Reads the nigori node to determine if any experimental types should be
   // enabled.
   // Note: opens a transaction.  May be called on any thread.
-  bool ReceivedExperimentalTypes(syncable::ModelTypeSet* to_add) const;
+  bool ReceivedExperimentalTypes(syncable::ModelEnumSet* to_add) const;
 
   // Uses a read-only transaction to determine if the directory being synced has
   // any remaining unsynced items.  May be called on any thread.
@@ -587,10 +587,10 @@ class SyncManager {
   DISALLOW_COPY_AND_ASSIGN(SyncManager);
 };
 
-bool InitialSyncEndedForTypes(syncable::ModelTypeSet types, UserShare* share);
+bool InitialSyncEndedForTypes(syncable::ModelEnumSet types, UserShare* share);
 
-syncable::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
-    const syncable::ModelTypeSet types,
+syncable::ModelEnumSet GetTypesWithEmptyProgressMarkerToken(
+    syncable::ModelEnumSet types,
     sync_api::UserShare* share);
 
 // Returns the string representation of a PassphraseRequiredReason value.

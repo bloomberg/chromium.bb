@@ -102,7 +102,7 @@ void SyncBackendHost::Initialize(
     SyncFrontend* frontend,
     const WeakHandle<JsEventHandler>& event_handler,
     const GURL& sync_service_url,
-    const syncable::ModelTypeSet& initial_types,
+    syncable::ModelEnumSet initial_types,
     const SyncCredentials& credentials,
     bool delete_sync_data_folder) {
   if (!sync_thread_.Start())
@@ -111,10 +111,10 @@ void SyncBackendHost::Initialize(
   frontend_ = frontend;
   DCHECK(frontend);
 
-  syncable::ModelTypeSet initial_types_with_nigori(initial_types);
+  syncable::ModelEnumSet initial_types_with_nigori(initial_types);
   CHECK(sync_prefs_.get());
   if (sync_prefs_->HasSyncSetupCompleted()) {
-    initial_types_with_nigori.insert(syncable::NIGORI);
+    initial_types_with_nigori.Put(syncable::NIGORI);
   }
 
   registrar_.reset(new SyncBackendRegistrar(initial_types_with_nigori,
@@ -247,19 +247,19 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
 }
 
 void SyncBackendHost::ConfigureDataTypes(
-    const syncable::ModelTypeSet& types_to_add,
-    const syncable::ModelTypeSet& types_to_remove,
+    syncable::ModelEnumSet types_to_add,
+    syncable::ModelEnumSet types_to_remove,
     sync_api::ConfigureReason reason,
     base::Callback<void(syncable::ModelEnumSet)> ready_task,
     bool enable_nigori) {
-  syncable::ModelTypeSet types_to_add_with_nigori = types_to_add;
-  syncable::ModelTypeSet types_to_remove_with_nigori = types_to_remove;
+  syncable::ModelEnumSet types_to_add_with_nigori = types_to_add;
+  syncable::ModelEnumSet types_to_remove_with_nigori = types_to_remove;
   if (enable_nigori) {
-    types_to_add_with_nigori.insert(syncable::NIGORI);
-    types_to_remove_with_nigori.erase(syncable::NIGORI);
+    types_to_add_with_nigori.Put(syncable::NIGORI);
+    types_to_remove_with_nigori.Remove(syncable::NIGORI);
   } else {
-    types_to_add_with_nigori.erase(syncable::NIGORI);
-    types_to_remove_with_nigori.insert(syncable::NIGORI);
+    types_to_add_with_nigori.Remove(syncable::NIGORI);
+    types_to_remove_with_nigori.Put(syncable::NIGORI);
   }
   // Only one configure is allowed at a time.
   DCHECK(!pending_config_mode_state_.get());
@@ -277,7 +277,7 @@ void SyncBackendHost::ConfigureDataTypes(
   // Cleanup disabled types before starting configuration so that
   // callers can assume that the data types are cleaned up once
   // configuration is done.
-  if (!types_to_remove_with_nigori.empty()) {
+  if (!types_to_remove_with_nigori.Empty()) {
     sync_thread_.message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&SyncBackendHost::Core::DoRequestCleanupDisabledTypes,
@@ -482,7 +482,7 @@ void SyncBackendHost::Core::OnClearServerDataSucceeded() {
 }
 
 void SyncBackendHost::Core::OnEncryptedTypesChanged(
-    const syncable::ModelTypeSet& encrypted_types,
+    syncable::ModelEnumSet encrypted_types,
     bool encrypt_everything) {
   if (!sync_loop_)
     return;
@@ -794,7 +794,7 @@ void SyncBackendHost::Core::NotifyUpdatedToken(const std::string& token) {
 }
 
 void SyncBackendHost::Core::NotifyEncryptedTypesChanged(
-    const syncable::ModelTypeSet& encrypted_types,
+    syncable::ModelEnumSet encrypted_types,
     bool encrypt_everything) {
   if (!host_)
     return;
@@ -823,8 +823,7 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
   const syncable::ModelEnumSet to_migrate =
       snapshot->syncer_status.types_needing_local_migration;
   if (!to_migrate.Empty())
-    host_->frontend_->OnMigrationNeededForTypes(
-        syncable::ModelEnumSetToSet(to_migrate));
+    host_->frontend_->OnMigrationNeededForTypes(to_migrate);
 
   // Process any changes to the datatypes we're syncing.
   // TODO(sync): add support for removing types.
@@ -837,10 +836,8 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
   if (host_->pending_download_state_.get()) {
     scoped_ptr<PendingConfigureDataTypesState> state(
         host_->pending_download_state_.release());
-    const syncable::ModelEnumSet types_to_add =
-        syncable::ModelTypeSetToEnumSet(state->types_to_add);
-    const syncable::ModelEnumSet added_types =
-        syncable::ModelTypeSetToEnumSet(state->added_types);
+    const syncable::ModelEnumSet types_to_add = state->types_to_add;
+    const syncable::ModelEnumSet added_types = state->added_types;
     DCHECK(types_to_add.HasAll(added_types));
     const syncable::ModelEnumSet initial_sync_ended =
         snapshot->initial_sync_ended;
@@ -886,7 +883,7 @@ void SyncBackendHost::Core::FinishConfigureDataTypesOnFrontendLoop() {
 
 void SyncBackendHost::AddExperimentalTypes() {
   CHECK(initialized());
-  syncable::ModelTypeSet to_add;
+  syncable::ModelEnumSet to_add;
   if (core_->sync_manager()->ReceivedExperimentalTypes(&to_add))
     frontend_->OnDataTypesChanged(to_add);
 }
@@ -922,8 +919,8 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
     case NOT_INITIALIZED:
       initialization_state_ = DOWNLOADING_NIGORI;
       ConfigureDataTypes(
-          syncable::ModelTypeSet(),
-          syncable::ModelTypeSet(),
+          syncable::ModelEnumSet(),
+          syncable::ModelEnumSet(),
           sync_api::CONFIGURE_REASON_NEW_CLIENT,
           // Calls back into this function.
           base::Bind(
@@ -977,15 +974,15 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
   SVLOG(1) << "Syncer in config mode. SBH executing "
            << "FinishConfigureDataTypesOnFrontendLoop";
 
-  if (pending_config_mode_state_->added_types.empty() &&
+  if (pending_config_mode_state_->added_types.Empty() &&
       !core_->sync_manager()->InitialSyncEndedForAllEnabledTypes()) {
 
-    syncable::ModelTypeSet enabled_types;
+    syncable::ModelEnumSet enabled_types;
     ModelSafeRoutingInfo routing_info;
     registrar_->GetModelSafeRoutingInfo(&routing_info);
     for (ModelSafeRoutingInfo::const_iterator i = routing_info.begin();
          i != routing_info.end(); ++i) {
-      enabled_types.insert(i->first);
+      enabled_types.Put(i->first);
     }
 
     // TODO(tim): Log / UMA / count this somehow?
@@ -1002,7 +999,7 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
 
   // If we've added types, we always want to request a nudge/config (even if
   // the initial sync is ended), in case we could not decrypt the data.
-  if (pending_config_mode_state_->added_types.empty()) {
+  if (pending_config_mode_state_->added_types.Empty()) {
     SVLOG(1) << "No new types added; calling ready_task directly";
     // No new types - just notify the caller that the types are available.
     const syncable::ModelEnumSet failed_configuration_types;
@@ -1012,8 +1009,7 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
 
     // Always configure nigori if it's enabled.
     syncable::ModelEnumSet types_to_config =
-        syncable::ModelTypeSetToEnumSet(
-            pending_download_state_->added_types);
+        pending_download_state_->added_types;
     if (IsNigoriEnabled()) {
       // Note: Nigori is the only type that gets added with a nonempty
       // progress marker during config. If the server returns a migration

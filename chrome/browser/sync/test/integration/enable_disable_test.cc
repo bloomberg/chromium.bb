@@ -43,25 +43,25 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
   DisableNotifications();
 
   // Setup sync with no enabled types.
-  ASSERT_TRUE(GetClient(0)->SetupSync(syncable::ModelTypeSet()));
+  ASSERT_TRUE(GetClient(0)->SetupSync(syncable::ModelEnumSet()));
 
-  syncable::ModelTypeSet registered_types;
-  GetClient(0)->service()->GetRegisteredDataTypes(&registered_types);
+  const syncable::ModelEnumSet registered_types =
+      GetClient(0)->service()->GetRegisteredDataTypes();
   sync_api::UserShare* user_share = GetClient(0)->service()->GetUserShare();
-  for (syncable::ModelTypeSet::const_iterator it = registered_types.begin();
-       it != registered_types.end(); ++it) {
-    ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(*it));
+  for (syncable::ModelEnumSet::Iterator it = registered_types.First();
+       it.Good(); it.Inc()) {
+    ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(it.Get()));
 
     // AUTOFILL_PROFILE is lumped together with AUTOFILL.
-    if (*it == syncable::AUTOFILL_PROFILE) {
+    if (it.Get() == syncable::AUTOFILL_PROFILE) {
       continue;
     }
 
-    ASSERT_TRUE(DoesTopLevelNodeExist(user_share, *it))
-        << syncable::ModelTypeToString(*it);
+    ASSERT_TRUE(DoesTopLevelNodeExist(user_share, it.Get()))
+        << syncable::ModelTypeToString(it.Get());
 
     // AUTOFILL_PROFILE is lumped together with AUTOFILL.
-    if (*it == syncable::AUTOFILL) {
+    if (it.Get() == syncable::AUTOFILL) {
       ASSERT_TRUE(DoesTopLevelNodeExist(user_share,
                                         syncable::AUTOFILL_PROFILE));
     }
@@ -78,34 +78,34 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
   // Setup sync with no disabled types.
   ASSERT_TRUE(GetClient(0)->SetupSync());
 
-  syncable::ModelTypeSet registered_types;
-  GetClient(0)->service()->GetRegisteredDataTypes(&registered_types);
+  const syncable::ModelEnumSet registered_types =
+      GetClient(0)->service()->GetRegisteredDataTypes();
 
   sync_api::UserShare* user_share = GetClient(0)->service()->GetUserShare();
 
   // Make sure all top-level nodes exist first.
-  for (syncable::ModelTypeSet::const_iterator it = registered_types.begin();
-       it != registered_types.end(); ++it) {
-    ASSERT_TRUE(DoesTopLevelNodeExist(user_share, *it));
+  for (syncable::ModelEnumSet::Iterator it = registered_types.First();
+       it.Good(); it.Inc()) {
+    ASSERT_TRUE(DoesTopLevelNodeExist(user_share, it.Get()));
   }
 
-  for (syncable::ModelTypeSet::const_iterator it = registered_types.begin();
-       it != registered_types.end(); ++it) {
-    ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(*it));
+  for (syncable::ModelEnumSet::Iterator it = registered_types.First();
+       it.Good(); it.Inc()) {
+    ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(it.Get()));
 
     // AUTOFILL_PROFILE is lumped together with AUTOFILL.
-    if (*it == syncable::AUTOFILL_PROFILE) {
+    if (it.Get() == syncable::AUTOFILL_PROFILE) {
       continue;
     }
 
     sync_api::UserShare* user_share =
         GetClient(0)->service()->GetUserShare();
 
-    ASSERT_FALSE(DoesTopLevelNodeExist(user_share, *it))
-        << syncable::ModelTypeToString(*it);
+    ASSERT_FALSE(DoesTopLevelNodeExist(user_share, it.Get()))
+        << syncable::ModelTypeToString(it.Get());
 
     // AUTOFILL_PROFILE is lumped together with AUTOFILL.
-    if (*it == syncable::AUTOFILL) {
+    if (it.Get() == syncable::AUTOFILL) {
       ASSERT_FALSE(DoesTopLevelNodeExist(user_share,
                                          syncable::AUTOFILL_PROFILE));
     }

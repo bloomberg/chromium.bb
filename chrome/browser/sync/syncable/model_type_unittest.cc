@@ -38,12 +38,10 @@ TEST_F(ModelTypeTest, ModelTypeFromValue) {
   }
 }
 
-TEST_F(ModelTypeTest, ModelTypeSetToValue) {
-  ModelTypeSet model_types;
-  model_types.insert(syncable::BOOKMARKS);
-  model_types.insert(syncable::APPS);
+TEST_F(ModelTypeTest, ModelEnumSetToValue) {
+  const ModelEnumSet model_types(syncable::BOOKMARKS, syncable::APPS);
 
-  scoped_ptr<ListValue> value(ModelTypeSetToValue(model_types));
+  scoped_ptr<ListValue> value(ModelEnumSetToValue(model_types));
   EXPECT_EQ(2u, value->GetSize());
   std::string types[2];
   EXPECT_TRUE(value->GetString(0, &types[0]));
@@ -52,26 +50,17 @@ TEST_F(ModelTypeTest, ModelTypeSetToValue) {
   EXPECT_EQ("Apps", types[1]);
 }
 
-TEST_F(ModelTypeTest, ModelTypeSetFromValue) {
+TEST_F(ModelTypeTest, ModelEnumSetFromValue) {
   // Try empty set first.
-  ModelTypeSet model_types;
-  scoped_ptr<ListValue> value(ModelTypeSetToValue(model_types));
-  EXPECT_EQ(model_types, ModelTypeSetFromValue(*value));
+  ModelEnumSet model_types;
+  scoped_ptr<ListValue> value(ModelEnumSetToValue(model_types));
+  EXPECT_TRUE(model_types.Equals(ModelEnumSetFromValue(*value)));
 
   // Now try with a few random types.
-  model_types.insert(BOOKMARKS);
-  model_types.insert(APPS);
-  value.reset(ModelTypeSetToValue(model_types));
-  EXPECT_EQ(model_types, ModelTypeSetFromValue(*value));
-}
-
-TEST_F(ModelTypeTest, GetAllRealModelTypes) {
-  const ModelTypeSet& all_types = GetAllRealModelTypes();
-  for (int i = 0; i < MODEL_TYPE_COUNT; ++i) {
-    ModelType type = ModelTypeFromInt(i);
-    EXPECT_EQ(IsRealDataType(type), all_types.count(type) > 0u);
-  }
-  EXPECT_EQ(0u, all_types.count(MODEL_TYPE_COUNT));
+  model_types.Put(BOOKMARKS);
+  model_types.Put(APPS);
+  value.reset(ModelEnumSetToValue(model_types));
+  EXPECT_TRUE(model_types.Equals(ModelEnumSetFromValue(*value)));
 }
 
 TEST_F(ModelTypeTest, IsRealDataType) {

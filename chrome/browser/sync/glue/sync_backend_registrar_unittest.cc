@@ -30,9 +30,9 @@ using syncable::THEMES;
 using syncable::NIGORI;
 using syncable::PASSWORDS;
 using syncable::MODEL_TYPE_COUNT;
+using syncable::ModelEnumSet;
 using syncable::ModelType;
 using syncable::ModelTypeFromInt;
-using syncable::ModelTypeSet;
 
 class SyncBackendRegistrarTest : public testing::Test {
  protected:
@@ -56,10 +56,10 @@ class SyncBackendRegistrarTest : public testing::Test {
   }
 
   void ExpectHasProcessorsForTypes(const SyncBackendRegistrar& registrar,
-                                   const ModelTypeSet& types) {
+                                   ModelEnumSet types) {
     for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
       ModelType model_type = ModelTypeFromInt(i);
-      EXPECT_EQ(types.count(model_type) > 0,
+      EXPECT_EQ(types.Has(model_type),
                 registrar.IsTypeActivatedForTest(model_type));
     }
   }
@@ -73,7 +73,7 @@ class SyncBackendRegistrarTest : public testing::Test {
 
 TEST_F(SyncBackendRegistrarTest, ConstructorEmpty) {
   TestingProfile profile;
-  SyncBackendRegistrar registrar(ModelTypeSet(), "test", &profile, &loop_);
+  SyncBackendRegistrar registrar(ModelEnumSet(), "test", &profile, &loop_);
   EXPECT_FALSE(registrar.IsNigoriEnabled());
   {
     std::vector<ModelSafeWorker*> workers;
@@ -81,17 +81,14 @@ TEST_F(SyncBackendRegistrarTest, ConstructorEmpty) {
     EXPECT_EQ(4u, workers.size());
   }
   ExpectRoutingInfo(&registrar, ModelSafeRoutingInfo());
-  ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
+  ExpectHasProcessorsForTypes(registrar, ModelEnumSet());
   registrar.OnSyncerShutdownComplete();
   registrar.StopOnUIThread();
 }
 
 TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
   TestingProfile profile;
-  ModelTypeSet initial_types;
-  initial_types.insert(BOOKMARKS);
-  initial_types.insert(NIGORI);
-  initial_types.insert(PASSWORDS);
+  const ModelEnumSet initial_types(BOOKMARKS, NIGORI, PASSWORDS);
   SyncBackendRegistrar registrar(initial_types, "test", &profile, &loop_);
   EXPECT_TRUE(registrar.IsNigoriEnabled());
   {
@@ -106,21 +103,19 @@ TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
     // Passwords dropped because of no password store.
     ExpectRoutingInfo(&registrar, expected_routing_info);
   }
-  ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
+  ExpectHasProcessorsForTypes(registrar, ModelEnumSet());
   registrar.OnSyncerShutdownComplete();
   registrar.StopOnUIThread();
 }
 
 TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
   TestingProfile profile;
-  SyncBackendRegistrar registrar(ModelTypeSet(), "test", &profile, &loop_);
+  SyncBackendRegistrar registrar(ModelEnumSet(), "test", &profile, &loop_);
 
   // Add.
-  ModelTypeSet types1;
-  types1.insert(BOOKMARKS);
-  types1.insert(NIGORI);
-  types1.insert(AUTOFILL);
-  EXPECT_EQ(types1, registrar.ConfigureDataTypes(types1, ModelTypeSet()));
+  const ModelEnumSet types1(BOOKMARKS, NIGORI, AUTOFILL);
+  EXPECT_TRUE(
+      registrar.ConfigureDataTypes(types1, ModelEnumSet()).Equals(types1));
   {
     ModelSafeRoutingInfo expected_routing_info;
     expected_routing_info[BOOKMARKS] = GROUP_PASSIVE;
@@ -128,25 +123,23 @@ TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
     expected_routing_info[AUTOFILL] = GROUP_PASSIVE;
     ExpectRoutingInfo(&registrar, expected_routing_info);
   }
-  ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
+  ExpectHasProcessorsForTypes(registrar, ModelEnumSet());
 
   // Add and remove.
-  ModelTypeSet types2;
-  types2.insert(PREFERENCES);
-  types2.insert(THEMES);
-  EXPECT_EQ(types2, registrar.ConfigureDataTypes(types2, types1));
+  const ModelEnumSet types2(PREFERENCES, THEMES);
+  EXPECT_TRUE(registrar.ConfigureDataTypes(types2, types1).Equals(types2));
   {
     ModelSafeRoutingInfo expected_routing_info;
     expected_routing_info[PREFERENCES] = GROUP_PASSIVE;
     expected_routing_info[THEMES] = GROUP_PASSIVE;
     ExpectRoutingInfo(&registrar, expected_routing_info);
   }
-  ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
+  ExpectHasProcessorsForTypes(registrar, ModelEnumSet());
 
   // Remove.
-  EXPECT_TRUE(registrar.ConfigureDataTypes(ModelTypeSet(), types2).empty());
+  EXPECT_TRUE(registrar.ConfigureDataTypes(ModelEnumSet(), types2).Empty());
   ExpectRoutingInfo(&registrar, ModelSafeRoutingInfo());
-  ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
+  ExpectHasProcessorsForTypes(registrar, ModelEnumSet());
 
   registrar.OnSyncerShutdownComplete();
   registrar.StopOnUIThread();
@@ -161,7 +154,7 @@ void TriggerChanges(SyncBackendRegistrar* registrar, ModelType type) {
 TEST_F(SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
   InSequence in_sequence;
   TestingProfile profile;
-  SyncBackendRegistrar registrar(ModelTypeSet(), "test", &profile, &loop_);
+  SyncBackendRegistrar registrar(ModelEnumSet(), "test", &profile, &loop_);
 
   // Should do nothing.
   TriggerChanges(&registrar, BOOKMARKS);
@@ -178,9 +171,9 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
   EXPECT_CALL(change_processor_mock, IsRunning())
       .WillRepeatedly(Return(false));
 
-  ModelTypeSet types;
-  types.insert(BOOKMARKS);
-  EXPECT_EQ(types, registrar.ConfigureDataTypes(types, ModelTypeSet()));
+  const ModelEnumSet types(BOOKMARKS);
+  EXPECT_TRUE(
+      registrar.ConfigureDataTypes(types, ModelEnumSet()).Equals(types));
   registrar.ActivateDataType(BOOKMARKS, GROUP_UI,
                              &change_processor_mock,
                              test_user_share_.user_share());
@@ -195,7 +188,7 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
 
   registrar.DeactivateDataType(BOOKMARKS);
   ExpectRoutingInfo(&registrar, ModelSafeRoutingInfo());
-  ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
+  ExpectHasProcessorsForTypes(registrar, ModelEnumSet());
 
   // Should do nothing.
   TriggerChanges(&registrar, BOOKMARKS);
@@ -208,7 +201,7 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
   content::TestBrowserThread db_thread(BrowserThread::DB, &loop_);
   InSequence in_sequence;
   TestingProfile profile;
-  SyncBackendRegistrar registrar(ModelTypeSet(), "test", &profile, &loop_);
+  SyncBackendRegistrar registrar(ModelEnumSet(), "test", &profile, &loop_);
 
   // Should do nothing.
   TriggerChanges(&registrar, AUTOFILL);
@@ -225,9 +218,9 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
   EXPECT_CALL(change_processor_mock, IsRunning())
       .WillRepeatedly(Return(false));
 
-  ModelTypeSet types;
-  types.insert(AUTOFILL);
-  EXPECT_EQ(types, registrar.ConfigureDataTypes(types, ModelTypeSet()));
+  const ModelEnumSet types(AUTOFILL);
+  EXPECT_TRUE(
+      registrar.ConfigureDataTypes(types, ModelEnumSet()).Equals(types));
   registrar.ActivateDataType(AUTOFILL, GROUP_DB,
                              &change_processor_mock,
                              test_user_share_.user_share());
@@ -242,7 +235,7 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
 
   registrar.DeactivateDataType(AUTOFILL);
   ExpectRoutingInfo(&registrar, ModelSafeRoutingInfo());
-  ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
+  ExpectHasProcessorsForTypes(registrar, ModelEnumSet());
 
   // Should do nothing.
   TriggerChanges(&registrar, AUTOFILL);

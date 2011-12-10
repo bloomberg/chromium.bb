@@ -127,9 +127,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   profile_->GetTokenService()->IssueAuthTokenForTest(
       GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
 
-  syncable::ModelTypeSet set;
-  set.insert(syncable::BOOKMARKS);
-  service_->OnUserChoseDatatypes(false, set);
+  service_->OnUserChoseDatatypes(
+      false, syncable::ModelEnumSet(syncable::BOOKMARKS));
   EXPECT_TRUE(service_->ShouldPushChanges());
 }
 
@@ -278,7 +277,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   errors.push_back(error);
   browser_sync::DataTypeManager::ConfigureResult result(
       status,
-      syncable::ModelTypeSet(),
+      syncable::ModelEnumSet(),
       errors);
   EXPECT_CALL(*data_type_manager, Configure(_, _)).
       WillRepeatedly(

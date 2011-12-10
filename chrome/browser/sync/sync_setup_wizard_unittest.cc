@@ -81,7 +81,7 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   }
 
   virtual void OnUserChoseDatatypes(bool sync_everything,
-      const syncable::ModelTypeSet& chosen_types) {
+                                    syncable::ModelEnumSet chosen_types) {
     user_chose_data_types_ = true;
     chosen_data_types_ = chosen_types;
   }
@@ -141,7 +141,7 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
     user_cancelled_dialog_ = false;
     user_chose_data_types_ = false;
     keep_everything_synced_ = false;
-    chosen_data_types_.clear();
+    chosen_data_types_.Clear();
   }
 
   // Use this to have the service act as if it were running under CrOS.
@@ -169,7 +169,7 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   bool keep_everything_synced_;
   bool is_using_secondary_passphrase_;
   bool encrypt_everything_;
-  syncable::ModelTypeSet chosen_data_types_;
+  syncable::ModelEnumSet chosen_data_types_;
   std::string passphrase_;
 
  private:
@@ -342,15 +342,15 @@ TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
   // DONE state and closed the UI.
   EXPECT_FALSE(wizard_->IsVisible());
   EXPECT_FALSE(service_->keep_everything_synced_);
-  EXPECT_EQ(1U, service_->chosen_data_types_.count(syncable::BOOKMARKS));
-  EXPECT_EQ(1U, service_->chosen_data_types_.count(syncable::PREFERENCES));
-  EXPECT_EQ(0U, service_->chosen_data_types_.count(syncable::THEMES));
-  EXPECT_EQ(0U, service_->chosen_data_types_.count(syncable::PASSWORDS));
-  EXPECT_EQ(0U, service_->chosen_data_types_.count(syncable::AUTOFILL));
-  EXPECT_EQ(0U, service_->chosen_data_types_.count(syncable::EXTENSIONS));
-  EXPECT_EQ(1U, service_->chosen_data_types_.count(syncable::TYPED_URLS));
-  EXPECT_EQ(1U, service_->chosen_data_types_.count(syncable::APPS));
-  EXPECT_EQ(0U, service_->chosen_data_types_.count(
+  EXPECT_TRUE(service_->chosen_data_types_.Has(syncable::BOOKMARKS));
+  EXPECT_TRUE(service_->chosen_data_types_.Has(syncable::PREFERENCES));
+  EXPECT_FALSE(service_->chosen_data_types_.Has(syncable::THEMES));
+  EXPECT_FALSE(service_->chosen_data_types_.Has(syncable::PASSWORDS));
+  EXPECT_FALSE(service_->chosen_data_types_.Has(syncable::AUTOFILL));
+  EXPECT_FALSE(service_->chosen_data_types_.Has(syncable::EXTENSIONS));
+  EXPECT_TRUE(service_->chosen_data_types_.Has(syncable::TYPED_URLS));
+  EXPECT_TRUE(service_->chosen_data_types_.Has(syncable::APPS));
+  EXPECT_FALSE(service_->chosen_data_types_.Has(
       syncable::APP_NOTIFICATIONS));
 }
 

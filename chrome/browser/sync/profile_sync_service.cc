@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync/profile_sync_service.h"
 
-#include <algorithm>
 #include <cstddef>
 #include <map>
 #include <set>
@@ -307,12 +306,12 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
     return;
   }
 
-  syncable::ModelTypeSet initial_types;
+  syncable::ModelEnumSet initial_types;
   // If sync setup hasn't finished, we don't want to initialize routing info
   // for any data types so that we don't download updates for types that the
   // user chooses not to sync on the first DownloadUpdatesCommand.
   if (HasSyncSetupCompleted()) {
-    GetPreferredDataTypes(&initial_types);
+    initial_types = GetPreferredDataTypes();
   }
 
   SyncCredentials credentials = GetCredentials();
@@ -341,18 +340,10 @@ void ProfileSyncService::CreateBackend() {
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
   if (encryption_pending())
     return true;
-  syncable::ModelTypeSet preferred_types;
-  GetPreferredDataTypes(&preferred_types);
-  syncable::ModelTypeSet encrypted_types;
-  GetEncryptedDataTypes(&encrypted_types);
-  const syncable::ModelEnumSet preferred_types_enum_set =
-      syncable::ModelTypeSetToEnumSet(preferred_types);
-  const syncable::ModelEnumSet encrypted_types_enum_set =
-      syncable::ModelTypeSetToEnumSet(encrypted_types);
-  DCHECK(encrypted_types.count(syncable::PASSWORDS));
-  return
-      !Intersection(preferred_types_enum_set,
-                    encrypted_types_enum_set).Empty();
+  const syncable::ModelEnumSet preferred_types = GetPreferredDataTypes();
+  const syncable::ModelEnumSet encrypted_types = GetEncryptedDataTypes();
+  DCHECK(encrypted_types.Has(syncable::PASSWORDS));
+  return !Intersection(preferred_types, encrypted_types).Empty();
 }
 
 void ProfileSyncService::OnSyncConfigureDone(
@@ -639,7 +630,7 @@ void ProfileSyncService::OnSyncCycleCompleted() {
 
 // TODO(sync): eventually support removing datatypes too.
 void ProfileSyncService::OnDataTypesChanged(
-    const syncable::ModelTypeSet& to_add) {
+    syncable::ModelEnumSet to_add) {
   // If this is a first time sync for a client, this will be called before
   // OnBackendInitialized() to ensure the new datatypes are available at sync
   // setup. As a result, the migrator won't exist yet. This is fine because for
@@ -652,28 +643,25 @@ void ProfileSyncService::OnDataTypesChanged(
   }
 
   DVLOG(2) << "OnDataTypesChanged called with types: "
-           << syncable::ModelTypeSetToString(to_add);
+           << syncable::ModelEnumSetToString(to_add);
 
-  syncable::ModelTypeSet registered_types;
-  GetRegisteredDataTypes(&registered_types);
+  const syncable::ModelEnumSet registered_types = GetRegisteredDataTypes();
 
-  syncable::ModelTypeSet to_register;
-  std::set_difference(to_add.begin(), to_add.end(),
-                      registered_types.begin(), registered_types.end(),
-                      std::inserter(to_register, to_register.end()));
+  const syncable::ModelEnumSet to_register =
+      Difference(to_add, registered_types);
 
-  DVLOG(2) << "Enabling types: " << syncable::ModelTypeSetToString(to_register);
+  DVLOG(2) << "Enabling types: " << syncable::ModelEnumSetToString(to_register);
 
-  for (syncable::ModelTypeSet::const_iterator it = to_register.begin();
-       it != to_register.end(); ++it) {
+  for (syncable::ModelEnumSet::Iterator it = to_register.First();
+       it.Good(); it.Inc()) {
     // Received notice to enable experimental type. Check if the type is
     // registered, and if not register a new datatype controller.
-    RegisterNewDataType(*it);
+    RegisterNewDataType(it.Get());
     // Enable the about:flags switch for the experimental type so we don't have
     // to always perform this reconfiguration. Once we set this, the type will
     // remain registered on restart, so we will no longer go down this code
     // path.
-    std::string experiment_name = GetExperimentNameForDataType(*it);
+    std::string experiment_name = GetExperimentNameForDataType(it.Get());
     if (experiment_name.empty())
       continue;
     about_flags::SetExperimentEnabled(g_browser_process->local_state(),
@@ -693,9 +681,9 @@ void ProfileSyncService::OnDataTypesChanged(
 
     // Only automatically turn on types if we have already finished set up.
     // Otherwise, just leave the experimental types on by default.
-    if (!to_register.empty() && HasSyncSetupCompleted() && migrator_.get()) {
+    if (!to_register.Empty() && HasSyncSetupCompleted() && migrator_.get()) {
       DVLOG(1) << "Dynamically enabling new datatypes: "
-               << syncable::ModelTypeSetToString(to_register);
+               << syncable::ModelEnumSetToString(to_register);
       OnMigrationNeededForTypes(to_register);
     }
   }
@@ -837,8 +825,7 @@ void ProfileSyncService::OnPassphraseAccepted() {
 
   // Make sure the data types that depend on the passphrase are started at
   // this time.
-  syncable::ModelTypeSet types;
-  GetPreferredDataTypes(&types);
+  const syncable::ModelEnumSet types = GetPreferredDataTypes();
 
   if (data_type_manager_.get()) {
     // Unblock the data type manager if necessary.
@@ -865,15 +852,15 @@ void ProfileSyncService::ResolvePassphraseRequired() {
 }
 
 void ProfileSyncService::OnEncryptedTypesChanged(
-    const syncable::ModelTypeSet& encrypted_types,
+    syncable::ModelEnumSet encrypted_types,
     bool encrypt_everything) {
   encrypted_types_ = encrypted_types;
   encrypt_everything_ = encrypt_everything;
   DVLOG(1) << "Encrypted types changed to "
-           << syncable::ModelTypeSetToString(encrypted_types_)
+           << syncable::ModelEnumSetToString(encrypted_types_)
            << " (encrypt everything is set to "
            << (encrypt_everything_ ? "true" : "false") << ")";
-  DCHECK_GT(encrypted_types_.count(syncable::PASSWORDS), 0u);
+  DCHECK(encrypted_types_.Has(syncable::PASSWORDS));
 }
 
 void ProfileSyncService::OnEncryptionComplete() {
@@ -890,7 +877,7 @@ void ProfileSyncService::OnEncryptionComplete() {
 }
 
 void ProfileSyncService::OnMigrationNeededForTypes(
-    const syncable::ModelTypeSet& types) {
+    syncable::ModelEnumSet types) {
   DCHECK(backend_initialized_);
   DCHECK(data_type_manager_.get());
 
@@ -1110,7 +1097,7 @@ void ProfileSyncService::OnUserSubmittedOAuth(
 }
 
 void ProfileSyncService::OnUserChoseDatatypes(bool sync_everything,
-    const syncable::ModelTypeSet& chosen_types) {
+    syncable::ModelEnumSet chosen_types) {
   if (!backend_.get() &&
       unrecoverable_error_detected_ == false) {
     NOTREACHED();
@@ -1150,17 +1137,12 @@ void ProfileSyncService::OnUserCancelledDialog() {
 }
 
 void ProfileSyncService::ChangePreferredDataTypes(
-    const syncable::ModelTypeSet& preferred_types) {
+    syncable::ModelEnumSet preferred_types) {
 
   DVLOG(1) << "ChangePreferredDataTypes invoked";
-  syncable::ModelTypeSet registered_types;
-  GetRegisteredDataTypes(&registered_types);
-  syncable::ModelTypeSet registered_preferred_types;
-  std::set_intersection(
-      registered_types.begin(), registered_types.end(),
-      preferred_types.begin(), preferred_types.end(),
-      std::inserter(registered_preferred_types,
-                    registered_preferred_types.end()));
+  const syncable::ModelEnumSet registered_types = GetRegisteredDataTypes();
+  const syncable::ModelEnumSet registered_preferred_types =
+      Intersection(registered_types, preferred_types);
   sync_prefs_.SetPreferredDataTypes(registered_types,
                                     registered_preferred_types);
 
@@ -1168,31 +1150,25 @@ void ProfileSyncService::ChangePreferredDataTypes(
   ReconfigureDatatypeManager();
 }
 
-void ProfileSyncService::GetPreferredDataTypes(
-    syncable::ModelTypeSet* preferred_types) const {
-  syncable::ModelTypeSet registered_types;
-  GetRegisteredDataTypes(&registered_types);
-  *preferred_types = sync_prefs_.GetPreferredDataTypes(registered_types);
-
-  syncable::ModelTypeSet failed_types =
+syncable::ModelEnumSet ProfileSyncService::GetPreferredDataTypes() const {
+  const syncable::ModelEnumSet registered_types = GetRegisteredDataTypes();
+  const syncable::ModelEnumSet preferred_types =
+      sync_prefs_.GetPreferredDataTypes(registered_types);
+  const syncable::ModelEnumSet failed_types =
       failed_datatypes_handler_.GetFailedTypes();
-  syncable::ModelTypeSet difference;
-  std::set_difference(preferred_types->begin(), preferred_types->end(),
-                      failed_types.begin(), failed_types.end(),
-                      std::inserter(difference, difference.end()));
-  std::swap(*preferred_types, difference);
+  return Difference(preferred_types, failed_types);
 }
 
-void ProfileSyncService::GetRegisteredDataTypes(
-    syncable::ModelTypeSet* registered_types) const {
-  registered_types->clear();
+syncable::ModelEnumSet ProfileSyncService::GetRegisteredDataTypes() const {
+  syncable::ModelEnumSet registered_types;
   // The data_type_controllers_ are determined by command-line flags; that's
   // effectively what controls the values returned here.
   for (DataTypeController::TypeMap::const_iterator it =
        data_type_controllers_.begin();
        it != data_type_controllers_.end(); ++it) {
-    registered_types->insert((*it).first);
+    registered_types.Put(it->first);
   }
+  return registered_types;
 }
 
 bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
@@ -1239,8 +1215,7 @@ void ProfileSyncService::ConfigureDataTypeManager() {
             this, data_type_manager_.get()));
   }
 
-  syncable::ModelTypeSet types;
-  GetPreferredDataTypes(&types);
+  const syncable::ModelEnumSet types = GetPreferredDataTypes();
   if (IsPassphraseRequiredForDecryption()) {
     // We need a passphrase still. We don't bother to attempt to configure
     // until we receive an OnPassphraseAccepted (which triggers a configure).
@@ -1354,13 +1329,11 @@ bool ProfileSyncService::EncryptEverythingEnabled() const {
   return encrypt_everything_;
 }
 
-void ProfileSyncService::GetEncryptedDataTypes(
-    syncable::ModelTypeSet* encrypted_types) const {
-  CHECK(encrypted_types);
+syncable::ModelEnumSet ProfileSyncService::GetEncryptedDataTypes() const {
+  DCHECK(encrypted_types_.Has(syncable::PASSWORDS));
   // We may be called during the setup process before we're
   // initialized.  In this case, we default to the sensitive types.
-  *encrypted_types = encrypted_types_;
-  DCHECK_GT(encrypted_types->count(syncable::PASSWORDS), 0u);
+  return encrypted_types_;
 }
 
 void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
@@ -1571,9 +1544,7 @@ void ProfileSyncService::UnsuppressAndStart() {
 }
 
 void ProfileSyncService::AcknowledgeSyncedTypes() {
-  syncable::ModelTypeSet registered_types;
-  GetRegisteredDataTypes(&registered_types);
-  sync_prefs_.AcknowledgeSyncedTypes(registered_types);
+  sync_prefs_.AcknowledgeSyncedTypes(GetRegisteredDataTypes());
 }
 
 void ProfileSyncService::ReconfigureDatatypeManager() {

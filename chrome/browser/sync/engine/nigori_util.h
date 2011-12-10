@@ -36,7 +36,7 @@ class WriteTransaction;
 // modify the data and does not care if data is unnecessarily encrypted.
 bool VerifyUnsyncedChangesAreEncrypted(
     BaseTransaction* const trans,
-    const ModelTypeSet& encrypted_types);
+    ModelEnumSet encrypted_types);
 
 // Processes all unsynced changes and ensures they are appropriately encrypted
 // or unencrypted, based on |encrypted_types|.
@@ -47,11 +47,11 @@ bool ProcessUnsyncedChangesForEncryption(
 // Returns true if the entry requires encryption but is not encrypted, false
 // otherwise. Note: this does not check that already encrypted entries are
 // encrypted with the proper key.
-bool EntryNeedsEncryption(const ModelTypeSet& encrypted_types,
+bool EntryNeedsEncryption(ModelEnumSet encrypted_types,
                           const Entry& entry);
 
 // Same as EntryNeedsEncryption, but looks at specifics.
-bool SpecificsNeedsEncryption(const ModelTypeSet& encrypted_types,
+bool SpecificsNeedsEncryption(ModelEnumSet encrypted_types,
                               const sync_pb::EntitySpecifics& specifics);
 
 // Verifies all data of type |type| is encrypted appropriately.

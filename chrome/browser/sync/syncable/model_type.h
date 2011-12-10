@@ -85,7 +85,6 @@ enum ModelType {
   MODEL_TYPE_COUNT,
 };
 
-typedef std::set<ModelType> ModelTypeSet;
 typedef browser_sync::EnumSet<
   ModelType, FIRST_REAL_MODEL_TYPE, LAST_REAL_MODEL_TYPE> ModelEnumSet;
 typedef browser_sync::EnumSet<
@@ -137,24 +136,13 @@ base::StringValue* ModelTypeToValue(ModelType model_type);
 // Converts a Value into a ModelType - complement to ModelTypeToValue().
 ModelType ModelTypeFromValue(const base::Value& value);
 
-std::string ModelTypeSetToString(const ModelTypeSet& model_types);
-
 // Returns the ModelType corresponding to the name |model_type_string|.
 ModelType ModelTypeFromString(const std::string& model_type_string);
 
 std::string ModelEnumSetToString(ModelEnumSet model_types);
 
-ModelTypeSet ModelEnumSetToSet(ModelEnumSet enum_set);
-
-ModelEnumSet ModelTypeSetToEnumSet(const ModelTypeSet& model_type_set);
-
 // Caller takes ownership of returned list.
 base::ListValue* ModelEnumSetToValue(ModelEnumSet model_types);
-
-// Caller takes ownership of returned list.
-base::ListValue* ModelTypeSetToValue(const ModelTypeSet& model_types);
-
-ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value);
 
 ModelEnumSet ModelEnumSetFromValue(const base::ListValue& value);
 
@@ -177,9 +165,6 @@ bool RealModelTypeToNotificationType(ModelType model_type,
 // type and |model_type| was filled in.
 bool NotificationTypeToRealModelType(const std::string& notification_type,
                                      ModelType* model_type);
-
-// Returns a ModelTypeSet with all real model types.
-ModelTypeSet GetAllRealModelTypes();
 
 // Returns true if |model_type| is a real datatype
 bool IsRealDataType(ModelType model_type);

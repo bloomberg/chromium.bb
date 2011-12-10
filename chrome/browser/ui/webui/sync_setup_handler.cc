@@ -89,58 +89,58 @@ bool GetConfiguration(const std::string& json, SyncConfiguration* config) {
   if (!result->GetBoolean("syncBookmarks", &sync_bookmarks))
     return false;
   if (sync_bookmarks)
-    config->data_types.insert(syncable::BOOKMARKS);
+    config->data_types.Put(syncable::BOOKMARKS);
 
   bool sync_preferences;
   if (!result->GetBoolean("syncPreferences", &sync_preferences))
     return false;
   if (sync_preferences)
-    config->data_types.insert(syncable::PREFERENCES);
+    config->data_types.Put(syncable::PREFERENCES);
 
   bool sync_themes;
   if (!result->GetBoolean("syncThemes", &sync_themes))
     return false;
   if (sync_themes)
-    config->data_types.insert(syncable::THEMES);
+    config->data_types.Put(syncable::THEMES);
 
   bool sync_passwords;
   if (!result->GetBoolean("syncPasswords", &sync_passwords))
     return false;
   if (sync_passwords)
-    config->data_types.insert(syncable::PASSWORDS);
+    config->data_types.Put(syncable::PASSWORDS);
 
   bool sync_autofill;
   if (!result->GetBoolean("syncAutofill", &sync_autofill))
     return false;
   if (sync_autofill)
-    config->data_types.insert(syncable::AUTOFILL);
+    config->data_types.Put(syncable::AUTOFILL);
 
   bool sync_extensions;
   if (!result->GetBoolean("syncExtensions", &sync_extensions))
     return false;
   if (sync_extensions) {
-    config->data_types.insert(syncable::EXTENSIONS);
-    config->data_types.insert(syncable::EXTENSION_SETTINGS);
+    config->data_types.Put(syncable::EXTENSIONS);
+    config->data_types.Put(syncable::EXTENSION_SETTINGS);
   }
 
   bool sync_typed_urls;
   if (!result->GetBoolean("syncTypedUrls", &sync_typed_urls))
     return false;
   if (sync_typed_urls)
-    config->data_types.insert(syncable::TYPED_URLS);
+    config->data_types.Put(syncable::TYPED_URLS);
 
   bool sync_sessions;
   if (!result->GetBoolean("syncSessions", &sync_sessions))
     return false;
   if (sync_sessions)
-    config->data_types.insert(syncable::SESSIONS);
+    config->data_types.Put(syncable::SESSIONS);
 
   bool sync_apps;
   if (!result->GetBoolean("syncApps", &sync_apps))
     return false;
   if (sync_apps) {
-    config->data_types.insert(syncable::APPS);
-    config->data_types.insert(syncable::APP_SETTINGS);
+    config->data_types.Put(syncable::APPS);
+    config->data_types.Put(syncable::APP_SETTINGS);
   }
 
   // Encryption settings.
@@ -202,24 +202,24 @@ bool HasConfigurationChanged(const SyncConfiguration& config,
 
   // Only check the data types that are explicitly listed on the sync
   // preferences page.
-  const syncable::ModelTypeSet& types = config.data_types;
-  if (((types.find(syncable::BOOKMARKS) != types.end()) !=
+  const syncable::ModelEnumSet types = config.data_types;
+  if (((types.Has(syncable::BOOKMARKS)) !=
        pref_service->GetBoolean(prefs::kSyncBookmarks)) ||
-      ((types.find(syncable::PREFERENCES) != types.end()) !=
+      ((types.Has(syncable::PREFERENCES)) !=
        pref_service->GetBoolean(prefs::kSyncPreferences)) ||
-      ((types.find(syncable::THEMES) != types.end()) !=
+      ((types.Has(syncable::THEMES)) !=
        pref_service->GetBoolean(prefs::kSyncThemes)) ||
-      ((types.find(syncable::PASSWORDS) != types.end()) !=
+      ((types.Has(syncable::PASSWORDS)) !=
        pref_service->GetBoolean(prefs::kSyncPasswords)) ||
-      ((types.find(syncable::AUTOFILL) != types.end()) !=
+      ((types.Has(syncable::AUTOFILL)) !=
        pref_service->GetBoolean(prefs::kSyncAutofill)) ||
-      ((types.find(syncable::EXTENSIONS) != types.end()) !=
+      ((types.Has(syncable::EXTENSIONS)) !=
        pref_service->GetBoolean(prefs::kSyncExtensions)) ||
-      ((types.find(syncable::TYPED_URLS) != types.end()) !=
+      ((types.Has(syncable::TYPED_URLS)) !=
        pref_service->GetBoolean(prefs::kSyncTypedUrls)) ||
-      ((types.find(syncable::SESSIONS) != types.end()) !=
+      ((types.Has(syncable::SESSIONS)) !=
        pref_service->GetBoolean(prefs::kSyncSessions)) ||
-      ((types.find(syncable::APPS) != types.end()) !=
+      ((types.Has(syncable::APPS)) !=
        pref_service->GetBoolean(prefs::kSyncApps)))
     return true;
 
@@ -580,32 +580,32 @@ void SyncSetupHandler::HandleConfigure(const ListValue* args) {
       if (!configuration.sync_everything) {
         // Only log the data types that are explicitly listed on the sync
         // preferences page.
-        const syncable::ModelTypeSet& types = configuration.data_types;
-        if (types.find(syncable::BOOKMARKS) != types.end())
+        const syncable::ModelEnumSet types = configuration.data_types;
+        if (types.Has(syncable::BOOKMARKS))
           UMA_HISTOGRAM_ENUMERATION(
               "Sync.CustomSync", BOOKMARKS, SELECTABLE_DATATYPE_COUNT + 1);
-        if (types.find(syncable::PREFERENCES) != types.end())
+        if (types.Has(syncable::PREFERENCES))
           UMA_HISTOGRAM_ENUMERATION(
               "Sync.CustomSync", PREFERENCES, SELECTABLE_DATATYPE_COUNT + 1);
-        if (types.find(syncable::PASSWORDS) != types.end())
+        if (types.Has(syncable::PASSWORDS))
           UMA_HISTOGRAM_ENUMERATION(
               "Sync.CustomSync", PASSWORDS, SELECTABLE_DATATYPE_COUNT + 1);
-        if (types.find(syncable::AUTOFILL) != types.end())
+        if (types.Has(syncable::AUTOFILL))
           UMA_HISTOGRAM_ENUMERATION(
               "Sync.CustomSync", AUTOFILL, SELECTABLE_DATATYPE_COUNT + 1);
-        if (types.find(syncable::THEMES) != types.end())
+        if (types.Has(syncable::THEMES))
           UMA_HISTOGRAM_ENUMERATION(
               "Sync.CustomSync", THEMES, SELECTABLE_DATATYPE_COUNT + 1);
-        if (types.find(syncable::TYPED_URLS) != types.end())
+        if (types.Has(syncable::TYPED_URLS))
           UMA_HISTOGRAM_ENUMERATION(
               "Sync.CustomSync", TYPED_URLS, SELECTABLE_DATATYPE_COUNT + 1);
-        if (types.find(syncable::EXTENSIONS) != types.end())
+        if (types.Has(syncable::EXTENSIONS))
           UMA_HISTOGRAM_ENUMERATION(
               "Sync.CustomSync", EXTENSIONS, SELECTABLE_DATATYPE_COUNT + 1);
-        if (types.find(syncable::SESSIONS) != types.end())
+        if (types.Has(syncable::SESSIONS))
           UMA_HISTOGRAM_ENUMERATION(
               "Sync.CustomSync", SESSIONS, SELECTABLE_DATATYPE_COUNT + 1);
-        if (types.find(syncable::APPS) != types.end())
+        if (types.Has(syncable::APPS))
           UMA_HISTOGRAM_ENUMERATION(
               "Sync.CustomSync", APPS, SELECTABLE_DATATYPE_COUNT + 1);
         COMPILE_ASSERT(17 == syncable::MODEL_TYPE_COUNT,

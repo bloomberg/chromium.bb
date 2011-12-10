@@ -194,11 +194,11 @@ void SyncerProtoUtil::HandleThrottleError(
     sessions::SyncSessionContext* context,
     sessions::SyncSession::Delegate* delegate) {
   DCHECK_EQ(error.error_type, browser_sync::THROTTLED);
-  if (error.error_data_types.size() > 0) {
-     context->SetUnthrottleTime(error.error_data_types, throttled_until);
-  } else {
+  if (error.error_data_types.Empty()) {
     // No datatypes indicates the client should be completely throttled.
     delegate->OnSilencedUntil(throttled_until);
+  } else {
+     context->SetUnthrottleTime(error.error_data_types, throttled_until);
   }
 }
 
@@ -278,7 +278,7 @@ browser_sync::SyncProtocolError ConvertErrorPBToLocalType(
     // THROTTLED is currently the only error code that uses |error_data_types|.
     DCHECK_EQ(error.error_type(), ClientToServerResponse::THROTTLED);
     for (int i = 0; i < error.error_data_type_ids_size(); ++i) {
-      sync_protocol_error.error_data_types.insert(
+      sync_protocol_error.error_data_types.Put(
           syncable::GetModelTypeFromExtensionFieldNumber(
               error.error_data_type_ids(i)));
     }

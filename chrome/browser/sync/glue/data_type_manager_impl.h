@@ -30,12 +30,12 @@ class DataTypeManagerImpl : public DataTypeManager {
   virtual ~DataTypeManagerImpl();
 
   // DataTypeManager interface.
-  virtual void Configure(const TypeSet& desired_types,
+  virtual void Configure(TypeSet desired_types,
                          sync_api::ConfigureReason reason) OVERRIDE;
 
   // Needed only for backend migration.
   virtual void ConfigureWithoutNigori(
-      const TypeSet& desired_types,
+      TypeSet desired_types,
       sync_api::ConfigureReason reason) OVERRIDE;
 
   virtual void Stop() OVERRIDE;
@@ -75,7 +75,7 @@ class DataTypeManagerImpl : public DataTypeManager {
   // Restart().
   void AddToConfigureTime();
 
-  virtual void ConfigureImpl(const TypeSet& desired_types,
+  virtual void ConfigureImpl(TypeSet desired_types,
                              sync_api::ConfigureReason reason,
                              bool enable_nigori);
 

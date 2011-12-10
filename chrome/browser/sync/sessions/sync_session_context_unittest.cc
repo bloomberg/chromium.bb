@@ -10,9 +10,8 @@
 namespace browser_sync {
 namespace sessions {
 TEST(SyncSessionContextTest, AddUnthrottleTimeTest) {
-  syncable::ModelTypeSet types;
-  types.insert(syncable::BOOKMARKS);
-  types.insert(syncable::PASSWORDS);
+  const syncable::ModelEnumSet types(
+      syncable::BOOKMARKS, syncable::PASSWORDS);
 
   SyncSessionContext context;
   base::TimeTicks now = base::TimeTicks::Now();
@@ -24,9 +23,8 @@ TEST(SyncSessionContextTest, AddUnthrottleTimeTest) {
 }
 
 TEST(SyncSessionContextTest, GetCurrentlyThrottledTypesTest) {
-  syncable::ModelTypeSet types;
-  types.insert(syncable::BOOKMARKS);
-  types.insert(syncable::PASSWORDS);
+  const syncable::ModelEnumSet types(
+      syncable::BOOKMARKS, syncable::PASSWORDS);
 
   SyncSessionContext context;
   base::TimeTicks now = base::TimeTicks::Now();
@@ -35,12 +33,12 @@ TEST(SyncSessionContextTest, GetCurrentlyThrottledTypesTest) {
   // now.
   context.SetUnthrottleTime(types, now - base::TimeDelta::FromSeconds(10));
   context.PruneUnthrottledTypes(base::TimeTicks::Now());
-  EXPECT_EQ(context.GetThrottledTypes(), syncable::ModelTypeSet());
+  EXPECT_TRUE(context.GetThrottledTypes().Empty());
 
   // Now update the throttled types with time set to 2 hours from now.
   context.SetUnthrottleTime(types, now + base::TimeDelta::FromSeconds(1200));
   context.PruneUnthrottledTypes(base::TimeTicks::Now());
-  EXPECT_EQ(context.GetThrottledTypes(), types);
+  EXPECT_TRUE(context.GetThrottledTypes().Equals(types));
 }
 }  // namespace sessions.
 }  // namespace browser_sync

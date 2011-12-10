@@ -103,7 +103,7 @@ class SyncFrontend {
   // of encrypted types is Cryptographer::SensitiveTypes() and that
   // the encrypt everything flag is false.
   virtual void OnEncryptedTypesChanged(
-      const syncable::ModelTypeSet& encrypted_types,
+      syncable::ModelEnumSet encrypted_types,
       bool encrypt_everything) = 0;
 
   // Called after we finish encrypting the current set of encrypted
@@ -112,10 +112,10 @@ class SyncFrontend {
 
   // Called to perform migration of |types|.
   virtual void OnMigrationNeededForTypes(
-      const syncable::ModelTypeSet& types) = 0;
+      syncable::ModelEnumSet types) = 0;
 
   // Inform the Frontend that new datatypes are available for registration.
-  virtual void OnDataTypesChanged(const syncable::ModelTypeSet& to_add) = 0;
+  virtual void OnDataTypesChanged(syncable::ModelEnumSet to_add) = 0;
 
   // Called when the sync cycle returns there is an user actionable error.
   virtual void OnActionableError(
@@ -157,7 +157,7 @@ class SyncBackendHost {
   void Initialize(SyncFrontend* frontend,
                   const WeakHandle<JsEventHandler>& event_handler,
                   const GURL& service_url,
-                  const syncable::ModelTypeSet& initial_types,
+                  syncable::ModelEnumSet initial_types,
                   const sync_api::SyncCredentials& credentials,
                   bool delete_sync_data_folder);
 
@@ -193,8 +193,8 @@ class SyncBackendHost {
   // set of all types that failed configuration (i.e., if its argument
   // is non-empty, then an error was encountered).
   virtual void ConfigureDataTypes(
-      const syncable::ModelTypeSet& types_to_add,
-      const syncable::ModelTypeSet& types_to_remove,
+      syncable::ModelEnumSet types_to_add,
+      syncable::ModelEnumSet types_to_remove,
       sync_api::ConfigureReason reason,
       base::Callback<void(syncable::ModelEnumSet)> ready_task,
       bool enable_nigori);
@@ -295,7 +295,7 @@ class SyncBackendHost {
     virtual void OnClearServerDataFailed() OVERRIDE;
     virtual void OnClearServerDataSucceeded() OVERRIDE;
     virtual void OnEncryptedTypesChanged(
-        const syncable::ModelTypeSet& encrypted_types,
+        syncable::ModelEnumSet encrypted_types,
         bool encrypt_everything) OVERRIDE;
     virtual void OnEncryptionComplete() OVERRIDE;
     virtual void OnActionableError(
@@ -461,7 +461,7 @@ class SyncBackendHost {
     // Invoked when the set of encrypted types or the encrypt
     // everything flag changes.
     void NotifyEncryptedTypesChanged(
-        const syncable::ModelTypeSet& encrypted_types,
+        syncable::ModelEnumSet encrypted_types,
         bool encrypt_everything);
 
     // Invoked when sync finishes encrypting new datatypes.
@@ -550,10 +550,10 @@ class SyncBackendHost {
 
     // The set of types that we are waiting to be initially synced in a
     // configuration cycle.
-    syncable::ModelTypeSet types_to_add;
+    syncable::ModelEnumSet types_to_add;
 
     // Additional details about which types were added.
-    syncable::ModelTypeSet added_types;
+    syncable::ModelEnumSet added_types;
     sync_api::ConfigureReason reason;
   };
 

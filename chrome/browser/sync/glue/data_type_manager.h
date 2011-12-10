@@ -48,7 +48,7 @@ class DataTypeManager {
     UNRECOVERABLE_ERROR  // We got an unrecoverable error during startup.
   };
 
-  typedef std::set<syncable::ModelType> TypeSet;
+  typedef syncable::ModelEnumSet TypeSet;
 
   // Note: |errors| is only filled when status is not OK.
   struct ConfigureResult {
@@ -81,10 +81,10 @@ class DataTypeManager {
   // Note that you may call Configure() while configuration is in
   // progress.  Configuration will be complete only when the
   // desired_types supplied in the last call to Configure is achieved.
-  virtual void Configure(const TypeSet& desired_types,
+  virtual void Configure(TypeSet desired_types,
                          sync_api::ConfigureReason reason) = 0;
 
-  virtual void ConfigureWithoutNigori(const TypeSet& desired_types,
+  virtual void ConfigureWithoutNigori(TypeSet desired_types,
       sync_api::ConfigureReason reason) = 0;
 
   // Synchronously stops all registered data types.  If called after

@@ -215,9 +215,9 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
       service_.reset(new PasswordTestProfileSyncService(
           &factory_, &profile_, "test_user", false,
           root_callback, node_callback));
-      syncable::ModelTypeSet preferred_types;
-      service_->GetPreferredDataTypes(&preferred_types);
-      preferred_types.insert(syncable::PASSWORDS);
+      syncable::ModelEnumSet preferred_types =
+          service_->GetPreferredDataTypes();
+      preferred_types.Put(syncable::PASSWORDS);
       service_->ChangePreferredDataTypes(preferred_types);
       EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
           Return(service_.get()));

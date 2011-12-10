@@ -702,8 +702,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailWriteToHistoryBackend) {
       WillRepeatedly(Return(false));
   StartSyncService(base::Bind(&AddTypedUrlEntries, this, sync_entries));
   ASSERT_TRUE(
-      service_->failed_datatypes_handler().GetFailedTypes().count(
-          syncable::TYPED_URLS) != 0);
-  ASSERT_TRUE(
-      service_->failed_datatypes_handler().GetFailedTypes().size() == 1);
+      service_->failed_datatypes_handler().GetFailedTypes().Has(
+          syncable::TYPED_URLS));
+  ASSERT_EQ(
+      1u, service_->failed_datatypes_handler().GetFailedTypes().Size());
 }

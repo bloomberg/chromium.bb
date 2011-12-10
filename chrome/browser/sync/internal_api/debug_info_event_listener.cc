@@ -73,7 +73,7 @@ void DebugInfoEventListener::OnClearServerDataSucceeded() {
 }
 
 void DebugInfoEventListener::OnEncryptedTypesChanged(
-    const syncable::ModelTypeSet& encrypted_types,
+    syncable::ModelEnumSet encrypted_types,
     bool encrypt_everything) {
   CreateAndAddEvent(sync_pb::DebugEventInfo::ENCRYPTED_TYPES_CHANGED);
 }

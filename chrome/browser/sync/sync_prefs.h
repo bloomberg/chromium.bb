@@ -80,8 +80,8 @@ class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs>,
   // The returned set is guaranteed to be a subset of
   // |registered_types|.  Returns |registered_types| directly if
   // HasKeepEverythingSynced() is true.
-  syncable::ModelTypeSet GetPreferredDataTypes(
-      const syncable::ModelTypeSet& registered_types) const;
+  syncable::ModelEnumSet GetPreferredDataTypes(
+      syncable::ModelEnumSet registered_types) const;
   // |preferred_types| should be a subset of |registered_types|.  All
   // types in |preferred_types| are marked preferred, and all types in
   // |registered_types| \ |preferred_types| are marked not preferred.
@@ -89,8 +89,8 @@ class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs>,
   // HasKeepEverythingSynced() is true, but won't be visible until
   // SetKeepEverythingSynced(false) is called.
   void SetPreferredDataTypes(
-    const syncable::ModelTypeSet& registered_types,
-    const syncable::ModelTypeSet& preferred_types);
+    syncable::ModelEnumSet registered_types,
+    syncable::ModelEnumSet preferred_types);
 
   // This pref is set outside of sync.
   bool IsManaged() const;
@@ -105,7 +105,7 @@ class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs>,
                              int64 max_version) OVERRIDE;
 
   // Merges the given set of types with the set of acknowledged types.
-  void AcknowledgeSyncedTypes(const syncable::ModelTypeSet& types);
+  void AcknowledgeSyncedTypes(syncable::ModelEnumSet types);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -115,7 +115,7 @@ class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs>,
   // For testing.
 
   void SetManagedForTest(bool is_managed);
-  syncable::ModelTypeSet GetAcknowledgeSyncedTypesForTest() const;
+  syncable::ModelEnumSet GetAcknowledgeSyncedTypesForTest() const;
 
  private:
   void RegisterPreferences();

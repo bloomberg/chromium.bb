@@ -287,17 +287,6 @@ StringValue* ModelTypeToValue(ModelType model_type) {
   return Value::CreateStringValue("");
 }
 
-std::string ModelTypeSetToString(const ModelTypeSet& model_types) {
-  std::string result;
-  for (ModelTypeSet::const_iterator iter = model_types.begin();
-       iter != model_types.end();) {
-    result += ModelTypeToString(*iter);
-    if (++iter != model_types.end())
-      result += ", ";
-  }
-  return result;
-}
-
 ModelType ModelTypeFromValue(const Value& value) {
   if (value.IsType(Value::TYPE_STRING)) {
     std::string result;
@@ -361,23 +350,6 @@ std::string ModelEnumSetToString(ModelEnumSet model_types) {
   return result;
 }
 
-ModelTypeSet ModelEnumSetToSet(ModelEnumSet enum_set) {
-  ModelTypeSet model_type_set;
-  for (ModelEnumSet::Iterator it = enum_set.First(); it.Good(); it.Inc()) {
-    model_type_set.insert(it.Get());
-  }
-  return model_type_set;
-}
-
-ModelEnumSet ModelTypeSetToEnumSet(const ModelTypeSet& model_type_set) {
-  ModelEnumSet enum_set;
-  for (ModelTypeSet::const_iterator it = model_type_set.begin();
-       it != model_type_set.end(); ++it) {
-    enum_set.Put(*it);
-  }
-  return enum_set;
-}
-
 base::ListValue* ModelEnumSetToValue(ModelEnumSet model_types) {
   ListValue* value = new ListValue();
   for (ModelEnumSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
@@ -385,23 +357,6 @@ base::ListValue* ModelEnumSetToValue(ModelEnumSet model_types) {
         Value::CreateStringValue(ModelTypeToString(it.Get())));
   }
   return value;
-}
-
-ListValue* ModelTypeSetToValue(const ModelTypeSet& model_types) {
-  ListValue* value = new ListValue();
-  for (ModelTypeSet::const_iterator i = model_types.begin();
-       i != model_types.end(); ++i) {
-    value->Append(Value::CreateStringValue(ModelTypeToString(*i)));
-  }
-  return value;
-}
-
-ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value) {
-  ModelTypeSet result;
-  for (ListValue::const_iterator i = value.begin(); i != value.end(); ++i) {
-    result.insert(ModelTypeFromValue(**i));
-  }
-  return result;
 }
 
 ModelEnumSet ModelEnumSetFromValue(const base::ListValue& value) {
@@ -654,14 +609,6 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     *model_type = UNSPECIFIED;
     return false;
   }
-}
-
-ModelTypeSet GetAllRealModelTypes() {
-  ModelTypeSet all_types;
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
-    all_types.insert(ModelTypeFromInt(i));
-  }
-  return all_types;
 }
 
 bool IsRealDataType(ModelType model_type) {
