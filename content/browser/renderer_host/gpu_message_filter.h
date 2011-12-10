@@ -15,6 +15,10 @@ class GpuProcessHost;
 struct GPUCreateCommandBufferConfig;
 class RenderWidgetHelper;
 
+namespace content {
+struct GPUInfo;
+}  // namespace content
+
 // A message filter for messages from the renderer to the GpuProcessHost(UIShim)
 // in the browser. Such messages are typically destined for the GPU process,
 // but need to be mediated by the browser.
@@ -40,6 +44,12 @@ class GpuMessageFilter : public BrowserMessageFilter,
       int32 render_view_id,
       const GPUCreateCommandBufferConfig& init_params,
       IPC::Message* reply);
+  // Helper callbacks for the message handlers.
+  void EstablishChannelCallback(IPC::Message* reply,
+                                const IPC::ChannelHandle& channel,
+                                base::ProcessHandle gpu_process_for_browser,
+                                const content::GPUInfo& gpu_info);
+  void CreateCommandBufferCallback(IPC::Message* reply, int32 route_id);
 
   int gpu_host_id_;
   int render_process_id_;

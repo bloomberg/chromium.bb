@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/id_map.h"
 #include "base/lazy_instance.h"
@@ -38,23 +39,13 @@ namespace {
 base::LazyInstance<IDMap<GpuProcessHostUIShim> > g_hosts_by_id =
     LAZY_INSTANCE_INITIALIZER;
 
-class SendOnIOThreadTask : public Task {
- public:
-  SendOnIOThreadTask(int host_id, IPC::Message* msg)
-      : host_id_(host_id),
-        msg_(msg) {
-  }
-
- private:
-  void Run() {
-    GpuProcessHost* host = GpuProcessHost::FromID(host_id_);
-    if (host)
-      host->Send(msg_.release());
-  }
-
-  int host_id_;
-  scoped_ptr<IPC::Message> msg_;
-};
+void SendOnIOThreadTask(int host_id, IPC::Message* msg) {
+  GpuProcessHost* host = GpuProcessHost::FromID(host_id);
+  if (host)
+    host->Send(msg);
+  else
+    delete msg;
+}
 
 class ScopedSendOnIOThread {
  public:
@@ -68,8 +59,9 @@ class ScopedSendOnIOThread {
     if (!cancelled_) {
       BrowserThread::PostTask(BrowserThread::IO,
                               FROM_HERE,
-                              new SendOnIOThreadTask(host_id_,
-                                                     msg_.release()));
+                              base::Bind(&SendOnIOThreadTask,
+                                         host_id_,
+                                         msg_.release()));
     }
   }
 
@@ -95,20 +87,10 @@ RenderWidgetHostView* GetRenderWidgetHostViewFromID(int render_process_id,
 
 }  // namespace
 
-RouteToGpuProcessHostUIShimTask::RouteToGpuProcessHostUIShimTask(
-    int host_id,
-    const IPC::Message& msg)
-  : host_id_(host_id),
-    msg_(msg) {
-}
-
-RouteToGpuProcessHostUIShimTask::~RouteToGpuProcessHostUIShimTask() {
-}
-
-void RouteToGpuProcessHostUIShimTask::Run() {
-  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(host_id_);
+void RouteToGpuProcessHostUIShimTask(int host_id, const IPC::Message& msg) {
+  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(host_id);
   if (ui_shim)
-    ui_shim->OnMessageReceived(msg_);
+    ui_shim->OnMessageReceived(msg);
 }
 
 GpuProcessHostUIShim::GpuProcessHostUIShim(int host_id)
@@ -156,7 +138,9 @@ bool GpuProcessHostUIShim::Send(IPC::Message* msg) {
   DCHECK(CalledOnValidThread());
   return BrowserThread::PostTask(BrowserThread::IO,
                                  FROM_HERE,
-                                 new SendOnIOThreadTask(host_id_, msg));
+                                 base::Bind(&SendOnIOThreadTask,
+                                            host_id_,
+                                            msg));
 }
 
 bool GpuProcessHostUIShim::OnMessageReceived(const IPC::Message& message) {

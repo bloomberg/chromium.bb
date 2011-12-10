@@ -15,7 +15,6 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/task.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
@@ -36,18 +35,7 @@ namespace IPC {
 class Message;
 }
 
-// A task that will forward an IPC message to the UI shim.
-class RouteToGpuProcessHostUIShimTask : public Task {
- public:
-  RouteToGpuProcessHostUIShimTask(int host_id, const IPC::Message& msg);
-  virtual ~RouteToGpuProcessHostUIShimTask();
-
- private:
-  virtual void Run() OVERRIDE;
-
-  int host_id_;
-  IPC::Message msg_;
-};
+void RouteToGpuProcessHostUIShimTask(int host_id, const IPC::Message& msg);
 
 class GpuProcessHostUIShim
     : public IPC::Channel::Listener,

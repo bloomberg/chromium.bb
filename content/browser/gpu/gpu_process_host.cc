@@ -4,6 +4,8 @@
 
 #include "content/browser/gpu/gpu_process_host.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
@@ -65,22 +67,9 @@ int g_last_host_id = 0;
 
 #if defined(TOOLKIT_USES_GTK)
 
-class ReleasePermanentXIDDispatcher: public Task {
- public:
-  explicit ReleasePermanentXIDDispatcher(gfx::PluginWindowHandle surface);
-  void Run();
- private:
-  gfx::PluginWindowHandle surface_;
-};
-
-ReleasePermanentXIDDispatcher::ReleasePermanentXIDDispatcher(
-  gfx::PluginWindowHandle surface)
-      : surface_(surface) {
-}
-
-void ReleasePermanentXIDDispatcher::Run() {
+void ReleasePermanentXIDDispatcher(gfx::PluginWindowHandle surface) {
   GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-  manager->ReleasePermanentXID(surface_);
+  manager->ReleasePermanentXID(surface);
 }
 
 #endif
@@ -122,7 +111,7 @@ GpuProcessHost::SurfaceRef::SurfaceRef(gfx::PluginWindowHandle surface)
 GpuProcessHost::SurfaceRef::~SurfaceRef() {
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
-                          new ReleasePermanentXIDDispatcher(surface_));
+                          base::Bind(&ReleasePermanentXIDDispatcher, surface_));
 }
 #endif  // defined(TOOLKIT_USES_GTK)
 
@@ -233,7 +222,7 @@ void GpuProcessHost::SendOnIO(int renderer_id,
                               IPC::Message* message) {
   BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableFunction(
+        base::Bind(
             &SendGpuProcessMessage, renderer_id, cause, message));
 }
 
@@ -275,7 +264,7 @@ GpuProcessHost::GpuProcessHost(int host_id)
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      NewRunnableFunction(&GpuProcessHostUIShim::Create, host_id));
+      base::Bind(base::IgnoreResult(&GpuProcessHostUIShim::Create), host_id));
 }
 
 GpuProcessHost::~GpuProcessHost() {
@@ -314,8 +303,7 @@ GpuProcessHost::~GpuProcessHost() {
 
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
-                          NewRunnableFunction(GpuProcessHostUIShim::Destroy,
-                                              host_id_));
+                          base::Bind(&GpuProcessHostUIShim::Destroy, host_id_));
 }
 
 bool GpuProcessHost::Init() {
@@ -353,7 +341,7 @@ void GpuProcessHost::RouteOnUIThread(const IPC::Message& message) {
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      new RouteToGpuProcessHostUIShimTask(host_id_, message));
+      base::Bind(&RouteToGpuProcessHostUIShimTask, host_id_, message));
 }
 
 bool GpuProcessHost::Send(IPC::Message* msg) {
@@ -388,24 +376,23 @@ void GpuProcessHost::OnChannelConnected(int32 peer_pid) {
 
 void GpuProcessHost::EstablishGpuChannel(
     int renderer_id,
-    EstablishChannelCallback *callback) {
+    const EstablishChannelCallback& callback) {
   DCHECK(CalledOnValidThread());
   TRACE_EVENT0("gpu", "GpuProcessHostUIShim::EstablishGpuChannel");
-  linked_ptr<EstablishChannelCallback> wrapped_callback(callback);
 
   // If GPU features are already blacklisted, no need to establish the channel.
   if (!GpuDataManager::GetInstance()->GpuAccessAllowed()) {
     EstablishChannelError(
-        wrapped_callback.release(), IPC::ChannelHandle(),
+        callback, IPC::ChannelHandle(),
         base::kNullProcessHandle, content::GPUInfo());
     return;
   }
 
   if (Send(new GpuMsg_EstablishChannel(renderer_id))) {
-    channel_requests_.push(wrapped_callback);
+    channel_requests_.push(callback);
   } else {
     EstablishChannelError(
-        wrapped_callback.release(), IPC::ChannelHandle(),
+        callback, IPC::ChannelHandle(),
         base::kNullProcessHandle, content::GPUInfo());
   }
 }
@@ -415,9 +402,8 @@ void GpuProcessHost::CreateViewCommandBuffer(
     int32 render_view_id,
     int32 renderer_id,
     const GPUCreateCommandBufferConfig& init_params,
-    CreateCommandBufferCallback* callback) {
+    const CreateCommandBufferCallback& callback) {
   DCHECK(CalledOnValidThread());
-  linked_ptr<CreateCommandBufferCallback> wrapped_callback(callback);
 
 #if defined(TOOLKIT_USES_GTK)
   ViewID view_id(renderer_id, render_view_id);
@@ -437,13 +423,13 @@ void GpuProcessHost::CreateViewCommandBuffer(
   if (compositing_surface != gfx::kNullPluginWindow &&
       Send(new GpuMsg_CreateViewCommandBuffer(
           compositing_surface, render_view_id, renderer_id, init_params))) {
-    create_command_buffer_requests_.push(wrapped_callback);
+    create_command_buffer_requests_.push(callback);
 #if defined(TOOLKIT_USES_GTK)
     surface_refs_.insert(std::pair<ViewID, linked_ptr<SurfaceRef> >(
         view_id, surface_ref));
 #endif
   } else {
-    CreateCommandBufferError(wrapped_callback.release(), MSG_ROUTING_NONE);
+    CreateCommandBufferError(callback, MSG_ROUTING_NONE);
   }
 }
 
@@ -453,7 +439,7 @@ void GpuProcessHost::OnChannelEstablished(
   // have been notified of its process handle.
   DCHECK(gpu_process_);
 
-  linked_ptr<EstablishChannelCallback> callback = channel_requests_.front();
+  EstablishChannelCallback callback = channel_requests_.front();
   channel_requests_.pop();
 
   // Currently if any of the GPU features are blacklisted, we don't establish a
@@ -461,7 +447,7 @@ void GpuProcessHost::OnChannelEstablished(
   if (!channel_handle.name.empty() &&
       !GpuDataManager::GetInstance()->GpuAccessAllowed()) {
     Send(new GpuMsg_CloseChannel(channel_handle));
-    EstablishChannelError(callback.release(),
+    EstablishChannelError(callback,
                           IPC::ChannelHandle(),
                           base::kNullProcessHandle,
                           content::GPUInfo());
@@ -472,19 +458,19 @@ void GpuProcessHost::OnChannelEstablished(
     return;
   }
 
-  callback->Run(
+  callback.Run(
       channel_handle, gpu_process_, GpuDataManager::GetInstance()->gpu_info());
 }
 
 void GpuProcessHost::OnCommandBufferCreated(const int32 route_id) {
   if (!create_command_buffer_requests_.empty()) {
-    linked_ptr<CreateCommandBufferCallback> callback =
+    CreateCommandBufferCallback callback =
         create_command_buffer_requests_.front();
     create_command_buffer_requests_.pop();
     if (route_id == MSG_ROUTING_NONE)
-      CreateCommandBufferError(callback.release(), route_id);
+      CreateCommandBufferError(callback, route_id);
     else
-      callback->Run(route_id);
+      callback.Run(route_id);
   }
 }
 
@@ -620,9 +606,9 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
 void GpuProcessHost::SendOutstandingReplies() {
   // First send empty channel handles for all EstablishChannel requests.
   while (!channel_requests_.empty()) {
-    linked_ptr<EstablishChannelCallback> callback = channel_requests_.front();
+    EstablishChannelCallback callback = channel_requests_.front();
     channel_requests_.pop();
-    EstablishChannelError(callback.release(),
+    EstablishChannelError(callback,
                           IPC::ChannelHandle(),
                           base::kNullProcessHandle,
                           content::GPUInfo());
@@ -630,17 +616,14 @@ void GpuProcessHost::SendOutstandingReplies() {
 }
 
 void GpuProcessHost::EstablishChannelError(
-    EstablishChannelCallback* callback,
+    const EstablishChannelCallback& callback,
     const IPC::ChannelHandle& channel_handle,
     base::ProcessHandle renderer_process_for_gpu,
     const content::GPUInfo& gpu_info) {
-  scoped_ptr<EstablishChannelCallback> wrapped_callback(callback);
-  wrapped_callback->Run(channel_handle, renderer_process_for_gpu, gpu_info);
+  callback.Run(channel_handle, renderer_process_for_gpu, gpu_info);
 }
 
 void GpuProcessHost::CreateCommandBufferError(
-    CreateCommandBufferCallback* callback, int32 route_id) {
-  scoped_ptr<GpuProcessHost::CreateCommandBufferCallback>
-    wrapped_callback(callback);
-  callback->Run(route_id);
+    const CreateCommandBufferCallback& callback, int32 route_id) {
+  callback.Run(route_id);
 }

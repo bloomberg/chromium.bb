@@ -9,7 +9,7 @@
 #include <map>
 #include <queue>
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/memory/linked_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/browser/browser_child_process_host.h"
@@ -58,18 +58,18 @@ class GpuProcessHost : public BrowserChildProcessHost,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 
-  typedef Callback3<const IPC::ChannelHandle&,
-                    base::ProcessHandle,
-                    const content::GPUInfo&>::Type
-    EstablishChannelCallback;
+  typedef base::Callback<void(const IPC::ChannelHandle&,
+                              base::ProcessHandle,
+                              const content::GPUInfo&)>
+      EstablishChannelCallback;
 
   // Tells the GPU process to create a new channel for communication with a
   // renderer. Once the GPU process responds asynchronously with the IPC handle
   // and GPUInfo, we call the callback.
   void EstablishGpuChannel(
-      int renderer_id, EstablishChannelCallback* callback);
+      int renderer_id, const EstablishChannelCallback& callback);
 
-  typedef Callback1<int32>::Type CreateCommandBufferCallback;
+  typedef base::Callback<void(int32)> CreateCommandBufferCallback;
 
   // Tells the GPU process to create a new command buffer that draws into the
   // window associated with the given renderer.
@@ -78,7 +78,7 @@ class GpuProcessHost : public BrowserChildProcessHost,
       int32 render_view_id,
       int32 renderer_id,
       const GPUCreateCommandBufferConfig& init_params,
-      CreateCommandBufferCallback* callback);
+      const CreateCommandBufferCallback& callback);
 
   // Whether this GPU process is set up to use software rendering.
   bool software_rendering();
@@ -107,11 +107,11 @@ class GpuProcessHost : public BrowserChildProcessHost,
 
   void SendOutstandingReplies();
   void EstablishChannelError(
-      EstablishChannelCallback* callback,
+      const EstablishChannelCallback& callback,
       const IPC::ChannelHandle& channel_handle,
       base::ProcessHandle renderer_process_for_gpu,
       const content::GPUInfo& gpu_info);
-  void CreateCommandBufferError(CreateCommandBufferCallback* callback,
+  void CreateCommandBufferError(const CreateCommandBufferCallback& callback,
                                 int32 route_id);
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
@@ -119,11 +119,10 @@ class GpuProcessHost : public BrowserChildProcessHost,
 
   // These are the channel requests that we have already sent to
   // the GPU process, but haven't heard back about yet.
-  std::queue<linked_ptr<EstablishChannelCallback> > channel_requests_;
+  std::queue<EstablishChannelCallback> channel_requests_;
 
   // The pending create command buffer requests we need to reply to.
-  std::queue<linked_ptr<CreateCommandBufferCallback> >
-      create_command_buffer_requests_;
+  std::queue<CreateCommandBufferCallback> create_command_buffer_requests_;
 
 #if defined(TOOLKIT_USES_GTK)
   typedef std::pair<int32 /* renderer_id */,
