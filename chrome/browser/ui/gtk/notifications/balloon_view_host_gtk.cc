@@ -18,7 +18,13 @@ BalloonViewHost::~BalloonViewHost() {
 }
 
 void BalloonViewHost::UpdateActualSize(const gfx::Size& new_size) {
-  tab_contents_->render_view_host()->view()->SetSize(new_size);
+  RenderViewHost* host = tab_contents_->render_view_host();
+  if (host) {
+    RenderWidgetHostView* view = host->view();
+    if (view)
+      view->SetSize(new_size);
+  }
+
   gtk_widget_set_size_request(
       native_view(), new_size.width(), new_size.height());
 }
