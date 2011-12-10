@@ -6,11 +6,12 @@
 #define PPAPI_THUNK_PPB_FILE_IO_API_H_
 
 #include "ppapi/c/ppb_file_io.h"
+#include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
 namespace thunk {
 
-class PPB_FileIO_API {
+class PPAPI_THUNK_EXPORT PPB_FileIO_API {
  public:
   virtual ~PPB_FileIO_API() {}
 

@@ -2,24 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PLUGINS_PPAPI_FILE_TYPE_CONVERSIONS_H_
-#define WEBKIT_PLUGINS_PPAPI_FILE_TYPE_CONVERSIONS_H_
+#ifndef PPAPI_SHARED_IMPL_FILE_TYPE_CONVERSION_H_
+#define PPAPI_SHARED_IMPL_FILE_TYPE_CONVERSION_H_
 
 #include "base/platform_file.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 
-namespace webkit {
 namespace ppapi {
 
-int PlatformFileErrorToPepperError(base::PlatformFileError error_code);
+PPAPI_SHARED_EXPORT int PlatformFileErrorToPepperError(
+    base::PlatformFileError error_code);
 
 // Converts a PP_FileOpenFlags_Dev flag combination into a corresponding
 // PlatformFileFlags flag combination.
 // Returns |true| if okay.
-bool PepperFileOpenFlagsToPlatformFileFlags(int32_t pp_open_flags,
-                                            int* flags_out);
+PPAPI_SHARED_EXPORT bool PepperFileOpenFlagsToPlatformFileFlags(
+    int32_t pp_open_flags,
+    int* flags_out);
 
 }  // namespace ppapi
-}  // namespace webkit
 
-#endif  // WEBKIT_PLUGINS_PPAPI_FILE_TYPE_CONVERSIONS_H_
+#endif  // PPAPI_SHARED_IMPL_FILE_TYPE_CONVERSION_H_

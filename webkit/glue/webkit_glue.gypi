@@ -216,8 +216,6 @@
         '../plugins/ppapi/file_callbacks.h',
         '../plugins/ppapi/file_path.cc',
         '../plugins/ppapi/file_path.h',
-        '../plugins/ppapi/file_type_conversions.cc',
-        '../plugins/ppapi/file_type_conversions.h',
         '../plugins/ppapi/fullscreen_container.h',
         '../plugins/ppapi/host_globals.cc',
         '../plugins/ppapi/host_globals.h',
