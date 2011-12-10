@@ -47,14 +47,6 @@ TESTS_TO_RUN = [
      ('llvm_math_intrinsics.c', '0', True, env.Bit('bitcode')),
      # NOTE: this test uses bitcode asm's
      ('llvm_bitmanip_intrinsics.c', '0', True, env.Bit('bitcode')),
-
-     # NOTE: Statically, this currently only works for PNaCl, c.f:
-     # http://code.google.com/p/nativeclient/issues/detail?id=968
-     # This works on X86-32 glibc but not X86-64.
-     # http://code.google.com/p/nativeclient/issues/detail?id=1096
-     ('initfini.c', '0', True,
-         (env.Bit('nacl_glibc') and env.Bit('target_x86_32')) or
-         (env.Bit('bitcode') and not env.Bit('nacl_glibc')))
 ]
 
 for src, exit_status, golden_file, cond in TESTS_TO_RUN:
@@ -72,6 +64,33 @@ for src, exit_status, golden_file, cond in TESTS_TO_RUN:
                          ['toolchain_tests','small_tests'],
                          'run_' + name + '_test')
 
+
+# initfini test
+# This works on X86-32 glibc but not X86-64.
+# http://code.google.com/p/nativeclient/issues/detail?id=1096
+initfini_obj = env.ComponentObject('initfini.c')
+initfini_broken = env.Bit('nacl_glibc') and env.Bit('target_x86_64')
+
+def AddInitFiniTest(env, name, extra_libs):
+  nexe = env.ComponentProgram(name,
+                              [initfini_obj],
+                              EXTRA_LIBS=extra_libs + ['${NONIRT_LIBS}'])
+  golden_file = env.File(name + '.stdout')
+  node = env.CommandSelLdrTestNacl(name + '.out',
+                                   nexe,
+                                   stdout_golden=golden_file)
+  env.AddNodeToTestSuite(node,
+                         ['toolchain_tests', 'small_tests'],
+                         'run_' + name + '_test',
+                         is_broken=initfini_broken)
+
+AddInitFiniTest(env, 'initfini_static', [])
+if env.Bit('nacl_glibc') and not env.Bit('nacl_disable_shared'):
+  # Additional case: Add initfini_shared.c as a shared object.
+  # For a shared object, the init/fini arrays are executed by
+  # the dynamic loader. This exercises a different code path.
+  env.NaClSdkLibrary('initfini_s', 'initfini_shared.c')
+  AddInitFiniTest(env, 'initfini_shared', ['initfini_s'])
 
 
 # NOTE: the tests below break easily under valgrid and since
