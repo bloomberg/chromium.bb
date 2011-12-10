@@ -38,6 +38,14 @@
             'hello_world_nexe',
             'src/trusted/service_runtime/service_runtime.gyp:sel_ldr',
           ],
+          'variables': {
+            'arch': '--arch=<(target_arch)',
+            'out': '--out=<(PRODUCT_DIR)/test-output/hello_world.out',
+            'name': '--name=hello_world',
+            'path': '--path=<(PRODUCT_DIR)',
+            'tools': '--tools=newlib',
+            'script': '<(DEPTH)/native_client/build/test_build.py',
+          },
           'conditions': [
             ['OS=="win"', {
               'dependencies': [
@@ -50,14 +58,21 @@
               'action_name': 'test build',
               'msvs_cygwin_shell': 0,
               'description': 'Testing NACL build',
-              'inputs': [],
-              'outputs': ['hello_world.out'],
+              'inputs': [
+                '<!@(<(python_exe) <(script) -i <(arch) <(name) <(tools))',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/test-output/hello_world.out'
+              ],
               'action': [
                 '>(python_exe)',
                 '<(DEPTH)/native_client/build/test_build.py',
-                '<(PRODUCT_DIR)',
-                'hello_world',
-                '<(target_arch)',
+                '-r',
+                '<(arch)',
+                '<(name)',
+                '<(out)',
+                '<(path)',
+                '<(tools)'
               ],
             },
           ],
