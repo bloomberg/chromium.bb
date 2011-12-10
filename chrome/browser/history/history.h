@@ -529,7 +529,7 @@ class HistoryService : public CancelableRequestProvider,
   // There can be only one closing task, so this will override any previously
   // set task. We will take ownership of the pointer and delete it when done.
   // The task will be run on the calling thread (this function is threadsafe).
-  void SetOnBackendDestroyTask(Task* task);
+  void SetOnBackendDestroyTask(const base::Closure& task);
 
   // Used for unit testing and potentially importing to get known information
   // into the database. This assumes the URL doesn't exist in the database

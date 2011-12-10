@@ -168,7 +168,7 @@ class HistoryTest : public testing::Test {
 
     // Make sure we don't have any event pending that could disrupt the next
     // test.
-    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();
   }
 
@@ -176,7 +176,7 @@ class HistoryTest : public testing::Test {
     DCHECK(history_service_.get());
 
     history_service_->NotifyRenderProcessHostDestruction(0);
-    history_service_->SetOnBackendDestroyTask(new MessageLoop::QuitTask);
+    history_service_->SetOnBackendDestroyTask(MessageLoop::QuitClosure());
     history_service_->Cleanup();
     history_service_ = NULL;
 

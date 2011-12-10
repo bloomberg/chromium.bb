@@ -310,7 +310,7 @@ HistoryService::Handle HistoryService::QuerySegmentUsageSince(
                   from_time, max_result_count);
 }
 
-void HistoryService::SetOnBackendDestroyTask(Task* task) {
+void HistoryService::SetOnBackendDestroyTask(const base::Closure& task) {
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::SetOnBackendDestroyTask,
                     MessageLoop::current(), task);
 }

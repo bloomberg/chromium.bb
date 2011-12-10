@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
@@ -209,7 +210,6 @@ HistoryBackend::HistoryBackend(const FilePath& history_dir,
       ALLOW_THIS_IN_INITIALIZER_LIST(expirer_(this, bookmark_service)),
       recent_redirects_(kMaxRedirectCount),
       backend_destroy_message_loop_(NULL),
-      backend_destroy_task_(NULL),
       segment_queried_(false),
       bookmark_service_(bookmark_service) {
 }
@@ -237,7 +237,7 @@ HistoryBackend::~HistoryBackend() {
     text_database_.reset();
   }
 
-  if (backend_destroy_task_) {
+  if (!backend_destroy_task_.is_null()) {
     // Notify an interested party (typically a unit test) that we're done.
     DCHECK(backend_destroy_message_loop_);
     backend_destroy_message_loop_->PostTask(FROM_HERE, backend_destroy_task_);
@@ -251,11 +251,9 @@ void HistoryBackend::Init(const std::string& languages, bool force_fail) {
 }
 
 void HistoryBackend::SetOnBackendDestroyTask(MessageLoop* message_loop,
-                                             Task* task) {
-  if (backend_destroy_task_) {
+                                             const base::Closure& task) {
+  if (!backend_destroy_task_.is_null())
     DLOG(WARNING) << "Setting more than one destroy task, overriding";
-    delete backend_destroy_task_;
-  }
   backend_destroy_message_loop_ = message_loop;
   backend_destroy_task_ = task;
 }

@@ -106,7 +106,7 @@ class VisitedLinkTest : public testing::Test {
       master_.reset(NULL);
 
     if (history_service_.get()) {
-      history_service_->SetOnBackendDestroyTask(new MessageLoop::QuitTask);
+      history_service_->SetOnBackendDestroyTask(MessageLoop::QuitClosure());
       history_service_->Cleanup();
       history_service_ = NULL;
 
@@ -402,7 +402,7 @@ TEST_F(VisitedLinkTest, Rebuild) {
   // complete before we set the task because the rebuild completion message
   // is posted to the message loop; until we Run() it, rebuild can not
   // complete.
-  master_->set_rebuild_complete_task(new MessageLoop::QuitTask);
+  master_->set_rebuild_complete_task(MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
 
   // Test that all URLs were written to the database properly.
@@ -423,7 +423,7 @@ TEST_F(VisitedLinkTest, BigImport) {
     master_->AddURL(TestURL(i));
 
   // Wait for the rebuild to complete.
-  master_->set_rebuild_complete_task(new MessageLoop::QuitTask);
+  master_->set_rebuild_complete_task(MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
 
   // Ensure that the right number of URLs are present
@@ -591,7 +591,7 @@ class VisitedLinkEventsTest : public ChromeRenderViewHostTestHarness {
   void WaitForCoalescense() {
     // Let the timer fire.
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                            new MessageLoop::QuitTask(), 110);
+                                            MessageLoop::QuitClosure(), 110);
     MessageLoop::current()->Run();
   }
 

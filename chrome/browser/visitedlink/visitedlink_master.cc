@@ -847,9 +847,9 @@ void VisitedLinkMaster::OnTableRebuildComplete(
   table_builder_ = NULL;  // Will release our reference to the builder.
 
   // Notify the unit test that the rebuild is complete (will be NULL in prod.)
-  if (rebuild_complete_task_.get()) {
-    rebuild_complete_task_->Run();
-    rebuild_complete_task_.reset(NULL);
+  if (!rebuild_complete_task_.is_null()) {
+    rebuild_complete_task_.Run();
+    rebuild_complete_task_.Reset();
   }
 }
 

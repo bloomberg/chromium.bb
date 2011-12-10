@@ -121,7 +121,7 @@ class HistoryQueryTest : public testing::Test {
 
   virtual void TearDown() {
     if (history_.get()) {
-      history_->SetOnBackendDestroyTask(new MessageLoop::QuitTask);
+      history_->SetOnBackendDestroyTask(MessageLoop::QuitClosure());
       history_->Cleanup();
       history_ = NULL;
       MessageLoop::current()->Run();  // Wait for the other thread.

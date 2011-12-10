@@ -12,6 +12,7 @@
 #include <set>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -102,9 +103,9 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // Sets a task to execute when the next rebuild from history is complete.
   // This is used by unit tests to wait for the rebuild to complete before
   // they continue. The pointer will be owned by this object after the call.
-  void set_rebuild_complete_task(Task* task) {
-    DCHECK(!rebuild_complete_task_.get());
-    rebuild_complete_task_.reset(task);
+  void set_rebuild_complete_task(const base::Closure& task) {
+    DCHECK(rebuild_complete_task_.is_null());
+    rebuild_complete_task_ = task;
   }
 
   // returns the number of items in the table for testing verification
@@ -359,9 +360,9 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // BrowserProcess. This is provided for unit tests.
   HistoryService* history_service_override_;
 
-  // When non-NULL, indicates the task that should be run after the next
-  // rebuild from history is complete.
-  scoped_ptr<Task> rebuild_complete_task_;
+  // When set, indicates the task that should be run after the next rebuild from
+  // history is complete.
+  base::Closure rebuild_complete_task_;
 
   // Set to prevent us from attempting to rebuild the database from global
   // history if we have an error opening the file. This is used for testing,
