@@ -117,16 +117,25 @@ remoting.HostList.prototype.setHosts_ = function(hosts) {
   this.showError_(null);
   this.hostTableEntries_ = [];
 
-  /** @type {remoting.HostList} */
+  /**
+   * @type {remoting.HostList}
+   */
   var that = this;
+  /**
+   * @param {remoting.HostTableEntry} hostTableEntry The entry being renamed.
+   */
+  var onRename = function(hostTableEntry) { that.renameHost_(hostTableEntry); }
+  /**
+   * @param {remoting.HostTableEntry} hostTableEntry The entry beign deleted.
+   */
+  var onDelete = function(hostTableEntry) { that.deleteHost_(hostTableEntry); }
+
   for (var i = 0; i < hosts.length; ++i) {
     /** @type {remoting.Host} */
     var host = hosts[i];
     // Validate the entry to make sure it has all the fields we expect.
     if (host.hostName && host.hostId && host.status && host.jabberId &&
         host.publicKey) {
-      var onRename = function() { that.renameHost_(host.hostId); }
-      var onDelete = function() { that.deleteHost_(host.hostId); }
       var hostTableEntry = new remoting.HostTableEntry();
       hostTableEntry.init(host, onRename, onDelete);
       this.hostTableEntries_[i] = hostTableEntry;
@@ -173,21 +182,14 @@ remoting.HostList.prototype.showOrHide_ = function(show) {
 
 /**
  * Remove a host from the list, and deregister it.
- * @param {string} hostId The id of the host to be removed.
+ * @param {remoting.HostTableEntry} hostTableEntry The host to be removed.
  * @return {void} Nothing.
  * @private
  */
-remoting.HostList.prototype.deleteHost_ = function(hostId) {
-  /** @type {remoting.HostTableEntry} */
-  var hostTableEntry = this.getHostForId(hostId);
-  if (!hostTableEntry) {
-    console.error('No host registered for id ' + hostId);
-    return;
-  }
-
+remoting.HostList.prototype.deleteHost_ = function(hostTableEntry) {
   this.table_.removeChild(hostTableEntry.tableRow);
   var index = this.hostTableEntries_.indexOf(hostTableEntry);
-  if (index != -1) {  // Since we've just found it, index must be >= 0
+  if (index != -1) {
     this.hostTableEntries_.splice(index, 1);
   }
 
@@ -195,7 +197,8 @@ remoting.HostList.prototype.deleteHost_ = function(hostId) {
   var deleteHost = function(token) {
     var headers = { 'Authorization': 'OAuth ' + token };
     remoting.xhr.remove(
-        'https://www.googleapis.com/chromoting/v1/@me/hosts/' + hostId,
+        'https://www.googleapis.com/chromoting/v1/@me/hosts/' +
+        hostTableEntry.host.hostId,
         function() {}, '', headers);
   }
   remoting.oauth2.callWithToken(deleteHost);
@@ -205,17 +208,11 @@ remoting.HostList.prototype.deleteHost_ = function(hostId) {
 
 /**
  * Prepare a host for renaming by replacing its name with an edit box.
- * @param {string} hostId The id of the host to be renamed.
+ * @param {remoting.HostTableEntry} hostTableEntry The host to be renamed.
  * @return {void} Nothing.
  * @private
  */
-remoting.HostList.prototype.renameHost_ = function(hostId) {
-  /** @type {remoting.HostTableEntry} */
-  var hostTableEntry = this.getHostForId(hostId);
-  if (!hostTableEntry) {
-    console.error('No host registered for id ' + hostId);
-    return;
-  }
+remoting.HostList.prototype.renameHost_ = function(hostTableEntry) {
   /** @param {string} token */
   var renameHost = function(token) {
     var headers = {
@@ -228,7 +225,8 @@ remoting.HostList.prototype.renameHost_ = function(hostId) {
       publicKey: hostTableEntry.host.publicKey
     } };
     remoting.xhr.put(
-        'https://www.googleapis.com/chromoting/v1/@me/hosts/' + hostId,
+        'https://www.googleapis.com/chromoting/v1/@me/hosts/' +
+        hostTableEntry.host.hostId,
         function(xhr) {},
         JSON.stringify(newHostDetails),
         headers);

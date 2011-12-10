@@ -42,15 +42,17 @@ remoting.HostTableEntry = function() {
   this.tableRow = null;
   /** @type {Element} @private */
   this.hostNameCell_ = null;
-  /** @type {function():void} @private */
-  this.onRename_ = function() {};
+  /** @type {function(remoting.HostTableEntry):void} @private */
+  this.onRename_ = function(hostId) {};
 };
 
 /**
  * Create the HTML elements for this entry.
  * @param {remoting.Host} host The host, as obtained from Apiary.
- * @param {function():void} onRename Callback for rename operations.
- * @param {function():void} onDelete Callback for delete operations.
+ * @param {function(remoting.HostTableEntry):void} onRename Callback for
+ *     rename operations.
+ * @param {function(remoting.HostTableEntry):void} onDelete Callback for
+ *     delete operations.
  */
 remoting.HostTableEntry.prototype.init = function(host, onRename, onDelete) {
   this.host = host;
@@ -114,15 +116,15 @@ remoting.HostTableEntry.prototype.init = function(host, onRename, onDelete) {
   this.tableRow.appendChild(editButton);
 
   // Create the host delete cell.
-  var removeButton = document.createElement('td');
-  removeButton.onclick = onDelete;
-  addClass(removeButton, 'clickable');
-  addClass(removeButton, 'host-list-edit');
+  var deleteButton = document.createElement('td');
+  deleteButton.onclick = function() { onDelete(that); }
+  addClass(deleteButton, 'clickable');
+  addClass(deleteButton, 'host-list-edit');
   var crossImage = document.createElement('img');
   crossImage.src = 'icon_cross.png';
   addClass(crossImage, 'host-list-remove-icon');
-  removeButton.appendChild(crossImage);
-  this.tableRow.appendChild(removeButton);
+  deleteButton.appendChild(crossImage);
+  this.tableRow.appendChild(deleteButton);
 };
 
 /**
@@ -157,7 +159,7 @@ remoting.HostTableEntry.prototype.commitRename_ = function() {
   if (editBox) {
     if (this.host.hostName != editBox.value) {
       this.host.hostName = editBox.value;
-      this.onRename_();
+      this.onRename_(this);
     }
     this.removeEditBox_();
   }
