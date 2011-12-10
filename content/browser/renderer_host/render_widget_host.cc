@@ -11,6 +11,7 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_state.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -438,6 +439,10 @@ void RenderWidgetHost::PaintAtSize(TransportDIB::Handle dib_handle,
 }
 
 BackingStore* RenderWidgetHost::GetBackingStore(bool force_create) {
+  TRACE_EVENT2("renderer_host", "RenderWidgetHost::GetBackingStore",
+               "width", base::IntToString(current_size_.width()),
+               "height", base::IntToString(current_size_.height()));
+
   // We should not be asked to paint while we are hidden.  If we are hidden,
   // then it means that our consumer failed to call WasRestored. If we're not
   // force creating the backing store, it's OK since we can feel free to give

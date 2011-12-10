@@ -11,6 +11,7 @@
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/environment.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/logging.h"
@@ -410,6 +411,8 @@ void BrowserWindowGtk::Init() {
 
 gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
                                                GdkEventExpose* event) {
+  TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::OnCustomFrameExpose");
+
   // Draw the default background.
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
   gdk_cairo_rectangle(cr, &event->area);
@@ -779,6 +782,7 @@ void BrowserWindowGtk::ToolbarSizeChanged(bool is_animating) {
 }
 
 void BrowserWindowGtk::UpdateTitleBar() {
+  TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::UpdateTitleBar");
   string16 title = browser_->GetWindowTitleForCurrentTab();
   gtk_window_set_title(window_, UTF16ToUTF8(title).c_str());
   if (ShouldShowWindowIcon())
@@ -933,6 +937,7 @@ void BrowserWindowGtk::UpdateReloadStopState(bool is_loading, bool force) {
 
 void BrowserWindowGtk::UpdateToolbar(TabContentsWrapper* contents,
                                      bool should_restore_state) {
+  TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::UpdateToolbar");
   toolbar_->UpdateTabContents(contents->tab_contents(), should_restore_state);
 }
 
@@ -1253,6 +1258,7 @@ void BrowserWindowGtk::ActiveTabChanged(TabContentsWrapper* old_contents,
                                         TabContentsWrapper* new_contents,
                                         int index,
                                         bool user_gesture) {
+  TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::ActiveTabChanged");
   if (old_contents && !old_contents->tab_contents()->is_being_destroyed())
     old_contents->view()->StoreFocus();
 
@@ -1324,6 +1330,7 @@ bool BrowserWindowGtk::DrawInfoBarArrows(int* x) const {
 }
 
 void BrowserWindowGtk::MaybeShowBookmarkBar(bool animate) {
+  TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::MaybeShowBookmarkBar");
   if (!IsBookmarkBarSupported())
     return;
 
@@ -1345,6 +1352,7 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(bool animate) {
 }
 
 void BrowserWindowGtk::UpdateDevToolsForContents(TabContents* contents) {
+  TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::UpdateDevToolsForContents");
   TabContentsWrapper* old_devtools = devtools_container_->tab();
   TabContentsWrapper* devtools_contents = contents ?
       DevToolsWindow::GetDevToolsContents(contents) : NULL;
@@ -2003,6 +2011,7 @@ void BrowserWindowGtk::OnLocationIconSizeAllocate(GtkWidget* sender,
 
 gboolean BrowserWindowGtk::OnExposeDrawInfobarBits(GtkWidget* sender,
                                                    GdkEventExpose* expose) {
+  TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::OnExposeDrawInfobarBits");
   // Maybe draw infobars
   infobar_container_->PaintInfobarBitsOn(sender, expose, NULL);
 
@@ -2019,6 +2028,7 @@ gboolean BrowserWindowGtk::OnBookmarkBarExpose(GtkWidget* sender,
 
 void BrowserWindowGtk::OnBookmarkBarSizeAllocate(GtkWidget* sender,
                                                  GtkAllocation* allocation) {
+  TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::OnBookmarkBarSizeAllocate");
   // The size of the bookmark bar affects how the infobar arrow is drawn on
   // the toolbar.
   if (infobar_container_->ContainsInfobars())
@@ -2378,6 +2388,8 @@ bool BrowserWindowGtk::BoundsMatchMonitorSize() {
 }
 
 void BrowserWindowGtk::PlaceBookmarkBar(bool is_floating) {
+  TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::PlaceBookmarkBar");
+
   GtkWidget* target_parent = NULL;
   if (!is_floating) {
     // Place the bookmark bar at the end of |window_vbox_|; this happens after

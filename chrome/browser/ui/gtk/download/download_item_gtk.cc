@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -699,6 +700,7 @@ void DownloadItemGtk::InitNineBoxes() {
 }
 
 gboolean DownloadItemGtk::OnHboxExpose(GtkWidget* widget, GdkEventExpose* e) {
+  TRACE_EVENT0("ui::gtk", "DownloadItemGtk::OnHboxExpose");
   if (theme_service_->UsingNativeTheme()) {
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
@@ -765,6 +767,7 @@ gboolean DownloadItemGtk::OnHboxExpose(GtkWidget* widget, GdkEventExpose* e) {
 }
 
 gboolean DownloadItemGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e) {
+  TRACE_EVENT0("ui::gtk", "DownloadItemGtk::OnExpose");
   if (!theme_service_->UsingNativeTheme()) {
     bool is_body = widget == body_.get();
 
@@ -811,6 +814,8 @@ gboolean DownloadItemGtk::OnButtonPress(GtkWidget* button,
 
 gboolean DownloadItemGtk::OnProgressAreaExpose(GtkWidget* widget,
                                                GdkEventExpose* event) {
+  TRACE_EVENT0("ui::gtk", "DownloadItemGtk::OnProgressAreaExpose");
+
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
 
@@ -872,6 +877,7 @@ void DownloadItemGtk::ShowPopupMenu(GtkWidget* button,
 
 gboolean DownloadItemGtk::OnDangerousPromptExpose(GtkWidget* widget,
                                                   GdkEventExpose* event) {
+  TRACE_EVENT0("ui::gtk", "DownloadItemGtk::OnDangerousPromptExpose");
   if (!theme_service_->UsingNativeTheme()) {
     // The hbox renderer will take care of the border when in GTK mode.
     dangerous_nine_box_->RenderToWidget(widget);

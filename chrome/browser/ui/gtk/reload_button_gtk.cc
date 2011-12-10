@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
@@ -196,6 +197,7 @@ void ReloadButtonGtk::OnClicked(GtkWidget* /* sender */) {
 
 gboolean ReloadButtonGtk::OnExpose(GtkWidget* widget,
                                    GdkEventExpose* e) {
+  TRACE_EVENT0("ui::gtk", "ReloadButtonGtk::OnExpose");
   if (theme_service_ && theme_service_->UsingNativeTheme())
     return FALSE;
   return ((visible_mode_ == MODE_RELOAD) ? reload_ : stop_).OnExpose(

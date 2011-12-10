@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/debug/trace_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
@@ -1068,6 +1069,8 @@ gboolean TabRendererGtk::OnCloseButtonMouseRelease(GtkWidget* widget,
 
 gboolean TabRendererGtk::OnExposeEvent(GtkWidget* widget,
                                        GdkEventExpose* event) {
+  TRACE_EVENT0("ui::gtk", "TabRendererGtk::OnExposeEvent");
+
   PaintTab(widget, event);
   gtk_container_propagate_expose(GTK_CONTAINER(tab_.get()),
                                  close_button_->widget(), event);

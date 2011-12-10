@@ -10,6 +10,7 @@
 #include <set>
 #include <string>
 
+#include "base/debug/trace_event.h"
 #include "base/environment.h"
 #include "base/nix/xdg_util.h"
 #include "base/stl_util.h"
@@ -1191,6 +1192,7 @@ void GtkThemeService::OnDestroyLabel(GtkWidget* button) {
 
 gboolean GtkThemeService::OnSeparatorExpose(GtkWidget* widget,
                                             GdkEventExpose* event) {
+  UNSHIPPED_TRACE_EVENT0("ui::gtk", "GtkThemeService::OnSeparatorExpose");
   if (UsingNativeTheme())
     return FALSE;
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
 
+#include "base/debug/trace_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -212,6 +213,8 @@ void InfoBarGtk::OnCloseButton(GtkWidget* button) {
 
 gboolean InfoBarGtk::OnBackgroundExpose(GtkWidget* sender,
                                         GdkEventExpose* event) {
+  TRACE_EVENT0("ui::gtk", "InfoBarGtk::OnBackgroundExpose");
+
   GtkAllocation allocation;
   gtk_widget_get_allocation(sender, &allocation);
   const int height = allocation.height;

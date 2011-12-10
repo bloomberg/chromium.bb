@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/debug/trace_event.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -72,6 +73,7 @@ int CustomDrawButtonBase::Height() const {
 gboolean CustomDrawButtonBase::OnExpose(GtkWidget* widget,
                                         GdkEventExpose* e,
                                         gdouble hover_state) {
+  TRACE_EVENT0("ui::gtk", "CustomDrawButtonBase::OnExpose");
   int paint_state = paint_override_ >= 0 ?
                     paint_override_ : gtk_widget_get_state(widget);
 
@@ -332,6 +334,7 @@ void CustomDrawButton::SetBackground(SkColor color,
 
 gboolean CustomDrawButton::OnCustomExpose(GtkWidget* sender,
                                           GdkEventExpose* e) {
+  UNSHIPPED_TRACE_EVENT0("ui::gtk", "CustomDrawButtonBase::OnCustomExpose");
   if (UseGtkTheme()) {
     // Continue processing this expose event.
     return FALSE;

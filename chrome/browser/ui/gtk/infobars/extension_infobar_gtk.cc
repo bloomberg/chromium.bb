@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/gtk/infobars/extension_infobar_gtk.h"
 
+#include "base/debug/trace_event.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/platform_util.h"
@@ -192,6 +193,8 @@ gboolean ExtensionInfoBarGtk::OnButtonPress(GtkWidget* widget,
 
 gboolean ExtensionInfoBarGtk::OnExpose(GtkWidget* sender,
                                        GdkEventExpose* event) {
+  TRACE_EVENT0("ui::gtk", "ExtensionInfoBarGtk::OnExpose");
+
   // We also need to draw our infobar arrows over the renderer.
   static_cast<InfoBarContainerGtk*>(container())->
       PaintInfobarBitsOn(sender, event, this);

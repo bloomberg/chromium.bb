@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -816,6 +817,7 @@ void FindBarGtk::OnClicked(GtkWidget* button) {
 gboolean FindBarGtk::OnContentEventBoxExpose(GtkWidget* widget,
                                              GdkEventExpose* event,
                                              FindBarGtk* bar) {
+  TRACE_EVENT0("ui::gtk", "FindBarGtk::OnContentEventBoxExpose");
   if (bar->theme_service_->UsingNativeTheme()) {
     // Draw the text entry background around where we input stuff. Note the
     // decrement to |width|. We do this because some theme engines
@@ -836,6 +838,8 @@ gboolean FindBarGtk::OnContentEventBoxExpose(GtkWidget* widget,
 // Used to handle custom painting of |container_|.
 gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
                               FindBarGtk* bar) {
+  TRACE_EVENT0("ui::gtk", "FindBarGtk::OnExpose");
+
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
 

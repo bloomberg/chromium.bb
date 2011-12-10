@@ -10,6 +10,7 @@
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -461,6 +462,8 @@ bool BrowserToolbarGtk::UpdateRoundedness() {
 
 gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
                                               GdkEventExpose* e) {
+  TRACE_EVENT0("ui::gtk", "BrowserToolbarGtk::OnAlignmentExpose");
+
   // We may need to update the roundedness of the toolbar's top corners. In
   // this case, don't draw; we'll be called again soon enough.
   if (UpdateRoundedness())
@@ -571,6 +574,7 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
 
 gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
                                                  GdkEventExpose* e) {
+  TRACE_EVENT0("ui::gtk", "BrowserToolbarGtk::OnLocationHboxExpose");
   if (theme_service_->UsingNativeTheme()) {
     GtkAllocation allocation;
     gtk_widget_get_allocation(location_hbox, &allocation);
@@ -653,6 +657,7 @@ void BrowserToolbarGtk::RebuildWrenchMenu() {
 
 gboolean BrowserToolbarGtk::OnWrenchMenuButtonExpose(GtkWidget* sender,
                                                      GdkEventExpose* expose) {
+  TRACE_EVENT0("ui::gtk", "BrowserToolbarGtk::OnWrenchMenuButtonExpose");
   int resource_id = 0;
   if (UpgradeDetector::GetInstance()->notify_upgrade()) {
     resource_id = UpgradeDetector::GetInstance()->GetIconResourceID(

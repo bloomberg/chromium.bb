@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
@@ -371,6 +372,8 @@ void DraggedViewGtk::SetContainerShapeMask() {
 }
 
 gboolean DraggedViewGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
+  TRACE_EVENT0("ui::gtk", "DraggedViewGtk::OnExpose");
+
   if (ui::IsScreenComposited())
     SetContainerTransparency();
   else

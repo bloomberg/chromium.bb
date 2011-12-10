@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -1382,6 +1383,9 @@ gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnButtonPressed(
 
 gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnExpose(
     GtkWidget* sender, GdkEventExpose* event) {
+  TRACE_EVENT0("ui::gtk",
+               "LocationBarViewGtk::ContentSettingImageViewGtk::OnExpose");
+
   if (!(animation_.IsShowing() || animation_.IsClosing()))
     return FALSE;
 
@@ -1626,6 +1630,7 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
 gboolean LocationBarViewGtk::PageActionViewGtk::OnExposeEvent(
     GtkWidget* widget,
     GdkEventExpose* event) {
+  TRACE_EVENT0("ui::gtk", "LocationBarViewGtk::PageActionViewGtk::OnExpose");
   TabContents* contents = owner_->GetTabContents();
   if (!contents)
     return FALSE;

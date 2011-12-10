@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -280,6 +281,7 @@ void BookmarkBarGtk::Init() {
 void BookmarkBarGtk::SetBookmarkBarState(
     BookmarkBar::State state,
     BookmarkBar::AnimateChangeType animate_type) {
+  TRACE_EVENT0("ui::gtk", "BookmarkBarGtk::SetBookmarkBarState");
   if (animate_type == BookmarkBar::ANIMATE_STATE_CHANGE &&
       (state == BookmarkBar::DETACHED ||
        bookmark_bar_state_ == BookmarkBar::DETACHED)) {
@@ -1366,6 +1368,7 @@ gboolean BookmarkBarGtk::OnFolderDragMotion(GtkWidget* button,
 
 gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
                                           GdkEventExpose* event) {
+  TRACE_EVENT0("ui::gtk", "BookmarkBarGtk::OnEventBoxExpose");
   GtkThemeService* theme_provider = theme_service_;
 
   // We don't need to render the toolbar image in GTK mode, except when

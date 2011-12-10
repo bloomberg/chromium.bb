@@ -7,6 +7,7 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/memory/singleton.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -101,6 +102,8 @@ TabGtk::~TabGtk() {
 }
 
 void TabGtk::Raise() const {
+  UNSHIPPED_TRACE_EVENT0("ui::gtk", "TabGtk::Raise");
+
   GdkWindow* window = gtk_input_event_box_get_window(
       GTK_INPUT_EVENT_BOX(event_box_));
   gdk_window_raise(window);

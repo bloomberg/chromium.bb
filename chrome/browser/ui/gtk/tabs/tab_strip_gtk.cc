@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -964,6 +965,8 @@ GtkWidget* TabStripGtk::GetWidgetForViewID(ViewID view_id) {
 void TabStripGtk::TabInsertedAt(TabContentsWrapper* contents,
                                 int index,
                                 bool foreground) {
+  TRACE_EVENT0("ui::gtk", "TabStripGtk::TabInsertedAt");
+
   DCHECK(contents);
   DCHECK(index == TabStripModel::kNoTab || model_->ContainsIndex(index));
 
@@ -1037,6 +1040,7 @@ void TabStripGtk::ActiveTabChanged(TabContentsWrapper* old_contents,
                                    TabContentsWrapper* new_contents,
                                    int index,
                                    bool user_gesture) {
+  TRACE_EVENT0("ui::gtk", "TabStripGtk::ActiveTabChanged");
   ReStack();
 }
 
@@ -1607,6 +1611,8 @@ bool TabStripGtk::IsCursorInTabStripZone() const {
 }
 
 void TabStripGtk::ReStack() {
+  TRACE_EVENT0("ui::gtk", "TabStripGtk::ReStack");
+
   if (!gtk_widget_get_realized(tabstrip_.get())) {
     // If the window isn't realized yet, we can't stack them yet. It will be
     // done by the OnMap signal handler.
@@ -1803,6 +1809,8 @@ TabStripGtk::DropInfo::~DropInfo() {
 
 gboolean TabStripGtk::DropInfo::OnExposeEvent(GtkWidget* widget,
                                               GdkEventExpose* event) {
+  TRACE_EVENT0("ui::gtk", "TabStripGtk::DropInfo::OnExposeEvent");
+
   if (ui::IsScreenComposited()) {
     SetContainerTransparency();
   } else {
@@ -1990,6 +1998,8 @@ void TabStripGtk::OnMap(GtkWidget* widget) {
 }
 
 gboolean TabStripGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
+  TRACE_EVENT0("ui::gtk", "TabStripGtk::OnExpose");
+
   if (gdk_region_empty(event->region))
     return TRUE;
 
@@ -2069,6 +2079,8 @@ gboolean TabStripGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
 }
 
 void TabStripGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
+  TRACE_EVENT0("ui::gtk", "TabStripGtk::OnSizeAllocate");
+
   gfx::Rect bounds = gfx::Rect(allocation->x, allocation->y,
       allocation->width, allocation->height);
 

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -413,6 +414,7 @@ void BalloonViewImpl::OnCloseButton(GtkWidget* widget) {
 // HTML view cut off the roundedness of the notification window.
 gboolean BalloonViewImpl::OnContentsExpose(GtkWidget* sender,
                                            GdkEventExpose* event) {
+  TRACE_EVENT0("ui::gtk", "BalloonViewImpl::OnContentsExpose");
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(sender->window));
   gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);
@@ -436,6 +438,7 @@ gboolean BalloonViewImpl::OnContentsExpose(GtkWidget* sender,
 }
 
 gboolean BalloonViewImpl::OnExpose(GtkWidget* sender, GdkEventExpose* event) {
+  TRACE_EVENT0("ui::gtk", "BalloonViewImpl::OnExpose");
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(sender->window));
   gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);

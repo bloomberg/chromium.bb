@@ -19,6 +19,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -804,6 +805,8 @@ void RenderWidgetHostViewGtk::ImeCancelComposition() {
 void RenderWidgetHostViewGtk::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
     const std::vector<gfx::Rect>& copy_rects) {
+  TRACE_EVENT0("ui::gtk", "RenderWidgetHostViewGtk::DidUpdateBackingStore");
+
   if (is_hidden_)
     return;
 
@@ -1074,6 +1077,8 @@ void RenderWidgetHostViewGtk::ModifyEventForEdgeDragging(
 }
 
 void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
+  TRACE_EVENT0("ui::gtk", "RenderWidgetHostViewGtk::Paint");
+
   // If the GPU process is rendering directly into the View,
   // call the compositor directly.
   RenderWidgetHost* render_widget_host = GetRenderWidgetHost();
