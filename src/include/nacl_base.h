@@ -53,12 +53,8 @@
  */
 #define NACL_MERGE(x, y) x ## y
 #define NACL_ARCH(x) NACL_MERGE(NACL_, x)
-/*
- * Avoid using 0, because "#if FOO == 0" is true if FOO is undefined, and does
- * not produce a warning or error.
- */
-#define NACL_x86  1
-#define NACL_arm  2
+#define NACL_x86  0
+#define NACL_arm  1
 
 /*****************************************************************************
  * Architecture name encodings.
