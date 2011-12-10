@@ -262,6 +262,7 @@ class ExtensionDownloadsEventRouter : public DownloadManager::Observer {
   virtual void ManagerGoingDown() OVERRIDE;
 
  private:
+  void Init(DownloadManager* manager);
   void DispatchEvent(const char* event_name, base::Value* json_arg);
   typedef base::hash_map<int, DownloadItem*> ItemMap;
   typedef std::set<int> DownloadIdSet;

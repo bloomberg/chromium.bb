@@ -4,6 +4,7 @@
 
 #include "chrome/browser/download/download_service.h"
 
+#include "base/callback.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -29,6 +30,15 @@ DownloadIdFactory* DownloadService::GetDownloadIdFactory() const {
   return id_factory_.get();
 }
 
+void DownloadService::OnManagerCreated(
+    const DownloadService::OnManagerCreatedCallback& cb) {
+  if (download_manager_created_) {
+    cb.Run(manager_.get());
+  } else {
+    on_manager_created_callbacks_.push_back(cb);
+  }
+}
+
 DownloadManager* DownloadService::GetDownloadManager() {
   if (!download_manager_created_) {
     // In case the delegate has already been set by
@@ -42,6 +52,12 @@ DownloadManager* DownloadService::GetDownloadManager() {
     manager_->Init(profile_);
     manager_delegate_->SetDownloadManager(manager_);
     download_manager_created_ = true;
+    for (std::vector<OnManagerCreatedCallback>::iterator cb
+         = on_manager_created_callbacks_.begin();
+         cb != on_manager_created_callbacks_.end(); ++cb) {
+      cb->Run(manager_.get());
+    }
+    on_manager_created_callbacks_.clear();
   }
   return manager_.get();
 }

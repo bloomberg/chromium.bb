@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -474,16 +475,24 @@ base::DictionaryValue* DownloadItemToJSON(DownloadItem* item) {
 }
 }  // anonymous namespace
 
-ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(
-    Profile* profile)
+ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(Profile* profile)
   : profile_(profile),
-    manager_(
-        profile ?
-        DownloadServiceFactory::GetForProfile(profile)->GetDownloadManager() :
-        NULL) {
+    manager_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
-  DCHECK(manager_);
+  // Register a callback with the DownloadService for this profile to be called
+  // when it creates the DownloadManager, or now if the manager already exists.
+  DownloadServiceFactory::GetForProfile(profile)->OnManagerCreated(base::Bind(
+      &ExtensionDownloadsEventRouter::Init, base::Unretained(this)));
+}
+
+// The only public methods on this class are ModelChanged() and
+// ManagerGoingDown(), and they are only called by DownloadManager, so
+// there's no way for any methods on this class to be called before
+// DownloadService calls Init() via the OnManagerCreated Callback above.
+void ExtensionDownloadsEventRouter::Init(DownloadManager* manager) {
+  DCHECK(manager_ == NULL);
+  manager_ = manager;
   manager_->AddObserver(this);
 }
 

@@ -6,7 +6,10 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SERVICE_H_
 #pragma once
 
+#include <vector>
+
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
@@ -24,6 +27,10 @@ class DownloadService : public ProfileKeyedService {
   virtual ~DownloadService();
 
   DownloadIdFactory* GetDownloadIdFactory() const;
+
+  // Register a callback to be called whenever the DownloadManager is created.
+  typedef base::Callback<void(DownloadManager*)> OnManagerCreatedCallback;
+  void OnManagerCreated(const OnManagerCreatedCallback& cb);
 
   // Get the download manager.  Creates the download manager if
   // it does not already exist.
@@ -63,6 +70,8 @@ class DownloadService : public ProfileKeyedService {
   // callbacks.
   scoped_refptr<DownloadManager> manager_;
   scoped_refptr<ChromeDownloadManagerDelegate> manager_delegate_;
+
+  std::vector<OnManagerCreatedCallback> on_manager_created_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadService);
 };
