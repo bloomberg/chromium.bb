@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/basictypes.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
+#include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/test/integration/performance/sync_timing_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/typed_urls_helper.h"
@@ -13,7 +15,19 @@ using typed_urls_helper::AssertAllProfilesHaveSameURLsAsVerifier;
 using typed_urls_helper::DeleteUrlFromHistory;
 using typed_urls_helper::GetTypedUrlsFromClient;
 
-static const int kNumUrls = 150;
+// This number should be as far away from a multiple of
+// kDefaultMaxCommitBatchSize as possible, so that sync cycle counts
+// for batch operations stay the same even if some batches end up not
+// being completely full.
+static const int kNumUrls = 163;
+// This compile assert basically asserts that kNumUrls is right in the
+// middle between two multiples of kDefaultMaxCommitBatchSize.
+COMPILE_ASSERT(
+    ((kNumUrls % browser_sync::kDefaultMaxCommitBatchSize) >=
+     (browser_sync::kDefaultMaxCommitBatchSize / 2)) &&
+    ((kNumUrls % browser_sync::kDefaultMaxCommitBatchSize) <=
+     ((browser_sync::kDefaultMaxCommitBatchSize + 1) / 2)),
+    kNumUrlsShouldBeBetweenTwoMultiplesOfkDefaultMaxCommitBatchSize);
 
 class TypedUrlsSyncPerfTest : public SyncTest {
  public:
