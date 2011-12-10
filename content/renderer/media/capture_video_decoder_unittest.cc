@@ -122,7 +122,7 @@ class CaptureVideoDecoderTest : public ::testing::Test {
     EXPECT_CALL(*vc_manager_, AddDevice(_, _))
         .WillOnce(Return(vc_impl_.get()));
     decoder_->Initialize(NULL,
-                         media::NewExpectedStatusCB(media::PIPELINE_OK),
+                         media::NewExpectedClosure(),
                          NewStatisticsCallback());
     message_loop_->RunAllPending();
   }

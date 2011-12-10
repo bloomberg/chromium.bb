@@ -34,7 +34,6 @@ using media::MockStatisticsCallback;
 using media::MockVideoRenderer;
 using media::MockFilterHost;
 using media::NewExpectedClosure;
-using media::NewExpectedStatusCB;
 using media::PipelineStatistics;
 using media::PIPELINE_OK;
 using media::StatisticsCallback;
@@ -133,8 +132,8 @@ class RTCVideoDecoderTest : public testing::Test {
 
   void InitializeDecoderSuccessfully() {
     // Test successful initialization.
-    decoder_->Initialize(
-        NULL, NewExpectedStatusCB(PIPELINE_OK), NewStatisticsCallback());
+    decoder_->Initialize(NULL,
+                         NewExpectedClosure(), NewStatisticsCallback());
     message_loop_.RunAllPending();
   }
 

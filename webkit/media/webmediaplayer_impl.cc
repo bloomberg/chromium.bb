@@ -700,8 +700,6 @@ void WebMediaPlayerImpl::putCurrentFrame(
         WebVideoFrameImpl::toVideoFrame(web_video_frame));
     proxy_->PutCurrentFrame(video_frame);
     delete web_video_frame;
-  } else {
-    proxy_->PutCurrentFrame(NULL);
   }
 }
 

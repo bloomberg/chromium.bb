@@ -576,7 +576,8 @@ void EglRenderingVDAClient::CreateDecoder() {
     return;
 
   // Configure the decoder.
-  media::VideoDecodeAccelerator::Profile profile = media::H264PROFILE_BASELINE;
+  media::VideoDecodeAccelerator::Profile profile =
+      media::VideoDecodeAccelerator::H264PROFILE_BASELINE;
   if (profile_ != -1)
     profile = static_cast<media::VideoDecodeAccelerator::Profile>(profile_);
   CHECK(decoder_->Initialize(profile));
@@ -802,10 +803,9 @@ static void AssertWaitForStateOrDeleted(ClientStateNotification* note,
       << ", instead of " << expected_state;
 }
 
-// We assert a minimal number of concurrent decoders we expect to succeed.
-// Different platforms can support more concurrent decoders, so we don't assert
-// failure above this.
-enum { kMinSupportedNumConcurrentDecoders = 3 };
+// We assert the exact number of concurrent decoders we expect to succeed and
+// that one more than that fails initialization.
+enum { kMaxSupportedNumConcurrentDecoders = 3 };
 
 // Test the most straightforward case possible: data is decoded from a single
 // chunk and rendered to the screen.
@@ -889,7 +889,7 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
       // We expect initialization to fail only when more than the supported
       // number of decoders is instantiated.  Assert here that something else
       // didn't trigger failure.
-      ASSERT_GT(num_concurrent_decoders, kMinSupportedNumConcurrentDecoders);
+      ASSERT_GT(num_concurrent_decoders, kMaxSupportedNumConcurrentDecoders);
       continue;
     }
     ASSERT_EQ(state, CS_INITIALIZED);
@@ -908,6 +908,9 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
     ASSERT_NO_FATAL_FAILURE(
         AssertWaitForStateOrDeleted(note, clients[i], CS_DESTROYED));
   }
+  ASSERT_EQ(saw_init_failure,
+            num_concurrent_decoders > kMaxSupportedNumConcurrentDecoders)
+      << num_concurrent_decoders;
   // Finally assert that decoding went as expected.
   for (size_t i = 0; i < num_concurrent_decoders && !saw_init_failure; ++i) {
     // We can only make performance/correctness assertions if the decoder was
@@ -994,9 +997,9 @@ INSTANTIATE_TEST_CASE_P(
     ResourceExhaustion, OmxVideoDecodeAcceleratorTest,
     ::testing::Values(
         // +0 hack below to promote enum to int.
-        MakeTuple(1, kMinSupportedNumConcurrentDecoders + 0, 1,
+        MakeTuple(1, kMaxSupportedNumConcurrentDecoders + 0, 1,
                   END_OF_STREAM_RESET, CS_RESET),
-        MakeTuple(1, kMinSupportedNumConcurrentDecoders + 1, 1,
+        MakeTuple(1, kMaxSupportedNumConcurrentDecoders + 1, 1,
                   END_OF_STREAM_RESET, CS_RESET)));
 
 // TODO(fischman, vrk): add more tests!  In particular:

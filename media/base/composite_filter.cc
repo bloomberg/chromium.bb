@@ -57,8 +57,6 @@ CompositeFilter::~CompositeFilter() {
 }
 
 bool CompositeFilter::AddFilter(scoped_refptr<Filter> filter) {
-  // TODO(fischman,scherkus): s/bool/void/ the return type and CHECK on failure
-  // of the sanity-checks that return false today.
   DCHECK_EQ(message_loop_, MessageLoop::current());
   if (!filter.get() || state_ != kCreated || !host())
     return false;
@@ -67,23 +65,6 @@ bool CompositeFilter::AddFilter(scoped_refptr<Filter> filter) {
   filter->set_host(host_impl_.get());
   filters_.push_back(make_scoped_refptr(filter.get()));
   return true;
-}
-
-void CompositeFilter::RemoveFilter(scoped_refptr<Filter> filter) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-  if (!filter.get() || state_ != kCreated || !host())
-    LOG(FATAL) << "Unknown filter, or in unexpected state.";
-
-  bool found = false;
-  for (FilterVector::iterator it = filters_.begin();
-       it != filters_.end() && !found; ++it) {
-    if (it->get() == filter.get()) {
-      filters_.erase(it);
-      found = true;
-    }
-  }
-  filter->clear_host();
-  CHECK(found);
 }
 
 void CompositeFilter::set_host(FilterHost* host) {
@@ -356,6 +337,7 @@ void CompositeFilter::SerialCallback() {
     DispatchPendingCallback(status_);
     return;
   }
+
   if (!filters_.empty())
     sequence_index_++;
 
@@ -393,6 +375,7 @@ void CompositeFilter::ParallelCallback() {
 
 void CompositeFilter::OnCallSequenceDone() {
   State next_state = GetNextState(state_);
+
   if (next_state == kInvalid) {
     // We somehow got into an unexpected state.
     ChangeState(kError);

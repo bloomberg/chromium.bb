@@ -33,7 +33,7 @@ CaptureVideoDecoder::~CaptureVideoDecoder() {}
 
 void CaptureVideoDecoder::Initialize(
     media::DemuxerStream* demuxer_stream,
-    const media::PipelineStatusCB& filter_callback,
+    const base::Closure& filter_callback,
     const media::StatisticsCallback& stat_callback) {
   message_loop_proxy_->PostTask(
       FROM_HERE,
@@ -134,7 +134,7 @@ void CaptureVideoDecoder::OnDeviceInfoReceived(
 
 void CaptureVideoDecoder::InitializeOnDecoderThread(
     media::DemuxerStream* demuxer_stream,
-    const media::PipelineStatusCB& filter_callback,
+    const base::Closure& filter_callback,
     const media::StatisticsCallback& stat_callback) {
   DVLOG(1) << "InitializeOnDecoderThread";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
@@ -142,7 +142,7 @@ void CaptureVideoDecoder::InitializeOnDecoderThread(
   capture_engine_ = vc_manager_->AddDevice(video_stream_id_, this);
 
   statistics_callback_ = stat_callback;
-  filter_callback.Run(media::PIPELINE_OK);
+  filter_callback.Run();
   state_ = kNormal;
 }
 

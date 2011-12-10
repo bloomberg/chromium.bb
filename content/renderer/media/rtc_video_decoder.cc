@@ -38,7 +38,7 @@ RTCVideoDecoder::RTCVideoDecoder(MessageLoop* message_loop,
 RTCVideoDecoder::~RTCVideoDecoder() {}
 
 void RTCVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
-                                 const media::PipelineStatusCB& filter_callback,
+                                 const base::Closure& filter_callback,
                                  const StatisticsCallback& stat_callback) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
@@ -51,7 +51,7 @@ void RTCVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
 
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   state_ = kNormal;
-  filter_callback.Run(PIPELINE_OK);
+  filter_callback.Run();
 
   // TODO(acolwell): Implement stats.
 }

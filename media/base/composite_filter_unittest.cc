@@ -379,8 +379,8 @@ TEST_F(CompositeFilterTest, TestAddFilterFailCases) {
   EXPECT_FALSE(composite_->AddFilter(filter));
 }
 
-// Test successful {Add,Remove}Filter() cases.
-TEST_F(CompositeFilterTest, TestAddRemoveFilter) {
+// Test successful AddFilter() cases.
+TEST_F(CompositeFilterTest, TestAddFilter) {
   composite_->set_host(mock_filter_host_.get());
 
   // Add a filter.
@@ -388,20 +388,8 @@ TEST_F(CompositeFilterTest, TestAddRemoveFilter) {
   EXPECT_EQ(NULL, filter->host());
 
   EXPECT_TRUE(composite_->AddFilter(filter));
+
   EXPECT_TRUE(filter->host() != NULL);
-
-  composite_->RemoveFilter(filter);
-  EXPECT_TRUE(filter->host() == NULL);
-}
-
-class CompositeFilterDeathTest : public CompositeFilterTest {};
-
-// Test failure of RemoveFilter() on an unknown filter.
-TEST_F(CompositeFilterDeathTest, TestRemoveUnknownFilter) {
-  composite_->set_host(mock_filter_host_.get());
-  // Remove unknown filter.
-  scoped_refptr<StrictMock<MockFilter> > filter = new StrictMock<MockFilter>();
-  EXPECT_DEATH(composite_->RemoveFilter(filter), "");
 }
 
 TEST_F(CompositeFilterTest, TestPlay) {

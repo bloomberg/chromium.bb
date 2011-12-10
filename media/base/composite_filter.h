@@ -27,9 +27,6 @@ class MEDIA_EXPORT CompositeFilter : public Filter {
   // because the composite is in the wrong state.
   bool AddFilter(scoped_refptr<Filter> filter);
 
-  // Undoes AddFilter's actions.  CHECK-fails if |filter| is unknown.
-  void RemoveFilter(scoped_refptr<Filter> filter);
-
   // media::Filter methods.
   virtual void set_host(FilterHost* host) OVERRIDE;
   virtual FilterHost* host() OVERRIDE;

@@ -19,13 +19,12 @@ class WebVideoFrameImpl : public WebKit::WebVideoFrame {
 
   WebVideoFrameImpl(scoped_refptr<media::VideoFrame> video_frame);
   virtual ~WebVideoFrameImpl();
-  virtual WebVideoFrame::Format format() const;
-  virtual unsigned width() const;
-  virtual unsigned height() const;
-  virtual unsigned planes() const;
-  virtual int stride(unsigned plane) const;
-  virtual const void* data(unsigned plane) const;
-  virtual unsigned textureId() const;
+  virtual WebVideoFrame::Format format() const OVERRIDE;
+  virtual unsigned width() const OVERRIDE;
+  virtual unsigned height() const OVERRIDE;
+  virtual unsigned planes() const OVERRIDE;
+  virtual int stride(unsigned plane) const OVERRIDE;
+  virtual const void* data(unsigned plane) const OVERRIDE;
 
  private:
   scoped_refptr<media::VideoFrame> video_frame_;
