@@ -121,8 +121,6 @@
       '-nacl_sdk.NaClSDKTest.testVerifyNaClPlugin',
       # crbug.com/105560
       '-notifications',
-      # crbug.com/107050
-      '-downloads.DownloadsTest.testBigZip',
     ],
 
     'win': [
