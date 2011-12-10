@@ -52,7 +52,7 @@ static void gtk_preserve_window_init(GtkPreserveWindow* widget) {
   priv->preserve_window = FALSE;
 
   // These widgets always have their own window.
-  gtk_fixed_set_has_window(GTK_FIXED(widget), TRUE);
+  gtk_widget_set_has_window(GTK_WIDGET(widget), TRUE);
 }
 
 GtkWidget* gtk_preserve_window_new() {
@@ -114,14 +114,10 @@ static void gtk_preserve_window_unrealize(GtkWidget* widget) {
     GtkContainerClass* container_class =
         GTK_CONTAINER_CLASS(gtk_preserve_window_parent_class);
 
-    // Deprecated as of GTK 2.22. Used for compatibility.
-    // It should be: gtk_widget_get_mapped()
-    if (GTK_WIDGET_MAPPED(widget)) {
+    if (gtk_widget_get_mapped(widget)) {
       widget_class->unmap(widget);
 
-      // Deprecated as of GTK 2.22. Used for compatibility.
-      // It should be: gtk_widget_set_mapped(widget, FALSE)
-      GTK_WIDGET_UNSET_FLAGS(widget, GTK_MAPPED);
+      gtk_widget_set_mapped(widget, FALSE);
     }
 
     // This is the behavior from GtkWidget, inherited by GtkFixed.
@@ -136,9 +132,7 @@ static void gtk_preserve_window_unrealize(GtkWidget* widget) {
     gtk_selection_remove_all(widget);
     gdk_window_set_user_data(widget->window, NULL);
 
-    // Deprecated as of GTK 2.22. Used for compatibility.
-    // It should be: gtk_widget_set_realized(widget, FALSE)
-    GTK_WIDGET_UNSET_FLAGS(widget, GTK_REALIZED);
+    gtk_widget_set_realized(widget, FALSE);
   } else {
     GTK_WIDGET_CLASS(gtk_preserve_window_parent_class)->unrealize(widget);
   }

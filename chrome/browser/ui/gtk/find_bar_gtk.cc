@@ -342,7 +342,7 @@ void FindBarGtk::SetFocusAndSelection() {
   StoreOutsideFocus();
   gtk_widget_grab_focus(text_entry_);
   // Select all the text.
-  gtk_entry_select_region(GTK_ENTRY(text_entry_), 0, -1);
+  gtk_editable_select_region(GTK_EDITABLE(text_entry_), 0, -1);
 }
 
 void FindBarGtk::ClearResults(const FindNotificationDetails& results) {
@@ -391,7 +391,7 @@ void FindBarGtk::UpdateUIForFindResult(const FindNotificationDetails& result,
   std::string entry_text(gtk_entry_get_text(GTK_ENTRY(text_entry_)));
   if (entry_text != find_text_utf8) {
     SetFindText(find_text);
-    gtk_entry_select_region(GTK_ENTRY(text_entry_), 0, -1);
+    gtk_editable_select_region(GTK_EDITABLE(text_entry_), 0, -1);
   }
 
   if (!find_text.empty() && have_valid_range) {

@@ -149,8 +149,8 @@ static void gtk_custom_menu_item_class_init(GtkCustomMenuItemClass* klass) {
                    G_SIGNAL_RUN_FIRST,
                    0,
                    NULL, NULL,
-                   gtk_marshal_NONE__INT,
-                   G_TYPE_NONE, 1, GTK_TYPE_INT);
+                   g_cclosure_marshal_VOID__INT,
+                   G_TYPE_NONE, 1, G_TYPE_INT);
   custom_menu_item_signals[TRY_BUTTON_PUSHED] =
       g_signal_new("try-button-pushed",
                    G_TYPE_FROM_CLASS(gobject_class),
@@ -158,7 +158,7 @@ static void gtk_custom_menu_item_class_init(GtkCustomMenuItemClass* klass) {
                    0,
                    NULL, NULL,
                    chrome_marshall_BOOLEAN__INT,
-                   G_TYPE_BOOLEAN, 1, GTK_TYPE_INT);
+                   G_TYPE_BOOLEAN, 1, G_TYPE_INT);
 }
 
 static void gtk_custom_menu_item_finalize(GObject *object) {
@@ -172,7 +172,7 @@ static void gtk_custom_menu_item_finalize(GObject *object) {
 static gint gtk_custom_menu_item_expose(GtkWidget* widget,
                                         GdkEventExpose* event) {
   if (gtk_widget_get_visible(widget) &&
-      GTK_WIDGET_MAPPED(widget) &&
+      gtk_widget_get_mapped(widget) &&
       gtk_bin_get_child(GTK_BIN(widget))) {
     // We skip the drawing in the GtkMenuItem class it draws the highlighted
     // background and we don't want that.

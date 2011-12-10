@@ -426,12 +426,12 @@ void BookmarkBarGtk::Show(BookmarkBar::State old_state,
   // probably be improved.
   if (bookmark_bar_state_ == BookmarkBar::DETACHED) {
     if (theme_service_->UsingNativeTheme()) {
-      if (GTK_WIDGET_REALIZED(event_box_->parent))
+      if (gtk_widget_get_realized(event_box_->parent))
         gdk_window_lower(event_box_->parent->window);
-      if (GTK_WIDGET_REALIZED(event_box_.get()))
+      if (gtk_widget_get_realized(event_box_.get()))
         gdk_window_lower(event_box_->window);
     } else {  // Chromium theme mode.
-      if (GTK_WIDGET_REALIZED(paint_box_)) {
+      if (gtk_widget_get_realized(paint_box_)) {
         gdk_window_lower(paint_box_->window);
         // The event box won't stay below its children's GdkWindows unless we
         // toggle the above-child property here. If the event box doesn't stay
@@ -1395,9 +1395,9 @@ gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
 
-    gfx::Rect area = GTK_WIDGET_NO_WINDOW(widget) ?
-        gfx::Rect(allocation) :
-        gfx::Rect(0, 0, allocation.width, allocation.height);
+    gfx::Rect area = gtk_widget_get_has_window(widget) ?
+                     gfx::Rect(0, 0, allocation.width, allocation.height) :
+                     gfx::Rect(allocation);
     NtpBackgroundUtil::PaintBackgroundDetachedMode(theme_provider, &canvas,
         area, tab_contents_size.height());
   }

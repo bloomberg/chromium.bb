@@ -142,7 +142,7 @@ void NineBox::RenderToWidgetWithOpacity(GtkWidget* dst, double opacity) const {
   // For widgets that have their own window, the allocation (x,y) coordinates
   // are GdkWindow relative. For other widgets, the coordinates are relative
   // to their container.
-  if (GTK_WIDGET_NO_WINDOW(dst)) {
+  if (!gtk_widget_get_has_window(dst)) {
     // Transform our cairo from window to widget coordinates.
     cairo_translate(cr, allocation.x, allocation.y);
   }

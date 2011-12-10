@@ -66,7 +66,7 @@ void GtkPluginContainerManager::MovePluginContainer(
   if (!widget)
     return;
 
-  DCHECK(!GTK_WIDGET_NO_WINDOW(widget));
+  DCHECK(gtk_widget_get_has_window(widget));
 
   if (!move.visible) {
     gtk_widget_hide(widget);

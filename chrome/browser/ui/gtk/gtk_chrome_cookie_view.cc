@@ -44,7 +44,7 @@ GtkWidget* InitDetailRow(int row, int label_id,
   GtkWidget* name_label = InitRowLabel(row, label_id, details_table);
 
   *entry = gtk_entry_new();
-  gtk_entry_set_editable(GTK_ENTRY(*entry), FALSE);
+  gtk_editable_set_editable(GTK_EDITABLE(*entry), FALSE);
   gtk_entry_set_has_frame(GTK_ENTRY(*entry), FALSE);
   gtk_table_attach_defaults(GTK_TABLE(details_table), *entry,
                             1, 2, row, row + 1);

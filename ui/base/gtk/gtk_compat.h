@@ -17,12 +17,32 @@
 // alphabetically by method.
 
 #if !GTK_CHECK_VERSION(2, 20, 0)
+inline gboolean gtk_widget_get_mapped(GtkWidget* widget) {
+  return GTK_WIDGET_MAPPED(widget);
+}
+
 inline gboolean gtk_widget_get_realized(GtkWidget* widget) {
   return GTK_WIDGET_REALIZED(widget);
 }
 
 inline gboolean gtk_widget_is_toplevel(GtkWidget* widget) {
   return GTK_WIDGET_TOPLEVEL(widget);
+}
+
+inline void gtk_widget_set_mapped(GtkWidget* widget,
+                                  gboolean mapped) {
+  if (mapped)
+    GTK_WIDGET_SET_FLAGS(widget, GTK_MAPPED);
+  else
+    GTK_WIDGET_UNSET_FLAGS(widget, GTK_MAPPED);
+}
+
+inline void gtk_widget_set_realized(GtkWidget* widget,
+                                    gboolean realized) {
+  if (realized)
+    GTK_WIDGET_SET_FLAGS(widget, GTK_REALIZED);
+  else
+    GTK_WIDGET_UNSET_FLAGS(widget, GTK_REALIZED);
 }
 #endif
 

@@ -1986,8 +1986,11 @@ int BrowserWindowGtk::GetXPositionOfLocationIcon(GtkWidget* relative_to) {
       (location_icon->allocation.width + 1) / 2,
       0, &x, NULL);
 
-  if (GTK_WIDGET_NO_WINDOW(relative_to))
-    x += relative_to->allocation.x;
+  if (!gtk_widget_get_has_window(relative_to)) {
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(relative_to, &allocation);
+    x += allocation.x;
+  }
 
   return x;
 }

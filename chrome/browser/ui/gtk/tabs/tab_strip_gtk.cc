@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 
-#include <algorithm>
 #include <gtk/gtk.h>
+#include <algorithm>
 
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
@@ -929,9 +929,11 @@ gfx::Point TabStripGtk::GetTabStripOriginForWidget(GtkWidget* target) {
       NOTREACHED();
     }
   }
-  if (GTK_WIDGET_NO_WINDOW(target)) {
-    x += target->allocation.x;
-    y += target->allocation.y;
+  if (!gtk_widget_get_has_window(target)) {
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(target, &allocation);
+    x += allocation.x;
+    y += allocation.y;
   }
   return gfx::Point(x, y);
 }
