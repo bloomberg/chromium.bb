@@ -180,13 +180,19 @@ TEST_F(GAIAInfoUpdateServiceTest, LogOut) {
   gfx::Image gaia_picture = gfx::test::CreateImage();
   GetCache()->SetGAIAPictureOfProfileAtIndex(0, &gaia_picture);
 
+  // Set a fake picture URL.
+  profile()->GetPrefs()->SetString(prefs::kProfileGAIAInfoPictureURL,
+                                   "example.com");
+
   GAIAInfoUpdateService service(profile());
+  EXPECT_FALSE(service.GetCachedPictureURL().empty());
   // Log out.
   profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "");
 
-  // Verify that the GAIA name and picture are unset.
+  // Verify that the GAIA name and picture, and picture URL are unset.
   EXPECT_TRUE(GetCache()->GetGAIANameOfProfileAtIndex(0).empty());
   EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(0));
+  EXPECT_TRUE(service.GetCachedPictureURL().empty());
 }
 
 TEST_F(GAIAInfoUpdateServiceTest, LogIn) {

@@ -113,6 +113,10 @@ void GAIAInfoUpdateService::OnDownloadComplete(ProfileDownloader* downloader,
     return;
 
   cache.SetGAIANameOfProfileAtIndex(profile_index, full_name);
+  // The profile index may have changed.
+  profile_index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
+  if (profile_index == std::string::npos)
+    return;
   if (picture_status == ProfileDownloader::PICTURE_SUCCESS) {
     profile_->GetPrefs()->SetString(prefs::kProfileGAIAInfoPictureURL,
                                     picture_url);
@@ -157,7 +161,13 @@ void GAIAInfoUpdateService::OnUsernameChanged() {
   if (username.empty()) {
     // Unset the old user's GAIA info.
     cache.SetGAIANameOfProfileAtIndex(profile_index, string16());
+    // The profile index may have changed.
+    profile_index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
+    if (profile_index == std::string::npos)
+      return;
     cache.SetGAIAPictureOfProfileAtIndex(profile_index, NULL);
+    // Unset the cached URL.
+    profile_->GetPrefs()->ClearPref(prefs::kProfileGAIAInfoPictureURL);
   } else {
     // Update the new user's GAIA info.
     Update();
