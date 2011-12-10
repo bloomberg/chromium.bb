@@ -38,19 +38,19 @@ class PPB_Graphics2D_Impl : public ::ppapi::Resource,
 
   bool is_always_opaque() const { return is_always_opaque_; }
 
+  // Resource overrides.
   virtual ::ppapi::thunk::PPB_Graphics2D_API* AsPPB_Graphics2D_API();
-
-  // Resource override.
-  virtual PPB_Graphics2D_Impl* AsPPB_Graphics2D_Impl();
+  virtual void LastPluginRefWasDeleted() OVERRIDE;
 
   // PPB_Graphics2D functions.
-  virtual PP_Bool Describe(PP_Size* size, PP_Bool* is_always_opaque);
+  virtual PP_Bool Describe(PP_Size* size, PP_Bool* is_always_opaque) OVERRIDE;
   virtual void PaintImageData(PP_Resource image_data,
                               const PP_Point* top_left,
-                              const PP_Rect* src_rect);
-  virtual void Scroll(const PP_Rect* clip_rect, const PP_Point* amount);
-  virtual void ReplaceContents(PP_Resource image_data);
-  virtual int32_t Flush(PP_CompletionCallback callback);
+                              const PP_Rect* src_rect) OVERRIDE;
+  virtual void Scroll(const PP_Rect* clip_rect,
+                      const PP_Point* amount) OVERRIDE;
+  virtual void ReplaceContents(PP_Resource image_data) OVERRIDE;
+  virtual int32_t Flush(PP_CompletionCallback callback) OVERRIDE;
 
   bool ReadImageData(PP_Resource image, const PP_Point* top_left);
 
@@ -100,7 +100,7 @@ class PPB_Graphics2D_Impl : public ::ppapi::Resource,
     }
 
     void Execute(int32_t result) {
-      PP_RunCompletionCallback(&callback_, result);
+      PP_RunAndClearCompletionCallback(&callback_, result);
     }
 
    private:

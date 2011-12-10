@@ -161,6 +161,9 @@ PPB_Graphics2D_Impl::PPB_Graphics2D_Impl(PP_Instance instance)
 }
 
 PPB_Graphics2D_Impl::~PPB_Graphics2D_Impl() {
+  // LastPluginRefWasDeleted should have aborted all pending callbacks.
+  DCHECK(painted_flush_callback_.is_null());
+  DCHECK(unpainted_flush_callback_.is_null());
 }
 
 // static
@@ -194,8 +197,14 @@ PPB_Graphics2D_Impl::AsPPB_Graphics2D_API() {
   return this;
 }
 
-PPB_Graphics2D_Impl* PPB_Graphics2D_Impl::AsPPB_Graphics2D_Impl() {
-  return this;
+void PPB_Graphics2D_Impl::LastPluginRefWasDeleted() {
+  Resource::LastPluginRefWasDeleted();
+
+  // Abort any pending callbacks.
+  if (!unpainted_flush_callback_.is_null())
+    unpainted_flush_callback_.Execute(PP_ERROR_ABORTED);
+  if (!painted_flush_callback_.is_null())
+    painted_flush_callback_.Execute(PP_ERROR_ABORTED);
 }
 
 PP_Bool PPB_Graphics2D_Impl::Describe(PP_Size* size,
@@ -540,14 +549,8 @@ void PPB_Graphics2D_Impl::ViewInitiatedPaint() {
 void PPB_Graphics2D_Impl::ViewFlushedPaint() {
   // Notify any "painted" callback. See |unpainted_flush_callback_| in the
   // header for more.
-  if (!painted_flush_callback_.is_null()) {
-    // We must clear this variable before issuing the callback. It will be
-    // common for the plugin to issue another invalidate in response to a flush
-    // callback, and we don't want to think that a callback is already pending.
-    FlushCallbackData callback;
-    std::swap(callback, painted_flush_callback_);
-    callback.Execute(PP_OK);
-  }
+  if (!painted_flush_callback_.is_null())
+    painted_flush_callback_.Execute(PP_OK);
 }
 
 void PPB_Graphics2D_Impl::ExecutePaintImageData(PPB_ImageData_Impl* image,
