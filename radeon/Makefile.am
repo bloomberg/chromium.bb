@@ -40,6 +40,7 @@ libdrm_radeon_la_SOURCES = \
 	radeon_cs_space.c \
 	radeon_bo.c \
 	radeon_cs.c \
+	radeon_surface.c \
 	bof.c \
 	bof.h
 
@@ -47,6 +48,7 @@ libdrm_radeonincludedir = ${includedir}/libdrm
 libdrm_radeoninclude_HEADERS = \
 	radeon_bo.h \
 	radeon_cs.h \
+	radeon_surface.h \
 	radeon_bo_gem.h \
 	radeon_cs_gem.h \
 	radeon_bo_int.h \
