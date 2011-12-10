@@ -10,6 +10,8 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
+#include "base/mac/scoped_nsexception_enabler.h"
 #include "base/metrics/histogram.h"
 #include "base/sys_string_conversions.h"
 #include "base/task.h"
@@ -26,6 +28,19 @@ using content::BrowserThread;
 namespace {
 // The number of characters in the first part of the language code.
 const unsigned int kShortLanguageCodeSize = 2;
+
+// +[NSSpellChecker sharedSpellChecker] can throw exceptions depending
+// on the state of the pasteboard, or possibly as a result of
+// third-party code (when setting up services entries).  The following
+// receives nil if an exception is thrown, in which case
+// spell-checking will not work, but it also will not crash the
+// browser.
+NSSpellChecker* SharedSpellChecker() {
+  return base::mac::ObjCCastStrict<NSSpellChecker>(
+      base::mac::PerformSelectorIgnoringExceptions(
+          [NSSpellChecker class],
+          @selector(sharedSpellChecker)));
+}
 
 // TextCheckingTask is reserved for spell checking against large size
 // of text, which possible contains multiple paragrpahs.  Checking
@@ -55,7 +70,7 @@ class TextCheckingTask : public Task {
     NSString* text_to_check = base::SysUTF16ToNSString(text_);
     size_t starting_at = 0;
     while (starting_at < text_.size()) {
-      NSRange range = [[NSSpellChecker sharedSpellChecker]
+      NSRange range = [SharedSpellChecker()
                          checkSpellingOfString:text_to_check
                                     startingAt:starting_at
                                       language:nil
@@ -152,8 +167,7 @@ std::string ConvertLanguageCodeFromMac(NSString* lang_code) {
 namespace SpellCheckerPlatform {
 
 void GetAvailableLanguages(std::vector<std::string>* spellcheck_languages) {
-  NSArray* availableLanguages = [[NSSpellChecker sharedSpellChecker]
-                        availableLanguages];
+  NSArray* availableLanguages = [SharedSpellChecker() availableLanguages];
   for (NSString* lang_code in availableLanguages) {
     spellcheck_languages->push_back(
               ConvertLanguageCodeFromMac(lang_code));
@@ -174,17 +188,17 @@ bool SpellCheckerProvidesPanel() {
 bool SpellingPanelVisible() {
   // This should only be called from the main thread.
   DCHECK([NSThread currentThread] == [NSThread mainThread]);
-  return [[[NSSpellChecker sharedSpellChecker] spellingPanel] isVisible];
+  return [[SharedSpellChecker() spellingPanel] isVisible];
 }
 
 void ShowSpellingPanel(bool show) {
   if (show) {
-    [[[NSSpellChecker sharedSpellChecker] spellingPanel]
+    [[SharedSpellChecker() spellingPanel]
         performSelectorOnMainThread:@selector(makeKeyAndOrderFront:)
                          withObject:nil
                       waitUntilDone:YES];
   } else {
-    [[[NSSpellChecker sharedSpellChecker] spellingPanel]
+    [[SharedSpellChecker() spellingPanel]
         performSelectorOnMainThread:@selector(close)
                          withObject:nil
                       waitUntilDone:YES];
@@ -193,7 +207,7 @@ void ShowSpellingPanel(bool show) {
 
 void UpdateSpellingPanelWithMisspelledWord(const string16& word) {
   NSString * word_to_display = base::SysUTF16ToNSString(word);
-  [[NSSpellChecker sharedSpellChecker]
+  [SharedSpellChecker()
       performSelectorOnMainThread:
         @selector(updateSpellingPanelWithMisspelledWord:)
                        withObject:word_to_display
@@ -208,9 +222,7 @@ bool PlatformSupportsLanguage(const std::string& current_language) {
   NSString* mac_lang_code = ConvertLanguageCodeToMac(current_language);
 
   // Then grab the languages available.
-  NSArray* availableLanguages;
-  availableLanguages = [[NSSpellChecker sharedSpellChecker]
-                        availableLanguages];
+  NSArray* availableLanguages = [SharedSpellChecker() availableLanguages];
 
   // Return true if the given language is supported by OS X.
   return [availableLanguages containsObject:mac_lang_code];
@@ -218,7 +230,7 @@ bool PlatformSupportsLanguage(const std::string& current_language) {
 
 void SetLanguage(const std::string& lang_to_set) {
   NSString* NS_lang_to_set = ConvertLanguageCodeToMac(lang_to_set);
-  [[NSSpellChecker sharedSpellChecker] setLanguage:NS_lang_to_set];
+  [SharedSpellChecker() setLanguage:NS_lang_to_set];
 }
 
 static int last_seen_tag_;
@@ -226,14 +238,14 @@ static int last_seen_tag_;
 bool CheckSpelling(const string16& word_to_check, int tag) {
   last_seen_tag_ = tag;
 
-  // [[NSSpellChecker sharedSpellChecker] checkSpellingOfString] returns an
-  // NSRange that we can look at to determine if a word is misspelled.
+  // -[NSSpellChecker checkSpellingOfString] returns an NSRange that
+  // we can look at to determine if a word is misspelled.
   NSRange spell_range = {0,0};
 
   // Convert the word to an NSString.
   NSString* NS_word_to_check = base::SysUTF16ToNSString(word_to_check);
   // Check the spelling, starting at the beginning of the word.
-  spell_range = [[NSSpellChecker sharedSpellChecker]
+  spell_range = [SharedSpellChecker()
                   checkSpellingOfString:NS_word_to_check startingAt:0
                   language:nil wrap:NO inSpellDocumentWithTag:tag
                   wordCount:NULL];
@@ -249,8 +261,7 @@ void FillSuggestionList(const string16& wrong_word,
   NSString* NS_wrong_word = base::SysUTF16ToNSString(wrong_word);
   TimeTicks debug_begin_time = base::Histogram::DebugNow();
   // The suggested words for |wrong_word|.
-  NSArray* guesses =
-      [[NSSpellChecker sharedSpellChecker] guessesForWord:NS_wrong_word];
+  NSArray* guesses = [SharedSpellChecker() guessesForWord:NS_wrong_word];
   DHISTOGRAM_TIMES("Spellcheck.SuggestTime",
                    base::Histogram::DebugNow() - debug_begin_time);
 
@@ -264,12 +275,12 @@ void FillSuggestionList(const string16& wrong_word,
 
 void AddWord(const string16& word) {
     NSString* word_to_add = base::SysUTF16ToNSString(word);
-  [[NSSpellChecker sharedSpellChecker] learnWord:word_to_add];
+  [SharedSpellChecker() learnWord:word_to_add];
 }
 
 void RemoveWord(const string16& word) {
   NSString *word_to_remove = base::SysUTF16ToNSString(word);
-  [[NSSpellChecker sharedSpellChecker] unlearnWord:word_to_remove];
+  [SharedSpellChecker() unlearnWord:word_to_remove];
 }
 
 int GetDocumentTag() {
@@ -278,13 +289,12 @@ int GetDocumentTag() {
 }
 
 void IgnoreWord(const string16& word) {
-  [[NSSpellChecker sharedSpellChecker] ignoreWord:base::SysUTF16ToNSString(word)
-                           inSpellDocumentWithTag:last_seen_tag_];
+  [SharedSpellChecker() ignoreWord:base::SysUTF16ToNSString(word)
+            inSpellDocumentWithTag:last_seen_tag_];
 }
 
 void CloseDocumentWithTag(int tag) {
-  [[NSSpellChecker sharedSpellChecker]
-    closeSpellDocumentWithTag:static_cast<NSInteger>(tag)];
+  [SharedSpellChecker() closeSpellDocumentWithTag:static_cast<NSInteger>(tag)];
 }
 
 void RequestTextCheck(int route_id,
