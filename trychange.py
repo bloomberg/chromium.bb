@@ -785,11 +785,6 @@ def TryChange(argv,
       # If no bot is specified, either the default pool will be selected or the
       # try server will refuse the job. Either case we don't need to interfere.
 
-    # Prevent rietveld updates if we aren't running all the tests.
-    if options.testfilter is not None:
-      options.issue = None
-      options.patchset = None
-
     # Send the patch.
     if options.send_patch:
       # If forced.
