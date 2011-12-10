@@ -25,7 +25,7 @@ class BackgroundContents : public TabContentsDelegate,
  public:
   class Delegate {
    public:
-    // Called by ShowCreatedWindow. Asks the delegate to attach the opened
+    // Called by AddNewContents(). Asks the delegate to attach the opened
     // TabContents to a suitable container (e.g. browser) or to show it if it's
     // a popup window.
     virtual void AddTabContents(TabContents* new_contents,
@@ -49,6 +49,11 @@ class BackgroundContents : public TabContentsDelegate,
   virtual void CloseContents(TabContents* source) OVERRIDE;
   virtual bool ShouldSuppressDialogs() OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(TabContents* tab) OVERRIDE;
+  virtual void AddNewContents(TabContents* source,
+                              TabContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture) OVERRIDE;
 
   // TabContentsObserver implementation:
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;

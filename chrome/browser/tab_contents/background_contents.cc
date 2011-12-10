@@ -93,6 +93,16 @@ void BackgroundContents::DidNavigateMainFramePostCommit(TabContents* tab) {
       content::Details<BackgroundContents>(this));
 }
 
+// Forward requests to add a new TabContents to our delegate.
+void BackgroundContents::AddNewContents(TabContents* source,
+                                        TabContents* new_contents,
+                                        WindowOpenDisposition disposition,
+                                        const gfx::Rect& initial_pos,
+                                        bool user_gesture) {
+  delegate_->AddTabContents(
+      new_contents, disposition, initial_pos, user_gesture);
+}
+
 void BackgroundContents::RenderViewGone(base::TerminationStatus status) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_TERMINATED,
