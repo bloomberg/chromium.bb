@@ -104,7 +104,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost {
     OnStreamGenerated(msg.routing_id(), request_id, audio_device_list.size(),
         video_device_list.size());
     // Notify that the event have occured.
-    message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     label_ = label;
     audio_devices_ = audio_device_list;
     video_devices_ = video_device_list;
@@ -112,7 +112,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost {
 
   void OnStreamGenerationFailed(const IPC::Message& msg, int request_id) {
     OnStreamGenerationFailed(msg.routing_id(), request_id);
-    message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     label_= "";
   }
 
@@ -121,7 +121,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost {
                            int index) {
     OnAudioDeviceFailed(msg.routing_id(), index);
     audio_devices_.erase(audio_devices_.begin() + index);
-    message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
   void OnVideoDeviceFailed(const IPC::Message& msg,
@@ -129,7 +129,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost {
                            int index) {
     OnVideoDeviceFailed(msg.routing_id(), index);
     video_devices_.erase(video_devices_.begin() + index);
-    message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
   MessageLoop* message_loop_;
@@ -172,7 +172,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 
   // Called on the VideoCaptureManager thread.
   static void PostQuitMessageLoop(MessageLoop* message_loop) {
-    message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
   // Called on the main thread.

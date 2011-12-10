@@ -195,7 +195,7 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedTab) {
   inspected_rvh->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));
   // Wait long enough for first timeout and see if it fired.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          new MessageLoop::QuitTask(), 10);
+                                          MessageLoop::QuitClosure(), 10);
   MessageLoop::current()->Run();
   EXPECT_FALSE(delegate.renderer_unresponsive_received());
 
@@ -205,7 +205,7 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedTab) {
   inspected_rvh->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));
   // Wait long enough for first timeout and see if it fired.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          new MessageLoop::QuitTask(), 10);
+                                          MessageLoop::QuitClosure(), 10);
   MessageLoop::current()->Run();
   EXPECT_TRUE(delegate.renderer_unresponsive_received());
 

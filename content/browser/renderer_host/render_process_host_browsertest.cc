@@ -32,7 +32,7 @@ int RenderProcessHostTest::RenderProcessHostCount() {
 }
 
 void PostQuit(MessageLoop* loop) {
-  loop->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+  loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 void DoNothing() {}

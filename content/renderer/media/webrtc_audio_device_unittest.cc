@@ -25,7 +25,7 @@ using testing::StrEq;
 namespace {
 
 ACTION_P(QuitMessageLoop, loop_or_proxy) {
-  loop_or_proxy->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  loop_or_proxy->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 class AudioUtil : public AudioUtilInterface {
@@ -383,7 +383,7 @@ TEST_F(WebRTCAudioDeviceTest, PlayLocalFile) {
                                              webrtc::kFileFormatPcm16kHzFile));
 
   message_loop_.PostDelayedTask(FROM_HERE,
-                                new MessageLoop::QuitTask(),
+                                MessageLoop::QuitClosure(),
                                 TestTimeouts::action_timeout_ms());
   message_loop_.Run();
 
@@ -442,7 +442,7 @@ TEST_F(WebRTCAudioDeviceTest, FullDuplexAudio) {
 
   LOG(INFO) << ">> You should now be able to hear yourself in loopback...";
   message_loop_.PostDelayedTask(FROM_HERE,
-                                new MessageLoop::QuitTask(),
+                                MessageLoop::QuitClosure(),
                                 TestTimeouts::action_timeout_ms());
   message_loop_.Run();
 

@@ -185,7 +185,7 @@ class MockVideoCaptureHost : public VideoCaptureHost {
 };
 
 ACTION_P(ExitMessageLoop, message_loop) {
-  message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 class VideoCaptureHostTest : public testing::Test {
@@ -246,7 +246,7 @@ class VideoCaptureHostTest : public testing::Test {
 
   // Called on the VideoCaptureManager thread.
   static void PostQuitMessageLoop(MessageLoop* message_loop) {
-    message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
   // Called on the main thread.

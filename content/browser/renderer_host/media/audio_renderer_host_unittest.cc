@@ -163,7 +163,7 @@ class MockAudioRendererHost : public AudioRendererHost {
 };
 
 ACTION_P(QuitMessageLoop, message_loop) {
-  message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 class AudioRendererHostTest : public testing::Test {
@@ -334,7 +334,7 @@ class AudioRendererHostTest : public testing::Test {
 
   // Called on the audio thread.
   static void PostQuitMessageLoop(MessageLoop* message_loop) {
-    message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
   // Called on the main thread.

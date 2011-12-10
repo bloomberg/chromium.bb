@@ -45,7 +45,7 @@ class UpdateChecker : public Provider::Observer {
     --(*expectations_count_ptr_);
 
     if (*expectations_count_ptr_ == 0) {
-      MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+      MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     }
   }
 

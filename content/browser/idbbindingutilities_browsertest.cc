@@ -101,7 +101,7 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
         new UtilityProcessHost(this, BrowserThread::IO);
     utility_process_host_->StartBatchMode();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            new MessageLoop::QuitTask());
+                            MessageLoop::QuitClosure());
   }
 
   void DestroyUtilityProcess() {
@@ -115,7 +115,7 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
     utility_process_host_->EndBatchMode();
     utility_process_host_ = NULL;
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            new MessageLoop::QuitTask());
+                            MessageLoop::QuitClosure());
   }
 
   void SetExpectedKeys(int expected_id,
@@ -196,19 +196,19 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
       }
     }
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            new MessageLoop::QuitTask());
+                            MessageLoop::QuitClosure());
   }
 
   void OnIDBKeysFromValuesAndKeyPathFailed(int id) {
     EXPECT_TRUE(value_for_key_path_failed_);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            new MessageLoop::QuitTask());
+                            MessageLoop::QuitClosure());
   }
 
   void OnInjectIDBKeyFinished(const content::SerializedScriptValue& new_value) {
     EXPECT_EQ(expected_value_.data(), new_value.data());
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            new MessageLoop::QuitTask());
+                            MessageLoop::QuitClosure());
   }
 
 

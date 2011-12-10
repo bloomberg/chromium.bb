@@ -2283,7 +2283,7 @@ class NavigationControllerHistoryTest : public NavigationControllerTest {
     HistoryService* history =
         profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
     if (history) {
-      history->SetOnBackendDestroyTask(new MessageLoop::QuitTask);
+      history->SetOnBackendDestroyTask(MessageLoop::QuitClosure());
       MessageLoop::current()->Run();
     }
 

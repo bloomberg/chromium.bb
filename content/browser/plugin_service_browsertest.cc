@@ -75,7 +75,7 @@ class MockPluginProcessHostClient : public PluginProcessHost::Client,
   MOCK_METHOD1(OnMessageReceived, bool(const IPC::Message& message));
   void OnChannelConnected(int32 peer_pid) OVERRIDE {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            new MessageLoop::QuitTask());
+                            MessageLoop::QuitClosure());
   }
   MOCK_METHOD0(OnChannelError, void());
   MOCK_METHOD0(OnChannelDenied, void());
@@ -152,7 +152,7 @@ void DoNothing() {}
 
 void QuitUIMessageLoopFromIOThread() {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          new MessageLoop::QuitTask());
+                          MessageLoop::QuitClosure());
 }
 
 void OpenChannelAndThenCancel(PluginProcessHost::Client* client) {
@@ -280,7 +280,7 @@ class MockCanceledAfterSentPluginProcessHostClient
     on_sent_plugin_channel_request_called_ = true;
     host()->CancelSentRequest(this);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            new MessageLoop::QuitTask());
+                            MessageLoop::QuitClosure());
   }
 
   bool on_sent_plugin_channel_request_called() const {

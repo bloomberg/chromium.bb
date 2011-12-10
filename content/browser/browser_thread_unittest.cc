@@ -17,7 +17,7 @@ class BrowserThreadTest : public testing::Test {
  public:
   void Release() const {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    loop_.PostTask(FROM_HERE, new MessageLoop::QuitTask);
+    loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
  protected:
@@ -35,7 +35,7 @@ class BrowserThreadTest : public testing::Test {
 
   static void BasicFunction(MessageLoop* message_loop) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+    message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
   static void DoNothing() {
@@ -65,7 +65,7 @@ class BrowserThreadTest : public testing::Test {
 
     ~DeletedOnFile() {
       CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-      message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+      message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     }
 
    private:

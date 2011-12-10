@@ -90,7 +90,7 @@ static bool CanRunAudioInputDeviceTests() {
 }
 
 ACTION_P(ExitMessageLoop, message_loop) {
-  message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 class AudioInputDeviceManagerTest: public testing::Test {

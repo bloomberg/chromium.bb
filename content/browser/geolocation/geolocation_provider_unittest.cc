@@ -84,13 +84,13 @@ class StartStopMockLocationProvider : public MockLocationProvider {
 
   virtual bool StartProvider(bool high_accuracy) {
     bool result = MockLocationProvider::StartProvider(high_accuracy);
-    test_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+    test_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     return result;
   }
 
   virtual void StopProvider() {
     MockLocationProvider::StopProvider();
-    test_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+    test_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
  private:
