@@ -22,7 +22,8 @@ RendererPreferences::RendererPreferences()
       inactive_selection_fg_color(0),
       browser_handles_top_level_requests(false),
       caret_blink_interval(0),
-      enable_referrers(true) {
+      enable_referrers(true),
+      default_zoom_level(0) {
 }
 
 }  // namespace content

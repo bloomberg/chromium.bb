@@ -79,6 +79,9 @@ struct CONTENT_EXPORT RendererPreferences {
 
   // Set to false to not send referrers.
   bool enable_referrers;
+
+  // Default page zoom level.
+  double default_zoom_level;
 };
 
 }  // namespace content

@@ -3705,11 +3705,6 @@ void RenderViewImpl::ZoomFactorHelper(content::PageZoom zoom,
 }
 
 void RenderViewImpl::OnSetZoomLevel(double zoom_level) {
-  // Don't set zoom level for full-page plugin since they don't use the same
-  // zoom settings.
-  if (webview()->mainFrame()->document().isPluginDocument())
-    return;
-
   webview()->hidePopups();
   webview()->setZoomLevel(false, zoom_level);
   zoomLevelChanged();
@@ -3912,6 +3907,7 @@ void RenderViewImpl::OnDisableScrollbarsForSmallWindows(
 
 void RenderViewImpl::OnSetRendererPrefs(
     const content::RendererPreferences& renderer_prefs) {
+  double old_zoom_level = renderer_preferences_.default_zoom_level;
   renderer_preferences_ = renderer_prefs;
   UpdateFontRenderingFromRendererPrefs();
 #if defined(TOOLKIT_USES_GTK)
@@ -3936,6 +3932,13 @@ void RenderViewImpl::OnSetRendererPrefs(
     webview()->themeChanged();
   }
 #endif
+  // If the zoom level for this page matches the old zoom default, and this
+  // is not a plugin, update the zoom level to match the new default.
+  if (webview() && !webview()->mainFrame()->document().isPluginDocument() &&
+      content::ZoomValuesEqual(webview()->zoomLevel(), old_zoom_level)) {
+    webview()->setZoomLevel(false, renderer_preferences_.default_zoom_level);
+    zoomLevelChanged();
+  }
 }
 
 void RenderViewImpl::OnMediaPlayerActionAt(const gfx::Point& location,

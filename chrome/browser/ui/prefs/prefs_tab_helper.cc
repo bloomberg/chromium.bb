@@ -42,6 +42,7 @@ void RegisterPerTabUserPrefs(PrefService* prefs) {
 // The list of prefs we want to observe.
 const char* kPrefsToObserve[] = {
   prefs::kDefaultCharset,
+  prefs::kDefaultZoomLevel,
   prefs::kEnableReferrers,
   prefs::kWebKitAllowDisplayingInsecureContent,
   prefs::kWebKitAllowRunningInsecureContent,
@@ -409,7 +410,8 @@ void PrefsTabHelper::Observe(int type,
       if ((*pref_name_in == prefs::kDefaultCharset) ||
           StartsWithASCII(*pref_name_in, "webkit.webprefs.", true)) {
         UpdateWebPreferences();
-      } else if (*pref_name_in == prefs::kEnableReferrers) {
+      } else if (*pref_name_in == prefs::kDefaultZoomLevel ||
+                 *pref_name_in == prefs::kEnableReferrers) {
         UpdateRendererPreferences();
       } else {
         NOTREACHED() << "unexpected pref change notification" << *pref_name_in;

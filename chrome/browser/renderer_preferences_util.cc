@@ -48,6 +48,8 @@ void UpdateFromSystemSettings(
 
   prefs->enable_referrers =
       profile->GetPrefs()->GetBoolean(prefs::kEnableReferrers);
+  prefs->default_zoom_level =
+      profile->GetPrefs()->GetDouble(prefs::kDefaultZoomLevel);
 }
 
 }  // renderer_preferences_util

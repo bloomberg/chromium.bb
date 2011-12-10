@@ -6,15 +6,13 @@
 #define CHROME_BROWSER_UI_TAB_CONTENTS_CORE_TAB_HELPER_H_
 #pragma once
 
-#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
 class CoreTabHelperDelegate;
 class TabContentsWrapper;
 
 // Per-tab class to handle functionality that is core to the operation of tabs.
-class CoreTabHelper : public TabContentsObserver,
-                      public content::NotificationObserver {
+class CoreTabHelper : public TabContentsObserver {
  public:
   explicit CoreTabHelper(TabContentsWrapper* wrapper);
   virtual ~CoreTabHelper();
@@ -32,18 +30,11 @@ class CoreTabHelper : public TabContentsObserver,
   // TabContentsObserver overrides:
   virtual void DidBecomeSelected() OVERRIDE;
 
-  // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // Delegate for notifying our owner about stuff. Not owned by us.
   CoreTabHelperDelegate* delegate_;
 
   // Our owning TabContentsWrapper.
   TabContentsWrapper* wrapper_;
-
-  PrefChangeRegistrar pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreTabHelper);
 };
