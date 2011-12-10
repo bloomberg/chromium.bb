@@ -299,7 +299,7 @@ void MockWebServer::HandlePostedResponse(
   posted_result_ = request.content();
   if (posted_result_ == expected_result_) {
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                            new MessageLoop::QuitTask,
+                                            MessageLoop::QuitClosure(),
                                             100);
   }
   connection->Send("HTTP/1.1 200 OK\r\n", "");

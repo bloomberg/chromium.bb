@@ -137,7 +137,7 @@ class AutomationMockDelegate
   void QuitMessageLoop() {
     // Quit on the caller message loop has to be called on the caller
     // thread.
-    caller_message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+    caller_message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
  private:

@@ -124,7 +124,7 @@ struct QuitMessageHit {
 
 void QuitMessageLoop(QuitMessageHit* msg) {
   msg->hit_ = true;
-  msg->loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+  msg->loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 }  // end namespace

@@ -451,7 +451,7 @@ void CFUrlRequestUnittestRunner::TakeDownBrowser(
 
   me->ShutDownHostBrowser();
   me->fake_chrome_.ui_loop()->PostDelayedTask(FROM_HERE,
-                                              new MessageLoop::QuitTask,
+                                              MessageLoop::QuitClosure(),
                                               TestTimeouts::tiny_timeout_ms());
 }
 

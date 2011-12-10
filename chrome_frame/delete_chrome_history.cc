@@ -91,7 +91,7 @@ STDMETHODIMP DeleteChromeHistory::DeleteBrowsingHistory(DWORD flags) {
     remove_mask_ |= BrowsingDataRemover::REMOVE_HISTORY;
 
   loop_.PostDelayedTask(FROM_HERE,
-      new MessageLoop::QuitTask, 1000 * 600);
+      MessageLoop::QuitClosure(), 1000 * 600);
   loop_.MessageLoop::Run();
 
   return S_OK;
