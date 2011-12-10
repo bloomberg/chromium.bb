@@ -39,7 +39,12 @@ ExtensionPopup::ExtensionPopup(
   SetLayoutManager(new views::FillLayout());
   AddChildView(host->view());
   host->view()->SetContainer(this);
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // Use OnNativeFocusChange to check for child window activation on deactivate.
+  set_close_on_deactivate(false);
+#else
   set_close_on_deactivate(!inspect_with_devtools);
+#endif
 
   // We wait to show the popup until the contained host finishes loading.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
@@ -48,9 +53,12 @@ ExtensionPopup::ExtensionPopup(
   // Listen for the containing view calling window.close();
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<Profile>(host->profile()));
+
+  views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
 }
 
 ExtensionPopup::~ExtensionPopup() {
+  views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
 }
 
 void ExtensionPopup::Observe(int type,
@@ -101,6 +109,27 @@ gfx::Size ExtensionPopup::GetPreferredSize() {
   sz.set_width(std::max(kMinWidth, std::min(kMaxWidth, sz.width())));
   sz.set_height(std::max(kMinHeight, std::min(kMaxHeight, sz.height())));
   return sz;
+}
+
+void ExtensionPopup::OnNativeFocusChange(gfx::NativeView focused_before,
+                                         gfx::NativeView focused_now) {
+  // TODO(msw): Implement something equivalent for Aura. See crbug.com/106958
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // Don't close if a child of this window is activated (only needed on Win).
+  // ExtensionPopups can create Javascipt dialogs; see crbug.com/106723.
+  gfx::NativeView this_window = GetWidget()->GetNativeView();
+  if (!inspect_with_devtools_ && focused_before == this_window) {
+    DCHECK_NE(focused_now, this_window);
+    if (::GetWindow(focused_now, GW_OWNER) == this_window)
+      return;
+    gfx::NativeView focused_parent = focused_now;
+    while (focused_parent = ::GetParent(focused_parent)) {
+      if (this_window == focused_parent)
+        return;
+    }
+    GetWidget()->Close();
+  }
+#endif
 }
 
 // static

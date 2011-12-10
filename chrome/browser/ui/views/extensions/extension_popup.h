@@ -12,12 +12,14 @@
 #include "content/public/browser/notification_observer.h"
 #include "googleurl/src/gurl.h"
 #include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/focus/widget_focus_manager.h"
 
 class Browser;
 
 class ExtensionPopup : public views::BubbleDelegateView,
                        public ExtensionView::Container,
-                       public content::NotificationObserver {
+                       public content::NotificationObserver,
+                       public views::WidgetFocusChangeListener {
  public:
   virtual ~ExtensionPopup();
 
@@ -50,8 +52,12 @@ class ExtensionPopup : public views::BubbleDelegateView,
   // ExtensionView::Container overrides.
   virtual void OnExtensionPreferredSizeChanged(ExtensionView* view) OVERRIDE;
 
-  // view::View overrides.
+  // views::View overrides.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+
+  // views::WidgetFocusChangeListener overrides.
+  virtual void OnNativeFocusChange(gfx::NativeView focused_before,
+                                   gfx::NativeView focused_now) OVERRIDE;
 
   // The min/max height of popups.
   static const int kMinWidth;
