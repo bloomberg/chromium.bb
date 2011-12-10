@@ -81,16 +81,36 @@ void PasswordChangeProcessor::Observe(
     switch (change->type()) {
       case PasswordStoreChange::ADD: {
         sync_api::WriteNode sync_node(&trans);
-        if (!sync_node.InitUniqueByCreation(syncable::PASSWORDS,
-                                            password_root, tag)) {
-          error_handler()->OnUnrecoverableError(FROM_HERE,
-              "Failed to create password sync node.");
-          return;
+        if (sync_node.InitUniqueByCreation(syncable::PASSWORDS,
+                                           password_root, tag)) {
+          PasswordModelAssociator::WriteToSyncNode(change->form(), &sync_node);
+          model_associator_->Associate(&tag, sync_node.GetId());
+          break;
+        } else {
+          // Maybe this node already exists and we should update it.
+          //
+          // If the PasswordStore is told to add an entry but an entry with the
+          // same name already exists, it will overwrite it.  It will report
+          // this change as an ADD rather than an UPDATE.  Ideally, it would be
+          // able to tell us what action was actually taken, rather than what
+          // action was requested.  If it did so, we wouldn't need to fall back
+          // to trying to update an existing password node here.
+          //
+          // TODO: Remove this.  See crbug.com/87855.
+          int64 sync_id = model_associator_->GetSyncIdFromChromeId(tag);
+          if (sync_api::kInvalidId == sync_id) {
+            error_handler()->OnUnrecoverableError(FROM_HERE,
+                "Unable to create or retrieve password node");
+            return;
+          }
+          if (!sync_node.InitByIdLookup(sync_id)) {
+            error_handler()->OnUnrecoverableError(FROM_HERE,
+                "Unable to create or retrieve password node");
+            return;
+          }
+          PasswordModelAssociator::WriteToSyncNode(change->form(), &sync_node);
+          break;
         }
-
-        PasswordModelAssociator::WriteToSyncNode(change->form(), &sync_node);
-        model_associator_->Associate(&tag, sync_node.GetId());
-        break;
       }
       case PasswordStoreChange::UPDATE: {
         sync_api::WriteNode sync_node(&trans);
