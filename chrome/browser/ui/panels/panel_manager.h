@@ -91,7 +91,20 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
     return panel_overflow_strip_.get();
   }
 
+  // Reduces time interval in tests to shorten test run time.
+  // Wrapper should be used around all time intervals in panels code.
+  static inline double AdjustTimeInterval(double interval) {
+    if (shorten_time_intervals_)
+      return interval / 100.0;
+    else
+      return interval;
+  }
+
 #ifdef UNIT_TEST
+  static void shorten_time_intervals_for_testing() {
+    shorten_time_intervals_ = true;
+  }
+
   void set_auto_hiding_desktop_bar(
       AutoHidingDesktopBar* auto_hiding_desktop_bar) {
     auto_hiding_desktop_bar_ = auto_hiding_desktop_bar;
@@ -141,6 +154,9 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
 
   // Tests may want to use a mock panel mouse watcher.
   void SetMouseWatcher(PanelMouseWatcher* watcher);
+
+  // Tests may want to shorten time intervals to reduce running time.
+  static bool shorten_time_intervals_;
 
   scoped_ptr<PanelStrip> panel_strip_;
   scoped_ptr<PanelOverflowStrip> panel_overflow_strip_;

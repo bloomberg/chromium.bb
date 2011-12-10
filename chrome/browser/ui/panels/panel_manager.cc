@@ -35,6 +35,9 @@ static const int kFullScreenModeCheckIntervalMs = 1000;
 }  // namespace
 
 // static
+bool PanelManager::shorten_time_intervals_ = false;
+
+// static
 PanelManager* PanelManager::GetInstance() {
   static base::LazyInstance<PanelManager> instance = LAZY_INSTANCE_INITIALIZER;
   return instance.Pointer();

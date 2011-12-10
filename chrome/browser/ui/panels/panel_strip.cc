@@ -142,7 +142,8 @@ void PanelStrip::AddPanel(Panel* panel) {
           base::Bind(&PanelStrip::DelayedMovePanelToOverflow,
                      base::Unretained(this),
                      panel),
-          kMoveNewPanelToOverflowDelayMilliseconds);
+                     PanelManager::AdjustTimeInterval(
+                         kMoveNewPanelToOverflowDelayMilliseconds));
     }
 #endif
     panel->Initialize(gfx::Rect(x, y, width, height));
@@ -498,13 +499,9 @@ void PanelStrip::BringUpOrDownTitlebars(bool bring_up) {
 
   // On some OSes, the interaction with native Taskbars/Docks may be improved
   // if the panels do not go back to minimized state too fast. For example,
-  // it makes it possible to hit the titlebar on OSX if Dock has Magnifying
-  // enabled - the panels stay up for a while after Dock magnification effect
-  // stops covering the panels.
-  //
-  // Another example would be taskbar in auto-hide mode on Linux. In this mode
-  // taskbar will cover the panel in title hover mode, leaving it up for a few
-  // seconds would allow the user to be able to click on it.
+  // with a taskbar in auto-hide mode, the taskbar will cover the panel in
+  // title-only mode which appears on hover. Leaving it up for a little longer
+  // would allow the user to be able to click on it.
   //
   // Currently, no platforms use both delays.
   DCHECK(task_delay_milliseconds == 0);
@@ -523,7 +520,7 @@ void PanelStrip::BringUpOrDownTitlebars(bool bring_up) {
       FROM_HERE,
       base::Bind(&PanelStrip::DelayedBringUpOrDownTitlebarsCheck,
                  titlebar_action_factory_.GetWeakPtr()),
-      task_delay_milliseconds);
+                 PanelManager::AdjustTimeInterval(task_delay_milliseconds));
 }
 
 void PanelStrip::DelayedBringUpOrDownTitlebarsCheck() {

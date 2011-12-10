@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/panels/panel_slide_animation.h"
 
 #include "chrome/browser/ui/panels/panel.h"
+#include "chrome/browser/ui/panels/panel_manager.h"
 
 namespace {
 
@@ -37,7 +38,7 @@ PanelSlideAnimation::PanelSlideAnimation(ui::AnimationDelegate* target,
       duration = kSetBoundsAnimationBigMinimizeMs;
     }
   }
-  SetSlideDuration(duration);
+  SetSlideDuration(PanelManager::AdjustTimeInterval(duration));
 }
 
 PanelSlideAnimation::~PanelSlideAnimation() {

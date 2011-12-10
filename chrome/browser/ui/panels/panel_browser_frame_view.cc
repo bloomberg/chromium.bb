@@ -847,7 +847,8 @@ void PanelBrowserFrameView::UpdateSettingsButtonVisibility(
     settings_button_animator_.reset(new ui::SlideAnimation(this));
     settings_button_animator_->SetTweenType(ui::Tween::LINEAR);
     settings_button_animator_->SetSlideDuration(
-        kUpdateSettingsVisibilityAnimationMs);
+        PanelManager::AdjustTimeInterval(
+            kUpdateSettingsVisibilityAnimationMs));
   }
 
   settings_button_animator_->Show();

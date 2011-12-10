@@ -468,7 +468,7 @@ enum {
       duration = 1.5;
     }
   }
-  [boundsAnimation_ setDuration: duration];
+  [boundsAnimation_ setDuration: PanelManager::AdjustTimeInterval(duration)];
   [boundsAnimation_ setFrameRate:0.0];
   [boundsAnimation_ setAnimationBlockingMode: NSAnimationNonblocking];
   [boundsAnimation_ startAnimation];

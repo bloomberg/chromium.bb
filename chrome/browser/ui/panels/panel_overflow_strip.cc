@@ -197,7 +197,8 @@ void PanelOverflowStrip::ShowOverflowTitles(bool show_overflow_titles) {
     overflow_hover_animator_.reset(new ui::SlideAnimation(this));
   if (overflow_hover_animator_->IsShowing())
     overflow_hover_animator_->Reset();
-  overflow_hover_animator_->SetSlideDuration(kOverflowHoverAnimationMs);
+  overflow_hover_animator_->SetSlideDuration(
+    PanelManager::AdjustTimeInterval(kOverflowHoverAnimationMs));
 
   overflow_hover_animator_->Show();
 }
