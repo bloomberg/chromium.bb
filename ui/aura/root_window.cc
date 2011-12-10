@@ -364,15 +364,16 @@ void RootWindow::SetCapture(Window* window) {
     // Make all subsequent mouse events and touch go to the capture window. We
     // shouldn't need to send an event here as OnCaptureLost should take care of
     // that.
-    if (mouse_pressed_handler_)
-      mouse_pressed_handler_ = capture_window_;
     if (touch_event_handler_)
       touch_event_handler_ = capture_window_;
+    if (mouse_moved_handler_ || mouse_button_flags_ != 0)
+      mouse_moved_handler_ = capture_window_;
   } else {
     // When capture is lost, we must reset the event handlers.
-    mouse_pressed_handler_ = NULL;
     touch_event_handler_ = NULL;
+    mouse_moved_handler_ = NULL;
   }
+  mouse_pressed_handler_ = NULL;
 }
 
 void RootWindow::ReleaseCapture(Window* window) {

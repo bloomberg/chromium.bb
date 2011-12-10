@@ -371,7 +371,7 @@ TEST_F(WindowTest, StackChildAbove) {
   EXPECT_EQ(child3.layer(), parent.layer()->children()[2]);
 }
 
-// Various destruction assertions.
+// Various capture assertions.
 TEST_F(WindowTest, CaptureTests) {
   aura::RootWindow* root_window = aura::RootWindow::GetInstance();
   CaptureWindowDelegateImpl delegate;
@@ -413,6 +413,35 @@ TEST_F(WindowTest, CaptureTests) {
   window->parent()->RemoveChild(window.get());
   EXPECT_FALSE(window->HasCapture());
   EXPECT_EQ(NULL, root_window->capture_window());
+}
+
+// Changes capture while capture is already ongoing.
+TEST_F(WindowTest, ChangeCaptureWhileMouseDown) {
+  CaptureWindowDelegateImpl delegate;
+  scoped_ptr<Window> window(CreateTestWindowWithDelegate(
+      &delegate, 0, gfx::Rect(0, 0, 20, 20), NULL));
+  CaptureWindowDelegateImpl delegate2;
+  scoped_ptr<Window> w2(CreateTestWindowWithDelegate(
+      &delegate2, 0, gfx::Rect(20, 20, 20, 20), NULL));
+  EXPECT_FALSE(window->HasCapture());
+
+  // Do a capture.
+  window->SetCapture();
+  delegate.set_mouse_event_count(0);
+  EXPECT_TRUE(window->HasCapture());
+  EXPECT_EQ(0, delegate.capture_lost_count());
+  EventGenerator generator(gfx::Point(50, 50));
+  generator.PressLeftButton();
+  EXPECT_EQ(1, delegate.mouse_event_count());
+  delegate.set_mouse_event_count(0);
+
+  // Reset the capture.
+  window->ReleaseCapture();
+  w2->SetCapture();
+  delegate2.set_mouse_event_count(0);
+  generator.MoveMouseTo(gfx::Point(40, 40));
+  EXPECT_EQ(0, delegate.mouse_event_count());
+  EXPECT_EQ(2, delegate2.mouse_event_count());
 }
 
 // Verifies capture is reset when a window is destroyed.
