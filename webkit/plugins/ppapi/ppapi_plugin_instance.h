@@ -5,7 +5,6 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_PPAPI_PLUGIN_INSTANCE_H_
 #define WEBKIT_PLUGINS_PPAPI_PPAPI_PLUGIN_INSTANCE_H_
 
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -23,13 +22,9 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_input_event.h"
-#include "ppapi/c/ppp_graphics_3d.h"
-#include "ppapi/c/ppp_instance.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/ppb_instance_shared.h"
-#include "ppapi/shared_impl/ppp_instance_combined.h"
 #include "ppapi/thunk/ppb_instance_api.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
@@ -38,8 +33,9 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
-struct PP_Var;
+struct PP_Point;
 struct PPP_Find_Dev;
+struct PPP_Graphics3D;
 struct PPP_InputEvent;
 struct PPP_Instance_Private;
 struct PPP_Messaging;

@@ -8,42 +8,35 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/utf_offset_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
-#include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
 #include "ppapi/c/dev/ppp_selection_dev.h"
 #include "ppapi/c/dev/ppp_zoom_dev.h"
-#include "ppapi/c/pp_input_event.h"
-#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_rect.h"
-#include "ppapi/c/pp_resource.h"
-#include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_core.h"
-#include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppp_input_event.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/ppp_mouse_lock.h"
-#include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/ppb_url_util_shared.h"
-#include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/ppp_instance_combined.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
 #include "printing/units.h"
-#include "skia/ext/platform_canvas.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -51,21 +44,17 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/skia_util.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/event_conversion.h"
 #include "webkit/plugins/ppapi/fullscreen_container.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/message_channel.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
-#include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/plugin_object.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
@@ -75,28 +64,27 @@
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/ppp_pdf.h"
-#include "webkit/plugins/ppapi/string.h"
 #include "webkit/plugins/sad_plugin.h"
 
 #if defined(OS_MACOSX)
+#include "printing/metafile_impl.h"
+#if !defined(USE_SKIA)
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "printing/metafile_impl.h"
-#endif
+#endif  // !defined(USE_SKIA)
+#endif  // defined(OS_MACOSX)
 
 #if defined(USE_SKIA)
 #include "printing/metafile.h"
 #include "printing/metafile_skia_wrapper.h"
+#include "skia/ext/platform_device.h"
 #endif
 
 #if defined(OS_WIN)
-#include "skia/ext/vector_platform_device_emf_win.h"
+#include "base/metrics/histogram.h"
+#include "skia/ext/platform_canvas.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/gdi_util.h"
-#endif
-
-#if defined(OS_MACOSX) && defined(USE_SKIA)
-#include "skia/ext/skia_utils_mac.h"
 #endif
 
 using base::StringPrintf;
@@ -116,8 +104,8 @@ using WebKit::WebCanvas;
 using WebKit::WebConsoleMessage;
 using WebKit::WebCursorInfo;
 using WebKit::WebDocument;
-using WebKit::WebFrame;
 using WebKit::WebElement;
+using WebKit::WebFrame;
 using WebKit::WebInputEvent;
 using WebKit::WebPluginContainer;
 using WebKit::WebString;
@@ -587,7 +575,7 @@ bool PluginInstance::SendCompositionEventWithUnderlineInformationToPlugin(
   if (filtered_input_event_mask_ & event_class)
     event.is_filtered = true;
   else
-    handled = true; // Unfiltered events are assumed to be handled.
+    handled = true;  // Unfiltered events are assumed to be handled.
   scoped_refptr<PPB_InputEvent_Shared> event_resource(
       new PPB_InputEvent_Shared(PPB_InputEvent_Shared::InitAsImpl(),
                                 pp_instance(), event));

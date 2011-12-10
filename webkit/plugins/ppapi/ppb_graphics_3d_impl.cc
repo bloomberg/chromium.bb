@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "ppapi/c/ppp_graphics_3d.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
