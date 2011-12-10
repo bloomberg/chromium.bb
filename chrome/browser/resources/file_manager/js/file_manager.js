@@ -199,6 +199,33 @@ FileManager.prototype = {
   const ARCHIVES_REGEXP = /.zip$/;
 
   /**
+   * Item for the Grid View.
+   * @constructor
+   */
+  function GridItem(fileManager, entry) {
+    var li = fileManager.document_.createElement('li');
+    GridItem.decorate(li, fileManager, entry);
+    return li;
+  }
+
+  GridItem.prototype = {
+    __proto__: cr.ui.ListItem.prototype,
+
+    get label() {
+      return this.querySelector('filename-label').textContent;
+    },
+    set label(value) {
+      // Grid sets it to entry. Ignore.
+    }
+  };
+
+  GridItem.decorate = function(li, fileManager, entry) {
+    li.__proto__ = GridItem.prototype;
+    fileManager.decorateThumbnail_(li, entry);
+  };
+
+
+  /**
    * Return a translated string.
    *
    * Wrapper function to make dealing with translated strings more concise.
@@ -1107,7 +1134,8 @@ FileManager.prototype = {
       this.table_.style.display = '';
       this.grid_.style.display = 'none';
       this.grid_.dataModel = this.emptyDataModel_;
-      this.currentList_ = this.table_;
+      /** @type {cr.ui.List} */
+      this.currentList_ = this.table_.list;
       this.dialogDom_.querySelector('button.detail-view').disabled = true;
       this.dialogDom_.querySelector('button.thumbnail-view').disabled = false;
       this.table_.selectionModel.selectedIndexes = selectedIndexes;
@@ -1117,6 +1145,7 @@ FileManager.prototype = {
       this.grid_.style.display = '';
       this.table_.style.display = 'none';
       this.table_.dataModel = this.emptyDataModel_;
+      /** @type {cr.ui.List} */
       this.currentList_ = this.grid_;
       this.dialogDom_.querySelector('button.thumbnail-view').disabled = true;
       this.dialogDom_.querySelector('button.detail-view').disabled = false;
@@ -1137,9 +1166,7 @@ FileManager.prototype = {
     cr.ui.Grid.decorate(this.grid_);
 
     var self = this;
-    this.grid_.itemConstructor = function(entry) {
-      return self.renderThumbnail_(entry);
-    };
+    this.grid_.itemConstructor = GridItem.bind(null, this);
 
     this.grid_.selectionModel = new this.selectionModelClass_();
 
@@ -1150,7 +1177,7 @@ FileManager.prototype = {
     cr.ui.contextMenuHandler.addContextMenuProperty(this.grid_);
     this.grid_.contextMenu = this.fileContextMenu_;
     this.grid_.addEventListener('mousedown',
-                                this.onGridMouseDown_.bind(this));
+                                this.onGridOrTableMouseDown_.bind(this));
   };
 
   /**
@@ -1193,7 +1220,7 @@ FileManager.prototype = {
     this.table_.contextMenu = this.fileContextMenu_;
 
     this.table_.addEventListener('mousedown',
-                                 this.onTableMouseDown_.bind(this));
+                                 this.onGridOrTableMouseDown_.bind(this));
   };
 
   FileManager.prototype.onCopyProgress_ = function(event) {
@@ -1279,16 +1306,10 @@ FileManager.prototype = {
         return;
 
       case 'rename':
-        var leadIndex = this.currentList_.selectionModel.leadIndex;
-        var li = this.currentList_.getListItemByIndex(leadIndex);
-        var label = li.querySelector('.filename-label');
-        if (!label) {
-          console.warn('Unable to find label for rename of index: ' +
-                       leadIndex);
-          return;
-        }
-
-        this.initiateRename_(label);
+        var index = this.currentList_.selectionModel.selectedIndex;
+        var item = this.currentList_.getListItemByIndex(index);
+        if (item)
+          this.initiateRename_(item);
         return;
 
       case 'delete':
@@ -1663,29 +1684,14 @@ FileManager.prototype = {
     return box;
   };
 
-  FileManager.prototype.renderThumbnail_ = function(entry) {
-    var li = this.document_.createElement('li');
+  FileManager.prototype.decorateThumbnail_ = function(li, entry) {
     li.className = 'thumbnail-item';
 
     if (this.showCheckboxes_)
       li.appendChild(this.renderCheckbox_(entry));
 
     li.appendChild(this.renderThumbnailBox_(entry, false));
-
-    var div = this.document_.createElement('div');
-    div.className = 'filename-label';
-    var labelText = entry.name;
-    if (this.currentDirEntry_.name == '')
-      labelText = this.getLabelForRootPath_(labelText);
-
-    div.textContent = labelText;
-    div.entry = entry;
-
-    li.appendChild(div);
-
-    cr.defineProperty(li, 'lead', cr.PropertyKind.BOOL_ATTR);
-    cr.defineProperty(li, 'selected', cr.PropertyKind.BOOL_ATTR);
-    return li;
+    li.appendChild(this.renderFileNameLabel_(entry));
   };
 
   /**
@@ -1735,14 +1741,23 @@ FileManager.prototype = {
     label.appendChild(this.renderIconType_(entry, columnId, table));
     label.entry = entry;
     label.className = 'detail-name';
-    if (this.currentDirEntry_.name == '') {
-      label.appendChild(this.document_.createTextNode(
-          this.getLabelForRootPath_(entry.name)));
-    } else {
-      label.appendChild(this.document_.createTextNode(entry.name));
-    }
-
+    label.appendChild(this.renderFileNameLabel_(entry));
     return label;
+  };
+
+  /**
+   * Render filename label for grid and list view.
+   * @param {Entry} entry The Entry object to render.
+   * @return {HTMLDivElement} The label.
+   */
+  FileManager.prototype.renderFileNameLabel_ = function(entry) {
+    // Filename need to be in a '.filename-label' container for correct
+    // work of inplace renaming.
+    var fileName = this.document_.createElement('div');
+    fileName.className = 'filename-label';
+    fileName.textContent = this.currentDirEntry_.name == '' ?
+        this.getLabelForRootPath_(entry.name) : entry.name;
+    return fileName;
   };
 
   /**
@@ -2511,7 +2526,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.selectIndex = function(index) {
-    this.currentList_.focus();
+    this.focusCurrentList_();
     if (index >= this.dataModel_.length)
       return;
     this.currentList_.selectionModel.selectedIndex = index;
@@ -2530,13 +2545,20 @@ FileManager.prototype = {
       if (this.dataModel_.item(i).name == name) {
         this.currentList_.selectionModel.setIndexSelected(i, true);
         this.currentList_.scrollIndexIntoView(i);
-        this.currentList_.focus();
+        this.focusCurrentList_();
         entryExists = true;
         break;
       }
     }
     return entryExists;
-  }
+  };
+
+  FileManager.prototype.focusCurrentList_ = function() {
+    if (this.listType_ == FileManager.ListType.DETAIL)
+      this.table_.focus();
+    else  // this.listType_ == FileManager.ListType.THUMBNAIL)
+      this.grid_.focus();
+  };
 
   /**
    * Return the name of the entries in the current directory
@@ -3250,49 +3272,30 @@ FileManager.prototype = {
     }
   };
 
-  FileManager.prototype.findListItem_ = function(event) {
+  FileManager.prototype.findListItemForEvent_ = function(event) {
     var node = event.srcElement;
+    var list = this.currentList_;
+    // Assume list items are direct children of the list.
+    if (node == list)
+      return null;
     while (node) {
-      if (node.tagName == 'LI')
-        break;
-      node = node.parentNode;
+      var parent = node.parentNode;
+      if (parent == list && node instanceof cr.ui.ListItem)
+        return node;
+      node = parent;
     }
-
-    return node;
+    return null;
   };
 
-  FileManager.prototype.onGridMouseDown_ = function(event) {
+  FileManager.prototype.onGridOrTableMouseDown_ = function(event) {
     this.updateCommands_();
 
-    if (this.allowRenameClick_(event, event.srcElement.parentNode)) {
+    var item = this.findListItemForEvent_(event);
+    if (!item)
+      return;
+    if (this.allowRenameClick_(event, item)) {
       event.preventDefault();
-      this.initiateRename_(event.srcElement);
-    }
-
-    if (event.button != 1)
-      return;
-
-    var li = this.findListItem_(event);
-    if (!li)
-      return;
-  };
-
-  FileManager.prototype.onTableMouseDown_ = function(event) {
-    this.updateCommands_();
-
-    if (this.allowRenameClick_(event,
-                               event.srcElement.parentNode.parentNode)) {
-      event.preventDefault();
-      this.initiateRename_(event.srcElement);
-    }
-
-    if (event.button != 1)
-      return;
-
-    var li = this.findListItem_(event);
-    if (!li) {
-      console.log('li not found', event);
-      return;
+      this.initiateRename_(item);
     }
   };
 
@@ -3324,8 +3327,10 @@ FileManager.prototype = {
    *
    * Renames can happen on mouse click if the user clicks on a label twice,
    * at least a half second apart.
+   * @param {MouseEvent} event Click on the item.
+   * @param {cr.ui.ListItem} item Clicked item.
    */
-  FileManager.prototype.allowRenameClick_ = function(event, row) {
+  FileManager.prototype.allowRenameClick_ = function(event, item) {
     if (this.dialogType_ != FileManager.DialogType.FULL_PAGE ||
         this.currentDirEntry_ == null || this.currentDirEntry_.name == '' ||
         isSystemDirEntry(this.currentDirEntry_)) {
@@ -3345,15 +3350,14 @@ FileManager.prototype = {
     }
 
     var now = new Date();
-    var path = event.srcElement.entry.fullPath;
     var lastLabelClick = this.lastLabelClick_;
-    this.lastLabelClick_ = {path: path, date: now};
+    this.lastLabelClick_ = {index: item.listIndex, date: now};
 
     // Rename already in progress.
     if (this.renameInput_.currentEntry)
       return false;
 
-    if (lastLabelClick && lastLabelClick.path == path) {
+    if (lastLabelClick && lastLabelClick.index == item.listIndex) {
       var delay = now - lastLabelClick.date;
       if (delay > 500 && delay < 2000) {
         this.lastLabelClick_ = null;
@@ -3364,7 +3368,8 @@ FileManager.prototype = {
     return false;
   };
 
-  FileManager.prototype.initiateRename_= function(label) {
+  FileManager.prototype.initiateRename_ = function(item) {
+    var label = item.querySelector('.filename-label');
     var input = this.renameInput_;
 
     input.value = label.textContent;
@@ -3383,7 +3388,7 @@ FileManager.prototype = {
 
     // This has to be set late in the process so we don't handle spurious
     // blur events.
-    input.currentEntry = label.entry;
+    input.currentEntry = this.currentList_.dataModel.item(item.listIndex);
   };
 
   FileManager.prototype.onRenameInputKeyDown_ = function(event) {
