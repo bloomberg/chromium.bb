@@ -5269,12 +5269,6 @@
    fun:_ZN5ppapi5proxy20PPB_Graphics2D_Proxy14OnHostMsgFlushERKNS_12HostResourceE
 }
 {
-   bug_106549
-   Memcheck:Uninitialized
-   fun:_ZN16ExtensionService24ProcessExtensionSyncDataERK17ExtensionSyncDataRNS_10SyncBundleE
-   fun:_ZN16ExtensionService18ProcessSyncChangesERKN15tracked_objects8LocationERKSt6vectorI10SyncChangeSaIS5_EE
-}
-{
    bug_106552
    Memcheck:Uninitialized
    ...

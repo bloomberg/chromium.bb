@@ -27,7 +27,11 @@ ExtensionSyncData::ExtensionSyncData(const SyncData& sync_data)
 }
 
 ExtensionSyncData::ExtensionSyncData(const SyncChange& sync_change)
-    : uninstalled_(sync_change.change_type() == SyncChange::ACTION_DELETE) {
+    : uninstalled_(sync_change.change_type() == SyncChange::ACTION_DELETE),
+      enabled_(false),
+      incognito_enabled_(false),
+      type_(Extension::SYNC_TYPE_NONE),
+      notifications_disabled_(false) {
   PopulateFromSyncData(sync_change.sync_data());
 }
 
