@@ -16,8 +16,8 @@ class Profile;
 // more specialized handler.
 class NewTabPageHandler : public WebUIMessageHandler {
  public:
-  NewTabPageHandler() {}
-  virtual ~NewTabPageHandler() {}
+  NewTabPageHandler();
+  virtual ~NewTabPageHandler();
 
   // WebUIMessageHandler implementation.
   virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
@@ -53,6 +53,9 @@ class NewTabPageHandler : public WebUIMessageHandler {
   static void DismissIntroMessage(PrefService* prefs);
 
  private:
+  // Tracks the number of times the user has switches pages (for UMA).
+  size_t page_switch_count_;
+
   // The purpose of this enum is to track which page on the NTP is showing.
   // The lower 10 bits of kNTPShownPage are used for the index within the page
   // group, and the rest of the bits are used for the page group ID (defined

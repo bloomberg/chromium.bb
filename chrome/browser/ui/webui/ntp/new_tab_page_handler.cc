@@ -28,6 +28,14 @@ static const int kIntroDisplayMax = 10;
 static const char kNTP4IntroURL[] =
   "http://www.google.com/support/chrome/bin/answer.py?answer=95451";
 
+NewTabPageHandler::NewTabPageHandler() : page_switch_count_(0) {
+}
+
+NewTabPageHandler::~NewTabPageHandler() {
+  HISTOGRAM_COUNTS_100("NewTabPage.SingleSessionPageSwitches",
+                       page_switch_count_);
+}
+
 WebUIMessageHandler* NewTabPageHandler::Attach(WebUI* web_ui) {
   // Record an open of the NTP with its default page type.
   PrefService* prefs = Profile::FromWebUI(web_ui)->GetPrefs();
@@ -81,6 +89,8 @@ void NewTabPageHandler::HandleNotificationPromoViewed(const ListValue* args) {
 }
 
 void NewTabPageHandler::HandlePageSelected(const ListValue* args) {
+  page_switch_count_++;
+
   double page_id_double;
   CHECK(args->GetDouble(0, &page_id_double));
   int page_id = static_cast<int>(page_id_double);
