@@ -42,7 +42,7 @@ ChromeWebUIDataSource* CreateAppListUIHTMLSource(PrefService* prefs) {
   localized_strings.SetString("title", title);
   localized_strings.SetString("appuninstall",
       l10n_util::GetStringFUTF16(
-          IDS_NEW_TAB_APP_UNINSTALL,
+          IDS_EXTENSIONS_UNINSTALL,
           l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
   localized_strings.SetString("appoptions",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_OPTIONS));

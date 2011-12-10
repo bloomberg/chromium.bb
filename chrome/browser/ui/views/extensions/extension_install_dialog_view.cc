@@ -288,7 +288,7 @@ bool ExtensionInstallDialogView::IsModal() const {
 }
 
 string16 ExtensionInstallDialogView::GetWindowTitle() const {
-  return prompt_.GetDialogTitle();
+  return prompt_.GetDialogTitle(extension_);
 }
 
 views::View* ExtensionInstallDialogView::GetContentsView() {

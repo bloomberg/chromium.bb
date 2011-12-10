@@ -182,7 +182,7 @@ are declared in build/common.gypi.
       <ph> element).  You can also use the 'grit add' tool to help you identify
       nontranslateable parts and create placeholders for them. -->
       <message name="IDS_BACKGROUND_APP_INSTALLED_BALLOON_TITLE" desc="The title of the balloon that is displayed when a background app is installed">
-        New background app installed
+        New background app added
       </message>
       <message name="IDS_BACKGROUND_APP_INSTALLED_BALLOON_BODY" desc="The contents of the balloon that is displayed when a background app is installed">
         <ph name="APP_NAME">$1<ex>Background App</ex></ph> will launch at system startup and continue to run in the background even once you've closed all other <ph name="PRODUCT_NAME">$2<ex>Google Chrome</ex></ph> windows.
@@ -2314,7 +2314,7 @@ are declared in build/common.gypi.
       </message>
       <message name="IDS_DOWNLOAD_STATUS_CRX_INSTALL_RUNNING"
                desc="Message shown when a CRX has been downloaded and is being unpacked.">
-        Installing...
+        Adding to <ph name="PRODUCT_NAME_SHORT">$1<ex>Chrome</ex></ph>...
       </message>
       <message name="IDS_DOWNLOAD_STATUS_OPEN_WHEN_COMPLETE"
          desc="Status that the file download will be opened when the download completes.">
@@ -3910,14 +3910,17 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       </message>
 
       <!-- Extension/App install prompt -->
-      <message name="IDS_EXTENSION_INSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app installation prompt window">
-        Confirm Installation
+      <message name="IDS_EXTENSION_INSTALL_APP_PROMPT_TITLE" desc="Titlebar of the extension or app installation prompt window">
+        Confirm New App
+      </message>
+      <message name="IDS_EXTENSION_INSTALL_EXTENSION_PROMPT_TITLE" desc="Titlebar of the extension or app installation prompt window">
+        Confirm New Extension
       </message>
       <message name="IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app inline installation prompt window">
         Add to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
       </message>
       <message name="IDS_EXTENSION_UNINSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app uninstallation prompt window">
-        Confirm Uninstallation
+        Confirm Removal
       </message>
       <message name="IDS_EXTENSION_RE_ENABLE_PROMPT_TITLE" desc="Titlebar of the extension or app prompt window when re-enabling an extension that requires additional permissions">
         Confirm Re-enable
@@ -3926,10 +3929,10 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
         Confirm Permissions
       </message>
       <message name="IDS_EXTENSION_INSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension or app installation prompt. Asks the user if they want to install a particular extension or app.">
-        Install <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>?
+        Add "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
       <message name="IDS_EXTENSION_UNINSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension or app uninstallation prompt. Asks the user if they want to uninstall a particular extension or app.">
-        Uninstall "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
+        Remove "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
       <message name="IDS_EXTENSION_RE_ENABLE_PROMPT_HEADING" desc="First bold line in the content area of the extension or app installation prompt. Asks the user if they want to re-enable a particular extension or app.">
         The newest version of "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been disabled because it requires more permissions.
@@ -3943,7 +3946,7 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
         Confirm Changes
       </message>
       <message name="IDS_EXTENSION_ALERT_ITEM_EXTERNAL" desc="A statement that an external extension has been newly installed. End users have no idea what an 'external' extension is, so we simply call them extensions.">
-The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been installed.
+The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been added to <ph name="PRODUCT_NAME_SHORT">$1<ex>Chrome</ex></ph>.
 '''
       </message>
       <message name="IDS_EXTENSION_ALERT_ITEM_BLACKLISTED" desc="A statement that an extension has been newly blacklisted. http://www.google.com/support/chrome/bin/answer.py?hl=en&amp;answer=1210215 contains the language on which we're basing the phrasing.">
@@ -4013,7 +4016,7 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
         Your physical location
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT" desc="Permisson string for access to extension management.">
-        Your list of installed apps, extensions, and themes
+        Your list of apps, extensions, and themes
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_ALL_PAGES_CONTENT" desc="Permisson string for access to page capture.">
         The content of pages you visit
@@ -4042,7 +4045,7 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
         Input directory must exist.
       </message>
       <message name="IDS_EXTENSION_DISALLOW_NON_DOWNLOADED_GALLERY_INSTALLS" desc="Error displayed when an app or extension that has an update URL used by the gallery is installed when not directly downloaded from the gallery.">
-        This can only be installed from the <ph name="CHROME_WEB_STORE">$1<ex>Web Store</ex></ph>.
+        This can only be added from the <ph name="CHROME_WEB_STORE">$1<ex>Web Store</ex></ph>.
       </message>
       <message name="IDS_EXTENSION_PRIVATE_KEY_INVALID_PATH" desc="Warning displayed in pack dialog when the private key must be a valid path.">
         Input value for private key must be a valid path.
@@ -4099,7 +4102,7 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
         Manifest file is invalid.
       </message>
       <message name="IDS_EXTENSION_OVERLAPPING_WEB_EXTENT" desc="Error message when a user tries to install an app with a web extent that overlaps another installed app.">
-        Could not install application because it conflicts with '<ph name="APP_NAME">$1<ex>Google Mail</ex></ph>', which is already installed.
+        Could not add application because it conflicts with "<ph name="APP_NAME">$1<ex>Google Mail</ex></ph>".
       </message>
       <message name="IDS_EXTENSION_LOCALES_NO_DEFAULT_LOCALE_SPECIFIED" desc="">
         Localization used, but default_locale wasn't specified in the manifest.
@@ -4159,7 +4162,7 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
 
       <!-- Extension installed bubble -->
       <message name="IDS_EXTENSION_INSTALLED_HEADING" desc="First line in the content area of the extension installed bubble. Instructs that the extension was installed.">
-        <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> is now installed.
+        <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> has been added to <ph name="SHORT_PRODUCT_NAME">$2<ex>Chrome</ex></ph>.
       </message>
 
       <message name="IDS_EXTENSION_INSTALLED_APP_INFO" desc="Text displayed inside a link when an app is installed. Clicking this link opens up the New Tab Page to show the app's icon.">
@@ -4177,10 +4180,10 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
         Manage extensions...
       </message>
       <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page">
-        You can manage your installed extensions by clicking Extensions in the Tools menu.
+        Manage your extensions by clicking Extensions in the Tools menu.
       </message>
       <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO_MAC" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page on MAC OS X">
-        You can manage your installed extensions by clicking Extensions in the Window menu.
+        Manage your extensions by clicking Extensions in the Window menu.
       </message>
       <message name="IDS_ACCNAME_INFOBAR_CONTAINER" desc="The accessible name for the infobar container.">
         Infobar Container
@@ -4206,7 +4209,7 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
         Update extensions now
       </message>
       <message name="IDS_EXTENSIONS_NONE_INSTALLED" desc="Text that lets the user know that no extensions are installed.">
-        Boo... No extensions installed :-(
+        Boo... You have no extensions :-(
       </message>
       <message name="IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY" desc="Text on next line after IDS_EXTENSIONS_NONE_INSTALLED that suggests the user look in the gallery for extensions to install.">
         Want to <ph name="BEGIN_LINK">$1</ph>browse the gallery<ph name="END_LINK">$2</ph> instead?
@@ -4257,7 +4260,7 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
         Reload
       </message>
       <message name="IDS_EXTENSIONS_UNINSTALL" desc="The link for uninstalling extensions.">
-        Uninstall
+        Remove from <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
       </message>
       <message name="IDS_EXTENSIONS_OPTIONS" desc="The button text for the options button.">
         Options
@@ -4272,7 +4275,7 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
         Inspect popup
       </message>
       <message name="IDS_EXTENSIONS_POLICY_CONTROLLED" desc="The text informing the user that an extension is policy controlled">
-        (this extension is managed and can not be uninstalled or disabled)
+        (this extension is managed and can not be removed or disabled)
       </message>
       <message name="IDS_GET_MORE_EXTENSIONS" desc="The link for getting more extensions. Displayed at bottom of extension management page when there is at least one extension installed.">
         Get more extensions
@@ -4334,13 +4337,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_EXTENSION_PROMPT_INSTALL_BUTTON" desc="Text for the install button on the extension install prompt">
-        Install
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_INLINE_INSTALL_BUTTON" desc="Text for the inline install button on the extension install prompt">
         Add
       </message>
       <message name="IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON" desc="Text for the uninstall button on the extension uninstall prompt">
-        Uninstall
+        Remove
       </message>
       <message name="IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON" desc="Text for the enable button on the extension re-enable prompt">
         Re-enable
@@ -9043,10 +9043,6 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
                desc="Text for the tooltip that is used for the button that shows the settings for an app icon.">
         Settings
       </message>
-      <message name="IDS_NEW_TAB_APP_UNINSTALL"
-               desc="Text for the trash can that appears when the user drags apps.">
-        Remove from <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
-      </message>
       <message name="IDS_NEW_TAB_APP_OPTIONS"
                desc="Text for the button that takes the user to the options of an app.">
         Options
@@ -10791,7 +10787,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         To use the Chrome Web Store, you must sign in with a Google Account.
       </message>
       <message name="IDS_WEB_STORE_LOGIN_INTRODUCTION_2" desc="The second message to display in the Web Store login dialog.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will sync any apps you install, so you will be able to access them from any <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> browser you sign in to.
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will sync any apps you have, so you will be able to access them from any <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> browser you sign in to.
       </message>
 
       <!-- Sync app menu item strings -->
@@ -14578,11 +14574,11 @@ Battery full
 
     <!-- PDF with unsupported feature Info Bar -->
     <message name="IDS_PDF_INFOBAR_QUESTION_READER_INSTALLED" desc="Question asked on the info bar when a user views a PDF with an unsupported feature and they have Adobe Reader installed.">
-      Parts of this PDF document could not be displayed.  Open in Adobe Reader?
+      Parts of this PDF document could not be displayed. Open in Adobe Reader?
     </message>
 
     <message name="IDS_PDF_INFOBAR_QUESTION_READER_NOT_INSTALLED" desc="Question asked on the info bar when a user views a PDF with an unsupported feature and they don't have Adobe Reader installed.">
-      Parts of this PDF document could not be displayed.  Install Adobe Reader?
+      Parts of this PDF document could not be displayed. Install Adobe Reader?
     </message>
 
     <message name="IDS_PDF_INFOBAR_QUESTION_ALWAYS_USE_READER" desc="Question asked on the info bar when a user opens a PDF with Reader and we want to ask them if they always want to use it for viewing PDF files.">
