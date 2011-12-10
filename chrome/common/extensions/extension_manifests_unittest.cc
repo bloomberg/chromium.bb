@@ -74,6 +74,19 @@ class ExtensionManifestTest : public testing::Test {
     Manifest(DictionaryValue* manifest, const char* name)
         : name_(name), manifest_(manifest) {
     }
+    Manifest(const Manifest& m) {
+      // C++98 requires the copy constructor for a type to be visiable if you
+      // take a const-ref of a temporary for that type.  Since Manifest
+      // contains a scoped_ptr, its implicit copy constructor is declared
+      // Manifest(Manifest&) according to spec 12.8.5.  This breaks the first
+      // requirement and thus you cannot use it with LoadAndExpectError() or
+      // LoadAndExpectSuccess() easily.
+      //
+      // To get around this spec pedantry, we declare the copy constructor
+      // explicitly.  It will never get invoked.
+      NOTREACHED();
+    }
+
 
     const std::string& name() const { return name_; }
 
