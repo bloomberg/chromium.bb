@@ -25,10 +25,10 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Google Inc."
             VALUE "FileDescription", "GCP Virtual Driver"
-            VALUE "FileVersion", "0, 1, 0, 1"
+            VALUE "FileVersion", "0.1.0.1"
             VALUE "InternalName", "GCP Virtual Driver"
             VALUE "ProductName", "GCP Virtual Driver"
-            VALUE "ProductVersion", "0, 1, 0, 1"
+            VALUE "ProductVersion", "0.1.0.1"
             VALUE "LegalCopyright", "Copyright (c) 2011 The Chromium Authors. All rights reserved."
         END
     END

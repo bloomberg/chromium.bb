@@ -32,6 +32,9 @@
       'msvs_settings': {
         'VCLinkerTool': {
           'SubSystem': '2',         # Set /SUBSYSTEM:WINDOWS
+          'AdditionalDependencies': [
+            'setupapi.lib',
+          ],
         },
       },
     },

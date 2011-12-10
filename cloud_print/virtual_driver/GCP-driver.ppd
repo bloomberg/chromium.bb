@@ -43,18 +43,9 @@
 
 *CloseGroup: General
 
-*% List of fonts supported. Taken from Sample PPD file for CUPS
-*% written by Michael Goffioul.
+*% List of 14 standard fonts and their common version numbers.
 
 *DefaultFont: Courier
-*Font AvantGarde-Book: Standard "(001.006S)" Standard ROM
-*Font AvantGarde-BookOblique: Standard "(001.006S)" Standard ROM
-*Font AvantGarde-Demi: Standard "(001.007S)" Standard ROM
-*Font AvantGarde-DemiOblique: Standard "(001.007S)" Standard ROM
-*Font Bookman-Demi: Standard "(001.004S)" Standard ROM
-*Font Bookman-DemiItalic: Standard "(001.004S)" Standard ROM
-*Font Bookman-Light: Standard "(001.004S)" Standard ROM
-*Font Bookman-LightItalic: Standard "(001.004S)" Standard ROM
 *Font Courier: Standard "(002.004S)" Standard ROM
 *Font Courier-Bold: Standard "(002.004S)" Standard ROM
 *Font Courier-BoldOblique: Standard "(002.004S)" Standard ROM
@@ -62,24 +53,10 @@
 *Font Helvetica: Standard "(001.006S)" Standard ROM
 *Font Helvetica-Bold: Standard "(001.007S)" Standard ROM
 *Font Helvetica-BoldOblique: Standard "(001.007S)" Standard ROM
-*Font Helvetica-Narrow: Standard "(001.006S)" Standard ROM
-*Font Helvetica-Narrow-Bold: Standard "(001.007S)" Standard ROM
-*Font Helvetica-Narrow-BoldOblique: Standard "(001.007S)" Standard ROM
-*Font Helvetica-Narrow-Oblique: Standard "(001.006S)" Standard ROM
 *Font Helvetica-Oblique: Standard "(001.006S)" Standard ROM
-*Font NewCenturySchlbk-Bold: Standard "(001.009S)" Standard ROM
-*Font NewCenturySchlbk-BoldItalic: Standard "(001.007S)" Standard ROM
-*Font NewCenturySchlbk-Italic: Standard "(001.006S)" Standard ROM
-*Font NewCenturySchlbk-Roman: Standard "(001.007S)" Standard ROM
-*Font Palatino-Bold: Standard "(001.005S)" Standard ROM
-*Font Palatino-BoldItalic: Standard "(001.005S)" Standard ROM
-*Font Palatino-Italic: Standard "(001.005S)" Standard ROM
-*Font Palatino-Roman: Standard "(001.005S)" Standard ROM
 *Font Symbol: Special "(001.007S)" Special ROM
 *Font Times-Bold: Standard "(001.007S)" Standard ROM
 *Font Times-BoldItalic: Standard "(001.009S)" Standard ROM
 *Font Times-Italic: Standard "(001.007S)" Standard ROM
 *Font Times-Roman: Standard "(001.007S)" Standard ROM
-*Font ZapfChancery-MediumItalic: Standard "(001.007S)" Standard ROM
 *Font ZapfDingbats: Special "(001.004S)" Standard ROM
-
