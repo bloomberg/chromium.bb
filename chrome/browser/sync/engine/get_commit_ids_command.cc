@@ -97,8 +97,7 @@ bool IsEntryReadyForCommit(syncable::ModelEnumSet encrypted_types,
   // We special case the nigori node because even though it is considered an
   // "encrypted type", not all nigori node changes require valid encryption
   // (ex: sync_tabs).
-  if (syncable::IsRealDataType(type) &&
-      (type != syncable::NIGORI) &&
+  if ((type != syncable::NIGORI) &&
       encrypted_types.Has(type) &&
       (passphrase_missing ||
        syncable::EntryNeedsEncryption(encrypted_types, entry))) {
@@ -112,7 +111,7 @@ bool IsEntryReadyForCommit(syncable::ModelEnumSet encrypted_types,
   }
 
   // Look at the throttled types.
-  if (syncable::IsRealDataType(type) && throttled_types.Has(type))
+  if (throttled_types.Has(type))
     return false;
 
   return true;

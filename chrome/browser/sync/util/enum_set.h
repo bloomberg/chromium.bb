@@ -65,8 +65,16 @@ class EnumSet {
   //   Process(it.Get());
   // }
   //
-  // There are no guarantees as to what will happen if you modify an
-  // EnumSet while traversing it with an iterator.
+  // The iterator must not be outlived by the set.  In particular, the
+  // following is an error:
+  //
+  // EnumSet<...> SomeFn() { ... }
+  //
+  // /* ERROR */
+  // for (EnumSet<...>::Iterator it = SomeFun().First(); ...
+  //
+  // Also, there are no guarantees as to what will happen if you
+  // modify an EnumSet while traversing it with an iterator.
   class Iterator {
    public:
     // A default-constructed iterator can't do anything except check
@@ -148,7 +156,7 @@ class EnumSet {
   // self-mutating versions of Union, Intersection, and Difference
   // (defined below).
 
-  // Adds the given value to our set.
+  // Adds the given value (which must be in range) to our set.
   void Put(E value) {
     enums_.set(ToIndex(value));
   }
@@ -165,9 +173,11 @@ class EnumSet {
     enums_ &= other.enums_;
   }
 
-  // Removes the given value from our set.
+  // If the given value is in range, removes it from our set.
   void Remove(E value) {
-    enums_.reset(ToIndex(value));
+    if (InRange(value)) {
+      enums_.reset(ToIndex(value));
+    }
   }
 
   // Removes all values in the given set from our set.
@@ -180,9 +190,10 @@ class EnumSet {
     enums_.reset();
   }
 
-  // Returns true iff the given value is a member of our set.
+  // Returns true iff the given value is in range and a member of our
+  // set.
   bool Has(E value) const {
-    return enums_.test(ToIndex(value));
+    return InRange(value) && enums_.test(ToIndex(value));
   }
 
   // Returns true iff the given set is a subset of our set.
@@ -220,6 +231,10 @@ class EnumSet {
       EnumSet set1, EnumSet set2);
 
   explicit EnumSet(EnumBitSet enums) : enums_(enums) {}
+
+  static bool InRange(E value) {
+    return (value >= MinEnumValue) && (value <= MaxEnumValue);
+  }
 
   // Converts a value to/from an index into |enums_|.
 

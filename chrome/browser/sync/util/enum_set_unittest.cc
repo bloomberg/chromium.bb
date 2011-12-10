@@ -18,6 +18,7 @@ enum TestEnum {
   TEST_3,
   TEST_4,
   TEST_MAX = TEST_4,
+  TEST_5
 };
 
 typedef EnumSet<TestEnum, TEST_MIN, TEST_MAX> TestEnumSet;
@@ -108,11 +109,13 @@ TEST_F(EnumSetTest, RetainAll) {
 
 TEST_F(EnumSetTest, Remove) {
   TestEnumSet enums(TEST_3, TEST_4);
+  enums.Remove(TEST_0);
   enums.Remove(TEST_2);
   EXPECT_TRUE(enums.Equals(TestEnumSet(TEST_3, TEST_4)));
   enums.Remove(TEST_3);
   EXPECT_TRUE(enums.Equals(TestEnumSet(TEST_4)));
   enums.Remove(TEST_4);
+  enums.Remove(TEST_5);
   EXPECT_TRUE(enums.Empty());
 }
 
@@ -130,10 +133,12 @@ TEST_F(EnumSetTest, Clear) {
 
 TEST_F(EnumSetTest, Has) {
   const TestEnumSet enums(TEST_3, TEST_4);
+  EXPECT_FALSE(enums.Has(TEST_0));
   EXPECT_FALSE(enums.Has(TEST_1));
   EXPECT_FALSE(enums.Has(TEST_2));
   EXPECT_TRUE(enums.Has(TEST_3));
   EXPECT_TRUE(enums.Has(TEST_4));
+  EXPECT_FALSE(enums.Has(TEST_5));
 }
 
 TEST_F(EnumSetTest, HasAll) {

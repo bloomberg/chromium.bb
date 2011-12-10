@@ -71,8 +71,6 @@ bool EntryNeedsEncryption(ModelEnumSet encrypted_types,
 bool SpecificsNeedsEncryption(ModelEnumSet encrypted_types,
                               const sync_pb::EntitySpecifics& specifics) {
   const ModelType type = GetModelTypeFromSpecifics(specifics);
-  if (!syncable::IsRealDataType(type))
-    return false;
   if (type == PASSWORDS || type == NIGORI)
     return false;  // These types have their own encryption schemes.
   if (!encrypted_types.Has(type))
