@@ -30,6 +30,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/printing/print_preview_context_menu_observer.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -597,6 +598,14 @@ void RenderViewContextMenu::InitMenu() {
     AppendAllExtensionItems();
 
   AppendDeveloperItems();
+
+  if (!print_preview_menu_observer_.get()) {
+    TabContentsWrapper* wrapper =
+        TabContentsWrapper::GetCurrentWrapperForContents(source_tab_contents_);
+    print_preview_menu_observer_.reset(
+        new PrintPreviewContextMenuObserver(wrapper));
+  }
+  observers_.AddObserver(print_preview_menu_observer_.get());
 }
 
 void RenderViewContextMenu::LookUpInDictionary() {
