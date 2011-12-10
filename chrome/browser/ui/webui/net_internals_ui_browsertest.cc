@@ -121,7 +121,8 @@ class NetInternalsTest : public WebUIBrowserTest {
     // there, and that the background tab exists at slot 1.
     void NavigateToPrerender(const ListValue* list_value);
 
-    // Creates an incognito browser.
+    // Creates an incognito browser.  Once creation is complete, passes a
+    // message to the Javascript test harness.
     void CreateIncognitoBrowser(const ListValue* list_value);
 
     // Closes an incognito browser created with CreateIncognitoBrowser.
@@ -264,6 +265,10 @@ void NetInternalsTest::MessageHandler::CreateIncognitoBrowser(
     const ListValue* list_value) {
   ASSERT_FALSE(incognito_browser_);
   incognito_browser_ = net_internals_test_->CreateIncognitoBrowser();
+
+  // Tell the test harness that creation is complete.
+  StringValue command_value("onIncognitoBrowserCreatedForTest");
+  web_ui()->CallJavascriptFunction("g_browser.receive", command_value);
 }
 
 void NetInternalsTest::MessageHandler::CloseIncognitoBrowser(
@@ -403,11 +408,6 @@ IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsDnsViewAddTwoTwice) {
 // Makes sure that openning and then closing an incognito window clears the
 // DNS cache.  To keep things simple, we add a fake cache entry ourselves,
 // rather than having the incognito browser create one.
-#if defined(OS_CHROMEOS)
-// http://crbug.com/106707
-#define NetInternalsDnsViewIncognitoClears \
-    FLAKY_NetInternalsDnsViewIncognitoClears
-#endif
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsDnsViewIncognitoClears) {
   EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsDnsViewIncognitoClears"));
 }

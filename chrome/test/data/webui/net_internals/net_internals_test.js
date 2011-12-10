@@ -424,18 +424,51 @@ var netInternalsTest = (function() {
     }
   };
 
-  // Creates an incognito window.  May not be called if there already is an
-  // incognito in exitence.  Returns immediately.
-  function getCreateIncognitoBrowserTask() {
-    return new CallFunctionTask(
-        function() {
-          chrome.send('createIncognitoBrowser');
-        });
+  /**
+   * A Task that creates an incognito window and only completes once it has
+   * navigated to about:blank.  The waiting is required to avoid reentrancy
+   * issues, since the function to create the incognito browser also waits
+   * for the navigation to complete.  May not be called if there's already an
+   * incognito browser in existence.
+   * @constructor
+   */
+  function CreateIncognitoBrowserTask() {
+    Task.call(this);
+  }
+
+  CreateIncognitoBrowserTask.prototype = {
+    __proto__: Task.prototype,
+
+    /**
+     * Tells the browser process to create an incognito browser, and sets
+     * up a callback to be called on completion.
+     */
+    start: function() {
+      // Reuse the BrowserBridge's callback mechanism, since it's already
+      // wrapped in our test harness.
+      assertEquals('undefined',
+                   typeof g_browser.onIncognitoBrowserCreatedForTest);
+      g_browser.onIncognitoBrowserCreatedForTest =
+          this.onIncognitoBrowserCreatedForTest.bind(this);
+
+      chrome.send('createIncognitoBrowser');
+    },
+
+    /**
+     * Deletes the callback function, and completes the task.
+     */
+    onIncognitoBrowserCreatedForTest: function() {
+      delete g_browser.onIncognitoBrowserCreatedForTest;
+      this.onTaskDone();
+    }
   };
 
-  // Closes an incognito window created with the task above.  May only be
-  // called if there's an incognito window created by the above function
-  // that has yet to be closed.  Returns immediately.
+  /**
+   * Returns a task that closes an incognito window created with the task
+   * above.  May only be called if there's an incognito window created by
+   * the above function that has yet to be closed.  Returns immediately.
+   * @return {Task} Task that closes incognito browser window.
+   */
   function getCloseIncognitoBrowserTask() {
     return new CallFunctionTask(
         function() {
@@ -530,7 +563,7 @@ var netInternalsTest = (function() {
     TaskQueue: TaskQueue,
     Task: Task,
     CallFunctionTask: CallFunctionTask,
-    getCreateIncognitoBrowserTask: getCreateIncognitoBrowserTask,
+    CreateIncognitoBrowserTask: CreateIncognitoBrowserTask,
     getCloseIncognitoBrowserTask: getCloseIncognitoBrowserTask,
     Source: Source,
     Event: Event,

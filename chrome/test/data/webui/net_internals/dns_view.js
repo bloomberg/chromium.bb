@@ -258,7 +258,7 @@ netInternalsTest.test('netInternalsDnsViewAddTwoTwice', function() {
 netInternalsTest.test('netInternalsDnsViewIncognitoClears', function() {
   netInternalsTest.switchToView('dns');
   var taskQueue = new netInternalsTest.TaskQueue(true);
-  taskQueue.addTask(netInternalsTest.getCreateIncognitoBrowserTask());
+  taskQueue.addTask(new netInternalsTest.CreateIncognitoBrowserTask());
   taskQueue.addTask(new AddCacheEntryTask(
                         'somewhere.com', '1.2.3.4', 0, true));
   taskQueue.addTask(netInternalsTest.getCloseIncognitoBrowserTask());
