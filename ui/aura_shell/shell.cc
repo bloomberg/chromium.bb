@@ -218,10 +218,11 @@ void Shell::Init() {
   GetContainer(aura_shell::internal::kShellWindowId_StatusContainer)->
       SetLayoutManager(status_area_layout_manager);
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraNoShadows))
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kAuraNoShadows))
     shadow_controller_.reset(new internal::ShadowController());
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraWindows)) {
+  if (command_line->HasSwitch(switches::kAuraWorkspaceManager)) {
     EnableWorkspaceManager();
   } else {
     internal::ToplevelLayoutManager* toplevel_layout_manager =

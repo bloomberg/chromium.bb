@@ -4954,11 +4954,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_MEDIA_SOURCE_DESCRIPTION" desc="Description for the flag to enable the Media Source API on &lt;video&gt; elements.">
         Enable experimental Media Source API on the video elements. This API allows JavaScript to send media data directly to a video element.
       </message>
-      <message name="IDS_FLAGS_AURA_WINDOWS_NAME" desc="Title for the flag to enable fancy translucent windows.">
+      <message name="IDS_FLAGS_AURA_WORKSPACE_MANAGER_NAME" desc="Title for flag for workspace manager window dragging.">
+        Workspace manager
+      </message>
+      <message name="IDS_FLAGS_AURA_WORKSPACE_MANAGER_DESCRIPTION" desc="Description for flag for workspace manager window dragging.">
+        Enable multiple workspaces and smart window sizing and dragging.
+      </message>
+      <message name="IDS_FLAGS_AURA_TRANSLUCENT_FRAMES_NAME" desc="Title for the flag to enable fancy translucent windows.">
         Translucent windows
       </message>
-      <message name="IDS_FLAGS_AURA_WINDOWS_DESCRIPTION" desc="Description for the flag to enable fancy translucent windows.">
-        Enable the "Aura" style for translucent window frames and constrained window dragging.
+      <message name="IDS_FLAGS_AURA_TRANSLUCENT_FRAMES_DESCRIPTION" desc="Description for the flag to enable fancy translucent windows.">
+        Enable translucent window frames.
       </message>
       <message name="IDS_FLAGS_ENABLE_POINTER_LOCK_NAME" desc="Title for the flag to enable the pointer lock feature.">
         Enable Pointer Lock

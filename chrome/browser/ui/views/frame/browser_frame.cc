@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -20,6 +21,10 @@
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/system/runtime_environment.h"
+#endif
+
+#if defined(USE_AURA)
+#include "ui/aura/aura_switches.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -58,6 +63,11 @@ void BrowserFrame::InitBrowserFrame() {
     // activation.
     params.keep_on_top = true;
   }
+#if defined(USE_AURA)
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAuraTranslucentFrames))
+    params.transparent = true;
+#endif
   Init(params);
 #if defined(OS_CHROMEOS) && !defined(USE_AURA)
   // On ChromeOS we always want top-level windows to appear active.

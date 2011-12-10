@@ -12,7 +12,10 @@ const char kAuraHostWindowSize[] = "aura-host-window-size";
 // Avoid drawing drop shadows under windows.
 const char kAuraNoShadows[] = "aura-no-shadows";
 
-// Use Aura-style window frames and drag behavior.
-const char kAuraWindows[] = "aura-windows";
+// Use Aura-style translucent window frame.
+const char kAuraTranslucentFrames[] = "aura-translucent-frames";
+
+// Use Aura-style workspace window dragging and sizing.
+const char kAuraWorkspaceManager[] = "aura-workspace-manager";
 
 }  // namespace switches

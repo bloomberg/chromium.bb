@@ -165,7 +165,8 @@ BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
     : views::NativeWidgetAura(browser_frame),
       browser_view_(browser_view),
       browser_frame_(browser_frame) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraWindows)) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAuraTranslucentFrames)) {
     // Aura paints layers behind this view, so this must be a layer also.
     // TODO: see if we can avoid this, layers are expensive.
     browser_view_->SetPaintToLayer(true);

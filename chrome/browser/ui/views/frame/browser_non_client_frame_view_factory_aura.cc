@@ -20,7 +20,8 @@ BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     return new PanelBrowserFrameView(
         frame, static_cast<PanelBrowserView*>(browser_view));
   }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraWindows))
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAuraTranslucentFrames))
     return new BrowserNonClientFrameViewAura(frame, browser_view);
   return new OpaqueBrowserFrameView(frame, browser_view);
 }

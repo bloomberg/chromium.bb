@@ -415,13 +415,20 @@ const Experiment kExperiments[] = {
   },
 #if defined(USE_AURA)
   {
-    "aura-windows",
-    IDS_FLAGS_AURA_WINDOWS_NAME,
-    IDS_FLAGS_AURA_WINDOWS_DESCRIPTION,
+    "aura-workspace-manager",
+    IDS_FLAGS_AURA_WORKSPACE_MANAGER_NAME,
+    IDS_FLAGS_AURA_WORKSPACE_MANAGER_DESCRIPTION,
     kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kAuraWindows)
+    SINGLE_VALUE_TYPE(switches::kAuraWorkspaceManager)
   },
-#endif
+  {
+    "aura-translucent-frames",
+    IDS_FLAGS_AURA_TRANSLUCENT_FRAMES_NAME,
+    IDS_FLAGS_AURA_TRANSLUCENT_FRAMES_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kAuraTranslucentFrames)
+  },
+#endif  // defined(USE_AURA)
   {
     "enable-gamepad",
     IDS_FLAGS_ENABLE_GAMEPAD_NAME,
