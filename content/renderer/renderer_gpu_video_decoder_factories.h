@@ -29,7 +29,7 @@ class RendererGpuVideoDecoderFactories
 
   virtual ~RendererGpuVideoDecoderFactories();
 
-  media::VideoDecodeAccelerator* CreateVideoDecodeAccelerator(
+  virtual media::VideoDecodeAccelerator* CreateVideoDecodeAccelerator(
       media::VideoDecodeAccelerator::Profile profile,
       media::VideoDecodeAccelerator::Client* client) OVERRIDE;
 
