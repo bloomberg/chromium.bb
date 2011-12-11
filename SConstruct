@@ -535,6 +535,12 @@ else:
 # Allow variadic macros
 werror_flags = werror_flags + ['-Wno-variadic-macros']
 
+# Clang Bug:
+# array-bounds detection gives false positive on valid code in GLibC.
+# BUG= http://llvm.org/bugs/show_bug.cgi?id=11536
+if pre_base_env.Bit('bitcode') and pre_base_env.Bit('nacl_glibc'):
+  werror_flags += ['-Wno-array-bounds']
+
 # ----------------------------------------------------------
 # Method to make sure -pedantic, etc, are not stripped from the
 # default env, since occasionally an engineer will be tempted down the
