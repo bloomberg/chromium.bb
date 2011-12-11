@@ -1098,8 +1098,8 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 	if (!bo_gem->mem_virtual) {
 		struct drm_i915_gem_mmap mmap_arg;
 
-		DBG("bo_map: %d (%s)\n", bo_gem->gem_handle, bo_gem->name);
-		assert(bo_gem->map_count == 1);
+		DBG("bo_map: %d (%s), map_count=%d\n",
+		    bo_gem->gem_handle, bo_gem->name, bo_gem->map_count);
 
 		memset(&mmap_arg, 0, sizeof(mmap_arg));
 		mmap_arg.handle = bo_gem->gem_handle;
@@ -1163,9 +1163,8 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 	if (bo_gem->gtt_virtual == NULL) {
 		struct drm_i915_gem_mmap_gtt mmap_arg;
 
-		DBG("bo_map_gtt: mmap %d (%s)\n", bo_gem->gem_handle,
-		    bo_gem->name);
-		assert(bo_gem->map_count == 1);
+		DBG("bo_map_gtt: mmap %d (%s), map_count=%d\n",
+		    bo_gem->gem_handle, bo_gem->name, bo_gem->map_count);
 
 		memset(&mmap_arg, 0, sizeof(mmap_arg));
 		mmap_arg.handle = bo_gem->gem_handle;
@@ -1239,7 +1238,14 @@ static int drm_intel_gem_bo_unmap(drm_intel_bo *bo)
 
 	pthread_mutex_lock(&bufmgr_gem->lock);
 
-	assert(bo_gem->map_count > 0);
+	if (bo_gem->map_count <= 0) {
+		DBG("attempted to unmap an unmapped bo\n");
+		pthread_mutex_unlock(&bufmgr_gem->lock);
+		/* Preserve the old behaviour of just treating this as a
+		 * no-op rather than reporting the error.
+		 */
+		return 0;
+	}
 
 	if (bo_gem->mapped_cpu_write) {
 		/* Cause a flush to happen if the buffer's pinned for
