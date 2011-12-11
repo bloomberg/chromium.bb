@@ -128,5 +128,14 @@ class CBuildBotTest(mox.MoxTestBase):
           '-build_tests' in config['useflags'] and config['chrome_tests'],
           'Config %s: has chrome_tests and use -build_tests.' % build_name)
 
+  def testARMNoVMTest(self):
+    """Verify ARM builds don't get VMTests turned on by accident"""
+
+    for build_name, config in cbuildbot_config.config.iteritems():
+      if build_name.startswith('arm-'):
+        self.assertTrue(config['vm_tests'] is None,
+                        "ARM builder %s can't run vm tests!" % build_name)
+
+
 if __name__ == '__main__':
   unittest.main()
