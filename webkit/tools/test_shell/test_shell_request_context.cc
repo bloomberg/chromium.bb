@@ -95,7 +95,9 @@ void TestShellRequestContext::Init(
   net::HttpCache* cache =
       new net::HttpCache(host_resolver(), cert_verifier(),
                          origin_bound_cert_service(), NULL, NULL,
-                         proxy_service(), ssl_config_service(),
+                         proxy_service(),
+                         "" /* ssl_session_cache_shard */,
+                         ssl_config_service(),
                          http_auth_handler_factory(), NULL,
                          http_server_properties(), NULL,
                          backend);

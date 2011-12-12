@@ -134,6 +134,11 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
   }
 }
 
+// The SSL session cache is partitioned by setting a string. By choosing a
+// different string here, we ensure that incognito connections don't resume
+// sessions from non-incognito connections and vice-versa.
+static const char kIncognitoSSLCacheShard[] = "incognito";
+
 OffTheRecordProfileIOData::OffTheRecordProfileIOData()
     : ProfileIOData(true) {}
 OffTheRecordProfileIOData::~OffTheRecordProfileIOData() {}
@@ -201,6 +206,7 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
                          main_context->transport_security_state(),
                          main_context->dns_cert_checker(),
                          main_context->proxy_service(),
+                         kIncognitoSSLCacheShard,
                          main_context->ssl_config_service(),
                          main_context->http_auth_handler_factory(),
                          main_context->network_delegate(),

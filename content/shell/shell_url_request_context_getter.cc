@@ -83,6 +83,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         NULL, //tranport_security_state
         NULL, //dns_cert_checker
         url_request_context_->proxy_service(),
+        "" /* ssl_session_cache_shard */,
         url_request_context_->ssl_config_service(),
         url_request_context_->http_auth_handler_factory(),
         NULL,  // network_delegate

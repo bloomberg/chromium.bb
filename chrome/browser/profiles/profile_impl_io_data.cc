@@ -372,6 +372,8 @@ void ProfileImplIOData::LazyInitializeInternal(
       main_context->transport_security_state(),
       main_context->dns_cert_checker(),
       main_context->proxy_service(),
+      "", // pass empty ssl_session_cache_shard to share the SSL session cache
+          // with everything that doesn't explicitly want a different one.
       main_context->ssl_config_service(),
       main_context->http_auth_handler_factory(),
       main_context->network_delegate(),

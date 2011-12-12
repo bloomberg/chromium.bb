@@ -56,13 +56,15 @@ std::string GetHostname(TestServer::Type type,
 TestServer::HTTPSOptions::HTTPSOptions()
     : server_certificate(CERT_OK),
       request_client_certificate(false),
-      bulk_ciphers(HTTPSOptions::BULK_CIPHER_ANY) {}
+      bulk_ciphers(HTTPSOptions::BULK_CIPHER_ANY),
+      record_resume(false) {}
 
 TestServer::HTTPSOptions::HTTPSOptions(
     TestServer::HTTPSOptions::ServerCertificate cert)
     : server_certificate(cert),
       request_client_certificate(false),
-      bulk_ciphers(HTTPSOptions::BULK_CIPHER_ANY) {}
+      bulk_ciphers(HTTPSOptions::BULK_CIPHER_ANY),
+      record_resume(false) {}
 
 TestServer::HTTPSOptions::~HTTPSOptions() {}
 
@@ -409,6 +411,9 @@ bool TestServer::AddCommandLineArguments(CommandLine* command_line) const {
       command_line->AppendArg(kBulkCipherSwitch + "=aes256");
     if (https_options_.bulk_ciphers & HTTPSOptions::BULK_CIPHER_3DES)
       command_line->AppendArg(kBulkCipherSwitch + "=3des");
+
+    if (https_options_.record_resume)
+      command_line->AppendArg("--https-record-resume");
   }
 
   return true;
