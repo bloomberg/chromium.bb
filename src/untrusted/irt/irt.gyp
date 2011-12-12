@@ -40,6 +40,7 @@
       'irt_entry_ppapi.c',
       'irt_ppapi.c',
       'irt_manifest.c',
+      'irt_nameservice.c',
     ],
   },
   'conditions': [

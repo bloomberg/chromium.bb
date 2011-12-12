@@ -8,4 +8,6 @@
 
 extern int irt_initialized;
 
+int irt_nameservice_lookup(const char *name, int oflag, int *out_fd);
+
 #endif  /* NATIVE_CLIENT_SRC_UNTRUSTED_IRT_IRT_PRIVATE_H_ */

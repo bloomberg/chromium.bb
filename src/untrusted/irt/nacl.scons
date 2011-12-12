@@ -86,6 +86,7 @@ irt_browser = ['irt_interfaces_ppapi.c',
                'irt_entry_ppapi.c',
                'irt_ppapi.c',
                'irt_manifest.c',
+               'irt_nameservice.c',
                ]
 
 def LinkIrt(output, files, libs):
