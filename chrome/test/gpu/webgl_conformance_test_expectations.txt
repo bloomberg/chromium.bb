@@ -4,7 +4,7 @@
 
 // This file contains a list of defective WebGL conformance tests. The expected
 // format is:
-//  {BUG#} {MAC,WIN,LINUX} : {TEST_NAME} = {FAIL,TIMEOUT}
+//  {BUG#} {MAC,WIN,LINUX,RELEASE,DEBUG} : {TEST_NAME} = {PASS,FAIL,TIMEOUT}
 //
 // Examples:
 //  91530 MAC WIN LINUX : context_lost_restored = TIMEOUT

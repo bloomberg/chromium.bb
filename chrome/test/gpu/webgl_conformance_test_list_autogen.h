@@ -9,6 +9,21 @@
 #ifndef CHROME_TEST_GPU_WEBGL_CONFORMANCE_TEST_LIST_AUTOGEN_H_
 #define CHROME_TEST_GPU_WEBGL_CONFORMANCE_TEST_LIST_AUTOGEN_H_
 
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_conformance_more_functions_readPixelsBadArgs FAILS_conformance_more_functions_readPixelsBadArgs
+#elif !defined(MAYBE_conformance_more_functions_readPixelsBadArgs)
+#define MAYBE_conformance_more_functions_readPixelsBadArgs conformance_more_functions_readPixelsBadArgs
+#endif
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_conformance_more_functions_texImage2DHTML FAILS_conformance_more_functions_texImage2DHTML
+#elif !defined(MAYBE_conformance_more_functions_texImage2DHTML)
+#define MAYBE_conformance_more_functions_texImage2DHTML conformance_more_functions_texImage2DHTML
+#endif
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_conformance_more_functions_texSubImage2DHTML FAILS_conformance_more_functions_texSubImage2DHTML
+#elif !defined(MAYBE_conformance_more_functions_texSubImage2DHTML)
+#define MAYBE_conformance_more_functions_texSubImage2DHTML conformance_more_functions_texSubImage2DHTML
+#endif
 CONFORMANCE_TEST(conformance_more_conformance_constants,
   "conformance/more/conformance/constants.html");
 CONFORMANCE_TEST(conformance_more_conformance_getContext,
@@ -73,13 +88,13 @@ CONFORMANCE_TEST(conformance_more_functions_isTests,
   "conformance/more/functions/isTests.html");
 CONFORMANCE_TEST(conformance_more_functions_readPixels,
   "conformance/more/functions/readPixels.html");
-CONFORMANCE_TEST(FAILS_conformance_more_functions_readPixelsBadArgs,
+CONFORMANCE_TEST(MAYBE_conformance_more_functions_readPixelsBadArgs,
   "conformance/more/functions/readPixelsBadArgs.html");
 CONFORMANCE_TEST(conformance_more_functions_texImage2D,
   "conformance/more/functions/texImage2D.html");
 CONFORMANCE_TEST(conformance_more_functions_texImage2DBadArgs,
   "conformance/more/functions/texImage2DBadArgs.html");
-CONFORMANCE_TEST(FAILS_conformance_more_functions_texImage2DHTML,
+CONFORMANCE_TEST(MAYBE_conformance_more_functions_texImage2DHTML,
   "conformance/more/functions/texImage2DHTML.html");
 CONFORMANCE_TEST(conformance_more_functions_texImage2DHTMLBadArgs,
   "conformance/more/functions/texImage2DHTMLBadArgs.html");
@@ -87,7 +102,7 @@ CONFORMANCE_TEST(conformance_more_functions_texSubImage2D,
   "conformance/more/functions/texSubImage2D.html");
 CONFORMANCE_TEST(conformance_more_functions_texSubImage2DBadArgs,
   "conformance/more/functions/texSubImage2DBadArgs.html");
-CONFORMANCE_TEST(FAILS_conformance_more_functions_texSubImage2DHTML,
+CONFORMANCE_TEST(MAYBE_conformance_more_functions_texSubImage2DHTML,
   "conformance/more/functions/texSubImage2DHTML.html");
 CONFORMANCE_TEST(conformance_more_functions_texSubImage2DHTMLBadArgs,
   "conformance/more/functions/texSubImage2DHTMLBadArgs.html");
