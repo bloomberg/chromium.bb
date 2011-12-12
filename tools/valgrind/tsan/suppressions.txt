@@ -351,7 +351,7 @@
    fun:logging::LogMessage::*LogMessage
    fun:base::PlatformThread::SetThreadPriority
    fun:base::SimpleThread::SetThreadPriority
-   fun:AudioRendererImpl::Run
+   fun:AudioDevice::Run
 }
 
 ############################
@@ -691,4 +691,16 @@
   fun:tracked_objects::ThreadData::InitializeAndSetTrackingStatus
   fun:ChildThread::OnSetProfilerStatus
   fun:DispatchToMethod
+}
+{
+  bug_107181
+  ThreadSanitizer:Race
+  fun:media::AudioRendererAlgorithmBase::set_playback_rate
+  fun:media::AudioRendererAlgorithmOLA::set_playback_rate
+  fun:media::AudioRendererBase::SetPlaybackRate
+  fun:AudioRendererImpl::SetPlaybackRate
+  fun:media::CompositeFilter::SetPlaybackRate
+  fun:media::PipelineImpl::PlaybackRateChangedTask
+  ...
+  fun:base::internal::RunnableAdapter::Run
 }
