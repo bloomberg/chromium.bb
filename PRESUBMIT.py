@@ -317,8 +317,8 @@ def CheckChangeOnCommit(input_api, output_api):
       output_api,
       json_url='http://chromium-status.appspot.com/current?format=json'))
   results.extend(input_api.canned_checks.CheckRietveldTryJobExecution(input_api,
-      output_api, 'http://codereview.chromium.org', ('win', 'linux', 'mac'),
-      'tryserver@chromium.org'))
+      output_api, 'http://codereview.chromium.org',
+      ('win_rel', 'linux_rel', 'mac_rel'), 'tryserver@chromium.org'))
 
   results.extend(input_api.canned_checks.CheckChangeHasBugField(
       input_api, output_api))
@@ -334,5 +334,5 @@ def GetPreferredTrySlaves(project, change):
   only_objc_files = all(
       f.LocalPath().endswith(('.mm', '.m')) for f in change.AffectedFiles())
   if only_objc_files:
-    return ['mac']
-  return ['win', 'linux', 'mac']
+    return ['mac_rel']
+  return ['win_rel', 'linux_rel', 'mac_rel']
