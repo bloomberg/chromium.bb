@@ -401,15 +401,20 @@ cr.define('cloudprint', function() {
           if (!trackCloudPrinterAdded(printers[i]['id'])) {
             break;
           }
+          if (printers[i]['displayName'] && printers[i]['displayName'] != '')
+            var name = printers[i]['displayName'];
+          else
+            var name = printers[i]['name'];
+
           var option = addDestinationListOptionAtPosition(
               lastCloudPrintOptionPos++,
-              printers[i]['name'],
+              name,
               printers[i]['id'],
-              printers[i]['name'] == defaultOrLastUsedPrinterName,
+              name == defaultOrLastUsedPrinterName,
               false,
               false);
           cloudprint.setCloudPrint(option,
-                                   printers[i]['name'],
+                                   name,
                                    printers[i]['id']);
         }
       }
