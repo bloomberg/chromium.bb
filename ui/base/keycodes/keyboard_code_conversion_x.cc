@@ -4,6 +4,7 @@
 
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 
+#define XK_3270  // for XK_3270_BackTab
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -31,9 +32,6 @@ KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev) {
 }
 
 KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
-  // Consult GDK key translation (in WindowsKeyCodeForGdkKeyCode) for details
-  // about the following translations.
-
   // TODO(sad): Have |keysym| go through the X map list?
 
   switch (keysym) {
@@ -45,10 +43,12 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
     case XK_Tab:
     case XK_KP_Tab:
     case XK_ISO_Left_Tab:
+    case XK_3270_BackTab:
       return VKEY_TAB;
     case XK_Linefeed:
     case XK_Return:
     case XK_KP_Enter:
+    case XK_ISO_Enter:
       return VKEY_RETURN;
     case XK_Clear:
       return VKEY_CLEAR;
@@ -81,6 +81,15 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
       return VKEY_UP;
     case XK_Escape:
       return VKEY_ESCAPE;
+    case XK_Kana_Lock:
+    case XK_Kana_Shift:
+      return VKEY_KANA;
+    case XK_Hangul:
+      return VKEY_HANGUL;
+    case XK_Hangul_Hanja:
+      return VKEY_HANJA;
+    case XK_Kanji:
+      return VKEY_KANJI;
     case XK_A:
     case XK_a:
       return VKEY_A;
