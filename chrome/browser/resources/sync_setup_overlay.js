@@ -592,6 +592,7 @@ cr.define('options', function() {
 
       $('access-code-input-row').hidden = false;
       $('access-code').disabled = false;
+      $('access-code').focus();
     },
 
     showCaptcha_: function(args) {
