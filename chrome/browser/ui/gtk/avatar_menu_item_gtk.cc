@@ -120,7 +120,6 @@ void AvatarMenuItemGtk::ShowEditLink() {
 
 gboolean AvatarMenuItemGtk::OnProfileFocusIn(GtkWidget* widget,
                                              GdkEventFocus* event) {
-  gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, &highlighted_color_);
   if (item_.active)
     ShowEditLink();
 
@@ -129,7 +128,6 @@ gboolean AvatarMenuItemGtk::OnProfileFocusIn(GtkWidget* widget,
 
 gboolean AvatarMenuItemGtk::OnProfileFocusOut(GtkWidget* widget,
                                               GdkEventFocus* event) {
-  gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, unhighlighted_color_);
   if (item_.active)
     ShowStatusLabel();
 
@@ -201,6 +199,22 @@ void AvatarMenuItemGtk::OnEditProfileLinkClicked(GtkWidget* link) {
                  weak_factory_.GetWeakPtr()));
 }
 
+gboolean AvatarMenuItemGtk::OnEventBoxExpose(GtkWidget* widget,
+                                             GdkEventExpose* event) {
+  // Draw the focus rectangle.
+  if (gtk_widget_has_focus(widget)) {
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
+    gtk_paint_focus(widget->style, widget->window,
+                    gtk_widget_get_state(widget),
+                    &event->area, widget, NULL,
+                    0, 0,
+                    allocation.width, allocation.height);
+  }
+
+  return TRUE;
+}
+
 void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
   widget_.Own(gtk_event_box_new());
 
@@ -216,6 +230,8 @@ void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
       G_CALLBACK(OnProfileFocusOutThunk), this);
   g_signal_connect(widget_.get(), "key-press-event",
       G_CALLBACK(OnProfileKeyPressThunk), this);
+  g_signal_connect_after(widget_.get(), "expose-event",
+      G_CALLBACK(OnEventBoxExposeThunk), this);
 
   GtkWidget* item_hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
   GdkPixbuf* avatar_pixbuf = NULL;

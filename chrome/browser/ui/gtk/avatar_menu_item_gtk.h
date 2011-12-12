@@ -67,6 +67,8 @@ class AvatarMenuItemGtk : public content::NotificationObserver {
                        GdkEventFocus*);
   CHROMEGTK_CALLBACK_1(AvatarMenuItemGtk, gboolean, OnProfileKeyPress,
                        GdkEventKey*);
+  CHROMEGTK_CALLBACK_1(AvatarMenuItemGtk, gboolean, OnEventBoxExpose,
+                       GdkEventExpose*);
   CHROMEGTK_CALLBACK_0(AvatarMenuItemGtk, void, OnEditProfileLinkClicked);
 
   // Create all widgets in this menu item, using |theme_service|.
