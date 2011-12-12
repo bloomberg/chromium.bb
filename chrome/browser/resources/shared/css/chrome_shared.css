@@ -15,7 +15,7 @@ a:active {
 #navbar-content-title {
   -webkit-padding-end: 24px;
   -webkit-user-select: none;
-  color: #53637d;
+  color: #333;
   cursor: pointer;
   font-size: 200%;
   font-weight: normal;
@@ -41,8 +41,7 @@ a:active {
 
 #navbar-container {
   -webkit-border-end: 1px solid #c6c9ce;
-  background: -webkit-linear-gradient(rgba(234, 238, 243, 0.2), #eaeef3),
-              -webkit-linear-gradient(left, #eaeef3, #eaeef3 97%, #d3d7db);
+  background-color: #f1f1f1;
   position: fixed;
   bottom: 0;
   /* We set both left and right for the sake of RTL. */
@@ -51,11 +50,6 @@ a:active {
   top: 0;
   width: 216px;
   z-index: 2;
-}
-
-html[dir='rtl'] #navbar-container {
-  background: -webkit-linear-gradient(rgba(234, 238, 243, 0), #EAEEF3),
-              -webkit-linear-gradient(right, #EAEEF3, #EAEEF3 97%, #D3D7DB);
 }
 
 html.hide-menu #navbar-container {
@@ -72,7 +66,7 @@ html.hide-menu #navbar-container {
 .navbar-item {
   border-bottom: 1px solid transparent;
   border-top: 1px solid transparent;
-  color: #426dc9;
+  color: #333;
   cursor: pointer;
   display: block;
   font-size: 105%;
@@ -90,7 +84,7 @@ html.hide-menu #navbar-container {
 
 .navbar-item-selected {
   -webkit-box-shadow: 0px 1px 0px #f7f7f7;
-  background: -webkit-linear-gradient(left, #bbcee9, #bbcee9 97%, #aabedc);
+  background-color: #bbcee9;
   border-bottom: 1px solid #8faad9;
   border-top: 1px solid #8faad9;
   color: black;
@@ -204,7 +198,7 @@ html[dir='rtl'] .weakrtl input::-webkit-input-placeholder {
   -webkit-padding-end: 24px;
   -webkit-user-select: none;
   border-bottom: 1px solid #eeeeee;
-  color: #53637d;
+  color: #333;
   font-size: 200%;
   font-weight: normal;
   margin: 0;
