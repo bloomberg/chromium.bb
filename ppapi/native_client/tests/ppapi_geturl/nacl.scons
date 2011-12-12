@@ -3,8 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This is a C PPAPI-based version of ../npapi_geturl.
-#
 # ppapi_geturl.html - test driver that loads the nexe and scripts it
 # ppapi_geturl_success.html - to be url-loaded and displayed w/n driver html
 #
