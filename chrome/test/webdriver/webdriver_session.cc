@@ -52,7 +52,8 @@ FrameId::FrameId(const WebViewId& view_id, const FramePath& frame_path)
 
 Session::Options::Options()
     : use_native_events(false),
-      load_async(false) {
+      load_async(false),
+      no_website_testing_defaults(false) {
 }
 
 Session::Options::~Options() {
@@ -80,11 +81,15 @@ Error* Session::Init(const Automation::BrowserOptions& options) {
   }
 
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      this,
+  RunSessionTask(base::Bind(
       &Session::InitOnSessionThread,
+      base::Unretained(this),
       options,
       &error));
+
+  if (!error)
+    error = PostBrowserStartInit();
+
   if (error)
     Terminate();
   return error;
@@ -118,9 +123,9 @@ Error* Session::AfterExecuteCommand() {
 }
 
 void Session::Terminate() {
-  RunSessionTask(NewRunnableMethod(
-      this,
-      &Session::TerminateOnSessionThread));
+  RunSessionTask(base::Bind(
+      &Session::TerminateOnSessionThread,
+      base::Unretained(this)));
   delete this;
 }
 
@@ -258,9 +263,9 @@ Error* Session::SendKeys(const ElementId& element, const string16& keys) {
   if (error)
     return error;
 
-  RunSessionTask(NewRunnableMethod(
-      this,
+  RunSessionTask(base::Bind(
       &Session::SendKeysOnSessionThread,
+      base::Unretained(this),
       keys,
       &error));
   return error;
@@ -270,9 +275,9 @@ Error* Session::DragAndDropFilePaths(
     const Point& location,
     const std::vector<FilePath::StringType>& paths) {
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::DragAndDropFilePaths,
+      base::Unretained(automation_.get()),
       current_target_.view_id,
       location,
       paths,
@@ -287,16 +292,16 @@ Error* Session::NavigateToURL(const std::string& url) {
   }
   Error* error = NULL;
   if (options_.load_async) {
-    RunSessionTask(NewRunnableMethod(
-        automation_.get(),
+    RunSessionTask(base::Bind(
         &Automation::NavigateToURLAsync,
+        base::Unretained(automation_.get()),
         current_target_.view_id,
         url,
         &error));
   } else {
-    RunSessionTask(NewRunnableMethod(
-        automation_.get(),
+    RunSessionTask(base::Bind(
         &Automation::NavigateToURL,
+        base::Unretained(automation_.get()),
         current_target_.view_id,
         url,
         &error));
@@ -310,9 +315,9 @@ Error* Session::GoForward() {
                      "The current target does not support navigation");
   }
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::GoForward,
+      base::Unretained(automation_.get()),
       current_target_.view_id,
       &error));
   return error;
@@ -324,9 +329,9 @@ Error* Session::GoBack() {
                      "The current target does not support navigation");
   }
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::GoBack,
+      base::Unretained(automation_.get()),
       current_target_.view_id,
       &error));
   return error;
@@ -338,9 +343,9 @@ Error* Session::Reload() {
                      "The current target does not support navigation");
   }
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::Reload,
+      base::Unretained(automation_.get()),
       current_target_.view_id,
       &error));
   return error;
@@ -372,9 +377,9 @@ Error* Session::GetTitle(std::string* tab_title) {
 Error* Session::MouseMoveAndClick(const Point& location,
                                   automation::MouseButton button) {
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::MouseClick,
+      base::Unretained(automation_.get()),
       current_target_.view_id,
       location,
       button,
@@ -386,9 +391,9 @@ Error* Session::MouseMoveAndClick(const Point& location,
 
 Error* Session::MouseMove(const Point& location) {
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::MouseMove,
+      base::Unretained(automation_.get()),
       current_target_.view_id,
       location,
       &error));
@@ -400,9 +405,9 @@ Error* Session::MouseMove(const Point& location) {
 Error* Session::MouseDrag(const Point& start,
                           const Point& end) {
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::MouseDrag,
+      base::Unretained(automation_.get()),
       current_target_.view_id,
       start,
       end,
@@ -418,9 +423,9 @@ Error* Session::MouseClick(automation::MouseButton button) {
 
 Error* Session::MouseButtonDown() {
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::MouseButtonDown,
+      base::Unretained(automation_.get()),
       current_target_.view_id,
       mouse_position_,
       &error));
@@ -429,9 +434,9 @@ Error* Session::MouseButtonDown() {
 
 Error* Session::MouseButtonUp() {
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::MouseButtonUp,
+      base::Unretained(automation_.get()),
       current_target_.view_id,
       mouse_position_,
       &error));
@@ -440,9 +445,9 @@ Error* Session::MouseButtonUp() {
 
 Error* Session::MouseDoubleClick() {
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::MouseDoubleClick,
+      base::Unretained(automation_.get()),
       current_target_.view_id,
       mouse_position_,
       &error));
@@ -451,9 +456,9 @@ Error* Session::MouseDoubleClick() {
 
 Error* Session::GetCookies(const std::string& url, ListValue** cookies) {
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::GetCookies,
+      base::Unretained(automation_.get()),
       url,
       cookies,
       &error));
@@ -463,9 +468,9 @@ Error* Session::GetCookies(const std::string& url, ListValue** cookies) {
 Error* Session::DeleteCookie(const std::string& url,
                            const std::string& cookie_name) {
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::DeleteCookie,
+      base::Unretained(automation_.get()),
       url,
       cookie_name,
       &error));
@@ -475,9 +480,9 @@ Error* Session::DeleteCookie(const std::string& url,
 Error* Session::SetCookie(const std::string& url,
                           DictionaryValue* cookie_dict) {
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::SetCookie,
+      base::Unretained(automation_.get()),
       url,
       cookie_dict,
       &error));
@@ -486,9 +491,9 @@ Error* Session::SetCookie(const std::string& url,
 
 Error* Session::GetViews(std::vector<WebViewInfo>* views) {
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::GetViews,
+      base::Unretained(automation_.get()),
       views,
       &error));
   return error;
@@ -501,9 +506,9 @@ Error* Session::SwitchToView(const std::string& id_or_name) {
   WebViewId new_view;
   StringToWebViewId(id_or_name, &new_view);
   if (new_view.IsValid()) {
-    RunSessionTask(NewRunnableMethod(
-        automation_.get(),
+    RunSessionTask(base::Bind(
         &Automation::DoesViewExist,
+        base::Unretained(automation_.get()),
         new_view,
         &does_exist,
         &error));
@@ -644,9 +649,9 @@ Error* Session::SwitchToTopFrameIfCurrentFrameInvalid() {
 
 Error* Session::CloseWindow() {
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::CloseView,
+      base::Unretained(automation_.get()),
       current_target_.view_id,
       &error));
 
@@ -668,9 +673,9 @@ Error* Session::CloseWindow() {
 
 Error* Session::GetAlertMessage(std::string* text) {
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::GetAppModalDialogMessage,
+      base::Unretained(automation_.get()),
       text,
       &error));
   return error;
@@ -690,15 +695,15 @@ Error* Session::SetAlertPromptText(const std::string& alert_prompt_text) {
 Error* Session::AcceptOrDismissAlert(bool accept) {
   Error* error = NULL;
   if (accept && has_alert_prompt_text_) {
-    RunSessionTask(NewRunnableMethod(
-        automation_.get(),
+    RunSessionTask(base::Bind(
         &Automation::AcceptPromptAppModalDialog,
+        base::Unretained(automation_.get()),
         alert_prompt_text_,
         &error));
   } else {
-    RunSessionTask(NewRunnableMethod(
-        automation_.get(),
+    RunSessionTask(base::Bind(
         &Automation::AcceptOrDismissAppModalDialog,
+        base::Unretained(automation_.get()),
         accept,
         &error));
   }
@@ -708,9 +713,9 @@ Error* Session::AcceptOrDismissAlert(bool accept) {
 
 std::string Session::GetBrowserVersion() {
   std::string version;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::GetBrowserVersion,
+      base::Unretained(automation_.get()),
       &version));
   return version;
 }
@@ -1006,18 +1011,18 @@ Error* Session::WaitForAllViewsToStopLoading() {
   if (!automation_.get())
     return NULL;
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::WaitForAllViewsToStopLoading,
+      base::Unretained(automation_.get()),
       &error));
   return error;
 }
 
 Error* Session::InstallExtensionDeprecated(const FilePath& path) {
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::InstallExtensionDeprecated,
+      base::Unretained(automation_.get()),
       path,
       &error));
   return error;
@@ -1099,6 +1104,29 @@ Error* Session::UninstallExtension(const std::string& extension_id) {
   return error;
 }
 
+Error* Session::SetPreference(
+    const std::string& pref,
+    bool is_user_pref,
+    base::Value* value) {
+  Error* error = NULL;
+  if (is_user_pref) {
+    RunSessionTask(base::Bind(
+        &Automation::SetPreference,
+        base::Unretained(automation_.get()),
+        pref,
+        value,
+        &error));
+  } else {
+    RunSessionTask(base::Bind(
+        &Automation::SetLocalStatePreference,
+        base::Unretained(automation_.get()),
+        pref,
+        value,
+        &error));
+  }
+  return error;
+}
+
 const std::string& Session::id() const {
   return id_;
 }
@@ -1133,9 +1161,9 @@ const Session::Options& Session::options() const {
 
 void Session::RunSessionTask(Task* task) {
   base::WaitableEvent done_event(false, false);
-  thread_.message_loop_proxy()->PostTask(FROM_HERE, NewRunnableMethod(
-      this,
+  thread_.message_loop_proxy()->PostTask(FROM_HERE, base::Bind(
       &Session::RunSessionTaskOnSessionThread,
+      base::Unretained(this),
       task,
       &done_event));
   done_event.Wait();
@@ -1193,9 +1221,9 @@ Error* Session::ExecuteScriptAndParseValue(const FrameId& frame_id,
                                            Value** script_result) {
   std::string response_json;
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::ExecuteScript,
+      base::Unretained(automation_.get()),
       frame_id.view_id,
       frame_id.frame_path,
       script,
@@ -1517,9 +1545,9 @@ Error* Session::GetScreenShot(std::string* png) {
   }
 
   FilePath path = screenshots_dir.path().AppendASCII("screen");
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
+  RunSessionTask(base::Bind(
       &Automation::CaptureEntirePageAsPNG,
+      base::Unretained(automation_.get()),
       current_target_.view_id,
       path,
       &error));
@@ -1546,6 +1574,42 @@ Error* Session::GetAppCacheStatus(int* status) {
       "getAppcacheStatus",
       new ListValue(),
       CreateDirectValueParser(status));
+}
+
+Error* Session::PostBrowserStartInit() {
+  Error* error = NULL;
+  if (!options_.no_website_testing_defaults)
+    error = InitForWebsiteTesting();
+  if (error)
+    return error;
+
+  // Install extensions.
+  for (size_t i = 0; i < options_.extensions.size(); ++i) {
+    error = InstallExtensionDeprecated(options_.extensions[i]);
+    if (error)
+      return error;
+  }
+  return NULL;
+}
+
+Error* Session::InitForWebsiteTesting() {
+  // Disable checking for SSL certificate revocation.
+  Error* error = SetPreference(
+      "ssl.rev_checking.enabled",
+      false /* is_user_pref */,
+      Value::CreateBooleanValue(false));
+  if (error)
+    return error;
+
+  // Allow certain content by default.
+  const int kAllowContent = 1;
+  DictionaryValue* default_content_settings = new DictionaryValue();
+  default_content_settings->SetInteger("geolocation", kAllowContent);
+  default_content_settings->SetInteger("notifications", kAllowContent);
+  return SetPreference(
+      "profile.default_content_settings",
+      true /* is_user_pref */,
+      default_content_settings);
 }
 
 }  // namespace webdriver

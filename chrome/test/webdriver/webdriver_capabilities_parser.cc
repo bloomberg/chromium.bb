@@ -37,6 +37,7 @@ Capabilities::Capabilities()
       detach(false),
       load_async(false),
       native_events(false),
+      no_website_testing_defaults(false),
       verbose(false) { }
 
 Capabilities::~Capabilities() { }
@@ -78,6 +79,8 @@ Error* CapabilitiesParser::Parse() {
     parser_map["chrome.nativeEvents"] = &CapabilitiesParser::ParseNativeEvents;
     parser_map["chrome.profile"] = &CapabilitiesParser::ParseProfile;
     parser_map["chrome.switches"] = &CapabilitiesParser::ParseArgs;
+    parser_map["chrome.noWebsiteTestingDefaults"] =
+        &CapabilitiesParser::ParseNoWebsiteTestingDefaults;
     parser_map["chrome.verbose"] = &CapabilitiesParser::ParseVerbose;
   } else {
     parser_map["args"] = &CapabilitiesParser::ParseArgs;
@@ -88,6 +91,8 @@ Error* CapabilitiesParser::Parse() {
     parser_map["loadAsync"] = &CapabilitiesParser::ParseLoadAsync;
     parser_map["nativeEvents"] = &CapabilitiesParser::ParseNativeEvents;
     parser_map["profile"] = &CapabilitiesParser::ParseProfile;
+    parser_map["noWebsiteTestingDefaults"] =
+        &CapabilitiesParser::ParseNoWebsiteTestingDefaults;
     parser_map["verbose"] = &CapabilitiesParser::ParseVerbose;
   }
 
@@ -199,6 +204,13 @@ Error* CapabilitiesParser::ParseProfile(const Value* option) {
   if (!DecodeAndWriteFile(caps_->profile, profile_base64, true /* unzip */,
                           &error_msg))
     return new Error(kUnknownError, "unable to unpack profile: " + error_msg);
+  return NULL;
+}
+
+Error* CapabilitiesParser::ParseNoWebsiteTestingDefaults(const Value* option) {
+  if (!option->GetAsBoolean(&caps_->no_website_testing_defaults))
+    return CreateBadInputError("noWebsiteTestingDefaults",
+                               Value::TYPE_BOOLEAN, option);
   return NULL;
 }
 

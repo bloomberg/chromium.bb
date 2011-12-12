@@ -1171,10 +1171,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     cmd_dict = {
       'command': 'SetLocalStatePrefs',
+      'windex': 0,
       'path': path,
       'value': value,
     }
-    self._GetResultFromJSONRequest(cmd_dict)
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
   def GetPrefsInfo(self):
     """Return info about preferences.
@@ -1186,8 +1187,12 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Returns:
       an instance of prefs_info.PrefsInfo
     """
+    cmd_dict = {
+      'command': 'GetPrefsInfo',
+      'windex': 0,
+    }
     return prefs_info.PrefsInfo(
-        self._SendJSONRequest(0, json.dumps({'command': 'GetPrefsInfo'}),
+        self._SendJSONRequest(-1, json.dumps(cmd_dict),
                               self.action_max_timeout_ms()))
 
   def SetPrefs(self, path, value):
@@ -1214,10 +1219,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     cmd_dict = {
       'command': 'SetPrefs',
+      'windex': 0,
       'path': path,
       'value': value,
     }
-    self._GetResultFromJSONRequest(cmd_dict)
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
   def SendWebkitKeyEvent(self, key_type, key_code, tab_index=0, windex=0):
     """Send a webkit key event to the browser.

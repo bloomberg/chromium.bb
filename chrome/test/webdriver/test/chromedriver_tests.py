@@ -281,6 +281,14 @@ class DesiredCapabilitiesTest(ChromeDriverTest):
     self.assertNotEqual(-1, driver.page_source.find('ExtTest2'))
     driver.quit()
 
+  def testUseWebsiteTestingDefaults(self):
+    """Test that chromedriver initializes options for website testing."""
+    driver = self.GetNewDriver()
+    driver.get(self.GetTestDataUrl() + '/content_setting_test.html')
+    driver.set_script_timeout(10)
+    # Will timeout if infobar appears.
+    driver.execute_async_script('waitForGeo(arguments[0])')
+
 
 class DetachProcessTest(unittest.TestCase):
 

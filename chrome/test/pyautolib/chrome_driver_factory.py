@@ -41,7 +41,8 @@ class ChromeDriverFactory(object):
       channel_id = os.path.join(tempfile.gettempdir(), channel_id)
     pyauto.CreateNewAutomationProvider(channel_id)
     return webdriver.Remote(self._chromedriver_server.service_url,
-                            {'chrome.channel': channel_id})
+                            {'chrome.channel': channel_id,
+                             'chrome.noWebsiteTestingDefaults': True})
 
   def _StartServerIfNecessary(self):
     """Starts the ChromeDriver server, if not already started."""

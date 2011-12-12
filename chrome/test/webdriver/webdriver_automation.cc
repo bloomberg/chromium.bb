@@ -797,6 +797,69 @@ void Automation::UninstallExtension(
     *error = new Error(kUnknownError, error_msg);
 }
 
+void Automation::SetLocalStatePreference(const std::string& pref,
+                                         base::Value* value,
+                                         Error** error) {
+  scoped_ptr<Value> scoped_value(value);
+  bool has_new_local_state_api = false;
+  // In version 927, SetLocalStatePrefs was changed from taking a browser
+  // handle to a browser index.
+  *error = CompareVersion(927, 0, &has_new_local_state_api);
+  if (*error)
+    return;
+
+  if (has_new_local_state_api) {
+    std::string error_msg;
+    if (!SendSetLocalStatePreferenceJSONRequest(
+            automation(), pref, scoped_value.release(), &error_msg))
+      *error = new Error(kUnknownError, error_msg);
+  } else {
+    std::string request, response;
+    DictionaryValue request_dict;
+    request_dict.SetString("command", "SetLocalStatePrefs");
+    request_dict.SetString("path", pref);
+    request_dict.Set("value", scoped_value.release());
+    base::JSONWriter::Write(&request_dict, false, &request);
+    if (!automation()->GetBrowserWindow(0)->SendJSONRequest(
+            request, -1, &response)) {
+      *error = new Error(kUnknownError, base::StringPrintf(
+          "Failed to set local state pref '%s'", pref.c_str()));
+    }
+  }
+}
+
+void Automation::SetPreference(const std::string& pref,
+                               base::Value* value,
+                               Error** error) {
+  scoped_ptr<Value> scoped_value(value);
+  bool has_new_pref_api = false;
+  // Chrome 17 is on the 963 branch. The first released 18 build should have
+  // the new SetPrefs method which uses a browser index instead of handle.
+  *error = CompareVersion(964, 0, &has_new_pref_api);
+  if (*error)
+    return;
+
+  if (has_new_pref_api) {
+    std::string error_msg;
+    if (!SendSetPreferenceJSONRequest(
+            automation(), pref, scoped_value.release(), &error_msg))
+      *error = new Error(kUnknownError, error_msg);
+  } else {
+    std::string request, response;
+    DictionaryValue request_dict;
+    request_dict.SetString("command", "SetPrefs");
+    request_dict.SetInteger("windex", 0);
+    request_dict.SetString("path", pref);
+    request_dict.Set("value", scoped_value.release());
+    base::JSONWriter::Write(&request_dict, false, &request);
+    if (!automation()->GetBrowserWindow(0)->SendJSONRequest(
+            request, -1, &response)) {
+      *error = new Error(kUnknownError, base::StringPrintf(
+          "Failed to set pref '%s'", pref.c_str()));
+    }
+  }
+}
+
 AutomationProxy* Automation::automation() const {
   return launcher_->automation();
 }

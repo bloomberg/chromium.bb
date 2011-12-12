@@ -2252,6 +2252,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::GetLocalStatePrefsInfo;
   handler_map["SetLocalStatePrefs"] =
       &TestingAutomationProvider::SetLocalStatePrefs;
+  handler_map["GetPrefsInfo"] = &TestingAutomationProvider::GetPrefsInfo;
+  handler_map["SetPrefs"] = &TestingAutomationProvider::SetPrefs;
   handler_map["ExecuteJavascript"] =
       &TestingAutomationProvider::ExecuteJavascriptJSON;
   handler_map["ExecuteJavascriptInRenderView"] =
@@ -2437,10 +2439,6 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::AddOrEditSearchEngine;
   browser_handler_map["PerformActionOnSearchEngine"] =
       &TestingAutomationProvider::PerformActionOnSearchEngine;
-
-  browser_handler_map["GetPrefsInfo"] =
-      &TestingAutomationProvider::GetPrefsInfo;
-  browser_handler_map["SetPrefs"] = &TestingAutomationProvider::SetPrefs;
 
   browser_handler_map["SetWindowDimensions"] =
       &TestingAutomationProvider::SetWindowDimensions;
@@ -3382,26 +3380,41 @@ void TestingAutomationProvider::SetLocalStatePrefs(
   reply.SendSuccess(NULL);
 }
 
-// Sample json input: { "command": "GetPrefsInfo" }
+// Sample json input: { "command": "GetPrefsInfo", "windex": 0 }
 // Refer chrome/test/pyautolib/prefs_info.py for sample json output.
-void TestingAutomationProvider::GetPrefsInfo(Browser* browser,
-                                             DictionaryValue* args,
+void TestingAutomationProvider::GetPrefsInfo(DictionaryValue* args,
                                              IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  std::string error_msg;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
+    reply.SendError(error_msg);
+    return;
+  }
   DictionaryValue* items = browser->profile()->GetPrefs()->
       GetPreferenceValues();
 
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   return_value->Set("prefs", items);  // return_value owns items.
-  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
+  reply.SendSuccess(return_value.get());
 }
 
-// Sample json input: { "command": "SetPrefs", "path": path, "value": value }
-void TestingAutomationProvider::SetPrefs(Browser* browser,
-                                         DictionaryValue* args,
+// Sample json input:
+// { "command": "SetPrefs",
+//   "windex": 0,
+//   "path": path,
+//   "value": value }
+void TestingAutomationProvider::SetPrefs(DictionaryValue* args,
                                          IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  std::string error_msg;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
+    reply.SendError(error_msg);
+    return;
+  }
   std::string path;
   Value* val;
-  AutomationJSONReply reply(this, reply_message);
   if (args->GetString("path", &path) && args->Get("value", &val)) {
     PrefService* pref_service = browser->profile()->GetPrefs();
     const PrefService::Preference* pref =

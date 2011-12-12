@@ -49,6 +49,13 @@ struct Capabilities {
   // WebKit APIs.
   bool native_events;
 
+  // By default, ChromeDriver configures Chrome in such a way as convenient
+  // for website testing. E.g., it configures Chrome so that sites are allowed
+  // to use the geolocation API without requesting the user's consent.
+  // If this is set to true, ChromeDriver will not modify Chrome's default
+  // behavior.
+  bool no_website_testing_defaults;
+
   // Path to a custom profile to use.
   FilePath profile;
 
@@ -83,6 +90,7 @@ class CapabilitiesParser {
   Error* ParseLoadAsync(const base::Value* option);
   Error* ParseNativeEvents(const base::Value* option);
   Error* ParseProfile(const base::Value* option);
+  Error* ParseNoWebsiteTestingDefaults(const base::Value* option);
   Error* ParseVerbose(const base::Value* option);
   // Decodes the given base64-encoded string, optionally unzips it, and
   // writes the result to |path|.

@@ -62,6 +62,16 @@ class Session {
     // True if the session should not wait for page loads and navigate
     // asynchronously.
     bool load_async;
+
+    // By default, ChromeDriver configures Chrome in such a way as convenient
+    // for website testing. E.g., it configures Chrome so that sites are allowed
+    // to use the geolocation API without requesting the user's consent.
+    // If this is set to true, ChromeDriver will not modify Chrome's default
+    // behavior.
+    bool no_website_testing_defaults;
+
+    // A list of extensions to install on startup.
+    std::vector<FilePath> extensions;
   };
 
   // Adds this |Session| to the |SessionManager|. The session manages its own
@@ -330,6 +340,13 @@ class Session {
 
   Error* UninstallExtension(const std::string& extension_id);
 
+  // Sets the preference to the given value. This function takes ownership
+  // of |value|. If the preference is a user preference (instead of local
+  // state preference) |is_user_pref| should be true.
+  Error* SetPreference(const std::string& pref,
+                       bool is_user_pref,
+                       base::Value* value);
+
   const std::string& id() const;
 
   const FrameId& current_target() const;
@@ -398,6 +415,8 @@ class Session {
       bool center,
       bool verify_clickable_at_middle,
       Point* location);
+  Error* PostBrowserStartInit();
+  Error* InitForWebsiteTesting();
 
   const std::string id_;
   FrameId current_target_;

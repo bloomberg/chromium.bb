@@ -454,4 +454,20 @@ bool SendUninstallExtensionJSONRequest(
     const std::string& extension_id,
     std::string* error_msg) WARN_UNUSED_RESULT;
 
+// Requests the local state preference to be set to the given value.
+// Ownership of |value| is taken by this function. Returns true on success.
+bool SendSetLocalStatePreferenceJSONRequest(
+    AutomationMessageSender* sender,
+    const std::string& pref,
+    base::Value* value,
+    std::string* error_msg) WARN_UNUSED_RESULT;
+
+// Requests the user preference to be set to the given value.
+// Ownership of |value| is taken by this function. Returns true on success.
+bool SendSetPreferenceJSONRequest(
+    AutomationMessageSender* sender,
+    const std::string& pref,
+    base::Value* value,
+    std::string* error_msg) WARN_UNUSED_RESULT;
+
 #endif  // CHROME_TEST_AUTOMATION_AUTOMATION_JSON_REQUESTS_H_

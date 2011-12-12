@@ -57,6 +57,9 @@ void CreateSession::ExecutePost(Response* const response) {
   Session::Options session_options;
   session_options.load_async = caps.load_async;
   session_options.use_native_events = caps.native_events;
+  session_options.no_website_testing_defaults =
+      caps.no_website_testing_defaults;
+  session_options.extensions = caps.extensions;
 
   Automation::BrowserOptions browser_options;
   browser_options.command = caps.command;
@@ -70,15 +73,6 @@ void CreateSession::ExecutePost(Response* const response) {
   if (error) {
     response->SetError(error);
     return;
-  }
-
-  // Install extensions.
-  for (size_t i = 0; i < caps.extensions.size(); ++i) {
-    Error* error = session->InstallExtensionDeprecated(caps.extensions[i]);
-    if (error) {
-      response->SetError(error);
-      return;
-    }
   }
 
   LOG(INFO) << "Created session " << session->id();

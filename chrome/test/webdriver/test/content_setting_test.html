@@ -1,0 +1,21 @@
+<script>
+var g_callback = null;
+var g_geoDone = false;
+function waitForGeo(doneCallback) {
+  if (g_geoDone) {
+    doneCallback();
+  } else {
+    g_callback = doneCallback;
+  }
+}
+
+function geoDone() {
+  g_geoDone = true;
+  if (g_callback)
+    g_callback();
+}
+
+// Don't care whether geo succeeds or fails, just whether it gets past the
+// infobar.
+navigator.geolocation.getCurrentPosition(geoDone, geoDone);
+</script>

@@ -806,3 +806,30 @@ bool SendUninstallExtensionJSONRequest(
   }
   return true;
 }
+
+bool SendSetLocalStatePreferenceJSONRequest(
+    AutomationMessageSender* sender,
+    const std::string& pref,
+    base::Value* value,
+    std::string* error_msg) {
+  DictionaryValue dict;
+  dict.SetString("command", "SetLocalStatePrefs");
+  dict.SetString("path", pref);
+  dict.Set("value", value);
+  DictionaryValue reply_dict;
+  return SendAutomationJSONRequest(sender, dict, &reply_dict, error_msg);
+}
+
+bool SendSetPreferenceJSONRequest(
+    AutomationMessageSender* sender,
+    const std::string& pref,
+    base::Value* value,
+    std::string* error_msg) {
+  DictionaryValue dict;
+  dict.SetString("command", "SetPrefs");
+  dict.SetInteger("windex", 0);
+  dict.SetString("path", pref);
+  dict.Set("value", value);
+  DictionaryValue reply_dict;
+  return SendAutomationJSONRequest(sender, dict, &reply_dict, error_msg);
+}

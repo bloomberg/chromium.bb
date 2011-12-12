@@ -28,6 +28,7 @@ class WebViewLocator;
 namespace base {
 class DictionaryValue;
 class ListValue;
+class Value;
 }
 
 namespace webdriver {
@@ -205,6 +206,17 @@ class Automation {
   // Uninstalls the given extension.
   void UninstallExtension(const std::string& extension_id, Error** error);
 
+  // Set a local state preference, which is not associated with any profile.
+  // Ownership of |value| is taken by this function.
+  void SetLocalStatePreference(const std::string& pref,
+                               base::Value* value,
+                               Error** error);
+
+  // Set a user preference, which is associated with the current profile.
+  // Ownership of |value| is taken by this fucntion.
+  void SetPreference(const std::string& pref,
+                     base::Value* value,
+                     Error** error);
 
  private:
   AutomationProxy* automation() const;

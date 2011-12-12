@@ -501,14 +501,12 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // Get info about preferences.
   // Uses the JSON interface for input/output.
-  void GetPrefsInfo(Browser* browser,
-                    base::DictionaryValue* args,
+  void GetPrefsInfo(base::DictionaryValue* args,
                     IPC::Message* reply_message);
 
   // Set prefs.
   // Uses the JSON interface for input/output.
-  void SetPrefs(Browser* browser,
-                base::DictionaryValue* args,
+  void SetPrefs(base::DictionaryValue* args,
                 IPC::Message* reply_message);
 
   // Return load times of initial tabs.
