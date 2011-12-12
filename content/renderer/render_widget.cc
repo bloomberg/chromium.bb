@@ -679,7 +679,7 @@ void RenderWidget::AnimateIfNeeded() {
   int animationInterval = IsRenderingVSynced() ? 16 : 0;
 
   base::Time now = base::Time::Now();
-  if (now >= animation_floor_time_) {
+  if (now >= animation_floor_time_ || is_accelerated_compositing_active_) {
     TRACE_EVENT0("renderer", "RenderWidget::AnimateIfNeeded")
     animation_floor_time_ = now +
         base::TimeDelta::FromMilliseconds(animationInterval);
