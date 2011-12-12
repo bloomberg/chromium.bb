@@ -136,7 +136,6 @@ class ProfileImpl : public Profile,
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
   virtual void ClearNetworkingHistorySince(base::Time time) OVERRIDE;
   virtual GURL GetHomePage() OVERRIDE;
-  virtual NetworkActionPredictor* GetNetworkActionPredictor() OVERRIDE;
   virtual void SaveSessionState() OVERRIDE;
 
 #if defined(OS_CHROMEOS)
@@ -266,7 +265,6 @@ class ProfileImpl : public Profile,
   scoped_refptr<WebKitContext> webkit_context_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
-  scoped_ptr<NetworkActionPredictor> network_action_predictor_;
   bool profile_sync_service_created_;
   bool history_service_created_;
   bool favicon_service_created_;

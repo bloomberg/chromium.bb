@@ -1594,12 +1594,6 @@ GURL ProfileImpl::GetHomePage() {
   return home_page;
 }
 
-NetworkActionPredictor* ProfileImpl::GetNetworkActionPredictor() {
-  if (!network_action_predictor_.get())
-    network_action_predictor_.reset(new NetworkActionPredictor(this));
-  return network_action_predictor_.get();
-}
-
 void ProfileImpl::SaveSessionState() {
   if (!session_restore_enabled_)
     return;

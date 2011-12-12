@@ -88,7 +88,6 @@ NetworkActionPredictor::NetworkActionPredictor(Profile* profile)
 }
 
 NetworkActionPredictor::~NetworkActionPredictor() {
-  db_->OnPredictorDestroyed();
 }
 
 void NetworkActionPredictor::RegisterTransitionalMatches(
@@ -187,6 +186,10 @@ bool NetworkActionPredictor::IsPreconnectable(const AutocompleteMatch& match) {
     default:
       return false;
   }
+}
+
+void NetworkActionPredictor::Shutdown() {
+  db_->OnPredictorDestroyed();
 }
 
 void NetworkActionPredictor::Observe(

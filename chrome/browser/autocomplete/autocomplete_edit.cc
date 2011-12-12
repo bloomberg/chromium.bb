@@ -17,6 +17,7 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/network_action_predictor.h"
+#include "chrome/browser/autocomplete/network_action_predictor_factory.h"
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/command_updater.h"
@@ -216,8 +217,9 @@ void AutocompleteEditModel::OnChanged() {
 
   NetworkActionPredictor::Action recommended_action =
       NetworkActionPredictor::ACTION_NONE;
-  NetworkActionPredictor* network_action_predictor = user_input_in_progress() ?
-      profile_->GetNetworkActionPredictor() : NULL;
+  NetworkActionPredictor* network_action_predictor =
+      user_input_in_progress() ?
+      NetworkActionPredictorFactory::GetForProfile(profile_) : NULL;
   if (network_action_predictor) {
     network_action_predictor->RegisterTransitionalMatches(user_text_,
                                                           result());
@@ -402,7 +404,7 @@ void AutocompleteEditModel::Revert() {
   view_->SetWindowTextAndCaretPos(permanent_text_,
                                   has_focus_ ? permanent_text_.length() : 0);
   NetworkActionPredictor* network_action_predictor =
-      profile_->GetNetworkActionPredictor();
+      NetworkActionPredictorFactory::GetForProfile(profile_);
   if (network_action_predictor)
     network_action_predictor->ClearTransitionalMatches();
 }

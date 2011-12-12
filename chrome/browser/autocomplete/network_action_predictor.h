@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/autocomplete/network_action_predictor_database.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -36,7 +37,8 @@ class URLDatabase;
 // use PostTaskAndReply without fear of crashes if it is destroyed before the
 // reply triggers. This is necessary during initialization.
 class NetworkActionPredictor
-    : public content::NotificationObserver,
+    : public ProfileKeyedService,
+      public content::NotificationObserver,
       public base::SupportsWeakPtr<NetworkActionPredictor> {
  public:
   enum Action {
@@ -111,6 +113,9 @@ class NetworkActionPredictor
       DBIdCacheMap;
 
   static const int kMaximumDaysToKeepEntry;
+
+  // ProfileKeyedService
+  virtual void Shutdown() OVERRIDE;
 
   // NotificationObserver
   virtual void Observe(int type,

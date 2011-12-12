@@ -8,6 +8,7 @@
 #include <deque>
 #include <iterator>
 
+#include "chrome/browser/autocomplete/network_action_predictor_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
@@ -42,11 +43,12 @@ void AssertFactoriesBuilt() {
     BackgroundContentsServiceFactory::GetInstance();
     CloudPrintProxyServiceFactory::GetInstance();
     CookieSettings::Factory::GetInstance();
-    SpeechInputExtensionManager::InitializeFactory();
+    NetworkActionPredictorFactory::GetInstance();
     PersonalDataManagerFactory::GetInstance();
     PluginPrefsFactory::GetInstance();
     prerender::PrerenderManagerFactory::GetInstance();
     SessionServiceFactory::GetInstance();
+    SpeechInputExtensionManager::InitializeFactory();
     TabRestoreServiceFactory::GetInstance();
     TemplateURLServiceFactory::GetInstance();
 

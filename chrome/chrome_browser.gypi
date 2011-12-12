@@ -128,6 +128,8 @@
         'browser/autocomplete/network_action_predictor.h',
         'browser/autocomplete/network_action_predictor_database.cc',
         'browser/autocomplete/network_action_predictor_database.h',
+        'browser/autocomplete/network_action_predictor_factory.cc',
+        'browser/autocomplete/network_action_predictor_factory.h',
         'browser/autocomplete/search_provider.cc',
         'browser/autocomplete/search_provider.h',
         'browser/autocomplete/shortcuts_provider.cc',

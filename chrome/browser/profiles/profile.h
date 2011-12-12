@@ -60,7 +60,6 @@ class FindBarState;
 class GAIAInfoUpdateService;
 class HistoryService;
 class HostContentSettingsMap;
-class NetworkActionPredictor;
 class PasswordStore;
 class PrefService;
 class ProfileSyncService;
@@ -498,10 +497,6 @@ class Profile : public content::BrowserContext {
 
   // Returns the home page for this profile.
   virtual GURL GetHomePage() = 0;
-
-  // Returns the NetworkActionPredictor used by the Omnibox to decide when to
-  // prerender or prefetch a result.
-  virtual NetworkActionPredictor* GetNetworkActionPredictor() = 0;
 
   // Makes the session state, e.g., cookies, persistent across the next restart.
   virtual void SaveSessionState() {}

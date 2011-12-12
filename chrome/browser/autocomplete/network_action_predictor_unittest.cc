@@ -104,6 +104,7 @@ class NetworkActionPredictorTest : public testing::Test {
 
   void TearDown() {
     profile_.DestroyHistoryService();
+    predictor_->Shutdown();
   }
 
  protected:

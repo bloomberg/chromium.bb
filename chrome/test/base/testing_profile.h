@@ -293,7 +293,6 @@ class TestingProfile : public Profile {
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
   virtual void ClearNetworkingHistorySince(base::Time time) OVERRIDE;
   virtual GURL GetHomePage() OVERRIDE;
-  virtual NetworkActionPredictor* GetNetworkActionPredictor() OVERRIDE;
 
   virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
 
