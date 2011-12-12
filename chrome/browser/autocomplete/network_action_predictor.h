@@ -146,9 +146,12 @@ class NetworkActionPredictor
   bool TryDeleteOldEntries(HistoryService* service);
 
   // Uses local caches to calculate an exact percentage prediction that the user
-  // will take a particular match given what they have typed.
-  double ExactAlgorithm(const string16& user_text,
-                        const AutocompleteMatch& match) const;
+  // will take a particular match given what they have typed. |is_in_db| is set
+  // to differentiate trivial zero results resulting from a match not being
+  // found from actual zero results where the calculation returns 0.0.
+  double CalculateConfidence(const string16& user_text,
+                             const AutocompleteMatch& match,
+                             bool* is_in_db) const;
 
   // Adds a row to the database and caches.
   void AddRow(const DBCacheKey& key,

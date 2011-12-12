@@ -35,7 +35,7 @@ const float kConfidenceCutoff[] = {
   0.5f
 };
 
-const size_t kMinimumUserTextLength = 2;
+const size_t kMinimumUserTextLength = 1;
 const int kMinimumNumberOfHits = 3;
 
 COMPILE_ASSERT(arraysize(kConfidenceCutoff) ==
@@ -130,23 +130,20 @@ void NetworkActionPredictor::ClearTransitionalMatches() {
 NetworkActionPredictor::Action NetworkActionPredictor::RecommendAction(
     const string16& user_text,
     const AutocompleteMatch& match) const {
-  double confidence = 0.0;
+  DCHECK(prerender::GetOmniboxHeuristicToUse() ==
+           prerender::OMNIBOX_HEURISTIC_EXACT ||
+         prerender::GetOmniboxHeuristicToUse() ==
+           prerender::OMNIBOX_HEURISTIC_EXACT_FULL);
 
-  switch (prerender::GetOmniboxHeuristicToUse()) {
-    case prerender::OMNIBOX_HEURISTIC_EXACT:
-    case prerender::OMNIBOX_HEURISTIC_EXACT_FULL:
-      confidence = ExactAlgorithm(user_text, match);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  };
-
+  bool is_in_db = false;
+  const double confidence = CalculateConfidence(user_text, match, &is_in_db);
   DCHECK(confidence >= 0.0 && confidence <= 1.0);
 
-  UMA_HISTOGRAM_COUNTS_100("NetworkActionPredictor.Confidence_" +
-                           prerender::GetOmniboxHistogramSuffix(),
-                           confidence * 100);
+  if (is_in_db) {
+    UMA_HISTOGRAM_COUNTS_100("NetworkActionPredictor.Confidence_" +
+                             prerender::GetOmniboxHistogramSuffix(),
+                             confidence * 100);
+  }
 
   // Map the confidence to an action.
   Action action = ACTION_NONE;
@@ -383,11 +380,13 @@ bool NetworkActionPredictor::TryDeleteOldEntries(HistoryService* service) {
   return true;
 }
 
-double NetworkActionPredictor::ExactAlgorithm(
+double NetworkActionPredictor::CalculateConfidence(
     const string16& user_text,
-    const AutocompleteMatch& match) const {
+    const AutocompleteMatch& match,
+    bool* is_in_db) const {
   const DBCacheKey key = { user_text, match.destination_url };
 
+  *is_in_db = false;
   if (user_text.length() < kMinimumUserTextLength)
     return 0.0;
 
@@ -395,6 +394,7 @@ double NetworkActionPredictor::ExactAlgorithm(
   if (iter == db_cache_.end())
     return 0.0;
 
+  *is_in_db = true;
   const DBCacheValue& value = iter->second;
   if (value.number_of_hits < kMinimumNumberOfHits)
     return 0.0;
