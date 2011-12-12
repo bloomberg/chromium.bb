@@ -85,10 +85,7 @@ remoting.HostTableEntry.prototype.init = function(host, onRename, onDelete) {
   var hostStatus = document.createElement('td');
   if (host.status == 'ONLINE') {
     var hostUrl = chrome.extension.getURL('choice.html') +
-        '?mode=me2me' +
-        '&hostJid=' + encodeURIComponent(host.jabberId) +
-        '&hostPublicKey=' + encodeURIComponent(host.publicKey) +
-        '&hostName=' + encodeURIComponent(host.hostName);
+        '?mode=me2me&hostId=' + encodeURIComponent(host.hostId);
     var connectButton = document.createElement('button');
     connectButton.setAttribute('class', 'mode-select-button');
     connectButton.setAttribute('type', 'button');

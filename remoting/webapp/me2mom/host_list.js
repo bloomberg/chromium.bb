@@ -16,6 +16,7 @@ var remoting = remoting || {};
  * Create a host list consisting of the specified HTML elements, which should
  * have a common parent that contains only host-list UI as it will be hidden
  * if the host-list is empty.
+ *
  * @constructor
  * @param {Element} table The HTML <table> to contain host-list.
  * @param {Element} errorDiv The HTML <div> to display error messages.
@@ -35,18 +36,40 @@ remoting.HostList = function(table, errorDiv) {
    * @type {Array.<remoting.HostTableEntry>}
    * @private
    */
-  this.hostTableEntries_ = null;
+  this.hostTableEntries_ = [];
+  /**
+   * @type {Array.<remoting.Host>}
+   * @private
+   */
+  this.hosts_ = [];
+  /**
+   * @type {string}
+   * @private
+   */
+  this.lastError_ = '';
+
+  // Load the cache of the last host-list, if present.
+  var cached = /** @type {string} */
+      (window.localStorage.getItem(remoting.HostList.HOSTS_KEY));
+  if (cached) {
+    try {
+      this.hosts_ = /** @type {Array} */ JSON.parse(cached);
+    } catch (err) {
+      console.error('Invalid host list cache:', /** @type {*} */(err));
+    }
+  }
 };
 
 /**
  * Search the host list for a host with the specified id.
+ *
  * @param {string} hostId The unique id of the host.
- * @return {remoting.HostTableEntry?} The host table entry, if any.
+ * @return {remoting.Host?} The host, if any.
  */
 remoting.HostList.prototype.getHostForId = function(hostId) {
-  for (var i = 0; i < this.hostTableEntries_.length; ++i) {
-    if (this.hostTableEntries_[i].host.hostId == hostId) {
-      return this.hostTableEntries_[i];
+  for (var i = 0; i < this.hosts_.length; ++i) {
+    if (this.hosts_[i].hostId == hostId) {
+      return this.hosts_[i];
     }
   }
   return null;
@@ -55,16 +78,18 @@ remoting.HostList.prototype.getHostForId = function(hostId) {
 /**
  * Query the Remoting Directory for the user's list of hosts.
  *
+ * @param {function(boolean):void} onDone Callback invoked with true on success
+ *     or false on failure.
  * @return {void} Nothing.
  */
-remoting.HostList.prototype.refresh = function() {
+remoting.HostList.prototype.refresh = function(onDone) {
   /** @type {remoting.HostList} */
   var that = this;
-  /** @param {XMLHttpRequest} xhr */
+  /** @param {XMLHttpRequest} xhr The response from the server. */
   var parseHostListResponse = function(xhr) {
-    that.parseHostListResponse_(xhr);
+    that.parseHostListResponse_(xhr, onDone);
   }
-  /** @param {string} token */
+  /** @param {string} token The OAuth2 token. */
   var getHosts = function(token) {
     var headers = { 'Authorization': 'OAuth ' + token };
     remoting.xhr.get(
@@ -72,7 +97,7 @@ remoting.HostList.prototype.refresh = function() {
         parseHostListResponse, '', headers);
   };
   remoting.oauth2.callWithToken(getHosts);
-}
+};
 
 /**
  * Handle the results of the host list request.  A success response will
@@ -80,41 +105,50 @@ remoting.HostList.prototype.refresh = function() {
  * able to successfully parse it.
  *
  * @param {XMLHttpRequest} xhr The XHR object for the host list request.
+ * @param {function(boolean):void} onDone The callback passed to |refresh|.
  * @return {void} Nothing.
+ * @private
  */
-remoting.HostList.prototype.parseHostListResponse_ = function(xhr) {
+remoting.HostList.prototype.parseHostListResponse_ = function(xhr, onDone) {
+  this.hosts_ = [];
+  this.lastError_ = '';
   try {
     if (xhr.status == 200) {
       var parsed_response =
           /** @type {{data: {items: Array}}} */ JSON.parse(xhr.responseText);
       if (parsed_response.data && parsed_response.data.items) {
-        this.setHosts_(parsed_response.data.items);
+        this.hosts_ = parsed_response.data.items;
       }
     } else {
       // Some other error.
       console.error('Bad status on host list query: ', xhr);
-      // For most errors in the 4xx range, tell the user to re-authorize us.
       if (xhr.status == 403) {
         // The user's account is not enabled for Me2Me, so fail silently.
-      } else if (xhr.status >= 400 && xhr.status <= 499) {
-        this.showError_(remoting.Error.GENERIC);
+      } else if (xhr.status >= 400 && xhr.status < 500) {
+        // For other errors, tell the user to re-authorize us.
+        this.lastError_ = remoting.Error.GENERIC;
+      } else {
+        this.lastError_ = remoting.Error.UNEXPECTED;
       }
     }
   } catch (er) {
     var typed_er = /** @type {Object} */ (er);
     console.error('Error processing response: ', xhr, typed_er);
+    this.lastError_ = remoting.Error.UNEXPECTED;
   }
-}
+  window.localStorage.setItem(remoting.HostList.HOSTS_KEY,
+                              JSON.stringify(this.hosts_));
+  onDone(this.lastError_ == '');
+};
 
 /**
- * Refresh the host list with up-to-date details.
- * @param {Array.<remoting.Host>} hosts The new host list.
+ * Display the list of hosts or error condition.
+ *
  * @return {void} Nothing.
- * @private
  */
-remoting.HostList.prototype.setHosts_ = function(hosts) {
+remoting.HostList.prototype.display = function() {
   this.table_.innerHTML = '';
-  this.showError_(null);
+  this.errorDiv_.innerText = '';
   this.hostTableEntries_ = [];
 
   /**
@@ -130,9 +164,9 @@ remoting.HostList.prototype.setHosts_ = function(hosts) {
    */
   var onDelete = function(hostTableEntry) { that.deleteHost_(hostTableEntry); }
 
-  for (var i = 0; i < hosts.length; ++i) {
+  for (var i = 0; i < this.hosts_.length; ++i) {
     /** @type {remoting.Host} */
-    var host = hosts[i];
+    var host = this.hosts_[i];
     // Validate the entry to make sure it has all the fields we expect.
     if (host.hostName && host.hostId && host.status && host.jabberId &&
         host.publicKey) {
@@ -143,28 +177,16 @@ remoting.HostList.prototype.setHosts_ = function(hosts) {
     }
   }
 
-  this.showOrHide_(this.hostTableEntries_.length != 0);
-};
-
-/**
- * Display a localized error message.
- * @param {remoting.Error?} errorTag The error to display, or NULL to clear any
- *     previous error.
- * @return {void} Nothing.
- */
-remoting.HostList.prototype.showError_ = function(errorTag) {
-  this.table_.innerHTML = '';
-  if (errorTag) {
-    l10n.localizeElementFromTag(this.errorDiv_,
-                                /** @type {string} */ (errorTag));
-    this.showOrHide_(true);
-  } else {
-    this.errorDiv_.innerText = '';
+  if (this.lastError_ != '') {
+    l10n.localizeElementFromTag(this.errorDiv_, this.lastError_);
   }
+
+  this.showOrHide_(this.hosts_.length != 0 || this.lastError_ != '');
 };
 
 /**
  * Show or hide the host-list UI.
+ *
  * @param {boolean} show True to show the UI, or false to hide it.
  * @return {void} Nothing.
  * @private
@@ -193,7 +215,7 @@ remoting.HostList.prototype.deleteHost_ = function(hostTableEntry) {
     this.hostTableEntries_.splice(index, 1);
   }
 
-  /** @param {string} token */
+  /** @param {string} token The OAuth2 token. */
   var deleteHost = function(token) {
     var headers = { 'Authorization': 'OAuth ' + token };
     remoting.xhr.remove(
@@ -239,6 +261,11 @@ remoting.HostList.prototype.renameHost_ = function(hostTableEntry) {
  * @private
  */
 remoting.HostList.COLLAPSED_ = 'collapsed';
+
+/**
+ * Key name under which Me2Me hosts are cached.
+ */
+remoting.HostList.HOSTS_KEY = 'me2me-cached-hosts';
 
 /** @type {remoting.HostList} */
 remoting.hostList = null;

@@ -70,7 +70,8 @@ remoting.setMode = function(mode) {
     document.addEventListener('keydown', remoting.DebugLog.onKeydown, false);
   }
   if (mode == remoting.AppMode.HOME) {
-    remoting.hostList.refresh();
+    var display = function() { remoting.hostList.display(); };
+    remoting.hostList.refresh(display);
   }
 };
 

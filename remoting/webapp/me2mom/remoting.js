@@ -20,7 +20,8 @@ remoting.Error = {
   HOST_IS_OFFLINE: /*i18n-content*/'ERROR_HOST_IS_OFFLINE',
   INCOMPATIBLE_PROTOCOL: /*i18n-content*/'ERROR_INCOMPATIBLE_PROTOCOL',
   BAD_PLUGIN_VERSION: /*i18n-content*/'ERROR_BAD_PLUGIN_VERSION',
-  GENERIC: /*i18n-content*/'ERROR_GENERIC'
+  GENERIC: /*i18n-content*/'ERROR_GENERIC',
+  UNEXPECTED: /*i18n-content*/'ERROR_UNEXPECTED'
 };
 
 (function() {
@@ -55,10 +56,8 @@ remoting.init = function() {
   var urlParams = getUrlParameters();
   if ('mode' in urlParams) {
     if (urlParams['mode'] == 'me2me') {
-      var hostJid = urlParams['hostJid'];
-      var hostPublicKey = urlParams['hostPublicKey'];
-      var hostName = urlParams['hostName'];
-      remoting.connectHost(hostJid, hostPublicKey, hostName);
+      var hostId = urlParams['hostId'];
+      remoting.connectHost(hostId, true);
       return;
     }
   }

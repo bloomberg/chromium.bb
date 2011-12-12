@@ -36,6 +36,12 @@ remoting.accessCode = '';
 remoting.hostJid = '';
 
 /**
+ * @type {string} For Me2Me connections, the id of the current host, used when
+ *     (re-)connecting, as the JID may have changed.
+ */
+remoting.hostId = '';
+
+/**
  * @type {string} The host's public key, returned by the server.
  */
 remoting.hostPublicKey = '';
@@ -248,7 +254,7 @@ function onClientStateChange_(oldState, newState) {
                        remoting.clientSession.error);
     if (remoting.clientSession.error ==
         remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE) {
-      showConnectError_(remoting.Error.HOST_IS_OFFLINE);
+      retryConnectOrReportOffline_();
     } else if (remoting.clientSession.error ==
                remoting.ClientSession.ConnectionError.SESSION_REJECTED) {
       showConnectError_(remoting.Error.INVALID_ACCESS_CODE);
@@ -267,6 +273,30 @@ function onClientStateChange_(oldState, newState) {
     // This should only happen if the web-app and client plugin get out of
     // sync, and even then the version check should allow compatibility.
     showConnectError_(remoting.Error.MISSING_PLUGIN);
+  }
+}
+
+/**
+ * If we have a hostId to retry, try refreshing it and connecting again. If not,
+ * then show the 'host offline' error message.
+ *
+ * @return {void} Nothing.
+ */
+function retryConnectOrReportOffline_() {
+  if (remoting.hostId) {
+    console.log('Connection failed. Retrying.');
+    /** @param {boolean} success True if the refresh was successful. */
+    var onDone = function(success) {
+      if (success) {
+        remoting.connectHost(remoting.hostId, false);
+      } else {
+        showConnectError_(remoting.Error.HOST_IS_OFFLINE);
+      }
+    };
+    remoting.hostList.refresh(onDone);
+  } else {
+    console.log('Connection failed. Not retrying.');
+    showConnectError_(remoting.Error.HOST_IS_OFFLINE);
   }
 }
 
@@ -396,24 +426,31 @@ function updateStatistics_() {
 
 
 /**
- * Start a connection to the specified host, using the stored details.
+ * Start a connection to the specified host, using the cached details.
  *
- * @param {string} hostJid The jabber Id of the host.
- * @param {string} hostPublicKey The public key of the host.
- * @param {string} hostName The name of the host.
+ * @param {string} hostId The unique id of the host.
+ * @param {boolean} retryIfOffline If true and the host can't be contacted,
+ *     refresh the host list and try again. This allows bookmarked hosts to
+ *     work even if they reregister with Talk and get a different Jid.
  * @return {void} Nothing.
  */
-remoting.connectHost = function(hostJid, hostPublicKey, hostName) {
-  // TODO(jamiewalch): Instead of passing the jid in the URL, cache it in local
-  // storage so that host bookmarks can be implemented efficiently.
-  remoting.hostJid = hostJid;
-  remoting.hostPublicKey = hostPublicKey;
-  document.getElementById('connected-to').innerText = hostName;
-  document.title = document.title + ': ' + hostName;
-
+remoting.connectHost = function(hostId, retryIfOffline) {
   remoting.debug.log('Connecting to host...');
   remoting.currentConnectionType = remoting.ConnectionType.Me2Me;
+
+  // Storing the hostId indicates that it should be retried on failure.
+  remoting.hostId = retryIfOffline ? hostId : '';
   remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
+
+  var host = remoting.hostList.getHostForId(hostId);
+  if (!host) {
+    retryConnectOrReportOffline_();
+    return;
+  }
+  remoting.hostJid = host.jabberId;
+  remoting.hostPublicKey = host.publicKey;
+  document.getElementById('connected-to').innerText = host.hostName;
+  document.title = document.title + ': ' + host.hostName;
 
   if (!remoting.wcsLoader) {
     remoting.wcsLoader = new remoting.WcsLoader();
@@ -432,10 +469,10 @@ remoting.connectHost = function(hostJid, hostPublicKey, hostName) {
  */
 remoting.connectHostWithWcs = function() {
   remoting.clientSession =
-  new remoting.ClientSession(
-      remoting.hostJid, remoting.hostPublicKey,
-      '', /** @type {string} */ (remoting.oauth2.getCachedEmail()),
-      onClientStateChange_);
+      new remoting.ClientSession(
+          remoting.hostJid, remoting.hostPublicKey,
+          '', /** @type {string} */ (remoting.oauth2.getCachedEmail()),
+          onClientStateChange_);
   /** @param {string} token The auth token. */
   var createPluginAndConnect = function(token) {
     remoting.clientSession.createPluginAndConnect(

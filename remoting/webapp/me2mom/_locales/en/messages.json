@@ -103,6 +103,10 @@
     "message": "The server failed to respond to the network request.",
     "description": "Error displayed by the client if the server does not respond to a network request."
   },
+  "ERROR_UNEXPECTED": {
+    "message": "An unexpected error occurred. Please report this problem to the developers.",
+    "description": "Error displayed in situations where things go wrong in ways not anticipated by the developers. There is typically no user-workaround to suggest, other than reporting the error so that we can investigate further."
+  },
   "FOOTER_WAITING": {
     "message": "waiting for connection\u2026",
     "description": "Footer text displayed at the host after an access code has been generated, but before a client connects."
