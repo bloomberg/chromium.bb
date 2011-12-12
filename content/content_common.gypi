@@ -292,7 +292,7 @@
         ],
       },
     }],
-    ['use_x11 == 1 and target_arch != "arm"', {
+    ['use_x11 == 1 and (target_arch != "arm" or chromeos == 0)', {
       'sources': [
         'common/gpu/x_util.cc',
         'common/gpu/x_util.h',
@@ -303,7 +303,7 @@
         '../gpu/gpu.gyp:command_buffer_service',
       ],
     }],
-    ['target_arch=="arm"', {
+    ['target_arch=="arm" and chromeos == 1', {
       'dependencies': [
         '../media/media.gyp:media',
       ],
