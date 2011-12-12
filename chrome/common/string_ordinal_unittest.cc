@@ -29,6 +29,22 @@ TEST(StringOrdinalTest, LessThan) {
   EXPECT_FALSE(middle_value.LessThan(small_value));
 }
 
+TEST(StringOrdinalTest, GreaterThan) {
+  StringOrdinal small_value("b");
+  StringOrdinal middle_value("n");
+  StringOrdinal big_value("z");
+
+  EXPECT_TRUE(big_value.GreaterThan(small_value));
+  EXPECT_TRUE(big_value.GreaterThan(middle_value));
+  EXPECT_TRUE(middle_value.GreaterThan(small_value));
+
+
+  EXPECT_FALSE(small_value.GreaterThan(middle_value));
+  EXPECT_FALSE(small_value.GreaterThan(big_value));
+  EXPECT_FALSE(middle_value.GreaterThan(big_value));
+}
+
+
 // Tests the CreateBetween StringOrdinal function by calling
 // on the small_value with the large_value as the  parameter and
 // vice-versa.

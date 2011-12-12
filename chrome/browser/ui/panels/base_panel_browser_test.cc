@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/string_ordinal.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/public/browser/notification_service.h"
@@ -378,6 +379,6 @@ scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(
   EXPECT_TRUE(extension.get());
   EXPECT_STREQ("", error.c_str());
   browser()->GetProfile()->GetExtensionService()->
-      OnExtensionInstalled(extension.get(), false, -1);
+      OnExtensionInstalled(extension.get(), false, StringOrdinal());
   return extension;
 }

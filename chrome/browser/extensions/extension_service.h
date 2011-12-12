@@ -393,7 +393,9 @@ class ExtensionService
 
   // Called by the backend when an extension has been installed.
   void OnExtensionInstalled(
-      const Extension* extension, bool from_webstore, int page_index);
+      const Extension* extension,
+      bool from_webstore,
+      const StringOrdinal& page_ordinal);
 
   // Initializes the |extension|'s active permission set and disables the
   // extension if the privilege level has increased (e.g., due to an upgrade).

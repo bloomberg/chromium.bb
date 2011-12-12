@@ -174,6 +174,10 @@ StringOrdinal::StringOrdinal() : string_ordinal_(""),
                                  is_valid_(false) {
 }
 
+StringOrdinal StringOrdinal::CreateInitialOrdinal() {
+  return StringOrdinal(std::string(1, kMidDigit));
+}
+
 bool StringOrdinal::IsValid() const {
   return is_valid_;
 }
@@ -182,6 +186,12 @@ bool StringOrdinal::LessThan(const StringOrdinal& other) const {
   CHECK(IsValid());
   CHECK(other.IsValid());
   return string_ordinal_ < other.string_ordinal_;
+}
+
+bool StringOrdinal::GreaterThan(const StringOrdinal& other) const {
+  CHECK(IsValid());
+  CHECK(other.IsValid());
+  return string_ordinal_ > other.string_ordinal_;
 }
 
 bool StringOrdinal::Equal(const StringOrdinal& other) const {
@@ -237,4 +247,9 @@ StringOrdinal StringOrdinal::CreateAfter() const {
 std::string StringOrdinal::ToString() const {
   CHECK(IsValid());
   return string_ordinal_;
+}
+
+bool StringOrdinalLessThan::operator() (const StringOrdinal& lhs,
+                                        const StringOrdinal& rhs) const {
+  return lhs.LessThan(rhs);
 }

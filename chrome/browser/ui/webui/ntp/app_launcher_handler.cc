@@ -67,6 +67,10 @@ extension_misc::AppLaunchBucket ParseLaunchSource(
 
 }  // namespace
 
+AppLauncherHandler::AppInstallInfo::AppInstallInfo() {}
+
+AppLauncherHandler::AppInstallInfo::~AppInstallInfo() {}
+
 AppLauncherHandler::AppLauncherHandler(ExtensionService* extension_service)
     : extension_service_(extension_service),
       ignore_changes_(false),
@@ -158,27 +162,32 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   if (notification)
     value->Set("notification", SerializeNotification(*notification));
 
-  int app_launch_index = prefs->GetAppLaunchIndex(extension->id());
-  if (app_launch_index == -1) {
-    // Make sure every app has a launch index (some predate the launch index).
-    // The webstore's app launch index is set to -2 to make sure it's first.
-    // The next time the user drags (any) app this will be set to something
-    // sane (i.e. >= 0).
-    app_launch_index = extension->id() == extension_misc::kWebStoreAppId ?
-        -2 : prefs->GetNextAppLaunchIndex(0);
-    prefs->SetAppLaunchIndex(extension->id(), app_launch_index);
-  }
-  value->SetInteger("app_launch_index", app_launch_index);
-
-  int page_index = prefs->GetPageIndex(extension->id());
-  if (page_index < 0) {
-    // Make sure every app has a page index (some predate the page index).
+  StringOrdinal page_ordinal = prefs->GetPageOrdinal(extension->id());
+  if (!page_ordinal.IsValid()) {
+    // Make sure every app has a page ordinal (some predate the page ordinal).
     // The webstore app should be on the first page.
-    page_index = extension->id() == extension_misc::kWebStoreAppId ?
-        0 : prefs->GetNaturalAppPageIndex();
-    prefs->SetPageIndex(extension->id(), page_index);
+    page_ordinal = extension->id() == extension_misc::kWebStoreAppId ?
+        prefs->CreateFirstAppPageOrdinal() : prefs->GetNaturalAppPageOrdinal();
+    prefs->SetPageOrdinal(extension->id(), page_ordinal);
   }
-  value->SetInteger("page_index", page_index);
+  // We convert the page_ordinal to an integer because the pages are referenced
+  // from within an array in the javascript code, which can't be easily
+  // changed to handle the StringOrdinal values, so we do the conversion here.
+  value->SetInteger("page_index",
+                    prefs->PageStringOrdinalAsInteger(page_ordinal));
+
+  StringOrdinal app_launch_ordinal =
+      prefs->GetAppLaunchOrdinal(extension->id());
+  if (!app_launch_ordinal.IsValid()) {
+    // Make sure every app has a launch ordinal (some predate the launch
+    // ordinal). The webstore's app launch ordinal is always set to the first
+    // position.
+    app_launch_ordinal = extension->id() == extension_misc::kWebStoreAppId ?
+        prefs->CreateFirstAppLaunchOrdinal(page_ordinal) :
+        prefs->CreateNextAppLaunchOrdinal(page_ordinal);
+    prefs->SetAppLaunchOrdinal(extension->id(), app_launch_ordinal);
+  }
+  value->SetString("app_launch_ordinal", app_launch_ordinal.ToString());
 }
 
 WebUIMessageHandler* AppLauncherHandler::Attach(WebUI* web_ui) {
@@ -327,7 +336,7 @@ void AppLauncherHandler::Observe(int type,
 }
 
 void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
-  // CreateAppInfo and ClearPageIndex can change the extension prefs.
+  // CreateAppInfo and ClearPageOrdinal can change the extension prefs.
   AutoReset<bool> auto_reset(&ignore_changes_, true);
 
   ListValue* list = new ListValue();
@@ -341,11 +350,11 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
     } else {
       // This is necessary because in some previous versions of chrome, we set a
       // page index for non-app extensions. Old profiles can persist this error,
-      // and this fixes it. If we don't fix it, GetNaturalAppPageIndex() doesn't
-      // work. See http://crbug.com/98325
+      // and this fixes it. This caused GetNaturalAppPageIndex() to break
+      // (see http://crbug.com/98325) before it was an ordinal value.
       ExtensionPrefs* prefs = extension_service_->extension_prefs();
-      if (prefs->GetPageIndex(extension->id()) != -1)
-        prefs->ClearPageIndex(extension->id());
+      if (prefs->GetPageOrdinal(extension->id()).IsValid())
+        prefs->ClearPageOrdinal(extension->id());
     }
   }
 
@@ -643,17 +652,26 @@ void AppLauncherHandler::HandleReorderApps(const ListValue* args) {
   CHECK(args->GetString(0, &dragged_app_id));
   CHECK(args->GetList(1, &app_order));
 
-  std::vector<std::string> extension_ids;
+  std::string predecessor_to_moved_ext;
+  std::string successor_to_moved_ext;
   for (size_t i = 0; i < app_order->GetSize(); ++i) {
     std::string value;
-    if (app_order->GetString(i, &value))
-      extension_ids.push_back(value);
+    if (app_order->GetString(i, &value) && value == dragged_app_id) {
+      if (i > 0)
+        CHECK(app_order->GetString(i - 1, &predecessor_to_moved_ext));
+      if (i + 1 < app_order->GetSize())
+        CHECK(app_order->GetString(i + 1, &successor_to_moved_ext));
+      break;
+    }
   }
 
   // Don't update the page; it already knows the apps have been reordered.
   AutoReset<bool> auto_reset(&ignore_changes_, true);
   extension_service_->extension_prefs()->SetAppDraggedByUser(dragged_app_id);
-  extension_service_->extension_prefs()->SetAppLauncherOrder(extension_ids);
+  extension_service_->extension_prefs()->OnExtensionMoved(
+      dragged_app_id,
+      predecessor_to_moved_ext,
+      successor_to_moved_ext);
 }
 
 void AppLauncherHandler::HandleSetPageIndex(const ListValue* args) {
@@ -661,11 +679,14 @@ void AppLauncherHandler::HandleSetPageIndex(const ListValue* args) {
   double page_index;
   CHECK(args->GetString(0, &extension_id));
   CHECK(args->GetDouble(1, &page_index));
+  const StringOrdinal& page_ordinal =
+      extension_service_->extension_prefs()->PageIntegerAsStringOrdinal(
+          static_cast<size_t>(page_index));
 
   // Don't update the page; it already knows the apps have been reordered.
   AutoReset<bool> auto_reset(&ignore_changes_, true);
-  extension_service_->extension_prefs()->SetPageIndex(extension_id,
-      static_cast<int>(page_index));
+  extension_service_->extension_prefs()->SetPageOrdinal(extension_id,
+      page_ordinal);
 }
 
 void AppLauncherHandler::HandlePromoSeen(const ListValue* args) {
@@ -698,6 +719,9 @@ void AppLauncherHandler::HandleGenerateAppForLink(const ListValue* args) {
 
   double page_index;
   CHECK(args->GetDouble(2, &page_index));
+  const StringOrdinal& page_ordinal =
+      extension_service_->extension_prefs()->PageIntegerAsStringOrdinal(
+          static_cast<size_t>(page_index));
 
   Profile* profile = Profile::FromWebUI(web_ui_);
   FaviconService* favicon_service =
@@ -711,7 +735,7 @@ void AppLauncherHandler::HandleGenerateAppForLink(const ListValue* args) {
   install_info->is_bookmark_app = true;
   install_info->title = title;
   install_info->app_url = launch_url;
-  install_info->page_index = static_cast<int>(page_index);
+  install_info->page_ordinal = page_ordinal;
 
   FaviconService::Handle h = favicon_service->GetFaviconForURL(
       launch_url, history::FAVICON, &favicon_consumer_,
@@ -785,7 +809,7 @@ void AppLauncherHandler::OnFaviconForApp(FaviconService::Handle handle,
 
   scoped_refptr<CrxInstaller> installer(
       CrxInstaller::Create(extension_service_, NULL));
-  installer->set_page_index(install_info->page_index);
+  installer->set_page_ordinal(install_info->page_ordinal);
   installer->InstallWebApp(*web_app);
   attempted_bookmark_app_install_ = true;
 }
@@ -801,12 +825,12 @@ void AppLauncherHandler::SetAppToBeHighlighted() {
 
 // static
 void AppLauncherHandler::RegisterUserPrefs(PrefService* pref_service) {
-  // TODO(csilv): We will want this to be a syncable preference instead.
+  // TODO(csharp): We will want this to be a syncable preference instead.
   pref_service->RegisterListPref(prefs::kNTPAppPageNames,
                                  PrefService::UNSYNCABLE_PREF);
 }
 
-// statiic
+// static
 void AppLauncherHandler::RecordWebStoreLaunch(bool promo_active) {
   UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
                             extension_misc::APP_LAUNCH_NTP_WEBSTORE,
