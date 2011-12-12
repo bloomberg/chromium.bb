@@ -51,6 +51,11 @@ class BrowserProcessImpl : public BrowserProcess,
   void PreStartThread(content::BrowserThread::ID identifier);
   void PostStartThread(content::BrowserThread::ID identifier);
 
+  // Called after the threads have been created but before the message loops
+  // starts running. Allows the browser process to do any initialization that
+  // requires all threads running.
+  void PreMainMessageLoopRun();
+
   // Most cleanup is done by these functions, driven from
   // ChromeBrowserMain based on notifications from the content
   // framework, rather than in the destructor, so that we can

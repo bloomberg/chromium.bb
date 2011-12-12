@@ -1446,6 +1446,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // watch the other threads and they must be running.
   browser_process_->watchdog_thread();
 
+  // Do any initializating in the browser process that requires all threads
+  // running.
+  browser_process_->PreMainMessageLoopRun();
+
 #if defined(USE_WEBKIT_COMPOSITOR)
   // We need to ensure WebKit has been initialized before we start the WebKit
   // compositor. This is done by the ResourceDispatcherHost on creation.
