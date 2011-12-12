@@ -227,9 +227,11 @@ void CoreChromeOSOptionsHandler::NotifySettingsChanged(
     NOTREACHED();
     return;
   }
-  for (PreferenceCallbackMap::const_iterator iter =
-      pref_callback_map_.find(*setting_name);
-      iter != pref_callback_map_.end(); ++iter) {
+  std::pair<PreferenceCallbackMap::const_iterator,
+            PreferenceCallbackMap::const_iterator> range =
+      pref_callback_map_.equal_range(*setting_name);
+  for (PreferenceCallbackMap::const_iterator iter = range.first;
+      iter != range.second; ++iter) {
     const std::wstring& callback_function = iter->second;
     ListValue result_value;
     result_value.Append(base::Value::CreateStringValue(setting_name->c_str()));
