@@ -75,6 +75,9 @@
 #define NACL_sys_tls_get                84
 #define NACL_sys_second_tls_set         85
 #define NACL_sys_second_tls_get         86
+#define NACL_sys_exception_handler      87
+#define NACL_sys_exception_stack        88
+#define NACL_sys_exception_clear_flag   89
 
 #define NACL_sys_sem_create             100
 #define NACL_sys_sem_wait               101

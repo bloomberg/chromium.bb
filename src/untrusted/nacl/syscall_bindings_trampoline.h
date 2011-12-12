@@ -189,6 +189,14 @@ typedef int (*TYPE_nacl_dyncode_modify) (void *dest, const void *src,
 
 typedef int (*TYPE_nacl_dyncode_delete) (void *dest, size_t size);
 
+typedef int (*TYPE_nacl_exception_handler) (
+                  void (*handler) (int eip, int esp),
+                  void (**old_handler) (int eip, int esp));
+
+typedef int (*TYPE_nacl_exception_stack) (void* stack, size_t size);
+
+typedef int (*TYPE_nacl_exception_clear_flag) (void);
+
 typedef int (*TYPE_nacl_test_infoleak) (void);
 
 #if __cplusplus

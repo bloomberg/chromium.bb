@@ -14,7 +14,7 @@
 
 
 static void NaClThreadStartupCheck() {
-  CHECK(sizeof(struct NaClThreadContext) == 64);
+  CHECK(sizeof(struct NaClThreadContext) == 0x48);
 }
 
 

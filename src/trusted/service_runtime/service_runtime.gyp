@@ -110,6 +110,7 @@
                 'win/nacl_thread_nice.c',
                 'win/sel_memory.c',
                 'win/sel_segments.c',
+                'win/thread_handle_map.c',
               ],
             }],
             # TODO(gregoryd): move arm-specific stuff into a separate gyp file.
@@ -219,6 +220,11 @@
             '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:ldrhandle',
           ],
         }],
+        ['OS=="win"', {
+          'sources': [
+             'win/debug_exception_handler_32.c',
+          ],
+        }],
       ],
     }, {
       'target_name': 'container',
@@ -313,6 +319,9 @@
                 '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:ldrhandle64',
               ],
             }],
+          ],
+          'sources': [
+            'win/debug_exception_handler_64.c',
           ],
         }, {
           'target_name': 'container64',

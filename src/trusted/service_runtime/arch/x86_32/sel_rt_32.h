@@ -11,6 +11,7 @@
 #ifndef __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_32_SEL_RT_32_H__
 #define __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_32_SEL_RT_32_H__ 1
 
+#include <stddef.h>
 #include "native_client/src/include/portability.h"
 
 uint16_t NaClGetGlobalCs(void);
@@ -114,6 +115,14 @@ struct NaClThreadContext {
   /*          38 */
   uint16_t    cs; /* spring_addr and cs must be adjacent */
   /*          3c */
+  char        dummy1[2];
+  nacl_reg_t  exception_stack;
+  /*          40 */
+  nacl_reg_t  exception_flag;
+  /*          44 */
 };
+
+#define NACL_THREAD_CONTEXT_EXCEPTION_HANDLER_OFFSET \
+            offsetof(struct NaClThreadContext, exception_stack)
 
 #endif /* __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_32_SEL_RT_32_H__ */

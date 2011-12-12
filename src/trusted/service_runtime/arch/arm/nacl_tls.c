@@ -38,7 +38,7 @@ uint32_t NaClGetThreadIdx(struct NaClAppThread *natp) {
 }
 
 static void NaClThreadStartupCheck() {
-  CHECK(sizeof(struct NaClThreadContext) == 0x38);
+  CHECK(sizeof(struct NaClThreadContext) == 0x40);
 }
 
 

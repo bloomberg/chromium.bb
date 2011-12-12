@@ -181,3 +181,11 @@ static INLINE uintptr_t NaClSandboxCodeAddr(struct NaClApp *nap,
 # endif
 #endif
 }
+
+static INLINE int NaClIsValidJumpTarget(struct NaClApp *nap,
+                                        uintptr_t addr) {
+  if (0 != (addr & (((uintptr_t) nap->bundle_size) - 1))) {
+    return 0;
+  }
+  return addr < nap->dynamic_text_end;
+}

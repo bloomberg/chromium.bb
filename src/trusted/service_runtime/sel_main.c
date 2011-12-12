@@ -53,6 +53,9 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_qualify.h"
 #include "native_client/src/trusted/service_runtime/win/exception_patch/ntdll_patch.h"
+#if NACL_WINDOWS
+#include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
+#endif
 
 static void VmentryPrinter(void           *state,
                     struct NaClVmmapEntry *vmep) {
@@ -195,6 +198,7 @@ int main(int  argc,
   int                           skip_qualification = 0;
   int                           enable_debug_stub = 0;
   int                           handle_signals = 0;
+  int                           exception_handling = 0;
   struct NaClPerfCounter        time_all_main;
   const char                    **envp;
   struct NaClEnvCleanser        env_cleanser;
@@ -270,8 +274,11 @@ int main(int  argc,
 #if NACL_LINUX
                        "+D:"
 #endif
-                       "aB:cE:f:Fgh:i:Il:Qr:RsSvw:X:")) != -1) {
+                       "aB:ceE:f:Fgh:i:Il:Qr:RsSvw:X:")) != -1) {
     switch (opt) {
+      case 'e':
+        exception_handling = 1;
+        break;
 #if NACL_LINUX
       case 'D':
         handle_r_debug(optarg, argv[0]);
@@ -379,6 +386,27 @@ int main(int  argc,
         fprintf(stderr, "ERROR: unknown option: [%c]\n\n", opt);
         PrintUsage();
         exit(-1);
+    }
+  }
+
+  if (exception_handling) {
+#if NACL_WINDOWS
+    int status;
+    DWORD exit_code;
+    status = NaClLaunchAndDebugItself(argv[0], &exit_code);
+    if (status == DEBUG_EXCEPTION_HANDLER_NOT_SUPPORTED) {
+      exception_handling = 0;
+    } else if (status == DEBUG_EXCEPTION_HANDLER_SUCCESS) {
+      return exit_code;
+    } else if (status == DEBUG_EXCEPTION_HANDLER_ERROR) {
+      fprintf(stderr, "ERROR in debug exception handling %d\n", GetLastError());
+      return -1;
+    }
+#else
+    exception_handling = 0;
+#endif
+    if (!exception_handling) {
+      fprintf(stderr, "WARNING: exception handling is not supported\n");
     }
   }
 

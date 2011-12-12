@@ -310,6 +310,8 @@ struct NaClApp {
 
   int                       enable_debug_stub;
   struct NaClDebugCallbacks *debug_stub_callbacks;
+  struct NaClMutex          exception_mu;
+  uint32_t                  exception_handler;
 };
 
 
@@ -603,6 +605,13 @@ int NaClMakePcrelThunk(struct NaClApp *nap);
 int NaClMakeDispatchThunk(struct NaClApp *nap);
 void NaClPatchOneTrampolineCall(uintptr_t call_target_addr,
                                 uintptr_t target_addr);
+
+#endif
+
+#if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 \
+     && NACL_BUILD_SUBARCH == 32)
+
+void NaClPatchDebuggerInfo(struct NaClApp *nap);
 
 #endif
 

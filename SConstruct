@@ -3189,6 +3189,7 @@ irt_variant_tests = [
     'tests/dynamic_linking/nacl.scons',
     'tests/egyptian_cotton/nacl.scons',
     'tests/environment_variables/nacl.scons',
+    'tests/exception_test/nacl.scons',
 # Disabled by Brad Chen 4 Sep to try to green Chromium nacl_integrationt tests
 #    'tests/fault_injection/nacl.scons',
     'tests/fib/nacl.scons',

@@ -1,0 +1,29 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+if not env.Bit('host_windows') or env.Bit('build_x86_64'):
+  Return()
+exception_test = env.ComponentProgram('exception_test', 'exception_test.c',
+                                      EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl(
+    'exception_test.out',
+    exception_test,
+    stdout_golden=env.File('exception_test.stdout'),
+    sel_ldr_flags=['-e'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_exception_test')
+
+exception_same_stack_test = env.ComponentProgram(
+    'exception_same_stack_test',
+    'exception_same_stack_test.c',
+    EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl(
+    'exception_same_stack_test.out',
+    exception_same_stack_test,
+    stdout_golden=env.File('exception_test.stdout'),
+    sel_ldr_flags=['-e'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_exception_same_stack_test')

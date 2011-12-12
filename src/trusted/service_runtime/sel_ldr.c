@@ -203,13 +203,15 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
 
   nap->enable_debug_stub = 0;
   nap->debug_stub_callbacks = NULL;
+  nap->exception_handler = 0;
+  if (!NaClMutexCtor(&nap->exception_mu)) {
+    goto cleanup_desc_mu;
+  }
 
   return 1;
 
-#if 0
  cleanup_desc_mu:
   NaClMutexDtor(&nap->desc_mu);
-#endif
  cleanup_threads_cv:
   NaClCondVarDtor(&nap->threads_cv);
  cleanup_threads_mu:
@@ -411,6 +413,13 @@ void  NaClLoadTrampoline(struct NaClApp *nap) {
    */
   num_syscalls = ((NACL_TRAMPOLINE_END - NACL_SYSCALL_START_ADDR)
                   / NACL_SYSCALL_BLOCK_SIZE) - 1;
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
+  /*
+   * Use one last entry to tell the debugger address of the nacl_user variable.
+   */
+  num_syscalls--;
+  NaClPatchDebuggerInfo(nap);
+#endif
 
   NaClLog(2, "num_syscalls = %d (0x%x)\n", num_syscalls, num_syscalls);
 

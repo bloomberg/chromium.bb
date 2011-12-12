@@ -71,5 +71,8 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   __asm__ __volatile__("fnstcw %0" : "=m" (ntcp->sys_fcw));
 #endif
 
+  ntcp->exception_stack = 0;
+  ntcp->exception_flag = 0;
+
   return 1;
 }

@@ -45,6 +45,10 @@ struct NaClThreadContext {
   /*            30 */
   uint32_t  tls_idx;
   /*            34 */
+  uint32_t  exception_stack;
+  /*            38 */
+  uint32_t  exception_flag;
+  /*            3C */
 };
 
 #endif /* __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_ARM_SEL_RT_H___ */

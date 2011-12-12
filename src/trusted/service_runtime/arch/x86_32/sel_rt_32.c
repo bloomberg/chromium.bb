@@ -96,5 +96,8 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   NaClLog(4, "user.gs: 0x%02x\n", ntcp->gs);
   NaClLog(4, "user.ss: 0x%02x\n", ntcp->ss);
 
+  ntcp->exception_stack = 0;
+  ntcp->exception_flag = 0;
+
   return 1;
 }
