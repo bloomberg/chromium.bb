@@ -127,27 +127,6 @@
           ],
         }],
         ['OS=="linux" and coverage==0', {
-          'conditions': [
-            ['target_arch=="x64"', {
-              'variables': {
-                # No extra reservation.
-                'nacl_reserve_top': [],
-              }
-            }],
-            ['target_arch=="ia32"', {
-              'variables': {
-                # 1G address space.
-                'nacl_reserve_top': ['--defsym', 'RESERVE_TOP=0x40000000'],
-              }
-            }],
-            ['target_arch=="arm"', {
-              'variables': {
-                # 1G address space, plus 4K guard area above because
-                # immediate offsets are 12 bits.
-                'nacl_reserve_top': ['--defsym', 'RESERVE_TOP=0x40001000'],
-              }
-            }],
-          ],
           'targets': [
             {
               'target_name': 'nacl_helper',
