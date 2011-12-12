@@ -71,7 +71,7 @@ deps = {
     'src/third_party/libvpx':
         Var('git_url') + '/chromium/deps/libvpx.git@ff76a77415f22751105d33e49f615cae4f58b52b',
     'src/third_party/libyuv':
-        Var('git_url') + '/external/libyuv.git@86e9487d0dd397779f948f2ecef4b46d240ee57c',
+        Var('git_url') + '/external/libyuv.git@fe5ff7ed5451496281697bda9cb85084c532926c',
     'src/third_party/mozc/chrome/chromeos/renderer':
         Var('git_url') + '/external/mozc/src/chrome/chromeos/renderer.git@89f4cd325e4a0af7c2b3d0ce230187ac61ecec45',
     'src/third_party/mozc/session':
@@ -111,7 +111,7 @@ deps = {
     'src/third_party/webgl_conformance':
         Var('git_url') + '/chromium/deps/webgl/sdk/tests.git@1639567ef629c3e078bccde2a0e7c6092a23c8d6',
     'src/third_party/webrtc':
-        Var('git_url') + '/external/webrtc/src.git@57dcc987c054b098b94775e09480f75fbc9dce22',
+        Var('git_url') + '/external/webrtc/src.git@54aa7030a04087a675d0a3418ad578cc8f648458',
     'src/third_party/yasm/source/patched-yasm':
         Var('git_url') + '/chromium/deps/yasm/patched-yasm.git@44efe151b6960bab3db0c85354cc4cce1024219d',
     'src/tools/grit':
