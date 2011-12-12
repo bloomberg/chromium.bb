@@ -15,7 +15,7 @@
 #include "content/public/browser/notification_registrar.h"
 
 class BookmarkModel;
-class BookmarkNode;
+class BookmarkPermanentNode;
 class Profile;
 
 // BookmarkLoadDetails is used by BookmarkStorage when loading bookmarks.
@@ -28,21 +28,25 @@ class Profile;
 // problems.
 class BookmarkLoadDetails {
  public:
-  BookmarkLoadDetails(BookmarkNode* bb_node,
-                      BookmarkNode* other_folder_node,
-                      BookmarkNode* mobile_folder_node,
+  BookmarkLoadDetails(BookmarkPermanentNode* bb_node,
+                      BookmarkPermanentNode* other_folder_node,
+                      BookmarkPermanentNode* mobile_folder_node,
                       BookmarkIndex* index,
                       int64 max_id);
   ~BookmarkLoadDetails();
 
-  BookmarkNode* bb_node() { return bb_node_.get(); }
-  BookmarkNode* release_bb_node() { return bb_node_.release(); }
-  BookmarkNode* mobile_folder_node() { return mobile_folder_node_.get(); }
-  BookmarkNode* release_mobile_folder_node() {
+  BookmarkPermanentNode* bb_node() { return bb_node_.get(); }
+  BookmarkPermanentNode* release_bb_node() { return bb_node_.release(); }
+  BookmarkPermanentNode* mobile_folder_node() {
+    return mobile_folder_node_.get();
+  }
+  BookmarkPermanentNode* release_mobile_folder_node() {
     return mobile_folder_node_.release();
   }
-  BookmarkNode* other_folder_node() { return other_folder_node_.get(); }
-  BookmarkNode* release_other_folder_node() {
+  BookmarkPermanentNode* other_folder_node() {
+    return other_folder_node_.get();
+  }
+  BookmarkPermanentNode* release_other_folder_node() {
     return other_folder_node_.release();
   }
   BookmarkIndex* index() { return index_.get(); }
@@ -72,9 +76,9 @@ class BookmarkLoadDetails {
   bool ids_reassigned() const { return ids_reassigned_; }
 
  private:
-  scoped_ptr<BookmarkNode> bb_node_;
-  scoped_ptr<BookmarkNode> other_folder_node_;
-  scoped_ptr<BookmarkNode> mobile_folder_node_;
+  scoped_ptr<BookmarkPermanentNode> bb_node_;
+  scoped_ptr<BookmarkPermanentNode> other_folder_node_;
+  scoped_ptr<BookmarkPermanentNode> mobile_folder_node_;
   scoped_ptr<BookmarkIndex> index_;
   int64 max_id_;
   std::string computed_checksum_;

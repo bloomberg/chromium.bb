@@ -40,9 +40,8 @@ class BookmarkModelAssociator
       UnrecoverableErrorHandler* unrecoverable_error_handler);
   virtual ~BookmarkModelAssociator();
 
-  // Invokes BookmarkModel::SetMobileFolderVisible() based on whether the mobile
-  // node exists.
-  void UpdateMobileNodeVisibility();
+  // Updates the visibility of the permanents node in the BookmarkModel.
+  void UpdatePermanentNodeVisibility();
 
   // AssociatorInterface implementation.
   //

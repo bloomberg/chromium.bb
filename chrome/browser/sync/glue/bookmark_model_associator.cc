@@ -186,11 +186,12 @@ BookmarkModelAssociator::~BookmarkModelAssociator() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void BookmarkModelAssociator::UpdateMobileNodeVisibility() {
+void BookmarkModelAssociator::UpdatePermanentNodeVisibility() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(bookmark_model_->IsLoaded());
 
-  bookmark_model_->SetMobileFolderVisible(
+  bookmark_model_->SetPermanentNodeVisible(
+      BookmarkNode::MOBILE,
       id_map_.find(bookmark_model_->mobile_node()->id()) != id_map_.end());
 }
 
@@ -236,7 +237,7 @@ void BookmarkModelAssociator::Associate(const BookmarkNode* node,
   id_map_inverse_[sync_id] = node;
   dirty_associations_sync_ids_.insert(sync_id);
   PostPersistAssociationsTask();
-  UpdateMobileNodeVisibility();
+  UpdatePermanentNodeVisibility();
 }
 
 void BookmarkModelAssociator::Disassociate(int64 sync_id) {

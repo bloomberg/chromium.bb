@@ -89,11 +89,12 @@ void LoadCallback(const FilePath& path,
 
 // BookmarkLoadDetails ---------------------------------------------------------
 
-BookmarkLoadDetails::BookmarkLoadDetails(BookmarkNode* bb_node,
-                                         BookmarkNode* other_folder_node,
-                                         BookmarkNode* mobile_folder_node,
-                                         BookmarkIndex* index,
-                                         int64 max_id)
+BookmarkLoadDetails::BookmarkLoadDetails(
+    BookmarkPermanentNode* bb_node,
+    BookmarkPermanentNode* other_folder_node,
+    BookmarkPermanentNode* mobile_folder_node,
+    BookmarkIndex* index,
+    int64 max_id)
     : bb_node_(bb_node),
       other_folder_node_(other_folder_node),
       mobile_folder_node_(mobile_folder_node),

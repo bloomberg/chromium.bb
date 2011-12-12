@@ -452,7 +452,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
   }
 
   // The visibility of the mobile node may need to change.
-  model_associator_->UpdateMobileNodeVisibility();
+  model_associator_->UpdatePermanentNodeVisibility();
 
   // We are now ready to hear about bookmarks changes again.
   model->AddObserver(this);

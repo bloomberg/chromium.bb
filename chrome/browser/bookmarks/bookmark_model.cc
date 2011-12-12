@@ -99,39 +99,21 @@ class SortComparator : public std::binary_function<const BookmarkNode*,
   icu::Collator* collator_;
 };
 
-// MobileNode ------------------------------------------------------------------
+}  // namespace
 
-// The visibility of the mobile node changes based on sync state, requiring a
-// special subclass.
-class MobileNode : public BookmarkNode {
- public:
-  explicit MobileNode(int64 id);
-  virtual ~MobileNode();
+// BookmarkPermanentNode -------------------------------------------------------
 
-  void set_visible(bool value) { visible_ = value; }
-
-  // BookmarkNode overrides:
-  virtual bool IsVisible() const OVERRIDE;
-
- private:
-  bool visible_;
-
-  DISALLOW_COPY_AND_ASSIGN(MobileNode);
-};
-
-MobileNode::MobileNode(int64 id)
+BookmarkPermanentNode::BookmarkPermanentNode(int64 id)
     : BookmarkNode(id, GURL()),
-      visible_(false) {
+      visible_(true) {
 }
 
-MobileNode::~MobileNode() {
+BookmarkPermanentNode::~BookmarkPermanentNode() {
 }
 
-bool MobileNode::IsVisible() const {
+bool BookmarkPermanentNode::IsVisible() const {
   return visible_ || !empty();
 }
-
-}  // namespace
 
 // BookmarkModel --------------------------------------------------------------
 
@@ -548,9 +530,22 @@ void BookmarkModel::ClearStore() {
   store_ = NULL;
 }
 
-void BookmarkModel::SetMobileFolderVisible(bool value) {
+void BookmarkModel::SetPermanentNodeVisible(BookmarkNode::Type type,
+                                            bool value) {
   DCHECK(loaded_);
-  static_cast<MobileNode*>(mobile_node_)->set_visible(value);
+  switch (type) {
+    case BookmarkNode::BOOKMARK_BAR:
+      bookmark_bar_node_->set_visible(value);
+      break;
+    case BookmarkNode::OTHER_NODE:
+      other_node_->set_visible(value);
+      break;
+    case BookmarkNode::MOBILE:
+      mobile_node_->set_visible(value);
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 bool BookmarkModel::IsBookmarkedNoLock(const GURL& url) {
@@ -740,26 +735,33 @@ bool BookmarkModel::IsValidIndex(const BookmarkNode* parent,
                           (allow_end && index == parent->child_count()))));
 }
 
-BookmarkNode* BookmarkModel::CreatePermanentNode(BookmarkNode::Type type) {
+BookmarkPermanentNode* BookmarkModel::CreatePermanentNode(
+    BookmarkNode::Type type) {
   DCHECK(type == BookmarkNode::BOOKMARK_BAR ||
          type == BookmarkNode::OTHER_NODE ||
          type == BookmarkNode::MOBILE);
-  BookmarkNode* node;
-  if (type == BookmarkNode::MOBILE) {
-    node = new MobileNode(generate_next_node_id());
-    node->set_title(
-        l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME));
-  } else {
-    node = new BookmarkNode(generate_next_node_id(), GURL());
-    if (type == BookmarkNode::BOOKMARK_BAR) {
-      node->set_title(l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_FOLDER_NAME));
-    } else if (type == BookmarkNode::OTHER_NODE) {
-      node->set_title(
-          l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME));
-    } else {
+  BookmarkPermanentNode* node =
+      new BookmarkPermanentNode(generate_next_node_id());
+  if (type == BookmarkNode::MOBILE)
+    node->set_visible(false);  // Mobile node is initially hidden.
+
+  int title_id;
+  switch (type) {
+    case BookmarkNode::BOOKMARK_BAR:
+      title_id = IDS_BOOKMARK_BAR_FOLDER_NAME;
+      break;
+    case BookmarkNode::OTHER_NODE:
+      title_id = IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME;
+      break;
+    case BookmarkNode::MOBILE:
+      title_id = IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME;
+      break;
+    default:
       NOTREACHED();
-    }
+      title_id = IDS_BOOKMARK_BAR_FOLDER_NAME;
+      break;
   }
+  node->set_title(l10n_util::GetStringUTF16(title_id));
   node->set_type(type);
   return node;
 }
@@ -856,9 +858,12 @@ int64 BookmarkModel::generate_next_node_id() {
 }
 
 BookmarkLoadDetails* BookmarkModel::CreateLoadDetails() {
-  BookmarkNode* bb_node = CreatePermanentNode(BookmarkNode::BOOKMARK_BAR);
-  BookmarkNode* other_node = CreatePermanentNode(BookmarkNode::OTHER_NODE);
-  BookmarkNode* mobile_node = CreatePermanentNode(BookmarkNode::MOBILE);
+  BookmarkPermanentNode* bb_node =
+      CreatePermanentNode(BookmarkNode::BOOKMARK_BAR);
+  BookmarkPermanentNode* other_node =
+      CreatePermanentNode(BookmarkNode::OTHER_NODE);
+  BookmarkPermanentNode* mobile_node =
+      CreatePermanentNode(BookmarkNode::MOBILE);
   return new BookmarkLoadDetails(bb_node, other_node, mobile_node,
                                  new BookmarkIndex(profile_), next_node_id_);
 }

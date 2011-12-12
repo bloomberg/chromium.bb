@@ -1087,12 +1087,23 @@ TEST_F(BookmarkModelTest, NodeVisibility) {
   // Mobile node invisible by default
   EXPECT_FALSE(model_.mobile_node()->IsVisible());
 
+  // Change visibility of permanent nodes.
+  model_.SetPermanentNodeVisible(BookmarkNode::BOOKMARK_BAR, false);
+  EXPECT_FALSE(model_.bookmark_bar_node()->IsVisible());
+  model_.SetPermanentNodeVisible(BookmarkNode::OTHER_NODE, false);
+  EXPECT_FALSE(model_.other_node()->IsVisible());
+  model_.SetPermanentNodeVisible(BookmarkNode::MOBILE, true);
+  EXPECT_TRUE(model_.mobile_node()->IsVisible());
+
   // Arbitrary node should be visible
   TestNode bbn;
   PopulateNodeFromString("B", &bbn);
   const BookmarkNode* parent = model_.bookmark_bar_node();
   PopulateBookmarkNode(&bbn, &model_, parent);
   EXPECT_TRUE(parent->GetChild(0)->IsVisible());
+
+  // Bookmark bar should be visible now that it has a child.
+  EXPECT_TRUE(model_.bookmark_bar_node()->IsVisible());
 }
 
 TEST_F(BookmarkModelTest, MobileNodeVisibileWithChildren) {
