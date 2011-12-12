@@ -196,3 +196,11 @@ node = env.CommandSelLdrTestNacl('strtoull.out', strtoull_nexe)
 env.AddNodeToTestSuite(node,
                        ['toolchain_tests', 'small_tests'],
                        'run_strtoull_test')
+
+wcstoll_nexe = env.ComponentProgram('wcstoll', 'wcstoll.c',
+                                    EXTRA_LIBS=['${NONIRT_LIBS}'])
+node = env.CommandSelLdrTestNacl('wcstoll.out', wcstoll_nexe)
+env.AddNodeToTestSuite(node,
+                       ['toolchain_tests', 'small_tests'],
+                       'run_wcstoll_test',
+                       is_broken=env.Bit('nacl_glibc'))
