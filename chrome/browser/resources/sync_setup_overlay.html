@@ -36,7 +36,8 @@
             <form id="gaia-login-form">
               <div id="email-row" class="reset-shown">
                 <label>
-                  <strong class="email-label" i18n-content="emailLabel"></strong>
+                  <strong class="email-label" i18n-content="emailLabel">
+                  </strong>
                   <input id="gaia-email" type="text" name="email" value=""
                       class="reset-enabled reset-shown reset-value"
                       autocomplete="off">
@@ -55,8 +56,8 @@
                       i18n-content="cannotBeBlank" hidden></div>
                 <label>
               </div>
-              <div id="access-code-input-row" class="access-code-row reset-hidden"
-                  hidden>
+              <div id="access-code-input-row"
+                  class="access-code-row reset-hidden" hidden>
                 <label>
                   <strong i18n-content="enterAccessCode"></strong>
                   <a i18n-values="href:getAccessCodeURL"
@@ -66,7 +67,8 @@
                       class="reset-enabled reset-value">
                 </label>
               </div>
-              <div id="errormsg-1-password" class="errormsg reset-hidden" hidden>
+              <div id="errormsg-1-password" class="errormsg reset-hidden"
+                  hidden>
                 <span i18n-content="invalidCredentials"></span>
                 <a i18n-values="href:invalidPasswordHelpURL" class="help-link"
                     target="_blank">?</a>
@@ -138,7 +140,8 @@
       <div id="sync-instructions-container" class="content-area">
         <span i18n-content="chooseDataTypesInstructions"></span>
         <a id="encryption-help-link" target="_blank"
-            i18n-values="href:encryptionHelpURL" i18n-content="learnMore"></a>
+            i18n-values="href:syncEverythingHelpURL" i18n-content="learnMore">
+        </a>
       </div>
       <div>
         <div class="action-area">

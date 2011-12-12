@@ -325,10 +325,29 @@ const char kSyncLearnMoreURL[] =
 const char kDownloadScanningLearnMoreURL[] =
     "http://www.google.com/support/chrome/bin/answer.py?answer=99020";
 
+const char kSyncEverythingLearnMoreURL[] =
+    "https://www.google.com/support/chrome/bin/answer.py?answer=185277";
+
 #if defined(OS_CHROMEOS)
 const char kCloudPrintLearnMoreURL[] =
     "https://www.google.com/support/chromeos/bin/topic.py?topic=29023";
 #endif
+
+const char kInvalidPasswordHelpURL[] =
+    "http://www.google.com/support/accounts/bin/answer.py?ctx=ch&answer=27444";
+
+const char kCanNotAccessAccountURL[] =
+    "http://www.google.com/support/accounts/bin/answer.py?answer=48598";
+
+const char kSyncEncryptionHelpURL[] =
+#if defined(OS_CHROMEOS)
+    "http://www.google.com/support/chromeos/bin/answer.py?answer=1181035";
+#else
+    "http://www.google.com/support/chrome/bin/answer.py?answer=1181035";
+#endif
+
+const char kSyncCreateNewAccountURL[] =
+    "https://www.google.com/accounts/NewAccount?service=chromiumsync";
 
 const char* const kChromeDebugURLs[] = {
   kChromeUICrashURL,

@@ -296,6 +296,23 @@ extern const char kSyncLearnMoreURL[];
 // The URL for the "Learn more" page for download scanning.
 extern const char kDownloadScanningLearnMoreURL[];
 
+// The URL for the "Learn more" page on the sync setup dialog, when syncing
+// everything.
+extern const char kSyncEverythingLearnMoreURL[];
+
+// The URL for information on how to recover your password.
+extern const char kInvalidPasswordHelpURL[];
+
+// The URL for information on what to do if you can't sign in to your Google
+// account.
+extern const char kCanNotAccessAccountURL[];
+
+// The URL for the "Learn more" page on sync encryption.
+extern const char kSyncEncryptionHelpURL[];
+
+// The URL to create a new Google account via sync.
+extern const char kSyncCreateNewAccountURL[];
+
 // "Debug" pages which are dangerous and not for general consumption.
 extern const char* const kChromeDebugURLs[];
 extern int kNumberOfChromeDebugURLs;

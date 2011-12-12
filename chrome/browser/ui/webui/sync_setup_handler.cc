@@ -40,21 +40,6 @@ using l10n_util::GetStringUTF16;
 
 namespace {
 
-// TODO(jhawkins): Move these to url_constants.h.
-const char* kInvalidPasswordHelpUrl =
-    "http://www.google.com/support/accounts/bin/answer.py?ctx=ch&answer=27444";
-const char* kCanNotAccessAccountUrl =
-    "http://www.google.com/support/accounts/bin/answer.py?answer=48598";
-#if defined(OS_CHROMEOS)
-const char* kEncryptionHelpUrl =
-    "http://www.google.com/support/chromeos/bin/answer.py?answer=1181035";
-#else
-const char* kEncryptionHelpUrl =
-    "http://www.google.com/support/chrome/bin/answer.py?answer=1181035";
-#endif
-const char* kCreateNewAccountUrl =
-    "https://www.google.com/accounts/NewAccount?service=chromiumsync";
-
 bool GetAuthData(const std::string& json,
                  std::string* username,
                  std::string* password,
@@ -269,10 +254,12 @@ void SyncSetupHandler::GetStaticLocalizedValues(
 
   localized_strings->SetString(
       "invalidPasswordHelpURL",
-      google_util::StringAppendGoogleLocaleParam(kInvalidPasswordHelpUrl));
+      google_util::StringAppendGoogleLocaleParam(
+          chrome::kInvalidPasswordHelpURL));
   localized_strings->SetString(
       "cannotAccessAccountURL",
-      google_util::StringAppendGoogleLocaleParam(kCanNotAccessAccountUrl));
+      google_util::StringAppendGoogleLocaleParam(
+          chrome::kCanNotAccessAccountURL));
   localized_strings->SetString(
       "introduction",
       GetStringFUTF16(IDS_SYNC_LOGIN_INTRODUCTION,
@@ -287,7 +274,8 @@ void SyncSetupHandler::GetStaticLocalizedValues(
                       GetStringUTF16(IDS_PRODUCT_NAME)));
   localized_strings->SetString(
       "encryptionHelpURL",
-      google_util::StringAppendGoogleLocaleParam(kEncryptionHelpUrl));
+      google_util::StringAppendGoogleLocaleParam(
+          chrome::kSyncEncryptionHelpURL));
   localized_strings->SetString(
       "passphraseEncryptionMessage",
       GetStringFUTF16(IDS_SYNC_PASSPHRASE_ENCRYPTION_MESSAGE,
@@ -305,6 +293,10 @@ void SyncSetupHandler::GetStaticLocalizedValues(
       "promoMessageTitle",
       GetStringFUTF16(IDS_SYNC_PROMO_MESSAGE_TITLE,
                       GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+  localized_strings->SetString(
+      "syncEverythingHelpURL",
+      google_util::StringAppendGoogleLocaleParam(
+          chrome::kSyncEverythingLearnMoreURL));
 
   // The experimental body string only appears if we are on the launch page
   // version of the Sync Promo.
@@ -317,8 +309,8 @@ void SyncSetupHandler::GetStaticLocalizedValues(
       "promoMessageBody",
       GetStringUTF16(message_body_resource_id));
 
-  std::string create_account_url =
-      google_util::StringAppendGoogleLocaleParam(kCreateNewAccountUrl);
+  std::string create_account_url = google_util::StringAppendGoogleLocaleParam(
+      chrome::kSyncCreateNewAccountURL);
   string16 create_account = GetStringUTF16(IDS_SYNC_CREATE_ACCOUNT);
   create_account= UTF8ToUTF16("<a id='create-account-link' target='_blank' "
       "class='account-link' href='" + create_account_url + "'>") +
