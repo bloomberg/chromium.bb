@@ -11,6 +11,7 @@
 
 import atexit
 import getpass
+import hashlib
 import json
 import logging
 import os
@@ -28,6 +29,9 @@ import gaia_auth
 import keygen
 
 REMOTING_COMMAND = "remoting_me2me_host"
+
+# Command-line switch for passing the config path to remoting_me2me_host.
+HOST_CONFIG_SWITCH_NAME = "host-config"
 
 SCRIPT_PATH = os.path.dirname(sys.argv[0])
 if not SCRIPT_PATH:
@@ -260,10 +264,11 @@ class Desktop:
     if not session_proc.pid:
       raise Exception("Could not start X session")
 
-  def launch_host(self):
+  def launch_host(self, host):
     # Start remoting host
-    command = locate_executable(REMOTING_COMMAND)
-    self.host_proc = subprocess.Popen(command, env=self.child_env)
+    args = [locate_executable(REMOTING_COMMAND),
+            "--%s=%s" % (HOST_CONFIG_SWITCH_NAME, host.config_file)]
+    self.host_proc = subprocess.Popen(args, env=self.child_env)
     if not self.host_proc.pid:
       raise Exception("Could not start remoting host")
 
@@ -287,7 +292,8 @@ def main():
       return 1
     auth.save_config()
 
-  host = Host(os.path.join(CONFIG_DIR, "host.json"))
+  host_hash = hashlib.md5(socket.gethostname()).hexdigest()
+  host = Host(os.path.join(CONFIG_DIR, "host#%s.json" % host_hash))
 
   if not host.load_config():
     host.create_config(auth)
@@ -298,7 +304,7 @@ def main():
   desktop = Desktop()
   desktop.launch_x_server()
   desktop.launch_x_session()
-  desktop.launch_host()
+  desktop.launch_host(host)
 
   while True:
     pid, status = os.wait()
@@ -310,7 +316,7 @@ def main():
 
     if pid == desktop.host_proc.pid:
       logging.info("Host process terminated, relaunching")
-      desktop.launch_host()
+      desktop.launch_host(host)
 
 if __name__ == "__main__":
   logging.basicConfig(level=logging.DEBUG)
