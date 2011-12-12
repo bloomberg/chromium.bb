@@ -24,7 +24,7 @@ cr.define('options', function() {
 
     startup_pages_pref_: {
       'name': 'session.urls_to_restore_on_startup',
-      'managed': false
+      'disabled': false
     },
 
     /**
@@ -247,7 +247,7 @@ cr.define('options', function() {
      */
     shouldEnableCustomStartupPageControls: function(pages) {
       return $('startupShowPagesButton').checked &&
-          !this.startup_pages_pref_.controlledBy;
+          !this.startup_pages_pref_.disabled;
     },
 
     /**
@@ -288,7 +288,7 @@ cr.define('options', function() {
      * @private
      */
     handleStartupPageListChange_: function(event) {
-      this.startup_pages_pref_.controlledBy = event.value['controlledBy'];
+      this.startup_pages_pref_.disabled = event.value['disabled'];
       this.updateCustomStartupPageControlStates_();
     },
 
