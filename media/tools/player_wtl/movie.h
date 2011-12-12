@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/base/message_loop_factory.h"
 
+class AudioManager;
 template <typename T> struct DefaultSingletonTraits;
 class WtlVideoRenderer;
 
@@ -22,7 +23,7 @@ class PipelineImpl;
 
 class Movie {
  public:
-   // Returns the singleton instance.
+  // Returns the singleton instance.
   static Movie* GetInstance();
 
   // Open a movie.
@@ -84,6 +85,7 @@ class Movie {
 
   scoped_refptr<PipelineImpl> pipeline_;
   scoped_ptr<media::MessageLoopFactory> message_loop_factory_;
+  scoped_refptr<AudioManager> audio_manager_;
 
   bool enable_audio_;
   bool enable_draw_;

@@ -13,6 +13,10 @@
 
 struct SpeechInputHostMsg_StartRecognition_Params;
 
+namespace content {
+class ResourceContext;
+}
+
 namespace speech_input {
 
 // SpeechInputDispatcherHost is a delegate for Speech API messages used by
@@ -26,7 +30,8 @@ class SpeechInputDispatcherHost : public BrowserMessageFilter,
   SpeechInputDispatcherHost(
       int render_process_id,
       net::URLRequestContextGetter* context_getter,
-      SpeechInputPreferences* speech_input_preferences);
+      SpeechInputPreferences* speech_input_preferences,
+      const content::ResourceContext* resource_context);
 
   // SpeechInputManager::Delegate methods.
   virtual void SetRecognitionResult(
@@ -59,6 +64,7 @@ class SpeechInputDispatcherHost : public BrowserMessageFilter,
 
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
   scoped_refptr<SpeechInputPreferences> speech_input_preferences_;
+  const content::ResourceContext* resource_context_;
 
   static SpeechInputManager* manager_;
 

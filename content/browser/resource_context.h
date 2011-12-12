@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 
+class AudioManager;
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
 class DownloadIdFactory;
@@ -83,6 +84,9 @@ class CONTENT_EXPORT ResourceContext {
   void set_media_stream_manager(
       media_stream::MediaStreamManager* media_stream_manager);
 
+  AudioManager* audio_manager() const;
+  void set_audio_manager(AudioManager* audio_manager);
+
  protected:
   ResourceContext();
 
@@ -100,6 +104,7 @@ class CONTENT_EXPORT ResourceContext {
   MediaObserver* media_observer_;
   DownloadIdFactory* download_id_factory_;
   media_stream::MediaStreamManager* media_stream_manager_;
+  AudioManager* audio_manager_;
 
   // Externally-defined data accessible by key.
   typedef std::map<const void*, void*> UserDataMap;

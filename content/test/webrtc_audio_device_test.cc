@@ -96,7 +96,7 @@ ACTION_P(QuitMessageLoop, loop_or_proxy) {
 }  // end namespace
 
 WebRTCAudioDeviceTest::WebRTCAudioDeviceTest()
-    : render_thread_(NULL), event_(false, false), audio_util_callback_(NULL) {
+    : render_thread_(NULL), audio_util_callback_(NULL) {
 }
 
 WebRTCAudioDeviceTest::~WebRTCAudioDeviceTest() {}
@@ -116,10 +116,9 @@ void WebRTCAudioDeviceTest::SetUp() {
   resource_context_.reset(new WebRTCMockResourceContext());
 
   static const char kThreadName[] = "RenderThread";
-  ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&SetupTask::InitializeIOThread, new SetupTask(this),
-                 kThreadName));
+  ChildProcess::current()->io_message_loop()->PostTask(FROM_HERE,
+      base::Bind(&WebRTCAudioDeviceTest::InitializeIOThread,
+                 base::Unretained(this), kThreadName));
   WaitForIOThreadCompletion();
 
   render_thread_ = new RenderThreadImpl(kThreadName);
@@ -129,11 +128,25 @@ void WebRTCAudioDeviceTest::SetUp() {
 void WebRTCAudioDeviceTest::TearDown() {
   SetAudioUtilCallback(NULL);
 
-  ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&SetupTask::UninitializeIOThread, new SetupTask(this)));
-  EXPECT_TRUE(event_.TimedWait(
-      base::TimeDelta::FromMilliseconds(TestTimeouts::action_timeout_ms())));
+  // Kick of the cleanup process by closing the channel. This queues up
+  // OnStreamClosed calls to be executed on the audio thread.
+  ChildProcess::current()->io_message_loop()->PostTask(FROM_HERE,
+      base::Bind(&WebRTCAudioDeviceTest::DestroyChannel,
+                 base::Unretained(this)));
+  WaitForIOThreadCompletion();
+
+  // When audio [input] render hosts are notified that the channel has
+  // been closed, they post tasks to the audio thread to close the
+  // AudioOutputController and once that's completed, a task is posted back to
+  // the IO thread to actually delete the AudioEntry for the audio stream. Only
+  // then is the reference to the audio manager released, so we wait for the
+  // whole thing to be torn down before we finally uninitialize the io thread.
+  WaitForAudioManagerCompletion();
+
+  ChildProcess::current()->io_message_loop()->PostTask(FROM_HERE,
+      base::Bind(&WebRTCAudioDeviceTest::UninitializeIOThread,
+                 base::Unretained((this))));
+  WaitForIOThreadCompletion();
   mock_process_.reset();
 }
 
@@ -156,33 +169,40 @@ void WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
   // Set the current thread as the IO thread.
   io_thread_.reset(new content::TestBrowserThread(content::BrowserThread::IO,
                                                   MessageLoop::current()));
+
+  audio_manager_ = AudioManager::Create();
+
+  // Populate our resource context.
   test_request_context_ = new TestURLRequestContext();
   resource_context_->set_request_context(test_request_context_.get());
   media_observer_.reset(new MockMediaObserver());
   resource_context_->set_media_observer(media_observer_.get());
-  media_stream_manager_.reset(new media_stream::MediaStreamManager());
+  media_stream_manager_.reset(new media_stream::MediaStreamManager(
+      audio_manager_));
   resource_context_->set_media_stream_manager(media_stream_manager_.get());
+  resource_context_->set_audio_manager(audio_manager_);
 
-  CreateChannel(thread_name, resource_context_.get());
+  // Create an IPC channel that handles incoming messages on the IO thread.
+  CreateChannel(thread_name);
 }
 
 void WebRTCAudioDeviceTest::UninitializeIOThread() {
-  DestroyChannel();
   resource_context_.reset();
   media_stream_manager_.reset();
+
+  EXPECT_TRUE(audio_manager_->HasOneRef());
+  audio_manager_ = NULL;
   test_request_context_ = NULL;
   initialize_com_.reset();
-  event_.Signal();
 }
 
-void WebRTCAudioDeviceTest::CreateChannel(
-    const char* name,
-    content::ResourceContext* resource_context) {
+void WebRTCAudioDeviceTest::CreateChannel(const char* name) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  audio_render_host_ = new AudioRendererHost(resource_context);
+  audio_render_host_ = new AudioRendererHost(resource_context_.get());
   audio_render_host_->OnChannelConnected(base::GetCurrentProcId());
 
-  audio_input_renderer_host_ = new AudioInputRendererHost(resource_context);
+  audio_input_renderer_host_ = new AudioInputRendererHost(
+      resource_context_.get());
   audio_input_renderer_host_->OnChannelConnected(base::GetCurrentProcId());
 
   channel_.reset(new IPC::Channel(name, IPC::Channel::MODE_SERVER, this));
@@ -257,11 +277,26 @@ bool WebRTCAudioDeviceTest::OnMessageReceived(const IPC::Message& message) {
 
 // Posts a final task to the IO message loop and waits for completion.
 void WebRTCAudioDeviceTest::WaitForIOThreadCompletion() {
-  ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE, base::Bind(&base::WaitableEvent::Signal,
-                            base::Unretained(&event_)));
-  EXPECT_TRUE(event_.TimedWait(
-      base::TimeDelta::FromMilliseconds(TestTimeouts::action_timeout_ms())));
+  WaitForMessageLoopCompletion(ChildProcess::current()->io_message_loop());
+}
+
+void WebRTCAudioDeviceTest::WaitForAudioManagerCompletion() {
+  if (audio_manager_)
+    WaitForMessageLoopCompletion(audio_manager_->GetMessageLoop());
+}
+
+void WebRTCAudioDeviceTest::WaitForMessageLoopCompletion(MessageLoop* loop) {
+  base::WaitableEvent* event = new base::WaitableEvent(false, false);
+  loop->PostTask(FROM_HERE, base::Bind(&base::WaitableEvent::Signal,
+                 base::Unretained(event)));
+  if (event->TimedWait(base::TimeDelta::FromMilliseconds(
+          TestTimeouts::action_max_timeout_ms()))) {
+    delete event;
+  } else {
+    // Don't delete the event object in case the message ever gets processed.
+    // If we do, we will crash the test process.
+    ADD_FAILURE() << "Failed to wait for message loop";
+  }
 }
 
 std::string WebRTCAudioDeviceTest::GetTestDataPath(

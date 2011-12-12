@@ -10,8 +10,9 @@
 
 namespace media {
 
-ReferenceAudioRenderer::ReferenceAudioRenderer()
+ReferenceAudioRenderer::ReferenceAudioRenderer(AudioManager* audio_manager)
     : AudioRendererBase(),
+      audio_manager_(audio_manager),
       bytes_per_second_(0) {
 }
 
@@ -71,7 +72,7 @@ bool ReferenceAudioRenderer::OnInitialize(int bits_per_channel,
                                           int sample_rate) {
   int samples_per_packet = sample_rate / 10;
   int hardware_buffer_size = samples_per_packet *
-    ChannelLayoutToChannelCount(channel_layout) * bits_per_channel / 8;
+      ChannelLayoutToChannelCount(channel_layout) * bits_per_channel / 8;
 
   // Allocate audio buffer based on hardware buffer size.
   buffer_capacity_ = 3 * hardware_buffer_size;
@@ -81,7 +82,8 @@ bool ReferenceAudioRenderer::OnInitialize(int bits_per_channel,
                          sample_rate, bits_per_channel, samples_per_packet);
   bytes_per_second_ = params.GetBytesPerSecond();
 
-  controller_ = AudioOutputController::Create(this, params, buffer_capacity_);
+  controller_ = AudioOutputController::Create(audio_manager_, this, params,
+                                              buffer_capacity_);
   return controller_ != NULL;
 }
 

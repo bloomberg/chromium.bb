@@ -52,6 +52,7 @@
 #include "content/browser/resource_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "media/audio/audio_manager.h"
 #include "net/base/origin_bound_cert_service.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
@@ -223,6 +224,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->referrer_charset = default_charset;
 
   params->io_thread = g_browser_process->io_thread();
+  params->audio_manager = g_browser_process->audio_manager();
 
   params->host_content_settings_map = profile->GetHostContentSettingsMap();
   params->cookie_settings = CookieSettings::GetForProfile(profile);
@@ -496,7 +498,8 @@ void ProfileIOData::LazyInitialize() const {
     job_factory_->AddInterceptor(new chromeos::GViewRequestInterceptor);
 #endif  // defined(OS_CHROMEOS) && !defined(GOOGLE_CHROME_BUILD)
 
-  media_stream_manager_.reset(new media_stream::MediaStreamManager);
+  media_stream_manager_.reset(
+      new media_stream::MediaStreamManager(profile_params_->audio_manager));
 
   // Take ownership over these parameters.
   database_tracker_ = profile_params_->database_tracker;
@@ -523,6 +526,7 @@ void ProfileIOData::LazyInitialize() const {
       io_thread_globals->media.media_internals.get());
   resource_context_.set_download_id_factory(download_id_factory_);
   resource_context_.set_media_stream_manager(media_stream_manager_.get());
+  resource_context_.set_audio_manager(profile_params_->audio_manager);
 
   LazyInitializeInternal(profile_params_.get());
 

@@ -61,6 +61,7 @@ SpeechRecognizer::SpeechRecognizer(Delegate* delegate,
                                    const std::string& language,
                                    const std::string& grammar,
                                    net::URLRequestContextGetter* context_getter,
+                                   AudioManager* audio_manager,
                                    bool filter_profanities,
                                    const std::string& hardware_info,
                                    const std::string& origin_url)
@@ -72,6 +73,7 @@ SpeechRecognizer::SpeechRecognizer(Delegate* delegate,
       hardware_info_(hardware_info),
       origin_url_(origin_url),
       context_getter_(context_getter),
+      audio_manager_(audio_manager),
       codec_(AudioEncoder::CODEC_FLAC),
       encoder_(NULL),
       endpointer_(kAudioSampleRate),
@@ -111,7 +113,8 @@ bool SpeechRecognizer::StartRecording() {
   AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,
                          kAudioSampleRate, kNumBitsPerAudioSample,
                          samples_per_packet);
-  audio_controller_ = AudioInputController::Create(this, params);
+  audio_controller_ = AudioInputController::Create(audio_manager_, this,
+                                                   params);
   DCHECK(audio_controller_.get());
   VLOG(1) << "SpeechRecognizer starting record.";
   num_samples_recorded_ = 0;
@@ -215,7 +218,7 @@ void SpeechRecognizer::HandleOnData(string* data) {
   bool speech_was_heard_before_packet = endpointer_.DidStartReceivingSpeech();
 
   const short* samples = reinterpret_cast<const short*>(data->data());
-  DCHECK((data->length() % sizeof(short)) == 0);
+  DCHECK_EQ((data->length() % sizeof(short)), 0U);
   int num_samples = data->length() / sizeof(short);
   encoder_->Encode(samples, num_samples);
   float rms;

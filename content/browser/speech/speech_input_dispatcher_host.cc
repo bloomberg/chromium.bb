@@ -5,6 +5,7 @@
 #include "content/browser/speech/speech_input_dispatcher_host.h"
 
 #include "base/lazy_instance.h"
+#include "content/browser/resource_context.h"
 #include "content/browser/speech/speech_input_preferences.h"
 #include "content/common/speech_input_messages.h"
 #include "content/public/browser/content_browser_client.h"
@@ -114,11 +115,13 @@ void SpeechInputDispatcherHost::set_manager(SpeechInputManager* manager) {
 SpeechInputDispatcherHost::SpeechInputDispatcherHost(
     int render_process_id,
     net::URLRequestContextGetter* context_getter,
-    SpeechInputPreferences* speech_input_preferences)
+    SpeechInputPreferences* speech_input_preferences,
+    const content::ResourceContext* resource_context)
     : render_process_id_(render_process_id),
       may_have_pending_requests_(false),
       context_getter_(context_getter),
-      speech_input_preferences_(speech_input_preferences) {
+      speech_input_preferences_(speech_input_preferences),
+      resource_context_(resource_context) {
   // This is initialized by Browser. Do not add any non-trivial
   // initialization here, instead do it lazily when required (e.g. see the
   // method |manager()|) or add an Init() method.
@@ -161,6 +164,7 @@ bool SpeechInputDispatcherHost::OnMessageReceived(
 
 void SpeechInputDispatcherHost::OnStartRecognition(
     const SpeechInputHostMsg_StartRecognition_Params &params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   int caller_id = g_speech_input_callers.Get().CreateId(
       render_process_id_, params.render_view_id, params.request_id);
   manager()->StartRecognition(this, caller_id,
@@ -169,7 +173,8 @@ void SpeechInputDispatcherHost::OnStartRecognition(
                               params.language, params.grammar,
                               params.origin_url,
                               context_getter_.get(),
-                              speech_input_preferences_.get());
+                              speech_input_preferences_.get(),
+                              resource_context_->audio_manager());
 }
 
 void SpeechInputDispatcherHost::OnCancelRecognition(int render_view_id,

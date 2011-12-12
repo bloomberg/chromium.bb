@@ -19,6 +19,7 @@
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/browser/resource_context.h"
 #include "content/common/media/video_capture_messages.h"
+#include "media/audio/audio_manager.h"
 #include "media/video/capture/video_capture_types.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
@@ -205,9 +206,12 @@ class VideoCaptureHostTest : public testing::Test {
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
 
+    audio_manager_ = AudioManager::Create();
+
     // Create a MediaStreamManager instance and hand over pointer to
     // ResourceContext.
-    media_stream_manager_.reset(new media_stream::MediaStreamManager());
+    media_stream_manager_.reset(new media_stream::MediaStreamManager(
+        audio_manager_));
 
 #ifndef TEST_REAL_CAPTURE_DEVICE
     media_stream_manager_->UseFakeDevice();
@@ -368,6 +372,7 @@ class VideoCaptureHostTest : public testing::Test {
   scoped_ptr<BrowserThreadImpl> ui_thread_;
   scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_ptr<media_stream::MediaStreamManager> media_stream_manager_;
+  scoped_refptr<AudioManager> audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureHostTest);
 };

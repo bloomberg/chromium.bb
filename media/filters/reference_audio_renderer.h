@@ -17,13 +17,15 @@
 #include "media/audio/audio_output_controller.h"
 #include "media/filters/audio_renderer_base.h"
 
+class AudioManager;
+
 namespace media {
 
 class MEDIA_EXPORT ReferenceAudioRenderer
     : public AudioRendererBase,
       public AudioOutputController::EventHandler {
  public:
-  ReferenceAudioRenderer();
+  explicit ReferenceAudioRenderer(AudioManager* audio_manager);
   virtual ~ReferenceAudioRenderer();
 
   // Filter implementation.
@@ -49,10 +51,11 @@ class MEDIA_EXPORT ReferenceAudioRenderer
   virtual void OnStop() OVERRIDE;
 
  private:
-  int bytes_per_second_;
-
   // AudioOutputController::Close callback.
   virtual void OnClose();
+
+  scoped_refptr<AudioManager> audio_manager_;
+  int bytes_per_second_;
 
   // Audio output controller.
   scoped_refptr<media::AudioOutputController> controller_;

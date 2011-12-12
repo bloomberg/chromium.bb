@@ -21,9 +21,10 @@ const char AudioInputDeviceManager::kInvalidDeviceId[] = "";
 // Starting id for the first capture session.
 const int kFirstSessionId = AudioInputDeviceManager::kFakeOpenSessionId + 1;
 
-AudioInputDeviceManager::AudioInputDeviceManager()
+AudioInputDeviceManager::AudioInputDeviceManager(AudioManager* audio_manager)
     : listener_(NULL),
-      next_capture_session_id_(kFirstSessionId) {
+      next_capture_session_id_(kFirstSessionId),
+      audio_manager_(audio_manager) {
 }
 
 AudioInputDeviceManager::~AudioInputDeviceManager() {
@@ -46,7 +47,7 @@ void AudioInputDeviceManager::EnumerateDevices() {
   DCHECK(listener_);
 
   media::AudioDeviceNames device_names;
-  AudioManager::GetAudioManager()->GetAudioInputDeviceNames(&device_names);
+  audio_manager_->GetAudioInputDeviceNames(&device_names);
 
   StreamDeviceInfoArray* devices = new StreamDeviceInfoArray;
   for (media::AudioDeviceNames::iterator it = device_names.begin();

@@ -102,6 +102,7 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual MHTMLGenerationManager* mhtml_generation_manager() OVERRIDE;
   virtual ComponentUpdateService* component_updater() OVERRIDE;
   virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
+  virtual AudioManager* audio_manager() OVERRIDE;
 
   // Set the local state for tests. Consumer is responsible for cleaning it up
   // afterwards (using ScopedTestingLocalState, for example).

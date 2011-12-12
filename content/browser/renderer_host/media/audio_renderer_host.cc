@@ -270,13 +270,15 @@ void AudioRendererHost::OnCreateStream(
     // entry and construct an AudioOutputController.
     entry->reader.reset(reader.release());
     entry->controller =
-        media::AudioOutputController::CreateLowLatency(this, audio_params,
-                                                       entry->reader.get());
+        media::AudioOutputController::CreateLowLatency(
+            resource_context_->audio_manager(), this, audio_params,
+            entry->reader.get());
   } else {
     // The choice of buffer capacity is based on experiment.
     entry->controller =
-        media::AudioOutputController::Create(this, audio_params,
-                                             3 * packet_size);
+        media::AudioOutputController::Create(
+            resource_context_->audio_manager(), this, audio_params,
+            3 * packet_size);
   }
 
   if (!entry->controller) {
@@ -399,6 +401,8 @@ void AudioRendererHost::DeleteEntries() {
 }
 
 void AudioRendererHost::CloseAndDeleteStream(AudioEntry* entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   if (!entry->pending_close) {
     entry->controller->Close(
         base::Bind(&AudioRendererHost::OnStreamClosed, this, entry));
@@ -407,7 +411,8 @@ void AudioRendererHost::CloseAndDeleteStream(AudioEntry* entry) {
 }
 
 void AudioRendererHost::OnStreamClosed(AudioEntry* entry) {
-  // Delete the entry after we've closed the stream.
+  // Delete the entry on the IO thread after we've closed the stream.
+  // (We're currently on the audio thread).
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&AudioRendererHost::DeleteEntry, this, entry));

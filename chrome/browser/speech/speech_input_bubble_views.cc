@@ -12,11 +12,12 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/browser/ui/views/window.h"
+#include "content/browser/resource_context.h"
+#include "content/browser/speech/speech_input_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "media/audio/audio_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/bubble/bubble_delegate.h"
@@ -204,7 +205,8 @@ void SpeechInputBubbleView::ButtonPressed(views::Button* source,
 
 void SpeechInputBubbleView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK_EQ(source, mic_settings_);
-  AudioManager::GetAudioManager()->ShowAudioInputSettings();
+  speech_input::SpeechInputManager::ShowAudioInputSettingsFromUI(
+      &tab_contents_->browser_context()->GetResourceContext());
 }
 
 gfx::Size SpeechInputBubbleView::GetPreferredSize() {

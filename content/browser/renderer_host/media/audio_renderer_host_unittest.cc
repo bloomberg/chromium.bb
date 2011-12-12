@@ -42,7 +42,8 @@ static bool IsRunningHeadless() {
 
 class MockAudioRendererHost : public AudioRendererHost {
  public:
-  MockAudioRendererHost(const content::ResourceContext* resource_context)
+  explicit MockAudioRendererHost(
+      const content::ResourceContext* resource_context)
       : AudioRendererHost(resource_context),
         shared_memory_length_(0) {
   }
@@ -182,11 +183,12 @@ class AudioRendererHostTest : public testing::Test {
                                            message_loop_.get()));
     ui_thread_.reset(new BrowserThreadImpl(BrowserThread::UI,
                                            message_loop_.get()));
-
+    audio_manager_ = AudioManager::Create();
     observer_.reset(new MockMediaObserver());
     content::MockResourceContext* context =
         content::MockResourceContext::GetInstance();
     context->set_media_observer(observer_.get());
+    context->set_audio_manager(audio_manager_);
     host_ = new MockAudioRendererHost(context);
 
     // Simulate IPC channel connected.
@@ -203,6 +205,14 @@ class AudioRendererHostTest : public testing::Test {
 
     // We need to continue running message_loop_ to complete all destructions.
     SyncWithAudioThread();
+
+    // Since the MockResourceContext object is a singleton that lives across
+    // multiple tests, we must clear pointers to objects that are about to die.
+    content::MockResourceContext* context =
+        content::MockResourceContext::GetInstance();
+    context->set_audio_manager(NULL);
+    context->set_media_observer(NULL);
+    audio_manager_ = NULL;
 
     io_thread_.reset();
     ui_thread_.reset();
@@ -338,9 +348,10 @@ class AudioRendererHostTest : public testing::Test {
   }
 
   // Called on the main thread.
-  static void PostQuitOnAudioThread(MessageLoop* message_loop) {
-    AudioManager::GetAudioManager()->GetMessageLoop()->PostTask(
-        FROM_HERE, base::Bind(&PostQuitMessageLoop, message_loop));
+  static void PostQuitOnAudioThread(AudioManager* audio_manager,
+                                    MessageLoop* message_loop) {
+    audio_manager->GetMessageLoop()->PostTask(FROM_HERE,
+        base::Bind(&PostQuitMessageLoop, message_loop));
   }
 
   // SyncWithAudioThread() waits until all pending tasks on the audio thread
@@ -348,8 +359,12 @@ class AudioRendererHostTest : public testing::Test {
   // current thread. It is used to synchronize with the audio thread when we are
   // closing an audio stream.
   void SyncWithAudioThread() {
+    // Don't use scoped_refptr to addref the AudioManager when posting
+    // to the thread that itself owns.
     message_loop_->PostTask(
-        FROM_HERE, base::Bind(&PostQuitOnAudioThread, message_loop_.get()));
+        FROM_HERE, base::Bind(&PostQuitOnAudioThread,
+            base::Unretained(audio_manager_.get()),
+            message_loop_.get()));
     message_loop_->Run();
   }
 
@@ -364,6 +379,7 @@ class AudioRendererHostTest : public testing::Test {
   scoped_ptr<MessageLoop> message_loop_;
   scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_ptr<BrowserThreadImpl> ui_thread_;
+  scoped_refptr<AudioManager> audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHostTest);
 };

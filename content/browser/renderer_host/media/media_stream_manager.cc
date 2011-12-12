@@ -16,6 +16,7 @@
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/browser/browser_thread.h"
+#include "media/audio/audio_manager.h"
 
 using content::BrowserThread;
 
@@ -80,10 +81,11 @@ struct MediaStreamManager::DeviceRequest {
   StreamDeviceInfoArray video_devices;
 };
 
-MediaStreamManager::MediaStreamManager()
+MediaStreamManager::MediaStreamManager(AudioManager* audio_manager)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           device_settings_(new MediaStreamDeviceSettings(this))),
-      enumeration_in_progress_(kNumMediaStreamTypes, false) {
+      enumeration_in_progress_(kNumMediaStreamTypes, false),
+      audio_manager_(audio_manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
@@ -103,7 +105,8 @@ VideoCaptureManager* MediaStreamManager::video_capture_manager() {
 AudioInputDeviceManager* MediaStreamManager::audio_input_device_manager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!audio_input_device_manager_.get()) {
-    audio_input_device_manager_.reset(new AudioInputDeviceManager());
+    audio_input_device_manager_.reset(
+        new AudioInputDeviceManager(audio_manager_));
     audio_input_device_manager_->Register(this);
   }
   return audio_input_device_manager_.get();

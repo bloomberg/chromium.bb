@@ -20,6 +20,8 @@
 #include "content/common/media/media_stream_options.h"
 #include "media/audio/audio_device_name.h"
 
+class AudioManager;
+
 namespace media_stream {
 
 class AudioInputDeviceManagerEventHandler;
@@ -34,7 +36,7 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   static const int kInvalidSessionId;
   static const char kInvalidDeviceId[];
 
-  AudioInputDeviceManager();
+  explicit AudioInputDeviceManager(AudioManager* audio_manager);
   virtual ~AudioInputDeviceManager();
 
   // MediaStreamProvider implementation, called on IO thread.
@@ -64,6 +66,7 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   EventHandlerMap event_handlers_;
   typedef std::map<int, media::AudioDeviceName> AudioInputDeviceMap;
   AudioInputDeviceMap devices_;
+  scoped_refptr<AudioManager> audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputDeviceManager);
 };

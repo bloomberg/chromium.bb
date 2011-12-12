@@ -7,6 +7,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/speech/speech_recognizer.h"
 #include "content/test/test_url_fetcher_factory.h"
+#include "media/audio/audio_manager.h"
 #include "media/audio/test_audio_input_controller_factory.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
@@ -25,16 +26,16 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
  public:
   SpeechRecognizerTest()
       : io_thread_(BrowserThread::IO, &message_loop_),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            recognizer_(new SpeechRecognizer(this, 1, std::string(),
-                                             std::string(), NULL, false,
-                                             std::string(), std::string()))),
+        audio_manager_(AudioManager::Create()),
         recording_complete_(false),
         recognition_complete_(false),
         result_received_(false),
         audio_received_(false),
         error_(content::SPEECH_INPUT_ERROR_NONE),
         volume_(-1.0f) {
+    recognizer_ = new SpeechRecognizer(this, 1, std::string(), std::string(),
+                                       NULL, audio_manager_, false,
+                                       std::string(), std::string());
     int audio_packet_length_bytes =
         (SpeechRecognizer::kAudioSampleRate *
          SpeechRecognizer::kAudioPacketIntervalMs *
@@ -111,6 +112,7 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
   MessageLoopForIO message_loop_;
   BrowserThreadImpl io_thread_;
   scoped_refptr<SpeechRecognizer> recognizer_;
+  scoped_refptr<AudioManager> audio_manager_;
   bool recording_complete_;
   bool recognition_complete_;
   bool result_received_;

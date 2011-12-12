@@ -246,6 +246,7 @@ void AudioInputRendererHost::OnCreateStream(
   // entry and construct an AudioInputController.
   entry->writer.reset(writer.release());
   entry->controller = media::AudioInputController::CreateLowLatency(
+      resource_context_->audio_manager(),
       this,
       audio_params,
       device_id,

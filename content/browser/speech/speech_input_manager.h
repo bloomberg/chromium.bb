@@ -16,6 +16,7 @@
 class SpeechInputPreferences;
 
 namespace content {
+class ResourceContext;
 struct SpeechInputResult;
 }
 
@@ -50,7 +51,13 @@ class CONTENT_EXPORT SpeechInputManager : public SpeechRecognizerDelegate {
 
   // Invokes the platform provided microphone settings UI in a non-blocking way,
   // via the BrowserThread::FILE thread.
-  static void ShowAudioInputSettings();
+  static void ShowAudioInputSettings(AudioManager* audio_manager);
+
+  // Same as ShowAudioInputSettings above but can be called from the UI thread
+  // where the caller has a pointer to a resource context, but due to not
+  // running on the IO thread, cannot access its properties.
+  static void ShowAudioInputSettingsFromUI(
+      const content::ResourceContext* resource_context);
 
   virtual ~SpeechInputManager();
 
@@ -71,7 +78,8 @@ class CONTENT_EXPORT SpeechInputManager : public SpeechRecognizerDelegate {
                                 const std::string& grammar,
                                 const std::string& origin_url,
                                 net::URLRequestContextGetter* context_getter,
-                                SpeechInputPreferences* speech_input_prefs);
+                                SpeechInputPreferences* speech_input_prefs,
+                                AudioManager* audio_manager);
   virtual void CancelRecognition(int caller_id);
   virtual void CancelAllRequestsWithDelegate(Delegate* delegate);
   virtual void StopRecording(int caller_id);
@@ -97,7 +105,8 @@ class CONTENT_EXPORT SpeechInputManager : public SpeechRecognizerDelegate {
   // recognition and for fetching optional request information.
 
   // Get the optional request information if available.
-  virtual void GetRequestInfo(bool* can_report_metrics,
+  virtual void GetRequestInfo(AudioManager* audio_manager,
+                              bool* can_report_metrics,
                               std::string* request_info) = 0;
 
   // Called when recognition has been requested from point |element_rect_| on

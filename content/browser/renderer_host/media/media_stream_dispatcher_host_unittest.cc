@@ -15,6 +15,7 @@
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
 #include "ipc/ipc_message_macros.h"
+#include "media/audio/audio_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -151,9 +152,11 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
 
+    audio_manager_ = AudioManager::Create();
+
     // Create a MediaStreamManager instance and hand over pointer to
     // ResourceContext.
-    media_stream_manager_.reset(new MediaStreamManager());
+    media_stream_manager_.reset(new MediaStreamManager(audio_manager_));
     // Make sure we use fake devices to avoid long delays.
     media_stream_manager_->UseFakeDevice();
     content::MockResourceContext::GetInstance()->set_media_stream_manager(
@@ -202,6 +205,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   scoped_ptr<BrowserThreadImpl> ui_thread_;
   scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_ptr<MediaStreamManager> media_stream_manager_;
+  scoped_refptr<AudioManager> audio_manager_;
 };
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateStream) {

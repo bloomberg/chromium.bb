@@ -14,13 +14,13 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::_;
-using ::testing::AnyNumber;
-using ::testing::InSequence;
-using ::testing::Return;
 using content::BrowserThread;
-
 using content::BrowserThreadImpl;
+using media_stream::AudioInputDeviceManager;
+using testing::_;
+using testing::AnyNumber;
+using testing::InSequence;
+using testing::Return;
 
 namespace media_stream {
 
@@ -80,26 +80,23 @@ class MockAudioInputDeviceManagerEventHandler
   DISALLOW_COPY_AND_ASSIGN(MockAudioInputDeviceManagerEventHandler);
 };
 
-// Returns true if machine has audio input device, else returns false.
-static bool CanRunAudioInputDeviceTests() {
-  AudioManager* audio_manager = AudioManager::GetAudioManager();
-  if (!audio_manager)
-    return false;
-
-  return audio_manager->HasAudioInputDevices();
-}
-
 ACTION_P(ExitMessageLoop, message_loop) {
   message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
-class AudioInputDeviceManagerTest: public testing::Test {
+class AudioInputDeviceManagerTest : public testing::Test {
  public:
   AudioInputDeviceManagerTest()
       : message_loop_(),
         io_thread_(),
         manager_(),
-        audio_input_listener_() {}
+        audio_input_listener_() {
+  }
+
+  // Returns true iff machine has an audio input device.
+  bool CanRunAudioInputDeviceTests() {
+    return audio_manager_->HasAudioInputDevices();
+  }
 
  protected:
   virtual void SetUp() {
@@ -107,7 +104,9 @@ class AudioInputDeviceManagerTest: public testing::Test {
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
-    manager_.reset(new media_stream::AudioInputDeviceManager());
+    audio_manager_ = AudioManager::Create();
+
+    manager_.reset(new AudioInputDeviceManager(audio_manager_));
     audio_input_listener_.reset(new MockAudioInputDeviceManagerListener());
     manager_->Register(audio_input_listener_.get());
 
@@ -129,6 +128,7 @@ class AudioInputDeviceManagerTest: public testing::Test {
   scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_ptr<AudioInputDeviceManager> manager_;
   scoped_ptr<MockAudioInputDeviceManagerListener> audio_input_listener_;
+  scoped_refptr<AudioManager> audio_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioInputDeviceManagerTest);
@@ -138,6 +138,9 @@ class AudioInputDeviceManagerTest: public testing::Test {
 TEST_F(AudioInputDeviceManagerTest, OpenAndCloseDevice) {
   if (!CanRunAudioInputDeviceTests())
     return;
+
+  ASSERT_FALSE(audio_input_listener_->devices_.empty());
+
   InSequence s;
 
   for (StreamDeviceInfoArray::const_iterator iter =
@@ -162,6 +165,9 @@ TEST_F(AudioInputDeviceManagerTest, OpenAndCloseDevice) {
 TEST_F(AudioInputDeviceManagerTest, OpenMultipleDevices) {
   if (!CanRunAudioInputDeviceTests())
     return;
+
+  ASSERT_FALSE(audio_input_listener_->devices_.empty());
+
   InSequence s;
 
   int index = 0;
@@ -225,6 +231,9 @@ TEST_F(AudioInputDeviceManagerTest, OpenNotExistingDevice) {
 TEST_F(AudioInputDeviceManagerTest, OpenDeviceTwice) {
   if (!CanRunAudioInputDeviceTests())
     return;
+
+  ASSERT_FALSE(audio_input_listener_->devices_.empty());
+
   InSequence s;
 
   // Opens and closes the default device twice.
@@ -254,6 +263,9 @@ TEST_F(AudioInputDeviceManagerTest, OpenDeviceTwice) {
 TEST_F(AudioInputDeviceManagerTest, StartAndStopSession) {
   if (!CanRunAudioInputDeviceTests())
     return;
+
+  ASSERT_FALSE(audio_input_listener_->devices_.empty());
+
   InSequence s;
 
   int index = 0;
@@ -297,6 +309,9 @@ TEST_F(AudioInputDeviceManagerTest, StartAndStopSession) {
 TEST_F(AudioInputDeviceManagerTest, CloseWithoutStopSession) {
   if (!CanRunAudioInputDeviceTests())
     return;
+
+  ASSERT_FALSE(audio_input_listener_->devices_.empty());
+
   InSequence s;
 
   int index = 0;
@@ -343,6 +358,9 @@ TEST_F(AudioInputDeviceManagerTest, CloseWithoutStopSession) {
 TEST_F(AudioInputDeviceManagerTest, StartDeviceTwice) {
   if (!CanRunAudioInputDeviceTests())
     return;
+
+  ASSERT_FALSE(audio_input_listener_->devices_.empty());
+
   InSequence s;
 
   // Create one EventHandler for each session.

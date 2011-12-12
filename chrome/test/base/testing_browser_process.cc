@@ -226,6 +226,10 @@ CRLSetFetcher* TestingBrowserProcess::crl_set_fetcher() {
   return NULL;
 }
 
+AudioManager* TestingBrowserProcess::audio_manager() {
+  return NULL;
+}
+
 void TestingBrowserProcess::SetLocalState(PrefService* local_state) {
   if (!local_state && notification_ui_manager_.get())
     notification_ui_manager_.reset();  // Used local_state_.

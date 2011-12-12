@@ -7,6 +7,10 @@
 
 #include "content/browser/renderer_host/render_process_host_impl.h"
 
+#if defined(OS_WIN)
+#include <objbase.h>  // For CoInitialize/CoUninitialize.
+#endif
+
 #include <algorithm>
 #include <limits>
 #include <vector>
@@ -73,6 +77,7 @@
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/text_input_client_message_filter.h"
 #include "content/browser/resolve_proxy_msg_helper.h"
+#include "content/browser/resource_context.h"
 #include "content/browser/speech/speech_input_dispatcher_host.h"
 #include "content/browser/trace_message_filter.h"
 #include "content/browser/user_metrics.h"
@@ -104,7 +109,6 @@
 #include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
-#include <objbase.h>
 #include "base/synchronization/waitable_event.h"
 #include "content/common/font_cache_dispatcher_win.h"
 #endif
@@ -460,55 +464,47 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           GetBrowserContext()->GetRequestContextForRenderProcess(GetID()),
           widget_helper_));
   channel_->AddFilter(render_message_filter);
+  content::BrowserContext* browser_context = GetBrowserContext();
+  const content::ResourceContext* resource_context =
+      &browser_context->GetResourceContext();
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
       GetID(), content::PROCESS_TYPE_RENDERER,
-      &GetBrowserContext()->GetResourceContext(),
-      new RendererURLRequestContextSelector(GetBrowserContext(), GetID()),
+      resource_context,
+      new RendererURLRequestContextSelector(browser_context, GetID()),
       content::GetContentClient()->browser()->GetResourceDispatcherHost());
 
   channel_->AddFilter(resource_message_filter);
-  channel_->AddFilter(new AudioInputRendererHost(
-      &GetBrowserContext()->GetResourceContext()));
-  channel_->AddFilter(
-      new AudioRendererHost(&GetBrowserContext()->GetResourceContext()));
-  channel_->AddFilter(
-      new VideoCaptureHost(&GetBrowserContext()->GetResourceContext()));
-  channel_->AddFilter(
-      new AppCacheDispatcherHost(GetBrowserContext()->GetAppCacheService(),
-                                 GetID()));
+  channel_->AddFilter(new AudioInputRendererHost(resource_context));
+  channel_->AddFilter(new AudioRendererHost(resource_context));
+  channel_->AddFilter(new VideoCaptureHost(resource_context));
+  channel_->AddFilter(new AppCacheDispatcherHost(
+      browser_context->GetAppCacheService(), GetID()));
   channel_->AddFilter(new ClipboardMessageFilter());
-  channel_->AddFilter(
-      new DOMStorageMessageFilter(GetID(),
-                                  GetBrowserContext()->GetWebKitContext()));
-  channel_->AddFilter(
-      new IndexedDBDispatcherHost(GetID(),
-                                  GetBrowserContext()->GetWebKitContext()));
-  channel_->AddFilter(
-      GeolocationDispatcherHost::New(
-          GetID(), GetBrowserContext()->GetGeolocationPermissionContext()));
+  channel_->AddFilter(new DOMStorageMessageFilter(GetID(),
+      browser_context->GetWebKitContext()));
+  channel_->AddFilter(new IndexedDBDispatcherHost(GetID(),
+      browser_context->GetWebKitContext()));
+  channel_->AddFilter(GeolocationDispatcherHost::New(
+      GetID(), browser_context->GetGeolocationPermissionContext()));
   channel_->AddFilter(new GpuMessageFilter(GetID(), widget_helper_.get()));
   channel_->AddFilter(new media_stream::MediaStreamDispatcherHost(
-      &GetBrowserContext()->GetResourceContext(), GetID()));
-  channel_->AddFilter(new PepperFileMessageFilter(GetID(),
-                      GetBrowserContext()));
-  channel_->AddFilter(
-      new PepperMessageFilter(&GetBrowserContext()->GetResourceContext()));
+      resource_context, GetID()));
+  channel_->AddFilter(new PepperFileMessageFilter(GetID(), browser_context));
+  channel_->AddFilter(new PepperMessageFilter(resource_context));
   channel_->AddFilter(new speech_input::SpeechInputDispatcherHost(
-      GetID(), GetBrowserContext()->GetRequestContext(),
-      GetBrowserContext()->GetSpeechInputPreferences()));
-  channel_->AddFilter(
-      new FileSystemDispatcherHost(
-          GetBrowserContext()->GetRequestContext(),
-          GetBrowserContext()->GetFileSystemContext()));
+      GetID(), browser_context->GetRequestContext(),
+      browser_context->GetSpeechInputPreferences(), resource_context));
+  channel_->AddFilter(new FileSystemDispatcherHost(
+      browser_context->GetRequestContext(),
+      browser_context->GetFileSystemContext()));
   channel_->AddFilter(new device_orientation::MessageFilter());
-  channel_->AddFilter(
-      new BlobMessageFilter(GetID(),
-                            GetBrowserContext()->GetBlobStorageContext()));
+  channel_->AddFilter(new BlobMessageFilter(GetID(),
+        browser_context->GetBlobStorageContext()));
   channel_->AddFilter(new FileUtilitiesMessageFilter(GetID()));
   channel_->AddFilter(new MimeRegistryMessageFilter());
   channel_->AddFilter(new DatabaseMessageFilter(
-      GetBrowserContext()->GetDatabaseTracker()));
+      browser_context->GetDatabaseTracker()));
 #if defined(OS_MACOSX)
   channel_->AddFilter(new TextInputClientMessageFilter(GetID()));
 #elif defined(OS_WIN)
@@ -517,28 +513,24 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
       new SocketStreamDispatcherHost(
-          new RendererURLRequestContextSelector(GetBrowserContext(), GetID()),
-          &GetBrowserContext()->GetResourceContext());
+          new RendererURLRequestContextSelector(browser_context, GetID()),
+                                                resource_context);
   channel_->AddFilter(socket_stream_dispatcher_host);
 
-  channel_->AddFilter(
-      new WorkerMessageFilter(
-          GetID(),
-          &GetBrowserContext()->GetResourceContext(),
-          content::GetContentClient()->browser()->GetResourceDispatcherHost(),
-          base::Bind(&RenderWidgetHelper::GetNextRoutingID,
-                     base::Unretained(widget_helper_.get()))));
+  channel_->AddFilter(new WorkerMessageFilter(GetID(), resource_context,
+      content::GetContentClient()->browser()->GetResourceDispatcherHost(),
+      base::Bind(&RenderWidgetHelper::GetNextRoutingID,
+                 base::Unretained(widget_helper_.get()))));
 
 #if defined(ENABLE_P2P_APIS)
-  channel_->AddFilter(new content::P2PSocketDispatcherHost(
-      &GetBrowserContext()->GetResourceContext()));
+  channel_->AddFilter(new content::P2PSocketDispatcherHost(resource_context));
 #endif
 
   channel_->AddFilter(new TraceMessageFilter());
   channel_->AddFilter(new ResolveProxyMsgHelper(
-      GetBrowserContext()->GetRequestContextForRenderProcess(GetID())));
-  channel_->AddFilter(new QuotaDispatcherHost(
-      GetID(), GetBrowserContext()->GetQuotaManager(),
+      browser_context->GetRequestContextForRenderProcess(GetID())));
+  channel_->AddFilter(new QuotaDispatcherHost(GetID(),
+      browser_context->GetQuotaManager(),
       content::GetContentClient()->browser()->CreateQuotaPermissionContext()));
   channel_->AddFilter(new content::GamepadBrowserMessageFilter(this));
   channel_->AddFilter(new ProfilerMessageFilter());

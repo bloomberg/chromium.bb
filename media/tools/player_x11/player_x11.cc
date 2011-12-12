@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <iostream>
-#include <signal.h>
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
+#include <signal.h>
+
+#include <iostream>  // NOLINT
 
 #include "base/at_exit.h"
 #include "base/bind.h"
@@ -14,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#include "media/audio/audio_manager.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media.h"
 #include "media/base/media_log.h"
@@ -32,6 +34,8 @@
 static Display* g_display = NULL;
 static Window g_window = 0;
 static bool g_running = false;
+
+AudioManager* g_audio_manager = NULL;
 
 class MessageLoopQuitter {
  public:
@@ -102,10 +106,12 @@ bool InitPipeline(MessageLoop* message_loop,
         new X11VideoRenderer(g_display, g_window, paint_message_loop));
   }
 
-  if (enable_audio)
-    collection->AddAudioRenderer(new media::ReferenceAudioRenderer());
-  else
+  if (enable_audio) {
+    collection->AddAudioRenderer(
+        new media::ReferenceAudioRenderer(g_audio_manager));
+  } else {
     collection->AddAudioRenderer(new media::NullAudioRenderer());
+  }
 
   // Create the pipeline and start it.
   *pipeline = new media::PipelineImpl(message_loop, new media::MediaLog());
@@ -176,7 +182,7 @@ void PeriodicalUpdate(
                                       base::Unretained(quitter)));
             return;
           } else if (key == XK_space) {
-            if (pipeline->GetPlaybackRate() < 0.01f) // paused
+            if (pipeline->GetPlaybackRate() < 0.01f)  // paused
               pipeline->SetPlaybackRate(1.0f);
             else
               pipeline->SetPlaybackRate(0.0f);
@@ -194,6 +200,9 @@ void PeriodicalUpdate(
 }
 
 int main(int argc, char** argv) {
+  scoped_refptr<AudioManager> audio_manager(AudioManager::Create());
+  g_audio_manager = audio_manager;
+
   // Read arguments.
   if (argc == 1) {
     std::cout << "Usage: " << argv[0] << " --file=FILE" << std::endl
@@ -252,7 +261,7 @@ int main(int argc, char** argv) {
     message_loop.PostTask(FROM_HERE, base::Bind(
         &PeriodicalUpdate, pipeline, &message_loop, audio_only));
     message_loop.Run();
-  } else{
+  } else {
     std::cout << "Pipeline initialization failed..." << std::endl;
   }
 
@@ -262,5 +271,7 @@ int main(int argc, char** argv) {
   thread->Stop();
   XDestroyWindow(g_display, g_window);
   XCloseDisplay(g_display);
+  g_audio_manager = NULL;
+
   return 0;
 }

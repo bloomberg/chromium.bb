@@ -125,6 +125,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual MHTMLGenerationManager* mhtml_generation_manager() OVERRIDE;
   virtual ComponentUpdateService* component_updater() OVERRIDE;
   virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
+  virtual AudioManager* audio_manager() OVERRIDE;
 
  private:
   // Must be called right before the IO thread is started.
@@ -281,6 +282,8 @@ class BrowserProcessImpl : public BrowserProcess,
 
   scoped_refptr<CRLSetFetcher> crl_set_fetcher_;
 #endif
+
+  scoped_refptr<AudioManager> audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessImpl);
 };

@@ -7,6 +7,7 @@
 #include "base/memory/singleton.h"
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
+#include "media/audio/audio_manager.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_log.h"
 #include "media/base/message_loop_factory_impl.h"
@@ -30,7 +31,8 @@ using media::ReferenceAudioRenderer;
 namespace media {
 
 Movie::Movie()
-    : enable_audio_(true),
+    : audio_manager_(AudioManager::Create()),
+      enable_audio_(true),
       enable_draw_(true),
       enable_dump_yuv_file_(false),
       enable_pause_(false),
@@ -78,7 +80,8 @@ bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
       message_loop_factory_->GetMessageLoop("VideoDecoderThread")));
 
   if (enable_audio_) {
-    collection->AddAudioRenderer(new ReferenceAudioRenderer());
+    collection->AddAudioRenderer(
+        new ReferenceAudioRenderer(audio_manager_));
   } else {
     collection->AddAudioRenderer(new media::NullAudioRenderer());
   }

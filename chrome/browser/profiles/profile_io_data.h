@@ -20,6 +20,7 @@
 #include "content/browser/resource_context.h"
 #include "net/base/cookie_monster.h"
 
+class AudioManager;
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
 class CookieSettings;
@@ -147,6 +148,7 @@ class ProfileIOData {
     std::string accept_charset;
     std::string referrer_charset;
     IOThread* io_thread;
+    scoped_refptr<AudioManager> audio_manager;
     scoped_refptr<HostContentSettingsMap> host_content_settings_map;
     scoped_refptr<CookieSettings> cookie_settings;
     scoped_refptr<HostZoomMap> host_zoom_map;

@@ -25,10 +25,13 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/media_stream_settings_requester.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/common/content_export.h"
+
+class AudioManager;
 
 namespace media_stream {
 
@@ -45,7 +48,7 @@ class CONTENT_EXPORT MediaStreamManager
     : public MediaStreamProviderListener,
       public SettingsRequester {
  public:
-  MediaStreamManager();
+  explicit MediaStreamManager(AudioManager* audio_manager);
   virtual ~MediaStreamManager();
 
   // Used to access VideoCaptureManager.
@@ -109,6 +112,7 @@ class CONTENT_EXPORT MediaStreamManager
   // All non-closed request.
   typedef std::map<std::string, DeviceRequest> DeviceRequests;
   DeviceRequests requests_;
+  scoped_refptr<AudioManager> audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamManager);
 };

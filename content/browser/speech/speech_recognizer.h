@@ -86,6 +86,7 @@ class CONTENT_EXPORT SpeechRecognizer
                    const std::string& language,
                    const std::string& grammar,
                    net::URLRequestContextGetter* context_getter,
+                   AudioManager* audio_manager,
                    bool filter_profanities,
                    const std::string& hardware_info,
                    const std::string& origin_url);
@@ -118,6 +119,8 @@ class CONTENT_EXPORT SpeechRecognizer
   virtual void SetRecognitionResult(
       const content::SpeechInputResult& result) OVERRIDE;
 
+  AudioManager* audio_manager() const { return audio_manager_; }
+
   static const int kAudioSampleRate;
   static const int kAudioPacketIntervalMs;  // Duration of each audio packet.
   static const ChannelLayout kChannelLayout;
@@ -145,6 +148,7 @@ class CONTENT_EXPORT SpeechRecognizer
   scoped_ptr<SpeechRecognitionRequest> request_;
   scoped_refptr<media::AudioInputController> audio_controller_;
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
+  scoped_refptr<AudioManager> audio_manager_;
   AudioEncoder::Codec codec_;
   scoped_ptr<AudioEncoder> encoder_;
   Endpointer endpointer_;

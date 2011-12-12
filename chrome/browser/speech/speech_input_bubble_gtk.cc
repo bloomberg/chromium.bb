@@ -14,6 +14,8 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
+#include "content/browser/resource_context.h"
+#include "content/browser/speech/speech_input_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -107,7 +109,8 @@ void SpeechInputBubbleGtk::OnTryAgainClicked(GtkWidget* widget) {
 }
 
 void SpeechInputBubbleGtk::OnMicSettingsClicked(GtkWidget* widget) {
-  AudioManager::GetAudioManager()->ShowAudioInputSettings();
+  speech_input::SpeechInputManager::ShowAudioInputSettingsFromUI(
+      &tab_contents()->browser_context()->GetResourceContext());
   Hide();
 }
 
@@ -133,7 +136,14 @@ void SpeechInputBubbleGtk::Show() {
   gtk_box_pack_start(GTK_BOX(vbox), label_, FALSE, FALSE,
                      kBubbleControlVerticalSpacing);
 
-  if (AudioManager::GetAudioManager()->CanShowAudioInputSettings()) {
+  Profile* profile = Profile::FromBrowserContext(
+      tab_contents()->browser_context());
+
+  // TODO(tommi): The audio_manager property can only be accessed from the
+  // IO thread, so we can't call CanShowAudioInputSettings directly here if
+  // we can show the input settings.  For now, we always show the link (like
+  // we do on other platforms).
+  if (true) {
     mic_settings_ = gtk_chrome_link_button_new(
         l10n_util::GetStringUTF8(IDS_SPEECH_INPUT_MIC_SETTINGS).c_str());
     gtk_box_pack_start(GTK_BOX(vbox), mic_settings_, FALSE, FALSE,
@@ -164,8 +174,6 @@ void SpeechInputBubbleGtk::Show() {
       kBubbleControlHorizontalSpacing, kBubbleControlHorizontalSpacing);
   gtk_container_add(GTK_CONTAINER(content), vbox);
 
-  Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->browser_context());
   GtkThemeService* theme_provider = GtkThemeService::GetFrom(profile);
   GtkWidget* reference_widget = tab_contents()->GetNativeView();
   gfx::Rect container_rect;
@@ -190,8 +198,8 @@ void SpeechInputBubbleGtk::Show() {
                             &target_rect,
                             content,
                             BubbleGtk::ARROW_LOCATION_TOP_LEFT,
-                            false, // match_system_theme
-                            true, // grab_input
+                            false,  // match_system_theme
+                            true,  // grab_input
                             theme_provider,
                             this);
 
