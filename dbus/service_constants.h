@@ -169,7 +169,10 @@ const char kBrightnessChangedSignal[] = "BrightnessChanged";
 const char kKeyboardBrightnessChangedSignal[] = "KeyboardBrightnessChanged";
 const char kPowerStateChangedSignal[] = "PowerStateChanged";
 const char kPowerSupplyPollSignal[] = "PowerSupplyPoll";
-const char kPowerButtonEventSignal[] = "PowerButtonEvent";
+const char kButtonEventSignal[] = "ButtonEvent";
+// Values
+const char kPowerButtonName[] = "power";
+const char kLockButtonName[] = "lock";
 // DEPRECATED
 const char kRequestLockScreenSignal[] = "RequestLockScreen";
 const char kRequestRestartSignal[] = "RequestRestart";
