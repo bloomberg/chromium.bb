@@ -28,7 +28,6 @@ class ChangePictureOptionsHandler : public OptionsPageUIHandler,
   virtual ~ChangePictureOptionsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void Initialize() OVERRIDE;
   virtual void GetLocalizedValues(
       base::DictionaryValue* localized_strings) OVERRIDE;
 
@@ -37,7 +36,7 @@ class ChangePictureOptionsHandler : public OptionsPageUIHandler,
 
  private:
   // Sends list of available default images to the page.
-  void SendAvailableImages();
+  void SendDefaultImages();
 
   // Sends current selection to the page.
   void SendSelectedImage();
@@ -65,8 +64,11 @@ class ChangePictureOptionsHandler : public OptionsPageUIHandler,
   // Gets the list of available user images and sends it to the page.
   void HandleGetAvailableImages(const base::ListValue* args);
 
+  // Handles page initialized event.
+  void HandlePageInitialized(const base::ListValue* args);
+
   // Handles page shown event.
-  void HandleOnPageShown(const base::ListValue* args);
+  void HandlePageShown(const base::ListValue* args);
 
   // Selects one of the available images as user's.
   void HandleSelectImage(const base::ListValue* args);

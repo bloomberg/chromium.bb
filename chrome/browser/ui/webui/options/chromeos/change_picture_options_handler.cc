@@ -73,21 +73,6 @@ ChangePictureOptionsHandler::~ChangePictureOptionsHandler() {
     select_file_dialog_->ListenerDestroyed();
 }
 
-void ChangePictureOptionsHandler::Initialize() {
-  // If no camera presence check has been performed in this session,
-  // start one now.
-  if (CameraDetector::camera_presence() ==
-      CameraDetector::kCameraPresenceUnknown)
-    CheckCameraPresence();
-
-  // While the check is in progress, use previous camera presence state and
-  // presume it is present if no check has been performed yet.
-  SetCameraPresent(CameraDetector::camera_presence() !=
-                   CameraDetector::kCameraAbsent);
-
-  SendAvailableImages();
-}
-
 void ChangePictureOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
@@ -114,20 +99,23 @@ void ChangePictureOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("takePhoto",
       base::Bind(&ChangePictureOptionsHandler::HandleTakePhoto,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("onPageShown",
-      base::Bind(&ChangePictureOptionsHandler::HandleOnPageShown,
+  web_ui_->RegisterMessageCallback("onChangePicturePageShown",
+      base::Bind(&ChangePictureOptionsHandler::HandlePageShown,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("onChangePicturePageInitialized",
+      base::Bind(&ChangePictureOptionsHandler::HandlePageInitialized,
                  base::Unretained(this)));
   web_ui_->RegisterMessageCallback("selectImage",
       base::Bind(&ChangePictureOptionsHandler::HandleSelectImage,
                  base::Unretained(this)));
 }
 
-void ChangePictureOptionsHandler::SendAvailableImages() {
+void ChangePictureOptionsHandler::SendDefaultImages() {
   ListValue image_urls;
   for (int i = 0; i < kDefaultImagesCount; ++i) {
     image_urls.Append(new StringValue(GetDefaultImageUrl(i)));
   }
-  web_ui_->CallJavascriptFunction("ChangePictureOptions.setUserImages",
+  web_ui_->CallJavascriptFunction("ChangePictureOptions.setDefaultImages",
                                   image_urls);
 }
 
@@ -168,9 +156,29 @@ void ChangePictureOptionsHandler::HandleTakePhoto(const ListValue* args) {
   window->Show();
 }
 
-void ChangePictureOptionsHandler::HandleOnPageShown(
+void ChangePictureOptionsHandler::HandlePageInitialized(
     const base::ListValue* args) {
   DCHECK(args && args->empty());
+  // If no camera presence check has been performed in this session,
+  // start one now.
+  if (CameraDetector::camera_presence() ==
+      CameraDetector::kCameraPresenceUnknown) {
+    CheckCameraPresence();
+  }
+
+  // While the check is in progress, use previous camera presence state and
+  // presume it is present if no check has been performed yet.
+  SetCameraPresent(CameraDetector::camera_presence() !=
+                   CameraDetector::kCameraAbsent);
+
+  SendDefaultImages();
+}
+
+void ChangePictureOptionsHandler::HandlePageShown(const base::ListValue* args) {
+  DCHECK(args && args->empty());
+  // TODO(ivankr): If user opens settings and goes to Change Picture page right
+  // after the check started |HandlePageInitialized| has been completed,
+  // |CheckCameraPresence| will be called twice, should be throttled.
   CheckCameraPresence();
   SendSelectedImage();
   UpdateProfileImage();

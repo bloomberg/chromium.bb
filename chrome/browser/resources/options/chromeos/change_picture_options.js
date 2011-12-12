@@ -67,6 +67,8 @@ cr.define('options', function() {
 
       // Old user image data (if present).
       this.oldImage_ = null;
+
+      chrome.send('onChangePicturePageInitialized');
     },
 
     /**
@@ -74,15 +76,17 @@ cr.define('options', function() {
      */
     didShowPage: function() {
       $('images-grid').updateAndFocus();
-      chrome.send('onPageShown');
+      chrome.send('onChangePicturePageShown');
     },
 
     /**
      * Called right before the page is hidden.
      */
     willHidePage: function() {
+      var imageGrid = $('images-grid');
+      imageGrid.blur();  // Make sure the image grid is not active.
       if (this.oldImage_) {
-        $('images-grid').removeItem(this.oldImage_);
+        imageGrid.removeItem(this.oldImage_);
         this.oldImage_ = null;
       }
     },
@@ -92,7 +96,6 @@ cr.define('options', function() {
      * @private
      */
     closePage_: function() {
-      $('images-grid').blur();  // Make sure the image grid is not active.
       OptionsPage.navigateToPage('personal');
     },
 
@@ -230,11 +233,11 @@ cr.define('options', function() {
     },
 
     /**
-     * Appends received images to the image grid.
-     * @param {Array.<string>} images An array of URLs to user images.
+     * Appends default images to the image grid. Should only be called once.
+     * @param {Array.<string>} images An array of URLs to default images.
      * @private
      */
-    setUserImages_: function(images) {
+    setDefaultImages_: function(images) {
       var imageGrid = $('images-grid');
       for (var i = 0, url; url = images[i]; i++) {
         imageGrid.addItem(url);
@@ -245,10 +248,10 @@ cr.define('options', function() {
   // Forward public APIs to private implementations.
   [
     'setCameraPresent',
+    'setDefaultImages',
     'setOldImage',
     'setProfileImage',
     'setSelectedImage',
-    'setUserImages',
   ].forEach(function(name) {
     ChangePictureOptions[name] = function(value1, value2) {
       ChangePictureOptions.getInstance()[name + '_'](value1, value2);
