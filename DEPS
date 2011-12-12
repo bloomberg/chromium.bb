@@ -41,7 +41,7 @@ vars = {
   # the commit queue can handle CLs rolling Skia
   # and V8 without interference from each other.
   "v8_revision": "10163",
-  "webrtc_revision": "1125",
+  "webrtc_revision": "1155",
   "jsoncpp_revision": "246",
 }
 
@@ -293,7 +293,7 @@ deps = {
         "/trunk/jsoncpp/src/lib_json@" + Var("jsoncpp_revision"),
 
   "src/third_party/libyuv":
-    (Var("googlecode_url") % "libyuv") + "/trunk@64",
+    (Var("googlecode_url") % "libyuv") + "/trunk@101",
 
   "src/third_party/mozc/session":
     (Var("googlecode_url") % "mozc") + "/trunk/src/session@83",
