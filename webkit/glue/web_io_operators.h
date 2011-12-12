@@ -14,7 +14,8 @@ namespace WebKit {
 
 #if defined(WCHAR_T_IS_UTF32)
 class WebString;
-std::ostream& operator<<(std::ostream& out, const WebString& s);
+WEBKIT_GLUE_EXPORT std::ostream& operator<<(std::ostream& out,
+                                            const WebString& s);
 #endif  // defined(WCHAR_T_IS_UTF32)
 
 struct WebPoint;
