@@ -42,10 +42,7 @@ class RendererAccessibilityBrowserTest : public InProcessBrowserTest {
     RenderViewHost* view_host = static_cast<RenderViewHost*>(host);
     view_host->set_save_accessibility_tree_for_testing(true);
     view_host->EnableRendererAccessibility();
-    while (view_host->accessibility_tree_for_testing().state &
-        (1 << WebAccessibility::STATE_BUSY)) {
-      tree_updated_observer.Wait();
-    }
+    tree_updated_observer.Wait();
     return view_host->accessibility_tree_for_testing();
   }
 

@@ -1395,13 +1395,17 @@ void RenderViewHost::OnAccessibilityNotifications(
     for (unsigned i = 0; i < params.size(); i++) {
       const ViewHostMsg_AccessibilityNotification_Params& param = params[i];
 
-      if (param.notification_type == ViewHostMsg_AccEvent::LOAD_COMPLETE &&
+      if ((param.notification_type == ViewHostMsg_AccEvent::LAYOUT_COMPLETE ||
+           param.notification_type == ViewHostMsg_AccEvent::LOAD_COMPLETE) &&
           save_accessibility_tree_for_testing_) {
         accessibility_tree_ = param.acc_tree;
-        content::NotificationService::current()->Notify(
-            content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
-            content::Source<RenderViewHost>(this),
-            content::NotificationService::NoDetails());
+
+        // Only notify for non-blank pages.
+        if (accessibility_tree_.children.size() > 0)
+          content::NotificationService::current()->Notify(
+              content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
+              content::Source<RenderViewHost>(this),
+              content::NotificationService::NoDetails());
       }
     }
   }

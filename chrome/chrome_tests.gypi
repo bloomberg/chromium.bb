@@ -2724,8 +2724,7 @@
         # is safe to run there. See http://crbug.com/78722 for details.
         '../base/files/file_path_watcher_browsertest.cc',
         '../content/app/startup_helper_win.cc',
-        # TODO(sergeyu): Disabled due to crbug.com/106934.
-        # '../content/browser/accessibility/renderer_accessibility_browsertest.cc',
+        '../content/browser/accessibility/renderer_accessibility_browsertest.cc',
         '../content/browser/child_process_security_policy_browsertest.cc',
         '../content/browser/device_orientation/device_orientation_browsertest.cc',
         '../content/browser/download/mhtml_generation_browsertest.cc',
