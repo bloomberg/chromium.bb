@@ -1220,7 +1220,7 @@
    bug_82974a
    Heapcheck:Leak
    fun:sqlite3MemMalloc
-   fun:net::X509Certificate::CreateOSCertHandleFromBytes
+   fun:net::X509Certificate::CreateOSCertHandleFromBytes*
 }
 {
    bug_82974b
