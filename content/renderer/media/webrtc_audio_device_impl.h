@@ -321,8 +321,8 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // on the input/capture side.
   int session_id_;
 
-  // Protects |recording_|.
-  base::Lock lock_;
+  // Protects |recording_|, |output_delay_ms_|, |input_delay_ms_|.
+  mutable base::Lock lock_;
 
   int bytes_per_sample_;
 

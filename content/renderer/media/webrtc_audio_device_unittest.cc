@@ -107,6 +107,7 @@ class WebRTCMediaProcessImpl : public webrtc::VoEMediaProcess {
                        const int length,
                        const int sampling_freq,
                        const bool is_stereo) {
+    base::AutoLock auto_lock(lock_);
     channel_id_ = channel;
     type_ = type;
     packet_size_ = length;
@@ -118,11 +119,30 @@ class WebRTCMediaProcessImpl : public webrtc::VoEMediaProcess {
     }
   }
 
-  int channel_id() const { return channel_id_; }
-  int type() const { return type_; }
-  int packet_size() const { return packet_size_; }
-  int sample_rate() const { return sample_rate_; }
-  int channels() const { return channels_; }
+  int channel_id() const {
+    base::AutoLock auto_lock(lock_);
+    return channel_id_;
+  }
+
+  int type() const {
+    base::AutoLock auto_lock(lock_);
+    return type_;
+  }
+
+  int packet_size() const {
+    base::AutoLock auto_lock(lock_);
+    return packet_size_;
+  }
+
+  int sample_rate() const {
+    base::AutoLock auto_lock(lock_);
+    return sample_rate_;
+  }
+
+  int channels() const {
+    base::AutoLock auto_lock(lock_);
+    return channels_;
+  }
 
  private:
   base::WaitableEvent* event_;
@@ -131,6 +151,7 @@ class WebRTCMediaProcessImpl : public webrtc::VoEMediaProcess {
   int packet_size_;
   int sample_rate_;
   int channels_;
+  mutable base::Lock lock_;
   DISALLOW_COPY_AND_ASSIGN(WebRTCMediaProcessImpl);
 };
 

@@ -65,8 +65,11 @@ void WebRtcAudioDeviceImpl::Render(
     size_t audio_delay_milliseconds) {
   DCHECK_LE(number_of_frames, output_buffer_size_);
 
-  // Store the reported audio delay locally.
-  output_delay_ms_ = audio_delay_milliseconds;
+  {
+    base::AutoLock auto_lock(lock_);
+    // Store the reported audio delay locally.
+    output_delay_ms_ = audio_delay_milliseconds;
+  }
 
   const int channels = audio_data.size();
   DCHECK_LE(channels, output_channels_);
@@ -119,8 +122,13 @@ void WebRtcAudioDeviceImpl::Capture(
     size_t audio_delay_milliseconds) {
   DCHECK_LE(number_of_frames, input_buffer_size_);
 
-  // Store the reported audio delay locally.
-  input_delay_ms_ = audio_delay_milliseconds;
+  int output_delay_ms = 0;
+  {
+    base::AutoLock auto_lock(lock_);
+    // Store the reported audio delay locally.
+    input_delay_ms_ = audio_delay_milliseconds;
+    output_delay_ms = output_delay_ms_;
+  }
 
   const int channels = audio_data.size();
   DCHECK_LE(channels, input_channels_);
@@ -156,7 +164,7 @@ void WebRtcAudioDeviceImpl::Capture(
         bytes_per_sample_,
         channels,
         samples_per_sec,
-        input_delay_ms_ + output_delay_ms_,
+        input_delay_ms_ + output_delay_ms,
         0,  // clock_drift
         0,  // current_mic_level
         new_mic_level);  // not used
@@ -642,12 +650,17 @@ int32_t WebRtcAudioDeviceImpl::StopRecording() {
   DVLOG(1) << "StopRecording()";
   DCHECK(audio_input_device_);
 
-  base::AutoLock auto_lock(lock_);
-  if (!recording_) {
-    // webrtc::VoiceEngine assumes that it is OK to call Stop() just in case.
-    return 0;
+  {
+    base::AutoLock auto_lock(lock_);
+    if (!recording_) {
+      // webrtc::VoiceEngine assumes that it is OK to call Stop() just in case.
+      return 0;
+    }
   }
+
   audio_input_device_->Stop();
+
+  base::AutoLock auto_lock(lock_);
   recording_ = false;
   return 0;
 }
@@ -890,12 +903,14 @@ int32_t WebRtcAudioDeviceImpl::PlayoutBuffer(BufferType* type,
 
 int32_t WebRtcAudioDeviceImpl::PlayoutDelay(uint16_t* delay_ms) const {
   // Report the cached output delay value.
+  base::AutoLock auto_lock(lock_);
   *delay_ms = static_cast<uint16_t>(output_delay_ms_);
   return 0;
 }
 
 int32_t WebRtcAudioDeviceImpl::RecordingDelay(uint16_t* delay_ms) const {
   // Report the cached output delay value.
+  base::AutoLock auto_lock(lock_);
   *delay_ms = static_cast<uint16_t>(input_delay_ms_);
   return 0;
 }
