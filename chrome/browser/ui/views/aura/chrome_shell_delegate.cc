@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/launcher/launcher_types.h"
+#include "ui/aura_shell/window_util.h"
 
 // static
 ChromeShellDelegate* ChromeShellDelegate::instance_ = NULL;
@@ -66,7 +67,7 @@ void ChromeShellDelegate::RequestAppListWidget(
 
 void ChromeShellDelegate::LauncherItemClicked(
     const aura_shell::LauncherItem& item) {
-  item.window->Activate();
+  aura_shell::ActivateWindow(item.window);
 }
 
 bool ChromeShellDelegate::ConfigureLauncherItem(

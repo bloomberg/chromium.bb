@@ -29,8 +29,6 @@ class TestStackingClient : public StackingClient {
  private:
   // Overridden from StackingClient:
   virtual void AddChildToDefaultParent(Window* window) OVERRIDE;
-  virtual bool CanActivateWindow(Window* window) const OVERRIDE;
-  virtual Window* GetTopmostWindowToActivate(Window* ignore) const OVERRIDE;
 
   scoped_ptr<Window> default_container_;
 

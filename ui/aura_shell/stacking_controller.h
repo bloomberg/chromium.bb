@@ -24,15 +24,8 @@ class StackingController : public aura::StackingClient {
   // Initializes this controller.
   void Init();
 
-  // Returns true if |window| exists within a container that supports
-  // activation.
-  static aura::Window* GetActivatableWindow(aura::Window* window);
-
   // Overridden from aura::StackingClient:
   virtual void AddChildToDefaultParent(aura::Window* window) OVERRIDE;
-  virtual bool CanActivateWindow(aura::Window* window) const OVERRIDE;
-  virtual aura::Window* GetTopmostWindowToActivate(
-      aura::Window* ignore) const OVERRIDE;
 
  private:
   // Returns corresponding modal container for a modal window.

@@ -28,6 +28,9 @@ BrowserWithTestWindowTest::BrowserWithTestWindowTest()
 #if defined(OS_WIN)
   OleInitialize(NULL);
 #endif
+#if defined(USE_AURA)
+  test_activation_client_.reset(new aura::test::TestActivationClient);
+#endif
 }
 
 void BrowserWithTestWindowTest::SetUp() {

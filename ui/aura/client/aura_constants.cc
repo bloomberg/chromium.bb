@@ -6,14 +6,19 @@
 
 namespace aura {
 
+// Alphabetical sort.
+const char kActivationDelegateKey[] = "ActivationDelegate";
 const char kAlwaysOnTopKey[] = "AlwaysOnTop";
+const char kDragDropDelegateKey[] = "DragDropDelegate";
+const char kModalKey[] = "Modal";
 const char kRestoreBoundsKey[] = "RestoreBounds";
+const char kRootWindowDragDropClientKey[] = "RootWindowDragDropClient";
+const char kRootWindowTooltipClientKey[] = "RootWindowTooltipClient";
+const char kRootWindowActiveWindow[] = "RootWindowActiveWindow";
+const char kRootWindowActivationClient[] = "RootWindowActivationClient";
+const char kShadowTypeKey[] = "ShadowType";
 const char kShowStateKey[] = "ShowState";
 const char kTooltipTextKey[] = "TooltipText";
-const char kModalKey[] = "Modal";
-const char kShadowTypeKey[] = "ShadowType";
-const char kRootWindowDragDropClientKey[] = "RootWindowDragDropClient";
-const char kDragDropDelegateKey[] = "DragDropDelegate";
-const char kRootWindowTooltipClientKey[] = "RootWindowTooltipClient";
+// Alphabetical sort.
 
 }  // namespace aura

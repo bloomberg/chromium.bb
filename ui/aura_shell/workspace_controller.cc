@@ -4,12 +4,14 @@
 
 #include "ui/aura_shell/workspace_controller.h"
 
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/default_container_layout_manager.h"
 #include "ui/aura_shell/launcher/launcher.h"
 #include "ui/aura_shell/launcher/launcher_model.h"
 #include "ui/aura_shell/shell.h"
+#include "ui/aura_shell/window_util.h"
 #include "ui/aura_shell/workspace/workspace.h"
 #include "ui/aura_shell/workspace/workspace_manager.h"
 
@@ -21,6 +23,7 @@ WorkspaceController::WorkspaceController(aura::Window* viewport)
       launcher_model_(NULL),
       ignore_move_event_(false) {
   workspace_manager_->AddObserver(this);
+  aura::RootWindow::GetInstance()->AddRootWindowObserver(this);
   aura::RootWindow::GetInstance()->AddObserver(this);
 }
 
@@ -29,6 +32,7 @@ WorkspaceController::~WorkspaceController() {
   if (launcher_model_)
     launcher_model_->RemoveObserver(this);
   aura::RootWindow::GetInstance()->RemoveObserver(this);
+  aura::RootWindow::GetInstance()->RemoveRootWindowObserver(this);
 }
 
 void WorkspaceController::ToggleOverview() {
@@ -48,11 +52,18 @@ void WorkspaceController::OnRootWindowResized(const gfx::Size& new_size) {
   workspace_manager_->SetWorkspaceSize(new_size);
 }
 
-void WorkspaceController::OnActiveWindowChanged(aura::Window* active) {
-  // FindBy handles NULL.
-  Workspace* workspace = workspace_manager_->FindBy(active);
-  if (workspace)
-    workspace->Activate();
+////////////////////////////////////////////////////////////////////////////////
+// WorkspaceController, aura::WindowObserver overrides:
+
+void WorkspaceController::OnWindowPropertyChanged(aura::Window* window,
+                                                  const char* key,
+                                                  void* old) {
+  if (key == aura::kRootWindowActiveWindow) {
+    // FindBy handles NULL.
+    Workspace* workspace = workspace_manager_->FindBy(GetActiveWindow());
+    if (workspace)
+      workspace->Activate();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
