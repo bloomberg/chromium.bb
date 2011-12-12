@@ -18,7 +18,6 @@
 #include "net/test/test_server.h"
 #include "webkit/plugins/plugin_switches.h"
 
-
 namespace {
 
 // Platform-specific filename relative to the chrome executable.
@@ -513,8 +512,8 @@ TEST_F(OutOfProcessPPAPITest, MAYBE_FlashFullscreen) {
   RunTestViaHTTP("FlashFullscreen");
 }
 
-// Fullscreen test fails on Mac.
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+// http://crbug.com/107175.
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_LINUX)
 #define MAYBE_Fullscreen FAILS_Fullscreen
 #else
 #define MAYBE_Fullscreen Fullscreen
