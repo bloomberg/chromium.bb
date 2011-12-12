@@ -233,8 +233,7 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
     NOTREACHED();
     return;
   }
-  if (image_url.empty())
-    return;
+  DCHECK(!image_url.empty());
 
   UserManager* user_manager = UserManager::Get();
   const User& user = user_manager->logged_in_user();

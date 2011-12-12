@@ -48,13 +48,8 @@ cr.define('options', function() {
       var imageGrid = $('images-grid');
       UserImagesGrid.decorate(imageGrid);
 
-      imageGrid.addEventListener('change', function(e) {
-        // Ignore programmatical selection.
-        if (!imageGrid.inProgramSelection) {
-          // Button selections will be ignored by Chrome handler.
-          chrome.send('selectImage', [this.selectedItemUrl || '']);
-        }
-      });
+      imageGrid.addEventListener('change',
+                                 this.handleImageSelected_.bind(this));
       imageGrid.addEventListener('activate',
                                  this.handleImageActivated_.bind(this));
       imageGrid.addEventListener('dblclick',
@@ -117,6 +112,22 @@ cr.define('options', function() {
     handleChooseFile_: function() {
       chrome.send('chooseFile');
       this.closePage_();
+    },
+
+    /**
+     * Handles image selection change.
+     * @private
+     */
+    handleImageSelected_: function() {
+      var imageGrid = $('images-grid');
+      var url = imageGrid.selectedItemUrl;
+      // Ignore deselection, selection change caused by program itself and
+      // selection of one of the action buttons.
+      if (url &&
+          !imageGrid.inProgramSelection &&
+          ButtonImageUrls.indexOf(url) == -1) {
+        chrome.send('selectImage', [url]);
+      }
     },
 
     /**
