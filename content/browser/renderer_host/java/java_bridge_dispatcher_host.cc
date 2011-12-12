@@ -5,7 +5,8 @@
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host.h"
 
 #include "base/bind.h"
-#include "content/browser/renderer_host/browser_render_process_host.h"
+#include "base/lazy_instance.h"
+#include "base/threading/thread.h"
 #include "content/browser/renderer_host/java/java_bridge_channel_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/child_process.h"
@@ -16,6 +17,20 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 
 using content::BrowserThread;
+
+namespace {
+class JavaBridgeThread : public base::Thread {
+ public:
+  JavaBridgeThread() : base::Thread("JavaBridge") {
+    Start();
+  }
+  virtual ~JavaBridgeThread() {
+    Stop();
+  }
+};
+base::LazyInstance<JavaBridgeThread> g_background_thread =
+    LAZY_INSTANCE_INITIALIZER;
+}  // namespace
 
 JavaBridgeDispatcherHost::JavaBridgeDispatcherHost(
     RenderViewHost* render_view_host)
@@ -62,13 +77,7 @@ bool JavaBridgeDispatcherHost::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void JavaBridgeDispatcherHost::OnGetChannelHandle(IPC::Message* reply_msg) {
-  if (RenderProcessHost::run_renderer_in_process()) {
-    // TODO(steveblock): Fix Java Bridge with in-process renderer. See
-    // http://code.google.com/p/chromium/issues/detail?id=106838
-    CHECK(false) << "Java Bridge does not support in-process renderer";
-  }
-  BrowserThread::PostTask(
-      BrowserThread::WEBKIT,
+  g_background_thread.Get().message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&JavaBridgeDispatcherHost::GetChannelHandle, this, reply_msg));
 }
@@ -85,11 +94,11 @@ void JavaBridgeDispatcherHost::GetChannelHandle(IPC::Message* reply_msg) {
 
 void JavaBridgeDispatcherHost::CreateNPVariantParam(NPObject* object,
                                                     NPVariant_Param* param) {
-  // The JavaBridgeChannelHost needs to be created on the WEBKIT thread, as
+  // The JavaBridgeChannelHost needs to be created on the background thread, as
   // that is where Java objects will live, and CreateNPVariantParam() needs the
   // channel to create the NPObjectStub. To avoid blocking here until the
   // channel is ready, create the NPVariant_Param by hand, then post a message
-  // to the WEBKIT thread to set up the channel and create the corresponding
+  // to the background thread to set up the channel and create the corresponding
   // NPObjectStub. Post that message before doing any IPC, to make sure that
   // the channel and object proxies are ready before responses are received
   // from the renderer.
@@ -101,8 +110,7 @@ void JavaBridgeDispatcherHost::CreateNPVariantParam(NPObject* object,
   param->npobject_routing_id = route_id;
 
   WebKit::WebBindings::retainObject(object);
-  BrowserThread::PostTask(
-      BrowserThread::WEBKIT,
+  g_background_thread.Get().message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&JavaBridgeDispatcherHost::CreateObjectStub, this, object,
                  route_id));
@@ -110,14 +118,15 @@ void JavaBridgeDispatcherHost::CreateNPVariantParam(NPObject* object,
 
 void JavaBridgeDispatcherHost::CreateObjectStub(NPObject* object,
                                                 int route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
-
+  DCHECK_EQ(g_background_thread.Get().message_loop(), MessageLoop::current());
   if (!channel_) {
     channel_ = JavaBridgeChannelHost::GetJavaBridgeChannelHost(
         render_view_host()->process()->id(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   }
 
+  // NPObjectStub takes a ref to the NPObject. The lifetime of the NPObjectStub
+  // is governed by that of the NPObjectProxy in the renderer, via the channel.
   // We don't need the containing window or the page URL, as we don't do
   // re-entrant sync IPC.
   new NPObjectStub(object, channel_, route_id, 0, GURL());

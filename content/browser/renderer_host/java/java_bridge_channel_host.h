@@ -15,8 +15,8 @@ class JavaBridgeChannelHost : public NPChannelBase {
       base::MessageLoopProxy* ipc_message_loop);
 
   // A threadsafe function to generate a unique route ID. Used by the
-  // JavaBridgeDispatcherHost on the UI thread and this class on the WEBKIT
-  // thread.
+  // JavaBridgeDispatcherHost on the UI thread and this class on the Java
+  // Bridge's background thread.
   static int ThreadsafeGenerateRouteID();
 
   // NPChannelBase implementation:

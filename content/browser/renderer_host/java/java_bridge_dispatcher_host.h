@@ -17,10 +17,10 @@ struct NPObject;
 struct NPVariant_Param;
 
 // This class handles injecting Java objects into a single RenderView. The Java
-// object itself lives on the browser's WEBKIT thread, while a proxy object is
-// created in the renderer. An instance of this class exists for each
-// RenderViewHost.
-class JavaBridgeDispatcherHost :
+// object itself lives in the browser process on a background thread, while a
+// proxy object is created in the renderer. An instance of this class exists
+// for each RenderViewHost.
+class JavaBridgeDispatcherHost
     : public base::RefCountedThreadSafe<JavaBridgeDispatcherHost>,
       public RenderViewHostObserver {
  public:
@@ -33,9 +33,9 @@ class JavaBridgeDispatcherHost :
   // using |name|. The proxy object remains bound until the next time the
   // window object is cleared after a call to RemoveNamedObject() or
   // AddNamedObject() with the same name. The proxy object proxies calls back
-  // to |object|, which is manipulated on the WEBKIT thread. This class holds a
-  // reference to |object| for the time that the proxy object is bound to the
-  // window object.
+  // to |object|, which is manipulated on the background thread. This class
+  // holds a reference to |object| for the time that the proxy object is bound
+  // to the window object.
   void AddNamedObject(const string16& name, NPObject* object);
   void RemoveNamedObject(const string16& name);
 
