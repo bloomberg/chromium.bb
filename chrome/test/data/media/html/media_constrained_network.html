@@ -1,0 +1,49 @@
+<!-- Used by media_constrained_network_perf to record perf metrics. -->
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <title>Constrained Video Test</title>
+  </head>
+
+  <body>
+    <video/>
+  </body>
+
+  <script type="text/javascript">
+    var video = document.querySelector('video');
+
+    // Tracks time when page load completes and src= is set.
+    var loadTime;
+
+    // Tracks time when playback starts.
+    var startTime;
+
+    // Metrics to record.  See media_constrained_network_perf for more details.
+    // Use -1 to indicate that we haven't recorded these values yet.  The PyAuto
+    // controller will poll for these values until they are each >= 0.
+    var extra_play_percentage = -1, time_to_playback = -1;
+
+    video.addEventListener('playing', function(event) {
+      startTime = new Date().getTime();
+
+      time_to_playback = Math.max(0, startTime - loadTime);
+    }, false);
+
+    video.addEventListener('ended', function(event) {
+      playTime = new Date().getTime() - startTime;
+      durMs = video.duration * 1000;
+
+      extra_play_percentage = Math.max(0, (playTime - durMs) / durMs)
+    }, false);
+
+    // Called by the PyAuto controller to initiate testing.
+    function startTest(src) {
+      loadTime = new Date().getTime();
+      video.src = src
+      video.play();
+
+      if (window.domAutomationController)
+        window.domAutomationController.send(true);
+    }
+  </script>
+</html>
