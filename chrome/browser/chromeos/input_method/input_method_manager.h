@@ -55,8 +55,10 @@ class InputMethodManager {
   };
 
   // CandidateWindowObserver is notified of events related to the candidate
-  // window.  These events won't occur when the virtual keyboard is used,
-  // since it controls its own candidate window.
+  // window.  The "suggestion window" used by IMEs such as ibus-mozc does not
+  // count as the candidate window (this may change if we later want suggestion
+  // window events as well).  These events also won't occur when the virtual
+  // keyboard is used, since it controls its own candidate window.
   class CandidateWindowObserver {
    public:
     virtual ~CandidateWindowObserver() {}

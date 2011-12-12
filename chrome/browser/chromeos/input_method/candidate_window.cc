@@ -841,7 +841,8 @@ CandidateWindowView::CandidateWindowView(views::Widget* parent_frame)
       previous_shortcut_column_width_(0),
       previous_candidate_column_width_(0),
       previous_annotation_column_width_(0),
-      is_suggestion_window_location_available_(false) {
+      is_suggestion_window_location_available_(false),
+      was_candidate_window_open_(false) {
 }
 
 CandidateWindowView::~CandidateWindowView() {
@@ -886,23 +887,18 @@ void CandidateWindowView::Init() {
 }
 
 void CandidateWindowView::HideAll() {
-  bool was_visible = IsCandidateWindowOpen();
   parent_frame_->Hide();
-  if (was_visible) {
-    FOR_EACH_OBSERVER(Observer, observers_, OnCandidateWindowClosed());
-  }
+  NotifyIfCandidateWindowOpenedOrClosed();
 }
 
 void CandidateWindowView::HideLookupTable() {
-  bool was_visible = IsCandidateWindowOpen();
   candidate_area_->Hide();
   if (preedit_area_->IsShown())
     ResizeAndMoveParentFrame();
   else
     parent_frame_->Hide();
-  if (was_visible) {
-    FOR_EACH_OBSERVER(Observer, observers_, OnCandidateWindowClosed());
-  }
+
+  NotifyIfCandidateWindowOpenedOrClosed();
 }
 
 InformationTextArea* CandidateWindowView::GetAuxiliaryTextArea() {
@@ -943,13 +939,21 @@ void CandidateWindowView::UpdatePreeditText(const std::string& utf8_text) {
 }
 
 void CandidateWindowView::ShowLookupTable() {
-  bool was_visible = IsCandidateWindowOpen();
   candidate_area_->Show();
   ResizeAndMoveParentFrame();
   parent_frame_->Show();
-  if (!was_visible) {
+
+  NotifyIfCandidateWindowOpenedOrClosed();
+}
+
+void CandidateWindowView::NotifyIfCandidateWindowOpenedOrClosed() {
+  bool is_open = IsCandidateWindowOpen();
+  if (!was_candidate_window_open_ && is_open) {
     FOR_EACH_OBSERVER(Observer, observers_, OnCandidateWindowOpened());
+  } else if (was_candidate_window_open_ && !is_open) {
+    FOR_EACH_OBSERVER(Observer, observers_, OnCandidateWindowClosed());
   }
+  was_candidate_window_open_ = is_open;
 }
 
 bool CandidateWindowView::ShouldUpdateCandidateViews(
@@ -1188,7 +1192,8 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
 }
 
 bool CandidateWindowView::IsCandidateWindowOpen() const {
-  return candidate_area_->IsVisible() && candidate_area_->IsShown();
+  return !is_suggestion_window_location_available_ &&
+      candidate_area_->IsVisible() && candidate_area_->IsShown();
 }
 
 void CandidateWindowView::SelectCandidateAt(int index_in_page) {

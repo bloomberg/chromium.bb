@@ -140,7 +140,13 @@ class CandidateWindowView : public views::View {
   // Returns the appropriate area (header or footer) to put auxiliary texts.
   InformationTextArea* GetAuxiliaryTextArea();
 
+  // Returns true if the candidate window is open.  The suggestion window does
+  // not count as the candidate window.
   bool IsCandidateWindowOpen() const;
+
+  // Notifies observers if the candidate window's opened/closed state has
+  // changed from the previous call to this function.
+  void NotifyIfCandidateWindowOpenedOrClosed();
 
   // The lookup table (candidates).
   InputMethodLookupTable lookup_table_;
@@ -191,6 +197,10 @@ class CandidateWindowView : public views::View {
   gfx::Rect suggestion_window_location_;
 
   bool is_suggestion_window_location_available_;
+
+  // True if the candidate window was open.  This is used to determine when to
+  // send OnCandidateWindowOpened and OnCandidateWindowClosed events.
+  bool was_candidate_window_open_;
 
   DISALLOW_COPY_AND_ASSIGN(CandidateWindowView);
 };
