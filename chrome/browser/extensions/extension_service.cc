@@ -74,8 +74,10 @@
 #include "chrome/browser/ui/global_error_service.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/extension_icon_source.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -99,6 +101,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "googleurl/src/gurl.h"
+#include "grit/theme_resources.h"
 #include "net/base/registry_controlled_domain.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
@@ -389,7 +392,8 @@ ExtensionService::ExtensionService(Profile* profile,
       apps_promo_(profile->GetPrefs()),
       event_routers_initialized_(false),
       extension_warnings_(profile),
-      socket_controller_(new extensions::SocketController()) {
+      socket_controller_(new extensions::SocketController()),
+      tracker_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Figure out if extension installation should be enabled.
@@ -2111,6 +2115,13 @@ void ExtensionService::OnExtensionInstalled(
       content::Source<Profile>(profile_),
       content::Details<const Extension>(extension));
 
+  // Temporary feature to always install shortcuts for platform apps to
+  // facilitate early testing.
+  // TODO(benwells): Remove before launching platform apps.
+  if (extension->is_platform_app()) {
+      StartInstallApplicationShortcut(extension);
+  }
+
   // Transfer ownership of |extension| to AddExtension.
   AddExtension(scoped_extension);
 }
@@ -2522,4 +2533,57 @@ ExtensionService::NaClModuleInfoList::iterator
       return iter;
   }
   return nacl_module_list_.end();
+}
+
+void ExtensionService::StartInstallApplicationShortcut(
+    const Extension* extension) {
+#if !defined(OS_MACOSX)
+  const int kAppIconSize = 32;
+
+  shortcut_info_.extension_id = extension->id();
+  shortcut_info_.url = GURL(extension->launch_web_url());
+  shortcut_info_.title = UTF8ToUTF16(extension->name());
+  shortcut_info_.description = UTF8ToUTF16(extension->description());
+  shortcut_info_.create_in_applications_menu = true;
+  shortcut_info_.create_in_quick_launch_bar = true;
+  shortcut_info_.create_on_desktop = true;
+
+  // The icon will be resized to |max_size|.
+  const gfx::Size max_size(kAppIconSize, kAppIconSize);
+
+  // Look for an icon. If there is no icon at the ideal size, we will resize
+  // whatever we can get. Making a large icon smaller is prefered to making a
+  // small icon larger, so look for a larger icon first:
+  ExtensionResource icon_resource = extension->GetIconResource(
+      kAppIconSize,
+      ExtensionIconSet::MATCH_BIGGER);
+
+  // If no icon exists that is the desired size or larger, get the
+  // largest icon available:
+  if (icon_resource.empty()) {
+    icon_resource = extension->GetIconResource(
+        kAppIconSize,
+        ExtensionIconSet::MATCH_SMALLER);
+  }
+
+  // icon_resource may still be empty at this point, in which case LoadImage
+  // which call the OnImageLoaded callback with a NULL image and exit
+  // immediately.
+  tracker_.LoadImage(extension,
+                     icon_resource,
+                     max_size,
+                     ImageLoadingTracker::DONT_CACHE);
+#endif
+}
+
+void ExtensionService::OnImageLoaded(SkBitmap *image,
+                                     const ExtensionResource &resource,
+                                     int index) {
+  // If the image failed to load (e.g. if the resource being loaded was empty)
+  // use the standard application icon.
+  if (!image || image->isNull())
+    image = ExtensionIconSource::LoadImageByResourceId(IDR_APP_DEFAULT_ICON);
+
+  shortcut_info_.favicon = *image;
+  web_app::CreateShortcut(profile_->GetPath(), shortcut_info_);
 }
