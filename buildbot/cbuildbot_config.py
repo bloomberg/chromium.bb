@@ -107,6 +107,7 @@ git_sync -- Boolean that enables parameter --git-sync for prebuilt.py.
 # pylint: disable=W0403
 import constants
 import copy
+import urllib
 
 GS_PATH_DEFAULT = 'default' # Means gs://chromeos-archive/ + bot_id
 
@@ -162,6 +163,8 @@ def GetManifestVersionsRepoUrl(internal_build, read_only=False):
       return constants.GERRIT_SSH_URL + constants.MANIFEST_VERSIONS_SUFFIX
 
 
+_URLQUOTED_PARAMS = ['paladin_builder_name']
+
 default = {
   'board' : None,
   'paladin_builder_name' : None,
@@ -182,8 +185,8 @@ default = {
   'chroot_replace' : False,
 
   'uprev' : False,
-  'overlays': 'public',
-  'push_overlays': None,
+  'overlays' : 'public',
+  'push_overlays' : None,
   'chrome_rev' : None,
 
   'chrome_tests' : False,
@@ -198,9 +201,9 @@ default = {
   'hw_tests_reimage' : True,
   'remote_ip' : None,
 
-  'gs_path': GS_PATH_DEFAULT,
+  'gs_path' : GS_PATH_DEFAULT,
 
-  'build_type': constants.PFQ_TYPE,
+  'build_type' : constants.PFQ_TYPE,
   'archive_build_debug' : False,
 
   'images' : ['test'],
@@ -246,9 +249,9 @@ binary = {
   'chroot_replace' : False,
   'quick_unit' : False,
 
-  'build_type': constants.BUILD_FROM_SOURCE_TYPE,
+  'build_type' : constants.BUILD_FROM_SOURCE_TYPE,
   'archive_build_debug' : True,
-  'images': ['test', 'factory_test', 'factory_install'],
+  'images' : ['test', 'factory_test', 'factory_install'],
   'git_sync' : True,
 }
 
@@ -263,52 +266,52 @@ full = {
 
   'quick_unit' : False,
 
-  'build_type': constants.BUILD_FROM_SOURCE_TYPE,
+  'build_type' : constants.BUILD_FROM_SOURCE_TYPE,
   'archive_build_debug' : True,
-  'images': ['base', 'test', 'factory_test', 'factory_install'],
+  'images' : ['base', 'test', 'factory_test', 'factory_install'],
   'git_sync' : True,
 }
 
 pfq = {
-  'important': True,
+  'important' : True,
   'uprev' : True,
-  'overlays': 'public',
-  'manifest_version': True,
+  'overlays' : 'public',
+  'manifest_version' : True,
   'trybot_list' : True,
 }
 
 # Pre Flight Queue branch builders uprev and push on both overlays.
 pfq_branch = pfq.copy()
 pfq_branch.update({
-  'overlays': 'both',
-  'push_overlays': 'both',
+  'overlays' : 'both',
+  'push_overlays' : 'both',
 })
 
 commit_queue = {
-  'important': True,
-  'build_type': constants.COMMIT_QUEUE_TYPE,
+  'important' : True,
+  'build_type' : constants.COMMIT_QUEUE_TYPE,
   'uprev' : True,
-  'overlays': 'public',
-  'prebuilts': False,
-  'manifest_version': True,
+  'overlays' : 'public',
+  'prebuilts' : False,
+  'manifest_version' : True,
 }
 
 chrome_pfq = {
-  'build_type': constants.CHROME_PFQ_TYPE,
-  'important': True,
+  'build_type' : constants.CHROME_PFQ_TYPE,
+  'important' : True,
   'uprev' : False,
   'chrome_tests' : True,
-  'overlays': 'public',
-  'manifest_version': True,
+  'overlays' : 'public',
+  'manifest_version' : True,
 }
 
 chrome_pfq_info = {
-  'build_type': constants.CHROME_PFQ_TYPE,
-  'chrome_rev': constants.CHROME_REV_TOT,
-  'overlays': 'public',
+  'build_type' : constants.CHROME_PFQ_TYPE,
+  'chrome_rev' : constants.CHROME_REV_TOT,
+  'overlays' : 'public',
   'chrome_tests' : True,
   'use_lkgm' : True,
-  'vm_tests': constants.SMOKE_SUITE_TEST_TYPE,
+  'vm_tests' : constants.SMOKE_SUITE_TEST_TYPE,
 }
 
 internal = {
@@ -328,7 +331,7 @@ release = {
   'build_tests' : True,
   'chrome_tests' : True,
   'manifest_version' : True,
-  'images': ['base', 'test', 'factory_test', 'factory_install'],
+  'images' : ['base', 'test', 'factory_test', 'factory_install'],
   'push_image' : True,
   'upload_symbols' : True,
   'nowithdebug' : True,
@@ -359,10 +362,15 @@ official = {
 
 config = {}
 
-def add_config(name, updates):
+def add_config(name, *inherits, **overrides):
   new_config = default.copy()
-  for update_config in updates:
+  for update_config in inherits:
     new_config.update(update_config)
+
+  new_config.update(overrides)
+
+  new_config.update((key, urllib.quote(new_config[key]))
+    for key in _URLQUOTED_PARAMS if new_config.get(key))
 
   config[name] = new_config
 
@@ -370,304 +378,301 @@ def add_config(name, updates):
 # External Builds
 #
 
-add_config('chromiumos-sdk', [full, {
+add_config('chromiumos-sdk', full,
   # The amd64-host has to be last as that is when the toolchains
   # are bundled up for inclusion in the sdk.
-  'board' : ['x86-generic', 'arm-generic', 'amd64-generic', 'amd64-host'],
-  'build_type' : constants.CHROOT_BUILDER_TYPE,
+  board=['x86-generic', 'arm-generic', 'amd64-generic', 'amd64-host'],
+  build_type=constants.CHROOT_BUILDER_TYPE,
+  use_sdk=False,
+)
 
-  'use_sdk' : False,
-}])
+add_config('refresh-packages', default,
+  board=['x86-generic', 'arm-generic'],
+  build_type=constants.REFRESH_PACKAGES_TYPE,
+)
 
-add_config('refresh-packages', [default, {
-  'board' : ['x86-generic', 'arm-generic'],
-  'build_type' : constants.REFRESH_PACKAGES_TYPE,
-}])
+add_config('x86-generic-pre-flight-queue', pfq,
+  board='x86-generic',
+  master=True,
+  push_overlays='public',
+  description='x86-generic PFQ',
+)
 
-add_config('x86-generic-pre-flight-queue', [pfq, {
-  'board' : 'x86-generic',
-  'master' : True,
-  'push_overlays' : 'public',
-  'description' : 'x86-generic PFQ',
-}])
+add_config('arm-tegra2-bin', arm, pfq,
+  board='tegra2',
+  description='arm-tegra2 PFQ',
+)
 
-add_config('arm-tegra2-bin', [arm, pfq, {
-  'board' : 'tegra2',
-  'description' : 'arm-tegra2 PFQ',
-}])
+add_config('amd64-corei7-bin', amd64, pfq,
+  board='amd64-corei7',
+  description='amd64-corei7 PFQ',
+)
 
-add_config('amd64-corei7-bin', [amd64, pfq, {
-  'board' : 'amd64-corei7',
-  'description' : 'amd64-corei7 PFQ',
-}])
+add_config('x86-generic-commit-queue', commit_queue,
+  board='x86-generic',
+  master=True,
+  paladin_builder_name='x86 generic commit queue',
+)
 
-add_config('x86-generic-commit-queue', [commit_queue, {
-  'board' : 'x86-generic',
-  'master' : True,
-  'paladin_builder_name': 'x86%20generic%20commit%20queue',
-}])
+add_config('arm-tegra2-commit-queue', arm, commit_queue,
+  board='tegra2',
+  paladin_builder_name='tegra2 commit queue',
+)
 
-add_config('arm-tegra2-commit-queue', [arm, commit_queue, {
-  'board' : 'tegra2',
-  'paladin_builder_name': 'tegra2%20commit%20queue',
-}])
+add_config('amd64-corei7-commit-queue', amd64, commit_queue,
+  board='amd64-corei7',
+)
 
-add_config('amd64-corei7-commit-queue', [amd64, commit_queue, {
-  'board' : 'amd64-corei7',
-}])
+add_config('x86-mario-commit-queue', commit_queue, internal,
+  board='x86-mario',
+  master=True,
+  overlays='private',
+  paladin_builder_name='TOT Commit Queue',
+)
 
-add_config('x86-mario-commit-queue', [commit_queue, internal, {
-  'board' : 'x86-mario',
-  'master': True,
-  'overlays': 'private',
-  'paladin_builder_name': 'TOT%20Commit%20Queue',
-}])
+add_config('x86-generic-chrome-pre-flight-queue', chrome_pfq,
+  board='x86-generic',
+  master=True,
+  push_overlays='public',
+  chrome_rev=constants.CHROME_REV_LATEST,
+)
 
-add_config('x86-generic-chrome-pre-flight-queue', [chrome_pfq, {
-  'board' : 'x86-generic',
-  'master' : True,
-  'push_overlays': 'public',
-  'chrome_rev': constants.CHROME_REV_LATEST,
-}])
+add_config('aura-chrome-pre-flight-queue', chrome_pfq,
+  board='x86-generic',
+  profile='aura',
+  chrome_rev=constants.CHROME_REV_LATEST,
+  vm_tests=None,
+  chrome_tests=False
+)
 
-add_config('aura-chrome-pre-flight-queue', [chrome_pfq, {
-  'board' : 'x86-generic',
-  'profile' : 'aura',
-  'chrome_rev': constants.CHROME_REV_LATEST,
-  'vm_tests' : None,
-  'chrome_tests' : False
-}])
+add_config('arm-tegra2-chrome-pre-flight-queue', chrome_pfq, arm,
+  board='tegra2',
+  chrome_rev=constants.CHROME_REV_LATEST,
+)
 
-add_config('arm-tegra2-chrome-pre-flight-queue', [chrome_pfq, arm, {
-  'board' : 'tegra2',
-  'chrome_rev': constants.CHROME_REV_LATEST,
-}])
+add_config('amd64-corei7-chrome-pre-flight-queue', chrome_pfq, amd64,
+  board='amd64-corei7',
+  chrome_rev=constants.CHROME_REV_LATEST,
+)
 
-add_config('amd64-corei7-chrome-pre-flight-queue', [chrome_pfq, amd64, {
-  'board' : 'amd64-corei7',
-  'chrome_rev' : constants.CHROME_REV_LATEST,
-}])
+add_config('x86-generic-tot-chrome-pfq-informational', chrome_pfq_info,
+  board='x86-generic',
+)
 
-add_config('x86-generic-tot-chrome-pfq-informational', [chrome_pfq_info, {
-  'board' : 'x86-generic',
-}])
+add_config('arm-generic-tot-chrome-pfq-informational', chrome_pfq_info, arm,
+  board='arm-generic',
+)
 
-add_config('arm-generic-tot-chrome-pfq-informational', [chrome_pfq_info, arm, {
-  'board' : 'arm-generic',
-}])
+add_config('arm-tegra2-tot-chrome-pfq-informational', chrome_pfq_info, arm,
+  board='tegra2',
+)
 
-add_config('arm-tegra2-tot-chrome-pfq-informational', [chrome_pfq_info, arm, {
-  'board' : 'tegra2',
-}])
-
-add_config('amd64-corei7-tot-chrome-pfq-informational',
-           [chrome_pfq_info, amd64, {
-  'board' : 'arm-generic',
-  'important' : False,
-}])
+add_config('amd64-corei7-tot-chrome-pfq-informational', chrome_pfq_info, amd64,
+  board='arm-generic',
+  important=False,
+)
 
 # arm- doesn't really matter, but cycles faster
-add_config('patch-tot-chrome-pfq-informational', [chrome_pfq_info, arm, {
-  'board' : 'arm-generic',
-  'useflags' : ['touchui_patches'],
-}])
+add_config('patch-tot-chrome-pfq-informational', chrome_pfq_info, arm,
+  board='arm-generic',
+  useflags=['touchui_patches'],
+)
 
-add_config('arm-generic-full', [arm, full, {
-  'board' : 'arm-generic',
-}])
+add_config('arm-generic-full', arm, full,
+  board='arm-generic',
+)
 
-add_config('arm-tegra2-full', [arm, full, {
-  'board' : 'tegra2',
-}])
+add_config('arm-tegra2-full', arm, full,
+  board='tegra2',
+)
 
-add_config('arm-tegra2-seaboard-full', [arm, full, {
-  'board' : 'tegra2_seaboard',
-}])
+add_config('arm-tegra2-seaboard-full', arm, full,
+  board='tegra2_seaboard',
+)
 
-add_config('x86-generic-full', [full, {
-  'board' : 'x86-generic',
-}])
+add_config('x86-generic-full', full,
+  board='x86-generic',
+)
 
-add_config('x86-pineview-full', [full, {
-  'board' : 'x86-pineview',
-}])
+add_config('x86-pineview-full', full,
+  board='x86-pineview',
+)
 
-add_config('x86-generic-toolchain', [full, {
-  'board' : 'x86-generic',
-  'latest_toolchain' : True,
-  'prebuilts' : False,
-}])
+add_config('x86-generic-toolchain', full,
+  board='x86-generic',
+  latest_toolchain=True,
+  prebuilts=False,
+)
 
-add_config('arm-tegra2-seaboard-toolchain', [arm, full, {
-  'board' : 'tegra2_seaboard',
-  'latest_toolchain' : True,
-  'prebuilts' : False,
-}])
+add_config('arm-tegra2-seaboard-toolchain', arm, full,
+  board='tegra2_seaboard',
+  latest_toolchain=True,
+  prebuilts=False,
+)
 
-add_config('amd64-generic-full', [full, {
-  'board' : 'amd64-generic',
-  'prebuilts' : True,
-}])
+add_config('amd64-generic-full', full,
+  board='amd64-generic',
+  prebuilts=True,
+)
 
-add_config('amd64-corei7-full', [full, {
-  'board' : 'amd64-corei7',
-  'prebuilts' : True,
-  'unittests' : False,
-  'vm_tests' : None,
-}])
+add_config('amd64-corei7-full', full,
+  board='amd64-corei7',
+  prebuilts=True,
+  unittests=False,
+  vm_tests=None,
+)
 
-add_config('x86-generic-asan', [{
-  'board' : 'x86-generic',
-  'profile' : 'asan',
-  'prebuilts' : False,
-  'useflags' : ['asan'],
-}])
+add_config('x86-generic-asan',
+  board='x86-generic',
+  profile='asan',
+  prebuilts=False,
+  useflags=['asan'],
+)
 
 #
 # Internal Builds
 #
 
-add_config('x86-mario-pre-flight-queue', [internal, pfq, {
-  'board' : 'x86-mario',
-  'master' : True,
-  'overlays': 'private',
-  'push_overlays': 'private',
-  'gs_path': 'gs://chromeos-x86-mario/pre-flight-master',
+add_config('x86-mario-pre-flight-queue', internal, pfq,
+  board='x86-mario',
+  master=True,
+  overlays='private',
+  push_overlays='private',
+  gs_path='gs://chromeos-x86-mario/pre-flight-master',
+  description='internal x86 PFQ',
+)
 
-  'description' : 'internal x86 PFQ',
-}])
+add_config('x86-alex-pre-flight-branch', internal, pfq_branch,
+  board='x86-alex',
+  master=True,
+)
 
-add_config('x86-alex-pre-flight-branch', [internal, pfq_branch, {
-  'board' : 'x86-alex',
-  'master' : True,
-}])
+add_config('x86-mario-pre-flight-branch', internal, pfq_branch,
+  board='x86-mario',
+)
 
-add_config('x86-mario-pre-flight-branch', [internal, pfq_branch, {
-  'board' : 'x86-mario',
-}])
+add_config('arm-tegra2_kaen-private-bin', internal, arm, pfq,
+  board='tegra2_kaen',
+  overlays='private',
+  description='tegra2_kaen PFQ'
+)
 
-add_config('arm-tegra2_kaen-private-bin', [internal, arm, pfq, {
-  'board' : 'tegra2_kaen',
-  'overlays': 'private',
-  'description' : 'tegra2_kaen PFQ'
-}])
+add_config('arm-tegra2_kaen-aura-private-bin', internal, arm, binary,
+  board='tegra2_kaen',
+  profile='aura',
+)
 
-add_config('arm-tegra2_kaen-aura-private-bin', [internal, arm, binary, {
-  'board' : 'tegra2_kaen',
-  'profile' : 'aura',
-}])
+add_config('x86-zgb-private-bin', internal, binary,
+  board='x86-zgb',
+)
 
-add_config('x86-zgb-private-bin', [internal, binary, {
-  'board' : 'x86-zgb',
-}])
+add_config('x86-alex-private-bin', internal, binary,
+  board='x86-alex',
+)
 
-add_config('x86-alex-private-bin', [internal, binary, {
-  'board' : 'x86-alex',
-}])
+add_config('stumpy-private-bin', internal, binary,
+  board='stumpy',
+)
 
-add_config('stumpy-private-bin', [internal, binary, {
-  'board' : 'stumpy',
-}])
+add_config('lumpy-private-bin', internal, binary,
+  board='lumpy',
+)
 
-add_config('lumpy-private-bin', [internal, binary, {
-  'board' : 'lumpy',
-}])
+add_config('link-private-bin', internal, pfq,
+  board='link',
+  overlays='private',
+  description='link PFQ',
+  prebuilts=False,
+)
 
-add_config('link-private-bin', [internal, pfq, {
-  'board' : 'link',
-  'overlays': 'private',
-  'description' : 'link PFQ',
-  'prebuilts' : False,
-}])
+add_config('x86-alex-toolchain', internal, full, official,
+  board='x86-alex',
+  build_tests=True,
+  chrome_tests=True,
+  prebuilts=False,
+  latest_toolchain=True,
+  useflags=['chrome_internal'],
+  hw_tests=[('platform_GCC',)],
+  hw_tests_reimage=False,
+  remote_ip='172.18.221.163',
+  use_lkgm=True,
+  gs_path=GS_PATH_DEFAULT,
+)
 
-add_config('x86-alex-toolchain', [internal, full, official, {
-  'board' : 'x86-alex',
-  'build_tests' : True,
-  'chrome_tests' : True,
-  'prebuilts' : False,
-  'latest_toolchain' : True,
-  'useflags' : ['chrome_internal'],
-  'hw_tests' : [('platform_GCC',)],
-  'hw_tests_reimage' : False,
-  'remote_ip' : '172.18.221.163',
-  'use_lkgm' : True,
-  'gs_path': GS_PATH_DEFAULT,
-}])
+add_config('arm-tegra2_seaboard-toolchain', internal, arm, full, official,
+  board='tegra2_seaboard',
+  build_tests=True,
+  chrome_tests=True,
+  prebuilts=False,
+  latest_toolchain=True,
+  useflags=['chrome_internal'],
+  use_lkgm=True,
+  gs_path=GS_PATH_DEFAULT,
+)
 
-add_config('arm-tegra2_seaboard-toolchain', [internal, arm, full, official, {
-  'board' : 'tegra2_seaboard',
-  'build_tests' : True,
-  'chrome_tests' : True,
-  'prebuilts' : False,
-  'latest_toolchain' : True,
-  'useflags' : ['chrome_internal'],
-  'use_lkgm' : True,
-  'gs_path': GS_PATH_DEFAULT,
-}])
+add_config('x86-mario-release', internal, full, official, release,
+  board='x86-mario',
+)
 
-add_config('x86-mario-release', [internal, full, official, release, {
-  'board' : 'x86-mario',
-}])
+add_config('x86-alex-release', internal, full, official, release,
+  board='x86-alex',
+)
 
-add_config('x86-alex-release', [internal, full, official, release, {
-  'board' : 'x86-alex',
-}])
+add_config('x86-alex_he-release', internal, full, official, release,
+  board='x86-alex_he',
+)
 
-add_config('x86-alex_he-release', [internal, full, official, release, {
-  'board' : 'x86-alex_he',
-}])
+add_config('x86-zgb-release', internal, full, official, release,
+  board='x86-zgb',
+)
 
-add_config('x86-zgb-release', [internal, full, official, release, {
-  'board' : 'x86-zgb',
-}])
+add_config('x86-zgb_he-release', internal, full, official, release,
+  board='x86-zgb_he',
+)
 
-add_config('x86-zgb_he-release', [internal, full, official, release, {
-  'board' : 'x86-zgb_he',
-}])
+add_config('stumpy-release', internal, full, official, release,
+  board='stumpy',
+)
 
-add_config('stumpy-release', [internal, full, official, release, {
-  'board' : 'stumpy',
-}])
+add_config('lumpy-release', internal, full, official, release,
+  board='lumpy',
+)
 
-add_config('lumpy-release', [internal, full, official, release, {
-  'board' : 'lumpy',
-}])
+add_config('link-release', internal, full, official, release,
+  board='link',
+  prebuilts=False,
+  vm_tests=None,
+)
 
-add_config('link-release', [internal, full, official, release, {
-  'board' : 'link',
-  'prebuilts' : False,
-  'vm_tests' : None,
-}])
+add_config('arm-tegra2_seaboard-release',
+    internal, full, official, release, arm,
+  board='tegra2_seaboard',
+  build_tests=True,
+)
 
-add_config('arm-tegra2_seaboard-release', [
-    internal, full, official, release, arm, {
-  'board' : 'tegra2_seaboard',
-  'build_tests' : True,
-}])
+add_config('arm-tegra2_kaen-release',
+    internal, full, official, release, arm,
+  board='tegra2_kaen',
+  build_tests=True,
+)
 
-add_config('arm-tegra2_kaen-release', [
-    internal, full, official, release, arm, {
-  'board' : 'tegra2_kaen',
-  'build_tests' : True,
-}])
+add_config('arm-tegra2_kaen-aura-release',
+    internal, full, official, release, arm,
+  board='tegra2_kaen',
+  profile='aura',
+  build_tests=True,
+)
 
-add_config('arm-tegra2_kaen-aura-release', [
-    internal, full, official, release, arm, {
-  'board' : 'tegra2_kaen',
-  'profile' : 'aura',
-  'build_tests' : True,
-}])
+add_config('aura-tot-chrome-pfq-informational', chrome_pfq_info,
+  board='x86-generic',
+  profile='aura',
+  vm_tests=None,
+  chrome_tests=False
+)
 
-add_config('aura-tot-chrome-pfq-informational', [chrome_pfq_info, {
-  'board' : 'x86-generic',
-  'profile' : 'aura',
-  'vm_tests' : None,
-  'chrome_tests' : False
-}])
-
-add_config('aura-release', [internal, full, official, release, {
-  'board' : 'x86-alex',
-  'profile' : 'aura',
-  'vm_tests' : None,
-  'chrome_tests' : False
-}])
+add_config('aura-release', internal, full, official, release,
+  board='x86-alex',
+  profile='aura',
+  vm_tests=None,
+  chrome_tests=False
+)
