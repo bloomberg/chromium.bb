@@ -51,14 +51,7 @@ void OptionsUITest::VerifySections(scoped_refptr<TabProxy> tab) {
   EXPECT_EQ(kExpectedSections, num_of_sections);
 }
 
-// See bug 104393.
-#if defined(USE_AURA)
-#define MAYBE_LoadOptionsByURL FAILS_LoadOptionsByURL
-#else
-#define MAYBE_LoadOptionsByURL LoadOptionsByURL
-#endif
-
-TEST_F(OptionsUITest, MAYBE_LoadOptionsByURL) {
+TEST_F(OptionsUITest, LoadOptionsByURL) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
