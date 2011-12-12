@@ -20,6 +20,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/browser.h"
@@ -370,6 +371,7 @@ bool ProfileManager::AddProfile(Profile* profile) {
 
   RegisterProfile(profile, true);
   DoFinalInit(profile, ShouldGoOffTheRecord());
+  ProfileMetrics::LogNumberOfProfiles(this, ProfileMetrics::ADD_PROFILE_EVENT);
   return true;
 }
 
@@ -659,6 +661,9 @@ void ProfileManager::ScheduleProfileForDeletion(const FilePath& profile_dir) {
 
   QueueProfileDirectoryForDeletion(profile_dir);
   cache.DeleteProfileFromCache(profile_dir);
+
+  ProfileMetrics::LogNumberOfProfiles(this,
+                                      ProfileMetrics::DELETE_PROFILE_EVENT);
 }
 
 // static
@@ -681,6 +686,8 @@ void ProfileManager::AutoloadProfiles() {
       GetProfile(cache.GetPathOfProfileAtIndex(p));
     }
   }
+  ProfileMetrics::LogNumberOfProfiles(this,
+                                      ProfileMetrics::STARTUP_PROFILE_EVENT);
 }
 
 ProfileManagerWithoutInit::ProfileManagerWithoutInit(

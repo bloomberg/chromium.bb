@@ -11,11 +11,13 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
 
 ProfileMetrics::ProfileType GetProfileType(
-    FilePath& profile_path) {
+    const FilePath& profile_path) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   ProfileMetrics::ProfileType metric = ProfileMetrics::SECONDARY;
   ProfileManager* manager = g_browser_process->profile_manager();
   FilePath user_data_dir;
@@ -62,6 +64,27 @@ enum ProfileAvatar {
   AVATAR_GAIA,              // 27
   NUM_PROFILE_AVATAR_METRICS
 };
+
+void ProfileMetrics::LogNumberOfProfiles(ProfileManager* manager,
+                                         ProfileEvent startup) {
+  size_t number_of_profiles =
+      manager->GetProfileInfoCache().GetNumberOfProfiles();
+  if (startup == STARTUP_PROFILE_EVENT) {
+    UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfProfilesOnStartup",
+                             number_of_profiles);
+  } else {
+    UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfProfilesAfterAddOrDelete",
+                             number_of_profiles);
+  }
+}
+
+void ProfileMetrics::LogProfileAddNewUser(ProfileAdd metric) {
+  DCHECK(metric < NUM_PROFILE_ADD_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Profile.AddNewUser", metric,
+                            NUM_PROFILE_ADD_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Profile.NetUserCount", ADD_NEW_USER,
+                            NUM_PROFILE_NET_METRICS);
+}
 
 void ProfileMetrics::LogProfileAvatarSelection(size_t icon_index) {
   DCHECK(icon_index < NUM_PROFILE_AVATAR_METRICS);
@@ -156,48 +179,16 @@ void ProfileMetrics::LogProfileAvatarSelection(size_t icon_index) {
                             NUM_PROFILE_AVATAR_METRICS);
 }
 
-void ProfileMetrics::LogProfileOpenMethod(ProfileOpen metric) {
-  DCHECK(metric < NUM_PROFILE_OPEN_METRICS);
-  UMA_HISTOGRAM_ENUMERATION("Profile.OpenMethod", metric,
-                            NUM_PROFILE_OPEN_METRICS);
-}
-
-void ProfileMetrics::LogProfileAddNewUser(ProfileAdd metric) {
-  DCHECK(metric < NUM_PROFILE_ADD_METRICS);
-  UMA_HISTOGRAM_ENUMERATION("Profile.AddNewUser", metric,
-                            NUM_PROFILE_ADD_METRICS);
-  UMA_HISTOGRAM_ENUMERATION("Profile.NetUserCount", ADD_NEW_USER,
-                            NUM_PROFILE_NET_METRICS);
-}
-
-void ProfileMetrics::LogProfileSwitchUser(ProfileOpen metric) {
-  DCHECK(metric < NUM_PROFILE_OPEN_METRICS);
-  UMA_HISTOGRAM_ENUMERATION("Profile.OpenMethod", metric,
-                            NUM_PROFILE_OPEN_METRICS);
-}
-
 void ProfileMetrics::LogProfileDeleteUser(ProfileNetUserCounts metric) {
   DCHECK(metric < NUM_PROFILE_NET_METRICS);
   UMA_HISTOGRAM_ENUMERATION("Profile.NetUserCount", metric,
                             NUM_PROFILE_NET_METRICS);
 }
 
-void ProfileMetrics::LogProfileSyncInfo(ProfileSync metric) {
-  DCHECK(metric < NUM_PROFILE_SYNC_METRICS);
-  UMA_HISTOGRAM_ENUMERATION("Profile.SyncCustomize", metric,
-                            NUM_PROFILE_SYNC_METRICS);
-}
-
-void ProfileMetrics::LogProfileUpdate(FilePath& profile_path) {
-  UMA_HISTOGRAM_ENUMERATION("Profile.Update",
-                            GetProfileType(profile_path),
-                            NUM_PROFILE_TYPE_METRICS);
-}
-
-void ProfileMetrics::LogProfileSyncSignIn(FilePath& profile_path) {
-  UMA_HISTOGRAM_ENUMERATION("Profile.SyncSignIn",
-                            GetProfileType(profile_path),
-                            NUM_PROFILE_TYPE_METRICS);
+void ProfileMetrics::LogProfileOpenMethod(ProfileOpen metric) {
+  DCHECK(metric < NUM_PROFILE_OPEN_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Profile.OpenMethod", metric,
+                            NUM_PROFILE_OPEN_METRICS);
 }
 
 void ProfileMetrics::LogProfileSwitchGaia(ProfileGaia metric) {
@@ -206,4 +197,34 @@ void ProfileMetrics::LogProfileSwitchGaia(ProfileGaia metric) {
   UMA_HISTOGRAM_ENUMERATION("Profile.SwitchGaiaPhotoSettings",
                             metric,
                             NUM_PROFILE_GAIA_METRICS);
+}
+
+void ProfileMetrics::LogProfileSwitchUser(ProfileOpen metric) {
+  DCHECK(metric < NUM_PROFILE_OPEN_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Profile.OpenMethod", metric,
+                            NUM_PROFILE_OPEN_METRICS);
+}
+
+void ProfileMetrics::LogProfileSyncInfo(ProfileSync metric) {
+  DCHECK(metric < NUM_PROFILE_SYNC_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Profile.SyncCustomize", metric,
+                            NUM_PROFILE_SYNC_METRICS);
+}
+
+void ProfileMetrics::LogProfileLaunch(const FilePath& profile_path) {
+  UMA_HISTOGRAM_ENUMERATION("Profile.LaunchBrowser",
+                            GetProfileType(profile_path),
+                            NUM_PROFILE_TYPE_METRICS);
+}
+
+void ProfileMetrics::LogProfileSyncSignIn(const FilePath& profile_path) {
+  UMA_HISTOGRAM_ENUMERATION("Profile.SyncSignIn",
+                            GetProfileType(profile_path),
+                            NUM_PROFILE_TYPE_METRICS);
+}
+
+void ProfileMetrics::LogProfileUpdate(const FilePath& profile_path) {
+  UMA_HISTOGRAM_ENUMERATION("Profile.Update",
+                            GetProfileType(profile_path),
+                            NUM_PROFILE_TYPE_METRICS);
 }

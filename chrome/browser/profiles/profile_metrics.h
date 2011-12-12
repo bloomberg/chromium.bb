@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 
 class FilePath;
+class ProfileManager;
 
 class ProfileMetrics {
  public:
@@ -61,15 +62,27 @@ class ProfileMetrics {
     NUM_PROFILE_GAIA_METRICS
   };
 
-  static void LogProfileAvatarSelection(size_t icon_index);
-  static void LogProfileOpenMethod(ProfileOpen metric);
+  enum ProfileEvent {
+    STARTUP_PROFILE_EVENT = 0,
+    ADD_PROFILE_EVENT,
+    DELETE_PROFILE_EVENT
+  };
+
+  static void LogNumberOfProfiles(ProfileManager* manager,
+                                  ProfileEvent startup);
   static void LogProfileAddNewUser(ProfileAdd metric);
-  static void LogProfileSwitchUser(ProfileOpen metric);
+  static void LogProfileAvatarSelection(size_t icon_index);
   static void LogProfileDeleteUser(ProfileNetUserCounts metric);
-  static void LogProfileSyncInfo(ProfileSync metric);
-  static void LogProfileUpdate(FilePath& profile_path);
-  static void LogProfileSyncSignIn(FilePath& profile_path);
+  static void LogProfileOpenMethod(ProfileOpen metric);
   static void LogProfileSwitchGaia(ProfileGaia metric);
+  static void LogProfileSwitchUser(ProfileOpen metric);
+  static void LogProfileSyncInfo(ProfileSync metric);
+
+  // These functions should only be called on the UI thread because they hook
+  // into g_browser_process through a helper function.
+  static void LogProfileLaunch(const FilePath& profile_path);
+  static void LogProfileSyncSignIn(const FilePath& profile_path);
+  static void LogProfileUpdate(const FilePath& profile_path);
 };
 
 

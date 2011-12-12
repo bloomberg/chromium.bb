@@ -76,6 +76,7 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -387,6 +388,9 @@ Browser::Browser(Type type, Profile* profile)
   TabFinder::GetInstance();
 
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_INIT);
+
+  FilePath profile_path = profile->GetPath();
+  ProfileMetrics::LogProfileLaunch(profile_path);
 }
 
 Browser::~Browser() {
