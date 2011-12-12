@@ -131,7 +131,8 @@ class GLES2Decoder : public CommonDecoder {
       unsigned format,
       unsigned type,
       int width,
-      int height) = 0;
+      int height,
+      bool is_texture_immutable) = 0;
 
  protected:
   GLES2Decoder();

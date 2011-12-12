@@ -106,8 +106,7 @@ bool TextureManager::TextureInfo::CanRender(
 }
 
 bool TextureManager::TextureInfo::MarkMipmapsGenerated(
-    const FeatureInfo* feature_info,
-    bool cleared) {
+    const FeatureInfo* feature_info) {
   if (!CanGenerateMipmaps(feature_info)) {
     return false;
   }
@@ -133,7 +132,7 @@ bool TextureManager::TextureInfo::MarkMipmapsGenerated(
                    info1.border,
                    info1.format,
                    info1.type,
-                   cleared);
+                   true);
     }
   }
 
@@ -524,7 +523,7 @@ bool TextureManager::TextureInfo::ClearLevel(
   // needed to be able to call GL correctly.
   info.cleared = decoder->ClearLevel(
       service_id_, target_, info.target, info.level, info.format, info.type,
-      info.width, info.height);
+      info.width, info.height, immutable_);
   if (!info.cleared) {
     ++num_uncleared_mips_;
   }
@@ -791,8 +790,7 @@ bool TextureManager::SetParameter(
 
 bool TextureManager::MarkMipmapsGenerated(
     const FeatureInfo* feature_info,
-    TextureManager::TextureInfo* info,
-    bool cleared) {
+    TextureManager::TextureInfo* info) {
   DCHECK(info);
   if (!info->CanRender(feature_info)) {
     DCHECK_NE(0, num_unrenderable_textures_);
@@ -804,7 +802,7 @@ bool TextureManager::MarkMipmapsGenerated(
   }
   num_uncleared_mips_ -= info->num_uncleared_mips();
   DCHECK_GE(num_uncleared_mips_, 0);
-  bool result = info->MarkMipmapsGenerated(feature_info, cleared);
+  bool result = info->MarkMipmapsGenerated(feature_info);
   num_uncleared_mips_ += info->num_uncleared_mips();
   if (!info->CanRender(feature_info)) {
     ++num_unrenderable_textures_;
