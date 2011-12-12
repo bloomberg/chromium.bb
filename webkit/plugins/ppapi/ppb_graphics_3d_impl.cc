@@ -88,14 +88,13 @@ PPB_Graphics3D_API* PPB_Graphics3D_Impl::AsPPB_Graphics3D_API() {
   return this;
 }
 
-PP_Bool PPB_Graphics3D_Impl::InitCommandBuffer(int32_t size) {
-  return PP_FromBool(GetCommandBuffer()->Initialize(size));
+PP_Bool PPB_Graphics3D_Impl::InitCommandBuffer() {
+  return PP_FromBool(GetCommandBuffer()->Initialize());
 }
 
-PP_Bool PPB_Graphics3D_Impl::GetRingBuffer(int* shm_handle,
-                                           uint32_t* shm_size) {
-  gpu::Buffer buffer = GetCommandBuffer()->GetRingBuffer();
-  return ShmToHandle(buffer.shared_memory, buffer.size, shm_handle, shm_size);
+PP_Bool PPB_Graphics3D_Impl::SetGetBuffer(int32_t transfer_buffer_id) {
+  GetCommandBuffer()->SetGetBuffer(transfer_buffer_id);
+  return PP_TRUE;
 }
 
 PP_Graphics3DTrustedState PPB_Graphics3D_Impl::GetState() {
@@ -192,7 +191,7 @@ bool PPB_Graphics3D_Impl::Init(PP_Resource share_context,
     return false;
 
   gpu::CommandBuffer* command_buffer = GetCommandBuffer();
-  if (!command_buffer->Initialize(kCommandBufferSize))
+  if (!command_buffer->Initialize())
     return false;
 
   return CreateGLES2Impl(kCommandBufferSize, kTransferBufferSize);

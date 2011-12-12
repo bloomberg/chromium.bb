@@ -116,6 +116,12 @@ class MockCommandBufferEngine : public CommandBufferEngine {
   }
 
   // Overridden from CommandBufferEngine.
+  virtual bool SetGetBuffer(int32 transfer_buffer_id) {
+    NOTREACHED();
+    return false;
+  }
+
+  // Overridden from CommandBufferEngine.
   virtual bool SetGetOffset(int32 offset) {
     if (static_cast<size_t>(offset) < kBufferSize) {
       get_offset_ = offset;

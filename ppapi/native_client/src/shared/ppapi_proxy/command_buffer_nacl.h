@@ -22,16 +22,12 @@ class CommandBufferNacl : public gpu::CommandBuffer {
   virtual ~CommandBufferNacl();
 
   // CommandBuffer implementation.
-  virtual bool Initialize(int32 size);
-  virtual bool Initialize(base::SharedMemory* buffer, int32 size) {
-    // TODO(neb): support for nacl if neccessary
-    return false;
-  }
-  virtual gpu::Buffer GetRingBuffer();
+  virtual bool Initialize();
   virtual State GetState();
   virtual State GetLastState();
   virtual void Flush(int32 put_offset);
   virtual State FlushSync(int32 put_offset, int32 last_known_get);
+  virtual void SetGetBuffer(int32 transfer_buffer_id);
   virtual void SetGetOffset(int32 get_offset);
   virtual int32 CreateTransferBuffer(size_t size, int32 id_request);
   virtual int32 RegisterTransferBuffer(base::SharedMemory* buffer,

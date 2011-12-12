@@ -93,9 +93,8 @@ class GpuCommandBufferStub
   void OnInitializeFailed(IPC::Message* reply_message);
 
   // Message handlers:
-  void OnInitialize(base::SharedMemoryHandle ring_buffer,
-                    int32 size,
-                    IPC::Message* reply_message);
+  void OnInitialize(IPC::Message* reply_message);
+  void OnSetGetBuffer(int32 shm_id, IPC::Message* reply_message);
   void OnSetParent(int32 parent_route_id,
                    uint32 parent_texture_id,
                    IPC::Message* reply_message);

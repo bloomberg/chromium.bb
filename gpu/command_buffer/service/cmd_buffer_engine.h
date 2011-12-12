@@ -29,6 +29,9 @@ class CommandBufferEngine {
   // Sets the token value.
   virtual void set_token(int32 token) = 0;
 
+  // Sets the shared memory buffer used for commands.
+  virtual bool SetGetBuffer(int32 transfer_buffer_id) = 0;
+
   // Sets the "get" pointer. Return false if offset is out of range.
   virtual bool SetGetOffset(int32 offset) = 0;
 

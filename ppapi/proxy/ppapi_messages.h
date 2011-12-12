@@ -834,10 +834,11 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBGraphics3D_Create,
                            PP_Instance /* instance */,
                            std::vector<int32_t> /* attrib_list */,
                            ppapi::HostResource /* result */)
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBGraphics3D_InitCommandBuffer,
+IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBGraphics3D_InitCommandBuffer,
+                           ppapi::HostResource /* context */)
+IPC_SYNC_MESSAGE_ROUTED2_0(PpapiHostMsg_PPBGraphics3D_SetGetBuffer,
                            ppapi::HostResource /* context */,
-                           int32 /* size */,
-                           base::SharedMemoryHandle /* ring_buffer */)
+                           int32 /* transfer_buffer_id */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBGraphics3D_GetState,
                            ppapi::HostResource /* context */,
                            gpu::CommandBuffer::State /* state */)

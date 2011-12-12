@@ -25,36 +25,16 @@ CommandBufferNacl::~CommandBufferNacl() {
   iface_core_->ReleaseResource(graphics_3d_);
 }
 
-bool CommandBufferNacl::Initialize(int32 size) {
+bool CommandBufferNacl::Initialize() {
   DebugPrintf("CommandBufferNacl::Initialize\n");
   int32_t success;
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
   NaClSrpcError retval =
       PpbGraphics3DRpcClient::PPB_Graphics3DTrusted_InitCommandBuffer(
-          channel, graphics_3d_, size, &success);
+          channel, graphics_3d_, &success);
   DebugPrintf("CommandBufferNaCl::Initialize returned success=%s\n",
       (PP_TRUE == success) ? "TRUE" : "FALSE");
   return NACL_SRPC_RESULT_OK == retval && PP_TRUE == success;
-}
-
-gpu::Buffer CommandBufferNacl::GetRingBuffer() {
-  DebugPrintf("CommandBufferNacl::GetRingBuffer\n");
-  if (!buffer_.ptr) {
-    DebugPrintf("CommandBufferNacl::GetRingBuffer: Fetching\n");
-    int shm_handle = -1;
-    int32_t shm_size = 0;
-
-    NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
-    NaClSrpcError retval =
-        PpbGraphics3DRpcClient::PPB_Graphics3DTrusted_GetRingBuffer(
-            channel, graphics_3d_, &shm_handle, &shm_size);
-    if (NACL_SRPC_RESULT_OK != retval) {
-      shm_handle = -1;
-    }
-    buffer_ = BufferFromShm(shm_handle, shm_size);
-  }
-
-  return buffer_;
 }
 
 gpu::CommandBuffer::State CommandBufferNacl::GetState() {
@@ -108,6 +88,13 @@ gpu::CommandBuffer::State CommandBufferNacl::FlushSync(int32 put_offset,
 
   last_state_ = PpapiToGpuState(state);
   return last_state_;
+}
+
+void CommandBufferNacl::SetGetBuffer(int32 transfer_buffer_id) {
+  DebugPrintf("CommandBufferNacl::SetGetBuffer\n");
+  NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
+  PpbGraphics3DRpcClient::PPB_Graphics3DTrusted_SetGetBuffer(
+      channel, graphics_3d_, transfer_buffer_id);
 }
 
 void CommandBufferNacl::SetGetOffset(int32 get_offset) {

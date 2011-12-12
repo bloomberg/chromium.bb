@@ -87,6 +87,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(GpuCommandBufferStub, message)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_Initialize,
                                     OnInitialize);
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_SetGetBuffer,
+                                    OnSetGetBuffer);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_SetParent,
                                     OnSetParent);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_GetState, OnGetState);
@@ -163,8 +165,6 @@ void GpuCommandBufferStub::OnInitializeFailed(IPC::Message* reply_message) {
 }
 
 void GpuCommandBufferStub::OnInitialize(
-    base::SharedMemoryHandle ring_buffer,
-    int32 size,
     IPC::Message* reply_message) {
   DCHECK(!command_buffer_.get());
 
@@ -172,19 +172,7 @@ void GpuCommandBufferStub::OnInitialize(
 
   command_buffer_.reset(new gpu::CommandBufferService);
 
-#if defined(OS_WIN)
-  // Windows dups the shared memory handle it receives into the current process
-  // and closes it when this variable goes out of scope.
-  base::SharedMemory shared_memory(ring_buffer,
-                                   false,
-                                   channel_->renderer_process());
-#else
-  // POSIX receives a dup of the shared memory handle and closes the dup when
-  // this variable goes out of scope.
-  base::SharedMemory shared_memory(ring_buffer, false);
-#endif
-
-  if (!command_buffer_->Initialize(&shared_memory, size)) {
+  if (!command_buffer_->Initialize()) {
     DLOG(ERROR) << "CommandBufferService failed to initialize.\n";
     OnInitializeFailed(reply_message);
     return;
@@ -266,6 +254,9 @@ void GpuCommandBufferStub::OnInitialize(
   command_buffer_->SetPutOffsetChangeCallback(
       base::Bind(&gpu::GpuScheduler::PutChanged,
                  base::Unretained(scheduler_.get())));
+  command_buffer_->SetGetBufferChangeCallback(
+      base::Bind(&gpu::GpuScheduler::SetGetBuffer,
+                 base::Unretained(scheduler_.get())));
   command_buffer_->SetParseErrorCallback(
       base::Bind(&GpuCommandBufferStub::OnParseError, base::Unretained(this)));
   scheduler_->SetScheduledCallback(
@@ -289,6 +280,12 @@ void GpuCommandBufferStub::OnInitialize(
 
   UNSHIPPED_TRACE_EVENT_INSTANT1("test_gpu", "CreateGLContextSuccess",
                                  "offscreen", surface_->IsOffscreen());
+}
+
+void GpuCommandBufferStub::OnSetGetBuffer(
+    int32 shm_id, IPC::Message* reply_message) {
+  command_buffer_->SetGetBuffer(shm_id);
+  Send(reply_message);
 }
 
 void GpuCommandBufferStub::OnSetParent(int32 parent_route_id,

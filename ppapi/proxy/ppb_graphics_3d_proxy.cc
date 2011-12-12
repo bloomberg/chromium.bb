@@ -31,13 +31,12 @@ class CommandBuffer : public gpu::CommandBuffer {
   virtual ~CommandBuffer();
 
   // gpu::CommandBuffer implementation:
-  virtual bool Initialize(int32 size);
-  virtual bool Initialize(base::SharedMemory* buffer, int32 size);
-  virtual gpu::Buffer GetRingBuffer();
+  virtual bool Initialize();
   virtual State GetState();
   virtual State GetLastState();
   virtual void Flush(int32 put_offset);
   virtual State FlushSync(int32 put_offset, int32 last_known_get);
+  virtual void SetGetBuffer(int32 transfer_buffer_id);
   virtual void SetGetOffset(int32 get_offset);
   virtual int32 CreateTransferBuffer(size_t size, int32 id_request);
   virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
@@ -53,9 +52,6 @@ class CommandBuffer : public gpu::CommandBuffer {
   bool Send(IPC::Message* msg);
   void UpdateState(const gpu::CommandBuffer::State& state);
 
-  int32 num_entries_;
-  scoped_ptr<base::SharedMemory> ring_buffer_;
-
   typedef base::hash_map<int32, gpu::Buffer> TransferBufferMap;
   TransferBufferMap transfer_buffers_;
 
@@ -69,8 +65,7 @@ class CommandBuffer : public gpu::CommandBuffer {
 
 CommandBuffer::CommandBuffer(const HostResource& resource,
                              PluginDispatcher* dispatcher)
-    : num_entries_(0),
-      resource_(resource),
+    : resource_(resource),
       dispatcher_(dispatcher) {
 }
 
@@ -84,47 +79,9 @@ CommandBuffer::~CommandBuffer() {
   }
 }
 
-bool CommandBuffer::Initialize(int32 size) {
-  DCHECK(!ring_buffer_.get());
-
-  // Initialize the service. Assuming we are sandboxed, the GPU
-  // process is responsible for duplicating the handle. This might not be true
-  // for NaCl.
-  base::SharedMemoryHandle handle;
-  if (Send(new PpapiHostMsg_PPBGraphics3D_InitCommandBuffer(
-          API_ID_PPB_GRAPHICS_3D, resource_, size, &handle)) &&
-      base::SharedMemory::IsHandleValid(handle)) {
-    ring_buffer_.reset(new base::SharedMemory(handle, false));
-    if (ring_buffer_->Map(size)) {
-      num_entries_ = size / sizeof(gpu::CommandBufferEntry);
-      return true;
-    }
-
-    ring_buffer_.reset();
-  }
-
-  return false;
-}
-
-bool CommandBuffer::Initialize(base::SharedMemory* buffer, int32 size) {
-  // Not implemented in proxy.
-  NOTREACHED();
-  return false;
-}
-
-gpu::Buffer CommandBuffer::GetRingBuffer() {
-  // Return locally cached ring buffer.
-  gpu::Buffer buffer;
-  if (ring_buffer_.get()) {
-    buffer.ptr = ring_buffer_->memory();
-    buffer.size = num_entries_ * sizeof(gpu::CommandBufferEntry);
-    buffer.shared_memory = ring_buffer_.get();
-  } else {
-    buffer.ptr = NULL;
-    buffer.size = 0;
-    buffer.shared_memory = NULL;
-  }
-  return buffer;
+bool CommandBuffer::Initialize() {
+  return Send(new PpapiHostMsg_PPBGraphics3D_InitCommandBuffer(
+      API_ID_PPB_GRAPHICS_3D, resource_));
 }
 
 gpu::CommandBuffer::State CommandBuffer::GetState() {
@@ -173,6 +130,13 @@ gpu::CommandBuffer::State CommandBuffer::FlushSync(int32 put_offset,
   }
 
   return last_state_;
+}
+
+void CommandBuffer::SetGetBuffer(int32 transfer_buffer_id) {
+  if (last_state_.error == gpu::error::kNoError) {
+    Send(new PpapiHostMsg_PPBGraphics3D_SetGetBuffer(
+        API_ID_PPB_GRAPHICS_3D, resource_, transfer_buffer_id));
+  }
 }
 
 void CommandBuffer::SetGetOffset(int32 get_offset) {
@@ -338,17 +302,17 @@ bool Graphics3D::Init() {
     return false;
 
   command_buffer_.reset(new CommandBuffer(host_resource(), dispatcher));
-  if (!command_buffer_->Initialize(kCommandBufferSize))
+  if (!command_buffer_->Initialize())
     return false;
 
   return CreateGLES2Impl(kCommandBufferSize, kTransferBufferSize);
 }
 
-PP_Bool Graphics3D::InitCommandBuffer(int32_t size) {
+PP_Bool Graphics3D::InitCommandBuffer() {
   return PP_FALSE;
 }
 
-PP_Bool Graphics3D::GetRingBuffer(int* shm_handle, uint32_t* shm_size) {
+PP_Bool Graphics3D::SetGetBuffer(int32_t /* transfer_buffer_id */) {
   return PP_FALSE;
 }
 
@@ -449,6 +413,8 @@ bool PPB_Graphics3D_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgCreate)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_InitCommandBuffer,
                         OnMsgInitCommandBuffer)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_SetGetBuffer,
+                        OnMsgSetGetBuffer)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_GetState,
                         OnMsgGetState)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_Flush,
@@ -488,22 +454,21 @@ void PPB_Graphics3D_Proxy::OnMsgCreate(PP_Instance instance,
 }
 
 void PPB_Graphics3D_Proxy::OnMsgInitCommandBuffer(
-    const HostResource& context,
-    int32 size,
-    base::SharedMemoryHandle* ring_buffer) {
-  *ring_buffer = base::SharedMemory::NULLHandle();
+    const HostResource& context) {
   EnterHostFromHostResource<PPB_Graphics3D_API> enter(context);
   if (enter.failed())
     return;
 
-  if (!enter.object()->InitCommandBuffer(size))
+  if (!enter.object()->InitCommandBuffer())
     return;
+}
 
-  int shm_handle;
-  uint32_t shm_size;
-  if (!enter.object()->GetRingBuffer(&shm_handle, &shm_size))
-    return;
-  *ring_buffer = TransportSHMHandleFromInt(dispatcher(), shm_handle);
+void PPB_Graphics3D_Proxy::OnMsgSetGetBuffer(
+    const HostResource& context,
+    int32 transfer_buffer_id) {
+  EnterHostFromHostResource<PPB_Graphics3D_API> enter(context);
+  if (enter.succeeded())
+    enter.object()->SetGetBuffer(transfer_buffer_id);
 }
 
 void PPB_Graphics3D_Proxy::OnMsgGetState(const HostResource& context,

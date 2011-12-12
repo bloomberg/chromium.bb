@@ -30,20 +30,18 @@ PP_Resource CreateRaw(PP_Instance instance,
       instance, share_context, attrib_list);
 }
 
-PP_Bool InitCommandBuffer(PP_Resource context, int32_t size) {
+PP_Bool InitCommandBuffer(PP_Resource context) {
   EnterGraphics3D enter(context, true);
   if (enter.failed())
     return PP_FALSE;
-  return enter.object()->InitCommandBuffer(size);
+  return enter.object()->InitCommandBuffer();
 }
 
-PP_Bool GetRingBuffer(PP_Resource context,
-                      int* shm_handle,
-                      uint32_t* shm_size) {
+PP_Bool SetGetBuffer(PP_Resource context, int32_t transfer_buffer_id) {
   EnterGraphics3D enter(context, true);
   if (enter.failed())
     return PP_FALSE;
-  return enter.object()->GetRingBuffer(shm_handle, shm_size);
+  return enter.object()->SetGetBuffer(transfer_buffer_id);
 }
 
 PP_Graphics3DTrustedState GetState(PP_Resource context) {
@@ -103,7 +101,7 @@ PP_Graphics3DTrustedState FlushSyncFast(PP_Resource context,
 const PPB_Graphics3DTrusted g_ppb_graphics_3d_trusted_thunk = {
   &CreateRaw,
   &InitCommandBuffer,
-  &GetRingBuffer,
+  &SetGetBuffer,
   &GetState,
   &CreateTransferBuffer,
   &DestroyTransferBuffer,

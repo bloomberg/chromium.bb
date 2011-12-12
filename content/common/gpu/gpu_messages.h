@@ -311,10 +311,12 @@ IPC_MESSAGE_CONTROL0(GpuChannelMsg_CloseChannel)
 // Initialize a command buffer with the given number of command entries.
 // Returns the shared memory handle for the command buffer mapped to the
 // calling process.
-IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_Initialize,
-                           base::SharedMemoryHandle /* ring_buffer */,
-                           int32 /* size */,
+IPC_SYNC_MESSAGE_ROUTED0_1(GpuCommandBufferMsg_Initialize,
                            bool /* result */)
+
+// Sets the shared memory buffer used for commands.
+IPC_SYNC_MESSAGE_ROUTED1_0(GpuCommandBufferMsg_SetGetBuffer,
+                           int32 /* shm_id */)
 
 // Sets the parent command buffer. This allows the parent and child to share
 // textures.

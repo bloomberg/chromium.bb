@@ -32,7 +32,7 @@ Display::~Display() {
 bool Display::Initialize() {
   scoped_ptr<gpu::CommandBufferService> command_buffer(
       new gpu::CommandBufferService);
-  if (!command_buffer->Initialize(kCommandBufferSize))
+  if (!command_buffer->Initialize())
     return false;
 
   int32 transfer_buffer_id =
