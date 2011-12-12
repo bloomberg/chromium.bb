@@ -24,8 +24,9 @@ class AURA_EXPORT RootWindowObserver {
   // Invoked when a new window is initialized.
   virtual void OnWindowInitialized(Window* window) {}
 
-  // Invoked when a window is focused.
-  virtual void OnWindowFocused(Window* window) {}
+  // Invoked when the active window is changed. |active| may be NULL if there is
+  // not active window.
+  virtual void OnActiveWindowChanged(Window* active) {}
 
  protected:
   virtual ~RootWindowObserver() {}

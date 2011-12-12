@@ -11,7 +11,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura_shell/modality_event_filter.h"
 #include "ui/aura_shell/shell.h"
-#include "ui/aura_shell/window_util.h"
+#include "ui/aura_shell/stacking_controller.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
@@ -126,7 +126,7 @@ void ModalContainerLayoutManager::OnLayerAnimationScheduled(
 
 bool ModalContainerLayoutManager::CanWindowReceiveEvents(
     aura::Window* window) {
-  return GetActivatableWindow(window) == modal_window();
+  return StackingController::GetActivatableWindow(window) == modal_window();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -135,6 +135,8 @@ bool ModalContainerLayoutManager::CanWindowReceiveEvents(
 void ModalContainerLayoutManager::AddModalWindow(aura::Window* window) {
   modal_windows_.push_back(window);
   CreateModalScreen();
+  container_->StackChildAtTop(window);
+  window->Activate();
 }
 
 void ModalContainerLayoutManager::RemoveModalWindow(aura::Window* window) {
@@ -146,7 +148,7 @@ void ModalContainerLayoutManager::RemoveModalWindow(aura::Window* window) {
   if (modal_windows_.empty())
     HideModalScreen();
   else
-    aura_shell::ActivateWindow(modal_window());
+    modal_window()->Activate();
 }
 
 void ModalContainerLayoutManager::CreateModalScreen() {

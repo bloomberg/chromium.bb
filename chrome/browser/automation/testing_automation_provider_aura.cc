@@ -8,13 +8,12 @@
 #include "chrome/browser/automation/automation_window_tracker.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/window_util.h"
 #include "ui/base/ui_base_types.h"
 
 void TestingAutomationProvider::ActivateWindow(int handle) {
   aura::Window* window = window_tracker_->GetResource(handle);
   if (window) {
-    aura_shell::ActivateWindow(window);
+    window->Activate();
   }
 }
 

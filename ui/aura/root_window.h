@@ -57,6 +57,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   gfx::Point last_mouse_location() const { return last_mouse_location_; }
   gfx::NativeCursor last_cursor() const { return last_cursor_; }
   StackingClient* stacking_client() { return stacking_client_.get(); }
+  Window* active_window() { return active_window_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
   Window* capture_window() { return capture_window_; }
   ScreenAura* screen() { return screen_; }
@@ -94,6 +95,20 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Called when the native screen's resolution changes.
   void OnNativeScreenResized(const gfx::Size& size);
 
+  // Sets the active window to |window| and the focused window to |to_focus|.
+  // If |to_focus| is NULL, |window| is focused. Does nothing if |window| is
+  // NULL.
+  void SetActiveWindow(Window* window, Window* to_focus);
+
+  // Activates the topmost window. Does nothing if the topmost window is already
+  // active.
+  void ActivateTopmostWindow();
+
+  // Deactivates |window| and activates the topmost window. Does nothing if
+  // |window| is not a topmost window, or there are no other suitable windows to
+  // activate.
+  void Deactivate(Window* window);
+
   // Invoked when |window| is initialized.
   void WindowInitialized(Window* window);
 
@@ -107,8 +122,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   MessageLoop::Dispatcher* GetDispatcher();
 
   // Add/remove observer.
-  void AddRootWindowObserver(RootWindowObserver* observer);
-  void RemoveRootWindowObserver(RootWindowObserver* observer);
+  void AddObserver(RootWindowObserver* observer);
+  void RemoveObserver(RootWindowObserver* observer);
 
   // Are any mouse buttons currently down?
   bool IsMouseButtonDown() const;
@@ -193,6 +208,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Used to schedule painting.
   base::WeakPtrFactory<RootWindow> schedule_paint_factory_;
 
+  Window* active_window_;
+
   // Last location seen in a mouse event.
   gfx::Point last_mouse_location_;
 
@@ -201,6 +218,10 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Last cursor set.  Used for testing.
   gfx::NativeCursor last_cursor_;
+
+  // Are we in the process of being destroyed? Used to avoid processing during
+  // destruction.
+  bool in_destructor_;
 
   ObserverList<RootWindowObserver> observers_;
 

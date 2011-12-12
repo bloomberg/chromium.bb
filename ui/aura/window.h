@@ -92,6 +92,14 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Returns the window's bounds in screen coordinates.
   gfx::Rect GetScreenBounds() const;
 
+  // Activates this window. Only top level windows can be activated. Requests
+  // to activate a non-top level window are ignored.
+  void Activate();
+
+  // Deactivates this window. Only top level windows can be
+  // deactivated. Requests to deactivate a non-top level window are ignored.
+  void Deactivate();
+
   // Returns true if this window is active.
   bool IsActive() const;
 
@@ -126,6 +134,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Stacks |child| above |other|.  Does nothing if |child| is already above
   // |other|.
   void StackChildAbove(Window* child, Window* other);
+
+  // Returns true if this window can be activated.
+  bool CanActivate() const;
 
   // Tree operations.
   // TODO(beng): Child windows are currently not owned by the hierarchy. We
@@ -237,8 +248,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   // Sets the window property |value| for given |name|. Setting NULL or 0
   // removes the property. It uses |ui::ViewProp| to store the property.
-  // Please see the description of |prop_map_| for more details. The caller is
-  // responsible for the lifetime of any object set as a property on the Window.
+  // Please see the description of |prop_map_| for more details.
   void SetProperty(const char* name, void* value);
   void SetIntProperty(const char* name, int value);
 

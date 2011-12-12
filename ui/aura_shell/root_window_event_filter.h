@@ -40,11 +40,14 @@ class AURA_SHELL_EXPORT RootWindowEventFilter : public aura::EventFilter {
                                               aura::TouchEvent* event) OVERRIDE;
 
  private:
+  // If necessary, activates |window| and changes focus.
+  void ActivateIfNecessary(aura::Window* window, aura::Event* event);
+
   // Updates the cursor if the target provides a custom one, and provides
   // default resize cursors for window edges.
   void UpdateCursor(aura::Window* target, aura::MouseEvent* event);
 
-  // Dispatches event to additional filters. Returns false or
+  // Dispatches event to addtional filters. Returns false or
   // ui::TOUCH_STATUS_UNKNOWN if event is consumed.
   bool FilterKeyEvent(aura::Window* target, aura::KeyEvent* event);
   bool FilterMouseEvent(aura::Window* target, aura::MouseEvent* event);

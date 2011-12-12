@@ -60,6 +60,16 @@ bool TestWindowDelegate::CanFocus() {
   return true;
 }
 
+bool TestWindowDelegate::ShouldActivate(Event* event) {
+  return true;
+}
+
+void TestWindowDelegate::OnActivated() {
+}
+
+void TestWindowDelegate::OnLostActive() {
+}
+
 void TestWindowDelegate::OnCaptureLost() {
 }
 
@@ -95,6 +105,34 @@ void ColorTestWindowDelegate::OnWindowDestroyed() {
 }
 void ColorTestWindowDelegate::OnPaint(gfx::Canvas* canvas) {
   canvas->GetSkCanvas()->drawColor(color_, SkXfermode::kSrc_Mode);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ActivateWindowDelegate
+
+ActivateWindowDelegate::ActivateWindowDelegate()
+    : activate_(true),
+      activated_count_(0),
+      lost_active_count_(0),
+      should_activate_count_(0) {
+}
+
+ActivateWindowDelegate::ActivateWindowDelegate(bool activate)
+    : activate_(activate),
+      activated_count_(0),
+      lost_active_count_(0),
+      should_activate_count_(0) {
+}
+
+bool ActivateWindowDelegate::ShouldActivate(Event* event) {
+  should_activate_count_++;
+  return activate_;
+}
+void ActivateWindowDelegate::OnActivated() {
+  activated_count_++;
+}
+void ActivateWindowDelegate::OnLostActive() {
+  lost_active_count_++;
 }
 
 }  // namespace test

@@ -32,7 +32,6 @@ class ShellDelegate;
 class ShellTooltipManager;
 
 namespace internal {
-class ActivationController;
 class AppList;
 class DragDropController;
 class ShadowController;
@@ -110,7 +109,6 @@ class AURA_SHELL_EXPORT Shell {
 
   scoped_ptr<internal::AppList> app_list_;
 
-  scoped_ptr<internal::ActivationController> activation_controller_;
   scoped_ptr<internal::DragDropController> drag_drop_controller_;
   scoped_ptr<internal::WorkspaceController> workspace_controller_;
   scoped_ptr<internal::ShadowController> shadow_controller_;

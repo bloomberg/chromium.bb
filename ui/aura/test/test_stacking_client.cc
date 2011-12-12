@@ -26,5 +26,20 @@ void TestStackingClient::AddChildToDefaultParent(Window* window) {
   default_container_->AddChild(window);
 }
 
+bool TestStackingClient::CanActivateWindow(Window* window) const {
+  return window->parent() == default_container_;
+}
+
+Window* TestStackingClient::GetTopmostWindowToActivate(Window* ignore) const {
+  for (aura::Window::Windows::const_reverse_iterator i =
+           default_container_->children().rbegin();
+       i != default_container_->children().rend();
+       ++i) {
+    if (*i != ignore && (*i)->CanActivate())
+      return *i;
+  }
+  return NULL;
+}
+
 }  // namespace test
 }  // namespace aura

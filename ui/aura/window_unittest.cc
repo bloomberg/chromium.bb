@@ -544,6 +544,70 @@ TEST_F(WindowTest, MouseEnterExit) {
   EXPECT_FALSE(d2.exited());
 }
 
+namespace {
+
+class ActiveWindowDelegate : public TestWindowDelegate {
+ public:
+  ActiveWindowDelegate() : window_(NULL), was_active_(false), hit_count_(0) {
+  }
+
+  void set_window(Window* window) { window_ = window; }
+
+  // Number of times OnLostActive has been invoked.
+  int hit_count() const { return hit_count_; }
+
+  // Was the window active from the first call to OnLostActive?
+  bool was_active() const { return was_active_; }
+
+  virtual void OnLostActive() OVERRIDE {
+    if (hit_count_++ == 0)
+      was_active_ = window_->IsActive();
+  }
+
+ private:
+  Window* window_;
+
+  // See description above getters for details on these.
+  bool was_active_;
+  int hit_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(ActiveWindowDelegate);
+};
+
+}  // namespace
+
+// Verifies that when WindowDelegate::OnLostActive is invoked the window is not
+// active.
+TEST_F(WindowTest, NotActiveInLostActive) {
+  RootWindow* root_window = RootWindow::GetInstance();
+
+  ActiveWindowDelegate d1;
+  scoped_ptr<Window> w1(
+      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50), NULL));
+  d1.set_window(w1.get());
+  scoped_ptr<Window> w2(
+      CreateTestWindowWithDelegate(NULL, 1, gfx::Rect(10, 10, 50, 50), NULL));
+
+  // Activate w1.
+  root_window->SetActiveWindow(w1.get(), NULL);
+  EXPECT_EQ(w1.get(), root_window->active_window());
+
+  // Should not have gotten a OnLostActive yet.
+  EXPECT_EQ(0, d1.hit_count());
+
+  // SetActiveWindow(NULL) should not change the active window.
+  root_window->SetActiveWindow(NULL, NULL);
+  EXPECT_TRUE(root_window->active_window() == w1.get());
+
+  // Now activate another window.
+  root_window->SetActiveWindow(w2.get(), NULL);
+
+  // Should have gotten OnLostActive and w1 should not have been active at that
+  // time.
+  EXPECT_EQ(1, d1.hit_count());
+  EXPECT_FALSE(d1.was_active());
+}
+
 // Creates a window with a delegate (w111) that can handle events at a lower
 // z-index than a window without a delegate (w12). w12 is sized to fill the
 // entire bounds of the container. This test verifies that
@@ -709,6 +773,37 @@ TEST_F(WindowTest, IgnoreEventsTest) {
   EXPECT_EQ(w111.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
   w111->set_ignore_events(true);
   EXPECT_EQ(w11.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
+}
+
+// Various assertions for activating/deactivating.
+TEST_F(WindowTest, Deactivate) {
+  TestWindowDelegate d1;
+  TestWindowDelegate d2;
+  scoped_ptr<Window> w1(
+      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(), NULL));
+  scoped_ptr<Window> w2(
+      CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(), NULL));
+  Window* parent = w1->parent();
+  parent->Show();
+  ASSERT_TRUE(parent);
+  ASSERT_EQ(2u, parent->children().size());
+  // Activate w2 and make sure it's active and frontmost.
+  w2->Activate();
+  EXPECT_TRUE(w2->IsActive());
+  EXPECT_FALSE(w1->IsActive());
+  EXPECT_EQ(w2.get(), parent->children()[1]);
+
+  // Activate w1 and make sure it's active and frontmost.
+  w1->Activate();
+  EXPECT_TRUE(w1->IsActive());
+  EXPECT_FALSE(w2->IsActive());
+  EXPECT_EQ(w1.get(), parent->children()[1]);
+
+  // Deactivate w1 and make sure w2 becomes active and frontmost.
+  w1->Deactivate();
+  EXPECT_FALSE(w1->IsActive());
+  EXPECT_TRUE(w2->IsActive());
+  EXPECT_EQ(w2.get(), parent->children()[1]);
 }
 
 // Tests transformation on the root window.
@@ -1024,6 +1119,57 @@ TEST_F(WindowObserverTest, PropertyChanged) {
 
   // Sanity check to see if |PropertyChangeInfoAndClear| really clears.
   EXPECT_EQ("name= old=0 new=0", PropertyChangeInfoAndClear());
+}
+
+class RootWindowObserverTest : public WindowTest,
+                               public RootWindowObserver {
+ public:
+  RootWindowObserverTest() : active_(NULL) {
+  }
+
+  virtual ~RootWindowObserverTest() {}
+
+  Window* active() const { return active_; }
+
+  void Reset() {
+    active_ = NULL;
+  }
+
+ private:
+  virtual void SetUp() OVERRIDE {
+    WindowTest::SetUp();
+    RootWindow::GetInstance()->AddObserver(this);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    RootWindow::GetInstance()->RemoveObserver(this);
+    WindowTest::TearDown();
+  }
+
+  virtual void OnActiveWindowChanged(Window* active) OVERRIDE {
+    active_ = active;
+  }
+
+  Window* active_;
+
+  DISALLOW_COPY_AND_ASSIGN(RootWindowObserverTest);
+};
+
+TEST_F(RootWindowObserverTest, WindowActivationObserve) {
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> w2(CreateTestWindowWithId(2, NULL));
+  scoped_ptr<Window> w3(CreateTestWindowWithId(3, w1.get()));
+
+  EXPECT_EQ(NULL, active());
+
+  w2->Activate();
+  EXPECT_EQ(w2.get(), active());
+
+  w3->Activate();
+  EXPECT_EQ(w2.get(), active());
+
+  w1->Activate();
+  EXPECT_EQ(w1.get(), active());
 }
 
 }  // namespace test

@@ -103,6 +103,10 @@ void Window::Show() {
 void Window::Hide() {
   SetVisible(false);
   ReleaseCapture();
+  if (RootWindow::GetInstance()->active_window() == this ||
+      !RootWindow::GetInstance()->active_window()) {
+    RootWindow::GetInstance()->ActivateTopmostWindow();
+  }
 }
 
 bool Window::IsVisible() const {
@@ -115,6 +119,19 @@ gfx::Rect Window::GetScreenBounds() const {
                                aura::RootWindow::GetInstance(),
                                &origin);
   return gfx::Rect(origin, bounds().size());
+}
+
+void Window::Activate() {
+  // If we support minimization need to ensure this restores the window first.
+  aura::RootWindow::GetInstance()->SetActiveWindow(this, this);
+}
+
+void Window::Deactivate() {
+  aura::RootWindow::GetInstance()->Deactivate(this);
+}
+
+bool Window::IsActive() const {
+  return aura::RootWindow::GetInstance()->active_window() == this;
 }
 
 void Window::SetTransform(const ui::Transform& transform) {
@@ -200,6 +217,10 @@ void Window::StackChildAbove(Window* child, Window* other) {
   }
 
   child->OnStackingChanged();
+}
+
+bool Window::CanActivate() const {
+  return IsVisible() && (!delegate_ || delegate_->ShouldActivate(NULL));
 }
 
 void Window::AddChild(Window* child) {

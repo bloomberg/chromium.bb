@@ -55,6 +55,18 @@ class AURA_EXPORT WindowDelegate {
   // Returns true of the window can be focused.
   virtual bool CanFocus() = 0;
 
+  // Returns true if the window should be activated. |event| is either the mouse
+  // event supplied if the activation is the result of a mouse, or the touch
+  // event if the activation is the result of a touch, or NULL if activation is
+  // attempted for another reason.
+  virtual bool ShouldActivate(Event* event) = 0;
+
+  // Sent when the window is activated.
+  virtual void OnActivated() = 0;
+
+  // Sent when the window loses active status.
+  virtual void OnLostActive() = 0;
+
   // Invoked when mouse capture is lost on the window.
   virtual void OnCaptureLost() = 0;
 

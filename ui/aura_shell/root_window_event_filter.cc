@@ -8,9 +8,8 @@
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/aura_shell/activation_controller.h"
 #include "ui/aura_shell/shell.h"
-#include "ui/aura_shell/window_util.h"
+#include "ui/aura_shell/stacking_controller.h"
 #include "ui/base/hit_test.h"
 
 namespace aura_shell {
@@ -80,7 +79,7 @@ bool RootWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
     return true;
 
   if (event->type() == ui::ET_MOUSE_PRESSED)
-    target->GetFocusManager()->SetFocusedWindow(target);
+    ActivateIfNecessary(target, event);
 
   return false;
 }
@@ -93,12 +92,23 @@ ui::TouchStatus RootWindowEventFilter::PreHandleTouchEvent(
     return status;
 
   if (event->type() == ui::ET_TOUCH_PRESSED)
-    target->GetFocusManager()->SetFocusedWindow(target);
+    ActivateIfNecessary(target, event);
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowEventFilter, private:
+
+void RootWindowEventFilter::ActivateIfNecessary(aura::Window* window,
+                                                aura::Event* event) {
+  aura::Window* activatable = StackingController::GetActivatableWindow(window);
+  if (activatable == aura::RootWindow::GetInstance()->active_window()) {
+    // |window| is a descendant of the active window, no need to activate.
+    window->GetFocusManager()->SetFocusedWindow(window);
+  } else {
+    aura::RootWindow::GetInstance()->SetActiveWindow(activatable, window);
+  }
+}
 
 void RootWindowEventFilter::UpdateCursor(aura::Window* target,
                                          aura::MouseEvent* event) {

@@ -10,7 +10,6 @@
 
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/content_export.h"
-#include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/gfx/compositor/compositor_observer.h"
 #include "webkit/glue/webcursor.h"
@@ -33,8 +32,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
       public ui::CompositorObserver,
 #endif
-      public aura::WindowDelegate,
-      public aura::ActivationDelegate {
+      public aura::WindowDelegate {
  public:
   explicit RenderWidgetHostViewAura(RenderWidgetHost* host);
   virtual ~RenderWidgetHostViewAura();
@@ -117,16 +115,14 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual bool OnMouseEvent(aura::MouseEvent* event) OVERRIDE;
   virtual ui::TouchStatus OnTouchEvent(aura::TouchEvent* event) OVERRIDE;
   virtual bool CanFocus() OVERRIDE;
+  virtual bool ShouldActivate(aura::Event* event) OVERRIDE;
+  virtual void OnActivated() OVERRIDE;
+  virtual void OnLostActive() OVERRIDE;
   virtual void OnCaptureLost() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnWindowDestroying() OVERRIDE;
   virtual void OnWindowDestroyed() OVERRIDE;
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
-
-  // Overridden from aura::ActivationDelegate:
-  virtual bool ShouldActivate(aura::Event* event) OVERRIDE;
-  virtual void OnActivated() OVERRIDE;
-  virtual void OnLostActive() OVERRIDE;
 
  private:
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)

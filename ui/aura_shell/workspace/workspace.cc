@@ -11,7 +11,6 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/property_util.h"
-#include "ui/aura_shell/window_util.h"
 #include "ui/aura_shell/workspace/workspace_manager.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/compositor/layer.h"
@@ -96,7 +95,7 @@ bool Workspace::Contains(aura::Window* window) const {
 
 aura::Window* Workspace::FindRotateWindowForLocation(
     const gfx::Point& position) {
-  aura::Window* active = aura_shell::GetActiveWindow();
+  aura::Window* active = aura::RootWindow::GetInstance()->active_window();
   if (GetTotalWindowsWidth() < bounds_.width()) {
     // If all windows fit to the width of the workspace, it returns the
     // window which contains |position|'s x coordinate.

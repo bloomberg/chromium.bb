@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/window_util.h"
 
 namespace platform_util {
 
@@ -19,11 +18,11 @@ gfx::NativeView GetParent(gfx::NativeView view) {
 }
 
 bool IsWindowActive(gfx::NativeWindow window) {
-  return aura_shell::IsActiveWindow(window);
+  return window->IsActive();
 }
 
 void ActivateWindow(gfx::NativeWindow window) {
-  aura_shell::ActivateWindow(window);
+  window->Activate();
 }
 
 bool IsVisible(gfx::NativeView view) {

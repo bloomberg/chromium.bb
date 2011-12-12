@@ -19,7 +19,7 @@ namespace aura_shell {
 namespace internal {
 
 ShadowController::ShadowController() {
-  aura::RootWindow::GetInstance()->AddRootWindowObserver(this);
+  aura::RootWindow::GetInstance()->AddObserver(this);
 }
 
 ShadowController::~ShadowController() {
@@ -27,7 +27,7 @@ ShadowController::~ShadowController() {
        it != window_shadows_.end(); ++it) {
     it->first->RemoveObserver(this);
   }
-  aura::RootWindow::GetInstance()->RemoveRootWindowObserver(this);
+  aura::RootWindow::GetInstance()->RemoveObserver(this);
 }
 
 void ShadowController::OnWindowInitialized(aura::Window* window) {

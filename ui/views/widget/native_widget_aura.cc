@@ -6,14 +6,13 @@
 
 #include "base/bind.h"
 #include "base/string_util.h"
-#include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/shadow_types.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
 #include "ui/aura/window_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/ui_base_types.h"
@@ -77,23 +76,20 @@ void NotifyLocaleChangedInternal(aura::Window* window) {
 
 // Used when SetInactiveRenderingDisabled() is invoked to track when active
 // status changes in such a way that we should enable inactive rendering.
-class NativeWidgetAura::ActiveWindowObserver : public aura::WindowObserver {
+class NativeWidgetAura::RootWindowObserverImpl
+    : public aura::RootWindowObserver {
  public:
-  explicit ActiveWindowObserver(NativeWidgetAura* host) : host_(host) {
+  explicit RootWindowObserverImpl(NativeWidgetAura* host)
+      : host_(host) {
     aura::RootWindow::GetInstance()->AddObserver(this);
   }
-  virtual ~ActiveWindowObserver() {
+
+  virtual ~RootWindowObserverImpl() {
     aura::RootWindow::GetInstance()->RemoveObserver(this);
   }
 
-  // Overridden from aura::WindowObserver:
-  virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const char* key,
-                                       void* old) OVERRIDE {
-    if (key != aura::kRootWindowActiveWindow)
-      return;
-    aura::Window* active =
-        aura::ActivationClient::GetActivationClient()->GetActiveWindow();
+  // RootWindowObserver overrides:
+  virtual void OnActiveWindowChanged(aura::Window* active) OVERRIDE {
     if (!active || (active != host_->window_ &&
                     active->transient_parent() != host_->window_)) {
       host_->delegate_->EnableInactiveRendering();
@@ -103,7 +99,7 @@ class NativeWidgetAura::ActiveWindowObserver : public aura::WindowObserver {
  private:
   NativeWidgetAura* host_;
 
-  DISALLOW_COPY_AND_ASSIGN(ActiveWindowObserver);
+  DISALLOW_COPY_AND_ASSIGN(RootWindowObserverImpl);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -184,8 +180,6 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     window_->SetProperty(aura::kDragDropDelegateKey,
         static_cast<aura::WindowDragDropDelegate*>(this));
   }
-
-  aura::ActivationDelegate::SetActivationDelegate(window_, this);
 
   if (window_type == Widget::InitParams::TYPE_MENU ||
       window_type == Widget::InitParams::TYPE_TOOLTIP)
@@ -431,7 +425,7 @@ void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
   window_->Show();
   if (can_activate_ && (state != ui::SHOW_STATE_INACTIVE ||
                         !GetWidget()->SetInitialFocus())) {
-    Activate();
+    window_->Activate();
   }
 }
 
@@ -440,16 +434,15 @@ bool NativeWidgetAura::IsVisible() const {
 }
 
 void NativeWidgetAura::Activate() {
-  aura::ActivationClient::GetActivationClient()->ActivateWindow(window_);
+  window_->Activate();
 }
 
 void NativeWidgetAura::Deactivate() {
-  aura::ActivationClient::GetActivationClient()->DeactivateWindow(window_);
+  window_->Deactivate();
 }
 
 bool NativeWidgetAura::IsActive() const {
-  return aura::ActivationClient::GetActivationClient()->GetActiveWindow() ==
-      window_;
+  return aura::RootWindow::GetInstance()->active_window() == window_;
 }
 
 void NativeWidgetAura::SetAlwaysOnTop(bool on_top) {
@@ -539,9 +532,9 @@ gfx::Rect NativeWidgetAura::GetWorkAreaBoundsInScreen() const {
 
 void NativeWidgetAura::SetInactiveRenderingDisabled(bool value) {
   if (!value)
-    active_window_observer_.reset();
+    root_window_observer_.reset();
   else
-    active_window_observer_.reset(new ActiveWindowObserver(this));
+    root_window_observer_.reset(new RootWindowObserverImpl(this));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -636,6 +629,22 @@ bool NativeWidgetAura::CanFocus() {
   return true;
 }
 
+bool NativeWidgetAura::ShouldActivate(aura::Event* event) {
+  return can_activate_;
+}
+
+void NativeWidgetAura::OnActivated() {
+  delegate_->OnNativeWidgetActivationChanged(true);
+  if (IsVisible() && GetWidget()->non_client_view())
+    GetWidget()->non_client_view()->SchedulePaint();
+}
+
+void NativeWidgetAura::OnLostActive() {
+  delegate_->OnNativeWidgetActivationChanged(false);
+  if (IsVisible() && GetWidget()->non_client_view())
+    GetWidget()->non_client_view()->SchedulePaint();
+}
+
 void NativeWidgetAura::OnCaptureLost() {
   delegate_->OnMouseCaptureLost();
 }
@@ -663,28 +672,6 @@ void NativeWidgetAura::OnWindowDestroyed() {
 void NativeWidgetAura::OnWindowVisibilityChanged(bool visible) {
   delegate_->OnNativeWidgetVisibilityChanged(visible);
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetAura, aura::ActivationDelegate implementation:
-
-bool NativeWidgetAura::ShouldActivate(aura::Event* event) {
-  return can_activate_;
-}
-
-void NativeWidgetAura::OnActivated() {
-  delegate_->OnNativeWidgetActivationChanged(true);
-  if (IsVisible() && GetWidget()->non_client_view())
-    GetWidget()->non_client_view()->SchedulePaint();
-}
-
-void NativeWidgetAura::OnLostActive() {
-  delegate_->OnNativeWidgetActivationChanged(false);
-  if (IsVisible() && GetWidget()->non_client_view())
-    GetWidget()->non_client_view()->SchedulePaint();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetAura, aura::WindowDragDropDelegate implementation:
 
 void NativeWidgetAura::OnDragEntered(const aura::DropTargetEvent& event) {
   DCHECK(drop_helper_.get() != NULL);

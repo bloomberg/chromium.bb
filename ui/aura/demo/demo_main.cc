@@ -54,6 +54,9 @@ class DemoWindowDelegate : public aura::WindowDelegate {
     return ui::TOUCH_STATUS_END;
   }
   virtual bool CanFocus() OVERRIDE { return true; }
+  virtual bool ShouldActivate(aura::Event* event) OVERRIDE { return true; }
+  virtual void OnActivated() OVERRIDE {}
+  virtual void OnLostActive() OVERRIDE {}
   virtual void OnCaptureLost() OVERRIDE {}
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->GetSkCanvas()->drawColor(color_, SkXfermode::kSrc_Mode);

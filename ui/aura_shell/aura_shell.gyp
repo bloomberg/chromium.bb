@@ -33,8 +33,6 @@
       ],
       'sources': [
         # All .cc, .h under views, except unittests
-        'activation_controller.cc',
-        'activation_controller.h',
         'always_on_top_controller.cc',
         'always_on_top_controller.h',
         'app_list.cc',
@@ -145,7 +143,6 @@
         'aura_shell',
       ],
       'sources': [
-        'activation_controller_unittest.cc',
         'default_container_layout_manager_unittest.cc',
         'root_window_event_filter_unittest.cc',
         'drag_drop_controller_unittest.cc',
@@ -158,12 +155,11 @@
         'shadow_controller_unittest.cc',
         'shell_accelerator_controller_unittest.cc',
         'shell_unittest.cc',
+        'stacking_controller_unittest.cc',
         'test_suite.cc',
         'test_suite.h',
         'test/aura_shell_test_base.cc',
         'test/aura_shell_test_base.h',
-        'test/test_activation_delegate.cc',
-        'test/test_activation_delegate.h',
         'toplevel_layout_manager_unittest.cc',
         'toplevel_window_event_filter_unittest.cc',
         'workspace_controller_unittest.cc',

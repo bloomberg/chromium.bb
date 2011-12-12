@@ -14,7 +14,6 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "ui/aura/aura_switches.h"
-#include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/tooltip_client.h"
@@ -69,6 +68,20 @@ class DefaultStackingClient : public StackingClient {
   // Overridden from StackingClient:
   virtual void AddChildToDefaultParent(Window* window) OVERRIDE {
     root_window_->AddChild(window);
+  }
+  virtual bool CanActivateWindow(Window* window) const OVERRIDE {
+    return window->parent() == root_window_;
+  }
+  virtual Window* GetTopmostWindowToActivate(Window* ignore) const OVERRIDE {
+    Window::Windows::const_reverse_iterator i;
+    for (i = root_window_->children().rbegin();
+         i != root_window_->children().rend();
+         ++i) {
+      if (*i == ignore)
+        continue;
+      return *i;
+    }
+    return NULL;
   }
 
   RootWindow* root_window_;
@@ -234,6 +247,55 @@ void RootWindow::OnNativeScreenResized(const gfx::Size& size) {
     SetHostSize(size);
 }
 
+void RootWindow::SetActiveWindow(Window* window, Window* to_focus) {
+  if (!window)
+    return;
+  // The stacking client may impose rules on what window configurations can be
+  // activated or deactivated.
+  if (!stacking_client_->CanActivateWindow(window))
+    return;
+  // The window may not be activate-able.
+  if (!window->CanActivate())
+    return;
+  // Nothing may actually have changed.
+  if (active_window_ == window)
+    return;
+
+  Window* old_active = active_window_;
+  active_window_ = window;
+  // Invoke OnLostActive after we've changed the active window. That way if the
+  // delegate queries for active state it doesn't think the window is still
+  // active.
+  if (old_active && old_active->delegate())
+    old_active->delegate()->OnLostActive();
+  if (active_window_) {
+    active_window_->parent()->StackChildAtTop(active_window_);
+    if (active_window_->delegate())
+      active_window_->delegate()->OnActivated();
+    active_window_->GetFocusManager()->SetFocusedWindow(
+        to_focus ? to_focus : active_window_);
+  }
+  FOR_EACH_OBSERVER(RootWindowObserver, observers_,
+                    OnActiveWindowChanged(active_window_));
+}
+
+void RootWindow::ActivateTopmostWindow() {
+  SetActiveWindow(stacking_client_->GetTopmostWindowToActivate(NULL), NULL);
+}
+
+void RootWindow::Deactivate(Window* window) {
+  // The stacking client may impose rules on what window configurations can be
+  // activated or deactivated.
+  if (!window || !stacking_client_->CanActivateWindow(window))
+    return;
+  if (active_window_ != window)
+    return;
+
+  Window* to_activate = stacking_client_->GetTopmostWindowToActivate(window);
+  if (to_activate)
+    SetActiveWindow(to_activate, NULL);
+}
+
 void RootWindow::WindowInitialized(Window* window) {
   FOR_EACH_OBSERVER(RootWindowObserver, observers_,
                     OnWindowInitialized(window));
@@ -255,17 +317,25 @@ void RootWindow::WindowDestroying(Window* window) {
     capture_window_ = NULL;
   if (touch_event_handler_ == window)
     touch_event_handler_ = NULL;
+
+  if (in_destructor_ || window != active_window_)
+    return;
+
+  // Reset active_window_ before invoking SetActiveWindow so that we don't
+  // attempt to notify it while running its destructor.
+  active_window_ = NULL;
+  SetActiveWindow(stacking_client_->GetTopmostWindowToActivate(window), NULL);
 }
 
 MessageLoop::Dispatcher* RootWindow::GetDispatcher() {
   return host_.get();
 }
 
-void RootWindow::AddRootWindowObserver(RootWindowObserver* observer) {
+void RootWindow::AddObserver(RootWindowObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void RootWindow::RemoveRootWindowObserver(RootWindowObserver* observer) {
+void RootWindow::RemoveObserver(RootWindowObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -336,8 +406,10 @@ RootWindow::RootWindow()
       ALLOW_THIS_IN_INITIALIZER_LIST(
           stacking_client_(new DefaultStackingClient(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
+      active_window_(NULL),
       mouse_button_flags_(0),
       last_cursor_(kCursorNull),
+      in_destructor_(false),
       screen_(new ScreenAura),
       capture_window_(NULL),
       mouse_pressed_handler_(NULL),
@@ -362,6 +434,7 @@ RootWindow::RootWindow()
 }
 
 RootWindow::~RootWindow() {
+  in_destructor_ = true;
   // Make sure to destroy the compositor before terminating so that state is
   // cleared and we don't hit asserts.
   compositor_ = NULL;
@@ -498,28 +571,15 @@ void RootWindow::OnLayerAnimationAborted(
 }
 
 void RootWindow::SetFocusedWindow(Window* focused_window) {
-  if (focused_window == focused_window_)
-    return;
-  if (focused_window && !focused_window->CanFocus())
-    return;
-  // The NULL-check of |focused)window| is essential here before asking the
-  // activation client, since it is valid to clear the focus by calling
-  // SetFocusedWindow() to NULL.
-  if (focused_window && ActivationClient::GetActivationClient() &&
-      !ActivationClient::GetActivationClient()->CanFocusWindow(
-          focused_window)) {
+  if (focused_window == focused_window_ ||
+      (focused_window && !focused_window->CanFocus())) {
     return;
   }
-
   if (focused_window_ && focused_window_->delegate())
     focused_window_->delegate()->OnBlur();
   focused_window_ = focused_window;
   if (focused_window_ && focused_window_->delegate())
     focused_window_->delegate()->OnFocus();
-  if (focused_window_) {
-    FOR_EACH_OBSERVER(RootWindowObserver, observers_,
-                      OnWindowFocused(focused_window_));
-  }
 }
 
 Window* RootWindow::GetFocusedWindow() {

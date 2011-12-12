@@ -13,7 +13,6 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_types.h"
-#include "ui/aura_shell/activation_controller.h"
 #include "ui/aura_shell/app_list.h"
 #include "ui/aura_shell/default_container_event_filter.h"
 #include "ui/aura_shell/default_container_layout_manager.h"
@@ -178,8 +177,6 @@ void Shell::DeleteInstance() {
 void Shell::Init() {
   aura::RootWindow* root_window = aura::RootWindow::GetInstance();
   root_window->SetCursor(aura::kCursorPointer);
-
-  activation_controller_.reset(new internal::ActivationController);
 
   aura::Window::Windows containers;
   CreateSpecialContainers(&containers);

@@ -4,8 +4,6 @@
 
 #include "ui/aura_shell/root_window_event_filter.h"
 
-#include "ui/aura/client/activation_delegate.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/cursor.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
@@ -15,10 +13,7 @@
 #include "ui/aura/test/test_event_filter.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_stacking_client.h"
-#include "ui/aura_shell/activation_controller.h"
 #include "ui/aura_shell/shell_window_ids.h"
-#include "ui/aura_shell/test/test_activation_delegate.h"
-#include "ui/aura_shell/window_util.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/screen.h"
 
@@ -36,17 +31,12 @@ class RootWindowEventFilterTest : public aura::test::AuraTestBase {
             aura::RootWindow::GetInstance()->stacking_client());
     stacking_client->default_container()->set_id(
         internal::kShellWindowId_DefaultContainer);
-    activation_controller_.reset(new internal::ActivationController);
-    activation_controller_->set_default_container_for_test(
-        stacking_client->default_container());
   }
   virtual ~RootWindowEventFilterTest() {
     aura::RootWindow::GetInstance()->SetEventFilter(NULL);
   }
 
  private:
-  scoped_ptr<internal::ActivationController> activation_controller_;
-
   DISALLOW_COPY_AND_ASSIGN(RootWindowEventFilterTest);
 };
 
@@ -134,72 +124,63 @@ TEST_F(RootWindowEventFilterTest, Focus) {
 TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
   aura::RootWindow* root_window = aura::RootWindow::GetInstance();
 
-  TestActivationDelegate d1;
-  aura::test::TestWindowDelegate wd;
+  aura::test::ActivateWindowDelegate d1;
   scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
-      &wd, 1, gfx::Rect(10, 10, 50, 50), NULL));
-  d1.SetWindow(w1.get());
-  TestActivationDelegate d2;
+      &d1, 1, gfx::Rect(10, 10, 50, 50), NULL));
+  aura::test::ActivateWindowDelegate d2;
   scoped_ptr<aura::Window> w2(aura::test::CreateTestWindowWithDelegate(
-      &wd, 2, gfx::Rect(70, 70, 50, 50), NULL));
-  d2.SetWindow(w2.get());
-
+      &d2, 2, gfx::Rect(70, 70, 50, 50), NULL));
   aura::internal::FocusManager* focus_manager = w1->GetFocusManager();
 
   d1.Clear();
   d2.Clear();
 
   // Activate window1.
-  aura_shell::ActivateWindow(w1.get());
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  root_window->SetActiveWindow(w1.get(), NULL);
+  EXPECT_EQ(w1.get(), root_window->active_window());
   EXPECT_EQ(w1.get(), focus_manager->GetFocusedWindow());
   EXPECT_EQ(1, d1.activated_count());
   EXPECT_EQ(0, d1.lost_active_count());
   d1.Clear();
 
-  {
-    // Click on window2.
-    gfx::Point press_point = w2->bounds().CenterPoint();
-    aura::Window::ConvertPointToWindow(w2->parent(), root_window, &press_point);
-    aura::test::EventGenerator generator(press_point);
-    generator.ClickLeftButton();
+  // Click on window2.
+  gfx::Point press_point = w2->bounds().CenterPoint();
+  aura::Window::ConvertPointToWindow(w2->parent(), root_window, &press_point);
+  aura::test::EventGenerator generator(press_point);
+  generator.ClickLeftButton();
 
-    // Window2 should have become active.
-    EXPECT_TRUE(IsActiveWindow(w2.get()));
-    EXPECT_EQ(w2.get(), focus_manager->GetFocusedWindow());
-    EXPECT_EQ(0, d1.activated_count());
-    EXPECT_EQ(1, d1.lost_active_count());
-    EXPECT_EQ(1, d2.activated_count());
-    EXPECT_EQ(0, d2.lost_active_count());
-    d1.Clear();
-    d2.Clear();
-  }
+  // Window2 should have become active.
+  EXPECT_EQ(w2.get(), root_window->active_window());
+  EXPECT_EQ(w2.get(), focus_manager->GetFocusedWindow());
+  EXPECT_EQ(0, d1.activated_count());
+  EXPECT_EQ(1, d1.lost_active_count());
+  EXPECT_EQ(1, d2.activated_count());
+  EXPECT_EQ(0, d2.lost_active_count());
+  d1.Clear();
+  d2.Clear();
 
-  {
-    // Click back on window1, but set it up so w1 doesn't activate on click.
-    gfx::Point press_point = w1->bounds().CenterPoint();
-    aura::Window::ConvertPointToWindow(w1->parent(), root_window, &press_point);
-    aura::test::EventGenerator generator(press_point);
-    d1.set_activate(false);
-    generator.ClickLeftButton();
+  // Click back on window1, but set it up so w1 doesn't activate on click.
+  press_point = w1->bounds().CenterPoint();
+  aura::Window::ConvertPointToWindow(w1->parent(), root_window, &press_point);
+  d1.set_activate(false);
+  generator.ClickLeftButton();
 
-    // Window2 should still be active and focused.
-    EXPECT_TRUE(IsActiveWindow(w2.get()));
-    EXPECT_EQ(w2.get(), focus_manager->GetFocusedWindow());
-    EXPECT_EQ(0, d1.activated_count());
-    EXPECT_EQ(0, d1.lost_active_count());
-    EXPECT_EQ(0, d2.activated_count());
-    EXPECT_EQ(0, d2.lost_active_count());
-    d1.Clear();
-    d2.Clear();
-  }
+  // Window2 should still be active and focused.
+  EXPECT_EQ(w2.get(), root_window->active_window());
+  EXPECT_EQ(w2.get(), focus_manager->GetFocusedWindow());
+  EXPECT_EQ(0, d1.activated_count());
+  EXPECT_EQ(0, d1.lost_active_count());
+  EXPECT_EQ(0, d2.activated_count());
+  EXPECT_EQ(0, d2.lost_active_count());
+  d1.Clear();
+  d2.Clear();
 
   // Destroy window2, this should make window1 active.
   d1.set_activate(true);
   w2.reset();
   EXPECT_EQ(0, d2.activated_count());
   EXPECT_EQ(0, d2.lost_active_count());
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  EXPECT_EQ(w1.get(), root_window->active_window());
   EXPECT_EQ(w1.get(), focus_manager->GetFocusedWindow());
   EXPECT_EQ(1, d1.activated_count());
   EXPECT_EQ(0, d1.lost_active_count());
@@ -209,24 +190,20 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
 TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
   aura::RootWindow* root_window = aura::RootWindow::GetInstance();
 
-  TestActivationDelegate d1;
-  aura::test::TestWindowDelegate wd;
+  aura::test::ActivateWindowDelegate d1;
   scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
-      &wd, -1, gfx::Rect(10, 10, 50, 50), NULL));
-  d1.SetWindow(w1.get());
-  TestActivationDelegate d2;
+      &d1, -1, gfx::Rect(10, 10, 50, 50), NULL));
+  aura::test::ActivateWindowDelegate d2;
   scoped_ptr<aura::Window> w2(aura::test::CreateTestWindowWithDelegate(
-      &wd, -2, gfx::Rect(70, 70, 50, 50), NULL));
-  d2.SetWindow(w2.get());
-
+      &d2, -2, gfx::Rect(70, 70, 50, 50), NULL));
   aura::internal::FocusManager* focus_manager = w1->GetFocusManager();
 
   d1.Clear();
   d2.Clear();
 
   // Activate window1.
-  aura_shell::ActivateWindow(w1.get());
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  root_window->SetActiveWindow(w1.get(), NULL);
+  EXPECT_EQ(w1.get(), root_window->active_window());
   EXPECT_EQ(w1.get(), focus_manager->GetFocusedWindow());
   EXPECT_EQ(1, d1.activated_count());
   EXPECT_EQ(0, d1.lost_active_count());
@@ -239,7 +216,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
   root_window->DispatchTouchEvent(&touchev1);
 
   // Window2 should have become active.
-  EXPECT_TRUE(IsActiveWindow(w2.get()));
+  EXPECT_EQ(w2.get(), root_window->active_window());
   EXPECT_EQ(w2.get(), focus_manager->GetFocusedWindow());
   EXPECT_EQ(0, d1.activated_count());
   EXPECT_EQ(1, d1.lost_active_count());
@@ -256,7 +233,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
   root_window->DispatchTouchEvent(&touchev2);
 
   // Window2 should still be active and focused.
-  EXPECT_TRUE(IsActiveWindow(w2.get()));
+  EXPECT_EQ(w2.get(), root_window->active_window());
   EXPECT_EQ(w2.get(), focus_manager->GetFocusedWindow());
   EXPECT_EQ(0, d1.activated_count());
   EXPECT_EQ(0, d1.lost_active_count());
@@ -270,7 +247,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
   w2.reset();
   EXPECT_EQ(0, d2.activated_count());
   EXPECT_EQ(0, d2.lost_active_count());
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  EXPECT_EQ(w1.get(), root_window->active_window());
   EXPECT_EQ(w1.get(), focus_manager->GetFocusedWindow());
   EXPECT_EQ(1, d1.activated_count());
   EXPECT_EQ(0, d1.lost_active_count());
@@ -352,11 +329,9 @@ TEST_F(RootWindowEventFilterTest, TransformActivate) {
   transform.ConcatTranslate(size.width(), 0);
   root_window->SetTransform(transform);
 
-  TestActivationDelegate d1;
-  aura::test::TestWindowDelegate wd;
+  aura::test::ActivateWindowDelegate d1;
   scoped_ptr<aura::Window> w1(
-      CreateTestWindowWithDelegate(&wd, 1, gfx::Rect(0, 10, 50, 50), NULL));
-  d1.SetWindow(w1.get());
+      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(0, 10, 50, 50), NULL));
   w1->Show();
 
   gfx::Point miss_point(5, 5);
@@ -377,7 +352,7 @@ TEST_F(RootWindowEventFilterTest, TransformActivate) {
                             hit_point,
                             ui::EF_LEFT_BUTTON_DOWN);
   root_window->DispatchMouseEvent(&mouseev2);
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  EXPECT_EQ(w1.get(), root_window->active_window());
   EXPECT_EQ(w1.get(), w1->GetFocusManager()->GetFocusedWindow());
 }
 
@@ -387,7 +362,7 @@ TEST_F(RootWindowEventFilterTest, AdditionalFilters) {
   // Creates a window and make it active
   scoped_ptr<aura::Window> w1(aura::test::CreateTestWindow(
       SK_ColorWHITE, -1, gfx::Rect(0, 0, 100, 100), NULL));
-  aura_shell::ActivateWindow(w1.get());
+  root_window->SetActiveWindow(w1.get(), NULL);
 
   // Creates two addition filters
   scoped_ptr<aura::test::TestEventFilter> f1(
