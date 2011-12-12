@@ -770,7 +770,7 @@ void UserManager::SaveImageToFile(const std::string& username,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   std::vector<unsigned char> encoded_image;
-  if (!gfx::PNGCodec::EncodeBGRASkBitmap(image, true, &encoded_image)) {
+  if (!gfx::PNGCodec::EncodeBGRASkBitmap(image, false, &encoded_image)) {
     LOG(ERROR) << "Failed to PNG encode the image.";
     return;
   }
