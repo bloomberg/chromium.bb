@@ -422,7 +422,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareProceed) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->controller()));
+          &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+              controller()));
   SendCommand("\"proceed\"");    // Simulate the user clicking "proceed"
   observer.Wait();
   AssertNoInterstitial(true);    // Assert the interstitial is gone.
@@ -450,7 +451,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingProceed) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->controller()));
+          &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+              controller()));
   SendCommand("\"proceed\"");   // Simulate the user clicking "proceed".
   observer.Wait();
   AssertNoInterstitial(true);    // Assert the interstitial is gone
@@ -466,7 +468,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingReportError) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->controller()));
+          &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+              controller()));
   SendCommand("\"reportError\"");   // Simulate the user clicking "report error"
   observer.Wait();
   AssertNoInterstitial(false);    // Assert the interstitial is gone
@@ -486,7 +489,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->controller()));
+          &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+              controller()));
   SendCommand("\"learnMore\"");   // Simulate the user clicking "learn more"
   observer.Wait();
   AssertNoInterstitial(false);    // Assert the interstitial is gone

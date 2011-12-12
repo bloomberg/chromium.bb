@@ -287,7 +287,7 @@ void DownloadRequestLimiter::CanDownloadImpl(
 
   TabDownloadState* state = GetDownloadState(
       &effective_wrapper->tab_contents()->controller(),
-      &originating_tab->controller(), true);
+      &originating_tab->tab_contents()->controller(), true);
   switch (state->download_status()) {
     case ALLOW_ALL_DOWNLOADS:
       if (state->download_count() && !(state->download_count() %

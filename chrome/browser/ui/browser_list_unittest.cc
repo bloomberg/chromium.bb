@@ -8,6 +8,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 typedef BrowserWithTestWindowTest BrowserListTest;
 
@@ -24,8 +25,8 @@ size_t CountAllTabs() {
 // Helper function to navigate to the print preview page.
 void NavigateToPrintUrl(TabContentsWrapper* tab, int page_id) {
   static_cast<TestRenderViewHost*>(
-      tab->render_view_host())->SendNavigate(page_id,
-                                             GURL(chrome::kChromeUIPrintURL));
+      tab->tab_contents()->render_view_host())->SendNavigate(
+          page_id, GURL(chrome::kChromeUIPrintURL));
 }
 
 }  // namespace

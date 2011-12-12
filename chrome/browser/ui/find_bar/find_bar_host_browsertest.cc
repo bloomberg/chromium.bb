@@ -271,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
 
   // Move the selection to link 1, after searching.
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      tab_contents->render_view_host(),
+      tab_contents->tab_contents()->render_view_host(),
       L"",
       L"window.domAutomationController.send(selectLink1());",
       &result));
@@ -345,7 +345,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   // Move the selection to link 1, after searching.
   std::string result;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      tab->render_view_host(),
+      tab->tab_contents()->render_view_host(),
       L"",
       L"window.domAutomationController.send(selectLink1());",
       &result));
@@ -588,7 +588,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->controller()));
+          &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+              controller()));
   browser()->Reload(CURRENT_TAB);
   observer.Wait();
 
@@ -1113,7 +1114,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
   // End the find session, click on the link.
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(&tab->controller()));
+      content::Source<NavigationController>(
+          &tab->tab_contents()->controller()));
   tab->find_tab_helper()->StopFinding(FindBarController::kActivateSelection);
   observer.Wait();
 }

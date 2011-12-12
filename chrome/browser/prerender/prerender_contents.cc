@@ -27,6 +27,7 @@
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_request_details.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/notification_service.h"
@@ -282,13 +283,14 @@ void PrerenderContents::StartPrerendering(
   if (starting_page_id_ < 0)
     starting_page_id_ = 0;
   starting_page_id_ += kPrerenderPageIdOffset;
-  prerender_contents_->controller().set_max_restored_page_id(starting_page_id_);
+  prerender_contents_->tab_contents()->controller().set_max_restored_page_id(
+      starting_page_id_);
 
   tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
   new_contents->set_delegate(tab_contents_delegate_.get());
 
   // Set the size of the prerender TabContents.
-  prerender_contents_->view()->SizeContents(tab_bounds.size());
+  prerender_contents_->tab_contents()->view()->SizeContents(tab_bounds.size());
 
   // Register as an observer of the RenderViewHost so we get messages.
   render_view_host_observer_.reset(
@@ -667,7 +669,7 @@ RenderViewHost* PrerenderContents::render_view_host_mutable() {
 const RenderViewHost* PrerenderContents::render_view_host() const {
   if (!prerender_contents_.get())
     return NULL;
-  return prerender_contents_->render_view_host();
+  return prerender_contents_->tab_contents()->render_view_host();
 }
 
 void PrerenderContents::CommitHistory(TabContentsWrapper* tab) {

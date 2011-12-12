@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 
 WebDragBookmarkHandlerGtk::WebDragBookmarkHandlerGtk()
@@ -81,7 +82,7 @@ void WebDragBookmarkHandlerGtk::OnDrop() {
 
     // Focus the target browser.
     Browser* browser = Browser::GetBrowserForController(
-        &tab_->controller(), NULL);
+        &tab_->tab_contents()->controller(), NULL);
     if (browser)
       browser->window()->Show();
   }

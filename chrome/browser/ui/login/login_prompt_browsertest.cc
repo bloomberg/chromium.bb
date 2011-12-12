@@ -15,6 +15,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/test/test_browser_thread.h"
@@ -240,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, PrefetchAuthCancels) {
   TabContentsWrapper* contents =
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents);
-  NavigationController* controller = &contents->controller();
+  NavigationController* controller = &contents->tab_contents()->controller();
   LoginPromptBrowserTestObserver observer;
 
   observer.Register(content::Source<NavigationController>(controller));
@@ -266,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth) {
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents);
 
-  NavigationController* controller = &contents->controller();
+  NavigationController* controller = &contents->tab_contents()->controller();
 
   LoginPromptBrowserTestObserver observer;
   observer.Register(content::Source<NavigationController>(controller));
@@ -361,7 +362,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, MultipleRealmCancellation) {
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents);
 
-  NavigationController* controller = &contents->controller();
+  NavigationController* controller = &contents->tab_contents()->controller();
   LoginPromptBrowserTestObserver observer;
 
   observer.Register(content::Source<NavigationController>(controller));
@@ -413,7 +414,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, MultipleRealmConfirmation) {
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents);
 
-  NavigationController* controller = &contents->controller();
+  NavigationController* controller = &contents->tab_contents()->controller();
   LoginPromptBrowserTestObserver observer;
 
   observer.Register(content::Source<NavigationController>(controller));
@@ -465,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, IncorrectConfirmation) {
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents);
 
-  NavigationController* controller = &contents->controller();
+  NavigationController* controller = &contents->tab_contents()->controller();
   LoginPromptBrowserTestObserver observer;
 
   observer.Register(content::Source<NavigationController>(controller));
@@ -536,7 +537,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, NoLoginPromptForFavicon) {
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents);
 
-  NavigationController* controller = &contents->controller();
+  NavigationController* controller = &contents->tab_contents()->controller();
   LoginPromptBrowserTestObserver observer;
 
   observer.Register(content::Source<NavigationController>(controller));
@@ -591,7 +592,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, BlockCrossdomainPrompt) {
   TabContentsWrapper* contents = browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents);
 
-  NavigationController* controller = &contents->controller();
+  NavigationController* controller = &contents->tab_contents()->controller();
   LoginPromptBrowserTestObserver observer;
   observer.Register(content::Source<NavigationController>(controller));
 
@@ -656,7 +657,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, SupplyRedundantAuths) {
   TabContentsWrapper* contents_1 =
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents_1);
-  NavigationController* controller_1 = &contents_1->controller();
+  NavigationController* controller_1 =
+      &contents_1->tab_contents()->controller();
 
   // Open a new tab.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -670,7 +672,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, SupplyRedundantAuths) {
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents_2);
   ASSERT_NE(contents_1, contents_2);
-  NavigationController* controller_2 = &contents_2->controller();
+  NavigationController* controller_2 =
+      &contents_2->tab_contents()->controller();
 
   LoginPromptBrowserTestObserver observer;
   observer.Register(content::Source<NavigationController>(controller_1));
@@ -722,7 +725,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, CancelRedundantAuths) {
   TabContentsWrapper* contents_1 =
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents_1);
-  NavigationController* controller_1 = &contents_1->controller();
+  NavigationController* controller_1 =
+      &contents_1->tab_contents()->controller();
 
   // Open a new tab.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -736,7 +740,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, CancelRedundantAuths) {
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents_2);
   ASSERT_NE(contents_1, contents_2);
-  NavigationController* controller_2 = &contents_2->controller();
+  NavigationController* controller_2 =
+      &contents_2->tab_contents()->controller();
 
   LoginPromptBrowserTestObserver observer;
   observer.Register(content::Source<NavigationController>(controller_1));
@@ -789,7 +794,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   TabContentsWrapper* contents =
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents);
-  NavigationController* controller = &contents->controller();
+  NavigationController* controller = &contents->tab_contents()->controller();
 
   // Open an incognito window.
   Browser* browser_incognito = CreateIncognitoBrowser();
@@ -800,7 +805,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   ASSERT_TRUE(contents_incognito);
   ASSERT_NE(contents, contents_incognito);
   NavigationController* controller_incognito =
-      &contents_incognito->controller();
+      &contents_incognito->tab_contents()->controller();
 
   LoginPromptBrowserTestObserver observer;
   observer.Register(content::Source<NavigationController>(controller));

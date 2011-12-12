@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/gfx/rect.h"
@@ -85,11 +86,14 @@ void FindBarController::ChangeTabContents(TabContentsWrapper* contents) {
   if (!tab_contents_)
     return;
 
-  registrar_.Add(this, chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
                  content::Source<TabContents>(tab_contents_->tab_contents()));
   registrar_.Add(
-      this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(&tab_contents_->controller()));
+      this,
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::Source<NavigationController>(
+          &tab_contents_->tab_contents()->controller()));
 
   MaybeSetPrepopulateText();
 
@@ -129,7 +133,7 @@ void FindBarController::Observe(int type,
   } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     NavigationController* source_controller =
         content::Source<NavigationController>(source).ptr();
-    if (source_controller == &tab_contents_->controller()) {
+    if (source_controller == &tab_contents_->tab_contents()->controller()) {
       content::LoadCommittedDetails* commit_details =
           content::Details<content::LoadCommittedDetails>(details).ptr();
       content::PageTransition transition_type =

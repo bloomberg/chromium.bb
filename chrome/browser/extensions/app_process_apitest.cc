@@ -416,7 +416,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
   ui_test_utils::WindowedNotificationObserver reload_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->controller()));
+          &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+              controller()));
   browser()->Reload(CURRENT_TAB);
   reload_observer.Wait();
   EXPECT_TRUE(process_map->Contains(
@@ -427,7 +428,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
   ui_test_utils::WindowedNotificationObserver reload_observer2(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->controller()));
+          &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+              controller()));
   browser()->Reload(CURRENT_TAB);
   reload_observer2.Wait();
   EXPECT_FALSE(process_map->Contains(
@@ -438,7 +440,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
   ui_test_utils::WindowedNotificationObserver js_reload_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->controller()));
+          &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+              controller()));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(contents->render_view_host(),
                                                L"", L"location.reload();"));
   js_reload_observer.Wait();
@@ -450,7 +453,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
   ui_test_utils::WindowedNotificationObserver js_reload_observer2(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->controller()));
+          &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+              controller()));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(contents->render_view_host(),
                                                L"", L"location.reload();"));
   js_reload_observer2.Wait();
@@ -599,7 +603,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadAppAfterCrash) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->controller()));
+          &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+              controller()));
   browser()->Reload(CURRENT_TAB);
   observer.Wait();
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(

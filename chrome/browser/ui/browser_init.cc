@@ -75,6 +75,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/tab_contents/navigation_details.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"

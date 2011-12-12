@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "base/property_bag.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
 class AlternateErrorPageTabObserver;
@@ -72,19 +72,16 @@ class SafeBrowsingTabObserver;
 // Wraps TabContents and all of its supporting objects in order to control
 // their ownership and lifetime, while allowing TabContents to remain generic
 // and re-usable in other projects.
-// TODO(pinkerton): Eventually, this class will become TabContents as far as
+//
+// TODO(avi): Eventually, this class will become TabContents as far as
 // the browser front-end is concerned, and the current TabContents will be
-// renamed to something like WebPage or WebView (ben's suggestions).
+// renamed to something like WebContents; <http://crbug.com/105875>.
 class TabContentsWrapper : public TabContentsObserver {
  public:
   // Takes ownership of |contents|, which must be heap-allocated (as it lives
   // in a scoped_ptr) and can not be NULL.
   explicit TabContentsWrapper(TabContents* contents);
   virtual ~TabContentsWrapper();
-
-  // Used to retrieve this object from |tab_contents_|, which is placed in
-  // its property bag to avoid adding additional interfaces.
-  static base::PropertyAccessor<TabContentsWrapper*>* property_accessor();
 
   // Create a TabContentsWrapper with the same state as this one. The returned
   // heap-allocated pointer is owned by the caller.
@@ -101,16 +98,10 @@ class TabContentsWrapper : public TabContentsObserver {
   static const TabContentsWrapper* GetCurrentWrapperForContents(
       const TabContents* contents);
 
+  // Returns the TabContents that this wraps.
   TabContents* tab_contents() const { return tab_contents_.get(); }
-  NavigationController& controller() const {
-    return tab_contents()->controller();
-  }
-  TabContentsView* view() const { return tab_contents()->view(); }
-  RenderViewHost* render_view_host() const {
-    return tab_contents()->render_view_host();
-  }
-  WebUI* web_ui() const { return tab_contents()->web_ui(); }
 
+  // Returns the Profile that is associated with this TabContentsWrapper.
   Profile* profile() const;
 
   // Tab Helpers ---------------------------------------------------------------
@@ -206,6 +197,10 @@ class TabContentsWrapper : public TabContentsObserver {
   FRIEND_TEST_ALL_PREFIXES(
       PrefsTabHelperTest, OverridePrefsOnViewCreation);
 
+  // Used to retrieve this object from |tab_contents_|, which is placed in
+  // its property bag to avoid adding additional interfaces.
+  static base::PropertyAccessor<TabContentsWrapper*>* property_accessor();
+
   // Tab Helpers ---------------------------------------------------------------
   // (These provide API for callers and have a getter function listed in the
   // "Tab Helpers" section in the member functions area, above.)
@@ -237,9 +232,6 @@ class TabContentsWrapper : public TabContentsObserver {
 
   scoped_ptr<RestoreTabHelper> restore_tab_helper_;
 
-  // Handles displaying a web intents picker to the user.
-  scoped_ptr<WebIntentPickerController> web_intent_picker_controller_;
-
   scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
   scoped_ptr<SnapshotTabHelper> snapshot_tab_helper_;
   scoped_ptr<TabContentsSSLHelper> ssl_helper_;
@@ -250,6 +242,9 @@ class TabContentsWrapper : public TabContentsObserver {
   scoped_ptr<TabSpecificContentSettings> content_settings_;
 
   scoped_ptr<TranslateTabHelper> translate_tab_helper_;
+
+  // Handles displaying a web intents picker to the user.
+  scoped_ptr<WebIntentPickerController> web_intent_picker_controller_;
 
   // Per-tab observers ---------------------------------------------------------
   // (These provide no API for callers; objects that need to exist 1:1 with tabs

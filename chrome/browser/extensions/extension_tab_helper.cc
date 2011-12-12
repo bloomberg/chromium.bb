@@ -169,7 +169,7 @@ void ExtensionTabHelper::OnGetAppNotifyChannel(
   ExtensionService* extension_service = profile->GetExtensionService();
   extensions::ProcessMap* process_map = extension_service->process_map();
   content::RenderProcessHost* process =
-      tab_contents_wrapper()->render_view_host()->process();
+      tab_contents_wrapper()->tab_contents()->render_view_host()->process();
   const Extension* extension =
       extension_service->GetInstalledApp(requestor_url);
   bool allowed =

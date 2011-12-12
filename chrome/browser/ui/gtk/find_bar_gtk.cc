@@ -673,7 +673,8 @@ bool FindBarGtk::MaybeForwardKeyEventToRenderer(GdkEventKey* event) {
   if (!contents)
     return false;
 
-  RenderViewHost* render_view_host = contents->render_view_host();
+  RenderViewHost* render_view_host =
+      contents->tab_contents()->render_view_host();
 
   // Make sure we don't have a text field element interfering with keyboard
   // input. Otherwise Up and Down arrow key strokes get eaten. "Nom Nom Nom".

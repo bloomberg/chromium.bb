@@ -69,7 +69,8 @@ bool FindBarHost::MaybeForwardKeyEventToWebpage(
   if (!contents)
     return false;
 
-  RenderViewHost* render_view_host = contents->render_view_host();
+  RenderViewHost* render_view_host =
+      contents->tab_contents()->render_view_host();
 
   // Make sure we don't have a text field element interfering with keyboard
   // input. Otherwise Up and Down arrow key strokes get eaten. "Nom Nom Nom".
@@ -319,7 +320,8 @@ void FindBarHost::UnregisterAccelerators() {
 
 void FindBarHost::GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect) {
   gfx::Rect frame_rect = host()->GetTopLevelWidget()->GetWindowScreenBounds();
-  TabContentsView* tab_view = find_bar_controller_->tab_contents()->view();
+  TabContentsView* tab_view =
+      find_bar_controller_->tab_contents()->tab_contents()->view();
   gfx::Rect webcontents_rect;
   tab_view->GetViewBounds(&webcontents_rect);
   avoid_overlapping_rect->Offset(0, webcontents_rect.y() - frame_rect.y());

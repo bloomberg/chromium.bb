@@ -308,7 +308,8 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
     settings->SetString(printing::kSettingHeaderFooterTitle,
                         initiator_tab->tab_contents()->GetTitle());
     std::string url;
-    NavigationEntry* entry = initiator_tab->controller().GetActiveEntry();
+    NavigationEntry* entry =
+        initiator_tab->tab_contents()->controller().GetActiveEntry();
     if (entry)
       url = entry->virtual_url().spec();
     settings->SetString(printing::kSettingHeaderFooterURL, url);
@@ -336,7 +337,7 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   }
 
   VLOG(1) << "Print preview request start";
-  RenderViewHost* rvh = initiator_tab->render_view_host();
+  RenderViewHost* rvh = initiator_tab->tab_contents()->render_view_host();
   rvh->Send(new PrintMsg_PrintPreview(rvh->routing_id(), *settings));
 }
 
@@ -351,7 +352,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   TabContentsWrapper* initiator_tab = GetInitiatorTab();
   CHECK(initiator_tab);
 
-  RenderViewHost* init_rvh = initiator_tab->render_view_host();
+  RenderViewHost* init_rvh = initiator_tab->tab_contents()->render_view_host();
   init_rvh->Send(new PrintMsg_ResetScriptedPrintCount(init_rvh->routing_id()));
 
   scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));

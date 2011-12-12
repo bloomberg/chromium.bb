@@ -45,6 +45,7 @@
 #include "chrome/browser/ui/sync/tab_contents_wrapper_synced_tab_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 namespace {
 

@@ -42,6 +42,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/intents_host.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
@@ -167,7 +168,7 @@ bool ExternalTabContainer::Init(Profile* profile,
 
   if (existing_contents) {
     tab_contents_.reset(existing_contents);
-    tab_contents_->controller().set_browser_context(profile);
+    tab_contents_->tab_contents()->controller().set_browser_context(profile);
   } else {
     TabContents* new_contents = new TabContents(profile, NULL, MSG_ROUTING_NONE,
                                                 NULL, NULL);
@@ -184,11 +185,12 @@ bool ExternalTabContainer::Init(Profile* profile,
           handle_top_level_requests;
 
   if (!existing_contents) {
-    tab_contents_->render_view_host()->AllowBindings(
+    tab_contents_->tab_contents()->render_view_host()->AllowBindings(
         content::BINDINGS_POLICY_EXTERNAL_HOST);
   }
 
-  NavigationController* controller = &tab_contents_->controller();
+  NavigationController* controller =
+      &tab_contents_->tab_contents()->controller();
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
@@ -236,14 +238,15 @@ bool ExternalTabContainer::Init(Profile* profile,
 void ExternalTabContainer::Uninitialize() {
   registrar_.RemoveAll();
   if (tab_contents_.get()) {
-    UnregisterRenderViewHost(tab_contents_->render_view_host());
+    UnregisterRenderViewHost(tab_contents_->tab_contents()->render_view_host());
 
     if (GetWidget()->GetRootView())
       GetWidget()->GetRootView()->RemoveAllChildViews(true);
 
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTERNAL_TAB_CLOSED,
-        content::Source<NavigationController>(&tab_contents_->controller()),
+        content::Source<NavigationController>(
+            &tab_contents_->tab_contents()->controller()),
         content::Details<ExternalTabContainer>(this));
 
     tab_contents_.reset(NULL);
@@ -817,7 +820,8 @@ void ExternalTabContainer::Observe(int type,
         // 0th entry will be +1).
         if (InitNavigationInfo(&navigation_info, commit->type,
                 commit->previous_entry_index -
-                tab_contents_->controller().last_committed_entry_index()))
+                tab_contents_->tab_contents()->
+                    controller().last_committed_entry_index()))
           automation_->Send(new AutomationMsg_DidNavigate(tab_handle_,
                                                           navigation_info));
       }
@@ -938,7 +942,8 @@ bool ExternalTabContainer::InitNavigationInfo(NavigationInfo* nav_info,
                                               content::NavigationType nav_type,
                                               int relative_offset) {
   DCHECK(nav_info);
-  NavigationEntry* entry = tab_contents_->controller().GetActiveEntry();
+  NavigationEntry* entry =
+      tab_contents_->tab_contents()->controller().GetActiveEntry();
   // If this is very early in the game then we may not have an entry.
   if (!entry)
     return false;
@@ -946,7 +951,7 @@ bool ExternalTabContainer::InitNavigationInfo(NavigationInfo* nav_info,
   nav_info->navigation_type = nav_type;
   nav_info->relative_offset = relative_offset;
   nav_info->navigation_index =
-      tab_contents_->controller().GetCurrentEntryIndex();
+      tab_contents_->tab_contents()->controller().GetCurrentEntryIndex();
   nav_info->url = entry->url();
   nav_info->referrer = entry->referrer().url;
   nav_info->title =  UTF16ToWideHack(entry->title());
@@ -994,12 +999,13 @@ bool ExternalTabContainer::AcceleratorPressed(
       accelerator_table_.find(accelerator);
   DCHECK(iter != accelerator_table_.end());
 
-  if (!tab_contents_.get() || !tab_contents_->render_view_host()) {
+  if (!tab_contents_.get() ||
+      !tab_contents_->tab_contents()->render_view_host()) {
     NOTREACHED();
     return false;
   }
 
-  RenderViewHost* host = tab_contents_->render_view_host();
+  RenderViewHost* host = tab_contents_->tab_contents()->render_view_host();
   int command_id = iter->second;
   switch (command_id) {
     case IDC_ZOOM_PLUS:
@@ -1013,16 +1019,17 @@ bool ExternalTabContainer::AcceleratorPressed(
       break;
     case IDC_DEV_TOOLS:
       DevToolsWindow::ToggleDevToolsWindow(
-          tab_contents_->render_view_host(), DEVTOOLS_TOGGLE_ACTION_NONE);
+          tab_contents_->tab_contents()->render_view_host(),
+          DEVTOOLS_TOGGLE_ACTION_NONE);
       break;
     case IDC_DEV_TOOLS_CONSOLE:
       DevToolsWindow::ToggleDevToolsWindow(
-          tab_contents_->render_view_host(),
+          tab_contents_->tab_contents()->render_view_host(),
           DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
       break;
     case IDC_DEV_TOOLS_INSPECT:
       DevToolsWindow::ToggleDevToolsWindow(
-          tab_contents_->render_view_host(),
+          tab_contents_->tab_contents()->render_view_host(),
           DEVTOOLS_TOGGLE_ACTION_INSPECT);
       break;
     default:
@@ -1040,7 +1047,7 @@ void ExternalTabContainer::Navigate(const GURL& url, const GURL& referrer) {
 
   TRACE_EVENT_BEGIN_ETW("ExternalTabContainer::Navigate", 0, url.spec());
 
-  tab_contents_->controller().LoadURL(
+  tab_contents_->tab_contents()->controller().LoadURL(
       url, content::Referrer(referrer, WebKit::WebReferrerPolicyDefault),
       content::PAGE_TRANSITION_START_PAGE, std::string());
 }
@@ -1093,7 +1100,7 @@ void ExternalTabContainer::LoadAccelerators() {
 
 void ExternalTabContainer::OnReinitialize() {
   if (load_requests_via_automation_) {
-    RenderViewHost* rvh = tab_contents_->render_view_host();
+    RenderViewHost* rvh = tab_contents_->tab_contents()->render_view_host();
     if (rvh) {
       AutomationResourceMessageFilter::ResumePendingRenderView(
           rvh->process()->GetID(), rvh->routing_id(),

@@ -46,26 +46,28 @@ const std::string& TabContentsWrapperSyncedTabDelegate::GetExtensionAppId()
 }
 
 int TabContentsWrapperSyncedTabDelegate::GetCurrentEntryIndex() const {
-  return tab_contents_wrapper_->controller().GetCurrentEntryIndex();
+  return tab_contents_wrapper_->tab_contents()->controller().
+      GetCurrentEntryIndex();
 }
 
 int TabContentsWrapperSyncedTabDelegate::GetEntryCount() const {
-  return tab_contents_wrapper_->controller().entry_count();
+  return tab_contents_wrapper_->tab_contents()->controller().entry_count();
 }
 
 int TabContentsWrapperSyncedTabDelegate::GetPendingEntryIndex() const {
-  return tab_contents_wrapper_->controller().pending_entry_index();
+  return tab_contents_wrapper_->tab_contents()->controller().
+      pending_entry_index();
 }
 
 NavigationEntry* TabContentsWrapperSyncedTabDelegate::GetPendingEntry() const {
-  return tab_contents_wrapper_->controller().pending_entry();
+  return tab_contents_wrapper_->tab_contents()->controller().pending_entry();
 }
 
 NavigationEntry* TabContentsWrapperSyncedTabDelegate::GetEntryAtIndex(int i)
     const {
-  return tab_contents_wrapper_->controller().GetEntryAtIndex(i);
+  return tab_contents_wrapper_->tab_contents()->controller().GetEntryAtIndex(i);
 }
 
 NavigationEntry* TabContentsWrapperSyncedTabDelegate::GetActiveEntry() const {
-  return tab_contents_wrapper_->controller().GetActiveEntry();
+  return tab_contents_wrapper_->tab_contents()->controller().GetActiveEntry();
 }

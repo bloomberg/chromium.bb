@@ -91,10 +91,11 @@ PrintPreviewUI* PrintPreviewMessageHandler::OnFailure(int document_cookie) {
   // Inform the print preview tab of the failure.
   TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
   // User might have closed it already.
-  if (!print_preview_tab || !print_preview_tab->web_ui())
+  if (!print_preview_tab || !print_preview_tab->tab_contents()->web_ui())
     return NULL;
 
-  return static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
+  return static_cast<PrintPreviewUI*>(
+      print_preview_tab->tab_contents()->web_ui());
 }
 
 void PrintPreviewMessageHandler::OnRequestPrintPreview(
@@ -112,11 +113,11 @@ void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(
   }
 
   TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
-  if (!print_preview_tab || !print_preview_tab->web_ui())
+  if (!print_preview_tab || !print_preview_tab->tab_contents()->web_ui())
     return;
 
   PrintPreviewUI* print_preview_ui =
-      static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
+      static_cast<PrintPreviewUI*>(print_preview_tab->tab_contents()->web_ui());
 
   if (!params.is_modifiable || params.clear_preview_data)
     print_preview_ui->ClearAllPreviewData();
@@ -127,11 +128,11 @@ void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(
 void PrintPreviewMessageHandler::OnDidPreviewPage(
     const PrintHostMsg_DidPreviewPage_Params& params) {
   TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
-  if (!print_preview_tab || !print_preview_tab->web_ui())
+  if (!print_preview_tab || !print_preview_tab->tab_contents()->web_ui())
     return;
 
   PrintPreviewUI* print_preview_ui =
-      static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
+      static_cast<PrintPreviewUI*>(print_preview_tab->tab_contents()->web_ui());
   int page_number = params.page_number;
   if (page_number >= FIRST_PAGE_INDEX && params.data_size) {
     RefCountedBytes* data_bytes =
@@ -156,11 +157,11 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
   // Get the print preview tab.
   TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
   // User might have closed it already.
-  if (!print_preview_tab || !print_preview_tab->web_ui())
+  if (!print_preview_tab || !print_preview_tab->tab_contents()->web_ui())
     return;
 
   PrintPreviewUI* print_preview_ui =
-      static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
+      static_cast<PrintPreviewUI*>(print_preview_tab->tab_contents()->web_ui());
 
   if (params.reuse_existing_data) {
     // Need to match normal rendering where we are expected to send this.
@@ -198,11 +199,11 @@ void PrintPreviewMessageHandler::OnPrintPreviewFailed(int document_cookie) {
 void PrintPreviewMessageHandler::OnDidGetDefaultPageLayout(
     const PageSizeMargins& page_layout_in_points) {
   TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
-  if (!print_preview_tab || !print_preview_tab->web_ui())
+  if (!print_preview_tab || !print_preview_tab->tab_contents()->web_ui())
     return;
 
   PrintPreviewUI* print_preview_ui =
-      static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
+      static_cast<PrintPreviewUI*>(print_preview_tab->tab_contents()->web_ui());
   print_preview_ui->OnDidGetDefaultPageLayout(page_layout_in_points);
 }
 

@@ -92,7 +92,7 @@ bool DevToolsWindow::IsDevToolsWindow(RenderViewHost* window_rvh) {
   DevToolsWindowList& instances = g_instances.Get();
   for (DevToolsWindowList::iterator it = instances.begin();
        it != instances.end(); ++it) {
-    if ((*it)->tab_contents_->render_view_host() == window_rvh)
+    if ((*it)->tab_contents_->tab_contents()->render_view_host() == window_rvh)
       return true;
   }
   return false;
@@ -159,9 +159,9 @@ DevToolsWindow* DevToolsWindow::Create(
   // Create TabContents with devtools.
   TabContentsWrapper* tab_contents =
       Browser::TabContentsFactory(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
-  tab_contents->render_view_host()->AllowBindings(
+  tab_contents->tab_contents()->render_view_host()->AllowBindings(
       content::BINDINGS_POLICY_WEB_UI);
-  tab_contents->controller().LoadURL(
+  tab_contents->tab_contents()->controller().LoadURL(
       GetDevToolsUrl(profile, docked, shared_worker_frontend),
       content::Referrer(),
       content::PAGE_TRANSITION_START_PAGE,
@@ -186,7 +186,8 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
       this);
   g_instances.Get().push_back(this);
   // Wipe out page icon so that the default application icon is used.
-  NavigationEntry* entry = tab_contents_->controller().GetActiveEntry();
+  NavigationEntry* entry =
+      tab_contents_->tab_contents()->controller().GetActiveEntry();
   entry->favicon().set_bitmap(SkBitmap());
   entry->favicon().set_is_valid(true);
 
@@ -194,11 +195,13 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
   registrar_.Add(
       this,
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(&tab_contents_->controller()));
+      content::Source<NavigationController>(
+          &tab_contents_->tab_contents()->controller()));
   registrar_.Add(
       this,
       content::NOTIFICATION_TAB_CLOSING,
-      content::Source<NavigationController>(&tab_contents_->controller()));
+      content::Source<NavigationController>(
+          &tab_contents_->tab_contents()->controller()));
   registrar_.Add(
       this,
       chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
@@ -263,7 +266,7 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
       BrowserWindow* inspected_window = inspected_browser->window();
       tab_contents_->tab_contents()->set_delegate(this);
       inspected_window->UpdateDevTools();
-      tab_contents_->view()->SetInitialFocus();
+      tab_contents_->tab_contents()->view()->SetInitialFocus();
       inspected_window->Show();
       TabStripModel* tabstrip_model = inspected_browser->tabstrip_model();
       tabstrip_model->ActivateTabAt(inspected_tab_index, true);
@@ -286,7 +289,7 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
 
   if (should_show_window) {
     browser_->window()->Show();
-    tab_contents_->view()->SetInitialFocus();
+    tab_contents_->tab_contents()->view()->SetInitialFocus();
   }
 
   ScheduleAction(action);
@@ -327,7 +330,7 @@ void DevToolsWindow::RequestSetDocked(bool docked) {
 }
 
 RenderViewHost* DevToolsWindow::GetRenderViewHost() {
-  return tab_contents_->render_view_host();
+  return tab_contents_->tab_contents()->render_view_host();
 }
 
 void DevToolsWindow::CreateDevToolsBrowser() {
@@ -365,7 +368,8 @@ bool DevToolsWindow::FindInspectedBrowserAndTabIndex(Browser** browser,
   if (!inspected_tab_)
     return false;
 
-  const NavigationController& controller = inspected_tab_->controller();
+  const NavigationController& controller =
+      inspected_tab_->tab_contents()->controller();
   for (BrowserList::const_iterator it = BrowserList::begin();
        it != BrowserList::end(); ++it) {
     int tab_index = (*it)->GetIndexOfController(&controller);
@@ -395,10 +399,11 @@ bool DevToolsWindow::IsInspectedBrowserPopupOrPanel() {
 }
 
 void DevToolsWindow::UpdateFrontendAttachedState() {
-  tab_contents_->render_view_host()->ExecuteJavascriptInWebFrame(
-      string16(),
-      docked_ ? ASCIIToUTF16("WebInspector.setAttachedWindow(true);")
-              : ASCIIToUTF16("WebInspector.setAttachedWindow(false);"));
+  tab_contents_->tab_contents()->render_view_host()->
+      ExecuteJavascriptInWebFrame(
+          string16(),
+          docked_ ? ASCIIToUTF16("WebInspector.setAttachedWindow(true);")
+                  : ASCIIToUTF16("WebInspector.setAttachedWindow(false);"));
 }
 
 
@@ -446,7 +451,7 @@ void DevToolsWindow::CallClientFunction(const string16& function_name,
   base::JSONWriter::Write(&arg, false, &json);
   string16 javascript = function_name + char16('(') + UTF8ToUTF16(json) +
       ASCIIToUTF16(");");
-  tab_contents_->render_view_host()->
+  tab_contents_->tab_contents()->render_view_host()->
       ExecuteJavascriptInWebFrame(string16(), javascript);
 }
 
@@ -460,7 +465,7 @@ void DevToolsWindow::Observe(int type,
     AddDevToolsExtensionsToClient();
   } else if (type == content::NOTIFICATION_TAB_CLOSING) {
     if (content::Source<NavigationController>(source).ptr() ==
-            &tab_contents_->controller()) {
+            &tab_contents_->tab_contents()->controller()) {
       // This happens when browser closes all of its tabs as a result
       // of window.Close event.
       // Notify manager that this DevToolsClientHost no longer exists and
@@ -484,12 +489,16 @@ void DevToolsWindow::DoAction() {
   // TODO: these messages should be pushed through the WebKit API instead.
   switch (action_on_load_) {
     case DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE:
-      tab_contents_->render_view_host()->ExecuteJavascriptInWebFrame(
-          string16(), ASCIIToUTF16("WebInspector.showConsole();"));
+      tab_contents_->tab_contents()->render_view_host()->
+          ExecuteJavascriptInWebFrame(
+              string16(),
+              ASCIIToUTF16("WebInspector.showConsole();"));
       break;
     case DEVTOOLS_TOGGLE_ACTION_INSPECT:
-      tab_contents_->render_view_host()->ExecuteJavascriptInWebFrame(
-          string16(), ASCIIToUTF16("WebInspector.toggleSearchingForNode();"));
+      tab_contents_->tab_contents()->render_view_host()->
+          ExecuteJavascriptInWebFrame(
+              string16(),
+              ASCIIToUTF16("WebInspector.toggleSearchingForNode();"));
     case DEVTOOLS_TOGGLE_ACTION_NONE:
       // Do nothing.
       break;
@@ -539,7 +548,7 @@ void DevToolsWindow::UpdateTheme() {
       "WebInspector.setToolbarColors(\"%s\", \"%s\")",
       SkColorToRGBAString(color_toolbar).c_str(),
       SkColorToRGBAString(color_tab_text).c_str());
-  tab_contents_->render_view_host()->
+  tab_contents_->tab_contents()->render_view_host()->
       ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(command));
 }
 
@@ -638,7 +647,7 @@ void DevToolsWindow::ActivateWindow() {
   } else {
     BrowserWindow* inspected_window = GetInspectedBrowserWindow();
     if (inspected_window)
-      tab_contents_->view()->Focus();
+      tab_contents_->tab_contents()->view()->Focus();
   }
 }
 

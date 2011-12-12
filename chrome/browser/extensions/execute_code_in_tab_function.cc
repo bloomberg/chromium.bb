@@ -224,8 +224,9 @@ bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
   params.code = code_string;
   params.all_frames = all_frames_;
   params.in_main_world = false;
-  contents->render_view_host()->Send(new ExtensionMsg_ExecuteCode(
-      contents->render_view_host()->routing_id(), params));
+  contents->tab_contents()->render_view_host()->Send(
+      new ExtensionMsg_ExecuteCode(
+          contents->tab_contents()->render_view_host()->routing_id(), params));
 
   Observe(contents->tab_contents());
   AddRef();  // balanced in OnExecuteCodeFinished()

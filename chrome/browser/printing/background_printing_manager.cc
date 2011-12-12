@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -58,7 +59,8 @@ void BackgroundPrintingManager::OwnPrintPreviewTab(
   //
   // Multiple sites may share the same RenderProcessHost, so check if this
   // notification has already been added.
-  content::RenderProcessHost* rph = preview_tab->render_view_host()->process();
+  content::RenderProcessHost* rph =
+      preview_tab->tab_contents()->render_view_host()->process();
   if (!registrar_.IsRegistered(this,
                                content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                                content::Source<content::RenderProcessHost>(
@@ -113,7 +115,7 @@ void BackgroundPrintingManager::OnRendererProcessClosed(
   TabContentsWrapperSet::const_iterator it;
   for (it = begin(); it != end(); ++it) {
     TabContentsWrapper* preview_tab = *it;
-    if (preview_tab->render_view_host()->process() == rph) {
+    if (preview_tab->tab_contents()->render_view_host()->process() == rph) {
       preview_tabs_pending_deletion.insert(preview_tab);
     }
   }
@@ -146,7 +148,7 @@ void BackgroundPrintingManager::OnTabContentsDestroyed(
       HasSharedRenderProcessHost(printing_tabs_pending_deletion_, preview_tab);
   if (!shared_rph) {
     content::RenderProcessHost* rph =
-        preview_tab->render_view_host()->process();
+        preview_tab->tab_contents()->render_view_host()->process();
     registrar_.Remove(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                       content::Source<content::RenderProcessHost>(rph));
   }
@@ -174,13 +176,14 @@ void BackgroundPrintingManager::DeletePreviewTab(TabContentsWrapper* tab) {
 bool BackgroundPrintingManager::HasSharedRenderProcessHost(
     const TabContentsWrapperSet& set,
     TabContentsWrapper* tab) {
-  content::RenderProcessHost* rph = tab->render_view_host()->process();
+  content::RenderProcessHost* rph =
+      tab->tab_contents()->render_view_host()->process();
   for (TabContentsWrapperSet::const_iterator it = set.begin();
        it != set.end();
        ++it) {
     TabContentsWrapper* iter_tab = *it;
     if ((iter_tab != tab) &&
-        (iter_tab->render_view_host()->process() == rph)) {
+        (iter_tab->tab_contents()->render_view_host()->process() == rph)) {
       return true;
     }
   }

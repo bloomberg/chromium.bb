@@ -233,7 +233,8 @@ const float kRightEdgeOffset = 25;
     // |ForwardKeyboardEvent()| directly ignores edit commands, which breaks
     // cmd-up/down if we ever decide to include |moveToBeginningOfDocument:| in
     // the list above.
-    RenderViewHost* render_view_host = contents->render_view_host();
+    RenderViewHost* render_view_host =
+        contents->tab_contents()->render_view_host();
     render_view_host->ForwardKeyboardEvent(NativeWebKeyboardEvent(event));
     return YES;
   }
@@ -466,7 +467,8 @@ const float kRightEdgeOffset = 25;
     return frame.origin.x;
 
   // Get the size of the container.
-  gfx::Rect container_rect(contents->view()->GetContainerSize());
+  gfx::Rect container_rect(
+      contents->tab_contents()->view()->GetContainerSize());
 
   // Position the FindBar on the top right corner.
   view_rect.set_x(

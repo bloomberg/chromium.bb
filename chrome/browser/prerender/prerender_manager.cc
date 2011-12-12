@@ -609,7 +609,8 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
   // If the session storage namespaces don't match, cancel the prerender.
   RenderViewHost* old_render_view_host = tab_contents->render_view_host();
   RenderViewHost* new_render_view_host =
-      prerender_contents->prerender_contents()->render_view_host();
+      prerender_contents->prerender_contents()->tab_contents()->
+          render_view_host();
   DCHECK(old_render_view_host);
   DCHECK(new_render_view_host);
   if (old_render_view_host->session_storage_namespace() !=
@@ -662,8 +663,8 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
   MarkTabContentsAsPrerendered(new_tab_contents->tab_contents());
 
   // Merge the browsing history.
-  new_tab_contents->controller().CopyStateFromAndPrune(
-      &old_tab_contents->controller());
+  new_tab_contents->tab_contents()->controller().CopyStateFromAndPrune(
+      &old_tab_contents->tab_contents()->controller());
   old_tab_contents->core_tab_helper()->delegate()->
       SwapTabContents(old_tab_contents, new_tab_contents);
   prerender_contents->CommitHistory(new_tab_contents);
@@ -693,7 +694,8 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
     // Schedule the delete to occur after the tab has run its unload handlers.
     on_close_tab_contents_deleters_.push_back(
         new OnCloseTabContentsDeleter(this, old_tab_contents));
-    old_tab_contents->render_view_host()->FirePageBeforeUnload(false);
+    old_tab_contents->tab_contents()->render_view_host()->
+        FirePageBeforeUnload(false);
   } else {
     // No unload handler to run, so delete asap.
     ScheduleDeleteOldTabContents(old_tab_contents, NULL);

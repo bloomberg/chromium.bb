@@ -898,7 +898,7 @@ bool CreateTabFunction::RunImpl() {
   browser::Navigate(&params);
 
   if (active)
-    params.target_contents->view()->SetInitialFocus();
+    params.target_contents->tab_contents()->view()->SetInitialFocus();
 
   // Return data about the newly created tab.
   if (has_callback()) {
@@ -1033,7 +1033,7 @@ bool UpdateTabFunction::RunImpl() {
                   NULL, &tab_strip, &contents, &tab_index, &error_)) {
     return false;
   }
-  NavigationController& controller = contents->controller();
+  NavigationController& controller = contents->tab_contents()->controller();
 
   // TODO(rafaelw): handle setting remaining tab properties:
   // -title
@@ -1376,7 +1376,8 @@ bool RemoveTabsFunction::RunImpl() {
     // is being dragged, or we're in some other nested event loop. This code
     // path should ensure that the tab is safely closed under such
     // circumstances, whereas |Browser::CloseTabContents()| does not.
-    RenderViewHost* render_view_host = contents->render_view_host();
+    RenderViewHost* render_view_host =
+        contents->tab_contents()->render_view_host();
     render_view_host->delegate()->Close(render_view_host);
   }
   return true;
@@ -1574,7 +1575,7 @@ bool DetectTabLanguageFunction::RunImpl() {
       return false;
   }
 
-  if (contents->controller().needs_reload()) {
+  if (contents->tab_contents()->controller().needs_reload()) {
     // If the tab hasn't been loaded, don't wait for the tab to load.
     error_ = keys::kCannotDetermineLanguageOfUnloadedTab;
     return false;
@@ -1597,10 +1598,12 @@ bool DetectTabLanguageFunction::RunImpl() {
                  content::Source<TabContents>(contents->tab_contents()));
   registrar_.Add(
       this, content::NOTIFICATION_TAB_CLOSING,
-      content::Source<NavigationController>(&(contents->controller())));
+      content::Source<NavigationController>(
+          &(contents->tab_contents()->controller())));
   registrar_.Add(
       this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(&(contents->controller())));
+      content::Source<NavigationController>(
+          &(contents->tab_contents()->controller())));
   return true;
 }
 

@@ -260,7 +260,8 @@ void ThumbnailLoader::LoadThumbnail() {
     // change on window resize, and since most users don't use devtools, this is
     // good enough.
     bottomOffset +=
-        devToolsContents->render_view_host()->view()->GetViewBounds().height();
+        devToolsContents->tab_contents()->render_view_host()->view()->
+            GetViewBounds().height();
     bottomOffset += 1;  // :-( Divider line between web contents and devtools.
   }
   return bottomOffset;
@@ -284,7 +285,7 @@ void ThumbnailLoader::LoadThumbnail() {
 }
 
 - (void)drawInContext:(CGContextRef)context {
-  RenderWidgetHost* rwh = contents_->render_view_host();
+  RenderWidgetHost* rwh = contents_->tab_contents()->render_view_host();
   // NULL if renderer crashed.
   RenderWidgetHostView* rwhv = rwh ? rwh->view() : NULL;
   if (!rwhv) {

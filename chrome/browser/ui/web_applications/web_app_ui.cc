@@ -101,8 +101,10 @@ UpdateShortcutWorker::UpdateShortcutWorker(TabContentsWrapper* tab_contents)
   file_name_ = web_app::internals::GetSanitizedFileName(shortcut_info_.title);
 
   registrar_.Add(
-      this, content::NOTIFICATION_TAB_CLOSING,
-      content::Source<NavigationController>(&tab_contents_->controller()));
+      this,
+      content::NOTIFICATION_TAB_CLOSING,
+      content::Source<NavigationController>(
+          &tab_contents_->tab_contents()->controller()));
 }
 
 void UpdateShortcutWorker::Run() {
@@ -116,7 +118,7 @@ void UpdateShortcutWorker::Observe(
     const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_TAB_CLOSING &&
       content::Source<NavigationController>(source).ptr() ==
-        &tab_contents_->controller()) {
+        &tab_contents_->tab_contents()->controller()) {
     // Underlying tab is closing.
     tab_contents_ = NULL;
   }

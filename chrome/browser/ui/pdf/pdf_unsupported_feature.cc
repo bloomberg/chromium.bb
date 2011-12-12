@@ -22,6 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -136,11 +137,11 @@ void OpenUsingReader(TabContentsWrapper* tab,
                      InfoBarDelegate* old_delegate,
                      InfoBarDelegate* new_delegate) {
   ChromePluginServiceFilter::GetInstance()->OverridePluginForTab(
-      tab->render_view_host()->process()->GetID(),
-      tab->render_view_host()->routing_id(),
+      tab->tab_contents()->render_view_host()->process()->GetID(),
+      tab->tab_contents()->render_view_host()->routing_id(),
       tab->tab_contents()->GetURL(),
       ASCIIToUTF16(PluginGroup::kAdobeReaderGroupName));
-  tab->render_view_host()->ReloadFrame();
+  tab->tab_contents()->render_view_host()->ReloadFrame();
 
   if (new_delegate) {
     if (old_delegate) {
@@ -402,6 +403,6 @@ void PDFHasUnsupportedFeature(TabContentsWrapper* tab) {
 
   PluginService::GetInstance()->GetPluginGroups(
       base::Bind(&GotPluginGroupsCallback,
-          tab->render_view_host()->process()->GetID(),
-          tab->render_view_host()->routing_id()));
+          tab->tab_contents()->render_view_host()->process()->GetID(),
+          tab->tab_contents()->render_view_host()->routing_id()));
 }

@@ -1440,7 +1440,7 @@ void BrowserView::TabDeactivated(TabContentsWrapper* contents) {
   // Some reports seem to show that the focus manager and/or focused view can
   // be garbage at that point, it is not clear why.
   if (!contents->tab_contents()->is_being_destroyed())
-    contents->view()->StoreFocus();
+    contents->tab_contents()->view()->StoreFocus();
 }
 
 void BrowserView::ActiveTabChanged(TabContentsWrapper* old_contents,
@@ -2608,7 +2608,7 @@ void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents) {
       !browser_->tabstrip_model()->closing_all() && GetWidget()->IsVisible()) {
     // We only restore focus if our window is visible, to avoid invoking blur
     // handlers when we are eventually shown.
-    new_contents->view()->RestoreFocus();
+    new_contents->tab_contents()->view()->RestoreFocus();
   }
 
   // Update all the UI bits.

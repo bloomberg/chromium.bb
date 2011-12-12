@@ -389,8 +389,8 @@ void TabStripNotificationObserver::Observe(
     const content::NotificationDetails& details) {
   if (type == notification_) {
     if (type == content::NOTIFICATION_TAB_PARENTED) {
-      ObserveTab(
-          &(content::Source<TabContentsWrapper>(source).ptr()->controller()));
+      ObserveTab(&(content::Source<TabContentsWrapper>(source).ptr()->
+                     tab_contents()->controller()));
     } else {
       ObserveTab(content::Source<NavigationController>(source).ptr());
     }
@@ -2748,7 +2748,8 @@ void NewTabObserver::Observe(int type,
                              const content::NotificationDetails& details) {
   DCHECK_EQ(content::NOTIFICATION_TAB_PARENTED, type);
   NavigationController* controller =
-      &(content::Source<TabContentsWrapper>(source).ptr()->controller());
+      &(content::Source<TabContentsWrapper>(source).ptr()->
+          tab_contents()->controller());
   if (automation_) {
     // TODO(phajdan.jr): Clean up this hack. We write the correct return type
     // here, but don't send the message. NavigationNotificationObserver

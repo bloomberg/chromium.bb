@@ -194,11 +194,12 @@ void ExtensionMessageService::OpenChannelToTab(
   MessagePort receiver;
   if (ExtensionTabUtil::GetTabById(tab_id, profile, true,
                                    NULL, NULL, &contents, NULL)) {
-    receiver.sender = contents->render_view_host();
-    receiver.routing_id = contents->render_view_host()->routing_id();
+    receiver.sender = contents->tab_contents()->render_view_host();
+    receiver.routing_id =
+        contents->tab_contents()->render_view_host()->routing_id();
   }
 
-  if (contents && contents->controller().needs_reload()) {
+  if (contents && contents->tab_contents()->controller().needs_reload()) {
     // The tab isn't loaded yet. Don't attempt to connect. Treat this as a
     // disconnect.
     DispatchOnDisconnect(MessagePort(source, MSG_ROUTING_CONTROL),

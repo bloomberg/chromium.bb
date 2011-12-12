@@ -1108,14 +1108,14 @@ private:
   NSInteger activeIndex = [self indexFromModelIndex:modelIndex];
 
   if (oldContents) {
-    int oldModelIndex =
-        browser_->GetIndexOfController(&(oldContents->controller()));
+    int oldModelIndex = browser_->GetIndexOfController(
+        &(oldContents->tab_contents()->controller()));
     if (oldModelIndex != -1) {  // When closing a tab, the old tab may be gone.
       NSInteger oldIndex = [self indexFromModelIndex:oldModelIndex];
       TabContentsController* oldController =
           [tabContentsArray_ objectAtIndex:oldIndex];
       [oldController willBecomeUnselectedTab];
-      oldContents->view()->StoreFocus();
+      oldContents->tab_contents()->view()->StoreFocus();
       oldContents->tab_contents()->WasHidden();
     }
   }
@@ -1152,7 +1152,7 @@ private:
 
   if (newContents) {
     newContents->tab_contents()->DidBecomeSelected();
-    newContents->view()->RestoreFocus();
+    newContents->tab_contents()->view()->RestoreFocus();
 
     if (newContents->find_tab_helper()->find_ui_active())
       browser_->GetFindBarController()->find_bar()->SetFocusAndSelection();

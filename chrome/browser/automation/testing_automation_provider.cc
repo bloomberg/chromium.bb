@@ -118,6 +118,7 @@
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/child_process_host.h"
@@ -526,8 +527,8 @@ void TestingAutomationProvider::AppendTab(int handle,
     TabContentsWrapper* contents =
         browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
     if (contents) {
-      append_tab_response =
-          GetIndexForNavigationController(&contents->controller(), browser);
+      append_tab_response = GetIndexForNavigationController(
+          &contents->tab_contents()->controller(), browser);
     }
   }
 
@@ -4811,9 +4812,9 @@ void TestingAutomationProvider::SubmitAutofillForm(
   base::SStringPrintf(&set_automation_id,
                       "window.domAutomationController.setAutomationId(%d);",
                       reply_message->routing_id());
-  tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
+  tab_contents->tab_contents()->render_view_host()->ExecuteJavascriptInWebFrame(
       frame_xpath, UTF8ToUTF16(set_automation_id));
-  tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
+  tab_contents->tab_contents()->render_view_host()->ExecuteJavascriptInWebFrame(
       frame_xpath, javascript);
 }
 

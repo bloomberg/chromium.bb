@@ -8,8 +8,6 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/task.h"
-// TODO(avi): remove when conversions not needed any more
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
@@ -29,6 +27,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/navigation_details.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -150,7 +149,7 @@ bool HintInfoBar::Accept() {
 // OmniboxSearchHint ----------------------------------------------------------
 
 OmniboxSearchHint::OmniboxSearchHint(TabContentsWrapper* tab) : tab_(tab) {
-  NavigationController* controller = &(tab->controller());
+  NavigationController* controller = &(tab->tab_contents()->controller());
   notification_registrar_.Add(
       this,
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
@@ -172,7 +171,8 @@ void OmniboxSearchHint::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    NavigationEntry* entry = tab_->controller().GetActiveEntry();
+    NavigationEntry* entry =
+        tab_->tab_contents()->controller().GetActiveEntry();
     if (search_engine_urls_.find(entry->url().spec()) ==
         search_engine_urls_.end()) {
       // The search engine is not in our white-list, bail.

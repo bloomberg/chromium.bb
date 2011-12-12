@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "net/test/test_server.h"
 
 // Regression test for http://crbug.com/63649.

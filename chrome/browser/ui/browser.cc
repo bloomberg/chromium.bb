@@ -148,6 +148,7 @@
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/devtools_manager.h"
@@ -1485,7 +1486,8 @@ bool Browser::IsClosingPermitted() {
 }
 
 bool Browser::CanGoBack() const {
-  return GetSelectedTabContentsWrapper()->controller().CanGoBack();
+  return GetSelectedTabContentsWrapper()->
+      tab_contents()->controller().CanGoBack();
 }
 
 void Browser::GoBack(WindowOpenDisposition disposition) {
@@ -1504,7 +1506,8 @@ void Browser::GoBack(WindowOpenDisposition disposition) {
 }
 
 bool Browser::CanGoForward() const {
-  return GetSelectedTabContentsWrapper()->controller().CanGoForward();
+  return GetSelectedTabContentsWrapper()->
+      tab_contents()->controller().CanGoForward();
 }
 
 void Browser::GoForward(WindowOpenDisposition disposition) {
@@ -1639,7 +1642,7 @@ void Browser::NewTab() {
 
   if (is_type_tabbed()) {
     AddBlankTab(true);
-    GetSelectedTabContentsWrapper()->view()->RestoreFocus();
+    GetSelectedTabContentsWrapper()->tab_contents()->view()->RestoreFocus();
   } else {
     Browser* b = GetOrCreateTabbedBrowser(profile_);
     b->AddBlankTab(true);
@@ -1647,7 +1650,7 @@ void Browser::NewTab() {
     // The call to AddBlankTab above did not set the focus to the tab as its
     // window was not active, so we have to do it explicitly.
     // See http://crbug.com/6380.
-    b->GetSelectedTabContentsWrapper()->view()->RestoreFocus();
+    b->GetSelectedTabContentsWrapper()->tab_contents()->view()->RestoreFocus();
   }
 }
 
@@ -1929,7 +1932,8 @@ void Browser::Zoom(content::PageZoom zoom) {
   if (is_devtools())
     return;
 
-  RenderViewHost* host = GetSelectedTabContentsWrapper()->render_view_host();
+  RenderViewHost* host =
+      GetSelectedTabContentsWrapper()->tab_contents()->render_view_host();
   if (zoom == content::PAGE_ZOOM_RESET) {
     host->SetZoomLevel(0);
     UserMetrics::RecordAction(UserMetricsAction("ZoomNormal"));
@@ -2043,7 +2047,8 @@ void Browser::OpenCreateShortcutsDialog() {
       web_app::IsValidUrl(current_tab->tab_contents()->GetURL())) <<
           "Menu item should be disabled.";
 
-  NavigationEntry* entry = current_tab->controller().GetLastCommittedEntry();
+  NavigationEntry* entry =
+      current_tab->tab_contents()->controller().GetLastCommittedEntry();
   if (!entry)
     return;
 
@@ -2066,7 +2071,8 @@ void Browser::ToggleDevToolsWindow(DevToolsToggleAction action) {
     UserMetrics::RecordAction(UserMetricsAction("DevTools_ToggleWindow"));
 
   DevToolsWindow::ToggleDevToolsWindow(
-      GetSelectedTabContentsWrapper()->render_view_host(), action);
+      GetSelectedTabContentsWrapper()->tab_contents()->render_view_host(),
+      action);
 }
 
 void Browser::OpenTaskManager(bool highlight_background_resources) {
@@ -3075,7 +3081,8 @@ TabContentsWrapper* Browser::CreateTabContentsForURL(
   if (!defer_load) {
     // Load the initial URL before adding the new tab contents to the tab strip
     // so that the tab contents has navigation state.
-    contents->controller().LoadURL(url, referrer, transition, std::string());
+    contents->tab_contents()->controller().LoadURL(
+        url, referrer, transition, std::string());
   }
 
   return contents;
@@ -3161,7 +3168,7 @@ void Browser::CreateHistoricalTab(TabContentsWrapper* contents) {
 
   // We only create historical tab entries for tabbed browser windows.
   if (service && CanSupportWindowFeature(FEATURE_TABSTRIP)) {
-    service->CreateHistoricalTab(&contents->controller(),
+    service->CreateHistoricalTab(&contents->tab_contents()->controller(),
         tab_handler_->GetTabStripModel()->GetIndexOfTabContents(contents));
   }
 }
@@ -3249,7 +3256,8 @@ void Browser::TabClosingAt(TabStripModel* tab_strip_model,
   fullscreen_controller_->OnTabClosing(contents->tab_contents());
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_CLOSING,
-      content::Source<NavigationController>(&contents->controller()),
+      content::Source<NavigationController>(
+          &contents->tab_contents()->controller()),
       content::NotificationService::NoDetails());
 
   // Sever the TabContents' connection back to us.
@@ -3347,11 +3355,12 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
   TabInsertedAt(new_contents, index,
                 (index == tab_handler_->GetTabStripModel()->active_index()));
 
-  int entry_count = new_contents->controller().entry_count();
+  int entry_count = new_contents->tab_contents()->controller().entry_count();
   if (entry_count > 0) {
     // Send out notification so that observers are updated appropriately.
-    new_contents->controller().NotifyEntryChanged(
-        new_contents->controller().GetEntryAtIndex(entry_count - 1),
+    new_contents->tab_contents()->controller().NotifyEntryChanged(
+        new_contents->tab_contents()->controller().GetEntryAtIndex(
+            entry_count - 1),
         entry_count - 1);
   }
 
@@ -3965,7 +3974,8 @@ void Browser::OnDidGetApplicationInfo(TabContentsWrapper* source,
   if (GetSelectedTabContentsWrapper() != source)
     return;
 
-  NavigationEntry* entry = source->controller().GetLastCommittedEntry();
+  NavigationEntry* entry =
+      source->tab_contents()->controller().GetLastCommittedEntry();
   if (!entry || (entry->page_id() != page_id))
     return;
 
@@ -5141,7 +5151,7 @@ bool Browser::OpenInstant(WindowOpenDisposition disposition) {
     // HideInstant is invoked after release so that InstantController is not
     // active when HideInstant asks it for its state.
     HideInstant();
-    preview_contents->controller().PruneAllButActive();
+    preview_contents->tab_contents()->controller().PruneAllButActive();
     tab_handler_->GetTabStripModel()->AddTabContents(
         preview_contents,
         -1,
@@ -5172,7 +5182,8 @@ void Browser::CreateInstantIfNecessary() {
 void Browser::ViewSource(TabContentsWrapper* contents) {
   DCHECK(contents);
 
-  NavigationEntry* active_entry = contents->controller().GetActiveEntry();
+  NavigationEntry* active_entry =
+      contents->tab_contents()->controller().GetActiveEntry();
   if (!active_entry)
     return;
 
@@ -5186,9 +5197,9 @@ void Browser::ViewSource(TabContentsWrapper* contents,
   DCHECK(contents);
 
   TabContentsWrapper* view_source_contents = contents->Clone();
-  view_source_contents->controller().PruneAllButActive();
+  view_source_contents->tab_contents()->controller().PruneAllButActive();
   NavigationEntry* active_entry =
-      view_source_contents->controller().GetActiveEntry();
+      view_source_contents->tab_contents()->controller().GetActiveEntry();
   if (!active_entry)
     return;
 
@@ -5296,7 +5307,8 @@ void Browser::ShowSyncSetup() {
 }
 
 void Browser::ToggleSpeechInput() {
-  GetSelectedTabContentsWrapper()->render_view_host()->ToggleSpeechInput();
+  GetSelectedTabContentsWrapper()->tab_contents()->render_view_host()->
+      ToggleSpeechInput();
 }
 
 void Browser::OnWindowDidShow() {

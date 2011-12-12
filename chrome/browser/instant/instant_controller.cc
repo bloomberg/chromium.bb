@@ -269,7 +269,8 @@ TabContentsWrapper* InstantController::CommitCurrentPreview(
     InstantCommitType type) {
   DCHECK(loader_.get());
   TabContentsWrapper* tab = ReleasePreviewContents(type);
-  tab->controller().CopyStateFromAndPrune(&tab_contents_->controller());
+  tab->tab_contents()->controller().CopyStateFromAndPrune(
+      &tab_contents_->tab_contents()->controller());
   delegate_->CommitInstant(tab);
   CompleteRelease(tab);
   return tab;

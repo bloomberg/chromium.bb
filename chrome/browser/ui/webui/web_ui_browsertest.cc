@@ -178,7 +178,8 @@ void WebUIBrowserTest::PreLoadJavascriptLibraries(
 void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
   TestNavigationObserver navigation_observer(
       content::Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->controller()),
+          &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+              controller()),
       this, 1);
   browser::NavigateParams params(
       browser(), GURL(browse_to), content::PAGE_TRANSITION_TYPED);
@@ -200,7 +201,7 @@ void WebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
   TabContentsWrapper* preview_tab = tab_controller->GetPrintPreviewForTab(
       browser()->GetSelectedTabContentsWrapper());
   ASSERT_TRUE(preview_tab);
-  SetWebUIInstance(preview_tab->web_ui());
+  SetWebUIInstance(preview_tab->tab_contents()->web_ui());
 }
 
 const char WebUIBrowserTest::kDummyURL[] = "chrome://DummyURL";

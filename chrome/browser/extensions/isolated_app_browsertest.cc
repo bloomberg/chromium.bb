@@ -118,7 +118,8 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->controller()));
+          &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+              controller()));
   browser()->Reload(CURRENT_TAB);
   observer.Wait();
   EXPECT_TRUE(HasCookie(tab1, "app1=3"));

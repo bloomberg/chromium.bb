@@ -9,6 +9,7 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_source.h"
 
 TestTabStripModelObserver::TestTabStripModelObserver(
@@ -41,8 +42,8 @@ void TestTabStripModelObserver::ObservePrintPreviewTabContents(
     TabContentsWrapper* preview_tab =
         tab_controller->GetPrintPreviewForTab(contents);
     if (preview_tab) {
-      RegisterAsObserver(
-          content::Source<NavigationController>(&preview_tab->controller()));
+      RegisterAsObserver(content::Source<NavigationController>(
+          &preview_tab->tab_contents()->controller()));
     }
   }
 }

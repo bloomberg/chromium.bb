@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/autofill_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -110,8 +111,10 @@ bool SavePasswordInfoBarDelegate::Cancel() {
 
 void PasswordManagerDelegateImpl::FillPasswordForm(
     const webkit_glue::PasswordFormFillData& form_data) {
-  tab_contents_->render_view_host()->Send(new AutofillMsg_FillPasswordForm(
-      tab_contents_->render_view_host()->routing_id(), form_data));
+  tab_contents_->tab_contents()->render_view_host()->Send(
+      new AutofillMsg_FillPasswordForm(
+          tab_contents_->tab_contents()->render_view_host()->routing_id(),
+          form_data));
 }
 
 void PasswordManagerDelegateImpl::AddSavePasswordInfoBar(
@@ -126,6 +129,6 @@ Profile* PasswordManagerDelegateImpl::GetProfileForPasswordManager() {
 }
 
 bool PasswordManagerDelegateImpl::DidLastPageLoadEncounterSSLErrors() {
-  return tab_contents_->controller().ssl_manager()->
+  return tab_contents_->tab_contents()->controller().ssl_manager()->
       ProcessedSSLErrorFromRequest();
 }

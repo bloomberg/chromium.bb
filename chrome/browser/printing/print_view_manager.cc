@@ -102,10 +102,10 @@ bool PrintViewManager::AdvancedPrintNow() {
       tab_controller->GetPrintPreviewForTab(tab_);
   if (print_preview_tab) {
     // Preview tab exist for current tab or current tab is preview tab.
-    if (!print_preview_tab->web_ui())
+    if (!print_preview_tab->tab_contents()->web_ui())
       return false;
-    PrintPreviewUI* print_preview_ui =
-        static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
+    PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
+        print_preview_tab->tab_contents()->web_ui());
     print_preview_ui->OnShowSystemDialog();
     return true;
   } else {

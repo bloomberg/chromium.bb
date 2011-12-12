@@ -221,7 +221,7 @@ TaskManagerTabContentsResource::TaskManagerTabContentsResource(
     TabContentsWrapper* tab_contents)
     : TaskManagerRendererResource(
           tab_contents->tab_contents()->GetRenderProcessHost()->GetHandle(),
-          tab_contents->render_view_host()),
+          tab_contents->tab_contents()->render_view_host()),
       tab_contents_(tab_contents),
       is_instant_preview_(false) {
   if (!prerender_icon_) {

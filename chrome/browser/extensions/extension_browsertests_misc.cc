@@ -805,7 +805,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(
-            &browser()->GetSelectedTabContentsWrapper()->controller()));
+            &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+                controller()));
     browser()->Reload(CURRENT_TAB);
     observer.Wait();
   }
@@ -831,7 +832,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(
-            &browser()->GetSelectedTabContentsWrapper()->controller()));
+            &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+                controller()));
     browser()->Reload(CURRENT_TAB);
     observer.Wait();
   }

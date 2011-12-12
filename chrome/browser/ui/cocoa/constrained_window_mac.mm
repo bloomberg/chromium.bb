@@ -105,7 +105,8 @@ void ConstrainedWindowMac::ShowConstrainedWindow() {
   // The TabContents only has a native window if it is currently visible. In
   // this case, open the sheet now. Else, Realize() will be called later, when
   // our tab becomes visible.
-  NSWindow* browserWindow = wrapper_->view()->GetTopLevelNativeWindow();
+  NSWindow* browserWindow =
+      wrapper_->tab_contents()->view()->GetTopLevelNativeWindow();
   NSWindowController* controller = [browserWindow windowController];
   if (controller != nil) {
     DCHECK([controller isKindOfClass:[BrowserWindowController class]]);

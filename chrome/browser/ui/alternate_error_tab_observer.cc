@@ -11,6 +11,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 
 AlternateErrorPageTabObserver::AlternateErrorPageTabObserver(

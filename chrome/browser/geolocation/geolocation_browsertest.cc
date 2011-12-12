@@ -324,7 +324,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
       ui_test_utils::WindowedNotificationObserver observer(
           content::NOTIFICATION_LOAD_STOP,
           content::Source<NavigationController>(
-              &tab_contents_wrapper->controller()));
+              &tab_contents_wrapper->tab_contents()->controller()));
       if (allowed)
         infobar_->AsConfirmInfoBarDelegate()->Accept();
       else

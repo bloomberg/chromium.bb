@@ -290,7 +290,7 @@ InstantLoader::TabContentsDelegateImpl::TabContentsDelegateImpl(
       content::Source<TabContents>(loader->preview_contents()->tab_contents()));
   registrar_.Add(this, content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
       content::Source<NavigationController>(
-          &loader->preview_contents()->controller()));
+          &loader->preview_contents()->tab_contents()->controller()));
 }
 
 void InstantLoader::TabContentsDelegateImpl::PrepareForNewLoad() {
@@ -547,9 +547,11 @@ void InstantLoader::TabContentsDelegateImpl::OnSetSuggestions(
     const std::vector<std::string>& suggestions,
     InstantCompleteBehavior behavior) {
   TabContentsWrapper* source = loader_->preview_contents();
-  if (!source->controller().GetActiveEntry() ||
-      page_id != source->controller().GetActiveEntry()->page_id())
+  if (!source->tab_contents()->controller().GetActiveEntry() ||
+      page_id !=
+          source->tab_contents()->controller().GetActiveEntry()->page_id()) {
     return;
+  }
 
   if (suggestions.empty())
     loader_->SetCompleteSuggestedText(string16(), behavior);
@@ -668,7 +670,8 @@ bool InstantLoader::Update(TabContentsWrapper* tab_contents,
       }
       // TODO: support real cursor position.
       int text_length = static_cast<int>(user_text_.size());
-      RenderViewHost* host = preview_contents_->render_view_host();
+      RenderViewHost* host =
+          preview_contents_->tab_contents()->render_view_host();
       host->Send(new ChromeViewMsg_SearchBoxChange(
           host->routing_id(), user_text_, verbatim, text_length, text_length));
 
@@ -690,8 +693,8 @@ bool InstantLoader::Update(TabContentsWrapper* tab_contents,
     DCHECK(template_url_id_ == 0);
     preview_tab_contents_delegate_->PrepareForNewLoad();
     frame_load_observer_.reset(NULL);
-    preview_contents_->controller().LoadURL(url_, content::Referrer(),
-                                            transition_type, std::string());
+    preview_contents_->tab_contents()->controller().LoadURL(
+        url_, content::Referrer(), transition_type, std::string());
   }
   return true;
 }
@@ -737,7 +740,8 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
   DCHECK(type == INSTANT_COMMIT_DESTROY || !frame_load_observer_.get());
 
   if (type != INSTANT_COMMIT_DESTROY && is_showing_instant()) {
-    RenderViewHost* host = preview_contents_->render_view_host();
+    RenderViewHost* host =
+        preview_contents_->tab_contents()->render_view_host();
     if (type == INSTANT_COMMIT_FOCUS_LOST) {
       host->Send(new ChromeViewMsg_SearchBoxCancel(host->routing_id()));
     } else {
@@ -770,7 +774,7 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
           this,
           content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
           content::Source<NavigationController>(
-              &preview_contents_->controller()));
+              &preview_contents_->tab_contents()->controller()));
 #endif
     }
     preview_contents_->tab_contents()->set_delegate(NULL);
@@ -807,7 +811,7 @@ void InstantLoader::MaybeLoadInstantURL(TabContentsWrapper* tab_contents,
 
 bool InstantLoader::IsNavigationPending() const {
   return preview_contents_.get() &&
-      preview_contents_->controller().pending_entry();
+      preview_contents_->tab_contents()->controller().pending_entry();
 }
 
 void InstantLoader::Observe(int type,
@@ -962,7 +966,8 @@ void InstantLoader::SendBoundsToPage(bool force_if_waiting) {
   if (preview_contents_.get() && is_showing_instant() &&
       (force_if_waiting || !is_determining_if_page_supports_instant())) {
     last_omnibox_bounds_ = omnibox_bounds_;
-    RenderViewHost* host = preview_contents_->render_view_host();
+    RenderViewHost* host =
+        preview_contents_->tab_contents()->render_view_host();
     host->Send(new ChromeViewMsg_SearchBoxResize(
         host->routing_id(), GetOmniboxBoundsInTermsOfPreview()));
   }
@@ -988,11 +993,14 @@ void InstantLoader::ReplacePreviewContents(TabContentsWrapper* old_tc,
   registrar_.Remove(
       this,
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      content::Source<NavigationController>(&old_tc->controller()));
+      content::Source<NavigationController>(
+          &old_tc->tab_contents()->controller()));
 #endif
-  registrar_.Remove(this,
-                 content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                 content::Source<NavigationController>(&old_tc->controller()));
+  registrar_.Remove(
+      this,
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::Source<NavigationController>(
+          &old_tc->tab_contents()->controller()));
 
   // We prerendered so we should be ready to show. If we're ready, swap in
   // immediately, otherwise show the preview as normal.
@@ -1015,8 +1023,10 @@ void InstantLoader::SetupPreviewContents(TabContentsWrapper* tab_contents) {
   // NavigationControllers (which happens if we commit) none of the page ids
   // will overlap.
   int32 max_page_id = tab_contents->tab_contents()->GetMaxPageID();
-  if (max_page_id != -1)
-    preview_contents_->controller().set_max_restored_page_id(max_page_id + 1);
+  if (max_page_id != -1) {
+    preview_contents_->tab_contents()->controller().set_max_restored_page_id(
+        max_page_id + 1);
+  }
 
 #if defined(OS_MACOSX)
   // If |preview_contents_| does not currently have a RWHV, we will call
@@ -1029,17 +1039,19 @@ void InstantLoader::SetupPreviewContents(TabContentsWrapper* tab_contents) {
   registrar_.Add(
       this,
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      content::Source<NavigationController>(&preview_contents_->controller()));
+      content::Source<NavigationController>(
+          &preview_contents_->tab_contents()->controller()));
 #endif
 
   registrar_.Add(
       this,
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(&preview_contents_->controller()));
+      content::Source<NavigationController>(
+          &preview_contents_->tab_contents()->controller()));
 
   gfx::Rect tab_bounds;
-  tab_contents->view()->GetContainerBounds(&tab_bounds);
-  preview_contents_->view()->SizeContents(tab_bounds.size());
+  tab_contents->tab_contents()->view()->GetContainerBounds(&tab_bounds);
+  preview_contents_->tab_contents()->view()->SizeContents(tab_bounds.size());
 }
 
 void InstantLoader::CreatePreviewContents(TabContentsWrapper* tab_contents) {
@@ -1074,9 +1086,9 @@ void InstantLoader::LoadInstantURL(TabContentsWrapper* tab_contents,
   CommandLine* cl = CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kInstantURL))
     instant_url = GURL(cl->GetSwitchValueASCII(switches::kInstantURL));
-  preview_contents_->controller().LoadURL(instant_url, content::Referrer(),
-                                          transition_type, std::string());
-  RenderViewHost* host = preview_contents_->render_view_host();
+  preview_contents_->tab_contents()->controller().LoadURL(
+      instant_url, content::Referrer(), transition_type, std::string());
+  RenderViewHost* host = preview_contents_->tab_contents()->render_view_host();
   preview_contents_->tab_contents()->HideContents();
 
   // If user_text is empty, this must be a preload of the search homepage. In

@@ -142,14 +142,14 @@ void TabStripModel::InsertTabContentsAt(int index,
       ForgetAllOpeners();
     }
     // Anything opened by a link we deem to have an opener.
-    data->SetGroup(&selected_contents->controller());
+    data->SetGroup(&selected_contents->tab_contents()->controller());
   } else if ((add_types & ADD_INHERIT_OPENER) && selected_contents) {
     if (active) {
       // Forget any existing relationships, we don't want to make things too
       // confusing by having multiple groups active at the same time.
       ForgetAllOpeners();
     }
-    data->opener = &selected_contents->controller();
+    data->opener = &selected_contents->tab_contents()->controller();
   }
 
   contents_data_.insert(contents_data_.begin() + index, data);
@@ -172,7 +172,8 @@ TabContentsWrapper* TabStripModel::ReplaceTabContentsAt(
   DCHECK(ContainsIndex(index));
   TabContentsWrapper* old_contents = GetContentsAt(index);
 
-  ForgetOpenersAndGroupsReferencing(&(old_contents->controller()));
+  ForgetOpenersAndGroupsReferencing(
+      &(old_contents->tab_contents()->controller()));
 
   contents_data_[index]->contents = new_contents;
 
@@ -211,14 +212,15 @@ TabContentsWrapper* TabStripModel::DiscardTabContentsAt(int index) {
                           NULL /* base_tab_contents */,
                           NULL /* session_storage_namespace */));
   TabContentsWrapper* old_contents = GetContentsAt(index);
-  NavigationEntry* old_nav_entry = old_contents->controller().GetActiveEntry();
+  NavigationEntry* old_nav_entry =
+      old_contents->tab_contents()->controller().GetActiveEntry();
   if (old_nav_entry) {
     // Set the new tab contents to reload this URL when clicked.
     // This also allows the tab to keep drawing the favicon and page title.
     NavigationEntry* new_nav_entry = new NavigationEntry(*old_nav_entry);
     std::vector<NavigationEntry*> entries;
     entries.push_back(new_nav_entry);
-    null_contents->controller().Restore(0, false, &entries);
+    null_contents->tab_contents()->controller().Restore(0, false, &entries);
   }
   ReplaceTabContentsAt(index, null_contents);
   // Mark the tab so it will reload when we click.
@@ -238,7 +240,8 @@ TabContentsWrapper* TabStripModel::DetachTabContentsAt(int index) {
   int next_selected_index = order_controller_->DetermineNewSelectedIndex(index);
   delete contents_data_.at(index);
   contents_data_.erase(contents_data_.begin() + index);
-  ForgetOpenersAndGroupsReferencing(&(removed_contents->controller()));
+  ForgetOpenersAndGroupsReferencing(
+      &(removed_contents->tab_contents()->controller()));
   if (empty())
     closing_all_ = true;
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
@@ -384,7 +387,7 @@ int TabStripModel::GetIndexOfController(
   int index = 0;
   TabContentsDataVector::const_iterator iter = contents_data_.begin();
   for (; iter != contents_data_.end(); ++iter, ++index) {
-    if (&(*iter)->contents->controller() == controller)
+    if (&(*iter)->contents->tab_contents()->controller() == controller)
       return index;
   }
   return kNoTab;
@@ -841,7 +844,7 @@ void TabStripModel::ExecuteContextMenuCommand(
         TabContentsWrapper* tab = GetTabContentsAt(indices[i]);
         if (tab && tab->tab_contents()->delegate()->CanReloadContents(
                 tab->tab_contents())) {
-          tab->controller().Reload(true);
+          tab->tab_contents()->controller().Reload(true);
         }
       }
       break;
@@ -1084,7 +1087,7 @@ void TabStripModel::GetIndicesWithSameOpener(int index,
   NavigationController* opener = contents_data_[index]->group;
   if (!opener) {
     // If there is no group, find all tabs with the selected tab as the opener.
-    opener = &(GetTabContentsAt(index)->controller());
+    opener = &(GetTabContentsAt(index)->tab_contents()->controller());
     if (!opener)
       return;
   }
@@ -1092,7 +1095,7 @@ void TabStripModel::GetIndicesWithSameOpener(int index,
     if (i == index)
       continue;
     if (contents_data_[i]->group == opener ||
-        &(GetTabContentsAt(i)->controller()) == opener) {
+        &(GetTabContentsAt(i)->tab_contents()->controller()) == opener) {
       indices->push_back(i);
     }
   }
@@ -1113,7 +1116,7 @@ bool TabStripModel::IsNewTabAtEndOfTabStrip(
   return url.SchemeIs(chrome::kChromeUIScheme) &&
          url.host() == chrome::kChromeUINewTabHost &&
          contents == GetContentsAt(count() - 1) &&
-         contents->controller().entry_count() == 1;
+         contents->tab_contents()->controller().entry_count() == 1;
 }
 
 bool TabStripModel::InternalCloseTabs(const std::vector<int>& in_indices,

@@ -82,7 +82,7 @@ void ExtensionTabIdMap::TabObserver::Observe(
     case content::NOTIFICATION_TAB_PARENTED: {
       TabContentsWrapper* tab =
           content::Source<TabContentsWrapper>(source).ptr();
-      RenderViewHost* host = tab->render_view_host();
+      RenderViewHost* host = tab->tab_contents()->render_view_host();
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(
@@ -101,7 +101,7 @@ void ExtensionTabIdMap::TabObserver::Observe(
           TabContentsWrapper::GetCurrentWrapperForContents(contents);
       if (!tab)
         break;
-      RenderViewHost* host = tab->render_view_host();
+      RenderViewHost* host = tab->tab_contents()->render_view_host();
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(
