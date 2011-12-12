@@ -126,6 +126,11 @@ TEST(ExtensionFileUtil, CheckIllegalFilenamesNoUnderscores) {
                                                             &error));
 }
 
+#if defined(OS_WIN)
+// http://crbug.com/106381
+#define CheckIllegalFilenamesOnlyReserved \
+    DISABLED_CheckIllegalFilenamesOnlyReserved
+#endif
 TEST(ExtensionFileUtil, CheckIllegalFilenamesOnlyReserved) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
