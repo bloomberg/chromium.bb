@@ -361,7 +361,7 @@ void NativeComboboxViews::ShowDropDownMenu() {
 
   dropdown_open_ = true;
   if (dropdown_list_menu_runner_->RunMenuAt(
-          NULL, NULL, bounds, MenuItemView::TOPLEFT,
+          GetWidget(), NULL, bounds, MenuItemView::TOPLEFT,
           MenuRunner::HAS_MNEMONICS) == MenuRunner::MENU_DELETED)
     return;
   dropdown_open_ = false;
