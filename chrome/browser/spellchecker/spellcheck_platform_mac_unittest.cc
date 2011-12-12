@@ -1,17 +1,17 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
+#include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Tests that words are properly ignored. Currently only enabled on OS X as it
 // is the only platform to support ignoring words. Note that in this test, we
 // supply a non-zero doc_tag, in order to test that ignored words are matched to
 // the correct document.
-TEST(PlatformSpellCheckTest, IgnoreWords_EN_US) {
+TEST(spellcheck_macTest, IgnoreWords_EN_US) {
   const char* kTestCases[] = {
     "teh",
     "morblier",
@@ -21,27 +21,27 @@ TEST(PlatformSpellCheckTest, IgnoreWords_EN_US) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
     const string16 word(ASCIIToUTF16(kTestCases[i]));
-    const int doc_tag = SpellCheckerPlatform::GetDocumentTag();
+    const int doc_tag = spellcheck_mac::GetDocumentTag();
 
     // The word should show up as misspelled.
-    EXPECT_FALSE(SpellCheckerPlatform::CheckSpelling(word, doc_tag)) << word;
+    EXPECT_FALSE(spellcheck_mac::CheckSpelling(word, doc_tag)) << word;
 
     // Ignore the word.
-    SpellCheckerPlatform::IgnoreWord(word);
+    spellcheck_mac::IgnoreWord(word);
 
     // The word should now show up as correctly spelled.
-    EXPECT_TRUE(SpellCheckerPlatform::CheckSpelling(word, doc_tag)) << word;
+    EXPECT_TRUE(spellcheck_mac::CheckSpelling(word, doc_tag)) << word;
 
     // Close the docuemnt. Any words that we had previously ignored should no
     // longer be ignored and thus should show up as misspelled.
-    SpellCheckerPlatform::CloseDocumentWithTag(doc_tag);
+    spellcheck_mac::CloseDocumentWithTag(doc_tag);
 
     // The word should now show be spelled wrong again
-    EXPECT_FALSE(SpellCheckerPlatform::CheckSpelling(word, doc_tag)) << word;
+    EXPECT_FALSE(spellcheck_mac::CheckSpelling(word, doc_tag)) << word;
   }
 }  // Test IgnoreWords_EN_US
 
-TEST(PlatformSpellCheckTest, SpellCheckSuggestions_EN_US) {
+TEST(spellcheck_macTest, SpellCheckSuggestions_EN_US) {
   static const struct {
     const char* input;           // A string to be tested.
     const char* suggested_word;  // A suggested word that should occur.
@@ -316,11 +316,11 @@ TEST(PlatformSpellCheckTest, SpellCheckSuggestions_EN_US) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
     const string16 word(ASCIIToUTF16(kTestCases[i].input));
-    EXPECT_FALSE(SpellCheckerPlatform::CheckSpelling(word, 0)) << word;
+    EXPECT_FALSE(spellcheck_mac::CheckSpelling(word, 0)) << word;
 
     // Check if the suggested words occur.
     std::vector<string16> suggestions;
-    SpellCheckerPlatform::FillSuggestionList(word, &suggestions);
+    spellcheck_mac::FillSuggestionList(word, &suggestions);
     bool suggested_word_is_present = false;
     const string16 suggested_word(ASCIIToUTF16(kTestCases[i].suggested_word));
     for (size_t j = 0; j < suggestions.size(); j++) {

@@ -5,8 +5,8 @@
 // This file defines the interface that any platform-specific spellchecker
 // needs to implement in order to be used by the browser.
 
-#ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECKER_PLATFORM_ENGINE_H_
-#define CHROME_BROWSER_SPELLCHECKER_SPELLCHECKER_PLATFORM_ENGINE_H_
+#ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_PLATFORM_MAC_H_
+#define CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_PLATFORM_MAC_H_
 #pragma once
 
 #include <string>
@@ -17,7 +17,7 @@
 
 class BrowserMessageFilter;
 
-namespace SpellCheckerPlatform {
+namespace spellcheck_mac {
 
 // Get the languages supported by the platform spellchecker and store them in
 // |spellcheck_languages|. Note that they must be converted to
@@ -39,10 +39,6 @@ void ShowSpellingPanel(bool show);
 // Changes the word show in the spelling panel to be |word|. Note that the
 // spelling panel need not be displayed for this to work.
 void UpdateSpellingPanelWithMisspelledWord(const string16& word);
-
-// Do any initialization needed for spellchecker.
-void Init();
-// TODO(pwicks): should we add a companion to this, TearDown or something?
 
 // Translates the codes used by chrome to the language codes used by os x
 // and checks the given language agains the languages that the current system
@@ -93,6 +89,6 @@ void RequestTextCheck(int route_id,
                       const string16& text,
                       BrowserMessageFilter* destination);
 
-}  // namespace SpellCheckerPlatform
+}  // namespace spellcheck_mac
 
-#endif  // CHROME_BROWSER_SPELLCHECKER_SPELLCHECKER_PLATFORM_ENGINE_H_
+#endif  // CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_PLATFORM_MAC_H_

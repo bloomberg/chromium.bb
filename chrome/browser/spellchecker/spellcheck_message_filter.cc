@@ -8,7 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
-#include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
+#include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "content/public/browser/render_process_host.h"
 
@@ -57,30 +57,42 @@ bool SpellCheckMessageFilter::OnMessageReceived(const IPC::Message& message,
 void SpellCheckMessageFilter::OnPlatformCheckSpelling(const string16& word,
                                                       int tag,
                                                       bool* correct) {
-  *correct = SpellCheckerPlatform::CheckSpelling(word, tag);
+#if defined(OS_MACOSX)
+  *correct = spellcheck_mac::CheckSpelling(word, tag);
+#endif
 }
 
 void SpellCheckMessageFilter::OnPlatformFillSuggestionList(
     const string16& word,
     std::vector<string16>* suggestions) {
-  SpellCheckerPlatform::FillSuggestionList(word, suggestions);
+#if defined(OS_MACOSX)
+  spellcheck_mac::FillSuggestionList(word, suggestions);
+#endif
 }
 
 void SpellCheckMessageFilter::OnGetDocumentTag(int* tag) {
-  *tag = SpellCheckerPlatform::GetDocumentTag();
+#if defined(OS_MACOSX)
+  *tag = spellcheck_mac::GetDocumentTag();
+#endif
 }
 
 void SpellCheckMessageFilter::OnDocumentWithTagClosed(int tag) {
-  SpellCheckerPlatform::CloseDocumentWithTag(tag);
+#if defined(OS_MACOSX)
+  spellcheck_mac::CloseDocumentWithTag(tag);
+#endif
 }
 
 void SpellCheckMessageFilter::OnShowSpellingPanel(bool show) {
-  SpellCheckerPlatform::ShowSpellingPanel(show);
+#if defined(OS_MACOSX)
+  spellcheck_mac::ShowSpellingPanel(show);
+#endif
 }
 
 void SpellCheckMessageFilter::OnUpdateSpellingPanelWithMisspelledWord(
     const string16& word) {
-  SpellCheckerPlatform::UpdateSpellingPanelWithMisspelledWord(word);
+#if defined(OS_MACOSX)
+  spellcheck_mac::UpdateSpellingPanelWithMisspelledWord(word);
+#endif
 }
 
 void SpellCheckMessageFilter::OnPlatformRequestTextCheck(
@@ -88,8 +100,10 @@ void SpellCheckMessageFilter::OnPlatformRequestTextCheck(
     int identifier,
     int document_tag,
     const string16& text) {
-  SpellCheckerPlatform::RequestTextCheck(
+#if defined(OS_MACOSX)
+  spellcheck_mac::RequestTextCheck(
       route_id, identifier, document_tag, text, this);
+#endif
 }
 
 void SpellCheckMessageFilter::OnSpellCheckerRequestDictionary() {

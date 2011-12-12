@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file implements the interface defined in spellchecker_platform_engine.h
-// for the OS X platform.
+// Integration with OS X native spellchecker.
 
-#include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
+#include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -164,7 +163,7 @@ std::string ConvertLanguageCodeFromMac(NSString* lang_code) {
 
 } // namespace
 
-namespace SpellCheckerPlatform {
+namespace spellcheck_mac {
 
 void GetAvailableLanguages(std::vector<std::string>* spellcheck_languages) {
   NSArray* availableLanguages = [SharedSpellChecker() availableLanguages];
@@ -212,9 +211,6 @@ void UpdateSpellingPanelWithMisspelledWord(const string16& word) {
         @selector(updateSpellingPanelWithMisspelledWord:)
                        withObject:word_to_display
                     waitUntilDone:YES];
-}
-
-void Init() {
 }
 
 bool PlatformSupportsLanguage(const std::string& current_language) {
@@ -307,4 +303,4 @@ void RequestTextCheck(int route_id,
           destination, route_id, identifier, text, document_tag));
 }
 
-}  // namespace SpellCheckerPlatform
+}  // namespace spellcheck_mac

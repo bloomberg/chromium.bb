@@ -17,8 +17,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
+#include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
 #include "chrome/browser/spellchecker/spellcheck_profile_provider.h"
-#include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -101,15 +101,17 @@ SpellCheckHostImpl::~SpellCheckHostImpl() {
 void SpellCheckHostImpl::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (SpellCheckerPlatform::SpellCheckerAvailable() &&
-      SpellCheckerPlatform::PlatformSupportsLanguage(language_)) {
+#if defined(OS_MACOSX)
+  if (spellcheck_mac::SpellCheckerAvailable() &&
+      spellcheck_mac::PlatformSupportsLanguage(language_)) {
     use_platform_spellchecker_ = true;
-    SpellCheckerPlatform::SetLanguage(language_);
+    spellcheck_mac::SetLanguage(language_);
     MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(&SpellCheckHostImpl::InformProfileOfInitialization,
                    weak_ptr_factory_.GetWeakPtr()));
     return;
   }
+#endif  // OS_MACOSX
 
   BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
       base::Bind(&SpellCheckHostImpl::InitializeDictionaryLocation,

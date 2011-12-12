@@ -1631,7 +1631,7 @@
         'browser/sessions/session_service_unittest.cc',
         'browser/shell_integration_unittest.cc',
         'browser/speech/speech_input_bubble_controller_unittest.cc',
-        'browser/spellchecker/spellchecker_platform_engine_unittest.cc',
+        'browser/spellchecker/spellcheck_platform_mac_unittest.cc',
         'browser/spellchecker/spellcheck_profile_unittest.cc',
         'browser/status_icons/status_icon_unittest.cc',
         'browser/status_icons/status_tray_unittest.cc',

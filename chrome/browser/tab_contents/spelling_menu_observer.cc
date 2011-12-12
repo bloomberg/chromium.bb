@@ -17,7 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
-#include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
+#include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -219,7 +219,9 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
     Profile* profile = proxy_->GetProfile();
     if (profile && profile->GetSpellCheckHost())
       profile->GetSpellCheckHost()->AddWord(UTF16ToUTF8(misspelled_word_));
-    SpellCheckerPlatform::AddWord(misspelled_word_);
+#if defined(OS_MACOSX)
+    spellcheck_mac::AddWord(misspelled_word_);
+#endif
   }
 }
 
