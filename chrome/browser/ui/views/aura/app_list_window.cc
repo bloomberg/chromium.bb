@@ -10,6 +10,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/views/widget/widget.h"
 
