@@ -336,6 +336,7 @@ made in recent releases.
 </p>
 
 <ul>
+  <li> <a href="#16">Google Chrome 16</a> </li>
   <li> <a href="#15">Google Chrome 15</a> </li>
   <li> <a href="#14">Google Chrome 14</a> </li>
   <li> <a href="#13">Google Chrome 13</a> </li>
@@ -353,6 +354,94 @@ In addition to the changes listed below,
 check out the
 <a href="experimental.html">experimental APIs</a>.
 </p>
+
+<h2 id="16"> Google Chrome 16 </h2>
+
+<h4> New APIs </h4>
+  <ul>
+    <li> The
+      <a href="webNavigation.html">web navigation API</a>
+      lets extensions receive notifications about the status
+      of navigation requests.
+      You can use this API to track navigation events.
+    </li>
+    <li> The
+      <a href="permissions.html">optional permissions API</a>
+      lets you control when users are presented with permission requests.
+    </li>
+    <li> The
+      <a href="contentSettings.html">content settings API</a>
+      lets extensions customize Chrome’s behavior
+      on a per-site basis instead of globally.
+      You can use this API to control whether websites can use features
+      such as cookies, JavaScript, and plug-ins.
+      </li>
+  </ul>
+
+<h4> Manifest changes </h4>
+  <ul>
+    <li> The new
+      <a href="manifest.html#requirements">requirements</a> field
+      allows you to declare extension requirements up front.
+      For example, you can use this field
+      to specify that your app requires 3D graphics support
+      in order to use features such as CSS 3D Tranforms or WebGL.
+    </li>
+  </ul>
+  
+<h4> Additions to existing APIs </h4>
+  <ul>
+    <li> The new
+    <a href="tabs.html#method-query">chrome.tabs.query()</a> method
+    gets all tabs that have the specified properties or
+    all tabs if no properties are specified.
+    </li>
+    <li>The new
+    <a href="tabs.html#method-reload">chrome.tabs.reload()</a> method
+    reloads a tab and includes the option
+    to preserve the local cache of the reloaded tab.
+    </li>
+    <li>The management API's
+    <a href="management.html#type-ExtensionInfo">ExtensionInfo</a> object
+    now has an <code>updateURL</code> property.
+    </li>
+    <li>
+    You can now limit the supported locales for an
+    <a href="external_extensions.html">external extension</a>
+    by adding the <code>supported_locales</code> attribute
+    to the <code>external_extensions.json</code>.
+    </li>
+  </ul>
+  
+<h4> Changes to existing APIs </h4>
+  <ul>
+    <li>The methods <code>getAllInWindow()</code> and
+    <code>getSelected()</code> have been deprecated.
+    To get details about all tabs in the specified window, use
+    <a href="tabs.html#method-query">chrome.tabs.query()</a>
+    with the argument <code>{'windowId': windowID}</code>.
+    To get the tab that is selected in the specified window, use
+    <code>chrome.tabs.query()</code>
+    with the argument <code>{'active': true}</code>.
+    </li>
+    <li> You are no longer required
+    to specify the <code>tabID</code> for the
+    <a href="tabs.html#method-update">chrome.tabs.update()</a> method.
+    When not provided,
+    the <code>tabID</code> defaults to the selected tab of the current window.
+    </li>
+    <li>
+    External extension files on Mac OS can now be owned by users
+    within a wheel group (or an admin group).
+    </li>
+    <li>
+    The "experimental" permission is no longer required
+    for the
+    <a href="windows.html#type-Window">window "panel"</a> type.
+    By default, the "panel" type creates a popup
+    unless the <code>--enable-panels</code> flag is set.
+    </li>
+  </ul>
 
 <h2 id="15"> Google Chrome 15 </h2>
 

@@ -51,6 +51,7 @@ are <b>name</b> and <b>version</b>.
   "<a href="options.html">options_page</a>": "<em>aFile</em>.html",
   "<a href="#permissions">permissions</a>": [...],
   "<a href="npapi.html">plugins</a>": [...],
+  "<a href="#requirements">requirements</a>": {...},
   "<a href="autoupdate.html">update_url</a>": "http://<em>path/to/updateInfo</em>.xml"
 }
 </pre>
@@ -619,6 +620,42 @@ table.
 </tr>
 </tr>
 </table>
+
+<h3 id="requirements">requirements</h3>
+
+<p>
+Technologies required by the app or extension.
+Hosting sites such as the Chrome Web Store may use this list
+to dissuade users from installing apps or extensions
+that will not work on their computer.
+</p>
+
+<p>
+The only supported requirement is "3D",
+which denotes GPU hardware acceleration.
+For that requirement,
+you can list the 3D-related features your app requires,
+as demonstrated in the following example:
+</p>
+
+<pre>
+"requirements": {
+  "3D": {
+    "features": ["css3d", "webgl"]
+  }
+}
+</pre>
+
+<p>
+The "css3d" requirement refers to the
+<a href="http://www.w3.org/TR/css3-3d-transforms/">CSS 3D Transforms specification</a>,
+and the "webgl" requirement refers to the
+<a href="http://www.khronos.org/webgl/">WebGL API</a>.
+For more information on Chrome 3D graphics support,
+see the help article on
+<a href="http://www.google.com/support/chrome/bin/answer.py?answer=1220892">WebGL and 3D graphics</a>.
+Support for additional requirements checks may be added in the future.
+</p>
 
 
 <h3 id="version">version</h3>
