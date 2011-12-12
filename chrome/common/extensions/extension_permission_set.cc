@@ -271,8 +271,9 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kTtsEngine, "ttsEngine", IDS_EXTENSION_PROMPT_WARNING_TTS_ENGINE,
       ExtensionPermissionMessage::kTtsEngine, kFlagNone, kTypeDefault);
   info->RegisterPermission(
-      kWebNavigation, "webNavigation", 0,
-      ExtensionPermissionMessage::kNone, kFlagSupportsOptional,
+      kWebNavigation, "webNavigation",
+      IDS_EXTENSION_PROMPT_WARNING_TABS,
+      ExtensionPermissionMessage::kTabs, kFlagSupportsOptional,
       kTypeDefault - kTypePlatformApp);
   info->RegisterPermission(
       kWebRequest, "webRequest", 0,
