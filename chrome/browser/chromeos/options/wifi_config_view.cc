@@ -314,13 +314,13 @@ bool WifiConfigView::CanLogin() {
 
   // If the network requires a passphrase, make sure it is the right length.
   if (passphrase_textfield_ != NULL
-      && passphrase_textfield_->IsEnabled()
+      && passphrase_textfield_->enabled()
       && passphrase_textfield_->text().length() < kMinWirelessPasswordLen)
     return false;
 
   // If we're using EAP, we must have a method.
   if (eap_method_combobox_
-      && eap_method_combobox_->IsEnabled()
+      && eap_method_combobox_->enabled()
       && eap_method_combobox_->selected_item() == EAP_METHOD_INDEX_NONE)
     return false;
 
@@ -336,7 +336,7 @@ bool WifiConfigView::UserCertRequired() const {
     return false;  // return false until cert_library_ is initialized.
   // Only EAP-TLS requires a user certificate.
   if (eap_method_combobox_ &&
-      eap_method_combobox_->IsEnabled() &&
+      eap_method_combobox_->enabled() &&
       eap_method_combobox_->selected_item() == EAP_METHOD_INDEX_TLS) {
     return true;
   }
@@ -348,7 +348,7 @@ bool WifiConfigView::HaveUserCerts() const {
 }
 
 bool WifiConfigView::IsUserCertValid() const {
-  if (!user_cert_combobox_ || !user_cert_combobox_->IsEnabled())
+  if (!user_cert_combobox_ || !user_cert_combobox_->enabled())
     return false;
   int selected = user_cert_combobox_->selected_item();
   if (selected < 0)
@@ -374,14 +374,14 @@ void WifiConfigView::RefreshEapFields() {
   phase_2_auth_combobox_->SetEnabled(
       phase_2_auth_combobox_->model()->GetItemCount() > 1 &&
       phase_2_auth_ui_data_.editable());
-  phase_2_auth_label_->SetEnabled(phase_2_auth_combobox_->IsEnabled());
+  phase_2_auth_label_->SetEnabled(phase_2_auth_combobox_->enabled());
 
   // No password for EAP-TLS
   passphrase_textfield_->SetEnabled(selected != EAP_METHOD_INDEX_NONE &&
                                     selected != EAP_METHOD_INDEX_TLS &&
                                     passphrase_ui_data_.editable());
-  passphrase_label_->SetEnabled(passphrase_textfield_->IsEnabled());
-  if (!passphrase_textfield_->IsEnabled())
+  passphrase_label_->SetEnabled(passphrase_textfield_->enabled());
+  if (!passphrase_textfield_->enabled())
     passphrase_textfield_->SetText(string16());
 
   // User certs only for EAP-TLS
@@ -407,11 +407,11 @@ void WifiConfigView::RefreshEapFields() {
 
   // No anonymous identity if no phase 2 auth.
   identity_anonymous_textfield_->SetEnabled(
-      phase_2_auth_combobox_->IsEnabled() &&
+      phase_2_auth_combobox_->enabled() &&
       identity_anonymous_ui_data_.editable());
   identity_anonymous_label_->SetEnabled(
-      identity_anonymous_textfield_->IsEnabled());
-  if (!identity_anonymous_textfield_->IsEnabled())
+      identity_anonymous_textfield_->enabled());
+  if (!identity_anonymous_textfield_->enabled())
     identity_anonymous_textfield_->SetText(string16());
 
   RefreshShareCheckbox();
@@ -649,7 +649,7 @@ bool WifiConfigView::GetSaveCredentials() const {
 }
 
 bool WifiConfigView::GetShareNetwork(bool share_default) const {
-  if (!share_network_checkbox_ || !share_network_checkbox_->IsEnabled())
+  if (!share_network_checkbox_ || !share_network_checkbox_->enabled())
     return share_default;
   return share_network_checkbox_->checked();
 }
@@ -1033,7 +1033,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
     RefreshEapFields();
 
     // Phase 2 authentication
-    if (phase_2_auth_combobox_->IsEnabled()) {
+    if (phase_2_auth_combobox_->enabled()) {
       EAPPhase2Auth eap_phase_2_auth =
           (wifi ? wifi->eap_phase_2_auth() : EAP_PHASE_2_AUTH_AUTO);
       switch (eap_phase_2_auth) {
@@ -1058,7 +1058,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
     }
 
     // Server CA certificate
-    if (server_ca_cert_combobox_->IsEnabled()) {
+    if (server_ca_cert_combobox_->enabled()) {
       const std::string& nss_nickname =
           (wifi ? wifi->eap_server_ca_cert_nss_nickname() : std::string());
       if (nss_nickname.empty()) {
@@ -1082,7 +1082,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
     }
 
     // User certificate
-    if (user_cert_combobox_->IsEnabled()) {
+    if (user_cert_combobox_->enabled()) {
       const std::string& pkcs11_id =
           (wifi ? wifi->eap_client_cert_pkcs11_id() : std::string());
       if (!pkcs11_id.empty()) {
@@ -1095,14 +1095,14 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
     }
 
     // Identity
-    if (identity_textfield_->IsEnabled()) {
+    if (identity_textfield_->enabled()) {
       const std::string& eap_identity =
           (wifi ? wifi->eap_identity() : std::string());
       identity_textfield_->SetText(UTF8ToUTF16(eap_identity));
     }
 
     // Anonymous identity
-    if (identity_anonymous_textfield_->IsEnabled()) {
+    if (identity_anonymous_textfield_->enabled()) {
       const std::string& eap_anonymous_identity =
           (wifi ? wifi->eap_anonymous_identity() : std::string());
       identity_anonymous_textfield_->SetText(
@@ -1110,7 +1110,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
     }
 
     // Passphrase
-    if (passphrase_textfield_->IsEnabled()) {
+    if (passphrase_textfield_->enabled()) {
       const std::string& eap_passphrase =
           (wifi ? wifi->eap_passphrase() : std::string());
       passphrase_textfield_->SetText(UTF8ToUTF16(eap_passphrase));
@@ -1131,7 +1131,7 @@ void WifiConfigView::InitFocus() {
     ssid_textfield_->RequestFocus();
   else if (eap_method_combobox_)
     eap_method_combobox_->RequestFocus();
-  else if (passphrase_textfield_ && passphrase_textfield_->IsEnabled())
+  else if (passphrase_textfield_ && passphrase_textfield_->enabled())
     passphrase_textfield_->RequestFocus();
 }
 

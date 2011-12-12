@@ -522,7 +522,7 @@ LRESULT NativeTableWin::OnCustomDraw(NMLVCUSTOMDRAW* draw_info) {
                   native_view(), view_index, LVIS_SELECTED | LVIS_DROPHILITED);
               bool drop_highlight = ((selected & LVIS_DROPHILITED) != 0);
               int bg_color_index;
-              if (!IsEnabled())
+              if (!enabled())
                 bg_color_index = COLOR_3DFACE;
               else if (drop_highlight)
                 bg_color_index = COLOR_HIGHLIGHT;

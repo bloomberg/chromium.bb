@@ -27,7 +27,7 @@ NativeControlGtk::~NativeControlGtk() {
 void NativeControlGtk::OnEnabledChanged() {
   View::OnEnabledChanged();
   if (native_view())
-    gtk_widget_set_sensitive(native_view(), IsEnabled());
+    gtk_widget_set_sensitive(native_view(), enabled());
 }
 
 void NativeControlGtk::ViewHierarchyChanged(bool is_add, View* parent,
@@ -66,7 +66,7 @@ void NativeControlGtk::NativeControlCreated(GtkWidget* native_control) {
   Attach(native_control);
 
   // Update the newly created GtkWidget with any resident enabled state.
-  gtk_widget_set_sensitive(native_view(), IsEnabled());
+  gtk_widget_set_sensitive(native_view(), enabled());
 
   // Listen for focus change event to update the FocusManager focused view.
   g_signal_connect(native_control, "focus-in-event",

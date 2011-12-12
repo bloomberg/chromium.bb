@@ -297,11 +297,11 @@ void VPNConfigView::InitFocus() {
     service_textfield_->RequestFocus();
   else if (provider_type_combobox_)
     provider_type_combobox_->RequestFocus();
-  else if (psk_passphrase_textfield_ && psk_passphrase_textfield_->IsEnabled())
+  else if (psk_passphrase_textfield_ && psk_passphrase_textfield_->enabled())
     psk_passphrase_textfield_->RequestFocus();
-  else if (user_cert_combobox_ && user_cert_combobox_->IsEnabled())
+  else if (user_cert_combobox_ && user_cert_combobox_->enabled())
     user_cert_combobox_->RequestFocus();
-  else if (server_ca_cert_combobox_ && server_ca_cert_combobox_->IsEnabled())
+  else if (server_ca_cert_combobox_ && server_ca_cert_combobox_->enabled())
     server_ca_cert_combobox_->RequestFocus();
 }
 
@@ -319,7 +319,7 @@ const std::string VPNConfigView::GetServer() const {
 
 const std::string VPNConfigView::GetPSKPassphrase() const {
   if (psk_passphrase_textfield_ &&
-      psk_passphrase_textfield_->IsEnabled() &&
+      psk_passphrase_textfield_->enabled() &&
       psk_passphrase_textfield_->IsVisible())
     return GetTextFromField(psk_passphrase_textfield_, false);
   return std::string();
@@ -621,7 +621,7 @@ void VPNConfigView::Refresh() {
   VirtualNetwork* vpn = cros->FindVirtualNetworkByPath(service_path_);
   if (server_ca_cert_combobox_) {
     server_ca_cert_combobox_->ModelChanged();
-    if (server_ca_cert_combobox_->IsEnabled() &&
+    if (server_ca_cert_combobox_->enabled() &&
         (vpn && !vpn->ca_cert_nss().empty())) {
       // Select the current server CA certificate in the combobox.
       int cert_index = cert_library_->GetCACertificates().FindCertByNickname(
@@ -639,7 +639,7 @@ void VPNConfigView::Refresh() {
 
   if (user_cert_combobox_) {
     user_cert_combobox_->ModelChanged();
-    if (user_cert_combobox_->IsEnabled() &&
+    if (user_cert_combobox_->enabled() &&
         (vpn && !vpn->client_cert_id().empty())) {
       int cert_index = cert_library_->GetUserCertificates().FindCertByPkcs11Id(
           vpn->client_cert_id());
@@ -764,7 +764,7 @@ bool VPNConfigView::HaveUserCerts() const {
 }
 
 bool VPNConfigView::IsUserCertValid() const {
-  if (!user_cert_combobox_ || !user_cert_combobox_->IsEnabled())
+  if (!user_cert_combobox_ || !user_cert_combobox_->enabled())
     return false;
   int selected = user_cert_combobox_->selected_item();
   if (selected < 0)

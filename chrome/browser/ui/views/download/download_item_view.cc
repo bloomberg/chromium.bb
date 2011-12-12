@@ -830,8 +830,8 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
 
     // Draw the file's name.
     canvas->DrawStringInt(filename, font_,
-                          IsEnabled() ? file_name_color :
-                                        kFileNameDisabledColor,
+                          enabled() ? file_name_color
+                                    : kFileNameDisabledColor,
                           mirrored_x, y, kTextWidth, font_.GetHeight());
   }
 
@@ -883,7 +883,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
       icon_y = download_util::kSmallProgressIconOffset;
     }
     icon_x = GetMirroredXWithWidthInView(icon_x, icon->width());
-    if (IsEnabled()) {
+    if (enabled()) {
       canvas->DrawBitmapInt(*icon, icon_x, icon_y);
     } else {
       // Use an alpha to make the image look disabled.

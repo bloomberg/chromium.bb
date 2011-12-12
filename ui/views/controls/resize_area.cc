@@ -37,7 +37,7 @@ std::string ResizeArea::GetClassName() const {
 }
 
 gfx::NativeCursor ResizeArea::GetCursor(const MouseEvent& event) {
-  if (!IsEnabled())
+  if (!enabled())
     return gfx::kNullCursor;
 #if defined(USE_AURA)
   return aura::kCursorEastWestResize;

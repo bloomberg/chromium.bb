@@ -413,10 +413,6 @@ void View::SetEnabled(bool enabled) {
   }
 }
 
-bool View::IsEnabled() const {
-  return enabled_;
-}
-
 void View::OnEnabledChanged() {
   SchedulePaint();
 }
@@ -907,7 +903,7 @@ bool View::IsFocusableInRootView() const {
 }
 
 bool View::IsAccessibilityFocusableInRootView() const {
-  return (focusable_ || accessibility_focusable_) && IsEnabled() &&
+  return (focusable_ || accessibility_focusable_) && enabled_ &&
     IsVisibleInRootView();
 }
 
@@ -1239,7 +1235,7 @@ void View::GetHitTestMask(gfx::Path* mask) const {
 // Focus -----------------------------------------------------------------------
 
 bool View::IsFocusable() const {
-  return focusable_ && IsEnabled() && IsVisible();
+  return focusable_ && enabled_ && IsVisible();
 }
 
 void View::OnFocus() {
@@ -1851,9 +1847,8 @@ void View::DestroyLayer() {
 // Input -----------------------------------------------------------------------
 
 bool View::ProcessMousePressed(const MouseEvent& event, DragInfo* drag_info) {
-  const bool enabled = IsEnabled();
   int drag_operations =
-      (enabled && event.IsOnlyLeftMouseButton() && HitTest(event.location())) ?
+      (enabled_ && event.IsOnlyLeftMouseButton() && HitTest(event.location())) ?
       GetDragOperations(event.location()) : 0;
   ContextMenuController* context_menu_controller = event.IsRightMouseButton() ?
       context_menu_controller_ : 0;
@@ -1861,7 +1856,7 @@ bool View::ProcessMousePressed(const MouseEvent& event, DragInfo* drag_info) {
   const bool result = OnMousePressed(event);
   // WARNING: we may have been deleted, don't use any View variables.
 
-  if (!enabled)
+  if (!enabled_)
     return result;
 
   if (drag_operations != ui::DragDropTypes::DRAG_NONE) {

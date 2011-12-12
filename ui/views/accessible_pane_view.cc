@@ -44,7 +44,7 @@ bool AccessiblePaneView::SetPaneFocus(views::View* initial_focus) {
   if (!initial_focus ||
       !Contains(initial_focus) ||
       !initial_focus->IsVisible() ||
-      !initial_focus->IsEnabled()) {
+      !initial_focus->enabled()) {
     initial_focus = GetFirstFocusableChild();
   }
 

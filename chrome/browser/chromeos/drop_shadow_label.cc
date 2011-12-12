@@ -29,7 +29,7 @@ void DropShadowLabel::PaintText(gfx::Canvas* canvas,
                                 const string16& text,
                                 const gfx::Rect& text_bounds,
                                 int flags) {
-  SkColor text_color = IsEnabled() ? enabled_color() : disabled_color();
+  SkColor text_color = enabled() ? enabled_color() : disabled_color();
   if (drop_shadow_size_ > 0) {
     const float kShadowOpacity = 0.2;
     const SkColor shadow_color =

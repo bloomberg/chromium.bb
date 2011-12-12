@@ -27,7 +27,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   int state;
   NativeTheme::State control_state;
 
-  if (IsEnabled()) {
+  if (enabled()) {
     if (render_selection) {
       control_state = NativeTheme::kHovered;
       state = MPI_HOT;
@@ -116,7 +116,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   }
 
   if (HasSubmenu()) {
-    int state_id = IsEnabled() ? MSM_NORMAL : MSM_DISABLED;
+    int state_id = enabled() ? MSM_NORMAL : MSM_DISABLED;
     gfx::Rect arrow_bounds(this->width() - item_right_margin_ +
                            config.label_to_arrow_padding, 0,
                            config.arrow_width, height());

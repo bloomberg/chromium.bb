@@ -221,16 +221,14 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
                   kBorderWidth);
 
   if (progress_width > 1) {
-    const bool enabled = IsEnabled();
-
-    const SkColor bar_color_start = enabled ?
+    const SkColor bar_color_start = enabled() ?
         SkColorSetRGB(100, 116, 147) :
         SkColorSetRGB(229, 232, 237);
-    const SkColor bar_color_end = enabled ?
+    const SkColor bar_color_end = enabled() ?
         SkColorSetRGB(65, 73, 87) :
         SkColorSetRGB(224, 225, 227);
 
-    const SkColor bar_outer_color = enabled ?
+    const SkColor bar_outer_color = enabled() ?
         SkColorSetRGB(0x4A, 0x4A, 0x4A) :
         SkColorSetARGB(0x80, 0x4A, 0x4A, 0x4A);
 

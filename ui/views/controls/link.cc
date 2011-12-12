@@ -52,7 +52,7 @@ std::string Link::GetClassName() const {
 }
 
 gfx::NativeCursor Link::GetCursor(const MouseEvent& event) {
-  if (!IsEnabled())
+  if (!enabled())
     return gfx::kNullCursor;
 #if defined(USE_AURA)
   return aura::kCursorHand;
@@ -71,7 +71,7 @@ bool Link::HitTest(const gfx::Point& l) const {
 }
 
 bool Link::OnMousePressed(const MouseEvent& event) {
-  if (!IsEnabled() ||
+  if (!enabled() ||
       (!event.IsLeftMouseButton() && !event.IsMiddleMouseButton()))
     return false;
   SetPressed(true);
@@ -79,7 +79,7 @@ bool Link::OnMousePressed(const MouseEvent& event) {
 }
 
 bool Link::OnMouseDragged(const MouseEvent& event) {
-  SetPressed(IsEnabled() &&
+  SetPressed(enabled() &&
              (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
              HitTest(event.location()));
   return true;
@@ -89,7 +89,7 @@ void Link::OnMouseReleased(const MouseEvent& event) {
   // Change the highlight first just in case this instance is deleted
   // while calling the controller
   OnMouseCaptureLost();
-  if (IsEnabled() &&
+  if (enabled() &&
       (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
       HitTest(event.location())) {
     // Focus the link on click.
@@ -190,8 +190,8 @@ void Link::SetPressed(bool pressed) {
 
 void Link::RecalculateFont() {
   // The font should be underlined iff the link is enabled.
-  if (IsEnabled() == !(font().GetStyle() & gfx::Font::UNDERLINED)) {
-    Label::SetFont(font().DeriveFont(0, IsEnabled() ?
+  if (enabled() == !(font().GetStyle() & gfx::Font::UNDERLINED)) {
+    Label::SetFont(font().DeriveFont(0, enabled() ?
         (font().GetStyle() | gfx::Font::UNDERLINED) :
         (font().GetStyle() & ~gfx::Font::UNDERLINED)));
   }

@@ -224,7 +224,7 @@ void TakePhotoView::UpdateVideoFrame(const SkBitmap& frame) {
   if (!is_capturing_)
     return;
 
-  if (!snapshot_button_->IsEnabled()) {
+  if (!snapshot_button_->enabled()) {
     user_image_->SetNormalState();
     snapshot_button_->SetEnabled(true);
     snapshot_button_->RequestFocus();

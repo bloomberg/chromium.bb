@@ -198,8 +198,8 @@ void NativeControl::ValidateNativeControl() {
     container_ = new NativeControlContainer(this);
     container_->Init();
     hwnd_view_->Attach(*container_);
-    if (!IsEnabled())
-      EnableWindow(GetNativeControlHWND(), IsEnabled());
+    if (!enabled())
+      EnableWindow(GetNativeControlHWND(), enabled());
 
     // This message ensures that the focus border is shown.
     ::SendMessage(container_->GetControl(),
@@ -314,7 +314,7 @@ void NativeControl::SetVisible(bool f) {
 void NativeControl::OnEnabledChanged() {
   View::OnEnabledChanged();
   if (GetNativeControlHWND())
-    EnableWindow(GetNativeControlHWND(), IsEnabled());
+    EnableWindow(GetNativeControlHWND(), enabled());
 }
 
 void NativeControl::OnPaint(gfx::Canvas* canvas) {

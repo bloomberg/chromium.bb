@@ -268,7 +268,7 @@ void Label::PaintText(gfx::Canvas* canvas,
                       const gfx::Rect& text_bounds,
                       int flags) {
   canvas->DrawStringInt(text, font_,
-      IsEnabled() ? actual_enabled_color_ : actual_disabled_color_,
+      enabled() ? actual_enabled_color_ : actual_disabled_color_,
       text_bounds.x(), text_bounds.y(), text_bounds.width(),
       text_bounds.height(), flags);
 

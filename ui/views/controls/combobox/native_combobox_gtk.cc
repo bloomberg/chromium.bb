@@ -61,7 +61,7 @@ void NativeComboboxGtk::UpdateSelectedItem() {
 }
 
 void NativeComboboxGtk::UpdateEnabled() {
-  SetEnabled(combobox_->IsEnabled());
+  SetEnabled(combobox_->enabled());
 }
 
 int NativeComboboxGtk::GetSelectedItem() const {

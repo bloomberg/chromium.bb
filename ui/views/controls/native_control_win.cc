@@ -62,7 +62,7 @@ bool NativeControlWin::ProcessMessage(UINT message,
 void NativeControlWin::OnEnabledChanged() {
   View::OnEnabledChanged();
   if (native_view())
-    EnableWindow(native_view(), IsEnabled());
+    EnableWindow(native_view(), enabled());
 }
 
 void NativeControlWin::ViewHierarchyChanged(bool is_add, View* parent,
@@ -146,7 +146,7 @@ void NativeControlWin::NativeControlCreated(HWND native_control) {
   // native_view() is now valid.
 
   // Update the newly created HWND with any resident enabled state.
-  EnableWindow(native_view(), IsEnabled());
+  EnableWindow(native_view(), enabled());
 
   // This message ensures that the focus border is shown.
   SendMessage(native_view(), WM_CHANGEUISTATE,

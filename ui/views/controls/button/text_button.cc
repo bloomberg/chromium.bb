@@ -411,7 +411,7 @@ const ui::Animation* TextButtonBase::GetAnimation() const {
 }
 
 void TextButtonBase::UpdateColor() {
-  color_ = View::IsEnabled() ? color_enabled_ : color_disabled_;
+  color_ = enabled() ? color_enabled_ : color_disabled_;
 }
 
 void TextButtonBase::UpdateTextSize() {

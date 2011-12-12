@@ -49,7 +49,7 @@ ButtonDropDown::~ButtonDropDown() {
 ////////////////////////////////////////////////////////////////////////////////
 
 bool ButtonDropDown::OnMousePressed(const MouseEvent& event) {
-  if (IsEnabled() && IsTriggerableEvent(event) && HitTest(event.location())) {
+  if (enabled() && IsTriggerableEvent(event) && HitTest(event.location())) {
     // Store the y pos of the mouse coordinates so we can use them later to
     // determine if the user dragged the mouse down (which should pop up the
     // drag down menu immediately, instead of waiting for the timer)
@@ -91,7 +91,7 @@ void ButtonDropDown::OnMouseReleased(const MouseEvent& event) {
   if (IsTriggerableEvent(event))
     show_menu_factory_.InvalidateWeakPtrs();
 
-  if (IsEnabled() && event.IsRightMouseButton() && HitTest(event.location())) {
+  if (enabled() && event.IsRightMouseButton() && HitTest(event.location())) {
     show_menu_factory_.InvalidateWeakPtrs();
     ShowDropDownMenu(GetWidget()->GetNativeView());
   }

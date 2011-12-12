@@ -175,7 +175,7 @@ void NativeTextfieldGtk::UpdateIsPassword() {
 void NativeTextfieldGtk::UpdateEnabled() {
   if (!native_view())
     return;
-  SetEnabled(textfield_->IsEnabled());
+  SetEnabled(textfield_->enabled());
 }
 
 gfx::Insets NativeTextfieldGtk::CalculateInsets() {

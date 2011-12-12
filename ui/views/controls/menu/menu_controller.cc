@@ -985,7 +985,7 @@ bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
         if (pending_state_.item->HasSubmenu()) {
           OpenSubmenuChangeSelectionIfCan();
         } else if (!SendAcceleratorToHotTrackedView() &&
-                   pending_state_.item->IsEnabled()) {
+                   pending_state_.item->enabled()) {
           Accept(pending_state_.item, 0);
           return false;
         }
@@ -1177,7 +1177,7 @@ MenuItemView* MenuController::GetMenuItemAt(View* source, int x, int y) {
          child_under_mouse->id() != MenuItemView::kMenuItemViewID) {
     child_under_mouse = child_under_mouse->parent();
   }
-  if (child_under_mouse && child_under_mouse->IsEnabled() &&
+  if (child_under_mouse && child_under_mouse->enabled() &&
       child_under_mouse->id() == MenuItemView::kMenuItemViewID) {
     return static_cast<MenuItemView*>(child_under_mouse);
   }
@@ -1200,7 +1200,7 @@ bool MenuController::IsScrollButtonAt(SubmenuView* source,
   MenuScrollViewContainer* scroll_view = source->GetScrollViewContainer();
   View* child_under_mouse =
       scroll_view->GetEventHandlerForPoint(gfx::Point(x, y));
-  if (child_under_mouse && child_under_mouse->IsEnabled()) {
+  if (child_under_mouse && child_under_mouse->enabled()) {
     if (child_under_mouse == scroll_view->scroll_up_button()) {
       *part = MenuPart::SCROLL_UP;
       return true;
@@ -1659,7 +1659,7 @@ MenuItemView* MenuController::FindNextSelectableMenuItem(MenuItemView* parent,
 
 void MenuController::OpenSubmenuChangeSelectionIfCan() {
   MenuItemView* item = pending_state_.item;
-  if (item->HasSubmenu() && item->IsEnabled()) {
+  if (item->HasSubmenu() && item->enabled()) {
     if (item->GetSubmenu()->GetMenuItemCount() > 0) {
       SetSelection(item->GetSubmenu()->GetMenuItemAt(0),
                    SELECTION_UPDATE_IMMEDIATELY);
@@ -1692,7 +1692,7 @@ MenuController::SelectByCharDetails MenuController::FindChildForMnemonic(
   for (int i = 0, menu_item_count = submenu->GetMenuItemCount();
        i < menu_item_count; ++i) {
     MenuItemView* child = submenu->GetMenuItemAt(i);
-    if (child->IsEnabled() && child->IsVisible()) {
+    if (child->enabled() && child->IsVisible()) {
       if (child == pending_state_.item)
         details.index_of_item = i;
       if (match_function(child, key)) {
@@ -1880,7 +1880,7 @@ void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
                                &target_menu_loc);
     View::ConvertPointToView(NULL, target_menu, &target_menu_loc);
     target = target_menu->GetEventHandlerForPoint(target_menu_loc);
-    if (target == target_menu || !target->IsEnabled())
+    if (target == target_menu || !target->enabled())
       target = NULL;
   }
   if (target != active_mouse_view_) {

@@ -258,7 +258,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   void SetEnabled(bool enabled);
 
   // Returns whether the view is enabled.
-  virtual bool IsEnabled() const;
+  bool enabled() const { return enabled_; }
 
   // This indicates that the view completely fills its bounds in an opaque
   // color. This doesn't affect compositing but is a hint to the compositor to

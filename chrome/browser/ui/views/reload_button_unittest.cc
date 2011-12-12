@@ -41,7 +41,7 @@ void ReloadButtonTest::CheckState(bool enabled,
                                   ReloadButton::Mode visible_mode,
                                   bool double_click_timer_running,
                                   bool stop_to_reload_timer_running) {
-  EXPECT_EQ(enabled, reload_.IsEnabled());
+  EXPECT_EQ(enabled, reload_.enabled());
   EXPECT_EQ(intended_mode, reload_.intended_mode_);
   EXPECT_EQ(visible_mode, reload_.visible_mode_);
   EXPECT_EQ(double_click_timer_running,

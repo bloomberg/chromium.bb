@@ -266,8 +266,8 @@ void NativeTextfieldWin::UpdateIsPassword() {
 }
 
 void NativeTextfieldWin::UpdateEnabled() {
-  SendMessage(m_hWnd, WM_ENABLE, textfield_->IsEnabled(), 0);
-  UpdateAccessibleState(STATE_SYSTEM_UNAVAILABLE, !textfield_->IsEnabled());
+  SendMessage(m_hWnd, WM_ENABLE, textfield_->enabled(), 0);
+  UpdateAccessibleState(STATE_SYSTEM_UNAVAILABLE, !textfield_->enabled());
 }
 
 gfx::Insets NativeTextfieldWin::CalculateInsets() {
@@ -860,7 +860,7 @@ void NativeTextfieldWin::OnNCPaint(HRGN region) {
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     part = EP_EDITTEXT;
 
-    if (!textfield_->IsEnabled())
+    if (!textfield_->enabled())
       state = ETS_DISABLED;
     else if (textfield_->read_only())
       state = ETS_READONLY;
@@ -871,7 +871,7 @@ void NativeTextfieldWin::OnNCPaint(HRGN region) {
   } else {
     part = EP_EDITBORDER_HVSCROLL;
 
-    if (!textfield_->IsEnabled())
+    if (!textfield_->enabled())
       state = EPSHV_DISABLED;
     else if (GetFocus() == m_hWnd)
       state = EPSHV_FOCUSED;
@@ -883,7 +883,7 @@ void NativeTextfieldWin::OnNCPaint(HRGN region) {
   }
 
   int classic_state =
-      (!textfield_->IsEnabled() || textfield_->read_only()) ? DFCS_INACTIVE : 0;
+      (!textfield_->enabled() || textfield_->read_only()) ? DFCS_INACTIVE : 0;
 
   gfx::NativeThemeWin::instance()->PaintTextField(hdc, part, state,
                                                   classic_state, &window_rect,

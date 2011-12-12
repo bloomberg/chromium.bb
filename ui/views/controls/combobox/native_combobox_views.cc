@@ -190,7 +190,7 @@ void NativeComboboxViews::UpdateSelectedItem() {
 }
 
 void NativeComboboxViews::UpdateEnabled() {
-  SetEnabled(combobox_->IsEnabled());
+  SetEnabled(combobox_->enabled());
 }
 
 int NativeComboboxViews::GetSelectedItem() const {

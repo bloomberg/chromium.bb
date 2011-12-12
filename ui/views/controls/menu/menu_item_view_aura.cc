@@ -64,8 +64,8 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   }
 
   // Render the foreground.
-  SkColor fg_color =
-      IsEnabled() ? TextButton::kEnabledColor : TextButton::kDisabledColor;
+  SkColor fg_color = enabled() ? TextButton::kEnabledColor
+                               : TextButton::kDisabledColor;
   const gfx::Font& font = GetFont();
   int accel_width = parent_menu_item_->GetSubmenu()->max_accelerator_width();
   int width = this->width() - item_right_margin_ - label_start_ - accel_width;

@@ -102,7 +102,7 @@ void ShutdownButton::LayoutIn(views::View* parent) {
 }
 
 gfx::NativeCursor ShutdownButton::GetCursor(const views::MouseEvent& event) {
-  return IsEnabled() ? gfx::GetCursor(GDK_HAND2) : NULL;
+  return enabled() ? gfx::GetCursor(GDK_HAND2) : NULL;
 }
 
 void ShutdownButton::OnLocaleChanged() {

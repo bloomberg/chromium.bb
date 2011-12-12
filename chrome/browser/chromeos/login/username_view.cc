@@ -112,7 +112,7 @@ void UsernameView::PaintUsername(const gfx::Rect& bounds) {
   // Draw the text.
   // Note, direct call of the DrawStringInt method produces the green dots
   // along the text perimeter (when the label is place on the white background).
-  SkColor text_color = IsEnabled() ? enabled_color() : disabled_color();
+  SkColor text_color = enabled() ? enabled_color() : disabled_color();
   SkColor kInvisibleHaloColor = 0x00000000;
   canvas.DrawStringWithHalo(GetText(), font(), text_color,
                             kInvisibleHaloColor, bounds.x() + margin_width_,

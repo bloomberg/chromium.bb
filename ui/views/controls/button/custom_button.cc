@@ -94,17 +94,13 @@ bool CustomButton::IsHotTracked() const {
 }
 
 void CustomButton::OnEnabledChanged() {
-  if (View::IsEnabled() ? (state_ != BS_DISABLED) : (state_ == BS_DISABLED))
+  if (enabled() ? (state_ != BS_DISABLED) : (state_ == BS_DISABLED))
     return;
 
-  if (View::IsEnabled())
+  if (enabled())
     SetState(IsMouseHovered() ? BS_HOT : BS_NORMAL);
   else
     SetState(BS_DISABLED);
-}
-
-bool CustomButton::IsEnabled() const {
-  return state_ != BS_DISABLED;
 }
 
 std::string CustomButton::GetClassName() const {
@@ -198,7 +194,7 @@ bool CustomButton::OnKeyReleased(const KeyEvent& event) {
 }
 
 bool CustomButton::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  if (!View::IsEnabled())
+  if (!enabled())
     return false;
 
   SetState(BS_NORMAL);

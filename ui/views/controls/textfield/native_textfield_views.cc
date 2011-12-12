@@ -143,7 +143,7 @@ bool NativeTextfieldViews::OnKeyReleased(const KeyEvent& event) {
 bool NativeTextfieldViews::GetDropFormats(
     int* formats,
     std::set<OSExchangeData::CustomFormat>* custom_formats) {
-  if (!textfield_->IsEnabled() || textfield_->read_only())
+  if (!textfield_->enabled() || textfield_->read_only())
     return false;
   // TODO(msw): Can we support URL, FILENAME, etc.?
   *formats = ui::OSExchangeData::STRING;
@@ -151,8 +151,7 @@ bool NativeTextfieldViews::GetDropFormats(
 }
 
 bool NativeTextfieldViews::CanDrop(const OSExchangeData& data) {
-  return textfield_->IsEnabled() && !textfield_->read_only() &&
-         data.HasString();
+  return textfield_->enabled() && !textfield_->read_only() && data.HasString();
 }
 
 int NativeTextfieldViews::OnDragUpdated(const DropTargetEvent& event) {
@@ -299,7 +298,7 @@ void NativeTextfieldViews::WriteDragDataForView(views::View* sender,
 
 int NativeTextfieldViews::GetDragOperationsForView(views::View* sender,
                                                    const gfx::Point& p) {
-  if (!textfield_->IsEnabled() || !GetRenderText()->IsPointInSelection(p))
+  if (!textfield_->enabled() || !GetRenderText()->IsPointInSelection(p))
     return ui::DragDropTypes::DRAG_NONE;
   if (sender == this && !textfield_->read_only())
     return ui::DragDropTypes::DRAG_MOVE | ui::DragDropTypes::DRAG_COPY;
@@ -407,7 +406,7 @@ void NativeTextfieldViews::UpdateIsPassword() {
 }
 
 void NativeTextfieldViews::UpdateEnabled() {
-  SetEnabled(textfield_->IsEnabled());
+  SetEnabled(textfield_->enabled());
   SchedulePaint();
   OnTextInputTypeChanged();
 }

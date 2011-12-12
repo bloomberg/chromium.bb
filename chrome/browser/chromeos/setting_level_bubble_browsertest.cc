@@ -46,22 +46,22 @@ IN_PROC_BROWSER_TEST_F(SettingLevelBubbleTest, CreateAndUpdate) {
   bubble.ShowBubble(70, false);
   EXPECT_TRUE(bubble.view_->GetWidget()->IsVisible());
   EXPECT_EQ(&mute_icon_, bubble.view_->icon_);
-  EXPECT_FALSE(bubble.view_->progress_bar_->IsEnabled());
+  EXPECT_FALSE(bubble.view_->progress_bar_->enabled());
 
   // Old target is 70, new target is 30, set enable = true.
   bubble.ShowBubble(30, true);
   EXPECT_EQ(&down_icon_, bubble.view_->icon_);
-  EXPECT_TRUE(bubble.view_->progress_bar_->IsEnabled());
+  EXPECT_TRUE(bubble.view_->progress_bar_->enabled());
 
   // Old target is 30, new target is 40, set enable = true.
   bubble.ShowBubble(30, true);
   EXPECT_EQ(&up_icon_, bubble.view_->icon_);
-  EXPECT_TRUE(bubble.view_->progress_bar_->IsEnabled());
+  EXPECT_TRUE(bubble.view_->progress_bar_->enabled());
 
   // Old target is 30, new target is 0, set enable = true.
   bubble.ShowBubble(0, true);
   EXPECT_EQ(&mute_icon_, bubble.view_->icon_);
-  EXPECT_TRUE(bubble.view_->progress_bar_->IsEnabled());
+  EXPECT_TRUE(bubble.view_->progress_bar_->enabled());
   bubble.HideBubble();
   MessageLoop::current()->RunAllPending();
 }

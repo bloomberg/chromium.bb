@@ -973,7 +973,7 @@ void NativeViewAccessibilityWin::SetState(
   if (!view)
     return;
 
-  if (!view->IsEnabled())
+  if (!view->enabled())
     msaa_state->lVal |= STATE_SYSTEM_UNAVAILABLE;
   if (!view->IsVisible())
     msaa_state->lVal |= STATE_SYSTEM_INVISIBLE;

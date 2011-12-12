@@ -88,7 +88,7 @@ bool RootView::OnKeyEvent(const KeyEvent& event) {
   View* v = GetFocusManager()->GetFocusedView();
   // Special case to handle right-click context menus triggered by the
   // keyboard.
-  if (v && v->IsEnabled() && ((event.key_code() == ui::VKEY_APPS) ||
+  if (v && v->enabled() && ((event.key_code() == ui::VKEY_APPS) ||
      (event.key_code() == ui::VKEY_F10 && event.IsShiftDown()))) {
     v->ShowContextMenu(v->GetKeyboardContextMenuLocation(), false);
     return true;
@@ -188,7 +188,7 @@ bool RootView::OnMousePressed(const MouseEvent& event) {
   for (mouse_pressed_handler_ = GetEventHandlerForPoint(e.location());
        mouse_pressed_handler_ && (mouse_pressed_handler_ != this);
        mouse_pressed_handler_ = mouse_pressed_handler_->parent()) {
-    if (!mouse_pressed_handler_->IsEnabled()) {
+    if (!mouse_pressed_handler_->enabled()) {
       // Disabled views should eat events instead of propagating them upwards.
       hit_disabled_view = true;
       break;
@@ -289,7 +289,7 @@ void RootView::OnMouseMoved(const MouseEvent& event) {
   // first.  The check for the existing handler is because if a view becomes
   // disabled while handling moves, it's wrong to suddenly send ET_MOUSE_EXITED
   // and ET_MOUSE_ENTERED events, because the mouse hasn't actually exited yet.
-  while (v && !v->IsEnabled() && (v != mouse_move_handler_))
+  while (v && !v->enabled() && (v != mouse_move_handler_))
     v = v->parent();
   if (v && v != this) {
     if (v != mouse_move_handler_) {
@@ -347,7 +347,7 @@ ui::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
   for (touch_pressed_handler_ = GetEventHandlerForPoint(e.location());
        touch_pressed_handler_ && (touch_pressed_handler_ != this);
        touch_pressed_handler_ = touch_pressed_handler_->parent()) {
-    if (!touch_pressed_handler_->IsEnabled()) {
+    if (!touch_pressed_handler_->enabled()) {
       // Disabled views eat events but are treated as not handled by the
       // the GestureManager.
       status = ui::TOUCH_STATUS_UNKNOWN;

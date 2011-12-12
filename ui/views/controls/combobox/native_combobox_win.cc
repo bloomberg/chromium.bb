@@ -86,7 +86,7 @@ void NativeComboboxWin::UpdateSelectedItem() {
 }
 
 void NativeComboboxWin::UpdateEnabled() {
-  SetEnabled(combobox_->IsEnabled());
+  SetEnabled(combobox_->enabled());
 }
 
 int NativeComboboxWin::GetSelectedItem() const {
