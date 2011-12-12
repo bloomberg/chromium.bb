@@ -6,7 +6,6 @@
 
 #import <QuartzCore/QuartzCore.h>
 
-#include <cmath>
 #include <limits>
 #include <string>
 
@@ -859,8 +858,7 @@ private:
     availableSpaceForNonMini += (numberOfOpenNonMiniTabs - 1) * kTabOverlap;
 
     // Divide up the space between the non-mini-tabs.
-    nonMiniTabWidth =
-        std::floor(availableSpaceForNonMini / numberOfOpenNonMiniTabs);
+    nonMiniTabWidth = availableSpaceForNonMini / numberOfOpenNonMiniTabs;
 
     // Clamp the width between the max and min.
     nonMiniTabWidth = MAX(MIN(nonMiniTabWidth, kMaxTabWidth), kMinTabWidth);
