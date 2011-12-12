@@ -140,6 +140,7 @@ class InterfaceTest(mox.MoxTestBase):
     """Test that debug and buildbot flags are set by default."""
     args = ['-r', self._BUILD_ROOT, self._X86_PREFLIGHT]
     (options, args) = self.parser.parse_args(args=args)
+    cbuildbot._PostParseCheck(options)
     self.assertEquals(options.debug, True)
     self.assertEquals(options.buildbot, False)
 
