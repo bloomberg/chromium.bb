@@ -30,7 +30,6 @@ class BrowserOnlineStateObserver;
 class ChromeNetLog;
 class ChromeResourceDispatcherHostDelegate;
 class CommandLine;
-class ChromeFrameFriendOfBrowserProcessImpl;  // TODO(joi): Remove
 class RemoteDebuggingServer;
 class TabCloseableStateWatcher;
 
@@ -128,9 +127,6 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
 
  private:
-  // TODO(joi): Remove. Temporary hack to get at CreateIOThreadState.
-  friend class ChromeFrameFriendOfBrowserProcessImpl;
-
   // Must be called right before the IO thread is started.
   void CreateIOThreadState();
 

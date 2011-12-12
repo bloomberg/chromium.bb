@@ -1,5 +1,5 @@
 @ECHO OFF
-REM Copyright (c) 2009 The Chromium Authors. All rights reserved.
+REM Copyright (c) 2011 The Chromium Authors. All rights reserved.
 REM Use of this source code is governed by a BSD-style license that can be
 REM found in the LICENSE file.
 REM
@@ -59,22 +59,31 @@ mkdir base
 mkdir build\%CONFIG%
 mkdir chrome_frame\test\data
 mkdir chrome_frame\test\html_util_test_data
+mkdir net\data
+mkdir net\tools\testserver
+mkdir third_party\pyftpdlib
+mkdir third_party\pylib
+mkdir third_party\python_26
+mkdir third_party\tlslite
 copy %CLIENT_ROOT%\base\base_paths_win.cc base\base_paths_win.cc
 xcopy %CLIENT_ROOT%\build\%CONFIG% build\%CONFIG% /E /EXCLUDE:%CLIENT_ROOT%\chrome_frame\test\poor_mans_trybot_xcopy_filter.txt
 xcopy %CLIENT_ROOT%\chrome_frame\test\data chrome_frame\test\data /E
+xcopy %CLIENT_ROOT%\net\data net\data /E
+xcopy %CLIENT_ROOT%\net\tools\testserver net\tools\testserver /E
+xcopy %CLIENT_ROOT%\third_party\pyftpdlib third_party\pyftpdlib /E
+xcopy %CLIENT_ROOT%\third_party\pylib third_party\pylib /E
+xcopy %CLIENT_ROOT%\third_party\python_26 third_party\python_26 /E
+xcopy %CLIENT_ROOT%\third_party\tlslite third_party\tlslite /E
 xcopy %CLIENT_ROOT%\chrome_frame\test\html_util_test_data chrome_frame\test\html_util_test_data /E
 copy %CLIENT_ROOT%\chrome_frame\CFInstance.js chrome_frame\CFInstance.js
 copy %CLIENT_ROOT%\chrome_frame\CFInstall.js chrome_frame\CFInstall.js
 @ECHO OFF
 echo ************************************
 echo DO THE FOLLOWING IN AN ADMIN PROMPT:
-echo ************************************
-echo regsvr32 \trybot\build\%CONFIG%\servers\npchrome_frame.dll
 echo *********************************
-echo THEN DO THIS IN A REGULAR PROMPT:
-echo *********************************
-echo \trybot\build\%CONFIG%\chrome_frame_unittests.exe
-echo \trybot\build\%CONFIG%\chrome_frame_tests.exe
+echo %DRIVE%%INSTALL_ROOT%\build\%CONFIG%\chrome_frame_unittests.exe
+echo %DRIVE%%INSTALL_ROOT%\build\%CONFIG%\chrome_frame_tests.exe
+echo %DRIVE%%INSTALL_ROOT%\build\%CONFIG%\chrome_frame_net_tests.exe
 goto end
 
 :usage

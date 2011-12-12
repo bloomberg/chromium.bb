@@ -379,6 +379,7 @@
         '../chrome/chrome.gyp:renderer',
         '../chrome/chrome.gyp:syncapi_core',
         '../chrome/chrome_resources.gyp:chrome_resources',
+        '../content/content.gyp:content_app',
         '../content/content.gyp:content_gpu',
         '../content/content.gyp:test_support_content',
         '../net/net.gyp:net',

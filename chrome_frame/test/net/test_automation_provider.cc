@@ -99,10 +99,17 @@ net::URLRequestJob* TestAutomationProvider::Factory(net::URLRequest* request,
 }
 
 std::string TestAutomationProvider::GetProtocolVersion() {
-  // Return the version of chrome.dll
+  // Return the version of npchrome_frame.dll.  We used to use
+  // chrome.dll, but the other end of the pipe in this case is
+  // actually npchrome_frame.dll (which fetches its version info from
+  // itself), and occasionally we run into RC dependency problems in
+  // incremental builds so that the version information does not get
+  // updated in one module but does in another, so better to use the
+  // exact same version to avoid hard-to-debug problems in development
+  // builds.
   FilePath path;
   PathService::Get(base::DIR_MODULE, &path);
-  path = path.AppendASCII("chrome.dll");
+  path = path.AppendASCII("npchrome_frame.dll");
 
   std::string version;
   scoped_ptr<FileVersionInfo> version_info(
