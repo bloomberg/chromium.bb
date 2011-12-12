@@ -35,11 +35,10 @@ ShellAcceleratorFilter::~ShellAcceleratorFilter() {
 
 bool ShellAcceleratorFilter::PreHandleKeyEvent(aura::Window* target,
                                                aura::KeyEvent* event) {
-  if (event->type() == ui::ET_KEY_PRESSED &&
-      Shell::GetInstance()->accelerator_controller()->Process(
-          ui::Accelerator(event->key_code(),
-                          event->flags() & kModifierFlagMask))) {
-    return true;
+  if (event->type() == ui::ET_KEY_PRESSED && !event->is_char()) {
+    return Shell::GetInstance()->accelerator_controller()->Process(
+        ui::Accelerator(event->key_code(),
+                        event->flags() & kModifierFlagMask));
   }
   return false;
 }

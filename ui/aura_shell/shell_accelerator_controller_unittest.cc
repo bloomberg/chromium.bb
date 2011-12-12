@@ -2,9 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/aura/event.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/test/test_windows.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_accelerator_controller.h"
+#include "ui/aura_shell/shell_window_ids.h"
 #include "ui/aura_shell/test/aura_shell_test_base.h"
+
+#if defined(USE_X11)
+#include <X11/Xlib.h>
+#include "ui/base/x/x11_util.h"
+#endif
 
 namespace aura_shell {
 namespace test {
@@ -12,26 +22,26 @@ namespace test {
 namespace {
 class TestTarget : public ui::AcceleratorTarget {
  public:
-  TestTarget() : accelerator_pressed_(false) {};
+  TestTarget() : accelerator_pressed_count_(0) {};
   virtual ~TestTarget() {};
 
-  bool accelerator_pressed() const {
-    return accelerator_pressed_;
+  int accelerator_pressed_count() const {
+    return accelerator_pressed_count_;
   }
 
-  void set_accelerator_pressed(bool accelerator_pressed) {
-    accelerator_pressed_ = accelerator_pressed;
+  void set_accelerator_pressed_count(int accelerator_pressed_count) {
+    accelerator_pressed_count_ = accelerator_pressed_count;
   }
 
   // Overridden from ui::AcceleratorTarget:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
  private:
-  bool accelerator_pressed_;
+  int accelerator_pressed_count_;
 };
 
 bool TestTarget::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  set_accelerator_pressed(true);
+  ++accelerator_pressed_count_;
   return true;
 }
 
@@ -43,23 +53,11 @@ class ShellAcceleratorControllerTest : public AuraShellTestBase {
   virtual ~ShellAcceleratorControllerTest() {};
 
   static ShellAcceleratorController* GetController();
-
-  // testing::Test:
-  // virtual void SetUp() OVERRIDE;
-  // virtual void TearDown() OVERRIDE;
 };
 
 ShellAcceleratorController* ShellAcceleratorControllerTest::GetController() {
   return Shell::GetInstance()->accelerator_controller();
 }
-
-// void ShellAcceleratorControllerTest::SetUp() {
-//   AuraShellTestBase::SetUp();
-// }
-
-// void ShellAcceleratorControllerTest::TearDown() {
-//   AuraShellTestBase::TearDown();
-// }
 
 TEST_F(ShellAcceleratorControllerTest, Register) {
   const ui::Accelerator accelerator_a(ui::VKEY_A, false, false, false);
@@ -68,7 +66,7 @@ TEST_F(ShellAcceleratorControllerTest, Register) {
 
   // The registered accelerator is processed.
   EXPECT_TRUE(GetController()->Process(accelerator_a));
-  EXPECT_TRUE(target.accelerator_pressed());
+  EXPECT_EQ(1, target.accelerator_pressed_count());
 }
 
 TEST_F(ShellAcceleratorControllerTest, RegisterMultipleTarget) {
@@ -81,8 +79,8 @@ TEST_F(ShellAcceleratorControllerTest, RegisterMultipleTarget) {
   // If multiple targets are registered with the same accelerator, the target
   // registered later processes the accelerator.
   EXPECT_TRUE(GetController()->Process(accelerator_a));
-  EXPECT_FALSE(target1.accelerator_pressed());
-  EXPECT_TRUE(target2.accelerator_pressed());
+  EXPECT_EQ(0, target1.accelerator_pressed_count());
+  EXPECT_EQ(1, target2.accelerator_pressed_count());
 }
 
 TEST_F(ShellAcceleratorControllerTest, Unregister) {
@@ -96,13 +94,13 @@ TEST_F(ShellAcceleratorControllerTest, Unregister) {
   // accelerator.
   GetController()->Unregister(accelerator_b, &target);
   EXPECT_TRUE(GetController()->Process(accelerator_a));
-  EXPECT_TRUE(target.accelerator_pressed());
+  EXPECT_EQ(1, target.accelerator_pressed_count());
 
   // The unregistered accelerator is no longer processed.
-  target.set_accelerator_pressed(false);
+  target.set_accelerator_pressed_count(0);
   GetController()->Unregister(accelerator_a, &target);
   EXPECT_FALSE(GetController()->Process(accelerator_a));
-  EXPECT_FALSE(target.accelerator_pressed());
+  EXPECT_EQ(0, target.accelerator_pressed_count());
 }
 
 TEST_F(ShellAcceleratorControllerTest, UnregisterAll) {
@@ -119,11 +117,11 @@ TEST_F(ShellAcceleratorControllerTest, UnregisterAll) {
   // All the accelerators registered for |target1| are no longer processed.
   EXPECT_FALSE(GetController()->Process(accelerator_a));
   EXPECT_FALSE(GetController()->Process(accelerator_b));
-  EXPECT_FALSE(target1.accelerator_pressed());
+  EXPECT_EQ(0, target1.accelerator_pressed_count());
 
   // UnregisterAll with a different target does not affect the other target.
   EXPECT_TRUE(GetController()->Process(accelerator_c));
-  EXPECT_TRUE(target2.accelerator_pressed());
+  EXPECT_EQ(1, target2.accelerator_pressed_count());
 }
 
 TEST_F(ShellAcceleratorControllerTest, Process) {
@@ -133,12 +131,55 @@ TEST_F(ShellAcceleratorControllerTest, Process) {
 
   // The registered accelerator is processed.
   EXPECT_TRUE(GetController()->Process(accelerator_a));
-  EXPECT_TRUE(target1.accelerator_pressed());
+  EXPECT_EQ(1, target1.accelerator_pressed_count());
 
   // The non-registered accelerator is not processed.
   const ui::Accelerator accelerator_b(ui::VKEY_B, false, false, false);
   EXPECT_FALSE(GetController()->Process(accelerator_b));
 }
+
+#if defined(OS_WIN) || defined(USE_X11)
+TEST_F(ShellAcceleratorControllerTest, ProcessOnce) {
+  // A focused window must exist for accelerators to be processed.
+  aura::Window* default_container =
+      aura_shell::Shell::GetInstance()->GetContainer(
+          internal::kShellWindowId_DefaultContainer);
+  aura::Window* window = aura::test::CreateTestWindowWithDelegate(
+      new aura::test::TestWindowDelegate,
+      -1,
+      gfx::Rect(),
+      default_container);
+  window->Activate();
+
+  const ui::Accelerator accelerator_a(ui::VKEY_A, false, false, false);
+  TestTarget target;
+  GetController()->Register(accelerator_a, &target);
+
+  // The accelerator is processed only once.
+#if defined(OS_WIN)
+  MSG msg1 = { NULL, WM_KEYDOWN, ui::VKEY_A, 0 };
+  aura::KeyEvent key_event1(msg1, false);
+  EXPECT_TRUE(aura::RootWindow::GetInstance()->DispatchKeyEvent(&key_event1));
+
+  MSG msg2 = { NULL, WM_CHAR, L'A', 0 };
+  aura::KeyEvent key_event2(msg2, true);
+  EXPECT_FALSE(aura::RootWindow::GetInstance()->DispatchKeyEvent(&key_event2));
+
+  MSG msg3 = { NULL, WM_KEYUP, ui::VKEY_A, 0 };
+  aura::KeyEvent key_event3(msg3, false);
+  EXPECT_FALSE(aura::RootWindow::GetInstance()->DispatchKeyEvent(&key_event3));
+#elif defined(USE_X11)
+  XEvent key_event;
+  ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED,
+                              ui::VKEY_A,
+                              0,
+                              &key_event);
+  EXPECT_TRUE(aura::RootWindow::GetInstance()->GetDispatcher()->Dispatch(
+      &key_event));
+#endif
+  EXPECT_EQ(1, target.accelerator_pressed_count());
+}
+#endif
 
 TEST_F(ShellAcceleratorControllerTest, GlobalAccelerators) {
   // TODO(mazda): Uncomment the followings once they are implemented.
