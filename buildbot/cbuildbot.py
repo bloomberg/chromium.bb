@@ -263,7 +263,7 @@ class Builder(object):
     # http://crosbug.com/23813 is fixed.
     abs_buildroot = os.path.abspath(self.options.buildroot)
     return (self.build_config['build_type'] != constants.COMMIT_QUEUE_TYPE and
-      not os.path.abspath(__file__).startswith(abs_buildroot))
+      not os.path.abspath( __file__).startswith(abs_buildroot))
 
   def _ReExecuteInBuildroot(self):
     """Reexecutes self in buildroot and returns True if build succeeds.
@@ -634,6 +634,12 @@ def _CheckChromeRevOption(_option, _opt_str, value, parser):
   parser.values.chrome_rev = value
 
 
+def _ProcessBuildBotOption(_option, _opt_str, _value, parser):
+  """Set side-effects of --buildbot option"""
+  parser.values.debug = False
+  parser.values.buildbot = True
+
+
 def _CreateParser():
   """Generate and return the parser with all the options."""
   # Parse options
@@ -682,8 +688,9 @@ def _CreateParser():
       'Advanced Options',
       'Caution: use these options at your own risk.')
 
-  group.add_option('--buildbot', dest='buildbot', action='store_true',
-                    default=False, help='This is running on a buildbot')
+  group.add_option('--buildbot', dest='buildbot', action='callback',
+                    default=False, callback=_ProcessBuildBotOption,
+                    help='This is running on a buildbot')
   group.add_option('--buildnumber',
                    help='build number', type='int', default=0)
   group.add_option('--chrome_root', default=None, type='string',

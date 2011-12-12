@@ -143,6 +143,13 @@ class InterfaceTest(mox.MoxTestBase):
     self.assertEquals(options.debug, True)
     self.assertEquals(options.buildbot, False)
 
+  def testBuildBotOption(self):
+    """Test that --buildbot option unsets debug flag."""
+    args = ['-r', self._BUILD_ROOT, '--buildbot', self._X86_PREFLIGHT]
+    (options, args) = self.parser.parse_args(args=args)
+    self.assertEquals(options.debug, False)
+    self.assertEquals(options.buildbot, True)
+
   def testBuildBotWithDebugOption(self):
     """Test that --debug option overrides --buildbot option."""
     args = ['-r', self._BUILD_ROOT, '--buildbot', '--debug',
