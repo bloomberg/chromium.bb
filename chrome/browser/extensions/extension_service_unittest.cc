@@ -25,8 +25,8 @@
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/component_loader.h"
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -74,6 +74,7 @@
 #include "testing/platform_test.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
+#include "webkit/plugins/npapi/mock_plugin_list.h"
 #include "webkit/quota/quota_manager.h"
 
 using content::BrowserThread;
@@ -3601,6 +3602,8 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   scoped_ptr<CommandLine> command_line;
   FilePath install_dir = profile->GetPath()
       .AppendASCII(ExtensionService::kInstallDirectoryName);
+  webkit::npapi::MockPluginList plugin_list(NULL, 0);
+  PluginService::GetInstance()->SetPluginListForTesting(&plugin_list);
 
   // By default, we are enabled.
   command_line.reset(new CommandLine(CommandLine::NO_PROGRAM));
