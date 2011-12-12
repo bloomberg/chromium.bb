@@ -37,7 +37,7 @@ static HB_Bool isLetter(HB_UChar16 ucs)
                      FLAG(HB_Letter_Titlecase) |
                      FLAG(HB_Letter_Modifier) |
                      FLAG(HB_Letter_Other);
-    return FLAG(HB_GetUnicodeCharCategory(ucs)) & test;
+    return !!(FLAG(HB_GetUnicodeCharCategory(ucs)) & test);
 }
 
 static HB_Bool isMark(HB_UChar16 ucs)
@@ -45,7 +45,7 @@ static HB_Bool isMark(HB_UChar16 ucs)
     const int test = FLAG(HB_Mark_NonSpacing) |
                      FLAG(HB_Mark_SpacingCombining) |
                      FLAG(HB_Mark_Enclosing);
-    return FLAG(HB_GetUnicodeCharCategory(ucs)) & test;
+    return !!(FLAG(HB_GetUnicodeCharCategory(ucs)) & test);
 }
 
 enum Form {

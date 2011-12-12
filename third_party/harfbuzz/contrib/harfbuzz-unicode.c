@@ -114,7 +114,7 @@ hb_utf16_script_run_next(unsigned *num_code_points, HB_ScriptItem *output,
     const HB_Script script = code_point_to_script(cp);
 
     if (script != current_script) {
-      if (current_script == init_script == HB_Script_Inherited) {
+      if (current_script == HB_Script_Inherited && init_script == HB_Script_Inherited) {
         // If we started off as inherited, we take whatever we can find.
         output->script = script;
         current_script = script;

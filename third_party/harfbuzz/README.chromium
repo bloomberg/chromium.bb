@@ -2,8 +2,8 @@ Name: harfbuzz
 Short Name: harfbuzz
 URL: http://anongit.freedesktop.org/git/harfbuzz.old.git
 Version: 0
-Date: 20110808
-Revision: d10a264823e81631336bab37f08a52cc243d3654
+Date: 20111101
+Revision: 93d8573ddcf97648983a1c1b5cdda8a3ec6d4432
 Security Critical: yes
 
 Description:
