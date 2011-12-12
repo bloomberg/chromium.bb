@@ -231,7 +231,6 @@ default = {
 
 arm = {
   # VM/tests are broken on arm.
-  'build_tests' : False,
   'unittests' : False,
   'vm_tests' : None,
 
@@ -647,20 +646,17 @@ add_config('link-release', internal, full, official, release,
 add_config('arm-tegra2_seaboard-release',
     internal, full, official, release, arm,
   board='tegra2_seaboard',
-  build_tests=True,
 )
 
 add_config('arm-tegra2_kaen-release',
     internal, full, official, release, arm,
   board='tegra2_kaen',
-  build_tests=True,
 )
 
 add_config('arm-tegra2_kaen-aura-release',
     internal, full, official, release, arm,
   board='tegra2_kaen',
   profile='aura',
-  build_tests=True,
 )
 
 add_config('aura-tot-chrome-pfq-informational', chrome_pfq_info,
