@@ -34,42 +34,56 @@ class HTMLFixer(object):
   def FixTableHeadings(self):
     '''Fixes the doxygen table headings.
 
-    This includes using <th> instead of <h2> for the heading, and putting
-    the "name" attribute into the "id" attribute of the <tr> tag.
+    This includes:
+      - Using bare <h2> title row instead of row embedded in <tr><td> in table
+      - Putting the "name" attribute into the "id" attribute of the <tr> tag.
+      - Splitting up tables into multiple separate tables if a table
+        heading appears in the middle of a table.
 
     For example, this html:
+     <table>
       <tr><td colspan="2"><h2><a name="pub-attribs"></a>
       Data Fields List</h2></td></tr>
+      ...
+     </table>
 
     would be converted to this:
-      <tr id="pub-attribs"><th colspan="2">Data Fields List</th></tr>
-
-    Also, this function splits up tables into multiple separate tables if
-    a table heading appears in the middle of a table.
+     <h2>Data Fields List</h2>
+     <table>
+      ...
+     </table>
     '''
 
     table_headers = []
     for tag in self.soup.findAll('tr'):
       if tag.td and tag.td.h2 and tag.td.h2.a and tag.td.h2.a['name']:
-        tag['id'] = tag.td.h2.a['name']
-        tag.td.string = tag.td.h2.a.next
-        tag.td.name = 'th'
+        #tag['id'] = tag.td.h2.a['name']
+        tag.string = tag.td.h2.a.next
+        tag.name = 'h2'
         table_headers.append(tag)
 
     # reverse the list so that earlier tags don't delete later tags
     table_headers.reverse()
     # Split up tables that have multiple table header (th) rows
     for tag in table_headers:
+      print "Header tag: %s is %s" % (tag.name, tag.string.strip())
       # Is this a heading in the middle of a table?
       if tag.findPreviousSibling('tr') and tag.parent.name == 'table':
+        print "Splitting Table named %s" % tag.string.strip()
         table = tag.parent
         table_parent = table.parent
         table_index = table_parent.contents.index(table)
         new_table = Tag(self.soup, name='table', attrs=table.attrs)
         table_parent.insert(table_index + 1, new_table)
         tag_index = table.contents.index(tag)
-        new_table.contents = table.contents[tag_index:]
-        del table.contents[tag_index:]
+        for index, row in enumerate(table.contents[tag_index:]):
+          new_table.insert(index, row)
+      # Now move the <h2> tag to be in front of the <table> tag
+      assert tag.parent.name == 'table'
+      table = tag.parent
+      table_parent = table.parent
+      table_index = table_parent.contents.index(table)
+      table_parent.insert(table_index, tag)
 
   def RemoveTopHeadings(self):
     '''Removes <div> sections with a header, tabs, or navpath class attribute'''
@@ -107,6 +121,7 @@ def main():
       with open(filename, 'r') as file:
         html = file.read()
 
+      print "Processing %s" % filename
       fixer = HTMLFixer(html)
       fixer.FixAll()
       with open(filename, 'w') as file:
