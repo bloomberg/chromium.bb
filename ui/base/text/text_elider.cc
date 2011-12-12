@@ -94,7 +94,7 @@ string16 ElideComponentizedPath(const string16& url_path_prefix,
         url_path_elements, url_filename, i);
     if (available_pixel_width >= font.GetStringWidth(elided_path))
       return ElideText(elided_path + url_query,
-          font, available_pixel_width, false);
+          font, available_pixel_width, ui::ELIDE_AT_END);
   }
 
   return string16();
@@ -125,7 +125,7 @@ string16 ElideUrl(const GURL& url,
 
   // If non-standard or not file type, return plain eliding.
   if (!(url.SchemeIsFile() || url.IsStandard()))
-    return ElideText(url_string, font, available_pixel_width, false);
+    return ElideText(url_string, font, available_pixel_width, ui::ELIDE_AT_END);
 
   // Now start eliding url_string to fit within available pixel width.
   // Fist pass - check to see whether entire url_string fits.
@@ -142,7 +142,7 @@ string16 ElideUrl(const GURL& url,
   // Return general elided text if url minus the query fits.
   string16 url_minus_query = url_string.substr(0, path_start_index + path_len);
   if (available_pixel_width >= font.GetStringWidth(url_minus_query))
-    return ElideText(url_string, font, available_pixel_width, false);
+    return ElideText(url_string, font, available_pixel_width, ui::ELIDE_AT_END);
 
   // Get Host.
   string16 url_host = UTF8ToUTF16(url.host());
@@ -213,7 +213,7 @@ string16 ElideUrl(const GURL& url,
         pixel_width_url_domain + pixel_width_url_path -
         font.GetStringWidth(url_query))) {
       return ElideText(url_subdomain + url_domain + url_path_query_etc,
-                       font, available_pixel_width, false);
+                       font, available_pixel_width, ui::ELIDE_AT_END);
     }
   }
 
@@ -241,7 +241,7 @@ string16 ElideUrl(const GURL& url,
     // No path to elide, or too long of a path (could overflow in loop below)
     // Just elide this as a text string.
     return ElideText(url_subdomain + url_domain + url_path_query_etc, font,
-                     available_pixel_width, false);
+                     available_pixel_width, ui::ELIDE_AT_END);
   }
 
   // Start eliding the path and replacing elements by ".../".
@@ -288,7 +288,8 @@ string16 ElideUrl(const GURL& url,
     final_elided_url_string += url_path;
   }
 
-  return ElideText(final_elided_url_string, font, available_pixel_width, false);
+  return ElideText(final_elided_url_string, font, available_pixel_width,
+                   ui::ELIDE_AT_END);
 }
 
 string16 ElideFilename(const FilePath& filename,
@@ -313,7 +314,7 @@ string16 ElideFilename(const FilePath& filename,
 
   if (rootname.empty() || extension.empty()) {
     string16 elided_name = ElideText(filename_utf16, font,
-                                     available_pixel_width, false);
+                                     available_pixel_width, ui::ELIDE_AT_END);
     return base::i18n::GetDisplayStringInLTRDirectionality(elided_name);
   }
 
@@ -328,13 +329,14 @@ string16 ElideFilename(const FilePath& filename,
 
   if (ext_width >= available_pixel_width) {
     string16 elided_name = ElideText(rootname + extension, font,
-                                     available_pixel_width, true);
+                                     available_pixel_width,
+                                     ui::ELIDE_IN_MIDDLE);
     return base::i18n::GetDisplayStringInLTRDirectionality(elided_name);
   }
 
   int available_root_width = available_pixel_width - ext_width;
   string16 elided_name =
-      ElideText(rootname, font, available_root_width, false);
+      ElideText(rootname, font, available_root_width, ui::ELIDE_AT_END);
   elided_name += extension;
   return base::i18n::GetDisplayStringInLTRDirectionality(elided_name);
 }
@@ -344,11 +346,13 @@ string16 ElideFilename(const FilePath& filename,
 string16 ElideText(const string16& text,
                    const gfx::Font& font,
                    int available_pixel_width,
-                   bool elide_in_middle) {
+                   ElideBehavior elide_behavior) {
   if (text.empty())
     return text;
 
   int current_text_pixel_width = font.GetStringWidth(text);
+  bool elide_in_middle = (elide_behavior == ui::ELIDE_IN_MIDDLE);
+  bool insert_ellipsis = (elide_behavior != ui::TRUNCATE_AT_END);
 
   // Pango will return 0 width for absurdly long strings. Cut the string in
   // half and try again.
@@ -360,7 +364,7 @@ string16 ElideText(const string16& text,
   // ridiculous), but we should check other widths for bogus values as well.
   if (current_text_pixel_width <= 0 && !text.empty()) {
     return ElideText(CutString(text, text.length() / 2, elide_in_middle, false),
-                     font, available_pixel_width, false);
+                     font, available_pixel_width, elide_behavior);
   }
 
   if (current_text_pixel_width <= available_pixel_width)
@@ -372,24 +376,25 @@ string16 ElideText(const string16& text,
   // Use binary search to compute the elided text.
   size_t lo = 0;
   size_t hi = text.length() - 1;
-  for (size_t guess = (lo + hi) / 2; guess != lo; guess = (lo + hi) / 2) {
+  size_t guess;
+  for (guess = (lo + hi) / 2; lo <= hi; guess = (lo + hi) / 2) {
     // We check the length of the whole desired string at once to ensure we
     // handle kerning/ligatures/etc. correctly.
-    int guess_length = font.GetStringWidth(
-        CutString(text, guess, elide_in_middle, true));
+    string16 cut = CutString(text, guess, elide_in_middle, insert_ellipsis);
+    int guess_length = font.GetStringWidth(cut);
     // Check again that we didn't hit a Pango width overflow. If so, cut the
     // current string in half and start over.
     if (guess_length <= 0) {
       return ElideText(CutString(text, guess / 2, elide_in_middle, false),
-                       font, available_pixel_width, elide_in_middle);
+                       font, available_pixel_width, elide_behavior);
     }
     if (guess_length > available_pixel_width)
-      hi = guess;
+      hi = guess - 1;
     else
-      lo = guess;
+      lo = guess + 1;
   }
 
-  return CutString(text, lo, elide_in_middle, true);
+  return CutString(text, guess, elide_in_middle, insert_ellipsis);
 }
 
 SortedDisplayURL::SortedDisplayURL(const GURL& url,
@@ -576,6 +581,8 @@ class RectangleString {
 
   // String onto which the output is accumulated.
   string16* output_;
+
+  DISALLOW_COPY_AND_ASSIGN(RectangleString);
 };
 
 void RectangleString::AddString(const string16& input) {

@@ -95,7 +95,8 @@ void TrimTooltipToFit(string16* text,
   string16 result;
   for (std::vector<string16>::iterator i = lines.begin(); i != lines.end();
        ++i) {
-    string16 elided_text = ui::ElideText(*i, font, available_width, false);
+    string16 elided_text =
+        ui::ElideText(*i, font, available_width, ui::ELIDE_AT_END);
     *max_width = std::max(*max_width, font.GetStringWidth(elided_text));
     if (!result.empty())
       result.push_back('\n');

@@ -164,7 +164,8 @@ NSMutableAttributedString* OmniboxPopupViewMac::ElideString(
   }
 
   // If ElideText() decides to do nothing, nothing to be done.
-  const string16 elided = ui::ElideText(originalString, font, width, false);
+  const string16 elided =
+      ui::ElideText(originalString, font, width, ui::ELIDE_AT_END);
   if (0 == elided.compare(originalString)) {
     return aString;
   }

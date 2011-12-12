@@ -42,7 +42,7 @@ std::string BuildElidedText(const std::string& input) {
       UTF8ToUTF16(input),
       gfx::Font(),
       kMaxLinkPixelSize,
-      false));
+      ui::ELIDE_AT_END));
 }
 
 }  // namespace

@@ -40,13 +40,21 @@ UI_EXPORT string16 ElideUrl(const GURL& url,
                             int available_pixel_width,
                             const std::string& languages);
 
-// Elides |text| to fit in |available_pixel_width|.  If |elide_in_middle| is
-// set the ellipsis is placed in the middle of the string; otherwise it is
-// placed at the end.
+enum ElideBehavior {
+  // Add ellipsis at the end of the string.
+  ELIDE_AT_END,
+  // Add ellipsis in the middle of the string.
+  ELIDE_IN_MIDDLE,
+  // Truncate the end of the string.
+  TRUNCATE_AT_END
+};
+
+// Elides |text| to fit in |available_pixel_width| according to the specified
+// |elide_behavior|.
 UI_EXPORT string16 ElideText(const string16& text,
                              const gfx::Font& font,
                              int available_pixel_width,
-                             bool elide_in_middle);
+                             ElideBehavior elide_behavior);
 
 // Elide a filename to fit a given pixel width, with an emphasis on not hiding
 // the extension unless we have to. If filename contains a path, the path will

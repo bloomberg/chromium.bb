@@ -352,7 +352,7 @@ const int kInterruptedAnimationDuration = 2.5;
       base::SysNSStringToUTF16([self secondaryTitle]),
       font_chr,
       availableWidth,
-      false));
+      ui::ELIDE_AT_END));
 }
 
 - (ui::ThemeProvider*)backgroundThemeWrappingProvider:

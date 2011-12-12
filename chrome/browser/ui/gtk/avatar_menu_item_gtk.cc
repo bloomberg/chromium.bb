@@ -253,7 +253,7 @@ void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
   string16 elided_name = ui::ElideText(item_.name,
                                        gfx::Font(),
                                        kUserNameMaxWidth,
-                                       /* elide_in_middle */ false);
+                                       ui::ELIDE_AT_END);
   if (item_.active) {
     name_label = gtk_util::CreateBoldLabel(UTF16ToUTF8(elided_name));
   } else {

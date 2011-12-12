@@ -92,7 +92,8 @@ string16 BackForwardMenuModel::GetLabelAt(int index) const {
       Profile::FromBrowserContext(GetTabContents()->browser_context());
   string16 menu_text(entry->GetTitleForDisplay(
       profile->GetPrefs()->GetString(prefs::kAcceptLanguages)));
-  menu_text = ui::ElideText(menu_text, gfx::Font(), kMaxWidth, false);
+  menu_text =
+      ui::ElideText(menu_text, gfx::Font(), kMaxWidth, ui::ELIDE_AT_END);
 
 #if !defined(OS_MACOSX)
   for (size_t i = menu_text.find('&'); i != string16::npos;

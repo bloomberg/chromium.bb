@@ -95,7 +95,7 @@ CGFloat EVBubbleDecoration::GetWidthForSpace(CGFloat width) {
                  [font_ pointSize]);
   NSString* elided_label = base::SysUTF16ToNSString(
       ui::ElideText(base::SysNSStringToUTF16(full_label_), font, width_left,
-                    true));
+                    ui::ELIDE_IN_MIDDLE));
 
   // Use the elided label.
   SetLabel(elided_label);

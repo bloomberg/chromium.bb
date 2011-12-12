@@ -82,8 +82,7 @@ TEST(TextEliderTest, TestGeneralEliding) {
 // both path AND file name to an ellipsis - ".../...". To avoid this result,
 // there is a hack in place that simply treats them as one string in this
 // case.
-TEST(TextEliderTest, TestTrailingEllipsisSlashEllipsisHack)
-{
+TEST(TextEliderTest, TestTrailingEllipsisSlashEllipsisHack) {
   const std::string kEllipsisStr(kEllipsis);
 
   // Very little space, would cause double ellipsis.
@@ -215,6 +214,29 @@ TEST(TextEliderTest, TestFilenameEliding) {
   }
 }
 
+TEST(TextEliderTest, ElideTextTruncate) {
+  const gfx::Font font;
+  const int kTestWidth = font.GetStringWidth(ASCIIToUTF16("Test"));
+  struct TestData {
+    const char* input;
+    int width;
+    const char* output;
+  } cases[] = {
+    { "", 0, "" },
+    { "Test", 0, "" },
+    { "", kTestWidth, "" },
+    { "Tes", kTestWidth, "Tes" },
+    { "Test", kTestWidth, "Test" },
+    { "Tests", kTestWidth, "Test" },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    string16 result = ui::ElideText(UTF8ToUTF16(cases[i].input), font,
+                                    cases[i].width, ui::TRUNCATE_AT_END);
+    EXPECT_EQ(cases[i].output, UTF16ToUTF8(result));
+  }
+}
+
 TEST(TextEliderTest, ElideTextLongStrings) {
   const string16 kEllipsisStr = UTF8ToUTF16(kEllipsis);
   string16 data_scheme(UTF8ToUTF16("data:text/plain,"));
@@ -247,9 +269,10 @@ TEST(TextEliderTest, ElideTextLongStrings) {
     EXPECT_EQ(testcases_end[i].output.size(),
               ElideText(testcases_end[i].input, font,
                         font.GetStringWidth(testcases_end[i].output),
-                        false).size());
+                        ui::ELIDE_AT_END).size());
     EXPECT_EQ(kEllipsisStr,
-              ElideText(testcases_end[i].input, font, ellipsis_width, false));
+              ElideText(testcases_end[i].input, font, ellipsis_width,
+                        ui::ELIDE_AT_END));
   }
 
   size_t number_of_trailing_as = (data_scheme_length + number_of_as) / 2;
@@ -271,10 +294,10 @@ TEST(TextEliderTest, ElideTextLongStrings) {
     EXPECT_EQ(testcases_middle[i].output.size(),
               ElideText(testcases_middle[i].input, font,
                         font.GetStringWidth(testcases_middle[i].output),
-                        false).size());
+                        ui::ELIDE_AT_END).size());
     EXPECT_EQ(kEllipsisStr,
               ElideText(testcases_middle[i].input, font, ellipsis_width,
-                        false));
+                        ui::ELIDE_AT_END));
   }
 }
 

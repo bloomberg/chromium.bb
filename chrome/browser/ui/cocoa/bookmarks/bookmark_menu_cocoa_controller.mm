@@ -33,7 +33,7 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
   string16 title = ui::ElideText(node->GetTitle(),
                                  font,
                                  kMaximumMenuPixelsWide,
-                                 false);
+                                 ui::ELIDE_AT_END);
   return base::SysUTF16ToNSString(title);
 }
 

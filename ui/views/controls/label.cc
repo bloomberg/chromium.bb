@@ -485,8 +485,8 @@ void Label::CalculateDrawStringParams(string16* paint_text,
     *paint_text = base::i18n::GetDisplayStringInLTRDirectionality(
         *paint_text);
   } else if (elide_in_middle_) {
-    *paint_text = ui::ElideText(text_,
-        font_, GetAvailableRect().width(), true);
+    *paint_text = ui::ElideText(text_, font_, GetAvailableRect().width(),
+                                ui::ELIDE_IN_MIDDLE);
   } else {
     *paint_text = text_;
   }

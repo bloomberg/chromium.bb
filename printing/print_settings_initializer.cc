@@ -47,7 +47,7 @@ void PrintSettingsInitializer::InitHeaderFooterStrings(
   double segment_width = GetHeaderFooterSegmentWidth(ConvertUnitDouble(
       print_settings->page_setup_device_units().physical_size().width(),
       print_settings->device_units_per_inch(), kPixelsPerInch));
-  date = ui::ElideText(date, font, segment_width, false);
+  date = ui::ElideText(date, font, segment_width, ui::ELIDE_AT_END);
   print_settings->date = date;
 
   // Calculate the available title width. If the date string is not long
@@ -57,7 +57,8 @@ void PrintSettingsInitializer::InitHeaderFooterStrings(
   double max_title_width = std::min(2 * segment_width,
                                     2 * (segment_width - date_width) +
                                         segment_width);
-  print_settings->title = ui::ElideText(title, font, max_title_width, false);
+  print_settings->title =
+      ui::ElideText(title, font, max_title_width, ui::ELIDE_AT_END);
 
   double max_url_width = 2 * segment_width;
   GURL gurl(url);
