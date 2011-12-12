@@ -115,7 +115,7 @@ int CertificateManagerModel::ImportFromPKCS12(net::CryptoModule* module,
                                               const string16& password,
                                               bool is_extractable) {
   int result = cert_db_.ImportFromPKCS12(module, data, password,
-                                         is_extractable);
+                                         is_extractable, NULL);
   if (result == net::OK)
     Refresh();
   return result;

@@ -154,7 +154,8 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12WrongPassword) {
             cert_db_.ImportFromPKCS12(slot_,
                                       pkcs12_data,
                                       string16(),
-                                      true));  // is_extractable
+                                      true,  // is_extractable
+                                      NULL));
 
   // Test db should still be empty.
   EXPECT_EQ(0U, ListCertsInSlot(slot_->os_module_handle()).size());
@@ -166,7 +167,8 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12AsExtractableAndExportAgain) {
   EXPECT_EQ(OK, cert_db_.ImportFromPKCS12(slot_,
                                           pkcs12_data,
                                           ASCIIToUTF16("12345"),
-                                          true));  // is_extractable
+                                          true,  // is_extractable
+                                          NULL));
 
   CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
   ASSERT_EQ(1U, cert_list.size());
@@ -189,7 +191,8 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12Twice) {
   EXPECT_EQ(OK, cert_db_.ImportFromPKCS12(slot_,
                                           pkcs12_data,
                                           ASCIIToUTF16("12345"),
-                                          true));  // is_extractable
+                                          true,  // is_extractable
+                                          NULL));
   EXPECT_EQ(1U, ListCertsInSlot(slot_->os_module_handle()).size());
 
   // NSS has a SEC_ERROR_PKCS12_DUPLICATE_DATA error, but it doesn't look like
@@ -197,7 +200,8 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12Twice) {
   EXPECT_EQ(OK, cert_db_.ImportFromPKCS12(slot_,
                                           pkcs12_data,
                                           ASCIIToUTF16("12345"),
-                                          true));  // is_extractable
+                                          true,  // is_extractable
+                                          NULL));
   EXPECT_EQ(1U, ListCertsInSlot(slot_->os_module_handle()).size());
 }
 
@@ -207,7 +211,8 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12AsUnextractableAndExportAgain) {
   EXPECT_EQ(OK, cert_db_.ImportFromPKCS12(slot_,
                                           pkcs12_data,
                                           ASCIIToUTF16("12345"),
-                                          false));  // is_extractable
+                                          false,  // is_extractable
+                                          NULL));
 
   CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
   ASSERT_EQ(1U, cert_list.size());
@@ -228,7 +233,8 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12OnlyMarkIncludedKey) {
   EXPECT_EQ(OK, cert_db_.ImportFromPKCS12(slot_,
                                           pkcs12_data,
                                           ASCIIToUTF16("12345"),
-                                          true));  // is_extractable
+                                          true,  // is_extractable
+                                          NULL));
 
   CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
   ASSERT_EQ(1U, cert_list.size());
@@ -238,7 +244,8 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12OnlyMarkIncludedKey) {
   EXPECT_EQ(OK, cert_db_.ImportFromPKCS12(slot_,
                                           pkcs12_data,
                                           ASCIIToUTF16("12345"),
-                                          false));  // is_extractable
+                                          false,  // is_extractable
+                                          NULL));
 
   cert_list = ListCertsInSlot(slot_->os_module_handle());
   ASSERT_EQ(1U, cert_list.size());
@@ -257,7 +264,8 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12InvalidFile) {
             cert_db_.ImportFromPKCS12(slot_,
                                       pkcs12_data,
                                       string16(),
-                                      true));  // is_extractable
+                                      true,  // is_extractable
+                                      NULL));
 
   // Test db should still be empty.
   EXPECT_EQ(0U, ListCertsInSlot(slot_->os_module_handle()).size());

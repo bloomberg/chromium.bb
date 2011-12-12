@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/cros/onc_network_parser.h"
 
+#include <pk11pub.h>
+#include <keyhi.h>
+
 #include "base/base64.h"
 #include "base/json/json_value_serializer.h"
 #include "base/json/json_writer.h"  // for debug output only.
@@ -200,9 +203,8 @@ OncNetworkParser::OncNetworkParser(const std::string& onc_blob)
       root_dict_->GetList("Certificates", &certificates_);
     VLOG(2) << "ONC file has " << GetNetworkConfigsSize() << " networks and "
             << GetCertificatesSize() << " certificates";
-    if (!has_network_configurations || !has_certificates) {
-      LOG(WARNING) << "ONC file has no NetworkConfigurations or Certificates.";
-    }
+    LOG_IF(WARNING, (!has_network_configurations && !has_certificates))
+      << "ONC file has no NetworkConfigurations or Certificates.";
   }
 }
 
@@ -228,7 +230,8 @@ int OncNetworkParser::GetCertificatesSize() const {
   return certificates_ ? certificates_->GetSize() : 0;
 }
 
-bool OncNetworkParser::ParseCertificate(int cert_index) {
+scoped_refptr<net::X509Certificate> OncNetworkParser::ParseCertificate(
+    int cert_index) {
   CHECK(certificates_);
   CHECK(static_cast<size_t>(cert_index) < certificates_->GetSize());
   CHECK(cert_index >= 0);
@@ -244,35 +247,39 @@ bool OncNetworkParser::ParseCertificate(int cert_index) {
             << ": " << certificate_json;
   }
 
-  // Get out the attributes of the given cert.
+  // Get out the attributes of the given certificate.
   std::string guid;
   bool remove = false;
   if (!certificate->GetString("GUID", &guid) || guid.empty()) {
     LOG(WARNING) << "ONC File: certificate missing identifier at index"
                  << cert_index;
-    return false;
+    return NULL;
   }
 
   if (!certificate->GetBoolean("Remove", &remove))
     remove = false;
 
   net::CertDatabase cert_database;
-  if (remove)
-    return cert_database.DeleteCertAndKeyByLabel(guid);
+  if (remove) {
+    bool success = DeleteCertAndKeyByNickname(guid);
+    DCHECK(success);
+    // TODO(gspencer): return removed certificate?
+    return NULL;
+  }
 
-  // Not removing, so let's get the data we need to add this cert.
+  // Not removing, so let's get the data we need to add this certificate.
   std::string cert_type;
   certificate->GetString("Type", &cert_type);
   if (cert_type == "Server" || cert_type == "Authority") {
-    return ParseServerOrCaCertificate(cert_index, cert_type, certificate);
+    return ParseServerOrCaCertificate(cert_index, cert_type, guid, certificate);
   }
   if (cert_type == "Client") {
-    return ParseClientCertificate(cert_index, certificate);
+    return ParseClientCertificate(cert_index, guid, certificate);
   }
 
   LOG(WARNING) << "ONC File: certificate of unknown type: " << cert_type
                << " at index " << cert_index;
-  return false;
+  return NULL;
 }
 
 Network* OncNetworkParser::ParseNetwork(int n) {
@@ -350,9 +357,11 @@ std::string OncNetworkParser::GetGuidFromDictionary(
   return guid_string;
 }
 
-bool OncNetworkParser::ParseServerOrCaCertificate(
+scoped_refptr<net::X509Certificate>
+OncNetworkParser::ParseServerOrCaCertificate(
     int cert_index,
     const std::string& cert_type,
+    const std::string& guid,
     base::DictionaryValue* certificate) {
   net::CertDatabase cert_database;
   bool web_trust = false;
@@ -363,7 +372,7 @@ bool OncNetworkParser::ParseServerOrCaCertificate(
       if (!trust_list->GetString(i, &trust_type)) {
         LOG(WARNING) << "ONC File: certificate trust is invalid at index "
                      << cert_index;
-        return false;
+        return NULL;
       }
       if (trust_type == "Web") {
         web_trust = true;
@@ -371,7 +380,7 @@ bool OncNetworkParser::ParseServerOrCaCertificate(
         LOG(WARNING) << "ONC File: certificate contains unknown "
                      << "trust type: " << trust_type
                      << " at index " << cert_index;
-        return false;
+        return NULL;
       }
     }
   }
@@ -381,23 +390,26 @@ bool OncNetworkParser::ParseServerOrCaCertificate(
     LOG(WARNING) << "ONC File: certificate missing appropriate "
                  << "certificate data for type: " << cert_type
                  << " at index " << cert_index;
-    return false;
+    return NULL;
   }
 
   std::string decoded_x509;
   if (!base::Base64Decode(x509_data, &decoded_x509)) {
     LOG(WARNING) << "Unable to base64 decode X509 data: \""
                  << x509_data << "\".";
-    return false;
+    return NULL;
   }
 
-  scoped_refptr<net::X509Certificate> x509_cert(
-      net::X509Certificate::CreateFromBytes(decoded_x509.c_str(),
-                                            decoded_x509.size()));
+  scoped_refptr<net::X509Certificate> x509_cert =
+      net::X509Certificate::CreateFromBytesWithNickname(
+          decoded_x509.c_str(),
+          decoded_x509.size(),
+          guid.c_str());
   if (!x509_cert.get()) {
     LOG(WARNING) << "Unable to create X509 certificate from bytes.";
-    return false;
+    return NULL;
   }
+
   net::CertificateList cert_list;
   cert_list.push_back(x509_cert);
   net::CertDatabase::ImportCertFailureList failures;
@@ -415,20 +427,22 @@ bool OncNetworkParser::ParseServerOrCaCertificate(
                  << net::ErrorToString(failures[0].net_error)
                  << ") importing " << cert_type << " certificate at index "
                  << cert_index;
-    return false;
+    return NULL;
   }
   if (!success) {
     LOG(WARNING) << "ONC File: Unknown error importing " << cert_type
                  << " certificate at index " << cert_index;
-    return false;
+    return NULL;
   }
   VLOG(2) << "Successfully imported server/ca certificate at index "
           << cert_index;
-  return true;
+
+  return x509_cert;
 }
 
-bool OncNetworkParser::ParseClientCertificate(
+scoped_refptr<net::X509Certificate> OncNetworkParser::ParseClientCertificate(
     int cert_index,
+    const std::string& guid,
     base::DictionaryValue* certificate) {
   net::CertDatabase cert_database;
   std::string pkcs12_data;
@@ -436,29 +450,60 @@ bool OncNetworkParser::ParseClientCertificate(
       pkcs12_data.empty()) {
     LOG(WARNING) << "ONC File: PKCS12 data is missing for Client "
                  << "certificate at index " << cert_index;
-    return false;
+    return NULL;
   }
 
   std::string decoded_pkcs12;
   if (!base::Base64Decode(pkcs12_data, &decoded_pkcs12)) {
     LOG(WARNING) << "Unable to base64 decode PKCS#12 data: \""
                  << pkcs12_data << "\".";
-    return false;
+    return NULL;
   }
 
   // Since this has a private key, always use the private module.
   scoped_refptr<net::CryptoModule> module(cert_database.GetPrivateModule());
+  net::CertificateList imported_certs;
+
   int result = cert_database.ImportFromPKCS12(
-      module.get(), decoded_pkcs12, string16(), false);
+      module.get(), decoded_pkcs12, string16(), false, &imported_certs);
   if (result != net::OK) {
     LOG(WARNING) << "ONC File: Unable to import Client certificate at index "
                  << cert_index
                  << " (error " << net::ErrorToString(result) << ").";
-    return false;
+    return NULL;
   }
+
+  if (imported_certs.size() == 0) {
+    LOG(WARNING) << "ONC File: PKCS12 data contains no importable certificates"
+        << " at index " << cert_index;
+    return NULL;
+  }
+
+  if (imported_certs.size() != 1) {
+    LOG(WARNING) << "ONC File: PKCS12 data at index " << cert_index
+        << " contains more than one certificate.  Only the first one will"
+        << " be imported.";
+  }
+
+  scoped_refptr<net::X509Certificate> cert_result = imported_certs[0];
+
+  // Find the private key associated with this certificate, and set the
+  // nickname on it.
+  SECKEYPrivateKey* private_key = PK11_FindPrivateKeyFromCert(
+      cert_result->os_cert_handle()->slot,
+      cert_result->os_cert_handle(),
+      NULL);  // wincx
+  if (private_key) {
+    PK11_SetPrivateKeyNickname(private_key, const_cast<char*>(guid.c_str()));
+    SECKEY_DestroyPrivateKey(private_key);
+  } else {
+    LOG(WARNING) << "ONC File: Unable to find private key for cert at index"
+                 << cert_index;
+  }
+
   VLOG(2) << "Successfully imported client certificate at index "
           << cert_index;
-  return true;
+  return cert_result;
 }
 
 bool OncNetworkParser::ParseNestedObject(Network* network,
@@ -586,6 +631,66 @@ bool OncNetworkParser::ParseNetworkConfigurationValue(
       break;
   }
   return false;
+}
+
+// static
+bool OncNetworkParser::DeleteCertAndKeyByNickname(const std::string& label) {
+  net::CertificateList cert_list;
+  ListCertsWithNickname(label, &cert_list);
+  net::CertDatabase cert_db;
+  bool result = true;
+  for (net::CertificateList::iterator iter = cert_list.begin();
+       iter != cert_list.end(); ++iter) {
+    // If we fail, we try and delete the rest still.
+    // TODO(gspencer): this isn't very "transactional".  If we fail on some, but
+    // not all, then it's possible to leave things in a weird state.
+    // Luckily there should only be one cert with a particular
+    // label, and the cert not being found is one of the few reasons the
+    // delete could fail, but still...  The other choice is to return
+    // failure immediately, but that doesn't seem to do what is intended.
+    if (!cert_db.DeleteCertAndKey(iter->get()))
+      result = false;
+  }
+  return result;
+}
+
+// static
+void OncNetworkParser::ListCertsWithNickname(const std::string& label,
+                                             net::CertificateList* result) {
+  net::CertificateList all_certs;
+  net::CertDatabase cert_db;
+  cert_db.ListCerts(&all_certs);
+  result->clear();
+  for (net::CertificateList::iterator iter = all_certs.begin();
+       iter != all_certs.end(); ++iter) {
+    if (iter->get()->os_cert_handle()->nickname) {
+      // Separate the nickname stored in the certificate at the colon, since
+      // NSS likes to store it as token:nickname.
+      const char* delimiter =
+          ::strchr(iter->get()->os_cert_handle()->nickname, ':');
+      if (delimiter) {
+        delimiter++;  // move past the colon.
+        if (strcmp(delimiter, label.c_str()) == 0) {
+          result->push_back(*iter);
+          continue;
+        }
+      }
+    }
+    // Now we find the private key for this certificate and see if it has a
+    // nickname that matches.  If there is a private key, and it matches,
+    // then this is a client cert that we are looking for.
+    SECKEYPrivateKey* private_key = PK11_FindPrivateKeyFromCert(
+        iter->get()->os_cert_handle()->slot,
+        iter->get()->os_cert_handle(),
+        NULL);  // wincx
+    if (private_key) {
+      char* private_key_nickname = PK11_GetPrivateKeyNickname(private_key);
+      if (private_key_nickname && private_key_nickname == label)
+        result->push_back(*iter);
+      PORT_Free(private_key_nickname);
+      SECKEY_DestroyPrivateKey(private_key);
+    }
+  }
 }
 
 // -------------------- OncWirelessNetworkParser --------------------

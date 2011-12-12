@@ -5,21 +5,27 @@
 #include "chrome/browser/chromeos/cros/onc_network_parser.h"
 
 #include <cert.h>
+#include <keyhi.h>
 #include <pk11pub.h>
 
 #include "base/lazy_instance.h"
 #include "base/scoped_temp_dir.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "crypto/nss_util.h"
 #include "net/base/cert_database.h"
+#include "net/base/cert_type.h"
 #include "net/base/crypto_module.h"
 #include "net/base/x509_certificate.h"
+#include "net/third_party/mozilla_security_manager/nsNSSCertTrust.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+namespace msm = mozilla_security_manager;
 namespace chromeos {
 
+namespace {
 const char kNetworkConfigurationOpenVPN[] =
       "    {"
       "      \"GUID\": \"{408290ea-9299-4757-ab04-8957d55f0f13}\","
@@ -102,6 +108,21 @@ const char kCertificateWebAuthority[] =
       "1kohau6FauQx87by5NIRPdkNPvkQ==\""
       "        }";
 
+const char g_token_name[] = "OncNetworkParserTest token";
+
+net::CertType GetCertType(const net::X509Certificate* cert) {
+  DCHECK(cert);
+  msm::nsNSSCertTrust trust(cert->os_cert_handle()->trust);
+  if (trust.HasAnyUser())
+    return net::USER_CERT;
+  if (trust.HasAnyCA() || CERT_IsCACert(cert->os_cert_handle(), NULL))
+    return net::CA_CERT;
+  if (trust.HasPeer(PR_TRUE, PR_FALSE, PR_FALSE))
+    return net::SERVER_CERT;
+  return net::UNKNOWN_CERT;
+}
+
+}  // namespace
 
 class OncNetworkParserTest : public testing::Test {
  public:
@@ -113,8 +134,7 @@ class OncNetworkParserTest : public testing::Test {
     // it once, and empty it for each test case.  Here's the bug:
     // https://bugzilla.mozilla.org/show_bug.cgi?id=588269
     ASSERT_TRUE(
-        crypto::OpenTestNSSDB(temp_db_dir_.Get().path(),
-                              "OncNetworkParserTest db"));
+        crypto::OpenTestNSSDB(temp_db_dir_.Get().path(), g_token_name));
   }
 
   static void TearDownTestCase() {
@@ -446,47 +466,6 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkL2TPIPsec) {
   EXPECT_FALSE(vpn->save_credentials());
 }
 
-TEST_F(OncNetworkParserTest, TestAddServerCertificate) {
-  std::string test_blob(
-      "{"
-      "    \"Certificates\": ["
-      "        {"
-      "            \"GUID\": \"{f998f760-272b-6939-4c2beffe428697aa}\","
-      "            \"Type\": \"Server\","
-      "            \"X509\": \"MIICWDCCAcECAxAAATANBgkqhkiG9w0BAQQFADCBkzEVM"
-      "BMGA1UEChMMR29vZ2xlLCBJbmMuMREwDwYDVQQLEwhDaHJvbWVPUzEiMCAGCSqGSIb3DQ"
-      "EJARYTZ3NwZW5jZXJAZ29vZ2xlLmNvbTEaMBgGA1UEBxMRTW91bnRhaW4gVmlldywgQ0E"
-      "xCzAJBgNVBAgTAkNBMQswCQYDVQQGEwJVUzENMAsGA1UEAxMEbG1hbzAeFw0xMTAzMTYy"
-      "MzQ5MzhaFw0xMjAzMTUyMzQ5MzhaMFMxCzAJBgNVBAYTAlVTMQswCQYDVQQIEwJDQTEVM"
-      "BMGA1UEChMMR29vZ2xlLCBJbmMuMREwDwYDVQQLEwhDaHJvbWVPUzENMAsGA1UEAxMEbG"
-      "1hbzCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEA31WiJ9LvprrhKtDlW0RdLFAO7Qj"
-      "kvs+sG6j2Vp2aBSrlhALG/0BVHUhWi4F/HHJho+ncLHAg5AGO0sdAjYUdQG6tfPqjLsIA"
-      "LtoKEZZdFe/JhmqOEaxWsSdu2S2RdPgCQOsP79EH58gXwu2gejCkJDmU22WL4YLuqOc17"
-      "nxbDC8CAwEAATANBgkqhkiG9w0BAQQFAAOBgQCv4vMD+PMlfnftu4/6Yf/oMLE8yCOqZT"
-      "Q/dWCxB9PiJnOefiBeSzSZE6Uv3G7qnblZPVZaFeJMd+ostt0viCyPucFsFgLMyyoV1dM"
-      "VPVwJT5Iq1AHehWXnTBbxUK9wioA5jOEKdroKjuSSsg/Q8Wx6cpJmttQz5olGPgstmACR"
-      "WA==\""
-      "        }"
-      "    ],"
-      "}");
-  OncNetworkParser parser(test_blob);
-
-  EXPECT_EQ(1, parser.GetCertificatesSize());
-  EXPECT_TRUE(parser.ParseCertificate(0));
-}
-
-TEST_F(OncNetworkParserTest, TestAddAuthorityCertificate) {
-  const std::string test_blob(std::string("{"
-      "    \"Certificates\": [") +
-      std::string(kCertificateWebAuthority) + std::string(
-      "    ],"
-      "}"));
-  OncNetworkParser parser(test_blob);
-
-  EXPECT_EQ(1, parser.GetCertificatesSize());
-  EXPECT_TRUE(parser.ParseCertificate(0));
-}
-
 TEST_F(OncNetworkParserTest, TestAddClientCertificate) {
   std::string test_blob(
       "{"
@@ -529,10 +508,130 @@ TEST_F(OncNetworkParserTest, TestAddClientCertificate) {
       "        }"
       "    ],"
       "}");
+  std::string test_guid("{f998f760-272b-6939-4c2beffe428697ac}");
   OncNetworkParser parser(test_blob);
+  ASSERT_EQ(1, parser.GetCertificatesSize());
 
-  EXPECT_EQ(1, parser.GetCertificatesSize());
-  EXPECT_TRUE(parser.ParseCertificate(0));
+  scoped_refptr<net::X509Certificate> cert = parser.ParseCertificate(0).get();
+  EXPECT_TRUE(cert.get() != NULL);
+  EXPECT_EQ(net::USER_CERT, GetCertType(cert.get()));
+
+  EXPECT_STREQ(test_guid.c_str(),
+               cert->GetDefaultNickname(net::USER_CERT).c_str());
+  net::CertificateList result_list;
+  OncNetworkParser::ListCertsWithNickname(test_guid, &result_list);
+  ASSERT_EQ(1ul, result_list.size());
+  EXPECT_EQ(net::USER_CERT, GetCertType(result_list[0].get()));
+
+  SECKEYPrivateKeyList* privkey_list =
+      PK11_ListPrivKeysInSlot(slot_->os_module_handle(), NULL, NULL);
+  EXPECT_TRUE(privkey_list);
+  if (privkey_list) {
+    SECKEYPrivateKeyListNode* node = PRIVKEY_LIST_HEAD(privkey_list);
+    int count = 0;
+    while (!PRIVKEY_LIST_END(node, privkey_list)) {
+      char* name = PK11_GetPrivateKeyNickname(node->key);
+      EXPECT_STREQ(test_guid.c_str(), name);
+      PORT_Free(name);
+      count++;
+      node = PRIVKEY_LIST_NEXT(node);
+    }
+    EXPECT_EQ(1, count);
+    SECKEY_DestroyPrivateKeyList(privkey_list);
+  }
+
+  SECKEYPublicKeyList* pubkey_list =
+      PK11_ListPublicKeysInSlot(slot_->os_module_handle(), NULL);
+  EXPECT_TRUE(pubkey_list);
+  if (pubkey_list) {
+    SECKEYPublicKeyListNode* node = PUBKEY_LIST_HEAD(pubkey_list);
+    int count = 0;
+    while (!PUBKEY_LIST_END(node, pubkey_list)) {
+      count++;
+      node = PUBKEY_LIST_NEXT(node);
+    }
+    EXPECT_EQ(1, count);
+    SECKEY_DestroyPublicKeyList(pubkey_list);
+  }
+}
+
+TEST_F(OncNetworkParserTest, TestAddServerCertificate) {
+  std::string test_blob(
+      "{"
+      "    \"Certificates\": ["
+      "        {"
+      "            \"GUID\": \"{f998f760-272b-6939-4c2beffe428697aa}\","
+      "            \"Type\": \"Server\","
+      "            \"X509\": \"MIICWDCCAcECAxAAATANBgkqhkiG9w0BAQQFADCBkzEVM"
+      "BMGA1UEChMMR29vZ2xlLCBJbmMuMREwDwYDVQQLEwhDaHJvbWVPUzEiMCAGCSqGSIb3DQ"
+      "EJARYTZ3NwZW5jZXJAZ29vZ2xlLmNvbTEaMBgGA1UEBxMRTW91bnRhaW4gVmlldywgQ0E"
+      "xCzAJBgNVBAgTAkNBMQswCQYDVQQGEwJVUzENMAsGA1UEAxMEbG1hbzAeFw0xMTAzMTYy"
+      "MzQ5MzhaFw0xMjAzMTUyMzQ5MzhaMFMxCzAJBgNVBAYTAlVTMQswCQYDVQQIEwJDQTEVM"
+      "BMGA1UEChMMR29vZ2xlLCBJbmMuMREwDwYDVQQLEwhDaHJvbWVPUzENMAsGA1UEAxMEbG"
+      "1hbzCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEA31WiJ9LvprrhKtDlW0RdLFAO7Qj"
+      "kvs+sG6j2Vp2aBSrlhALG/0BVHUhWi4F/HHJho+ncLHAg5AGO0sdAjYUdQG6tfPqjLsIA"
+      "LtoKEZZdFe/JhmqOEaxWsSdu2S2RdPgCQOsP79EH58gXwu2gejCkJDmU22WL4YLuqOc17"
+      "nxbDC8CAwEAATANBgkqhkiG9w0BAQQFAAOBgQCv4vMD+PMlfnftu4/6Yf/oMLE8yCOqZT"
+      "Q/dWCxB9PiJnOefiBeSzSZE6Uv3G7qnblZPVZaFeJMd+ostt0viCyPucFsFgLMyyoV1dM"
+      "VPVwJT5Iq1AHehWXnTBbxUK9wioA5jOEKdroKjuSSsg/Q8Wx6cpJmttQz5olGPgstmACR"
+      "WA==\""
+      "        }"
+      "    ],"
+      "}");
+  std::string test_guid("{f998f760-272b-6939-4c2beffe428697aa}");
+  OncNetworkParser parser(test_blob);
+  ASSERT_EQ(1, parser.GetCertificatesSize());
+
+  scoped_refptr<net::X509Certificate> cert = parser.ParseCertificate(0).get();
+  EXPECT_TRUE(cert.get() != NULL);
+  EXPECT_EQ(net::SERVER_CERT, GetCertType(cert.get()));
+
+  EXPECT_STREQ(test_guid.c_str(),
+               cert->GetDefaultNickname(net::SERVER_CERT).c_str());
+  net::CertificateList result_list;
+  OncNetworkParser::ListCertsWithNickname(test_guid, &result_list);
+  ASSERT_EQ(1ul, result_list.size());
+  EXPECT_EQ(net::SERVER_CERT, GetCertType(result_list[0].get()));
+
+  SECKEYPrivateKeyList* privkey_list =
+      PK11_ListPrivKeysInSlot(slot_->os_module_handle(), NULL, NULL);
+  EXPECT_FALSE(privkey_list);
+
+  SECKEYPublicKeyList* pubkey_list =
+      PK11_ListPublicKeysInSlot(slot_->os_module_handle(), NULL);
+  EXPECT_FALSE(pubkey_list);
+
+}
+
+TEST_F(OncNetworkParserTest, TestAddAuthorityCertificate) {
+  const std::string test_blob(std::string("{"
+      "    \"Certificates\": [") +
+      std::string(kCertificateWebAuthority) + std::string(
+      "    ],"
+      "}"));
+  std::string test_guid("{f998f760-272b-6939-4c2beffe428697ab}");
+  OncNetworkParser parser(test_blob);
+  ASSERT_EQ(1, parser.GetCertificatesSize());
+
+  scoped_refptr<net::X509Certificate> cert = parser.ParseCertificate(0).get();
+  EXPECT_TRUE(cert.get() != NULL);
+  EXPECT_EQ(net::CA_CERT, GetCertType(cert.get()));
+
+  EXPECT_STREQ(test_guid.c_str(),
+               cert->GetDefaultNickname(net::CA_CERT).c_str());
+  net::CertificateList result_list;
+  OncNetworkParser::ListCertsWithNickname(test_guid, &result_list);
+  ASSERT_EQ(1ul, result_list.size());
+  EXPECT_EQ(net::CA_CERT, GetCertType(result_list[0].get()));
+
+  SECKEYPrivateKeyList* privkey_list =
+      PK11_ListPrivKeysInSlot(slot_->os_module_handle(), NULL, NULL);
+  EXPECT_FALSE(privkey_list);
+
+  SECKEYPublicKeyList* pubkey_list =
+      PK11_ListPublicKeysInSlot(slot_->os_module_handle(), NULL);
+  EXPECT_FALSE(pubkey_list);
+
 }
 
 TEST_F(OncNetworkParserTest, TestNetworkAndCertificate) {

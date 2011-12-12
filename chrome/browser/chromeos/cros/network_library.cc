@@ -39,6 +39,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "crypto/nss_util.h"  // crypto::GetTPMTokenInfo() for 802.1X and VPN.
 #include "grit/generated_resources.h"
+#include "net/base/x509_certificate.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
@@ -2839,7 +2840,7 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
 
   for (int i = 0; i < parser.GetCertificatesSize(); i++) {
     // Insert each of the available certs into the certificate DB.
-    if (!parser.ParseCertificate(i)) {
+    if (parser.ParseCertificate(i).get() == NULL) {
       DLOG(WARNING) << "Cannot parse certificate in ONC file";
       return false;
     }

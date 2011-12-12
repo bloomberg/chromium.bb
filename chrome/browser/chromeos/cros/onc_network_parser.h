@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"  // for OVERRIDE
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/network_parser.h"
@@ -17,6 +18,11 @@ namespace base {
 class DictionaryValue;
 class ListValue;
 class Value;
+}
+
+namespace net {
+class X509Certificate;
+typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 }
 
 namespace chromeos {
@@ -52,16 +58,17 @@ class OncNetworkParser : public NetworkParser {
   // Returns the number of networks in the "NetworkConfigs" list.
   int GetNetworkConfigsSize() const;
 
-  // Returns the number of certificates in the "Certificates" list.
-  int GetCertificatesSize() const;
-
   // Call to create the network by parsing network config in the nth position.
   // (0-based). Returns NULL if there's a parse error or if n is out of range.
   Network* ParseNetwork(int n);
 
+  // Returns the number of certificates in the "Certificates" list.
+  int GetCertificatesSize() const;
+
   // Call to parse and import the nth certificate in the certificate
-  // list.  Returns false on failure.
-  bool ParseCertificate(int n);
+  // list into the certificate store.  Returns a NULL refptr if
+  // there's a parse error or if n is out of range.
+  scoped_refptr<net::X509Certificate> ParseCertificate(int n);
 
   virtual Network* CreateNetworkFromInfo(const std::string& service_path,
       const base::DictionaryValue& info) OVERRIDE;
@@ -104,13 +111,26 @@ class OncNetworkParser : public NetworkParser {
                                const std::string& onc_type);
 
  private:
-  bool ParseServerOrCaCertificate(
+  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestAddClientCertificate);
+  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestAddServerCertificate);
+  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestAddAuthorityCertificate);
+  scoped_refptr<net::X509Certificate> ParseServerOrCaCertificate(
     int cert_index,
     const std::string& cert_type,
+    const std::string& guid,
     base::DictionaryValue* certificate);
-  bool ParseClientCertificate(
+  scoped_refptr<net::X509Certificate> ParseClientCertificate(
     int cert_index,
+    const std::string& guid,
     base::DictionaryValue* certificate);
+
+  // This lists the certificates that have the string |label| as their
+  // certificate nickname (exact match).
+  static void ListCertsWithNickname(const std::string& label,
+                                    net::CertificateList* result);
+  // This deletes any certificate that has the string |label| as its
+  // nickname (exact match).
+  static bool DeleteCertAndKeyByNickname(const std::string& label);
 
   // Error message from the JSON parser, if applicable.
   std::string parse_error_;
