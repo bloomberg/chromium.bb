@@ -33,6 +33,9 @@ cr.define('options', function() {
     // An object containing all known profile names.
     profileNames_: {},
 
+    // The currently selected icon in the icon grid.
+    iconGridSelectedURL_: null,
+
     /**
      * Initialize the page.
      */
@@ -91,6 +94,7 @@ cr.define('options', function() {
      * @private
      */
     setProfileInfo_: function(profileInfo) {
+      this.iconGridSelectedURL_ = profileInfo.iconURL;
       this.profileInfo_ = profileInfo;
       $('manage-profile-name').value = profileInfo.name;
       $('manage-profile-icon-grid').selectedItem = profileInfo.iconURL;
@@ -197,6 +201,9 @@ cr.define('options', function() {
      */
     onIconGridSelectionChanged_: function() {
       var iconURL = $('manage-profile-icon-grid').selectedItem;
+      if (!iconURL || iconURL == this.iconGridSelectedURL_)
+        return;
+      this.iconGridSelectedURL_ = iconURL;
       chrome.send('profileIconSelectionChanged',
                   [this.profileInfo_.filePath, iconURL]);
     },
