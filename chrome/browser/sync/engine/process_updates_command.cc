@@ -28,8 +28,7 @@ ProcessUpdatesCommand::ProcessUpdatesCommand() {}
 ProcessUpdatesCommand::~ProcessUpdatesCommand() {}
 
 bool ProcessUpdatesCommand::HasCustomGroupsToChange() const {
-  // TODO(akalin): Set to true.
-  return false;
+  return true;
 }
 
 std::set<ModelSafeGroup> ProcessUpdatesCommand::GetGroupsToChange(
