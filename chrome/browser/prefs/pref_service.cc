@@ -907,6 +907,10 @@ bool PrefService::Preference::IsManaged() const {
   return pref_value_store()->PrefValueInManagedStore(name_.c_str());
 }
 
+bool PrefService::Preference::IsRecommended() const {
+  return pref_value_store()->PrefValueFromRecommendedStore(name_.c_str());
+}
+
 bool PrefService::Preference::HasExtensionSetting() const {
   return pref_value_store()->PrefValueInExtensionStore(name_.c_str());
 }

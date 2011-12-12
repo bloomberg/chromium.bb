@@ -272,8 +272,7 @@ DictionaryValue* CoreOptionsHandler::CreateValueForPref(
     dict->SetString("controlledBy", "policy");
   } else if (controlling_pref->IsExtensionControlled()) {
     dict->SetString("controlledBy", "extension");
-  } else if (controlling_pref->IsUserModifiable() &&
-             !controlling_pref->IsDefaultValue()) {
+  } else if (controlling_pref->IsRecommended()) {
     dict->SetString("controlledBy", "recommended");
   }
   dict->SetBoolean("disabled", !controlling_pref->IsUserModifiable());

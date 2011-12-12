@@ -78,6 +78,10 @@ class PrefService : public base::NonThreadSafe {
     // whether the pref is actually being controlled by the policy setting.
     bool IsManaged() const;
 
+    // Returns true if the Preference is recommended, i.e. set by an admin
+    // policy but the user is allowed to change it.
+    bool IsRecommended() const;
+
     // Returns true if the Preference has a value set by an extension, even if
     // that value is being overridden by a higher-priority source.
     bool HasExtensionSetting() const;

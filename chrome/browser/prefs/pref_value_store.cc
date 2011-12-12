@@ -164,6 +164,11 @@ bool PrefValueStore::PrefValueFromUserStore(const char* name) const {
   return ControllingPrefStoreForPref(name) == USER_STORE;
 }
 
+bool PrefValueStore::PrefValueFromRecommendedStore(const char* name) const {
+  return ControllingPrefStoreForPref(name) == RECOMMENDED_PLATFORM_STORE ||
+         ControllingPrefStoreForPref(name) == RECOMMENDED_CLOUD_STORE;
+}
+
 bool PrefValueStore::PrefValueFromDefaultStore(const char* name) const {
   return ControllingPrefStoreForPref(name) == DEFAULT_STORE;
 }

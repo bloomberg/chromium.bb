@@ -94,6 +94,7 @@ class PrefValueStore {
   // a higher-priority source.
   bool PrefValueFromExtensionStore(const char* name) const;
   bool PrefValueFromUserStore(const char* name) const;
+  bool PrefValueFromRecommendedStore(const char* name) const;
   bool PrefValueFromDefaultStore(const char* name) const;
 
   // Check whether a Preference value is modifiable by the user, i.e. whether
