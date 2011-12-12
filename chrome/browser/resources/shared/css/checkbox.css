@@ -13,8 +13,6 @@ input[type='checkbox'] {
   border-radius: 3px;
   border: 1px solid #a0a0a0;
   display: inline-block;
-  font: inherit;  /* TODO(csilv): investigate why this is required on the
-                     Windows platform. http://crbug.com/105811 */
   height: 16px;
   margin-bottom: 0;
   margin-top: 0;
@@ -43,13 +41,11 @@ input[type='checkbox']:not(:disabled):active {
 input[type='checkbox']:checked::before {
   color: #808080;
   content: url('../images/checkmark.png');
+  font-size: 13px;  /* Explicitly set the font size so that the positioning
+                       of the checkmark is correct. */
   height: 16px;
   left: 2px;
   position: absolute;
-}
-
-html[os=mac] input[type='checkbox']:checked::before {
-  top: 2px;
 }
 
 input[type='radio'] {
