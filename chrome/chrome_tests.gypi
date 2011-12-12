@@ -1519,6 +1519,7 @@
         'browser/policy/asynchronous_policy_provider_unittest.cc',
         'browser/policy/asynchronous_policy_test_base.cc',
         'browser/policy/asynchronous_policy_test_base.h',
+        'browser/policy/auto_enrollment_client_unittest.cc',
         'browser/policy/cloud_policy_controller_unittest.cc',
         'browser/policy/cloud_policy_provider_unittest.cc',
         'browser/policy/cloud_policy_subsystem_unittest.cc',
@@ -2123,6 +2124,7 @@
           'sources/': [
             ['exclude', '^browser/chromeos/'],
             ['exclude', '^browser/oom_priority_manager_unittest.cc'],
+            ['exclude', '^browser/policy/auto_enrollment_client_unittest.cc' ],
             ['exclude', '^browser/policy/configuration_policy_handler_chromeos_unittest.cc' ],
             ['exclude', '^browser/policy/device_policy_cache_unittest.cc'],
             ['exclude', '^browser/policy/enterprise_install_attributes_unittest.cc' ],

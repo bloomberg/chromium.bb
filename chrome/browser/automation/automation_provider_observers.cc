@@ -3058,6 +3058,8 @@ void PolicyUpdatesObserver::Reply() {
     AutomationJSONReply(
         automation_, reply_message_.release()).SendSuccess(NULL);
   }
+  // Reply() is only called from MaybeReply(), which makes the callback own
+  // |this|; so |this| will be deleted once this method returns.
 }
 
 // static

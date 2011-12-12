@@ -1204,6 +1204,16 @@ const char kCompressSystemFeedback[]        = "compress-sys-feedback";
 // Enables overriding the path for the default authentication extension.
 const char kAuthExtensionPath[]             = "auth-ext-path";
 
+// Power of the power-of-2 initial modulus that will be used by the
+// auto-enrollment client. E.g. "4" means the modulus will be 2^4 = 16.
+const char kEnterpriseEnrollmentInitialModulus[]  =
+    "enterprise-enrollment-initial-modulus";
+
+// Power of the power-of-2 maximum modulus that will be used by the
+// auto-enrollment client.
+const char kEnterpriseEnrollmentModulusLimit[]    =
+    "enterprise-enrollment-modulus-limit";
+
 #ifndef NDEBUG
 // Skips all other OOBE pages after user login.
 const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";

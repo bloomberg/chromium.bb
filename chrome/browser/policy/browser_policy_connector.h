@@ -86,6 +86,9 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // Locks the device to an enterprise domain.
   EnterpriseInstallAttributes::LockResult LockDevice(const std::string& user);
 
+  // Returns the device serial number, or an empty string if not available.
+  static std::string GetSerialNumber();
+
   // Returns the enterprise domain if device is managed.
   std::string GetEnterpriseDomain();
 

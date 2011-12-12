@@ -69,7 +69,7 @@ const char kMachineInfoSystemHwqual[] = "hardware_class";
 // in the "serial_number" key for v2+ VPDs. However, we cannot check this first,
 // since we'd get the "serial_number" value from the SMBIOS (yes, there's a name
 // clash here!), which is different from the serial number we want and not
-// actually per-device. So, we check the the legacy keys first. If we find a
+// actually per-device. So, we check the legacy keys first. If we find a
 // serial number for these, we use it, otherwise we must be on a newer device
 // that provides the correct data in "serial_number".
 const char* kMachineInfoSerialNumberKeys[] = {
@@ -155,22 +155,16 @@ void BrowserPolicyConnector::RegisterForDevicePolicy(
   if (device_data_store_.get()) {
     if (device_data_store_->machine_id().empty() ||
         device_data_store_->machine_model().empty()) {
-      std::string machine_id;
-      std::string machine_model;
       chromeos::system::StatisticsProvider* provider =
           chromeos::system::StatisticsProvider::GetInstance();
+
+      std::string machine_model;
       if (!provider->GetMachineStatistic(kMachineInfoSystemHwqual,
                                          &machine_model)) {
         LOG(ERROR) << "Failed to get machine model.";
       }
-      for (size_t i = 0; i < arraysize(kMachineInfoSerialNumberKeys); i++) {
-        if (provider->GetMachineStatistic(kMachineInfoSerialNumberKeys[i],
-                                          &machine_id) &&
-            !machine_id.empty()) {
-          break;
-        }
-      }
 
+      std::string machine_id = GetSerialNumber();
       if (machine_id.empty())
         LOG(ERROR) << "Failed to get machine serial number.";
 
@@ -208,6 +202,23 @@ EnterpriseInstallAttributes::LockResult
 #endif
 
   return EnterpriseInstallAttributes::LOCK_BACKEND_ERROR;
+}
+
+// static
+std::string BrowserPolicyConnector::GetSerialNumber() {
+  std::string serial_number;
+#if defined(OS_CHROMEOS)
+  chromeos::system::StatisticsProvider* provider =
+      chromeos::system::StatisticsProvider::GetInstance();
+  for (size_t i = 0; i < arraysize(kMachineInfoSerialNumberKeys); i++) {
+    if (provider->GetMachineStatistic(kMachineInfoSerialNumberKeys[i],
+                                      &serial_number) &&
+        !serial_number.empty()) {
+      break;
+    }
+  }
+#endif
+  return serial_number;
 }
 
 std::string BrowserPolicyConnector::GetEnterpriseDomain() {
