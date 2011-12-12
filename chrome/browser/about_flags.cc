@@ -372,6 +372,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kUseMoreWebUI)
   },
+  {
+    "enable-http-pipelining",
+    IDS_FLAGS_ENABLE_HTTP_PIPELINING_NAME,
+    IDS_FLAGS_ENABLE_HTTP_PIPELINING_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableHttpPipelining)
+  },
   // TODO(flackr): Remove this flag and views screen locker when the WebUI
   // locker is mature (crbug.com/105263).
   {
