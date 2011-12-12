@@ -48,6 +48,7 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
       { switches::kDisableTLS1, prefs::kTLS1Enabled, false },
       { switches::kEnableOriginBoundCerts, prefs::kEnableOriginBoundCerts,
           true },
+      { switches::kEnableMemoryInfo, prefs::kEnableMemoryInfo, false },
 };
 
 const CommandLinePrefStore::IntegerSwitchToPreferenceMapEntry

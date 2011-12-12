@@ -103,7 +103,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 114
+#   For your editing convenience: highest ID currently used: 115
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -2222,6 +2222,19 @@
       'desc': '''Specifies whether the TLS origin-bound certificates extension should be enabled.
 
       This setting is used to enable the TLS origin-bound certificates extension for testing.  This experimental setting will be removed in the future.''',
+    },
+    {
+      'name': 'EnableMemoryInfo',
+      'type': 'main',
+      'supported_on': ['chrome.*:16-'],
+      'features': {'dynamic_refresh': True},
+      'future': True,
+      'example_value': False,
+      'id': 115,
+      'caption': '''Enable reporting memory info (JS heap size) to page''',
+      'desc': '''Allows pages to access JavaScript memory usage statistics.
+
+      This settings makes the memory statistics from the Developer Tools Profiles panel available to the web page itself.''',
     },
   ],
   'messages': {

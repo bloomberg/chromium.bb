@@ -38,6 +38,7 @@
   "DownloadDirectory": "Downloads",
   "EditBookmarksEnabled": true,
   "EnableAuthNegotiatePort": false,
+  "EnableMemoryInfo": false,
   "EnableOriginBoundCerts": false,
   "EnabledPlugins": ["Java"],
   "ExtensionInstallBlacklist": ["extension_id1", "extension_id2"],

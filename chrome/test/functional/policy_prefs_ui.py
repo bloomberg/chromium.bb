@@ -196,6 +196,7 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
     'URLWhitelist': ([ 'google.com' ], []),
     'EnterpriseWebStoreURL': ('', []),
     'EnterpriseWebStoreName': ('', []),
+    'EnableMemoryInfo': (True, []),
 
     # ChromeOS-only policies:
     'ChromeOsLockOnIdleSuspend': (True, [ PERSONAL ], [ 'chromeos' ]),

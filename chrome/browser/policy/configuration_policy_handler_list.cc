@@ -194,6 +194,8 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kEnterpriseWebStoreURL },
   { Value::TYPE_STRING, kPolicyEnterpriseWebStoreName,
     prefs::kEnterpriseWebStoreName },
+  { Value::TYPE_BOOLEAN, kPolicyEnableMemoryInfo,
+    prefs::kEnableMemoryInfo },
 
 #if defined(OS_CHROMEOS)
   { Value::TYPE_BOOLEAN, kPolicyChromeOsLockOnIdleSuspend,

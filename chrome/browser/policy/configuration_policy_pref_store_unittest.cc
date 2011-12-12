@@ -255,6 +255,8 @@ INSTANTIATE_TEST_CASE_P(
                     prefs::kImportSearchEngine),
         TypeAndName(kPolicyImportSavedPasswords,
                     prefs::kImportSavedPasswords),
+        TypeAndName(kPolicyEnableMemoryInfo,
+                    prefs::kEnableMemoryInfo),
         TypeAndName(kPolicyDeveloperToolsDisabled,
                     prefs::kDevToolsDisabled)));
 

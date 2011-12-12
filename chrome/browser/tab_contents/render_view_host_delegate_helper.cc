@@ -472,7 +472,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.accelerated_video_enabled =
         !command_line.HasSwitch(switches::kDisableAcceleratedVideo);
     web_prefs.memory_info_enabled =
-        command_line.HasSwitch(switches::kEnableMemoryInfo);
+        prefs->GetBoolean(prefs::kEnableMemoryInfo);
     web_prefs.interactive_form_validation_enabled =
         !command_line.HasSwitch(switches::kDisableInteractiveFormValidation);
     web_prefs.fullscreen_enabled =

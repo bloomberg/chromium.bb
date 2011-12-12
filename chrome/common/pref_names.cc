@@ -838,6 +838,9 @@ const char kEnableHyperlinkAuditing[] = "enable_a_ping";
 // Whether to enable sending referrers.
 const char kEnableReferrers[] = "enable_referrers";
 
+// Boolean to enable reporting memory info to page.
+const char kEnableMemoryInfo[] = "enable_memory_info";
+
 #if defined(OS_MACOSX)
 // Whether presentation mode is enabled for fullscreen (used on Lion only).
 const char kPresentationModeEnabled[] = "presentation_mode_enabled";
