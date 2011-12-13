@@ -62,10 +62,6 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/preferences.h"
-#endif
-
 using base::Time;
 using base::TimeDelta;
 
