@@ -11,16 +11,13 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_piece.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GURL;
 class SiteInstance;
 class TabContents;
-
-namespace base {
-class StringPiece;
-}
 
 namespace content {
 

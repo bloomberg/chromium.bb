@@ -10,10 +10,6 @@
 #include "base/string_piece.h"
 #include "v8/include/v8.h"
 
-namespace base {
-class StringPiece;
-}
-
 // A very simple implementation of v8::ExternalAsciiStringResource that just
 // wraps a buffer. The buffer must outlive the v8 runtime instance this resource
 // is used in.
