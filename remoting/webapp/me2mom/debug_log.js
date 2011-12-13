@@ -161,7 +161,6 @@ remoting.DebugLog.prototype.verifyAttributes = function(node, validAttrs) {
     var attrNode = node.attributes[i];
     var attr = attrNode.nodeName;
     if (attrs.indexOf(',' + attr + ',') == -1) {
-      console.log("invalid attr: " + attr);
       return false;
     }
   }
