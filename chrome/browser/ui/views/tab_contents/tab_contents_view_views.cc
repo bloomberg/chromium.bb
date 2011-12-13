@@ -341,6 +341,10 @@ void TabContentsViewViews::ShowContextMenu(const ContextMenuParams& params) {
   context_menu_.reset(new RenderViewContextMenuViews(tab_contents_, params));
   context_menu_->Init();
 
+  // Don't show empty menus.
+  if (context_menu_->menu_model().GetItemCount() == 0)
+    return;
+
   gfx::Point screen_point(params.x, params.y);
   views::View::ConvertPointToScreen(GetRootView(), &screen_point);
 

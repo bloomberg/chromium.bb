@@ -47,8 +47,10 @@
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -360,8 +362,9 @@ void RenderViewContextMenu::AppendExtensionItems(
   if (items.empty())
     return;
 
-  // If this is the first extension-provided menu item, add a separator.
-  if (*index == 0)
+  // If this is the first extension-provided menu item, and there are other
+  // items in the menu, add a separator.
+  if (*index == 0 && menu_model_.GetItemCount())
     menu_model_.AddSeparator();
 
   int menu_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + (*index)++;
@@ -510,6 +513,20 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
 void RenderViewContextMenu::InitMenu() {
   bool has_link = !params_.unfiltered_link_url.is_empty();
   bool has_selection = !params_.selection_text.empty();
+
+  Browser* active_browser = BrowserList::FindBrowserWithTabContents(
+      source_tab_contents_);
+  if (active_browser && active_browser->is_app()) {
+    const std::string ext_id = web_app::GetExtensionIdFromApplicationName(
+        active_browser->app_name());
+    const Extension* app =
+        profile_->GetExtensionService()->GetInstalledExtension(ext_id);
+    if (app && app->is_platform_app()) {
+      int index = 0;
+      AppendExtensionItems(app->id(), &index);
+      return;
+    }
+  }
 
   if (AppendCustomItems()) {
     // If there's a selection, don't early return when there are custom items,
