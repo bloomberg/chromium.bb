@@ -194,7 +194,7 @@ class WebDataServiceFake : public WebDataService {
     // initialization (which seems way more fragile) we can't tell which
     // component is asking at what time, and some components in these Autofill
     // tests require a WebDataService.
-    return NULL;
+    return 0;
   }
 
   virtual AutocompleteSyncableService*
