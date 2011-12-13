@@ -53,6 +53,17 @@ class Authenticator {
     REJECTED,
   };
 
+  // Returns true if |message| is an Authenticator message.
+  static bool IsAuthenticatorMessage(const buzz::XmlElement* message);
+
+  // Creates an empty Authenticator message, owned by the caller.
+  static buzz::XmlElement* CreateEmptyAuthenticatorMessage();
+
+  // Finds Authenticator message among child elements of |message|, or
+  // returns NULL otherwise.
+  static const buzz::XmlElement* FindAuthenticatorMessage(
+      const buzz::XmlElement* message);
+
   Authenticator() {}
   virtual ~Authenticator() {}
 

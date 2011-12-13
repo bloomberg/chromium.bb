@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "remoting/base/constants.h"
+#include "remoting/protocol/authenticator.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 using buzz::QName;
@@ -27,7 +28,6 @@ const char kControlTag[] = "control";
 const char kEventTag[] = "event";
 const char kVideoTag[] = "video";
 const char kResolutionTag[] = "initial-resolution";
-const char kAuthenticationTag[] = "authentication";
 
 const char kTransportAttr[] = "transport";
 const char kVersionAttr[] = "version";
@@ -198,8 +198,7 @@ XmlElement* ContentDescription::ToXml() const {
   root->AddElement(resolution_tag);
 
   if (authenticator_message_.get()) {
-    DCHECK(authenticator_message_->Name() ==
-           QName(kChromotingXmlNamespace, kAuthenticationTag));
+    DCHECK(Authenticator::IsAuthenticatorMessage(authenticator_message_.get()));
     root->AddElement(new XmlElement(*authenticator_message_));
   }
 
@@ -266,8 +265,7 @@ ContentDescription* ContentDescription::ParseXml(
     *config->mutable_initial_resolution() = resolution;
 
     scoped_ptr<XmlElement> authenticator_message;
-    child = element->FirstNamed(QName(kChromotingXmlNamespace,
-                                      kAuthenticationTag));
+    child = Authenticator::FindAuthenticatorMessage(element);
     if (child)
       authenticator_message.reset(new XmlElement(*child));
 

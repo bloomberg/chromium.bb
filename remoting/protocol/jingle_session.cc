@@ -45,6 +45,8 @@ JingleSession::JingleSession(
   jid_ = cricket_session_->remote_name();
   cricket_session_->SignalState.connect(this, &JingleSession::OnSessionState);
   cricket_session_->SignalError.connect(this, &JingleSession::OnSessionError);
+  cricket_session_->SignalInfoMessage.connect(
+      this, &JingleSession::OnSessionInfoMessage);
   cricket_session_->SignalReceivedTerminateReason.connect(
       this, &JingleSession::OnTerminateReason);
 }
@@ -246,6 +248,25 @@ void JingleSession::OnSessionError(
   }
 }
 
+void JingleSession::OnSessionInfoMessage(cricket::Session* session,
+                                         const buzz::XmlElement* message) {
+  DCHECK_EQ(cricket_session_,session);
+
+  const buzz::XmlElement* auth_message =
+      Authenticator::FindAuthenticatorMessage(message);
+  if (auth_message) {
+    if (state_ != CONNECTED ||
+        authenticator_->state() != Authenticator::WAITING_MESSAGE) {
+      LOG(WARNING) << "Received unexpected authenticator message "
+                   << auth_message->Str();
+      return;
+    }
+
+    authenticator_->ProcessMessage(auth_message);
+    ProcessAuthenticationStep();
+  }
+}
+
 void JingleSession::OnTerminateReason(cricket::Session* session,
                                       const std::string& reason) {
   terminate_reason_ = reason;
@@ -294,16 +315,10 @@ bool JingleSession::InitializeConfigFromDescription(
     return false;
   }
 
-  DCHECK(authenticator_->state() == Authenticator::WAITING_MESSAGE);
+  DCHECK_EQ(authenticator_->state(), Authenticator::WAITING_MESSAGE);
   authenticator_->ProcessMessage(auth_message);
-  // Support for more than two auth message is not implemented yet.
-  DCHECK(authenticator_->state() != Authenticator::WAITING_MESSAGE &&
-         authenticator_->state() != Authenticator::MESSAGE_READY);
 
-  if (authenticator_->state() != Authenticator::ACCEPTED) {
-    return false;
-  }
-
+  // Initialize session configuration.
   SessionConfig config;
   if (!content_description->config()->GetFinalConfig(&config)) {
     LOG(ERROR) << "Connection response does not specify configuration";
@@ -333,8 +348,12 @@ void JingleSession::OnAccept() {
 
   SetState(CONNECTED);
 
-  if (authenticator_->state() == Authenticator::ACCEPTED)
+  // Process authentication.
+  if (authenticator_->state() == Authenticator::ACCEPTED) {
     SetState(AUTHENTICATED);
+  } else {
+    ProcessAuthenticationStep();
+  }
 }
 
 void JingleSession::OnTerminate() {
@@ -398,8 +417,6 @@ void JingleSession::AcceptConnection() {
 
   DCHECK(authenticator_->state() == Authenticator::WAITING_MESSAGE);
   authenticator_->ProcessMessage(auth_message);
-  // Support for more than two auth message is not implemented yet.
-  DCHECK(authenticator_->state() != Authenticator::WAITING_MESSAGE);
   if (authenticator_->state() == Authenticator::REJECTED) {
     CloseInternal(net::ERR_CONNECTION_FAILED, AUTHENTICATION_FAILED);
     return;
@@ -412,9 +429,27 @@ void JingleSession::AcceptConnection() {
   buzz::XmlElement* auth_reply = NULL;
   if (authenticator_->state() == Authenticator::MESSAGE_READY)
     auth_reply = authenticator_->GetNextMessage();
-  DCHECK_EQ(authenticator_->state(), Authenticator::ACCEPTED);
+  DCHECK_NE(authenticator_->state(), Authenticator::MESSAGE_READY);
   cricket_session_->Accept(
       CreateSessionDescription(candidate_config, auth_reply));
+}
+
+void JingleSession::ProcessAuthenticationStep() {
+  DCHECK_EQ(state_, CONNECTED);
+
+  if (authenticator_->state() == Authenticator::MESSAGE_READY) {
+    buzz::XmlElement* auth_message = authenticator_->GetNextMessage();
+    cricket::XmlElements message;
+    message.push_back(auth_message);
+    cricket_session_->SendInfoMessage(message);
+  }
+  DCHECK_NE(authenticator_->state(), Authenticator::MESSAGE_READY);
+
+  if (authenticator_->state() == Authenticator::ACCEPTED) {
+    SetState(AUTHENTICATED);
+  } else if (authenticator_->state() == Authenticator::REJECTED) {
+    CloseInternal(net::ERR_CONNECTION_ABORTED, AUTHENTICATION_FAILED);
+  }
 }
 
 void JingleSession::AddChannelConnector(

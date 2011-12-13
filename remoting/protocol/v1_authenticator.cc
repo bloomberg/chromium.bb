@@ -20,7 +20,6 @@ namespace remoting {
 namespace protocol {
 
 namespace {
-const char kAuthenticationTag[] = "authentication";
 const char kAuthTokenTag[] = "auth-token";
 const char kCertificateTag[] = "certificate";
 }  // namespace
@@ -64,19 +63,16 @@ void V1ClientAuthenticator::ProcessMessage(const XmlElement* message) {
 XmlElement* V1ClientAuthenticator::GetNextMessage() {
   DCHECK_EQ(state_, MESSAGE_READY);
 
-  XmlElement* authentication_tag = new XmlElement(
-      QName(kChromotingXmlNamespace, kAuthenticationTag));
-
+  XmlElement* message = CreateEmptyAuthenticatorMessage();
   std::string token =
       protocol::GenerateSupportAuthToken(local_jid_, shared_secret_);
-
   XmlElement* auth_token_tag = new XmlElement(
       QName(kChromotingXmlNamespace, kAuthTokenTag));
   auth_token_tag->SetBodyText(token);
-  authentication_tag->AddElement(auth_token_tag);
+  message->AddElement(auth_token_tag);
 
   state_ = WAITING_MESSAGE;
-  return authentication_tag;
+  return message;
 }
 
 ChannelAuthenticator*
@@ -121,9 +117,7 @@ void V1HostAuthenticator::ProcessMessage(const XmlElement* message) {
 XmlElement* V1HostAuthenticator::GetNextMessage() {
   DCHECK_EQ(state_, MESSAGE_READY);
 
-  XmlElement* message = new XmlElement(
-      QName(kChromotingXmlNamespace, kAuthenticationTag));
-
+  XmlElement* message = CreateEmptyAuthenticatorMessage();
   buzz::XmlElement* certificate_tag = new XmlElement(
       buzz::QName(kChromotingXmlNamespace, kCertificateTag));
   std::string base64_cert;

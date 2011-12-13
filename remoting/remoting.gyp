@@ -743,6 +743,7 @@
       'sources': [
         'protocol/auth_util.cc',
         'protocol/auth_util.h',
+        'protocol/authenticator.cc',
         'protocol/authenticator.h',
         'protocol/buffered_socket_writer.cc',
         'protocol/buffered_socket_writer.h',

@@ -171,14 +171,14 @@ class JingleSessionTest : public testing::Test {
     {
       InSequence dummy;
 
+      EXPECT_CALL(host_connection_callback_,
+                  OnStateChange(Session::CONNECTED))
+          .Times(AtMost(1));
       if (expect_fail) {
         EXPECT_CALL(host_connection_callback_,
                     OnStateChange(Session::FAILED))
             .Times(1);
       } else {
-        EXPECT_CALL(host_connection_callback_,
-                    OnStateChange(Session::CONNECTED))
-            .Times(1);
         EXPECT_CALL(host_connection_callback_,
                     OnStateChange(Session::AUTHENTICATED))
             .Times(1);
@@ -191,14 +191,14 @@ class JingleSessionTest : public testing::Test {
       EXPECT_CALL(client_connection_callback_,
                   OnStateChange(Session::CONNECTING))
           .Times(1);
+      EXPECT_CALL(client_connection_callback_,
+                  OnStateChange(Session::CONNECTED))
+          .Times(AtMost(1));
       if (expect_fail) {
         EXPECT_CALL(client_connection_callback_,
                     OnStateChange(Session::FAILED))
             .Times(1);
       } else {
-        EXPECT_CALL(client_connection_callback_,
-                    OnStateChange(Session::CONNECTED))
-            .Times(1);
         EXPECT_CALL(client_connection_callback_,
                     OnStateChange(Session::AUTHENTICATED))
             .Times(1);
@@ -326,10 +326,22 @@ TEST_F(JingleSessionTest, Connect) {
   InitiateConnection(1, FakeAuthenticator::ACCEPT, false);
 }
 
-// Verify that we can't connect two endpoints with mismatched secrets.
+// Verify that we can connect two endpoints with multi-step authentication.
+TEST_F(JingleSessionTest, ConnectMultistep) {
+  CreateServerPair(3, FakeAuthenticator::ACCEPT);
+  InitiateConnection(3, FakeAuthenticator::ACCEPT, false);
+}
+
+// Verify that connection is terminated when auth fails.
 TEST_F(JingleSessionTest, ConnectBadAuth) {
   CreateServerPair(1, FakeAuthenticator::REJECT);
   InitiateConnection(1, FakeAuthenticator::ACCEPT, true);
+}
+
+// Verify that connection is terminted when multi-step auth fails.
+TEST_F(JingleSessionTest, ConnectBadMultistepAuth) {
+  CreateServerPair(3, FakeAuthenticator::REJECT);
+  InitiateConnection(3, FakeAuthenticator::ACCEPT, true);
 }
 
 TEST_F(JingleSessionTest, ConnectBadChannelAuth) {
@@ -364,6 +376,21 @@ TEST_F(JingleSessionTest, TestTcpChannel) {
   CreateServerPair(1, FakeAuthenticator::ACCEPT);
   ASSERT_NO_FATAL_FAILURE(
       InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
+
+  ASSERT_NO_FATAL_FAILURE(CreateChannel());
+
+  StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
+                                kMessageSize, kMessages);
+  tester.Start();
+  message_loop_.Run();
+  tester.CheckResults();
+}
+
+// Verify that we can connect channels with multistep auth.
+TEST_F(JingleSessionTest, TestMultistepAuthTcpChannel) {
+  CreateServerPair(3, FakeAuthenticator::ACCEPT);
+  ASSERT_NO_FATAL_FAILURE(
+      InitiateConnection(3, FakeAuthenticator::ACCEPT, false));
 
   ASSERT_NO_FATAL_FAILURE(CreateChannel());
 

@@ -74,14 +74,15 @@ class JingleSession : public protocol::Session,
   bool InitializeConfigFromDescription(
       const cricket::SessionDescription* description);
 
-  // Used for Session.SignalState sigslot.
+  // Handlers for |cricket_session_| signals.
   void OnSessionState(cricket::BaseSession* session,
                       cricket::BaseSession::State state);
-  // Used for Session.SignalError sigslot.
   void OnSessionError(cricket::BaseSession* session,
                       cricket::BaseSession::Error error);
-  // Used for Session.SignalReceivedTerminateReason sigslot.
-  void OnTerminateReason(cricket::Session* session, const std::string& reason);
+  void OnSessionInfoMessage(cricket::Session* session,
+                            const buzz::XmlElement* message);
+  void OnTerminateReason(cricket::Session* session,
+                         const std::string& reason);
 
   void OnInitiate();
   void OnAccept();
@@ -90,6 +91,8 @@ class JingleSession : public protocol::Session,
   // Notifies upper layer about incoming connection and
   // accepts/rejects connection.
   void AcceptConnection();
+
+  void ProcessAuthenticationStep();
 
   void AddChannelConnector(const std::string& name,
                            JingleChannelConnector* connector);
