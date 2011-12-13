@@ -194,6 +194,7 @@ class WebResourceService::UnpackerClient : public UtilityProcessHost::Client {
 
   void StartProcessOnIOThread(BrowserThread::ID thread_id) {
     UtilityProcessHost* host = new UtilityProcessHost(this, thread_id);
+    host->set_use_linux_zygote(true);
     // TODO(mrc): get proper file path when we start using web resources
     // that need to be unpacked.
     host->Send(new ChromeUtilityMsg_UnpackWebResource(json_data_));

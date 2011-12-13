@@ -60,5 +60,6 @@ void ImageDecoder::DecodeImageInSandbox(
   UtilityProcessHost* utility_process_host =
       new UtilityProcessHost(this,
                              target_thread_id_);
+  utility_process_host->set_use_linux_zygote(true);
   utility_process_host->Send(new ChromeUtilityMsg_DecodeImage(image_data));
 }

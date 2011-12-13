@@ -594,6 +594,7 @@ void CrxUpdateService::ParseManifest(const std::string& xml) {
     UtilityProcessHost* host =
         new UtilityProcessHost(new ManifestParserBridge(this),
                                BrowserThread::UI);
+    host->set_use_linux_zygote(true);
     host->Send(new ChromeUtilityMsg_ParseUpdateManifest(xml));
   }
 }
