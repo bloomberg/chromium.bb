@@ -103,14 +103,14 @@ bool BrowsingDataExtensionFunction::RunImpl() {
 
   removal_mask_ = GetRemovalMask();
 
-  if (removal_mask_ & BrowsingDataRemover::REMOVE_LSO_DATA) {
-    // If we're being asked to remove LSO data, check whether it's actually
+  if (removal_mask_ & BrowsingDataRemover::REMOVE_PLUGIN_DATA) {
+    // If we're being asked to remove plugin data, check whether it's actually
     // supported.
     Profile* profile = GetCurrentBrowser()->profile();
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(
-            &BrowsingDataExtensionFunction::CheckRemovingLSODataSupported,
+            &BrowsingDataExtensionFunction::CheckRemovingPluginDataSupported,
             this,
             make_scoped_refptr(PluginPrefs::GetForProfile(profile))));
   } else {
@@ -121,10 +121,10 @@ bool BrowsingDataExtensionFunction::RunImpl() {
   return true;
 }
 
-void BrowsingDataExtensionFunction::CheckRemovingLSODataSupported(
+void BrowsingDataExtensionFunction::CheckRemovingPluginDataSupported(
     scoped_refptr<PluginPrefs> plugin_prefs) {
   if (!PluginDataRemoverHelper::IsSupported(plugin_prefs))
-    removal_mask_ &= ~BrowsingDataRemover::REMOVE_LSO_DATA;
+    removal_mask_ &= ~BrowsingDataRemover::REMOVE_PLUGIN_DATA;
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

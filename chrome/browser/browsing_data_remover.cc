@@ -104,7 +104,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_networking_history_(false),
       waiting_for_clear_cookies_(false),
       waiting_for_clear_cache_(false),
-      waiting_for_clear_lso_data_(false),
+      waiting_for_clear_plugin_data_(false),
       remove_mask_(0) {
   DCHECK(profile);
 }
@@ -128,7 +128,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_networking_history_(false),
       waiting_for_clear_cookies_(false),
       waiting_for_clear_cache_(false),
-      waiting_for_clear_lso_data_(false),
+      waiting_for_clear_plugin_data_(false),
       remove_mask_(0) {
   DCHECK(profile);
 }
@@ -255,10 +255,10 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     }
   }
 
-  if (remove_mask & REMOVE_LSO_DATA) {
+  if (remove_mask & REMOVE_PLUGIN_DATA) {
     UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_LSOData"));
 
-    waiting_for_clear_lso_data_ = true;
+    waiting_for_clear_plugin_data_ = true;
     if (!plugin_data_remover_.get()) {
       plugin_data_remover_.reset(
           content::PluginDataRemover::Create(profile_->GetResourceContext()));
@@ -593,7 +593,7 @@ void BrowsingDataRemover::OnQuotaManagedDataDeleted() {
 
 void BrowsingDataRemover::OnWaitableEventSignaled(
     base::WaitableEvent* waitable_event) {
-  waiting_for_clear_lso_data_ = false;
+  waiting_for_clear_plugin_data_ = false;
   NotifyAndDeleteIfDone();
 }
 

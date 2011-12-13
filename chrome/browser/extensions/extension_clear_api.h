@@ -39,9 +39,10 @@ class BrowsingDataExtensionFunction : public AsyncExtensionFunction,
   virtual int GetRemovalMask() const = 0;
 
  private:
-  // Updates the removal bitmask according to whether removing LSO data is
+  // Updates the removal bitmask according to whether removing plugin data is
   // supported or not.
-  void CheckRemovingLSODataSupported(scoped_refptr<PluginPrefs> plugin_prefs);
+  void CheckRemovingPluginDataSupported(
+      scoped_refptr<PluginPrefs> plugin_prefs);
 
   // Called when we're ready to start removing data.
   void StartRemoving();

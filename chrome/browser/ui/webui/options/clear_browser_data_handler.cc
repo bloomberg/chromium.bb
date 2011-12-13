@@ -107,7 +107,7 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
     int site_data_mask = BrowsingDataRemover::REMOVE_SITE_DATA;
     // Don't try to clear LSO data if it's not supported.
     if (!*clear_plugin_lso_data_enabled_)
-      site_data_mask &= ~BrowsingDataRemover::REMOVE_LSO_DATA;
+      site_data_mask &= ~BrowsingDataRemover::REMOVE_PLUGIN_DATA;
     remove_mask |= site_data_mask;
   }
   if (prefs->GetBoolean(prefs::kDeletePasswords))

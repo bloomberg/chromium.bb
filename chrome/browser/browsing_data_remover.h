@@ -66,15 +66,15 @@ class BrowsingDataRemover : public content::NotificationObserver,
     REMOVE_HISTORY = 1 << 6,
     REMOVE_INDEXEDDB = 1 << 7,
     REMOVE_LOCAL_STORAGE = 1 << 8,
-    REMOVE_LSO_DATA = 1 << 9,
+    REMOVE_PLUGIN_DATA = 1 << 9,
     REMOVE_PASSWORDS = 1 << 10,
     REMOVE_WEBSQL = 1 << 11,
 
     // "Site data" includes cookies, appcache, file systems, indexedDBs, local
-    // storage, webSQL, and LSO data.
+    // storage, webSQL, and plugin data.
     REMOVE_SITE_DATA = REMOVE_APPCACHE | REMOVE_COOKIES | REMOVE_FILE_SYSTEMS |
                        REMOVE_INDEXEDDB | REMOVE_LOCAL_STORAGE |
-                       REMOVE_LSO_DATA | REMOVE_WEBSQL
+                       REMOVE_PLUGIN_DATA | REMOVE_WEBSQL
   };
 
   // When BrowsingDataRemover successfully removes data, a notification of type
@@ -217,7 +217,7 @@ class BrowsingDataRemover : public content::NotificationObserver,
            !waiting_for_clear_history_ &&
            !waiting_for_clear_quota_managed_data_ &&
            !waiting_for_clear_networking_history_ &&
-           !waiting_for_clear_lso_data_;
+           !waiting_for_clear_plugin_data_;
   }
 
   // Setter for removing_; DCHECKs that we can only start removing if we're not
@@ -265,7 +265,7 @@ class BrowsingDataRemover : public content::NotificationObserver,
   bool waiting_for_clear_networking_history_;
   bool waiting_for_clear_cookies_;
   bool waiting_for_clear_cache_;
-  bool waiting_for_clear_lso_data_;
+  bool waiting_for_clear_plugin_data_;
 
   // Tracking how many origins need to be deleted, and whether we're finished
   // gathering origins.
