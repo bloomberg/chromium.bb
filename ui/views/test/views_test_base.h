@@ -11,6 +11,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/test_views_delegate.h"
 
+namespace aura {
+namespace test {
+class TestActivationClient;
+}
+}
+
 namespace views {
 
 class TestViewsDelegate;
@@ -40,6 +46,9 @@ class ViewsTestBase : public testing::Test {
  private:
   MessageLoopForUI message_loop_;
   scoped_ptr<TestViewsDelegate> views_delegate_;
+#if defined(USE_AURA)
+  scoped_ptr<aura::test::TestActivationClient> test_activation_client_;
+#endif
   bool setup_called_;
   bool teardown_called_;
 

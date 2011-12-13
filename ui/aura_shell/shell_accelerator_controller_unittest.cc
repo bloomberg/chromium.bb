@@ -10,6 +10,7 @@
 #include "ui/aura_shell/shell_accelerator_controller.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/aura_shell/test/aura_shell_test_base.h"
+#include "ui/aura_shell/window_util.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
@@ -149,7 +150,7 @@ TEST_F(ShellAcceleratorControllerTest, ProcessOnce) {
       -1,
       gfx::Rect(),
       default_container);
-  window->Activate();
+  ActivateWindow(window);
 
   const ui::Accelerator accelerator_a(ui::VKEY_A, false, false, false);
   TestTarget target;

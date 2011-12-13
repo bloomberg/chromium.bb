@@ -13,6 +13,7 @@
 #include "ui/aura/window_types.h"
 #include "ui/aura_shell/property_util.h"
 #include "ui/aura_shell/show_state_controller.h"
+#include "ui/aura_shell/window_util.h"
 #include "ui/aura_shell/workspace/workspace.h"
 #include "ui/aura_shell/workspace/workspace_manager.h"
 #include "ui/base/ui_base_types.h"
@@ -105,7 +106,7 @@ void DefaultContainerLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 
   Workspace* workspace = workspace_manager_->GetActiveWorkspace();
   if (workspace) {
-    aura::Window* active = aura::RootWindow::GetInstance()->active_window();
+    aura::Window* active = aura_shell::GetActiveWindow();
     // Active window may not be in the default container layer.
     if (!workspace->Contains(active))
       active = NULL;

@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/window_drag_drop_delegate.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/events.h"
@@ -28,6 +29,7 @@ class TooltipManagerAura;
 
 class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
                                       public aura::WindowDelegate,
+                                      public aura::ActivationDelegate,
                                       public aura::WindowDragDropDelegate {
  public:
   explicit NativeWidgetAura(internal::NativeWidgetDelegate* delegate);
@@ -132,14 +134,16 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual bool OnMouseEvent(aura::MouseEvent* event) OVERRIDE;
   virtual ui::TouchStatus OnTouchEvent(aura::TouchEvent* event) OVERRIDE;
   virtual bool CanFocus() OVERRIDE;
-  virtual bool ShouldActivate(aura::Event* event) OVERRIDE;
-  virtual void OnActivated() OVERRIDE;
-  virtual void OnLostActive() OVERRIDE;
   virtual void OnCaptureLost() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnWindowDestroying() OVERRIDE;
   virtual void OnWindowDestroyed() OVERRIDE;
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
+
+  // Overridden from aura::ActivationDelegate:
+  virtual bool ShouldActivate(aura::Event* event) OVERRIDE;
+  virtual void OnActivated() OVERRIDE;
+  virtual void OnLostActive() OVERRIDE;
 
   // Overridden from aura::WindowDragDropDelegate:
   virtual void OnDragEntered(const aura::DropTargetEvent& event) OVERRIDE;
@@ -151,7 +155,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
 
  private:
-  class RootWindowObserverImpl;
+  class ActiveWindowObserver;
 
   internal::NativeWidgetDelegate* delegate_;
 
@@ -171,7 +175,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
 
   scoped_ptr<TooltipManagerAura> tooltip_manager_;
 
-  scoped_ptr<RootWindowObserverImpl> root_window_observer_;
+  scoped_ptr<ActiveWindowObserver> active_window_observer_;
 
   scoped_ptr<DropHelper> drop_helper_;
 

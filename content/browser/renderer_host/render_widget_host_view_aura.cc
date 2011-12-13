@@ -100,6 +100,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       skip_schedule_paint_(false) {
   host_->SetView(this);
   window_->SetProperty(aura::kTooltipTextKey, &tooltip_);
+  aura::ActivationDelegate::SetActivationDelegate(window_, this);
 }
 
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
@@ -546,16 +547,6 @@ bool RenderWidgetHostViewAura::CanFocus() {
   return popup_type_ == WebKit::WebPopupTypeNone;
 }
 
-bool RenderWidgetHostViewAura::ShouldActivate(aura::Event* event) {
-  return false;
-}
-
-void RenderWidgetHostViewAura::OnActivated() {
-}
-
-void RenderWidgetHostViewAura::OnLostActive() {
-}
-
 void RenderWidgetHostViewAura::OnCaptureLost() {
   host_->LostCapture();
 }
@@ -584,6 +575,19 @@ void RenderWidgetHostViewAura::OnWindowDestroyed() {
 }
 
 void RenderWidgetHostViewAura::OnWindowVisibilityChanged(bool visible) {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostViewAura, aura::ActivationDelegate implementation:
+
+bool RenderWidgetHostViewAura::ShouldActivate(aura::Event* event) {
+  return false;
+}
+
+void RenderWidgetHostViewAura::OnActivated() {
+}
+
+void RenderWidgetHostViewAura::OnLostActive() {
 }
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)

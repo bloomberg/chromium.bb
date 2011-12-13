@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/root_window_observer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/aura_shell/aura_shell_export.h"
 #include "ui/aura_shell/launcher/launcher_model_observer.h"
 #include "ui/aura_shell/workspace/workspace_observer.h"
@@ -33,6 +34,7 @@ class WorkspaceManager;
 // a move event between Laucher and Workspace.
 class AURA_SHELL_EXPORT WorkspaceController :
       public aura::RootWindowObserver,
+      public aura::WindowObserver,
       public aura_shell::internal::WorkspaceObserver,
       public aura_shell::LauncherModelObserver {
  public:
@@ -48,9 +50,13 @@ class AURA_SHELL_EXPORT WorkspaceController :
     return workspace_manager_.get();
   }
 
-  // RootWindowObserver overrides:
+  // aura::RootWindowObserver overrides:
   virtual void OnRootWindowResized(const gfx::Size& new_size) OVERRIDE;
-  virtual void OnActiveWindowChanged(aura::Window* active) OVERRIDE;
+
+  // aura::WindowObserver overrides:
+  virtual void OnWindowPropertyChanged(aura::Window* window,
+                                       const char* key,
+                                       void* old) OVERRIDE;
 
   // WorkspaceObserver overrides:
   virtual void WindowMoved(WorkspaceManager* manager,

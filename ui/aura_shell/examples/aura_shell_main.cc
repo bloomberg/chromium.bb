@@ -13,6 +13,7 @@
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/aura_shell/shell_factory.h"
+#include "ui/aura_shell/window_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/canvas.h"
@@ -74,7 +75,7 @@ class ShellDelegateImpl : public aura_shell::ShellDelegate {
 
   virtual void LauncherItemClicked(
       const aura_shell::LauncherItem& item) OVERRIDE {
-    item.window->Activate();
+    aura_shell::ActivateWindow(item.window);
   }
 
   virtual bool ConfigureLauncherItem(aura_shell::LauncherItem* item) OVERRIDE {

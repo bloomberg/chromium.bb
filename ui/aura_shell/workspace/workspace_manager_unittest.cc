@@ -10,6 +10,8 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_stacking_client.h"
 #include "ui/aura/window.h"
+#include "ui/aura_shell/activation_controller.h"
+#include "ui/aura_shell/shell_window_ids.h"
 #include "ui/aura_shell/workspace/workspace.h"
 #include "ui/aura_shell/workspace/workspace_observer.h"
 #include "ui/base/ui_base_types.h"
@@ -77,7 +79,16 @@ namespace internal {
 
 class WorkspaceManagerTestBase : public aura::test::AuraTestBase {
  public:
-  WorkspaceManagerTestBase() {}
+  WorkspaceManagerTestBase() {
+    aura::test::TestStackingClient* stacking_client =
+        static_cast<aura::test::TestStackingClient*>(
+            aura::RootWindow::GetInstance()->stacking_client());
+    stacking_client->default_container()->set_id(
+        internal::kShellWindowId_DefaultContainer);
+    activation_controller_.reset(new internal::ActivationController);
+    activation_controller_->set_default_container_for_test(
+        stacking_client->default_container());
+  }
   virtual ~WorkspaceManagerTestBase() {}
 
   virtual void SetUp() OVERRIDE {
@@ -102,6 +113,8 @@ class WorkspaceManagerTestBase : public aura::test::AuraTestBase {
   scoped_ptr<WorkspaceManager> manager_;
 
  private:
+  scoped_ptr<internal::ActivationController> activation_controller_;
+
   DISALLOW_COPY_AND_ASSIGN(WorkspaceManagerTestBase);
 };
 

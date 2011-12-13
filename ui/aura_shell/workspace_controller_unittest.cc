@@ -7,6 +7,9 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_stacking_client.h"
 #include "ui/aura/window.h"
+#include "ui/aura_shell/activation_controller.h"
+#include "ui/aura_shell/shell_window_ids.h"
+#include "ui/aura_shell/window_util.h"
 #include "ui/aura_shell/workspace/workspace.h"
 #include "ui/aura_shell/workspace/workspace_manager.h"
 
@@ -23,10 +26,17 @@ class WorkspaceControllerTest : public aura::test::AuraTestBase {
   virtual void SetUp() OVERRIDE {
     aura::test::AuraTestBase::SetUp();
     contents_view_ = GetTestStackingClient()->default_container();
+    // Activatable windows need to be in a container the ActivationController
+    // recognizes.
+    contents_view_->set_id(
+        aura_shell::internal::kShellWindowId_DefaultContainer);
+    activation_controller_.reset(new ActivationController);
+    activation_controller_->set_default_container_for_test(contents_view_);
     controller_.reset(new WorkspaceController(contents_view_));
   }
 
   virtual void TearDown() OVERRIDE {
+    activation_controller_.reset();
     controller_.reset();
     aura::test::AuraTestBase::TearDown();
   }
@@ -39,7 +49,7 @@ class WorkspaceControllerTest : public aura::test::AuraTestBase {
     return window;
   }
 
-  aura::Window * contents_view() {
+  aura::Window* contents_view() {
     return contents_view_;
   }
 
@@ -51,6 +61,8 @@ class WorkspaceControllerTest : public aura::test::AuraTestBase {
 
  private:
   aura::Window* contents_view_;
+
+  scoped_ptr<ActivationController> activation_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceControllerTest);
 };
@@ -69,7 +81,7 @@ TEST_F(WorkspaceControllerTest, Overview) {
   EXPECT_TRUE(ws2->AddWindowAfter(w2.get(), NULL));
 
   // Activating a window switches the active workspace.
-  w2->Activate();
+  aura_shell::ActivateWindow(w2.get());
   EXPECT_EQ(ws2, workspace_manager()->GetActiveWorkspace());
 
   // The size of contents_view() is now ws1(500) + ws2(500) + margin(50).
@@ -83,7 +95,7 @@ TEST_F(WorkspaceControllerTest, Overview) {
 
   // Activating window w1 switches the active window and
   // the mode back to normal mode.
-  w1->Activate();
+  aura_shell::ActivateWindow(w1.get());
   EXPECT_EQ(ws1, workspace_manager()->GetActiveWorkspace());
   EXPECT_FALSE(workspace_manager()->is_overview());
 
