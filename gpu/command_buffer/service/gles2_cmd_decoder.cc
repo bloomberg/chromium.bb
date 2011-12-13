@@ -911,8 +911,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
       unsigned format,
       unsigned type,
       int width,
-      int height,
-      bool is_texture_immutable);
+      int height);
 
   // Restore all GL state that affects clearing.
   void RestoreClearState();
@@ -3239,7 +3238,7 @@ void GLES2DecoderImpl::DoEnableVertexAttribArray(GLuint index) {
 void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   if (!info ||
-      !texture_manager()->MarkMipmapsGenerated(feature_info_, info)) {
+      !texture_manager()->MarkMipmapsGenerated(feature_info_, info, true)) {
     SetGLError(GL_INVALID_OPERATION,
                "glGenerateMipmaps: Can not generate mips for npot textures");
     return;
@@ -6144,8 +6143,7 @@ bool GLES2DecoderImpl::ClearLevel(
     unsigned format,
     unsigned type,
     int width,
-    int height,
-    bool is_texture_immutable) {
+    int height) {
   // Assumes the size has already been checked.
   uint32 pixels_size = 0;
   if (!GLES2Util::ComputeImageDataSize(
@@ -6155,13 +6153,8 @@ bool GLES2DecoderImpl::ClearLevel(
   scoped_array<char> zero(new char[pixels_size]);
   memset(zero.get(), 0, pixels_size);
   glBindTexture(bind_target, service_id);
-  if (is_texture_immutable) {
-    glTexSubImage2D(
-        target, level, 0, 0, width, height, format, type, zero.get());
-  } else {
-    WrappedTexImage2D(
-        target, level, format, width, height, 0, format, type, zero.get());
-  }
+  WrappedTexImage2D(
+      target, level, format, width, height, 0, format, type, zero.get());
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(bind_target);
   glBindTexture(bind_target, info ? info->service_id() : 0);
   return true;
@@ -6506,19 +6499,19 @@ void GLES2DecoderImpl::DoCompressedTexSubImage2D(
   if (!info->GetLevelType(target, level, &type, &internal_format)) {
     SetGLError(
         GL_INVALID_OPERATION,
-        "glCompressedTexSubImage2D: level does not exist.");
+        "glCompressdTexSubImage2D: level does not exist.");
     return;
   }
   if (internal_format != format) {
     SetGLError(
         GL_INVALID_OPERATION,
-        "glCompressedTexSubImage2D: format does not match internal format.");
+        "glCompressdTexSubImage2D: format does not match internal format.");
     return;
   }
   if (!info->ValidForTexture(
       target, level, xoffset, yoffset, width, height, format, type)) {
     SetGLError(GL_INVALID_VALUE,
-               "glCompressedTexSubImage2D: bad dimensions.");
+               "glCompressdTexSubImage2D: bad dimensions.");
     return;
   }
   // Note: There is no need to deal with texture cleared tracking here
@@ -6609,8 +6602,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     // some part was clipped so clear the texture.
     if (!ClearLevel(
         info->service_id(), info->target(),
-        target, level, internal_format, GL_UNSIGNED_BYTE, width, height,
-        info->IsImmutable())) {
+        target, level, internal_format, GL_UNSIGNED_BYTE, width, height)) {
       SetGLError(GL_OUT_OF_MEMORY, "glCopyTexImage2D: dimensions too big");
       return;
     }
@@ -6760,31 +6752,28 @@ void GLES2DecoderImpl::DoTexSubImage2D(
     return;
   }
 
-  GLsizei tex_width = 0;
-  GLsizei tex_height = 0;
-  bool ok = info->GetLevelSize(target, level, &tex_width, &tex_height);
-  DCHECK(ok);
-  if (xoffset != 0 || yoffset != 0 ||
-      width != tex_width || height != tex_height) {
-    if (!texture_manager()->ClearTextureLevel(this, info, target, level)) {
-      SetGLError(GL_OUT_OF_MEMORY, "glTexSubImage2D: dimensions too big");
+  // See if we can call glTexImage2D instead since it appears to be faster.
+  if (teximage2d_faster_than_texsubimage2d_ && xoffset == 0 && yoffset == 0 &&
+      !info->IsImmutable()) {
+    GLsizei tex_width = 0;
+    GLsizei tex_height = 0;
+    bool ok = info->GetLevelSize(target, level, &tex_width, &tex_height);
+    DCHECK(ok);
+    if (width == tex_width && height == tex_height) {
+      // NOTE: In OpenGL ES 2.0 border is always zero and format is always the
+      // same as internal_foramt. If that changes we'll need to look them up.
+      WrappedTexImage2D(
+          target, level, format, width, height, 0, format, type, data);
+      texture_manager()->SetLevelCleared(info, target, level);
       return;
     }
-    glTexSubImage2D(
-        target, level, xoffset, yoffset, width, height, format, type, data);
+  }
+  if (!texture_manager()->ClearTextureLevel(this, info, target, level)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glTexSubImage2D: dimensions too big");
     return;
   }
-
-  if (teximage2d_faster_than_texsubimage2d_ && !info->IsImmutable()) {
-    // NOTE: In OpenGL ES 2.0 border is always zero and format is always the
-    // same as internal_foramt. If that changes we'll need to look them up.
-    WrappedTexImage2D(
-        target, level, format, width, height, 0, format, type, data);
-  } else {
-    glTexSubImage2D(
-        target, level, xoffset, yoffset, width, height, format, type, data);
-  }
-  texture_manager()->SetLevelCleared(info, target, level);
+  glTexSubImage2D(
+      target, level, xoffset, yoffset, width, height, format, type, data);
 }
 
 error::Error GLES2DecoderImpl::HandleTexSubImage2D(
@@ -7842,16 +7831,11 @@ void GLES2DecoderImpl::DoTexStorage2DEXT(
   if (error == GL_NO_ERROR) {
     GLenum format = ExtractFormatFromStorageFormat(internal_format);
     GLenum type = ExtractTypeFromStorageFormat(internal_format);
-    GLsizei level_width = width;
-    GLsizei level_height = height;
-    for (int ii = 0; ii < levels; ++ii) {
-      texture_manager()->SetLevelInfo(
-          feature_info_, info,
-          target, 0, format, level_width, level_height, 1, 0, format, type,
-          false);
-      level_width = std::max(1, level_width >> 1);
-      level_height = std::max(1, level_height >> 1);
-    }
+    texture_manager()->SetLevelInfo(
+        feature_info_, info,
+        target, 0, format, width, height, 1, 0, format, type,
+        false);
+    texture_manager()->MarkMipmapsGenerated(feature_info_, info, false);
     info->SetImmutable(true);
   }
 

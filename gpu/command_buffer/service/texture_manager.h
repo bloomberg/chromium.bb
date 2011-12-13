@@ -254,7 +254,7 @@ class TextureManager {
         const FeatureInfo* feature_info, GLenum pname, GLint param);
 
     // Makes each of the mip levels as though they were generated.
-    bool MarkMipmapsGenerated(const FeatureInfo* feature_info);
+    bool MarkMipmapsGenerated(const FeatureInfo* feature_info, bool cleared);
 
     void MarkAsDeleted() {
       service_id_ = 0;
@@ -409,8 +409,8 @@ class TextureManager {
 
   // Makes each of the mip levels as though they were generated.
   // Returns false if that's not allowed for the given texture.
-  bool MarkMipmapsGenerated(const FeatureInfo* feature_info,
-                            TextureInfo* info);
+  bool MarkMipmapsGenerated(const FeatureInfo* feature_info, TextureInfo* info,
+                            bool cleared);
 
   // Clears any uncleared renderable levels.
   bool ClearRenderableLevels(GLES2Decoder* decoder, TextureInfo* info);
