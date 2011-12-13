@@ -294,6 +294,10 @@ void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
     // The "edit your profile" link.
     edit_profile_link_ = gtk_chrome_link_button_new(
         l10n_util::GetStringUTF8(IDS_PROFILES_EDIT_PROFILE_LINK).c_str());
+    // Fix for bug#107348. edit link steals focus from menu item which
+    // hides edit link button in focus-out-event handler,
+    // so, it misses the click event.
+    gtk_widget_set_can_focus(edit_profile_link_, FALSE);
 
     link_alignment_ = gtk_alignment_new(0, 0, 0, 0);
     gtk_container_add(GTK_CONTAINER(link_alignment_), edit_profile_link_);
