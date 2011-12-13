@@ -252,6 +252,14 @@ display_handle_global(void *data,
 }
 
 static void
+wl_global_destroy(struct wl_global *global)
+{
+	wl_list_remove(&global->link);
+	free(global->interface);
+	free(global);
+}
+
+static void
 display_handle_global_remove(void *data,
                              struct wl_display *display, uint32_t id)
 {
@@ -259,8 +267,7 @@ display_handle_global_remove(void *data,
 
 	wl_list_for_each(global, &display->global_list, link)
 		if (global->id == id) {
-			wl_list_remove(&global->link);
-			free(global);
+			wl_global_destroy(global);
 			break;
 		}
 }
@@ -394,7 +401,7 @@ wl_display_destroy(struct wl_display *display)
 	wl_map_release(&display->objects);
 	wl_list_for_each_safe(global, gnext,
 			      &display->global_list, link)
-		free(global);
+		wl_global_destroy(global);
 	wl_list_for_each_safe(listener, lnext,
 			      &display->global_listener_list, link)
 		free(listener);
