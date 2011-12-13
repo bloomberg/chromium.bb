@@ -74,6 +74,8 @@ class CONTENT_EXPORT URLFetcher {
     GET,
     POST,
     HEAD,
+    DELETE_REQUEST,   // DELETE is already taken on Windows.
+                      // <winnt.h> defines a DELETE macro.
   };
 
   // |url| is the URL to send the request to.

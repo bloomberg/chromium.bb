@@ -814,6 +814,10 @@ void URLFetcherImpl::Core::StartURLRequest() {
       request_->set_method("HEAD");
       break;
 
+    case DELETE_REQUEST:
+      request_->set_method("DELETE");
+      break;
+
     default:
       NOTREACHED();
   }
