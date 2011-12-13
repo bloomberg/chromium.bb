@@ -13,6 +13,7 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/autofill/personal_data_manager_observer.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
@@ -65,6 +66,34 @@ static const char* kTestFormString =
     " <input type=\"text\" id=\"phone\"><br>"
     "</form>";
 
+class WindowedPersonalDataManagerObserver : public PersonalDataManagerObserver {
+ public:
+  WindowedPersonalDataManagerObserver() :
+      personal_data_changed_(false),
+      has_run_message_loop_(false) {
+  }
+
+  void Wait() {
+    if (!personal_data_changed_) {
+      has_run_message_loop_ = true;
+      ui_test_utils::RunMessageLoop();
+    }
+  }
+
+  void OnPersonalDataChanged() OVERRIDE {
+    if (has_run_message_loop_) {
+      MessageLoopForUI::current()->Quit();
+      has_run_message_loop_ = false;
+    }
+
+    personal_data_changed_ = true;
+  }
+
+ private:
+  bool personal_data_changed_;
+  bool has_run_message_loop_;
+};
+
 class AutofillTest : public InProcessBrowserTest {
  protected:
   AutofillTest() {
@@ -85,7 +114,15 @@ class AutofillTest : public InProcessBrowserTest {
         PersonalDataManagerFactory::GetForProfile(browser()->profile());
     ASSERT_TRUE(personal_data_manager);
 
+    WindowedPersonalDataManagerObserver observer;
+    personal_data_manager->SetObserver(&observer);
+
     personal_data_manager->AddProfile(profile);
+
+    // AddProfile is asynchronous. Wait for it to finish before continuing the
+    // tests.
+    observer.Wait();
+    personal_data_manager->RemoveObserver(&observer);
   }
 
   void ExpectFieldValue(const std::wstring& field_name,
