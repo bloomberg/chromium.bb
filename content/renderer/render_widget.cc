@@ -1044,7 +1044,7 @@ void RenderWidget::didCompleteSwapBuffers() {
   params.plugin_window_moves.swap(plugin_window_moves_);
   params.flags = next_paint_flags_;
   params.scroll_offset = GetScrollOffset();
-  update_reply_pending_ = true;
+  params.needs_ack = false;
 
   Send(new ViewHostMsg_UpdateRect(routing_id_, params));
   next_paint_flags_ = 0;
