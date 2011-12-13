@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/socket/socket.h"
 #include "net/socket/stream_socket.h"
@@ -27,6 +28,11 @@ extern const char kTestJid[];
 // Read() reads data from another buffer that can be set with AppendInputData().
 // Pending reads are supported, so if there is a pending read AppendInputData()
 // calls the read callback.
+//
+// Two fake sockets can be connected to each other using the
+// PairWith() method, e.g.: a->PairWith(b). After this all data
+// written to |a| can be read from |b| and vica versa. Two connected
+// sockets |a| and |b| must be created and used on the same thread.
 class FakeSocket : public net::StreamSocket {
  public:
   FakeSocket();
@@ -34,7 +40,8 @@ class FakeSocket : public net::StreamSocket {
 
   const std::string& written_data() const { return written_data_; }
 
-  void AppendInputData(const char* data, int data_size);
+  void AppendInputData(const std::vector<char>& data);
+  void PairWith(FakeSocket* peer_socket);
   int input_pos() const { return input_pos_; }
   bool read_pending() const { return read_pending_; }
 
@@ -47,7 +54,7 @@ class FakeSocket : public net::StreamSocket {
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
   virtual bool SetSendBufferSize(int32 size) OVERRIDE;
 
-  // net::StreamSocket implementation.
+  // net::StreamSocket interface.
   virtual int Connect(const net::CompletionCallback& callback) OVERRIDE;
   virtual void Disconnect() OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
@@ -67,6 +74,7 @@ class FakeSocket : public net::StreamSocket {
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
   net::CompletionCallback read_callback_;
+  base::WeakPtr<FakeSocket> peer_socket_;
 
   std::string written_data_;
   std::string input_data_;
@@ -75,6 +83,7 @@ class FakeSocket : public net::StreamSocket {
   net::BoundNetLog net_log_;
 
   MessageLoop* message_loop_;
+  base::WeakPtrFactory<FakeSocket> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSocket);
 };

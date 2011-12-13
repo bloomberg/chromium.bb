@@ -25,13 +25,13 @@ namespace remoting {
 namespace protocol {
 
 class V1HostChannelAuthenticator : public ChannelAuthenticator,
-                                       public base::NonThreadSafe  {
+                                   public base::NonThreadSafe  {
  public:
   // Caller retains ownership of |local_private_key|. It must exist
   // while this object exists.
   V1HostChannelAuthenticator(const std::string& local_cert,
-                                 crypto::RSAPrivateKey* local_private_key,
-                                 const std::string& shared_secret);
+                             crypto::RSAPrivateKey* local_private_key,
+                             const std::string& shared_secret);
   virtual ~V1HostChannelAuthenticator();
 
   // ChannelAuthenticator interface.

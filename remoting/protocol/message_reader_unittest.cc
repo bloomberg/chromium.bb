@@ -68,7 +68,7 @@ class MessageReaderTest : public testing::Test {
     std::string data = std::string(4, ' ') + message;
     talk_base::SetBE32(const_cast<char*>(data.data()), message.size());
 
-    socket_.AppendInputData(data.data(), data.size());
+    socket_.AppendInputData(std::vector<char>(data.begin(), data.end()));
   }
 
   bool CompareResult(CompoundBuffer* buffer, const std::string& expected) {

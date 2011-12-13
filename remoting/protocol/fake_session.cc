@@ -4,9 +4,12 @@
 
 #include "remoting/protocol/fake_session.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
+#include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -16,17 +19,19 @@ const char kTestJid[] = "host1@gmail.com/chromoting123";
 
 FakeSocket::FakeSocket()
     : read_pending_(false),
+      read_buffer_size_(0),
       input_pos_(0),
-      message_loop_(MessageLoop::current()) {
+      message_loop_(MessageLoop::current()),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 FakeSocket::~FakeSocket() {
   EXPECT_EQ(message_loop_, MessageLoop::current());
 }
 
-void FakeSocket::AppendInputData(const char* data, int data_size) {
+void FakeSocket::AppendInputData(const std::vector<char>& data) {
   EXPECT_EQ(message_loop_, MessageLoop::current());
-  input_data_.insert(input_data_.end(), data, data + data_size);
+  input_data_.insert(input_data_.end(), data.begin(), data.end());
   // Complete pending read if any.
   if (read_pending_) {
     read_pending_ = false;
@@ -36,9 +41,15 @@ void FakeSocket::AppendInputData(const char* data, int data_size) {
     memcpy(read_buffer_->data(),
            &(*input_data_.begin()) + input_pos_, result);
     input_pos_ += result;
-    read_callback_.Run(result);
     read_buffer_ = NULL;
+    read_callback_.Run(result);
   }
+}
+
+void FakeSocket::PairWith(FakeSocket* peer_socket) {
+  EXPECT_EQ(message_loop_, MessageLoop::current());
+  peer_socket_ = peer_socket->weak_factory_.GetWeakPtr();
+  peer_socket->peer_socket_ = weak_factory_.GetWeakPtr();
 }
 
 int FakeSocket::Read(net::IOBuffer* buf, int buf_len,
@@ -64,6 +75,13 @@ int FakeSocket::Write(net::IOBuffer* buf, int buf_len,
   EXPECT_EQ(message_loop_, MessageLoop::current());
   written_data_.insert(written_data_.end(),
                        buf->data(), buf->data() + buf_len);
+
+  if (peer_socket_) {
+    message_loop_->PostTask(FROM_HERE, base::Bind(
+        &FakeSocket::AppendInputData, peer_socket_,
+        std::vector<char>(buf->data(), buf->data() + buf_len)));
+  }
+
   return buf_len;
 }
 
@@ -82,7 +100,7 @@ int FakeSocket::Connect(const net::CompletionCallback& callback) {
 }
 
 void FakeSocket::Disconnect() {
-  NOTIMPLEMENTED();
+  peer_socket_.reset();
 }
 
 bool FakeSocket::IsConnected() const {
@@ -95,10 +113,11 @@ bool FakeSocket::IsConnectedAndIdle() const {
   return false;
 }
 
-int FakeSocket::GetPeerAddress(
-    net::AddressList* address) const {
-  NOTIMPLEMENTED();
-  return net::ERR_FAILED;
+int FakeSocket::GetPeerAddress(net::AddressList* address) const {
+  net::IPAddressNumber ip;
+  ip.resize(net::kIPv4AddressSize);
+  *address = net::AddressList::CreateFromIPAddress(ip, 0);
+  return net::OK;
 }
 
 int FakeSocket::GetLocalAddress(

@@ -199,6 +199,7 @@ void ConnectionToHost::OnSessionStateChange(
           CloseOnError(INCOMPATIBLE_PROTOCOL);
           break;
         case Session::CHANNEL_CONNECTION_ERROR:
+        case Session::UNKNOWN_ERROR:
           CloseOnError(NETWORK_FAILURE);
           break;
         case Session::OK:

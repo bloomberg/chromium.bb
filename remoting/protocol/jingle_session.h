@@ -80,6 +80,8 @@ class JingleSession : public protocol::Session,
   // Used for Session.SignalError sigslot.
   void OnSessionError(cricket::BaseSession* session,
                       cricket::BaseSession::Error error);
+  // Used for Session.SignalReceivedTerminateReason sigslot.
+  void OnTerminateReason(cricket::Session* session, const std::string& reason);
 
   void OnInitiate();
   void OnAccept();
@@ -134,6 +136,11 @@ class JingleSession : public protocol::Session,
 
   // Channels that are currently being connected.
   ChannelConnectorsMap channel_connectors_;
+
+  // Termination reason. Needs to be stored because
+  // SignalReceivedTerminateReason handler is not allowed to destroy
+  // the object.
+  std::string terminate_reason_;
 
   ScopedRunnableMethodFactory<JingleSession> task_factory_;
 

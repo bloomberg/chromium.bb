@@ -45,6 +45,8 @@ JingleSession::JingleSession(
   jid_ = cricket_session_->remote_name();
   cricket_session_->SignalState.connect(this, &JingleSession::OnSessionState);
   cricket_session_->SignalError.connect(this, &JingleSession::OnSessionError);
+  cricket_session_->SignalReceivedTerminateReason.connect(
+      this, &JingleSession::OnTerminateReason);
 }
 
 JingleSession::~JingleSession() {
@@ -244,6 +246,11 @@ void JingleSession::OnSessionError(
   }
 }
 
+void JingleSession::OnTerminateReason(cricket::Session* session,
+                                      const std::string& reason) {
+  terminate_reason_ = reason;
+}
+
 void JingleSession::OnInitiate() {
   DCHECK(CalledOnValidThread());
   jid_ = cricket_session_->remote_name();
@@ -332,7 +339,16 @@ void JingleSession::OnAccept() {
 
 void JingleSession::OnTerminate() {
   DCHECK(CalledOnValidThread());
-  CloseInternal(net::ERR_CONNECTION_ABORTED, OK);
+
+  if (terminate_reason_ == "success") {
+    CloseInternal(net::ERR_CONNECTION_ABORTED, OK);
+  } else if (terminate_reason_ == "decline") {
+    CloseInternal(net::ERR_CONNECTION_ABORTED, AUTHENTICATION_FAILED);
+  } else if (terminate_reason_ == "incompatible-protocol") {
+    CloseInternal(net::ERR_CONNECTION_ABORTED, INCOMPATIBLE_PROTOCOL);
+  } else {
+    CloseInternal(net::ERR_CONNECTION_ABORTED, UNKNOWN_ERROR);
+  }
 }
 
 void JingleSession::AcceptConnection() {

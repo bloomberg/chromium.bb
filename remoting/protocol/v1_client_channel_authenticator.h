@@ -25,7 +25,7 @@ namespace remoting {
 namespace protocol {
 
 class V1ClientChannelAuthenticator : public ChannelAuthenticator,
-                                         public base::NonThreadSafe {
+                                     public base::NonThreadSafe {
  public:
   V1ClientChannelAuthenticator(const std::string& host_cert,
                                const std::string& shared_secret);

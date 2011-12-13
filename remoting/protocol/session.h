@@ -60,6 +60,7 @@ class Session : public base::NonThreadSafe {
     INCOMPATIBLE_PROTOCOL,
     AUTHENTICATION_FAILED,
     CHANNEL_CONNECTION_ERROR,
+    UNKNOWN_ERROR,
   };
 
   // State change callbacks are called after session state has
