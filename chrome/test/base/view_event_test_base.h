@@ -16,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -133,6 +134,8 @@ class ViewEventTestBase : public views::WidgetDelegate,
   scoped_ptr<base::Thread> dnd_thread_;
 
   MessageLoopForUI message_loop_;
+
+  content::TestBrowserThread ui_thread_;
 
   // Method factory used for time-outs.
   ScopedRunnableMethodFactory<ViewEventTestBase> method_factory_;

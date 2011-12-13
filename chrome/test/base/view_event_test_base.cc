@@ -15,12 +15,14 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/gfx/compositor/test/compositor_test_support.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
+#include "ui/aura_shell/shell.h"
 #endif
 
 namespace {
@@ -60,6 +62,7 @@ const int kMouseMoveDelayMS = 200;
 ViewEventTestBase::ViewEventTestBase()
   : window_(NULL),
     content_view_(NULL),
+    ui_thread_(content::BrowserThread::UI, &message_loop_),
     ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
@@ -89,6 +92,7 @@ void ViewEventTestBase::SetUp() {
   ui::CompositorTestSupport::Initialize();
 #if defined(USE_AURA)
   aura::RootWindow::GetInstance();
+  aura_shell::Shell::CreateInstance(NULL);
 #endif
   window_ = views::Widget::CreateWindow(this);
 }
@@ -104,6 +108,7 @@ void ViewEventTestBase::TearDown() {
     window_ = NULL;
   }
 #if defined(USE_AURA)
+  aura_shell::Shell::DeleteInstance();
   aura::RootWindow::DeleteInstance();
 #endif
   ui::CompositorTestSupport::Terminate();
