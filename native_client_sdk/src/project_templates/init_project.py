@@ -264,7 +264,7 @@ class ProjectInitializer(object):
 
   def __init__(self, is_c_project, is_vs_project, project_name,
                project_location, nacl_platform, project_templates_dir,
-               os_resource=os):
+               nacl_sdk_root=None, os_resource=os):
     """Initializes all the fields that are known after parsing the parameters.
 
     Args:
@@ -285,6 +285,7 @@ class ProjectInitializer(object):
     self.__project_templates_dir = project_templates_dir
     # System resources are properties so mocks can be inserted.
     self.__fileinput = fileinput
+    self.__nacl_sdk_root = nacl_sdk_root
     self.__os = os_resource
     self.__shutil = shutil
     self.__sys = sys
@@ -350,7 +351,7 @@ class ProjectInitializer(object):
     contents as necessary.
     """
     camel_case_name = GetCamelCaseName(self.__project_name)
-    sdk_root_dir = os.getenv('NACL_SDK_ROOT', None)
+    sdk_root_dir = self.__nacl_sdk_root
     if not sdk_root_dir:
       raise Error("Error: NACL_SDK_ROOT is not set")
     sdk_root_dir = self.os.path.abspath(sdk_root_dir)
@@ -475,7 +476,8 @@ def main(argv):
   print 'init_project is preparing your project.'
   # Check to see if the project is going into the SDK bundle.  If so, issue a
   # warning.
-  sdk_root_dir = os.getenv('NACL_SDK_ROOT', None)
+  sdk_root_dir = os.getenv('NACL_SDK_ROOT',
+                           os.path.dirname(os.path.dirname(script_dir)))
   if sdk_root_dir:
     if os.path.normpath(options.project_directory).count(
         os.path.normpath(sdk_root_dir)) > 0:
@@ -487,7 +489,8 @@ def main(argv):
                                            options.project_name,
                                            options.project_directory,
                                            options.nacl_platform,
-                                           script_dir)
+                                           script_dir,
+                                           nacl_sdk_root=sdk_root_dir)
   project_initializer.PrepareDirectoryContent()
   project_initializer.PrepareFileContent()
   return 0
