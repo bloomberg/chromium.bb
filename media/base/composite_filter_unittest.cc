@@ -396,7 +396,8 @@ TEST_F(CompositeFilterTest, TestAddRemoveFilter) {
 class CompositeFilterDeathTest : public CompositeFilterTest {};
 
 // Test failure of RemoveFilter() on an unknown filter.
-TEST_F(CompositeFilterDeathTest, TestRemoveUnknownFilter) {
+// TODO(fischman): figure out why this is flaky.  http://crbug.com/104579
+TEST_F(CompositeFilterDeathTest, DISABLED_TestRemoveUnknownFilter) {
   composite_->set_host(mock_filter_host_.get());
   // Remove unknown filter.
   scoped_refptr<StrictMock<MockFilter> > filter = new StrictMock<MockFilter>();
