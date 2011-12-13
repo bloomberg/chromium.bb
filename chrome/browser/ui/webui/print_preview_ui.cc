@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_preview_data_service.h"
+#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
@@ -73,25 +74,33 @@ base::LazyInstance<PrintPreviewRequestIdMapWithLock>
 PrintPreviewUI::PrintPreviewUI(TabContents* contents)
     : ConstrainedHtmlUI(contents),
       initial_preview_start_time_(base::TimeTicks::Now()),
+      handler_(NULL),
       source_is_modifiable_(true),
       tab_closed_(false) {
-  // WebUI owns |handler_|.
-  handler_ = new PrintPreviewHandler();
-  AddMessageHandler(handler_->Attach(this));
+  printing::PrintPreviewTabController* controller =
+      printing::PrintPreviewTabController::GetInstance();
+  is_dummy_ = (!controller || !controller->is_creating_print_preview_tab());
 
   // Set up the chrome://print/ data source.
   Profile* profile = Profile::FromBrowserContext(contents->browser_context());
   profile->GetChromeURLDataManager()->AddDataSource(
-      new PrintPreviewDataSource());
+      new PrintPreviewDataSource(is_dummy_));
+  if (is_dummy_)
+    return;
+
+  // WebUI owns |handler_|.
+  handler_ = new PrintPreviewHandler();
+  AddMessageHandler(handler_->Attach(this));
 
   preview_ui_addr_str_ = GetPrintPreviewUIAddress();
-
   g_print_preview_request_id_map.Get().Set(preview_ui_addr_str_, -1);
 }
 
 PrintPreviewUI::~PrintPreviewUI() {
-  print_preview_data_service()->RemoveEntry(preview_ui_addr_str_);
+  if (is_dummy_)
+    return;
 
+  print_preview_data_service()->RemoveEntry(preview_ui_addr_str_);
   g_print_preview_request_id_map.Get().Erase(preview_ui_addr_str_);
 }
 

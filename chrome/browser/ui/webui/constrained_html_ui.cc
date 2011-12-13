@@ -29,6 +29,8 @@ ConstrainedHtmlUI::~ConstrainedHtmlUI() {
 }
 
 void ConstrainedHtmlUI::RenderViewCreated(RenderViewHost* render_view_host) {
+  ChromeWebUI::RenderViewCreated(render_view_host);
+
   ConstrainedHtmlUIDelegate* delegate = GetConstrainedDelegate();
   if (!delegate)
     return;
@@ -53,8 +55,6 @@ void ConstrainedHtmlUI::RenderViewCreated(RenderViewHost* render_view_host) {
       chrome::NOTIFICATION_HTML_DIALOG_SHOWN,
       content::Source<WebUI>(this),
       content::Details<RenderViewHost>(render_view_host));
-
-  ChromeWebUI::RenderViewCreated(render_view_host);
 }
 
 void ConstrainedHtmlUI::OnDialogCloseMessage(const ListValue* args) {

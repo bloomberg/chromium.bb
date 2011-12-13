@@ -6605,6 +6605,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_PRINT_PREVIEW_RIGHT_MARGIN_LABEL" desc="ARIA label used by screen reader to explain the purpose of the right margin textbox.">
         Right margin
       </message>
+      <message name="IDS_PRINT_PREVIEW_INTENTIONALLY_BLANK" desc="silly message seen in many technical manuals on blank pages.">
+        This page is intentionally left blank.
+      </message>
 
       <!-- Load State -->
       <message name="IDS_LOAD_STATE_WAITING_FOR_DELEGATE">

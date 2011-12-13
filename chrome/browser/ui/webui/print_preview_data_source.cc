@@ -36,8 +36,16 @@ const char kAdvancedPrintShortcut[] = "(Shift+Ctrl+P)";
 
 };  // namespace
 
-PrintPreviewDataSource::PrintPreviewDataSource()
+PrintPreviewDataSource::PrintPreviewDataSource(bool is_dummy)
     : ChromeWebUIDataSource(chrome::kChromeUIPrintHost) {
+  Init(is_dummy);
+}
+
+void PrintPreviewDataSource::Init(bool is_dummy) {
+  if (is_dummy) {
+    AddLocalizedString("intentionallyBlankText",
+                       IDS_PRINT_PREVIEW_INTENTIONALLY_BLANK);
+  }
 
   AddLocalizedString("title", IDS_PRINT_PREVIEW_TITLE);
   AddLocalizedString("loading", IDS_PRINT_PREVIEW_LOADING);
@@ -131,8 +139,13 @@ PrintPreviewDataSource::PrintPreviewDataSource()
   AddLocalizedString("right", IDS_PRINT_PREVIEW_RIGHT_MARGIN_LABEL);
 
   set_json_path("strings.js");
-  add_resource_path("print_preview.js", IDR_PRINT_PREVIEW_JS);
-  set_default_resource(IDR_PRINT_PREVIEW_HTML);
+  if (is_dummy) {
+    add_resource_path("print_preview_dummy.js", IDR_PRINT_PREVIEW_DUMMY_JS);
+    set_default_resource(IDR_PRINT_PREVIEW_DUMMY_HTML);
+  } else {
+    add_resource_path("print_preview.js", IDR_PRINT_PREVIEW_JS);
+    set_default_resource(IDR_PRINT_PREVIEW_HTML);
+  }
 }
 
 PrintPreviewDataSource::~PrintPreviewDataSource() {
@@ -153,8 +166,8 @@ void PrintPreviewDataSource::StartDataRequest(const std::string& path,
   base::SplitString(path, '/', &url_substr);
   int page_index = 0;
   if (url_substr.size() == 3 && base::StringToInt(url_substr[1], &page_index)) {
-      PrintPreviewDataService::GetInstance()->GetDataEntry(
-          url_substr[0], page_index, &data);
+    PrintPreviewDataService::GetInstance()->GetDataEntry(
+        url_substr[0], page_index, &data);
   }
   if (data.get()) {
     SendResponse(request_id, data);
