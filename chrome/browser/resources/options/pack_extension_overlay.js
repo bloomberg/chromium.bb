@@ -77,7 +77,7 @@ cr.define('options', function() {
      * @private
      */
     handleBrowsePrivateKey_: function(e) {
-      this.showFileDialog_('file', 'load', function(filePath) {
+      this.showFileDialog_('file', 'pem', function(filePath) {
         $('extensionPrivateKey').value = filePath;
       });
     },
