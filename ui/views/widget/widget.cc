@@ -365,7 +365,6 @@ void Widget::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   if (!is_add) {
     if (child == dragged_view_)
       dragged_view_ = NULL;
-
     FocusManager* focus_manager = GetFocusManager();
     if (focus_manager)
       focus_manager->ViewRemoved(child);
@@ -895,6 +894,10 @@ void Widget::OnNativeWidgetCreated() {
 }
 
 void Widget::OnNativeWidgetDestroying() {
+  // Tell the focus manager (if any) that root_view is being removed
+  // in case that the focused view is under this root view.
+  if (GetFocusManager())
+    GetFocusManager()->ViewRemoved(root_view_.get());
   FOR_EACH_OBSERVER(Observer, observers_, OnWidgetClosing(this));
   if (non_client_view_)
     non_client_view_->WindowClosing();
