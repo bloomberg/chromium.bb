@@ -154,7 +154,7 @@ class SyncTest : public InProcessBrowserTest {
   // Trigger a notification to be sent to all clients.  This operation
   // is available only if ServerSupportsNotificationControl() returned
   // true.
-  void TriggerNotification(syncable::ModelEnumSet changed_types);
+  void TriggerNotification(syncable::ModelTypeSet changed_types);
 
   // Returns true if the server being used supports injecting errors.
   bool ServerSupportsErrorTriggering() const;
@@ -162,7 +162,7 @@ class SyncTest : public InProcessBrowserTest {
   // Triggers a migration for one or more datatypes, and waits
   // for the server to complete it.  This operation is available
   // only if ServerSupportsErrorTriggering() returned true.
-  void TriggerMigrationDoneError(syncable::ModelEnumSet model_types);
+  void TriggerMigrationDoneError(syncable::ModelTypeSet model_types);
 
   // Triggers the server to set its birthday to a random value thereby
   // the server would return a birthday error on next sync.

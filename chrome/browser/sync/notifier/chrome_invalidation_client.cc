@@ -129,7 +129,7 @@ void ChromeInvalidationClient::Stop() {
   max_invalidation_versions_.clear();
 }
 
-void ChromeInvalidationClient::RegisterTypes(syncable::ModelEnumSet types) {
+void ChromeInvalidationClient::RegisterTypes(syncable::ModelTypeSet types) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   registered_types_ = types;
   if (ticl_ready_ && registration_manager_.get()) {
@@ -189,7 +189,7 @@ void ChromeInvalidationClient::Invalidate(
   if (invalidation.has_payload())
     payload = invalidation.payload();
 
-  EmitInvalidation(syncable::ModelEnumSet(model_type), payload);
+  EmitInvalidation(syncable::ModelTypeSet(model_type), payload);
   // TODO(akalin): We should really acknowledge only after we get the
   // updates from the sync server. (see http://crbug.com/78462).
   client->Acknowledge(ack_handle);
@@ -211,7 +211,7 @@ void ChromeInvalidationClient::InvalidateUnknownVersion(
     return;
   }
 
-  EmitInvalidation(syncable::ModelEnumSet(model_type), "");
+  EmitInvalidation(syncable::ModelTypeSet(model_type), "");
   // TODO(akalin): We should really acknowledge only after we get the
   // updates from the sync server. (see http://crbug.com/78462).
   client->Acknowledge(ack_handle);
@@ -231,7 +231,7 @@ void ChromeInvalidationClient::InvalidateAll(
 }
 
 void ChromeInvalidationClient::EmitInvalidation(
-    syncable::ModelEnumSet types, const std::string& payload) {
+    syncable::ModelTypeSet types, const std::string& payload) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   syncable::ModelTypePayloadMap type_payloads =
       syncable::ModelTypePayloadMapFromEnumSet(types, payload);

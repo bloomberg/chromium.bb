@@ -32,7 +32,7 @@ void StoreTimestampsCommand::ExecuteImpl(sessions::SyncSession* session) {
   // Update the progress marker tokens from the server result.  If a marker
   // was omitted for any one type, that indicates no change from the previous
   // state.
-  syncable::ModelEnumSet forward_progress_types;
+  syncable::ModelTypeSet forward_progress_types;
   for (int i = 0; i < updates.new_progress_marker_size(); ++i) {
     syncable::ModelType model =
         syncable::GetModelTypeFromExtensionFieldNumber(
@@ -49,9 +49,9 @@ void StoreTimestampsCommand::ExecuteImpl(sessions::SyncSession* session) {
   if (VLOG_IS_ON(1)) {
     DVLOG_IF(1, !forward_progress_types.Empty())
         << "Get Updates got new progress marker for types: "
-        << syncable::ModelEnumSetToString(forward_progress_types)
+        << syncable::ModelTypeSetToString(forward_progress_types)
         << " out of possible: "
-        << syncable::ModelEnumSetToString(status->updates_request_types());
+        << syncable::ModelTypeSetToString(status->updates_request_types());
   }
   if (updates.has_changes_remaining()) {
     int64 changes_left = updates.changes_remaining();

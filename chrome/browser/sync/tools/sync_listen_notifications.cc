@@ -137,7 +137,7 @@ int main(int argc, char* argv[]) {
   sync_notifier->SetState("");
   sync_notifier->UpdateCredentials(email, token);
   // Listen for notifications for all known types.
-  sync_notifier->UpdateEnabledTypes(syncable::ModelEnumSet::All());
+  sync_notifier->UpdateEnabledTypes(syncable::ModelTypeSet::All());
 
   ui_loop.Run();
 

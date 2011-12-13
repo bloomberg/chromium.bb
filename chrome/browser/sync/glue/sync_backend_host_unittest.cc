@@ -40,10 +40,10 @@ class MockSyncFrontend : public SyncFrontend {
   MOCK_METHOD1(OnPassphraseRequired, void(sync_api::PassphraseRequiredReason));
   MOCK_METHOD0(OnPassphraseAccepted, void());
   MOCK_METHOD2(OnEncryptedTypesChanged,
-               void(syncable::ModelEnumSet, bool));
+               void(syncable::ModelTypeSet, bool));
   MOCK_METHOD0(OnEncryptionComplete, void());
-  MOCK_METHOD1(OnMigrationNeededForTypes, void(syncable::ModelEnumSet));
-  MOCK_METHOD1(OnDataTypesChanged, void(syncable::ModelEnumSet));
+  MOCK_METHOD1(OnMigrationNeededForTypes, void(syncable::ModelTypeSet));
+  MOCK_METHOD1(OnDataTypesChanged, void(syncable::ModelTypeSet));
   MOCK_METHOD1(OnActionableError,
       void(const browser_sync::SyncProtocolError& sync_error));
 };
@@ -97,7 +97,7 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
   backend.Initialize(&mock_frontend,
                      WeakHandle<JsEventHandler>(),
                      GURL(k_mock_url),
-                     syncable::ModelEnumSet(),
+                     syncable::ModelTypeSet(),
                      credentials,
                      true);
   backend.StopSyncingForShutdown();

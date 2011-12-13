@@ -446,7 +446,7 @@ class SyncableDirectoryTest : public testing::Test {
     return 1 == dir_->kernel_->metahandles_to_purge->count(metahandle);
   }
 
-  void CheckPurgeEntriesWithTypeInSucceeded(ModelEnumSet types_to_purge,
+  void CheckPurgeEntriesWithTypeInSucceeded(ModelTypeSet types_to_purge,
                                             bool before_reload) {
     SCOPED_TRACE(testing::Message("Before reload: ") << before_reload);
     {
@@ -472,7 +472,7 @@ class SyncableDirectoryTest : public testing::Test {
       }
     }
 
-    for (ModelEnumSet::Iterator it = types_to_purge.First();
+    for (ModelTypeSet::Iterator it = types_to_purge.First();
          it.Good(); it.Inc()) {
       EXPECT_FALSE(dir_->initial_sync_ended_for_type(it.Get()));
     }
@@ -533,7 +533,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsMetahandlesToPurge) {
     }
   }
 
-  syncable::ModelEnumSet to_purge(BOOKMARKS);
+  syncable::ModelTypeSet to_purge(BOOKMARKS);
   dir_->PurgeEntriesWithTypeIn(to_purge);
 
   Directory::SaveChangesSnapshot snapshot1;
@@ -623,7 +623,7 @@ TEST_F(SyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
   dir_->set_initial_sync_ended_for_type(PREFERENCES, true);
   dir_->set_initial_sync_ended_for_type(AUTOFILL, true);
 
-  syncable::ModelEnumSet types_to_purge(PREFERENCES, AUTOFILL);
+  syncable::ModelTypeSet types_to_purge(PREFERENCES, AUTOFILL);
 
   TestIdFactory id_factory;
   // Create some items for each type.
@@ -885,8 +885,8 @@ TEST_F(SyncableDirectoryTest, TestGetUnsynced) {
 TEST_F(SyncableDirectoryTest, TestGetUnappliedUpdates) {
   Directory::UnappliedUpdateMetaHandles handles;
   int64 handle1, handle2;
-  const syncable::FullModelEnumSet all_types =
-      syncable::FullModelEnumSet::All();
+  const syncable::FullModelTypeSet all_types =
+      syncable::FullModelTypeSet::All();
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
 
@@ -1379,7 +1379,7 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailureWithPurge) {
                                &delegate_, NullTransactionObserver()));
   ASSERT_TRUE(dir_->good());
 
-  syncable::ModelEnumSet set(BOOKMARKS);
+  syncable::ModelTypeSet set(BOOKMARKS);
   dir_->PurgeEntriesWithTypeIn(set);
   EXPECT_TRUE(IsInMetahandlesToPurge(handle1));
   ASSERT_FALSE(dir_->SaveChanges());

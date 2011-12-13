@@ -38,7 +38,7 @@ bool ProcessUnsyncedChangesForEncryption(
 
 bool VerifyUnsyncedChangesAreEncrypted(
     BaseTransaction* const trans,
-    ModelEnumSet encrypted_types) {
+    ModelTypeSet encrypted_types) {
   std::vector<int64> handles;
   browser_sync::SyncerUtil::GetUnsyncedEntries(trans, &handles);
   for (size_t i = 0; i < handles.size(); ++i) {
@@ -53,7 +53,7 @@ bool VerifyUnsyncedChangesAreEncrypted(
   return true;
 }
 
-bool EntryNeedsEncryption(ModelEnumSet encrypted_types,
+bool EntryNeedsEncryption(ModelTypeSet encrypted_types,
                           const Entry& entry) {
   if (!entry.Get(UNIQUE_SERVER_TAG).empty())
     return false;  // We don't encrypt unique server nodes.
@@ -68,7 +68,7 @@ bool EntryNeedsEncryption(ModelEnumSet encrypted_types,
           entry.Get(NON_UNIQUE_NAME) != kEncryptedString);
 }
 
-bool SpecificsNeedsEncryption(ModelEnumSet encrypted_types,
+bool SpecificsNeedsEncryption(ModelTypeSet encrypted_types,
                               const sync_pb::EntitySpecifics& specifics) {
   const ModelType type = GetModelTypeFromSpecifics(specifics);
   if (type == PASSWORDS || type == NIGORI)

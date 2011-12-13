@@ -31,11 +31,11 @@ class DirectoryChangeDelegate {
       BaseTransaction* trans) = 0;
   // Must return the set of all ModelTypes that were modified in the
   // transaction.
-  virtual ModelEnumSet HandleTransactionEndingChangeEvent(
+  virtual ModelTypeSet HandleTransactionEndingChangeEvent(
       const ImmutableWriteTransactionInfo& write_transaction_info,
       BaseTransaction* trans) = 0;
   virtual void HandleTransactionCompleteChangeEvent(
-      ModelEnumSet models_with_changes) = 0;
+      ModelTypeSet models_with_changes) = 0;
  protected:
   virtual ~DirectoryChangeDelegate() {}
 };

@@ -78,7 +78,7 @@ using browser_sync::sessions::SyncSessionContext;
 using syncable::DirectoryManager;
 using syncable::ImmutableWriteTransactionInfo;
 using syncable::ModelType;
-using syncable::ModelEnumSet;
+using syncable::ModelTypeSet;
 using syncable::SPECIFICS;
 using sync_pb::GetUpdatesCallerInfo;
 
@@ -207,7 +207,7 @@ class SyncManager::SyncInternal
 
   // Conditionally sets the flag in the Nigori node which instructs other
   // clients to start syncing tabs.
-  void MaybeSetSyncTabsInNigoriNode(ModelEnumSet enabled_types);
+  void MaybeSetSyncTabsInNigoriNode(ModelTypeSet enabled_types);
 
   // Tell the sync engine to start the syncing process.
   void StartSyncingNormally();
@@ -243,8 +243,8 @@ class SyncManager::SyncInternal
   // builds the list of sync-engine initiated changes that will be forwarded to
   // the SyncManager's Observers.
   virtual void HandleTransactionCompleteChangeEvent(
-      ModelEnumSet models_with_changes) OVERRIDE;
-  virtual ModelEnumSet HandleTransactionEndingChangeEvent(
+      ModelTypeSet models_with_changes) OVERRIDE;
+  virtual ModelTypeSet HandleTransactionEndingChangeEvent(
       const ImmutableWriteTransactionInfo& write_transaction_info,
       syncable::BaseTransaction* trans) OVERRIDE;
   virtual void HandleCalculateChangesChangeEventFromSyncApi(
@@ -262,7 +262,7 @@ class SyncManager::SyncInternal
 
   // Cryptographer::Observer implementation.
   virtual void OnEncryptedTypesChanged(
-      syncable::ModelEnumSet encrypted_types,
+      syncable::ModelTypeSet encrypted_types,
       bool encrypt_everything) OVERRIDE;
 
   // SyncNotifierObserver implementation.
@@ -321,7 +321,7 @@ class SyncManager::SyncInternal
   virtual void OnIPAddressChanged() OVERRIDE;
 
   bool InitialSyncEndedForAllEnabledTypes() {
-    syncable::ModelEnumSet types;
+    syncable::ModelTypeSet types;
     ModelSafeRoutingInfo enabled_types;
     registrar_->GetModelSafeRoutingInfo(&enabled_types);
     for (ModelSafeRoutingInfo::const_iterator i = enabled_types.begin();
@@ -642,7 +642,7 @@ void SyncManager::UpdateEnabledTypes() {
 }
 
 void SyncManager::MaybeSetSyncTabsInNigoriNode(
-    ModelEnumSet enabled_types) {
+    ModelTypeSet enabled_types) {
   DCHECK(thread_checker_.CalledOnValidThread());
   data_->MaybeSetSyncTabsInNigoriNode(enabled_types);
 }
@@ -702,7 +702,7 @@ void SyncManager::RequestClearServerData() {
 }
 
 void SyncManager::RequestConfig(
-    ModelEnumSet types, ConfigureReason reason) {
+    ModelTypeSet types, ConfigureReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!data_->scheduler()) {
     LOG(INFO)
@@ -965,7 +965,7 @@ void SyncManager::SyncInternal::UpdateEnabledTypes() {
   DCHECK(thread_checker_.CalledOnValidThread());
   ModelSafeRoutingInfo routes;
   registrar_->GetModelSafeRoutingInfo(&routes);
-  const ModelEnumSet enabled_types = GetRoutingInfoTypes(routes);
+  const ModelTypeSet enabled_types = GetRoutingInfoTypes(routes);
   sync_notifier_->UpdateEnabledTypes(enabled_types);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableSyncTabsForOtherClients)) {
@@ -974,7 +974,7 @@ void SyncManager::SyncInternal::UpdateEnabledTypes() {
 }
 
 void SyncManager::SyncInternal::MaybeSetSyncTabsInNigoriNode(
-    const ModelEnumSet enabled_types) {
+    const ModelTypeSet enabled_types) {
   // The initialized_ check is to ensure that we don't CHECK in GetUserShare
   // when this is called on start-up. It's ok to ignore that case, since
   // presumably this would've run when the user originally enabled sessions.
@@ -1135,11 +1135,11 @@ void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
   Cryptographer* cryptographer = trans->GetCryptographer();
   if (!cryptographer || !cryptographer->is_ready())
     return;
-  syncable::ModelEnumSet encrypted_types = GetEncryptedTypes(trans);
+  syncable::ModelTypeSet encrypted_types = GetEncryptedTypes(trans);
   ModelSafeRoutingInfo routes;
   registrar_->GetModelSafeRoutingInfo(&routes);
   std::string tag;
-  for (syncable::ModelEnumSet::Iterator iter = encrypted_types.First();
+  for (syncable::ModelTypeSet::Iterator iter = encrypted_types.First();
        iter.Good(); iter.Inc()) {
     if (iter.Get() == syncable::PASSWORDS ||
         iter.Get() == syncable::NIGORI ||
@@ -1349,7 +1349,7 @@ void SyncManager::SyncInternal::OnServerConnectionEvent(
 }
 
 void SyncManager::SyncInternal::HandleTransactionCompleteChangeEvent(
-    ModelEnumSet models_with_changes) {
+    ModelTypeSet models_with_changes) {
   // This notification happens immediately after the transaction mutex is
   // released. This allows work to be performed without blocking other threads
   // from acquiring a transaction.
@@ -1357,7 +1357,7 @@ void SyncManager::SyncInternal::HandleTransactionCompleteChangeEvent(
     return;
 
   // Call commit.
-  for (ModelEnumSet::Iterator it = models_with_changes.First();
+  for (ModelTypeSet::Iterator it = models_with_changes.First();
        it.Good(); it.Inc()) {
     change_delegate_->OnChangesComplete(it.Get());
     change_observer_.Call(
@@ -1365,7 +1365,7 @@ void SyncManager::SyncInternal::HandleTransactionCompleteChangeEvent(
   }
 }
 
-ModelEnumSet
+ModelTypeSet
     SyncManager::SyncInternal::HandleTransactionEndingChangeEvent(
         const ImmutableWriteTransactionInfo& write_transaction_info,
         syncable::BaseTransaction* trans) {
@@ -1373,7 +1373,7 @@ ModelEnumSet
   // falls out of scope. It happens while the channel mutex is still held,
   // and while the transaction mutex is held, so it cannot be re-entrant.
   if (!change_delegate_ || ChangeBuffersAreEmpty())
-    return ModelEnumSet();
+    return ModelTypeSet();
 
   // This will continue the WriteTransaction using a read only wrapper.
   // This is the last chance for read to occur in the WriteTransaction
@@ -1381,7 +1381,7 @@ ModelEnumSet
   // underlying transaction.
   ReadTransaction read_trans(GetUserShare(), trans);
 
-  ModelEnumSet models_with_changes;
+  ModelTypeSet models_with_changes;
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
     const syncable::ModelType type = syncable::ModelTypeFromInt(i);
@@ -1536,7 +1536,7 @@ void SyncManager::SyncInternal::RequestNudge(
   if (scheduler())
      scheduler()->ScheduleNudge(
         TimeDelta::FromMilliseconds(0), browser_sync::NUDGE_SOURCE_LOCAL,
-        ModelEnumSet(), location);
+        ModelTypeSet(), location);
 }
 
 void SyncManager::SyncInternal::RequestNudgeForDataType(
@@ -1562,7 +1562,7 @@ void SyncManager::SyncInternal::RequestNudgeForDataType(
   }
   scheduler()->ScheduleNudge(nudge_delay,
                              browser_sync::NUDGE_SOURCE_LOCAL,
-                             ModelEnumSet(type),
+                             ModelTypeSet(type),
                              nudge_location);
 }
 
@@ -1624,7 +1624,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
     if (is_notifiable_commit) {
       allstatus_.IncrementNotifiableCommits();
       if (sync_notifier_.get()) {
-        const ModelEnumSet changed_types =
+        const ModelTypeSet changed_types =
             syncable::ModelTypePayloadMapToEnumSet(
                 event.snapshot->source.types);
         sync_notifier_->SendNotification(changed_types);
@@ -1852,7 +1852,7 @@ JsArgList SyncManager::SyncInternal::FindNodesContainingString(
 }
 
 void SyncManager::SyncInternal::OnEncryptedTypesChanged(
-    syncable::ModelEnumSet encrypted_types,
+    syncable::ModelTypeSet encrypted_types,
     bool encrypt_everything) {
   // NOTE: We're in a transaction.
   FOR_EACH_OBSERVER(
@@ -1981,12 +1981,12 @@ void SyncManager::RefreshEncryption() {
     data_->RefreshEncryption();
 }
 
-syncable::ModelEnumSet SyncManager::GetEncryptedDataTypesForTest() const {
+syncable::ModelTypeSet SyncManager::GetEncryptedDataTypesForTest() const {
   ReadTransaction trans(FROM_HERE, GetUserShare());
   return GetEncryptedTypes(&trans);
 }
 
-bool SyncManager::ReceivedExperimentalTypes(syncable::ModelEnumSet* to_add)
+bool SyncManager::ReceivedExperimentalTypes(syncable::ModelTypeSet* to_add)
     const {
   ReadTransaction trans(FROM_HERE, GetUserShare());
   ReadNode node(&trans);
@@ -2013,7 +2013,7 @@ void SyncManager::TriggerOnNotificationStateChangeForTest(
 }
 
 void SyncManager::TriggerOnIncomingNotificationForTest(
-    ModelEnumSet model_types) {
+    ModelTypeSet model_types) {
   DCHECK(thread_checker_.CalledOnValidThread());
   syncable::ModelTypePayloadMap model_types_with_payloads =
       syncable::ModelTypePayloadMapFromEnumSet(model_types,
@@ -2041,7 +2041,7 @@ std::string PassphraseRequiredReasonToString(
 }
 
 // Helper function to determine if initial sync had ended for types.
-bool InitialSyncEndedForTypes(syncable::ModelEnumSet types,
+bool InitialSyncEndedForTypes(syncable::ModelTypeSet types,
                               sync_api::UserShare* share) {
   syncable::ScopedDirLookup lookup(share->dir_manager.get(),
                                    share->name);
@@ -2050,7 +2050,7 @@ bool InitialSyncEndedForTypes(syncable::ModelEnumSet types,
     return false;
   }
 
-  for (syncable::ModelEnumSet::Iterator i = types.First();
+  for (syncable::ModelTypeSet::Iterator i = types.First();
        i.Good(); i.Inc()) {
     if (!lookup->initial_sync_ended_for_type(i.Get()))
       return false;
@@ -2058,19 +2058,19 @@ bool InitialSyncEndedForTypes(syncable::ModelEnumSet types,
   return true;
 }
 
-syncable::ModelEnumSet GetTypesWithEmptyProgressMarkerToken(
-    syncable::ModelEnumSet types,
+syncable::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
+    syncable::ModelTypeSet types,
     sync_api::UserShare* share) {
   syncable::ScopedDirLookup lookup(share->dir_manager.get(),
                                    share->name);
   if (!lookup.good()) {
     NOTREACHED() << "ScopedDirLookup failed for "
                   << "GetTypesWithEmptyProgressMarkerToken";
-    return syncable::ModelEnumSet();
+    return syncable::ModelTypeSet();
   }
 
-  syncable::ModelEnumSet result;
-  for (syncable::ModelEnumSet::Iterator i = types.First();
+  syncable::ModelTypeSet result;
+  for (syncable::ModelTypeSet::Iterator i = types.First();
        i.Good(); i.Inc()) {
     sync_pb::DataTypeProgressMarker marker;
     lookup->GetDownloadProgress(i.Get(), &marker);

@@ -773,7 +773,7 @@ class Directory {
     // Last sync timestamp fetched from the server.
     sync_pb::DataTypeProgressMarker download_progress[MODEL_TYPE_COUNT];
     // true iff we ever reached the end of the changelog.
-    ModelEnumSet initial_sync_ended;
+    ModelTypeSet initial_sync_ended;
     // The store birthday we were given by the server. Contents are opaque to
     // the client.
     std::string store_birthday;
@@ -971,14 +971,14 @@ class Directory {
   // Returns all server types with unapplied updates.  A subset of
   // those types can then be passed into
   // GetUnappliedUpdateMetaHandles() below.
-  FullModelEnumSet GetServerTypesWithUnappliedUpdates(
+  FullModelTypeSet GetServerTypesWithUnappliedUpdates(
       BaseTransaction* trans) const;
 
   // Get all the metahandles for unapplied updates for a given set of
   // server types.
   typedef std::vector<int64> UnappliedUpdateMetaHandles;
   void GetUnappliedUpdateMetaHandles(BaseTransaction* trans,
-                                     FullModelEnumSet server_types,
+                                     FullModelTypeSet server_types,
                                      UnappliedUpdateMetaHandles* result);
 
   // Checks tree metadata consistency.
@@ -1004,7 +1004,7 @@ class Directory {
   // entries, which means something different in the syncable namespace.
   // WARNING! This can be real slow, as it iterates over all entries.
   // WARNING! Performs synchronous I/O.
-  virtual void PurgeEntriesWithTypeIn(ModelEnumSet types);
+  virtual void PurgeEntriesWithTypeIn(ModelTypeSet types);
 
  private:
   // Helper to prime ids_index, parent_id_and_names_index, unsynced_metahandles
@@ -1259,7 +1259,7 @@ class WriteTransaction : public BaseTransaction {
 
  protected:
   // Overridden by tests.
-  virtual void NotifyTransactionComplete(ModelEnumSet models_with_changes);
+  virtual void NotifyTransactionComplete(ModelTypeSet models_with_changes);
 
  private:
   // Clears |mutations_|.
@@ -1267,7 +1267,7 @@ class WriteTransaction : public BaseTransaction {
 
   void UnlockAndNotify(const ImmutableEntryKernelMutationMap& mutations);
 
-  ModelEnumSet NotifyTransactionChangingAndEnding(
+  ModelTypeSet NotifyTransactionChangingAndEnding(
       const ImmutableEntryKernelMutationMap& mutations);
 
   // Only the original fields are filled in until |RecordMutations()|.

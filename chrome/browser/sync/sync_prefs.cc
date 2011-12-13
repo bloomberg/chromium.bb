@@ -123,11 +123,11 @@ void SyncPrefs::SetKeepEverythingSynced(bool keep_everything_synced) {
   pref_service_->ScheduleSavePersistentPrefs();
 }
 
-syncable::ModelEnumSet SyncPrefs::GetPreferredDataTypes(
-    syncable::ModelEnumSet registered_types) const {
+syncable::ModelTypeSet SyncPrefs::GetPreferredDataTypes(
+    syncable::ModelTypeSet registered_types) const {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   if (!pref_service_) {
-    return syncable::ModelEnumSet();
+    return syncable::ModelTypeSet();
   }
 
   if (pref_service_->GetBoolean(prefs::kSyncKeepEverythingSynced)) {
@@ -136,7 +136,7 @@ syncable::ModelEnumSet SyncPrefs::GetPreferredDataTypes(
 
   // Remove autofill_profile since it's controlled by autofill, and
   // search_engines since it's controlled by preferences (see code below).
-  syncable::ModelEnumSet user_selectable_types(registered_types);
+  syncable::ModelTypeSet user_selectable_types(registered_types);
   DCHECK(!user_selectable_types.Has(syncable::NIGORI));
   user_selectable_types.Remove(syncable::AUTOFILL_PROFILE);
   user_selectable_types.Remove(syncable::SEARCH_ENGINES);
@@ -146,9 +146,9 @@ syncable::ModelEnumSet SyncPrefs::GetPreferredDataTypes(
   // TODO(akalin): Centralize notion of all user selectable data types.
   user_selectable_types.Remove(syncable::APP_NOTIFICATIONS);
 
-  syncable::ModelEnumSet preferred_types;
+  syncable::ModelTypeSet preferred_types;
 
-  for (syncable::ModelEnumSet::Iterator it = user_selectable_types.First();
+  for (syncable::ModelTypeSet::Iterator it = user_selectable_types.First();
        it.Good(); it.Inc()) {
     if (GetDataTypePreferred(it.Get())) {
       preferred_types.Put(it.Get());
@@ -181,12 +181,12 @@ syncable::ModelEnumSet SyncPrefs::GetPreferredDataTypes(
 }
 
 void SyncPrefs::SetPreferredDataTypes(
-    syncable::ModelEnumSet registered_types,
-    syncable::ModelEnumSet preferred_types) {
+    syncable::ModelTypeSet registered_types,
+    syncable::ModelTypeSet preferred_types) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   CHECK(pref_service_);
   DCHECK(registered_types.HasAll(preferred_types));
-  syncable::ModelEnumSet preferred_types_with_dependents(preferred_types);
+  syncable::ModelTypeSet preferred_types_with_dependents(preferred_types);
   // Set autofill_profile to the same enabled/disabled state as
   // autofill (since only autofill is shown in the UI).
   if (registered_types.Has(syncable::AUTOFILL) &&
@@ -218,7 +218,7 @@ void SyncPrefs::SetPreferredDataTypes(
     }
   }
 
-  for (syncable::ModelEnumSet::Iterator it = registered_types.First();
+  for (syncable::ModelTypeSet::Iterator it = registered_types.First();
        it.Good(); it.Inc()) {
     SetDataTypePreferred(
         it.Get(), preferred_types_with_dependents.Has(it.Get()));
@@ -313,18 +313,18 @@ void SyncPrefs::SetMaxVersion(syncable::ModelType model_type,
 }
 
 void SyncPrefs::AcknowledgeSyncedTypes(
-    syncable::ModelEnumSet types) {
+    syncable::ModelTypeSet types) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   CHECK(pref_service_);
   // Add the types to the current set of acknowledged
   // types, and then store the resulting set in prefs.
-  const syncable::ModelEnumSet acknowledged_types =
+  const syncable::ModelTypeSet acknowledged_types =
       Union(types,
-            syncable::ModelEnumSetFromValue(
+            syncable::ModelTypeSetFromValue(
                 *pref_service_->GetList(prefs::kSyncAcknowledgedSyncTypes)));
 
   scoped_ptr<ListValue> value(
-      syncable::ModelEnumSetToValue(acknowledged_types));
+      syncable::ModelTypeSetToValue(acknowledged_types));
   pref_service_->Set(prefs::kSyncAcknowledgedSyncTypes, *value);
   pref_service_->ScheduleSavePersistentPrefs();
 }
@@ -357,12 +357,12 @@ void SyncPrefs::SetManagedForTest(bool is_managed) {
   pref_service_->ScheduleSavePersistentPrefs();
 }
 
-syncable::ModelEnumSet SyncPrefs::GetAcknowledgeSyncedTypesForTest() const {
+syncable::ModelTypeSet SyncPrefs::GetAcknowledgeSyncedTypesForTest() const {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   if (!pref_service_) {
-    return syncable::ModelEnumSet();
+    return syncable::ModelTypeSet();
   }
-  return syncable::ModelEnumSetFromValue(
+  return syncable::ModelTypeSetFromValue(
       *pref_service_->GetList(prefs::kSyncAcknowledgedSyncTypes));
 }
 
@@ -460,7 +460,7 @@ void SyncPrefs::RegisterPreferences() {
   // We will start prompting people about new data types after the launch of
   // SESSIONS - all previously launched data types are treated as if they are
   // already acknowledged.
-  syncable::ModelEnumSet model_set;
+  syncable::ModelTypeSet model_set;
   model_set.Put(syncable::BOOKMARKS);
   model_set.Put(syncable::PREFERENCES);
   model_set.Put(syncable::PASSWORDS);
@@ -474,7 +474,7 @@ void SyncPrefs::RegisterPreferences() {
   model_set.Put(syncable::TYPED_URLS);
   model_set.Put(syncable::SESSIONS);
   pref_service_->RegisterListPref(prefs::kSyncAcknowledgedSyncTypes,
-                                  syncable::ModelEnumSetToValue(model_set),
+                                  syncable::ModelTypeSetToValue(model_set),
                                   PrefService::UNSYNCABLE_PREF);
 
   pref_service_->RegisterDictionaryPref(prefs::kSyncMaxInvalidationVersions,

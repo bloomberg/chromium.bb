@@ -142,7 +142,7 @@ syncable::ModelTypePayloadMap MakeMap(syncable::ModelType model_type,
   return type_payloads;
 }
 
-syncable::ModelTypePayloadMap MakeMapFromSet(syncable::ModelEnumSet types,
+syncable::ModelTypePayloadMap MakeMapFromSet(syncable::ModelTypeSet types,
                                              const std::string& payload) {
   return syncable::ModelTypePayloadMapFromEnumSet(types, payload);
 }
@@ -150,7 +150,7 @@ syncable::ModelTypePayloadMap MakeMapFromSet(syncable::ModelEnumSet types,
 }  // namespace
 
 TEST_F(ChromeInvalidationClientTest, InvalidateBadObjectId) {
-  syncable::ModelEnumSet types(syncable::BOOKMARKS, syncable::APPS);
+  syncable::ModelTypeSet types(syncable::BOOKMARKS, syncable::APPS);
   client_.RegisterTypes(types);
   EXPECT_CALL(mock_listener_, OnInvalidate(MakeMapFromSet(types, "")));
   FireInvalidate("bad", 1, NULL);
@@ -203,7 +203,7 @@ TEST_F(ChromeInvalidationClientTest, InvalidateUnknownVersion) {
 TEST_F(ChromeInvalidationClientTest, InvalidateVersionMultipleTypes) {
   using ::testing::Mock;
 
-  syncable::ModelEnumSet types(syncable::BOOKMARKS, syncable::APPS);
+  syncable::ModelTypeSet types(syncable::BOOKMARKS, syncable::APPS);
   client_.RegisterTypes(types);
 
   EXPECT_CALL(mock_listener_,
@@ -258,14 +258,14 @@ TEST_F(ChromeInvalidationClientTest, InvalidateVersionMultipleTypes) {
 }
 
 TEST_F(ChromeInvalidationClientTest, InvalidateAll) {
-  syncable::ModelEnumSet types(syncable::PREFERENCES, syncable::EXTENSIONS);
+  syncable::ModelTypeSet types(syncable::PREFERENCES, syncable::EXTENSIONS);
   client_.RegisterTypes(types);
   EXPECT_CALL(mock_listener_, OnInvalidate(MakeMapFromSet(types, "")));
   FireInvalidateAll();
 }
 
 TEST_F(ChromeInvalidationClientTest, RegisterTypes) {
-  syncable::ModelEnumSet types(syncable::PREFERENCES, syncable::EXTENSIONS);
+  syncable::ModelTypeSet types(syncable::PREFERENCES, syncable::EXTENSIONS);
   client_.RegisterTypes(types);
   // Registered types should be preserved across Stop/Start.
   TearDown();

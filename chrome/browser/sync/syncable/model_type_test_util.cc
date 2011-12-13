@@ -6,46 +6,46 @@
 
 namespace syncable {
 
-void PrintTo(ModelEnumSet model_types, ::std::ostream* os) {
-  *os << ModelEnumSetToString(model_types);
+void PrintTo(ModelTypeSet model_types, ::std::ostream* os) {
+  *os << ModelTypeSetToString(model_types);
 }
 
 namespace {
 
 // Matcher implementation for HasModelTypes().
 class HasModelTypesMatcher
-    : public ::testing::MatcherInterface<ModelEnumSet> {
+    : public ::testing::MatcherInterface<ModelTypeSet> {
  public:
-  explicit HasModelTypesMatcher(ModelEnumSet expected_types)
+  explicit HasModelTypesMatcher(ModelTypeSet expected_types)
       : expected_types_(expected_types) {}
 
   virtual ~HasModelTypesMatcher() {}
 
   virtual bool MatchAndExplain(
-      ModelEnumSet model_types,
+      ModelTypeSet model_types,
       ::testing::MatchResultListener* listener) const {
     // No need to annotate listener since we already define PrintTo().
     return model_types.Equals(expected_types_);
   }
 
   virtual void DescribeTo(::std::ostream* os) const {
-    *os << "has model types " << ModelEnumSetToString(expected_types_);
+    *os << "has model types " << ModelTypeSetToString(expected_types_);
   }
 
   virtual void DescribeNegationTo(::std::ostream* os) const {
     *os << "doesn't have model types "
-        << ModelEnumSetToString(expected_types_);
+        << ModelTypeSetToString(expected_types_);
   }
 
  private:
-  const ModelEnumSet expected_types_;
+  const ModelTypeSet expected_types_;
 
   DISALLOW_COPY_AND_ASSIGN(HasModelTypesMatcher);
 };
 
 }  // namespace
 
-::testing::Matcher<ModelEnumSet> HasModelTypes(ModelEnumSet expected_types) {
+::testing::Matcher<ModelTypeSet> HasModelTypes(ModelTypeSet expected_types) {
   return ::testing::MakeMatcher(new HasModelTypesMatcher(expected_types));
 }
 

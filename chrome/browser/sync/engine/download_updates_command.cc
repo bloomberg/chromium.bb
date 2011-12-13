@@ -24,8 +24,8 @@ using sessions::SyncSession;
 using std::string;
 using syncable::FIRST_REAL_MODEL_TYPE;
 using syncable::MODEL_TYPE_COUNT;
-using syncable::ModelEnumSet;
-using syncable::ModelEnumSetToString;
+using syncable::ModelTypeSet;
+using syncable::ModelTypeSetToString;
 
 DownloadUpdatesCommand::DownloadUpdatesCommand() {}
 DownloadUpdatesCommand::~DownloadUpdatesCommand() {}
@@ -52,15 +52,15 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
   }
 
   // Request updates for all enabled types.
-  const ModelEnumSet enabled_types =
+  const ModelTypeSet enabled_types =
       GetRoutingInfoTypes(session->routing_info());
   DVLOG(1) << "Getting updates for types "
-           << ModelEnumSetToString(enabled_types);
+           << ModelTypeSetToString(enabled_types);
   DCHECK(!enabled_types.Empty());
 
   const syncable::ModelTypePayloadMap& type_payload_map =
       session->source().types;
-  for (ModelEnumSet::Iterator it = enabled_types.First();
+  for (ModelTypeSet::Iterator it = enabled_types.First();
        it.Good(); it.Inc()) {
     sync_pb::DataTypeProgressMarker* progress_marker =
         get_updates->add_from_progress_marker();

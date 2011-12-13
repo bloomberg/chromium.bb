@@ -83,10 +83,10 @@ class StatusController {
   ClientToServerResponse* mutable_commit_response() {
     return &shared_.commit_response;
   }
-  const syncable::ModelEnumSet updates_request_types() const {
+  const syncable::ModelTypeSet updates_request_types() const {
     return shared_.updates_request_types;
   }
-  void set_updates_request_types(syncable::ModelEnumSet value) {
+  void set_updates_request_types(syncable::ModelTypeSet value) {
     shared_.updates_request_types = value;
   }
   const ClientToServerResponse& updates_response() const {
@@ -223,7 +223,7 @@ class StatusController {
   void increment_num_successful_bookmark_commits();
   void increment_num_updates_downloaded_by(int value);
   void increment_num_tombstone_updates_downloaded_by(int value);
-  void set_types_needing_local_migration(syncable::ModelEnumSet types);
+  void set_types_needing_local_migration(syncable::ModelTypeSet types);
   void set_unsynced_handles(const std::vector<int64>& unsynced_handles);
   void increment_num_local_overwrites();
   void increment_num_server_overwrites();

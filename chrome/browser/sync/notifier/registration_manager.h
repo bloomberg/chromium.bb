@@ -67,7 +67,7 @@ class RegistrationManager {
 
   // Registers all types included in the given set (that are not
   // already disabled) and sets all other types to be unregistered.
-  void SetRegisteredTypes(syncable::ModelEnumSet types);
+  void SetRegisteredTypes(syncable::ModelTypeSet types);
 
   // Marks the registration for the |model_type| lost and re-registers
   // it (unless it's disabled).
@@ -84,7 +84,7 @@ class RegistrationManager {
   // The functions below should only be used in tests.
 
   // Gets all currently-registered types.
-  syncable::ModelEnumSet GetRegisteredTypes() const;
+  syncable::ModelTypeSet GetRegisteredTypes() const;
 
   // Gets all pending registrations and their next min delays.
   PendingRegistrationMap GetPendingRegistrations() const;

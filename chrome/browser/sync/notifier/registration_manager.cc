@@ -70,7 +70,7 @@ RegistrationManager::~RegistrationManager() {
 }
 
 void RegistrationManager::SetRegisteredTypes(
-    syncable::ModelEnumSet types) {
+    syncable::ModelTypeSet types) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
 
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
@@ -118,9 +118,9 @@ void RegistrationManager::DisableType(syncable::ModelType model_type) {
   status->Disable();
 }
 
-syncable::ModelEnumSet RegistrationManager::GetRegisteredTypes() const {
+syncable::ModelTypeSet RegistrationManager::GetRegisteredTypes() const {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  syncable::ModelEnumSet registered_types;
+  syncable::ModelTypeSet registered_types;
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
     syncable::ModelType model_type = syncable::ModelTypeFromInt(i);

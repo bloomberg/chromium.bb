@@ -102,7 +102,7 @@ void SyncBackendHost::Initialize(
     SyncFrontend* frontend,
     const WeakHandle<JsEventHandler>& event_handler,
     const GURL& sync_service_url,
-    syncable::ModelEnumSet initial_types,
+    syncable::ModelTypeSet initial_types,
     const SyncCredentials& credentials,
     bool delete_sync_data_folder) {
   if (!sync_thread_.Start())
@@ -111,7 +111,7 @@ void SyncBackendHost::Initialize(
   frontend_ = frontend;
   DCHECK(frontend);
 
-  syncable::ModelEnumSet initial_types_with_nigori(initial_types);
+  syncable::ModelTypeSet initial_types_with_nigori(initial_types);
   CHECK(sync_prefs_.get());
   if (sync_prefs_->HasSyncSetupCompleted()) {
     initial_types_with_nigori.Put(syncable::NIGORI);
@@ -247,13 +247,13 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
 }
 
 void SyncBackendHost::ConfigureDataTypes(
-    syncable::ModelEnumSet types_to_add,
-    syncable::ModelEnumSet types_to_remove,
+    syncable::ModelTypeSet types_to_add,
+    syncable::ModelTypeSet types_to_remove,
     sync_api::ConfigureReason reason,
-    base::Callback<void(syncable::ModelEnumSet)> ready_task,
+    base::Callback<void(syncable::ModelTypeSet)> ready_task,
     bool enable_nigori) {
-  syncable::ModelEnumSet types_to_add_with_nigori = types_to_add;
-  syncable::ModelEnumSet types_to_remove_with_nigori = types_to_remove;
+  syncable::ModelTypeSet types_to_add_with_nigori = types_to_add;
+  syncable::ModelTypeSet types_to_remove_with_nigori = types_to_remove;
   if (enable_nigori) {
     types_to_add_with_nigori.Put(syncable::NIGORI);
     types_to_remove_with_nigori.Remove(syncable::NIGORI);
@@ -482,7 +482,7 @@ void SyncBackendHost::Core::OnClearServerDataSucceeded() {
 }
 
 void SyncBackendHost::Core::OnEncryptedTypesChanged(
-    syncable::ModelEnumSet encrypted_types,
+    syncable::ModelTypeSet encrypted_types,
     bool encrypt_everything) {
   if (!sync_loop_)
     return;
@@ -684,7 +684,7 @@ void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
 }
 
 void SyncBackendHost::Core::DoRequestConfig(
-    syncable::ModelEnumSet types_to_config,
+    syncable::ModelTypeSet types_to_config,
     sync_api::ConfigureReason reason) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   sync_manager_->RequestConfig(types_to_config, reason);
@@ -720,7 +720,7 @@ void SyncBackendHost::Core::HandleInitializationCompletedOnFrontendLoop(
 
 void SyncBackendHost::Core::HandleNigoriConfigurationCompletedOnFrontendLoop(
     const WeakHandle<JsBackend>& js_backend,
-    const syncable::ModelEnumSet failed_configuration_types) {
+    const syncable::ModelTypeSet failed_configuration_types) {
   if (!host_)
     return;
   host_->HandleInitializationCompletedOnFrontendLoop(
@@ -794,7 +794,7 @@ void SyncBackendHost::Core::NotifyUpdatedToken(const std::string& token) {
 }
 
 void SyncBackendHost::Core::NotifyEncryptedTypesChanged(
-    syncable::ModelEnumSet encrypted_types,
+    syncable::ModelTypeSet encrypted_types,
     bool encrypt_everything) {
   if (!host_)
     return;
@@ -820,7 +820,7 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
 
   SVLOG(1) << "Got snapshot " << snapshot->ToString();
 
-  const syncable::ModelEnumSet to_migrate =
+  const syncable::ModelTypeSet to_migrate =
       snapshot->syncer_status.types_needing_local_migration;
   if (!to_migrate.Empty())
     host_->frontend_->OnMigrationNeededForTypes(to_migrate);
@@ -836,20 +836,20 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
   if (host_->pending_download_state_.get()) {
     scoped_ptr<PendingConfigureDataTypesState> state(
         host_->pending_download_state_.release());
-    const syncable::ModelEnumSet types_to_add = state->types_to_add;
-    const syncable::ModelEnumSet added_types = state->added_types;
+    const syncable::ModelTypeSet types_to_add = state->types_to_add;
+    const syncable::ModelTypeSet added_types = state->added_types;
     DCHECK(types_to_add.HasAll(added_types));
-    const syncable::ModelEnumSet initial_sync_ended =
+    const syncable::ModelTypeSet initial_sync_ended =
         snapshot->initial_sync_ended;
-    const syncable::ModelEnumSet failed_configuration_types =
+    const syncable::ModelTypeSet failed_configuration_types =
         Difference(added_types, initial_sync_ended);
     SVLOG(1)
         << "Added types: "
-        << syncable::ModelEnumSetToString(added_types)
+        << syncable::ModelTypeSetToString(added_types)
         << ", configured types: "
-        << syncable::ModelEnumSetToString(initial_sync_ended)
+        << syncable::ModelTypeSetToString(initial_sync_ended)
         << ", failed configuration types: "
-        << syncable::ModelEnumSetToString(failed_configuration_types);
+        << syncable::ModelTypeSetToString(failed_configuration_types);
     state->ready_task.Run(failed_configuration_types);
     if (!failed_configuration_types.Empty())
       return;
@@ -883,7 +883,7 @@ void SyncBackendHost::Core::FinishConfigureDataTypesOnFrontendLoop() {
 
 void SyncBackendHost::AddExperimentalTypes() {
   CHECK(initialized());
-  syncable::ModelEnumSet to_add;
+  syncable::ModelTypeSet to_add;
   if (core_->sync_manager()->ReceivedExperimentalTypes(&to_add))
     frontend_->OnDataTypesChanged(to_add);
 }
@@ -919,8 +919,8 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
     case NOT_INITIALIZED:
       initialization_state_ = DOWNLOADING_NIGORI;
       ConfigureDataTypes(
-          syncable::ModelEnumSet(),
-          syncable::ModelEnumSet(),
+          syncable::ModelTypeSet(),
+          syncable::ModelTypeSet(),
           sync_api::CONFIGURE_REASON_NEW_CLIENT,
           // Calls back into this function.
           base::Bind(
@@ -977,7 +977,7 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
   if (pending_config_mode_state_->added_types.Empty() &&
       !core_->sync_manager()->InitialSyncEndedForAllEnabledTypes()) {
 
-    syncable::ModelEnumSet enabled_types;
+    syncable::ModelTypeSet enabled_types;
     ModelSafeRoutingInfo routing_info;
     registrar_->GetModelSafeRoutingInfo(&routing_info);
     for (ModelSafeRoutingInfo::const_iterator i = routing_info.begin();
@@ -1002,13 +1002,13 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
   if (pending_config_mode_state_->added_types.Empty()) {
     SVLOG(1) << "No new types added; calling ready_task directly";
     // No new types - just notify the caller that the types are available.
-    const syncable::ModelEnumSet failed_configuration_types;
+    const syncable::ModelTypeSet failed_configuration_types;
     pending_config_mode_state_->ready_task.Run(failed_configuration_types);
   } else {
     pending_download_state_.reset(pending_config_mode_state_.release());
 
     // Always configure nigori if it's enabled.
-    syncable::ModelEnumSet types_to_config =
+    syncable::ModelTypeSet types_to_config =
         pending_download_state_->added_types;
     if (IsNigoriEnabled()) {
       // Note: Nigori is the only type that gets added with a nonempty
@@ -1019,7 +1019,7 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
       types_to_config.Put(syncable::NIGORI);
     }
     SVLOG(1) << "Types "
-             << syncable::ModelEnumSetToString(types_to_config)
+             << syncable::ModelTypeSetToString(types_to_config)
             << " added; calling DoRequestConfig";
     sync_thread_.message_loop()->PostTask(FROM_HERE,
          base::Bind(&SyncBackendHost::Core::DoRequestConfig,

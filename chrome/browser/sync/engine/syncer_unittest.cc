@@ -144,7 +144,7 @@ class SyncerTest : public testing::Test,
   virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) OVERRIDE {
     // We're just testing the sync engine here, so we shunt everything to
     // the SyncerThread.  Datatypes which aren't enabled aren't in the map.
-    for (syncable::ModelEnumSet::Iterator it = enabled_datatypes_.First();
+    for (syncable::ModelTypeSet::Iterator it = enabled_datatypes_.First();
          it.Good(); it.Inc()) {
       (*out)[it.Get()] = GROUP_PASSIVE;
     }
@@ -370,7 +370,7 @@ class SyncerTest : public testing::Test,
       GetCommitIdsCommand command(limit);
       command.BuildCommitIds(
           session_->status_controller().unsynced_handles(),
-          session_->write_transaction(), routes, syncable::ModelEnumSet());
+          session_->write_transaction(), routes, syncable::ModelTypeSet());
       vector<syncable::Id> output =
           command.ordered_commit_set_->GetAllCommitIds();
       size_t truncated_size = std::min(limit, expected_id_order.size());
@@ -495,7 +495,7 @@ class SyncerTest : public testing::Test,
   base::TimeDelta last_sessions_commit_delay_seconds_;
   scoped_refptr<ModelSafeWorker> worker_;
 
-  syncable::ModelEnumSet enabled_datatypes_;
+  syncable::ModelTypeSet enabled_datatypes_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncerTest);
 };
@@ -558,7 +558,7 @@ TEST_F(SyncerTest, GetCommitIdsCommandTruncates) {
 TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());
-  const syncable::ModelEnumSet throttled_types(syncable::BOOKMARKS);
+  const syncable::ModelTypeSet throttled_types(syncable::BOOKMARKS);
   KeyParams key_params = {"localhost", "dummy", "foobar"};
   sync_pb::EntitySpecifics bookmark_data;
   AddDefaultExtensionValue(syncable::BOOKMARKS, &bookmark_data);
@@ -856,7 +856,7 @@ TEST_F(SyncerTest, TestPurgeWhileUnsynced) {
     parent2.Put(syncable::ID, pref_node_id);
   }
 
-  dir->PurgeEntriesWithTypeIn(syncable::ModelEnumSet(syncable::PREFERENCES));
+  dir->PurgeEntriesWithTypeIn(syncable::ModelTypeSet(syncable::PREFERENCES));
 
   const StatusController& status = session_->status_controller();
   syncer_->SyncShare(session_.get(), SYNCER_BEGIN, SYNCER_END);
@@ -894,7 +894,7 @@ TEST_F(SyncerTest, TestPurgeWhileUnapplied) {
     parent.Put(syncable::ID, parent_id_);
   }
 
-  dir->PurgeEntriesWithTypeIn(syncable::ModelEnumSet(syncable::BOOKMARKS));
+  dir->PurgeEntriesWithTypeIn(syncable::ModelTypeSet(syncable::BOOKMARKS));
 
   syncer_->SyncShare(session_.get(), SYNCER_BEGIN, SYNCER_END);
   dir->SaveChanges();
@@ -2156,8 +2156,8 @@ TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
 }
 
 TEST_F(SyncerTest, ParentAndChildBothMatch) {
-  const syncable::FullModelEnumSet all_types =
-      syncable::FullModelEnumSet::All();
+  const syncable::FullModelTypeSet all_types =
+      syncable::FullModelTypeSet::All();
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
   syncable::Id parent_id = ids_.NewServerId();

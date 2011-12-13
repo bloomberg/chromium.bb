@@ -28,7 +28,7 @@ class FailedDatatypesHandler {
   void OnUserChoseDatatypes();
 
   // Returns the types that are failing.
-  syncable::ModelEnumSet GetFailedTypes() const;
+  syncable::ModelTypeSet GetFailedTypes() const;
 
   // Returns if there are any failed types.
   bool AnyFailedDatatype() const;

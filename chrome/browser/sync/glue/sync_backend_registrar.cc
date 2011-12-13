@@ -51,7 +51,7 @@ bool IsOnThreadForGroup(ModelSafeGroup group) {
 }  // namespace
 
 SyncBackendRegistrar::SyncBackendRegistrar(
-    syncable::ModelEnumSet initial_types,
+    syncable::ModelTypeSet initial_types,
     const std::string& name, Profile* profile,
     MessageLoop* sync_loop) :
     name_(name),
@@ -71,7 +71,7 @@ SyncBackendRegistrar::SyncBackendRegistrar(
   // routing_info map.  We set them to group passive, meaning that
   // updates will be applied to sync, but not dispatched to the native
   // models.
-  for (syncable::ModelEnumSet::Iterator it = initial_types.First();
+  for (syncable::ModelTypeSet::Iterator it = initial_types.First();
        it.Good(); it.Inc()) {
     routing_info_[it.Get()] = GROUP_PASSIVE;
   }
@@ -108,12 +108,12 @@ bool SyncBackendRegistrar::IsNigoriEnabled() const {
   return routing_info_.find(syncable::NIGORI) != routing_info_.end();
 }
 
-syncable::ModelEnumSet SyncBackendRegistrar::ConfigureDataTypes(
-    syncable::ModelEnumSet types_to_add,
-    syncable::ModelEnumSet types_to_remove) {
+syncable::ModelTypeSet SyncBackendRegistrar::ConfigureDataTypes(
+    syncable::ModelTypeSet types_to_add,
+    syncable::ModelTypeSet types_to_remove) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(Intersection(types_to_add, types_to_remove).Empty());
-  syncable::ModelEnumSet filtered_types_to_add = types_to_add;
+  syncable::ModelTypeSet filtered_types_to_add = types_to_add;
   if (workers_.count(GROUP_HISTORY) == 0) {
     LOG(WARNING) << "No history worker -- removing TYPED_URLS";
     filtered_types_to_add.Remove(syncable::TYPED_URLS);
@@ -124,8 +124,8 @@ syncable::ModelEnumSet SyncBackendRegistrar::ConfigureDataTypes(
   }
 
   base::AutoLock lock(lock_);
-  syncable::ModelEnumSet newly_added_types;
-  for (syncable::ModelEnumSet::Iterator it =
+  syncable::ModelTypeSet newly_added_types;
+  for (syncable::ModelTypeSet::Iterator it =
            filtered_types_to_add.First();
        it.Good(); it.Inc()) {
     // Add a newly specified data type as GROUP_PASSIVE into the
@@ -135,18 +135,18 @@ syncable::ModelEnumSet SyncBackendRegistrar::ConfigureDataTypes(
       newly_added_types.Put(it.Get());
     }
   }
-  for (syncable::ModelEnumSet::Iterator it = types_to_remove.First();
+  for (syncable::ModelTypeSet::Iterator it = types_to_remove.First();
        it.Good(); it.Inc()) {
     routing_info_.erase(it.Get());
   }
 
   // TODO(akalin): Use SVLOG/SLOG if we add any more logging.
   DVLOG(1) << name_ << ": Adding types "
-           << syncable::ModelEnumSetToString(types_to_add)
+           << syncable::ModelTypeSetToString(types_to_add)
            << " (with newly-added types "
-           << syncable::ModelEnumSetToString(newly_added_types)
+           << syncable::ModelTypeSetToString(newly_added_types)
            << ") and removing types "
-           << syncable::ModelEnumSetToString(types_to_remove)
+           << syncable::ModelTypeSetToString(types_to_remove)
            << " to get new routing info "
            << ModelSafeRoutingInfoToString(routing_info_);
 

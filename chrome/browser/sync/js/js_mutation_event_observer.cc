@@ -85,7 +85,7 @@ void JsMutationEventObserver::OnChangesComplete(
 
 void JsMutationEventObserver::OnTransactionWrite(
     const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
-    syncable::ModelEnumSet models_with_changes) {
+    syncable::ModelTypeSet models_with_changes) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   if (!event_handler_.IsInitialized()) {
     return;
@@ -94,7 +94,7 @@ void JsMutationEventObserver::OnTransactionWrite(
   details.Set("writeTransactionInfo",
               write_transaction_info.Get().ToValue(kChangeLimit));
   details.Set("modelsWithChanges",
-              syncable::ModelEnumSetToValue(models_with_changes));
+              syncable::ModelTypeSetToValue(models_with_changes));
   HandleJsEvent(FROM_HERE, "onTransactionWrite", JsEventDetails(&details));
 }
 

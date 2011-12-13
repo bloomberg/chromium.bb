@@ -17,7 +17,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
-using syncable::ModelEnumSet;
+using syncable::ModelTypeSet;
 
 namespace browser_sync {
 
@@ -47,12 +47,12 @@ BackendMigrator::~BackendMigrator() {
 
 #define SDVLOG(verbose_level) DVLOG(verbose_level) << name_ << ": "
 
-void BackendMigrator::MigrateTypes(syncable::ModelEnumSet types) {
-  const ModelEnumSet old_to_migrate = to_migrate_;
+void BackendMigrator::MigrateTypes(syncable::ModelTypeSet types) {
+  const ModelTypeSet old_to_migrate = to_migrate_;
   to_migrate_.PutAll(types);
-  SDVLOG(1) << "MigrateTypes called with " << ModelEnumSetToString(types)
-           << ", old_to_migrate = " << ModelEnumSetToString(old_to_migrate)
-          << ", to_migrate_ = " << ModelEnumSetToString(to_migrate_);
+  SDVLOG(1) << "MigrateTypes called with " << ModelTypeSetToString(types)
+           << ", old_to_migrate = " << ModelTypeSetToString(old_to_migrate)
+          << ", to_migrate_ = " << ModelTypeSetToString(to_migrate_);
   if (old_to_migrate.Equals(to_migrate_)) {
     SDVLOG(1) << "MigrateTypes called with no new types; ignoring";
     return;
@@ -103,12 +103,12 @@ bool BackendMigrator::TryStart() {
 void BackendMigrator::RestartMigration() {
   // We'll now disable any running types that need to be migrated.
   ChangeState(DISABLING_TYPES);
-  const ModelEnumSet full_set = service_->GetPreferredDataTypes();
-  const ModelEnumSet difference = Difference(full_set, to_migrate_);
+  const ModelTypeSet full_set = service_->GetPreferredDataTypes();
+  const ModelTypeSet difference = Difference(full_set, to_migrate_);
   bool configure_with_nigori = !to_migrate_.Has(syncable::NIGORI);
   SDVLOG(1) << "BackendMigrator disabling types "
-            << ModelEnumSetToString(to_migrate_) << "; configuring "
-            << ModelEnumSetToString(difference)
+            << ModelTypeSetToString(to_migrate_) << "; configuring "
+            << ModelTypeSetToString(difference)
             << (configure_with_nigori ? " with nigori" : " without nigori");
 
   // Add nigori for config or not based upon if the server told us to migrate
@@ -141,9 +141,9 @@ void BackendMigrator::Observe(int type,
 
 namespace {
 
-syncable::ModelEnumSet GetUnsyncedDataTypes(sync_api::UserShare* user_share) {
+syncable::ModelTypeSet GetUnsyncedDataTypes(sync_api::UserShare* user_share) {
   sync_api::ReadTransaction trans(FROM_HERE, user_share);
-  syncable::ModelEnumSet unsynced_data_types;
+  syncable::ModelTypeSet unsynced_data_types;
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
     syncable::ModelType type = syncable::ModelTypeFromInt(i);
@@ -161,9 +161,9 @@ syncable::ModelEnumSet GetUnsyncedDataTypes(sync_api::UserShare* user_share) {
 void BackendMigrator::OnConfigureDone(
     const DataTypeManager::ConfigureResult& result) {
   SDVLOG(1) << "OnConfigureDone with requested types "
-            << ModelEnumSetToString(result.requested_types)
+            << ModelTypeSetToString(result.requested_types)
             << ", status " << result.status
-            << ", and to_migrate_ = " << ModelEnumSetToString(to_migrate_);
+            << ", and to_migrate_ = " << ModelTypeSetToString(to_migrate_);
   if (state_ == WAITING_TO_START) {
     if (!TryStart())
       SDVLOG(1) << "Manager still not configured; still waiting";
@@ -172,7 +172,7 @@ void BackendMigrator::OnConfigureDone(
 
   DCHECK_GT(state_, WAITING_TO_START);
 
-  const ModelEnumSet intersection =
+  const ModelTypeSet intersection =
       Intersection(result.requested_types, to_migrate_);
   // This intersection check is to determine if our disable request
   // was interrupted by a user changing preferred types.
@@ -197,13 +197,13 @@ void BackendMigrator::OnConfigureDone(
   }
 
   if (state_ == DISABLING_TYPES) {
-    const syncable::ModelEnumSet unsynced_types =
+    const syncable::ModelTypeSet unsynced_types =
         GetUnsyncedDataTypes(user_share_);
     if (!unsynced_types.HasAll(to_migrate_)) {
       SLOG(WARNING) << "Set of unsynced types: "
-                    << syncable::ModelEnumSetToString(unsynced_types)
+                    << syncable::ModelTypeSetToString(unsynced_types)
                     << " does not contain types to migrate: "
-                    << syncable::ModelEnumSetToString(to_migrate_)
+                    << syncable::ModelTypeSetToString(to_migrate_)
                     << "; not re-enabling yet";
       return;
     }
@@ -211,16 +211,16 @@ void BackendMigrator::OnConfigureDone(
     ChangeState(REENABLING_TYPES);
     // Don't use |to_migrate_| for the re-enabling because the user
     // may have chosen to disable types during the migration.
-    const ModelEnumSet full_set = service_->GetPreferredDataTypes();
+    const ModelTypeSet full_set = service_->GetPreferredDataTypes();
     SDVLOG(1) << "BackendMigrator re-enabling types: "
-              << syncable::ModelEnumSetToString(full_set);
+              << syncable::ModelTypeSetToString(full_set);
     manager_->Configure(full_set, sync_api::CONFIGURE_REASON_MIGRATION);
   } else if (state_ == REENABLING_TYPES) {
     // We're done!
     ChangeState(IDLE);
 
     SDVLOG(1) << "BackendMigrator: Migration complete for: "
-              << syncable::ModelEnumSetToString(to_migrate_);
+              << syncable::ModelTypeSetToString(to_migrate_);
     to_migrate_.Clear();
   }
 }
@@ -229,7 +229,7 @@ BackendMigrator::State BackendMigrator::state() const {
   return state_;
 }
 
-syncable::ModelEnumSet
+syncable::ModelTypeSet
     BackendMigrator::GetPendingMigrationTypesForTest() const {
   return to_migrate_;
 }

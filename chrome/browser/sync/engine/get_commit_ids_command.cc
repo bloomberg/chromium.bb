@@ -44,7 +44,7 @@ void GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
     passphrase_missing_ = cryptographer->has_pending_keys();
   };
 
-  const syncable::ModelEnumSet throttled_types =
+  const syncable::ModelTypeSet throttled_types =
        session->context()->GetThrottledTypes();
   // We filter out all unready entries from the set of unsynced handles to
   // ensure we don't trigger useless sync cycles attempting to retry due to
@@ -74,10 +74,10 @@ namespace {
 // and not requiring encryption (any entry containing an encrypted datatype
 // while the cryptographer requires a passphrase is not ready for commit.)
 // 2. Its type is not currently throttled.
-bool IsEntryReadyForCommit(syncable::ModelEnumSet encrypted_types,
+bool IsEntryReadyForCommit(syncable::ModelTypeSet encrypted_types,
                            bool passphrase_missing,
                            const syncable::Entry& entry,
-                           syncable::ModelEnumSet throttled_types) {
+                           syncable::ModelTypeSet throttled_types) {
   if (!entry.Get(syncable::IS_UNSYNCED))
     return false;
 
@@ -121,7 +121,7 @@ bool IsEntryReadyForCommit(syncable::ModelEnumSet encrypted_types,
 
 void GetCommitIdsCommand::FilterUnreadyEntries(
     syncable::BaseTransaction* trans,
-    syncable::ModelEnumSet throttled_types,
+    syncable::ModelTypeSet throttled_types,
     syncable::Directory::UnsyncedMetaHandles* unsynced_handles) {
   syncable::Directory::UnsyncedMetaHandles::iterator iter;
   syncable::Directory::UnsyncedMetaHandles new_unsynced_handles;
@@ -144,7 +144,7 @@ void GetCommitIdsCommand::AddUncommittedParentsAndTheirPredecessors(
     syncable::BaseTransaction* trans,
     syncable::Id parent_id,
     const ModelSafeRoutingInfo& routes,
-    syncable::ModelEnumSet throttled_types) {
+    syncable::ModelTypeSet throttled_types) {
   OrderedCommitSet item_dependencies(routes);
 
   // Climb the tree adding entries leaf -> root.
@@ -169,7 +169,7 @@ void GetCommitIdsCommand::AddUncommittedParentsAndTheirPredecessors(
 }
 
 bool GetCommitIdsCommand::AddItem(syncable::Entry* item,
-                                  syncable::ModelEnumSet throttled_types,
+                                  syncable::ModelTypeSet throttled_types,
                                   OrderedCommitSet* result) {
   if (!IsEntryReadyForCommit(encrypted_types_, passphrase_missing_, *item,
                              throttled_types))
@@ -186,7 +186,7 @@ bool GetCommitIdsCommand::AddItem(syncable::Entry* item,
 
 bool GetCommitIdsCommand::AddItemThenPredecessors(
     syncable::BaseTransaction* trans,
-    syncable::ModelEnumSet throttled_types,
+    syncable::ModelTypeSet throttled_types,
     syncable::Entry* item,
     syncable::IndexedBitField inclusion_filter,
     OrderedCommitSet* result) {
@@ -210,7 +210,7 @@ bool GetCommitIdsCommand::AddItemThenPredecessors(
 
 void GetCommitIdsCommand::AddPredecessorsThenItem(
     syncable::BaseTransaction* trans,
-    syncable::ModelEnumSet throttled_types,
+    syncable::ModelTypeSet throttled_types,
     syncable::Entry* item,
     syncable::IndexedBitField inclusion_filter,
     const ModelSafeRoutingInfo& routes) {
@@ -230,7 +230,7 @@ void GetCommitIdsCommand::AddCreatesAndMoves(
     const vector<int64>& unsynced_handles,
     syncable::WriteTransaction* write_transaction,
     const ModelSafeRoutingInfo& routes,
-    syncable::ModelEnumSet throttled_types) {
+    syncable::ModelTypeSet throttled_types) {
   // Add moves and creates, and prepend their uncommitted parents.
   for (CommitMetahandleIterator iterator(unsynced_handles, write_transaction,
                                          ordered_commit_set_.get());
@@ -341,7 +341,7 @@ void GetCommitIdsCommand::AddDeletes(const vector<int64>& unsynced_handles,
 void GetCommitIdsCommand::BuildCommitIds(const vector<int64>& unsynced_handles,
     syncable::WriteTransaction* write_transaction,
     const ModelSafeRoutingInfo& routes,
-    syncable::ModelEnumSet throttled_types) {
+    syncable::ModelTypeSet throttled_types) {
   ordered_commit_set_.reset(new OrderedCommitSet(routes));
   // Commits follow these rules:
   // 1. Moves or creates are preceded by needed folder creates, from

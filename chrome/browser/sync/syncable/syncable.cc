@@ -819,7 +819,7 @@ void Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
   }
 }
 
-void Directory::PurgeEntriesWithTypeIn(ModelEnumSet types) {
+void Directory::PurgeEntriesWithTypeIn(ModelTypeSet types) {
   if (types.Empty())
     return;
 
@@ -863,7 +863,7 @@ void Directory::PurgeEntriesWithTypeIn(ModelEnumSet types) {
       }
 
       // Ensure meta tracking for these data types reflects the deleted state.
-      for (syncable::ModelEnumSet::Iterator it = types.First();
+      for (syncable::ModelTypeSet::Iterator it = types.First();
            it.Good(); it.Inc()) {
         set_initial_sync_ended_for_type_unsafe(it.Get(), false);
         kernel_->persisted_info.reset_download_progress(it.Get());
@@ -1025,9 +1025,9 @@ int64 Directory::unsynced_entity_count() const {
   return kernel_->unsynced_metahandles->size();
 }
 
-FullModelEnumSet Directory::GetServerTypesWithUnappliedUpdates(
+FullModelTypeSet Directory::GetServerTypesWithUnappliedUpdates(
     BaseTransaction* trans) const {
-  syncable::FullModelEnumSet server_types;
+  syncable::FullModelTypeSet server_types;
   ScopedKernelLock lock(this);
   for (int i = UNSPECIFIED; i < MODEL_TYPE_COUNT; ++i) {
     const ModelType type = ModelTypeFromInt(i);
@@ -1040,7 +1040,7 @@ FullModelEnumSet Directory::GetServerTypesWithUnappliedUpdates(
 
 void Directory::GetUnappliedUpdateMetaHandles(
     BaseTransaction* trans,
-    FullModelEnumSet server_types,
+    FullModelTypeSet server_types,
     UnappliedUpdateMetaHandles* result) {
   result->clear();
   ScopedKernelLock lock(this);
@@ -1308,7 +1308,7 @@ ImmutableEntryKernelMutationMap WriteTransaction::RecordMutations() {
 void WriteTransaction::UnlockAndNotify(
     const ImmutableEntryKernelMutationMap& mutations) {
   // Work while transaction mutex is held.
-  ModelEnumSet models_with_changes;
+  ModelTypeSet models_with_changes;
   bool has_mutations = !mutations.Get().empty();
   if (has_mutations) {
     models_with_changes = NotifyTransactionChangingAndEnding(mutations);
@@ -1321,7 +1321,7 @@ void WriteTransaction::UnlockAndNotify(
   }
 }
 
-ModelEnumSet WriteTransaction::NotifyTransactionChangingAndEnding(
+ModelTypeSet WriteTransaction::NotifyTransactionChangingAndEnding(
     const ImmutableEntryKernelMutationMap& mutations) {
   dirkernel_->transaction_mutex.AssertAcquired();
   DCHECK(!mutations.Get().empty());
@@ -1341,7 +1341,7 @@ ModelEnumSet WriteTransaction::NotifyTransactionChangingAndEnding(
         immutable_write_transaction_info, this);
   }
 
-  ModelEnumSet models_with_changes =
+  ModelTypeSet models_with_changes =
       delegate->HandleTransactionEndingChangeEvent(
           immutable_write_transaction_info, this);
 
@@ -1353,7 +1353,7 @@ ModelEnumSet WriteTransaction::NotifyTransactionChangingAndEnding(
 }
 
 void WriteTransaction::NotifyTransactionComplete(
-    ModelEnumSet models_with_changes) {
+    ModelTypeSet models_with_changes) {
   dirkernel_->delegate->HandleTransactionCompleteChangeEvent(
       models_with_changes);
 }

@@ -18,7 +18,7 @@ namespace browser_sync {
 namespace {
 
 using syncable::HasModelTypes;
-using syncable::ModelEnumSet;
+using syncable::ModelTypeSet;
 using testing::_;
 
 class CleanupDisabledTypesCommandTest : public MockDirectorySyncerCommandTest {
@@ -40,7 +40,7 @@ class CleanupDisabledTypesCommandTest : public MockDirectorySyncerCommandTest {
 // TODO(tim): Add syncer test to verify previous routing info is set.
 TEST_F(CleanupDisabledTypesCommandTest, NoPreviousRoutingInfo) {
   CleanupDisabledTypesCommand command;
-  ModelEnumSet expected = ModelEnumSet::All();
+  ModelTypeSet expected = ModelTypeSet::All();
   expected.Remove(syncable::BOOKMARKS);
   EXPECT_CALL(*mock_directory(),
               PurgeEntriesWithTypeIn(HasModelTypes(expected)));
@@ -72,7 +72,7 @@ TEST_F(CleanupDisabledTypesCommandTest, TypeDisabled) {
   prev[syncable::PREFERENCES] = GROUP_PASSIVE;
   session()->context()->set_previous_session_routing_info(prev);
 
-  const ModelEnumSet expected(syncable::PASSWORDS, syncable::PREFERENCES);
+  const ModelTypeSet expected(syncable::PASSWORDS, syncable::PREFERENCES);
   EXPECT_CALL(*mock_directory(),
               PurgeEntriesWithTypeIn(HasModelTypes(expected)));
   command.ExecuteImpl(session());

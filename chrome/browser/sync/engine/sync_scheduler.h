@@ -79,7 +79,7 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
 
   // The meat and potatoes.
   void ScheduleNudge(const base::TimeDelta& delay, NudgeSource source,
-                     syncable::ModelEnumSet types,
+                     syncable::ModelTypeSet types,
                      const tracked_objects::Location& nudge_location);
   void ScheduleNudgeWithPayloads(
       const base::TimeDelta& delay, NudgeSource source,
@@ -89,7 +89,7 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
   // Note: The source argument of this function must come from the subset of
   // GetUpdatesCallerInfo values related to configurations.
   void ScheduleConfig(
-      syncable::ModelEnumSet types,
+      syncable::ModelTypeSet types,
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
 
   void ScheduleClearUserData();

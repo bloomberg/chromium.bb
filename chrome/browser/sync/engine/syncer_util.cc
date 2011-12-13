@@ -299,7 +299,7 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
     cryptographer->Update(nigori);
 
     // Make sure any unsynced changes are properly encrypted as necessary.
-    const syncable::ModelEnumSet encrypted_types =
+    const syncable::ModelTypeSet encrypted_types =
         cryptographer->GetEncryptedTypes();
     if (!VerifyUnsyncedChangesAreEncrypted(trans, encrypted_types) &&
         (!cryptographer->is_ready() ||

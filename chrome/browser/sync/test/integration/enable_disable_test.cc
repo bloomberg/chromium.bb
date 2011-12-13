@@ -43,12 +43,12 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
   DisableNotifications();
 
   // Setup sync with no enabled types.
-  ASSERT_TRUE(GetClient(0)->SetupSync(syncable::ModelEnumSet()));
+  ASSERT_TRUE(GetClient(0)->SetupSync(syncable::ModelTypeSet()));
 
-  const syncable::ModelEnumSet registered_types =
+  const syncable::ModelTypeSet registered_types =
       GetClient(0)->service()->GetRegisteredDataTypes();
   sync_api::UserShare* user_share = GetClient(0)->service()->GetUserShare();
-  for (syncable::ModelEnumSet::Iterator it = registered_types.First();
+  for (syncable::ModelTypeSet::Iterator it = registered_types.First();
        it.Good(); it.Inc()) {
     ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(it.Get()));
 
@@ -78,18 +78,18 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
   // Setup sync with no disabled types.
   ASSERT_TRUE(GetClient(0)->SetupSync());
 
-  const syncable::ModelEnumSet registered_types =
+  const syncable::ModelTypeSet registered_types =
       GetClient(0)->service()->GetRegisteredDataTypes();
 
   sync_api::UserShare* user_share = GetClient(0)->service()->GetUserShare();
 
   // Make sure all top-level nodes exist first.
-  for (syncable::ModelEnumSet::Iterator it = registered_types.First();
+  for (syncable::ModelTypeSet::Iterator it = registered_types.First();
        it.Good(); it.Inc()) {
     ASSERT_TRUE(DoesTopLevelNodeExist(user_share, it.Get()));
   }
 
-  for (syncable::ModelEnumSet::Iterator it = registered_types.First();
+  for (syncable::ModelTypeSet::Iterator it = registered_types.First();
        it.Good(); it.Inc()) {
     ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(it.Get()));
 

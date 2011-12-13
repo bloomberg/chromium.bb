@@ -158,7 +158,7 @@ class SyncManager {
     int useful_sync_cycles;
 
     // Encryption related.
-    syncable::ModelEnumSet encrypted_types;
+    syncable::ModelTypeSet encrypted_types;
     bool cryptographer_ready;
     bool crypto_has_pending_keys;
 
@@ -390,7 +390,7 @@ class SyncManager {
     //
     // Called from within a transaction.
     virtual void OnEncryptedTypesChanged(
-        syncable::ModelEnumSet encrypted_types,
+        syncable::ModelTypeSet encrypted_types,
         bool encrypt_everything) = 0;
 
     // Called after we finish encrypting the current set of encrypted
@@ -457,7 +457,7 @@ class SyncManager {
 
   // Conditionally sets the flag in the Nigori node which instructs other
   // clients to start syncing tabs.
-  void MaybeSetSyncTabsInNigoriNode(syncable::ModelEnumSet enabled_types);
+  void MaybeSetSyncTabsInNigoriNode(syncable::ModelTypeSet enabled_types);
 
   // Put the syncer in normal mode ready to perform nudges and polls.
   void StartSyncingNormally();
@@ -483,7 +483,7 @@ class SyncManager {
 
   // Switches the mode of operation to CONFIGURATION_MODE and
   // schedules a config task to fetch updates for |types|.
-  void RequestConfig(syncable::ModelEnumSet types,
+  void RequestConfig(syncable::ModelTypeSet types,
                      sync_api::ConfigureReason reason);
 
   void RequestCleanupDisabledTypes();
@@ -559,12 +559,12 @@ class SyncManager {
 
   // Gets the set of encrypted types from the cryptographer
   // Note: opens a transaction.  May be called from any thread.
-  syncable::ModelEnumSet GetEncryptedDataTypesForTest() const;
+  syncable::ModelTypeSet GetEncryptedDataTypesForTest() const;
 
   // Reads the nigori node to determine if any experimental types should be
   // enabled.
   // Note: opens a transaction.  May be called on any thread.
-  bool ReceivedExperimentalTypes(syncable::ModelEnumSet* to_add) const;
+  bool ReceivedExperimentalTypes(syncable::ModelTypeSet* to_add) const;
 
   // Uses a read-only transaction to determine if the directory being synced has
   // any remaining unsynced items.  May be called on any thread.
@@ -576,7 +576,7 @@ class SyncManager {
       bool notifications_enabled);
 
   void TriggerOnIncomingNotificationForTest(
-      syncable::ModelEnumSet model_types);
+      syncable::ModelTypeSet model_types);
 
  private:
   base::ThreadChecker thread_checker_;
@@ -587,10 +587,10 @@ class SyncManager {
   DISALLOW_COPY_AND_ASSIGN(SyncManager);
 };
 
-bool InitialSyncEndedForTypes(syncable::ModelEnumSet types, UserShare* share);
+bool InitialSyncEndedForTypes(syncable::ModelTypeSet types, UserShare* share);
 
-syncable::ModelEnumSet GetTypesWithEmptyProgressMarkerToken(
-    syncable::ModelEnumSet types,
+syncable::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
+    syncable::ModelTypeSet types,
     sync_api::UserShare* share);
 
 // Returns the string representation of a PassphraseRequiredReason value.

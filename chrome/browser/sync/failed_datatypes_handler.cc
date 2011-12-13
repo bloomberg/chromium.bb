@@ -15,8 +15,8 @@ FailedDatatypesHandler::FailedDatatypesHandler(ProfileSyncService* service)
 FailedDatatypesHandler::~FailedDatatypesHandler() {
 }
 
-syncable::ModelEnumSet FailedDatatypesHandler::GetFailedTypes() const {
-  syncable::ModelEnumSet result;
+syncable::ModelTypeSet FailedDatatypesHandler::GetFailedTypes() const {
+  syncable::ModelTypeSet result;
   for (std::list<SyncError>::const_iterator it = errors_.begin();
        it != errors_.end(); ++it) {
     DCHECK(!result.Has(it->type()));
@@ -27,7 +27,7 @@ syncable::ModelEnumSet FailedDatatypesHandler::GetFailedTypes() const {
 
 bool FailedDatatypesHandler::UpdateFailedDatatypes(
     DataTypeManager::ConfigureResult result) {
-  const syncable::ModelEnumSet types = GetFailedTypes();
+  const syncable::ModelTypeSet types = GetFailedTypes();
   bool any_new_failed_types = false;
   for (std::list<SyncError>::iterator it = result.errors.begin();
        it != result.errors.end(); ++it) {

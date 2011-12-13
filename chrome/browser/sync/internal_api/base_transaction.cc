@@ -26,7 +26,7 @@ BaseTransaction::~BaseTransaction() {
   delete lookup_;
 }
 
-syncable::ModelEnumSet GetEncryptedTypes(
+syncable::ModelTypeSet GetEncryptedTypes(
     const sync_api::BaseTransaction* trans) {
   Cryptographer* cryptographer = trans->GetCryptographer();
   return cryptographer->GetEncryptedTypes();

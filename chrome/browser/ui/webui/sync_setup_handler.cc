@@ -187,7 +187,7 @@ bool HasConfigurationChanged(const SyncConfiguration& config,
 
   // Only check the data types that are explicitly listed on the sync
   // preferences page.
-  const syncable::ModelEnumSet types = config.data_types;
+  const syncable::ModelTypeSet types = config.data_types;
   if (((types.Has(syncable::BOOKMARKS)) !=
        pref_service->GetBoolean(prefs::kSyncBookmarks)) ||
       ((types.Has(syncable::PREFERENCES)) !=
@@ -572,7 +572,7 @@ void SyncSetupHandler::HandleConfigure(const ListValue* args) {
       if (!configuration.sync_everything) {
         // Only log the data types that are explicitly listed on the sync
         // preferences page.
-        const syncable::ModelEnumSet types = configuration.data_types;
+        const syncable::ModelTypeSet types = configuration.data_types;
         if (types.Has(syncable::BOOKMARKS))
           UMA_HISTOGRAM_ENUMERATION(
               "Sync.CustomSync", BOOKMARKS, SELECTABLE_DATATYPE_COUNT + 1);

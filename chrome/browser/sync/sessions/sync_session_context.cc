@@ -49,9 +49,9 @@ SyncSessionContext::~SyncSessionContext() {
   }
 }
 
-void SyncSessionContext::SetUnthrottleTime(syncable::ModelEnumSet types,
+void SyncSessionContext::SetUnthrottleTime(syncable::ModelTypeSet types,
                                            const base::TimeTicks& time) {
-  for (syncable::ModelEnumSet::Iterator it = types.First();
+  for (syncable::ModelTypeSet::Iterator it = types.First();
        it.Good(); it.Inc()) {
     unthrottle_times_[it.Get()] = time;
   }
@@ -74,8 +74,8 @@ void SyncSessionContext::PruneUnthrottledTypes(const base::TimeTicks& time) {
 
 // TODO(lipalani): Call this function and fill the return values in snapshot
 // so it could be shown in the about:sync page.
-syncable::ModelEnumSet SyncSessionContext::GetThrottledTypes() const {
-  syncable::ModelEnumSet types;
+syncable::ModelTypeSet SyncSessionContext::GetThrottledTypes() const {
+  syncable::ModelTypeSet types;
   for (UnthrottleTimes::const_iterator it = unthrottle_times_.begin();
        it != unthrottle_times_.end();
        ++it) {

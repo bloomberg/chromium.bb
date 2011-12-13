@@ -567,7 +567,7 @@ void SyncTest::EnableNotifications() {
 }
 
 void SyncTest::TriggerNotification(
-    syncable::ModelEnumSet changed_types) {
+    syncable::ModelTypeSet changed_types) {
   ASSERT_TRUE(ServerSupportsNotificationControl());
   const std::string& data =
       sync_notifier::P2PNotificationData("from_server",
@@ -589,11 +589,11 @@ bool SyncTest::ServerSupportsErrorTriggering() const {
 }
 
 void SyncTest::TriggerMigrationDoneError(
-    syncable::ModelEnumSet model_types) {
+    syncable::ModelTypeSet model_types) {
   ASSERT_TRUE(ServerSupportsErrorTriggering());
   std::string path = "chromiumsync/migrate";
   char joiner = '?';
-  for (syncable::ModelEnumSet::Iterator it = model_types.First();
+  for (syncable::ModelTypeSet::Iterator it = model_types.First();
        it.Good(); it.Inc()) {
     path.append(
         base::StringPrintf(

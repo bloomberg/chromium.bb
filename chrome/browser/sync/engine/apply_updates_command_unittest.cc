@@ -426,7 +426,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
   // Storing the cryptographer separately is bad, but for this test we
   // know it's safe.
   Cryptographer* cryptographer;
-  syncable::ModelEnumSet encrypted_types;
+  syncable::ModelTypeSet encrypted_types;
   encrypted_types.Put(syncable::PASSWORDS);
   encrypted_types.Put(syncable::NIGORI);
   {
@@ -471,14 +471,14 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
   EXPECT_TRUE(cryptographer->has_pending_keys());
   EXPECT_TRUE(
       cryptographer->GetEncryptedTypes()
-          .Equals(syncable::ModelEnumSet::All()));
+          .Equals(syncable::ModelTypeSet::All()));
 }
 
 TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
   // Storing the cryptographer separately is bad, but for this test we
   // know it's safe.
   Cryptographer* cryptographer;
-  syncable::ModelEnumSet encrypted_types;
+  syncable::ModelTypeSet encrypted_types;
   encrypted_types.Put(syncable::PASSWORDS);
   encrypted_types.Put(syncable::NIGORI);
   {
@@ -525,14 +525,14 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
   EXPECT_TRUE(cryptographer->has_pending_keys());
   EXPECT_TRUE(
       cryptographer->GetEncryptedTypes()
-          .Equals(syncable::ModelEnumSet::All()));
+          .Equals(syncable::ModelTypeSet::All()));
 }
 
 TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
   // Storing the cryptographer separately is bad, but for this test we
   // know it's safe.
   Cryptographer* cryptographer;
-  syncable::ModelEnumSet encrypted_types;
+  syncable::ModelTypeSet encrypted_types;
   encrypted_types.Put(syncable::PASSWORDS);
   encrypted_types.Put(syncable::NIGORI);
   {
@@ -621,7 +621,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
 
     // If ProcessUnsyncedChangesForEncryption worked, all our unsynced changes
     // should be encrypted now.
-    EXPECT_TRUE(syncable::ModelEnumSet::All().Equals(
+    EXPECT_TRUE(syncable::ModelTypeSet::All().Equals(
         cryptographer->GetEncryptedTypes()));
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
 
@@ -635,7 +635,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
   // Storing the cryptographer separately is bad, but for this test we
   // know it's safe.
   Cryptographer* cryptographer;
-  syncable::ModelEnumSet encrypted_types;
+  syncable::ModelTypeSet encrypted_types;
   encrypted_types.Put(syncable::PASSWORDS);
   encrypted_types.Put(syncable::NIGORI);
   {
@@ -733,7 +733,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
     encrypted_types.Put(syncable::BOOKMARKS);
     EXPECT_TRUE(
         cryptographer->GetEncryptedTypes().Equals(
-            syncable::ModelEnumSet().All()));
+            syncable::ModelTypeSet().All()));
 
     Syncer::UnsyncedMetaHandles handles;
     SyncerUtil::GetUnsyncedEntries(&trans, &handles);

@@ -126,10 +126,10 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
   const int kNumServerChangesRemaining = 105;
   const bool kIsShareUsable = true;
 
-  const syncable::ModelEnumSet initial_sync_ended(
+  const syncable::ModelTypeSet initial_sync_ended(
       syncable::BOOKMARKS, syncable::PREFERENCES);
   scoped_ptr<ListValue> expected_initial_sync_ended_value(
-      syncable::ModelEnumSetToValue(initial_sync_ended));
+      syncable::ModelTypeSetToValue(initial_sync_ended));
 
   std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
   download_progress_markers[syncable::BOOKMARKS] = "test";

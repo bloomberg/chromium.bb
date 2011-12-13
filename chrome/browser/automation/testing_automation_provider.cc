@@ -4976,9 +4976,9 @@ void TestingAutomationProvider::GetSyncInfo(Browser* browser,
     sync_info->SetString("last synced", service->GetLastSyncedTimeString());
     sync_info->SetInteger("updates received", status.updates_received);
     ListValue* synced_datatype_list = new ListValue;
-    const syncable::ModelEnumSet synced_datatypes =
+    const syncable::ModelTypeSet synced_datatypes =
         service->GetPreferredDataTypes();
-    for (syncable::ModelEnumSet::Iterator it = synced_datatypes.First();
+    for (syncable::ModelTypeSet::Iterator it = synced_datatypes.First();
          it.Good(); it.Inc()) {
       synced_datatype_list->Append(
           new StringValue(syncable::ModelTypeToString(it.Get())));

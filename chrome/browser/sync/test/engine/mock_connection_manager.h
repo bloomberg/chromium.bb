@@ -207,7 +207,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   // Expect that GetUpdates will request exactly the types indicated in
   // the bitset.
   void ExpectGetUpdatesRequestTypes(
-      syncable::ModelEnumSet expected_filter) {
+      syncable::ModelTypeSet expected_filter) {
     expected_filter_ = expected_filter;
   }
 
@@ -344,7 +344,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   // use the older sync_pb::SyncEntity_BookmarkData-style protocol.
   bool use_legacy_bookmarks_protocol_;
 
-  syncable::ModelEnumSet expected_filter_;
+  syncable::ModelTypeSet expected_filter_;
 
   syncable::ModelTypePayloadMap expected_payloads_;
 

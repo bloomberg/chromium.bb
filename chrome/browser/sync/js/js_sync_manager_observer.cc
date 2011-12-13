@@ -81,14 +81,14 @@ void JsSyncManagerObserver::OnPassphraseAccepted(
 }
 
 void JsSyncManagerObserver::OnEncryptedTypesChanged(
-    syncable::ModelEnumSet encrypted_types,
+    syncable::ModelTypeSet encrypted_types,
     bool encrypt_everything) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
   details.Set("encryptedTypes",
-               syncable::ModelEnumSetToValue(encrypted_types));
+               syncable::ModelTypeSetToValue(encrypted_types));
   details.SetBoolean("encryptEverything", encrypt_everything);
   HandleJsEvent(FROM_HERE,
                 "onEncryptedTypesChanged", JsEventDetails(&details));

@@ -22,10 +22,10 @@ class SyncBackendHostMock : public SyncBackendHost {
   virtual ~SyncBackendHostMock();
 
   MOCK_METHOD5(ConfigureDataTypes,
-               void(syncable::ModelEnumSet,
-                    syncable::ModelEnumSet,
+               void(syncable::ModelTypeSet,
+                    syncable::ModelTypeSet,
                     sync_api::ConfigureReason,
-                    base::Callback<void(syncable::ModelEnumSet)>,
+                    base::Callback<void(syncable::ModelTypeSet)>,
                     bool));
   MOCK_METHOD0(StartSyncingWithServer, void());
 };

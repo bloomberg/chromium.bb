@@ -34,7 +34,7 @@ class GetCommitIdsCommand : public SyncerCommand {
   void BuildCommitIds(const vector<int64>& unsynced_handles,
                       syncable::WriteTransaction* write_transaction,
                       const ModelSafeRoutingInfo& routes,
-                      syncable::ModelEnumSet throttled_types);
+                      syncable::ModelTypeSet throttled_types);
 
   // TODO(chron): Remove writes from this iterator. As a warning, this
   // iterator causes writes to entries and so isn't a pure iterator.
@@ -117,28 +117,28 @@ class GetCommitIdsCommand : public SyncerCommand {
   // 2. Its type is currently throttled.
   void FilterUnreadyEntries(
       syncable::BaseTransaction* trans,
-      syncable::ModelEnumSet throttled_types,
+      syncable::ModelTypeSet throttled_types,
       syncable::Directory::UnsyncedMetaHandles* unsynced_handles);
 
   void AddUncommittedParentsAndTheirPredecessors(
       syncable::BaseTransaction* trans,
       syncable::Id parent_id,
       const ModelSafeRoutingInfo& routes,
-      syncable::ModelEnumSet throttled_types);
+      syncable::ModelTypeSet throttled_types);
 
   // OrderedCommitSet helpers for adding predecessors in order.
   // TODO(ncarter): Refactor these so that the |result| parameter goes away,
   // and AddItem doesn't need to consider two OrderedCommitSets.
   bool AddItem(syncable::Entry* item,
-               syncable::ModelEnumSet throttled_types,
+               syncable::ModelTypeSet throttled_types,
                sessions::OrderedCommitSet* result);
   bool AddItemThenPredecessors(syncable::BaseTransaction* trans,
-                               syncable::ModelEnumSet throttled_types,
+                               syncable::ModelTypeSet throttled_types,
                                syncable::Entry* item,
                                syncable::IndexedBitField inclusion_filter,
                                sessions::OrderedCommitSet* result);
   void AddPredecessorsThenItem(syncable::BaseTransaction* trans,
-                               syncable::ModelEnumSet throttled_types,
+                               syncable::ModelTypeSet throttled_types,
                                syncable::Entry* item,
                                syncable::IndexedBitField inclusion_filter,
                                const ModelSafeRoutingInfo& routes);
@@ -148,7 +148,7 @@ class GetCommitIdsCommand : public SyncerCommand {
   void AddCreatesAndMoves(const vector<int64>& unsynced_handles,
                           syncable::WriteTransaction* write_transaction,
                           const ModelSafeRoutingInfo& routes,
-                          syncable::ModelEnumSet throttled_types);
+                          syncable::ModelTypeSet throttled_types);
 
   void AddDeletes(const vector<int64>& unsynced_handles,
                   syncable::WriteTransaction* write_transaction);
@@ -157,7 +157,7 @@ class GetCommitIdsCommand : public SyncerCommand {
 
   int requested_commit_batch_size_;
   bool passphrase_missing_;
-  syncable::ModelEnumSet encrypted_types_;
+  syncable::ModelTypeSet encrypted_types_;
 
   DISALLOW_COPY_AND_ASSIGN(GetCommitIdsCommand);
 };

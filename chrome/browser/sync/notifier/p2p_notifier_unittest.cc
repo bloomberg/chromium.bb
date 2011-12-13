@@ -75,7 +75,7 @@ class P2PNotifierTest : public testing::Test {
   }
 
   syncable::ModelTypePayloadMap MakePayloadMap(
-      syncable::ModelEnumSet types) {
+      syncable::ModelTypeSet types) {
     return syncable::ModelTypePayloadMapFromEnumSet(types, "");
   }
 
@@ -100,21 +100,21 @@ TEST_F(P2PNotifierTest, P2PNotificationTarget) {
 TEST_F(P2PNotifierTest, P2PNotificationDataIsTargeted) {
   {
     const P2PNotificationData notification_data(
-        "sender", NOTIFY_SELF, syncable::ModelEnumSet());
+        "sender", NOTIFY_SELF, syncable::ModelTypeSet());
     EXPECT_TRUE(notification_data.IsTargeted("sender"));
     EXPECT_FALSE(notification_data.IsTargeted("other1"));
     EXPECT_FALSE(notification_data.IsTargeted("other2"));
   }
   {
     const P2PNotificationData notification_data(
-        "sender", NOTIFY_OTHERS, syncable::ModelEnumSet());
+        "sender", NOTIFY_OTHERS, syncable::ModelTypeSet());
     EXPECT_FALSE(notification_data.IsTargeted("sender"));
     EXPECT_TRUE(notification_data.IsTargeted("other1"));
     EXPECT_TRUE(notification_data.IsTargeted("other2"));
   }
   {
     const P2PNotificationData notification_data(
-        "sender", NOTIFY_ALL, syncable::ModelEnumSet());
+        "sender", NOTIFY_ALL, syncable::ModelTypeSet());
     EXPECT_TRUE(notification_data.IsTargeted("sender"));
     EXPECT_TRUE(notification_data.IsTargeted("other1"));
     EXPECT_TRUE(notification_data.IsTargeted("other2"));
@@ -138,7 +138,7 @@ TEST_F(P2PNotifierTest, P2PNotificationDataDefault) {
 }
 
 TEST_F(P2PNotifierTest, P2PNotificationDataNonDefault) {
-  const syncable::ModelEnumSet changed_types(
+  const syncable::ModelTypeSet changed_types(
       syncable::BOOKMARKS, syncable::THEMES);
   const P2PNotificationData notification_data(
       "sender", NOTIFY_ALL, changed_types);
@@ -158,7 +158,7 @@ TEST_F(P2PNotifierTest, P2PNotificationDataNonDefault) {
 }
 
 TEST_F(P2PNotifierTest, NotificationsBasic) {
-  syncable::ModelEnumSet enabled_types(
+  syncable::ModelTypeSet enabled_types(
       syncable::BOOKMARKS, syncable::PREFERENCES);
 
   EXPECT_CALL(mock_observer_, OnNotificationStateChange(true));
@@ -171,17 +171,17 @@ TEST_F(P2PNotifierTest, NotificationsBasic) {
   // Sent with target NOTIFY_OTHERS so should not be propagated to
   // |mock_observer_|.
   {
-    syncable::ModelEnumSet changed_types(
+    syncable::ModelTypeSet changed_types(
         syncable::THEMES, syncable::APPS);
     p2p_notifier_->SendNotification(changed_types);
   }
 }
 
 TEST_F(P2PNotifierTest, SendNotificationData) {
-  syncable::ModelEnumSet enabled_types(
+  syncable::ModelTypeSet enabled_types(
       syncable::BOOKMARKS, syncable::PREFERENCES);
 
-  syncable::ModelEnumSet changed_types(
+  syncable::ModelTypeSet changed_types(
       syncable::THEMES, syncable::APPS);
 
   const syncable::ModelTypePayloadMap& changed_payload_map =
@@ -213,7 +213,7 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
   // Should be dropped.
   Mock::VerifyAndClearExpectations(&mock_observer_);
   p2p_notifier_->SendNotificationDataForTest(
-      P2PNotificationData("sender", NOTIFY_SELF, syncable::ModelEnumSet()));
+      P2PNotificationData("sender", NOTIFY_SELF, syncable::ModelTypeSet()));
 
   // Should be dropped.
   p2p_notifier_->SendNotificationDataForTest(
@@ -228,7 +228,7 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
   // Should be dropped.
   Mock::VerifyAndClearExpectations(&mock_observer_);
   p2p_notifier_->SendNotificationDataForTest(
-      P2PNotificationData("sender2", NOTIFY_OTHERS, syncable::ModelEnumSet()));
+      P2PNotificationData("sender2", NOTIFY_OTHERS, syncable::ModelTypeSet()));
 
   // Should be propagated.
   Mock::VerifyAndClearExpectations(&mock_observer_);
@@ -245,7 +245,7 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
   // Should be dropped.
   Mock::VerifyAndClearExpectations(&mock_observer_);
   p2p_notifier_->SendNotificationDataForTest(
-      P2PNotificationData("sender2", NOTIFY_ALL, syncable::ModelEnumSet()));
+      P2PNotificationData("sender2", NOTIFY_ALL, syncable::ModelTypeSet()));
 }
 
 }  // namespace

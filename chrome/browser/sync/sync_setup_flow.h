@@ -30,7 +30,7 @@ struct SyncConfiguration {
 
   bool encrypt_all;
   bool sync_everything;
-  syncable::ModelEnumSet data_types;
+  syncable::ModelTypeSet data_types;
   // We pass a separate |set_xxxxx_passphrase| flag because sometimes the UI
   // wants to set an empty gaia/secondary passphrase (for example, when the user
   // doesn't enter a passphrase, but we still want the ProfileSyncService to

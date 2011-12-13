@@ -10,7 +10,7 @@
 namespace browser_sync {
 namespace sessions {
 TEST(SyncSessionContextTest, AddUnthrottleTimeTest) {
-  const syncable::ModelEnumSet types(
+  const syncable::ModelTypeSet types(
       syncable::BOOKMARKS, syncable::PASSWORDS);
 
   SyncSessionContext context;
@@ -23,7 +23,7 @@ TEST(SyncSessionContextTest, AddUnthrottleTimeTest) {
 }
 
 TEST(SyncSessionContextTest, GetCurrentlyThrottledTypesTest) {
-  const syncable::ModelEnumSet types(
+  const syncable::ModelTypeSet types(
       syncable::BOOKMARKS, syncable::PASSWORDS);
 
   SyncSessionContext context;

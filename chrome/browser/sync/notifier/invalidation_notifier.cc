@@ -92,14 +92,14 @@ void InvalidationNotifier::UpdateCredentials(
 }
 
 void InvalidationNotifier::UpdateEnabledTypes(
-    syncable::ModelEnumSet enabled_types) {
+    syncable::ModelTypeSet enabled_types) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   CHECK(!invalidation_client_id_.empty());
   invalidation_client_.RegisterTypes(enabled_types);
 }
 
 void InvalidationNotifier::SendNotification(
-    syncable::ModelEnumSet changed_types) {
+    syncable::ModelTypeSet changed_types) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   // Do nothing.
 }

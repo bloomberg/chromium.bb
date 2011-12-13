@@ -86,9 +86,9 @@ enum ModelType {
 };
 
 typedef browser_sync::EnumSet<
-  ModelType, FIRST_REAL_MODEL_TYPE, LAST_REAL_MODEL_TYPE> ModelEnumSet;
+  ModelType, FIRST_REAL_MODEL_TYPE, LAST_REAL_MODEL_TYPE> ModelTypeSet;
 typedef browser_sync::EnumSet<
-  ModelType, UNSPECIFIED, LAST_REAL_MODEL_TYPE> FullModelEnumSet;
+  ModelType, UNSPECIFIED, LAST_REAL_MODEL_TYPE> FullModelTypeSet;
 
 inline ModelType ModelTypeFromInt(int i) {
   DCHECK_GE(i, 0);
@@ -139,12 +139,12 @@ ModelType ModelTypeFromValue(const base::Value& value);
 // Returns the ModelType corresponding to the name |model_type_string|.
 ModelType ModelTypeFromString(const std::string& model_type_string);
 
-std::string ModelEnumSetToString(ModelEnumSet model_types);
+std::string ModelTypeSetToString(ModelTypeSet model_types);
 
 // Caller takes ownership of returned list.
-base::ListValue* ModelEnumSetToValue(ModelEnumSet model_types);
+base::ListValue* ModelTypeSetToValue(ModelTypeSet model_types);
 
-ModelEnumSet ModelEnumSetFromValue(const base::ListValue& value);
+ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value);
 
 // Returns a string corresponding to the syncable tag for this datatype.
 std::string ModelTypeToRootTag(ModelType type);

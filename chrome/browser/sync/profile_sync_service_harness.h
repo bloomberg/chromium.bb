@@ -59,7 +59,7 @@ class ProfileSyncServiceHarness
 
   // Same as the above method, but enables sync only for the datatypes contained
   // in |synced_datatypes|.
-  bool SetupSync(syncable::ModelEnumSet synced_datatypes);
+  bool SetupSync(syncable::ModelTypeSet synced_datatypes);
 
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged() OVERRIDE;
@@ -102,7 +102,7 @@ class ProfileSyncServiceHarness
   bool AwaitActionableError();
 
   // Blocks until the given set of data types are migrated.
-  bool AwaitMigration(syncable::ModelEnumSet expected_migrated_types);
+  bool AwaitMigration(syncable::ModelTypeSet expected_migrated_types);
 
   // Blocks the caller until this harness has observed that the sync engine
   // has downloaded all the changes seen by the |partner| harness's client.
@@ -335,11 +335,11 @@ class ProfileSyncServiceHarness
 
   // The current set of data types pending migration.  Used by
   // AwaitMigration().
-  syncable::ModelEnumSet pending_migration_types_;
+  syncable::ModelTypeSet pending_migration_types_;
 
   // The set of data types that have undergone migration.  Used by
   // AwaitMigration().
-  syncable::ModelEnumSet migrated_types_;
+  syncable::ModelTypeSet migrated_types_;
 
   // Used for logging.
   const std::string profile_debug_name_;

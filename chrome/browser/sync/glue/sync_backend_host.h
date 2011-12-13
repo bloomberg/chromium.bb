@@ -103,7 +103,7 @@ class SyncFrontend {
   // of encrypted types is Cryptographer::SensitiveTypes() and that
   // the encrypt everything flag is false.
   virtual void OnEncryptedTypesChanged(
-      syncable::ModelEnumSet encrypted_types,
+      syncable::ModelTypeSet encrypted_types,
       bool encrypt_everything) = 0;
 
   // Called after we finish encrypting the current set of encrypted
@@ -112,10 +112,10 @@ class SyncFrontend {
 
   // Called to perform migration of |types|.
   virtual void OnMigrationNeededForTypes(
-      syncable::ModelEnumSet types) = 0;
+      syncable::ModelTypeSet types) = 0;
 
   // Inform the Frontend that new datatypes are available for registration.
-  virtual void OnDataTypesChanged(syncable::ModelEnumSet to_add) = 0;
+  virtual void OnDataTypesChanged(syncable::ModelTypeSet to_add) = 0;
 
   // Called when the sync cycle returns there is an user actionable error.
   virtual void OnActionableError(
@@ -157,7 +157,7 @@ class SyncBackendHost {
   void Initialize(SyncFrontend* frontend,
                   const WeakHandle<JsEventHandler>& event_handler,
                   const GURL& service_url,
-                  syncable::ModelEnumSet initial_types,
+                  syncable::ModelTypeSet initial_types,
                   const sync_api::SyncCredentials& credentials,
                   bool delete_sync_data_folder);
 
@@ -193,10 +193,10 @@ class SyncBackendHost {
   // set of all types that failed configuration (i.e., if its argument
   // is non-empty, then an error was encountered).
   virtual void ConfigureDataTypes(
-      syncable::ModelEnumSet types_to_add,
-      syncable::ModelEnumSet types_to_remove,
+      syncable::ModelTypeSet types_to_add,
+      syncable::ModelTypeSet types_to_remove,
       sync_api::ConfigureReason reason,
-      base::Callback<void(syncable::ModelEnumSet)> ready_task,
+      base::Callback<void(syncable::ModelTypeSet)> ready_task,
       bool enable_nigori);
 
   // Makes an asynchronous call to syncer to switch to config mode. When done
@@ -295,7 +295,7 @@ class SyncBackendHost {
     virtual void OnClearServerDataFailed() OVERRIDE;
     virtual void OnClearServerDataSucceeded() OVERRIDE;
     virtual void OnEncryptedTypesChanged(
-        syncable::ModelEnumSet encrypted_types,
+        syncable::ModelTypeSet encrypted_types,
         bool encrypt_everything) OVERRIDE;
     virtual void OnEncryptionComplete() OVERRIDE;
     virtual void OnActionableError(
@@ -386,7 +386,7 @@ class SyncBackendHost {
     void DoShutdown(bool stopping_sync);
 
     virtual void DoRequestConfig(
-        syncable::ModelEnumSet types_to_config,
+        syncable::ModelTypeSet types_to_config,
         sync_api::ConfigureReason reason);
 
     // Start the configuration mode.  |callback| is called on the sync
@@ -417,7 +417,7 @@ class SyncBackendHost {
     // part of the initialization process.
     void HandleNigoriConfigurationCompletedOnFrontendLoop(
         const WeakHandle<JsBackend>& js_backend,
-        syncable::ModelEnumSet failed_configuration_types);
+        syncable::ModelTypeSet failed_configuration_types);
 
    private:
     friend class base::RefCountedThreadSafe<SyncBackendHost::Core>;
@@ -461,7 +461,7 @@ class SyncBackendHost {
     // Invoked when the set of encrypted types or the encrypt
     // everything flag changes.
     void NotifyEncryptedTypesChanged(
-        syncable::ModelEnumSet encrypted_types,
+        syncable::ModelTypeSet encrypted_types,
         bool encrypt_everything);
 
     // Invoked when sync finishes encrypting new datatypes.
@@ -546,14 +546,14 @@ class SyncBackendHost {
     // The ready_task will be run when configuration is done with the
     // set of all types that failed configuration (i.e., if its
     // argument is non-empty, then an error was encountered).
-    base::Callback<void(syncable::ModelEnumSet)> ready_task;
+    base::Callback<void(syncable::ModelTypeSet)> ready_task;
 
     // The set of types that we are waiting to be initially synced in a
     // configuration cycle.
-    syncable::ModelEnumSet types_to_add;
+    syncable::ModelTypeSet types_to_add;
 
     // Additional details about which types were added.
-    syncable::ModelEnumSet added_types;
+    syncable::ModelTypeSet added_types;
     sync_api::ConfigureReason reason;
   };
 

@@ -77,7 +77,7 @@ TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
                                          sessions::ErrorCounters(),
                                          100,
                                          false,
-                                         syncable::ModelEnumSet(),
+                                         syncable::ModelTypeSet(),
                                          download_progress_markers,
                                          false,
                                          true,
@@ -200,7 +200,7 @@ TEST_F(JsSyncManagerObserverTest, OnEncryptedTypesChanged) {
   const bool encrypt_everything = false;
   expected_details.Set("encryptedTypes", encrypted_type_values);
   expected_details.SetBoolean("encryptEverything", encrypt_everything);
-  syncable::ModelEnumSet encrypted_types;
+  syncable::ModelTypeSet encrypted_types;
 
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {

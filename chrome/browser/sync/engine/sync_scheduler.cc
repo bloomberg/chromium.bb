@@ -26,8 +26,8 @@ namespace browser_sync {
 using sessions::SyncSession;
 using sessions::SyncSessionSnapshot;
 using sessions::SyncSourceInfo;
-using syncable::ModelEnumSet;
-using syncable::ModelEnumSetToString;
+using syncable::ModelTypeSet;
+using syncable::ModelTypeSetToString;
 using syncable::ModelTypePayloadMap;
 using sync_pb::GetUpdatesCallerInfo;
 
@@ -460,13 +460,13 @@ void SyncScheduler::ScheduleCleanupDisabledTypes() {
 
 void SyncScheduler::ScheduleNudge(
     const TimeDelta& delay,
-    NudgeSource source, ModelEnumSet types,
+    NudgeSource source, ModelTypeSet types,
     const tracked_objects::Location& nudge_location) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   SDVLOG_LOC(nudge_location, 2)
       << "Nudge scheduled with delay " << delay.InMilliseconds() << " ms, "
       << "source " << GetNudgeSourceString(source) << ", "
-      << "types " << ModelEnumSetToString(types);
+      << "types " << ModelTypeSetToString(types);
 
   ModelTypePayloadMap types_with_payloads =
       syncable::ModelTypePayloadMapFromEnumSet(types, std::string());
@@ -563,7 +563,7 @@ void SyncScheduler::ScheduleNudgeImpl(
 
 // Helper to extract the routing info and workers corresponding to types in
 // |types| from |registrar|.
-void GetModelSafeParamsForTypes(ModelEnumSet types,
+void GetModelSafeParamsForTypes(ModelTypeSet types,
     ModelSafeWorkerRegistrar* registrar, ModelSafeRoutingInfo* routes,
     std::vector<ModelSafeWorker*>* workers) {
   ModelSafeRoutingInfo r_tmp;
@@ -574,7 +574,7 @@ void GetModelSafeParamsForTypes(ModelEnumSet types,
   bool passive_group_added = false;
 
   typedef std::vector<ModelSafeWorker*>::const_iterator iter;
-  for (ModelEnumSet::Iterator it = types.First();
+  for (ModelTypeSet::Iterator it = types.First();
        it.Good(); it.Inc()) {
     const syncable::ModelType t = it.Get();
     DCHECK_EQ(1U, r_tmp.count(t));
@@ -606,7 +606,7 @@ void GetModelSafeParamsForTypes(ModelEnumSet types,
 }
 
 void SyncScheduler::ScheduleConfig(
-    ModelEnumSet types,
+    ModelTypeSet types,
     GetUpdatesCallerInfo::GetUpdatesSource source) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK(IsConfigRelatedUpdateSourceValue(source));

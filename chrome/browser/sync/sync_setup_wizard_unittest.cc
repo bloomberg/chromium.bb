@@ -81,7 +81,7 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   }
 
   virtual void OnUserChoseDatatypes(bool sync_everything,
-                                    syncable::ModelEnumSet chosen_types) {
+                                    syncable::ModelTypeSet chosen_types) {
     user_chose_data_types_ = true;
     chosen_data_types_ = chosen_types;
   }
@@ -169,7 +169,7 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   bool keep_everything_synced_;
   bool is_using_secondary_passphrase_;
   bool encrypt_everything_;
-  syncable::ModelEnumSet chosen_data_types_;
+  syncable::ModelTypeSet chosen_data_types_;
   std::string passphrase_;
 
  private:

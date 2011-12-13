@@ -13,13 +13,13 @@
 
 namespace syncable {
 
-// Defined for googletest.  Forwards to ModelEnumSetToString().
-void PrintTo(ModelEnumSet model_types, ::std::ostream* os);
+// Defined for googletest.  Forwards to ModelTypeSetToString().
+void PrintTo(ModelTypeSet model_types, ::std::ostream* os);
 
-// A gmock matcher for ModelEnumSet.  Use like:
+// A gmock matcher for ModelTypeSet.  Use like:
 //
 //   EXPECT_CALL(mock, ProcessModelTypes(HasModelTypes(expected_types)));
-::testing::Matcher<ModelEnumSet> HasModelTypes(ModelEnumSet expected_types);
+::testing::Matcher<ModelTypeSet> HasModelTypes(ModelTypeSet expected_types);
 
 }  // namespace syncable
 

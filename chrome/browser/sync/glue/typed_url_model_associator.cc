@@ -820,7 +820,7 @@ void TypedUrlModelAssociator::UpdateURLRowFromTypedUrlSpecifics(
 bool TypedUrlModelAssociator::CryptoReadyIfNecessary() {
   // We only access the cryptographer while holding a transaction.
   sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-  const syncable::ModelEnumSet encrypted_types =
+  const syncable::ModelTypeSet encrypted_types =
       sync_api::GetEncryptedTypes(&trans);
   return !encrypted_types.Has(syncable::TYPED_URLS) ||
          sync_service_->IsCryptographerReady(&trans);

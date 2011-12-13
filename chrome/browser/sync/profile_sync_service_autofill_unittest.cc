@@ -605,7 +605,7 @@ class WriteTransactionTest: public WriteTransaction {
         wait_for_syncapi_(wait_for_syncapi) { }
 
   virtual void NotifyTransactionComplete(
-      syncable::ModelEnumSet types) OVERRIDE {
+      syncable::ModelTypeSet types) OVERRIDE {
     // This is where we differ. Force a thread change here, giving another
     // thread a chance to create a WriteTransaction
     (*wait_for_syncapi_)->Wait();

@@ -36,7 +36,7 @@ class MockSyncSessionContext : public SyncSessionContext {
  public:
   MockSyncSessionContext() {}
   ~MockSyncSessionContext() {}
-  MOCK_METHOD2(SetUnthrottleTime, void(syncable::ModelEnumSet,
+  MOCK_METHOD2(SetUnthrottleTime, void(syncable::ModelTypeSet,
                                        const base::TimeTicks&));
 };
 
@@ -275,7 +275,7 @@ TEST_F(SyncerProtoUtilTest, HandleThrottlingWithDatatypes) {
   MockSyncSessionContext context;
   SyncProtocolError error;
   error.error_type = browser_sync::THROTTLED;
-  syncable::ModelEnumSet types;
+  syncable::ModelTypeSet types;
   types.Put(syncable::BOOKMARKS);
   types.Put(syncable::PASSWORDS);
   error.error_data_types = types;

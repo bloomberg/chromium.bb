@@ -62,9 +62,9 @@ SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}
 void SyncBackendHostForProfileSyncTest::
     SimulateSyncCycleCompletedInitialSyncEnded(
     const tracked_objects::Location& location) {
-  syncable::ModelEnumSet sync_ended;
+  syncable::ModelTypeSet sync_ended;
   if (!fail_initial_download_)
-    sync_ended = syncable::ModelEnumSet::All();
+    sync_ended = syncable::ModelTypeSet::All();
   std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
   core_->HandleSyncCycleCompletedOnFrontendLoop(new SyncSessionSnapshot(
       SyncerStatus(), ErrorCounters(), 0, false,
@@ -98,7 +98,7 @@ void SyncBackendHostForProfileSyncTest::StartConfiguration(
     const base::Closure& callback) {
   SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop();
   if (initialization_state_ == DOWNLOADING_NIGORI) {
-    syncable::ModelEnumSet sync_ended;
+    syncable::ModelTypeSet sync_ended;
 
     if (!fail_initial_download_)
       sync_ended.Put(syncable::NIGORI);

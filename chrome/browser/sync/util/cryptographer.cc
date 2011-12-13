@@ -273,10 +273,10 @@ Cryptographer::UpdateResult Cryptographer::Update(
 }
 
 // Static
-syncable::ModelEnumSet Cryptographer::SensitiveTypes() {
+syncable::ModelTypeSet Cryptographer::SensitiveTypes() {
   // Both of these have their own encryption schemes, but we include them
   // anyways.
-  syncable::ModelEnumSet types;
+  syncable::ModelTypeSet types;
   types.Put(syncable::PASSWORDS);
   types.Put(syncable::NIGORI);
   return types;
@@ -289,7 +289,7 @@ void Cryptographer::UpdateEncryptedTypesFromNigori(
     return;
   }
 
-  syncable::ModelEnumSet encrypted_types(SensitiveTypes());
+  syncable::ModelTypeSet encrypted_types(SensitiveTypes());
   if (nigori.encrypt_bookmarks())
     encrypted_types.Put(syncable::BOOKMARKS);
   if (nigori.encrypt_preferences())
@@ -358,13 +358,13 @@ void Cryptographer::UpdateNigoriFromEncryptedTypes(
 
 void Cryptographer::set_encrypt_everything() {
   if (encrypt_everything_) {
-    DCHECK(encrypted_types_.Equals(syncable::ModelEnumSet::All()));
+    DCHECK(encrypted_types_.Equals(syncable::ModelTypeSet::All()));
     return;
   }
   encrypt_everything_ = true;
   // Change |encrypted_types_| directly to avoid sending more than one
   // notification.
-  encrypted_types_ = syncable::ModelEnumSet::All();
+  encrypted_types_ = syncable::ModelTypeSet::All();
   EmitEncryptedTypesChangedNotification();
 }
 
@@ -372,17 +372,17 @@ bool Cryptographer::encrypt_everything() const {
   return encrypt_everything_;
 }
 
-syncable::ModelEnumSet Cryptographer::GetEncryptedTypes() const {
+syncable::ModelTypeSet Cryptographer::GetEncryptedTypes() const {
   return encrypted_types_;
 }
 
 void Cryptographer::MergeEncryptedTypesForTest(
-    syncable::ModelEnumSet encrypted_types) {
+    syncable::ModelTypeSet encrypted_types) {
   MergeEncryptedTypes(encrypted_types);
 }
 
 void Cryptographer::MergeEncryptedTypes(
-    syncable::ModelEnumSet encrypted_types) {
+    syncable::ModelTypeSet encrypted_types) {
   if (encrypted_types_.HasAll(encrypted_types)) {
     return;
   }

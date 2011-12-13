@@ -65,7 +65,7 @@ P2PNotificationData::P2PNotificationData() : target_(NOTIFY_SELF) {}
 P2PNotificationData::P2PNotificationData(
     const std::string& sender_id,
     P2PNotificationTarget target,
-    syncable::ModelEnumSet changed_types)
+    syncable::ModelTypeSet changed_types)
     : sender_id_(sender_id),
       target_(target),
       changed_types_(changed_types) {}
@@ -86,7 +86,7 @@ bool P2PNotificationData::IsTargeted(const std::string& id) const {
   }
 }
 
-syncable::ModelEnumSet P2PNotificationData::GetChangedTypes() const {
+syncable::ModelTypeSet P2PNotificationData::GetChangedTypes() const {
   return changed_types_;
 }
 
@@ -102,7 +102,7 @@ std::string P2PNotificationData::ToString() const {
   dict->SetString(kSenderIdKey, sender_id_);
   dict->SetString(kNotificationTypeKey,
                   P2PNotificationTargetToString(target_));
-  dict->Set(kChangedTypesKey, syncable::ModelEnumSetToValue(changed_types_));
+  dict->Set(kChangedTypesKey, syncable::ModelTypeSetToValue(changed_types_));
   std::string json;
   base::JSONWriter::Write(dict.get(), false /* pretty_print */, &json);
   return json;
@@ -138,7 +138,7 @@ bool P2PNotificationData::ResetFromString(const std::string& str) {
                  << kChangedTypesKey;
     return false;
   }
-  changed_types_ = syncable::ModelEnumSetFromValue(*changed_types_list);
+  changed_types_ = syncable::ModelTypeSetFromValue(*changed_types_list);
   return true;
 }
 
@@ -212,9 +212,9 @@ void P2PNotifier::UpdateCredentials(
 }
 
 void P2PNotifier::UpdateEnabledTypes(
-    syncable::ModelEnumSet enabled_types) {
+    syncable::ModelTypeSet enabled_types) {
   DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
-  const syncable::ModelEnumSet new_enabled_types =
+  const syncable::ModelTypeSet new_enabled_types =
       Difference(enabled_types, enabled_types_);
   enabled_types_ = enabled_types;
   const P2PNotificationData notification_data(
@@ -223,7 +223,7 @@ void P2PNotifier::UpdateEnabledTypes(
 }
 
 void P2PNotifier::SendNotification(
-    syncable::ModelEnumSet changed_types) {
+    syncable::ModelTypeSet changed_types) {
   DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   const P2PNotificationData notification_data(
       unique_id_, send_notification_target_, changed_types);

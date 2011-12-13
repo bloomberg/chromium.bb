@@ -15,7 +15,7 @@ class TransactionObserver {
  public:
   virtual void OnTransactionWrite(
       const ImmutableWriteTransactionInfo& write_transaction_info,
-      ModelEnumSet models_with_changes) = 0;
+      ModelTypeSet models_with_changes) = 0;
  protected:
   virtual ~TransactionObserver() {}
 };

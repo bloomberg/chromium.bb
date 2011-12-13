@@ -74,7 +74,7 @@ using browser_sync::sessions::SyncSessionSnapshot;
 using browser_sync::WeakHandle;
 using content::BrowserThread;
 using syncable::kEncryptedString;
-using syncable::ModelEnumSet;
+using syncable::ModelTypeSet;
 using syncable::ModelType;
 using test::ExpectDictStringValue;
 using testing::_;
@@ -632,7 +632,7 @@ class SyncManagerObserverMock : public SyncManager::Observer {
   MOCK_METHOD0(OnClearServerDataFailed, void());  // NOLINT
   MOCK_METHOD0(OnClearServerDataSucceeded, void());  // NOLINT
   MOCK_METHOD2(OnEncryptedTypesChanged,
-               void(ModelEnumSet, bool));  // NOLINT
+               void(ModelTypeSet, bool));  // NOLINT
   MOCK_METHOD0(OnEncryptionComplete, void());  // NOLINT
   MOCK_METHOD1(OnActionableError,
                  void(const browser_sync::SyncProtocolError&));  // NOLINT
@@ -647,8 +647,8 @@ class SyncNotifierMock : public sync_notifier::SyncNotifier {
   MOCK_METHOD2(UpdateCredentials,
                void(const std::string&, const std::string&));
   MOCK_METHOD1(UpdateEnabledTypes,
-               void(syncable::ModelEnumSet));
-  MOCK_METHOD1(SendNotification, void(syncable::ModelEnumSet));
+               void(syncable::ModelTypeSet));
+  MOCK_METHOD1(SendNotification, void(syncable::ModelTypeSet));
 };
 
 class SyncManagerTest : public testing::Test,
@@ -801,10 +801,10 @@ class SyncManagerTest : public testing::Test,
     sync_notifier_observer_ = NULL;
   }
 
-  void SyncNotifierUpdateEnabledTypes(syncable::ModelEnumSet types) {
+  void SyncNotifierUpdateEnabledTypes(syncable::ModelTypeSet types) {
     ModelSafeRoutingInfo routes;
     GetModelSafeRoutingInfo(&routes);
-    const syncable::ModelEnumSet expected_types =
+    const syncable::ModelTypeSet expected_types =
         GetRoutingInfoTypes(routes);
     EXPECT_TRUE(types.Equals(expected_types));
     ++update_enabled_types_call_count_;
@@ -854,7 +854,7 @@ TEST_F(SyncManagerTest, UpdateEnabledTypes) {
 }
 
 TEST_F(SyncManagerTest, DoNotSyncTabsInNigoriNode) {
-  const syncable::ModelEnumSet encrypted_types(syncable::TYPED_URLS);
+  const syncable::ModelTypeSet encrypted_types(syncable::TYPED_URLS);
   sync_manager_.MaybeSetSyncTabsInNigoriNode(encrypted_types);
 
   ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -864,7 +864,7 @@ TEST_F(SyncManagerTest, DoNotSyncTabsInNigoriNode) {
 }
 
 TEST_F(SyncManagerTest, SyncTabsInNigoriNode) {
-  const syncable::ModelEnumSet encrypted_types(syncable::SESSIONS);
+  const syncable::ModelTypeSet encrypted_types(syncable::SESSIONS);
   sync_manager_.MaybeSetSyncTabsInNigoriNode(encrypted_types);
 
   ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1158,8 +1158,8 @@ TEST_F(SyncManagerTest, OnNotificationStateChange) {
 TEST_F(SyncManagerTest, OnIncomingNotification) {
   StrictMock<MockJsEventHandler> event_handler;
 
-  const syncable::ModelEnumSet empty_model_types;
-  const syncable::ModelEnumSet model_types(
+  const syncable::ModelTypeSet empty_model_types;
+  const syncable::ModelTypeSet model_types(
       syncable::BOOKMARKS, syncable::THEMES);
 
   // Build expected_args to have a single argument with the string
@@ -1168,7 +1168,7 @@ TEST_F(SyncManagerTest, OnIncomingNotification) {
   {
     ListValue* model_type_list = new ListValue();
     expected_details.Set("changedTypes", model_type_list);
-    for (syncable::ModelEnumSet::Iterator it = model_types.First();
+    for (syncable::ModelTypeSet::Iterator it = model_types.First();
          it.Good(); it.Inc()) {
       model_type_list->Append(
           Value::CreateStringValue(
@@ -1198,7 +1198,7 @@ TEST_F(SyncManagerTest, RefreshEncryptionReady) {
   EXPECT_TRUE(SetUpEncryption(true));
   EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.RefreshEncryption();
-  const syncable::ModelEnumSet encrypted_types =
+  const syncable::ModelTypeSet encrypted_types =
       sync_manager_.GetEncryptedDataTypesForTest();
   EXPECT_TRUE(encrypted_types.Has(syncable::PASSWORDS));
   EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
@@ -1218,7 +1218,7 @@ TEST_F(SyncManagerTest, RefreshEncryptionReady) {
 TEST_F(SyncManagerTest, RefreshEncryptionNotReady) {
   // Don't set up encryption (no nigori node created).
   sync_manager_.RefreshEncryption();  // Should fail.
-  const syncable::ModelEnumSet encrypted_types =
+  const syncable::ModelTypeSet encrypted_types =
       sync_manager_.GetEncryptedDataTypesForTest();
   EXPECT_TRUE(encrypted_types.Has(syncable::PASSWORDS));  // Hardcoded.
   EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
@@ -1229,7 +1229,7 @@ TEST_F(SyncManagerTest, RefreshEncryptionEmptyNigori) {
   EXPECT_TRUE(SetUpEncryption(false));
   EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.RefreshEncryption();  // Should write to nigori.
-  const syncable::ModelEnumSet encrypted_types =
+  const syncable::ModelTypeSet encrypted_types =
       sync_manager_.GetEncryptedDataTypesForTest();
   EXPECT_TRUE(encrypted_types.Has(syncable::PASSWORDS));  // Hardcoded.
   EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
@@ -1249,7 +1249,7 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithNoData) {
   EXPECT_TRUE(SetUpEncryption(true));
   EXPECT_CALL(observer_,
               OnEncryptedTypesChanged(
-                  HasModelTypes(syncable::ModelEnumSet::All()), true));
+                  HasModelTypes(syncable::ModelTypeSet::All()), true));
   EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.EnableEncryptEverything();
   EXPECT_TRUE(sync_manager_.EncryptEverythingEnabledForTest());
@@ -1306,14 +1306,14 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
 
   EXPECT_CALL(observer_,
               OnEncryptedTypesChanged(
-                  HasModelTypes(syncable::ModelEnumSet::All()), true));
+                  HasModelTypes(syncable::ModelTypeSet::All()), true));
   EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.EnableEncryptEverything();
   EXPECT_TRUE(sync_manager_.EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     EXPECT_TRUE(GetEncryptedTypes(&trans).Equals(
-        syncable::ModelEnumSet::All()));
+        syncable::ModelTypeSet::All()));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
         trans.GetCryptographer(),
@@ -1340,7 +1340,7 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     EXPECT_TRUE(GetEncryptedTypes(&trans).Equals(
-        syncable::ModelEnumSet::All()));
+        syncable::ModelTypeSet::All()));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
         trans.GetCryptographer(),
@@ -1501,7 +1501,7 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
 
   EXPECT_CALL(observer_,
               OnEncryptedTypesChanged(
-                  HasModelTypes(syncable::ModelEnumSet::All()), true));
+                  HasModelTypes(syncable::ModelTypeSet::All()), true));
   EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.EnableEncryptEverything();
   EXPECT_TRUE(sync_manager_.EncryptEverythingEnabledForTest());
@@ -1509,7 +1509,7 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     EXPECT_TRUE(GetEncryptedTypes(&trans).Equals(
-        syncable::ModelEnumSet::All()));
+        syncable::ModelTypeSet::All()));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
         trans.GetCryptographer(),

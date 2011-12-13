@@ -12,12 +12,12 @@ namespace syncable {
 typedef testing::Test NigoriUtilTest;
 
 TEST(NigoriUtilTest, SpecificsNeedsEncryption) {
-  ModelEnumSet encrypted_types;
+  ModelTypeSet encrypted_types;
   encrypted_types.Put(BOOKMARKS);
   encrypted_types.Put(PASSWORDS);
 
   sync_pb::EntitySpecifics specifics;
-  EXPECT_FALSE(SpecificsNeedsEncryption(ModelEnumSet(), specifics));
+  EXPECT_FALSE(SpecificsNeedsEncryption(ModelTypeSet(), specifics));
   EXPECT_FALSE(SpecificsNeedsEncryption(encrypted_types, specifics));
 
   AddDefaultExtensionValue(PREFERENCES, &specifics);
@@ -30,11 +30,11 @@ TEST(NigoriUtilTest, SpecificsNeedsEncryption) {
   bookmark_specifics.MutableExtension(sync_pb::bookmark)->set_title("title");
   bookmark_specifics.MutableExtension(sync_pb::bookmark)->set_url("url");
   EXPECT_TRUE(SpecificsNeedsEncryption(encrypted_types, bookmark_specifics));
-  EXPECT_FALSE(SpecificsNeedsEncryption(ModelEnumSet(), bookmark_specifics));
+  EXPECT_FALSE(SpecificsNeedsEncryption(ModelTypeSet(), bookmark_specifics));
 
   bookmark_specifics.mutable_encrypted();
   EXPECT_FALSE(SpecificsNeedsEncryption(encrypted_types, bookmark_specifics));
-  EXPECT_FALSE(SpecificsNeedsEncryption(ModelEnumSet(), bookmark_specifics));
+  EXPECT_FALSE(SpecificsNeedsEncryption(ModelTypeSet(), bookmark_specifics));
 
   sync_pb::EntitySpecifics password_specifics;
   AddDefaultExtensionValue(PASSWORDS, &password_specifics);

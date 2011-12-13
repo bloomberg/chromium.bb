@@ -29,7 +29,7 @@ namespace {
 
 // Helper function to disable password sync.
 void DisablePasswordSync(ProfileSyncService* service) {
-  syncable::ModelEnumSet types = service->GetPreferredDataTypes();
+  syncable::ModelTypeSet types = service->GetPreferredDataTypes();
   types.Remove(syncable::PASSWORDS);
   service->OnUserChoseDatatypes(false, types);
 }
@@ -123,9 +123,9 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
 
   // Bookmarks, Preferences, and Themes are launched for good, there's no
   // going back now.  Check if the other data types are registered though.
-  const syncable::ModelEnumSet registered_types =
+  const syncable::ModelTypeSet registered_types =
       service->GetRegisteredDataTypes();
-  const syncable::ModelEnumSet preferred_types =
+  const syncable::ModelTypeSet preferred_types =
       service->GetPreferredDataTypes();
   args->SetBoolean("passwordsRegistered",
       registered_types.Has(syncable::PASSWORDS));

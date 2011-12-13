@@ -136,7 +136,7 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
     LOG(ERROR) << "Scoped dir lookup failed!";
 
   bool is_share_useable = true;
-  syncable::ModelEnumSet initial_sync_ended;
+  syncable::ModelTypeSet initial_sync_ended;
   std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {

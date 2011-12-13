@@ -38,7 +38,7 @@ bool WriteNode::UpdateEntryWithEncryption(
     syncable::MutableEntry* entry) {
   syncable::ModelType type = syncable::GetModelTypeFromSpecifics(new_specifics);
   DCHECK_GE(type, syncable::FIRST_REAL_MODEL_TYPE);
-  const syncable::ModelEnumSet encrypted_types =
+  const syncable::ModelTypeSet encrypted_types =
       cryptographer->GetEncryptedTypes();
   sync_pb::EntitySpecifics generated_specifics;
   if (!SpecificsNeedsEncryption(encrypted_types, new_specifics) ||

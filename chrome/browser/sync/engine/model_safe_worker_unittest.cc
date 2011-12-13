@@ -44,7 +44,7 @@ TEST_F(ModelSafeWorkerTest, GetRoutingInfoTypes) {
   routing_info[syncable::BOOKMARKS] = GROUP_PASSIVE;
   routing_info[syncable::NIGORI] = GROUP_UI;
   routing_info[syncable::PREFERENCES] = GROUP_DB;
-  const syncable::ModelEnumSet expected_types(
+  const syncable::ModelTypeSet expected_types(
       syncable::BOOKMARKS,
       syncable::NIGORI,
       syncable::PREFERENCES);

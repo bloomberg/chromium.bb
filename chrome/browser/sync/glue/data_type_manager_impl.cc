@@ -217,16 +217,16 @@ void DataTypeManagerImpl::Restart(sync_api::ConfigureReason reason,
   // The task will be invoked when updates are downloaded.
   state_ = DOWNLOAD_PENDING;
   // Hopefully http://crbug.com/79970 will make this less verbose.
-  syncable::ModelEnumSet all_types;
+  syncable::ModelTypeSet all_types;
   for (DataTypeController::TypeMap::const_iterator it =
            controllers_->begin(); it != controllers_->end(); ++it) {
     all_types.Put(it->first);
   }
-  const syncable::ModelEnumSet types_to_add = last_requested_types_;
+  const syncable::ModelTypeSet types_to_add = last_requested_types_;
   // Check that types_to_add \subseteq all_types.
   DCHECK(all_types.HasAll(types_to_add));
   // Set types_to_remove to all_types \setminus types_to_add.
-  const syncable::ModelEnumSet types_to_remove =
+  const syncable::ModelTypeSet types_to_remove =
       Difference(all_types, types_to_add);
   backend_->ConfigureDataTypes(
       types_to_add,
@@ -268,7 +268,7 @@ bool DataTypeManagerImpl::ProcessReconfigure() {
 }
 
 void DataTypeManagerImpl::DownloadReady(
-    syncable::ModelEnumSet failed_configuration_types) {
+    syncable::ModelTypeSet failed_configuration_types) {
   DCHECK_EQ(state_, DOWNLOAD_PENDING);
 
   // Ignore |failed_configuration_types| if we need to reconfigure
@@ -280,7 +280,7 @@ void DataTypeManagerImpl::DownloadReady(
   if (!failed_configuration_types.Empty()) {
     std::string error_msg =
         "Configuration failed for types " +
-        syncable::ModelEnumSetToString(failed_configuration_types);
+        syncable::ModelTypeSetToString(failed_configuration_types);
     SyncError error(FROM_HERE, error_msg,
                     failed_configuration_types.First().Get());
     Abort(UNRECOVERABLE_ERROR, error);

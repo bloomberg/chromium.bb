@@ -173,7 +173,7 @@ void AllStatus::IncrementNotificationsReceived() {
   ++status_.notifications_received;
 }
 
-void AllStatus::SetEncryptedTypes(syncable::ModelEnumSet types) {
+void AllStatus::SetEncryptedTypes(syncable::ModelTypeSet types) {
   ScopedStatusLock lock(this);
   status_.encrypted_types = types;
 }

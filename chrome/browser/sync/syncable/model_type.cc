@@ -339,9 +339,9 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
   return UNSPECIFIED;
 }
 
-std::string ModelEnumSetToString(ModelEnumSet model_types) {
+std::string ModelTypeSetToString(ModelTypeSet model_types) {
   std::string result;
-  for (ModelEnumSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
+  for (ModelTypeSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
     if (!result.empty()) {
       result += ", ";
     }
@@ -350,17 +350,17 @@ std::string ModelEnumSetToString(ModelEnumSet model_types) {
   return result;
 }
 
-base::ListValue* ModelEnumSetToValue(ModelEnumSet model_types) {
+base::ListValue* ModelTypeSetToValue(ModelTypeSet model_types) {
   ListValue* value = new ListValue();
-  for (ModelEnumSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
+  for (ModelTypeSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
     value->Append(
         Value::CreateStringValue(ModelTypeToString(it.Get())));
   }
   return value;
 }
 
-ModelEnumSet ModelEnumSetFromValue(const base::ListValue& value) {
-  ModelEnumSet result;
+ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value) {
+  ModelTypeSet result;
   for (ListValue::const_iterator i = value.begin(); i != value.end(); ++i) {
     result.Put(ModelTypeFromValue(**i));
   }

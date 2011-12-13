@@ -78,7 +78,7 @@ struct SyncerStatus {
 
   // If the syncer encountered a MIGRATION_DONE code, these are the types that
   // the client must now "migrate", by purging and re-downloading all updates.
-  syncable::ModelEnumSet types_needing_local_migration;
+  syncable::ModelTypeSet types_needing_local_migration;
 
   // Overwrites due to conflict resolution counters.
   int num_local_overwrites;
@@ -121,7 +121,7 @@ struct SyncSessionSnapshot {
       const ErrorCounters& errors,
       int64 num_server_changes_remaining,
       bool is_share_usable,
-      syncable::ModelEnumSet initial_sync_ended,
+      syncable::ModelTypeSet initial_sync_ended,
       const std::string
           (&download_progress_markers)[syncable::MODEL_TYPE_COUNT],
       bool more_to_sync,
@@ -144,7 +144,7 @@ struct SyncSessionSnapshot {
   const ErrorCounters errors;
   const int64 num_server_changes_remaining;
   const bool is_share_usable;
-  const syncable::ModelEnumSet initial_sync_ended;
+  const syncable::ModelTypeSet initial_sync_ended;
   const std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
   const bool has_more_to_sync;
   const bool is_silenced;
@@ -319,7 +319,7 @@ struct AllModelTypeState {
   ClientToServerResponse commit_response;
   // We GetUpdates for some combination of types at once.
   // requested_update_types stores the set of types which were requested.
-  syncable::ModelEnumSet updates_request_types;
+  syncable::ModelTypeSet updates_request_types;
   ClientToServerResponse updates_response;
   // Used to build the shared commit message.
   DirtyOnWrite<std::vector<int64> > unsynced_handles;

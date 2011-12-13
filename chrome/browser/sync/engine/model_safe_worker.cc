@@ -30,9 +30,9 @@ std::string ModelSafeRoutingInfoToString(
   return json;
 }
 
-syncable::ModelEnumSet GetRoutingInfoTypes(
+syncable::ModelTypeSet GetRoutingInfoTypes(
     const ModelSafeRoutingInfo& routing_info) {
-  syncable::ModelEnumSet types;
+  syncable::ModelTypeSet types;
   for (ModelSafeRoutingInfo::const_iterator it = routing_info.begin();
        it != routing_info.end(); ++it) {
     types.Put(it->first);

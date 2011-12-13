@@ -14,19 +14,19 @@ using browser_sync::ModelSafeRoutingInfo;
 namespace syncable {
 
 ModelTypePayloadMap ModelTypePayloadMapFromEnumSet(
-    syncable::ModelEnumSet types,
+    syncable::ModelTypeSet types,
     const std::string& payload) {
   ModelTypePayloadMap types_with_payloads;
-  for (syncable::ModelEnumSet::Iterator it = types.First();
+  for (syncable::ModelTypeSet::Iterator it = types.First();
        it.Good(); it.Inc()) {
     types_with_payloads[it.Get()] = payload;
   }
   return types_with_payloads;
 }
 
-ModelEnumSet ModelTypePayloadMapToEnumSet(
+ModelTypeSet ModelTypePayloadMapToEnumSet(
     const ModelTypePayloadMap& payload_map) {
-  ModelEnumSet types;
+  ModelTypeSet types;
   for (ModelTypePayloadMap::const_iterator it = payload_map.begin();
        it != payload_map.end(); ++it) {
     types.Put(it->first);

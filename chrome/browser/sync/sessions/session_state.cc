@@ -114,7 +114,7 @@ SyncSessionSnapshot::SyncSessionSnapshot(
     const ErrorCounters& errors,
     int64 num_server_changes_remaining,
     bool is_share_usable,
-    syncable::ModelEnumSet initial_sync_ended,
+    syncable::ModelTypeSet initial_sync_ended,
     const std::string
         (&download_progress_markers)[syncable::MODEL_TYPE_COUNT],
     bool more_to_sync,
@@ -159,7 +159,7 @@ DictionaryValue* SyncSessionSnapshot::ToValue() const {
                     static_cast<int>(num_server_changes_remaining));
   value->SetBoolean("isShareUsable", is_share_usable);
   value->Set("initialSyncEnded",
-             syncable::ModelEnumSetToValue(initial_sync_ended));
+             syncable::ModelTypeSetToValue(initial_sync_ended));
   value->Set("downloadProgressMarkers",
              DownloadProgressMarkersToValue(download_progress_markers));
   value->SetBoolean("hasMoreToSync", has_more_to_sync);

@@ -48,7 +48,7 @@ class DataTypeManager {
     UNRECOVERABLE_ERROR  // We got an unrecoverable error during startup.
   };
 
-  typedef syncable::ModelEnumSet TypeSet;
+  typedef syncable::ModelTypeSet TypeSet;
 
   // Note: |errors| is only filled when status is not OK.
   struct ConfigureResult {

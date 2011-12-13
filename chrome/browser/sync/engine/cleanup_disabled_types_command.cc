@@ -18,8 +18,8 @@ CleanupDisabledTypesCommand::CleanupDisabledTypesCommand() {}
 CleanupDisabledTypesCommand::~CleanupDisabledTypesCommand() {}
 
 void CleanupDisabledTypesCommand::ExecuteImpl(sessions::SyncSession* session) {
-  using syncable::ModelEnumSet;
-  using syncable::ModelEnumSetToString;
+  using syncable::ModelTypeSet;
+  using syncable::ModelTypeSetToString;
 
   // Because a full directory purge is slow, we avoid purging
   // undesired types unless we have reason to believe they were
@@ -39,14 +39,14 @@ void CleanupDisabledTypesCommand::ExecuteImpl(sessions::SyncSession* session) {
   //                                       |  (failure, browser restart
   //                                       |  before another sync session,..)
 
-  const ModelEnumSet enabled_types =
+  const ModelTypeSet enabled_types =
       GetRoutingInfoTypes(session->routing_info());
 
-  const ModelEnumSet previous_enabled_types =
+  const ModelTypeSet previous_enabled_types =
       GetRoutingInfoTypes(
           session->context()->previous_session_routing_info());
 
-  ModelEnumSet to_cleanup = Difference(ModelEnumSet::All(), enabled_types);
+  ModelTypeSet to_cleanup = Difference(ModelTypeSet::All(), enabled_types);
 
   // If |previous_enabled_types| is non-empty (i.e., not the first
   // sync session), set |to_cleanup| to its intersection with
@@ -55,10 +55,10 @@ void CleanupDisabledTypesCommand::ExecuteImpl(sessions::SyncSession* session) {
     to_cleanup.RetainAll(previous_enabled_types);
   }
 
-  DVLOG(1) << "enabled_types = " << ModelEnumSetToString(enabled_types)
+  DVLOG(1) << "enabled_types = " << ModelTypeSetToString(enabled_types)
            << ", previous_enabled_types = "
-           << ModelEnumSetToString(previous_enabled_types)
-           << ", to_cleanup = " << ModelEnumSetToString(to_cleanup);
+           << ModelTypeSetToString(previous_enabled_types)
+           << ", to_cleanup = " << ModelTypeSetToString(to_cleanup);
 
   if (to_cleanup.Empty())
     return;

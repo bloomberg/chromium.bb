@@ -108,14 +108,14 @@ class SyncSessionTest : public testing::Test,
       FAIL() << msg;
   }
 
-  syncable::ModelEnumSet ParamsMeaningAllEnabledTypes() {
-    syncable::ModelEnumSet request_params(
+  syncable::ModelTypeSet ParamsMeaningAllEnabledTypes() {
+    syncable::ModelTypeSet request_params(
         syncable::BOOKMARKS, syncable::AUTOFILL);
     return request_params;
   }
 
-  syncable::ModelEnumSet ParamsMeaningJustOneEnabledType() {
-    return syncable::ModelEnumSet(syncable::AUTOFILL);
+  syncable::ModelTypeSet ParamsMeaningJustOneEnabledType() {
+    return syncable::ModelTypeSet(syncable::AUTOFILL);
   }
 
   MessageLoop message_loop_;
@@ -537,7 +537,7 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestWithSameType) {
 
 
 TEST_F(SyncSessionTest, MakeTypePayloadMapFromBitSet) {
-  syncable::ModelEnumSet types;
+  syncable::ModelTypeSet types;
   std::string payload = "test";
   syncable::ModelTypePayloadMap types_with_payloads =
       syncable::ModelTypePayloadMapFromEnumSet(types, payload);
