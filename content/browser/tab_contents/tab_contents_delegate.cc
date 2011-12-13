@@ -10,6 +10,8 @@
 #include "content/browser/javascript_dialogs.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/intents_host.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/common/url_constants.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/web_intent_data.h"
@@ -337,6 +339,10 @@ TabContentsDelegate::~TabContentsDelegate() {
     tab_contents->set_delegate(NULL);
   }
   DCHECK(attached_contents_.empty());
+  content::NotificationService::current()->Notify(
+      content::NOTIFICATION_TAB_CONTENTS_DELEGATE_DESTROYED,
+      content::Source<TabContentsDelegate>(this),
+      content::NotificationService::NoDetails());
 }
 
 void TabContentsDelegate::Attach(TabContents* tab_contents) {

@@ -24,6 +24,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/theme_resources.h"
@@ -360,6 +361,11 @@ void DefaultTabDragController::Init(
   }
   InitWindowCreatePoint();
   initial_selection_model_.Copy(initial_selection_model);
+
+  registrar_.Add(
+      this,
+      content::NOTIFICATION_TAB_CONTENTS_DELEGATE_DESTROYED,
+      content::NotificationService::AllSources());
 }
 
 void DefaultTabDragController::InitTabDragData(BaseTab* tab,
@@ -471,6 +477,13 @@ void DefaultTabDragController::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  if (type == content::NOTIFICATION_TAB_CONTENTS_DELEGATE_DESTROYED) {
+    TabContentsDelegate* delegate =
+        content::Source<TabContentsDelegate>(source).ptr();
+    for (size_t i = 0; i < drag_data_.size(); ++i)
+      CHECK_NE(delegate, drag_data_[i].original_delegate);
+    return;
+  }
   DCHECK_EQ(type, content::NOTIFICATION_TAB_CONTENTS_DESTROYED);
   TabContents* destroyed_contents = content::Source<TabContents>(source).ptr();
   for (size_t i = 0; i < drag_data_.size(); ++i) {
