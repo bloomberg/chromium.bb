@@ -258,7 +258,13 @@ class Desktop:
 
   def launch_x_session(self):
     # Start desktop session
+    # The /dev/null input redirection is necessary to prevent Xsession from
+    # reading from stdin.  If this code runs as a shell background job in a
+    # terminal, any reading from stdin causes the job to be suspended.
+    # Daemonization would solve this problem by separating the process from the
+    # controlling terminal.
     session_proc = subprocess.Popen("/etc/X11/Xsession",
+                                    stdin=open("/dev/null", "r"),
                                     cwd=os.environ["HOME"],
                                     env=self.child_env)
     if not session_proc.pid:
