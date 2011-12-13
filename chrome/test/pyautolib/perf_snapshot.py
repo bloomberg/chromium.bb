@@ -51,7 +51,7 @@ class _V8HeapSnapshotParser(object):
                        returns a dictionary of the summarized results.
   """
   _CHILD_TYPES = ['context', 'element', 'property', 'internal', 'hidden',
-                  'shortcut']
+                  'shortcut', 'weak']
   _NODE_TYPES = ['hidden', 'array', 'string', 'object', 'code', 'closure',
                  'regexp', 'number', 'native']
 
