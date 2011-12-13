@@ -6,6 +6,7 @@
 
 #import <QuartzCore/QuartzCore.h>
 
+#include <cmath>
 #include <limits>
 #include <string>
 
@@ -851,6 +852,7 @@ private:
   // Initialize |nonMiniTabWidth| in case there aren't any non-mini-tabs; this
   // value shouldn't actually be used.
   CGFloat nonMiniTabWidth = kMaxTabWidth;
+  CGFloat nonMiniTabWidthFraction = 0;
   const NSInteger numberOfOpenNonMiniTabs = [self numberOfOpenNonMiniTabs];
   if (numberOfOpenNonMiniTabs) {
     // Find the width of a non-mini-tab. This only applies to horizontal
@@ -862,6 +864,11 @@ private:
 
     // Clamp the width between the max and min.
     nonMiniTabWidth = MAX(MIN(nonMiniTabWidth, kMaxTabWidth), kMinTabWidth);
+
+    // Separate integral and fractional parts.
+    CGFloat integralPart = std::floor(nonMiniTabWidth);
+    nonMiniTabWidthFraction = nonMiniTabWidth - integralPart;
+    nonMiniTabWidth = integralPart;
   }
 
   BOOL visible = [[tabStripView_ window] isVisible];
@@ -870,6 +877,8 @@ private:
   bool hasPlaceholderGap = false;
   // Whether or not the last tab processed by the loop was a mini tab.
   BOOL isLastTabMini = NO;
+  CGFloat tabWidthAccumulatedFraction = 0;
+  NSInteger laidOutNonMiniTabs = 0;
   for (TabController* tab in tabArray_.get()) {
     // Ignore a tab that is going through a close animation.
     if ([closingControllers_ containsObject:tab])
@@ -920,8 +929,31 @@ private:
     // Set the width. Selected tabs are slightly wider when things get really
     // small and thus we enforce a different minimum width.
     BOOL isMini = [tab mini];
-    tabFrame.size.width = isMini ?
-        ([tab app] ? kAppTabWidth : kMiniTabWidth) : nonMiniTabWidth;
+    if (isMini) {
+      tabFrame.size.width = [tab app] ? kAppTabWidth : kMiniTabWidth;
+    } else {
+      // Tabs have non-integer widths. Assign the integer part to the tab, and
+      // keep an accumulation of the fractional parts. When the fractional
+      // accumulation gets to be more than one pixel, assign that to the current
+      // tab being laid out. This is vaguely inspired by Bresenham's line
+      // algorithm.
+      tabFrame.size.width = nonMiniTabWidth;
+      tabWidthAccumulatedFraction += nonMiniTabWidthFraction;
+
+      if (tabWidthAccumulatedFraction >= 1.0) {
+        ++tabFrame.size.width;
+        --tabWidthAccumulatedFraction;
+      }
+
+      // In case of rounding error, give any left over pixels to the last tab.
+      if (laidOutNonMiniTabs == numberOfOpenNonMiniTabs - 1 &&
+          tabWidthAccumulatedFraction > 0.5) {
+        ++tabFrame.size.width;
+      }
+
+      ++laidOutNonMiniTabs;
+    }
+
     if ([tab selected])
       tabFrame.size.width = MAX(tabFrame.size.width, kMinSelectedTabWidth);
 
