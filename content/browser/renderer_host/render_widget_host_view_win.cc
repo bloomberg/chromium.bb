@@ -182,6 +182,19 @@ LRESULT CALLBACK PluginWrapperWindowProc(HWND window, unsigned int message,
   return ::DefWindowProc(window, message, wparam, lparam);
 }
 
+void SendToGpuProcessHost(int gpu_host_id, scoped_ptr<IPC::Message> message) {
+  GpuProcessHost* gpu_process_host = GpuProcessHost::FromID(gpu_host_id);
+  if (!gpu_process_host)
+    return;
+
+  gpu_process_host->Send(message.release());
+}
+
+void PostTaskOnIOThread(const tracked_objects::Location& from_here,
+                        base::Closure task) {
+  BrowserThread::PostTask(BrowserThread::IO, from_here, task);
+}
+
 bool DecodeZoomGesture(HWND hwnd, const GESTUREINFO& gi,
                        content::PageZoom* zoom,
                        POINT* zoom_center) {
@@ -2035,12 +2048,19 @@ void RenderWidgetHostViewWin::AcceleratedSurfaceBuffersSwapped(
       accelerated_surface_->Initialize();
     }
 
+    scoped_ptr<IPC::Message> message(
+        new AcceleratedSurfaceMsg_BuffersSwappedACK(params.route_id));
+    base::Closure acknowledge_task = base::Bind(
+        SendToGpuProcessHost,
+        gpu_host_id,
+        base::Passed(&message));
+
     accelerated_surface_->AsyncPresentAndAcknowledge(
         params.size,
         params.surface_id,
-        base::Bind(&RenderWidgetHost::AcknowledgeSwapBuffers,
-                   gpu_host_id,
-                   params.route_id));
+        base::Bind(PostTaskOnIOThread,
+                   FROM_HERE,
+                   acknowledge_task));
   } else {
     RenderWidgetHost::AcknowledgeSwapBuffers(params.route_id, gpu_host_id);
   }
