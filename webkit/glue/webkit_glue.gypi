@@ -436,6 +436,8 @@
         'web_io_operators.h',
         'window_open_disposition.h',
         'window_open_disposition.cc',
+        'worker_task_runner.cc',
+        'worker_task_runner.h',
 
         # These files used to be built in the webcore target, but moved here
         # since part of glue.

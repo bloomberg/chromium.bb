@@ -429,6 +429,7 @@
         '../../glue/webframe_unittest.cc',
         '../../glue/webkit_glue_unittest.cc',
         '../../glue/webview_unittest.cc',
+        '../../glue/worker_task_runner_unittest.cc',
         '../../media/buffered_data_source_unittest.cc',
         '../../media/buffered_resource_loader_unittest.cc',
         '../../media/simple_data_source_unittest.cc',
