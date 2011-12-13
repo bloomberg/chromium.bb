@@ -826,7 +826,8 @@ class ArchiveStage(NonHaltingBuilderStage):
       # Put the version right back on the queue in case anyone else is waiting.
       self._version_queue.put(version)
       if version:
-        self._set_version = os.readlink(version)
+        self._set_version = '%s-b%s' % (os.readlink(version),
+                                        self._options.buildnumber)
       else:
         self._set_version = None
 
