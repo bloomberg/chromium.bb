@@ -285,7 +285,8 @@ TEST_F(EndToEndAsyncTest, EmptyResponseCallback) {
   // check if the test does not crash.
 }
 
-TEST_F(EndToEndAsyncTest, TestSignal) {
+// Flaky, http://crbug.com/107301
+TEST_F(EndToEndAsyncTest, FLAKY_TestSignal) {
   const char kMessage[] = "hello, world";
   // Send the test signal from the exported object.
   test_service_->SendTestSignal(kMessage);
