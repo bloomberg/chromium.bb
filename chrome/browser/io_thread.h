@@ -49,6 +49,10 @@ class URLSecurityManager;
 
 // Contains state associated with, initialized and cleaned up on, and
 // primarily used on, the IO thread.
+//
+// If you are looking to interact with the IO thread (e.g. post tasks
+// to it or check if it is the current thread), see
+// content::BrowserThread.
 class IOThread : public content::BrowserThreadDelegate {
  public:
   struct Globals {
