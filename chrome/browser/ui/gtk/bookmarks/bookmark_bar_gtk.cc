@@ -42,6 +42,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -1273,18 +1274,15 @@ void BookmarkBarGtk::OnDragReceived(GtkWidget* widget,
 
   switch (target_type) {
     case ui::CHROME_BOOKMARK_ITEM: {
-      std::vector<const BookmarkNode*> nodes =
-          bookmark_utils::GetNodesFromSelection(context, selection_data,
-                                                target_type,
-                                                browser_->profile(),
-                                                &delete_selection_data,
-                                                &dnd_success);
-      DCHECK(!nodes.empty());
-      for (std::vector<const BookmarkNode*>::iterator it = nodes.begin();
-           it != nodes.end(); ++it) {
-        model_->Move(*it, dest_node, index);
-        index = dest_node->GetIndexOf(*it) + 1;
-      }
+      Pickle pickle(reinterpret_cast<char*>(selection_data->data),
+                    selection_data->length);
+      BookmarkNodeData drag_data;
+      DCHECK(drag_data.ReadFromPickle(&pickle));
+      dnd_success = bookmark_utils::PerformBookmarkDrop(
+          browser_->profile(),
+          drag_data,
+          dest_node,
+          index) != ui::DragDropTypes::DRAG_NONE;
       break;
     }
 
