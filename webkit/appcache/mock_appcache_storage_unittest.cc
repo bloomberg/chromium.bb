@@ -461,16 +461,18 @@ TEST_F(MockAppCacheStorageTest, BasicFindMainFallbackResponse) {
 
   Manifest manifest;
   manifest.fallback_namespaces.push_back(
-      FallbackNamespace(kFallbackNamespaceUrl1, kFallbackEntryUrl1));
+      Namespace(FALLBACK_NAMESPACE, kFallbackNamespaceUrl1,
+                kFallbackEntryUrl1));
   manifest.fallback_namespaces.push_back(
-      FallbackNamespace(kFallbackNamespaceUrl2, kFallbackEntryUrl2));
+      Namespace(FALLBACK_NAMESPACE, kFallbackNamespaceUrl2,
+                kFallbackEntryUrl2));
 
   scoped_refptr<AppCache> cache(new AppCache(&service, kCacheId));
   cache->InitializeWithManifest(&manifest);
-  cache->AddEntry(
-      kFallbackEntryUrl1, AppCacheEntry(AppCacheEntry::FALLBACK, kResponseId1));
-  cache->AddEntry(
-      kFallbackEntryUrl2, AppCacheEntry(AppCacheEntry::FALLBACK, kResponseId2));
+  cache->AddEntry(kFallbackEntryUrl1,
+                  AppCacheEntry(AppCacheEntry::FALLBACK, kResponseId1));
+  cache->AddEntry(kFallbackEntryUrl2,
+                  AppCacheEntry(AppCacheEntry::FALLBACK, kResponseId2));
   cache->set_complete(true);
 
   scoped_refptr<AppCacheGroup> group(

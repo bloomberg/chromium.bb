@@ -869,14 +869,18 @@ void AppCacheUpdateJob::BuildUrlFileList(const Manifest& manifest) {
     AddUrlToFileList(GURL(*it), AppCacheEntry::EXPLICIT);
   }
 
-  // TODO(michaeln): Add resources from intercept namepsaces too.
-  // http://code.google.com/p/chromium/issues/detail?id=101565
+  const std::vector<Namespace>& intercepts =
+      manifest.intercept_namespaces;
+  for (std::vector<Namespace>::const_iterator it = intercepts.begin();
+       it != intercepts.end(); ++it) {
+     AddUrlToFileList(it->target_url, AppCacheEntry::INTERCEPT);
+  }
 
-  const std::vector<FallbackNamespace>& fallbacks =
+  const std::vector<Namespace>& fallbacks =
       manifest.fallback_namespaces;
-  for (std::vector<FallbackNamespace>::const_iterator it = fallbacks.begin();
+  for (std::vector<Namespace>::const_iterator it = fallbacks.begin();
        it != fallbacks.end(); ++it) {
-     AddUrlToFileList(it->second, AppCacheEntry::FALLBACK);
+     AddUrlToFileList(it->target_url, AppCacheEntry::FALLBACK);
   }
 
   // Add all master entries from newest complete cache.

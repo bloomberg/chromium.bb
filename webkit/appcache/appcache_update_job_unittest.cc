@@ -114,6 +114,9 @@ class MockHttpServer {
     } else if (path == "/files/fallback1a") {
       (*headers) = std::string(ok_headers, arraysize(ok_headers));
       (*body) = "fallback1a";
+    } else if (path == "/files/intercept1a") {
+      (*headers) = std::string(ok_headers, arraysize(ok_headers));
+      (*body) = "intercept1a";
     } else if (path == "/files/gone") {
       (*headers) = std::string(gone_headers, arraysize(gone_headers));
       (*body) = "";
@@ -156,6 +159,11 @@ class MockHttpServer {
                 "fallback1 fallback1a\n"
                 "NETWORK:\n"
                 "online1\n";
+    } else if (path == "/files/manifest-with-intercept") {
+      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
+      (*body) = "CACHE MANIFEST\n"
+                "CHROMIUM-INTERCEPT:\n"
+                "intercept1 return intercept1a\n";
     } else if (path == "/files/notmodified") {
       (*headers) = std::string(not_modified_headers,
                                arraysize(not_modified_headers));
@@ -190,6 +198,12 @@ class MockHttpServerJobFactory
     return MockHttpServer::JobFactory(request);
   }
 };
+
+inline bool operator==(const Namespace& lhs, const Namespace& rhs) {
+  return lhs.type == rhs.type &&
+         lhs.namespace_url == rhs.namespace_url &&
+         lhs.target_url == rhs.target_url;
+}
 
 }  // namespace
 
@@ -1006,6 +1020,33 @@ class AppCacheUpdateJobTest : public testing::Test,
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = true;
     tested_manifest_ = MANIFEST1;
+    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
+                               CHECKING_EVENT);
+
+    WaitForUpdateToFinish();
+  }
+
+  void DownloadInterceptEntriesTest() {
+    // Ensures we download intercept entries too.
+    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+    GURL manifest_url = MockHttpServer::GetMockUrl(
+        "files/manifest-with-intercept");
+    MakeService();
+    group_ = new AppCacheGroup(
+        service_.get(), manifest_url,
+        service_->storage()->NewGroupId());
+    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(1, frontend);
+    update->StartUpdate(host, GURL());
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    tested_manifest_ = MANIFEST_WITH_INTERCEPT;
     frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
                                CHECKING_EVENT);
 
@@ -3010,6 +3051,9 @@ class AppCacheUpdateJobTest : public testing::Test,
         case PENDING_MASTER_NO_UPDATE:
           VerifyMasterEntryNoUpdate(cache);
           break;
+        case MANIFEST_WITH_INTERCEPT:
+          VerifyManifestWithIntercept(cache);
+          break;
         case NONE:
         default:
           break;
@@ -3043,13 +3087,12 @@ class AppCacheUpdateJobTest : public testing::Test,
     }
 
     expected = 1;
-    EXPECT_EQ(expected, cache->fallback_namespaces_.size());
-    EXPECT_TRUE(cache->fallback_namespaces_.end() !=
-        std::find(cache->fallback_namespaces_.begin(),
-                  cache->fallback_namespaces_.end(),
-                  FallbackNamespace(
-                      MockHttpServer::GetMockUrl("files/fallback1"),
-                      MockHttpServer::GetMockUrl("files/fallback1a"))));
+    ASSERT_EQ(expected, cache->fallback_namespaces_.size());
+    EXPECT_TRUE(cache->fallback_namespaces_[0] ==
+                    Namespace(
+                        FALLBACK_NAMESPACE,
+                        MockHttpServer::GetMockUrl("files/fallback1"),
+                        MockHttpServer::GetMockUrl("files/fallback1a")));
 
     EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
     EXPECT_TRUE(cache->online_whitelist_all_);
@@ -3071,13 +3114,12 @@ class AppCacheUpdateJobTest : public testing::Test,
         AppCacheEntry::MASTER, entry->types());
 
     expected = 1;
-    EXPECT_EQ(expected, cache->fallback_namespaces_.size());
-    EXPECT_TRUE(cache->fallback_namespaces_.end() !=
-        std::find(cache->fallback_namespaces_.begin(),
-                  cache->fallback_namespaces_.end(),
-                  FallbackNamespace(
-                      MockHttpServer::GetMockUrl("files/fallback1"),
-                      MockHttpServer::GetMockUrl("files/explicit1"))));
+    ASSERT_EQ(expected, cache->fallback_namespaces_.size());
+    EXPECT_TRUE(cache->fallback_namespaces_[0] ==
+                    Namespace(
+                        FALLBACK_NAMESPACE,
+                        MockHttpServer::GetMockUrl("files/fallback1"),
+                        MockHttpServer::GetMockUrl("files/explicit1")));
 
     EXPECT_EQ(expected, cache->online_whitelist_namespaces_.size());
     EXPECT_TRUE(cache->online_whitelist_namespaces_.end() !=
@@ -3153,6 +3195,21 @@ class AppCacheUpdateJobTest : public testing::Test,
     EXPECT_TRUE(cache->update_time_ > base::Time());
   }
 
+  void VerifyManifestWithIntercept(AppCache* cache) {
+    EXPECT_EQ(2u, cache->entries().size());
+    const char* kManifestPath = "files/manifest-with-intercept";
+    AppCacheEntry* entry =
+        cache->GetEntry(MockHttpServer::GetMockUrl(kManifestPath));
+    ASSERT_TRUE(entry);
+    EXPECT_EQ(AppCacheEntry::MANIFEST, entry->types());
+    entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/intercept1a"));
+    ASSERT_TRUE(entry);
+    EXPECT_TRUE(entry->IsIntercept());
+    EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
+    EXPECT_FALSE(cache->online_whitelist_all_);
+    EXPECT_TRUE(cache->update_time_ > base::Time());
+  }
+
  private:
   // Various manifest files used in this test.
   enum TestedManifest {
@@ -3162,6 +3219,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     EMPTY_MANIFEST,
     EMPTY_FILE_MANIFEST,
     PENDING_MASTER_NO_UPDATE,
+    MANIFEST_WITH_INTERCEPT
   };
 
   scoped_ptr<IOThread> io_thread_;
@@ -3305,6 +3363,10 @@ TEST_F(AppCacheUpdateJobTest, UpgradeManifestDataUnchanged) {
 
 TEST_F(AppCacheUpdateJobTest, BasicCacheAttemptSuccess) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::BasicCacheAttemptSuccessTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, DownloadInterceptEntriesTest) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::DownloadInterceptEntriesTest);
 }
 
 TEST_F(AppCacheUpdateJobTest, BasicUpgradeSuccess) {

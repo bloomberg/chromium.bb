@@ -82,36 +82,40 @@ const AppCacheEntry* AppCache::GetEntryWithResponseId(int64 response_id) {
 GURL AppCache::GetFallbackEntryUrl(const GURL& namespace_url) const {
   size_t count = fallback_namespaces_.size();
   for (size_t i = 0; i < count; ++i) {
-    if (fallback_namespaces_[i].first == namespace_url)
-      return fallback_namespaces_[i].second;
+    if (fallback_namespaces_[i].namespace_url == namespace_url)
+      return fallback_namespaces_[i].target_url;
   }
   NOTREACHED();
   return GURL();
 }
 
 namespace {
-bool SortByLength(
-    const FallbackNamespace& lhs, const FallbackNamespace& rhs) {
-  return lhs.first.spec().length() > rhs.first.spec().length();
+bool SortNamespacesByLength(
+    const Namespace& lhs, const Namespace& rhs) {
+  return lhs.namespace_url.spec().length() > rhs.namespace_url.spec().length();
 }
 }
 
 void AppCache::InitializeWithManifest(Manifest* manifest) {
   DCHECK(manifest);
+  intercept_namespaces_.swap(manifest->intercept_namespaces);
   fallback_namespaces_.swap(manifest->fallback_namespaces);
   online_whitelist_namespaces_.swap(manifest->online_whitelist_namespaces);
   online_whitelist_all_ = manifest->online_whitelist_all;
 
-  // Sort the fallback namespaces by url string length, longest to shortest,
+  // Sort the namespaces by url string length, longest to shortest,
   // since longer matches trump when matching a url to a namespace.
+  std::sort(intercept_namespaces_.begin(), intercept_namespaces_.end(),
+            SortNamespacesByLength);
   std::sort(fallback_namespaces_.begin(), fallback_namespaces_.end(),
-            SortByLength);
+            SortNamespacesByLength);
 }
 
 void AppCache::InitializeWithDatabaseRecords(
     const AppCacheDatabase::CacheRecord& cache_record,
     const std::vector<AppCacheDatabase::EntryRecord>& entries,
-    const std::vector<AppCacheDatabase::FallbackNameSpaceRecord>& fallbacks,
+    const std::vector<AppCacheDatabase::NamespaceRecord>& intercepts,
+    const std::vector<AppCacheDatabase::NamespaceRecord>& fallbacks,
     const std::vector<AppCacheDatabase::OnlineWhiteListRecord>& whitelists) {
   DCHECK(cache_id_ == cache_record.cache_id);
   online_whitelist_all_ = cache_record.online_wildcard;
@@ -124,16 +128,28 @@ void AppCache::InitializeWithDatabaseRecords(
   }
   DCHECK(cache_size_ == cache_record.cache_size);
 
+  for (size_t i = 0; i < intercepts.size(); ++i) {
+    const AppCacheDatabase::NamespaceRecord& intercept = intercepts.at(i);
+    intercept_namespaces_.push_back(
+        Namespace(INTERCEPT_NAMESPACE,
+                  intercept.namespace_url,
+                  intercept.target_url));
+  }
+
   for (size_t i = 0; i < fallbacks.size(); ++i) {
-    const AppCacheDatabase::FallbackNameSpaceRecord& fallback = fallbacks.at(i);
+    const AppCacheDatabase::NamespaceRecord& fallback = fallbacks.at(i);
     fallback_namespaces_.push_back(
-        FallbackNamespace(fallback.namespace_url, fallback.fallback_entry_url));
+        Namespace(FALLBACK_NAMESPACE,
+                  fallback.namespace_url,
+                  fallback.target_url));
   }
 
   // Sort the fallback namespaces by url string length, longest to shortest,
   // since longer matches trump when matching a url to a namespace.
+  std::sort(intercept_namespaces_.begin(), intercept_namespaces_.end(),
+            SortNamespacesByLength);
   std::sort(fallback_namespaces_.begin(), fallback_namespaces_.end(),
-            SortByLength);
+            SortNamespacesByLength);
 
   if (!online_whitelist_all_) {
     for (size_t i = 0; i < whitelists.size(); ++i) {
@@ -146,7 +162,8 @@ void AppCache::ToDatabaseRecords(
     const AppCacheGroup* group,
     AppCacheDatabase::CacheRecord* cache_record,
     std::vector<AppCacheDatabase::EntryRecord>* entries,
-    std::vector<AppCacheDatabase::FallbackNameSpaceRecord>* fallbacks,
+    std::vector<AppCacheDatabase::NamespaceRecord>* intercepts,
+    std::vector<AppCacheDatabase::NamespaceRecord>* fallbacks,
     std::vector<AppCacheDatabase::OnlineWhiteListRecord>* whitelists) {
   DCHECK(group && cache_record && entries && fallbacks && whitelists);
   DCHECK(entries->empty() && fallbacks->empty() && whitelists->empty());
@@ -171,13 +188,24 @@ void AppCache::ToDatabaseRecords(
 
   GURL origin = group->manifest_url().GetOrigin();
 
-  for (size_t i = 0; i < fallback_namespaces_.size(); ++i) {
-    fallbacks->push_back(AppCacheDatabase::FallbackNameSpaceRecord());
-    AppCacheDatabase::FallbackNameSpaceRecord& record = fallbacks->back();
+  for (size_t i = 0; i < intercept_namespaces_.size(); ++i) {
+    intercepts->push_back(AppCacheDatabase::NamespaceRecord());
+    AppCacheDatabase::NamespaceRecord& record = intercepts->back();
     record.cache_id = cache_id_;
     record.origin = origin;
-    record.namespace_url = fallback_namespaces_[i].first;
-    record.fallback_entry_url = fallback_namespaces_[i].second;
+    record.type = INTERCEPT_NAMESPACE;
+    record.namespace_url = intercept_namespaces_[i].namespace_url;
+    record.target_url = intercept_namespaces_[i].target_url;
+  }
+
+  for (size_t i = 0; i < fallback_namespaces_.size(); ++i) {
+    fallbacks->push_back(AppCacheDatabase::NamespaceRecord());
+    AppCacheDatabase::NamespaceRecord& record = fallbacks->back();
+    record.cache_id = cache_id_;
+    record.origin = origin;
+    record.type = FALLBACK_NAMESPACE;
+    record.namespace_url = fallback_namespaces_[i].namespace_url;
+    record.target_url = fallback_namespaces_[i].target_url;
   }
 
   if (!online_whitelist_all_) {
@@ -216,12 +244,20 @@ bool AppCache::FindResponseForRequest(const GURL& url,
     return true;
   }
 
-  FallbackNamespace* fallback_namespace = FindFallbackNamespace(url_no_ref);
+  const Namespace* intercept_namespace = FindInterceptNamespace(url_no_ref);
+  if (intercept_namespace) {
+    entry = GetEntry(intercept_namespace->target_url);
+    DCHECK(entry);
+    *found_entry = *entry;
+    return true;
+  }
+
+  const Namespace* fallback_namespace = FindFallbackNamespace(url_no_ref);
   if (fallback_namespace) {
-    entry = GetEntry(fallback_namespace->second);
+    entry = GetEntry(fallback_namespace->target_url);
     DCHECK(entry);
     *found_fallback_entry = *entry;
-    *found_fallback_namespace = fallback_namespace->first;
+    *found_fallback_namespace = fallback_namespace->namespace_url;
     return true;
   }
 
@@ -229,12 +265,13 @@ bool AppCache::FindResponseForRequest(const GURL& url,
   return *found_network_namespace;
 }
 
-FallbackNamespace* AppCache::FindFallbackNamespace(const GURL& url) {
-  size_t count = fallback_namespaces_.size();
+const Namespace* AppCache::FindNamespace(
+    const NamespaceVector& namespaces, const GURL& url) {
+  size_t count = namespaces.size();
   for (size_t i = 0; i < count; ++i) {
     if (StartsWithASCII(
-            url.spec(), fallback_namespaces_[i].first.spec(), true)) {
-      return &fallback_namespaces_[i];
+            url.spec(), namespaces[i].namespace_url.spec(), true)) {
+      return &namespaces[i];
     }
   }
   return NULL;
@@ -249,6 +286,7 @@ void AppCache::ToResourceInfoVector(AppCacheResourceInfoVector* infos) const {
     info.url = iter->first;
     info.is_master = iter->second.IsMaster();
     info.is_manifest = iter->second.IsManifest();
+    info.is_intercept = iter->second.IsIntercept();
     info.is_fallback = iter->second.IsFallback();
     info.is_foreign = iter->second.IsForeign();
     info.is_explicit = iter->second.IsExplicit();

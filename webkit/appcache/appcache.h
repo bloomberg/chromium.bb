@@ -92,7 +92,8 @@ class APPCACHE_EXPORT AppCache : public base::RefCounted<AppCache> {
   void InitializeWithDatabaseRecords(
       const AppCacheDatabase::CacheRecord& cache_record,
       const std::vector<AppCacheDatabase::EntryRecord>& entries,
-      const std::vector<AppCacheDatabase::FallbackNameSpaceRecord>& fallbacks,
+      const std::vector<AppCacheDatabase::NamespaceRecord>& intercepts,
+      const std::vector<AppCacheDatabase::NamespaceRecord>& fallbacks,
       const std::vector<AppCacheDatabase::OnlineWhiteListRecord>& whitelists);
 
   // Returns the database records to be stored in the AppCacheDatabase
@@ -101,7 +102,8 @@ class APPCACHE_EXPORT AppCache : public base::RefCounted<AppCache> {
       const AppCacheGroup* group,
       AppCacheDatabase::CacheRecord* cache_record,
       std::vector<AppCacheDatabase::EntryRecord>* entries,
-      std::vector<AppCacheDatabase::FallbackNameSpaceRecord>* fallbacks,
+      std::vector<AppCacheDatabase::NamespaceRecord>* intercepts,
+      std::vector<AppCacheDatabase::NamespaceRecord>* fallbacks,
       std::vector<AppCacheDatabase::OnlineWhiteListRecord>* whitelists);
 
   bool FindResponseForRequest(const GURL& url,
@@ -128,7 +130,14 @@ class APPCACHE_EXPORT AppCache : public base::RefCounted<AppCache> {
   void set_owning_group(AppCacheGroup* group) { owning_group_ = group; }
 
   // FindResponseForRequest helpers
-  FallbackNamespace* FindFallbackNamespace(const GURL& url);
+  const Namespace* FindInterceptNamespace(const GURL& url) {
+    return FindNamespace(intercept_namespaces_, url);
+  }
+  const Namespace* FindFallbackNamespace(const GURL& url) {
+    return FindNamespace(fallback_namespaces_, url);
+  }
+  const Namespace* FindNamespace(const NamespaceVector& namespaces,
+                                 const GURL& url);
 
   // Use AppCacheHost::Associate*Cache() to manipulate host association.
   void AssociateHost(AppCacheHost* host) {
@@ -142,7 +151,8 @@ class APPCACHE_EXPORT AppCache : public base::RefCounted<AppCache> {
 
   EntryMap entries_;    // contains entries of all types
 
-  std::vector<FallbackNamespace> fallback_namespaces_;
+  NamespaceVector intercept_namespaces_;
+  NamespaceVector fallback_namespaces_;
   std::vector<GURL> online_whitelist_namespaces_;
   bool online_whitelist_all_;
 

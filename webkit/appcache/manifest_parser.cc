@@ -40,6 +40,7 @@ namespace appcache {
 
 enum Mode {
   EXPLICIT,
+  INTERCEPT,
   FALLBACK,
   ONLINE_WHITELIST,
   UNKNOWN,
@@ -60,6 +61,8 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
 
   const wchar_t kSignature[] = L"CACHE MANIFEST";
   const size_t kSignatureLength = arraysize(kSignature) - 1;
+  const wchar_t kChromiumSignature[] = L"CHROMIUM CACHE MANIFEST";
+  const size_t kChromiumSignatureLength = arraysize(kChromiumSignature) - 1;
 
   DCHECK(manifest.explicit_urls.empty());
   DCHECK(manifest.fallback_namespaces.empty());
@@ -89,12 +92,19 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
     ++p;
   }
 
-  if (p >= end ||
-      data_string.compare(bom_offset, kSignatureLength, kSignature)) {
+  if (p >= end)
+    return false;
+
+  // Check for a supported signature and skip p past it.
+  if (0 == data_string.compare(bom_offset, kSignatureLength,
+                               kSignature)) {
+    p += kSignatureLength;
+  } else if (0 == data_string.compare(bom_offset, kChromiumSignatureLength,
+                                      kChromiumSignature)) {
+    p += kChromiumSignatureLength;
+  } else {
     return false;
   }
-
-  p += kSignatureLength;  // Skip past "CACHE MANIFEST"
 
   // Character after "CACHE MANIFEST" must be whitespace.
   if (p < end && *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r')
@@ -135,6 +145,8 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
       mode = FALLBACK;
     } else if (line == L"NETWORK:") {
       mode = ONLINE_WHITELIST;
+    } else if (line == L"CHROMIUM-INTERCEPT:") {
+      mode = INTERCEPT;
     } else if (*(line.end() - 1) == ':') {
       mode = UNKNOWN;
     } else if (mode == UNKNOWN) {
@@ -179,6 +191,75 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
       } else {
         manifest.online_whitelist_namespaces.push_back(url);
       }
+    } else if (mode == INTERCEPT) {
+      // Lines of the form,
+      // <urlnamespace> <intercept_type> <targeturl>
+      const wchar_t* line_p = line.c_str();
+      const wchar_t* line_end = line_p + line.length();
+
+      // Look for first whitespace separating the url namespace from
+      // the intercept type.
+      while (line_p < line_end && *line_p != '\t' && *line_p != ' ')
+        ++line_p;
+
+      if (line_p == line_end)
+        continue;  // There was no whitespace separating the URLs.
+
+      string16 namespace_url16;
+      WideToUTF16(line.c_str(), line_p - line.c_str(), &namespace_url16);
+      GURL namespace_url = manifest_url.Resolve(namespace_url16);
+      if (!namespace_url.is_valid())
+        continue;
+      if (namespace_url.has_ref()) {
+        GURL::Replacements replacements;
+        replacements.ClearRef();
+        namespace_url = namespace_url.ReplaceComponents(replacements);
+      }
+
+      // The namespace URL must have the same scheme, host and port
+      // as the manifest's URL.
+      if (manifest_url.GetOrigin() != namespace_url.GetOrigin())
+        continue;
+
+      // Skip whitespace separating namespace from the type.
+      while (line_p < line_end && (*line_p == '\t' || *line_p == ' '))
+        ++line_p;
+
+      // Look for whitespace separating the type from the target url.
+      const wchar_t* type_start = line_p;
+      while (line_p < line_end && *line_p != '\t' && *line_p != ' ')
+        ++line_p;
+
+      // Look for a type value we understand, otherwise skip the line.
+      std::wstring type(type_start, line_p - type_start);
+      if (type != L"return")
+        continue;
+
+      // Skip whitespace separating type from the target_url.
+      while (line_p < line_end && (*line_p == '\t' || *line_p == ' '))
+        ++line_p;
+
+      // Look for whitespace separating the URL from subsequent ignored tokens.
+      const wchar_t* target_url_start = line_p;
+      while (line_p < line_end && *line_p != '\t' && *line_p != ' ')
+        ++line_p;
+
+      string16 target_url16;
+      WideToUTF16(target_url_start, line_p - target_url_start, &target_url16);
+      GURL target_url = manifest_url.Resolve(target_url16);
+      if (!target_url.is_valid())
+        continue;
+
+      if (target_url.has_ref()) {
+        GURL::Replacements replacements;
+        replacements.ClearRef();
+        target_url = target_url.ReplaceComponents(replacements);
+      }
+      if (manifest_url.GetOrigin() != target_url.GetOrigin())
+        continue;
+
+      manifest.intercept_namespaces.push_back(
+          Namespace(INTERCEPT_NAMESPACE, namespace_url, target_url));
     } else if (mode == FALLBACK) {
       const wchar_t* line_p = line.c_str();
       const wchar_t* line_end = line_p + line.length();
@@ -238,7 +319,7 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
       // Store regardless of duplicate namespace URL. Only first match
       // will ever be used.
       manifest.fallback_namespaces.push_back(
-          FallbackNamespace(namespace_url, fallback_url));
+          Namespace(FALLBACK_NAMESPACE, namespace_url, fallback_url));
     } else {
       NOTREACHED();
     }

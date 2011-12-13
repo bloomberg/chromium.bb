@@ -54,6 +54,11 @@ enum LogLevel {
   LOG_ERROR,
 };
 
+enum NamespaceType {
+  FALLBACK_NAMESPACE,
+  INTERCEPT_NAMESPACE
+};
+
 struct APPCACHE_EXPORT AppCacheInfo {
   AppCacheInfo();
   ~AppCacheInfo();
@@ -80,6 +85,7 @@ struct APPCACHE_EXPORT AppCacheResourceInfo {
   int64 size;
   bool is_master;
   bool is_manifest;
+  bool is_intercept;
   bool is_fallback;
   bool is_foreign;
   bool is_explicit;
@@ -87,6 +93,18 @@ struct APPCACHE_EXPORT AppCacheResourceInfo {
 };
 
 typedef std::vector<AppCacheResourceInfo> AppCacheResourceInfoVector;
+
+struct APPCACHE_EXPORT Namespace {
+  Namespace();  // Type is set to FALLBACK_NAMESPACE by default.
+  Namespace(NamespaceType type, const GURL& url, const GURL& target);
+  ~Namespace();
+
+  NamespaceType type;
+  GURL namespace_url;
+  GURL target_url;
+};
+
+typedef std::vector<Namespace> NamespaceVector;
 
 // Interface used by backend (browser-process) to talk to frontend (renderer).
 class APPCACHE_EXPORT AppCacheFrontend {

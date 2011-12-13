@@ -62,7 +62,7 @@ bool DeleteGroupAndRelatedRecords(AppCacheDatabase* database,
         database->DeleteGroup(group_id) &&
         database->DeleteCache(cache_record.cache_id) &&
         database->DeleteEntriesForCache(cache_record.cache_id) &&
-        database->DeleteFallbackNameSpacesForCache(cache_record.cache_id) &&
+        database->DeleteNamespacesForCache(cache_record.cache_id) &&
         database->DeleteOnlineWhiteListForCache(cache_record.cache_id) &&
         database->InsertDeletableResponseIds(*deletable_response_ids);
   } else {
@@ -375,7 +375,9 @@ class AppCacheStorageImpl::StoreOrLoadTask : public DatabaseTask {
   AppCacheDatabase::GroupRecord group_record_;
   AppCacheDatabase::CacheRecord cache_record_;
   std::vector<AppCacheDatabase::EntryRecord> entry_records_;
-  std::vector<AppCacheDatabase::FallbackNameSpaceRecord>
+  std::vector<AppCacheDatabase::NamespaceRecord>
+      intercept_namespace_records_;
+  std::vector<AppCacheDatabase::NamespaceRecord>
       fallback_namespace_records_;
   std::vector<AppCacheDatabase::OnlineWhiteListRecord>
       online_whitelist_records_;
@@ -384,8 +386,9 @@ class AppCacheStorageImpl::StoreOrLoadTask : public DatabaseTask {
 bool AppCacheStorageImpl::StoreOrLoadTask::FindRelatedCacheRecords(
     int64 cache_id) {
   return database_->FindEntriesForCache(cache_id, &entry_records_) &&
-         database_->FindFallbackNameSpacesForCache(
-             cache_id, &fallback_namespace_records_) &&
+         database_->FindNamespacesForCache(
+             cache_id, &intercept_namespace_records_,
+             &fallback_namespace_records_) &&
          database_->FindOnlineWhiteListForCache(
              cache_id, &online_whitelist_records_);
 }
@@ -405,7 +408,9 @@ void AppCacheStorageImpl::StoreOrLoadTask::CreateCacheAndGroupFromRecords(
 
   (*cache) = new AppCache(storage_->service_, cache_record_.cache_id);
   cache->get()->InitializeWithDatabaseRecords(
-      cache_record_, entry_records_, fallback_namespace_records_,
+      cache_record_, entry_records_,
+      intercept_namespace_records_,
+      fallback_namespace_records_,
       online_whitelist_records_);
   cache->get()->set_complete(true);
 
@@ -554,7 +559,9 @@ AppCacheStorageImpl::StoreGroupAndCacheTask::StoreGroupAndCacheTask(
   group_record_.origin = group_record_.manifest_url.GetOrigin();
   newest_cache->ToDatabaseRecords(
       group,
-      &cache_record_, &entry_records_, &fallback_namespace_records_,
+      &cache_record_, &entry_records_,
+      &intercept_namespace_records_,
+      &fallback_namespace_records_,
       &online_whitelist_records_);
 }
 
@@ -644,7 +651,7 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
       success_ =
           database_->DeleteCache(cache.cache_id) &&
           database_->DeleteEntriesForCache(cache.cache_id) &&
-          database_->DeleteFallbackNameSpacesForCache(cache.cache_id) &&
+          database_->DeleteNamespacesForCache(cache.cache_id) &&
           database_->DeleteOnlineWhiteListForCache(cache.cache_id) &&
           database_->InsertDeletableResponseIds(newly_deletable_response_ids_);
           // TODO(michaeln): store group_id too with deletable ids
@@ -657,7 +664,8 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
       success_ &&
       database_->InsertCache(&cache_record_) &&
       database_->InsertEntryRecords(entry_records_) &&
-      database_->InsertFallbackNameSpaceRecords(fallback_namespace_records_)&&
+      database_->InsertNamespaceRecords(intercept_namespace_records_) &&
+      database_->InsertNamespaceRecords(fallback_namespace_records_) &&
       database_->InsertOnlineWhiteListRecords(online_whitelist_records_);
 
   if (!success_)
@@ -726,49 +734,6 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::CancelCompletion() {
 
 // FindMainResponseTask -------
 
-class AppCacheStorageImpl::FindMainResponseTask : public DatabaseTask {
- public:
-  FindMainResponseTask(AppCacheStorageImpl* storage,
-                       const GURL& url,
-                       const GURL& preferred_manifest_url,
-                       const AppCacheWorkingSet::GroupMap* groups_in_use)
-      : DatabaseTask(storage), url_(url),
-        preferred_manifest_url_(preferred_manifest_url),
-        cache_id_(kNoCacheId), group_id_(0) {
-    if (groups_in_use) {
-      for (AppCacheWorkingSet::GroupMap::const_iterator it =
-               groups_in_use->begin();
-           it != groups_in_use->end(); ++it) {
-        AppCacheGroup* group = it->second;
-        AppCache* cache = group->newest_complete_cache();
-        if (group->is_obsolete() || !cache)
-          continue;
-        cache_ids_in_use_.insert(cache->cache_id());
-      }
-    }
-  }
-
-  virtual void Run();
-  virtual void RunCompleted();
-
- private:
-  typedef std::vector<AppCacheDatabase::FallbackNameSpaceRecord*>
-      FallbackNameSpaceVector;
-  bool FindExactMatch(int64 preferred_id);
-  bool FindFallback(int64 preferred_id);
-  bool FindFirstValidFallback(const FallbackNameSpaceVector& fallbacks);
-
-  GURL url_;
-  GURL preferred_manifest_url_;
-  std::set<int64> cache_ids_in_use_;
-  AppCacheEntry entry_;
-  AppCacheEntry fallback_entry_;
-  GURL fallback_url_;
-  int64 cache_id_;
-  int64 group_id_;
-  GURL manifest_url_;
-};
-
 // Helpers for FindMainResponseTask::Run()
 namespace {
 class SortByCachePreference
@@ -798,8 +763,8 @@ class SortByCachePreference
 };
 
 bool SortByLength(
-    const AppCacheDatabase::FallbackNameSpaceRecord& lhs,
-    const AppCacheDatabase::FallbackNameSpaceRecord& rhs) {
+    const AppCacheDatabase::NamespaceRecord& lhs,
+    const AppCacheDatabase::NamespaceRecord& rhs) {
   return lhs.namespace_url.spec().length() > rhs.namespace_url.spec().length();
 }
 
@@ -843,6 +808,55 @@ class NetworkNamespaceHelper {
 
 }  // namespace
 
+class AppCacheStorageImpl::FindMainResponseTask : public DatabaseTask {
+ public:
+  FindMainResponseTask(AppCacheStorageImpl* storage,
+                       const GURL& url,
+                       const GURL& preferred_manifest_url,
+                       const AppCacheWorkingSet::GroupMap* groups_in_use)
+      : DatabaseTask(storage), url_(url),
+        preferred_manifest_url_(preferred_manifest_url),
+        cache_id_(kNoCacheId), group_id_(0) {
+    if (groups_in_use) {
+      for (AppCacheWorkingSet::GroupMap::const_iterator it =
+               groups_in_use->begin();
+           it != groups_in_use->end(); ++it) {
+        AppCacheGroup* group = it->second;
+        AppCache* cache = group->newest_complete_cache();
+        if (group->is_obsolete() || !cache)
+          continue;
+        cache_ids_in_use_.insert(cache->cache_id());
+      }
+    }
+  }
+
+  virtual void Run();
+  virtual void RunCompleted();
+
+ private:
+  typedef std::vector<AppCacheDatabase::NamespaceRecord*>
+      NamespaceRecordPtrVector;
+  bool FindExactMatch(int64 preferred_id);
+  bool FindNamespaceMatch(int64 preferred_id);
+  bool FindNamespaceHelper(
+      int64 preferred_cache_id,
+      AppCacheDatabase::NamespaceRecordVector* namespaces,
+      NetworkNamespaceHelper* network_namespace_helper);
+  bool FindFirstValidNamespace(const NamespaceRecordPtrVector& namespaces);
+
+  GURL url_;
+  GURL preferred_manifest_url_;
+  std::set<int64> cache_ids_in_use_;
+  AppCacheEntry entry_;
+  AppCacheEntry fallback_entry_;
+  GURL fallback_url_;
+  int64 cache_id_;
+  int64 group_id_;
+  GURL manifest_url_;
+};
+
+
+
 void AppCacheStorageImpl::FindMainResponseTask::Run() {
   // NOTE: The heuristics around choosing amoungst multiple candidates
   // is underspecified, and just plain not fully understood. This needs
@@ -868,10 +882,8 @@ void AppCacheStorageImpl::FindMainResponseTask::Run() {
     }
   }
 
-  // TODO(michaeln): Also lookup matches in intercept namespaces.
-  // http://code.google.com/p/chromium/issues/detail?id=101565
   if (FindExactMatch(preferred_cache_id) ||
-      FindFallback(preferred_cache_id)) {
+      FindNamespaceMatch(preferred_cache_id)) {
     // We found something.
     DCHECK(cache_id_ != kNoCacheId && !manifest_url_.is_empty() &&
            group_id_ != 0);
@@ -911,46 +923,62 @@ FindMainResponseTask::FindExactMatch(int64 preferred_cache_id) {
 }
 
 bool AppCacheStorageImpl::
-FindMainResponseTask::FindFallback(int64 preferred_cache_id) {
-  std::vector<AppCacheDatabase::FallbackNameSpaceRecord> all_fallbacks;
-  if (!database_->FindFallbackNameSpacesForOrigin(
-          url_.GetOrigin(), &all_fallbacks)
-      || all_fallbacks.empty()) {
+FindMainResponseTask::FindNamespaceMatch(int64 preferred_cache_id) {
+  AppCacheDatabase::NamespaceRecordVector all_intercepts;
+  AppCacheDatabase::NamespaceRecordVector all_fallbacks;
+  if (!database_->FindNamespacesForOrigin(
+          url_.GetOrigin(), &all_intercepts, &all_fallbacks)
+      || (all_intercepts.empty() && all_fallbacks.empty())) {
     return false;
   }
 
+  NetworkNamespaceHelper network_namespace_helper(database_);
+  if (FindNamespaceHelper(preferred_cache_id,
+                          &all_intercepts,
+                          &network_namespace_helper) ||
+      FindNamespaceHelper(preferred_cache_id,
+                          &all_fallbacks,
+                          &network_namespace_helper)) {
+    return true;
+  }
+  return false;
+}
+
+bool AppCacheStorageImpl::
+FindMainResponseTask::FindNamespaceHelper(
+    int64 preferred_cache_id,
+    AppCacheDatabase::NamespaceRecordVector* namespaces,
+    NetworkNamespaceHelper* network_namespace_helper) {
   // Sort them by length, longer matches within the same cache/bucket take
   // precedence.
-  std::sort(all_fallbacks.begin(), all_fallbacks.end(), SortByLength);
+  std::sort(namespaces->begin(), namespaces->end(), SortByLength);
 
-  // Filter the list and bin them into buckets.
-  NetworkNamespaceHelper network_namespace_helper(database_);
-  FallbackNameSpaceVector preferred_fallbacks;
-  FallbackNameSpaceVector inuse_fallbacks;
-  FallbackNameSpaceVector other_fallbacks;
-  std::vector<AppCacheDatabase::FallbackNameSpaceRecord>::iterator iter;
-  for (iter = all_fallbacks.begin(); iter < all_fallbacks.end(); ++iter) {
+  NamespaceRecordPtrVector preferred_namespaces;
+  NamespaceRecordPtrVector inuse_namespaces;
+  NamespaceRecordPtrVector other_namespaces;
+  std::vector<AppCacheDatabase::NamespaceRecord>::iterator iter;
+  for (iter = namespaces->begin(); iter < namespaces->end(); ++iter) {
     // Skip those that aren't a prefix match.
     if (!StartsWithASCII(url_.spec(), iter->namespace_url.spec(), true))
       continue;
 
-    // Skip fallback namespaces where the requested url falls into a network
+    // Skip namespaces where the requested url falls into a network
     // namespace of its containing appcache.
-    if (network_namespace_helper.IsInNetworkNamespace(url_, iter->cache_id))
+    if (network_namespace_helper->IsInNetworkNamespace(url_, iter->cache_id))
       continue;
 
     // Bin them into one of our three buckets.
     if (iter->cache_id == preferred_cache_id)
-      preferred_fallbacks.push_back(&(*iter));
+      preferred_namespaces.push_back(&(*iter));
     else if (cache_ids_in_use_.find(iter->cache_id) != cache_ids_in_use_.end())
-      inuse_fallbacks.push_back(&(*iter));
+      inuse_namespaces.push_back(&(*iter));
     else
-      other_fallbacks.push_back(&(*iter));
+      other_namespaces.push_back(&(*iter));
   }
 
-  if (FindFirstValidFallback(preferred_fallbacks) ||
-      FindFirstValidFallback(inuse_fallbacks) ||
-      FindFirstValidFallback(other_fallbacks))
+  if (FindFirstValidNamespace(preferred_namespaces) ||
+      FindFirstValidNamespace(inuse_namespaces) ||
+      FindFirstValidNamespace(other_namespaces))
     return true;  // We found one.
 
   // We didn't find anything.
@@ -958,13 +986,13 @@ FindMainResponseTask::FindFallback(int64 preferred_cache_id) {
 }
 
 bool AppCacheStorageImpl::
-FindMainResponseTask::FindFirstValidFallback(
-    const FallbackNameSpaceVector& fallbacks) {
+FindMainResponseTask::FindFirstValidNamespace(
+    const NamespaceRecordPtrVector& namespaces) {
   // Take the first with a valid, non-foreign entry.
-  FallbackNameSpaceVector::const_iterator iter;
-  for (iter = fallbacks.begin(); iter < fallbacks.end();  ++iter) {
+  NamespaceRecordPtrVector::const_iterator iter;
+  for (iter = namespaces.begin(); iter < namespaces.end();  ++iter) {
     AppCacheDatabase::EntryRecord entry_record;
-    if (database_->FindEntry((*iter)->cache_id, (*iter)->fallback_entry_url,
+    if (database_->FindEntry((*iter)->cache_id, (*iter)->target_url,
                              &entry_record)) {
       AppCacheDatabase::GroupRecord group_record;
       if ((entry_record.flags & AppCacheEntry::FOREIGN) ||
@@ -974,9 +1002,13 @@ FindMainResponseTask::FindFirstValidFallback(
       manifest_url_ = group_record.manifest_url;
       group_id_ = group_record.group_id;
       cache_id_ = (*iter)->cache_id;
-      fallback_url_ = (*iter)->fallback_entry_url;
-      fallback_entry_ = AppCacheEntry(
-          entry_record.flags, entry_record.response_id);
+      if ((*iter)->type == FALLBACK_NAMESPACE) {
+        fallback_url_ = (*iter)->target_url;
+        fallback_entry_ = AppCacheEntry(
+            entry_record.flags, entry_record.response_id);
+      } else {
+        entry_ = AppCacheEntry(entry_record.flags, entry_record.response_id);
+      }
       return true;  // We found one.
     }
   }

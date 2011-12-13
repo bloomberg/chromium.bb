@@ -37,19 +37,19 @@
 
 #include "base/hash_tables.h"
 #include "webkit/appcache/appcache_export.h"
+#include "webkit/appcache/appcache_interfaces.h"
 
 class GURL;
 
 namespace appcache {
-
-typedef std::pair<GURL, GURL> FallbackNamespace;
 
 struct APPCACHE_EXPORT Manifest {
   Manifest();
   ~Manifest();
 
   base::hash_set<std::string> explicit_urls;
-  std::vector<FallbackNamespace> fallback_namespaces;
+  NamespaceVector intercept_namespaces;
+  NamespaceVector fallback_namespaces;
   std::vector<GURL> online_whitelist_namespaces;
   bool online_whitelist_all;
 };

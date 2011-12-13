@@ -22,6 +22,7 @@ class AppCacheEntry {
     EXPLICIT = 1 << 2,
     FOREIGN = 1 << 3,
     FALLBACK = 1 << 4,
+    INTERCEPT = 1 << 5,
   };
 
   AppCacheEntry()
@@ -43,6 +44,7 @@ class AppCacheEntry {
   bool IsExplicit() const { return (types_ & EXPLICIT) != 0; }
   bool IsForeign() const { return (types_ & FOREIGN) != 0; }
   bool IsFallback() const { return (types_ & FALLBACK) != 0; }
+  bool IsIntercept() const { return (types_ & INTERCEPT) != 0; }
 
   int64 response_id() const { return response_id_; }
   void set_response_id(int64 id) { response_id_ = id; }

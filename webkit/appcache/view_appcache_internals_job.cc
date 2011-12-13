@@ -176,6 +176,8 @@ std::string FormFlagsString(const AppCacheResourceInfo& info) {
     str.append("Manifest, ");
   if (info.is_master)
     str.append("Master, ");
+  if (info.is_intercept)
+    str.append("Intercept, ");
   if (info.is_fallback)
     str.append("Fallback, ");
   if (info.is_explicit)

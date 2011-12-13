@@ -10,17 +10,17 @@
 
 namespace appcache {
 
-class ManifestParserTest : public testing::Test {
+class AppCacheManifestParserTest : public testing::Test {
 };
 
-TEST(ManifestParserTest, NoData) {
+TEST(AppCacheManifestParserTest, NoData) {
   GURL url;
   Manifest manifest;
   EXPECT_FALSE(ParseManifest(url, "", 0, manifest));
   EXPECT_FALSE(ParseManifest(url, "CACHE MANIFEST\r", 0, manifest));  // 0 len
 }
 
-TEST(ManifestParserTest, CheckSignature) {
+TEST(AppCacheManifestParserTest, CheckSignature) {
   GURL url;
   Manifest manifest;
 
@@ -48,6 +48,7 @@ TEST(ManifestParserTest, CheckSignature) {
     "CACHE MANIFEST\r\n",
     "CACHE MANIFEST\t# ignore me\r",
     "CACHE MANIFEST ignore\r\n",
+    "CHROMIUM CACHE MANIFEST\r\n",
     "\xEF\xBB\xBF" "CACHE MANIFEST \r\n",   // BOM present
   };
 
@@ -57,7 +58,7 @@ TEST(ManifestParserTest, CheckSignature) {
   }
 }
 
-TEST(ManifestParserTest, NoManifestUrl) {
+TEST(AppCacheManifestParserTest, NoManifestUrl) {
   Manifest manifest;
   const std::string kData("CACHE MANIFEST\r"
     "relative/tobase.com\r"
@@ -70,7 +71,7 @@ TEST(ManifestParserTest, NoManifestUrl) {
   EXPECT_FALSE(manifest.online_whitelist_all);
 }
 
-TEST(ManifestParserTest, ExplicitUrls) {
+TEST(AppCacheManifestParserTest, ExplicitUrls) {
   Manifest manifest;
   const GURL kUrl("http://www.foo.com");
   const std::string kData("CACHE MANIFEST\r"
@@ -107,7 +108,7 @@ TEST(ManifestParserTest, ExplicitUrls) {
   EXPECT_TRUE(urls.find("http://www.foo.com/*") != urls.end());
 }
 
-TEST(ManifestParserTest, WhitelistUrls) {
+TEST(AppCacheManifestParserTest, WhitelistUrls) {
   Manifest manifest;
   const GURL kUrl("http://www.bar.com");
   const std::string kData("CACHE MANIFEST\r"
@@ -130,6 +131,7 @@ TEST(ManifestParserTest, WhitelistUrls) {
   EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(), manifest));
   EXPECT_TRUE(manifest.explicit_urls.empty());
   EXPECT_TRUE(manifest.fallback_namespaces.empty());
+  EXPECT_TRUE(manifest.intercept_namespaces.empty());
   EXPECT_FALSE(manifest.online_whitelist_all);
 
   std::vector<GURL> online = manifest.online_whitelist_namespaces;
@@ -143,7 +145,7 @@ TEST(ManifestParserTest, WhitelistUrls) {
   EXPECT_EQ(GURL("http://www.bar.com/*foo"), online[5]);
 }
 
-TEST(ManifestParserTest, FallbackUrls) {
+TEST(AppCacheManifestParserTest, FallbackUrls) {
   Manifest manifest;
   const GURL kUrl("http://glorp.com");
   const std::string kData("CACHE MANIFEST\r"
@@ -174,32 +176,39 @@ TEST(ManifestParserTest, FallbackUrls) {
   EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
   EXPECT_FALSE(manifest.online_whitelist_all);
 
-  std::vector<FallbackNamespace> fallbacks = manifest.fallback_namespaces;
+  const NamespaceVector& fallbacks = manifest.fallback_namespaces;
   const size_t kExpected = 5;
   ASSERT_EQ(kExpected, fallbacks.size());
+  EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[0].type);
+  EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[1].type);
+  EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[2].type);
+  EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[3].type);
+  EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[4].type);
   EXPECT_EQ(GURL("http://glorp.com/relative/one"),
-            fallbacks[0].first);
+            fallbacks[0].namespace_url);
   EXPECT_EQ(GURL("http://glorp.com/onefb"),
-            fallbacks[0].second);
+            fallbacks[0].target_url);
   EXPECT_EQ(GURL("http://glorp.com/two"),
-            fallbacks[1].first);
+            fallbacks[1].namespace_url);
   EXPECT_EQ(GURL("http://glorp.com/relative/twofb"),
-            fallbacks[1].second);
+            fallbacks[1].target_url);
   EXPECT_EQ(GURL("http://glorp.com/three"),
-            fallbacks[2].first);
+            fallbacks[2].namespace_url);
   EXPECT_EQ(GURL("http://glorp.com/relative/threefb"),
-            fallbacks[2].second);
+            fallbacks[2].target_url);
   EXPECT_EQ(GURL("http://glorp.com/three"),       // duplicates are stored
-            fallbacks[3].first);
+            fallbacks[3].namespace_url);
   EXPECT_EQ(GURL("http://glorp.com/three-dup"),
-            fallbacks[3].second);
+            fallbacks[3].target_url);
   EXPECT_EQ(GURL("http://glorp.com/relative/four"),
-            fallbacks[4].first);
+            fallbacks[4].namespace_url);
   EXPECT_EQ(GURL("http://glorp.com/relative/fourfb"),
-            fallbacks[4].second);
+            fallbacks[4].target_url);
+
+  EXPECT_TRUE(manifest.intercept_namespaces.empty());
 }
 
-TEST(ManifestParserTest, FallbackUrlsWithPort) {
+TEST(AppCacheManifestParserTest, FallbackUrlsWithPort) {
   Manifest manifest;
   const GURL kUrl("http://www.portme.com:1234");
   const std::string kData("CACHE MANIFEST\r"
@@ -217,24 +226,70 @@ TEST(ManifestParserTest, FallbackUrlsWithPort) {
   EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
   EXPECT_FALSE(manifest.online_whitelist_all);
 
-  std::vector<FallbackNamespace> fallbacks = manifest.fallback_namespaces;
+  const NamespaceVector& fallbacks = manifest.fallback_namespaces;
   const size_t kExpected = 3;
   ASSERT_EQ(kExpected, fallbacks.size());
+  EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[0].type);
+  EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[1].type);
+  EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[2].type);
   EXPECT_EQ(GURL("http://www.portme.com:1234/one"),
-            fallbacks[0].first);
+            fallbacks[0].namespace_url);
   EXPECT_EQ(GURL("http://www.portme.com:1234/relative/onefb"),
-            fallbacks[0].second);
+            fallbacks[0].target_url);
   EXPECT_EQ(GURL("http://www.portme.com:1234/relative/two"),
-            fallbacks[1].first);
+            fallbacks[1].namespace_url);
   EXPECT_EQ(GURL("http://www.portme.com:1234/relative/twofb"),
-            fallbacks[1].second);
+            fallbacks[1].target_url);
   EXPECT_EQ(GURL("http://www.portme.com:1234/three"),
-            fallbacks[2].first);
+            fallbacks[2].namespace_url);
   EXPECT_EQ(GURL("http://www.portme.com:1234/threefb"),
-            fallbacks[2].second);
+            fallbacks[2].target_url);
+
+  EXPECT_TRUE(manifest.intercept_namespaces.empty());
 }
 
-TEST(ManifestParserTest, ComboUrls) {
+TEST(AppCacheManifestParserTest, InterceptUrls) {
+  Manifest manifest;
+  const GURL kUrl("http://www.portme.com:1234");
+  const std::string kData("CHROMIUM CACHE MANIFEST\r"
+    "CHROMIUM-INTERCEPT:\r"
+    "http://www.portme.com:1234/one return relative/int1\r"
+    "HTTP://www.portme.com:9/wrong return http://www.portme.com:1234/ignore\r"
+    "http://www.portme.com:1234/wrong return http://www.portme.com:9/boo\r"
+    "relative/two return relative/int2\r"
+    "relative/three wrong relative/threefb\r"
+    "http://www.portme.com:1234/three return HTTP://www.portme.com:1234/int3\r"
+    "http://www.portme.com/noport return http://www.portme.com:1234/skipped\r"
+    "http://www.portme.com:1234/skipme return http://www.portme.com/noport\r"
+    "relative/wrong/again missing/intercept_type\r");
+
+  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(), manifest));
+  EXPECT_TRUE(manifest.fallback_namespaces.empty());
+  EXPECT_TRUE(manifest.explicit_urls.empty());
+  EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
+  EXPECT_FALSE(manifest.online_whitelist_all);
+
+  const NamespaceVector& intercepts = manifest.intercept_namespaces;
+  const size_t kExpected = 3;
+  ASSERT_EQ(kExpected, intercepts.size());
+  EXPECT_EQ(INTERCEPT_NAMESPACE, intercepts[0].type);
+  EXPECT_EQ(INTERCEPT_NAMESPACE, intercepts[1].type);
+  EXPECT_EQ(INTERCEPT_NAMESPACE, intercepts[2].type);
+  EXPECT_EQ(GURL("http://www.portme.com:1234/one"),
+            intercepts[0].namespace_url);
+  EXPECT_EQ(GURL("http://www.portme.com:1234/relative/int1"),
+            intercepts[0].target_url);
+  EXPECT_EQ(GURL("http://www.portme.com:1234/relative/two"),
+            intercepts[1].namespace_url);
+  EXPECT_EQ(GURL("http://www.portme.com:1234/relative/int2"),
+            intercepts[1].target_url);
+  EXPECT_EQ(GURL("http://www.portme.com:1234/three"),
+            intercepts[2].namespace_url);
+  EXPECT_EQ(GURL("http://www.portme.com:1234/int3"),
+            intercepts[2].target_url);
+}
+
+TEST(AppCacheManifestParserTest, ComboUrls) {
   Manifest manifest;
   const GURL kUrl("http://combo.com:42");
   const std::string kData("CACHE MANIFEST\r"
@@ -275,20 +330,24 @@ TEST(ManifestParserTest, ComboUrls) {
   EXPECT_EQ(GURL("http://combo.com:42/relative/whitelist-3"), online[2]);
   EXPECT_EQ(GURL("http://combo.com:99/whitelist-4"), online[3]);
 
-  std::vector<FallbackNamespace> fallbacks = manifest.fallback_namespaces;
+  const NamespaceVector& fallbacks = manifest.fallback_namespaces;
   expected = 2;
   ASSERT_EQ(expected, fallbacks.size());
+  EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[0].type);
+  EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[1].type);
   EXPECT_EQ(GURL("http://combo.com:42/fallback-1"),
-            fallbacks[0].first);
+            fallbacks[0].namespace_url);
   EXPECT_EQ(GURL("http://combo.com:42/fallback-1b"),
-            fallbacks[0].second);
+            fallbacks[0].target_url);
   EXPECT_EQ(GURL("http://combo.com:42/relative/fallback-2"),
-            fallbacks[1].first);
+            fallbacks[1].namespace_url);
   EXPECT_EQ(GURL("http://combo.com:42/relative/fallback-2b"),
-            fallbacks[1].second);
+            fallbacks[1].target_url);
+
+  EXPECT_TRUE(manifest.intercept_namespaces.empty());
 }
 
-TEST(ManifestParserTest, UnusualUtf8) {
+TEST(AppCacheManifestParserTest, UnusualUtf8) {
   Manifest manifest;
   const GURL kUrl("http://bad.com");
   const std::string kData("CACHE MANIFEST\r"
@@ -301,7 +360,7 @@ TEST(ManifestParserTest, UnusualUtf8) {
   EXPECT_TRUE(urls.find("http://bad.com/nonbmp%F1%84%AB%BC") != urls.end());
 }
 
-TEST(ManifestParserTest, IgnoreAfterSpace) {
+TEST(AppCacheManifestParserTest, IgnoreAfterSpace) {
   Manifest manifest;
   const GURL kUrl("http://smorg.borg");
   const std::string kData(
@@ -313,7 +372,7 @@ TEST(ManifestParserTest, IgnoreAfterSpace) {
   EXPECT_TRUE(urls.find("http://smorg.borg/resource.txt") != urls.end());
 }
 
-TEST(ManifestParserTest, DifferentOriginUrlWithSecureScheme) {
+TEST(AppCacheManifestParserTest, DifferentOriginUrlWithSecureScheme) {
   Manifest manifest;
   const GURL kUrl("https://www.foo.com");
   const std::string kData("CACHE MANIFEST\r"
@@ -341,4 +400,3 @@ TEST(ManifestParserTest, DifferentOriginUrlWithSecureScheme) {
 }
 
 }  // namespace appcache
-
