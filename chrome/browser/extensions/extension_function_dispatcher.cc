@@ -82,6 +82,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/extensions/api/terminal/terminal_private_api.h"
 #include "chrome/browser/extensions/extension_file_browser_private_api.h"
 #include "chrome/browser/extensions/extension_info_private_api_chromeos.h"
 #include "chrome/browser/extensions/extension_input_ime_api.h"
@@ -415,6 +416,11 @@ void FactoryRegistry::ResetFunctions() {
 
   // InputMethod
   RegisterFunction<GetInputMethodFunction>();
+
+  // Terminal
+  RegisterFunction<OpenTerminalProcessFunction>();
+  RegisterFunction<SendInputToTerminalProcessFunction>();
+  RegisterFunction<CloseTerminalProcessFunction>();
 
 #if defined(USE_VIRTUAL_KEYBOARD)
   // Input

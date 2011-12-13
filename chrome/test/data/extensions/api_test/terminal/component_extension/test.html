@@ -1,0 +1,192 @@
+<script>
+var shellCommand = 'shell\n';
+var catCommand = 'cat\n';
+var catErrCommand = 'cat 1>&2\n';
+var testLine = 'testline\n';
+
+var croshName = 'crosh';
+var invalidName = 'some name';
+
+var invalidNameError = 'Invalid process name.';
+
+var testLineNum = 10;
+var testProcessTotal = 2;
+
+var testProcessCount = 0;
+var testProcesses = [];
+
+// We assume we are running on ChromeOS at the beginning. If we are wrong,
+// we'll find out before actual testing starts.
+var runningOnChromeOS = true;
+
+function TestProcess(pid, type) {
+  this.pid_ = pid;
+  this.type_= type;
+  this.expectation_ = '';
+  this.someOutputReceived_ = false;
+  this.closed_ = false;
+};
+
+TestProcess.prototype.testExpectation = function(text) {
+  var textPosition = this.expectation_.search(text);
+  chrome.test.assertEq(0, textPosition);
+  if (this.expectation_.lenght == text.length)
+    this.expectation_.clear();
+  else
+    this.expectation_ = this.expectation_.substring(text.length);
+};
+
+TestProcess.prototype.testOutputType = function(receivedType) {
+  if (runningOnChromeOS) {
+    chrome.test.assertEq(this.type_, receivedType);
+  } else {
+     chrome.test.assertEq('stdout', receivedType);
+  }
+};
+
+TestProcess.prototype.pid = function() {
+  return this.pid_;
+};
+
+TestProcess.prototype.done = function() {
+  return this.expectation_.length == 0;
+};
+
+TestProcess.prototype.isClosed = function() {
+  return this.closed_;
+};
+
+TestProcess.prototype.setClosed = function() {
+  this.closed_ = true;
+};
+
+TestProcess.prototype.someOutputReceived = function() {
+  return this.someOutputReceived_;
+};
+
+TestProcess.prototype.setSomeOutputReceived = function() {
+  this.someOutputReceived_ = true;
+};
+
+TestProcess.prototype.getCatCommand = function() {
+  if (this.type_ == "stdout")
+    return catCommand;
+  return catErrCommand;
+};
+
+TestProcess.prototype.addExpectationLine = function(line) {
+  this.expectation_ = this.expectation_.concat(line);
+};
+
+TestProcess.prototype.kickOffTest = function(line, lineNum) {
+  for (var i = 0; i < lineNum; i++) {
+    this.addExpectationLine(line);
+  }
+
+  chrome.terminalPrivate.sendInput(this.pid_, this.getCatCommand(),
+      function (result) {
+        chrome.test.assertTrue(result);
+      }
+  );
+
+  for (var i = 0; i < lineNum; i++) 
+    chrome.terminalPrivate.sendInput(this.pid_, line,
+        function (result) {
+          chrome.test.assertTrue(result);
+        }
+  );
+};
+
+
+function getProcessIndexForPid(pid) {
+  for (var i = 0; i < testProcessTotal; i++) {
+    if (testProcesses[i] && pid == testProcesses[i].pid())
+      return i;
+  }
+  return undefined;
+};
+
+function processOutputListener(pid, type, text) {
+  var processIndex = getProcessIndexForPid(pid);
+  if (processIndex == undefined)
+    return;
+  var process = testProcesses[processIndex];
+
+  if (!process.someOutputReceived()) {
+    process.setSomeOutputReceived();
+    if (text == shellCommand) {
+      runningOnChromeOS = false;
+      process.addExpectationLine(process.getCatCommand());
+    }
+    process.kickOffTest(testLine, testLineNum);
+    return;
+  }
+
+  process.testOutputType(type);
+
+  process.testExpectation(text);
+
+  if (process.done())
+    closeTerminal(processIndex);
+};
+
+function maybeEndTest() {
+  for (var i = 0; i < testProcessTotal; i++) {
+    if (!testProcesses[i] || !testProcesses[i].isClosed())
+      return;
+  }
+
+  chrome.test.succeed();
+};
+
+function closeTerminal(index) {
+  var process = testProcesses[index];
+  chrome.terminalPrivate.closeTerminalProcess(
+      process.pid(),
+      function(result) {
+        chrome.test.assertTrue(result);
+        process.setClosed();
+        maybeEndTest();
+      }
+  );
+};
+
+function initTest(pid) {
+  chrome.terminalPrivate.sendInput(
+      pid,
+      shellCommand,
+      function(result) {
+        chrome.test.assertTrue(result);
+      }
+  ); 
+};
+
+chrome.test.runTests([
+  function terminalTest() {
+    chrome.terminalPrivate.onProcessOutput.addListener(processOutputListener);
+
+    for (var i = 0; i < testProcessTotal; i++) {
+      chrome.terminalPrivate.openTerminalProcess(croshName, function(result) {
+          chrome.test.assertTrue(result >= 0);
+          var type = (testProcessCount % 2) ? 'stderr' : 'stdout';
+          testProcesses[testProcessCount] = new TestProcess(result, type);
+          testProcessCount++;
+          initTest(result);
+      });
+    }
+  },
+
+  function invalidProcessNameTest() {
+    chrome.terminalPrivate.openTerminalProcess(invalidName,
+        chrome.test.callbackFail(invalidNameError));
+  }
+]);
+</script>
+<html>
+  <body>
+    <h1>
+      terminalPrivate test...
+    </h1>
+    </div>
+  </body>
+</html>

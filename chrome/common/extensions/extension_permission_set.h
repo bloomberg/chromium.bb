@@ -123,6 +123,7 @@ class ExtensionAPIPermission {
     kSocket,
     kSystemPrivate,
     kTab,
+    kTerminalPrivate,
     kTts,
     kTtsEngine,
     kUnlimitedStorage,

@@ -200,6 +200,7 @@ TEST(ExtensionAPIPermissionTest, ComponentOnlyPermissions) {
   private_perms.insert(ExtensionAPIPermission::kMediaPlayerPrivate);
   private_perms.insert(ExtensionAPIPermission::kMetricsPrivate);
   private_perms.insert(ExtensionAPIPermission::kSystemPrivate);
+  private_perms.insert(ExtensionAPIPermission::kTerminalPrivate);
   private_perms.insert(ExtensionAPIPermission::kWebstorePrivate);
 
   ExtensionAPIPermissionSet perms = info->GetAll();
@@ -211,7 +212,7 @@ TEST(ExtensionAPIPermissionTest, ComponentOnlyPermissions) {
               info->GetByID(*i)->is_component_only());
   }
 
-  EXPECT_EQ(7, count);
+  EXPECT_EQ(8, count);
 }
 
 TEST(ExtensionPermissionSetTest, EffectiveHostPermissions) {
@@ -671,6 +672,7 @@ TEST(ExtensionPermissionSetTest, PermissionMessages) {
   skip.insert(ExtensionAPIPermission::kMediaPlayerPrivate);
   skip.insert(ExtensionAPIPermission::kMetricsPrivate);
   skip.insert(ExtensionAPIPermission::kSystemPrivate);
+  skip.insert(ExtensionAPIPermission::kTerminalPrivate);
   skip.insert(ExtensionAPIPermission::kWebSocketProxyPrivate);
   skip.insert(ExtensionAPIPermission::kWebstorePrivate);
 

@@ -308,6 +308,9 @@ void ExtensionAPIPermission::RegisterAllPermissions(
   info->RegisterPermission(
       kSystemPrivate, "systemPrivate", 0,
       ExtensionPermissionMessage::kNone, kFlagComponentOnly, kTypeDefault);
+  info->RegisterPermission(
+      kTerminalPrivate, "terminalPrivate", 0,
+      ExtensionPermissionMessage::kNone, kFlagComponentOnly, kTypeDefault);
 
   // Full url access permissions.
   info->RegisterPermission(
