@@ -40,7 +40,6 @@
           ],
           'variables': {
             'arch': '--arch=<(target_arch)',
-            'out': '--out=<(PRODUCT_DIR)/test-output/hello_world.out',
             'name': '--name=hello_world',
             'path': '--path=<(PRODUCT_DIR)',
             'tools': '--tools=newlib',
@@ -61,8 +60,9 @@
               'inputs': [
                 '<!@(<(python_exe) <(script) -i <(arch) <(name) <(tools))',
               ],
+              # Add a bogus output file, to cause this step to always fire.
               'outputs': [
-                '<(PRODUCT_DIR)/test-output/hello_world.out'
+                '<(PRODUCT_DIR)/test-output/dont_create_hello_world.out'
               ],
               'action': [
                 '>(python_exe)',
@@ -70,7 +70,6 @@
                 '-r',
                 '<(arch)',
                 '<(name)',
-                '<(out)',
                 '<(path)',
                 '<(tools)'
               ],
