@@ -1180,6 +1180,8 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 			    __FILE__, __LINE__,
 			    bo_gem->gem_handle, bo_gem->name,
 			    strerror(errno));
+			if (--bo_gem->map_count == 0)
+				drm_intel_gem_bo_close_vma(bufmgr_gem, bo_gem);
 			pthread_mutex_unlock(&bufmgr_gem->lock);
 			return ret;
 		}
