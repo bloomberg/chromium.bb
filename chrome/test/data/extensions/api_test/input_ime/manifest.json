@@ -5,7 +5,7 @@
   "manifest_version": 2,
   "description": "Input method ime tests.",
   "background_page": "background.html",
-  "permissions": [ "input", "experimental" ],
+  "permissions": [ "ime", "experimental" ],
   "input_components": [{
     "name": "Test IME",
     "type": "ime",

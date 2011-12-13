@@ -2533,7 +2533,7 @@
         'browser/extensions/extension_incognito_apitest.cc',
         'browser/extensions/extension_info_private_apitest_chromeos.cc',
         'browser/extensions/extension_input_apitest.cc',
-        'browser/extensions/extension_input_ime_apitest.cc',
+        'browser/extensions/extension_input_ime_apitest_chromeos.cc',
         'browser/extensions/extension_input_method_apitest.cc',
         'browser/extensions/extension_input_ui_apitest.cc',
         'browser/extensions/extension_install_ui_browsertest.cc',

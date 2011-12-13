@@ -48,6 +48,7 @@ class ExtensionPermissionMessage {
     kTtsEngine,
     kContentSettings,
     kAllPageContent,
+    kIme,
     kEnumBoundary
   };
 
@@ -110,6 +111,7 @@ class ExtensionAPIPermission {
     kGeolocation,
     kHistory,
     kIdle,
+    kIme,
     kInputMethodPrivate,
     kManagement,
     kMediaPlayerPrivate,

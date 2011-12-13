@@ -408,6 +408,11 @@ var chrome = chrome || {};
     customBindings['StorageNamespace'] = StorageNamespace;
   }
   function setupInputEvents() {
+    if (chrome.experimental.input == undefined ||
+        chrome.experimental.input.ime == undefined) {
+      // The IME api is not available, don't set up the event.
+      return;
+    }
     chrome.experimental.input.ime.onKeyEvent.dispatch =
         function(engineID, keyData) {
       var args = Array.prototype.slice.call(arguments);

@@ -249,6 +249,10 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kIdle, "idle", 0, ExtensionPermissionMessage::kNone,
       kFlagSupportsOptional, kTypeDefault);
   info->RegisterPermission(
+      kIme, "ime", IDS_EXTENSION_PROMPT_WARNING_IME,
+      ExtensionPermissionMessage::kIme,
+      kFlagSupportsOptional, kTypeDefault);
+  info->RegisterPermission(
       kInputMethodPrivate, "inputMethodPrivate", 0,
       ExtensionPermissionMessage::kNone, kFlagNone, kTypeDefault);
   info->RegisterPermission(
