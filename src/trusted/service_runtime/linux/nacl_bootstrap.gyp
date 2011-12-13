@@ -84,6 +84,11 @@
         '-fasan',
         '-faddress-sanitizer',
         '-w',
+        # We filter these out because release_extra_cflags or another
+        # such thing might be adding them in, and those options wind up
+        # coming after the -fno-stack-protector we added above.
+        '-fstack-protector',
+        '-fstack-protector-all',
       ],
       'conditions': [
         ['clang==1', {
