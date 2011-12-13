@@ -54,10 +54,6 @@ class IncognitoExtensionProcessManager : public ExtensionProcessManager {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details);
 
-  // Returns the extension for an URL, which can either be a chrome-extension
-  // URL or a web app URL.
-  const Extension* GetExtensionOrAppByURL(const GURL& url);
-
   // Returns true if the extension is allowed to run in incognito mode.
   bool IsIncognitoEnabled(const Extension* extension);
 
@@ -146,7 +142,8 @@ ExtensionHost* ExtensionProcessManager::CreateViewHost(
       Profile::FromBrowserContext(browsing_instance_->browser_context());
   ExtensionService* service = profile->GetExtensionService();
   if (service) {
-    const Extension* extension = service->GetExtensionByURL(url);
+    const Extension* extension =
+        service->extensions()->GetByID(url.host());
     if (extension)
       return CreateViewHost(extension, url, browser, view_type);
   }
@@ -439,23 +436,16 @@ void IncognitoExtensionProcessManager::CreateBackgroundHost(
 
 SiteInstance* IncognitoExtensionProcessManager::GetSiteInstanceForURL(
     const GURL& url) {
-  const Extension* extension = GetExtensionOrAppByURL(url);
-  if (!extension || extension->incognito_split_mode()) {
-    return ExtensionProcessManager::GetSiteInstanceForURL(url);
-  } else {
-    return original_manager_->GetSiteInstanceForURL(url);
-  }
-}
-
-const Extension* IncognitoExtensionProcessManager::GetExtensionOrAppByURL(
-    const GURL& url) {
   Profile* profile =
       Profile::FromBrowserContext(browsing_instance_->browser_context());
   ExtensionService* service = profile->GetExtensionService();
-  if (!service)
-    return NULL;
-  return (url.SchemeIs(chrome::kExtensionScheme)) ?
-      service->GetExtensionByURL(url) : service->GetExtensionByWebExtent(url);
+  if (service) {
+    const Extension* extension = service->extensions()->GetExtensionOrAppByURL(
+        ExtensionURLInfo(url));
+    if (extension && !extension->incognito_split_mode())
+      return original_manager_->GetSiteInstanceForURL(url);
+  }
+  return ExtensionProcessManager::GetSiteInstanceForURL(url);
 }
 
 bool IncognitoExtensionProcessManager::IsIncognitoEnabled(

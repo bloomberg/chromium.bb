@@ -52,7 +52,8 @@ void ExtensionNavigationObserver::PromptToEnableExtensionIfNecessary(
 
   ExtensionService* extension_service = profile_->GetExtensionService();
   const Extension* extension =
-      extension_service->GetDisabledExtensionByWebExtent(nav_entry->url());
+      extension_service->disabled_extensions()->
+      GetExtensionOrAppByURL(ExtensionURLInfo(nav_entry->url()));
   if (!extension)
     return;
 

@@ -35,10 +35,12 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "net/base/net_util.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
+using WebKit::WebSecurityOrigin;
 
 // GeolocationInfoBarQueueController ------------------------------------------
 
@@ -551,14 +553,19 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
   }
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  ExtensionService* extensions = profile_->GetExtensionService();
-  if (extensions) {
-    const Extension* ext = extensions->GetExtensionByURL(requesting_frame);
-    if (!ext)
-      ext = extensions->GetExtensionByWebExtent(requesting_frame);
-    if (ext && ext->HasAPIPermission(ExtensionAPIPermission::kGeolocation)) {
+  ExtensionService* extension_service = profile_->GetExtensionService();
+  if (extension_service) {
+    const Extension* extension =
+        extension_service->extensions()->GetExtensionOrAppByURL(
+            ExtensionURLInfo(
+                WebSecurityOrigin::createFromString(
+                    UTF8ToUTF16(requesting_frame.spec())),
+                requesting_frame));
+    if (extension &&
+        extension->HasAPIPermission(ExtensionAPIPermission::kGeolocation)) {
       // Make sure the extension is in the calling process.
-      if (extensions->process_map()->Contains(ext->id(), render_process_id)) {
+      if (extension_service->process_map()->Contains(
+              extension->id(), render_process_id)) {
         NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
                             requesting_frame, callback, true);
         return;

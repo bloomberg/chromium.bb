@@ -67,7 +67,7 @@ class ExtensionWebUIImageLoadingTracker : public ImageLoadingTracker::Observer {
     // disabled in incognito mode.
     ExtensionService* service = profile->GetExtensionService();
     if (service)
-      extension_ = service->GetExtensionByURL(page_url);
+      extension_ = service->extensions()->GetByID(page_url.host());
   }
 
   void Init() {
@@ -130,9 +130,8 @@ ExtensionWebUI::ExtensionWebUI(TabContents* tab_contents, const GURL& url)
   Profile* profile =
       Profile::FromBrowserContext(tab_contents->browser_context());
   ExtensionService* service = profile->GetExtensionService();
-  const Extension* extension = service->GetExtensionByURL(url);
-  if (!extension)
-    extension = service->GetExtensionByWebExtent(url);
+  const Extension* extension =
+      service->extensions()->GetExtensionOrAppByURL(ExtensionURLInfo(url));
   DCHECK(extension);
   // Only hide the url for internal pages (e.g. chrome-extension or packaged
   // component apps like bookmark manager.
@@ -224,7 +223,8 @@ bool ExtensionWebUI::HandleChromeURLOverride(
     }
 
     // Verify that the extension that's being referred to actually exists.
-    const Extension* extension = service->GetExtensionByURL(extension_url);
+    const Extension* extension =
+        service->extensions()->GetByID(extension_url.host());
     if (!extension) {
       // This can currently happen if you use --load-extension one run, and
       // then don't use it the next.  It could also happen if an extension

@@ -329,8 +329,8 @@ const Extension* TaskManagerTabContentsResource::GetExtension() const {
   if (HostsExtension()) {
     ExtensionService* extension_service =
         tab_contents_->profile()->GetExtensionService();
-    return extension_service->GetExtensionByURL(
-        tab_contents_->tab_contents()->GetURL());
+    return extension_service->extensions()->GetByID(
+        tab_contents_->tab_contents()->GetURL().host());
   }
 
   return NULL;

@@ -117,9 +117,11 @@ NotificationOptionsMenuModel::NotificationOptionsMenuModel(Balloon* balloon)
   const GURL& origin = notification.origin_url();
 
   if (origin.SchemeIs(chrome::kExtensionScheme)) {
-    ExtensionService* ext_service =
+    ExtensionService* extension_service =
         balloon_->profile()->GetExtensionService();
-    const Extension* extension = ext_service->GetExtensionByURL(origin);
+    const Extension* extension =
+        extension_service->extensions()->GetExtensionOrAppByURL(
+            ExtensionURLInfo(origin));
     // We get back no extension here when we show the notification after
     // the extension has crashed.
     if (extension) {
@@ -165,12 +167,14 @@ string16 NotificationOptionsMenuModel::GetLabelForCommandId(int command_id)
     DesktopNotificationService* service =
         DesktopNotificationServiceFactory::GetForProfile(balloon_->profile());
     if (origin.SchemeIs(chrome::kExtensionScheme)) {
-      ExtensionService* ext_service =
+      ExtensionService* extension_service =
           balloon_->profile()->GetExtensionService();
-      const Extension* extension = ext_service->GetExtensionByURL(origin);
+      const Extension* extension =
+          extension_service->extensions()->GetExtensionOrAppByURL(
+              ExtensionURLInfo(origin));
       if (extension) {
         return l10n_util::GetStringUTF16(
-            ext_service->IsExtensionEnabled(extension->id()) ?
+            extension_service->IsExtensionEnabled(extension->id()) ?
                 IDS_EXTENSIONS_DISABLE :
                 IDS_EXTENSIONS_ENABLE);
       }
@@ -212,7 +216,7 @@ bool NotificationOptionsMenuModel::GetAcceleratorForCommandId(
 void NotificationOptionsMenuModel::ExecuteCommand(int command_id) {
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(balloon_->profile());
-  ExtensionService* ext_service =
+  ExtensionService* extension_service =
       balloon_->profile()->GetExtensionService();
   const GURL& origin = balloon_->notification().origin_url();
   switch (command_id) {
@@ -223,13 +227,15 @@ void NotificationOptionsMenuModel::ExecuteCommand(int command_id) {
         service->GrantPermission(origin);
       break;
     case kToggleExtensionCommand: {
-      const Extension* extension = ext_service->GetExtensionByURL(origin);
+      const Extension* extension =
+          extension_service->extensions()->GetExtensionOrAppByURL(
+              ExtensionURLInfo(origin));
       if (extension) {
         const std::string& id = extension->id();
-        if (ext_service->IsExtensionEnabled(id))
-          ext_service->DisableExtension(id);
+        if (extension_service->IsExtensionEnabled(id))
+          extension_service->DisableExtension(id);
         else
-          ext_service->EnableExtension(id);
+          extension_service->EnableExtension(id);
       }
       break;
     }

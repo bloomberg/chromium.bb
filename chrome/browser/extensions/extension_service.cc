@@ -258,8 +258,10 @@ static const char* kAllowedDownloadURLPatterns[] = {
 
 bool ExtensionService::IsDownloadFromGallery(const GURL& download_url,
                                              const GURL& referrer_url) {
-  const Extension* download_extension = GetExtensionByWebExtent(download_url);
-  const Extension* referrer_extension = GetExtensionByWebExtent(referrer_url);
+  const Extension* download_extension =
+      extensions_.GetHostedAppByURL(ExtensionURLInfo(download_url));
+  const Extension* referrer_extension =
+      extensions_.GetHostedAppByURL(ExtensionURLInfo(referrer_url));
   const Extension* webstore_app = GetWebStoreApp();
 
   bool referrer_valid = (referrer_extension == webstore_app);
@@ -310,15 +312,10 @@ bool ExtensionService::IsDownloadFromGallery(const GURL& download_url,
 }
 
 const Extension* ExtensionService::GetInstalledApp(const GURL& url) {
-  // Check for hosted app.
-  const Extension* app = GetExtensionByWebExtent(url);
-  if (app)
-    return app;
-
-  // Check for packaged app.
-  app = GetExtensionByURL(url);
-  if (app && app->is_app())
-    return app;
+  const Extension* extension = extensions_.GetExtensionOrAppByURL(
+      ExtensionURLInfo(url));
+  if (extension && extension->is_app())
+    return extension;
 
   return NULL;
 }
@@ -2176,56 +2173,12 @@ const Extension* ExtensionService::GetWebStoreApp() {
   return GetExtensionById(extension_misc::kWebStoreAppId, false);
 }
 
-const Extension* ExtensionService::GetExtensionByURL(const GURL& url) {
-  return url.scheme() != chrome::kExtensionScheme ? NULL :
-      GetExtensionById(url.host(), false);
-}
-
-const Extension* ExtensionService::GetExtensionByWebExtent(const GURL& url) {
-  // TODO(yoz): Should be ExtensionSet::GetByURL.
-  for (ExtensionSet::const_iterator iter = extensions_.begin();
-       iter != extensions_.end(); ++iter) {
-    if ((*iter)->web_extent().MatchesURL(url))
-      return *iter;
-  }
-  return NULL;
-}
-
-const Extension* ExtensionService::GetDisabledExtensionByWebExtent(
-    const GURL& url) {
-  // TODO(yoz): Should be ExtensionSet::GetByURL.
-  for (ExtensionSet::const_iterator iter = disabled_extensions_.begin();
-       iter != disabled_extensions_.end(); ++iter) {
-    if ((*iter)->web_extent().MatchesURL(url))
-      return *iter;
-  }
-  return NULL;
-}
-
 bool ExtensionService::ExtensionBindingsAllowed(const GURL& url) {
-  // Allow bindings for all packaged extensions.
-  // Note that GetExtensionByURL may return an Extension for hosted apps
-  // (excluding bookmark apps) if the URL came from GetEffectiveURL.
-  const Extension* extension = GetExtensionByURL(url);
-  if (extension && extension->GetType() != Extension::TYPE_HOSTED_APP)
-    return true;
-
-  // Allow bindings for all component, hosted apps.
-  if (!extension)
-    extension = GetExtensionByWebExtent(url);
-  return (extension && extension->location() == Extension::COMPONENT);
-}
-
-const Extension* ExtensionService::GetExtensionByOverlappingWebExtent(
-    const URLPatternSet& extent) {
-  // TODO(yoz): Should be in ExtensionSet.
-  for (ExtensionSet::const_iterator iter = extensions_.begin();
-       iter != extensions_.end(); ++iter) {
-    if ((*iter)->web_extent().OverlapsWith(extent))
-      return *iter;
-  }
-
-  return NULL;
+  // Allow bindings for all packaged extensions and component hosted apps.
+  const Extension* extension = extensions_.GetExtensionOrAppByURL(
+      ExtensionURLInfo(url));
+  return extension && (!extension->is_hosted_app() ||
+                       extension->location() == Extension::COMPONENT);
 }
 
 const SkBitmap& ExtensionService::GetOmniboxIcon(

@@ -93,14 +93,22 @@ class ExtensionSet {
 
   // Returns the extension ID, or empty if none. This includes web URLs that
   // are part of an extension's web extent.
-  std::string GetIDByURL(const ExtensionURLInfo& info) const;
+  std::string GetExtensionOrAppIDByURL(const ExtensionURLInfo& info) const;
 
   // Returns the Extension, or NULL if none.  This includes web URLs that are
   // part of an extension's web extent.
   // NOTE: This can return NULL if called before UpdateExtensions receives
   // bulk extension data (e.g. if called from
   // EventBindings::HandleContextCreated)
-  const Extension* GetByURL(const ExtensionURLInfo& info) const;
+  const Extension* GetExtensionOrAppByURL(const ExtensionURLInfo& info) const;
+
+  // Returns the hosted app whose web extent contains the URL.
+  const Extension* GetHostedAppByURL(const ExtensionURLInfo& info) const;
+
+  // Returns a hosted app that contains any URL that overlaps with the given
+  // extent, if one exists.
+  const Extension* GetHostedAppByOverlappingWebExtent(
+      const URLPatternSet& extent) const;
 
   // Returns true if |new_url| is in the extent of the same extension as
   // |old_url|.  Also returns true if neither URL is in an app.

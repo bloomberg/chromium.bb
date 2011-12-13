@@ -72,7 +72,8 @@ bool IsWebStoreURL(Profile* profile, const GURL& url) {
     NOTREACHED();
     return false;
   }
-  return (service->GetExtensionByWebExtent(url) == store);
+  return (service->extensions()->GetHostedAppByURL(ExtensionURLInfo(url)) ==
+          store);
 }
 
 // Whitelists extension IDs for use by webstorePrivate.silentlyInstall.

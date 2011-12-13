@@ -233,7 +233,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         if (!contents) {
           if (extension_process_map->Contains(host->process()->GetID())) {
             const Extension* extension =
-                extension_service->GetExtensionByURL(url);
+                extension_service->extensions()->GetByID(url.host());
             if (extension) {
               string16 title = UTF8ToUTF16(extension->name());
               process.titles.push_back(title);

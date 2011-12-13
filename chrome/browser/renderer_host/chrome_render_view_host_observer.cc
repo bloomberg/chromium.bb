@@ -152,7 +152,7 @@ const Extension* ChromeRenderViewHostObserver::GetExtension() {
 
   // May be null if the extension doesn't exist, for example if somebody typos
   // a chrome-extension:// URL.
-  return service->GetExtensionByURL(site);
+  return service->extensions()->GetByID(site.host());
 }
 
 void ChromeRenderViewHostObserver::RemoveRenderViewHostForExtensions(

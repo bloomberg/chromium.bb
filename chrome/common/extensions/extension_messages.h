@@ -33,8 +33,11 @@ IPC_STRUCT_BEGIN(ExtensionHostMsg_Request_Params)
   // URL of the frame the request was sent from. This isn't necessarily an
   // extension url. Extension requests can also originate from content scripts,
   // in which case extension_id will indicate the ID of the associated
-  // extension. Or, they can origiante from hosted apps or normal web pages.
+  // extension. Or, they can originate from hosted apps or normal web pages.
   IPC_STRUCT_MEMBER(GURL, source_url)
+
+  // Web security origin of the frame the request was sent from.
+  IPC_STRUCT_MEMBER(string16, source_origin)
 
   // Unique request id to match requests and responses.
   IPC_STRUCT_MEMBER(int, request_id)

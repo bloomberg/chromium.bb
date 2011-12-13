@@ -32,7 +32,8 @@ SiteInstance* GetSiteInstanceForNewTab(TabContents* source_contents,
   // as part of creating the tab.
   ExtensionService* service = profile->GetExtensionService();
   if (ChromeWebUIFactory::GetInstance()->UseWebUIForURL(profile, url) ||
-      (service && service->GetExtensionByWebExtent(url))) {
+      (service &&
+       service->extensions()->GetHostedAppByURL(ExtensionURLInfo(url)))) {
     return SiteInstance::CreateSiteInstanceForURL(profile, url);
   }
 

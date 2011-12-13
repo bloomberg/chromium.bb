@@ -91,7 +91,8 @@ std::string OfflineLoadPage::GetHTMLContents() {
   ExtensionService* extensions_service = profile->GetExtensionService();
   // Extension service does not exist in test.
   if (extensions_service)
-    extension = extensions_service->GetExtensionByWebExtent(url());
+    extension = extensions_service->extensions()->GetHostedAppByURL(
+        ExtensionURLInfo(url()));
 
   if (extension)
     GetAppOfflineStrings(extension, failed_url, &strings);

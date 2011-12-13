@@ -111,7 +111,7 @@ const Extension* ChromeV8Extension::GetExtensionForCurrentRenderView() const {
       ExtensionURLInfo(document.securityOrigin(), url)))
     return NULL;
 
-  return extensions->GetByURL(
+  return extensions->GetExtensionOrAppByURL(
       ExtensionURLInfo(document.securityOrigin(), url));
 }
 

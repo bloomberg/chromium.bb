@@ -474,7 +474,7 @@ bool ChromeContentRendererClient::IsNaClAllowed(
 
   // Determine if the manifest URL is part of an extension.
   const Extension* extension =
-      extension_dispatcher_->extensions()->GetByURL(
+      extension_dispatcher_->extensions()->GetExtensionOrAppByURL(
           ExtensionURLInfo(manifest_url));
   // Only component, unpacked, and Chrome Web Store extensions are allowed.
   bool allowed_extension = extension &&
@@ -548,7 +548,7 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
       EqualsASCII(failed_request.httpMethod(), "POST");
 
   if (failed_url.is_valid() && !failed_url.SchemeIs(chrome::kExtensionScheme)) {
-    extension = extension_dispatcher_->extensions()->GetByURL(
+    extension = extension_dispatcher_->extensions()->GetExtensionOrAppByURL(
         ExtensionURLInfo(failed_url));
   }
 
@@ -617,7 +617,8 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
 
     if (is_content_initiated) {
       const Extension* extension =
-          extension_dispatcher_->extensions()->GetByURL(ExtensionURLInfo(url));
+          extension_dispatcher_->extensions()->GetExtensionOrAppByURL(
+              ExtensionURLInfo(url));
       if (extension && extension->is_app()) {
         UMA_HISTOGRAM_ENUMERATION(
             extension_misc::kAppLaunchHistogram,
@@ -734,7 +735,8 @@ void ChromeContentRendererClient::SetExtensionDispatcher(
 const Extension* ChromeContentRendererClient::GetNonBookmarkAppExtension(
     const ExtensionSet* extensions, const GURL& url) {
   // Exclude bookmark apps, which do not use the app process model.
-  const Extension* extension = extensions->GetByURL(ExtensionURLInfo(url));
+  const Extension* extension = extensions->GetExtensionOrAppByURL(
+      ExtensionURLInfo(url));
   if (extension && extension->from_bookmark())
     extension = NULL;
   return extension;
@@ -760,7 +762,7 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(
     WebDocument opener_document = frame->opener()->document();
     GURL opener_url = opener_document.url();
     WebSecurityOrigin opener_origin = opener_document.securityOrigin();
-    bool opener_is_extension_url = !!extensions->GetByURL(
+    bool opener_is_extension_url = !!extensions->GetExtensionOrAppByURL(
         ExtensionURLInfo(opener_origin, opener_url));
     WebSecurityOrigin opener = frame->opener()->document().securityOrigin();
     if (!new_url_extension &&

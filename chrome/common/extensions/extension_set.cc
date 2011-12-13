@@ -49,20 +49,22 @@ void ExtensionSet::Clear() {
   extensions_.clear();
 }
 
-std::string ExtensionSet::GetIDByURL(const ExtensionURLInfo& info) const {
+std::string ExtensionSet::GetExtensionOrAppIDByURL(
+    const ExtensionURLInfo& info) const {
   DCHECK(!info.origin().isNull());
 
   if (info.url().SchemeIs(chrome::kExtensionScheme))
     return info.origin().isUnique() ? "" : info.url().host();
 
-  const Extension* extension = GetByURL(info);
+  const Extension* extension = GetExtensionOrAppByURL(info);
   if (!extension)
     return "";
 
   return extension->id();
 }
 
-const Extension* ExtensionSet::GetByURL(const ExtensionURLInfo& info) const {
+const Extension* ExtensionSet::GetExtensionOrAppByURL(
+    const ExtensionURLInfo& info) const {
   // In the common case, the document's origin will correspond to its URL,
   // but in some rare cases involving sandboxing, the two will be different.
   // We catch those cases by checking whether the document's origin is unique.
@@ -74,10 +76,26 @@ const Extension* ExtensionSet::GetByURL(const ExtensionURLInfo& info) const {
   if (info.url().SchemeIs(chrome::kExtensionScheme))
     return GetByID(info.url().host());
 
-  ExtensionMap::const_iterator i = extensions_.begin();
-  for (; i != extensions_.end(); ++i) {
-    if (i->second->web_extent().MatchesURL(info.url()))
-      return i->second.get();
+  return GetHostedAppByURL(info);
+}
+
+const Extension* ExtensionSet::GetHostedAppByURL(
+    const ExtensionURLInfo& info) const {
+  for (ExtensionMap::const_iterator iter = extensions_.begin();
+       iter != extensions_.end(); ++iter) {
+    if (iter->second->web_extent().MatchesURL(info.url()))
+      return iter->second.get();
+  }
+
+  return NULL;
+}
+
+const Extension* ExtensionSet::GetHostedAppByOverlappingWebExtent(
+    const URLPatternSet& extent) const {
+  for (ExtensionMap::const_iterator iter = extensions_.begin();
+       iter != extensions_.end(); ++iter) {
+    if (iter->second->web_extent().OverlapsWith(extent))
+      return iter->second.get();
   }
 
   return NULL;
@@ -85,8 +103,8 @@ const Extension* ExtensionSet::GetByURL(const ExtensionURLInfo& info) const {
 
 bool ExtensionSet::InSameExtent(const GURL& old_url,
                                 const GURL& new_url) const {
-  return GetByURL(ExtensionURLInfo(old_url)) ==
-      GetByURL(ExtensionURLInfo(new_url));
+  return GetExtensionOrAppByURL(ExtensionURLInfo(old_url)) ==
+      GetExtensionOrAppByURL(ExtensionURLInfo(new_url));
 }
 
 const Extension* ExtensionSet::GetByID(const std::string& id) const {

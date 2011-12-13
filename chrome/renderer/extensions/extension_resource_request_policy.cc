@@ -18,7 +18,7 @@ bool ExtensionResourceRequestPolicy::CanRequestResource(
   CHECK(resource_url.SchemeIs(chrome::kExtensionScheme));
 
   const Extension* extension =
-      loaded_extensions->GetByURL(ExtensionURLInfo(resource_url));
+      loaded_extensions->GetExtensionOrAppByURL(ExtensionURLInfo(resource_url));
   if (!extension) {
     // Allow the load in the case of a non-existent extension. We'll just get a
     // 404 from the browser process.

@@ -79,19 +79,19 @@ TEST(ExtensionSetTest, ExtensionSet) {
   EXPECT_EQ(3u, extensions.size());
 
   // Get extension by its chrome-extension:// URL
-  EXPECT_EQ(ext2, extensions.GetByURL(
+  EXPECT_EQ(ext2, extensions.GetExtensionOrAppByURL(
       ExtensionURLInfo(ext2->GetResourceURL("test.html"))));
-  EXPECT_EQ(ext3, extensions.GetByURL(
+  EXPECT_EQ(ext3, extensions.GetExtensionOrAppByURL(
       ExtensionURLInfo(ext3->GetResourceURL("test.html"))));
-  EXPECT_EQ(ext4, extensions.GetByURL(
+  EXPECT_EQ(ext4, extensions.GetExtensionOrAppByURL(
       ExtensionURLInfo(ext4->GetResourceURL("test.html"))));
 
   // Get extension by web extent.
-  EXPECT_EQ(ext2, extensions.GetByURL(
+  EXPECT_EQ(ext2, extensions.GetExtensionOrAppByURL(
       ExtensionURLInfo(GURL("http://code.google.com/p/chromium/monkey"))));
-  EXPECT_EQ(ext3, extensions.GetByURL(
+  EXPECT_EQ(ext3, extensions.GetExtensionOrAppByURL(
       ExtensionURLInfo(GURL("http://dev.chromium.org/design-docs/"))));
-  EXPECT_FALSE(extensions.GetByURL(
+  EXPECT_FALSE(extensions.GetExtensionOrAppByURL(
       ExtensionURLInfo(GURL("http://blog.chromium.org/"))));
 
   // Test InSameExtent().

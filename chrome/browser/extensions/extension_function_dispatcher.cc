@@ -65,11 +65,13 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/extensions/extension_input_api.h"
@@ -88,6 +90,7 @@
 #endif
 
 using extensions::ExtensionAPI;
+using WebKit::WebSecurityOrigin;
 
 // FactoryRegistry -------------------------------------------------------------
 
@@ -608,10 +611,12 @@ void ExtensionFunctionDispatcher::Dispatch(
   if (!service || !process_map)
     return;
 
-  const Extension* extension = service->GetExtensionById(
-      params.extension_id, false);
+  const Extension* extension = service->extensions()->GetByID(
+      params.extension_id);
   if (!extension)
-    extension = service->GetExtensionByWebExtent(params.source_url);
+    extension = service->extensions()->GetHostedAppByURL(ExtensionURLInfo(
+        WebSecurityOrigin::createFromString(params.source_origin),
+        params.source_url));
 
   scoped_refptr<ExtensionFunction> function(
       CreateExtensionFunction(params, extension,

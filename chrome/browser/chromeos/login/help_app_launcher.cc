@@ -46,7 +46,7 @@ void HelpAppLauncher::ShowHelpTopic(HelpTopic help_topic_id) {
                               static_cast<int>(help_topic_id)));
   // HelpApp component extension presents only in official builds so we can
   // show help only when the extensions is installed.
-  if (service->GetExtensionByURL(url))
+  if (service->extensions()->GetByID(url.host()))
     ShowHelpTopicDialog(GURL(url));
 }
 

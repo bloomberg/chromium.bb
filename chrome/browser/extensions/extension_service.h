@@ -357,20 +357,6 @@ class ExtensionService
   // The App that represents the web store.
   const Extension* GetWebStoreApp();
 
-  // Lookup an extension by |url|.
-  const Extension* GetExtensionByURL(const GURL& url);
-
-  // Returns the extension whose web extent contains |url|.
-  const Extension* GetExtensionByWebExtent(const GURL& url);
-
-  // Returns the disabled extension whose web extent contains |url|.
-  const Extension* GetDisabledExtensionByWebExtent(const GURL& url);
-
-  // Returns an extension that contains any URL that overlaps with the given
-  // extent, if one exists.
-  const Extension* GetExtensionByOverlappingWebExtent(
-      const URLPatternSet& extent);
-
   // Returns true if |url| should get extension api bindings and be permitted
   // to make api calls. Note that this is independent of what extension
   // permissions the given extension has been granted.

@@ -45,6 +45,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBlob.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -55,6 +56,7 @@
 using content::V8ValueConverter;
 using extensions::ExtensionAPI;
 using WebKit::WebFrame;
+using WebKit::WebSecurityOrigin;
 using WebKit::WebView;
 
 namespace {
@@ -501,9 +503,12 @@ class ExtensionImpl : public ChromeV8Extension {
       return v8::Undefined();
 
     GURL source_url;
+    WebSecurityOrigin source_origin;
     WebFrame* webframe = current_context->web_frame();
-    if (webframe)
+    if (webframe) {
       source_url = webframe->document().url();
+      source_origin = webframe->document().securityOrigin();
+    }
 
     int request_id = args[2]->Int32Value();
     bool has_callback = args[3]->BooleanValue();
@@ -520,6 +525,7 @@ class ExtensionImpl : public ChromeV8Extension {
     params.arguments.Swap(value_args);
     params.extension_id = current_context->extension_id();
     params.source_url = source_url;
+    params.source_origin = source_origin.toString();
     params.request_id = request_id;
     params.has_callback = has_callback;
     params.user_gesture =

@@ -390,8 +390,8 @@ void CrxInstaller::ConfirmInstall() {
 
   GURL overlapping_url;
   const Extension* overlapping_extension =
-      frontend_weak_->
-      GetExtensionByOverlappingWebExtent(extension_->web_extent());
+      frontend_weak_->extensions()->
+      GetHostedAppByOverlappingWebExtent(extension_->web_extent());
   if (overlapping_extension &&
       overlapping_extension->id() != extension_->id()) {
     ReportFailureFromUIThread(l10n_util::GetStringFUTF8(

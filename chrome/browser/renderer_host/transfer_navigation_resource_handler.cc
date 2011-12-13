@@ -22,7 +22,8 @@ namespace {
 const Extension* GetNonBookmarkAppExtension(
     const ExtensionSet& extensions, const GURL& url) {
   // Exclude bookmark apps, which do not use the app process model.
-  const Extension* extension = extensions.GetByURL(ExtensionURLInfo(url));
+  const Extension* extension = extensions.GetExtensionOrAppByURL(
+      ExtensionURLInfo(url));
   if (extension && extension->from_bookmark())
     extension = NULL;
   return extension;

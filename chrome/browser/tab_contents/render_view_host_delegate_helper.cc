@@ -102,7 +102,8 @@ RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
   // permission as that is checked in RenderMessageFilter when the CreateWindow
   // message is processed.
   const Extension* extension =
-      extensions_service->GetExtensionByWebExtent(opener_url);
+      extensions_service->extensions()->GetHostedAppByURL(
+          ExtensionURLInfo(opener_url));
   if (!extension)
     return NULL;
 
@@ -551,8 +552,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
 
   ExtensionService* service = profile->GetExtensionService();
   if (service) {
-    const Extension* extension =
-        service->GetExtensionByURL(rvh->site_instance()->site());
+    const Extension* extension = service->extensions()->GetByID(
+        rvh->site_instance()->site().host());
     extension_webkit_preferences::SetPreferences(
         extension, rvh->delegate()->GetRenderViewType(), &web_prefs);
   }

@@ -40,12 +40,14 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "net/base/escape.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
 using WebKit::WebNotificationPresenter;
 using WebKit::WebTextDirection;
+using WebKit::WebSecurityOrigin;
 
 const ContentSetting kDefaultSetting = CONTENT_SETTING_ASK;
 
@@ -406,9 +408,14 @@ string16 DesktopNotificationService::DisplayNameForOrigin(
     const GURL& origin) {
   // If the source is an extension, lookup the display name.
   if (origin.SchemeIs(chrome::kExtensionScheme)) {
-    ExtensionService* ext_service = profile_->GetExtensionService();
-    if (ext_service) {
-      const Extension* extension = ext_service->GetExtensionByURL(origin);
+    ExtensionService* extension_service = profile_->GetExtensionService();
+    if (extension_service) {
+      const Extension* extension =
+          extension_service->extensions()->GetExtensionOrAppByURL(
+              ExtensionURLInfo(
+                  WebSecurityOrigin::createFromString(
+                      UTF8ToUTF16(origin.spec())),
+                  origin));
       if (extension)
         return UTF8ToUTF16(extension->name());
     }

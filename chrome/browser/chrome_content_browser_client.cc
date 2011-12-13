@@ -57,6 +57,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -178,7 +179,8 @@ RenderProcessHostPrivilege GetPrivilegeRequiredByUrl(
     return PRIV_NORMAL;
 
   if (url.SchemeIs(chrome::kExtensionScheme)) {
-    const Extension* extension = service->GetExtensionByURL(url);
+    const Extension* extension =
+        service->extensions()->GetByID(url.host());
     if (extension && extension->is_storage_isolated())
       return PRIV_ISOLATED;
     if (extension && extension->is_hosted_app())
@@ -376,8 +378,8 @@ GURL ChromeContentBrowserClient::GetEffectiveURL(
   if (!profile || !profile->GetExtensionService())
     return url;
 
-  const Extension* extension =
-      profile->GetExtensionService()->GetExtensionByWebExtent(url);
+  const Extension* extension = profile->GetExtensionService()->extensions()->
+      GetHostedAppByURL(ExtensionURLInfo(url));
   if (!extension)
     return url;
 
@@ -403,8 +405,8 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
   if (!profile || !profile->GetExtensionService())
     return false;
 
-  const Extension* extension =
-      profile->GetExtensionService()->GetExtensionByURL(effective_url);
+  const Extension* extension = profile->GetExtensionService()->extensions()->
+      GetExtensionOrAppByURL(ExtensionURLInfo(effective_url));
   if (!extension)
     return false;
 
@@ -489,9 +491,8 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
     return;
 
   const Extension* extension =
-      service->GetExtensionByURL(site_instance->site());
-  if (!extension)
-    extension = service->GetExtensionByWebExtent(site_instance->site());
+      service->extensions()->GetExtensionOrAppByURL(ExtensionURLInfo(
+          site_instance->site()));
   if (!extension)
     return;
 
@@ -519,9 +520,8 @@ void ChromeContentBrowserClient::SiteInstanceDeleting(
     return;
 
   const Extension* extension =
-      service->GetExtensionByURL(site_instance->site());
-  if (!extension)
-    extension = service->GetExtensionByWebExtent(site_instance->site());
+      service->extensions()->GetExtensionOrAppByURL(
+          ExtensionURLInfo(site_instance->site()));
   if (!extension)
     return;
 

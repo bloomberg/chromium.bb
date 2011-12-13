@@ -293,8 +293,8 @@ void ExtensionDispatcher::DidCreateScriptContext(
     extension_id = user_script_slave_->GetExtensionIdForIsolatedWorld(world_id);
   } else {
     GURL frame_url = UserScriptSlave::GetDataSourceURLForFrame(frame);
-    extension_id = extensions_.GetIDByURL(
-      ExtensionURLInfo(frame->document().securityOrigin(), frame_url));
+    extension_id = extensions_.GetExtensionOrAppIDByURL(
+        ExtensionURLInfo(frame->document().securityOrigin(), frame_url));
   }
 
   ChromeV8Context* context =
