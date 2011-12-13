@@ -14,6 +14,7 @@ import getpass
 import hashlib
 import json
 import logging
+import optparse
 import os
 import random
 import signal
@@ -201,8 +202,10 @@ def signal_handler(signum, stackframe):
 
 class Desktop:
   """Manage a single virtual desktop"""
-  def __init__(self):
+  def __init__(self, width, height):
     self.x_proc = None
+    self.width = width
+    self.height = height
     g_desktops.append(self)
 
   @staticmethod
@@ -214,7 +217,7 @@ class Desktop:
       display += 1
     return display
 
-  def launch_x_server(self):
+  def launch_x_server(self, extra_x_args):
     display = self.get_unused_display_number()
     ret_code = subprocess.call("xauth add :%d . `mcookie`" % display,
                                shell=True)
@@ -222,11 +225,12 @@ class Desktop:
       raise Exception("xauth failed with code %d" % ret_code)
 
     logging.info("Starting Xvfb on display :%d" % display);
+    screen_option = "%dx%dx24" % (self.width, self.height)
     self.x_proc = subprocess.Popen(["Xvfb", ":%d" % display,
                                     "-auth", X_AUTH_FILE,
                                     "-nolisten", "tcp",
-                                    "-screen", "0", "1024x768x24",
-                                    ])
+                                    "-screen", "0", screen_option
+                                    ] + extra_x_args)
     if not self.x_proc.pid:
       raise Exception("Could not start Xvfb.")
 
@@ -280,6 +284,27 @@ class Desktop:
 
 
 def main():
+  parser = optparse.OptionParser(
+      "Usage: %prog [options] [ -- [ X server options ] ]")
+  parser.add_option("-s", "--size", dest="size", default="1280x1024",
+                    help="dimensions of virtual desktop (default: %default)")
+  (options, args) = parser.parse_args()
+
+  size_components = options.size.split("x")
+  if len(size_components) != 2:
+    parser.error("Incorrect size format, should be WIDTHxHEIGHT");
+
+  try:
+    width = int(size_components[0])
+    height = int(size_components[1])
+
+    # Enforce minimum desktop size, as a sanity-check.  The limit of 100 will
+    # detect typos of 2 instead of 3 digits.
+    if width < 100 or height < 100:
+      raise ValueError
+  except ValueError:
+    parser.error("Width and height should be 100 pixels or greater")
+
   atexit.register(cleanup)
 
   for s in [signal.SIGHUP, signal.SIGINT, signal.SIGTERM]:
@@ -307,8 +332,8 @@ def main():
 
   logging.info("Using host_id: " + host.host_id)
 
-  desktop = Desktop()
-  desktop.launch_x_server()
+  desktop = Desktop(width, height)
+  desktop.launch_x_server(args)
   desktop.launch_x_session()
   desktop.launch_host(host)
 
