@@ -41,6 +41,7 @@
       'irt_ppapi.c',
       'irt_manifest.c',
       'irt_nameservice.c',
+      'irt_random.c',
     ],
   },
   'conditions': [

@@ -156,6 +156,11 @@ struct nacl_irt_resource_open {
   int (*open_resource)(const char *file, int *fd);
 };
 
+#define NACL_IRT_RANDOM_v0_1 "nacl-irt-random-0.1"
+struct nacl_irt_random {
+  int (*get_random_bytes)(void *buf, size_t count, size_t *nread);
+};
+
 #if __cplusplus
 }
 #endif
