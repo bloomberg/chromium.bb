@@ -82,11 +82,6 @@ class CONTENT_EXPORT DOMStorageContext {
   // are not deleted by this method.
   void DeleteDataModifiedSince(const base::Time& cutoff);
 
-  // Delete any local storage files which are allowed to be stored only until
-  // the end of the session. Protected origins, per the SpecialStoragePolicy,
-  // are not deleted by this method.
-  void DeleteSessionOnlyData();
-
   // Deletes a single local storage file.
   void DeleteLocalStorageFile(const FilePath& file_path);
 
