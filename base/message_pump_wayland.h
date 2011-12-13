@@ -10,6 +10,10 @@
 #include "base/message_pump_glib.h"
 #include "base/message_pump_observer.h"
 
+typedef struct _GMainContext GMainContext;
+typedef struct _GPollFD GPollFD;
+typedef struct _GSource GSource;
+
 namespace base {
 
 namespace wayland {
@@ -37,7 +41,23 @@ class MessagePumpDispatcher {
   virtual ~MessagePumpDispatcher() {}
 };
 
-typedef MessagePumpGlib MessagePumpForUI;
+class BASE_EXPORT MessagePumpWayland : public MessagePumpGlib {
+
+ public:
+  MessagePumpWayland();
+  virtual ~MessagePumpWayland();
+
+  // Overridden from MessagePumpGlib
+  virtual bool RunOnce(GMainContext* context, bool block) OVERRIDE;
+ private:
+
+  // This is a GLib structure that we can add event sources to.
+  GMainContext* context_;
+
+  DISALLOW_COPY_AND_ASSIGN(MessagePumpWayland);
+};
+
+typedef MessagePumpWayland MessagePumpForUI;
 
 }  // namespace base
 
