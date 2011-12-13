@@ -1,14 +1,21 @@
 <html>
   <!--
-  This test checks that prerender is cancelled when an audio tag is
-  encountered.
+  This test checks that <audio> tags are deferred during prerendering.
   -->
-  <head>
-    <title>Prerender cancellation for HTML5 audio.</title>
-  </head>
-  <body>
-    <audio controls="controls" autoplay="autoplay">
-      <source src="nonexistant.wav" type="audio/wav" />
-    </audio>
-  </body>
+<head>
+<title>Prerender for HTML5 audio.</title>
+</head>
+
+<body>
+<audio id="mediaEl" src="bear.wav" controls>
+</audio>
+
+<script>
+  var willPlay = false;
+  var testNetworkEvents = false;
+</script>
+
+<script src="prerender_html5_common.js"></script>
+
+</body>
 </html>

@@ -1279,14 +1279,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTaskManager) {
 }
 
 // Checks that audio loads are deferred on prerendering.
-// Commentted out due to upload issue with CL: 8095007.
-// TODO(shishir): Fix this.
-// IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5Audio) {
-//   PrerenderTestURL("files/prerender/prerender_html5_audio.html",
-//                   FINAL_STATUS_USED,
-//                   1);
-//  NavigateToDestUrlAndWaitForPassTitle();
-// }
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5Audio) {
+  PrerenderTestURL("files/prerender/prerender_html5_audio.html",
+                  FINAL_STATUS_USED,
+                  1);
+  NavigateToDestUrlAndWaitForPassTitle();
+}
 
 // Checks that audio loads are deferred on prerendering and played back when
 // the prerender is swapped in if autoplay is set.
