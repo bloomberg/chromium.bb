@@ -1535,6 +1535,17 @@ bool WebRequestAddEventListener::RunImpl() {
     return false;
   }
 
+  // We allow to subscribe to patterns that are broader than the host
+  // permissions. E.g., we could subscribe to http://www.example.com/*
+  // while having host permissions for http://www.example.com/foo/* and
+  // http://www.example.com/bar/*.
+  // For this reason we do only a coarse check here to warn the extension
+  // developer if he does something obviously wrong.
+  if (extension->GetEffectiveHostPermissions().is_empty()) {
+    error_ = keys::kHostPermissionsRequired;
+    return false;
+  }
+
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       profile_id(), extension_id(), extension_name,
       event_name, sub_event_name, filter,

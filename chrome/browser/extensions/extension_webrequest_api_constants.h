@@ -57,6 +57,7 @@ extern const char kInvalidRedirectUrl[];
 extern const char kInvalidBlockingResponse[];
 extern const char kInvalidRequestFilterUrl[];
 extern const char kBlockingPermissionRequired[];
+extern const char kHostPermissionsRequired[];
 
 }  // namespace extension_webrequest_api_constants
 

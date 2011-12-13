@@ -51,8 +51,11 @@ const char kInvalidBlockingResponse[] =
     "cancel cannot be true in the presence of other keys.";
 const char kInvalidRequestFilterUrl[] = "'*' is not a valid URL pattern.";
 const char kBlockingPermissionRequired[] =
-        "You do not have permission to use blocking webRequest listeners. "
-        "Be sure to declare the webRequestBlocking permission in your "
-        "manifest.";
+    "You do not have permission to use blocking webRequest listeners. "
+    "Be sure to declare the webRequestBlocking permission in your "
+    "manifest.";
+const char kHostPermissionsRequired[] =
+    "You need to request host permissions in the manifest file in order to "
+    "be notified about requests from the webRequest API.";
 
 }  // namespace extension_webrequest_api_constants
