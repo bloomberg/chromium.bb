@@ -85,7 +85,7 @@ def ParseIndex(data, min_rev, max_rev):
       if ((min_rev is None or rev >= min_rev) and
           (max_rev is None or rev <= max_rev)):
         pdict[rev] = directory
-    return directories
+  return directories
 
 
 # Unfortunately, it is necessary to download the index file to map rev -> url.
