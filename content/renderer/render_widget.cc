@@ -481,8 +481,11 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
 
   bool prevent_default = false;
   if (WebInputEvent::isMouseEventType(input_event->type)) {
-    prevent_default = WillHandleMouseEvent(
-        *(static_cast<const WebMouseEvent*>(input_event)));
+    const WebMouseEvent& mouse_event =
+        *static_cast<const WebMouseEvent*>(input_event);
+    TRACE_EVENT2("renderer", "HandleMouseMove",
+                 "x", mouse_event.x, "y", mouse_event.y);
+    prevent_default = WillHandleMouseEvent(mouse_event);
   }
 
   bool processed = prevent_default;
@@ -878,6 +881,13 @@ void RenderWidget::DoDeferredUpdate() {
     pending_update_params_->needs_ack = false;
     webwidget_->composite(false);
   }
+
+  // If we're holding a pending input event ACK, send the ACK before sending the
+  // UpdateReply message so we can receive another input event before the
+  // UpdateRect_ACK on platforms where the UpdateRect_ACK is sent from within
+  // the UpdateRect IPC message handler.
+  if (pending_input_event_ack_.get())
+    Send(pending_input_event_ack_.release());
 
   // If composite() called SwapBuffers, pending_update_params_ will be reset (in
   // OnSwapBuffersPosted), meaning a message has been added to the

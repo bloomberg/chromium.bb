@@ -554,7 +554,8 @@ void RenderWidgetHost::StopHangMonitorTimeout() {
 }
 
 void RenderWidgetHost::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
-  TRACE_EVENT0("renderer_host", "RenderWidgetHost::ForwardMouseEvent");
+  TRACE_EVENT2("renderer_host", "RenderWidgetHost::ForwardMouseEvent",
+               "x", mouse_event.x, "y", mouse_event.y);
   if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
 
