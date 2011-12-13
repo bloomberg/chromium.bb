@@ -61,6 +61,13 @@ SkBitmap GetGAIAPictureForNTP(const gfx::Image& image) {
   return canvas.ExtractBitmap();
 }
 
+// Puts the |content| into a span with the given CSS class.
+string16 CreateSpanWithClass(const string16& content,
+                             const std::string& css_class) {
+  return ASCIIToUTF16("<span class='" + css_class + "'>") +
+      net::EscapeForHTML(content) + ASCIIToUTF16("</span>");
+}
+
 } // namespace
 
 NTPLoginHandler::NTPLoginHandler() {
@@ -186,27 +193,21 @@ void NTPLoginHandler::UpdateLogin() {
       // title bar and the full name can be ambiguous.
       if (cache.GetNumberOfProfiles() == 1) {
         string16 name = cache.GetGAIANameOfProfileAtIndex(profile_index);
-        header = ASCIIToUTF16("<span class='profile-name'>") +
-                 net::EscapeForHTML(name) +
-                 ASCIIToUTF16("</span>");
+        header = CreateSpanWithClass(name, "profile-name");
         const gfx::Image* image =
             cache.GetGAIAPictureOfProfileAtIndex(profile_index);
         if (image)
           icon_url = web_ui_util::GetImageDataUrl(GetGAIAPictureForNTP(*image));
       }
-      if (header.empty()) {
-        header = UTF8ToUTF16("<span class='profile-name'>" +
-                             net::EscapeForHTML(username) + "</span>");
-      }
+      if (header.empty())
+        header = CreateSpanWithClass(UTF8ToUTF16(username), "profile-name");
     }
   } else if (SyncPromoUI::ShouldShowSyncPromo(profile) &&
              (SyncPromoUI::UserHasSeenSyncPromoAtStartup(profile) ||
               PromoResourceService::CanShowNTPSignInPromo(profile))) {
     string16 signed_in_link = l10n_util::GetStringUTF16(
         IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK);
-    signed_in_link = ASCIIToUTF16("<span class='link-span'>") +
-                     net::EscapeForHTML(signed_in_link) +
-                     ASCIIToUTF16("</span>");
+    signed_in_link = CreateSpanWithClass(signed_in_link, "link-span");
     header = l10n_util::GetStringFUTF16(
         IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_HEADER,
         l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
