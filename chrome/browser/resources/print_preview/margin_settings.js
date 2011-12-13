@@ -167,7 +167,7 @@ cr.define('print_preview', function() {
   /**
    * Extracts the number formatting and measurement system for the current
    * locale.
-   * @param {string} numberFormat Is the formatted version of a sample number,
+   * @param {string} numberFormat Is the formatted version of a sample number
    *     sent from the backend.
    * @param {number} measurementSystem 0 for SI (aka metric system), 1 for the
    *     system used in the US. Note: Mathces UMeasurementSystem enum in
@@ -175,10 +175,9 @@ cr.define('print_preview', function() {
    */
   MarginSettings.setNumberFormatAndMeasurementSystem = function(
       numberFormat, measurementSystem) {
-    var regex = /^(\d+)(\.|\,)(\d+)(\.|\,)(\d+)$/;
-    var matches = numberFormat.match(regex);
-    MarginSettings.thousandsPoint = matches[2];
-    MarginSettings.decimalPoint = matches[4];
+    var symbols = parseNumberFormat(numberFormat);
+    MarginSettings.thousandsPoint = symbols[0];
+    MarginSettings.decimalPoint = symbols[1];
     MarginSettings.useMetricSystem = measurementSystem == 0;
   };
 

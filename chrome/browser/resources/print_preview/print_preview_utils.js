@@ -247,3 +247,19 @@ function convertMillimetersToPoints(value) {
 function convertPointsToMillimeters(value) {
   return value / POINTS_PER_MILLIMETER;
 }
+
+/**
+ * Parses |numberFormat| and extracts the symbols used for the thousands point
+ * and decimal point.
+ * @param {string} numberFormat The formatted version of the number 12345678.
+ * @return {!array.<string>} The extracted symbols in the order
+ *     [thousandsSymbol, decimalSymbol]]. For example
+ *     parseNumberFormat("123,456.78") returns [",", "."].
+ */
+function parseNumberFormat(numberFormat) {
+  if (!numberFormat)
+    numberFormat = '';
+  var regex = /^(\d+)(\W{0,1})(\d+)(\W{0,1})(\d+)$/;
+  var matches = numberFormat.match(regex) || ['','',',','','.'];
+  return [matches[2], matches[4]];
+}

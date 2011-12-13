@@ -111,3 +111,21 @@ TEST_F('PrintPreviewUtilsUnitTest', 'PageSetToPageRanges', function() {
   assertEquals(pageRanges[2].from, 11);
   assertEquals(pageRanges[2].to, 11);
 });
+
+TEST_F('PrintPreviewUtilsUnitTest', 'ParseNumberFormat', function() {
+  assertTrue(areArraysEqual(['.', ','], parseNumberFormat('123.456,78')));
+  assertTrue(areArraysEqual(['.', '.'], parseNumberFormat('123.456.78')));
+  assertTrue(areArraysEqual([',', '.'], parseNumberFormat('123,456.78')));
+  assertTrue(areArraysEqual([',', ','], parseNumberFormat('123,456,78')));
+  assertTrue(areArraysEqual([' ', ','], parseNumberFormat('123 456,78')));
+  assertTrue(areArraysEqual([' ', '.'], parseNumberFormat('123 456.78')));
+  assertTrue(areArraysEqual([' ', ' '], parseNumberFormat('123 456 78')));
+  assertTrue(areArraysEqual(['', ''], parseNumberFormat('123')));
+
+  assertTrue(areArraysEqual([',', '.'], parseNumberFormat('abcdef')));
+  assertTrue(areArraysEqual([',', '.'], parseNumberFormat(null)));
+  assertTrue(areArraysEqual([',', '.'], parseNumberFormat(undefined)));
+  assertTrue(areArraysEqual([',', '.'], parseNumberFormat('')));
+  assertTrue(areArraysEqual([',', '.'], parseNumberFormat('1')));
+  assertTrue(areArraysEqual([',', '.'], parseNumberFormat('12')));
+});
