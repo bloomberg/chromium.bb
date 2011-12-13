@@ -86,7 +86,8 @@ void DraggedTabControllerGtk::CaptureDragInfo(const gfx::Point& mouse_offset) {
 
 void DraggedTabControllerGtk::Drag() {
   if (!drag_data_->GetSourceTabData()->tab_ ||
-      !drag_data_->GetSourceTabContentsWrapper()) {
+      !drag_data_->GetSourceTabContentsWrapper() ||
+      !drag_data_->GetSourceTabContents()) {
     return;
   }
 
