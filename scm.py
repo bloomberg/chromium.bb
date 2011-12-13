@@ -226,7 +226,7 @@ class GIT(object):
     # pipe at a time.
     # The -100 is an arbitrary limit so we don't search forever.
     cmd = ['git', 'log', '-100', '--pretty=medium']
-    proc = subprocess2.Popen(cmd, cwd, stdout=subprocess2.PIPE)
+    proc = subprocess2.Popen(cmd, cwd=cwd, stdout=subprocess2.PIPE)
     url = None
     for line in proc.stdout:
       match = git_svn_re.match(line)
