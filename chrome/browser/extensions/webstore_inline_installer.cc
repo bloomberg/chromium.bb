@@ -73,6 +73,7 @@ class SafeWebstoreResponseParser : public UtilityProcessHost::Client {
   void StartWorkOnIOThread() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     utility_host_ = new UtilityProcessHost(this, BrowserThread::IO);
+    utility_host_->set_use_linux_zygote(true);
     utility_host_->Send(new ChromeUtilityMsg_ParseJSON(webstore_data_));
   }
 

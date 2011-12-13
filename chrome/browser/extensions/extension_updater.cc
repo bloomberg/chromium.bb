@@ -650,6 +650,7 @@ class SafeManifestParser : public UtilityProcessHost::Client {
     if (use_utility_process) {
       UtilityProcessHost* host = new UtilityProcessHost(
           this, BrowserThread::UI);
+      host->set_use_linux_zygote(true);
       host->Send(new ChromeUtilityMsg_ParseUpdateManifest(xml_));
     } else {
       UpdateManifest manifest;

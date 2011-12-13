@@ -68,6 +68,7 @@ void WebstoreInstallHelper::Start() {
 void WebstoreInstallHelper::StartWorkOnIOThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   utility_host_ = new UtilityProcessHost(this, BrowserThread::IO);
+  utility_host_->set_use_linux_zygote(true);
   utility_host_->StartBatchMode();
 
   if (!icon_base64_data_.empty())
