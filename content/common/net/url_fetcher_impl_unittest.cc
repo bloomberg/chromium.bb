@@ -326,24 +326,6 @@ TEST_F(URLFetcherTempFileTest, CanTakeOwnershipOfFile) {
       << temp_file_.value() << " not removed.";
 }
 
-// Wrapper that lets us call CreateFetcher() on a thread of our choice.  We
-// could make URLFetcherTest refcounted and use PostTask(FROM_HERE.. ) to call
-// CreateFetcher() directly, but the ownership of the URLFetcherTest is a bit
-// confusing in that case because GTest doesn't know about the refcounting.
-// It's less confusing to just do it this way.
-class FetcherWrapperTask : public Task {
- public:
-  FetcherWrapperTask(URLFetcherTest* test, const GURL& url)
-      : test_(test), url_(url) { }
-  virtual void Run() {
-    test_->CreateFetcher(url_);
-  }
-
- private:
-  URLFetcherTest* test_;
-  GURL url_;
-};
-
 void URLFetcherPostTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, content::URLFetcher::POST, this);
   fetcher_->SetRequestContext(new TestURLRequestContextGetter(
@@ -571,8 +553,11 @@ TEST_F(URLFetcherTest, DifferentThreadsTest) {
   // scope.
   base::Thread t("URLFetcher test thread");
   ASSERT_TRUE(t.Start());
-  t.message_loop()->PostTask(FROM_HERE, new FetcherWrapperTask(this,
-      test_server.GetURL("defaultresponse")));
+  t.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&URLFetcherTest::CreateFetcher,
+                 base::Unretained(this),
+                 test_server.GetURL("defaultresponse")));
 
   MessageLoop::current()->Run();
 }
@@ -726,7 +711,9 @@ TEST_F(URLFetcherCancelTest, ReleasesContext) {
   // scope.
   base::Thread t("URLFetcher test thread");
   ASSERT_TRUE(t.Start());
-  t.message_loop()->PostTask(FROM_HERE, new FetcherWrapperTask(this, url));
+  t.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&URLFetcherTest::CreateFetcher, base::Unretained(this), url));
 
   MessageLoop::current()->Run();
 
@@ -757,7 +744,9 @@ TEST_F(URLFetcherCancelTest, CancelWhileDelayedStartTaskPending) {
 
   base::Thread t("URLFetcher test thread");
   ASSERT_TRUE(t.Start());
-  t.message_loop()->PostTask(FROM_HERE, new FetcherWrapperTask(this, url));
+  t.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&URLFetcherTest::CreateFetcher, base::Unretained(this), url));
 
   MessageLoop::current()->Run();
 
@@ -792,8 +781,7 @@ TEST_F(URLFetcherTest, CancelAll) {
   io_message_loop_proxy()->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&CancelAllOnIO),
-      base::Bind(&MessageLoop::Quit,
-                 base::Unretained(MessageLoop::current())));
+      MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
   EXPECT_EQ(0, GetNumFetcherCores());
   delete fetcher_;
