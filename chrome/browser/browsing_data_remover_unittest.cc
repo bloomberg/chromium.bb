@@ -12,9 +12,11 @@
 #include "base/platform_file.h"
 #include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/notification_service.h"
 #include "content/test/test_browser_thread.h"
 #include "net/base/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
@@ -120,7 +122,7 @@ class RemoveCookieTester : public BrowsingDataRemoverTester {
     if (cookies == "A=1") {
       get_cookie_success_ = true;
     } else {
-      EXPECT_EQ(cookies, "");
+      EXPECT_EQ("", cookies);
       get_cookie_success_ = false;
     }
     Notify();
@@ -234,7 +236,8 @@ class RemoveQuotaManagedDataTester : public BrowsingDataRemoverTester {
 
 // Test Class ----------------------------------------------------------------
 
-class BrowsingDataRemoverTest : public testing::Test {
+class BrowsingDataRemoverTest : public testing::Test,
+                                public content::NotificationObserver {
  public:
   BrowsingDataRemoverTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
@@ -243,6 +246,8 @@ class BrowsingDataRemoverTest : public testing::Test {
         file_thread_(BrowserThread::FILE, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_),
         profile_(new TestingProfile()) {
+    registrar_.Add(this, chrome::NOTIFICATION_BROWSING_DATA_REMOVED,
+                   content::Source<Profile>(profile_.get()));
   }
 
   virtual ~BrowsingDataRemoverTest() {
@@ -266,6 +271,8 @@ class BrowsingDataRemoverTest : public testing::Test {
         base::Time::Now() + base::TimeDelta::FromMilliseconds(10));
     remover->AddObserver(tester);
 
+    called_with_details_.reset(new BrowsingDataRemover::NotificationDetails());
+
     // BrowsingDataRemover deletes itself when it completes.
     remover->Remove(remove_mask);
     tester->BlockUntilNotified();
@@ -273,6 +280,14 @@ class BrowsingDataRemoverTest : public testing::Test {
 
   TestingProfile* GetProfile() {
     return profile_.get();
+  }
+
+  base::Time GetBeginTime() {
+    return called_with_details_->removal_begin;
+  }
+
+  int GetRemovalMask() {
+    return called_with_details_->removal_mask;
   }
 
   quota::MockQuotaManager* GetMockManager() {
@@ -287,7 +302,25 @@ class BrowsingDataRemoverTest : public testing::Test {
     return (quota::MockQuotaManager*) profile_->GetQuotaManager();
   }
 
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
+    DCHECK_EQ(type, chrome::NOTIFICATION_BROWSING_DATA_REMOVED);
+
+    // We're not taking ownership of the details object, but storing a copy of
+    // it locally.
+    called_with_details_.reset(new BrowsingDataRemover::NotificationDetails(
+        *content::Details<BrowsingDataRemover::NotificationDetails>(
+            details).ptr()));
+
+    registrar_.RemoveAll();
+  }
+
  private:
+  scoped_ptr<BrowsingDataRemover::NotificationDetails> called_with_details_;
+  content::NotificationRegistrar registrar_;
+
   // message_loop_, as well as all the threads associated with it must be
   // defined before profile_ to prevent explosions. Oh how I love C++.
   MessageLoopForUI message_loop_;
@@ -313,6 +346,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveCookieForever) {
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_COOKIES, tester.get());
 
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_COOKIES, GetRemovalMask());
   EXPECT_FALSE(tester->ContainsCookie());
 }
 
@@ -326,6 +360,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveHistoryForever) {
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_HISTORY, tester.get());
 
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_HISTORY, GetRemovalMask());
   EXPECT_FALSE(tester->HistoryContainsURL(kOrigin1));
 }
 
@@ -343,6 +378,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveHistoryForLastHour) {
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::LAST_HOUR,
       BrowsingDataRemover::REMOVE_HISTORY, tester.get());
 
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_HISTORY, GetRemovalMask());
   EXPECT_FALSE(tester->HistoryContainsURL(kOrigin1));
   EXPECT_TRUE(tester->HistoryContainsURL(kOrigin2));
 }
@@ -356,6 +392,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverBoth) {
       BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_LSO_DATA, tester.get());
 
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
+      ~BrowsingDataRemover::REMOVE_LSO_DATA, GetRemovalMask());
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
       quota::kStorageTypeTemporary));
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
@@ -379,6 +417,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyTemporary) {
       BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_LSO_DATA, tester.get());
 
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
+      ~BrowsingDataRemover::REMOVE_LSO_DATA, GetRemovalMask());
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
       quota::kStorageTypeTemporary));
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
@@ -402,6 +442,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyPersistent) {
       BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_LSO_DATA, tester.get());
 
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
+      ~BrowsingDataRemover::REMOVE_LSO_DATA, GetRemovalMask());
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
       quota::kStorageTypeTemporary));
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
@@ -425,6 +467,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverNeither) {
       BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_LSO_DATA, tester.get());
 
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
+      ~BrowsingDataRemover::REMOVE_LSO_DATA, GetRemovalMask());
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
       quota::kStorageTypeTemporary));
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
@@ -448,6 +492,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastHour) {
       BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_LSO_DATA, tester.get());
 
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
+      ~BrowsingDataRemover::REMOVE_LSO_DATA, GetRemovalMask());
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
       quota::kStorageTypeTemporary));
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
@@ -471,6 +517,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastWeek) {
       BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_LSO_DATA, tester.get());
 
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
+      ~BrowsingDataRemover::REMOVE_LSO_DATA, GetRemovalMask());
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
       quota::kStorageTypeTemporary));
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
@@ -500,6 +548,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedUnprotectedOrigins) {
       BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_LSO_DATA, tester.get());
 
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
+      ~BrowsingDataRemover::REMOVE_LSO_DATA, GetRemovalMask());
   EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin1,
       quota::kStorageTypeTemporary));
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,

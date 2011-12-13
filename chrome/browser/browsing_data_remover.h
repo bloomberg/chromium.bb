@@ -77,6 +77,23 @@ class BrowsingDataRemover : public content::NotificationObserver,
                        REMOVE_LSO_DATA | REMOVE_WEBSQL
   };
 
+  // When BrowsingDataRemover successfully removes data, a notification of type
+  // NOTIFICATION_BROWSING_DATA_REMOVED is triggered with a Details object of
+  // this type.
+  struct NotificationDetails {
+    NotificationDetails();
+    NotificationDetails(const NotificationDetails& details);
+    NotificationDetails(base::Time removal_begin,
+                       int removal_mask);
+    ~NotificationDetails();
+
+    // The beginning of the removal time range.
+    base::Time removal_begin;
+
+    // The removal mask (see the RemoveDataMask enum for details)
+    int removal_mask;
+  };
+
   // Observer is notified when the removal is done. Done means keywords have
   // been deleted, cache cleared and all other tasks scheduled.
   class Observer {
@@ -254,6 +271,9 @@ class BrowsingDataRemover : public content::NotificationObserver,
   // gathering origins.
   int quota_managed_origins_to_delete_count_;
   int quota_managed_storage_types_to_delete_count_;
+
+  // The removal mask for the current removal operation.
+  int remove_mask_;
 
   ObserverList<Observer> observer_list_;
 

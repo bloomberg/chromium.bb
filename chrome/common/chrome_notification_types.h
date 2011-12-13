@@ -984,6 +984,15 @@ enum NotificationType {
   // all error UIs should update.
   NOTIFICATION_GLOBAL_ERRORS_CHANGED,
 
+  // BrowsingDataRemover ----------------------------------------------------
+  // Sent on the UI thread after BrowsingDataRemover has removed browsing data
+  // but before it has notified its explicit observers. The source is a
+  // Source<Profile> containing the profile in which browsing data was removed,
+  // and the detail is a BrowsingDataRemover::NotificationDetail containing the
+  // removal mask and the start of the removal timeframe with which
+  // BrowsingDataRemove::Remove was called.
+  NOTIFICATION_BROWSING_DATA_REMOVED,
+
   // Note:-
   // Currently only Content and Chrome define and use notifications.
   // Custom notifications not belonging to Content and Chrome should start
