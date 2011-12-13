@@ -145,12 +145,6 @@ class BaseSessionService : public CancelableRequestProvider,
       InternalGetCommandsRequest* request,
       CancelableRequestConsumerBase* consumer);
 
-  // Invokes ReadCurrentSessionCommands with request on the backend thread.
-  // If testing, ReadLastSessionCommands is invoked directly.
-  Handle ScheduleGetCurrentSessionCommands(
-      InternalGetCommandsRequest* request,
-      CancelableRequestConsumerBase* consumer);
-
   // In production, this posts the task to the FILE thread.  For
   // tests, it immediately runs the specified task on the current
   // thread.

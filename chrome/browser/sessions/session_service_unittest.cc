@@ -622,38 +622,6 @@ TEST_F(SessionServiceTest, PinnedTrue) {
   EXPECT_TRUE(CreateAndWriteSessionWithOneTab(true, true));
 }
 
-class GetCurrentSessionCallbackHandler {
- public:
-  void OnGotSession(int handle, std::vector<SessionWindow*>* windows) {
-    EXPECT_EQ(1U, windows->size());
-    EXPECT_EQ(2U, (*windows)[0]->tabs.size());
-    EXPECT_EQ(2U, (*windows)[0]->tabs[0]->navigations.size());
-    EXPECT_EQ(GURL("http://bar/1"),
-              (*windows)[0]->tabs[0]->navigations[0].virtual_url());
-    EXPECT_EQ(GURL("http://bar/2"),
-              (*windows)[0]->tabs[0]->navigations[1].virtual_url());
-    EXPECT_EQ(2U, (*windows)[0]->tabs[1]->navigations.size());
-    EXPECT_EQ(GURL("http://foo/1"),
-              (*windows)[0]->tabs[1]->navigations[0].virtual_url());
-    EXPECT_EQ(GURL("http://foo/2"),
-              (*windows)[0]->tabs[1]->navigations[1].virtual_url());
-  }
-};
-
-TEST_F(SessionServiceTest, GetCurrentSession) {
-  AddTab(browser(), GURL("http://foo/1"));
-  NavigateAndCommitActiveTab(GURL("http://foo/2"));
-  AddTab(browser(), GURL("http://bar/1"));
-  NavigateAndCommitActiveTab(GURL("http://bar/2"));
-
-  CancelableRequestConsumer consumer;
-  GetCurrentSessionCallbackHandler handler;
-  service()->GetCurrentSession(
-      &consumer,
-      base::Bind(&GetCurrentSessionCallbackHandler::OnGotSession,
-                 base::Unretained(&handler)));
-}
-
 // Test that the notification for SESSION_SERVICE_SAVED is working properly.
 TEST_F(SessionServiceTest, SavedSessionNotification) {
   content::NotificationRegistrar registrar_;

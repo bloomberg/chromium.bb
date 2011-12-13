@@ -170,16 +170,6 @@ class SessionService : public BaseSessionService,
   Handle GetLastSession(CancelableRequestConsumerBase* consumer,
                         const SessionCallback& callback);
 
-  // Fetches the contents of the current session, notifying the callback when
-  // done. If the callback is supplied an empty vector of SessionWindows
-  // it means the session could not be restored.
-  //
-  // The created request does NOT directly invoke the callback, rather the
-  // callback invokes OnGotSessionCommands from which we map the
-  // SessionCommands to browser state, then notify the callback.
-  Handle GetCurrentSession(CancelableRequestConsumerBase* consumer,
-                           const SessionCallback& callback);
-
   // Overridden from BaseSessionService because we want some UMA reporting on
   // session update activities.
   virtual void Save() OVERRIDE;

@@ -84,7 +84,7 @@ class InternalSessionRequest
         real_callback(real_callback) {
   }
 
-  // The callback supplied to GetLastSession and GetCurrentSession.
+  // The callback supplied to GetLastSession.
   SessionService::SessionCallback real_callback;
 
  private:
@@ -422,35 +422,6 @@ SessionService::Handle SessionService::GetLastSession(
                      base::Unretained(this)),
           callback),
       consumer);
-}
-
-SessionService::Handle SessionService::GetCurrentSession(
-    CancelableRequestConsumerBase* consumer,
-    const SessionCallback& callback) {
-  if (pending_window_close_ids_.empty()) {
-    // If there are no pending window closes, we can get the current session
-    // from memory.
-    scoped_refptr<InternalSessionRequest> request(new InternalSessionRequest(
-        base::Bind(&SessionService::OnGotSessionCommands,
-                   base::Unretained(this)),
-        callback));
-    AddRequest(request, consumer);
-    IdToRange tab_to_available_range;
-    std::set<SessionID::id_type> windows_to_track;
-    BuildCommandsFromBrowsers(&(request->commands),
-                              &tab_to_available_range,
-                              &windows_to_track);
-    request->ForwardResult(request->handle(), request);
-    return request->handle();
-  } else {
-    // If there are pending window closes, read the current session from disk.
-    return ScheduleGetCurrentSessionCommands(
-        new InternalSessionRequest(
-            base::Bind(&SessionService::OnGotSessionCommands,
-                       base::Unretained(this)),
-            callback),
-        consumer);
-  }
 }
 
 void SessionService::Save() {

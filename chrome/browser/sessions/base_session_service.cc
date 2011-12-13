@@ -275,19 +275,6 @@ BaseSessionService::Handle BaseSessionService::ScheduleGetLastSessionCommands(
   return request->handle();
 }
 
-BaseSessionService::Handle
-    BaseSessionService::ScheduleGetCurrentSessionCommands(
-        InternalGetCommandsRequest* request,
-        CancelableRequestConsumerBase* consumer) {
-  scoped_refptr<InternalGetCommandsRequest> request_wrapper(request);
-  AddRequest(request, consumer);
-  RunTaskOnBackendThread(
-      FROM_HERE,
-      base::Bind(&SessionBackend::ReadCurrentSessionCommands, backend(),
-                 request_wrapper));
-  return request->handle();
-}
-
 bool BaseSessionService::RunTaskOnBackendThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
