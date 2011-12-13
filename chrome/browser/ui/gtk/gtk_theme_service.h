@@ -117,10 +117,6 @@ class GtkThemeService : public ThemeService {
   // Expose the inner label. Only used for testing.
   GtkWidget* fake_label() { return fake_label_.get(); }
 
-  // Same as above, but auto-mirrors the underlying pixbuf in RTL mode.
-  gfx::CairoCachedSurface* GetRTLEnabledSurfaceNamed(
-      int id, GtkWidget* widget_on_display);
-
   // A way to get a cached cairo surface for the equivalent of GetFolderIcon()
   // or GetDefaultFavicon(). Uses the ids defined in CairoDefaultIcon.
   gfx::CairoCachedSurface* GetCairoIcon(int id, GtkWidget* widget_on_display);

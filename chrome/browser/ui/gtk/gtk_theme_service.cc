@@ -570,21 +570,6 @@ void GtkThemeService::GetScrollbarColors(GdkColor* thumb_active_color,
     *track_color = *theme_trough_color;
 }
 
-gfx::CairoCachedSurface* GtkThemeService::GetRTLEnabledSurfaceNamed(
-    int id,
-    GtkWidget* widget_on_display) {
-  // We flip the sign of |id| when passing it to GetSurfaceNamedImpl() for the
-  // same reason that ThemeService::GetPixbufImpl() does: so that if one
-  // location calls this function with a resource ID, and another place calls
-  // GetSurfaceNamed() with the same ID, they'll correctly get different
-  // surfaces in RTL mode.
-  return GetSurfaceNamedImpl(
-      -id,
-      &per_display_surfaces_,
-      &GtkThemeService::GetRTLEnabledPixbufNamedWrapper,
-      widget_on_display);
-}
-
 gfx::CairoCachedSurface* GtkThemeService::GetCairoIcon(
     int id,
     GtkWidget* widget_on_display) {

@@ -94,4 +94,8 @@ GdkPixbuf* ResourceBundle::GetRTLEnabledPixbufNamed(int resource_id) {
   return *GetPixbufImpl(resource_id, true);
 }
 
+gfx::Image& ResourceBundle::GetRTLEnabledImageNamed(int resource_id) {
+  return *GetPixbufImpl(resource_id, true);
+}
+
 }  // namespace ui

@@ -901,9 +901,9 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
     GtkAllocation border_allocation = bar->border_bin_->allocation;
 
     // Blit the left part of the background image once on the left.
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     gfx::CairoCachedSurface* background_left =
-        bar->theme_service_->GetRTLEnabledSurfaceNamed(
-        IDR_FIND_BOX_BACKGROUND_LEFT, widget);
+        rb.GetRTLEnabledImageNamed(IDR_FIND_BOX_BACKGROUND_LEFT).ToCairo();
     background_left->SetSource(cr, widget,
                                border_allocation.x, border_allocation.y);
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
@@ -912,7 +912,6 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
     cairo_fill(cr);
 
     // Blit the center part of the background image in all the space between.
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     gfx::CairoCachedSurface* background =
         rb.GetNativeImageNamed(IDR_FIND_BOX_BACKGROUND).ToCairo();
     background->SetSource(cr, widget,

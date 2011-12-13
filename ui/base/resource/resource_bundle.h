@@ -180,6 +180,9 @@ class UI_EXPORT ResourceBundle {
   // This function flips it in RTL locales.
   GdkPixbuf* GetRTLEnabledPixbufNamed(int resource_id);
 
+  // Same as above, but returns a gfx::Image wrapping the GdkPixbuf.
+  gfx::Image& GetRTLEnabledImageNamed(int resource_id);
+
  private:
   // Shared implementation for the above two functions.
   gfx::Image* GetPixbufImpl(int resource_id, bool rtl_enabled);
