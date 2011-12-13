@@ -22,7 +22,7 @@ function test() {
   var config = {
     mode: "pac_script",
     pacScript: {
-      data: "trash!",
+      data: "trash!-FindProxyForURL",
       mandatory: false
     }
   };

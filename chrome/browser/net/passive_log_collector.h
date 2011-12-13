@@ -237,19 +237,19 @@ class PassiveLogCollector : public ChromeNetLog::ThreadSafeObserverImpl {
   };
 
   // Specialization of SourceTracker for handling
-  // SOURCE_INIT_PROXY_RESOLVER.
-  class InitProxyResolverTracker : public SourceTracker {
+  // SOURCE_PROXY_SCRIPT_DECIDER.
+  class ProxyScriptDeciderTracker : public SourceTracker {
    public:
     static const size_t kMaxNumSources;
     static const size_t kMaxGraveyardSize;
 
-    InitProxyResolverTracker();
+    ProxyScriptDeciderTracker();
 
    private:
     virtual Action DoAddEntry(const ChromeNetLog::Entry& entry,
                               SourceInfo* out_info) OVERRIDE;
 
-    DISALLOW_COPY_AND_ASSIGN(InitProxyResolverTracker);
+    DISALLOW_COPY_AND_ASSIGN(ProxyScriptDeciderTracker);
   };
 
   // Tracks the log entries for the last seen SOURCE_SPDY_SESSION.
@@ -447,7 +447,7 @@ class PassiveLogCollector : public ChromeNetLog::ThreadSafeObserverImpl {
   SocketTracker socket_tracker_;
   RequestTracker url_request_tracker_;
   RequestTracker socket_stream_tracker_;
-  InitProxyResolverTracker init_proxy_resolver_tracker_;
+  ProxyScriptDeciderTracker proxy_script_decider_tracker_;
   SpdySessionTracker spdy_session_tracker_;
   DNSRequestTracker dns_request_tracker_;
   DNSJobTracker dns_job_tracker_;

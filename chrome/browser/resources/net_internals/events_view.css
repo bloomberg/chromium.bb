@@ -92,7 +92,7 @@ found in the LICENSE file.
   color: #803030;
 }
 
-#events-view-source-list-tbody .source_INIT_PROXY_RESOLVER {
+#events-view-source-list-tbody .source_PROXY_SCRIPT_DECIDER {
   color: green;
 }
 

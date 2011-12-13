@@ -7,7 +7,7 @@
  *
  *   - Shows the current proxy settings.
  *   - Has a button to reload these settings.
- *   - Shows the log entries for the most recent INIT_PROXY_RESOLVER source
+ *   - Shows the log entries for the most recent PROXY_SCRIPT_DECIDER source
  *   - Shows the list of proxy hostnames that are cached as "bad".
  *   - Has a button to clear the cached bad proxies.
  */
@@ -65,9 +65,9 @@ var ProxyView = (function() {
     },
 
     onLoadLogFinish: function(data, tabData) {
-      // It's possible that the last INIT_PROXY_RESOLVER source was deleted from
-      // the log, but earlier sources remain.  When that happens, clear the list
-      // of entries here, to avoid displaying misleading information.
+      // It's possible that the last PROXY_SCRIPT_DECIDER source was deleted
+      // from the log, but earlier sources remain.  When that happens, clear the
+      // list of entries here, to avoid displaying misleading information.
       if (tabData != this.latestProxySourceId_)
         this.clearLog_();
       return this.onProxySettingsChanged(data.proxySettings) &&
@@ -127,14 +127,14 @@ var ProxyView = (function() {
 
     /**
      * Called whenever SourceEntries are updated with new log entries.  Updates
-     * |proxyResolverLogPre_| with the log entries of the INIT_PROXY_RESOLVER
+     * |proxyResolverLogPre_| with the log entries of the PROXY_SCRIPT_DECIDER
      * SourceEntry with the greatest id.
      */
     onSourceEntriesUpdated: function(sourceEntries) {
       for (var i = sourceEntries.length - 1; i >= 0; --i) {
         var sourceEntry = sourceEntries[i];
 
-        if (sourceEntry.getSourceType() != LogSourceType.INIT_PROXY_RESOLVER ||
+        if (sourceEntry.getSourceType() != LogSourceType.PROXY_SCRIPT_DECIDER ||
             this.latestProxySourceId_ > sourceEntry.getSourceId()) {
           continue;
         }
