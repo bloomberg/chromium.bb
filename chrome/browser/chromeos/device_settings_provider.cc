@@ -144,10 +144,8 @@ void DeviceSettingsProvider::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED &&
-      UserManager::Get()->current_user_is_owner()) {
-    // Reload the initial policy blob, apply settings from temp storage,
-    // and write back the blob.
+  if (type == chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
+    // Reload the policy blob once the owner key has been loaded or updated.
     ownership_status_ = OwnershipService::OWNERSHIP_TAKEN;
     Reload();
   }
