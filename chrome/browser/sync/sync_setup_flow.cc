@@ -438,6 +438,15 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
     }
     case SyncSetupWizard::GAIA_SUCCESS:
       if (end_state_ == SyncSetupWizard::GAIA_SUCCESS) {
+        // The user has just re-authed - set the passphrase so we can re-encrypt
+        // if necessary. If we are currently encrypting with an explicit
+        // passphrase, this does nothing.
+        // TODO(atwilson): Move all the code dealing with the implicit GAIA
+        // passphrase back into ProfileSyncService in a
+        // NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL listener once we get rid of
+        // SyncSetupFlow.
+        if (!cached_passphrase_.empty())
+          service_->SetPassphrase(cached_passphrase_, false);
         flow_handler_->ShowGaiaSuccessAndClose();
         break;
       }
