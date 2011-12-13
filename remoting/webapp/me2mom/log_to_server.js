@@ -20,20 +20,29 @@ remoting.LogToServer = function() {
   this.pendingEntries = [];
   /** @type {remoting.StatsAccumulator} */
   this.statsAccumulator = new remoting.StatsAccumulator();
+  /** @type string */
+  this.sessionId = '';
+  /** @type number */
+  this.sessionIdGenerationTime = 0;
 };
 
-// Local storage keys.
+// Local storage key.
 /** @private */
-remoting.LogToServer.prototype.KEY_ENABLED_ = 'remoting.LogToServer.enabled';
-/** @private */
-remoting.LogToServer.prototype.KEY_ID_ = 'remoting.LogToServer.id';
+remoting.LogToServer.KEY_ENABLED_ = 'remoting.LogToServer.enabled';
 
-// Constants used for generating an ID.
+// Constants used for generating a session ID.
 /** @private */
-remoting.LogToServer.prototype.ID_ALPHABET_ =
+remoting.LogToServer.SESSION_ID_ALPHABET_ =
     'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
 /** @private */
-remoting.LogToServer.prototype.ID_LEN_ = 20;
+remoting.LogToServer.SESSION_ID_LEN_ = 20;
+
+// The maximum age of a session ID, in milliseconds.
+remoting.LogToServer.MAX_SESSION_ID_AGE = 24 * 60 * 60 * 1000;
+
+// The time over which to accumulate connection statistics before logging them
+// to the server, in milliseconds.
+remoting.LogToServer.CONNECTION_STATS_ACCUMULATE_TIME = 60 * 1000;
 
 /**
  * Enables or disables logging.
@@ -41,7 +50,8 @@ remoting.LogToServer.prototype.ID_LEN_ = 20;
  * @param {boolean} enabled whether logging is enabled
  */
 remoting.LogToServer.prototype.setEnabled = function(enabled) {
-  window.localStorage.setItem(this.KEY_ENABLED_, enabled ? 'true' : 'false');
+  window.localStorage.setItem(remoting.LogToServer.KEY_ENABLED_,
+     enabled ? 'true' : 'false');
 }
 
 /**
@@ -52,16 +62,31 @@ remoting.LogToServer.prototype.setEnabled = function(enabled) {
  */
 remoting.LogToServer.prototype.logClientSessionStateChange =
     function(state, connectionError) {
+  this.maybeExpireSessionId();
+  // Maybe set the session ID.
+  if ((state == remoting.ClientSession.State.CONNECTING) ||
+      (state == remoting.ClientSession.State.INITIALIZING) ||
+      (state == remoting.ClientSession.State.CONNECTED)) {
+    if (this.sessionId == '') {
+      this.setSessionId();
+    }
+  }
+  // Log the session state change.
   var entry = remoting.ServerLogEntry.makeClientSessionStateChange(
       state, connectionError);
   entry.addHostFields();
   entry.addChromeVersionField();
   entry.addWebappVersionField();
-  entry.addIdField(this.getId());
+  entry.addSessionIdField(this.sessionId);
   this.log(entry);
   // Don't accumulate connection statistics across state changes.
   this.logAccumulatedStatistics();
   this.statsAccumulator.empty();
+  // Maybe clear the session ID.
+  if ((state == remoting.ClientSession.State.CLOSED) ||
+      (state == remoting.ClientSession.State.CONNECTION_FAILED)) {
+    this.clearSessionId();
+  }
 };
 
 /**
@@ -69,11 +94,13 @@ remoting.LogToServer.prototype.logClientSessionStateChange =
  * @param {Object.<string, number>} stats the connection statistics
  */
 remoting.LogToServer.prototype.logStatistics = function(stats) {
+  this.maybeExpireSessionId();
   // Store the statistics.
   this.statsAccumulator.add(stats);
   // Send statistics to the server if they've been accumulating for at least
   // 60 seconds.
-  if (this.statsAccumulator.getTimeSinceFirstValue() >= 60 * 1000) {
+  if (this.statsAccumulator.getTimeSinceFirstValue() >=
+      remoting.LogToServer.CONNECTION_STATS_ACCUMULATE_TIME) {
     this.logAccumulatedStatistics();
   }
 };
@@ -92,7 +119,7 @@ remoting.LogToServer.prototype.logAccumulatedStatistics = function() {
     entry.addHostFields();
     entry.addChromeVersionField();
     entry.addWebappVersionField();
-    entry.addIdField(this.getId());
+    entry.addSessionIdField(this.sessionId);
     this.log(entry);
   }
   this.statsAccumulator.empty();
@@ -137,43 +164,66 @@ remoting.LogToServer.prototype.log = function(entry) {
  * @return {boolean} whether logging is enabled
  */
 remoting.LogToServer.prototype.isEnabled = function() {
-  var value = window.localStorage.getItem(this.KEY_ENABLED_);
+  var value = window.localStorage.getItem(remoting.LogToServer.KEY_ENABLED_);
   return (value == 'true');
 };
 
 /**
- * Gets an ID from local storage.
- *
- * This function returns the empty string if logging is disabled.
- * If logging is enabled, and there is no ID in local storage, then this
- * function will create and store an ID.
+ * Sets the session ID to a random string.
  *
  * @private
- * @return {string} an ID, or the empty string
  */
-remoting.LogToServer.prototype.getId = function() {
-  if (!this.isEnabled()) {
-    return '';
-  }
-  var id = window.localStorage.getItem(this.KEY_ID_);
-  if ((!id) || (typeof id != 'string')) {
-    id = this.generateId();
-    window.localStorage.setItem(this.KEY_ID_, id);
-  }
-  return id.toString();
+remoting.LogToServer.prototype.setSessionId = function() {
+  this.sessionId = remoting.LogToServer.generateSessionId();
+  this.sessionIdGenerationTime = new Date().getTime();
 };
 
 /**
- * Generates an ID.
+ * Clears the session ID.
  *
  * @private
- * @return {string} an ID
  */
-remoting.LogToServer.prototype.generateId = function() {
+remoting.LogToServer.prototype.clearSessionId = function() {
+  this.sessionId = '';
+  this.sessionIdGenerationTime = 0;
+};
+
+/**
+ * Sets a new session ID, if the current session ID has reached its maximum age.
+ *
+ * This method also logs the old and new session IDs to the server, in separate
+ * log entries.
+ *
+ * @private
+ */
+remoting.LogToServer.prototype.maybeExpireSessionId = function() {
+  if ((this.sessionId != '') &&
+      (new Date().getTime() - this.sessionIdGenerationTime >=
+      remoting.LogToServer.MAX_SESSION_ID_AGE)) {
+    // Log the old session ID.
+    var entry = remoting.ServerLogEntry.makeSessionIdOld(this.sessionId);
+    this.log(entry);
+    // Generate a new session ID.
+    this.setSessionId();
+    // Log the new session ID.
+    entry = remoting.ServerLogEntry.makeSessionIdNew(this.sessionId);
+    this.log(entry);
+  }
+};
+
+/**
+ * Generates a string that can be used as a session ID.
+ *
+ * @private
+ * @return {string} a session ID
+ */
+remoting.LogToServer.generateSessionId = function() {
   var idArray = [];
-  for (var i = 0; i < this.ID_LEN_; i++) {
-    var index = Math.random() * this.ID_ALPHABET_.length;
-    idArray.push(this.ID_ALPHABET_.slice(index, index + 1));
+  for (var i = 0; i < remoting.LogToServer.SESSION_ID_LEN_; i++) {
+    var index =
+        Math.random() * remoting.LogToServer.SESSION_ID_ALPHABET_.length;
+    idArray.push(
+        remoting.LogToServer.SESSION_ID_ALPHABET_.slice(index, index + 1));
   }
   return idArray.join('');
 };

@@ -27,7 +27,7 @@ remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_STATE_ =
     'session-state';
 
 /** @private */
-remoting.ServerLogEntry.KEY_ID_ = 'id';
+remoting.ServerLogEntry.KEY_SESSION_ID_ = 'session-id';
 
 /** @private */
 remoting.ServerLogEntry.KEY_ROLE_ = 'role';
@@ -131,6 +131,12 @@ remoting.ServerLogEntry.KEY_BROWSER_VERSION_ = 'browser-version';
 
 /** @private */
 remoting.ServerLogEntry.KEY_WEBAPP_VERSION_ = 'webapp-version';
+
+/** @private */
+remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_ID_OLD_ = 'session-id-old';
+
+/** @private */
+remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_ID_NEW_ = 'session-id-new';
 
 /**
  * Sets one field in this log entry.
@@ -249,12 +255,44 @@ remoting.ServerLogEntry.prototype.addStatsField = function(
 };
 
 /**
- * Adds an ID field to this log entry.
+ * Makes a log entry for a "this session ID is old" event.
  *
- * @param {string} id
+ * @param {string} sessionId
+ * @return {remoting.ServerLogEntry}
  */
-remoting.ServerLogEntry.prototype.addIdField = function(id) {
-  this.set(remoting.ServerLogEntry.KEY_ID_, id);
+remoting.ServerLogEntry.makeSessionIdOld = function(sessionId) {
+  var entry = new remoting.ServerLogEntry();
+  entry.set(remoting.ServerLogEntry.KEY_ROLE_,
+            remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
+  entry.set(remoting.ServerLogEntry.KEY_EVENT_NAME_,
+            remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_ID_OLD_);
+  entry.addSessionIdField(sessionId);
+  return entry;
+};
+
+/**
+ * Makes a log entry for a "this session ID is new" event.
+ *
+ * @param {string} sessionId
+ * @return {remoting.ServerLogEntry}
+ */
+remoting.ServerLogEntry.makeSessionIdNew = function(sessionId) {
+  var entry = new remoting.ServerLogEntry();
+  entry.set(remoting.ServerLogEntry.KEY_ROLE_,
+            remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
+  entry.set(remoting.ServerLogEntry.KEY_EVENT_NAME_,
+            remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_ID_NEW_);
+  entry.addSessionIdField(sessionId);
+  return entry;
+};
+
+/**
+ * Adds a session ID field to this log entry.
+ *
+ * @param {string} sessionId
+ */
+remoting.ServerLogEntry.prototype.addSessionIdField = function(sessionId) {
+  this.set(remoting.ServerLogEntry.KEY_SESSION_ID_, sessionId);
 }
 
 /**
