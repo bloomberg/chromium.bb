@@ -182,7 +182,10 @@ LRESULT CALLBACK PluginWrapperWindowProc(HWND window, unsigned int message,
   return ::DefWindowProc(window, message, wparam, lparam);
 }
 
-void SendToGpuProcessHost(int gpu_host_id, scoped_ptr<IPC::Message> message) {
+void SendToGpuProcessHost(int gpu_host_id, IPC::Message* m) {
+  // TODO(ajwong): Switch back to Passed() when it becomes available again.
+  scoped_ptr<IPC::Message> message(m);
+
   GpuProcessHost* gpu_process_host = GpuProcessHost::FromID(gpu_host_id);
   if (!gpu_process_host)
     return;
@@ -2048,12 +2051,10 @@ void RenderWidgetHostViewWin::AcceleratedSurfaceBuffersSwapped(
       accelerated_surface_->Initialize();
     }
 
-    scoped_ptr<IPC::Message> message(
-        new AcceleratedSurfaceMsg_BuffersSwappedACK(params.route_id));
     base::Closure acknowledge_task = base::Bind(
         SendToGpuProcessHost,
         gpu_host_id,
-        base::Passed(&message));
+        new AcceleratedSurfaceMsg_BuffersSwappedACK(params.route_id));
 
     accelerated_surface_->AsyncPresentAndAcknowledge(
         params.size,
