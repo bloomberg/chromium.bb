@@ -82,7 +82,7 @@ void CompositeFilter::RemoveFilter(scoped_refptr<Filter> filter) {
     filter->clear_host();
     return;
   }
-  NOTREACHED() << "Filter missing.";
+  LOG(FATAL) << "Filter missing.";
 }
 
 void CompositeFilter::set_host(FilterHost* host) {
