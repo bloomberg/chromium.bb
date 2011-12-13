@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -133,6 +134,12 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   TabContentsObserver::Observe(host_contents_.get());
   host_contents_->set_delegate(this);
   host_contents_->set_view_type(host_type);
+
+  // TODO(mpcomplete): This was lifted from PrefsTabHelper, but it might be
+  // better to reuse all of PrefsTabHelper. We'd first have to make it not
+  // depend on TabContentsWrapper.
+  renderer_preferences_util::UpdateFromSystemSettings(
+      host_contents_->GetMutableRendererPrefs(), profile_);
 
   render_view_host_ = host_contents_->render_view_host();
 
