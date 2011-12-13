@@ -117,6 +117,8 @@
       <include name="IDR_TRACING_HTML" file="resources\tracing.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_TRACING_JS" file="resources\tracing.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_TRANSLATE_JS" file="resources\translate.js" type="BINDATA" />
+      <include name="IDR_UBER_HTML" file="resources\uber\uber.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_UBER_JS" file="resources\uber\uber.js" type="BINDATA" />
       <include name="IDR_WEBSTORE_MANIFEST" file="resources\webstore_app\manifest.json" type="BINDATA" />
       <include name="IDR_ENTERPRISE_WEBSTORE_MANIFEST" file="resources\enterprise_webstore_app\manifest.json" type="BINDATA" />
       <if expr="not pp_ifdef('chromeos')">

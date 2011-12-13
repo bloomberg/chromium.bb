@@ -173,8 +173,8 @@ void WebUI::AddMessageHandler(WebUIMessageHandler* handler) {
 }
 
 void WebUI::ExecuteJavascript(const string16& javascript) {
-  tab_contents_->render_view_host()->ExecuteJavascriptInWebFrame(string16(),
-                                                                 javascript);
+  tab_contents_->render_view_host()->ExecuteJavascriptInWebFrame(
+      ASCIIToUTF16(frame_xpath_), javascript);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

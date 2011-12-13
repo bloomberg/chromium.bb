@@ -99,7 +99,7 @@ void WebUIBindings::Send(const CppArgumentList& args, CppVariant* result) {
 }
 
 void DOMBoundBrowserObject::SetProperty(const std::string& name,
-                                const std::string& value) {
+                                        const std::string& value) {
   CppVariant* cpp_value = new CppVariant;
   cpp_value->Set(value);
   BindProperty(name, cpp_value);

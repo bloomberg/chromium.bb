@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
 #include "chrome/browser/ui/webui/test_chrome_web_ui_factory.h"
 #include "chrome/browser/ui/webui/tracing_ui.h"
+#include "chrome/browser/ui/webui/uber/uber_ui.h"
 #include "chrome/browser/ui/webui/workers_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -196,6 +197,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(TabContents* tab_contents,
 #endif
   if (url.host() == chrome::kChromeUIPluginsHost)
     return &NewWebUI<PluginsUI>;
+  if (url.host() == chrome::kChromeUIProfilerHost)
+    return &NewWebUI<ProfilerUI>;
   if (url.host() == chrome::kChromeUIQuotaInternalsHost)
     return &NewWebUI<QuotaInternalsUI>;
   if (url.host() == chrome::kChromeUISSLClientCertificateSelectorHost)
@@ -210,8 +213,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(TabContents* tab_contents,
     return &NewWebUI<TaskManagerUI>;
   if (url.host() == chrome::kChromeUITracingHost)
     return &NewWebUI<TracingUI>;
-  if (url.host() == chrome::kChromeUIProfilerHost)
-    return &NewWebUI<ProfilerUI>;
+  if (url.host() == chrome::kChromeUIUberHost)
+    return &NewWebUI<UberUI>;
   if (url.host() == chrome::kChromeUIWorkersHost)
     return &NewWebUI<WorkersUI>;
 

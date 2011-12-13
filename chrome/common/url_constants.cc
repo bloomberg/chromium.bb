@@ -180,6 +180,7 @@ const char kChromeUITermsHost[] = "terms";
 const char kChromeUIThumbnailHost[] = "thumb";
 const char kChromeUITouchIconHost[] = "touch-icon";
 const char kChromeUITracingHost[] = "tracing";
+const char kChromeUIUberHost[] = "chrome";
 const char kChromeUIVersionHost[] = "version";
 const char kChromeUIWorkersHost[] = "workers";
 

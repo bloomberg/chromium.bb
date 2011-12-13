@@ -118,6 +118,10 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
     register_callback_overwrites_ = value;
   }
 
+  void set_frame_xpath(const std::string& xpath) {
+    frame_xpath_ = xpath;
+  }
+
   // Call a Javascript function by sending its name and arguments down to
   // the renderer.  This is asynchronous; there's no way to get the result
   // of the call, and should be thought of more like sending a message to
@@ -189,6 +193,10 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
   // A map of message name -> message handling callback.
   typedef std::map<std::string, MessageCallback> MessageCallbackMap;
   MessageCallbackMap message_callbacks_;
+
+  // The path for the iframe this WebUI is embedded in (empty if not in an
+  // iframe).
+  std::string frame_xpath_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUI);
 };

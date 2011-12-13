@@ -350,7 +350,7 @@ cr.define('options', function() {
       } else if (languageCode in templateData.uiLanguageCodeSet) {
         // If the language is supported as UI language, users can click on
         // the button to change the UI language.
-        if (cr.commandLine.options['--bwsi']) {
+        if (cr.commandLine && cr.commandLine.options['--bwsi']) {
           // In the guest mode for ChromeOS, changing UI language does not make
           // sense because it does not take effect after browser restart.
           uiLanguageButton.hidden = true;

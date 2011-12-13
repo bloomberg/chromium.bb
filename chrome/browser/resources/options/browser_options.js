@@ -120,7 +120,7 @@ cr.define('options', function() {
       startupPagesList.autoExpands = true;
 
       // Check if we are in the guest mode.
-      if (cr.commandLine.options['--bwsi']) {
+      if (cr.commandLine && cr.commandLine.options['--bwsi']) {
         // Hide the startup section.
         $('startupSection').hidden = true;
       } else {

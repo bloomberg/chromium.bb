@@ -3960,6 +3960,8 @@
         'browser/ui/webui/theme_source.h',
         'browser/ui/webui/tracing_ui.cc',
         'browser/ui/webui/tracing_ui.h',
+        'browser/ui/webui/uber/uber_ui.cc',
+        'browser/ui/webui/uber/uber_ui.h',
         'browser/ui/webui/user_selectable_sync_type.h',
         'browser/ui/webui/web_ui_util.cc',
         'browser/ui/webui/web_ui_util.h',
