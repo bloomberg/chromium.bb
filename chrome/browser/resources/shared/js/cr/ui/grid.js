@@ -168,7 +168,11 @@ cr.define('cr.ui', function() {
           this.countItemsInRange_(firstIndex, scrollTop + clientHeight));
       count = columns * Math.ceil(count / columns);
       count = Math.min(count, this.dataModel.length - firstIndex);
-      return count;
+      return {
+        first: firstIndex,
+        length: count,
+        last: firstIndex + count - 1
+      };
     },
 
     /**
