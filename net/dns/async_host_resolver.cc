@@ -397,8 +397,8 @@ void AsyncHostResolver::OnDnsRequestComplete(
   requestlist_map_.erase(rit);
 
   // Cleanup |dns_req| and start a new one if there are pending requests.
-  delete dns_req;
   dns_requests_.remove(dns_req);
+  delete dns_req;
   ProcessPending();
 }
 
