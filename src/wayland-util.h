@@ -117,9 +117,15 @@ int wl_list_length(struct wl_list *list);
 int wl_list_empty(struct wl_list *list);
 void wl_list_insert_list(struct wl_list *list, struct wl_list *other);
 
+#ifdef __GNUC__
 #define __container_of(ptr, sample, member)				\
-	(void *)((char *)(ptr)	-					\
+	(typeof(sample))((char *)(ptr)	-				\
 		 ((char *)&(sample)->member - (char *)(sample)))
+#else
+#define __container_of(ptr, sample, member)				\
+	(void *)((char *)(ptr)	-				        \
+		 ((char *)&(sample)->member - (char *)(sample)))
+#endif
 
 #define wl_list_for_each(pos, head, member)				\
 	for (pos = 0, pos = __container_of((head)->next, pos, member);	\
