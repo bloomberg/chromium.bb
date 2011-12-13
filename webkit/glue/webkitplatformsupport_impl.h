@@ -124,11 +124,6 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   void SuspendSharedTimer();
   void ResumeSharedTimer();
 
-  virtual void didStartWorkerRunLoop(
-      const WebKit::WebWorkerRunLoop& runLoop) OVERRIDE;
-  virtual void didStopWorkerRunLoop(
-      const WebKit::WebWorkerRunLoop& runLoop) OVERRIDE;
-
  private:
   void DoTimeout() {
     if (shared_timer_func_ && !shared_timer_suspended_)

@@ -41,7 +41,6 @@
 #include "webkit/glue/websocketstreamhandle_impl.h"
 #include "webkit/glue/webthread_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
-#include "webkit/glue/worker_task_runner.h"
 #include "webkit/media/audio_decoder.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/plugins/webplugininfo.h"
@@ -685,18 +684,6 @@ void WebKitPlatformSupportImpl::DestroyCurrentThread(void* thread) {
   WebThreadImplForMessageLoop* impl =
       static_cast<WebThreadImplForMessageLoop*>(thread);
   delete impl;
-}
-
-void WebKitPlatformSupportImpl::didStartWorkerRunLoop(
-    const WebKit::WebWorkerRunLoop& runLoop) {
-  WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
-  worker_task_runner->OnWorkerRunLoopStarted(runLoop);
-}
-
-void WebKitPlatformSupportImpl::didStopWorkerRunLoop(
-    const WebKit::WebWorkerRunLoop& runLoop) {
-  WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
-  worker_task_runner->OnWorkerRunLoopStopped(runLoop);
 }
 
 }  // namespace webkit_glue
