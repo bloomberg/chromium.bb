@@ -2127,6 +2127,7 @@
             ['exclude', '^browser/policy/auto_enrollment_client_unittest.cc' ],
             ['exclude', '^browser/policy/configuration_policy_handler_chromeos_unittest.cc' ],
             ['exclude', '^browser/policy/device_policy_cache_unittest.cc'],
+            ['exclude', '^browser/policy/device_status_collector_unittest.cc'],
             ['exclude', '^browser/policy/enterprise_install_attributes_unittest.cc' ],
             ['exclude', '^browser/policy/network_configuration_updater_unittest.cc' ],
             ['exclude', '^browser/ui/webui/chromeos/imageburner/'],

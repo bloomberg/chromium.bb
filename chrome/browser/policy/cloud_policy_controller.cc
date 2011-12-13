@@ -275,8 +275,10 @@ void CloudPolicyController::SendPolicyRequest() {
   if (cache_->GetPublicKeyVersion(&key_version))
     fetch_request->set_public_key_version(key_version);
 
+#if defined(OS_CHROMEOS)
   if (data_store_->device_status_collector())
     data_store_->device_status_collector()->GetStatus(&device_status);
+#endif
 
   backend_->ProcessPolicyRequest(data_store_->device_token(),
                                  data_store_->device_id(),

@@ -6,17 +6,14 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/message_loop.h"
 #include "base/string_number_conversions.h"
-#include "base/task.h"
-#include "base/time.h"
-#include "chrome/browser/idle.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 
 using base::Time;
 using base::TimeDelta;
+using chromeos::VersionLoader;
 
 namespace em = enterprise_management;
 
@@ -53,6 +50,15 @@ DeviceStatusCollector::DeviceStatusCollector(PrefService* local_state)
                TimeDelta::FromSeconds(
                    DeviceStatusCollector::kPollIntervalSeconds),
                this, &DeviceStatusCollector::CheckIdleState);
+
+  // Get the the OS and firmware version info.
+  version_loader_.GetVersion(&consumer_,
+                             base::Bind(&DeviceStatusCollector::OnOSVersion,
+                                        base::Unretained(this)),
+                             VersionLoader::VERSION_FULL);
+  version_loader_.GetFirmware(&consumer_,
+                              base::Bind(&DeviceStatusCollector::OnOSFirmware,
+                                         base::Unretained(this)));
 }
 
 DeviceStatusCollector::~DeviceStatusCollector() {
@@ -147,6 +153,19 @@ void DeviceStatusCollector::GetStatus(em::DeviceStatusReportRequest* request) {
   }
   ListPrefUpdate update(local_state_, kPrefDeviceActivePeriods);
   update.Get()->Clear();
+
+  request->set_os_version(os_version_);
+  request->set_firmware_version(firmware_version_);
+}
+
+void DeviceStatusCollector::OnOSVersion(VersionLoader::Handle handle,
+                                        std::string version) {
+  os_version_ = version;
+}
+
+void DeviceStatusCollector::OnOSFirmware(VersionLoader::Handle handle,
+                                         std::string version) {
+  firmware_version_ = version;
 }
 
 }  // namespace policy

@@ -35,7 +35,6 @@
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
-#include "chrome/browser/policy/device_status_collector.h"
 #include "chrome/browser/policy/url_blacklist_manager.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -91,6 +90,7 @@
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/status/input_method_menu.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
+#include "chrome/browser/policy/device_status_collector.h"
 #else
 #include "chrome/browser/extensions/default_apps.h"
 #endif
@@ -130,7 +130,6 @@ void RegisterLocalState(PrefService* local_state) {
   SSLConfigServiceManager::RegisterPrefs(local_state);
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::CloudPolicySubsystem::RegisterPrefs(local_state);
-  policy::DeviceStatusCollector::RegisterPrefs(local_state);
 #endif
   ProfileInfoCache::RegisterPrefs(local_state);
   ProfileManager::RegisterPrefs(local_state);
@@ -143,6 +142,7 @@ void RegisterLocalState(PrefService* local_state) {
   chromeos::signed_settings_cache::RegisterPrefs(local_state);
   chromeos::NetworkMenuButton::RegisterPrefs(local_state);
   chromeos::ProxyConfigServiceImpl::RegisterPrefs(local_state);
+  policy::DeviceStatusCollector::RegisterPrefs(local_state);
 #endif
 }
 

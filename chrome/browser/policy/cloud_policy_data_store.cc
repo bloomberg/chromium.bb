@@ -151,6 +151,7 @@ CloudPolicyDataStore::UserAffiliation
   return user_affiliation_;
 }
 
+#if defined(OS_CHROMEOS)
 DeviceStatusCollector*
     CloudPolicyDataStore::device_status_collector() {
   return device_status_collector_.get();
@@ -160,6 +161,7 @@ void CloudPolicyDataStore::set_device_status_collector(
     DeviceStatusCollector* collector) {
   device_status_collector_.reset(collector);
 }
+#endif
 
 void CloudPolicyDataStore::AddObserver(
     CloudPolicyDataStore::Observer* observer) {

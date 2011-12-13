@@ -4100,6 +4100,8 @@
             ['exclude', 'browser/policy/auto_enrollment_client.h'],
             ['exclude', 'browser/policy/device_policy_cache.cc'],
             ['exclude', 'browser/policy/device_policy_cache.h'],
+            ['exclude', 'browser/policy/device_status_collector.cc'],
+            ['exclude', 'browser/policy/device_status_collector.h'],
             ['exclude', 'browser/policy/enterprise_install_attributes.cc'],
             ['exclude', 'browser/policy/enterprise_install_attributes.h'],
             ['exclude', 'browser/policy/network_configuration_updater.cc'],

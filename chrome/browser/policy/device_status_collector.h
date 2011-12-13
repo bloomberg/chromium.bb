@@ -8,9 +8,8 @@
 
 #include "base/time.h"
 #include "base/timer.h"
+#include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/idle.h"
-
-using base::Time;
 
 namespace enterprise_management {
 class DeviceStatusReportRequest;
@@ -37,8 +36,8 @@ class DeviceStatusCollector {
   // Check whether the user has been idle for a certain period of time.
   virtual void CheckIdleState();
 
-  // Used instead of Time::Now(), to make testing possible.
-  virtual Time GetCurrentTime();
+  // Used instead of base::Time::Now(), to make testing possible.
+  virtual base::Time GetCurrentTime();
 
   // Callback which receives the results of the idle state check.
   void IdleStateCallback(IdleState state);
@@ -49,18 +48,30 @@ class DeviceStatusCollector {
  private:
   void AddActivePeriod(base::Time start, base::Time end);
 
+  // Callbacks from chromeos::VersionLoader.
+  void OnOSVersion(chromeos::VersionLoader::Handle handle,
+                   std::string version);
+  void OnOSFirmware(chromeos::VersionLoader::Handle handle,
+                    std::string version);
+
   // How often to poll to see if the user is idle.
   int poll_interval_seconds_;
 
   PrefService* local_state_;
 
   // The last time an idle state check was performed.
-  Time last_idle_check_;
+  base::Time last_idle_check_;
 
   // The idle state the last time it was checked.
   IdleState last_idle_state_;
 
   base::RepeatingTimer<DeviceStatusCollector> timer_;
+
+  chromeos::VersionLoader version_loader_;
+  CancelableRequestConsumer consumer_;
+
+  std::string os_version_;
+  std::string firmware_version_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceStatusCollector);
 };

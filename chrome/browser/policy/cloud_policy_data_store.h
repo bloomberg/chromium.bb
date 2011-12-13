@@ -10,7 +10,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/policy/device_status_collector.h"
+#endif
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 
 namespace policy {
@@ -82,7 +84,11 @@ class CloudPolicyDataStore {
   void set_machine_model(const std::string& machine_model);
   void set_user_name(const std::string& user_name);
   void set_user_affiliation(UserAffiliation user_affiliation);
+
+#if defined(OS_CHROMEOS)
   void set_device_status_collector(DeviceStatusCollector* collector);
+  DeviceStatusCollector* device_status_collector();
+#endif
 
   const std::string& device_id() const;
   const std::string& device_token() const;
@@ -96,7 +102,6 @@ class CloudPolicyDataStore {
   bool token_cache_loaded() const;
   const std::string& user_name() const;
   UserAffiliation user_affiliation() const;
-  DeviceStatusCollector* device_status_collector();
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -130,7 +135,9 @@ class CloudPolicyDataStore {
 
   bool token_cache_loaded_;
 
+#if defined(OS_CHROMEOS)
   scoped_ptr<DeviceStatusCollector> device_status_collector_;
+#endif
 
   ObserverList<Observer, true> observer_list_;
 
