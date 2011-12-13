@@ -260,8 +260,9 @@ name=http://crbug.com/88213
 
 UNADDRESSABLE ACCESS
 name=http://crbug.com/96010
-...
-*!NotificationService::Notify
+*!TestingProfile::FinishInit
+*!TestingProfile::TestingProfile
+*!BrowserAboutHandlerTest_WillHandleBrowserAboutURL_Test::TestBody
 
 UNADDRESSABLE ACCESS
 name=http://crbug.com/106522
