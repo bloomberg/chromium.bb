@@ -6,13 +6,45 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_INFO_CACHE_UNITTEST_H_
 #pragma once
 
+#include <set>
+
 #include "base/message_loop.h"
+#include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class FilePath;
 class ProfileInfoCache;
+
+// Class used to test that ProfileInfoCache does not try to access any
+// unexpected profile names.
+class ProfileNameVerifierObserver : public ProfileInfoCacheObserver {
+ public:
+  ProfileNameVerifierObserver();
+  virtual ~ProfileNameVerifierObserver();
+
+  // ProfileInfoCacheObserver overrides:
+  virtual void OnProfileAdded(
+      const string16& profile_name,
+      const string16& profile_base_dir,
+      const FilePath& profile_path,
+      const gfx::Image* avatar_image) OVERRIDE;
+  virtual void OnProfileRemoved(
+      const string16& profile_name) OVERRIDE;
+  virtual void OnProfileNameChanged(
+      const string16& old_profile_name,
+      const string16& new_profile_name) OVERRIDE;
+  virtual void OnProfileAvatarChanged(
+      const string16& profile_name,
+      const string16& profile_base_dir,
+      const FilePath& profile_path,
+      const gfx::Image* avatar_image) OVERRIDE;
+
+ private:
+  std::set<string16> profile_names_;
+  DISALLOW_COPY_AND_ASSIGN(ProfileNameVerifierObserver);
+};
 
 class ProfileInfoCacheTest : public testing::Test {
  protected:
@@ -33,6 +65,7 @@ class ProfileInfoCacheTest : public testing::Test {
   MessageLoopForUI ui_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
+  ProfileNameVerifierObserver name_observer_;
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_INFO_CACHE_UNITTEST_H_

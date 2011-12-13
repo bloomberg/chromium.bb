@@ -131,8 +131,14 @@ void GAIAInfoUpdateService::OnDownloadComplete(ProfileDownloader* downloader,
   // preference guards against clobbering the user's custom settings.
   if (!cache.GetHasMigratedToGAIAInfoOfProfileAtIndex(profile_index)) {
     cache.SetHasMigratedToGAIAInfoOfProfileAtIndex(profile_index, true);
-    cache.SetIsUsingGAIAPictureOfProfileAtIndex(profile_index, true);
+    // Order matters here for shortcut management, like in
+    // ProfileShortcutManagerWin::OnProfileAdded, as the picture update does not
+    // allow us to change the target, so we have to apply any renaming first. We
+    // also need to re-fetch the index, as SetIsUsingGAIANameOfProfileAtIndex
+    // may alter it.
     cache.SetIsUsingGAIANameOfProfileAtIndex(profile_index, true);
+    profile_index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
+    cache.SetIsUsingGAIAPictureOfProfileAtIndex(profile_index, true);
   }
 }
 

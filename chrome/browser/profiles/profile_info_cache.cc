@@ -229,19 +229,16 @@ void ProfileInfoCache::RemoveObserver(ProfileInfoCacheObserver* obs) {
 }
 
 void ProfileInfoCache::DeleteProfileFromCache(const FilePath& profile_path) {
-  DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
-  DictionaryValue* cache = update.Get();
-
-  std::string key = CacheKeyFromProfilePath(profile_path);
-  DictionaryValue* info = NULL;
-  cache->GetDictionary(key, &info);
-  string16 name;
-  info->GetString(kNameKey, &name);
+  string16 name = GetNameOfProfileAtIndex(
+      GetIndexOfProfileWithPath(profile_path));
 
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                     observer_list_,
                     OnProfileRemoved(name));
 
+  DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
+  DictionaryValue* cache = update.Get();
+  std::string key = CacheKeyFromProfilePath(profile_path);
   cache->Remove(key, NULL);
   sorted_keys_.erase(std::find(sorted_keys_.begin(), sorted_keys_.end(), key));
 
@@ -404,8 +401,7 @@ void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,
     return;
 
   scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
-  string16 old_name;
-  info->GetString(kNameKey, &old_name);
+  string16 old_name = GetNameOfProfileAtIndex(index);
   info->SetString(kNameKey, name);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
@@ -430,12 +426,11 @@ void ProfileInfoCache::SetUserNameOfProfileAtIndex(size_t index,
 void ProfileInfoCache::SetAvatarIconOfProfileAtIndex(size_t index,
                                                      size_t icon_index) {
   scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
-  string16 name;
-  info->GetString(kNameKey, &name);
   info->SetString(kAvatarIconKey, GetDefaultAvatarIconUrl(icon_index));
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
 
+  string16 name = GetNameOfProfileAtIndex(index);
   FilePath profile_path = GetPathOfProfileAtIndex(index);
   std::string key = CacheKeyFromProfilePath(profile_path);
   gfx::Image& avatar_img =
@@ -477,10 +472,19 @@ void ProfileInfoCache::SetIsUsingGAIANameOfProfileAtIndex(size_t index,
     return;
 
   scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  string16 old_name;
+  info->GetString(kNameKey, &old_name);
   info->SetBoolean(kUseGAIANameKey, value);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
+  string16 new_name = GetGAIANameOfProfileAtIndex(index);
   UpdateSortForProfileIndex(index);
+
+  if (value) {
+    FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
+                      observer_list_,
+                      OnProfileNameChanged(old_name, new_name));
+  }
 }
 
 void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
@@ -534,8 +538,7 @@ void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
 void ProfileInfoCache::SetIsUsingGAIAPictureOfProfileAtIndex(size_t index,
                                                              bool value) {
   scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
-  string16 name;
-  info->GetString(kNameKey, &name);
+  string16 name = GetNameOfProfileAtIndex(index);
   info->SetBoolean(kUseGAIAPictureKey, value);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());

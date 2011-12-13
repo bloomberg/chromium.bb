@@ -22,6 +22,44 @@
 
 using content::BrowserThread;
 
+ProfileNameVerifierObserver::ProfileNameVerifierObserver() {
+}
+
+ProfileNameVerifierObserver::~ProfileNameVerifierObserver() {
+}
+
+void ProfileNameVerifierObserver::OnProfileAdded(
+    const string16& profile_name,
+    const string16& profile_base_dir,
+    const FilePath& profile_path,
+    const gfx::Image* avatar_image) {
+  EXPECT_TRUE(profile_names_.find(profile_name) == profile_names_.end());
+  profile_names_.insert(profile_name);
+}
+
+void ProfileNameVerifierObserver::OnProfileRemoved(
+    const string16& profile_name) {
+  EXPECT_TRUE(profile_names_.find(profile_name) != profile_names_.end());
+  profile_names_.erase(profile_name);
+}
+
+void ProfileNameVerifierObserver::OnProfileNameChanged(
+    const string16& old_profile_name,
+    const string16& new_profile_name) {
+  EXPECT_TRUE(profile_names_.find(old_profile_name) != profile_names_.end());
+  EXPECT_TRUE(profile_names_.find(new_profile_name) == profile_names_.end());
+  profile_names_.erase(old_profile_name);
+  profile_names_.insert(new_profile_name);
+}
+
+void ProfileNameVerifierObserver::OnProfileAvatarChanged(
+    const string16& profile_name,
+    const string16& profile_base_dir,
+    const FilePath& profile_path,
+    const gfx::Image* avatar_image) {
+  EXPECT_TRUE(profile_names_.find(profile_name) != profile_names_.end());
+}
+
 ProfileInfoCacheTest::ProfileInfoCacheTest()
     : testing_profile_manager_(
         static_cast<TestingBrowserProcess*>(g_browser_process)),
@@ -34,6 +72,7 @@ ProfileInfoCacheTest::~ProfileInfoCacheTest() {
 
 void ProfileInfoCacheTest::SetUp() {
   ASSERT_TRUE(testing_profile_manager_.SetUp());
+  testing_profile_manager_.profile_info_cache()->AddObserver(&name_observer_);
 }
 
 void ProfileInfoCacheTest::TearDown() {
