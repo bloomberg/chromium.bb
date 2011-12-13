@@ -64,6 +64,9 @@ class EndToEndAsyncTest : public testing::Test {
                    base::Unretained(this)),
         base::Bind(&EndToEndAsyncTest::OnConnected,
                    base::Unretained(this)));
+    // Wait until the object proxy is connected to the signal.
+    message_loop_.Run();
+
     // Connect to the "Test2" signal of "org.chromium.TestInterface" from
     // the remote object. There was a bug where we were emitting error
     // messages like "Requested to remove an unknown match rule: ..." at
@@ -285,8 +288,7 @@ TEST_F(EndToEndAsyncTest, EmptyResponseCallback) {
   // check if the test does not crash.
 }
 
-// Flaky, http://crbug.com/107301
-TEST_F(EndToEndAsyncTest, FLAKY_TestSignal) {
+TEST_F(EndToEndAsyncTest, TestSignal) {
   const char kMessage[] = "hello, world";
   // Send the test signal from the exported object.
   test_service_->SendTestSignal(kMessage);
@@ -296,8 +298,7 @@ TEST_F(EndToEndAsyncTest, FLAKY_TestSignal) {
   ASSERT_EQ(kMessage, test_signal_string_);
 }
 
-// Flaky, http://crbug.com/106796
-TEST_F(EndToEndAsyncTest, FLAKY_TestSignalFromRoot) {
+TEST_F(EndToEndAsyncTest, TestSignalFromRoot) {
   const char kMessage[] = "hello, world";
   // Send the test signal from the root object path, to see if we can
   // handle signals sent from "/", like dbus-send does.
