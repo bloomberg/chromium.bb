@@ -43,6 +43,7 @@ struct DisallowedFeatures {
 class GLES2Decoder : public CommonDecoder {
  public:
   typedef error::Error Error;
+  typedef base::Callback<void(int32 id, const std::string& msg)> MsgCallback;
 
   // Creates a decoder.
   static GLES2Decoder* Create(ContextGroup* group);
@@ -132,6 +133,9 @@ class GLES2Decoder : public CommonDecoder {
       unsigned type,
       int width,
       int height) = 0;
+
+  // A callback for messages from the decoder.
+  virtual void SetMsgCallback(const MsgCallback& callback) = 0;
 
  protected:
   GLES2Decoder();

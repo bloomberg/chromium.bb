@@ -49,6 +49,7 @@ bool CommandBufferProxy::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_NotifyRepaint,
                         OnNotifyRepaint);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_EchoAck, OnEchoAck);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ConsoleMsg, OnConsoleMessage);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -85,6 +86,13 @@ void CommandBufferProxy::OnEchoAck() {
   base::Closure callback = echo_tasks_.front();
   echo_tasks_.pop();
   callback.Run();
+}
+
+void CommandBufferProxy::OnConsoleMessage(
+    const GPUCommandBufferConsoleMessage& message) {
+  // TODO(gman): Pass this on to the console.
+  DLOG(INFO) << "CONSOLE_MESSAGE: "
+             << message.id << " : " << message.message;
 }
 
 void CommandBufferProxy::SetChannelErrorCallback(

@@ -249,6 +249,10 @@ void GpuCommandBufferStub::OnInitialize(
     decoder_->set_debug(true);
   }
 
+  decoder_->SetMsgCallback(
+      base::Bind(&GpuCommandBufferStub::SendConsoleMessage,
+                 base::Unretained(this)));
+
   SetSwapInterval();
 
   command_buffer_->SetPutOffsetChangeCallback(
@@ -472,6 +476,18 @@ void GpuCommandBufferStub::OnDestroyVideoDecoder(int decoder_route_id) {
 
 void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {
   surface_->SetVisible(visible);
+}
+
+void GpuCommandBufferStub::SendConsoleMessage(
+    int32 id,
+    const std::string& message) {
+  GPUCommandBufferConsoleMessage console_message;
+  console_message.id = id;
+  console_message.message = message;
+  IPC::Message* msg = new GpuCommandBufferMsg_ConsoleMsg(
+      route_id_, console_message);
+  msg->set_unblock(true);
+  Send(msg);
 }
 
 #endif  // defined(ENABLE_GPU)

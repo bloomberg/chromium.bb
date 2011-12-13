@@ -66,6 +66,7 @@ class MockGLES2Decoder : public GLES2Decoder {
       unsigned type,
       int width,
       int height));
+  MOCK_METHOD1(SetMsgCallback, void(const MsgCallback& callback));
 
   DISALLOW_COPY_AND_ASSIGN(MockGLES2Decoder);
 };

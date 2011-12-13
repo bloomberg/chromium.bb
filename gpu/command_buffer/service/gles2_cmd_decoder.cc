@@ -521,6 +521,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
       const base::Callback<void(gfx::Size)>& callback);
 
   virtual void SetSwapBuffersCallback(const base::Closure& callback);
+  virtual void SetMsgCallback(const MsgCallback& callback);
 
   virtual void SetStreamTextureManager(StreamTextureManager* manager);
   virtual bool GetServiceTextureId(uint32 client_texture_id,
@@ -1424,6 +1425,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   base::Callback<void(gfx::Size)> resize_callback_;
 
   base::Closure swap_buffers_callback_;
+  MsgCallback msg_callback_;
 
   StreamTextureManager* stream_texture_manager_;
 
@@ -2591,6 +2593,10 @@ void GLES2DecoderImpl::SetResizeCallback(
 
 void GLES2DecoderImpl::SetSwapBuffersCallback(const base::Closure& callback) {
   swap_buffers_callback_ = callback;
+}
+
+void GLES2DecoderImpl::SetMsgCallback(const MsgCallback& callback) {
+  msg_callback_ = callback;
 }
 
 void GLES2DecoderImpl::SetStreamTextureManager(StreamTextureManager* manager) {
@@ -4568,6 +4574,9 @@ void GLES2DecoderImpl::SetGLError(GLenum error, const char* msg) {
   if (msg) {
     last_error_ = msg;
     LOG(ERROR) << last_error_;
+    if (!msg_callback_.is_null()) {
+      msg_callback_.Run(0, GLES2Util::GetStringEnum(error) + " : " + msg);
+    }
   }
   error_bits_ |= GLES2Util::GLErrorToErrorBit(error);
 }

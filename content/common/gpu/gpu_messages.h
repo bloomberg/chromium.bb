@@ -82,6 +82,11 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceRelease_Params)
 #endif
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(GPUCommandBufferConsoleMessage)
+  IPC_STRUCT_MEMBER(int32, id)
+  IPC_STRUCT_MEMBER(std::string, message)
+IPC_STRUCT_END()
+
 IPC_STRUCT_TRAITS_BEGIN(content::DxDiagNode)
   IPC_STRUCT_TRAITS_MEMBER(values)
   IPC_STRUCT_TRAITS_MEMBER(children)
@@ -351,6 +356,10 @@ IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_Rescheduled)
 // GPU process to the renderer process.)
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_UpdateState,
                     gpu::CommandBuffer::State /* state */)
+
+// Sent by the GPU process to display messages in the console.
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ConsoleMsg,
+                    GPUCommandBufferConsoleMessage /* msg */)
 
 // Create a shared memory transfer buffer. Returns an id that can be used to
 // identify the transfer buffer from a comment.

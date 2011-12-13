@@ -60,6 +60,13 @@ class CommandBuffer {
     uint32 generation;
   };
 
+  struct ConsoleMessage {
+    // An user supplied id.
+    int32 id;
+    // The message.
+    std::string message;
+  };
+
   CommandBuffer() {
   }
 

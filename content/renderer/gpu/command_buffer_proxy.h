@@ -22,6 +22,7 @@
 #include "ipc/ipc_message.h"
 
 class GpuChannelHost;
+struct GPUCommandBufferConsoleMessage;
 
 namespace base {
 class SharedMemory;
@@ -102,6 +103,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   void OnNotifyRepaint();
   void OnDestroyed(gpu::error::ContextLostReason reason);
   void OnEchoAck();
+  void OnConsoleMessage(const GPUCommandBufferConsoleMessage& message);
 
   // Local cache of id to transfer buffer mapping.
   typedef std::map<int32, gpu::Buffer> TransferBufferMap;

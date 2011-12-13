@@ -86,6 +86,9 @@ class GpuCommandBufferStub
 
   gfx::GpuPreference gpu_preference() { return gpu_preference_; }
 
+  // Sends a message to the console.
+  void SendConsoleMessage(int32 id, const std::string& message);
+
  private:
   void Destroy();
 
