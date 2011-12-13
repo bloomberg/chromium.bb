@@ -459,8 +459,6 @@
       # ==================================================
       # crbug.com/101787
       '-enterprise.EnterpriseTestReverse.testDefaultSearchProviderDisabled',
-      # crbug.com/98500
-      '-enterprise.EnterpriseTestReverse.testAlwaysAuthorizePluginsDisabled',
       # crbug.com/96896
       '-enterprise.EnterpriseTest.testDisabledPlugins',
       '-enterprise.EnterpriseTest.testEnabledPlugins',
@@ -518,8 +516,6 @@
       # ==================================================
       # crbug.com/101787
       '-enterprise.EnterpriseTestReverse.testDefaultSearchProviderDisabled',
-      # crbug.com/98500
-      '-enterprise.EnterpriseTestReverse.testAlwaysAuthorizePluginsDisabled',
       # crbug.com/97179
       '-enterprise.EnterpriseTest.testAlwaysAuthorizePlugins',
     ],
