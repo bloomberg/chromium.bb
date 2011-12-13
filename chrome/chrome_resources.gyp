@@ -39,6 +39,13 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
+          'action_name': 'options2_resources',
+          'variables': {
+            'grit_grd_file': 'browser/resources/options2_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
           'action_name': 'quota_internals_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/quota_internals_resources.grd',

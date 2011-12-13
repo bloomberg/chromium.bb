@@ -72,6 +72,9 @@ class OptionsPageUIHandler : public WebUIMessageHandler,
 class OptionsPageUIHandlerHost {
  public:
   virtual void InitializeHandlers() = 0;
+
+ protected:
+  virtual ~OptionsPageUIHandlerHost() {}
 };
 
 // The WebUI for chrome:settings.

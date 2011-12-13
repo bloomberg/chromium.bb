@@ -1,0 +1,30 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_LANGUAGE_CUSTOMIZE_MODIFIER_KEYS_HANDLER_H_  // NOLINT
+#define CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_LANGUAGE_CUSTOMIZE_MODIFIER_KEYS_HANDLER_H_  // NOLINT
+#pragma once
+
+#include "base/compiler_specific.h"
+#include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/ui/webui/options2/options_ui.h"
+
+namespace chromeos {
+
+// Customize modifier keys overlay page UI handler.
+class LanguageCustomizeModifierKeysHandler : public OptionsPage2UIHandler {
+ public:
+  LanguageCustomizeModifierKeysHandler();
+  virtual ~LanguageCustomizeModifierKeysHandler();
+
+  // OptionsPage2UIHandler implementation.
+  virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LanguageCustomizeModifierKeysHandler);
+};
+
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_LANGUAGE_CUSTOMIZE_MODIFIER_KEYS_HANDLER_H_  // NOLINT
