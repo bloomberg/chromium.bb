@@ -87,7 +87,10 @@ def CheckHomeForFile(filename):
 
 def UnknownFiles():
   """Runs svn status and returns unknown files."""
-  return [item[1] for item in SVN.CaptureStatus([]) if item[0][0] == '?']
+  return [
+      item[1] for item in SVN.CaptureStatus([], GetRepositoryRoot())
+      if item[0][0] == '?'
+  ]
 
 
 def GetRepositoryRoot():
@@ -138,7 +141,7 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
       return None
     if (not os.path.exists(cached_file) or
         (time.time() - os.stat(cached_file).st_mtime) > max_age):
-      dir_info = SVN.CaptureInfo('.')
+      dir_info = SVN.CaptureLocalInfo([], '.')
       repo_root = dir_info['Repository Root']
       if use_root:
         url_path = repo_root
@@ -548,8 +551,7 @@ class ChangeInfo(object):
     files = values['files']
     if update_status:
       for item in files[:]:
-        filename = os.path.join(local_root, item[1])
-        status_result = SVN.CaptureStatus(filename)
+        status_result = SVN.CaptureStatus(item[1], local_root)
         if not status_result or not status_result[0][0]:
           # File has been reverted.
           save = True
@@ -678,7 +680,7 @@ def GetModifiedFiles():
       files_in_cl[filename] = change_info.name
 
   # Get all the modified files.
-  status_result = SVN.CaptureStatus(None)
+  status_result = SVN.CaptureStatus(None, GetRepositoryRoot())
   for line in status_result:
     status = line[0]
     filename = line[1]
@@ -733,8 +735,9 @@ def ListFiles(show_unknown_files):
   return 0
 
 
-def GenerateDiff(files, root=None):
-  return SVN.GenerateDiff(files, root=root)
+def GenerateDiff(files):
+  return SVN.GenerateDiff(
+      files, GetRepositoryRoot(), full_move=False, revision=None)
 
 
 def OptionallyDoPresubmitChecks(change_info, committing, args):
@@ -1037,7 +1040,14 @@ def CMDcommit(change_info, args):
 def CMDchange(args):
   """Creates or edits a changelist.
 
-  Only scans the current directory and subdirectories."""
+  Only scans the current directory and subdirectories.
+  """
+  # Verify the user is running the change command from a read-write checkout.
+  svn_info = SVN.CaptureLocalInfo([], '.')
+  if not svn_info:
+    ErrorExit("Current checkout is unversioned.  Please retry with a versioned "
+              "directory.")
+
   if len(args) == 0:
     # Generate a random changelist name.
     changename = GenerateChangeName()
@@ -1046,12 +1056,6 @@ def CMDchange(args):
   else:
     changename = args[0]
   change_info = ChangeInfo.Load(changename, GetRepositoryRoot(), False, True)
-
-  # Verify the user is running the change command from a read-write checkout.
-  svn_info = SVN.CaptureInfo('.')
-  if not svn_info:
-    ErrorExit("Current checkout is unversioned.  Please retry with a versioned "
-              "directory.")
 
   if len(args) == 2:
     if not os.path.isfile(args[1]):
@@ -1439,6 +1443,7 @@ def main(argv):
   except upload.ClientLoginError, e:
     print >> sys.stderr, 'Got an exception logging in to Rietveld'
     print >> sys.stderr, str(e)
+    return 1
   except urllib2.HTTPError, e:
     if e.code != 500:
       raise

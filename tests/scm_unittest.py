@@ -20,6 +20,10 @@ import scm
 import subprocess2
 
 
+# Access to a protected member XXX of a client class
+# pylint: disable=W0212
+
+
 class BaseTestCase(SuperMoxTestBase):
   # Like unittest's assertRaises, but checks for Gclient.Error.
   def assertRaisesError(self, msg, fn, *args, **kwargs):
@@ -94,7 +98,8 @@ class SVNTestCase(BaseSCMTestCase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-        'AssertVersion', 'Capture', 'CaptureRevision', 'CaptureInfo',
+        'AssertVersion', 'Capture', 'CaptureRevision', 'CaptureLocalInfo',
+        'CaptureRemoteInfo',
         'CaptureStatus', 'current_version', 'DiffItem', 'GenerateDiff',
         'GetCheckoutRoot', 'GetEmail', 'GetFileProperty', 'IsMoved',
         'IsMovedInfo', 'ReadSimpleAuth', 'Revert', 'RunAndGetFileList',
@@ -104,19 +109,19 @@ class SVNTestCase(BaseSCMTestCase):
 
   def testGetCheckoutRoot(self):
     # pylint: disable=E1103
-    self.mox.StubOutWithMock(scm.SVN, 'CaptureInfo')
+    self.mox.StubOutWithMock(scm.SVN, '_CaptureInfo')
     self.mox.StubOutWithMock(scm, 'GetCasedPath')
     scm.os.path.abspath = lambda x: x
     scm.GetCasedPath = lambda x: x
-    scm.SVN.CaptureInfo(self.root_dir + '/foo/bar').AndReturn({
+    scm.SVN._CaptureInfo([], self.root_dir + '/foo/bar').AndReturn({
         'Repository Root': 'svn://svn.chromium.org/chrome',
         'URL': 'svn://svn.chromium.org/chrome/trunk/src',
     })
-    scm.SVN.CaptureInfo(self.root_dir + '/foo').AndReturn({
+    scm.SVN._CaptureInfo([], self.root_dir + '/foo').AndReturn({
         'Repository Root': 'svn://svn.chromium.org/chrome',
         'URL': 'svn://svn.chromium.org/chrome/trunk',
     })
-    scm.SVN.CaptureInfo(self.root_dir).AndReturn({
+    scm.SVN._CaptureInfo([], self.root_dir).AndReturn({
         'Repository Root': 'svn://svn.chromium.org/chrome',
         'URL': 'svn://svn.chromium.org/chrome/trunk/tools/commit-queue/workdir',
     })
@@ -140,7 +145,7 @@ class SVNTestCase(BaseSCMTestCase):
 </entry>
 </info>
 """ % self.url
-    scm.SVN.Capture(['info', '--xml', self.url]).AndReturn(xml_text)
+    scm.SVN.Capture(['info', '--xml', self.url], None).AndReturn(xml_text)
     expected = {
       'URL': 'http://src.chromium.org/svn/trunk/src/chrome/app/d',
       'UUID': None,
@@ -154,7 +159,7 @@ class SVNTestCase(BaseSCMTestCase):
       'Node Kind': 'file',
     }
     self.mox.ReplayAll()
-    file_info = scm.SVN.CaptureInfo(self.url)
+    file_info = scm.SVN._CaptureInfo([self.url], None)
     self.assertEquals(sorted(file_info.items()), sorted(expected.items()))
 
   def testCaptureInfo(self):
@@ -181,9 +186,9 @@ class SVNTestCase(BaseSCMTestCase):
 </entry>
 </info>
 """ % (self.url, self.root_dir)
-    scm.SVN.Capture(['info', '--xml', self.url]).AndReturn(xml_text)
+    scm.SVN.Capture(['info', '--xml', self.url], None).AndReturn(xml_text)
     self.mox.ReplayAll()
-    file_info = scm.SVN.CaptureInfo(self.url)
+    file_info = scm.SVN._CaptureInfo([self.url], None)
     expected = {
       'URL': self.url,
       'UUID': '7b9385f5-0452-0410-af26-ad4892b7a1fb',
@@ -235,10 +240,10 @@ class SVNTestCase(BaseSCMTestCase):
 </target>
 </status>
 """
-    scm.SVN.Capture(['status', '--xml', '.']).AndReturn(text)
+    scm.SVN.Capture(['status', '--xml'], '.').AndReturn(text)
 
     self.mox.ReplayAll()
-    info = scm.SVN.CaptureStatus('.')
+    info = scm.SVN.CaptureStatus(None, '.')
     expected = [
       ('?      ', 'unversionned_file.txt'),
       ('M      ', 'build\\internal\\essential.vsprops'),
@@ -255,9 +260,9 @@ class SVNTestCase(BaseSCMTestCase):
        path="perf">
        </target>
        </status>"""
-    scm.SVN.Capture(['status', '--xml']).AndReturn(text)
+    scm.SVN.Capture(['status', '--xml'], None).AndReturn(text)
     self.mox.ReplayAll()
-    info = scm.SVN.CaptureStatus(None)
+    info = scm.SVN.CaptureStatus(None, None)
     self.assertEquals(info, [])
 
 

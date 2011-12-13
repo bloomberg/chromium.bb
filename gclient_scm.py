@@ -711,8 +711,9 @@ class SVNWrapper(SCMWrapper):
   def GetRevisionDate(self, revision):
     """Returns the given revision's date in ISO-8601 format (which contains the
     time zone)."""
-    date = scm.SVN.Capture(['propget', '--revprop', 'svn:date', '-r', revision,
-                            os.path.join(self.checkout_path, '.')])
+    date = scm.SVN.Capture(
+        ['propget', '--revprop', 'svn:date', '-r', revision],
+        os.path.join(self.checkout_path, '.'))
     return date.strip()
 
   def cleanup(self, options, args, file_list):
@@ -796,7 +797,8 @@ class SVNWrapper(SCMWrapper):
 
     # Get the existing scm url and the revision number of the current checkout.
     try:
-      from_info = scm.SVN.CaptureInfo(os.path.join(self.checkout_path, '.'))
+      from_info = scm.SVN.CaptureLocalInfo(
+          [], os.path.join(self.checkout_path, '.'))
     except (gclient_utils.Error, subprocess2.CalledProcessError):
       raise gclient_utils.Error(
           ('Can\'t update/checkout %s if an unversioned directory is present. '
@@ -809,14 +811,16 @@ class SVNWrapper(SCMWrapper):
             self.checkout_path, from_info))
 
     # Look for locked directories.
-    dir_info = scm.SVN.CaptureStatus(os.path.join(self.checkout_path, '.'))
+    dir_info = scm.SVN.CaptureStatus(
+        None, os.path.join(self.checkout_path, '.'))
     if any(d[0][2] == 'L' for d in dir_info):
       try:
         self._Run(['cleanup', self.checkout_path], options)
       except subprocess2.CalledProcessError, e:
         # Get the status again, svn cleanup may have cleaned up at least
         # something.
-        dir_info = scm.SVN.CaptureStatus(os.path.join(self.checkout_path, '.'))
+        dir_info = scm.SVN.CaptureStatus(
+            None, os.path.join(self.checkout_path, '.'))
 
         # Try to fix the failures by removing troublesome files.
         for d in dir_info:
@@ -832,14 +836,14 @@ class SVNWrapper(SCMWrapper):
 
     # Retrieve the current HEAD version because svn is slow at null updates.
     if options.manually_grab_svn_rev and not revision:
-      from_info_live = scm.SVN.CaptureInfo(from_info['URL'])
+      from_info_live = scm.SVN.CaptureRemoteInfo(from_info['URL'])
       revision = str(from_info_live['Revision'])
       rev_str = ' at %s' % revision
 
     if from_info['URL'] != base_url:
       # The repository url changed, need to switch.
       try:
-        to_info = scm.SVN.CaptureInfo(url)
+        to_info = scm.SVN.CaptureRemoteInfo(url)
       except (gclient_utils.Error, subprocess2.CalledProcessError):
         # The url is invalid or the server is not accessible, it's safer to bail
         # out right now.
@@ -868,7 +872,7 @@ class SVNWrapper(SCMWrapper):
       else:
         if not options.force and not options.reset:
           # Look for local modifications but ignore unversioned files.
-          for status in scm.SVN.CaptureStatus(self.checkout_path):
+          for status in scm.SVN.CaptureStatus(None, self.checkout_path):
             if status[0] != '?':
               raise gclient_utils.Error(
                   ('Can\'t switch the checkout to %s; UUID don\'t match and '

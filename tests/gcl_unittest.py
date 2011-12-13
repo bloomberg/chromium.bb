@@ -24,7 +24,7 @@ class GclTestsBase(SuperMoxTestBase):
     SuperMoxTestBase.setUp(self)
     self.fake_root_dir = self.RootDir()
     self.mox.StubOutWithMock(gcl, 'RunShell')
-    self.mox.StubOutWithMock(gcl.SVN, 'CaptureInfo')
+    self.mox.StubOutWithMock(gcl.SVN, '_CaptureInfo')
     self.mox.StubOutWithMock(gcl.SVN, 'GetCheckoutRoot')
     self.mox.StubOutWithMock(gcl, 'tempfile')
     self.mox.StubOutWithMock(gcl.upload, 'RealMain')

@@ -63,7 +63,7 @@ def commit_svn(repo, usr, pwd):
   """Commits the changes and returns the new revision number."""
   to_add = []
   to_remove = []
-  for status, filepath in scm.SVN.CaptureStatus(repo):
+  for status, filepath in scm.SVN.CaptureStatus(None, repo):
     if status[0] == '?':
       to_add.append(filepath)
     elif status[0] == '!':

@@ -25,6 +25,10 @@ import rietveld
 presubmit_canned_checks = presubmit.presubmit_canned_checks
 
 
+# Access to a protected member XXX of a client class
+# pylint: disable=W0212
+
+
 class PresubmitTestsBase(SuperMoxTestBase):
   """Setups and tear downs the mocks but doesn't test anything as-is."""
   presubmit_text = """
@@ -112,18 +116,19 @@ def GetPreferredTrySlaves(project):
 """
 
   def setUp(self):
-    class FakeChange(object):
-      root = '/'
-
-      def RepositoryRoot(self):
-        return self.root
-
     SuperMoxTestBase.setUp(self)
-    self.fake_change = FakeChange()
+    class FakeChange(object):
+      def __init__(self, obj):
+        self._root = obj.fake_root_dir
+      def RepositoryRoot(self):
+        return self._root
+
     self.mox.StubOutWithMock(presubmit, 'random')
     self.mox.StubOutWithMock(presubmit, 'warn')
     presubmit._ASKED_FOR_FEEDBACK = False
     self.fake_root_dir = self.RootDir()
+    self.fake_change = FakeChange(self)
+
     # Special mocks.
     def MockAbsPath(f):
       return f
@@ -134,7 +139,7 @@ def GetPreferredTrySlaves(project):
     presubmit.os.getcwd = self.RootDir
     presubmit.os.chdir = MockChdir
     self.mox.StubOutWithMock(presubmit.scm, 'determine_scm')
-    self.mox.StubOutWithMock(presubmit.scm.SVN, 'CaptureInfo')
+    self.mox.StubOutWithMock(presubmit.scm.SVN, '_CaptureInfo')
     self.mox.StubOutWithMock(presubmit.scm.SVN, 'GetFileProperty')
     self.mox.StubOutWithMock(presubmit.gclient_utils, 'FileRead')
     self.mox.StubOutWithMock(presubmit.gclient_utils, 'FileWrite')
@@ -253,37 +258,45 @@ class PresubmitUnittest(PresubmitTestsBase):
       ['?', 'flop/notfound.txt'],  # not found in SVN, still exists locally
       ['D', 'boo/flap.h'],
     ]
-    blat = presubmit.os.path.join(self.fake_root_dir, 'foo', 'blat.cc')
-    notfound = presubmit.os.path.join(
-        self.fake_root_dir, 'flop', 'notfound.txt')
-    flap = presubmit.os.path.join(self.fake_root_dir, 'boo', 'flap.h')
-    binary = presubmit.os.path.join(self.fake_root_dir, 'binary.dll')
-    isdir = presubmit.os.path.join(self.fake_root_dir, 'isdir')
-    presubmit.os.path.exists(blat).AndReturn(True)
-    presubmit.os.path.isdir(blat).AndReturn(False)
-    presubmit.os.path.exists(binary).AndReturn(True)
-    presubmit.os.path.isdir(binary).AndReturn(False)
-    presubmit.os.path.exists(isdir).AndReturn(True)
-    presubmit.os.path.isdir(isdir).AndReturn(True)
-    presubmit.os.path.exists(notfound).AndReturn(True)
-    presubmit.os.path.isdir(notfound).AndReturn(False)
-    presubmit.os.path.exists(flap).AndReturn(False)
-    presubmit.scm.SVN.CaptureInfo(flap
+    blat = presubmit.os.path.join('foo', 'blat.cc')
+    notfound = presubmit.os.path.join('flop', 'notfound.txt')
+    flap = presubmit.os.path.join('boo', 'flap.h')
+    binary = 'binary.dll'
+    isdir = 'isdir'
+    f_blat = presubmit.os.path.join(self.fake_root_dir, blat)
+    f_notfound = presubmit.os.path.join(self.fake_root_dir, notfound)
+    f_flap = presubmit.os.path.join(self.fake_root_dir, flap)
+    f_binary = presubmit.os.path.join(self.fake_root_dir, binary)
+    f_isdir = presubmit.os.path.join(self.fake_root_dir, isdir)
+    presubmit.os.path.exists(f_blat).AndReturn(True)
+    presubmit.os.path.isdir(f_blat).AndReturn(False)
+    presubmit.os.path.exists(f_binary).AndReturn(True)
+    presubmit.os.path.isdir(f_binary).AndReturn(False)
+    presubmit.os.path.exists(f_isdir).AndReturn(True)
+    presubmit.os.path.isdir(f_isdir).AndReturn(True)
+    presubmit.os.path.exists(f_notfound).AndReturn(True)
+    presubmit.os.path.isdir(f_notfound).AndReturn(False)
+    presubmit.os.path.exists(f_flap).AndReturn(False)
+    presubmit.scm.SVN._CaptureInfo([flap], self.fake_root_dir
         ).AndReturn({'Node Kind': 'file'})
-    presubmit.scm.SVN.GetFileProperty(blat, 'svn:mime-type').AndReturn(None)
     presubmit.scm.SVN.GetFileProperty(
-        binary, 'svn:mime-type').AndReturn('application/octet-stream')
+        blat, 'svn:mime-type', self.fake_root_dir).AndReturn(None)
     presubmit.scm.SVN.GetFileProperty(
-        notfound, 'svn:mime-type').AndReturn('')
-    presubmit.scm.SVN.CaptureInfo(blat).AndReturn(
+        binary, 'svn:mime-type', self.fake_root_dir
+        ).AndReturn('application/octet-stream')
+    presubmit.scm.SVN.GetFileProperty(
+        notfound, 'svn:mime-type', self.fake_root_dir).AndReturn('')
+    presubmit.scm.SVN._CaptureInfo([blat], self.fake_root_dir).AndReturn(
             {'URL': 'svn:/foo/foo/blat.cc'})
-    presubmit.scm.SVN.CaptureInfo(binary).AndReturn(
+    presubmit.scm.SVN._CaptureInfo([binary], self.fake_root_dir).AndReturn(
         {'URL': 'svn:/foo/binary.dll'})
-    presubmit.scm.SVN.CaptureInfo(notfound).AndReturn({})
-    presubmit.scm.SVN.CaptureInfo(flap).AndReturn(
+    presubmit.scm.SVN._CaptureInfo([notfound], self.fake_root_dir).AndReturn({})
+    presubmit.scm.SVN._CaptureInfo([flap], self.fake_root_dir).AndReturn(
             {'URL': 'svn:/foo/boo/flap.h'})
-    presubmit.scm.SVN.GenerateDiff([blat]).AndReturn(self.presubmit_diffs)
-    presubmit.scm.SVN.GenerateDiff([notfound]).AndReturn(self.presubmit_diffs)
+    presubmit.scm.SVN.GenerateDiff([blat], self.fake_root_dir, False, None
+        ).AndReturn(self.presubmit_diffs)
+    presubmit.scm.SVN.GenerateDiff([notfound], self.fake_root_dir, False, None
+        ).AndReturn(self.presubmit_diffs)
 
     self.mox.ReplayAll()
 
@@ -846,9 +859,11 @@ class InputApiUnittest(PresubmitTestsBase):
         members)
 
   def testDepotToLocalPath(self):
-    presubmit.scm.SVN.CaptureInfo('svn://foo/smurf').AndReturn(
-        {'Path': 'prout'})
-    presubmit.scm.SVN.CaptureInfo('svn:/foo/notfound/burp').AndReturn({})
+    presubmit.scm.SVN._CaptureInfo(['svn://foo/smurf'], self.fake_root_dir
+        ).AndReturn({'Path': 'prout'})
+    presubmit.scm.SVN._CaptureInfo(
+        ['svn:/foo/notfound/burp'], self.fake_root_dir
+        ).AndReturn({})
     self.mox.ReplayAll()
 
     path = presubmit.InputApi(
@@ -861,8 +876,10 @@ class InputApiUnittest(PresubmitTestsBase):
     self.failUnless(path == None)
 
   def testLocalToDepotPath(self):
-    presubmit.scm.SVN.CaptureInfo('smurf').AndReturn({'URL': 'svn://foo'})
-    presubmit.scm.SVN.CaptureInfo('notfound-food').AndReturn({})
+    presubmit.scm.SVN._CaptureInfo(['smurf'], self.fake_root_dir
+        ).AndReturn({'URL': 'svn://foo'})
+    presubmit.scm.SVN._CaptureInfo(['notfound-food'], self.fake_root_dir
+        ).AndReturn({})
     self.mox.ReplayAll()
     path = presubmit.InputApi(
         self.fake_change, './p', False, None, False).LocalToDepotPath(
@@ -917,18 +934,34 @@ class InputApiUnittest(PresubmitTestsBase):
     presubmit.os.path.exists(notfound).AndReturn(False)
     presubmit.os.path.exists(flap).AndReturn(True)
     presubmit.os.path.isdir(flap).AndReturn(False)
-    presubmit.scm.SVN.CaptureInfo(beingdeleted).AndReturn({})
-    presubmit.scm.SVN.CaptureInfo(notfound).AndReturn({})
-    presubmit.scm.SVN.GetFileProperty(blat, 'svn:mime-type').AndReturn(None)
-    presubmit.scm.SVN.GetFileProperty(readme, 'svn:mime-type').AndReturn(None)
-    presubmit.scm.SVN.GetFileProperty(binary, 'svn:mime-type').AndReturn(
-        'application/octet-stream')
-    presubmit.scm.SVN.GetFileProperty(weird, 'svn:mime-type').AndReturn(None)
-    presubmit.scm.SVN.GetFileProperty(another, 'svn:mime-type').AndReturn(None)
-    presubmit.scm.SVN.GetFileProperty(third_party, 'svn:mime-type'
+    presubmit.scm.SVN._CaptureInfo(
+        [files[6][1]], self.fake_root_dir).AndReturn({})
+    presubmit.scm.SVN._CaptureInfo(
+        [files[7][1]], self.fake_root_dir).AndReturn({})
+    presubmit.scm.SVN.GetFileProperty(
+        files[0][1], 'svn:mime-type', self.fake_root_dir
         ).AndReturn(None)
-    presubmit.scm.SVN.GenerateDiff([blat]).AndReturn(self.presubmit_diffs)
-    presubmit.scm.SVN.GenerateDiff([another]).AndReturn(self.presubmit_diffs)
+    presubmit.scm.SVN.GetFileProperty(
+        files[1][1], 'svn:mime-type', self.fake_root_dir
+        ).AndReturn(None)
+    presubmit.scm.SVN.GetFileProperty(
+        files[2][1], 'svn:mime-type', self.fake_root_dir
+        ).AndReturn('application/octet-stream')
+    presubmit.scm.SVN.GetFileProperty(
+        files[3][1], 'svn:mime-type', self.fake_root_dir
+        ).AndReturn(None)
+    presubmit.scm.SVN.GetFileProperty(
+        files[4][1], 'svn:mime-type', self.fake_root_dir
+        ).AndReturn(None)
+    presubmit.scm.SVN.GetFileProperty(
+        files[5][1], 'svn:mime-type', self.fake_root_dir
+        ).AndReturn(None)
+    presubmit.scm.SVN.GenerateDiff(
+        [files[0][1]], self.fake_root_dir, False, None
+        ).AndReturn(self.presubmit_diffs)
+    presubmit.scm.SVN.GenerateDiff(
+        [files[4][1]], self.fake_root_dir, False, None
+        ).AndReturn(self.presubmit_diffs)
 
     self.mox.ReplayAll()
 
@@ -970,7 +1003,7 @@ class InputApiUnittest(PresubmitTestsBase):
 
   def testDefaultWhiteListBlackListFilters(self):
     def f(x):
-      return presubmit.AffectedFile(x, 'M')
+      return presubmit.AffectedFile(x, 'M', self.fake_root_dir)
     files = [
       (
         [
@@ -1051,10 +1084,11 @@ class InputApiUnittest(PresubmitTestsBase):
       return 'a' in affected_file.LocalPath()
     files = [('A', 'eeaee'), ('M', 'eeabee'), ('M', 'eebcee')]
     for _, item in files:
-      item = presubmit.os.path.join(self.fake_root_dir, item)
-      presubmit.os.path.exists(item).AndReturn(True)
-      presubmit.os.path.isdir(item).AndReturn(False)
-      presubmit.scm.SVN.GetFileProperty(item, 'svn:mime-type').AndReturn(None)
+      full_item = presubmit.os.path.join(self.fake_root_dir, item)
+      presubmit.os.path.exists(full_item).AndReturn(True)
+      presubmit.os.path.isdir(full_item).AndReturn(False)
+      presubmit.scm.SVN.GetFileProperty(
+          item, 'svn:mime-type', self.fake_root_dir).AndReturn(None)
     self.mox.ReplayAll()
 
     change = presubmit.SvnChange(
@@ -1073,10 +1107,11 @@ class InputApiUnittest(PresubmitTestsBase):
     black_list = [r".*?b.*?"]
     files = [('A', 'eeaee'), ('M', 'eeabee'), ('M', 'eebcee'), ('M', 'eecaee')]
     for _, item in files:
-      item = presubmit.os.path.join(self.fake_root_dir, item)
-      presubmit.os.path.exists(item).AndReturn(True)
-      presubmit.os.path.isdir(item).AndReturn(False)
-      presubmit.scm.SVN.GetFileProperty(item, 'svn:mime-type').AndReturn(None)
+      full_item = presubmit.os.path.join(self.fake_root_dir, item)
+      presubmit.os.path.exists(full_item).AndReturn(True)
+      presubmit.os.path.isdir(full_item).AndReturn(False)
+      presubmit.scm.SVN.GetFileProperty(
+          item, 'svn:mime-type', self.fake_root_dir).AndReturn(None)
     self.mox.ReplayAll()
 
     change = presubmit.SvnChange(
@@ -1268,36 +1303,42 @@ class AffectedFileUnittest(PresubmitTestsBase):
       'OldFileTempPath', 'Property', 'ServerPath',
     ]
     # If this test fails, you should add the relevant test.
-    self.compareMembers(presubmit.AffectedFile('a', 'b'), members)
-    self.compareMembers(presubmit.SvnAffectedFile('a', 'b'), members)
+    self.compareMembers(
+        presubmit.AffectedFile('a', 'b', self.fake_root_dir), members)
+    self.compareMembers(
+        presubmit.SvnAffectedFile('a', 'b', self.fake_root_dir), members)
 
   def testAffectedFile(self):
     path = presubmit.os.path.join('foo', 'blat.cc')
-    presubmit.os.path.exists(path).AndReturn(True)
-    presubmit.os.path.isdir(path).AndReturn(False)
-    presubmit.gclient_utils.FileRead(path, 'rU').AndReturn('whatever\ncookie')
-    presubmit.scm.SVN.CaptureInfo(path).AndReturn(
+    f_path = presubmit.os.path.join(self.fake_root_dir, path)
+    presubmit.os.path.exists(f_path).AndReturn(True)
+    presubmit.os.path.isdir(f_path).AndReturn(False)
+    presubmit.gclient_utils.FileRead(f_path, 'rU').AndReturn('whatever\ncookie')
+    presubmit.scm.SVN._CaptureInfo([path], self.fake_root_dir).AndReturn(
         {'URL': 'svn:/foo/foo/blat.cc'})
     self.mox.ReplayAll()
-    af = presubmit.SvnAffectedFile('foo/blat.cc', 'M')
+    af = presubmit.SvnAffectedFile('foo/blat.cc', 'M', self.fake_root_dir)
     self.assertEquals('svn:/foo/foo/blat.cc', af.ServerPath())
     self.assertEquals(presubmit.normpath('foo/blat.cc'), af.LocalPath())
     self.assertEquals('M', af.Action())
     self.assertEquals(['whatever', 'cookie'], af.NewContents())
 
   def testAffectedFileNotExists(self):
-    presubmit.os.path.exists('notfound.cc').AndReturn(False)
-    presubmit.gclient_utils.FileRead('notfound.cc', 'rU').AndRaise(IOError)
+    notfound = 'notfound.cc'
+    f_notfound = presubmit.os.path.join(self.fake_root_dir, notfound)
+    presubmit.os.path.exists(f_notfound).AndReturn(False)
+    presubmit.gclient_utils.FileRead(f_notfound, 'rU').AndRaise(IOError)
     self.mox.ReplayAll()
-    af = presubmit.AffectedFile('notfound.cc', 'A')
+    af = presubmit.AffectedFile(notfound, 'A', self.fake_root_dir)
     self.assertEquals('', af.ServerPath())
     self.assertEquals([], af.NewContents())
 
   def testProperty(self):
-    presubmit.scm.SVN.GetFileProperty('foo.cc', 'svn:secret-property'
+    presubmit.scm.SVN.GetFileProperty(
+        'foo.cc', 'svn:secret-property', self.fake_root_dir
         ).AndReturn('secret-property-value')
     self.mox.ReplayAll()
-    affected_file = presubmit.SvnAffectedFile('foo.cc', 'A')
+    affected_file = presubmit.SvnAffectedFile('foo.cc', 'A', self.fake_root_dir)
     # Verify cache coherency.
     self.assertEquals('secret-property-value',
                       affected_file.Property('svn:secret-property'))
@@ -1305,35 +1346,44 @@ class AffectedFileUnittest(PresubmitTestsBase):
                       affected_file.Property('svn:secret-property'))
 
   def testIsDirectoryNotExists(self):
-    presubmit.os.path.exists('foo.cc').AndReturn(False)
-    presubmit.scm.SVN.CaptureInfo('foo.cc').AndReturn({})
+    filename = 'foo.cc'
+    f_filename = presubmit.os.path.join(self.fake_root_dir, filename)
+    presubmit.os.path.exists(f_filename).AndReturn(False)
+    presubmit.scm.SVN._CaptureInfo([filename], self.fake_root_dir).AndReturn({})
     self.mox.ReplayAll()
-    affected_file = presubmit.SvnAffectedFile('foo.cc', 'A')
+    affected_file = presubmit.SvnAffectedFile(filename, 'A', self.fake_root_dir)
     # Verify cache coherency.
     self.failIf(affected_file.IsDirectory())
     self.failIf(affected_file.IsDirectory())
 
   def testIsDirectory(self):
-    presubmit.os.path.exists('foo.cc').AndReturn(True)
-    presubmit.os.path.isdir('foo.cc').AndReturn(True)
+    filename = 'foo.cc'
+    f_filename = presubmit.os.path.join(self.fake_root_dir, filename)
+    presubmit.os.path.exists(f_filename).AndReturn(True)
+    presubmit.os.path.isdir(f_filename).AndReturn(True)
     self.mox.ReplayAll()
-    affected_file = presubmit.SvnAffectedFile('foo.cc', 'A')
+    affected_file = presubmit.SvnAffectedFile(filename, 'A', self.fake_root_dir)
     # Verify cache coherency.
     self.failUnless(affected_file.IsDirectory())
     self.failUnless(affected_file.IsDirectory())
 
   def testIsTextFile(self):
-    files = [presubmit.SvnAffectedFile('foo/blat.txt', 'M'),
-            presubmit.SvnAffectedFile('foo/binary.blob', 'M'),
-            presubmit.SvnAffectedFile('blat/flop.txt', 'D')]
+    files = [
+        presubmit.SvnAffectedFile('foo/blat.txt', 'M', self.fake_root_dir),
+        presubmit.SvnAffectedFile('foo/binary.blob', 'M', self.fake_root_dir),
+        presubmit.SvnAffectedFile('blat/flop.txt', 'D', self.fake_root_dir)
+    ]
     blat = presubmit.os.path.join('foo', 'blat.txt')
     blob = presubmit.os.path.join('foo', 'binary.blob')
-    presubmit.os.path.exists(blat).AndReturn(True)
-    presubmit.os.path.isdir(blat).AndReturn(False)
-    presubmit.os.path.exists(blob).AndReturn(True)
-    presubmit.os.path.isdir(blob).AndReturn(False)
-    presubmit.scm.SVN.GetFileProperty(blat, 'svn:mime-type').AndReturn(None)
-    presubmit.scm.SVN.GetFileProperty(blob, 'svn:mime-type'
+    f_blat = presubmit.os.path.join(self.fake_root_dir, blat)
+    f_blob = presubmit.os.path.join(self.fake_root_dir, blob)
+    presubmit.os.path.exists(f_blat).AndReturn(True)
+    presubmit.os.path.isdir(f_blat).AndReturn(False)
+    presubmit.os.path.exists(f_blob).AndReturn(True)
+    presubmit.os.path.isdir(f_blob).AndReturn(False)
+    presubmit.scm.SVN.GetFileProperty(blat, 'svn:mime-type', self.fake_root_dir
+        ).AndReturn(None)
+    presubmit.scm.SVN.GetFileProperty(blob, 'svn:mime-type', self.fake_root_dir
         ).AndReturn('application/octet-stream')
     self.mox.ReplayAll()
 
@@ -1530,33 +1580,37 @@ class CannedChecksUnittest(PresubmitTestsBase):
         'mychange', '', self.fake_root_dir, [], 0, 0, None)
     input_api1 = self.MockInputApi(change1, committing)
     files1 = [
-      presubmit.SvnAffectedFile('foo/bar.cc', 'A'),
-      presubmit.SvnAffectedFile('foo.cc', 'M'),
+      presubmit.SvnAffectedFile('foo/bar.cc', 'A', self.fake_root_dir),
+      presubmit.SvnAffectedFile('foo.cc', 'M', self.fake_root_dir),
     ]
     if use_source_file:
       input_api1.AffectedSourceFiles(None).AndReturn(files1)
     else:
       input_api1.AffectedFiles(include_deleted=False).AndReturn(files1)
-    presubmit.scm.SVN.GetFileProperty(presubmit.normpath('foo/bar.cc'),
-                                      property_name).AndReturn(value1)
-    presubmit.scm.SVN.GetFileProperty(presubmit.normpath('foo.cc'),
-                                      property_name).AndReturn(value1)
+    presubmit.scm.SVN.GetFileProperty(
+        presubmit.normpath('foo/bar.cc'), property_name, self.fake_root_dir
+        ).AndReturn(value1)
+    presubmit.scm.SVN.GetFileProperty(
+        presubmit.normpath('foo.cc'), property_name, self.fake_root_dir
+        ).AndReturn(value1)
     change2 = presubmit.SvnChange(
         'mychange', '', self.fake_root_dir, [], 0, 0, None)
     input_api2 = self.MockInputApi(change2, committing)
     files2 = [
-      presubmit.SvnAffectedFile('foo/bar.cc', 'A'),
-      presubmit.SvnAffectedFile('foo.cc', 'M'),
+      presubmit.SvnAffectedFile('foo/bar.cc', 'A', self.fake_root_dir),
+      presubmit.SvnAffectedFile('foo.cc', 'M', self.fake_root_dir),
     ]
     if use_source_file:
       input_api2.AffectedSourceFiles(None).AndReturn(files2)
     else:
       input_api2.AffectedFiles(include_deleted=False).AndReturn(files2)
 
-    presubmit.scm.SVN.GetFileProperty(presubmit.normpath('foo/bar.cc'),
-                                      property_name).AndReturn(value2)
-    presubmit.scm.SVN.GetFileProperty(presubmit.normpath('foo.cc'),
-                                      property_name).AndReturn(value2)
+    presubmit.scm.SVN.GetFileProperty(
+        presubmit.normpath('foo/bar.cc'), property_name, self.fake_root_dir
+        ).AndReturn(value2)
+    presubmit.scm.SVN.GetFileProperty(
+        presubmit.normpath('foo.cc'), property_name, self.fake_root_dir
+        ).AndReturn(value2)
     self.mox.ReplayAll()
 
     results1 = check(input_api1, presubmit.OutputApi, None)
@@ -1685,7 +1739,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(len(results1), 1)
     self.assertEquals(results1[0].__class__,
         presubmit.OutputApi.PresubmitPromptWarning)
-    # pylint: disable=W0212
     self.assertEquals(results1[0]._long_text,
         'makefile.foo, line 46')
 
@@ -1836,7 +1889,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.mox.StubOutWithMock(presubmit_canned_checks, 'CheckSvnProperty')
     input_api = self.MockInputApi(None, False)
     output_api = presubmit.OutputApi()
-    A = lambda x: presubmit.AffectedFile(x, 'M')
+    A = lambda x: presubmit.AffectedFile(x, 'M', self.fake_root_dir)
     files = [
       A('a.pdf'), A('b.bmp'), A('c.gif'), A('d.png'), A('e.jpg'), A('f.jpe'),
       A('random'), A('g.jpeg'), A('h.ico'),
@@ -1975,7 +2028,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__,
                       presubmit.OutputApi.PresubmitNotifyResult)
-    # pylint: disable=W0212
     self.assertEquals('test_module failed!\nfoo', results[0]._message)
 
   def testRunPythonUnitTestsFailureCommitting(self):
@@ -1990,7 +2042,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
         input_api, presubmit.OutputApi, ['test_module'])
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__, presubmit.OutputApi.PresubmitError)
-    # pylint: disable=W0212
     self.assertEquals('test_module failed!\nfoo', results[0]._message)
 
   def testRunPythonUnitTestsSuccess(self):
@@ -2231,7 +2282,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
         project_name=None,
         owners_check=True)
     self.assertEqual(1, len(results))
-    # pylint: disable=W0212
     self.assertEqual(
         'Found line ending with white spaces in:', results[0]._message)
     self.checkstdout('')

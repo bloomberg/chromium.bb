@@ -244,11 +244,7 @@ class SVN(SCM):
     return data
 
   def CaptureStatus(self):
-    previous_cwd = os.getcwd()
-    os.chdir(self.checkout_root)
-    result = scm.SVN.CaptureStatus(self.checkout_root)
-    os.chdir(previous_cwd)
-    return result
+    return scm.SVN.CaptureStatus(None, self.checkout_root)
 
   def GenerateDiff(self):
     """Returns a string containing the diff for the given file list.
@@ -468,8 +464,9 @@ def GuessVCS(options, path, file_list):
       # 128 = git error code when not in a repo.
       logging.warning('Unexpected error code: %s' % e.returncode)
       raise
-  raise NoTryServerAccess("Could not guess version control system. "
-                          "Are you in a working copy directory?")
+  raise NoTryServerAccess(
+      ( 'Could not guess version control system for %s.\n'
+        'Are you in a working copy directory?') % path)
 
 
 def GetMungedDiff(path_diff, diff):

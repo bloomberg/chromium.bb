@@ -398,13 +398,13 @@ class SVN(object):
   current_version = None
 
   @staticmethod
-  def Capture(args, **kwargs):
+  def Capture(args, cwd, **kwargs):
     """Always redirect stderr.
 
     Throws an exception if non-0 is returned.
     """
     return subprocess2.check_output(
-        ['svn'] + args, stderr=subprocess2.PIPE, **kwargs)
+        ['svn'] + args, stderr=subprocess2.PIPE, cwd=cwd, **kwargs)
 
   @staticmethod
   def RunAndGetFileList(verbose, args, cwd, file_list, stdout=None):
@@ -514,13 +514,30 @@ class SVN(object):
       break
 
   @staticmethod
-  def CaptureInfo(cwd):
+  def CaptureRemoteInfo(url):
+    """Returns a dictionary from the svn info output for the given url.
+
+    Throws an exception if svn info fails.
+    """
+    assert isinstance(url, str)
+    return SVN._CaptureInfo([url], None)
+
+  @staticmethod
+  def CaptureLocalInfo(files, cwd):
+    """Returns a dictionary from the svn info output for the given files.
+
+    Throws an exception if svn info fails.
+    """
+    assert isinstance(files, (list, tuple))
+    return SVN._CaptureInfo(files, cwd)
+
+  @staticmethod
+  def _CaptureInfo(files, cwd):
     """Returns a dictionary from the svn info output for the given file.
 
     Throws an exception if svn info fails."""
     result = {}
-    output = SVN.Capture(['info', '--xml', cwd])
-    info = ElementTree.XML(output)
+    info = ElementTree.XML(SVN.Capture(['info', '--xml'] + files, cwd))
     if info is None:
       return result
     entry = info.find('entry')
@@ -563,10 +580,10 @@ class SVN(object):
     Returns:
       Int base revision
     """
-    return SVN.CaptureInfo(cwd).get('Revision')
+    return SVN.CaptureLocalInfo([], cwd).get('Revision')
 
   @staticmethod
-  def CaptureStatus(files):
+  def CaptureStatus(files, cwd):
     """Returns the svn 1.5 svn status emulated output.
 
     @files can be a string (one file) or a list of files.
@@ -598,7 +615,7 @@ class SVN(object):
       'replaced': 'R',
       'unversioned': '?',
     }
-    dom = ElementTree.XML(SVN.Capture(command))
+    dom = ElementTree.XML(SVN.Capture(command, cwd))
     results = []
     if dom is None:
       return results
@@ -645,9 +662,10 @@ class SVN(object):
     return results
 
   @staticmethod
-  def IsMoved(filename):
+  def IsMoved(filename, cwd):
     """Determine if a file has been added through svn mv"""
-    return SVN.IsMovedInfo(SVN.CaptureInfo(filename))
+    assert isinstance(filename, basestring)
+    return SVN.IsMovedInfo(SVN.CaptureLocalInfo([filename], cwd))
 
   @staticmethod
   def IsMovedInfo(info):
@@ -657,7 +675,7 @@ class SVN(object):
             info.get('Schedule') == 'add')
 
   @staticmethod
-  def GetFileProperty(filename, property_name):
+  def GetFileProperty(filename, property_name, cwd):
     """Returns the value of an SVN property for the given file.
 
     Args:
@@ -670,12 +688,12 @@ class SVN(object):
       empty string is also returned.
     """
     try:
-      return SVN.Capture(['propget', property_name, filename])
+      return SVN.Capture(['propget', property_name, filename], cwd)
     except subprocess2.CalledProcessError:
       return ''
 
   @staticmethod
-  def DiffItem(filename, full_move=False, revision=None):
+  def DiffItem(filename, cwd, full_move, revision):
     """Diffs a single file.
 
     Should be simple, eh? No it isn't.
@@ -693,15 +711,18 @@ class SVN(object):
     try:
       # Use "svn info" output instead of os.path.isdir because the latter fails
       # when the file is deleted.
-      return SVN._DiffItemInternal(filename, SVN.CaptureInfo(filename),
-                                   bogus_dir,
-                                   full_move=full_move, revision=revision)
+      return SVN._DiffItemInternal(
+          filename,
+          cwd,
+          SVN.CaptureLocalInfo([filename], cwd),
+          bogus_dir,
+          full_move,
+          revision)
     finally:
       gclient_utils.RemoveDirectory(bogus_dir)
 
   @staticmethod
-  def _DiffItemInternal(filename, info, bogus_dir, full_move=False,
-                        revision=None):
+  def _DiffItemInternal(filename, cwd, info, bogus_dir, full_move, revision):
     """Grabs the diff data."""
     command = ["diff", "--config-dir", bogus_dir, filename]
     if revision:
@@ -737,7 +758,7 @@ class SVN(object):
       else:
         if info.get("Node Kind") != "directory":
           # svn diff on a mv/cp'd file outputs nothing if there was no change.
-          data = SVN.Capture(command)
+          data = SVN.Capture(command, cwd)
           if not data:
             # We put in an empty Index entry so upload.py knows about them.
             data = "Index: %s\n" % filename.replace(os.sep, '/')
@@ -746,7 +767,7 @@ class SVN(object):
       if info.get("Node Kind") != "directory":
         # Normal simple case.
         try:
-          data = SVN.Capture(command)
+          data = SVN.Capture(command, cwd)
         except subprocess2.CalledProcessError:
           if revision:
             data = GenFakeDiff(filename)
@@ -756,7 +777,7 @@ class SVN(object):
     return data
 
   @staticmethod
-  def GenerateDiff(filenames, root=None, full_move=False, revision=None):
+  def GenerateDiff(filenames, cwd, full_move, revision):
     """Returns a string containing the diff for the given file list.
 
     The files in the list should either be absolute paths or relative to the
@@ -765,9 +786,7 @@ class SVN(object):
     The diff will always use relative paths.
     """
     assert isinstance(filenames, (list, tuple))
-    previous_cwd = os.getcwd()
-    root = root or SVN.GetCheckoutRoot(previous_cwd)
-    root = os.path.normcase(os.path.join(root, ''))
+    root = os.path.normcase(os.path.join(cwd, ''))
     def RelativePath(path, root):
       """We must use relative paths."""
       if os.path.normcase(path).startswith(root):
@@ -781,11 +800,10 @@ class SVN(object):
     # config directory, which gets around these problems.
     bogus_dir = tempfile.mkdtemp()
     try:
-      os.chdir(root)
       # Cleanup filenames
       filenames = [RelativePath(f, root) for f in filenames]
       # Get information about the modified items (files and directories)
-      data = dict([(f, SVN.CaptureInfo(f)) for f in filenames])
+      data = dict([(f, SVN.CaptureLocalInfo([f], root)) for f in filenames])
       diffs = []
       if full_move:
         # Eliminate modified files inside moved/copied directory.
@@ -805,12 +823,12 @@ class SVN(object):
             # for now, the most common case is a head copy,
             # so let's just encode that as a straight up cp.
             srcurl = info.get('Copied From URL')
-            root = info.get('Repository Root')
+            file_root = info.get('Repository Root')
             rev = int(info.get('Copied From Rev'))
-            assert srcurl.startswith(root)
-            src = srcurl[len(root)+1:]
+            assert srcurl.startswith(file_root)
+            src = srcurl[len(file_root)+1:]
             try:
-              srcinfo = SVN.CaptureInfo(srcurl)
+              srcinfo = SVN.CaptureRemoteInfo(srcurl)
             except subprocess2.CalledProcessError, e:
               if not 'Not a valid URL' in e.stderr:
                 raise
@@ -818,7 +836,7 @@ class SVN(object):
               # revision the file was deleted.
               srcinfo = {'Revision': rev}
             if (srcinfo.get('Revision') != rev and
-                SVN.Capture(['diff', '-r', '%d:head' % rev, srcurl])):
+                SVN.Capture(['diff', '-r', '%d:head' % rev, srcurl], cwd)):
               metaheaders.append("#$ svn cp -r %d %s %s "
                                  "### WARNING: note non-trunk copy\n" %
                                  (rev, src, filename))
@@ -832,9 +850,8 @@ class SVN(object):
           diffs.append("### END SVN COPY METADATA\n")
       # Now ready to do the actual diff.
       for filename in sorted(data.iterkeys()):
-        diffs.append(SVN._DiffItemInternal(filename, data[filename], bogus_dir,
-                                           full_move=full_move,
-                                           revision=revision))
+        diffs.append(SVN._DiffItemInternal(
+            filename, cwd, data[filename], bogus_dir, full_move, revision))
       # Use StringIO since it can be messy when diffing a directory move with
       # full_move=True.
       buf = cStringIO.StringIO()
@@ -844,14 +861,13 @@ class SVN(object):
       buf.close()
       return result
     finally:
-      os.chdir(previous_cwd)
       gclient_utils.RemoveDirectory(bogus_dir)
 
   @staticmethod
-  def GetEmail(repo_root):
+  def GetEmail(cwd):
     """Retrieves the svn account which we assume is an email address."""
     try:
-      infos = SVN.CaptureInfo(repo_root)
+      infos = SVN.CaptureLocalInfo([], cwd)
     except subprocess2.CalledProcessError:
       return None
 
@@ -904,36 +920,36 @@ class SVN(object):
     return values
 
   @staticmethod
-  def GetCheckoutRoot(directory):
+  def GetCheckoutRoot(cwd):
     """Returns the top level directory of the current repository.
 
     The directory is returned as an absolute path.
     """
-    directory = os.path.abspath(directory)
+    cwd = os.path.abspath(cwd)
     try:
-      info = SVN.CaptureInfo(directory)
+      info = SVN.CaptureLocalInfo([], cwd)
       cur_dir_repo_root = info['Repository Root']
       url = info['URL']
     except subprocess2.CalledProcessError:
       return None
     while True:
-      parent = os.path.dirname(directory)
+      parent = os.path.dirname(cwd)
       try:
-        info = SVN.CaptureInfo(parent)
+        info = SVN.CaptureLocalInfo([], parent)
         if (info['Repository Root'] != cur_dir_repo_root or
             info['URL'] != os.path.dirname(url)):
           break
         url = info['URL']
       except subprocess2.CalledProcessError:
         break
-      directory = parent
-    return GetCasedPath(directory)
+      cwd = parent
+    return GetCasedPath(cwd)
 
   @classmethod
   def AssertVersion(cls, min_version):
     """Asserts svn's version is at least min_version."""
     if cls.current_version is None:
-      cls.current_version = cls.Capture(['--version']).split()[2]
+      cls.current_version = cls.Capture(['--version'], None).split()[2]
     current_version_list = map(only_int, cls.current_version.split('.'))
     for min_ver in map(int, min_version.split('.')):
       ver = current_version_list.pop(0)
@@ -944,16 +960,16 @@ class SVN(object):
     return (True, cls.current_version)
 
   @staticmethod
-  def Revert(repo_root, callback=None, ignore_externals=False):
-    """Reverts all svn modifications in repo_root, including properties.
+  def Revert(cwd, callback=None, ignore_externals=False):
+    """Reverts all svn modifications in cwd, including properties.
 
     Deletes any modified files or directory.
 
     A "svn update --revision BASE" call is required after to revive deleted
     files.
     """
-    for file_status in SVN.CaptureStatus(repo_root):
-      file_path = os.path.join(repo_root, file_status[1])
+    for file_status in SVN.CaptureStatus(None, cwd):
+      file_path = os.path.join(cwd, file_status[1])
       if (ignore_externals and
           file_status[0][0] == 'X' and
           file_status[0][1:].isspace()):
@@ -985,11 +1001,11 @@ class SVN(object):
           not file_status[0][1:].isspace()):
         # Added, deleted file requires manual intervention and require calling
         # revert, like for properties.
-        if not os.path.isdir(repo_root):
+        if not os.path.isdir(cwd):
           # '.' was deleted. It's not worth continuing.
           return
         try:
-          SVN.Capture(['revert', file_status[1]], cwd=repo_root)
+          SVN.Capture(['revert', file_status[1]], cwd=cwd)
         except subprocess2.CalledProcessError:
           if not os.path.exists(file_path):
             continue

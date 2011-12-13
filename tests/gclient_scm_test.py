@@ -31,6 +31,10 @@ import subprocess2
 join = gclient_scm.os.path.join
 
 
+# Access to a protected member XXX of a client class
+# pylint: disable=W0212
+
+
 class GCBaseTestCase(object):
   def assertRaisesError(self, msg, fn, *args, **kwargs):
     """Like unittest's assertRaises() but checks for Gclient.Error."""
@@ -52,9 +56,8 @@ class BaseTestCase(GCBaseTestCase, SuperMoxTestBase):
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'FileRead')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'FileWrite')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'RemoveDirectory')
-    self._CaptureSVNInfo = gclient_scm.scm.SVN.CaptureInfo
     self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'Capture')
-    self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'CaptureInfo')
+    self.mox.StubOutWithMock(gclient_scm.scm.SVN, '_CaptureInfo')
     self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'CaptureStatus')
     self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'RunAndGetFileList')
     self.mox.StubOutWithMock(subprocess2, 'communicate')
@@ -156,7 +159,7 @@ class SVNWrapperTestCase(BaseTestCase):
     options = self.Options(verbose=True)
     gclient_scm.os.path.isdir(self.base_path).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(False)
-    gclient_scm.scm.SVN.Capture(['--version']
+    gclient_scm.scm.SVN.Capture(['--version'], None
         ).AndReturn('svn, version 1.5.1 (r32289)')
     # It'll to a checkout instead.
     gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
@@ -197,7 +200,8 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.makedirs(parent)
     gclient_scm.os.path.exists(parent).AndReturn(True)
     files_list = self.mox.CreateMockAnything()
-    gclient_scm.scm.SVN.Capture(['--version']).AndReturn('svn, version 1.6')
+    gclient_scm.scm.SVN.Capture(['--version'], None
+        ).AndReturn('svn, version 1.6')
     gclient_scm.scm.SVN.RunAndGetFileList(
         options.verbose,
         ['checkout', self.url, self.base_path, '--force', '--ignore-externals'],
@@ -216,7 +220,7 @@ class SVNWrapperTestCase(BaseTestCase):
     options = self.Options(verbose=True)
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.os.path.isdir(join(self.base_path, '.svn')).AndReturn(True)
-    gclient_scm.scm.SVN.CaptureStatus(self.base_path).AndReturn([])
+    gclient_scm.scm.SVN.CaptureStatus(None, self.base_path).AndReturn([])
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.scm.SVN.RunAndGetFileList(
         options.verbose,
@@ -237,7 +241,7 @@ class SVNWrapperTestCase(BaseTestCase):
     items = [
       ('~      ', 'a'),
     ]
-    gclient_scm.scm.SVN.CaptureStatus(self.base_path).AndReturn(items)
+    gclient_scm.scm.SVN.CaptureStatus(None, self.base_path).AndReturn(items)
     file_path = join(self.base_path, 'a')
     gclient_scm.os.path.exists(file_path).AndReturn(True)
     gclient_scm.os.path.isfile(file_path).AndReturn(False)
@@ -266,7 +270,7 @@ class SVNWrapperTestCase(BaseTestCase):
     items = [
       ('~      ', '.'),
     ]
-    gclient_scm.scm.SVN.CaptureStatus(self.base_path).AndReturn(items)
+    gclient_scm.scm.SVN.CaptureStatus(None, self.base_path).AndReturn(items)
     file_path = join(self.base_path, '.')
     gclient_scm.os.path.exists(file_path).AndReturn(True)
     gclient_scm.os.path.isfile(file_path).AndReturn(False)
@@ -317,7 +321,7 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.makedirs(parent)
     gclient_scm.os.path.exists(parent).AndReturn(True)
     files_list = self.mox.CreateMockAnything()
-    gclient_scm.scm.SVN.Capture(['--version']
+    gclient_scm.scm.SVN.Capture(['--version'], None
         ).AndReturn('svn, version 1.5.1 (r32289)')
     gclient_scm.scm.SVN.RunAndGetFileList(
         options.verbose,
@@ -344,17 +348,18 @@ class SVNWrapperTestCase(BaseTestCase):
 
     # Verify no locked files.
     dotted_path = join(self.base_path, '.')
-    gclient_scm.scm.SVN.CaptureStatus(dotted_path).AndReturn([])
+    gclient_scm.scm.SVN.CaptureStatus(None, dotted_path).AndReturn([])
 
     # Checkout or update.
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
-    gclient_scm.scm.SVN.CaptureInfo(dotted_path).AndReturn(file_info)
+    gclient_scm.scm.SVN._CaptureInfo([], dotted_path).AndReturn(file_info)
     # Cheat a bit here.
-    gclient_scm.scm.SVN.CaptureInfo(file_info['URL']).AndReturn(file_info)
+    gclient_scm.scm.SVN._CaptureInfo([file_info['URL']], None
+        ).AndReturn(file_info)
     additional_args = []
     if options.manually_grab_svn_rev:
       additional_args = ['--revision', str(file_info['Revision'])]
-    gclient_scm.scm.SVN.Capture(['--version']
+    gclient_scm.scm.SVN.Capture(['--version'], None
         ).AndReturn('svn, version 1.5.1 (r32289)')
     additional_args.extend(['--force', '--ignore-externals'])
     files_list = []
@@ -377,14 +382,14 @@ class SVNWrapperTestCase(BaseTestCase):
 
     # Checks to make sure that we support svn co --depth.
     gclient_scm.scm.SVN.current_version = None
-    gclient_scm.scm.SVN.Capture(['--version']
+    gclient_scm.scm.SVN.Capture(['--version'], None
         ).AndReturn('svn, version 1.5.1 (r32289)')
     gclient_scm.os.path.exists(join(self.base_path, '.svn')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, 'DEPS')).AndReturn(False)
 
     # Verify no locked files.
     dotted_path = join(self.base_path, '.')
-    gclient_scm.scm.SVN.CaptureStatus(dotted_path).AndReturn([])
+    gclient_scm.scm.SVN.CaptureStatus(None, dotted_path).AndReturn([])
 
     # When checking out a single file, we issue an svn checkout and svn update.
     files_list = self.mox.CreateMockAnything()
@@ -402,8 +407,9 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
-    gclient_scm.scm.SVN.CaptureInfo(dotted_path).AndReturn(file_info)
-    gclient_scm.scm.SVN.CaptureInfo(file_info['URL']).AndReturn(file_info)
+    gclient_scm.scm.SVN._CaptureInfo([], dotted_path).AndReturn(file_info)
+    gclient_scm.scm.SVN._CaptureInfo([file_info['URL']], None
+        ).AndReturn(file_info)
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -416,7 +422,7 @@ class SVNWrapperTestCase(BaseTestCase):
 
     # Checks to make sure that we support svn co --depth.
     gclient_scm.scm.SVN.current_version = None
-    gclient_scm.scm.SVN.Capture(['--version']
+    gclient_scm.scm.SVN.Capture(['--version'], None
         ).AndReturn('svn, version 1.4.4 (r25188)')
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
 
@@ -440,7 +446,7 @@ class SVNWrapperTestCase(BaseTestCase):
 
     # Checks to make sure that we support svn co --depth.
     gclient_scm.scm.SVN.current_version = None
-    gclient_scm.scm.SVN.Capture(['--version']
+    gclient_scm.scm.SVN.Capture(['--version'], None
         ).AndReturn('svn, version 1.5.1 (r32289)')
     gclient_scm.os.path.exists(join(self.base_path, '.svn')).AndReturn(False)
     # If DEPS already exists, assume we're upgrading from svn1.4, so delete
@@ -449,7 +455,8 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.remove(join(self.base_path, 'DEPS'))
 
     # Verify no locked files.
-    gclient_scm.scm.SVN.CaptureStatus(join(self.base_path, '.')).AndReturn([])
+    gclient_scm.scm.SVN.CaptureStatus(
+        None, join(self.base_path, '.')).AndReturn([])
 
     # When checking out a single file, we issue an svn checkout and svn update.
     files_list = self.mox.CreateMockAnything()
@@ -467,9 +474,10 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
-    gclient_scm.scm.SVN.CaptureInfo(
-        join(self.base_path, ".")).AndReturn(file_info)
-    gclient_scm.scm.SVN.CaptureInfo(file_info['URL']).AndReturn(file_info)
+    gclient_scm.scm.SVN._CaptureInfo(
+        [], join(self.base_path, ".")).AndReturn(file_info)
+    gclient_scm.scm.SVN._CaptureInfo([file_info['URL']], None
+        ).AndReturn(file_info)
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -486,21 +494,23 @@ class SVNWrapperTestCase(BaseTestCase):
     }
     # Checks to make sure that we support svn co --depth.
     gclient_scm.scm.SVN.current_version = None
-    gclient_scm.scm.SVN.Capture(['--version']
+    gclient_scm.scm.SVN.Capture(['--version'], None
         ).AndReturn('svn, version 1.5.1 (r32289)')
     gclient_scm.os.path.exists(join(self.base_path, '.svn')).AndReturn(True)
 
     # Verify no locked files.
-    gclient_scm.scm.SVN.CaptureStatus(join(self.base_path, '.')).AndReturn([])
+    gclient_scm.scm.SVN.CaptureStatus(None, join(self.base_path, '.')
+        ).AndReturn([])
 
     # Now we fall back on scm.update().
     files_list = self.mox.CreateMockAnything()
     gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
-    gclient_scm.scm.SVN.CaptureInfo(
-        join(self.base_path, '.')).AndReturn(file_info)
-    gclient_scm.scm.SVN.CaptureInfo(file_info['URL']).AndReturn(file_info)
+    gclient_scm.scm.SVN._CaptureInfo(
+        [], join(self.base_path, '.')).AndReturn(file_info)
+    gclient_scm.scm.SVN._CaptureInfo([file_info['URL']], None
+        ).AndReturn(file_info)
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -872,7 +882,6 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
                                 relpath=self.relpath)
     file_path = join(self.base_path, 'b')
     open(file_path, 'w').writelines('conflict\n')
-    # pylint: disable=W0212
     scm._Run(['commit', '-am', 'test'], options)
     __builtin__.raw_input = lambda x: 'y'
     exception = ('Conflict while rebasing this branch.\n'

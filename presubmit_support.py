@@ -302,9 +302,8 @@ class InputApi(object):
 
       Remember to check for the None case and show an appropriate error!
     """
-    local_path = scm.SVN.CaptureInfo(depot_path).get('Path')
-    if local_path:
-      return local_path
+    return scm.SVN.CaptureLocalInfo([depot_path], self.change.RepositoryRoot()
+        ).get('Path')
 
   def LocalToDepotPath(self, local_path):
     """Translate a local path to a depot path.
@@ -315,9 +314,8 @@ class InputApi(object):
     Returns:
       The depot path (SVN URL) of the file if mapped, otherwise None.
     """
-    depot_path = scm.SVN.CaptureInfo(local_path).get('URL')
-    if depot_path:
-      return depot_path
+    return scm.SVN.CaptureLocalInfo([local_path], self.change.RepositoryRoot()
+        ).get('URL')
 
   def AffectedFiles(self, include_dirs=False, include_deletes=True,
                     file_filter=None):
@@ -429,7 +427,7 @@ class AffectedFile(object):
   """Representation of a file in a change."""
   # Method could be a function
   # pylint: disable=R0201
-  def __init__(self, path, action, repository_root=''):
+  def __init__(self, path, action, repository_root):
     self._path = path
     self._action = action
     self._local_root = repository_root
@@ -563,8 +561,8 @@ class SvnAffectedFile(AffectedFile):
 
   def ServerPath(self):
     if self._server_path is None:
-      self._server_path = scm.SVN.CaptureInfo(
-          self.AbsoluteLocalPath()).get('URL', '')
+      self._server_path = scm.SVN.CaptureLocalInfo(
+          [self.LocalPath()], self._local_root).get('URL', '')
     return self._server_path
 
   def IsDirectory(self):
@@ -575,14 +573,15 @@ class SvnAffectedFile(AffectedFile):
         # querying subversion, especially on Windows.
         self._is_directory = os.path.isdir(path)
       else:
-        self._is_directory = scm.SVN.CaptureInfo(
-            path).get('Node Kind') in ('dir', 'directory')
+        self._is_directory = scm.SVN.CaptureLocalInfo(
+            [self.LocalPath()], self._local_root
+            ).get('Node Kind') in ('dir', 'directory')
     return self._is_directory
 
   def Property(self, property_name):
     if not property_name in self._properties:
       self._properties[property_name] = scm.SVN.GetFileProperty(
-          self.AbsoluteLocalPath(), property_name).rstrip()
+          self.LocalPath(), property_name, self._local_root).rstrip()
     return self._properties[property_name]
 
   def IsTextFile(self):
@@ -593,13 +592,14 @@ class SvnAffectedFile(AffectedFile):
       elif self.IsDirectory():
         self._is_text_file = False
       else:
-        mime_type = scm.SVN.GetFileProperty(self.AbsoluteLocalPath(),
-                                            'svn:mime-type')
+        mime_type = scm.SVN.GetFileProperty(
+            self.LocalPath(), 'svn:mime-type', self._local_root)
         self._is_text_file = (not mime_type or mime_type.startswith('text/'))
     return self._is_text_file
 
   def GenerateScmDiff(self):
-    return scm.SVN.GenerateDiff([self.AbsoluteLocalPath()])
+    return scm.SVN.GenerateDiff(
+        [self.LocalPath()], self._local_root, False, None)
 
 
 class GitAffectedFile(AffectedFile):
