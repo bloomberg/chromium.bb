@@ -78,15 +78,18 @@ static void gtk_preserve_window_realize(GtkWidget* widget) {
   g_return_if_fail(GTK_IS_PRESERVE_WINDOW(widget));
 
   if (widget->window) {
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
+
     gdk_window_reparent(widget->window,
                         gtk_widget_get_parent_window(widget),
-                        widget->allocation.x,
-                        widget->allocation.y);
+                        allocation.x,
+                        allocation.y);
     GtkPreserveWindowPrivate* priv = GTK_PRESERVE_WINDOW_GET_PRIVATE(widget);
     if (!priv->delegate_resize) {
-      gdk_window_resize(widget->window,
-                        widget->allocation.width,
-                        widget->allocation.height);
+      gdk_window_resize(gtk_widget_get_window(widget),
+                        allocation.width,
+                        allocation.height);
     }
     widget->style = gtk_style_attach(widget->style, widget->window);
     gtk_style_set_background(widget->style, widget->window, GTK_STATE_NORMAL);

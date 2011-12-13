@@ -26,9 +26,12 @@ void PopulateSubmenus(GtkWidget* child, gpointer data) {
 
 // Is the cursor over |menu| or one of its parent menus?
 bool MotionIsOverMenu(GtkWidget* menu, GdkEventMotion* motion) {
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(menu, &allocation);
+
   if (motion->x >= 0 && motion->y >= 0 &&
-      motion->x < menu->allocation.width &&
-      motion->y < menu->allocation.height) {
+      motion->x < allocation.width &&
+      motion->y < allocation.height) {
     return true;
   }
 
@@ -131,8 +134,10 @@ gboolean MenuBarHelper::OnMenuMotionNotify(GtkWidget* menu,
 
     last_button = button;
 
-    if (x >= 0 && y >= 0 && x < button->allocation.width &&
-        y < button->allocation.height) {
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(button, &allocation);
+
+    if (x >= 0 && y >= 0 && x < allocation.width && y < allocation.height) {
       if (button != button_showing_menu_)
         delegate_->PopupForButton(button);
       return TRUE;

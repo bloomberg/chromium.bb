@@ -344,7 +344,10 @@ void DraggedViewGtk::SetContainerShapeMask() {
       cairo_set_operator(cairo_context, CAIRO_OPERATOR_SOURCE);
     else
       cairo_set_operator(cairo_context, CAIRO_OPERATOR_OVER);
-    PaintTab(i, container_, cairo_context, container_->allocation.width);
+
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(container_, &allocation);
+    PaintTab(i, container_, cairo_context, allocation.width);
   }
 
   if (!attached_) {
@@ -383,6 +386,9 @@ gboolean DraggedViewGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
   int tab_height = static_cast<int>(
       kScalingFactor * renderers_[drag_data_->source_tab_index()]->height());
 
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+
   // Draw the render area.
   BackingStore* backing_store = drag_data_->GetSourceTabContents()->
       render_view_host()->GetBackingStore(false);
@@ -390,8 +396,8 @@ gboolean DraggedViewGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
     // This leaves room for the border.
     static_cast<BackingStoreGtk*>(backing_store)->PaintToRect(
         gfx::Rect(kDragFrameBorderSize, tab_height,
-                  widget->allocation.width - kTwiceDragFrameBorderSize,
-                  widget->allocation.height - tab_height -
+                  allocation.width - kTwiceDragFrameBorderSize,
+                  allocation.height - tab_height -
                   kDragFrameBorderSize),
         GDK_DRAWABLE(widget->window));
   }
@@ -408,8 +414,8 @@ gboolean DraggedViewGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
     double offset = kDragFrameBorderSize / 2.0 - 0.5;
     double left_x = offset;
     double top_y = tab_height - kDragFrameBorderSize + offset;
-    double right_x = widget->allocation.width - offset;
-    double bottom_y = widget->allocation.height - offset;
+    double right_x = allocation.width - offset;
+    double bottom_y = allocation.height - offset;
 
     cairo_move_to(cr, left_x, top_y);
     cairo_line_to(cr, left_x, bottom_y);
@@ -426,11 +432,11 @@ gboolean DraggedViewGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
   for (int i = renderers_.size() - 1; i >= 0; i--) {
     if (i == drag_data_->source_tab_index())
       continue;
-    PaintTab(i, widget, cr, widget->allocation.width);
+    PaintTab(i, widget, cr, allocation.width);
   }
   // Painting the active tab last, so that it appears on top.
   PaintTab(drag_data_->source_tab_index(), widget, cr,
-           widget->allocation.width);
+           allocation.width);
 
   cairo_destroy(cr);
 

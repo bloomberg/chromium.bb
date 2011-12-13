@@ -1389,7 +1389,9 @@ gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnExpose(
   if (!(animation_.IsShowing() || animation_.IsClosing()))
     return FALSE;
 
-  const int height = sender->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(sender, &allocation);
+  const int height = allocation.height;
 
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(sender->window));
   gdk_cairo_rectangle(cr, &event->area);

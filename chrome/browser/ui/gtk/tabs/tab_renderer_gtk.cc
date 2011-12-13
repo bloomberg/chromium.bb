@@ -99,9 +99,13 @@ gfx::Rect GetWidgetBoundsRelativeToParent(GtkWidget* parent,
                                           GtkWidget* widget) {
   gfx::Point parent_pos = gtk_util::GetWidgetScreenPosition(parent);
   gfx::Point widget_pos = gtk_util::GetWidgetScreenPosition(widget);
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+
   return gfx::Rect(widget_pos.x() - parent_pos.x(),
                    widget_pos.y() - parent_pos.y(),
-                   widget->allocation.width, widget->allocation.height);
+                   allocation.width, allocation.height);
 }
 
 }  // namespace

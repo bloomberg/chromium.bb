@@ -157,12 +157,15 @@ gboolean TabGtk::OnButtonReleaseEvent(GtkWidget* widget,
     }
   }
 
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+
   // Middle mouse up means close the tab, but only if the mouse is over it
   // (like a button).
   if (event->button == 2 &&
       event->x >= 0 && event->y >= 0 &&
-      event->x < widget->allocation.width &&
-      event->y < widget->allocation.height) {
+      event->x < allocation.width &&
+      event->y < allocation.height) {
     // If the user is currently holding the left mouse button down but hasn't
     // moved the mouse yet, a drag hasn't started yet.  In that case, clean up
     // some state before closing the tab to avoid a crash.  Once the drag has
