@@ -28,6 +28,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <signal.h>
 
 #include <wayland-client.h>
 #include <wayland-egl.h>
@@ -208,19 +209,35 @@ create_display(void)
 	return display;
 }
 
+static int running = 1;
+
+static void
+signal_int(int signum)
+{
+	running = 0;
+}
+
 int
 main(int argc, char **argv)
 {
+	struct sigaction sigint;
 	struct display *display;
 	struct window *window;
 
 	display = create_display();
 	window = create_window(display, 250, 250);
 
+	sigint.sa_handler = signal_int;
+	sigemptyset(&sigint.sa_mask);
+	sigint.sa_flags = SA_RESETHAND;
+	sigaction(SIGINT, &sigint, NULL);
+
 	redraw(window, NULL, 0);
 
-	while (true)
+	while (running)
 		wl_display_iterate(display->display, display->mask);
+
+	fprintf(stderr, "simple-shm exiting\n");
 
 	return 0;
 }

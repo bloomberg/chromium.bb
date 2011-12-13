@@ -26,6 +26,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include <assert.h>
+#include <signal.h>
 
 #include <wayland-client.h>
 #include <wayland-egl.h>
@@ -307,9 +308,18 @@ event_mask_update(uint32_t mask, void *data)
 	return 0;
 }
 
+static int running = 1;
+
+static void
+signal_int(int signum)
+{
+	running = 0;
+}
+
 int
 main(int argc, char **argv)
 {
+	struct sigaction sigint;
 	struct display display = { 0 };
 	struct window  window  = { 0 };
 
@@ -333,10 +343,17 @@ main(int argc, char **argv)
 	create_surface(&window);
 	init_gl(&window);
 
+	sigint.sa_handler = signal_int;
+	sigemptyset(&sigint.sa_mask);
+	sigint.sa_flags = SA_RESETHAND;
+	sigaction(SIGINT, &sigint, NULL);
+
 	redraw(&window, NULL, 0);
 
-	while (true)
+	while (running)
 		wl_display_iterate(display.display, display.mask);
+
+	fprintf(stderr, "simple-egl exiting\n");
 
 	return 0;
 }
