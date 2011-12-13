@@ -1,0 +1,8 @@
+span.certUntrusted {
+  background-color: pink;
+  border: 1px solid red;
+  border-radius: 3px;
+  margin-right: 3px;
+  padding-left: 1px;
+  padding-right: 1px;
+}

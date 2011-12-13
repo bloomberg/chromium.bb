@@ -1,0 +1,10 @@
+#ignoredHostList {
+  border: solid 1px #999999;
+  height: 100px;
+  -webkit-margin-start: 0px;
+}
+
+#newHost {
+  -webkit-margin-start: 0px;
+  margin-top: 8px;
+}

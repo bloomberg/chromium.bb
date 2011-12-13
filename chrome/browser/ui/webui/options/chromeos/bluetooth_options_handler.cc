@@ -19,7 +19,7 @@
 
 namespace {
 
-// |UpdateDeviceCallback| takes a variable length list as an arugment. The
+// |UpdateDeviceCallback| takes a variable length list as an argument. The
 // value stored in each list element is indicated by the following constants.
 const int kUpdateDeviceAddressIndex = 0;
 const int kUpdateDeviceCommandIndex = 1;

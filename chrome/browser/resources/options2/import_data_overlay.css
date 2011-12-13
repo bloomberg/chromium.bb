@@ -1,0 +1,23 @@
+#import-from-div {
+  margin-bottom: 20px;
+}
+
+#import-checkboxes > div:not(:first-child) {
+  -webkit-padding-start: 8px;
+  margin: 5px 0;
+}
+
+#import-throbber {
+  margin: 4px 10px;
+  vertical-align: middle;
+  visibility: hidden;
+}
+
+#import-success-header {
+  font-size: 1.2em;
+}
+
+#import-success-image {
+  text-align: center;
+  margin: 20px;
+}
