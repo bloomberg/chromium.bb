@@ -105,6 +105,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   static int GetDefaultAvatarIconResourceIDAtIndex(size_t index);
   // Returns a URL for the default avatar icon with specified index.
   static std::string GetDefaultAvatarIconUrl(size_t index);
+  // Checks if |index| is a valid avatar icon index
+  static bool IsDefaultAvatarIconIndex(size_t index);
   // Checks if the given URL points to one of the default avatar icons. If it
   // is, returns true and its index through |icon_index|. If not, returns false.
   static bool IsDefaultAvatarIconUrl(const std::string& icon_url,

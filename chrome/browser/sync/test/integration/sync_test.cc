@@ -707,7 +707,7 @@ int SyncTest::NumberOfDefaultSyncItems() const {
   // TODO(stevet): It would be nice if there was some mechanism for retrieving
   // this sum from each data type without having to manually count and update
   // this value.
-  return 7;
+  return 9;
 }
 
 void SyncTest::SetProxyConfig(net::URLRequestContextGetter* context_getter,
