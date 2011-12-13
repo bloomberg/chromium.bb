@@ -1,0 +1,274 @@
+/*
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+
+.details-view {
+  -webkit-padding-end: 10px;
+}
+
+.extension-list-item {
+  padding-bottom: 7px;
+  padding-top: 7px;
+  width: 100%;
+  -webkit-user-select: auto;
+}
+
+/* Get rid of display: table, which causes width issues. */
+#extension-settings .displaytable {
+  display: block;
+}  
+/* Get rid of display: table row, which causes width issues. */
+#extension-settings .displaytable > section {
+  display: block;
+}
+/* Get rid of display: table cell, which causes width issues. */
+#extension-settings .displaytable > section > * {
+  display: block;
+}
+
+.extension-settings-content {
+  border-bottom : 0px solid #eee;
+  margin-top: 3px;
+}
+
+#extension-settings-list {
+  min-height: 0;
+  overflow-y: hidden;
+}
+
+/* Get rid of the light-blue background on list item hover. */
+#extension-settings-list:not([disabled]) > :hover {
+  background-color: white;
+  border-color: #CDCDCD;
+}
+
+.butter-bar {
+  background: #FFF299;
+  padding: 2px 5px;
+  border-radius: 3px;
+  white-space: normal;
+}
+
+.search-suppress {
+  display: none;
+  height: 0;
+}
+
+.extension-list-item-collaped {
+  height: auto;
+  margin-bottom: 16px;
+  -webkit-transition: padding 300ms, overflow 300ms, opacity 700ms;
+}
+
+.extension-list-item-expanded {
+  height: auto;
+  margin-bottom: 16px;
+  overflow: visible;
+  -webkit-transition: padding 300ms, overflow 300ms, opacity 700ms;
+}
+
+.extension-settings {
+  overflow-x: hidden;
+}
+
+.extension-icon {
+  height: 48px;
+  vertical-align: text-top;
+  width: 48px;
+  -webkit-padding-start: 15px;
+  -webkit-padding-end: 15px;
+  -webkit-user-select: none;
+}
+
+.extension-title {
+  font-size: 16px;
+  font-weight: 500;
+  -webkit-padding-end: 20px;
+}
+
+.extension-version {
+  font-size: 13px;
+  font-weight: 400;
+  -webkit-padding-end: 7px;
+}
+  
+.extension-description {
+  font-size: 13px;
+  white-space: normal;
+  -webkit-padding-end: 5px;
+}
+
+.extension-checkbox-span {
+  -webkit-margin-start: 7px;
+}
+
+.extension-checkbox-label {
+  -webkit-margin-end: 10px;
+}
+
+.extension-delete {
+  -webkit-margin-start: 5px;
+}
+
+.extension-details-hidden {
+  opacity: 0;
+  max-height: 0;
+  -webkit-transition: max-height 400ms, opacity 200ms;
+}
+
+.extension-details-visible {
+  opacity: 1;
+  max-height: 1000px;
+  -webkit-transition: max-height 200ms, opacity 300ms;
+}
+
+.extension-links-view {
+  -webkit-padding-start: 15px;
+}
+
+.extension-links-trailing {
+  -webkit-padding-end: 7px;
+}
+
+.extension-zippy-container {
+  cursor: pointer;
+  width: 20px;
+  -webkit-user-select: none;
+}
+
+.extension-warnings-title {
+  color: red;
+}
+
+.extension-warnings {
+  margin-top: 6px;
+}
+
+.extension-warnings ul {
+  margin: 0;
+}
+
+.extension-warnings > * {
+  white-space: normal;
+}
+
+.informative-text {
+  color: gray;
+}
+
+.extension-zippy-default {
+  background-image: url('../options/zippy.png');
+  background-repeat: no-repeat;
+  background-position: center top;
+  position: absolute;
+  left: 12px;
+  top: 25px;
+  width: 6px;
+  height: 16px;
+  opacity: .25;
+}
+
+.extension-zippy-collapsed {
+  -webkit-transition: -webkit-transform 100ms;
+  -webkit-transform: rotate(0deg);
+}
+
+.extension-zippy-collapsed:hover {
+  opacity: .5;
+  -webkit-transform: rotate(5deg);
+  -webkit-transition: -webkit-transform 100ms, opacity 100ms;
+}
+
+.extension-zippy-expanded {
+  -webkit-transition: -webkit-transform 100ms;
+  -webkit-transform: rotate(90deg);
+}
+
+.extension-zippy-expanded:hover {
+  -webkit-transition: -webkit-transform 100ms;
+  -webkit-transform: rotate(85deg);
+}
+
+.extension-enabling {
+  position: relative;
+  top: 3px;
+}
+
+.extension-enabling-label {
+  color: black;
+  -webkit-padding-start: 3px;
+  -webkit-padding-end: 9px;
+}
+
+.extension-enabling-label-bold {
+  font-weight: bold;
+}
+
+.extension-inspect-table {
+  padding: 0;
+  border-spacing: 0;
+}
+
+.extension-inspect-left-column {
+  vertical-align: text-top;
+}
+
+/* Dev */
+
+.dev-open {
+  border-bottom: 1px solid rgb(205, 205, 205);
+  height: 32px;
+  padding-bottom: 7px;
+  padding-top: 13px;
+  -webkit-padding-start: 4px;
+  -webkit-padding-end: 3px;
+  -webkit-transition: padding 300ms, height 300ms, opacity 700ms;
+}
+.dev-closed {
+  height: 0;
+  opacity: 0;
+  padding-top: 9px;
+  -webkit-padding-start: 4px;
+  -webkit-padding-end: 3px;
+  -webkit-transition: padding 300ms, height 700ms, opacity 200ms;
+}
+
+.dev-button-visible {
+  display: inherit;
+  opacity: 1;
+  -webkit-transition: opacity 200ms;
+}
+
+.dev-button-hidden {
+  display: none;
+}
+
+#suggest-gallery {
+  -webkit-padding-start: 10px;
+}
+
+#dev-toggle {
+  display: block;
+  text-align: end;
+  margin-top: -28px;
+  -webkit-margin-end: 8px;
+}
+
+#get-more-extensions-container {
+  display: -webkit-box;
+}
+
+#get-more-extensions {
+  padding-top: 5px;
+  font-size: 15px;
+  -webkit-padding-start: 10px;
+}
+
+/* Support full keyboard accessibility without making things ugly
+   for users who click, by hiding some focus outlines when the user
+   clicks anywhere, but showing them when the user presses any key. */
+body.hide-some-focus-outlines .extension-zippy-container {
+  outline: none;
+}

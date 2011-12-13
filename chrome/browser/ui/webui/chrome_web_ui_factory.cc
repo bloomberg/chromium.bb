@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/downloads_ui.h"
 #include "chrome/browser/ui/webui/edit_search_engine_dialog_ui_webui.h"
+#include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/task_manager_ui.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/flash_ui.h"
@@ -171,6 +172,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(TabContents* tab_contents,
     return &NewWebUI<DownloadsUI>;
   if (url.host() == chrome::kChromeUIEditSearchEngineDialogHost)
     return &NewWebUI<EditSearchEngineDialogUI>;
+  if (url.host() == chrome::kChromeUIExtensionsFrameHost)
+    return &NewWebUI<ExtensionsUI>;
   if (url.host() == chrome::kChromeUIFlagsHost)
     return &NewWebUI<FlagsUI>;
   if (url.host() == chrome::kChromeUIFlashHost)

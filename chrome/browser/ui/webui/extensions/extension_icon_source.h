@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_EXTENSION_ICON_SOURCE_H_
-#define CHROME_BROWSER_UI_WEBUI_EXTENSION_ICON_SOURCE_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_EXTENSIONS_EXTENSION_ICON_SOURCE_H_
+#define CHROME_BROWSER_UI_WEBUI_EXTENSIONS_EXTENSION_ICON_SOURCE_H_
 #pragma once
 
 #include <map>
@@ -170,4 +170,4 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
   DISALLOW_COPY_AND_ASSIGN(ExtensionIconSource);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_EXTENSION_ICON_SOURCE_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_EXTENSIONS_EXTENSION_ICON_SOURCE_H_

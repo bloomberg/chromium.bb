@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
+#include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -33,6 +34,10 @@ UberUI::UberUI(TabContents* contents) : ChromeWebUI(contents) {
   ChromeWebUI* options = new OptionsUI(contents);
   options->set_frame_xpath("//iframe[@id='settings']");
   sub_uis_.push_back(options);
+
+  ChromeWebUI* extensions = new ExtensionsUI(contents);
+  extensions->set_frame_xpath("//iframe[@id='extensions']");
+  sub_uis_.push_back(extensions);
 }
 
 UberUI::~UberUI() {

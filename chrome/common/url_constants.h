@@ -128,6 +128,7 @@ extern const char kChromeUIDNSHost[];
 extern const char kChromeUIDownloadsHost[];
 extern const char kChromeUIEditSearchEngineDialogHost[];
 extern const char kChromeUIExtensionIconHost[];
+extern const char kChromeUIExtensionsFrameHost[];
 extern const char kChromeUIExtensionsHost[];
 extern const char kChromeUIFaviconHost[];
 extern const char kChromeUIFlagsHost[];

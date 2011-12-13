@@ -136,6 +136,7 @@ const char kChromeUIDNSHost[] = "dns";
 const char kChromeUIDownloadsHost[] = "downloads";
 const char kChromeUIEditSearchEngineDialogHost[] = "editsearchengine";
 const char kChromeUIExtensionIconHost[] = "extension-icon";
+const char kChromeUIExtensionsFrameHost[] = "extensions-frame";
 const char kChromeUIExtensionsHost[] = "extensions";
 const char kChromeUIFaviconHost[] = "favicon";
 const char kChromeUIFlagsHost[] = "flags";
