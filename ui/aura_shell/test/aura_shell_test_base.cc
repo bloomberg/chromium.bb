@@ -5,6 +5,7 @@
 #include "ui/aura_shell/test/aura_shell_test_base.h"
 
 #include "ui/aura_shell/shell.h"
+#include "ui/aura_shell/test/test_shell_delegate.h"
 
 namespace aura_shell {
 namespace test {
@@ -19,7 +20,7 @@ void AuraShellTestBase::SetUp() {
   aura::test::AuraTestBase::SetUp();
 
   // Creates Shell and hook with Desktop.
-  aura_shell::Shell::CreateInstance(NULL);
+  aura_shell::Shell::CreateInstance(new TestShellDelegate);
 }
 
 void AuraShellTestBase::TearDown() {

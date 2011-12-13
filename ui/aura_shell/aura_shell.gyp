@@ -164,6 +164,8 @@
         'test/aura_shell_test_base.h',
         'test/test_activation_delegate.cc',
         'test/test_activation_delegate.h',
+        'test/test_shell_delegate.cc',
+        'test/test_shell_delegate.h',
         'toplevel_layout_manager_unittest.cc',
         'toplevel_window_event_filter_unittest.cc',
         'workspace_controller_unittest.cc',

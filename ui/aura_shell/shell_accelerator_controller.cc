@@ -7,7 +7,11 @@
 #include "base/logging.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura_shell/launcher/launcher.h"
+#include "ui/aura_shell/launcher/launcher_model.h"
 #include "ui/aura_shell/shell.h"
+#include "ui/aura_shell/shell_window_ids.h"
+#include "ui/aura_shell/window_util.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/gfx/compositor/debug_utils.h"
@@ -47,16 +51,27 @@ struct AcceleratorData {
 #endif
 };
 
-bool HandleCycleBackward() {
-  // TODO(mazda): http://crbug.com/105204
-  NOTIMPLEMENTED();
-  return false;
-}
+bool HandleCycleWindow(bool forward) {
+  if (aura_shell::Shell::GetInstance()->IsScreenLocked())
+    return false;
 
-bool HandleCycleForward() {
-  // TODO(mazda): http://crbug.com/105204
-  NOTIMPLEMENTED();
-  return false;
+  // Use the same order of the windows in LauncherModel to cycle windows.
+  aura_shell::LauncherModel* model =
+      aura_shell::Shell::GetInstance()->launcher()->model();
+  aura::Window* active_window = aura_shell::GetActiveWindow();
+  if (!active_window) {
+    LOG(ERROR) << "No active window";
+    return false;
+  }
+  int active_index = model->ItemIndexByWindow(active_window);
+  if (active_index < 0) {
+    VLOG(2) << "Active window not found in the launcher model";
+    return false;
+  }
+  int next_index = (active_index + (forward ? 1 : -1) + model->item_count()) %
+      model->item_count();
+  aura_shell::ActivateWindow(model->items()[next_index].window);
+  return true;
 }
 
 bool HandleTakeScreenshot() {
@@ -166,9 +181,9 @@ bool ShellAcceleratorController::AcceleratorPressed(
   DCHECK(it != accelerators_.end());
   switch (static_cast<AcceleratorAction>(it->second)) {
     case CYCLE_BACKWARD:
-      return HandleCycleBackward();
+      return HandleCycleWindow(false);
     case CYCLE_FORWARD:
-      return HandleCycleForward();
+      return HandleCycleWindow(true);
     case TAKE_SCREENSHOT:
       return HandleTakeScreenshot();
 #if !defined(NDEBUG)

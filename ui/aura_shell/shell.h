@@ -69,6 +69,9 @@ class AURA_SHELL_EXPORT Shell {
   // Toggles app list.
   void ToggleAppList();
 
+  // Returns true if the screen is locked.
+  bool IsScreenLocked() const;
+
   ShellAcceleratorController* accelerator_controller() {
     return accelerator_controller_.get();
   }

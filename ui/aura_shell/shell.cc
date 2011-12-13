@@ -4,6 +4,8 @@
 
 #include "ui/aura_shell/shell.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "ui/aura/aura_switches.h"
@@ -283,6 +285,21 @@ void Shell::ToggleAppList() {
   if (!app_list_.get())
     app_list_.reset(new internal::AppList);
   app_list_->SetVisible(!app_list_->IsVisible());
+}
+
+// Returns true if the screen is locked.
+bool Shell::IsScreenLocked() const {
+  const aura::Window* lock_screen_container = GetContainer(
+      internal::kShellWindowId_LockScreenContainer);
+  const aura::Window::Windows& lock_screen_windows =
+      lock_screen_container->children();
+  aura::Window::Windows::const_iterator lock_screen_it =
+      std::find_if(lock_screen_windows.begin(), lock_screen_windows.end(),
+                   std::mem_fun(&aura::Window::IsVisible));
+  if (lock_screen_it != lock_screen_windows.end())
+    return true;
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
