@@ -48,7 +48,8 @@ struct window {
 	struct wl_surface *surface;
 	struct wl_shell_surface *shell_surface;
 	struct wl_buffer *buffer;
-	void *data;
+	void *shm_data;
+	struct wl_callback *callback;
 };
 
 static struct wl_buffer *
@@ -98,6 +99,7 @@ create_window(struct display *display, int width, int height)
 	struct window *window;
 	
 	window = malloc(sizeof *window);
+	window->callback = NULL;
 	window->display = display;
 	window->width = width;
 	window->height = height;
@@ -107,11 +109,23 @@ create_window(struct display *display, int width, int height)
 	window->buffer = create_shm_buffer(display,
 					   width, height,
 					   WL_SHM_FORMAT_XRGB32,
-					   &window->data);
+					   &window->shm_data);
 
 	wl_shell_surface_set_toplevel(window->shell_surface);
 
 	return window;
+}
+
+static void
+destroy_window(struct window *window)
+{
+	if (window->callback)
+		wl_callback_destroy(window->callback);
+
+	wl_buffer_destroy(window->buffer);
+	wl_shell_surface_destroy(window->shell_surface);
+	wl_surface_destroy(window->surface);
+	free(window);
 }
 
 static const struct wl_callback_listener frame_listener;
@@ -123,7 +137,7 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	uint32_t *p;
 	int i, end, offset;
 
-	p = window->data;
+	p = window->shm_data;
 	end = window->width * window->height;
 	offset = time >> 4;
 	for (i = 0; i < end; i++)
@@ -137,8 +151,8 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	if (callback)
 		wl_callback_destroy(callback);
 
-	callback = wl_surface_frame(window->surface);
-	wl_callback_add_listener(callback, &frame_listener, window);
+	window->callback = wl_surface_frame(window->surface);
+	wl_callback_add_listener(window->callback, &frame_listener, window);
 }
 
 static const struct wl_callback_listener frame_listener = {
@@ -209,6 +223,22 @@ create_display(void)
 	return display;
 }
 
+static void
+destroy_display(struct display *display)
+{
+	if (display->shm)
+		wl_shm_destroy(display->shm);
+
+	if (display->shell)
+		wl_shell_destroy(display->shell);
+
+	if (display->compositor)
+		wl_compositor_destroy(display->compositor);
+
+	wl_display_destroy(display->display);
+	free(display);
+}
+
 static int running = 1;
 
 static void
@@ -238,6 +268,8 @@ main(int argc, char **argv)
 		wl_display_iterate(display->display, display->mask);
 
 	fprintf(stderr, "simple-shm exiting\n");
+	destroy_window(window);
+	destroy_display(display);
 
 	return 0;
 }
