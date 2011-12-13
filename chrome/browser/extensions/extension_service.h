@@ -558,9 +558,8 @@ class ExtensionService
     return &extension_warnings_;
   }
 
-  extensions::SocketController* socket_controller() {
-    return socket_controller_;
-  }
+  // Call only from IO thread.
+  extensions::SocketController* socket_controller();
 
   // Implement ImageLoadingTracker::Observer. |tracker_| is used to
   // load the application's icon, which is done when we start creating an

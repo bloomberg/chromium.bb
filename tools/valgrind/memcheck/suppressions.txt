@@ -5309,15 +5309,6 @@
    fun:_ZNK26ExtensionMsg_Loaded_Params18ConvertToExtensionEv
    fun:_ZN19ExtensionDispatcher8OnLoadedERKSt6vectorI26ExtensionMsg_Loaded_ParamsSaIS1_EE
 }
-{
-   bug_106969
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN16ExtensionServiceC1EP7ProfilePK11CommandLineRK8FilePathP14ExtensionPrefsbb
-   fun:_ZN14TestingProfile22CreateExtensionServiceEPK11CommandLineRK8FilePathb
-   fun:_ZN43ExtensionServiceTestSimple_Enabledness_Test8TestBodyEv
-}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations

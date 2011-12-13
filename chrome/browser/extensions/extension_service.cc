@@ -389,7 +389,7 @@ ExtensionService::ExtensionService(Profile* profile,
       apps_promo_(profile->GetPrefs()),
       event_routers_initialized_(false),
       extension_warnings_(profile),
-      socket_controller_(new extensions::SocketController()),
+      socket_controller_(NULL),
       tracker_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -478,9 +478,15 @@ ExtensionService::~ExtensionService() {
   // TODO(miket): if we find ourselves adding more and more per-API
   // controllers, we should manage them all with an
   // APIControllerController (still working on that name).
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      new DeleteTask<extensions::SocketController>(socket_controller_));
+  if (socket_controller_) {
+    // If this check failed, then a unit test was using sockets but didn't
+    // provide the IO thread message loop needed for those sockets to do their
+    // job (including destroying themselves at shutdown).
+    DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::IO));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        new DeleteTask<extensions::SocketController>(socket_controller_));
+  }
 }
 
 void ExtensionService::InitEventRoutersAfterImport() {
@@ -2539,4 +2545,18 @@ void ExtensionService::OnImageLoaded(SkBitmap *image,
 
   shortcut_info_.favicon = *image;
   web_app::CreateShortcut(profile_->GetPath(), shortcut_info_);
+}
+
+extensions::SocketController* ExtensionService::socket_controller() {
+  // TODO(miket): Find a better place for SocketController to live. It needs
+  // to be scoped such that it can be created and destroyed on the IO thread.
+  //
+  // To coexist with certain unit tests that don't have an IO thread message
+  // loop available at ExtensionService shutdown, we lazy-initialize this
+  // object so that those cases neither create nor destroy a SocketController.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!socket_controller_) {
+    socket_controller_ = new extensions::SocketController();
+  }
+  return socket_controller_;
 }
