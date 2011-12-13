@@ -4591,7 +4591,10 @@ void GLES2DecoderImpl::CopyRealGLErrorsToWrapper() {
 void GLES2DecoderImpl::ClearRealGLErrors() {
   GLenum error;
   while ((error = glGetError()) != GL_NO_ERROR) {
-    NOTREACHED() << "GL error " << error << " was unhandled.";
+    if (error != GL_OUT_OF_MEMORY) {
+      // GL_OUT_OF_MEMORY can legally happen on lost device.
+      NOTREACHED() << "GL error " << error << " was unhandled.";
+    }
   }
 }
 
