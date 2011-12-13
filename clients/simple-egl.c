@@ -66,6 +66,7 @@ struct window {
 	struct wl_surface *surface;
 	struct wl_shell_surface *shell_surface;
 	EGLSurface egl_surface;
+	struct wl_callback *callback;
 };
 
 static const char *vert_shader_text =
@@ -123,6 +124,18 @@ init_egl(struct display *display)
 					    EGL_NO_CONTEXT, context_attribs);
 	assert(display->egl.ctx);
 
+}
+
+static void
+fini_egl(struct display *display)
+{
+	/* Required, otherwise segfault in egl_dri2.c: dri2_make_current()
+	 * on eglReleaseThread(). */
+	eglMakeCurrent(display->egl.dpy, EGL_NO_SURFACE, EGL_NO_SURFACE,
+		       EGL_NO_CONTEXT);
+
+	eglTerminate(display->egl.dpy);
+	eglReleaseThread();
 }
 
 static GLuint
@@ -219,6 +232,18 @@ create_surface(struct window *window)
 	assert(ret == EGL_TRUE);
 }
 
+static void
+destroy_surface(struct window *window)
+{
+	wl_egl_window_destroy(window->native);
+
+	wl_shell_surface_destroy(window->shell_surface);
+	wl_surface_destroy(window->surface);
+
+	if (window->callback)
+		wl_callback_destroy(window->callback);
+}
+
 static const struct wl_callback_listener frame_listener;
 
 static void
@@ -276,8 +301,8 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	if (callback)
 		wl_callback_destroy(callback);
 
-	callback = wl_surface_frame(window->surface);
-	wl_callback_add_listener(callback, &frame_listener, window);
+	window->callback = wl_surface_frame(window->surface);
+	wl_callback_add_listener(window->callback, &frame_listener, window);
 }
 
 static const struct wl_callback_listener frame_listener = {
@@ -323,9 +348,6 @@ main(int argc, char **argv)
 	struct display display = { 0 };
 	struct window  window  = { 0 };
 
-	memset(&display, 0, sizeof display);
-	memset(&window,  0, sizeof window);
-
 	window.display = &display;
 	window.geometry.width  = 250;
 	window.geometry.height = 250;
@@ -354,6 +376,17 @@ main(int argc, char **argv)
 		wl_display_iterate(display.display, display.mask);
 
 	fprintf(stderr, "simple-egl exiting\n");
+
+	destroy_surface(&window);
+	fini_egl(&display);
+
+	if (display.shell)
+		wl_shell_destroy(display.shell);
+
+	if (display.compositor)
+		wl_compositor_destroy(display.compositor);
+
+	wl_display_destroy(display.display);
 
 	return 0;
 }
