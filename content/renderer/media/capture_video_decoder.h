@@ -9,6 +9,7 @@
 #include "content/common/content_export.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/filters.h"
+#include "media/base/pipeline_status.h"
 #include "media/base/video_frame.h"
 #include "media/video/capture/video_capture.h"
 
@@ -41,7 +42,7 @@ class CONTENT_EXPORT CaptureVideoDecoder
   // Decoder implementation.
   virtual void Initialize(
       media::DemuxerStream* demuxer_stream,
-      const base::Closure& filter_callback,
+      const media::PipelineStatusCB& filter_callback,
       const media::StatisticsCallback& stat_callback) OVERRIDE;
   virtual void Read(const ReadCB& callback) OVERRIDE;
   virtual const gfx::Size& natural_size() OVERRIDE;
@@ -78,7 +79,7 @@ class CONTENT_EXPORT CaptureVideoDecoder
 
   void InitializeOnDecoderThread(
       media::DemuxerStream* demuxer_stream,
-      const base::Closure& filter_callback,
+      const media::PipelineStatusCB& filter_callback,
       const media::StatisticsCallback& stat_callback);
   void ReadOnDecoderThread(const ReadCB& callback);
 

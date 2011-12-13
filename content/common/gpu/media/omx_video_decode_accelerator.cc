@@ -50,25 +50,25 @@ static bool AreOMXFunctionPointersInitialized() {
 // Maps h264-related Profile enum values to OMX_VIDEO_AVCPROFILETYPE values.
 static OMX_U32 MapH264ProfileToOMXAVCProfile(uint32 profile) {
   switch (profile) {
-    case media::VideoDecodeAccelerator::H264PROFILE_BASELINE:
+    case media::H264PROFILE_BASELINE:
       return OMX_VIDEO_AVCProfileBaseline;
-    case media::VideoDecodeAccelerator::H264PROFILE_MAIN:
+    case media::H264PROFILE_MAIN:
       return OMX_VIDEO_AVCProfileMain;
-    case media::VideoDecodeAccelerator::H264PROFILE_EXTENDED:
+    case media::H264PROFILE_EXTENDED:
       return OMX_VIDEO_AVCProfileExtended;
-    case media::VideoDecodeAccelerator::H264PROFILE_HIGH:
+    case media::H264PROFILE_HIGH:
       return OMX_VIDEO_AVCProfileHigh;
-    case media::VideoDecodeAccelerator::H264PROFILE_HIGH10PROFILE:
+    case media::H264PROFILE_HIGH10PROFILE:
       return OMX_VIDEO_AVCProfileHigh10;
-    case media::VideoDecodeAccelerator::H264PROFILE_HIGH422PROFILE:
+    case media::H264PROFILE_HIGH422PROFILE:
       return OMX_VIDEO_AVCProfileHigh422;
-    case media::VideoDecodeAccelerator::H264PROFILE_HIGH444PREDICTIVEPROFILE:
+    case media::H264PROFILE_HIGH444PREDICTIVEPROFILE:
       return OMX_VIDEO_AVCProfileHigh444;
     // Below enums don't have equivalent enum in Openmax.
-    case media::VideoDecodeAccelerator::H264PROFILE_SCALABLEBASELINE:
-    case media::VideoDecodeAccelerator::H264PROFILE_SCALABLEHIGH:
-    case media::VideoDecodeAccelerator::H264PROFILE_STEREOHIGH:
-    case media::VideoDecodeAccelerator::H264PROFILE_MULTIVIEWHIGH:
+    case media::H264PROFILE_SCALABLEBASELINE:
+    case media::H264PROFILE_SCALABLEHIGH:
+    case media::H264PROFILE_STEREOHIGH:
+    case media::H264PROFILE_MULTIVIEWHIGH:
       // Nvidia OMX video decoder requires the same resources (as that of the
       // High profile) in every profile higher to the Main profile.
       return OMX_VIDEO_AVCProfileHigh444;
@@ -144,7 +144,8 @@ static void InitParam(const OmxVideoDecodeAccelerator& dec, T* param) {
 bool OmxVideoDecodeAccelerator::Initialize(Profile profile) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
-  RETURN_ON_FAILURE(profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX,
+  RETURN_ON_FAILURE((profile >= media::H264PROFILE_MIN &&
+                     profile <= media::H264PROFILE_MAX),
                     "Only h264 supported", INVALID_ARGUMENT, false);
   profile_ = MapH264ProfileToOMXAVCProfile(profile);
   RETURN_ON_FAILURE(profile_ != OMX_VIDEO_AVCProfileMax,
@@ -768,7 +769,8 @@ void OmxVideoDecodeAccelerator::FillBufferDoneTask(
   --output_buffers_at_component_;
 
   if (fake_output_buffers_.size() && fake_output_buffers_.count(buffer)) {
-    DCHECK_EQ(fake_output_buffers_.erase(buffer), 1U);
+    size_t erased = fake_output_buffers_.erase(buffer);
+    DCHECK_EQ(erased, 1U);
     OMX_ERRORTYPE result =
         OMX_FreeBuffer(component_handle_, output_port_, buffer);
     RETURN_ON_OMX_FAILURE(result, "OMX_FreeBuffer failed", PLATFORM_FAILURE,);

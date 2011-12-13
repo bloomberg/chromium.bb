@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/pp_video_dev.idl modified Fri Nov 11 20:20:20 2011. */
+/* From dev/pp_video_dev.idl modified Wed Nov 23 13:51:18 2011. */
 
 #ifndef PPAPI_C_DEV_PP_VIDEO_DEV_H_
 #define PPAPI_C_DEV_PP_VIDEO_DEV_H_
@@ -15,8 +15,7 @@
 
 /**
  * @file
- * NOTE: these must be kept in sync with the versions in
- * media/video/video_decode_accelerator.h!
+ * NOTE: these must be kept in sync with the versions in media/!
  */
 
 
@@ -30,8 +29,10 @@
  * Keep the values in this enum unique, as they imply format (h.264 vs. VP8,
  * for example), and keep the values for a particular format grouped together
  * for clarity.
+ * Note: Keep these in sync with media::VideoCodecProfile.
  */
 typedef enum {
+  PP_VIDEODECODER_PROFILE_UNKNOWN = -1,
   PP_VIDEODECODER_H264PROFILE_NONE = 0,
   PP_VIDEODECODER_H264PROFILE_BASELINE = 1,
   PP_VIDEODECODER_H264PROFILE_MAIN = 2,
@@ -43,7 +44,8 @@ typedef enum {
   PP_VIDEODECODER_H264PROFILE_SCALABLEBASELINE = 8,
   PP_VIDEODECODER_H264PROFILE_SCALABLEHIGH = 9,
   PP_VIDEODECODER_H264PROFILE_STEREOHIGH = 10,
-  PP_VIDEODECODER_H264PROFILE_MULTIVIEWHIGH = 11
+  PP_VIDEODECODER_H264PROFILE_MULTIVIEWHIGH = 11,
+  PP_VIDEODECODER_PROFILE_MAX = PP_VIDEODECODER_H264PROFILE_MULTIVIEWHIGH
 } PP_VideoDecoder_Profile;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VideoDecoder_Profile, 4);
 /**

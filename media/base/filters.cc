@@ -29,6 +29,11 @@ Filter::Filter() : host_(NULL) {}
 
 Filter::~Filter() {}
 
+void Filter::clear_host() {
+  DCHECK(host_);
+  host_ = NULL;
+}
+
 void Filter::set_host(FilterHost* host) {
   DCHECK(host);
   DCHECK(!host_);

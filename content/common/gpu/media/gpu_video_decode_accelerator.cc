@@ -112,16 +112,16 @@ void GpuVideoDecodeAccelerator::Initialize(
   DCHECK(!video_decode_accelerator_.get());
   DCHECK(!init_done_msg_);
   DCHECK(init_done_msg);
+  init_done_msg_ = init_done_msg;
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
   DCHECK(stub_ && stub_->decoder());
-  init_done_msg_ = init_done_msg;
   OmxVideoDecodeAccelerator* omx_decoder = new OmxVideoDecodeAccelerator(this);
   omx_decoder->SetEglState(
       gfx::GLSurfaceEGL::GetHardwareDisplay(),
       stub_->decoder()->GetGLContext()->GetHandle());
   video_decode_accelerator_ = omx_decoder;
   video_decode_accelerator_->Initialize(profile);
-#else
+#else  // Update RenderViewImpl::createMediaPlayer when adding clauses.
   NOTIMPLEMENTED() << "HW video decode acceleration not available.";
   NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
 #endif  // defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
