@@ -97,19 +97,19 @@ class GIT(object):
   current_version = None
 
   @staticmethod
-  def Capture(args, **kwargs):
+  def Capture(args, cwd, **kwargs):
     return subprocess2.check_output(
-        ['git'] + args, stderr=subprocess2.PIPE, **kwargs)
+        ['git'] + args, cwd=cwd, stderr=subprocess2.PIPE, **kwargs)
 
   @staticmethod
-  def CaptureStatus(files, upstream_branch=None):
+  def CaptureStatus(files, cwd, upstream_branch):
     """Returns git status.
 
     @files can be a string (one file) or a list of files.
 
     Returns an array of (status, file) tuples."""
     if upstream_branch is None:
-      upstream_branch = GIT.GetUpstreamBranch(os.getcwd())
+      upstream_branch = GIT.GetUpstreamBranch(cwd)
       if upstream_branch is None:
         raise gclient_utils.Error('Cannot determine upstream branch')
     command = ['diff', '--name-status', '-r', '%s...' % upstream_branch]
@@ -119,7 +119,7 @@ class GIT(object):
       command.append(files)
     else:
       command.extend(files)
-    status = GIT.Capture(command).rstrip()
+    status = GIT.Capture(command, cwd).rstrip()
     results = []
     if status:
       for statusline in status.splitlines():
@@ -226,7 +226,7 @@ class GIT(object):
     # pipe at a time.
     # The -100 is an arbitrary limit so we don't search forever.
     cmd = ['git', 'log', '-100', '--pretty=medium']
-    proc = subprocess2.Popen(cmd, stdout=subprocess2.PIPE)
+    proc = subprocess2.Popen(cmd, cwd, stdout=subprocess2.PIPE)
     url = None
     for line in proc.stdout:
       match = git_svn_re.match(line)
@@ -237,8 +237,9 @@ class GIT(object):
 
     if url:
       svn_remote_re = re.compile(r'^svn-remote\.([^.]+)\.url (.*)$')
-      remotes = GIT.Capture(['config', '--get-regexp',
-                            r'^svn-remote\..*\.url'], cwd=cwd).splitlines()
+      remotes = GIT.Capture(
+          ['config', '--get-regexp', r'^svn-remote\..*\.url'],
+          cwd=cwd).splitlines()
       for remote in remotes:
         match = svn_remote_re.match(remote)
         if match:
@@ -383,7 +384,7 @@ class GIT(object):
   def AssertVersion(cls, min_version):
     """Asserts git's version is at least min_version."""
     if cls.current_version is None:
-      cls.current_version = cls.Capture(['--version']).split()[-1]
+      cls.current_version = cls.Capture(['--version'], '.').split()[-1]
     current_version_list = map(only_int, cls.current_version.split('.'))
     for min_ver in map(int, min_version.split('.')):
       ver = current_version_list.pop(0)

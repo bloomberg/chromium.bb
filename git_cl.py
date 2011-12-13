@@ -500,7 +500,7 @@ or verify this branch is set up to track another (via the --track argument to
     name = RunCommand(['git', 'rev-parse', 'HEAD']).strip()
     # Need to pass a relative path for msysgit.
     try:
-      files = scm.GIT.CaptureStatus([root], upstream_branch)
+      files = scm.GIT.CaptureStatus([root], '.', upstream_branch)
     except subprocess2.CalledProcessError:
       DieWithError(
           ('\nFailed to diff against upstream branch %s!\n\n'

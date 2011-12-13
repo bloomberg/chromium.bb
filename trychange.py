@@ -275,13 +275,17 @@ class GIT(SCM):
     logging.info("GIT(%s)" % self.checkout_root)
 
   def CaptureStatus(self):
-    return scm.GIT.CaptureStatus(self.checkout_root.replace(os.sep, '/'),
-                                 self.diff_against)
+    return scm.GIT.CaptureStatus(
+        [],
+        self.checkout_root.replace(os.sep, '/'),
+        self.diff_against)
 
   def GenerateDiff(self):
-    return scm.GIT.GenerateDiff(self.checkout_root, files=self.files,
-                                full_move=True,
-                                branch=self.diff_against)
+    return scm.GIT.GenerateDiff(
+        self.checkout_root,
+        files=self.files,
+        full_move=True,
+        branch=self.diff_against)
 
 
 def _ParseSendChangeOptions(options):
