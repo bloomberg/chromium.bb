@@ -22,23 +22,12 @@
 
 namespace {
 
-class ClearCacheHelper {
- public:
-  ClearCacheHelper(ChromeBenchmarkingMessageFilter* filter,
-                   IPC::Message* reply_msg)
-      : filter_(filter),
-        reply_msg_(reply_msg) {
-  }
-
-  void Run(int result) {
-    ChromeViewHostMsg_ClearCache::WriteReplyParams(reply_msg_, result);
-    filter_->Send(reply_msg_);
-  }
-
- private:
-  scoped_refptr<ChromeBenchmarkingMessageFilter> filter_;
-  IPC::Message* reply_msg_;
-};
+void ClearCacheCallback(ChromeBenchmarkingMessageFilter* filter,
+                        IPC::Message* reply_msg,
+                        int result) {
+  ChromeViewHostMsg_ClearCache::WriteReplyParams(reply_msg, result);
+  filter->Send(reply_msg);
+}
 
 // Class to assist with clearing out the cache when we want to preserve
 // the sslhostinfo entries.  It's not very efficient, but its just for debug.
@@ -50,13 +39,11 @@ class DoomEntriesHelper {
         iter_(NULL),
         ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
             base::Bind(&DoomEntriesHelper::CacheCallback,
-                       base::Unretained(this)))),
-        clear_cache_helper_(NULL) {
+                       base::Unretained(this)))) {
   }
 
-  // Takes ownership of |callback|.
-  void ClearCache(ClearCacheHelper* helper) {
-    clear_cache_helper_.reset(helper);
+  void ClearCache(const net::CompletionCallback& callback) {
+    clear_cache_callback_ = callback;
     return CacheCallback(net::OK);  // Start clearing the cache.
   }
 
@@ -66,7 +53,7 @@ class DoomEntriesHelper {
   void CacheCallback(int result) {
     do {
       if (result != net::OK) {
-        clear_cache_helper_->Run(result);
+        clear_cache_callback_.Run(result);
         delete this;
         return;
       }
@@ -90,7 +77,7 @@ class DoomEntriesHelper {
   disk_cache::Entry* entry_;
   void* iter_;
   net::CompletionCallback callback_;
-  scoped_ptr<ClearCacheHelper> clear_cache_helper_;
+  net::CompletionCallback clear_cache_callback_;
 };
 
 }  // namespace
@@ -138,16 +125,14 @@ void ChromeBenchmarkingMessageFilter::OnClearCache(bool preserve_ssl_host_info,
   disk_cache::Backend* backend = request_context_->GetURLRequestContext()->
       http_transaction_factory()->GetCache()->GetCurrentBackend();
   if (backend) {
-    scoped_ptr<ClearCacheHelper> clear_cache_helper(
-        new ClearCacheHelper(this, reply_msg));
+    net::CompletionCallback callback =
+        base::Bind(&ClearCacheCallback, make_scoped_refptr(this), reply_msg);
     if (preserve_ssl_host_info) {
       DoomEntriesHelper* helper = new DoomEntriesHelper(backend);
-      helper->ClearCache(clear_cache_helper.release());  // Will self clean.
+      helper->ClearCache(callback);  // Will self clean.
       return;
     } else {
-      rv = backend->DoomAllEntries(
-          base::Bind(&ClearCacheHelper::Run,
-                     base::Owned(clear_cache_helper.release())));
+      rv = backend->DoomAllEntries(callback);
       if (rv == net::ERR_IO_PENDING) {
         // The callback will send the reply.
         return;
