@@ -3566,19 +3566,6 @@
    fun:_ZN7history20ExpireHistoryBackend25DoExpireHistoryIndexFilesEv
 }
 {
-   bug_86483a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN17VisitedLinkMaster23RebuildTableFromHistoryEv
-   fun:_ZN17VisitedLinkMaster15InitFromScratchEb
-   fun:_ZN17VisitedLinkMaster4InitEv
-   fun:_ZN11ProfileImpl20GetVisitedLinkMasterEv
-   fun:_ZN24VisitedLinkEventListener7ObserveEiRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN19NotificationService6NotifyEiRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN24BrowserRenderProcessHost17OnProcessLaunchedEv
-   fun:_ZN20ChildProcessLauncher7Context6NotifyEbi
-}
-{
    bug_87094a
    Memcheck:Leak
    fun:_Znw*
