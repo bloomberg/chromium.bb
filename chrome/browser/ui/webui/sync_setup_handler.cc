@@ -673,6 +673,8 @@ void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
     CloseOverlay();
     return;
   }
+
+  StepWizardForShowSetupUI();
   ShowSetupUI();
 }
 
@@ -703,6 +705,10 @@ void SyncSetupHandler::OpenSyncSetup() {
     CloseOverlay();
     return;
   }
+
+  // The wizard must be stepped before attaching. Allow subclasses to step the
+  // wizard to appropriate state.
+  StepWizardForShowSetupUI();
 
   // Attach this as the sync setup handler, before calling ShowSetupUI().
   if (!service->get_wizard().AttachSyncSetupHandler(this)) {

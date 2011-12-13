@@ -14,13 +14,13 @@ OptionsSyncSetupHandler::OptionsSyncSetupHandler(
 OptionsSyncSetupHandler::~OptionsSyncSetupHandler() {
 }
 
-void OptionsSyncSetupHandler::ShowSetupUI() {
+void OptionsSyncSetupHandler::StepWizardForShowSetupUI() {
   ProfileSyncService* service =
       Profile::FromWebUI(web_ui_)->GetProfileSyncService();
   DCHECK(service);
 
-  // The user is trying to manually load a syncSetup URL.  We should bring up
-  // either a login or a configure flow based on the state of sync.
+  // We should bring up either a login or a configure flow based on the state of
+  // sync.
   if (service->HasSyncSetupCompleted()) {
     if (service->IsPassphraseRequiredForDecryption()) {
       service->get_wizard().Step(SyncSetupWizard::ENTER_PASSPHRASE);
@@ -30,7 +30,9 @@ void OptionsSyncSetupHandler::ShowSetupUI() {
   } else {
     service->get_wizard().Step(SyncSetupWizard::GetLoginState());
   }
+}
 
+void OptionsSyncSetupHandler::ShowSetupUI() {
   // Show the Sync Setup page.
   scoped_ptr<Value> page(Value::CreateStringValue("syncSetup"));
   web_ui_->CallJavascriptFunction("OptionsPage.navigateToPage", *page);

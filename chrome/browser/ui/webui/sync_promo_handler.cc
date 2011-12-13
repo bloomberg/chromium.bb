@@ -179,10 +179,15 @@ void SyncPromoHandler::Observe(int type,
   }
 }
 
-void SyncPromoHandler::ShowSetupUI() {
+void SyncPromoHandler::StepWizardForShowSetupUI() {
   ProfileSyncService* service =
       Profile::FromWebUI(web_ui_)->GetProfileSyncService();
   service->get_wizard().Step(SyncSetupWizard::GetLoginState());
+}
+
+void SyncPromoHandler::ShowSetupUI() {
+  // We don't need to do anything here; The UI for the sync promo is already
+  // displayed.
 }
 
 void SyncPromoHandler::HandleCloseSyncPromo(const base::ListValue* args) {

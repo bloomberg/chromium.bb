@@ -35,6 +35,8 @@ class SyncPromoHandler : public SyncSetupHandler {
                        const content::NotificationDetails& details) OVERRIDE;
 
  protected:
+  virtual void StepWizardForShowSetupUI() OVERRIDE;
+
   virtual void ShowSetupUI() OVERRIDE;
 
  private:

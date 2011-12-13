@@ -15,6 +15,8 @@ class OptionsSyncSetupHandler : public SyncSetupHandler {
   virtual ~OptionsSyncSetupHandler();
 
  protected:
+  virtual void StepWizardForShowSetupUI() OVERRIDE;
+
   virtual void ShowSetupUI() OVERRIDE;
 };
 

@@ -81,6 +81,10 @@ class SyncSetupHandler : public GaiaOAuthConsumer,
 
   SyncSetupFlow* flow() { return flow_; }
 
+  // Subclasses must implement to step the SyncSetupWizard to the correct state
+  // before showing the Setup UI.
+  virtual void StepWizardForShowSetupUI() = 0;
+
   // Subclasses must implement this to show the setup UI that's appropriate
   // for the page this is contained in.
   virtual void ShowSetupUI() = 0;
