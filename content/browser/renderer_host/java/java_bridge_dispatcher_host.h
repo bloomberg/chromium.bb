@@ -39,9 +39,10 @@ class JavaBridgeDispatcherHost
   void AddNamedObject(const string16& name, NPObject* object);
   void RemoveNamedObject(const string16& name);
 
-  // RenderViewHostObserver override:
+  // RenderViewHostObserver overrides:
   // The IPC macros require this to be public.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual void RenderViewHostDestroyed() OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<JavaBridgeDispatcherHost>;
