@@ -17,7 +17,14 @@ namespace chromeos {
 
 class CrosSettingsProvider {
  public:
-  virtual ~CrosSettingsProvider() {}
+  // The callback type that is called to notify the CrosSettings observers
+  // about a setting change.
+  typedef base::Callback<void(const std::string&)> NotifyObserversCallback;
+
+  // Creates a new provider instance. |notify_cb| will be used to notify
+  // about setting changes.
+  explicit CrosSettingsProvider(const NotifyObserversCallback& notify_cb);
+  virtual ~CrosSettingsProvider();
 
   // Sets |in_value| to given |path| in cros settings.
   void Set(const std::string& path, const base::Value& in_value);
@@ -38,10 +45,17 @@ class CrosSettingsProvider {
   // Reloads the caches if the provider has any.
   virtual void Reload() = 0;
 
+ protected:
+  // Notifies the observers about a setting change.
+  void NotifyObservers(const std::string& path);
+
  private:
   // Does the real job for Set().
   virtual void DoSet(const std::string& path,
                      const base::Value& in_value) = 0;
+
+  // Callback used to notify about setting changes.
+  NotifyObserversCallback notify_cb_;
 };
 
 }  // namespace chromeos

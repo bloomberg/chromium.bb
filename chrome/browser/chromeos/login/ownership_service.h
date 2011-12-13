@@ -129,6 +129,9 @@ class OwnershipService : public content::NotificationObserver {
   content::NotificationRegistrar notification_registrar_;
   volatile Status ownership_status_;
   base::Lock ownership_status_lock_;
+
+  // If true, current user is regarded as owner (for testing only).
+  bool force_ownership_;
 };
 
 }  // namespace chromeos

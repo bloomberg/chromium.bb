@@ -331,6 +331,7 @@ extern const char kParallelAuth[];
 extern const char kCandidateWindowLang[];
 extern const char kGuestSession[];
 extern const char kStubCros[];
+extern const char kStubCrosSettings[];
 extern const char kScreenSaverUrl[];
 extern const char kCompressSystemFeedback[];
 extern const char kAuthExtensionPath[];

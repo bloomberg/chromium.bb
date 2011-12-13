@@ -37,11 +37,6 @@ class CrosSettings : public base::NonThreadSafe {
   // Sets |in_value| to given |path| in cros settings.
   void Set(const std::string& path, const base::Value& in_value);
 
-  // Fires system setting change notification.
-  // TODO(pastarmovj): Consider to remove this function from the public
-  // interface.
-  void FireObservers(const char* path);
-
   // Gets settings value of given |path| to |out_value|.
   const base::Value* GetPref(const std::string& path) const;
 
@@ -97,6 +92,8 @@ class CrosSettings : public base::NonThreadSafe {
   void ReloadProviders();
 
  private:
+  friend struct base::DefaultLazyInstanceTraits<CrosSettings>;
+
   // List of ChromeOS system settings providers.
   std::vector<CrosSettingsProvider*> providers_;
 
@@ -109,7 +106,9 @@ class CrosSettings : public base::NonThreadSafe {
 
   CrosSettings();
   ~CrosSettings();
-  friend struct base::DefaultLazyInstanceTraits<CrosSettings>;
+
+  // Fires system setting change notification.
+  void FireObservers(const std::string& path);
 
   DISALLOW_COPY_AND_ASSIGN(CrosSettings);
 };

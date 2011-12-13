@@ -24,7 +24,7 @@ namespace chromeos {
 class SystemSettingsProvider : public CrosSettingsProvider,
                                public system::TimezoneSettings::Observer {
  public:
-  SystemSettingsProvider();
+  explicit SystemSettingsProvider(const NotifyObserversCallback& notify_cb);
   virtual ~SystemSettingsProvider();
 
   // CrosSettingsProvider overrides.

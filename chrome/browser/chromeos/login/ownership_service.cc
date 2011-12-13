@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/ownership_service.h"
 
+#include "base/command_line.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_path.h"
@@ -12,6 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
@@ -30,7 +32,9 @@ OwnershipService* OwnershipService::GetSharedInstance() {
 OwnershipService::OwnershipService()
     : manager_(new OwnerManager),
       utils_(OwnerKeyUtils::Create()),
-      ownership_status_(OWNERSHIP_UNKNOWN) {
+      ownership_status_(OWNERSHIP_UNKNOWN),
+      force_ownership_(CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kStubCrosSettings)) {
   notification_registrar_.Add(
       this,
       chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
@@ -61,6 +65,8 @@ bool OwnershipService::IsAlreadyOwned() {
 }
 
 OwnershipService::Status OwnershipService::GetStatus(bool blocking) {
+  if (force_ownership_)
+    return OWNERSHIP_TAKEN;
   Status status = OWNERSHIP_UNKNOWN;
   bool is_owned = false;
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -138,6 +144,8 @@ void OwnershipService::Observe(int type,
 }
 
 bool OwnershipService::CurrentUserIsOwner() {
+  if (force_ownership_)
+    return true;
   // If this user has the private key associated with the owner's
   // public key, this user is the owner.
   return IsAlreadyOwned() && manager_->EnsurePrivateKey();

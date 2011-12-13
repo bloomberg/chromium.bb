@@ -34,7 +34,7 @@ class OwnershipService;
 class DeviceSettingsProvider : public CrosSettingsProvider,
                                public content::NotificationObserver {
  public:
-  DeviceSettingsProvider();
+  explicit DeviceSettingsProvider(const NotifyObserversCallback& notify_cb);
   virtual ~DeviceSettingsProvider();
 
   // CrosSettingsProvider implementation.

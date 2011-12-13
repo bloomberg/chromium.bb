@@ -183,7 +183,9 @@ string16 GetExemplarCity(const icu::TimeZone& zone) {
 
 namespace chromeos {
 
-SystemSettingsProvider::SystemSettingsProvider() {
+SystemSettingsProvider::SystemSettingsProvider(
+    const NotifyObserversCallback& notify_cb)
+    : CrosSettingsProvider(notify_cb) {
   for (size_t i = 0; i < arraysize(kTimeZones); i++) {
     timezones_.push_back(icu::TimeZone::createTimeZone(
         icu::UnicodeString(kTimeZones[i], -1, US_INV)));
@@ -242,7 +244,7 @@ void SystemSettingsProvider::TimezoneChanged(const icu::TimeZone& timezone) {
   // Fires system setting change notification.
   timezone_value_.reset(
       base::Value::CreateStringValue(GetKnownTimezoneID(timezone)));
-  CrosSettings::Get()->FireObservers(kSystemTimezone);
+  NotifyObservers(kSystemTimezone);
 }
 
 ListValue* SystemSettingsProvider::GetTimezoneList() {

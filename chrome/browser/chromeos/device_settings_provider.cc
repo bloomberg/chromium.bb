@@ -92,8 +92,10 @@ bool HasOldMetricsFile() {
 
 }  // namespace
 
-DeviceSettingsProvider::DeviceSettingsProvider()
-    : ownership_status_(OwnershipService::GetSharedInstance()->GetStatus(true)),
+DeviceSettingsProvider::DeviceSettingsProvider(
+    const NotifyObserversCallback& notify_cb)
+    : CrosSettingsProvider(notify_cb),
+      ownership_status_(OwnershipService::GetSharedInstance()->GetStatus(true)),
       migration_helper_(new SignedSettingsMigrationHelper()),
       retries_left_(kNumRetriesLimit),
       trusted_(false) {
@@ -130,7 +132,7 @@ void DeviceSettingsProvider::DoSet(const std::string& path,
     LOG(WARNING) << "Changing settings from non-owner, setting=" << path;
 
     // Revert UI change.
-    CrosSettings::Get()->FireObservers(path.c_str());
+    NotifyObservers(path);
     return;
   }
 
@@ -180,7 +182,7 @@ void DeviceSettingsProvider::SetInPolicy(const std::string& prop,
     if (value.GetAsString(&owner)) {
       policy_.set_username(owner);
       values_cache_.SetValue(prop, value.DeepCopy());
-      CrosSettings::Get()->FireObservers(prop.c_str());
+      NotifyObservers(prop);
       // We can't trust this value anymore until we reload the real username.
       trusted_ = false;
     } else {
@@ -273,7 +275,7 @@ void DeviceSettingsProvider::SetInPolicy(const std::string& prop,
   // Set the cache to the updated value.
   policy_ = data;
   UpdateValuesCache();
-  CrosSettings::Get()->FireObservers(prop.c_str());
+  NotifyObservers(prop);
 
   if (!signed_settings_cache::Store(data, g_browser_process->local_state()))
     LOG(ERROR) << "Couldn't store to the temp storage.";

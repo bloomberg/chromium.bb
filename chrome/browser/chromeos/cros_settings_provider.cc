@@ -12,6 +12,14 @@
 
 namespace chromeos {
 
+CrosSettingsProvider::CrosSettingsProvider(
+    const NotifyObserversCallback& notify_cb)
+  : notify_cb_(notify_cb) {
+}
+
+CrosSettingsProvider::~CrosSettingsProvider() {
+}
+
 void CrosSettingsProvider::Set(const std::string& path,
                                const base::Value& value) {
   // We don't allow changing any of the cros settings without prefix
@@ -23,6 +31,10 @@ void CrosSettingsProvider::Set(const std::string& path,
     return;
   }
   DoSet(path, value);
+}
+
+void CrosSettingsProvider::NotifyObservers(const std::string& path) {
+  notify_cb_.Run(path);
 }
 
 };  // namespace chromeos

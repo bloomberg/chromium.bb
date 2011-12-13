@@ -4,13 +4,17 @@
 
 #include "chrome/browser/chromeos/cros_settings.h"
 
+#include "base/bind.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/device_settings_provider.h"
+#include "chrome/browser/chromeos/stub_cros_settings_provider.h"
 #include "chrome/browser/ui/webui/options/chromeos/system_settings_provider.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -29,11 +33,10 @@ bool CrosSettings::IsCrosSettings(const std::string& path) {
   return StartsWithASCII(path, kCrosSettingsPrefix, true);
 }
 
-void CrosSettings::FireObservers(const char* path) {
+void CrosSettings::FireObservers(const std::string& path) {
   DCHECK(CalledOnValidThread());
-  std::string path_str(path);
   SettingsObserverMap::iterator observer_iterator =
-      settings_observers_.find(path_str);
+      settings_observers_.find(path);
   if (observer_iterator == settings_observers_.end())
     return;
 
@@ -42,7 +45,7 @@ void CrosSettings::FireObservers(const char* path) {
   while ((observer = it.GetNext()) != NULL) {
     observer->Observe(chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED,
                       content::Source<CrosSettings>(this),
-                      content::Details<std::string>(&path_str));
+                      content::Details<const std::string>(&path));
   }
 }
 
@@ -263,8 +266,18 @@ bool CrosSettings::GetList(const std::string& path,
 }
 
 CrosSettings::CrosSettings() {
-  AddSettingsProvider(new SystemSettingsProvider());
-  AddSettingsProvider(new DeviceSettingsProvider());
+  CrosSettingsProvider::NotifyObserversCallback notify_cb(
+      base::Bind(&CrosSettings::FireObservers,
+                 // This is safe since |this| is never deleted.
+                 base::Unretained(this)));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kStubCrosSettings)) {
+    AddSettingsProvider(new StubCrosSettingsProvider(notify_cb));
+  } else {
+    AddSettingsProvider(new DeviceSettingsProvider(notify_cb));
+  }
+  // System settings are not mocked currently.
+  AddSettingsProvider(new SystemSettingsProvider(notify_cb));
 }
 
 CrosSettings::~CrosSettings() {

@@ -1333,6 +1333,7 @@
         'browser/chromeos/status/input_method_menu_unittest.cc',
         'browser/chromeos/status/network_menu_icon.cc',
         'browser/chromeos/status/network_menu_icon_unittest.cc',
+        'browser/chromeos/stub_cros_settings_provider_unittest.cc',
         'browser/chromeos/system/mock_statistics_provider.cc',
         'browser/chromeos/system/mock_statistics_provider.h',
         'browser/chromeos/system/name_value_pairs_parser_unittest.cc',
