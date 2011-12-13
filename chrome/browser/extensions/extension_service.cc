@@ -2035,9 +2035,7 @@ void ExtensionService::UpdateActiveExtensionsInCrashReporter() {
 }
 
 void ExtensionService::OnExtensionInstalled(
-    const Extension* extension,
-    bool from_webstore,
-    const StringOrdinal& page_ordinal) {
+    const Extension* extension, bool from_webstore, int page_index) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Ensure extension is deleted unless we transfer ownership.
@@ -2094,7 +2092,7 @@ void ExtensionService::OnExtensionInstalled(
       extension,
       initial_enable ? Extension::ENABLED : Extension::DISABLED,
       from_webstore,
-      page_ordinal);
+      page_index);
 
   // Unpacked extensions default to allowing file access, but if that has been
   // overridden, don't reset the value.

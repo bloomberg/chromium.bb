@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/extension_prefs_scope.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/string_ordinal.h"
 #include "googleurl/src/gurl.h"
 
 class ExtensionPrefValueMap;
@@ -100,25 +99,16 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   void SetToolbarOrder(const std::vector<std::string>& extension_ids);
 
   // Called when an extension is installed, so that prefs get created.
-  // If |page_ordinal| is an invalid ordinal, then a page will be found
-  // for the App.
+  // If |page_index| is -1, and the then a page will be found for the App.
   void OnExtensionInstalled(const Extension* extension,
                             Extension::State initial_state,
                             bool from_webstore,
-                            const StringOrdinal& page_ordinal);
+                            int page_index);
 
   // Called when an extension is uninstalled, so that prefs get cleaned up.
   void OnExtensionUninstalled(const std::string& extension_id,
                               const Extension::Location& location,
                               bool external_uninstall);
-
-  // Updates the app launcher value for the moved extension so that it is now
-  // located after the given predecessor and before the successor.
-  // Empty strings are used to indicate no successor or predecessor.
-  void OnExtensionMoved(
-      const std::string& moved_extension_id,
-      const std::string& predecessor_extension_id,
-      const std::string& successor_extension_id);
 
   // Called to change the extension's state when it is enabled/disabled.
   void SetExtensionState(const std::string& extension_id, Extension::State);
@@ -314,55 +304,36 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   bool GetWebStoreLogin(std::string* result);
   void SetWebStoreLogin(const std::string& login);
 
-  // Get the application launch ordinal for an app with |extension_id|. This
-  // determines the order in which the app appears on the page it's on in the
-  // New Tab Page (Note that you can compare app launch ordinals only if the
-  // apps are on the same page). A string value close to |a*| generally
-  // indicates top left. If the extension has no launch ordinal, an invalid
-  // StringOrdinal is returned.
-  StringOrdinal GetAppLaunchOrdinal(const std::string& extension_id) const;
+  // Get the application launch index for an extension with |extension_id|. This
+  // determines the order of which the applications appear on the New Tab Page.
+  // A value of 0 generally indicates top left. If the extension has no launch
+  // index a -1 value is returned.
+  int GetAppLaunchIndex(const std::string& extension_id);
 
-  // Sets a specific launch ordinal for an app with |extension_id|.
-  void SetAppLaunchOrdinal(const std::string& extension_id,
-                           const StringOrdinal& ordinal);
+  // Sets a specific launch index for an extension with |extension_id|.
+  void SetAppLaunchIndex(const std::string& extension_id, int index);
 
-  // Returns a StringOrdinal that is lower than any app launch ordinal for the
-  // given page.
-  StringOrdinal CreateFirstAppLaunchOrdinal(const StringOrdinal& page_ordinal)
-      const;
+  // Gets the next available application launch index. This is 1 higher than the
+  // highest current application launch index found for the page |on_page|.
+  int GetNextAppLaunchIndex(int on_page);
 
-  // Returns a StringOrdinal that is higher than any app launch ordinal for the
-  // given page.
-  StringOrdinal CreateNextAppLaunchOrdinal(const StringOrdinal& page_ordinal)
-      const;
+  // Gets the page a new app should install to. Starts on page 0, and if there
+  // are N or more apps on it, tries to install on the next page.
+  int GetNaturalAppPageIndex();
 
-  // Returns a StringOrdinal that is lower than any existing page ordinal.
-  StringOrdinal CreateFirstAppPageOrdinal() const;
+  // Sets the order the apps should be displayed in the app launcher.
+  void SetAppLauncherOrder(const std::vector<std::string>& extension_ids);
 
-  // Gets the page a new app should install to, which is the earliest non-full
-  // page.  The returned ordinal may correspond to a page that doesn't yet exist
-  // if all pages are full.
-  StringOrdinal GetNaturalAppPageOrdinal() const;
+  // Get the application page index for an extension with |extension_id|.  This
+  // determines which page an app will appear on in page-based NTPs.  If
+  // the app has no page specified, -1 is returned.
+  int GetPageIndex(const std::string& extension_id);
 
-  // Get the page ordinal for an app with |extension_id|. This determines
-  // which page an app will appear on in page-based NTPs.  If the app has no
-  // page specified, an invalid StringOrdinal is returned.
-  StringOrdinal GetPageOrdinal(const std::string& extension_id) const;
+  // Sets a specific page index for an extension with |extension_id|.
+  void SetPageIndex(const std::string& extension_id, int index);
 
-  // Sets a specific page ordinal for an app with |extension_id|.
-  void SetPageOrdinal(const std::string& extension_id,
-                      const StringOrdinal& ordinal);
-
-  // Removes the page ordinal for an app.
-  void ClearPageOrdinal(const std::string& extension_id);
-
-  // Convert the page StringOrdinal value to its integer equivalent. This takes
-  // O(# of apps) worst-case.
-  int PageStringOrdinalAsInteger(const StringOrdinal& page_ordinal) const;
-
-  // Converts the page index integer to its StringOrdinal equivalent. This takes
-  // O(# of apps) worst-case.
-  StringOrdinal PageIntegerAsStringOrdinal(size_t page_index) const;
+  // Removes the page index for an extension.
+  void ClearPageIndex(const std::string& extension_id);
 
   // Returns true if the user repositioned the app on the app launcher via drag
   // and drop.
@@ -438,8 +409,6 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   virtual base::Time GetCurrentTime() const;
 
  private:
-  friend class ExtensionPrefsGetMinOrMaxAppLaunchOrdinalsOnPage;  // Unit test.
-  friend class ExtensionPrefsMigrateAppIndex;  // Unit test.
   friend class ExtensionPrefsUninstallExtension;  // Unit test.
 
   // ExtensionContentSettingsStore::Observer methods:
@@ -487,11 +456,6 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   bool ReadExtensionPrefList(const std::string& extension_id,
                              const std::string& pref_key,
                              const base::ListValue** out_value);
-
-  // Reads a string pref |pref_key| from extension with id |extension_id|.
-  bool ReadExtensionPrefString(const std::string& extension_id,
-                               const std::string& pref_key,
-                               std::string* out_value) const;
 
   // Interprets the list pref, |pref_key| in |extension_id|'s preferences, as a
   // URLPatternSet. The |valid_schemes| specify how to parse the URLPatterns.
@@ -550,51 +514,16 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   // Migrates the permissions data in the pref store.
   void MigratePermissions(const ExtensionIdSet& extension_ids);
 
-  // Migrates the app launcher and page index values.
-  void MigrateAppIndex(const ExtensionIdSet& extension_ids);
-
   // Checks whether there is a state pref for the extension and if so, whether
   // it matches |check_state|.
   bool DoesExtensionHaveState(const std::string& id,
                               Extension::State check_state) const;
-
-  // An enum used by GetMinOrMaxAppLaunchOrdinalsOnPage to specify which
-  // value should be returned.
-  enum AppLaunchOrdinalReturn {MIN_ORDINAL, MAX_ORDINAL};
-
-  // This function returns the lowest ordinal on |page_ordinal| if
-  // |return_value| == AppLaunchOrdinalReturn::MIN_ORDINAL, otherwise it returns
-  // the largest ordinal on |page_ordinal|. If there are no apps on the page
-  // then an invalid StringOrdinal is returned. It is an error to call this
-  // function with an invalid |page_ordinal|.
-  StringOrdinal GetMinOrMaxAppLaunchOrdinalsOnPage(
-      const StringOrdinal& page_ordinal,
-      AppLaunchOrdinalReturn return_type) const;
-
-  // Initialize the |page_ordinal_map_| with the page ordinals used by the
-  // given extensions.
-  void InitializePageOrdinalMap(const ExtensionIdSet& extension_ids);
-
-  // Called when an application changes the value of its page ordinal so that
-  // |page_ordinal_map_| is aware that |old_value| page ordinal has been
-  // replace by the |new_value| page ordinal and adjusts its mapping
-  // accordingly. This works with valid and invalid StringOrdinals.
-  void UpdatePageOrdinalMap(const StringOrdinal& old_value,
-                            const StringOrdinal& new_value);
 
   // The pref service specific to this set of extension prefs. Owned by profile.
   PrefService* prefs_;
 
   // Base extensions install directory.
   FilePath install_directory_;
-
-  // A map of all the StringOrdinal page indices mapping to how often they are
-  // used, this is used for mapping the StringOrdinals to their integer
-  // equivalent as well as quick lookup of the sorted StringOrdinals.
-  // TODO(csharp) Convert this to a two-layer map to allow page ordinal lookup
-  // by id and vice versa.
-  typedef std::map<StringOrdinal, int, StringOrdinalLessThan> PageOrdinalMap;
-  PageOrdinalMap page_ordinal_map_;
 
   // Weak pointer, owned by Profile.
   ExtensionPrefValueMap* extension_pref_value_map_;

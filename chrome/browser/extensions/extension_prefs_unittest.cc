@@ -10,13 +10,11 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
-#include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_permission_set.h"
-#include "chrome/common/string_ordinal.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/test/notification_observer_mock.h"
@@ -656,8 +654,7 @@ class ExtensionPrefsOnExtensionInstalled : public ExtensionPrefsTest {
     extension_ = prefs_.AddExtension("on_extension_installed");
     EXPECT_FALSE(prefs()->IsExtensionDisabled(extension_->id()));
     prefs()->OnExtensionInstalled(
-        extension_.get(), Extension::DISABLED, false,
-        StringOrdinal());
+        extension_.get(), Extension::DISABLED, false, -1);
   }
 
   virtual void Verify() {
@@ -670,109 +667,85 @@ class ExtensionPrefsOnExtensionInstalled : public ExtensionPrefsTest {
 TEST_F(ExtensionPrefsOnExtensionInstalled,
        ExtensionPrefsOnExtensionInstalled) {}
 
-class ExtensionPrefsAppLaunchOrdinal : public ExtensionPrefsTest {
+class ExtensionPrefsAppLaunchIndex : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
     // No extensions yet.
-    StringOrdinal page = StringOrdinal::CreateInitialOrdinal();
-    EXPECT_TRUE(StringOrdinal::CreateInitialOrdinal().Equal(
-       prefs()->CreateNextAppLaunchOrdinal(page)));
+    EXPECT_EQ(0, prefs()->GetNextAppLaunchIndex(0));
 
     extension_ = prefs_.AddApp("on_extension_installed");
     EXPECT_FALSE(prefs()->IsExtensionDisabled(extension_->id()));
     prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED,
-                                  false, StringOrdinal());
+                                  false, -1);
   }
 
   virtual void Verify() {
-    StringOrdinal launch_ordinal =
-        prefs()->GetAppLaunchOrdinal(extension_->id());
-    StringOrdinal page_ordinal = StringOrdinal::CreateInitialOrdinal();
+    int launch_index = prefs()->GetAppLaunchIndex(extension_->id());
+    // Extension should have been assigned a launch index > 0.
+    EXPECT_GT(launch_index, 0);
+    EXPECT_EQ(launch_index + 1, prefs()->GetNextAppLaunchIndex(0));
+    // Set a new launch index of one higher and verify.
+    prefs()->SetAppLaunchIndex(extension_->id(),
+                               prefs()->GetNextAppLaunchIndex(0));
+    int new_launch_index = prefs()->GetAppLaunchIndex(extension_->id());
+    EXPECT_EQ(launch_index + 1, new_launch_index);
 
-    // Extension should have been assigned a valid StringOrdinal.
-    EXPECT_TRUE(launch_ordinal.IsValid());
-    EXPECT_TRUE(launch_ordinal.LessThan(
-        prefs()->CreateNextAppLaunchOrdinal(page_ordinal)));
-    // Set a new launch ordinal of and verify it comes after.
-    prefs()->SetAppLaunchOrdinal(
-        extension_->id(),
-        prefs()->CreateNextAppLaunchOrdinal(page_ordinal));
-    StringOrdinal new_launch_ordinal =
-        prefs()->GetAppLaunchOrdinal(extension_->id());
-    EXPECT_TRUE(launch_ordinal.LessThan(new_launch_ordinal));
+    // This extension doesn't exist, so it should return -1.
+    EXPECT_EQ(-1, prefs()->GetAppLaunchIndex("foo"));
 
-    // This extension doesn't exist, so it should return an invalid
-    // StringOrdinal.
-    StringOrdinal invalid_app_launch_ordinal =
-        prefs()->GetAppLaunchOrdinal("foo");
-    EXPECT_FALSE(invalid_app_launch_ordinal.IsValid());
-    EXPECT_EQ(-1, prefs()->PageStringOrdinalAsInteger(
-        invalid_app_launch_ordinal));
-
-    // The second page doesn't have any apps so its next launch ordinal should
-    // be the first launch ordinal.
-    StringOrdinal next_page = page_ordinal.CreateAfter();
-    StringOrdinal next_page_app_launch_ordinal =
-        prefs()->CreateNextAppLaunchOrdinal(next_page);
-    EXPECT_TRUE(next_page_app_launch_ordinal.Equal(
-        prefs()->CreateFirstAppLaunchOrdinal(next_page)));
+    // The second page doesn't have any apps so its next launch index should
+    // still be 0.
+    EXPECT_EQ(prefs()->GetNextAppLaunchIndex(1), 0);
   }
 
  private:
   scoped_refptr<Extension> extension_;
 };
-TEST_F(ExtensionPrefsAppLaunchOrdinal, ExtensionPrefsAppLaunchOrdinal) {}
+TEST_F(ExtensionPrefsAppLaunchIndex, ExtensionPrefsAppLaunchIndex) {}
 
-class ExtensionPrefsPageOrdinal : public ExtensionPrefsTest {
+class ExtensionPrefsPageIndex : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
-    extension_ = prefs_.AddApp("page_ordinal");
-    // Install with a page preference.
-    StringOrdinal page = StringOrdinal::CreateInitialOrdinal();
+    extension_ = prefs_.AddApp("page_index");
+    // Install to page 3 (index 2).
     prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED,
-                                  false, page);
-    EXPECT_TRUE(page.Equal(prefs()->GetPageOrdinal(extension_->id())));
-    EXPECT_EQ(0, prefs()->PageStringOrdinalAsInteger(page));
+                                  false, 2);
+    EXPECT_EQ(2, prefs()->GetPageIndex(extension_->id()));
 
-    scoped_refptr<Extension> extension2 = prefs_.AddApp("page_ordinal_2");
+    scoped_refptr<Extension> extension2 = prefs_.AddApp("page_index_2");
     // Install without any page preference.
     prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED,
-                                  false, StringOrdinal());
-    EXPECT_TRUE(prefs()->GetPageOrdinal(extension_->id()).IsValid());
+                                  false, -1);
+    EXPECT_EQ(0, prefs()->GetPageIndex(extension_->id()));
   }
 
   virtual void Verify() {
-    StringOrdinal old_page = prefs()->GetPageOrdinal(extension_->id());
-    StringOrdinal new_page = old_page.CreateAfter();
+    // Set the page index.
+    prefs()->SetPageIndex(extension_->id(), 1);
+    // Verify the page index.
+    EXPECT_EQ(1, prefs()->GetPageIndex(extension_->id()));
 
-    // Set the page ordinal.
-    prefs()->SetPageOrdinal(extension_->id(), new_page);
-    // Verify the page ordinal.
-    EXPECT_TRUE(new_page.Equal(prefs()->GetPageOrdinal(extension_->id())));
-    EXPECT_EQ(1, prefs()->PageStringOrdinalAsInteger(new_page));
-
-    // This extension doesn't exist, so it should return an invalid
-    // StringOrdinal.
-    EXPECT_FALSE(prefs()->GetPageOrdinal("foo").IsValid());
+    // This extension doesn't exist, so it should return -1.
+    EXPECT_EQ(-1, prefs()->GetPageIndex("foo"));
   }
 
  private:
   scoped_refptr<Extension> extension_;
 };
-TEST_F(ExtensionPrefsPageOrdinal, ExtensionPrefsPageOrdinal) {}
+TEST_F(ExtensionPrefsPageIndex, ExtensionPrefsPageIndex) {}
 
 class ExtensionPrefsAppLocation : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
     extension_ = prefs_.AddExtension("not_an_app");
-    // Non-apps should not have any app launch ordinal or page ordinal.
+    // Non-apps should not have any app launch index or page index.
     prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED,
-                                  false, StringOrdinal());
+                                  false, 0);
   }
 
   virtual void Verify() {
-    EXPECT_FALSE(prefs()->GetAppLaunchOrdinal(extension_->id()).IsValid());
-    EXPECT_FALSE(prefs()->GetPageOrdinal(extension_->id()).IsValid());
+    EXPECT_EQ(-1, prefs()->GetAppLaunchIndex(extension_->id()));
+    EXPECT_EQ(-1, prefs()->GetPageIndex(extension_->id()));
   }
 
  private:
@@ -786,7 +759,7 @@ class ExtensionPrefsAppDraggedByUser : public ExtensionPrefsTest {
     extension_ = prefs_.AddExtension("on_extension_installed");
     EXPECT_FALSE(prefs()->WasAppDraggedByUser(extension_->id()));
     prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED,
-                                  false, StringOrdinal());
+                                  false, -1);
   }
 
   virtual void Verify() {
@@ -936,8 +909,7 @@ class ExtensionPrefsPreferencesBase : public ExtensionPrefsTest {
     Extension* extensions[] = {ext1_, ext2_, ext3_};
     for (int i = 0; i < 3; ++i) {
       if (ext == extensions[i] && !installed[i]) {
-        prefs()->OnExtensionInstalled(ext, Extension::ENABLED,
-                                      false, StringOrdinal());
+        prefs()->OnExtensionInstalled(ext, Extension::ENABLED, false, -1);
         installed[i] = true;
         break;
       }
@@ -1244,126 +1216,3 @@ class ExtensionPrefsDisableExtensions
   int iteration_;
 };
 TEST_F(ExtensionPrefsDisableExtensions, ExtensionPrefsDisableExtensions) {}
-
-// Tests the application index to ordinal migration code. This should be removed
-// when the migrate code is taken out.
-class ExtensionPrefsMigrateAppIndex  : public ExtensionPrefsPreferencesBase {
- public:
-  ExtensionPrefsMigrateAppIndex() {}
-  virtual ~ExtensionPrefsMigrateAppIndex() {}
-  virtual void Initialize() {
-    // A preference determining the order of which the apps appear on the NTP.
-    const char kPrefAppLaunchIndexDeprecated[] = "app_launcher_index";
-    // A preference determining the page on which an app appears in the NTP.
-    const char kPrefPageIndexDeprecated[] = "page_index";
-
-    // Setup the deprecated preferences.
-    prefs()->UpdateExtensionPref(ext1_->id(),
-                                 kPrefAppLaunchIndexDeprecated,
-                                 Value::CreateIntegerValue(0));
-    prefs()->UpdateExtensionPref(ext1_->id(),
-                                 kPrefPageIndexDeprecated,
-                                 Value::CreateIntegerValue(0));
-
-    prefs()->UpdateExtensionPref(ext2_->id(),
-                                 kPrefAppLaunchIndexDeprecated,
-                                 Value::CreateIntegerValue(1));
-    prefs()->UpdateExtensionPref(ext2_->id(),
-                                 kPrefPageIndexDeprecated,
-                                 Value::CreateIntegerValue(0));
-
-    prefs()->UpdateExtensionPref(ext3_->id(),
-                                 kPrefAppLaunchIndexDeprecated,
-                                 Value::CreateIntegerValue(0));
-    prefs()->UpdateExtensionPref(ext3_->id(),
-                                 kPrefPageIndexDeprecated,
-                                 Value::CreateIntegerValue(1));
-
-    // We insert the ids in reserve order so that we have to deal with the
-    // element on the 2nd page before the 1st page is seen.
-    ExtensionPrefs::ExtensionIdSet ids;
-    ids.push_back(ext3_->id());
-    ids.push_back(ext2_->id());
-    ids.push_back(ext1_->id());
-
-    prefs_.prefs()->MigrateAppIndex(ids);
-  }
-  virtual void Verify() {
-    StringOrdinal first_ordinal = StringOrdinal::CreateInitialOrdinal();
-
-    EXPECT_TRUE(first_ordinal.Equal(prefs()->GetAppLaunchOrdinal(ext1_->id())));
-    EXPECT_TRUE(first_ordinal.LessThan(
-        prefs()->GetAppLaunchOrdinal(ext2_->id())));
-    EXPECT_TRUE(first_ordinal.Equal(prefs()->GetAppLaunchOrdinal(ext3_->id())));
-
-    EXPECT_TRUE(first_ordinal.Equal(prefs()->GetPageOrdinal(ext1_->id())));
-    EXPECT_TRUE(first_ordinal.Equal(prefs()->GetPageOrdinal(ext2_->id())));
-    EXPECT_TRUE(first_ordinal.LessThan(prefs()->GetPageOrdinal(ext3_->id())));
-  }
-};
-TEST_F(ExtensionPrefsMigrateAppIndex, ExtensionPrefsMigrateAppIndex) {}
-
-class ExtensionPrefsGetMinOrMaxAppLaunchOrdinalsOnPage :
-    public ExtensionPrefsPreferencesBase {
- public:
-  ExtensionPrefsGetMinOrMaxAppLaunchOrdinalsOnPage() {}
-  virtual ~ExtensionPrefsGetMinOrMaxAppLaunchOrdinalsOnPage() {}
-  virtual void Initialize() {
-    DictionaryValue simple_dict;
-    simple_dict.SetString(keys::kVersion, "1.0.0.0");
-    simple_dict.SetString(keys::kName, "unused");
-    simple_dict.SetString(keys::kApp, "true");
-    simple_dict.SetString(keys::kLaunchLocalPath, "fake.html");
-
-    std::string error;
-    app1_scoped_ = Extension::Create(
-        prefs_.temp_dir().AppendASCII("app1_"), Extension::EXTERNAL_PREF,
-        simple_dict, Extension::STRICT_ERROR_CHECKS, &error);
-    prefs()->OnExtensionInstalled(app1_scoped_.get(),
-                                  Extension::ENABLED,
-                                  false,
-                                  StringOrdinal());
-
-    app2_scoped_ = Extension::Create(
-        prefs_.temp_dir().AppendASCII("app2_"), Extension::EXTERNAL_PREF,
-        simple_dict, Extension::STRICT_ERROR_CHECKS, &error);
-    prefs()->OnExtensionInstalled(app2_scoped_.get(),
-                                  Extension::ENABLED,
-                                  false,
-                                  StringOrdinal());
-  }
-  virtual void Verify() {
-    StringOrdinal page = StringOrdinal::CreateInitialOrdinal();
-
-    StringOrdinal min = prefs()->GetMinOrMaxAppLaunchOrdinalsOnPage(
-        page,
-        ExtensionPrefs::MIN_ORDINAL);
-    StringOrdinal max = prefs()->GetMinOrMaxAppLaunchOrdinalsOnPage(
-        page,
-        ExtensionPrefs::MAX_ORDINAL);
-    EXPECT_TRUE(min.IsValid());
-    EXPECT_TRUE(max.IsValid());
-    EXPECT_TRUE(min.LessThan(max));
-
-    // Ensure that the min and max values aren't set for empty pages.
-    min = StringOrdinal();
-    max = StringOrdinal();
-    StringOrdinal empty_page = page.CreateAfter();
-    EXPECT_FALSE(min.IsValid());
-    EXPECT_FALSE(max.IsValid());
-    min = prefs()->GetMinOrMaxAppLaunchOrdinalsOnPage(
-        empty_page,
-        ExtensionPrefs::MIN_ORDINAL);
-    max = prefs()->GetMinOrMaxAppLaunchOrdinalsOnPage(
-        empty_page,
-        ExtensionPrefs::MAX_ORDINAL);
-    EXPECT_FALSE(min.IsValid());
-    EXPECT_FALSE(max.IsValid());
-  }
-
- private:
-    scoped_refptr<Extension> app1_scoped_;
-    scoped_refptr<Extension> app2_scoped_;
-};
-TEST_F(ExtensionPrefsGetMinOrMaxAppLaunchOrdinalsOnPage,
-       ExtensionPrefsGetMinOrMaxAppLaunchOrdinalsOnPage) {}

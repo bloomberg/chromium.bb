@@ -143,8 +143,7 @@ scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifestAndFlags(
 
   EXPECT_TRUE(Extension::IdIsValid(extension->id()));
   prefs_->OnExtensionInstalled(extension, Extension::ENABLED,
-                               extra_flags & Extension::FROM_WEBSTORE,
-                               StringOrdinal::CreateInitialOrdinal());
+                               extra_flags & Extension::FROM_WEBSTORE, 0);
   return extension;
 }
 

@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/string_ordinal.h"
 
 using content::BrowserThread;
 
@@ -57,7 +56,7 @@ void SimpleExtensionLoadPrompt::ShowPrompt() {
 void SimpleExtensionLoadPrompt::InstallUIProceed() {
   if (service_weak_.get())
     service_weak_->OnExtensionInstalled(
-        extension_, false, StringOrdinal());  // Not from web store.
+        extension_, false, -1);  // Not from web store.
   delete this;
 }
 
@@ -210,7 +209,7 @@ void UnpackedInstaller::OnLoaded(
   }
   service_weak_->OnExtensionInstalled(extension,
                                       false,  // Not from web store.
-                                      StringOrdinal());
+                                      -1);
 }
 
 }  // namespace extensions
