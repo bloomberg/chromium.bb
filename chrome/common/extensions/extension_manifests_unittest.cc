@@ -29,7 +29,7 @@
 #include "chrome/common/extensions/url_pattern.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
-
+#include "webkit/glue/web_intent_service_data.h"
 
 namespace {
 

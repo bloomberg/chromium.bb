@@ -26,7 +26,6 @@
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/size.h"
-#include "webkit/glue/web_intent_service_data.h"
 
 class ExtensionAction;
 class ExtensionResource;
@@ -38,6 +37,10 @@ class Version;
 namespace base {
 class DictionaryValue;
 class ListValue;
+}
+
+namespace webkit_glue {
+struct WebIntentServiceData;
 }
 
 // Represents a Chrome extension.
