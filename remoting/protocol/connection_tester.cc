@@ -59,6 +59,9 @@ void StreamConnectionTester::Done() {
 void StreamConnectionTester::InitBuffers() {
   output_buffer_ = new net::DrainableIOBuffer(
       new net::IOBuffer(test_data_size_), test_data_size_);
+  for (int i = 0; i < test_data_size_; ++i) {
+    output_buffer_->data()[i] = static_cast<char>(i);
+  }
 
   input_buffer_ = new net::GrowableIOBuffer();
 }
@@ -175,7 +178,9 @@ void DatagramConnectionTester::DoWrite() {
   }
 
   scoped_refptr<net::IOBuffer> packet(new net::IOBuffer(message_size_));
-  memset(packet->data(), 123, message_size_);
+  for (int i = 0; i < message_size_; ++i) {
+    packet->data()[i] = static_cast<char>(i);
+  }
   sent_packets_[packets_sent_] = packet;
   // Put index of this packet in the beginning of the packet body.
   memcpy(packet->data(), &packets_sent_, sizeof(packets_sent_));
