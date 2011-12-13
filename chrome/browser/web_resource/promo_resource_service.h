@@ -8,12 +8,13 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_resource/notification_promo.h"
 #include "chrome/browser/web_resource/web_resource_service.h"
 #include "chrome/common/chrome_version_info.h"
 
 namespace base {
-  class DictionaryValue;
+class DictionaryValue;
 }
 
 class AppsPromoLogoFetcher;
@@ -81,8 +82,6 @@ class PromoResourceService
   // so we can fetch new data if the locale changes.
   std::string GetPromoLocale();
 
-  void Init();
-
   // Returns true if |builds_targeted| includes the release channel Chrome
   // belongs to. For testing purposes, you can override the current channel
   // with set_channel.
@@ -97,6 +96,14 @@ class PromoResourceService
   // checks than ScheduleNotification, namely it schedules updates immediately
   // if the promo service or Chrome locale has changed.
   void ScheduleNotificationOnInit();
+
+  // If delay_ms is positive, schedule notification with the delay.
+  // If delay_ms is 0, notify immediately by calling WebResourceStateChange().
+  // If delay_ms is negative, do nothing.
+  void PostNotification(int64 delay_ms);
+
+  // Notify listeners that the state of a web resource has changed.
+  void PromoResourceStateChange();
 
   // Overrides the current Chrome release channel for testing purposes.
   void set_channel(chrome::VersionInfo::Channel channel) { channel_ = channel; }
@@ -238,6 +245,18 @@ class PromoResourceService
 
   // Overrides the current Chrome release channel for testing purposes.
   chrome::VersionInfo::Channel channel_;
+
+  // Allows the creation of tasks to send a notification.
+  // This allows the PromoResourceService to notify the New Tab Page immediately
+  // when a new web resource should be shown or removed.
+  base::WeakPtrFactory<PromoResourceService> weak_ptr_factory_;
+
+  // Notification type when an update is done.
+  int notification_type_;
+
+  // True if a task has been set to update the cache when a new web resource
+  // becomes available.
+  bool web_resource_update_scheduled_;
 
   // A helper that downloads the promo logo.
   scoped_ptr<AppsPromoLogoFetcher> apps_promo_logo_fetcher_;

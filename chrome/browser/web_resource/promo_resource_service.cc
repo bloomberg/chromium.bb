@@ -80,6 +80,9 @@ void PromoResourceService::RegisterPrefs(PrefService* local_state) {
 
 // static
 void PromoResourceService::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterStringPref(prefs::kNTPPromoResourceCacheUpdate,
+                            "0",
+                            PrefService::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(prefs::kNTPCustomLogoStart,
                             0,
                             PrefService::UNSYNCABLE_PREF);
@@ -130,20 +133,17 @@ PromoResourceService::PromoResourceService(Profile* profile)
     : WebResourceService(profile->GetPrefs(),
                          GetPromoResourceURL(),
                          true,  // append locale to URL
-                         chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
                          prefs::kNTPPromoResourceCacheUpdate,
                          kStartResourceFetchDelay,
                          GetCacheUpdateDelay()),
                          profile_(profile),
-                         channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {
-  Init();
+      channel_(chrome::VersionInfo::CHANNEL_UNKNOWN),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      web_resource_update_scheduled_(false) {
+  ScheduleNotificationOnInit();
 }
 
 PromoResourceService::~PromoResourceService() { }
-
-void PromoResourceService::Init() {
-  ScheduleNotificationOnInit();
-}
 
 bool PromoResourceService::IsBuildTargeted(int builds_targeted) {
   if (channel_ == chrome::VersionInfo::CHANNEL_UNKNOWN)
@@ -206,6 +206,30 @@ void PromoResourceService::ScheduleNotificationOnInit() {
     double promo_end = prefs_->GetDouble(prefs::kNTPPromoEnd);
     ScheduleNotification(promo_start, promo_end);
   }
+}
+
+void PromoResourceService::PostNotification(int64 delay_ms) {
+  if (web_resource_update_scheduled_)
+    return;
+  if (delay_ms > 0) {
+    web_resource_update_scheduled_ = true;
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&PromoResourceService::PromoResourceStateChange,
+                   weak_ptr_factory_.GetWeakPtr()),
+        delay_ms);
+  } else if (delay_ms == 0) {
+    PromoResourceStateChange();
+  }
+}
+
+void PromoResourceService::PromoResourceStateChange() {
+  web_resource_update_scheduled_ = false;
+  content::NotificationService* service =
+      content::NotificationService::current();
+  service->Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
+                  content::Source<WebResourceService>(this),
+                  content::NotificationService::NoDetails());
 }
 
 int PromoResourceService::GetPromoServiceVersion() {
