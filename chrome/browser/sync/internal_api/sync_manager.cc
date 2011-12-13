@@ -854,7 +854,10 @@ bool SyncManager::SyncInternal::UpdateCryptographerAndNigori() {
   // are present in the nigori node. If they're not, we write the current set of
   // keys.
   if (!nigori.has_encrypted() && cryptographer->is_ready()) {
-    cryptographer->GetKeys(nigori.mutable_encrypted());
+    if (!cryptographer->GetKeys(nigori.mutable_encrypted())) {
+      NOTREACHED();
+      return false;
+    }
   }
 
   // Ensure the nigori node reflects the most recent set of sensitive types
@@ -1057,17 +1060,21 @@ void SyncManager::SyncInternal::SetPassphrase(
       return;
 
     cryptographer->AddKey(params);
-
-    // TODO(tim): Bug 58231. It would be nice if SetPassphrase didn't require
-    // messing with the Nigori node, because we can't call SetPassphrase until
-    // download conditions are met vs Cryptographer init.  It seems like it's
-    // safe to defer this work.
-    sync_pb::NigoriSpecifics specifics(node.GetNigoriSpecifics());
-    specifics.clear_encrypted();
-    cryptographer->GetKeys(specifics.mutable_encrypted());
-    specifics.set_using_explicit_passphrase(is_explicit);
-    node.SetNigoriSpecifics(specifics);
   }
+
+  // TODO(tim): Bug 58231. It would be nice if SetPassphrase didn't require
+  // messing with the Nigori node, because we can't call SetPassphrase until
+  // download conditions are met vs Cryptographer init.  It seems like it's
+  // safe to defer this work.
+  sync_pb::NigoriSpecifics specifics(node.GetNigoriSpecifics());
+  // Does not modify specifics.encrypted() if the original decrypted data was
+  // the same.
+  if (!cryptographer->GetKeys(specifics.mutable_encrypted())) {
+    NOTREACHED();
+    return;
+  }
+  specifics.set_using_explicit_passphrase(is_explicit);
+  node.SetNigoriSpecifics(specifics);
 
   // Does nothing if everything is already encrypted or the cryptographer has
   // pending keys.
@@ -1129,8 +1136,6 @@ void SyncManager::SyncInternal::RefreshEncryption() {
   ReEncryptEverything(&trans);
 }
 
-// TODO(zea): Add unit tests that ensure no sync changes are made when not
-// needed.
 void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
   Cryptographer* cryptographer = trans->GetCryptographer();
   if (!cryptographer || !cryptographer->is_ready())

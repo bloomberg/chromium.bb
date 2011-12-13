@@ -38,6 +38,7 @@ bool WriteNode::UpdateEntryWithEncryption(
     syncable::MutableEntry* entry) {
   syncable::ModelType type = syncable::GetModelTypeFromSpecifics(new_specifics);
   DCHECK_GE(type, syncable::FIRST_REAL_MODEL_TYPE);
+  const sync_pb::EntitySpecifics& old_specifics = entry->Get(SPECIFICS);
   const syncable::ModelTypeSet encrypted_types =
       cryptographer->GetEncryptedTypes();
   sync_pb::EntitySpecifics generated_specifics;
@@ -56,7 +57,18 @@ bool WriteNode::UpdateEntryWithEncryption(
                << " with content: "
                << info;
     }
-    syncable::AddDefaultExtensionValue(type, &generated_specifics);
+    // Only copy over the old specifics if it is of the right type and already
+    // encrypted. The first time we encrypt a node we start from scratch, hence
+    // removing all the unencrypted data, but from then on we only want to
+    // update the node if the data changes or the encryption key changes.
+    if (syncable::GetModelTypeFromSpecifics(old_specifics) == type &&
+        old_specifics.has_encrypted()) {
+      generated_specifics.CopyFrom(old_specifics);
+    } else {
+      syncable::AddDefaultExtensionValue(type, &generated_specifics);
+    }
+    // Does not change anything if underlying encrypted blob was already up
+    // to date and encrypted with the default key.
     if (!cryptographer->Encrypt(new_specifics,
                                 generated_specifics.mutable_encrypted())) {
       NOTREACHED() << "Could not encrypt data for node of type "
@@ -65,21 +77,19 @@ bool WriteNode::UpdateEntryWithEncryption(
     }
   }
 
-  const sync_pb::EntitySpecifics& old_specifics = entry->Get(SPECIFICS);
-  if (AreSpecificsEqual(cryptographer, old_specifics, generated_specifics) &&
-      (entry->Get(syncable::NON_UNIQUE_NAME) == kEncryptedString ||
-       !generated_specifics.has_encrypted())) {
-    // Even if the data is the same but the old specifics are encrypted with an
-    // old key, we should go ahead and re-encrypt with the new key.
-    if ((!old_specifics.has_encrypted() &&
-         !generated_specifics.has_encrypted()) ||
-         cryptographer->CanDecryptUsingDefaultKey(old_specifics.encrypted())) {
-      DVLOG(2) << "Specifics of type " << syncable::ModelTypeToString(type)
-               << " already match, dropping change.";
-      return true;
-    }
-    // TODO(zea): Add some way to keep track of how often we're reencrypting
-    // because of a passphrase change.
+  // It's possible this entry was encrypted but didn't properly overwrite the
+  // non_unique_name (see crbug.com/96314).
+  bool encrypted_without_overwriting_name = (old_specifics.has_encrypted() &&
+      entry->Get(syncable::NON_UNIQUE_NAME) != kEncryptedString);
+
+  // If we're encrypted but the name wasn't overwritten properly we still want
+  // to rewrite the entry, irrespective of whether the specifics match.
+  if (!encrypted_without_overwriting_name &&
+      old_specifics.SerializeAsString() ==
+          generated_specifics.SerializeAsString()) {
+    DVLOG(2) << "Specifics of type " << syncable::ModelTypeToString(type)
+             << " already match, dropping change.";
+    return true;
   }
 
   if (generated_specifics.has_encrypted()) {
@@ -184,20 +194,6 @@ void WriteNode::SetPasswordSpecifics(
   DCHECK_EQ(syncable::PASSWORDS, GetModelType());
 
   Cryptographer* cryptographer = GetTransaction()->GetCryptographer();
-
-  // Idempotency check to prevent unnecessary syncing: if the plaintexts match
-  // and the old ciphertext is encrypted with the most current key, there's
-  // nothing to do here.  Because each encryption is seeded with a different
-  // random value, checking for equivalence post-encryption doesn't suffice.
-  const sync_pb::EncryptedData& old_ciphertext =
-      GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::password).encrypted();
-  scoped_ptr<sync_pb::PasswordSpecificsData> old_plaintext(
-      DecryptPasswordSpecifics(GetEntry()->Get(SPECIFICS), cryptographer));
-  if (old_plaintext.get() &&
-      old_plaintext->SerializeAsString() == data.SerializeAsString() &&
-      cryptographer->CanDecryptUsingDefaultKey(old_ciphertext)) {
-    return;
-  }
 
   sync_pb::PasswordSpecifics new_value;
   if (!cryptographer->Encrypt(data, new_value.mutable_encrypted())) {

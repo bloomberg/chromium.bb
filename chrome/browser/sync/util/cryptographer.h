@@ -103,9 +103,12 @@ class Cryptographer {
   // key.
   bool CanDecryptUsingDefaultKey(const sync_pb::EncryptedData& encrypted) const;
 
-  // Encrypts |message| into |encrypted|. Returns true unless encryption fails.
-  // Note that encryption will fail if |message| isn't valid (eg. a required
-  // field isn't set).
+  // Encrypts |message| into |encrypted|. Does not overwrite |encrypted| if
+  // |message| already matches the decrypted data within |encrypted| and
+  // |encrypted| was encrypted with the current default key. This avoids
+  // unnecessarily modifying |encrypted| if the change had no practical effect.
+  // Returns true unless encryption fails or |message| isn't valid (e.g. a
+  // required field isn't set).
   bool Encrypt(const ::google::protobuf::MessageLite& message,
                sync_pb::EncryptedData* encrypted) const;
 

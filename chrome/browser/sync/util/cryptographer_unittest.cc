@@ -87,6 +87,39 @@ TEST(CryptographerTest, CanEncryptAndDecrypt) {
   EXPECT_EQ(original.SerializeAsString(), decrypted.SerializeAsString());
 }
 
+TEST(CryptographerTest, EncryptOnlyIfDifferent) {
+  Cryptographer cryptographer;
+
+  KeyParams params = {"localhost", "dummy", "dummy"};
+  EXPECT_TRUE(cryptographer.AddKey(params));
+  EXPECT_TRUE(cryptographer.is_ready());
+
+  sync_pb::PasswordSpecificsData original;
+  original.set_origin("http://example.com");
+  original.set_username_value("azure");
+  original.set_password_value("hunter2");
+
+  sync_pb::EncryptedData encrypted;
+  EXPECT_TRUE(cryptographer.Encrypt(original, &encrypted));
+
+  sync_pb::EncryptedData encrypted2, encrypted3;
+  encrypted2.CopyFrom(encrypted);
+  encrypted3.CopyFrom(encrypted);
+  EXPECT_TRUE(cryptographer.Encrypt(original, &encrypted2));
+
+  // Now encrypt with a new default key. Should overwrite the old data.
+  KeyParams params_new = {"localhost", "dummy", "dummy2"};
+  cryptographer.AddKey(params_new);
+  EXPECT_TRUE(cryptographer.Encrypt(original, &encrypted3));
+
+  sync_pb::PasswordSpecificsData decrypted;
+  EXPECT_TRUE(cryptographer.Decrypt(encrypted2, &decrypted));
+  // encrypted2 should match encrypted, encrypted3 should not (due to salting).
+  EXPECT_EQ(encrypted.SerializeAsString(), encrypted2.SerializeAsString());
+  EXPECT_NE(encrypted.SerializeAsString(), encrypted3.SerializeAsString());
+  EXPECT_EQ(original.SerializeAsString(), decrypted.SerializeAsString());
+}
+
 TEST(CryptographerTest, AddKeySetsDefault) {
   Cryptographer cryptographer;
 

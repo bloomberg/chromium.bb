@@ -55,9 +55,11 @@ bool Cryptographer::CanDecryptUsingDefaultKey(
   return default_nigori_ && (data.key_name() == default_nigori_->first);
 }
 
-bool Cryptographer::Encrypt(const ::google::protobuf::MessageLite& message,
-                            sync_pb::EncryptedData* encrypted) const {
-  if (!encrypted || !default_nigori_) {
+bool Cryptographer::Encrypt(
+    const ::google::protobuf::MessageLite& message,
+    sync_pb::EncryptedData* encrypted) const {
+  DCHECK(encrypted);
+  if (!default_nigori_) {
     LOG(ERROR) << "Cryptographer not ready, failed to encrypt.";
     return false;
   }
@@ -66,6 +68,14 @@ bool Cryptographer::Encrypt(const ::google::protobuf::MessageLite& message,
   if (!message.SerializeToString(&serialized)) {
     LOG(ERROR) << "Message is invalid/missing a required field.";
     return false;
+  }
+
+  if (CanDecryptUsingDefaultKey(*encrypted)) {
+    const std::string& original_serialized = DecryptToString(*encrypted);
+    if (original_serialized == serialized) {
+      DVLOG(2) << "Re-encryption unnecessary, encrypted data already matches.";
+      return true;
+    }
   }
 
   encrypted->set_key_name(default_nigori_->first);

@@ -208,6 +208,12 @@ class BaseNode {
   void SetUnencryptedSpecifics(const sync_pb::EntitySpecifics& specifics);
 
  private:
+  // Have to friend the test class as well to allow member functions to access
+  // protected/private BaseNode methods.
+  friend class SyncManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(SyncApiTest, GenerateSyncableHash);
+  FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, UpdateEntryWithEncryption);
+
   void* operator new(size_t size);  // Node is meant for stack use only.
 
   // A holder for the unencrypted data stored in an encrypted node.
@@ -215,9 +221,6 @@ class BaseNode {
 
   // Same as |unencrypted_data_|, but for legacy password encryption.
   scoped_ptr<sync_pb::PasswordSpecificsData> password_data_;
-
-  friend class SyncApiTest;
-  FRIEND_TEST_ALL_PREFIXES(SyncApiTest, GenerateSyncableHash);
 
   DISALLOW_COPY_AND_ASSIGN(BaseNode);
 };
