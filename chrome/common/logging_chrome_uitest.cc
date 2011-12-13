@@ -158,10 +158,14 @@ class RendererCrashTest : public UITest {
 
 #if defined(OS_MACOSX)
 // Crash service doesn't exist for the Mac yet: http://crbug.com/45243
-#define Crash DISABLED_Crash
+#define MAYBE_Crash DISABLED_Crash
+#elif defined(OS_CHROME)
+#define MAYBE_Crash FLAKY_Crash
+#else
+#define MAYBE_Crash Crash
 #endif
 // Launch the app in renderer crash test mode, then close the app.
-TEST_F(RendererCrashTest, Crash) {
+TEST_F(RendererCrashTest, MAYBE_Crash) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   ASSERT_TRUE(browser->WaitForTabCountToBecome(1));
