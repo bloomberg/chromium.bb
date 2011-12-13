@@ -302,9 +302,7 @@ void BrowserList::MarkAsCleanShutdown() {
   }
 }
 
-void BrowserList::AttemptExitInternal(bool restart) {
-  PrefService* pref_service = g_browser_process->local_state();
-  pref_service->SetBoolean(prefs::kWasRestarted, restart);
+void BrowserList::AttemptExitInternal() {
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_APP_EXITING,
       content::NotificationService::AllSources(),
@@ -481,7 +479,7 @@ void BrowserList::CloseAllBrowsersWithProfile(Profile* profile) {
 }
 
 // static
-void BrowserList::AttemptUserExit(bool restart) {
+void BrowserList::AttemptUserExit() {
 #if defined(OS_CHROMEOS)
   chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker("LogoutStarted", false);
   // Write /tmp/uptime-logout-started as well.
@@ -508,7 +506,7 @@ void BrowserList::AttemptUserExit(bool restart) {
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, false);
 #endif
-  AttemptExitInternal(restart);
+  AttemptExitInternal();
 }
 
 // static
@@ -520,28 +518,31 @@ void BrowserList::AttemptRestart() {
       (*it)->profile()->SaveSessionState();
   }
 
+  PrefService* pref_service = g_browser_process->local_state();
+  pref_service->SetBoolean(prefs::kWasRestarted, true);
+  pref_service->ScheduleSavePersistentPrefs();
+
 #if defined(OS_CHROMEOS)
   // For CrOS instead of browser restart (which is not supported) perform a full
   // sign out. Session will be only restored if user has that setting set.
   // Same session restore behavior happens in case of full restart after update.
-  AttemptUserExit(true);
+  AttemptUserExit();
 #else
   // Set the flag to restore state after the restart.
-  PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, true);
-  AttemptExit(true);
+  AttemptExit();
 #endif
 }
 
 // static
-void BrowserList::AttemptExit(bool restart) {
+void BrowserList::AttemptExit() {
   // If we know that all browsers can be closed without blocking,
   // don't notify users of crashes beyond this point.
   // Note that MarkAsCleanShutdown does not set UMA's exit cleanly bit
   // so crashes during shutdown are still reported in UMA.
   if (AreAllBrowsersCloseable())
     MarkAsCleanShutdown();
-  AttemptExitInternal(restart);
+  AttemptExitInternal();
 }
 
 #if defined(OS_CHROMEOS)
@@ -557,7 +558,7 @@ void BrowserList::ExitCleanly() {
   // screen locker.
   if (!AreAllBrowsersCloseable())
     browser_shutdown::OnShutdownStarting(browser_shutdown::END_SESSION);
-  AttemptExitInternal(false);
+  AttemptExitInternal();
 }
 #endif
 

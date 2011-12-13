@@ -78,6 +78,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tabs/pinned_tab_service_factory.h"
 #include "chrome/browser/transport_security_persister.h"
+#include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -378,7 +379,7 @@ void ProfileImpl::DoFinalInit() {
       (!DidLastSessionExitCleanly() ||
        CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kRestoreLastSession) ||
-       local_state->GetBoolean(prefs::kWasRestarted));
+       BrowserInit::WasRestarted());
 
   // Make sure we initialize the ProfileIOData after everything else has been
   // initialized that we might be reading from the IO thread.

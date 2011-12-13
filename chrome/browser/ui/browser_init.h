@@ -74,6 +74,11 @@ class BrowserInit {
                      IsFirstRun is_first_run,
                      int* return_code);
 
+  // When called the first time, reads the value of the preference kWasRestarted
+  // and resets it to false. Subsequent calls return the value which was read
+  // the first time.
+  static bool WasRestarted();
+
   // LaunchWithProfile ---------------------------------------------------------
   //
   // Assists launching the application and appending the initial tabs for a
@@ -249,6 +254,11 @@ class BrowserInit {
 
   // Additional tabs to open during first run.
   std::vector<GURL> first_run_tabs_;
+
+  // Stores the value of the preference kWasRestarted had when it was read.
+  static bool was_restarted_;
+  // True if we have already read and reset the preference kWasRestarted.
+  static bool was_restarted_read_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserInit);
 };

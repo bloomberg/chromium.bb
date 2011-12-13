@@ -335,10 +335,9 @@ bool IncognitoIsForced(const CommandLine& command_line,
 
 SessionStartupPref GetSessionStartupPref(const CommandLine& command_line,
                                          Profile* profile) {
-  PrefService* pref_service = g_browser_process->local_state();
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(profile);
   if (command_line.HasSwitch(switches::kRestoreLastSession) ||
-      pref_service->GetBoolean(prefs::kWasRestarted)) {
+      BrowserInit::WasRestarted()) {
     pref.type = SessionStartupPref::LAST;
   }
   if (pref.type == SessionStartupPref::LAST &&
@@ -499,6 +498,9 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
 
 // BrowserInit ----------------------------------------------------------------
 
+bool BrowserInit::was_restarted_ = false;
+bool BrowserInit::was_restarted_read_ = false;
+
 BrowserInit::BrowserInit() {}
 
 BrowserInit::~BrowserInit() {}
@@ -585,6 +587,17 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
   return true;
 }
 
+// static
+bool BrowserInit::WasRestarted() {
+  if (!was_restarted_read_) {
+    PrefService* pref_service = g_browser_process->local_state();
+    was_restarted_ = pref_service->GetBoolean(prefs::kWasRestarted);
+    pref_service->SetBoolean(prefs::kWasRestarted, false);
+    pref_service->ScheduleSavePersistentPrefs();
+    was_restarted_read_ = true;
+  }
+  return was_restarted_;
+}
 
 // BrowserInit::LaunchWithProfile::Tab ----------------------------------------
 
