@@ -75,6 +75,7 @@ class RenderTextWin : public RenderText {
   virtual void GetSubstringBounds(size_t from,
                                   size_t to,
                                   std::vector<Rect>* bounds) OVERRIDE;
+  virtual void SetSelectionModel(const SelectionModel& model) OVERRIDE;
   virtual bool IsCursorablePosition(size_t position) OVERRIDE;
   virtual void UpdateLayout() OVERRIDE;
   virtual void EnsureLayout() OVERRIDE;

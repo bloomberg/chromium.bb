@@ -344,6 +344,16 @@ void RenderTextWin::GetSubstringBounds(size_t from,
   }
 }
 
+void RenderTextWin::SetSelectionModel(const SelectionModel& model) {
+  RenderText::SetSelectionModel(model);
+  // TODO(xji): The styles are applied to text inside ItemizeLogicalText(). So,
+  // we need to update layout here in order for the styles, such as selection
+  // foreground, to be picked up. Eventually, we should separate styles from
+  // layout by applying foreground, strike, and underline styles during
+  // DrawVisualText as what RenderTextLinux does.
+  UpdateLayout();
+}
+
 bool RenderTextWin::IsCursorablePosition(size_t position) {
   if (position == 0 || position == text().length())
     return true;

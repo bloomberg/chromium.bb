@@ -18,12 +18,6 @@
 
 namespace {
 
-// TODO(xji): instead of converting each R or G or B from 8-bit to 16-bit,
-// it should also massage A in the conversion.
-int ConvertColorFrom8BitTo16Bit(int c) {
-  return (c << 8) + c;
-}
-
 // Returns whether the given Pango item is Left to Right.
 bool IsRunLTR(const PangoItem* item) {
   return (item->analysis.level & 1) == 0;
@@ -647,14 +641,11 @@ void RenderTextLinux::ResetLayout() {
 void RenderTextLinux::SetupPangoAttributes(PangoLayout* layout) {
   PangoAttrList* attrs = pango_attr_list_new();
 
-  StyleRanges ranges_of_style(style_ranges());
-  ApplyCompositionAndSelectionStyles(&ranges_of_style);
-
   PlatformFont* default_platform_font = default_style().font.platform_font();
 
   PangoAttribute* pango_attr;
-  for (StyleRanges::const_iterator i = ranges_of_style.begin();
-       i < ranges_of_style.end(); ++i) {
+  for (StyleRanges::const_iterator i = style_ranges().begin();
+       i < style_ranges().end(); ++i) {
     size_t start = std::min(i->range.start(), text().length());
     size_t end = std::min(i->range.end(), text().length());
     if (start >= end)
@@ -663,7 +654,7 @@ void RenderTextLinux::SetupPangoAttributes(PangoLayout* layout) {
     const Font& font = i->font;
     // In Pango, different fonts means different runs, and it breaks Arabic
     // shaping acorss run boundaries. So, set font only when it is different
-    // from the default faont.
+    // from the default font.
     // TODO(xji): we'll eventually need to split up StyleRange into components
     // (ColorRange, FontRange, etc.) so that we can combine adjacent ranges
     // with the same Fonts (to avoid unnecessarily splitting up runs)
@@ -672,23 +663,6 @@ void RenderTextLinux::SetupPangoAttributes(PangoLayout* layout) {
       pango_attr = pango_attr_font_desc_new(desc);
       AppendPangoAttribute(start, end, pango_attr, attrs);
       pango_font_description_free(desc);
-    }
-
-    SkColor foreground = i->foreground;
-    pango_attr = pango_attr_foreground_new(
-        ConvertColorFrom8BitTo16Bit(SkColorGetR(foreground)),
-        ConvertColorFrom8BitTo16Bit(SkColorGetG(foreground)),
-        ConvertColorFrom8BitTo16Bit(SkColorGetB(foreground)));
-    AppendPangoAttribute(start, end, pango_attr, attrs);
-
-    if (i->underline) {
-      pango_attr = pango_attr_underline_new(PANGO_UNDERLINE_SINGLE);
-      AppendPangoAttribute(start, end, pango_attr, attrs);
-    }
-
-    if (i->strike) {
-      pango_attr = pango_attr_strikethrough_new(true);
-      AppendPangoAttribute(start, end, pango_attr, attrs);
     }
   }
 
