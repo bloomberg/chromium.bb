@@ -230,7 +230,7 @@ class AutomationProvider
   virtual void OnEndTracingComplete() OVERRIDE;
   virtual void OnTraceDataCollected(const std::string& trace_fragment) OVERRIDE;
 
-  void OnUnhandledMessage();
+  void OnUnhandledMessage(const IPC::Message& message);
 
   // Clear and reinitialize the automation IPC channel.
   bool ReinitializeChannel();
