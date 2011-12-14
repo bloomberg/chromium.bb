@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_MEDIA_BUFFERED_DATA_SOURCE_FACTORY_H_
-#define WEBKIT_MEDIA_BUFFERED_DATA_SOURCE_FACTORY_H_
+#ifndef WEBKIT_MEDIA_WEB_DATA_SOURCE_FACTORY_H_
+#define WEBKIT_MEDIA_WEB_DATA_SOURCE_FACTORY_H_
 
 #include "base/memory/ref_counted.h"
 #include "media/base/async_filter_factory_base.h"
@@ -56,4 +56,4 @@ class WebDataSourceFactory : public media::AsyncDataSourceFactoryBase {
 
 }  // namespace webkit_media
 
-#endif  // WEBKIT_MEDIA_BUFFERED_DATA_SOURCE_FACTORY_H_
+#endif  // WEBKIT_MEDIA_WEB_DATA_SOURCE_FACTORY_H_
