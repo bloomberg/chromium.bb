@@ -320,7 +320,7 @@ const std::string VPNConfigView::GetServer() const {
 const std::string VPNConfigView::GetPSKPassphrase() const {
   if (psk_passphrase_textfield_ &&
       psk_passphrase_textfield_->enabled() &&
-      psk_passphrase_textfield_->IsVisible())
+      psk_passphrase_textfield_->visible())
     return GetTextFromField(psk_passphrase_textfield_, false);
   return std::string();
 }

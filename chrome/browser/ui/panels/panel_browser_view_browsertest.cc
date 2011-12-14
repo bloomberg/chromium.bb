@@ -211,18 +211,18 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     EXPECT_EQ(titlebar_height, panel1->GetBounds().height());
     EXPECT_EQ(expected_bottom_on_title_only, panel1->GetBounds().bottom());
     WaitTillBoundsAnimationFinished(panel1);
-    EXPECT_TRUE(frame_view1->close_button_->IsVisible());
-    EXPECT_TRUE(frame_view1->title_icon_->IsVisible());
-    EXPECT_TRUE(frame_view1->title_label_->IsVisible());
+    EXPECT_TRUE(frame_view1->close_button_->visible());
+    EXPECT_TRUE(frame_view1->title_icon_->visible());
+    EXPECT_TRUE(frame_view1->title_label_->visible());
 
     panel1->SetExpansionState(Panel::EXPANDED);
     EXPECT_EQ(Panel::EXPANDED, panel1->expansion_state());
     EXPECT_EQ(initial_height, panel1->GetBounds().height());
     EXPECT_EQ(expected_bottom_on_expanded, panel1->GetBounds().bottom());
     WaitTillBoundsAnimationFinished(panel1);
-    EXPECT_TRUE(frame_view1->close_button_->IsVisible());
-    EXPECT_TRUE(frame_view1->title_icon_->IsVisible());
-    EXPECT_TRUE(frame_view1->title_label_->IsVisible());
+    EXPECT_TRUE(frame_view1->close_button_->visible());
+    EXPECT_TRUE(frame_view1->title_icon_->visible());
+    EXPECT_TRUE(frame_view1->title_label_->visible());
 
     panel1->SetExpansionState(Panel::MINIMIZED);
     EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
@@ -499,9 +499,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, PanelLayout) {
   EXPECT_TRUE(ContainsControl(panel, close_button));
 
   // These controls should be visible.
-  EXPECT_TRUE(title_icon->IsVisible());
-  EXPECT_TRUE(title_text->IsVisible());
-  EXPECT_TRUE(close_button->IsVisible());
+  EXPECT_TRUE(title_icon->visible());
+  EXPECT_TRUE(title_text->visible());
+  EXPECT_TRUE(close_button->visible());
 
   // Validate their layouts.
   int titlebar_height = GetTitlebarHeight(panel);
@@ -537,23 +537,23 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, ShowOrHideSettingsButton) {
 
   // When the panel is active, the settings button should always be visible.
   mouse_watcher->MoveMouse(true);
-  EXPECT_TRUE(settings_button->IsVisible());
+  EXPECT_TRUE(settings_button->visible());
   mouse_watcher->MoveMouse(false);
-  EXPECT_TRUE(settings_button->IsVisible());
+  EXPECT_TRUE(settings_button->visible());
 
   // When the panel is inactive, the options button is active per the mouse over
   // the panel or not.
   panel->Deactivate();
   EXPECT_FALSE(panel->IsActive());
   WaitTillSettingsAnimationFinished(panel);
-  EXPECT_FALSE(settings_button->IsVisible());
+  EXPECT_FALSE(settings_button->visible());
 
   mouse_watcher->MoveMouse(true);
   WaitTillSettingsAnimationFinished(panel);
-  EXPECT_TRUE(settings_button->IsVisible());
+  EXPECT_TRUE(settings_button->visible());
   mouse_watcher->MoveMouse(false);
   WaitTillSettingsAnimationFinished(panel);
-  EXPECT_FALSE(settings_button->IsVisible());
+  EXPECT_FALSE(settings_button->visible());
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, SetBoundsAnimation) {

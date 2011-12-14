@@ -107,7 +107,7 @@ void SubmenuView::Layout() {
   int menu_item_width = width() - insets.width();
   for (int i = 0; i < child_count(); ++i) {
     View* child = child_at(i);
-    if (child->IsVisible()) {
+    if (child->visible()) {
       gfx::Size child_pref_size = child->GetPreferredSize();
       child->SetBounds(x, y, menu_item_width, child_pref_size.height());
       y += child_pref_size.height();
@@ -124,8 +124,8 @@ gfx::Size SubmenuView::GetPreferredSize() {
   int height = 0;
   for (int i = 0; i < child_count(); ++i) {
     View* child = child_at(i);
-    gfx::Size child_pref_size = child->IsVisible() ?
-        child->GetPreferredSize() : gfx::Size();
+    gfx::Size child_pref_size = child->visible() ? child->GetPreferredSize()
+                                                 : gfx::Size();
     max_width = std::max(max_width, child_pref_size.width());
     height += child_pref_size.height();
     if (child->id() == MenuItemView::kMenuItemViewID) {

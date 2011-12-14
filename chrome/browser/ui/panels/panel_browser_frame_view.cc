@@ -405,7 +405,7 @@ int PanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   if (frame_component != HTNOWHERE)
     return frame_component;
 
-  if (close_button_->IsVisible() &&
+  if (close_button_->visible() &&
       close_button_->GetMirroredBounds().Contains(point))
     return HTCLOSE;
 

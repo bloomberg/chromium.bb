@@ -41,7 +41,7 @@ class PowerMenuButtonTest : public InProcessBrowserTest {
     PowerMenuButton* power = GetPowerMenuButton();
 
     power->PowerChanged(status);
-    EXPECT_TRUE(power->IsVisible());
+    EXPECT_TRUE(power->visible());
 
     string16 tooltip;
     // There is static_cast<StatusAreaButton*> because GetTootipText is also
@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryMissingTest) {
   PowerMenuButton* power = GetPowerMenuButton();
   power->PowerChanged(status);
 
-  EXPECT_FALSE(power->IsVisible());
+  EXPECT_FALSE(power->visible());
 }
 
 IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryNotSupportedTest) {
@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryNotSupportedTest) {
   PowerMenuButton* power = GetPowerMenuButton();
   power->PowerChanged(status);
 
-  EXPECT_FALSE(power->IsVisible());
+  EXPECT_FALSE(power->visible());
 }
 
 IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryChargedTest) {

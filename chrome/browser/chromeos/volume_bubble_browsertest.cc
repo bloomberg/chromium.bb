@@ -18,7 +18,7 @@ IN_PROC_BROWSER_TEST_F(VolumeBubbleTest, GetInstanceAndShow) {
 
   bubble1->ShowBubble(20, true);
   EXPECT_TRUE(bubble1->view_ != NULL);
-  EXPECT_TRUE(bubble1->view_->IsVisible());
+  EXPECT_TRUE(bubble1->view_->visible());
   views::View* saved_view = bubble1->view_;
   bubble1->HideBubble();
   EXPECT_EQ(NULL, bubble1->view_);

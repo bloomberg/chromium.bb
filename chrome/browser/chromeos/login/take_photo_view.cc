@@ -90,7 +90,7 @@ class CameraImageView : public views::ImageView {
   }
 
   bool HasSnapshot() const {
-    return !throbber_->IsVisible() && !message_->IsVisible();
+    return !throbber_->visible() && !message_->visible();
   }
 
  private:
@@ -116,7 +116,7 @@ class CameraImageView : public views::ImageView {
   // views::View override:
   virtual void Layout() {
     gfx::Size size = GetPreferredSize();
-    if (throbber_->IsVisible()) {
+    if (throbber_->visible()) {
       gfx::Size throbber_size = throbber_->GetPreferredSize();
       int throbber_x = (size.width() - throbber_size.width()) / 2;
       int throbber_y = (size.height() - throbber_size.height()) / 2;
@@ -125,7 +125,7 @@ class CameraImageView : public views::ImageView {
                            throbber_size.width(),
                            throbber_size.height());
     }
-    if (message_->IsVisible()) {
+    if (message_->visible()) {
       message_->SizeToFit(size.width() - kHorizontalPadding * 2);
       gfx::Size message_size = message_->GetPreferredSize();
       int message_y = size.height() - kVerticalPadding - message_size.height();

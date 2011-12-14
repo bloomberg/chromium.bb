@@ -37,5 +37,5 @@ void PageActionWithBadgeView::Layout() {
 void PageActionWithBadgeView::UpdateVisibility(TabContents* contents,
                                                const GURL& url) {
   image_view_->UpdateVisibility(contents, url);
-  SetVisible(image_view_->IsVisible());
+  SetVisible(image_view_->visible());
 }

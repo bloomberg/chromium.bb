@@ -125,7 +125,7 @@ std::vector<views::View*>
   std::vector<View*> visible_children;
   for (int i = 0; i < child_count(); ++i) {
     View* v = child_at(i);
-    if (child_at(i)->IsVisible())
+    if (child_at(i)->visible())
       visible_children.push_back(v);
   }
   return visible_children;

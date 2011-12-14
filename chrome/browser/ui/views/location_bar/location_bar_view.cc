@@ -525,16 +525,16 @@ void LocationBarView::Layout() {
         kItemEditPadding);
   }
 
-  if (star_view_ && star_view_->IsVisible())
+  if (star_view_ && star_view_->visible())
     entry_width -= star_view_->GetPreferredSize().width() + kItemPadding;
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
-    if ((*i)->IsVisible())
+    if ((*i)->visible())
       entry_width -= ((*i)->GetPreferredSize().width() + kItemPadding);
   }
   for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
-    if ((*i)->IsVisible())
+    if ((*i)->visible())
       entry_width -= ((*i)->GetPreferredSize().width() + kItemPadding);
   }
   // The gap between the edit and whatever is to its right is shortened.
@@ -587,7 +587,7 @@ void LocationBarView::Layout() {
 
   // Lay out items to the right of the edit field.
   int offset = width() - kEdgeThickness - kEdgeItemPadding;
-  if (star_view_ && star_view_->IsVisible()) {
+  if (star_view_ && star_view_->visible()) {
     int star_width = star_view_->GetPreferredSize().width();
     offset -= star_width;
     star_view_->SetBounds(offset, location_y, star_width, location_height);
@@ -596,7 +596,7 @@ void LocationBarView::Layout() {
 
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
-    if ((*i)->IsVisible()) {
+    if ((*i)->visible()) {
       int page_action_width = (*i)->GetPreferredSize().width();
       offset -= page_action_width;
       (*i)->SetBounds(offset, location_y, page_action_width, location_height);
@@ -608,7 +608,7 @@ void LocationBarView::Layout() {
   for (ContentSettingViews::const_reverse_iterator
        i(content_setting_views_.rbegin()); i != content_setting_views_.rend();
        ++i) {
-    if ((*i)->IsVisible()) {
+    if ((*i)->visible()) {
       int content_blocked_width = (*i)->GetPreferredSize().width();
       offset -= content_blocked_width;
       (*i)->SetBounds(offset, location_y, content_blocked_width,
@@ -618,11 +618,11 @@ void LocationBarView::Layout() {
   }
 
   // Now lay out items to the left of the edit field.
-  if (location_icon_view_->IsVisible()) {
+  if (location_icon_view_->visible()) {
     location_icon_view_->SetBounds(kEdgeThickness + kEdgeItemPadding,
         location_y, location_icon_width, location_height);
     offset = location_icon_view_->bounds().right() + kItemEditPadding;
-  } else if (ev_bubble_view_->IsVisible()) {
+  } else if (ev_bubble_view_->visible()) {
     ev_bubble_view_->SetBounds(kEdgeThickness + kBubbleHorizontalPadding,
         location_y + kBubbleVerticalPadding, ev_bubble_width,
         ev_bubble_view_->GetPreferredSize().height());
@@ -640,7 +640,7 @@ void LocationBarView::Layout() {
         0, selected_keyword_view_->GetPreferredSize().height());
     LayoutView(selected_keyword_view_, kItemEditPadding, available_width,
                true, &location_bounds);
-    location_bounds.set_x(selected_keyword_view_->IsVisible() ?
+    location_bounds.set_x(selected_keyword_view_->visible() ?
         (offset + selected_keyword_view_->width() + kItemEditPadding) :
         (kEdgeThickness + kEdgeEditPadding));
   } else if (show_keyword_hint) {
@@ -652,7 +652,7 @@ void LocationBarView::Layout() {
     location_bounds.Inset(0, 0, kEditInternalSpace, 0);
     LayoutView(keyword_hint_view_, kItemEditPadding, available_width, false,
                &location_bounds);
-    if (!keyword_hint_view_->IsVisible()) {
+    if (!keyword_hint_view_->visible()) {
       // Put back the enlargement that we undid above.
       location_bounds.Inset(0, 0, -kEditInternalSpace, 0);
     }
@@ -908,7 +908,7 @@ void LocationBarView::LayoutView(views::View* view,
     view_size = view->GetMinimumSize();
   int desired_width = view_size.width() + padding;
   view->SetVisible(desired_width < bounds->width());
-  if (view->IsVisible()) {
+  if (view->visible()) {
     view->SetBounds(
         leading ? bounds->x() : (bounds->right() - view_size.width()),
         view->y(), view_size.width(), view->height());
@@ -942,7 +942,7 @@ void LocationBarView::RefreshPageActionViews() {
   std::map<ExtensionAction*, bool> old_visibility;
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i)
-    old_visibility[(*i)->image_view()->page_action()] = (*i)->IsVisible();
+    old_visibility[(*i)->image_view()->page_action()] = (*i)->visible();
 
   // Remember the previous visibility of the page actions so that we can
   // notify when this changes.
@@ -982,7 +982,7 @@ void LocationBarView::RefreshPageActionViews() {
       // Check if the visibility of the action changed and notify if it did.
       ExtensionAction* action = (*i)->image_view()->page_action();
       if (old_visibility.find(action) == old_visibility.end() ||
-          old_visibility[action] != (*i)->IsVisible()) {
+          old_visibility[action] != (*i)->visible()) {
         content::NotificationService::current()->Notify(
             chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
             content::Source<ExtensionAction>(action),
@@ -1028,7 +1028,7 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(
       // Return true so that the edit sees the tab and commits the suggestion.
       return true;
     }
-    if (keyword_hint_view_->IsVisible() && !event.IsShiftDown()) {
+    if (keyword_hint_view_->visible() && !event.IsShiftDown()) {
       // Return true so the edit gets the tab event and enters keyword mode.
       return true;
     }
@@ -1178,7 +1178,7 @@ int LocationBarView::PageActionCount() {
 int LocationBarView::PageActionVisibleCount() {
   int result = 0;
   for (size_t i = 0; i < page_action_views_.size(); i++) {
-    if (page_action_views_[i]->IsVisible())
+    if (page_action_views_[i]->visible())
       ++result;
   }
   return result;
@@ -1195,7 +1195,7 @@ ExtensionAction* LocationBarView::GetPageAction(size_t index) {
 ExtensionAction* LocationBarView::GetVisiblePageAction(size_t index) {
   size_t current = 0;
   for (size_t i = 0; i < page_action_views_.size(); ++i) {
-    if (page_action_views_[i]->IsVisible()) {
+    if (page_action_views_[i]->visible()) {
       if (current == index)
         return page_action_views_[i]->image_view()->page_action();
 
@@ -1210,7 +1210,7 @@ ExtensionAction* LocationBarView::GetVisiblePageAction(size_t index) {
 void LocationBarView::TestPageActionPressed(size_t index) {
   size_t current = 0;
   for (size_t i = 0; i < page_action_views_.size(); ++i) {
-    if (page_action_views_[i]->IsVisible()) {
+    if (page_action_views_[i]->visible()) {
       if (current == index) {
         const int kLeftMouseButton = 1;
         page_action_views_[i]->image_view()->ExecuteAction(kLeftMouseButton,

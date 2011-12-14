@@ -453,21 +453,21 @@ const BookmarkNode* BookmarkBarView::GetNodeForButtonAtModelIndex(
   // Check the buttons first.
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
     views::View* child = child_at(i);
-    if (!child->IsVisible())
+    if (!child->visible())
       break;
     if (child->bounds().Contains(adjusted_loc))
       return model_->bookmark_bar_node()->GetChild(i);
   }
 
   // Then the overflow button.
-  if (overflow_button_->IsVisible() &&
+  if (overflow_button_->visible() &&
       overflow_button_->bounds().Contains(adjusted_loc)) {
     *model_start_index = GetFirstHiddenNodeIndex();
     return model_->bookmark_bar_node();
   }
 
   // And finally the other folder.
-  if (other_bookmarked_button_->IsVisible() &&
+  if (other_bookmarked_button_->visible() &&
       other_bookmarked_button_->bounds().Contains(adjusted_loc)) {
     return model_->other_node();
   }
@@ -641,7 +641,7 @@ void BookmarkBarView::PaintChildren(gfx::Canvas* canvas) {
     } else {
       x = GetBookmarkButton(index)->x();
     }
-    if (GetBookmarkButtonCount() > 0 && GetBookmarkButton(0)->IsVisible()) {
+    if (GetBookmarkButtonCount() > 0 && GetBookmarkButton(0)->visible()) {
       y = GetBookmarkButton(0)->y();
       h = GetBookmarkButton(0)->height();
     }
@@ -1163,7 +1163,7 @@ views::TextButton* BookmarkBarView::GetBookmarkButton(int index) {
 int BookmarkBarView::GetFirstHiddenNodeIndex() {
   const int bb_count = GetBookmarkButtonCount();
   for (int i = 0; i < bb_count; ++i) {
-    if (!GetBookmarkButton(i)->IsVisible())
+    if (!GetBookmarkButton(i)->visible())
       return i;
   }
   return bb_count;
@@ -1295,7 +1295,7 @@ void BookmarkBarView::BookmarkNodeChangedImpl(BookmarkModel* model,
   if (old_pref.width() != new_pref.width()) {
     Layout();
     SchedulePaint();
-  } else if (button->IsVisible()) {
+  } else if (button->visible()) {
     button->SchedulePaint();
   }
 }
@@ -1363,7 +1363,7 @@ void BookmarkBarView::CalculateDropLocation(const DropTargetEvent& event,
   bool found = false;
   const int other_delta_x = mirrored_x - other_bookmarked_button_->x();
   Profile* profile = browser_->profile();
-  if (other_bookmarked_button_->IsVisible() && other_delta_x >= 0 &&
+  if (other_bookmarked_button_->visible() && other_delta_x >= 0 &&
       other_delta_x < other_bookmarked_button_->width()) {
     // Mouse is over 'other' folder.
     location->button_type = DROP_OTHER_FOLDER;
@@ -1380,7 +1380,7 @@ void BookmarkBarView::CalculateDropLocation(const DropTargetEvent& event,
   }
 
   for (int i = 0; i < GetBookmarkButtonCount() &&
-       GetBookmarkButton(i)->IsVisible() && !found; i++) {
+       GetBookmarkButton(i)->visible() && !found; i++) {
     views::TextButton* button = GetBookmarkButton(i);
     int button_x = mirrored_x - button->x();
     int button_w = button->width();
@@ -1406,7 +1406,7 @@ void BookmarkBarView::CalculateDropLocation(const DropTargetEvent& event,
   }
 
   if (!found) {
-    if (overflow_button_->IsVisible()) {
+    if (overflow_button_->visible()) {
       // Are we over the overflow button?
       int overflow_delta_x = mirrored_x - overflow_button_->x();
       if (overflow_delta_x >= 0 &&
@@ -1421,7 +1421,7 @@ void BookmarkBarView::CalculateDropLocation(const DropTargetEvent& event,
       } else {
         return;
       }
-    } else if (!other_bookmarked_button_->IsVisible() ||
+    } else if (!other_bookmarked_button_->visible() ||
                mirrored_x < other_bookmarked_button_->x()) {
       // Mouse is after the last visible button but before more recently
       // bookmarked; use the last visible index.
@@ -1526,7 +1526,7 @@ void BookmarkBarView::UpdateColors() {
 
 void BookmarkBarView::UpdateOtherBookmarksVisibility() {
   bool has_other_children = !model_->other_node()->empty();
-  if (has_other_children == other_bookmarked_button_->IsVisible())
+  if (has_other_children == other_bookmarked_button_->visible())
     return;
   other_bookmarked_button_->SetVisible(has_other_children);
   bookmarks_separator_view_->SetVisible(has_other_children);
@@ -1562,8 +1562,7 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
     height += browser_defaults::kBookmarkBarHeight;
   }
 
-  gfx::Size other_bookmarked_pref =
-      other_bookmarked_button_->IsVisible() ?
+  gfx::Size other_bookmarked_pref = other_bookmarked_button_->visible() ?
       other_bookmarked_button_->GetPreferredSize() : gfx::Size();
   gfx::Size overflow_pref = overflow_button_->GetPreferredSize();
   gfx::Size bookmarks_separator_pref =
@@ -1571,7 +1570,7 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
 
   int max_x = width - overflow_pref.width() - kButtonPadding -
       bookmarks_separator_pref.width();
-  if (other_bookmarked_button_->IsVisible())
+  if (other_bookmarked_button_->visible())
     max_x -= other_bookmarked_pref.width() + kButtonPadding;
 
   // Next, layout out the buttons. Any buttons that are placed beyond the
@@ -1603,9 +1602,8 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   }
 
   // Layout the right side of the bar.
-  const bool all_visible =
-      (GetBookmarkButtonCount() == 0 ||
-       child_at(GetBookmarkButtonCount() - 1)->IsVisible());
+  const bool all_visible = (GetBookmarkButtonCount() == 0 ||
+                            child_at(GetBookmarkButtonCount() - 1)->visible());
 
   // Layout the right side buttons.
   if (!compute_bounds_only)
@@ -1621,7 +1619,7 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   x += overflow_pref.width();
 
   // Separator.
-  if (bookmarks_separator_view_->IsVisible()) {
+  if (bookmarks_separator_view_->visible()) {
     if (!compute_bounds_only) {
       bookmarks_separator_view_->SetBounds(x,
                                            y - top_margin,
@@ -1634,7 +1632,7 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   }
 
   // The other bookmarks button.
-  if (other_bookmarked_button_->IsVisible()) {
+  if (other_bookmarked_button_->visible()) {
     if (!compute_bounds_only) {
       other_bookmarked_button_->SetBounds(x, y, other_bookmarked_pref.width(),
                                           height);

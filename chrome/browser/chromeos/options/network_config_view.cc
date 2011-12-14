@@ -217,14 +217,8 @@ void ControlledSettingIndicatorView::Update(
 }
 
 gfx::Size ControlledSettingIndicatorView::GetPreferredSize() {
-  if (!IsVisible())
-    return gfx::Size();
-
-  return image_view_->GetPreferredSize();
-}
-
-bool ControlledSettingIndicatorView::IsVisible() const {
-  return managed_ && views::View::IsVisible();
+  return (managed_ && visible()) ? image_view_->GetPreferredSize()
+                                 : gfx::Size();
 }
 
 void ControlledSettingIndicatorView::Layout() {

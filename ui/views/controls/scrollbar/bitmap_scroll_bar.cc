@@ -282,7 +282,7 @@ void BitmapScrollBar::Layout() {
   if ((IsHorizontal() && (track_bounds.width() < thumb_prefsize.width()) ||
       (!IsHorizontal() && (track_bounds.height() < thumb_prefsize.height())))) {
     thumb->SetVisible(false);
-  } else if (!thumb->IsVisible()) {
+  } else if (!thumb->visible()) {
     thumb->SetVisible(true);
   }
 }

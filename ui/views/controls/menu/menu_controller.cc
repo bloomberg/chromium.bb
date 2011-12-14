@@ -1651,7 +1651,7 @@ MenuItemView* MenuController::FindNextSelectableMenuItem(MenuItemView* parent,
     if (index == start_index)
       return NULL;
     MenuItemView* child = parent->GetSubmenu()->GetMenuItemAt(index);
-    if (child->IsVisible())
+    if (child->visible())
       return child;
   } while (index != start_index);
   return NULL;
@@ -1692,7 +1692,7 @@ MenuController::SelectByCharDetails MenuController::FindChildForMnemonic(
   for (int i = 0, menu_item_count = submenu->GetMenuItemCount();
        i < menu_item_count; ++i) {
     MenuItemView* child = submenu->GetMenuItemAt(i);
-    if (child->enabled() && child->IsVisible()) {
+    if (child->enabled() && child->visible()) {
       if (child == pending_state_.item)
         details.index_of_item = i;
       if (match_function(child, key)) {

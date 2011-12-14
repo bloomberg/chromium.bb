@@ -106,7 +106,7 @@ void DragDropController::DragUpdate(aura::Window* target,
   }
 
   DCHECK(drag_image_.get());
-  if (drag_image_->IsVisible()) {
+  if (drag_image_->visible()) {
     drag_image_->SetScreenPosition(RootWindow::GetInstance()->
         last_mouse_location().Add(kDragDropWidgetOffset));
   }

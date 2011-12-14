@@ -261,7 +261,7 @@ void AutocompletePopupContentsView::LayoutChildren() {
   int top = contents_rect.y();
   for (int i = 0; i < child_count(); ++i) {
     View* v = child_at(i);
-    if (v->IsVisible()) {
+    if (v->visible()) {
       v->SetBounds(contents_rect.x(), top, contents_rect.width(),
                    v->GetPreferredSize().height());
       top = v->bounds().bottom();

@@ -497,14 +497,13 @@ int BrowserViewLayout::GetTopMarginForActiveContent() {
     return 0;
   }
 
-  if (contents_split_->child_at(1) &&
-      contents_split_->child_at(1)->IsVisible())
+  if (contents_split_->child_at(1) && contents_split_->child_at(1)->visible())
     return 0;
 
   if (SidebarManager::IsSidebarAllowed()) {
     views::View* sidebar_split = contents_split_->child_at(0);
     if (sidebar_split->child_count() >= 2 &&
-        sidebar_split->child_at(1)->IsVisible())
+        sidebar_split->child_at(1)->visible())
       return 0;
   }
 

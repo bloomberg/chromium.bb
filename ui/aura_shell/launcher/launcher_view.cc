@@ -316,7 +316,7 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
       kHorizontalPadding - bounds->overflow_bounds.width() -
       kHorizontalPadding);
   bool show_overflow = (last_visible_index + 1 != view_model_->view_size());
-  if (overflow_button_->IsVisible() != show_overflow) {
+  if (overflow_button_->visible() != show_overflow) {
     // Only change visibility of the views if the visibility of the overflow
     // button changes. Otherwise we'll effect the insertion animation, which
     // changes the visibility.
@@ -436,7 +436,7 @@ void LauncherView::ConfigureChildView(views::View* view) {
 void LauncherView::GetOverflowWindows(std::vector<aura::Window*>* names) {
   int index = 0;
   while (index < view_model_->view_size() &&
-         view_model_->view_at(index)->IsVisible()) {
+         view_model_->view_at(index)->visible()) {
     index++;
   }
   while (index < view_model_->view_size()) {
@@ -520,7 +520,7 @@ void LauncherView::LauncherItemAdded(int model_index) {
   // hidden, so it visually appears as though we are providing space for
   // it. When done we'll fade the view in.
   AnimateToIdealBounds();
-  if (!overflow_button_->IsVisible()) {
+  if (!overflow_button_->visible()) {
     bounds_animator_->SetAnimationDelegate(
         view, new StartFadeAnimationDelegate(this, view), true);
   }

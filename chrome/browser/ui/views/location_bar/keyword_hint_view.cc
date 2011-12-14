@@ -78,7 +78,7 @@ void KeywordHintView::SetKeyword(const string16& keyword) {
 }
 
 void KeywordHintView::OnPaint(gfx::Canvas* canvas) {
-  int image_x = leading_label_->IsVisible() ? leading_label_->width() : 0;
+  int image_x = leading_label_->visible() ? leading_label_->width() : 0;
 
   // Since we paint the button image directly on the canvas (instead of using a
   // child view), we must mirror the button's position manually if the locale

@@ -176,7 +176,7 @@ void SpeechInputBubbleView::UpdateLayout(
     SetImage(image);
   }
 
-  if (icon_->IsVisible())
+  if (icon_->visible())
     icon_->ResetImageSize();
 
   // When moving from warming up to recording state, the size of the content
@@ -212,7 +212,7 @@ void SpeechInputBubbleView::LinkClicked(views::Link* source, int event_flags) {
 gfx::Size SpeechInputBubbleView::GetPreferredSize() {
   int width = heading_->GetPreferredSize().width();
   int control_width = cancel_->GetPreferredSize().width();
-  if (try_again_->IsVisible()) {
+  if (try_again_->visible()) {
     control_width += try_again_->GetPreferredSize().width() +
                      views::kRelatedButtonHSpacing;
   }
@@ -220,21 +220,21 @@ gfx::Size SpeechInputBubbleView::GetPreferredSize() {
   control_width = std::max(icon_->GetPreferredSize().width(),
                            kIconLayoutMinWidth);
   width = std::max(width, control_width);
-  if (mic_settings_->IsVisible()) {
+  if (mic_settings_->visible()) {
     control_width = mic_settings_->GetPreferredSize().width();
     width = std::max(width, control_width);
   }
 
   int height = cancel_->GetPreferredSize().height();
-  if (message_->IsVisible()) {
+  if (message_->visible()) {
     height += message_->GetHeightForWidth(width) +
               views::kLabelToControlVerticalSpacing;
   }
-  if (heading_->IsVisible())
+  if (heading_->visible())
     height += heading_->GetPreferredSize().height();
-  if (icon_->IsVisible())
+  if (icon_->visible())
     height += icon_->GetImage().height();
-  if (mic_settings_->IsVisible())
+  if (mic_settings_->visible())
     height += mic_settings_->GetPreferredSize().height();
   width += kBubbleHorizMargin * 2;
   height += kBubbleVertMargin * 2;
@@ -248,8 +248,8 @@ void SpeechInputBubbleView::Layout() {
   int available_width = width() - kBubbleHorizMargin * 2;
   int available_height = height() - kBubbleVertMargin * 2;
 
-  if (message_->IsVisible()) {
-    DCHECK(try_again_->IsVisible());
+  if (message_->visible()) {
+    DCHECK(try_again_->visible());
 
     int control_height = try_again_->GetPreferredSize().height();
     int try_again_width = try_again_->GetPreferredSize().width();
@@ -270,7 +270,7 @@ void SpeechInputBubbleView::Layout() {
     mic_settings_->SetBounds(kBubbleHorizMargin, y, available_width,
                              control_height);
   } else {
-    DCHECK(icon_->IsVisible());
+    DCHECK(icon_->visible());
 
     int control_height = icon_->GetImage().height();
     if (display_mode_ == SpeechInputBubbleBase::DISPLAY_MODE_WARM_UP)
@@ -278,13 +278,13 @@ void SpeechInputBubbleView::Layout() {
     icon_->SetBounds(x, y, available_width, control_height);
     y += control_height;
 
-    if (heading_->IsVisible()) {
+    if (heading_->visible()) {
       control_height = heading_->GetPreferredSize().height();
       heading_->SetBounds(x, y, available_width, control_height);
       y += control_height;
     }
 
-    if (cancel_->IsVisible()) {
+    if (cancel_->visible()) {
       control_height = cancel_->GetPreferredSize().height();
       int width = cancel_->GetPreferredSize().width();
       cancel_->SetBounds(x + (available_width - width) / 2, y, width,

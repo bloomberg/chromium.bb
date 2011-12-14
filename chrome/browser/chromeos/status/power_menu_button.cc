@@ -321,7 +321,7 @@ void PowerMenuButton::UpdateIconAndLabelInfo() {
   line_power_on_ = power_status_.line_power_on;
 
   bool should_be_visible = battery_is_present_;
-  if (should_be_visible != IsVisible())
+  if (should_be_visible != visible())
     SetVisible(should_be_visible);
 
   if (!should_be_visible)

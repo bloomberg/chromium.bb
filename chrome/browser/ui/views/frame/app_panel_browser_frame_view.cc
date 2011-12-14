@@ -152,7 +152,7 @@ int AppPanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
     return frame_component;
 
   // Then see if the point is within any of the window controls.
-  if (close_button_->IsVisible() &&
+  if (close_button_->visible() &&
       close_button_->GetMirroredBounds().Contains(point))
     return HTCLOSE;
 

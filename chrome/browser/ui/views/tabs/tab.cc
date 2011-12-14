@@ -288,7 +288,7 @@ void Tab::Layout() {
       title_top -= (text_height - minimum_size.height()) / 2;
 
     int title_width;
-    if (close_button()->IsVisible()) {
+    if (close_button()->visible()) {
       title_width = std::max(close_button()->x() -
                              kTitleCloseButtonSpacing - title_left, 0);
     } else {

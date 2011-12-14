@@ -123,7 +123,7 @@ bool ViewAndLayerTreeAreConsistent(const views::View* view,
     EXPECT_EQ(l->IsDrawn(), v->IsVisibleInRootView());
     if (v->IsVisibleInRootView() != l->IsDrawn()) {
       for (const views::View* vv = v; vv; vv = vv->parent())
-        LOG(ERROR) << "V: " << vv << " " << vv->IsVisible() << " "
+        LOG(ERROR) << "V: " << vv << " " << vv->visible() << " "
                    << vv->IsVisibleInRootView() << " " << vv->layer();
       for (const ui::Layer* ll = l; ll; ll = ll->parent())
         LOG(ERROR) << "L: " << ll << " " << ll->IsDrawn();
@@ -184,10 +184,10 @@ void ScrambleTree(views::View* view) {
     view->SetPaintToLayer(true);
 
   if (base::RandDouble() < 0.1)
-    view->SetVisible(!view->IsVisible());
+    view->SetVisible(!view->visible());
 }
 
-}
+}  // namespace
 
 namespace views {
 

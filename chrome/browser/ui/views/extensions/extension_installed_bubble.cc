@@ -367,9 +367,9 @@ void ExtensionInstalledBubble::ShowInternal() {
     // If the view is not visible then it is in the chevron, so point the
     // install bubble to the chevron instead. If this is an incognito window,
     // both could be invisible.
-    if (!reference_view || !reference_view->IsVisible()) {
+    if (!reference_view || !reference_view->visible()) {
       reference_view = container->chevron();
-      if (!reference_view || !reference_view->IsVisible())
+      if (!reference_view || !reference_view->visible())
         reference_view = NULL;  // fall back to app menu below.
     }
   } else if (type_ == PAGE_ACTION) {

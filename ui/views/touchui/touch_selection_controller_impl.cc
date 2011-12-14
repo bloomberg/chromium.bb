@@ -493,11 +493,11 @@ gfx::Point TouchSelectionControllerImpl::GetSelectionHandle2Position() {
 }
 
 bool TouchSelectionControllerImpl::IsSelectionHandle1Visible() {
-  return selection_handle_1_->IsVisible();
+  return selection_handle_1_->visible();
 }
 
 bool TouchSelectionControllerImpl::IsSelectionHandle2Visible() {
-  return selection_handle_2_->IsVisible();
+  return selection_handle_2_->visible();
 }
 
 TouchSelectionController* TouchSelectionController::create(

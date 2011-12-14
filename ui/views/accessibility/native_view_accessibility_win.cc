@@ -975,7 +975,7 @@ void NativeViewAccessibilityWin::SetState(
 
   if (!view->enabled())
     msaa_state->lVal |= STATE_SYSTEM_UNAVAILABLE;
-  if (!view->IsVisible())
+  if (!view->visible())
     msaa_state->lVal |= STATE_SYSTEM_INVISIBLE;
   if (view->IsHotTracked())
     msaa_state->lVal |= STATE_SYSTEM_HOTTRACKED;

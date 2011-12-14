@@ -446,7 +446,7 @@ gfx::Point BrowserView::OffsetPointForToolbarBackgroundImage(
 }
 
 int BrowserView::GetSidebarWidth() const {
-  if (!sidebar_container_ || !sidebar_container_->IsVisible())
+  if (!sidebar_container_ || !sidebar_container_->visible())
     return 0;
   return sidebar_split_->divider_offset();
 }
@@ -923,7 +923,7 @@ void BrowserView::FocusToolbar() {
 }
 
 void BrowserView::FocusBookmarksToolbar() {
-  if (active_bookmark_bar_ && bookmark_bar_view_->IsVisible())
+  if (active_bookmark_bar_ && bookmark_bar_view_->visible())
     bookmark_bar_view_->SetPaneFocus(bookmark_bar_view_.get());
 }
 
@@ -960,9 +960,9 @@ void BrowserView::RotatePaneFocus(bool forwards) {
   std::vector<views::View*> accessible_views(
       accessible_panes.begin(), accessible_panes.end());
   accessible_views.push_back(GetTabContentsContainerView());
-  if (sidebar_container_ && sidebar_container_->IsVisible())
+  if (sidebar_container_ && sidebar_container_->visible())
     accessible_views.push_back(GetSidebarContainerView());
-  if (devtools_container_->IsVisible())
+  if (devtools_container_->visible())
     accessible_views.push_back(devtools_container_->GetFocusView());
   int count = static_cast<int>(accessible_views.size());
 
@@ -2115,8 +2115,8 @@ void BrowserView::UpdateSidebarForContents(TabContentsWrapper* tab_contents) {
   bool visible = NULL != sidebar_contents &&
                  browser_->SupportsWindowFeature(Browser::FEATURE_SIDEBAR);
 
-  bool should_show = visible && !sidebar_container_->IsVisible();
-  bool should_hide = !visible && sidebar_container_->IsVisible();
+  bool should_show = visible && !sidebar_container_->visible();
+  bool should_hide = !visible && sidebar_container_->visible();
 
   // Update sidebar content.
   TabContents* old_contents = sidebar_container_->tab_contents();
@@ -2165,8 +2165,8 @@ void BrowserView::UpdateDevToolsForContents(TabContentsWrapper* wrapper) {
       devtools_contents = devtools_contents_wrapper->tab_contents();
   }
 
-  bool should_show = devtools_contents && !devtools_container_->IsVisible();
-  bool should_hide = !devtools_contents && devtools_container_->IsVisible();
+  bool should_show = devtools_contents && !devtools_container_->visible();
+  bool should_hide = !devtools_contents && devtools_container_->visible();
 
   devtools_container_->ChangeTabContents(devtools_contents);
 

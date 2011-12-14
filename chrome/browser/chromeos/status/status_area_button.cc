@@ -113,9 +113,9 @@ void StatusAreaButton::OnThemeChanged() {
   UpdateTextStyle();
 }
 
-void StatusAreaButton::SetVisible(bool visible) {
-  if (visible != IsVisible()) {
-    views::MenuButton::SetVisible(visible);
+void StatusAreaButton::SetVisible(bool is_visible) {
+  if (is_visible != visible()) {
+    views::MenuButton::SetVisible(is_visible);
     delegate_->ButtonVisibilityChanged(this);
   }
 }

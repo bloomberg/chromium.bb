@@ -131,7 +131,7 @@ class InfobarView : public views::View {
 
   // views::View overrides.
   virtual gfx::Size GetPreferredSize() {
-    if (!IsVisible())
+    if (!visible())
       return gfx::Size();
 
     // Add space around the banner.

@@ -184,7 +184,7 @@ void BackgroundView::HideScreenSaver() {
 }
 
 bool BackgroundView::IsScreenSaverVisible() {
-  return ScreenSaverEnabled() && background_area_->IsVisible();
+  return ScreenSaverEnabled() && background_area_->visible();
 }
 
 bool BackgroundView::ScreenSaverEnabled() {

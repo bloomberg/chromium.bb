@@ -41,10 +41,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityMenuButtonTest,
   ASSERT_TRUE(button != NULL);
 
   accessibility::EnableAccessibility(true, NULL);
-  EXPECT_TRUE(button->IsVisible());
+  EXPECT_TRUE(button->visible());
 
   accessibility::EnableAccessibility(false, NULL);
-  EXPECT_FALSE(button->IsVisible());
+  EXPECT_FALSE(button->visible());
 }
 
 }  // namespace chromeos

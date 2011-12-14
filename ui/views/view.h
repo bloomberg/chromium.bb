@@ -242,19 +242,19 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // as with Labels).
   virtual int GetHeightForWidth(int w);
 
-  // Set whether the receiving view is visible. Painting is scheduled as needed
+  // Set whether this view is visible. Painting is scheduled as needed.
   virtual void SetVisible(bool visible);
 
   // Return whether a view is visible
-  virtual bool IsVisible() const;
+  bool visible() const { return visible_; }
 
   // Return whether a view and its ancestors are visible. Returns true if the
   // path from this view to the root view is visible.
   virtual bool IsVisibleInRootView() const;
 
   // Set whether this view is enabled. A disabled view does not receive keyboard
-  // or mouse inputs. If flag differs from the current value, SchedulePaint is
-  // invoked.
+  // or mouse inputs. If |enabled| differs from the current value, SchedulePaint
+  // is invoked.
   void SetEnabled(bool enabled);
 
   // Returns whether the view is enabled.

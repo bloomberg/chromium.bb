@@ -155,7 +155,6 @@ class ControlledSettingIndicatorView : public views::View {
  protected:
   // views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual bool IsVisible() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;

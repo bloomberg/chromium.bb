@@ -194,7 +194,7 @@ void NativeControl::ValidateNativeControl() {
     AddChildView(hwnd_view_);
   }
 
-  if (!container_ && IsVisible()) {
+  if (!container_ && visible()) {
     container_ = new NativeControlContainer(this);
     container_->Init();
     hwnd_view_->Attach(*container_);
@@ -300,14 +300,13 @@ void NativeControl::NativeControlDestroyed() {
   container_ = NULL;
 }
 
-void NativeControl::SetVisible(bool f) {
-  if (f != IsVisible()) {
-    View::SetVisible(f);
-    if (!f && container_) {
+void NativeControl::SetVisible(bool is_visible) {
+  if (is_visible != visible()) {
+    View::SetVisible(is_visible);
+    if (!is_visible && container_)
       ::DestroyWindow(*container_);
-    } else if (f && !container_) {
+    else if (is_visible && !container_)
       ValidateNativeControl();
-    }
   }
 }
 

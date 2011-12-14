@@ -149,7 +149,7 @@ class TabLayout : public LayoutManager {
     for (int i = 0; i < host->child_count(); ++i) {
       View* child = host->child_at(i);
       // We only layout visible children, since it may be expensive.
-      if (child->IsVisible() && child->bounds() != bounds)
+      if (child->visible() && child->bounds() != bounds)
         child->SetBoundsRect(bounds);
     }
   }

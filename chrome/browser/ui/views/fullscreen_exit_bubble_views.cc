@@ -70,7 +70,7 @@ ButtonView::~ButtonView() {
 }
 
 gfx::Size ButtonView::GetPreferredSize() {
-  return IsVisible() ? views::View::GetPreferredSize() : gfx::Size();
+  return visible() ? views::View::GetPreferredSize() : gfx::Size();
 }
 
 }  // namespace

@@ -199,7 +199,7 @@ gfx::Size Label::GetPreferredSize() {
   // TODO(munjal): This logic probably belongs to the View class. But for now,
   // put it here since putting it in View class means all inheriting classes
   // need ot respect the collapse_when_hidden_ flag.
-  if (!IsVisible() && collapse_when_hidden_)
+  if (!visible() && collapse_when_hidden_)
     return gfx::Size();
 
   gfx::Size prefsize(GetTextSize());

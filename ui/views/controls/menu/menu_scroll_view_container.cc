@@ -196,7 +196,7 @@ void MenuScrollViewContainer::Layout() {
   int y = insets.top();
   int width = View::width() - insets.width();
   int content_height = height() - insets.height();
-  if (!scroll_up_button_->IsVisible()) {
+  if (!scroll_up_button_->visible()) {
     scroll_view_->SetBounds(x, y, width, content_height);
     scroll_view_->Layout();
     return;

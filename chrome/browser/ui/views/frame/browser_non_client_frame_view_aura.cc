@@ -51,7 +51,7 @@ const SkColor kMaximizeButtonBackgroundColor = SkColorSetRGB(0, 255, 0);
 const SkColor kCloseButtonBackgroundColor = SkColorSetRGB(255, 0, 0);
 
 bool HitVisibleView(views::View* view, gfx::Point point) {
-  return view->IsVisible() && view->GetMirroredBounds().Contains(point);
+  return view->visible() && view->GetMirroredBounds().Contains(point);
 }
 
 }  // namespace

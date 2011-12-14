@@ -148,7 +148,7 @@ Widget* RootView::GetWidget() {
 }
 
 bool RootView::IsVisibleInRootView() const {
-  return IsVisible();
+  return visible();
 }
 
 std::string RootView::GetClassName() const {

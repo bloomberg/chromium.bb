@@ -48,7 +48,7 @@ void ExtensionView::DidStopLoading() {
 void ExtensionView::SetIsClipped(bool is_clipped) {
   if (is_clipped_ != is_clipped) {
     is_clipped_ = is_clipped;
-    if (IsVisible())
+    if (visible())
       ShowIfCompletelyLoaded();
   }
 }
@@ -58,7 +58,7 @@ gfx::NativeCursor ExtensionView::GetCursor(const views::MouseEvent& event) {
 }
 
 void ExtensionView::SetVisible(bool is_visible) {
-  if (is_visible != IsVisible()) {
+  if (is_visible != visible()) {
     NativeViewHost::SetVisible(is_visible);
 
     // Also tell RenderWidgetHostView the new visibility. Despite its name, it
@@ -82,7 +82,7 @@ void ExtensionView::CreateWidgetHostView() {
 }
 
 void ExtensionView::ShowIfCompletelyLoaded() {
-  if (IsVisible() || is_clipped_)
+  if (visible() || is_clipped_)
     return;
 
   // We wait to show the ExtensionView until it has loaded, and the view has
@@ -113,7 +113,7 @@ void ExtensionView::SetBackground(const SkBitmap& background) {
 void ExtensionView::UpdatePreferredSize(const gfx::Size& new_size) {
   // Don't actually do anything with this information until we have been shown.
   // Size changes will not be honored by lower layers while we are hidden.
-  if (!IsVisible()) {
+  if (!visible()) {
     pending_preferred_size_ = new_size;
     return;
   }

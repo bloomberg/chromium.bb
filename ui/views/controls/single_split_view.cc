@@ -54,10 +54,10 @@ void SingleSplitView::Layout() {
   CalculateChildrenBounds(bounds(), &leading_bounds, &trailing_bounds);
 
   if (has_children()) {
-    if (child_at(0)->IsVisible())
+    if (child_at(0)->visible())
       child_at(0)->SetBoundsRect(leading_bounds);
     if (child_count() > 1) {
-      if (child_at(1)->IsVisible())
+      if (child_at(1)->visible())
         child_at(1)->SetBoundsRect(trailing_bounds);
     }
   }
@@ -118,8 +118,8 @@ void SingleSplitView::CalculateChildrenBounds(
     const gfx::Rect& bounds,
     gfx::Rect* leading_bounds,
     gfx::Rect* trailing_bounds) const {
-  bool is_leading_visible = has_children() && child_at(0)->IsVisible();
-  bool is_trailing_visible = child_count() > 1 && child_at(1)->IsVisible();
+  bool is_leading_visible = has_children() && child_at(0)->visible();
+  bool is_trailing_visible = child_count() > 1 && child_at(1)->visible();
 
   if (!is_leading_visible && !is_trailing_visible) {
     *leading_bounds = gfx::Rect();
@@ -213,7 +213,7 @@ bool SingleSplitView::IsPointInDivider(const gfx::Point& p) {
   if (child_count() < 2)
     return false;
 
-  if (!child_at(0)->IsVisible() || !child_at(1)->IsVisible())
+  if (!child_at(0)->visible() || !child_at(1)->visible())
     return false;
 
   int divider_relative_offset;

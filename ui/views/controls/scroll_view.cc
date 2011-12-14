@@ -107,7 +107,7 @@ void ScrollView::SetControlVisibility(View* control, bool should_show) {
   if (!control)
     return;
   if (should_show) {
-    if (!control->IsVisible()) {
+    if (!control->visible()) {
       AddChildView(control);
       control->SetVisible(true);
     }
@@ -261,15 +261,13 @@ gfx::Rect ScrollView::GetVisibleRect() const {
   if (!contents_)
     return gfx::Rect();
 
-  const int x =
-      horiz_sb_->IsVisible() ? horiz_sb_->GetPosition() : 0;
-  const int y =
-      vert_sb_->IsVisible() ? vert_sb_->GetPosition() : 0;
+  const int x = horiz_sb_->visible() ? horiz_sb_->GetPosition() : 0;
+  const int y = vert_sb_->visible() ? vert_sb_->GetPosition() : 0;
   return gfx::Rect(x, y, viewport_->width(), viewport_->height());
 }
 
 void ScrollView::ScrollContentsRegionToBeVisible(const gfx::Rect& rect) {
-  if (!contents_ || (!horiz_sb_->IsVisible() && !vert_sb_->IsVisible()))
+  if (!contents_ || (!horiz_sb_->visible() && !vert_sb_->visible()))
     return;
 
   // Figure out the maximums for this scroll view.
@@ -318,13 +316,13 @@ void ScrollView::UpdateScrollBarPositions() {
     return;
   }
 
-  if (horiz_sb_->IsVisible()) {
+  if (horiz_sb_->visible()) {
     int vw = viewport_->width();
     int cw = contents_->width();
     int origin = contents_->x();
     horiz_sb_->Update(vw, cw, -origin);
   }
-  if (vert_sb_->IsVisible()) {
+  if (vert_sb_->visible()) {
     int vh = viewport_->height();
     int ch = contents_->height();
     int origin = contents_->y();
@@ -337,7 +335,7 @@ void ScrollView::ScrollToPosition(ScrollBar* source, int position) {
   if (!contents_)
     return;
 
-  if (source == horiz_sb_ && horiz_sb_->IsVisible()) {
+  if (source == horiz_sb_ && horiz_sb_->visible()) {
     int vw = viewport_->width();
     int cw = contents_->width();
     int origin = contents_->x();
@@ -350,7 +348,7 @@ void ScrollView::ScrollToPosition(ScrollBar* source, int position) {
       contents_->SetX(-position);
       contents_->SchedulePaintInRect(contents_->GetVisibleBounds());
     }
-  } else if (source == vert_sb_ && vert_sb_->IsVisible()) {
+  } else if (source == vert_sb_ && vert_sb_->visible()) {
     int vh = viewport_->height();
     int ch = contents_->height();
     int origin = contents_->y();
@@ -389,25 +387,24 @@ bool ScrollView::OnKeyPressed(const KeyEvent& event) {
   bool processed = false;
 
   // Give vertical scrollbar priority
-  if (vert_sb_->IsVisible()) {
+  if (vert_sb_->visible())
     processed = vert_sb_->OnKeyPressed(event);
-  }
 
-  if (!processed && horiz_sb_->IsVisible()) {
+  if (!processed && horiz_sb_->visible())
     processed = horiz_sb_->OnKeyPressed(event);
-  }
+
   return processed;
 }
 
 bool ScrollView::OnMouseWheel(const MouseWheelEvent& e) {
   bool processed = false;
   // Give vertical scrollbar priority
-  if (vert_sb_->IsVisible()) {
+  if (vert_sb_->visible())
     processed = vert_sb_->OnMouseWheel(e);
-  }
-  if (!processed && horiz_sb_->IsVisible()) {
+
+  if (!processed && horiz_sb_->visible())
     processed = horiz_sb_->OnMouseWheel(e);
-  }
+
   return processed;
 }
 

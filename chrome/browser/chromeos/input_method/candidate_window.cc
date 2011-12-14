@@ -1193,7 +1193,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
 
 bool CandidateWindowView::IsCandidateWindowOpen() const {
   return !is_suggestion_window_location_available_ &&
-      candidate_area_->IsVisible() && candidate_area_->IsShown();
+      candidate_area_->visible() && candidate_area_->IsShown();
 }
 
 void CandidateWindowView::SelectCandidateAt(int index_in_page) {

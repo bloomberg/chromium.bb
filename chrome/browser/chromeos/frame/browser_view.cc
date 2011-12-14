@@ -264,7 +264,7 @@ class BrowserViewLayout : public ::BrowserViewLayout {
     if (!status_area_)
       return;
     gfx::Rect current_bounds;
-    if (status_area_->IsVisible()) {
+    if (status_area_->visible()) {
       gfx::Rect translated_bounds =
           status_area_->parent()->ConvertRectToWidget(status_area_->bounds());
       // To avoid a dead zone across the top of the screen,

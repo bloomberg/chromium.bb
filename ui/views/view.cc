@@ -267,7 +267,7 @@ void View::SetBoundsRect(const gfx::Rect& bounds) {
     return;
   }
 
-  if (IsVisible()) {
+  if (visible_) {
     // Paint where the view is currently.
     SchedulePaintBoundsChanged(
         bounds_.size() == bounds.size() ? SCHEDULE_PAINT_SIZE_SAME :
@@ -398,12 +398,8 @@ void View::SetVisible(bool visible) {
   }
 }
 
-bool View::IsVisible() const {
-  return visible_;
-}
-
 bool View::IsVisibleInRootView() const {
-  return IsVisible() && parent_ ? parent_->IsVisibleInRootView() : false;
+  return visible_ && parent_ ? parent_->IsVisibleInRootView() : false;
 }
 
 void View::SetEnabled(bool enabled) {
@@ -661,7 +657,7 @@ void View::SchedulePaint() {
 }
 
 void View::SchedulePaintInRect(const gfx::Rect& rect) {
-  if (!IsVisible() || !painting_enabled_)
+  if (!visible_ || !painting_enabled_)
     return;
 
   if (layer()) {
@@ -722,7 +718,7 @@ View* View::GetEventHandlerForPoint(const gfx::Point& point) {
   // tightly encloses the specified point.
   for (int i = child_count() - 1; i >= 0; --i) {
     View* child = child_at(i);
-    if (!child->IsVisible())
+    if (!child->visible())
       continue;
 
     gfx::Point point_in_child_coords(point);
@@ -1161,19 +1157,19 @@ void View::MoveLayerToParent(ui::Layer* parent_layer,
 void View::UpdateLayerVisibility() {
   if (!use_acceleration_when_possible)
     return;
-  bool visible = IsVisible();
+  bool visible = visible_;
   for (const View* v = parent_; visible && v && !v->layer(); v = v->parent_)
-    visible = v->IsVisible();
+    visible = v->visible();
 
   UpdateChildLayerVisibility(visible);
 }
 
 void View::UpdateChildLayerVisibility(bool ancestor_visible) {
   if (layer()) {
-    layer()->SetVisible(ancestor_visible && IsVisible());
+    layer()->SetVisible(ancestor_visible && visible_);
   } else {
     for (int i = 0, count = child_count(); i < count; ++i)
-      child_at(i)->UpdateChildLayerVisibility(ancestor_visible && IsVisible());
+      child_at(i)->UpdateChildLayerVisibility(ancestor_visible && visible_);
   }
 }
 
@@ -1235,7 +1231,7 @@ void View::GetHitTestMask(gfx::Path* mask) const {
 // Focus -----------------------------------------------------------------------
 
 bool View::IsFocusable() const {
-  return focusable_ && enabled_ && IsVisible();
+  return focusable_ && enabled_ && visible_;
 }
 
 void View::OnFocus() {
@@ -1470,7 +1466,7 @@ void View::SchedulePaintBoundsChanged(SchedulePaintType type) {
 }
 
 void View::PaintCommon(gfx::Canvas* canvas) {
-  if (!IsVisible() || !painting_enabled_)
+  if (!visible_ || !painting_enabled_)
     return;
 
   {
@@ -1604,7 +1600,7 @@ void View::VisibilityChangedImpl(View* starting_from, bool is_visible) {
 }
 
 void View::BoundsChanged(const gfx::Rect& previous_bounds) {
-  if (IsVisible()) {
+  if (visible_) {
     // Paint the new bounds.
     SchedulePaintBoundsChanged(
         bounds_.size() == previous_bounds.size() ? SCHEDULE_PAINT_SIZE_SAME :

@@ -33,7 +33,7 @@ BrowserRootView::BrowserRootView(BrowserView* browser_view,
 bool BrowserRootView::GetDropFormats(
       int* formats,
       std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {
-  if (tabstrip() && tabstrip()->IsVisible()) {
+  if (tabstrip() && tabstrip()->visible()) {
     *formats = ui::OSExchangeData::URL | ui::OSExchangeData::STRING;
     return true;
   }
@@ -45,7 +45,7 @@ bool BrowserRootView::AreDropTypesRequired() {
 }
 
 bool BrowserRootView::CanDrop(const ui::OSExchangeData& data) {
-  if (!tabstrip() || !tabstrip()->IsVisible())
+  if (!tabstrip() || !tabstrip()->visible())
     return false;
 
   // If there is a URL, we'll allow the drop.
@@ -125,7 +125,7 @@ std::string BrowserRootView::GetClassName() const {
 
 bool BrowserRootView::ShouldForwardToTabStrip(
     const views::DropTargetEvent& event) {
-  if (!tabstrip()->IsVisible())
+  if (!tabstrip()->visible())
     return false;
 
   // Allow the drop as long as the mouse is over the tabstrip or vertically

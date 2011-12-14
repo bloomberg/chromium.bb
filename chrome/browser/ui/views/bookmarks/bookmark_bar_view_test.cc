@@ -210,7 +210,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     bb_view_pref_ = bb_view_->GetPreferredSize();
     bb_view_pref_.set_width(1000);
     views::TextButton* button = GetBookmarkButton(4);
-    while (button->IsVisible()) {
+    while (button->visible()) {
       bb_view_pref_.set_width(bb_view_pref_.width() - 25);
       bb_view_->SetBounds(0, 0, bb_view_pref_.width(), bb_view_pref_.height());
       bb_view_->Layout();

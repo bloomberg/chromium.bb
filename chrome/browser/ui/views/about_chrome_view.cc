@@ -404,11 +404,11 @@ void AboutChromeView::Layout() {
   views::DialogClientView* dialog_client_view = GetDialogClientView();
   int max_x = parent_bounds.width();
   if (dialog_client_view->ok_button() &&
-      dialog_client_view->ok_button()->IsVisible()) {
+      dialog_client_view->ok_button()->visible()) {
     max_x = std::min(dialog_client_view->ok_button()->x(), max_x);
   }
   if (dialog_client_view->cancel_button() &&
-      dialog_client_view->cancel_button()->IsVisible()) {
+      dialog_client_view->cancel_button()->visible()) {
     max_x = std::min(dialog_client_view->cancel_button()->x(), max_x);
   }
   update_label_.SetHorizontalAlignment(views::Label::ALIGN_LEFT);

@@ -477,7 +477,7 @@ void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
 size_t BrowserActionsContainer::VisibleBrowserActions() const {
   size_t visible_actions = 0;
   for (size_t i = 0; i < browser_action_views_.size(); ++i) {
-    if (browser_action_views_[i]->IsVisible())
+    if (browser_action_views_[i]->visible())
       ++visible_actions;
   }
   return visible_actions;
@@ -510,7 +510,7 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
   // We can get the execute event for browser actions that are not visible,
   // since buttons can be activated from the overflow menu (chevron). In that
   // case we show the popup as originating from the chevron.
-  View* reference_view = button->parent()->IsVisible() ? button : chevron_;
+  View* reference_view = button->parent()->visible() ? button : chevron_;
   views::BubbleBorder::ArrowLocation arrow_location = base::i18n::IsRTL() ?
       views::BubbleBorder::TOP_LEFT : views::BubbleBorder::TOP_RIGHT;
   popup_ = ExtensionPopup::ShowPopup(button->GetPopupUrl(), browser_,
@@ -674,7 +674,7 @@ int BrowserActionsContainer::OnPerformDrop(
   size_t i = 0;
   for (; i < browser_action_views_.size(); ++i) {
     int view_x = browser_action_views_[i]->GetMirroredBounds().x();
-    if (!browser_action_views_[i]->IsVisible() ||
+    if (!browser_action_views_[i]->visible() ||
         (base::i18n::IsRTL() ? (view_x < drop_indicator_position_) :
             (view_x >= drop_indicator_position_))) {
       // We have reached the end of the visible icons or found one that has a
@@ -824,7 +824,7 @@ void BrowserActionsContainer::TestExecuteBrowserAction(int index) {
 void BrowserActionsContainer::TestSetIconVisibilityCount(size_t icons) {
   model_->SetVisibleIconCount(icons);
   chevron_->SetVisible(icons < browser_action_views_.size());
-  container_width_ = IconCountToWidth(icons, chevron_->IsVisible());
+  container_width_ = IconCountToWidth(icons, chevron_->visible());
   Layout();
   SchedulePaint();
 }
@@ -997,7 +997,7 @@ void BrowserActionsContainer::SetContainerWidth() {
   if (visible_actions < 0)  // All icons should be visible.
     visible_actions = model_->size();
   chevron_->SetVisible(static_cast<size_t>(visible_actions) < model_->size());
-  container_width_ = IconCountToWidth(visible_actions, chevron_->IsVisible());
+  container_width_ = IconCountToWidth(visible_actions, chevron_->visible());
 }
 
 void BrowserActionsContainer::CloseOverflowMenu() {
