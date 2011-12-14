@@ -43,6 +43,8 @@ class PowerManagerClient {
   // Interface for observing changes from the power manager.
   class Observer {
    public:
+    virtual ~Observer() {}
+
     // Called when the brightness is changed.
     // |level| is of the range [0, 100].
     // |user_initiated| is true if the action is initiated by the user.
