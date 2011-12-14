@@ -279,13 +279,13 @@ NPObject* WebPluginImpl::scriptableObject() {
   return delegate_->GetPluginScriptableObject();
 }
 
-bool WebPluginImpl::getFormValue(WebKit::WebString* value) {
+bool WebPluginImpl::getFormValue(WebKit::WebString& value) {
   if (!delegate_)
     return false;
   string16 form_value;
   if (!delegate_->GetFormValue(&form_value))
     return false;
-  *value = form_value;
+  value = form_value;
   return true;
 }
 

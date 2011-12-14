@@ -69,7 +69,7 @@ class WEBKIT_PLUGINS_EXPORT WebPluginImpl :
       WebKit::WebPluginContainer* container);
   virtual void destroy();
   virtual NPObject* scriptableObject();
-  virtual bool getFormValue(WebKit::WebString* value);
+  virtual bool getFormValue(WebKit::WebString& value);
   virtual void paint(
       WebKit::WebCanvas* canvas, const WebKit::WebRect& paint_rect);
   virtual void updateGeometry(

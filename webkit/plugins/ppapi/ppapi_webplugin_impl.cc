@@ -117,7 +117,7 @@ NPObject* WebPluginImpl::scriptableObject() {
   return message_channel_np_object;
 }
 
-bool WebPluginImpl::getFormValue(WebString* value) {
+bool WebPluginImpl::getFormValue(WebString& value) {
   return false;
 }
 
