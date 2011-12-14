@@ -21,17 +21,20 @@
 #if !defined(NDEBUG) && !defined(__native_client__) && !defined(GLES2_CONFORMANCE_TESTS)  // NOLINT
   #if defined(GLES2_INLINE_OPTIMIZATION)
     // TODO(gman): Replace with macros that work with inline optmization.
+    #define GPU_CLIENT_SINGLE_THREAD_CHECK()
     #define GPU_CLIENT_LOG(args)
     #define GPU_CLIENT_LOG_CODE_BLOCK(code)
     #define GPU_CLIENT_DCHECK_CODE_BLOCK(code)
   #else
     #include "base/logging.h"
+    #define GPU_CLIENT_SINGLE_THREAD_CHECK() SingleThreadChecker checker(this);
     #define GPU_CLIENT_LOG(args)  DLOG_IF(INFO, debug_) << args;
     #define GPU_CLIENT_LOG_CODE_BLOCK(code) code
     #define GPU_CLIENT_DCHECK_CODE_BLOCK(code) code
     #define GPU_CLIENT_DEBUG
   #endif
 #else
+  #define GPU_CLIENT_SINGLE_THREAD_CHECK()
   #define GPU_CLIENT_LOG(args)
   #define GPU_CLIENT_LOG_CODE_BLOCK(code)
   #define GPU_CLIENT_DCHECK_CODE_BLOCK(code)
@@ -383,6 +386,16 @@ class GLES2Implementation {
     GLuint bound_texture_cube_map;
   };
 
+  // Checks for single threaded access.
+  class SingleThreadChecker {
+   public:
+    SingleThreadChecker(GLES2Implementation* gles2_implementation);
+    ~SingleThreadChecker();
+
+   private:
+    GLES2Implementation* gles2_implementation_;
+  };
+
   // Gets the value of the result.
   template <typename T>
   T GetResultAs() {
@@ -541,6 +554,9 @@ class GLES2Implementation {
   bool sharing_resources_;
 
   bool bind_generates_resource_;
+
+  // Used to check for single threaded access.
+  int use_count_;
 
   // Map of GLenum to Strings for glGetString.  We need to cache these because
   // the pointer passed back to the client has to remain valid for eternity.
