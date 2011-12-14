@@ -41,16 +41,13 @@ int main(void) {
     } else if (nread != sizeof(byte2)) {
       fprintf(stderr, "get_random_bytes read %u != %u\n", nread, sizeof(byte2));
       result = 1;
-    } else {
-      if (byte1 == byte2) {
-        fprintf(stderr, "Read the same %u-byte value twice!  (%#x)\n",
-                sizeof(byte1), byte1);
-        result = 1;
-      }
-      /*
-       * We got two different values, so they must be random!
-       */
     }
+
+    /*
+     * Reading the same byte value twice is not really that unlikely.  So
+     * we don't test the values.  We've just tested that the code doesn't
+     * freak out for single-byte reads.
+     */
   }
 
   int int1, int2;
@@ -79,6 +76,8 @@ int main(void) {
       }
       /*
        * We got two different values, so they must be random!
+       * (No, that's not really true.  But probably close enough
+       * with a 32-bit value.)
        */
     }
   }
