@@ -77,7 +77,8 @@ def ResolveTarget(build_file, target, toolset):
       build_file = os.path.normpath(os.path.join(os.path.dirname(build_file),
                                                  parsed_build_file))
       # Further (to handle cases like ../cwd), make it relative to cwd)
-      build_file = RelativePath(build_file, '.')
+      if not os.path.isabs(build_file):
+        build_file = RelativePath(build_file, '.')
     else:
       build_file = parsed_build_file
 
