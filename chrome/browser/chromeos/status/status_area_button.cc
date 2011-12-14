@@ -129,6 +129,10 @@ bool StatusAreaButton::HitTest(const gfx::Point& l) const {
   return MenuButton::HitTest(point);
 }
 
+void StatusAreaButton::SetMenuActive(bool active) {
+  menu_active_ = active;
+}
+
 int StatusAreaButton::icon_height() {
   return 24;
 }

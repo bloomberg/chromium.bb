@@ -33,31 +33,36 @@ class ClockMenuButton : public StatusAreaButton,
   explicit ClockMenuButton(StatusAreaButton::Delegate* delegate);
   virtual ~ClockMenuButton();
 
-  // views::MenuDelegate implementation
-  virtual string16 GetLabel(int id) const OVERRIDE;
-  virtual bool IsCommandEnabled(int id) const OVERRIDE;
-  virtual void ExecuteCommand(int id) OVERRIDE;
-
-  // views::View
-  virtual void OnLocaleChanged() OVERRIDE;
-
-  // Updates the time on the menu button.
-  void UpdateText();
-
-  // Sets default use 24hour clock mode.
-  void SetDefaultUse24HourClock(bool use_24hour_clock);
-
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // views::MenuDelegate implementation
+  virtual string16 GetLabel(int id) const OVERRIDE;
+  virtual bool IsCommandEnabled(int id) const OVERRIDE;
+  virtual void ExecuteCommand(int id) OVERRIDE;
+
+  // Initialize PrefChangeRegistrar with the current default profile.
+  void UpdateProfile();
+
+  // Updates the time on the menu button.
+  void UpdateText();
+
  protected:
+  // StatusAreaButton implementation
+  virtual void SetMenuActive(bool active) OVERRIDE;
   virtual int horizontal_padding() OVERRIDE;
 
- private:
+  // views::View implementation
+  virtual void OnLocaleChanged() OVERRIDE;
+
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
+
+ private:
+  // Sets default use 24hour clock mode.
+  void SetUse24HourClock(bool use_24hour_clock);
 
   // Create and initialize menu if not already present.
   void EnsureMenu();
@@ -70,10 +75,11 @@ class ClockMenuButton : public StatusAreaButton,
   // The clock menu.
   scoped_ptr<views::MenuRunner> menu_runner_;
 
-  PrefChangeRegistrar registrar_;
+  PrefService* pref_service_;
+  scoped_ptr<PrefChangeRegistrar> registrar_;
 
-  // Default value for use_24hour_clock.
-  bool default_use_24hour_clock_;
+  // Cached value for use_24hour_clock.
+  bool use_24hour_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(ClockMenuButton);
 };

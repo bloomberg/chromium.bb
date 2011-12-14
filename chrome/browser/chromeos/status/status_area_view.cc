@@ -105,7 +105,7 @@ void StatusAreaView::ChildPreferredSizeChanged(View* child) {
 void StatusAreaView::MakeButtonsActive(bool active) {
   for (std::list<StatusAreaButton*>::iterator iter = buttons_.begin();
        iter != buttons_.end(); ++iter) {
-    (*iter)->set_menu_active(active);
+    (*iter)->SetMenuActive(active);
   }
 }
 

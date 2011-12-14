@@ -71,13 +71,6 @@ void StatusAreaViewChromeos::UpdateClockText() {
     clock_button->UpdateText();
 }
 
-void StatusAreaViewChromeos::SetDefaultUse24HourClock(bool use_24hour_clock) {
-  ClockMenuButton* clock_button =
-      static_cast<ClockMenuButton*>(GetViewByID(VIEW_ID_STATUS_BUTTON_CLOCK));
-  if (clock_button)
-    clock_button->SetDefaultUse24HourClock(use_24hour_clock);
-}
-
 // static
 void StatusAreaViewChromeos::AddChromeosButtons(
     StatusAreaView* status_area,

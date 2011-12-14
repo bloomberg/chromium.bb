@@ -74,7 +74,10 @@ class StatusAreaButton : public views::MenuButton {
   virtual void SetVisible(bool visible) OVERRIDE;
   virtual bool HitTest(const gfx::Point& l) const OVERRIDE;
 
-  void set_menu_active(bool active) { menu_active_ = active; }
+  // Sets menu_active_. Override this to perform additional actions when
+  // menus are activated.
+  virtual void SetMenuActive(bool active);
+
   bool menu_active() const { return menu_active_; }
 
  protected:

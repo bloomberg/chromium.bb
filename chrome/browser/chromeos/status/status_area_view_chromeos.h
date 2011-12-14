@@ -53,9 +53,6 @@ class StatusAreaViewChromeos : public StatusAreaView,
   // TimezoneSettings::Observer:
   virtual void TimezoneChanged(const icu::TimeZone& timezone) OVERRIDE;
 
-  // Sets default use 24hour clock mode.
-  void SetDefaultUse24HourClock(bool use_24hour_clock);
-
   // Convenience function to add buttons to a status area for ChromeOS.
   // |clock_button| (if non-NULL) is set to the ClockMenuButton that is created
   // by this method.

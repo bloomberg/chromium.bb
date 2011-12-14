@@ -43,22 +43,30 @@ const int kTimerSlopSeconds = 1;
 
 ClockMenuButton::ClockMenuButton(StatusAreaButton::Delegate* delegate)
     : StatusAreaButton(delegate, this),
-      default_use_24hour_clock_(false) {
+      pref_service_(NULL),
+      use_24hour_clock_(false) {
   set_id(VIEW_ID_STATUS_BUTTON_CLOCK);
-
-#if defined(OS_CHROMEOS)  // See note at top of file
-  // Start monitoring the kUse24HourClock preference.
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  if (profile) {  // This can be NULL in the login screen.
-    registrar_.Init(profile->GetPrefs());
-    registrar_.Add(prefs::kUse24HourClock, this);
-  }
-#endif
+  UpdateProfile();
   UpdateTextAndSetNextTimer();
 }
 
 ClockMenuButton::~ClockMenuButton() {
   timer_.Stop();
+}
+
+void ClockMenuButton::UpdateProfile() {
+#if defined(OS_CHROMEOS)  // See note at top of file
+  // Start monitoring the kUse24HourClock preference.
+  Profile* profile = ProfileManager::GetDefaultProfile();
+  if (profile && profile->GetPrefs() != pref_service_) {
+    pref_service_ = profile->GetPrefs();
+    use_24hour_clock_ = pref_service_->GetBoolean(prefs::kUse24HourClock);
+    registrar_.reset(new PrefChangeRegistrar);
+    registrar_->Init(pref_service_);
+    registrar_->Add(prefs::kUse24HourClock, this);
+    UpdateText();
+  }
+#endif
 }
 
 void ClockMenuButton::UpdateTextAndSetNextTimer() {
@@ -87,27 +95,20 @@ void ClockMenuButton::UpdateTextAndSetNextTimer() {
 
 void ClockMenuButton::UpdateText() {
   base::Time time(base::Time::Now());
-  bool use_24hour_clock = default_use_24hour_clock_;
-#if defined(OS_CHROMEOS)  // See note at top of file
-  // If the profie is present, check the use 24-hour clock preference.
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  if (profile)
-    use_24hour_clock = profile->GetPrefs()->GetBoolean(prefs::kUse24HourClock);
-#endif
   SetText(base::TimeFormatTimeOfDayWithHourClockType(
       time,
-      use_24hour_clock ? base::k24HourClock : base::k12HourClock,
+      use_24hour_clock_ ? base::k24HourClock : base::k12HourClock,
       base::kDropAmPm));
-  SetTooltipText(base::TimeFormatFriendlyDateAndTime(time));
-  SetAccessibleName(base::TimeFormatFriendlyDateAndTime(time));
+  string16 friendly_time_string(base::TimeFormatFriendlyDateAndTime(time));
+  SetTooltipText(friendly_time_string);
+  SetAccessibleName(friendly_time_string);
   SchedulePaint();
 }
 
-void ClockMenuButton::SetDefaultUse24HourClock(bool use_24hour_clock) {
-  if (default_use_24hour_clock_ == use_24hour_clock)
+void ClockMenuButton::SetUse24HourClock(bool use_24hour_clock) {
+  if (use_24hour_clock_ == use_24hour_clock)
     return;
-
-  default_use_24hour_clock_ = use_24hour_clock;
+  use_24hour_clock_ = use_24hour_clock;
   UpdateText();
 }
 
@@ -120,7 +121,11 @@ void ClockMenuButton::Observe(int type,
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     std::string* pref_name = content::Details<std::string>(details).ptr();
     if (*pref_name == prefs::kUse24HourClock) {
-      UpdateText();
+      Profile* profile = ProfileManager::GetDefaultProfile();
+      if (profile) {
+        SetUse24HourClock(
+            profile->GetPrefs()->GetBoolean(prefs::kUse24HourClock));
+      }
     }
   }
 #endif
@@ -141,6 +146,13 @@ void ClockMenuButton::ExecuteCommand(int id) {
   DCHECK_EQ(CLOCK_OPEN_OPTIONS_ITEM, id);
   delegate()->ExecuteStatusAreaCommand(
       this, StatusAreaButton::Delegate::SHOW_SYSTEM_OPTIONS);
+}
+
+// StatusAreaButton implementation
+void ClockMenuButton::SetMenuActive(bool active) {
+  // Activation gets updated when we change login state, so profile may change.
+  UpdateProfile();
+  StatusAreaButton::SetMenuActive(active);
 }
 
 int ClockMenuButton::horizontal_padding() {

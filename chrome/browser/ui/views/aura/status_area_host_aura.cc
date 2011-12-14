@@ -103,8 +103,10 @@ void StatusAreaHostAura::ExecuteStatusAreaCommand(
     const views::View* button_view, int command_id) {
 #if defined(OS_CHROMEOS)
   if (chromeos::StatusAreaViewChromeos::IsBrowserMode()) {
-    Browser* browser = BrowserList::FindBrowserWithProfile(
-        ProfileManager::GetDefaultProfile());
+    Profile* profile = ProfileManager::GetDefaultProfile();
+    Browser* browser = BrowserList::FindBrowserWithProfile(profile);
+    if (!browser)
+      browser = Browser::Create(profile);
     switch (command_id) {
       case StatusAreaButton::Delegate::SHOW_NETWORK_OPTIONS:
         browser->OpenInternetOptionsDialog();

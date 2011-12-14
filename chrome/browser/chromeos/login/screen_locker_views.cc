@@ -650,14 +650,6 @@ void ScreenLockerViews::LockScreen(bool unlock_on_input) {
   background_view_ = screen_lock_background_view_;
   background_view_->Init(GURL(url_string));
 
-  // Gets user profile and sets default user 24hour flag since we don't
-  // expose user profile in ScreenLockerBackgroundView.
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  if (profile) {
-    background_view_->SetDefaultUse24HourClock(
-        profile->GetPrefs()->GetBoolean(prefs::kUse24HourClock));
-  }
-
   if (background_view_->ScreenSaverEnabled())
     StartScreenSaver();
 
