@@ -443,12 +443,11 @@ class VMTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(background, 'SetNiceness')
     background.SetNiceness(foreground=True)
     self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
-    commands.ArchiveTestResults(self.build_root, self.fake_results_dir,
-                                prefix='')
+    self.archive_stage_mock = self.mox.CreateMock(stages.ArchiveStage)
 
   def ConstructStage(self):
     return stages.VMTestStage(self.bot_id, self.options, self.build_config,
-                              None)
+                              self.archive_stage_mock)
 
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
@@ -470,6 +469,11 @@ class VMTestStageTest(AbstractStageTest):
                           build_config=self.bot_id,
                           nplus1_archive_dir=self.fake_results_dir,
                           test_type=constants.FULL_AU_TEST_TYPE)
+    commands.ArchiveTestResults(self.build_root, self.fake_results_dir,
+                                prefix='').AndReturn('some tarball')
+    self.archive_stage_mock.UpdatePayloadsReady(self.fake_results_dir)
+    self.archive_stage_mock.TestResultsReady('some tarball')
+    self.archive_stage_mock.VMTestStatus(True)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -495,10 +499,16 @@ class VMTestStageTest(AbstractStageTest):
                           build_config=self.bot_id,
                           nplus1_archive_dir=self.fake_results_dir,
                           test_type=constants.SIMPLE_AU_TEST_TYPE)
+    commands.ArchiveTestResults(self.build_root, self.fake_results_dir,
+                                prefix='').AndReturn('some tarball')
+    self.archive_stage_mock.UpdatePayloadsReady(self.fake_results_dir)
+    self.archive_stage_mock.TestResultsReady('some tarball')
+    self.archive_stage_mock.VMTestStatus(True)
 
     self.mox.ReplayAll()
     self.RunStage()
     self.mox.VerifyAll()
+
 
 class UnitTestStageTest(AbstractStageTest):
 
@@ -535,141 +545,29 @@ class HWTestStageTest(AbstractStageTest):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     AbstractStageTest.setUp(self)
-    self.options.hw_tests = True
-    self.options.remote_ip = '1.1.1.1'
+    self.bot_id = 'x86-mario-release'
+    self.build_config = config.config[self.bot_id].copy()
+    self.archive_stage_mock = self.mox.CreateMock(stages.ArchiveStage)
+    self.platform = 'netbook_MARIO'
 
   def ConstructStage(self):
-    return stages.HWTestStage(self.bot_id, self.options, self.build_config)
+    return stages.HWTestStage(self.bot_id, self.options, self.build_config,
+                              self.archive_stage_mock, self.suite,
+                              self.platform)
 
-  def testHWTestOneTest(self):
-    """HW test with 1 test, with reimaging and remote IP set in options."""
-    self.bot_id = 'x86-generic-chrome-pre-flight-queue'
-    self.build_config = config.config[self.bot_id].copy()
-    self.build_config['hw_tests'] = [('test_Test',)]
-    self.build_config['hw_tests_reimage'] = True
+  def testWithSuite(self):
+    """Test if run correctly with a test suite."""
+    self.suite = 'bvt'
 
-    self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
-    self.mox.StubOutWithMock(commands, 'RunRemoteTest')
+    self.archive_stage_mock.GetGSUploadLocation().AndReturn('some_url')
+    self.archive_stage_mock.WaitForVMTestStatus().AndReturn(True)
+    self.archive_stage_mock.WaitForHWTestUploads().AndReturn(True)
 
-    commands.UpdateRemoteHW(self.build_root,
-                            mox.IgnoreArg(),
-                            self.options.remote_ip)
-    commands.RunRemoteTest(self.build_root,
-                           self.build_config['board'],
-                           self.options.remote_ip,
-                           'test_Test',
-                           ())
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
-
-  def testHWTestOneTestWithArgs(self):
-    """HW test with 1 test with arguments."""
-    self.bot_id = 'x86-generic-chrome-pre-flight-queue'
-    self.build_config = config.config[self.bot_id].copy()
-    self.build_config['hw_tests'] = [('test_Test', 'abc',)]
-    self.build_config['hw_tests_reimage'] = True
-
-    self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
-    self.mox.StubOutWithMock(commands, 'RunRemoteTest')
-
-    commands.UpdateRemoteHW(self.build_root,
-                            mox.IgnoreArg(),
-                            self.options.remote_ip)
-    commands.RunRemoteTest(self.build_root,
-                           self.build_config['board'],
-                           self.options.remote_ip,
-                           'test_Test',
-                           (('abc',)))
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
-
-  def testHWTestNoTests(self):
-    """HW test with no tests."""
-    self.bot_id = 'x86-generic-chrome-pre-flight-queue'
-    self.build_config = config.config[self.bot_id].copy()
-    self.build_config['hw_tests'] = None
-    self.build_config['hw_tests_reimage'] = True
-
-    self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
-    self.mox.StubOutWithMock(commands, 'RunRemoteTest')
-
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
-
-  def testHWTestTwoTests(self):
-    """HW test with 2 tests, with reimaging and remote IP set in options."""
-    self.bot_id = 'x86-generic-chrome-pre-flight-queue'
-    self.build_config = config.config[self.bot_id].copy()
-    self.build_config['hw_tests'] = [('test_Test',), ('test_Test2',)]
-    self.build_config['hw_tests_reimage'] = True
-
-    self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
-    self.mox.StubOutWithMock(commands, 'RunRemoteTest')
-
-    commands.UpdateRemoteHW(self.build_root,
-                            mox.IgnoreArg(),
-                            self.options.remote_ip)
-    commands.RunRemoteTest(self.build_root,
-                           self.build_config['board'],
-                           self.options.remote_ip,
-                           'test_Test',
-                           ())
-
-    commands.RunRemoteTest(self.build_root,
-                           self.build_config['board'],
-                           self.options.remote_ip,
-                           'test_Test2',
-                           ())
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
-
-  def testHWTestNoReimage(self):
-    """HW test with 1 test, with no reimaging and remote IP set in options."""
-    self.bot_id = 'x86-generic-chrome-pre-flight-queue'
-    self.build_config = config.config[self.bot_id].copy()
-    self.build_config['hw_tests'] = [('test_Test',)]
-    self.build_config['hw_tests_reimage'] = False
-
-    self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
-    self.mox.StubOutWithMock(commands, 'RunRemoteTest')
-
-    commands.RunRemoteTest(self.build_root,
-                           self.build_config['board'],
-                           self.options.remote_ip,
-                           'test_Test',
-                           ())
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
-
-  def testHWTestConfigIP(self):
-    """HW test with 1 test, with reimaging and remote IP set in config."""
-    self.bot_id = 'x86-generic-chrome-pre-flight-queue'
-    self.build_config = config.config[self.bot_id].copy()
-    self.build_config['hw_tests'] = [('test_Test',)]
-    self.build_config['hw_tests_reimage'] = True
-    self.build_config['remote_ip'] = self.options.remote_ip
-
-    self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
-    self.mox.StubOutWithMock(commands, 'RunRemoteTest')
-
-    commands.UpdateRemoteHW(self.build_root,
-                            mox.IgnoreArg(),
-                            self.options.remote_ip)
-    commands.RunRemoteTest(self.build_root,
-                           self.build_config['board'],
-                           self.options.remote_ip,
-                           'test_Test',
-                           ())
+    self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
+    commands.RunHWTestSuite('some_url',
+                            self.suite,
+                            self.platform,
+                            False)
 
     self.mox.ReplayAll()
     self.RunStage()

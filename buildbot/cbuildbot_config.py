@@ -158,16 +158,11 @@ _settings = dict(
 # vm_tests -- Run vm test type defined in constants.
   vm_tests=constants.SIMPLE_AU_TEST_TYPE,
 
-# hw_tests -- A list of autotests and arguments to run on remote hardware.
-#             The format is [(test1, argument, argument,), (test2,), ...]
-  hw_tests=None,
+# hw_tests -- A list of autotest suites to run on remote hardware.
+  hw_tests=[],
 
-# hw_tests_reimage -- Whether to reimage the remote device before running
-#                     hw_tests.
-  hw_tests_reimage=True,
-
-# remote_ip -- IP of the remote Chromium OS machine used for testing.
-  remote_ip=None,
+# platform -- Hardware platform on which the build is tested.
+  platform=None,
 
 # gs_path -- Google Storage path to offload files to.
 #            None - No upload
@@ -650,9 +645,6 @@ _internal_toolchain = _toolchain.derive(internal, full, official,
 
 _internal_toolchain.add_config('x86-alex-toolchain',
   board='x86-alex',
-  hw_tests=[('platform_GCC',)],
-  hw_tests_reimage=False,
-  remote_ip='172.18.221.163',
 )
 
 _internal_toolchain.add_config('arm-tegra2_seaboard-toolchain',
@@ -720,6 +712,12 @@ _release.add_config('link-release',
   board='link',
   prebuilts=False,
   vm_tests=None,
+)
+
+_release.add_config('autotest-experimental',
+  board='x86-alex',
+  platform='netbook_ALEX',
+  hw_tests=['bvt', 'regression', 'performance', 'platform', 'pyauto']
 )
 
 _arm_release = _release.derive(arm)

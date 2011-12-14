@@ -620,6 +620,11 @@ class BuildTargetStage(bs.BuilderStage):
                       os.path.join(self.GetImageDirSymlink(),
                                    'autotest.tar.bz2'))
 
+  def _HandleStageException(self, exception):
+    # In case of an exception, this prevents any consumer from starving.
+    self._archive_stage.AutotestTarballReady(None)
+    return super(BuildTargetStage, self)._HandleStageException(exception)
+
 
 class ChromeTestStage(bs.BuilderStage):
   """Run chrome tests in a virtual machine."""
@@ -647,8 +652,12 @@ class ChromeTestStage(bs.BuilderStage):
                                                    test_results_dir,
                                                    prefix='chrome_')
 
-      if self._archive_stage:
-        self._archive_stage.TestResultsReady(test_tarball)
+      self._archive_stage.TestResultsReady(test_tarball)
+
+  def _HandleStageException(self, exception):
+    # In case of an exception, this prevents any consumer from starving.
+    self._archive_stage.TestResultsReady(None)
+    return super(ChromeTestStage, self)._HandleStageException(exception)
 
 
 class UnitTestStage(bs.BuilderStage):
@@ -681,6 +690,7 @@ class VMTestStage(bs.BuilderStage):
     # These directories are used later to archive test artifacts.
     payloads_dir = None
     test_results_dir = None
+    tests_passed = False
 
     try:
       # Payloads dir is not in the chroot as ctest archives them outside of
@@ -696,6 +706,7 @@ class VMTestStage(bs.BuilderStage):
                             test_type=self._build_config['vm_tests'],
                             nplus1_archive_dir=payloads_dir,
                             build_config=self._bot_id)
+      tests_passed = True
 
     except commands.TestException:
       raise bs.NonBacktraceBuildException()  # Suppress redundant output.
@@ -706,41 +717,41 @@ class VMTestStage(bs.BuilderStage):
                                                    test_results_dir,
                                                    prefix='')
 
-      if self._archive_stage:
-        self._archive_stage.UpdatePayloadsReady(payloads_dir)
-        self._archive_stage.TestResultsReady(test_tarball)
+      self._archive_stage.UpdatePayloadsReady(payloads_dir)
+      self._archive_stage.TestResultsReady(test_tarball)
+      self._archive_stage.VMTestStatus(tests_passed)
+
+  def _HandleStageException(self, exception):
+    # In case of an exception, this prevents any consumer from starving.
+    self._archive_stage.UpdatePayloadsReady(None)
+    self._archive_stage.TestResultsReady(None)
+    self._archive_stage.VMTestStatus(False)
+    return super(VMTestStage, self)._HandleStageException(exception)
 
 
-class HWTestStage(NonHaltingBuilderStage):
-  """Stage that performs testing on actual HW."""
+class HWTestStage(bs.BuilderStage):
+  """Stage that runs tests in the Autotest lab."""
 
-  option_name = 'hw_tests'
+  option_name = 'tests'
+
+  def __init__(self, bot_id, options, build_config, archive_stage, suite,
+               platform):
+    super(HWTestStage, self).__init__(bot_id, options, build_config,
+                                      suffix='[' + suite + ']')
+    self._archive_url = archive_stage.GetGSUploadLocation()
+    self._archive_stage = archive_stage
+    self._suite = suite
+    self._platform = platform
 
   def _PerformStage(self):
-    if not self._build_config['hw_tests']:
-      return
+    if not self._archive_stage.WaitForVMTestStatus():
+      raise Exception('VM tests failed.')
 
-    if self._options.remote_ip:
-      ip = self._options.remote_ip
-    elif self._build_config['remote_ip']:
-      ip = self._build_config['remote_ip']
-    else:
-      raise Exception('Please specify remote_ip.')
+    if not self._archive_stage.WaitForHWTestUploads():
+      raise Exception('Missing uploads.')
 
-    if self._build_config['hw_tests_reimage']:
-      commands.UpdateRemoteHW(self._build_root,
-                              self.GetImageDirSymlink(),
-                              ip)
-
-    for test in self._build_config['hw_tests']:
-      test_name = test[0]
-      test_args = test[1:]
-
-      commands.RunRemoteTest(self._build_root,
-                             self._build_config['board'],
-                             ip,
-                             test_name,
-                             test_args)
+    commands.RunHWTestSuite(self._archive_url, self._suite, self._platform,
+                            self._options.debug)
 
 
 class SDKTestStage(bs.BuilderStage):
@@ -768,23 +779,6 @@ class SDKTestStage(bs.BuilderStage):
     cros_lib.RunCommand(cmd, cwd=self._build_root)
 
 
-class RemoteTestStatusStage(bs.BuilderStage):
-  """Stage that performs testing steps."""
-
-  option_name = 'remote_test_status'
-
-  def _PerformStage(self):
-    test_status_cmd = ['./crostools/get_test_status.py',
-                       '--board=%s' % self._build_config['board'],
-                       '--build=%s' % self._options.buildnumber]
-    for job in self._options.remote_test_status.split(','):
-      result = cros_lib.RunCommand(
-          test_status_cmd + ['--category=%s' % job],
-          redirect_stdout=True, print_cmd=False)
-      # Emit annotations for buildbot status updates.
-      print result.output
-
-
 class ArchiveStage(NonHaltingBuilderStage):
   """Archives build and test artifacts for developer consumption."""
 
@@ -798,9 +792,6 @@ class ArchiveStage(NonHaltingBuilderStage):
           'No images found to archive.')
 
   # This stage is intended to run in the background, in parallel with tests.
-  # When the tests have completed, TestStageComplete method must be
-  # called. (If no tests are run, the TestStageComplete method must be
-  # called with 'None'.)
   def __init__(self, bot_id, options, build_config):
     super(ArchiveStage, self).__init__(bot_id, options, build_config)
     if build_config['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT:
@@ -821,8 +812,10 @@ class ArchiveStage(NonHaltingBuilderStage):
     self._version_queue = multiprocessing.Queue()
     self._autotest_tarball_queue = multiprocessing.Queue()
     self._test_results_queue = multiprocessing.Queue()
+    self._vm_test_status_queue = multiprocessing.Queue()
     self._update_payloads_queue = multiprocessing.Queue()
     self._breakpad_symbols_queue = multiprocessing.Queue()
+    self._hw_test_uploads_status_queue = multiprocessing.Queue()
 
   def SetVersion(self, path_to_image):
     """Sets the cros version for the given built path to an image.
@@ -858,8 +851,9 @@ class ArchiveStage(NonHaltingBuilderStage):
     """Tell Archive Stage that test results are ready.
 
        Args:
-         test_results: The test results tarball from the tests. If no tests
-                       results are available, this should be set to None.
+         update_payloads_dir: The test results tarball from the tests. If no
+                              payloads are available, this should be set to
+                              None.
     """
     self._update_payloads_queue.put(update_payloads_dir)
 
@@ -872,15 +866,40 @@ class ArchiveStage(NonHaltingBuilderStage):
     """
     self._test_results_queue.put(test_results)
 
-  def TestStageExited(self):
-    """Tell Archive Stage that test stage has exited.
+  def VMTestStatus(self, test_status):
+    """Tell Archive Stage that VM test status is ready.
 
-    If the test phase failed strangely, this failsafe ensures that the archive
-    stage doesn't sit around waiting for data.
+       Args:
+         test_status: The test status from VMTestStage. True if tests passed,
+                      False otherwise.
     """
-    self._autotest_tarball_queue.put(None)
-    self._test_results_queue.put(None)
-    self._update_payloads_queue.put(None)
+    self._vm_test_status_queue.put(test_status)
+
+  def WaitForVMTestStatus(self):
+    """Waits for VM test status.
+
+    Returns:
+      True if VM tests passed.
+      False otherswise.
+    """
+    cros_lib.Info('Waiting for VM test status...')
+    status = self._vm_test_status_queue.get()
+    # Put the status back so other HWTestStage instances don't starve.
+    self._vm_test_status_queue.put(status)
+    return status
+
+  def WaitForHWTestUploads(self):
+    """Waits until artifacts needed for HWTest stage are uploaded.
+
+    Returns:
+      True if artifacts uploaded successfully.
+      False otherswise.
+    """
+    cros_lib.Info('Waiting for uploads...')
+    status = self._hw_test_uploads_status_queue.get()
+    # Put the status back so other HWTestStage instances don't starve.
+    self._hw_test_uploads_status_queue.put(status)
+    return status
 
   def _BreakpadSymbolsGenerated(self, success):
     """Signal that breakpad symbols have been generated.
@@ -915,7 +934,7 @@ class ArchiveStage(NonHaltingBuilderStage):
     if not self._options.buildbot:
       return self._GetArchivePath()
     elif self._gsutil_archive:
-      upload_location = self._GetGSUploadLocation()
+      upload_location = self.GetGSUploadLocation()
       url_prefix = 'https://sandbox.google.com/storage/'
       return upload_location.replace('gs://', url_prefix)
     else:
@@ -923,7 +942,7 @@ class ArchiveStage(NonHaltingBuilderStage):
       return 'http://%s/archive/%s/%s' % (socket.getfqdn(), self._bot_id,
                                           version)
 
-  def _GetGSUploadLocation(self):
+  def GetGSUploadLocation(self):
     """Get the Google Storage location where we should upload artifacts."""
     version = self.GetVersion()
     if version and self._gsutil_archive:
@@ -991,11 +1010,14 @@ class ArchiveStage(NonHaltingBuilderStage):
     config = self._build_config
     board = config['board']
     debug = self._options.debug
-    upload_url = self._GetGSUploadLocation()
+    upload_url = self.GetGSUploadLocation()
     archive_path = self._SetupArchivePath()
     image_dir = self.GetImageDirSymlink()
     debug_tarball_queue = multiprocessing.Queue()
     upload_queue = multiprocessing.Queue()
+    NUM_UPLOAD_QUEUE_THREADS = 10
+    upload_for_hw_test_queue = multiprocessing.Queue()
+    NUM_HW_TEST_UPLOAD_QUEUE_THREADS = 6
 
     extra_env = {}
     if config['useflags']:
@@ -1007,8 +1029,9 @@ class ArchiveStage(NonHaltingBuilderStage):
     # The following functions are run in parallel (except where indicated
     # otherwise)
     # \- BuildAndArchiveArtifacts
-    #    \- ArchiveAutotestTarball
-    #    \- ArchivePayloads
+    #    \- ArchiveArtifactsForHWTesting
+    #       \- ArchiveAutotestTarball
+    #       \- ArchivePayloads
     #    \- ArchiveTestResults
     #    \- ArchiveDebugSymbols
     #    \- BuildAndArchiveAllImages
@@ -1017,12 +1040,14 @@ class ArchiveStage(NonHaltingBuilderStage):
     #       \- ArchiveRegularImages
     # \- UploadDebugSymbols
     # \- UploadArtifacts
+    # \- UploadArtifactsForHWTesting
 
     def ArchiveAutotestTarball():
       """Archives the autotest tarball produced in BuildTarget."""
       autotest_tarball = self._GetAutotestTarball()
       if autotest_tarball:
-        upload_queue.put(commands.ArchiveFile(autotest_tarball, archive_path))
+        upload_for_hw_test_queue.put(commands.ArchiveFile(autotest_tarball,
+                                                          archive_path))
 
     def ArchivePayloads():
       """Archives update payloads when they are ready."""
@@ -1030,7 +1055,8 @@ class ArchiveStage(NonHaltingBuilderStage):
       if update_payloads_dir:
         for payload in os.listdir(update_payloads_dir):
           full_path = os.path.join(update_payloads_dir, payload)
-          upload_queue.put(commands.ArchiveFile(full_path, archive_path))
+          upload_for_hw_test_queue.put(commands.ArchiveFile(full_path,
+                                                            archive_path))
 
     def ArchiveTestResults():
       """Archives test results when they are ready."""
@@ -1124,22 +1150,44 @@ class ArchiveStage(NonHaltingBuilderStage):
       background.RunParallelSteps([BuildAndArchiveFactoryImages,
                                    ArchiveRegularImages])
 
-    def UploadArtifacts():
+    def UploadArtifacts(queue):
       # Upload any generated artifacts to Google Storage.
       while True:
-        filename = upload_queue.get()
+        filename = queue.get()
         if filename is None:
           # Shut down self and other upload processes.
-          upload_queue.put(None)
+          queue.put(None)
           break
         commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
+
+    def ArchiveArtifactsForHWTesting():
+      """Archives artifacts required for HWTest stage."""
+      try:
+        steps = [ArchiveAutotestTarball, ArchivePayloads]
+        background.RunParallelSteps(steps)
+      finally:
+        # Shut down upload queue.
+        upload_for_hw_test_queue.put(None)
+
+    def UploadArtifactsForHWTesting():
+      """Upload artifacts to Google Storage required for HWTest stage."""
+      try:
+        background.RunParallelSteps(
+            [lambda: UploadArtifacts(upload_for_hw_test_queue)] *
+            NUM_HW_TEST_UPLOAD_QUEUE_THREADS)
+        self._hw_test_uploads_status_queue.put(True)
+      except background.BackgroundException:
+        # Let HWTestStage know immediately if uploads failed
+        # instead of waiting for other threads to complete.
+        self._hw_test_uploads_status_queue.put(False)
+        raise
 
     def BuildAndArchiveArtifacts():
       try:
         # Run archiving steps in parallel.
         steps = [ArchiveDebugSymbols, BuildAndArchiveAllImages]
         if self._options.tests:
-          steps += [ArchiveAutotestTarball, ArchivePayloads, ArchiveTestResults]
+          steps += [ArchiveArtifactsForHWTesting, ArchiveTestResults]
 
         background.RunParallelSteps(steps)
       finally:
@@ -1147,11 +1195,12 @@ class ArchiveStage(NonHaltingBuilderStage):
         upload_queue.put(None)
         debug_tarball_queue.put(None)
 
-    # Build and archive artifacts. In the background, create 16 upload
-    # processes for uploading any created artifacts.
-    background.RunParallelSteps([BuildAndArchiveArtifacts] +
-                                [UploadDebugSymbols] +
-                                [UploadArtifacts] * 16)
+    # Build and archive artifacts.
+    steps = [BuildAndArchiveArtifacts, UploadDebugSymbols]
+    steps += [lambda: UploadArtifacts(upload_queue)] * NUM_UPLOAD_QUEUE_THREADS
+    if self._options.tests:
+      steps += [UploadArtifactsForHWTesting]
+    background.RunParallelSteps(steps)
 
     # Now that all data has been generated, we can upload the final result to
     # the image server.
@@ -1175,6 +1224,12 @@ class ArchiveStage(NonHaltingBuilderStage):
 
     commands.RemoveOldArchives(self._bot_archive_root,
                                self._options.max_archive_builds)
+
+  def _HandleStageException(self, exception):
+    # Tell the HWTestStage not to wait for artifacts to be uploaded
+    # in case ArchiveStage throws an exception.
+    self._hw_test_uploads_status_queue.put(False)
+    return super(ArchiveStage, self)._HandleStageException(exception)
 
 
 class UploadPrebuiltsStage(bs.BuilderStage):
