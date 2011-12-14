@@ -92,7 +92,10 @@ void PepperSessionManager::Close() {
   listener_ = NULL;
   jingle_info_request_.reset();
 
-  signal_strategy_->RemoveListener(this);
+  if (signal_strategy_) {
+    signal_strategy_->RemoveListener(this);
+    signal_strategy_ = NULL;
+  }
 }
 
 void PepperSessionManager::set_authenticator_factory(

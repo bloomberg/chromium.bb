@@ -190,6 +190,10 @@ void PepperSession::OnIncomingMessage(const JingleMessage& message,
       OnAccept(message, reply);
       break;
 
+    case JingleMessage::SESSION_INFO:
+      OnSessionInfo(message, reply);
+      break;
+
     case JingleMessage::TRANSPORT_INFO:
       ProcessTransportInfo(message);
       break;
@@ -221,27 +225,43 @@ void PepperSession::OnAccept(const JingleMessage& message,
 
   DCHECK(authenticator_->state() == Authenticator::WAITING_MESSAGE);
   authenticator_->ProcessMessage(auth_message);
-  // Support for more than two auth message is not implemented yet.
-  DCHECK(authenticator_->state() != Authenticator::WAITING_MESSAGE &&
-         authenticator_->state() != Authenticator::MESSAGE_READY);
-
-  if (authenticator_->state() == Authenticator::REJECTED) {
-    OnError(AUTHENTICATION_FAILED);
-    return;
-  }
 
   if (!InitializeConfigFromDescription(message.description.get())) {
     OnError(INCOMPATIBLE_PROTOCOL);
     return;
   }
 
+  // In case there is transport information in the accept message.
+  ProcessTransportInfo(message);
+
   SetState(CONNECTED);
 
-  if (authenticator_->state() == Authenticator::ACCEPTED)
+  // Process authentication.
+  if (authenticator_->state() == Authenticator::ACCEPTED) {
     SetState(AUTHENTICATED);
+  } else {
+    ProcessAuthenticationStep();
+  }
+}
 
-   // In case there is transport information in the accept message.
-  ProcessTransportInfo(message);
+void PepperSession::OnSessionInfo(const JingleMessage& message,
+                                  JingleMessageReply* reply) {
+  if (message.info.get() &&
+      Authenticator::IsAuthenticatorMessage(message.info.get())) {
+    if (state_ != CONNECTED ||
+        authenticator_->state() != Authenticator::WAITING_MESSAGE) {
+      LOG(WARNING) << "Received unexpected authenticator message "
+                   << message.info->Str();
+      *reply = JingleMessageReply(JingleMessageReply::UNEXPECTED_REQUEST);
+      OnError(INCOMPATIBLE_PROTOCOL);
+      return;
+    }
+
+    authenticator_->ProcessMessage(message.info.get());
+    ProcessAuthenticationStep();
+  } else {
+    *reply = JingleMessageReply(JingleMessageReply::UNSUPPORTED_INFO);
+  }
 }
 
 void PepperSession::ProcessTransportInfo(const JingleMessage& message) {
@@ -277,16 +297,21 @@ void PepperSession::OnTerminate(const JingleMessage& message,
     return;
   }
 
-  if (state_ == CONNECTED || state_ == AUTHENTICATED) {
-    if (message.reason == JingleMessage::GENERAL_ERROR) {
-      OnError(CHANNEL_CONNECTION_ERROR);
-    } else {
-      CloseInternal(false);
-    }
-    return;
+  if (state_ != CONNECTED && state_ != AUTHENTICATED) {
+    LOG(WARNING) << "Received unexpected session-terminate message.";
   }
 
-  LOG(WARNING) << "Received unexpected session-terminate message.";
+  if (message.reason == JingleMessage::SUCCESS) {
+    CloseInternal(false);
+  } else if (message.reason == JingleMessage::DECLINE) {
+    OnError(AUTHENTICATION_FAILED);
+  } else if (message.reason == JingleMessage::GENERAL_ERROR) {
+    OnError(CHANNEL_CONNECTION_ERROR);
+  } else if (message.reason == JingleMessage::INCOMPATIBLE_PARAMETERS) {
+    OnError(INCOMPATIBLE_PROTOCOL);
+  } else {
+    OnError(UNKNOWN_ERROR);
+  }
 }
 
 bool PepperSession::InitializeConfigFromDescription(
@@ -303,6 +328,38 @@ bool PepperSession::InitializeConfigFromDescription(
   }
 
   return true;
+}
+
+void PepperSession::ProcessAuthenticationStep() {
+  DCHECK_EQ(state_, CONNECTED);
+
+  if (authenticator_->state() == Authenticator::MESSAGE_READY) {
+    JingleMessage message(peer_jid_, JingleMessage::SESSION_INFO, session_id_);
+    message.info.reset(authenticator_->GetNextMessage());
+    DCHECK(message.info.get());
+
+    session_info_request_.reset(session_manager_->iq_sender()->SendIq(
+        message.ToXml(), base::Bind(
+            &PepperSession::OnSessionInfoResponse,
+            base::Unretained(this))));
+  }
+  DCHECK_NE(authenticator_->state(), Authenticator::MESSAGE_READY);
+
+  if (authenticator_->state() == Authenticator::ACCEPTED) {
+    SetState(AUTHENTICATED);
+  } else if (authenticator_->state() == Authenticator::REJECTED) {
+    OnError(AUTHENTICATION_FAILED);
+  }
+}
+
+void PepperSession::OnSessionInfoResponse(const buzz::XmlElement* response) {
+  const std::string& type = response->Attr(buzz::QName("", "type"));
+  if (type != "result") {
+    LOG(ERROR) << "Received error in response to session-info message: \""
+               << response->Str()
+               << "\". Terminating the session.";
+    OnError(AUTHENTICATION_FAILED);
+  }
 }
 
 void PepperSession::AddLocalCandidate(const cricket::Candidate& candidate) {

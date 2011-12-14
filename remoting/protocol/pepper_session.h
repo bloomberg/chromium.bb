@@ -83,11 +83,15 @@ class PepperSession : public Session {
 
   // Message handlers for incoming messages.
   void OnAccept(const JingleMessage& message, JingleMessageReply* reply);
+  void OnSessionInfo(const JingleMessage& message, JingleMessageReply* reply);
   void OnTerminate(const JingleMessage& message, JingleMessageReply* reply);
   void ProcessTransportInfo(const JingleMessage& message);
 
   // Called from OnAccept() to initialize session config.
   bool InitializeConfigFromDescription(const ContentDescription* description);
+
+  void ProcessAuthenticationStep();
+  void OnSessionInfoResponse(const buzz::XmlElement* response);
 
   // Called by PepperChannel.
   void AddLocalCandidate(const cricket::Candidate& candidate);
@@ -116,6 +120,7 @@ class PepperSession : public Session {
   scoped_ptr<Authenticator> authenticator_;
 
   scoped_ptr<IqRequest> initiate_request_;
+  scoped_ptr<IqRequest> session_info_request_;
   scoped_ptr<IqRequest> transport_info_request_;
 
   ChannelsMap channels_;

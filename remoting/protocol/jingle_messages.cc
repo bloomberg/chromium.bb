@@ -59,6 +59,7 @@ static const NameMapElement<JingleMessage::ActionType> kActionTypes[] = {
   { JingleMessage::SESSION_INITIATE, "session-initiate" },
   { JingleMessage::SESSION_ACCEPT, "session-accept" },
   { JingleMessage::SESSION_TERMINATE, "session-terminate" },
+  { JingleMessage::SESSION_INFO, "session-info" },
   { JingleMessage::TRANSPORT_INFO, "transport-info" },
 };
 
@@ -185,6 +186,19 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
     return false;
   }
 
+  if (action == SESSION_INFO) {
+    // session-info messages may contain arbitrary information not
+    // defined by the Jingle protocol. We don't need to parse it.
+    const XmlElement* child = jingle_tag->FirstElement();
+    if (child) {
+      // session-info is allowed to be empty.
+      info.reset(new XmlElement(*child));
+    } else {
+      info.reset(NULL);
+    }
+    return true;
+  }
+
   const XmlElement* reason_tag =
       jingle_tag->FirstNamed(QName(kJingleNamespace, "reason"));
   if (reason_tag && reason_tag->FirstElement()) {
@@ -266,6 +280,12 @@ buzz::XmlElement* JingleMessage::ToXml() {
   if (!action_attr)
     LOG(FATAL) << "Invalid action value " << action;
   jingle_tag->AddAttr(QName(kEmptyNamespace, "action"), action_attr);
+
+  if (action == SESSION_INFO) {
+    if (info.get())
+      jingle_tag->AddElement(new XmlElement(*info.get()));
+    return root.release();
+  }
 
   if (action == SESSION_INITIATE)
     jingle_tag->AddAttr(QName(kEmptyNamespace, "initiator"), from);
@@ -370,6 +390,10 @@ buzz::XmlElement* JingleMessageReply::ToXml(
     case UNEXPECTED_REQUEST:
       type = "modify";
       name = QName(kJabberNamespace, "unexpected-request");
+      break;
+    case UNSUPPORTED_INFO:
+      type = "modify";
+      name = QName(kJabberNamespace, "feature-not-implemented");
       break;
     default:
       NOTREACHED();

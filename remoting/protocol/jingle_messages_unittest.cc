@@ -220,6 +220,35 @@ TEST(JingleMessageTest, SessionTerminate) {
       << error;
 }
 
+TEST(JingleMessageTest, SessionInfo) {
+  const char* kTestSessionTerminateMessage =
+      "<cli:iq from='user@gmail.com/chromoting016DBB07' "
+      "to='user@gmail.com/chromiumsy5C6A652D' type='set' "
+      "xmlns:cli='jabber:client'><jingle action='session-info' "
+      "sid='2227053353' xmlns='urn:xmpp:jingle:1'><test-info>TestMessage"
+      "</test-info></jingle></cli:iq>";
+
+  scoped_ptr<XmlElement> source_message(
+      XmlElement::ForStr(kTestSessionTerminateMessage));
+  ASSERT_TRUE(source_message.get());
+
+  EXPECT_TRUE(JingleMessage::IsJingleMessage(source_message.get()));
+
+  JingleMessage message;
+  std::string error;
+  EXPECT_TRUE(message.ParseXml(source_message.get(), &error)) << error;
+
+  EXPECT_EQ(message.action, JingleMessage::SESSION_INFO);
+  ASSERT_TRUE(message.info.get() != NULL);
+  EXPECT_TRUE(message.info->Name() ==
+              buzz::QName("urn:xmpp:jingle:1", "test-info"));
+
+  scoped_ptr<XmlElement> formatted_message(message.ToXml());
+  ASSERT_TRUE(formatted_message.get());
+  EXPECT_TRUE(VerifyXml(source_message.get(), formatted_message.get(), &error))
+      << error;
+}
+
 TEST(JingleMessageReplyTest, ToXml) {
   const char* kTestIncomingMessage =
       "<cli:iq from='user@gmail.com/chromoting016DBB07' id='4' "

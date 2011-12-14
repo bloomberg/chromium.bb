@@ -68,13 +68,23 @@ void IqSender::RemoveRequest(IqRequest* request) {
 
 bool IqSender::OnIncomingStanza(const buzz::XmlElement* stanza) {
   if (stanza->Name() != buzz::QN_IQ) {
-    LOG(WARNING) << "Received unexpected non-IQ packet" << stanza->Str();
+    LOG(WARNING) << "Received unexpected non-IQ packet " << stanza->Str();
+    return false;
+  }
+
+  const std::string& type = stanza->Attr(buzz::QN_TYPE);
+  if (type.empty()) {
+    LOG(WARNING) << "IQ packet missing type " << stanza->Str();
+    return false;
+  }
+
+  if (type != "result" && type != "error") {
     return false;
   }
 
   const std::string& id = stanza->Attr(buzz::QN_ID);
   if (id.empty()) {
-    LOG(WARNING) << "IQ packet missing id" << stanza->Str();
+    LOG(WARNING) << "IQ packet missing id " << stanza->Str();
     return false;
   }
 

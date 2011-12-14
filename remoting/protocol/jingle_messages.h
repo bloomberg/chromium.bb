@@ -30,6 +30,7 @@ struct JingleMessage {
     SESSION_INITIATE,
     SESSION_ACCEPT,
     SESSION_TERMINATE,
+    SESSION_INFO,
     TRANSPORT_INFO,
   };
 
@@ -66,6 +67,9 @@ struct JingleMessage {
   scoped_ptr<ContentDescription> description;
   std::list<cricket::Candidate> candidates;
 
+  // Content of session-info messages.
+  scoped_ptr<buzz::XmlElement> info;
+
   // Value from the <reason> tag if it is present in the
   // message. Useful mainly for session-terminate messages, but Jingle
   // spec allows it in any message.
@@ -83,6 +87,7 @@ struct JingleMessageReply {
     NOT_IMPLEMENTED,
     INVALID_SID,
     UNEXPECTED_REQUEST,
+    UNSUPPORTED_INFO,
   };
 
   JingleMessageReply();
