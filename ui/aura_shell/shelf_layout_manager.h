@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura_shell/aura_shell_export.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
@@ -23,8 +24,9 @@ namespace internal {
 // ShelfLayoutManager is a layout manager responsible for the launcher.
 // Also supports showing and hiding the launcher/status area
 // as well as positioning them.
-class ShelfLayoutManager : public aura::LayoutManager,
-                           public ui::LayerAnimationObserver {
+// Exported for unit tests.
+class AURA_SHELL_EXPORT ShelfLayoutManager : public aura::LayoutManager,
+                                             public ui::LayerAnimationObserver {
  public:
   ShelfLayoutManager(views::Widget* launcher, views::Widget* status);
   virtual ~ShelfLayoutManager();
