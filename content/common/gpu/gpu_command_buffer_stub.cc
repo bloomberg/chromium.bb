@@ -168,8 +168,6 @@ void GpuCommandBufferStub::OnInitialize(
     IPC::Message* reply_message) {
   DCHECK(!command_buffer_.get());
 
-  UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "TryCreateGLContext");
-
   command_buffer_.reset(new gpu::CommandBufferService);
 
   if (!command_buffer_->Initialize()) {
@@ -281,9 +279,6 @@ void GpuCommandBufferStub::OnInitialize(
 
   GpuCommandBufferMsg_Initialize::WriteReplyParams(reply_message, true);
   Send(reply_message);
-
-  UNSHIPPED_TRACE_EVENT_INSTANT1("test_gpu", "CreateGLContextSuccess",
-                                 "offscreen", surface_->IsOffscreen());
 }
 
 void GpuCommandBufferStub::OnSetGetBuffer(

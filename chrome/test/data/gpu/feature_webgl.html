@@ -31,10 +31,10 @@ function runTest() {
 
 function draw() {
   frameCount++;
-  gl.viewport(0, 0, 500, 500);
+  gl.viewport(0, 0, 10, 10);
   gl.clearColor(1.0/frameCount, 0.0, 0.0, 1.0);
   gl.clear(gl.COLOR_BUFFER_BIT);
-  if (frameCount == 5) {
+  if (frameCount == 3) {
     endTest();
   } else {
     window.webkitRequestAnimationFrame(draw);
@@ -49,6 +49,6 @@ function endTest() {
 </head>
 <body onload="runTest()">
 WebGL should trigger GPU process launch if it is allowed.
-<canvas id="da-canvas" width="500" height="500"></canvas>
+<canvas id="da-canvas" width="10" height="10"></canvas>
 </body>
 </html>

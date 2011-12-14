@@ -22,19 +22,13 @@
 namespace {
 
 typedef uint32 GpuResultFlags;
-#define EXPECT_NO_GPU_PROCESS         GpuResultFlags(0)
-// Expect GPU process to be created.
-#define EXPECT_GPU_PROCESS            GpuResultFlags(1<<0)
-// Expect num_contexts_ to be created (onscreen or offscreen).
-#define EXPECT_GPU_CONTEXTS           GpuResultFlags(1<<1)
+#define EXPECT_NO_GPU_PROCESS         GpuResultFlags(1<<0)
 // Expect a SwapBuffers to occur (see gles2_cmd_decoder.cc).
-#define EXPECT_GPU_SWAP_BUFFERS       GpuResultFlags(1<<2)
+#define EXPECT_GPU_SWAP_BUFFERS       GpuResultFlags(1<<1)
 
 class GpuFeatureTest : public InProcessBrowserTest {
  public:
-  GpuFeatureTest()
-      : num_contexts_(0),
-        num_offscreen_contexts_(0) {}
+  GpuFeatureTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
     // This enables DOM automation for tab contents.
@@ -83,51 +77,28 @@ class GpuFeatureTest : public InProcessBrowserTest {
     analyzer->AssociateBeginEndEvents();
     TraceAnalyzer::TraceEventVector events;
 
-    size_t num_gpu_processes = (expectations & EXPECT_GPU_PROCESS) ? 1 : 0;
-    analyzer->FindEvents(Query::MatchBeginName("OnGraphicsInfoCollected"),
-                         &events);
-    EXPECT_EQ(num_gpu_processes, events.size());
-
-    // Check for context creation if expected:
-    if (expectations & EXPECT_GPU_CONTEXTS) {
-      analyzer->FindEvents(
-          Query(EVENT_NAME) == Query::String("TryCreateGLContext"),
-          &events);
-      EXPECT_EQ(num_contexts_, events.size());
-      analyzer->FindEvents(
-          Query(EVENT_NAME) == Query::String("CreateGLContextSuccess"),
-          &events);
-      EXPECT_EQ(num_contexts_, events.size());
+    // This measurement is flaky, because the GPU process is sometimes
+    // started before the test (always with force-compositing-mode on CrOS).
+    if (expectations & EXPECT_NO_GPU_PROCESS) {
+      EXPECT_EQ(0u, analyzer->FindEvents(
+          Query::MatchBeginName("OnGraphicsInfoCollected"), &events));
     }
 
     // Check for swap buffers if expected:
     if (expectations & EXPECT_GPU_SWAP_BUFFERS) {
-      analyzer->FindEvents(
-          Query(EVENT_NAME) == Query::String("SwapBuffers"),
-          &events);
-      EXPECT_GT(events.size(), size_t(0));
+      EXPECT_GT(analyzer->FindEvents(Query(EVENT_NAME) ==
+                                     Query::String("SwapBuffers"), &events),
+                size_t(0));
     }
   }
-
- protected:
-  size_t num_contexts_;
-  size_t num_offscreen_contexts_;
 };
 
-#if defined(OS_CHROMEOS)
-// http://crbug.com/106259
-#define MAYBE_AcceleratedCompositingAllowed DISABLED_testSetBooleanPrefTriggers
-#else
-#define MAYBE_AcceleratedCompositingAllowed AcceleratedCompositingAllowed
-#endif
-IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_AcceleratedCompositingAllowed) {
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, AcceleratedCompositingAllowed) {
   GpuFeatureFlags flags = GpuDataManager::GetInstance()->GetGpuFeatureFlags();
   EXPECT_EQ(flags.flags(), 0u);
 
-  num_contexts_ = 1;
   const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
-  RunTest(url, EXPECT_GPU_PROCESS | EXPECT_GPU_SWAP_BUFFERS |
-          EXPECT_GPU_CONTEXTS);
+  RunTest(url, EXPECT_GPU_SWAP_BUFFERS);
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, AcceleratedCompositingBlocked) {
@@ -154,14 +125,12 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, AcceleratedCompositingBlocked) {
   RunTest(url, EXPECT_NO_GPU_PROCESS);
 }
 
-IN_PROC_BROWSER_TEST_F(GpuFeatureTest, FLAKY_WebGLAllowed) {
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLAllowed) {
   GpuFeatureFlags flags = GpuDataManager::GetInstance()->GetGpuFeatureFlags();
   EXPECT_EQ(flags.flags(), 0u);
 
-  num_contexts_ = 2;
   const FilePath url(FILE_PATH_LITERAL("feature_webgl.html"));
-  RunTest(url, EXPECT_GPU_PROCESS | EXPECT_GPU_SWAP_BUFFERS |
-          EXPECT_GPU_CONTEXTS);
+  RunTest(url, EXPECT_GPU_SWAP_BUFFERS);
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLBlocked) {
@@ -188,20 +157,12 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLBlocked) {
   RunTest(url, EXPECT_NO_GPU_PROCESS);
 }
 
-#if defined(OS_LINUX)
-// http://crbug.com/104142
-#define Canvas2DAllowed DISABLED_Canvas2DAllowed
-#endif
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
   GpuFeatureFlags flags = GpuDataManager::GetInstance()->GetGpuFeatureFlags();
   EXPECT_EQ(flags.flags(), 0u);
 
-  num_contexts_ = 2;
-  const GpuResultFlags expectations = EXPECT_GPU_PROCESS |
-                                      EXPECT_GPU_SWAP_BUFFERS |
-                                      EXPECT_GPU_CONTEXTS;
   const FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
-  RunTest(url, expectations);
+  RunTest(url, EXPECT_GPU_SWAP_BUFFERS);
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DBlocked) {

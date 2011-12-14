@@ -16,8 +16,9 @@ function runTest() {
 }
 function draw() {
   frameCount++;
-  document.body.style.backgroundColor = (frameCount & 1) ? "red" : "blue";
-  if (frameCount == 5) {
+  var table = document.getElementById("table");
+  table.style.backgroundColor = (frameCount & 1) ? 'red' : 'black';
+  if (frameCount == 3) {
     domAutomationController.setAutomationId(1);
     domAutomationController.send("FINISHED");
   } else {
@@ -27,6 +28,8 @@ function draw() {
 </script>
 </head>
 <body onload="runTest()">
-This page should trigger accelerated-compositing, i.e., gpu process should launch, if accelerated-compositing is allowed.
+This page should trigger accelerated-compositing, i.e., gpu process should
+ launch, if accelerated-compositing is allowed.
+<table id="table" width="10" height="10"><tr/></table>
 </body>
 </html>

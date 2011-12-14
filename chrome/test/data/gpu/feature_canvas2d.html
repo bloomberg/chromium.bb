@@ -26,9 +26,8 @@ function runTest() {
 
 function draw() {
   frameCount++;
-  document.body.style.backgroundColor = (frameCount & 1) ? "red" : "blue";
-  context.fillRect(0, 0, 500, frameCount*100);
-  if (frameCount == 5) {
+  context.fillRect(0, 0, 100, frameCount);
+  if (frameCount == 3) {
     endTest();
   } else {
     window.webkitRequestAnimationFrame(draw);
@@ -43,6 +42,7 @@ function endTest() {
 </head>
 <body onload="runTest()">
 Canvas2D should trigger GPU process launch if accelerated-2d-canvas is allowed.
-<canvas id="da-canvas" width="500" height="500"></canvas>
+200x200 is enough to trigger accelerated canvas 2D.
+<canvas id="da-canvas" width="200" height="200"></canvas>
 </body>
 </html>
