@@ -331,7 +331,7 @@ class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {
     helper_.EndProcessingTimers();
   }
-#elif defined(TOUCH_UI) || defined(USE_AURA)
+#elif defined(USE_AURA)
   virtual base::EventStatus WillProcessEvent(
       const base::NativeEvent& event) OVERRIDE {
     return base::EVENT_CONTINUE;
