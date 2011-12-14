@@ -36,12 +36,12 @@ except ImportError:
   # Unable to find depot_tools, so just use standard subprocess
   import subprocess
 
-
 SS_USAGE = "python %prog [options] path/to/test [gtest_args]"
 SS_DEFAULT_NUM_CORES = 4
-SS_DEFAULT_SHARDS_PER_CORE = 5 # num_shards = cores * SHARDS_PER_CORE
-SS_DEFAULT_RUNS_PER_CORE = 1 # num_workers = cores * RUNS_PER_CORE
-SS_DEFAULT_RETRY_PERCENT = 5 # --retry-failed ignored if more than 5% fail
+SS_DEFAULT_SHARDS_PER_CORE = 5  # num_shards = cores * SHARDS_PER_CORE
+SS_DEFAULT_RUNS_PER_CORE = 1  # num_workers = cores * RUNS_PER_CORE
+SS_DEFAULT_RETRY_PERCENT = 5  # --retry-failed ignored if more than 5% fail
+SS_DEFAULT_TIMEOUT = 530  # Slightly less than buildbot's default 600 seconds
 
 
 def DetectNumCores():
@@ -83,7 +83,11 @@ def RunShard(test, num_shards, index, gtest_args, stdout, stderr):
   env["CHROME_LOG_FILE"] = "chrome_log_%d" % index
 
   return subprocess.Popen(
-      args, stdout=stdout, stderr=stderr, env=env, bufsize=0)
+      args, stdout=stdout,
+      stderr=stderr,
+      env=env,
+      bufsize=0,
+      universal_newlines=True)
 
 
 class ShardRunner(threading.Thread):
@@ -195,7 +199,7 @@ class ShardingSupervisor(object):
   SHARD_COMPLETED = object()
 
   def __init__(self, test, num_shards, num_runs, color, original_order,
-               prefix, retry_percent, gtest_args):
+               prefix, retry_percent, timeout, gtest_args):
     """Inits ShardingSupervisor with given options and gtest arguments."""
     self.test = test
     self.num_shards = num_shards
@@ -204,6 +208,7 @@ class ShardingSupervisor(object):
     self.original_order = original_order
     self.prefix = prefix
     self.retry_percent = retry_percent
+    self.timeout = timeout
     self.gtest_args = gtest_args
     self.failed_tests = []
     self.failed_shards = []
@@ -289,12 +294,40 @@ class ShardingSupervisor(object):
     """Prints the output from each shard in consecutive order, waiting for
     the current shard to finish before starting on the next shard.
     """
-    for shard_index in range(self.num_shards):
-      while True:
-        line = self.shard_output[shard_index].get()
-        if line is self.SHARD_COMPLETED:
-          break
-        sys.stdout.write(line)
+    try:
+      for shard_index in range(self.num_shards):
+        while True:
+          try:
+            line = self.shard_output[shard_index].get(True, self.timeout)
+          except Queue.Empty:
+            # Shard timed out, notice failure and move on.
+            self.LogShardFailure(shard_index)
+            # TODO(maruel): Print last test. It'd be simpler to have the
+            # processing in the main thread.
+            # TODO(maruel): Make sure the worker thread terminates.
+            sys.stdout.write('TIMED OUT\n\n')
+            LogTestFailure(
+                'FAILURE: SHARD %d TIMED OUT; %d seconds' % (
+                    shard_index, self.timeout))
+            break
+          if line is self.SHARD_COMPLETED:
+            break
+          sys.stdout.write(line)
+    except:
+      sys.stdout.flush()
+      print >> sys.stderr, 'CAUGHT EXCEPTION: dumping remaining data:'
+      for shard_index in range(self.num_shards):
+        while True:
+          try:
+            line = self.shard_output[shard_index].get(False)
+          except Queue.Empty:
+            # Shard timed out, notice failure and move on.
+            self.LogShardFailure(shard_index)
+            break
+          if line is self.SHARD_COMPLETED:
+            break
+          sys.stderr.write(line)
+      raise
 
   def LogOutputLine(self, index, line):
     """Either prints the shard output line immediately or saves it in the
@@ -411,6 +444,9 @@ def main():
       default=SS_DEFAULT_RETRY_PERCENT,
       help="ignore --retry-failed if more than this percent fail [0, 100]"
       " (default = %i)" % SS_DEFAULT_RETRY_PERCENT)
+  parser.add_option(
+      "-t", "--timeout", type="int", default=SS_DEFAULT_TIMEOUT,
+      help="timeout in seconds to wait for a shard (default=%default s)")
   parser.disable_interspersed_args()
   (options, args) = parser.parse_args()
 
@@ -462,7 +498,7 @@ def main():
   # shard and run the whole test
   ss = ShardingSupervisor(
       args[0], num_shards, num_runs, options.color, options.original_order,
-      options.prefix, options.retry_percent, gtest_args)
+      options.prefix, options.retry_percent, options.timeout, gtest_args)
   return ss.ShardTest()
 
 
