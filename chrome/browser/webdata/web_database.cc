@@ -13,7 +13,7 @@
 #include "chrome/browser/webdata/token_service_table.h"
 #include "chrome/browser/webdata/web_apps_table.h"
 #include "chrome/browser/webdata/web_intents_table.h"
-#include "content/browser/notification_service_impl.h"
+#include "content/public/browser/notification_service.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -92,7 +92,7 @@ sql::InitStatus WebDatabase::Init(const FilePath& db_name) {
   // When running in unit tests, there is already a NotificationService object.
   // Since only one can exist at a time per thread, check first.
   if (!content::NotificationService::current())
-    notification_service_.reset(new NotificationServiceImpl);
+    notification_service_.reset(content::NotificationService::Create());
 
   // Set the exceptional sqlite error handler.
   db_.set_error_delegate(GetErrorHandlerForWebDb());

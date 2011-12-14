@@ -23,6 +23,11 @@ content::NotificationService* content::NotificationService::current() {
 }
 
 // static
+content::NotificationService* content::NotificationService::Create() {
+  return new NotificationServiceImpl;
+}
+
+// static
 bool NotificationServiceImpl::HasKey(const NotificationSourceMap& map,
                                  const content::NotificationSource& source) {
   return map.find(source.map_key()) != map.end();

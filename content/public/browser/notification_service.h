@@ -22,6 +22,8 @@ class CONTENT_EXPORT NotificationService {
   // none.
   static NotificationService* current();
 
+  static NotificationService* Create();
+
   virtual ~NotificationService() {}
 
   // Synchronously posts a notification to all interested observers.

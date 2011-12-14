@@ -13,8 +13,8 @@
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
-#include "content/browser/notification_service_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -60,7 +60,7 @@ class ThreadNotificationService
 
   base::WaitableEvent done_event_;
   base::Thread* notification_thread_;
-  scoped_ptr<NotificationServiceImpl> service_;
+  scoped_ptr<content::NotificationService> service_;
 };
 
 class ThreadNotifier :  // NOLINT

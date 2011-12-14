@@ -21,7 +21,7 @@
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/notification_service_impl.h"
+#include "content/public/browser/notification_service.h"
 
 using webkit_glue::PasswordForm;
 
@@ -1016,5 +1016,5 @@ void PasswordStoreMac::RemoveKeychainForms(
 }
 
 void PasswordStoreMac::CreateNotificationService() {
-  notification_service_.reset(new NotificationServiceImpl);
+  notification_service_.reset(content::NotificationService::Create());
 }

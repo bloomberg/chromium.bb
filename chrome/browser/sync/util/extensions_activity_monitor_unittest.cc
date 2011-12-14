@@ -13,7 +13,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "content/browser/notification_service_impl.h"
+#include "content/public/browser/notification_service.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -85,7 +85,7 @@ class BookmarkAPIEventGenerator {
 
 void DoUIThreadSetupCallback(content::NotificationService** service,
                              base::WaitableEvent* done) {
-  *service = new NotificationServiceImpl();
+  *service = content::NotificationService::Create();
   done->Signal();
 }
 

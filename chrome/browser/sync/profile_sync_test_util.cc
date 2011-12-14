@@ -38,7 +38,7 @@ void ThreadNotificationService::TearDown() {
 ThreadNotificationService::~ThreadNotificationService() {}
 
 void ThreadNotificationService::InitTask() {
-  service_.reset(new NotificationServiceImpl());
+  service_.reset(content::NotificationService::Create());
   done_event_.Signal();
 }
 
