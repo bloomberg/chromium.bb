@@ -259,7 +259,25 @@ TEST_F(CloudPolicyControllerTest, DontSetFetchingDoneWithoutTokens) {
   CreateNewController();
   // Initialized without an oauth token, goes into TOKEN_UNAVAILABLE state.
   // This means the controller is still waiting for an oauth token fetch.
+  loop_.RunAllPending();
   EXPECT_FALSE(cache_->IsReady());
+
+  controller_->OnDeviceTokenChanged();
+  loop_.RunAllPending();
+  EXPECT_FALSE(cache_->IsReady());
+}
+
+TEST_F(CloudPolicyControllerTest, RefreshPoliciesWithoutMaterial) {
+  CreateNewWaitingCache();
+  CreateNewController();
+  loop_.RunAllPending();
+  EXPECT_FALSE(cache_->IsReady());
+
+  // Same scenario as the last test, but the RefreshPolicies call must always
+  // notify the cache.
+  controller_->RefreshPolicies();
+  loop_.RunAllPending();
+  EXPECT_TRUE(cache_->IsReady());
 }
 
 TEST_F(CloudPolicyControllerTest, DontSetFetchingDoneWithoutFetching) {

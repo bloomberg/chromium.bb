@@ -136,6 +136,11 @@ void CloudPolicySubsystem::Reset() {
   device_token_fetcher_->Reset();
 }
 
+void CloudPolicySubsystem::RefreshPolicies() {
+  if (cloud_policy_controller_.get())
+    cloud_policy_controller_->RefreshPolicies();
+}
+
 // static
 void CloudPolicySubsystem::RegisterPrefs(PrefService* pref_service) {
   pref_service->RegisterIntegerPref(prefs::kDevicePolicyRefreshRate,

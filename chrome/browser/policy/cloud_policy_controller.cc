@@ -106,6 +106,23 @@ void CloudPolicyController::Reset() {
   SetState(STATE_TOKEN_UNAVAILABLE);
 }
 
+void CloudPolicyController::RefreshPolicies() {
+  // This call must eventually trigger a notification to the cache.
+  if (data_store_->device_token().empty()) {
+    // The DMToken has to be fetched.
+    if (ReadyToFetchToken()) {
+      SetState(STATE_TOKEN_UNAVAILABLE);
+    } else {
+      // The controller doesn't have enough material to start a token fetch,
+      // but observers of the cache are waiting for the refresh.
+      SetState(STATE_TOKEN_UNMANAGED);
+    }
+  } else {
+    // The token is valid, so the next step is to fetch policy.
+    SetState(STATE_TOKEN_VALID);
+  }
+}
+
 void CloudPolicyController::HandlePolicyResponse(
     const em::DevicePolicyResponse& response) {
   if (response.response_size() > 0) {
@@ -240,10 +257,14 @@ void CloudPolicyController::Initialize(
     SetState(STATE_TOKEN_UNAVAILABLE);
 }
 
+bool CloudPolicyController::ReadyToFetchToken() {
+  return data_store_->token_cache_loaded() &&
+         !data_store_->user_name().empty() &&
+         data_store_->has_auth_token();
+}
+
 void CloudPolicyController::FetchToken() {
-  if (data_store_->token_cache_loaded() &&
-      !data_store_->user_name().empty() &&
-      data_store_->has_auth_token()) {
+  if (ReadyToFetchToken()) {
     if (CanBeInManagedDomain(data_store_->user_name())) {
       // Generate a new random device id. (It'll only be kept if registration
       // succeeds.)

@@ -90,6 +90,10 @@ class CloudPolicySubsystem
   // retry operations.
   void Reset();
 
+  // Refreshes the policies retrieved by this subsystem. This triggers new
+  // policy fetches if possible, otherwise it keeps the current set of policies.
+  void RefreshPolicies();
+
   // Registers cloud policy related prefs.
   static void RegisterPrefs(PrefService* pref_service);
 

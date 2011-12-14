@@ -43,6 +43,10 @@ class CloudPolicyController
   // Stops any pending activity and resets the controller to unenrolled state.
   void Reset();
 
+  // Attempts to fetch policies again, if possible. The cache is notified that
+  // a fetch was attempted.
+  void RefreshPolicies();
+
   // DevicePolicyResponseDelegate implementation:
   virtual void HandlePolicyResponse(
       const em::DevicePolicyResponse& response) OVERRIDE;
@@ -90,6 +94,9 @@ class CloudPolicyController
                   CloudPolicyDataStore* data_store,
                   PolicyNotifier* notifier,
                   DelayedWorkScheduler* scheduler);
+
+  // Checks if the controller is ready to fetch the DMToken.
+  bool ReadyToFetchToken();
 
   // Asks the token fetcher to fetch a new token.
   void FetchToken();

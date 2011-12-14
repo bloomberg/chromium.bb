@@ -221,10 +221,10 @@ void BrowserPolicyConnector::ResetDevicePolicy() {
 
 void BrowserPolicyConnector::FetchCloudPolicy() {
 #if defined(OS_CHROMEOS)
-  if (device_data_store_.get())
-    device_data_store_->NotifyDeviceTokenChanged();
-  if (user_data_store_.get())
-    user_data_store_->NotifyDeviceTokenChanged();
+  if (device_cloud_policy_subsystem_.get())
+    device_cloud_policy_subsystem_->RefreshPolicies();
+  if (user_cloud_policy_subsystem_.get())
+    user_cloud_policy_subsystem_->RefreshPolicies();
 #endif
 }
 
