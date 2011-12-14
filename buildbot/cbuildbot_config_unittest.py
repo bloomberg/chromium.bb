@@ -136,6 +136,14 @@ class CBuildBotTest(mox.MoxTestBase):
         self.assertTrue(config['vm_tests'] is None,
                         "ARM builder %s can't run vm tests!" % build_name)
 
+  def testHWTestNeedsVMTest(self):
+    """Verify VMTest is a prerequisite for HWTest"""
+
+    for build_name, config in cbuildbot_config.config.iteritems():
+      if config['hw_tests']:
+        self.assertTrue(config['vm_tests'],
+                        'Config %s: HWTest depend on VMTest' % build_name)
+
 
 if __name__ == '__main__':
   unittest.main()

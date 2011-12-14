@@ -37,12 +37,14 @@ class BuilderStage(object):
   def SetTrackingBranch(tracking_branch):
     BuilderStage._tracking_branch = tracking_branch
 
-  def __init__(self, bot_id, options, build_config):
+  def __init__(self, bot_id, options, build_config, suffix=None):
     self._bot_id = bot_id
     self._options = options
     self._build_config = build_config
     self._prebuilt_type = None
     self.name = self.name_stage_re.match(self.__class__.__name__).group(1)
+    if suffix:
+      self.name += suffix
     self._ExtractVariables()
 
     # Determine correct chrome_rev.
