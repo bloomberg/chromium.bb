@@ -9,6 +9,9 @@ for more details about the presubmit API built into gcl.
 """
 
 
+import re
+
+
 _EXCLUDED_PATHS = (
     r"^breakpad[\\\/].*",
     r"^net/tools/spdyshark/[\\\/].*",
@@ -335,4 +338,8 @@ def GetPreferredTrySlaves(project, change):
       f.LocalPath().endswith(('.mm', '.m')) for f in change.AffectedFiles())
   if only_objc_files:
     return ['mac_rel']
-  return ['win_rel', 'linux_rel', 'mac_rel']
+  preferred = ['win_rel', 'linux_rel', 'mac_rel']
+  aura_re = '_aura[^/]*[.][^/]*'
+  if any(re.search(aura_re, f.LocalPath()) for f in change.AffectedFiles()):
+    preferred.append('linux_aura:compile')
+  return preferred
