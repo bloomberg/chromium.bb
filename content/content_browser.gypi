@@ -166,6 +166,8 @@
     'browser/download/download_manager_impl.h',
     'browser/download/download_persistent_store_info.cc',
     'browser/download/download_persistent_store_info.h',
+    'browser/download/download_query.cc',
+    'browser/download/download_query.h',
     'browser/download/download_request_handle.cc',
     'browser/download/download_request_handle.h',
     'browser/download/download_resource_handler.cc',

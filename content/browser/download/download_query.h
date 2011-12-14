@@ -1,0 +1,148 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_QUERY_H_
+#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_QUERY_H_
+#pragma once
+
+#include <map>
+#include <string>
+#include <vector>
+
+#include "base/callback_forward.h"
+#include "content/browser/download/download_item.h"
+
+namespace base {
+class Value;
+}
+
+// Filter and sort a vector of DownloadItem*s.
+//
+// The following example copies from |all_items| to |results| those
+// DownloadItem*s whose start time is 0 and whose id is odd, sorts primarily by
+// bytes received ascending and secondarily by url descending, and limits the
+// results to 20 items. Any number of filters or sorters is allowed. If all
+// sorters compare two DownloadItems equivalently, then they are sorted by their
+// id ascending.
+//
+// DownloadQuery query;
+// scoped_ptr<base::Value> start_time(base::Balue::CreateIntegerValue(0));
+// CHECK(query.AddFilter(FILTER_START_TIME, *start_time.get()));
+// bool FilterOutOddDownloads(const DownloadItem& item) {
+//   return 0 == (item.GetId() % 2);
+// }
+// CHECK(query.AddFilter(base::Bind(&FilterOutOddDownloads)));
+// query.AddSorter(SORT_BYTES_RECEIVED, ASCENDING);
+// query.AddSorter(SORT_URL, DESCENDING);
+// query.Limit(20);
+// DownloadVector all_items, results;
+// query.Search(all_items.begin(), all_items.end(), &results);
+class CONTENT_EXPORT DownloadQuery {
+ public:
+  typedef std::vector<DownloadItem*> DownloadVector;
+
+  // FilterCallback is a Callback that takes a DownloadItem and returns true if
+  // the item matches the filter and false otherwise.
+  // query.AddFilter(base::Bind(&YourFilterFunction));
+  typedef base::Callback<bool(const DownloadItem&)> FilterCallback;
+
+  // All times are the number of milliseconds since the Unix epoch.
+  enum FilterType {
+    FILTER_BYTES_RECEIVED,       // int
+    FILTER_DANGER_ACCEPTED,      // bool
+    FILTER_FILENAME,             // string
+    FILTER_FILENAME_REGEX,       // string
+    FILTER_MIME,                 // string
+    FILTER_PAUSED,               // bool
+    FILTER_QUERY,                // string
+    FILTER_STARTED_AFTER,        // int
+    FILTER_STARTED_BEFORE,       // int
+    FILTER_START_TIME,           // int
+    FILTER_TOTAL_BYTES,          // int
+    FILTER_TOTAL_BYTES_GREATER,  // int
+    FILTER_TOTAL_BYTES_LESS,     // int
+    FILTER_URL,                  // string
+    FILTER_URL_REGEX,            // string
+  };
+
+  enum SortType {
+    SORT_BYTES_RECEIVED,
+    SORT_DANGER,
+    SORT_DANGER_ACCEPTED,
+    SORT_FILENAME,
+    SORT_MIME,
+    SORT_PAUSED,
+    SORT_START_TIME,
+    SORT_STATE,
+    SORT_TOTAL_BYTES,
+    SORT_URL,
+  };
+
+  enum SortDirection {
+    ASCENDING,
+    DESCENDING,
+  };
+
+  DownloadQuery();
+  ~DownloadQuery();
+
+  // Adds a new filter of type |type| with value |value| and returns true if
+  // |type| is valid and |value| is the correct Value-type and well-formed.
+  // Returns false if |type| is invalid or |value| is the incorrect Value-type
+  // or malformed.  Search() will filter out all DownloadItem*s that do not
+  // match all filters.  Multiple instances of the same FilterType are allowed,
+  // so you can pass two regexes to AddFilter(URL_REGEX,...) in order to
+  // Search() for items whose url matches both regexes. You can also pass two
+  // different DownloadStates to AddFilter(), which will cause Search() to
+  // filter out all items.
+  bool AddFilter(const FilterCallback& filter);
+  bool AddFilter(FilterType type, const base::Value& value);
+  void AddFilter(DownloadStateInfo::DangerType danger);
+  void AddFilter(DownloadItem::DownloadState state);
+
+  // Adds a new sorter of type |type| with direction |direction|.  After
+  // filtering DownloadItem*s, Search() will sort the results primarily by the
+  // sorter from the first call to Sort(), secondarily by the sorter from the
+  // second call to Sort(), and so on. For example, if the InputIterator passed
+  // to Search() yields four DownloadItems {id:0, error:0, start_time:0}, {id:1,
+  // error:0, start_time:1}, {id:2, error:1, start_time:0}, {id:3, error:1,
+  // start_time:1}, and Sort is called twice, once with (SORT_ERROR, ASCENDING)
+  // then with (SORT_START_TIME, DESCENDING), then Search() will return items
+  // ordered 1,0,3,2.
+  void AddSorter(SortType type, SortDirection direction);
+
+  // Limit the size of search results to |limit|.
+  void Limit(size_t limit) { limit_ = limit; }
+
+  // Filters DownloadItem*s from |iter| to |last| into |results|, sorts
+  // |results|, and limits the size of |results|. |results| must be non-NULL.
+  template <typename InputIterator>
+  void Search(InputIterator iter, const InputIterator last,
+              DownloadVector* results) const {
+    results->clear();
+    for (; iter != last; ++iter) {
+      if (Matches(**iter)) results->push_back(*iter);
+    }
+    FinishSearch(results);
+  }
+
+ private:
+  struct Sorter;
+  class DownloadComparator;
+  typedef std::vector<FilterCallback> FilterCallbackVector;
+  typedef std::vector<Sorter> SorterVector;
+
+  bool FilterRegex(const std::string& regex_str,
+      const base::Callback<std::string(const DownloadItem&)>& accessor);
+  bool Matches(const DownloadItem& item) const;
+  void FinishSearch(DownloadVector* results) const;
+
+  FilterCallbackVector filters_;
+  SorterVector sorters_;
+  size_t limit_;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadQuery);
+};
+
+#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_QUERY_H_
