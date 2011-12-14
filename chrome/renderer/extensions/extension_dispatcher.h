@@ -56,9 +56,15 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   bool IsExtensionActive(const std::string& extension_id) const;
 
   // See WebKit::WebPermissionClient::allowScriptExtension
+  // TODO(koz): Remove once WebKit no longer calls this.
   bool AllowScriptExtension(WebKit::WebFrame* frame,
                             const std::string& v8_extension_name,
                             int extension_group);
+
+  bool AllowScriptExtension(WebKit::WebFrame* frame,
+                            const std::string& v8_extension_name,
+                            int extension_group,
+                            int world_id);
 
   void DidCreateScriptContext(WebKit::WebFrame* frame,
                               v8::Handle<v8::Context> context,

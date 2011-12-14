@@ -260,6 +260,14 @@ bool ExtensionDispatcher::AllowScriptExtension(
     WebFrame* frame,
     const std::string& v8_extension_name,
     int extension_group) {
+  return AllowScriptExtension(frame, v8_extension_name, extension_group, 0);
+}
+
+bool ExtensionDispatcher::AllowScriptExtension(
+    WebFrame* frame,
+    const std::string& v8_extension_name,
+    int extension_group,
+    int world_id) {
   // NULL in unit tests.
   if (!RenderThread::Get())
     return true;
