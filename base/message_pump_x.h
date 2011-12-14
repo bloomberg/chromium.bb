@@ -45,9 +45,6 @@ class BASE_EXPORT MessagePumpX : public MessagePumpGlib {
   MessagePumpX();
   virtual ~MessagePumpX();
 
-  // Overridden from MessagePumpGlib:
-  virtual bool RunOnce(GMainContext* context, bool block) OVERRIDE;
-
   // Returns default X Display.
   static Display* GetDefaultXDisplay();
 
@@ -56,6 +53,10 @@ class BASE_EXPORT MessagePumpX : public MessagePumpGlib {
 
   // Sets the default dispatcher to process native events.
   static void SetDefaultDispatcher(MessagePumpDispatcher* dispatcher);
+
+  // Internal function. Called by the glib source dispatch function. Processes
+  // all available X events.
+  gboolean DispatchXEvents();
 
  private:
   // Initializes the glib event source for X.
