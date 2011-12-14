@@ -122,8 +122,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(TabContents* tab_contents,
   ExtensionService* service = profile ? profile->GetExtensionService() : NULL;
   if (service && service->ExtensionBindingsAllowed(url) &&
       (!tab_contents ||
-        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents)))
-  return &NewWebUI<ExtensionWebUI>;
+        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents))) {
+    return &NewWebUI<ExtensionWebUI>;
+  }
 
   // All platform builds of Chrome will need to have a cloud printing
   // dialog as backup.  It's just that on Chrome OS, it's the only
@@ -135,20 +136,23 @@ WebUIFactoryFunction GetWebUIFactoryFunction(TabContents* tab_contents,
   // schemes to filter out most URLs.
   if (!url.SchemeIs(chrome::kChromeDevToolsScheme) &&
       !url.SchemeIs(chrome::kChromeInternalScheme) &&
-      !url.SchemeIs(chrome::kChromeUIScheme))
+      !url.SchemeIs(chrome::kChromeUIScheme)) {
     return NULL;
+  }
 
   if (url.host() == chrome::kChromeUISyncResourcesHost ||
-      url.host() == chrome::kChromeUICloudPrintSetupHost)
+      url.host() == chrome::kChromeUICloudPrintSetupHost) {
     return &NewWebUI<HtmlDialogUI>;
+  }
 
   // Special case the new tab page. In older versions of Chrome, the new tab
   // page was hosted at chrome-internal:<blah>. This might be in people's saved
   // sessions or bookmarks, so we say any URL with that scheme triggers the new
   // tab page.
   if (url.host() == chrome::kChromeUINewTabHost ||
-      url.SchemeIs(chrome::kChromeInternalScheme))
+      url.SchemeIs(chrome::kChromeInternalScheme)) {
     return &NewWebUI<NewTabUI>;
+  }
 
   // We must compare hosts only since some of the Web UIs append extra stuff
   // after the host name.

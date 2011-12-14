@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/webui/uber/uber_ui.h"
 
+#include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/common/url_constants.h"
@@ -31,37 +33,45 @@ UberUI::UberUI(TabContents* contents) : ChromeWebUI(contents) {
   Profile* profile = Profile::FromBrowserContext(contents->browser_context());
   profile->GetChromeURLDataManager()->AddDataSource(CreateUberHTMLSource());
 
-  ChromeWebUI* options = new OptionsUI(contents);
-  options->set_frame_xpath("//iframe[@id='settings']");
-  sub_uis_.push_back(options);
-
-  ChromeWebUI* extensions = new ExtensionsUI(contents);
-  extensions->set_frame_xpath("//iframe[@id='extensions']");
-  sub_uis_.push_back(extensions);
+  RegisterSubpage(chrome::kChromeUISettingsURL);
+  RegisterSubpage(chrome::kChromeUIExtensionsFrameURL);
 }
 
 UberUI::~UberUI() {
+  STLDeleteValues(&sub_uis_);
+}
+
+void UberUI::RegisterSubpage(const std::string& page_url) {
+  ChromeWebUI* web_ui = static_cast<ChromeWebUI*>(
+      ChromeWebUIFactory::GetInstance()->CreateWebUIForURL(tab_contents_,
+                                                           GURL(page_url)));
+
+  web_ui->set_frame_xpath("//iframe[@src='" + page_url + "']");
+  sub_uis_[page_url] = web_ui;
 }
 
 void UberUI::RenderViewCreated(RenderViewHost* render_view_host) {
-  for (size_t i = 0; i < sub_uis_.size(); i++) {
-    sub_uis_[i]->RenderViewCreated(render_view_host);
+  for (SubpageMap::iterator iter = sub_uis_.begin(); iter != sub_uis_.end();
+       ++iter) {
+    iter->second->RenderViewCreated(render_view_host);
   }
 
   ChromeWebUI::RenderViewCreated(render_view_host);
 }
 
 void UberUI::RenderViewReused(RenderViewHost* render_view_host) {
-  for (size_t i = 0; i < sub_uis_.size(); i++) {
-    sub_uis_[i]->RenderViewReused(render_view_host);
+  for (SubpageMap::iterator iter = sub_uis_.begin(); iter != sub_uis_.end();
+       ++iter) {
+    iter->second->RenderViewReused(render_view_host);
   }
 
   ChromeWebUI::RenderViewReused(render_view_host);
 }
 
 void UberUI::DidBecomeActiveForReusedRenderView() {
-  for (size_t i = 0; i < sub_uis_.size(); i++) {
-    sub_uis_[i]->DidBecomeActiveForReusedRenderView();
+  for (SubpageMap::iterator iter = sub_uis_.begin(); iter != sub_uis_.end();
+       ++iter) {
+    iter->second->DidBecomeActiveForReusedRenderView();
   }
 
   ChromeWebUI::DidBecomeActiveForReusedRenderView();
@@ -70,11 +80,14 @@ void UberUI::DidBecomeActiveForReusedRenderView() {
 void UberUI::OnWebUISend(const GURL& source_url,
                          const std::string& message,
                          const ListValue& args) {
-  // TODO(estade): This should only send the message to the appropriate
-  // subpage (if any), not all of them.
-  for (size_t i = 0; i < sub_uis_.size(); i++) {
-    sub_uis_[i]->OnWebUISend(source_url, message, args);
+  // Find the appropriate subpage and forward the message.
+  SubpageMap::iterator subpage = sub_uis_.find(source_url.GetOrigin().spec());
+  if (subpage == sub_uis_.end()) {
+    // The message was sent from the uber page itself.
+    DCHECK_EQ(std::string(chrome::kChromeUIUberHost), source_url.host());
+    ChromeWebUI::OnWebUISend(source_url, message, args);
+  } else {
+    // The message was sent from a subpage.
+    subpage->second->OnWebUISend(source_url, message, args);
   }
-
-  ChromeWebUI::OnWebUISend(source_url, message, args);
 }

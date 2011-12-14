@@ -34,6 +34,7 @@ extern const char kChromeUIDevToolsURL[];
 extern const char kChromeUIDownloadsURL[];
 extern const char kChromeUIEditSearchEngineDialogURL[];
 extern const char kChromeUIExtensionIconURL[];
+extern const char kChromeUIExtensionsFrameURL[];
 extern const char kChromeUIExtensionsURL[];
 extern const char kChromeUIFaviconURL[];
 extern const char kChromeUIFlagsURL[];

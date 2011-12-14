@@ -31,8 +31,16 @@ class UberUI : public ChromeWebUI {
   virtual void DidBecomeActiveForReusedRenderView() OVERRIDE;
 
  private:
-  // Collection of WebUIs for the subpages within uber.
-  ScopedVector<ChromeWebUI> sub_uis_;
+  // A map from URL origin to WebUI instance.
+  typedef std::map<std::string, ChromeWebUI*> SubpageMap;
+
+  // Creates and stores a WebUI for the given URL.
+  void RegisterSubpage(const std::string& page_url);
+
+  // The WebUI*s in this map are owned.
+  SubpageMap sub_uis_;
+
+  DISALLOW_COPY_AND_ASSIGN(UberUI);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_UBER_UBER_UI_H_
