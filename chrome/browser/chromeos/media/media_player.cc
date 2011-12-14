@@ -37,8 +37,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -53,6 +53,7 @@
 #endif
 
 using content::BrowserThread;
+using content::UserMetricsAction;
 
 static const char* kMediaPlayerAppName = "mediaplayer";
 static const int kPopupLeft = 0;

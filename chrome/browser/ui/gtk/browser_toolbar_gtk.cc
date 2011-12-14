@@ -43,9 +43,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -58,6 +58,8 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/skbitmap_operations.h"
+
+using content::UserMetricsAction;
 
 namespace {
 
@@ -291,7 +293,7 @@ void BrowserToolbarGtk::ShowAppMenu() {
     RebuildWrenchMenu();
 
   wrench_menu_button_->SetPaintOverride(GTK_STATE_ACTIVE);
-  UserMetrics::RecordAction(UserMetricsAction("ShowAppMenu"));
+  content::RecordAction(UserMetricsAction("ShowAppMenu"));
   wrench_menu_->PopupAsFromKeyEvent(wrench_menu_button_->widget());
 }
 

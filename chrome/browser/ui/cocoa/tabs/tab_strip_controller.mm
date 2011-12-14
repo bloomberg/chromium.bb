@@ -55,7 +55,7 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -66,6 +66,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/mac/nsimage_cache.h"
+
+using content::UserMetricsAction;
 
 NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
 
@@ -695,7 +697,7 @@ private:
   if (!tabStripModel_->ContainsIndex(index))
     return;
 
-  UserMetrics::RecordAction(UserMetricsAction("CloseTab_Mouse"));
+  content::RecordAction(UserMetricsAction("CloseTab_Mouse"));
   const NSInteger numberOfOpenTabs = [self numberOfOpenTabs];
   if (numberOfOpenTabs > 1) {
     bool isClosingLastTab = index == numberOfOpenTabs - 1;
@@ -1832,7 +1834,7 @@ private:
   // Either insert a new tab or open in a current tab.
   switch (disposition) {
     case NEW_FOREGROUND_TAB: {
-      UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"));
+      content::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"));
       browser::NavigateParams params(
           browser_, *url, content::PAGE_TRANSITION_TYPED);
       params.disposition = disposition;
@@ -1843,7 +1845,7 @@ private:
       break;
     }
     case CURRENT_TAB:
-      UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLOnTab"));
+      content::RecordAction(UserMetricsAction("Tab_DropURLOnTab"));
       tabStripModel_->GetTabContentsAt(index)
           ->tab_contents()->OpenURL(*url, GURL(), CURRENT_TAB,
                                     content::PAGE_TRANSITION_TYPED);

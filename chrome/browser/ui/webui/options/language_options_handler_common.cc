@@ -21,10 +21,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_common.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using content::UserMetricsAction;
 
 LanguageOptionsHandlerCommon::LanguageOptionsHandlerCommon() {
 }
@@ -142,7 +144,7 @@ DictionaryValue* LanguageOptionsHandlerCommon::GetSpellCheckLanguageCodeSet() {
 
 void LanguageOptionsHandlerCommon::LanguageOptionsOpenCallback(
     const ListValue* args) {
-  UserMetrics::RecordAction(UserMetricsAction("LanguageOptions_Open"));
+  content::RecordAction(UserMetricsAction("LanguageOptions_Open"));
 }
 
 void LanguageOptionsHandlerCommon::UiLanguageChangeCallback(
@@ -151,7 +153,7 @@ void LanguageOptionsHandlerCommon::UiLanguageChangeCallback(
   CHECK(!language_code.empty());
   const std::string action = base::StringPrintf(
       "LanguageOptions_UiLanguageChange_%s", language_code.c_str());
-  UserMetrics::RecordComputedAction(action);
+  content::RecordComputedAction(action);
   SetApplicationLocale(language_code);
     web_ui_->CallJavascriptFunction("options.LanguageOptions.uiLanguageSaved");
 }
@@ -162,5 +164,5 @@ void LanguageOptionsHandlerCommon::SpellCheckLanguageChangeCallback(
   CHECK(!language_code.empty());
   const std::string action = base::StringPrintf(
       "LanguageOptions_SpellCheckLanguageChange_%s", language_code.c_str());
-  UserMetrics::RecordComputedAction(action);
+  content::RecordComputedAction(action);
 }

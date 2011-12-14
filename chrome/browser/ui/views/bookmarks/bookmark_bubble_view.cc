@@ -16,8 +16,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -33,6 +33,7 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
+using content::UserMetricsAction;
 using views::ColumnSet;
 using views::GridLayout;
 
@@ -272,7 +273,7 @@ void BookmarkBubbleView::ButtonPressed(
 
 void BookmarkBubbleView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK(source == remove_link_);
-  UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"));
+  content::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"));
 
   // Set this so we remove the bookmark after the window closes.
   remove_bookmark_ = true;
@@ -284,15 +285,15 @@ void BookmarkBubbleView::ItemChanged(views::Combobox* combo_box,
                                      int prev_index,
                                      int new_index) {
   if (new_index + 1 == parent_model_.GetItemCount()) {
-    UserMetrics::RecordAction(
-              UserMetricsAction("BookmarkBubble_EditFromCombobox"));
+    content::RecordAction(
+        UserMetricsAction("BookmarkBubble_EditFromCombobox"));
     ShowEditor();
   }
 }
 
 void BookmarkBubbleView::HandleButtonPressed(views::Button* sender) {
   if (sender == edit_button_) {
-    UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Edit"));
+    content::RecordAction(UserMetricsAction("BookmarkBubble_Edit"));
     ShowEditor();
   } else {
     DCHECK_EQ(sender, close_button_);
@@ -324,7 +325,7 @@ void BookmarkBubbleView::ApplyEdits() {
     const string16 new_title = title_tf_->text();
     if (new_title != node->GetTitle()) {
       model->SetTitle(node, new_title);
-      UserMetrics::RecordAction(
+      content::RecordAction(
           UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"));
     }
     // Last index means 'Choose another folder...'
@@ -332,7 +333,7 @@ void BookmarkBubbleView::ApplyEdits() {
       const BookmarkNode* new_parent =
           parent_model_.GetNodeAt(parent_combobox_->selected_item());
       if (new_parent != node->parent()) {
-        UserMetrics::RecordAction(
+        content::RecordAction(
             UserMetricsAction("BookmarkBubble_ChangeParent"));
         model->Move(node, new_parent, new_parent->child_count());
       }

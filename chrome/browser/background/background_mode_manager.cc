@@ -26,14 +26,16 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+using content::UserMetricsAction;
 
 BackgroundModeManager::BackgroundModeData::BackgroundModeData(
     int command_id,
@@ -467,7 +469,7 @@ void BackgroundModeManager::ExecuteCommand(int command_id) {
       bmd->GetBrowserWindow()->OpenTaskManager(true);
       break;
     case IDC_EXIT:
-      UserMetrics::RecordAction(UserMetricsAction("Exit"));
+      content::RecordAction(UserMetricsAction("Exit"));
       BrowserList::AttemptExit();
       break;
     case IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND: {

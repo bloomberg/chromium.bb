@@ -23,7 +23,7 @@
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -32,6 +32,7 @@
 #include "ui/gfx/image/image.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 
+using content::UserMetricsAction;
 using webkit::npapi::PluginGroup;
 using webkit::WebPluginInfo;
 
@@ -74,7 +75,7 @@ PDFEnableAdobeReaderInfoBarDelegate::PDFEnableAdobeReaderInfoBarDelegate(
     InfoBarTabHelper* infobar_helper, Profile* profile)
     : ConfirmInfoBarDelegate(infobar_helper),
       profile_(profile) {
-  UserMetrics::RecordAction(UserMetricsAction("PDF_EnableReaderInfoBarShown"));
+  content::RecordAction(UserMetricsAction("PDF_EnableReaderInfoBarShown"));
 }
 
 PDFEnableAdobeReaderInfoBarDelegate::~PDFEnableAdobeReaderInfoBarDelegate() {
@@ -113,7 +114,7 @@ string16 PDFEnableAdobeReaderInfoBarDelegate::GetMessageText() const {
 }
 
 void PDFEnableAdobeReaderInfoBarDelegate::OnYes() {
-  UserMetrics::RecordAction(UserMetricsAction("PDF_EnableReaderInfoBarOK"));
+  content::RecordAction(UserMetricsAction("PDF_EnableReaderInfoBarOK"));
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile_);
   plugin_prefs->EnablePluginGroup(
       true, ASCIIToUTF16(webkit::npapi::PluginGroup::kAdobeReaderGroupName));
@@ -122,7 +123,7 @@ void PDFEnableAdobeReaderInfoBarDelegate::OnYes() {
 }
 
 void PDFEnableAdobeReaderInfoBarDelegate::OnNo() {
-  UserMetrics::RecordAction(UserMetricsAction("PDF_EnableReaderInfoBarCancel"));
+  content::RecordAction(UserMetricsAction("PDF_EnableReaderInfoBarCancel"));
 }
 
 // Launch the url to get the latest Adbobe Reader installer.
@@ -163,7 +164,7 @@ class PDFUnsupportedFeatureInterstitial : public ChromeInterstitialPage {
             tab->tab_contents(), false, tab->tab_contents()->GetURL()),
         tab_contents_(tab),
         reader_webplugininfo_(reader_webplugininfo) {
-    UserMetrics::RecordAction(UserMetricsAction("PDF_ReaderInterstitialShown"));
+    content::RecordAction(UserMetricsAction("PDF_ReaderInterstitialShown"));
   }
 
  protected:
@@ -198,18 +199,18 @@ class PDFUnsupportedFeatureInterstitial : public ChromeInterstitialPage {
 
   virtual void CommandReceived(const std::string& command) {
     if (command == "0") {
-      UserMetrics::RecordAction(
+      content::RecordAction(
           UserMetricsAction("PDF_ReaderInterstitialCancel"));
       DontProceed();
       return;
     }
 
     if (command == "1") {
-      UserMetrics::RecordAction(
+      content::RecordAction(
           UserMetricsAction("PDF_ReaderInterstitialUpdate"));
       OpenReaderUpdateURL(tab());
     } else if (command == "2") {
-      UserMetrics::RecordAction(
+      content::RecordAction(
           UserMetricsAction("PDF_ReaderInterstitialIgnore"));
       OpenUsingReader(tab_contents_, reader_webplugininfo_, NULL, NULL);
     } else {
@@ -264,12 +265,12 @@ PDFUnsupportedFeatureInfoBarDelegate::PDFUnsupportedFeatureInfoBarDelegate(
       reader_installed_(!!reader_group),
       reader_vulnerable_(false) {
   if (!reader_installed_) {
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("PDF_InstallReaderInfoBarShown"));
     return;
   }
 
-  UserMetrics::RecordAction(UserMetricsAction("PDF_UseReaderInfoBarShown"));
+  content::RecordAction(UserMetricsAction("PDF_UseReaderInfoBarShown"));
   const std::vector<WebPluginInfo>& plugins =
       reader_group->web_plugin_infos();
   DCHECK_EQ(plugins.size(), 1u);
@@ -325,12 +326,12 @@ string16 PDFUnsupportedFeatureInfoBarDelegate::GetMessageText() const {
 
 bool PDFUnsupportedFeatureInfoBarDelegate::OnYes() {
   if (!reader_installed_) {
-    UserMetrics::RecordAction(UserMetricsAction("PDF_InstallReaderInfoBarOK"));
+    content::RecordAction(UserMetricsAction("PDF_InstallReaderInfoBarOK"));
     OpenReaderUpdateURL(tab_contents_->tab_contents());
     return true;
   }
 
-  UserMetrics::RecordAction(UserMetricsAction("PDF_UseReaderInfoBarOK"));
+  content::RecordAction(UserMetricsAction("PDF_UseReaderInfoBarOK"));
 
   if (reader_vulnerable_) {
     PDFUnsupportedFeatureInterstitial* interstitial =
@@ -353,9 +354,9 @@ bool PDFUnsupportedFeatureInfoBarDelegate::OnYes() {
 }
 
 void PDFUnsupportedFeatureInfoBarDelegate::OnNo() {
-  UserMetrics::RecordAction(reader_installed_ ?
-      UserMetricsAction("PDF_UseReaderInfoBarCancel") :
-      UserMetricsAction("PDF_InstallReaderInfoBarCancel"));
+  content::RecordAction(reader_installed_ ?
+                        UserMetricsAction("PDF_UseReaderInfoBarCancel") :
+                        UserMetricsAction("PDF_InstallReaderInfoBarCancel"));
 }
 
 void GotPluginGroupsCallback(int process_id,

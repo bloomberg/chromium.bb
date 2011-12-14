@@ -11,8 +11,8 @@
 #include "base/platform_file.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
-#include "content/browser/user_metrics.h"
 #include "content/common/file_system_messages.h"
+#include "content/public/browser/user_metrics.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_platform_file.h"
 #include "net/url_request/url_request_context.h"
@@ -25,6 +25,7 @@
 #include "webkit/fileapi/file_system_util.h"
 
 using content::BrowserThread;
+using content::UserMetricsAction;
 using fileapi::FileSystemCallbackDispatcher;
 using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemOperation;
@@ -165,9 +166,9 @@ void FileSystemDispatcherHost::OnOpen(
     int request_id, const GURL& origin_url, fileapi::FileSystemType type,
     int64 requested_size, bool create) {
   if (type == fileapi::kFileSystemTypeTemporary) {
-    UserMetrics::RecordAction(UserMetricsAction("OpenFileSystemTemporary"));
+    content::RecordAction(UserMetricsAction("OpenFileSystemTemporary"));
   } else if (type == fileapi::kFileSystemTypePersistent) {
-    UserMetrics::RecordAction(UserMetricsAction("OpenFileSystemPersistent"));
+    content::RecordAction(UserMetricsAction("OpenFileSystemPersistent"));
   }
   GetNewOperation(request_id)->OpenFileSystem(origin_url, type, create);
 }

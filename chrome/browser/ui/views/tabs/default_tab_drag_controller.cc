@@ -22,11 +22,11 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/animation/animation.h"
@@ -43,6 +43,8 @@
 #include <gdk/gdk.h>  // NOLINT
 #include <gdk/gdkkeysyms.h>  // NOLINT
 #endif
+
+using content::UserMetricsAction;
 
 static const int kHorizontalMoveThreshold = 16;  // Pixels.
 
@@ -1190,38 +1192,38 @@ void DefaultTabDragController::CompleteDrag() {
     if (dock_info_.type() != DockInfo::NONE) {
       switch (dock_info_.type()) {
         case DockInfo::LEFT_OF_WINDOW:
-          UserMetrics::RecordAction(UserMetricsAction("DockingWindow_Left"));
+          content::RecordAction(UserMetricsAction("DockingWindow_Left"));
           break;
 
         case DockInfo::RIGHT_OF_WINDOW:
-          UserMetrics::RecordAction(UserMetricsAction("DockingWindow_Right"));
+          content::RecordAction(UserMetricsAction("DockingWindow_Right"));
           break;
 
         case DockInfo::BOTTOM_OF_WINDOW:
-          UserMetrics::RecordAction(UserMetricsAction("DockingWindow_Bottom"));
+          content::RecordAction(UserMetricsAction("DockingWindow_Bottom"));
           break;
 
         case DockInfo::TOP_OF_WINDOW:
-          UserMetrics::RecordAction(UserMetricsAction("DockingWindow_Top"));
+          content::RecordAction(UserMetricsAction("DockingWindow_Top"));
           break;
 
         case DockInfo::MAXIMIZE:
-          UserMetrics::RecordAction(
+          content::RecordAction(
               UserMetricsAction("DockingWindow_Maximize"));
           break;
 
         case DockInfo::LEFT_HALF:
-          UserMetrics::RecordAction(
+          content::RecordAction(
               UserMetricsAction("DockingWindow_LeftHalf"));
           break;
 
         case DockInfo::RIGHT_HALF:
-          UserMetrics::RecordAction(
+          content::RecordAction(
               UserMetricsAction("DockingWindow_RightHalf"));
           break;
 
         case DockInfo::BOTTOM_HALF:
-          UserMetrics::RecordAction(
+          content::RecordAction(
               UserMetricsAction("DockingWindow_BottomHalf"));
           break;
 

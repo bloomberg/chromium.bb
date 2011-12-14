@@ -11,12 +11,12 @@
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/user_metrics.h"
 #include "content/common/database_messages.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/result_codes.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/sqlite/sqlite3.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/sqlite/sqlite3.h"
 #include "webkit/database/database_util.h"
 #include "webkit/database/vfs_backend.h"
 #include "webkit/quota/quota_manager.h"
@@ -26,6 +26,7 @@
 #endif
 
 using content::BrowserThread;
+using content::UserMetricsAction;
 using quota::QuotaManager;
 using quota::QuotaManagerProxy;
 using quota::QuotaStatusCode;
@@ -300,7 +301,7 @@ void DatabaseMessageFilter::OnDatabaseModified(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!database_connections_.IsDatabaseOpened(
           origin_identifier, database_name)) {
-    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_DBMF"));
+    content::RecordAction(UserMetricsAction("BadMessageTerminate_DBMF"));
     BadMessageReceived();
     return;
   }
@@ -313,7 +314,7 @@ void DatabaseMessageFilter::OnDatabaseClosed(const string16& origin_identifier,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!database_connections_.IsDatabaseOpened(
           origin_identifier, database_name)) {
-    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_DBMF"));
+    content::RecordAction(UserMetricsAction("BadMessageTerminate_DBMF"));
     BadMessageReceived();
     return;
   }

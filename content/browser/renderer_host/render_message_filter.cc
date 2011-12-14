@@ -28,13 +28,13 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/resource_context.h"
-#include "content/browser/user_metrics.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "ipc/ipc_channel_handle.h"
@@ -69,6 +69,7 @@
 using content::BrowserThread;
 using content::ChildProcessHostImpl;
 using content::PluginServiceFilter;
+using content::UserMetricsAction;
 using net::CookieStore;
 
 namespace {
@@ -812,7 +813,7 @@ void RenderMessageFilter::OnAsyncOpenFile(const IPC::Message& msg,
   if (!ChildProcessSecurityPolicy::GetInstance()->HasPermissionsForFile(
           render_process_id_, path, flags)) {
     DLOG(ERROR) << "Bad flags in ViewMsgHost_AsyncOpenFile message: " << flags;
-    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_AOF"));
+    content::RecordAction(UserMetricsAction("BadMessageTerminate_AOF"));
     BadMessageReceived();
     return;
   }

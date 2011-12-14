@@ -27,7 +27,6 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "content/browser/resource_context.h"
-#include "content/browser/user_metrics.h"
 #include "content/browser/worker_host/message_port_service.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/browser/worker_host/worker_service.h"
@@ -37,6 +36,7 @@
 #include "content/common/worker_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "ipc/ipc_switches.h"
@@ -50,6 +50,7 @@
 
 using content::BrowserThread;
 using content::ChildProcessHost;
+using content::UserMetricsAction;
 
 namespace {
 
@@ -320,7 +321,7 @@ bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
 
   if (!msg_is_ok) {
     NOTREACHED();
-    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_WPH"));
+    content::RecordAction(UserMetricsAction("BadMessageTerminate_WPH"));
     base::KillProcess(handle(), content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
   }
 

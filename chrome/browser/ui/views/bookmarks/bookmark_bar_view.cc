@@ -39,9 +39,9 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/page_navigator.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/page_transition_types.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -62,6 +62,7 @@
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 
+using content::UserMetricsAction;
 using views::CustomButton;
 using views::DropTargetEvent;
 using views::MenuButton;
@@ -927,7 +928,7 @@ void BookmarkBarView::BookmarkNodeFaviconChanged(BookmarkModel* model,
 void BookmarkBarView::WriteDragDataForView(View* sender,
                                            const gfx::Point& press_pt,
                                            ui::OSExchangeData* data) {
-  UserMetrics::RecordAction(UserMetricsAction("BookmarkBar_DragButton"));
+  content::RecordAction(UserMetricsAction("BookmarkBar_DragButton"));
 
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
     if (sender == GetBookmarkButton(i)) {
@@ -1038,7 +1039,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
   bookmark_utils::RecordBookmarkLaunch(IsDetached() ?
       bookmark_utils::LAUNCH_DETACHED_BAR :
       bookmark_utils::LAUNCH_ATTACHED_BAR);
-  UserMetrics::RecordAction(UserMetricsAction("ClickedBookmarkBarURLButton"));
+  content::RecordAction(UserMetricsAction("ClickedBookmarkBarURLButton"));
 }
 
 void BookmarkBarView::ShowContextMenuForView(View* source,

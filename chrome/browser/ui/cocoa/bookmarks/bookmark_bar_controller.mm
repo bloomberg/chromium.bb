@@ -43,7 +43,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -52,6 +52,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/mac/nsimage_cache.h"
+
+using content::UserMetricsAction;
 
 // Bookmark bar state changing and animations
 //
@@ -750,7 +752,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node) {
     [self openAll:node disposition:NEW_FOREGROUND_TAB];
-    UserMetrics::RecordAction(UserMetricsAction("OpenAllBookmarks"));
+    content::RecordAction(UserMetricsAction("OpenAllBookmarks"));
   }
 }
 
@@ -758,7 +760,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node) {
     [self openAll:node disposition:NEW_WINDOW];
-    UserMetrics::RecordAction(UserMetricsAction("OpenAllBookmarksNewWindow"));
+    content::RecordAction(UserMetricsAction("OpenAllBookmarksNewWindow"));
   }
 }
 
@@ -766,7 +768,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node) {
     [self openAll:node disposition:OFF_THE_RECORD];
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("OpenAllBookmarksIncognitoWindow"));
   }
 }

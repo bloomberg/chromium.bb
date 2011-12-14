@@ -11,18 +11,20 @@
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using content::UserMetricsAction;
 
 namespace importer {
 
 void ShowImportLockDialog(gfx::NativeWindow parent,
                           ImporterHost* importer_host) {
   ImportLockDialogGtk::Show(parent, importer_host);
-  UserMetrics::RecordAction(UserMetricsAction("ImportLockDialogGtk_Shown"));
+  content::RecordAction(UserMetricsAction("ImportLockDialogGtk_Shown"));
 }
 
 }  // namespace importer

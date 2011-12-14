@@ -15,18 +15,19 @@
 
 #include <string>
 
-#include "base/bind.h"
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/eintr_wrapper.h"
 #include "base/metrics/histogram.h"
 #include "base/perftimer.h"
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/metrics_service.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/user_metrics.h"
 
 using content::BrowserThread;
+using content::UserMetricsAction;
 
 namespace chromeos {
 
@@ -60,7 +61,7 @@ void ExternalMetrics::Start() {
 
 void ExternalMetrics::RecordActionUI(std::string action_string) {
   if (valid_user_actions_.count(action_string)) {
-    UserMetrics::RecordComputedAction(action_string);
+    content::RecordComputedAction(action_string);
   } else {
     LOG(ERROR) << "undefined UMA action: " << action_string;
   }

@@ -13,8 +13,10 @@
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "ui/base/text/text_elider.h"
+
+using content::UserMetricsAction;
 
 namespace {
 
@@ -116,11 +118,11 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
                           disposition);
 
   if (disposition == NEW_FOREGROUND_TAB) {
-    UserMetrics::RecordAction(UserMetricsAction("OpenAllBookmarks"));
+    content::RecordAction(UserMetricsAction("OpenAllBookmarks"));
   } else if (disposition == NEW_WINDOW) {
-    UserMetrics::RecordAction(UserMetricsAction("OpenAllBookmarksNewWindow"));
+    content::RecordAction(UserMetricsAction("OpenAllBookmarksNewWindow"));
   } else {
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("OpenAllBookmarksIncognitoWindow"));
   }
 }

@@ -29,14 +29,16 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using content::UserMetricsAction;
 
 namespace {
 
@@ -691,39 +693,39 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
   }
   switch (content_type) {
     case CONTENT_SETTINGS_TYPE_COOKIES:
-      UserMetrics::RecordAction(
+      content::RecordAction(
           UserMetricsAction("Options_DefaultCookieSettingChanged"));
       break;
     case CONTENT_SETTINGS_TYPE_IMAGES:
-      UserMetrics::RecordAction(
+      content::RecordAction(
           UserMetricsAction("Options_DefaultImagesSettingChanged"));
       break;
     case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
-      UserMetrics::RecordAction(
+      content::RecordAction(
           UserMetricsAction("Options_DefaultJavaScriptSettingChanged"));
       break;
     case CONTENT_SETTINGS_TYPE_PLUGINS:
-      UserMetrics::RecordAction(
+      content::RecordAction(
           UserMetricsAction("Options_DefaultPluginsSettingChanged"));
       break;
     case CONTENT_SETTINGS_TYPE_POPUPS:
-      UserMetrics::RecordAction(
+      content::RecordAction(
           UserMetricsAction("Options_DefaultPopupsSettingChanged"));
       break;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      UserMetrics::RecordAction(
+      content::RecordAction(
           UserMetricsAction("Options_DefaultNotificationsSettingChanged"));
       break;
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      UserMetrics::RecordAction(
+      content::RecordAction(
           UserMetricsAction("Options_DefaultGeolocationSettingChanged"));
       break;
     case CONTENT_SETTINGS_TYPE_INTENTS:
-      UserMetrics::RecordAction(
+      content::RecordAction(
           UserMetricsAction("Options_DefaultHandlersSettingChanged"));
       break;
     case CONTENT_SETTINGS_TYPE_MOUSELOCK:
-      UserMetrics::RecordAction(
+      content::RecordAction(
           UserMetricsAction("Options_DefaultMouseLockSettingChanged"));
       break;
     default:

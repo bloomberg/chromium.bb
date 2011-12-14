@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -25,6 +25,8 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
+
+using content::UserMetricsAction;
 
 namespace {
 
@@ -78,7 +80,7 @@ void CriticalNotificationBubbleView::OnCountdown() {
   int seconds = GetRemainingTime();
   if (seconds <= 0) {
     // Time's up!
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("CriticalNotification_AutoRestart"));
     refresh_timer_.Stop();
     BrowserList::AttemptRestart();
@@ -97,11 +99,11 @@ void CriticalNotificationBubbleView::ButtonPressed(
   UpgradeDetector::GetInstance()->acknowledge_critical_update();
 
   if (sender == restart_button_) {
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("CriticalNotification_Restart"));
     BrowserList::AttemptRestart();
   } else if (sender == dismiss_button_) {
-    UserMetrics::RecordAction(UserMetricsAction("CriticalNotification_Ignore"));
+    content::RecordAction(UserMetricsAction("CriticalNotification_Ignore"));
     // If the counter reaches 0, we set a restart flag that must be cleared if
     // the user selects, for example, "Stay on this page" during an
     // onbeforeunload handler.
@@ -196,5 +198,5 @@ void CriticalNotificationBubbleView::Init() {
       base::TimeDelta::FromMilliseconds(kRefreshBubbleEvery),
       this, &CriticalNotificationBubbleView::OnCountdown);
 
-  UserMetrics::RecordAction(UserMetricsAction("CriticalNotificationShown"));
+  content::RecordAction(UserMetricsAction("CriticalNotificationShown"));
 }

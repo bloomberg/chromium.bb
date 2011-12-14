@@ -32,9 +32,9 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
@@ -48,6 +48,7 @@
 #endif
 
 using content::BrowserThread;
+using content::UserMetricsAction;
 
 namespace {
 
@@ -409,7 +410,7 @@ void ProfileManager::NewWindowWithProfile(
   if (browser) {
     browser->window()->Activate();
   } else {
-    UserMetrics::RecordAction(UserMetricsAction("NewWindow"));
+    content::RecordAction(UserMetricsAction("NewWindow"));
     CommandLine command_line(CommandLine::NO_PROGRAM);
     int return_code;
     BrowserInit browser_init;

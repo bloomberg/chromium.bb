@@ -17,19 +17,20 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/content_settings.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::UserMetricsAction;
 using content_settings::SettingInfo;
 using content_settings::SettingSource;
 using content_settings::SETTING_SOURCE_USER;
@@ -377,7 +378,7 @@ class ContentSettingPluginBubbleModel : public ContentSettingSingleRadioGroup {
 
  private:
   virtual void OnCustomLinkClicked() OVERRIDE {
-    UserMetrics::RecordAction(UserMetricsAction("ClickToPlay_LoadAll_Bubble"));
+    content::RecordAction(UserMetricsAction("ClickToPlay_LoadAll_Bubble"));
     DCHECK(tab_contents());
     RenderViewHost* host = tab_contents()->tab_contents()->render_view_host();
     host->Send(new ChromeViewMsg_LoadBlockedPlugins(host->routing_id()));

@@ -20,8 +20,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/plugin_service.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,6 +34,7 @@
 #endif
 
 using content::BrowserThread;
+using content::UserMetricsAction;
 
 #define FILEBROWSER_DOMAIN "hhaomjibdihmijegdhdafkllkbggdgoj"
 const char kFileBrowserDomain[] = FILEBROWSER_DOMAIN;
@@ -279,7 +280,7 @@ void ViewFolder(const FilePath& dir) {
   std::string url = chrome::kChromeUIFileManagerURL;
   url += "#/" + net::EscapeUrlEncodedData(virtual_path.value(), false);
 
-  UserMetrics::RecordAction(UserMetricsAction("ShowFileBrowserFullTab"));
+  content::RecordAction(UserMetricsAction("ShowFileBrowserFullTab"));
   browser->ShowSingletonTabRespectRef(GURL(url));
 }
 

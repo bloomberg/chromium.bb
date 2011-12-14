@@ -26,10 +26,10 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_store.h"
@@ -39,6 +39,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
+using content::UserMetricsAction;
 
 namespace chromeos {
 
@@ -72,7 +73,7 @@ LoginPerformer::~LoginPerformer() {
 // LoginPerformer, LoginStatusConsumer implementation:
 
 void LoginPerformer::OnLoginFailure(const LoginFailure& failure) {
-  UserMetrics::RecordAction(UserMetricsAction("Login_Failure"));
+  content::RecordAction(UserMetricsAction("Login_Failure"));
   UMA_HISTOGRAM_ENUMERATION("Login.FailureReason", failure.reason(),
                             LoginFailure::NUM_FAILURE_REASONS);
 
@@ -126,7 +127,7 @@ void LoginPerformer::OnLoginSuccess(
     const GaiaAuthConsumer::ClientLoginResult& credentials,
     bool pending_requests,
     bool using_oauth) {
-  UserMetrics::RecordAction(UserMetricsAction("Login_Success"));
+  content::RecordAction(UserMetricsAction("Login_Success"));
   // 0 - Login success offline and online. It's a new user. or it's an
   //     existing user and offline auth took longer than online auth.
   // 1 - Login success offline only. It's an existing user login.
@@ -201,7 +202,7 @@ void LoginPerformer::OnProfileCreated(
 }
 
 void LoginPerformer::OnOffTheRecordLoginSuccess() {
-  UserMetrics::RecordAction(
+  content::RecordAction(
       UserMetricsAction("Login_GuestLoginSuccess"));
 
   if (delegate_)

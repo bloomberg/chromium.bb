@@ -43,10 +43,10 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_data_remover.h"
+#include "content/public/browser/user_metrics.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/net_errors.h"
 #include "net/base/transport_security_state.h"
@@ -58,6 +58,7 @@
 #include "webkit/quota/quota_types.h"
 
 using content::BrowserThread;
+using content::UserMetricsAction;
 
 // Done so that we can use PostTask on BrowsingDataRemovers and not have
 // BrowsingDataRemover implement RefCounted.
@@ -153,7 +154,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
         profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
     if (history_service) {
       std::set<GURL> restrict_urls;
-      UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_History"));
+      content::RecordAction(UserMetricsAction("ClearBrowsingData_History"));
       waiting_for_clear_history_ = true;
       history_service->ExpireHistoryBetween(restrict_urls,
           delete_begin_, delete_end_,
@@ -211,7 +212,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
   }
 
   if (remove_mask & REMOVE_DOWNLOADS) {
-    UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_Downloads"));
+    content::RecordAction(UserMetricsAction("ClearBrowsingData_Downloads"));
     DownloadManager* download_manager =
         DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager();
     download_manager->RemoveDownloadsBetween(delete_begin_, delete_end_);
@@ -219,7 +220,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
   }
 
   if (remove_mask & REMOVE_COOKIES) {
-    UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_Cookies"));
+    content::RecordAction(UserMetricsAction("ClearBrowsingData_Cookies"));
     // Since we are running on the UI thread don't call GetURLRequestContext().
     net::URLRequestContextGetter* rq_context = profile_->GetRequestContext();
     if (rq_context) {
@@ -256,7 +257,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
   }
 
   if (remove_mask & REMOVE_PLUGIN_DATA) {
-    UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_LSOData"));
+    content::RecordAction(UserMetricsAction("ClearBrowsingData_LSOData"));
 
     waiting_for_clear_plugin_data_ = true;
     if (!plugin_data_remover_.get()) {
@@ -269,7 +270,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
   }
 
   if (remove_mask & REMOVE_PASSWORDS) {
-    UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_Passwords"));
+    content::RecordAction(UserMetricsAction("ClearBrowsingData_Passwords"));
     PasswordStore* password_store =
         profile_->GetPasswordStore(Profile::EXPLICIT_ACCESS);
 
@@ -278,7 +279,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
   }
 
   if (remove_mask & REMOVE_FORM_DATA) {
-    UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_Autofill"));
+    content::RecordAction(UserMetricsAction("ClearBrowsingData_Autofill"));
     WebDataService* web_data_service =
         profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
 
@@ -301,7 +302,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
 
     // Invoke DoClearCache on the IO thread.
     waiting_for_clear_cache_ = true;
-    UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_Cache"));
+    content::RecordAction(UserMetricsAction("ClearBrowsingData_Cache"));
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,

@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 
 #include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
+namespace {
+
 using content::BrowserThread;
+using content::UserMetricsAction;
 
-void UserMetrics::RecordAction(const UserMetricsAction& action) {
-  Record(action.str_);
-}
+// Forward declare because of circular dependency.
+void CallRecordOnUI(const std::string& action);
 
-void UserMetrics::RecordComputedAction(const std::string& action) {
-  Record(action.c_str());
-}
-
-void UserMetrics::Record(const char *action) {
+void Record(const char *action) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&UserMetrics::CallRecordOnUI, action));
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&CallRecordOnUI, action));
     return;
   }
 
@@ -32,6 +32,20 @@ void UserMetrics::Record(const char *action) {
       content::Details<const char*>(&action));
 }
 
-void UserMetrics::CallRecordOnUI(const std::string& action) {
+void CallRecordOnUI(const std::string& action) {
   Record(action.c_str());
 }
+
+}  // namespace
+
+namespace content {
+
+void RecordAction(const UserMetricsAction& action) {
+  Record(action.str_);
+}
+
+void RecordComputedAction(const std::string& action) {
+  Record(action.c_str());
+}
+
+}  // namespace content

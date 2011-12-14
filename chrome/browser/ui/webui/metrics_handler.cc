@@ -14,10 +14,11 @@
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 
 using base::ListValue;
+using content::UserMetricsAction;
 
 MetricsHandler::MetricsHandler() {}
 MetricsHandler::~MetricsHandler() {}
@@ -37,7 +38,7 @@ void MetricsHandler::RegisterMessages() {
 
 void MetricsHandler::HandleRecordAction(const ListValue* args) {
   std::string string_action = UTF16ToUTF8(ExtractStringValue(args));
-  UserMetrics::RecordComputedAction(string_action);
+  content::RecordComputedAction(string_action);
 }
 
 void MetricsHandler::HandleRecordInHistogram(const ListValue* args) {

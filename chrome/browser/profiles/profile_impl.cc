@@ -105,10 +105,10 @@
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/speech/speech_input_manager.h"
 #include "content/browser/ssl/ssl_host_state.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/locale_settings.h"
 #include "net/base/transport_security_state.h"
 #include "net/http/http_server_properties.h"
@@ -144,6 +144,7 @@
 using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
+using content::UserMetricsAction;
 
 namespace {
 
@@ -346,10 +347,10 @@ void ProfileImpl::DoFinalInit() {
 
   clear_local_state_on_exit_ = prefs->GetBoolean(prefs::kClearSiteDataOnExit);
   if (clear_local_state_on_exit_) {
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("ClearSiteDataOnExitEnabled"));
   } else {
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("ClearSiteDataOnExitDisabled"));
   }
 

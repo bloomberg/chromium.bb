@@ -31,7 +31,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/gfx/image/image.h"
 
@@ -44,6 +44,7 @@
 #endif
 
 using content::BrowserThread;
+using content::UserMetricsAction;
 
 namespace {
 

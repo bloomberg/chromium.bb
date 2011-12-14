@@ -9,10 +9,12 @@
 #include "base/message_loop.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+using content::UserMetricsAction;
 
 namespace importer {
 
@@ -32,7 +34,7 @@ void ShowImportLockDialog(gfx::NativeWindow parent,
   MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&ImporterHost::OnImportLockDialogEnd,
                  importer_host, is_continue));
-  UserMetrics::RecordAction(UserMetricsAction("ImportLockDialogCocoa_Shown"));
+  content::RecordAction(UserMetricsAction("ImportLockDialogCocoa_Shown"));
 }
 
 }  // namespace importer

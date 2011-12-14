@@ -14,8 +14,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
@@ -26,6 +26,7 @@
 #endif
 
 using content::BrowserThread;
+using content::UserMetricsAction;
 
 // Strings used in alignment properties.
 const char* ThemeService::kAlignmentTop = "top";
@@ -327,7 +328,7 @@ void ThemeService::SetTheme(const Extension* extension) {
   SaveThemeID(extension->id());
 
   NotifyThemeChanged();
-  UserMetrics::RecordAction(UserMetricsAction("Themes_Installed"));
+  content::RecordAction(UserMetricsAction("Themes_Installed"));
 }
 
 void ThemeService::RemoveUnusedThemes() {
@@ -352,7 +353,7 @@ void ThemeService::RemoveUnusedThemes() {
 void ThemeService::UseDefaultTheme() {
   ClearAllThemeData();
   NotifyThemeChanged();
-  UserMetrics::RecordAction(UserMetricsAction("Themes_Reset"));
+  content::RecordAction(UserMetricsAction("Themes_Reset"));
 }
 
 void ThemeService::SetNativeTheme() {
@@ -585,7 +586,7 @@ void ThemeService::LoadThemePrefs() {
     }
 
     if (loaded_pack) {
-      UserMetrics::RecordAction(UserMetricsAction("Themes.Loaded"));
+      content::RecordAction(UserMetricsAction("Themes.Loaded"));
     } else {
       // TODO(erg): We need to pop up a dialog informing the user that their
       // theme is being migrated.
@@ -596,11 +597,11 @@ void ThemeService::LoadThemePrefs() {
         if (extension) {
           DLOG(ERROR) << "Migrating theme";
           BuildFromExtension(extension);
-          UserMetrics::RecordAction(UserMetricsAction("Themes.Migrated"));
+          content::RecordAction(UserMetricsAction("Themes.Migrated"));
         } else {
           DLOG(ERROR) << "Theme is mysteriously gone.";
           ClearAllThemeData();
-          UserMetrics::RecordAction(UserMetricsAction("Themes.Gone"));
+          content::RecordAction(UserMetricsAction("Themes.Gone"));
         }
       }
     }

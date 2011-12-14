@@ -23,11 +23,13 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using content::UserMetricsAction;
 
 namespace {
 
@@ -224,7 +226,7 @@ void BookmarkBubbleGtk::OnNameActivate(GtkWidget* widget) {
 void BookmarkBubbleGtk::OnFolderChanged(GtkWidget* widget) {
   int index = gtk_combo_box_get_active(GTK_COMBO_BOX(folder_combo_));
   if (index == folder_combo_model_->GetItemCount() - 1) {
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("BookmarkBubble_EditFromCombobox"));
     // GTK doesn't handle having the combo box destroyed from the changed
     // signal.  Since showing the editor also closes the bubble, delay this
@@ -249,7 +251,7 @@ void BookmarkBubbleGtk::OnFolderPopupShown(GtkWidget* widget,
 }
 
 void BookmarkBubbleGtk::OnEditClicked(GtkWidget* widget) {
-  UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Edit"));
+  content::RecordAction(UserMetricsAction("BookmarkBubble_Edit"));
   ShowEditor();
 }
 
@@ -258,7 +260,7 @@ void BookmarkBubbleGtk::OnCloseClicked(GtkWidget* widget) {
 }
 
 void BookmarkBubbleGtk::OnRemoveClicked(GtkWidget* widget) {
-  UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"));
+  content::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"));
 
   apply_edits_ = false;
   remove_bookmark_ = true;
@@ -276,7 +278,7 @@ void BookmarkBubbleGtk::ApplyEdits() {
 
     if (new_title != node->GetTitle()) {
       model_->SetTitle(node, new_title);
-      UserMetrics::RecordAction(
+      content::RecordAction(
           UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"));
     }
 
@@ -286,7 +288,7 @@ void BookmarkBubbleGtk::ApplyEdits() {
     if (index < folder_combo_model_->GetItemCount() - 1) {
       const BookmarkNode* new_parent = folder_combo_model_->GetNodeAt(index);
       if (new_parent != node->parent()) {
-        UserMetrics::RecordAction(
+        content::RecordAction(
             UserMetricsAction("BookmarkBubble_ChangeParent"));
         model_->Move(node, new_parent, new_parent->child_count());
       }

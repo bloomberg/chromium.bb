@@ -46,9 +46,9 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -81,6 +81,8 @@
 #if defined(USE_NSS)
 #include "chrome/browser/ui/webui/options/certificate_manager_handler.h"
 #endif
+
+using content::UserMetricsAction;
 
 static const char kLocalizedStringsFile[] = "strings.js";
 static const char kOptionsBundleJsFile[]  = "options_bundle.js";

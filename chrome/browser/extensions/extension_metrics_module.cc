@@ -6,16 +6,17 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 
 using base::Histogram;
 using base::LinearHistogram;
+using content::UserMetricsAction;
 
 bool MetricsRecordUserActionFunction::RunImpl() {
   std::string name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &name));
 
-  UserMetrics::RecordComputedAction(name);
+  content::RecordComputedAction(name);
   return true;
 }
 

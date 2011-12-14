@@ -30,8 +30,8 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -40,6 +40,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
+using content::UserMetricsAction;
 
 // For malware interstitial pages, we link the problematic URL to Google's
 // diagnostic page.
@@ -626,7 +627,7 @@ void SafeBrowsingBlockingPage::RecordUserAction(BlockingPageEvent event) {
       NOTREACHED() << "Unexpected event: " << event;
   }
 
-  UserMetrics::RecordComputedAction(action);
+  content::RecordComputedAction(action);
 }
 
 void SafeBrowsingBlockingPage::FinishMalwareDetails(int64 delay_ms) {

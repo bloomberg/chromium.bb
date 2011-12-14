@@ -18,10 +18,13 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/guid.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/favicon_size.h"
+
+using content::UserMetricsAction;
+
 // TODO(pastarmovj): Remove google_update_settings and user_metrics when the
 // CollectRLZMetrics function is not needed anymore.
 
@@ -577,9 +580,9 @@ void TemplateURLRef::CollectRLZMetrics() const {
            !google_util::IsOrganic(brand)) {
         // Now we know we should have had RLZ token check if there was one.
         if (url().find("rlz=") != std::string::npos)
-          UserMetrics::RecordAction(UserMetricsAction("SearchWithRLZ"));
+          content::RecordAction(UserMetricsAction("SearchWithRLZ"));
         else
-          UserMetrics::RecordAction(UserMetricsAction("SearchWithoutRLZ"));
+          content::RecordAction(UserMetricsAction("SearchWithoutRLZ"));
       }
       return;
     }

@@ -23,8 +23,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/accessibility/browser_accessibility_state.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -49,6 +49,8 @@
 #include "chrome/browser/ui/views/app_menu_button_win.h"
 #endif
 #endif
+
+using content::UserMetricsAction;
 
 // static
 const char ToolbarView::kViewClassName[] = "browser/ui/views/ToolbarView";
@@ -289,7 +291,7 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
   } else if (ShouldShowIncompatibilityWarning()) {
 #if defined(OS_WIN)
     if (!was_showing)
-      UserMetrics::RecordAction(UserMetricsAction("ConflictBadge"));
+      content::RecordAction(UserMetricsAction("ConflictBadge"));
     badge = *tp->GetBitmapNamed(IDR_CONFLICT_BADGE);
     incompatibility_badge_showing = true;
 #else

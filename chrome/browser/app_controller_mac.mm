@@ -63,10 +63,10 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
@@ -75,6 +75,7 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 
 using content::BrowserThread;
+using content::UserMetricsAction;
 
 // 10.6 adds a public API for the Spotlight-backed search menu item in the Help
 // menu.  Provide the declaration so it can be called below when building with
@@ -824,7 +825,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       break;
     }
     case IDC_SHOW_BOOKMARK_MANAGER:
-      UserMetrics::RecordAction(UserMetricsAction("ShowBookmarkManager"));
+      content::RecordAction(UserMetricsAction("ShowBookmarkManager"));
       if (Browser* browser = ActivateBrowser(lastProfile)) {
         // Open a bookmark manager tab.
         browser->OpenBookmarkManager();
@@ -874,7 +875,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
           ProfileSyncService::START_FROM_WRENCH);
       break;
     case IDC_TASK_MANAGER:
-      UserMetrics::RecordAction(UserMetricsAction("TaskManager"));
+      content::RecordAction(UserMetricsAction("TaskManager"));
       TaskManagerMac::Show(false);
       break;
     case IDC_OPTIONS:

@@ -16,10 +16,12 @@
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"
+
+using content::UserMetricsAction;
 
 namespace {
 
@@ -335,12 +337,12 @@ bool NotificationPromo::CanShow() const {
 }
 
 void NotificationPromo::HandleClosed() {
-  UserMetrics::RecordAction(UserMetricsAction("NTPPromoClosed"));
+  content::RecordAction(UserMetricsAction("NTPPromoClosed"));
   prefs_->SetBoolean(prefs::kNTPPromoClosed, true);
 }
 
 bool NotificationPromo::HandleViewed() {
-  UserMetrics::RecordAction(UserMetricsAction("NTPPromoShown"));
+  content::RecordAction(UserMetricsAction("NTPPromoShown"));
   if (prefs_->HasPrefPath(prefs::kNTPPromoViewsMax))
     max_views_ = prefs_->GetInteger(prefs::kNTPPromoViewsMax);
 

@@ -18,11 +18,11 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -44,6 +44,7 @@
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/widget/widget.h"
 
+using content::UserMetricsAction;
 using ui::MenuModel;
 using views::CustomButton;
 using views::ImageButton;
@@ -602,7 +603,7 @@ void WrenchMenu::RunMenu(views::MenuButton* host) {
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(host, &screen_loc);
   gfx::Rect bounds(screen_loc, host->size());
-  UserMetrics::RecordAction(UserMetricsAction("ShowAppMenu"));
+  content::RecordAction(UserMetricsAction("ShowAppMenu"));
   if (menu_runner_->RunMenuAt(host->GetWidget(), host, bounds,
           MenuItemView::TOPRIGHT, views::MenuRunner::HAS_MNEMONICS) ==
       views::MenuRunner::MENU_DELETED)

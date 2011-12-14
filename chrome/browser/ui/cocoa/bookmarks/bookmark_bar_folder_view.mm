@@ -9,7 +9,9 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_folder_target.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
+
+using content::UserMetricsAction;
 
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 
@@ -203,7 +205,7 @@
     doDrag = [[self controller] dragButton:button
                                         to:[info draggingLocation]
                                       copy:copy];
-    UserMetrics::RecordAction(UserMetricsAction("BookmarkBarFolder_DragEnd"));
+    content::RecordAction(UserMetricsAction("BookmarkBarFolder_DragEnd"));
   }
   return doDrag;
 }

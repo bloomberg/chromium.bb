@@ -75,7 +75,7 @@ class WebResourceService::UnpackerClient : public UtilityProcessHost::Client {
       IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_UnpackWebResource_Failed,
                           OnUnpackWebResourceFailed)
       IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP_EX()
+    IPC_END_MESSAGE_MAP()
     return handled;
   }
 

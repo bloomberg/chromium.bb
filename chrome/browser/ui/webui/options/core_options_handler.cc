@@ -19,15 +19,17 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/user_metrics.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using content::UserMetricsAction;
 
 CoreOptionsHandler::CoreOptionsHandler()
     : handlers_host_(NULL) {
@@ -218,7 +220,7 @@ void CoreOptionsHandler::ClearPref(const std::string& pref_name,
   pref_service->ScheduleSavePersistentPrefs();
 
   if (!metric.empty())
-    UserMetrics::RecordComputedAction(metric);
+    content::RecordComputedAction(metric);
 }
 
 void CoreOptionsHandler::ProcessUserMetric(const base::Value* value,
@@ -233,7 +235,7 @@ void CoreOptionsHandler::ProcessUserMetric(const base::Value* value,
     metric_string += bool_value ? "_Enable" : "_Disable";
   }
 
-  UserMetrics::RecordComputedAction(metric_string);
+  content::RecordComputedAction(metric_string);
 }
 
 void CoreOptionsHandler::NotifyPrefChanged(
@@ -452,7 +454,7 @@ void CoreOptionsHandler::HandleClearPref(const ListValue* args) {
 void CoreOptionsHandler::HandleUserMetricsAction(const ListValue* args) {
   std::string metric = UTF16ToUTF8(ExtractStringValue(args));
   if (!metric.empty())
-    UserMetrics::RecordComputedAction(metric);
+    content::RecordComputedAction(metric);
 }
 
 void CoreOptionsHandler::UpdateClearPluginLSOData() {

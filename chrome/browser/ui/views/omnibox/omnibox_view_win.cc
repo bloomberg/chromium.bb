@@ -32,7 +32,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "googleurl/src/url_util.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -58,6 +58,8 @@
 
 #pragma comment(lib, "oleacc.lib")  // Needed for accessibility support.
 #pragma comment(lib, "riched20.lib")  // Needed for the richedit control.
+
+using content::UserMetricsAction;
 
 ///////////////////////////////////////////////////////////////////////////////
 // AutocompleteEditModel
@@ -2509,10 +2511,10 @@ void OmniboxViewWin::StartDragIfNecessary(const CPoint& point) {
       model_->GetDataForURLExport(&url, &title, &favicon);
     drag_utils::SetURLAndDragImage(url, title, favicon, &data);
     supported_modes |= DROPEFFECT_LINK;
-    UserMetrics::RecordAction(UserMetricsAction("Omnibox_DragURL"));
+    content::RecordAction(UserMetricsAction("Omnibox_DragURL"));
   } else {
     supported_modes |= DROPEFFECT_MOVE;
-    UserMetrics::RecordAction(UserMetricsAction("Omnibox_DragString"));
+    content::RecordAction(UserMetricsAction("Omnibox_DragString"));
   }
 
   data.SetString(text_to_write);

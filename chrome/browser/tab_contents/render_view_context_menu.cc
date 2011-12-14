@@ -67,8 +67,8 @@
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_restriction.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -84,6 +84,7 @@
 #include "chrome/browser/extensions/file_manager_util.h"
 #endif
 
+using content::UserMetricsAction;
 using WebKit::WebContextMenuData;
 using WebKit::WebMediaPlayerAction;
 using WebKit::WebURL;
@@ -1392,7 +1393,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     if (handlers.empty()) {
       return;
     }
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("RegisterProtocolHandler.ContextMenu_Open"));
     int handlerIndex = id - IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST;
     WindowOpenDisposition disposition =
@@ -1476,9 +1477,9 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_PLAYPAUSE: {
       bool play = !!(params_.media_flags & WebContextMenuData::MediaPaused);
       if (play) {
-        UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Play"));
+        content::RecordAction(UserMetricsAction("MediaContextMenu_Play"));
       } else {
-        UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Pause"));
+        content::RecordAction(UserMetricsAction("MediaContextMenu_Pause"));
       }
       MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                           WebMediaPlayerAction(
@@ -1489,9 +1490,9 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_MUTE: {
       bool mute = !(params_.media_flags & WebContextMenuData::MediaMuted);
       if (mute) {
-        UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Mute"));
+        content::RecordAction(UserMetricsAction("MediaContextMenu_Mute"));
       } else {
-        UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Unmute"));
+        content::RecordAction(UserMetricsAction("MediaContextMenu_Unmute"));
       }
       MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                           WebMediaPlayerAction(
@@ -1500,7 +1501,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     }
 
     case IDC_CONTENT_CONTEXT_LOOP:
-      UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Loop"));
+      content::RecordAction(UserMetricsAction("MediaContextMenu_Loop"));
       MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                           WebMediaPlayerAction(
                               WebMediaPlayerAction::Loop,
@@ -1508,7 +1509,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_CONTROLS:
-      UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Controls"));
+      content::RecordAction(UserMetricsAction("MediaContextMenu_Controls"));
       MediaPlayerActionAt(
           gfx::Point(params_.x, params_.y),
           WebMediaPlayerAction(
@@ -1695,7 +1696,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 #endif  // OS_MACOSX
     case IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS: {
-      UserMetrics::RecordAction(
+      content::RecordAction(
           UserMetricsAction("RegisterProtocolHandler.ContextMenu_Settings"));
       WindowOpenDisposition disposition =
           ForceNewTabDispositionFromEventFlags(event_flags);
@@ -1847,7 +1848,7 @@ void RenderViewContextMenu::CopyImageAt(int x, int y) {
 }
 
 void RenderViewContextMenu::Inspect(int x, int y) {
-  UserMetrics::RecordAction(UserMetricsAction("DevTools_InspectElement"));
+  content::RecordAction(UserMetricsAction("DevTools_InspectElement"));
   DevToolsWindow::InspectElement(
       source_tab_contents_->render_view_host(), x, y);
 }

@@ -21,13 +21,15 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/webplugininfo.h"
+
+using content::UserMetricsAction;
 
 namespace {
 
@@ -119,27 +121,27 @@ BlockedPluginInfoBarDelegate::BlockedPluginInfoBarDelegate(
     const string16& utf16_name)
     : PluginInfoBarDelegate(infobar_helper, utf16_name),
       content_settings_(content_settings) {
-  UserMetrics::RecordAction(UserMetricsAction("BlockedPluginInfobar.Shown"));
+  content::RecordAction(UserMetricsAction("BlockedPluginInfobar.Shown"));
   std::string name = UTF16ToUTF8(utf16_name);
   if (name == webkit::npapi::PluginGroup::kJavaGroupName)
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("BlockedPluginInfobar.Shown.Java"));
   else if (name == webkit::npapi::PluginGroup::kQuickTimeGroupName)
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("BlockedPluginInfobar.Shown.QuickTime"));
   else if (name == webkit::npapi::PluginGroup::kShockwaveGroupName)
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("BlockedPluginInfobar.Shown.Shockwave"));
   else if (name == webkit::npapi::PluginGroup::kRealPlayerGroupName)
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("BlockedPluginInfobar.Shown.RealPlayer"));
   else if (name == webkit::npapi::PluginGroup::kWindowsMediaPlayerGroupName)
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("BlockedPluginInfobar.Shown.WindowsMediaPlayer"));
 }
 
 BlockedPluginInfoBarDelegate::~BlockedPluginInfoBarDelegate() {
-  UserMetrics::RecordAction(UserMetricsAction("BlockedPluginInfobar.Closed"));
+  content::RecordAction(UserMetricsAction("BlockedPluginInfobar.Closed"));
 }
 
 std::string BlockedPluginInfoBarDelegate::GetLearnMoreURL() const {
@@ -157,13 +159,13 @@ string16 BlockedPluginInfoBarDelegate::GetButtonLabel(
 }
 
 bool BlockedPluginInfoBarDelegate::Accept() {
-  UserMetrics::RecordAction(
+  content::RecordAction(
       UserMetricsAction("BlockedPluginInfobar.AllowThisTime"));
   return PluginInfoBarDelegate::Cancel();
 }
 
 bool BlockedPluginInfoBarDelegate::Cancel() {
-  UserMetrics::RecordAction(
+  content::RecordAction(
       UserMetricsAction("BlockedPluginInfobar.AlwaysAllow"));
   content_settings_->AddExceptionForURL(owner()->tab_contents()->GetURL(),
                                         owner()->tab_contents()->GetURL(),
@@ -174,13 +176,13 @@ bool BlockedPluginInfoBarDelegate::Cancel() {
 }
 
 void BlockedPluginInfoBarDelegate::InfoBarDismissed() {
-  UserMetrics::RecordAction(
+  content::RecordAction(
       UserMetricsAction("BlockedPluginInfobar.Dismissed"));
 }
 
 bool BlockedPluginInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  UserMetrics::RecordAction(
+  content::RecordAction(
       UserMetricsAction("BlockedPluginInfobar.LearnMore"));
   return PluginInfoBarDelegate::LinkClicked(disposition);
 }
@@ -216,30 +218,30 @@ OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
     const GURL& update_url)
     : PluginInfoBarDelegate(infobar_helper, utf16_name),
       update_url_(update_url) {
-  UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Shown"));
+  content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Shown"));
   std::string name = UTF16ToUTF8(utf16_name);
   if (name == webkit::npapi::PluginGroup::kJavaGroupName)
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.Java"));
   else if (name == webkit::npapi::PluginGroup::kQuickTimeGroupName)
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.QuickTime"));
   else if (name == webkit::npapi::PluginGroup::kShockwaveGroupName)
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.Shockwave"));
   else if (name == webkit::npapi::PluginGroup::kRealPlayerGroupName)
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.RealPlayer"));
   else if (name == webkit::npapi::PluginGroup::kSilverlightGroupName)
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.Silverlight"));
   else if (name == webkit::npapi::PluginGroup::kAdobeReaderGroupName)
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.Reader"));
 }
 
 OutdatedPluginInfoBarDelegate::~OutdatedPluginInfoBarDelegate() {
-  UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Closed"));
+  content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Closed"));
 }
 
 std::string OutdatedPluginInfoBarDelegate::GetLearnMoreURL() const {
@@ -257,26 +259,26 @@ string16 OutdatedPluginInfoBarDelegate::GetButtonLabel(
 }
 
 bool OutdatedPluginInfoBarDelegate::Accept() {
-  UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Update"));
+  content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Update"));
   owner()->tab_contents()->OpenURL(update_url_, GURL(), NEW_FOREGROUND_TAB,
                                    content::PAGE_TRANSITION_LINK);
   return false;
 }
 
 bool OutdatedPluginInfoBarDelegate::Cancel() {
-  UserMetrics::RecordAction(
+  content::RecordAction(
       UserMetricsAction("OutdatedPluginInfobar.AllowThisTime"));
   return PluginInfoBarDelegate::Cancel();
 }
 
 void OutdatedPluginInfoBarDelegate::InfoBarDismissed() {
-  UserMetrics::RecordAction(
+  content::RecordAction(
       UserMetricsAction("OutdatedPluginInfobar.Dismissed"));
 }
 
 bool OutdatedPluginInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  UserMetrics::RecordAction(
+  content::RecordAction(
       UserMetricsAction("OutdatedPluginInfobar.LearnMore"));
   return PluginInfoBarDelegate::LinkClicked(disposition);
 }

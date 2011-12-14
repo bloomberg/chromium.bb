@@ -27,7 +27,7 @@
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/x/x11_util.h"
@@ -38,6 +38,8 @@
 #include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
 #include "ui/views/widget/native_widget_gtk.h"
 #endif
+
+using content::UserMetricsAction;
 
 namespace {
 
@@ -701,7 +703,7 @@ void ScreenLockerViews::OnGrabInputs() {
 void ScreenLockerViews::StartScreenSaver() {
   if (!background_view_->IsScreenSaverVisible()) {
     VLOG(1) << "StartScreenSaver";
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("ScreenLocker_StartScreenSaver"));
     background_view_->ShowScreenSaver();
     if (screen_lock_view_) {

@@ -20,12 +20,14 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
+
+using content::UserMetricsAction;
 
 static TabRendererData::NetworkState TabContentsNetworkState(
     TabContents* contents) {
@@ -285,10 +287,10 @@ void BrowserTabStripController::PerformDrop(bool drop_before,
   params.tabstrip_index = index;
 
   if (drop_before) {
-    UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"));
+    content::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"));
     params.disposition = NEW_FOREGROUND_TAB;
   } else {
-    UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLOnTab"));
+    content::RecordAction(UserMetricsAction("Tab_DropURLOnTab"));
     params.disposition = CURRENT_TAB;
     params.source_contents = model_->GetTabContentsAt(index);
   }
@@ -303,7 +305,7 @@ bool BrowserTabStripController::IsCompatibleWith(BaseTabStrip* other) const {
 }
 
 void BrowserTabStripController::CreateNewTab() {
-  UserMetrics::RecordAction(UserMetricsAction("NewTab_Button"));
+  content::RecordAction(UserMetricsAction("NewTab_Button"));
   model_->delegate()->AddBlankTab(true);
 }
 

@@ -15,8 +15,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
+
+using content::UserMetricsAction;
 
 FullscreenController::FullscreenController(BrowserWindow* window,
                                            Profile* profile,
@@ -166,7 +168,7 @@ void FullscreenController::ToggleFullscreenMode(bool for_tab) {
     tab_fullscreen_accepted_ = entering_fullscreen &&
         GetFullscreenSetting(url) == CONTENT_SETTING_ALLOW;
   } else {
-    UserMetrics::RecordAction(UserMetricsAction("ToggleFullscreen"));
+    content::RecordAction(UserMetricsAction("ToggleFullscreen"));
   }
   if (entering_fullscreen)
     window_->EnterFullscreen(url, GetFullscreenExitBubbleType());

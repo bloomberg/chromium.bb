@@ -10,10 +10,12 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/mac/nsimage_cache.h"
+
+using content::UserMetricsAction;
 
 
 @interface BookmarkButtonCell(Private)
@@ -151,9 +153,9 @@
       static_cast<const BookmarkNode*>([[self representedObject] pointerValue]);
 
   if (node->parent() && node->parent()->type() == BookmarkNode::FOLDER) {
-    UserMetrics::RecordAction(UserMetricsAction("BookmarkBarFolder_CtxMenu"));
+    content::RecordAction(UserMetricsAction("BookmarkBarFolder_CtxMenu"));
   } else {
-    UserMetrics::RecordAction(UserMetricsAction("BookmarkBar_CtxMenu"));
+    content::RecordAction(UserMetricsAction("BookmarkBar_CtxMenu"));
   }
 
   [menu setRepresentedObject:[NSNumber numberWithLongLong:node->id()]];

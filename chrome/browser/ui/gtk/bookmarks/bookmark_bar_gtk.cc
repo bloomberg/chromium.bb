@@ -36,9 +36,9 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -50,6 +50,8 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/image/image.h"
+
+using content::UserMetricsAction;
 
 namespace {
 
@@ -1135,7 +1137,7 @@ void BookmarkBarGtk::OnClicked(GtkWidget* sender) {
   bookmark_utils::OpenAll(window_->GetNativeHandle(), profile, page_navigator_,
       node, gtk_util::DispositionForCurrentButtonPressEvent());
 
-  UserMetrics::RecordAction(UserMetricsAction("ClickedBookmarkBarURLButton"));
+  content::RecordAction(UserMetricsAction("ClickedBookmarkBarURLButton"));
 }
 
 void BookmarkBarGtk::OnButtonDragBegin(GtkWidget* button,

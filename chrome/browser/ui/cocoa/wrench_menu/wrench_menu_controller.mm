@@ -19,16 +19,18 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/menu_tracked_root_view.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/accelerators/accelerator_cocoa.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
+
+using content::UserMetricsAction;
 
 @interface WrenchMenuController (Private)
 - (void)createModel;
@@ -168,7 +170,7 @@ class ZoomLevelObserver : public content::NotificationObserver {
       [self wrenchMenuModel]->GetLabelForCommandId(IDC_ZOOM_PERCENT_DISPLAY));
   [[[buttonViewController_ zoomItem] viewWithTag:IDC_ZOOM_PERCENT_DISPLAY]
       setTitle:title];
-  UserMetrics::RecordAction(UserMetricsAction("ShowAppMenu"));
+  content::RecordAction(UserMetricsAction("ShowAppMenu"));
 
   NSImage* icon = [self wrenchMenuModel]->browser()->window()->IsFullscreen() ?
       [NSImage imageNamed:NSImageNameExitFullScreenTemplate] :

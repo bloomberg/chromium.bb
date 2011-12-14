@@ -10,9 +10,11 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using content::UserMetricsAction;
 
 RegisterProtocolHandlerInfoBarDelegate::RegisterProtocolHandlerInfoBarDelegate(
     InfoBarTabHelper* infobar_helper,
@@ -70,14 +72,14 @@ bool RegisterProtocolHandlerInfoBarDelegate::NeedElevation(
 }
 
 bool RegisterProtocolHandlerInfoBarDelegate::Accept() {
-  UserMetrics::RecordAction(
+  content::RecordAction(
       UserMetricsAction("RegisterProtocolHandler.Infobar_Accept"));
   registry_->OnAcceptRegisterProtocolHandler(handler_);
   return true;
 }
 
 bool RegisterProtocolHandlerInfoBarDelegate::Cancel() {
-  UserMetrics::RecordAction(
+  content::RecordAction(
       UserMetricsAction("RegisterProtocolHandler.InfoBar_Deny"));
   registry_->OnIgnoreRegisterProtocolHandler(handler_);
   return true;
@@ -89,7 +91,7 @@ string16 RegisterProtocolHandlerInfoBarDelegate::GetLinkText() const {
 
 bool RegisterProtocolHandlerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  UserMetrics::RecordAction(
+  content::RecordAction(
       UserMetricsAction("RegisterProtocolHandler.InfoBar_LearnMore"));
   owner()->tab_contents()->OpenURL(google_util::AppendGoogleLocaleParam(GURL(
       chrome::kLearnMoreRegisterProtocolHandlerURL)), GURL(),

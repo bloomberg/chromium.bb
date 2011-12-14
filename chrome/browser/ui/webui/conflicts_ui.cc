@@ -20,10 +20,10 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -31,6 +31,8 @@
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+using content::UserMetricsAction;
 
 namespace {
 
@@ -155,7 +157,7 @@ void ConflictsDOMHandler::Observe(int type,
 ///////////////////////////////////////////////////////////////////////////////
 
 ConflictsUI::ConflictsUI(TabContents* contents) : ChromeWebUI(contents) {
-  UserMetrics::RecordAction(UserMetricsAction("ViewAboutConflicts"));
+  content::RecordAction(UserMetricsAction("ViewAboutConflicts"));
   AddMessageHandler((new ConflictsDOMHandler())->Attach(this));
 
   // Set up the about:conflicts source.

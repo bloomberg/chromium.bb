@@ -6,15 +6,17 @@
 
 #include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
 #include "chrome/browser/profiles/profile.h"
+#import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_folder_target.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
-#import "chrome/browser/themes/theme_service.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+
+using content::UserMetricsAction;
 
 @interface BookmarkBarView (Private)
 - (void)themeDidChangeNotification:(NSNotification*)aNotification;
@@ -242,7 +244,7 @@
     rtn = [controller_ dragButton:button
                                to:[info draggingLocation]
                              copy:copy];
-    UserMetrics::RecordAction(UserMetricsAction("BookmarkBar_DragEnd"));
+    content::RecordAction(UserMetricsAction("BookmarkBar_DragEnd"));
   }
   return rtn;
 }

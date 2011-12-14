@@ -36,9 +36,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
@@ -53,6 +53,7 @@
 #endif
 
 using content::BrowserThread;
+using content::UserMetricsAction;
 
 namespace {
 
@@ -217,7 +218,7 @@ void ScreenLocker::Init() {
 
 void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
   DVLOG(1) << "OnLoginFailure";
-  UserMetrics::RecordAction(UserMetricsAction("ScreenLocker_OnLoginFailure"));
+  content::RecordAction(UserMetricsAction("ScreenLocker_OnLoginFailure"));
   if (authentication_start_time_.is_null()) {
     LOG(ERROR) << "authentication_start_time_ is not set";
   } else {
@@ -324,7 +325,7 @@ void ScreenLocker::Signout() {
   // TODO(flackr): For proper functionality, check if (error_info) is NULL
   // (crbug.com/105267).
   delegate_->ClearErrors();
-  UserMetrics::RecordAction(UserMetricsAction("ScreenLocker_Signout"));
+  content::RecordAction(UserMetricsAction("ScreenLocker_Signout"));
 #if defined(TOOLKIT_USES_GTK)
   WmIpc::instance()->NotifyAboutSignout();
 #endif
@@ -349,7 +350,7 @@ void ScreenLocker::SetLoginStatusConsumer(
 // static
 void ScreenLocker::Show() {
   DVLOG(1) << "In ScreenLocker::Show";
-  UserMetrics::RecordAction(UserMetricsAction("ScreenLocker_Show"));
+  content::RecordAction(UserMetricsAction("ScreenLocker_Show"));
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
 
   // Check whether the currently logged in user is a guest account and if so,

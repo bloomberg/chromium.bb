@@ -42,11 +42,13 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+using content::UserMetricsAction;
 
 ///////////////////////////////////////////////////////////////////////////////
 // AutocompleteEditController
@@ -548,7 +550,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
     }
 
     if (template_url) {
-      UserMetrics::RecordAction(UserMetricsAction("AcceptedKeyword"));
+      content::RecordAction(UserMetricsAction("AcceptedKeyword"));
       template_url_service->IncrementUsageCount(template_url);
 
       if (match.transition == content::PAGE_TRANSITION_KEYWORD ||
@@ -607,7 +609,7 @@ bool AutocompleteEditModel::AcceptKeyword() {
                                // since the edit contents have disappeared.  It
                                // doesn't really matter, but we clear it to be
                                // consistent.
-  UserMetrics::RecordAction(UserMetricsAction("AcceptedKeywordHint"));
+  content::RecordAction(UserMetricsAction("AcceptedKeywordHint"));
   return true;
 }
 

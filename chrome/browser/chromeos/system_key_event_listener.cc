@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/volume_bubble.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
 #include "ui/base/x/x11_util.h"
 
@@ -27,6 +27,8 @@
 #elif !defined(TOOLKIT_USES_GTK)
 #include "base/message_pump_x.h"
 #endif
+
+using content::UserMetricsAction;
 
 namespace chromeos {
 
@@ -337,29 +339,29 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
       if (!(state & (Mod1Mask | ShiftMask | ControlMask))) {
         if (keycode == key_f6_ || keycode == key_brightness_down_) {
           if (keycode == key_f6_)
-            UserMetrics::RecordAction(
+            content::RecordAction(
                 UserMetricsAction("Accel_BrightnessDown_F6"));
           OnBrightnessDown();
           return true;
         } else if (keycode == key_f7_ || keycode == key_brightness_up_) {
           if (keycode == key_f7_)
-            UserMetrics::RecordAction(
+            content::RecordAction(
                 UserMetricsAction("Accel_BrightnessUp_F7"));
           OnBrightnessUp();
           return true;
         } else if (keycode == key_f8_ || keycode == key_volume_mute_) {
           if (keycode == key_f8_)
-            UserMetrics::RecordAction(UserMetricsAction("Accel_VolumeMute_F8"));
+            content::RecordAction(UserMetricsAction("Accel_VolumeMute_F8"));
           OnVolumeMute();
           return true;
         } else if (keycode == key_f9_ || keycode == key_volume_down_) {
           if (keycode == key_f9_)
-            UserMetrics::RecordAction(UserMetricsAction("Accel_VolumeDown_F9"));
+            content::RecordAction(UserMetricsAction("Accel_VolumeDown_F9"));
           OnVolumeDown();
           return true;
         } else if (keycode == key_f10_ || keycode == key_volume_up_) {
           if (keycode == key_f10_)
-            UserMetrics::RecordAction(UserMetricsAction("Accel_VolumeUp_F10"));
+            content::RecordAction(UserMetricsAction("Accel_VolumeUp_F10"));
           OnVolumeUp();
           return true;
         }

@@ -11,8 +11,10 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "googleurl/src/gurl.h"
+
+using content::UserMetricsAction;
 
 EditSearchEngineController::EditSearchEngineController(
     const TemplateURL* template_url,
@@ -104,7 +106,7 @@ void EditSearchEngineController::AcceptAddOrEdit(
     modifiable_url->SetURL(url_string, 0, 0);
     // TemplateURLService takes ownership of template_url_.
     template_url_service->Add(modifiable_url);
-    UserMetrics::RecordAction(UserMetricsAction("KeywordEditor_AddKeywordJS"));
+    content::RecordAction(UserMetricsAction("KeywordEditor_AddKeywordJS"));
   } else {
     // Adding or modifying an entry via the Delegate.
     edit_keyword_delegate_->OnEditedKeyword(template_url_,

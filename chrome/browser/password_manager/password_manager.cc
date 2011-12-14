@@ -15,10 +15,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "grit/generated_resources.h"
 
+using content::UserMetricsAction;
 using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormMap;
 
@@ -49,9 +50,9 @@ static void ReportMetrics(bool password_manager_enabled) {
   ran_once = true;
 
   if (password_manager_enabled)
-    UserMetrics::RecordAction(UserMetricsAction("PasswordManager_Enabled"));
+    content::RecordAction(UserMetricsAction("PasswordManager_Enabled"));
   else
-    UserMetrics::RecordAction(UserMetricsAction("PasswordManager_Disabled"));
+    content::RecordAction(UserMetricsAction("PasswordManager_Disabled"));
 }
 
 PasswordManager::PasswordManager(TabContents* tab_contents,

@@ -26,7 +26,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -50,6 +50,8 @@
 #include "chrome/browser/ui/views/restart_message_box.h"
 #include "chrome/installer/util/install_util.h"
 #endif  // defined(OS_WIN)
+
+using content::UserMetricsAction;
 
 // The amount of vertical space separating the error label at the bottom from
 // the rest of the text.
@@ -663,19 +665,19 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
 
   switch (result) {
     case UPGRADE_STARTED:
-      UserMetrics::RecordAction(UserMetricsAction("Upgrade_Started"));
+      content::RecordAction(UserMetricsAction("Upgrade_Started"));
       show_throbber = true;
       update_label_.SetText(
           UTF16ToWide(l10n_util::GetStringUTF16(IDS_UPGRADE_STARTED)));
       break;
     case UPGRADE_CHECK_STARTED:
-      UserMetrics::RecordAction(UserMetricsAction("UpgradeCheck_Started"));
+      content::RecordAction(UserMetricsAction("UpgradeCheck_Started"));
       show_throbber = true;
       update_label_.SetText(
           UTF16ToWide(l10n_util::GetStringUTF16(IDS_UPGRADE_CHECK_STARTED)));
       break;
     case UPGRADE_IS_AVAILABLE:
-      UserMetrics::RecordAction(
+      content::RecordAction(
           UserMetricsAction("UpgradeCheck_UpgradeIsAvailable"));
       DCHECK(!google_updater_);  // Should have been nulled out already.
       google_updater_ = new GoogleUpdate();
@@ -708,7 +710,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
           Version::GetVersionFromString(version_info.Version()));
       if (!installed_version.get() ||
           (installed_version->CompareTo(*running_version) <= 0)) {
-        UserMetrics::RecordAction(
+        content::RecordAction(
             UserMetricsAction("UpgradeCheck_AlreadyUpToDate"));
         string16 update_label_text = l10n_util::GetStringFUTF16(
             IDS_UPGRADE_ALREADY_UP_TO_DATE,
@@ -726,10 +728,10 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
     }
     case UPGRADE_SUCCESSFUL: {
       if (result == UPGRADE_ALREADY_UP_TO_DATE)
-        UserMetrics::RecordAction(
+        content::RecordAction(
             UserMetricsAction("UpgradeCheck_AlreadyUpgraded"));
       else
-        UserMetrics::RecordAction(UserMetricsAction("UpgradeCheck_Upgraded"));
+        content::RecordAction(UserMetricsAction("UpgradeCheck_Upgraded"));
       restart_button_visible_ = true;
       const string16& update_string =
           UTF16ToWide(l10n_util::GetStringFUTF16(
@@ -740,7 +742,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
       break;
     }
     case UPGRADE_ERROR: {
-      UserMetrics::RecordAction(UserMetricsAction("UpgradeCheck_Error"));
+      content::RecordAction(UserMetricsAction("UpgradeCheck_Error"));
       if (!error_message.empty() && error_label_) {
         error_label_->SetText(
             l10n_util::GetStringFUTF16(IDS_ABOUT_BOX_ERROR_DURING_UPDATE_CHECK,

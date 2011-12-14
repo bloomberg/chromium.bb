@@ -18,7 +18,7 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -27,6 +27,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/codec/png_codec.h"
+
+using content::UserMetricsAction;
 
 const int BackForwardMenuModel::kMaxHistoryItems = 12;
 const int BackForwardMenuModel::kMaxChapterStops = 5;
@@ -167,7 +169,7 @@ void BackForwardMenuModel::ActivatedAt(int index, int event_flags) {
 
   // Execute the command for the last item: "Show Full History".
   if (index == GetItemCount() - 1) {
-    UserMetrics::RecordComputedAction(BuildActionName("ShowFullHistory", -1));
+    content::RecordComputedAction(BuildActionName("ShowFullHistory", -1));
     browser_->ShowSingletonTabOverwritingNTP(
         browser_->GetSingletonTabNavigateParams(
             GURL(chrome::kChromeUIHistoryURL)));
@@ -176,10 +178,10 @@ void BackForwardMenuModel::ActivatedAt(int index, int event_flags) {
 
   // Log whether it was a history or chapter click.
   if (index < GetHistoryItemCount()) {
-    UserMetrics::RecordComputedAction(
+    content::RecordComputedAction(
         BuildActionName("HistoryClick", index));
   } else {
-    UserMetrics::RecordComputedAction(
+    content::RecordComputedAction(
         BuildActionName("ChapterClick", index - GetHistoryItemCount() - 1));
   }
 
@@ -191,7 +193,7 @@ void BackForwardMenuModel::ActivatedAt(int index, int event_flags) {
 }
 
 void BackForwardMenuModel::MenuWillShow() {
-  UserMetrics::RecordComputedAction(BuildActionName("Popup", -1));
+  content::RecordComputedAction(BuildActionName("Popup", -1));
   requested_favicons_.clear();
   load_consumer_.CancelAllRequests();
 }

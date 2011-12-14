@@ -21,15 +21,17 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
-#include "content/browser/user_metrics.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/common/content_constants.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/user_metrics.h"
+#include "content/public/common/content_constants.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "webkit/glue/webkit_glue.h"
+
+using content::UserMetricsAction;
 
 namespace {
 
@@ -695,7 +697,7 @@ content::NavigationType NavigationController::ClassifyNavigation(
     // Because the unknown entry has committed, we risk showing the wrong URL in
     // release builds. Instead, we'll kill the renderer process to be safe.
     LOG(ERROR) << "terminating renderer for bad navigation: " << params.url;
-    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_NC"));
+    content::RecordAction(UserMetricsAction("BadMessageTerminate_NC"));
 
     // Temporary code so we can get more information.  Format:
     //  http://url/foo.html#page1#max3#frame1#ids:2_Nx,1_1x,3_2

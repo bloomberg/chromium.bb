@@ -29,7 +29,6 @@
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/user_metrics.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/drag_messages.h"
 #include "content/common/speech_input_messages.h"
@@ -41,6 +40,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host_observer.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/result_codes.h"
@@ -55,6 +55,7 @@
 
 using base::TimeDelta;
 using content::BrowserThread;
+using content::UserMetricsAction;
 using WebKit::WebConsoleMessage;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;
@@ -742,7 +743,7 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
   if (!msg_is_ok) {
     // The message had a handler, but its de-serialization failed.
     // Kill the renderer.
-    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_RVH"));
+    content::RecordAction(UserMetricsAction("BadMessageTerminate_RVH"));
     process()->ReceivedBadMessage();
   }
 

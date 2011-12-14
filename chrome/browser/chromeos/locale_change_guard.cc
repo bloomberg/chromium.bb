@@ -16,12 +16,14 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using content::UserMetricsAction;
 
 namespace chromeos {
 
@@ -67,7 +69,7 @@ void LocaleChangeGuard::RevertLocaleChange(const ListValue* list) {
   if (reverted_)
     return;
   reverted_ = true;
-  UserMetrics::RecordAction(UserMetricsAction("LanguageChange_Revert"));
+  content::RecordAction(UserMetricsAction("LanguageChange_Revert"));
   profile_->ChangeAppLocale(
       from_locale_, Profile::APP_LOCALE_CHANGED_VIA_REVERT);
 
@@ -192,7 +194,7 @@ void LocaleChangeGuard::AcceptLocaleChange() {
   }
   if (prefs->GetString(prefs::kApplicationLocale) != to_locale_)
     return;
-  UserMetrics::RecordAction(UserMetricsAction("LanguageChange_Accept"));
+  content::RecordAction(UserMetricsAction("LanguageChange_Accept"));
   prefs->SetString(prefs::kApplicationLocaleBackup, to_locale_);
   prefs->SetString(prefs::kApplicationLocaleAccepted, to_locale_);
   prefs->ScheduleSavePersistentPrefs();

@@ -18,8 +18,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/sync/sync_global_error.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -34,10 +34,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -54,6 +54,8 @@
 #if defined(OS_WIN)
 #include "chrome/browser/enumerate_modules_model_win.h"
 #endif
+
+using content::UserMetricsAction;
 
 ////////////////////////////////////////////////////////////////////////////////
 // EncodingMenuModel
@@ -336,7 +338,7 @@ void WrenchMenuModel::ExecuteCommand(int command_id) {
   }
 
   if (command_id == IDC_HELP_PAGE)
-    UserMetrics::RecordAction(UserMetricsAction("ShowHelpTabViaWrenchMenu"));
+    content::RecordAction(UserMetricsAction("ShowHelpTabViaWrenchMenu"));
 
   browser_->ExecuteCommand(command_id);
 }

@@ -37,13 +37,13 @@
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/tab_contents/title_updated_details.h"
-#include "content/browser/user_metrics.h"
 #include "content/browser/webui/web_ui_factory.h"
 #include "content/common/intents_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_restriction.h"
@@ -110,6 +110,7 @@
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
 using content::DevToolsManagerImpl;
+using content::UserMetricsAction;
 
 namespace {
 
@@ -327,7 +328,7 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP_EX()
 
   if (!message_is_ok) {
-    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_RVD"));
+    content::RecordAction(UserMetricsAction("BadMessageTerminate_RVD"));
     GetRenderProcessHost()->ReceivedBadMessage();
   }
 
@@ -1072,7 +1073,7 @@ void TabContents::OnDidLoadResourceFromMemoryCache(
 }
 
 void TabContents::OnDidDisplayInsecureContent() {
-  UserMetrics::RecordAction(UserMetricsAction("SSL.DisplayedInsecureContent"));
+  content::RecordAction(UserMetricsAction("SSL.DisplayedInsecureContent"));
   displayed_insecure_content_ = true;
   SSLManager::NotifySSLInternalStateChanged(&controller());
 }
@@ -1081,9 +1082,9 @@ void TabContents::OnDidRunInsecureContent(
     const std::string& security_origin, const GURL& target_url) {
   LOG(INFO) << security_origin << " ran insecure content from "
             << target_url.possibly_invalid_spec();
-  UserMetrics::RecordAction(UserMetricsAction("SSL.RanInsecureContent"));
+  content::RecordAction(UserMetricsAction("SSL.RanInsecureContent"));
   if (EndsWith(security_origin, kDotGoogleDotCom, false)) {
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("SSL.RanInsecureContentGoogle"));
   }
   controller_.ssl_manager()->DidRunInsecureContent(security_origin);

@@ -19,7 +19,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gl/gl_switches.h"
@@ -27,6 +27,8 @@
 #if defined(USE_AURA)
 #include "ui/aura/aura_switches.h"
 #endif
+
+using content::UserMetricsAction;
 
 namespace about_flags {
 
@@ -695,13 +697,13 @@ void RecordUMAStatistics(const PrefService* prefs) {
        ++it) {
     std::string action("AboutFlags_");
     action += *it;
-    UserMetrics::RecordComputedAction(action);
+    content::RecordComputedAction(action);
   }
   // Since flag metrics are recorded every startup, add a tick so that the
   // stats can be made meaningful.
   if (flags.size())
-    UserMetrics::RecordAction(UserMetricsAction("AboutFlags_StartupTick"));
-  UserMetrics::RecordAction(UserMetricsAction("StartupTick"));
+    content::RecordAction(UserMetricsAction("AboutFlags_StartupTick"));
+  content::RecordAction(UserMetricsAction("StartupTick"));
 }
 
 //////////////////////////////////////////////////////////////////////////////

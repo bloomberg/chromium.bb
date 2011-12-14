@@ -151,11 +151,11 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/devtools_manager.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_details.h"
 #include "content/public/browser/intents_host.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_restriction.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
@@ -206,6 +206,7 @@
 #endif
 
 using base::TimeDelta;
+using content::UserMetricsAction;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1495,7 +1496,7 @@ bool Browser::CanGoBack() const {
 }
 
 void Browser::GoBack(WindowOpenDisposition disposition) {
-  UserMetrics::RecordAction(UserMetricsAction("Back"));
+  content::RecordAction(UserMetricsAction("Back"));
 
   TabContentsWrapper* current_tab = GetSelectedTabContentsWrapper();
   if (CanGoBack()) {
@@ -1515,18 +1516,18 @@ bool Browser::CanGoForward() const {
 }
 
 void Browser::GoForward(WindowOpenDisposition disposition) {
-  UserMetrics::RecordAction(UserMetricsAction("Forward"));
+  content::RecordAction(UserMetricsAction("Forward"));
   if (CanGoForward())
     GetOrCloneTabForDisposition(disposition)->controller().GoForward();
 }
 
 void Browser::Reload(WindowOpenDisposition disposition) {
-  UserMetrics::RecordAction(UserMetricsAction("Reload"));
+  content::RecordAction(UserMetricsAction("Reload"));
   ReloadInternal(disposition, false);
 }
 
 void Browser::ReloadIgnoringCache(WindowOpenDisposition disposition) {
-  UserMetrics::RecordAction(UserMetricsAction("ReloadIgnoringCache"));
+  content::RecordAction(UserMetricsAction("ReloadIgnoringCache"));
   ReloadInternal(disposition, true);
 }
 
@@ -1552,7 +1553,7 @@ void Browser::ReloadInternal(WindowOpenDisposition disposition,
 }
 
 void Browser::Home(WindowOpenDisposition disposition) {
-  UserMetrics::RecordAction(UserMetricsAction("Home"));
+  content::RecordAction(UserMetricsAction("Home"));
   OpenURL(
       profile_->GetHomePage(), GURL(), disposition,
       content::PageTransitionFromInt(
@@ -1561,7 +1562,7 @@ void Browser::Home(WindowOpenDisposition disposition) {
 }
 
 void Browser::OpenCurrentURL() {
-  UserMetrics::RecordAction(UserMetricsAction("LoadURL"));
+  content::RecordAction(UserMetricsAction("LoadURL"));
   LocationBar* location_bar = window_->GetLocationBar();
   if (!location_bar)
     return;
@@ -1602,7 +1603,7 @@ void Browser::OpenCurrentURL() {
 }
 
 void Browser::Stop() {
-  UserMetrics::RecordAction(UserMetricsAction("Stop"));
+  content::RecordAction(UserMetricsAction("Stop"));
   GetSelectedTabContentsWrapper()->tab_contents()->Stop();
 }
 
@@ -1616,7 +1617,7 @@ void Browser::NewWindow() {
     NewIncognitoWindow();
     return;
   }
-  UserMetrics::RecordAction(UserMetricsAction("NewWindow"));
+  content::RecordAction(UserMetricsAction("NewWindow"));
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile_->GetOriginalProfile());
   if (!session_service ||
@@ -1632,17 +1633,17 @@ void Browser::NewIncognitoWindow() {
     return;
   }
 
-  UserMetrics::RecordAction(UserMetricsAction("NewIncognitoWindow"));
+  content::RecordAction(UserMetricsAction("NewIncognitoWindow"));
   Browser::OpenEmptyWindow(profile_->GetOffTheRecordProfile());
 }
 
 void Browser::CloseWindow() {
-  UserMetrics::RecordAction(UserMetricsAction("CloseWindow"));
+  content::RecordAction(UserMetricsAction("CloseWindow"));
   window_->Close();
 }
 
 void Browser::NewTab() {
-  UserMetrics::RecordAction(UserMetricsAction("NewTab"));
+  content::RecordAction(UserMetricsAction("NewTab"));
 
   if (is_type_tabbed()) {
     AddBlankTab(true);
@@ -1659,18 +1660,18 @@ void Browser::NewTab() {
 }
 
 void Browser::CloseTab() {
-  UserMetrics::RecordAction(UserMetricsAction("CloseTab_Accelerator"));
+  content::RecordAction(UserMetricsAction("CloseTab_Accelerator"));
   if (CanCloseTab())
     tab_handler_->GetTabStripModel()->CloseSelectedTabs();
 }
 
 void Browser::SelectNextTab() {
-  UserMetrics::RecordAction(UserMetricsAction("SelectNextTab"));
+  content::RecordAction(UserMetricsAction("SelectNextTab"));
   tab_handler_->GetTabStripModel()->SelectNextTab();
 }
 
 void Browser::SelectPreviousTab() {
-  UserMetrics::RecordAction(UserMetricsAction("SelectPrevTab"));
+  content::RecordAction(UserMetricsAction("SelectPrevTab"));
   tab_handler_->GetTabStripModel()->SelectPreviousTab();
 }
 
@@ -1681,7 +1682,7 @@ void Browser::OpenTabpose() {
     return;
   }
 
-  UserMetrics::RecordAction(UserMetricsAction("OpenTabpose"));
+  content::RecordAction(UserMetricsAction("OpenTabpose"));
   window()->OpenTabpose();
 #else
   NOTREACHED();
@@ -1689,34 +1690,34 @@ void Browser::OpenTabpose() {
 }
 
 void Browser::MoveTabNext() {
-  UserMetrics::RecordAction(UserMetricsAction("MoveTabNext"));
+  content::RecordAction(UserMetricsAction("MoveTabNext"));
   tab_handler_->GetTabStripModel()->MoveTabNext();
 }
 
 void Browser::MoveTabPrevious() {
-  UserMetrics::RecordAction(UserMetricsAction("MoveTabPrevious"));
+  content::RecordAction(UserMetricsAction("MoveTabPrevious"));
   tab_handler_->GetTabStripModel()->MoveTabPrevious();
 }
 
 void Browser::SelectNumberedTab(int index) {
   if (index < tab_count()) {
-    UserMetrics::RecordAction(UserMetricsAction("SelectNumberedTab"));
+    content::RecordAction(UserMetricsAction("SelectNumberedTab"));
     tab_handler_->GetTabStripModel()->ActivateTabAt(index, true);
   }
 }
 
 void Browser::SelectLastTab() {
-  UserMetrics::RecordAction(UserMetricsAction("SelectLastTab"));
+  content::RecordAction(UserMetricsAction("SelectLastTab"));
   tab_handler_->GetTabStripModel()->SelectLastTab();
 }
 
 void Browser::DuplicateTab() {
-  UserMetrics::RecordAction(UserMetricsAction("Duplicate"));
+  content::RecordAction(UserMetricsAction("Duplicate"));
   DuplicateContentsAt(active_index());
 }
 
 void Browser::RestoreTab() {
-  UserMetrics::RecordAction(UserMetricsAction("RestoreTab"));
+  content::RecordAction(UserMetricsAction("RestoreTab"));
   TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(profile_);
   if (!service)
@@ -1741,7 +1742,7 @@ void Browser::WriteCurrentURLToClipboard() {
 }
 
 void Browser::ConvertPopupToTabbedBrowser() {
-  UserMetrics::RecordAction(UserMetricsAction("ShowAsTab"));
+  content::RecordAction(UserMetricsAction("ShowAsTab"));
   int tab_strip_index = tab_handler_->GetTabStripModel()->active_index();
   TabContentsWrapper* contents =
       tab_handler_->GetTabStripModel()->DetachTabContentsAt(tab_strip_index);
@@ -1791,12 +1792,12 @@ void Browser::ShowKeyboardOverlay() {
 #endif
 
 void Browser::Exit() {
-  UserMetrics::RecordAction(UserMetricsAction("Exit"));
+  content::RecordAction(UserMetricsAction("Exit"));
   BrowserList::AttemptUserExit();
 }
 
 void Browser::BookmarkCurrentPage() {
-  UserMetrics::RecordAction(UserMetricsAction("Star"));
+  content::RecordAction(UserMetricsAction("Star"));
 
   BookmarkModel* model = profile()->GetBookmarkModel();
   if (!model || !model->IsLoaded())
@@ -1823,10 +1824,10 @@ void Browser::BookmarkCurrentPage() {
 }
 
 void Browser::SavePage() {
-  UserMetrics::RecordAction(UserMetricsAction("SavePage"));
+  content::RecordAction(UserMetricsAction("SavePage"));
   TabContents* current_tab = GetSelectedTabContents();
   if (current_tab && current_tab->contents_mime_type() == "application/pdf")
-    UserMetrics::RecordAction(UserMetricsAction("PDF.SavePage"));
+    content::RecordAction(UserMetricsAction("PDF.SavePage"));
   GetSelectedTabContents()->OnSavePage();
 }
 
@@ -1847,7 +1848,7 @@ bool Browser::CanSupportWindowFeature(WindowFeature feature) const {
 }
 
 void Browser::EmailPageLocation() {
-  UserMetrics::RecordAction(UserMetricsAction("EmailPageLocation"));
+  content::RecordAction(UserMetricsAction("EmailPageLocation"));
   TabContents* tc = GetSelectedTabContents();
   DCHECK(tc);
 
@@ -1871,7 +1872,7 @@ void Browser::AdvancedPrint() {
 }
 
 void Browser::ToggleEncodingAutoDetect() {
-  UserMetrics::RecordAction(UserMetricsAction("AutoDetectChange"));
+  content::RecordAction(UserMetricsAction("AutoDetectChange"));
   encoding_auto_detect_.SetValue(!encoding_auto_detect_.GetValue());
   // If "auto detect" is turned on, then any current override encoding
   // is cleared. This also implicitly performs a reload.
@@ -1885,7 +1886,7 @@ void Browser::ToggleEncodingAutoDetect() {
 }
 
 void Browser::OverrideEncoding(int encoding_id) {
-  UserMetrics::RecordAction(UserMetricsAction("OverrideEncoding"));
+  content::RecordAction(UserMetricsAction("OverrideEncoding"));
   const std::string selected_encoding =
       CharacterEncoding::GetCanonicalEncodingNameByCommandId(encoding_id);
   TabContents* contents = GetSelectedTabContents();
@@ -1903,32 +1904,32 @@ void Browser::OverrideEncoding(int encoding_id) {
 }
 
 void Browser::Cut() {
-  UserMetrics::RecordAction(UserMetricsAction("Cut"));
+  content::RecordAction(UserMetricsAction("Cut"));
   window()->Cut();
 }
 
 void Browser::Copy() {
-  UserMetrics::RecordAction(UserMetricsAction("Copy"));
+  content::RecordAction(UserMetricsAction("Copy"));
   window()->Copy();
 }
 
 void Browser::Paste() {
-  UserMetrics::RecordAction(UserMetricsAction("Paste"));
+  content::RecordAction(UserMetricsAction("Paste"));
   window()->Paste();
 }
 
 void Browser::Find() {
-  UserMetrics::RecordAction(UserMetricsAction("Find"));
+  content::RecordAction(UserMetricsAction("Find"));
   FindInPage(false, false);
 }
 
 void Browser::FindNext() {
-  UserMetrics::RecordAction(UserMetricsAction("FindNext"));
+  content::RecordAction(UserMetricsAction("FindNext"));
   FindInPage(true, true);
 }
 
 void Browser::FindPrevious() {
-  UserMetrics::RecordAction(UserMetricsAction("FindPrevious"));
+  content::RecordAction(UserMetricsAction("FindPrevious"));
   FindInPage(true, false);
 }
 
@@ -1940,7 +1941,7 @@ void Browser::Zoom(content::PageZoom zoom) {
       GetSelectedTabContentsWrapper()->tab_contents()->render_view_host();
   if (zoom == content::PAGE_ZOOM_RESET) {
     host->SetZoomLevel(0);
-    UserMetrics::RecordAction(UserMetricsAction("ZoomNormal"));
+    content::RecordAction(UserMetricsAction("ZoomNormal"));
     return;
   }
 
@@ -1963,10 +1964,10 @@ void Browser::Zoom(content::PageZoom zoom) {
         continue;
       if (zoom_level < current_zoom_level) {
         host->SetZoomLevel(zoom_level);
-        UserMetrics::RecordAction(UserMetricsAction("ZoomMinus"));
+        content::RecordAction(UserMetricsAction("ZoomMinus"));
         return;
       }
-      UserMetrics::RecordAction(UserMetricsAction("ZoomMinus_AtMinimum"));
+      content::RecordAction(UserMetricsAction("ZoomMinus_AtMinimum"));
     }
   } else {
     // Iterate through the zoom levels in normal order to find the next
@@ -1978,57 +1979,57 @@ void Browser::Zoom(content::PageZoom zoom) {
         continue;
       if (zoom_level > current_zoom_level) {
         host->SetZoomLevel(zoom_level);
-        UserMetrics::RecordAction(UserMetricsAction("ZoomPlus"));
+        content::RecordAction(UserMetricsAction("ZoomPlus"));
         return;
       }
     }
-    UserMetrics::RecordAction(UserMetricsAction("ZoomPlus_AtMaximum"));
+    content::RecordAction(UserMetricsAction("ZoomPlus_AtMaximum"));
   }
 }
 
 void Browser::FocusToolbar() {
-  UserMetrics::RecordAction(UserMetricsAction("FocusToolbar"));
+  content::RecordAction(UserMetricsAction("FocusToolbar"));
   window_->FocusToolbar();
 }
 
 void Browser::FocusAppMenu() {
-  UserMetrics::RecordAction(UserMetricsAction("FocusAppMenu"));
+  content::RecordAction(UserMetricsAction("FocusAppMenu"));
   window_->FocusAppMenu();
 }
 
 void Browser::FocusLocationBar() {
-  UserMetrics::RecordAction(UserMetricsAction("FocusLocation"));
+  content::RecordAction(UserMetricsAction("FocusLocation"));
   window_->SetFocusToLocationBar(true);
 }
 
 void Browser::FocusBookmarksToolbar() {
-  UserMetrics::RecordAction(UserMetricsAction("FocusBookmarksToolbar"));
+  content::RecordAction(UserMetricsAction("FocusBookmarksToolbar"));
   window_->FocusBookmarksToolbar();
 }
 
 void Browser::FocusChromeOSStatus() {
-  UserMetrics::RecordAction(UserMetricsAction("FocusChromeOSStatus"));
+  content::RecordAction(UserMetricsAction("FocusChromeOSStatus"));
   window_->FocusChromeOSStatus();
 }
 
 void Browser::FocusNextPane() {
-  UserMetrics::RecordAction(UserMetricsAction("FocusNextPane"));
+  content::RecordAction(UserMetricsAction("FocusNextPane"));
   window_->RotatePaneFocus(true);
 }
 
 void Browser::FocusPreviousPane() {
-  UserMetrics::RecordAction(UserMetricsAction("FocusPreviousPane"));
+  content::RecordAction(UserMetricsAction("FocusPreviousPane"));
   window_->RotatePaneFocus(false);
 }
 
 void Browser::FocusSearch() {
   // TODO(beng): replace this with FocusLocationBar
-  UserMetrics::RecordAction(UserMetricsAction("FocusSearch"));
+  content::RecordAction(UserMetricsAction("FocusSearch"));
   window_->GetLocationBar()->FocusSearch();
 }
 
 void Browser::OpenFile() {
-  UserMetrics::RecordAction(UserMetricsAction("OpenFile"));
+  content::RecordAction(UserMetricsAction("OpenFile"));
   if (!select_file_dialog_.get())
     select_file_dialog_ = SelectFileDialog::Create(this);
 
@@ -2044,7 +2045,7 @@ void Browser::OpenFile() {
 }
 
 void Browser::OpenCreateShortcutsDialog() {
-  UserMetrics::RecordAction(UserMetricsAction("CreateShortcut"));
+  content::RecordAction(UserMetricsAction("CreateShortcut"));
 #if !defined(OS_MACOSX)
   TabContentsWrapper* current_tab = GetSelectedTabContentsWrapper();
   DCHECK(current_tab &&
@@ -2070,9 +2071,9 @@ void Browser::OpenCreateShortcutsDialog() {
 
 void Browser::ToggleDevToolsWindow(DevToolsToggleAction action) {
   if (action == DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE)
-    UserMetrics::RecordAction(UserMetricsAction("DevTools_ToggleConsole"));
+    content::RecordAction(UserMetricsAction("DevTools_ToggleConsole"));
   else
-    UserMetrics::RecordAction(UserMetricsAction("DevTools_ToggleWindow"));
+    content::RecordAction(UserMetricsAction("DevTools_ToggleWindow"));
 
   DevToolsWindow::ToggleDevToolsWindow(
       GetSelectedTabContentsWrapper()->tab_contents()->render_view_host(),
@@ -2080,7 +2081,7 @@ void Browser::ToggleDevToolsWindow(DevToolsToggleAction action) {
 }
 
 void Browser::OpenTaskManager(bool highlight_background_resources) {
-  UserMetrics::RecordAction(UserMetricsAction("TaskManager"));
+  content::RecordAction(UserMetricsAction("TaskManager"));
   if (highlight_background_resources)
     window_->ShowBackgroundPages();
   else
@@ -2088,26 +2089,26 @@ void Browser::OpenTaskManager(bool highlight_background_resources) {
 }
 
 void Browser::OpenBugReportDialog() {
-  UserMetrics::RecordAction(UserMetricsAction("ReportBug"));
+  content::RecordAction(UserMetricsAction("ReportBug"));
   browser::ShowHtmlBugReportView(this, std::string(), 0);
 }
 
 void Browser::ToggleBookmarkBar() {
-  UserMetrics::RecordAction(UserMetricsAction("ShowBookmarksBar"));
+  content::RecordAction(UserMetricsAction("ShowBookmarksBar"));
   window_->ToggleBookmarkBar();
 }
 
 void Browser::OpenBookmarkManager() {
-  UserMetrics::RecordAction(UserMetricsAction("ShowBookmarkManager"));
-  UserMetrics::RecordAction(UserMetricsAction("ShowBookmarks"));
+  content::RecordAction(UserMetricsAction("ShowBookmarkManager"));
+  content::RecordAction(UserMetricsAction("ShowBookmarks"));
   ShowSingletonTabOverwritingNTP(
       GetSingletonTabNavigateParams(GURL(chrome::kChromeUIBookmarksURL)));
 }
 
 void Browser::OpenBookmarkManagerWithHash(const std::string& action,
                                           int64 node_id) {
-  UserMetrics::RecordAction(UserMetricsAction("ShowBookmarkManager"));
-  UserMetrics::RecordAction(UserMetricsAction("ShowBookmarks"));
+  content::RecordAction(UserMetricsAction("ShowBookmarkManager"));
+  content::RecordAction(UserMetricsAction("ShowBookmarks"));
   browser::NavigateParams params(GetSingletonTabNavigateParams(
       GURL(chrome::kChromeUIBookmarksURL).Resolve(
       StringPrintf("/#%s%s", action.c_str(),
@@ -2134,13 +2135,13 @@ void Browser::ShowAvatarMenu() {
 }
 
 void Browser::ShowHistoryTab() {
-  UserMetrics::RecordAction(UserMetricsAction("ShowHistory"));
+  content::RecordAction(UserMetricsAction("ShowHistory"));
   ShowSingletonTabOverwritingNTP(
       GetSingletonTabNavigateParams(GURL(chrome::kChromeUIHistoryURL)));
 }
 
 void Browser::ShowDownloadsTab() {
-  UserMetrics::RecordAction(UserMetricsAction("ShowDownloads"));
+  content::RecordAction(UserMetricsAction("ShowDownloads"));
 #if !defined(OS_CHROMEOS)
   // ChromiumOS uses ActiveDownloadsUI instead of of DownloadShelf.
   if (window()) {
@@ -2154,17 +2155,17 @@ void Browser::ShowDownloadsTab() {
 }
 
 void Browser::ShowExtensionsTab() {
-  UserMetrics::RecordAction(UserMetricsAction("ShowExtensions"));
+  content::RecordAction(UserMetricsAction("ShowExtensions"));
   ShowOptionsTab(chrome::kExtensionsSubPage);
 }
 
 void Browser::ShowAboutConflictsTab() {
-  UserMetrics::RecordAction(UserMetricsAction("AboutConflicts"));
+  content::RecordAction(UserMetricsAction("AboutConflicts"));
   ShowSingletonTab(GURL(chrome::kChromeUIConflictsURL));
 }
 
 void Browser::ShowBrokenPageTab(TabContents* contents) {
-  UserMetrics::RecordAction(UserMetricsAction("ReportBug"));
+  content::RecordAction(UserMetricsAction("ReportBug"));
   string16 page_title = contents->GetTitle();
   NavigationEntry* entry = contents->controller().GetActiveEntry();
   if (!entry)
@@ -2187,22 +2188,22 @@ void Browser::ShowOptionsTab(const std::string& sub_page) {
 }
 
 void Browser::OpenClearBrowsingDataDialog() {
-  UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_ShowDlg"));
+  content::RecordAction(UserMetricsAction("ClearBrowsingData_ShowDlg"));
   ShowOptionsTab(chrome::kClearBrowserDataSubPage);
 }
 
 void Browser::OpenOptionsDialog() {
-  UserMetrics::RecordAction(UserMetricsAction("ShowOptions"));
+  content::RecordAction(UserMetricsAction("ShowOptions"));
   ShowOptionsTab("");
 }
 
 void Browser::OpenPasswordManager() {
-  UserMetrics::RecordAction(UserMetricsAction("Options_ShowPasswordManager"));
+  content::RecordAction(UserMetricsAction("Options_ShowPasswordManager"));
   ShowOptionsTab(chrome::kPasswordManagerSubPage);
 }
 
 void Browser::OpenImportSettingsDialog() {
-  UserMetrics::RecordAction(UserMetricsAction("Import_ShowDlg"));
+  content::RecordAction(UserMetricsAction("Import_ShowDlg"));
   ShowOptionsTab(chrome::kImportDataSubPage);
 }
 
@@ -2216,7 +2217,7 @@ void Browser::OpenSyncMyBookmarksDialog() {
 }
 
 void Browser::OpenAboutChromeDialog() {
-  UserMetrics::RecordAction(UserMetricsAction("AboutChrome"));
+  content::RecordAction(UserMetricsAction("AboutChrome"));
 #if defined(OS_CHROMEOS)
   std::string chrome_settings(chrome::kChromeUISettingsURL);
   ShowSingletonTab(GURL(chrome_settings.append(chrome::kAboutOptionsSubPage)));
@@ -2226,12 +2227,12 @@ void Browser::OpenAboutChromeDialog() {
 }
 
 void Browser::OpenUpdateChromeDialog() {
-  UserMetrics::RecordAction(UserMetricsAction("UpdateChrome"));
+  content::RecordAction(UserMetricsAction("UpdateChrome"));
   window_->ShowUpdateChromeDialog();
 }
 
 void Browser::ShowHelpTab() {
-  UserMetrics::RecordAction(UserMetricsAction("ShowHelpTab"));
+  content::RecordAction(UserMetricsAction("ShowHelpTab"));
   GURL help_url(kHelpContentUrl);
   GURL localized_help_url = google_util::AppendGoogleLocaleParam(help_url);
   ShowSingletonTab(localized_help_url);
@@ -2249,42 +2250,42 @@ void Browser::OpenAutofillHelpTabAndActivate() {
 }
 
 void Browser::OpenSearchEngineOptionsDialog() {
-  UserMetrics::RecordAction(UserMetricsAction("EditSearchEngines"));
+  content::RecordAction(UserMetricsAction("EditSearchEngines"));
   ShowOptionsTab(chrome::kSearchEnginesSubPage);
 }
 
 #if defined(FILE_MANAGER_EXTENSION)
 void Browser::OpenFileManager() {
-  UserMetrics::RecordAction(UserMetricsAction("OpenFileManager"));
+  content::RecordAction(UserMetricsAction("OpenFileManager"));
   ShowSingletonTabRespectRef(GURL(chrome::kChromeUIFileManagerURL));
 }
 #endif
 
 #if defined(OS_CHROMEOS)
 void Browser::LockScreen() {
-  UserMetrics::RecordAction(UserMetricsAction("LockScreen"));
+  content::RecordAction(UserMetricsAction("LockScreen"));
   chromeos::CrosLibrary::Get()->GetScreenLockLibrary()->
       NotifyScreenLockRequested();
 }
 
 void Browser::Shutdown() {
-  UserMetrics::RecordAction(UserMetricsAction("Shutdown"));
+  content::RecordAction(UserMetricsAction("Shutdown"));
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       RequestShutdown();
 }
 
 void Browser::OpenSystemOptionsDialog() {
-  UserMetrics::RecordAction(UserMetricsAction("OpenSystemOptionsDialog"));
+  content::RecordAction(UserMetricsAction("OpenSystemOptionsDialog"));
   ShowOptionsTab(chrome::kSystemOptionsSubPage);
 }
 
 void Browser::OpenInternetOptionsDialog() {
-  UserMetrics::RecordAction(UserMetricsAction("OpenInternetOptionsDialog"));
+  content::RecordAction(UserMetricsAction("OpenInternetOptionsDialog"));
   ShowOptionsTab(chrome::kInternetOptionsSubPage);
 }
 
 void Browser::OpenLanguageOptionsDialog() {
-  UserMetrics::RecordAction(UserMetricsAction("OpenLanguageOptionsDialog"));
+  content::RecordAction(UserMetricsAction("OpenLanguageOptionsDialog"));
   ShowOptionsTab(chrome::kLanguageOptionsSubPage);
 }
 
@@ -2588,7 +2589,7 @@ void Browser::RegisterProtocolHandlerHelper(TabContents* tab,
       tcw->profile()->GetProtocolHandlerRegistry();
 
   if (!registry->SilentlyHandleRegisterHandlerRequest(handler)) {
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("RegisterProtocolHandler.InfoBar_Shown"));
     InfoBarTabHelper* infobar_helper = tcw->infobar_tab_helper();
     infobar_helper->AddInfoBar(
@@ -5200,7 +5201,7 @@ void Browser::ViewSource(TabContentsWrapper* contents) {
 void Browser::ViewSource(TabContentsWrapper* contents,
                          const GURL& url,
                          const std::string& content_state) {
-  UserMetrics::RecordAction(UserMetricsAction("ViewSource"));
+  content::RecordAction(UserMetricsAction("ViewSource"));
   DCHECK(contents);
 
   TabContentsWrapper* view_source_contents = contents->Clone();

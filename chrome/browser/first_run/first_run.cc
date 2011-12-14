@@ -31,7 +31,7 @@
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "googleurl/src/gurl.h"
 
 #if defined(OS_WIN)
@@ -39,6 +39,8 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #endif
+
+using content::UserMetricsAction;
 
 namespace {
 
@@ -618,7 +620,7 @@ void FirstRun::AutoImport(
     ImportSettings(profile, importer_host, importer_list, items);
   }
 
-  UserMetrics::RecordAction(UserMetricsAction("FirstRunDef_Accept"));
+  content::RecordAction(UserMetricsAction("FirstRunDef_Accept"));
 
   // Launch the search engine dialog only for certain builds, and only if the
   // user has not already set preferences.

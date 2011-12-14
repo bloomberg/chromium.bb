@@ -31,9 +31,9 @@
 #include "content/browser/download/download_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/page_zoom.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -45,6 +45,8 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
 #include "chrome/browser/ui/webui/options/advanced_options_utils.h"
 #endif
+
+using content::UserMetricsAction;
 
 AdvancedOptionsHandler::AdvancedOptionsHandler() {
 
@@ -354,7 +356,7 @@ void AdvancedOptionsHandler::HandleSelectDownloadLocation(
 
 void AdvancedOptionsHandler::FileSelected(const FilePath& path, int index,
                                           void* params) {
-  UserMetrics::RecordAction(UserMetricsAction("Options_SetDownloadDirectory"));
+  content::RecordAction(UserMetricsAction("Options_SetDownloadDirectory"));
   PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
   pref_service->SetFilePath(prefs::kDownloadDefaultDirectory, path);
 }
@@ -367,7 +369,7 @@ void AdvancedOptionsHandler::OnCloudPrintSetupClosed() {
 }
 
 void AdvancedOptionsHandler::HandleAutoOpenButton(const ListValue* args) {
-  UserMetrics::RecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"));
+  content::RecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"));
   DownloadManager* manager =
       web_ui_->tab_contents()->browser_context()->GetDownloadManager();
   if (manager)
@@ -379,9 +381,9 @@ void AdvancedOptionsHandler::HandleMetricsReportingCheckbox(
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
   std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
   bool enabled = checked_str == "true";
-  UserMetrics::RecordAction(
+  content::RecordAction(
       enabled ?
-          UserMetricsAction("Options_MetricsReportingCheckbox_Enable") :
+      UserMetricsAction("Options_MetricsReportingCheckbox_Enable") :
           UserMetricsAction("Options_MetricsReportingCheckbox_Disable"));
   bool is_enabled = OptionsUtil::ResolveMetricsReportingEnabled(enabled);
   enable_metrics_recording_.SetValue(is_enabled);
@@ -411,9 +413,9 @@ void AdvancedOptionsHandler::HandleCheckRevocationCheckbox(
     const ListValue* args) {
   std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
   bool enabled = checked_str == "true";
-  UserMetrics::RecordAction(
+  content::RecordAction(
       enabled ?
-          UserMetricsAction("Options_CheckCertRevocation_Enable") :
+      UserMetricsAction("Options_CheckCertRevocation_Enable") :
           UserMetricsAction("Options_CheckCertRevocation_Disable"));
   rev_checking_enabled_.SetValue(enabled);
 }
@@ -423,8 +425,8 @@ void AdvancedOptionsHandler::HandleBackgroundModeCheckbox(
     const ListValue* args) {
   std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
   bool enabled = checked_str == "true";
-  UserMetrics::RecordAction(enabled ?
-      UserMetricsAction("Options_BackgroundMode_Enable") :
+  content::RecordAction(enabled ?
+                        UserMetricsAction("Options_BackgroundMode_Enable") :
       UserMetricsAction("Options_BackgroundMode_Disable"));
   background_mode_enabled_.SetValue(enabled);
 }
@@ -438,20 +440,20 @@ void AdvancedOptionsHandler::SetupBackgroundModeSettings() {
 
 #if !defined(OS_CHROMEOS)
 void AdvancedOptionsHandler::ShowNetworkProxySettings(const ListValue* args) {
-  UserMetrics::RecordAction(UserMetricsAction("Options_ShowProxySettings"));
+  content::RecordAction(UserMetricsAction("Options_ShowProxySettings"));
   AdvancedOptionsUtilities::ShowNetworkProxySettings(web_ui_->tab_contents());
 }
 #endif
 
 #if !defined(USE_NSS) && !defined(USE_OPENSSL)
 void AdvancedOptionsHandler::ShowManageSSLCertificates(const ListValue* args) {
-  UserMetrics::RecordAction(UserMetricsAction("Options_ManageSSLCertificates"));
+  content::RecordAction(UserMetricsAction("Options_ManageSSLCertificates"));
   AdvancedOptionsUtilities::ShowManageSSLCertificates(web_ui_->tab_contents());
 }
 #endif
 
 void AdvancedOptionsHandler::ShowCloudPrintManagePage(const ListValue* args) {
-  UserMetrics::RecordAction(UserMetricsAction("Options_ManageCloudPrinters"));
+  content::RecordAction(UserMetricsAction("Options_ManageCloudPrinters"));
   // Open a new tab in the current window for the management page.
   Profile* profile = Profile::FromWebUI(web_ui_);
   web_ui_->tab_contents()->OpenURL(
@@ -461,7 +463,7 @@ void AdvancedOptionsHandler::ShowCloudPrintManagePage(const ListValue* args) {
 
 #if !defined(OS_CHROMEOS)
 void AdvancedOptionsHandler::ShowCloudPrintSetupDialog(const ListValue* args) {
-  UserMetrics::RecordAction(UserMetricsAction("Options_EnableCloudPrintProxy"));
+  content::RecordAction(UserMetricsAction("Options_EnableCloudPrintProxy"));
   // Open the connector enable page in the current tab.
   Profile* profile = Profile::FromWebUI(web_ui_);
   web_ui_->tab_contents()->OpenURL(
@@ -472,7 +474,7 @@ void AdvancedOptionsHandler::ShowCloudPrintSetupDialog(const ListValue* args) {
 
 void AdvancedOptionsHandler::HandleDisableCloudPrintProxy(
     const ListValue* args) {
-  UserMetrics::RecordAction(
+  content::RecordAction(
       UserMetricsAction("Options_DisableCloudPrintProxy"));
   CloudPrintProxyServiceFactory::GetForProfile(Profile::FromWebUI(web_ui_))->
       DisableForUser();

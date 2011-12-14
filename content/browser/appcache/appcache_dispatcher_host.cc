@@ -7,8 +7,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/user_metrics.h"
 #include "content/common/appcache_messages.h"
+#include "content/public/browser/user_metrics.h"
+
+using content::UserMetricsAction;
 
 AppCacheDispatcherHost::AppCacheDispatcherHost(
     ChromeAppCacheService* appcache_service,
@@ -62,7 +64,7 @@ bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& message,
 }
 
 void AppCacheDispatcherHost::BadMessageReceived() {
-  UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_ACDH"));
+  content::RecordAction(UserMetricsAction("BadMessageTerminate_ACDH"));
   BrowserMessageFilter::BadMessageReceived();
 }
 

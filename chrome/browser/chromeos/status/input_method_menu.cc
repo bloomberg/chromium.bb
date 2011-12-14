@@ -18,8 +18,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -29,6 +29,8 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/widget/widget.h"
+
+using content::UserMetricsAction;
 
 // The language menu consists of 3 parts (in this order):
 //
@@ -354,7 +356,7 @@ void InputMethodMenu::ActivatedAt(int index) {
         = input_method_descriptors_->at(index);
     InputMethodManager::GetInstance()->ChangeInputMethod(
         input_method.id());
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("LanguageMenuButton_InputMethodChanged"));
     return;
   }
@@ -488,7 +490,7 @@ void InputMethodMenu::FirstObserverIsAdded(InputMethodManager* manager) {
 }
 
 void InputMethodMenu::PrepareForMenuOpen() {
-  UserMetrics::RecordAction(UserMetricsAction("LanguageMenuButton_Open"));
+  content::RecordAction(UserMetricsAction("LanguageMenuButton_Open"));
   PrepareMenuModel();
 }
 

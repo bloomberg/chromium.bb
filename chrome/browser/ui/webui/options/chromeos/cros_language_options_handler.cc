@@ -20,10 +20,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using content::UserMetricsAction;
 
 namespace chromeos {
 
@@ -207,7 +209,7 @@ void CrosLanguageOptionsHandler::SetApplicationLocale(
 }
 
 void CrosLanguageOptionsHandler::RestartCallback(const ListValue* args) {
-  UserMetrics::RecordAction(UserMetricsAction("LanguageOptions_SignOut"));
+  content::RecordAction(UserMetricsAction("LanguageOptions_SignOut"));
 
   Browser* browser = Browser::GetBrowserForController(
       &web_ui_->tab_contents()->controller(), NULL);
@@ -220,7 +222,7 @@ void CrosLanguageOptionsHandler::InputMethodDisableCallback(
   const std::string input_method_id = UTF16ToASCII(ExtractStringValue(args));
   const std::string action = base::StringPrintf(
       "LanguageOptions_DisableInputMethod_%s", input_method_id.c_str());
-  UserMetrics::RecordComputedAction(action);
+  content::RecordComputedAction(action);
 }
 
 void CrosLanguageOptionsHandler::InputMethodEnableCallback(
@@ -228,7 +230,7 @@ void CrosLanguageOptionsHandler::InputMethodEnableCallback(
   const std::string input_method_id = UTF16ToASCII(ExtractStringValue(args));
   const std::string action = base::StringPrintf(
       "LanguageOptions_EnableInputMethod_%s", input_method_id.c_str());
-  UserMetrics::RecordComputedAction(action);
+  content::RecordComputedAction(action);
 }
 
 void CrosLanguageOptionsHandler::InputMethodOptionsOpenCallback(
@@ -236,7 +238,7 @@ void CrosLanguageOptionsHandler::InputMethodOptionsOpenCallback(
   const std::string input_method_id = UTF16ToASCII(ExtractStringValue(args));
   const std::string action = base::StringPrintf(
       "InputMethodOptions_Open_%s", input_method_id.c_str());
-  UserMetrics::RecordComputedAction(action);
+  content::RecordComputedAction(action);
 }
 
 } // namespace chromeos

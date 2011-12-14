@@ -18,9 +18,10 @@
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 
 using content::BrowserThread;
+using content::UserMetricsAction;
 
 namespace errors = extension_manifest_errors;
 
@@ -88,7 +89,7 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
       info.extension_id != extension->id()) {
     error = errors::kCannotChangeExtensionID;
     extension = NULL;
-    UserMetrics::RecordAction(UserMetricsAction("Extensions.IDChangedError"));
+    content::RecordAction(UserMetricsAction("Extensions.IDChangedError"));
   }
 
   if (!extension) {

@@ -21,12 +21,12 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/user_metrics.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/public/browser/notification_service.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
@@ -38,7 +38,7 @@
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
-
+using content::UserMetricsAction;
 using WebKit::WebGestureEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
@@ -245,7 +245,7 @@ bool RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
 
   if (!msg_is_ok) {
     // The message de-serialization failed. Kill the renderer process.
-    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_RWH"));
+    content::RecordAction(UserMetricsAction("BadMessageTerminate_RWH"));
     process()->ReceivedBadMessage();
   }
   return handled;
@@ -1032,7 +1032,7 @@ void RenderWidgetHost::OnMsgUpdateRect(
     if (dib) {
       if (dib->size() < size) {
         DLOG(WARNING) << "Transport DIB too small for given rectangle";
-        UserMetrics::RecordAction(
+        content::RecordAction(
             UserMetricsAction("BadMessageTerminate_RWH1"));
         process()->ReceivedBadMessage();
       } else {
@@ -1155,7 +1155,7 @@ void RenderWidgetHost::OnMsgInputEventAck(WebInputEvent::Type event_type,
 
   int type = static_cast<int>(event_type);
   if (type < WebInputEvent::Undefined) {
-    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_RWH2"));
+    content::RecordAction(UserMetricsAction("BadMessageTerminate_RWH2"));
     process()->ReceivedBadMessage();
   } else if (type == WebInputEvent::MouseMove) {
     mouse_move_pending_ = false;
@@ -1200,13 +1200,13 @@ void RenderWidgetHost::ProcessWheelAck(bool processed) {
 
 void RenderWidgetHost::OnMsgFocus() {
   // Only RenderViewHost can deal with that message.
-  UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_RWH4"));
+  content::RecordAction(UserMetricsAction("BadMessageTerminate_RWH4"));
   process()->ReceivedBadMessage();
 }
 
 void RenderWidgetHost::OnMsgBlur() {
   // Only RenderViewHost can deal with that message.
-  UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_RWH5"));
+  content::RecordAction(UserMetricsAction("BadMessageTerminate_RWH5"));
   process()->ReceivedBadMessage();
 }
 
@@ -1457,50 +1457,50 @@ void RenderWidgetHost::SelectRange(const gfx::Point& start,
 
 void RenderWidgetHost::Undo() {
   Send(new ViewMsg_Undo(routing_id()));
-  UserMetrics::RecordAction(UserMetricsAction("Undo"));
+  content::RecordAction(UserMetricsAction("Undo"));
 }
 
 void RenderWidgetHost::Redo() {
   Send(new ViewMsg_Redo(routing_id()));
-  UserMetrics::RecordAction(UserMetricsAction("Redo"));
+  content::RecordAction(UserMetricsAction("Redo"));
 }
 
 void RenderWidgetHost::Cut() {
   Send(new ViewMsg_Cut(routing_id()));
-  UserMetrics::RecordAction(UserMetricsAction("Cut"));
+  content::RecordAction(UserMetricsAction("Cut"));
 }
 
 void RenderWidgetHost::Copy() {
   Send(new ViewMsg_Copy(routing_id()));
-  UserMetrics::RecordAction(UserMetricsAction("Copy"));
+  content::RecordAction(UserMetricsAction("Copy"));
 }
 
 void RenderWidgetHost::CopyToFindPboard() {
 #if defined(OS_MACOSX)
   // Windows/Linux don't have the concept of a find pasteboard.
   Send(new ViewMsg_CopyToFindPboard(routing_id()));
-  UserMetrics::RecordAction(UserMetricsAction("CopyToFindPboard"));
+  content::RecordAction(UserMetricsAction("CopyToFindPboard"));
 #endif
 }
 
 void RenderWidgetHost::Paste() {
   Send(new ViewMsg_Paste(routing_id()));
-  UserMetrics::RecordAction(UserMetricsAction("Paste"));
+  content::RecordAction(UserMetricsAction("Paste"));
 }
 
 void RenderWidgetHost::PasteAndMatchStyle() {
   Send(new ViewMsg_PasteAndMatchStyle(routing_id()));
-  UserMetrics::RecordAction(UserMetricsAction("PasteAndMatchStyle"));
+  content::RecordAction(UserMetricsAction("PasteAndMatchStyle"));
 }
 
 void RenderWidgetHost::Delete() {
   Send(new ViewMsg_Delete(routing_id()));
-  UserMetrics::RecordAction(UserMetricsAction("DeleteSelection"));
+  content::RecordAction(UserMetricsAction("DeleteSelection"));
 }
 
 void RenderWidgetHost::SelectAll() {
   Send(new ViewMsg_SelectAll(routing_id()));
-  UserMetrics::RecordAction(UserMetricsAction("SelectAll"));
+  content::RecordAction(UserMetricsAction("SelectAll"));
 }
 bool RenderWidgetHost::GotResponseToLockMouseRequest(bool allowed) {
   if (!allowed) {

@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/page_navigator.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -26,6 +26,7 @@
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/widget/widget.h"
 
+using content::UserMetricsAction;
 using views::MenuItemView;
 
 // Max width of a menu. There does not appear to be an OS value for this, yet
@@ -288,7 +289,7 @@ void BookmarkMenuDelegate::WriteDragData(MenuItemView* sender,
                                          ui::OSExchangeData* data) {
   DCHECK(sender && data);
 
-  UserMetrics::RecordAction(UserMetricsAction("BookmarkBar_DragFromFolder"));
+  content::RecordAction(UserMetricsAction("BookmarkBar_DragFromFolder"));
 
   BookmarkNodeData drag_data(menu_id_to_node_map_[sender->GetCommand()]);
   drag_data.Write(profile_, data);

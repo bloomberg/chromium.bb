@@ -11,9 +11,9 @@
 #include "content/browser/in_process_webkit/indexed_db_database_callbacks.h"
 #include "content/browser/in_process_webkit/indexed_db_transaction_callbacks.h"
 #include "content/browser/renderer_host/render_message_filter.h"
-#include "content/browser/user_metrics.h"
 #include "content/common/indexed_db_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "googleurl/src/gurl.h"
@@ -31,6 +31,7 @@
 #include "webkit/glue/webkit_glue.h"
 
 using content::BrowserThread;
+using content::UserMetricsAction;
 using WebKit::WebDOMStringList;
 using WebKit::WebExceptionCode;
 using WebKit::WebIDBCallbacks;
@@ -283,7 +284,7 @@ ObjectType* IndexedDBDispatcherHost::GetOrTerminateProcess(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   ObjectType* return_object = map->Lookup(return_object_id);
   if (!return_object) {
-    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_IDBMF"));
+    content::RecordAction(UserMetricsAction("BadMessageTerminate_IDBMF"));
     BadMessageReceived();
   }
   return return_object;

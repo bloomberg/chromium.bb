@@ -34,8 +34,8 @@
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -52,6 +52,8 @@
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #endif  // defined(TOOLKIT_GTK)
+
+using content::UserMetricsAction;
 
 PersonalOptionsHandler::PersonalOptionsHandler() {
   multiprofile_ = ProfileManager::IsMultipleProfilesEnabled();
@@ -378,14 +380,14 @@ void PersonalOptionsHandler::Initialize() {
 }
 
 void PersonalOptionsHandler::ThemesReset(const ListValue* args) {
-  UserMetrics::RecordAction(UserMetricsAction("Options_ThemesReset"));
+  content::RecordAction(UserMetricsAction("Options_ThemesReset"));
   Profile* profile = Profile::FromWebUI(web_ui_);
   ThemeServiceFactory::GetForProfile(profile)->UseDefaultTheme();
 }
 
 #if defined(TOOLKIT_GTK)
 void PersonalOptionsHandler::ThemesSetGTK(const ListValue* args) {
-  UserMetrics::RecordAction(UserMetricsAction("Options_GtkThemeSet"));
+  content::RecordAction(UserMetricsAction("Options_GtkThemeSet"));
   Profile* profile = Profile::FromWebUI(web_ui_);
   ThemeServiceFactory::GetForProfile(profile)->SetNativeTheme();
 }

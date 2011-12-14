@@ -80,13 +80,13 @@
 #include "content/browser/resource_context.h"
 #include "content/browser/speech/speech_input_dispatcher_host.h"
 #include "content/browser/trace_message_filter.h"
-#include "content/browser/user_metrics.h"
 #include "content/browser/webui/web_ui_factory.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
@@ -118,6 +118,7 @@
 using content::BrowserThread;
 using content::ChildProcessHost;
 using content::ChildProcessHostImpl;
+using content::UserMetricsAction;
 
 // This class creates the IO thread for the renderer when running in
 // single-process mode.  It's not used in multi-process mode.
@@ -911,7 +912,7 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
       // The message had a handler, but its de-serialization failed.
       // We consider this a capital crime. Kill the renderer if we have one.
       LOG(ERROR) << "bad message " << msg.type() << " terminating renderer.";
-      UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_BRPH"));
+      content::RecordAction(UserMetricsAction("BadMessageTerminate_BRPH"));
       ReceivedBadMessage();
     }
     return true;
@@ -1308,7 +1309,7 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 
 void RenderProcessHostImpl::OnUserMetricsRecordAction(
     const std::string& action) {
-  UserMetrics::RecordComputedAction(action);
+  content::RecordComputedAction(action);
 }
 
 void RenderProcessHostImpl::OnRevealFolderInOS(const FilePath& path) {

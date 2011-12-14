@@ -29,13 +29,15 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using content::UserMetricsAction;
 
 BrowserOptionsHandler::BrowserOptionsHandler()
     : template_url_service_(NULL), startup_custom_pages_table_model_(NULL) {
@@ -184,7 +186,7 @@ void BrowserOptionsHandler::BecomeDefaultBrowser(const ListValue* args) {
   if (default_browser_policy_.IsManaged())
     return;
 
-  UserMetrics::RecordAction(UserMetricsAction("Options_SetAsDefaultBrowser"));
+  content::RecordAction(UserMetricsAction("Options_SetAsDefaultBrowser"));
 #if defined(OS_MACOSX)
   if (ShellIntegration::SetAsDefaultBrowser())
     UpdateDefaultBrowserState();
@@ -285,7 +287,7 @@ void BrowserOptionsHandler::SetDefaultSearchEngine(const ListValue* args) {
       selected_index < static_cast<int>(model_urls.size()))
     template_url_service_->SetDefaultSearchProvider(model_urls[selected_index]);
 
-  UserMetrics::RecordAction(UserMetricsAction("Options_SearchEngineChanged"));
+  content::RecordAction(UserMetricsAction("Options_SearchEngineChanged"));
 }
 
 void BrowserOptionsHandler::UpdateSearchEngines() {

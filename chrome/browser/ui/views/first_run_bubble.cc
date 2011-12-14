@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/window.h"
-#include "content/browser/user_metrics.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -26,6 +26,8 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
+
+using content::UserMetricsAction;
 
 namespace {
 const int kAnchorVerticalOffset = -4;
@@ -120,7 +122,7 @@ FirstRunBubble::~FirstRunBubble() {
 void FirstRunBubble::ButtonPressed(views::Button* sender,
                                    const views::Event& event) {
   if (bubble_type_ == FirstRun::OEM_BUBBLE) {
-    UserMetrics::RecordAction(
+    content::RecordAction(
         UserMetricsAction("FirstRunOEMBubbleView_Clicked"));
   }
   GetWidget()->Close();
