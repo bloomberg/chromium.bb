@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/profiles/profile.h"
@@ -47,7 +48,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     extensions_dir_ = profile_dir.AppendASCII("Extensions");
 
     if (enable_extensions_) {
-      if (load_extension_.empty()) {
+      if (load_extensions_.empty()) {
         FilePath src_dir;
         PathService::Get(chrome::DIR_TEST_DATA, &src_dir);
         src_dir = src_dir.AppendASCII("extensions").AppendASCII("good");
@@ -61,8 +62,10 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
       command_line->AppendSwitch(switches::kDisableExtensions);
     }
 
-    if (!load_extension_.empty()) {
-      command_line->AppendSwitchPath(switches::kLoadExtension, load_extension_);
+    if (!load_extensions_.empty()) {
+      FilePath::StringType paths = JoinString(load_extensions_, ',');
+      command_line->AppendSwitchNative(switches::kLoadExtension,
+                                       paths);
       command_line->AppendSwitch(switches::kDisableExtensionsFileAccessCheck);
     }
   }
@@ -131,7 +134,8 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
   FilePath extensions_dir_;
   FilePath user_scripts_dir_;
   bool enable_extensions_;
-  FilePath load_extension_;
+  // Extensions to load from the command line.
+  std::vector<FilePath::StringType> load_extensions_;
 
   int num_expected_extensions_;
 };
@@ -196,13 +200,15 @@ class ExtensionsLoadTest : public ExtensionStartupTestBase {
  public:
   ExtensionsLoadTest() {
     enable_extensions_ = true;
-    PathService::Get(chrome::DIR_TEST_DATA, &load_extension_);
-    load_extension_ = load_extension_
+    FilePath one_extension_path;
+    PathService::Get(chrome::DIR_TEST_DATA, &one_extension_path);
+    one_extension_path = one_extension_path
         .AppendASCII("extensions")
         .AppendASCII("good")
         .AppendASCII("Extensions")
         .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
         .AppendASCII("1.0.0.0");
+    load_extensions_.push_back(one_extension_path.value());
   }
 };
 
@@ -215,5 +221,50 @@ class ExtensionsLoadTest : public ExtensionStartupTestBase {
 
 IN_PROC_BROWSER_TEST_F(ExtensionsLoadTest, Maybe_Test) {
   WaitForServicesToStart(1, true);
+  TestInjection(true, true);
+}
+
+// ExtensionsLoadMultipleTest
+// Ensures that we can startup the browser with multiple extensions
+// via --load-extension=X1,X2,X3.
+class ExtensionsLoadMultipleTest : public ExtensionStartupTestBase {
+ public:
+  ExtensionsLoadMultipleTest() {
+    enable_extensions_ = true;
+    FilePath one_extension_path;
+    PathService::Get(chrome::DIR_TEST_DATA, &one_extension_path);
+    one_extension_path = one_extension_path
+        .AppendASCII("extensions")
+        .AppendASCII("good")
+        .AppendASCII("Extensions")
+        .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
+        .AppendASCII("1.0.0.0");
+    load_extensions_.push_back(one_extension_path.value());
+
+    FilePath second_extension_path;
+    PathService::Get(chrome::DIR_TEST_DATA, &second_extension_path);
+    second_extension_path = second_extension_path
+        .AppendASCII("extensions")
+        .AppendASCII("app");
+    load_extensions_.push_back(second_extension_path.value());
+
+    FilePath third_extension_path;
+    PathService::Get(chrome::DIR_TEST_DATA, &third_extension_path);
+    third_extension_path = third_extension_path
+        .AppendASCII("extensions")
+        .AppendASCII("app1");
+    load_extensions_.push_back(third_extension_path.value());
+
+    FilePath fourth_extension_path;
+    PathService::Get(chrome::DIR_TEST_DATA, &fourth_extension_path);
+    fourth_extension_path = fourth_extension_path
+        .AppendASCII("extensions")
+        .AppendASCII("app2");
+    load_extensions_.push_back(fourth_extension_path.value());
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(ExtensionsLoadMultipleTest, Test) {
+  WaitForServicesToStart(4, true);
   TestInjection(true, true);
 }

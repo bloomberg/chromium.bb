@@ -472,10 +472,16 @@ void ProfileImpl::InitExtensions(bool extensions_enabled) {
     // Load any extensions specified with --load-extension.
     // TODO(yoz): Seems like this should move into ExtensionService::Init.
     if (command_line->HasSwitch(switches::kLoadExtension)) {
-      FilePath path = command_line->GetSwitchValuePath(
+      CommandLine::StringType path_list = command_line->GetSwitchValueNative(
           switches::kLoadExtension);
-      extensions::UnpackedInstaller::Create(extension_service_.get())->
-        LoadFromCommandLine(path);
+      StringTokenizerT<CommandLine::StringType,
+          CommandLine::StringType::const_iterator> t(path_list,
+                                                     FILE_PATH_LITERAL(","));
+      scoped_refptr<extensions::UnpackedInstaller> installer =
+          extensions::UnpackedInstaller::Create(extension_service_.get());
+      while (t.GetNext()) {
+        installer->LoadFromCommandLine(FilePath(t.token()));
+      }
     }
   }
 
