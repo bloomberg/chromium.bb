@@ -42,6 +42,7 @@ class StatusAreaView : public views::AccessiblePaneView,
   // views::View* overrides.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
+  virtual void PreferredSizeChanged() OVERRIDE;
   virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
 
  private:

@@ -90,16 +90,20 @@ void StatusAreaView::Layout() {
   }
 }
 
+void StatusAreaView::PreferredSizeChanged() {
+#if defined(USE_AURA)
+  if (GetWidget())
+    GetWidget()->SetSize(GetPreferredSize());
+#endif
+  views::AccessiblePaneView::PreferredSizeChanged();
+}
+
 void StatusAreaView::ChildPreferredSizeChanged(View* child) {
   // When something like the clock menu button's size changes, we need to
   // relayout. Also mark that this view's size has changed. This will let
   // BrowserView know to relayout, which will reset the bounds of this view.
   Layout();
   PreferredSizeChanged();
-#if defined(USE_AURA)
-  if (GetWidget())
-    GetWidget()->SetSize(GetPreferredSize());
-#endif
 }
 
 void StatusAreaView::MakeButtonsActive(bool active) {
