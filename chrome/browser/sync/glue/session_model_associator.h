@@ -201,7 +201,7 @@ class SessionModelAssociator
   void BlockUntilLocalChangeForTest(int64 timeout_milli);
 
   // Callback for when the session name has been computed.
-  void OnSessionNameInitialized(const std::string& name);
+  void OnSessionNameInitialized(const std::string name);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, WriteSessionToNode);

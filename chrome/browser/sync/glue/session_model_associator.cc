@@ -557,8 +557,7 @@ void SessionModelAssociator::InitializeCurrentMachineTag(
   tab_pool_.set_machine_tag(current_machine_tag_);
 }
 
-void SessionModelAssociator::OnSessionNameInitialized(
-    const std::string& name) {
+void SessionModelAssociator::OnSessionNameInitialized(const std::string name) {
   DCHECK(CalledOnValidThread());
   // Only use the default machine name if it hasn't already been set.
   if (current_session_name_.empty())
