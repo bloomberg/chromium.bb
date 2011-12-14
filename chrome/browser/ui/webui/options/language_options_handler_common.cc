@@ -64,6 +64,10 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
       l10n_util::GetStringFUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_THIS_LANGUAGE_IS_CURRENTLY_IN_USE,
           product_name));
+  localized_strings->SetString("restart_required",
+          l10n_util::GetStringUTF16(IDS_OPTIONS_RELAUNCH_REQUIRED));
+  // OS X uses the OS native spellchecker so no need for these strings.
+#if !defined(OS_MACOSX)
   localized_strings->SetString("use_this_for_spell_checking",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_USE_THIS_FOR_SPELL_CHECKING));
@@ -73,12 +77,11 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
   localized_strings->SetString("is_used_for_spell_checking",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_IS_USED_FOR_SPELL_CHECKING));
-  localized_strings->SetString("restart_required",
-          l10n_util::GetStringUTF16(IDS_OPTIONS_RELAUNCH_REQUIRED));
   localized_strings->SetString("enable_spell_check",
           l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_SPELLCHECK));
   localized_strings->SetString("enable_auto_spell_correction",
           l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_AUTO_SPELL_CORRECTION));
+#endif  // !OS_MACOSX
   localized_strings->SetString("add_language_title",
           l10n_util::GetStringUTF16(IDS_OPTIONS_LANGUAGES_ADD_TITLE));
   localized_strings->SetString("add_language_select_label",
