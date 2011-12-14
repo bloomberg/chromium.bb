@@ -6,10 +6,21 @@
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
+#include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::SetTitle;
+using passwords_helper::AddLogin;
+using passwords_helper::CreateTestPasswordForm;
+using passwords_helper::GetPasswordCount;
+using passwords_helper::GetPasswordStore;
+using passwords_helper::GetVerifierPasswordCount;
+using passwords_helper::GetVerifierPasswordStore;
+using passwords_helper::ProfileContainsSamePasswordFormsAsVerifier;
+
+using webkit_glue::PasswordForm;
 
 class SyncErrorTest : public SyncTest{
  public:
@@ -102,4 +113,27 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest,
   ASSERT_EQ(status.sync_protocol_error.url, protocol_error.url);
   ASSERT_EQ(status.sync_protocol_error.error_description,
       protocol_error.error_description);
+}
+
+IN_PROC_BROWSER_TEST_F(SyncErrorTest, AuthErrorTest) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  PasswordForm form0 = CreateTestPasswordForm(0);
+  AddLogin(GetVerifierPasswordStore(), form0);
+  ASSERT_EQ(1, GetVerifierPasswordCount());
+  AddLogin(GetPasswordStore(0), form0);
+  ASSERT_EQ(1, GetPasswordCount(0));
+
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Added a login."));
+  ASSERT_TRUE(ProfileContainsSamePasswordFormsAsVerifier(0));
+  ASSERT_EQ(1, GetPasswordCount(0));
+
+  TriggerAuthError();
+  PasswordForm form1 = CreateTestPasswordForm(1);
+  AddLogin(GetPasswordStore(0), form1);
+  ASSERT_FALSE(GetClient(0)->AwaitFullSyncCompletion("Must get auth error."));
+  ASSERT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
+            GetClient(0)->service()->GetAuthError().state());
+  ASSERT_EQ(ProfileSyncService::Status::OFFLINE_UNSYNCED,
+            GetClient(0)->GetStatus().summary);
 }

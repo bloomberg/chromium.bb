@@ -172,6 +172,11 @@ class SyncTest : public InProcessBrowserTest {
   // this state until shut down.
   void TriggerTransientError();
 
+  // Triggers an auth error on the server, simulating the case when the gaia
+  // password is changed at another location. Note the server will stay in
+  // this state until shut down.
+  void TriggerAuthError();
+
   // Triggers a sync error on the server.
   void TriggerSyncError(const browser_sync::SyncProtocolError& error);
 
