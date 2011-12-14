@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/debug/trace_event.h"
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "ui/gfx/canvas_skia.h"
@@ -268,6 +269,7 @@ void RenderTextLinux::EnsureLayout() {
 }
 
 void RenderTextLinux::DrawVisualText(Canvas* canvas) {
+  TRACE_EVENT0("gfx", "RenderTextLinux::DrawVisualText");
   DCHECK(layout_);
 
   Point offset(GetOriginForSkiaDrawing());
@@ -315,7 +317,10 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
 
     PangoFontDescription* native_font =
         pango_font_describe(run->item->analysis.font);
-    renderer.SetFont(gfx::Font(native_font));
+    {
+      TRACE_EVENT0("gfx", "RenderTextLinux::DrawVisualText SetFont");
+      renderer.SetFont(gfx::Font(native_font));
+    }
     pango_font_description_free(native_font);
 
     SkScalar glyph_x = x;

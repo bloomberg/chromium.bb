@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/debug/trace_event.h"
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -421,9 +422,14 @@ int RenderText::GetStringWidth() {
 }
 
 void RenderText::Draw(Canvas* canvas) {
-  EnsureLayout();
+  TRACE_EVENT0("gfx", "RenderText::Draw");
+  {
+    TRACE_EVENT0("gfx", "RenderText::EnsureLayout");
+    EnsureLayout();
+  }
 
   if (!text().empty()) {
+    TRACE_EVENT0("gfx", "RenderText::Draw draw text");
     DrawSelection(canvas);
     DrawVisualText(canvas);
   }
@@ -686,6 +692,7 @@ void RenderText::UpdateCachedBoundsAndOffset() {
 }
 
 void RenderText::DrawSelection(Canvas* canvas) {
+  TRACE_EVENT0("gfx", "RenderText::DrawSelection");
   std::vector<Rect> sel;
   GetSubstringBounds(GetSelectionStart(), GetCursorPosition(), &sel);
   SkColor color = focused() ? kFocusedSelectionColor : kUnfocusedSelectionColor;
@@ -694,6 +701,7 @@ void RenderText::DrawSelection(Canvas* canvas) {
 }
 
 void RenderText::DrawCursor(Canvas* canvas) {
+  TRACE_EVENT0("gfx", "RenderText::DrawCursor");
   // Paint cursor. Replace cursor is drawn as rectangle for now.
   // TODO(msw): Draw a better cursor with a better indication of association.
   if (cursor_visible() && focused()) {

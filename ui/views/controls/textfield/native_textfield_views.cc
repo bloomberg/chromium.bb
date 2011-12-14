@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
@@ -802,6 +803,7 @@ void NativeTextfieldViews::RepaintCursor() {
 }
 
 void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
+  TRACE_EVENT0("views", "NativeTextfieldViews::PaintTextAndCursor");
   canvas->Save();
   GetRenderText()->set_cursor_visible(is_drop_cursor_visible_ ||
       (is_cursor_visible_ && !model_->HasSelection()));
