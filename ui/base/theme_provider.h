@@ -109,7 +109,6 @@ class UI_EXPORT ThemeProvider {
   // assert in debug mode if it does not. On failure, this will return a
   // pointer to a shared empty placeholder bitmap so it will be visible what
   // is missing.
-  virtual GdkPixbuf* GetPixbufNamed(int id) const = 0;
 
   // As above, but flips it in RTL locales.
   virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id) const = 0;

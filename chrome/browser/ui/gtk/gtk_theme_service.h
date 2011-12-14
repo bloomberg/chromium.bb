@@ -250,8 +250,6 @@ class GtkThemeService : public ThemeService {
   //
   // Especially since GetUnthemedNativePixbuf always locks and
   // GetRTLEnabledPixbufNamedWrapper locks in debug builds.
-  GdkPixbuf* GetRTLEnabledPixbufNamedWrapper(int id) const;
-  GdkPixbuf* GetUnthemedNativePixbuf(int id) const;
   GdkPixbuf* GetPixbufForIconId(int id) const;
 
   // Handles signal from GTK that our theme has been changed.

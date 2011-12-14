@@ -1125,18 +1125,6 @@ gfx::CairoCachedSurface* GtkThemeService::GetSurfaceNamedImpl(
   return surface;
 }
 
-// PixbufProvidingMethod that undoes the negative sign on |id|.
-GdkPixbuf* GtkThemeService::GetRTLEnabledPixbufNamedWrapper(int id) const {
-  return GetRTLEnabledPixbufNamed(-id);
-}
-
-// PixbufProvidingMethod that just calls ResourceBundle. We want to minimize
-// the calls to this method because it aquires an AutoLock and we don't want
-// this to happen all the time.
-GdkPixbuf* GtkThemeService::GetUnthemedNativePixbuf(int id) const {
-  return ResourceBundle::GetSharedInstance().GetNativeImageNamed(id);
-}
-
 // PixbufProvidingMethod that maps a GtkThemeService::CairoDefaultIcon to a
 // GdkPixbuf.
 GdkPixbuf* GtkThemeService::GetPixbufForIconId(int id) const {

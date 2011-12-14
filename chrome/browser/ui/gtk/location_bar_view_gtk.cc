@@ -851,8 +851,9 @@ void LocationBarViewGtk::UpdateSiteTypeArea() {
   }
 
   int resource_id = location_entry_->GetIcon();
-  gtk_image_set_from_pixbuf(GTK_IMAGE(location_icon_image_),
-                            theme_service_->GetPixbufNamed(resource_id));
+  gtk_image_set_from_pixbuf(
+      GTK_IMAGE(location_icon_image_),
+      theme_service_->GetImageNamed(resource_id)->ToGdkPixbuf());
 
   if (toolbar_model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
     if (!gtk_util::IsActingAsRoundedWindow(site_type_event_box_)) {
@@ -1148,9 +1149,10 @@ void LocationBarViewGtk::UpdateStarIcon() {
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
   if (star_enabled) {
     gtk_widget_show_all(star_.get());
-    gtk_image_set_from_pixbuf(GTK_IMAGE(star_image_),
-        theme_service_->GetPixbufNamed(
-            starred_ ? IDR_STAR_LIT : IDR_STAR));
+    int id = starred_ ? IDR_STAR_LIT : IDR_STAR;
+    gtk_image_set_from_pixbuf(
+        GTK_IMAGE(star_image_),
+        theme_service_->GetImageNamed(id)->ToGdkPixbuf());
   } else {
     gtk_widget_hide_all(star_.get());
   }
@@ -1286,8 +1288,8 @@ void LocationBarViewGtk::ContentSettingImageViewGtk::UpdateFromTabContents(
   }
 
   gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()),
-      GtkThemeService::GetFrom(parent_->browser()->profile())->GetPixbufNamed(
-          content_setting_image_model_->get_icon()));
+      GtkThemeService::GetFrom(parent_->browser()->profile())->GetImageNamed(
+          content_setting_image_model_->get_icon())->ToGdkPixbuf());
 
   gtk_widget_set_tooltip_text(widget(),
       content_setting_image_model_->get_tooltip().c_str());

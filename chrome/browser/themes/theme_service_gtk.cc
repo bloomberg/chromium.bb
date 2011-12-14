@@ -11,10 +11,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/gtk_util.h"
 
-GdkPixbuf* ThemeService::GetPixbufNamed(int id) const {
-  return GetPixbufImpl(id, false);
-}
-
 GdkPixbuf* ThemeService::GetRTLEnabledPixbufNamed(int id) const {
   return GetPixbufImpl(id, true);
 }
