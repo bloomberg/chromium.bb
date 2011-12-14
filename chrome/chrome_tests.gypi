@@ -4087,6 +4087,7 @@
               '/usr/lib/libpython2.6.dylib'
             ],
           },
+          'msvs_disabled_warnings': [4211],
           'conditions': [
             ['os_posix == 1 and OS!="mac"', {
               'include_dirs': [
