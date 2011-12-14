@@ -571,6 +571,10 @@ int DownloadItemImpl::PercentComplete() const {
 
 void DownloadItemImpl::OnPathDetermined(const FilePath& path) {
   full_path_ = path;
+  // If we prompted the user, then target_name is stale.  Allow it to be
+  // populated by UpdateTarget().
+  if (PromptUserForSaveLocation())
+    state_info_.target_name.clear();
   UpdateTarget();
 }
 
@@ -608,11 +612,16 @@ void DownloadItemImpl::OnDownloadCompleting(DownloadFileManager* file_manager) {
   DCHECK_NE(DANGEROUS, GetSafetyState());
   DCHECK(file_manager);
 
+  // If we prompted the user for save location, then we should overwrite the
+  // target.  Otherwise, if the danger state was NOT_DANGEROUS, we already
+  // uniquified the path and should overwrite.
+  bool should_overwrite = (PromptUserForSaveLocation() ||
+                           GetDangerType() == DownloadStateInfo::NOT_DANGEROUS);
   if (NeedsRename()) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         base::Bind(&DownloadFileManager::RenameCompletingDownloadFile,
                    file_manager, download_id_,
-                   GetTargetFilePath(), GetSafetyState() == SAFE));
+                   GetTargetFilePath(), should_overwrite));
     return;
   }
 

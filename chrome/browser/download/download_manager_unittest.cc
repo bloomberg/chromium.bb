@@ -11,6 +11,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -79,7 +80,80 @@ DownloadFile* MockDownloadFileFactory::CreateFile(
 
 using content::BrowserThread;
 
+namespace {
+
 DownloadId::Domain kValidIdDomain = "valid DownloadId::Domain";
+
+class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
+ public:
+  explicit TestDownloadManagerDelegate(Profile* profile)
+      : ChromeDownloadManagerDelegate(profile),
+        mark_content_dangerous_(false) {
+  }
+
+  virtual void ChooseDownloadPath(TabContents* tab_contents,
+                                  const FilePath& suggested_path,
+                                  void* data) OVERRIDE {
+    if (!expected_suggested_path_.empty()) {
+      EXPECT_STREQ(expected_suggested_path_.value().c_str(),
+                   suggested_path.value().c_str());
+    }
+    if (file_selection_response_.empty()) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&DownloadManager::FileSelectionCanceled,
+                     download_manager_.get(),
+                     base::Unretained(data)));
+    } else {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&DownloadManager::FileSelected,
+                     download_manager_.get(),
+                     file_selection_response_,
+                     base::Unretained(data)));
+    }
+    expected_suggested_path_.clear();
+    file_selection_response_.clear();
+  }
+
+  void SetFileSelectionExpectation(const FilePath& suggested_path,
+                                   const FilePath& response) {
+    expected_suggested_path_ = suggested_path;
+    file_selection_response_ = response;
+  }
+
+  void SetMarkContentsDangerous(bool dangerous) {
+    mark_content_dangerous_ = dangerous;
+  }
+
+  virtual bool ShouldCompleteDownload(DownloadItem* item) {
+    if (mark_content_dangerous_) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&TestDownloadManagerDelegate::MarkContentDangerous,
+                     this, item->GetId()));
+      mark_content_dangerous_ = false;
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+ private:
+  void MarkContentDangerous(int32 download_id) {
+    DownloadItem* item = download_manager_->GetActiveDownloadItem(download_id);
+    if (!item)
+      return;
+    item->MarkContentDangerous();
+    item->MaybeCompleteDownload();
+  }
+
+  FilePath expected_suggested_path_;
+  FilePath file_selection_response_;
+  bool mark_content_dangerous_;
+};
+
+} // namespace
 
 class DownloadManagerTest : public testing::Test {
  public:
@@ -88,7 +162,7 @@ class DownloadManagerTest : public testing::Test {
 
   DownloadManagerTest()
       : profile_(new TestingProfile()),
-        download_manager_delegate_(new ChromeDownloadManagerDelegate(
+        download_manager_delegate_(new TestDownloadManagerDelegate(
             profile_.get())),
         id_factory_(new DownloadIdFactory(kValidIdDomain)),
         download_manager_(new DownloadManagerImpl(
@@ -160,7 +234,7 @@ class DownloadManagerTest : public testing::Test {
  protected:
   DownloadStatusUpdater download_status_updater_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_refptr<ChromeDownloadManagerDelegate> download_manager_delegate_;
+  scoped_refptr<TestDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<DownloadIdFactory> id_factory_;
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<DownloadFileManager> file_manager_;
@@ -420,6 +494,325 @@ TEST_F(DownloadManagerTest, MAYBE_StartDownload) {
     // Note that DownloadManager::FileSelectionCanceled() is never called.
     EXPECT_EQ(kStartDownloadCases[i].expected_save_as,
               observer.ShowedFileDialogForId(i));
+  }
+}
+
+namespace {
+
+enum PromptForSaveLocation {
+  DONT_PROMPT,
+  PROMPT
+};
+
+enum ValidateDangerousDownload {
+  DONT_VALIDATE,
+  VALIDATE
+};
+
+// Test cases to be used with DownloadFilenameTest.  The paths that are used in
+// test cases can contain "$dl" and "$alt" tokens which are replaced by a
+// default download path, and an alternate download path in
+// ExpandFilenameTestPath() below.
+const struct DownloadFilenameTestCase {
+
+  // Fields to be set in DownloadStateInfo when calling SetFileCheckResults().
+  const FilePath::CharType*     suggested_path;
+  const FilePath::CharType*     target_name;
+  PromptForSaveLocation         prompt_user_for_save_location;
+  DownloadStateInfo::DangerType danger_type;
+
+  // If we receive a ChooseDownloadPath() call to prompt the user for a download
+  // location, |prompt_path| is the expected prompt path. The
+  // TestDownloadManagerDelegate will respond with |final_path|. If |final_path|
+  // is empty, then the file choose dialog be cancelled.
+  const FilePath::CharType*     prompt_path;
+
+  // The expected intermediate path for the download.
+  const FilePath::CharType*     intermediate_path;
+
+  // The expected final path for the download.
+  const FilePath::CharType*     final_path;
+
+  // If this is a dangerous download, then we will either validate the download
+  // or delete it depending on the value of |validate_dangerous_download|.
+  ValidateDangerousDownload     validate_dangerous_download;
+} kDownloadFilenameTestCases[] = {
+  {
+    // 0: A safe file is downloaded with no prompting.
+    FILE_PATH_LITERAL("$dl/foo.txt"),
+    FILE_PATH_LITERAL(""),
+    DONT_PROMPT,
+    DownloadStateInfo::NOT_DANGEROUS,
+    FILE_PATH_LITERAL(""),
+    FILE_PATH_LITERAL("$dl/foo.txt.crdownload"),
+    FILE_PATH_LITERAL("$dl/foo.txt"),
+    DONT_VALIDATE
+  },
+  {
+    // 1: A safe file is downloaded with prompting.
+    FILE_PATH_LITERAL("$dl/foo.txt"),
+    FILE_PATH_LITERAL(""),
+    PROMPT,
+    DownloadStateInfo::NOT_DANGEROUS,
+    FILE_PATH_LITERAL("$dl/foo.txt"),
+    FILE_PATH_LITERAL("$dl/foo.txt.crdownload"),
+    FILE_PATH_LITERAL("$dl/foo.txt"),
+    DONT_VALIDATE
+  },
+  {
+    // 2: A safe file is downloaded. The filename is changed before the dialog
+    // completes.
+    FILE_PATH_LITERAL("$dl/foo.txt"),
+    FILE_PATH_LITERAL(""),
+    PROMPT,
+    DownloadStateInfo::NOT_DANGEROUS,
+    FILE_PATH_LITERAL("$dl/foo.txt"),
+    FILE_PATH_LITERAL("$dl/bar.txt.crdownload"),
+    FILE_PATH_LITERAL("$dl/bar.txt"),
+    DONT_VALIDATE
+  },
+  {
+    // 3: A safe file is downloaded. The download path is changed before the
+    // dialog completes.
+    FILE_PATH_LITERAL("$dl/foo.txt"),
+    FILE_PATH_LITERAL(""),
+    PROMPT,
+    DownloadStateInfo::NOT_DANGEROUS,
+    FILE_PATH_LITERAL("$dl/foo.txt"),
+    FILE_PATH_LITERAL("$alt/bar.txt.crdownload"),
+    FILE_PATH_LITERAL("$alt/bar.txt"),
+    DONT_VALIDATE
+  },
+  {
+    // 4: Potentially dangerous content.
+    FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
+    FILE_PATH_LITERAL("foo.exe"),
+    DONT_PROMPT,
+    DownloadStateInfo::MAYBE_DANGEROUS_CONTENT,
+    FILE_PATH_LITERAL(""),
+    FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
+    FILE_PATH_LITERAL("$dl/foo.exe"),
+    DONT_VALIDATE
+  },
+  {
+    // 5: Potentially dangerous content. Uses "Save as."
+    FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
+    FILE_PATH_LITERAL("foo.exe"),
+    PROMPT,
+    DownloadStateInfo::MAYBE_DANGEROUS_CONTENT,
+    FILE_PATH_LITERAL("$dl/foo.exe"),
+    FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
+    FILE_PATH_LITERAL("$dl/foo.exe"),
+    DONT_VALIDATE
+  },
+  {
+    // 6: Potentially dangerous content. Uses "Save as." The download filename
+    // is changed before the dialog completes.
+    FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
+    FILE_PATH_LITERAL("foo.exe"),
+    PROMPT,
+    DownloadStateInfo::MAYBE_DANGEROUS_CONTENT,
+    FILE_PATH_LITERAL("$dl/foo.exe"),
+    FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
+    FILE_PATH_LITERAL("$dl/bar.exe"),
+    DONT_VALIDATE
+  },
+  {
+    // 7: Potentially dangerous content. Uses "Save as." The download directory
+    // is changed before the dialog completes.
+    FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
+    FILE_PATH_LITERAL("foo.exe"),
+    PROMPT,
+    DownloadStateInfo::MAYBE_DANGEROUS_CONTENT,
+    FILE_PATH_LITERAL("$dl/foo.exe"),
+    FILE_PATH_LITERAL("$alt/Unconfirmed xxx.download"),
+    FILE_PATH_LITERAL("$alt/bar.exe"),
+    DONT_VALIDATE
+  },
+  {
+    // 8: Dangerous content. Saved directly.
+    FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
+    FILE_PATH_LITERAL("foo.exe"),
+    PROMPT,
+    DownloadStateInfo::DANGEROUS_URL,
+    FILE_PATH_LITERAL(""),
+    FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
+    FILE_PATH_LITERAL("$dl/foo.exe"),
+    VALIDATE
+  },
+  {
+    // 9: Dangerous content. Saved directly. Not validated.
+    FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
+    FILE_PATH_LITERAL("foo.exe"),
+    DONT_PROMPT,
+    DownloadStateInfo::DANGEROUS_URL,
+    FILE_PATH_LITERAL(""),
+    FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
+    FILE_PATH_LITERAL(""),
+    DONT_VALIDATE
+  },
+  {
+    // 10: Dangerous content. Uses "Save as." The download directory is changed
+    // before the dialog completes.
+    FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
+    FILE_PATH_LITERAL("foo.exe"),
+    PROMPT,
+    DownloadStateInfo::DANGEROUS_URL,
+    FILE_PATH_LITERAL("$dl/foo.exe"),
+    FILE_PATH_LITERAL("$alt/Unconfirmed xxx.download"),
+    FILE_PATH_LITERAL("$alt/bar.exe"),
+    VALIDATE
+  },
+  {
+    // 11: A safe file is download. The target file exists, but we don't
+    // uniquify. Safe downloads are uniquified in ChromeDownloadManagerDelegate
+    // instead of DownloadManagerImpl.
+    FILE_PATH_LITERAL("$dl/exists.txt"),
+    FILE_PATH_LITERAL(""),
+    DONT_PROMPT,
+    DownloadStateInfo::NOT_DANGEROUS,
+    FILE_PATH_LITERAL(""),
+    FILE_PATH_LITERAL("$dl/exists.txt.crdownload"),
+    FILE_PATH_LITERAL("$dl/exists.txt"),
+    DONT_VALIDATE
+  },
+  {
+    // 12: A potentially dangerous file is download. The target file exists. The
+    // target path is uniquified.
+    FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
+    FILE_PATH_LITERAL("exists.exe"),
+    DONT_PROMPT,
+    DownloadStateInfo::MAYBE_DANGEROUS_CONTENT,
+    FILE_PATH_LITERAL(""),
+    FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
+    FILE_PATH_LITERAL("$dl/exists (1).exe"),
+    DONT_VALIDATE
+  },
+  {
+    // 13: A dangerous file is download. The target file exists. The target path
+    // is uniquified.
+    FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
+    FILE_PATH_LITERAL("exists.exe"),
+    DONT_PROMPT,
+    DownloadStateInfo::DANGEROUS_CONTENT,
+    FILE_PATH_LITERAL(""),
+    FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
+    FILE_PATH_LITERAL("$dl/exists (1).exe"),
+    VALIDATE
+  },
+  {
+    // 14: A potentially dangerous file is download with prompting. The target
+    // file exists. The target path is not uniquified because the filename was
+    // given to us by the user.
+    FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
+    FILE_PATH_LITERAL("exists.exe"),
+    PROMPT,
+    DownloadStateInfo::MAYBE_DANGEROUS_CONTENT,
+    FILE_PATH_LITERAL("$dl/exists.exe"),
+    FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
+    FILE_PATH_LITERAL("$dl/exists.exe"),
+    DONT_VALIDATE
+  },
+};
+
+FilePath ExpandFilenameTestPath(const FilePath::CharType* template_path,
+                                const FilePath& downloads_dir,
+                                const FilePath& alternate_dir) {
+  FilePath::StringType path(template_path);
+  ReplaceSubstringsAfterOffset(&path, 0, FILE_PATH_LITERAL("$dl"),
+                               downloads_dir.value());
+  ReplaceSubstringsAfterOffset(&path, 0, FILE_PATH_LITERAL("$alt"),
+                               alternate_dir.value());
+  FilePath file_path(path);
+#if defined(FILE_PATH_USES_WIN_SEPARATORS)
+  file_path = file_path.NormalizeWindowsPathSeparators();
+#endif
+  return file_path;
+}
+
+} // namespace
+
+TEST_F(DownloadManagerTest, DownloadFilenameTest) {
+  ScopedTempDir scoped_dl_dir;
+  ASSERT_TRUE(scoped_dl_dir.CreateUniqueTempDir());
+
+  FilePath downloads_dir(scoped_dl_dir.path());
+  FilePath alternate_dir(downloads_dir.Append(FILE_PATH_LITERAL("Foo")));
+
+  // We create a known file to test file uniquification.
+  file_util::WriteFile(downloads_dir.Append(FILE_PATH_LITERAL("exists.txt")),
+                       "", 0);
+  file_util::WriteFile(downloads_dir.Append(FILE_PATH_LITERAL("exists.exe")),
+                       "", 0);
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kDownloadFilenameTestCases); ++i) {
+    scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
+    info->download_id = DownloadId(kValidIdDomain, i);
+    info->url_chain.push_back(GURL());
+
+    MockDownloadFile::StatisticsRecorder recorder;
+    MockDownloadFile* download_file(new MockDownloadFile(
+        info.get(), DownloadRequestHandle(), download_manager_, &recorder));
+    FilePath suggested_path(ExpandFilenameTestPath(
+        kDownloadFilenameTestCases[i].suggested_path,
+        downloads_dir, alternate_dir));
+    FilePath prompt_path(ExpandFilenameTestPath(
+        kDownloadFilenameTestCases[i].prompt_path,
+        downloads_dir, alternate_dir));
+    FilePath intermediate_path(ExpandFilenameTestPath(
+        kDownloadFilenameTestCases[i].intermediate_path,
+        downloads_dir, alternate_dir));
+    FilePath final_path(ExpandFilenameTestPath(
+        kDownloadFilenameTestCases[i].final_path,
+        downloads_dir, alternate_dir));
+    // If |final_path| is empty, its a signal that the download doesn't
+    // complete.  Therefore it will only go through a single rename.
+    int expected_rename_count = (final_path.empty() ? 1 : 2);
+
+    AddDownloadToFileManager(info->download_id.local(), download_file);
+
+    download_file->SetExpectedPath(0, intermediate_path);
+    if (!final_path.empty())
+      download_file->SetExpectedPath(1, final_path);
+
+    download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
+    DownloadItem* download = GetActiveDownloadItem(i);
+    ASSERT_TRUE(download != NULL);
+
+    DownloadStateInfo state = download->GetStateInfo();
+    state.suggested_path = suggested_path;
+    state.danger = kDownloadFilenameTestCases[i].danger_type;
+    state.prompt_user_for_save_location =
+        (kDownloadFilenameTestCases[i].prompt_user_for_save_location == PROMPT);
+    state.target_name = FilePath(kDownloadFilenameTestCases[i].target_name);
+    if (state.danger == DownloadStateInfo::DANGEROUS_CONTENT) {
+      // DANGEROUS_CONTENT will only be known once we have all the data. We let
+      // our TestDownloadManagerDelegate handle it.
+      state.danger = DownloadStateInfo::MAYBE_DANGEROUS_CONTENT;
+      download_manager_delegate_->SetMarkContentsDangerous(true);
+    }
+    download->SetFileCheckResults(state);
+    download_manager_delegate_->SetFileSelectionExpectation(
+        prompt_path, final_path);
+    download_manager_->RestartDownload(i);
+    message_loop_.RunAllPending();
+
+    OnResponseCompleted(i, 1024, std::string("fake_hash"));
+    message_loop_.RunAllPending();
+
+    if (download->GetSafetyState() == DownloadItem::DANGEROUS) {
+      if (kDownloadFilenameTestCases[i].validate_dangerous_download == VALIDATE)
+        download->DangerousDownloadValidated();
+      else
+        download->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
+      message_loop_.RunAllPending();
+      // |download| might be deleted when we get here.
+    }
+
+    EXPECT_EQ(
+        expected_rename_count,
+        recorder.Count(MockDownloadFile::StatisticsRecorder::STAT_RENAME))
+        << "For test run " << i;
   }
 }
 

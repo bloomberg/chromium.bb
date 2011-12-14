@@ -313,10 +313,17 @@ void DownloadManagerImpl::RestartDownload(
     // FileSelectionCancelled().
     int32* id_ptr = new int32;
     *id_ptr = download_id;
+    FilePath target_path;
+    // If |download| is a potentially dangerous file, then |suggested_path|
+    // contains the intermediate name instead of the final download
+    // filename. The latter is GetTargetName().
+    if (download->GetDangerType() != DownloadStateInfo::NOT_DANGEROUS)
+      target_path = suggested_path.DirName().Append(download->GetTargetName());
+    else
+      target_path = suggested_path;
 
-    delegate_->ChooseDownloadPath(
-        contents, suggested_path, reinterpret_cast<void*>(id_ptr));
-
+    delegate_->ChooseDownloadPath(contents, target_path,
+                                  reinterpret_cast<void*>(id_ptr));
     FOR_EACH_OBSERVER(Observer, observers_,
                       SelectFileDialogDisplayed(download_id));
   } else {
@@ -369,6 +376,11 @@ DownloadItem* DownloadManagerImpl::CreateSavePackageDownloadItem(
   return download;
 }
 
+// For non-safe downloads with no prompting, |chosen_file| is the intermediate
+// path for saving the in-progress download. The final target filename for these
+// is |download->GetTargetName()|.  For all other downloads (non-safe downloads
+// for which we have prompted for a save location, and all safe downloads),
+// |chosen_file| is the final target download path.
 void DownloadManagerImpl::ContinueDownloadWithPath(
     DownloadItem* download, const FilePath& chosen_file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -562,8 +574,11 @@ void DownloadManagerImpl::OnDownloadRenamedToFinalName(
   if (!item)
     return;
 
-  if (item->GetSafetyState() == DownloadItem::SAFE) {
-    DCHECK_EQ(0, uniquifier) << "We should not uniquify SAFE downloads twice";
+  if (item->GetDangerType() == DownloadStateInfo::NOT_DANGEROUS ||
+      item->PromptUserForSaveLocation()) {
+    DCHECK_EQ(0, uniquifier)
+        << "We should not uniquify user supplied filenames or safe filenames "
+           "that have already been uniquified.";
   }
 
   BrowserThread::PostTask(

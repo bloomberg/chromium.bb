@@ -133,9 +133,20 @@ bool ChromeDownloadManagerDelegate::OverrideIntermediatePath(
     DownloadItem* item,
     FilePath* intermediate_path) {
   if (item->GetDangerType() != DownloadStateInfo::NOT_DANGEROUS) {
-    // The download might not be safe.  It's name is already set to an
-    // intermediate name, so no need to override.
-    return false;
+    if (item->PromptUserForSaveLocation()) {
+      // When we prompt the user, we overwrite the FullPath with what the user
+      // wanted to use. Construct a file path using the previously determined
+      // intermediate filename and the new path.
+      // TODO(asanka): This can trample an in-progress download in the new
+      // target directory if it was using the same intermediate name.
+      FilePath file_name = item->GetSuggestedPath().BaseName();
+      *intermediate_path = item->GetFullPath().DirName().Append(file_name);
+      return true;
+    } else {
+      // The download's name is already set to an intermediate name, so no need
+      // to override.
+      return false;
+    }
   }
 
   // The download is a safe download.  We need to rename it to its intermediate
