@@ -17,6 +17,7 @@ namespace ppapi {
 class NPObjectVar;
 class ProxyObjectVar;
 class StringVar;
+class VarTracker;
 
 // Var -------------------------------------------------------------------------
 
@@ -48,6 +49,8 @@ class PPAPI_SHARED_EXPORT Var : public base::RefCounted<Var> {
   int32 GetExistingVarID() const;
 
  protected:
+  friend class VarTracker;
+
   Var();
 
   // Returns the unique ID associated with this string or object, creating it
@@ -61,6 +64,9 @@ class PPAPI_SHARED_EXPORT Var : public base::RefCounted<Var> {
   // Sets the internal object ID. This assumes that the ID hasn't been set
   // before. This is used in cases where the ID is generated externally.
   void AssignVarID(int32 id);
+
+  // Reset the assigned object ID.
+  void ResetVarID() { AssignVarID(0); };
 
  private:
   // This will be 0 if no ID has been assigned (this happens lazily).
