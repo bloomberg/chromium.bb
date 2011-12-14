@@ -55,7 +55,7 @@ using sync_api::SyncCredentials;
 
 #define SLOG(severity) LOG(severity) << name_ << ": "
 
-#define SVLOG(verbose_level) DVLOG(verbose_level) << name_ << ": "
+#define SDVLOG(verbose_level) DVLOG(verbose_level) << name_ << ": "
 
 SyncBackendHost::SyncBackendHost(const std::string& name,
                                  Profile* profile,
@@ -146,7 +146,7 @@ void SyncBackendHost::UpdateCredentials(const SyncCredentials& credentials) {
 }
 
 void SyncBackendHost::StartSyncingWithServer() {
-  SVLOG(1) << "SyncBackendHost::StartSyncingWithServer called.";
+  SDVLOG(1) << "SyncBackendHost::StartSyncingWithServer called.";
   sync_thread_.message_loop()->PostTask(FROM_HERE,
       base::Bind(&SyncBackendHost::Core::DoStartSyncing, core_.get()));
 }
@@ -818,7 +818,7 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
 
   host_->last_snapshot_.reset(snapshot);
 
-  SVLOG(1) << "Got snapshot " << snapshot->ToString();
+  SDVLOG(1) << "Got snapshot " << snapshot->ToString();
 
   const syncable::ModelTypeSet to_migrate =
       snapshot->syncer_status.types_needing_local_migration;
@@ -843,7 +843,7 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
         snapshot->initial_sync_ended;
     const syncable::ModelTypeSet failed_configuration_types =
         Difference(added_types, initial_sync_ended);
-    SVLOG(1)
+    SDVLOG(1)
         << "Added types: "
         << syncable::ModelTypeSetToString(added_types)
         << ", configured types: "
@@ -971,8 +971,8 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
   // complete, the configure_state_.ready_task_ is run via an
   // OnInitializationComplete notification.
 
-  SVLOG(1) << "Syncer in config mode. SBH executing "
-           << "FinishConfigureDataTypesOnFrontendLoop";
+  SDVLOG(1) << "Syncer in config mode. SBH executing "
+            << "FinishConfigureDataTypesOnFrontendLoop";
 
   if (pending_config_mode_state_->added_types.Empty() &&
       !core_->sync_manager()->InitialSyncEndedForAllEnabledTypes()) {
@@ -1000,7 +1000,7 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
   // If we've added types, we always want to request a nudge/config (even if
   // the initial sync is ended), in case we could not decrypt the data.
   if (pending_config_mode_state_->added_types.Empty()) {
-    SVLOG(1) << "No new types added; calling ready_task directly";
+    SDVLOG(1) << "No new types added; calling ready_task directly";
     // No new types - just notify the caller that the types are available.
     const syncable::ModelTypeSet failed_configuration_types;
     pending_config_mode_state_->ready_task.Run(failed_configuration_types);
@@ -1018,9 +1018,8 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
       // migraiton error for nigori during config.
       types_to_config.Put(syncable::NIGORI);
     }
-    SVLOG(1) << "Types "
-             << syncable::ModelTypeSetToString(types_to_config)
-            << " added; calling DoRequestConfig";
+    SDVLOG(1) << "Types " << syncable::ModelTypeSetToString(types_to_config)
+              << " added; calling DoRequestConfig";
     sync_thread_.message_loop()->PostTask(FROM_HERE,
          base::Bind(&SyncBackendHost::Core::DoRequestConfig,
                     core_.get(),
@@ -1075,7 +1074,7 @@ void SyncBackendHost::RefreshEncryption(const base::Closure& done_callback) {
                  core_.get(), sync_thread_done_callback));
 }
 
-#undef SVLOG
+#undef SDVLOG
 
 #undef SLOG
 
