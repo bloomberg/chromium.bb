@@ -101,10 +101,15 @@ Gallery.prototype.initDom_ = function(shareActions) {
   filenameSpacer.className = 'filename-spacer';
   this.toolbar_.appendChild(filenameSpacer);
 
+  this.filenameText_ = doc.createElement('div');
+  this.filenameText_.addEventListener('click',
+      this.onFilenameClick_.bind(this));
+  filenameSpacer.appendChild(this.filenameText_);
+
   this.filenameEdit_ = doc.createElement('input');
   this.filenameEdit_.setAttribute('type', 'text');
   this.filenameEdit_.addEventListener('blur',
-      this.updateFilename_.bind(this));
+      this.onFilenameEditBlur_.bind(this));
   this.filenameEdit_.addEventListener('keydown',
       this.onFilenameEditKeydown_.bind(this));
   filenameSpacer.appendChild(this.filenameEdit_);
@@ -266,7 +271,21 @@ Gallery.prototype.updateFilename_ = function() {
 
   var fullName = item.getCopyName() ||
       ImageUtil.getFullNameFromUrl(item.getUrl());
-  this.filenameEdit_.value = ImageUtil.getFileNameFromFullName(fullName);
+  var displayName = ImageUtil.getFileNameFromFullName(fullName);
+  this.filenameEdit_.value = displayName;
+  this.filenameText_.textContent = displayName;
+};
+
+Gallery.prototype.onFilenameClick_ = function() {
+  ImageUtil.setAttribute(this.container_, 'renaming', true);
+  setTimeout(this.filenameEdit_.select.bind(this.filenameEdit_), 0);
+  this.cancelFading_();
+};
+
+Gallery.prototype.onFilenameEditBlur_ = function() {
+  ImageUtil.setAttribute(this.container_, 'renaming', false);
+  this.updateFilename_();
+  this.initiateFading_();
 };
 
 Gallery.prototype.onFilenameEditKeydown_ = function() {
@@ -333,6 +352,10 @@ Gallery.prototype.renameItem_ = function(item, name) {
       onVictimFound, doRename);
 };
 
+Gallery.prototype.isRenaming_ = function() {
+  return this.container_.hasAttribute('renaming');
+};
+
 Gallery.prototype.onClose_ = function() {
   // TODO: handle write errors gracefully (suggest retry or saving elsewhere).
   this.saveChanges_(this.closeCallback_);
@@ -350,7 +373,9 @@ Gallery.prototype.openImage = function(id, content, metadata, slide, callback) {
   if (item) {
     this.updateFilename_();
   } else {
-    this.filenameEdit_.value = ImageUtil.getFileNameFromUrl(content);
+    var displayName = ImageUtil.getFileNameFromUrl(content);
+    this.filenameEdit_.value = displayName;
+    this.filenameText_.textContent = displayName;
   }
 
   var self = this;
@@ -483,12 +508,13 @@ Gallery.prototype.onMouseMove_ = function(e) {
 
 Gallery.prototype.onFadeTimeout_ = function() {
   this.fadeTimeoutId_ = null;
-  if (this.isEditing_() || this.isSharing_()) return;
+  if (this.isEditing_() || this.isSharing_() || this.isRenaming_()) return;
   this.container_.removeAttribute('tools');
 };
 
 Gallery.prototype.initiateFading_ = function(opt_timeout) {
-  if (this.mouseOverTool_ || this.isEditing_() || this.isSharing_())
+  if (this.mouseOverTool_ || this.isEditing_() || this.isSharing_() ||
+      this.isRenaming_())
     return;
 
   if (!this.fadeTimeoutId_)

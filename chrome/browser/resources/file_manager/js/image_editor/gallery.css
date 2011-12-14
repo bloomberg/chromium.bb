@@ -229,22 +229,49 @@ body {
 /* Filename */
 
 .gallery .filename-spacer {
-  padding: 0 10px;
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
-  -webkit-box-align: center;
+  position: relative;
+  width: 270px;
 }
 
+.gallery[renaming] .filename-spacer > div,
 .gallery .filename-spacer > input {
+  opacity: 0;
+  z-index: 0;
+}
+
+.gallery .filename-spacer > div,
+.gallery[renaming] .filename-spacer > input {
+  opacity: 1;
+  z-index: 1;
+}
+
+.gallery .filename-spacer > input,
+.gallery .filename-spacer > div {
+  font-family: Open Sans,Droid Sans Fallback,sans-serif;
+  position: absolute;
+  left: 10px;
+  top: 15px;
   background-color: transparent;
   color: white;
-  width: 200px;
+  width: 260px;
+  height: 21px;
   border: none;
   outline: none;
+  font-size: 120%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.gallery .filename-spacer > input:focus {
-  background-color: rgba(48, 48, 48, 0.75);
+.gallery .filename-spacer > div:hover {
+  background-color: rgba(48, 48, 48, 1.0);
+  cursor: pointer;
+}
+
+.gallery .filename-spacer > input:focus,
+.gallery .filename-spacer > input:focus:hover {
+  background-color: white;
+  color: black;
   border-right: 1px solid white;
   border-bottom: 1px solid white;
 }
@@ -268,12 +295,12 @@ body {
 
   width: 280px;
   max-width: 100%;
-  -webkit-transition: max-width 500ms ease-in-out;
+  -webkit-transition: opacity 180ms linear;
   z-index: 0;
 }
 
 .gallery[editing] .toolbar .ribbon {
-  max-width: 0;
+  opacity: 0;
 }
 
 .gallery .ribbon-image {
@@ -321,17 +348,18 @@ body {
   overflow: hidden;
   pointer-events: none;
   right: 0;
-  width: 75%;
+  width: 100%;
+  opacity: 0;
   height: 55px;
   color: white;
   display: -webkit-box;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
-  -webkit-transition: width 500ms ease-in-out;
-  }
+  -webkit-transition: opacity 180ms linear;
+}
 
 .gallery[editing] .toolbar .edit-bar {
-  width: 100%;
+  opacity: 1;
 }
 
 .gallery .edit-main {
