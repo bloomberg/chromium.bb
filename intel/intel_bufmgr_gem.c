@@ -958,7 +958,7 @@ static void drm_intel_gem_bo_purge_vma_cache(drm_intel_bufmgr_gem *bufmgr_gem)
 				      bufmgr_gem->vma_cache.next,
 				      vma_list);
 		assert(bo_gem->map_count == 0);
-		DRMLISTDEL(&bo_gem->vma_list);
+		DRMLISTDELINIT(&bo_gem->vma_list);
 
 		if (bo_gem->mem_virtual) {
 			munmap(bo_gem->mem_virtual, bo_gem->bo.size);
