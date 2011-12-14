@@ -273,6 +273,9 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   double GetCPUUsage(int index) const;
   int GetProcessId(int index) const;
   int GetResourceUniqueId(int index) const;
+  // Returns the index of resource that has the given |unique_id|. Returns -1 if
+  // no resouce has the |unique_id|.
+  int GetResourceIndexByUniqueId(const int unique_id) const;
 
   // Methods to return formatted resource information.
   string16 GetResourceTitle(int index) const;

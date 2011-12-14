@@ -307,8 +307,8 @@ void TaskManagerHandler::Init() {
 }
 
 void TaskManagerHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("killProcess",
-      base::Bind(&TaskManagerHandler::HandleKillProcess,
+  web_ui_->RegisterMessageCallback("killProcesses",
+      base::Bind(&TaskManagerHandler::HandleKillProcesses,
                  base::Unretained(this)));
   web_ui_->RegisterMessageCallback("inspect",
       base::Bind(&TaskManagerHandler::HandleInspect,
@@ -341,57 +341,41 @@ static int parseIndex(const Value* value) {
   return index;
 }
 
-void TaskManagerHandler::HandleKillProcess(const ListValue* indexes) {
-  for (ListValue::const_iterator i = indexes->begin();
-       i != indexes->end(); i++) {
-    int index = parseIndex(*i);
-    if (index == -1)
-      continue;
-
-    int resource_index = model_->GetResourceIndexForGroup(index, 0);
+void TaskManagerHandler::HandleKillProcesses(const ListValue* unique_ids) {
+  for (ListValue::const_iterator i = unique_ids->begin();
+       i != unique_ids->end(); ++i) {
+    int unique_id = parseIndex(*i);
+    int resource_index = model_->GetResourceIndexByUniqueId(unique_id);
     if (resource_index == -1)
       continue;
 
-    LOG(INFO) << "kill PID:" << model_->GetResourceProcessId(resource_index);
     task_manager_->KillProcess(resource_index);
   }
 }
 
-void TaskManagerHandler::HandleActivatePage(const ListValue* resource_index) {
-  for (ListValue::const_iterator i = resource_index->begin();
-       i != resource_index->end(); ++i) {
+void TaskManagerHandler::HandleActivatePage(const ListValue* unique_ids) {
+  for (ListValue::const_iterator i = unique_ids->begin();
+       i != unique_ids->end(); ++i) {
     int unique_id = parseIndex(*i);
-    if (unique_id == -1)
+    int resource_index = model_->GetResourceIndexByUniqueId(unique_id);
+    if (resource_index == -1)
       continue;
 
-    for (int resource_index = 0; resource_index < model_->ResourceCount();
-         ++resource_index) {
-      if (model_->GetResourceUniqueId(resource_index) == unique_id) {
-        task_manager_->ActivateProcess(resource_index);
-        break;
-      }
-    }
-
+    task_manager_->ActivateProcess(resource_index);
     break;
   }
 }
 
-void TaskManagerHandler::HandleInspect(const ListValue* resource_index) {
-  for (ListValue::const_iterator i = resource_index->begin();
-       i != resource_index->end(); ++i) {
+void TaskManagerHandler::HandleInspect(const ListValue* unique_ids) {
+  for (ListValue::const_iterator i = unique_ids->begin();
+       i != unique_ids->end(); ++i) {
     int unique_id = parseIndex(*i);
-    if (unique_id == -1)
+    int resource_index = model_->GetResourceIndexByUniqueId(unique_id);
+    if (resource_index == -1)
       continue;
 
-    for (int resource_index = 0; resource_index < model_->ResourceCount();
-         ++resource_index) {
-      if (model_->GetResourceUniqueId(resource_index) == unique_id) {
-        if (model_->CanInspect(resource_index))
-          model_->Inspect(resource_index);
-        break;
-      }
-    }
-
+    if (model_->CanInspect(resource_index))
+      model_->Inspect(resource_index);
     break;
   }
 }

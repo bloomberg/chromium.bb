@@ -125,6 +125,15 @@ int TaskManagerModel::GetResourceUniqueId(int index) const {
   return resources_[index]->get_unique_id();
 }
 
+int TaskManagerModel::GetResourceIndexByUniqueId(const int unique_id) const {
+  for (int resource_index = 0; resource_index < ResourceCount();
+       ++resource_index) {
+    if (GetResourceUniqueId(resource_index) == unique_id)
+      return resource_index;
+  }
+  return -1;
+}
+
 string16 TaskManagerModel::GetResourceTitle(int index) const {
   CHECK_LT(index, ResourceCount());
   return resources_[index]->GetTitle();

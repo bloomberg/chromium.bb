@@ -85,12 +85,20 @@ TaskManager.prototype = {
   },
 
   /**
-   * Sends commands to kill a process.
+   * Sends commands to kill selected processes.
    * @public
    */
-  killProcess: function () {
+  killSelectedProcesses: function () {
     var selectedIndexes = this.selectionModel_.selectedIndexes;
-    chrome.send('killProcess', selectedIndexes);
+    var dm = this.dataModel_;
+    var uniqueIds = [];
+    for (var i = 0; i < selectedIndexes.length; i++) {
+      var index = selectedIndexes[i];
+      var task = dm.item(index);
+      uniqueIds.push(task['uniqueId'][0]);
+    }
+
+    chrome.send('killProcesses', uniqueIds);
   },
 
   /**
@@ -152,7 +160,8 @@ TaskManager.prototype = {
     this.document_ = dialogDom.ownerDocument;
 
     $('close-window').addEventListener('click', this.close.bind(this));
-    $('kill-process').addEventListener('click', this.killProcess.bind(this));
+    $('kill-process').addEventListener('click',
+                                       this.killSelectedProcesses.bind(this));
     $('about-memory-link').addEventListener('click',
                                             this.openAboutMemory.bind(this));
 
