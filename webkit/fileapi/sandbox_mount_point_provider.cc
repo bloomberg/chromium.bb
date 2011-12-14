@@ -14,6 +14,7 @@
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/metrics/histogram.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -35,6 +36,15 @@ static const FilePath::CharType kOldFileSystemUniqueNamePrefix[] =
 static const int kOldFileSystemUniqueLength = 16;
 static const unsigned kOldFileSystemUniqueDirectoryNameLength =
     kOldFileSystemUniqueLength + arraysize(kOldFileSystemUniqueNamePrefix) - 1;
+
+const char kOpenFileSystem[] = "FileSystem.OpenFileSystem";
+enum FileSystemError {
+  kOK = 0,
+  kIncognito,
+  kInvalidScheme,
+  kCreateDirectoryError,
+  kFileSystemErrorMax,
+};
 
 // Restricted names.
 // http://dev.w3.org/2009/dap/file-system/file-dir-sys.html#naming-restrictions
@@ -343,6 +353,11 @@ class SandboxMountPointProvider::GetFileSystemRootPathTask
   }
 
   void DispatchCallbackOnCallerThread(const FilePath& root_path) {
+    if (root_path.empty()) {
+      UMA_HISTOGRAM_ENUMERATION(kOpenFileSystem,
+                                kCreateDirectoryError,
+                                kFileSystemErrorMax);
+    }
     origin_message_loop_proxy_->PostTask(
         FROM_HERE,
         base::Bind(&GetFileSystemRootPathTask::DispatchCallback, this,
@@ -355,6 +370,10 @@ class SandboxMountPointProvider::GetFileSystemRootPathTask
         FileSystemPathManager::GetFileSystemTypeString(type_);
     DCHECK(!type_string.empty());
     std::string name = origin_identifier + ":" + type_string;
+
+    if (!root_path.empty())
+      UMA_HISTOGRAM_ENUMERATION(kOpenFileSystem, kOK, kFileSystemErrorMax);
+
     callback_.Run(!root_path.empty(), root_path, name);
     callback_.Reset();
   }
@@ -425,11 +444,17 @@ void SandboxMountPointProvider::ValidateFileSystemRootAndGetURL(
   if (path_manager_->is_incognito()) {
     // TODO(kinuko): return an isolated temporary directory.
     callback.Run(false, FilePath(), std::string());
+    UMA_HISTOGRAM_ENUMERATION(kOpenFileSystem,
+                              kIncognito,
+                              kFileSystemErrorMax);
     return;
   }
 
   if (!path_manager_->IsAllowedScheme(origin_url)) {
     callback.Run(false, FilePath(), std::string());
+    UMA_HISTOGRAM_ENUMERATION(kOpenFileSystem,
+                              kInvalidScheme,
+                              kFileSystemErrorMax);
     return;
   }
 
