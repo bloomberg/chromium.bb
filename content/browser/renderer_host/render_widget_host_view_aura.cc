@@ -522,7 +522,8 @@ bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
 
   // Needed to propagate mouse event to native_tab_contents_view_aura.
   // TODO(pkotwicz): Find a better way of doing this.
-  window_->parent()->delegate()->OnMouseEvent(event);
+  if (window_->parent()->delegate())
+    window_->parent()->delegate()->OnMouseEvent(event);
 
   // Return true so that we receive released/drag events.
   return true;
