@@ -93,6 +93,16 @@ if env.Bit('nacl_glibc') and not env.Bit('nacl_disable_shared'):
   AddInitFiniTest(env, 'initfini_shared', ['initfini_s'])
 
 
+if env.Bit('nacl_glibc'):
+  nexe = env.ComponentProgram('pthread_cleanup', 'pthread_cleanup.c',
+                              EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
+  node = env.CommandSelLdrTestNacl('pthread_cleanup.out', nexe)
+  env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+                         'run_pthread_cleanup_test',
+# TODO(mcgrathr): http://code.google.com/p/nativeclient/issues/detail?id=2490
+                         is_broken=env.Bit('target_x86_64'))
+
+
 # NOTE: the tests below break easily under valgrid and since
 #       they do not exercise malloc/free we exclude
 if env.IsRunningUnderValgrind():
