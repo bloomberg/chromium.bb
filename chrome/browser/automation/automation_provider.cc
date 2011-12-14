@@ -465,23 +465,19 @@ bool AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                                     OnRunUnloadHandlers)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetZoomLevel, OnSetZoomLevel)
 #endif  // defined(OS_WIN)
-    IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_MESSAGE_UNHANDLED(handled = false; OnUnhandledMessage())
   IPC_END_MESSAGE_MAP_EX()
-  if (!handled)
-    OnUnhandledMessage(message);
   if (!deserialize_success)
     OnMessageDeserializationFailure();
   return handled;
 }
 
-void AutomationProvider::OnUnhandledMessage(const IPC::Message& message) {
+void AutomationProvider::OnUnhandledMessage() {
   // We should not hang here. Print a message to indicate what's going on,
   // and disconnect the channel to notify the caller about the error
   // in a way it can't ignore, and make any further attempts to send
   // messages fail fast.
   LOG(ERROR) << "AutomationProvider received a message it can't handle. "
-             << "Message type: " << message.type()
-             << ", routing ID: " << message.routing_id() << ". "
              << "Please make sure that you use switches::kTestingChannelID "
              << "for test code (TestingAutomationProvider), and "
              << "switches::kAutomationClientChannelID for everything else "
