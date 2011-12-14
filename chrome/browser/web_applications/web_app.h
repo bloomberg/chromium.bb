@@ -40,6 +40,9 @@ void CreateShortcut(
     const FilePath& profile_path,
     const ShellIntegration::ShortcutInfo& shortcut_info);
 
+// Allow tests to disable shortcut creation.
+void SetDisableShortcutCreationForTests(bool disable);
+
 // Returns true if given url is a valid web app url.
 bool IsValidUrl(const GURL& url);
 

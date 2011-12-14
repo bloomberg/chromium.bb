@@ -10,6 +10,7 @@
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -45,6 +46,7 @@ class PlatformAppBrowserTest : public ExtensionBrowserTest {
   }
 
   void LoadAndLaunchPlatformApp(const char* name) {
+    web_app::SetDisableShortcutCreationForTests(true);
     EXPECT_TRUE(LoadExtension(test_data_dir_.AppendASCII("platform_apps").
         AppendASCII(name)));
 
