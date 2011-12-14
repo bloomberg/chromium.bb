@@ -35,7 +35,7 @@ vars = {
   "libvpx_revision": "109236",
   "lss_revision": "9",
   "ffmpeg_revision": "112050",
-  "sfntly_revision": "117",
+  "sfntly_revision": "118",
   "skia_revision": "2850",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
@@ -121,8 +121,8 @@ deps = {
     Var("nacl_trunk") + "/src/native_client/tests/prebuilt@" +
     Var("nacl_revision"),
 
-  "src/third_party/sfntly/src/sfntly":
-    (Var("googlecode_url") % "sfntly") + "/trunk/cpp/src/sfntly@" +
+  "src/third_party/sfntly/cpp/src":
+    (Var("googlecode_url") % "sfntly") + "/trunk/cpp/src@" +
     Var("sfntly_revision"),
 
   "src/third_party/skia/src":
