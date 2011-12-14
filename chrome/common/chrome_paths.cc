@@ -60,6 +60,16 @@ const FilePath::CharType kInternalNaClHelperBootstrapFileName[] =
     FILE_PATH_LITERAL("nacl_helper_bootstrap");
 #endif
 
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+
+const FilePath::CharType kO3DPluginFileName[] =
+    FILE_PATH_LITERAL("pepper/libppo3dautoplugin.so");
+
+const FilePath::CharType kGTalkPluginFileName[] =
+    FILE_PATH_LITERAL("pepper/libppgoogletalk.so");
+
+#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 }  // namespace
 
 namespace chrome {
@@ -252,6 +262,16 @@ bool PathProvider(int key, FilePath* result) {
       if (!PathService::Get(base::DIR_MODULE, &cur))
         return false;
       cur = cur.Append(kInternalNaClHelperBootstrapFileName);
+      break;
+    case chrome::FILE_O3D_PLUGIN:
+        if (!PathService::Get(base::DIR_MODULE, &cur))
+          return false;
+      cur = cur.Append(kO3DPluginFileName);
+      break;
+    case chrome::FILE_GTALK_PLUGIN:
+        if (!PathService::Get(base::DIR_MODULE, &cur))
+          return false;
+      cur = cur.Append(kGTalkPluginFileName);
       break;
 #endif
     case chrome::FILE_RESOURCES_PACK:

@@ -51,6 +51,16 @@ const char kNaClPluginDescription[] = "Native Client Executable";
 
 const char kNaClOldPluginName[] = "Chrome NaCl";
 
+const char kO3DPluginName[] = "Google Talk Plugin Video Accelerator";
+const char kO3DPluginMimeType[] ="application/vnd.o3d.auto";
+const char kO3DPluginExtension[] = "";
+const char kO3DPluginDescription[] = "O3D MIME";
+
+const char kGTalkPluginName[] = "Google Talk Plugin";
+const char kGTalkPluginMimeType[] ="application/googletalk";
+const char kGTalkPluginExtension[] = ".googletalk";
+const char kGTalkPluginDescription[] = "Google Talk Plugin";
+
 #if defined(ENABLE_REMOTING)
 const char kRemotingViewerPluginName[] = "Remoting Viewer";
 const FilePath::CharType kRemotingViewerPluginPath[] =
@@ -114,6 +124,42 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       plugins->push_back(nacl);
 
       skip_nacl_file_check = true;
+    }
+  }
+
+  static bool skip_o3d_file_check = false;
+  if (PathService::Get(chrome::FILE_O3D_PLUGIN, &path)) {
+    if (skip_o3d_file_check || file_util::PathExists(path)) {
+      content::PepperPluginInfo o3d;
+      o3d.path = path;
+      o3d.name = kO3DPluginName;
+      o3d.is_out_of_process = true;
+      o3d.is_sandboxed = false;
+      webkit::WebPluginMimeType o3d_mime_type(kO3DPluginMimeType,
+                                              kO3DPluginExtension,
+                                              kO3DPluginDescription);
+      o3d.mime_types.push_back(o3d_mime_type);
+      plugins->push_back(o3d);
+
+      skip_o3d_file_check = true;
+    }
+  }
+
+  static bool skip_gtalk_file_check = false;
+  if (PathService::Get(chrome::FILE_GTALK_PLUGIN, &path)) {
+    if (skip_gtalk_file_check || file_util::PathExists(path)) {
+      content::PepperPluginInfo gtalk;
+      gtalk.path = path;
+      gtalk.name = kGTalkPluginName;
+      gtalk.is_out_of_process = true;
+      gtalk.is_sandboxed = false;
+      webkit::WebPluginMimeType gtalk_mime_type(kGTalkPluginMimeType,
+                                                kGTalkPluginExtension,
+                                                kGTalkPluginDescription);
+      gtalk.mime_types.push_back(gtalk_mime_type);
+      plugins->push_back(gtalk);
+
+      skip_gtalk_file_check = true;
     }
   }
 
