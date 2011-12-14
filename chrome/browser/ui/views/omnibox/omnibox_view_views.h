@@ -19,6 +19,10 @@
 #include "ui/views/view.h"
 #include "webkit/glue/window_open_disposition.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
+#endif
+
 class AutocompleteEditController;
 class AutocompleteEditModel;
 class AutocompletePopupView;
@@ -33,10 +37,15 @@ class TabContents;
 // Adjust paste behavior (should not autocomplete).
 // Custom context menu for omnibox.
 // Instant.
-class OmniboxViewViews : public views::View,
-                         public OmniboxView,
-                         public content::NotificationObserver,
-                         public views::TextfieldController {
+class OmniboxViewViews
+    : public views::View,
+      public OmniboxView,
+      public content::NotificationObserver,
+#if defined(OS_CHROMEOS)
+      public
+          chromeos::input_method::InputMethodManager::CandidateWindowObserver,
+#endif
+      public views::TextfieldController {
  public:
   // The internal view class name.
   static const char kViewClassName[];
@@ -148,6 +157,14 @@ class OmniboxViewViews : public views::View,
   virtual void OnBeforeUserAction(views::Textfield* sender) OVERRIDE;
   virtual void OnAfterUserAction(views::Textfield* sender) OVERRIDE;
 
+#if defined(OS_CHROMEOS)
+  // chromeos::input_method::InputMethodManager::CandidateWindowObserver:
+  virtual void CandidateWindowOpened(
+      chromeos::input_method::InputMethodManager* manager) OVERRIDE;
+  virtual void CandidateWindowClosed(
+      chromeos::input_method::InputMethodManager* manager) OVERRIDE;
+#endif
+
  private:
   // Return the number of characers in the current buffer.
   size_t GetTextLength() const;
@@ -196,6 +213,11 @@ class OmniboxViewViews : public views::View,
   // Was the delete key pressed with an empty selection at the end of the edit?
   bool delete_at_end_pressed_;
   LocationBarView* location_bar_view_;
+
+  // True if the IME candidate window is open. When this is true, we want to
+  // avoid showing the popup. So far, the candidate window is detected only
+  // on Chrome OS.
+  bool ime_candidate_window_open_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViews);
 };

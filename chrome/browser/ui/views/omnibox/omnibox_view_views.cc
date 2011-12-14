@@ -161,12 +161,22 @@ OmniboxViewViews::OmniboxViewViews(AutocompleteEditController* controller,
       security_level_(ToolbarModel::NONE),
       ime_composing_before_change_(false),
       delete_at_end_pressed_(false),
-      location_bar_view_(location_bar) {
+      location_bar_view_(location_bar),
+      ime_candidate_window_open_(false) {
   set_border(views::Border::CreateEmptyBorder(kAutocompleteVerticalMargin, 0,
                                               kAutocompleteVerticalMargin, 0));
+#if defined(OS_CHROMEOS)
+  chromeos::input_method::InputMethodManager::GetInstance()->
+      AddCandidateWindowObserver(this);
+#endif
 }
 
 OmniboxViewViews::~OmniboxViewViews() {
+#if defined(OS_CHROMEOS)
+  chromeos::input_method::InputMethodManager::GetInstance()->
+      RemoveCandidateWindowObserver(this);
+#endif
+
   // Explicitly teardown members which have a reference to us.  Just to be safe
   // we want them to be destroyed before destroying any other internal state.
   popup_view_.reset();
@@ -467,6 +477,8 @@ void OmniboxViewViews::RevertAll() {
 
 void OmniboxViewViews::UpdatePopup() {
   model_->SetInputInProgress(true);
+  if (ime_candidate_window_open_)
+    return;
   if (!model_->has_focus())
     return;
 
@@ -667,6 +679,20 @@ void OmniboxViewViews::OnBeforeUserAction(views::Textfield* sender) {
 void OmniboxViewViews::OnAfterUserAction(views::Textfield* sender) {
   OnAfterPossibleChange();
 }
+
+#if defined(OS_CHROMEOS)
+void OmniboxViewViews::CandidateWindowOpened(
+      chromeos::input_method::InputMethodManager* manager) {
+  ime_candidate_window_open_ = true;
+  ClosePopup();
+}
+
+void OmniboxViewViews::CandidateWindowClosed(
+      chromeos::input_method::InputMethodManager* manager) {
+  ime_candidate_window_open_ = false;
+  UpdatePopup();
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxViewViews, private:
