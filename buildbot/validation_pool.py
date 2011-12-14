@@ -20,7 +20,7 @@ from chromite.buildbot import patch as cros_patch
 from chromite.lib import cros_build_lib
 
 _BUILD_DASHBOARD = 'http://build.chromium.org/p/chromiumos'
-_BUILD_INT_DASHBOARD = 'http://chromeos-botmaster.mtv.corp.google.com:8026'
+_BUILD_INT_DASHBOARD = 'http://chromegw/i/chromeos'
 
 
 class TreeIsClosedException(Exception):
@@ -204,18 +204,25 @@ class ValidationPool(object):
         deps.extend(change.GerritDependencies(buildroot))
         deps.extend(change.PaladinDependencies(buildroot))
       except cros_patch.MissingChangeIDException as me:
-        logging.error(me)
+        change.apply_error_message = (
+            'Could not apply change %s because change has a Gerrit Dependency '
+            'that does not contain a ChangeId.  Please remove this dependency '
+            'or update the dependency with a ChangeId.' % change.id)
+        logging.error(change.apply_error_message)
+        logging.error(str(me))
+        changes_that_failed_to_apply_to_tot.add(change)
         apply_chain = False
 
       for dep in deps:
         dep_change = change_map.get(dep)
         if not dep_change:
           # The dep may have been committed already.
-          if self.gerrit_helper.IsChangeCommitted(dep):
-            logging.info('Dependency %s already submitted.', dep)
-          else:
-            logging.error('Cannot apply change %s because dependent change %s '
-                          'is not ready to be committed.', change.id, dep)
+          if not self.gerrit_helper.IsChangeCommitted(dep):
+            message = ('Could not apply change %s because dependent '
+                       'change %s is not ready to be committed.' % (
+                        change.id, dep))
+            logging.info(message)
+            change.apply_error_message = message
             apply_chain = False
             break
         else:
@@ -232,21 +239,29 @@ class ValidationPool(object):
         try:
           if change in changes_applied:
             continue
-          if change in changes_that_failed_to_apply_to_tot:
+          elif change in changes_that_failed_to_apply_to_tot:
             break
+          else:
+            change.Apply(buildroot, trivial=not self.dryrun)
 
-          change.Apply(buildroot, trivial=not self.dryrun)
-          changes_applied.add(change)
-          changes_list.append(change)
         except cros_patch.ApplyPatchException as e:
           if e.type == cros_patch.ApplyPatchException.TYPE_REBASE_TO_TOT:
             changes_that_failed_to_apply_to_tot.add(change)
           else:
+            change.apply_error_message = (
+                'Your change conflicted with another change being tested '
+                'in the last validation pool.  Please re-sync, rebase and '
+                're-upload.')
             changes_that_failed_to_apply_against_other_changes.add(change)
 
           break
         else:
+          # We applied the change successfully.
+          changes_applied.add(change)
+          changes_list.append(change)
           lkgm_manager.PrintLink(str(change), change.url)
+          change.HandleApplied(self.gerrit_helper, self.build_log,
+                               dryrun=self.dryrun)
 
     if changes_applied:
       logging.debug('Done investigating changes.  Applied %s',

@@ -6,6 +6,7 @@
 
 """Unittests for commands.  Needs to be run inside of chroot for mox."""
 
+import logging
 import mox
 import os
 import sys
@@ -131,6 +132,10 @@ class GerritPatchTest(mox.MoxTestBase):
     "status":"NEW",
   }
 
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+    self.mox.StubOutWithMock(cros_patch.GerritPatch, 'RemoveCommitReady')
+
   def testGerritSubmit(self):
     """Tests submission review string looks correct."""
     self.mox.StubOutWithMock(cros_lib, 'RunCommand')
@@ -139,15 +144,24 @@ class GerritPatchTest(mox.MoxTestBase):
     cros_lib.RunCommand(
         'ssh -p 29418 gerrit.chromium.org gerrit review '
         '--submit 1112,2'.split(), error_ok=True)
-
     self.mox.ReplayAll()
     my_patch.Submit(helper, False)
     self.mox.VerifyAll()
+
+  def testGerritHandleApplied(self):
+    """Tests review string looks correct."""
+    my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
+    helper = gerrit_helper.GerritHelper(False)
+    self.mox.ReplayAll()
+    my_patch.HandleApplied(helper, 'http://fake%20url/1234', True)
+    self.mox.VerifyAll()
+
 
   def testGerritHandleApplyError(self):
     """Tests review string looks correct."""
     my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
     helper = gerrit_helper.GerritHelper(False)
+    my_patch.RemoveCommitReady(helper, True)
     self.mox.ReplayAll()
     my_patch.HandleCouldNotApply(helper, 'http://fake%20url/1234', True)
     self.mox.VerifyAll()
@@ -156,6 +170,7 @@ class GerritPatchTest(mox.MoxTestBase):
     """Tests review string looks correct."""
     my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
     helper = gerrit_helper.GerritHelper(False)
+    my_patch.RemoveCommitReady(helper, True)
     self.mox.ReplayAll()
     my_patch.HandleCouldNotSubmit(helper, 'http://fake%20url/1234', True)
     self.mox.VerifyAll()
@@ -164,6 +179,7 @@ class GerritPatchTest(mox.MoxTestBase):
     """Tests review string looks correct."""
     my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
     helper = gerrit_helper.GerritHelper(False)
+    my_patch.RemoveCommitReady(helper, True)
     self.mox.ReplayAll()
     my_patch.HandleCouldNotVerify(helper, 'http://fake%20url/1234', True)
     self.mox.VerifyAll()
@@ -374,4 +390,9 @@ class HelperFunctionTests(mox.MoxTestBase):
 
 
 if __name__ == '__main__':
+  logging_format = '%(asctime)s - %(filename)s - %(levelname)-8s: %(message)s'
+  date_format = '%H:%M:%S'
+  logging.basicConfig(level=logging.DEBUG, format=logging_format,
+
+                      datefmt=date_format)
   unittest.main()

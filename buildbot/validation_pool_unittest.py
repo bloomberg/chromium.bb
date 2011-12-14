@@ -6,6 +6,7 @@
 
 """Module that contains unittests for validation_pool module."""
 
+import logging
 import mox
 import sys
 import unittest
@@ -92,7 +93,9 @@ class TestValidationPool(mox.MoxTestBase):
     patch1.PaladinDependencies(build_root).AndReturn([])
 
     patch2.Apply(build_root, trivial=True)
+    patch2.HandleApplied(None, pool.build_log, dryrun=False)
     patch1.Apply(build_root, trivial=True)
+    patch1.HandleApplied(None, pool.build_log, dryrun=False)
 
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
@@ -146,6 +149,7 @@ class TestValidationPool(mox.MoxTestBase):
     patch2.PaladinDependencies(build_root).AndReturn([])
     helper.IsChangeCommitted(patch1.id).AndReturn(True)
     patch2.Apply(build_root, trivial=True)
+    patch2.HandleApplied(helper, pool.build_log, dryrun=False)
 
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
@@ -190,6 +194,7 @@ class TestValidationPool(mox.MoxTestBase):
     patch3.GerritDependencies(build_root).AndReturn([])
     patch3.PaladinDependencies(build_root).AndReturn([])
     patch3.Apply(build_root, trivial=True)
+    patch3.HandleApplied(None, pool.build_log, dryrun=False)
 
     # This one should be handled later (not where patch1 is handled.
     patch4.GerritDependencies(build_root).AndReturn([])
@@ -197,7 +202,8 @@ class TestValidationPool(mox.MoxTestBase):
     patch4.Apply(build_root, trivial=True).AndRaise(
         cros_patch.ApplyPatchException(
             patch1,
-            type=cros_patch.ApplyPatchException.TYPE_REBASE_TO_PATCH_INFLIGHT))
+            patch_type=\
+                cros_patch.ApplyPatchException.TYPE_REBASE_TO_PATCH_INFLIGHT))
 
     patch1.HandleCouldNotApply(None, pool.build_log, dryrun=False)
 
@@ -227,6 +233,9 @@ class TestValidationPool(mox.MoxTestBase):
     patch2.GerritDependencies(build_root).AndReturn([])
     patch2.PaladinDependencies(build_root).AndReturn([])
     patch2.Apply(build_root, trivial=True)
+    patch2.HandleApplied(None, pool.build_log, dryrun=False)
+
+    patch1.HandleCouldNotApply(None, pool.build_log, dryrun=False)
 
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
@@ -274,10 +283,15 @@ class TestValidationPool(mox.MoxTestBase):
     patch4.PaladinDependencies(build_root).AndReturn(['ChangeId5'])
 
     patch2.Apply(build_root, trivial=True)
+    patch2.HandleApplied(None, pool.build_log, dryrun=False)
     patch1.Apply(build_root, trivial=True)
+    patch1.HandleApplied(None, pool.build_log, dryrun=False)
     patch3.Apply(build_root, trivial=True)
+    patch3.HandleApplied(None, pool.build_log, dryrun=False)
     patch5.Apply(build_root, trivial=True)
+    patch5.HandleApplied(None, pool.build_log, dryrun=False)
     patch4.Apply(build_root, trivial=True)
+    patch4.HandleApplied(None, pool.build_log, dryrun=False)
 
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
@@ -306,7 +320,10 @@ class TestValidationPool(mox.MoxTestBase):
     patch2.PaladinDependencies(build_root).AndReturn([])
 
     patch1.Apply(build_root, trivial=True)
+    patch1.HandleApplied(None, pool.build_log, dryrun=False)
+
     patch2.Apply(build_root, trivial=True)
+    patch2.HandleApplied(None, pool.build_log, dryrun=False)
 
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
@@ -378,4 +395,9 @@ class TestValidationPool(mox.MoxTestBase):
 
 
 if __name__ == '__main__':
+  logging_format = '%(asctime)s - %(filename)s - %(levelname)-8s: %(message)s'
+  date_format = '%H:%M:%S'
+  logging.basicConfig(level=logging.DEBUG, format=logging_format,
+
+                      datefmt=date_format)
   unittest.main()

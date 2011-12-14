@@ -18,10 +18,12 @@ from chromite.lib import cros_build_lib as cros_lib
 # The prefix of the temporary directory created to store local patches.
 _TRYBOT_TEMP_PREFIX = 'trybot_patch-'
 
-# URL where the Commit Queue documentation is stored.
-_PALADIN_DOCUMENTATION_URL = ('http://www.chromium.org/developers/'
-                              'tree-sheriffs/sheriff-details-chromium-os/'
-                              'commit-queue-overview')
+def _RunCommand(cmd, dryrun):
+  """Runs the specified shell cmd if dryrun=False."""
+  if dryrun:
+    logging.info('Would have run: %s', ' '.join(cmd))
+  else:
+    cros_lib.RunCommand(cmd, error_ok=True)
 
 
 class PatchException(Exception):
@@ -35,10 +37,10 @@ class ApplyPatchException(Exception):
   TYPE_REBASE_TO_TOT = 1
   TYPE_REBASE_TO_PATCH_INFLIGHT = 2
 
-  def __init__(self, patch, type=TYPE_REBASE_TO_TOT):
+  def __init__(self, patch, patch_type=TYPE_REBASE_TO_TOT):
     super(ApplyPatchException, self).__init__()
     self.patch = patch
-    self.type = type
+    self.type = patch_type
 
   def __str__(self):
     return 'Failed to apply patch ' + str(self.patch)
@@ -47,6 +49,32 @@ class ApplyPatchException(Exception):
 class MissingChangeIDException(Exception):
   """Raised if a patch is missing a Change-ID."""
   pass
+
+
+class PaladinMessage():
+  """An object that is used to send messages to developers about their changes.
+  """
+  # URL where Paladin documentation is stored.
+  _PALADIN_DOCUMENTATION_URL = ('http://www.chromium.org/developers/'
+                                'tree-sheriffs/sheriff-details-chromium-os/'
+                                'commit-queue-overview')
+
+  def __init__(self, message, patch, helper):
+    self.message = message
+    self.patch = patch
+    self.helper = helper
+
+  def _ConstructPaladinMessage(self):
+    """Adds any standard Paladin messaging to an existing message."""
+    return self.message + (' Please see %s for more information.' %
+                           self._PALADIN_DOCUMENTATION_URL)
+
+  def Send(self, dryrun):
+    """Sends the message to the developer."""
+    cmd = self.helper.GetGerritReviewCommand(
+        ['-m', '"%s"' % self._ConstructPaladinMessage(),
+         '%s,%s' % (self.patch.gerrit_number, self.patch.patch_number)])
+    _RunCommand(cmd, dryrun)
 
 
 class Patch(object):
@@ -108,6 +136,11 @@ class GerritPatch(Patch):
     # status - Current state of this change.  Can be one of
     # ['NEW', 'SUBMITTED', 'MERGED', 'ABANDONED'].
     self.status = patch_dict['status']
+    # Allows a caller to specify why we can't apply this change when we
+    # HandleApplicaiton failures.
+    self.apply_error_message = ('Please re-sync, rebase, and re-upload your '
+                                'change.')
+
 
   def IsAlreadyMerged(self):
     """Returns whether the patch has already been merged in Gerrit."""
@@ -169,12 +202,12 @@ class GerritPatch(Patch):
         self._RebaseOnto(upstream, upstream, project_dir, trivial)
       except cros_lib.RunCommandError:
         raise ApplyPatchException(
-            self, type=ApplyPatchException.TYPE_REBASE_TO_TOT)
+            self, patch_type=ApplyPatchException.TYPE_REBASE_TO_TOT)
       else:
         # We failed to apply to patch_branch but succeeded against TOT.
         # We should pass a different type of exception in this case.
         raise ApplyPatchException(
-            self, type=ApplyPatchException.TYPE_REBASE_TO_PATCH_INFLIGHT)
+            self, patch_type=ApplyPatchException.TYPE_REBASE_TO_PATCH_INFLIGHT)
 
     finally:
       cros_lib.RunCommand(['git', 'checkout', constants.PATCH_BRANCH],
@@ -196,21 +229,17 @@ class GerritPatch(Patch):
 
   # --------------------- Gerrit Operations --------------------------------- #
 
-  @staticmethod
-  def _RunCommand(cmd, dryrun):
-    """Runs the specified shell cmd if dryrun=False."""
-    if dryrun:
-      logging.info('Would have run: %s', ' '.join(cmd))
-    else:
-      cros_lib.RunCommand(cmd, error_ok=True)
-
-  @staticmethod
-  def ConstructErrorMessage(msg):
-    return msg + (' Please see %s for more information.' %
-                  _PALADIN_DOCUMENTATION_URL)
+  def RemoveCommitReady(self, helper, dryrun=False):
+    """Remove any commit ready bits associated with CL."""
+    query = ['-c',
+             '"delete from patch_set_approvals where change_id=%s'
+             ' AND category_id=\'COMR\';"' % self.gerrit_number
+            ]
+    cmd = helper.GetGerritSqlCommand(query)
+    _RunCommand(cmd, dryrun)
 
   def HandleCouldNotSubmit(self, helper, build_log, dryrun=False):
-    """Handler that is called when the Commit Queue can't submit a change.
+    """Handler that is called when Paladin can't submit a change.
 
     This should be rare, but if an admin overrides the commit queue and commits
     a change that conflicts with this change, it'll apply, build/validate but
@@ -222,18 +251,14 @@ class GerritPatch(Patch):
 
     """
     msg = ('The Commit Queue failed to submit your change in %s . '
-           'This is most likely due to an owner of your repo overriding the '
-           'Commit Queue and committing a change that conflicts with yours. '
-           'Please rebase and re-upload your change to re-submit.' % build_log)
-    msg = self.ConstructErrorMessage(msg)
-
-    cmd = helper.GetGerritReviewCommand(
-        ['-m', '"%s"' % msg, '%s,%s' % (self.gerrit_number, self.patch_number)])
-    GerritPatch._RunCommand(cmd, dryrun)
+           'This can happen if you submitted your change or someone else '
+           'submitted a conflicting change while your change was being tested.'
+           % build_log)
+    PaladinMessage(msg, self, helper).Send(dryrun)
     self.RemoveCommitReady(helper, dryrun)
 
   def HandleCouldNotVerify(self, helper, build_log, dryrun=False):
-    """Handler for when the Commit Queue fails to validate a change.
+    """Handler for when Paladin fails to validate a change.
 
     This handler notifies set Verified-1 to the review forcing the developer
     to re-upload a change that works.  There are many reasons why this might be
@@ -250,38 +275,40 @@ class GerritPatch(Patch):
            'If you believe this happened in error, just re-mark your commit as '
            'ready. Your change will then get automatically retried.' %
            build_log)
-    msg = self.ConstructErrorMessage(msg)
-    cmd = helper.GetGerritReviewCommand(
-        ['-m', '"%s"' % msg, '%s,%s' % (self.gerrit_number, self.patch_number)])
-    GerritPatch._RunCommand(cmd, dryrun)
+    PaladinMessage(msg, self, helper).Send(dryrun)
     self.RemoveCommitReady(helper, dryrun)
 
-  def RemoveCommitReady(self, helper, dryrun=False):
-    """Remove any commit ready bits associated with CL."""
-    query = ['-c',
-             '"delete from patch_set_approvals where change_id=%s'
-             ' AND category_id=\'COMR\';"' % self.gerrit_number
-            ]
-    cmd = helper.GetGerritSqlCommand(query)
-    GerritPatch._RunCommand(cmd, dryrun)
-
   def HandleCouldNotApply(self, helper, build_log, dryrun=False):
-    """Handler for when the Commit Queue fails to apply a change.
+    """Handler for when Paladin fails to apply a change.
 
     This handler notifies set CodeReview-2 to the review forcing the developer
     to re-upload a rebased change.
 
     Args:
       helper: Instance of gerrit_helper for the gerrit instance.
+      build_log: URL of where to find the logs for this build.
       dryrun: If true, do not actually commit anything to Gerrit.
     """
-    msg = ('The Commit Queue failed to apply your change cleanly in %s . '
-           'Please re-sync, rebase, and re-upload your change.' % build_log)
-    msg = self.ConstructErrorMessage(msg)
-    cmd = helper.GetGerritReviewCommand(
-        ['-m', '"%s"' % msg, '%s,%s' % (self.gerrit_number, self.patch_number)])
-    GerritPatch._RunCommand(cmd, dryrun)
+    msg = ('The Commit Queue failed to apply your change in %s . ' %
+           build_log)
+    msg += self.apply_error_message
+    PaladinMessage(msg, self, helper).Send(dryrun)
     self.RemoveCommitReady(helper, dryrun)
+
+  def HandleApplied(self, helper, build_log, dryrun=False):
+    """Handler for when Paladin successfully applies a change.
+
+    This handler notifies a developer that their change is being tried as
+    part of a Paladin run defined by a build_log.
+
+    Args:
+      helper: Instance of gerrit_helper for the gerrit instance.
+      build_log: URL of where to find the logs for this build.
+      dryrun: If true, do not actually commit anything to Gerrit.
+    """
+    msg = ('The Commit Queue has picked up your change. '
+           'You can follow along at %s .' % build_log)
+    PaladinMessage(msg, self, helper).Send(dryrun)
 
   def CommitMessage(self, buildroot):
     """Returns the commit message for the patch as a string."""
@@ -358,8 +385,7 @@ class GerritPatch(Patch):
     """
     cmd = helper.GetGerritReviewCommand(['--submit', '%s,%s' % (
         self.gerrit_number, self.patch_number)])
-
-    GerritPatch._RunCommand(cmd, dryrun)
+    _RunCommand(cmd, dryrun)
 
   def __str__(self):
     """Returns custom string to identify this patch."""
