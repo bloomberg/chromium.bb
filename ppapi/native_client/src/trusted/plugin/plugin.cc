@@ -1000,9 +1000,8 @@ Plugin::Plugin(PP_Instance pp_instance)
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p, pp_instance=%"
                  NACL_PRId32")\n", static_cast<void*>(this), pp_instance));
   NaClSrpcModuleInit();
-  nexe_downloader_.Initialize(this);
-  pnacl_.Initialize(this);
   callback_factory_.Initialize(this);
+  nexe_downloader_.Initialize(this);
 }
 
 
@@ -1305,7 +1304,7 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
   // Inform JavaScript that we successfully translated the bitcode to a nexe.
   EnqueueProgressEvent(kProgressEventProgress);
   nacl::scoped_ptr<nacl::DescWrapper>
-      wrapper(pnacl_.ReleaseTranslatedFD());
+      wrapper(pnacl_coordinator_.get()->ReleaseTranslatedFD());
   ErrorInfo error_info;
   bool was_successful = LoadNaClModule(
       wrapper.get(), &error_info,
@@ -1621,7 +1620,10 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
       pp::CompletionCallback translate_callback =
           callback_factory_.NewCallback(&Plugin::BitcodeDidTranslate);
       // Will always call the callback on success or failure.
-      pnacl_.BitcodeToNative(program_url, translate_callback);
+      pnacl_coordinator_.reset(
+          PnaclCoordinator::BitcodeToNative(this,
+                                            program_url,
+                                            translate_callback));
       return;
     } else {
       pp::CompletionCallback open_callback =

@@ -22,32 +22,33 @@ namespace plugin {
 class Plugin;
 class PnaclCoordinator;
 
+
+// Loads a list of remote resources, providing a way to get file descriptors for
+// thse resources.  All URLs in relative to resource_base_url_.
 class PnaclResources {
  public:
-  PnaclResources(Plugin* plugin, PnaclCoordinator* coordinator)
+  PnaclResources(Plugin* plugin,
+                 PnaclCoordinator* coordinator,
+                 const nacl::string& resource_base_url,
+                 const std::vector<nacl::string>& resource_urls,
+                 const pp::CompletionCallback& all_loaded_callback)
       : plugin_(plugin),
         coordinator_(coordinator),
-        all_loaded_(true),
-        client_callback_is_valid_(false)
-        { }
+        resource_urls_(resource_urls),
+        all_loaded_callback_(all_loaded_callback),
+        resource_base_url_(resource_base_url) {
+    callback_factory_.Initialize(this);
+  }
 
   virtual ~PnaclResources();
 
-  void Initialize();
-
-  // URLs are all relative to the coordinator's resource_base_url().
-
+  // Start fetching the URLs.  After construction, this is the first step.
+  void StartDownloads();
   // Get the wrapper for the downloaded resource.
+  // Only valid after all_loaded_callback_ has been run.
   nacl::DescWrapper* WrapperForUrl(const nacl::string& url) {
     return resource_wrappers_[url];
   }
-
-  // Add an URL for download.
-  void AddResourceUrl(const nacl::string& url);
-  // Start fetching the URLs.
-  void StartDownloads();
-  // Set the callback for what to do when all the resources are available.
-  void RunWhenAllLoaded(pp::CompletionCallback& client_callback);
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PnaclResources);
@@ -56,25 +57,24 @@ class PnaclResources {
   void ResourceReady(int32_t pp_error,
                      const nacl::string& url,
                      const nacl::string& full_url);
-  // Callback invoked when all resources have been loaded.
-  void AllLoaded(int32_t pp_error);
 
+  // The plugin requesting the resource loading.
   Plugin* plugin_;
+  // The coordinator responsible for reporting errors, etc.
   PnaclCoordinator* coordinator_;
+  // The base url for looking up resources.
+  nacl::string resource_base_url_;
+  // The list of resource URLs (relative to resource_base_url_) to load.
   std::vector<nacl::string> resource_urls_;
-  std::map<nacl::string, nacl::DescWrapper*> resource_wrappers_;
-  nacl::scoped_ptr<DelayedCallback> delayed_callback_;
-  // Set once all resources have been loaded to indicate that future calls to
-  // RunWhenAllLoaded should immediately invoke the client callback.  This
-  // simplifies the client while allowing resources to be used for subsequent
-  // translations.
-  bool all_loaded_;
   // Callback to be invoked when all resources can be guaranteed available.
-  pp::CompletionCallback client_callback_;
-  // If RunWhenAllLoaded was called before all resources have been loaded,
-  // this indicates that the registered client callback should be used when
-  // the last resource arrives.
-  bool client_callback_is_valid_;
+  pp::CompletionCallback all_loaded_callback_;
+  // The descriptor wrappers for the downloaded URLs.  Only valid
+  // once all_loaded_callback_ has been invoked.
+  std::map<nacl::string, nacl::DescWrapper*> resource_wrappers_;
+  // Because we may be loading multiple resources, we need a callback that
+  // is invoked each time a resource arrives, and finally invokes
+  // all_loaded_callback_ when done.
+  nacl::scoped_ptr<DelayedCallback> delayed_callback_;
   // Factory for ready callbacks, etc.
   pp::CompletionCallbackFactory<PnaclResources> callback_factory_;
 };

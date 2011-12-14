@@ -488,7 +488,7 @@ class Plugin : public pp::InstancePrivate {
   FileDownloader nexe_downloader_;
   pp::CompletionCallbackFactory<Plugin> callback_factory_;
 
-  PnaclCoordinator pnacl_;
+  nacl::scoped_ptr<PnaclCoordinator> pnacl_coordinator_;
 
   // The manifest dictionary.  Used for looking up resources to be loaded.
   nacl::scoped_ptr<Manifest> manifest_;

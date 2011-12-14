@@ -165,4 +165,9 @@ bool SrpcClient::Invoke(uintptr_t method_id,
   return true;
 }
 
+void SrpcClient::AttachService(NaClSrpcService* service, void* instance_data) {
+  srpc_channel_.server = service;
+  srpc_channel_.server_instance_data = instance_data;
+}
+
 }  // namespace plugin

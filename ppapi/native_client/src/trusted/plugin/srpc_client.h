@@ -48,6 +48,9 @@ class SrpcClient {
   bool Invoke(uintptr_t method_id, SrpcParams* params);
   bool InitParams(uintptr_t method_id, SrpcParams* params);
 
+  // Attach a service for reverse-direction (from .nexe) RPCs.
+  void AttachService(NaClSrpcService* service, void* instance_data);
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(SrpcClient);
   SrpcClient();
