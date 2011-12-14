@@ -11,10 +11,6 @@
 #include <crt_externs.h>
 #endif
 
-#ifdef _WIN64  /* TODO(gregoryd): remove this when win64 issues are fixed */
-#define NACL_NO_INLINE
-#endif
-
 #include <stdio.h>
 
 #include "native_client/src/shared/platform/nacl_check.h"

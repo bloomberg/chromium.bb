@@ -480,9 +480,7 @@ void NaClLoadSpringboard(struct NaClApp  *nap);
 
 static const uintptr_t kNaClBadAddress = (uintptr_t) -1;
 
-#ifndef NACL_NO_INLINE
 #include "native_client/src/trusted/service_runtime/sel_ldr-inl.h"
-#endif
 
 /*
  * Looks up a descriptor in the open-file table.  An additional
