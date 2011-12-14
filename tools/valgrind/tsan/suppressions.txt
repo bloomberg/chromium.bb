@@ -693,7 +693,7 @@
   fun:DispatchToMethod
 }
 {
-  bug_107181
+  bug_107181a
   ThreadSanitizer:Race
   fun:media::AudioRendererAlgorithmBase::set_playback_rate
   fun:media::AudioRendererAlgorithmOLA::set_playback_rate
@@ -703,4 +703,12 @@
   fun:media::PipelineImpl::PlaybackRateChangedTask
   ...
   fun:base::internal::RunnableAdapter::Run
+}
+{
+  bug_107181b
+  fun:media::AudioRendererAlgorithmBase::playback_rate
+  fun:media::AudioRendererBase::GetPlaybackRate
+  fun:AudioRendererImpl::Render
+  fun:AudioDevice::FireRenderCallback
+  fun:AudioDevice::Run
 }
