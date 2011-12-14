@@ -488,7 +488,8 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
   std::vector<std::pair<std::string, std::string> > sorted_ids;
   for (std::set<std::string>::iterator i = ids.begin(); i != ids.end(); ++i) {
     const Extension* extension = service->GetExtensionById(*i, false);
-    if (extension)
+    // Platform apps have their context menus created directly in InitMenu.
+    if (extension && !extension->is_platform_app())
       sorted_ids.push_back(
           std::pair<std::string, std::string>(extension->name(), *i));
   }
