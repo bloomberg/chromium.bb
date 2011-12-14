@@ -1317,8 +1317,7 @@ void LoginUtils::DoBrowserLaunch(Profile* profile,
   if (browser_shutdown::IsTryingToQuit())
     return;
 
-  chromeos::StatusAreaViewChromeos::
-      SetScreenMode(StatusAreaViewChromeos::BROWSER_MODE);
+  StatusAreaViewChromeos::SetScreenMode(StatusAreaViewChromeos::BROWSER_MODE);
   BootTimesLoader::Get()->AddLoginTimeMarker("BrowserLaunched", false);
 
   VLOG(1) << "Launching browser...";
@@ -1338,6 +1337,8 @@ void LoginUtils::DoBrowserLaunch(Profile* profile,
   // browser before it is dereferenced by the login host.
   if (login_host) {
     login_host->OnSessionStart();
+    login_host->SetStatusAreaVisible(true);
+    login_host->SetStatusAreaEnabled(true);
     login_host = NULL;
   }
 }
