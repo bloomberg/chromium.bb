@@ -95,6 +95,7 @@
         'conditions': [
             ['OS=="mac"', {
               'sources': [
+                'osx/crash_filter.c',
                 'osx/nacl_ldt.c',
                 'osx/nacl_oop_debugger_hooks.c',
                 'osx/nacl_thread_nice.c',
