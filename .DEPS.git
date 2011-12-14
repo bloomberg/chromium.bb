@@ -88,8 +88,8 @@ deps = {
         Var('git_url') + '/external/google-safe-browsing/testing.git@1c915e54f77f3a8288bd6af5c507d2dbdc6b4035',
     'src/third_party/scons-2.0.1':
         Var('git_url') + '/native_client/src/third_party/scons-2.0.1.git@c81c95aff36392cffede13382dd5fcad25c0a603',
-    'src/third_party/sfntly/src/sfntly':
-        Var('git_url') + '/external/sfntly/cpp/src/sfntly.git@0e9f789cbc196ac2513446aea67875d4d99728d0',
+    'src/third_party/sfntly/cpp/src':
+        Var('git_url') + '/external/sfntly/cpp/src.git@ca72e2646f852b6c39ef1b07fa9b250988ce9d54',
     'src/third_party/skia/include':
         Var('git_url') + '/external/skia/include.git@3af8bcfea7b45cf10f8bb80da0af1e8c6e2561bf',
     'src/third_party/skia/src':
