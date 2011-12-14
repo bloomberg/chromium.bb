@@ -4809,7 +4809,7 @@ var keyboardOverlayData = {
         },
         "E0 1D": {
           "format": "smaller",
-          "label": "crtl"
+          "label": "ctrl"
         },
         "E0 38": {
           "format": "smaller",
@@ -15789,7 +15789,6 @@ var keyboardOverlayData = {
     "9<>CTRL": "keyboardOverlayActivateLastTab",
     "ALT": "keyboardOverlayFocusWrenchMenu",
     "ALT<>SHIFT": "keyboardOverlayCycleThroughInputMethods",
-    "SHIFT<>SHIFT": "keyboardOverlayToggleCapsLock",
     "a<>CTRL": "keyboardOverlaySelectAll",
     "arrowkeys<>CTRL": "keyboardOverlayWordMove",
     "b<>ALT<>SHIFT": "keyboardOverlayFocusBookmarks",
@@ -15844,6 +15843,7 @@ var keyboardOverlayData = {
     "right<>CTRL<>SHIFT": "keyboardOverlaySelectWordAtATime",
     "s<>ALT<>SHIFT": "keyboardOverlayFocusStatusIcon",
     "s<>CTRL": "keyboardOverlaySave",
+    "search<>SHIFT": "keyboardOverlayToggleCapsLock",
     "space<>CTRL": "keyboardOverlaySelectPreviousInputMethod",
     "space<>SHIFT": "keyboardOverlayScrollUpOnePage",
     "t<>ALT<>SHIFT": "keyboardOverlayFocusToolbar",
