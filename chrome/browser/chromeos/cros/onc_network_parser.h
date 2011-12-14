@@ -110,6 +110,19 @@ class OncNetworkParser : public NetworkParser {
                                ConnectionType expected,
                                const std::string& onc_type);
 
+
+  // This lists the certificates that have the string |label| as their
+  // certificate nickname (exact match).
+  static void ListCertsWithNickname(const std::string& label,
+                                    net::CertificateList* result);
+  // This deletes any certificate that has the string |label| as its
+  // nickname (exact match).
+  static bool DeleteCertAndKeyByNickname(const std::string& label);
+
+  // Find the PKCS#11 ID of the certificate with the given GUID.  Returns
+  // an empty string on failure.
+  static std::string GetPkcs11IdFromCertGuid(const std::string& guid);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestAddClientCertificate);
   FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestAddServerCertificate);
@@ -123,14 +136,6 @@ class OncNetworkParser : public NetworkParser {
     int cert_index,
     const std::string& guid,
     base::DictionaryValue* certificate);
-
-  // This lists the certificates that have the string |label| as their
-  // certificate nickname (exact match).
-  static void ListCertsWithNickname(const std::string& label,
-                                    net::CertificateList* result);
-  // This deletes any certificate that has the string |label| as its
-  // nickname (exact match).
-  static bool DeleteCertAndKeyByNickname(const std::string& label);
 
   // Error message from the JSON parser, if applicable.
   std::string parse_error_;

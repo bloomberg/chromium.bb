@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/common/net/x509_certificate_model.h"
 #include "net/base/cert_database.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
@@ -693,6 +694,17 @@ void OncNetworkParser::ListCertsWithNickname(const std::string& label,
   }
 }
 
+// static
+std::string OncNetworkParser::GetPkcs11IdFromCertGuid(const std::string& guid) {
+  // We have to look up the GUID to find the PKCS#11 ID that is needed.
+  net::CertificateList cert_list;
+  ListCertsWithNickname(guid, &cert_list);
+  DCHECK_EQ(1ul, cert_list.size());
+  if (cert_list.size() == 1)
+    return x509_certificate_model::GetPkcs11Id(cert_list[0]->os_cert_handle());
+  return std::string();
+}
+
 // -------------------- OncWirelessNetworkParser --------------------
 
 OncWirelessNetworkParser::OncWirelessNetworkParser() {}
@@ -800,8 +812,14 @@ bool OncWifiNetworkParser::ParseEAPValue(OncNetworkParser*,
     case PROPERTY_INDEX_EAP_PASSWORD:
       wifi_network->set_eap_passphrase(GetStringValue(value));
       return true;
+    case PROPERTY_INDEX_ONC_CLIENT_CERT_REF: {
+      std::string cert_id = GetPkcs11IdFromCertGuid(GetStringValue(value));
+      if (cert_id.empty())
+        return false;
+      wifi_network->set_eap_client_cert_pkcs11_id(cert_id);
+      return true;
+    }
     case PROPERTY_INDEX_ONC_CLIENT_CERT_PATTERN:
-    case PROPERTY_INDEX_ONC_CLIENT_CERT_REF:
     case PROPERTY_INDEX_ONC_CLIENT_CERT_TYPE:
       // TODO(crosbug.com/19409): Support certificate patterns.
       // Ignore for now.
@@ -979,8 +997,14 @@ bool OncVirtualNetworkParser::ParseIPsecValue(OncNetworkParser* parser,
       // with the current connection manager.
       virtual_network->set_save_credentials(GetBooleanValue(value));
       return true;
+    case PROPERTY_INDEX_ONC_CLIENT_CERT_REF: {
+      std::string cert_id = GetPkcs11IdFromCertGuid(GetStringValue(value));
+      if (cert_id.empty())
+        return false;
+      virtual_network->set_client_cert_id(cert_id);
+      return true;
+    }
     case PROPERTY_INDEX_ONC_CLIENT_CERT_PATTERN:
-    case PROPERTY_INDEX_ONC_CLIENT_CERT_REF:
     case PROPERTY_INDEX_ONC_CLIENT_CERT_TYPE:
       // TODO(crosbug.com/19409): Support certificate patterns.
       // Ignore for now.
@@ -1129,8 +1153,14 @@ bool OncVirtualNetworkParser::ParseOpenVPNValue(OncNetworkParser*,
       }
       return true;
     }
+    case PROPERTY_INDEX_ONC_CLIENT_CERT_REF: {
+      std::string cert_id = GetPkcs11IdFromCertGuid(GetStringValue(value));
+      if (cert_id.empty())
+        return false;
+      virtual_network->set_client_cert_id(cert_id);
+      return true;
+    }
     case PROPERTY_INDEX_ONC_CLIENT_CERT_PATTERN:
-    case PROPERTY_INDEX_ONC_CLIENT_CERT_REF:
     case PROPERTY_INDEX_ONC_CLIENT_CERT_TYPE:
       // TODO(crosbug.com/19409): Support certificate patterns.
       // Ignore for now.

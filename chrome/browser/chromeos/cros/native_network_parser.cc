@@ -1132,12 +1132,18 @@ bool NativeWifiNetworkParser::ParseValue(PropertyIndex index,
       wifi_network->set_eap_passphrase(eap_passphrase);
       return true;
     }
+    case PROPERTY_INDEX_EAP_CA_CERT: {
+      std::string eap_cert_nickname;
+      if (!value.GetAsString(&eap_cert_nickname))
+        break;
+      wifi_network->set_eap_server_ca_cert_nss_nickname(eap_cert_nickname);
+      return true;
+    }
     case PROPERTY_INDEX_EAP_CLIENT_CERT:
     case PROPERTY_INDEX_EAP_CLIENT_CERT_NSS:
     case PROPERTY_INDEX_EAP_PRIVATE_KEY:
     case PROPERTY_INDEX_EAP_PRIVATE_KEY_PASSWORD:
     case PROPERTY_INDEX_EAP_KEY_ID:
-    case PROPERTY_INDEX_EAP_CA_CERT:
     case PROPERTY_INDEX_EAP_CA_CERT_ID:
     case PROPERTY_INDEX_EAP_PIN:
     case PROPERTY_INDEX_EAP_KEY_MGMT:
