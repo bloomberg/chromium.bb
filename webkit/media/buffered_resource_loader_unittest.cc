@@ -82,10 +82,10 @@ class BufferedResourceLoaderTest : public testing::Test {
     last_position_ = last_position;
 
     url_loader_ = new NiceMock<MockWebURLLoader>();
-    loader_ = new BufferedResourceLoader(
+    loader_.reset(new BufferedResourceLoader(
         gurl_, first_position_, last_position_,
         BufferedResourceLoader::kThresholdDefer, 0, 0,
-        new media::MediaLog());
+        new media::MediaLog()));
     loader_->SetURLLoaderForTest(url_loader_);
   }
 
@@ -191,7 +191,7 @@ class BufferedResourceLoaderTest : public testing::Test {
     InSequence s;
     EXPECT_CALL(*url_loader_, cancel());
     loader_->Stop();
-    loader_ = NULL;
+    loader_.reset();
   }
 
   // Helper method to write to |loader_| from |data_|.
@@ -291,7 +291,7 @@ class BufferedResourceLoaderTest : public testing::Test {
   int64 first_position_;
   int64 last_position_;
 
-  scoped_refptr<BufferedResourceLoader> loader_;
+  scoped_ptr<BufferedResourceLoader> loader_;
   NiceMock<MockWebURLLoader>* url_loader_;
 
   MockWebFrameClient client_;

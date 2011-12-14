@@ -6,7 +6,6 @@
 #define WEBKIT_MEDIA_ACTIVE_LOADER_H_
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace WebKit {
@@ -15,20 +14,16 @@ class WebURLLoader;
 
 namespace webkit_media {
 
-class BufferedResourceLoader;
-
-// Wraps an active WebURLLoader with some additional state and maintains a
-// reference to its parent.
+// Wraps an active WebURLLoader with some additional state.
 //
 // Handles deferring and deletion of loaders.
 class ActiveLoader {
  public:
-  // Creates an ActiveLoader with a reference to its parent. The initial state
-  // assumes that the loader has started loading and has not been deferred.
+  // Creates an ActiveLoader with the given loader. It is assumed that the
+  // initial state of |loader| is loading and not deferred.
   //
   // ActiveLoader takes ownership of |loader|.
-  ActiveLoader(const scoped_refptr<BufferedResourceLoader>& parent,
-               WebKit::WebURLLoader* loader);
+  explicit ActiveLoader(WebKit::WebURLLoader* loader);
   ~ActiveLoader();
 
   // Starts or stops deferring the resource load.
@@ -41,7 +36,6 @@ class ActiveLoader {
  private:
   friend class BufferedDataSourceTest;
 
-  scoped_refptr<BufferedResourceLoader> parent_;
   scoped_ptr<WebKit::WebURLLoader> loader_;
   bool deferred_;
 

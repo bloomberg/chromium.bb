@@ -37,9 +37,7 @@ const char kDataScheme[] = "data";
 // WebURLLoader and does the actual resource loading. This object does
 // buffering internally, it defers the resource loading if buffer is full
 // and un-defers the resource loading if it is under buffered.
-class BufferedResourceLoader
-    : public base::RefCountedThreadSafe<BufferedResourceLoader>,
-      public WebKit::WebURLLoaderClient {
+class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
  public:
   // kNeverDefer - Aggresively buffer; never defer loading while paused.
   // kReadThenDefer - Request only enough data to fulfill read requests.
@@ -65,6 +63,7 @@ class BufferedResourceLoader
                          int bitrate,
                          float playback_rate,
                          media::MediaLog* media_log);
+  virtual ~BufferedResourceLoader();
 
   // Start the resource loading with the specified URL and range.
   // This method operates in asynchronous mode. Once there's a response from the
@@ -174,10 +173,6 @@ class BufferedResourceLoader
   // Sets the bitrate to the given value and updates buffer window
   // accordingly.
   void SetBitrate(int bitrate);
-
- protected:
-  friend class base::RefCountedThreadSafe<BufferedResourceLoader>;
-  virtual ~BufferedResourceLoader();
 
  private:
   friend class BufferedDataSourceTest;

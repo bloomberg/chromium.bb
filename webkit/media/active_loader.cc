@@ -9,17 +9,13 @@
 
 namespace webkit_media {
 
-ActiveLoader::ActiveLoader(
-    const scoped_refptr<BufferedResourceLoader>& parent,
-    WebKit::WebURLLoader* loader)
-    : parent_(parent),
-      loader_(loader),
+ActiveLoader::ActiveLoader(WebKit::WebURLLoader* loader)
+    : loader_(loader),
       deferred_(false) {
 }
 
 ActiveLoader::~ActiveLoader() {
-  if (parent_)
-    Cancel();
+  Cancel();
 }
 
 void ActiveLoader::SetDeferred(bool deferred) {
@@ -28,10 +24,7 @@ void ActiveLoader::SetDeferred(bool deferred) {
 }
 
 void ActiveLoader::Cancel() {
-  // We only need to maintain a reference to our parent while the loader is
-  // still active. Failing to do so can result in circular refcounts.
   loader_->cancel();
-  parent_ = NULL;
 }
 
 }  // namespace webkit_media

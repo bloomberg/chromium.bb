@@ -222,7 +222,7 @@ void BufferedDataSource::InitializeTask() {
   if (url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme)) {
     // Do an unbounded range request starting at the beginning.  If the server
     // responds with 200 instead of 206 we'll fall back into a streaming mode.
-    loader_ = CreateResourceLoader(0, kPositionNotSpecified);
+    loader_.reset(CreateResourceLoader(0, kPositionNotSpecified));
     loader_->Start(
         base::Bind(&BufferedDataSource::HttpInitialStartCallback, this),
         base::Bind(&BufferedDataSource::NetworkEventCallback, this),
@@ -231,8 +231,8 @@ void BufferedDataSource::InitializeTask() {
     // For all other protocols, assume they support range request. We fetch
     // the full range of the resource to obtain the instance size because
     // we won't be served HTTP headers.
-    loader_ = CreateResourceLoader(kPositionNotSpecified,
-                                   kPositionNotSpecified);
+    loader_.reset(CreateResourceLoader(kPositionNotSpecified,
+                                       kPositionNotSpecified));
     loader_->Start(
         base::Bind(&BufferedDataSource::NonHttpInitialStartCallback, this),
         base::Bind(&BufferedDataSource::NetworkEventCallback, this),
@@ -303,7 +303,7 @@ void BufferedDataSource::RestartLoadingTask() {
       return;
   }
 
-  loader_ = CreateResourceLoader(read_position_, kPositionNotSpecified);
+  loader_.reset(CreateResourceLoader(read_position_, kPositionNotSpecified));
   loader_->Start(
       base::Bind(&BufferedDataSource::PartialReadStartCallback, this),
       base::Bind(&BufferedDataSource::NetworkEventCallback, this),
@@ -363,7 +363,7 @@ BufferedDataSource::ChooseDeferStrategy() {
 // prior to make this method call.
 void BufferedDataSource::ReadInternal() {
   DCHECK(MessageLoop::current() == render_loop_);
-  DCHECK(loader_);
+  DCHECK(loader_.get());
 
   // First we prepare the intermediate read buffer for BufferedResourceLoader
   // to write to.
@@ -441,8 +441,8 @@ void BufferedDataSource::HttpInitialStartCallback(int error) {
     // Assuming that the Range header was causing the problem. Retry without
     // the Range header.
     using_range_request_ = false;
-    loader_ = CreateResourceLoader(kPositionNotSpecified,
-                                   kPositionNotSpecified);
+    loader_.reset(CreateResourceLoader(kPositionNotSpecified,
+                                       kPositionNotSpecified));
     loader_->Start(
         base::Bind(&BufferedDataSource::HttpInitialStartCallback, this),
         base::Bind(&BufferedDataSource::NetworkEventCallback, this),

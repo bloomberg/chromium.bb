@@ -155,7 +155,7 @@ class BufferedDataSource : public WebDataSource {
   WebKit::WebFrame* frame_;
 
   // A resource loader for the media resource.
-  scoped_refptr<BufferedResourceLoader> loader_;
+  scoped_ptr<BufferedResourceLoader> loader_;
 
   // True if |loader| is downloading data.
   bool is_downloading_data_;

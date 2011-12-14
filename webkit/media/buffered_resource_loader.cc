@@ -182,7 +182,7 @@ void BufferedResourceLoader::Start(
 
   // Start the resource loading.
   loader->loadAsynchronously(request, this);
-  active_loader_.reset(new ActiveLoader(this, loader));
+  active_loader_.reset(new ActiveLoader(loader));
 }
 
 void BufferedResourceLoader::Stop() {
