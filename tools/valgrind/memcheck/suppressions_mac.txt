@@ -1963,6 +1963,18 @@
    fun:CGCMSInterfaceTransformConvertColorComponents
 }
 {
+   bug_105341_c
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:allocWorld
+   fun:create
+   fun:aquireColorWorldByAttributes
+   fun:acquireColorWorld
+   fun:CMSTransformConvertRequired
+   fun:CGCMSInterfaceTransformConvertRequired
+}
+{
    bug_105342
    Memcheck:Leak
    fun:_Znw*
