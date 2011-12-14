@@ -163,19 +163,20 @@ bool ContentSettingsObserver::AllowFileSystem(WebFrame* frame) {
 bool ContentSettingsObserver::AllowImage(WebFrame* frame,
                                          bool enabled_per_settings,
                                          const WebURL& image_url) {
-  if (is_interstitial_page_)
-    return true;
-  if (IsWhitelistedForContentSettings(frame))
-    return true;
-
   bool allow = enabled_per_settings;
-  if (content_setting_rules_ && enabled_per_settings) {
-    GURL secondary_url(image_url);
-    allow = GetContentSettingFromRules(
-        content_setting_rules_->image_rules,
-        frame, secondary_url) != CONTENT_SETTING_BLOCK;
-  }
+  if (enabled_per_settings) {
+    if (is_interstitial_page_)
+      return true;
+    if (IsWhitelistedForContentSettings(frame))
+      return true;
 
+    if (content_setting_rules_) {
+      GURL secondary_url(image_url);
+      allow = GetContentSettingFromRules(
+          content_setting_rules_->image_rules,
+          frame, secondary_url) != CONTENT_SETTING_BLOCK;
+    }
+  }
   if (!allow)
     DidBlockContentType(CONTENT_SETTINGS_TYPE_IMAGES, std::string());
   return allow;
@@ -203,10 +204,10 @@ bool ContentSettingsObserver::AllowPlugins(WebFrame* frame,
 
 bool ContentSettingsObserver::AllowScript(WebFrame* frame,
                                           bool enabled_per_settings) {
-  if (is_interstitial_page_)
-    return true;
   if (!enabled_per_settings)
     return false;
+  if (is_interstitial_page_)
+    return true;
 
   std::map<WebFrame*, bool>::const_iterator it =
       cached_script_permissions_.find(frame);
@@ -234,10 +235,10 @@ bool ContentSettingsObserver::AllowScriptFromSource(
     WebFrame* frame,
     bool enabled_per_settings,
     const WebKit::WebURL& script_url) {
-  if (is_interstitial_page_)
-    return true;
   if (!enabled_per_settings)
     return false;
+  if (is_interstitial_page_)
+    return true;
 
   bool allow = true;
   if (content_setting_rules_) {
