@@ -44,6 +44,10 @@ chrome.test.runTests([
     event.removeListener(cb2);
     chrome.test.assertFalse(event.hasListener(cb1));
     chrome.test.assertFalse(event.hasListener(cb2));
+    event.addListener(cb1, {urls: ["http://foo/*"]});
+    event.addListener(cb1, {urls: ["http://bar/*"]});
+    event.removeListener(cb1);
+    chrome.test.assertFalse(event.hasListener(cb1));
     chrome.test.succeed();
   },
 

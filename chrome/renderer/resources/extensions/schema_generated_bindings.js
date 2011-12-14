@@ -269,18 +269,16 @@ var chrome = chrome || {};
 
   // Unregisters a callback.
   chrome.WebRequestEvent.prototype.removeListener = function(cb) {
-    var idx = this.findListener_(cb);
-    if (idx < 0) {
-      return;
+    var idx;
+    while ((idx = this.findListener_(cb)) >= 0) {
+      var e = this.subEvents_[idx];
+      e.subEvent.removeListener(e.subEventCallback);
+      if (e.subEvent.hasListeners()) {
+        console.error(
+            "Internal error: webRequest subEvent has orphaned listeners.");
+      }
+      this.subEvents_.splice(idx, 1);
     }
-
-    var e = this.subEvents_[idx];
-    e.subEvent.removeListener(e.subEventCallback);
-    if (e.subEvent.hasListeners()) {
-      console.error(
-          "Internal error: webRequest subEvent has orphaned listeners.");
-    }
-    this.subEvents_.splice(idx, 1);
   };
 
   chrome.WebRequestEvent.prototype.findListener_ = function(cb) {
