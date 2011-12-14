@@ -46,7 +46,9 @@ const char* DefaultMessageForErrorCode(ErrorCode code) {
 
 }  // namespace
 
-Error::Error(ErrorCode code): code_(code) {
+Error::Error(ErrorCode code)
+    : code_(code),
+      details_(DefaultMessageForErrorCode(code)) {
 }
 
 Error::Error(ErrorCode code, const std::string& details)
@@ -57,32 +59,7 @@ Error::~Error() {
 }
 
 void Error::AddDetails(const std::string& details) {
-  if (details_.empty())
-    details_ = details;
-  else
-    details_ = details + ";\n " + details_;
-}
-
-std::string Error::GetErrorMessage() const {
-  std::string msg;
-  if (details_.length())
-    msg = details_;
-  else
-    msg = DefaultMessageForErrorCode(code_);
-
-  // Only include a stacktrace on Linux. Windows and Mac have all symbols
-  // stripped in release builds.
-#if defined(OS_LINUX)
-  size_t count = 0;
-  trace_.Addresses(&count);
-  if (count > 0) {
-    std::ostringstream ostream;
-    trace_.OutputToStream(&ostream);
-    msg += "\n";
-    msg += ostream.str();
-  }
-#endif
-  return msg;
+  details_ = details + ";\n " + details_;
 }
 
 ErrorCode Error::code() const {
@@ -91,10 +68,6 @@ ErrorCode Error::code() const {
 
 const std::string& Error::details() const {
   return details_;
-}
-
-const base::debug::StackTrace& Error::trace() const {
-  return trace_;
 }
 
 }  // namespace webdriver

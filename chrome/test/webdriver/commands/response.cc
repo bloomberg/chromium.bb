@@ -15,16 +15,9 @@ namespace {
 
 // Error message taken from:
 // http://code.google.com/p/selenium/wiki/JsonWireProtocol#Response_Status_Codes
-const char* const kStatusKey = "status";
-const char* const kValueKey = "value";
-const char* const kMessageKey = "message";
-const char* const kScreenKey = "screen";
-const char* const kClassKey = "class";
-const char* const kStackTraceKey = "stackTrace";
-const char* const kStackTraceFileNameKey = "fileName";
-const char* const kStackTraceClassNameKey = "className";
-const char* const kStackTraceMethodNameKey = "methodName";
-const char* const kStackTraceLineNumberKey = "lineNumber";
+const char kStatusKey[] = "status";
+const char kValueKey[] = "value";
+const char kMessageKey[] = "message";
 
 }  // namespace
 
@@ -59,7 +52,7 @@ void Response::SetValue(Value* value) {
 
 void Response::SetError(Error* error) {
   DictionaryValue* error_dict = new DictionaryValue();
-  error_dict->SetString(kMessageKey, error->GetErrorMessage());
+  error_dict->SetString(kMessageKey, error->details());
 
   SetStatus(error->code());
   SetValue(error_dict);

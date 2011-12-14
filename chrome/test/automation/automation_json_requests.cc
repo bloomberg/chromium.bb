@@ -38,11 +38,9 @@ bool SendAutomationJSONRequest(AutomationMessageSender* sender,
   if (!SendAutomationJSONRequestWithDefaultTimeout(
           sender, request, &reply, &success)) {
     *error_msg = base::StringPrintf(
-        "Chrome did not respond to '%s'. Elapsed time was %" PRId64 " ms. "
-            "Request details: (%s).",
+        "Chrome did not respond to '%s'. Elapsed time was %" PRId64 " ms.",
         command.c_str(),
-        (base::Time::Now() - before_sending).InMilliseconds(),
-        request.c_str());
+        (base::Time::Now() - before_sending).InMilliseconds());
     return false;
   }
   scoped_ptr<Value> value(base::JSONReader::Read(reply, true));
@@ -55,10 +53,9 @@ bool SendAutomationJSONRequest(AutomationMessageSender* sender,
     std::string error;
     dict->GetString("error", &error);
     *error_msg = base::StringPrintf(
-        "Internal Chrome error during '%s': (%s). Request details: (%s).",
+        "Internal Chrome error during '%s': (%s).",
         command.c_str(),
-        error.c_str(),
-        request.c_str());
+        error.c_str());
     LOG(ERROR) << "JSON request failed: " << command << "\n"
                << "    with error: " << error;
     return false;

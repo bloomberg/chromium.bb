@@ -57,7 +57,7 @@ void WebDriverCommand::Finish() {
   scoped_ptr<Error> error(session_->AfterExecuteCommand());
   if (error.get()) {
     LOG(WARNING) << "Command did not finish successfully: "
-                 << error->GetErrorMessage();
+                 << error->details();
   }
 }
 

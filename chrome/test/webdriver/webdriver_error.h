@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/debug/stack_trace.h"
 
 namespace webdriver {
 
@@ -49,16 +48,12 @@ class Error {
 
   void AddDetails(const std::string& details);
 
-  std::string GetErrorMessage() const;
-
   ErrorCode code() const;
   const std::string& details() const;
-  const base::debug::StackTrace& trace() const;
 
  private:
   ErrorCode code_;
   std::string details_;
-  base::debug::StackTrace trace_;
 
   DISALLOW_COPY_AND_ASSIGN(Error);
 };
