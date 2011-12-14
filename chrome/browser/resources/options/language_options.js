@@ -93,8 +93,11 @@ cr.define('options', function() {
           $('auto-spell-correction-option').hidden = false;
 
         // Handle spell check enable/disable.
-        Preferences.getInstance().addEventListener(this.enableSpellCheckPref,
-            this.updateEnableSpellCheck_.bind(this));
+        if (!cr.isMac) {
+          Preferences.getInstance().addEventListener(
+              this.enableSpellCheckPref,
+              this.updateEnableSpellCheck_.bind(this));
+        }
       }
 
       // Listen to user clicks on the "Change touch keyboard settings..."
@@ -219,7 +222,8 @@ cr.define('options', function() {
       this.updateSelectedLanguageName_(languageCode);
       if (cr.isWindows || cr.isChromeOS)
         this.updateUiLanguageButton_(languageCode);
-      this.updateSpellCheckLanguageButton_(languageCode);
+      if (!cr.isMac)
+        this.updateSpellCheckLanguageButton_(languageCode);
       if (cr.isChromeOS)
         this.updateInputMethodList_(languageCode);
       this.updateLanguageListInAddLanguageOverlay_();

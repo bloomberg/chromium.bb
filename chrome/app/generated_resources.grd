@@ -7807,18 +7807,20 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
                desc="Warning invoked when the user tries to remove the language used for displaying Chrome OS">
         This language is currently in use for displaying <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph>.
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_USE_THIS_FOR_SPELL_CHECKING"
-               desc="The label for a language a button that changes the spell check language of Chrome OS">
-        Use this language for spell checking
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_CANNOT_BE_USED_FOR_SPELL_CHECKING"
-               desc="The label for a language that cannot be used for spell checking">
-        This language cannot be used for spell checking
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_IS_USED_FOR_SPELL_CHECKING"
-               desc="The label for a language that is currently used for spell checking">
-        This language is used for spell checking
-      </message>
+      <if expr="not is_macosx">
+        <message name="IDS_OPTIONS_SETTINGS_USE_THIS_FOR_SPELL_CHECKING"
+                 desc="The label for a language a button that changes the spell check language of Chrome">
+          Use this language for spell checking
+        </message>
+        <message name="IDS_OPTIONS_SETTINGS_CANNOT_BE_USED_FOR_SPELL_CHECKING"
+                 desc="The label for a language that cannot be used for spell checking">
+          This language cannot be used for spell checking
+        </message>
+        <message name="IDS_OPTIONS_SETTINGS_IS_USED_FOR_SPELL_CHECKING"
+                 desc="The label for a language that is currently used for spell checking">
+          This language is used for spell checking
+        </message>
+      </if>
       <if expr="not pp_ifdef('chromeos')">
         <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_RELAUNCH_BUTTON"
                  desc="The label for the relaunch button for changing UI language">
@@ -9645,23 +9647,30 @@ The following application will be launched if you accept this request:
       <message name="IDS_OPTIONS_FONT_SIZE_LABEL_CUSTOM" desc="The label of the 'Custom' option">
         Custom
       </message>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not pp_ifdef('use_titlecase') and not is_macosx">
         <message name="IDS_OPTIONS_LANGUAGE_AND_SPELLCHECK_BUTTON" desc="Button title for invoking the 'Languages and Spell-checker' panel.">
           Languages and spell-checker settings...
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="pp_ifdef('use_titlecase') and not is_macosx">
         <message name="IDS_OPTIONS_LANGUAGE_AND_SPELLCHECK_BUTTON" desc="Button title for invoking the 'Languages and Spell-checker' panel.">
           Languages and Spell-checker Settings...
         </message>
       </if>
+      <if expr="is_macosx">
+        <message name="IDS_OPTIONS_LANGUAGE_AND_SPELLCHECK_BUTTON" desc="Button title for invoking the 'Languages' panel.">
+          Language Settings...
+        </message>
+      </if>
 
-      <message name="IDS_OPTIONS_ENABLE_SPELLCHECK" desc="The documentation string of the 'Enable spellcheck' option">
-        Enable spell checking
-      </message>
-      <message name="IDS_OPTIONS_ENABLE_AUTO_SPELL_CORRECTION" desc="The documentation string of the 'Enable auto spell correction' option">
-        Enable automatic spell correction
-      </message>
+      <if expr="not is_macosx">
+        <message name="IDS_OPTIONS_ENABLE_SPELLCHECK" desc="The documentation string of the 'Enable spellcheck' option">
+          Enable spell checking
+        </message>
+        <message name="IDS_OPTIONS_ENABLE_AUTO_SPELL_CORRECTION" desc="The documentation string of the 'Enable auto spell correction' option">
+          Enable automatic spell correction
+        </message>
+      </if>
 
       <!-- General app failure messages -->
       <message name="IDS_COULDNT_OPEN_PROFILE_ERROR" desc="Error displayed on startup when the profile can not be opened correctly due to problems reading or writing files in it">
