@@ -27,8 +27,11 @@ class OwnershipStatusChecker {
   // user is the owner.
   typedef base::Callback<void(OwnershipService::Status, bool)> Callback;
 
-  explicit OwnershipStatusChecker(const Callback& callback);
+  OwnershipStatusChecker();
   ~OwnershipStatusChecker();
+
+  // Starts the ownership check.
+  void Check(const Callback& callback);
 
  private:
   // The refcounted core that handles the thread switching.

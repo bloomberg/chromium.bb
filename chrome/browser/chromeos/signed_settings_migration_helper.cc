@@ -28,9 +28,10 @@ void SignedSettingsMigrationHelper::AddMigrationValue(const std::string& path,
 }
 
 void SignedSettingsMigrationHelper::MigrateValues(void) {
-  ownership_checker_.reset(new OwnershipStatusChecker(
+  ownership_checker_.reset(new OwnershipStatusChecker());
+  ownership_checker_->Check(
       base::Bind(&SignedSettingsMigrationHelper::DoMigrateValues,
-                 base::Unretained(this))));
+                 base::Unretained(this)));
 }
 
 // NotificationObserver overrides:

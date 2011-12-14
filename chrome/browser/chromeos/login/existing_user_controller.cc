@@ -280,10 +280,10 @@ void ExistingUserController::OnUserSelected(const std::string& username) {
 void ExistingUserController::OnStartEnterpriseEnrollment() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableDevicePolicy)) {
-    ownership_checker_.reset(new OwnershipStatusChecker(
-        base::Bind(
-            &ExistingUserController::OnEnrollmentOwnershipCheckCompleted,
-            base::Unretained(this))));
+    ownership_checker_.reset(new OwnershipStatusChecker());
+    ownership_checker_->Check(base::Bind(
+        &ExistingUserController::OnEnrollmentOwnershipCheckCompleted,
+        base::Unretained(this)));
   }
 }
 

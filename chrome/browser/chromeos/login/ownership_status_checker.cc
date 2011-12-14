@@ -11,13 +11,20 @@ using content::BrowserThread;
 
 namespace chromeos {
 
-OwnershipStatusChecker::OwnershipStatusChecker(const Callback& callback)
-    : core_(new Core(callback)) {
-  core_->Check();
+OwnershipStatusChecker::OwnershipStatusChecker() {
 }
 
 OwnershipStatusChecker::~OwnershipStatusChecker() {
-  core_->Cancel();
+  if (core_.get())
+    core_->Cancel();
+}
+
+void OwnershipStatusChecker::Check(const Callback& callback) {
+  // If already called once cancel the old callback.
+  if (core_.get())
+    core_->Cancel();
+  core_ = new Core(callback);
+  core_->Check();
 }
 
 OwnershipStatusChecker::Core::Core(const Callback& callback)
@@ -29,23 +36,11 @@ OwnershipStatusChecker::Core::~Core() {}
 
 void OwnershipStatusChecker::Core::Check() {
   DCHECK(origin_loop_->BelongsToCurrentThread());
-  OwnershipService::Status status =
-      OwnershipService::GetSharedInstance()->GetStatus(false);
-  // We can only report the OWNERSHIP_NONE status without executing code on the
-  // file thread because checking whether the current user is owner needs file
-  // access.
-  if (status == OwnershipService::OWNERSHIP_NONE) {
-    // Take a spin on the message loop in order to avoid reentrancy in callers.
-    origin_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&OwnershipStatusChecker::Core::ReportResult, this, status,
-                   false));
-  } else {
-    // Switch to the file thread to make the blocking call.
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&OwnershipStatusChecker::Core::CheckOnFileThread, this));
-  }
+  // We can only report the status after executing code on the file thread
+  // because checking whether the current user is owner needs file access.
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&OwnershipStatusChecker::Core::CheckOnFileThread, this));
 }
 
 void OwnershipStatusChecker::Core::Cancel() {
@@ -56,7 +51,8 @@ void OwnershipStatusChecker::Core::Cancel() {
 void OwnershipStatusChecker::Core::CheckOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   OwnershipService::Status status =
-      OwnershipService::GetSharedInstance()->GetStatus(true);
+      OwnershipService::GetSharedInstance()->IsAlreadyOwned() ?
+          OwnershipService::OWNERSHIP_TAKEN : OwnershipService::OWNERSHIP_NONE;
   bool current_user_is_owner =
       OwnershipService::GetSharedInstance()->CurrentUserIsOwner();
   origin_loop_->PostTask(
