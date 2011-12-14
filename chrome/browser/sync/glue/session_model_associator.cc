@@ -175,7 +175,10 @@ bool SessionModelAssociator::AssociateWindows(bool reload_tabs) {
       DVLOG(1) << "Associating window " << window_id << " with "
                << (*i)->GetTabCount() << " tabs.";
       window_s.set_window_id(window_id);
-      window_s.set_selected_tab_index((*i)->GetActiveIndex());
+      // Note: We don't bother to set selected tab index anymore. We still
+      // consume it when receiving foreign sessions, as reading it is free, but
+      // it triggers too many sync cycles with too little value to make setting
+      // it worthwhile.
       if ((*i)->IsTypeTabbed()) {
         window_s.set_browser_type(
             sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
