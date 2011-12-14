@@ -39,16 +39,6 @@
   width: 300px;
 }
 
-/* On OS X we use the native OS spellchecker, so don't display the dictionary */
-/* pane. */
-html[os=mac] .language-options-left {
- background-color: white;
-}
-
-html[os=mac] .language-options-right {
- visibility: hidden;
-}
-
 .language-options-lower-left {
   -webkit-box-flex: 0;
   -webkit-padding-start: 12px;
