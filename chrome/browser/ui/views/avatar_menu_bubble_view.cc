@@ -351,14 +351,15 @@ AvatarMenuBubbleView::AvatarMenuBubbleView(
   avatar_menu_model_.reset(new AvatarMenuModel(
       &g_browser_process->profile_manager()->GetProfileInfoCache(),
       this, browser_));
-  // Build the menu for the first time.
-  OnAvatarMenuModelChanged(avatar_menu_model_.get());
 }
 
 AvatarMenuBubbleView::~AvatarMenuBubbleView() {
 }
 
 gfx::Size AvatarMenuBubbleView::GetPreferredSize() {
+  if (!add_profile_link_)
+    return gfx::Size();
+
   int max_width = 0;
   int total_height = 0;
   for (size_t i = 0; i < item_views_.size(); ++i) {
@@ -431,6 +432,16 @@ bool AvatarMenuBubbleView::AcceleratorPressed(
   return true;
 }
 
+void AvatarMenuBubbleView::ViewHierarchyChanged(bool is_add,
+                                                views::View* parent,
+                                                views::View* child) {
+  // Build the menu for the first time.
+  if (!add_profile_link_ && is_add && child == this)
+    OnAvatarMenuModelChanged(avatar_menu_model_.get());
+
+  views::BubbleDelegateView::ViewHierarchyChanged(is_add, parent, child);
+}
+
 void AvatarMenuBubbleView::ButtonPressed(views::Button* sender,
                                          const views::Event& event) {
   for (size_t i = 0; i < item_views_.size(); ++i) {
@@ -497,5 +508,7 @@ void AvatarMenuBubbleView::OnAvatarMenuModelChanged(
   add_profile_link_->SetEnabledColor(SkColorSetRGB(0xe3, 0xed, 0xf6));
   AddChildView(add_profile_link_);
 
-  PreferredSizeChanged();
+  // If the bubble has already been shown then resize and reposition the bubble.
+  Layout();
+  SizeToContents();
 }
