@@ -2,7 +2,8 @@ Name: Mongoose webserver
 Short Name: mongoose
 URL: http://code.google.com/p/mongoose/
 LICENSE: MIT
-Version: Revision 55cf8bf30cd9 (between 3.0 and 3.1)
+Version: 55cf8bf30cd9
+Release: between 3.0 and 3.1
 Security Critical: no
 
 Description:
@@ -21,3 +22,5 @@ Local modifications (all detailed in chrome-mongoose-modifications.diff,
 pending upstreaming by danielwh):
 * Fixed a couple of Windows/VS2010 compiler warnings/errors
 * Fixed linger code to apply to sockets from bind, rather than shutdown
+* Don't ignore SIGCHLD, since the proxy launcher depends on it for determining
+  chrome's exit code.
