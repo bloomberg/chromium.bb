@@ -127,15 +127,16 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       button_down_timeout_(0.0),
       tap_to_click_state_(kTtcIdle),
       tap_enable_(prop_reg, "Tap Enable", false),
-      tap_timeout_(prop_reg, "Tap Timeout", 0.2),
+      tap_timeout_(prop_reg, "Tap Timeout", 0.1),
       tap_drag_timeout_(prop_reg, "Tap Drag Timeout", 0.7),
       drag_lock_enable_(prop_reg, "Tap Drag Lock Enable", 0),
       tap_move_dist_(prop_reg, "Tap Move Distance", 2.0),
+      tap_prohibited_border_width_(prop_reg, "Tap Prohibited Width", 18.0),
       palm_pressure_(prop_reg, "Palm Pressure", 200.0),
-      palm_edge_min_width_(prop_reg, "Tap Exclusion Border Width", 6.0),
-      palm_edge_width_(prop_reg, "Palm Edge Zone Width", 12.5),
+      palm_edge_min_width_(prop_reg, "Tap Exclusion Border Width", 8.0),
+      palm_edge_width_(prop_reg, "Palm Edge Zone Width", 14.0),
       palm_edge_point_speed_(prop_reg, "Palm Edge Zone Min Point Speed", 100.0),
-      palm_min_distance_(prop_reg, "Palm Min Distance", 50.0),
+      palm_min_distance_(prop_reg, "Palm Min Distance", 40.0),
       wiggle_max_dist_(prop_reg, "Wiggle Max Distance", 8.0),
       wiggle_suppress_timeout_(prop_reg, "Wiggle Timeout", 0.075),
       wiggle_button_down_timeout_(prop_reg, "Wiggle Button Down Timeout", 0.75),
@@ -254,6 +255,14 @@ bool ImmediateInterpreter::FingerInPalmEnvelope(const FingerState& fs) {
       fs.position_x > (hw_props_.right - limit) ||
       fs.position_y < limit ||
       fs.position_y > (hw_props_.bottom - limit);
+}
+
+bool ImmediateInterpreter::FingerInTapProhibitedEnvelope(
+    const FingerState& fs) {
+  return fs.position_x < tap_prohibited_border_width_.val_ ||
+      fs.position_x > (hw_props_.right - tap_prohibited_border_width_.val_) ||
+      fs.position_y < tap_prohibited_border_width_.val_ ||
+      fs.position_y > (hw_props_.bottom - tap_prohibited_border_width_.val_);
 }
 
 void ImmediateInterpreter::UpdatePalmState(const HardwareState& hwstate) {
@@ -629,12 +638,25 @@ void ImmediateInterpreter::UpdateTapState(
   if (tap_to_click_state_ == kTtcIdle && !tap_enable_.val_)
     return;
   Log("Entering UpdateTapState");
-  if (hwstate)
+
+  set<short, kMaxGesturingFingers> tap_gs_fingers;
+
+  if (hwstate) {
     for (int i = 0; i < hwstate->finger_cnt; ++i)
       Log("HWSTATE: %d", hwstate->fingers[i].tracking_id);
-  for (set<short, kMaxGesturingFingers>::const_iterator it =
-           gs_fingers.begin(), e = gs_fingers.end(); it != e; ++it)
-    Log("GS: %d", *it);
+    for (set<short, kMaxGesturingFingers>::const_iterator it =
+             gs_fingers.begin(), e = gs_fingers.end(); it != e; ++it) {
+      const FingerState* fs = hwstate->GetFingerState(*it);
+      if (!fs) {
+        Err("Missing finger state?!");
+        continue;
+      }
+      if (!FingerInTapProhibitedEnvelope(*fs)) {
+        Log("GS: %d", *it);
+        tap_gs_fingers.insert(*it);
+      }
+    }
+  }
   set<short, kMaxTapFingers> added_fingers;
 
   // Fingers removed from the pad entirely
@@ -648,10 +670,10 @@ void ImmediateInterpreter::UpdateTapState(
   bool is_timeout = (now - tap_to_click_state_entered_ >
                      TimeoutForTtcState(tap_to_click_state_));
 
-  if (hwstate && (!same_fingers || prev_gs_fingers_ != gs_fingers)) {
+  if (hwstate && (!same_fingers || prev_tap_gs_fingers_ != tap_gs_fingers)) {
     // See if fingers were added
     for (set<short, kMaxGesturingFingers>::const_iterator it =
-             gs_fingers.begin(), e = gs_fingers.end(); it != e; ++it)
+             tap_gs_fingers.begin(), e = tap_gs_fingers.end(); it != e; ++it)
       if (!prev_state_.GetFingerState(*it)) {
         // Gesturing finger wasn't in prev state. It's new.
         added_fingers.insert(*it);
@@ -660,9 +682,9 @@ void ImmediateInterpreter::UpdateTapState(
 
     // See if fingers were removed or are now non-gesturing (dead)
     for (set<short, kMaxGesturingFingers>::const_iterator it =
-             prev_gs_fingers_.begin(), e = prev_gs_fingers_.end();
+             prev_tap_gs_fingers_.begin(), e = prev_tap_gs_fingers_.end();
          it != e; ++it) {
-      if (gs_fingers.find(*it) != gs_fingers.end())
+      if (tap_gs_fingers.find(*it) != tap_gs_fingers.end())
         // still gesturing; neither removed nor dead
         continue;
       if (!hwstate->GetFingerState(*it)) {
@@ -676,6 +698,8 @@ void ImmediateInterpreter::UpdateTapState(
       }
     }
   }
+
+  prev_tap_gs_fingers_ = tap_gs_fingers;
 
   // The state machine:
 

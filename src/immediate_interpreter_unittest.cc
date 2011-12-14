@@ -963,11 +963,12 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
       LOG(INFO) << "Resetting imm interpreter, i = " << i;
       ii.reset(new ImmediateInterpreter(NULL));
       ii->SetHardwareProperties(hwprops);
-      ii->tap_timeout_.val_ = 0.05;
+      ii->drag_lock_enable_.val_ = 1;
       ii->tap_drag_timeout_.val_ = 0.05;
       ii->tap_enable_.val_ = 1;
       ii->tap_move_dist_.val_ = 1.0;
-      ii->drag_lock_enable_.val_ = 1;
+      ii->tap_prohibited_border_width_.val_ = 0.0;
+      ii->tap_timeout_.val_ = 0.05;
       EXPECT_EQ(kIdl, ii->tap_to_click_state_);
     } else {
       same_fingers = ii->prev_state_.SameFingersAs(hwsgs_full[i].hws);
@@ -1067,11 +1068,12 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
         LOG(INFO) << "Resetting imm interpreter, i = " << i;
         ii.reset(new ImmediateInterpreter(NULL));
         ii->SetHardwareProperties(hwprops);
-        ii->tap_timeout_.val_ = 0.05;
+        ii->drag_lock_enable_.val_ = 1;
         ii->tap_drag_timeout_.val_ = 0.05;
         ii->tap_enable_.val_ = 1;
         ii->tap_move_dist_.val_ = 1.0;
-        ii->drag_lock_enable_.val_ = 1;
+        ii->tap_prohibited_border_width_.val_ = 0.0;
+        ii->tap_timeout_.val_ = 0.05;
         EXPECT_EQ(kIdl, ii->tap_to_click_state_);
         EXPECT_TRUE(ii->tap_enable_.val_);
       } else {
