@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+#include <vector>
+
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
@@ -241,10 +244,122 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   sql::Statement remove_keyword(db.GetKeywordTable()->db_->GetUniqueStatement(
       "DELETE FROM keywords WHERE id=1"));
   ASSERT_TRUE(remove_keyword.Run());
+  EXPECT_TRUE(db.GetKeywordTable()->IsBackupSignatureValid());
+  EXPECT_EQ(1, db.GetKeywordTable()->GetDefaultSearchProviderID());
+  EXPECT_EQ(1, db.GetKeywordTable()->GetDefaultSearchProviderIDBackup());
+  EXPECT_TRUE(db.GetKeywordTable()->DidDefaultSearchProviderChange());
+
+  // Change keywords backup.
+  sql::Statement remove_keyword_backup(
+      db.GetKeywordTable()->db_->GetUniqueStatement(
+          "DELETE FROM keywords_backup WHERE id=1"));
+  ASSERT_TRUE(remove_keyword_backup.Run());
   EXPECT_FALSE(db.GetKeywordTable()->IsBackupSignatureValid());
   EXPECT_EQ(1, db.GetKeywordTable()->GetDefaultSearchProviderID());
   EXPECT_EQ(0, db.GetKeywordTable()->GetDefaultSearchProviderIDBackup());
   EXPECT_TRUE(db.GetKeywordTable()->DidDefaultSearchProviderChange());
+}
+
+TEST_F(KeywordTableTest, GetTableContents) {
+  WebDatabase db;
+
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  TemplateURL template_url;
+  template_url.set_short_name(ASCIIToUTF16("short_name"));
+  template_url.set_keyword(ASCIIToUTF16("keyword"));
+  GURL favicon_url("http://favicon.url/");
+  GURL originating_url("http://originating.url/");
+  template_url.SetFaviconURL(favicon_url);
+  template_url.SetURL("http://url/", 0, 0);
+  template_url.set_safe_for_autoreplace(true);
+  template_url.set_show_in_default_list(true);
+  template_url.SetSuggestionsURL("url2", 0, 0);
+  template_url.set_sync_guid("1234-5678-90AB-CDEF");
+  template_url.set_date_created(base::Time::UnixEpoch());
+  template_url.set_last_modified(base::Time::UnixEpoch());
+  SetID(1, &template_url);
+
+  ASSERT_TRUE(db.GetKeywordTable()->AddKeyword(template_url));
+
+  GURL originating_url2("http://originating.url/");
+  template_url.set_originating_url(originating_url2);
+  template_url.set_autogenerate_keyword(true);
+  EXPECT_EQ(ASCIIToUTF16("url"), template_url.keyword());
+  template_url.add_input_encoding("Shift_JIS");
+  set_prepopulate_id(&template_url, 5);
+  set_logo_id(&template_url, 2000);
+  template_url.SetInstantURL("http://instant2/", 0, 0);
+  SetID(2, &template_url);
+  template_url.set_sync_guid("FEDC-BA09-8765-4321");
+  ASSERT_TRUE(db.GetKeywordTable()->AddKeyword(template_url));
+
+  const char kTestContents[] =
+      "1short_namekeywordhttp://favicon.url/http://url/1001"
+      "url200000"
+      "1234-5678-90AB-CDEF"
+      "2short_nameurlhttp://favicon.url/http://url/1http://originating.url/"
+      "00Shift_JIS1url25120000http://instant2/0"
+      "FEDC-BA09-8765-4321";
+
+  std::string contents;
+  ASSERT_TRUE(db.GetKeywordTable()->GetTableContents("keywords", &contents));
+  EXPECT_EQ(kTestContents, contents);
+
+  ASSERT_TRUE(db.GetKeywordTable()->GetTableContents("keywords_backup",
+                                                     &contents));
+  EXPECT_EQ(kTestContents, contents);
+}
+
+TEST_F(KeywordTableTest, GetTableContentsOrdering) {
+  WebDatabase db;
+
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  TemplateURL template_url;
+  template_url.set_short_name(ASCIIToUTF16("short_name"));
+  template_url.set_keyword(ASCIIToUTF16("keyword"));
+  GURL favicon_url("http://favicon.url/");
+  GURL originating_url("http://originating.url/");
+  template_url.SetFaviconURL(favicon_url);
+  template_url.SetURL("http://url/", 0, 0);
+  template_url.set_safe_for_autoreplace(true);
+  template_url.set_show_in_default_list(true);
+  template_url.SetSuggestionsURL("url2", 0, 0);
+  template_url.set_sync_guid("1234-5678-90AB-CDEF");
+  template_url.set_date_created(base::Time::UnixEpoch());
+  template_url.set_last_modified(base::Time::UnixEpoch());
+  SetID(2, &template_url);
+
+  ASSERT_TRUE(db.GetKeywordTable()->AddKeyword(template_url));
+
+  GURL originating_url2("http://originating.url/");
+  template_url.set_originating_url(originating_url2);
+  template_url.set_autogenerate_keyword(true);
+  EXPECT_EQ(ASCIIToUTF16("url"), template_url.keyword());
+  template_url.add_input_encoding("Shift_JIS");
+  set_prepopulate_id(&template_url, 5);
+  set_logo_id(&template_url, 2000);
+  template_url.SetInstantURL("http://instant2/", 0, 0);
+  SetID(1, &template_url);
+  template_url.set_sync_guid("FEDC-BA09-8765-4321");
+  ASSERT_TRUE(db.GetKeywordTable()->AddKeyword(template_url));
+
+  const char kTestContents[] =
+      "1short_nameurlhttp://favicon.url/http://url/1http://originating.url/"
+      "00Shift_JIS1url25120000http://instant2/0"
+      "FEDC-BA09-8765-4321"
+      "2short_namekeywordhttp://favicon.url/http://url/1001"
+      "url200000"
+      "1234-5678-90AB-CDEF";
+
+  std::string contents;
+  ASSERT_TRUE(db.GetKeywordTable()->GetTableContents("keywords", &contents));
+  EXPECT_EQ(kTestContents, contents);
+
+  ASSERT_TRUE(db.GetKeywordTable()->GetTableContents("keywords_backup",
+                                                     &contents));
+  EXPECT_EQ(kTestContents, contents);
 }
 
 TEST_F(KeywordTableTest, UpdateKeyword) {

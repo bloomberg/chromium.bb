@@ -54,23 +54,29 @@ class Statement;
 //   sync_guid              See TemplateURL::sync_guid. This was added in
 //                          version 39.
 //
+// keywords_backup          The full copy of the |keywords| table. Added in
+//                          version 43. Must be in sync with |keywords|
+//                          table otherwise verification of default search
+//                          provider settings will fail.
+//
 // This class also manages some fields in the |meta| table:
-//   Default Search Provider ID      The id of the default search provider.
-//   Default Search Provider ID Backup
+//
+// Default Search Provider ID        The id of the default search provider.
+// Default Search Provider ID Backup
 //                                   Backup copy of the above for restoring it
 //                                   in case the setting was hijacked or
 //                                   corrupted. This was added in version 40.
-//   Default Search Provider Backup  Backup copy of the raw in |keywords|
+// Default Search Provider Backup  Backup copy of the raw in |keywords|
 //                                   with the default search provider ID to
 //                                   restore all provider info. This was added
-//                                   in version 42.
-//   Default Search Provider ID Backup Signature
+//                                   in version 42. Not used in 43.
+// Default Search Provider ID Backup Signature
 //                                   The signature of backup data and
 //                                   |keywords| table contents to be able to
 //                                   verify the backup and understand when the
 //                                   settings were changed. This was added
 //                                   in version 40.
-//   Builtin Keyword Version         The version of builtin keywords data.
+// Builtin Keyword Version           The version of builtin keywords data.
 //
 class KeywordTable : public WebDatabaseTable {
  public:
@@ -123,14 +129,22 @@ class KeywordTable : public WebDatabaseTable {
   bool MigrateToVersion39AddSyncGUIDColumn();
   bool MigrateToVersion40AddDefaultSearchProviderBackup();
   bool MigrateToVersion41RewriteDefaultSearchProviderBackup();
-  bool MigrateToVersion42AddKeywordsBackupTable();
+  bool MigrateToVersion42AddFullDefaultSearchProviderBackup();
+  bool MigrateToVersion43AddKeywordsBackupTable();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, DefaultSearchProviderBackup);
+  FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, GetTableContents);
+  FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, GetTableContentsOrdering);
 
-  // Returns contents of |keywords| table and default search provider backup
-  // as a string.
-  std::string GetSignatureData();
+  // Returns contents of |keywords_backup| table and default search provider
+  // id backup as a string through |data|. Return value is true on success,
+  // false otherwise.
+  bool GetSignatureData(std::string* data);
+
+  // Returns contents of selected table as a string in |contents| parameter.
+  // Returns true on success, false otherwise.
+  bool GetTableContents(const char* table_name, std::string* contents);
 
   // Updates settings backup, signs it and stores the signature in the
   // database. Returns true on success.
@@ -143,15 +157,23 @@ class KeywordTable : public WebDatabaseTable {
   // Parses TemplateURL out of SQL statement result.
   void GetURLFromStatement(const sql::Statement& s, TemplateURL* url);
 
-  // Gets a string representation for TemplateURL with id specified.
-  // Used to store its result in |meta| table or to compare with this
-  // backup. Returns true on success, false otherwise.
-  bool GetTemplateURLBackup(TemplateURLID id, std::string* result);
+  // Gets a string representation for keyword with id specified.
+  // Used to store its result in |meta| table or to compare with another
+  // keyword. Returns true on success, false otherwise.
+  bool GetKeywordAsString(TemplateURLID id,
+                          const std::string& table_name,
+                          std::string* result);
+
+  // Updates default search provider id backup in |meta| table. Returns
+  // true on success. The id is returned back via |id| parameter.
+  bool UpdateDefaultSearchProviderIDBackup(TemplateURLID* id);
 
   // Updates default search provider backup with TemplateURL data with
   // specified id. Returns true on success.
   // If id is 0, sets an empty string as a backup.
-  bool UpdateDefaultSearchProviderBackup(TemplateURLID id);
+  // Returns the result through |backup| parameter.
+  bool UpdateDefaultSearchProviderBackup(TemplateURLID id,
+                                         std::string* backup);
 
   DISALLOW_COPY_AND_ASSIGN(KeywordTable);
 };

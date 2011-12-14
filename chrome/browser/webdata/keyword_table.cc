@@ -10,6 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/protector/histograms.h"
@@ -42,6 +43,13 @@ const char kDefaultSearchIDBackupKey[] =
 // the whole |keywords| table are signed.
 const char kBackupSignatureKey[] =
     "Default Search Provider ID Backup Signature";
+
+const char kKeywordColumnsConcatenated[] =
+    "id || short_name || keyword || favicon_url || url || "
+    "safe_for_autoreplace || originating_url || date_created || "
+    "usage_count || input_encodings || show_in_default_list || "
+    "suggest_url || prepopulate_id || autogenerate_keyword || logo_id || "
+    "created_by_policy || instant_url || last_modified || sync_guid";
 
 void BindURLToStatement(const TemplateURL& url, sql::Statement* s) {
   s->BindString(0, UTF16ToUTF8(url.short_name()));
@@ -228,6 +236,7 @@ bool KeywordTable::DidDefaultSearchProviderChange() {
         protector::kProtectorHistogramDefaultSearchProvider,
         protector::kProtectorErrorBackupInvalid,
         protector::kProtectorErrorCount);
+    LOG(ERROR) << "Backup signature is invalid";
     return true;
   }
 
@@ -245,8 +254,8 @@ bool KeywordTable::DidDefaultSearchProviderChange() {
           protector::kProtectorErrorValueValidZero,
           protector::kProtectorErrorCount);
       return false;
-    } else if (meta_table_->GetValue(kDefaultSearchBackupKey, &backup_url) &&
-               GetTemplateURLBackup(current_id, &current_url) &&
+    } else if (GetKeywordAsString(backup_id, "keywords_backup", &backup_url) &&
+               GetKeywordAsString(current_id, "keywords", &current_url) &&
                current_url == backup_url) {
       UMA_HISTOGRAM_ENUMERATION(
           protector::kProtectorHistogramDefaultSearchProvider,
@@ -260,6 +269,7 @@ bool KeywordTable::DidDefaultSearchProviderChange() {
       protector::kProtectorHistogramDefaultSearchProvider,
       protector::kProtectorErrorValueChanged,
       protector::kProtectorErrorCount);
+  LOG(ERROR) << "Default Search Provider is changed.";
   return true;
 }
 
@@ -368,71 +378,30 @@ bool KeywordTable::MigrateToVersion41RewriteDefaultSearchProviderBackup() {
   return MigrateToVersion40AddDefaultSearchProviderBackup();
 }
 
-bool KeywordTable::MigrateToVersion42AddKeywordsBackupTable() {
-  return UpdateBackupSignature();
-}
-
-std::string KeywordTable::GetSignatureData() {
-  int64 backup_value = 0;
-  if (!meta_table_->GetValue(kDefaultSearchIDBackupKey, &backup_value)) {
-    LOG(ERROR) << "No backup id for signing.";
-    return std::string();
-  }
-  std::string backup_data = base::Int64ToString(backup_value);
-
-  std::string backup_url;
-  if (!meta_table_->GetValue(kDefaultSearchBackupKey, &backup_url)) {
-    LOG(ERROR) << "No backup for signing.";
-    return std::string();
-  }
-  backup_data += backup_url;
-
-  sql::Statement s(db_->GetCachedStatement(SQL_FROM_HERE,
-      "SELECT id || short_name || keyword || favicon_url || url || "
-      "safe_for_autoreplace || originating_url || date_created || "
-      "usage_count || input_encodings || show_in_default_list || "
-      "suggest_url || prepopulate_id || autogenerate_keyword || logo_id || "
-      "created_by_policy || instant_url || last_modified || sync_guid "
-      "FROM keywords ORDER BY id ASC"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return std::string();
-  }
-  while (s.Step())
-    backup_data += s.ColumnString(0);
-  if (!s.Succeeded()) {
-    NOTREACHED() << "Statement execution failed";
-    return std::string();
-  }
-  return backup_data;
-}
-
-bool KeywordTable::UpdateBackupSignature() {
+bool KeywordTable::MigrateToVersion42AddFullDefaultSearchProviderBackup() {
   sql::Transaction transaction(db_);
   if (!transaction.Begin()) {
-    NOTREACHED() << "Failed to begin transaction.";
+    NOTREACHED() << "Failed to start transaction";
     return false;
   }
 
-  // Backup of default search provider id.
-  int64 id = GetDefaultSearchProviderID();
-  if (!meta_table_->SetValue(kDefaultSearchIDBackupKey, id)) {
-    NOTREACHED() << "Failed to write backup id.";
+  int64 id = 0;
+  if (!UpdateDefaultSearchProviderIDBackup(&id))
+    return false;
+
+  std::string keyword_backup;
+  if (!UpdateDefaultSearchProviderBackup(id, &keyword_backup))
+    return false;
+
+  std::string keywords;
+  if (!GetTableContents("keywords", &keywords)) {
+    NOTREACHED() << "Can't get keywords table contents to sign";
     return false;
   }
 
-  // Backup of the default search provider info.
-  if (!UpdateDefaultSearchProviderBackup(id)) {
-    NOTREACHED() << "Failed to update backup.";
-    return false;
-  }
-
-  // Now calculate and update the signature.
-  std::string data_to_sign = GetSignatureData();
-  if (data_to_sign.empty()) {
-    NOTREACHED() << "Can't get data to sign";
-    return false;
-  }
+  std::string data_to_sign = base::Int64ToString(id) +
+                             keyword_backup +
+                             keywords;
   std::string signature = protector::SignSetting(data_to_sign);
   if (signature.empty()) {
     NOTREACHED() << "Signature is empty";
@@ -446,10 +415,109 @@ bool KeywordTable::UpdateBackupSignature() {
   return transaction.Commit();
 }
 
+bool KeywordTable::MigrateToVersion43AddKeywordsBackupTable() {
+  return meta_table_->SetValue(kDefaultSearchBackupKey, std::string()) &&
+         UpdateBackupSignature();
+}
+
+bool KeywordTable::GetSignatureData(std::string* backup) {
+  DCHECK(backup);
+
+  int64 backup_value = 0;
+  if (!meta_table_->GetValue(kDefaultSearchIDBackupKey, &backup_value)) {
+    LOG(ERROR) << "No backup id for signing.";
+    return false;
+  }
+
+  std::string keywords_backup_data;
+  if (!GetTableContents("keywords_backup", &keywords_backup_data)) {
+    LOG(ERROR) << "Can't get keywords backup data";
+    return false;
+  }
+  *backup = base::Int64ToString(backup_value) + keywords_backup_data;
+  return true;
+}
+
+bool KeywordTable::GetTableContents(const char* table_name,
+                                    std::string* contents) {
+  DCHECK(contents);
+  std::string table_data;
+
+  std::string query =
+      "SELECT " + std::string(kKeywordColumnsConcatenated) +
+      " FROM " + std::string(table_name) + " ORDER BY id ASC";
+  sql::Statement s(db_->GetCachedStatement(sql::StatementID(table_name),
+                                           query.c_str()));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+  while (s.Step())
+    table_data += s.ColumnString(0);
+  if (!s.Succeeded()) {
+    NOTREACHED() << "Statement execution failed";
+    return false;
+  }
+  *contents = table_data;
+  return true;
+}
+
+bool KeywordTable::UpdateBackupSignature() {
+  sql::Transaction transaction(db_);
+  if (!transaction.Begin()) {
+    NOTREACHED() << "Failed to start transaction";
+    return false;
+  }
+
+  int64 id = 0;
+  if (!UpdateDefaultSearchProviderIDBackup(&id)) {
+    LOG(ERROR) << "Failed to update default search id backup.";
+    return false;
+  }
+
+  // Backup of all keywords.
+  if (db_->DoesTableExist("keywords_backup") &&
+      !db_->Execute("DROP TABLE keywords_backup"))
+    return false;
+
+  if (!db_->Execute(
+      "CREATE TABLE keywords_backup AS "
+      "SELECT id, short_name, keyword, favicon_url, url, "
+      "safe_for_autoreplace, originating_url, date_created, "
+      "usage_count, input_encodings, show_in_default_list, "
+      "suggest_url, prepopulate_id, autogenerate_keyword, logo_id, "
+      "created_by_policy, instant_url, last_modified, sync_guid "
+      "FROM keywords ORDER BY id ASC")) {
+    LOG(ERROR) << "Failed to create keywords_backup table.";
+    return false;
+  }
+
+  std::string data_to_sign;
+  if (!GetSignatureData(&data_to_sign)) {
+    LOG(ERROR) << "No data to sign.";
+    return false;
+  }
+
+  std::string signature = protector::SignSetting(data_to_sign);
+  if (signature.empty()) {
+    LOG(ERROR) << "Signature is empty";
+    return false;
+  }
+
+  if (!meta_table_->SetValue(kBackupSignatureKey, signature)) {
+    NOTREACHED() << "Failed to write signature.";
+    return false;
+  }
+
+  return transaction.Commit();
+}
+
 bool KeywordTable::IsBackupSignatureValid() {
   std::string signature;
+  std::string signature_data;
   return meta_table_->GetValue(kBackupSignatureKey, &signature) &&
-         protector::IsSettingValid(GetSignatureData(), signature);
+         GetSignatureData(&signature_data) &&
+         protector::IsSettingValid(signature_data, signature);
 }
 
 void KeywordTable::GetURLFromStatement(
@@ -503,15 +571,13 @@ void KeywordTable::GetURLFromStatement(
   url->set_sync_guid(s.ColumnString(18));
 }
 
-bool KeywordTable::GetTemplateURLBackup(TemplateURLID id,
-                                        std::string* result) {
-  sql::Statement s(db_->GetUniqueStatement(
-      "SELECT id || short_name || keyword || favicon_url || url || "
-      "safe_for_autoreplace || originating_url || date_created || "
-      "usage_count || input_encodings || show_in_default_list || "
-      "suggest_url || prepopulate_id || autogenerate_keyword || logo_id || "
-      "created_by_policy || instant_url || last_modified || sync_guid "
-      "FROM keywords WHERE id=?"));
+bool KeywordTable::GetKeywordAsString(TemplateURLID id,
+                                      const std::string& table_name,
+                                      std::string* result) {
+  std::string query =
+      "SELECT " + std::string(kKeywordColumnsConcatenated) +
+      " FROM " + table_name + " WHERE id=?";
+  sql::Statement s(db_->GetUniqueStatement(query.c_str()));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
@@ -531,11 +597,32 @@ bool KeywordTable::GetTemplateURLBackup(TemplateURLID id,
   return true;
 }
 
-bool KeywordTable::UpdateDefaultSearchProviderBackup(TemplateURLID id) {
-  std::string backup;
-  if (id != 0 && !GetTemplateURLBackup(id, &backup)) {
-    NOTREACHED() << "Failed to get the keyword with id " << id;
+bool KeywordTable::UpdateDefaultSearchProviderIDBackup(TemplateURLID* id) {
+  DCHECK(id);
+  int64 default_search_id = GetDefaultSearchProviderID();
+  if (!meta_table_->SetValue(kDefaultSearchIDBackupKey,
+                             default_search_id)) {
+    LOG(ERROR) << "Can't write default search id backup.";
     return false;
   }
-  return meta_table_->SetValue(kDefaultSearchBackupKey, backup);
+
+  *id = default_search_id;
+  return true;
+}
+
+bool KeywordTable::UpdateDefaultSearchProviderBackup(TemplateURLID id,
+                                                     std::string* backup) {
+  DCHECK(backup);
+  std::string backup_url;
+  if (id != 0 && !GetKeywordAsString(id, "keywords", &backup_url)) {
+    LOG(WARNING) << "Failed to get the keyword with id " << id;
+    return false;
+  }
+  if (!meta_table_->SetValue(kDefaultSearchBackupKey, backup_url)) {
+    LOG(WARNING) << "Failed to update the keyword backup";
+    return false;
+  }
+
+  *backup = backup_url;
+  return true;
 }
