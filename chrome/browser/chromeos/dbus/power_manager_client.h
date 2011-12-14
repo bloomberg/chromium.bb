@@ -54,6 +54,15 @@ class PowerManagerClient {
 
     // Called when the system resumes from suspend.
     virtual void SystemResumed() {}
+
+    // Called when the screen is locked.
+    virtual void LockScreen() {}
+
+    // Called when the screen is unlocked.
+    virtual void UnlockScreen() {}
+
+    // Called when the screen fails to unlock.
+    virtual void UnlockScreenFailed() {}
   };
 
   // Adds and removes the observer.
@@ -80,6 +89,18 @@ class PowerManagerClient {
   // replied.  It passes the idle time in seconds to |callback|.  If it
   // encounters some error, it passes -1 to |callback|.
   virtual void CalculateIdleTime(const CalculateIdleTimeCallback& callback) = 0;
+
+  // Notifies PowerManager that a user requested to lock the screen.
+  virtual void NotifyScreenLockRequested() = 0;
+
+  // Notifies PowerManager that screen lock has been completed.
+  virtual void NotifyScreenLockCompleted() = 0;
+
+  // Notifies PowerManager that a user unlocked the screen.
+  virtual void NotifyScreenUnlockRequested() = 0;
+
+  // Notifies PowerManager that screen is unlocked.
+  virtual void NotifyScreenUnlockCompleted() = 0;
 
   // Creates the instance.
   static PowerManagerClient* Create(dbus::Bus* bus);

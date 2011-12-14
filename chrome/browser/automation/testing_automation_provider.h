@@ -25,8 +25,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 #if defined(OS_CHROMEOS)
-// TODO(sque): move to a ChromeOS-specific class.  See crosbug.com/22081.
-#include "chrome/browser/chromeos/dbus/power_manager_client.h"
+// TODO(sque): move to a ChromeOS-specific class. See crosbug.com/22081.
+class PowerManagerClientObserverForTesting;
 #endif  // defined(OS_CHROMEOS)
 
 class AutofillProfile;
@@ -45,9 +45,6 @@ struct WebPluginInfo;
 class TestingAutomationProvider : public AutomationProvider,
                                   public BrowserList::Observer,
                                   public importer::ImporterListObserver,
-#if defined(OS_CHROMEOS)
-                                  public chromeos::PowerManagerClient::Observer,
-#endif  // defined(OS_CHROMEOS)
                                   public content::NotificationObserver {
  public:
   explicit TestingAutomationProvider(Profile* profile);
@@ -1425,9 +1422,8 @@ class TestingAutomationProvider : public AutomationProvider,
                            DictionaryValue* args,
                            IPC::Message* reply_message);
 
-  // chromeos::PowerManagerClient::Observer overrides.
-  virtual void PowerChanged(const chromeos::PowerSupplyStatus& status) OVERRIDE;
-
+  void AddChromeosObservers();
+  void RemoveChromeosObservers();
 #endif  // defined(OS_CHROMEOS)
 
   void WaitForTabCountToBecome(int browser_handle,
@@ -1478,6 +1474,12 @@ class TestingAutomationProvider : public AutomationProvider,
   // A temporary object that receives a notification when a popup menu opens.
   PopupMenuWaiter* popup_menu_waiter_;
 #endif  // defined(TOOLKIT_VIEWS)
+
+#if defined(OS_CHROMEOS)
+  // Avoid scoped ptr here to avoid having to define it completely in the
+  // non-ChromeOS code.
+  PowerManagerClientObserverForTesting* power_manager_observer_;
+#endif  // defined(OS_CHROMEOS)
 
   // Used to wait on various browser sync events.
   scoped_ptr<ProfileSyncServiceHarness> sync_waiter_;

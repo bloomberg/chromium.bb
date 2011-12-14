@@ -15,8 +15,8 @@
 #include "chrome/browser/chromeos/audio_handler.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/dbus/update_engine_client.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -203,9 +203,18 @@ DictionaryValue* CreateDictionaryWithPolicies(
 }
 
 // Last reported power status.
-chromeos::PowerSupplyStatus power_status;
+chromeos::PowerSupplyStatus global_power_status;
 
 }  // namespace
+
+class PowerManagerClientObserverForTesting
+    : public chromeos::PowerManagerClient::Observer {
+ public:
+  virtual void PowerChanged(const chromeos::PowerSupplyStatus& status)
+      OVERRIDE {
+    global_power_status = status;
+  }
+};
 
 void TestingAutomationProvider::GetLoginInfo(DictionaryValue* args,
                                              IPC::Message* reply_message) {
@@ -276,7 +285,7 @@ void TestingAutomationProvider::Login(DictionaryValue* args,
 void TestingAutomationProvider::LockScreen(DictionaryValue* args,
                                            IPC::Message* reply_message) {
   new ScreenLockUnlockObserver(this, reply_message, true);
-  CrosLibrary::Get()->GetScreenLockLibrary()->
+  DBusThreadManager::Get()->GetPowerManagerClient()->
       NotifyScreenLockRequested();
 }
 
@@ -326,19 +335,19 @@ void TestingAutomationProvider::GetBatteryInfo(DictionaryValue* args,
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
 
   return_value->SetBoolean("battery_is_present",
-                           power_status.battery_is_present);
-  return_value->SetBoolean("line_power_on", power_status.line_power_on);
-  if (power_status.battery_is_present) {
+                           global_power_status.battery_is_present);
+  return_value->SetBoolean("line_power_on", global_power_status.line_power_on);
+  if (global_power_status.battery_is_present) {
     return_value->SetBoolean("battery_fully_charged",
-                             power_status.battery_is_full);
+                             global_power_status.battery_is_full);
     return_value->SetDouble("battery_percentage",
-                            power_status.battery_percentage);
-    if (power_status.line_power_on) {
-      int64 time = power_status.battery_seconds_to_full;
-      if (time > 0 || power_status.battery_is_full)
+                            global_power_status.battery_percentage);
+    if (global_power_status.line_power_on) {
+      int64 time = global_power_status.battery_seconds_to_full;
+      if (time > 0 || global_power_status.battery_is_full)
         return_value->SetInteger("battery_seconds_to_full", time);
     } else {
-      int64 time = power_status.battery_seconds_to_empty;
+      int64 time = global_power_status.battery_seconds_to_empty;
       if (time > 0)
         return_value->SetInteger("battery_seconds_to_empty", time);
     }
@@ -1124,7 +1133,15 @@ void TestingAutomationProvider::CaptureProfilePhoto(
   window->Show();
 }
 
-void TestingAutomationProvider::PowerChanged(
-    const chromeos::PowerSupplyStatus& status) {
-  power_status = status;
+void TestingAutomationProvider::AddChromeosObservers() {
+  power_manager_observer_ = new PowerManagerClientObserverForTesting;
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      AddObserver(power_manager_observer_);
+}
+
+void TestingAutomationProvider::RemoveChromeosObservers() {
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      RemoveObserver(power_manager_observer_);
+  delete power_manager_observer_;
+  power_manager_observer_ = NULL;
 }
