@@ -54,6 +54,10 @@ class FetchPrebuilt(object):
       sys.exit(2)
     self._outdir = self._options.outdir
     self._url = self._args[0]
+    # Chromium continuous build archive has a non-standard format.
+    if 'index.html?path=' in self._url:
+      self._url = self._url.replace('index.html?path=', '')
+    self._url = self._url.rstrip('/')
 
     # Determine name of zip.
     if not self._options.platform.startswith('linux'):
@@ -110,25 +114,29 @@ class FetchPrebuilt(object):
     get_it2me = self._DoesURLExist(self._it2me_zip_url)
 
     # Fetch chrome & pyauto binaries
-    print 'Fetching'
-    print self._chrome_zip_url
+    print 'Fetching', self._chrome_zip_url
+    chrome_zip = urllib.urlretrieve(self._chrome_zip_url)[0]
+
     if get_it2me:
-      print self._it2me_zip_url
+      print 'Fetching', self._it2me_zip_url
+      it2me_zip = urllib.urlretrieve(self._it2me_zip_url)[0]
     else:
       print 'Warning: %s does not exist.' % self._it2me_zip_url
-    print self._pyautolib_py_url
-    print self._pyautolib_so_url
-    print self._chromedriver_url
-    chrome_zip = urllib.urlretrieve(self._chrome_zip_url)[0]
-    if get_it2me:
-      it2me_zip = urllib.urlretrieve(self._it2me_zip_url)[0]
+
+    print 'Fetching', self._pyautolib_py_url
     pyautolib_py = urllib.urlretrieve(self._pyautolib_py_url)[0]
+
+    print 'Fetching', self._pyautolib_so_url
     pyautolib_so = urllib.urlretrieve(self._pyautolib_so_url)[0]
+
+    print 'Fetching', self._chromedriver_url
     chromedriver = urllib.urlretrieve(self._chromedriver_url)[0]
+
     chrome_unzip_dir = os.path.join(self._outdir, self._chrome_zip_name)
     if os.path.exists(chrome_unzip_dir):
       print 'Cleaning', chrome_unzip_dir
       pyauto_utils.RemovePath(chrome_unzip_dir)
+    print 'Unzipping'
     pyauto_utils.UnzipFilenameToDir(chrome_zip, self._outdir)
     if get_it2me:
       pyauto_utils.UnzipFilenameToDir(it2me_zip, self._outdir)
