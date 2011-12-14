@@ -201,7 +201,9 @@ void CapsLockMenuButton::MaybeShowBubble() {
       // We've already shown the bubble |kMaxBubbleCount| times.
       !should_show_bubble_ ||
       // Don't show the bubble when Caps Lock key is available.
-      HasCapsLock())
+      HasCapsLock() ||
+      // Don't show it when the status area is hidden.
+      (parent() && !parent()->visible()))
     return;
 
   ++bubble_count_;
