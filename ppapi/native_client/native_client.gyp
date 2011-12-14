@@ -7,7 +7,7 @@
     '../../native_client/build/common.gypi',
   ],
   'conditions': [
-    ['disable_nacl!=1', {
+    ['disable_nacl==0 and disable_nacl_untrusted==0', {
       'targets': [
         {
           'target_name': 'ppapi_lib',
@@ -79,7 +79,7 @@
             ],
           },
           'dependencies': [
-            'src/shared/ppapi_proxy/ppapi_proxy.gyp:ppruntime_lib',
+            'src/shared/ppapi_proxy/ppapi_proxy_untrusted.gyp:ppruntime_lib',
             '../../native_client/src/untrusted/irt/irt.gyp:irt_browser_lib',
             '../../native_client/src/shared/srpc/srpc.gyp:srpc_lib',
             '../../native_client/src/shared/platform/platform.gyp:platform_lib',

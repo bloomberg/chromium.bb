@@ -817,7 +817,7 @@
         '../content/worker/test/worker_uitest.cc',
       ],
       'conditions': [
-        ['disable_nacl!=1', {
+        ['disable_nacl==0 and disable_nacl_untrusted==0', {
           'dependencies': [
             '../ppapi/ppapi_untrusted.gyp:ppapi_nacl_tests',
           ],
