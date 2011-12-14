@@ -142,8 +142,6 @@
         'controls/menu/native_menu_gtk.h',
         'controls/menu/native_menu_host.h',
         'controls/menu/native_menu_host_delegate.h',
-        'controls/menu/native_menu_views.cc',
-        'controls/menu/native_menu_views.h',
         'controls/menu/native_menu_win.cc',
         'controls/menu/native_menu_win.h',
         'controls/menu/nested_dispatcher_gtk.cc',
@@ -445,8 +443,6 @@
         }],
         ['use_aura==0', {
           'sources!': [
-            'controls/menu/native_menu_views.cc',
-            'controls/menu/native_menu_views.h',
             'controls/tabbed_pane/native_tabbed_pane_views.cc',
             'controls/tabbed_pane/native_tabbed_pane_views.h',
             'widget/tooltip_manager_views.cc',
