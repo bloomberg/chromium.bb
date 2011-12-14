@@ -72,6 +72,11 @@ class VersionInfo {
   // will be CHANNEL_UNKNOWN.
   static Channel GetChannel();
 
+#if defined(OS_CHROMEOS)
+  // Sets channel before use.
+  static void SetChannel(const std::string& channel);
+#endif
+
   // Returns a version string to be displayed in "About Chromium" dialog.
   std::string CreateVersionString() const;
 

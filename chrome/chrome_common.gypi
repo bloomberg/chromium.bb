@@ -81,6 +81,7 @@
         'common/chrome_sandbox_type_mac.h',
         'common/chrome_utility_messages.h',
         'common/chrome_version_info.cc',
+        'common/chrome_version_info_chromeos.cc',
         'common/chrome_version_info_linux.cc',
         'common/chrome_version_info_mac.mm',
         'common/chrome_version_info_win.cc',
@@ -279,6 +280,15 @@
         ['OS=="linux" and selinux==1', {
           'dependencies': [
             '../build/linux/system.gyp:selinux',
+          ],
+        }],
+        ['chromeos==0', {
+          'sources!': [
+            'common/chrome_version_info_chromeos.cc',
+          ],
+        }, {
+          'sources!': [
+            'common/chrome_version_info_linux.cc',
           ],
         }],
         ['OS=="mac"', {

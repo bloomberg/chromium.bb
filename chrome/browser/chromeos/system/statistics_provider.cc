@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "chrome/browser/chromeos/system/name_value_pairs_parser.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
+#include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -150,6 +151,20 @@ void StatisticsProviderImpl::LoadMachineStatistics() {
                             kMachineOSInfoEq,
                             kMachineOSInfoDelim);
   GetNameValuePairsFromFile(&parser, FilePath(kVpdFile), kVpdEq, kVpdDelim);
+
+#if defined(GOOGLE_CHROME_BUILD)
+  // TODO(kochi): This is for providing a channel information to
+  // chrome::VersionInfo::GetChannel()/GetVersionStringModifier(),
+  // but this is still late for some early customers such as
+  // prerender::ConfigurePrefetchAndPrerender() and
+  // ThreadWatcherList::ParseCommandLine().
+  // See http://crbug.com/107333 .
+  const char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
+  std::string channel;
+  if (GetMachineStatistic(kChromeOSReleaseTrack, &channel)) {
+      chrome::VersionInfo::SetChannel(channel);
+  }
+#endif
 
   // Finished loading the statistics.
   on_statistics_loaded_.Signal();

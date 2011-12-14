@@ -6,7 +6,7 @@
 
 namespace chrome {
 
-// static. Warning: this may be either Linux or ChromeOS.
+// static
 std::string VersionInfo::GetVersionStringModifier() {
   char* env = getenv("CHROME_VERSION_EXTRA");
   if (!env)
@@ -29,7 +29,7 @@ std::string VersionInfo::GetVersionStringModifier() {
   return modifier;
 }
 
-// static. Warning: this may be either Linux or ChromeOS.
+// static
 VersionInfo::Channel VersionInfo::GetChannel() {
 #if defined(GOOGLE_CHROME_BUILD)
   std::string channel = GetVersionStringModifier();
