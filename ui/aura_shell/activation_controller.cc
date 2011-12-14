@@ -27,6 +27,7 @@ bool SupportsChildActivation(aura::Window* window) {
   return window->id() == kShellWindowId_DefaultContainer ||
          window->id() == kShellWindowId_AlwaysOnTopContainer ||
          window->id() == kShellWindowId_ModalContainer ||
+         window->id() == kShellWindowId_LockScreenContainer ||
          window->id() == kShellWindowId_LockModalContainer;
 }
 
