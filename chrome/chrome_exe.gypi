@@ -311,17 +311,18 @@
             {
               # Modify the Info.plist as needed.  The script explains why this
               # is needed.  This is also done in the helper_app and chrome_dll
-              # targets.  Use -b0 to not include any Breakpad information; that
-              # all goes into the framework's Info.plist.  Keystone information
-              # is included if Keystone is enabled.  The application reads
-              # Keystone keys from this plist and not the framework's, and
-              # the ticket will reference this Info.plist to determine the tag
-              # of the installed product.  Use -s1 to include Subversion
-              # information.  The -p flag controls whether to insert PDF as a
-              # supported type identifier that can be opened.
+              # targets.  Use --breakpad=0 to not include any Breakpad
+              # information; that all goes into the framework's Info.plist.
+              # Keystone information is included if Keystone is enabled.  The
+              # application reads Keystone keys from this plist and not the
+              # framework's, and the ticket will reference this Info.plist to
+              # determine the tag of the installed product.  Use -s1 to
+              # include Subversion information.  The -p flag controls whether
+              # to insert PDF as a supported type identifier that can be
+              # opened.
               'postbuild_name': 'Tweak Info.plist',
               'action': ['<(tweak_info_plist_path)',
-                         '-b0',
+                         '--breakpad=0',
                          '-k<(mac_keystone)',
                          '-s1',
                          '-p<(internal_pdf)',

@@ -357,7 +357,8 @@
                   # but this seems like a really good place to store them.
                   'postbuild_name': 'Tweak Info.plist',
                   'action': ['<(tweak_info_plist_path)',
-                             '-b<(mac_breakpad)',
+                             '--breakpad=<(mac_breakpad_compiled_in)',
+                             '--breakpad_uploads=<(mac_breakpad_uploads)',
                              '-k0',
                              '-s1',
                              '<(branding)',
@@ -451,6 +452,8 @@
                     # A real .dSYM is needed for dump_syms to operate on.
                     'mac_real_dsym': 1,
                   },
+                }],
+                ['mac_breakpad_compiled_in==1', {
                   'sources': [
                     'app/breakpad_mac.mm',
                     'app/breakpad_mac.h',
@@ -468,13 +471,13 @@
                       ],
                     },
                   ],
-                }, {  # else: mac_breakpad!=1
+                }, {  # else: mac_breakpad_compiled_in!=1
                   # No Breakpad, put in the stubs.
                   'sources': [
                     'app/breakpad_mac_stubs.mm',
                     'app/breakpad_mac.h',
                   ],
-                }],  # mac_breakpad
+                }],  # mac_breakpad_compiled_in
                 ['mac_keystone==1', {
                   'mac_bundle_resources': [
                     'browser/mac/keystone_promote_preflight.sh',

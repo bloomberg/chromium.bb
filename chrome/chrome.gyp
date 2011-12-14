@@ -770,12 +770,12 @@
             {
               # Modify the Info.plist as needed.  The script explains why this
               # is needed.  This is also done in the chrome and chrome_dll
-              # targets.  In this case, -b0, -k0, and -s0 are used because
-              # Breakpad, Keystone, and Subersion keys are never placed into
-              # the helper.
+              # targets.  In this case, --breakpad=0, -k0, and -s0 are used
+              # because Breakpad, Keystone, and Subersion keys are never
+              # placed into the helper.
               'postbuild_name': 'Tweak Info.plist',
               'action': ['<(tweak_info_plist_path)',
-                         '-b0',
+                         '--breakpad=0',
                          '-k0',
                          '-s0',
                          '<(branding)',
