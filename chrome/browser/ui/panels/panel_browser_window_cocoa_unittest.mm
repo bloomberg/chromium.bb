@@ -42,6 +42,7 @@ class PanelBrowserWindowCocoaTest : public CocoaProfileTest {
  public:
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
+    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePanels);
   }
 
   Panel* CreateTestPanel(const std::string& panel_name) {

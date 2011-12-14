@@ -26,6 +26,7 @@ class PanelAppBrowserTest : public ExtensionBrowserTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnablePanels);
   }
 
   void LoadAndLaunchExtension(const char* name) {

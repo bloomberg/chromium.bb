@@ -174,6 +174,7 @@ BasePanelBrowserTest::~BasePanelBrowserTest() {
 
 void BasePanelBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   EnableDOMAutomation();
+  command_line->AppendSwitch(switches::kEnablePanels);
 }
 
 void BasePanelBrowserTest::SetUpOnMainThread() {

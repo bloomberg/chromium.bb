@@ -22,6 +22,11 @@
 
 class BrowserInitTest : public ExtensionBrowserTest {
  protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    ExtensionBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnablePanels);
+  }
+
   // Helper functions return void so that we can ASSERT*().
   // Use ASSERT_NO_FATAL_FAILURE around calls to these functions to stop the
   // test if an assert fails.
