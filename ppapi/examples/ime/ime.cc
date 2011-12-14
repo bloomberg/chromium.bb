@@ -22,9 +22,10 @@
 
 namespace {
 
-// Extracted from: ui/base/keycode/keyboard_codes.h
+// Extracted from: ui/base/keycodes/keyboard_codes.h
 enum {
   VKEY_BACK = 0x08,
+  VKEY_SHIFT = 0x10,
   VKEY_DELETE = 0x2E,
   VKEY_LEFT = 0x25,
   VKEY_UP = 0x26,
@@ -36,6 +37,7 @@ const uint32_t kTextfieldBgColor = 0xffffffff;
 const uint32_t kTextfieldTextColor = 0xff000000;
 const uint32_t kTextfieldCaretColor = 0xff000000;
 const uint32_t kTextfieldPreeditTextColor = 0xffff0000;
+const uint32_t kTextfieldSelectionBackgroundColor = 0xffeecccc;
 const uint32_t kTextfieldUnderlineColorMain = 0xffff0000;
 const uint32_t kTextfieldUnderlineColorSub = 0xffddaaaa;
 
@@ -122,7 +124,8 @@ class MyTextField {
         status_handler_(handler),
         area_(x, y, width, height),
         font_size_(height - 2),
-        caret_pos_(std::string::npos) {
+        caret_pos_(std::string::npos),
+        anchor_pos_(std::string::npos) {
     pp::FontDescription_Dev desc;
     desc.set_family(PP_FONTFAMILY_SANSSERIF);
     desc.set_size(font_size_);
@@ -136,6 +139,15 @@ class MyTextField {
 
     if (caret_pos_ != std::string::npos) {
       int offset = area_.x();
+      // selection (for the case without composition text)
+      if (composition_.empty() && HasSelection()) {
+        int left_x = font_.MeasureSimpleText(
+            utf8_text_.substr(0, SelectionLeft()));
+        int right_x = font_.MeasureSimpleText(
+            utf8_text_.substr(0, SelectionRight()));
+        FillRect(image, offset + left_x, area_.y(), right_x - left_x,
+                 area_.height(), kTextfieldSelectionBackgroundColor);
+      }
       // before caret
       {
         std::string str = utf8_text_.substr(0, caret_pos_);
@@ -151,6 +163,16 @@ class MyTextField {
       // composition
       {
         const std::string& str = composition_;
+        // selection
+        if (composition_selection_.first != composition_selection_.second) {
+          int left_x = font_.MeasureSimpleText(
+              str.substr(0, composition_selection_.first));
+          int right_x = font_.MeasureSimpleText(
+              str.substr(0, composition_selection_.second));
+          FillRect(image, offset + left_x, area_.y(), right_x - left_x,
+                   area_.height(), kTextfieldSelectionBackgroundColor);
+        }
+        // composition text
         font_.DrawTextAt(
             image,
             pp::TextRun_Dev(str.c_str(), false, false),
@@ -173,7 +195,8 @@ class MyTextField {
           }
         }
         // caret
-        int caretx = font_.MeasureSimpleText(str.substr(0, selection_.first));
+        int caretx = font_.MeasureSimpleText(
+            str.substr(0, composition_selection_.first));
         FillRect(image,
                  pp::Rect(offset + caretx, area_.y(), 2, area_.height()),
                  kTextfieldCaretColor);
@@ -207,10 +230,12 @@ class MyTextField {
       const std::vector< std::pair<uint32_t, uint32_t> >& segments,
       int32_t target_segment,
       const std::pair<uint32_t, uint32_t>& selection) {
+    if (HasSelection() && !text.empty())
+      InsertText("");
     composition_ = text;
     segments_ = segments;
     target_segment_ = target_segment;
-    selection_ = selection;
+    composition_selection_ = selection;
     CaretPosChanged();
   }
 
@@ -228,7 +253,7 @@ class MyTextField {
   void SetText(const std::string& text) {
     utf8_text_ = text;
     if (Focused()) {
-      caret_pos_ = text.size();
+      caret_pos_ = anchor_pos_ = text.size();
       CaretPosChanged();
     }
   }
@@ -237,56 +262,93 @@ class MyTextField {
   void InsertText(const std::string& text) {
     if (!Focused())
       return;
-    utf8_text_.insert(caret_pos_, text);
-    if (Focused()) {
-      caret_pos_ += text.size();
-      CaretPosChanged();
-    }
+    utf8_text_.replace(SelectionLeft(), SelectionRight() - SelectionLeft(),
+                       text);
+    caret_pos_ = anchor_pos_ = SelectionLeft() + text.size();
+    CaretPosChanged();
   }
 
   // Handles mouse click event and changes the focus state.
   bool RefocusByMouseClick(int x, int y) {
     if (!Contains(x, y)) {
       // The text field is unfocused.
-      caret_pos_ = std::string::npos;
+      caret_pos_ = anchor_pos_ = std::string::npos;
       return false;
     }
 
     // The text field is focused.
     size_t n = font_.CharacterOffsetForPixel(
         pp::TextRun_Dev(utf8_text_.c_str()), x - area_.x());
-    caret_pos_ = GetNthCharOffsetUtf8(utf8_text_, n);
+    caret_pos_ = anchor_pos_ = GetNthCharOffsetUtf8(utf8_text_, n);
     CaretPosChanged();
     return true;
   }
 
-  void KeyLeft() {
+  void MouseDrag(int x, int y) {
     if (!Focused())
       return;
-    caret_pos_ = GetPrevCharOffsetUtf8(utf8_text_, caret_pos_);
+    size_t n = font_.CharacterOffsetForPixel(
+        pp::TextRun_Dev(utf8_text_.c_str()), x - area_.x());
+    caret_pos_ = GetNthCharOffsetUtf8(utf8_text_, n);
+  }
+
+  void MouseUp(int x, int y) {
+    if (!Focused())
+      return;
     CaretPosChanged();
   }
 
-  void KeyRight() {
+  void KeyLeft(bool shift) {
     if (!Focused())
       return;
-    caret_pos_ = GetNextCharOffsetUtf8(utf8_text_, caret_pos_);
+    // Move caret to the head of the selection or to the previous character.
+    if (!shift && HasSelection())
+      caret_pos_ = SelectionLeft();
+    else
+      caret_pos_ = GetPrevCharOffsetUtf8(utf8_text_, caret_pos_);
+    // Move the anchor if the shift key is not pressed.
+    if (!shift)
+      anchor_pos_ = caret_pos_;
+    CaretPosChanged();
+  }
+
+  void KeyRight(bool shift) {
+    if (!Focused())
+      return;
+    // Move caret to the end of the selection or to the next character.
+    if (!shift && HasSelection())
+      caret_pos_ = SelectionRight();
+    else
+      caret_pos_ = GetNextCharOffsetUtf8(utf8_text_, caret_pos_);
+    // Move the anchor if the shift key is not pressed.
+    if (!shift)
+      anchor_pos_ = caret_pos_;
     CaretPosChanged();
   }
 
   void KeyDelete() {
     if (!Focused())
       return;
-    size_t i = GetNextCharOffsetUtf8(utf8_text_, caret_pos_);
-    utf8_text_.erase(caret_pos_, i - caret_pos_);
-    CaretPosChanged();
+    if (HasSelection()) {
+      InsertText("");
+    } else {
+      size_t i = GetNextCharOffsetUtf8(utf8_text_, caret_pos_);
+      utf8_text_.erase(caret_pos_, i - caret_pos_);
+      CaretPosChanged();
+    }
   }
 
   void KeyBackspace() {
-    if (!Focused() || caret_pos_ == 0)
+    if (!Focused())
       return;
-    KeyLeft();
-    KeyDelete();
+    if (HasSelection()) {
+      InsertText("");
+    } else if (caret_pos_ != 0) {
+      size_t i = GetPrevCharOffsetUtf8(utf8_text_, caret_pos_);
+      utf8_text_.erase(i, caret_pos_ - i);
+      caret_pos_ = anchor_pos_ = i;
+      CaretPosChanged();
+    }
   }
 
  private:
@@ -295,11 +357,20 @@ class MyTextField {
     if (Focused()) {
       std::string str = utf8_text_.substr(0, caret_pos_);
       if (!composition_.empty())
-        str += composition_.substr(0, selection_.first);
+        str += composition_.substr(0, composition_selection_.first);
       int px = font_.MeasureSimpleText(str);
       pp::Rect caret(area_.x() + px, area_.y(), 0, area_.height() + 2);
       status_handler_->FocusIn(caret, area_);
     }
+  }
+  size_t SelectionLeft() const {
+    return std::min(caret_pos_, anchor_pos_);
+  }
+  size_t SelectionRight() const {
+    return std::max(caret_pos_, anchor_pos_);
+  }
+  bool HasSelection() const {
+    return caret_pos_ != anchor_pos_;
   }
 
   pp::Instance* instance_;
@@ -310,9 +381,10 @@ class MyTextField {
   pp::Font_Dev font_;
   std::string utf8_text_;
   size_t caret_pos_;
+  size_t anchor_pos_;
   std::string composition_;
   std::vector< std::pair<uint32_t, uint32_t> > segments_;
-  std::pair<uint32_t, uint32_t> selection_;
+  std::pair<uint32_t, uint32_t> composition_selection_;
   int target_segment_;
 };
 
@@ -320,7 +392,8 @@ class MyInstance : public pp::Instance {
  public:
   explicit MyInstance(PP_Instance instance)
       : pp::Instance(instance),
-        status_handler_(new TextFieldStatusHandler) {
+        status_handler_(new TextFieldStatusHandler),
+        dragging_(false) {
   }
 
   ~MyInstance() {
@@ -394,6 +467,11 @@ class MyInstance : public pp::Instance {
         ret = OnMouseMove(mouseEvent);
         break;
       }
+      case PP_INPUTEVENT_TYPE_MOUSEUP: {
+        const pp::MouseInputEvent mouseEvent(event);
+        ret = OnMouseUp(mouseEvent);
+        break;
+      }
       case PP_INPUTEVENT_TYPE_KEYDOWN: {
         Log("Keydown");
         const pp::KeyboardInputEvent keyEvent(event);
@@ -433,7 +511,7 @@ class MyInstance : public pp::Instance {
       default:
         break;
     }
-    if (ret && event.GetType() != PP_INPUTEVENT_TYPE_MOUSEMOVE)
+    if (ret && (dragging_ || event.GetType() != PP_INPUTEVENT_TYPE_MOUSEMOVE))
       Paint();
     return ret;
   }
@@ -479,6 +557,8 @@ class MyInstance : public pp::Instance {
   }
 
   bool OnMouseDown(const pp::MouseInputEvent& ev) {
+    dragging_ = true;
+
     bool anyone_focused = false;
     for (std::vector<MyTextField>::iterator it = textfield_.begin();
          it != textfield_.end();
@@ -508,6 +588,8 @@ class MyInstance : public pp::Instance {
                        ev.GetPosition().y())) {
         cursor_control->SetCursor(pp_instance(), PP_CURSORTYPE_IBEAM,
                                   0, NULL);
+        if (it->Focused() && dragging_)
+          it->MouseDrag(ev.GetPosition().x(), ev.GetPosition().y());
         return true;
       }
     }
@@ -516,17 +598,28 @@ class MyInstance : public pp::Instance {
     return true;
   }
 
+  bool OnMouseUp(const pp::MouseInputEvent& ev) {
+    dragging_ = false;
+    for (std::vector<MyTextField>::iterator it = textfield_.begin();
+         it != textfield_.end();
+         ++it)
+      if (it->Focused())
+        it->MouseUp(ev.GetPosition().x(), ev.GetPosition().y());
+    return false;
+  }
+
   bool OnKeyDown(const pp::KeyboardInputEvent& ev) {
     for (std::vector<MyTextField>::iterator it = textfield_.begin();
          it != textfield_.end();
          ++it) {
       if (it->Focused()) {
+        bool shift = ev.GetModifiers() & PP_INPUTEVENT_MODIFIER_SHIFTKEY;
         switch (ev.GetKeyCode()) {
           case VKEY_LEFT:
-            it->KeyLeft();
+            it->KeyLeft(shift);
             break;
           case VKEY_RIGHT:
-            it->KeyRight();
+            it->KeyRight(shift);
             break;
           case VKEY_DELETE:
             it->KeyDelete();
@@ -606,6 +699,9 @@ class MyInstance : public pp::Instance {
 
   // Holds instances of text fields.
   std::vector<MyTextField> textfield_;
+
+  // Whether or not during a drag operation.
+  bool dragging_;
 };
 
 class MyModule : public pp::Module {
