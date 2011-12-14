@@ -4554,7 +4554,6 @@
    fun:_ZN7WebCore23v8StringToWebCoreStringEN2v86HandleINS0_6StringEEE
    fun:_ZN7WebCore22v8ValueToWebCoreStringEN2v86HandleINS0_5ValueEEE
    fun:_ZN7WebCore15toWebCoreStringEN2v86HandleINS0_5ValueEEE
-   fun:_ZN7WebCore15V8WorkerContext21importScriptsCallbackERKN2v89ArgumentsE
 }
 {
    bug_101145c
@@ -4612,11 +4611,11 @@
    bug_101151
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF6StringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN7WebCore15V8ParameterBase8toStringIN3WTF6StringEEET_v
-   fun:_ZN7WebCore15V8ParameterBasecvN3WTF6StringEEv
+   fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF*StringEEET_*
+   fun:_ZN7WebCore15V8ParameterBase8toStringIN3WTF*StringEEET_*
+   fun:_ZN7WebCore15V8ParameterBasecvN3WTF*StringEEv
    ...
-   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+   fun:_ZN2v88internalL*HandleApiCall*
    obj:*
 }
 {
@@ -4934,7 +4933,7 @@
    bug_103467
    Memcheck:Uninitialized
    fun:_ZNK7WebCore12NamedNodeMap20mappedMapsEquivalentEPKS0_
-   fun:_ZNK7WebCore16CSSStyleSelector24canShareStyleWithElementEPNS_4NodeE
+   fun:_ZNK7WebCore16CSSStyleSelector24canShareStyleWithElementE*
    fun:_ZNK7WebCore16CSSStyleSelector26findSiblingForStyleSharingEPNS_4NodeERj
 }
 {
@@ -5314,9 +5313,9 @@
    bug_107503a
    Memcheck:Uninitialized
    fun:bcmp
-   fun:_ZN3WTF14VectorComparerILb1EN7WebCore11CSSPropertyEE7compareEPKS2_S5_m
-   fun:_ZN3WTF20VectorTypeOperationsIN7WebCore11CSSPropertyEE7compareEPKS2_S5_m
-   fun:_ZN3WTFeqIN7WebCore11CSSPropertyELm4EEEbRKNS_6VectorIT_XT0_EEES7_
+   fun:_ZN3WTF14VectorComparerILb1EN7WebCore11CSSPropertyE*
+   fun:_ZN3WTF20VectorTypeOperationsIN7WebCore11CSSPropertyE*
+   fun:_ZN3WTFeqIN7WebCore11CSSPropertyE*
    fun:_ZNK7WebCore26CSSMutableStyleDeclaration15propertiesEqualEPKS0_
    fun:_ZNK7WebCore12NamedNodeMap20mappedMapsEquivalentEPKS0_
    fun:_ZNK7WebCore16CSSStyleSelector24canShareStyleWithElementEPNS_13StyledElementE
