@@ -7,6 +7,7 @@
 #include "base/i18n/icu_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "grit/ui_resources.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura_shell/examples/toplevel_window.h"
 #include "ui/aura_shell/launcher/launcher_types.h"
@@ -91,6 +92,10 @@ class ShellDelegateImpl : public aura_shell::ShellDelegate {
     }
     image_count = (image_count + 1) % 3;
     return true;  // Makes the entry show up in the launcher.
+  }
+
+  virtual int GetResourceIDForNewBrowserWindow() OVERRIDE {
+    return IDR_AURA_LAUNCHER_ICON_CHROME;
   }
 };
 

@@ -24,9 +24,8 @@ Launcher::Launcher(aura::Window* window_container)
 
   widget_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
-  // All the content is drawn by the launcher buttons. Turn off the widget's
-  // layer's texture to avoid unnecessary memory use.
-  params.create_texture_for_layer = false;
+  params.create_texture_for_layer = true;
+  params.transparent = true;
   params.parent = Shell::GetInstance()->GetContainer(
       aura_shell::internal::kShellWindowId_LauncherContainer);
   internal::LauncherView* launcher_view =
