@@ -37,7 +37,7 @@ class AURA_SHELL_EXPORT ShelfLayoutManager : public aura::LayoutManager,
   // widgets.
   void LayoutShelf();
 
-  // Sets the visbility of the shelf to |visible|.
+  // Sets the visibility of the shelf to |visible|.
   void SetVisible(bool visible);
   bool visible() const { return animating_ ? !visible_ : visible_; }
 
@@ -66,7 +66,7 @@ class AURA_SHELL_EXPORT ShelfLayoutManager : public aura::LayoutManager,
   // Stops any animations.
   void StopAnimating();
 
-  // Calculates the target bounds assuming visibility of |visibile|.
+  // Calculates the target bounds assuming visibility of |visible|.
   void CalculateTargetBounds(bool visible,
                              TargetBounds* target_bounds);
 

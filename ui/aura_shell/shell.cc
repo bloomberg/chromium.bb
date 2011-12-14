@@ -22,6 +22,7 @@
 #include "ui/aura_shell/root_window_event_filter.h"
 #include "ui/aura_shell/root_window_layout_manager.h"
 #include "ui/aura_shell/drag_drop_controller.h"
+#include "ui/aura_shell/laptop_mode_layout_manager.h"
 #include "ui/aura_shell/launcher/launcher.h"
 #include "ui/aura_shell/modal_container_layout_manager.h"
 #include "ui/aura_shell/shadow_controller.h"
@@ -58,8 +59,11 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
   containers->push_back(background_container);
 
   aura::Window* default_container = new aura::Window(NULL);
-  default_container->SetEventFilter(
-      new ToplevelWindowEventFilter(default_container));
+  // Primary windows in laptop mode don't allow drag, so don't use the filter.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraLaptopMode)) {
+    default_container->SetEventFilter(
+        new ToplevelWindowEventFilter(default_container));
+  }
   default_container->set_id(internal::kShellWindowId_DefaultContainer);
   containers->push_back(default_container);
 
@@ -197,47 +201,14 @@ void Shell::Init() {
           root_window->stacking_client());
   stacking_controller->Init();
 
-  internal::RootWindowLayoutManager* root_window_layout =
-      new internal::RootWindowLayoutManager(root_window);
-  root_window->SetLayoutManager(root_window_layout);
-
-  root_window_layout->set_background_widget(
-      internal::CreateDesktopBackground());
-  aura::Window* default_container =
-      GetContainer(internal::kShellWindowId_DefaultContainer);
-  launcher_.reset(new Launcher(default_container));
-
-  views::Widget* status_widget = NULL;
-  if (delegate_.get())
-    status_widget = delegate_->CreateStatusArea();
-  if (!status_widget)
-    status_widget = internal::CreateStatusArea();
-
-  internal::ShelfLayoutManager* shelf_layout_manager =
-      new internal::ShelfLayoutManager(launcher_->widget(), status_widget);
-  GetContainer(aura_shell::internal::kShellWindowId_LauncherContainer)->
-      SetLayoutManager(shelf_layout_manager);
-
-  internal::StatusAreaLayoutManager* status_area_layout_manager =
-      new internal::StatusAreaLayoutManager(shelf_layout_manager);
-  GetContainer(aura_shell::internal::kShellWindowId_StatusContainer)->
-      SetLayoutManager(status_area_layout_manager);
+  InitLayoutManagers(root_window);
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kAuraNoShadows))
     shadow_controller_.reset(new internal::ShadowController());
 
-  if (command_line->HasSwitch(switches::kAuraWorkspaceManager)) {
-    EnableWorkspaceManager();
-  } else {
-    internal::ToplevelLayoutManager* toplevel_layout_manager =
-        new internal::ToplevelLayoutManager();
-    default_container->SetLayoutManager(toplevel_layout_manager);
-    toplevel_layout_manager->set_shelf(shelf_layout_manager);
-  }
-
   // Force a layout.
-  root_window_layout->OnWindowResized();
+  root_window->layout_manager()->OnWindowResized();
 
   // Initialize ShellAcceleratorFilter
   accelerator_filter_.reset(new internal::ShellAcceleratorFilter);
@@ -255,6 +226,57 @@ void Shell::Init() {
   aura::RootWindow::GetInstance()->SetProperty(
       aura::kRootWindowDragDropClientKey,
       static_cast<aura::DragDropClient*>(drag_drop_controller_.get()));
+}
+
+void Shell::InitLayoutManagers(aura::RootWindow* root_window) {
+  internal::RootWindowLayoutManager* root_window_layout =
+      new internal::RootWindowLayoutManager(root_window);
+  root_window->SetLayoutManager(root_window_layout);
+
+  views::Widget* status_widget = NULL;
+  if (delegate_.get())
+    status_widget = delegate_->CreateStatusArea();
+  if (!status_widget)
+    status_widget = internal::CreateStatusArea();
+
+  aura::Window* default_container =
+      GetContainer(internal::kShellWindowId_DefaultContainer);
+
+  // Laptop mode has a simplified layout manager and doesn't use the launcher,
+  // desktop background, shelf, etc.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraLaptopMode)) {
+    default_container->SetLayoutManager(
+        new internal::LaptopModeLayoutManager());
+    // TODO(jamescook): Adjust status area layout.
+    return;
+  }
+
+  root_window_layout->set_background_widget(
+      internal::CreateDesktopBackground());
+  launcher_.reset(new Launcher(default_container));
+
+  internal::ShelfLayoutManager* shelf_layout_manager =
+      new internal::ShelfLayoutManager(launcher_->widget(), status_widget);
+  GetContainer(aura_shell::internal::kShellWindowId_LauncherContainer)->
+      SetLayoutManager(shelf_layout_manager);
+
+  internal::StatusAreaLayoutManager* status_area_layout_manager =
+      new internal::StatusAreaLayoutManager(shelf_layout_manager);
+  GetContainer(aura_shell::internal::kShellWindowId_StatusContainer)->
+      SetLayoutManager(status_area_layout_manager);
+
+  // Workspace manager has its own layout managers.
+  if (CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kAuraWorkspaceManager)) {
+    EnableWorkspaceManager();
+    return;
+  }
+
+  // Default layout manager.
+  internal::ToplevelLayoutManager* toplevel_layout_manager =
+      new internal::ToplevelLayoutManager();
+  default_container->SetLayoutManager(toplevel_layout_manager);
+  toplevel_layout_manager->set_shelf(shelf_layout_manager);
 }
 
 aura::Window* Shell::GetContainer(int container_id) {

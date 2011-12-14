@@ -66,6 +66,11 @@ class BrowserFrame : public views::Widget {
   // its frame treatment if necessary.
   void TabStripDisplayModeChanged();
 
+  // Returns true for single window mode.  ChromeOS and Aura laptop mode use a
+  // single window filling the work area, which does not have a close, maximize,
+  // minimize or restore button and does not draw frame edges.
+  bool IsSingleWindowMode() const;
+
   // Overridden from views::Widget:
   virtual bool IsMaximized() const OVERRIDE;
   virtual views::internal::RootView* CreateRootView() OVERRIDE;

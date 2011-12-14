@@ -6,10 +6,8 @@
 
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/property_util.h"
 #include "ui/aura_shell/shelf_layout_manager.h"
-#include "ui/aura_shell/workspace/workspace.h"
-#include "ui/aura_shell/workspace/workspace_manager.h"
+#include "ui/aura_shell/window_util.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/screen.h"
 
@@ -30,8 +28,10 @@ void ToplevelLayoutManager::OnWindowResized() {
 void ToplevelLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   windows_.insert(child);
   child->AddObserver(this);
-  if (child->GetProperty(aura::kShowStateKey))
-    WindowStateChanged(child);
+  if (child->GetProperty(aura::kShowStateKey)) {
+    UpdateBoundsFromShowState(child);
+    UpdateShelfVisibility();
+  }
 }
 
 void ToplevelLayoutManager::OnWillRemoveWindowFromLayout(
@@ -61,36 +61,10 @@ void ToplevelLayoutManager::SetChildBounds(aura::Window* child,
 void ToplevelLayoutManager::OnWindowPropertyChanged(aura::Window* window,
                                                     const char* name,
                                                     void* old) {
-  if (name == aura::kShowStateKey)
-    WindowStateChanged(window);
-}
-
-void ToplevelLayoutManager::WindowStateChanged(aura::Window* window) {
-  switch (window->GetIntProperty(aura::kShowStateKey)) {
-    case ui::SHOW_STATE_NORMAL: {
-      const gfx::Rect* restore = GetRestoreBounds(window);
-      window->SetProperty(aura::kRestoreBoundsKey, NULL);
-      if (restore)
-        window->SetBounds(*restore);
-      delete restore;
-      break;
-    }
-
-    case ui::SHOW_STATE_MAXIMIZED:
-      SetRestoreBoundsIfNotSet(window);
-      window->SetBounds(gfx::Screen::GetMonitorWorkAreaNearestWindow(window));
-      break;
-
-    case ui::SHOW_STATE_FULLSCREEN:
-      SetRestoreBoundsIfNotSet(window);
-      window->SetBounds(gfx::Screen::GetMonitorAreaNearestWindow(window));
-      break;
-
-    default:
-      break;
+  if (name == aura::kShowStateKey) {
+    UpdateBoundsFromShowState(window);
+    UpdateShelfVisibility();
   }
-
-  UpdateShelfVisibility();
 }
 
 void ToplevelLayoutManager::UpdateShelfVisibility() {

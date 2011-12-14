@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_TOPLEVEL_LAYOUT_MANAGER_H_
-#define UI_AURA_SHELL_TOPLEVEL_LAYOUT_MANAGER_H_
+#ifndef UI_AURA_SHELL_LAPTOP_MODE_LAYOUT_MANAGER_H_
+#define UI_AURA_SHELL_LAPTOP_MODE_LAYOUT_MANAGER_H_
 #pragma once
 
 #include <set>
@@ -17,19 +17,15 @@
 namespace aura_shell {
 namespace internal {
 
-class ShelfLayoutManager;
-
-// ToplevelLayoutManager is the LayoutManager installed on a container that
-// hosts what the shell considers to be top-level windows. It is used if the
-// WorkspaceManager is not enabled. ToplevelLayoutManager listens for changes to
-// kShowStateKey and resizes the window appropriately.
-class AURA_SHELL_EXPORT ToplevelLayoutManager : public aura::LayoutManager,
-                                                public aura::WindowObserver {
+// LaptopModeLayoutManager is an alternate LayoutManager for the container that
+// hosts what the shell considers to be top-level windows. It is used for low
+// resolution screens and keeps the main browser window maximized.
+// It listens for changes to kShowStateKey and resizes the window appropriately.
+class AURA_SHELL_EXPORT LaptopModeLayoutManager : public aura::LayoutManager,
+                                                  public aura::WindowObserver {
  public:
-  ToplevelLayoutManager();
-  virtual ~ToplevelLayoutManager();
-
-  void set_shelf(ShelfLayoutManager* shelf) { shelf_ = shelf; }
+  LaptopModeLayoutManager();
+  virtual ~LaptopModeLayoutManager();
 
   // LayoutManager overrides:
   virtual void OnWindowResized() OVERRIDE;
@@ -48,20 +44,13 @@ class AURA_SHELL_EXPORT ToplevelLayoutManager : public aura::LayoutManager,
  private:
   typedef std::set<aura::Window*> Windows;
 
-  // Updates the visibility of the shelf based on if there are any full screen
-  // windows.
-  void UpdateShelfVisibility();
-
   // Set of windows we're listening to.
   Windows windows_;
 
-  // May be NULL if we're not using a shelf.
-  ShelfLayoutManager* shelf_;
-
-  DISALLOW_COPY_AND_ASSIGN(ToplevelLayoutManager);
+  DISALLOW_COPY_AND_ASSIGN(LaptopModeLayoutManager);
 };
 
 }  // namespace aura_shell
 }  // namespace internal
 
-#endif  // UI_AURA_SHELL_TOPLEVEL_LAYOUT_MANAGER_H_
+#endif  // UI_AURA_SHELL_LAPTOP_MODE_LAYOUT_MANAGER_H_

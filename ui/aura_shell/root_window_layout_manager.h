@@ -46,6 +46,7 @@ class RootWindowLayoutManager : public aura::LayoutManager {
  private:
   aura::Window* owner_;
 
+  // May be NULL if we're not painting a background.
   views::Widget* background_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowLayoutManager);

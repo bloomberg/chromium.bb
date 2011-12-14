@@ -32,7 +32,8 @@ void RootWindowLayoutManager::OnWindowResized() {
   for (i = owner_->children().begin(); i != owner_->children().end(); ++i)
     (*i)->SetBounds(fullscreen_bounds);
 
-  background_widget_->SetBounds(fullscreen_bounds);
+  if (background_widget_)
+    background_widget_->SetBounds(fullscreen_bounds);
 }
 
 void RootWindowLayoutManager::OnWindowAddedToLayout(aura::Window* child) {

@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/widget/native_widget.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -67,13 +68,26 @@ void BrowserFrame::InitBrowserFrame() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAuraTranslucentFrames))
     params.transparent = true;
+  // Aura laptop mode fills the monitor with with its windows.
+  if (command_line->HasSwitch(switches::kAuraLaptopMode) &&
+      browser_view_->IsBrowserTypeNormal()) {
+    params.bounds = gfx::Screen::GetPrimaryMonitorBounds();
+    params.show_state = ui::SHOW_STATE_MAXIMIZED;
+  }
 #endif
   Init(params);
-#if defined(OS_CHROMEOS) && !defined(USE_AURA)
-  // On ChromeOS we always want top-level windows to appear active.
-  if (!browser_view_->IsBrowserTypePopup())
-    DisableInactiveRendering();
+
+  // On ChromeOS and Aura laptop mode we always want top-level windows
+  // to appear active.
+  bool disable_inactive_rendering = false;
+#if defined(USE_AURA)
+  disable_inactive_rendering =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraLaptopMode);
+#elif defined(OS_CHROMEOS)
+  disable_inactive_rendering = true;
 #endif
+  if (disable_inactive_rendering && !browser_view_->IsBrowserTypePopup())
+    DisableInactiveRendering();
 }
 
 int BrowserFrame::GetMinimizeButtonOffset() const {
@@ -105,8 +119,20 @@ void BrowserFrame::TabStripDisplayModeChanged() {
   native_browser_frame_->TabStripDisplayModeChanged();
 }
 
+bool BrowserFrame::IsSingleWindowMode() const {
+  bool single_window_mode = false;
+#if defined(USE_AURA)
+  single_window_mode =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraLaptopMode);
+#elif defined(OS_CHROMEOS)
+  single_window_mode =
+      chromeos::system::runtime_environment::IsRunningOnChromeOS();
+#endif
+  return single_window_mode;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserFrameWin, views::Window overrides:
+// BrowserFrame, views::Widget overrides:
 
 bool BrowserFrame::IsMaximized() const {
 #if defined(OS_CHROMEOS) && !defined(USE_AURA)

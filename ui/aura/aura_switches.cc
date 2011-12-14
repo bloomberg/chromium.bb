@@ -9,6 +9,10 @@ namespace switches {
 // Initial dimensions for the host window in the form "1024x768".
 const char kAuraHostWindowSize[] = "aura-host-window-size";
 
+// Show only a single maximized window, like traditional non-Aura builds.
+// Useful for low-resolution screens, such as on laptops.
+const char kAuraLaptopMode[] = "aura-laptop-mode";
+
 // Avoid drawing drop shadows under windows.
 const char kAuraNoShadows[] = "aura-no-shadows";
 

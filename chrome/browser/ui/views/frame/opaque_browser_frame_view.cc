@@ -42,6 +42,10 @@
 #include "ui/views/window/frame_background.h"
 #include "ui/views/window/window_shape.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/aura_switches.h"
+#endif
+
 #if defined(USE_VIRTUAL_KEYBOARD)
 #include "chrome/browser/ui/virtual_keyboard/virtual_keyboard_manager.h"
 #endif
@@ -132,6 +136,7 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   SkColor color = tp->GetColor(ThemeService::COLOR_BUTTON_BACKGROUND);
   SkBitmap* background =
       tp->GetBitmapNamed(IDR_THEME_WINDOW_CONTROL_BACKGROUND);
+  // TODO(jamescook): Refactor button setup into one button setup function.
   minimize_button_->SetImage(views::CustomButton::BS_NORMAL,
                              tp->GetBitmapNamed(IDR_MINIMIZE));
   minimize_button_->SetImage(views::CustomButton::BS_HOT,
@@ -145,12 +150,6 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   minimize_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_MINIMIZE));
   AddChildView(minimize_button_);
-#if defined(USE_AURA)
-  // TODO(jamescook): Remove this when Aura uses its own custom window frame,
-  // BrowserNonClientFrameViewAura.  Layout code depends on this button's
-  // position, so just hide it.
-  minimize_button_->SetVisible(false);
-#endif
 
   maximize_button_->SetImage(views::CustomButton::BS_NORMAL,
                              tp->GetBitmapNamed(IDR_MAXIMIZE));
@@ -945,38 +944,37 @@ void OpaqueBrowserFrameView::LayoutWindowControls() {
       close_button_size.width() + right_extra_width,
       close_button_size.height());
 
-#if defined(OS_CHROMEOS) && !defined(USE_AURA)
-  // LayoutWindowControls could be triggered from
-  // NativeWidgetGtk::UpdateWindowTitle(), which could happen when user
-  // navigates in fullscreen mode. And because
-  // BrowserFrameChromeos::IsMaximized() return false for fullscreen mode, we
-  // explicitly test fullscreen mode here and make it use the same code path
-  // as maximized mode.
-  // TODO(oshima): Optimize the relayout logic to defer the frame view's
-  // relayout until it is necessary, i.e when it becomes visible.
-  if (is_maximized || frame()->IsFullscreen()) {
-    minimize_button_->SetVisible(false);
-    restore_button_->SetVisible(false);
-    maximize_button_->SetVisible(false);
+  // Both ChromeOS and Aura laptop mode use a single main window.
+  if (frame()->IsSingleWindowMode()) {
+    // LayoutWindowControls could be triggered from
+    // NativeWidgetGtk::UpdateWindowTitle(), which could happen when user
+    // navigates in fullscreen mode. And because
+    // BrowserFrameChromeos::IsMaximized() return false for fullscreen mode, we
+    // explicitly test fullscreen mode here and make it use the same code path
+    // as maximized mode.
+    // TODO(oshima): Optimize the relayout logic to defer the frame view's
+    // relayout until it is necessary, i.e when it becomes visible.
+    if (is_maximized || frame()->IsFullscreen()) {
+      minimize_button_->SetVisible(false);
+      restore_button_->SetVisible(false);
+      maximize_button_->SetVisible(false);
 
-    if (browser_view()->browser()->is_devtools()) {
-      close_button_->SetVisible(true);
-      minimize_button_->SetBounds(close_button_->bounds().x(), 0, 0, 0);
-    } else {
-      close_button_->SetVisible(false);
-      // Set the bounds of the minimize button so that we don't have to change
-      // other places that rely on the bounds. Put it slightly to the right
-      // of the edge of the view, so that when we remove the spacing it lines
-      // up with the edge.
-      minimize_button_->SetBounds(width() - FrameBorderThickness(false) +
-          kNewTabCaptionMaximizedSpacing, 0, 0, 0);
+      if (browser_view()->browser()->is_devtools()) {
+        close_button_->SetVisible(true);
+        minimize_button_->SetBounds(close_button_->bounds().x(), 0, 0, 0);
+      } else {
+        close_button_->SetVisible(false);
+        // Set the bounds of the minimize button so that we don't have to change
+        // other places that rely on the bounds. Put it slightly to the right
+        // of the edge of the view, so that when we remove the spacing it lines
+        // up with the edge.
+        minimize_button_->SetBounds(width() - FrameBorderThickness(false) +
+            kNewTabCaptionMaximizedSpacing, 0, 0, 0);
+      }
+      return;
     }
-
-    return;
-  } else {
     close_button_->SetVisible(true);
   }
-#endif
 
   // When the window is restored, we show a maximized button; otherwise, we show
   // a restore button.
@@ -995,9 +993,11 @@ void OpaqueBrowserFrameView::LayoutWindowControls() {
                             caption_y, visible_button_size.width(),
                             visible_button_size.height());
 
-#if !defined(USE_AURA)
+#if defined(USE_AURA)
   // TODO(jamescook): Go back to showing minimize button when Aura uses its
   // own custom window frame, BrowserNonClientFrameViewAura.
+  minimize_button_->SetVisible(false);
+#else
   minimize_button_->SetVisible(true);
 #endif
   minimize_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,

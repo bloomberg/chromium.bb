@@ -14,6 +14,8 @@ class Window;
 
 namespace aura_shell {
 
+// TODO(jamescook): Put all these functions in namespace window_util.
+
 // Returns true if |window| is in the maximized state.
 AURA_SHELL_EXPORT bool IsWindowMaximized(aura::Window* window);
 
@@ -29,6 +31,9 @@ AURA_SHELL_EXPORT aura::Window* GetActiveWindow();
 // If you're looking for a function to get the activatable "top level" window,
 // this is probably what you're looking for.
 AURA_SHELL_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
+
+// Update window bounds based on a change in show state.
+AURA_SHELL_EXPORT void UpdateBoundsFromShowState(aura::Window* window);
 
 }  // namespace aura_shell
 

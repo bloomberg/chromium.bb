@@ -1998,15 +1998,18 @@ void BrowserView::Init() {
   ignore_layout_ = false;
 
 #if defined(USE_AURA)
+  // Add launcher item if we're using the launcher and this type of browser
+  // needs an item.
   aura_shell::LauncherItemType type;
-  if (ChromeShellDelegate::ShouldCreateLauncherItemForBrowser(browser_.get(),
+  if (aura_shell::Shell::GetInstance()->launcher() &&
+      ChromeShellDelegate::ShouldCreateLauncherItemForBrowser(browser_.get(),
                                                               &type)) {
     icon_updater_.reset(new LauncherIconUpdater(
         browser_->tabstrip_model(),
         aura_shell::Shell::GetInstance()->launcher()->model(),
         frame_->GetNativeWindow()));
   }
-#endif
+#endif  // defined(USE_AURA)
 }
 
 void BrowserView::LoadingAnimationCallback() {

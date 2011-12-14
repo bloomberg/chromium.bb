@@ -9,7 +9,9 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/activation_controller.h"
+#include "ui/aura_shell/property_util.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/gfx/screen.h"
 
 namespace aura_shell {
 
@@ -36,6 +38,32 @@ aura::Window* GetActiveWindow() {
 
 aura::Window* GetActivatableWindow(aura::Window* window) {
   return internal::ActivationController::GetActivatableWindow(window);
+}
+
+void UpdateBoundsFromShowState(aura::Window* window) {
+  switch (window->GetIntProperty(aura::kShowStateKey)) {
+    case ui::SHOW_STATE_NORMAL: {
+      const gfx::Rect* restore = GetRestoreBounds(window);
+      window->SetProperty(aura::kRestoreBoundsKey, NULL);
+      if (restore)
+        window->SetBounds(*restore);
+      delete restore;
+      break;
+    }
+
+    case ui::SHOW_STATE_MAXIMIZED:
+      SetRestoreBoundsIfNotSet(window);
+      window->SetBounds(gfx::Screen::GetMonitorWorkAreaNearestWindow(window));
+      break;
+
+    case ui::SHOW_STATE_FULLSCREEN:
+      SetRestoreBoundsIfNotSet(window);
+      window->SetBounds(gfx::Screen::GetMonitorAreaNearestWindow(window));
+      break;
+
+    default:
+      break;
+  }
 }
 
 }  // namespace aura_shell

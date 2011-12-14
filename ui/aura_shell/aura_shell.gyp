@@ -55,6 +55,8 @@
         'drag_image_view.h',
         'image_grid.cc',
         'image_grid.h',
+        'laptop_mode_layout_manager.cc',
+        'laptop_mode_layout_manager.h',
         'launcher/app_launcher_button.cc',
         'launcher/app_launcher_button.h',
         'launcher/launcher.cc',

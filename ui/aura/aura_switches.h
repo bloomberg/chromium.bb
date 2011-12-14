@@ -10,7 +10,9 @@
 
 namespace switches {
 
+// Please keep alphabetized.
 AURA_EXPORT extern const char kAuraHostWindowSize[];
+AURA_EXPORT extern const char kAuraLaptopMode[];
 AURA_EXPORT extern const char kAuraNoShadows[];
 AURA_EXPORT extern const char kAuraTranslucentFrames[];
 AURA_EXPORT extern const char kAuraWorkspaceManager[];

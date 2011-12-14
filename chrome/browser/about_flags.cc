@@ -445,6 +445,18 @@ const Experiment kExperiments[] = {
     kOsMac | kOsWin,
     SINGLE_VALUE_TYPE(switches::kEnableGamepad)
   },
+#if defined(USE_AURA)
+  // TODO(jamescook): Enable this for all ChromeOS builds when we're sure
+  // Aura laptop mode performance and feature set match traditional non-Aura
+  // builds.
+  {
+    "aura-laptop-mode",
+    IDS_FLAGS_AURA_LAPTOP_MODE_NAME,
+    IDS_FLAGS_AURA_LAPTOP_MODE_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kAuraLaptopMode)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;
