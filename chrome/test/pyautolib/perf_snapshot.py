@@ -37,6 +37,7 @@ import logging
 import optparse
 import simplejson
 import socket
+import sys
 import threading
 import time
 import urllib2
@@ -187,7 +188,7 @@ class _DevToolsSocketRequest(object):
                  value is True only if all results for this request are known).
   """
   def __init__(self, method, message_id):
-    """Initializes a DevToolsSocket request.
+    """Initialize.
 
     Args:
       method: The string method name for this request.
@@ -212,7 +213,7 @@ class _DevToolsSocketRequest(object):
 class _DevToolsSocketClient(asyncore.dispatcher):
   """Client that communicates with a remote Chrome instance via sockets.
 
-  This class works in conjunction with the _PerformanceSnapshotterThread class
+  This class works in conjunction with the _RemoteInspectorBaseThread class
   to communicate with a remote Chrome instance following the remote debugging
   communication protocol in WebKit.  This class performs the lower-level work
   of socket communication.
@@ -225,12 +226,12 @@ class _DevToolsSocketClient(asyncore.dispatcher):
     handshake_done: A boolean indicating whether or not the client has completed
                     the required protocol handshake with the remote Chrome
                     instance.
-    snapshotter: An instance of the _PerformanceSnapshotterThread class that is
-                 working together with this class to communicate with a remote
-                 Chrome instance.
+    inspector_thread: An instance of the _RemoteInspectorBaseThread class that
+                      is working together with this class to communicate with a
+                      remote Chrome instance.
   """
   def __init__(self, verbose, show_socket_messages, hostname, port, path):
-    """Initializes the DevToolsSocketClient.
+    """Initialize.
 
     Args:
       verbose: A boolean indicating whether or not to use verbose logging.
@@ -251,8 +252,10 @@ class _DevToolsSocketClient(asyncore.dispatcher):
     self._read_buffer = ''
     self._write_buffer = ''
 
+    self._socket_buffer_lock = threading.Lock()
+
     self.handshake_done = False
-    self.snapshotter = None
+    self.inspector_thread = None
 
     # Connect to the remote Chrome instance and initiate the protocol handshake.
     self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -292,6 +295,7 @@ class _DevToolsSocketClient(asyncore.dispatcher):
 
   def handle_write(self):
     """Called if a writable socket can be written; overridden from asyncore."""
+    self._socket_buffer_lock.acquire()
     if self._write_buffer:
       sent = self.send(self._write_buffer)
       if self._show_socket_messages:
@@ -305,9 +309,11 @@ class _DevToolsSocketClient(asyncore.dispatcher):
                                               self._write_buffer[:sent-1])
         print msg
       self._write_buffer = self._write_buffer[sent:]
+    self._socket_buffer_lock.release()
 
   def handle_read(self):
     """Called when a socket can be read; overridden from asyncore."""
+    self._socket_buffer_lock.acquire()
     if self.handshake_done:
       # Process a message reply from the remote Chrome instance.
       self._read_buffer += self.recv(4096)
@@ -326,8 +332,8 @@ class _DevToolsSocketClient(asyncore.dispatcher):
                  '%s\n'
                  '========================') % data
           print msg
-        if self.snapshotter:
-          self.snapshotter.NotifyReply(data)
+        if self.inspector_thread:
+          self.inspector_thread.NotifyReply(data)
         pos = self._read_buffer.find('\xff')
     else:
       # Process a handshake reply from the remote Chrome instance.
@@ -345,6 +351,7 @@ class _DevToolsSocketClient(asyncore.dispatcher):
                  '%s\n'
                  '=========================') % data
           print msg
+    self._socket_buffer_lock.release()
 
   def handle_close(self):
     """Called when the socket is closed; overridden from asyncore."""
@@ -366,29 +373,239 @@ class _DevToolsSocketClient(asyncore.dispatcher):
   def handle_error(self):
     """Called when an exception is raised; overridden from asyncore."""
     self.close()
-    self.snapshotter.NotifySocketClientException()
+    self.inspector_thread.NotifySocketClientException()
     asyncore.dispatcher.handle_error(self)
 
 
-class _PerformanceSnapshotterThread(threading.Thread):
-  """Manages communication with a remote Chrome instance to take snapshots.
+class _RemoteInspectorBaseThread(threading.Thread):
+  """Manages communication using Chrome's remote inspector protocol.
 
   This class works in conjunction with the _DevToolsSocketClient class to
-  communicate with a remote Chrome instance following the remote debugging
+  communicate with a remote Chrome instance following the remote inspector
   communication protocol in WebKit.  This class performs the higher-level work
   of managing request and reply messages, whereas _DevToolsSocketClient handles
   the lower-level work of socket communication.
 
+  This base class should be subclassed for each different type of action that
+  needs to be performed using the remote inspector (e.g., take a v8 heap
+  snapshot, force a garbage collect):
+
+    * Each subclass should override the run() method to customize the work done
+      by the thread, making sure to call self._client.close() when done.
+    * If overriding __init__ in a subclass, the base class __init__ must also be
+      invoked.
+    * The HandleReply() function should be overridden if special handling needs
+      to be performed using the reply messages received from the remote Chrome
+      instance.
+
   Public Methods:
+    NotifySocketClientException: Notifies the current object that the
+                                 _DevToolsSocketClient encountered an exception.
+                                 Called by the _DevToolsSocketClient.
     NotifyReply: Notifies the current object of a reply message that has been
                  received from the remote Chrome instance (which would have been
                  sent in response to an earlier request).  Called by the
                  _DevToolsSocketClient.
-    NotifySocketClientException: Notifies the current object that the
-                                 _DevToolsSocketClient encountered an exception.
-                                 Called by the _DevToolsSocketClient.
+    HandleReply: Processes a reply message received from the remote Chrome
+                 instance.  Should be overridden by a subclass if special
+                 result handling needs to be performed.
     run: Starts the thread of execution for this object.  Invoked implicitly
-         by calling the start() method on this object.
+         by calling the start() method on this object.  Should be overridden
+         by a subclass.
+  """
+  def __init__(self, tab_index, verbose, show_socket_messages):
+    """Initialize.
+
+    Args:
+      tab_index: The integer index of the tab in the remote Chrome instance to
+                 use for snapshotting.
+      verbose: A boolean indicating whether or not to use verbose logging.
+      show_socket_messages: A boolean indicating whether or not to show the
+                            socket messages sent/received when communicating
+                            with the remote Chrome instance.
+    """
+    threading.Thread.__init__(self)
+    self._logger = logging.getLogger('_RemoteInspectorBaseThread')
+    self._logger.setLevel([logging.WARNING, logging.DEBUG][verbose])
+
+    self._killed = False
+    self._next_request_id = 1
+    self._requests = []
+
+    # Create a DevToolsSocket client and wait for it to complete the remote
+    # debugging protocol handshake with the remote Chrome instance.
+    result = self._IdentifyDevToolsSocketConnectionInfo(tab_index)
+    self._client = _DevToolsSocketClient(
+        verbose, show_socket_messages, result['host'], result['port'],
+        result['path'])
+    self._client.inspector_thread = self
+    while asyncore.socket_map:
+      if self._client.handshake_done or self._killed:
+        break
+      asyncore.loop(timeout=1, count=1)
+
+  def NotifySocketClientException(self):
+    """Notifies that the _DevToolsSocketClient encountered an exception."""
+    self._killed = True
+
+  def NotifyReply(self, msg):
+    """Notifies of a reply message received from the remote Chrome instance.
+
+    Args:
+      msg: A string reply message received from the remote Chrome instance;
+           assumed to be a JSON message formatted according to the remote
+           debugging communication protocol in WebKit.
+    """
+    reply_dict = simplejson.loads(msg)
+    if 'result' in reply_dict:
+      # This is the result message associated with a previously-sent request.
+      request = self._GetRequestWithId(reply_dict['id'])
+      if request:
+        request.is_complete = True
+    self.HandleReply(reply_dict)
+
+  def HandleReply(self, reply_dict):
+    """Processes a reply message received from the remote Chrome instance.
+
+    Override this function to specially handle reply messages from the remote
+    Chrome instance.
+
+    Args:
+      reply_dict: A dictionary representing the reply message received from the
+                  remote Chrome instance.
+    """
+    pass
+
+  def run(self):
+    """Start _PerformanceSnapshotterThread; overridden from threading.Thread.
+
+    Should be overridden in a subclass.
+    """
+    self._client.close()
+
+  def _GetRequestWithId(self, request_id):
+    """Identifies the request with the specified id.
+
+    Args:
+      request_id: An integer request id; should be unique for each request.
+
+    Returns:
+      A request object associated with the given id if found, or
+      None otherwise.
+    """
+    found_request = [x for x in self._requests if x.id == request_id]
+    if found_request:
+      return found_request[0]
+    return None
+
+  def _GetFirstIncompleteRequest(self, method):
+    """Identifies the first incomplete request with the given method name.
+
+    Args:
+      method: The string method name of the request for which to search.
+
+    Returns:
+      The first request object in the request list that is not yet complete and
+      is also associated with the given method name, or
+      None if no such request object can be found.
+    """
+    for request in self._requests:
+      if not request.is_complete and request.method == method:
+        return request
+    return None
+
+  def _GetLatestRequestOfType(self, ref_req, method):
+    """Identifies the latest specified request before a reference request.
+
+    This function finds the latest request with the specified method that
+    occurs before the given reference request.
+
+    Returns:
+      The latest _DevToolsSocketRequest object with the specified method,
+      if found, or None otherwise.
+    """
+    start_looking = False
+    for request in self._requests[::-1]:
+      if request.id == ref_req.id:
+        start_looking = True
+      elif start_looking:
+        if request.method == method:
+          return request
+    return None
+
+  def _FillInParams(self, request):
+    """Fills in parameters for requests as necessary before the request is sent.
+
+    Args:
+      request: The _DevToolsSocketRequest object associated with a request
+               message that is about to be sent.
+    """
+    if request.method == 'Profiler.takeHeapSnapshot':
+      # We always want detailed v8 heap snapshot information.
+      request.params = {'detailed': True}
+    elif request.method == 'Profiler.getProfile':
+      # To actually request the snapshot data from a previously-taken snapshot,
+      # we need to specify the unique uid of the snapshot we want.
+      # The relevant uid should be contained in the last
+      # 'Profiler.takeHeapSnapshot' request object.
+      last_req = self._GetLatestRequestOfType(request,
+                                              'Profiler.takeHeapSnapshot')
+      if last_req and 'uid' in last_req.results:
+        request.params = {'type': 'HEAP', 'uid': last_req.results['uid']}
+
+  @staticmethod
+  def _IdentifyDevToolsSocketConnectionInfo(tab_index):
+    """Identifies DevToolsSocket connection info from a remote Chrome instance.
+
+    Args:
+      tab_index: The integer index of the tab in the remote Chrome instance to
+                 which to connect.
+
+    Returns:
+      A dictionary containing the DevToolsSocket connection info:
+      {
+        'host': string,
+        'port': integer,
+        'path': string,
+      }
+
+    Raises:
+      RuntimeError: When DevToolsSocket connection info cannot be identified.
+    """
+    try:
+      # TODO(dennisjeffrey): Do not assume port 9222.  The port should be passed
+      # as input to this function.
+      f = urllib2.urlopen('http://localhost:9222/json')
+      result = f.read();
+      result = simplejson.loads(result)
+    except urllib2.URLError, e:
+      raise RuntimeError(
+          'Error accessing Chrome instance debugging port: ' + str(e))
+
+    if tab_index >= len(result):
+      raise RuntimeError(
+          'Specified tab index %d doesn\'t exist (%d tabs found)' %
+          (tab_index, len(result)))
+
+    if 'webSocketDebuggerUrl' not in result[tab_index]:
+      raise RuntimeError('No socket URL exists for the specified tab.')
+
+    socket_url = result[tab_index]['webSocketDebuggerUrl']
+    parsed = urlparse.urlparse(socket_url)
+    # On ChromeOS, the "ws://" scheme may not be recognized, leading to an
+    # incorrect netloc (and empty hostname and port attributes) in |parsed|.
+    # Change the scheme to "http://" to fix this.
+    if not parsed.hostname or not parsed.port:
+      socket_url = 'http' + socket_url[socket_url.find(':'):]
+      parsed = urlparse.urlparse(socket_url)
+      # Warning: |parsed.scheme| is incorrect after this point.
+    return ({'host': parsed.hostname,
+             'port': parsed.port,
+             'path': parsed.path})
+
+
+class _PerformanceSnapshotterThread(_RemoteInspectorBaseThread):
+  """Manages communication with a remote Chrome to take v8 heap snapshots.
 
   Public Attributes:
     collected_heap_snapshot_data: A list of dictionaries, where each dictionary
@@ -405,7 +622,7 @@ class _PerformanceSnapshotterThread(threading.Thread):
   def __init__(
       self, tab_index, output_file, interval, num_snapshots, verbose,
       show_socket_messages, interactive_mode):
-    """Initializes a _PerformanceSnapshotterThread object.
+    """Initialize.
 
     Args:
       tab_index: The integer index of the tab in the remote Chrome instance to
@@ -423,56 +640,30 @@ class _PerformanceSnapshotterThread(threading.Thread):
                             with the remote Chrome instance.
       interactive_mode: A boolean indicating whether or not to take snapshots
                         in interactive mode.
-
-    Raises:
-      RuntimeError: When no proper connection can be made to a remote Chrome
-                    instance.
     """
-    threading.Thread.__init__(self)
-
-    self._logger = logging.getLogger('_PerformanceSnapshotterThread')
-    self._logger.setLevel([logging.WARNING, logging.DEBUG][verbose])
+    _RemoteInspectorBaseThread.__init__(self, tab_index, verbose,
+                                        show_socket_messages)
 
     self._output_file = output_file
     self._interval = interval
     self._num_snapshots = num_snapshots
     self._interactive_mode = interactive_mode
 
-    self._next_request_id = 1
-    self._requests = []
     self._current_heap_snapshot = []
     self._url = ''
     self.collected_heap_snapshot_data = []
     self.last_snapshot_start_time = 0
 
-    self._killed = False
-
-    # Create a DevToolsSocket client and wait for it to complete the remote
-    # debugging protocol handshake with the remote Chrome instance.
-    result = self._IdentifyDevToolsSocketConnectionInfo(tab_index)
-    self._client = _DevToolsSocketClient(
-        verbose, show_socket_messages, result['host'], result['port'],
-        result['path'])
-    self._client.snapshotter = self
-    while asyncore.socket_map:
-      if self._client.handshake_done or self._killed:
-        break
-      asyncore.loop(timeout=1, count=1)
-
-  def NotifyReply(self, msg):
-    """Notifies of a reply message received from the remote Chrome instance.
+  def HandleReply(self, reply_dict):
+    """Processes a reply message received from the remote Chrome instance.
 
     Args:
-      msg: A string reply message received from the remote Chrome instance;
-           assumed to be a JSON message formatted according to the remote
-           debugging communication protocol in WebKit.
+      reply_dict: A dictionary object representing the reply message received
+                   from the remote inspector.
     """
-    reply_dict = simplejson.loads(msg)
     if 'result' in reply_dict:
       # This is the result message associated with a previously-sent request.
       request = self._GetRequestWithId(reply_dict['id'])
-      if request:
-        request.is_complete = True
       if 'frameTree' in reply_dict['result']:
         self._url = reply_dict['result']['frameTree']['frame']['url']
     elif 'method' in reply_dict:
@@ -524,10 +715,6 @@ class _PerformanceSnapshotterThread(threading.Thread):
         self._logger.debug('Heap snapshot analysis complete (%s).',
                            total_size_str)
 
-  def NotifySocketClientException(self):
-    """Notifies that the _DevToolsSocketClient encountered an exception."""
-    self._killed = True
-
   @staticmethod
   def _ConvertBytesToHumanReadableString(num_bytes):
     """Converts an integer number of bytes into a human-readable string.
@@ -545,130 +732,11 @@ class _PerformanceSnapshotterThread(threading.Thread):
     else:
       return '%.2f MB' % (num_bytes / 1048576.0)
 
-  def _IdentifyDevToolsSocketConnectionInfo(self, tab_index):
-    """Identifies DevToolsSocket connection info from a remote Chrome instance.
-
-    Args:
-      tab_index: The integer index of the tab in the remote Chrome instance to
-                 which to connect.
-
-    Returns:
-      A dictionary containing the DevToolsSocket connection info:
-      {
-        'host': string,
-        'port': integer,
-        'path': string,
-      }
-
-    Raises:
-      RuntimeError: When DevToolsSocket connection info cannot be identified.
-    """
-    try:
-      # TODO(dennisjeffrey): Do not assume port 9222.  The port should be passed
-      # as input to this function.
-      f = urllib2.urlopen('http://localhost:9222/json')
-      result = f.read();
-      result = simplejson.loads(result)
-    except urllib2.URLError, e:
-      raise RuntimeError(
-          'Error accessing Chrome instance debugging port: ' + str(e))
-
-    if tab_index >= len(result):
-      raise RuntimeError(
-          'Specified tab index %d doesn\'t exist (%d tabs found)' %
-          (tab_index, len(result)))
-
-    if 'webSocketDebuggerUrl' not in result[tab_index]:
-      raise RuntimeError('No socket URL exists for the specified tab.')
-
-    socket_url = result[tab_index]['webSocketDebuggerUrl']
-    parsed = urlparse.urlparse(socket_url)
-    # On ChromeOS, the "ws://" scheme may not be recognized, leading to an
-    # incorrect netloc (and empty hostname and port attributes) in |parsed|.
-    # Change the scheme to "http://" to fix this.
-    if not parsed.hostname or not parsed.port:
-      socket_url = 'http' + socket_url[socket_url.find(':'):]
-      parsed = urlparse.urlparse(socket_url)
-      # Warning: |parsed.scheme| is incorrect after this point.
-    return ({'host': parsed.hostname,
-             'port': parsed.port,
-             'path': parsed.path})
-
   def _ResetRequests(self):
     """Clears snapshot-related info in preparation for a new snapshot."""
     self._requests = []
     self._current_heap_snapshot = []
     self._url = ''
-
-  def _GetRequestWithId(self, request_id):
-    """Identifies the request with the specified id.
-
-    Args:
-      request_id: An integer request id; should be unique for each request.
-
-    Returns:
-      A request object associated with the given id if found, or
-      None otherwise.
-    """
-    found_request = [x for x in self._requests if x.id == request_id]
-    if found_request:
-      return found_request[0]
-    return None
-
-  def _GetFirstIncompleteRequest(self, method):
-    """Identifies the first incomplete request with the given method name.
-
-    Args:
-      method: The string method name of the request for which to search.
-
-    Returns:
-      The first request object in the request list that is not yet complete and
-      is also associated with the given method name, or
-      None if no such request object can be found.
-    """
-    for request in self._requests:
-      if not request.is_complete and request.method == method:
-        return request
-    return None
-
-  def _GetLatestRequestOfType(self, ref_req, method):
-    """Identifies the latest specified request before a reference request.
-
-    This function finds the latest request with the specified method that
-    occurs before the given reference request.
-
-    Returns:
-      The latest request object with the specified method, if found, or
-      None otherwise.
-    """
-    start_looking = False
-    for request in self._requests[::-1]:
-      if request.id == ref_req.id:
-        start_looking = True
-      elif start_looking:
-        if request.method == method:
-          return request
-    return None
-
-  def _FillInParams(self, request):
-    """Fills in parameters for requests as necessary before the request is sent.
-
-    Args:
-      request: The request object associated with a request message that is
-               about to be sent.
-    """
-    if request.method == 'Profiler.takeHeapSnapshot':
-      # We always want detailed heap snapshot information.
-      request.params = {'detailed': True}
-    elif request.method == 'Profiler.getProfile':
-      # To actually request the snapshot data from a previously-taken snapshot,
-      # we need to specify the unique uid of the snapshot we want.
-      # The relevant uid should be contained in the last
-      # 'Profiler.takeHeapSnapshot' request object.
-      last_req = self._GetLatestRequestOfType(request,
-                                              'Profiler.takeHeapSnapshot')
-      if last_req and 'uid' in last_req.results:
-        request.params = {'type': 'HEAP', 'uid': last_req.results['uid']}
 
   def _TakeHeapSnapshot(self):
     """Takes a heap snapshot by communicating with _DevToolsSocketClient.
@@ -740,12 +808,46 @@ class _PerformanceSnapshotterThread(threading.Thread):
         self._logger.debug('Snapshotter thread finished.')
 
 
+class _GarbageCollectThread(_RemoteInspectorBaseThread):
+  """Manages communication with a remote Chrome to force a garbage collect."""
+
+  _COLLECT_GARBAGE_MESSAGES = [
+    'Profiler.collectGarbage',
+  ]
+
+  def run(self):
+    """Start _GarbageCollectThread; overridden from threading.Thread."""
+    if self._killed:
+      return
+
+    # Prepare the request list.
+    for message in self._COLLECT_GARBAGE_MESSAGES:
+      self._requests.append(
+          _DevToolsSocketRequest(message, self._next_request_id))
+      self._next_request_id += 1
+
+    # Send out each request.  Wait until each request is complete before sending
+    # the next request.
+    for request in self._requests:
+      self._FillInParams(request)
+      self._client.SendMessage(str(request))
+      while not request.is_complete:
+        if self._killed:
+          return
+        time.sleep(0.1)
+    self._client.close()
+    return
+
+
+# TODO(dennisjeffrey): The "verbose" option used in this file should re-use
+# pyauto's verbose flag.
 class PerformanceSnapshotter(object):
   """Main class for taking v8 heap snapshots.
 
   Public Methods:
     HeapSnapshot: Begins taking heap snapshots according to the initialization
                   parameters for the current object.
+    GarbageCollect: Forces a garbage collection.
     SetInteractiveMode: Sets the current object to take snapshots in interactive
                         mode. Only used by the main() function in this script
                         when the 'interactive mode' command-line flag is set.
@@ -757,7 +859,7 @@ class PerformanceSnapshotter(object):
   def __init__(
       self, tab_index=0, output_file=None, interval=DEFAULT_SNAPSHOT_INTERVAL,
       num_snapshots=1, verbose=False, show_socket_messages=False):
-    """Initializes a PerformanceSnapshotter object.
+    """Initialize.
 
     Args:
       tab_index: The integer index of the tab in the remote Chrome instance to
@@ -815,6 +917,20 @@ class PerformanceSnapshotter(object):
     snapshotter_thread.join()
     self._logger.debug('Done taking snapshots.')
     return snapshotter_thread.collected_heap_snapshot_data
+
+  def GarbageCollect(self):
+    """Forces a garbage collection."""
+    gc_thread = _GarbageCollectThread(self._tab_index, self._verbose,
+                                      self._show_socket_messages)
+    gc_thread.start()
+    try:
+      while asyncore.socket_map:
+        if not gc_thread.is_alive():
+          break
+        asyncore.loop(timeout=1, count=1)
+    except KeyboardInterrupt:
+      pass
+    gc_thread.join()
 
   def SetInteractiveMode(self):
     """Sets the current object to take snapshots in interactive mode."""
