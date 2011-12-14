@@ -256,13 +256,13 @@ void BrowserAccessibilityManager::UpdateNode(
   // modify |current| directly and return - no tree changes are needed.
   if (!include_children) {
     DCHECK_EQ(0U, src.children.size());
-    current->Initialize(
+    current->PreInitialize(
         this,
         current->parent(),
         current->child_id(),
         current->index_in_parent(),
         src);
-    current->SendNodeUpdateEvents();
+    current->PostInitialize();
     return;
   }
 
@@ -337,7 +337,13 @@ BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
     children_can_send_show_events = false;
   }
 
-  instance->Initialize(this, parent, child_id, index_in_parent, src);
+  instance->PreInitialize(this, parent, child_id, index_in_parent, src);
+  for (int i = 0; i < static_cast<int>(src.children.size()); ++i) {
+    BrowserAccessibility* child = CreateAccessibilityTree(
+        instance, src.children[i], i, children_can_send_show_events);
+    instance->AddChild(child);
+  }
+
   child_id_map_[child_id] = instance;
   renderer_id_to_child_id_map_[src.id] = child_id;
 
@@ -346,11 +352,6 @@ BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
 
   if ((src.state >> WebAccessibility::STATE_FOCUSED) & 1)
     SetFocus(instance, false);
-  for (int i = 0; i < static_cast<int>(src.children.size()); ++i) {
-    BrowserAccessibility* child = CreateAccessibilityTree(
-        instance, src.children[i], i, children_can_send_show_events);
-    instance->AddChild(child);
-  }
 
   // Note: the purpose of send_show_events and children_can_send_show_events
   // is so that we send a single OBJECT_SHOW event for the root of a subtree
@@ -359,7 +360,7 @@ BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
   if (send_show_events)
     NotifyAccessibilityEvent(ViewHostMsg_AccEvent::OBJECT_SHOW, instance);
 
-  instance->SendNodeUpdateEvents();
+  instance->PostInitialize();
 
   return instance;
 }
