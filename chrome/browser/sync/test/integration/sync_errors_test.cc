@@ -115,7 +115,8 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest,
       protocol_error.error_description);
 }
 
-IN_PROC_BROWSER_TEST_F(SyncErrorTest, AuthErrorTest) {
+// TODO(rsimha): Enable after fixing crbug.com/107611.
+IN_PROC_BROWSER_TEST_F(SyncErrorTest, DISABLED_AuthErrorTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   PasswordForm form0 = CreateTestPasswordForm(0);
