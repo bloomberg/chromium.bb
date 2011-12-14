@@ -1131,7 +1131,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, FLAKY_BrowserAccelerators) {
 }
 
 // Flakily fails and times out on Win only.  http://crbug.com/69941
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(USE_AURA)
 #define MAYBE_PopupAccelerators DISABLED_PopupAccelerators
 #else
 #define MAYBE_PopupAccelerators PopupAccelerators
