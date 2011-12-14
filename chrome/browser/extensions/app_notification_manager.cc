@@ -8,7 +8,10 @@
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/location.h"
+#include "base/metrics/histogram.h"
+#include "base/perftimer.h"
 #include "base/stl_util.h"
+#include "base/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/protocol/app_notification_specifics.pb.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -87,6 +90,7 @@ AppNotificationManager::~AppNotificationManager() {
 
 void AppNotificationManager::Init() {
   FilePath storage_path = profile_->GetPath().AppendASCII("App Notifications");
+  load_timer_.reset(new PerfTimer());
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
@@ -200,8 +204,10 @@ void AppNotificationManager::Observe(
 }
 
 void AppNotificationManager::LoadOnFileThread(const FilePath& storage_path) {
+  PerfTimer timer;
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!loaded());
+
   storage_.reset(AppNotificationStorage::Create(storage_path));
   if (!storage_.get())
     return;
@@ -222,6 +228,9 @@ void AppNotificationManager::LoadOnFileThread(const FilePath& storage_path) {
       FROM_HERE,
       base::Bind(&AppNotificationManager::HandleLoadResults,
           this, result.release()));
+
+  UMA_HISTOGRAM_LONG_TIMES("AppNotification.MgrFileThreadLoadTime",
+                           timer.Elapsed());
 }
 
 void AppNotificationManager::HandleLoadResults(NotificationMap* map) {
@@ -229,19 +238,29 @@ void AppNotificationManager::HandleLoadResults(NotificationMap* map) {
   DCHECK(map);
   DCHECK(!loaded());
   notifications_.reset(map);
+  UMA_HISTOGRAM_LONG_TIMES("AppNotification.MgrLoadDelay",
+                           load_timer_->Elapsed());
+  load_timer_.reset();
 
-  // Generate STATE_CHAGNED notifications for extensions that have at
+  // Generate STATE_CHANGED notifications for extensions that have at
   // least one notification loaded.
+  int app_count = 0;
+  int notification_count = 0;
   NotificationMap::const_iterator i;
   for (i = map->begin(); i != map->end(); ++i) {
     const std::string& id = i->first;
     if (i->second.empty())
       continue;
+    app_count++;
+    notification_count += i->second.size();
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
         content::Source<Profile>(profile_),
         content::Details<const std::string>(&id));
   }
+  UMA_HISTOGRAM_COUNTS("AppNotification.MgrLoadAppCount", app_count);
+  UMA_HISTOGRAM_COUNTS("AppNotification.MgrLoadTotalCount",
+                       notification_count);
 
   // Generate MANAGER_LOADED notification.
   content::NotificationService::current()->Notify(

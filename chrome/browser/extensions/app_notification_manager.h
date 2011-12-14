@@ -21,6 +21,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class PerfTimer;
 class Profile;
 
 // This class keeps track of notifications for installed apps.
@@ -157,6 +158,9 @@ class AppNotificationManager
   bool models_associated_;
   // Whether syncer changes are being processed right now.
   bool processing_syncer_changes_;
+
+  // Used for a histogram of load time.
+  scoped_ptr<PerfTimer> load_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AppNotificationManager);
 };

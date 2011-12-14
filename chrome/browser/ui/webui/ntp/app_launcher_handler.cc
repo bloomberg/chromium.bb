@@ -742,6 +742,8 @@ void AppLauncherHandler::HandleNotificationClose(const ListValue* args) {
   if (!extension)
     return;
 
+  UMA_HISTOGRAM_COUNTS("AppNotification.NTPNotificationClosed", 1);
+
   AppNotificationManager* notification_manager =
       extension_service_->app_notification_manager();
   notification_manager->ClearAll(extension_id);
