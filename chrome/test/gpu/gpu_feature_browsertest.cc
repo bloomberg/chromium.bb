@@ -75,7 +75,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
 
     scoped_ptr<TraceAnalyzer> analyzer(TraceAnalyzer::Create(json_events));
     analyzer->AssociateBeginEndEvents();
-    TraceAnalyzer::TraceEventVector events;
+    TraceEventVector events;
 
     // This measurement is flaky, because the GPU process is sometimes
     // started before the test (always with force-compositing-mode on CrOS).
