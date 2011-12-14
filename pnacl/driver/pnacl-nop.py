@@ -9,7 +9,9 @@
 # updates the copy in the toolchain/ tree.
 #
 
-from driver_tools import *
+import sys
+from driver_tools import DriverMain
+from driver_log import Log, StringifyCommand
 
 def main(unused_argv):
   # unused_argv does not contain argv[0], etc, so we refer to sys.argv here.

@@ -10,6 +10,8 @@
 #
 
 from driver_tools import *
+from driver_env import env
+from driver_log import Log
 
 EXTRA_ENV = {
   'ALLOW_TRANSLATE': '0',  # Allow bitcode translation before linking.

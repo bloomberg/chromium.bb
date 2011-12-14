@@ -15,6 +15,7 @@
 import driver_tools
 import os
 import pathtools
+import driver_log
 
 def IsLinkerScript(filename):
   return ParseLinkerScript(filename) is not None
@@ -33,7 +34,7 @@ def IsLinkerScript(filename):
 #
 # Returns None on any parse error.
 def ParseLinkerScript(filename):
-  fp = driver_tools.DriverOpen(filename, 'r')
+  fp = driver_log.DriverOpen(filename, 'r')
 
   ret = []
   stack = []
@@ -194,7 +195,7 @@ def FindLib(arg, searchdirs, static_only):
   assert(searchdirs is not None)
   name = arg[len('-l'):]
   if not name:
-    driver_tools.Log.Fatal("-l missing library name")
+    driver_log.Log.Fatal("-l missing library name")
   is_whole_name = (name[0] == ':')
 
   searchnames = []
@@ -225,7 +226,7 @@ def FindLib(arg, searchdirs, static_only):
     label = name
   else:
     label = arg
-  driver_tools.Log.Fatal("Cannot find '%s'", label)
+  driver_log.Log.Fatal("Cannot find '%s'", label)
 
 def FindFile(search_names, search_dirs):
   for curdir in search_dirs:

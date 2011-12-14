@@ -12,6 +12,8 @@
 # Show the PNaCl metadata of a bitcode file
 
 from driver_tools import *
+from driver_env import env
+from driver_log import Log, DriverExit
 
 EXTRA_ENV = {
   'INPUTS'   : '',
@@ -49,4 +51,3 @@ def main(argv):
 
 if __name__ == "__main__":
   DriverMain(main)
-

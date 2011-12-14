@@ -15,6 +15,8 @@
 # (SRPC and non-SRPC).
 
 from driver_tools import *
+from driver_env import env
+from driver_log import Log
 
 EXTRA_ENV = {
   'INPUTS'   : '',

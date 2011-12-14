@@ -3200,9 +3200,10 @@ driver-install() {
   rm -f "${INSTALL_BIN}"/pnacl-*
 
   spushd "${DRIVER_DIR}"
-  cp driver_tools.py "${INSTALL_BIN}"
+  cp driver_*.py "${INSTALL_BIN}"
   cp artools.py "${INSTALL_BIN}"
   cp ldtools.py "${INSTALL_BIN}"
+  cp shelltools.py "${INSTALL_BIN}"
   cp pathtools.py "${INSTALL_BIN}"
   for t in pnacl-*; do
     local name=$(basename "$t")

@@ -10,6 +10,8 @@
 #
 
 from driver_tools import *
+from driver_env import env
+from driver_log import Log, DriverOpen, DriverClose
 
 EXTRA_ENV = {
   'INPUTS'          : '',

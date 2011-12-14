@@ -10,8 +10,8 @@
 #
 
 import driver_tools
-
-env = driver_tools.env
+from driver_env import env
+from driver_log import Log, TempFiles
 
 EXTRA_ENV = {
   'INPUTS'      : '',

@@ -12,18 +12,20 @@
 # Tool for reading archive (.a) files
 
 # TODO(pdox): Refactor driver_tools so that there is no circular dependency.
+# (just using DecodeELFHeader still)
 import driver_tools
+import driver_log
 
 AR_MAGIC = '!<arch>\n'
 
 def IsArchive(filename):
-  fp = driver_tools.DriverOpen(filename, "rb")
+  fp = driver_log.DriverOpen(filename, "rb")
   magic = fp.read(8)
   fp.close()
   return magic == AR_MAGIC
 
 def GetArchiveType(filename):
-  fp = driver_tools.DriverOpen(filename, "rb")
+  fp = driver_log.DriverOpen(filename, "rb")
 
   # Read the archive magic header
   magic = fp.read(8)
@@ -36,7 +38,7 @@ def GetArchiveType(filename):
     if member.error == 'EOF':
       break
     elif member.error:
-      driver_tools.Log.Fatal("%s: %s", filename, member.error)
+      driver_log.Log.Fatal("%s: %s", filename, member.error)
 
     data = fp.read(member.size)
     if member.is_regular_file:
@@ -48,7 +50,7 @@ def GetArchiveType(filename):
           found_type = 'archive-%s' % elf_header.arch
 
   if not found_type:
-    driver_tools.Log.Fatal("%s: Unable to determine archive type", filename)
+    driver_log.Log.Fatal("%s: Unable to determine archive type", filename)
 
   fp.close()
   return found_type

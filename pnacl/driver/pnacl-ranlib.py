@@ -9,7 +9,9 @@
 # updates the copy in the toolchain/ tree.
 #
 
-from driver_tools import *
+from driver_tools import RunWithLog, IsBitcode, DriverMain
+from driver_env import env
+from driver_log import Log
 
 EXTRA_ENV = {
   'SINGLE_BC_LIBS'   : '0',
@@ -34,4 +36,3 @@ def ExperimentalRanlibHack(argv):
 
 if __name__ == "__main__":
   DriverMain(main)
-

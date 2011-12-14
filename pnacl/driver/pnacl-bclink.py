@@ -9,7 +9,8 @@
 # updates the copy in the toolchain/ tree.
 #
 
-from driver_tools import *
+from driver_tools import RunWithLog, DriverMain
+from driver_env import env
 
 def main(argv):
   env.set('ARGV', *argv)

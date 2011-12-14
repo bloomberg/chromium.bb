@@ -9,7 +9,10 @@
 # updates the copy in the toolchain/ tree.
 #
 
+import shutil
 from driver_tools import *
+from driver_env import env
+from driver_log import Log
 
 EXTRA_ENV = {
   'SINGLE_BC_LIBS': '0',  # 'archive' bitcode libs as single bitcode file
