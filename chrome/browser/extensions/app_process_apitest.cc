@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -253,25 +254,27 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessInstances) {
 
 // Tests that bookmark apps do not use the app process model and are treated
 // like normal web pages instead.  http://crbug.com/104636.
-// TODO(creis): This test is disabled until we have a way to load a bookmark
-// app in browser_tests.  See http://crbug.com/104649.
-IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_BookmarkAppGetsNormalProcess) {
+IN_PROC_BROWSER_TEST_F(AppApiTest, BookmarkAppGetsNormalProcess) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
-  extensions::ProcessMap* process_map =
-      browser()->profile()->GetExtensionService()->process_map();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
+  extensions::ProcessMap* process_map = service->process_map();
 
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
-
-  // TODO(creis): We need a way to load an app in a test as a bookmark app.
-  // Until then, from_bookmark() will return false and this test will fail.
-  const Extension* extension =
-      LoadExtension(test_data_dir_.AppendASCII("app_process"));
-  ASSERT_TRUE(extension);
-  EXPECT_TRUE(extension->from_bookmark());
   GURL base_url = GetTestBaseURL("app_process");
+
+  // Load an app as a bookmark app.
+  std::string error;
+  scoped_refptr<const Extension> extension(extension_file_util::LoadExtension(
+      test_data_dir_.AppendASCII("app_process"),
+      Extension::LOAD,
+      Extension::FROM_BOOKMARK,
+      &error));
+  service->OnExtensionInstalled(extension, false, 0);
+  ASSERT_TRUE(extension.get());
+  ASSERT_TRUE(extension->from_bookmark());
 
   // Test both opening a URL in a new tab, and opening a tab and then navigating
   // it.  Either way, bookmark app tabs should be considered normal processes
