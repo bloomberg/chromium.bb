@@ -33,7 +33,7 @@ void DelayedCookieMonster::SetCookiesInternalCallback(bool result) {
 }
 
 void DelayedCookieMonster::GetCookiesWithOptionsInternalCallback(
-    std::string cookie) {
+    const std::string& cookie) {
   cookie_ = cookie;
   did_run_ = true;
 }

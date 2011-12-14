@@ -145,7 +145,7 @@ class GetCookieStringCallback : public CookieCallback {
   explicit GetCookieStringCallback(Thread* run_in_thread)
       : CookieCallback(run_in_thread) {}
 
-  void Run(std::string cookie) {
+  void Run(const std::string& cookie) {
     cookie_ = cookie;
     CallbackEpilogue();
   }
