@@ -66,10 +66,7 @@ for src, exit_status, golden_file, cond in TESTS_TO_RUN:
 
 
 # initfini test
-# This works on X86-32 glibc but not X86-64.
-# http://code.google.com/p/nativeclient/issues/detail?id=1096
 initfini_obj = env.ComponentObject('initfini.c')
-initfini_broken = env.Bit('nacl_glibc') and env.Bit('target_x86_64')
 
 def AddInitFiniTest(env, name, extra_libs):
   nexe = env.ComponentProgram(name,
@@ -81,8 +78,7 @@ def AddInitFiniTest(env, name, extra_libs):
                                    stdout_golden=golden_file)
   env.AddNodeToTestSuite(node,
                          ['toolchain_tests', 'small_tests'],
-                         'run_' + name + '_test',
-                         is_broken=initfini_broken)
+                         'run_' + name + '_test')
 
 AddInitFiniTest(env, 'initfini_static', [])
 if env.Bit('nacl_glibc') and not env.Bit('nacl_disable_shared'):
@@ -98,9 +94,7 @@ if env.Bit('nacl_glibc'):
                               EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
   node = env.CommandSelLdrTestNacl('pthread_cleanup.out', nexe)
   env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
-                         'run_pthread_cleanup_test',
-# TODO(mcgrathr): http://code.google.com/p/nativeclient/issues/detail?id=2490
-                         is_broken=env.Bit('target_x86_64'))
+                         'run_pthread_cleanup_test')
 
 
 # NOTE: the tests below break easily under valgrid and since
