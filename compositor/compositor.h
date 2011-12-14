@@ -128,6 +128,7 @@ struct wlsc_shader {
 	GLuint vertex_shader, fragment_shader;
 	GLuint proj_uniform;
 	GLuint tex_uniform;
+	GLuint alpha_uniform;
 	GLuint color_uniform;
 };
 
@@ -173,7 +174,8 @@ struct wlsc_compositor {
 	EGLContext context;
 	EGLConfig config;
 	GLuint fbo;
-	GLuint proj_uniform, tex_uniform;
+	GLuint proj_uniform, tex_uniform, alpha_uniform;
+	uint32_t current_alpha;
 	struct wlsc_shader texture_shader;
 	struct wlsc_shader solid_shader;
 	struct wl_display *wl_display;
@@ -241,6 +243,7 @@ struct wlsc_surface {
 	struct wl_list link;
 	struct wl_list buffer_link;
 	struct wlsc_transform *transform;
+	uint32_t alpha;
 	uint32_t visual;
 
 	/*

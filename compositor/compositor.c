@@ -225,6 +225,7 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	surface->y = y;
 	surface->width = width;
 	surface->height = height;
+	surface->alpha = 255;
 
 	surface->fullscreen_output = NULL;
 	surface->buffer = NULL;
@@ -546,6 +547,12 @@ wlsc_surface_draw(struct wlsc_surface *es,
 	default:
 		fprintf(stderr, "bogus visual\n");
 		break;
+	}
+
+	if (es->alpha != ec->current_alpha) {
+		glUniform1f(ec->texture_shader.alpha_uniform,
+			    es->alpha / 255.0);
+		ec->current_alpha = es->alpha;
 	}
 
 	if (es->transform == NULL) {
@@ -1626,9 +1633,11 @@ static const char texture_fragment_shader[] =
 	"precision mediump float;\n"
 	"varying vec2 v_texcoord;\n"
 	"uniform sampler2D tex;\n"
+	"uniform float alpha;\n"
 	"void main()\n"
 	"{\n"
 	"   gl_FragColor = texture2D(tex, v_texcoord)\n;"
+	"   gl_FragColor = alpha * gl_FragColor;\n"
 	"}\n";
 
 static const char solid_fragment_shader[] =
@@ -1687,6 +1696,7 @@ wlsc_shader_init(struct wlsc_shader *shader,
 
 	shader->proj_uniform = glGetUniformLocation(shader->program, "proj");
 	shader->tex_uniform = glGetUniformLocation(shader->program, "tex");
+	shader->alpha_uniform = glGetUniformLocation(shader->program, "alpha");
 
 	return 0;
 }
