@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/views/aura/app_list_window.h"
 #include "chrome/browser/ui/views/aura/status_area_host_aura.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "grit/theme_resources.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/launcher/launcher_types.h"
 #include "ui/aura_shell/window_util.h"
@@ -76,8 +75,4 @@ bool ChromeShellDelegate::ConfigureLauncherItem(
   BrowserView* view = BrowserView::GetBrowserViewForNativeWindow(item->window);
   return view &&
       ShouldCreateLauncherItemForBrowser(view->browser(), &(item->type));
-}
-
-int ChromeShellDelegate::GetResourceIDForNewBrowserWindow() {
-  return IDR_PRODUCT_LOGO_32;
 }

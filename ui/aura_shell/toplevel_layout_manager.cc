@@ -48,14 +48,7 @@ void ToplevelLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
 
 void ToplevelLayoutManager::SetChildBounds(aura::Window* child,
                                            const gfx::Rect& requested_bounds) {
-  const static int kTitleHeight = 12;
-  gfx::Rect child_bounds(requested_bounds);
-  gfx::Rect work_area = gfx::Screen::GetMonitorWorkAreaNearestWindow(child);
-  if (child_bounds.y() < 0)
-    child_bounds.set_y(0);
-  else if (child_bounds.y() + kTitleHeight > work_area.bottom())
-    child_bounds.set_y(work_area.bottom() - kTitleHeight);
-  SetChildBoundsDirect(child, child_bounds);
+  SetChildBoundsDirect(child, requested_bounds);
 }
 
 void ToplevelLayoutManager::OnWindowPropertyChanged(aura::Window* window,

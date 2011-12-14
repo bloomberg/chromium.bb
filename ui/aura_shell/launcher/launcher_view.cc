@@ -12,21 +12,18 @@
 #include "ui/aura_shell/launcher/tabbed_launcher_button.h"
 #include "ui/aura_shell/launcher/view_model.h"
 #include "ui/aura_shell/launcher/view_model_utils.h"
-#include "ui/aura_shell/shelf_layout_manager.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/base/animation/animation.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
 using ui::Animation;
@@ -85,6 +82,48 @@ class MenuDelegateImpl : public ui::SimpleMenuModel::Delegate {
   DISALLOW_COPY_AND_ASSIGN(MenuDelegateImpl);
 };
 
+// ImageButton subclass that animates transition changes using the opacity of
+// the layer.
+class FadeButton : public views::ImageButton {
+ public:
+  explicit FadeButton(views::ButtonListener* listener)
+      : ImageButton(listener) {
+    SetPaintToLayer(true);
+    layer()->SetFillsBoundsOpaquely(false);
+    layer()->SetOpacity(kDimmedButtonOpacity);
+  }
+
+ protected:
+  // ImageButton overrides:
+  virtual SkBitmap GetImageToPaint() OVERRIDE {
+    // ImageButton::GetImageToPaint returns an alpha blended image based on
+    // hover_animation_. FadeButton uses hover_animation to change the opacity
+    // of the layer, so this can be overriden to return the normal image always.
+    return images_[BS_NORMAL];
+  }
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+    layer()->SetOpacity(kDimmedButtonOpacity + (1.0f - kDimmedButtonOpacity) *
+                        animation->GetCurrentValue());
+    layer()->ScheduleDraw();
+  }
+  virtual void StateChanged() OVERRIDE {
+    if (!hover_animation_->is_animating()) {
+      float opacity = state_ == BS_NORMAL ? kDimmedButtonOpacity : 1.0f;
+      if (layer()->opacity() != opacity) {
+        layer()->SetOpacity(opacity);
+        layer()->ScheduleDraw();
+      }
+    }
+  }
+  virtual void SchedulePaint() OVERRIDE {
+    // All changes we care about trigger a draw on the layer, so this can be
+    // overriden to do nothing.
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FadeButton);
+};
+
 // AnimationDelegate that deletes a view when done. This is used when a launcher
 // item is removed, which triggers a remove animation. When the animation is
 // done we delete the view.
@@ -127,25 +166,6 @@ class FadeInAnimationDelegate :
 
   DISALLOW_COPY_AND_ASSIGN(FadeInAnimationDelegate);
 };
-
-// Used to draw the background of the shelf.
-class ShelfPainter : public views::Painter {
- public:
-  ShelfPainter() {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    image_ = *rb.GetImageNamed(IDR_AURA_LAUNCHER_BACKGROUND).ToSkBitmap();
-  }
-
-  virtual void Paint(int w, int h, gfx::Canvas* canvas) OVERRIDE {
-    canvas->TileImageInt(image_, 0, 0, w, h);
-  }
-
- private:
-  SkBitmap image_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfPainter);
-};
-
 
 }  // namespace
 
@@ -224,18 +244,12 @@ LauncherView::~LauncherView() {
 }
 
 void LauncherView::Init() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   model_->AddObserver(this);
-
-  set_background(
-      views::Background::CreateBackgroundPainter(true, new ShelfPainter()));
-
-  new_browser_button_ = new views::ImageButton(this);
-  int new_browser_button_image_id =
-      Shell::GetInstance()->delegate()->GetResourceIDForNewBrowserWindow();
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  new_browser_button_ = new FadeButton(this);
   new_browser_button_->SetImage(
       views::CustomButton::BS_NORMAL,
-      rb.GetImageNamed(new_browser_button_image_id).ToSkBitmap());
+      rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_CHROME).ToSkBitmap());
   ConfigureChildView(new_browser_button_);
   AddChildView(new_browser_button_);
 
@@ -247,29 +261,18 @@ void LauncherView::Init() {
     AddChildView(child);
   }
 
-  show_apps_button_ = new views::ImageButton(this);
+  show_apps_button_ = new FadeButton(this);
   show_apps_button_->SetImage(
       views::CustomButton::BS_NORMAL,
       rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST).ToSkBitmap());
-  show_apps_button_->SetImage(
-      views::CustomButton::BS_HOT,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_HOT).ToSkBitmap());
-  show_apps_button_->SetImage(
-      views::CustomButton::BS_PUSHED,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED).ToSkBitmap());
   ConfigureChildView(show_apps_button_);
   AddChildView(show_apps_button_);
 
-  overflow_button_ = new views::ImageButton(this);
+  overflow_button_ = new FadeButton(this);
+  // TODO: need image for this.
   overflow_button_->SetImage(
       views::CustomButton::BS_NORMAL,
       rb.GetImageNamed(IDR_AURA_LAUNCHER_OVERFLOW).ToSkBitmap());
-  overflow_button_->SetImage(
-      views::CustomButton::BS_HOT,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_OVERFLOW_HOT).ToSkBitmap());
-  overflow_button_->SetImage(
-      views::CustomButton::BS_PUSHED,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_OVERFLOW_PUSHED).ToSkBitmap());
   ConfigureChildView(overflow_button_);
   AddChildView(overflow_button_);
 
@@ -333,8 +336,8 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
         (kPreferredHeight - bounds->overflow_bounds.height()) / 2);
     x = bounds->overflow_bounds.right() + kHorizontalPadding;
   }
-  // TODO(sky): -6 is a hack, remove when we get better images.
-  bounds->show_apps_bounds.set_x(x - 6);
+  // TODO(sky): -8 is a hack, remove when we get better images.
+  bounds->show_apps_bounds.set_x(x - 8);
   bounds->show_apps_bounds.set_y(
       (kPreferredHeight - bounds->show_apps_bounds.height()) / 2);
 }

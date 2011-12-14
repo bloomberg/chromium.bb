@@ -122,7 +122,7 @@ void ShelfLayoutManager::CalculateTargetBounds(bool visible,
   gfx::Rect launcher_bounds(launcher_->GetWindowScreenBounds());
   target_bounds->launcher_bounds = gfx::Rect(
       available_bounds.x(), y + (max_height_ - launcher_bounds.height()) / 2,
-      available_bounds.width(),
+      available_bounds.width() - status_bounds.width(),
       launcher_bounds.height());
   if (visible)
     target_bounds->work_area_insets = gfx::Insets(0, 0, max_height_, 0);

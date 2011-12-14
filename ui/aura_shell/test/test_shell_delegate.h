@@ -25,7 +25,6 @@ class TestShellDelegate : public ShellDelegate {
       const SetWidgetCallback& callback) OVERRIDE;
   virtual void LauncherItemClicked(const LauncherItem& item) OVERRIDE;
   virtual bool ConfigureLauncherItem(LauncherItem* item) OVERRIDE;
-  virtual int GetResourceIDForNewBrowserWindow() OVERRIDE;
 };
 
 }  // namespace test

@@ -44,7 +44,6 @@ class ChromeShellDelegate : public aura_shell::ShellDelegate {
   virtual void LauncherItemClicked(
       const aura_shell::LauncherItem& item) OVERRIDE;
   virtual bool ConfigureLauncherItem(aura_shell::LauncherItem* item) OVERRIDE;
-  virtual int GetResourceIDForNewBrowserWindow() OVERRIDE;
 
  private:
   static ChromeShellDelegate* instance_;

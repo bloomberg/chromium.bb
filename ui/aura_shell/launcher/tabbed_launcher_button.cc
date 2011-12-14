@@ -32,27 +32,23 @@ const int kBgBottomInset = 12;
 const int kBgRightInset = 8;
 
 // static
-TabbedLauncherButton::ImageSet* TabbedLauncherButton::bg_image_1_ = NULL;
-TabbedLauncherButton::ImageSet* TabbedLauncherButton::bg_image_2_ = NULL;
-TabbedLauncherButton::ImageSet* TabbedLauncherButton::bg_image_3_ = NULL;
+SkBitmap* TabbedLauncherButton::bg_image_1_ = NULL;
+SkBitmap* TabbedLauncherButton::bg_image_2_ = NULL;
+SkBitmap* TabbedLauncherButton::bg_image_3_ = NULL;
 
 TabbedLauncherButton::TabbedLauncherButton(views::ButtonListener* listener,
                                            LauncherButtonHost* host)
-    : views::ImageButton(listener),
+    : views::CustomButton(listener),
       host_(host) {
   if (!bg_image_1_) {
-    bg_image_1_ = CreateImageSet(IDR_AURA_LAUNCHER_TABBED_BROWSER_1,
-                                 IDR_AURA_LAUNCHER_TABBED_BROWSER_1_PUSHED,
-                                 IDR_AURA_LAUNCHER_TABBED_BROWSER_1_HOT);
-    bg_image_2_ = CreateImageSet(IDR_AURA_LAUNCHER_TABBED_BROWSER_2,
-                                 IDR_AURA_LAUNCHER_TABBED_BROWSER_2_PUSHED,
-                                 IDR_AURA_LAUNCHER_TABBED_BROWSER_2_HOT);
-    bg_image_3_ = CreateImageSet(IDR_AURA_LAUNCHER_TABBED_BROWSER_3,
-                                 IDR_AURA_LAUNCHER_TABBED_BROWSER_3_PUSHED,
-                                 IDR_AURA_LAUNCHER_TABBED_BROWSER_3_HOT);
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    bg_image_1_ = new SkBitmap(
+        *rb.GetImageNamed(IDR_AURA_LAUNCHER_TABBED_BROWSER_1).ToSkBitmap());
+    bg_image_2_ = new SkBitmap(
+        *rb.GetImageNamed(IDR_AURA_LAUNCHER_TABBED_BROWSER_2).ToSkBitmap());
+    bg_image_3_ = new SkBitmap(
+        *rb.GetImageNamed(IDR_AURA_LAUNCHER_TABBED_BROWSER_3).ToSkBitmap());
   }
-  SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                    views::ImageButton::ALIGN_MIDDLE);
 }
 
 TabbedLauncherButton::~TabbedLauncherButton() {
@@ -60,20 +56,21 @@ TabbedLauncherButton::~TabbedLauncherButton() {
 
 void TabbedLauncherButton::SetImages(const LauncherTabbedImages& images) {
   images_ = images;
-  ImageSet* set;
-  if (images_.size() <= 1)
-    set = bg_image_1_;
-  else if (images_.size() == 2)
-    set = bg_image_2_;
-  else
-    set = bg_image_3_;
-  SetImage(BS_NORMAL, set->normal_image);
-  SetImage(BS_HOT, set->hot_image);
-  SetImage(BS_PUSHED, set->pushed_image);
+}
+
+gfx::Size TabbedLauncherButton::GetPreferredSize() {
+  return gfx::Size(bg_image_1_->width(), bg_image_1_->height());
 }
 
 void TabbedLauncherButton::OnPaint(gfx::Canvas* canvas) {
-  ImageButton::OnPaint(canvas);
+  SkBitmap* bg_image = NULL;
+  if (images_.size() <= 1)
+    bg_image = bg_image_1_;
+  else if (images_.size() == 2)
+    bg_image = bg_image_2_;
+  else
+    bg_image = bg_image_3_;
+  canvas->DrawBitmapInt(*bg_image, 0, 0);
 
   if (images_.empty())
     return;
@@ -82,43 +79,30 @@ void TabbedLauncherButton::OnPaint(gfx::Canvas* canvas) {
   // TODO(sky): if we settle on just 1 icon, then we should simplify surrounding
   // code (don't use a vector of images).
   int x = (width() - images_[0].image.width()) / 2;
-  int y = (height() - images_[0].image.height()) / 2 + 1;
+  int y = (height() - images_[0].image.height()) / 2;
   canvas->DrawBitmapInt(images_[0].image, x, y);
 }
 
 bool TabbedLauncherButton::OnMousePressed(const views::MouseEvent& event) {
-  ImageButton::OnMousePressed(event);
+  CustomButton::OnMousePressed(event);
   host_->MousePressedOnButton(this, event);
   return true;
 }
 
 void TabbedLauncherButton::OnMouseReleased(const views::MouseEvent& event) {
   host_->MouseReleasedOnButton(this, false);
-  ImageButton::OnMouseReleased(event);
+  CustomButton::OnMouseReleased(event);
 }
 
 void TabbedLauncherButton::OnMouseCaptureLost() {
   host_->MouseReleasedOnButton(this, true);
-  ImageButton::OnMouseCaptureLost();
+  CustomButton::OnMouseCaptureLost();
 }
 
 bool TabbedLauncherButton::OnMouseDragged(const views::MouseEvent& event) {
-  ImageButton::OnMouseDragged(event);
+  CustomButton::OnMouseDragged(event);
   host_->MouseDraggedOnButton(this, event);
   return true;
-}
-
-// static
-TabbedLauncherButton::ImageSet* TabbedLauncherButton::CreateImageSet(
-    int normal_id,
-    int pushed_id,
-    int hot_id) {
-  ImageSet* set = new ImageSet;
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  set->normal_image = new SkBitmap(*rb.GetImageNamed(normal_id).ToSkBitmap());
-  set->pushed_image = new SkBitmap(*rb.GetImageNamed(pushed_id).ToSkBitmap());
-  set->hot_image = new SkBitmap(*rb.GetImageNamed(hot_id).ToSkBitmap());
-  return set;
 }
 
 }  // namespace internal
