@@ -16,7 +16,8 @@ namespace policy {
 CloudPolicyCacheBase::CloudPolicyCacheBase()
     : notifier_(NULL),
       initialization_complete_(false),
-      is_unmanaged_(false) {
+      is_unmanaged_(false),
+      machine_id_missing_(false) {
   public_key_version_.version = 0;
   public_key_version_.valid = false;
 }
@@ -153,6 +154,7 @@ bool CloudPolicyCacheBase::DecodePolicyResponse(
     if (public_key_version->valid)
       public_key_version->version = policy_data.public_key_version();
   }
+  machine_id_missing_ = policy_data.valid_serial_number_missing();
 
   return DecodePolicyData(policy_data, mandatory, recommended);
 }

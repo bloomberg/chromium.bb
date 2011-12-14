@@ -153,24 +153,6 @@ void BrowserPolicyConnector::RegisterForDevicePolicy(
     TokenType token_type) {
 #if defined(OS_CHROMEOS)
   if (device_data_store_.get()) {
-    if (device_data_store_->machine_id().empty() ||
-        device_data_store_->machine_model().empty()) {
-      chromeos::system::StatisticsProvider* provider =
-          chromeos::system::StatisticsProvider::GetInstance();
-
-      std::string machine_model;
-      if (!provider->GetMachineStatistic(kMachineInfoSystemHwqual,
-                                         &machine_model)) {
-        LOG(ERROR) << "Failed to get machine model.";
-      }
-
-      std::string machine_id = GetSerialNumber();
-      if (machine_id.empty())
-        LOG(ERROR) << "Failed to get machine serial number.";
-
-      device_data_store_->set_machine_id(machine_id);
-      device_data_store_->set_machine_model(machine_model);
-    }
     device_data_store_->set_user_name(owner_email);
     switch (token_type) {
       case TOKEN_TYPE_OAUTH:
@@ -443,6 +425,28 @@ void BrowserPolicyConnector::InitializeDevicePolicy() {
 void BrowserPolicyConnector::CompleteInitialization() {
 #if defined(OS_CHROMEOS)
   if (device_cloud_policy_subsystem_.get()) {
+    // Read serial number and machine model. This must be done before we call
+    // CompleteInitialization() below such that the serial number is available
+    // for re-submission in case we're doing serial number recovery.
+    if (device_data_store_->machine_id().empty() ||
+        device_data_store_->machine_model().empty()) {
+      chromeos::system::StatisticsProvider* provider =
+          chromeos::system::StatisticsProvider::GetInstance();
+
+      std::string machine_model;
+      if (!provider->GetMachineStatistic(kMachineInfoSystemHwqual,
+                                         &machine_model)) {
+        LOG(ERROR) << "Failed to get machine model.";
+      }
+
+      std::string machine_id = GetSerialNumber();
+      if (machine_id.empty())
+        LOG(ERROR) << "Failed to get machine serial number.";
+
+      device_data_store_->set_machine_id(machine_id);
+      device_data_store_->set_machine_model(machine_model);
+    }
+
     device_cloud_policy_subsystem_->CompleteInitialization(
         prefs::kDevicePolicyRefreshRate,
         kServiceInitializationStartupDelay);

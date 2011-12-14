@@ -25,9 +25,9 @@
 
 namespace policy {
 
-using ::testing::_;
 using ::testing::AtMost;
 using ::testing::InSequence;
+using ::testing::_;
 using content::BrowserThread;
 
 namespace em = enterprise_management;
@@ -45,6 +45,7 @@ const char kDeviceManagementUrl[] =
 const char kUsername[] = "john@smith.com";
 const char kAuthToken[] = "secret123";
 const char kPolicyType[] = "google/chrome/test";
+const char kMachineId[] = "test-machine-id";
 
 }  // namespace
 
@@ -53,8 +54,8 @@ ACTION_P(CreateFailedResponse, http_error_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   em::DeviceManagementResponse response_data;
 
-  arg2->response_data = response_data.SerializeAsString();
-  arg2->response_code = http_error_code;
+  arg3->response_data = response_data.SerializeAsString();
+  arg3->response_code = http_error_code;
 }
 
 // An action that returns an URLRequestJob with a successful device
@@ -64,18 +65,23 @@ ACTION_P(CreateSuccessfulRegisterResponse, token) {
   em::DeviceManagementResponse response_data;
   response_data.mutable_register_response()->set_device_management_token(token);
 
-  arg2->response_data = response_data.SerializeAsString();
-  arg2->response_code = 200;
+  arg3->response_data = response_data.SerializeAsString();
+  arg3->response_code = 200;
 }
 
 // An action that returns an URLRequestJob with a successful policy response.
-ACTION_P(CreateSuccessfulPolicyResponse, homepage_location) {
+ACTION_P3(CreateSuccessfulPolicyResponse,
+          homepage_location,
+          set_serial_valid,
+          serial_valid) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   em::CloudPolicySettings settings;
   settings.mutable_homepagelocation()->set_homepagelocation(homepage_location);
   em::PolicyData policy_data;
   policy_data.set_policy_type(kPolicyType);
   policy_data.set_policy_value(settings.SerializeAsString());
+  if (set_serial_valid)
+    policy_data.set_valid_serial_number_missing(serial_valid);
 
   em::DeviceManagementResponse response_data;
   em::DevicePolicyResponse* policy_response =
@@ -84,15 +90,14 @@ ACTION_P(CreateSuccessfulPolicyResponse, homepage_location) {
   fetch_response->set_error_code(200);
   fetch_response->set_policy_data(policy_data.SerializeAsString());
 
-  arg2->response_data = response_data.SerializeAsString();
-  arg2->response_code = 200;
+  arg3->response_data = response_data.SerializeAsString();
+  arg3->response_code = 200;
 }
 
 // Tests CloudPolicySubsystem by intercepting its network requests.
 // The requests are intercepted by PolicyRequestInterceptor and they are
 // logged by LoggingWorkScheduler for further examination.
-template<typename TESTBASE>
-class CloudPolicySubsystemTestBase : public TESTBASE {
+class CloudPolicySubsystemTestBase : public testing::Test {
  public:
   CloudPolicySubsystemTestBase()
       : ui_thread_(BrowserThread::UI, &loop_),
@@ -124,6 +129,12 @@ class CloudPolicySubsystemTestBase : public TESTBASE {
         kDeviceManagementUrl, logger_.get()));
     cloud_policy_subsystem_->CompleteInitialization(
         prefs::kDevicePolicyRefreshRate, 0);
+
+    // Abort the test on unexpected requests.
+    ON_CALL(factory(), Intercept(_, _, _, _))
+       .WillByDefault(InvokeWithoutArgs(
+           this,
+           &CloudPolicySubsystemTestBase::StopMessageLoop));
   }
 
   virtual void TearDown() {
@@ -137,15 +148,15 @@ class CloudPolicySubsystemTestBase : public TESTBASE {
   }
 
   void ExecuteTest() {
+    // Stop the test once all the expectations are met. This relies on a
+    // sequence being active (see tests below).
+    EXPECT_CALL(factory(), Intercept(_, _, _, _))
+        .Times(AtMost(1))
+        .WillRepeatedly(
+            InvokeWithoutArgs(this,
+                              &CloudPolicySubsystemTestBase::StopMessageLoop));
+
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    // The first unexpected request of the policy subsystem will stop the
-    // message loop.
-    // This code relies on the fact that an InSequence object is active.
-    EXPECT_CALL(*(factory_.get()), Intercept(_, _, _))
-       .Times(AtMost(1))
-       .WillOnce(InvokeWithoutArgs(
-           this,
-           &CloudPolicySubsystemTestBase::StopMessageLoop));
     data_store_->set_user_name(kUsername);
     data_store_->SetGaiaToken(kAuthToken);
     data_store_->SetDeviceToken("", true);
@@ -165,27 +176,31 @@ class CloudPolicySubsystemTestBase : public TESTBASE {
   }
 
   void ExpectSuccessfulRegistration() {
-    EXPECT_CALL(*(factory_.get()), Intercept(kGaiaAuthHeader, "register", _))
+    EXPECT_CALL(factory(), Intercept(kGaiaAuthHeader, "register", _, _))
         .WillOnce(CreateSuccessfulRegisterResponse(kDMToken));
   }
 
   void ExpectFailedRegistration(int n, int code) {
-    EXPECT_CALL(*(factory_.get()), Intercept(kGaiaAuthHeader, "register", _))
+    EXPECT_CALL(factory(), Intercept(kGaiaAuthHeader, "register", _, _))
         .Times(n)
         .WillRepeatedly(CreateFailedResponse(code));
   }
 
   void ExpectFailedPolicy(int n, int code) {
-    EXPECT_CALL(*(factory_.get()), Intercept(kDMAuthHeader, "policy", _))
+    EXPECT_CALL(factory(), Intercept(kDMAuthHeader, "policy", _, _))
         .Times(n)
         .WillRepeatedly(CreateFailedResponse(code));
   }
 
-  void ExpectSuccessfulPolicy(int n, const std::string& homepage) {
-    EXPECT_CALL(*(factory_.get()), Intercept(kDMAuthHeader, "policy", _))
+  void ExpectSuccessfulPolicy(int n,
+                              const std::string& homepage) {
+    EXPECT_CALL(factory(), Intercept(kDMAuthHeader, "policy", _, _))
         .Times(n)
-        .WillRepeatedly(CreateSuccessfulPolicyResponse(homepage));
+        .WillRepeatedly(CreateSuccessfulPolicyResponse(homepage, false, false));
   }
+
+  TestingPolicyURLFetcherFactory& factory() { return *factory_; }
+  CloudPolicyDataStore* data_store() { return data_store_.get(); }
 
  private:
   // Verifies for a given policy that it is provided by the subsystem.
@@ -211,7 +226,7 @@ class CloudPolicySubsystemTestBase : public TESTBASE {
     int count = 0;
 
     // Length and max number of requests for the first interval.
-    int64 length = 10*60*1000; // 10 minutes
+    int64 length = 10 * 60 * 1000; // 10 minutes
     int64 limit = 10; // maximum nr of requests in the first 10 minutes
 
     while (cur <= events.back()) {
@@ -221,7 +236,7 @@ class CloudPolicySubsystemTestBase : public TESTBASE {
       cur += length;
 
       // Length and max number of requests for the subsequent intervals.
-      length = 60*60*1000; // 60 minutes
+      length = 60 * 60 * 1000; // 60 minutes
       limit = 12; // maxminum nr of requests in the next 60 minutes
     }
 
@@ -269,8 +284,8 @@ class CombinedTestDesc {
 };
 
 class CloudPolicySubsystemCombinedTest
-    : public CloudPolicySubsystemTestBase<
-                 testing::TestWithParam<CombinedTestDesc> > {
+    : public CloudPolicySubsystemTestBase,
+      public testing::WithParamInterface<CombinedTestDesc> {
 };
 
 TEST_P(CloudPolicySubsystemCombinedTest, Combined) {
@@ -309,7 +324,8 @@ INSTANTIATE_TEST_CASE_P(
 // the error code returned for registration attempts.
 
 class CloudPolicySubsystemRegistrationTest
-    : public CloudPolicySubsystemTestBase<testing::TestWithParam<int> > {
+    : public CloudPolicySubsystemTestBase,
+      public testing::WithParamInterface<int> {
 };
 
 TEST_P(CloudPolicySubsystemRegistrationTest, Registration) {
@@ -331,7 +347,7 @@ INSTANTIATE_TEST_CASE_P(
 // response from the server.
 
 class CloudPolicySubsystemRegistrationFailureTest
-    : public CloudPolicySubsystemTestBase<testing::Test> {
+    : public CloudPolicySubsystemTestBase {
 };
 
 TEST_F(CloudPolicySubsystemRegistrationFailureTest, RegistrationFailure) {
@@ -346,7 +362,8 @@ TEST_F(CloudPolicySubsystemRegistrationFailureTest, RegistrationFailure) {
 // the error code returned for failed policy attempts.
 
 class CloudPolicySubsystemPolicyTest
-    : public CloudPolicySubsystemTestBase<testing::TestWithParam<int> > {
+    : public CloudPolicySubsystemTestBase,
+      public testing::WithParamInterface<int> {
 };
 
 TEST_P(CloudPolicySubsystemPolicyTest, Policy) {
@@ -368,7 +385,8 @@ INSTANTIATE_TEST_CASE_P(
 // them. The parameter is the error code returned for registration attempts.
 
 class CloudPolicySubsystemPolicyReregisterTest
-    : public CloudPolicySubsystemTestBase<testing::TestWithParam<int> > {
+    : public CloudPolicySubsystemTestBase,
+      public testing::WithParamInterface<int> {
 };
 
 TEST_P(CloudPolicySubsystemPolicyReregisterTest, Policy) {
@@ -387,5 +405,57 @@ INSTANTIATE_TEST_CASE_P(
     CloudPolicySubsystemPolicyReregisterTestInstance,
     CloudPolicySubsystemPolicyReregisterTest,
     testing::Values(401, 403, 410));
+
+MATCHER_P(PolicyWithSerial, expected_serial, "") {
+  return arg.policy_request().request(0).machine_id() == expected_serial;
+}
+
+class CloudPolicySubsystemSerialNumberRecoveryTest
+    : public CloudPolicySubsystemTestBase {
+ protected:
+  virtual ~CloudPolicySubsystemSerialNumberRecoveryTest() {}
+
+  virtual void SetUp() {
+    CloudPolicySubsystemTestBase::SetUp();
+    data_store()->set_machine_id(kMachineId);
+  }
+
+  void ExpectPolicyRequest(const std::string& serial,
+                           bool set_serial_valid,
+                           bool serial_valid) {
+    EXPECT_CALL(factory(), Intercept(kDMAuthHeader, "policy",
+                                     PolicyWithSerial(serial), _))
+        .WillOnce(CreateSuccessfulPolicyResponse("", set_serial_valid,
+                                                 serial_valid));
+  }
+};
+
+// Tests that no serial is sent if the flag is not set.
+TEST_F(CloudPolicySubsystemSerialNumberRecoveryTest, FlagNotSet) {
+  InSequence s;
+  ExpectSuccessfulRegistration();
+  ExpectPolicyRequest("", false, false);
+  ExpectPolicyRequest("", false, false);
+  ExecuteTest();
+}
+
+// Tests that no serial is sent if the flag is set to false.
+TEST_F(CloudPolicySubsystemSerialNumberRecoveryTest, FlagFalse) {
+  InSequence s;
+  ExpectSuccessfulRegistration();
+  ExpectPolicyRequest("", true, false);
+  ExpectPolicyRequest("", false, false);
+  ExecuteTest();
+}
+
+// Tests that the serial is sent once if the server requests it.
+TEST_F(CloudPolicySubsystemSerialNumberRecoveryTest, SerialRequested) {
+  InSequence s;
+  ExpectSuccessfulRegistration();
+  ExpectPolicyRequest("", true, true);
+  ExpectPolicyRequest(kMachineId, false, false);
+  ExpectPolicyRequest("", false, false);
+  ExecuteTest();
+}
 
 }  // policy

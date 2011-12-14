@@ -68,6 +68,10 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
     return last_policy_refresh_time_;
   }
 
+  bool machine_id_missing() const {
+    return machine_id_missing_;
+  }
+
   // Get the version of the encryption key currently used for decoding policy.
   // Returns true if the version is available, in which case |version| is filled
   // in.
@@ -158,6 +162,10 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
 
   // Whether the the server has indicated this device is unmanaged.
   bool is_unmanaged_;
+
+  // Flag indicating whether the server claims that a valid machine identifier
+  // is missing on the server side. Read directly from the policy blob.
+  bool machine_id_missing_;
 
   // Currently used public key version, if available.
   PublicKeyVersion public_key_version_;

@@ -265,6 +265,8 @@ void CloudPolicyController::SendPolicyRequest() {
   em::DeviceStatusReportRequest device_status;
   fetch_request->set_signature_type(em::PolicyFetchRequest::SHA1_RSA);
   fetch_request->set_policy_type(data_store_->policy_type());
+  if (cache_->machine_id_missing() && !data_store_->machine_id().empty())
+    fetch_request->set_machine_id(data_store_->machine_id());
   if (!cache_->is_unmanaged() &&
       !cache_->last_policy_refresh_time().is_null()) {
     base::TimeDelta timestamp =

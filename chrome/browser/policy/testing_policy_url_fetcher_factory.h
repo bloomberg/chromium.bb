@@ -16,6 +16,10 @@
 
 class GURL;
 
+namespace enterprise_management {
+class DeviceManagementRequest;
+}
+
 namespace policy {
 
 class EventLogger;
@@ -45,15 +49,20 @@ class TestingPolicyURLFetcherFactory : public content::URLFetcherFactory,
 
   // Called back by TestingPolicyURLFetcher objects. Uses |Intercept| to get
   // the response and notifies |logger_| of a network request event.
-  void GetResponse(const std::string& auth_header,
-                   const std::string& request_type,
-                   TestURLResponse* response);
+  void GetResponse(
+      const std::string& auth_header,
+      const std::string& request_type,
+      const enterprise_management::DeviceManagementRequest& request,
+      TestURLResponse* response);
 
   // Place EXPECT_CALLs on this method to control the responses of the
   // produced URLFetchers. The response data should be copied into |response|.
-  MOCK_METHOD3(Intercept, void(const std::string& auth_header,
-                               const std::string& request_type,
-                               TestURLResponse* response));
+  MOCK_METHOD4(
+      Intercept,
+      void(const std::string& auth_header,
+           const std::string& request_type,
+           const enterprise_management::DeviceManagementRequest& request,
+           TestURLResponse* response));
 
  private:
   EventLogger* logger_;

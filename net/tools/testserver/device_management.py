@@ -75,6 +75,10 @@ PKCS1_RSA_OID = '\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01'
 # SHA256 sum of "0".
 SHA256_0 = hashlib.sha256('0').digest()
 
+# List of bad machine identifiers that trigger the |valid_serial_number_missing|
+# flag to be set set in the policy fetch response.
+BAD_MACHINE_IDS = [ '123490EN400015' ];
+
 class RequestHandler(object):
   """Decodes and handles device management requests from clients.
 
@@ -228,7 +232,7 @@ class RequestHandler(object):
       return response
 
     # Unregister the device.
-    self._server.UnregisterDevice(token);
+    self._server.UnregisterDevice(token['device_token']);
 
     # Prepare and send the response.
     response = dm.DeviceManagementResponse()
@@ -398,6 +402,9 @@ class RequestHandler(object):
     if not token_info:
       return error
 
+    if msg.machine_id:
+      self._server.UpdateMachineId(token_info['device_token'], msg.machine_id)
+
     # Response is only given if the scope is specified in the config file.
     # Normally 'google/chromeos/device' and 'google/chromeos/user' should be
     # accepted.
@@ -433,9 +440,12 @@ class RequestHandler(object):
     policy_data = dm.PolicyData()
     policy_data.policy_type = msg.policy_type
     policy_data.timestamp = int(time.time() * 1000)
-    policy_data.request_token = token_info['device_token'];
+    policy_data.request_token = token_info['device_token']
     policy_data.policy_value = policy_value
     policy_data.machine_name = token_info['machine_name']
+    policy_data.valid_serial_number_missing = (
+        token_info['machine_id'] in BAD_MACHINE_IDS)
+
     if signing_key:
       policy_data.public_key_version = key_version
     policy_data.username = self._server.username
@@ -595,8 +605,19 @@ class TestServer(object):
       'device_token': dmtoken,
       'allowed_policy_types': allowed_policy_types[type],
       'machine_name': 'chromeos-' + machine_id,
+      'machine_id': machine_id,
     }
     return self._registered_tokens[dmtoken]
+
+  def UpdateMachineId(self, dmtoken, machine_id):
+    """Updates the machine identifier for a registered device.
+
+    Args:
+      dmtoken: The device management token provided by the client.
+      machine_id: Updated hardware identifier value.
+    """
+    if dmtoken in self._registered_tokens:
+      self._registered_tokens[dmtoken]['machine_id'] = machine_id
 
   def LookupToken(self, dmtoken):
     """Looks up a device or a user by DM token.
