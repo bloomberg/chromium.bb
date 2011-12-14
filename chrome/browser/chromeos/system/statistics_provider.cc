@@ -50,17 +50,6 @@ const char kVpdDelim[] = "\n";
 // Timeout that we should wait for statistics to get loaded
 const int kTimeoutSecs = 3;
 
-// Gets name-value paris from the file using the parser.
-void GetNameValuePairsFromFile(NameValuePairsParser* parser,
-                               const FilePath& file_path,
-                               const std::string& eq,
-                               const std::string& delim) {
-  std::string contents;
-  if (file_util::ReadFileToString(file_path, &contents)) {
-    parser->ParseNameValuePairs(contents, eq, delim);
-  }
-}
-
 }  // namespace
 
 // The StatisticsProvider implementation used in production.
@@ -142,15 +131,13 @@ void StatisticsProviderImpl::LoadMachineStatistics() {
     // Use kUnknownHardwareClass if the hardware class command fails.
     parser.AddNameValuePair(kHardwareClassKey, kUnknownHardwareClass);
   }
-  GetNameValuePairsFromFile(&parser,
-                            FilePath(kMachineHardwareInfoFile),
-                            kMachineHardwareInfoEq,
-                            kMachineHardwareInfoDelim);
-  GetNameValuePairsFromFile(&parser,
-                            FilePath(kMachineOSInfoFile),
-                            kMachineOSInfoEq,
-                            kMachineOSInfoDelim);
-  GetNameValuePairsFromFile(&parser, FilePath(kVpdFile), kVpdEq, kVpdDelim);
+  parser.GetNameValuePairsFromFile(FilePath(kMachineHardwareInfoFile),
+                                   kMachineHardwareInfoEq,
+                                   kMachineHardwareInfoDelim);
+  parser.GetNameValuePairsFromFile(FilePath(kMachineOSInfoFile),
+                                   kMachineOSInfoEq,
+                                   kMachineOSInfoDelim);
+  parser.GetNameValuePairsFromFile(FilePath(kVpdFile), kVpdEq, kVpdDelim);
 
 #if defined(GOOGLE_CHROME_BUILD)
   // TODO(kochi): This is for providing a channel information to

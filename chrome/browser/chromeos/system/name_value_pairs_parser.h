@@ -12,6 +12,8 @@
 
 #include "base/basictypes.h"
 
+class FilePath;
+
 namespace chromeos {
 namespace system {
 
@@ -32,6 +34,11 @@ class NameValuePairsParser {
   // don't exist on Linux desktop.
   bool GetSingleValueFromTool(int argc, const char* argv[],
                               const std::string& key);
+
+  // Parses name-value pairs from the file.
+  void GetNameValuePairsFromFile(const FilePath& file_path,
+                                 const std::string& eq,
+                                 const std::string& delim);
 
   // This will parse strings with output in the format:
   // <key><EQ><value><DELIM>[<key><EQ><value>][...]

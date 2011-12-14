@@ -72,19 +72,30 @@ bool NameValuePairsParser::GetSingleValueFromTool(int argc,
   DCHECK_GE(argc, 1);
 
   if (!file_util::PathExists(FilePath(argv[0]))) {
-    LOG(ERROR) << argv[0] << " not found";
+    LOG(WARNING) << "Tool for statistics not found: " << argv[0];
     return false;
   }
 
   CommandLine command_line(argc, argv);
   std::string output_string;
   if (!base::GetAppOutput(command_line, &output_string)) {
-    LOG(ERROR) << "Error executing: " << command_line.GetCommandLineString();
+    LOG(WARNING) << "Error executing: " << command_line.GetCommandLineString();
     return false;
   }
   TrimWhitespaceASCII(output_string, TRIM_ALL, &output_string);
   AddNameValuePair(key, output_string);
   return true;
+}
+
+void NameValuePairsParser::GetNameValuePairsFromFile(const FilePath& file_path,
+                                                     const std::string& eq,
+                                                     const std::string& delim) {
+  std::string contents;
+  if (file_util::ReadFileToString(file_path, &contents)) {
+    ParseNameValuePairs(contents, eq, delim);
+  } else {
+    LOG(WARNING) << "Unable to read statistics file: " << file_path.value();
+  }
 }
 
 }  // namespace system
