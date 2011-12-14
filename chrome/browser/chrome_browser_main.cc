@@ -277,7 +277,8 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
 
   if (parsed_command_line.HasSwitch(switches::kMaxSpdySessionsPerDomain)) {
     int value;
-    base::StringToInt(parsed_command_line.GetSwitchValueASCII(
+    base::StringToInt(
+        parsed_command_line.GetSwitchValueASCII(
             switches::kMaxSpdySessionsPerDomain),
         &value);
     net::SpdySessionPool::set_max_sessions_per_domain(value);
@@ -292,6 +293,24 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
 
   if (parsed_command_line.HasSwitch(switches::kEnableHttpPipelining))
     net::HttpStreamFactory::set_http_pipelining_enabled(true);
+
+  if (parsed_command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
+    int value;
+    base::StringToInt(
+        parsed_command_line.GetSwitchValueASCII(
+            switches::kTestingFixedHttpPort),
+        &value);
+    net::HttpStreamFactory::set_testing_fixed_http_port(value);
+  }
+
+  if (parsed_command_line.HasSwitch(switches::kTestingFixedHttpsPort)) {
+    int value;
+    base::StringToInt(
+        parsed_command_line.GetSwitchValueASCII(
+            switches::kTestingFixedHttpsPort),
+        &value);
+    net::HttpStreamFactory::set_testing_fixed_https_port(value);
+  }
 }
 
 void InitializeURLRequestThrottlerManager(net::NetLog* net_log) {

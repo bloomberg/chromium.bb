@@ -1075,6 +1075,10 @@ const char kTestType[]                      = "test-type";
 // channel with the given ID.
 const char kTestingChannelID[]              = "testing-channel";
 
+// Allows for forcing socket connections to http/https to use fixed ports.
+const char kTestingFixedHttpPort[]          = "testing-fixed-http-port";
+const char kTestingFixedHttpsPort[]         = "testing-fixed-https-port";
+
 // Enables UI changes that make it easier to use with a touchscreen.
 const char kTouchOptimizedUI[]              = "touch-optimized-ui";
 
