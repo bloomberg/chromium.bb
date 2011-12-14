@@ -20,8 +20,13 @@ using autofill_helper::GetProfileCount;
 using autofill_helper::RemoveKey;
 using autofill_helper::SetProfiles;
 
-static const int kNumKeys = 150;
-static const int kNumProfiles = 150;
+// See comments in typed_urls_sync_perf_test.cc for reasons for these
+// magic numbers.
+//
+// TODO(akalin): If this works, decomp the magic number calculation
+// into a macro and have all the perf tests use it.
+static const int kNumKeys = 163;
+static const int kNumProfiles = 163;
 
 class AutofillSyncPerfTest : public SyncTest {
  public:
