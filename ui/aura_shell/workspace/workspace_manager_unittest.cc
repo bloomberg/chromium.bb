@@ -80,14 +80,11 @@ namespace internal {
 class WorkspaceManagerTestBase : public aura::test::AuraTestBase {
  public:
   WorkspaceManagerTestBase() {
-    aura::test::TestStackingClient* stacking_client =
-        static_cast<aura::test::TestStackingClient*>(
-            aura::RootWindow::GetInstance()->stacking_client());
-    stacking_client->default_container()->set_id(
+    GetTestStackingClient()->default_container()->set_id(
         internal::kShellWindowId_DefaultContainer);
     activation_controller_.reset(new internal::ActivationController);
     activation_controller_->set_default_container_for_test(
-        stacking_client->default_container());
+        GetTestStackingClient()->default_container());
   }
   virtual ~WorkspaceManagerTestBase() {}
 

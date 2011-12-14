@@ -15,12 +15,17 @@ class Window;
 // An interface implemented by an object that stacks windows.
 class AURA_EXPORT StackingClient {
  public:
-  virtual ~StackingClient() {}
+  // Sets/Gets the StackingClient for the RootWindow.
+  static void SetStackingClient(StackingClient* stacking_client);
+  static StackingClient* GetStackingClient();
 
   // Called by the Window when its parent is set to NULL. The delegate is given
   // an opportunity to inspect the window and add it to a default parent window
   // of its choosing.
   virtual void AddChildToDefaultParent(Window* window) = 0;
+
+ protected:
+  virtual ~StackingClient() {}
 };
 
 }  // namespace aura

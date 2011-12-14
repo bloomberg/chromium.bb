@@ -14,18 +14,6 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_AURA)
-#include "ui/aura/test/test_activation_client.h"
-#endif
-
-#if defined(USE_AURA)
-namespace aura {
-namespace test {
-class TestActivationClient;
-}
-}
-#endif
-
 class GURL;
 class NavigationController;
 
@@ -118,10 +106,6 @@ class BrowserWithTestWindowTest : public testing::Test {
 
   MockRenderProcessHostFactory rph_factory_;
   TestRenderViewHostFactory rvh_factory_;
-
-#if defined(USE_AURA)
-  scoped_ptr<aura::test::TestActivationClient> test_activation_client_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserWithTestWindowTest);
 };

@@ -16,6 +16,7 @@ const char kRootWindowDragDropClientKey[] = "RootWindowDragDropClient";
 const char kRootWindowTooltipClientKey[] = "RootWindowTooltipClient";
 const char kRootWindowActiveWindow[] = "RootWindowActiveWindow";
 const char kRootWindowActivationClient[] = "RootWindowActivationClient";
+const char kRootWindowStackingClient[] = "RootWindowStackingClient";
 const char kShadowTypeKey[] = "ShadowType";
 const char kShowStateKey[] = "ShowState";
 const char kTooltipTextKey[] = "TooltipText";

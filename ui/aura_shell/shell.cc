@@ -120,8 +120,6 @@ Shell::Shell(ShellDelegate* delegate)
       delegate_(delegate) {
   aura::RootWindow::GetInstance()->SetEventFilter(
       new internal::RootWindowEventFilter);
-  aura::RootWindow::GetInstance()->SetStackingClient(
-      new internal::StackingController);
 }
 
 Shell::~Shell() {
@@ -192,10 +190,8 @@ void Shell::Init() {
     (*i)->Show();
   }
 
-  internal::StackingController* stacking_controller =
-      static_cast<internal::StackingController*>(
-          root_window->stacking_client());
-  stacking_controller->Init();
+  // This is created after the special containers, since it expects them.
+  stacking_controller_.reset(new internal::StackingController);
 
   internal::RootWindowLayoutManager* root_window_layout =
       new internal::RootWindowLayoutManager(root_window);

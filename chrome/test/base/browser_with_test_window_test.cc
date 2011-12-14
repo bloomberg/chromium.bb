@@ -18,6 +18,10 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/common/page_transition_types.h"
 
+#if defined(USE_AURA)
+#include "ui/aura_shell/shell.h"
+#endif
+
 using content::BrowserThread;
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest()
@@ -29,7 +33,7 @@ BrowserWithTestWindowTest::BrowserWithTestWindowTest()
   OleInitialize(NULL);
 #endif
 #if defined(USE_AURA)
-  test_activation_client_.reset(new aura::test::TestActivationClient);
+  aura_shell::Shell::CreateInstance(NULL);
 #endif
 }
 
@@ -53,6 +57,9 @@ BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {
 
 #if defined(OS_WIN)
   OleUninitialize();
+#endif
+#if defined(USE_AURA)
+  aura_shell::Shell::DeleteInstance();
 #endif
 }
 

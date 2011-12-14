@@ -21,9 +21,6 @@ class StackingController : public aura::StackingClient {
   StackingController();
   virtual ~StackingController();
 
-  // Initializes this controller.
-  void Init();
-
   // Overridden from aura::StackingClient:
   virtual void AddChildToDefaultParent(aura::Window* window) OVERRIDE;
 

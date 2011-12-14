@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/client/stacking_client.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"

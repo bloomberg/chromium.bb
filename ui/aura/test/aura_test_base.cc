@@ -46,8 +46,7 @@ AuraTestBase::~AuraTestBase() {
 }
 
 TestStackingClient* AuraTestBase::GetTestStackingClient() {
-  return static_cast<TestStackingClient*>(
-      aura::RootWindow::GetInstance()->stacking_client());
+  return static_cast<TestStackingClient*>(StackingClient::GetStackingClient());
 }
 
 void AuraTestBase::SetUp() {

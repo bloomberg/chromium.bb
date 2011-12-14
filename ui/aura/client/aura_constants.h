@@ -46,6 +46,10 @@ AURA_EXPORT extern const char kRootWindowActiveWindow[];
 // the value is |aura::ActivationClient*|.
 AURA_EXPORT extern const char kRootWindowActivationClient[];
 
+// A property key to store a client that handles window stacking. The type of
+// the value is |aura::StackingClient*|.
+AURA_EXPORT extern const char kRootWindowStackingClient[];
+
 // A property key for a value from aura::ShadowType describing the drop shadow
 // that should be displayed under the window.  If unset, no shadow is displayed.
 AURA_EXPORT extern const char kShadowTypeKey[];
