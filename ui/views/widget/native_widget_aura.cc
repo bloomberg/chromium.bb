@@ -115,6 +115,9 @@ NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
       can_activate_(true),
+#if defined(USE_X11)
+      should_handle_menu_key_release_(false),
+#endif
       cursor_(gfx::kNullCursor) {
 }
 
@@ -548,10 +551,42 @@ void NativeWidgetAura::SetInactiveRenderingDisabled(bool value) {
 // NativeWidgetAura, views::InputMethodDelegate implementation:
 
 void NativeWidgetAura::DispatchKeyEventPostIME(const KeyEvent& key) {
-  if (delegate_->OnKeyEvent(key))
+  if (delegate_->OnKeyEvent(key) || !GetWidget()->GetFocusManager())
     return;
-  if (key.type() == ui::ET_KEY_PRESSED && GetWidget()->GetFocusManager())
+
+#if defined(USE_X11)
+  // TODO(oshima): This is copied from native_widget_gtk for now.
+  // RenderWidgetHostViewAura doesn't work and needs more work.
+  // oshima thinks this should be moved to focus manager (see
+  // crbug.com/106998), but beng believes that this should be done
+  // in RootWindowHosLinux for aura/linux.
+  const int key_code = key.key_code();
+
+  // Always reset |should_handle_menu_key_release_| unless we are handling a
+  // VKEY_MENU key release event. It ensures that VKEY_MENU accelerator can only
+  // be activated when handling a VKEY_MENU key release event which is preceded
+  // by an un-handled VKEY_MENU key press event.
+  if (key_code != ui::VKEY_MENU || key.type() != ui::ET_KEY_RELEASED)
+    should_handle_menu_key_release_ = false;
+
+  if (key.type() == ui::ET_KEY_PRESSED) {
+    // VKEY_MENU is triggered by key release event.
+    // FocusManager::OnKeyEvent() returns false when the key has been consumed.
+    if (key_code != ui::VKEY_MENU)
+      GetWidget()->GetFocusManager()->OnKeyEvent(key);
+    else
+      should_handle_menu_key_release_ = true;
+  } else if (key_code == ui::VKEY_MENU && should_handle_menu_key_release_ &&
+             (key.flags() & ~ui::EF_ALT_DOWN) == 0) {
+    // Trigger VKEY_MENU when only this key is pressed and released, and both
+    // press and release events are not handled by others.
+    ui::Accelerator accelerator(ui::VKEY_MENU, false, false, false);
+    GetWidget()->GetFocusManager()->ProcessAccelerator(accelerator);
+  }
+#else
+  if (key.type() == ui::ET_KEY_PRESSED)
     GetWidget()->GetFocusManager()->OnKeyEvent(key);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -570,6 +605,9 @@ void NativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
 }
 
 void NativeWidgetAura::OnFocus() {
+#if defined(USE_X11)
+  should_handle_menu_key_release_ = false;
+#endif
   Widget* widget = GetWidget();
   if (widget->is_top_level()) {
     InputMethod* input_method = widget->GetInputMethod();

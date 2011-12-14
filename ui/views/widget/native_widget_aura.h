@@ -171,6 +171,11 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   // Can we be made active?
   bool can_activate_;
 
+#if defined(USE_X11)
+  // Indicates if we should handle the upcoming Alt key release event.
+  bool should_handle_menu_key_release_;
+#endif
+
   gfx::NativeCursor cursor_;
 
   scoped_ptr<TooltipManagerAura> tooltip_manager_;
