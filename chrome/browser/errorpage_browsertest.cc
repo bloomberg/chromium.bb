@@ -8,11 +8,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/test_navigation_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/net/url_request_failed_dns_job.h"
 #include "content/browser/net/url_request_mock_http_job.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/test/test_navigation_observer.h"
 
 using content::BrowserThread;
 
@@ -93,7 +93,10 @@ class ErrorPageTest : public InProcessBrowserTest {
     } else {
       FAIL();
     }
-    test_navigation_observer.WaitForObservation();
+    test_navigation_observer.WaitForObservation(
+        base::Bind(&ui_test_utils::RunMessageLoop),
+        base::Bind(&MessageLoop::Quit,
+                   base::Unretained(MessageLoopForUI::current())));
 
     EXPECT_EQ(title_watcher.WaitAndGetTitle(), ASCIIToUTF16(expected_title));
   }

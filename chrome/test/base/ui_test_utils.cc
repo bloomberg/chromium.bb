@@ -43,7 +43,6 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/test/automation/javascript_execution_controller.h"
 #include "chrome/test/base/bookmark_load_observer.h"
-#include "chrome/test/base/test_navigation_observer.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -53,6 +52,7 @@
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/test/test_navigation_observer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -313,7 +313,10 @@ void WaitForNavigations(NavigationController* controller,
   TestNavigationObserver observer(
       content::Source<NavigationController>(controller), NULL,
       number_of_navigations);
-  observer.WaitForObservation();
+  observer.WaitForObservation(
+      base::Bind(&ui_test_utils::RunMessageLoop),
+      base::Bind(&MessageLoop::Quit,
+                 base::Unretained(MessageLoopForUI::current())));
 }
 
 void WaitForNewTab(Browser* browser) {
@@ -369,7 +372,11 @@ void NavigateToURL(browser::NavigateParams* params) {
   TestNavigationObserver observer(
       content::NotificationService::AllSources(), NULL, 1);
   browser::Navigate(params);
-  observer.WaitForObservation();
+  observer.WaitForObservation(
+      base::Bind(&ui_test_utils::RunMessageLoop),
+      base::Bind(&MessageLoop::Quit,
+                 base::Unretained(MessageLoopForUI::current())));
+
 }
 
 void NavigateToURL(Browser* browser, const GURL& url) {
@@ -430,7 +437,10 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     tab_contents = browser->GetSelectedTabContents();
   }
   if (disposition == CURRENT_TAB) {
-    same_tab_observer.WaitForObservation();
+    same_tab_observer.WaitForObservation(
+        base::Bind(&ui_test_utils::RunMessageLoop),
+        base::Bind(&MessageLoop::Quit,
+                   base::Unretained(MessageLoopForUI::current())));
     return;
   } else if (tab_contents) {
     NavigationController* controller = &tab_contents->controller();

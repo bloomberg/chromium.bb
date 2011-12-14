@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/base/test_navigation_observer.h"
+#include "content/test/test_navigation_observer.h"
 
-#include "chrome/test/base/js_injection_ready_observer.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host_observer.h"
+#include "content/test/js_injection_ready_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// This class observes |rvh| and calls OnJsInjectionReady() of
-// |js_injection_ready_observer| when the time is right to inject
-// JavaScript into the page.
+// This class observes |render_view_host| and calls OnJsInjectionReady() of
+// |js_injection_ready_observer| when the time is right to inject JavaScript
+// into the page.
 class TestNavigationObserver::RVHOSendJS
     : public content::RenderViewHostObserver {
  public:
-  RVHOSendJS(RenderViewHost* rvh,
+  RVHOSendJS(RenderViewHost* render_view_host,
              JsInjectionReadyObserver* js_injection_ready_observer)
-      : content::RenderViewHostObserver(rvh),
+      : content::RenderViewHostObserver(render_view_host),
         js_injection_ready_observer_(js_injection_ready_observer) {
   }
 
@@ -45,7 +44,8 @@ TestNavigationObserver::TestNavigationObserver(
       js_injection_ready_observer_(js_injection_ready_observer),
       done_(false),
       running_(false) {
-  // When we need to do javascript injection, register for RVH creation.
+  // When javascript injection is requested, register for RenderViewHost
+  // creation.
   if (js_injection_ready_observer_) {
     registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
                    content::NotificationService::AllSources());
@@ -56,17 +56,19 @@ TestNavigationObserver::TestNavigationObserver(
 TestNavigationObserver::~TestNavigationObserver() {
 }
 
-void TestNavigationObserver::WaitForObservation() {
+void TestNavigationObserver::WaitForObservation(
+    const base::Closure& wait_loop_callback,
+    const base::Closure& done_callback) {
   if (!done_) {
     EXPECT_FALSE(running_);
     running_ = true;
-    ui_test_utils::RunMessageLoop();
+    done_callback_ = done_callback;
+    wait_loop_callback.Run();
   }
 }
 
 TestNavigationObserver::TestNavigationObserver(
-    JsInjectionReadyObserver*
-        js_injection_ready_observer,
+    JsInjectionReadyObserver* js_injection_ready_observer,
     int number_of_navigations)
     : navigation_started_(false),
       navigations_completed_(0),
@@ -74,7 +76,8 @@ TestNavigationObserver::TestNavigationObserver(
       js_injection_ready_observer_(js_injection_ready_observer),
       done_(false),
       running_(false) {
-  // When we need to do javascript injection, register for RVH creation.
+  // When javascript injection is requested, register for RenderViewHost
+  // creation.
   if (js_injection_ready_observer_) {
     registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
                    content::NotificationService::AllSources());
@@ -105,7 +108,7 @@ void TestNavigationObserver::Observe(
         navigation_started_ = false;
         done_ = true;
         if (running_)
-          MessageLoopForUI::current()->Quit();
+          done_callback_.Run();
       }
       break;
     case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED:

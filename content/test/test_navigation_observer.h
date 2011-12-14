@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_BASE_TEST_NAVIGATION_OBSERVER_H_
-#define CHROME_TEST_BASE_TEST_NAVIGATION_OBSERVER_H_
+#ifndef CONTENT_TEST_TEST_NAVIGATION_OBSERVER_H_
+#define CONTENT_TEST_TEST_NAVIGATION_OBSERVER_H_
 #pragma once
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 class JsInjectionReadyObserver;
-class NavigationController;
-class RenderViewHost;
 
 // For browser_tests, which run on the UI thread, run a second
 // MessageLoop and quit when the navigation completes loading. For
@@ -35,8 +34,9 @@ class TestNavigationObserver : public content::NotificationObserver {
 
   virtual ~TestNavigationObserver();
 
-  // Run the UI message loop until |done_| becomes true.
-  void WaitForObservation();
+  // Run |wait_loop_callback| until complete, then run |done_callback|.
+  void WaitForObservation(const base::Closure& wait_loop_callback,
+                          const base::Closure& done_callback);
 
  protected:
   // Note: |js_injection_ready_observer| is owned by the caller and should be
@@ -72,6 +72,10 @@ class TestNavigationObserver : public content::NotificationObserver {
   // |done_| will get set when this object observes a TabStripModel event.
   bool done_;
 
+  // |done_callback_| will be set while |running_| is true and will be called
+  // when navigation completes.
+  base::Closure done_callback_;
+
   // |running_| will be true during WaitForObservation until |done_| is true.
   bool running_;
 
@@ -82,4 +86,4 @@ class TestNavigationObserver : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(TestNavigationObserver);
 };
 
-#endif  // CHROME_TEST_BASE_TEST_NAVIGATION_OBSERVER_H_
+#endif  // CONTENT_TEST_TEST_NAVIGATION_OBSERVER_H_

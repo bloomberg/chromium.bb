@@ -12,8 +12,8 @@
 #include "base/string16.h"
 #include "chrome/browser/ui/webui/web_ui_test_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/js_injection_ready_observer.h"
-#include "chrome/test/base/test_navigation_observer.h"
+#include "content/test/js_injection_ready_observer.h"
+#include "content/test/test_navigation_observer.h"
 
 class RenderViewHost;
 class WebUIMessageHandler;

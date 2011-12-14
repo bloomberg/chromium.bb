@@ -5,7 +5,7 @@
 #include "chrome/test/base/test_html_dialog_observer.h"
 
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/test/base/js_injection_ready_observer.h"
+#include "content/test/js_injection_ready_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/browser/tab_contents/navigation_controller.h"
