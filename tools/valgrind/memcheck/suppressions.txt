@@ -5321,6 +5321,44 @@
    fun:_ZN3zip3ZipERK8FilePathS2_b
    fun:_ZN12_GLOBAL__N_128ZipTest_ZipIgnoreHidden_Test8TestBodyEv
 }
+{
+   bug_107503a
+   Memcheck:Uninitialized
+   fun:bcmp
+   fun:_ZN3WTF14VectorComparerILb1EN7WebCore11CSSPropertyEE7compareEPKS2_S5_m
+   fun:_ZN3WTF20VectorTypeOperationsIN7WebCore11CSSPropertyEE7compareEPKS2_S5_m
+   fun:_ZN3WTFeqIN7WebCore11CSSPropertyELm4EEEbRKNS_6VectorIT_XT0_EEES7_
+   fun:_ZNK7WebCore26CSSMutableStyleDeclaration15propertiesEqualEPKS0_
+   fun:_ZNK7WebCore12NamedNodeMap20mappedMapsEquivalentEPKS0_
+   fun:_ZNK7WebCore16CSSStyleSelector24canShareStyleWithElementEPNS_13StyledElementE
+   fun:_ZNK7WebCore16CSSStyleSelector26findSiblingForStyleSharingEPNS_4NodeERj
+   fun:_ZN7WebCore16CSSStyleSelector17locateSharedStyleEv
+   fun:_ZN7WebCore16CSSStyleSelector15styleForElementEPNS_7ElementEPNS_11RenderStyleEbbPNS_12RenderRegionE
+   fun:_ZN7WebCore7Element16styleForRendererEv
+}
+{
+   bug_107503b
+   Memcheck:Uninitialized
+   fun:_ZNK7WebCore12NamedNodeMap20mappedMapsEquivalentEPKS0_
+   fun:_ZNK7WebCore16CSSStyleSelector24canShareStyleWithElementEPNS_13StyledElementE
+   fun:_ZNK7WebCore16CSSStyleSelector26findSiblingForStyleSharingEPNS_4NodeERj
+   fun:_ZN7WebCore16CSSStyleSelector17locateSharedStyleEv
+   fun:_ZN7WebCore16CSSStyleSelector15styleForElementEPNS_7ElementEPNS_11RenderStyleEbbPNS_12RenderRegionE
+   fun:_ZN7WebCore7Element16styleForRendererEv
+   fun:_ZN7WebCore7Element11recalcStyleENS_4Node11StyleChangeE
+   fun:_ZN7WebCore7Element11recalcStyleENS_4Node11StyleChangeE
+   fun:_ZN7WebCore7Element11recalcStyleENS_4Node11StyleChangeE
+   fun:_ZN7WebCore7Element11recalcStyleENS_4Node11StyleChangeE
+   fun:_ZN7WebCore7Element11recalcStyleENS_4Node11StyleChangeE
+   fun:_ZN7WebCore7Element11recalcStyleENS_4Node11StyleChangeE
+   fun:_ZN7WebCore8Document11recalcStyleENS_4Node11StyleChangeE
+   fun:_ZN7WebCore8Document19updateStyleIfNeededEv
+   fun:_ZN7WebCore8Document26updateStyleForAllDocumentsEv
+   fun:_ZN7WebCore16ScriptController13executeScriptERKNS_16ScriptSourceCodeE
+   fun:_ZN6WebKit12WebFrameImpl27executeScriptAndReturnValueERKNS_15WebScriptSourceE
+   fun:_ZN14RenderViewImpl14EvaluateScriptERKSbItN4base20string16_char_traitsESaItEES5_ib
+   fun:_ZN14RenderViewImpl19OnScriptEvalRequestERKSbItN4base20string16_char_traitsESaItEES5_ib
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
