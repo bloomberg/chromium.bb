@@ -127,11 +127,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params);
 
-  // Returns the extension for the given URL.  Excludes extension objects for
-  // bookmark apps, which do not use the app process model.
-  const Extension* GetNonBookmarkAppExtension(const ExtensionSet* extensions,
-                                              const GURL& url);
-
   // Returns true if the frame is navigating to an URL either into or out of an
   // extension app's extent.
   bool CrossesExtensionExtents(WebKit::WebFrame* frame,
