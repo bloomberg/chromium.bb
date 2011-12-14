@@ -147,7 +147,7 @@ Widget* RootView::GetWidget() {
   return const_cast<Widget*>(const_cast<const RootView*>(this)->GetWidget());
 }
 
-bool RootView::IsVisibleInRootView() const {
+bool RootView::IsDrawn() const {
   return visible();
 }
 

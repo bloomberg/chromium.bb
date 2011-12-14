@@ -317,7 +317,7 @@ gfx::Insets View::GetInsets() const {
 }
 
 gfx::Rect View::GetVisibleBounds() const {
-  if (!IsVisibleInRootView())
+  if (!IsDrawn())
     return gfx::Rect();
   gfx::Rect vis_bounds(0, 0, width(), height());
   gfx::Rect ancestor_bounds;
@@ -398,8 +398,8 @@ void View::SetVisible(bool visible) {
   }
 }
 
-bool View::IsVisibleInRootView() const {
-  return visible_ && parent_ ? parent_->IsVisibleInRootView() : false;
+bool View::IsDrawn() const {
+  return visible_ && parent_ ? parent_->IsDrawn() : false;
 }
 
 void View::SetEnabled(bool enabled) {
@@ -895,12 +895,11 @@ void View::SetNextFocusableView(View* view) {
 }
 
 bool View::IsFocusableInRootView() const {
-  return IsFocusable() && IsVisibleInRootView();
+  return IsFocusable() && IsDrawn();
 }
 
 bool View::IsAccessibilityFocusableInRootView() const {
-  return (focusable_ || accessibility_focusable_) && enabled_ &&
-    IsVisibleInRootView();
+  return (focusable_ || accessibility_focusable_) && enabled_ && IsDrawn();
 }
 
 FocusManager* View::GetFocusManager() {
@@ -1935,7 +1934,7 @@ void View::RegisterPendingAccelerators() {
     return;
   }
   // Only register accelerators if we are visible.
-  if (!IsVisibleInRootView() || !GetWidget()->IsVisible())
+  if (!IsDrawn() || !GetWidget()->IsVisible())
     return;
   for (std::vector<ui::Accelerator>::const_iterator i(
            accelerators_->begin() + registered_accelerator_count_);

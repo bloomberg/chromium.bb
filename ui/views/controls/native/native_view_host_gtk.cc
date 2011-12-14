@@ -173,7 +173,7 @@ void NativeViewHostGtk::AddedToWidget() {
 
   AttachHostWidget();
 
-  if (host_->IsVisibleInRootView()) {
+  if (host_->IsDrawn()) {
     gtk_widget_show(host_->native_view());
     gtk_widget_show(fixed_);
   } else {

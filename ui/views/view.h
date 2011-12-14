@@ -248,9 +248,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Return whether a view is visible
   bool visible() const { return visible_; }
 
-  // Return whether a view and its ancestors are visible. Returns true if the
+  // Return whether this view and its ancestors are visible. Returns true if the
   // path from this view to the root view is visible.
-  virtual bool IsVisibleInRootView() const;
+  virtual bool IsDrawn() const;
 
   // Set whether this view is enabled. A disabled view does not receive keyboard
   // or mouse inputs. If |enabled| differs from the current value, SchedulePaint

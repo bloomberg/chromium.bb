@@ -32,7 +32,7 @@ class StatusAreaViewTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(StatusAreaViewTest, VisibleTest) {
   const StatusAreaView* status = GetStatusAreaView();
-  EXPECT_TRUE(status->IsVisibleInRootView());
+  EXPECT_TRUE(status->IsDrawn());
   EXPECT_FALSE(status->size().IsEmpty());
 }
 

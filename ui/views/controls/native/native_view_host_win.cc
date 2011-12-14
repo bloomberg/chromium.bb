@@ -55,7 +55,7 @@ void NativeViewHostWin::AddedToWidget() {
   HWND widget_hwnd = host_->GetWidget()->GetNativeView();
   if (parent_hwnd != widget_hwnd)
     SetParent(host_->native_view(), widget_hwnd);
-  if (host_->IsVisibleInRootView())
+  if (host_->IsDrawn())
     ShowWindow(host_->native_view(), SW_SHOW);
   else
     ShowWindow(host_->native_view(), SW_HIDE);

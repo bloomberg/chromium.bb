@@ -120,11 +120,11 @@ bool ViewAndLayerTreeAreConsistent(const views::View* view,
       return false;
 
     // Check if the visibility states of the View and the Layer are in sync.
-    EXPECT_EQ(l->IsDrawn(), v->IsVisibleInRootView());
-    if (v->IsVisibleInRootView() != l->IsDrawn()) {
+    EXPECT_EQ(l->IsDrawn(), v->IsDrawn());
+    if (v->IsDrawn() != l->IsDrawn()) {
       for (const views::View* vv = v; vv; vv = vv->parent())
         LOG(ERROR) << "V: " << vv << " " << vv->visible() << " "
-                   << vv->IsVisibleInRootView() << " " << vv->layer();
+                   << vv->IsDrawn() << " " << vv->layer();
       for (const ui::Layer* ll = l; ll; ll = ll->parent())
         LOG(ERROR) << "L: " << ll << " " << ll->IsDrawn();
       return false;

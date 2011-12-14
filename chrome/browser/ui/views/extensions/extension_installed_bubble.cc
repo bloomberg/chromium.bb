@@ -341,7 +341,7 @@ void ExtensionInstalledBubble::ShowInternal() {
     if (browser_view->IsTabStripVisible()) {
       AbstractTabStripView* tabstrip = browser_view->tabstrip();
       views::View* ntp_button = tabstrip->GetNewTabButton();
-      if (ntp_button && ntp_button->IsVisibleInRootView()) {
+      if (ntp_button && ntp_button->IsDrawn()) {
         reference_view = ntp_button;
       } else {
         // Just have the bubble point at the tab strip.

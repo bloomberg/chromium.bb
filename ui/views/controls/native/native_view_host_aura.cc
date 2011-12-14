@@ -45,7 +45,7 @@ void NativeViewHostAura::AddedToWidget() {
   aura::Window* widget_window = host_->GetWidget()->GetNativeView();
   if (host_->native_view()->parent() != widget_window)
     widget_window->AddChild(host_->native_view());
-  if (host_->IsVisibleInRootView())
+  if (host_->IsDrawn())
     host_->native_view()->Show();
   else
     host_->native_view()->Hide();

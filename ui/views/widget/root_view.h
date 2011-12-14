@@ -99,7 +99,7 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   // Overridden from View:
   virtual const Widget* GetWidget() const OVERRIDE;
   virtual Widget* GetWidget() OVERRIDE;
-  virtual bool IsVisibleInRootView() const OVERRIDE;
+  virtual bool IsDrawn() const OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
   virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
