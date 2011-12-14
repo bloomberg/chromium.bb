@@ -706,6 +706,8 @@ void SyncBackendHost::Core::DeleteSyncDataFolder() {
 
 void SyncBackendHost::Core::FinishConfigureDataTypes() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  if (!host_ || !host_->frontend_)
+    return;
   host_->frontend_loop_->PostTask(FROM_HERE, base::Bind(
       &SyncBackendHost::Core::FinishConfigureDataTypesOnFrontendLoop, this));
 }
@@ -878,6 +880,8 @@ void SyncBackendHost::Core::HandleClearServerDataFailedOnFrontendLoop() {
 }
 
 void SyncBackendHost::Core::FinishConfigureDataTypesOnFrontendLoop() {
+  if (!host_)
+    return;
   host_->FinishConfigureDataTypesOnFrontendLoop();
 }
 
