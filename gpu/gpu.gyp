@@ -39,6 +39,7 @@
       },
       'dependencies': [
         '../base/base.gyp:base',
+        'command_buffer/command_buffer.gyp:gles2_utils',
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
@@ -55,12 +56,8 @@
         'command_buffer/common/gles2_cmd_format_autogen.h',
         'command_buffer/common/gles2_cmd_format.cc',
         'command_buffer/common/gles2_cmd_format.h',
-        'command_buffer/common/gles2_cmd_utils.cc',
-        'command_buffer/common/gles2_cmd_utils.h',
         'command_buffer/common/id_allocator.cc',
         'command_buffer/common/id_allocator.h',
-        'command_buffer/common/logging.cc',
-        'command_buffer/common/logging.h',
         'command_buffer/common/thread_local.h',
         'command_buffer/common/types.h',
       ],
