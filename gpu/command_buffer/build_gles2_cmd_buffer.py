@@ -2369,6 +2369,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       file.Write("%s %s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
+      file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
       self.WriteClientGLCallLog(func, file)
       func.WriteDestinationInitalizationValidation(file)
       for arg in func.GetOriginalArgs():
@@ -2793,6 +2794,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       file.Write("%s %s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
+      file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
       func.WriteDestinationInitalizationValidation(file)
       self.WriteClientGLCallLog(func, file)
       for arg in func.GetOriginalArgs():
@@ -2871,7 +2873,8 @@ class GENnHandler(TypeHandler):
     self.WriteClientGLCallLog(func, file)
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
-    code = """  id_handlers_[id_namespaces::k%(resource_type)s]->
+    code = """  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  id_handlers_[id_namespaces::k%(resource_type)s]->
       MakeIds(0, %(args)s);
   helper_->%(name)sImmediate(%(args)s);
 %(log_code)s
@@ -3086,6 +3089,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     file.Write("%s %s(%s) {\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
+    file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
     func.WriteDestinationInitalizationValidation(file)
     self.WriteClientGLCallLog(func, file)
     for arg in func.GetOriginalArgs():
@@ -3116,6 +3120,7 @@ class DeleteHandler(TypeHandler):
     file.Write("%s %s(%s) {\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
+    file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
     func.WriteDestinationInitalizationValidation(file)
     self.WriteClientGLCallLog(func, file)
     for arg in func.GetOriginalArgs():
@@ -3235,6 +3240,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
           'count_name': func.GetOriginalArgs()[0].name,
         }
       file.Write("%(return_type)s %(name)s(%(typed_args)s) {\n" % args)
+      file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
       func.WriteDestinationInitalizationValidation(file)
       self.WriteClientGLCallLog(func, file)
       file.Write("""  GPU_CLIENT_LOG_CODE_BLOCK({
@@ -3402,6 +3408,7 @@ class GETnHandler(TypeHandler):
       file.Write("%s %s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
+      file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
       func.WriteDestinationInitalizationValidation(file)
       self.WriteClientGLCallLog(func, file)
       for arg in func.GetOriginalArgs():
@@ -3592,6 +3599,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     file.Write("%s %s(%s) {\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
+    file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
     func.WriteDestinationInitalizationValidation(file)
     self.WriteClientGLCallLog(func, file)
     last_arg_name = func.GetLastOriginalArg().name
@@ -3815,6 +3823,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     file.Write("%s %s(%s) {\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
+    file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
     func.WriteDestinationInitalizationValidation(file)
     self.WriteClientGLCallLog(func, file)
     last_arg_name = func.GetLastOriginalArg().name
@@ -4204,6 +4213,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
       file.Write("%s %s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
+      file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
       func.WriteDestinationInitalizationValidation(file)
       self.WriteClientGLCallLog(func, file)
       file.Write("  typedef %s::Result Result;\n" % func.name)
@@ -4243,7 +4253,9 @@ class STRnHandler(TypeHandler):
 
   def WriteGLES2ImplementationHeader(self, func, file):
     """Overrriden from TypeHandler."""
-    code_1 = "%(return_type)s %(func_name)s(%(args)s) {\n"
+    code_1 = """%(return_type)s %(func_name)s(%(args)s) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+"""
     code_2 = """  GPU_CLIENT_LOG("[" << this << "] gl%(func_name)s" << "("
       << %(arg0)s << ", "
       << %(arg1)s << ", "
