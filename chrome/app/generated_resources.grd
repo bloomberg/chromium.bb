@@ -4940,7 +4940,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Disable the new HTML implementation of the lock screen.
       </message>
       <message name="IDS_FLAGS_ENABLE_VIDEO_TRACK_NAME" desc="Title for the flag to enable the &lt;track&gt; element for &lt;video&gt; elements.">
-        Enable &lt;track&gt; element
+        Enable <ph name="TRACK_HTML">&lt;track&gt;</ph> element
       </message>
       <message name="IDS_FLAGS_ENABLE_VIDEO_TRACK_DESCRIPTION" desc="Description for the flag to enable the track element for captions on &lt;videos&gt; elements.">
         Enable the track element (not yet fully functional) for captions, subtitles, chapters, and audio descriptions on video elements.
@@ -4952,7 +4952,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable various alerts about changes in extension state.
       </message>
       <message name="IDS_FLAGS_ENABLE_MEDIA_SOURCE_NAME" desc="Title for the flag to enable the Media Source API on &lt;video&gt; elements.">
-        Enable Media Source API on &lt;video&gt; elements.
+        Enable Media Source API on <ph name="VIDEO_HTML">&lt;video&gt;</ph> elements.
       </message>
       <message name="IDS_FLAGS_ENABLE_MEDIA_SOURCE_DESCRIPTION" desc="Description for the flag to enable the Media Source API on &lt;video&gt; elements.">
         Enable experimental Media Source API on the video elements. This API allows JavaScript to send media data directly to a video element.
@@ -12049,16 +12049,16 @@ changed since last sign in
         Reject
       </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY_REQUEST" desc="Bluetooth pairing message typically shown when pairing with a device that has a display.  The label %1 is replaced by the passkey and %2 with the name of the device.">
-        Please confirm that the passkey %1 is shown on "%2".
+        Please confirm that the passkey <ph name="PASSKEY">%1<ex>0123</ex></ph> is shown on "<ph name="DEVICE_NAME">%2<ex>Nexus S</ex></ph>".
       </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_PASSKEY_REQUEST" desc="Bluetooth pairing message typically displayed when the external device has no display or means of input.">
         Please enter the passkey:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PASSKEY_REQUEST" desc="Bluetooth pairing message typically displayed when pairing a wireless keyboard.  The label %1 is replaced by the passkey and %2 with the name of the device.">
-        Please enter the passkey %1 on "%2".
+        Please enter the passkey <ph name="PASSKEY">%1<ex>0123</ex></ph> on "<ph name="DEVICE_NAME">%2<ex>Nexus S</ex></ph>".
       </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_FAILED_PAIRING_INSTRUCTIONS" desc="">
-        Please make sure that "%1" is turn on, in range and ready for pairing.
+        Please make sure that "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>" is turned on, in range and ready for pairing.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for accessbility.">
         Enable accessibility features
