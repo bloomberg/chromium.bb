@@ -13318,9 +13318,9 @@ Press Ctrl+Alt+Z to cancel.
       <message name="IDS_STATUSBAR_WIFI_SCANNING_MESSAGE" desc="Scanning for wifi networks">
         Searching for Wi-Fi networks...
       </message>
-      <message name="IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SHIFT_KEYS" desc="The tooltip for the caps lock indicator button.">
+      <message name="IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SHIFT_AND_SEARCH_KEYS" desc="The tooltip for the caps lock indicator button.">
 CAPS LOCK is on.
-Press both Shift keys to cancel
+Press Shift + Search key to cancel
       </message>
       <message name="IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SEARCH" desc="The tooltip for the caps lock indicator button.">
 CAPS LOCK is on.

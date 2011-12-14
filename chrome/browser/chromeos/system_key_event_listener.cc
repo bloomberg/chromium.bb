@@ -91,8 +91,7 @@ SystemKeyEventListener::SystemKeyEventListener()
   key_f8_ = XKeysymToKeycode(display, XK_F8);
   key_f9_ = XKeysymToKeycode(display, XK_F9);
   key_f10_ = XKeysymToKeycode(display, XK_F10);
-  key_left_shift_ = XKeysymToKeycode(display, XK_Shift_L);
-  key_right_shift_ = XKeysymToKeycode(display, XK_Shift_R);
+  key_search_ = XKeysymToKeycode(display, XK_Super_L);
 
   if (key_brightness_down_)
     GrabKey(key_brightness_down_, 0);
@@ -325,11 +324,11 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
     if (keycode) {
       const unsigned int state = (xevent->xkey.state & kSupportedModifiers);
 
-      // Toggle Caps Lock if both Shift keys are pressed simultaneously.
-      if (keycode == key_left_shift_ || keycode == key_right_shift_) {
-        const bool other_shift_is_held = (state & ShiftMask);
+      // Toggle Caps Lock if Shift and Search keys are pressed.
+      if (keycode == key_search_) {
+        const bool shift_is_held = (state & ShiftMask);
         const bool other_mods_are_held = (state & ~(ShiftMask | LockMask));
-        if (other_shift_is_held && !other_mods_are_held)
+        if (shift_is_held && !other_mods_are_held)
           input_method_manager->GetXKeyboard()->SetCapsLockEnabled(
               !caps_lock_is_on_);
       }

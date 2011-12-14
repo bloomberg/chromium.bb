@@ -164,14 +164,14 @@ void CapsLockMenuButton::Observe(int type,
 }
 
 void CapsLockMenuButton::UpdateAccessibleName() {
-  int id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SHIFT_KEYS;
+  int id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SHIFT_AND_SEARCH_KEYS;
   if (HasCapsLock())
     id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SEARCH;
   SetAccessibleName(l10n_util::GetStringUTF16(id));
 }
 
 string16 CapsLockMenuButton::GetText() const {
-  int id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SHIFT_KEYS;
+  int id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SHIFT_AND_SEARCH_KEYS;
   if (HasCapsLock())
     id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SEARCH;
   return l10n_util::GetStringUTF16(id);

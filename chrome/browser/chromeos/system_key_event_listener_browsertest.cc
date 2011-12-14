@@ -185,11 +185,11 @@ class SystemKeyEventListenerTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(SystemKeyEventListenerTest, TestCapsLock) {
   listener_->AddCapsLockObserver(&caps_lock_observer_);
 
-  // Press both Shift keys. Note that ProcessedXEvent() returns false even when
-  // the second Shift key is pressed.
+  // Press Shift and Search keys. Note that ProcessedXEvent() returns false
+  // even when Shift and Search keys are both pressed.
   EXPECT_FALSE(SendFakeEvent(XK_Shift_L, 0, true));
-  EXPECT_FALSE(SendFakeEvent(XK_Shift_R, ShiftMask, true));
-  EXPECT_FALSE(SendFakeEvent(XK_Shift_R, ShiftMask, false));
+  EXPECT_FALSE(SendFakeEvent(XK_Super_L, ShiftMask, true));
+  EXPECT_FALSE(SendFakeEvent(XK_Super_L, ShiftMask, false));
   EXPECT_FALSE(SendFakeEvent(XK_Shift_L, ShiftMask, false));
   // Enter a new message loop and wait for OnCapsLockChange() to be called.
   ui_test_utils::RunMessageLoop();
@@ -199,25 +199,25 @@ IN_PROC_BROWSER_TEST_F(SystemKeyEventListenerTest, TestCapsLock) {
 
   // Test all other Shift_L/R combinations.
   EXPECT_FALSE(SendFakeEvent(XK_Shift_L, 0, true));
-  EXPECT_FALSE(SendFakeEvent(XK_Shift_R, ShiftMask, true));
+  EXPECT_FALSE(SendFakeEvent(XK_Super_L, ShiftMask, true));
   EXPECT_FALSE(SendFakeEvent(XK_Shift_L, ShiftMask, false));
-  EXPECT_FALSE(SendFakeEvent(XK_Shift_R, ShiftMask, false));
+  EXPECT_FALSE(SendFakeEvent(XK_Super_L, 0, false));
   ui_test_utils::RunMessageLoop();
   EXPECT_EQ(
       initial_caps_lock_state_, manager_->GetXKeyboard()->CapsLockIsEnabled());
 
   EXPECT_FALSE(SendFakeEvent(XK_Shift_R, 0, true));
-  EXPECT_FALSE(SendFakeEvent(XK_Shift_L, ShiftMask, true));
-  EXPECT_FALSE(SendFakeEvent(XK_Shift_L, ShiftMask, false));
+  EXPECT_FALSE(SendFakeEvent(XK_Super_L, ShiftMask, true));
+  EXPECT_FALSE(SendFakeEvent(XK_Super_L, ShiftMask, false));
   EXPECT_FALSE(SendFakeEvent(XK_Shift_R, ShiftMask, false));
   ui_test_utils::RunMessageLoop();
   EXPECT_EQ(
       !initial_caps_lock_state_, manager_->GetXKeyboard()->CapsLockIsEnabled());
 
   EXPECT_FALSE(SendFakeEvent(XK_Shift_R, 0, true));
-  EXPECT_FALSE(SendFakeEvent(XK_Shift_L, ShiftMask, true));
+  EXPECT_FALSE(SendFakeEvent(XK_Super_L, ShiftMask, true));
   EXPECT_FALSE(SendFakeEvent(XK_Shift_R, ShiftMask, false));
-  EXPECT_FALSE(SendFakeEvent(XK_Shift_L, ShiftMask, false));
+  EXPECT_FALSE(SendFakeEvent(XK_Super_L, 0, false));
   ui_test_utils::RunMessageLoop();
   EXPECT_EQ(
       initial_caps_lock_state_, manager_->GetXKeyboard()->CapsLockIsEnabled());
@@ -233,33 +233,33 @@ IN_PROC_BROWSER_TEST_F(SystemKeyEventListenerTest, TestCapsLockWithNumLock) {
   listener_->AddCapsLockObserver(&caps_lock_observer_);
 
   EXPECT_FALSE(SendFakeEvent(XK_Shift_L, num_lock_mask_, true));
-  EXPECT_FALSE(SendFakeEvent(XK_Shift_R, ShiftMask | num_lock_mask_, true));
-  EXPECT_FALSE(SendFakeEvent(XK_Shift_R, ShiftMask | num_lock_mask_, false));
+  EXPECT_FALSE(SendFakeEvent(XK_Super_L, ShiftMask | num_lock_mask_, true));
+  EXPECT_FALSE(SendFakeEvent(XK_Super_L, ShiftMask | num_lock_mask_, false));
   EXPECT_FALSE(SendFakeEvent(XK_Shift_L, ShiftMask | num_lock_mask_, false));
   ui_test_utils::RunMessageLoop();
   EXPECT_EQ(
       !initial_caps_lock_state_, manager_->GetXKeyboard()->CapsLockIsEnabled());
 
   EXPECT_FALSE(SendFakeEvent(XK_Shift_L, num_lock_mask_, true));
-  EXPECT_FALSE(SendFakeEvent(XK_Shift_R, ShiftMask | num_lock_mask_, true));
+  EXPECT_FALSE(SendFakeEvent(XK_Super_L, ShiftMask | num_lock_mask_, true));
   EXPECT_FALSE(SendFakeEvent(XK_Shift_L, ShiftMask | num_lock_mask_, false));
-  EXPECT_FALSE(SendFakeEvent(XK_Shift_R, ShiftMask | num_lock_mask_, false));
+  EXPECT_FALSE(SendFakeEvent(XK_Super_L, ShiftMask | num_lock_mask_, false));
   ui_test_utils::RunMessageLoop();
   EXPECT_EQ(
       initial_caps_lock_state_, manager_->GetXKeyboard()->CapsLockIsEnabled());
 
   EXPECT_FALSE(SendFakeEvent(XK_Shift_R, num_lock_mask_, true));
-  EXPECT_FALSE(SendFakeEvent(XK_Shift_L, ShiftMask | num_lock_mask_, true));
-  EXPECT_FALSE(SendFakeEvent(XK_Shift_L, ShiftMask | num_lock_mask_, false));
+  EXPECT_FALSE(SendFakeEvent(XK_Super_L, ShiftMask | num_lock_mask_, true));
+  EXPECT_FALSE(SendFakeEvent(XK_Super_L, ShiftMask | num_lock_mask_, false));
   EXPECT_FALSE(SendFakeEvent(XK_Shift_R, ShiftMask | num_lock_mask_, false));
   ui_test_utils::RunMessageLoop();
   EXPECT_EQ(
       !initial_caps_lock_state_, manager_->GetXKeyboard()->CapsLockIsEnabled());
 
   EXPECT_FALSE(SendFakeEvent(XK_Shift_R, num_lock_mask_, true));
-  EXPECT_FALSE(SendFakeEvent(XK_Shift_L, ShiftMask | num_lock_mask_, true));
+  EXPECT_FALSE(SendFakeEvent(XK_Super_L, ShiftMask | num_lock_mask_, true));
   EXPECT_FALSE(SendFakeEvent(XK_Shift_R, ShiftMask | num_lock_mask_, false));
-  EXPECT_FALSE(SendFakeEvent(XK_Shift_L, ShiftMask | num_lock_mask_, false));
+  EXPECT_FALSE(SendFakeEvent(XK_Super_L, ShiftMask | num_lock_mask_, false));
   ui_test_utils::RunMessageLoop();
   EXPECT_EQ(
       initial_caps_lock_state_, manager_->GetXKeyboard()->CapsLockIsEnabled());
@@ -268,14 +268,14 @@ IN_PROC_BROWSER_TEST_F(SystemKeyEventListenerTest, TestCapsLockWithNumLock) {
   manager_->GetXKeyboard()->SetCapsLockEnabled(initial_caps_lock_state_);
 }
 
-// Tests pressing Shift_L+R with an another modifier like Control. Caps Lock
+// Tests pressing Shift+Search with an another modifier like Control. Caps Lock
 // status should not be changed this time.
 IN_PROC_BROWSER_TEST_F(SystemKeyEventListenerTest, TestCapsLockWithControl) {
   listener_->AddCapsLockObserver(&caps_lock_observer_);
 
   EXPECT_FALSE(SendFakeEvent(XK_Shift_L, ControlMask, true));
-  EXPECT_FALSE(SendFakeEvent(XK_Shift_R, ShiftMask | ControlMask, true));
-  EXPECT_FALSE(SendFakeEvent(XK_Shift_R, ShiftMask | ControlMask, false));
+  EXPECT_FALSE(SendFakeEvent(XK_Super_L, ShiftMask | ControlMask, true));
+  EXPECT_FALSE(SendFakeEvent(XK_Super_L, ShiftMask | ControlMask, false));
   EXPECT_FALSE(SendFakeEvent(XK_Shift_L, ShiftMask | ControlMask, false));
   EXPECT_EQ(
       initial_caps_lock_state_, manager_->GetXKeyboard()->CapsLockIsEnabled());
