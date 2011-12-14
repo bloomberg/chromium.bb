@@ -583,6 +583,8 @@ int main(int  argc,
     NaClPerfCounterIntervalLast(&time_all_main);
   }
 
+  NaClAppInitialDescriptorHookup(nap);
+
   if (!rpc_supplies_nexe) {
     struct GioMemoryFileSnapshot main_file;
 
@@ -628,8 +630,6 @@ int main(int  argc,
     }
   }
 
-  NaClAppInitialDescriptorHookup(nap);
-
   /*
    * Execute additional I/O redirections.  NB: since the NaClApp
    * takes ownership of host / IMC socket descriptors, all but
@@ -638,7 +638,7 @@ int main(int  argc,
    * close descriptors, since the underlying host OS will do so
    * as part of service runtime exit.
    */
-  NaClLog(4, "Processing I/O redirection/inheritance from environment\n");
+  NaClLog(4, "Processing I/O redirection/inheritance from command line\n");
   for (entry = redir_queue; NULL != entry; entry = entry->next) {
     switch (entry->tag) {
       case HOST_DESC:

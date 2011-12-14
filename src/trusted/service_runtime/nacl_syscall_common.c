@@ -780,6 +780,7 @@ int32_t NaClCommonSysWrite(struct NaClAppThread *natp,
   NaClSysCommonThreadSyscallEnter(natp);
 
   ndp = NaClGetDesc(natp->nap, d);
+  NaClLog(4, " ndp = %"NACL_PRIxPTR"\n", (uintptr_t) ndp);
   if (NULL == ndp) {
     retval = -NACL_ABI_EBADF;
     goto cleanup;

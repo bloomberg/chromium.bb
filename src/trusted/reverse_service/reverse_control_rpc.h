@@ -17,5 +17,6 @@
 #define NACL_REVERSE_CONTROL_ADD_CHANNEL    "add_channel::b"
 #define NACL_REVERSE_CONTROL_INIT_DONE      "init_done::"
 #define NACL_REVERSE_CONTROL_REPORT_STATUS  "exit_status:i:"
+#define NACL_REVERSE_CONTROL_POST_MESSAGE   "post_message:C:i"
 
 #endif

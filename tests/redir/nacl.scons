@@ -58,13 +58,26 @@ env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_redir_test')
 
-node = env.Command('redir_test_output_compare',
-                   ['${PYTHON}',
-                    env.File('${SCONSTRUCT_DIR}/tools/file_cmp_test.py'),
-                    outfile,
-                    env.File('redir_test.stdout')],
-                   [env.File(outfile)])
+test_node = env.AutoDepsCommand(
+    'redir_test_output_compare',
+    ['${PYTHON}',
+     env.File('${SCONSTRUCT_DIR}/tools/file_cmp_test.py'),
+     outfile,
+     env.File('redir_test.stdout')],
+    [node, env.File(outfile)])
 
-env.AddNodeToTestSuite(node,
+env.AddNodeToTestSuite(test_node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_redir_test')
+
+test_node = env.AutoDepsCommand(
+    'redir_test_error_compare',
+    ['${PYTHON}',
+     env.File('${SCONSTRUCT_DIR}/tools/file_cmp_test.py'),
+     errfile,
+     env.File('redir_test.stderr')],
+    [node, env.File(errfile)])
+
+env.AddNodeToTestSuite(test_node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_redir_test')

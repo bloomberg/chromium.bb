@@ -42,6 +42,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_config_dangerous.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "native_client/src/trusted/service_runtime/nacl_kern_services.h"
+#include "native_client/src/trusted/service_runtime/nacl_resource.h"
 
 #include "native_client/src/trusted/service_runtime/sel_mem.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
@@ -70,6 +71,11 @@ struct NaClDebugCallbacks {
   void (*thread_create_hook)(struct NaClAppThread *natp);
   void (*thread_exit_hook)(struct NaClAppThread *natp);
   void (*process_exit_hook)(int exit_status);
+};
+
+enum NaClResourcePhase {
+  NACL_RESOURCE_PHASE_START,
+  NACL_RESOURCE_PHASE_REV_CHAN
 };
 
 struct NaClApp {
@@ -207,6 +213,9 @@ struct NaClApp {
   struct NaClSecureService        *secure_service;
   struct NaClManifestProxy        *manifest_proxy;
   struct NaClKernService          *kern_service;
+
+  struct NaClResourceNaClApp      resources;
+  enum NaClResourcePhase          resource_phase;
 
   struct NaClSecureReverseClient  *reverse_client;
   enum NaClReverseChannelInitializationState {

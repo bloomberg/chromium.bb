@@ -45,10 +45,23 @@ def main(argv):
     return -1
   command_tester.GlobalSettings['name'] = os.path.split(argv[0])[1]
   if filecmp.cmp(argv[0], argv[1]):
-    command_tester.Print(command_tester.SuccessMessage())
+    command_tester.Print(command_tester.SuccessMessage(0))  # bogus time
     return 0
   else:
-    command_tester.Print(command_tester.FailureMessage())
+    def dump_file_contents(fn):
+      print 'File %s' % fn
+      print 70 * '-'
+      h = None
+      try:
+        h = open(fn)
+        print h.read()
+      finally:
+        if h is not None:
+          h.close()
+      print 70 * '-'
+    dump_file_contents(argv[0])
+    dump_file_contents(argv[1])
+    command_tester.Print(command_tester.FailureMessage(0))  # bogus time
     return -1
 
 if __name__ == '__main__':

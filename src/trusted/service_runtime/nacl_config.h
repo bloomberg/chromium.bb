@@ -10,8 +10,8 @@
  * NOTE: This header is ALSO included by assembler files and hence
  *       must not include any C code
  */
-#ifndef NATIVE_CLIENT_SERVICE_RUNTIME_NACL_CONFIG_H_
-#define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_CONFIG_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_CONFIG_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_CONFIG_H_
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl_asm.h"
@@ -237,4 +237,4 @@
 #endif /* NACL_ARCH(NACL_BUILD_ARCH) */
 
 
-#endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_NACL_CONFIG_H_ */
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_CONFIG_H_ */

@@ -6,6 +6,8 @@
 
 #include <string.h>
 
+#include <string>
+
 #include "native_client/src/trusted/reverse_service/reverse_service.h"
 
 #include "native_client/src/include/nacl_compiler_annotations.h"
@@ -121,6 +123,28 @@ void ModuleExitRpc(NaClSrpcRpc* rpc,
     service->reverse_interface()->ReportExitStatus(exit_status);
   }
   NaClLog(4, "Leaving ModuleExitRpc\n");
+  rpc->result = NACL_SRPC_RESULT_OK;
+}
+
+void PostMessageRpc(NaClSrpcRpc* rpc,
+                    NaClSrpcArg** in_args,
+                    NaClSrpcArg** out_args,
+                    NaClSrpcClosure* done) {
+  nacl::ReverseService* service = reinterpret_cast<nacl::ReverseService*>(
+      rpc->channel->server_instance_data);
+  char* message = in_args[0]->arrays.carr;
+  nacl_abi_size_t nbytes = in_args[0]->u.count;
+  NaClSrpcClosureRunner on_return(done);
+
+  NaClLog(4, "Entered PostMessageRpc\n");
+  if (NULL == service->reverse_interface()) {
+    NaClLog(1, "PostMessage RPC, no reverse_interface.  Message: %s\n",
+            message);
+  } else {
+    service->reverse_interface()->DoPostMessage(std::string(message, nbytes));
+  }
+  out_args[0]->u.ival = (int32_t) nbytes;
+  NaClLog(4, "Leaving PostMessageRpc\n");
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -394,6 +418,7 @@ NaClSrpcHandlerDesc const ReverseService::handlers[] = {
   { NACL_REVERSE_CONTROL_ADD_CHANNEL, AddChannel, },
   { NACL_REVERSE_CONTROL_INIT_DONE, ModuleInitDoneRpc, },
   { NACL_REVERSE_CONTROL_REPORT_STATUS, ModuleExitRpc, },
+  { NACL_REVERSE_CONTROL_POST_MESSAGE, PostMessageRpc, },
   { NACL_MANIFEST_LIST, ManifestListRpc, },
   { NACL_MANIFEST_LOOKUP, ManifestLookupRpc, },
   { NACL_MANIFEST_UNREF, ManifestUnrefRpc, },

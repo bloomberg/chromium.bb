@@ -3218,6 +3218,7 @@ irt_variant_tests = [
     'tests/nthread_nice/nacl.scons',
     'tests/null/nacl.scons',
     'tests/nullptr/nacl.scons',
+    'tests/postmessage_redir/nacl.scons',
     'tests/pnacl_abi/nacl.scons',
     'tests/pnacl_client_translator/nacl.scons',
     'tests/redir/nacl.scons',

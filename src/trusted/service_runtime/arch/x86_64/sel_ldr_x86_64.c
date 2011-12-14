@@ -117,7 +117,7 @@ void  NaClPatchOneTrampolineCall(uintptr_t  call_target_addr,
   struct NaClPatchInfo  patch_info;
   struct NaClPatch      call_target;
 
-  NaClLog(4, "call_target_addr = 0x%"NACL_PRIxPTR"\n", call_target_addr);
+  NaClLog(6, "call_target_addr = 0x%"NACL_PRIxPTR"\n", call_target_addr);
   CHECK(0 != call_target_addr);
   call_target.target = (((uintptr_t) &NaCl_trampoline_call_target)
                         - sizeof(uintptr_t));

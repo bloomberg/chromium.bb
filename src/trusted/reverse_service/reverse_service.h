@@ -29,7 +29,7 @@ class ReverseInterface : public RefCountBase {
  public:
   virtual ~ReverseInterface() {}
 
-  // debugging, messaging
+  // For debugging, messaging.  |message| goes to JavaScript console.
   virtual void Log(nacl::string message) = 0;
 
   // Startup handshake
@@ -59,6 +59,14 @@ class ReverseInterface : public RefCountBase {
   // The low-order 8 bits of the |exit_status| should be reported to
   // any interested parties.
   virtual void ReportExitStatus(int exit_status) = 0;
+
+  // Standard output and standard error redirection, via setting
+  // NACL_EXE_STDOUT to the string "DEBUG_ONLY:dev://postmessage" (see
+  // native_client/src/trusted/nacl_resource.* and sel_ldr).  NB: the
+  // contents of |message| is arbitrary bytes and not an Unicode
+  // string, so the implementation should take care to handle this
+  // appropriately.
+  virtual void DoPostMessage(nacl::string message) = 0;
 
   // covariant impl of Ref()
   ReverseInterface* Ref() {  // down_cast

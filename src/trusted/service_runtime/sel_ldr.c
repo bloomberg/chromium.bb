@@ -44,6 +44,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_desc_effector_ldr.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
+#include "native_client/src/trusted/service_runtime/nacl_resource.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
@@ -142,6 +143,10 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   nap->secure_service = NULL;
   nap->manifest_proxy = NULL;
   nap->kern_service = NULL;
+  nap->resource_phase = NACL_RESOURCE_PHASE_START;
+  if (!NaClResourceNaClAppInit(&nap->resources, nap)) {
+    goto cleanup_dynamic_load_mutex;
+  }
   nap->reverse_client = NULL;
   nap->reverse_channel_initialization_state =
       NACL_REVERSE_CHANNEL_UNINITIALIZED;
@@ -246,7 +251,7 @@ int NaClAppCtor(struct NaClApp *nap) {
 size_t  NaClAlignPad(size_t val, size_t align) {
   /* align is always a power of 2, but we do not depend on it */
   if (!align) {
-    NaClLog(0,
+    NaClLog(4,
             "sel_ldr: NaClAlignPad, align == 0, at 0x%08"NACL_PRIxS"\n",
             val);
     return 0;
@@ -668,6 +673,50 @@ void NaClAddImcHandle(struct NaClApp  *nap,
   NaClSetDesc(nap, nacl_desc, (struct NaClDesc *) dp);
 }
 
+
+static void NaClProcessRedirControl(struct NaClApp *nap) {
+  static struct {
+    int         d;
+    char const  *env_name;
+    int         nacl_flags;
+    int         mode;
+  } redir_control[] = {
+    { 0, "NACL_EXE_STDIN",
+      NACL_ABI_O_RDONLY, 0, },
+    { 1, "NACL_EXE_STDOUT",
+      NACL_ABI_O_WRONLY | NACL_ABI_O_APPEND | NACL_ABI_O_CREAT, 0777, },
+    { 2, "NACL_EXE_STDERR",
+      NACL_ABI_O_WRONLY | NACL_ABI_O_APPEND | NACL_ABI_O_CREAT, 0777, },
+  };
+
+  size_t          ix;
+  char const      *env;
+  struct NaClDesc *ndp;
+
+  for (ix = 0; ix < NACL_ARRAY_SIZE(redir_control); ++ix) {
+    if (NULL != (env = getenv(redir_control[ix].env_name))) {
+      NaClLog(4, "getenv(%s) -> %s\n", redir_control[ix].env_name, env);
+      ndp = NaClResourceOpen((struct NaClResource *) &nap->resources,
+                             env,
+                             redir_control[ix].nacl_flags,
+                             redir_control[ix].mode);
+      NaClLog(4, " NaClResourceOpen returned %"NACL_PRIxPTR"\n",
+              (uintptr_t) ndp);
+      if (NULL != ndp) {
+        NaClLog(4, "Setting descriptor %d\n", (int) ix);
+        NaClSetDesc(nap, (int) ix, ndp);
+        ndp = NULL;
+      }
+    } else if (NACL_RESOURCE_PHASE_START == nap->resource_phase) {
+      /*
+       * Environment not set -- handle default inheritance.
+       */
+      NaClAddHostDescriptor(nap, DUP(redir_control[ix].d),
+                            redir_control[ix].nacl_flags, (int) ix);
+    }
+  }
+}
+
 /*
  * Process default descriptor inheritance.  This means dup'ing
  * descriptors 0-2 and making them available to the NaCl App.
@@ -682,36 +731,11 @@ void NaClAddImcHandle(struct NaClApp  *nap,
  * in debug mode.
  */
 void NaClAppInitialDescriptorHookup(struct NaClApp  *nap) {
-  static struct {
-    int         d;
-    char const  *env_name;
-    int         flags;
-    int         mode;
-    int         nacl_flags;
-  } redir_control[] = {
-    { 0, "NACL_EXE_STDIN",  O_RDONLY, 0,
-      NACL_ABI_O_RDONLY, },
-    { 1, "NACL_EXE_STDOUT", O_WRONLY | O_APPEND | O_CREAT, 0777,
-      NACL_ABI_O_WRONLY | NACL_ABI_O_APPEND, },
-    { 2, "NACL_EXE_STDERR", O_WRONLY | O_APPEND | O_CREAT, 0777,
-      NACL_ABI_O_WRONLY | NACL_ABI_O_APPEND, },
-  };
 
-  size_t  ix;
-  char    *env;
-  int     d;
-
-  for (ix = 0; ix < NACL_ARRAY_SIZE(redir_control); ++ix) {
-    d = -1;
-    if (NULL != (env = getenv(redir_control[ix].env_name))) {
-      d = open(env, redir_control[ix].flags, redir_control[ix].mode);
-      /* may return -1, esp sandbox */
-    }
-    if (-1 == d) {
-      d = DUP(redir_control[ix].d);
-    }
-    NaClAddHostDescriptor(nap, d, redir_control[ix].nacl_flags, (int) ix);
-  }
+  NaClLog(4, "Processing I/O redirection/inheritance from environment\n");
+  nap->resource_phase = NACL_RESOURCE_PHASE_START;
+  NaClProcessRedirControl(nap);
+  NaClLog(4, "... done.\n");
 }
 
 void NaClAppVmmapUpdate(struct NaClApp    *nap,
@@ -923,6 +947,7 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
     case NACL_DESC_IMC_SOCKET:
     case NACL_DESC_QUOTA:
     case NACL_DESC_DEVICE_RNG:
+    case NACL_DESC_DEVICE_POSTMESSAGE:
       /* Unsupported stuff */
       rpc->result = NACL_SRPC_RESULT_APP_ERROR;
       goto cleanup;
@@ -1309,6 +1334,17 @@ static void NaClSecureReverseClientSetup(struct NaClSrpcRpc     *rpc,
       (struct NaClRefCount *) rev);
   out_args[0]->u.hval = NaClDescRef(rev->base.bound_and_cap[1]);
   rpc->result = NACL_SRPC_RESULT_OK;
+
+  /*
+   * Hook up reverse-channel enabled resources, e.g.,
+   * DEBUG_ONLY:dev://postmessage.  NB: Resources specified by
+   * file:path should have been taken care of earlier, in
+   * NaClAppInitialDescriptorHookup.
+   */
+  nap->resource_phase = NACL_RESOURCE_PHASE_REV_CHAN;
+  NaClLog(4, "Processing dev I/O redirection/inheritance from environment\n");
+  NaClProcessRedirControl(nap);
+  NaClLog(4, "... done.\n");
 
   /*
    * Service thread takes the reference rev.

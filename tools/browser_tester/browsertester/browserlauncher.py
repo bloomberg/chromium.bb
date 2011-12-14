@@ -142,17 +142,39 @@ class BrowserLauncher(object):
   def SetStandardStream(self, env, var_name, redirect_file, is_output):
     if redirect_file is None:
       return
-    redirect_file = os.path.abspath(redirect_file)
+    file_prefix = 'file:'
+    dev_prefix = 'dev:'
+    debug_warning = 'DEBUG_ONLY:'
+    # logic must match src/trusted/service_runtime/nacl_resource.*
+    # resource specification notation.  file: is the default
+    # interpretation, so we must have an exhaustive list of
+    # alternative schemes accepted.  if we remove the file-is-default
+    # interpretation, replace with
+    #   is_file = redirect_file.startswith(file_prefix)
+    # and remove the list of non-file schemes.
+    is_file = (not (redirect_file.startswith(dev_prefix) or
+                    redirect_file.startswith(debug_warning + dev_prefix)))
+    if is_file:
+      if redirect_file.startswith(file_prefix):
+        bare_file = redirect_file[len(file_prefix)]
+      else:
+        bare_file = redirect_file
+      # why always abspath?  does chrome chdir or might it in the
+      # future?  this means we do not test/use the relative path case.
+      redirect_file = file_prefix + os.path.abspath(bare_file)
+    else:
+      bare_file = None  # ensure error if used without checking is_file
     env[var_name] = redirect_file
     if is_output:
       # sel_ldr appends program output to the file so we need to clear it
       # in order to get the stable result.
-      if os.path.exists(redirect_file):
-        os.remove(redirect_file)
-      parent_dir = os.path.dirname(redirect_file)
-      # parent directory may not exist.
-      if not os.path.exists(parent_dir):
-        os.makedirs(parent_dir)
+      if is_file:
+        if os.path.exists(bare_file):
+          os.remove(bare_file)
+        parent_dir = os.path.dirname(bare_file)
+        # parent directory may not exist.
+        if not os.path.exists(parent_dir):
+          os.makedirs(parent_dir)
 
   def Launch(self, cmd, env):
     browser_path = cmd[0]
