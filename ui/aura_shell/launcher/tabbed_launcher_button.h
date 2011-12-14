@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ui/aura_shell/launcher/launcher_types.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/image_button.h"
 
 namespace aura_shell {
 namespace internal {
@@ -15,7 +15,7 @@ namespace internal {
 class LauncherButtonHost;
 
 // Button used for items on the launcher corresponding to tabbed windows.
-class TabbedLauncherButton : public views::CustomButton {
+class TabbedLauncherButton : public views::ImageButton {
  public:
   TabbedLauncherButton(views::ButtonListener* listener,
                        LauncherButtonHost* host);
@@ -23,9 +23,6 @@ class TabbedLauncherButton : public views::CustomButton {
 
   // Sets the images to display for this entry.
   void SetImages(const LauncherTabbedImages& images);
-
-  // View overrides:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
  protected:
   // View overrides:
@@ -36,15 +33,25 @@ class TabbedLauncherButton : public views::CustomButton {
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
 
  private:
+  struct ImageSet {
+    SkBitmap* normal_image;
+    SkBitmap* pushed_image;
+    SkBitmap* hot_image;
+  };
+
+  // Creates an ImageSet using the specified image ids. Caller owns the returned
+  // value.
+  static ImageSet* CreateImageSet(int normal_id, int pushed_id, int hot_id);
+
   LauncherTabbedImages images_;
 
   LauncherButtonHost* host_;
 
   // Background images. Which one is chosen depends upon how many images are
   // provided.
-  static SkBitmap* bg_image_1_;
-  static SkBitmap* bg_image_2_;
-  static SkBitmap* bg_image_3_;
+  static ImageSet* bg_image_1_;
+  static ImageSet* bg_image_2_;
+  static ImageSet* bg_image_3_;
 
   DISALLOW_COPY_AND_ASSIGN(TabbedLauncherButton);
 };

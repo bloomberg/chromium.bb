@@ -4,6 +4,8 @@
 
 #include "ui/aura_shell/test/test_shell_delegate.h"
 
+#include "grit/ui_resources.h"
+
 namespace aura_shell {
 namespace test {
 
@@ -30,6 +32,10 @@ void TestShellDelegate::LauncherItemClicked(const LauncherItem& item) {
 
 bool TestShellDelegate::ConfigureLauncherItem(LauncherItem* item) {
   return true;
+}
+
+int TestShellDelegate::GetResourceIDForNewBrowserWindow() {
+  return IDR_AURA_LAUNCHER_ICON_CHROME;
 }
 
 }  // namespace test
