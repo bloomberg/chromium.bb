@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/webui/net_internals_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "chrome/browser/ui/webui/options2/options_ui2.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
 #include "chrome/browser/ui/webui/policy_ui.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
@@ -214,6 +215,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(TabContents* tab_contents,
     return &NewWebUI<SessionsUI>;
   if (url.host() == chrome::kChromeUISettingsHost)
     return &NewWebUI<OptionsUI>;
+  if (url.host() == chrome::kChromeUISettingsFrameHost)
+    return &NewWebUI<Options2UI>;
   if (url.host() == chrome::kChromeUISyncInternalsHost)
     return &NewWebUI<SyncInternalsUI>;
   if (url.host() == chrome::kChromeUITaskManagerHost)
@@ -448,6 +451,9 @@ RefCountedMemory* ChromeWebUIFactory::GetFaviconResourceBytes(
 
   if (page_url.host() == chrome::kChromeUISettingsHost)
     return OptionsUI::GetFaviconResourceBytes();
+
+  if (page_url.host() == chrome::kChromeUISettingsFrameHost)
+    return Options2UI::GetFaviconResourceBytes();
 
   if (page_url.host() == chrome::kChromeUIPluginsHost)
     return PluginsUI::GetFaviconResourceBytes();

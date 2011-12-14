@@ -917,6 +917,7 @@
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/ui/webui/options/chromeos/'],
+            ['exclude', '^browser/ui/webui/options2/chromeos/'],
           ],
         }],
       ],
@@ -2132,6 +2133,7 @@
             ['exclude', '^browser/ui/webui/chromeos/imageburner/'],
             ['exclude', '^browser/ui/webui/chromeos/login'],
             ['exclude', '^browser/ui/webui/options/chromeos/'],
+            ['exclude', '^browser/ui/webui/options2/chromeos/'],
           ],
         }],
         ['toolkit_uses_gtk == 1', {

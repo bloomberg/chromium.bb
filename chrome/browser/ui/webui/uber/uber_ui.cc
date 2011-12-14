@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
-#include "chrome/browser/ui/webui/options/options_ui.h"
+#include "chrome/browser/ui/webui/options2/options_ui2.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/browser_resources.h"
@@ -33,7 +33,7 @@ UberUI::UberUI(TabContents* contents) : ChromeWebUI(contents) {
   Profile* profile = Profile::FromBrowserContext(contents->browser_context());
   profile->GetChromeURLDataManager()->AddDataSource(CreateUberHTMLSource());
 
-  RegisterSubpage(chrome::kChromeUISettingsURL);
+  RegisterSubpage(chrome::kChromeUISettingsFrameURL);
   RegisterSubpage(chrome::kChromeUIExtensionsFrameURL);
 }
 

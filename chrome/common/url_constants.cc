@@ -65,6 +65,9 @@ const char kChromeUIPolicyURL[] = "chrome://policy/";
 const char kChromeUIPrintURL[] = "chrome://print/";
 const char kChromeUISessionsURL[] = "chrome://sessions/";
 const char kChromeUISettingsURL[] = "chrome://settings/";
+// settings-frame is the URL used to directly access the new settings page in
+// the UberPage, AKA options2.
+const char kChromeUISettingsFrameURL[] = "chrome://settings-frame/";
 const char kChromeUIShorthangURL[] = "chrome://shorthang/";
 const char kChromeUISSLClientCertificateSelectorURL[] = "chrome://select-cert/";
 const char kChromeUISyncPromoURL[] = "chrome://syncpromo/";
@@ -169,6 +172,7 @@ const char kChromeUIQuotaInternalsHost[] = "quota-internals";
 const char kChromeUIResourcesHost[] = "resources";
 const char kChromeUISessionsHost[] = "sessions";
 const char kChromeUISettingsHost[] = "settings";
+const char kChromeUISettingsFrameHost[] = "settings-frame";
 const char kChromeUIShorthangHost[] = "shorthang";
 const char kChromeUISSLClientCertificateSelectorHost[] = "select-cert";
 const char kChromeUIStatsHost[] = "stats";

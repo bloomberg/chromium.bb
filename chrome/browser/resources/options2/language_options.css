@@ -1,0 +1,239 @@
+.language-options {
+  display: -webkit-box;
+  margin: 10px 0;
+}
+
+.language-options-lower-left button,
+.language-options-right button {
+  min-width: 70px;
+}
+
+.language-options h3 {
+  -webkit-margin-start: 12px;
+  font-size: 100%;
+  font-weight: bold;
+  margin-top: 12px;
+}
+
+.language-options-contents  {
+  -webkit-padding-start: 12px;
+  -webkit-padding-end: 12px;
+  padding-bottom: 10px;
+}
+
+.language-options-header, .language-options-footer {
+  margin: 10px 0;
+}
+
+.language-options-left, .language-options-right {
+  border: 1px solid #cccccc;
+  vertical-align: top;
+  padding: 0;
+  height: 400px;
+}
+
+.language-options-left {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  background-color: #ebeff9;
+  width: 300px;
+}
+
+/* On OS X we use the native OS spellchecker, so don't display the dictionary */
+/* pane. */
+html[os=mac] .language-options-left {
+ background-color: white;
+}
+
+html[os=mac] .language-options-right {
+ visibility: hidden;
+}
+
+.language-options-lower-left {
+  -webkit-box-flex: 0;
+  -webkit-padding-start: 12px;
+  padding-bottom: 10px;
+}
+
+.language-options-right {
+  /* To share the center line with the left pane. */
+  -webkit-margin-start: -1px;
+  width: 360px;
+}
+
+.language-options-notification {
+  display: none;
+  background-color: #fff29e;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  padding: 12px 30px 12px 12px;
+}
+
+#language-options-input-method-list button {
+  display: block;
+  -webkit-margin-start: 20px;
+}
+
+#language-options-ui-language-button {
+  width: 95%;
+  -webkit-margin-start: 10px;
+}
+
+#language-options-spell-check-language-button {
+  width: 95%;
+  -webkit-margin-start: 10px;
+}
+
+#language-options-input-method-list label {
+  margin: 4px 0;
+}
+
+#language-options-list {
+  -webkit-box-flex: 1;
+  outline: none;
+  padding: 1px 0 0;
+  width: 100%;
+}
+
+#language-options-list .language-name {
+  -webkit-box-flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#language-options-list li {
+  -webkit-padding-start: 12px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+#language-options-list-dropmarker {
+  background-color: hsl(214, 91%, 65%);
+  background-clip: padding-box;
+  border: 3px solid hsl(214, 91%, 65%);
+  border-bottom-color: transparent;
+  border-top-color: transparent;
+  border-radius: 0;
+  box-sizing: border-box;
+  display: none;
+  height: 8px;
+  overflow: hidden;
+  pointer-events: none;
+  position: fixed;
+  z-index: 10;
+}
+
+#language-options-ui-restart-button {
+  margin-top: 12px;
+}
+
+/*
+ * In ChromeOS we present the language choices as a big page of links.
+ */
+
+html[os=chromeos] #add-language-overlay-language-list {
+  -webkit-column-count: 2;
+  -webkit-column-gap: 20px;
+}
+
+html[os=chromeos] #add-language-overlay-cancel-button {
+  /* Place the button in the center. */
+  display: block;
+  margin: auto;
+  margin-top: 15px;
+}
+
+html[os=chromeos] #add-language-overlay-page {
+  width: 800px;
+  padding: 20px;
+}
+
+html[os=chromeos] #add-language-overlay-page button.link-button {
+  padding: 0;
+  text-align: left;
+}
+
+html[os=chromeos] #add-language-overlay-page ul {
+  padding: 0;
+  margin: 0;
+}
+
+/* TODO(kochi): This is temporary copy from new_tab.css */
+/* Notification */
+
+#notification {
+  position: relative;
+  background-color: hsl(52, 100%, 80%);
+  border: 1px solid rgb(211, 211, 211);
+  border-radius: 6px;
+  padding: 7px 15px;
+  white-space: nowrap;
+  display: table;
+  /* Set the height and margin so that the element does not use any vertical
+    space */
+  height: 16px;
+  margin: -44px auto 12px auto;
+  font-weight: bold;
+  opacity: 0;
+  pointer-events: none;
+  -webkit-transition: opacity 150ms;
+  z-index: 1;
+  color: black;
+}
+
+#notification > * {
+  display: table-cell;
+  max-width: 500px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#notification.show {
+  opacity: 1;
+  pointer-events: all;
+  -webkit-transition: opacity 1s;
+}
+
+#notification .link {
+  cursor: pointer;
+  text-decoration: underline;
+  -webkit-appearance: none;
+  border: 0;
+  background: none;
+  color: rgba(0, 102, 204, 0.3);
+  -webkit-padding-start: 20px;
+}
+
+#notification .link-color {
+  color: rgb(0, 102, 204);
+}
+
+#chewing-max-chi-symbol-len {
+  width: 100px;
+  height: 30%;
+}
+
+#add-language-overlay-page .content-area {
+  padding-bottom: 10px;
+}
+
+.text-button,
+.text-button:active,
+.text-button:focus,
+.text-button:hover {
+  -webkit-box-shadow: none;
+  background: transparent none;
+  border-color: transparent;
+  color: #000;
+}
+
+button[disabled].text-button,
+button[disabled].text-button:active,
+button[disabled].text-button:focus,
+button[disabled].text-button:hover {
+  -webkit-box-shadow: none;
+  background: transparent none;
+  border-color: transparent;
+  color: #AAA;
+}

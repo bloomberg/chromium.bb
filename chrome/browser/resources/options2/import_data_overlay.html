@@ -1,0 +1,70 @@
+<div id="import-data-overlay" class="page" hidden>
+  <h1 i18n-content="importDataOverlay"></h1>
+  <div id="import-data-configure">
+    <div class="content-area">
+      <div id="import-from-div">
+        <span i18n-content="importFromLabel"></span>
+        <select id="import-browsers">
+          <option i18n-content="importLoading"></option>
+        </select>
+      </div>
+      <div id="import-checkboxes">
+        <div i18n-content="importDescription"></div>
+        <div>
+          <input id="import-history" type="checkbox" pref="import_history">
+          <label for="import-history" i18n-content="importHistory"></label>
+        </div>
+        <div>
+          <input id="import-favorites" type="checkbox" pref="import_bookmarks">
+          <label for="import-favorites" i18n-content="importFavorites"></label>
+        </div>
+        <div>
+          <input id="import-passwords" type="checkbox"
+              pref="import_saved_passwords">
+          <label for="import-passwords" i18n-content="importPasswords"></label>
+        </div>
+        <div>
+          <input id="import-search" type="checkbox" pref="import_search_engine">
+          <label for="import-search" i18n-content="importSearch"></label>
+        </div>
+      </div>
+    </div>
+    <div class="action-area">
+      <div class="action-area-right">
+        <div id="import-throbber" class="throbber"></div>
+        <div class="button-strip">
+          <button id="import-data-cancel" i18n-content="cancel"></button>
+          <button id="import-data-commit" i18n-content="importCommit"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="import-data-success" hidden>
+    <div class="content-area">
+      <div id="import-success-header">
+        <strong i18n-content="importSucceeded"></strong>
+      </div>
+      <div id="import-success-image">
+        <img src="success-large.png" />
+      </div>
+      <div id="import-find-your-bookmarks">
+        <span i18n-content="findYourImportedBookmarks"></span>
+        <div class="checkbox">
+          <label>
+            <input id="import-data-show-bookmarks-bar"
+                pref="bookmark_bar.show_on_all_tabs"
+                metric="Options_ShowBookmarksBar" type="checkbox">
+            <span i18n-content="toolbarShowBookmarksBar"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="action-area">
+      <div class="action-area-right">
+        <div class="button-strip">
+          <button id="import-data-confirm" i18n-content="ok"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
