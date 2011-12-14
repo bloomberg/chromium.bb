@@ -7,7 +7,6 @@
 #@-------------------------------------------------------------------
 #@ This script builds the ARM and PNaCl untrusted toolchains.
 #@ It MUST be run from the native_client/ directory.
-#
 ######################################################################
 # Directory Layout Description
 ######################################################################
