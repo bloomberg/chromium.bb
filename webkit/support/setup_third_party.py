@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -14,7 +14,10 @@ def GetHeaderFilesInDir(dir_path):
   """Return a list of all header files in dir_path."""
   all_files = []
   for root, dirs, files in os.walk(dir_path):
-    all_files.extend([os.path.join(root, f) for f in files if f.endswith('.h')])
+    # Normalize windows paths to unix-style if necessary as gyp can get
+    # confused if a mix of forward- and backwards-separators are both present.
+    all_files.extend([os.path.join(root, f).replace(os.sep, '/')
+                      for f in files if f.endswith('.h')])
   return all_files
 
 
