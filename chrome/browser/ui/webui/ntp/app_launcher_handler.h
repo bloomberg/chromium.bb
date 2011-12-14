@@ -15,6 +15,7 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/string_ordinal.h"
 #include "content/browser/cancelable_request.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_observer.h"
@@ -114,10 +115,13 @@ class AppLauncherHandler : public WebUIMessageHandler,
 
  private:
   struct AppInstallInfo {
+    AppInstallInfo();
+    ~AppInstallInfo();
+
     bool is_bookmark_app;
     string16 title;
     GURL app_url;
-    int page_index;
+    StringOrdinal page_ordinal;
   };
 
   // Records a web store launch in the appropriate histograms. |promo_active|

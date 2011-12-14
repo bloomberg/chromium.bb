@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
+#include "chrome/common/string_ordinal.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -272,7 +273,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, BookmarkAppGetsNormalProcess) {
       Extension::LOAD,
       Extension::FROM_BOOKMARK,
       &error));
-  service->OnExtensionInstalled(extension, false, 0);
+  service->OnExtensionInstalled(extension, false,
+                                StringOrdinal::CreateInitialOrdinal());
   ASSERT_TRUE(extension.get());
   ASSERT_TRUE(extension->from_bookmark());
 

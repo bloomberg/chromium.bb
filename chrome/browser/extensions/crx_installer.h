@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/string_ordinal.h"
 #include "chrome/common/web_apps.h"
 
 class ExtensionService;
@@ -177,8 +178,8 @@ class CrxInstaller
     install_cause_ = install_cause;
   }
 
-  void set_page_index(int page_index) {
-    page_index_ = page_index;
+  void set_page_ordinal(const StringOrdinal& page_ordinal) {
+    page_ordinal_ = page_ordinal;
   }
 
   Profile* profile() { return profile_; }
@@ -271,8 +272,8 @@ class CrxInstaller
   // ExtensionService on success, or delete it on failure.
   scoped_refptr<const Extension> extension_;
 
-  // The index of the NTP apps page |extension_| will be shown on.
-  int page_index_;
+  // The ordinal of the NTP apps page |extension_| will be shown on.
+  StringOrdinal page_ordinal_;
 
   // A parsed copy of the unmodified original manifest, before any
   // transformations like localization have taken place.

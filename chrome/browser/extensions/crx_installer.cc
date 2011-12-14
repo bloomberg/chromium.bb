@@ -133,7 +133,6 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
       extensions_enabled_(frontend_weak->extensions_enabled()),
       delete_source_(false),
       create_app_shortcut_(false),
-      page_index_(-1),
       frontend_weak_(frontend_weak),
       profile_(frontend_weak->profile()),
       client_(client),
@@ -588,7 +587,7 @@ void CrxInstaller::ReportSuccessFromUIThread() {
   // Tell the frontend about the installation and hand off ownership of
   // extension_ to it.
   frontend_weak_->OnExtensionInstalled(extension_, is_gallery_install(),
-                                       page_index_);
+                                       page_ordinal_);
 
   NotifyCrxInstallComplete(extension_.get());
 

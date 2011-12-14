@@ -92,7 +92,8 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
   // The call to OnExtensionInstalled ensures the other extension prefs
   // are set up with the defaults.
   service->extension_prefs()->OnExtensionInstalled(
-      extension, Extension::ENABLED, false, 0);
+      extension, Extension::ENABLED, false,
+      StringOrdinal::CreateInitialOrdinal());
 
   // Toggling incognito or file access will reload the extension, so wait for
   // the reload and grab the new extension instance. The default state is
