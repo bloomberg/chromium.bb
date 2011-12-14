@@ -498,6 +498,9 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
 
 // BrowserInit ----------------------------------------------------------------
 
+bool BrowserInit::was_restarted_ = false;
+bool BrowserInit::was_restarted_read_ = false;
+
 BrowserInit::BrowserInit() {}
 
 BrowserInit::~BrowserInit() {}
@@ -586,20 +589,14 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
 
 // static
 bool BrowserInit::WasRestarted() {
-  // Stores the value of the preference kWasRestarted had when it was read.
-  static bool was_restarted = false;
-
-  // True if we have already read and reset the preference kWasRestarted.
-  static bool was_restarted_read = false;
-
-  if (!was_restarted_read) {
+  if (!was_restarted_read_) {
     PrefService* pref_service = g_browser_process->local_state();
-    was_restarted = pref_service->GetBoolean(prefs::kWasRestarted);
+    was_restarted_ = pref_service->GetBoolean(prefs::kWasRestarted);
     pref_service->SetBoolean(prefs::kWasRestarted, false);
     pref_service->ScheduleSavePersistentPrefs();
-    was_restarted_read = true;
+    was_restarted_read_ = true;
   }
-  return was_restarted;
+  return was_restarted_;
 }
 
 // BrowserInit::LaunchWithProfile::Tab ----------------------------------------

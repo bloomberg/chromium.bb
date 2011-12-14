@@ -255,6 +255,11 @@ class BrowserInit {
   // Additional tabs to open during first run.
   std::vector<GURL> first_run_tabs_;
 
+  // Stores the value of the preference kWasRestarted had when it was read.
+  static bool was_restarted_;
+  // True if we have already read and reset the preference kWasRestarted.
+  static bool was_restarted_read_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserInit);
 };
 
