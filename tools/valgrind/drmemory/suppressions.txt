@@ -101,6 +101,11 @@ ppapi_tests.dll!*
 ...
 *!base::internal::RunnableAdapter<*>::Run
 
+INVALID HEAP ARGUMENT
+name=http://crbug.com/107567 intentional mismatch in _DebugHeapDelete, no frame
+*!std::numpunct<*>::_Tidy
+*!std::numpunct<*>::~numpunct<*>
+
 ############################
 # Intentional errors in Chromium tests (ToolsSanityTests)
 LEAK
