@@ -210,6 +210,8 @@ chromeos::PowerSupplyStatus global_power_status;
 class PowerManagerClientObserverForTesting
     : public chromeos::PowerManagerClient::Observer {
  public:
+  virtual ~PowerManagerClientObserverForTesting() {}
+
   virtual void PowerChanged(const chromeos::PowerSupplyStatus& status)
       OVERRIDE {
     global_power_status = status;
