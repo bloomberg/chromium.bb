@@ -365,8 +365,10 @@ void ExtensionBrowserEventRouter::TabSelectionChanged(
 
   for (size_t i = 0; i < new_selection.size(); ++i) {
     int index = new_selection[i];
-    int tab_id = ExtensionTabUtil::GetTabId(
-        tab_strip_model->GetTabContentsAt(index)->tab_contents());
+    TabContentsWrapper* contents = tab_strip_model->GetTabContentsAt(index);
+    if (!contents)
+      break;
+    int tab_id = ExtensionTabUtil::GetTabId(contents->tab_contents());
     all->Append(Value::CreateIntegerValue(tab_id));
   }
 
