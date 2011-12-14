@@ -106,8 +106,7 @@ void CapsLockMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
       kDummyCommandId,
       string16(),
       views::MenuItemView::NORMAL);
-  status_ = new StatusAreaBubbleContentView(source,
-                                            CreateImageViewWithCapsLockIcon(),
+  status_ = new StatusAreaBubbleContentView(CreateImageViewWithCapsLockIcon(),
                                             GetText());
   submenu->AddChildView(status_);
   menu->CreateSubmenu()->set_resize_open_menu(true);
@@ -219,9 +218,9 @@ void CapsLockMenuButton::CreateAndShowBubble() {
     return;
   }
   bubble_controller_.reset(
-      StatusAreaBubbleController::ShowBubbleForAWhile(
-          new StatusAreaBubbleContentView(this,
-                                          CreateImageViewWithCapsLockIcon(),
+      StatusAreaBubbleController::ShowBubbleUnderViewForAWhile(
+          this,
+          new StatusAreaBubbleContentView(CreateImageViewWithCapsLockIcon(),
                                           GetText())));
 }
 

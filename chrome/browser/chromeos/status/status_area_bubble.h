@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/timer.h"
-#include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -16,14 +15,13 @@ class Label;
 
 namespace chromeos {
 
-// StatusAreaBubbleContentView is managed by StatusAreaBubbleController.
+// StatusAreaBubbleContentView is used as the content view of
+// StatusAreaBubbleController.
 // It can be also used to show a bubble-like menu under the status area.
-class StatusAreaBubbleContentView : public views::BubbleDelegateView {
+class StatusAreaBubbleContentView : public views::View {
  public:
   // |icon_view| is used to show icon, |this| will take its ownership.
-  StatusAreaBubbleContentView(views::View* anchor_view,
-                              views::View* icon_view,
-                              const string16& message);
+  StatusAreaBubbleContentView(views::View* icon_view, const string16& message);
   virtual ~StatusAreaBubbleContentView();
 
   string16 GetMessage() const;
@@ -33,8 +31,6 @@ class StatusAreaBubbleContentView : public views::BubbleDelegateView {
 
   // views::View override
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
 
  private:
   views::View* icon_view_;
@@ -49,7 +45,8 @@ class StatusAreaBubbleController : public views::Widget::Observer {
   virtual ~StatusAreaBubbleController();
 
   // Show bubble under |view| for a while.
-  static StatusAreaBubbleController* ShowBubbleForAWhile(
+  static StatusAreaBubbleController* ShowBubbleUnderViewForAWhile(
+      views::View* view,
       StatusAreaBubbleContentView* content);
 
   // views::Widget::Observer override
@@ -59,9 +56,11 @@ class StatusAreaBubbleController : public views::Widget::Observer {
   void HideBubble();
 
  private:
+  class StatusAreaBubbleDelegateView;
+
   StatusAreaBubbleController();
 
-  StatusAreaBubbleContentView* bubble_;
+  StatusAreaBubbleDelegateView* bubble_;
   // A timer to hide this bubble.
   base::OneShotTimer<StatusAreaBubbleController> timer_;
 

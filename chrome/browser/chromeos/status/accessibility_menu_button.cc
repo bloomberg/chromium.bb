@@ -100,9 +100,9 @@ void AccessibilityMenuButton::Observe(
             GetImageNamed(IDR_ACCESSIBILITY_ICON);
         icon_view->SetImage(image.ToSkBitmap());
         bubble_controller_.reset(
-            StatusAreaBubbleController::ShowBubbleForAWhile(
+            StatusAreaBubbleController::ShowBubbleUnderViewForAWhile(
+                this,
                 new StatusAreaBubbleContentView(
-                    this,
                     icon_view,
                     l10n_util::GetStringUTF16(
                         IDS_STATUSBAR_ACCESSIBILITY_TURNED_ON_BUBBLE))));
