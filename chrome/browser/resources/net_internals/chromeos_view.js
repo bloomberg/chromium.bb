@@ -20,7 +20,7 @@ var CrosView = (function() {
     if (fileContent)
       g_browser.importONCFile(fileContent, passcode);
     else
-      setParseStatus_(false);
+      setParseStatus_('ONC file parse failed: cannot read file');
   }
 
   /**
@@ -69,11 +69,11 @@ var CrosView = (function() {
    *
    *  @private
    */
-  function setParseStatus_(success) {
+  function setParseStatus_(error) {
     var parseStatus = $(CrosView.PARSE_STATUS_ID);
     parseStatus.hidden = false;
-    parseStatus.textContent = success ?
-        "ONC file successfully parsed" : "ONC file parse failed";
+    parseStatus.textContent = error ?
+        'ONC file parse failed: ' + error : 'ONC file successfully parsed';
     reset_();
   }
 

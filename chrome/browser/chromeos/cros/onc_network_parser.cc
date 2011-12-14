@@ -16,11 +16,13 @@
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/common/net/x509_certificate_model.h"
+#include "grit/generated_resources.h"
 #include "net/base/cert_database.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
 #include "net/base/x509_certificate.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 
@@ -235,10 +237,13 @@ scoped_refptr<net::X509Certificate> OncNetworkParser::ParseCertificate(
     int cert_index) {
   CHECK(certificates_);
   CHECK(static_cast<size_t>(cert_index) < certificates_->GetSize());
-  CHECK(cert_index >= 0);
+  CHECK_GE(cert_index, 0);
   base::DictionaryValue* certificate = NULL;
-  certificates_->GetDictionary(cert_index, &certificate);
-  CHECK(certificate);
+  if (!certificates_->GetDictionary(cert_index, &certificate)) {
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_CERT_DATA_MALFORMED);
+    return NULL;
+  }
 
   if (VLOG_IS_ON(2)) {
     std::string certificate_json;
@@ -254,6 +259,8 @@ scoped_refptr<net::X509Certificate> OncNetworkParser::ParseCertificate(
   if (!certificate->GetString("GUID", &guid) || guid.empty()) {
     LOG(WARNING) << "ONC File: certificate missing identifier at index"
                  << cert_index;
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_CERT_GUID_MISSING);
     return NULL;
   }
 
@@ -262,9 +269,10 @@ scoped_refptr<net::X509Certificate> OncNetworkParser::ParseCertificate(
 
   net::CertDatabase cert_database;
   if (remove) {
-    bool success = DeleteCertAndKeyByNickname(guid);
-    DCHECK(success);
-    // TODO(gspencer): return removed certificate?
+    if (!DeleteCertAndKeyByNickname(guid)) {
+      parse_error_ = l10n_util::GetStringUTF8(
+          IDS_NETWORK_CONFIG_ERROR_CERT_DELETE);
+    }
     return NULL;
   }
 
@@ -280,15 +288,22 @@ scoped_refptr<net::X509Certificate> OncNetworkParser::ParseCertificate(
 
   LOG(WARNING) << "ONC File: certificate of unknown type: " << cert_type
                << " at index " << cert_index;
+  parse_error_ = l10n_util::GetStringUTF8(
+      IDS_NETWORK_CONFIG_ERROR_CERT_TYPE_MISSING);
   return NULL;
 }
 
 Network* OncNetworkParser::ParseNetwork(int n) {
-  if (!network_configs_)
-    return NULL;
+  CHECK(network_configs_);
+  CHECK(static_cast<size_t>(n) < network_configs_->GetSize());
+  CHECK_GE(n, 0);
   DictionaryValue* info = NULL;
-  if (!network_configs_->GetDictionary(n, &info))
+  if (!network_configs_->GetDictionary(n, &info)) {
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_NETWORK_PROP_DICT_MALFORMED);
     return NULL;
+  }
+
   if (VLOG_IS_ON(2)) {
     std::string network_json;
     base::JSONWriter::Write(static_cast<base::Value*>(info),
@@ -304,8 +319,11 @@ Network* OncNetworkParser::CreateNetworkFromInfo(
     const std::string& service_path,
     const DictionaryValue& info) {
   ConnectionType type = ParseTypeFromDictionary(info);
-  if (type == TYPE_UNKNOWN)  // Return NULL if cannot parse network type.
+  if (type == TYPE_UNKNOWN) {  // Return NULL if cannot parse network type.
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_NETWORK_TYPE_MISSING);
     return NULL;
+  }
   scoped_ptr<Network> network(CreateNewNetwork(type, service_path));
   if (!ParseNestedObject(network.get(),
                          "NetworkConfiguration",
@@ -313,6 +331,9 @@ Network* OncNetworkParser::CreateNetworkFromInfo(
                          network_configuration_signature,
                          ParseNetworkConfigurationValue)) {
     LOG(WARNING) << "Network " << network->name() << " failed to parse.";
+    if (parse_error_.empty())
+      parse_error_ = l10n_util::GetStringUTF8(
+          IDS_NETWORK_CONFIG_ERROR_NETWORK_PROP_DICT_MALFORMED);
     return NULL;
   }
   if (VLOG_IS_ON(2)) {
@@ -373,6 +394,8 @@ OncNetworkParser::ParseServerOrCaCertificate(
       if (!trust_list->GetString(i, &trust_type)) {
         LOG(WARNING) << "ONC File: certificate trust is invalid at index "
                      << cert_index;
+        parse_error_ = l10n_util::GetStringUTF8(
+            IDS_NETWORK_CONFIG_ERROR_CERT_TRUST_INVALID);
         return NULL;
       }
       if (trust_type == "Web") {
@@ -381,6 +404,8 @@ OncNetworkParser::ParseServerOrCaCertificate(
         LOG(WARNING) << "ONC File: certificate contains unknown "
                      << "trust type: " << trust_type
                      << " at index " << cert_index;
+        parse_error_ = l10n_util::GetStringUTF8(
+            IDS_NETWORK_CONFIG_ERROR_CERT_TRUST_UNKNOWN);
         return NULL;
       }
     }
@@ -391,6 +416,8 @@ OncNetworkParser::ParseServerOrCaCertificate(
     LOG(WARNING) << "ONC File: certificate missing appropriate "
                  << "certificate data for type: " << cert_type
                  << " at index " << cert_index;
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_CERT_DATA_MISSING);
     return NULL;
   }
 
@@ -398,6 +425,8 @@ OncNetworkParser::ParseServerOrCaCertificate(
   if (!base::Base64Decode(x509_data, &decoded_x509)) {
     LOG(WARNING) << "Unable to base64 decode X509 data: \""
                  << x509_data << "\".";
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_CERT_DATA_MALFORMED);
     return NULL;
   }
 
@@ -408,6 +437,8 @@ OncNetworkParser::ParseServerOrCaCertificate(
           guid.c_str());
   if (!x509_cert.get()) {
     LOG(WARNING) << "Unable to create X509 certificate from bytes.";
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_CERT_DATA_MALFORMED);
     return NULL;
   }
 
@@ -417,7 +448,7 @@ OncNetworkParser::ParseServerOrCaCertificate(
   bool success = false;
   if (cert_type == "Server") {
     success = cert_database.ImportServerCert(cert_list, &failures);
-  } else { // Authority cert
+  } else {  // Authority cert
     net::CertDatabase::TrustBits trust = web_trust ?
                                          net::CertDatabase::TRUSTED_SSL :
                                          net::CertDatabase::UNTRUSTED;
@@ -428,11 +459,15 @@ OncNetworkParser::ParseServerOrCaCertificate(
                  << net::ErrorToString(failures[0].net_error)
                  << ") importing " << cert_type << " certificate at index "
                  << cert_index;
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_CERT_IMPORT);
     return NULL;
   }
   if (!success) {
     LOG(WARNING) << "ONC File: Unknown error importing " << cert_type
                  << " certificate at index " << cert_index;
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_UNKNOWN);
     return NULL;
   }
   VLOG(2) << "Successfully imported server/ca certificate at index "
@@ -451,6 +486,8 @@ scoped_refptr<net::X509Certificate> OncNetworkParser::ParseClientCertificate(
       pkcs12_data.empty()) {
     LOG(WARNING) << "ONC File: PKCS12 data is missing for Client "
                  << "certificate at index " << cert_index;
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_CERT_DATA_MISSING);
     return NULL;
   }
 
@@ -458,6 +495,8 @@ scoped_refptr<net::X509Certificate> OncNetworkParser::ParseClientCertificate(
   if (!base::Base64Decode(pkcs12_data, &decoded_pkcs12)) {
     LOG(WARNING) << "Unable to base64 decode PKCS#12 data: \""
                  << pkcs12_data << "\".";
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_CERT_DATA_MALFORMED);
     return NULL;
   }
 
@@ -471,6 +510,8 @@ scoped_refptr<net::X509Certificate> OncNetworkParser::ParseClientCertificate(
     LOG(WARNING) << "ONC File: Unable to import Client certificate at index "
                  << cert_index
                  << " (error " << net::ErrorToString(result) << ").";
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_CERT_IMPORT);
     return NULL;
   }
 
@@ -515,6 +556,8 @@ bool OncNetworkParser::ParseNestedObject(Network* network,
   bool any_errors = false;
   if (!value.IsType(base::Value::TYPE_DICTIONARY)) {
     VLOG(1) << network->name() << ": expected object of type " << onc_type;
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_NETWORK_PROP_DICT_MALFORMED);
     return false;
   }
   VLOG(2) << "Parsing nested object of type " << onc_type;
@@ -560,6 +603,9 @@ bool OncNetworkParser::ParseNestedObject(Network* network,
               << "(" << index << ")] = " << value_json;
     }
   }
+  if (any_errors)
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_NETWORK_PROP_DICT_MALFORMED);
   return !any_errors;
 }
 

@@ -316,9 +316,9 @@ var BrowserBridge = (function() {
         this.hstsObservers_[i].onHSTSQueryResult(info);
     },
 
-    receivedONCFileParse: function(status) {
+    receivedONCFileParse: function(error) {
       for (var i = 0; i < this.crosONCFileParseObservers_.length; i++)
-        this.crosONCFileParseObservers_[i].onONCFileParse(status);
+        this.crosONCFileParseObservers_[i].onONCFileParse(error);
     },
 
     receivedHttpCacheInfo: function(info) {
@@ -498,7 +498,7 @@ var BrowserBridge = (function() {
      * Adds a listener for ONC file parse status. The observer will be called
      * back with:
      *
-     *   observer.onONCFileParse(status);
+     *   observer.onONCFileParse(error);
      */
     addCrosONCFileParseObserver: function(observer) {
       this.crosONCFileParseObservers_.push(observer);
