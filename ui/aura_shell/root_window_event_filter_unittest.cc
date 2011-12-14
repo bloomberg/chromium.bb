@@ -31,11 +31,14 @@ class RootWindowEventFilterTest : public aura::test::AuraTestBase {
     aura::RootWindow::GetInstance()->SetEventFilter(
         new internal::RootWindowEventFilter);
 
-    GetTestStackingClient()->default_container()->set_id(
+    aura::test::TestStackingClient* stacking_client =
+        static_cast<aura::test::TestStackingClient*>(
+            aura::RootWindow::GetInstance()->stacking_client());
+    stacking_client->default_container()->set_id(
         internal::kShellWindowId_DefaultContainer);
     activation_controller_.reset(new internal::ActivationController);
     activation_controller_->set_default_container_for_test(
-        GetTestStackingClient()->default_container());
+        stacking_client->default_container());
   }
   virtual ~RootWindowEventFilterTest() {
     aura::RootWindow::GetInstance()->SetEventFilter(NULL);

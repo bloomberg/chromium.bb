@@ -155,8 +155,8 @@ void Window::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
 void Window::SetParent(Window* parent) {
   if (parent)
     parent->AddChild(this);
-  else if (StackingClient::GetStackingClient())
-    StackingClient::GetStackingClient()->AddChildToDefaultParent(this);
+  else if (RootWindow::GetInstance()->stacking_client())
+    RootWindow::GetInstance()->stacking_client()->AddChildToDefaultParent(this);
   else
     NOTREACHED();
 }

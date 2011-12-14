@@ -11,7 +11,7 @@ namespace test {
 
 TestStackingClient::TestStackingClient()
     : default_container_(new Window(NULL)) {
-  StackingClient::SetStackingClient(this);
+  RootWindow::GetInstance()->SetStackingClient(this);
   default_container_->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
   default_container_->SetBounds(
       gfx::Rect(gfx::Point(), RootWindow::GetInstance()->GetHostSize()));

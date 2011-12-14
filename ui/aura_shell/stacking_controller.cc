@@ -29,14 +29,17 @@ bool IsWindowModal(aura::Window* window) {
 // StackingController, public:
 
 StackingController::StackingController() {
-  aura::StackingClient::SetStackingClient(this);
+  aura::RootWindow::GetInstance()->SetStackingClient(this);
+}
+
+StackingController::~StackingController() {
+}
+
+void StackingController::Init() {
   always_on_top_controller_.reset(new internal::AlwaysOnTopController);
   always_on_top_controller_->SetContainers(
       GetContainer(internal::kShellWindowId_DefaultContainer),
       GetContainer(internal::kShellWindowId_AlwaysOnTopContainer));
-}
-
-StackingController::~StackingController() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -67,9 +67,12 @@ class ToplevelWindowEventFilterTest : public aura::test::AuraTestBase {
 
   virtual void SetUp() OVERRIDE {
     aura::test::AuraTestBase::SetUp();
-    GetTestStackingClient()->default_container()->SetEventFilter(
-        new ToplevelWindowEventFilter(
-            GetTestStackingClient()->default_container()));
+    aura::Window* default_container =
+        static_cast<aura::test::TestStackingClient*>(
+            aura::RootWindow::GetInstance()->stacking_client())->
+                default_container();
+    default_container->SetEventFilter(
+        new ToplevelWindowEventFilter(default_container));
   }
 
  protected:

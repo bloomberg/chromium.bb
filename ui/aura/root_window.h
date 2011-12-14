@@ -37,6 +37,7 @@ class RootWindowObserver;
 class KeyEvent;
 class MouseEvent;
 class ScreenAura;
+class StackingClient;
 class TouchEvent;
 
 // RootWindow is responsible for hosting a set of windows.
@@ -55,9 +56,12 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   ui::Compositor* compositor() { return compositor_.get(); }
   gfx::Point last_mouse_location() const { return last_mouse_location_; }
   gfx::NativeCursor last_cursor() const { return last_cursor_; }
+  StackingClient* stacking_client() { return stacking_client_.get(); }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
   Window* capture_window() { return capture_window_; }
   ScreenAura* screen() { return screen_; }
+
+  void SetStackingClient(StackingClient* stacking_client);
 
   // Shows the root window host.
   void ShowRootWindow();
@@ -176,6 +180,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   scoped_refptr<ui::Compositor> compositor_;
 
   scoped_ptr<RootWindowHost> host_;
+
+  scoped_ptr<StackingClient> stacking_client_;
 
   static RootWindow* instance_;
 

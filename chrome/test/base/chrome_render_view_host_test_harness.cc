@@ -13,16 +13,9 @@
 
 ChromeRenderViewHostTestHarness::ChromeRenderViewHostTestHarness()
     : RenderViewHostTestHarness() {
-#if defined(USE_AURA)
-  aura_shell::Shell::CreateInstance(NULL);
-#endif
 }
 
 ChromeRenderViewHostTestHarness::~ChromeRenderViewHostTestHarness() {
-#if defined(USE_AURA)
-  aura_shell::Shell::DeleteInstance();
-  aura::RootWindow::DeleteInstance();
-#endif
 }
 
 TestingProfile* ChromeRenderViewHostTestHarness::profile() {
@@ -37,4 +30,8 @@ void ChromeRenderViewHostTestHarness::SetUp() {
 
 void ChromeRenderViewHostTestHarness::TearDown() {
   RenderViewHostTestHarness::TearDown();
+#if defined(USE_AURA)
+  aura_shell::Shell::DeleteInstance();
+  aura::RootWindow::DeleteInstance();
+#endif
 }

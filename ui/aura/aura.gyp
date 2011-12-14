@@ -32,7 +32,6 @@
         'client/aura_constants.cc',
         'client/aura_constants.h',
         'client/drag_drop_client.h',
-        'client/stacking_client.cc',
         'client/stacking_client.h',
         'client/tooltip_client.h',
         'client/window_drag_drop_delegate.h',
