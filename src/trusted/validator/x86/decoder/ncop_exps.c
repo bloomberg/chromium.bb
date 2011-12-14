@@ -159,14 +159,47 @@ static void NaClPrintDisassembledConst64(
   }
 }
 
+#define NACLOP_REG_PREFIX "Reg"
+
+size_t NaClOpRegName(NaClOpKind reg, char* buffer, size_t buffer_size) {
+  const char* name = NaClOpKindName(reg);
+  char* str;
+  size_t index;
+
+  /* Fail if no room to put register name. */
+  if (buffer_size == 0) return 0;
+  buffer[0] = '\0';  /* To be safe, in case we exit prematurely. */
+
+  /* Get name for register. */
+  name = NaClOpKindName(reg);
+  if (NULL == name) return 0;
+
+  /* Strip off 'Reg' prefix from register name, if it exists. */
+  str = strstr(name, NACLOP_REG_PREFIX);
+  if (str != name) return 0;
+  str += strlen(NACLOP_REG_PREFIX);
+
+  /* Copy the name, converting characters to lower case. */
+  for (index = 0; (index + 1) < buffer_size; ++index) {
+    char ch = tolower(str[index]);
+    if ('\0' == ch) break;
+    buffer[index] = tolower(str[index]);
+  }
+
+  /* Be sure to add null character at end. */
+  buffer[index] = '\0';
+  return index;
+}
+
+#define MAX_REGISTER_SIZE 256
+
 /* Print out the disassembled representation of the given register
  * to the given file.
  */
 static void NaClPrintDisassembledRegKind(struct Gio* file, NaClOpKind reg) {
-  const char* name = NaClOpKindName(reg);
-  char* str = strstr(name, "Reg");
-  gprintf(file, "%c", '%');
-  NaClPrintLower(file, str == NULL ? (char*) name : str + strlen("Reg"));
+  char buffer[MAX_REGISTER_SIZE];
+  NaClOpRegName(reg, buffer, MAX_REGISTER_SIZE);
+  gprintf(file, "%c%s", '%', buffer);
 }
 
 static INLINE void NaClPrintDisassembledReg(struct Gio* file, NaClExp* node) {

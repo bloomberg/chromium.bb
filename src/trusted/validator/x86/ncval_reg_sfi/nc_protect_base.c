@@ -13,7 +13,6 @@
 
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_protect_base.h"
 
-#include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_trans.h"
@@ -166,7 +165,6 @@ static Bool NaClIsLeaAddressRegPlusRbase(NaClValidatorState* state,
  * where REG is the passed 64-bit register, and REG(32) is
  * the corresponding 32-bit retister.
  */
-
 static Bool NaClAcceptRegMoveLea32To64(struct NaClValidatorState* state,
                                        struct NaClInstIter* iter,
                                        const NaClInst* inst,
@@ -174,17 +172,14 @@ static Bool NaClAcceptRegMoveLea32To64(struct NaClValidatorState* state,
   NaClInstState* inst_state = state->cur_inst_state;
   assert((RegRSP == reg) || (RegRBP == reg));
   if (NaClOperandOneIsRegisterSet(inst_state, reg) &&
-      NaClInstIterHasLookbackStateInline(iter, 1)) {
-    NaClInstState* prev_inst = NaClInstIterGetLookbackStateInline(iter, 1);
-    if (NaClAssignsRegisterWithZeroExtends(
-            prev_inst, NaClGet32For64BitReg(reg)) &&
-        NaClIsLeaAddressRegPlusRbase(state, inst_state, reg)) {
-      DEBUG(const char* reg_name = NaClOpKindName(reg);
-            printf("nc protect base for 'lea %s. [%s, rbase]'\n",
-                   reg_name, reg_name));
-      NaClMarkInstructionJumpIllegal(state, inst_state);
-      return TRUE;
-    }
+      NaClIsLeaAddressRegPlusRbase(state, inst_state, reg) &&
+      NaClAssignsRegisterWithZeroExtendsInPrevious(iter, state, reg)) {
+    /* Mark as valid. */
+    DEBUG(const char* reg_name = NaClOpKindName(reg);
+          printf("nc protect base for 'lea %s. [%s, rbase]'\n",
+                 reg_name, reg_name));
+    NaClMarkInstructionJumpIllegal(state, inst_state);
+    return TRUE;
   }
   return FALSE;
 }
@@ -302,7 +297,7 @@ static void NaClCheckRspAssignments(struct NaClValidatorState* state,
     case InstLea:
       if (NaClAcceptRegMoveLea32To64(state, iter, inst, RegRSP)) {
         /* case 6. Found that the assignment to ESP in the previous
-         * instruction is legal, so long as the two instrucitons
+         * instruction is legal, so long as the two instructions
          * are atomic.
          */
         DEBUG(printf("nc protect esp for lea\n"));
@@ -356,7 +351,7 @@ static void NaClCheckRbpAssignments(struct NaClValidatorState* state,
    * (2) %ebp = zero extend 32-bit value.
    *     add %rbp, %rbase
    *
-   *     Typical use in the exit from a fucntion, restoring RBP.
+   *     Typical use in the exit from a function, restoring RBP.
    *     The ... in the MOV is gotten from a stack pop in such
    *     cases. However, for long jumps etc., the value may
    *     be gotten from memory, or even a register.
@@ -378,29 +373,16 @@ static void NaClCheckRbpAssignments(struct NaClValidatorState* state,
   NaClExpVector* vector = state->cur_inst_vector;
   switch (inst_name) {
     case InstAdd:
-      if (NaClInstIterHasLookbackStateInline(iter, 1)) {
-        if (NaClIsBinarySetUsingRegisters(
-                state->decoder_tables,
-                inst, InstAdd, vector,
-                RegRBP, state->base_register)) {
-#ifdef NCVAL_TESTING
-          char* buffer;
-          size_t buffer_size;
-          NaClConditionAppend(state->precond, &buffer, &buffer_size);
-          SNPRINTF(buffer, buffer_size, "ZeroExtends(Ebp)");
+      if (NaClIsBinarySetUsingRegisters(
+              state->decoder_tables,
+              inst, InstAdd, vector,
+              RegRBP, state->base_register)) {
+        if (NaClAssignsRegisterWithZeroExtendsInPrevious(iter, state, RegRBP)) {
+          /* case 2. */
+          NaClMarkInstructionJumpIllegal(state, inst_state);
+          state->set_base_registers.buffer[
+              state->set_base_registers.previous_index].ebp_set_inst = NULL;
           return;
-#else
-          NaClInstState* prev_state =
-              NaClInstIterGetLookbackStateInline(iter, 1);
-          if (NaClAssignsRegisterWithZeroExtends(
-                  prev_state, RegEBP)) {
-            /* case 2. */
-            NaClMarkInstructionJumpIllegal(state, inst_state);
-            state->set_base_registers.buffer[
-                state->set_base_registers.previous_index].ebp_set_inst = NULL;
-            return;
-          }
-#endif
         }
       }
       break;

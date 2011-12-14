@@ -11,9 +11,11 @@
 
 #include "native_client/src/trusted/validator/x86/decoder/ncopcode_desc.h"
 
+struct NaClInstIter;
 struct NaClInstState;
 struct NaClExpVector;
 struct NaClDecodeTables;
+struct NaClValidatorState;
 
 /* Special flag set to find set/use of an operand. */
 extern const NaClOpFlags NaClOpSetOrUse;
@@ -87,10 +89,28 @@ Bool NaClOperandOneIsRegisterSet(struct NaClInstState* state,
 Bool NaClOperandOneZeroExtends(struct NaClInstState* state);
 
 /* Returns true if the given instruction is binary where the first
- * Operand is a register set on the given register, and the
- * second operand corresponds to a 32-bit vlaue that is zero extended.
+ * operand of the instruction is a register set on the given register,
+ * and the second operand corresponds to a 32-bit value that is zero extended.
+ * Note: if reg_name isn't a 32-bit register, this function will return false.
  */
 Bool NaClAssignsRegisterWithZeroExtends(struct NaClInstState* state,
                                         NaClOpKind reg_name);
+
+/* Returns true if the previous instruction (from the instruction currently
+ * being processed using the given instruction iterator) is binary where the
+ * first operand is a register set on the given register, and the
+ * second operand corresponds to a 32-bit value that is zero extended.
+ *
+ * When NCVAL_TESTING is defined, this function always returns true, and
+ * adds the corresponding precondition to the current instruction.
+ */
+Bool NaClAssignsRegisterWithZeroExtendsInPrevious(
+    struct NaClInstIter* iter,        /* Instruction iterator used. */
+    struct NaClValidatorState* state, /* Validator state associated with
+                                       * the current instruction.
+                                       */
+    NaClOpKind reg);                  /* Register that gets extended by previous
+                                       * instruction.
+                                       */
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NCVALIDATE_UTILS_H__ */

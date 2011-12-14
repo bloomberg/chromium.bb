@@ -114,6 +114,13 @@ void NaClInstStateInstPrint(struct Gio* file, struct NaClInstState* state);
  */
 char* NaClInstStateInstructionToString(struct NaClInstState* state);
 
+/* Generates the lower case name of the corresponding register into the
+ * given character buffer. Returns the number of characters added to the buffer.
+ * Returns zero if there is no corresponding (valid) register name for the reg
+ * argument.
+ */
+size_t NaClOpRegName(NaClOpKind reg, char* buffer, size_t buffer_size);
+
 EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_DECODER_NCOP_EXPS_H_ */

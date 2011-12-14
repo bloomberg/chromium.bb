@@ -8,9 +8,14 @@
 
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_utils.h"
 
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_decode_tables.h"
+#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
+#include "native_client/src/trusted/validator/x86/decoder/nc_inst_trans.h"
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter.h"
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter_internal.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
@@ -21,6 +26,7 @@
 
 #include "native_client/src/trusted/validator/x86/decoder/ncopcode_desc_inl.c"
 #include "native_client/src/trusted/validator/x86/decoder/ncop_exps_inl.c"
+#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter_inl.c"
 
 const NaClOpFlags NaClOpSetOrUse = NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse);
 
@@ -113,4 +119,31 @@ Bool NaClAssignsRegisterWithZeroExtends(NaClInstState* state,
                                         NaClOpKind reg_name) {
   return NaClOperandOneIsRegisterSet(state, reg_name) &&
       NaClOperandOneZeroExtends(state);
+}
+
+/* Maximum character buffer size to use for generating messages. */
+static const size_t kMaxBufferSize = 1024;
+
+Bool NaClAssignsRegisterWithZeroExtendsInPrevious(
+    struct NaClInstIter* iter,
+    struct NaClValidatorState* state,
+    NaClOpKind reg) {
+  NaClOpKind reg32 = NaClGet32For64BitReg(reg);
+  if (RegUnknown != reg32) {
+#ifdef NCVAL_TESTING
+    char* buffer;
+    size_t buffer_size;
+    char reg_name[kMaxBufferSize];
+    NaClOpRegName(reg32, reg_name, kMaxBufferSize);
+    NaClConditionAppend(state->precond, &buffer, &buffer_size);
+    SNPRINTF(buffer, buffer_size, "ZeroExtends(%s)", reg_name);
+    return TRUE;
+#else
+    if (NaClInstIterHasLookbackStateInline(iter, 1)) {
+      NaClInstState* prev_inst = NaClInstIterGetLookbackStateInline(iter, 1);
+      return NaClAssignsRegisterWithZeroExtends(prev_inst, reg32);
+    }
+#endif
+  }
+  return FALSE;
 }
