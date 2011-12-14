@@ -17,11 +17,11 @@ class TestWebSocket : public TestCase {
  public:
   explicit TestWebSocket(TestingInstance* instance) : TestCase(instance) {}
 
- private:
   // TestCase implementation.
   virtual bool Init();
   virtual void RunTests(const std::string& filter);
 
+ private:
   PP_Var CreateVar(const char* string);
   void ReleaseVar(const PP_Var& var);
   bool AreEqual(const PP_Var& var, const char* string);

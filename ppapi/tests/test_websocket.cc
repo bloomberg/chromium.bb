@@ -6,7 +6,6 @@
 
 #include <string.h>
 
-#include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_websocket_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_var.h"
@@ -48,20 +47,20 @@ bool TestWebSocket::Init() {
   if (!websocket_interface_ || !var_interface_ || !core_interface_)
     return false;
 
-  return InitTestingInterface();
+  return true;
 }
 
 void TestWebSocket::RunTests(const std::string& filter) {
-  RUN_TEST_WITH_REFERENCE_CHECK(IsWebSocket, filter);
-  RUN_TEST_WITH_REFERENCE_CHECK(UninitializedPropertiesAccess, filter);
-  RUN_TEST_WITH_REFERENCE_CHECK(InvalidConnect, filter);
-  RUN_TEST_WITH_REFERENCE_CHECK(Protocols, filter);
-  RUN_TEST_WITH_REFERENCE_CHECK(GetURL, filter);
-  RUN_TEST_WITH_REFERENCE_CHECK(ValidConnect, filter);
-  RUN_TEST_WITH_REFERENCE_CHECK(InvalidClose, filter);
-  RUN_TEST_WITH_REFERENCE_CHECK(ValidClose, filter);
-  RUN_TEST_WITH_REFERENCE_CHECK(GetProtocol, filter);
-  RUN_TEST_WITH_REFERENCE_CHECK(TextSendReceive, filter);
+  RUN_TEST(IsWebSocket, filter);
+  RUN_TEST(UninitializedPropertiesAccess, filter);
+  RUN_TEST(InvalidConnect, filter);
+  RUN_TEST(Protocols, filter);
+  RUN_TEST(GetURL, filter);
+  RUN_TEST(ValidConnect, filter);
+  RUN_TEST(InvalidClose, filter);
+  RUN_TEST(ValidClose, filter);
+  RUN_TEST(GetProtocol, filter);
+  RUN_TEST(TextSendReceive, filter);
 }
 
 PP_Var TestWebSocket::CreateVar(const char* string) {
@@ -139,18 +138,15 @@ std::string TestWebSocket::TestUninitializedPropertiesAccess() {
 
   PP_Var close_reason = websocket_interface_->GetCloseReason(ws);
   ASSERT_TRUE(AreEqual(close_reason, ""));
-  ReleaseVar(close_reason);
 
   PP_Bool close_was_clean = websocket_interface_->GetCloseWasClean(ws);
   ASSERT_EQ(PP_FALSE, close_was_clean);
 
   PP_Var extensions = websocket_interface_->GetExtensions(ws);
   ASSERT_TRUE(AreEqual(extensions, ""));
-  ReleaseVar(extensions);
 
   PP_Var protocol = websocket_interface_->GetProtocol(ws);
   ASSERT_TRUE(AreEqual(protocol, ""));
-  ReleaseVar(protocol);
 
   PP_WebSocketReadyState_Dev ready_state =
       websocket_interface_->GetReadyState(ws);
@@ -158,9 +154,6 @@ std::string TestWebSocket::TestUninitializedPropertiesAccess() {
 
   PP_Var url = websocket_interface_->GetURL(ws);
   ASSERT_TRUE(AreEqual(url, ""));
-  ReleaseVar(url);
-
-  core_interface_->ReleaseResource(ws);
 
   PASS();
 }
