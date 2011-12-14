@@ -1789,11 +1789,8 @@ class NetworkLibrary {
   virtual void SwitchToPreferredNetwork() = 0;
 
   // Load networks from an Open Network Configuration blob.
-  // If there was an error, this will return false and |error| will be set to
-  // the error message.
   virtual bool LoadOncNetworks(const std::string& onc_blob,
-                               const std::string& passcode,
-                               std::string* error) = 0;
+                               const std::string& passcode) = 0;
 
   // This sets the active network for the network type. Note: priority order
   // is unchanged (i.e. if a wifi network is set to active, but an ethernet

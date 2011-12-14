@@ -1295,11 +1295,10 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
     NOTREACHED();
   }
 
-  std::string error;
-  chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-      LoadOncNetworks(onc_blob, passcode, &error);
+  const bool success = chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
+      LoadOncNetworks(onc_blob, passcode);
   SendJavascriptCommand("receivedONCFileParse",
-                        Value::CreateStringValue(error));
+                        Value::CreateBooleanValue(success));
 }
 #endif
 

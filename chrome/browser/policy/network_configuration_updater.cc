@@ -56,11 +56,8 @@ void NetworkConfigurationUpdater::ApplyNetworkConfiguration(
 
   if (*cached_value != new_network_config) {
     *cached_value = new_network_config;
-    std::string error;
-    if (!network_library_->LoadOncNetworks(new_network_config, "", &error)) {
-      LOG(WARNING) << "Network library failed to load ONC configuration:"
-          << error;
-    }
+    if (!network_library_->LoadOncNetworks(new_network_config, ""))
+      LOG(WARNING) << "Network library failed to load ONC configuration.";
   }
 }
 
