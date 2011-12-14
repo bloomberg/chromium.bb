@@ -762,6 +762,12 @@ void HistoryService::DeleteURL(const GURL& url) {
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::DeleteURL, url);
 }
 
+void HistoryService::DeleteURLsForTest(const std::vector<GURL>& urls) {
+  // We will update the visited links when we observe the delete
+  // notifications.
+  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::DeleteURLs, urls);
+}
+
 void HistoryService::ExpireHistoryBetween(
     const std::set<GURL>& restrict_urls,
     Time begin_time, Time end_time,

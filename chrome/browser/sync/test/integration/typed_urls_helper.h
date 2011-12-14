@@ -53,6 +53,10 @@ void AddUrlToHistoryWithTimestamp(int index,
 // Deletes a URL from the history DB for a specific sync profile.
 void DeleteUrlFromHistory(int index, const GURL& url);
 
+// Deletes a list of URLs from the history DB for a specific sync
+// profile.
+void DeleteUrlsFromHistory(int index, const std::vector<GURL>& urls);
+
 // Returns true if all clients match the verifier profile.
 void AssertAllProfilesHaveSameURLsAsVerifier();
 

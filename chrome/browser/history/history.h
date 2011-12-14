@@ -380,6 +380,10 @@ class HistoryService : public CancelableRequestProvider,
   // Delete all the information related to a single url.
   void DeleteURL(const GURL& url);
 
+  // Delete all the information related to a list of urls.  (Deleting
+  // URLs one by one is slow as it has to flush to disk each time.)
+  void DeleteURLsForTest(const std::vector<GURL>& urls);
+
   // Removes all visits in the selected time range (including the start time),
   // updating the URLs accordingly. This deletes the associated data, including
   // the full text index. This function also deletes the associated favicons,

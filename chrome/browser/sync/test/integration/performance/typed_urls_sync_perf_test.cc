@@ -12,7 +12,7 @@
 
 using typed_urls_helper::AddUrlToHistory;
 using typed_urls_helper::AssertAllProfilesHaveSameURLsAsVerifier;
-using typed_urls_helper::DeleteUrlFromHistory;
+using typed_urls_helper::DeleteUrlsFromHistory;
 using typed_urls_helper::GetTypedUrlsFromClient;
 
 // This number should be as far away from a multiple of
@@ -73,11 +73,13 @@ void TypedUrlsSyncPerfTest::UpdateURLs(int profile) {
 }
 
 void TypedUrlsSyncPerfTest::RemoveURLs(int profile) {
-  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(profile);
+  const std::vector<history::URLRow>& urls = GetTypedUrlsFromClient(profile);
+  std::vector<GURL> gurls;
   for (std::vector<history::URLRow>::const_iterator it = urls.begin();
        it != urls.end(); ++it) {
-    DeleteUrlFromHistory(profile, it->url());
+    gurls.push_back(it->url());
   }
+  DeleteUrlsFromHistory(profile, gurls);
 }
 
 int TypedUrlsSyncPerfTest::GetURLCount(int profile) {

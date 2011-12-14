@@ -279,6 +279,15 @@ void DeleteUrlFromHistory(int index, const GURL& url) {
   WaitForHistoryDBThread(index);
 }
 
+void DeleteUrlsFromHistory(int index, const std::vector<GURL>& urls) {
+  test()->GetProfile(index)->GetHistoryServiceWithoutCreating()->
+      DeleteURLsForTest(urls);
+  if (test()->use_verifier())
+    test()->verifier()->GetHistoryService(Profile::IMPLICIT_ACCESS)->
+        DeleteURLsForTest(urls);
+  WaitForHistoryDBThread(index);
+}
+
 void AssertURLRowVectorsAreEqual(
     const std::vector<history::URLRow>& left,
     const std::vector<history::URLRow>& right) {
