@@ -85,8 +85,6 @@
       '-autofill.AutofillTest.testFillProfileCrazyCharacters',
       # crbug.com/99475
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
-      # crbug.com/103456
-      '-indexeddb.IndexedDBTest.testVersionChangeCrashResilience',
       # crbug.com/99506
       '-notifications.NotificationsTest.testSpecialURLNotification',
       # crbug.com/71715

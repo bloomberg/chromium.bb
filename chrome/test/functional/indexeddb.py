@@ -15,36 +15,21 @@ class IndexedDBTest(pyauto.PyUITest):
     crash_url = 'about:inducebrowsercrashforrealz'
     self.NavigateToURL(crash_url)
 
-  def _GetTestResult(self):
-    """Returns the result of an asynchronous test"""
-    js = """
-        window.domAutomationController.send(window.testResult);
-    """
-    return self.ExecuteJavascript(js)
-
-  def _WaitForTestResult(self):
-    """Waits until a non-empty asynchronous test result is recorded"""
-    self.assertTrue(self.WaitUntil(lambda: self._GetTestResult() != '',
-                                   timeout=120),
-                    msg='Test did not finish')
-
   def testIndexedDBNullKeyPathPersistence(self):
     """Verify null key path persists after restarting browser."""
 
     url = self.GetHttpURLForDataPath('indexeddb', 'bug_90635.html')
 
-    self.NavigateToURL(url)
-    self._WaitForTestResult()
-    self.assertEqual(self._GetTestResult(),
-                     'pass - first run',
-                     msg='Key paths had unexpected values')
+    self.NavigateToURL(url + '#part1')
+    self.assertTrue(self.WaitUntil(self.GetActiveTabTitle,
+                                   expect_retval='pass - first run'),
+                    msg='Key paths had unexpected values')
 
     self.RestartBrowser(clear_profile=False)
 
-    self.NavigateToURL(url)
-    self._WaitForTestResult()
-    self.assertEqual(self._GetTestResult(),
-                     'pass - second run',
+    self.NavigateToURL(url + '#part2')
+    self.assertTrue(self.WaitUntil(self.GetActiveTabTitle,
+                                    expect_retval='pass - second run'),
                      msg='Key paths had unexpected values')
 
   def testVersionChangeCrashResilience(self):
@@ -54,23 +39,25 @@ class IndexedDBTest(pyauto.PyUITest):
     url = self.GetHttpURLForDataPath('indexeddb', 'version_change_crash.html')
 
     self.NavigateToURL(url + '#part1')
-    self.assertTrue(self.WaitUntil(
-        lambda: self._GetTestResult() == 'part1 - complete'))
+    self.assertTrue(self.WaitUntil(self.GetActiveTabTitle,
+                                   expect_retval='pass - part1 - complete'),
+                    msg='Failed to prepare database')
 
     self.RestartBrowser(clear_profile=False)
 
     self.NavigateToURL(url + '#part2')
-    self.assertTrue(self.WaitUntil(
-        lambda: self._GetTestResult() != 'part2 - crash me'))
+    self.assertTrue(self.WaitUntil(self.GetActiveTabTitle,
+                                   expect_retval='pass - part2 - crash me'),
+                    msg='Failed to start transaction')
+
     self._CrashBrowser()
 
     self.RestartBrowser(clear_profile=False)
 
     self.NavigateToURL(url + '#part3')
-    self._WaitForTestResult()
-    self.assertEqual(self._GetTestResult(),
-                     'part3 - pass',
-                     msg='VERSION_CHANGE not completely aborted')
+    self.assertTrue(self.WaitUntil(self.GetActiveTabTitle,
+                                   expect_retval='pass - part3 - rolled back'),
+                    msg='VERSION_CHANGE not completely aborted')
 
 if __name__ == '__main__':
   pyauto_functional.Main()
