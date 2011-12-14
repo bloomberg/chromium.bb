@@ -263,11 +263,6 @@ void FilterDisabledTests() {
     // Flaky on the tryservers, http://crbug.com/103097
     "URLRequestTestHTTP.MultipleRedirectTest",
     "URLRequestTestHTTP.NetworkDelegateRedirectRequest",
-
-    // Newly added tests which fail in CF.
-    "HTTPSRequestTest.HTTPSPreloadedHSTSTest",
-    "HTTPSRequestTest.ResumeTest",
-    "HTTPSRequestTest.SSLSessionCacheShardTest",
   };
 
   const char* ie9_disabled_tests[] = {
@@ -664,6 +659,21 @@ void CFUrlRequestUnittestRunner::PostDestroyThreads() {
 #endif
 }
 
+// We need a module since some of the accessibility code that gets pulled
+// in here uses ATL.
+class ObligatoryModule: public CAtlExeModuleT<ObligatoryModule> {
+ public:
+  static HRESULT InitializeCom() {
+    return OleInitialize(NULL);
+  }
+
+  static void UninitializeCom() {
+    OleUninitialize();
+  }
+};
+
+ObligatoryModule g_obligatory_atl_module;
+
 const char* IEVersionToString(IEVersion version) {
   switch (version) {
     case IE_6:
@@ -719,13 +729,15 @@ int main(int argc, char** argv) {
   g_argc = argc;
   g_argv = argv;
 
-  if (chrome_frame_test::GetInstalledIEVersion() >= IE_9) {
+  // Temporarily disabled, http://crbug.com/105435.
+  if (true || chrome_frame_test::GetInstalledIEVersion() >= IE_9) {
     // Adding this here as the command line and the logging stuff gets
     // initialized in the NetTestSuite constructor. Did not want to break that.
     base::AtExitManager at_exit_manager;
     CommandLine::Init(argc, argv);
     CFUrlRequestUnittestRunner::InitializeLogging();
-    LOG(INFO) << "Not running ChromeFrame net tests on IE9+";
+    LOG(INFO) << "Temporarily not running ChromeFrame net tests.";
+    //LOG(INFO) << "Not running ChromeFrame net tests on IE9+";
     return 0;
   }
 
