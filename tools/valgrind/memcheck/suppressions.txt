@@ -5309,6 +5309,18 @@
    fun:_ZNK26ExtensionMsg_Loaded_Params18ConvertToExtensionEv
    fun:_ZN19ExtensionDispatcher8OnLoadedERKSt6vectorI26ExtensionMsg_Loaded_ParamsSaIS1_EE
 }
+{
+   bug_107502
+   Memcheck:Uninitialized
+   fun:deflate
+   fun:zipCloseFileInZipRaw64
+   fun:zipCloseFileInZipRaw
+   fun:zipCloseFileInZip
+   fun:_ZN12_GLOBAL__N_113AddEntryToZipEPvRK8FilePathS3_
+   fun:_ZN3zip21ZipWithFilterCallbackERK8FilePathS2_RKN4base8CallbackIFbS2_EEE
+   fun:_ZN3zip3ZipERK8FilePathS2_b
+   fun:_ZN12_GLOBAL__N_128ZipTest_ZipIgnoreHidden_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
