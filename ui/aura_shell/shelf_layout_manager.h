@@ -26,8 +26,7 @@ namespace internal {
 class ShelfLayoutManager : public aura::LayoutManager,
                            public ui::LayerAnimationObserver {
  public:
-  ShelfLayoutManager(views::Widget* launcher,
-                     views::Widget* status);
+  ShelfLayoutManager(views::Widget* launcher, views::Widget* status);
   virtual ~ShelfLayoutManager();
 
   bool in_layout() const { return in_layout_; }
@@ -38,6 +37,13 @@ class ShelfLayoutManager : public aura::LayoutManager,
 
   // Sets the visbility of the shelf to |visible|.
   void SetVisible(bool visible);
+  bool visible() const { return animating_ ? !visible_ : visible_; }
+
+  views::Widget* launcher() { return launcher_; }
+  views::Widget* status() { return status_; }
+
+  // See description above field.
+  int max_height() const { return max_height_; }
 
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;

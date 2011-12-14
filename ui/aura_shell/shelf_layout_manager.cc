@@ -39,7 +39,6 @@ ShelfLayoutManager::ShelfLayoutManager(views::Widget* launcher,
   GetLayer(launcher)->GetAnimator()->AddObserver(this);
 }
 
-
 ShelfLayoutManager::~ShelfLayoutManager() {
   // Do not try to remove observer from layer as the Launcher is
   // already deleted.
@@ -108,6 +107,7 @@ void ShelfLayoutManager::StopAnimating() {
     visible_ = !visible_;
   }
   GetLayer(launcher_)->GetAnimator()->StopAnimating();
+  GetLayer(status_)->GetAnimator()->StopAnimating();
 }
 
 void ShelfLayoutManager::CalculateTargetBounds(bool visible,
@@ -133,7 +133,9 @@ void ShelfLayoutManager::AnimateWidgetTo(views::Widget* widget,
                                          float target_opacity) {
   ui::Layer* layer = GetLayer(widget);
   ui::LayerAnimator::ScopedSettings animation_setter(layer->GetAnimator());
-  widget->SetBounds(target_bounds);
+  // Don't go through the widget, otherwise we end up back in SetChildBounds and
+  // cancel the animation/layout.
+  layer->SetBounds(target_bounds);
   layer->SetOpacity(target_opacity);
 }
 
