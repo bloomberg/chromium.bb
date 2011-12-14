@@ -178,6 +178,10 @@ class NetworkActionPredictor
   // This is cleared after every Omnibox navigation.
   std::vector<TransitionalMatch> transitional_matches_;
 
+  // This allows us to predict the effect of confidence threshold changes on
+  // accuracy.
+  mutable std::vector<std::pair<GURL, double> > tracked_urls_;
+
   DBCacheMap db_cache_;
   DBIdCacheMap db_id_cache_;
 

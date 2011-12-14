@@ -140,6 +140,9 @@ NetworkActionPredictor::Action NetworkActionPredictor::RecommendAction(
   DCHECK(confidence >= 0.0 && confidence <= 1.0);
 
   if (is_in_db) {
+    // Multiple enties with the same URL are fine as the confidence may be
+    // different.
+    tracked_urls_.push_back(std::make_pair(match.destination_url, confidence));
     UMA_HISTOGRAM_COUNTS_100("NetworkActionPredictor.Confidence_" +
                              prerender::GetOmniboxHistogramSuffix(),
                              confidence * 100);
@@ -296,6 +299,19 @@ void NetworkActionPredictor::OnOmniboxOpenedUrl(const AutocompleteLog& log) {
   CommitTransaction();
 
   ClearTransitionalMatches();
+
+  // Check against tracked urls and log accuracy for the confidence we
+  // predicted.
+  for (std::vector<std::pair<GURL, double> >::const_iterator it =
+       tracked_urls_.begin(); it != tracked_urls_.end();
+       ++it) {
+    if (opened_url == it->first) {
+      UMA_HISTOGRAM_COUNTS_100("NetworkActionPredictor.AccurateCount_" +
+                               prerender::GetOmniboxHistogramSuffix(),
+                               it->second * 100);
+    }
+  }
+  tracked_urls_.clear();
 }
 
 
