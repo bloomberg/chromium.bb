@@ -1304,6 +1304,19 @@
             },
           },
         },
+        {
+          'target_name': 'sb_sigutil',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'safe_browsing_proto',
+          ],
+          'sources': [
+            'browser/safe_browsing/signature_util.h',
+            'browser/safe_browsing/signature_util_win.cc',
+            'tools/safe_browsing/sb_sigutil.cc',
+          ],
+        },
       ]},  # 'targets'
     ],  # OS=="win"
   ],  # 'conditions'
