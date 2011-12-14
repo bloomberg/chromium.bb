@@ -118,6 +118,19 @@ void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
     if (login_web_ui) {
       RenderViewHost* render_view_host =
           login_web_ui->tab_contents()->render_view_host();
+      // Set a flag to tell ChromeVox that it's just been enabled,
+      // so that it won't interrupt our speech feedback enabled message.
+      ExtensionMsg_ExecuteCode_Params params;
+      params.request_id = 0;
+      params.extension_id = extension->id();
+      params.is_javascript = true;
+      params.code = "window.INJECTED_AFTER_LOAD = true;";
+      params.all_frames = true;
+      params.in_main_world = false;
+      render_view_host->Send(new ExtensionMsg_ExecuteCode(
+          render_view_host->routing_id(), params));
+
+      // Inject ChromeVox' content scripts.
       ContentScriptLoader* loader = new ContentScriptLoader(
           extension->id(), render_view_host);
 
