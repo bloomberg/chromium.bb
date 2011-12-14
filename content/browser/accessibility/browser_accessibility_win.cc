@@ -27,8 +27,6 @@ const GUID GUID_ISimpleDOM = {
     0x0c539790, 0x12e4, 0x11cf,
     0xb6, 0x61, 0x00, 0xaa, 0x00, 0x4c, 0xd6, 0xd8};
 
-const char16 BrowserAccessibilityWin::kEmbeddedCharacter[] = L"\xfffc";
-
 //
 // BrowserAccessibilityRelation
 //
@@ -1754,7 +1752,13 @@ STDMETHODIMP BrowserAccessibilityWin::get_nCharacters(LONG* n_characters) {
   if (!n_characters)
     return E_INVALIDARG;
 
-  *n_characters = TextForIAccessibleText().length();
+  if (role_ == WebAccessibility::ROLE_TEXT_FIELD ||
+      role_ == WebAccessibility::ROLE_TEXTAREA) {
+    *n_characters = value_.length();
+  } else {
+    *n_characters = name_.length();
+  }
+
   return S_OK;
 }
 
@@ -2065,62 +2069,6 @@ STDMETHODIMP BrowserAccessibilityWin::setSelection(LONG selection_index,
   HandleSpecialTextOffset(text_str, &end_offset);
 
   manager_->SetTextSelection(*this, start_offset, end_offset);
-  return S_OK;
-}
-
-//
-// IAccessibleHypertext methods.
-//
-
-STDMETHODIMP BrowserAccessibilityWin::get_nHyperlinks(long* hyperlink_count) {
-  if (!instance_active_)
-    return E_FAIL;
-
-  if (!hyperlink_count)
-    return E_INVALIDARG;
-
-  *hyperlink_count = hyperlink_offset_to_index_.size();
-  return S_OK;
-}
-
-STDMETHODIMP BrowserAccessibilityWin::get_hyperlink(
-    long index,
-    IAccessibleHyperlink** hyperlink) {
-  if (!instance_active_)
-    return E_FAIL;
-
-  if (!hyperlink ||
-      index < 0 ||
-      index >= static_cast<long>(hyperlinks_.size())) {
-    return E_INVALIDARG;
-  }
-
-  BrowserAccessibilityWin* child =
-      children_[hyperlinks_[index]]->toBrowserAccessibilityWin();
-  *hyperlink = static_cast<IAccessibleHyperlink*>(child->NewReference());
-  return S_OK;
-}
-
-STDMETHODIMP BrowserAccessibilityWin::get_hyperlinkIndex(
-    long char_index,
-    long* hyperlink_index) {
-  if (!instance_active_)
-    return E_FAIL;
-
-  if (!hyperlink_index)
-    return E_INVALIDARG;
-
-  *hyperlink_index = -1;
-
-  if (char_index < 0 || char_index >= static_cast<long>(hypertext_.size()))
-    return E_INVALIDARG;
-
-  std::map<int32, int32>::iterator it =
-      hyperlink_offset_to_index_.find(char_index);
-  if (it == hyperlink_offset_to_index_.end())
-    return E_FAIL;
-
-  *hyperlink_index = it->second;
   return S_OK;
 }
 
@@ -2520,9 +2468,6 @@ STDMETHODIMP BrowserAccessibilityWin::QueryService(
 
   if (guidService == IID_IAccessible ||
       guidService == IID_IAccessible2 ||
-      guidService == IID_IAccessibleAction ||
-      guidService == IID_IAccessibleHyperlink ||
-      guidService == IID_IAccessibleHypertext ||
       guidService == IID_IAccessibleImage ||
       guidService == IID_IAccessibleTable ||
       guidService == IID_IAccessibleTable2 ||
@@ -2549,7 +2494,12 @@ HRESULT WINAPI BrowserAccessibilityWin::InternalQueryInterface(
     const _ATL_INTMAP_ENTRY* entries,
     REFIID iid,
     void** object) {
-  if (iid == IID_IAccessibleImage) {
+  if (iid == IID_IAccessibleText) {
+    if (ia_role_ != ROLE_SYSTEM_LINK && ia_role_ != ROLE_SYSTEM_TEXT) {
+      *object = NULL;
+      return E_NOINTERFACE;
+    }
+  } else if (iid == IID_IAccessibleImage) {
     if (ia_role_ != ROLE_SYSTEM_GRAPHIC) {
       *object = NULL;
       return E_NOINTERFACE;
@@ -2587,8 +2537,8 @@ HRESULT WINAPI BrowserAccessibilityWin::InternalQueryInterface(
 //
 
 // Initialize this object and mark it as active.
-void BrowserAccessibilityWin::PreInitialize() {
-  BrowserAccessibility::PreInitialize();
+void BrowserAccessibilityWin::Initialize() {
+  BrowserAccessibility::Initialize();
 
   InitRoleAndState();
 
@@ -2707,25 +2657,7 @@ void BrowserAccessibilityWin::PreInitialize() {
   }
 }
 
-void BrowserAccessibilityWin::PostInitialize() {
-  BrowserAccessibility::PostInitialize();
-
-  // Construct the hypertext for this node.
-  hyperlink_offset_to_index_.clear();
-  hyperlinks_.clear();
-  hypertext_.clear();
-  for (unsigned int i = 0; i < children().size(); ++i) {
-    BrowserAccessibility* child = children()[i];
-    if (child->role() == WebAccessibility::ROLE_STATIC_TEXT) {
-      hypertext_ += child->name();
-    } else {
-      hyperlink_offset_to_index_[hypertext_.size()] = hyperlinks_.size();
-      hypertext_ += kEmbeddedCharacter;
-      hyperlinks_.push_back(i);
-    }
-  }
-  DCHECK_EQ(hyperlink_offset_to_index_.size(), hyperlinks_.size());
-
+void BrowserAccessibilityWin::SendNodeUpdateEvents() {
   // Fire an event when an alert first appears.
   if (role_ == WebAccessibility::ROLE_ALERT && first_time_)
     manager_->NotifyAccessibilityEvent(ViewHostMsg_AccEvent::ALERT, this);
@@ -2856,10 +2788,8 @@ string16 BrowserAccessibilityWin::Escape(const string16& str) {
 const string16& BrowserAccessibilityWin::TextForIAccessibleText() {
   if (IsEditableText()) {
     return value_;
-  } else if (role_ == WebAccessibility::ROLE_STATIC_TEXT) {
-    return name_;
   } else {
-    return hypertext_;
+    return name_;
   }
 }
 

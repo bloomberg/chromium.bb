@@ -55,16 +55,21 @@ class CONTENT_EXPORT BrowserAccessibility {
   // Perform platform specific initialization. This can be called multiple times
   // during the lifetime of this instance after the members of this base object
   // have been reset with new values from the renderer process.
-  // Child dependent initialization can be done here.
-  virtual void PostInitialize() {}
+  virtual void Initialize();
+
+  // Optionally send events triggered simply by the fact that this node
+  // has been created or modified (and has been attached to the tree).
+  // This can include "show" events, "text changed" events in live regions,
+  // or "alert" events.
+  virtual void SendNodeUpdateEvents() {}
 
   // Initialize this object, reading attributes from |src|. Does not
   // recurse into children of |src| and build the whole subtree.
-  void PreInitialize(BrowserAccessibilityManager* manager,
-      BrowserAccessibility* parent,
-      int32 child_id,
-      int32 index_in_parent,
-      const WebAccessibility& src);
+  void Initialize(BrowserAccessibilityManager* manager,
+                  BrowserAccessibility* parent,
+                  int32 child_id,
+                  int32 index_in_parent,
+                  const WebAccessibility& src);
 
   // Add a child of this object.
   void AddChild(BrowserAccessibility* child);
@@ -274,12 +279,6 @@ class CONTENT_EXPORT BrowserAccessibility {
   string16 GetTextRecursive() const;
 
  protected:
-  // Perform platform specific initialization. This can be called multiple times
-  // during the lifetime of this instance after the members of this base object
-  // have been reset with new values from the renderer process.
-  // Perform child independent initialization in this method.
-  virtual void PreInitialize();
-
   BrowserAccessibility();
 
   // The manager of this tree of accessibility objects; needed for
