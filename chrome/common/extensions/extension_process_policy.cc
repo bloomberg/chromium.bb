@@ -26,14 +26,23 @@ bool CrossesExtensionProcessBoundary(
   const Extension* new_url_extension = GetNonBookmarkAppExtension(extensions,
                                                                   new_url);
 
-  // TODO(creis): Temporary workaround for crbug.com/59285: Only return true if
-  // we would enter an extension app's extent from a non-app, or if we leave an
-  // extension with no web extent.  We avoid swapping processes to exit a hosted
-  // app for now, since we do not yet support postMessage calls from outside the
-  // app back into it (e.g., as in Facebook OAuth 2.0).
+  // TODO(creis): Temporary workaround for crbug.com/59285: Do not swap process
+  // to navigate from a hosted app to a normal page or another hosted app
+  // (unless either is the web store).  This is because we do not yet support
+  // postMessage calls from outside the app back into it (e.g., as in Facebook
+  // OAuth 2.0).  This will be removed when http://crbug.com/99202 is fixed.
   bool old_url_is_hosted_app = old_url_extension &&
       !old_url_extension->web_extent().is_empty();
-  if (old_url_is_hosted_app)
+  bool new_url_is_normal_or_hosted = !new_url_extension ||
+      !new_url_extension->web_extent().is_empty();
+  bool either_is_web_store =
+      (old_url_extension &&
+       old_url_extension->id() == extension_misc::kWebStoreAppId) ||
+      (new_url_extension &&
+       new_url_extension->id() == extension_misc::kWebStoreAppId);
+  if (old_url_is_hosted_app &&
+      new_url_is_normal_or_hosted &&
+      !either_is_web_store)
     return false;
 
   return old_url_extension != new_url_extension;
