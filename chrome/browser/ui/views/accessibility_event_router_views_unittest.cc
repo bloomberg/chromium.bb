@@ -116,6 +116,11 @@ class AccessibilityEventRouterViewsTest
   virtual void TearDown() {
     delete views::ViewsDelegate::views_delegate;
     views::ViewsDelegate::views_delegate = NULL;
+
+    // The Widget's FocusManager is deleted using DeleteSoon - this
+    // forces it to be deleted now, so we don't have any memory leaks
+    // when this method exits.
+    MessageLoop::current()->RunAllPending();
   }
 
   views::Widget* CreateWindowWithContents(views::View* contents) {

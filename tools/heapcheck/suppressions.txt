@@ -1752,17 +1752,3 @@
    fun:browser_sync::DataTypeManagerImpl::Stop
    fun:ProfileSyncService::Shutdown
 }
-{
-   bug_106109
-   Heapcheck:Leak
-   ...
-   fun:::DefaultFocusManagerFactory::CreateFocusManager
-   fun:views::FocusManagerFactory::Create
-   fun:views::Widget::OnNativeWidgetCreated
-   fun:views::NativeWidgetGtk::InitNativeWidget
-   fun:views::Widget::Init
-   fun:views::Widget::CreateWindowWithParentAndBounds
-   fun:views::Widget::CreateWindowWithBounds
-   fun:AccessibilityEventRouterViewsTest::CreateWindowWithContents
-   fun:AccessibilityEventRouterViewsTest_TestFocusNotification_Test::TestBody
-}
