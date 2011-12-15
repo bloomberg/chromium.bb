@@ -26,14 +26,12 @@
 #include "chrome/browser/ui/webui/options2/content_settings_handler.h"
 #include "chrome/browser/ui/webui/options2/cookies_view_handler.h"
 #include "chrome/browser/ui/webui/options2/core_options_handler.h"
-#include "chrome/browser/ui/webui/options2/extension_settings_handler.h"
 #include "chrome/browser/ui/webui/options2/font_settings_handler.h"
 #include "chrome/browser/ui/webui/options2/handler_options_handler.h"
 #include "chrome/browser/ui/webui/options2/import_data_handler.h"
 #include "chrome/browser/ui/webui/options2/language_options_handler.h"
 #include "chrome/browser/ui/webui/options2/manage_profile_handler.h"
 #include "chrome/browser/ui/webui/options2/options_sync_setup_handler.h"
-#include "chrome/browser/ui/webui/options2/pack_extension_handler.h"
 #include "chrome/browser/ui/webui/options2/password_manager_handler.h"
 #include "chrome/browser/ui/webui/options2/personal_options_handler.h"
 #include "chrome/browser/ui/webui/options2/search_engine_manager_handler.h"
@@ -213,7 +211,6 @@ Options2UI::Options2UI(TabContents* contents)
   AddOptionsPageUIHandler(localized_strings, new ClearBrowserDataHandler());
   AddOptionsPageUIHandler(localized_strings, new ContentSettingsHandler());
   AddOptionsPageUIHandler(localized_strings, new CookiesViewHandler());
-  AddOptionsPageUIHandler(localized_strings, new ExtensionSettingsHandler());
   AddOptionsPageUIHandler(localized_strings, new FontSettingsHandler());
   AddOptionsPageUIHandler(localized_strings, new WebIntentsSettingsHandler());
 #if defined(OS_CHROMEOS)
@@ -223,7 +220,6 @@ Options2UI::Options2UI(TabContents* contents)
   AddOptionsPageUIHandler(localized_strings, new LanguageOptionsHandler());
 #endif
   AddOptionsPageUIHandler(localized_strings, new ManageProfileHandler());
-  AddOptionsPageUIHandler(localized_strings, new PackExtensionHandler());
   AddOptionsPageUIHandler(localized_strings, new PasswordManagerHandler());
   AddOptionsPageUIHandler(localized_strings, new PersonalOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new SearchEngineManagerHandler());
