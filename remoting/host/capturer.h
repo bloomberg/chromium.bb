@@ -46,6 +46,20 @@ class Capturer {
   // Create platform-specific capturer.
   static Capturer* Create();
 
+#if defined(OS_LINUX)
+  // Set whether the Capturer should try to use X DAMAGE support if it is
+  // available.  This needs to be called before the Capturer is created.
+  // This is used by the Virtual Me2Me host, since the XDamage extension is
+  // known to work reliably in this case.
+
+  // TODO(lambroslambrou): This currently sets a global flag, referenced during
+  // Capturer::Create().  This is a temporary solution, until the
+  // DesktopEnvironment class is refactored to allow applications to control
+  // the creation of various stubs (including the Capturer) - see
+  // http://crbug.com/104544
+  static void EnableXDamage(bool enable);
+#endif  // defined(OS_LINUX)
+
   // Called when the screen configuration is changed.
   virtual void ScreenConfigurationChanged() = 0;
 

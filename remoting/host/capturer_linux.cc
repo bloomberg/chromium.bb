@@ -23,10 +23,12 @@ namespace {
 
 static const int kBytesPerPixel = 4;
 
+// Default to false, since many systems have broken XDamage support - see
+// http://crbug.com/73423.
+static bool g_should_use_x_damage = false;
+
 static bool ShouldUseXDamage() {
-  // For now, always use full-screen polling instead of the DAMAGE extension,
-  // as this extension is broken on many current systems OOTB.
-  return false;
+  return g_should_use_x_damage;
 }
 
 // A class representing a full-frame pixel buffer
@@ -511,6 +513,11 @@ Capturer* Capturer::Create() {
     capturer = NULL;
   }
   return capturer;
+}
+
+// static
+void Capturer::EnableXDamage(bool enable) {
+  g_should_use_x_damage = enable;
 }
 
 }  // namespace remoting

@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
 #include "remoting/base/constants.h"
+#include "remoting/host/capturer.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/desktop_environment.h"
@@ -67,6 +68,10 @@ class HostProcess {
     } else {
       host_config_path_ = default_config_dir.Append(kDefaultHostConfigFile);
     }
+
+#if defined(OS_LINUX)
+    Capturer::EnableXDamage(true);
+#endif
   }
 
   int Run() {
