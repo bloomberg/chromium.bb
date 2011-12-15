@@ -39,14 +39,16 @@ class Suppression(object):
     stack: a list of "fun:" or "obj:" or ellipsis lines.
   """
 
-  def __init__(self, description, type, stack):
+  def __init__(self, description, type, stack, defined_at):
     """Inits Suppression.
 
-    Args: Same as class attributes.
+    description, type, stack: same as class attributes
+    defined_at: file:line identifying where the suppression was defined
     """
     self.description = description
     self.type = type
     self._stack = stack
+    self.defined_at = defined_at
     re_line = '{\n.*\n%s\n' % self.type
     re_bucket = ''
     for line in stack:
@@ -127,15 +129,13 @@ class Suppression(object):
 
 
 class SuppressionError(Exception):
-  def __init__(self, filename, line, message=''):
-    Exception.__init__(self, filename, line, message)
-    self._file = filename
-    self._line = line
+  def __init__(self, message, happened_at):
     self._message = message
+    self._happened_at = happened_at
 
   def __str__(self):
-    return 'Error reading suppressions from "%s" (line %d): %s.' % (
-        self._file, self._line, self._message)
+    return 'Error reading suppressions at %s!\n%s' % (
+        self._happened_at, self._message)
 
 def ReadSuppressionsFromFile(filename):
   """Read suppressions from the given file and return them as a list"""
@@ -152,7 +152,7 @@ def ReadSuppressions(lines, supp_descriptor):
   Args:
     lines: a list of lines containing suppressions.
     supp_descriptor: should typically be a filename.
-      Used only when parsing errors happen.
+        Used only when printing errors.
   """
   result = []
   cur_descr = ''
@@ -173,10 +173,12 @@ def ReadSuppressions(lines, supp_descriptor):
         in_suppression = True
         pass
       else:
-        raise SuppressionError(supp_descriptor, nline,
-                               'Expected: "{"')
+        raise SuppressionError('Expected: "{"',
+                               "%s:%d" % (supp_descriptor, nline))
     elif line.startswith('}'):
-      result.append(Suppression(cur_descr, cur_type, cur_stack))
+      result.append(
+          Suppression(cur_descr, cur_type, cur_stack,
+                      "%s:%d" % (supp_descriptor, nline)))
       cur_descr = ''
       cur_type = ''
       cur_stack = []
@@ -188,17 +190,18 @@ def ReadSuppressions(lines, supp_descriptor):
       if (not line.startswith("Memcheck:")) and \
          (not line.startswith("ThreadSanitizer:")) and \
          (line != "Heapcheck:Leak"):
-        raise SuppressionError(supp_descriptor, nline,
-            '"Memcheck:TYPE" , "ThreadSanitizer:TYPE" or "Heapcheck:Leak '
-            'is expected, got "%s"' % line)
+        raise SuppressionError(
+            'Expected "Memcheck:TYPE", "ThreadSanitizer:TYPE" '
+            'or "Heapcheck:Leak", got "%s"' % line,
+            "%s:%d" % (supp_descriptor, nline))
       supp_type = line.split(':')[1]
       if not supp_type in ["Addr1", "Addr2", "Addr4", "Addr8",
                            "Cond", "Free", "Jump", "Leak", "Overlap", "Param",
                            "Value1", "Value2", "Value4", "Value8",
                            "Race", "UnlockNonLocked", "InvalidLock",
                            "Unaddressable", "Uninitialized"]:
-        raise SuppressionError(supp_descriptor, nline,
-                               'Unknown suppression type "%s"' % supp_type)
+        raise SuppressionError('Unknown suppression type "%s"' % supp_type,
+                               "%s:%d" % (supp_descriptor, nline))
       cur_type = line
       continue
     elif re.match("^fun:.*|^obj:.*|^\.\.\.$", line):
@@ -206,10 +209,55 @@ def ReadSuppressions(lines, supp_descriptor):
     elif len(cur_stack) == 0 and cur_type == "Memcheck:Param":
       cur_stack.append(line.strip())
     else:
-      raise SuppressionError(supp_descriptor, nline,
-                             '"fun:function_name" or "obj:object_file" ' \
-                             'or "..." expected')
+      raise SuppressionError(
+          '"fun:function_name" or "obj:object_file" or "..." expected',
+          "%s:%d" % (supp_descriptor, nline))
   return result
+
+
+def PresubmitCheck(input_api, output_api):
+  """A helper function useful in PRESUBMIT.py
+     Returns a list of errors or [].
+  """
+  sup_regex = re.compile('suppressions.*\.txt$')
+  filenames = [f.AbsoluteLocalPath() for f in input_api.AffectedFiles()
+                   if sup_regex.search(f.LocalPath())]
+
+  errors = []
+
+  # TODO(timurrrr): warn on putting suppressions into a wrong file,
+  # e.g. TSan suppression in a memcheck file.
+
+  for f in filenames:
+    try:
+      known_supp_names = {}  # Key: name, Value: suppression.
+      supps = ReadSuppressionsFromFile(f)
+      for s in supps:
+        if re.search("<.*suppression.name.here>", s.description):
+          # Suppression name line is
+          # <insert_a_suppression_name_here> for Memcheck,
+          # <Put your suppression name here> for TSan,
+          # name=<insert_a_suppression_name_here> for DrMemory
+          errors.append(
+              SuppressionError(
+                  "You've forgotten to put a suppression name like bug_XXX",
+                  s.defined_at))
+          continue
+
+        if s.description in known_supp_names:
+          errors.append(
+              SuppressionError(
+                  'Suppression named "%s" is defined more than once, '
+                  'see %s' % (s.description,
+                              known_supp_names[s.description].defined_at),
+                  s.defined_at))
+        else:
+          known_supp_names[s.description] = s
+
+    except SuppressionError as e:
+      errors.append(e)
+
+  return [output_api.PresubmitError(str(e)) for e in errors]
 
 
 def TestStack(stack, positive, negative):
@@ -221,11 +269,14 @@ def TestStack(stack, positive, negative):
     negative: the list of suppressions that should not match.
   """
   for supp in positive:
-    assert ReadSuppressions(supp.split("\n"), "")[0].Match(stack), \
-           "Suppression:\n%s\ndidn't match stack:\n%s" % (supp, stack)
+    parsed = ReadSuppressions(supp.split("\n"), "positive_suppression")
+    assert parsed[0].Match(stack), \
+        "Suppression:\n%s\ndidn't match stack:\n%s" % (supp, stack)
   for supp in negative:
-    assert not ReadSuppressions(supp.split("\n"), "")[0].Match(stack), \
-           "Suppression:\n%s\ndid match stack:\n%s" % (supp, stack)
+    parsed = ReadSuppressions(supp.split("\n"), "negative_suppression")
+    assert not parsed[0].Match(stack), \
+        "Suppression:\n%s\ndid match stack:\n%s" % (supp, stack)
+
 
 def SelfTest():
   """Tests the Suppression.Match() capabilities."""

@@ -591,7 +591,7 @@
   fun:base::::ThreadFunc
 }
 {
-  bug_102327_b
+  bug_102327_c
   ThreadSanitizer:Race
   fun:tracked_objects::ThreadData::tracking_status
 }
@@ -611,7 +611,7 @@
   fun:webrtc::ThreadPosix::*
 }
 {
-  bug_103711c
+  bug_103711d
   ThreadSanitizer:Race
   fun:webrtc::FileWrapper*::*
   ...
@@ -626,7 +626,7 @@
   fun:WebRTCAudioDeviceTest_Construct_Test::TestBody
 }
 {
-  bug_103711d
+  bug_103711e
   ThreadSanitizer:Race
   ...
   fun:WebRTCAudioDeviceTest::OnMessageReceived
@@ -639,7 +639,7 @@
   fun:event_base_loop
 }
 {
-  bug_103711e
+  bug_103711f
   ThreadSanitizer:Race
   fun:webrtc::TracePosix::AddTime
   fun:webrtc::TraceImpl::AddImpl
@@ -647,12 +647,12 @@
   fun:webrtc::ThreadPosix::Run
 }
 {
-  bug_103711f
+  bug_103711g
   ThreadSanitizer:Race
   fun:WebRTCAudioDeviceTest::SetUp
 }
 {
-  bug_103711g
+  bug_103711h
   ThreadSanitizer:Race
   fun:webrtc::EventWrapper::~EventWrapper
   fun:webrtc::EventPosix::~EventPosix
