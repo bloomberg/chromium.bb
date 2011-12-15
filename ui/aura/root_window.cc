@@ -15,10 +15,6 @@
 #include "base/string_split.h"
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/client/activation_client.h"
-#include "ui/aura/client/drag_drop_client.h"
-#include "ui/aura/client/stacking_client.h"
-#include "ui/aura/client/tooltip_client.h"
-#include "ui/aura/client/window_drag_drop_delegate.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/event.h"
@@ -58,24 +54,6 @@ bool IsNonClientLocation(Window* target, const gfx::Point& location) {
   return hit_test_code != HTCLIENT && hit_test_code != HTNOWHERE;
 }
 
-class DefaultStackingClient : public StackingClient {
- public:
-  explicit DefaultStackingClient(RootWindow* root_window)
-      : root_window_(root_window) {}
-  virtual ~DefaultStackingClient() {}
-
- private:
-
-  // Overridden from StackingClient:
-  virtual void AddChildToDefaultParent(Window* window) OVERRIDE {
-    root_window_->AddChild(window);
-  }
-
-  RootWindow* root_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(DefaultStackingClient);
-};
-
 typedef std::vector<EventFilter*> EventFilters;
 
 void GetEventFiltersToNotify(Window* target, EventFilters* filters) {
@@ -108,10 +86,6 @@ RootWindow* RootWindow::GetInstance() {
 void RootWindow::DeleteInstance() {
   delete instance_;
   instance_ = NULL;
-}
-
-void RootWindow::SetStackingClient(StackingClient* stacking_client) {
-  stacking_client_.reset(stacking_client);
 }
 
 void RootWindow::ShowRootWindow() {
@@ -333,8 +307,6 @@ void RootWindow::ToggleFullScreen() {
 RootWindow::RootWindow()
     : Window(NULL),
       host_(aura::RootWindowHost::Create(GetInitialHostWindowBounds())),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          stacking_client_(new DefaultStackingClient(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
       mouse_button_flags_(0),
       last_cursor_(kCursorNull),

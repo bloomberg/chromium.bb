@@ -30,21 +30,25 @@ AURA_EXPORT extern const char kModalKey[];
 // of the value is |gfx::Rect*|.
 AURA_EXPORT extern const char kRestoreBoundsKey[];
 
-// A property key to store the drag and drop client for the root window. The
-// type of the value is |aura::DragDropClient*|.
-AURA_EXPORT extern const char kRootWindowDragDropClientKey[];
-
-// A property key to store the tooltip client for the root window. The type of
-// the value is |aura::TooltipClient*|.
-AURA_EXPORT extern const char kRootWindowTooltipClientKey[];
+// A property key to store a client that handles window activation. The type of
+// the value is |aura::ActivationClient*|.
+AURA_EXPORT extern const char kRootWindowActivationClient[];
 
 // A property key to store what the client defines as the active window on the
 // RootWindow. The type of the value is |aura::Window*|.
 AURA_EXPORT extern const char kRootWindowActiveWindow[];
 
-// A property key to store a client that handles window activation. The type of
-// the value is |aura::ActivationClient*|.
-AURA_EXPORT extern const char kRootWindowActivationClient[];
+// A property key to store the drag and drop client for the root window. The
+// type of the value is |aura::DragDropClient*|.
+AURA_EXPORT extern const char kRootWindowDragDropClientKey[];
+
+// A property key to store a client that handles window parenting. The type of
+// the value is |aura::client::StackingClient*|.
+AURA_EXPORT extern const char kRootWindowStackingClient[];
+
+// A property key to store the tooltip client for the root window. The type of
+// the value is |aura::TooltipClient*|.
+AURA_EXPORT extern const char kRootWindowTooltipClientKey[];
 
 // A property key for a value from aura::ShadowType describing the drop shadow
 // that should be displayed under the window.  If unset, no shadow is displayed.

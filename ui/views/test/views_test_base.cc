@@ -11,7 +11,6 @@
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_activation_client.h"
-#include "ui/aura/test/test_stacking_client.h"
 #endif
 
 namespace views {
@@ -24,7 +23,6 @@ ViewsTestBase::ViewsTestBase()
 #endif
 #if defined(USE_AURA)
   test_activation_client_.reset(new aura::test::TestActivationClient);
-  new aura::test::TestStackingClient;
 #endif
 }
 

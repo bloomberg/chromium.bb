@@ -24,6 +24,18 @@
 
 namespace aura {
 
+namespace {
+
+Window* GetParentForWindow(Window* window, Window* suggested_parent) {
+  if (suggested_parent)
+    return suggested_parent;
+  if (client::GetStackingClient())
+    return client::GetStackingClient()->GetDefaultParent(window);
+  return RootWindow::GetInstance();
+}
+
+}  // namespace
+
 Window::Window(WindowDelegate* delegate)
     : type_(WINDOW_TYPE_UNKNOWN),
       delegate_(delegate),
@@ -153,12 +165,7 @@ void Window::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
 }
 
 void Window::SetParent(Window* parent) {
-  if (parent)
-    parent->AddChild(this);
-  else if (RootWindow::GetInstance()->stacking_client())
-    RootWindow::GetInstance()->stacking_client()->AddChildToDefaultParent(this);
-  else
-    NOTREACHED();
+  GetParentForWindow(this, parent)->AddChild(this);
 }
 
 void Window::StackChildAtTop(Window* child) {

@@ -5,7 +5,7 @@
 #include "ui/aura_shell/workspace_controller.h"
 
 #include "ui/aura/test/aura_test_base.h"
-#include "ui/aura/test/test_stacking_client.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/activation_controller.h"
 #include "ui/aura_shell/shell_window_ids.h"
@@ -25,7 +25,7 @@ class WorkspaceControllerTest : public aura::test::AuraTestBase {
 
   virtual void SetUp() OVERRIDE {
     aura::test::AuraTestBase::SetUp();
-    contents_view_ = GetTestStackingClient()->default_container();
+    contents_view_ = aura::RootWindow::GetInstance();
     // Activatable windows need to be in a container the ActivationController
     // recognizes.
     contents_view_->set_id(

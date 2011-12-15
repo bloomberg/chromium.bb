@@ -16,16 +16,13 @@ namespace internal {
 
 class AlwaysOnTopController;
 
-class StackingController : public aura::StackingClient {
+class StackingController : public aura::client::StackingClient {
  public:
   StackingController();
   virtual ~StackingController();
 
-  // Initializes this controller.
-  void Init();
-
-  // Overridden from aura::StackingClient:
-  virtual void AddChildToDefaultParent(aura::Window* window) OVERRIDE;
+  // Overridden from aura::client::StackingClient:
+  virtual aura::Window* GetDefaultParent(aura::Window* window) OVERRIDE;
 
  private:
   // Returns corresponding modal container for a modal window.

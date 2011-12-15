@@ -9,7 +9,6 @@
 #endif
 
 #include "ui/aura/root_window.h"
-#include "ui/aura/test/test_stacking_client.h"
 
 namespace aura {
 namespace test {
@@ -21,8 +20,6 @@ AuraTestBase::AuraTestBase()
   OleInitialize(NULL);
 #endif
 
-  // TestStackingClient is owned by the root window.
-  new TestStackingClient();
   RootWindow::GetInstance()->Show();
   RootWindow::GetInstance()->SetHostSize(gfx::Size(600, 600));
 }
@@ -43,11 +40,6 @@ AuraTestBase::~AuraTestBase() {
   // Ensure that we don't use the previously-allocated static RootWindow object
   // later -- on Linux, it holds a reference to our message loop's X connection.
   aura::RootWindow::DeleteInstance();
-}
-
-TestStackingClient* AuraTestBase::GetTestStackingClient() {
-  return static_cast<TestStackingClient*>(
-      aura::RootWindow::GetInstance()->stacking_client());
 }
 
 void AuraTestBase::SetUp() {

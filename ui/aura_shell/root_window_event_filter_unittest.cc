@@ -14,7 +14,6 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/test/test_event_filter.h"
 #include "ui/aura/test/test_window_delegate.h"
-#include "ui/aura/test/test_stacking_client.h"
 #include "ui/aura_shell/activation_controller.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/aura_shell/test/test_activation_delegate.h"
@@ -31,14 +30,11 @@ class RootWindowEventFilterTest : public aura::test::AuraTestBase {
     aura::RootWindow::GetInstance()->SetEventFilter(
         new internal::RootWindowEventFilter);
 
-    aura::test::TestStackingClient* stacking_client =
-        static_cast<aura::test::TestStackingClient*>(
-            aura::RootWindow::GetInstance()->stacking_client());
-    stacking_client->default_container()->set_id(
+    aura::RootWindow::GetInstance()->set_id(
         internal::kShellWindowId_DefaultContainer);
     activation_controller_.reset(new internal::ActivationController);
     activation_controller_->set_default_container_for_test(
-        stacking_client->default_container());
+        aura::RootWindow::GetInstance());
   }
   virtual ~RootWindowEventFilterTest() {
     aura::RootWindow::GetInstance()->SetEventFilter(NULL);

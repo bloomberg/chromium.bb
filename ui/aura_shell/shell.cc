@@ -124,8 +124,6 @@ Shell::Shell(ShellDelegate* delegate)
       delegate_(delegate) {
   aura::RootWindow::GetInstance()->SetEventFilter(
       new internal::RootWindowEventFilter);
-  aura::RootWindow::GetInstance()->SetStackingClient(
-      new internal::StackingController);
 }
 
 Shell::~Shell() {
@@ -196,10 +194,7 @@ void Shell::Init() {
     (*i)->Show();
   }
 
-  internal::StackingController* stacking_controller =
-      static_cast<internal::StackingController*>(
-          root_window->stacking_client());
-  stacking_controller->Init();
+  stacking_controller_.reset(new internal::StackingController);
 
   InitLayoutManagers(root_window);
 

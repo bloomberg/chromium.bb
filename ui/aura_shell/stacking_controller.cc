@@ -29,43 +29,35 @@ bool IsWindowModal(aura::Window* window) {
 // StackingController, public:
 
 StackingController::StackingController() {
-  aura::RootWindow::GetInstance()->SetStackingClient(this);
-}
-
-StackingController::~StackingController() {
-}
-
-void StackingController::Init() {
+  aura::client::SetStackingClient(this);
   always_on_top_controller_.reset(new internal::AlwaysOnTopController);
   always_on_top_controller_->SetContainers(
       GetContainer(internal::kShellWindowId_DefaultContainer),
       GetContainer(internal::kShellWindowId_AlwaysOnTopContainer));
 }
 
+StackingController::~StackingController() {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // StackingController, aura::StackingClient implementation:
 
-void StackingController::AddChildToDefaultParent(aura::Window* window) {
-  aura::Window* parent = NULL;
+aura::Window* StackingController::GetDefaultParent(aura::Window* window) {
   switch (window->type()) {
     case aura::WINDOW_TYPE_NORMAL:
     case aura::WINDOW_TYPE_POPUP:
-      if (IsWindowModal(window)) {
-        parent = GetModalContainer(window);
-        break;
-      }
-      parent = always_on_top_controller_->GetContainer(window);
-      break;
+      if (IsWindowModal(window))
+        return GetModalContainer(window);
+      return always_on_top_controller_->GetContainer(window);
     case aura::WINDOW_TYPE_MENU:
     case aura::WINDOW_TYPE_TOOLTIP:
-      parent = GetContainer(internal::kShellWindowId_MenusAndTooltipsContainer);
-      break;
+      return GetContainer(internal::kShellWindowId_MenusAndTooltipsContainer);
     default:
       NOTREACHED() << "Window " << window->id()
                    << " has unhandled type " << window->type();
       break;
   }
-  parent->AddChild(window);
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
