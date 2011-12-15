@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "webkit/plugins/npapi/test/plugin_get_javascript_url_test.h"
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 
 // url for "self".
 #define SELF_URL "javascript:window.location+\"\""
@@ -67,6 +68,7 @@ void CALLBACK ExecuteGetJavascriptUrlTest::TimerProc(
   ExecuteGetJavascriptUrlTest* this_instance =
       reinterpret_cast<ExecuteGetJavascriptUrlTest*>
           (::GetProp(window, L"Plugin_Instance"));
+  CHECK(this_instance);
 
   ::RemoveProp(window, L"Plugin_Instance");
 
