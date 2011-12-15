@@ -2139,6 +2139,37 @@
     },
     {
       "api_calls": [
+        "chrome.extension.getURL",
+        "chrome.tabs.insertCSS"
+      ],
+      "crx_path": null,
+      "description": "Spruce up your pages with custom CSS.",
+      "features": [
+        "<all_urls>",
+        "browser_action",
+        "experimental",
+        "options_page",
+        "tabs"
+      ],
+      "icon": null,
+      "id": "24452253a5f1a93c2e8d63e55042005f8bc33606",
+      "name": "Stylizr",
+      "packaged_app": false,
+      "path": "examples\/api\/storage\/stylizr\/",
+      "protocols": [],
+      "search_string": "STYLIZR SPRUCE UP YOUR PAGES WITH CUSTOM CSS. <ALL_URLS> BROWSER_ACTION EXPERIMENTAL OPTIONS_PAGE TABS CHROME.EXTENSION.GETURL CHROME.TABS.INSERTCSS",
+      "source_files": [
+        "manifest.json",
+        "options.html",
+        "options.js",
+        "popup.html",
+        "popup.js"
+      ],
+      "source_hash": "fa67fae5afc20d9ad9b46a8d25037aabcb89630e",
+      "zip_path": "examples\/api\/storage\/stylizr.zip"
+    },
+    {
+      "api_calls": [
         "chrome.browserAction.onClicked",
         "chrome.extension.getURL",
         "chrome.tabs.create",
