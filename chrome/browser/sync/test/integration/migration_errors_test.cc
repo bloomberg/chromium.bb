@@ -351,17 +351,12 @@ IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest,
       MODIFY_BOOKMARK);
 }
 
-// Flaky on Mac 10.6 Sync bot: http://crbug.com/107205.
-#if defined(OS_MACOSX)
-#define MAYBE_MigrationHellWithoutNigori FLAKY_MigrationHellWithoutNigori
-#else
-#define MAYBE_MigrationHellWithoutNigori MigrationHellWithoutNigori
-#endif
-
+// Flaky on Mac 10.6 Sync bot and crashes on Win7 sync bot:
+// http://crbug.com/107205.
 // Migrate every datatype in sequence; the catch being that the server
 // will only tell the client about the migrations one at a time.
 IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest,
-                       MAYBE_MigrationHellWithoutNigori) {
+                       DISABLED_MigrationHellWithoutNigori) {
   ASSERT_TRUE(SetupClients());
   MigrationList migration_list = GetPreferredDataTypesList();
   // Let the first nudge be a datatype that's neither prefs nor
@@ -370,7 +365,10 @@ IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest,
   RunTwoClientMigrationTest(migration_list, MODIFY_BOOKMARK);
 }
 
-IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest, MigrationHellWithNigori) {
+// Flaky on Mac 10.6 Sync bot and crashes on Win7 sync bot:
+// http://crbug.com/107205.
+IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest,
+                       DISABLED_MigrationHellWithNigori) {
   ASSERT_TRUE(SetupClients());
   MigrationList migration_list = GetPreferredDataTypesList();
   // Let the first nudge be a datatype that's neither prefs nor
