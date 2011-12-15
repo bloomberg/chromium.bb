@@ -51,6 +51,7 @@
 
 #include "xf86drm.h"
 #include "xf86drmMode.h"
+#include "drm_fourcc.h"
 #include "libkms.h"
 
 #ifdef HAVE_CAIRO
@@ -267,6 +268,49 @@ void dump_framebuffers(void)
 	printf("\n");
 }
 
+static void dump_planes(void)
+{
+	drmModePlaneRes *plane_resources;
+	drmModePlane *ovr;
+	int i, j;
+
+	plane_resources = drmModeGetPlaneResources(fd);
+	if (!plane_resources) {
+		fprintf(stderr, "drmModeGetPlaneResources failed: %s\n",
+			strerror(errno));
+		return;
+	}
+
+	printf("Planes:\n");
+	printf("id\tcrtc\tfb\tCRTC x,y\tx,y\tgamma size\n");
+	for (i = 0; i < plane_resources->count_planes; i++) {
+		ovr = drmModeGetPlane(fd, plane_resources->planes[i]);
+		if (!ovr) {
+			fprintf(stderr, "drmModeGetPlane failed: %s\n",
+				strerror(errno));
+			continue;
+		}
+
+		printf("%d\t%d\t%d\t%d,%d\t\t%d,%d\t%d\n",
+		       ovr->plane_id, ovr->crtc_id, ovr->fb_id,
+		       ovr->crtc_x, ovr->crtc_y, ovr->x, ovr->y,
+		       ovr->gamma_size);
+
+		if (!ovr->count_formats)
+			continue;
+
+		printf("  formats:");
+		for (j = 0; j < ovr->count_formats; j++)
+			printf(" %4.4s", (char *)&ovr->formats[j]);
+		printf("\n");
+
+		drmModeFreePlane(ovr);
+	}
+	printf("\n");
+
+	return;
+}
+
 /*
  * Mode setting with the kernel interfaces is a bit of a chore.
  * First you have to find the connector in question and make sure the
@@ -280,11 +324,18 @@ struct connector {
 	drmModeModeInfo *mode;
 	drmModeEncoder *encoder;
 	int crtc;
+	int pipe;
 	unsigned int fb_id[2], current_fb_id;
 	struct timeval start;
 
 	int swap_count;
-};	
+};
+
+struct plane {
+	uint32_t con_id;  /* the id of connector to bind to */
+	uint32_t w, h;
+	unsigned int fb_id;
+};
 
 static void
 connector_find_mode(struct connector *c)
@@ -351,6 +402,15 @@ connector_find_mode(struct connector *c)
 
 	if (c->crtc == -1)
 		c->crtc = c->encoder->crtc_id;
+
+	/* and figure out which crtc index it is: */
+	for (i = 0; i < resources->count_crtcs; i++) {
+		if (c->crtc == resources->crtcs[i]) {
+			c->pipe = i;
+			break;
+		}
+	}
+
 }
 
 static struct kms_bo *
@@ -534,13 +594,83 @@ page_flip_handler(int fd, unsigned int frame,
 	}
 }
 
+static int
+set_plane(struct kms_driver *kms, struct connector *c, struct plane *p)
+{
+	drmModePlaneRes *plane_resources;
+	drmModePlane *ovr;
+	uint32_t handles[4], pitches[4], offsets[4] = {0}; /* we only use [0] */
+	uint32_t plane_id = 0;
+	struct kms_bo *plane_bo;
+	uint32_t plane_flags = 0;
+	int i, crtc_x, crtc_y, crtc_w, crtc_h;
+
+	/* find an unused plane which can be connected to our crtc */
+	plane_resources = drmModeGetPlaneResources(fd);
+	if (!plane_resources) {
+		fprintf(stderr, "drmModeGetPlaneResources failed: %s\n",
+			strerror(errno));
+		return -1;
+	}
+
+	for (i = 0; i < plane_resources->count_planes && !plane_id; i++) {
+		ovr = drmModeGetPlane(fd, plane_resources->planes[i]);
+		if (!ovr) {
+			fprintf(stderr, "drmModeGetPlane failed: %s\n",
+				strerror(errno));
+			return -1;
+		}
+
+		if ((ovr->possible_crtcs & (1 << c->pipe)) && !ovr->crtc_id)
+			plane_id = ovr->plane_id;
+
+		drmModeFreePlane(ovr);
+	}
+
+	if (!plane_id) {
+		fprintf(stderr, "failed to find plane!\n");
+		return -1;
+	}
+
+	/* TODO.. would be nice to test YUV overlays.. */
+	if (create_test_buffer(kms, p->w, p->h, &pitches[0], &plane_bo))
+		return -1;
+
+	kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[0]);
+
+	/* just use single plane format for now.. */
+	if (drmModeAddFB2(fd, p->w, p->h, DRM_FORMAT_XRGB8888,
+			handles, pitches, offsets, &p->fb_id, plane_flags)) {
+		fprintf(stderr, "failed to add fb: %s\n", strerror(errno));
+		return -1;
+	}
+
+	/* ok, boring.. but for now put in middle of screen: */
+	crtc_x = c->mode->hdisplay / 3;
+	crtc_y = c->mode->vdisplay / 3;
+	crtc_w = crtc_x;
+	crtc_h = crtc_y;
+
+	/* note src coords (last 4 args) are in Q16 format */
+	if (drmModeSetPlane(fd, plane_id, c->crtc, p->fb_id,
+			    plane_flags, crtc_x, crtc_y, crtc_w, crtc_h,
+			    0, 0, p->w << 16, p->h << 16)) {
+		fprintf(stderr, "failed to enable plane: %s\n",
+			strerror(errno));
+		return -1;
+	}
+
+	return 0;
+}
+
 static void
-set_mode(struct connector *c, int count, int page_flip)
+set_mode(struct connector *c, int count, struct plane *p, int plane_count,
+		int page_flip)
 {
 	struct kms_driver *kms;
 	struct kms_bo *bo, *other_bo;
 	unsigned int fb_id, other_fb_id;
-	int i, ret, width, height, x, stride;
+	int i, j, ret, width, height, x, stride;
 	unsigned handle;
 	drmEventContext evctx;
 
@@ -593,6 +723,12 @@ set_mode(struct connector *c, int count, int page_flip)
 			fprintf(stderr, "failed to set mode: %s\n", strerror(errno));
 			return;
 		}
+
+		/* if we have a plane/overlay to show, set that up now: */
+		for (j = 0; j < plane_count; j++)
+			if (p[j].con_id == c[i].id)
+				if (set_plane(kms, &c[i], &p[j]))
+					return;
 	}
 
 	if (!page_flip)
@@ -676,19 +812,20 @@ set_mode(struct connector *c, int count, int page_flip)
 
 extern char *optarg;
 extern int optind, opterr, optopt;
-static char optstr[] = "ecpmfs:v";
+static char optstr[] = "ecpmfs:P:v";
 
 void usage(char *name)
 {
 	fprintf(stderr, "usage: %s [-ecpmf]\n", name);
 	fprintf(stderr, "\t-e\tlist encoders\n");
 	fprintf(stderr, "\t-c\tlist connectors\n");
-	fprintf(stderr, "\t-p\tlist CRTCs (pipes)\n");
+	fprintf(stderr, "\t-p\tlist CRTCs and planes (pipes)\n");
 	fprintf(stderr, "\t-m\tlist modes\n");
 	fprintf(stderr, "\t-f\tlist framebuffers\n");
 	fprintf(stderr, "\t-v\ttest vsynced page flipping\n");
 	fprintf(stderr, "\t-s <connector_id>:<mode>\tset a mode\n");
 	fprintf(stderr, "\t-s <connector_id>@<crtc_id>:<mode>\tset a mode\n");
+	fprintf(stderr, "\t-P <connector_id>:<w>x<h>\tset a plane\n");
 	fprintf(stderr, "\n\tDefault is to dump all info.\n");
 	exit(0);
 }
@@ -719,12 +856,13 @@ static int page_flipping_supported(int fd)
 int main(int argc, char **argv)
 {
 	int c;
-	int encoders = 0, connectors = 0, crtcs = 0, framebuffers = 0;
+	int encoders = 0, connectors = 0, crtcs = 0, planes = 0, framebuffers = 0;
 	int test_vsync = 0;
 	char *modules[] = { "i915", "radeon", "nouveau", "vmwgfx", "omapdrm" };
 	char *modeset = NULL;
-	int i, count = 0;
+	int i, count = 0, plane_count = 0;
 	struct connector con_args[2];
+	struct plane plane_args[2];
 	
 	opterr = 0;
 	while ((c = getopt(argc, argv, optstr)) != -1) {
@@ -737,6 +875,7 @@ int main(int argc, char **argv)
 			break;
 		case 'p':
 			crtcs = 1;
+			planes = 1;
 			break;
 		case 'm':
 			modes = 1;
@@ -760,6 +899,14 @@ int main(int argc, char **argv)
 				usage(argv[0]);
 			count++;				      
 			break;
+		case 'P':
+			if (sscanf(optarg, "%d:%dx%d",
+					&plane_args[plane_count].con_id,
+					&plane_args[plane_count].w,
+					&plane_args[plane_count].h) != 3)
+				usage(argv[0]);
+			plane_count++;
+			break;
 		default:
 			usage(argv[0]);
 			break;
@@ -767,7 +914,7 @@ int main(int argc, char **argv)
 	}
 
 	if (argc == 1)
-		encoders = connectors = crtcs = modes = framebuffers = 1;
+		encoders = connectors = crtcs = planes = modes = framebuffers = 1;
 
 	for (i = 0; i < ARRAY_SIZE(modules); i++) {
 		printf("trying to load module %s...", modules[i]);
@@ -801,10 +948,11 @@ int main(int argc, char **argv)
 	dump_resource(encoders);
 	dump_resource(connectors);
 	dump_resource(crtcs);
+	dump_resource(planes);
 	dump_resource(framebuffers);
 
 	if (count > 0) {
-		set_mode(con_args, count, test_vsync);
+		set_mode(con_args, count, plane_args, plane_count, test_vsync);
 		getchar();
 	}
 
