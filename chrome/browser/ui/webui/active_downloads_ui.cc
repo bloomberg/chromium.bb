@@ -24,10 +24,12 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/media/media_player.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_util.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/file_manager_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -370,6 +372,19 @@ ActiveDownloadsUI::ActiveDownloadsUI(TabContents* contents)
 }
 
 // static
+bool ActiveDownloadsUI::ShouldShowPopup(Profile* profile,
+                                        DownloadItem* download) {
+  // Don't show downloads panel for extension/theme downloads from gallery,
+  // or temporary downloads.
+  ExtensionService* service = profile->GetExtensionService();
+  return !download->IsTemporary() &&
+         (!ChromeDownloadManagerDelegate::IsExtensionDownload(download) ||
+          service == NULL ||
+          !service->IsDownloadFromGallery(download->GetURL(),
+                                         download->GetReferrerUrl()));
+}
+
+// static
 Browser* ActiveDownloadsUI::OpenPopup(Profile* profile) {
   Browser* browser = GetPopup();
 
@@ -397,6 +412,7 @@ Browser* ActiveDownloadsUI::OpenPopup(Profile* profile) {
   return browser;
 }
 
+// static
 Browser* ActiveDownloadsUI::GetPopup() {
   for (BrowserList::const_iterator it = BrowserList::begin();
        it != BrowserList::end();

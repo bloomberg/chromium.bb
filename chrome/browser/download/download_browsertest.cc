@@ -1732,11 +1732,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToFile) {
   ASSERT_TRUE(CheckDownloadFullPaths(browser(),
                                      target_file_full_path,
                                      OriginFile(file)));
-#if !defined(OS_CHROMEOS)
-  // TODO(rdsmith/achuith): Re-enable on ChromeOS when
-  // http://crbug.com/106856 is fixed.
 
   // Temporary downloads won't be visible.
   CheckDownloadUI(browser(), false, false, file);
-#endif
 }

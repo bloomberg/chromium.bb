@@ -3727,15 +3727,8 @@ void Browser::OnStartDownload(TabContents* source, DownloadItem* download) {
 
   if (DisplayOldDownloadsUI()) {
 #if defined(OS_CHROMEOS) && !defined(USE_AURA)
-    // Don't show content browser for extension/theme downloads from gallery.
-    ExtensionService* service = profile_->GetExtensionService();
-    if (!ChromeDownloadManagerDelegate::IsExtensionDownload(download) ||
-        service == NULL ||
-        !service->IsDownloadFromGallery(download->GetURL(),
-                                        download->GetReferrerUrl())) {
-      // Open the Active Downloads ui for chromeos.
+    if (ActiveDownloadsUI::ShouldShowPopup(profile_, download))
       ActiveDownloadsUI::OpenPopup(profile_);
-    }
 #else
     // GetDownloadShelf creates the download shelf if it was not yet created.
     DownloadShelf* shelf = window()->GetDownloadShelf();

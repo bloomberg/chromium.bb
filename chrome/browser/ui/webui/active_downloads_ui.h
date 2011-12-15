@@ -23,6 +23,7 @@ class ActiveDownloadsUI : public HtmlDialogUI {
  public:
   explicit ActiveDownloadsUI(TabContents* contents);
 
+  static bool ShouldShowPopup(Profile* profile, DownloadItem* download);
   static Browser* OpenPopup(Profile* profile);
   static Browser* GetPopup();
 
