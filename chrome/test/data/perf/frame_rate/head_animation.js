@@ -48,7 +48,7 @@ function __did_render_frame() {
 
   if (__running) {
     __advance_gesture();
-    __update_fps();
+    __record_frame_time();
   }
 }
 
