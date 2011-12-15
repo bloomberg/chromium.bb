@@ -4,13 +4,13 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/osx/crash_filter.h"
 
 #include <mach/mach.h>
 #include <mach/task.h>
 
+#include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 
 

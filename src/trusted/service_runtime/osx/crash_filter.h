@@ -10,6 +10,10 @@
 
 #include <mach/port.h>
 
+#include "native_client/src/include/nacl_base.h"
+
+EXTERN_C_BEGIN
+
 /*
  * This function is intended for use by Chromium's embedding of
  * Breakpad crash reporting.  Given the Mach port for a thread in this
@@ -18,6 +22,8 @@
  * used for deciding whether to report the crash.
  */
 int NaClMachThreadIsInUntrusted(mach_port_t thread_port);
+
+EXTERN_C_END
 
 
 #endif
