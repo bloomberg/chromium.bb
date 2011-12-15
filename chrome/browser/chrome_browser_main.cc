@@ -53,8 +53,6 @@
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
-#include "chrome/browser/net/chrome_dns_cert_provenance_checker.h"
-#include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -282,8 +280,6 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
         &value);
     net::SpdySessionPool::set_max_sessions_per_domain(value);
   }
-
-  SetDnsCertProvenanceCheckerFactory(CreateChromeDnsCertProvenanceChecker);
 
   if (parsed_command_line.HasSwitch(switches::kEnableWebSocketOverSpdy)) {
     // Enable WebSocket over SPDY.

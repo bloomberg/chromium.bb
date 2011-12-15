@@ -290,10 +290,8 @@ void ProfileImplIOData::LazyInitializeInternal(
   media_request_context_->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
 
-  main_context->set_dns_cert_checker(dns_cert_checker());
   main_context->set_fraudulent_certificate_reporter(
       fraudulent_certificate_reporter());
-  media_request_context_->set_dns_cert_checker(dns_cert_checker());
   media_request_context_->set_fraudulent_certificate_reporter(
       fraudulent_certificate_reporter());
 
@@ -370,7 +368,6 @@ void ProfileImplIOData::LazyInitializeInternal(
       main_context->cert_verifier(),
       main_context->origin_bound_cert_service(),
       main_context->transport_security_state(),
-      main_context->dns_cert_checker(),
       main_context->proxy_service(),
       "", // pass empty ssl_session_cache_shard to share the SSL session cache
           // with everything that doesn't explicitly want a different one.

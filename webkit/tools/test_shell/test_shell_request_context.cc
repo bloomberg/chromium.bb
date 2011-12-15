@@ -93,13 +93,17 @@ void TestShellRequestContext::Init(
       cache_path, 0, SimpleResourceLoaderBridge::GetCacheThread());
 
   net::HttpCache* cache =
-      new net::HttpCache(host_resolver(), cert_verifier(),
-                         origin_bound_cert_service(), NULL, NULL,
+      new net::HttpCache(host_resolver(),
+                         cert_verifier(),
+                         origin_bound_cert_service(),
+                         NULL, // transport_security_state
                          proxy_service(),
-                         "" /* ssl_session_cache_shard */,
+                         "",  // ssl_session_cache_shard
                          ssl_config_service(),
-                         http_auth_handler_factory(), NULL,
-                         http_server_properties(), NULL,
+                         http_auth_handler_factory(),
+                         NULL,  // network_delegate
+                         http_server_properties(),
+                         NULL,  // netlog
                          backend);
 
   cache->set_mode(cache_mode);

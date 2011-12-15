@@ -29,7 +29,6 @@ class SystemURLRequestContextGetter;
 namespace net {
 class CertVerifier;
 class CookieStore;
-class DnsRRResolver;
 class FtpTransactionFactory;
 class HostResolver;
 class HttpAuthHandlerFactory;
@@ -74,7 +73,6 @@ class IOThread : public content::BrowserThreadDelegate {
     // used to enforce pinning for system requests and will only use built-in
     // pins.
     scoped_ptr<net::TransportSecurityState> transport_security_state;
-    scoped_ptr<net::DnsRRResolver> dnsrr_resolver;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
     scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
     scoped_ptr<net::HttpServerProperties> http_server_properties;

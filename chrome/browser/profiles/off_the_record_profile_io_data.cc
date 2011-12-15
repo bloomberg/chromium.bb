@@ -168,7 +168,6 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
       io_thread_globals->cert_verifier.get());
   main_context->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
-  main_context->set_dns_cert_checker(dns_cert_checker());
   main_context->set_fraudulent_certificate_reporter(
       fraudulent_certificate_reporter());
   main_context->set_proxy_service(proxy_service());
@@ -204,7 +203,6 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
                          main_context->cert_verifier(),
                          main_context->origin_bound_cert_service(),
                          main_context->transport_security_state(),
-                         main_context->dns_cert_checker(),
                          main_context->proxy_service(),
                          kIncognitoSSLCacheShard,
                          main_context->ssl_config_service(),

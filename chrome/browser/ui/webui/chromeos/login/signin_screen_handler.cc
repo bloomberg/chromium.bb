@@ -34,7 +34,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
-#include "net/base/dnsrr_resolver.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
@@ -83,8 +82,6 @@ void ClearDnsCache(IOThread* io_thread) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (browser_shutdown::IsTryingToQuit())
     return;
-
-  io_thread->globals()->dnsrr_resolver.get()->OnIPAddressChanged();
 }
 
 }  // namespace
