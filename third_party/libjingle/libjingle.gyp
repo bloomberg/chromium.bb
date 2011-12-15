@@ -34,6 +34,7 @@
     'include_dirs': [
       './overrides',
       './source',
+      '../../third_party/libyuv/include',
     ],
     'dependencies': [
       '<(DEPTH)/base/base.gyp:base',

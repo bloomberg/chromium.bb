@@ -53,7 +53,8 @@ void IpcNetworkManager::OnNetworkListChanged(
     memcpy(&address, &it->address[0], sizeof(uint32));
     address = ntohl(address);
     networks.push_back(
-        new talk_base::Network(it->name, it->name, address));
+        new talk_base::Network(
+            it->name, it->name, talk_base::IPAddress(address)));
   }
 
   MergeNetworkList(networks, !first_update_sent_);
