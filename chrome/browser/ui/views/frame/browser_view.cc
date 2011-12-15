@@ -121,9 +121,7 @@
 #include "ui/views/widget/native_widget_win.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/ui/views/accelerator_table.h"
-#if !defined(TOUCH_UI)
 #include "chrome/browser/ui/views/handle_web_keyboard_event.h"
-#endif
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1216,7 +1214,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   views::FocusManager* focus_manager = GetFocusManager();
   DCHECK(focus_manager);
 
-#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI)
+#if defined(TOOLKIT_USES_GTK)
   // Views and WebKit use different tables for GdkEventKey -> views::KeyEvent
   // conversion. We need to use View's conversion table here to keep consistent
   // behavior with views::FocusManager::OnKeyEvent() method.
@@ -1263,7 +1261,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
     return false;
 
   // Executing the command may cause |this| object to be destroyed.
-#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI)
+#if defined(TOOLKIT_USES_GTK)
   if (browser_->IsReservedCommandOrKey(id, event) &&
       !event.match_edit_command) {
 #else
@@ -1281,7 +1279,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
 
 void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   // TODO(ben): figure out why are these two code paths so different
-#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI)
+#if defined(TOOLKIT_USES_GTK)
   HandleWebKeyboardEvent(GetWidget(), event);
 #else
   unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
