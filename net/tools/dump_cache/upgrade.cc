@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -733,9 +735,9 @@ int32 SlaveSM::GetEntryFromList() {
 
   int rv;
   if (input_->msg.command == GET_NEXT_ENTRY) {
-    rv = cache_->OpenNextEntry(&iterator_,
-                               reinterpret_cast<disk_cache::Entry**>(&entry_),
-                               &next_callback_);
+    rv = cache_->OpenNextEntry(
+        &iterator_, reinterpret_cast<disk_cache::Entry**>(&entry_),
+        base::Bind(&SlaveSM::DoGetEntryComplete, base::Unretained(this)));
   } else {
     DCHECK(input_->msg.command == GET_PREV_ENTRY);
     rv = cache_->OpenPrevEntry(&iterator_,

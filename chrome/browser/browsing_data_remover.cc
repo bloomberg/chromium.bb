@@ -478,10 +478,14 @@ void BrowsingDataRemover::DoClearCache(int rv) {
         // |cache_| can be null if it cannot be initialized.
         if (cache_) {
           if (delete_begin_.is_null()) {
-            rv = cache_->DoomAllEntries(&cache_callback_);
+            rv = cache_->DoomAllEntries(
+                base::Bind(&BrowsingDataRemover::DoClearCache,
+                           base::Unretained(this)));
           } else {
-            rv = cache_->DoomEntriesBetween(delete_begin_, delete_end_,
-                                            &cache_callback_);
+            rv = cache_->DoomEntriesBetween(
+                delete_begin_, delete_end_,
+                base::Bind(&BrowsingDataRemover::DoClearCache,
+                           base::Unretained(this)));
           }
           cache_ = NULL;
         }
