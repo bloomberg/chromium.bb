@@ -1270,6 +1270,10 @@ const char kUseMockKeychain[]               = "use-mock-keychain";
 #if !defined(OS_MACOSX)
 // Enables Kiosk mode.
 const char kKioskMode[]                     = "kiosk";
+
+// Print automatically in kiosk mode. |kKioskMode| must be set as well.
+// See http://crbug.com/31395.
+const char kKioskModePrinting[]             = "kiosk-printing";
 #endif
 
 #if defined(TOOLKIT_VIEWS)

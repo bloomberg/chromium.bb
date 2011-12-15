@@ -361,6 +361,7 @@ extern const char kUseMockKeychain[];
 
 #if !defined(OS_MACOSX)
 extern const char kKioskMode[];
+extern const char kKioskModePrinting[];
 #endif
 
 #if defined(TOOLKIT_VIEWS)

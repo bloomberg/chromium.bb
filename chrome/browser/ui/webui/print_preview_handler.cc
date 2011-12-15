@@ -51,7 +51,7 @@
 #include "printing/print_settings.h"
 #include "unicode/ulocdata.h"
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_MACOSX)
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #endif
@@ -104,6 +104,9 @@ const char kInitiatorTabTitle[] = "initiatorTabTitle";
 const char kMeasurementSystem[] = "measurementSystem";
 // Name of a dictionary field holding the number format according to the locale.
 const char kNumberFormat[] = "numberFormat";
+// Name of a dictionary field specifying whether to print automatically in
+// kiosk mode. See http://crbug.com/31395.
+const char kPrintAutomaticallyInKioskMode[] = "printAutomaticallyInKioskMode";
 
 
 // Get the print job settings dictionary from |args|. The caller takes
@@ -637,6 +640,15 @@ void PrintPreviewHandler::SendInitialSettings(
   initial_settings.SetString(printing::kSettingPrinterName,
                              default_printer);
   initial_settings.SetString(kCloudPrintData, cloud_print_data);
+
+#if defined(OS_MACOSX)
+  bool kiosk_mode = false;  // No kiosk mode on Mac yet.
+#else
+  CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  bool kiosk_mode = (cmdline->HasSwitch(switches::kKioskMode) &&
+                     cmdline->HasSwitch(switches::kKioskModePrinting));
+#endif
+  initial_settings.SetBoolean(kPrintAutomaticallyInKioskMode, kiosk_mode);
 
   if (print_preview_ui->source_is_modifiable()) {
     GetLastUsedMarginSettings(&initial_settings);

@@ -53,6 +53,10 @@ var isPrintReadyMetafileReady = false;
 // True when preview tab is hidden.
 var isTabHidden = false;
 
+// True in kiosk mode where print preview can print automatically without
+// user intervention. See http://crbug.com/31395.
+var printAutomaticallyInKioskMode = false;
+
 // @type {print_preview.PrintHeader} Holds the print and cancel buttons.
 var printHeader;
 
@@ -191,6 +195,8 @@ function setInitialSettings(initialSettings) {
   }
   setDefaultPrinter(initialSettings['printerName'],
                     initialSettings['cloudPrintData']);
+  printAutomaticallyInKioskMode =
+      initialSettings['printAutomaticallyInKioskMode'];
 }
 
 /**
@@ -815,6 +821,8 @@ function onPDFLoad() {
   isFirstPageLoaded = true;
   checkAndHideOverlayLayerIfValid();
   sendPrintDocumentRequestIfNeeded();
+  if (printAutomaticallyInKioskMode)
+    printHeader.printButton.click();
 }
 
 function setPluginPreviewPageCount() {
