@@ -47,11 +47,15 @@ void MoveAndClickCommand::ExecutePost(Response* response) {
   if (tag_name == "option") {
     const char* kCanOptionBeToggledScript =
         "function(option) {"
-        "  var select = option.parentElement;"
-        "  if (!select || select.tagName.toLowerCase() != 'select')"
-        "    throw new Error('Option element is not in a select');"
-        "  return select.multiple;"
-        "}";
+        "  for (var parent = option.parentElement;"
+        "       parent;"
+        "       parent = parent.parentElement) {"
+        "    if (parent.tagName.toLowerCase() == 'select') {"
+        "      return parent.multiple;"
+        "    }"
+        "  }"
+        "  throw new Error('Option element is not in a select');"
+        "};";
     bool can_be_toggled;
     error = session_->ExecuteScriptAndParse(
         session_->current_target(),
