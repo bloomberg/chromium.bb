@@ -23,6 +23,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
+#include "content/common/child_process.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/gpu/command_buffer_proxy.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
@@ -146,6 +147,14 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
     return false;
 
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::MaybeInitializeGL");
+
+  // If the context is being initialized on something other than the main
+  // thread, then drop the web_view_ pointer so we don't accidentally
+  // dereference it.
+  MessageLoop* main_message_loop =
+      ChildProcess::current()->main_thread()->message_loop();
+  if (MessageLoop::current() != main_message_loop)
+    web_view_ = NULL;
 
   // Convert WebGL context creation attributes into RendererGLContext / EGL size
   // requests.

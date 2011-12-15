@@ -494,7 +494,9 @@ class WebGraphicsContext3DCommandBufferImpl
   int32 render_view_routing_id_;
 
   bool render_directly_to_web_view_;
+
   // If rendering directly to WebView, weak pointer to it.
+  // This is only set when the context is bound to the main thread.
   WebKit::WebView* web_view_;
 
 #if defined(OS_MACOSX)
