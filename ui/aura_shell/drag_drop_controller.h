@@ -28,8 +28,9 @@ namespace internal {
 
 class DragImageView;
 
-class AURA_SHELL_EXPORT DragDropController : public aura::DragDropClient,
-                                             public aura::EventFilter {
+class AURA_SHELL_EXPORT DragDropController
+    : public aura::client::DragDropClient,
+      public aura::EventFilter {
  public:
   DragDropController();
   virtual ~DragDropController();
@@ -38,7 +39,7 @@ class AURA_SHELL_EXPORT DragDropController : public aura::DragDropClient,
     should_block_during_drag_drop_ = should_block_during_drag_drop;
   }
 
-  // Overridden from aura::DragDropClient:
+  // Overridden from aura::client::DragDropClient:
   virtual int StartDragAndDrop(const ui::OSExchangeData& data,
                                 int operation) OVERRIDE;
   virtual void DragUpdate(aura::Window* target,

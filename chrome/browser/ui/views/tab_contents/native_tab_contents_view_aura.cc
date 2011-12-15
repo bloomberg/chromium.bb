@@ -11,8 +11,8 @@
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
@@ -173,10 +173,7 @@ RenderWidgetHostView* NativeTabContentsViewAura::CreateRenderWidgetHostView(
   view->Show();
 
   // We listen to drag drop events in the newly created view's window.
-  aura::Window* window = static_cast<aura::Window*>(view->GetNativeView());
-  DCHECK(window);
-  window->SetProperty(aura::kDragDropDelegateKey,
-      static_cast<aura::WindowDragDropDelegate*>(this));
+  aura::client::SetDragDropDelegate(view->GetNativeView(), this);
   return view;
 }
 
@@ -194,10 +191,7 @@ void NativeTabContentsViewAura::StartDragging(const WebDropData& drop_data,
                                              WebKit::WebDragOperationsMask ops,
                                              const SkBitmap& image,
                                              const gfx::Point& image_offset) {
-  aura::DragDropClient* client = static_cast<aura::DragDropClient*>(
-      aura::RootWindow::GetInstance()->GetProperty(
-          aura::kRootWindowDragDropClientKey));
-  if (!client)
+  if (!aura::client::GetDragDropClient())
     return;
 
   ui::OSExchangeDataProviderAura* provider = new ui::OSExchangeDataProviderAura;
@@ -212,7 +206,8 @@ void NativeTabContentsViewAura::StartDragging(const WebDropData& drop_data,
   // updates while in the system DoDragDrop loop.
   bool old_state = MessageLoop::current()->NestableTasksAllowed();
   MessageLoop::current()->SetNestableTasksAllowed(true);
-  int result_op = client->StartDragAndDrop(data, ConvertFromWeb(ops));
+  int result_op = aura::client::GetDragDropClient()->StartDragAndDrop(
+      data, ConvertFromWeb(ops));
   MessageLoop::current()->SetNestableTasksAllowed(old_state);
 
   EndDrag(ConvertToWeb(result_op));
@@ -220,19 +215,13 @@ void NativeTabContentsViewAura::StartDragging(const WebDropData& drop_data,
 }
 
 void NativeTabContentsViewAura::CancelDrag() {
-  aura::DragDropClient* client = static_cast<aura::DragDropClient*>(
-      aura::RootWindow::GetInstance()->GetProperty(
-          aura::kRootWindowDragDropClientKey));
-  if (client)
-    client->DragCancel();
+  if (aura::client::GetDragDropClient())
+    aura::client::GetDragDropClient()->DragCancel();
 }
 
 bool NativeTabContentsViewAura::IsDoingDrag() const {
-  aura::DragDropClient* client = static_cast<aura::DragDropClient*>(
-      aura::RootWindow::GetInstance()->GetProperty(
-          aura::kRootWindowDragDropClientKey));
-  if (client)
-    return client->IsDragDropInProgress();
+  if (aura::client::GetDragDropClient())
+    return aura::client::GetDragDropClient()->IsDragDropInProgress();
   return false;
 }
 

@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_CLIENT_WINDOW_DRAG_DROP_DELEGATE_H_
-#define UI_AURA_CLIENT_WINDOW_DRAG_DROP_DELEGATE_H_
+#ifndef UI_AURA_CLIENT_DRAG_DROP_DELEGATE_H_
+#define UI_AURA_CLIENT_DRAG_DROP_DELEGATE_H_
 #pragma once
 
 #include "ui/aura/aura_export.h"
 
 namespace aura {
-
 class DropTargetEvent;
+class Window;
+namespace client {
 
 // Delegate interface for drag and drop actions on aura::Window.
-class AURA_EXPORT WindowDragDropDelegate {
+class AURA_EXPORT DragDropDelegate {
  public:
   // OnDragEntered is invoked when the mouse enters this window during a drag &
   // drop session. This is immediately followed by an invocation of
@@ -35,9 +36,14 @@ class AURA_EXPORT WindowDragDropDelegate {
   virtual int OnPerformDrop(const DropTargetEvent& event) = 0;
 
  protected:
-  virtual ~WindowDragDropDelegate() {}
+  virtual ~DragDropDelegate() {}
 };
 
+AURA_EXPORT void SetDragDropDelegate(Window* window,
+                                     DragDropDelegate* delegate);
+AURA_EXPORT DragDropDelegate* GetDragDropDelegate(Window* window);
+
+}  // namespace client
 }  // namespace aura
 
-#endif  // UI_AURA_CLIENT_WINDOW_DRAG_DROP_DELEGATE_H_
+#endif  // UI_AURA_CLIENT_DRAG_DROP_DELEGATE_H_

@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/window_drag_drop_delegate.h"
+#include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/drag_image_view.h"
@@ -23,17 +23,7 @@ namespace internal {
 using aura::RootWindow;
 
 namespace {
-aura::WindowDragDropDelegate* GetDragDropDelegate(aura::Window* window) {
-  if (!window)
-    return NULL;
-  void* prop = window->GetProperty(aura::kDragDropDelegateKey);
-  if (!prop)
-    return NULL;
-  return static_cast<aura::WindowDragDropDelegate*>(prop);
-}
-
 const gfx::Point kDragDropWidgetOffset(0, 0);
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -48,6 +38,7 @@ DragDropController::DragDropController()
       drag_drop_in_progress_(false),
       should_block_during_drag_drop_(true) {
   Shell::GetInstance()->AddRootWindowEventFilter(this);
+  aura::client::SetDragDropClient(this);
 }
 
 DragDropController::~DragDropController() {
@@ -86,17 +77,19 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
 
 void DragDropController::DragUpdate(aura::Window* target,
                                     const aura::MouseEvent& event) {
-  aura::WindowDragDropDelegate* delegate = NULL;
+  aura::client::DragDropDelegate* delegate = NULL;
   if (target != dragged_window_) {
-    if ((delegate = GetDragDropDelegate(dragged_window_)))
+    if (dragged_window_ &&
+        (delegate = aura::client::GetDragDropDelegate(dragged_window_))) {
       delegate->OnDragExited();
+    }
     dragged_window_ = target;
-    if ((delegate = GetDragDropDelegate(dragged_window_))) {
+    if ((delegate = aura::client::GetDragDropDelegate(dragged_window_))) {
       aura::DropTargetEvent e(*drag_data_, event.location(), drag_operation_);
       delegate->OnDragEntered(e);
     }
   } else {
-    if ((delegate = GetDragDropDelegate(dragged_window_))) {
+    if ((delegate = aura::client::GetDragDropDelegate(dragged_window_))) {
       aura::DropTargetEvent e(*drag_data_, event.location(), drag_operation_);
       int op = delegate->OnDragUpdated(e);
        gfx::NativeCursor cursor = (op == ui::DragDropTypes::DRAG_NONE)?
@@ -114,9 +107,9 @@ void DragDropController::DragUpdate(aura::Window* target,
 
 void DragDropController::Drop(aura::Window* target,
                               const aura::MouseEvent& event) {
-  aura::WindowDragDropDelegate* delegate = NULL;
+  aura::client::DragDropDelegate* delegate = NULL;
   DCHECK(target == dragged_window_);
-  if ((delegate = GetDragDropDelegate(dragged_window_))) {
+  if ((delegate = aura::client::GetDragDropDelegate(dragged_window_))) {
     aura::DropTargetEvent e(*drag_data_, event.location(), drag_operation_);
     drag_operation_ = delegate->OnPerformDrop(e);
     // TODO(varunjain): if drag_op is 0, do drag widget flying back animation

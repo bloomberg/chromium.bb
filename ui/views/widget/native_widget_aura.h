@@ -9,7 +9,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/activation_delegate.h"
-#include "ui/aura/client/window_drag_drop_delegate.h"
+#include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/events.h"
 #include "ui/views/views_export.h"
@@ -30,7 +30,7 @@ class TooltipManagerAura;
 class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
                                       public aura::WindowDelegate,
                                       public aura::ActivationDelegate,
-                                      public aura::WindowDragDropDelegate {
+                                      public aura::client::DragDropDelegate {
  public:
   explicit NativeWidgetAura(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetAura();
@@ -145,7 +145,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void OnActivated() OVERRIDE;
   virtual void OnLostActive() OVERRIDE;
 
-  // Overridden from aura::WindowDragDropDelegate:
+  // Overridden from aura::client::DragDropDelegate:
   virtual void OnDragEntered(const aura::DropTargetEvent& event) OVERRIDE;
   virtual int OnDragUpdated(const aura::DropTargetEvent& event) OVERRIDE;
   virtual void OnDragExited() OVERRIDE;

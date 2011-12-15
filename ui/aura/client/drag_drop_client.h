@@ -14,8 +14,8 @@ class OSExchangeData;
 }
 
 namespace aura {
-
 class Window;
+namespace client {
 
 // An interface implemented by an object that controls a drag and drop session.
 class AURA_EXPORT DragDropClient {
@@ -40,6 +40,10 @@ class AURA_EXPORT DragDropClient {
   virtual bool IsDragDropInProgress() = 0;
 };
 
+AURA_EXPORT void SetDragDropClient(DragDropClient* client);
+AURA_EXPORT DragDropClient* GetDragDropClient();
+
+}  // namespace client
 }  // namespace aura
 
 #endif  // UI_AURA_CLIENT_DRAG_DROP_CLIENT_H_

@@ -218,9 +218,6 @@ void Shell::Init() {
 
   // Initialize drag drop controller.
   drag_drop_controller_.reset(new internal::DragDropController);
-  aura::RootWindow::GetInstance()->SetProperty(
-      aura::kRootWindowDragDropClientKey,
-      static_cast<aura::DragDropClient*>(drag_drop_controller_.get()));
 }
 
 void Shell::InitLayoutManagers(aura::RootWindow* root_window) {

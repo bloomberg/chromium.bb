@@ -184,8 +184,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   drop_helper_.reset(new DropHelper(GetWidget()->GetRootView()));
   if (params.type != Widget::InitParams::TYPE_TOOLTIP &&
       params.type != Widget::InitParams::TYPE_POPUP) {
-    window_->SetProperty(aura::kDragDropDelegateKey,
-        static_cast<aura::WindowDragDropDelegate*>(this));
+    aura::client::SetDragDropDelegate(window_, this);
   }
 
   aura::ActivationDelegate::SetActivationDelegate(window_, this);
@@ -510,11 +509,8 @@ bool NativeWidgetAura::IsAccessibleWidget() const {
 void NativeWidgetAura::RunShellDrag(View* view,
                                    const ui::OSExchangeData& data,
                                    int operation) {
-  aura::DragDropClient* client = static_cast<aura::DragDropClient*>(
-      aura::RootWindow::GetInstance()->GetProperty(
-          aura::kRootWindowDragDropClientKey));
-  if (client)
-    client->StartDragAndDrop(data, operation);
+  if (aura::client::GetDragDropClient())
+    aura::client::GetDragDropClient()->StartDragAndDrop(data, operation);
 }
 
 void NativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
@@ -681,7 +677,6 @@ void NativeWidgetAura::OnPaint(gfx::Canvas* canvas) {
 }
 
 void NativeWidgetAura::OnWindowDestroying() {
-  window_->SetProperty(aura::kDragDropDelegateKey, NULL);
   delegate_->OnNativeWidgetDestroying();
 
   // If the aura::Window is destroyed, we can no longer show tooltips.

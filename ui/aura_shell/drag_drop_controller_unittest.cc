@@ -172,27 +172,19 @@ void AddViewToWidgetAndResize(views::Widget* widget, views::View* view) {
 
 class DragDropControllerTest : public AuraShellTestBase {
  public:
-  DragDropControllerTest() : AuraShellTestBase() {
-  }
-
-  virtual ~DragDropControllerTest() {
-    aura::RootWindow::GetInstance()->SetProperty(
-        aura::kRootWindowDragDropClientKey,
-        NULL);
-  }
+  DragDropControllerTest() : AuraShellTestBase() {}
+  virtual ~DragDropControllerTest() {}
 
   void SetUp() OVERRIDE {
     AuraShellTestBase::SetUp();
-    drag_drop_controller_ = new TestDragDropController;
+    drag_drop_controller_.reset(new TestDragDropController);
     drag_drop_controller_->set_should_block_during_drag_drop(false);
-    aura::RootWindow::GetInstance()->SetProperty(
-        aura::kRootWindowDragDropClientKey,
-        drag_drop_controller_);
+    aura::client::SetDragDropClient(drag_drop_controller_.get());
   }
 
   void TearDown() OVERRIDE {
-    delete drag_drop_controller_;
-    drag_drop_controller_ = NULL;
+    aura::client::SetDragDropClient(NULL);
+    drag_drop_controller_.reset();
     AuraShellTestBase::TearDown();
   }
 
@@ -201,7 +193,7 @@ class DragDropControllerTest : public AuraShellTestBase {
   }
 
  protected:
-  TestDragDropController* drag_drop_controller_;
+  scoped_ptr<TestDragDropController> drag_drop_controller_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DragDropControllerTest);
