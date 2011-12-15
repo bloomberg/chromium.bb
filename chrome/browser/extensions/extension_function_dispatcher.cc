@@ -490,6 +490,7 @@ void FactoryRegistry::ResetFunctions() {
 
   // System
   RegisterFunction<extensions::GetIncognitoModeAvailabilityFunction>();
+  RegisterFunction<extensions::GetUpdateStatusFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

@@ -8,21 +8,23 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_SYSTEM_SYSTEM_API_H_
 #define CHROME_BROWSER_EXTENSIONS_SYSTEM_SYSTEM_API_H_
 
-#include "chrome/browser/extensions/extension_preference_api.h"
-
-#include <string>
-
-namespace base {
-class Value;
-}
+#include "chrome/browser/extensions/extension_function.h"
 
 namespace extensions {
 
 class GetIncognitoModeAvailabilityFunction : public SyncExtensionFunction {
  public:
-  virtual ~GetIncognitoModeAvailabilityFunction();
+  virtual ~GetIncognitoModeAvailabilityFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("systemPrivate.getIncognitoModeAvailability")
+};
+
+// API function which returns the status of system update.
+class GetUpdateStatusFunction : public SyncExtensionFunction {
+ public:
+  virtual ~GetUpdateStatusFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("systemPrivate.getUpdateStatus")
 };
 
 }  // namespace extensions

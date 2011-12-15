@@ -9,6 +9,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/update_engine_client.h"
+#else
+#include "chrome/browser/upgrade_detector.h"
+#endif
+
 namespace {
 
 // Maps prefs::kIncognitoModeAvailability values (0 = enabled, ...)
@@ -19,12 +26,18 @@ const char* kIncognitoModeAvailabilityStrings[] = {
   "forced"
 };
 
+// Property keys.
+const char kStateKey[] = "state";
+const char kDownloadProgressKey[] = "download_progress";
+
+// System update states.
+const char kNotAvailableState[] = "NotAvailable";
+const char kUpdatingState[] = "Updating";
+const char kNeedRestartState[] = "NeedRestart";
+
 }  // namespace
 
 namespace extensions {
-
-GetIncognitoModeAvailabilityFunction::~GetIncognitoModeAvailabilityFunction() {
-}
 
 bool GetIncognitoModeAvailabilityFunction::RunImpl() {
   PrefService* prefs = profile_->GetPrefs();
@@ -34,6 +47,67 @@ bool GetIncognitoModeAvailabilityFunction::RunImpl() {
       value < static_cast<int>(arraysize(kIncognitoModeAvailabilityStrings)));
   result_.reset(
       Value::CreateStringValue(kIncognitoModeAvailabilityStrings[value]));
+  return true;
+}
+
+bool GetUpdateStatusFunction::RunImpl() {
+  std::string state;
+  double download_progress = 0;
+#if defined(OS_CHROMEOS)
+  // With UpdateEngineClient, we can provide more detailed information about
+  // system updates on ChromeOS.
+  const chromeos::UpdateEngineClient::Status status =
+      chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->
+      GetLastStatus();
+  // |download_progress| is set to 1 after download finishes
+  // (i.e. verify, finalize and need-reboot phase) to indicate the progress
+  // even though |status.download_progress| is 0 in these phases.
+  switch (status.status) {
+    case chromeos::UpdateEngineClient::UPDATE_STATUS_ERROR:
+      state = kNotAvailableState;
+      break;
+    case chromeos::UpdateEngineClient::UPDATE_STATUS_IDLE:
+      state = kNotAvailableState;
+      break;
+    case chromeos::UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE:
+      state = kNotAvailableState;
+      break;
+    case chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE:
+      state = kUpdatingState;
+      break;
+    case chromeos::UpdateEngineClient::UPDATE_STATUS_DOWNLOADING:
+      state = kUpdatingState;
+      download_progress = status.download_progress;
+      break;
+    case chromeos::UpdateEngineClient::UPDATE_STATUS_VERIFYING:
+      state = kUpdatingState;
+      download_progress = 1;
+      break;
+    case chromeos::UpdateEngineClient::UPDATE_STATUS_FINALIZING:
+      state = kUpdatingState;
+      download_progress = 1;
+      break;
+    case chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT:
+      state = kNeedRestartState;
+      download_progress = 1;
+      break;
+    case chromeos::UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT:
+      state = kNotAvailableState;
+      break;
+  }
+#else
+  if (UpgradeDetector::GetInstance()->notify_upgrade()) {
+    state = kNeedRestartState;
+    download_progress = 1;
+  } else {
+    state = kNotAvailableState;
+  }
+#endif
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetString(kStateKey, state);
+  dict->SetDouble(kDownloadProgressKey, download_progress);
+  result_.reset(dict);
+
   return true;
 }
 
