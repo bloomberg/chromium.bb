@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chrome_page_zoom.h"
+
 #include <algorithm>
 #include <cmath>
 
-#include "chrome/browser/chrome_page_zoom.h"
+#include "chrome/browser/chrome_page_zoom_constants.h"
 #include "content/public/common/page_zoom.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
@@ -15,11 +17,6 @@ enum PageZoomValueType {
   PAGE_ZOOM_VALUE_TYPE_FACTOR,
   PAGE_ZOOM_VALUE_TYPE_LEVEL,
 };
-
-const double kPresetZoomFactors[] = { 0.25, 0.333, 0.5, 0.666, 0.75, 0.9, 1.0,
-                                      1.1, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0, 4.0,
-                                      5.0 };
-const size_t kPresetZoomFactorsSize = arraysize(kPresetZoomFactors);
 
 std::vector<double> PresetZoomValues(PageZoomValueType value_type,
                                      double custom_value) {

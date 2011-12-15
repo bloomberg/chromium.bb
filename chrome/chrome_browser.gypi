@@ -375,6 +375,8 @@
         'browser/chrome_browser_main_extra_parts_views.h',
         'browser/chrome_content_browser_client.cc',
         'browser/chrome_content_browser_client.h',
+        'browser/chrome_page_zoom_constants.cc',
+        'browser/chrome_page_zoom_constants.h',
         'browser/chrome_page_zoom.cc',
         'browser/chrome_page_zoom.h',
         'browser/chrome_plugin_message_filter.cc',
