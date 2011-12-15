@@ -2379,6 +2379,12 @@ init_xkb(struct display *d)
 	}
 }
 
+static void
+fini_xkb(struct display *display)
+{
+	xkb_free_keymap(display->xkb);
+}
+
 static int
 init_egl(struct display *d)
 {
@@ -2463,6 +2469,21 @@ init_egl(struct display *d)
 #endif
 
 	return 0;
+}
+
+static void
+fini_egl(struct display *display)
+{
+#ifdef HAVE_CAIRO_EGL
+	cairo_device_destroy(display->argb_device);
+	cairo_device_destroy(display->rgb_device);
+#endif
+
+	eglMakeCurrent(display->dpy, EGL_NO_SURFACE, EGL_NO_SURFACE,
+		       EGL_NO_CONTEXT);
+
+	eglTerminate(display->dpy);
+	eglReleaseThread();
 }
 
 static int
@@ -2556,6 +2577,17 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 	init_xkb(d);
 
 	return d;
+}
+
+void
+display_destroy(struct display *display)
+{
+	fini_xkb(display);
+	fini_egl(display);
+
+	wl_display_flush(display->display);
+	wl_display_destroy(display->display);
+	free(display);
 }
 
 void

@@ -50,6 +50,9 @@ struct display *
 display_create(int *argc, char **argv[], const GOptionEntry *option_entries);
 
 void
+display_destroy(struct display *display);
+
+void
 display_set_user_data(struct display *display, void *data);
 
 void *
