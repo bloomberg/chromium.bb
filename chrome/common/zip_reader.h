@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "third_party/zlib/contrib/minizip/unzip.h"
@@ -77,6 +78,12 @@ class ZipReader {
   // success.
   bool Open(const FilePath& zip_file_path);
 
+#if defined(OS_POSIX)
+  // Opens the zip file referred to by the file descriptor |zip_fd|.
+  // Returns true on success.
+  bool OpenFromFd(int zip_fd);
+#endif
+
   // Closes the currently opened zip file. This function is called in the
   // destructor of the class, so you usually don't need to call this.
   void Close();
@@ -125,6 +132,12 @@ class ZipReader {
   // beforehand.
   bool ExtractCurrentEntryIntoDirectory(const FilePath& output_directory_path);
 
+#if defined(OS_POSIX)
+  // Extracts the current entry by writing directly to a file descriptor.
+  // Does not close the file descriptor. Returns true on success.
+  bool ExtractCurrentEntryToFd(int fd);
+#endif
+
   // Returns the current entry info. Returns NULL if the current entry is
   // not yet opened. OpenCurrentEntryInZip() must be called beforehand.
   EntryInfo* current_entry_info() const {
@@ -136,6 +149,9 @@ class ZipReader {
   int num_entries() const { return num_entries_; }
 
  private:
+  // Common code used both in Open and OpenFromFd.
+  bool OpenInternal();
+
   // Resets the internal state.
   void Reset();
 

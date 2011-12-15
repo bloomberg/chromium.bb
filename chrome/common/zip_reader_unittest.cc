@@ -4,6 +4,12 @@
 
 #include "chrome/common/zip_reader.h"
 
+#if defined(OS_POSIX)
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#endif
+
 #include <set>
 #include <string>
 
@@ -17,6 +23,46 @@
 #include "chrome/common/zip_internal.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+namespace {
+
+#if defined(OS_POSIX)
+// Wrap file descriptors in a class so that we don't leak them in tests.
+class FdWrapper {
+ public:
+  typedef enum {
+    READ_ONLY,
+    READ_WRITE
+  } AccessMode;
+
+  FdWrapper(const FilePath& file, AccessMode mode) : fd_(-1) {
+    switch (mode) {
+    case READ_ONLY:
+      fd_ = open(file.value().c_str(), O_RDONLY);
+      break;
+    case READ_WRITE:
+      fd_ = open(file.value().c_str(),
+                 O_RDWR | O_CREAT,
+                 S_IRUSR | S_IWUSR);
+      break;
+    default:
+      NOTREACHED();
+    }
+    return;
+  }
+
+  ~FdWrapper() {
+    close(fd_);
+  }
+
+  int fd() { return fd_; }
+
+ private:
+  int fd_;
+};
+#endif
+
+}   // namespace
 
 namespace zip {
 
@@ -74,6 +120,14 @@ TEST_F(ZipReaderTest, Open_ValidZipFile) {
   ASSERT_TRUE(reader.Open(test_zip_file_));
 }
 
+#if defined(OS_POSIX)
+TEST_F(ZipReaderTest, Open_ValidZipFd) {
+  ZipReader reader;
+  FdWrapper zip_fd_wrapper(test_zip_file_, FdWrapper::READ_ONLY);
+  ASSERT_TRUE(reader.OpenFromFd(zip_fd_wrapper.fd()));
+}
+#endif
+
 TEST_F(ZipReaderTest, Open_NonExistentFile) {
   ZipReader reader;
   ASSERT_FALSE(reader.Open(test_data_dir_.AppendASCII("nonexistent.zip")));
@@ -102,6 +156,26 @@ TEST_F(ZipReaderTest, Iteration) {
   EXPECT_EQ(test_zip_contents_, actual_contents);
 }
 
+#if defined(OS_POSIX)
+// Open the test zip file from a file descriptor, iterate through its contents,
+// and compare that they match the expected contents.
+TEST_F(ZipReaderTest, FdIteration) {
+  std::set<FilePath> actual_contents;
+  ZipReader reader;
+  FdWrapper zip_fd_wrapper(test_zip_file_, FdWrapper::READ_ONLY);
+  ASSERT_TRUE(reader.OpenFromFd(zip_fd_wrapper.fd()));
+  while (reader.HasMore()) {
+    ASSERT_TRUE(reader.OpenCurrentEntryInZip());
+    actual_contents.insert(reader.current_entry_info()->file_path());
+    ASSERT_TRUE(reader.AdvanceToNextEntry());
+  }
+  EXPECT_FALSE(reader.AdvanceToNextEntry());  // Shouldn't go further.
+  EXPECT_EQ(test_zip_contents_.size(),
+            static_cast<size_t>(reader.num_entries()));
+  EXPECT_EQ(test_zip_contents_.size(), actual_contents.size());
+  EXPECT_EQ(test_zip_contents_, actual_contents);
+}
+#endif
 
 TEST_F(ZipReaderTest, LocateAndOpenEntry_ValidFile) {
   std::set<FilePath> actual_contents;
@@ -139,6 +213,49 @@ TEST_F(ZipReaderTest, ExtractCurrentEntryToFilePath_RegularFile) {
   // the loop in ExtractCurrentEntry().
   EXPECT_LT(static_cast<size_t>(internal::kZipBufSize), output.size());
 }
+
+#if defined(OS_POSIX)
+TEST_F(ZipReaderTest, FdExtractCurrentEntryToFilePath_RegularFile) {
+  ZipReader reader;
+  FdWrapper zip_fd_wrapper(test_zip_file_, FdWrapper::READ_ONLY);
+  ASSERT_TRUE(reader.OpenFromFd(zip_fd_wrapper.fd()));
+  FilePath target_path(FILE_PATH_LITERAL("foo/bar/quux.txt"));
+  ASSERT_TRUE(reader.LocateAndOpenEntry(target_path));
+  ASSERT_TRUE(reader.ExtractCurrentEntryToFilePath(
+      test_dir_.AppendASCII("quux.txt")));
+  // Read the output file and compute the MD5.
+  std::string output;
+  ASSERT_TRUE(file_util::ReadFileToString(test_dir_.AppendASCII("quux.txt"),
+                                          &output));
+  const std::string md5 = base::MD5String(output);
+  const std::string kExpectedMD5 = "d1ae4ac8a17a0e09317113ab284b57a6";
+  EXPECT_EQ(kExpectedMD5, md5);
+  // quux.txt should be larger than kZipBufSize so that we can exercise
+  // the loop in ExtractCurrentEntry().
+  EXPECT_LT(static_cast<size_t>(internal::kZipBufSize), output.size());
+}
+
+TEST_F(ZipReaderTest, FdExtractCurrentEntryToFd_RegularFile) {
+  ZipReader reader;
+  FdWrapper zip_fd_wrapper(test_zip_file_, FdWrapper::READ_ONLY);
+  ASSERT_TRUE(reader.OpenFromFd(zip_fd_wrapper.fd()));
+  FilePath target_path(FILE_PATH_LITERAL("foo/bar/quux.txt"));
+  FilePath out_path = test_dir_.AppendASCII("quux.txt");
+  FdWrapper out_fd_w(out_path, FdWrapper::READ_WRITE);
+  ASSERT_TRUE(reader.LocateAndOpenEntry(target_path));
+  ASSERT_TRUE(reader.ExtractCurrentEntryToFd(out_fd_w.fd()));
+  // Read the output file and compute the MD5.
+  std::string output;
+  ASSERT_TRUE(file_util::ReadFileToString(test_dir_.AppendASCII("quux.txt"),
+                                          &output));
+  const std::string md5 = base::MD5String(output);
+  const std::string kExpectedMD5 = "d1ae4ac8a17a0e09317113ab284b57a6";
+  EXPECT_EQ(kExpectedMD5, md5);
+  // quux.txt should be larger than kZipBufSize so that we can exercise
+  // the loop in ExtractCurrentEntry().
+  EXPECT_LT(static_cast<size_t>(internal::kZipBufSize), output.size());
+}
+#endif
 
 TEST_F(ZipReaderTest, ExtractCurrentEntryToFilePath_Directory) {
   ZipReader reader;

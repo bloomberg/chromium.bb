@@ -82,18 +82,21 @@ bool ZipReader::Open(const FilePath& zip_file_path) {
     return false;
   }
 
-  unz_global_info zip_info = {};  // Zero-clear.
-  if (unzGetGlobalInfo(zip_file_, &zip_info) != UNZ_OK) {
+  return OpenInternal();
+}
+
+#if defined(OS_POSIX)
+bool ZipReader::OpenFromFd(const int zip_fd) {
+  DCHECK(!zip_file_);
+
+  zip_file_ = internal::OpenFdForUnzipping(zip_fd);
+  if (!zip_file_) {
     return false;
   }
-  num_entries_ = zip_info.number_entry;
-  if (num_entries_ < 0)
-    return false;
 
-  // We are already at the end if the zip file is empty.
-  reached_end_ = (num_entries_ == 0);
-  return true;
+  return OpenInternal();
 }
+#endif
 
 void ZipReader::Close() {
   if (zip_file_) {
@@ -227,6 +230,62 @@ bool ZipReader::ExtractCurrentEntryIntoDirectory(
   FilePath output_file_path = output_directory_path.Append(
       current_entry_info()->file_path());
   return ExtractCurrentEntryToFilePath(output_file_path);
+}
+
+#if defined(OS_POSIX)
+bool ZipReader::ExtractCurrentEntryToFd(const int fd) {
+  DCHECK(zip_file_);
+
+  // If this is a directory, there's nothing to extract to the file descriptor,
+  // so return false.
+  if (current_entry_info()->is_directory())
+    return false;
+
+  const int open_result = unzOpenCurrentFile(zip_file_);
+  if (open_result != UNZ_OK)
+    return false;
+
+  bool success = true;  // This becomes false when something bad happens.
+  while (true) {
+    char buf[internal::kZipBufSize];
+    const int num_bytes_read = unzReadCurrentFile(zip_file_, buf,
+                                                  internal::kZipBufSize);
+    if (num_bytes_read == 0) {
+      // Reached the end of the file.
+      break;
+    } else if (num_bytes_read < 0) {
+      // If num_bytes_read < 0, then it's a specific UNZ_* error code.
+      success = false;
+      break;
+    } else if (num_bytes_read > 0) {
+      // Some data is read. Write it to the output file descriptor.
+      if (num_bytes_read !=
+          file_util::WriteFileDescriptor(fd, buf, num_bytes_read)) {
+        success = false;
+        break;
+      }
+    }
+  }
+
+  unzCloseCurrentFile(zip_file_);
+  return success;
+}
+#endif  // defined(OS_POSIX)
+
+bool ZipReader::OpenInternal() {
+  DCHECK(zip_file_);
+
+  unz_global_info zip_info = {};  // Zero-clear.
+  if (unzGetGlobalInfo(zip_file_, &zip_info) != UNZ_OK) {
+    return false;
+  }
+  num_entries_ = zip_info.number_entry;
+  if (num_entries_ < 0)
+    return false;
+
+  // We are already at the end if the zip file is empty.
+  reached_end_ = (num_entries_ == 0);
+  return true;
 }
 
 void ZipReader::Reset() {

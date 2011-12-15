@@ -9,6 +9,8 @@
 #include "third_party/zlib/contrib/minizip/zip.h"
 #if defined(OS_WIN)
 #include "third_party/zlib/contrib/minizip/iowin32.h"
+#elif defined(OS_POSIX)
+#include "third_party/zlib/contrib/minizip/ioapi.h"
 #endif
 
 namespace {
@@ -65,6 +67,45 @@ void* ZipOpenFunc(void *opaque, const char* filename, int mode) {
 }
 #endif
 
+#if defined(OS_POSIX)
+// Callback function for zlib that opens a file stream from a file descriptor.
+void* FdOpenFileFunc(void* opaque, const char* filename, int mode) {
+  FILE* file = NULL;
+  const char* mode_fopen = NULL;
+
+  if ((mode & ZLIB_FILEFUNC_MODE_READWRITEFILTER) == ZLIB_FILEFUNC_MODE_READ)
+    mode_fopen = "rb";
+  else if (mode & ZLIB_FILEFUNC_MODE_EXISTING)
+    mode_fopen = "r+b";
+  else if (mode & ZLIB_FILEFUNC_MODE_CREATE)
+    mode_fopen = "wb";
+
+  if ((filename != NULL) && (mode_fopen != NULL))
+    file = fdopen(*static_cast<int*>(opaque), mode_fopen);
+
+  return file;
+}
+
+// We don't actually close the file stream since that would close
+// the underlying file descriptor, and we don't own it. We do free
+// |opaque| since we malloc'ed it in FillFdOpenFileFunc.
+int CloseFileFunc(void* opaque, void* stream) {
+  free(opaque);
+  return 0;
+}
+
+// Fills |pzlib_filecunc_def| appropriately to handle the zip file
+// referred to by |fd|.
+void FillFdOpenFileFunc(zlib_filefunc_def* pzlib_filefunc_def, int fd) {
+  fill_fopen_filefunc(pzlib_filefunc_def);
+  pzlib_filefunc_def->zopen_file = FdOpenFileFunc;
+  pzlib_filefunc_def->zclose_file = CloseFileFunc;
+  int* ptr_fd = static_cast<int*>(malloc(sizeof(fd)));
+  *ptr_fd = fd;
+  pzlib_filefunc_def->opaque = ptr_fd;
+}
+#endif  // defined(OS_POSIX)
+
 }  // namespace
 
 namespace zip {
@@ -80,6 +121,15 @@ unzFile OpenForUnzipping(const std::string& file_name_utf8) {
 #endif
   return unzOpen2(file_name_utf8.c_str(), zip_func_ptrs);
 }
+
+#if defined(OS_POSIX)
+unzFile OpenFdForUnzipping(int zip_fd) {
+  zlib_filefunc_def zip_funcs;
+  FillFdOpenFileFunc(&zip_funcs, zip_fd);
+  // Passing dummy "fd" filename to zlib.
+  return unzOpen2("fd", &zip_funcs);
+}
+#endif
 
 zipFile OpenForZipping(const std::string& file_name_utf8, int append_flag) {
   zlib_filefunc_def* zip_func_ptrs = NULL;
