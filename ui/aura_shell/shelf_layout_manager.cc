@@ -7,6 +7,8 @@
 #include "base/auto_reset.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
+#include "ui/aura_shell/launcher/launcher.h"
+#include "ui/aura_shell/shell.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/views/widget/widget.h"
@@ -54,6 +56,8 @@ void ShelfLayoutManager::LayoutShelf() {
   GetLayer(status_)->SetOpacity(target_opacity);
   launcher_->SetBounds(target_bounds.launcher_bounds);
   status_->SetBounds(target_bounds.status_bounds);
+  Shell::GetInstance()->launcher()->SetStatusWidth(
+      target_bounds.status_bounds.width());
   aura::RootWindow::GetInstance()->screen()->set_work_area_insets(
       target_bounds.work_area_insets);
 }

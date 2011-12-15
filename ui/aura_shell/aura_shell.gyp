@@ -153,6 +153,7 @@
         'drag_drop_controller_unittest.cc',
         'image_grid_unittest.cc',
         'launcher/launcher_model_unittest.cc',
+        'launcher/launcher_unittest.cc',
         'launcher/view_model_unittest.cc',
         'launcher/view_model_utils_unittest.cc',
         'modal_container_layout_manager_unittest.cc',

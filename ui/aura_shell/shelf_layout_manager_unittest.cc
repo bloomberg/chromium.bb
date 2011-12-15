@@ -7,6 +7,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/window.h"
+#include "ui/aura_shell/launcher/launcher.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/aura_shell/test/aura_shell_test_base.h"
@@ -102,6 +103,31 @@ TEST_F(ShelfLayoutManagerTest, LayoutShelfWhileAnimating) {
             gfx::Screen::GetPrimaryMonitorBounds().bottom());
   EXPECT_GE(shelf->status()->GetNativeView()->bounds().y(),
             gfx::Screen::GetPrimaryMonitorBounds().bottom());
+}
+
+// Makes sure the launcher is initially sized correctly.
+TEST_F(ShelfLayoutManagerTest, LauncherInitiallySized) {
+  Launcher* launcher = Shell::GetInstance()->launcher();
+  ASSERT_TRUE(launcher);
+  ShelfLayoutManager* shelf_layout_manager = GetShelfLayoutManager();
+  ASSERT_TRUE(shelf_layout_manager);
+  ASSERT_TRUE(shelf_layout_manager->status());
+  int status_width =
+      shelf_layout_manager->status()->GetWindowScreenBounds().width();
+  // Test only makes sense if the status is > 0, which is better be.
+  EXPECT_GT(status_width, 0);
+  EXPECT_EQ(status_width, launcher->GetStatusWidth());
+}
+
+// Makes sure the launcher is sized when the status area changes size.
+TEST_F(ShelfLayoutManagerTest, LauncherUpdatedWhenStatusAreaChangesSize) {
+  Launcher* launcher = Shell::GetInstance()->launcher();
+  ASSERT_TRUE(launcher);
+  ShelfLayoutManager* shelf_layout_manager = GetShelfLayoutManager();
+  ASSERT_TRUE(shelf_layout_manager);
+  ASSERT_TRUE(shelf_layout_manager->status());
+  shelf_layout_manager->status()->SetBounds(gfx::Rect(0, 0, 200, 200));
+  EXPECT_EQ(200, launcher->GetStatusWidth());
 }
 
 }  // namespace internal

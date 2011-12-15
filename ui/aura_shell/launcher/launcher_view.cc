@@ -19,14 +19,12 @@
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
 using ui::Animation;
@@ -128,25 +126,6 @@ class FadeInAnimationDelegate :
   DISALLOW_COPY_AND_ASSIGN(FadeInAnimationDelegate);
 };
 
-// Used to draw the background of the shelf.
-class ShelfPainter : public views::Painter {
- public:
-  ShelfPainter() {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    image_ = *rb.GetImageNamed(IDR_AURA_LAUNCHER_BACKGROUND).ToSkBitmap();
-  }
-
-  virtual void Paint(int w, int h, gfx::Canvas* canvas) OVERRIDE {
-    canvas->TileImageInt(image_, 0, 0, w, h);
-  }
-
- private:
-  SkBitmap image_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfPainter);
-};
-
-
 }  // namespace
 
 // AnimationDelegate used when inserting a new item. This steadily decreased the
@@ -226,9 +205,6 @@ LauncherView::~LauncherView() {
 void LauncherView::Init() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   model_->AddObserver(this);
-
-  set_background(
-      views::Background::CreateBackgroundPainter(true, new ShelfPainter()));
 
   new_browser_button_ = new views::ImageButton(this);
   ShellDelegate* delegate = Shell::GetInstance()->delegate();

@@ -21,10 +21,12 @@ class Widget;
 namespace aura_shell {
 namespace internal {
 
-// ShelfLayoutManager is a layout manager responsible for the launcher.
-// Also supports showing and hiding the launcher/status area
-// as well as positioning them.
-// Exported for unit tests.
+// ShelfLayoutManager is the layout manager responsible for the launcher and
+// status widgets. The launcher is given the total available width and told the
+// width of the status area. This allows the launcher to draw the background and
+// layout to the status area.
+// To respond to bounds changes in the status area StatusAreaLayoutManager works
+// closely with ShelfLayoutManager.
 class AURA_SHELL_EXPORT ShelfLayoutManager : public aura::LayoutManager,
                                              public ui::LayerAnimationObserver {
  public:

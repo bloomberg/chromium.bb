@@ -30,10 +30,16 @@ class AURA_SHELL_EXPORT Launcher : public aura::WindowObserver {
   explicit Launcher(aura::Window* window_container);
   ~Launcher();
 
+  // Sets the width of the status area.
+  void SetStatusWidth(int width);
+  int GetStatusWidth();
+
   LauncherModel* model() { return model_.get(); }
   views::Widget* widget() { return widget_; }
 
  private:
+  class DelegateView;
+
   typedef std::map<aura::Window*, bool> WindowMap;
 
   // If necessary asks the delegate if an entry should be created in the
@@ -56,6 +62,9 @@ class AURA_SHELL_EXPORT Launcher : public aura::WindowObserver {
   // The set of windows we know about. The boolean indicates whether we've asked
   // the delegate if the window should added to the launcher.
   WindowMap known_windows_;
+
+  // Contents view of the widget. Houses the LauncherView.
+  DelegateView* delegate_view_;
 
   DISALLOW_COPY_AND_ASSIGN(Launcher);
 };
