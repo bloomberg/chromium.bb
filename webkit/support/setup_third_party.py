@@ -106,8 +106,15 @@ def WriteSetupFilename(input_filename, out_filename):
     num_parent_dirs += 1
     out_dir = os.path.split(out_dir)[0]
 
-  rel_path = os.path.join('/'.join(['..'] * num_parent_dirs),
-                          input_filename[len(ancestor):])
+  if sys.platform == 'win32':
+    # Windows has a file path limit of 260 characters that we can hit when
+    # generating these forwarding headers.  Instead of writing the full
+    # relative path, just write the path relative to the WebKit/chromium dir,
+    # which is in the include path.
+    rel_path = input_filename[len(ancestor):]
+  else:
+    rel_path = os.path.join('/'.join(['..'] * num_parent_dirs),
+                            input_filename[len(ancestor):])
 
   out_file = open(out_filename, 'w')
   out_file.write("""// This file is generated.  Do not edit.
