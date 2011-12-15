@@ -570,6 +570,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     switches::kGpuStartupDialog,
     switches::kLoggingLevel,
     switches::kNoSandbox,
+    switches::kTraceStartup,
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                              arraysize(kSwitchNames));
