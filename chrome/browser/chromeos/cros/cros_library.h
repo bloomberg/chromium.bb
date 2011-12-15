@@ -21,7 +21,6 @@ class CertLibrary;
 class CryptohomeLibrary;
 class LibraryLoader;
 class NetworkLibrary;
-class ScreenLockLibrary;
 
 // This class handles access to sub-parts of ChromeOS library. it provides
 // a level of indirection so individual libraries that it exposes can
@@ -45,7 +44,6 @@ class CrosLibrary {
     void SetBurnLibrary(BurnLibrary* library, bool own);
     void SetCryptohomeLibrary(CryptohomeLibrary* library, bool own);
     void SetNetworkLibrary(NetworkLibrary* library, bool own);
-    void SetScreenLockLibrary(ScreenLockLibrary* library, bool own);
 
    private:
     friend class CrosLibrary;
@@ -68,7 +66,6 @@ class CrosLibrary {
   CertLibrary* GetCertLibrary();
   CryptohomeLibrary* GetCryptohomeLibrary();
   NetworkLibrary* GetNetworkLibrary();
-  ScreenLockLibrary* GetScreenLockLibrary();
 
   // Getter for Test API that gives access to internal members of this class.
   TestApi* GetTestApi();
@@ -131,7 +128,6 @@ class CrosLibrary {
   Library<CertLibrary> cert_lib_;
   Library<CryptohomeLibrary> crypto_lib_;
   Library<NetworkLibrary> network_lib_;
-  Library<ScreenLockLibrary> screen_lock_lib_;
 
   // Stub implementations of the libraries should be used.
   bool use_stub_impl_;

@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
-#include "chrome/browser/chromeos/cros/mock_screen_lock_library.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -32,8 +31,7 @@ using ::testing::_;
 CrosMock::CrosMock()
     : loader_(NULL),
       mock_cryptohome_library_(NULL),
-      mock_network_library_(NULL),
-      mock_screen_lock_library_(NULL) {
+      mock_network_library_(NULL) {
 }
 
 CrosMock::~CrosMock() {
@@ -73,14 +71,6 @@ void CrosMock::InitMockNetworkLibrary() {
   test_api()->SetNetworkLibrary(mock_network_library_, true);
 }
 
-void CrosMock::InitMockScreenLockLibrary() {
-  InitMockLibraryLoader();
-  if (mock_screen_lock_library_)
-    return;
-  mock_screen_lock_library_ = new StrictMock<MockScreenLockLibrary>();
-  test_api()->SetScreenLockLibrary(mock_screen_lock_library_, true);
-}
-
 // Initialization of mocks.
 MockCryptohomeLibrary* CrosMock::mock_cryptohome_library() {
   return mock_cryptohome_library_;
@@ -88,10 +78,6 @@ MockCryptohomeLibrary* CrosMock::mock_cryptohome_library() {
 
 MockNetworkLibrary* CrosMock::mock_network_library() {
   return mock_network_library_;
-}
-
-MockScreenLockLibrary* CrosMock::mock_screen_lock_library() {
-  return mock_screen_lock_library_;
 }
 
 void CrosMock::SetStatusAreaMocksExpectations() {
@@ -211,8 +197,6 @@ void CrosMock::TearDownMocks() {
     test_api()->SetCryptohomeLibrary(NULL, false);
   if (mock_network_library_)
     test_api()->SetNetworkLibrary(NULL, false);
-  if (mock_screen_lock_library_)
-    test_api()->SetScreenLockLibrary(NULL, false);
 }
 
 }  // namespace chromeos

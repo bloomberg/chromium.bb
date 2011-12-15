@@ -15,7 +15,6 @@ class MockCryptohomeLibrary;
 class MockKeyboardLibrary;
 class MockLibraryLoader;
 class MockNetworkLibrary;
-class MockScreenLockLibrary;
 
 // Class for initializing mocks for some parts of CrosLibrary. Once you mock
 // part of CrosLibrary it will be considered as successfully loaded and
@@ -41,13 +40,11 @@ class CrosMock {
   void InitMockCryptohomeLibrary();
   void InitMockKeyboardLibrary();
   void InitMockNetworkLibrary();
-  void InitMockScreenLockLibrary();
 
   // Get mocks.
   MockCryptohomeLibrary* mock_cryptohome_library();
   MockKeyboardLibrary* mock_keyboard_library();
   MockNetworkLibrary* mock_network_library();
-  MockScreenLockLibrary* mock_screen_lock_library();
 
   // This method sets up corresponding expectations for basic mocks that
   // are used by status area items.
@@ -72,7 +69,6 @@ class CrosMock {
   MockCryptohomeLibrary* mock_cryptohome_library_;
   MockKeyboardLibrary* mock_keyboard_library_;
   MockNetworkLibrary* mock_network_library_;
-  MockScreenLockLibrary* mock_screen_lock_library_;
 
   WifiNetworkVector wifi_networks_;
   CellularNetworkVector cellular_networks_;

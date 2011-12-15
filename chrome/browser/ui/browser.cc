@@ -190,8 +190,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
@@ -2264,7 +2262,7 @@ void Browser::OpenFileManager() {
 #if defined(OS_CHROMEOS)
 void Browser::LockScreen() {
   content::RecordAction(UserMetricsAction("LockScreen"));
-  chromeos::CrosLibrary::Get()->GetScreenLockLibrary()->
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       NotifyScreenLockRequested();
 }
 

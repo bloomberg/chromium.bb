@@ -435,8 +435,6 @@
         'browser/chromeos/cros/network_ui_data.h',
         'browser/chromeos/cros/onc_network_parser.cc',
         'browser/chromeos/cros/onc_network_parser.h',
-        'browser/chromeos/cros/screen_lock_library.cc',
-        'browser/chromeos/cros/screen_lock_library.h',
         'browser/chromeos/cros_settings.cc',
         'browser/chromeos/cros_settings.h',
         'browser/chromeos/cros_settings_names.cc',
