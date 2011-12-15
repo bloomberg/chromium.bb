@@ -8,6 +8,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
+#include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/status/status_area_bubble.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/chromeos/view_ids.h"
@@ -203,7 +204,12 @@ void CapsLockMenuButton::MaybeShowBubble() {
       // Don't show the bubble when Caps Lock key is available.
       HasCapsLock() ||
       // Don't show it when the status area is hidden.
-      (parent() && !parent()->visible()))
+      (parent() && !parent()->visible()) ||
+      // Don't show the bubble when screen is locked as this results in two
+      // visible caps lock bubbles (crbug.com/105280). The greater problem of
+      // displaying bubbles from all caps lock menu buttons regardless of
+      // visibility is described in crbug.com/106776.
+      ScreenLocker::default_screen_locker())
     return;
 
   ++bubble_count_;
