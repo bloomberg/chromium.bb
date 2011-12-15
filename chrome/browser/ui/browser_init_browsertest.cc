@@ -5,9 +5,11 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -15,6 +17,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -307,6 +310,26 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutPanel) {
   EXPECT_NE(
       new_browser->app_name_.find(extension_app->id()),
       std::string::npos) << new_browser->app_name_;
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserInitTest, ReadingWasRestartedAfterRestart) {
+  // Tests that BrowserInit::WasRestarted reads and resets the preference
+  // kWasRestarted correctly.
+  PrefService* pref_service = g_browser_process->local_state();
+  pref_service->SetBoolean(prefs::kWasRestarted, true);
+  EXPECT_TRUE(BrowserInit::WasRestarted());
+  EXPECT_FALSE(pref_service->GetBoolean(prefs::kWasRestarted));
+  EXPECT_TRUE(BrowserInit::WasRestarted());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserInitTest, ReadingWasRestartedAfterNormalStart) {
+  // Tests that BrowserInit::WasRestarted reads and resets the preference
+  // kWasRestarted correctly.
+  PrefService* pref_service = g_browser_process->local_state();
+  pref_service->SetBoolean(prefs::kWasRestarted, false);
+  EXPECT_FALSE(BrowserInit::WasRestarted());
+  EXPECT_FALSE(pref_service->GetBoolean(prefs::kWasRestarted));
+  EXPECT_FALSE(BrowserInit::WasRestarted());
 }
 
 #endif  // !defined(OS_MACOSX)
