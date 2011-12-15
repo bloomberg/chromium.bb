@@ -1008,15 +1008,18 @@ GLX_FUNCTIONS = [
 
 FUNCTION_SETS = [
   [GL_FUNCTIONS, 'gl', ['../../../third_party/mesa/MesaLib/include/GL/glext.h',
-    '../../../third_party/khronos/GLES2/gl2ext.h']],
-  [OSMESA_FUNCTIONS, 'osmesa', []],
-  [EGL_FUNCTIONS, 'egl', ['../../../third_party/khronos/EGL/eglext.h']],
+    '../../../third_party/khronos/GLES2/gl2ext.h'], []],
+  [OSMESA_FUNCTIONS, 'osmesa', [], []],
+  [EGL_FUNCTIONS, 'egl', ['../../../third_party/khronos/EGL/eglext.h'],
+    [
+      'EGL_ANGLE_d3d_share_handle_client_buffer',
+    ],
+  ],
   [WGL_FUNCTIONS, 'wgl', [
-    '../../../third_party/mesa/MesaLib/include/GL/wglext.h']],
+    '../../../third_party/mesa/MesaLib/include/GL/wglext.h'], []],
   [GLX_FUNCTIONS, 'glx', [
-    '../../../third_party/mesa/MesaLib/include/GL/glxext.h']],
+    '../../../third_party/mesa/MesaLib/include/GL/glxext.h'], []],
 ]
-
 
 def GenerateHeader(file, functions, set_name, used_extension_functions):
   """Generates gl_binding_autogen_x.h"""
@@ -1395,7 +1398,7 @@ def LooksLikeExtensionFunction(function):
   return vendor is not None and not vendor.group(1) in ['GL', 'API', 'DC']
 
 
-def GetUsedExtensionFunctions(functions, extension_headers):
+def GetUsedExtensionFunctions(functions, extension_headers, extra_extensions):
   """Determine which functions belong to extensions.
 
   Args:
@@ -1422,6 +1425,10 @@ def GetUsedExtensionFunctions(functions, extension_headers):
         extension = functions_to_extensions[name]
         used_extension_functions[extension].append((func['names'][0], name))
 
+  # Add extensions that do not have any functions.
+  used_extension_functions.update(dict(
+      [(e, []) for e in extra_extensions if e not in used_extension_functions]))
+
   def ExtensionSortKey(name):
     # Prefer ratified extensions and EXTs.
     preferences = ['_ARB_', '_OES_', '_EXT_', '']
@@ -1441,9 +1448,9 @@ def main(argv):
   else:
     dir = '.'
 
-  for [functions, set_name, extension_headers] in FUNCTION_SETS:
+  for [functions, set_name, extension_headers, extensions] in FUNCTION_SETS:
     used_extension_functions = GetUsedExtensionFunctions(
-        functions, extension_headers)
+        functions, extension_headers, extensions)
 
     header_file = open(
         os.path.join(dir, 'gl_bindings_autogen_%s.h' % set_name), 'wb')

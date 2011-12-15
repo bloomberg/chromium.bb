@@ -194,7 +194,8 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
   base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
 
   if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
-      os_info->version() >= base::win::VERSION_VISTA &&
+      gfx::g_EGL_ANGLE_query_surface_pointer &&
+      gfx::g_EGL_ANGLE_d3d_share_handle_client_buffer &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableImageTransportSurface)) {
     surface = new PbufferImageTransportSurface(manager,
