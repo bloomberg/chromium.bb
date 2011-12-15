@@ -132,7 +132,7 @@ const char kWebKitFantasyFontFamilyMap[] =
     "webkit.webprefs.fonts.fantasy";
 
 // TODO(falken): Add all the scripts we should support.
-const char* kWebKitScriptsForFontFamilyMaps[] =
+const char* const kWebKitScriptsForFontFamilyMaps[] =
     { "Arab", "Hang", "Hans", "Hant", "Hrkt" };
 const size_t kWebKitScriptsForFontFamilyMapsLength =
     arraysize(kWebKitScriptsForFontFamilyMaps);

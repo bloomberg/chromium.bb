@@ -56,7 +56,7 @@ extern const char kWebKitFantasyFontFamilyMap[];
 
 // ISO 15924 four-letter script codes that per-script font prefs are supported
 // for.
-extern const char* kWebKitScriptsForFontFamilyMaps[];
+extern const char* const kWebKitScriptsForFontFamilyMaps[];
 extern const size_t kWebKitScriptsForFontFamilyMapsLength;
 
 // Per-script font prefs that have defaults, for easy reference when registering
