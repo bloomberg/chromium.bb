@@ -73,6 +73,9 @@ void DrawPangoTextUnderline(cairo_t* cr,
                             double extra_edge_width,
                             const Rect& text_rect);
 
+// Returns the size in pixels for the specified |pango_font|.
+size_t GetPangoFontSizeInPixels(PangoFontDescription* pango_font);
+
 }  // namespace gfx
 
 #endif  // UI_GFX_PANGO_UTIL_H_

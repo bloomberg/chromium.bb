@@ -36,6 +36,8 @@ class SkiaTextRenderer {
   explicit SkiaTextRenderer(Canvas* canvas);
   ~SkiaTextRenderer();
 
+  void SetTypeface(SkTypeface* typeface);
+  void SetTextSize(int size);
   void SetFont(const gfx::Font& font);
   void SetForegroundColor(SkColor foreground);
   void DrawSelection(const std::vector<Rect>& selection, SkColor color);

@@ -11,6 +11,7 @@
 #include "base/debug/trace_event.h"
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/pango_util.h"
@@ -319,7 +320,11 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
         pango_font_describe(run->item->analysis.font);
     {
       TRACE_EVENT0("gfx", "RenderTextLinux::DrawVisualText SetFont");
-      renderer.SetFont(gfx::Font(native_font));
+      const char* family_name = pango_font_description_get_family(native_font);
+      SkAutoTUnref<SkTypeface> typeface(
+          SkTypeface::CreateFromName(family_name, SkTypeface::kNormal));
+      renderer.SetTypeface(typeface.get());
+      renderer.SetTextSize(GetPangoFontSizeInPixels(native_font));
     }
     pango_font_description_free(native_font);
 

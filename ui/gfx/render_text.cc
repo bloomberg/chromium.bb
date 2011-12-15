@@ -96,15 +96,23 @@ SkiaTextRenderer::SkiaTextRenderer(Canvas* canvas)
 SkiaTextRenderer::~SkiaTextRenderer() {
 }
 
+void SkiaTextRenderer::SetTypeface(SkTypeface* typeface) {
+  paint_.setTypeface(typeface);
+}
+
+void SkiaTextRenderer::SetTextSize(int size) {
+  paint_.setTextSize(size);
+}
+
 void SkiaTextRenderer::SetFont(const gfx::Font& font) {
   SkAutoTUnref<SkTypeface> typeface(
       SkTypeface::CreateFromName(font.GetFontName().c_str(),
                                  SkTypeface::kNormal));
   if (typeface.get()) {
     // |paint_| adds its own ref. So don't |release()| it from the ref ptr here.
-    paint_.setTypeface(typeface.get());
+    SetTypeface(typeface.get());
   }
-  paint_.setTextSize(font.GetFontSize());
+  SetTextSize(font.GetFontSize());
 }
 
 void SkiaTextRenderer::SetForegroundColor(SkColor foreground) {

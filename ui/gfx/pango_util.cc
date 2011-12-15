@@ -112,6 +112,27 @@ cairo_font_options_t* GetCairoFontOptions() {
   return cairo_font_options;
 }
 
+// Returns the number of pixels in a point.
+// - multiply a point size by this to get pixels ("device units")
+// - divide a pixel size by this to get points
+float GetPixelsInPoint() {
+  static float pixels_in_point = 1.0;
+  static bool determined_value = false;
+
+  if (!determined_value) {
+    // http://goo.gl/UIh5m: "This is a scale factor between points specified in
+    // a PangoFontDescription and Cairo units.  The default value is 96, meaning
+    // that a 10 point font will be 13 units high. (10 * 96. / 72. = 13.3)."
+    double pango_dpi = gfx::GetPangoResolution();
+    if (pango_dpi <= 0)
+      pango_dpi = 96.0;
+    pixels_in_point = pango_dpi / 72.0;  // 72 points in an inch
+    determined_value = true;
+  }
+
+  return pixels_in_point;
+}
+
 }  // namespace
 
 namespace gfx {
@@ -323,6 +344,19 @@ void DrawPangoTextUnderline(cairo_t* cr,
                 text_rect.x() + text_rect.width() + extra_edge_width,
                 underline_y);
   cairo_stroke(cr);
+}
+
+size_t GetPangoFontSizeInPixels(PangoFontDescription* pango_font) {
+  size_t size_in_pixels = pango_font_description_get_size(pango_font);
+  if (pango_font_description_get_size_is_absolute(pango_font)) {
+    // If the size is absolute, then it's in Pango units rather than points.
+    // There are PANGO_SCALE Pango units in a device unit (pixel).
+    size_in_pixels /= PANGO_SCALE;
+  } else {
+    // Otherwise, we need to convert from points.
+    size_in_pixels = size_in_pixels * GetPixelsInPoint() / PANGO_SCALE;
+  }
+  return size_in_pixels;
 }
 
 }  // namespace gfx

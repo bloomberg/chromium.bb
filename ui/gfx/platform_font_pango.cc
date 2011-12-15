@@ -18,6 +18,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/linux_util.h"
+#include "ui/gfx/pango_util.h"
 
 #if !defined(USE_WAYLAND) && defined(TOOLKIT_USES_GTK)
 #include <gdk/gdk.h>
@@ -30,27 +31,6 @@ namespace {
 // GNOME/KDE is a non-scalable one. The name should be listed in the
 // IsFallbackFontAllowed function in skia/ext/SkFontHost_fontconfig_direct.cpp.
 const char* kFallbackFontFamilyName = "sans";
-
-// Returns the number of pixels in a point.
-// - multiply a point size by this to get pixels ("device units")
-// - divide a pixel size by this to get points
-float GetPixelsInPoint() {
-  static float pixels_in_point = 1.0;
-  static bool determined_value = false;
-
-  if (!determined_value) {
-    // http://goo.gl/UIh5m: "This is a scale factor between points specified in
-    // a PangoFontDescription and Cairo units.  The default value is 96, meaning
-    // that a 10 point font will be 13 units high. (10 * 96. / 72. = 13.3)."
-    double pango_dpi = gfx::GetPangoResolution();
-    if (pango_dpi <= 0)
-      pango_dpi = 96.0;
-    pixels_in_point = pango_dpi / 72.0;  // 72 points in an inch
-    determined_value = true;
-  }
-
-  return pixels_in_point;
-}
 
 // Retrieves the pango metrics for a pango font description. Caches the metrics
 // and never frees them. The metrics objects are relatively small and
@@ -165,24 +145,12 @@ PlatformFontPango::PlatformFontPango(const Font& other) {
 PlatformFontPango::PlatformFontPango(NativeFont native_font) {
   const char* family_name = pango_font_description_get_family(native_font);
 
-  gint size_in_pixels = 0;
-  if (pango_font_description_get_size_is_absolute(native_font)) {
-    // If the size is absolute, then it's in Pango units rather than points.
-    // There are PANGO_SCALE Pango units in a device unit (pixel).
-    size_in_pixels = pango_font_description_get_size(native_font) / PANGO_SCALE;
-  } else {
-    // Otherwise, we need to convert from points.
-    size_in_pixels =
-        pango_font_description_get_size(native_font) * GetPixelsInPoint() /
-        PANGO_SCALE;
-  }
-
   // Find best match font for |family_name| to make sure we can get
   // a SkTypeface for the default font.
   // TODO(agl): remove this.
   std::string font_family = FindBestMatchFontFamilyName(family_name);
 
-  InitWithNameAndSize(font_family, size_in_pixels);
+  InitWithNameAndSize(font_family, gfx::GetPangoFontSizeInPixels(native_font));
   int style = 0;
   if (pango_font_description_get_weight(native_font) == PANGO_WEIGHT_BOLD) {
     // TODO(davemoore) What should we do about other weights? We currently
