@@ -120,12 +120,19 @@ using content::UserMetricsAction;
                                            withString:@" "];
   title = [title stringByReplacingOccurrencesOfString:@"\r"
                                            withString:@" "];
-  // If there is no title, squeeze things tight by displaying only the image; by
-  // default, Cocoa leaves extra space in an attempt to display an empty title.
+
   if ([title length]) {
     [self setImagePosition:NSImageLeft];
     [self setTitle:title];
+  } else if ([self isFolderButtonCell]) {
+    // Left-align icons for bookmarks within folders, regardless of whether
+    // there is a title.
+    [self setImagePosition:NSImageLeft];
   } else {
+    // For bookmarks without a title that aren't visible directly in the
+    // bookmarks bar, squeeze things tighter by displaying only the image.
+    // By default, Cocoa leaves extra space in an attempt to display an
+    // empty title.
     [self setImagePosition:NSImageOnly];
   }
 
