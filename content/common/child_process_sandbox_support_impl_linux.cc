@@ -7,18 +7,13 @@
 #include <sys/stat.h>
 
 #include "base/eintr_wrapper.h"
-#include "base/global_descriptors_posix.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
-#include "content/common/chrome_descriptors.h"
+#include "content/common/child_process_sandbox_support_impl_linux.h"
 #include "content/common/sandbox_methods_linux.h"
 #include "content/common/unix_domain_socket_posix.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/linux/WebFontFamily.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontRenderStyle.h"
-
-static int GetSandboxFD() {
-  return kSandboxIPCChannel + base::GlobalDescriptors::kBaseDescriptor;
-}
 
 namespace content {
 
@@ -85,21 +80,6 @@ void GetRenderStyleForStrike(const char* family, int sizeAndStyle,
     out->useAntiAlias = useAntiAlias;
     out->useSubpixel = useSubpixel;
   }
-}
-
-int MakeSharedMemorySegmentViaIPC(size_t length, bool executable) {
-  Pickle request;
-  request.WriteInt(LinuxSandbox::METHOD_MAKE_SHARED_MEMORY_SEGMENT);
-  request.WriteUInt32(length);
-  request.WriteBool(executable);
-  uint8_t reply_buf[10];
-  int result_fd;
-  ssize_t result = UnixDomainSocket::SendRecvMsg(GetSandboxFD(),
-                                                 reply_buf, sizeof(reply_buf),
-                                                 &result_fd, request);
-  if (result == -1)
-    return -1;
-  return result_fd;
 }
 
 int MatchFontWithFallback(const std::string& face, bool bold,
