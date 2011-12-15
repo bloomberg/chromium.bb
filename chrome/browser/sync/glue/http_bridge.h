@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -19,7 +20,6 @@
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class MessageLoop;
 class HttpBridgeTest;

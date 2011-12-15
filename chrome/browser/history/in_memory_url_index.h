@@ -24,7 +24,6 @@
 #include "chrome/browser/history/in_memory_url_index_types.h"
 #include "chrome/browser/history/in_memory_url_index_cache.pb.h"
 #include "sql/connection.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace base {
 class Time;

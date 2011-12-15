@@ -8,11 +8,11 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/file_path.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class Extension;
 class ExtensionServiceInterface;

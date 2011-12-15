@@ -8,12 +8,12 @@
 #include <map>
 #include <set>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/appcache/appcache_export.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/appcache/appcache_storage.h"

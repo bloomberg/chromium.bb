@@ -9,6 +9,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -16,7 +17,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "talk/base/sigslot.h"
 #include "talk/xmpp/xmppengine.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace buzz {
 class PreXmppAuth;

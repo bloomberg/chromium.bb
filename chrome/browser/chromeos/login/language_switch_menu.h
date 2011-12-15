@@ -8,8 +8,8 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/view_menu_delegate.h"
 #include "ui/views/view.h"

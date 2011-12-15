@@ -11,11 +11,11 @@
 #include <string>
 
 #include "base/callback_old.h"
+#include "base/gtest_prod_util.h"
 #include "base/threading/platform_thread.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_status.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class UrlmonUrlRequest
   : public CComObjectRootEx<CComMultiThreadModel>,
