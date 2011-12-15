@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_PASSWORD_FORM_DOM_MANAGER_H_
-#define WEBKIT_GLUE_PASSWORD_FORM_DOM_MANAGER_H_
+#ifndef WEBKIT_FORMS_PASSWORD_FORM_DOM_MANAGER_H_
+#define WEBKIT_FORMS_PASSWORD_FORM_DOM_MANAGER_H_
 
 #include <map>
 
-#include "webkit/glue/form_data.h"
-#include "webkit/glue/password_form.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "webkit/forms/form_data.h"
+#include "webkit/forms/password_form.h"
+#include "webkit/forms/webkit_forms_export.h"
 
 namespace WebKit {
 class WebForm;
 }
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 
 // Structure used for autofilling password forms.
 // basic_data identifies the HTML form on the page and preferred username/
@@ -26,7 +27,7 @@ namespace webkit_glue {
 // unless the PasswordManager determined there is an additional risk
 // associated with this form. This can happen, for example, if action URI's
 // of the observed form and our saved representation don't match up.
-struct WEBKIT_GLUE_EXPORT PasswordFormFillData {
+struct WEBKIT_FORMS_EXPORT PasswordFormFillData {
   typedef std::map<string16, string16> LoginCollection;
 
   FormData basic_data;
@@ -42,7 +43,7 @@ class PasswordFormDomManager {
   // custom metadata to DOM nodes, so we have to do this every time an event
   // happens with a given form and compare against previously Create'd forms
   // to identify..which sucks.
-  WEBKIT_GLUE_EXPORT static PasswordForm* CreatePasswordForm(
+  WEBKIT_FORMS_EXPORT static PasswordForm* CreatePasswordForm(
       const WebKit::WebFormElement& form);
 
   // Create a FillData structure in preparation for autofilling a form,
@@ -51,7 +52,7 @@ class PasswordFormDomManager {
   // preferred_match should equal (address) one of matches.
   // wait_for_username_before_autofill is true if we should not autofill
   // anything until the user typed in a valid username and blurred the field.
-  WEBKIT_GLUE_EXPORT static void InitFillData(const PasswordForm& form_on_page,
+  WEBKIT_FORMS_EXPORT static void InitFillData(const PasswordForm& form_on_page,
                            const PasswordFormMap& matches,
                            const PasswordForm* const preferred_match,
                            bool wait_for_username_before_autofill,
@@ -60,6 +61,7 @@ class PasswordFormDomManager {
   DISALLOW_IMPLICIT_CONSTRUCTORS(PasswordFormDomManager);
 };
 
-}  // namespace webkit_glue
+}  // namespace forms
+}  // namespace webkit
 
-#endif  // WEBKIT_GLUE_PASSWORD_FORM_DOM_MANAGER_H__
+#endif  // WEBKIT_FORMS_PASSWORD_FORM_DOM_MANAGER_H__

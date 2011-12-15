@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/password_form_dom_manager.h"
+#include "webkit/forms/password_form_dom_manager.h"
 
 #include "base/logging.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPasswordFormData.h"
-#include "webkit/glue/form_field.h"
+#include "webkit/forms/form_field.h"
 
 using WebKit::WebFormElement;
 using WebKit::WebInputElement;
 using WebKit::WebPasswordFormData;
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 
 PasswordFormFillData::PasswordFormFillData() : wait_for_username(false) {
 }
@@ -61,4 +62,5 @@ void PasswordFormDomManager::InitFillData(
   }
 }
 
-}  // namespace webkit_glue
+}  // namespace forms
+}  // namespace webkit

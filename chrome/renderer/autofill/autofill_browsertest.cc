@@ -9,15 +9,15 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
-#include "webkit/glue/form_data.h"
-#include "webkit/glue/form_field.h"
+#include "webkit/forms/form_data.h"
+#include "webkit/forms/form_field.h"
 
 using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebInputElement;
 using WebKit::WebString;
-using webkit_glue::FormData;
-using webkit_glue::FormField;
+using webkit::forms::FormData;
+using webkit::forms::FormField;
 
 namespace autofill {
 

@@ -20,16 +20,16 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
-#include "webkit/glue/form_data.h"
+#include "webkit/forms/form_data.h"
 
 using content::BrowserThread;
 using testing::_;
-using webkit_glue::FormData;
+using webkit::forms::FormData;
 
 class MockWebDataService : public WebDataService {
  public:
   MOCK_METHOD1(AddFormFields,
-               void(const std::vector<webkit_glue::FormField>&));  // NOLINT
+               void(const std::vector<webkit::forms::FormField>&));  // NOLINT
 };
 
 class AutocompleteHistoryManagerTest : public ChromeRenderViewHostTestHarness {
@@ -62,7 +62,7 @@ TEST_F(AutocompleteHistoryManagerTest, CreditCardNumberValue) {
   form.user_submitted = true;
 
   // Valid Visa credit card number pulled from the paypal help site.
-  webkit_glue::FormField valid_cc;
+  webkit::forms::FormField valid_cc;
   valid_cc.label = ASCIIToUTF16("Credit Card");
   valid_cc.name = ASCIIToUTF16("ccnum");
   valid_cc.value = ASCIIToUTF16("4012888888881881");
@@ -85,7 +85,7 @@ TEST_F(AutocompleteHistoryManagerTest, NonCreditCardNumberValue) {
   form.user_submitted = true;
 
   // Invalid credit card number.
-  webkit_glue::FormField invalid_cc;
+  webkit::forms::FormField invalid_cc;
   invalid_cc.label = ASCIIToUTF16("Credit Card");
   invalid_cc.name = ASCIIToUTF16("ccnum");
   invalid_cc.value = ASCIIToUTF16("4580123456789012");
@@ -105,7 +105,7 @@ TEST_F(AutocompleteHistoryManagerTest, SSNValue) {
   form.action = GURL("http://myform.com/submit.html");
   form.user_submitted = true;
 
-  webkit_glue::FormField ssn;
+  webkit::forms::FormField ssn;
   ssn.label = ASCIIToUTF16("Social Security Number");
   ssn.name = ASCIIToUTF16("ssn");
   ssn.value = ASCIIToUTF16("078-05-1120");
@@ -126,7 +126,7 @@ TEST_F(AutocompleteHistoryManagerTest, SearchField) {
   form.user_submitted = true;
 
   // Search field.
-  webkit_glue::FormField search_field;
+  webkit::forms::FormField search_field;
   search_field.label = ASCIIToUTF16("Search");
   search_field.name = ASCIIToUTF16("search");
   search_field.value = ASCIIToUTF16("my favorite query");
@@ -146,8 +146,8 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
   virtual ~MockAutofillExternalDelegate() {}
 
   virtual void OnQuery(int query_id,
-                       const webkit_glue::FormData& form,
-                       const webkit_glue::FormField& field,
+                       const webkit::forms::FormData& form,
+                       const webkit::forms::FormField& field,
                        const gfx::Rect& bounds,
                        bool display_warning) OVERRIDE {}
 
@@ -170,8 +170,8 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
 
   virtual void OnQueryPlatformSpecific(
       int query_id,
-      const webkit_glue::FormData& form,
-      const webkit_glue::FormField& field) OVERRIDE {}
+      const webkit::forms::FormData& form,
+      const webkit::forms::FormField& field) OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillExternalDelegate);

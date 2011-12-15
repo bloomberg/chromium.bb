@@ -40,7 +40,7 @@
 #include "content/test/notification_observer_mock.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "webkit/glue/password_form.h"
+#include "webkit/forms/password_form.h"
 
 using base::Time;
 using browser_sync::PasswordChangeProcessor;
@@ -77,7 +77,7 @@ using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::SaveArg;
 using testing::SetArgumentPointee;
-using webkit_glue::PasswordForm;
+using webkit::forms::PasswordForm;
 
 ACTION_P3(MakePasswordSyncComponents, service, ps, dtc) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));

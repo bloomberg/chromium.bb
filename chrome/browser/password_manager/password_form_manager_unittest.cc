@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,9 +10,9 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_profile.h"
-#include "webkit/glue/password_form.h"
+#include "webkit/forms/password_form.h"
 
-using webkit_glue::PasswordForm;
+using webkit::forms::PasswordForm;
 
 class PasswordFormManagerTest : public testing::Test {
  public:

@@ -13,8 +13,8 @@
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebLabelElement.h"
@@ -24,8 +24,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSelectElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
-#include "webkit/glue/form_data.h"
-#include "webkit/glue/form_field.h"
+#include "webkit/forms/form_data.h"
+#include "webkit/forms/form_field.h"
 
 using WebKit::WebElement;
 using WebKit::WebFormControlElement;
@@ -39,8 +39,8 @@ using WebKit::WebOptionElement;
 using WebKit::WebSelectElement;
 using WebKit::WebString;
 using WebKit::WebVector;
-using webkit_glue::FormData;
-using webkit_glue::FormField;
+using webkit::forms::FormData;
+using webkit::forms::FormField;
 
 namespace {
 
@@ -417,7 +417,7 @@ void GetOptionStringsFromElement(const WebSelectElement& select_element,
 
 // The callback type used by |ForEachMatchingFormField()|.
 typedef void (*Callback)(WebKit::WebFormControlElement*,
-                         const webkit_glue::FormField*,
+                         const webkit::forms::FormField*,
                          bool);
 
 // For each autofillable field in |data| that matches a field in the |form|,
@@ -479,7 +479,7 @@ void ForEachMatchingFormField(const WebFormElement& form_element,
 // Sets the |field|'s value to the value in |data|.
 // Also sets the "autofilled" attribute, causing the background to be yellow.
 void FillFormField(WebKit::WebFormControlElement* field,
-                   const webkit_glue::FormField* data,
+                   const webkit::forms::FormField* data,
                    bool is_initiating_node) {
   // Nothing to fill.
   if (data->value.empty())
@@ -509,7 +509,7 @@ void FillFormField(WebKit::WebFormControlElement* field,
 // Sets the |field|'s "suggested" (non JS visible) value to the value in |data|.
 // Also sets the "autofilled" attribute, causing the background to be yellow.
 void PreviewFormField(WebKit::WebFormControlElement* field,
-                      const webkit_glue::FormField* data,
+                      const webkit::forms::FormField* data,
                       bool is_initiating_node) {
   // Nothing to preview.
   if (data->value.empty())
@@ -662,8 +662,8 @@ bool WebFormElementToFormData(
     const WebKit::WebFormControlElement& form_control_element,
     RequirementsMask requirements,
     ExtractMask extract_mask,
-    webkit_glue::FormData* form,
-    webkit_glue::FormField* field) {
+    webkit::forms::FormData* form,
+    webkit::forms::FormField* field) {
   const WebFrame* frame = form_element.document().frame();
   if (!frame)
     return false;
@@ -790,7 +790,7 @@ bool WebFormElementToFormData(
 
 bool FindFormAndFieldForInputElement(const WebInputElement& element,
                                      FormData* form,
-                                     webkit_glue::FormField* field,
+                                     webkit::forms::FormField* field,
                                      RequirementsMask requirements) {
   if (!IsAutofillableElement(element))
     return false;

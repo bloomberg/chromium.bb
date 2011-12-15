@@ -18,10 +18,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 struct FormData;
 struct FormDataPredictions;
 struct FormField;
+}
 }
 
 namespace WebKit {
@@ -97,9 +99,9 @@ class AutofillAgent : public content::RenderViewObserver,
                              const std::vector<string16>& labels,
                              const std::vector<string16>& icons,
                              const std::vector<int>& unique_ids);
-  void OnFormDataFilled(int query_id, const webkit_glue::FormData& form);
+  void OnFormDataFilled(int query_id, const webkit::forms::FormData& form);
   void OnFieldTypePredictionsAvailable(
-      const std::vector<webkit_glue::FormDataPredictions>& forms);
+      const std::vector<webkit::forms::FormDataPredictions>& forms);
 
   // For external Autofill selection.
   void OnSelectAutofillSuggestionAtIndex(int listIndex);
@@ -141,8 +143,8 @@ class AutofillAgent : public content::RenderViewObserver,
   // |node|. Returns true if the data was found; and false otherwise.
   bool FindFormAndFieldForNode(
       const WebKit::WebNode& node,
-      webkit_glue::FormData* form,
-      webkit_glue::FormField* field) WARN_UNUSED_RESULT;
+      webkit::forms::FormData* form,
+      webkit::forms::FormField* field) WARN_UNUSED_RESULT;
 
   FormCache form_cache_;
 

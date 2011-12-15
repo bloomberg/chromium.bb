@@ -9,14 +9,15 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
-#include "webkit/glue/form_data.h"
-#include "webkit/glue/form_field.h"
+#include "webkit/forms/form_data.h"
+#include "webkit/forms/form_field.h"
 
-using webkit_glue::FormData;
-using webkit_glue::FormField;
+using webkit::forms::FormData;
+using webkit::forms::FormField;
 using WebKit::WebInputElement;
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 
 std::ostream& operator<<(std::ostream& os, const FormData& form) {
   os << UTF16ToUTF8(form.name)
@@ -28,7 +29,7 @@ std::ostream& operator<<(std::ostream& os, const FormData& form) {
      << form.action.spec()
      << " ";
 
-  for (std::vector<webkit_glue::FormField>::const_iterator iter =
+  for (std::vector<webkit::forms::FormField>::const_iterator iter =
            form.fields.begin();
        iter != form.fields.end(); ++iter) {
     os << *iter
@@ -38,6 +39,7 @@ std::ostream& operator<<(std::ostream& os, const FormData& form) {
   return os;
 }
 
+}  // namespace forms
 }  // namespace webkit_glue
 
 class FormStructureTest {

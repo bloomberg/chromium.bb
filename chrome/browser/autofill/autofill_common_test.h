@@ -10,9 +10,11 @@ class AutofillProfile;
 class CreditCard;
 class Profile;
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 struct FormField;
-}  // namespace webkit_glue
+}
+}
 
 // Common utilities shared amongst Autofill tests.
 namespace autofill_test {
@@ -22,7 +24,7 @@ void CreateTestFormField(const char* label,
                          const char* name,
                          const char* value,
                          const char* type,
-                         webkit_glue::FormField* field);
+                         webkit::forms::FormField* field);
 
 // A unit testing utility that is common to a number of the Autofill unit
 // tests.  |SetProfileInfo| provides a quick way to populate a profile with

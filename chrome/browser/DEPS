@@ -21,6 +21,7 @@ include_rules = [
   "+third_party/cros",
   "+third_party/cros_system_api",
   "+webkit/database",
+  "+webkit/forms",  # Defines some types that are marshalled over IPC.
   "+webkit/glue",  # Defines some types that are marshalled over IPC.
   "+webkit/plugins",  # Defines some types that are marshalled over IPC.
   "+webkit/quota",

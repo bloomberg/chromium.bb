@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,9 +12,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/common/chrome_paths.h"
-#include "webkit/glue/password_form.h"
+#include "webkit/forms/password_form.h"
 
-using webkit_glue::PasswordForm;
+using webkit::forms::PasswordForm;
 
 class LoginDatabaseTest : public testing::Test {
  protected:

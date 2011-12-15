@@ -10,10 +10,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
-#include "webkit/glue/form_data.h"
+#include "webkit/forms/form_data.h"
 #include "webkit/glue/web_io_operators.h"
 
-using webkit_glue::FormData;
+using webkit::forms::FormData;
 using WebKit::WebFrame;
 using WebKit::WebString;
 using WebKit::WebTextDirection;
@@ -41,7 +41,7 @@ TEST_F(FormAutocompleteTest, NormalFormSubmit) {
   AutofillHostMsg_FormSubmitted::Read(message, &forms);
   ASSERT_EQ(2U, forms.a.fields.size());
 
-  webkit_glue::FormField& form_field = forms.a.fields[0];
+  webkit::forms::FormField& form_field = forms.a.fields[0];
   EXPECT_EQ(WebString("fname"), form_field.name);
   EXPECT_EQ(WebString("Rick"), form_field.value);
 
@@ -90,7 +90,7 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffInputSubmit) {
   AutofillHostMsg_FormSubmitted::Read(message, &forms);
   ASSERT_EQ(1U, forms.a.fields.size());
 
-  webkit_glue::FormField& form_field = forms.a.fields[0];
+  webkit::forms::FormField& form_field = forms.a.fields[0];
   EXPECT_EQ(WebString("fname"), form_field.name);
   EXPECT_EQ(WebString("Rick"), form_field.value);
 }

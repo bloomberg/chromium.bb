@@ -38,9 +38,14 @@ namespace base {
 class Thread;
 }
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 struct FormField;
 struct PasswordForm;
+}
+}
+
+namespace webkit_glue {
 struct WebIntentServiceData;
 }
 
@@ -410,13 +415,13 @@ class WebDataService
   //////////////////////////////////////////////////////////////////////////////
 
   // Adds |form| to the list of remembered password forms.
-  void AddLogin(const webkit_glue::PasswordForm& form);
+  void AddLogin(const webkit::forms::PasswordForm& form);
 
   // Updates the remembered password form.
-  void UpdateLogin(const webkit_glue::PasswordForm& form);
+  void UpdateLogin(const webkit::forms::PasswordForm& form);
 
   // Removes |form| from the list of remembered password forms.
-  void RemoveLogin(const webkit_glue::PasswordForm& form);
+  void RemoveLogin(const webkit::forms::PasswordForm& form);
 
   // Removes all logins created in the specified daterange
   void RemoveLoginsCreatedBetween(const base::Time& delete_begin,
@@ -429,7 +434,7 @@ class WebDataService
   // |consumer| will be notified when the request is done. The result is of
   // type WDResult<std::vector<PasswordForm*>>.
   // The result will be null on failure. The |consumer| owns all PasswordForm's.
-  Handle GetLogins(const webkit_glue::PasswordForm& form,
+  Handle GetLogins(const webkit::forms::PasswordForm& form,
                    WebDataServiceConsumer* consumer);
 
   // Gets the complete list of password forms that have not been blacklisted and
@@ -467,7 +472,8 @@ class WebDataService
   //////////////////////////////////////////////////////////////////////////////
 
   // Schedules a task to add form fields to the web database.
-  virtual void AddFormFields(const std::vector<webkit_glue::FormField>& fields);
+  virtual void AddFormFields(
+      const std::vector<webkit::forms::FormField>& fields);
 
   // Initiates the request for a vector of values which have been entered in
   // form input fields named |name|.  The method OnWebDataServiceRequestDone of
@@ -653,12 +659,12 @@ class WebDataService
   // Password manager.
   //
   //////////////////////////////////////////////////////////////////////////////
-  void AddLoginImpl(GenericRequest<webkit_glue::PasswordForm>* request);
-  void UpdateLoginImpl(GenericRequest<webkit_glue::PasswordForm>* request);
-  void RemoveLoginImpl(GenericRequest<webkit_glue::PasswordForm>* request);
+  void AddLoginImpl(GenericRequest<webkit::forms::PasswordForm>* request);
+  void UpdateLoginImpl(GenericRequest<webkit::forms::PasswordForm>* request);
+  void RemoveLoginImpl(GenericRequest<webkit::forms::PasswordForm>* request);
   void RemoveLoginsCreatedBetweenImpl(
       GenericRequest2<base::Time, base::Time>* request);
-  void GetLoginsImpl(GenericRequest<webkit_glue::PasswordForm>* request);
+  void GetLoginsImpl(GenericRequest<webkit::forms::PasswordForm>* request);
   void GetAutofillableLoginsImpl(WebDataRequest* request);
   void GetBlacklistLoginsImpl(WebDataRequest* request);
 #if defined(OS_WIN)
@@ -673,7 +679,7 @@ class WebDataService
   //
   //////////////////////////////////////////////////////////////////////////////
   void AddFormElementsImpl(
-      GenericRequest<std::vector<webkit_glue::FormField> >* request);
+      GenericRequest<std::vector<webkit::forms::FormField> >* request);
   void GetFormValuesForElementNameImpl(WebDataRequest* request,
       const string16& name, const string16& prefix, int limit);
   void RemoveFormElementsAddedBetweenImpl(

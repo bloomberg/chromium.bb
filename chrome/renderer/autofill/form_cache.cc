@@ -17,10 +17,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/glue/form_data.h"
-#include "webkit/glue/form_data_predictions.h"
-#include "webkit/glue/form_field.h"
-#include "webkit/glue/form_field_predictions.h"
+#include "webkit/forms/form_data.h"
+#include "webkit/forms/form_data_predictions.h"
+#include "webkit/forms/form_field.h"
+#include "webkit/forms/form_field_predictions.h"
 
 using WebKit::WebDocument;
 using WebKit::WebFormControlElement;
@@ -30,8 +30,8 @@ using WebKit::WebInputElement;
 using WebKit::WebSelectElement;
 using WebKit::WebString;
 using WebKit::WebVector;
-using webkit_glue::FormData;
-using webkit_glue::FormDataPredictions;
+using webkit::forms::FormData;
+using webkit::forms::FormDataPredictions;
 
 namespace {
 

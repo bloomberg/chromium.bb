@@ -76,7 +76,7 @@ class ExternalProcessImporterClient : public UtilityProcessHost::Client {
   void OnFaviconsImportStart(size_t total_favicons_count);
   void OnFaviconsImportGroup(
       const std::vector<history::ImportedFaviconUsage>& favicons_group);
-  void OnPasswordFormImportReady(const webkit_glue::PasswordForm& form);
+  void OnPasswordFormImportReady(const webkit::forms::PasswordForm& form);
   void OnKeywordsImportReady(
       const std::vector<TemplateURL>& template_urls,
       int default_keyword_index,

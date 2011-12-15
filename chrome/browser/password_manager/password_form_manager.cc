@@ -12,11 +12,11 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/profiles/profile.h"
-#include "webkit/glue/password_form_dom_manager.h"
+#include "webkit/forms/password_form_dom_manager.h"
 
 using base::Time;
-using webkit_glue::PasswordForm;
-using webkit_glue::PasswordFormMap;
+using webkit::forms::PasswordForm;
+using webkit::forms::PasswordFormMap;
 
 PasswordFormManager::PasswordFormManager(Profile* profile,
                                          PasswordManager* password_manager,

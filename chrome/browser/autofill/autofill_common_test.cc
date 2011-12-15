@@ -11,7 +11,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "webkit/glue/form_field.h"
+#include "webkit/forms/form_field.h"
 
 namespace autofill_test {
 
@@ -19,7 +19,7 @@ void CreateTestFormField(const char* label,
                          const char* name,
                          const char* value,
                          const char* type,
-                         webkit_glue::FormField* field) {
+                         webkit::forms::FormField* field) {
   field->label = ASCIIToUTF16(label);
   field->name = ASCIIToUTF16(name);
   field->value = ASCIIToUTF16(value);

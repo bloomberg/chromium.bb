@@ -30,7 +30,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/data_url.h"
-#include "webkit/glue/password_form.h"
+#include "webkit/forms/password_form.h"
 
 namespace {
 const char kItemOpen[] = "<DT><A";
@@ -347,7 +347,7 @@ void Firefox2Importer::ImportPasswords() {
 
   std::string content;
   file_util::ReadFileToString(file, &content);
-  std::vector<webkit_glue::PasswordForm> forms;
+  std::vector<webkit::forms::PasswordForm> forms;
   decryptor.ParseSignons(content, &forms);
 
   if (!cancelled()) {

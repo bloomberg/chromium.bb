@@ -18,7 +18,7 @@ class PasswordManagerDelegateImpl : public PasswordManagerDelegate {
 
   // PasswordManagerDelegate implementation.
   virtual void FillPasswordForm(
-      const webkit_glue::PasswordFormFillData& form_data) OVERRIDE;
+      const webkit::forms::PasswordFormFillData& form_data) OVERRIDE;
   virtual void AddSavePasswordInfoBar(
       PasswordFormManager* form_to_save) OVERRIDE;
   virtual Profile* GetProfileForPasswordManager() OVERRIDE;

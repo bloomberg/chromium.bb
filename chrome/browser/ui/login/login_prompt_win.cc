@@ -21,7 +21,7 @@
 #include "ui/views/window/dialog_delegate.h"
 
 using content::BrowserThread;
-using webkit_glue::PasswordForm;
+using webkit::forms::PasswordForm;
 
 // ----------------------------------------------------------------------------
 // LoginHandlerWin

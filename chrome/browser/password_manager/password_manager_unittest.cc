@@ -19,7 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
-using webkit_glue::PasswordForm;
+using webkit::forms::PasswordForm;
 using testing::_;
 using testing::DoAll;
 using ::testing::Exactly;
@@ -29,7 +29,7 @@ using ::testing::Return;
 class MockPasswordManagerDelegate : public PasswordManagerDelegate {
  public:
   MOCK_METHOD1(FillPasswordForm, void(
-     const webkit_glue::PasswordFormFillData&));
+     const webkit::forms::PasswordFormFillData&));
   MOCK_METHOD1(AddSavePasswordInfoBar, void(PasswordFormManager*));
   MOCK_METHOD0(GetProfileForPasswordManager, Profile*());
   MOCK_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
@@ -66,9 +66,9 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD1(GetAutofillableLoginsImpl, void(GetLoginsRequest*));
   MOCK_METHOD1(GetBlacklistLoginsImpl, void(GetLoginsRequest*));
   MOCK_METHOD1(FillAutofillableLogins,
-      bool(std::vector<webkit_glue::PasswordForm*>*));
+      bool(std::vector<webkit::forms::PasswordForm*>*));
   MOCK_METHOD1(FillBlacklistLogins,
-      bool(std::vector<webkit_glue::PasswordForm*>*));
+      bool(std::vector<webkit::forms::PasswordForm*>*));
 };
 
 ACTION_P2(InvokeConsumer, handle, forms) {

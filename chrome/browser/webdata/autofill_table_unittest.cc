@@ -21,11 +21,11 @@
 #include "chrome/common/guid.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/form_field.h"
+#include "webkit/forms/form_field.h"
 
 using base::Time;
 using base::TimeDelta;
-using webkit_glue::FormField;
+using webkit::forms::FormField;
 
 // So we can compare AutofillKeys with EXPECT_EQ().
 std::ostream& operator<<(std::ostream& os, const AutofillKey& key) {

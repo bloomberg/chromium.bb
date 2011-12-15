@@ -36,7 +36,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/password_form.h"
+#include "webkit/forms/password_form.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_comptr.h"
@@ -220,7 +220,7 @@ class TestObserver : public ProfileWriter,
     return true;
   }
 
-  virtual void AddPasswordForm(const webkit_glue::PasswordForm& form) {
+  virtual void AddPasswordForm(const webkit::forms::PasswordForm& form) {
     // Importer should obtain this password form only.
     EXPECT_EQ(GURL("http://localhost:8080/security/index.htm"), form.origin);
     EXPECT_EQ("http://localhost:8080/", form.signon_realm);
@@ -556,7 +556,7 @@ class FirefoxObserver : public ProfileWriter,
     return true;
   }
 
-  virtual void AddPasswordForm(const webkit_glue::PasswordForm& form) {
+  virtual void AddPasswordForm(const webkit::forms::PasswordForm& form) {
     PasswordList p = kFirefox2Passwords[password_count_];
     EXPECT_EQ(p.origin, form.origin.spec());
     EXPECT_EQ(p.realm, form.signon_realm);
@@ -760,7 +760,7 @@ class Firefox3Observer : public ProfileWriter,
     return true;
   }
 
-  virtual void AddPasswordForm(const webkit_glue::PasswordForm& form) {
+  virtual void AddPasswordForm(const webkit::forms::PasswordForm& form) {
     PasswordList p = kFirefox3Passwords[password_count_];
     EXPECT_EQ(p.origin, form.origin.spec());
     EXPECT_EQ(p.realm, form.signon_realm);

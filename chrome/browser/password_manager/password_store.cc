@@ -10,15 +10,15 @@
 #include "base/task.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "content/public/browser/browser_thread.h"
-#include "webkit/glue/password_form.h"
+#include "webkit/forms/password_form.h"
 
 using content::BrowserThread;
 using std::vector;
-using webkit_glue::PasswordForm;
+using webkit::forms::PasswordForm;
 
 PasswordStore::GetLoginsRequest::GetLoginsRequest(GetLoginsCallback* callback)
     : CancelableRequest1<GetLoginsCallback,
-                         std::vector<webkit_glue::PasswordForm*> >(callback) {
+                         std::vector<webkit::forms::PasswordForm*> >(callback) {
 }
 
 PasswordStore::GetLoginsRequest::~GetLoginsRequest() {

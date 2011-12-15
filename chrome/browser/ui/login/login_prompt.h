@@ -49,7 +49,7 @@ class LoginHandler : public ResourceDispatcherHostLoginDelegate,
 
   // Sets information about the authentication type (|form|) and the
   // |password_manager| for this profile.
-  void SetPasswordForm(const webkit_glue::PasswordForm& form);
+  void SetPasswordForm(const webkit::forms::PasswordForm& form);
   void SetPasswordManager(PasswordManager* password_manager);
 
   // Returns the TabContents that needs authentication.
@@ -141,7 +141,7 @@ class LoginHandler : public ResourceDispatcherHostLoginDelegate,
   // when later notifying the password manager if the credentials were accepted
   // or rejected.
   // This should only be accessed on the UI loop.
-  webkit_glue::PasswordForm password_form_;
+  webkit::forms::PasswordForm password_form_;
 
   // Points to the password manager owned by the TabContents requesting auth.
   // Can be null if the TabContents is not a TabContents.

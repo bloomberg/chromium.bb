@@ -15,7 +15,7 @@ using passwords_helper::GetVerifierPasswordCount;
 using passwords_helper::GetVerifierPasswordStore;
 using passwords_helper::ProfileContainsSamePasswordFormsAsVerifier;
 
-using webkit_glue::PasswordForm;
+using webkit::forms::PasswordForm;
 
 class SingleClientPasswordsSyncTest : public SyncTest {
  public:

@@ -92,7 +92,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
-#include "webkit/glue/password_form.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "chrome/browser/external_tab_container_win.h"

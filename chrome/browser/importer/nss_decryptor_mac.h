@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,8 +105,11 @@ typedef SECStatus
 typedef void (*SECITEMFreeItemFunc)(SECItem *item, PRBool free_it);
 typedef void (*PLArenaFinishFunc)(void);
 typedef PRStatus (*PRCleanupFunc)(void);
-namespace webkit_glue {
+
+namespace webkit {
+namespace forms {
 struct PasswordForm;
+}
 }
 
 // A wrapper for Firefox NSS decrypt component.
@@ -130,13 +133,13 @@ class NSSDecryptor {
   // username/password and reads other related information.
   // The result will be stored in |forms|.
   void ParseSignons(const std::string& content,
-                    std::vector<webkit_glue::PasswordForm>* forms);
+                    std::vector<webkit::forms::PasswordForm>* forms);
 
   // Reads and parses the Firefox password sqlite db, decrypts the
   // username/password and reads other related information.
   // The result will be stored in |forms|.
   bool ReadAndParseSignons(const FilePath& sqlite_file,
-                           std::vector<webkit_glue::PasswordForm>* forms);
+                           std::vector<webkit::forms::PasswordForm>* forms);
  private:
   PK11SlotInfo* GetKeySlotForDB() const { return PK11_GetInternalKeySlot(); }
   void FreeSlot(PK11SlotInfo* slot) const { PK11_FreeSlot(slot); }

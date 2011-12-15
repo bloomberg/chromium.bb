@@ -19,7 +19,7 @@
 #include "content/public/browser/notification_service.h"
 
 using content::BrowserThread;
-using webkit_glue::PasswordForm;
+using webkit::forms::PasswordForm;
 
 // MigrateHelper handles migration from WebDB to PasswordStore. It runs
 // entirely on the UI thread and is owned by PasswordStoreDefault.
@@ -181,7 +181,7 @@ void PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
 }
 
 void PasswordStoreDefault::GetLoginsImpl(
-    GetLoginsRequest* request, const webkit_glue::PasswordForm& form) {
+    GetLoginsRequest* request, const webkit::forms::PasswordForm& form) {
   login_db_->GetLogins(form, &request->value);
   ForwardLoginsResult(request);
 }

@@ -8,6 +8,7 @@ include_rules = [
   "+remoting/client/plugin",
   "+sandbox/src",
   "+skia",
+  "+webkit/forms",  # Defines some types that are marshalled over IPC.
   "+webkit/glue",
   "+webkit/plugins",
 

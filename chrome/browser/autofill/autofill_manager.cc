@@ -19,8 +19,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
-#include "chrome/browser/autofill/autofill_feedback_infobar_delegate.h"
 #include "chrome/browser/autofill/autofill_external_delegate.h"
+#include "chrome/browser/autofill/autofill_feedback_infobar_delegate.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/autofill_profile.h"
@@ -54,16 +54,16 @@
 #include "ipc/ipc_message_macros.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
-#include "webkit/glue/form_data.h"
-#include "webkit/glue/form_data_predictions.h"
-#include "webkit/glue/form_field.h"
+#include "webkit/forms/form_data.h"
+#include "webkit/forms/form_data_predictions.h"
+#include "webkit/forms/form_field.h"
 
 using base::TimeTicks;
 using content::BrowserThread;
 using switches::kEnableAutofillFeedback;
-using webkit_glue::FormData;
-using webkit_glue::FormDataPredictions;
-using webkit_glue::FormField;
+using webkit::forms::FormData;
+using webkit::forms::FormDataPredictions;
+using webkit::forms::FormField;
 
 namespace {
 
@@ -115,7 +115,7 @@ void RemoveDuplicateSuggestions(std::vector<string16>* values,
 // logical form.  Returns true if any field in the given |section| within |form|
 // is auto-filled.
 bool SectionIsAutofilled(const FormStructure& form_structure,
-                         const webkit_glue::FormData& form,
+                         const FormData& form,
                          const string16& section) {
   DCHECK_EQ(form_structure.field_count(), form.fields.size());
   for (size_t i = 0; i < form_structure.field_count(); ++i) {
@@ -1130,7 +1130,7 @@ void AutofillManager::GetCreditCardSuggestions(
 
 void AutofillManager::FillCreditCardFormField(const CreditCard& credit_card,
                                               AutofillFieldType type,
-                                              webkit_glue::FormField* field) {
+                                              FormField* field) {
   DCHECK_EQ(AutofillType::CREDIT_CARD, AutofillType(type).group());
   DCHECK(field);
 
@@ -1154,7 +1154,7 @@ void AutofillManager::FillCreditCardFormField(const CreditCard& credit_card,
 void AutofillManager::FillFormField(const AutofillProfile& profile,
                                     const AutofillField& cached_field,
                                     size_t variant,
-                                    webkit_glue::FormField* field) {
+                                    FormField* field) {
   AutofillFieldType type = cached_field.type();
   DCHECK_NE(AutofillType::CREDIT_CARD, AutofillType(type).group());
   DCHECK(field);
@@ -1181,7 +1181,7 @@ void AutofillManager::FillFormField(const AutofillProfile& profile,
 void AutofillManager::FillPhoneNumberField(const AutofillProfile& profile,
                                            const AutofillField& cached_field,
                                            size_t variant,
-                                           webkit_glue::FormField* field) {
+                                           FormField* field) {
   std::vector<string16> values;
   profile.GetCanonicalizedMultiInfo(cached_field.type(), &values);
   DCHECK(variant < values.size());

@@ -30,18 +30,18 @@ class PasswordStoreX : public PasswordStoreDefault {
   // with return values rather than implicit consumer notification.
   class NativeBackend {
    public:
-    typedef std::vector<webkit_glue::PasswordForm*> PasswordFormList;
+    typedef std::vector<webkit::forms::PasswordForm*> PasswordFormList;
 
     virtual ~NativeBackend() {}
 
     virtual bool Init() = 0;
 
-    virtual bool AddLogin(const webkit_glue::PasswordForm& form) = 0;
-    virtual bool UpdateLogin(const webkit_glue::PasswordForm& form) = 0;
-    virtual bool RemoveLogin(const webkit_glue::PasswordForm& form) = 0;
+    virtual bool AddLogin(const webkit::forms::PasswordForm& form) = 0;
+    virtual bool UpdateLogin(const webkit::forms::PasswordForm& form) = 0;
+    virtual bool RemoveLogin(const webkit::forms::PasswordForm& form) = 0;
     virtual bool RemoveLoginsCreatedBetween(const base::Time& delete_begin,
                                             const base::Time& delete_end) = 0;
-    virtual bool GetLogins(const webkit_glue::PasswordForm& form,
+    virtual bool GetLogins(const webkit::forms::PasswordForm& form,
                            PasswordFormList* forms) = 0;
     virtual bool GetLoginsCreatedBetween(const base::Time& get_begin,
                                          const base::Time& get_end,
@@ -76,19 +76,21 @@ class PasswordStoreX : public PasswordStoreDefault {
   virtual ~PasswordStoreX();
 
   // Implements PasswordStore interface.
-  virtual void AddLoginImpl(const webkit_glue::PasswordForm& form) OVERRIDE;
-  virtual void UpdateLoginImpl(const webkit_glue::PasswordForm& form) OVERRIDE;
-  virtual void RemoveLoginImpl(const webkit_glue::PasswordForm& form) OVERRIDE;
+  virtual void AddLoginImpl(const webkit::forms::PasswordForm& form) OVERRIDE;
+  virtual void UpdateLoginImpl(
+      const webkit::forms::PasswordForm& form) OVERRIDE;
+  virtual void RemoveLoginImpl(
+      const webkit::forms::PasswordForm& form) OVERRIDE;
   virtual void RemoveLoginsCreatedBetweenImpl(
       const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
   virtual void GetLoginsImpl(GetLoginsRequest* request,
-                             const webkit_glue::PasswordForm& form) OVERRIDE;
+                             const webkit::forms::PasswordForm& form) OVERRIDE;
   virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) OVERRIDE;
   virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) OVERRIDE;
   virtual bool FillAutofillableLogins(
-      std::vector<webkit_glue::PasswordForm*>* forms) OVERRIDE;
+      std::vector<webkit::forms::PasswordForm*>* forms) OVERRIDE;
   virtual bool FillBlacklistLogins(
-      std::vector<webkit_glue::PasswordForm*>* forms) OVERRIDE;
+      std::vector<webkit::forms::PasswordForm*>* forms) OVERRIDE;
 
   // Sort logins by origin, like the ORDER BY clause in login_database.cc.
   void SortLoginsByOrigin(NativeBackend::PasswordFormList* list);

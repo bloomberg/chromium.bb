@@ -28,8 +28,13 @@
 #include "webkit/glue/window_open_disposition.h"
 #include "webkit/plugins/webplugininfo.h"
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 struct PasswordForm;
+}
+}
+
+namespace webkit_glue {
 struct ResourceDevToolsInfo;
 struct ResourceLoadTimingInfo;
 }
@@ -237,8 +242,8 @@ struct SimilarTypeTraits<WindowOpenDisposition> {
 };
 
 template <>
-struct CONTENT_EXPORT ParamTraits<webkit_glue::PasswordForm> {
-  typedef webkit_glue::PasswordForm param_type;
+struct CONTENT_EXPORT ParamTraits<webkit::forms::PasswordForm> {
+  typedef webkit::forms::PasswordForm param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

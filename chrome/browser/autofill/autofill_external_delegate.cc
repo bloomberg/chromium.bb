@@ -33,8 +33,8 @@ void AutofillExternalDelegate::SelectAutofillSuggestionAtIndex(int listIndex) {
 }
 
 void AutofillExternalDelegate::OnQuery(int query_id,
-                                       const webkit_glue::FormData& form,
-                                       const webkit_glue::FormField& field,
+                                       const webkit::forms::FormData& form,
+                                       const webkit::forms::FormField& field,
                                        const gfx::Rect& bounds,
                                        bool display_warning_if_disabled) {
   autofill_query_field_ = field;

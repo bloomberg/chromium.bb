@@ -31,9 +31,9 @@ AutofillField::AutofillField()
       phone_part_(IGNORED) {
 }
 
-AutofillField::AutofillField(const webkit_glue::FormField& field,
+AutofillField::AutofillField(const webkit::forms::FormField& field,
                              const string16& unique_name)
-    : webkit_glue::FormField(field),
+    : webkit::forms::FormField(field),
       unique_name_(unique_name),
       server_type_(NO_SERVER_DATA),
       heuristic_type_(UNKNOWN_TYPE),

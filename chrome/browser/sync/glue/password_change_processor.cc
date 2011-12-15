@@ -9,8 +9,8 @@
 #include "base/location.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/password_model_associator.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
@@ -23,7 +23,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "webkit/glue/password_form.h"
+#include "webkit/forms/password_form.h"
 
 using content::BrowserThread;
 
@@ -181,7 +181,7 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
       sync_api::ExtraPasswordChangeRecordData* extra =
           it->extra.get();
       const sync_pb::PasswordSpecificsData& password = extra->unencrypted();
-      webkit_glue::PasswordForm form;
+      webkit::forms::PasswordForm form;
       PasswordModelAssociator::CopyPassword(password, &form);
       deleted_passwords_.push_back(form);
       model_associator_->Disassociate(it->id);
@@ -201,7 +201,7 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
 
     const sync_pb::PasswordSpecificsData& password_data =
         sync_node.GetPasswordSpecifics();
-    webkit_glue::PasswordForm password;
+    webkit::forms::PasswordForm password;
     PasswordModelAssociator::CopyPassword(password_data, &password);
 
     if (sync_api::ChangeRecord::ACTION_ADD == it->action) {

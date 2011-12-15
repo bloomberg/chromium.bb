@@ -38,16 +38,18 @@ namespace buzz {
 class XmlElement;
 }
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 struct FormData;
 struct FormDataPredictions;
+}
 }
 
 // FormStructure stores a single HTML form together with the values entered
 // in the fields along with additional information needed by Autofill.
 class FormStructure {
  public:
-  explicit FormStructure(const webkit_glue::FormData& form);
+  explicit FormStructure(const webkit::forms::FormData& form);
   virtual ~FormStructure();
 
   // Runs several heuristics against the form fields to determine their possible
@@ -78,7 +80,7 @@ class FormStructure {
   // fields' predicted types.
   static void GetFieldTypePredictions(
       const std::vector<FormStructure*>& form_structures,
-      std::vector<webkit_glue::FormDataPredictions>* forms);
+      std::vector<webkit::forms::FormDataPredictions>* forms);
 
   // The unique signature for this form, composed of the target url domain,
   // the form name, and the form field names in a 64-bit hash.
@@ -139,8 +141,8 @@ class FormStructure {
 
   virtual std::string server_experiment_id() const;
 
-  bool operator==(const webkit_glue::FormData& form) const;
-  bool operator!=(const webkit_glue::FormData& form) const;
+  bool operator==(const webkit::forms::FormData& form) const;
+  bool operator!=(const webkit::forms::FormData& form) const;
 
  private:
   friend class FormStructureTest;

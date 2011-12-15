@@ -26,7 +26,7 @@
 #include "grit/generated_resources.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
-#include "webkit/glue/password_form.h"
+#include "webkit/forms/password_form.h"
 
 using content::BrowserThread;
 
@@ -311,7 +311,7 @@ void Firefox3Importer::ImportPasswords() {
     return;
   }
 
-  std::vector<webkit_glue::PasswordForm> forms;
+  std::vector<webkit::forms::PasswordForm> forms;
   FilePath source_path = source_path_;
   FilePath file = source_path.AppendASCII("signons.sqlite");
   if (file_util::PathExists(file)) {

@@ -10,9 +10,9 @@
 #include "base/logging.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "sql/statement.h"
-#include "webkit/glue/password_form.h"
+#include "webkit/forms/password_form.h"
 
-using webkit_glue::PasswordForm;
+using webkit::forms::PasswordForm;
 
 namespace {
 

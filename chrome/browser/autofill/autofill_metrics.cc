@@ -9,7 +9,7 @@
 #include "base/time.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/form_structure.h"
-#include "webkit/glue/form_data.h"
+#include "webkit/forms/form_data.h"
 
 namespace {
 
@@ -202,7 +202,7 @@ void LogServerExperimentId(const std::string& histogram_name,
   ServerExperiment metric = UNKNOWN_EXPERIMENT;
 
   const std::string default_experiment_name =
-      FormStructure(webkit_glue::FormData()).server_experiment_id();
+      FormStructure(webkit::forms::FormData()).server_experiment_id();
   if (experiment_id.empty())
     metric = NO_EXPERIMENT;
   else if (experiment_id == "ar06")

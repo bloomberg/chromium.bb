@@ -1217,7 +1217,7 @@ class AutomationProviderGetPasswordsObserver : public PasswordStoreConsumer {
 
   virtual void OnPasswordStoreRequestDone(
       CancelableRequestProvider::Handle handle,
-      const std::vector<webkit_glue::PasswordForm*>& result);
+      const std::vector<webkit::forms::PasswordForm*>& result) OVERRIDE;
 
  private:
   base::WeakPtr<AutomationProvider> provider_;

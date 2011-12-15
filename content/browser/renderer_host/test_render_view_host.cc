@@ -14,11 +14,11 @@
 #include "content/public/common/content_client.h"
 #include "content/test/test_browser_context.h"
 #include "ui/gfx/rect.h"
+#include "webkit/forms/password_form.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
-#include "webkit/glue/password_form.h"
 
-using webkit_glue::PasswordForm;
+using webkit::forms::PasswordForm;
 
 void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
                         int page_id,

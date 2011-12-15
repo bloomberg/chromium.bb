@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_FORM_DATA_PREDICTIONS_H__
-#define WEBKIT_GLUE_FORM_DATA_PREDICTIONS_H__
+#ifndef WEBKIT_FORMS_FORM_DATA_PREDICTIONS_H__
+#define WEBKIT_FORMS_FORM_DATA_PREDICTIONS_H__
 
 #include <string>
 #include <vector>
 
-#include "webkit/glue/form_data.h"
-#include "webkit/glue/form_field_predictions.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "webkit/forms/form_data.h"
+#include "webkit/forms/form_field_predictions.h"
+#include "webkit/forms/webkit_forms_export.h"
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 
 // Holds information about a form to be filled and/or submitted.
-struct WEBKIT_GLUE_EXPORT FormDataPredictions {
+struct WEBKIT_FORMS_EXPORT FormDataPredictions {
   // Data for this form.
   FormData data;
   // The form signature for communication with the crowdsourcing server.
@@ -30,6 +31,7 @@ struct WEBKIT_GLUE_EXPORT FormDataPredictions {
   ~FormDataPredictions();
 };
 
-}  // namespace webkit_glue
+}  // namespace forms
+}  // namespace webkit
 
-#endif  // WEBKIT_GLUE_FORM_DATA_PREDICTIONS_H__
+#endif  // WEBKIT_FORMS_FORM_DATA_PREDICTIONS_H__

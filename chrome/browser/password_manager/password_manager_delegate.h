@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DELEGATE_H_
 #pragma once
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 struct PasswordFormFillData;
-}  // namespace webkit_glue
+}
+}
 
 class PasswordFormManager;
 class Profile;
@@ -25,7 +27,7 @@ class PasswordManagerDelegate {
   // through the RenderViewHost to FillPasswordForm.  Tests can override this
   // to sever the dependency on the entire rendering stack.
   virtual void FillPasswordForm(
-      const webkit_glue::PasswordFormFillData& form_data) = 0;
+      const webkit::forms::PasswordFormFillData& form_data) = 0;
 
   // A mechanism to show an infobar in the current tab at our request.
   virtual void AddSavePasswordInfoBar(PasswordFormManager* form_to_save) = 0;

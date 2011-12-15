@@ -75,7 +75,7 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
     // Send the password store's reply back to the handler.
     virtual void OnPasswordStoreRequestDone(
         CancelableRequestProvider::Handle handle,
-        const std::vector<webkit_glue::PasswordForm*>& result) = 0;
+        const std::vector<webkit::forms::PasswordForm*>& result) = 0;
 
    protected:
     PasswordManagerHandler* page_;
@@ -93,7 +93,7 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
     // Send the password store's reply back to the handler.
     virtual void OnPasswordStoreRequestDone(
         CancelableRequestProvider::Handle handle,
-        const std::vector<webkit_glue::PasswordForm*>& result) OVERRIDE;
+        const std::vector<webkit::forms::PasswordForm*>& result) OVERRIDE;
   };
 
   // A short class to mediate requests to the password store for exceptions.
@@ -107,15 +107,15 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
     // Send the password store's reply back to the handler.
     virtual void OnPasswordStoreRequestDone(
         CancelableRequestProvider::Handle handle,
-        const std::vector<webkit_glue::PasswordForm*>& result) OVERRIDE;
+        const std::vector<webkit::forms::PasswordForm*>& result) OVERRIDE;
   };
 
   // Password store consumer for populating the password list and exceptions.
   PasswordListPopulater populater_;
   PasswordExceptionListPopulater exception_populater_;
 
-  ScopedVector<webkit_glue::PasswordForm> password_list_;
-  ScopedVector<webkit_glue::PasswordForm> password_exception_list_;
+  ScopedVector<webkit::forms::PasswordForm> password_list_;
+  ScopedVector<webkit::forms::PasswordForm> password_exception_list_;
 
   // User's pref
   std::string languages_;

@@ -13,8 +13,8 @@
 #include "content/browser/site_instance.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/page_transition_types.h"
-#include "webkit/glue/password_form.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/forms/password_form.h"
 
 TestTabContents::TestTabContents(content::BrowserContext* browser_context,
                                  SiteInstance* instance)
@@ -62,7 +62,7 @@ void TestTabContents::TestDidNavigateWithReferrer(
   params.should_update_history = false;
   params.searchable_form_url = GURL();
   params.searchable_form_encoding = std::string();
-  params.password_form = webkit_glue::PasswordForm();
+  params.password_form = webkit::forms::PasswordForm();
   params.security_info = std::string();
   params.gesture = NavigationGestureUser;
   params.was_within_same_page = false;

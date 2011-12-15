@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "webkit/glue/password_form.h"
+#include "webkit/forms/password_form.h"
 
 class PasswordStoreChange {
  public:
@@ -18,13 +18,13 @@ class PasswordStoreChange {
     REMOVE,
   };
 
-  PasswordStoreChange(Type type, const webkit_glue::PasswordForm& form)
+  PasswordStoreChange(Type type, const webkit::forms::PasswordForm& form)
       : type_(type), form_(form) {
   }
   virtual ~PasswordStoreChange() {}
 
   Type type() const { return type_; }
-  const webkit_glue::PasswordForm& form() const { return form_; }
+  const webkit::forms::PasswordForm& form() const { return form_; }
 
   bool operator==(const PasswordStoreChange& other) const {
     return type() == other.type() &&
@@ -46,7 +46,7 @@ class PasswordStoreChange {
 
  private:
   Type type_;
-  webkit_glue::PasswordForm form_;
+  webkit::forms::PasswordForm form_;
 };
 
 typedef std::vector<PasswordStoreChange> PasswordStoreChangeList;

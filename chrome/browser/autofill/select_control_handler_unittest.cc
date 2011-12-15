@@ -9,7 +9,7 @@
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/select_control_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/form_field.h"
+#include "webkit/forms/form_field.h"
 
 typedef testing::Test SelectControlHandlerTest;
 
@@ -21,7 +21,7 @@ TEST_F(SelectControlHandlerTest, CreditCardMonthExact) {
   for (size_t i = 0; i < arraysize(kMonthsNumeric); ++i)
     options[i] = ASCIIToUTF16(kMonthsNumeric[i]);
 
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("select-one");
   field.option_values = options;
   field.option_contents = options;
@@ -41,7 +41,7 @@ TEST_F(SelectControlHandlerTest, CreditCardMonthAbbreviated) {
   for (size_t i = 0; i < arraysize(kMonthsAbbreviated); ++i)
     options[i] = ASCIIToUTF16(kMonthsAbbreviated[i]);
 
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("select-one");
   field.option_values = options;
   field.option_contents = options;
@@ -61,7 +61,7 @@ TEST_F(SelectControlHandlerTest, CreditCardMonthFull) {
   for (size_t i = 0; i < arraysize(kMonthsFull); ++i)
     options[i] = ASCIIToUTF16(kMonthsFull[i]);
 
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("select-one");
   field.option_values = options;
   field.option_contents = options;
@@ -80,7 +80,7 @@ TEST_F(SelectControlHandlerTest, CreditCardMonthNumeric) {
   for (size_t i = 0; i < arraysize(kMonthsNumeric); ++i)
     options[i] = ASCIIToUTF16(kMonthsNumeric[i]);
 
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("select-one");
   field.option_values = options;
   field.option_contents = options;
@@ -99,7 +99,7 @@ TEST_F(SelectControlHandlerTest, AddressCountryFull) {
   for (size_t i = 0; i < arraysize(kCountries); ++i)
     options[i] = ASCIIToUTF16(kCountries[i]);
 
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("select-one");
   field.option_values = options;
   field.option_contents = options;
@@ -118,7 +118,7 @@ TEST_F(SelectControlHandlerTest, AddressCountryAbbrev) {
   for (size_t i = 0; i < arraysize(kCountries); ++i)
     options[i] = ASCIIToUTF16(kCountries[i]);
 
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("select-one");
   field.option_values = options;
   field.option_contents = options;
@@ -137,7 +137,7 @@ TEST_F(SelectControlHandlerTest, AddressStateFull) {
   for (size_t i = 0; i < arraysize(kStates); ++i)
     options[i] = ASCIIToUTF16(kStates[i]);
 
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("select-one");
   field.option_values = options;
   field.option_contents = options;
@@ -156,7 +156,7 @@ TEST_F(SelectControlHandlerTest, AddressStateAbbrev) {
   for (size_t i = 0; i < arraysize(kStates); ++i)
     options[i] = ASCIIToUTF16(kStates[i]);
 
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("select-one");
   field.option_values = options;
   field.option_contents = options;
@@ -178,7 +178,7 @@ TEST_F(SelectControlHandlerTest, FillByValue) {
     contents[i] = ASCIIToUTF16(base::StringPrintf("%d", static_cast<int>(i)));
   }
 
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("select-one");
   field.option_values = values;
   field.option_contents = contents;
@@ -200,7 +200,7 @@ TEST_F(SelectControlHandlerTest, FillByContents) {
     contents[i] = ASCIIToUTF16(kStates[i]);
   }
 
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("select-one");
   field.option_values = values;
   field.option_contents = contents;

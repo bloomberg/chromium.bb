@@ -882,7 +882,7 @@ enum NotificationType {
   // store are changed. The detail of this notification is a list of changes
   // represented by a vector of PasswordStoreChange. Each change includes a
   // change type (ADD, UPDATE, or REMOVE) as well as the
-  // |webkit_glue::PasswordForm|s that were affected.
+  // |webkit::forms::PasswordForm|s that were affected.
   NOTIFICATION_LOGINS_CHANGED,
 
   // Sent when an import process has ended.

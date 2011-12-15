@@ -9,7 +9,7 @@
 #include "chrome/browser/importer/importer_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/glue/password_form.h"
+#include "webkit/forms/password_form.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/password_manager/ie7_password.h"
@@ -74,7 +74,7 @@ void InProcessImporterBridge::SetKeywords(
 }
 
 void InProcessImporterBridge::SetPasswordForm(
-    const webkit_glue::PasswordForm& form) {
+    const webkit::forms::PasswordForm& form) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ProfileWriter::AddPasswordForm, writer_, form));

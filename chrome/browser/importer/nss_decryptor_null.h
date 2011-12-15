@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,8 +14,10 @@
 
 class FilePath;
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 struct PasswordForm;
+}
 }
 
 // A NULL wrapper for Firefox NSS decrypt component, for use in builds where
@@ -26,9 +28,9 @@ class NSSDecryptor {
   bool Init(const FilePath& dll_path, const FilePath& db_path) { return false; }
   string16 Decrypt(const std::string& crypt) const { return string16(); }
   void ParseSignons(const std::string& content,
-                    std::vector<webkit_glue::PasswordForm>* forms) {}
+                    std::vector<webkit::forms::PasswordForm>* forms) {}
   bool ReadAndParseSignons(const FilePath& sqlite_file,
-                           std::vector<webkit_glue::PasswordForm>* forms) {
+                           std::vector<webkit::forms::PasswordForm>* forms) {
     return false;
   }
 

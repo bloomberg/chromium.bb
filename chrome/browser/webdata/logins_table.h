@@ -15,8 +15,10 @@ namespace base {
 class Time;
 }
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 struct PasswordForm;
+}
 }
 
 #if defined(OS_WIN)
@@ -55,7 +57,7 @@ class LoginsTable : public WebDatabaseTable {
   virtual bool IsSyncable() OVERRIDE;
 
   // Adds |form| to the list of remembered password forms.
-  bool AddLogin(const webkit_glue::PasswordForm& form);
+  bool AddLogin(const webkit::forms::PasswordForm& form);
 
 #if defined(OS_WIN)
   // Adds |info| to the list of imported passwords from ie7/ie8.
@@ -69,10 +71,10 @@ class LoginsTable : public WebDatabaseTable {
 #endif
 
   // Updates remembered password form.
-  bool UpdateLogin(const webkit_glue::PasswordForm& form);
+  bool UpdateLogin(const webkit::forms::PasswordForm& form);
 
   // Removes |form| from the list of remembered password forms.
-  bool RemoveLogin(const webkit_glue::PasswordForm& form);
+  bool RemoveLogin(const webkit::forms::PasswordForm& form);
 
   // Removes all logins created from |delete_begin| onwards (inclusive) and
   // before |delete_end|. You may use a null Time value to do an unbounded
@@ -83,14 +85,14 @@ class LoginsTable : public WebDatabaseTable {
   // Loads a list of matching password forms into the specified vector |forms|.
   // The list will contain all possibly relevant entries to the observed |form|,
   // including blacklisted matches.
-  bool GetLogins(const webkit_glue::PasswordForm& form,
-                 std::vector<webkit_glue::PasswordForm*>* forms);
+  bool GetLogins(const webkit::forms::PasswordForm& form,
+                 std::vector<webkit::forms::PasswordForm*>* forms);
 
   // Loads the complete list of password forms into the specified vector |forms|
   // if include_blacklisted is true, otherwise only loads those which are
   // actually autofill-able; i.e haven't been blacklisted by the user selecting
   // the 'Never for this site' button.
-  bool GetAllLogins(std::vector<webkit_glue::PasswordForm*>* forms,
+  bool GetAllLogins(std::vector<webkit::forms::PasswordForm*>* forms,
                     bool include_blacklisted);
 
  private:

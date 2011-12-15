@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/form_field.h"
+#include "webkit/forms/form_field.h"
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -17,7 +17,8 @@ using WebKit::WebOptionElement;
 using WebKit::WebSelectElement;
 using WebKit::WebVector;
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 
 FormField::FormField()
     : max_length(0),
@@ -64,4 +65,5 @@ std::ostream& operator<<(std::ostream& os, const FormField& field) {
       << (field.should_autocomplete ? "true" : "false");
 }
 
-}  // namespace webkit_glue
+}  // namespace forms
+}  // namespace webkit

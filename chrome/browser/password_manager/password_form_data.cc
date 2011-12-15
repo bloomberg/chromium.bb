@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_form_data.h"
 
-using webkit_glue::PasswordForm;
+using webkit::forms::PasswordForm;
 
 PasswordForm* CreatePasswordFormFromData(
     const PasswordFormData& form_data) {
@@ -69,7 +69,7 @@ std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {
             << "date_created: " << form.date_created.ToDoubleT();
 }
 
-typedef std::set<const webkit_glue::PasswordForm*> SetOfForms;
+typedef std::set<const webkit::forms::PasswordForm*> SetOfForms;
 
 bool ContainsSamePasswordFormsPtr(
     const std::vector<PasswordForm*>& first,
@@ -98,8 +98,8 @@ bool ContainsSamePasswordFormsPtr(
 }
 
 bool ContainsSamePasswordForms(
-    std::vector<webkit_glue::PasswordForm>& first,
-    std::vector<webkit_glue::PasswordForm>& second) {
+    std::vector<webkit::forms::PasswordForm>& first,
+    std::vector<webkit::forms::PasswordForm>& second) {
   std::vector<PasswordForm*> first_ptr;
   for (unsigned int i = 0; i < first.size(); ++i) {
     first_ptr.push_back(&first[i]);

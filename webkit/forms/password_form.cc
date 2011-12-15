@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/password_form.h"
+#include "webkit/forms/password_form.h"
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 
 PasswordForm::PasswordForm()
     : scheme(SCHEME_HTML),
@@ -33,4 +34,5 @@ PasswordForm::PasswordForm(const WebKit::WebPasswordFormData& web_password_form)
 PasswordForm::~PasswordForm() {
 }
 
-}  // namespace webkit_glue
+}  // namespace forms
+}  // namespace webkit

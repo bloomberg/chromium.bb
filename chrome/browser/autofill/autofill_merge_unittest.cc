@@ -16,7 +16,7 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
-#include "webkit/glue/form_data.h"
+#include "webkit/forms/form_data.h"
 
 namespace {
 
@@ -155,7 +155,7 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
   personal_data_.Reset();
 
   // Create a test form.
-  webkit_glue::FormData form;
+  webkit::forms::FormData form;
   form.name = ASCIIToUTF16("MyTestForm");
   form.method = ASCIIToUTF16("POST");
   form.origin = GURL("https://www.example.com/origin.html");
@@ -175,7 +175,7 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
       string16 field_type = UTF8ToUTF16(line.substr(0, separator_pos));
       string16 value = UTF8ToUTF16(line.substr(separator_pos + kFieldOffset));
 
-      webkit_glue::FormField field;
+      webkit::forms::FormField field;
       field.label = field_type;
       field.name = field_type;
       field.value = value;

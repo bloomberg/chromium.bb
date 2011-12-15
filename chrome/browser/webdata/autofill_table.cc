@@ -26,10 +26,10 @@
 #include "chrome/common/guid.h"
 #include "sql/statement.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/glue/form_field.h"
+#include "webkit/forms/form_field.h"
 
 using base::Time;
-using webkit_glue::FormField;
+using webkit::forms::FormField;
 
 namespace {
 

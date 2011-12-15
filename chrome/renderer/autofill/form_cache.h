@@ -12,17 +12,19 @@
 
 #include "base/string16.h"
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 struct FormData;
 struct FormDataPredictions;
-}  // namespace webkit_glue
+}
+}
 
 namespace WebKit {
 class WebDocument;
 class WebFrame;
 class WebInputElement;
 class WebSelectElement;
-}  // namespace WebKit
+}
 
 namespace autofill {
 
@@ -35,7 +37,7 @@ class FormCache {
   // Scans the DOM in |frame| extracting and storing forms.
   // Returns a vector of the extracted forms.
   void ExtractForms(const WebKit::WebFrame& frame,
-                    std::vector<webkit_glue::FormData>* forms);
+                    std::vector<webkit::forms::FormData>* forms);
 
   // Resets the forms for the specified |frame|.
   void ResetFrame(const WebKit::WebFrame& frame);
@@ -48,7 +50,7 @@ class FormCache {
   // field's overall predicted type.  Also sets the title to include the field's
   // heuristic type, server type, and signature; as well as the form's signature
   // and the experiment id for the server predictions.
-  bool ShowPredictions(const webkit_glue::FormDataPredictions& form);
+  bool ShowPredictions(const webkit::forms::FormDataPredictions& form);
 
  private:
   // The cached web frames.

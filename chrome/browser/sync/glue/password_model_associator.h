@@ -22,14 +22,16 @@ class MessageLoop;
 class PasswordStore;
 class ProfileSyncService;
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 struct PasswordForm;
-};
+}
+}
 
 namespace sync_api {
 class WriteNode;
 class WriteTransaction;
-};
+}
 
 namespace browser_sync {
 
@@ -43,7 +45,7 @@ extern const char kPasswordTag[];
 class PasswordModelAssociator
   : public PerDataTypeAssociatorInterface<std::string, std::string> {
  public:
-  typedef std::vector<webkit_glue::PasswordForm> PasswordVector;
+  typedef std::vector<webkit::forms::PasswordForm> PasswordVector;
 
   static syncable::ModelType model_type() { return syncable::PASSWORDS; }
   PasswordModelAssociator(ProfileSyncService* sync_service,
@@ -96,7 +98,7 @@ class PasswordModelAssociator
                             const PasswordVector* updated_passwords,
                             const PasswordVector* deleted_passwords);
 
-  static std::string MakeTag(const webkit_glue::PasswordForm& password);
+  static std::string MakeTag(const webkit::forms::PasswordForm& password);
   static std::string MakeTag(const sync_pb::PasswordSpecificsData& password);
   static std::string MakeTag(const std::string& origin_url,
                              const std::string& username_element,
@@ -105,12 +107,12 @@ class PasswordModelAssociator
                              const std::string& signon_realm);
 
   static void CopyPassword(const sync_pb::PasswordSpecificsData& password,
-                           webkit_glue::PasswordForm* new_password);
+                           webkit::forms::PasswordForm* new_password);
 
   static bool MergePasswords(const sync_pb::PasswordSpecificsData& password,
-                             const webkit_glue::PasswordForm& password_form,
-                             webkit_glue::PasswordForm* new_password);
-  static void WriteToSyncNode(const webkit_glue::PasswordForm& password_form,
+                             const webkit::forms::PasswordForm& password_form,
+                             webkit::forms::PasswordForm* new_password);
+  static void WriteToSyncNode(const webkit::forms::PasswordForm& password_form,
                               sync_api::WriteNode* node);
 
   // Called at various points in model association to determine if the

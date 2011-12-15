@@ -54,7 +54,8 @@ class ExternalProcessImporterBridge : public ImporterBridge {
                            int default_keyword_index,
                            bool unique_on_host_and_path) OVERRIDE;
 
-  virtual void SetPasswordForm(const webkit_glue::PasswordForm& form) OVERRIDE;
+  virtual void SetPasswordForm(
+      const webkit::forms::PasswordForm& form) OVERRIDE;
 
   virtual void NotifyStarted() OVERRIDE;
   virtual void NotifyItemStarted(importer::ImportItem item) OVERRIDE;

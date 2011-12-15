@@ -26,7 +26,7 @@
 #include "webkit/glue/webkit_glue.h"
 
 using content::BrowserThread;
-using webkit_glue::PasswordForm;
+using webkit::forms::PasswordForm;
 
 namespace {
 

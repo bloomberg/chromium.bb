@@ -19,7 +19,7 @@
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/glue/password_form.h"
+#include "webkit/forms/password_form.h"
 
 // After a successful *new* login attempt, we take the PasswordFormManager in
 // provisional_save_manager_ and move it to a SavePasswordInfoBarDelegate while
@@ -110,7 +110,7 @@ bool SavePasswordInfoBarDelegate::Cancel() {
 // PasswordManagerDelegateImpl ------------------------------------------------
 
 void PasswordManagerDelegateImpl::FillPasswordForm(
-    const webkit_glue::PasswordFormFillData& form_data) {
+    const webkit::forms::PasswordFormFillData& form_data) {
   tab_contents_->tab_contents()->render_view_host()->Send(
       new AutofillMsg_FillPasswordForm(
           tab_contents_->tab_contents()->render_view_host()->routing_id(),

@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_FORM_DATA_H__
-#define WEBKIT_GLUE_FORM_DATA_H__
+#ifndef WEBKIT_FORMS_FORM_DATA_H__
+#define WEBKIT_FORMS_FORM_DATA_H__
 
 #include <vector>
 
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/glue/form_field.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "webkit/forms/form_field.h"
+#include "webkit/forms/webkit_forms_export.h"
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 
 // Holds information about a form to be filled and/or submitted.
-struct WEBKIT_GLUE_EXPORT FormData {
+struct WEBKIT_FORMS_EXPORT FormData {
   // The name of the form.
   string16 name;
   // GET or POST.
@@ -37,6 +38,7 @@ struct WEBKIT_GLUE_EXPORT FormData {
   bool operator==(const FormData& form) const;
 };
 
-}  // namespace webkit_glue
+}  // namespace forms
+}  // namespace webkit
 
-#endif  // WEBKIT_GLUE_FORM_DATA_H__
+#endif  // WEBKIT_FORMS_FORM_DATA_H__

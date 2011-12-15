@@ -44,9 +44,11 @@ namespace IPC {
 class Message;
 }
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 struct FormData;
 struct FormField;
+}
 }
 
 // Manages saving and restoring the user's personal information entered into web
@@ -70,8 +72,8 @@ class AutofillManager : public TabContentsObserver,
 
   // Called from our external delegate so they cannot be private.
   void OnFillAutofillFormData(int query_id,
-                              const webkit_glue::FormData& form,
-                              const webkit_glue::FormField& field,
+                              const webkit::forms::FormData& form,
+                              const webkit::forms::FormField& field,
                               int unique_id);
   void OnDidShowAutofillSuggestions(bool is_new_popup);
   void OnDidFillAutofillFormData(const base::TimeTicks& timestamp);
@@ -130,7 +132,7 @@ class AutofillManager : public TabContentsObserver,
   // Processes the submitted |form|, saving any new Autofill data and uploading
   // the possible field types for the submitted fields to the crowdsouring
   // server.  Returns false if this form is not relevant for Autofill.
-  bool OnFormSubmitted(const webkit_glue::FormData& form,
+  bool OnFormSubmitted(const webkit::forms::FormData& form,
                        const base::TimeTicks& timestamp);
 
  private:
@@ -144,16 +146,16 @@ class AutofillManager : public TabContentsObserver,
   virtual void OnLoadedServerPredictions(
       const std::string& response_xml) OVERRIDE;
 
-  void OnFormsSeen(const std::vector<webkit_glue::FormData>& forms,
+  void OnFormsSeen(const std::vector<webkit::forms::FormData>& forms,
                    const base::TimeTicks& timestamp);
-  void OnTextFieldDidChange(const webkit_glue::FormData& form,
-                            const webkit_glue::FormField& field,
+  void OnTextFieldDidChange(const webkit::forms::FormData& form,
+                            const webkit::forms::FormField& field,
                             const base::TimeTicks& timestamp);
 
   // The |bounding_box| is a window relative value.
   void OnQueryFormFieldAutofill(int query_id,
-                                const webkit_glue::FormData& form,
-                                const webkit_glue::FormField& field,
+                                const webkit::forms::FormData& form,
+                                const webkit::forms::FormField& field,
                                 const gfx::Rect& bounding_box,
                                 bool display_warning);
   void OnShowAutofillDialog();
@@ -178,15 +180,15 @@ class AutofillManager : public TabContentsObserver,
 
   // Fills |form_structure| cached element corresponding to |form|.
   // Returns false if the cached element was not found.
-  bool FindCachedForm(const webkit_glue::FormData& form,
+  bool FindCachedForm(const webkit::forms::FormData& form,
                       FormStructure** form_structure) const WARN_UNUSED_RESULT;
 
   // Fills |form_structure| and |autofill_field| with the cached elements
   // corresponding to |form| and |field|.  This might have the side-effect of
   // updating the cache.  Returns false if the |form| is not autofillable, or if
   // it is not already present in the cache and the cache is full.
-  bool GetCachedFormAndField(const webkit_glue::FormData& form,
-                             const webkit_glue::FormField& field,
+  bool GetCachedFormAndField(const webkit::forms::FormData& form,
+                             const webkit::forms::FormField& field,
                              FormStructure** form_structure,
                              AutofillField** autofill_field) WARN_UNUSED_RESULT;
 
@@ -194,7 +196,7 @@ class AutofillManager : public TabContentsObserver,
   // |cached_form| should be a pointer to the existing version of the form, or
   // NULL if no cached version exists.  The updated form is then written into
   // |updated_form|.  Returns false if the cache could not be updated.
-  bool UpdateCachedForm(const webkit_glue::FormData& live_form,
+  bool UpdateCachedForm(const webkit::forms::FormData& live_form,
                         const FormStructure* cached_form,
                         FormStructure** updated_form) WARN_UNUSED_RESULT;
 
@@ -202,7 +204,7 @@ class AutofillManager : public TabContentsObserver,
   // value of |field| and returns the labels of the matching profiles. |labels|
   // is filled with the Profile label.
   void GetProfileSuggestions(FormStructure* form,
-                             const webkit_glue::FormField& field,
+                             const webkit::forms::FormField& field,
                              AutofillFieldType type,
                              std::vector<string16>* values,
                              std::vector<string16>* labels,
@@ -212,7 +214,7 @@ class AutofillManager : public TabContentsObserver,
   // Returns a list of values from the stored credit cards that match |type| and
   // the value of |field| and returns the labels of the matching credit cards.
   void GetCreditCardSuggestions(FormStructure* form,
-                                const webkit_glue::FormField& field,
+                                const webkit::forms::FormField& field,
                                 AutofillFieldType type,
                                 std::vector<string16>* values,
                                 std::vector<string16>* labels,
@@ -222,7 +224,7 @@ class AutofillManager : public TabContentsObserver,
   // Set |field|'s value based on |type| and contents of the |credit_card|.
   void FillCreditCardFormField(const CreditCard& credit_card,
                                AutofillFieldType type,
-                               webkit_glue::FormField* field);
+                               webkit::forms::FormField* field);
 
   // Set |field|'s value based on |cached_field|'s type and contents of the
   // |profile|. The |variant| parameter specifies which value in a multi-valued
@@ -230,7 +232,7 @@ class AutofillManager : public TabContentsObserver,
   void FillFormField(const AutofillProfile& profile,
                      const AutofillField& cached_field,
                      size_t variant,
-                     webkit_glue::FormField* field);
+                     webkit::forms::FormField* field);
 
   // Set |field|'s value for phone number based on contents of the |profile|.
   // The |cached_field| specifies the type of the phone and whether this is a
@@ -239,10 +241,10 @@ class AutofillManager : public TabContentsObserver,
   void FillPhoneNumberField(const AutofillProfile& profile,
                             const AutofillField& cached_field,
                             size_t variant,
-                            webkit_glue::FormField* field);
+                            webkit::forms::FormField* field);
 
   // Parses the forms using heuristic matching and querying the Autofill server.
-  void ParseForms(const std::vector<webkit_glue::FormData>& forms);
+  void ParseForms(const std::vector<webkit::forms::FormData>& forms);
 
   // Imports the form data, submitted by the user, into |personal_data_|.
   void ImportFormData(const FormStructure& submitted_form);

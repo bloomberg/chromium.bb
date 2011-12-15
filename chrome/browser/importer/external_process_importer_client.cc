@@ -285,7 +285,7 @@ void ExternalProcessImporterClient::OnFaviconsImportGroup(
 }
 
 void ExternalProcessImporterClient::OnPasswordFormImportReady(
-    const webkit_glue::PasswordForm& form) {
+    const webkit::forms::PasswordForm& form) {
   if (cancelled_)
     return;
 

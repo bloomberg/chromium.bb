@@ -13,9 +13,11 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 struct FormData;
-}  // namespace webkit_glue
+}
+}
 
 class AutofillExternalDelegate;
 class Profile;
@@ -47,7 +49,7 @@ class AutocompleteHistoryManager : public TabContentsObserver,
       const std::vector<string16>& autofill_labels,
       const std::vector<string16>& autofill_icons,
       const std::vector<int>& autofill_unique_ids);
-  void OnFormSubmitted(const webkit_glue::FormData& form);
+  void OnFormSubmitted(const webkit::forms::FormData& form);
 
   // Sets our external delegate.
   void SetExternalDelegate(AutofillExternalDelegate* delegate);

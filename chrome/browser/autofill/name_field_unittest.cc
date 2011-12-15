@@ -9,7 +9,7 @@
 #include "chrome/browser/autofill/autofill_scanner.h"
 #include "chrome/browser/autofill/name_field.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/form_field.h"
+#include "webkit/forms/form_field.h"
 
 class NameFieldTest : public testing::Test {
  public:
@@ -30,7 +30,7 @@ class NameFieldTest : public testing::Test {
 };
 
 TEST_F(NameFieldTest, FirstMiddleLast) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("First Name");
@@ -61,7 +61,7 @@ TEST_F(NameFieldTest, FirstMiddleLast) {
 }
 
 TEST_F(NameFieldTest, FirstMiddleLast2) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = string16();
@@ -92,7 +92,7 @@ TEST_F(NameFieldTest, FirstMiddleLast2) {
 }
 
 TEST_F(NameFieldTest, FirstLast) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = string16();
@@ -116,7 +116,7 @@ TEST_F(NameFieldTest, FirstLast) {
 }
 
 TEST_F(NameFieldTest, FirstLast2) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Name");
@@ -140,7 +140,7 @@ TEST_F(NameFieldTest, FirstLast2) {
 }
 
 TEST_F(NameFieldTest, FirstLastMiddleWithSpaces) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("First  Name");
@@ -171,7 +171,7 @@ TEST_F(NameFieldTest, FirstLastMiddleWithSpaces) {
 }
 
 TEST_F(NameFieldTest, FirstLastEmpty) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Name");
@@ -195,7 +195,7 @@ TEST_F(NameFieldTest, FirstLastEmpty) {
 }
 
 TEST_F(NameFieldTest, FirstMiddleLastEmpty) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Name");
@@ -226,7 +226,7 @@ TEST_F(NameFieldTest, FirstMiddleLastEmpty) {
 }
 
 TEST_F(NameFieldTest, MiddleInitial) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("First Name");
@@ -257,7 +257,7 @@ TEST_F(NameFieldTest, MiddleInitial) {
 }
 
 TEST_F(NameFieldTest, MiddleInitialNoLastName) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("First Name");
@@ -276,7 +276,7 @@ TEST_F(NameFieldTest, MiddleInitialNoLastName) {
 // This case is from the dell.com checkout page.  The middle initial "mi" string
 // came at the end following other descriptive text.  http://crbug.com/45123.
 TEST_F(NameFieldTest, MiddleInitialAtEnd) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = string16();

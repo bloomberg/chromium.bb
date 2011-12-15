@@ -23,8 +23,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
-#include "webkit/glue/form_data.h"
-#include "webkit/glue/form_field.h"
+#include "webkit/forms/form_data.h"
+#include "webkit/forms/form_field.h"
 
 using content::BrowserThread;
 using ::testing::_;
@@ -32,8 +32,8 @@ using ::testing::AnyNumber;
 using ::testing::Mock;
 using base::TimeTicks;
 using base::TimeDelta;
-using webkit_glue::FormData;
-using webkit_glue::FormField;
+using webkit::forms::FormData;
+using webkit::forms::FormField;
 
 namespace {
 

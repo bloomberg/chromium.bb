@@ -15,12 +15,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "webkit/glue/form_field.h"
-#include "webkit/glue/password_form.h"
-#include "webkit/glue/password_form_dom_manager.h"
+#include "webkit/forms/form_field.h"
+#include "webkit/forms/password_form.h"
+#include "webkit/forms/password_form_dom_manager.h"
 
 namespace {
 
@@ -46,7 +46,7 @@ typedef std::vector<FormElements*> FormElementsList;
 // Helper to search the given form element for the specified input elements
 // in |data|, and add results to |result|.
 static bool FindFormInputElements(WebKit::WebFormElement* fe,
-                                  const webkit_glue::FormData& data,
+                                  const webkit::forms::FormData& data,
                                   FormElements* result) {
   // Loop through the list of elements we need to find on the form in order to
   // autofill it. If we don't find any one of them, abort processing this
@@ -94,7 +94,7 @@ static bool FindFormInputElements(WebKit::WebFormElement* fe,
 
 // Helper to locate form elements identified by |data|.
 void FindFormElements(WebKit::WebView* view,
-                      const webkit_glue::FormData& data,
+                      const webkit::forms::FormData& data,
                       FormElementsList* results) {
   DCHECK(view);
   DCHECK(results);
@@ -148,7 +148,7 @@ bool IsElementEditable(const WebKit::WebInputElement& element) {
   return element.isEnabled() && !element.isReadOnly();
 }
 
-void FillForm(FormElements* fe, const webkit_glue::FormData& data) {
+void FillForm(FormElements* fe, const webkit::forms::FormData& data) {
   if (!fe->form_element.autoComplete())
     return;
 
@@ -217,7 +217,7 @@ bool PasswordAutofillManager::TextFieldDidEndEditing(
   if (iter == login_to_password_info_.end())
     return false;
 
-  const webkit_glue::PasswordFormFillData& fill_data =
+  const webkit::forms::PasswordFormFillData& fill_data =
       iter->second.fill_data;
 
   // If wait_for_username is false, we should have filled when the text changed.
@@ -342,7 +342,7 @@ void PasswordAutofillManager::SendPasswordForms(WebKit::WebFrame* frame,
   WebKit::WebVector<WebKit::WebFormElement> forms;
   frame->document().forms(forms);
 
-  std::vector<webkit_glue::PasswordForm> password_forms;
+  std::vector<webkit::forms::PasswordForm> password_forms;
   for (size_t i = 0; i < forms.size(); ++i) {
     const WebKit::WebFormElement& form = forms[i];
 
@@ -351,8 +351,8 @@ void PasswordAutofillManager::SendPasswordForms(WebKit::WebFrame* frame,
       continue;
     if (only_visible && !form.hasNonEmptyBoundingBox())
       continue;
-    scoped_ptr<webkit_glue::PasswordForm> password_form(
-        webkit_glue::PasswordFormDomManager::CreatePasswordForm(form));
+    scoped_ptr<webkit::forms::PasswordForm> password_form(
+        webkit::forms::PasswordFormDomManager::CreatePasswordForm(form));
     if (password_form.get())
       password_forms.push_back(*password_form);
   }
@@ -410,7 +410,7 @@ bool PasswordAutofillManager::InputElementLostFocus() {
 }
 
 void PasswordAutofillManager::OnFillPasswordForm(
-    const webkit_glue::PasswordFormFillData& form_data) {
+    const webkit::forms::PasswordFormFillData& form_data) {
   FormElementsList forms;
   // We own the FormElements* in forms.
   FindFormElements(render_view()->GetWebView(), form_data.basic_data, &forms);
@@ -450,13 +450,13 @@ void PasswordAutofillManager::OnFillPasswordForm(
 // PasswordAutofillManager, private:
 
 void PasswordAutofillManager::GetSuggestions(
-    const webkit_glue::PasswordFormFillData& fill_data,
+    const webkit::forms::PasswordFormFillData& fill_data,
     const string16& input,
     std::vector<string16>* suggestions) {
   if (StartsWith(fill_data.basic_data.fields[0].value, input, false))
     suggestions->push_back(fill_data.basic_data.fields[0].value);
 
-  webkit_glue::PasswordFormFillData::LoginCollection::const_iterator iter;
+  webkit::forms::PasswordFormFillData::LoginCollection::const_iterator iter;
   for (iter = fill_data.additional_logins.begin();
        iter != fill_data.additional_logins.end(); ++iter) {
     if (StartsWith(iter->first, input, false))
@@ -465,7 +465,7 @@ void PasswordAutofillManager::GetSuggestions(
 }
 
 bool PasswordAutofillManager::ShowSuggestionPopup(
-    const webkit_glue::PasswordFormFillData& fill_data,
+    const webkit::forms::PasswordFormFillData& fill_data,
     const WebKit::WebInputElement& user_input) {
   WebKit::WebFrame* frame = user_input.document().frame();
   if (!frame)
@@ -493,7 +493,7 @@ bool PasswordAutofillManager::ShowSuggestionPopup(
 bool PasswordAutofillManager::FillUserNameAndPassword(
     WebKit::WebInputElement* username_element,
     WebKit::WebInputElement* password_element,
-    const webkit_glue::PasswordFormFillData& fill_data,
+    const webkit::forms::PasswordFormFillData& fill_data,
     bool exact_username_match,
     bool set_selection) {
   string16 current_username = username_element->value();
@@ -508,7 +508,7 @@ bool PasswordAutofillManager::FillUserNameAndPassword(
     password = fill_data.basic_data.fields[1].value;
   } else {
     // Scan additional logins for a match.
-    webkit_glue::PasswordFormFillData::LoginCollection::const_iterator iter;
+    webkit::forms::PasswordFormFillData::LoginCollection::const_iterator iter;
     for (iter = fill_data.additional_logins.begin();
          iter != fill_data.additional_logins.end(); ++iter) {
       if (DoUsernamesMatch(iter->first, current_username,
@@ -540,7 +540,7 @@ bool PasswordAutofillManager::FillUserNameAndPassword(
 void PasswordAutofillManager::PerformInlineAutocomplete(
     const WebKit::WebInputElement& username_input,
     const WebKit::WebInputElement& password_input,
-    const webkit_glue::PasswordFormFillData& fill_data) {
+    const webkit::forms::PasswordFormFillData& fill_data) {
   DCHECK(!fill_data.wait_for_username);
 
   // We need non-const versions of the username and password inputs.

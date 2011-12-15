@@ -17,9 +17,9 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/string16.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "base/string16.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
@@ -39,7 +39,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/glue/password_form.h"
+#include "webkit/forms/password_form.h"
 
 namespace {
 
@@ -280,7 +280,7 @@ void IEImporter::ImportPasswordsIE6() {
       continue;
     }
 
-    webkit_glue::PasswordForm form;
+    webkit::forms::PasswordForm form;
     GURL::Replacements rp;
     rp.ClearUsername();
     rp.ClearPassword();

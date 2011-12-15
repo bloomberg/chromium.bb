@@ -40,7 +40,7 @@ using testing::ElementsAreArray;
 using testing::Pointee;
 using testing::Property;
 using testing::WithArg;
-using webkit_glue::PasswordForm;
+using webkit::forms::PasswordForm;
 
 typedef std::vector<PasswordForm*> VectorOfForms;
 

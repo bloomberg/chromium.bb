@@ -28,7 +28,7 @@ using content::BrowserThread;
 using testing::_;
 using testing::Invoke;
 using testing::Return;
-using webkit_glue::PasswordForm;
+using webkit::forms::PasswordForm;
 
 namespace {
 

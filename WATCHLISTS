@@ -195,7 +195,8 @@
         'chrome/test/data/autofill/heuristics/input/.*|'\
         'chrome/test/data/autofill/heuristics/output/.*|'\
         'chrome/test/data/autofill/merge/input/.*|'\
-        'chrome/test/data/autofill/merge/output/.*',
+        'chrome/test/data/autofill/merge/output/.*|'\
+        'webkit/forms/.*',
     },
     'webdata': {
       'filepath': 'chrome/browser/webdata/.*',

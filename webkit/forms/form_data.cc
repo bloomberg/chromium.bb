@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/form_data.h"
+#include "webkit/forms/form_data.h"
 
 #include "base/string_util.h"
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 
 FormData::FormData()
     : user_submitted(false) {
@@ -33,4 +34,5 @@ bool FormData::operator==(const FormData& form) const {
           fields == form.fields);
 }
 
-}  // namespace webkit_glue
+}  // namespace forms
+}  // namespace webkit

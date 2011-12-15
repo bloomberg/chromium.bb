@@ -18,7 +18,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "net/base/escape.h"
-#include "webkit/glue/password_form.h"
+#include "webkit/forms/password_form.h"
 
 using content::BrowserThread;
 
@@ -55,7 +55,7 @@ bool PasswordModelAssociator::AssociateModels(SyncError* error) {
   // We must not be holding a transaction when we interact with the password
   // store, as it can post tasks to the UI thread which can itself be blocked
   // on our transaction, resulting in deadlock. (http://crbug.com/70658)
-  std::vector<webkit_glue::PasswordForm*> passwords;
+  std::vector<webkit::forms::PasswordForm*> passwords;
   if (!password_store_->FillAutofillableLogins(&passwords) ||
       !password_store_->FillBlacklistLogins(&passwords)) {
     STLDeleteElements(&passwords);
@@ -79,7 +79,7 @@ bool PasswordModelAssociator::AssociateModels(SyncError* error) {
       return false;
     }
 
-    for (std::vector<webkit_glue::PasswordForm*>::iterator ix =
+    for (std::vector<webkit::forms::PasswordForm*>::iterator ix =
              passwords.begin();
          ix != passwords.end(); ++ix) {
       if (IsAbortPending()) {
@@ -94,7 +94,7 @@ bool PasswordModelAssociator::AssociateModels(SyncError* error) {
             node.GetPasswordSpecifics();
         DCHECK_EQ(tag, MakeTag(password));
 
-        webkit_glue::PasswordForm new_password;
+        webkit::forms::PasswordForm new_password;
 
         if (MergePasswords(password, **ix, &new_password)) {
           sync_api::WriteNode write_node(&trans);
@@ -145,7 +145,7 @@ bool PasswordModelAssociator::AssociateModels(SyncError* error) {
       // The password only exists on the server.  Add it to the local
       // model.
       if (current_passwords.find(tag) == current_passwords.end()) {
-        webkit_glue::PasswordForm new_password;
+        webkit::forms::PasswordForm new_password;
 
         CopyPassword(password, &new_password);
         Associate(&tag, sync_child_node.GetId());
@@ -315,9 +315,9 @@ bool PasswordModelAssociator::WriteToPasswordStore(
 // static
 void PasswordModelAssociator::CopyPassword(
         const sync_pb::PasswordSpecificsData& password,
-        webkit_glue::PasswordForm* new_password) {
+        webkit::forms::PasswordForm* new_password) {
   new_password->scheme =
-      static_cast<webkit_glue::PasswordForm::Scheme>(password.scheme());
+      static_cast<webkit::forms::PasswordForm::Scheme>(password.scheme());
   new_password->signon_realm = password.signon_realm();
   new_password->origin = GURL(password.origin());
   new_password->action = GURL(password.action());
@@ -340,8 +340,8 @@ void PasswordModelAssociator::CopyPassword(
 // static
 bool PasswordModelAssociator::MergePasswords(
         const sync_pb::PasswordSpecificsData& password,
-        const webkit_glue::PasswordForm& password_form,
-        webkit_glue::PasswordForm* new_password) {
+        const webkit::forms::PasswordForm& password_form,
+        webkit::forms::PasswordForm* new_password) {
   DCHECK(new_password);
 
   if (password.scheme() == password_form.scheme &&
@@ -376,7 +376,7 @@ bool PasswordModelAssociator::MergePasswords(
 
 // static
 void PasswordModelAssociator::WriteToSyncNode(
-         const webkit_glue::PasswordForm& password_form,
+         const webkit::forms::PasswordForm& password_form,
          sync_api::WriteNode* node) {
   sync_pb::PasswordSpecificsData password;
   password.set_scheme(password_form.scheme);
@@ -397,7 +397,7 @@ void PasswordModelAssociator::WriteToSyncNode(
 
 // static
 std::string PasswordModelAssociator::MakeTag(
-                const webkit_glue::PasswordForm& password) {
+                const webkit::forms::PasswordForm& password) {
   return MakeTag(password.origin.spec(),
                  UTF16ToUTF8(password.username_element),
                  UTF16ToUTF8(password.username_value),

@@ -23,18 +23,18 @@
 #include "chrome/browser/webdata/logins_table.h"
 #include "chrome/browser/webdata/token_service_table.h"
 #include "chrome/browser/webdata/web_apps_table.h"
-#include "chrome/browser/webdata/web_intents_table.h"
 #include "chrome/browser/webdata/web_database.h"
+#include "chrome/browser/webdata/web_intents_table.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "webkit/glue/form_field.h"
-#include "webkit/glue/password_form.h"
+#include "webkit/forms/form_field.h"
+#include "webkit/forms/password_form.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -45,8 +45,8 @@
 using base::Bind;
 using base::Time;
 using content::BrowserThread;
-using webkit_glue::FormField;
-using webkit_glue::PasswordForm;
+using webkit::forms::FormField;
+using webkit::forms::PasswordForm;
 using webkit_glue::WebIntentServiceData;
 
 namespace {

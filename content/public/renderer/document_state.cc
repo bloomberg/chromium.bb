@@ -5,8 +5,8 @@
 #include "content/public/renderer/document_state.h"
 
 #include "content/public/renderer/navigation_state.h"
+#include "webkit/forms/password_form.h"
 #include "webkit/glue/alt_error_page_resource_fetcher.h"
-#include "webkit/glue/password_form.h"
 
 namespace content {
 
@@ -28,7 +28,7 @@ DocumentState::DocumentState()
 
 DocumentState::~DocumentState() {}
 
-void DocumentState::set_password_form_data(webkit_glue::PasswordForm* data) {
+void DocumentState::set_password_form_data(webkit::forms::PasswordForm* data) {
   password_form_data_.reset(data);
 }
 

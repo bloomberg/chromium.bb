@@ -10,16 +10,18 @@
 
 #include "base/string16.h"
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 struct FormData;
 struct FormField;
-}  // namespace webkit_glue
+}
+}
 
 namespace WebKit {
 class WebFormElement;
 class WebFormControlElement;
 class WebInputElement;
-}  // namespace WebKit
+}
 
 namespace autofill {
 
@@ -64,7 +66,7 @@ void ExtractAutofillableElements(
 void WebFormControlElementToFormField(
     const WebKit::WebFormControlElement& element,
     ExtractMask extract_mask,
-    webkit_glue::FormField* field);
+    webkit::forms::FormField* field);
 
 // Fills |form| with the FormData object corresponding to the |form_element|.
 // If |field| is non-NULL, also fills |field| with the FormField object
@@ -78,25 +80,25 @@ bool WebFormElementToFormData(
     const WebKit::WebFormControlElement& form_control_element,
     RequirementsMask requirements,
     ExtractMask extract_mask,
-    webkit_glue::FormData* form,
-    webkit_glue::FormField* field);
+    webkit::forms::FormData* form,
+    webkit::forms::FormField* field);
 
 // Finds the form that contains |element| and returns it in |form|.  Fills
 // |field| with the |FormField| representation for element.
 // Returns false if the form is not found.
 bool FindFormAndFieldForInputElement(const WebKit::WebInputElement& element,
-                                     webkit_glue::FormData* form,
-                                     webkit_glue::FormField* field,
+                                     webkit::forms::FormData* form,
+                                     webkit::forms::FormField* field,
                                      RequirementsMask requirements);
 
 // Fills the form represented by |form|.  |element| is the input element that
 // initiated the auto-fill process.
-void FillForm(const webkit_glue::FormData& form,
+void FillForm(const webkit::forms::FormData& form,
               const WebKit::WebInputElement& element);
 
 // Previews the form represented by |form|.  |element| is the input element that
 // initiated the preview process.
-void PreviewForm(const webkit_glue::FormData& form,
+void PreviewForm(const webkit::forms::FormData& form,
                  const WebKit::WebInputElement& element);
 
 // Clears the placeholder values and the auto-filled background for any fields

@@ -11,11 +11,11 @@
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/password_form.h"
+#include "webkit/forms/password_form.h"
 
 using base::Time;
 using base::TimeDelta;
-using webkit_glue::PasswordForm;
+using webkit::forms::PasswordForm;
 
 class LoginsTableTest : public testing::Test {
  public:

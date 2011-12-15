@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_FORM_FIELD_H_
-#define WEBKIT_GLUE_FORM_FIELD_H_
+#ifndef WEBKIT_FORMS_FORM_FIELD_H_
+#define WEBKIT_FORMS_FORM_FIELD_H_
 
 #include <vector>
 
 #include "base/string16.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "webkit/forms/webkit_forms_export.h"
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 
 // Stores information about a field in a form.
-struct WEBKIT_GLUE_EXPORT FormField {
+struct WEBKIT_FORMS_EXPORT FormField {
   FormField();
   virtual ~FormField();
 
@@ -42,10 +43,11 @@ struct WEBKIT_GLUE_EXPORT FormField {
 };
 
 // So we can compare FormFields with EXPECT_EQ().
-WEBKIT_GLUE_EXPORT std::ostream& operator<<(std::ostream& os,
+WEBKIT_FORMS_EXPORT std::ostream& operator<<(std::ostream& os,
                                             const FormField& field);
 
-}  // namespace webkit_glue
+}  // namespace forms
+}  // namespace webkit
 
 // Prefer to use this macro in place of |EXPECT_EQ()| for comparing |FormField|s
 // in test code.
@@ -60,4 +62,4 @@ WEBKIT_GLUE_EXPORT std::ostream& operator<<(std::ostream& os,
     EXPECT_EQ(expected.is_autofilled, actual.is_autofilled); \
   } while (0)
 
-#endif  // WEBKIT_GLUE_FORM_FIELD_H_
+#endif  // WEBKIT_FORMS_FORM_FIELD_H_

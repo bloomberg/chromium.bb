@@ -23,7 +23,7 @@ using passwords_helper::RemoveLogins;
 using passwords_helper::SetPassphrase;
 using passwords_helper::UpdateLogin;
 
-using webkit_glue::PasswordForm;
+using webkit::forms::PasswordForm;
 
 static const char* kValidPassphrase = "passphrase!";
 static const char* kAnotherValidPassphrase = "another passphrase!";

@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/form_data_predictions.h"
+#include "webkit/forms/form_data_predictions.h"
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 
 FormDataPredictions::FormDataPredictions() {
 }
@@ -19,4 +20,5 @@ FormDataPredictions::FormDataPredictions(const FormDataPredictions& other)
 FormDataPredictions::~FormDataPredictions() {
 }
 
-}  // namespace webkit_glue
+}  // namespace forms
+}  // namespace webkit

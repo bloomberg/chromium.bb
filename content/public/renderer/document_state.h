@@ -14,8 +14,13 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 struct PasswordForm;
+}
+}
+
+namespace webkit_glue {
 class AltErrorPageResourceFetcher;
 }
 
@@ -162,10 +167,10 @@ class DocumentState : public WebKit::WebDataSource::ExtraData {
     searchable_form_encoding_ = encoding;
   }
 
-  webkit_glue::PasswordForm* password_form_data() const {
+  webkit::forms::PasswordForm* password_form_data() const {
     return password_form_data_.get();
   }
-  void set_password_form_data(webkit_glue::PasswordForm* data);
+  void set_password_form_data(webkit::forms::PasswordForm* data);
 
   const std::string& security_info() const { return security_info_; }
   void set_security_info(const std::string& security_info) {
@@ -238,7 +243,7 @@ class DocumentState : public WebKit::WebDataSource::ExtraData {
 
   GURL searchable_form_url_;
   std::string searchable_form_encoding_;
-  scoped_ptr<webkit_glue::PasswordForm> password_form_data_;
+  scoped_ptr<webkit::forms::PasswordForm> password_form_data_;
   std::string security_info_;
 
   bool use_error_page_;

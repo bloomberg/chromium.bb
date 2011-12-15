@@ -13,14 +13,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
-#include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
+#include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/thread_observer_helper.h"
-#include "webkit/glue/form_field.h"
+#include "webkit/forms/form_field.h"
 
 using base::WaitableEvent;
 using content::BrowserThread;
@@ -133,11 +133,11 @@ PersonalDataManager* GetPersonalDataManager(int index) {
 }
 
 void AddKeys(int profile, const std::set<AutofillKey>& keys) {
-  std::vector<webkit_glue::FormField> form_fields;
+  std::vector<webkit::forms::FormField> form_fields;
   for (std::set<AutofillKey>::const_iterator i = keys.begin();
        i != keys.end();
        ++i) {
-    webkit_glue::FormField field;
+    webkit::forms::FormField field;
     field.name = i->name();
     field.value = i->value();
     form_fields.push_back(field);

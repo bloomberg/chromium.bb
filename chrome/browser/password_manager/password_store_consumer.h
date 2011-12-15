@@ -8,9 +8,11 @@
 
 #include "content/browser/cancelable_request.h"
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 struct PasswordForm;
-};
+}
+}
 
 // Reads from the PasswordStore are done asynchronously on a separate
 // thread. PasswordStoreConsumer provides the virtual callback method, which is
@@ -25,7 +27,7 @@ class PasswordStoreConsumer {
   // anyway with an empty vector.
   virtual void OnPasswordStoreRequestDone(
       CancelableRequestProvider::Handle handle,
-      const std::vector<webkit_glue::PasswordForm*>& result) = 0;
+      const std::vector<webkit::forms::PasswordForm*>& result) = 0;
 
   // The CancelableRequest framework needs both a callback (the
   // PasswordStoreConsumer::OnPasswordStoreRequestDone) as well as a

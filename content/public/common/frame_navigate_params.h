@@ -14,7 +14,7 @@
 #include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
-#include "webkit/glue/password_form.h"
+#include "webkit/forms/password_form.h"
 
 namespace content {
 
@@ -61,7 +61,7 @@ struct CONTENT_EXPORT FrameNavigateParams {
   std::string searchable_form_encoding;
 
   // See password_form.h.
-  webkit_glue::PasswordForm password_form;
+  webkit::forms::PasswordForm password_form;
 
   // Contents MIME type of main frame.
   std::string contents_mime_type;

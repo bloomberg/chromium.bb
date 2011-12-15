@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_FORM_FIELD_PREDICTIONS_H_
-#define WEBKIT_GLUE_FORM_FIELD_PREDICTIONS_H_
+#ifndef WEBKIT_FORMS_FORM_FIELD_PREDICTIONS_H_
+#define WEBKIT_FORMS_FORM_FIELD_PREDICTIONS_H_
 
 #include <string>
 #include <vector>
 
-#include "webkit/glue/form_field.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "webkit/forms/form_field.h"
+#include "webkit/forms/webkit_forms_export.h"
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 
 // Stores information about a field in a form.
-struct WEBKIT_GLUE_EXPORT FormFieldPredictions {
+struct WEBKIT_FORMS_EXPORT FormFieldPredictions {
   FormFieldPredictions();
   FormFieldPredictions(const FormFieldPredictions& other);
   ~FormFieldPredictions();
@@ -26,6 +27,7 @@ struct WEBKIT_GLUE_EXPORT FormFieldPredictions {
   std::string overall_type;
 };
 
-}  // namespace webkit_glue
+}  // namespace forms
+}  // namespace webkit
 
-#endif  // WEBKIT_GLUE_FORM_FIELD_PREDICTIONS_H_
+#endif  // WEBKIT_FORMS_FORM_FIELD_PREDICTIONS_H_

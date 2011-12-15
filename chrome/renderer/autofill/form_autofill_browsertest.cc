@@ -22,7 +22,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSelectElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
-#include "webkit/glue/form_data.h"
+#include "webkit/forms/form_data.h"
 #include "webkit/glue/web_io_operators.h"
 
 using WebKit::WebDocument;
@@ -44,8 +44,8 @@ using autofill::FormCache;
 using autofill::PreviewForm;
 using autofill::WebFormControlElementToFormField;
 
-using webkit_glue::FormData;
-using webkit_glue::FormField;
+using webkit::forms::FormData;
+using webkit::forms::FormField;
 
 class FormAutofillTest : public ChromeRenderViewTest {
  public:

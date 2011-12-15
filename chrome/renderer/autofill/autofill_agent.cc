@@ -19,14 +19,14 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/glue/form_data.h"
-#include "webkit/glue/form_data_predictions.h"
-#include "webkit/glue/form_field.h"
-#include "webkit/glue/password_form.h"
+#include "webkit/forms/form_data.h"
+#include "webkit/forms/form_data_predictions.h"
+#include "webkit/forms/form_field.h"
+#include "webkit/forms/password_form.h"
 
 using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;
@@ -35,8 +35,8 @@ using WebKit::WebInputElement;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebNode;
 using WebKit::WebString;
-using webkit_glue::FormData;
-using webkit_glue::FormDataPredictions;
+using webkit::forms::FormData;
+using webkit::forms::FormDataPredictions;
 
 namespace {
 
@@ -83,7 +83,7 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
 void AutofillAgent::DidFinishDocumentLoad(WebFrame* frame) {
   // The document has now been fully loaded.  Scan for forms to be sent up to
   // the browser.
-  std::vector<webkit_glue::FormData> forms;
+  std::vector<webkit::forms::FormData> forms;
   form_cache_.ExtractForms(*frame, &forms);
 
   if (!forms.empty()) {
@@ -226,8 +226,8 @@ void AutofillAgent::TextFieldDidChangeImpl(const WebInputElement& element) {
 
   ShowSuggestions(element, false, true, false);
 
-  webkit_glue::FormData form;
-  webkit_glue::FormField field;
+  webkit::forms::FormData form;
+  webkit::forms::FormField field;
   if (FindFormAndFieldForInputElement(element, &form, &field, REQUIRE_NONE)) {
     Send(new AutofillHostMsg_TextFieldDidChange(routing_id(), form, field,
                                                 base::TimeTicks::Now()));
@@ -333,7 +333,7 @@ void AutofillAgent::OnSuggestionsReturned(int query_id,
 }
 
 void AutofillAgent::OnFormDataFilled(int query_id,
-                                     const webkit_glue::FormData& form) {
+                                     const webkit::forms::FormData& form) {
   if (!render_view()->GetWebView() || query_id != autofill_query_id_)
     return;
 
@@ -409,8 +409,8 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
   autofill_query_element_ = element;
   display_warning_if_disabled_ = display_warning_if_disabled;
 
-  webkit_glue::FormData form;
-  webkit_glue::FormField field;
+  webkit::forms::FormData form;
+  webkit::forms::FormField field;
   if (!FindFormAndFieldForInputElement(element, &form, &field,
                                        REQUIRE_AUTOCOMPLETE)) {
     // If we didn't find the cached form, at least let autocomplete have a shot
@@ -437,8 +437,8 @@ void AutofillAgent::FillAutofillFormData(const WebNode& node,
   static int query_counter = 0;
   autofill_query_id_ = query_counter++;
 
-  webkit_glue::FormData form;
-  webkit_glue::FormField field;
+  webkit::forms::FormData form;
+  webkit::forms::FormField field;
   if (!FindFormAndFieldForInputElement(node.toConst<WebInputElement>(), &form,
                                        &field, REQUIRE_AUTOCOMPLETE)) {
     return;

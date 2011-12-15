@@ -23,7 +23,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 
-using webkit_glue::PasswordForm;
+using webkit::forms::PasswordForm;
 
 // Utility class to handle the details of constructing and running a keychain
 // search from a set of attributes.
@@ -641,7 +641,7 @@ SecKeychainItemRef MacKeychainPasswordFormAdapter::KeychainItemForForm(
 std::vector<SecKeychainItemRef>
     MacKeychainPasswordFormAdapter::MatchingKeychainItems(
         const std::string& signon_realm,
-        webkit_glue::PasswordForm::Scheme scheme,
+        webkit::forms::PasswordForm::Scheme scheme,
         const char* path, const char* username) {
   std::vector<SecKeychainItemRef> matches;
 
@@ -887,7 +887,7 @@ void PasswordStoreMac::RemoveLoginsCreatedBetweenImpl(
 }
 
 void PasswordStoreMac::GetLoginsImpl(GetLoginsRequest* request,
-                                     const webkit_glue::PasswordForm& form) {
+                                     const webkit::forms::PasswordForm& form) {
   MacKeychainPasswordFormAdapter keychain_adapter(keychain_.get());
   std::vector<PasswordForm*> keychain_forms =
       keychain_adapter.PasswordsFillingForm(form);
@@ -960,7 +960,7 @@ bool PasswordStoreMac::AddToKeychainIfNecessary(const PasswordForm& form) {
 }
 
 bool PasswordStoreMac::DatabaseHasFormMatchingKeychainForm(
-    const webkit_glue::PasswordForm& form) {
+    const webkit::forms::PasswordForm& form) {
   bool has_match = false;
   std::vector<PasswordForm*> database_forms;
   login_metadata_db_->GetLogins(form, &database_forms);

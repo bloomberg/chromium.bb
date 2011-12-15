@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "webkit/glue/form_field.h"
+#include "webkit/forms/form_field.h"
 
 class AutofillManager;
 class TabContentsWrapper;
@@ -18,9 +18,11 @@ namespace gfx {
 class Rect;
 }
 
-namespace webkit_glue {
+namespace webkit {
+namespace forms {
 struct FormData;
-}  // namespace webkit_glue
+}
+}
 
 // TODO(csharp): A lot of the logic in this class is copied from autofillagent.
 // Once Autofill is moved out of WebKit this class should be the only home for
@@ -45,8 +47,8 @@ class AutofillExternalDelegate {
   // Autocomplete because they have their own popup, and showing our popup
   // on to of theirs would be a poor user experience.
   virtual void OnQuery(int query_id,
-                       const webkit_glue::FormData& form,
-                       const webkit_glue::FormField& field,
+                       const webkit::forms::FormData& form,
+                       const webkit::forms::FormField& field,
                        const gfx::Rect& bounds,
                        bool display_warning_if_disabled);
 
@@ -87,9 +89,10 @@ class AutofillExternalDelegate {
       int separator_index) = 0;
 
   // Handle instance specific OnQueryCode.
-  virtual void OnQueryPlatformSpecific(int query_id,
-                                       const webkit_glue::FormData& form,
-                                       const webkit_glue::FormField& field) = 0;
+  virtual void OnQueryPlatformSpecific(
+      int query_id,
+      const webkit::forms::FormData& form,
+      const webkit::forms::FormField& field) = 0;
 
  private:
   TabContentsWrapper* tab_contents_wrapper_;  // weak; owns me.
@@ -99,7 +102,7 @@ class AutofillExternalDelegate {
   int autofill_query_id_;
 
   // The current field selected by Autofill.
-  webkit_glue::FormField autofill_query_field_;
+  webkit::forms::FormField autofill_query_field_;
 
   // Should we display a warning if Autofill is disabled?
   bool display_warning_if_disabled_;

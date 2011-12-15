@@ -22,11 +22,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
-#include "webkit/glue/form_data.h"
+#include "webkit/forms/form_data.h"
 
 using content::BrowserThread;
-using webkit_glue::FormData;
-using webkit_glue::FormField;
+using webkit::forms::FormData;
+using webkit::forms::FormField;
 using WebKit::WebInputElement;
 
 namespace {

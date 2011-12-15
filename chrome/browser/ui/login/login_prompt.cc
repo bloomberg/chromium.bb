@@ -32,7 +32,7 @@
 #include "ui/base/text/text_elider.h"
 
 using content::BrowserThread;
-using webkit_glue::PasswordForm;
+using webkit::forms::PasswordForm;
 
 class LoginHandlerImpl;
 
@@ -107,7 +107,7 @@ LoginHandler::~LoginHandler() {
   SetModel(NULL);
 }
 
-void LoginHandler::SetPasswordForm(const webkit_glue::PasswordForm& form) {
+void LoginHandler::SetPasswordForm(const webkit::forms::PasswordForm& form) {
   password_form_ = form;
 }
 

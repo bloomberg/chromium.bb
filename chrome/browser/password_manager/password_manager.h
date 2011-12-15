@@ -12,8 +12,8 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/login/login_model.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "webkit/glue/password_form.h"
-#include "webkit/glue/password_form_dom_manager.h"
+#include "webkit/forms/password_form.h"
+#include "webkit/forms/password_form_dom_manager.h"
 
 class PasswordManagerDelegate;
 class PasswordManagerTest;
@@ -36,9 +36,9 @@ class PasswordManager : public LoginModel,
 
   // Called by a PasswordFormManager when it decides a form can be autofilled
   // on the page.
-  void Autofill(const webkit_glue::PasswordForm& form_for_autofill,
-                const webkit_glue::PasswordFormMap& best_matches,
-                const webkit_glue::PasswordForm* const preferred_match,
+  void Autofill(const webkit::forms::PasswordForm& form_for_autofill,
+                const webkit::forms::PasswordFormMap& best_matches,
+                const webkit::forms::PasswordForm* const preferred_match,
                 bool wait_for_username) const;
 
   // LoginModel implementation.
@@ -47,7 +47,7 @@ class PasswordManager : public LoginModel,
   // When a form is submitted, we prepare to save the password but wait
   // until we decide the user has successfully logged in. This is step 1
   // of 2 (see SavePassword).
-  void ProvisionallySavePassword(webkit_glue::PasswordForm form);
+  void ProvisionallySavePassword(webkit::forms::PasswordForm form);
 
   // TabContentsObserver overrides.
   virtual void DidStopLoading() OVERRIDE;
@@ -57,9 +57,9 @@ class PasswordManager : public LoginModel,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnPasswordFormsFound(
-      const std::vector<webkit_glue::PasswordForm>& forms);
+      const std::vector<webkit::forms::PasswordForm>& forms);
   void OnPasswordFormsVisible(
-      const std::vector<webkit_glue::PasswordForm>& visible_forms);
+      const std::vector<webkit::forms::PasswordForm>& visible_forms);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PasswordManagerTest, FormSeenThenLeftPage);

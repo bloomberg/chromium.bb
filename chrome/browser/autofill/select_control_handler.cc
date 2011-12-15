@@ -13,7 +13,7 @@
 #include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/form_group.h"
-#include "webkit/glue/form_field.h"
+#include "webkit/forms/form_field.h"
 
 namespace {
 
@@ -120,7 +120,7 @@ const char* const kMonthsNumeric[] = {
 // Returns true if the value was successfully set, meaning |value| was found in
 // the list of select options in |field|.
 bool SetSelectControlValue(const string16& value,
-                           webkit_glue::FormField* field) {
+                           webkit::forms::FormField* field) {
   string16 value_lowercase = StringToLowerASCII(value);
 
   DCHECK_EQ(field->option_values.size(), field->option_contents.size());
@@ -136,7 +136,7 @@ bool SetSelectControlValue(const string16& value,
 }
 
 bool FillStateSelectControl(const string16& value,
-                            webkit_glue::FormField* field) {
+                            webkit::forms::FormField* field) {
   string16 abbrev, full;
   if (value.size() < 4U) {
     abbrev = value;
@@ -157,7 +157,7 @@ bool FillStateSelectControl(const string16& value,
 }
 
 bool FillCountrySelectControl(const FormGroup& form_group,
-                              webkit_glue::FormField* field) {
+                              webkit::forms::FormField* field) {
   const AutofillProfile& profile =
       static_cast<const AutofillProfile&>(form_group);
   std::string country_code = profile.CountryCode();
@@ -180,7 +180,7 @@ bool FillCountrySelectControl(const FormGroup& form_group,
 }
 
 bool FillExpirationMonthSelectControl(const string16& value,
-                                      webkit_glue::FormField* field) {
+                                      webkit::forms::FormField* field) {
   int index = 0;
   if (!base::StringToInt(value, &index) ||
       index <= 0 ||
@@ -200,7 +200,7 @@ namespace autofill {
 
 void FillSelectControl(const FormGroup& form_group,
                        AutofillFieldType type,
-                       webkit_glue::FormField* field) {
+                       webkit::forms::FormField* field) {
   DCHECK(field);
   DCHECK_EQ(ASCIIToUTF16("select-one"), field->form_control_type);
   DCHECK_EQ(field->option_values.size(), field->option_contents.size());

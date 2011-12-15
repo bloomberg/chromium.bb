@@ -1758,7 +1758,7 @@ AutomationProviderGetPasswordsObserver::
 
 void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
     CancelableRequestProvider::Handle handle,
-    const std::vector<webkit_glue::PasswordForm*>& result) {
+    const std::vector<webkit::forms::PasswordForm*>& result) {
   if (!provider_) {
     delete this;
     return;
@@ -1767,10 +1767,10 @@ void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
 
   ListValue* passwords = new ListValue;
-  for (std::vector<webkit_glue::PasswordForm*>::const_iterator it =
+  for (std::vector<webkit::forms::PasswordForm*>::const_iterator it =
            result.begin(); it != result.end(); ++it) {
     DictionaryValue* password_val = new DictionaryValue;
-    webkit_glue::PasswordForm* password_form = *it;
+    webkit::forms::PasswordForm* password_form = *it;
     password_val->SetString("username_value", password_form->username_value);
     password_val->SetString("password_value", password_form->password_value);
     password_val->SetString("signon_realm", password_form->signon_realm);

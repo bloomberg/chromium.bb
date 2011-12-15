@@ -9,7 +9,7 @@
 #include "chrome/browser/autofill/autofill_scanner.h"
 #include "chrome/browser/autofill/credit_card_field.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/form_field.h"
+#include "webkit/forms/form_field.h"
 
 class CreditCardFieldTest : public testing::Test {
  public:
@@ -43,7 +43,7 @@ TEST_F(CreditCardFieldTest, NonParse) {
 }
 
 TEST_F(CreditCardFieldTest, ParseCreditCardNoNumber) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Exp Month");
@@ -60,7 +60,7 @@ TEST_F(CreditCardFieldTest, ParseCreditCardNoNumber) {
 }
 
 TEST_F(CreditCardFieldTest, ParseCreditCardNoDate) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Card Number");
@@ -73,7 +73,7 @@ TEST_F(CreditCardFieldTest, ParseCreditCardNoDate) {
 }
 
 TEST_F(CreditCardFieldTest, ParseMiniumCreditCard) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Card Number");
@@ -105,7 +105,7 @@ TEST_F(CreditCardFieldTest, ParseMiniumCreditCard) {
 }
 
 TEST_F(CreditCardFieldTest, ParseFullCreditCard) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Name on Card");
@@ -151,7 +151,7 @@ TEST_F(CreditCardFieldTest, ParseFullCreditCard) {
 }
 
 TEST_F(CreditCardFieldTest, ParseExpMonthYear) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Name on Card");
@@ -190,7 +190,7 @@ TEST_F(CreditCardFieldTest, ParseExpMonthYear) {
 }
 
 TEST_F(CreditCardFieldTest, ParseExpMonthYear2) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Name on Card");
@@ -229,7 +229,7 @@ TEST_F(CreditCardFieldTest, ParseExpMonthYear2) {
 }
 
 TEST_F(CreditCardFieldTest, ParseExpField) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Name on Card");
@@ -261,7 +261,7 @@ TEST_F(CreditCardFieldTest, ParseExpField) {
 }
 
 TEST_F(CreditCardFieldTest, ParseExpField2DigitYear) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Name on Card");
@@ -293,7 +293,7 @@ TEST_F(CreditCardFieldTest, ParseExpField2DigitYear) {
 }
 
 TEST_F(CreditCardFieldTest, ParseCreditCardHolderNameWithCCFullName) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Name");

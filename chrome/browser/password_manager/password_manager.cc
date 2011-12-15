@@ -20,8 +20,8 @@
 #include "grit/generated_resources.h"
 
 using content::UserMetricsAction;
-using webkit_glue::PasswordForm;
-using webkit_glue::PasswordFormMap;
+using webkit::forms::PasswordForm;
+using webkit::forms::PasswordFormMap;
 
 // static
 void PasswordManager::RegisterUserPrefs(PrefService* prefs) {
@@ -226,8 +226,8 @@ void PasswordManager::Autofill(
     case PasswordForm::SCHEME_HTML: {
       // Note the check above is required because the observer_ for a non-HTML
       // schemed password form may have been freed, so we need to distinguish.
-      webkit_glue::PasswordFormFillData fill_data;
-      webkit_glue::PasswordFormDomManager::InitFillData(form_for_autofill,
+      webkit::forms::PasswordFormFillData fill_data;
+      webkit::forms::PasswordFormDomManager::InitFillData(form_for_autofill,
                                                         best_matches,
                                                         preferred_match,
                                                         wait_for_username,

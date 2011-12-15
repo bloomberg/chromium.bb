@@ -17,13 +17,13 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "webkit/glue/form_data.h"
-#include "webkit/glue/form_field.h"
+#include "webkit/forms/form_data.h"
+#include "webkit/forms/form_field.h"
 
-using webkit_glue::FormField;
-using webkit_glue::PasswordFormFillData;
-using webkit_glue::PasswordForm;
-using webkit_glue::PasswordFormDomManager;
+using webkit::forms::FormField;
+using webkit::forms::PasswordFormFillData;
+using webkit::forms::PasswordForm;
+using webkit::forms::PasswordFormDomManager;
 using WebKit::WebDocument;
 using WebKit::WebElement;
 using WebKit::WebFrame;

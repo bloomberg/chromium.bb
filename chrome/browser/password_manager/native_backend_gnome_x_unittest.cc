@@ -18,7 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
-using webkit_glue::PasswordForm;
+using webkit::forms::PasswordForm;
 
 namespace {
 

@@ -10,7 +10,7 @@
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_scanner.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/form_field.h"
+#include "webkit/forms/form_field.h"
 
 class AddressFieldTest : public testing::Test {
  public:
@@ -44,7 +44,7 @@ TEST_F(AddressFieldTest, NonParse) {
 }
 
 TEST_F(AddressFieldTest, ParseOneLineAddress) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Address");
@@ -62,7 +62,7 @@ TEST_F(AddressFieldTest, ParseOneLineAddress) {
 }
 
 TEST_F(AddressFieldTest, ParseOneLineAddressBilling) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Address");
@@ -80,7 +80,7 @@ TEST_F(AddressFieldTest, ParseOneLineAddressBilling) {
 }
 
 TEST_F(AddressFieldTest, ParseOneLineAddressShipping) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Address");
@@ -98,7 +98,7 @@ TEST_F(AddressFieldTest, ParseOneLineAddressShipping) {
 }
 
 TEST_F(AddressFieldTest, ParseTwoLineAddress) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Address");
@@ -123,7 +123,7 @@ TEST_F(AddressFieldTest, ParseTwoLineAddress) {
 }
 
 TEST_F(AddressFieldTest, ParseThreeLineAddress) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Address Line1");
@@ -154,7 +154,7 @@ TEST_F(AddressFieldTest, ParseThreeLineAddress) {
 }
 
 TEST_F(AddressFieldTest, ParseCity) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("City");
@@ -172,7 +172,7 @@ TEST_F(AddressFieldTest, ParseCity) {
 }
 
 TEST_F(AddressFieldTest, ParseState) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("State");
@@ -190,7 +190,7 @@ TEST_F(AddressFieldTest, ParseState) {
 }
 
 TEST_F(AddressFieldTest, ParseZip) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Zip");
@@ -208,7 +208,7 @@ TEST_F(AddressFieldTest, ParseZip) {
 }
 
 TEST_F(AddressFieldTest, ParseStateAndZipOneLabel) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("State/Province, Zip/Postal Code");
@@ -233,7 +233,7 @@ TEST_F(AddressFieldTest, ParseStateAndZipOneLabel) {
 }
 
 TEST_F(AddressFieldTest, ParseCountry) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Country");
@@ -251,7 +251,7 @@ TEST_F(AddressFieldTest, ParseCountry) {
 }
 
 TEST_F(AddressFieldTest, ParseTwoLineAddressMissingLabel) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Address");
@@ -276,7 +276,7 @@ TEST_F(AddressFieldTest, ParseTwoLineAddressMissingLabel) {
 }
 
 TEST_F(AddressFieldTest, ParseCompany) {
-  webkit_glue::FormField field;
+  webkit::forms::FormField field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Company");
