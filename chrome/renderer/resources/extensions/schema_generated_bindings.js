@@ -638,10 +638,43 @@ var chrome = chrome || {};
     // Ditto StorageNamespace.
     setupStorageNamespace();
 
-    // |apiFunctions| is a hash of name -> object that stores the
-    // name & definition of the apiFunction. Custom handling of api functions
-    // is implemented by adding a "handleRequest" function to the object.
-    var apiFunctions = {};
+    // Stores the name and definition of each API function, with methods to
+    // modify their behaviour (such as a custom way to handle requests to the
+    // API, a custom callback, etc).
+    function APIFunctions() {
+      this.apiFunctions_ = {};
+    }
+    APIFunctions.prototype.register = function(apiName, apiFunction) {
+      this.apiFunctions_[apiName] = apiFunction;
+    };
+    APIFunctions.prototype.setProperty =
+        function(apiName, propertyName, customizedFunction) {
+      // TODO(kalman): later, when this is asynchronous and we're only
+      // customizing exactly what we need, these should be held onto until
+      // this api function is registered.
+      if (this.apiFunctions_.hasOwnProperty(apiName))
+        this.apiFunctions_[apiName][propertyName] = customizedFunction;
+    };
+    APIFunctions.prototype.setHandleRequest =
+        function(apiName, customizedFunction) {
+      return this.setProperty(apiName, 'handleRequest', customizedFunction);
+    };
+    APIFunctions.prototype.setUpdateArgumentsPostValidate =
+        function(apiName, customizedFunction) {
+      return this.setProperty(
+        apiName, 'updateArgumentsPostValidate', customizedFunction);
+    };
+    APIFunctions.prototype.setUpdateArgumentsPreValidate =
+        function(apiName, customizedFunction) {
+      return this.setProperty(
+        apiName, 'updateArgumentsPreValidate', customizedFunction);
+    };
+    APIFunctions.prototype.setCustomCallback =
+        function(apiName, customizedFunction) {
+      return this.setProperty(apiName, 'customCallback', customizedFunction);
+    };
+
+    var apiFunctions = new APIFunctions();
 
     // Read api definitions and setup api functions in the chrome namespace.
     // TODO(rafaelw): Consider defining a json schema for an api definition
@@ -704,7 +737,7 @@ var chrome = chrome || {};
           var apiFunction = {};
           apiFunction.definition = functionDef;
           apiFunction.name = apiDef.namespace + "." + functionDef.name;
-          apiFunctions[apiFunction.name] = apiFunction;
+          apiFunctions.register(apiFunction.name, apiFunction);
 
           module[functionDef.name] = (function() {
             var args = arguments;
@@ -813,16 +846,16 @@ var chrome = chrome || {};
     chrome.webstorePrivate.beginInstallWithManifest2 =
         chrome.webstorePrivate.beginInstallWithManifest3;
 
-    apiFunctions["tabs.connect"].handleRequest = function(tabId, connectInfo) {
+    apiFunctions.setHandleRequest("tabs.connect", function(tabId, connectInfo) {
       var name = "";
       if (connectInfo) {
         name = connectInfo.name || name;
       }
       var portId = OpenChannelToTab(tabId, chromeHidden.extensionId, name);
       return chromeHidden.Port.createPort(portId, name);
-    };
+    });
 
-    apiFunctions["tabs.sendRequest"].handleRequest =
+    apiFunctions.setHandleRequest("tabs.sendRequest",
         function(tabId, request, responseCallback) {
       var port = chrome.tabs.connect(tabId,
                                      {name: chromeHidden.kRequestChannel});
@@ -841,9 +874,9 @@ var chrome = chrome || {};
           port = null;
         }
       });
-    };
+    });
 
-    apiFunctions["pageCapture.saveAsMHTML"].customCallback =
+    apiFunctions.setCustomCallback("pageCapture.saveAsMHTML",
       function(name, request, response) {
         var params = chromeHidden.JSON.parse(response);
         var path = params.mhtmlFilePath;
@@ -856,9 +889,9 @@ var chrome = chrome || {};
         // Notify the browser. Now that the blob is referenced from JavaScript,
         // the browser can drop its reference to it.
         SendResponseAck(request.id);
-      };
+      });
 
-    apiFunctions["fileBrowserPrivate.requestLocalFileSystem"].customCallback =
+    apiFunctions.setCustomCallback("fileBrowserPrivate.requestLocalFileSystem",
       function(name, request, response) {
         var resp = response ? [chromeHidden.JSON.parse(response)] : [];
         var fs = null;
@@ -867,14 +900,14 @@ var chrome = chrome || {};
         if (request.callback)
           request.callback(fs);
         request.callback = null;
-      };
+      });
 
-    apiFunctions["chromePrivate.decodeJPEG"].handleRequest =
+    apiFunctions.setHandleRequest("chromePrivate.decodeJPEG",
       function(jpeg_image) {
         return DecodeJPEG(jpeg_image);
-      };
+      });
 
-    apiFunctions["extension.getViews"].handleRequest = function(properties) {
+    apiFunctions.setHandleRequest("extension.getViews", function(properties) {
       var windowId = -1;
       var type = "ALL";
       if (typeof(properties) != "undefined") {
@@ -886,20 +919,20 @@ var chrome = chrome || {};
         }
       }
       return GetExtensionViews(windowId, type) || null;
-    };
+    });
 
-    apiFunctions["extension.getBackgroundPage"].handleRequest = function() {
+    apiFunctions.setHandleRequest("extension.getBackgroundPage", function() {
       return GetExtensionViews(-1, "BACKGROUND")[0] || null;
-    };
+    });
 
-    apiFunctions["extension.getExtensionTabs"].handleRequest =
+    apiFunctions.setHandleRequest("extension.getExtensionTabs",
         function(windowId) {
       if (typeof(windowId) == "undefined")
         windowId = -1;
       return GetExtensionViews(windowId, "TAB");
-    };
+    });
 
-    apiFunctions["devtools.getTabEvents"].handleRequest = function(tabId) {
+    apiFunctions.setHandleRequest("devtools.getTabEvents", function(tabId) {
       var tabIdProxy = {};
       var functions = ["onPageEvent", "onTabClose"];
       functions.forEach(function(name) {
@@ -909,7 +942,7 @@ var chrome = chrome || {};
         tabIdProxy[name] = new chrome.Event("devtools." + tabId + "." + name);
       });
       return tabIdProxy;
-    };
+    });
 
     var canvas;
     function setIconCommon(details, name, parameters, actionType, iconSize,
@@ -973,25 +1006,25 @@ var chrome = chrome || {};
                     EXTENSION_ACTION_ICON_SIZE, SetIconCommon);
     }
 
-    apiFunctions["browserAction.setIcon"].handleRequest = function(details) {
+    apiFunctions.setHandleRequest("browserAction.setIcon", function(details) {
       setExtensionActionIconCommon(
           details, this.name, this.definition.parameters, "browser action");
-    };
+    });
 
-    apiFunctions["pageAction.setIcon"].handleRequest = function(details) {
+    apiFunctions.setHandleRequest("pageAction.setIcon", function(details) {
       setExtensionActionIconCommon(
           details, this.name, this.definition.parameters, "page action");
-    };
+    });
 
-    apiFunctions["experimental.sidebar.setIcon"].handleRequest =
+    apiFunctions.setHandleRequest("experimental.sidebar.setIcon",
         function(details) {
       var SIDEBAR_ICON_SIZE = 16;
       setIconCommon(
           details, this.name, this.definition.parameters, "sidebar",
           SIDEBAR_ICON_SIZE, SetIconCommon);
-    };
+    });
 
-    apiFunctions["contextMenus.create"].handleRequest =
+    apiFunctions.setHandleRequest("contextMenus.create",
         function() {
       var args = arguments;
       var id = GetNextContextMenuId();
@@ -999,36 +1032,36 @@ var chrome = chrome || {};
       sendRequest(this.name, args, this.definition.parameters,
                   {customCallback: this.customCallback});
       return id;
-    };
+    });
 
-    apiFunctions["omnibox.setDefaultSuggestion"].handleRequest =
+    apiFunctions.setHandleRequest("omnibox.setDefaultSuggestion",
         function(details) {
       var parseResult = parseOmniboxDescription(details.description);
       sendRequest(this.name, [parseResult], this.definition.parameters);
-    };
+    });
 
-    apiFunctions["webRequest.addEventListener"].handleRequest =
+    apiFunctions.setHandleRequest("webRequest.addEventListener",
         function() {
       var args = Array.prototype.slice.call(arguments);
       sendRequest(this.name, args, this.definition.parameters,
                   {forIOThread: true});
-    };
+    });
 
-    apiFunctions["webRequest.eventHandled"].handleRequest =
+    apiFunctions.setHandleRequest("webRequest.eventHandled",
         function() {
       var args = Array.prototype.slice.call(arguments);
       sendRequest(this.name, args, this.definition.parameters,
                   {forIOThread: true});
-    };
+    });
 
-    apiFunctions["webRequest.handlerBehaviorChanged"].
-        handleRequest = function() {
+    apiFunctions.setHandleRequest("webRequest.handlerBehaviorChanged",
+        function() {
       var args = Array.prototype.slice.call(arguments);
       sendRequest(this.name, args, this.definition.parameters,
                   {forIOThread: true});
-    };
+    });
 
-    apiFunctions["contextMenus.create"].customCallback =
+    apiFunctions.setCustomCallback("contextMenus.create",
         function(name, request, response) {
       if (chrome.extension.lastError) {
         return;
@@ -1042,18 +1075,18 @@ var chrome = chrome || {};
         chromeHidden.contextMenus.ensureListenerSetup();
         chromeHidden.contextMenus.handlers[id] = onclick;
       }
-    };
+    });
 
-    apiFunctions["contextMenus.remove"].customCallback =
+    apiFunctions.setCustomCallback("contextMenus.remove",
         function(name, request, response) {
       if (chrome.extension.lastError) {
         return;
       }
       var id = request.args[0];
       delete chromeHidden.contextMenus.handlers[id];
-    };
+    });
 
-    apiFunctions["contextMenus.update"].customCallback =
+    apiFunctions.setCustomCallback("contextMenus.update",
         function(name, request, response) {
       if (chrome.extension.lastError) {
         return;
@@ -1062,17 +1095,17 @@ var chrome = chrome || {};
       if (request.args[1].onclick) {
         chromeHidden.contextMenus.handlers[id] = request.args[1].onclick;
       }
-    };
+    });
 
-    apiFunctions["contextMenus.removeAll"].customCallback =
+    apiFunctions.setCustomCallback("contextMenus.removeAll",
         function(name, request, response) {
       if (chrome.extension.lastError) {
         return;
       }
       chromeHidden.contextMenus.handlers = {};
-    };
+    });
 
-    apiFunctions["tabs.captureVisibleTab"].updateArgumentsPreValidate =
+    apiFunctions.setUpdateArgumentsPreValidate("tabs.captureVisibleTab",
         function() {
       // Old signature:
       //    captureVisibleTab(int windowId, function callback);
@@ -1090,9 +1123,9 @@ var chrome = chrome || {};
         newArgs = arguments;
       }
       return newArgs;
-    };
+    });
 
-    apiFunctions["omnibox.sendSuggestions"].updateArgumentsPostValidate =
+    apiFunctions.setUpdateArgumentsPostValidate("omnibox.sendSuggestions",
         function(requestId, userSuggestions) {
       var suggestions = [];
       for (var i = 0; i < userSuggestions.length; i++) {
@@ -1102,9 +1135,9 @@ var chrome = chrome || {};
         suggestions.push(parseResult);
       }
       return [requestId, suggestions];
-    };
+    });
 
-    apiFunctions["tts.speak"].handleRequest = function() {
+    apiFunctions.setHandleRequest("tts.speak", function() {
       var args = arguments;
       if (args.length > 1 && args[1] && args[1].onEvent) {
         var id = GetNextTtsEventId();
@@ -1113,9 +1146,9 @@ var chrome = chrome || {};
       }
       sendRequest(this.name, args, this.definition.parameters);
       return id;
-    };
+    });
 
-    apiFunctions["experimental.socket.create"].handleRequest = function() {
+    apiFunctions.setHandleRequest("experimental.socket.create", function() {
       var args = arguments;
       if (args.length > 1 && args[1] && args[1].onEvent) {
         var id = GetNextSocketEventId();
@@ -1124,7 +1157,7 @@ var chrome = chrome || {};
       }
       sendRequest(this.name, args, this.definition.parameters);
       return id;
-    };
+    });
 
     if (chrome.test) {
       chrome.test.getApiDefinitions = GetExtensionAPIDefinition;
@@ -1137,6 +1170,9 @@ var chrome = chrome || {};
     setupSocketEvents();
     setupTtsEvents();
   });
+
+  // TODO(kalman): these should all be unnecessary steps if we design the
+  // APIFunctions class correctly.
 
   if (!chrome.experimental)
     chrome.experimental = {};
