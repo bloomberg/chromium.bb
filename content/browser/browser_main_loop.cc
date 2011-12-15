@@ -114,7 +114,8 @@ static void GLibLogHandler(const gchar* log_domain,
     LOG(ERROR) << "GTK File code error: " << message;
   } else if (strstr(message, "Theme file for default has no") ||
              strstr(message, "Theme directory") ||
-             strstr(message, "theme pixmap")) {
+             strstr(message, "theme pixmap") ||
+             strstr(message, "locate theme engine")) {
     LOG(ERROR) << "GTK theme error: " << message;
   } else if (strstr(message, "gtk_drag_dest_leave: assertion")) {
     LOG(ERROR) << "Drag destination deleted: http://crbug.com/18557";
