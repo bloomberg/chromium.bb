@@ -1027,6 +1027,20 @@ map(struct wlsc_shell *base,
 		wlsc_surface_configure(surface,
 				       surface->x, surface->y, width, height);
 
+	switch (surface_type) {
+	case SHELL_SURFACE_TOPLEVEL:
+	case SHELL_SURFACE_TRANSIENT:
+	case SHELL_SURFACE_FULLSCREEN:
+		if (!shell->locked)
+			activate(base, surface,
+				 (struct wlsc_input_device *)
+					compositor->input_device,
+				 wlsc_compositor_get_time());
+		break;
+	default:
+		break;
+	}
+
 	if (surface_type == SHELL_SURFACE_TOPLEVEL)
 		wlsc_zoom_run(surface, 0.8, 1.0, NULL, NULL);
 }
