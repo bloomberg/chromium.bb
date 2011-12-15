@@ -67,8 +67,7 @@ def ErrOut(text):
   sys.stderr.write( '>>>' + '>> <<'.join(sys.argv) + '<<\n\n')
   sys.stderr.write(' '.join(sys.argv) + '<<\n\n')
   sys.stderr.write(text + '\n')
-  sys.exit(-1)
-
+  sys.exit(1)
 
 def Run(cmd_line):
   """Run the provided command-line returning the error code.
@@ -112,13 +111,13 @@ def GetLibPath(tool, arch):
   """For a given tool and architecture, determine the library path."""
   arch_map = {
     'ia32': 'lib32',
-    'x64': 'lib64',
+    'x64': 'lib',
   }
   lib = arch_map[arch]
 
   # For 64bit win, the arch is incorrectly reported as 32bit, so override it.
   if UseWin64():
-    lib = 'lib64'
+    lib = 'lib'
   return os.path.join(GetToolchainPath(tool), 'x86_64-nacl', lib)
 
 
@@ -154,6 +153,8 @@ def BuildCmdLine(path, nexe, arch, tool):
   # the file system.
   libpath = GetLibPath(tool, arch)
   ldso = os.path.join(libpath, 'runnable-ld.so')
+  # Force POSIX style paths required by runnable-ld
+  nexe = nexe.replace('\\', '/')
   return [sel_ldr, '-a', '-B', irt_core, '--', ldso, '--library-path',
           libpath, nexe]
 
@@ -232,7 +233,7 @@ def Main(argv):
       out = open(options.output, 'w')
     except EnvironmentError:
       print 'Failed to open %s.\n' % options.output
-      return -1
+      return 1
   else:
     out = None
 
@@ -261,4 +262,3 @@ def Main(argv):
 
 if __name__ == '__main__':
   sys.exit(Main(sys.argv))
-

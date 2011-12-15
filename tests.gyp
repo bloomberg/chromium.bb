@@ -21,7 +21,7 @@
           ],
           'variables': {
             'nexe_target': 'hello_world',
-            'build_glibc': 0,
+            'build_glibc': 1,
             'build_newlib': 1,
             'sources': [
               'tests/hello_world/hello_world.c',
@@ -42,7 +42,7 @@
             'arch': '--arch=<(target_arch)',
             'name': '--name=hello_world',
             'path': '--path=<(PRODUCT_DIR)',
-            'tools': '--tools=newlib',
+            'tools': '--tools=newlib,glibc',
             'script': '<(DEPTH)/native_client/build/test_build.py',
           },
           'conditions': [
