@@ -38,16 +38,10 @@ class WmMessageListener : public MessageLoopForUI::Observer {
   void RemoveObserver(Observer* observer) {
     observers_.RemoveObserver(observer);
   }
-#if defined(TOUCH_UI)
-  // MessageLoopForUI::Observer overrides.
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
-#else
+
   // MessageLoopForUI::Observer overrides.
   virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
   virtual void DidProcessEvent(GdkEvent* event) OVERRIDE;
-#endif
 
  private:
   friend struct DefaultSingletonTraits<WmMessageListener>;

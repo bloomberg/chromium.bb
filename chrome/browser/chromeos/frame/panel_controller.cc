@@ -4,11 +4,6 @@
 
 #include "chrome/browser/chromeos/frame/panel_controller.h"
 
-#if defined(TOUCH_UI)
-#include <X11/Xlib.h>
-#include <X11/extensions/XInput2.h>
-#endif
-
 #include <vector>
 
 #include "base/logging.h"
@@ -39,39 +34,6 @@
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
 #endif
-
-#if defined(TOUCH_UI)
-namespace {
-
-gfx::Point RootLocationFromXEvent(const XEvent* xev) {
-  switch (xev->type) {
-    case ButtonPress:
-    case ButtonRelease:
-      return gfx::Point(xev->xbutton.x_root, xev->xbutton.y_root);
-    case MotionNotify:
-      return gfx::Point(xev->xmotion.x_root, xev->xmotion.y_root);
-
-    case GenericEvent: {
-      const XIDeviceEvent* xiev =
-          static_cast<XIDeviceEvent*>(xev->xcookie.data);
-      switch (xiev->evtype) {
-        case XI_ButtonPress:
-        case XI_ButtonRelease:
-        case XI_Motion:
-          return gfx::Point(static_cast<int>(xiev->root_x),
-                            static_cast<int>(xiev->root_y));
-      }
-    }
-
-    default:
-      NOTREACHED();
-  }
-
-  return gfx::Point();
-}
-
-}  // namespace
-#endif  // defined(TOUCH_UI)
 
 namespace chromeos {
 
@@ -335,17 +297,10 @@ bool PanelController::TitleMouseDragged(const views::MouseEvent& event) {
     return false;
   }
 
-#if !defined(TOUCH_UI)
   const GdkEvent* gdk_event = event.gdk_event();
   GdkEventMotion last_motion_event = gdk_event->motion;
   int x_root = last_motion_event.x_root;
   int y_root = last_motion_event.y_root;
-#else
-  const XEvent* xev = event.native_event();
-  gfx::Point abs_location = RootLocationFromXEvent(xev);
-  int x_root = abs_location.x();
-  int y_root = abs_location.y();
-#endif
 
   if (!dragging_) {
     if (views::View::ExceededDragThreshold(x_root - mouse_down_abs_x_,
