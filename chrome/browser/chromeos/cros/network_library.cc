@@ -1745,7 +1745,8 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   // virtual SetIPConfig implemented in derived classes.
   virtual void SwitchToPreferredNetwork() OVERRIDE;
   virtual bool LoadOncNetworks(const std::string& onc_blob,
-                               const std::string& passcode) OVERRIDE;
+                               const std::string& passcode,
+                               std::string* error) OVERRIDE;
   virtual bool SetActiveNetwork(ConnectionType type,
                                 const std::string& service_path) OVERRIDE;
 
@@ -2834,14 +2835,23 @@ void NetworkLibraryImplBase::SwitchToPreferredNetwork() {
 }
 
 bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
-                                             const std::string& passcode) {
+                                             const std::string& passcode,
+                                             std::string* error) {
   // TODO(gspencer): Add support for decrypting onc files. crbug.com/19397
   OncNetworkParser parser(onc_blob);
+
+  if (!parser.parse_error().empty()) {
+    if (error)
+      *error = parser.parse_error();
+    return false;
+  }
 
   for (int i = 0; i < parser.GetCertificatesSize(); i++) {
     // Insert each of the available certs into the certificate DB.
     if (parser.ParseCertificate(i).get() == NULL) {
       DLOG(WARNING) << "Cannot parse certificate in ONC file";
+      if (error)
+        *error = parser.parse_error();
       return false;
     }
   }
@@ -2851,6 +2861,8 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
     scoped_ptr<Network> network(parser.ParseNetwork(i));
     if (!network.get()) {
       DLOG(WARNING) << "Cannot parse network in ONC file";
+      if (error)
+        *error = parser.parse_error();
       return false;
     }
 
@@ -2868,8 +2880,15 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
 
     CallConfigureService(network->unique_id(), &dict);
   }
-  return (parser.GetNetworkConfigsSize() != 0 ||
-          parser.GetCertificatesSize() != 0);
+
+  if (parser.GetNetworkConfigsSize() != 0 ||
+      parser.GetCertificatesSize() != 0) {
+      if (error)
+        *error = l10n_util::GetStringUTF8(
+            IDS_NETWORK_CONFIG_ERROR_NETWORK_IMPORT);
+      return false;
+  }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -5102,7 +5121,7 @@ void NetworkLibraryImplStub::Init() {
         "  ],"
         "  \"Certificates\": []"
         "}");
-  LoadOncNetworks(test_blob, "");
+  LoadOncNetworks(test_blob, "", NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////

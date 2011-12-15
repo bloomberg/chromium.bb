@@ -11,6 +11,7 @@
 
 using testing::Mock;
 using testing::Return;
+using testing::_;
 
 namespace policy {
 
@@ -26,7 +27,7 @@ class NetworkConfigurationUpdaterTest
 TEST_P(NetworkConfigurationUpdaterTest, InitialUpdate) {
   provider_.AddPolicy(GetParam(), Value::CreateStringValue(kFakeONC));
 
-  EXPECT_CALL(network_library_, LoadOncNetworks(kFakeONC, ""))
+  EXPECT_CALL(network_library_, LoadOncNetworks(kFakeONC, "", _))
       .WillRepeatedly(Return(true));
 
   NetworkConfigurationUpdater updater(&provider_, &network_library_);
@@ -37,20 +38,20 @@ TEST_P(NetworkConfigurationUpdaterTest, PolicyChange) {
   NetworkConfigurationUpdater updater(&provider_, &network_library_);
 
   // We should update if policy changes.
-  EXPECT_CALL(network_library_, LoadOncNetworks(kFakeONC, ""))
+  EXPECT_CALL(network_library_, LoadOncNetworks(kFakeONC, "", _))
       .WillOnce(Return(true));
   provider_.AddPolicy(GetParam(), Value::CreateStringValue(kFakeONC));
   provider_.NotifyPolicyUpdated();
   Mock::VerifyAndClearExpectations(&network_library_);
 
   // No update if the set the same value again.
-  EXPECT_CALL(network_library_, LoadOncNetworks(kFakeONC, ""))
+  EXPECT_CALL(network_library_, LoadOncNetworks(kFakeONC, "", _))
       .Times(0);
   provider_.NotifyPolicyUpdated();
   Mock::VerifyAndClearExpectations(&network_library_);
 
   // Another update is expected if the policy goes away.
-  EXPECT_CALL(network_library_, LoadOncNetworks("", ""))
+  EXPECT_CALL(network_library_, LoadOncNetworks("", "", _))
       .WillOnce(Return(true));
   provider_.RemovePolicy(GetParam());
   provider_.NotifyPolicyUpdated();

@@ -263,7 +263,6 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifi1) {
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   EXPECT_EQ(0, parser.GetCertificatesSize());
-  EXPECT_FALSE(parser.ParseNetwork(1));
   scoped_ptr<Network> network(parser.ParseNetwork(0));
   ASSERT_TRUE(network.get());
 
@@ -299,7 +298,6 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP1) {
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   EXPECT_EQ(0, parser.GetCertificatesSize());
-  EXPECT_FALSE(parser.ParseNetwork(1));
   scoped_ptr<Network> network(parser.ParseNetwork(0));
   ASSERT_TRUE(network.get());
 
@@ -339,7 +337,6 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP2) {
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   EXPECT_EQ(0, parser.GetCertificatesSize());
-  EXPECT_FALSE(parser.ParseNetwork(1));
   scoped_ptr<Network> network(parser.ParseNetwork(0));
   ASSERT_TRUE(network.get());
 
