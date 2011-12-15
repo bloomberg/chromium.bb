@@ -174,11 +174,7 @@ const char* const kUnknownLanguageCode = "und";
 
 const int kJavascriptMessageExpectedDelay = 1000;
 
-#ifdef TOUCH_UI
-const bool kEnableTouchIcon = true;
-#else
 const bool kEnableTouchIcon = false;
-#endif
 
 #if defined(OS_LINUX)
 extern const int kLowestRendererOomScore = 300;
