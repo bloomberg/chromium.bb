@@ -68,7 +68,6 @@ class TemplateURLIsSame {
         url->safe_for_autoreplace() == other_->safe_for_autoreplace() &&
         url->show_in_default_list() == other_->show_in_default_list() &&
         url->input_encodings() == other_->input_encodings() &&
-        url->logo_id() == other_->logo_id() &&
         url->prepopulate_id() == other_->prepopulate_id();
   }
 
@@ -156,6 +155,13 @@ DefaultSearchProviderChange::DefaultSearchProviderChange(
   if (old_url) {
     old_id_ = old_url->id();
     old_name_ = old_url->short_name();
+  }
+  if (old_id_ == new_id_) {
+    // This means someone has tampered with the search providers list but not
+    // with the ID. Old ID is useless in this case so the prepopulated default
+    // search provider will be used.
+    old_id_ = 0;
+    // TODO(ivankr): restore the default search provider from the backup table.
   }
 }
 
@@ -270,6 +276,13 @@ string16 DefaultSearchProviderChange::GetApplyButtonText() const {
     if (new_id_ == fallback_id_) {
       // Old search engine is lost, the fallback search engine is the same as
       // the new one so no need to show this button.
+      return string16();
+    }
+    if (!new_name_.empty() &&
+        new_name_ == fallback_name_) {
+      // The fallback and new search engines have the same name but different
+      // IDs, which most likely is some fraud attempt, so don't suggest to
+      // apply the new setting.
       return string16();
     }
     if (new_name_.length() > kMaxDisplayedNameLength)
