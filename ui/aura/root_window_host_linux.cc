@@ -344,10 +344,8 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
   XFlush(xdisplay_);
 
   // TODO(sad): Re-enable once crbug.com/106516 is fixed.
-#if 0
   if (base::MessagePumpForUI::HasXInput2())
     ui::TouchFactory::GetInstance()->SetupXI2ForXWindow(xwindow_);
-#endif
 
   base::MessagePumpX::SetDefaultDispatcher(this);
   MessageLoopForUI::current()->AddDestructionObserver(this);
@@ -421,6 +419,13 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
       ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
       if (!factory->ShouldProcessXI2Event(xev))
         break;
+
+      // Update the device list if necessary.
+      if (xev->xgeneric.evtype == XI_HierarchyChanged) {
+        factory->UpdateDeviceList(xdisplay_);
+        handled = true;
+        break;
+      }
 
       // If this is a motion event we want to coalesce all pending motion
       // events that are at the top of the queue.
