@@ -18,6 +18,7 @@
 #include "base/i18n/icu_encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/time_formatting.h"
+#include "base/memory/scoped_vector.h"
 #include "base/json/json_writer.h"  // for debug output only.
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -161,6 +162,20 @@ void ValidateUTF8(const std::string& str, std::string* output) {
       // Puts REPLACEMENT CHARACTER (U+FFFD) if character is not readable UTF-8
       base::WriteUnicodeCharacter(0xFFFD, output);
   }
+}
+
+NetworkProfileType GetProfileTypeForSource(NetworkUIData::ONCSource source) {
+  switch (source) {
+    case NetworkUIData::ONC_SOURCE_DEVICE_POLICY:
+      return PROFILE_SHARED;
+    case NetworkUIData::ONC_SOURCE_USER_POLICY:
+      return PROFILE_USER;
+    case NetworkUIData::ONC_SOURCE_NONE:
+    case NetworkUIData::ONC_SOURCE_USER_IMPORT:
+      return PROFILE_NONE;
+  }
+  NOTREACHED() << "Unknown ONC source " << source;
+  return PROFILE_NONE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2857,16 +2872,29 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
     }
   }
 
+  // Parse all networks. Bail out if that fails.
+  ScopedVector<Network> networks;
   for (int i = 0; i < parser.GetNetworkConfigsSize(); i++) {
     // Parse Open Network Configuration blob into a temporary Network object.
-    scoped_ptr<Network> network(parser.ParseNetwork(i));
-    if (!network.get()) {
+    Network* network = parser.ParseNetwork(i);
+    if (!network) {
       DLOG(WARNING) << "Cannot parse network in ONC file";
       if (error)
         *error = parser.parse_error();
       return false;
     }
+    networks.push_back(network);
+  }
 
+  // Configure the networks. While doing so, collect unique identifiers of the
+  // networks that are defined in the ONC blob in |network_ids|. They're later
+  // used to clean out any previously-existing networks that had been configured
+  // through policy but are no longer specified in the updated ONC blob.
+  std::set<std::string> network_ids;
+  std::string profile_path(GetProfilePath(GetProfileTypeForSource(source)));
+  for (std::vector<Network*>::iterator iter(networks.begin());
+       iter != networks.end(); ++iter) {
+    Network* network = *iter;
     DictionaryValue dict;
     for (Network::PropertyMap::const_iterator props =
              network->property_map_.begin();
@@ -2879,7 +2907,40 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
         VLOG(2) << "Property " << props->first << " will not be sent";
     }
 
+    // Set the appropriate profile for |source|.
+    if (!profile_path.empty())
+      dict.SetString(flimflam::kProfileProperty, profile_path);
+
     CallConfigureService(network->unique_id(), &dict);
+    network_ids.insert(network->unique_id());
+  }
+
+  // Go through the list of existing remembered networks and clean out the ones
+  // that no longer have a definition in the ONC blob. We first collect the
+  // networks and do the actual deletion later because ForgetNetwork() changes
+  // the remembered network vectors.
+  if (source != NetworkUIData::ONC_SOURCE_USER_IMPORT) {
+    std::vector<std::string> to_be_deleted;
+    for (WifiNetworkVector::iterator i(remembered_wifi_networks_.begin());
+         i != remembered_wifi_networks_.end(); ++i) {
+      WifiNetwork* network = *i;
+      if (NetworkUIData::GetONCSource(network) == source &&
+          network_ids.find(network->unique_id()) == network_ids.end())
+        to_be_deleted.push_back(network->service_path());
+    }
+
+    for (VirtualNetworkVector::iterator i(remembered_virtual_networks_.begin());
+         i != remembered_virtual_networks_.end(); ++i) {
+      VirtualNetwork* network = *i;
+      if (NetworkUIData::GetONCSource(network) == source &&
+          network_ids.find(network->unique_id()) == network_ids.end())
+        to_be_deleted.push_back(network->service_path());
+    }
+
+    for (std::vector<std::string>::const_iterator i(to_be_deleted.begin());
+         i != to_be_deleted.end(); ++i) {
+      ForgetNetwork(*i);
+    }
   }
 
   if (parser.GetNetworkConfigsSize() != 0 ||

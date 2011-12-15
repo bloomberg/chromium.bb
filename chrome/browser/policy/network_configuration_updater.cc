@@ -10,6 +10,9 @@
 
 namespace policy {
 
+const char NetworkConfigurationUpdater::kEmptyConfiguration[] =
+    "{NetworkConfigurations:[],Certificates:[]}";
+
 NetworkConfigurationUpdater::NetworkConfigurationUpdater(
     ConfigurationPolicyProvider* provider,
     chromeos::NetworkLibrary* network_library)
@@ -56,6 +59,12 @@ void NetworkConfigurationUpdater::ApplyNetworkConfiguration(
     if (!value->GetAsString(&new_network_config))
       LOG(WARNING) << "Invalid network configuration.";
   }
+
+  // We need to load an empty configuration to get rid of any configuration
+  // that has been installed previously. An empty string also works, but
+  // generates warnings and errors, which we'd like to avoid.
+  if (new_network_config.empty())
+    new_network_config = kEmptyConfiguration;
 
   if (*cached_value != new_network_config) {
     *cached_value = new_network_config;

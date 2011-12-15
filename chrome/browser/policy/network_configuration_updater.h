@@ -31,6 +31,9 @@ class NetworkConfigurationUpdater
   // ConfigurationPolicyProvider::Observer:
   virtual void OnUpdatePolicy(ConfigurationPolicyProvider* provider) OVERRIDE;
 
+  // Empty network configuration blob.
+  static const char kEmptyConfiguration[];
+
  private:
   // Grabs network configuration from policy and applies it.
   void Update();

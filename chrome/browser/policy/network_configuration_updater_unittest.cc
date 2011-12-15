@@ -20,6 +20,24 @@ static const char kFakeONC[] = "{ \"GUID\": \"1234\" }";
 class NetworkConfigurationUpdaterTest
     : public testing::TestWithParam<ConfigurationPolicyType> {
  protected:
+  virtual void SetUp() OVERRIDE {
+    EXPECT_CALL(network_library_, LoadOncNetworks(_, "", _, _))
+        .WillRepeatedly(Return(true));
+  }
+
+  // Maps configuration policy type to corresponding ONC source.
+  static chromeos::NetworkUIData::ONCSource TypeToONCSource(
+      ConfigurationPolicyType type) {
+    switch (type) {
+      case kPolicyDeviceOpenNetworkConfiguration:
+        return chromeos::NetworkUIData::ONC_SOURCE_DEVICE_POLICY;
+      case kPolicyOpenNetworkConfiguration:
+        return chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY;
+      default:
+        return chromeos::NetworkUIData::ONC_SOURCE_NONE;
+    }
+  }
+
   chromeos::MockNetworkLibrary network_library_;
   MockConfigurationPolicyProvider provider_;
 };
@@ -27,8 +45,9 @@ class NetworkConfigurationUpdaterTest
 TEST_P(NetworkConfigurationUpdaterTest, InitialUpdate) {
   provider_.AddPolicy(GetParam(), Value::CreateStringValue(kFakeONC));
 
-  EXPECT_CALL(network_library_, LoadOncNetworks(kFakeONC, "", _, _))
-      .WillRepeatedly(Return(true));
+  EXPECT_CALL(network_library_,
+              LoadOncNetworks(kFakeONC, "", TypeToONCSource(GetParam()), _))
+      .WillOnce(Return(true));
 
   NetworkConfigurationUpdater updater(&provider_, &network_library_);
   Mock::VerifyAndClearExpectations(&network_library_);
@@ -38,20 +57,24 @@ TEST_P(NetworkConfigurationUpdaterTest, PolicyChange) {
   NetworkConfigurationUpdater updater(&provider_, &network_library_);
 
   // We should update if policy changes.
-  EXPECT_CALL(network_library_, LoadOncNetworks(kFakeONC, "", _, _))
+  EXPECT_CALL(network_library_,
+              LoadOncNetworks(kFakeONC, "", TypeToONCSource(GetParam()), _))
       .WillOnce(Return(true));
   provider_.AddPolicy(GetParam(), Value::CreateStringValue(kFakeONC));
   provider_.NotifyPolicyUpdated();
   Mock::VerifyAndClearExpectations(&network_library_);
 
   // No update if the set the same value again.
-  EXPECT_CALL(network_library_, LoadOncNetworks(kFakeONC, "", _, _))
+  EXPECT_CALL(network_library_,
+              LoadOncNetworks(kFakeONC, "", TypeToONCSource(GetParam()), _))
       .Times(0);
   provider_.NotifyPolicyUpdated();
   Mock::VerifyAndClearExpectations(&network_library_);
 
   // Another update is expected if the policy goes away.
-  EXPECT_CALL(network_library_, LoadOncNetworks("", "", _, _))
+  EXPECT_CALL(network_library_,
+              LoadOncNetworks(NetworkConfigurationUpdater::kEmptyConfiguration,
+                              "", TypeToONCSource(GetParam()), _))
       .WillOnce(Return(true));
   provider_.RemovePolicy(GetParam());
   provider_.NotifyPolicyUpdated();
