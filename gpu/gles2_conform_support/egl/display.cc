@@ -138,6 +138,9 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   command_buffer_->SetPutOffsetChangeCallback(
       base::Bind(&gpu::GpuScheduler::PutChanged,
                  base::Unretained(gpu_scheduler_.get())));
+  command_buffer_->SetGetBufferChangeCallback(
+      base::Bind(&gpu::GpuScheduler::SetGetBuffer,
+                 base::Unretained(gpu_scheduler_.get())));
 
   surface_.reset(new Surface(win));
 
@@ -147,6 +150,9 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
 void Display::DestroySurface(EGLSurface surface) {
   DCHECK(IsValidSurface(surface));
   gpu_scheduler_.reset();
+  if (decoder_.get()) {
+    decoder_->Destroy();
+  }
   decoder_.reset();
   gl_surface_ = NULL;
   gl_context_ = NULL;

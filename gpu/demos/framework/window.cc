@@ -34,6 +34,9 @@ Window::Window()
 }
 
 Window::~Window() {
+  if (decoder_.get()) {
+    decoder_->Destroy();
+  }
 }
 
 bool Window::Init(int width, int height) {
@@ -91,6 +94,9 @@ bool Window::CreateRenderContext(gfx::PluginWindowHandle hwnd) {
 
   command_buffer_->SetPutOffsetChangeCallback(
       base::Bind(&GpuScheduler::PutChanged,
+                 base::Unretained(gpu_scheduler_.get())));
+  command_buffer_->SetGetBufferChangeCallback(
+      base::Bind(&GpuScheduler::SetGetBuffer,
                  base::Unretained(gpu_scheduler_.get())));
 
   gles2_cmd_helper_.reset(new GLES2CmdHelper(command_buffer_.get()));
