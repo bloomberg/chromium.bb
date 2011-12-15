@@ -7,11 +7,11 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "content/browser/browser_context.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/file_stream.h"
 

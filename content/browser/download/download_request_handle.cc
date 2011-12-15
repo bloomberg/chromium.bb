@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/stringprintf.h"
-#include "content/browser/browser_context.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

@@ -25,6 +25,7 @@
     '<(INTERMEDIATE_DIR)',
   ],
   'sources': [
+    'public/browser/browser_context.h',
     'public/browser/browser_main_parts.h',
     'public/browser/browser_shutdown.h',
     'public/browser/browser_thread.h',
@@ -85,7 +86,6 @@
     'browser/appcache/chrome_appcache_service.h',
     'browser/browser_child_process_host.cc',
     'browser/browser_child_process_host.h',
-    'browser/browser_context.h',
     'browser/browser_main.cc',
     'browser/browser_main.h',
     'browser/browser_main_loop.cc',

@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_temp_dir.h"
-#include "content/browser/browser_context.h"
+#include "content/public/browser/browser_context.h"
 
 class WebKitContext;
 

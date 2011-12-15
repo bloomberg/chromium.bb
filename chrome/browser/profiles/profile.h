@@ -15,7 +15,7 @@
 #include "chrome/browser/net/preconnect.h" // TODO: remove this.
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "content/browser/browser_context.h"
+#include "content/public/browser/browser_context.h"
 
 namespace base {
 class Time;

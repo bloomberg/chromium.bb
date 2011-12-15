@@ -10,7 +10,7 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/browser_context.h"
+#include "content/public/browser/browser_context.h"
 
 class DownloadIdFactory;
 class DownloadManager;

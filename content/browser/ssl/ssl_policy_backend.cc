@@ -4,9 +4,9 @@
 
 #include "content/browser/ssl/ssl_policy_backend.h"
 
-#include "content/browser/browser_context.h"
 #include "content/browser/ssl/ssl_host_state.h"
 #include "content/browser/tab_contents/navigation_controller.h"
+#include "content/public/browser/browser_context.h"
 
 SSLPolicyBackend::SSLPolicyBackend(NavigationController* controller)
     : ssl_host_state_(controller->browser_context()->GetSSLHostState()),
