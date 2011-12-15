@@ -55,7 +55,7 @@ void MoveAndClickCommand::ExecutePost(Response* response) {
         "    }"
         "  }"
         "  throw new Error('Option element is not in a select');"
-        "};";
+        "}";
     bool can_be_toggled;
     error = session_->ExecuteScriptAndParse(
         session_->current_target(),
