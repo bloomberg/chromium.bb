@@ -77,44 +77,72 @@ class AccessibilityEventRouterViews {
   // Checks the type of the view and calls one of the more specific
   // Send*Notification methods, below.
   void DispatchAccessibilityNotification(
-      views::View* view, int type);
+      views::View* view,
+      int type);
 
   // Each of these methods constructs an AccessibilityControlInfo object
   // and sends a notification of a specific accessibility event.
-  void SendButtonNotification(
-      views::View* view, int type, Profile* profile);
-  void SendLinkNotification(
-      views::View* view, int type, Profile* profile);
-  void SendMenuNotification(
-      views::View* view, int type, Profile* profile);
-  void SendMenuItemNotification(
-      views::View* view, int type, Profile* profile);
-  void SendTextfieldNotification(
-      views::View* view, int type, Profile* profile);
-  void SendComboboxNotification(
-      views::View* view, int type, Profile* profile);
-  void SendCheckboxNotification(
-      views::View* view, int type, Profile* profile);
-  void SendWindowNotification(
-      views::View* view, int type, Profile* profile);
+  static void SendButtonNotification(
+      views::View* view,
+      int type,
+      Profile* profile);
+  static void SendLinkNotification(
+      views::View* view,
+      int type,
+      Profile* profile);
+  static void SendMenuNotification(
+      views::View* view,
+      int type,
+      Profile* profile);
+  static void SendMenuItemNotification(
+      views::View* view,
+      int type,
+      Profile* profile);
+  static void SendTextfieldNotification(
+      views::View* view,
+      int type,
+      Profile* profile);
+  static void SendComboboxNotification(
+      views::View* view,
+      int type,
+      Profile* profile);
+  static void SendCheckboxNotification(
+      views::View* view,
+      int type,
+      Profile* profile);
+  static void SendWindowNotification(
+      views::View* view,
+      int type,
+      Profile* profile);
 
   // Return the name of a view.
-  std::string GetViewName(views::View* view);
+  static std::string GetViewName(views::View* view);
+
+  // Get the context of a view - the name of the enclosing group, toolbar, etc.
+  static std::string GetViewContext(views::View* view);
+
+  // Return a descendant of this view with a given accessible role, if found.
+  static views::View* FindDescendantWithAccessibleRole(
+      views::View* view,
+      ui::AccessibilityTypes::Role role);
 
   // Return true if it's an event on a menu.
-  bool IsMenuEvent(views::View* view, int type);
+  static bool IsMenuEvent(views::View* view,
+                          int type);
 
   // Recursively explore all menu items of |menu| and return in |count|
   // the total number of items, and in |index| the 0-based index of
   // |item|, if found. Initialize |count| to zero before calling this
   // method. |index| will be unchanged if the item is not found, so
   // initialize it to -1 to detect this case.
-  void RecursiveGetMenuItemIndexAndCount(
-      views::View* menu, views::View* item, int* index, int* count);
+  static void RecursiveGetMenuItemIndexAndCount(views::View* menu,
+                                                views::View* item,
+                                                int* index,
+                                                int* count);
 
   // Recursively explore the subviews and return the text from the first
   // subview with a role of STATIC_TEXT.
-  std::string RecursiveGetStaticText(views::View* view);
+  static std::string RecursiveGetStaticText(views::View* view);
 
   // The profile associated with the most recent window event  - used to
   // figure out where to route a few events that can't be directly traced

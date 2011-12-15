@@ -551,8 +551,11 @@ void LocationBarViewGtk::OnKillFocus() {
 
 void LocationBarViewGtk::OnSetFocus() {
   Profile* profile = browser_->profile();
-  AccessibilityTextBoxInfo info(profile,
-      l10n_util::GetStringUTF8(IDS_ACCNAME_LOCATION), false);
+  AccessibilityTextBoxInfo info(
+      profile,
+      l10n_util::GetStringUTF8(IDS_ACCNAME_LOCATION),
+      std::string(),
+      false);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
       content::Source<Profile>(profile),

@@ -9,6 +9,7 @@ namespace extension_accessibility_api_constants {
 // String keys for AccessibilityObject properties.
 const char kTypeKey[] = "type";
 const char kNameKey[] = "name";
+const char kContextKey[] = "context";
 const char kDetailsKey[] = "details";
 const char kValueKey[] = "details.value";
 const char kPasswordKey[] = "details.isPassword";

@@ -59,11 +59,20 @@ class AccessibilityControlInfo : public AccessibilityEventInfo {
 
   const std::string& name() const { return name_; }
 
+  const std::string& context() const { return context_; }
+
  protected:
-  AccessibilityControlInfo(Profile* profile, const std::string& control_name);
+  AccessibilityControlInfo(Profile* profile,
+                           const std::string& name);
+
+  void set_context(const std::string& context) { context_ = context; }
 
   // The name of the control, like "OK" or "Password".
   std::string name_;
+
+  // A string describing the context of the control, such as the name of
+  // the group or toolbar it's contained in.
+  std::string context_;
 };
 
 // Accessibility information about a window passed to onWindowOpened
@@ -79,7 +88,9 @@ class AccessibilityWindowInfo : public AccessibilityControlInfo {
 // and onControlAction event listeners.
 class AccessibilityButtonInfo : public AccessibilityControlInfo {
  public:
-  AccessibilityButtonInfo(Profile* profile, const std::string& button_name);
+  AccessibilityButtonInfo(Profile* profile,
+                          const std::string& button_name,
+                          const std::string& context);
 
   virtual const char* type() const OVERRIDE;
 };
@@ -88,7 +99,9 @@ class AccessibilityButtonInfo : public AccessibilityControlInfo {
 // and onControlAction event listeners.
 class AccessibilityLinkInfo : public AccessibilityControlInfo {
  public:
-  AccessibilityLinkInfo(Profile* profile, const std::string& link_name);
+  AccessibilityLinkInfo(Profile* profile,
+                        const std::string& link_name,
+                        const std::string& context);
 
   virtual const char* type() const OVERRIDE;
 };
@@ -99,6 +112,7 @@ class AccessibilityRadioButtonInfo : public AccessibilityControlInfo {
  public:
   AccessibilityRadioButtonInfo(Profile* profile,
                                const std::string& name,
+                               const std::string& context,
                                bool checked,
                                int item_index,
                                int item_count);
@@ -126,6 +140,7 @@ class AccessibilityCheckboxInfo : public AccessibilityControlInfo {
  public:
   AccessibilityCheckboxInfo(Profile* profile,
                             const std::string& name,
+                            const std::string& context,
                             bool checked);
 
   virtual const char* type() const OVERRIDE;
@@ -146,6 +161,7 @@ class AccessibilityTabInfo : public AccessibilityControlInfo {
  public:
   AccessibilityTabInfo(Profile* profile,
                        const std::string& tab_name,
+                       const std::string& context,
                        int tab_index,
                        int tab_count);
 
@@ -173,6 +189,7 @@ class AccessibilityComboBoxInfo : public AccessibilityControlInfo {
  public:
   AccessibilityComboBoxInfo(Profile* profile,
                             const std::string& name,
+                            const std::string& context,
                             const std::string& value,
                             int item_index,
                             int item_count);
@@ -205,6 +222,7 @@ class AccessibilityTextBoxInfo : public AccessibilityControlInfo {
  public:
   AccessibilityTextBoxInfo(Profile* profile,
                            const std::string& name,
+                           const std::string& context,
                            bool password);
 
   virtual const char* type() const OVERRIDE;
@@ -236,6 +254,7 @@ class AccessibilityListBoxInfo : public AccessibilityControlInfo {
  public:
   AccessibilityListBoxInfo(Profile* profile,
                            const std::string& name,
+                           const std::string& context,
                            const std::string& value,
                            int item_index,
                            int item_count);
@@ -305,6 +324,7 @@ class AccessibilityMenuItemInfo : public AccessibilityControlInfo {
  public:
   AccessibilityMenuItemInfo(Profile* profile,
                             const std::string& name,
+                            const std::string& context,
                             bool has_submenu,
                             int item_index,
                             int item_count);

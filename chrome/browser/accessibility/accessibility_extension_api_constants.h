@@ -13,6 +13,7 @@ namespace extension_accessibility_api_constants {
 // Keys.
 extern const char kTypeKey[];
 extern const char kNameKey[];
+extern const char kContextKey[];
 extern const char kDetailsKey[];
 extern const char kValueKey[];
 extern const char kPasswordKey[];

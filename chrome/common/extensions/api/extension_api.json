@@ -17,6 +17,11 @@
             "type": "string",
             "description": "The localized name of the object, like OK or Password. Do not rely on an exact string match because the text will be in the user's language and may change in the future."
           },
+          "context": {
+            "type": "string",
+            "description": "The localized name of the context for the object, like the name of the surrounding toolbar or group of controls.",
+            "optional": true
+          },
           "details": {
             "description": "Other details like the state, depending on the type of object.",
             "optional": true,

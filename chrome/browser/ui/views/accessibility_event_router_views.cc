@@ -91,6 +91,7 @@ void AccessibilityEventRouterViews::HandleMenuItemFocused(
 
   AccessibilityMenuItemInfo info(most_recent_profile_,
                                  UTF16ToUTF8(menu_item_name),
+                                 UTF16ToUTF8(menu_name),
                                  has_submenu,
                                  item_index,
                                  item_count);
@@ -170,22 +171,26 @@ void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
   }
 }
 
+// static
 void AccessibilityEventRouterViews::SendButtonNotification(
     views::View* view,
     int type,
     Profile* profile) {
-  AccessibilityButtonInfo info(profile, GetViewName(view));
+  AccessibilityButtonInfo info(
+      profile, GetViewName(view), GetViewContext(view));
   SendAccessibilityNotification(type, &info);
 }
 
+// static
 void AccessibilityEventRouterViews::SendLinkNotification(
     views::View* view,
     int type,
     Profile* profile) {
-  AccessibilityLinkInfo info(profile, GetViewName(view));
+  AccessibilityLinkInfo info(profile, GetViewName(view), GetViewContext(view));
   SendAccessibilityNotification(type, &info);
 }
 
+// static
 void AccessibilityEventRouterViews::SendMenuNotification(
     views::View* view,
     int type,
@@ -194,11 +199,13 @@ void AccessibilityEventRouterViews::SendMenuNotification(
   SendAccessibilityNotification(type, &info);
 }
 
+// static
 void AccessibilityEventRouterViews::SendMenuItemNotification(
     views::View* view,
     int type,
     Profile* profile) {
   std::string name = GetViewName(view);
+  std::string context = GetViewContext(view);
 
   bool has_submenu = false;
   int index = -1;
@@ -217,10 +224,12 @@ void AccessibilityEventRouterViews::SendMenuItemNotification(
     RecursiveGetMenuItemIndexAndCount(parent_menu, view, &index, &count);
   }
 
-  AccessibilityMenuItemInfo info(profile, name, has_submenu, index, count);
+  AccessibilityMenuItemInfo info(
+      profile, name, context, has_submenu, index, count);
   SendAccessibilityNotification(type, &info);
 }
 
+// static
 void AccessibilityEventRouterViews::SendTextfieldNotification(
     views::View* view,
     int type,
@@ -228,14 +237,16 @@ void AccessibilityEventRouterViews::SendTextfieldNotification(
   ui::AccessibleViewState state;
   view->GetAccessibleState(&state);
   std::string name = UTF16ToUTF8(state.name);
+  std::string context = GetViewContext(view);
   bool password =
       (state.state & ui::AccessibilityTypes::STATE_PROTECTED) != 0;
-  AccessibilityTextBoxInfo info(profile, name, password);
+  AccessibilityTextBoxInfo info(profile, name, context, password);
   std::string value = UTF16ToUTF8(state.value);
   info.SetValue(value, state.selection_start, state.selection_end);
   SendAccessibilityNotification(type, &info);
 }
 
+// static
 void AccessibilityEventRouterViews::SendComboboxNotification(
     views::View* view,
     int type,
@@ -244,11 +255,13 @@ void AccessibilityEventRouterViews::SendComboboxNotification(
   view->GetAccessibleState(&state);
   std::string name = UTF16ToUTF8(state.name);
   std::string value = UTF16ToUTF8(state.value);
+  std::string context = GetViewContext(view);
   AccessibilityComboBoxInfo info(
-      profile, name, value, state.index, state.count);
+      profile, name, context, value, state.index, state.count);
   SendAccessibilityNotification(type, &info);
 }
 
+// static
 void AccessibilityEventRouterViews::SendCheckboxNotification(
     views::View* view,
     int type,
@@ -257,11 +270,16 @@ void AccessibilityEventRouterViews::SendCheckboxNotification(
   view->GetAccessibleState(&state);
   std::string name = UTF16ToUTF8(state.name);
   std::string value = UTF16ToUTF8(state.value);
+  std::string context = GetViewContext(view);
   AccessibilityCheckboxInfo info(
-      profile, name, state.state == ui::AccessibilityTypes::STATE_CHECKED);
+      profile,
+      name,
+      context,
+      state.state == ui::AccessibilityTypes::STATE_CHECKED);
   SendAccessibilityNotification(type, &info);
 }
 
+// static
 void AccessibilityEventRouterViews::SendWindowNotification(
     views::View* view,
     int type,
@@ -283,12 +301,68 @@ void AccessibilityEventRouterViews::SendWindowNotification(
   SendAccessibilityNotification(type, &info);
 }
 
+// static
 std::string AccessibilityEventRouterViews::GetViewName(views::View* view) {
   ui::AccessibleViewState state;
   view->GetAccessibleState(&state);
   return UTF16ToUTF8(state.name);
 }
 
+// static
+std::string AccessibilityEventRouterViews::GetViewContext(views::View* view) {
+  for (views::View* parent = view->parent();
+       parent;
+       parent = parent->parent()) {
+    ui::AccessibleViewState state;
+    parent->GetAccessibleState(&state);
+
+    // Two cases are handled right now. More could be added in the future
+    // depending on how the UI evolves.
+
+    // A control in a toolbar should use the toolbar's accessible name
+    // as the context.
+    if (state.role == ui::AccessibilityTypes::ROLE_TOOLBAR &&
+        !state.name.empty()) {
+      return UTF16ToUTF8(state.name);
+    }
+
+    // A control inside of an alert (like an infobar) should grab the
+    // first static text descendant as the context; that's the prompt.
+    if (state.role == ui::AccessibilityTypes::ROLE_ALERT) {
+      views::View* static_text_child = FindDescendantWithAccessibleRole(
+          parent, ui::AccessibilityTypes::ROLE_STATICTEXT);
+      if (static_text_child) {
+        ui::AccessibleViewState state;
+        static_text_child->GetAccessibleState(&state);
+        if (!state.name.empty())
+          return UTF16ToUTF8(state.name);
+      }
+      return std::string();
+    }
+  }
+
+  return std::string();
+}
+
+// static
+views::View* AccessibilityEventRouterViews::FindDescendantWithAccessibleRole(
+    views::View* view, ui::AccessibilityTypes::Role role) {
+  ui::AccessibleViewState state;
+  view->GetAccessibleState(&state);
+  if (state.role == role)
+    return view;
+
+  for (int i = 0; i < view->child_count(); i++) {
+    views::View* child = view->child_at(i);
+    views::View* result = FindDescendantWithAccessibleRole(child, role);
+    if (result)
+      return result;
+  }
+
+  return NULL;
+}
+
+// static
 bool AccessibilityEventRouterViews::IsMenuEvent(
     views::View* view,
     int type) {
@@ -310,6 +384,7 @@ bool AccessibilityEventRouterViews::IsMenuEvent(
   return false;
 }
 
+// static
 void AccessibilityEventRouterViews::RecursiveGetMenuItemIndexAndCount(
     views::View* menu,
     views::View* item,
@@ -332,6 +407,7 @@ void AccessibilityEventRouterViews::RecursiveGetMenuItemIndexAndCount(
   }
 }
 
+// static
 std::string AccessibilityEventRouterViews::RecursiveGetStaticText(
     views::View* view) {
   ui::AccessibleViewState state;
