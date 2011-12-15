@@ -80,6 +80,11 @@ bool ExtensionDevToolsBridge::RegisterAsDevToolsClientHost() {
         this,
         FormatDevToolsMessage(3, "Network.enable"));
 
+    // 3. Enable page events.
+    devtools_manager->DispatchOnInspectorBackend(
+        this,
+        FormatDevToolsMessage(4, "Page.enable"));
+
     return true;
   }
   return false;
