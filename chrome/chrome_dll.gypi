@@ -50,6 +50,7 @@
                 'app/chrome_main_delegate.h',
 
                 '<(SHARED_INTERMEDIATE_DIR)/chrome_version/chrome_dll_version.rc',
+                '../base/win/dllmain.cc',
 
                 '../webkit/glue/resources/aliasb.cur',
                 '../webkit/glue/resources/cell.cur',
