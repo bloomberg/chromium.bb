@@ -32,26 +32,66 @@ const char16 kForwardSlash = '/';
 
 namespace {
 
-// Cuts |text| to be |length| characters long.  If |cut_in_middle| is true, the
-// middle of the string is removed to leave equal-length pieces from the
-// beginning and end of the string; otherwise, the end of the string is removed
-// and only the beginning remains.  If |insert_ellipsis| is true, then an
-// ellipsis character will by inserted at the cut point.
-string16 CutString(const string16& text,
-                   size_t length,
-                   bool cut_in_middle,
-                   bool insert_ellipsis) {
-  // TODO(tony): This is wrong, it might split the string in the middle of a
-  // surrogate pair.
-  const string16 kInsert = insert_ellipsis ? UTF8ToUTF16(kEllipsis) :
-                                             string16();
-  if (!cut_in_middle)
-    return text.substr(0, length) + kInsert;
-  // We put the extra character, if any, before the cut.
-  const size_t half_length = length / 2;
-  return text.substr(0, length - half_length) + kInsert +
-      text.substr(text.length() - half_length, half_length);
-}
+// Helper class to split + elide text, while respecting UTF16 surrogate pairs.
+class StringSlicer {
+ public:
+  StringSlicer(const string16& text,
+               const string16& ellipsis,
+               bool elide_in_middle)
+      : text_(text),
+        ellipsis_(ellipsis),
+        elide_in_middle_(elide_in_middle) {
+  }
+
+  // Cuts |text_| to be |length| characters long.  If |cut_in_middle_| is true,
+  // the middle of the string is removed to leave equal-length pieces from the
+  // beginning and end of the string; otherwise, the end of the string is
+  // removed and only the beginning remains.  If |insert_ellipsis| is true,
+  // then an ellipsis character will by inserted at the cut point.
+  string16 CutString(size_t length, bool insert_ellipsis) {
+    const string16 kInsert = insert_ellipsis ? ellipsis_ : string16();
+
+    if (!elide_in_middle_)
+      return text_.substr(0, FindValidBoundaryBefore(length)) + kInsert;
+
+    // We put the extra character, if any, before the cut.
+    size_t half_length = length / 2;
+    size_t prefix_length = FindValidBoundaryBefore(length - half_length);
+    size_t suffix_start_guess = text_.length() - half_length;
+    size_t suffix_start = FindValidBoundaryAfter(suffix_start_guess);
+    size_t suffix_length = half_length - (suffix_start_guess - suffix_start);
+    return text_.substr(0, prefix_length) + kInsert +
+           text_.substr(suffix_start, suffix_length);
+  }
+
+ private:
+  // Returns a valid cut boundary at or before |index|.
+  size_t FindValidBoundaryBefore(size_t index) {
+    DCHECK_LE(index, text_.length());
+    if (index != text_.length())
+      U16_SET_CP_START(text_.data(), 0, index);
+    return index;
+  }
+
+  // Returns a valid cut boundary at or after |index|.
+  size_t FindValidBoundaryAfter(size_t index) {
+    DCHECK_LE(index, text_.length());
+    if (index != text_.length())
+      U16_SET_CP_LIMIT(text_.data(), 0, index, text_.length());
+    return index;
+  }
+
+  // The text to be sliced.
+  const string16& text_;
+
+  // Ellipsis string to use.
+  const string16& ellipsis_;
+
+  // If true, the middle of the string will be elided.
+  bool elide_in_middle_;
+
+  DISALLOW_COPY_AND_ASSIGN(StringSlicer);
+};
 
 // Build a path from the first |num_components| elements in |path_elements|.
 // Prepends |path_prefix|, appends |filename|, inserts ellipsis if appropriate.
@@ -350,9 +390,13 @@ string16 ElideText(const string16& text,
   if (text.empty())
     return text;
 
+  const string16 kEllipsisUTF16 = UTF8ToUTF16(kEllipsis);
+
   int current_text_pixel_width = font.GetStringWidth(text);
   bool elide_in_middle = (elide_behavior == ui::ELIDE_IN_MIDDLE);
   bool insert_ellipsis = (elide_behavior != ui::TRUNCATE_AT_END);
+
+  StringSlicer slicer(text, kEllipsisUTF16, elide_in_middle);
 
   // Pango will return 0 width for absurdly long strings. Cut the string in
   // half and try again.
@@ -363,14 +407,14 @@ string16 ElideText(const string16& text,
   // (eliding way too much from a ridiculous string is probably still
   // ridiculous), but we should check other widths for bogus values as well.
   if (current_text_pixel_width <= 0 && !text.empty()) {
-    return ElideText(CutString(text, text.length() / 2, elide_in_middle, false),
-                     font, available_pixel_width, elide_behavior);
+    string16 cut = slicer.CutString(text.length() / 2, false);
+    return ElideText(cut, font, available_pixel_width, elide_behavior);
   }
 
   if (current_text_pixel_width <= available_pixel_width)
     return text;
 
-  if (font.GetStringWidth(UTF8ToUTF16(kEllipsis)) > available_pixel_width)
+  if (font.GetStringWidth(kEllipsisUTF16) > available_pixel_width)
     return string16();
 
   // Use binary search to compute the elided text.
@@ -380,12 +424,12 @@ string16 ElideText(const string16& text,
   for (guess = (lo + hi) / 2; lo <= hi; guess = (lo + hi) / 2) {
     // We check the length of the whole desired string at once to ensure we
     // handle kerning/ligatures/etc. correctly.
-    string16 cut = CutString(text, guess, elide_in_middle, insert_ellipsis);
+    string16 cut = slicer.CutString(guess, insert_ellipsis);
     int guess_length = font.GetStringWidth(cut);
     // Check again that we didn't hit a Pango width overflow. If so, cut the
     // current string in half and start over.
     if (guess_length <= 0) {
-      return ElideText(CutString(text, guess / 2, elide_in_middle, false),
+      return ElideText(slicer.CutString(guess / 2, false),
                        font, available_pixel_width, elide_behavior);
     }
     if (guess_length > available_pixel_width)
@@ -394,7 +438,7 @@ string16 ElideText(const string16& text,
       lo = guess + 1;
   }
 
-  return CutString(text, guess, elide_in_middle, insert_ellipsis);
+  return slicer.CutString(guess, insert_ellipsis);
 }
 
 SortedDisplayURL::SortedDisplayURL(const GURL& url,

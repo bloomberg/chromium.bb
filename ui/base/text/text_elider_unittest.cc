@@ -237,6 +237,51 @@ TEST(TextEliderTest, ElideTextTruncate) {
   }
 }
 
+// Checks that all occurrences of |first_char| are followed by |second_char| and
+// all occurrences of |second_char| are preceded by |first_char| in |text|.
+static void CheckSurrogatePairs(const string16& text,
+                                char16 first_char,
+                                char16 second_char) {
+  size_t index = text.find_first_of(first_char);
+  while (index != string16::npos) {
+    EXPECT_LT(index, text.length() - 1);
+    EXPECT_EQ(second_char, text[index + 1]);
+    index = text.find_first_of(first_char, index + 1);
+  }
+  index = text.find_first_of(second_char);
+  while (index != string16::npos) {
+    EXPECT_GT(index, 0U);
+    EXPECT_EQ(first_char, text[index - 1]);
+    index = text.find_first_of(second_char, index + 1);
+  }
+}
+
+TEST(TextEliderTest, ElideTextSurrogatePairs) {
+  const gfx::Font font;
+  // The below is 'MUSICAL SYMBOL G CLEF', which is represented in UTF-16 as
+  // two characters forming a surrogate pair 0x0001D11E.
+  const std::string kSurrogate = "\xF0\x9D\x84\x9E";
+  const string16 kTestString =
+      UTF8ToUTF16(kSurrogate + "ab" + kSurrogate + kSurrogate + "cd");
+  const int kTestStringWidth = font.GetStringWidth(kTestString);
+  const char16 kSurrogateFirstChar = kTestString[0];
+  const char16 kSurrogateSecondChar = kTestString[1];
+  string16 result;
+
+  // Elide |kTextString| to all possible widths and check that no instance of
+  // |kSurrogate| was split in two.
+  for (int width = 0; width <= kTestStringWidth; width++) {
+    result = ui::ElideText(kTestString, font, width, ui::TRUNCATE_AT_END);
+    CheckSurrogatePairs(result, kSurrogateFirstChar, kSurrogateSecondChar);
+
+    result = ui::ElideText(kTestString, font, width, ui::ELIDE_AT_END);
+    CheckSurrogatePairs(result, kSurrogateFirstChar, kSurrogateSecondChar);
+
+    result = ui::ElideText(kTestString, font, width, ui::ELIDE_IN_MIDDLE);
+    CheckSurrogatePairs(result, kSurrogateFirstChar, kSurrogateSecondChar);
+  }
+}
+
 TEST(TextEliderTest, ElideTextLongStrings) {
   const string16 kEllipsisStr = UTF8ToUTF16(kEllipsis);
   string16 data_scheme(UTF8ToUTF16("data:text/plain,"));
