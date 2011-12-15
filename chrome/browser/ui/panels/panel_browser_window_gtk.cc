@@ -417,7 +417,9 @@ gfx::Size PanelBrowserWindowGtk::ContentSizeFromWindowSize(
 }
 
 int PanelBrowserWindowGtk::TitleOnlyHeight() const {
-  return titlebar_widget()->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(titlebar_widget(), &allocation);
+  return allocation.height;
 }
 
 void PanelBrowserWindowGtk::StartBoundsAnimation(
@@ -564,8 +566,13 @@ GdkRectangle PanelBrowserWindowGtk::GetTitlebarRectForDrawAttention() const {
   // We get the window width and not the titlebar_widget() width because we'd
   // like for the window borders on either side of the title bar to be the same
   // color.
-  rect.width = GTK_WIDGET(window())->allocation.width;
-  rect.height = titlebar_widget()->allocation.height;
+  GtkAllocation window_allocation;
+  gtk_widget_get_allocation(GTK_WIDGET(window()), &window_allocation);
+  rect.width = window_allocation.width;
+
+  GtkAllocation titlebar_allocation;
+  gtk_widget_get_allocation(titlebar_widget(), &titlebar_allocation);
+  rect.height = titlebar_allocation.height;
 
   return rect;
 }

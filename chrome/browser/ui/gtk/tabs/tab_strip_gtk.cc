@@ -921,8 +921,10 @@ void TabStripGtk::SetVerticalOffset(int offset) {
 
 gfx::Point TabStripGtk::GetTabStripOriginForWidget(GtkWidget* target) {
   int x, y;
+  GtkAllocation widget_allocation;
+  gtk_widget_get_allocation(widget(), &widget_allocation);
   if (!gtk_widget_translate_coordinates(widget(), target,
-      -widget()->allocation.x, 0, &x, &y)) {
+      -widget_allocation.x, 0, &x, &y)) {
     // If the tab strip isn't showing, give the coordinates relative to the
     // toplevel instead.
     if (!gtk_widget_translate_coordinates(
@@ -931,10 +933,10 @@ gfx::Point TabStripGtk::GetTabStripOriginForWidget(GtkWidget* target) {
     }
   }
   if (!gtk_widget_get_has_window(target)) {
-    GtkAllocation allocation;
-    gtk_widget_get_allocation(target, &allocation);
-    x += allocation.x;
-    y += allocation.y;
+    GtkAllocation target_allocation;
+    gtk_widget_get_allocation(target, &target_allocation);
+    x += target_allocation.x;
+    y += target_allocation.y;
   }
   return gfx::Point(x, y);
 }
@@ -1489,7 +1491,9 @@ void TabStripGtk::GetDesiredTabWidths(int tab_count,
   }
 
   // Determine how much space we can actually allocate to tabs.
-  int available_width = tabstrip_->allocation.width;
+  GtkAllocation tabstrip_allocation;
+  gtk_widget_get_allocation(tabstrip_.get(), &tabstrip_allocation);
+  int available_width = tabstrip_allocation.width;
   if (available_width_for_tabs_ < 0) {
     available_width = bounds_.width();
     available_width -=

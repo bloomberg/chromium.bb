@@ -454,7 +454,10 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
   gtk_widget_translate_coordinates(toolbar_->widget(),
       GTK_WIDGET(window_), 0, 0, &left_x,
       &top_y);
-  int center_width = window_vbox_->allocation.width;
+
+  GtkAllocation window_vbox_allocation;
+  gtk_widget_get_allocation(window_vbox_, &window_vbox_allocation);
+  int center_width = window_vbox_allocation.width;
 
   gfx::CairoCachedSurface* top_center =
       rb.GetNativeImageNamed(IDR_CONTENT_TOP_CENTER).ToCairo();
@@ -513,7 +516,7 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
   int bottom_y;
   gtk_widget_translate_coordinates(window_vbox_,
       GTK_WIDGET(window_),
-      0, window_vbox_->allocation.height,
+      0, window_vbox_allocation.height,
       NULL, &bottom_y);
   // |side_y| is where to start drawing the side shadows.  The top corners draw
   // the sides down to the bottom of the toolbar.
@@ -571,7 +574,7 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
   cairo_rectangle(cr,
       left_x + 1,
       bottom_y,
-      window_vbox_->allocation.width - 2,
+      window_vbox_allocation.width - 2,
       kContentShadowThickness);
   cairo_fill(cr);
 }
@@ -1927,10 +1930,15 @@ void BrowserWindowGtk::UpdateCustomFrame() {
 }
 
 gfx::Size BrowserWindowGtk::GetNonClientFrameSize() const {
-  return gfx::Size(window_container_->allocation.width -
-                   render_area_floating_container_->allocation.width,
-                   window_container_->allocation.height -
-                   render_area_floating_container_->allocation.height);
+  GtkAllocation window_container_allocation;
+  gtk_widget_get_allocation(window_container_, &window_container_allocation);
+  GtkAllocation render_area_floating_container_allocation;
+  gtk_widget_get_allocation(render_area_floating_container_,
+                            &render_area_floating_container_allocation);
+  return gfx::Size(window_container_allocation.width -
+                   render_area_floating_container_allocation.width,
+                   window_container_allocation.height -
+                   render_area_floating_container_allocation.height);
 }
 
 void BrowserWindowGtk::InvalidateWindow() {
@@ -1988,10 +1996,14 @@ void BrowserWindowGtk::InvalidateInfoBarBits() {
 int BrowserWindowGtk::GetXPositionOfLocationIcon(GtkWidget* relative_to) {
   GtkWidget* location_icon = toolbar_->GetLocationBarView()->
       location_icon_widget();
+
+  GtkAllocation location_icon_allocation;
+  gtk_widget_get_allocation(location_icon, &location_icon_allocation);
+
   int x = 0;
   gtk_widget_translate_coordinates(
       location_icon, relative_to,
-      (location_icon->allocation.width + 1) / 2,
+      (location_icon_allocation.width + 1) / 2,
       0, &x, NULL);
 
   if (!gtk_widget_get_has_window(relative_to)) {

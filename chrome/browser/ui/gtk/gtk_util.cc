@@ -416,17 +416,21 @@ void UndoForceFontSize(GtkWidget* widget) {
 }
 
 gfx::Point GetWidgetScreenPosition(GtkWidget* widget) {
-  if (!widget->window) {
+  GdkWindow* window = gtk_widget_get_window(widget);
+
+  if (!window) {
     NOTREACHED() << "Must only be called on realized widgets.";
     return gfx::Point(0, 0);
   }
 
   gint x, y;
-  gdk_window_get_origin(widget->window, &x, &y);
+  gdk_window_get_origin(window, &x, &y);
 
-  if (GTK_WIDGET_NO_WINDOW(widget)) {
-    x += widget->allocation.x;
-    y += widget->allocation.y;
+  if (!gtk_widget_get_has_window(widget)) {
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
+    x += allocation.x;
+    y += allocation.y;
   }
 
   return gfx::Point(x, y);
@@ -434,8 +438,12 @@ gfx::Point GetWidgetScreenPosition(GtkWidget* widget) {
 
 gfx::Rect GetWidgetScreenBounds(GtkWidget* widget) {
   gfx::Point position = GetWidgetScreenPosition(widget);
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+
   return gfx::Rect(position.x(), position.y(),
-                   widget->allocation.width, widget->allocation.height);
+                   allocation.width, allocation.height);
 }
 
 gfx::Size GetWidgetSize(GtkWidget* widget) {
@@ -507,18 +515,27 @@ void SetButtonTriggersNavigation(GtkWidget* button) {
 int MirroredLeftPointForRect(GtkWidget* widget, const gfx::Rect& bounds) {
   if (!base::i18n::IsRTL())
     return bounds.x();
-  return widget->allocation.width - bounds.x() - bounds.width();
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  return allocation.width - bounds.x() - bounds.width();
 }
 
 int MirroredRightPointForRect(GtkWidget* widget, const gfx::Rect& bounds) {
   if (!base::i18n::IsRTL())
     return bounds.right();
-  return widget->allocation.width - bounds.x();
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  return allocation.width - bounds.x();
 }
 
 int MirroredXCoordinate(GtkWidget* widget, int x) {
-  if (base::i18n::IsRTL())
-    return widget->allocation.width - x;
+  if (base::i18n::IsRTL()) {
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
+    return allocation.width - x;
+  }
   return x;
 }
 
@@ -816,7 +833,10 @@ gfx::Rect GetWidgetRectRelativeToToplevel(GtkWidget* widget) {
                                    toplevel,
                                    0, 0,
                                    &x, &y);
-  return gfx::Rect(x, y, widget->allocation.width, widget->allocation.height);
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  return gfx::Rect(x, y, allocation.width, allocation.height);
 }
 
 void SuppressDefaultPainting(GtkWidget* container) {
@@ -866,11 +886,13 @@ gfx::Rect WidgetBounds(GtkWidget* widget) {
   //
   //   Widget coordinates are a bit odd; for historical reasons, they are
   //   defined as widget->window coordinates for widgets that are not
-  //   GTK_NO_WINDOW widgets, and are relative to widget->allocation.x,
-  //   widget->allocation.y for widgets that are GTK_NO_WINDOW widgets.
+  //   GTK_NO_WINDOW widgets, and are relative to allocation.x, allocation.y
+  //   for widgets that are GTK_NO_WINDOW widgets.
   //
   // So the base is always (0,0).
-  return gfx::Rect(0, 0, widget->allocation.width, widget->allocation.height);
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  return gfx::Rect(0, 0, allocation.width, allocation.height);
 }
 
 void SetWMLastUserActionTime(GtkWindow* window) {
