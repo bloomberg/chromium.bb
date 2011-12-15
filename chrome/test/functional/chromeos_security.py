@@ -98,6 +98,11 @@ class ChromeosSecurity(pyauto.PyUITest):
       full_actual_info: A list of dictionaries describing the actual information
                         for all extensions.
     """
+    # Skip the Web Store; it's integral to Chrome and is redundant to check on
+    # ChromeOS.  This can reduce the number of times we have to update the
+    # baseline for this test.
+    actual_set.discard('Chrome Web Store')
+
     def _GetSetDifferenceMessage(expected_set, actual_set):
       strings = []
       for missing_item in expected_set.difference(actual_set):
