@@ -93,6 +93,7 @@ class Preferences : public content::NotificationObserver {
   IntegerPrefMember speed_factor_;
   IntegerPrefMember sensitivity_;
   BooleanPrefMember use_24hour_clock_;
+  BooleanPrefMember primary_mouse_button_right_;
 
   // Input method preferences.
   StringPrefMember language_hotkey_next_engine_in_menu_;

@@ -44,7 +44,6 @@ namespace {
 void TouchpadExistsFileThread(bool* exists) {
   *exists = chromeos::system::touchpad_settings::TouchpadExists();
 }
-
 }
 
 SystemOptionsHandler::SystemOptionsHandler() {
@@ -75,8 +74,12 @@ void SystemOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("brightnessIncrease",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BRIGHTNESS_INCREASE));
 
+  localized_strings->SetString("pointer",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_POINTER));
   localized_strings->SetString("touchpad",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_TOUCHPAD));
+  localized_strings->SetString("mouse",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_MOUSE));
   localized_strings->SetString("enableTapToClick",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_TAP_TO_CLICK_ENABLED_DESCRIPTION));
@@ -88,6 +91,9 @@ void SystemOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("sensitivityMore",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_SENSITIVITY_MORE_DESCRIPTION));
+  localized_strings->SetString("primaryMouseRight",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_PRIMARY_MOUSE_RIGHT_DESCRIPTION));
 
   localized_strings->SetString("language",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE));

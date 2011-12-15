@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/system/touchpad_settings.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -18,6 +21,7 @@ using content::BrowserThread;
 
 namespace chromeos {
 namespace system {
+
 namespace touchpad_settings {
 namespace {
 const char* kTpControl = "/opt/google/touchpad/tpcontrol";
@@ -94,5 +98,14 @@ void SetTapToClick(bool enabled) {
 }
 
 }  // namespace touchpad_settings
+
+namespace mouse_settings {
+
+void SetPrimaryButtonRight(bool right) {
+  // TODO(achuith, adlr): Call mouse_ctrl when it exists.
+}
+
+}  // namespace mouse_settings
+
 }  // namespace system
 }  // namespace chromeos

@@ -44,6 +44,9 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kTapToClickEnabled,
                              false,
                              PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kPrimaryMouseButtonRight,
+                             false,
+                             PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kLabsMediaplayerEnabled,
                              false,
                              PrefService::UNSYNCABLE_PREF);
@@ -208,6 +211,8 @@ void Preferences::Init(PrefService* prefs) {
   accessibility_enabled_.Init(prefs::kSpokenFeedbackEnabled, prefs, this);
   sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, this);
   use_24hour_clock_.Init(prefs::kUse24HourClock, prefs, this);
+  primary_mouse_button_right_.Init(prefs::kPrimaryMouseButtonRight,
+                                   prefs, this);
   language_hotkey_next_engine_in_menu_.Init(
       prefs::kLanguageHotkeyNextEngineInMenu, prefs, this);
   language_hotkey_previous_engine_.Init(
@@ -308,6 +313,14 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "Touchpad.Sensitivity.Started", sensitivity, 1, 5, 5);
     }
+  }
+  if (!pref_name || *pref_name == prefs::kPrimaryMouseButtonRight) {
+    const bool right = primary_mouse_button_right_.GetValue();
+    system::mouse_settings::SetPrimaryButtonRight(right);
+    if (pref_name)
+      UMA_HISTOGRAM_BOOLEAN("Mouse.PrimaryButtonLeft.Changed", right);
+    else
+      UMA_HISTOGRAM_BOOLEAN("Mouse.PrimaryButtonLeft.Started", right);
   }
 
   // We don't handle prefs::kLanguageCurrentInputMethod and PreviousInputMethod

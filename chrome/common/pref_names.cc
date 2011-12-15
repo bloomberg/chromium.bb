@@ -415,6 +415,9 @@ const char kAudioVolume[] = "settings.audio.volume";
 // A boolean pref set to true if TapToClick is being done in browser.
 const char kTapToClickEnabled[] = "settings.touchpad.enable_tap_to_click";
 
+// A boolean pref set to true if primary mouse button is the left button.
+const char kPrimaryMouseButtonRight[] = "settings.mouse.primary_right";
+
 // A integer pref for the touchpad sensitivity.
 const char kTouchpadSensitivity[] = "settings.touchpad.sensitivity2";
 

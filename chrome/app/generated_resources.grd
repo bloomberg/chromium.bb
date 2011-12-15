@@ -11964,6 +11964,12 @@ changed since last sign in
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_TOUCHPAD">
         Touchpad
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_POINTER">
+        Pointer
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_MOUSE">
+        Mouse
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_SCREEN" desc="Title for section in settings/system for screen brightness control">
         Screen
       </message>
@@ -11998,13 +12004,16 @@ changed since last sign in
         Enable tap-to-click
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SENSITIVITY_DESCRIPTION" desc="In the settings tab, the text next to the slider for the touchpad touch sensitivity.">
-        Pointer speed:
+        Speed:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SENSITIVITY_LESS_DESCRIPTION" desc="In the settings tab, the text under the left (less sensitive) side of the slider for the touchpad touch sensitivity.">
         Slow
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SENSITIVITY_MORE_DESCRIPTION" desc="In the settings tab, the text under the right (more sensitive) side of the slider for the touchpad touch sensitivity.">
         Fast
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_PRIMARY_MOUSE_RIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to set the primary mouse button to the right button.">
+        Make right button primary
       </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_DISABLE">
         Disable bluetooth

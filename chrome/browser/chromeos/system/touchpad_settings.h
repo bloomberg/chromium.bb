@@ -19,6 +19,13 @@ void SetSensitivity(int value);
 void SetTapToClick(bool enabled);
 
 }  // namespace touchpad_settings
+
+namespace mouse_settings {
+
+void SetPrimaryButtonRight(bool right);
+
+}  // namespace mouse_settings
+
 }  // namespace system
 }  // namespace chromeos
 
