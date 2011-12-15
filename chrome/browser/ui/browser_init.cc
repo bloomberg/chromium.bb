@@ -28,6 +28,7 @@
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/component_updater/flash_component_installer.h"
 #include "chrome/browser/component_updater/recovery_component_installer.h"
+#include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_creator.h"
@@ -489,6 +490,11 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
   // network.
   if (command_line.HasSwitch(switches::kEnableCRLSets))
     g_browser_process->crl_set_fetcher()->StartInitialLoad(cus);
+
+  // This developer version of Pnacl should only be installed for developers.
+  if (command_line.HasSwitch(switches::kEnablePnacl)) {
+    RegisterPnaclComponent(cus);
+  }
 
   cus->Start();
 }

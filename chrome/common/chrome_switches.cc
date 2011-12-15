@@ -536,6 +536,9 @@ const char kEnablePlatformApps[]            = "enable-platform-apps";
 const char kEnableResourceContentSettings[] =
     "enable-resource-content-settings";
 
+// Enables the installation and usage of Portable Native Client.
+const char kEnablePnacl[]                    = "enable-pnacl";
+
 // Enables speculative TCP/IP preconnection.
 const char kEnablePreconnect[]              = "enable-preconnect";
 
