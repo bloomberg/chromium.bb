@@ -10,6 +10,12 @@
 
 namespace chrome_page_zoom {
 
+// Zoom factors supported by the browser.
+extern const double kPresetZoomFactors[];
+
+// Size of |kPresetZoomFactors|.
+extern const size_t kPresetZoomFactorsSize;
+
 // Return a sorted vector of zoom factors. The vector will consist of preset
 // values along with a custom value (if the custom value is not already
 // represented.)

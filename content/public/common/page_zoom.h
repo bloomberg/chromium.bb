@@ -26,6 +26,12 @@ CONTENT_EXPORT extern const double kMinimumZoomFactor;
 // WebView::maxTextSizeMultiplier.
 CONTENT_EXPORT extern const double kMaximumZoomFactor;
 
+// Epsilon value for comparing two floating-point zoom values. We don't use
+// std::numeric_limits<> because it is too precise for zoom values. Zoom
+// values lose precision due to factor/level conversions. A value of 0.001
+// is precise enough for zoom value comparisons.
+CONTENT_EXPORT extern const double kEpsilon;
+
 // Test if two zoom values (either zoom factors or zoom levels) should be
 // considered equal.
 CONTENT_EXPORT bool ZoomValuesEqual(double value_a, double value_b);
