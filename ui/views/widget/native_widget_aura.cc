@@ -150,6 +150,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   Widget::InitParams::Type window_type =
       params.child ? Widget::InitParams::TYPE_CONTROL : params.type;
   window_->SetType(GetAuraWindowTypeForWidgetType(window_type));
+  // TODO(jamescook): Should this use params.show_state instead?
   window_->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_NORMAL);
   window_->Init(params.create_texture_for_layer ?
                     ui::Layer::LAYER_HAS_TEXTURE :
@@ -319,7 +320,8 @@ void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
 void NativeWidgetAura::GetWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
-  *bounds = window_->GetTargetBounds();
+  // The interface specifies returning restored bounds, not current bounds.
+  *bounds = GetRestoredBounds();
   *show_state = static_cast<ui::WindowShowState>(
       window_->GetIntProperty(aura::kShowStateKey));
 }
