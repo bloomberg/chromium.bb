@@ -76,6 +76,13 @@ class MainPage(webapp.RequestHandler):
         if result.status_code != 200:
           logging.error("urlfetch failed: " + url)
           # TODO(nickbaum): what should we do when the urlfetch fails?
+        # Files inside of samples should be rendered with content-type
+        # text/plain so that their source is visible when linked to. The only
+        # types we should serve as-is are images.
+        if (path.startswith("/examples") and
+            not (result.headers['content-type'].startswith('image/') or
+                 result.headers['Content-Type'].startswith('image/'))):
+          result.headers['content-type'] = 'text/plain'
       except:
         logging.error("urlfetch failed: " + url)
         # TODO(nickbaum): what should we do when the urlfetch fails?
