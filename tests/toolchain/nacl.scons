@@ -90,11 +90,17 @@ if env.Bit('nacl_glibc') and not env.Bit('nacl_disable_shared'):
 
 
 if env.Bit('nacl_glibc'):
-  nexe = env.ComponentProgram('pthread_cleanup', 'pthread_cleanup.c',
+  bias_env = env.Clone()
+  # PNaCl bias is needed until __jmp_buf (defined in bits/setjmp.h) has
+  # the same size on X86-32 and X86-64.
+  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2490
+  if env.Bit('bitcode'):
+    bias_env.AddBiasForPNaCl()
+  nexe = bias_env.ComponentProgram('pthread_cleanup', 'pthread_cleanup.c',
                               EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
-  node = env.CommandSelLdrTestNacl('pthread_cleanup.out', nexe)
-  env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
-                         'run_pthread_cleanup_test')
+  node = bias_env.CommandSelLdrTestNacl('pthread_cleanup.out', nexe)
+  bias_env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+                              'run_pthread_cleanup_test')
 
 
 # NOTE: the tests below break easily under valgrid and since
