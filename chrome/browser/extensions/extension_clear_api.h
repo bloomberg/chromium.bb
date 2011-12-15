@@ -17,6 +17,27 @@
 
 class PluginPrefs;
 
+namespace extension_clear_api_constants {
+
+// Keys.
+extern const char kAppCacheKey[];
+extern const char kCacheKey[];
+extern const char kCookiesKey[];
+extern const char kDownloadsKey[];
+extern const char kFileSystemsKey[];
+extern const char kFormDataKey[];
+extern const char kHistoryKey[];
+extern const char kIndexedDBKey[];
+extern const char kPluginDataKey[];
+extern const char kLocalStorageKey[];
+extern const char kPasswordsKey[];
+extern const char kWebSQLKey[];
+
+// Errors!
+extern const char kOneAtATimeError[];
+
+}  // namespace extension_clear_api_constants
+
 // This serves as a base class from which the browsing data API functions will
 // inherit. Each needs to be an observer of BrowsingDataRemover events, and each
 // will handle those events in the same way (by calling the passed-in callback
@@ -47,8 +68,20 @@ class BrowsingDataExtensionFunction : public AsyncExtensionFunction,
   // Called when we're ready to start removing data.
   void StartRemoving();
 
-  BrowsingDataRemover::TimePeriod period_;
+  base::Time remove_since_;
   int removal_mask_;
+};
+
+class ClearAppCacheFunction : public BrowsingDataExtensionFunction {
+ public:
+  ClearAppCacheFunction() {}
+  virtual ~ClearAppCacheFunction() {}
+
+ protected:
+  // BrowsingDataTypeExtensionFunction interface method.
+  virtual int GetRemovalMask() const OVERRIDE;
+
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.appcache")
 };
 
 class ClearBrowsingDataFunction : public BrowsingDataExtensionFunction {
@@ -99,6 +132,18 @@ class ClearDownloadsFunction : public BrowsingDataExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.downloads")
 };
 
+class ClearFileSystemsFunction : public BrowsingDataExtensionFunction {
+ public:
+  ClearFileSystemsFunction() {}
+  virtual ~ClearFileSystemsFunction() {}
+
+ protected:
+  // BrowsingDataTypeExtensionFunction interface method.
+  virtual int GetRemovalMask() const OVERRIDE;
+
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.fileSystems")
+};
+
 class ClearFormDataFunction : public BrowsingDataExtensionFunction {
  public:
   ClearFormDataFunction() {}
@@ -123,6 +168,42 @@ class ClearHistoryFunction : public BrowsingDataExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.history")
 };
 
+class ClearIndexedDBFunction : public BrowsingDataExtensionFunction {
+ public:
+  ClearIndexedDBFunction() {}
+  virtual ~ClearIndexedDBFunction() {}
+
+ protected:
+  // BrowsingDataTypeExtensionFunction interface method.
+  virtual int GetRemovalMask() const OVERRIDE;
+
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.indexedDB")
+};
+
+class ClearLocalStorageFunction : public BrowsingDataExtensionFunction {
+ public:
+  ClearLocalStorageFunction() {}
+  virtual ~ClearLocalStorageFunction() {}
+
+ protected:
+  // BrowsingDataTypeExtensionFunction interface method.
+  virtual int GetRemovalMask() const OVERRIDE;
+
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.localStorage")
+};
+
+class ClearPluginDataFunction : public BrowsingDataExtensionFunction {
+ public:
+  ClearPluginDataFunction() {}
+  virtual ~ClearPluginDataFunction() {}
+
+ protected:
+  // BrowsingDataTypeExtensionFunction interface method.
+  virtual int GetRemovalMask() const OVERRIDE;
+
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.pluginData")
+};
+
 class ClearPasswordsFunction : public BrowsingDataExtensionFunction {
  public:
   ClearPasswordsFunction() {}
@@ -135,4 +216,15 @@ class ClearPasswordsFunction : public BrowsingDataExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.passwords")
 };
 
+class ClearWebSQLFunction : public BrowsingDataExtensionFunction {
+ public:
+  ClearWebSQLFunction() {}
+  virtual ~ClearWebSQLFunction() {}
+
+ protected:
+  // BrowsingDataTypeExtensionFunction interface method.
+  virtual int GetRemovalMask() const OVERRIDE;
+
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.webSQL")
+};
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_CLEAR_API_H_
