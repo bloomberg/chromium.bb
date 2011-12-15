@@ -12,15 +12,6 @@
 
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::SetTitle;
-using passwords_helper::AddLogin;
-using passwords_helper::CreateTestPasswordForm;
-using passwords_helper::GetPasswordCount;
-using passwords_helper::GetPasswordStore;
-using passwords_helper::GetVerifierPasswordCount;
-using passwords_helper::GetVerifierPasswordStore;
-using passwords_helper::ProfileContainsSamePasswordFormsAsVerifier;
-
-using webkit::forms::PasswordForm;
 
 class SyncErrorTest : public SyncTest{
  public:
@@ -115,23 +106,17 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest,
       protocol_error.error_description);
 }
 
-// TODO(rsimha): Enable after fixing crbug.com/107611.
-IN_PROC_BROWSER_TEST_F(SyncErrorTest, DISABLED_AuthErrorTest) {
+IN_PROC_BROWSER_TEST_F(SyncErrorTest, AuthErrorTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  PasswordForm form0 = CreateTestPasswordForm(0);
-  AddLogin(GetVerifierPasswordStore(), form0);
-  ASSERT_EQ(1, GetVerifierPasswordCount());
-  AddLogin(GetPasswordStore(0), form0);
-  ASSERT_EQ(1, GetPasswordCount(0));
-
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Added a login."));
-  ASSERT_TRUE(ProfileContainsSamePasswordFormsAsVerifier(0));
-  ASSERT_EQ(1, GetPasswordCount(0));
+  const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
+  SetTitle(0, node1, L"new_title1");
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Sync."));
 
   TriggerAuthError();
-  PasswordForm form1 = CreateTestPasswordForm(1);
-  AddLogin(GetPasswordStore(0), form1);
+
+  const BookmarkNode* node2 = AddFolder(0, 0, L"title2");
+  SetTitle(0, node2, L"new_title2");
   ASSERT_FALSE(GetClient(0)->AwaitFullSyncCompletion("Must get auth error."));
   ASSERT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
             GetClient(0)->service()->GetAuthError().state());
