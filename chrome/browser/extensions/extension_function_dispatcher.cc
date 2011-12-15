@@ -185,18 +185,12 @@ void FactoryRegistry::ResetFunctions() {
 
   // Browsing Data.
   RegisterFunction<ClearBrowsingDataFunction>();
-  RegisterFunction<ClearAppCacheFunction>();
   RegisterFunction<ClearCacheFunction>();
   RegisterFunction<ClearCookiesFunction>();
   RegisterFunction<ClearDownloadsFunction>();
-  RegisterFunction<ClearFileSystemsFunction>();
   RegisterFunction<ClearFormDataFunction>();
   RegisterFunction<ClearHistoryFunction>();
-  RegisterFunction<ClearIndexedDBFunction>();
-  RegisterFunction<ClearLocalStorageFunction>();
-  RegisterFunction<ClearPluginDataFunction>();
   RegisterFunction<ClearPasswordsFunction>();
-  RegisterFunction<ClearWebSQLFunction>();
 
   // Bookmarks.
   RegisterFunction<GetBookmarksFunction>();

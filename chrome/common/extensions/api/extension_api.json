@@ -8784,9 +8784,10 @@
     "namespace": "experimental.clear",
     "types": [
       {
-        "id": "RemovalRange",
-        "type": "number",
-        "description": "Remove data accumulated on or after this date, represented in milliseconds since the epoch ('Date().GetTime()')"
+        "id": "TimePeriod",
+        "type": "string",
+        "enum": ["last_hour", "last_day", "last_week", "last_month", "everything"],
+        "description": "The timeframe inside of which to delete browsing data. Passing 'last_day', for example, will delete all browsing data that was touched between 24 hours ago and right now, inclusive."
       }
     ],
     "functions": [
@@ -8796,19 +8797,14 @@
         "type": "function",
         "parameters": [
           {
-            "$ref": "RemovalRange",
-            "name": "since"
+            "$ref": "TimePeriod",
+            "name": "period"
           },
           {
             "name": "dataToRemove",
             "type": "object",
             "description": "An object whose properties specify which browsing data types ought to be cleared. You may set as many or as few as you like in a single call, each is optional (defaulting to <code>false</code>).",
             "properties": {
-              "appcache": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Should websites' appcaches be cleared?"
-              },
               "cache": {
                 "type": "boolean",
                 "optional": true,
@@ -8824,11 +8820,6 @@
                 "optional": true,
                 "description": "Should the browser's download list be cleared?"
               },
-              "fileSystems": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Should websites' file systems be cleared?"
-              },
               "formData": {
                 "type": "boolean",
                 "optional": true,
@@ -8839,30 +8830,10 @@
                 "optional": true,
                 "description": "Should the browser's history be cleared?"
               },
-              "indexedDB": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Should websites' IndexedDB data be cleared?"
-              },
-              "localStorage": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Should websites' local storage data be cleared?"
-              },
-              "pluginData": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Should plugins' data be cleared?"
-              },
               "passwords": {
                 "type": "boolean",
                 "optional": true,
                 "description": "Should the stored passwords be cleared?"
-              },
-              "webSQL": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Should websites' WebSQL data be cleared?"
               }
             }
           },
@@ -8876,36 +8847,18 @@
         ]
       },
       {
-        "name": "appcache",
-        "description": "Clears websites' appcache data.",
-        "type": "function",
-        "parameters": [
-          {
-            "$ref": "RemovalRange",
-            "name": "since"
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "description": "Called when websites' appcache data has been cleared.",
-            "optional": true,
-            "parameters": []
-          }
-        ]
-      },
-      {
         "name": "cache",
         "description": "Clears the browser's cache.",
         "type": "function",
         "parameters": [
           {
-            "$ref": "RemovalRange",
-            "name": "since"
+            "$ref": "TimePeriod",
+            "name": "period"
           },
           {
             "name": "callback",
             "type": "function",
-            "description": "Called when the browser's cache has been cleared.",
+            "description": "Called when the browser's cache has cleared.",
             "optional": true,
             "parameters": []
           }
@@ -8913,17 +8866,17 @@
       },
       {
         "name": "cookies",
-        "description": "Clears the browser's cookies.",
+        "description": "Clears the browser's cookies and site data.",
         "type": "function",
         "parameters": [
           {
-            "$ref": "RemovalRange",
-            "name": "since"
+            "$ref": "TimePeriod",
+            "name": "period"
           },
           {
             "name": "callback",
             "type": "function",
-            "description": "Called when the browser's cookies have been cleared.",
+            "description": "Called when the browser's cookies and site data have been cleared.",
             "optional": true,
             "parameters": []
           }
@@ -8935,8 +8888,8 @@
         "type": "function",
         "parameters": [
           {
-            "$ref": "RemovalRange",
-            "name": "since"
+            "$ref": "TimePeriod",
+            "name": "period"
           },
           {
             "name": "callback",
@@ -8948,31 +8901,13 @@
         ]
       },
       {
-        "name": "fileSystems",
-        "description": "Clears websites' file system data.",
-        "type": "function",
-        "parameters": [
-          {
-            "$ref": "RemovalRange",
-            "name": "since"
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "description": "Called when websites' file systems have been cleared.",
-            "optional": true,
-            "parameters": []
-          }
-        ]
-      },
-      {
         "name": "formData",
         "description": "Clears the browser's stored form data (autofill).",
         "type": "function",
         "parameters": [
           {
-            "$ref": "RemovalRange",
-            "name": "since"
+            "$ref": "TimePeriod",
+            "name": "period"
           },
           {
             "name": "callback",
@@ -8989,8 +8924,8 @@
         "type": "function",
         "parameters": [
           {
-            "$ref": "RemovalRange",
-            "name": "since"
+            "$ref": "TimePeriod",
+            "name": "period"
           },
           {
             "name": "callback",
@@ -9002,90 +8937,18 @@
         ]
       },
       {
-        "name": "indexedDB",
-        "description": "Clears websites' IndexedDB data.",
-        "type": "function",
-        "parameters": [
-          {
-            "$ref": "RemovalRange",
-            "name": "since"
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "description": "Called when websites' IndexedDB data has been cleared.",
-            "optional": true,
-            "parameters": []
-          }
-        ]
-      },
-      {
-        "name": "localStorage",
-        "description": "Clears websites' local storage data.",
-        "type": "function",
-        "parameters": [
-          {
-            "$ref": "RemovalRange",
-            "name": "since"
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "description": "Called when websites' local storage has been cleared.",
-            "optional": true,
-            "parameters": []
-          }
-        ]
-      },
-      {
-        "name": "lsoData",
-        "description": "Clears plugins' Local Storage Object data.",
-        "type": "function",
-        "parameters": [
-          {
-            "$ref": "RemovalRange",
-            "name": "since"
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "description": "Called when plugins' Local Storage Data has been cleared.",
-            "optional": true,
-            "parameters": []
-          }
-        ]
-      },
-      {
         "name": "passwords",
         "description": "Clears the browser's stored passwords.",
         "type": "function",
         "parameters": [
           {
-            "$ref": "RemovalRange",
-            "name": "since"
+            "$ref": "TimePeriod",
+            "name": "period"
           },
           {
             "name": "callback",
             "type": "function",
             "description": "Called when the browser's passwords have been cleared.",
-            "optional": true,
-            "parameters": []
-          }
-        ]
-      },
-      {
-        "name": "webSQL",
-        "description": "Clears websites' WebSQL data.",
-        "type": "function",
-        "parameters": [
-          {
-            "$ref": "RemovalRange",
-            "name": "since"
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "description": "Called when websites' WebSQL databases have been cleared.",
             "optional": true,
             "parameters": []
           }
