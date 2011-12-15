@@ -4,13 +4,22 @@
  * found in the LICENSE file.
  */
 
+/* This is the native crtbegin (crtbegin.o).
+ *
+ * It contains the constructor/destructor for exception handling,
+ * and the symbol for __EH_FRAME_BEGIN__. This is native because
+ * exception handling is also native (externally provided).
+ */
+
+
+
 /*
  * HACK:
  * The real structure is defined in unwind-dw2-fde.h
  * this is something that is at least twice as big.
  */
 struct object {
-  void *p[16];
+  void *p[16] __attribute__((aligned(8)));
 };
 
 /*
@@ -30,8 +39,9 @@ extern void __deregister_frame_info(const void *begin);
  * of this section, and needs to (2) mark the end of the section by a NULL.
  */
 
-static char __EH_FRAME_BEGIN__[0]
-    __attribute__((section(".eh_frame"), aligned(4)));
+static char __EH_FRAME_BEGIN__[]
+    __attribute__((section(".eh_frame"), aligned(4)))
+    = { };
 
 
 /*

@@ -113,31 +113,28 @@ EXTRA_ENV = {
   #             and into pnacl-translate.
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
   'LD_ARGS_newlib_static':
-    '-l:crt1.x -l:crti.bc -l:crtbegin.bc ${ld_inputs} ' +
+    '-l:crt1.x -l:crti.bc -l:crtdummy.bc -l:crtbegin.bc ${ld_inputs} ' +
     '${DEFAULTLIBS ? --start-group ${LIBSTDCPP} -lc -lnacl --end-group ' +
     '-l:pnacl_abi.bc}',
 
   # The next three are copied verbatim from nacl-gcc
   'LD_ARGS_glibc_static':
-    '-l:crt1.bc -l:crti.o -l:crtbeginT.o ' +
+    '-l:crt1.bc -l:crti.bc -l:crtdummy.bc -l:crtbegin.bc ' +
     '${ld_inputs} ${DEFAULTLIBS ? ${LIBSTDCPP} -lc ' +
     # Replace with pnacl_abi.bc
-    '--start-group -lgcc_eh -lc -lgcc --end-group} ' +
-    '-l:crtend.o -l:crtn.o',
+    '--start-group -lgcc_eh -lc -lgcc --end-group}',
 
   'LD_ARGS_glibc_shared':
-    '-shared -l:crti.o -l:crtbeginS.o ' +
+    '-shared -l:crti.bc -l:crtdummy.bc -l:crtbeginS.bc ' +
     '${ld_inputs} ${DEFAULTLIBS ? ${LIBSTDCPP} -lc ' +
     # Replace with pnacl_abi.bc
-    '-lgcc_s} ' +
-    '-l:crtendS.o -l:crtn.o',
+    '-lgcc_s}',
 
   'LD_ARGS_glibc_dynamic':
-    '-l:crt1.bc -l:crti.o ' +
-    '-l:crtbegin.o ${ld_inputs} ${DEFAULTLIBS ? ${LIBSTDCPP} -lc ' +
+    '-l:crt1.bc -l:crti.bc -l:crtdummy.bc -l:crtbegin.bc ' +
+    '${ld_inputs} ${DEFAULTLIBS ? ${LIBSTDCPP} -lc ' +
     # Replace with pnacl_abi.bc
-    '-lgcc_s} ' +
-    '-l:crtend.o -l:crtn.o',
+    '-lgcc_s}',
 
   'LIBSTDCPP'   : '${LANGUAGE==CXX ? -lstdc++ -lm }',
 

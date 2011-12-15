@@ -23,10 +23,10 @@ EXTRA_ENV = {
   # Flags for pnacl-nativeld
   'LD_FLAGS': '${STATIC ? -static : ${SHARED ? -shared}}',
 
-  'STATIC'        : '0',
-  'SHARED'        : '0',
-  'STDLIB'        : '1',
-  'DEFAULTLIBS'   : '1',
+  'STATIC'         : '0',
+  'SHARED'         : '0',
+  'STDLIB'         : '1',
+  'USE_DEFAULTLIBS': '1',
 
   'INPUTS'        : '',
   'OUTPUT'        : '',
@@ -47,30 +47,37 @@ EXTRA_ENV = {
   # TODO(pdox): To simplify translation, reduce from 4 to 2 cases.
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
   'LD_ARGS_newlib_static':
-    '${LD_ARGS_IRT_SHIM} -l:crtbegin.o ' +
-    '${DEFAULTLIBS ? --start-group ${ld_inputs} -lgcc_eh -lgcc --end-group} ' +
+    '${LD_ARGS_IRT_SHIM} -l:crtbegin.o --start-group ' +
+    '${ld_inputs} ${DEFAULTLIBS} --end-group ' +
     '-l:libcrt_platform.a -l:crtend.o',
 
   'LD_ARGS_glibc_static' :
-     '${LD_ARGS_IRT_SHIM} -l:crti.o -l:crtbeginT.o ${ld_inputs} ' +
-     '${DEFAULTLIBS ? ${GLIBC_HACK} --start-group -lgcc -lgcc_eh -lc ' +
-     '--end-group} -l:crtend.o -l:crtn.o',
+     '${LD_ARGS_IRT_SHIM} -l:crtbegin.o ${ld_inputs} ' +
+     '--start-group ${DEFAULTLIBS} --end-group -l:crtend.o',
 
   'LD_ARGS_glibc_shared' :
-     '--eh-frame-hdr -shared -l:crti.o -l:crtbeginS.o ' +
-     '${ld_inputs} ${DEFAULTLIBS ? ${SDK_HACK} ${GLIBC_HACK} ${DSO_HACK} ' +
-     '-lgcc -lgcc_s} -l:crtendS.o -l:crtn.o',
+     '--eh-frame-hdr -shared ' +
+     '-l:crtbeginS.o ${ld_inputs} ${DEFAULTLIBS} -l:crtendS.o',
 
   'LD_ARGS_glibc_dynamic':
-    '--eh-frame-hdr ${LD_ARGS_IRT_SHIM} -l:crti.o -l:crtbegin.o ' +
-    '${ld_inputs} ${DEFAULTLIBS ? ${SDK_HACK} ${GLIBC_HACK} ${DSO_HACK} ' +
-    '-lgcc -lgcc_s} -l:crtend.o -l:crtn.o',
+    '--eh-frame-hdr ${LD_ARGS_IRT_SHIM} ' +
+    '-l:crtbegin.o ${ld_inputs} ${DEFAULTLIBS} -l:crtend.o',
+
+  'DEFAULTLIBS' : '${USE_DEFAULTLIBS ? ${DEFAULTLIBS_%LIBMODE%_%EMITMODE%}}',
+  'DEFAULTLIBS_newlib_static': '-lgcc_eh -lgcc',
+  'DEFAULTLIBS_glibc_static' : '-lgcc_eh -lgcc ${GLIBC_HACK}',
+  'DEFAULTLIBS_glibc_shared' : '${DEFAULTLIBS_glibc_dynamic}',
+  'DEFAULTLIBS_glibc_dynamic':
+    '${SDK_HACK} ${GLIBC_HACK} ${DSO_HACK} ${ABI_DEPS}',
+
+  # libgcc and libgcc_s
+  'ABI_DEPS': '-lgcc_s -lgcc',
 
   # Because of ABI and symbol versioning issues, these still need to
   # be included directly in the native link.
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=577
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2089
-  'GLIBC_HACK': '--as-needed -lstdc++ -lm --no-as-needed -lc -lpthread',
+  'GLIBC_HACK': '-lstdc++ -lm -lc -lpthread',
   'DSO_HACK'  : '-l:ld-2.9.so',
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2451
   'SDK_HACK'  : '',
@@ -143,7 +150,10 @@ TranslatorPatterns = [
   ( '-static',         "env.set('STATIC', '1')"),
   ( '-shared',         "env.set('SHARED', '1')"),
   ( '-nostdlib',       "env.set('STDLIB', '0')"),
-  ( '-nodefaultlibs',  "env.set('DEFAULTLIBS', '0')"),
+
+  # Disables the default libraries.
+  # This flag is needed for building libgcc_s.so.
+  ( '-nodefaultlibs',  "env.set('USE_DEFAULTLIBS', '0')"),
 
   ( '--noirtshim',      "env.set('USE_IRT_SHIM', '0')"),
 

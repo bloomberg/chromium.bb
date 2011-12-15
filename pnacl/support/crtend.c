@@ -4,7 +4,8 @@
  * found in the LICENSE file.
  */
 
-/*
+/* Native crtend.o
+ *
  * Exception handling frames are aggregated into a single section called
  * .eh_frame.  The runtime system needs to (1) have a symbol for the beginning
  * of this section, and needs to (2) mark the end of the section by a NULL.

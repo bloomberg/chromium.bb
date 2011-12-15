@@ -348,13 +348,10 @@ def RemoveNativeStdLibs(objs):
     return objs
 
   # GLibC standard libraries
-  startfiles = ['crti.o', 'crtbegin.o', 'crtbeginS.o',
-                'crtbeginT.o', 'crtend.o', 'crtendS.o', 'crtn.o']
   defaultlibs = ['libc_nonshared.a', 'libpthread_nonshared.a',
                  'libc.a', 'libstdc++.a', 'libgcc.a', 'libgcc_eh.a',
                  'libm.a']
-  filterobjs = startfiles + defaultlibs
-  return [f for f in objs if pathtools.split(f)[1] not in filterobjs]
+  return [f for f in objs if pathtools.split(f)[1] not in defaultlibs]
 
 def SplitLinkLine(inputs):
   """ Pull native objects (.o, .a) out of the input list.

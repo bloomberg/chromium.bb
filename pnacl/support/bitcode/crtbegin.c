@@ -5,6 +5,14 @@
  */
 
 /*
+ * This is the bitcode crtbegin (crtbegin.bc)
+ *
+ * It provides a hook for running global destructors
+ * when a C++ module is unloaded (by dl_close).
+ * It is closely coupled with libstdc++.so
+ */
+
+/*
  * __dso_handle uniquely identifies each DSO.
  *
  * The C++ global destructor list (__cxa_atexit) is keyed by
@@ -32,7 +40,7 @@ extern void __cxa_finalize(void*) __attribute__ ((weak));
   * .fini_array section in PNaCl.  The function pointers in .fini_array
   * at exit.
   */
- static void __attribute__((destructor)) __do_global_dtors_aux(void) {
+void __attribute__((destructor)) __do_global_dtors_aux(void) {
 #ifdef SHARED
   /* TODO(pdox): Determine whether this call to __cxa_finalize
    * is actually needed or used. */

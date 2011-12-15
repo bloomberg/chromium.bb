@@ -921,29 +921,18 @@ glibc-copy() {
   mkdir -p "${INSTALL_LIB_X8664}"
   mkdir -p "${GLIBC_INSTALL_DIR}"
 
-  # Files in: lib/gcc/${NACL64_TARGET}/4.4.3/[32]/
-  local LIBS1="crtbegin.o crtbeginT.o crtbeginS.o crtend.o crtendS.o"
-
   # Files in: ${NACL64_TARGET}/lib[32]/
-  local LIBS2="crti.o crtn.o \
-               libstdc++.a libstdc++.so* \
-               libc.a libc_nonshared.a \
-               libc-2.9.so libc.so libc.so.* \
-               libm-2.9.so libm.a libm.so libm.so.* \
-               libdl-2.9.so libdl.so.* libdl.so libdl.a \
-               libpthread-2.9.so libpthread.a libpthread.so \
-               libpthread.so.* libpthread_nonshared.a \
-               runnable-ld.so \
-               ld-2.9.so"
+  local LIBS_TO_COPY="libstdc++.a libstdc++.so* \
+                      libc.a libc_nonshared.a \
+                      libc-2.9.so libc.so libc.so.* \
+                      libm-2.9.so libm.a libm.so libm.so.* \
+                      libdl-2.9.so libdl.so.* libdl.so libdl.a \
+                      libpthread-2.9.so libpthread.a libpthread.so \
+                      libpthread.so.* libpthread_nonshared.a \
+                      runnable-ld.so \
+                      ld-2.9.so"
 
-  for lib in ${LIBS1} ; do
-    cp -a "${NNACL_GLIBC_ROOT}/lib/gcc/${NACL64_TARGET}/4.4.3/32/"${lib} \
-       "${INSTALL_LIB_X8632}"
-    cp -a "${NNACL_GLIBC_ROOT}/lib/gcc/${NACL64_TARGET}/4.4.3/"${lib} \
-       "${INSTALL_LIB_X8664}"
-  done
-
-  for lib in ${LIBS2} ; do
+  for lib in ${LIBS_TO_COPY} ; do
     cp -a "${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib32/"${lib} \
           "${INSTALL_LIB_X8632}"
     cp -a "${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib/"${lib} \
@@ -1670,7 +1659,8 @@ libgcc_eh() {
 
   # Setup fake gcc build directory.
   mkdir -p "${objdir}"/gcc
-  cp -a "${PNACL_ROOT}"/scripts/libgcc.mvars "${objdir}"/gcc
+  cp -a "${PNACL_ROOT}"/scripts/libgcc-${LIBMODE}.mvars \
+        "${objdir}"/gcc/libgcc.mvars
   cp -a "${PNACL_ROOT}"/scripts/libgcc-tconfig.h "${objdir}"/gcc/tconfig.h
   touch "${objdir}"/gcc/tm.h
 
@@ -1680,6 +1670,10 @@ libgcc_eh() {
   spushd "${subdir}"
   local flags="-arch ${arch} --pnacl-bias=${arch} --pnacl-allow-translate"
   flags+=" --pnacl-allow-native"
+  if ${LIBMODE_GLIBC}; then
+    # Enable thread safety using pthreads
+    flags+=" -D_PTHREADS -D_GNU_SOURCE"
+  fi
   flags+=" -DENABLE_RUNTIME_CHECKING"
   StepBanner "LIBGCC_EH" "Configure ${arch}"
   RunWithLog libgcc.${arch}.configure \
@@ -2917,36 +2911,42 @@ newlib-install() {
 }
 
 libs-support() {
-  # TODO(pdox): Merge newlib/glibc native support libraries.
-  if ${LIBMODE_GLIBC}; then
-    return 0
+  StepBanner "LIBS-SUPPORT"
+  if ${LIBMODE_NEWLIB}; then
+    libs-support-newlib
   fi
   libs-support-bitcode
+  local arch
   for arch in arm x86-32 x86-64; do
     libs-support-native ${arch}
   done
 }
 
+libs-support-newlib() {
+  mkdir -p "${INSTALL_LIB}"
+  spushd "${PNACL_SUPPORT}"
+  # Install crt1.x (linker script)
+  StepBanner "LIBS-SUPPORT-NEWLIB" "Install crt1.x (linker script)"
+  cp crt1.x "${INSTALL_LIB}"/crt1.x
+  spopd
+}
+
 libs-support-bitcode() {
-  StepBanner "LIBS-SUPPORT-BITCODE"
   local flags="-no-save-temps"
   mkdir -p "${INSTALL_LIB}"
 
   spushd "${PNACL_SUPPORT}"
 
-  # Install crti.o (_init/_fini for newlib)
+  # Install crti.bc (empty _init/_fini)
   StepBanner "LIBS-SUPPORT" "Install crti.bc"
   ${PNACL_CC} ${flags} -c crti.c -o "${INSTALL_LIB}"/crti.bc
 
   # Install crtbegin bitcode (__dso_handle/__cxa_finalize for C++)
   StepBanner "LIBS-SUPPORT" "Install crtbegin.bc / crtbeginS.bc"
+  ${PNACL_CC} ${flags} -c bitcode/crtdummy.c -o "${INSTALL_LIB}"/crtdummy.bc
   ${PNACL_CC} ${flags} -c bitcode/crtbegin.c -o "${INSTALL_LIB}"/crtbegin.bc
   ${PNACL_CC} ${flags} -c bitcode/crtbegin.c -o "${INSTALL_LIB}"/crtbeginS.bc \
                        -DSHARED
-
-  # Install crt1.x (linker script)
-  StepBanner "LIBS-SUPPORT" "Install crt1.x (linker script)"
-  cp crt1.x "${INSTALL_LIB}"/crt1.x
 
   # Install pnacl_abi.bc
   StepBanner "LIBS-SUPPORT" "Install pnacl_abi.bc (stub pso)"
@@ -2956,9 +2956,9 @@ libs-support-bitcode() {
 }
 
 libs-support-native() {
-  StepBanner "LIBS-SUPPORT-NATIVE (${arch})"
   local arch=$1
   local destdir="${INSTALL_LIB}"-${arch}
+  local label="LIBS-SUPPORT (${arch})"
   mkdir -p "${destdir}"
 
   local flags="-arch ${arch} --pnacl-allow-native --pnacl-allow-translate \
@@ -2967,18 +2967,18 @@ libs-support-native() {
   spushd "${PNACL_SUPPORT}"
 
   # Compile crtbegin.o / crtend.o
-  StepBanner "LIBS-SUPPORT" "Install crtbegin.o / crtend.o"
+  StepBanner "${label}" "Install crtbegin.o / crtend.o"
   ${PNACL_CC} ${flags} -c crtbegin.c -o "${destdir}"/crtbegin.o
   ${PNACL_CC} ${flags} -c crtend.c -o "${destdir}"/crtend.o
 
   # TODO(pdox): Use this for shared objects when we build libgcc_s.so ourselves
   # Compile crtbeginS.o / crtendS.o
-  StepBanner "LIBS-SUPPORT" "Install crtbeginS.o / crtendS.o"
+  StepBanner "${label}" "Install crtbeginS.o / crtendS.o"
   ${PNACL_CC} ${flags} -c crtbegin.c -fPIC -DSHARED -o "${destdir}"/crtbeginS.o
   ${PNACL_CC} ${flags} -c crtend.c -fPIC -DSHARED -o "${destdir}"/crtendS.o
 
   # Make libcrt_platform.a
-  StepBanner "LIBS-SUPPORT" "Install libcrt_platform.a"
+  StepBanner "${label}" "Install libcrt_platform.a"
   local tmpdir="${TC_BUILD}/libs-support-native"
   rm -rf "${tmpdir}"
   mkdir -p "${tmpdir}"
