@@ -219,7 +219,7 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_toolchain_arm_untrusted.sh linux 64 glibc',
     'mac-pnacl-x86_32-newlib':
         'bash buildbot/buildbot_toolchain_arm_untrusted.sh mac 32 newlib',
-    'linux-pnacl-testsuite':
+    'linux-pnacl-x86_64-newlib-tests':
         'bash buildbot/buildbot_pnacl_toolchain_tests.sh',
     # TODO(pdox): Rename this bot to x86_64
     'win-pnacl-x86_32-newlib':
