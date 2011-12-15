@@ -138,8 +138,8 @@ base::Value* RunFunctionAndReturnResult(UIThreadExtensionFunction* function,
   RunFunction(function, args, browser, flags);
   EXPECT_TRUE(function->GetError().empty()) << "Unexpected error: "
       << function->GetError();
-  EXPECT_TRUE(function->GetResultValue()) << "No result value found";
-  return function->GetResultValue()->DeepCopy();
+  return (function->GetResultValue() == NULL) ? NULL :
+      function->GetResultValue()->DeepCopy();
 }
 
 // This helps us be able to wait until an AsyncExtensionFunction calls
