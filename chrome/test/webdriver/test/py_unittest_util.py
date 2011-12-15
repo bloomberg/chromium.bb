@@ -23,6 +23,7 @@ class _GTestTextTestResult(unittest._TextTestResult):
   """
   def __init__(self, stream, descriptions, verbosity):
     unittest._TextTestResult.__init__(self, stream, descriptions, verbosity)
+    self._fails = set()
 
   def _GetTestURI(self, test):
     if sys.version_info[:2] <= (2, 4):
@@ -44,10 +45,15 @@ class _GTestTextTestResult(unittest._TextTestResult):
   def addError(self, test, err):
     unittest.TestResult.addError(self, test, err)
     self.stream.writeln('[      ERROR ] %s' % self._GetTestURI(test))
+    self._fails.add(self._GetTestURI(test))
 
   def addFailure(self, test, err):
     unittest.TestResult.addFailure(self, test, err)
     self.stream.writeln('[     FAILED ] %s' % self._GetTestURI(test))
+    self._fails.add(self._GetTestURI(test))
+
+  def getRetestFilter(self):
+    return ':'.join(self._fails)
 
 
 class GTestTextTestRunner(unittest.TextTestRunner):

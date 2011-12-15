@@ -34,6 +34,7 @@
 #include "chrome/test/automation/extension_proxy.h"
 #include "chrome/test/automation/proxy_launcher.h"
 #include "chrome/test/automation/tab_proxy.h"
+#include "chrome/test/base/chrome_process_util.h"
 #include "chrome/test/webdriver/frame_path.h"
 #include "chrome/test/webdriver/webdriver_basic_types.h"
 #include "chrome/test/webdriver/webdriver_error.h"
@@ -302,7 +303,24 @@ void Automation::Init(const BrowserOptions& options, Error** error) {
 
 void Automation::Terminate() {
   if (launcher_.get() && launcher_->process() != base::kNullProcessHandle) {
-    launcher_->QuitBrowser();
+#if defined(OS_MACOSX)
+    // There's currently no way to shutdown gracefully with mac chrome.
+    // An alert could be open or (open before shutdown is started) and stop
+    // the whole process. Close any current dialog, try to kill gently, and
+    // if all else fails, kill it hard.
+    Error* error = NULL;
+    AcceptOrDismissAppModalDialog(true /* accept */, &error);
+    scoped_ptr<Error> scoped_error(error);
+
+    kill(launcher_->process(), SIGTERM);
+    int exit_code = -1;
+    if (!launcher_->WaitForBrowserProcessToQuit(10000, &exit_code)) {
+      TerminateAllChromeProcesses(launcher_->process_id());
+    }
+    base::CloseProcessHandle(launcher_->process());
+#else
+    launcher_->TerminateBrowser();
+#endif
   }
 }
 

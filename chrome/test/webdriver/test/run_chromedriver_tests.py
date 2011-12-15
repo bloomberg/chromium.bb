@@ -48,9 +48,6 @@ def main():
   if options.list is True:
     print '\n'.join(py_unittest_util.GetTestNamesFromSuite(filtered_suite))
     return 0
-  if sys.platform.startswith('darwin'):
-    print 'All tests temporarily disabled on mac, crbug.com/103434'
-    return 0
 
   driver_exe = options.driver_exe
   if driver_exe is not None:
@@ -61,6 +58,8 @@ def main():
   ChromeDriverTest.GlobalSetUp(driver_exe, chrome_exe)
   result = py_unittest_util.GTestTextTestRunner(verbosity=1).run(filtered_suite)
   ChromeDriverTest.GlobalTearDown()
+  if not result.wasSuccessful():
+    print "Rerun failing tests using --f=" + result.getRetestFilter()
   return not result.wasSuccessful()
 
 

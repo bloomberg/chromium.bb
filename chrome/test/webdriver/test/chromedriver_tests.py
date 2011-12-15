@@ -44,6 +44,13 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait
 
 
+def SkipIf(should_skip):
+  """Decorator which allows skipping individual test cases."""
+  if should_skip:
+    return lambda func: None
+  return lambda func: func
+
+
 class Request(urllib2.Request):
   """Extends urllib2.Request to support all HTTP request types."""
 
@@ -89,17 +96,17 @@ def SendRequest(url, method=None, data=None):
   return opener.open(request)
 
 
-class BasicTest(unittest.TestCase):
+class BasicTest(ChromeDriverTest):
   """Basic ChromeDriver tests."""
 
   def setUp(self):
-    self._server = ChromeDriverLauncher(test_paths.CHROMEDRIVER_EXE).Launch()
+    self._server2 = ChromeDriverLauncher(self.GetDriverPath()).Launch()
 
   def tearDown(self):
-    self._server.Kill()
+    self._server2.Kill()
 
   def testShouldReturn403WhenSentAnUnknownCommandURL(self):
-    request_url = self._server.GetUrl() + '/foo'
+    request_url = self._server2.GetUrl() + '/foo'
     try:
       SendRequest(request_url, method='GET')
       self.fail('Should have raised a urllib.HTTPError for returned 403')
@@ -107,7 +114,7 @@ class BasicTest(unittest.TestCase):
       self.assertEquals(403, expected.code)
 
   def testShouldReturnHTTP405WhenSendingANonPostToTheSessionURL(self):
-    request_url = self._server.GetUrl() + '/session'
+    request_url = self._server2.GetUrl() + '/session'
     try:
       SendRequest(request_url, method='GET')
       self.fail('Should have raised a urllib.HTTPError for returned 405')
@@ -116,7 +123,7 @@ class BasicTest(unittest.TestCase):
       self.assertEquals('POST', expected.hdrs['Allow'])
 
   def testShouldGetA404WhenAttemptingToDeleteAnUnknownSession(self):
-    request_url = self._server.GetUrl() + '/session/unkown_session_id'
+    request_url = self._server2.GetUrl() + '/session/unkown_session_id'
     try:
       SendRequest(request_url, method='DELETE')
       self.fail('Should have raised a urllib.HTTPError for returned 404')
@@ -124,7 +131,7 @@ class BasicTest(unittest.TestCase):
       self.assertEquals(404, expected.code)
 
   def testShouldReturn204ForFaviconRequests(self):
-    request_url = self._server.GetUrl() + '/favicon.ico'
+    request_url = self._server2.GetUrl() + '/favicon.ico'
     # In python2.5, a 204 status code causes an exception.
     if sys.version_info[0:2] == (2, 5):
       try:
@@ -140,7 +147,7 @@ class BasicTest(unittest.TestCase):
         response.close()
 
   def testCreatingSessionShouldRedirectToCorrectURL(self):
-    request_url = self._server.GetUrl() + '/session'
+    request_url = self._server2.GetUrl() + '/session'
     response = SendRequest(request_url, method='POST',
                            data='{"desiredCapabilities": {}}')
     self.assertEquals(200, response.code)
@@ -157,11 +164,11 @@ class BasicTest(unittest.TestCase):
     self.assertEquals(data['sessionId'], url_parts[2])
 
 
-class WebserverTest(unittest.TestCase):
+class WebserverTest(ChromeDriverTest):
   """Tests the built-in ChromeDriver webserver."""
 
   def testShouldNotServeFilesByDefault(self):
-    server = ChromeDriverLauncher(test_paths.CHROMEDRIVER_EXE).Launch()
+    server = ChromeDriverLauncher(self.GetDriverPath()).Launch()
     try:
       SendRequest(server.GetUrl(), method='GET')
       self.fail('Should have raised a urllib.HTTPError for returned 403')
@@ -171,7 +178,7 @@ class WebserverTest(unittest.TestCase):
       server.Kill()
 
   def testCanServeFiles(self):
-    launcher = ChromeDriverLauncher(test_paths.CHROMEDRIVER_EXE,
+    launcher = ChromeDriverLauncher(self.GetDriverPath(),
                                     root_path=os.path.dirname(__file__))
     server = launcher.Launch()
     request_url = server.GetUrl() + '/' + os.path.basename(__file__)
@@ -290,14 +297,14 @@ class DesiredCapabilitiesTest(ChromeDriverTest):
     driver.execute_async_script('waitForGeo(arguments[0])')
 
 
-class DetachProcessTest(unittest.TestCase):
+class DetachProcessTest(ChromeDriverTest):
 
   def setUp(self):
-    self._server = ChromeDriverLauncher(test_paths.CHROMEDRIVER_EXE).Launch()
-    self._factory = ChromeDriverFactory(self._server)
+    self._server2 = ChromeDriverLauncher(self.GetDriverPath()).Launch()
+    self._factory2 = ChromeDriverFactory(self._server2)
 
   def tearDown(self):
-    self._server.Kill()
+    self._server2.Kill()
 
   # TODO(kkania): Remove this when Chrome 15 is stable.
   def testDetachProcess(self):
@@ -305,10 +312,10 @@ class DetachProcessTest(unittest.TestCase):
     # Chrome successfully in detached mode. There's not an easy way to know
     # if Chrome is shutting down due to the channel error when the client
     # disconnects.
-    driver = self._factory.GetNewDriver({'chrome.detach': True})
+    driver = self._factory2.GetNewDriver({'chrome.detach': True})
     driver.get('about:memory')
     pid = int(driver.find_elements_by_xpath('//*[@jscontent="pid"]')[0].text)
-    self._server.Kill()
+    self._server2.Kill()
     try:
       util.Kill(pid)
     except OSError:
@@ -583,18 +590,18 @@ class TypingTest(ChromeDriverTest):
     self.assertEquals('much more text', area_elem.get_attribute('value'))
 
 
-class UrlBaseTest(unittest.TestCase):
+class UrlBaseTest(ChromeDriverTest):
   """Tests that the server can be configured for a different URL base."""
 
   def setUp(self):
-    self._server = ChromeDriverLauncher(test_paths.CHROMEDRIVER_EXE,
-                                        url_base='/wd/hub').Launch()
+    self._server2 = ChromeDriverLauncher(self.GetDriverPath(),
+                                         url_base='/wd/hub').Launch()
 
   def tearDown(self):
-    self._server.Kill()
+    self._server2.Kill()
 
   def testCreatingSessionShouldRedirectToCorrectURL(self):
-    request_url = self._server.GetUrl() + '/session'
+    request_url = self._server2.GetUrl() + '/session'
     response = SendRequest(request_url, method='POST',
                            data='{"desiredCapabilities":{}}')
     self.assertEquals(200, response.code)
@@ -637,19 +644,19 @@ class ElementEqualityTest(ChromeDriverTest):
     self.assertTrue(result['value'])
 
 
-class LoggingTest(unittest.TestCase):
+class LoggingTest(ChromeDriverTest):
 
   def setUp(self):
-    self._server = ChromeDriverLauncher(test_paths.CHROMEDRIVER_EXE).Launch()
-    self._factory = ChromeDriverFactory(self._server)
+    self._server2 = ChromeDriverLauncher(self.GetDriverPath()).Launch()
+    self._factory2 = ChromeDriverFactory(self._server2)
 
   def tearDown(self):
-    self._factory.QuitAll()
-    self._server.Kill()
+    self._factory2.QuitAll()
+    self._server2.Kill()
 
   def testNoVerboseLogging(self):
-    driver = self._factory.GetNewDriver()
-    url = self._factory.GetServer().GetUrl()
+    driver = self._factory2.GetNewDriver()
+    url = self._factory2.GetServer().GetUrl()
     driver.execute_script('console.log("HI")')
     req = SendRequest(url + '/log', method='GET')
     log = req.read()
@@ -657,8 +664,8 @@ class LoggingTest(unittest.TestCase):
 
   # crbug.com/94470
   def DISABLED_testVerboseLogging(self):
-    driver = self._factory.GetNewDriver({'chrome.verbose': True})
-    url = self._factory.GetServer().GetUrl()
+    driver = self._factory2.GetNewDriver({'chrome.verbose': True})
+    url = self._factory2.GetServer().GetUrl()
     driver.execute_script('console.log("HI")')
     req = SendRequest(url + '/log', method='GET')
     log = req.read()
@@ -877,13 +884,15 @@ class ExtensionTest(ChromeDriverTest):
     self.assertEquals('test', textfield.get_attribute('value'))
     self.assertEquals('test', driver.title)
     self.assertTrue(driver.current_url.endswith('view_checks.html'))
-    self.assertTrue('shouldBeInPageSource' in driver.page_source)
+    self.assertTrue('Should be in page source' in driver.page_source)
     driver.close()
     def is_view_closed(driver):
       return len(filter(lambda view: view['handle'] == view_handle,
                         extension._get_views())) == 0
     WebDriverWait(driver, 10).until(is_view_closed)
 
+  # Mac extension infobars are currently broken: crbug.com/107573.
+  @SkipIf(util.IsMac())
   def testInfobarView(self):
     driver = self.GetNewDriver({'chrome.switches':
                                 ['enable-experimental-extension-apis']})
