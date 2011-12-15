@@ -152,6 +152,7 @@ struct wlsc_zoom {
 	struct wlsc_spring spring;
 	struct wlsc_transform transform;
 	struct wl_listener listener;
+	GLfloat start, stop;
 	void (*done)(struct wlsc_zoom *zoom, void *data);
 	void *data;
 };
@@ -191,7 +192,8 @@ wlsc_zoom_frame(struct wlsc_animation *animation,
 	if (wlsc_spring_done(&zoom->spring))
 		wlsc_zoom_destroy(zoom);
 
-	scale = zoom->spring.current;
+	scale = zoom->start +
+		(zoom->stop - zoom->start) * zoom->spring.current;
 	wlsc_matrix_init(&zoom->transform.matrix);
 	wlsc_matrix_translate(&zoom->transform.matrix,
 			      -(es->x + es->width / 2.0),
@@ -201,6 +203,9 @@ wlsc_zoom_frame(struct wlsc_animation *animation,
 			      es->x + es->width / 2.0,
 			      es->y + es->height / 2.0, 0);
 
+	es->alpha = zoom->spring.current * 255;
+	if (es->alpha > 255)
+		es->alpha = 255;
 	scale = 1.0 / zoom->spring.current;
 	wlsc_matrix_init(&zoom->transform.inverse);
 	wlsc_matrix_scale(&zoom->transform.inverse, scale, scale, scale);
@@ -221,8 +226,11 @@ wlsc_zoom_run(struct wlsc_surface *surface, GLfloat start, GLfloat stop,
 	zoom->surface = surface;
 	zoom->done = done;
 	zoom->data = data;
+	zoom->start = start;
+	zoom->stop = stop;
 	surface->transform = &zoom->transform;
-	wlsc_spring_init(&zoom->spring, 200.0, start, stop);
+	wlsc_spring_init(&zoom->spring, 200.0, 0.0, 1.0);
+	zoom->spring.friction = 700;
 	zoom->spring.timestamp = wlsc_compositor_get_time();
 	zoom->animation.frame = wlsc_zoom_frame;
 	wlsc_zoom_frame(&zoom->animation, NULL, zoom->spring.timestamp);
