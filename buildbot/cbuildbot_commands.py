@@ -701,14 +701,8 @@ def UploadPrebuilts(buildroot, board, overlay_config, category,
 
   if binhost_bucket is not None:
     cmd.extend(['--upload', binhost_bucket])
-  elif overlay_config == 'public':
-    cmd.extend(['--upload', 'gs://chromeos-prebuilt'])
   else:
-    assert overlay_config in ('private', 'both')
-    bucket_board = 'chromeos-%s' % board
-    upload_bucket = 'gs://%s/%s/%d/prebuilts/' % (bucket_board, category,
-                    buildnumber)
-    cmd.extend(['--upload', upload_bucket])
+    cmd.extend(['--upload', 'gs://chromeos-prebuilt'])
 
   if overlay_config in ('private', 'both'):
     cmd.extend(['--private', '--binhost-conf-dir', _PRIVATE_BINHOST_CONF_DIR])
