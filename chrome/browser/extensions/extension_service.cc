@@ -552,12 +552,19 @@ void ExtensionService::Init() {
   component_loader_->LoadAll();
   extensions::InstalledLoader(this).LoadAllExtensions();
 
-  // TODO(erikkay) this should probably be deferred to a future point
-  // rather than running immediately at startup.
-  CheckForExternalUpdates();
+  // If we are running in the import process, don't bother initializing the
+  // extension service since this can interfere with the main browser process
+  // that is already running an extension service for this profile.
+  // TODO(aa): can we start up even less of ExtensionService?
+  // http://crbug.com/107636
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kImport)) {
+    // TODO(erikkay) this should probably be deferred to a future point
+    // rather than running immediately at startup.
+    CheckForExternalUpdates();
 
-  // TODO(erikkay) this should probably be deferred as well.
-  GarbageCollectExtensions();
+    // TODO(erikkay) this should probably be deferred as well.
+    GarbageCollectExtensions();
+  }
 }
 
 bool ExtensionService::UpdateExtension(
