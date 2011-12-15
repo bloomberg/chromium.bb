@@ -228,22 +228,17 @@ def MakeSelUniversalScriptForLD(ld_flags,
     basename = pathtools.basename(f)
     # A nice name for making a sel_universal variable.
     # Hopefully this does not clash...
-    nicename = basename.replace('.','_').replace('-','_')
-    script.append('readonly_file %s %s' % (nicename, f))
-    script.append('pnacl_emu_add_varname_mapping %s %s' % (basename, nicename))
+    script.append('reverse_service_add_manifest_mapping files/%s %s' %
+                  (basename, f))
 
   use_default = env.getbool('USE_DEFAULT_CMD_LINE')
   if use_default:
     basename = pathtools.basename(main_input)
     # A nice name for making a sel_universal variable.
     # Hopefully this does not clash...
-    nicename = basename.replace('.','_').replace('-','_')
-    script.append('readonly_file %s %s' % (nicename, main_input))
-    contract_name = '___PNACL_GENERATED'
-    script.append('pnacl_emu_add_varname_mapping %s %s' %
-                  (contract_name, nicename))
-    script.append('rpc RunWithDefaultCommandLine s("${lookup_service_string}")'
-                  ' h(nexefile) i(0) s("") s("") *')
+    script.append('readonly_file objfile %s' % main_input)
+    script.append('rpc RunWithDefaultCommandLine '
+                  'h(objfile) h(nexefile) i(0) s("") s("") *')
   else:
     # Join all the arguments.
     # Based on the format of RUN_LD, the order of arguments is:
@@ -254,8 +249,7 @@ def MakeSelUniversalScriptForLD(ld_flags,
       basename = pathtools.basename(f)
       command_line = command_line + basename + kTerminator
     command_line_escaped = command_line.replace(kTerminator, '\\x00')
-    script.append('rpc Run s("${lookup_service_string}") h(nexefile) i(0)'
-                  ' s("") s("") C(%d,%s) *' %
+    script.append('rpc Run h(nexefile) i(0) s("") s("") C(%d,%s) *' %
                   (len(command_line), command_line_escaped))
   script.append('echo "ld complete"')
   script.append('')
