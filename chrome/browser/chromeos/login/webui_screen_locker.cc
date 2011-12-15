@@ -114,6 +114,10 @@ void WebUIScreenLocker::ClearErrors() {
 WebUIScreenLocker::~WebUIScreenLocker() {
   DCHECK(lock_window_);
   lock_window_->Close();
+  // If LockScreen() was called, we need to clear the signin screen handler
+  // delegate set in ShowSigninScreen so that it no longer points to us.
+  if (login_display_.get())
+    static_cast<OobeUI*>(GetWebUI())->ResetSigninScreenHandlerDelegate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

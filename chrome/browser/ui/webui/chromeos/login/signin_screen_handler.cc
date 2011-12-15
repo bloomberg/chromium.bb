@@ -323,14 +323,19 @@ void SigninScreenHandler::Show(bool oobe_ui) {
 }
 
 void SigninScreenHandler::SetDelegate(SigninScreenHandlerDelegate* delegate) {
-  CHECK(delegate);
   delegate_ = delegate;
-  delegate_->SetWebUIHandler(this);
+  if (delegate_)
+    delegate_->SetWebUIHandler(this);
 }
 
 // SigninScreenHandler, private: -----------------------------------------------
 
 void SigninScreenHandler::Initialize() {
+  // If delegate_ is NULL here (e.g. WebUIScreenLocker has been destroyed),
+  // don't do anything, just return.
+  if (!delegate_)
+    return;
+
   // Register for Caps Lock state change notifications;
   key_event_listener_ = SystemKeyEventListener::GetInstance();
   if (key_event_listener_)
@@ -524,6 +529,9 @@ void SigninScreenHandler::ShowSigninScreenForCreds(
 }
 
 void SigninScreenHandler::HandleCompleteLogin(const base::ListValue* args) {
+  if (!delegate_)
+    return;
+
   std::string typed_email;
   std::string password;
   if (!args->GetString(0, &typed_email) ||
@@ -538,6 +546,9 @@ void SigninScreenHandler::HandleCompleteLogin(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleAuthenticateUser(const base::ListValue* args) {
+  if (!delegate_)
+    return;
+
   std::string username;
   std::string password;
   if (!args->GetString(0, &username) ||
@@ -551,10 +562,14 @@ void SigninScreenHandler::HandleAuthenticateUser(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleLaunchIncognito(const base::ListValue* args) {
+  if (!delegate_)
+    return;
   delegate_->LoginAsGuest();
 }
 
 void SigninScreenHandler::HandleFixCaptivePortal(const base::ListValue* args) {
+  if (!delegate_)
+    return;
   delegate_->FixCaptivePortal();
 }
 
@@ -563,6 +578,9 @@ void SigninScreenHandler::HandleShutdownSystem(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleRemoveUser(const base::ListValue* args) {
+  if (!delegate_)
+    return;
+
   std::string email;
   if (!args->GetString(0, &email)) {
     NOTREACHED();
@@ -589,6 +607,8 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
 
 void SigninScreenHandler::HandleToggleEnrollmentScreen(
     const base::ListValue* args) {
+  if (!delegate_)
+    return;
   delegate_->ShowEnterpriseEnrollmentScreen();
 }
 
@@ -606,6 +626,8 @@ void SigninScreenHandler::HandleLaunchHelpApp(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::SendUserList(bool animated) {
+  if (!delegate_)
+    return;
   bool show_guest = delegate_->IsShowGuest();
 
   size_t max_non_owner_users = show_guest ? kMaxUsers - 2 : kMaxUsers - 1;
@@ -724,6 +746,8 @@ void SigninScreenHandler::HandleSignOutUser(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleCreateAccount(const base::ListValue* args) {
+  if (!delegate_)
+    return;
   delegate_->CreateAccount();
 }
 

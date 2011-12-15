@@ -55,6 +55,9 @@ class OobeUI : public OobeDisplay,
   // Shows the signin screen.
   void ShowSigninScreen(SigninScreenHandlerDelegate* delegate);
 
+  // Resets the delegate set in ShowSigninScreen.
+  void ResetSigninScreenHandlerDelegate();
+
   // Called when the login main frame has been rendered.
   void OnLoginPromptVisible();
 
