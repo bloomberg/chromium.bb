@@ -9,6 +9,7 @@ import unittest
 
 import pyauto_functional
 import pyauto
+import pyauto_errors
 import test_utils
 
 
@@ -214,7 +215,16 @@ class FindMatchTests(pyauto.PyUITest):
   def _VerifySearchInPDFURL(self, url, word, expected_count):
     """Verify that we can find in a pdf file."""
     self.NavigateToURL(url)
-    search_count = self.FindInPage(word)['match_count']
+    # Check for JSONInterfaceError thrown when FindInPage called before page
+    # loaded crbug.com/107448.
+    num_loops = 10
+    for loop in range(num_loops):
+      try:
+        search_count = self.FindInPage(word, timeout=1000)['match_count']
+        break
+      except pyauto_errors.JSONInterfaceError:
+        if loop == num_loops - 1:
+          raise
     self.assertEqual(expected_count, search_count,
                      'Failed to find in the %s pdf file' % url)
 
@@ -229,12 +239,11 @@ class FindMatchTests(pyauto.PyUITest):
       return
     # Search in pdf file over file://.
     file_url = self.GetFileURLForDataPath('plugin', 'Embed.pdf')
-    self._VerifySearchInPDFURL(file_url, 'adobe', 8) 
+    self._VerifySearchInPDFURL(file_url, 'adobe', 8)
 
-    # Disabling this test crbug.com/70927 
     # Search in pdf file over http://.
-    # http_url = 'http://www.irs.gov/pub/irs-pdf/fw4.pdf'
-    # self._VerifySearchInPDFURL(http_url, 'Allowances', 16) 
+    http_url = 'http://www.irs.gov/pub/irs-pdf/fw4.pdf'
+    self._VerifySearchInPDFURL(http_url, 'Allowances', 16)
 
 if __name__ == '__main__':
   pyauto_functional.Main()

@@ -2663,7 +2663,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
   def FindInPage(self, search_string, forward=True,
                  match_case=False, find_next=False,
-                 tab_index=0, windex=0):
+                 tab_index=0, windex=0, timeout=-1):
     """Find the match count for the given search string and search parameters.
     This is equivalent to using the find box.
 
@@ -2673,7 +2673,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       match_case: Boolean to set for case sensitive search.
       find_next: Boolean to set to continue the search or start from beginning.
       tab_index: The tab index, default is 0.
-      window_index: The window index, default is 0.
+      windex: The window index, default is 0.
+      timeout: request timeout (in milliseconds), default is -1.
 
     Returns:
       number of matches found for the given search string and parameters
@@ -2695,7 +2696,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'match_case' : match_case,
       'find_next' : find_next,
     }
-    return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+    return self._GetResultFromJSONRequest(cmd_dict, windex=windex,
+                                          timeout=timeout)
 
   def ExecuteJavascript(self, js, tab_index=0, windex=0, frame_xpath=''):
     """Executes a script in the specified frame of a tab.
