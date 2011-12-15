@@ -607,6 +607,8 @@ extern const char kChromeOsReleaseChannel[];
 
 extern const char kRegisteredBackgroundContents[];
 
+extern const char kShownAutoLaunchInfobar[];
+
 extern const char kAuthSchemes[];
 extern const char kDisableAuthNegotiateCnameLookup[];
 extern const char kEnableAuthNegotiatePort[];

@@ -3625,6 +3625,17 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
         View
       </message>
 
+      <!-- Autolaunch infobar -->
+      <message name="IDS_AUTO_LAUNCH_INFOBAR_TEXT" desc="The text to show in the infobar when Chrome was automatically launched on startup">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is configured to automatically launch when you start your computer.
+      </message>
+      <message name="IDS_AUTO_LAUNCH_OK" desc="Label for OK button on Autolaunch confirmation infobar.">
+        OK
+      </message>
+      <message name="IDS_AUTO_LAUNCH_REVERT" desc="Label for button (on Autolaunch confirmation infobar) that disables autolaunching.">
+        Cut it out!
+      </message>
+
       <!-- Basic Auth Dialog -->
       <message name="IDS_LOGIN_DIALOG_TITLE" desc="String to be displayed in the title bar of the login prompt dialog">
         Authentication Required
@@ -8191,6 +8202,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </message>
       <message name="IDS_OPTIONS_DEFAULTBROWSER_SXS" desc="The text displayed when Chrome is installed in side-by-side mode, which does not support setting as the default browser.">
         This is a secondary installation of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, and cannot be made your default browser.
+      </message>
+      <message name="IDS_AUTOLAUNCH_TEXT" desc="The text displayed in settings to explain whether Chrome is set to auto-launch on startup or not.">
+        Launch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> automatically when I start my computer
       </message>
 
       <if expr="pp_ifdef('use_titlecase')">

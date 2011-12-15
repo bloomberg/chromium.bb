@@ -39,6 +39,7 @@ namespace {
 
 const wchar_t kStageBinaryPatching[] = L"binary_patching";
 const wchar_t kStageBuilding[] = L"building";
+const wchar_t kStageConfiguringAutoLaunch[] = L"configuring_auto_launch";
 const wchar_t kStageCopyingPreferencesFile[] = L"copying_prefs";
 const wchar_t kStageCreatingShortcuts[] = L"creating_shortcuts";
 const wchar_t kStageEnsemblePatching[] = L"ensemble_patching";
@@ -69,7 +70,8 @@ const wchar_t* const kStages[] = {
   kStageCreatingShortcuts,
   kStageRegisteringChrome,
   kStageRemovingOldVersions,
-  kStageFinishing
+  kStageFinishing,
+  kStageConfiguringAutoLaunch,
 };
 
 COMPILE_ASSERT(installer::NUM_STAGES == arraysize(kStages),
@@ -173,7 +175,8 @@ Version* InstallUtil::GetChromeVersion(BrowserDistribution* dist,
   DCHECK(dist);
   RegKey key;
   HKEY reg_root = (system_install) ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  LONG result = key.Open(reg_root, dist->GetVersionKey().c_str(), KEY_READ);
+  LONG result = key.Open(reg_root, dist->GetVersionKey().c_str(),
+                         KEY_QUERY_VALUE);
 
   std::wstring version_str;
   if (result == ERROR_SUCCESS)

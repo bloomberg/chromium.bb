@@ -39,6 +39,7 @@ const char kDefaultMasterPrefs[] = "master_preferences";
 // {
 //   "distribution": {
 //      "alternate_shortcut_text": false,
+//      "auto_launch_chrome": false,
 //      "oem_bubble": false,
 //      "chrome_shortcut_icon_index": 0,
 //      "create_all_shortcuts": true,

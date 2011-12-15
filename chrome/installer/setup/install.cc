@@ -18,6 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/install_worker.h"
+#include "chrome/installer/util/auto_launch_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
@@ -411,6 +412,20 @@ InstallStatus InstallOrUpdateProduct(
 
       RegisterChromeOnMachine(installer_state, *chrome_install,
           make_chrome_default || force_chrome_default_for_user);
+
+      if (result == FIRST_INSTALL_SUCCESS) {
+        installer_state.UpdateStage(installer::CONFIGURE_AUTO_LAUNCH);
+
+        // Add auto-launch key if specified in master preferences.
+        bool auto_launch_chrome = false;
+        prefs.GetBool(
+            installer::master_preferences::kAutoLaunchChrome,
+            &auto_launch_chrome);
+        if (auto_launch_chrome) {
+          auto_launch_util::SetWillLaunchAtLogin(
+              true, installer_state.target_path());
+        }
+      }
     }
 
     installer_state.UpdateStage(installer::REMOVING_OLD_VERSIONS);

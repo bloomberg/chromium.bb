@@ -20,6 +20,7 @@
 #include "base/string_split.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/automation/chrome_frame_automation_provider.h"
@@ -116,9 +117,126 @@
 #include "ui/base/touch/touch_factory.h"
 #endif
 
+#if defined(OS_WIN)
+#include "chrome/installer/util/auto_launch_util.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
+
+static const int kMaxInfobarShown = 5;
+
+#if defined(OS_WIN)
+// The delegate for the infobar shown when Chrome was auto-launched.
+class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
+ public:
+  AutolaunchInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+                            PrefService* prefs);
+  virtual ~AutolaunchInfoBarDelegate();
+
+ private:
+  void AllowExpiry() { should_expire_ = true; }
+
+  // ConfirmInfoBarDelegate:
+  virtual bool ShouldExpire(
+      const content::LoadCommittedDetails& details) const OVERRIDE;
+  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
+
+  // The prefs to use.
+  PrefService* prefs_;
+
+  // Whether the user clicked one of the buttons.
+  bool action_taken_;
+
+  // Whether the info-bar should be dismissed on the next navigation.
+  bool should_expire_;
+
+  // Used to delay the expiration of the info-bar.
+  base::WeakPtrFactory<AutolaunchInfoBarDelegate> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutolaunchInfoBarDelegate);
+};
+
+AutolaunchInfoBarDelegate::AutolaunchInfoBarDelegate(
+    InfoBarTabHelper* infobar_helper,
+    PrefService* prefs)
+    : ConfirmInfoBarDelegate(infobar_helper),
+      prefs_(prefs),
+      action_taken_(false),
+      should_expire_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+  auto_launch_trial::UpdateInfobarShownMetric();
+
+  int count = prefs_->GetInteger(prefs::kShownAutoLaunchInfobar);
+  prefs_->SetInteger(prefs::kShownAutoLaunchInfobar, count + 1);
+
+  // We want the info-bar to stick-around for a few seconds and then be hidden
+  // on the next navigation after that.
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&AutolaunchInfoBarDelegate::AllowExpiry,
+                 weak_factory_.GetWeakPtr()),
+      8000);  // 8 seconds.
+}
+
+AutolaunchInfoBarDelegate::~AutolaunchInfoBarDelegate() {
+  if (!action_taken_) {
+    auto_launch_trial::UpdateInfobarResponseMetric(
+        auto_launch_trial::INFOBAR_IGNORE);
+  }
+}
+
+bool AutolaunchInfoBarDelegate::ShouldExpire(
+    const content::LoadCommittedDetails& details) const {
+  return details.is_navigation_to_different_page() && should_expire_;
+}
+
+gfx::Image* AutolaunchInfoBarDelegate::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_PRODUCT_LOGO_32);
+}
+
+string16 AutolaunchInfoBarDelegate::GetMessageText() const {
+  return l10n_util::GetStringFUTF16(IDS_AUTO_LAUNCH_INFOBAR_TEXT,
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+}
+
+string16 AutolaunchInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
+  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
+      IDS_AUTO_LAUNCH_OK : IDS_AUTO_LAUNCH_REVERT);
+}
+
+bool AutolaunchInfoBarDelegate::Accept() {
+  action_taken_ = true;
+  auto_launch_trial::UpdateInfobarResponseMetric(
+      auto_launch_trial::INFOBAR_OK);
+  return true;
+}
+
+bool AutolaunchInfoBarDelegate::Cancel() {
+  action_taken_ = true;
+
+  // Track infobar reponse.
+  auto_launch_trial::UpdateInfobarResponseMetric(
+      auto_launch_trial::INFOBAR_CUT_IT_OUT);
+  // Also make sure we keep track of how many disable and how many enable.
+  const bool auto_launch = false;
+  auto_launch_trial::UpdateToggleAutoLaunchMetric(auto_launch);
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&auto_launch_util::SetWillLaunchAtLogin,
+                 auto_launch, FilePath()));
+  return true;
+}
+
+#endif  // OS_WIN
 
 // DefaultBrowserInfoBarDelegate ----------------------------------------------
 
@@ -222,6 +340,26 @@ bool DefaultBrowserInfoBarDelegate::Cancel() {
   prefs_->SetBoolean(prefs::kCheckDefaultBrowser, false);
   return true;
 }
+
+#if defined(OS_WIN)
+void CheckAutoLaunchCallback() {
+  if (!auto_launch_trial::IsInAutoLaunchGroup())
+    return;
+
+  Browser* browser = BrowserList::GetLastActive();
+  TabContentsWrapper* tab = browser->GetSelectedTabContentsWrapper();
+
+  int infobar_shown =
+      tab->profile()->GetPrefs()->GetInteger(prefs::kShownAutoLaunchInfobar);
+  if (infobar_shown >= kMaxInfobarShown)
+    return;
+
+  InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
+  infobar_helper->AddInfoBar(
+      new AutolaunchInfoBarDelegate(infobar_helper,
+      tab->profile()->GetPrefs()));
+}
+#endif
 
 void NotifyNotDefaultBrowserCallback() {
   Browser* browser = BrowserList::GetLastActive();
@@ -517,6 +655,12 @@ bool BrowserInit::InProcessStartup() {
   return in_startup;
 }
 
+// static
+void BrowserInit::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterIntegerPref(
+      prefs::kShownAutoLaunchInfobar, 0, PrefService::UNSYNCABLE_PREF);
+}
+
 bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
                                 Profile* profile,
                                 const FilePath& cur_dir,
@@ -699,6 +843,8 @@ bool BrowserInit::LaunchWithProfile::Launch(
     if (process_startup) {
       if (browser_defaults::kOSSupportsOtherBrowsers &&
           !command_line_.HasSwitch(switches::kNoDefaultBrowserCheck)) {
+        CheckIfAutoLaunched(profile);
+
         // Check whether we are the default browser.
         CheckDefaultBrowser(profile);
       }
@@ -1307,6 +1453,19 @@ void BrowserInit::LaunchWithProfile::CheckDefaultBrowser(Profile* profile) {
   }
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE, base::Bind(&CheckDefaultBrowserCallback));
+}
+
+void BrowserInit::LaunchWithProfile::CheckIfAutoLaunched(Profile* profile) {
+#if defined(OS_WIN)
+  if (!auto_launch_trial::IsInAutoLaunchGroup())
+    return;
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kAutoLaunchAtStartup)) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(&CheckAutoLaunchCallback));
+  }
+#endif
 }
 
 std::vector<GURL> BrowserInit::GetURLsFromCommandLine(

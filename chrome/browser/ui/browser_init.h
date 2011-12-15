@@ -18,6 +18,7 @@
 class Browser;
 class CommandLine;
 class GURL;
+class PrefService;
 class TabContentsWrapper;
 
 // class containing helpers for BrowserMain to spin up a new instance and
@@ -61,6 +62,8 @@ class BrowserInit {
 
   // Returns true if the browser is coming up.
   static bool InProcessStartup();
+
+  static void RegisterUserPrefs(PrefService* prefs);
 
   // Launches a browser window associated with |profile|. |command_line| should
   // be the command line passed to this process. |cur_dir| can be empty, which
@@ -223,6 +226,9 @@ class BrowserInit {
     // Checks whether Chrome is still the default browser (unless the user
     // previously instructed not to do so) and warns the user if it is not.
     void CheckDefaultBrowser(Profile* profile);
+
+    // Checks whether Chrome was auto-started at login.
+    void CheckIfAutoLaunched(Profile* profile);
 
     const FilePath cur_dir_;
     const CommandLine& command_line_;

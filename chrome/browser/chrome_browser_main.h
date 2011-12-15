@@ -113,6 +113,10 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // has on retention and general apps/webstore usage.
   void DefaultAppsFieldTrial();
 
+  // A field trial to see what effects launching Chrome automatically on
+  // computer startup has on retention and usage of Chrome.
+  void AutoLaunchChromeFieldTrial();
+
   // Methods for |SetupMetricsAndFieldTrials()| --------------------------------
 
   // Constructs metrics service and does related initialization, including

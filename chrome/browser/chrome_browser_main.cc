@@ -29,6 +29,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
+#include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -1113,6 +1114,20 @@ void ChromeBrowserMainParts::DefaultAppsFieldTrial() {
   }
 }
 
+void ChromeBrowserMainParts::AutoLaunchChromeFieldTrial() {
+  std::string brand;
+  google_util::GetBrand(&brand);
+
+  // Create a 100% field trial based on the brand code.
+  if (LowerCaseEqualsASCII(brand, "rngp")) {
+    base::FieldTrialList::CreateFieldTrial(kAutoLaunchTrialName,
+                                           kAutoLaunchTrialAutoLaunchGroup);
+  } else if (LowerCaseEqualsASCII(brand, "rngq")) {
+    base::FieldTrialList::CreateFieldTrial(kAutoLaunchTrialName,
+                                           kAutoLaunchTrialControlGroup);
+  }
+}
+
 // ChromeBrowserMainParts: |SetupMetricsAndFieldTrials()| related --------------
 
 // Initializes the metrics service with the configuration for this process,
@@ -1173,6 +1188,7 @@ void ChromeBrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
   WarmConnectionFieldTrial();
   PredictorFieldTrial();
   DefaultAppsFieldTrial();
+  AutoLaunchChromeFieldTrial();
   sync_promo_trial::Activate();
 }
 

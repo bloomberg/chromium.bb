@@ -22,6 +22,7 @@
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
+#include "chrome/installer/util/auto_launch_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
@@ -734,8 +735,12 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   // Chrome is not in use so lets uninstall Chrome by deleting various files
   // and registry entries. Here we will just make best effort and keep going
   // in case of errors.
-  if (is_chrome)
+  if (is_chrome) {
     ClearRlzProductState();
+
+    if (auto_launch_util::WillLaunchAtLogin(installer_state.target_path()))
+      auto_launch_util::SetWillLaunchAtLogin(false, FilePath());
+  }
 
   // First delete shortcuts from Start->Programs, Desktop & Quick Launch.
   DeleteChromeShortcuts(installer_state, product);

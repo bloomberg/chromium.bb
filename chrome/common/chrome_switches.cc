@@ -105,12 +105,16 @@ const char kAuthNegotiateDelegateWhitelist[] =
 // HTTP authentication schemes to enable. This is a comma-separated list of
 // authentication schemes (basic, digest, ntlm, and negotiate). By default all
 // schemes are enabled. The primary use of this command line flag is to help
-// triage autentication-related issues reported by end-users.
+// triage authentication-related issues reported by end-users.
 const char kAuthSchemes[]                   = "auth-schemes";
 
 // Whitelist of servers which NTLM and Negotiate can automatically authenticate
 // with using the default credentials of the currently logged in user.
 const char kAuthServerWhitelist[]           = "auth-server-whitelist";
+
+// A flag that is used to tell Chrome that it was launched automatically at
+// computer startup and not by some user action.
+const char kAutoLaunchAtStartup[]           = "auto-launch-at-startup";
 
 // The value of this switch tells the app to listen for and broadcast
 // automation-related messages on IPC channel with the given ID.

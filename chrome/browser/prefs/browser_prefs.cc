@@ -52,6 +52,7 @@
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
@@ -153,6 +154,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   SessionStartupPref::RegisterUserPrefs(user_prefs);
   BookmarkModel::RegisterUserPrefs(user_prefs);
   Browser::RegisterUserPrefs(user_prefs);
+  BrowserInit::RegisterUserPrefs(user_prefs);
   PasswordManager::RegisterUserPrefs(user_prefs);
   chrome_browser_net::Predictor::RegisterUserPrefs(user_prefs);
   DownloadPrefs::RegisterUserPrefs(user_prefs);

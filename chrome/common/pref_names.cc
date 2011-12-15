@@ -1524,6 +1524,10 @@ const char kCloudPrintSigninDialogHeight[] =
 // launches.
 const char kRegisteredBackgroundContents[] = "background_contents.registered";
 
+// An int that stores how often we've shown the "Chrome is configured to
+// auto-launch" infobar.
+const char kShownAutoLaunchInfobar[] = "browser.shown_autolaunch_infobar";
+
 // String that lists supported HTTP authentication schemes.
 const char kAuthSchemes[] = "auth.schemes";
 

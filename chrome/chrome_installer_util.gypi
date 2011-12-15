@@ -15,6 +15,8 @@
           'installer/util/app_command.h',
           'installer/util/app_commands.cc',
           'installer/util/app_commands.h',
+          'installer/util/auto_launch_util.cc',
+          'installer/util/auto_launch_util.h',
           'installer/util/browser_distribution.cc',
           'installer/util/browser_distribution.h',
           'installer/util/channel_info.cc',

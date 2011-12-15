@@ -92,6 +92,9 @@ enum ArchiveType {
 };
 
 // Stages of an installation reported through Google Update on failure.
+// The order and value of existing enums must not change. Please add new
+// values to the end (before NUM_STAGES) and update the compile assert below
+// to assert on the last value added.
 enum InstallerStage {
   NO_STAGE,                    // 0: No stage to report.
   PRECONDITIONS,               // 1: Evaluating pre-install conditions.
@@ -109,15 +112,17 @@ enum InstallerStage {
   REGISTERING_CHROME,          // 13: Performing Chrome registration.
   REMOVING_OLD_VERSIONS,       // 14: Deleting old version directories.
   FINISHING,                   // 15: Finishing the install.
-  NUM_STAGES                   // 16: The number of stages.
+  CONFIGURE_AUTO_LAUNCH,       // 16: Configuring Chrome to auto-launch.
+  NUM_STAGES                   // 17: The number of stages.
 };
 
 // When we start reporting the numerical values from the enum, the order
 // above MUST be preserved.
-COMPILE_ASSERT(FINISHING == 15,
+COMPILE_ASSERT(CONFIGURE_AUTO_LAUNCH == 16,
                never_ever_ever_change_InstallerStage_values_bang);
 
 namespace switches {
+extern const char kAutoLaunchChrome[];
 extern const char kCeee[];
 extern const char kChrome[];
 extern const char kChromeFrame[];
