@@ -100,6 +100,7 @@ bool VarTracker::ReleaseVar(int32 var_id) {
     } else {
       // All other var types can just be released.
       DCHECK(info.track_with_no_reference_count == 0);
+      info.var->ResetVarID();
       live_vars_.erase(found);
     }
   }
