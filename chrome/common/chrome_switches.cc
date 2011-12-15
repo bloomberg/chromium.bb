@@ -473,6 +473,10 @@ const char kEnableCrxlessWebApps[]          = "enable-crxless-web-apps";
 const char kEnableExperimentalExtensionApis[] =
     "enable-experimental-extension-apis";
 
+// Enables logging for extension activity.
+const char kEnableExtensionActivityLogging[] =
+    "enable-extension-activity-logging";
+
 // Enables extension alerts, which are currently in development.
 const char kEnableExtensionAlerts[] = "enable-extension-alerts";
 

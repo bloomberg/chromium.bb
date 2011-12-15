@@ -981,6 +981,8 @@
         'browser/extensions/default_apps_trial.h',
         'browser/extensions/execute_code_in_tab_function.cc',
         'browser/extensions/execute_code_in_tab_function.h',
+        'browser/extensions/extension_activity_log.cc',
+        'browser/extensions/extension_activity_log.h',
         'browser/extensions/extension_app_api.cc',
         'browser/extensions/extension_app_api.h',
         'browser/extensions/extension_browser_actions_api.cc',

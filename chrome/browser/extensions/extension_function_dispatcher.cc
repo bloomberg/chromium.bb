@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/json/json_value_serializer.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/process_util.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/download/download_extension_api.h"
 #include "chrome/browser/extensions/api/socket/socket_api.h"
 #include "chrome/browser/extensions/execute_code_in_tab_function.h"
+#include "chrome/browser/extensions/extension_activity_log.h"
 #include "chrome/browser/extensions/extension_app_api.h"
 #include "chrome/browser/extensions/extension_browser_actions_api.h"
 #include "chrome/browser/extensions/extension_chrome_auth_private_api.h"
@@ -525,6 +527,47 @@ ExtensionFunction* FactoryRegistry::NewFunction(const std::string& name) {
   return function;
 }
 
+const char kAccessDenied[] = "access denied";
+const char kQuotaExceeded[] = "quota exceeded";
+
+void LogSuccess(const Extension* extension,
+                const ExtensionHostMsg_Request_Params& params) {
+  ExtensionActivityLog* extension_activity_log =
+      ExtensionActivityLog::GetInstance();
+  if (extension_activity_log->HasObservers(extension)) {
+    std::string call_signature = params.name + "(";
+    ListValue::const_iterator it = params.arguments.begin();
+    for (; it != params.arguments.end(); ++it) {
+      std::string arg;
+      JSONStringValueSerializer serializer(&arg);
+      if (serializer.SerializeAndOmitBinaryValues(**it)) {
+        if (it != params.arguments.begin())
+          call_signature += ", ";
+        call_signature += arg;
+      }
+    }
+    call_signature += ")";
+
+    extension_activity_log->Log(
+        extension,
+        ExtensionActivityLog::ACTIVITY_EXTENSION_API_CALL,
+        call_signature);
+  }
+}
+
+void LogFailure(const Extension* extension,
+                const std::string& func_name,
+                const char* reason) {
+  ExtensionActivityLog* extension_activity_log =
+      ExtensionActivityLog::GetInstance();
+  if (extension_activity_log->HasObservers(extension)) {
+    extension_activity_log->Log(
+        extension,
+        ExtensionActivityLog::ACTIVITY_EXTENSION_API_BLOCK,
+        func_name + ": " + reason);
+  }
+}
+
 };  // namespace
 
 // ExtensionFunctionDispatcher -------------------------------------------------
@@ -558,8 +601,10 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
       CreateExtensionFunction(params, extension, render_process_id,
                               extension_info_map->process_map(), profile,
                               ipc_sender, routing_id));
-  if (!function)
+  if (!function) {
+    LogFailure(extension, params.name, kAccessDenied);
     return;
+  }
 
   IOThreadExtensionFunction* function_io =
       function->AsIOThreadExtensionFunction();
@@ -576,8 +621,10 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
   if (quota->Assess(extension->id(), function, &params.arguments,
                     base::TimeTicks::Now())) {
     function->Run();
+    LogSuccess(extension, params);
   } else {
     function->OnQuotaExceeded();
+    LogFailure(extension, params.name, kQuotaExceeded);
   }
 }
 
@@ -637,8 +684,10 @@ void ExtensionFunctionDispatcher::Dispatch(
                               *(service->process_map()),
                               profile(), render_view_host,
                               render_view_host->routing_id()));
-  if (!function)
+  if (!function) {
+    LogFailure(extension, params.name, kAccessDenied);
     return;
+  }
 
   UIThreadExtensionFunction* function_ui =
       function->AsUIThreadExtensionFunction();
@@ -658,8 +707,10 @@ void ExtensionFunctionDispatcher::Dispatch(
     ExternalProtocolHandler::PermitLaunchUrl();
 
     function->Run();
+    LogSuccess(extension, params);
   } else {
     function->OnQuotaExceeded();
+    LogFailure(extension, params.name, kQuotaExceeded);
   }
 }
 
