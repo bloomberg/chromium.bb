@@ -219,7 +219,7 @@ class PolicyTestBase(pyauto.PyUITest):
       logging.debug('DISABLE_BROWSER_RESTART_MAGIC_FILE found. '
                     'Removing temporarily for the next restart.')
       restore_magic_file = True
-      os.path.remove(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE)
+      os.remove(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE)
       assert not os.path.exists(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE)
 
     logging.debug('Starting session manager again')
