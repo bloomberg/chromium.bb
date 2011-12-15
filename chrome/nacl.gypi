@@ -67,7 +67,10 @@
             'nacl_target': 1,
           },
           'dependencies': [
-            '../ipc/ipc.gyp:ipc',
+            'chrome_resources.gyp:chrome_resources',
+            'chrome_resources.gyp:chrome_strings',
+            'common',
+            '../webkit/support/webkit_support.gyp:glue',
             '../ppapi/native_client/src/trusted/plugin/plugin.gyp:ppGoogleNaClPluginChrome',
             '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel',
             '../native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
@@ -142,9 +145,6 @@
               ],
               'sources': [
                 'nacl/nacl_helper_linux.cc',
-                '../chrome/common/nacl_messages.cc',
-                '../content/common/child_process_sandbox_support_impl_shm_linux.cc',
-                '../content/common/unix_domain_socket_posix.cc',
               ],
               'conditions': [
                 ['toolkit_uses_gtk == 1', {
