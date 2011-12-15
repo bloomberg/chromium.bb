@@ -1305,6 +1305,7 @@ SyncError ExtensionService::MergeDataAndStartSyncing(
 
   bundle->sync_processor = sync_processor;
 
+  // Process extensions from sync.
   for (SyncDataList::const_iterator i = initial_sync_data.begin();
        i != initial_sync_data.end();
        ++i) {
@@ -1313,15 +1314,20 @@ SyncError ExtensionService::MergeDataAndStartSyncing(
     ProcessExtensionSyncData(extension_sync_data, *bundle);
   }
 
+  // Process local extensions.
+  // TODO(yoz): Determine whether pending extensions should be considered too.
+  //            See crbug.com/104399.
   SyncDataList sync_data_list = GetAllSyncData(type);
   SyncChangeList sync_change_list;
   for (SyncDataList::const_iterator i = sync_data_list.begin();
        i != sync_data_list.end();
        ++i) {
-    if (bundle->HasExtensionId(i->GetTag()))
+    if (bundle->HasExtensionId(i->GetTag())) {
       sync_change_list.push_back(SyncChange(SyncChange::ACTION_UPDATE, *i));
-    else
+    } else {
+      bundle->synced_extensions.insert(i->GetTag());
       sync_change_list.push_back(SyncChange(SyncChange::ACTION_ADD, *i));
+    }
   }
   bundle->sync_processor->ProcessSyncChanges(FROM_HERE, sync_change_list);
 
