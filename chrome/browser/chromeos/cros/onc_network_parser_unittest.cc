@@ -259,7 +259,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifi1) {
       "    }"
       "  }]"
       "}");
-  OncNetworkParser parser(test_blob);
+  OncNetworkParser parser(test_blob, NetworkUIData::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   EXPECT_EQ(0, parser.GetCertificatesSize());
@@ -294,7 +294,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP1) {
       "    }"
       "  }]"
       "}");
-  OncNetworkParser parser(test_blob);
+  OncNetworkParser parser(test_blob, NetworkUIData::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   EXPECT_EQ(0, parser.GetCertificatesSize());
@@ -333,7 +333,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP2) {
       "    }"
       "  }]"
       "}");
-  OncNetworkParser parser(test_blob);
+  OncNetworkParser parser(test_blob, NetworkUIData::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   EXPECT_EQ(0, parser.GetCertificatesSize());
@@ -361,7 +361,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkOpenVPN) {
       "  \"NetworkConfigurations\": [") +
       std::string(kNetworkConfigurationOpenVPN) + std::string(
       "  ]}"));
-  OncNetworkParser parser(test_blob);
+  OncNetworkParser parser(test_blob, NetworkUIData::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   EXPECT_EQ(0, parser.GetCertificatesSize());
@@ -440,7 +440,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkL2TPIPsec) {
       "  ],"
       "  \"Certificates\": []"
       "}");
-  OncNetworkParser parser(test_blob);
+  OncNetworkParser parser(test_blob, NetworkUIData::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   EXPECT_EQ(0, parser.GetCertificatesSize());
@@ -506,7 +506,7 @@ TEST_F(OncNetworkParserTest, TestAddClientCertificate) {
       "    ],"
       "}");
   std::string test_guid("{f998f760-272b-6939-4c2beffe428697ac}");
-  OncNetworkParser parser(test_blob);
+  OncNetworkParser parser(test_blob, NetworkUIData::ONC_SOURCE_USER_IMPORT);
   ASSERT_EQ(1, parser.GetCertificatesSize());
 
   scoped_refptr<net::X509Certificate> cert = parser.ParseCertificate(0).get();
@@ -576,7 +576,7 @@ TEST_F(OncNetworkParserTest, TestAddServerCertificate) {
       "    ],"
       "}");
   std::string test_guid("{f998f760-272b-6939-4c2beffe428697aa}");
-  OncNetworkParser parser(test_blob);
+  OncNetworkParser parser(test_blob, NetworkUIData::ONC_SOURCE_USER_IMPORT);
   ASSERT_EQ(1, parser.GetCertificatesSize());
 
   scoped_refptr<net::X509Certificate> cert = parser.ParseCertificate(0).get();
@@ -607,7 +607,7 @@ TEST_F(OncNetworkParserTest, TestAddAuthorityCertificate) {
       "    ],"
       "}"));
   std::string test_guid("{f998f760-272b-6939-4c2beffe428697ab}");
-  OncNetworkParser parser(test_blob);
+  OncNetworkParser parser(test_blob, NetworkUIData::ONC_SOURCE_USER_IMPORT);
   ASSERT_EQ(1, parser.GetCertificatesSize());
 
   scoped_refptr<net::X509Certificate> cert = parser.ParseCertificate(0).get();
@@ -628,7 +628,6 @@ TEST_F(OncNetworkParserTest, TestAddAuthorityCertificate) {
   SECKEYPublicKeyList* pubkey_list =
       PK11_ListPublicKeysInSlot(slot_->os_module_handle(), NULL);
   EXPECT_FALSE(pubkey_list);
-
 }
 
 TEST_F(OncNetworkParserTest, TestNetworkAndCertificate) {
@@ -641,7 +640,7 @@ TEST_F(OncNetworkParserTest, TestNetworkAndCertificate) {
       std::string(kCertificateWebAuthority) + std::string(
       "  ],"
       "}"));
-  OncNetworkParser parser(test_blob);
+  OncNetworkParser parser(test_blob, NetworkUIData::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetCertificatesSize());
   EXPECT_TRUE(parser.ParseCertificate(0));

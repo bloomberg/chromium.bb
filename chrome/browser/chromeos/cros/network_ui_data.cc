@@ -68,6 +68,8 @@ void NetworkUIData::SetProperty(const char* property_key,
 }
 
 void NetworkUIData::FillDictionary(base::DictionaryValue* dict) const {
+  dict->Clear();
+
   std::string source_string(GetONCSourceMapper().GetKey(onc_source_));
   if (!source_string.empty())
     dict->SetString(kKeyONCSource, source_string);

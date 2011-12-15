@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/network_parser.h"
+#include "chrome/browser/chromeos/cros/network_ui_data.h"
 
 namespace base {
 class DictionaryValue;
@@ -51,7 +52,8 @@ class OncNetworkParser : public NetworkParser {
                                 const base::Value&,
                                 Network*);
 
-  explicit OncNetworkParser(const std::string& onc_blob);
+  OncNetworkParser(const std::string& onc_blob,
+                   NetworkUIData::ONCSource onc_source);
   virtual ~OncNetworkParser();
   static const EnumMapper<PropertyIndex>* property_mapper();
 
@@ -139,6 +141,9 @@ class OncNetworkParser : public NetworkParser {
 
   // Error message from the JSON parser, if applicable.
   std::string parse_error_;
+
+  // Where the ONC blob comes from.
+  NetworkUIData::ONCSource onc_source_;
 
   scoped_ptr<base::DictionaryValue> root_dict_;
   base::ListValue* network_configs_;

@@ -189,8 +189,7 @@ NetworkInfoDictionary::NetworkInfoDictionary(
   set_remembered(true);
   set_shared(remembered->profile_type() == chromeos::PROFILE_SHARED);
   set_needs_new_plan(false);
-  set_policy_managed(
-      network ? chromeos::NetworkUIData::IsManaged(network) : false);
+  set_policy_managed(chromeos::NetworkUIData::IsManaged(remembered));
 }
 
 DictionaryValue* NetworkInfoDictionary::BuildDictionary() {

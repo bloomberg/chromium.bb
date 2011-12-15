@@ -420,6 +420,7 @@
         'browser/chromeos/cros/cros_library.h',
         'browser/chromeos/cros/cryptohome_library.cc',
         'browser/chromeos/cros/cryptohome_library.h',
+        'browser/chromeos/cros/enum_mapper.h',
         'browser/chromeos/cros/library_loader.cc',
         'browser/chromeos/cros/library_loader.h',
         'browser/chromeos/cros/native_network_constants.cc',

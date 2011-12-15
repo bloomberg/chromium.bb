@@ -155,8 +155,9 @@ class MockNetworkLibrary : public NetworkLibrary {
                                                    HardwareAddressFormat));
   MOCK_METHOD1(SetIPConfig, void(const NetworkIPConfig&));
   MOCK_METHOD0(SwitchToPreferredNetwork, void(void));
-  MOCK_METHOD3(LoadOncNetworks, bool(const std::string&,
+  MOCK_METHOD4(LoadOncNetworks, bool(const std::string&,
                                      const std::string&,
+                                     NetworkUIData::ONCSource,
                                      std::string*));
   MOCK_METHOD2(SetActiveNetwork, bool(ConnectionType, const std::string&));
 };

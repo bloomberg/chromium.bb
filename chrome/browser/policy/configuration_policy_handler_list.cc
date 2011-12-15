@@ -231,10 +231,12 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
 #if defined(OS_CHROMEOS)
   handlers_.push_back(
       new NetworkConfigurationPolicyHandler(
-          kPolicyDeviceOpenNetworkConfiguration));
+          kPolicyDeviceOpenNetworkConfiguration,
+          chromeos::NetworkUIData::ONC_SOURCE_DEVICE_POLICY));
   handlers_.push_back(
       new NetworkConfigurationPolicyHandler(
-          kPolicyOpenNetworkConfiguration));
+          kPolicyOpenNetworkConfiguration,
+          chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY));
 #endif  // defined(OS_CHROMEOS)
 }
 

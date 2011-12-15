@@ -18,8 +18,10 @@
 namespace policy {
 
 NetworkConfigurationPolicyHandler::NetworkConfigurationPolicyHandler(
-    ConfigurationPolicyType type)
-    : TypeCheckingPolicyHandler(type, Value::TYPE_STRING) {}
+    ConfigurationPolicyType type,
+    chromeos::NetworkUIData::ONCSource onc_source)
+    : TypeCheckingPolicyHandler(type, Value::TYPE_STRING),
+      onc_source_(onc_source) {}
 
 NetworkConfigurationPolicyHandler::~NetworkConfigurationPolicyHandler() {}
 
@@ -33,7 +35,7 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
   if (value) {
     std::string onc_blob;
     value->GetAsString(&onc_blob);
-    chromeos::OncNetworkParser parser(onc_blob);
+    chromeos::OncNetworkParser parser(onc_blob, onc_source_);
     if (!parser.parse_error().empty()) {
       errors->AddError(policy_type(),
                        IDS_POLICY_NETWORK_CONFIG_PARSE_ERROR,

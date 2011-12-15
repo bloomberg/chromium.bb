@@ -31,7 +31,6 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
-#include "chrome/browser/chromeos/cros/network_ui_data.h"
 #include "chrome/browser/chromeos/cros/onc_network_parser.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/network_login_observer.h"
@@ -1746,6 +1745,7 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   virtual void SwitchToPreferredNetwork() OVERRIDE;
   virtual bool LoadOncNetworks(const std::string& onc_blob,
                                const std::string& passcode,
+                               NetworkUIData::ONCSource source,
                                std::string* error) OVERRIDE;
   virtual bool SetActiveNetwork(ConnectionType type,
                                 const std::string& service_path) OVERRIDE;
@@ -2836,9 +2836,10 @@ void NetworkLibraryImplBase::SwitchToPreferredNetwork() {
 
 bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
                                              const std::string& passcode,
+                                             NetworkUIData::ONCSource source,
                                              std::string* error) {
   // TODO(gspencer): Add support for decrypting onc files. crbug.com/19397
-  OncNetworkParser parser(onc_blob);
+  OncNetworkParser parser(onc_blob, source);
 
   if (!parser.parse_error().empty()) {
     if (error)
@@ -5121,7 +5122,7 @@ void NetworkLibraryImplStub::Init() {
         "  ],"
         "  \"Certificates\": []"
         "}");
-  LoadOncNetworks(test_blob, "", NULL);
+  LoadOncNetworks(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -12,7 +12,9 @@ namespace policy {
 
 TEST(NetworkConfigurationPolicyHandlerTest, Empty) {
   PolicyMap policy_map;
-  NetworkConfigurationPolicyHandler handler(kPolicyOpenNetworkConfiguration);
+  NetworkConfigurationPolicyHandler handler(
+      kPolicyOpenNetworkConfiguration,
+      chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY);
   PolicyErrorMap errors;
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.GetErrors(kPolicyOpenNetworkConfiguration).empty());
@@ -35,7 +37,9 @@ TEST(NetworkConfigurationPolicyHandlerTest, ValidONC) {
   PolicyMap policy_map;
   policy_map.Set(kPolicyOpenNetworkConfiguration,
                  Value::CreateStringValue(kTestONC));
-  NetworkConfigurationPolicyHandler handler(kPolicyOpenNetworkConfiguration);
+  NetworkConfigurationPolicyHandler handler(
+      kPolicyOpenNetworkConfiguration,
+      chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY);
   PolicyErrorMap errors;
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.GetErrors(kPolicyOpenNetworkConfiguration).empty());
@@ -45,7 +49,9 @@ TEST(NetworkConfigurationPolicyHandlerTest, WrongType) {
   PolicyMap policy_map;
   policy_map.Set(kPolicyOpenNetworkConfiguration,
                  Value::CreateBooleanValue(false));
-  NetworkConfigurationPolicyHandler handler(kPolicyOpenNetworkConfiguration);
+  NetworkConfigurationPolicyHandler handler(
+      kPolicyOpenNetworkConfiguration,
+      chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY);
   PolicyErrorMap errors;
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.GetErrors(kPolicyOpenNetworkConfiguration).empty());
@@ -56,7 +62,9 @@ TEST(NetworkConfigurationPolicyHandlerTest, JSONParseError) {
   PolicyMap policy_map;
   policy_map.Set(kPolicyOpenNetworkConfiguration,
                  Value::CreateStringValue(kTestONC));
-  NetworkConfigurationPolicyHandler handler(kPolicyOpenNetworkConfiguration);
+  NetworkConfigurationPolicyHandler handler(
+      kPolicyOpenNetworkConfiguration,
+      chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY);
   PolicyErrorMap errors;
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.GetErrors(kPolicyOpenNetworkConfiguration).empty());
@@ -79,7 +87,9 @@ TEST(NetworkConfigurationPolicyHandlerTest, Sanitization) {
   PolicyMap policy_map;
   policy_map.Set(kPolicyOpenNetworkConfiguration,
                  Value::CreateStringValue(kTestONC));
-  NetworkConfigurationPolicyHandler handler(kPolicyOpenNetworkConfiguration);
+  NetworkConfigurationPolicyHandler handler(
+      kPolicyOpenNetworkConfiguration,
+      chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY);
   PolicyErrorMap errors;
   handler.PrepareForDisplaying(&policy_map);
   const Value* sanitized = policy_map.Get(kPolicyOpenNetworkConfiguration);

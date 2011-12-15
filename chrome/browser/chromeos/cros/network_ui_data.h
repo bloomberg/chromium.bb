@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/network_parser.h"
+#include "chrome/browser/chromeos/cros/enum_mapper.h"
 
 namespace chromeos {
 

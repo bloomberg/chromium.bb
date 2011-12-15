@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/cros/onc_network_parser.h"
 
-#include <pk11pub.h>
 #include <keyhi.h>
+#include <pk11pub.h>
 
 #include "base/base64.h"
 #include "base/json/json_value_serializer.h"
@@ -186,8 +186,10 @@ std::string ConvertValueToString(const base::Value& value) {
 
 // -------------------- OncNetworkParser --------------------
 
-OncNetworkParser::OncNetworkParser(const std::string& onc_blob)
+OncNetworkParser::OncNetworkParser(const std::string& onc_blob,
+                                   NetworkUIData::ONCSource onc_source)
     : NetworkParser(get_onc_mapper()),
+      onc_source_(onc_source),
       network_configs_(NULL),
       certificates_(NULL) {
   VLOG(2) << __func__ << ": OncNetworkParser called on " << onc_blob;
@@ -227,6 +229,28 @@ const EnumMapper<PropertyIndex>* OncNetworkParser::property_mapper() {
 
 int OncNetworkParser::GetNetworkConfigsSize() const {
   return network_configs_ ? network_configs_->GetSize() : 0;
+}
+
+Network* OncNetworkParser::ParseNetwork(int n) {
+  CHECK(network_configs_);
+  CHECK(static_cast<size_t>(n) < network_configs_->GetSize());
+  CHECK_GE(n, 0);
+  DictionaryValue* info = NULL;
+  if (!network_configs_->GetDictionary(n, &info)) {
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_NETWORK_PROP_DICT_MALFORMED);
+    return NULL;
+  }
+
+  if (VLOG_IS_ON(2)) {
+    std::string network_json;
+    base::JSONWriter::Write(static_cast<base::Value*>(info),
+                            true, &network_json);
+    VLOG(2) << "Parsing network at index " << n
+            << ": " << network_json;
+  }
+
+  return CreateNetworkFromInfo(std::string(), *info);
 }
 
 int OncNetworkParser::GetCertificatesSize() const {
@@ -293,28 +317,6 @@ scoped_refptr<net::X509Certificate> OncNetworkParser::ParseCertificate(
   return NULL;
 }
 
-Network* OncNetworkParser::ParseNetwork(int n) {
-  CHECK(network_configs_);
-  CHECK(static_cast<size_t>(n) < network_configs_->GetSize());
-  CHECK_GE(n, 0);
-  DictionaryValue* info = NULL;
-  if (!network_configs_->GetDictionary(n, &info)) {
-    parse_error_ = l10n_util::GetStringUTF8(
-        IDS_NETWORK_CONFIG_ERROR_NETWORK_PROP_DICT_MALFORMED);
-    return NULL;
-  }
-
-  if (VLOG_IS_ON(2)) {
-    std::string network_json;
-    base::JSONWriter::Write(static_cast<base::Value*>(info),
-                            true, &network_json);
-    VLOG(2) << "Parsing network at index " << n
-            << ": " << network_json;
-  }
-
-  return CreateNetworkFromInfo(std::string(), *info);
-}
-
 Network* OncNetworkParser::CreateNetworkFromInfo(
     const std::string& service_path,
     const DictionaryValue& info) {
@@ -325,6 +327,13 @@ Network* OncNetworkParser::CreateNetworkFromInfo(
     return NULL;
   }
   scoped_ptr<Network> network(CreateNewNetwork(type, service_path));
+
+  // Initialize UI data.
+  NetworkUIData ui_data;
+  ui_data.set_onc_source(onc_source_);
+  ui_data.FillDictionary(network->ui_data());
+
+  // Parse all properties recursively.
   if (!ParseNestedObject(network.get(),
                          "NetworkConfiguration",
                          static_cast<const base::Value&>(info),
@@ -336,12 +345,88 @@ Network* OncNetworkParser::CreateNetworkFromInfo(
           IDS_NETWORK_CONFIG_ERROR_NETWORK_PROP_DICT_MALFORMED);
     return NULL;
   }
+
+  // Update the UI data property.
+  std::string ui_data_json;
+  base::JSONWriter::Write(network->ui_data(), false, &ui_data_json);
+  base::StringValue ui_data_string_value(ui_data_json);
+  network->UpdatePropertyMap(PROPERTY_INDEX_UI_DATA, ui_data_string_value);
+
   if (VLOG_IS_ON(2)) {
     VLOG(2) << "Created Network '" << network->name()
             << "' from info. Path:" << service_path
             << " Type:" << ConnectionTypeToString(type);
   }
+
   return network.release();
+}
+
+bool OncNetworkParser::ParseNestedObject(Network* network,
+                                         const std::string& onc_type,
+                                         const base::Value& value,
+                                         OncValueSignature* signature,
+                                         ParserPointer parser) {
+  bool any_errors = false;
+  if (!value.IsType(base::Value::TYPE_DICTIONARY)) {
+    VLOG(1) << network->name() << ": expected object of type " << onc_type;
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_NETWORK_PROP_DICT_MALFORMED);
+    return false;
+  }
+  VLOG(2) << "Parsing nested object of type " << onc_type;
+  const DictionaryValue* dict = NULL;
+  value.GetAsDictionary(&dict);
+  for (DictionaryValue::key_iterator iter = dict->begin_keys();
+       iter != dict->end_keys(); ++iter) {
+    const std::string& key = *iter;
+
+    // Recommended keys are only of interest to the UI code and the UI reads it
+    // directly from the ONC blob.
+    if (key == "Recommended")
+      continue;
+
+    base::Value* inner_value = NULL;
+    dict->GetWithoutPathExpansion(key, &inner_value);
+    CHECK(inner_value != NULL);
+    int field_index;
+    for (field_index = 0; signature[field_index].field != NULL; ++field_index) {
+      if (key == signature[field_index].field)
+        break;
+    }
+    if (signature[field_index].field == NULL) {
+      VLOG(1) << network->name() << ": unexpected field: "
+              << key << ", in type: " << onc_type;
+      any_errors = true;
+      continue;
+    }
+    if (!inner_value->IsType(signature[field_index].type)) {
+      VLOG(1) << network->name() << ": field with wrong type: " << key
+              << ", actual type: " << inner_value->GetType()
+              << ", expected type: " << signature[field_index].type;
+      any_errors = true;
+      continue;
+    }
+    PropertyIndex index = signature[field_index].index;
+    // We need to UpdatePropertyMap now since parser might want to
+    // change the mapped value.
+    network->UpdatePropertyMap(index, *inner_value);
+    if (!parser(this, index, *inner_value, network)) {
+      VLOG(1) << network->name() << ": field not parsed: " << key;
+      any_errors = true;
+      continue;
+    }
+    if (VLOG_IS_ON(2)) {
+      std::string value_json;
+      base::JSONWriter::Write(inner_value, true, &value_json);
+      VLOG(2) << network->name() << ": Successfully parsed [" << key
+              << "(" << index << ")] = " << value_json;
+    }
+  }
+  if (any_errors) {
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_NETWORK_PROP_DICT_MALFORMED);
+  }
+  return !any_errors;
 }
 
 Network* OncNetworkParser::CreateNewNetwork(
@@ -377,6 +462,77 @@ std::string OncNetworkParser::GetGuidFromDictionary(
   std::string guid_string;
   info.GetString("GUID", &guid_string);
   return guid_string;
+}
+
+// static
+bool OncNetworkParser::ParseNetworkConfigurationValue(
+    OncNetworkParser* parser,
+    PropertyIndex index,
+    const base::Value& value,
+    Network* network) {
+  switch (index) {
+    case PROPERTY_INDEX_ONC_WIFI: {
+      return parser->ParseNestedObject(network,
+                                       "WiFi",
+                                       value,
+                                       wifi_signature,
+                                       OncWifiNetworkParser::ParseWifiValue);
+    }
+    case PROPERTY_INDEX_ONC_VPN: {
+      if (!CheckNetworkType(network, TYPE_VPN, "VPN"))
+        return false;
+      VirtualNetwork* virtual_network = static_cast<VirtualNetwork*>(network);
+      // Got the "VPN" field.  Immediately store the VPN.Type field
+      // value so that we can properly validate fields in the VPN
+      // object based on the type.
+      const DictionaryValue* dict = NULL;
+      CHECK(value.GetAsDictionary(&dict));
+      std::string provider_type_string;
+      if (!dict->GetString("Type", &provider_type_string)) {
+        VLOG(1) << network->name() << ": VPN.Type is missing";
+        return false;
+      }
+      ProviderType provider_type =
+        OncVirtualNetworkParser::ParseProviderType(provider_type_string);
+      virtual_network->set_provider_type(provider_type);
+      return parser->ParseNestedObject(network,
+                                       "VPN",
+                                       value,
+                                       vpn_signature,
+                                       OncVirtualNetworkParser::ParseVPNValue);
+      return true;
+    }
+    case PROPERTY_INDEX_ONC_REMOVE:
+      VLOG(1) << network->name() << ": Remove field not yet implemented";
+      return false;
+    case PROPERTY_INDEX_TYPE: {
+      // Update property with native value for type.
+      std::string str =
+        NativeNetworkParser::network_type_mapper()->GetKey(network->type());
+      scoped_ptr<StringValue> val(Value::CreateStringValue(str));
+      network->UpdatePropertyMap(PROPERTY_INDEX_TYPE, *val.get());
+      return true;
+    }
+    case PROPERTY_INDEX_GUID:
+    case PROPERTY_INDEX_NAME:
+      // Fall back to generic parser for these.
+      return parser->ParseValue(index, value, network);
+    default:
+      break;
+  }
+  return false;
+}
+
+// static
+bool OncNetworkParser::CheckNetworkType(Network* network,
+                                        ConnectionType expected,
+                                        const std::string& onc_type) {
+  if (expected != network->type()) {
+    LOG(WARNING) << network->name() << ": "
+                 << onc_type << " field unexpected for this type network";
+    return false;
+  }
+  return true;
 }
 
 scoped_refptr<net::X509Certificate>
@@ -548,159 +704,6 @@ scoped_refptr<net::X509Certificate> OncNetworkParser::ParseClientCertificate(
   return cert_result;
 }
 
-bool OncNetworkParser::ParseNestedObject(Network* network,
-                                         const std::string& onc_type,
-                                         const base::Value& value,
-                                         OncValueSignature* signature,
-                                         ParserPointer parser) {
-  bool any_errors = false;
-  if (!value.IsType(base::Value::TYPE_DICTIONARY)) {
-    VLOG(1) << network->name() << ": expected object of type " << onc_type;
-    parse_error_ = l10n_util::GetStringUTF8(
-        IDS_NETWORK_CONFIG_ERROR_NETWORK_PROP_DICT_MALFORMED);
-    return false;
-  }
-  VLOG(2) << "Parsing nested object of type " << onc_type;
-  const DictionaryValue* dict = NULL;
-  value.GetAsDictionary(&dict);
-  for (DictionaryValue::key_iterator iter = dict->begin_keys();
-       iter != dict->end_keys(); ++iter) {
-    const std::string& key = *iter;
-    base::Value* inner_value = NULL;
-    dict->GetWithoutPathExpansion(key, &inner_value);
-    CHECK(inner_value != NULL);
-    int field_index;
-    for (field_index = 0; signature[field_index].field != NULL; ++field_index) {
-      if (key == signature[field_index].field)
-        break;
-    }
-    if (signature[field_index].field == NULL) {
-      VLOG(1) << network->name() << ": unexpected field: "
-              << key << ", in type: " << onc_type;
-      any_errors = true;
-      continue;
-    }
-    if (!inner_value->IsType(signature[field_index].type)) {
-      VLOG(1) << network->name() << ": field with wrong type: " << key
-              << ", actual type: " << inner_value->GetType()
-              << ", expected type: " << signature[field_index].type;
-      any_errors = true;
-      continue;
-    }
-    PropertyIndex index = signature[field_index].index;
-    // We need to UpdatePropertyMap now since parser might want to
-    // change the mapped value.
-    network->UpdatePropertyMap(index, *inner_value);
-    if (!parser(this, index, *inner_value, network)) {
-      VLOG(1) << network->name() << ": field not parsed: " << key;
-      any_errors = true;
-      continue;
-    }
-    if (VLOG_IS_ON(2)) {
-      std::string value_json;
-      base::JSONWriter::Write(inner_value, true, &value_json);
-      VLOG(2) << network->name() << ": Successfully parsed [" << key
-              << "(" << index << ")] = " << value_json;
-    }
-  }
-  if (any_errors)
-    parse_error_ = l10n_util::GetStringUTF8(
-        IDS_NETWORK_CONFIG_ERROR_NETWORK_PROP_DICT_MALFORMED);
-  return !any_errors;
-}
-
-// static
-bool OncNetworkParser::CheckNetworkType(Network* network,
-                                        ConnectionType expected,
-                                        const std::string& onc_type) {
-  if (expected != network->type()) {
-    LOG(WARNING) << network->name() << ": "
-                 << onc_type << " field unexpected for this type network";
-    return false;
-  }
-  return true;
-}
-
-// static
-bool OncNetworkParser::ParseNetworkConfigurationValue(
-    OncNetworkParser* parser,
-    PropertyIndex index,
-    const base::Value& value,
-    Network* network) {
-  switch (index) {
-    case PROPERTY_INDEX_ONC_WIFI: {
-      return parser->ParseNestedObject(network,
-                                       "WiFi",
-                                       value,
-                                       wifi_signature,
-                                       OncWifiNetworkParser::ParseWifiValue);
-    }
-    case PROPERTY_INDEX_ONC_VPN: {
-      if (!CheckNetworkType(network, TYPE_VPN, "VPN"))
-        return false;
-      VirtualNetwork* virtual_network = static_cast<VirtualNetwork*>(network);
-      // Got the "VPN" field.  Immediately store the VPN.Type field
-      // value so that we can properly validate fields in the VPN
-      // object based on the type.
-      const DictionaryValue* dict = NULL;
-      CHECK(value.GetAsDictionary(&dict));
-      std::string provider_type_string;
-      if (!dict->GetString("Type", &provider_type_string)) {
-        VLOG(1) << network->name() << ": VPN.Type is missing";
-        return false;
-      }
-      ProviderType provider_type =
-        OncVirtualNetworkParser::ParseProviderType(provider_type_string);
-      virtual_network->set_provider_type(provider_type);
-      return parser->ParseNestedObject(network,
-                                       "VPN",
-                                       value,
-                                       vpn_signature,
-                                       OncVirtualNetworkParser::ParseVPNValue);
-      return true;
-    }
-    case PROPERTY_INDEX_ONC_REMOVE:
-      VLOG(1) << network->name() << ": Remove field not yet implemented";
-      return false;
-    case PROPERTY_INDEX_TYPE: {
-      // Update property with native value for type.
-      std::string str =
-        NativeNetworkParser::network_type_mapper()->GetKey(network->type());
-      scoped_ptr<StringValue> val(Value::CreateStringValue(str));
-      network->UpdatePropertyMap(PROPERTY_INDEX_TYPE, *val.get());
-      return true;
-    }
-    case PROPERTY_INDEX_GUID:
-    case PROPERTY_INDEX_NAME:
-      // Fall back to generic parser for these.
-      return parser->ParseValue(index, value, network);
-    default:
-      break;
-  }
-  return false;
-}
-
-// static
-bool OncNetworkParser::DeleteCertAndKeyByNickname(const std::string& label) {
-  net::CertificateList cert_list;
-  ListCertsWithNickname(label, &cert_list);
-  net::CertDatabase cert_db;
-  bool result = true;
-  for (net::CertificateList::iterator iter = cert_list.begin();
-       iter != cert_list.end(); ++iter) {
-    // If we fail, we try and delete the rest still.
-    // TODO(gspencer): this isn't very "transactional".  If we fail on some, but
-    // not all, then it's possible to leave things in a weird state.
-    // Luckily there should only be one cert with a particular
-    // label, and the cert not being found is one of the few reasons the
-    // delete could fail, but still...  The other choice is to return
-    // failure immediately, but that doesn't seem to do what is intended.
-    if (!cert_db.DeleteCertAndKey(iter->get()))
-      result = false;
-  }
-  return result;
-}
-
 // static
 void OncNetworkParser::ListCertsWithNickname(const std::string& label,
                                              net::CertificateList* result) {
@@ -738,6 +741,27 @@ void OncNetworkParser::ListCertsWithNickname(const std::string& label,
       SECKEY_DestroyPrivateKey(private_key);
     }
   }
+}
+
+// static
+bool OncNetworkParser::DeleteCertAndKeyByNickname(const std::string& label) {
+  net::CertificateList cert_list;
+  ListCertsWithNickname(label, &cert_list);
+  net::CertDatabase cert_db;
+  bool result = true;
+  for (net::CertificateList::iterator iter = cert_list.begin();
+       iter != cert_list.end(); ++iter) {
+    // If we fail, we try and delete the rest still.
+    // TODO(gspencer): this isn't very "transactional".  If we fail on some, but
+    // not all, then it's possible to leave things in a weird state.
+    // Luckily there should only be one cert with a particular
+    // label, and the cert not being found is one of the few reasons the
+    // delete could fail, but still...  The other choice is to return
+    // failure immediately, but that doesn't seem to do what is intended.
+    if (!cert_db.DeleteCertAndKey(iter->get()))
+      result = false;
+  }
+  return result;
 }
 
 // static

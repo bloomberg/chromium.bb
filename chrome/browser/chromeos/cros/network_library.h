@@ -18,6 +18,7 @@
 #include "base/observer_list.h"
 #include "base/string16.h"
 #include "base/timer.h"
+#include "chrome/browser/chromeos/cros/network_ui_data.h"
 #include "third_party/cros/chromeos_network.h"
 
 namespace base {
@@ -1793,6 +1794,7 @@ class NetworkLibrary {
   // the error message.
   virtual bool LoadOncNetworks(const std::string& onc_blob,
                                const std::string& passcode,
+                               NetworkUIData::ONCSource source,
                                std::string* error) = 0;
 
   // This sets the active network for the network type. Note: priority order

@@ -36,14 +36,17 @@ void NetworkConfigurationUpdater::Update() {
   }
 
   ApplyNetworkConfiguration(policy, kPolicyDeviceOpenNetworkConfiguration,
+                            chromeos::NetworkUIData::ONC_SOURCE_DEVICE_POLICY,
                             &device_network_config_);
   ApplyNetworkConfiguration(policy, kPolicyOpenNetworkConfiguration,
+                            chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY,
                             &user_network_config_);
 }
 
 void NetworkConfigurationUpdater::ApplyNetworkConfiguration(
     const PolicyMap& policy_map,
     ConfigurationPolicyType policy_type,
+    chromeos::NetworkUIData::ONCSource onc_source,
     std::string* cached_value) {
   std::string new_network_config;
   const base::Value* value = policy_map.Get(policy_type);
@@ -57,9 +60,10 @@ void NetworkConfigurationUpdater::ApplyNetworkConfiguration(
   if (*cached_value != new_network_config) {
     *cached_value = new_network_config;
     std::string error;
-    if (!network_library_->LoadOncNetworks(new_network_config, "", &error)) {
+    if (!network_library_->LoadOncNetworks(new_network_config, "", onc_source,
+                                           &error)) {
       LOG(WARNING) << "Network library failed to load ONC configuration:"
-          << error;
+                   << error;
     }
   }
 }

@@ -1297,7 +1297,8 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
 
   std::string error;
   chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-      LoadOncNetworks(onc_blob, passcode, &error);
+      LoadOncNetworks(onc_blob, passcode,
+                      chromeos::NetworkUIData::ONC_SOURCE_USER_IMPORT, &error);
   SendJavascriptCommand("receivedONCFileParse",
                         Value::CreateStringValue(error));
 }

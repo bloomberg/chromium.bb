@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "chrome/browser/chromeos/cros/network_ui_data.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
 namespace chromeos {
@@ -39,6 +40,7 @@ class NetworkConfigurationUpdater
   // updated).
   void ApplyNetworkConfiguration(const PolicyMap& policy_map,
                                  ConfigurationPolicyType policy_type,
+                                 chromeos::NetworkUIData::ONCSource onc_source,
                                  std::string* cached_value);
 
   // Wraps the provider we read network configuration from.
