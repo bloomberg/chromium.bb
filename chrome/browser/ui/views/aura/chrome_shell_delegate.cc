@@ -46,8 +46,7 @@ bool ChromeShellDelegate::ShouldCreateLauncherItemForBrowser(
 }
 
 void ChromeShellDelegate::CreateNewWindow() {
-  Browser* browser = Browser::Create(
-      ProfileManager::GetDefaultProfile()->GetOriginalProfile());
+  Browser* browser = Browser::Create(ProfileManager::GetDefaultProfile());
   browser->AddSelectedTabWithURL(GURL(), content::PAGE_TRANSITION_START_PAGE);
   browser->window()->Show();
 }
