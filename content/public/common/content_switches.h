@@ -65,7 +65,7 @@ extern const char kDisableSpellcheckAPI[];
 CONTENT_EXPORT extern const char kDisableWebAudio[];
 extern const char kDisableWebSockets[];
 extern const char kEnableAccelerated2dCanvas[];
-CONTENT_EXPORT extern const char kEnableAcceleratedDrawing[];
+CONTENT_EXPORT extern const char kEnableAcceleratedPainting[];
 CONTENT_EXPORT extern const char kEnableAcceleratedFilters[];
 extern const char kEnableAccessibility[];
 extern const char kEnableAccessibilityLogging[];
@@ -179,6 +179,8 @@ extern const char kUseSystemSSL[];
 #if !defined(OFFICIAL_BUILD)
 CONTENT_EXPORT extern const char kRendererCheckFalseTest[];
 #endif
+
+extern const char kEnablePerTilePainting[];
 
 }  // namespace switches
 

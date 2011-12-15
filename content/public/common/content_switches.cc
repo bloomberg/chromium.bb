@@ -170,11 +170,8 @@ const char kDisableWebSockets[]             = "disable-web-sockets";
 // Enable gpu-accelerated 2d canvas.
 const char kEnableAccelerated2dCanvas[]     = "enable-accelerated-2d-canvas";
 
-// Enable hardware accelerated page drawing.
-// Please note that this flag is honored only if chromium is compiled with
-// SKIA_GPU flag, which can be enabled by setting use_skia_gpu variable to 1
-// in build/features_override.gypi.
-const char kEnableAcceleratedDrawing[]      = "enable-accelerated-drawing";
+// Enable hardware accelerated page painting.
+const char kEnableAcceleratedPainting[]     = "enable-accelerated-painting";
 
 // Enable gpu-accelerated SVG/W3C filters.
 const char kEnableAcceleratedFilters[]      = "enable-accelerated-filters";
@@ -558,5 +555,8 @@ const char kUseSystemSSL[]                  = "use-system-ssl";
 // Causes the renderer process to throw an assertion on launch.
 const char kRendererCheckFalseTest[]        = "renderer-check-false-test";
 #endif
+
+// Enable per-tile page painting.
+const char kEnablePerTilePainting[]         = "enable-per-tile-painting";
 
 }  // namespace switches

@@ -99,7 +99,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool accelerated_layers_enabled;
   bool accelerated_video_enabled;
   bool accelerated_2d_canvas_enabled;
-  bool accelerated_drawing_enabled;
+  bool accelerated_painting_enabled;
   bool accelerated_filters_enabled;
   bool accelerated_plugins_enabled;
   bool memory_info_enabled;
@@ -111,6 +111,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool enable_scroll_animator;
   bool hixie76_websocket_protocol_enabled;
   bool visual_word_movement_enabled;
+  bool per_tile_painting_enabled;
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
   // the embedder to use the same default value.

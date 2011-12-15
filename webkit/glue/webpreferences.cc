@@ -85,7 +85,7 @@ WebPreferences::WebPreferences()
       accelerated_layers_enabled(false),
       accelerated_video_enabled(false),
       accelerated_2d_canvas_enabled(false),
-      accelerated_drawing_enabled(false),
+      accelerated_painting_enabled(false),
       accelerated_filters_enabled(false),
       accelerated_plugins_enabled(false),
       memory_info_enabled(false),
@@ -96,7 +96,8 @@ WebPreferences::WebPreferences()
       should_print_backgrounds(false),
       enable_scroll_animator(false),
       hixie76_websocket_protocol_enabled(false),
-      visual_word_movement_enabled(false) {
+      visual_word_movement_enabled(false),
+      per_tile_painting_enabled(false) {
 }
 
 WebPreferences::~WebPreferences() {
@@ -279,8 +280,8 @@ void WebPreferences::Apply(WebView* web_view) const {
   // Enable gpu-accelerated 2d canvas if requested on the command line.
   settings->setAccelerated2dCanvasEnabled(accelerated_2d_canvas_enabled);
 
-  // Enable gpu-accelerated drawing if requested on the command line.
-  settings->setAcceleratedDrawingEnabled(accelerated_drawing_enabled);
+  // Enable gpu-accelerated painting if requested on the command line.
+  settings->setAcceleratedPaintingEnabled(accelerated_painting_enabled);
 
   // Enable gpu-accelerated filters if requested on the command line.
   settings->setAcceleratedFiltersEnabled(accelerated_filters_enabled);
@@ -329,6 +330,9 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setHixie76WebSocketProtocolEnabled(
       hixie76_websocket_protocol_enabled);
   settings->setVisualWordMovementEnabled(visual_word_movement_enabled);
+
+  // Enable per-tile painting if requested on the command line.
+  settings->setPerTilePaintingEnabled(per_tile_painting_enabled);
 
   WebNetworkStateNotifier::setOnLine(is_online);
 }

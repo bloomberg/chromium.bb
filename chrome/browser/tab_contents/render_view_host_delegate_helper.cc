@@ -458,9 +458,9 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.accelerated_2d_canvas_enabled =
         GpuProcessHost::gpu_enabled() &&
         !command_line.HasSwitch(switches::kDisableAccelerated2dCanvas);
-    web_prefs.accelerated_drawing_enabled =
+    web_prefs.accelerated_painting_enabled =
         GpuProcessHost::gpu_enabled() &&
-        command_line.HasSwitch(switches::kEnableAcceleratedDrawing);
+        command_line.HasSwitch(switches::kEnableAcceleratedPainting);
     web_prefs.accelerated_filters_enabled =
         GpuProcessHost::gpu_enabled() &&
         command_line.HasSwitch(switches::kEnableAcceleratedFilters);
@@ -506,9 +506,10 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
 
     web_prefs.visual_word_movement_enabled =
         command_line.HasSwitch(switches::kEnableVisualWordMovement);
-
     web_prefs.unified_textchecker_enabled =
         command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures);
+    web_prefs.per_tile_painting_enabled =
+        command_line.HasSwitch(switches::kEnablePerTilePainting);
   }
 
   {  // Certain GPU features might have been blacklisted.
@@ -568,7 +569,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.accelerated_compositing_enabled = false;
     web_prefs.accelerated_2d_canvas_enabled = false;
     web_prefs.accelerated_video_enabled = false;
-    web_prefs.accelerated_drawing_enabled = false;
+    web_prefs.accelerated_painting_enabled = false;
     web_prefs.accelerated_plugins_enabled = false;
   }
 

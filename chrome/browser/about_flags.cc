@@ -154,15 +154,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kShowCompositedLayerBorders)
   },
   {
-    "accelerated-drawing",
-    IDS_FLAGS_ACCELERATED_DRAWING_NAME,
-    IDS_FLAGS_ACCELERATED_DRAWING_DESCRIPTION,
+    "accelerated-painting",
+    IDS_FLAGS_ACCELERATED_PAINTING_NAME,
+    IDS_FLAGS_ACCELERATED_PAINTING_DESCRIPTION,
 #if defined(USE_SKIA)
     kOsAll,
 #else
     0,
 #endif
-    SINGLE_VALUE_TYPE(switches::kEnableAcceleratedDrawing)
+    SINGLE_VALUE_TYPE(switches::kEnableAcceleratedPainting)
   },
   {
     "show-fps-counter",
@@ -457,6 +457,17 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kAuraLaptopMode)
   },
 #endif
+  {
+    "per-tile-painting",
+    IDS_FLAGS_PER_TILE_PAINTING_NAME,
+    IDS_FLAGS_PER_TILE_PAINTING_DESCRIPTION,
+#if defined(USE_SKIA)
+    kOsAll,
+#else
+    0,
+#endif
+    SINGLE_VALUE_TYPE(switches::kEnablePerTilePainting)
+  },
 };
 
 const Experiment* experiments = kExperiments;
