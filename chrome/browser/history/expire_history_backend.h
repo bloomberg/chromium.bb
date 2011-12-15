@@ -83,6 +83,9 @@ class ExpireHistoryBackend {
   // Deletes everything associated with a URL.
   void DeleteURL(const GURL& url);
 
+  // Deletes everything associated with each URL in the list.
+  void DeleteURLs(const std::vector<GURL>& url);
+
   // Removes all visits to restrict_urls (or all URLs if empty) in the given
   // time range, updating the URLs accordingly,
   void ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
@@ -106,7 +109,6 @@ class ExpireHistoryBackend {
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, DeleteTextIndexForURL);
   FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, DeleteFaviconsIfPossible);
   FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, ArchiveSomeOldHistory);
   FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, ExpiringVisitsReader);
@@ -114,17 +116,6 @@ class ExpireHistoryBackend {
   friend class ::TestingProfile;
 
   struct DeleteDependencies;
-
-  // Removes the data from the full text index associated with the given URL
-  // string/ID pair. If |update_visits| is set, the visits that reference the
-  // indexed data will be updated to reflect the fact that the indexed data is
-  // gone. Setting this to false is a performance optimization when the caller
-  // knows that the visits will be deleted after the call.
-  //
-  // TODO(brettw) when we have an "archived" history database, this should take
-  // a flag to optionally delete from there. This way it can be used for page
-  // re-indexing as well as for full URL deletion.
-  void DeleteTextIndexForURL(const GURL& url, URLID url_id, bool update_visits);
 
   // Deletes the visit-related stuff for all the visits in the given list, and
   // adds the rows for unique URLs affected to the affected_urls list in

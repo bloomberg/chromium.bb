@@ -1994,10 +1994,7 @@ void HistoryBackend::ReleaseDBTasks() {
 ////////////////////////////////////////////////////////////////////////////////
 
 void HistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
-  for (std::vector<GURL>::const_iterator url = urls.begin(); url != urls.end();
-       ++url) {
-    expirer_.DeleteURL(*url);
-  }
+  expirer_.DeleteURLs(urls);
 
   db_->GetStartDate(&first_recorded_time_);
   // Force a commit, if the user is deleting something for privacy reasons, we

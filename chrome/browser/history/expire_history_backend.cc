@@ -197,37 +197,45 @@ void ExpireHistoryBackend::SetDatabases(HistoryDatabase* main_db,
 }
 
 void ExpireHistoryBackend::DeleteURL(const GURL& url) {
+  DeleteURLs(std::vector<GURL>(1, url));
+}
+
+void ExpireHistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
   if (!main_db_)
     return;
 
-  URLRow url_row;
-  if (!main_db_->GetRowForURL(url, &url_row))
-    return;  // Nothing to delete.
-
-  // Collect all the visits and delete them. Note that we don't give up if
-  // there are no visits, since the URL could still have an entry that we should
-  // delete.
-  // TODO(brettw): bug 1171148: We should also delete from the archived DB.
-  VisitVector visits;
-  main_db_->GetVisitsForURL(url_row.id(), &visits);
-
   DeleteDependencies dependencies;
-  DeleteVisitRelatedInfo(visits, &dependencies);
+  for (std::vector<GURL>::const_iterator url = urls.begin(); url != urls.end();
+       ++url) {
+    URLRow url_row;
+    if (!main_db_->GetRowForURL(*url, &url_row))
+      return;  // Nothing to delete.
 
-  // We skip ExpireURLsForVisits (since we are deleting from the URL, and not
-  // starting with visits in a given time range). We therefore need to call the
-  // deletion and favicon update functions manually.
+    // Collect all the visits and delete them. Note that we don't give
+    // up if there are no visits, since the URL could still have an
+    // entry that we should delete.  TODO(brettw): bug 1171148: We
+    // should also delete from the archived DB.
+    VisitVector visits;
+    main_db_->GetVisitsForURL(url_row.id(), &visits);
 
-  BookmarkService* bookmark_service = GetBookmarkService();
-  bool is_bookmarked =
-      (bookmark_service && bookmark_service->IsBookmarked(url));
+    DeleteVisitRelatedInfo(visits, &dependencies);
 
-  DeleteOneURL(url_row, is_bookmarked, &dependencies);
-  if (!is_bookmarked)
-    DeleteFaviconsIfPossible(dependencies.affected_favicons);
+    // We skip ExpireURLsForVisits (since we are deleting from the
+    // URL, and not starting with visits in a given time range). We
+    // therefore need to call the deletion and favicon update
+    // functions manually.
 
-  if (text_db_)
-    text_db_->OptimizeChangedDatabases(dependencies.text_db_changes);
+    BookmarkService* bookmark_service = GetBookmarkService();
+    bool is_bookmarked =
+        (bookmark_service && bookmark_service->IsBookmarked(*url));
+
+    DeleteOneURL(url_row, is_bookmarked, &dependencies);
+    if (!is_bookmarked)
+      DeleteFaviconsIfPossible(dependencies.affected_favicons);
+
+    if (text_db_)
+      text_db_->OptimizeChangedDatabases(dependencies.text_db_changes);
+  }
 
   BroadcastDeleteNotifications(&dependencies);
 }
