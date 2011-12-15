@@ -386,6 +386,7 @@ main(int argc, char **argv)
 	if (display.compositor)
 		wl_compositor_destroy(display.compositor);
 
+	wl_display_flush(display.display);
 	wl_display_destroy(display.display);
 
 	return 0;

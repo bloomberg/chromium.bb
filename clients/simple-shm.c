@@ -235,6 +235,7 @@ destroy_display(struct display *display)
 	if (display->compositor)
 		wl_compositor_destroy(display->compositor);
 
+	wl_display_flush(display->display);
 	wl_display_destroy(display->display);
 	free(display);
 }
