@@ -160,7 +160,7 @@ class GpuMainThread : public base::Thread {
   DISALLOW_COPY_AND_ASSIGN(GpuMainThread);
 };
 
-static bool HostIsValid(int host_id, GpuProcessHost* host) {
+static bool HostIsValid(GpuProcessHost* host) {
   if (!host)
     return false;
 
@@ -194,7 +194,7 @@ GpuProcessHost* GpuProcessHost::GetForRenderer(
     IDMap<GpuProcessHost>::iterator it(g_hosts_by_id.Pointer());
     GpuProcessHost *host = it.GetCurrentValue();
 
-    if (HostIsValid(it.GetCurrentKey(), host))
+    if (HostIsValid(host))
       return host;
   }
 
@@ -234,7 +234,7 @@ GpuProcessHost* GpuProcessHost::FromID(int host_id) {
     return NULL;
 
   GpuProcessHost *host = g_hosts_by_id.Pointer()->Lookup(host_id);
-  if (HostIsValid(host_id, host))
+  if (HostIsValid(host))
     return host;
 
   return NULL;
