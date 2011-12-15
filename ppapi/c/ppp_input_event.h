@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppp_input_event.idl modified Wed Aug 17 11:16:34 2011. */
+/* From ppp_input_event.idl modified Thu Dec 15 12:44:27 2011. */
 
 #ifndef PPAPI_C_PPP_INPUT_EVENT_H_
 #define PPAPI_C_PPP_INPUT_EVENT_H_
@@ -63,7 +63,7 @@ struct PPP_InputEvent {
    * handler) for mouse events. Otherwise, the instance will not receive focus
    * and keyboard events will not be sent.
    *
-   * \see PPB_InputEvent.ReqeustInputEvents and
+   * \see PPB_InputEvent.RequestInputEvents and
    * PPB_InputEvent.RequestFilteringInputEvents
    *
    * @return PP_TRUE if the event was handled, PP_FALSE if not. If you have

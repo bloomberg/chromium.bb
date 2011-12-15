@@ -48,7 +48,7 @@ interface PPP_InputEvent {
    * handler) for mouse events. Otherwise, the instance will not receive focus
    * and keyboard events will not be sent.
    *
-   * \see PPB_InputEvent.ReqeustInputEvents and
+   * \see PPB_InputEvent.RequestInputEvents and
    * PPB_InputEvent.RequestFilteringInputEvents
    *
    * @return PP_TRUE if the event was handled, PP_FALSE if not. If you have
