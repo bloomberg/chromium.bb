@@ -153,6 +153,20 @@ class TestCaseFactory {
     instance_->LogTest(#name, Test##name()); \
   }
 
+#define RUN_TEST_WITH_REFERENCE_CHECK(name, test_filter) \
+  if (MatchesFilter(#name, test_filter)) { \
+    force_async_ = false; \
+    uint32_t objects = testing_interface_->GetLiveObjectsForInstance( \
+        instance_->pp_instance()); \
+    std::string error_message = Test##name(); \
+    if (error_message.empty() && \
+        testing_interface_->GetLiveObjectsForInstance( \
+            instance_->pp_instance()) != objects) \
+      error_message = MakeFailureMessage(__FILE__, __LINE__, \
+          "reference leak check"); \
+    instance_->LogTest(#name, error_message); \
+  }
+
 // Like RUN_TEST above but forces functions taking callbacks to complete
 // asynchronously on success or error.
 #define RUN_TEST_FORCEASYNC(name, test_filter) \
