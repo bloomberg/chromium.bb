@@ -281,7 +281,8 @@ cr.define('ntp4', function() {
 
       // Sort by launch ordinal
       apps.sort(function(a, b) {
-        return a.app_launch_ordinal > b.app_launch_ordinal;
+        return a.app_launch_ordinal > b.app_launch_ordinal ? 1 :
+          a.app_launch_ordinal < b.app_launch_ordinal ? -1 : 0;
       });
 
       // An app to animate (in case it was just installed).
