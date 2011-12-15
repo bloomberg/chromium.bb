@@ -26,6 +26,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_internals.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
+#include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
 #include "chrome/browser/net/chrome_fraudulent_certificate_reporter.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
@@ -432,6 +433,9 @@ void ProfileIOData::LazyInitialize() const {
         profile_params_->profile,
         &enable_referrers_));
 
+  dns_cert_checker_.reset(
+      CreateDnsCertProvenanceChecker(io_thread_globals->dnsrr_resolver.get(),
+                                     main_request_context_));
   fraudulent_certificate_reporter_.reset(
       new chrome_browser_net::ChromeFraudulentCertificateReporter(
           main_request_context_));
