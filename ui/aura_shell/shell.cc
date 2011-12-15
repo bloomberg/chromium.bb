@@ -31,10 +31,10 @@
 #include "ui/aura_shell/shell_accelerator_filter.h"
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/aura_shell/shell_factory.h"
-#include "ui/aura_shell/shell_tooltip_manager.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/aura_shell/stacking_controller.h"
 #include "ui/aura_shell/status_area_layout_manager.h"
+#include "ui/aura_shell/tooltip_controller.h"
 #include "ui/aura_shell/toplevel_layout_manager.h"
 #include "ui/aura_shell/toplevel_window_event_filter.h"
 #include "ui/aura_shell/workspace_controller.h"
@@ -129,12 +129,9 @@ Shell::Shell(ShellDelegate* delegate)
 Shell::~Shell() {
   RemoveRootWindowEventFilter(accelerator_filter_.get());
 
-  // ShellTooltipManager needs a valid shell instance. We delete it before
+  // TooltipController needs a valid shell instance. We delete it before
   // deleting the shell |instance_|.
-  RemoveRootWindowEventFilter(tooltip_manager_.get());
-  aura::RootWindow::GetInstance()->SetProperty(
-      aura::kRootWindowTooltipClientKey,
-      NULL);
+  RemoveRootWindowEventFilter(tooltip_controller_.get());
 
   // Make sure we delete WorkspaceController before launcher is
   // deleted as it has a reference to launcher model.
@@ -150,7 +147,7 @@ Shell::~Shell() {
     delete child;
   }
 
-  tooltip_manager_.reset();
+  tooltip_controller_.reset();
 
   // Drag drop controller needs a valid shell instance. We destroy it first.
   drag_drop_controller_.reset();
@@ -209,12 +206,9 @@ void Shell::Init() {
   accelerator_filter_.reset(new internal::ShellAcceleratorFilter);
   AddRootWindowEventFilter(accelerator_filter_.get());
 
-  // Initialize ShellTooltipManager
-  tooltip_manager_.reset(new ShellTooltipManager);
-  aura::RootWindow::GetInstance()->SetProperty(
-      aura::kRootWindowTooltipClientKey,
-      static_cast<aura::TooltipClient*>(tooltip_manager_.get()));
-  AddRootWindowEventFilter(tooltip_manager_.get());
+  // Initialize TooltipController.
+  tooltip_controller_.reset(new internal::TooltipController);
+  AddRootWindowEventFilter(tooltip_controller_.get());
 
   // Initialize drag drop controller.
   drag_drop_controller_.reset(new internal::DragDropController);

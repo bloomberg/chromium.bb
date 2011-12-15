@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/shell_tooltip_manager.h"
+#include "ui/aura_shell/tooltip_controller.h"
 
 #include <vector>
 
@@ -123,9 +123,10 @@ views::Widget* CreateTooltip() {
 }  // namespace
 
 namespace aura_shell {
+namespace internal {
 
 // Displays a widget with tooltip using a views::Label.
-class ShellTooltipManager::Tooltip {
+class TooltipController::Tooltip {
  public:
   Tooltip() {
     label_.set_background(
@@ -197,35 +198,35 @@ class ShellTooltipManager::Tooltip {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// ShellTooltipManager public:
+// TooltipController public:
 
-ShellTooltipManager::ShellTooltipManager()
+TooltipController::TooltipController()
     : aura::EventFilter(NULL),
       tooltip_window_(NULL),
       tooltip_(new Tooltip) {
   tooltip_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(kTooltipTimeoutMs),
-      this, &ShellTooltipManager::TooltipTimerFired);
+      this, &TooltipController::TooltipTimerFired);
 }
 
-ShellTooltipManager::~ShellTooltipManager() {
+TooltipController::~TooltipController() {
   if (tooltip_window_)
     tooltip_window_->RemoveObserver(this);
 }
 
-void ShellTooltipManager::UpdateTooltip(aura::Window* target) {
+void TooltipController::UpdateTooltip(aura::Window* target) {
   // If tooltip is visible, we may want to hide it. If it is not, we are ok.
   if (tooltip_window_ == target && tooltip_->IsVisible())
     UpdateIfRequired();
 }
 
-bool ShellTooltipManager::PreHandleKeyEvent(aura::Window* target,
-                                            aura::KeyEvent* event) {
+bool TooltipController::PreHandleKeyEvent(aura::Window* target,
+                                          aura::KeyEvent* event) {
   return false;
 }
 
-bool ShellTooltipManager::PreHandleMouseEvent(aura::Window* target,
-                                              aura::MouseEvent* event) {
+bool TooltipController::PreHandleMouseEvent(aura::Window* target,
+                                            aura::MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_MOVED:
       if (tooltip_window_ != target) {
@@ -255,30 +256,27 @@ bool ShellTooltipManager::PreHandleMouseEvent(aura::Window* target,
   return false;
 }
 
-ui::TouchStatus ShellTooltipManager::PreHandleTouchEvent(
+ui::TouchStatus TooltipController::PreHandleTouchEvent(
     aura::Window* target,
     aura::TouchEvent* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-void ShellTooltipManager::OnWindowDestroyed(aura::Window* window) {
+void TooltipController::OnWindowDestroyed(aura::Window* window) {
   if (tooltip_window_ == window) {
     tooltip_window_->RemoveObserver(this);
     tooltip_window_ = NULL;
   }
 }
 
-void ShellTooltipManager::TooltipTimerFired() {
+void TooltipController::TooltipTimerFired() {
   UpdateIfRequired();
 }
 
-void ShellTooltipManager::UpdateIfRequired() {
+void TooltipController::UpdateIfRequired() {
   string16 tooltip_text;
-  if (tooltip_window_) {
-    void* property = tooltip_window_->GetProperty(aura::kTooltipTextKey);
-    if (property)
-      tooltip_text = *static_cast<string16*>(property);
-  }
+  if (tooltip_window_)
+    tooltip_text = *aura::client::GetTooltipText(tooltip_window_);
 
   if (tooltip_text_ != tooltip_text) {
     tooltip_text_ = tooltip_text;
@@ -294,4 +292,5 @@ void ShellTooltipManager::UpdateIfRequired() {
   }
 }
 
+}  // namespace internal
 }  // namespace aura_shell

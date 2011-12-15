@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_SHELL_TOOLTIP_MANAGER_H_
-#define UI_AURA_SHELL_SHELL_TOOLTIP_MANAGER_H_
+#ifndef UI_AURA_SHELL_TOOLTIP_CONTROLLER_H_
+#define UI_AURA_SHELL_TOOLTIP_CONTROLLER_H_
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
@@ -23,16 +23,17 @@ class Window;
 }
 
 namespace aura_shell {
+namespace internal {
 
-// ShellTooltipManager provides tooltip functionality for aura shell.
-class AURA_SHELL_EXPORT ShellTooltipManager : public aura::TooltipClient,
-                                              public aura::EventFilter,
-                                              public aura::WindowObserver {
+// TooltipController provides tooltip functionality for aura shell.
+class AURA_SHELL_EXPORT TooltipController : public aura::client::TooltipClient,
+                                            public aura::EventFilter,
+                                            public aura::WindowObserver {
  public:
-  ShellTooltipManager();
-  virtual ~ShellTooltipManager();
+  TooltipController();
+  virtual ~TooltipController();
 
-  // Overridden from aura::TooltipClient.
+  // Overridden from aura::client::TooltipClient.
   void UpdateTooltip(aura::Window* target);
 
   // Overridden from aura::EventFilter.
@@ -59,13 +60,14 @@ class AURA_SHELL_EXPORT ShellTooltipManager : public aura::TooltipClient,
   string16 tooltip_text_;
   scoped_ptr<Tooltip> tooltip_;
 
-  base::RepeatingTimer<ShellTooltipManager> tooltip_timer_;
+  base::RepeatingTimer<TooltipController> tooltip_timer_;
 
   gfx::Point curr_mouse_loc_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellTooltipManager);
+  DISALLOW_COPY_AND_ASSIGN(TooltipController);
 };
 
+}  // namespace internal
 }  // namespace aura_shell
 
-#endif  // UI_AURA_SHELL_SHELL_TOOLTIP_MANAGER_H_
+#endif  // UI_AURA_SHELL_TOOLTIP_CONTROLLER_H_

@@ -40,22 +40,19 @@ int TooltipManager::GetMaxWidth(int x, int y) {
 
 TooltipManagerAura::TooltipManagerAura(NativeWidgetAura* native_widget_aura)
     : native_widget_aura_(native_widget_aura) {
-  native_widget_aura_->GetNativeView()->SetProperty(aura::kTooltipTextKey,
-      &tooltip_text_);
+  aura::client::SetTooltipText(native_widget_aura_->GetNativeView(),
+                               &tooltip_text_);
 }
 
 TooltipManagerAura::~TooltipManagerAura() {
-  native_widget_aura_->GetNativeView()->SetProperty(aura::kTooltipTextKey,
-      NULL);
+  aura::client::SetTooltipText(native_widget_aura_->GetNativeView(), NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // TooltipManagerAura, TooltipManager implementation:
 
 void TooltipManagerAura::UpdateTooltip() {
-  void* property = aura::RootWindow::GetInstance()->GetProperty(
-      aura::kRootWindowTooltipClientKey);
-  if (property) {
+  if (aura::client::GetTooltipClient()) {
     gfx::Point view_point =
         aura::RootWindow::GetInstance()->last_mouse_location();
     aura::Window::ConvertPointToWindow(aura::RootWindow::GetInstance(),
@@ -68,15 +65,13 @@ void TooltipManagerAura::UpdateTooltip() {
     } else {
       tooltip_text_.clear();
     }
-    aura::TooltipClient* tc = static_cast<aura::TooltipClient*>(property);
-    tc->UpdateTooltip(native_widget_aura_->GetNativeView());
+    aura::client::GetTooltipClient()->UpdateTooltip(
+        native_widget_aura_->GetNativeView());
   }
 }
 
 void TooltipManagerAura::TooltipTextChanged(View* view)  {
-  void* property = aura::RootWindow::GetInstance()->GetProperty(
-      aura::kRootWindowTooltipClientKey);
-  if (property) {
+  if (aura::client::GetTooltipClient()) {
     gfx::Point view_point =
         aura::RootWindow::GetInstance()->last_mouse_location();
     aura::Window::ConvertPointToWindow(aura::RootWindow::GetInstance(),
@@ -91,8 +86,8 @@ void TooltipManagerAura::TooltipTextChanged(View* view)  {
     } else {
       tooltip_text_.clear();
     }
-    aura::TooltipClient* tc = static_cast<aura::TooltipClient*>(property);
-    tc->UpdateTooltip(native_widget_aura_->GetNativeView());
+    aura::client::GetTooltipClient()->UpdateTooltip(
+        native_widget_aura_->GetNativeView());
   }
 }
 

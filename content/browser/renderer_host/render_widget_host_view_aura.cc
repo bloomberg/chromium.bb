@@ -274,12 +274,8 @@ void RenderWidgetHostViewAura::Destroy() {
 
 void RenderWidgetHostViewAura::SetTooltipText(const string16& tooltip_text) {
   tooltip_ = tooltip_text;
-  void* property = aura::RootWindow::GetInstance()->GetProperty(
-      aura::kRootWindowTooltipClientKey);
-  if (property) {
-    aura::TooltipClient* tc = static_cast<aura::TooltipClient*>(property);
-    tc->UpdateTooltip(window_);
-  }
+  if (aura::client::GetTooltipClient())
+    aura::client::GetTooltipClient()->UpdateTooltip(window_);
 }
 
 BackingStore* RenderWidgetHostViewAura::AllocBackingStore(

@@ -47,7 +47,7 @@ AURA_EXPORT extern const char kRootWindowDragDropClientKey[];
 AURA_EXPORT extern const char kRootWindowStackingClient[];
 
 // A property key to store the tooltip client for the root window. The type of
-// the value is |aura::TooltipClient*|.
+// the value is |aura::client::TooltipClient*|.
 AURA_EXPORT extern const char kRootWindowTooltipClientKey[];
 
 // A property key for a value from aura::ShadowType describing the drop shadow

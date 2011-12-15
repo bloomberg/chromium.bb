@@ -11,8 +11,8 @@
 #include "ui/gfx/font.h"
 
 namespace aura {
-
 class Window;
+namespace client {
 
 class AURA_EXPORT TooltipClient {
  public:
@@ -20,6 +20,12 @@ class AURA_EXPORT TooltipClient {
   virtual void UpdateTooltip(Window* target) = 0;
 };
 
+AURA_EXPORT void SetTooltipClient(TooltipClient* client);
+AURA_EXPORT TooltipClient* GetTooltipClient();
+AURA_EXPORT void SetTooltipText(Window* window, string16* tooltip_text);
+AURA_EXPORT string16* GetTooltipText(Window* window);
+
+}  // namespace client
 }  // namespace aura
 
 #endif  // UI_AURA_CLIENT_TOOLTIP_CLIENT_H_
