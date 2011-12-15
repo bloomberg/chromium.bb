@@ -26,6 +26,7 @@
 #include <string.h>
 #include <cairo.h>
 #include <math.h>
+#include <assert.h>
 
 #include <linux/input.h>
 #include <wayland-client.h>
@@ -45,6 +46,7 @@ struct resizor {
 		double target;
 		double previous;
 	} height;
+	struct wl_callback *frame_callback;
 };
 
 static void
@@ -55,6 +57,8 @@ frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 	};
 	struct resizor *resizor = data;
 	double force, height;
+
+	assert(!callback || callback == resizor->frame_callback);
 
 	height = resizor->height.current;
 	force = (resizor->height.target - height) / 10.0 +
@@ -78,12 +82,17 @@ frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 
 	window_schedule_redraw(resizor->window);
 
-	if (callback)
-		wl_callback_destroy(callback);
+	if (resizor->frame_callback) {
+		wl_callback_destroy(resizor->frame_callback);
+		resizor->frame_callback = NULL;
+	}
 
 	if (fabs(resizor->height.previous - resizor->height.target) > 0.1) {
-		callback = wl_surface_frame(window_get_wl_surface(resizor->window));
-		wl_callback_add_listener(callback, &listener, resizor);
+		resizor->frame_callback =
+			wl_surface_frame(
+				window_get_wl_surface(resizor->window));
+		wl_callback_add_listener(resizor->frame_callback, &listener,
+					 resizor);
 	}
 }
 
@@ -150,6 +159,9 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 	case XK_Up:
 		resizor->height.target = 200;
 		frame_callback(resizor, NULL, 0);
+		break;
+	case XK_Escape:
+		display_exit(resizor->display);
 		break;
 	}
 }
@@ -220,20 +232,34 @@ resizor_create(struct display *display)
 	return resizor;
 }
 
+static void
+resizor_destroy(struct resizor *resizor)
+{
+	if (resizor->frame_callback)
+		wl_callback_destroy(resizor->frame_callback);
+
+	window_destroy(resizor->window);
+	free(resizor);
+}
+
 int
 main(int argc, char *argv[])
 {
-	struct display *d;
+	struct display *display;
+	struct resizor *resizor;
 
-	d = display_create(&argc, &argv, NULL);
-	if (d == NULL) {
+	display = display_create(&argc, &argv, NULL);
+	if (display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;
 	}
 
-	resizor_create (d);
+	resizor = resizor_create(display);
 
-	display_run(d);
+	display_run(display);
+
+	resizor_destroy(resizor);
+	display_destroy(display);
 
 	return 0;
 }
