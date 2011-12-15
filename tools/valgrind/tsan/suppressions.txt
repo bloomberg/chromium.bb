@@ -706,6 +706,7 @@
 }
 {
   bug_107181b
+  ThreadSanitizer:Race
   fun:media::AudioRendererAlgorithmBase::playback_rate
   fun:media::AudioRendererBase::GetPlaybackRate
   fun:AudioRendererImpl::Render
