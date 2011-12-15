@@ -218,6 +218,12 @@ class CommandBufferHelper {
     return ring_buffer_;
   }
 
+  void FreeRingBuffer();
+
+  bool HaveRingBuffer() const {
+    return ring_buffer_id_ != -1;
+  }
+
  private:
   // Waits until get changes, updating the value of get_.
   void WaitForGetChange();

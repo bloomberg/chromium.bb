@@ -30,6 +30,10 @@ CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
 }
 
 bool CommandBufferHelper::AllocateRingBuffer() {
+  if (HaveRingBuffer()) {
+    return true;
+  }
+
   int32 id = command_buffer_->CreateTransferBuffer(ring_buffer_size_, -1);
   if (id < 0) {
     return false;
@@ -61,6 +65,14 @@ bool CommandBufferHelper::AllocateRingBuffer() {
   return true;
 }
 
+void CommandBufferHelper::FreeRingBuffer() {
+  GPU_CHECK_EQ(put_, get_offset());
+  if (HaveRingBuffer()) {
+    command_buffer_->DestroyTransferBuffer(ring_buffer_id_);
+    ring_buffer_id_ = -1;
+  }
+}
+
 bool CommandBufferHelper::Initialize(int32 ring_buffer_size) {
   ring_buffer_size_ = ring_buffer_size;
   return AllocateRingBuffer();
@@ -70,6 +82,7 @@ CommandBufferHelper::~CommandBufferHelper() {
 }
 
 bool CommandBufferHelper::FlushSync() {
+  GPU_DCHECK(HaveRingBuffer());
   last_flush_time_ = clock();
   last_put_sent_ = put_;
   CommandBuffer::State state = command_buffer_->FlushSync(put_, get_offset());
@@ -77,6 +90,7 @@ bool CommandBufferHelper::FlushSync() {
 }
 
 void CommandBufferHelper::Flush() {
+  GPU_DCHECK(HaveRingBuffer());
   last_flush_time_ = clock();
   last_put_sent_ = put_;
   command_buffer_->Flush(put_);
@@ -86,6 +100,7 @@ void CommandBufferHelper::Flush() {
 // error is set.
 bool CommandBufferHelper::Finish() {
   TRACE_EVENT0("gpu", "CommandBufferHelper::Finish");
+  GPU_DCHECK(HaveRingBuffer());
   do {
     // Do not loop forever if the flush fails, meaning the command buffer reader
     // has shutdown.
@@ -101,6 +116,8 @@ bool CommandBufferHelper::Finish() {
 // value is higher than that token). Calls Finish() if the token value wraps,
 // which will be rare.
 int32 CommandBufferHelper::InsertToken() {
+  AllocateRingBuffer();
+  GPU_DCHECK(HaveRingBuffer());
   // Increment token as 31-bit integer. Negative values are used to signal an
   // error.
   token_ = (token_ + 1) & 0x7FFFFFFF;
@@ -118,6 +135,7 @@ int32 CommandBufferHelper::InsertToken() {
 // Waits until the current token value is greater or equal to the value passed
 // in argument.
 void CommandBufferHelper::WaitForToken(int32 token) {
+  GPU_DCHECK(HaveRingBuffer());
   TRACE_EVENT_IF_LONGER_THAN0(50, "gpu", "CommandBufferHelper::WaitForToken");
   // Return immediately if corresponding InsertToken failed.
   if (token < 0)
@@ -141,6 +159,8 @@ void CommandBufferHelper::WaitForToken(int32 token) {
 // function will return early if an error occurs, in which case the available
 // space may not be available.
 void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
+  AllocateRingBuffer();
+  GPU_DCHECK(HaveRingBuffer());
   GPU_DCHECK(count < usable_entry_count_);
   if (put_ + count > usable_entry_count_) {
     // There's not enough room between the current put and the end of the
@@ -188,6 +208,8 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
 }
 
 CommandBufferEntry* CommandBufferHelper::GetSpace(uint32 entries) {
+  AllocateRingBuffer();
+  GPU_DCHECK(HaveRingBuffer());
   ++commands_issued_;
   WaitForAvailableEntries(entries);
   CommandBufferEntry* space = &entries_[put_];

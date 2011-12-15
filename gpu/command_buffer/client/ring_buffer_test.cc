@@ -36,8 +36,8 @@ class BaseRingBufferTest : public testing::Test {
 
   class DoJumpCommand {
    public:
-    explicit DoJumpCommand(CommandParser* parser)
-        : parser_(parser) {
+    explicit DoJumpCommand(GpuScheduler* gpu_scheduler)
+        : gpu_scheduler_(gpu_scheduler) {
     }
 
     error::Error DoCommand(
@@ -45,12 +45,12 @@ class BaseRingBufferTest : public testing::Test {
         unsigned int arg_count,
         const void* cmd_data) {
       const cmd::Jump* jump_cmd = static_cast<const cmd::Jump*>(cmd_data);
-      parser_->set_get(jump_cmd->offset);
+      gpu_scheduler_->parser()->set_get(jump_cmd->offset);
       return error::kNoError;
     };
 
    private:
-    CommandParser* parser_;
+    GpuScheduler* gpu_scheduler_;
   };
 
   virtual void SetUp() {
@@ -67,27 +67,21 @@ class BaseRingBufferTest : public testing::Test {
     command_buffer_.reset(new CommandBufferService);
     command_buffer_->Initialize();
 
-    parser_ = new CommandParser(api_mock_.get());
-
     gpu_scheduler_.reset(new GpuScheduler(
-        command_buffer_.get(), NULL, parser_));
+        command_buffer_.get(), api_mock_.get(), NULL));
     command_buffer_->SetPutOffsetChangeCallback(base::Bind(
         &GpuScheduler::PutChanged, base::Unretained(gpu_scheduler_.get())));
+    command_buffer_->SetGetBufferChangeCallback(base::Bind(
+        &GpuScheduler::SetGetBuffer, base::Unretained(gpu_scheduler_.get())));
 
     api_mock_->set_engine(gpu_scheduler_.get());
-    do_jump_command_.reset(new DoJumpCommand(parser_));
+    do_jump_command_.reset(new DoJumpCommand(gpu_scheduler_.get()));
     EXPECT_CALL(*api_mock_, DoCommand(cmd::kJump, _, _))
         .WillRepeatedly(
             Invoke(do_jump_command_.get(), &DoJumpCommand::DoCommand));
 
     helper_.reset(new CommandBufferHelper(command_buffer_.get()));
     helper_->Initialize(kBufferSize);
-
-    // Note: parser->SetBuffer would normally be called through
-    // helper_->Initialize but currently it needs a GpuCommandBufferStub as the
-    // CommandBuffer instead of the CommandBufferService for that to happen.
-    Buffer ring_buffer = helper_->get_ring_buffer();
-    parser_->SetBuffer(ring_buffer.ptr, ring_buffer.size, 0, ring_buffer.size);
   }
 
   int32 GetToken() {
@@ -101,7 +95,6 @@ class BaseRingBufferTest : public testing::Test {
   scoped_ptr<AsyncAPIMock> api_mock_;
   scoped_ptr<CommandBufferService> command_buffer_;
   scoped_ptr<GpuScheduler> gpu_scheduler_;
-  CommandParser* parser_;
   scoped_ptr<CommandBufferHelper> helper_;
   scoped_ptr<DoJumpCommand> do_jump_command_;
 };

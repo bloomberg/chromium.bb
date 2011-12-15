@@ -28,8 +28,8 @@ class GpuScheduler
       public base::SupportsWeakPtr<GpuScheduler> {
  public:
   GpuScheduler(CommandBuffer* command_buffer,
-               gles2::GLES2Decoder* decoder,
-               CommandParser* parser);
+               AsyncAPIInterface* handler,
+               gles2::GLES2Decoder* decoder);
 
   virtual ~GpuScheduler();
 
@@ -62,6 +62,10 @@ class GpuScheduler
 
   void DeferToFence(base::Closure task);
 
+  CommandParser* parser() const {
+    return parser_.get();
+  }
+
  private:
   // Polls the fences, invoking callbacks that were waiting to be triggered
   // by them and returns whether all fences were complete.
@@ -71,6 +75,9 @@ class GpuScheduler
   // CommandBuffer owns the GpuScheduler and holds a strong reference to it
   // through the ProcessCommands callback.
   CommandBuffer* command_buffer_;
+
+  // The parser uses this to execute commands.
+  AsyncAPIInterface* handler_;
 
   // Does not own decoder. TODO(apatrick): The GpuScheduler shouldn't need a
   // pointer to the decoder, it is only used to initialize the CommandParser,
@@ -98,6 +105,8 @@ class GpuScheduler
 
   base::Closure scheduled_callback_;
   base::Closure command_processed_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(GpuScheduler);
 };
 
 }  // namespace gpu

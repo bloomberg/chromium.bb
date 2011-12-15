@@ -41,8 +41,8 @@ class CommandBufferHelperTest : public testing::Test {
   // Helper so mock can handle the Jump command.
   class DoJumpCommand {
    public:
-    explicit DoJumpCommand(CommandParser* parser)
-        : parser_(parser) {
+    explicit DoJumpCommand(GpuScheduler* gpu_scheduler)
+        : gpu_scheduler_(gpu_scheduler) {
     }
 
     error::Error DoCommand(
@@ -50,12 +50,12 @@ class CommandBufferHelperTest : public testing::Test {
         unsigned int arg_count,
         const void* cmd_data) {
       const cmd::Jump* jump_cmd = static_cast<const cmd::Jump*>(cmd_data);
-      parser_->set_get(jump_cmd->offset);
+      gpu_scheduler_->parser()->set_get(jump_cmd->offset);
       return error::kNoError;
     };
 
    private:
-    CommandParser* parser_;
+    GpuScheduler* gpu_scheduler_;
   };
 
   virtual void SetUp() {
@@ -68,33 +68,32 @@ class CommandBufferHelperTest : public testing::Test {
     command_buffer_.reset(new CommandBufferService);
     command_buffer_->Initialize();
 
-    parser_ = new CommandParser(api_mock_.get());
+    gpu_scheduler_.reset(new GpuScheduler(
+        command_buffer_.get(), api_mock_.get(), NULL));
+    command_buffer_->SetPutOffsetChangeCallback(base::Bind(
+        &GpuScheduler::PutChanged, base::Unretained(gpu_scheduler_.get())));
+    command_buffer_->SetGetBufferChangeCallback(base::Bind(
+        &GpuScheduler::SetGetBuffer, base::Unretained(gpu_scheduler_.get())));
 
-    do_jump_command_.reset(new DoJumpCommand(parser_));
+    do_jump_command_.reset(new DoJumpCommand(gpu_scheduler_.get()));
     EXPECT_CALL(*api_mock_, DoCommand(cmd::kJump, _, _))
         .WillRepeatedly(
             Invoke(do_jump_command_.get(), &DoJumpCommand::DoCommand));
 
-    gpu_scheduler_.reset(new GpuScheduler(
-        command_buffer_.get(), NULL, parser_));
-    command_buffer_->SetPutOffsetChangeCallback(base::Bind(
-        &GpuScheduler::PutChanged, base::Unretained(gpu_scheduler_.get())));
 
     api_mock_->set_engine(gpu_scheduler_.get());
 
     helper_.reset(new CommandBufferHelper(command_buffer_.get()));
     helper_->Initialize(kCommandBufferSizeBytes);
-
-    // Note: parser->SetBuffer would normally be called through
-    // helper_->Initialize but currently it needs a GpuCommandBufferStub as the
-    // CommandBuffer instead of the CommandBufferService for that to happen.
-    Buffer ring_buffer = helper_->get_ring_buffer();
-    parser_->SetBuffer(ring_buffer.ptr, ring_buffer.size, 0, ring_buffer.size);
   }
 
   virtual void TearDown() {
     // If the GpuScheduler posts any tasks, this forces them to run.
     MessageLoop::current()->RunAllPending();
+  }
+
+  const CommandParser* GetParser() const {
+    return gpu_scheduler_->parser();
   }
 
   // Adds a command to the buffer through the helper, while adding it as an
@@ -121,8 +120,8 @@ class CommandBufferHelperTest : public testing::Test {
 
   // Checks that the buffer from put to put+size is free in the parser.
   void CheckFreeSpace(CommandBufferOffset put, unsigned int size) {
-    CommandBufferOffset parser_put = parser_->put();
-    CommandBufferOffset parser_get = parser_->get();
+    CommandBufferOffset parser_put = GetParser()->put();
+    CommandBufferOffset parser_get = GetParser()->get();
     CommandBufferOffset limit = put + size;
     if (parser_get > parser_put) {
       // "busy" buffer wraps, so "free" buffer is between put (inclusive) and
@@ -163,7 +162,6 @@ class CommandBufferHelperTest : public testing::Test {
   scoped_ptr<AsyncAPIMock> api_mock_;
   scoped_ptr<CommandBufferService> command_buffer_;
   scoped_ptr<GpuScheduler> gpu_scheduler_;
-  CommandParser* parser_;
   scoped_ptr<CommandBufferHelper> helper_;
   Sequence sequence_;
   scoped_ptr<DoJumpCommand> do_jump_command_;
@@ -174,7 +172,7 @@ class CommandBufferHelperTest : public testing::Test {
 TEST_F(CommandBufferHelperTest, TestCommandProcessing) {
   // Check initial state of the engine - it should have been configured by the
   // helper.
-  EXPECT_TRUE(parser_ != NULL);
+  EXPECT_TRUE(GetParser() != NULL);
   EXPECT_EQ(error::kNoError, GetError());
   EXPECT_EQ(0, GetGetOffset());
 
@@ -194,7 +192,7 @@ TEST_F(CommandBufferHelperTest, TestCommandProcessing) {
   // Wait until it's done.
   helper_->Finish();
   // Check that the engine has no more work to do.
-  EXPECT_TRUE(parser_->IsEmpty());
+  EXPECT_TRUE(GetParser()->IsEmpty());
 
   // Check that the commands did happen.
   Mock::VerifyAndClearExpectations(api_mock_.get());
@@ -307,6 +305,34 @@ TEST_F(CommandBufferHelperTest, TestToken) {
 
   // Check the error status.
   EXPECT_EQ(error::kNoError, GetError());
+}
+
+TEST_F(CommandBufferHelperTest, FreeRingBuffer) {
+  EXPECT_TRUE(helper_->HaveRingBuffer());
+
+  // Test freeing ring buffer.
+  helper_->FreeRingBuffer();
+  EXPECT_FALSE(helper_->HaveRingBuffer());
+
+  // Test that InsertToken allocates a new one
+  int32 token = helper_->InsertToken();
+  EXPECT_TRUE(helper_->HaveRingBuffer());
+  EXPECT_CALL(*api_mock_.get(), DoCommand(cmd::kSetToken, 1, _))
+      .WillOnce(DoAll(Invoke(api_mock_.get(), &AsyncAPIMock::SetToken),
+                      Return(error::kNoError)));
+  helper_->WaitForToken(token);
+  helper_->FreeRingBuffer();
+  EXPECT_FALSE(helper_->HaveRingBuffer());
+
+  // Test that WaitForAvailableEntries allocates a new one
+  AddCommandWithExpect(error::kNoError, kUnusedCommandId, 0, NULL);
+  EXPECT_TRUE(helper_->HaveRingBuffer());
+  helper_->Finish();
+  helper_->FreeRingBuffer();
+  EXPECT_FALSE(helper_->HaveRingBuffer());
+
+  // Check that the commands did happen.
+  Mock::VerifyAndClearExpectations(api_mock_.get());
 }
 
 }  // namespace gpu

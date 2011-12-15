@@ -45,12 +45,12 @@ class GpuSchedulerTest : public testing::Test {
     CommandBuffer::State default_state;
     default_state.num_entries = kRingBufferEntries;
     ON_CALL(*command_buffer_.get(), GetState())
-      .WillByDefault(Return(default_state));
+        .WillByDefault(Return(default_state));
 
     decoder_.reset(new gles2::MockGLES2Decoder());
     scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(),
                                            decoder_.get(),
-                                           NULL));
+                                           decoder_.get()));
     EXPECT_CALL(*command_buffer_, GetTransferBuffer(kTransferBufferId))
        .WillOnce(Return(shared_memory_buffer_));
     EXPECT_CALL(*command_buffer_, SetGetOffset(0));

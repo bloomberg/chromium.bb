@@ -17,12 +17,14 @@ using ::base::SharedMemory;
 
 namespace gpu {
 
-GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
-                           gles2::GLES2Decoder* decoder,
-                           CommandParser* parser)
+GpuScheduler::GpuScheduler(
+    CommandBuffer* command_buffer,
+    AsyncAPIInterface* handler,
+    gles2::GLES2Decoder* decoder)
     : command_buffer_(command_buffer),
+      handler_(handler),
       decoder_(decoder),
-      parser_(parser),
+      parser_(NULL),
       unscheduled_count_(0) {
 }
 
@@ -121,7 +123,7 @@ bool GpuScheduler::SetGetBuffer(int32 transfer_buffer_id) {
   }
 
   if (!parser_.get()) {
-    parser_.reset(new CommandParser(decoder_));
+    parser_.reset(new CommandParser(handler_));
   }
 
   parser_->SetBuffer(

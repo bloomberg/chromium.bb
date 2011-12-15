@@ -476,7 +476,7 @@ bool GLInProcessContext::Initialize(bool onscreen,
 
   gpu_scheduler_.reset(new GpuScheduler(command_buffer_.get(),
                                         decoder_.get(),
-                                        NULL));
+                                        decoder_.get()));
 
   decoder_->set_engine(gpu_scheduler_.get());
 
