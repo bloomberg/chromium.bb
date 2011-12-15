@@ -212,6 +212,7 @@ void ParamTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params>::Write(
   ParamTraits<float>::Write(m, p.transformation[2][0]);
   ParamTraits<float>::Write(m, p.transformation[2][1]);
   ParamTraits<float>::Write(m, p.transformation[2][2]);
+  ParamTraits<PP_Bool>::Write(m, p.allow_subpixel_aa);
   ParamTraits<std::vector<uint16_t> >::Write(m, p.glyph_indices);
   ParamTraits<std::vector<PP_Point> >::Write(m, p.glyph_advances);
 }
@@ -238,6 +239,7 @@ bool ParamTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params>::Read(
       ParamTraits<float>::Read(m, iter, &r->transformation[2][0]) &&
       ParamTraits<float>::Read(m, iter, &r->transformation[2][1]) &&
       ParamTraits<float>::Read(m, iter, &r->transformation[2][2]) &&
+      ParamTraits<PP_Bool>::Read(m, iter, &r->allow_subpixel_aa) &&
       ParamTraits<std::vector<uint16_t> >::Read(m, iter, &r->glyph_indices) &&
       ParamTraits<std::vector<PP_Point> >::Read(m, iter, &r->glyph_advances) &&
       r->glyph_indices.size() == r->glyph_advances.size();

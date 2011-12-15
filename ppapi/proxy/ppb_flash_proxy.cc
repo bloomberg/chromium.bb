@@ -43,9 +43,10 @@ PP_Bool DrawGlyphs(PP_Instance instance,
                    PP_Resource pp_image_data,
                    const PP_FontDescription_Dev* font_desc,
                    uint32_t color,
-                   PP_Point position,
-                   PP_Rect clip,
+                   const PP_Point* position,
+                   const PP_Rect* clip,
                    const float transformation[3][3],
+                   PP_Bool allow_subpixel_aa,
                    uint32_t glyph_count,
                    const uint16_t glyph_indices[],
                    const PP_Point glyph_advances[]) {
@@ -67,12 +68,13 @@ PP_Bool DrawGlyphs(PP_Instance instance,
   params.image_data = image_data->host_resource();
   params.font_desc.SetFromPPFontDescription(dispatcher, *font_desc, true);
   params.color = color;
-  params.position = position;
-  params.clip = clip;
+  params.position = *position;
+  params.clip = *clip;
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 3; j++)
       params.transformation[i][j] = transformation[i][j];
   }
+  params.allow_subpixel_aa = allow_subpixel_aa;
 
   params.glyph_indices.insert(params.glyph_indices.begin(),
                               &glyph_indices[0],
@@ -85,6 +87,22 @@ PP_Bool DrawGlyphs(PP_Instance instance,
   dispatcher->Send(new PpapiHostMsg_PPBFlash_DrawGlyphs(
       API_ID_PPB_FLASH, params, &result));
   return result;
+}
+
+PP_Bool DrawGlyphs11(PP_Instance instance,
+                     PP_Resource pp_image_data,
+                     const PP_FontDescription_Dev* font_desc,
+                     uint32_t color,
+                     PP_Point position,
+                     PP_Rect clip,
+                     const float transformation[3][3],
+                     uint32_t glyph_count,
+                     const uint16_t glyph_indices[],
+                     const PP_Point glyph_advances[]) {
+  // Backwards-compatible version.
+  return DrawGlyphs(instance, pp_image_data, font_desc, color, &position,
+                    &clip, transformation, PP_TRUE, glyph_count, glyph_indices,
+                    glyph_advances);
 }
 
 PP_Var GetProxyForURL(PP_Instance instance, const char* url) {
@@ -100,7 +118,7 @@ PP_Var GetProxyForURL(PP_Instance instance, const char* url) {
 
 int32_t Navigate(PP_Resource request_id,
                  const char* target,
-                 bool from_user_action) {
+                 PP_Bool from_user_action) {
   thunk::EnterResource<thunk::PPB_URLRequestInfo_API> enter(request_id, true);
   if (enter.failed())
     return PP_ERROR_BADRESOURCE;
@@ -116,6 +134,13 @@ int32_t Navigate(PP_Resource request_id,
       instance, enter.object()->GetData(), target, from_user_action,
       &result));
   return result;
+}
+
+int32_t Navigate11(PP_Resource request_id,
+                   const char* target,
+                   bool from_user_action) {
+  // Backwards-compatible version.
+  return Navigate(request_id, target, PP_FromBool(from_user_action));
 }
 
 void RunMessageLoop(PP_Instance instance) {
@@ -158,7 +183,22 @@ PP_Var GetCommandLineArgs(PP_Module /*pp_module*/) {
   return StringVar::StringToPPVar(args);
 }
 
-const PPB_Flash flash_interface = {
+void PreLoadFontInWindows(const void* logfontw) {
+  // TODO(brettw) implement this.
+}
+
+const PPB_Flash_11 flash_interface_11 = {
+  &SetInstanceAlwaysOnTop,
+  &DrawGlyphs11,
+  &GetProxyForURL,
+  &Navigate11,
+  &RunMessageLoop,
+  &QuitMessageLoop,
+  &GetLocalTimeZoneOffset,
+  &GetCommandLineArgs
+};
+
+const PPB_Flash flash_interface_12 = {
   &SetInstanceAlwaysOnTop,
   &DrawGlyphs,
   &GetProxyForURL,
@@ -166,12 +206,9 @@ const PPB_Flash flash_interface = {
   &RunMessageLoop,
   &QuitMessageLoop,
   &GetLocalTimeZoneOffset,
-  &GetCommandLineArgs
+  &GetCommandLineArgs,
+  &PreLoadFontInWindows
 };
-
-InterfaceProxy* CreateFlashProxy(Dispatcher* dispatcher) {
-  return new PPB_Flash_Proxy(dispatcher);
-}
 
 }  // namespace
 
@@ -187,8 +224,13 @@ PPB_Flash_Proxy::~PPB_Flash_Proxy() {
 }
 
 // static
-const PPB_Flash* PPB_Flash_Proxy::GetInterface() {
-  return &flash_interface;
+const PPB_Flash_11* PPB_Flash_Proxy::GetInterface11() {
+  return &flash_interface_11;
+}
+
+// static
+const PPB_Flash* PPB_Flash_Proxy::GetInterface12() {
+  return &flash_interface_12;
 }
 
 bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
@@ -238,8 +280,9 @@ void PPB_Flash_Proxy::OnMsgDrawGlyphs(const PPBFlash_DrawGlyphs_Params& params,
   *result = ppb_flash_impl_->DrawGlyphs(
       0,  // Unused instance param.
       params.image_data.host_resource(), &font_desc,
-      params.color, params.position, params.clip,
+      params.color, &params.position, &params.clip,
       const_cast<float(*)[3]>(params.transformation),
+      params.allow_subpixel_aa,
       static_cast<uint32_t>(params.glyph_indices.size()),
       const_cast<uint16_t*>(&params.glyph_indices[0]),
       const_cast<PP_Point*>(&params.glyph_advances[0]));
@@ -255,7 +298,7 @@ void PPB_Flash_Proxy::OnMsgGetProxyForURL(PP_Instance instance,
 void PPB_Flash_Proxy::OnMsgNavigate(PP_Instance instance,
                                     const PPB_URLRequestInfo_Data& data,
                                     const std::string& target,
-                                    bool from_user_action,
+                                    PP_Bool from_user_action,
                                     int32_t* result) {
   DCHECK(!dispatcher()->IsPlugin());
 

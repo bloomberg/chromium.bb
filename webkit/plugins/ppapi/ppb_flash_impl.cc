@@ -55,9 +55,10 @@ PP_Bool DrawGlyphs(PP_Instance,
                    PP_Resource pp_image_data,
                    const PP_FontDescription_Dev* font_desc,
                    uint32_t color,
-                   PP_Point position,
-                   PP_Rect clip,
+                   const PP_Point* position,
+                   const PP_Rect* clip,
                    const float transformation[3][3],
+                   PP_Bool allow_subpixel_aa,
                    uint32_t glyph_count,
                    const uint16_t glyph_indices[],
                    const PP_Point glyph_advances[]) {
@@ -91,9 +92,9 @@ PP_Bool DrawGlyphs(PP_Instance,
   canvas->save();
 
   // Clip is applied in pixels before the transform.
-  SkRect clip_rect = { clip.point.x, clip.point.y,
-                       clip.point.x + clip.size.width,
-                       clip.point.y + clip.size.height };
+  SkRect clip_rect = { clip->point.x, clip->point.y,
+                       clip->point.x + clip->size.width,
+                       clip->point.y + clip->size.height };
   canvas->clipRect(clip_rect);
 
   // -- Do not return early below this. The canvas needs restoring and the
@@ -120,11 +121,13 @@ PP_Bool DrawGlyphs(PP_Instance,
   paint.setHinting(SkPaint::kFull_Hinting);
   paint.setTextSize(SkIntToScalar(font_desc->size));
   paint.setTypeface(typeface);  // Takes a ref and manages lifetime.
-  paint.setSubpixelText(true);
-  paint.setLCDRenderText(true);
+  if (allow_subpixel_aa) {
+    paint.setSubpixelText(true);
+    paint.setLCDRenderText(true);
+  }
 
-  SkScalar x = SkIntToScalar(position.x);
-  SkScalar y = SkIntToScalar(position.y);
+  SkScalar x = SkIntToScalar(position->x);
+  SkScalar y = SkIntToScalar(position->y);
 
   // Build up the skia advances.
   if (glyph_count == 0)
@@ -144,6 +147,21 @@ PP_Bool DrawGlyphs(PP_Instance,
   return PP_TRUE;
 }
 
+PP_Bool DrawGlyphs11(PP_Instance instance,
+                     PP_Resource pp_image_data,
+                     const PP_FontDescription_Dev* font_desc,
+                     uint32_t color,
+                     PP_Point position,
+                     PP_Rect clip,
+                     const float transformation[3][3],
+                     uint32_t glyph_count,
+                     const uint16_t glyph_indices[],
+                     const PP_Point glyph_advances[]) {
+  return DrawGlyphs(instance, pp_image_data, font_desc, color, &position,
+                    &clip, transformation, PP_TRUE, glyph_count,
+                    glyph_indices, glyph_advances);
+}
+
 PP_Var GetProxyForURL(PP_Instance pp_instance, const char* url) {
   PluginInstance* instance = HostGlobals::Get()->GetInstance(pp_instance);
   if (!instance)
@@ -161,7 +179,7 @@ PP_Var GetProxyForURL(PP_Instance pp_instance, const char* url) {
 
 int32_t Navigate(PP_Resource request_id,
                  const char* target,
-                 bool from_user_action) {
+                 PP_Bool from_user_action) {
   EnterResource<PPB_URLRequestInfo_API> enter(request_id, true);
   if (enter.failed())
     return PP_ERROR_BADRESOURCE;
@@ -174,7 +192,14 @@ int32_t Navigate(PP_Resource request_id,
   PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(request);
   if (!plugin_instance)
     return PP_ERROR_FAILED;
-  return plugin_instance->Navigate(request, target, from_user_action);
+  return plugin_instance->Navigate(request, target,
+                                   PP_ToBool(from_user_action));
+}
+
+int32_t Navigate11(PP_Resource request_id,
+                   const char* target,
+                   bool from_user_action) {
+  return Navigate(request_id, target, PP_FromBool(from_user_action));
 }
 
 void RunMessageLoop(PP_Instance instance) {
@@ -219,7 +244,22 @@ PP_Var GetCommandLineArgs(PP_Module pp_module) {
   return StringVar::StringToPPVar(args);
 }
 
-const PPB_Flash ppb_flash = {
+void PreLoadFontInWindows(const void* logfontw) {
+  // TODO(brettw) implement this.
+}
+
+const PPB_Flash_11 ppb_flash_11 = {
+  &SetInstanceAlwaysOnTop,
+  &DrawGlyphs11,
+  &GetProxyForURL,
+  &Navigate11,
+  &RunMessageLoop,
+  &QuitMessageLoop,
+  &GetLocalTimeZoneOffset,
+  &GetCommandLineArgs
+};
+
+const PPB_Flash ppb_flash_12 = {
   &SetInstanceAlwaysOnTop,
   &DrawGlyphs,
   &GetProxyForURL,
@@ -227,14 +267,20 @@ const PPB_Flash ppb_flash = {
   &RunMessageLoop,
   &QuitMessageLoop,
   &GetLocalTimeZoneOffset,
-  &GetCommandLineArgs
+  &GetCommandLineArgs,
+  &PreLoadFontInWindows
 };
 
 }  // namespace
 
 // static
-const PPB_Flash* PPB_Flash_Impl::GetInterface() {
-  return &ppb_flash;
+const PPB_Flash_11* PPB_Flash_Impl::GetInterface11() {
+  return &ppb_flash_11;
+}
+
+// static
+const PPB_Flash* PPB_Flash_Impl::GetInterface12() {
+  return &ppb_flash_12;
 }
 
 }  // namespace ppapi

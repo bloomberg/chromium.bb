@@ -286,8 +286,10 @@ const void* GetInterface(const char* name) {
     return &core_interface;
   if (strcmp(name, PPB_FILECHOOSER_TRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_FileChooser_Trusted_Thunk();
-  if (strcmp(name, PPB_FLASH_INTERFACE) == 0)
-    return PPB_Flash_Impl::GetInterface();
+  if (strcmp(name, PPB_FLASH_INTERFACE_11_0) == 0)
+    return PPB_Flash_Impl::GetInterface11();
+  if (strcmp(name, PPB_FLASH_INTERFACE_12_0) == 0)
+    return PPB_Flash_Impl::GetInterface12();
   if (strcmp(name, PPB_FLASH_CLIPBOARD_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Flash_Clipboard_Thunk();
   if (strcmp(name, PPB_FLASH_CLIPBOARD_INTERFACE_3_LEGACY) == 0)

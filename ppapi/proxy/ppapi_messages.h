@@ -663,7 +663,7 @@ IPC_SYNC_MESSAGE_ROUTED4_1(PpapiHostMsg_PPBFlash_Navigate,
                            PP_Instance /* instance */,
                            ppapi::PPB_URLRequestInfo_Data /* request_data */,
                            std::string /* target */,
-                           bool /* from_user_action */,
+                           PP_Bool /* from_user_action */,
                            int32_t /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBFlash_RunMessageLoop,
                            PP_Instance /* instance */)

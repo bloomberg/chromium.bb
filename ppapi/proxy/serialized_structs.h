@@ -81,6 +81,7 @@ struct PPBFlash_DrawGlyphs_Params {
   PP_Point position;
   PP_Rect clip;
   float transformation[3][3];
+  PP_Bool allow_subpixel_aa;
   std::vector<uint16_t> glyph_indices;
   std::vector<PP_Point> glyph_advances;
 };

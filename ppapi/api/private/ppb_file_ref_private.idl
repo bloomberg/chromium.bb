@@ -3,7 +3,10 @@
  * found in the LICENSE file.
  */
 
-/* This file contains PPB_FileRefPrivate interface. */
+/* This file contains the <code>PPB_FileRefPrivate</code> interface. */
+label Chrome {
+  M15 = 0.1
+};
 
 /* PPB_FileRefPrivate interface */
 interface PPB_FileRefPrivate {

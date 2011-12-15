@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ipc/ipc_platform_file.h"
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_time.h"
@@ -16,6 +17,7 @@
 #include "ppapi/shared_impl/host_resource.h"
 
 struct PPB_Flash;
+struct PPB_Flash_11;
 
 namespace ppapi {
 
@@ -31,7 +33,9 @@ class PPB_Flash_Proxy : public InterfaceProxy {
   explicit PPB_Flash_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Flash_Proxy();
 
-  static const PPB_Flash* GetInterface();
+  // Returns the corresponding version of the Flash interface pointer.
+  static const PPB_Flash_11* GetInterface11();
+  static const PPB_Flash* GetInterface12();
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -48,7 +52,7 @@ class PPB_Flash_Proxy : public InterfaceProxy {
   void OnMsgNavigate(PP_Instance instance,
                      const PPB_URLRequestInfo_Data& data,
                      const std::string& target,
-                     bool from_user_action,
+                     PP_Bool from_user_action,
                      int32_t* result);
   void OnMsgRunMessageLoop(PP_Instance instance);
   void OnMsgQuitMessageLoop(PP_Instance instance);

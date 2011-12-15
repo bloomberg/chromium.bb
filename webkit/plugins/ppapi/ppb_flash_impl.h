@@ -18,7 +18,8 @@ class PPB_Flash_Impl {
  public:
   // Returns a pointer to the interface implementing PPB_Flash that is
   // exposed to the plugin.
-  static const PPB_Flash* GetInterface();
+  static const PPB_Flash_11* GetInterface11();
+  static const PPB_Flash* GetInterface12();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PPB_Flash_Impl);

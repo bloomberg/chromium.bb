@@ -248,8 +248,10 @@ const void* InterfaceList::GetInterfaceForPPP(const std::string& name) const {
 
 void InterfaceList::AddFlashInterfaces() {
   AddProxy(API_ID_PPB_FLASH, &ProxyFactory<PPB_Flash_Proxy>);
-  AddPPB(PPB_FLASH_INTERFACE, API_ID_PPB_FLASH,
-         PPB_Flash_Proxy::GetInterface());
+  AddPPB(PPB_FLASH_INTERFACE_11_0, API_ID_PPB_FLASH,
+         PPB_Flash_Proxy::GetInterface11());
+  AddPPB(PPB_FLASH_INTERFACE_12_0, API_ID_PPB_FLASH,
+         PPB_Flash_Proxy::GetInterface12());
 
   AddProxy(API_ID_PPB_FLASH_CLIPBOARD,
            &ProxyFactory<PPB_Flash_Clipboard_Proxy>);

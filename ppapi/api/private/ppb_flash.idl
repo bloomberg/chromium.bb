@@ -3,11 +3,21 @@
  * found in the LICENSE file.
  */
 
-/* This file contains PPB_Flash interface. */
+/**
+ * This file contains the <code>PPB_Flash</code> interface.
+ */
 
-/* PPB_Flash interface. */
-interface PPB_Flash_0_7 {
-  /* Sets or clears the rendering hint that the given plugin instance is always
+label Chrome {
+  M17 = 12.0
+};
+
+/**
+ * The <code>PPB_Flash</code> interface contains pointers to various functions
+ * that are only needed to support Pepper Flash.
+ */
+interface PPB_Flash {
+  /**
+   * Sets or clears the rendering hint that the given plugin instance is always
    * on top of page content. Somewhat more optimized painting can be used in
    * this case.
    */
@@ -15,6 +25,14 @@ interface PPB_Flash_0_7 {
       [in] PP_Instance instance,
       [in] PP_Bool on_top);
 
+  /**
+   * Draws the given pre-laid-out text. It is almost equivalent to Windows'
+   * ExtTextOut with the addition of the transformation (a 3x3 matrix given the
+   * transform to apply before drawing). It also adds the allow_subpixel_aa
+   * flag which when true, will use subpixel antialiasing if enabled in the
+   * system settings. For this to work properly, the graphics layer that the
+   * text is being drawn into must be opaque.
+   */
   PP_Bool DrawGlyphs(
       [in] PP_Instance instance,
       [in] PP_Resource pp_image_data,
@@ -23,27 +41,30 @@ interface PPB_Flash_0_7 {
       [in] PP_Point position,
       [in] PP_Rect clip,
       [in] float_t[3][3] transformation,
+      [in] PP_Bool allow_subpixel_aa,
       [in] uint32_t glyph_count,
       [in, size_is(glyph_count)] uint16_t[] glyph_indices,
       [in, size_is(glyph_count)] PP_Point[] glyph_advances);
 
-  /* Retrieves the proxy that will be used for the given URL. The result will
+  /**
+   * Retrieves the proxy that will be used for the given URL. The result will
    * be a string in PAC format, or an undefined var on error.
    */
   PP_Var GetProxyForURL(
       [in] PP_Instance instance,
       [in] str_t url);
 
-  /* Navigate to URL. May open a new tab if target is not "_self". Return true
-   * if success. This differs from javascript:window.open() in that it bypasses
-   * the popup blocker, even when this is not called from an event handler.
+  /**
+   * Navigate to the URL given by the given URLRequestInfo. (This supports GETs,
+   * POSTs, and javascript: URLs.) May open a new tab if target is not "_self".
    */
-  PP_Bool NavigateToURL(
-      [in] PP_Instance instance,
-      [in] str_t url,
-      [in] str_t target);
+  int32_t Navigate(
+      [in] PP_Resource request_info,
+      [in] str_t target,
+      [in] PP_Bool from_user_action);
 
-  /* Runs a nested message loop. The plugin will be reentered from this call.
+  /**
+   * Runs a nested message loop. The plugin will be reentered from this call.
    * This function is used in places where Flash would normally enter a nested
    * message loop (e.g., when displaying context menus), but Pepper provides
    * only an asynchronous call. After performing that asynchronous call, call
@@ -57,4 +78,59 @@ interface PPB_Flash_0_7 {
    */
   void QuitMessageLoop(
       [in] PP_Instance instance);
+
+  /**
+   * Retrieves the local time zone offset from GM time for the given UTC time.
+   */
+  double_t GetLocalTimeZoneOffset(
+      [in] PP_Instance instance,
+      [in] PP_Time t);
+
+  /**
+   * Gets a (string) with "command-line" options for Flash; used to pass
+   * run-time debugging parameters, etc.
+   */
+  PP_Var GetCommandLineArgs(
+      [in] PP_Module module);
+
+  /**
+   * Loads the given font in a more priviledged process on Windows. Call this if
+   * Windows is giving errors for font calls. See
+   * content/renderer/font_cache_dispatcher_win.cc
+   *
+   * The parameter is a pointer to a LOGFONTW structure.
+   *
+   * On non-Windows platforms, this function does nothing.
+   */
+  void PreloadFontWin(
+      [in] mem_t logfontw);
 };
+
+#inline c
+/**
+ * The old version of the interface, which cannot be generated from IDL.
+ * TODO(viettrungluu): Remove this when enough time has passed. crbug.com/104184
+ */
+#define PPB_FLASH_INTERFACE_11_0 "PPB_Flash;11"
+struct PPB_Flash_11 {
+  void (*SetInstanceAlwaysOnTop)(PP_Instance instance, PP_Bool on_top);
+  PP_Bool (*DrawGlyphs)(PP_Instance instance,
+                        PP_Resource pp_image_data,
+                        const struct PP_FontDescription_Dev* font_desc,
+                        uint32_t color,
+                        struct PP_Point position,
+                        struct PP_Rect clip,
+                        const float transformation[3][3],
+                        uint32_t glyph_count,
+                        const uint16_t glyph_indices[],
+                        const struct PP_Point glyph_advances[]);
+  struct PP_Var (*GetProxyForURL)(PP_Instance instance, const char* url);
+  int32_t (*Navigate)(PP_Resource request_info,
+                      const char* target,
+                      bool from_user_action);
+  void (*RunMessageLoop)(PP_Instance instance);
+  void (*QuitMessageLoop)(PP_Instance instance);
+  double (*GetLocalTimeZoneOffset)(PP_Instance instance, PP_Time t);
+  struct PP_Var (*GetCommandLineArgs)(PP_Module module);
+};
+#endinl
