@@ -77,7 +77,7 @@
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
-#include "chrome/browser/ui/webui/sync_promo_trial.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_trial.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"

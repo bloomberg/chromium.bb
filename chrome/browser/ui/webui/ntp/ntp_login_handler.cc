@@ -25,7 +25,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/sync_promo_ui.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/chrome_notification_types.h"

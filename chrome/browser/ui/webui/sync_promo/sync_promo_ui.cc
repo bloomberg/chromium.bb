@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/sync_promo_ui.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
@@ -15,7 +15,8 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
-#include "chrome/browser/ui/webui/sync_promo_handler.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_handler.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_trial.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -121,6 +122,9 @@ SyncPromoUI::SyncPromoUI(TabContents* contents) : ChromeWebUI(contents) {
   html_source->add_resource_path(kSyncPromoJsFile, IDR_SYNC_PROMO_JS);
   html_source->set_default_resource(IDR_SYNC_PROMO_HTML);
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
+
+  if (sync_promo_trial::IsPartOfBrandTrialToEnable())
+    sync_promo_trial::RecordUserShownPromoWithTrialBrand();
 }
 
 // static
@@ -182,6 +186,11 @@ bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
   int show_count = prefs->GetInteger(prefs::kSyncPromoStartupCount);
   if (show_count >= kSyncPromoShowAtStartupMaximum)
     return false;
+
+  // If the current install has a brand code that's part of an experiment, honor
+  // that before master prefs.
+  if (sync_promo_trial::IsPartOfBrandTrialToEnable())
+    return sync_promo_trial::ShouldShowAtStartupBasedOnBrand();
 
   // This pref can be set in the master preferences file to allow or disallow
   // showing the sync promo at startup.

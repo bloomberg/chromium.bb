@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_SYNC_PROMO_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_SYNC_PROMO_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_SYNC_PROMO_SYNC_PROMO_HANDLER2_H_
+#define CHROME_BROWSER_UI_WEBUI_SYNC_PROMO_SYNC_PROMO_HANDLER2_H_
 #pragma once
 
 #include "chrome/browser/ui/webui/sync_setup_handler2.h"
@@ -70,7 +70,7 @@ class SyncPromoHandler2 : public SyncSetupHandler2 {
 
   // Increment the local view count by the specified non-negative integer
   // amount. Returns the new total view count.
-  int IncrementViewCountBy(unsigned int amount);
+  int IncrementViewCountBy(size_t amount);
 
   // Record a user's flow through the promo to our histogram in UMA.
   void RecordUserFlowAction(int action);
@@ -94,4 +94,4 @@ class SyncPromoHandler2 : public SyncSetupHandler2 {
   DISALLOW_COPY_AND_ASSIGN(SyncPromoHandler2);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_SYNC_PROMO_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_SYNC_PROMO_SYNC_PROMO_HANDLER2_H_

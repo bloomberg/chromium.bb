@@ -59,7 +59,7 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/options/extension_settings_handler.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
-#include "chrome/browser/ui/webui/sync_promo_ui.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/pref_names.h"

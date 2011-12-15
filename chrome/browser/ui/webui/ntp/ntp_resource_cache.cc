@@ -26,7 +26,7 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
-#include "chrome/browser/ui/webui/sync_promo_ui.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/sync_setup_handler.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/chrome_notification_types.h"

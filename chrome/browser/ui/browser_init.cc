@@ -64,7 +64,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/sync_promo_ui.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"

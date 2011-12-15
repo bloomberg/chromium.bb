@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/sync_promo_handler2.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_handler2.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -15,8 +15,8 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/webui/sync_promo_trial.h"
-#include "chrome/browser/ui/webui/sync_promo_ui.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_trial.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -55,6 +55,13 @@ static bool IsValidUserFlowAction(int action) {
   return (action >= SYNC_PROMO_FIRST_VALID_JS_ACTION &&
           action <= SYNC_PROMO_LAST_VALID_JS_ACTION) ||
          action == SYNC_PROMO_LEFT_DURING_THROBBER;
+}
+
+static void RecordExperimentOutcomesOnSignIn() {
+  if (sync_promo_trial::IsExperimentActive())
+    sync_promo_trial::RecordUserSignedIn();
+  if (sync_promo_trial::IsPartOfBrandTrialToEnable())
+    sync_promo_trial::RecordUserSignedInWithTrialBrand();
 }
 
 }  // namespace
@@ -122,16 +129,12 @@ void SyncPromoHandler2::RegisterMessages() {
 }
 
 void SyncPromoHandler2::ShowGaiaSuccessAndClose() {
-  if (sync_promo_trial::IsExperimentActive())
-    sync_promo_trial::RecordUserSignedIn();
-
+  RecordExperimentOutcomesOnSignIn();
   SyncSetupHandler2::ShowGaiaSuccessAndClose();
 }
 
 void SyncPromoHandler2::ShowGaiaSuccessAndSettingUp() {
-  if (sync_promo_trial::IsExperimentActive())
-    sync_promo_trial::RecordUserSignedIn();
-
+  RecordExperimentOutcomesOnSignIn();
   SyncSetupHandler2::ShowGaiaSuccessAndSettingUp();
 }
 
@@ -246,7 +249,8 @@ void SyncPromoHandler2::HandleRecordThrobberTime(const base::ListValue* args) {
 }
 
 // TODO(dbeam): Replace with metricsHandler:recordHistogramCount when it exists.
-void SyncPromoHandler2::HandleRecordSignInAttempts(const base::ListValue* args) {
+void SyncPromoHandler2::HandleRecordSignInAttempts(
+    const base::ListValue* args) {
   double count_double;
   CHECK(args->GetDouble(0, &count_double));
   UMA_HISTOGRAM_COUNTS("SyncPromo.SignInAttempts", count_double);
@@ -273,7 +277,7 @@ int SyncPromoHandler2::GetViewCount() const {
   return prefs_->GetInteger(prefs::kSyncPromoViewCount);
 }
 
-int SyncPromoHandler2::IncrementViewCountBy(unsigned int amount) {
+int SyncPromoHandler2::IncrementViewCountBy(size_t amount) {
   // Let the user increment by 0 if they really want.  It might be useful for a
   // weird way of sending preference change notifications...
   int adjusted = GetViewCount() + amount;

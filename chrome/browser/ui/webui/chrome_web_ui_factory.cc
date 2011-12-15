@@ -64,7 +64,7 @@
 #include "chrome/browser/ui/webui/chromeos/system_info_ui.h"
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
 #else
-#include "chrome/browser/ui/webui/sync_promo_ui.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #endif
 
 #if defined(USE_VIRTUAL_KEYBOARD)
