@@ -26,6 +26,7 @@ int NaClMachThreadIsInUntrusted(mach_port_t thread_port) {
   mach_msg_type_number_t size = NACL_ARRAY_SIZE(regs_array);
   i386_thread_state_t *regs = (i386_thread_state_t *) regs_array;
   kern_return_t rc;
+  uint16_t global_cs = NaClGetGlobalCs();
 
   rc = thread_get_state(thread_port, i386_THREAD_STATE, regs_array, &size);
   if (rc != 0) {
@@ -33,7 +34,16 @@ int NaClMachThreadIsInUntrusted(mach_port_t thread_port) {
             "thread_get_state() failed with error %i\n", (int) rc);
   }
 
-  return regs->__cs != NaClGetGlobalCs();
+  /*
+   * If global_cs is 0 (which is not a usable segment selector), the
+   * sandbox has not been initialised yet, so there can be no untrusted
+   * code running.
+   */
+  if (global_cs == 0) {
+    return 0;
+  }
+
+  return regs->__cs != global_cs;
 }
 
 #endif

@@ -122,8 +122,15 @@ int main(int argc, char **argv) {
   /* sel_ldr_standard.c currently requires at least 1 argument. */
   char *untrusted_argv[] = {"blah"};
 
+  if (argc == 2 && strcmp(argv[1], "early_trusted") == 0) {
+    g_expect_untrusted = 0;
+    RegisterExceptionHandler();
+    /* Cause a crash. */
+    *(volatile int *) 0 = 0;
+  }
+
   if (argc != 3) {
-    NaClLog(LOG_FATAL, "Expected 2 arguments\n");
+    NaClLog(LOG_FATAL, "Expected 1 or 2 arguments\n");
   }
 
   if (strcmp(argv[1], "trusted") == 0) {

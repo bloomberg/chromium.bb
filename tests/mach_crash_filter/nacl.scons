@@ -62,3 +62,9 @@ node = env.CommandTest('mach_filter_trusted_crash_test.out',
 env.AddNodeToTestSuite(node, ['small_tests'],
                        'run_mach_filter_trusted_crash_test',
                        is_broken=is_broken)
+
+node = env.CommandTest('mach_filter_early_trusted_crash_test.out',
+                       [runner, 'early_trusted'], declares_exit_status=True)
+env.AddNodeToTestSuite(node, ['small_tests'],
+                       'run_mach_filter_early_trusted_crash_test',
+                       is_broken=is_broken)
