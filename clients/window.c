@@ -1163,52 +1163,44 @@ get_pointer_location(struct window *window, int32_t x, int32_t y)
 	return location;
 }
 
-void
-input_set_pointer_image(struct input *input, uint32_t time, int pointer)
+static int
+input_get_pointer_image_for_location(struct input *input, int pointer)
 {
-	struct display *display = input->display;
-	struct wl_buffer *buffer;
-	cairo_surface_t *surface;
 	int location;
 
 	location = get_pointer_location(input->pointer_focus,
 					input->sx, input->sy);
 	switch (location) {
 	case WINDOW_RESIZING_TOP:
-		pointer = POINTER_TOP;
-		break;
+		return POINTER_TOP;
 	case WINDOW_RESIZING_BOTTOM:
-		pointer = POINTER_BOTTOM;
-		break;
+		return POINTER_BOTTOM;
 	case WINDOW_RESIZING_LEFT:
-		pointer = POINTER_LEFT;
-		break;
+		return POINTER_LEFT;
 	case WINDOW_RESIZING_RIGHT:
-		pointer = POINTER_RIGHT;
-		break;
+		return POINTER_RIGHT;
 	case WINDOW_RESIZING_TOP_LEFT:
-		pointer = POINTER_TOP_LEFT;
-		break;
+		return POINTER_TOP_LEFT;
 	case WINDOW_RESIZING_TOP_RIGHT:
-		pointer = POINTER_TOP_RIGHT;
-		break;
+		return POINTER_TOP_RIGHT;
 	case WINDOW_RESIZING_BOTTOM_LEFT:
-		pointer = POINTER_BOTTOM_LEFT;
-		break;
+		return POINTER_BOTTOM_LEFT;
 	case WINDOW_RESIZING_BOTTOM_RIGHT:
-		pointer = POINTER_BOTTOM_RIGHT;
-		break;
+		return POINTER_BOTTOM_RIGHT;
 	case WINDOW_EXTERIOR:
 	case WINDOW_TITLEBAR:
-		if (input->current_pointer_image == POINTER_DEFAULT)
-			return;
-
-		wl_input_device_attach(input->input_device, time, NULL, 0, 0);
-		input->current_pointer_image = POINTER_DEFAULT;
-		return;
+		return POINTER_LEFT_PTR;
 	default:
-		break;
+		return pointer;
 	}
+}
+
+void
+input_set_pointer_image(struct input *input, uint32_t time, int pointer)
+{
+	struct display *display = input->display;
+	struct wl_buffer *buffer;
+	cairo_surface_t *surface;
 
 	if (pointer == input->current_pointer_image)
 		return;
@@ -1264,6 +1256,7 @@ window_handle_motion(void *data, struct wl_input_device *input_device,
 						    x, y, sx, sy,
 						    window->user_data);
 
+	pointer = input_get_pointer_image_for_location(input, pointer);
 	input_set_pointer_image(input, time, pointer);
 }
 
@@ -1288,6 +1281,7 @@ window_handle_button(void *data,
 		case WINDOW_TITLEBAR:
 			if (!window->shell_surface)
 				break;
+			input_set_pointer_image(input, time, POINTER_DRAGGING);
 			wl_shell_surface_move(window->shell_surface,
 					      input_device, time);
 			break;
@@ -1399,6 +1393,7 @@ window_handle_pointer_focus(void *data,
 		item = window_find_item(window, x, y);
 		window_set_focus_item(window, item);
 
+		pointer = input_get_pointer_image_for_location(input, pointer);
 		input_set_pointer_image(input, time, pointer);
 	}
 }

@@ -96,20 +96,6 @@ struct wlsc_output {
 	void (*destroy)(struct wlsc_output *output);
 };
 
-enum wlsc_pointer_type {
-	WLSC_POINTER_BOTTOM_LEFT,
-	WLSC_POINTER_BOTTOM_RIGHT,
-	WLSC_POINTER_BOTTOM,
-	WLSC_POINTER_DRAGGING,
-	WLSC_POINTER_LEFT_PTR,
-	WLSC_POINTER_LEFT,
-	WLSC_POINTER_RIGHT,
-	WLSC_POINTER_TOP_LEFT,
-	WLSC_POINTER_TOP_RIGHT,
-	WLSC_POINTER_TOP,
-	WLSC_POINTER_IBEAM,
-};
-
 struct wlsc_input_device {
 	struct wl_input_device input_device;
 	struct wlsc_compositor *compositor;
@@ -135,14 +121,6 @@ enum wlsc_visual {
 	WLSC_ARGB_VISUAL,
 	WLSC_PREMUL_ARGB_VISUAL,
 	WLSC_RGB_VISUAL
-};
-
-struct wlsc_sprite {
-	GLuint texture;
-	EGLImageKHR image;
-	uint32_t visual;
-	int width;
-	int height;
 };
 
 struct wlsc_shader {
@@ -196,7 +174,6 @@ struct wlsc_compositor {
 	EGLConfig config;
 	GLuint fbo;
 	GLuint proj_uniform, tex_uniform;
-	struct wlsc_sprite **pointer_sprites;
 	struct wlsc_shader texture_shader;
 	struct wlsc_shader solid_shader;
 	struct wl_display *wl_display;
@@ -368,9 +345,6 @@ wlsc_surface_damage_rectangle(struct wlsc_surface *surface,
 			      int32_t x, int32_t y,
 			      int32_t width, int32_t height);
 
-void
-wlsc_input_device_set_pointer_image(struct wlsc_input_device *device,
-				    enum wlsc_pointer_type type);
 struct wlsc_surface *
 pick_surface(struct wl_input_device *device, int32_t *sx, int32_t *sy);
 

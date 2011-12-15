@@ -423,128 +423,6 @@ wlsc_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 	}
 }
 
-static void
-wlsc_sprite_attach(struct wlsc_sprite *sprite, struct wl_surface *surface)
-{
-	struct wlsc_surface *es = (struct wlsc_surface *) surface;
-	struct wlsc_compositor *ec = es->compositor;
-
-	es->pitch = sprite->width;
-	es->image = sprite->image;
-	if (sprite->image != EGL_NO_IMAGE_KHR) {
-		glBindTexture(GL_TEXTURE_2D, es->texture);
-		ec->image_target_texture_2d(GL_TEXTURE_2D, es->image);
-	} else {
-		if (es->saved_texture == 0)
-			es->saved_texture = es->texture;
-		es->texture = sprite->texture;
-	}
-
-	es->visual = sprite->visual;
-
-	if (es->buffer)
-		es->buffer = NULL;
-}
-
-enum sprite_usage {
-	SPRITE_USE_CURSOR = (1 << 0),
-};
-
-static struct wlsc_sprite *
-create_sprite_from_png(struct wlsc_compositor *ec,
-		       const char *filename, uint32_t usage)
-{
-	uint32_t *pixels, *pad;
-	struct wlsc_sprite *sprite;
-	int32_t width, height;
-	uint32_t stride;
-
-	pixels = wlsc_load_image(filename, &width, &height, &stride);
-	if (pixels == NULL)
-		return NULL;
-
-	sprite = malloc(sizeof *sprite);
-	if (sprite == NULL) {
-		free(pixels);
-		return NULL;
-	}
-
-	sprite->visual = WLSC_PREMUL_ARGB_VISUAL;
-	sprite->width = width;
-	sprite->height = height;
-	sprite->image = EGL_NO_IMAGE_KHR;
-
-	glGenTextures(1, &sprite->texture);
-	glBindTexture(GL_TEXTURE_2D, sprite->texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	if (usage & SPRITE_USE_CURSOR && ec->create_cursor_image != NULL) {
-		sprite->image = ec->create_cursor_image(ec, &sprite->width,
-							&sprite->height);
-
-		ec->image_target_texture_2d(GL_TEXTURE_2D, sprite->image);
-
-		if (sprite->width > width || sprite->height > height) {
-			pad = calloc(sprite->width * sprite->height,
-				     sizeof *pad);
-			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
-					sprite->width, sprite->height,
-					GL_BGRA_EXT, GL_UNSIGNED_BYTE, pad);
-			free(pad);
-		}
-
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height,
-				GL_BGRA_EXT, GL_UNSIGNED_BYTE, pixels);
-
-	} else {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT, width, height, 0,
-			     GL_BGRA_EXT, GL_UNSIGNED_BYTE, pixels);
-	}
-
-	free(pixels);
-
-	return sprite;
-}
-
-static const struct {
-	const char *filename;
-	int hotspot_x, hotspot_y;
-} pointer_images[] = {
-	{ DATADIR "/wayland/bottom_left_corner.png",	 6, 30 },
-	{ DATADIR "/wayland/bottom_right_corner.png",	28, 28 },
-	{ DATADIR "/wayland/bottom_side.png",		16, 20 },
-	{ DATADIR "/wayland/grabbing.png",		20, 17 },
-	{ DATADIR "/wayland/left_ptr.png",		10,  5 },
-	{ DATADIR "/wayland/left_side.png",		10, 20 },
-	{ DATADIR "/wayland/right_side.png",		30, 19 },
-	{ DATADIR "/wayland/top_left_corner.png",	 8,  8 },
-	{ DATADIR "/wayland/top_right_corner.png",	26,  8 },
-	{ DATADIR "/wayland/top_side.png",		18,  8 },
-	{ DATADIR "/wayland/xterm.png",			15, 15 }
-};
-
-static void
-create_pointer_images(struct wlsc_compositor *ec)
-{
-	int i, count;
-
-	count = ARRAY_LENGTH(pointer_images);
-	ec->pointer_sprites = malloc(count * sizeof *ec->pointer_sprites);
-	for (i = 0; i < count; i++) {
-		ec->pointer_sprites[i] =
-			create_sprite_from_png(ec,
-					       pointer_images[i].filename,
-					       SPRITE_USE_CURSOR);
-		if (!ec->pointer_sprites[i]) {
-			fprintf(stderr, "Error loading pointer image: %s\n",
-				pointer_images[i].filename);
-		}
-	}
-}
-
 static int
 texture_region(struct wlsc_surface *es, pixman_region32_t *region)
 {
@@ -800,6 +678,9 @@ wlsc_output_set_cursor(struct wlsc_output *output,
 	struct wlsc_input_device *device = (struct wlsc_input_device *) dev;
 	pixman_region32_t cursor_region;
 	int use_hardware_cursor = 1, prior_was_hardware;
+
+	if (device->sprite == NULL)
+		return;
 
 	pixman_region32_init_rect(&cursor_region,
 				  device->sprite->x, device->sprite->y,
@@ -1146,54 +1027,6 @@ const static struct wl_surface_interface surface_interface = {
 };
 
 static void
-wlsc_input_device_attach(struct wlsc_input_device *device,
-			 int x, int y, int width, int height)
-{
-	wlsc_surface_damage_below(device->sprite);
-
-	device->hotspot_x = x;
-	device->hotspot_y = y;
-
-	device->sprite->x = device->input_device.x - device->hotspot_x;
-	device->sprite->y = device->input_device.y - device->hotspot_y;
-	device->sprite->width = width;
-	device->sprite->height = height;
-
-	wlsc_surface_damage(device->sprite);
-}
-
-static void
-wlsc_input_device_attach_buffer(struct wlsc_input_device *device,
-				struct wl_buffer *buffer, int x, int y)
-{
-	wlsc_buffer_attach(buffer, &device->sprite->surface);
-	wlsc_input_device_attach(device, x, y, buffer->width, buffer->height);
-}
-
-static void
-wlsc_input_device_attach_sprite(struct wlsc_input_device *device,
-				struct wlsc_sprite *sprite, int x, int y)
-{
-	if (!sprite)
-		return;
-
-	wlsc_sprite_attach(sprite, &device->sprite->surface);
-	wlsc_input_device_attach(device, x, y, sprite->width, sprite->height);
-}
-
-WL_EXPORT void
-wlsc_input_device_set_pointer_image(struct wlsc_input_device *device,
-				    enum wlsc_pointer_type type)
-{
-	struct wlsc_compositor *compositor = device->compositor;
-
-	wlsc_input_device_attach_sprite(device,
-					compositor->pointer_sprites[type],
-					pointer_images[type].hotspot_x,
-					pointer_images[type].hotspot_y);
-}
-
-static void
 compositor_create_surface(struct wl_client *client,
 			  struct wl_resource *resource, uint32_t id)
 {
@@ -1401,12 +1234,14 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 					       time, x, y, sx, sy);
 	}
 
-	wlsc_surface_damage_below(wd->sprite);
+	if (wd->sprite) {
+		wlsc_surface_damage_below(wd->sprite);
 
-	wd->sprite->x = device->x - wd->hotspot_x;
-	wd->sprite->y = device->y - wd->hotspot_y;
+		wd->sprite->x = device->x - wd->hotspot_x;
+		wd->sprite->y = device->y - wd->hotspot_y;
 
-	wlsc_surface_damage(wd->sprite);
+		wlsc_surface_damage(wd->sprite);
+	}
 }
 
 WL_EXPORT void
@@ -1604,16 +1439,11 @@ notify_pointer_focus(struct wl_input_device *device,
 						  time, x, y, sx, sy);
 
 		compositor->focus = 1;
-
-		wd->sprite->x = device->x - wd->hotspot_x;
-		wd->sprite->y = device->y - wd->hotspot_y;
 	} else {
 		wl_input_device_set_pointer_focus(device, NULL,
 						  time, 0, 0, 0, 0);
 		compositor->focus = 0;
 	}
-
-	wlsc_surface_damage(wd->sprite);
 }
 
 WL_EXPORT void
@@ -1664,25 +1494,44 @@ input_device_attach(struct wl_client *client,
 		    struct wl_resource *buffer_resource, int32_t x, int32_t y)
 {
 	struct wlsc_input_device *device = resource->data;
+	struct wlsc_compositor *compositor = device->compositor;
 	struct wl_buffer *buffer;
 
 	if (time < device->input_device.pointer_focus_time)
 		return;
-#if 0
 	if (device->input_device.pointer_focus == NULL)
 		return;
 	if (device->input_device.pointer_focus->resource.client != client)
 		return;
-#endif
 
-	if (buffer_resource) {
-		buffer = buffer_resource->data;
-		wlsc_input_device_attach_buffer(device, buffer, x, y);
-	} else {
-		wlsc_input_device_set_pointer_image(device,
-						    WLSC_POINTER_LEFT_PTR);
+	if (device->sprite)
+		wlsc_surface_damage_below(device->sprite);
+
+	if (!buffer_resource) {
+		destroy_surface(&device->sprite->surface.resource);
+		device->sprite = NULL;
 		return;
 	}
+
+	if (!device->sprite) {
+		device->sprite =
+			wlsc_surface_create(compositor,
+					    device->input_device.x,
+					    device->input_device.y, 32, 32);
+		wl_list_init(&device->sprite->link);
+	}
+
+	buffer = buffer_resource->data;
+	wlsc_buffer_attach(buffer, &device->sprite->surface);
+
+	device->hotspot_x = x;
+	device->hotspot_y = y;
+	device->sprite->width = buffer->width;
+	device->sprite->height = buffer->height;
+	device->sprite->x = device->input_device.x - device->hotspot_x;
+	device->sprite->y = device->input_device.y - device->hotspot_y;
+
+	wlsc_surface_damage(device->sprite);
 }
 
 const static struct wl_input_device_interface input_device_interface = {
@@ -1718,10 +1567,7 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 	wl_display_add_global(ec->wl_display, &wl_input_device_interface,
 			      device, bind_input_device);
 
-	device->sprite = wlsc_surface_create(ec,
-					     device->input_device.x,
-					     device->input_device.y, 32, 32);
-	wl_list_insert(&ec->surface_list, &device->sprite->link);
+	device->sprite = NULL;
 
 	device->compositor = ec;
 	device->hotspot_x = 16;
@@ -1732,7 +1578,6 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 
 	wl_list_insert(ec->input_device_list.prev, &device->link);
 
-	wlsc_input_device_set_pointer_image(device, WLSC_POINTER_LEFT_PTR);
 	device->selection_data_source = NULL;
 }
 
@@ -2050,8 +1895,6 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	wlsc_compositor_add_binding(ec, KEY_BACKSPACE, 0,
 				    MODIFIER_CTRL | MODIFIER_ALT,
 				    terminate_binding, ec);
-
-	create_pointer_images(ec);
 
 	screenshooter_create(ec);
 

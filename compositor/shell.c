@@ -174,7 +174,6 @@ wlsc_surface_move(struct wlsc_surface *es,
 					&move->grab, &es->surface, time) < 0)
 		return 0;
 
-	wlsc_input_device_set_pointer_image(wd, WLSC_POINTER_DRAGGING);
 	wl_input_device_set_pointer_focus(&wd->input_device,
 					  NULL, time, 0, 0, 0, 0);
 
@@ -253,7 +252,6 @@ wlsc_surface_resize(struct shell_surface *shsurf,
 {
 	struct wlsc_resize_grab *resize;
 	struct wlsc_surface *es = shsurf->surface;
-	enum wlsc_pointer_type pointer = WLSC_POINTER_LEFT_PTR;
 
 	/* FIXME: Reject if fullscreen */
 
@@ -273,38 +271,10 @@ wlsc_surface_resize(struct shell_surface *shsurf,
 	    (edges & 3) == 3 || (edges & 12) == 12)
 		return 0;
 
-	switch (edges) {
-	case WL_SHELL_SURFACE_RESIZE_TOP:
-		pointer = WLSC_POINTER_TOP;
-		break;
-	case WL_SHELL_SURFACE_RESIZE_BOTTOM:
-		pointer = WLSC_POINTER_BOTTOM;
-		break;
-	case WL_SHELL_SURFACE_RESIZE_LEFT:
-		pointer = WLSC_POINTER_LEFT;
-		break;
-	case WL_SHELL_SURFACE_RESIZE_TOP_LEFT:
-		pointer = WLSC_POINTER_TOP_LEFT;
-		break;
-	case WL_SHELL_SURFACE_RESIZE_BOTTOM_LEFT:
-		pointer = WLSC_POINTER_BOTTOM_LEFT;
-		break;
-	case WL_SHELL_SURFACE_RESIZE_RIGHT:
-		pointer = WLSC_POINTER_RIGHT;
-		break;
-	case WL_SHELL_SURFACE_RESIZE_TOP_RIGHT:
-		pointer = WLSC_POINTER_TOP_RIGHT;
-		break;
-	case WL_SHELL_SURFACE_RESIZE_BOTTOM_RIGHT:
-		pointer = WLSC_POINTER_BOTTOM_RIGHT;
-		break;
-	}
-
 	if (wl_input_device_update_grab(&wd->input_device,
 					&resize->grab, &es->surface, time) < 0)
 		return 0;
 
-	wlsc_input_device_set_pointer_image(wd, pointer);
 	wl_input_device_set_pointer_focus(&wd->input_device,
 					  NULL, time, 0, 0, 0, 0);
 
