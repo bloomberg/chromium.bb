@@ -463,6 +463,11 @@ content::JavaScriptDialogCreator* ExtensionHost::GetJavaScriptDialogCreator() {
   return GetJavaScriptDialogCreatorInstance();
 }
 
+void ExtensionHost::RunFileChooser(TabContents* tab,
+                                   const content::FileChooserParams& params) {
+  Browser::RunFileChooserHelper(tab, params);
+}
+
 void ExtensionHost::AddNewContents(TabContents* source,
                                    TabContents* new_contents,
                                    WindowOpenDisposition disposition,

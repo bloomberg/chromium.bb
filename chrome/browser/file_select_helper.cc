@@ -301,8 +301,12 @@ void FileSelectHelper::RunFileChooserOnFileThread(
 
 void FileSelectHelper::RunFileChooserOnUIThread(
     const content::FileChooserParams& params) {
-  if (!render_view_host_ || !tab_contents_)
+  if (!render_view_host_ || !tab_contents_) {
+    // If the renderer was destroyed before we started, just cancel the
+    // operation.
+    RunFileChooserEnd();
     return;
+  }
 
   if (!select_file_dialog_.get())
     select_file_dialog_ = SelectFileDialog::Create(this);

@@ -124,6 +124,8 @@ class ExtensionHost : public TabContentsDelegate,
                                    const gfx::Size& pref_size) OVERRIDE;
   virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator()
       OVERRIDE;
+  virtual void RunFileChooser(
+      TabContents* tab, const content::FileChooserParams& params) OVERRIDE;
   virtual void AddNewContents(TabContents* source,
                               TabContents* new_contents,
                               WindowOpenDisposition disposition,
