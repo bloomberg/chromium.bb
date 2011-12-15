@@ -29,7 +29,7 @@ class TooltipManagerAura;
 
 class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
                                       public aura::WindowDelegate,
-                                      public aura::ActivationDelegate,
+                                      public aura::client::ActivationDelegate,
                                       public aura::client::DragDropDelegate {
  public:
   explicit NativeWidgetAura(internal::NativeWidgetDelegate* delegate);
@@ -140,7 +140,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void OnWindowDestroyed() OVERRIDE;
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
 
-  // Overridden from aura::ActivationDelegate:
+  // Overridden from aura::client::ActivationDelegate:
   virtual bool ShouldActivate(aura::Event* event) OVERRIDE;
   virtual void OnActivated() OVERRIDE;
   virtual void OnLostActive() OVERRIDE;

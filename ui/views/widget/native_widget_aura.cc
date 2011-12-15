@@ -93,7 +93,7 @@ class NativeWidgetAura::ActiveWindowObserver : public aura::WindowObserver {
     if (key != aura::kRootWindowActiveWindow)
       return;
     aura::Window* active =
-        aura::ActivationClient::GetActivationClient()->GetActiveWindow();
+        aura::client::GetActivationClient()->GetActiveWindow();
     if (!active || (active != host_->window_ &&
                     active->transient_parent() != host_->window_)) {
       host_->delegate_->EnableInactiveRendering();
@@ -187,7 +187,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     aura::client::SetDragDropDelegate(window_, this);
   }
 
-  aura::ActivationDelegate::SetActivationDelegate(window_, this);
+  aura::client::SetActivationDelegate(window_, this);
 
   if (window_type == Widget::InitParams::TYPE_MENU ||
       window_type == Widget::InitParams::TYPE_TOOLTIP)
@@ -442,16 +442,15 @@ bool NativeWidgetAura::IsVisible() const {
 }
 
 void NativeWidgetAura::Activate() {
-  aura::ActivationClient::GetActivationClient()->ActivateWindow(window_);
+  aura::client::GetActivationClient()->ActivateWindow(window_);
 }
 
 void NativeWidgetAura::Deactivate() {
-  aura::ActivationClient::GetActivationClient()->DeactivateWindow(window_);
+  aura::client::GetActivationClient()->DeactivateWindow(window_);
 }
 
 bool NativeWidgetAura::IsActive() const {
-  return aura::ActivationClient::GetActivationClient()->GetActiveWindow() ==
-      window_;
+  return aura::client::GetActivationClient()->GetActiveWindow() == window_;
 }
 
 void NativeWidgetAura::SetAlwaysOnTop(bool on_top) {

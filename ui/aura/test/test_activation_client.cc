@@ -13,14 +13,14 @@ namespace test {
 // TestActivationClient, public:
 
 TestActivationClient::TestActivationClient() : active_window_(NULL) {
-  ActivationClient::SetActivationClient(this);
+  client::SetActivationClient(this);
 }
 
 TestActivationClient::~TestActivationClient() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TestActivationClient, ActivationClient implementation:
+// TestActivationClient, client::ActivationClient implementation:
 
 void TestActivationClient::ActivateWindow(Window* window) {
   if (active_window_)

@@ -8,16 +8,16 @@
 #include "ui/aura/root_window.h"
 
 namespace aura {
+namespace client {
 
-// static
-void ActivationClient::SetActivationClient(ActivationClient* client) {
+void SetActivationClient(ActivationClient* client) {
   RootWindow::GetInstance()->SetProperty(kRootWindowActivationClient, client);
 }
 
-// static
-ActivationClient* ActivationClient::GetActivationClient() {
+ActivationClient* GetActivationClient() {
   return reinterpret_cast<ActivationClient*>(
       RootWindow::GetInstance()->GetProperty(kRootWindowActivationClient));
 }
 
+}  // namespace client
 }  // namespace aura

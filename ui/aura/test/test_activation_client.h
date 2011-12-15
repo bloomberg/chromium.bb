@@ -14,12 +14,13 @@
 namespace aura {
 namespace test {
 
-class TestActivationClient : public ActivationClient, public WindowObserver {
+class TestActivationClient : public client::ActivationClient,
+                             public WindowObserver {
  public:
   TestActivationClient();
   virtual ~TestActivationClient();
 
-  // Overridden from ActivationClient:
+  // Overridden from client::ActivationClient:
   virtual void ActivateWindow(Window* window) OVERRIDE;
   virtual void DeactivateWindow(Window* window) OVERRIDE;
   virtual Window* GetActiveWindow() OVERRIDE;

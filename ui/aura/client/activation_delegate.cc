@@ -8,17 +8,16 @@
 #include "ui/aura/window.h"
 
 namespace aura {
+namespace client {
 
-// static
-void ActivationDelegate::SetActivationDelegate(Window* window,
-                                               ActivationDelegate* delegate) {
+void SetActivationDelegate(Window* window, ActivationDelegate* delegate) {
   window->SetProperty(kActivationDelegateKey, delegate);
 }
 
-// static
-ActivationDelegate* ActivationDelegate::GetActivationDelegate(Window* window) {
+ActivationDelegate* GetActivationDelegate(Window* window) {
   return reinterpret_cast<ActivationDelegate*>(
       window->GetProperty(kActivationDelegateKey));
 }
 
+}  // namespace client
 }  // namespace aura

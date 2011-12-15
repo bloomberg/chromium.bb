@@ -9,16 +9,12 @@
 #include "ui/aura/aura_export.h"
 
 namespace aura {
-
 class Window;
+namespace client {
 
 // An interface implemented by an object that manages window activation.
 class AURA_EXPORT ActivationClient {
  public:
-  // Sets/Gets the activation client on the RootWindow.
-  static void SetActivationClient(ActivationClient* client);
-  static ActivationClient* GetActivationClient();
-
   // Activates |window|. If |window| is NULL, nothing happens.
   virtual void ActivateWindow(Window* window) = 0;
 
@@ -37,6 +33,11 @@ class AURA_EXPORT ActivationClient {
   virtual ~ActivationClient() {}
 };
 
+// Sets/Gets the activation client on the RootWindow.
+AURA_EXPORT void SetActivationClient(ActivationClient* client);
+AURA_EXPORT ActivationClient* GetActivationClient();
+
+}  // namespace clients
 }  // namespace aura
 
 #endif  // UI_AURA_CLIENT_ACTIVATION_CLIENT_H_

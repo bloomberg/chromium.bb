@@ -100,7 +100,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       skip_schedule_paint_(false) {
   host_->SetView(this);
   window_->SetProperty(aura::kTooltipTextKey, &tooltip_);
-  aura::ActivationDelegate::SetActivationDelegate(window_, this);
+  aura::client::SetActivationDelegate(window_, this);
 }
 
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
@@ -579,7 +579,7 @@ void RenderWidgetHostViewAura::OnWindowVisibilityChanged(bool visible) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostViewAura, aura::ActivationDelegate implementation:
+// RenderWidgetHostViewAura, aura::client::ActivationDelegate implementation:
 
 bool RenderWidgetHostViewAura::ShouldActivate(aura::Event* event) {
   return false;

@@ -34,7 +34,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       public ui::CompositorObserver,
 #endif
       public aura::WindowDelegate,
-      public aura::ActivationDelegate {
+      public aura::client::ActivationDelegate {
  public:
   explicit RenderWidgetHostViewAura(RenderWidgetHost* host);
   virtual ~RenderWidgetHostViewAura();
@@ -123,7 +123,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void OnWindowDestroyed() OVERRIDE;
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
 
-  // Overridden from aura::ActivationDelegate:
+  // Overridden from aura::client::ActivationDelegate:
   virtual bool ShouldActivate(aura::Event* event) OVERRIDE;
   virtual void OnActivated() OVERRIDE;
   virtual void OnLostActive() OVERRIDE;

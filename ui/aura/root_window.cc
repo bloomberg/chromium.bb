@@ -477,9 +477,8 @@ void RootWindow::SetFocusedWindow(Window* focused_window) {
   // The NULL-check of |focused)window| is essential here before asking the
   // activation client, since it is valid to clear the focus by calling
   // SetFocusedWindow() to NULL.
-  if (focused_window && ActivationClient::GetActivationClient() &&
-      !ActivationClient::GetActivationClient()->CanFocusWindow(
-          focused_window)) {
+  if (focused_window && client::GetActivationClient() &&
+      !client::GetActivationClient()->CanFocusWindow(focused_window)) {
     return;
   }
 

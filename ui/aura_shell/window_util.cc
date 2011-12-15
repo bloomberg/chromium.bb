@@ -21,11 +21,11 @@ bool IsWindowMaximized(aura::Window* window) {
 }
 
 void ActivateWindow(aura::Window* window) {
-  aura::ActivationClient::GetActivationClient()->ActivateWindow(window);
+  aura::client::GetActivationClient()->ActivateWindow(window);
 }
 
 void DeactivateWindow(aura::Window* window) {
-  aura::ActivationClient::GetActivationClient()->DeactivateWindow(window);
+  aura::client::GetActivationClient()->DeactivateWindow(window);
 }
 
 bool IsActiveWindow(aura::Window* window) {
@@ -33,7 +33,7 @@ bool IsActiveWindow(aura::Window* window) {
 }
 
 aura::Window* GetActiveWindow() {
-  return aura::ActivationClient::GetActivationClient()->GetActiveWindow();
+  return aura::client::GetActivationClient()->GetActiveWindow();
 }
 
 aura::Window* GetActivatableWindow(aura::Window* window) {

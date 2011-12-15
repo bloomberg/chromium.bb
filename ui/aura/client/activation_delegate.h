@@ -9,19 +9,14 @@
 #include "ui/aura/aura_export.h"
 
 namespace aura {
-
 class Event;
 class Window;
+namespace client {
 
 // An interface implemented by an object that configures and responds to changes
 // to a window's activation state.
 class AURA_EXPORT ActivationDelegate {
  public:
-  // Sets/Gets the ActivationDelegate on the Window. No ownership changes.
-  static void SetActivationDelegate(Window* window,
-                                    ActivationDelegate* delegate);
-  static ActivationDelegate* GetActivationDelegate(Window* window);
-
   // Returns true if the window should be activated. |event| is either the mouse
   // event supplied if the activation is the result of a mouse, or the touch
   // event if the activation is the result of a touch, or NULL if activation is
@@ -38,6 +33,12 @@ class AURA_EXPORT ActivationDelegate {
   virtual ~ActivationDelegate() {}
 };
 
+// Sets/Gets the ActivationDelegate on the Window. No ownership changes.
+AURA_EXPORT void SetActivationDelegate(Window* window,
+                                       ActivationDelegate* delegate);
+AURA_EXPORT ActivationDelegate* GetActivationDelegate(Window* window);
+
+}  // namespace client
 }  // namespace aura
 
 #endif  // UI_AURA_CLIENT_ACTIVATION_DELEGATE_H_

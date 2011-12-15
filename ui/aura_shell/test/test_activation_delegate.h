@@ -19,7 +19,7 @@ namespace test {
 
 // A test ActivationDelegate that can be used to track activation changes for
 // an aura::Window.
-class TestActivationDelegate : public aura::ActivationDelegate {
+class TestActivationDelegate : public aura::client::ActivationDelegate {
  public:
   TestActivationDelegate();
   explicit TestActivationDelegate(bool activate);
@@ -37,7 +37,7 @@ class TestActivationDelegate : public aura::ActivationDelegate {
     window_was_active_ = false;
   }
 
-  // Overridden from ActivationDelegate:
+  // Overridden from client::ActivationDelegate:
   virtual bool ShouldActivate(aura::Event* event) OVERRIDE;
   virtual void OnActivated() OVERRIDE;
   virtual void OnLostActive() OVERRIDE;

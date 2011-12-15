@@ -37,9 +37,8 @@ bool SupportsChildActivation(aura::Window* window) {
 bool CanActivateWindow(aura::Window* window) {
   return window &&
       window->IsVisible() &&
-      (!aura::ActivationDelegate::GetActivationDelegate(window) ||
-        aura::ActivationDelegate::GetActivationDelegate(window)->
-            ShouldActivate(NULL)) &&
+      (!aura::client::GetActivationDelegate(window) ||
+        aura::client::GetActivationDelegate(window)->ShouldActivate(NULL)) &&
       SupportsChildActivation(window->parent());
 }
 
@@ -51,7 +50,7 @@ bool CanActivateWindow(aura::Window* window) {
 ActivationController::ActivationController()
     : updating_activation_(false),
       default_container_for_test_(NULL) {
-  aura::ActivationClient::SetActivationClient(this);
+  aura::client::SetActivationClient(this);
   aura::RootWindow::GetInstance()->AddRootWindowObserver(this);
 }
 
@@ -77,7 +76,7 @@ aura::Window* ActivationController::GetActivatableWindow(aura::Window* window) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// StackingController, aura::ActivationClient implementation:
+// ActivationController, aura::client::ActivationClient implementation:
 
 void ActivationController::ActivateWindow(aura::Window* window) {
   // Prevent recursion when called from focus.
@@ -103,12 +102,12 @@ void ActivationController::ActivateWindow(aura::Window* window) {
   // Invoke OnLostActive after we've changed the active window. That way if the
   // delegate queries for active state it doesn't think the window is still
   // active.
-  if (old_active && aura::ActivationDelegate::GetActivationDelegate(old_active))
-    aura::ActivationDelegate::GetActivationDelegate(old_active)->OnLostActive();
+  if (old_active && aura::client::GetActivationDelegate(old_active))
+    aura::client::GetActivationDelegate(old_active)->OnLostActive();
   if (window) {
     window->parent()->StackChildAtTop(window);
-    if (aura::ActivationDelegate::GetActivationDelegate(window))
-      aura::ActivationDelegate::GetActivationDelegate(window)->OnActivated();
+    if (aura::client::GetActivationDelegate(window))
+      aura::client::GetActivationDelegate(window)->OnActivated();
   }
 }
 

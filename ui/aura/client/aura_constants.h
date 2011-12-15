@@ -31,7 +31,7 @@ AURA_EXPORT extern const char kModalKey[];
 AURA_EXPORT extern const char kRestoreBoundsKey[];
 
 // A property key to store a client that handles window activation. The type of
-// the value is |aura::ActivationClient*|.
+// the value is |aura::client::ActivationClient*|.
 AURA_EXPORT extern const char kRootWindowActivationClient[];
 
 // A property key to store what the client defines as the active window on the

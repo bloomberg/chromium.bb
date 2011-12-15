@@ -18,9 +18,10 @@ namespace aura_shell {
 namespace internal {
 
 // Exported for unit tests.
-class AURA_SHELL_EXPORT ActivationController : public aura::ActivationClient,
-                                               public aura::WindowObserver,
-                                               public aura::RootWindowObserver {
+class AURA_SHELL_EXPORT ActivationController
+    : public aura::client::ActivationClient,
+      public aura::WindowObserver,
+      public aura::RootWindowObserver {
  public:
   ActivationController();
   virtual ~ActivationController();
@@ -29,7 +30,7 @@ class AURA_SHELL_EXPORT ActivationController : public aura::ActivationClient,
   // activation.
   static aura::Window* GetActivatableWindow(aura::Window* window);
 
-  // Overridden from aura::ActivationClient:
+  // Overridden from aura::client::ActivationClient:
   virtual void ActivateWindow(aura::Window* window) OVERRIDE;
   virtual void DeactivateWindow(aura::Window* window) OVERRIDE;
   virtual aura::Window* GetActiveWindow() OVERRIDE;
