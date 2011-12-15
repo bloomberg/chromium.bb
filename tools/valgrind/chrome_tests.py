@@ -497,7 +497,7 @@ def _main():
                          "instead of /tmp.\nThis can be useful for tool "
                          "developers/maintainers.\nPlease note that the <tool>"
                          ".logs directory will be clobbered on tool startup.")
-  parser.add_option("-n", "--num_tests", default=500, type="int",
+  parser.add_option("-n", "--num_tests", default=1500, type="int",
                     help="for layout tests: # of subtests per run.  0 for all.")
 
   options, args = parser.parse_args()
