@@ -207,7 +207,6 @@ int main() {
   }
   ns = -1;
   nacl_nameservice(&ns);
-  printf("ns = %d\n", ns);
   assert(-1 != ns);
 
   connected_socket = imc_connect(ns);
@@ -216,7 +215,6 @@ int main() {
     fprintf(stderr, "Srpc client channel ctor failed\n");
     return 1;
   }
-  printf("NaClSrpcClientCtor succeeded\n");
   close(ns);
 
   if (!NaClSrpcAcceptClientConnection(srpc_methods)) {

@@ -28,6 +28,7 @@
 #include "native_client/src/trusted/reverse_service/reverse_service.h"
 #include "native_client/src/trusted/sel_universal/pepper_emu_handler.h"
 #include "native_client/src/trusted/sel_universal/pnacl_emu_handler.h"
+#include "native_client/src/trusted/sel_universal/reverse_emulate.h"
 #include "native_client/src/trusted/sel_universal/replay_handler.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 
@@ -66,7 +67,7 @@ static const char* kUsage =
     "  --command_file <file>\n"
     "  --var <tag> <value>\n"
     "  --url_alias <url> <filename>\n"
-    "  --rpc_services\n"
+    "  --uses_reverse_service\n"
     "\n"
     "The following sel_ldr arguments might be useful:\n"
     "  -v                    increase verbosity\n"
@@ -85,7 +86,7 @@ static vector<string> initial_commands;
 static bool abort_on_error = false;
 static bool silence_nexe = false;
 static string command_prefix = "";
-static bool rpc_services = false;
+static bool uses_reverse_service = false;
 
 // When given argc and argv this function (a) extracts the nexe argument,
 // (b) populates sel_ldr_argv with sel_ldr arguments, and (c) populates
@@ -162,8 +163,8 @@ static nacl::string ProcessArguments(int argc,
       const string val = string(argv[i + 2]);
       i += 2;
       initial_vars[tag] = val;
-    } else if (flag == "--rpc_services") {
-      rpc_services = true;
+    } else if (flag == "--uses_reverse_service") {
+      uses_reverse_service = true;
     } else if (flag == "--") {
       // Done processing sel_ldr args.  The first argument after '--' is the
       // nexe.
@@ -243,36 +244,8 @@ int raii_main(int argc, char* argv[]) {
 
   delete host_file;
 
-  nacl::scoped_ptr_refcount<nacl::ReverseService> rev_svc;
-
-  if (rpc_services) {
-    NaClLog(1, "Launching reverse RPC services\n");
-
-    NaClSrpcResultCodes rpc_result;
-    NaClDesc* h;
-    rpc_result = NaClSrpcInvokeBySignature(&command_channel,
-                                           "reverse_setup::h",
-                                           &h);
-    if (NACL_SRPC_RESULT_OK != rpc_result) {
-      NaClLog(LOG_ERROR, "sel_universal: reverse setup failed\n");
-      exit(1);
-    }
-    nacl::scoped_ptr<nacl::DescWrapper> conn_cap(launcher.WrapCleanup(h));
-    if (conn_cap == NULL) {
-      NaClLog(LOG_ERROR, "sel_universal: reverse desc wrap failed\n");
-      exit(1);
-    }
-
-    rev_svc.reset(new nacl::ReverseService(conn_cap.get(), NULL));
-    if (rev_svc == NULL) {
-      NaClLog(LOG_ERROR, "sel_universal: reverse service ctor failed\n");
-      exit(1);
-    }
-    conn_cap.release();
-    if (!rev_svc->Start()) {
-      NaClLog(LOG_ERROR, "sel_universal: reverse service start failed\n");
-      exit(1);
-    }
+  if (uses_reverse_service) {
+    ReverseEmulateInit(&command_channel, &launcher);
   }
 
   if (!launcher.StartModuleAndSetupAppChannel(&command_channel, &channel)) {
@@ -316,6 +289,10 @@ int raii_main(int argc, char* argv[]) {
   loop.AddHandler("pnacl_emu_initialize", HandlerPnaclEmuInitialize);
   loop.AddHandler("pnacl_emu_add_varname_mapping",
                   HandlerPnaclEmuAddVarnameMapping);
+  loop.AddHandler("reverse_service_add_manifest_mapping",
+                  HandlerReverseEmuAddManifestMapping);
+  loop.AddHandler("reverse_service_dump_manifest_mappings",
+                  HandlerReverseEmuDumpManifestMappings);
 
   loop.AddHandler("pepper_emu_initialize", HandlerPepperEmuInitialize);
   loop.AddHandler("pepper_emu_event_loop", HandlerPepperEmuEventLoop);
@@ -337,8 +314,8 @@ int raii_main(int argc, char* argv[]) {
   NaClSrpcDtor(&command_channel);
   NaClSrpcDtor(&channel);
 
-  if (rev_svc != NULL) {
-    rev_svc->WaitForServiceThreadsToExit();
+  if (uses_reverse_service) {
+    ReverseEmulateFini();
   }
 
   return success ? 0 : -1;

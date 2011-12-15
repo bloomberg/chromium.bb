@@ -22,6 +22,7 @@
                     'pnacl_emu_coordinator.cc',
                     'pnacl_emu_handler.cc',
                     'primitives_simple.cc',
+                    'reverse_emulate.cc',
                     'replay_handler.cc',
                     'rpc_universal_system.cc',
                     'rpc_universal.cc',

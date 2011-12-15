@@ -36,6 +36,22 @@ srpc_ns_nexe = env.ComponentProgram(srpc_ns_nexe_name,
 env.Publish(srpc_ns_nexe_name, 'run',
             ['srpc_nameservice_test.html'])
 
+# sel_universal test
+
+node = env.SelUniversalTest(
+    'srpc_nameservice_test.out',
+    srpc_ns_nexe,
+    sel_universal_flags=['--uses_reverse_service',
+                         '--command_file',
+                         env.File('srpc_nameservice_test.stdin')],
+    stdout_golden=env.File('srpc_nameservice_test.stdout'),
+    # Slight misnomer: actually just enables the IRT.
+    uses_ppapi=True
+    )
+env.AddNodeToTestSuite(node,
+                       ['small_tests'],
+                       'run_srpc_nameservice_test')
+
 # chrome_browser_tests
 
 node = env.PPAPIBrowserTester(
