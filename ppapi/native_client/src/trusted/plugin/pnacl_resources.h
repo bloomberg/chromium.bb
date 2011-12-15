@@ -34,9 +34,9 @@ class PnaclResources {
                  const pp::CompletionCallback& all_loaded_callback)
       : plugin_(plugin),
         coordinator_(coordinator),
+        resource_base_url_(resource_base_url),
         resource_urls_(resource_urls),
-        all_loaded_callback_(all_loaded_callback),
-        resource_base_url_(resource_base_url) {
+        all_loaded_callback_(all_loaded_callback) {
     callback_factory_.Initialize(this);
   }
 
