@@ -199,11 +199,15 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
   if (pending > limit) {
     Flush();
   } else if (commands_issued_ % kCommandsPerFlushCheck == 0) {
+#if !defined(OS_ANDROID)
     // Allow this command buffer to be pre-empted by another if a "reasonable"
-    // amount of work has been done.
+    // amount of work has been done. On highend machines, this reduces the
+    // latency of GPU commands. However, on Android, this can cause the
+    // kernel to thrash between generating GPU commands and executing them.
     clock_t current_time = clock();
     if (current_time - last_flush_time_ > kFlushDelay * CLOCKS_PER_SEC)
       Flush();
+#endif
   }
 }
 
