@@ -77,9 +77,8 @@ class ProxyResolvingClientSocket : public net::StreamSocket {
   void ReportSuccessfulProxyConnection();
 
   // Callbacks passed to net APIs.
-  net::OldCompletionCallbackImpl<ProxyResolvingClientSocket>
-      proxy_resolve_callback_;
-  net::OldCompletionCallbackImpl<ProxyResolvingClientSocket> connect_callback_;
+  net::CompletionCallback proxy_resolve_callback_;
+  net::CompletionCallback connect_callback_;
 
   scoped_refptr<net::HttpNetworkSession> network_session_;
 

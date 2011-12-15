@@ -276,12 +276,11 @@ class MockHttpTransactionFactory : public net::HttpTransactionFactory {
                                                        false,
                                                        false);
     net::ClientSocketHandle* connection = new net::ClientSocketHandle;
-    EXPECT_EQ(net::OK, connection->Init(host_port_pair_.ToString(),
-                                        transport_params_,
-                                        net::MEDIUM,
-                                        NULL,
-                                        http_session_->GetTransportSocketPool(),
-                                        net::BoundNetLog()));
+    EXPECT_EQ(net::OK,
+              connection->Init(host_port_pair_.ToString(), transport_params_,
+                               net::MEDIUM, net::CompletionCallback(),
+                               http_session_->GetTransportSocketPool(),
+                               net::BoundNetLog()));
     EXPECT_EQ(net::OK,
               session_->InitializeWithSocket(connection, false, net::OK));
   }

@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "googleurl/src/gurl.h"
@@ -24,10 +25,12 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
     const net::SSLConfig& ssl_config,
     const net::HostPortPair& dest_host_port_pair)
-        : proxy_resolve_callback_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
-                        &ProxyResolvingClientSocket::ProcessProxyResolveDone),
-          connect_callback_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
-                            &ProxyResolvingClientSocket::ProcessConnectDone),
+        : ALLOW_THIS_IN_INITIALIZER_LIST(proxy_resolve_callback_(
+              base::Bind(&ProxyResolvingClientSocket::ProcessProxyResolveDone,
+                         base::Unretained(this)))),
+          ALLOW_THIS_IN_INITIALIZER_LIST(connect_callback_(
+              base::Bind(&ProxyResolvingClientSocket::ProcessConnectDone,
+                         base::Unretained(this)))),
           ssl_config_(ssl_config),
           pac_request_(NULL),
           dest_host_port_pair_(dest_host_port_pair),
@@ -109,7 +112,7 @@ int ProxyResolvingClientSocket::Connect(
   int status = network_session_->proxy_service()->ResolveProxy(
       url,
       &proxy_info_,
-      &proxy_resolve_callback_,
+      proxy_resolve_callback_,
       &pac_request_,
       bound_net_log_);
   if (status != net::ERR_IO_PENDING) {
@@ -169,14 +172,8 @@ void ProxyResolvingClientSocket::ProcessProxyResolveDone(int status) {
   transport_.reset(new net::ClientSocketHandle);
   // Now that we have resolved the proxy, we need to connect.
   status = net::InitSocketHandleForRawConnect(
-      dest_host_port_pair_,
-      network_session_.get(),
-      proxy_info_,
-      ssl_config_,
-      ssl_config_,
-      bound_net_log_,
-      transport_.get(),
-      &connect_callback_);
+      dest_host_port_pair_, network_session_.get(), proxy_info_, ssl_config_,
+      ssl_config_, bound_net_log_, transport_.get(), connect_callback_);
   if (status != net::ERR_IO_PENDING) {
     // Since this method is always called asynchronously. it is OK to call
     // ProcessConnectDone synchronously.
@@ -254,7 +251,7 @@ int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
 
   GURL url("http://" + dest_host_port_pair_.ToString());
   int rv = network_session_->proxy_service()->ReconsiderProxyAfterError(
-      url, &proxy_info_, &proxy_resolve_callback_, &pac_request_,
+      url, &proxy_info_, proxy_resolve_callback_, &pac_request_,
       bound_net_log_);
   if (rv == net::OK || rv == net::ERR_IO_PENDING) {
     CloseTransportSocket();

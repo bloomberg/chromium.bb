@@ -264,11 +264,11 @@ class SpdyWebSocketStreamTest : public testing::Test {
     EXPECT_TRUE(spdy_session_pool->HasSession(host_port_proxy_pair_));
     transport_params_ = new TransportSocketParams(host_port_pair_, MEDIUM,
                                                   false, false);
-    TestOldCompletionCallback callback;
+    TestCompletionCallback callback;
     scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
     EXPECT_EQ(ERR_IO_PENDING,
               connection->Init(host_port_pair_.ToString(), transport_params_,
-                               MEDIUM, &callback,
+                               MEDIUM, callback.callback(),
                                http_session_->GetTransportSocketPool(),
                                BoundNetLog()));
     EXPECT_EQ(OK, callback.WaitForResult());
