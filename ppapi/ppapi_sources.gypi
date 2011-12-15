@@ -243,6 +243,8 @@
       # Trusted interfaces.
       'cpp/trusted/file_chooser_trusted.cc',
       'cpp/trusted/file_chooser_trusted.h',
+      'cpp/trusted/file_io_trusted.cc',
+      'cpp/trusted/file_io_trusted.h',
     ],
     #
     # Common Testing source for trusted and untrusted (NaCl) pugins.
