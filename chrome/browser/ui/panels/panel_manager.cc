@@ -252,8 +252,13 @@ int PanelManager::num_panels() const {
   return panel_strip_->num_panels() + panel_overflow_strip_->num_panels();
 }
 
-const PanelManager::Panels& PanelManager::panels() const {
-  return panel_strip_->panels();
+std::vector<Panel*> PanelManager::panels() const {
+  std::vector<Panel*> panels = panel_strip_->panels();
+  for (PanelOverflowStrip::Panels::const_iterator iter =
+           panel_overflow_strip_->panels().begin();
+       iter != panel_overflow_strip_->panels().end(); ++iter)
+    panels.push_back(*iter);
+  return panels;
 }
 
 void PanelManager::SetMouseWatcher(PanelMouseWatcher* watcher) {

@@ -180,7 +180,12 @@ bool PanelStrip::Remove(Panel* panel) {
   }
 
   DoRemove(panel);
-  Rearrange();
+
+  // Don't rearrange the strip if a panel is being moved from the panel strip
+  // to the overflow strip.
+  if (panel->expansion_state() != Panel::IN_OVERFLOW)
+    Rearrange();
+
   return true;
 }
 

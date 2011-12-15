@@ -23,8 +23,6 @@ class PanelStrip;
 // This class manages a set of panels.
 class PanelManager : public AutoHidingDesktopBar::Observer {
  public:
-  typedef std::vector<Panel*> Panels;
-
   // Returns a single instance.
   static PanelManager* GetInstance();
 
@@ -72,7 +70,7 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
 
   int num_panels() const;
   int StartingRightPosition() const;
-  const Panels& panels() const;
+  std::vector<Panel*> panels() const;
 
   AutoHidingDesktopBar* auto_hiding_desktop_bar() const {
     return auto_hiding_desktop_bar_;

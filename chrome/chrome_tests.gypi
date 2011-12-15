@@ -550,6 +550,7 @@
         'browser/ui/gtk/bookmarks/bookmark_bar_gtk_interactive_uitest.cc',
         'browser/ui/omnibox/omnibox_view_browsertest.cc',
         'browser/ui/panels/panel_browsertest.cc',
+        'browser/ui/panels/panel_overflow_browsertest.cc',
         'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
         'browser/ui/views/button_dropdown_test.cc',
         'browser/ui/views/constrained_window_views_browsertest.cc',
@@ -642,6 +643,7 @@
         ['chromeos==1', {
           'sources!': [
             'browser/ui/panels/panel_browsertest.cc',
+            'browser/ui/panels/panel_overflow_browsertest.cc',
           ],
         }],
         ['OS=="win"', {

@@ -8,12 +8,14 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/notification_service.h"
 #include "ui/base/animation/slide_animation.h"
 
 namespace {
 // The width of the overflow area that is expanded to show more info, i.e.
 // titles, when the mouse hovers over the area.
-const int kOverflowAreaHoverWidth = 200;
+static const int kOverflowAreaHoverWidth = 200;
 
 // Maximium number of overflow panels allowed to be shown.
 const size_t kMaxVisibleOverflowPanelsAllowed = 6;
@@ -24,6 +26,8 @@ const int kOverflowHoverAnimationMs = 180;
 
 PanelOverflowStrip::PanelOverflowStrip(PanelManager* panel_manager)
     : panel_manager_(panel_manager),
+      current_display_width_(0),
+      max_visible_panels_(kMaxVisibleOverflowPanelsAllowed),
       are_overflow_titles_shown_(false),
       overflow_hover_animator_start_width_(0),
       overflow_hover_animator_end_width_(0) {
@@ -38,7 +42,14 @@ void PanelOverflowStrip::SetDisplayArea(const gfx::Rect& display_area) {
     return;
 
   display_area_ = display_area;
+  UpdateCurrentWidth();
+
   Refresh();
+}
+
+void PanelOverflowStrip::UpdateCurrentWidth() {
+  current_display_width_ = are_overflow_titles_shown_ ? kOverflowAreaHoverWidth
+                                                      : display_area_.width();
 }
 
 void PanelOverflowStrip::AddPanel(Panel* panel) {
@@ -106,7 +117,6 @@ void PanelOverflowStrip::DoRefresh(size_t start_index, size_t end_index) {
   if (panels_.empty() || start_index == panels_.size())
     return;
 
-  DCHECK(start_index < panels_.size());
   DCHECK(end_index < panels_.size());
 
   for (size_t index = start_index; index <= end_index; ++index) {
@@ -127,14 +137,9 @@ gfx::Rect PanelOverflowStrip::ComputeLayout(
   bounds.set_x(display_area_.x());
   bounds.set_y(bottom - iconified_size.height());
 
-  if (are_overflow_titles_shown_) {
-    // Both icon and title are visible when the mouse hovers over the overflow
-    // area.
-    bounds.set_width(kOverflowAreaHoverWidth);
-    bounds.set_height(iconified_size.height());
-  } else if (index < kMaxVisibleOverflowPanelsAllowed) {
-    // Only the icon is visible.
-    bounds.set_width(iconified_size.width());
+  if (are_overflow_titles_shown_ ||
+      static_cast<int>(index) < max_visible_panels_) {
+    bounds.set_width(current_display_width_);
     bounds.set_height(iconified_size.height());
   } else {
     // Invisible for overflow-on-overflow.
@@ -155,17 +160,14 @@ bool PanelOverflowStrip::ShouldShowOverflowTitles(
   if (panels_.empty())
     return false;
 
-  int width;
   Panel* top_visible_panel;
   if (are_overflow_titles_shown_) {
-    width = kOverflowAreaHoverWidth;
     top_visible_panel = panels_.back();
   } else {
-    width = display_area_.width();
-    top_visible_panel = panels_.size() >= kMaxVisibleOverflowPanelsAllowed ?
-        panels_[kMaxVisibleOverflowPanelsAllowed - 1] : panels_.back();
+    top_visible_panel = num_panels() >= max_visible_panels_ ?
+        panels_[max_visible_panels_ - 1] : panels_.back();
   }
-  return mouse_position.x() <= display_area_.x() + width &&
+  return mouse_position.x() <= display_area_.x() + current_display_width_ &&
          top_visible_panel->GetBounds().y() <= mouse_position.y() &&
          mouse_position.y() <= display_area_.bottom();
 }
@@ -175,11 +177,13 @@ void PanelOverflowStrip::ShowOverflowTitles(bool show_overflow_titles) {
     return;
   are_overflow_titles_shown_ = show_overflow_titles;
 
+  UpdateCurrentWidth();
+
   if (panels_.empty())
     return;
 
   if (show_overflow_titles) {
-    overflow_hover_animator_start_width_ = display_area_.width();
+    overflow_hover_animator_start_width_ = current_display_width_;
     overflow_hover_animator_end_width_ = kOverflowAreaHoverWidth;
 
     // We need to bring all overflow panels to the top of z-order since the
@@ -189,7 +193,7 @@ void PanelOverflowStrip::ShowOverflowTitles(bool show_overflow_titles) {
       (*iter)->EnsureFullyVisible();
     }
   } else {
-    overflow_hover_animator_start_width_ = kOverflowAreaHoverWidth;
+    overflow_hover_animator_start_width_ = current_display_width_;
     overflow_hover_animator_end_width_ = display_area_.width();
   }
 
@@ -203,21 +207,28 @@ void PanelOverflowStrip::ShowOverflowTitles(bool show_overflow_titles) {
   overflow_hover_animator_->Show();
 }
 
+void PanelOverflowStrip::AnimationEnded(const ui::Animation* animation) {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
+      content::Source<PanelOverflowStrip>(this),
+      content::NotificationService::NoDetails());
+}
+
 void PanelOverflowStrip::AnimationProgressed(const ui::Animation* animation) {
-  int current_width = overflow_hover_animator_->CurrentValueBetween(
+  int current_display_width = overflow_hover_animator_->CurrentValueBetween(
       overflow_hover_animator_start_width_, overflow_hover_animator_end_width_);
-  bool end_of_shrinking = current_width == display_area_.width();
+  bool end_of_shrinking = current_display_width == display_area_.width();
 
   // Update each overflow panel.
   for (size_t i = 0; i < panels_.size(); ++i) {
     Panel* overflow_panel = panels_[i];
     gfx::Rect bounds = overflow_panel->GetBounds();
 
-    if (i >= kMaxVisibleOverflowPanelsAllowed && end_of_shrinking) {
+    if (static_cast<int>(i) >= max_visible_panels_ && end_of_shrinking) {
       bounds.set_width(0);
       bounds.set_height(0);
     } else {
-      bounds.set_width(current_width);
+      bounds.set_width(current_display_width);
       bounds.set_height(overflow_panel->IconOnlySize().height());
     }
 

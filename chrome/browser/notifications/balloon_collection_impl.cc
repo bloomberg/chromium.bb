@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -399,7 +400,8 @@ gfx::Size BalloonCollectionImpl::Layout::ConstrainToSizeLimits(
 
 bool BalloonCollectionImpl::Layout::ComputeOffsetToMoveAbovePanels(
     const gfx::Rect& panel_bounds) {
-  const PanelManager::Panels& panels = PanelManager::GetInstance()->panels();
+  const PanelStrip::Panels& panels =
+      PanelManager::GetInstance()->panel_strip()->panels();
   int offset_to_move_above_panels = 0;
 
   // The offset is the maximum height of panels that could overlap with the
@@ -413,7 +415,7 @@ bool BalloonCollectionImpl::Layout::ComputeOffsetToMoveAbovePanels(
       return false;
     }
 
-    for (PanelManager::Panels::const_reverse_iterator iter = panels.rbegin();
+    for (PanelStrip::Panels::const_reverse_iterator iter = panels.rbegin();
          iter != panels.rend(); ++iter) {
       // No need to check panels beyond the area occupied by the balloons.
       if ((*iter)->GetBounds().x() >= work_area_.x() + max_balloon_width())
@@ -432,7 +434,7 @@ bool BalloonCollectionImpl::Layout::ComputeOffsetToMoveAbovePanels(
       return false;
     }
 
-    for (PanelManager::Panels::const_iterator iter = panels.begin();
+    for (PanelStrip::Panels::const_iterator iter = panels.begin();
          iter != panels.end(); ++iter) {
       // No need to check panels beyond the area occupied by the balloons.
       if ((*iter)->GetBounds().right() <=

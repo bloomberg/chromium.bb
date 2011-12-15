@@ -50,9 +50,14 @@ class PanelOverflowStrip : public PanelMouseWatcherObserver,
   Panel* first_panel() const {
     return panels_.empty() ? NULL : panels_.front();
   }
+  const Panels& panels() const { return panels_; }
 
 #ifdef UNIT_TEST
-  const Panels& panels() const { return panels_; }
+  int current_display_width() const { return current_display_width_; }
+
+  void set_max_visible_panels(int max_visible_panels) {
+    max_visible_panels_ = max_visible_panels;
+  }
 #endif
 
  private:
@@ -60,7 +65,10 @@ class PanelOverflowStrip : public PanelMouseWatcherObserver,
   virtual void OnMouseMove(const gfx::Point& mouse_position) OVERRIDE;
 
   // Overridden from AnimationDelegate:
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+
+  void UpdateCurrentWidth();
 
   void DoRefresh(size_t start_index, size_t end_index);
 
@@ -84,6 +92,14 @@ class PanelOverflowStrip : public PanelMouseWatcherObserver,
   // The overflow area where panels are iconified due to insufficient space
  // in the panel strip.
   gfx::Rect display_area_;
+
+  // Current width of the overflow area. It is the width of the panel in the
+  // iconified state when the mouse does not hover over it, or the width of
+  // the panel showing more info when the mouse hovers over it.
+  int current_display_width_;
+
+  // Maximium number of overflow panels allowed to be shown.
+  int max_visible_panels_;
 
   // For mouse hover-over effect.
   bool are_overflow_titles_shown_;

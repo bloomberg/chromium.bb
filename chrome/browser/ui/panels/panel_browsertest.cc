@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_service.h"
@@ -27,7 +26,6 @@
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/panel_overflow_strip.h"
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/ui/panels/test_panel_mouse_watcher.h"
@@ -54,24 +52,6 @@ class PanelBrowserTest : public BasePanelBrowserTest {
   }
 
  protected:
-  void CloseWindowAndWait(Browser* browser) {
-    // Closing a browser window may involve several async tasks. Need to use
-    // message pump and wait for the notification.
-    size_t browser_count = BrowserList::size();
-    ui_test_utils::WindowedNotificationObserver signal(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        content::Source<Browser>(browser));
-    browser->CloseWindow();
-    signal.Wait();
-    // Now we have one less browser instance.
-    EXPECT_EQ(browser_count - 1, BrowserList::size());
-  }
-
-  void MoveMouse(const gfx::Point& position) {
-    PanelManager::GetInstance()->mouse_watcher()->NotifyMouseMovement(position);
-    MessageLoopForUI::current()->RunAllPending();
-  }
-
   void MoveMouseAndWaitForExpansionStateChange(Panel* panel,
                                                const gfx::Point& position) {
     ui_test_utils::WindowedNotificationObserver signal(
@@ -79,89 +59,6 @@ class PanelBrowserTest : public BasePanelBrowserTest {
         content::Source<Panel>(panel));
     MoveMouse(position);
     signal.Wait();
-  }
-
-  void TestCreatePanelOnOverflow() {
-    PanelManager* panel_manager = PanelManager::GetInstance();
-    PanelStrip* panel_strip = panel_manager->panel_strip();
-    PanelOverflowStrip* panel_overflow_strip =
-        panel_manager->panel_overflow_strip();
-    EXPECT_EQ(0, panel_manager->num_panels()); // No panels initially.
-
-    // Create testing extensions.
-    DictionaryValue empty_value;
-    scoped_refptr<Extension> extension1 =
-        CreateExtension(FILE_PATH_LITERAL("extension1"),
-        Extension::INVALID, empty_value);
-    scoped_refptr<Extension> extension2 =
-        CreateExtension(FILE_PATH_LITERAL("extension2"),
-        Extension::INVALID, empty_value);
-    scoped_refptr<Extension> extension3 =
-        CreateExtension(FILE_PATH_LITERAL("extension3"),
-        Extension::INVALID, empty_value);
-
-    // First, create 3 panels.
-    Panel* panel1 = CreatePanelWithBounds(
-        web_app::GenerateApplicationNameFromExtensionId(extension1->id()),
-        gfx::Rect(0, 0, 250, 200));
-    Panel* panel2 = CreatePanelWithBounds(
-        web_app::GenerateApplicationNameFromExtensionId(extension2->id()),
-        gfx::Rect(0, 0, 300, 200));
-    Panel* panel3 = CreatePanelWithBounds(
-        web_app::GenerateApplicationNameFromExtensionId(extension1->id()),
-        gfx::Rect(0, 0, 200, 200));
-    ASSERT_EQ(3, panel_manager->num_panels());
-    EXPECT_EQ(3, panel_strip->num_panels());
-    EXPECT_EQ(0, panel_overflow_strip->num_panels());
-
-    // Open a panel that would overflow.
-    CreatePanelParams params4(
-        web_app::GenerateApplicationNameFromExtensionId(extension2->id()),
-        gfx::Rect(0, 0, 280, 200),
-        SHOW_AS_INACTIVE);
-    Panel* panel4 = CreatePanelWithParams(params4);
-    WaitForExpansionStateChanged(panel4, Panel::IN_OVERFLOW);
-    ASSERT_EQ(4, panel_manager->num_panels());
-    EXPECT_EQ(3, panel_strip->num_panels());
-    EXPECT_EQ(1, panel_overflow_strip->num_panels());
-
-    // Open another panel that would overflow.
-    CreatePanelParams params5(
-        web_app::GenerateApplicationNameFromExtensionId(extension3->id()),
-        gfx::Rect(0, 0, 300, 200),
-        SHOW_AS_INACTIVE);
-    Panel* panel5 = CreatePanelWithParams(params5);
-    WaitForExpansionStateChanged(panel5, Panel::IN_OVERFLOW);
-    ASSERT_EQ(5, panel_manager->num_panels());
-    EXPECT_EQ(3, panel_strip->num_panels());
-    EXPECT_EQ(2, panel_overflow_strip->num_panels());
-    EXPECT_EQ(Panel::IN_OVERFLOW, panel4->expansion_state());
-
-    // Close a visible panel. Expect an overflow panel to move over.
-    CloseWindowAndWait(panel2->browser());
-    ASSERT_EQ(4, panel_manager->num_panels());
-    EXPECT_EQ(3, panel_strip->num_panels());
-    EXPECT_EQ(1, panel_overflow_strip->num_panels());
-    EXPECT_NE(Panel::IN_OVERFLOW, panel4->expansion_state());
-    EXPECT_EQ(Panel::IN_OVERFLOW, panel5->expansion_state());
-
-    // Close another visible panel. Remaining overflow panel cannot move over
-    // due to not enough room.
-    CloseWindowAndWait(panel3->browser());
-    ASSERT_EQ(3, panel_manager->num_panels());
-    EXPECT_EQ(2, panel_strip->num_panels());
-    EXPECT_EQ(1, panel_overflow_strip->num_panels());
-    EXPECT_EQ(Panel::IN_OVERFLOW, panel5->expansion_state());
-
-    // Closing one more panel makes room for all panels to fit on screen.
-    CloseWindowAndWait(panel4->browser());
-    ASSERT_EQ(2, panel_manager->num_panels());
-    EXPECT_EQ(2, panel_strip->num_panels());
-    EXPECT_EQ(0, panel_overflow_strip->num_panels());
-    EXPECT_NE(Panel::IN_OVERFLOW, panel5->expansion_state());
-
-    panel1->Close();
-    panel5->Close();
   }
 
   // Helper function for debugging.
@@ -544,17 +441,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FindBar) {
   browser->ShowFindBar();
   ASSERT_TRUE(browser->GetFindBarController()->find_bar()->IsFindBarVisible());
   panel->Close();
-}
-
-// TODO(jianli): remove the guard when overflow support is enabled on other
-// platforms. http://crbug.com/105073
-#if defined(OS_WIN)
-#define MAYBE_CreatePanelOnOverflow CreatePanelOnOverflow
-#else
-#define MAYBE_CreatePanelOnOverflow DISABLED_CreatePanelOnOverflow
-#endif
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_CreatePanelOnOverflow) {
-  TestCreatePanelOnOverflow();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DragOnePanel) {
@@ -1134,11 +1020,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateMultiple) {
   // Create 4 panels in the following screen layout:
   //    P3  P2  P1  P0
   const int kNumPanels = 4;
-  std::string panel_name_base("PanelTest");
-  for (int i = 0; i < kNumPanels; ++i) {
-    CreatePanelWithBounds(panel_name_base + base::IntToString(i),
-                          gfx::Rect(0, 0, 100, 100));
-  }
+  for (int i = 0; i < kNumPanels; ++i)
+    CreatePanelWithBounds(MakePanelName(i), gfx::Rect(0, 0, 100, 100));
   const std::vector<Panel*>& panels = PanelManager::GetInstance()->panels();
 
   std::vector<bool> expected_active_states;
