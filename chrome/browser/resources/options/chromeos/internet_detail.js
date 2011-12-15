@@ -41,6 +41,70 @@ cr.define('options.internet', function() {
     },
 
     /**
+     * Initializes the controlled setting indicators for the page.
+     * @param {Object} data Dictionary with metadata about the settings.
+     */
+    initializeControlledSettingIndicators: function(data) {
+      indicators =
+          this.pageDiv.querySelectorAll('.controlled-setting-indicator');
+      for (var i = 0; i < indicators.length; i++) {
+        var dataProperty = indicators[i].getAttribute('data');
+        if (dataProperty && data[dataProperty]) {
+          this.initializeIndicator_(indicators[i],
+                                    data[dataProperty].controlledBy,
+                                    data[dataProperty].default);
+        }
+      }
+    },
+
+    /**
+     * Sets up a single controlled setting indicator, setting the controlledBy
+     * property and an event handler for resetting to the default value if
+     * appropriate.
+     * @param {Object} indicator The indicator element.
+     * @param {string} controlledBy The entity that controls the setting.
+     * @param {Object} defaultValue The default value to reset to, if
+     * applicable.
+     */
+    initializeIndicator_ : function(indicator, controlledBy, defaultValue) {
+      var forElement = $(indicator.getAttribute('for'));
+      var recommended = controlledBy == 'recommended';
+      if (!controlledBy || (recommended && !defaultValue))
+        controlledBy = null;
+
+      indicator.controlledBy = controlledBy;
+
+      if (forElement) {
+        forElement.disabled = !recommended;
+
+        // Special handling for radio buttons:
+        //  - If the setting is recommended, show the recommended indicator
+        //    next to the choice that is recommended.
+        //  - Else, show the indicator next to the selected choice.
+        if (forElement.type == 'radio') {
+          if (recommended)
+            indicator.hidden = (defaultValue != forElement.value);
+          else
+            indicator.hidden = !forElement.checked;
+        }
+
+        indicator.setAttribute('allow-reset');
+        indicator.addEventListener(
+            'reset',
+            function(element, e) {
+              if (forElement.type == 'radio' || forElement.type == 'checkbox') {
+                // The recommended setting indicator is always shown next to
+                // the recommended choice.
+                forElement.checked = true;
+              } else {
+                forElement.value = defaultValue;
+              }
+              e.preventDefault();
+            });
+      }
+    },
+
+    /**
      * Update details page controls.
      * @private
      */

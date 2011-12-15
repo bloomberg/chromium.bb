@@ -98,8 +98,8 @@ cr.define('options', function() {
       bubbleText.className = 'controlled-setting-bubble-text';
       bubbleText.textContent = text;
 
-      var pref = self.getAttribute('pref');
-      if (self.controlledBy == 'recommended' && pref) {
+      var allowReset = self.getAttribute('allow-reset');
+      if (self.controlledBy == 'recommended' && allowReset) {
         var container = doc.createElement('div');
         var action = doc.createElement('button');
         action.classList.add('link-button');
@@ -109,7 +109,12 @@ cr.define('options', function() {
         action.addEventListener(
             'click',
             function(e) {
-              Preferences.clearPref(pref);
+              // Fire the reset event, falling back to just resetting the pref.
+              if (!cr.dispatchSimpleEvent(self, 'reset', true, true)) {
+                var pref = self.getAttribute('pref');
+                if (pref)
+                  Preferences.clearPref(pref);
+              }
             });
         container.appendChild(action);
         bubbleText.appendChild(container);

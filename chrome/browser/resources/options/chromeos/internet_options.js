@@ -673,25 +673,7 @@ cr.define('options', function() {
       detailsPage.gsm = false;
     }
 
-    // Update controlled option indicators.
-    indicators = cr.doc.querySelectorAll(
-        '#detailsInternetPage .controlled-setting-indicator');
-    for (var i = 0; i < indicators.length; i++) {
-      var dataProperty = indicators[i].getAttribute('data');
-      if (dataProperty && data[dataProperty]) {
-        var controlledBy = data[dataProperty].controlledBy;
-        if (controlledBy) {
-          indicators[i].controlledBy = controlledBy;
-          var forElement = $(indicators[i].getAttribute('for'));
-          if (forElement)
-            forElement.disabled = true;
-          if (forElement.type == 'radio' && !forElement.checked)
-            indicators[i].hidden = true;
-        } else {
-          indicators[i].controlledBy = null;
-        }
-      }
-    }
+    detailsPage.initializeControlledSettingIndicators(data)
 
     // Don't show page name in address bar and in history to prevent people
     // navigate here by hand and solve issue with page session restore.
