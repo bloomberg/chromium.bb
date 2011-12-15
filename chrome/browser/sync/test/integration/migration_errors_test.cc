@@ -261,8 +261,9 @@ IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, AllTypesIndividually) {
   RunSingleClientMigrationTest(GetPreferredDataTypesList(), MODIFY_BOOKMARK);
 }
 
+// This test is crashing on Win and Linux sync bots. http://crbug.com/107743
 IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
-                       AllTypesIndividuallyTriggerNotification) {
+                       DISABLED_AllTypesIndividuallyTriggerNotification) {
   ASSERT_TRUE(SetupClients());
   RunSingleClientMigrationTest(GetPreferredDataTypesList(),
                                TRIGGER_NOTIFICATION);
