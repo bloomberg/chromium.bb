@@ -15,6 +15,8 @@ PNACL_BUILD=pnacl/build.sh
 TORTURE_TEST=tools/toolchain_tester/torture_test.sh
 LLVM_TESTSUITE=pnacl/scripts/llvm-test-suite.sh
 
+export PNACL_BUILDBOT=true
+
 clobber() {
   echo @@@BUILD_STEP clobber@@@
   rm -rf scons-out
