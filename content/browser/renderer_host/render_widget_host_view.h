@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
@@ -30,6 +31,7 @@ struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
 
 class BackingStore;
+class BrowserAccessibilityManager;
 class RenderWidgetHost;
 class WebCursor;
 struct NativeWebKeyboardEvent;
@@ -312,6 +314,9 @@ class RenderWidgetHostView {
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
   }
 
+  BrowserAccessibilityManager* GetBrowserAccessibilityManager() const;
+  void SetBrowserAccessibilityManager(BrowserAccessibilityManager* manager);
+
   gfx::Rect reserved_contents_rect() const {
     return reserved_rect_;
   }
@@ -355,6 +360,9 @@ class RenderWidgetHostView {
   ui::Range selection_range_;
 
  private:
+  // Manager of the tree representation of the WebKit render tree.
+  scoped_ptr<BrowserAccessibilityManager> browser_accessibility_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostView);
 };
 

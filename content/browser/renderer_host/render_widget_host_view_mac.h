@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "content/browser/accessibility/browser_accessibility_delegate_mac.h"
-#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/accelerated_surface_container_manager_mac.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/edit_command.h"
@@ -315,8 +314,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // This is true when we are currently painting and thus should handle extra
   // paint requests by expanding the invalid rect rather than actually painting.
   bool about_to_validate_and_paint_;
-
-  scoped_ptr<BrowserAccessibilityManager> browser_accessibility_manager_;
 
   // This is true when we have already scheduled a call to
   // |-callSetNeedsDisplayInRect:| but it has not been fulfilled yet.  Used to

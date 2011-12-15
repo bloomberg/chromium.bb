@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 
 #include "base/logging.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 
 #if defined(TOOLKIT_USES_GTK)
@@ -39,6 +40,15 @@ void RenderWidgetHostView::SetBackground(const SkBitmap& background) {
   background_ = background;
 }
 
+BrowserAccessibilityManager*
+    RenderWidgetHostView::GetBrowserAccessibilityManager() const {
+  return browser_accessibility_manager_.get();
+}
+
+void RenderWidgetHostView::SetBrowserAccessibilityManager(
+    BrowserAccessibilityManager* manager) {
+  browser_accessibility_manager_.reset(manager);
+}
 
 void RenderWidgetHostView::SelectionChanged(const string16& text,
                                             size_t offset,

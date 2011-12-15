@@ -22,6 +22,7 @@
 #include "content/browser/mac/closure_blocks_leopard_compat.h"
 #include "content/browser/plugin_process_host.h"
 #import "content/browser/renderer_host/accelerated_plugin_view_mac.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/backing_store_mac.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -1098,12 +1099,12 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
 
 void RenderWidgetHostViewMac::OnAccessibilityNotifications(
     const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
-  if (!browser_accessibility_manager_.get()) {
-    browser_accessibility_manager_.reset(
+  if (!GetBrowserAccessibilityManager()) {
+    SetBrowserAccessibilityManager(
         BrowserAccessibilityManager::CreateEmptyDocument(
             cocoa_view_, static_cast<WebAccessibility::State>(0), NULL));
   }
-  browser_accessibility_manager_->OnAccessibilityNotifications(params);
+  GetBrowserAccessibilityManager()->OnAccessibilityNotifications(params);
 }
 
 void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
@@ -1928,7 +1929,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
 - (id)accessibilityAttributeValue:(NSString *)attribute {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->browser_accessibility_manager_.get();
+      renderWidgetHostView_->GetBrowserAccessibilityManager();
 
   // Contents specifies document view of RenderWidgetHostViewCocoa provided by
   // BrowserAccessibilityManager. Children includes all subviews in addition to
@@ -1953,25 +1954,25 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {
-  if (!renderWidgetHostView_->browser_accessibility_manager_.get())
+  if (!renderWidgetHostView_->GetBrowserAccessibilityManager())
     return self;
   NSPoint pointInWindow = [[self window] convertScreenToBase:point];
   NSPoint localPoint = [self convertPoint:pointInWindow fromView:nil];
   localPoint.y = NSHeight([self bounds]) - localPoint.y;
   BrowserAccessibilityCocoa* root = renderWidgetHostView_->
-      browser_accessibility_manager_->
+      GetBrowserAccessibilityManager()->
           GetRoot()->toBrowserAccessibilityCocoa();
   id obj = [root accessibilityHitTest:localPoint];
   return obj;
 }
 
 - (BOOL)accessibilityIsIgnored {
-  return !renderWidgetHostView_->browser_accessibility_manager_.get();
+  return !renderWidgetHostView_->GetBrowserAccessibilityManager();
 }
 
 - (NSUInteger)accessibilityGetIndexOf:(id)child {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->browser_accessibility_manager_.get();
+      renderWidgetHostView_->GetBrowserAccessibilityManager();
   // Only child is root.
   if (manager &&
       manager->GetRoot()->toBrowserAccessibilityCocoa() == child) {
@@ -1983,7 +1984,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
 - (id)accessibilityFocusedUIElement {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->browser_accessibility_manager_.get();
+      renderWidgetHostView_->GetBrowserAccessibilityManager();
   if (manager) {
     BrowserAccessibility* focused_item = manager->GetFocus(NULL);
     DCHECK(focused_item);

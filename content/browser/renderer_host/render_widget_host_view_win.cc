@@ -18,7 +18,6 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
-#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -1098,8 +1097,8 @@ LRESULT RenderWidgetHostViewWin::OnSetCursor(HWND window, UINT hittest_code,
 }
 
 void RenderWidgetHostViewWin::OnSetFocus(HWND window) {
-  if (browser_accessibility_manager_.get())
-    browser_accessibility_manager_->GotFocus();
+  if (GetBrowserAccessibilityManager())
+    GetBrowserAccessibilityManager()->GotFocus();
   if (render_widget_host_) {
     render_widget_host_->GotFocus();
     render_widget_host_->SetActive(true);
@@ -1831,12 +1830,12 @@ LRESULT RenderWidgetHostViewWin::OnGestureEvent(
 
 void RenderWidgetHostViewWin::OnAccessibilityNotifications(
     const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
-  if (!browser_accessibility_manager_.get()) {
-    browser_accessibility_manager_.reset(
+  if (!GetBrowserAccessibilityManager()) {
+    SetBrowserAccessibilityManager(
         BrowserAccessibilityManager::CreateEmptyDocument(
             m_hWnd, static_cast<WebAccessibility::State>(0), this));
   }
-  browser_accessibility_manager_->OnAccessibilityNotifications(params);
+  GetBrowserAccessibilityManager()->OnAccessibilityNotifications(params);
 }
 
 bool RenderWidgetHostViewWin::LockMouse() {
@@ -1904,7 +1903,7 @@ void RenderWidgetHostViewWin::Observe(
   // If it was our RenderProcessHost that posted the notification,
   // clear the BrowserAccessibilityManager, because the renderer is
   // dead and any accessibility information we have is now stale.
-  browser_accessibility_manager_.reset(NULL);
+  SetBrowserAccessibilityManager(NULL);
 }
 
 static void PaintCompositorHostWindow(HWND hWnd) {
@@ -2111,16 +2110,17 @@ IAccessible* RenderWidgetHostViewWin::GetIAccessible() {
     NotifyWinEvent(EVENT_SYSTEM_ALERT, m_hWnd, kIdCustom, CHILDID_SELF);
   }
 
-  if (!browser_accessibility_manager_.get()) {
+  if (!GetBrowserAccessibilityManager()) {
     // Return busy document tree while renderer accessibility tree loads.
     WebAccessibility::State busy_state =
         static_cast<WebAccessibility::State>(1 << WebAccessibility::STATE_BUSY);
-    browser_accessibility_manager_.reset(
+    SetBrowserAccessibilityManager(
         BrowserAccessibilityManager::CreateEmptyDocument(
             m_hWnd, busy_state, this));
   }
 
-  return browser_accessibility_manager_->GetRoot()->toBrowserAccessibilityWin();
+  return GetBrowserAccessibilityManager()->GetRoot()->
+      toBrowserAccessibilityWin();
 }
 
 LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
