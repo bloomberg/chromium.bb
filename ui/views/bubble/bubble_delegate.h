@@ -107,11 +107,11 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // contents preferred size.
   void SizeToContents();
 
+  BubbleFrameView* GetBubbleFrameView() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewBasicTest, NonClientHitTest);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CreateDelegate);
-
-  BubbleFrameView* GetBubbleFrameView() const;
 
   // Get bubble bounds from the anchor point and client view's preferred size.
   gfx::Rect GetBubbleBounds();

@@ -432,16 +432,6 @@ bool AvatarMenuBubbleView::AcceleratorPressed(
   return true;
 }
 
-void AvatarMenuBubbleView::ViewHierarchyChanged(bool is_add,
-                                                views::View* parent,
-                                                views::View* child) {
-  // Build the menu for the first time.
-  if (!add_profile_link_ && is_add && child == this)
-    OnAvatarMenuModelChanged(avatar_menu_model_.get());
-
-  views::BubbleDelegateView::ViewHierarchyChanged(is_add, parent, child);
-}
-
 void AvatarMenuBubbleView::ButtonPressed(views::Button* sender,
                                          const views::Event& event) {
   for (size_t i = 0; i < item_views_.size(); ++i) {
@@ -475,6 +465,8 @@ gfx::Rect AvatarMenuBubbleView::GetAnchorRect() {
 }
 
 void AvatarMenuBubbleView::Init() {
+  // Build the menu for the first time.
+  OnAvatarMenuModelChanged(avatar_menu_model_.get());
   AddAccelerator(ui::Accelerator(ui::VKEY_DOWN, 0));
   AddAccelerator(ui::Accelerator(ui::VKEY_UP, 0));
 }
@@ -510,5 +502,6 @@ void AvatarMenuBubbleView::OnAvatarMenuModelChanged(
 
   // If the bubble has already been shown then resize and reposition the bubble.
   Layout();
-  SizeToContents();
+  if (GetBubbleFrameView())
+    SizeToContents();
 }

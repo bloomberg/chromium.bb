@@ -279,7 +279,8 @@ void BubbleDelegateView::SizeToContents() {
 
 BubbleFrameView* BubbleDelegateView::GetBubbleFrameView() const {
   const Widget* widget = border_widget_ ? border_widget_ : GetWidget();
-  return static_cast<BubbleFrameView*>(widget->non_client_view()->frame_view());
+  const NonClientView* view = widget ? widget->non_client_view() : NULL;
+  return view ? static_cast<BubbleFrameView*>(view->frame_view()) : NULL;
 }
 
 gfx::Rect BubbleDelegateView::GetBubbleBounds() {
