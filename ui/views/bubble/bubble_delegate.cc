@@ -83,7 +83,6 @@ const SkColor BubbleDelegateView::kBackgroundColor = SK_ColorWHITE;
 BubbleDelegateView::BubbleDelegateView()
     : close_on_esc_(true),
       close_on_deactivate_(true),
-      allow_bubble_offscreen_(false),
       anchor_view_(NULL),
       arrow_location_(BubbleBorder::TOP_LEFT),
       color_(kBackgroundColor),
@@ -99,7 +98,6 @@ BubbleDelegateView::BubbleDelegateView(
     BubbleBorder::ArrowLocation arrow_location)
     : close_on_esc_(true),
       close_on_deactivate_(true),
-      allow_bubble_offscreen_(false),
       anchor_view_(anchor_view),
       arrow_location_(arrow_location),
       color_(kBackgroundColor),
@@ -146,10 +144,7 @@ View* BubbleDelegateView::GetContentsView() {
 }
 
 NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView() {
-  return new BubbleFrameView(GetArrowLocation(),
-                             GetPreferredSize(),
-                             color(),
-                             allow_bubble_offscreen());
+  return new BubbleFrameView(arrow_location(), color());
 }
 
 void BubbleDelegateView::OnWidgetActivationChanged(Widget* widget,
@@ -161,28 +156,7 @@ void BubbleDelegateView::OnWidgetActivationChanged(Widget* widget,
 }
 
 gfx::Rect BubbleDelegateView::GetAnchorRect() {
-  if (!anchor_view())
-    return gfx::Rect();
-
-  BubbleBorder::ArrowLocation location = GetArrowLocation();
-  gfx::Point anchor;
-  // By default, pick the middle of |anchor_view_|'s edge opposite the arrow.
-  if (BubbleBorder::is_arrow_on_horizontal(location)) {
-    anchor.SetPoint(anchor_view()->width() / 2,
-        BubbleBorder::is_arrow_on_top(location) ? anchor_view()->height() : 0);
-  } else if (BubbleBorder::has_arrow(location)) {
-    anchor.SetPoint(
-        BubbleBorder::is_arrow_on_left(location) ? anchor_view()->width() : 0,
-        anchor_view_->height() / 2);
-  } else {
-    anchor = anchor_view()->bounds().CenterPoint();
-  }
-  View::ConvertPointToScreen(anchor_view(), &anchor);
-  return gfx::Rect(anchor, gfx::Size());
-}
-
-BubbleBorder::ArrowLocation BubbleDelegateView::GetArrowLocation() const {
-  return arrow_location_;
+  return anchor_view() ? anchor_view()->GetScreenBounds() : gfx::Rect();
 }
 
 void BubbleDelegateView::Show() {
@@ -286,8 +260,8 @@ BubbleFrameView* BubbleDelegateView::GetBubbleFrameView() const {
 gfx::Rect BubbleDelegateView::GetBubbleBounds() {
   // The argument rect has its origin at the bubble's arrow anchor point;
   // its size is the preferred size of the bubble's client view (this view).
-  return GetBubbleFrameView()->GetWindowBoundsForAnchorAndClientSize(
-      GetAnchorRect(), GetPreferredSize());
+  return GetBubbleFrameView()->GetUpdatedWindowBounds(GetAnchorRect(),
+      GetPreferredSize(), true /*try_mirroring_arrow*/);
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)

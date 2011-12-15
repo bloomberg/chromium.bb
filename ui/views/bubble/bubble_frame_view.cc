@@ -6,31 +6,53 @@
 
 #include <algorithm>
 
-#include "ui/views/bubble/border_contents_view.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_border.h"
-#include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
 
+static const int kMargin = 6;
+
+namespace {
+
+// Get the |vertical| or horizontal screen overflow of the |window_bounds|.
+int GetOffScreenLength(const gfx::Rect& monitor_bounds,
+                       const gfx::Rect& window_bounds,
+                       bool vertical) {
+  if (monitor_bounds.IsEmpty() || monitor_bounds.Contains(window_bounds))
+    return 0;
+
+  //  window_bounds
+  //  +-------------------------------+
+  //  |             top               |
+  //  |      +----------------+       |
+  //  | left | monitor_bounds | right |
+  //  |      +----------------+       |
+  //  |            bottom             |
+  //  +-------------------------------+
+  if (vertical)
+    return std::max(0, monitor_bounds.y() - window_bounds.y()) +
+           std::max(0, window_bounds.bottom() - monitor_bounds.bottom());
+  return std::max(0, monitor_bounds.x() - window_bounds.x()) +
+         std::max(0, window_bounds.right() - monitor_bounds.right());
+}
+
+}  // namespace
+
 namespace views {
 
-BubbleFrameView::BubbleFrameView(BubbleBorder::ArrowLocation location,
-                                 const gfx::Size& client_size,
-                                 SkColor color,
-                                 bool allow_bubble_offscreen)
-    : border_contents_(new BorderContentsView()),
-      location_(location),
-      allow_bubble_offscreen_(allow_bubble_offscreen) {
-  border_contents_->Init();
-  bubble_border()->set_arrow_location(location_);
+BubbleFrameView::BubbleFrameView(BubbleBorder::ArrowLocation arrow_location,
+                                 SkColor color)
+    : bubble_border_(NULL),
+      content_margins_(kMargin, kMargin, kMargin, kMargin) {
+  if (base::i18n::IsRTL())
+    arrow_location = BubbleBorder::horizontal_mirror(arrow_location);
+  // TODO(alicet): Expose the shadow option in BorderContentsView when we make
+  // the fullscreen exit bubble use the new bubble code.
+  bubble_border_ = new BubbleBorder(arrow_location, BubbleBorder::NO_SHADOW);
+  set_border(bubble_border_);
+  set_background(new BubbleBackground(bubble_border_));
   bubble_border()->set_background_color(color);
-  SetLayoutManager(new views::FillLayout());
-  AddChildView(border_contents_);
-  gfx::Rect windows_bounds =
-      GetWindowBoundsForAnchorAndClientSize(gfx::Rect(), client_size);
-  border_contents_->SetBoundsRect(
-      gfx::Rect(gfx::Point(), windows_bounds.size()));
-  SetBoundsRect(windows_bounds);
 }
 
 BubbleFrameView::~BubbleFrameView() {}
@@ -38,33 +60,16 @@ BubbleFrameView::~BubbleFrameView() {}
 gfx::Rect BubbleFrameView::GetBoundsForClientView() const {
   gfx::Insets margin;
   bubble_border()->GetInsets(&margin);
-  margin += border_contents_->content_margins();
-  return gfx::Rect(margin.left(),
-                   margin.top(),
+  margin += content_margins();
+  return gfx::Rect(margin.left(), margin.top(),
                    std::max(width() - margin.width(), 0),
                    std::max(height() - margin.height(), 0));
 }
 
 gfx::Rect BubbleFrameView::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
-  // The |client_bounds| origin is the bubble arrow anchor point.
-  gfx::Rect anchor(client_bounds.origin(), gfx::Size());
-  // The |client_bounds| size is the bubble client view size.
-  return GetWindowBoundsForAnchorAndClientSize(anchor, client_bounds.size());
-}
-
-gfx::Rect BubbleFrameView::GetWindowBoundsForAnchorAndClientSize(
-    const gfx::Rect& anchor,
-    const gfx::Size& client_size) const {
-  gfx::Rect content_bounds;
-  gfx::Rect window_bounds;
-  border_contents_->SizeAndGetBounds(anchor,
-                                     location_,
-                                     allow_bubble_offscreen_,
-                                     client_size,
-                                     &content_bounds,
-                                     &window_bounds);
-  return window_bounds;
+  return const_cast<BubbleFrameView*>(this)->GetUpdatedWindowBounds(
+      gfx::Rect(), client_bounds.size(), false);
 }
 
 int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
@@ -72,13 +77,51 @@ int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
 }
 
 gfx::Size BubbleFrameView::GetPreferredSize() {
-  Widget* widget = GetWidget();
-  gfx::Rect rect(gfx::Point(), widget->client_view()->GetPreferredSize());
-  return widget->non_client_view()->GetWindowBoundsForClientBounds(rect).size();
+  gfx::Size client_size(GetWidget()->client_view()->GetPreferredSize());
+  return GetUpdatedWindowBounds(gfx::Rect(), client_size, false).size();
 }
 
-BubbleBorder* BubbleFrameView::bubble_border() const {
-  return static_cast<BubbleBorder*>(border_contents_->border());
+gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
+                                                  gfx::Size client_size,
+                                                  bool try_mirroring_arrow) {
+  // Give the contents a margin.
+  client_size.Enlarge(content_margins_.width(), content_margins_.height());
+
+  if (try_mirroring_arrow) {
+    // Try to mirror the anchoring if the bubble does not fit on the screen.
+    MirrorArrowIfOffScreen(true, anchor_rect, client_size);
+    MirrorArrowIfOffScreen(false, anchor_rect, client_size);
+  }
+
+  // Calculate the bounds with the arrow in its updated location.
+  return bubble_border_->GetBounds(anchor_rect, client_size);
+}
+
+gfx::Rect BubbleFrameView::GetMonitorBounds(const gfx::Rect& rect) {
+  return gfx::Screen::GetMonitorWorkAreaNearestPoint(rect.CenterPoint());
+}
+
+void BubbleFrameView::MirrorArrowIfOffScreen(
+    bool vertical,
+    const gfx::Rect& anchor_rect,
+    const gfx::Size& client_size) {
+  // Check if the bounds don't fit on screen.
+  gfx::Rect monitor_rect(GetMonitorBounds(anchor_rect));
+  gfx::Rect window_bounds(bubble_border_->GetBounds(anchor_rect, client_size));
+  if (GetOffScreenLength(monitor_rect, window_bounds, vertical) > 0) {
+    BubbleBorder::ArrowLocation arrow = bubble_border()->arrow_location();
+    // Mirror the arrow and get the new bounds.
+    bubble_border_->set_arrow_location(
+        vertical ? BubbleBorder::vertical_mirror(arrow) :
+                   BubbleBorder::horizontal_mirror(arrow));
+    gfx::Rect mirror_bounds =
+        bubble_border_->GetBounds(anchor_rect, client_size);
+    // Restore the original arrow if mirroring doesn't show more of the bubble.
+    if (GetOffScreenLength(monitor_rect, mirror_bounds, vertical) >=
+        GetOffScreenLength(monitor_rect, window_bounds, vertical)) {
+      bubble_border_->set_arrow_location(arrow);
+    }
+  }
 }
 
 }  // namespace views

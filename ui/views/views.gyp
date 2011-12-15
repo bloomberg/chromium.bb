@@ -55,8 +55,6 @@
         'background.h',
         'border.cc',
         'border.h',
-        'bubble/border_contents_view.cc',
-        'bubble/border_contents_view.h',
         'bubble/bubble_border.cc',
         'bubble/bubble_border.h',
         'bubble/bubble_delegate.cc',
@@ -508,7 +506,6 @@
       'sources': [
         'accessible_pane_view_unittest.cc',
         'animation/bounds_animator_unittest.cc',
-        'bubble/border_contents_unittest.cc',
         'bubble/bubble_delegate_unittest.cc',
         'bubble/bubble_frame_view_unittest.cc',
         'controls/combobox/native_combobox_views_unittest.cc',

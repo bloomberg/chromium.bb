@@ -390,6 +390,8 @@ void ExtensionInstalledBubble::ShowInternal() {
     reference_view = browser_view->GetToolbarView()->app_menu();
   set_anchor_view(reference_view);
 
+  set_arrow_location(type_ == OMNIBOX_KEYWORD ? views::BubbleBorder::TOP_LEFT :
+                                                views::BubbleBorder::TOP_RIGHT);
   SetLayoutManager(new views::FillLayout());
   AddChildView(
       new InstalledBubbleContent(browser_, extension_, type_, &icon_, this));
@@ -403,17 +405,10 @@ gfx::Rect ExtensionInstalledBubble::GetAnchorRect() {
   if (type_ == OMNIBOX_KEYWORD) {
     LocationBarView* location_bar_view =
         BrowserView::GetBrowserViewForBrowser(browser_)->GetLocationBarView();
-    return gfx::Rect(location_bar_view->GetLocationEntryOrigin().Add(
-        gfx::Point(0, location_bar_view->location_entry_view()->height())),
-        gfx::Size());
+    return gfx::Rect(location_bar_view->GetLocationEntryOrigin(),
+        gfx::Size(0, location_bar_view->location_entry_view()->height()));
   }
   return views::BubbleDelegateView::GetAnchorRect();
-}
-
-views::BubbleBorder::ArrowLocation
-    ExtensionInstalledBubble::GetArrowLocation() const {
-  return type_ == OMNIBOX_KEYWORD ? views::BubbleBorder::TOP_LEFT :
-                                    views::BubbleBorder::TOP_RIGHT;
 }
 
 void ExtensionInstalledBubble::WindowClosing() {

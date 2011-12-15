@@ -112,11 +112,11 @@ void SpeechInputBubbleView::OnWidgetActivationChanged(views::Widget* widget,
 gfx::Rect SpeechInputBubbleView::GetAnchorRect() {
   gfx::Rect container_rect;
   tab_contents_->GetContainerBounds(&container_rect);
-  gfx::Point anchor(container_rect.x() + element_rect_.CenterPoint().x(),
-                    container_rect.y() + element_rect_.bottom());
-  if (!container_rect.Contains(anchor))
+  gfx::Rect anchor(element_rect_);
+  anchor.Offset(container_rect.origin());
+  if (!container_rect.Intersects(anchor))
     return BubbleDelegateView::GetAnchorRect();
-  return gfx::Rect(anchor, gfx::Size());
+  return anchor;
 }
 
 void SpeechInputBubbleView::Init() {

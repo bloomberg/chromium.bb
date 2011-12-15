@@ -30,7 +30,7 @@
 using content::UserMetricsAction;
 
 namespace {
-const int kAnchorVerticalOffset = -4;
+const int kAnchorVerticalInset = 5;
 const int kLayoutTopInset = 1;
 const int kLayoutLeftInset = 2;
 const int kLayoutBottomInset = 7;
@@ -102,7 +102,7 @@ void FirstRunBubble::Init() {
 gfx::Rect FirstRunBubble::GetAnchorRect() {
   // Compensate for padding in anchor.
   gfx::Rect rect(BubbleDelegateView::GetAnchorRect());
-  rect.Offset(0, anchor_view() ? kAnchorVerticalOffset : 0);
+  rect.Inset(0, anchor_view() ? kAnchorVerticalInset : 0);
   return rect;
 }
 

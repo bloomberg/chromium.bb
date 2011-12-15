@@ -88,8 +88,7 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& position_relative_to,
   gfx::Size border_size(contents_size);
   gfx::Insets insets;
   GetInsets(&insets);
-  border_size.Enlarge(insets.left() + insets.right(),
-                      insets.top() + insets.bottom());
+  border_size.Enlarge(insets.width(), insets.height());
 
   // Screen position depends on the arrow location.
   // The arrow should overlap the target by some amount since there is space

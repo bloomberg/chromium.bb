@@ -56,13 +56,13 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
       close_on_deactivate_ = close_on_deactivate;
   }
 
-  bool allow_bubble_offscreen() const { return allow_bubble_offscreen_; }
-  void set_allow_bubble_offscreen(bool allow_bubble_offscreen) {
-    allow_bubble_offscreen_ = allow_bubble_offscreen;
-  }
-
   View* anchor_view() const { return anchor_view_; }
   void set_anchor_view(View* anchor_view) { anchor_view_ = anchor_view; }
+
+  BubbleBorder::ArrowLocation arrow_location() const { return arrow_location_; }
+  void set_arrow_location(BubbleBorder::ArrowLocation arrow_location) {
+      arrow_location_ = arrow_location;
+  }
 
   SkColor color() const { return color_; }
   void set_color(SkColor color) { color_ = color; }
@@ -74,9 +74,6 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
 
   // Get the arrow's anchor rect in screen space.
   virtual gfx::Rect GetAnchorRect();
-
-  // Get the arrow's location on the bubble.
-  virtual BubbleBorder::ArrowLocation GetArrowLocation() const;
 
   // Show the bubble's widget (and |border_widget_| on Windows).
   void Show();
@@ -110,7 +107,7 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   BubbleFrameView* GetBubbleFrameView() const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewBasicTest, NonClientHitTest);
+  FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, NonClientHitTest);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CreateDelegate);
 
   // Get bubble bounds from the anchor point and client view's preferred size.
@@ -127,10 +124,6 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Flags controlling bubble closure on the escape key and deactivation.
   bool close_on_esc_;
   bool close_on_deactivate_;
-
-  // Whether the bubble is allowed to be displayed offscreen, or if auto
-  // re-positioning should be performed.
-  bool allow_bubble_offscreen_;
 
   // The view hosting this bubble; the arrow is anchored to this view.
   View* anchor_view_;

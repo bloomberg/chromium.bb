@@ -298,8 +298,7 @@ void PageInfoBubbleView::OnPageInfoModelChanged() {
 gfx::Rect PageInfoBubbleView::GetAnchorRect() {
   // Compensate for some built-in padding in the icon.
   gfx::Rect anchor(BubbleDelegateView::GetAnchorRect());
-  if (anchor_view())
-    anchor.Offset(0, -5);
+  anchor.Inset(0, anchor_view() ? 5 : 0);
   return anchor;
 }
 

@@ -65,7 +65,6 @@ class ExtensionInstalledBubble
 
   // views::BubbleDelegate
   virtual gfx::Rect GetAnchorRect() OVERRIDE;
-  virtual views::BubbleBorder::ArrowLocation GetArrowLocation() const OVERRIDE;
 
   const Extension* extension_;
   Browser* browser_;

@@ -121,7 +121,7 @@ views::View* BookmarkBubbleView::GetInitiallyFocusedView() {
 gfx::Rect BookmarkBubbleView::GetAnchorRect() {
   // Compensate for some built-in padding in the star image.
   gfx::Rect rect(BubbleDelegateView::GetAnchorRect());
-  rect.Offset(0, -5);
+  rect.Inset(0, anchor_view() ? 5 : 0);
   return rect;
 }
 

@@ -29,8 +29,8 @@ const int kMaxBubbleViewWidth = 262;
 // The horizontal padding between the title and the icon.
 const int kTitleHorizontalPadding = 3;
 
-// The vertical offset of the wrench bubble from the wrench menu button.
-const int kWrenchBubblePointOffsetY = -6;
+// The vertical inset of the wrench bubble anchor from the wrench menu button.
+const int kAnchorVerticalInset = 5;
 
 const int kLayoutBottomPadding = 2;
 
@@ -125,7 +125,7 @@ GlobalErrorBubbleView::~GlobalErrorBubbleView() {
 
 gfx::Rect GlobalErrorBubbleView::GetAnchorRect() {
   gfx::Rect rect(views::BubbleDelegateView::GetAnchorRect());
-  rect.Offset(0, anchor_view() ? kWrenchBubblePointOffsetY : 0);
+  rect.Inset(0, anchor_view() ? kAnchorVerticalInset : 0);
   return rect;
 }
 

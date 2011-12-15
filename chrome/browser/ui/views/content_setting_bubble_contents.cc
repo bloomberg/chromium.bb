@@ -135,7 +135,7 @@ gfx::Size ContentSettingBubbleContents::GetPreferredSize() {
 
 gfx::Rect ContentSettingBubbleContents::GetAnchorRect() {
   gfx::Rect rect(BubbleDelegateView::GetAnchorRect());
-  rect.Offset(0, -5);
+  rect.Inset(0, anchor_view() ? 5 : 0);
   return rect;
 }
 

@@ -22,7 +22,7 @@ TEST_F(BubbleDelegateTest, CreateDelegate) {
 
   BubbleBorder* border =
       bubble_delegate->GetBubbleFrameView()->bubble_border();
-  EXPECT_EQ(bubble_delegate->GetArrowLocation(), border->arrow_location());
+  EXPECT_EQ(bubble_delegate->arrow_location(), border->arrow_location());
   EXPECT_EQ(bubble_delegate->color(), border->background_color());
 
   bubble_widget->CloseNow();
