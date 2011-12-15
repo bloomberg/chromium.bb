@@ -273,6 +273,23 @@ WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
   return webkit_event;
 }
 
+WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
+    aura::ScrollEvent* event) {
+  WebKit::WebMouseWheelEvent webkit_event;
+
+  webkit_event.type = WebKit::WebInputEvent::MouseWheel;
+  webkit_event.button = WebKit::WebMouseEvent::ButtonNone;
+  webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
+  webkit_event.timeStampSeconds = event->time_stamp().ToDoubleT();
+  // TODO(davemoore) Support X offset, once cmt generates better data.
+  if (abs(event->y_offset()) >= 1) {
+    webkit_event.deltaY = event->y_offset();
+    webkit_event.wheelTicksY = webkit_event.deltaY > 0 ? 1 : -1;
+  }
+
+  return webkit_event;
+}
+
 WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     aura::KeyEvent* event) {
   base::NativeEvent native_event = event->native_event();

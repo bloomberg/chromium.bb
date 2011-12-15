@@ -22,6 +22,8 @@ WebKit::WebTouchPoint* UpdateWebTouchEventFromNativeEvent(
 WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(aura::MouseEvent* event);
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
     aura::MouseEvent* event);
+WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
+    aura::ScrollEvent* event);
 WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     aura::KeyEvent* event);
 WebKit::WebTouchPoint* UpdateWebTouchEventFromAuraEvent(
@@ -74,6 +76,29 @@ WebKit::WebMouseEvent MakeWebMouseEvent(aura::MouseEvent* event) {
 }
 
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(aura::MouseEvent* event) {
+#if defined(OS_WIN)
+  // Construct an untranslated event from the platform event data.
+  WebKit::WebMouseWheelEvent webkit_event =
+      MakeUntranslatedWebMouseWheelEventFromNativeEvent(event->native_event());
+#else
+  WebKit::WebMouseWheelEvent webkit_event =
+      MakeWebMouseWheelEventFromAuraEvent(event);
+#endif
+
+  // Replace the event's coordinate fields with translated position data from
+  // |event|.
+  webkit_event.windowX = webkit_event.x = event->x();
+  webkit_event.windowY = webkit_event.y = event->y();
+
+  const gfx::Point host_point =
+      ui::EventLocationFromNative(event->native_event());
+  webkit_event.globalX = host_point.x();
+  webkit_event.globalY = host_point.y();
+
+  return webkit_event;
+}
+
+WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(aura::ScrollEvent* event) {
 #if defined(OS_WIN)
   // Construct an untranslated event from the platform event data.
   WebKit::WebMouseWheelEvent webkit_event =

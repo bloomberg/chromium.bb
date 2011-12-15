@@ -204,6 +204,29 @@ class AURA_EXPORT DropTargetEvent : public LocatedEvent {
   DISALLOW_COPY_AND_ASSIGN(DropTargetEvent);
 };
 
+class AURA_EXPORT ScrollEvent : public MouseEvent {
+ public:
+  ScrollEvent(const base::NativeEvent& native_event);
+  ScrollEvent(const ScrollEvent& model,
+              Window* source,
+              Window* target,
+              ui::EventType type,
+              int flags)
+      : MouseEvent(model, source, target, type, flags),
+        x_offset_(model.x_offset_),
+        y_offset_(model.y_offset_) {
+  }
+
+  float x_offset() const { return x_offset_; }
+  float y_offset() const { return y_offset_; }
+
+ private:
+  float x_offset_;
+  float y_offset_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollEvent);
+};
+
 }  // namespace aura
 
 #endif  // UI_AURA_EVENT_H_

@@ -37,6 +37,8 @@ class RootWindowObserver;
 class KeyEvent;
 class MouseEvent;
 class ScreenAura;
+class StackingClient;
+class ScrollEvent;
 class TouchEvent;
 
 // RootWindow is responsible for hosting a set of windows.
@@ -80,6 +82,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Handles a key event. Returns true if handled.
   bool DispatchKeyEvent(KeyEvent* event);
+
+  // Handles a scroll event. Returns true if handled.
+  bool DispatchScrollEvent(ScrollEvent* event);
 
   // Handles a touch event. Returns true if handled.
   bool DispatchTouchEvent(TouchEvent* event);

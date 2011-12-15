@@ -5,6 +5,7 @@
 #include "ui/base/events.h"
 
 #include <X11/Xlib.h>
+#include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
 #include <string.h>
 
@@ -17,6 +18,10 @@
 #if !defined(TOOLKIT_USES_GTK)
 #include "base/message_pump_x.h"
 #endif
+
+// Copied from xserver-properties.h
+#define AXIS_LABEL_PROP_REL_HWHEEL "Rel Horiz Wheel"
+#define AXIS_LABEL_PROP_REL_WHEEL "Rel Vert Wheel"
 
 namespace {
 
@@ -34,6 +39,125 @@ static const int kMaxWheelButton = 9;
 #else
 static const int kMaxWheelButton = 7;
 #endif
+
+// A class to support the detection of scroll events, using X11 valuators.
+class UI_EXPORT ScrollEventData {
+ public:
+  // Returns the ScrollEventData singleton.
+  static ScrollEventData* GetInstance() {
+    return Singleton<ScrollEventData>::get();
+  }
+
+  // Updates the list of devices.
+  void UpdateDeviceList(Display* display) {
+    scroll_devices_.reset();
+    device_to_valuators_.clear();
+
+    int count = 0;
+    XDeviceInfo* dev_list = XListInputDevices(display, &count);
+    Atom xi_touchpad = XInternAtom(display, XI_TOUCHPAD, false);
+    for (int i = 0; i < count; ++i) {
+      XDeviceInfo* dev = dev_list + i;
+      if (dev->type == xi_touchpad)
+        scroll_devices_[dev_list[i].id] = true;
+    }
+    if (dev_list)
+      XFreeDeviceList(dev_list);
+
+    XIDeviceInfo* info_list = XIQueryDevice(display, XIAllDevices, &count);
+    Atom x_axis = XInternAtom(display, AXIS_LABEL_PROP_REL_HWHEEL, false);
+    Atom y_axis = XInternAtom(display, AXIS_LABEL_PROP_REL_WHEEL, false);
+    for (int i = 0; i < count; ++i) {
+      XIDeviceInfo* info = info_list + i;
+
+      if (!scroll_devices_[info->deviceid])
+        continue;
+
+      if (info->use != XISlavePointer && info->use != XIFloatingSlave) {
+        scroll_devices_[info->deviceid] = false;
+        continue;
+      }
+
+      Valuators valuators = {-1, -1};
+      for (int j = 0; j < info->num_classes; ++j) {
+        if (info->classes[j]->type != XIValuatorClass)
+          continue;
+
+        XIValuatorClassInfo* v =
+            reinterpret_cast<XIValuatorClassInfo*>(info->classes[j]);
+        if (v->label == x_axis)
+          valuators.x_scroll = v->number;
+        else if (v->label == y_axis)
+          valuators.y_scroll = v->number;
+      }
+      if (valuators.x_scroll >= 0 && valuators.y_scroll >= 0)
+        device_to_valuators_[info->deviceid] = valuators;
+      else
+        scroll_devices_[info->deviceid] = false;
+    }
+  }
+
+  // Returns true if this is a scroll event (a motion event with the necessary
+  // valuators. Also returns the offsets. |x_offset| and |y_offset| can be
+  // NULL.
+  bool GetScrollOffsets(const XEvent& xev, float* x_offset, float* y_offset) {
+    XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev.xcookie.data);
+
+    if (x_offset)
+      *x_offset = 0;
+    if (y_offset)
+      *y_offset = 0;
+
+    if (!scroll_devices_[xiev->deviceid])
+      return false;
+
+    int x_scroll = device_to_valuators_[xiev->deviceid].x_scroll;
+    int y_scroll = device_to_valuators_[xiev->deviceid].y_scroll;
+
+    bool has_x_offset = XIMaskIsSet(xiev->valuators.mask, x_scroll);
+    bool has_y_offset = XIMaskIsSet(xiev->valuators.mask, y_scroll);
+    bool is_scroll = has_x_offset || has_y_offset;
+
+    if (!x_offset && !y_offset)
+      return is_scroll;
+
+    double* valuators = xiev->valuators.values;
+    for (int i = 0; i < xiev->valuators.mask_len * 8; ++i) {
+      if (XIMaskIsSet(xiev->valuators.mask, i)) {
+        if (x_offset && x_scroll == i)
+          *x_offset = -(*valuators);
+        else if (y_offset && y_scroll == i)
+          *y_offset = -(*valuators);
+        valuators++;
+      }
+    }
+
+    return is_scroll;
+  }
+
+ private:
+  // Requirement for Singleton
+  friend struct DefaultSingletonTraits<ScrollEventData>;
+
+  struct Valuators {
+    int x_scroll;
+    int y_scroll;
+  };
+
+  ScrollEventData() {
+    UpdateDeviceList(ui::GetXDisplay());
+  }
+
+  ~ScrollEventData() {}
+
+  // A quick lookup table for determining if events from the pointer device
+  // should be processed.
+  static const int kMaxDeviceNum = 128;
+  std::bitset<kMaxDeviceNum> scroll_devices_;
+  std::map<int, Valuators> device_to_valuators_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollEventData);
+};
 
 int GetEventFlagsFromXState(unsigned int state) {
   int flags = 0;
@@ -192,21 +316,22 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
           static_cast<XIDeviceEvent*>(native_event->xcookie.data);
       if (TouchFactory::GetInstance()->IsTouchDevice(xievent->sourceid))
         return GetTouchEventType(native_event);
-      int button = EventButtonFromNative(native_event);
       switch (xievent->evtype) {
         case XI_ButtonPress:
-          if (button >= kMinWheelButton &&
-              button <= kMaxWheelButton)
+        case XI_ButtonRelease: {
+          int button = EventButtonFromNative(native_event);
+          if (button >= kMinWheelButton && button <= kMaxWheelButton)
             return ET_MOUSEWHEEL;
-          return ET_MOUSE_PRESSED;
-        case XI_ButtonRelease:
-          if (button >= kMinWheelButton &&
-              button <= kMaxWheelButton)
-            return ET_MOUSEWHEEL;
-          return ET_MOUSE_RELEASED;
+          return xievent->evtype == XI_ButtonPress ?
+              ET_MOUSE_PRESSED : ET_MOUSE_RELEASED;
+        }
         case XI_Motion:
-          return GetButtonMaskForX2Event(xievent) ?
-              ET_MOUSE_DRAGGED : ET_MOUSE_MOVED;
+          if (GetScrollOffsets(native_event, NULL, NULL))
+            return ET_SCROLL;
+          else if (GetButtonMaskForX2Event(xievent))
+            return ET_MOUSE_DRAGGED;
+          else
+            return ET_MOUSE_MOVED;
       }
     }
     default:
@@ -403,6 +528,19 @@ float GetTouchForce(const base::NativeEvent& native_event) {
       deviceid, ui::TouchFactory::TP_PRESSURE, &force))
     force = 0.0;
   return force;
+}
+
+bool GetScrollOffsets(const base::NativeEvent& native_event,
+                      float* x_offset,
+                      float* y_offset) {
+  return ScrollEventData::GetInstance()->GetScrollOffsets(
+      *native_event, x_offset, y_offset);
+}
+
+void UpdateDeviceList() {
+  Display* display = GetXDisplay();
+  ScrollEventData::GetInstance()->UpdateDeviceList(display);
+  TouchFactory::GetInstance()->UpdateDeviceList(display);
 }
 
 base::NativeEvent CreateNoopEvent() {

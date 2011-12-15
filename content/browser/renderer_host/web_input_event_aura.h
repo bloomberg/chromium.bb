@@ -11,6 +11,7 @@
 namespace aura {
 class KeyEvent;
 class MouseEvent;
+class ScrollEvent;
 class TouchEvent;
 }
 
@@ -18,6 +19,7 @@ namespace content {
 
 WebKit::WebMouseEvent MakeWebMouseEvent(aura::MouseEvent* event);
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(aura::MouseEvent* event);
+WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(aura::ScrollEvent* event);
 WebKit::WebKeyboardEvent MakeWebKeyboardEvent(aura::KeyEvent* event);
 
 // Updates the WebTouchEvent based on the TouchEvent. It returns the updated

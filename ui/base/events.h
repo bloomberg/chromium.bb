@@ -35,6 +35,7 @@ enum EventType {
   ET_TOUCH_CANCELLED,
   ET_DROP_TARGET_EVENT,
   ET_FOCUS_CHANGE,
+  ET_SCROLL,
 };
 
 // Event flags currently supported
@@ -69,6 +70,9 @@ enum TouchStatus {
                              // synthetic mouse event generated from the
                              // unused touch event was handled.
 };
+
+// Updates the list of devices for cached properties.
+UI_EXPORT void UpdateDeviceList();
 
 // Get the EventType from a native event.
 UI_EXPORT EventType EventTypeFromNative(const base::NativeEvent& native_event);
@@ -110,6 +114,12 @@ UI_EXPORT float GetTouchAngle(const base::NativeEvent& native_event);
 
 // Gets the force from a native_event. Normalized to be [0, 1]. Default is 0.0.
 UI_EXPORT float GetTouchForce(const base::NativeEvent& native_event);
+
+// Returns whether this is a scroll event and optionally gets the amount to be
+// scrolled. |x_offset| and |y_offset| can be NULL.
+UI_EXPORT bool GetScrollOffsets(const base::NativeEvent& native_event,
+                                float* x_offset,
+                                float* y_offset);
 
 // Creates and returns no-op event.
 UI_EXPORT base::NativeEvent CreateNoopEvent();

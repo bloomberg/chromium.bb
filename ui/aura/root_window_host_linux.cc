@@ -197,7 +197,8 @@ int CoalescePendingXIMotionEvents(const XEvent* xev, XEvent* last_event) {
     }
 
     if (next_event.type == GenericEvent &&
-        next_event.xgeneric.evtype == XI_Motion) {
+        next_event.xgeneric.evtype == XI_Motion &&
+        !ui::GetScrollOffsets(&next_event, NULL, NULL)) {
       XIDeviceEvent* next_xievent =
           static_cast<XIDeviceEvent*>(next_event.xcookie.data);
       // Confirm that the motion event is targeted at the same window
@@ -343,7 +344,6 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
   XSelectInput(xdisplay_, x_root_window_, StructureNotifyMask);
   XFlush(xdisplay_);
 
-  // TODO(sad): Re-enable once crbug.com/106516 is fixed.
   if (base::MessagePumpForUI::HasXInput2())
     ui::TouchFactory::GetInstance()->SetupXI2ForXWindow(xwindow_);
 
@@ -422,22 +422,17 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
 
       // Update the device list if necessary.
       if (xev->xgeneric.evtype == XI_HierarchyChanged) {
-        factory->UpdateDeviceList(xdisplay_);
+        ui::UpdateDeviceList();
         handled = true;
         break;
       }
 
+      ui::EventType type = ui::EventTypeFromNative(xev);
       // If this is a motion event we want to coalesce all pending motion
       // events that are at the top of the queue.
       XEvent last_event;
       int num_coalesced = 0;
-      if (xev->xgeneric.evtype == XI_Motion) {
-        num_coalesced = CoalescePendingXIMotionEvents(xev, &last_event);
-        if (num_coalesced > 0)
-          xev = &last_event;
-      }
 
-      ui::EventType type = ui::EventTypeFromNative(xev);
       switch (type) {
         case ui::ET_TOUCH_PRESSED:
         case ui::ET_TOUCH_RELEASED:
@@ -446,15 +441,26 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
           handled = root_window_->DispatchTouchEvent(&touchev);
           break;
         }
+        case ui::ET_MOUSE_MOVED:
+        case ui::ET_MOUSE_DRAGGED: {
+          // If this is a motion event we want to coalesce all pending motion
+          // events that are at the top of the queue.
+          num_coalesced = CoalescePendingXIMotionEvents(xev, &last_event);
+          if (num_coalesced > 0)
+            xev = &last_event;
+        }
         case ui::ET_MOUSE_PRESSED:
         case ui::ET_MOUSE_RELEASED:
-        case ui::ET_MOUSE_MOVED:
-        case ui::ET_MOUSE_DRAGGED:
         case ui::ET_MOUSEWHEEL:
         case ui::ET_MOUSE_ENTERED:
         case ui::ET_MOUSE_EXITED: {
           MouseEvent mouseev(xev);
           handled = root_window_->DispatchMouseEvent(&mouseev);
+          break;
+        }
+        case ui::ET_SCROLL: {
+          ScrollEvent scrollev(xev);
+          handled = root_window_->DispatchScrollEvent(&scrollev);
           break;
         }
         case ui::ET_UNKNOWN:

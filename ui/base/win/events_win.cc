@@ -253,6 +253,17 @@ float GetTouchForce(const base::NativeEvent& native_event) {
   return 0.0;
 }
 
+bool GetScrollOffsets(const base::NativeEvent& native_event,
+                      float* x_offset,
+                      float* y_offset) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void UpdateDeviceList() {
+  NOTIMPLEMENTED();
+}
+
 base::NativeEvent CreateNoopEvent() {
   MSG event;
   event.message = WM_USER;

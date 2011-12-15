@@ -251,4 +251,9 @@ uint16 KeyEvent::GetUnmodifiedCharacter() const {
 #endif
 }
 
+ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
+    : MouseEvent(native_event) {
+  ui::GetScrollOffsets(native_event, &x_offset_, &y_offset_);
+}
+
 }  // namespace aura

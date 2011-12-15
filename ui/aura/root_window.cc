@@ -170,6 +170,28 @@ bool RootWindow::DispatchKeyEvent(KeyEvent* event) {
   return false;
 }
 
+bool RootWindow::DispatchScrollEvent(ScrollEvent* event) {
+  event->UpdateForTransform(layer()->transform());
+
+  last_mouse_location_ = event->location();
+
+  Window* target =
+      mouse_pressed_handler_ ? mouse_pressed_handler_ : capture_window_;
+  if (!target)
+    target = GetEventHandlerForPoint(event->location());
+
+  if (target && target->delegate()) {
+    int flags = event->flags();
+    gfx::Point location_in_window = event->location();
+    Window::ConvertPointToWindow(this, target, &location_in_window);
+    if (IsNonClientLocation(target, location_in_window))
+      flags |= ui::EF_IS_NON_CLIENT;
+    ScrollEvent translated_event(*event, this, target, event->type(), flags);
+    return ProcessMouseEvent(target, &translated_event);
+  }
+  return false;
+}
+
 bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
   event->UpdateForTransform(layer()->transform());
   bool handled = false;

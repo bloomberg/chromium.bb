@@ -410,6 +410,19 @@ class VIEWS_EXPORT DropTargetEvent : public LocatedEvent {
   DISALLOW_COPY_AND_ASSIGN(DropTargetEvent);
 };
 
+class VIEWS_EXPORT ScrollEvent : public MouseEvent {
+ public:
+  explicit ScrollEvent(const NativeEvent& native_event);
+  float x_offset() const { return x_offset_; }
+  float y_offset() const { return y_offset_; }
+
+ private:
+  float x_offset_;
+  float y_offset_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollEvent);
+};
+
 }  // namespace views
 
 #endif  // UI_VIEWS_EVENTS_EVENT_H_

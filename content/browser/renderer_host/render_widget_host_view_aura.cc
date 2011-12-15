@@ -506,6 +506,10 @@ int RenderWidgetHostViewAura::GetNonClientComponent(
 bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSEWHEEL)
     host_->ForwardWheelEvent(content::MakeWebMouseWheelEvent(event));
+  else if (event->type() == ui::ET_SCROLL)
+    host_->ForwardWheelEvent(
+        content::MakeWebMouseWheelEvent(
+            static_cast<aura::ScrollEvent*>(event)));
   else if (CanRendererHandleEvent(event->native_event()))
     host_->ForwardMouseEvent(content::MakeWebMouseEvent(event));
 

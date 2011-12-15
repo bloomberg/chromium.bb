@@ -59,4 +59,10 @@ MouseWheelEvent::MouseWheelEvent(const NativeEvent& native_event)
       offset_(ui::GetMouseWheelOffset(native_event->native_event())) {
 }
 
+ScrollEvent::ScrollEvent(const NativeEvent& native_event)
+    : MouseEvent(native_event) {
+  CHECK(ui::GetScrollOffsets(
+      native_event->native_event(), &x_offset_, &y_offset_));
+}
+
 }  // namespace views
