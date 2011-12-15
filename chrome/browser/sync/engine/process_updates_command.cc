@@ -27,10 +27,6 @@ using sessions::UpdateProgress;
 ProcessUpdatesCommand::ProcessUpdatesCommand() {}
 ProcessUpdatesCommand::~ProcessUpdatesCommand() {}
 
-bool ProcessUpdatesCommand::HasCustomGroupsToChange() const {
-  return true;
-}
-
 std::set<ModelSafeGroup> ProcessUpdatesCommand::GetGroupsToChange(
     const sessions::SyncSession& session) const {
   return session.GetEnabledGroupsWithVerifiedUpdates();

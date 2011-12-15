@@ -27,10 +27,6 @@ using syncable::SYNCER;
 VerifyUpdatesCommand::VerifyUpdatesCommand() {}
 VerifyUpdatesCommand::~VerifyUpdatesCommand() {}
 
-bool VerifyUpdatesCommand::HasCustomGroupsToChange() const {
-  return true;
-}
-
 std::set<ModelSafeGroup> VerifyUpdatesCommand::GetGroupsToChange(
     const sessions::SyncSession& session) const {
   std::set<ModelSafeGroup> groups_with_updates;

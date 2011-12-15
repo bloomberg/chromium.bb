@@ -17,10 +17,6 @@ using sessions::SyncSession;
 ApplyUpdatesCommand::ApplyUpdatesCommand() {}
 ApplyUpdatesCommand::~ApplyUpdatesCommand() {}
 
-bool ApplyUpdatesCommand::HasCustomGroupsToChange() const {
-  return true;
-}
-
 std::set<ModelSafeGroup> ApplyUpdatesCommand::GetGroupsToChange(
     const sessions::SyncSession& session) const {
   std::set<ModelSafeGroup> groups_with_unapplied_updates;

@@ -14,10 +14,6 @@ namespace browser_sync {
 ResolveConflictsCommand::ResolveConflictsCommand() {}
 ResolveConflictsCommand::~ResolveConflictsCommand() {}
 
-bool ResolveConflictsCommand::HasCustomGroupsToChange() const {
-  return true;
-}
-
 std::set<ModelSafeGroup> ResolveConflictsCommand::GetGroupsToChange(
     const sessions::SyncSession& session) const {
   return session.GetEnabledGroupsWithConflicts();

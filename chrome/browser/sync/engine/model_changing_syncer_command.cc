@@ -19,9 +19,7 @@ void ModelChangingSyncerCommand::ExecuteImpl(sessions::SyncSession* session) {
   }
 
   const std::set<ModelSafeGroup>& groups_to_change =
-      HasCustomGroupsToChange() ?
-      GetGroupsToChange(*work_session_) :
-      session->GetEnabledGroups();
+      GetGroupsToChange(*work_session_);
   for (size_t i = 0; i < session->workers().size(); ++i) {
     ModelSafeWorker* worker = work_session_->workers()[i];
     ModelSafeGroup group = worker->GetModelSafeGroup();

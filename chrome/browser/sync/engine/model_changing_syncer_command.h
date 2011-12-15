@@ -48,15 +48,6 @@ class ModelChangingSyncerCommand : public SyncerCommand {
   }
 
  protected:
-  // Hack to track down which subclass triggers the perf regression.
-  // (See comments in http://codereview.chromium.org/8637006/ for
-  // details.)  If this returns false (the default),
-  // GetGroupsToChange() is not used and session.GetEnabledGroups()
-  // is used instead.
-  //
-  // TODO(akalin): Remove this when we track down the perf regression.
-  virtual bool HasCustomGroupsToChange() const = 0;
-
   // This should return the set of groups in |session| that need to be
   // changed.  The returned set should be a subset of
   // session.GetEnabledGroups().  Subclasses can guarantee this either

@@ -60,10 +60,6 @@ void ResetErrorCounters(StatusController* status) {
 ProcessCommitResponseCommand::ProcessCommitResponseCommand() {}
 ProcessCommitResponseCommand::~ProcessCommitResponseCommand() {}
 
-bool ProcessCommitResponseCommand::HasCustomGroupsToChange() const {
-  return true;
-}
-
 std::set<ModelSafeGroup> ProcessCommitResponseCommand::GetGroupsToChange(
     const sessions::SyncSession& session) const {
   std::set<ModelSafeGroup> groups_with_commits;

@@ -30,10 +30,6 @@ using std::vector;
 BuildAndProcessConflictSetsCommand::BuildAndProcessConflictSetsCommand() {}
 BuildAndProcessConflictSetsCommand::~BuildAndProcessConflictSetsCommand() {}
 
-bool BuildAndProcessConflictSetsCommand::HasCustomGroupsToChange() const {
-  return true;
-}
-
 std::set<ModelSafeGroup> BuildAndProcessConflictSetsCommand::GetGroupsToChange(
     const sessions::SyncSession& session) const {
   return session.GetEnabledGroupsWithConflicts();

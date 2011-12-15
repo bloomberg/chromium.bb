@@ -26,10 +26,6 @@ class FakeModelChangingSyncerCommand : public ModelChangingSyncerCommand {
   }
 
  protected:
-  virtual bool HasCustomGroupsToChange() const OVERRIDE {
-    return false;
-  }
-
   virtual std::set<ModelSafeGroup> GetGroupsToChange(
       const sessions::SyncSession& session) const OVERRIDE {
     return session.GetEnabledGroups();
