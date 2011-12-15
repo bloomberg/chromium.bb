@@ -220,22 +220,15 @@ def MakeSelUniversalScriptForLD(ld_flags,
 
   # Open the output file.
   script.append('readwrite_file nexefile %s' % outfile)
-  # Start the pnacl lookup service.
-  script.append('pnacl_emu_initialize')
-  script.append('install_upcalls lookup_service_string dummy_channel')
   # Create a mapping for each input file and add it to the command line.
   for f in files:
     basename = pathtools.basename(f)
-    # A nice name for making a sel_universal variable.
-    # Hopefully this does not clash...
     script.append('reverse_service_add_manifest_mapping files/%s %s' %
                   (basename, f))
 
   use_default = env.getbool('USE_DEFAULT_CMD_LINE')
   if use_default:
     basename = pathtools.basename(main_input)
-    # A nice name for making a sel_universal variable.
-    # Hopefully this does not clash...
     script.append('readonly_file objfile %s' % main_input)
     script.append('rpc RunWithDefaultCommandLine '
                   'h(objfile) h(nexefile) i(0) s("") s("") *')
