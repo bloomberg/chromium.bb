@@ -4190,6 +4190,8 @@
           ],
           'sources/': [
             ['exclude', '^browser/safe_browsing/'],
+            ['include', '^browser/safe_browsing/safe_browsing_tab_observer.cc'],
+            ['include', '^browser/safe_browsing/safe_browsing_tab_observer.h'],
           ],
         }],
         ['chromeos==0', {

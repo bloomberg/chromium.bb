@@ -7,7 +7,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -17,7 +16,18 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
+#if defined(ENABLE_SAFE_BROWSING)
+#include "chrome/browser/safe_browsing/client_side_detection_host.h"
+#endif
+
 namespace safe_browsing {
+
+#if !defined(ENABLE_SAFE_BROWSING)
+// Provide a dummy implementation so that scoped_ptr<ClientSideDetectionHost>
+// has a concrete destructor to call. This is necessary because it is used
+// as a member of SafeBrowsingTabObserver, even if it only ever contains NULL.
+class ClientSideDetectionHost { };
+#endif
 
 SafeBrowsingTabObserver::SafeBrowsingTabObserver(
     TabContentsWrapper* wrapper) : wrapper_(wrapper) {
