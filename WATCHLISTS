@@ -64,6 +64,9 @@
     'history': {
       'filepath': 'chrome/browser/history/.*',
     },
+    'history_ui': {
+      'filepath': 'chrome/browser/resources/history.*',
+    },
     'renderer': {
       'filepath': 'chrome/browser/renderer_host/.*|chrome/renderer/.*|'\
         'chrome/common/render.*',
@@ -332,6 +335,7 @@
                 'dpranke-watch+content@chromium.org'],
     'download': ['phajdan.jr@chromium.org','rdsmith+dwatch@chromium.org'],
     'history': ['brettw-cc@chromium.org'],
+    'history_ui': ['dubroy@chromium.org'],
     'renderer': ['darin-cc@chromium.org',
                  'brettw-cc@chromium.org'],
     'tab_contents': ['brettw-cc@chromium.org', 'avi@chromium.org',
