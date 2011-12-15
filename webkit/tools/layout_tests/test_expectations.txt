@@ -7,3 +7,7 @@
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
 
+BUGCR107668: fast/speech/input-appearance-numberandspeech.html = IMAGE
+BUGCR107668: fast/speech/input-appearance-searchandspeech.html = IMAGE
+BUGCR107668: fast/speech/input-appearance-speechbutton.html = IMAGE
+BUGCR107668: fast/speech/speech-bidi-rendering.html = IMAGE
