@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_VIEW_H_
 
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/chromeos/input_method/ibus_ui_controller.h"
 #include "ui/views/view.h"
 
@@ -133,6 +134,8 @@ class CandidateWindowView : public views::View {
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(CandidateWindowViewTest, MozcUpdateCandidateTest);
+
   // Initializes the candidate views if needed.
   void MaybeInitializeCandidateViews(
       const InputMethodLookupTable& lookup_table);

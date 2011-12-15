@@ -1,13 +1,16 @@
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// TODO(nona): Add unittests for UpdateCandidates.
 
 #include "chrome/browser/chromeos/input_method/candidate_window_view.h"
 
 #include <string>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/test/views_test_base.h"
+#include "ui/views/widget/widget.h"
+
+typedef views::ViewsTestBase CandidateWindowViewTest;
 
 namespace chromeos {
 namespace input_method {
@@ -57,13 +60,11 @@ void AppendCandidateIntoMozcCandidates(InputMethodLookupTable* table,
   candidate->set_value(value);
   candidate->set_id(current_entry_count);
   candidate->set_information_id(current_entry_count);
-
-
 }
 
 }  // namespace
 
-TEST(CandidateWindowViewTest, ShouldUpdateCandidateViewsTest) {
+TEST_F(CandidateWindowViewTest, ShouldUpdateCandidateViewsTest) {
   // This test verifies the process of judging update lookup-table or not.
   // This judgement is handled by ShouldUpdateCandidateViews, which returns true
   // if update is necessary and vice versa.
@@ -176,7 +177,7 @@ TEST(CandidateWindowViewTest, ShouldUpdateCandidateViewsTest) {
                                                               new_table));
 }
 
-TEST(CandidateWindowViewTest, MozcSuggestWindowShouldUpdateTest) {
+TEST_F(CandidateWindowViewTest, MozcSuggestWindowShouldUpdateTest) {
   // ShouldUpdateCandidateViews method should also judge with consideration of
   // the mozc specific candidate information. Following tests verify them.
   const char* kSampleCandidate1 = "Sample Candidate 1";
@@ -331,5 +332,83 @@ TEST(CandidateWindowViewTest, MozcSuggestWindowShouldUpdateTest) {
                                                               new_table));
 }
 
+TEST_F(CandidateWindowViewTest, MozcUpdateCandidateTest) {
+  // This test verifies whether UpdateCandidates function updates window mozc
+  // specific candidate position correctly on the correct condition.
+
+  // For testing, we have to prepare empty widget.
+  // We should NOT manually free widget by default, otherwise double free will
+  // be occurred. So, we should instantiate widget class with "new" operation.
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  widget->Init(params);
+
+  CandidateWindowView candidate_window_view(widget);
+  candidate_window_view.Init();
+
+  const int kCaretPositionX1 = 10;
+  const int kCaretPositionY1 = 20;
+  const int kCaretPositionWidth1 = 30;
+  const int kCaretPositionHeight1 = 40;
+
+  const int kCaretPositionX2 = 15;
+  const int kCaretPositionY2 = 25;
+  const int kCaretPositionWidth2 = 35;
+  const int kCaretPositionHeight2 = 45;
+
+  InputMethodLookupTable new_table;
+  ClearInputMethodLookupTable(&new_table);
+  InitializeMozcCandidates(&new_table);
+
+  // If window location is CARET, use default position. So
+  // is_suggestion_window_location_available_ should be false.
+  SetCaretRectIntoMozcCandidates(&new_table,
+                                 mozc::commands::Candidates::CARET,
+                                 kCaretPositionX1,
+                                 kCaretPositionY1,
+                                 kCaretPositionWidth1,
+                                 kCaretPositionHeight1);
+  candidate_window_view.UpdateCandidates(new_table);
+  EXPECT_FALSE(candidate_window_view.is_suggestion_window_location_available_);
+
+  // If window location is COMPOSITION, update position and set
+  // is_suggestion_window_location_available_ as true.
+  SetCaretRectIntoMozcCandidates(&new_table,
+                                 mozc::commands::Candidates::COMPOSITION,
+                                 kCaretPositionX1,
+                                 kCaretPositionY1,
+                                 kCaretPositionWidth1,
+                                 kCaretPositionHeight1);
+  candidate_window_view.UpdateCandidates(new_table);
+  EXPECT_TRUE(candidate_window_view.is_suggestion_window_location_available_);
+  EXPECT_EQ(kCaretPositionX1,
+            candidate_window_view.suggestion_window_location_.x());
+  EXPECT_EQ(kCaretPositionY1,
+            candidate_window_view.suggestion_window_location_.y());
+  EXPECT_EQ(kCaretPositionWidth1,
+            candidate_window_view.suggestion_window_location_.width());
+  EXPECT_EQ(kCaretPositionHeight1,
+            candidate_window_view.suggestion_window_location_.height());
+
+  SetCaretRectIntoMozcCandidates(&new_table,
+                                 mozc::commands::Candidates::COMPOSITION,
+                                 kCaretPositionX2,
+                                 kCaretPositionY2,
+                                 kCaretPositionWidth2,
+                                 kCaretPositionHeight2);
+  candidate_window_view.UpdateCandidates(new_table);
+  EXPECT_TRUE(candidate_window_view.is_suggestion_window_location_available_);
+  EXPECT_EQ(kCaretPositionX2,
+            candidate_window_view.suggestion_window_location_.x());
+  EXPECT_EQ(kCaretPositionY2,
+            candidate_window_view.suggestion_window_location_.y());
+  EXPECT_EQ(kCaretPositionWidth2,
+            candidate_window_view.suggestion_window_location_.width());
+  EXPECT_EQ(kCaretPositionHeight2,
+            candidate_window_view.suggestion_window_location_.height());
+
+  // We should call CloseNow method, otherwise this test will leak memory.
+  widget->CloseNow();
+}
 }  // namespace input_method
 }  // namespace chromeos
