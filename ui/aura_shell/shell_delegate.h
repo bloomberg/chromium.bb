@@ -50,10 +50,6 @@ class AURA_SHELL_EXPORT ShellDelegate {
   // an entry for |item->window| it should configure |item| appropriately and
   // return true.
   virtual bool ConfigureLauncherItem(LauncherItem* item) = 0;
-
-  // Returns the resource id of the image to show on the button that creates a
-  // new browser window.
-  virtual int GetResourceIDForNewBrowserWindow() = 0;
 };
 }  // namespace aura_shell
 

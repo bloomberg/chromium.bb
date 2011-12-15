@@ -133,7 +133,9 @@
 
       <!-- Images only used by Aura. -->
       <if expr="pp_ifdef('use_aura')">
-        <include name="IDR_AURA_LAUNCHER_ICON_CHROME" file="aura/chromium-32.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_NEW_BROWSER" file="aura/new_browser.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_NEW_BROWSER_HOT" file="aura/new_browser_h.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_NEW_BROWSER_PUSHED" file="aura/new_browser_p.png" type="BINDATA" />
         <include name="IDR_AURA_LAUNCHER_OVERFLOW" file="aura/launcher_overflow.png" type="BINDATA" />
         <include name="IDR_AURA_LAUNCHER_OVERFLOW_HOT" file="aura/launcher_overflow_h.png" type="BINDATA" />
         <include name="IDR_AURA_LAUNCHER_OVERFLOW_PUSHED" file="aura/launcher_overflow_p.png" type="BINDATA" />

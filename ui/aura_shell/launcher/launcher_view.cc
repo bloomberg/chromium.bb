@@ -206,25 +206,6 @@ void LauncherView::Init() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   model_->AddObserver(this);
 
-  new_browser_button_ = new views::ImageButton(this);
-  ShellDelegate* delegate = Shell::GetInstance()->delegate();
-  int new_browser_button_image_id = delegate ?
-      delegate->GetResourceIDForNewBrowserWindow() :
-      IDR_AURA_LAUNCHER_ICON_CHROME;
-  new_browser_button_->SetImage(
-      views::CustomButton::BS_NORMAL,
-      rb.GetImageNamed(new_browser_button_image_id).ToSkBitmap());
-  ConfigureChildView(new_browser_button_);
-  AddChildView(new_browser_button_);
-
-  const LauncherItems& items(model_->items());
-  for (LauncherItems::const_iterator i = items.begin(); i != items.end(); ++i) {
-    views::View* child = CreateViewForItem(*i);
-    child->SetPaintToLayer(true);
-    view_model_->Add(child, static_cast<int>(i - items.begin()));
-    AddChildView(child);
-  }
-
   show_apps_button_ = new views::ImageButton(this);
   show_apps_button_->SetImage(
       views::CustomButton::BS_NORMAL,
@@ -237,6 +218,27 @@ void LauncherView::Init() {
       rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED).ToSkBitmap());
   ConfigureChildView(show_apps_button_);
   AddChildView(show_apps_button_);
+
+  const LauncherItems& items(model_->items());
+  for (LauncherItems::const_iterator i = items.begin(); i != items.end(); ++i) {
+    views::View* child = CreateViewForItem(*i);
+    child->SetPaintToLayer(true);
+    view_model_->Add(child, static_cast<int>(i - items.begin()));
+    AddChildView(child);
+  }
+
+  new_browser_button_ = new views::ImageButton(this);
+  new_browser_button_->SetImage(
+      views::CustomButton::BS_NORMAL,
+      rb.GetImageNamed(IDR_AURA_LAUNCHER_NEW_BROWSER).ToSkBitmap());
+  new_browser_button_->SetImage(
+      views::CustomButton::BS_HOT,
+      rb.GetImageNamed(IDR_AURA_LAUNCHER_NEW_BROWSER_HOT).ToSkBitmap());
+  new_browser_button_->SetImage(
+      views::CustomButton::BS_PUSHED,
+      rb.GetImageNamed(IDR_AURA_LAUNCHER_NEW_BROWSER_PUSHED).ToSkBitmap());
+  ConfigureChildView(new_browser_button_);
+  AddChildView(new_browser_button_);
 
   overflow_button_ = new views::ImageButton(this);
   overflow_button_->SetImage(
@@ -257,8 +259,8 @@ void LauncherView::Init() {
 void LauncherView::LayoutToIdealBounds() {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
-  new_browser_button_->SetBoundsRect(ideal_bounds.new_browser_bounds);
   show_apps_button_->SetBoundsRect(ideal_bounds.show_apps_bounds);
+  new_browser_button_->SetBoundsRect(ideal_bounds.new_browser_bounds);
   ViewModelUtils::SetViewBoundsToIdealBounds(*view_model_);
 }
 
@@ -267,12 +269,14 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   if (!available_width)
     return;
 
-  // new_browser_button first.
+  // show_apps_button_ first.
   int x = kLeadingInset;
-  gfx::Size pref = new_browser_button_->GetPreferredSize();
-  bounds->new_browser_bounds = gfx::Rect(
+  gfx::Size pref = show_apps_button_->GetPreferredSize();
+  bounds->show_apps_bounds = gfx::Rect(
       x, (kPreferredHeight - pref.height()) / 2, pref.width(), pref.height());
-  x += bounds->new_browser_bounds.width() + kHorizontalPadding;
+  x += bounds->show_apps_bounds.width() + kHorizontalPadding;
+  // TODO: remove when we get better images.
+  x -= 6;
 
   // Then launcher buttons.
   for (int i = 0; i < view_model_->view_size(); ++i) {
@@ -283,11 +287,11 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     x += pref.width() + kHorizontalPadding;
   }
 
-  // Show apps button and overflow button.
-  bounds->show_apps_bounds.set_size(show_apps_button_->GetPreferredSize());
+  // new_browser_button_ and overflow button.
+  bounds->new_browser_bounds.set_size(new_browser_button_->GetPreferredSize());
   bounds->overflow_bounds.set_size(overflow_button_->GetPreferredSize());
   int last_visible_index = DetermineLastVisibleIndex(
-      available_width - kLeadingInset - bounds->show_apps_bounds.width() -
+      available_width - kLeadingInset - bounds->new_browser_bounds.width() -
       kHorizontalPadding - bounds->overflow_bounds.width() -
       kHorizontalPadding);
   bool show_overflow = (last_visible_index + 1 != view_model_->view_size());
@@ -311,10 +315,9 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
         (kPreferredHeight - bounds->overflow_bounds.height()) / 2);
     x = bounds->overflow_bounds.right() + kHorizontalPadding;
   }
-  // TODO(sky): -6 is a hack, remove when we get better images.
-  bounds->show_apps_bounds.set_x(x - 6);
-  bounds->show_apps_bounds.set_y(
-      (kPreferredHeight - bounds->show_apps_bounds.height()) / 2);
+  bounds->new_browser_bounds.set_x(x);
+  bounds->new_browser_bounds.set_y(
+      (kPreferredHeight - bounds->new_browser_bounds.height()) / 2);
 }
 
 int LauncherView::DetermineLastVisibleIndex(int max_x) {
@@ -474,7 +477,7 @@ void LauncherView::CancelDrag(views::View* deleted_view) {
 gfx::Size LauncherView::GetPreferredSize() {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
-  return gfx::Size(ideal_bounds.show_apps_bounds.right() + kLeadingInset,
+  return gfx::Size(ideal_bounds.new_browser_bounds.right() + kLeadingInset,
                    kPreferredHeight);
 }
 
