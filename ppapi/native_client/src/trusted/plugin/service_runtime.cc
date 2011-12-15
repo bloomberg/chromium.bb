@@ -121,14 +121,14 @@ void PluginReverseInterface::DoPostMessage(nacl::string message) {
 }
 
 void PluginReverseInterface::StartupInitializationComplete() {
-  NaClLog(0, "PluginReverseInterface::StartupInitializationComplete\n");
+  NaClLog(4, "PluginReverseInterface::StartupInitializationComplete\n");
   if (init_done_cb_.pp_completion_callback().func != NULL) {
-    NaClLog(0,
+    NaClLog(4,
             "PluginReverseInterface::StartupInitializationComplete:"
             " invoking CB\n");
     pp::Module::Get()->core()->CallOnMainThread(0, init_done_cb_, PP_OK);
   } else {
-    NaClLog(0,
+    NaClLog(1,
             "PluginReverseInterface::StartupInitializationComplete:"
             " init_done_cb_ not valid, skipping.\n");
   }
@@ -362,12 +362,12 @@ void PluginReverseInterface::CloseManifestEntry_MainThreadContinuation(
 }
 
 void PluginReverseInterface::ReportCrash() {
-  NaClLog(0, "PluginReverseInterface::ReportCrash\n");
+  NaClLog(4, "PluginReverseInterface::ReportCrash\n");
   if (crash_cb_.pp_completion_callback().func != NULL) {
-    NaClLog(0, "PluginReverseInterface::ReportCrash: invoking CB\n");
+    NaClLog(4, "PluginReverseInterface::ReportCrash: invoking CB\n");
     pp::Module::Get()->core()->CallOnMainThread(0, crash_cb_, PP_OK);
   } else {
-    NaClLog(0,
+    NaClLog(1,
             "PluginReverseInterface::ReportCrash:"
             " crash_cb_ not valid, skipping\n");
   }

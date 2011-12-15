@@ -1274,6 +1274,15 @@ void Plugin::NexeDidCrash(int32_t pp_error) {
                    " non-PP_OK arg -- SHOULD NOT HAPPEN\n"));
   }
   PLUGIN_PRINTF(("Plugin::NexeDidCrash: crash event!\n"));
+  int exit_status = main_subprocess_.service_runtime()->exit_status();
+  if (-1 != exit_status) {
+    // The NaCl module voluntarily exited.  However, this is still a
+    // crash from the point of view of Pepper, since PPAPI plugins are
+    // event handlers and should never exit.
+    PLUGIN_PRINTF((("Plugin::NexeDidCrash: nexe exited with status %d"
+                    " so this is a \"controlled crash\".\n"),
+                   exit_status));
+  }
   // If the crash occurs during load, we just want to report an error
   // that fits into our load progress event grammar.  If the crash
   // occurs after loaded/loadend, then we use ReportDeadNexe to send a
