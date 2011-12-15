@@ -712,6 +712,258 @@ void RectangleString::NewLine(bool output) {
   current_col_ = 0;
 }
 
+// Internal class used to track progress of a rectangular text elide
+// operation.  Exists so the top-level ElideRectangleText() function
+// can be broken into smaller methods sharing this state.
+class RectangleText {
+ public:
+  RectangleText(const gfx::Font& font,
+                int available_pixel_width,
+                int available_pixel_height,
+                ui::WordWrapBehavior wrap_behavior,
+                std::vector<string16>* lines)
+      : font_(font),
+        line_height_(font.GetHeight()),
+        available_pixel_width_(available_pixel_width),
+        available_pixel_height_(available_pixel_height),
+        wrap_behavior_(wrap_behavior),
+        current_width_(0),
+        current_height_(0),
+        lines_(lines),
+        full_(false) {}
+
+  // Perform deferred initializions following creation.  Must be called
+  // before any input can be added via AddString().
+  void Init() { lines_->clear(); }
+
+  // Add an input string, reformatting to fit the desired dimensions.
+  // AddString() may be called multiple times to concatenate together
+  // multiple strings into the region (the current caller doesn't do
+  // this, however).
+  void AddString(const string16& input);
+
+  // Perform any deferred output processing.  Must be called after the last
+  // AddString() call has occured.  Returns |true| if the text had to be
+  // truncated to fit the available height.
+  bool Finalize();
+
+ private:
+  // Returns |true| if |text| is entirely composed of whitespace.
+  bool IsWhitespaceString(const string16& text) const;
+
+  // Add a line to the rectangular region at the current position,
+  // either by itself or by breaking it into words.
+  void AddLine(const string16& line);
+
+  // Wrap the specified word across multiple lines.
+  int WrapWord(const string16& word);
+
+  // Add a long word - wrapping, eliding or truncating per the wrap behavior.
+  int AddWordOverflow(const string16& word);
+
+  // Add a word to the rectangluar region at the current position.
+  int AddWord(const string16& word);
+
+  // Append the specified |text| to the current output line, incrementing the
+  // running width by the specified amount. This is an optimization over
+  // |AddToCurrentLine()| when |text_width| is already known.
+  void AddToCurrentLineWithWidth(const string16& text, int text_width);
+
+  // Append the specified |text| to the current output line.
+  void AddToCurrentLine(const string16& text);
+
+  // Set the current position to the beginning of the next line.
+  bool NewLine();
+
+  // The font used for measuring text width.
+  const gfx::Font& font_;
+
+  // The height of each line of text.
+  const int line_height_;
+
+  // The number of pixels of available width in the rectangle.
+  const int available_pixel_width_;
+
+  // The number of pixels of available height in the rectangle.
+  const int available_pixel_height_;
+
+  // The wrap behavior for words that are too long to fit on a single line.
+  const ui::WordWrapBehavior wrap_behavior_;
+
+  // The current running width.
+  int current_width_;
+
+  // The current running height.
+  int current_height_;
+
+  // The current line of text.
+  string16 current_line_;
+
+  // The output vector of lines.
+  std::vector<string16>* lines_;
+
+  // Indicates whether there were too many lines for the available height.
+  bool full_;
+
+  DISALLOW_COPY_AND_ASSIGN(RectangleText);
+};
+
+void RectangleText::AddString(const string16& input) {
+  base::i18n::BreakIterator lines(input,
+                                  base::i18n::BreakIterator::BREAK_NEWLINE);
+  if (lines.Init()) {
+    while (!full_ && lines.Advance()) {
+      string16 line = lines.GetString();
+      // The BREAK_NEWLINE iterator will keep the trailing newline character,
+      // except in the case of the last line, which may not have one.  Remove
+      // the newline character, if it exists.
+      if (!line.empty() && line[line.length() - 1] == '\n')
+        line.resize(line.length() - 1);
+      AddLine(line);
+    }
+  } else {
+    NOTREACHED() << "BreakIterator (lines) init failed";
+  }
+}
+
+bool RectangleText::Finalize() {
+  // Remove trailing whitespace from the last line or remove the last line
+  // completely, if it's just whitespace.
+  if (!full_ && !lines_->empty()) {
+    TrimWhitespace(lines_->back(), TRIM_TRAILING, &lines_->back());
+    if (lines_->back().empty())
+      lines_->resize(lines_->size() - 1);
+  }
+  return full_;
+}
+
+bool RectangleText::IsWhitespaceString(const string16& text) const {
+  return text.find_first_not_of(kWhitespaceUTF16) == string16::npos;
+}
+
+void RectangleText::AddLine(const string16& line) {
+  int line_width = font_.GetStringWidth(line);
+  if (line_width < available_pixel_width_) {
+    AddToCurrentLineWithWidth(line, line_width);
+  } else {
+    // Iterate over positions that are valid to break the line at. In general,
+    // these are word boundaries but after any punctuation following the word.
+    base::i18n::BreakIterator words(line,
+                                    base::i18n::BreakIterator::BREAK_LINE);
+    if (words.Init()) {
+      while (words.Advance()) {
+        bool truncate = !current_line_.empty();
+        const string16& word = words.GetString();
+        int lines_added = AddWord(word);
+        if (lines_added) {
+          if (truncate) {
+            // Trim trailing whitespace from the line that was added.
+            int line = lines_->size() - lines_added;
+            TrimWhitespace(lines_->at(line), TRIM_TRAILING, &lines_->at(line));
+          }
+          if (IsWhitespaceString(word)) {
+            // Skip the first space if the previous line was carried over.
+            current_width_ = 0;
+            current_line_.clear();
+          }
+        }
+      }
+    } else {
+      NOTREACHED() << "BreakIterator (words) init failed";
+    }
+  }
+  // Account for naturally-occuring newlines.
+  NewLine();
+}
+
+int RectangleText::WrapWord(const string16& word) {
+  // Word is so wide that it must be fragmented.
+  string16 text = word;
+  int lines_added = 0;
+  bool first_fragment = true;
+  while (!full_ && !text.empty()) {
+    string16 fragment =
+        ui::ElideText(text, font_, available_pixel_width_, ui::TRUNCATE_AT_END);
+    if (!first_fragment && NewLine())
+      lines_added++;
+    AddToCurrentLine(fragment);
+    text = text.substr(fragment.length());
+    first_fragment = false;
+  }
+  return lines_added;
+}
+
+int RectangleText::AddWordOverflow(const string16& word) {
+  int lines_added = 0;
+
+  // Unless this is the very first word, put it on a new line.
+  if (!current_line_.empty()) {
+    if (!NewLine())
+      return 0;
+    lines_added++;
+  }
+
+  if (wrap_behavior_ == ui::IGNORE_LONG_WORDS) {
+    current_line_ = word;
+    current_width_ = available_pixel_width_;
+  } else if (wrap_behavior_ == ui::WRAP_LONG_WORDS) {
+    lines_added += WrapWord(word);
+  } else {
+    ui::ElideBehavior elide_behavior = (wrap_behavior_ == ui::ELIDE_LONG_WORDS ?
+                                        ui::ELIDE_AT_END : ui::TRUNCATE_AT_END);
+    string16 elided_word =
+        ui::ElideText(word, font_, available_pixel_width_, elide_behavior);
+    AddToCurrentLine(elided_word);
+  }
+
+  return lines_added;
+}
+
+int RectangleText::AddWord(const string16& word) {
+  int lines_added = 0;
+  string16 trimmed;
+  TrimWhitespace(word, TRIM_TRAILING, &trimmed);
+  int trimmed_width = font_.GetStringWidth(trimmed);
+  if (trimmed_width <= available_pixel_width_) {
+    // Word can be made to fit, no need to fragment it.
+    if ((current_width_ + trimmed_width > available_pixel_width_) && NewLine())
+      lines_added++;
+    // Append the non-trimmed word, in case more words are added after.
+    AddToCurrentLine(word);
+  } else {
+    lines_added = AddWordOverflow(word);
+  }
+  return lines_added;
+}
+
+void RectangleText::AddToCurrentLine(const string16& text) {
+  AddToCurrentLineWithWidth(text, font_.GetStringWidth(text));
+}
+
+void RectangleText::AddToCurrentLineWithWidth(const string16& text,
+                                              int text_width) {
+  if (current_height_ >= available_pixel_height_) {
+    full_ = true;
+    return;
+  }
+  current_line_.append(text);
+  current_width_ += text_width;
+}
+
+bool RectangleText::NewLine() {
+  bool line_added = false;
+  if (current_height_ < available_pixel_height_) {
+    lines_->push_back(current_line_);
+    current_line_.clear();
+    line_added = true;
+  } else {
+    full_ = true;
+  }
+  current_height_ += line_height_;
+  current_width_ = 0;
+  return line_added;
+}
+
 }  // namespace
 
 namespace ui {
@@ -719,6 +971,22 @@ namespace ui {
 bool ElideRectangleString(const string16& input, size_t max_rows,
                           size_t max_cols, bool strict, string16* output) {
   RectangleString rect(max_rows, max_cols, strict, output);
+  rect.Init();
+  rect.AddString(input);
+  return rect.Finalize();
+}
+
+bool ElideRectangleText(const string16& input,
+                        const gfx::Font& font,
+                        int available_pixel_width,
+                        int available_pixel_height,
+                        WordWrapBehavior wrap_behavior,
+                        std::vector<string16>* lines) {
+  RectangleText rect(font,
+                     available_pixel_width,
+                     available_pixel_height,
+                     wrap_behavior,
+                     lines);
   rect.Init();
   rect.AddString(input);
   return rect.Finalize();

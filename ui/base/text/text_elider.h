@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/string16.h"
@@ -127,6 +128,39 @@ UI_EXPORT bool ElideString(const string16& input, int max_len,
 UI_EXPORT bool ElideRectangleString(const string16& input, size_t max_rows,
                                     size_t max_cols, bool strict,
                                     string16* output);
+
+// Specifies the word wrapping behavior of |ElideRectangleText()| when a word
+// would exceed the available width.
+enum WordWrapBehavior {
+  // Words that are too wide will be put on a new line, but will not be
+  // truncated or elided.
+  IGNORE_LONG_WORDS,
+
+  // Words that are too wide will be put on a new line and will be truncated to
+  // the available width.
+  TRUNCATE_LONG_WORDS,
+
+  // Words that are too wide will be put on a new line and will be elided to the
+  // available width.
+  ELIDE_LONG_WORDS,
+
+  // Words that are too wide will be put on a new line and will be wrapped over
+  // multiple lines.
+  WRAP_LONG_WORDS,
+};
+
+// Reformats |text| into output vector |lines| so that the resulting text fits
+// into an |available_pixel_width| by |available_pixel_height| rectangle with
+// the specified |font|. Input newlines are respected, but lines that are too
+// long are broken into pieces. For words that are too wide to fit on a single
+// line, the wrapping behavior can be specified with the |wrap_behavior| param.
+// Returns |true| if the input had to be truncated (and not just reformatted).
+UI_EXPORT bool ElideRectangleText(const string16& text,
+                                  const gfx::Font& font,
+                                  int available_pixel_width,
+                                  int available_pixel_height,
+                                  WordWrapBehavior wrap_behavior,
+                                  std::vector<string16>* lines);
 
 // Truncates the string to length characters. This breaks the string at
 // the first word break before length, adding the horizontal ellipsis
