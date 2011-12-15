@@ -528,8 +528,10 @@ void NativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
 }
 
 void NativeWidgetAura::ClearNativeFocus() {
-  if (window_ && window_->GetFocusManager())
+  if (window_ && window_->GetFocusManager() &&
+      window_->Contains(window_->GetFocusManager()->GetFocusedWindow())) {
     window_->GetFocusManager()->SetFocusedWindow(window_);
+  }
 }
 
 void NativeWidgetAura::FocusNativeView(gfx::NativeView native_view) {
