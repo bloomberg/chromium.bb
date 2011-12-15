@@ -135,6 +135,9 @@ display_watch_fd(struct display *display,
 void
 display_run(struct display *d);
 
+void
+display_exit(struct display *d);
+
 enum pointer_type {
 	POINTER_BOTTOM_LEFT,
 	POINTER_BOTTOM_RIGHT,

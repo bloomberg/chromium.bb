@@ -79,6 +79,8 @@ struct display {
 	int epoll_fd;
 	struct wl_list deferred_list;
 
+	int running;
+
 	struct wl_list window_list;
 	struct wl_list input_list;
 	struct wl_list output_list;
@@ -2695,10 +2697,14 @@ display_run(struct display *display)
 	struct epoll_event ep[16];
 	int i, count;
 
+	display->running = 1;
 	while (1) {
 		while (display->mask & WL_DISPLAY_WRITABLE)
 			wl_display_iterate(display->display,
 					   WL_DISPLAY_WRITABLE);
+
+		if (!display->running)
+			break;
 
 		count = epoll_wait(display->epoll_fd,
 				   ep, ARRAY_LENGTH(ep), -1);
@@ -2714,4 +2720,10 @@ display_run(struct display *display)
 			task->run(task, 0);
 		}
 	}
+}
+
+void
+display_exit(struct display *display)
+{
+	display->running = 0;
 }
