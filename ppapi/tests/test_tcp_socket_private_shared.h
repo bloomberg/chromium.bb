@@ -22,14 +22,11 @@ class TestTCPSocketPrivateShared : public TestCase {
   void QuitMessageLoop();
 
  private:
-  static const char* const kHost;
-  static const int kPort = 443;
-
   std::string CreateSocket(PP_Resource* socket);
-  std::string SyncConnect(PP_Resource socket, const char* host, int port);
+  std::string SyncConnect(PP_Resource socket,
+                          const std::string& host, uint16_t port);
   std::string SyncConnectWithNetAddress(PP_Resource socket,
                                         const PP_NetAddress_Private& addr);
-  std::string SyncSSLHandshake(PP_Resource socket, const char* host, int port);
   std::string SyncRead(PP_Resource socket, char* buffer, int32_t num_bytes,
                        int32_t* bytes_read);
   std::string SyncWrite(PP_Resource socket, const char* buffer,
@@ -44,6 +41,8 @@ class TestTCPSocketPrivateShared : public TestCase {
   std::string TestReconnect();
 
   const PPB_TCPSocket_Private* tcp_socket_private_interface_;
+  std::string host_;
+  uint16_t port_;
 };
 
 #endif  // PPAPI_TESTS_TEST_TCP_SOCKET_PRIVATE_SHARED_H_

@@ -4,6 +4,9 @@
 
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_testing.h"
 
+#include <cstddef>
+#include <new>
+
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
@@ -23,6 +26,8 @@ namespace {
 
 const nacl_abi_size_t kPPPointBytes =
     static_cast<nacl_abi_size_t>(sizeof(struct PP_Point));
+const nacl_abi_size_t kPPURLComponentsDevBytes =
+    static_cast<nacl_abi_size_t>(sizeof(struct PP_URLComponents_Dev));
 
 PP_Bool ReadImageData(PP_Resource device_context_2d,
                       PP_Resource image,
@@ -97,6 +102,35 @@ PP_Bool IsOutOfProcess() {
   return PP_FALSE;
 }
 
+struct PP_Var GetDocumentURL(PP_Instance instance,
+                             struct PP_URLComponents_Dev* components) {
+  DebugPrintf("PPB_Testing::GetDocumentURL: "
+              "instance=%"NACL_PRIu32"\n", instance);
+
+  NaClSrpcChannel* channel = GetMainSrpcChannel();
+  nacl_abi_size_t components_size = kPPURLComponentsDevBytes;
+  nacl_abi_size_t url_size = kMaxVarSize;
+  nacl::scoped_array<char> url_bytes(new (std::nothrow) char[url_size]);
+  if (url_bytes.get() == NULL)
+    return PP_MakeUndefined();
+
+  NaClSrpcError srpc_result =
+      PpbTestingRpcClient::PPB_Testing_GetDocumentURL(
+          channel,
+          instance,
+          &components_size, reinterpret_cast<char*>(components),
+          &url_size, url_bytes.get());
+
+  struct PP_Var url = PP_MakeUndefined();
+  if (srpc_result == NACL_SRPC_RESULT_OK)
+    (void) DeserializeTo(url_bytes.get(), url_size, 1, &url);
+
+  DebugPrintf("PPB_Testing::GetDocumentURL: %s\n",
+              NaClSrpcErrorString(srpc_result));
+
+  return url;
+}
+
 }  // namespace
 
 const PPB_Testing_Dev* PluginTesting::GetInterface() {
@@ -105,7 +139,9 @@ const PPB_Testing_Dev* PluginTesting::GetInterface() {
     RunMessageLoop,
     QuitMessageLoop,
     GetLiveObjectsForInstance,
-    IsOutOfProcess
+    IsOutOfProcess,
+    NULL,
+    GetDocumentURL
   };
   return &testing_interface;
 }

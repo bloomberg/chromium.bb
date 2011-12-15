@@ -4,9 +4,6 @@
 
 #include "ppapi/tests/test_tcp_socket_private_shared.h"
 
-#include <string.h>
-#include <new>
-#include <string>
 #include <vector>
 
 #include "ppapi/cpp/module.h"
@@ -14,10 +11,6 @@
 #include "ppapi/tests/testing_instance.h"
 
 REGISTER_TEST_CASE(TCPSocketPrivateShared);
-
-// TODO(ygorshenin): get rid of using external server in tests,
-// http://crbug.com/105863
-const char* const TestTCPSocketPrivateShared::kHost = "www.google.com";
 
 TestTCPSocketPrivateShared::TestTCPSocketPrivateShared(
     TestingInstance* instance)
@@ -29,7 +22,16 @@ bool TestTCPSocketPrivateShared::Init() {
       pp::Module::Get()->GetBrowserInterface(PPB_TCPSOCKET_PRIVATE_INTERFACE));
   if (!tcp_socket_private_interface_)
     instance_->AppendError("TCPSocketPrivate interface not available");
-  return tcp_socket_private_interface_ && InitTestingInterface();
+
+  bool init_host_port = false;
+  if (!GetLocalHostPort(instance_->pp_instance(), &host_, &port_))
+    instance_->AppendError("Can't init host and port");
+  else
+    init_host_port = true;
+
+  return tcp_socket_private_interface_ &&
+      init_host_port &&
+      InitTestingInterface();
 }
 
 void TestTCPSocketPrivateShared::RunTests(const std::string& filter) {
@@ -53,12 +55,12 @@ std::string TestTCPSocketPrivateShared::CreateSocket(PP_Resource* socket) {
 }
 
 std::string TestTCPSocketPrivateShared::SyncConnect(PP_Resource socket,
-                                                    const char* host,
-                                                    int port) {
+                                                    const std::string& host,
+                                                    uint16_t port) {
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
 
   int32_t rv = tcp_socket_private_interface_->Connect(
-      socket, host, port,
+      socket, host.c_str(), port,
       static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
 
   if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
@@ -85,24 +87,6 @@ std::string TestTCPSocketPrivateShared::SyncConnectWithNetAddress(
     rv = callback.WaitForResult();
   if (rv != PP_OK)
     return ReportError("PPB_TCPSocket_Private::ConnectWithNetAddress", rv);
-  PASS();
-}
-
-std::string TestTCPSocketPrivateShared::SyncSSLHandshake(PP_Resource socket,
-                                                         const char* host,
-                                                         int port) {
-  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-
-  int32_t rv = tcp_socket_private_interface_->SSLHandshake(
-      socket, host, port,
-      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
-
-  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-    return ReportError("PPB_TCPSocket_Private::SSLHandshake force_async", rv);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (rv != PP_OK)
-    return ReportError("PPB_TCPSocket_Private::SSLHandshake", rv);
   PASS();
 }
 
@@ -189,7 +173,7 @@ std::string TestTCPSocketPrivateShared::TestGetAddress() {
   if (!error_message.empty())
     return error_message;
 
-  error_message = SyncConnect(socket, kHost, kPort);
+  error_message = SyncConnect(socket, host_, port_);
   if (!error_message.empty())
     return error_message;
 
@@ -214,14 +198,11 @@ std::string TestTCPSocketPrivateShared::TestConnect() {
   error_message = CreateSocket(&socket);
   if (!error_message.empty())
     return error_message;
-  error_message = SyncConnect(socket, kHost, kPort);
-  if (!error_message.empty())
-    return error_message;
-  error_message = SyncSSLHandshake(socket, kHost, kPort);
+  error_message = SyncConnect(socket, host_, port_);
   if (!error_message.empty())
     return error_message;
   error_message =
-      CheckHTTPResponse(socket, "GET /robots.txt\r\n", "HTTP/1.0 200 OK");
+      CheckHTTPResponse(socket, "GET / HTTP/1.0\r\n\r\n", "HTTP/1.0 200 OK");
   if (!error_message.empty())
     return error_message;
   tcp_socket_private_interface_->Disconnect(socket);
@@ -236,10 +217,7 @@ std::string TestTCPSocketPrivateShared::TestReconnect() {
   error_message = CreateSocket(&socket);
   if (!error_message.empty())
     return error_message;
-  error_message = SyncConnect(socket, kHost, kPort);
-  if (!error_message.empty())
-    return error_message;
-  error_message = SyncSSLHandshake(socket, kHost, kPort);
+  error_message = SyncConnect(socket, host_, port_);
   if (!error_message.empty())
     return error_message;
 
@@ -256,14 +234,14 @@ std::string TestTCPSocketPrivateShared::TestReconnect() {
   error_message = SyncConnectWithNetAddress(socket, remote_address);
   if (!error_message.empty())
     return error_message;
-  error_message = SyncSSLHandshake(socket, kHost, kPort);
-  if (!error_message.empty())
-    return error_message;
-  error_message =
-      CheckHTTPResponse(socket, "GET /robots.txt\r\n", "HTTP/1.0 200 OK");
+  error_message = CheckHTTPResponse(socket,
+                                    "GET / HTTP/1.0\r\n\r\n",
+                                    "HTTP/1.0 200 OK");
   if (!error_message.empty())
     return error_message;
   tcp_socket_private_interface_->Disconnect(socket);
 
   PASS();
 }
+
+// TODO(ygorshenin): test SSLHandshake somehow

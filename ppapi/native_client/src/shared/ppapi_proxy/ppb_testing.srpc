@@ -33,5 +33,12 @@
            'outputs': [['live_object_count', 'int32_t'],  # uint32_t
                       ]
           },
+	  {'name': 'PPB_Testing_GetDocumentURL',
+	   'inputs': [['instance', 'PP_Instance'],
+	             ],
+           'outputs': [['components', 'char[]'],          # PP_URLComponents_Dev
+                       ['url', 'char[]'],                 # PP_Var
+		      ]
+          },
          ]
 }

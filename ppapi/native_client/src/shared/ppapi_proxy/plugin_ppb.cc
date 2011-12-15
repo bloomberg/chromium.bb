@@ -85,6 +85,7 @@ InterfaceMapElement interface_map[] = {
     true },
   { PPB_TESTING_DEV_INTERFACE_0_7, PluginTesting::GetInterface(), true },
   { PPB_TESTING_DEV_INTERFACE_0_8, PluginTesting::GetInterface(), true },
+  { PPB_TESTING_DEV_INTERFACE_0_9, PluginTesting::GetInterface(), true },
   { PPB_UDPSOCKET_PRIVATE_INTERFACE, PluginUDPSocketPrivate::GetInterface(),
     true },
   { PPB_URLLOADER_INTERFACE, PluginURLLoader::GetInterface(), true },

@@ -1021,6 +1021,12 @@ class PpbTestingRpcServer {
       NaClSrpcClosure* done,
       PP_Instance instance,
       int32_t* live_object_count);
+  static void PPB_Testing_GetDocumentURL(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      nacl_abi_size_t* components_bytes, char* components,
+      nacl_abi_size_t* url_bytes, char* url);
 
  private:
   PpbTestingRpcServer();

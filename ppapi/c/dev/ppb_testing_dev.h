@@ -3,21 +3,24 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_testing_dev.idl modified Sat Nov 19 15:58:18 2011. */
+/* From dev/ppb_testing_dev.idl modified Wed Dec 14 12:58:12 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_TESTING_DEV_H_
 #define PPAPI_C_DEV_PPB_TESTING_DEV_H_
 
+#include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/pp_var.h"
 
 #define PPB_TESTING_DEV_INTERFACE_0_7 "PPB_Testing(Dev);0.7"
 #define PPB_TESTING_DEV_INTERFACE_0_8 "PPB_Testing(Dev);0.8"
-#define PPB_TESTING_DEV_INTERFACE PPB_TESTING_DEV_INTERFACE_0_8
+#define PPB_TESTING_DEV_INTERFACE_0_9 "PPB_Testing(Dev);0.9"
+#define PPB_TESTING_DEV_INTERFACE PPB_TESTING_DEV_INTERFACE_0_9
 
 /**
  * @file
@@ -112,6 +115,15 @@ struct PPB_Testing_Dev {
    * performs.
    */
   void (*SimulateInputEvent)(PP_Instance instance, PP_Resource input_event);
+  /**
+   * Returns the URL for the document. This is a safe way to retrieve
+   * window.location.href.
+   * If the canonicalized URL is valid, the method will parse the URL
+   * and fill in the components structure. This pointer may be NULL
+   * to specify that no component information is necessary.
+   */
+  struct PP_Var (*GetDocumentURL)(PP_Instance instance,
+                                  struct PP_URLComponents_Dev* components);
 };
 
 struct PPB_Testing_Dev_0_7 {
@@ -122,6 +134,17 @@ struct PPB_Testing_Dev_0_7 {
   void (*QuitMessageLoop)(PP_Instance instance);
   uint32_t (*GetLiveObjectsForInstance)(PP_Instance instance);
   PP_Bool (*IsOutOfProcess)();
+};
+
+struct PPB_Testing_Dev_0_8 {
+  PP_Bool (*ReadImageData)(PP_Resource device_context_2d,
+                           PP_Resource image,
+                           const struct PP_Point* top_left);
+  void (*RunMessageLoop)(PP_Instance instance);
+  void (*QuitMessageLoop)(PP_Instance instance);
+  uint32_t (*GetLiveObjectsForInstance)(PP_Instance instance);
+  PP_Bool (*IsOutOfProcess)();
+  void (*SimulateInputEvent)(PP_Instance instance, PP_Resource input_event);
 };
 /**
  * @}

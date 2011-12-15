@@ -5,6 +5,7 @@
 #include "ppapi/tests/test_utils.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #if defined(_MSC_VER)
 #include <windows.h>
 #else
@@ -13,6 +14,7 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/var.h"
 
 const int kActionTimeoutMs = 10000;
 
@@ -37,6 +39,36 @@ void PlatformSleep(int duration_ms) {
 #else
   usleep(duration_ms * 1000);
 #endif
+}
+
+bool GetLocalHostPort(PP_Instance instance, std::string* host, uint16_t* port) {
+  if (!host || !port)
+    return false;
+
+  const PPB_Testing_Dev* testing = GetTestingInterface();
+  if (!testing)
+    return false;
+
+  PP_URLComponents_Dev components;
+  pp::Var pp_url(pp::Var::PassRef(),
+                 testing->GetDocumentURL(instance, &components));
+  if (!pp_url.is_string())
+    return false;
+  std::string url = pp_url.AsString();
+
+  if (components.host.len < 0)
+    return false;
+  host->assign(url.substr(components.host.begin, components.host.len));
+
+  if (components.port.len <= 0)
+    return false;
+
+  int i = atoi(url.substr(components.port.begin, components.port.len).c_str());
+  if (i < 0 || i > 65535)
+    return false;
+  *port = static_cast<uint16_t>(i);
+
+  return true;
 }
 
 TestCompletionCallback::TestCompletionCallback(PP_Instance instance)

@@ -14,6 +14,7 @@
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_point.h"
+#include "ppapi/cpp/var.h"
 #include "srpcgen/ppb_rpc.h"
 
 using ppapi_proxy::DebugPrintf;
@@ -90,4 +91,27 @@ void PpbTestingRpcServer::PPB_Testing_GetLiveObjectsForInstance(
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
+void PpbTestingRpcServer::PPB_Testing_GetDocumentURL(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
+    PP_Instance instance,
+    nacl_abi_size_t* components_bytes, char* components,
+    nacl_abi_size_t* url_bytes, char* url) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
+  if (*components_bytes != sizeof(struct PP_URLComponents_Dev))
+    return;
+  if (*url_bytes != ppapi_proxy::kMaxVarSize)
+    return;
+
+  struct PP_Var pp_url = PPBTestingInterface()->GetDocumentURL(
+      instance, reinterpret_cast<struct PP_URLComponents_Dev*>(components));
+
+  if (!ppapi_proxy::SerializeTo(&pp_url, url, url_bytes))
+    return;
+
+  DebugPrintf("PPB_Testing_Dev::GetDocumentURL: url=%s\n",
+              pp::Var(pp::Var::PassRef(), pp_url).AsString().c_str());
+  rpc->result = NACL_SRPC_RESULT_OK;
+}

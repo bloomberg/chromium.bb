@@ -888,6 +888,11 @@ class PpbTestingRpcClient {
       NaClSrpcChannel* channel,
       PP_Instance instance,
       int32_t* live_object_count);
+  static NaClSrpcError PPB_Testing_GetDocumentURL(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      nacl_abi_size_t* components_bytes, char* components,
+      nacl_abi_size_t* url_bytes, char* url);
 
  private:
   PpbTestingRpcClient();

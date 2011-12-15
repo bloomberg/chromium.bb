@@ -18,6 +18,7 @@ extern const int kActionTimeoutMs;
 const PPB_Testing_Dev* GetTestingInterface();
 std::string ReportError(const char* method, int32_t error);
 void PlatformSleep(int duration_ms);
+bool GetLocalHostPort(PP_Instance instance, std::string* host, uint16_t* port);
 
 class TestCompletionCallback {
  public:

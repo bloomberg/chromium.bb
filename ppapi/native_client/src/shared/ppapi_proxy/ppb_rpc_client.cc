@@ -2553,6 +2553,25 @@ NaClSrpcError PpbTestingRpcClient::PPB_Testing_GetLiveObjectsForInstance(
   return retval;
 }
 
+NaClSrpcError PpbTestingRpcClient::PPB_Testing_GetDocumentURL(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    nacl_abi_size_t* components_bytes, char* components,
+    nacl_abi_size_t* url_bytes, char* url)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Testing_GetDocumentURL:i:CC",
+      instance,
+      components_bytes, components,
+      url_bytes, url
+  );
+  return retval;
+}
+
 NaClSrpcError PpbUDPSocketPrivateRpcClient::PPB_UDPSocket_Private_Create(
     NaClSrpcChannel* channel,
     PP_Instance instance_id,

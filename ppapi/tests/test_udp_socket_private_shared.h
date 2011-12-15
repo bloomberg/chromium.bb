@@ -20,9 +20,6 @@ class TestUDPSocketPrivateShared : public TestCase {
   void QuitMessageLoop();
 
  private:
-  static const char* const kHost;
-  static const int kPort = 80;
-
   // Creates tcp_socket and connects to www.google.com:80. After that,
   // stores into |address| local address and returns created
   // tcp_socket. This is a way to create |PP_NetAddress_Private|
@@ -37,6 +34,8 @@ class TestUDPSocketPrivateShared : public TestCase {
 
   const PPB_TCPSocket_Private* tcp_socket_private_interface_;
   const PPB_UDPSocket_Private* udp_socket_private_interface_;
+  std::string host_;
+  uint16_t port_;
 };
 
 #endif  // PPAPI_TESTS_TEST_UDP_SOCKET_PRIVATE_SHARED_H_

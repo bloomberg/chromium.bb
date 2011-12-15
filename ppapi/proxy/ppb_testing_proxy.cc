@@ -15,6 +15,7 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_input_event_api.h"
 
+using ppapi::thunk::EnterInstance;
 using ppapi::thunk::EnterResource;
 using ppapi::thunk::PPB_InputEvent_API;
 
@@ -87,13 +88,21 @@ void SimulateInputEvent(PP_Instance instance_id, PP_Resource input_event) {
       API_ID_PPB_TESTING, instance_id, input_event_data));
 }
 
+PP_Var GetDocumentURL(PP_Instance instance, PP_URLComponents_Dev* components) {
+  EnterInstance enter(instance);
+  if (enter.failed())
+    return PP_MakeUndefined();
+  return enter.functions()->GetDocumentURL(instance, components);
+}
+
 const PPB_Testing_Dev testing_interface = {
   &ReadImageData,
   &RunMessageLoop,
   &QuitMessageLoop,
   &GetLiveObjectsForInstance,
   &IsOutOfProcess,
-  &SimulateInputEvent
+  &SimulateInputEvent,
+  &GetDocumentURL
 };
 
 InterfaceProxy* CreateTestingProxy(Dispatcher* dispatcher) {

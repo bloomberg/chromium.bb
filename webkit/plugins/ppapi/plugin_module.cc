@@ -239,13 +239,21 @@ void SimulateInputEvent(PP_Instance instance, PP_Resource input_event) {
   plugin_instance->SimulateInputEvent(input_event_data);
 }
 
+PP_Var GetDocumentURL(PP_Instance instance, PP_URLComponents_Dev* components) {
+  PluginInstance* plugin_instance = host_globals->GetInstance(instance);
+  if (!plugin_instance)
+    return PP_MakeUndefined();
+  return plugin_instance->GetDocumentURL(instance, components);
+}
+
 const PPB_Testing_Dev testing_interface = {
   &ReadImageData,
   &RunMessageLoop,
   &QuitMessageLoop,
   &GetLiveObjectsForInstance,
   &IsOutOfProcess,
-  &SimulateInputEvent
+  &SimulateInputEvent,
+  &GetDocumentURL
 };
 
 // GetInterface ----------------------------------------------------------------
@@ -340,7 +348,8 @@ const void* GetInterface(const char* name) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePepperTesting)) {
     if (strcmp(name, PPB_TESTING_DEV_INTERFACE) == 0 ||
-        strcmp(name, PPB_TESTING_DEV_INTERFACE_0_7) == 0) {
+        strcmp(name, PPB_TESTING_DEV_INTERFACE_0_7) == 0 ||
+        strcmp(name, PPB_TESTING_DEV_INTERFACE_0_8) == 0) {
       return &testing_interface;
     }
   }

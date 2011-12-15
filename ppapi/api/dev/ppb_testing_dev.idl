@@ -11,7 +11,8 @@
 
 label Chrome {
   M14 = 0.7,
-  M15 = 0.8
+  M15 = 0.8,
+  M17 = 0.9
 };
 
 interface PPB_Testing_Dev {
@@ -102,4 +103,15 @@ interface PPB_Testing_Dev {
   [version=0.8]
   void SimulateInputEvent([in] PP_Instance instance,
                           [in] PP_Resource input_event);
+
+  /**
+   * Returns the URL for the document. This is a safe way to retrieve
+   * window.location.href.
+   * If the canonicalized URL is valid, the method will parse the URL
+   * and fill in the components structure. This pointer may be NULL
+   * to specify that no component information is necessary.
+   */
+  [version=0.9]
+  PP_Var GetDocumentURL([in] PP_Instance instance,
+                        [out] PP_URLComponents_Dev components);
 };
