@@ -335,6 +335,7 @@ struct plane {
 	uint32_t con_id;  /* the id of connector to bind to */
 	uint32_t w, h;
 	unsigned int fb_id;
+	char format_str[5]; /* need to leave room for terminating \0 */
 };
 
 static void
@@ -594,6 +595,63 @@ page_flip_handler(int fd, unsigned int frame,
 	}
 }
 
+/* swap these for big endian.. */
+#define RED   2
+#define GREEN 1
+#define BLUE  0
+
+static void
+fill420(unsigned char *y, unsigned char *u, unsigned char *v,
+		int cs /*chroma pixel stride */,
+		int n, int width, int height, int stride)
+{
+	int i, j;
+
+	/* paint the buffer with colored tiles, in blocks of 2x2 */
+	for (j = 0; j < height; j+=2) {
+		unsigned char *y1p = y + j * stride;
+		unsigned char *y2p = y1p + stride;
+		unsigned char *up = u + (j/2) * stride * cs / 2;
+		unsigned char *vp = v + (j/2) * stride * cs / 2;
+
+		for (i = 0; i < width; i+=2) {
+			div_t d = div(n+i+j, width);
+			uint32_t rgb = 0x00130502 * (d.quot >> 6) + 0x000a1120 * (d.rem >> 6);
+			unsigned char *rgbp = (unsigned char *)&rgb;
+			unsigned char y = (0.299 * rgbp[RED]) + (0.587 * rgbp[GREEN]) + (0.114 * rgbp[BLUE]);
+
+			*(y2p++) = *(y1p++) = y;
+			*(y2p++) = *(y1p++) = y;
+
+			*up = (rgbp[BLUE] - y) * 0.565 + 128;
+			*vp = (rgbp[RED] - y) * 0.713 + 128;
+			up += cs;
+			vp += cs;
+		}
+	}
+}
+
+static void
+fill422(unsigned char *virtual, int n, int width, int height, int stride)
+{
+	int i, j;
+	/* paint the buffer with colored tiles */
+	for (j = 0; j < height; j++) {
+		uint8_t *ptr = (uint8_t*)((char*)virtual + j * stride);
+		for (i = 0; i < width; i++) {
+			div_t d = div(n+i+j, width);
+			uint32_t rgb = 0x00130502 * (d.quot >> 6) + 0x000a1120 * (d.rem >> 6);
+			unsigned char *rgbp = (unsigned char *)&rgb;
+			unsigned char y = (0.299 * rgbp[RED]) + (0.587 * rgbp[GREEN]) + (0.114 * rgbp[BLUE]);
+
+			*(ptr++) = y;
+			*(ptr++) = (rgbp[BLUE] - y) * 0.565 + 128;
+			*(ptr++) = y;
+			*(ptr++) = (rgbp[RED] - y) * 0.713 + 128;
+		}
+	}
+}
+
 static int
 set_plane(struct kms_driver *kms, struct connector *c, struct plane *p)
 {
@@ -602,8 +660,8 @@ set_plane(struct kms_driver *kms, struct connector *c, struct plane *p)
 	uint32_t handles[4], pitches[4], offsets[4] = {0}; /* we only use [0] */
 	uint32_t plane_id = 0;
 	struct kms_bo *plane_bo;
-	uint32_t plane_flags = 0;
-	int i, crtc_x, crtc_y, crtc_w, crtc_h;
+	uint32_t plane_flags = 0, format;
+	int i, ret, crtc_x, crtc_y, crtc_w, crtc_h;
 
 	/* find an unused plane which can be connected to our crtc */
 	plane_resources = drmModeGetPlaneResources(fd);
@@ -627,19 +685,87 @@ set_plane(struct kms_driver *kms, struct connector *c, struct plane *p)
 		drmModeFreePlane(ovr);
 	}
 
+	fprintf(stderr, "testing %dx%d@%s overlay plane\n",
+			p->w, p->h, p->format_str);
+
 	if (!plane_id) {
 		fprintf(stderr, "failed to find plane!\n");
 		return -1;
 	}
 
-	/* TODO.. would be nice to test YUV overlays.. */
-	if (create_test_buffer(kms, p->w, p->h, &pitches[0], &plane_bo))
-		return -1;
+	if (!strcmp(p->format_str, "XR24")) {
+		if (create_test_buffer(kms, p->w, p->h, &pitches[0], &plane_bo))
+			return -1;
+		kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[0]);
+		format = DRM_FORMAT_XRGB8888;
+	} else {
+		void *virtual;
 
-	kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[0]);
+		/* TODO: this always allocates a buffer for 32bpp RGB.. but for
+		 * YUV formats, we don't use all of it..  since 4bytes/pixel is
+		 * worst case, so live with it for now and just don't use all
+		 * the buffer:
+		 */
+		plane_bo = allocate_buffer(kms, p->w, p->h, &pitches[0]);
+		if (!plane_bo)
+			return -1;
+
+		ret = kms_bo_map(plane_bo, &virtual);
+		if (ret) {
+			fprintf(stderr, "failed to map buffer: %s\n",
+				strerror(-ret));
+			kms_bo_destroy(&plane_bo);
+			return -1;
+		}
+
+		/* just testing a limited # of formats to test single
+		 * and multi-planar path.. would be nice to add more..
+		 */
+		if (!strcmp(p->format_str, "YUYV")) {
+			pitches[0] = p->w * 2;
+			offsets[0] = 0;
+			kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[0]);
+
+			fill422(virtual, 0, p->w, p->h, pitches[0]);
+
+			format = DRM_FORMAT_YUYV;
+		} else if (!strcmp(p->format_str, "NV12")) {
+			pitches[0] = p->w;
+			offsets[0] = 0;
+			kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[0]);
+			pitches[1] = p->w;
+			offsets[1] = p->w * p->h;
+			kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[1]);
+
+			fill420(virtual, virtual+offsets[1], virtual+offsets[1]+1,
+					2, 0, p->w, p->h, pitches[0]);
+
+			format = DRM_FORMAT_NV12;
+		} else if (!strcmp(p->format_str, "YV12")) {
+			pitches[0] = p->w;
+			offsets[0] = 0;
+			kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[0]);
+			pitches[1] = p->w / 2;
+			offsets[1] = p->w * p->h;
+			kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[1]);
+			pitches[2] = p->w / 2;
+			offsets[2] = offsets[1] + (p->w * p->h) / 4;
+			kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[1]);
+
+			fill420(virtual, virtual+offsets[1], virtual+offsets[2],
+					1, 0, p->w, p->h, pitches[0]);
+
+			format = DRM_FORMAT_YVU420;
+		} else {
+			fprintf(stderr, "Unknown format: %s\n", p->format_str);
+			return -1;
+		}
+
+		kms_bo_unmap(plane_bo);
+	}
 
 	/* just use single plane format for now.. */
-	if (drmModeAddFB2(fd, p->w, p->h, DRM_FORMAT_XRGB8888,
+	if (drmModeAddFB2(fd, p->w, p->h, format,
 			handles, pitches, offsets, &p->fb_id, plane_flags)) {
 		fprintf(stderr, "failed to add fb: %s\n", strerror(errno));
 		return -1;
@@ -826,6 +952,7 @@ void usage(char *name)
 	fprintf(stderr, "\t-s <connector_id>:<mode>\tset a mode\n");
 	fprintf(stderr, "\t-s <connector_id>@<crtc_id>:<mode>\tset a mode\n");
 	fprintf(stderr, "\t-P <connector_id>:<w>x<h>\tset a plane\n");
+	fprintf(stderr, "\t-P <connector_id>:<w>x<h>@<format>\tset a plane\n");
 	fprintf(stderr, "\n\tDefault is to dump all info.\n");
 	exit(0);
 }
@@ -862,7 +989,7 @@ int main(int argc, char **argv)
 	char *modeset = NULL;
 	int i, count = 0, plane_count = 0;
 	struct connector con_args[2];
-	struct plane plane_args[2];
+	struct plane plane_args[2] = {0};
 	
 	opterr = 0;
 	while ((c = getopt(argc, argv, optstr)) != -1) {
@@ -900,7 +1027,13 @@ int main(int argc, char **argv)
 			count++;				      
 			break;
 		case 'P':
-			if (sscanf(optarg, "%d:%dx%d",
+			strcpy(plane_args[plane_count].format_str, "XR24");
+			if (sscanf(optarg, "%d:%dx%d@%4s",
+					&plane_args[plane_count].con_id,
+					&plane_args[plane_count].w,
+					&plane_args[plane_count].h,
+					plane_args[plane_count].format_str) != 4 &&
+				sscanf(optarg, "%d:%dx%d",
 					&plane_args[plane_count].con_id,
 					&plane_args[plane_count].w,
 					&plane_args[plane_count].h) != 3)
