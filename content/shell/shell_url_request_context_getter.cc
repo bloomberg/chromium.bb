@@ -80,10 +80,9 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         url_request_context_->host_resolver(),
         url_request_context_->cert_verifier(),
         url_request_context_->origin_bound_cert_service(),
-        NULL, //tranport_security_state
-        NULL, //dns_cert_checker
+        NULL, // tranport_security_state
         url_request_context_->proxy_service(),
-        "" /* ssl_session_cache_shard */,
+        "", // ssl_session_cache_shard
         url_request_context_->ssl_config_service(),
         url_request_context_->http_auth_handler_factory(),
         NULL,  // network_delegate

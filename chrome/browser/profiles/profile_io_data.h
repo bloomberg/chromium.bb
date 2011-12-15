@@ -44,7 +44,6 @@ class MediaStreamManager;
 
 namespace net {
 class CookieStore;
-class DnsCertProvenanceChecker;
 class FraudulentCertificateReporter;
 class HttpTransactionFactory;
 class OriginBoundCertService;
@@ -205,10 +204,6 @@ class ProfileIOData {
     return network_delegate_.get();
   }
 
-  net::DnsCertProvenanceChecker* dns_cert_checker() const {
-    return dns_cert_checker_.get();
-  }
-
   net::FraudulentCertificateReporter* fraudulent_certificate_reporter() const {
     return fraudulent_certificate_reporter_.get();
   }
@@ -283,7 +278,6 @@ class ProfileIOData {
       chrome_url_data_manager_backend_;
   mutable scoped_ptr<net::OriginBoundCertService> origin_bound_cert_service_;
   mutable scoped_ptr<net::NetworkDelegate> network_delegate_;
-  mutable scoped_ptr<net::DnsCertProvenanceChecker> dns_cert_checker_;
   mutable scoped_ptr<net::FraudulentCertificateReporter>
       fraudulent_certificate_reporter_;
   mutable scoped_ptr<net::ProxyService> proxy_service_;
