@@ -231,10 +231,6 @@ class SyncBackendHost {
   const GoogleServiceAuthError& GetAuthError() const;
   const sessions::SyncSessionSnapshot* GetLastSessionSnapshot() const;
 
-  const FilePath& sync_data_folder_path() const {
-    return sync_data_folder_path_;
-  }
-
   // Determines if the underlying sync engine has made any local changes to
   // items that have not yet been synced with the server.
   // ONLY CALL THIS IF OnInitializationComplete was called!
@@ -254,6 +250,58 @@ class SyncBackendHost {
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const;
 
  protected:
+  // The types and functions below are protected so that test
+  // subclasses can use them.
+  //
+  // TODO(akalin): Figure out a better way for tests to hook into
+  // SyncBackendHost.
+
+  typedef base::Callback<sync_api::HttpPostProviderFactory*(void)>
+      MakeHttpBridgeFactoryFn;
+
+  struct DoInitializeOptions {
+    DoInitializeOptions(
+        MessageLoop* sync_loop,
+        SyncBackendRegistrar* registrar,
+        const WeakHandle<JsEventHandler>& event_handler,
+        const GURL& service_url,
+        MakeHttpBridgeFactoryFn make_http_bridge_factory_fn,
+        const sync_api::SyncCredentials& credentials,
+        sync_notifier::SyncNotifierFactory* sync_notifier_factory,
+        bool delete_sync_data_folder,
+        const std::string& restored_key_for_bootstrapping,
+        bool setup_for_test_mode);
+    ~DoInitializeOptions();
+
+    MessageLoop* sync_loop;
+    SyncBackendRegistrar* registrar;
+    WeakHandle<JsEventHandler> event_handler;
+    GURL service_url;
+    // Overridden by tests.
+    MakeHttpBridgeFactoryFn make_http_bridge_factory_fn;
+    sync_api::SyncCredentials credentials;
+    sync_notifier::SyncNotifierFactory* const sync_notifier_factory;
+    std::string lsid;
+    bool delete_sync_data_folder;
+    std::string restored_key_for_bootstrapping;
+    bool setup_for_test_mode;
+  };
+
+  // Allows tests to perform alternate core initialization work.
+  virtual void InitCore(const DoInitializeOptions& options);
+
+  // Called from Core::OnSyncCycleCompleted to handle updating frontend
+  // thread components.
+  void HandleSyncCycleCompletedOnFrontendLoop(
+      sessions::SyncSessionSnapshot* snapshot);
+
+  // Called to finish the job of ConfigureDataTypes once the syncer is in
+  // configuration mode.
+  void FinishConfigureDataTypesOnFrontendLoop();
+
+  bool IsDownloadingNigoriForTest() const;
+
+ private:
   // An enum representing the steps to initializing the SyncBackendHost.
   enum InitializationState {
     NOT_ATTEMPTED,
@@ -274,7 +322,9 @@ class SyncBackendHost {
   class Core : public base::RefCountedThreadSafe<SyncBackendHost::Core>,
                public sync_api::SyncManager::Observer {
    public:
-    Core(const std::string& name, SyncBackendHost* backend);
+    Core(const std::string& name,
+         const FilePath& sync_data_folder_path,
+         const base::WeakPtr<SyncBackendHost>& backend);
 
     // SyncManager::Observer implementation.  The Core just acts like an air
     // traffic controller here, forwarding incoming messages to appropriate
@@ -300,32 +350,6 @@ class SyncBackendHost {
     virtual void OnEncryptionComplete() OVERRIDE;
     virtual void OnActionableError(
         const browser_sync::SyncProtocolError& sync_error) OVERRIDE;
-
-    struct DoInitializeOptions {
-      DoInitializeOptions(
-          MessageLoop* sync_loop,
-          SyncBackendRegistrar* registrar,
-          const WeakHandle<JsEventHandler>& event_handler,
-          const GURL& service_url,
-          const scoped_refptr<net::URLRequestContextGetter>&
-              request_context_getter,
-          const sync_api::SyncCredentials& credentials,
-          bool delete_sync_data_folder,
-          const std::string& restored_key_for_bootstrapping,
-          bool setup_for_test_mode);
-      ~DoInitializeOptions();
-
-      MessageLoop* sync_loop;
-      SyncBackendRegistrar* registrar;
-      WeakHandle<JsEventHandler> event_handler;
-      GURL service_url;
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter;
-      sync_api::SyncCredentials credentials;
-      std::string lsid;
-      bool delete_sync_data_folder;
-      std::string restored_key_for_bootstrapping;
-      bool setup_for_test_mode;
-    };
 
     // Note:
     //
@@ -407,18 +431,6 @@ class SyncBackendHost {
     // A callback from the SyncerThread when it is safe to continue config.
     void FinishConfigureDataTypes();
 
-    // Called to handle updating frontend thread components whenever we may
-    // need to alert the frontend that the backend is intialized.
-    void HandleInitializationCompletedOnFrontendLoop(
-        const WeakHandle<JsBackend>& js_backend,
-        bool success);
-
-    // Called when configuration of the Nigori node has completed as
-    // part of the initialization process.
-    void HandleNigoriConfigurationCompletedOnFrontendLoop(
-        const WeakHandle<JsBackend>& js_backend,
-        syncable::ModelTypeSet failed_configuration_types);
-
    private:
     friend class base::RefCountedThreadSafe<SyncBackendHost::Core>;
     friend class SyncBackendHostForProfileSyncTest;
@@ -439,52 +451,14 @@ class SyncBackendHost {
     // initialization.
     void SaveChanges();
 
-    // Let the front end handle the actionable error event.
-    void HandleActionableErrorEventOnFrontendLoop(
-        const browser_sync::SyncProtocolError& sync_error);
-
-    // Dispatched to from OnAuthError to handle updating frontend UI
-    // components.
-    void HandleAuthErrorEventOnFrontendLoop(
-        const GoogleServiceAuthError& new_auth_error);
-
-    // Invoked when a passphrase is required to decrypt a set of Nigori keys,
-    // or for encrypting. |reason| denotes why the passhrase was required.
-    void NotifyPassphraseRequired(sync_api::PassphraseRequiredReason reason);
-
-    // Invoked when the passphrase provided by the user has been accepted.
-    void NotifyPassphraseAccepted(const std::string& bootstrap_token);
-
-    // Invoked when an updated token is available from the sync server.
-    void NotifyUpdatedToken(const std::string& token);
-
-    // Invoked when the set of encrypted types or the encrypt
-    // everything flag changes.
-    void NotifyEncryptedTypesChanged(
-        syncable::ModelTypeSet encrypted_types,
-        bool encrypt_everything);
-
-    // Invoked when sync finishes encrypting new datatypes.
-    void NotifyEncryptionComplete();
-
-    // Called from Core::OnSyncCycleCompleted to handle updating frontend
-    // thread components.
-    void HandleSyncCycleCompletedOnFrontendLoop(
-        sessions::SyncSessionSnapshot* snapshot);
-
-    void HandleStopSyncingPermanentlyOnFrontendLoop();
-
-    // Called to handle success/failure of clearing server data
-    void HandleClearServerDataSucceededOnFrontendLoop();
-    void HandleClearServerDataFailedOnFrontendLoop();
-
-    void FinishConfigureDataTypesOnFrontendLoop();
-
     // Name used for debugging.
     const std::string name_;
 
-    // Our parent SyncBackendHost
-    SyncBackendHost* host_;
+    // Path of the folder that stores the sync data files.
+    const FilePath sync_data_folder_path_;
+
+    // Our parent SyncBackendHost.
+    WeakHandle<SyncBackendHost> host_;
 
     // The loop where all the sync backend operations happen.
     // Non-NULL only between calls to DoInitialize() and DoShutdown().
@@ -503,42 +477,6 @@ class SyncBackendHost {
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
 
-  // Checks if we have received a notice to turn on experimental datatypes
-  // (via the nigori node) and informs the frontend if that is the case.
-  // Note: it is illegal to call this before the backend is initialized.
-  void AddExperimentalTypes();
-
-  // InitializationComplete passes through the SyncBackendHost to forward
-  // on to |frontend_|, and so that tests can intercept here if they need to
-  // set up initial conditions.
-  virtual void HandleInitializationCompletedOnFrontendLoop(
-      const WeakHandle<JsBackend>& js_backend,
-      bool success);
-
-  // Called to finish the job of ConfigureDataTypes once the syncer is in
-  // configuration mode.
-  void FinishConfigureDataTypesOnFrontendLoop();
-
-  // Allows tests to perform alternate core initialization work.
-  virtual void InitCore(const Core::DoInitializeOptions& options);
-
-  // Factory method for HttpPostProviderFactories.  Should be
-  // thread-safe.
-  virtual sync_api::HttpPostProviderFactory* MakeHttpBridgeFactory(
-      const scoped_refptr<net::URLRequestContextGetter>& getter);
-
-  // Helpers to persist a token that can be used to bootstrap sync encryption
-  // across browser restart to avoid requiring the user to re-enter their
-  // passphrase.  |token| must be valid UTF-8 as we use the PrefService for
-  // storage.
-  void PersistEncryptionBootstrapToken(const std::string& token);
-
-  // Our core, which communicates directly to the syncapi.
-  scoped_refptr<Core> core_;
-
-  InitializationState initialization_state_;
-
- private:
   struct PendingConfigureDataTypesState {
     PendingConfigureDataTypesState();
     ~PendingConfigureDataTypesState();
@@ -557,8 +495,66 @@ class SyncBackendHost {
     sync_api::ConfigureReason reason;
   };
 
+  // Checks if we have received a notice to turn on experimental datatypes
+  // (via the nigori node) and informs the frontend if that is the case.
+  // Note: it is illegal to call this before the backend is initialized.
+  void AddExperimentalTypes();
+
+  // InitializationComplete passes through the SyncBackendHost to forward
+  // on to |frontend_|, and so that tests can intercept here if they need to
+  // set up initial conditions.
+  virtual void HandleInitializationCompletedOnFrontendLoop(
+      const WeakHandle<JsBackend>& js_backend,
+      bool success);
+
+  // Helpers to persist a token that can be used to bootstrap sync encryption
+  // across browser restart to avoid requiring the user to re-enter their
+  // passphrase.  |token| must be valid UTF-8 as we use the PrefService for
+  // storage.
+  void PersistEncryptionBootstrapToken(const std::string& token);
+
   // For convenience, checks if initialization state is INITIALIZED.
   bool initialized() const { return initialization_state_ == INITIALIZED; }
+
+  // Let the front end handle the actionable error event.
+  void HandleActionableErrorEventOnFrontendLoop(
+      const browser_sync::SyncProtocolError& sync_error);
+
+  // Invoked when a passphrase is required to decrypt a set of Nigori keys,
+  // or for encrypting. |reason| denotes why the passhrase was required.
+  void NotifyPassphraseRequired(sync_api::PassphraseRequiredReason reason);
+
+  // Invoked when the passphrase provided by the user has been accepted.
+  void NotifyPassphraseAccepted(const std::string& bootstrap_token);
+
+  // Invoked when an updated token is available from the sync server.
+  void NotifyUpdatedToken(const std::string& token);
+
+  // Invoked when the set of encrypted types or the encrypt
+  // everything flag changes.
+  void NotifyEncryptedTypesChanged(
+      syncable::ModelTypeSet encrypted_types,
+      bool encrypt_everything);
+
+  // Invoked when sync finishes encrypting new datatypes.
+  void NotifyEncryptionComplete();
+
+  void HandleStopSyncingPermanentlyOnFrontendLoop();
+
+  // Called to handle success/failure of clearing server data
+  void HandleClearServerDataSucceededOnFrontendLoop();
+  void HandleClearServerDataFailedOnFrontendLoop();
+
+  // Dispatched to from OnAuthError to handle updating frontend UI
+  // components.
+  void HandleAuthErrorEventOnFrontendLoop(
+      const GoogleServiceAuthError& new_auth_error);
+
+  // Called when configuration of the Nigori node has completed as
+  // part of the initialization process.
+  void HandleNigoriConfigurationCompletedOnFrontendLoop(
+      const WeakHandle<JsBackend>& js_backend,
+      syncable::ModelTypeSet failed_configuration_types);
 
   // Must be called on |frontend_loop_|.  |done_callback| is called on
   // |frontend_loop_|.
@@ -567,6 +563,8 @@ class SyncBackendHost {
   // Handles stopping the core's SyncManager, accounting for whether
   // initialization is done yet.
   void StopSyncManagerForShutdown(const base::Closure& closure);
+
+  base::WeakPtrFactory<SyncBackendHost> weak_ptr_factory_;
 
   // A thread where all the sync operations happen.
   base::Thread sync_thread_;
@@ -577,10 +575,15 @@ class SyncBackendHost {
 
   Profile* const profile_;
 
-  const base::WeakPtr<SyncPrefs> sync_prefs_;
-
   // Name used for debugging (set from profile_->GetDebugName()).
   const std::string name_;
+
+  // Our core, which communicates directly to the syncapi.
+  scoped_refptr<Core> core_;
+
+  InitializationState initialization_state_;
+
+  const base::WeakPtr<SyncPrefs> sync_prefs_;
 
   sync_notifier::SyncNotifierFactory sync_notifier_factory_;
 
@@ -588,9 +591,6 @@ class SyncBackendHost {
 
   // The frontend which we serve (and are owned by).
   SyncFrontend* frontend_;
-
-  // Path of the folder that stores the sync data files.
-  FilePath sync_data_folder_path_;
 
   scoped_ptr<PendingConfigureDataTypesState> pending_download_state_;
   scoped_ptr<PendingConfigureDataTypesState> pending_config_mode_state_;

@@ -66,21 +66,25 @@ void SyncBackendHostForProfileSyncTest::
   if (!fail_initial_download_)
     sync_ended = syncable::ModelTypeSet::All();
   std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
-  core_->HandleSyncCycleCompletedOnFrontendLoop(new SyncSessionSnapshot(
+  HandleSyncCycleCompletedOnFrontendLoop(new SyncSessionSnapshot(
       SyncerStatus(), ErrorCounters(), 0, false,
       sync_ended, download_progress_markers, false, false, 0, 0, 0, false,
       SyncSourceInfo(), 0, base::Time::Now()));
 }
 
-sync_api::HttpPostProviderFactory*
-    SyncBackendHostForProfileSyncTest::MakeHttpBridgeFactory(
-        const scoped_refptr<net::URLRequestContextGetter>& getter) {
-  return new browser_sync::TestHttpBridgeFactory;
+namespace {
+
+sync_api::HttpPostProviderFactory* MakeTestHttpBridgeFactory() {
+  return new browser_sync::TestHttpBridgeFactory();
 }
 
+}  // namespace
+
 void SyncBackendHostForProfileSyncTest::InitCore(
-    const Core::DoInitializeOptions& options) {
-  Core::DoInitializeOptions test_options = options;
+    const DoInitializeOptions& options) {
+  DoInitializeOptions test_options = options;
+  test_options.make_http_bridge_factory_fn =
+      base::Bind(&MakeTestHttpBridgeFactory);
   test_options.credentials.email = "testuser@gmail.com";
   test_options.credentials.sync_token = "token";
   test_options.restored_key_for_bootstrapping = "";
@@ -97,13 +101,13 @@ void SyncBackendHostForProfileSyncTest::InitCore(
 void SyncBackendHostForProfileSyncTest::StartConfiguration(
     const base::Closure& callback) {
   SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop();
-  if (initialization_state_ == DOWNLOADING_NIGORI) {
+  if (IsDownloadingNigoriForTest()) {
     syncable::ModelTypeSet sync_ended;
 
     if (!fail_initial_download_)
       sync_ended.Put(syncable::NIGORI);
     std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
-    core_->HandleSyncCycleCompletedOnFrontendLoop(new SyncSessionSnapshot(
+    HandleSyncCycleCompletedOnFrontendLoop(new SyncSessionSnapshot(
         SyncerStatus(), ErrorCounters(), 0, false,
         sync_ended, download_progress_markers, false, false, 0, 0, 0, false,
         SyncSourceInfo(), 0, base::Time::Now()));
