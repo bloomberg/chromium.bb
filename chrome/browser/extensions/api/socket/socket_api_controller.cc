@@ -6,6 +6,7 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/socket/socket_api_controller.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/profiles/profile.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -16,13 +17,39 @@
 
 using namespace net;
 
+namespace events {
+const char kOnEvent[] = "experimental.socket.onEvent";
+};  // namespace events
+
 namespace extensions {
+
+enum SocketEventType {
+  SOCKET_EVENT_WRITE_COMPLETE
+};
+
+const char kEventTypeKey[] = "type";
+const char kEventTypeWriteComplete[] = "writeComplete";
+
+const char kSrcIdKey[] = "srcId";
+const char kIsFinalEventKey[] = "isFinalEvent";
+
+const char kResultCodeKey[] = "resultCode";
+
+std::string SocketEventTypeToString(SocketEventType event_type) {
+  switch (event_type) {
+    case SOCKET_EVENT_WRITE_COMPLETE:
+      return kEventTypeWriteComplete;
+    default:
+      NOTREACHED();
+      return std::string();
+  }
+}
 
 // A Socket wraps a low-level socket and includes housekeeping information that
 // we need to manage it in the context of an extension.
 class Socket {
  public:
-  Socket(const Profile* profile, const std::string& src_extension_id,
+  Socket(Profile* profile, const std::string& src_extension_id, int src_id,
          const GURL& src_url);
   ~Socket();
 
@@ -30,25 +57,29 @@ class Socket {
   void Close();
   int Write(const std::string message);
 
+  void OnSocketEvent(SocketEventType event_type, int result_code);
+
  private:
-  // TODO(miket): this metadata will enable us to pass events back to the
-  // extension that created this Socket.
-  const Profile* profile_;
   int id_;
+
+  // This group of variables lets us send events back to the creator extension.
+  Profile* profile_;
   std::string src_extension_id_;
+  int src_id_;
   GURL src_url_;
 
   scoped_ptr<net::UDPClientSocket> udp_client_socket_;
   bool is_connected_;
 
-  // A callback required by UDPClientSocket::Write().
-  void OnIOComplete(int result);
+  void OnWriteComplete(int result);
 };
 
-Socket::Socket(const Profile* profile, const std::string& src_extension_id,
-               const GURL& src_url)
-    : profile_(profile),
+Socket::Socket(Profile* profile, const std::string& src_extension_id,
+               int src_id, const GURL& src_url)
+    : id_(-1),
+      profile_(profile),
       src_extension_id_(src_extension_id),
+      src_id_(src_id),
       src_url_(src_url),
       udp_client_socket_(new UDPClientSocket(
           DatagramSocket::DEFAULT_BIND,
@@ -63,8 +94,36 @@ Socket::~Socket() {
   }
 }
 
-void Socket::OnIOComplete(int result) {
-  // We don't need to do anything.
+void Socket::OnSocketEvent(SocketEventType event_type, int result_code) {
+  // Do we have a destination for this event?
+  if (src_id_ < 0)
+    return;
+
+  std::string event_type_string = SocketEventTypeToString(event_type);
+
+  ListValue args;
+  DictionaryValue* event = new DictionaryValue();
+  event->SetString(kEventTypeKey, event_type_string);
+  event->SetInteger(kSrcIdKey, src_id_);
+
+  // TODO(miket): Signal that it's OK to clean up onEvent listeners. This is
+  // the framework we'll use, but we need to start using it.
+  event->SetBoolean(kIsFinalEventKey, false);
+
+  if (event_type == SOCKET_EVENT_WRITE_COMPLETE) {
+    event->SetInteger(kResultCodeKey, result_code);
+  }
+
+  args.Set(0, event);
+  std::string json_args;
+  base::JSONWriter::Write(&args, false, &json_args);
+
+  profile_->GetExtensionEventRouter()->DispatchEventToExtension(
+      src_extension_id_,
+      events::kOnEvent,
+      json_args,
+      profile_,
+      src_url_);
 }
 
 bool Socket::Connect(const net::IPEndPoint& ip_end_point) {
@@ -77,6 +136,10 @@ void Socket::Close() {
   udp_client_socket_->Close();
 }
 
+void Socket::OnWriteComplete(int result) {
+  OnSocketEvent(SOCKET_EVENT_WRITE_COMPLETE, result);
+}
+
 int Socket::Write(const std::string message) {
   int length = message.length();
   scoped_refptr<StringIOBuffer> io_buffer(new StringIOBuffer(message));
@@ -87,7 +150,7 @@ int Socket::Write(const std::string message) {
   while (buffer->BytesRemaining()) {
     int rv = udp_client_socket_->Write(
         buffer, buffer->BytesRemaining(),
-        base::Bind(&Socket::OnIOComplete, base::Unretained(this)));
+        base::Bind(&Socket::OnWriteComplete, base::Unretained(this)));
     if (rv <= 0) {
       // We pass all errors, including ERROR_IO_PENDING, back to the caller.
       return bytes_sent > 0 ? bytes_sent : rv;
@@ -112,10 +175,12 @@ Socket* SocketController::GetSocket(int socket_id) {
   return NULL;
 }
 
-int SocketController::CreateUdp(const Profile* profile,
+int SocketController::CreateUdp(Profile* profile,
                                 const std::string& extension_id,
+                                int src_id,
                                 const GURL& src_url) {
-  linked_ptr<Socket> socket(new Socket(profile, extension_id, src_url));
+  linked_ptr<Socket> socket(new Socket(profile, extension_id, src_id,
+                                       src_url));
   CHECK(socket.get());
   socket_map_[next_socket_id_] = socket;
   return next_socket_id_++;

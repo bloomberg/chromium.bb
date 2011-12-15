@@ -7,24 +7,25 @@
 
 var chrome = chrome || {};
 (function() {
-  native function GetExtensionAPIDefinition();
-  native function StartRequest();
   native function GetChromeHidden();
+  native function GetExtensionAPIDefinition();
   native function GetNextRequestId();
   native function Print();
+  native function StartRequest();
 
+  native function CreateBlob(filePath);
+  native function DecodeJPEG(jpegImage);
   native function GetCurrentPageActions(extensionId);
   native function GetExtensionViews();
-  native function GetNextContextMenuId();
-  native function GetNextTtsEventId();
-  native function OpenChannelToTab();
-  native function GetRenderViewId();
-  native function SetIconCommon();
-  native function GetUniqueSubEventName(eventName);
   native function GetLocalFileSystem(name, path);
-  native function DecodeJPEG(jpegImage);
-  native function CreateBlob(filePath);
+  native function GetNextContextMenuId();
+  native function GetNextSocketEventId();
+  native function GetNextTtsEventId();
+  native function GetRenderViewId();
+  native function GetUniqueSubEventName(eventName);
+  native function OpenChannelToTab();
   native function SendResponseAck(requestId);
+  native function SetIconCommon();
 
   var chromeHidden = GetChromeHidden();
 
@@ -585,6 +586,28 @@ var chrome = chrome || {};
       }
   }
 
+  function setupSocketEvents() {
+    chromeHidden.socket = {};
+    chromeHidden.socket.handlers = {};
+    try {
+      chrome.experimental.socket.onEvent.addListener(
+          function(event) {
+            var eventHandler = chromeHidden.socket.handlers[event.srcId];
+            if (eventHandler) {
+              eventHandler({
+               type: event.type,
+                      resultCode: event.resultCode,
+                      });
+              if (event.isFinalEvent) {
+                delete chromeHidden.socket.handlers[event.srcId];
+              }
+            }
+          });
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   // Get the platform from navigator.appVersion.
   function getPlatform() {
     var platforms = [
@@ -1092,14 +1115,26 @@ var chrome = chrome || {};
       return id;
     };
 
+    apiFunctions["experimental.socket.create"].handleRequest = function() {
+      var args = arguments;
+      if (args.length > 1 && args[1] && args[1].onEvent) {
+        var id = GetNextSocketEventId();
+        args[1].srcId = id;
+        chromeHidden.socket.handlers[id] = args[1].onEvent;
+      }
+      sendRequest(this.name, args, this.definition.parameters);
+      return id;
+    };
+
     if (chrome.test) {
       chrome.test.getApiDefinitions = GetExtensionAPIDefinition;
     }
 
-    setupPageActionEvents(extensionId);
     setupHiddenContextMenuEvent(extensionId);
     setupInputEvents();
     setupOmniboxEvents();
+    setupPageActionEvents(extensionId);
+    setupSocketEvents();
     setupTtsEvents();
   });
 
@@ -1111,6 +1146,9 @@ var chrome = chrome || {};
 
   if (!chrome.experimental.speechInput)
     chrome.experimental.speechInput = {};
+
+  if (!chrome.experimental.socket)
+    chrome.experimental.socket = {};
 
   if (!chrome.tts)
     chrome.tts = {};

@@ -45,10 +45,16 @@ class SocketApiFunction : public AsyncExtensionFunction {
 // one that created the socket. Too bad.
 
 class SocketCreateFunction : public SocketApiFunction {
+ public:
+  SocketCreateFunction();
+
  protected:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
   virtual bool Respond() OVERRIDE;
+
+ private:
+  int src_id_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.create")
 };

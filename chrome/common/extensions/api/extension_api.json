@@ -9040,27 +9040,23 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["data", "error"],
-            "description": "A 'data' event represents data received on the socket. An 'error' event represents an error."
+            "enum": ["writeComplete"],
+            "description": "A writeComplete event reports the result of a write that blocked."
           },
-          "byteCount": {
+          "resultCode": {
             "type": "integer",
-            "optional": true,
-            "description": "The number of bytes received in a 'data' event."
-          },
-          "bytes": {
-            "type": "blob",
-            "optional": true,
-            "description": "The data received."
-          },
-          "errorCode": {
-            "type": "integer",
-            "description": "The error code, if the event type is 'error'.",
+            "description": "The result code, if the event type is writeComplete.",
             "optional": true
           },
-          "errorMessage": {
-            "type": "string",
-            "description": "The error description, if the event type is 'error'.",
+          "isFinalEvent": {
+            "type": "boolean",
+            "description": "Whether this is the final event that this socket will send.",
+            "nodoc": true
+          },
+          "srcId": {
+            "type": "number",
+            "description": "An ID unique to the calling function's context so that events can get routed back to the correct callback.",
+            "nodoc": true,
             "optional": true
           }
         }
@@ -9216,6 +9212,21 @@
             ]
           }
         ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onEvent",
+        "type": "function",
+        "nodoc": true,
+        "parameters": [
+          {
+            "name": "event",
+            "$ref": "SocketEvent",
+            "description": "The event indicating socket status."
+          }
+        ],
+        "description": "Used to pass events back to the function that called create()."
       }
     ]
   },

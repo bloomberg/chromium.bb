@@ -194,6 +194,8 @@ class ExtensionImpl : public ChromeV8Extension {
       return v8::FunctionTemplate::New(OpenChannelToTab);
     } else if (name->Equals(v8::String::New("GetNextContextMenuId"))) {
       return v8::FunctionTemplate::New(GetNextContextMenuId);
+    } else if (name->Equals(v8::String::New("GetNextSocketEventId"))) {
+      return v8::FunctionTemplate::New(GetNextSocketEventId);
     } else if (name->Equals(v8::String::New("GetNextTtsEventId"))) {
       return v8::FunctionTemplate::New(GetNextTtsEventId);
     } else if (name->Equals(v8::String::New("GetCurrentPageActions"))) {
@@ -449,6 +451,13 @@ class ExtensionImpl : public ChromeV8Extension {
     // extension process, not content scripts.
     static int next_tts_event_id = 1;
     return v8::Integer::New(next_tts_event_id++);
+  }
+
+  static v8::Handle<v8::Value> GetNextSocketEventId(
+      const v8::Arguments& args) {
+    // Same comment as GetNextTtsEventId.
+    static int next_event_id = 1;
+    return v8::Integer::New(next_event_id++);
   }
 
   static v8::Handle<v8::Value> GetCurrentPageActions(

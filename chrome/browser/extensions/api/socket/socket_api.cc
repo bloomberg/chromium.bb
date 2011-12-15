@@ -49,9 +49,25 @@ void SocketApiFunction::RespondOnUIThread() {
   SendResponse(Respond());
 }
 
+SocketCreateFunction::SocketCreateFunction()
+    : src_id_(-1) {}
+
 bool SocketCreateFunction::Prepare() {
   std::string socket_type;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &socket_type));
+
+  scoped_ptr<DictionaryValue> options(new DictionaryValue());
+  if (args_->GetSize() >= 2) {
+    DictionaryValue* temp_options = NULL;
+    if (args_->GetDictionary(1, &temp_options))
+      options.reset(temp_options->DeepCopy());
+  }
+
+  // If we tacked on a srcId to the options object, pull it out here to provide
+  // to the Socket.
+  if (options->HasKey(kSrcIdKey)) {
+    EXTENSION_FUNCTION_VALIDATE(options->GetInteger(kSrcIdKey, &src_id_));
+  }
 
   // TODO(miket): this constitutes a second form of truth as to the enum
   // validity. But our unit-test framework skips the enum validation. So in
@@ -66,7 +82,7 @@ bool SocketCreateFunction::Prepare() {
 
 void SocketCreateFunction::Work() {
   DictionaryValue* result = new DictionaryValue();
-  int socket_id = controller()->CreateUdp(profile(), extension_id(),
+  int socket_id = controller()->CreateUdp(profile(), extension_id(), src_id_,
                                           source_url());
   result->SetInteger(kSocketIdKey, socket_id);
   result_.reset(result);

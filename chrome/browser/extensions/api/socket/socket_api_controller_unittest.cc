@@ -24,7 +24,7 @@ TEST_F(SocketApiControllerTest, TestSocketControllerLifetime) {
   const std::string extension_id("xxxxxxxxx");
   const GURL url;
   for (int i = 0; i < 10; ++i) {
-    int socket_id = controller->CreateUdp(profile, extension_id, url);
+    int socket_id = controller->CreateUdp(profile, extension_id, -1, url);
     ASSERT_TRUE(socket_id != 0);
   }
 
@@ -33,7 +33,7 @@ TEST_F(SocketApiControllerTest, TestSocketControllerLifetime) {
   const int kPort = 38888;
   const std::string address("127.0.0.1");
   for (int i = 0; i < 10; ++i) {
-    int socket_id = controller->CreateUdp(profile, extension_id, url);
+    int socket_id = controller->CreateUdp(profile, extension_id, -1, url);
     ASSERT_TRUE(socket_id != 0);
     ASSERT_TRUE(controller->ConnectUdp(socket_id, address, kPort));
   }
