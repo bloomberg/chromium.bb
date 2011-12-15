@@ -12,6 +12,15 @@
 
 namespace ppapi {
 
+class TestVarTracker : public VarTracker {
+ public:
+  TestVarTracker() {}
+  virtual ~TestVarTracker() {}
+  virtual ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes) OVERRIDE {
+    return NULL;
+  }
+};
+
 // Implementation of PpapiGlobals for tests that don't need either the host- or
 // plugin-specific implementations.
 class TestGlobals : public PpapiGlobals {
@@ -28,7 +37,7 @@ class TestGlobals : public PpapiGlobals {
 
  private:
   ResourceTracker resource_tracker_;
-  VarTracker var_tracker_;
+  TestVarTracker var_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TestGlobals);
 };

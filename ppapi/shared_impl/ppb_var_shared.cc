@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "ppapi/c/dev/ppb_var_array_buffer_dev.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
@@ -17,6 +18,10 @@ using ppapi::PpapiGlobals;
 using ppapi::StringVar;
 
 namespace ppapi {
+namespace {
+
+
+// PPB_Var methods -------------------------------------------------------------
 
 void AddRefVar(PP_Var var) {
   ppapi::ProxyAutoLock lock;
@@ -48,7 +53,6 @@ const char* VarToUtf8(PP_Var var, uint32_t* len) {
   return NULL;
 }
 
-namespace {
 const PPB_Var var_interface = {
   &AddRefVar,
   &ReleaseVar,
@@ -62,6 +66,35 @@ const PPB_Var_1_0 var_interface1_0 = {
   &VarFromUtf8_1_0,
   &VarToUtf8
 };
+
+
+// PPB_VarArrayBuffer_Dev methods ----------------------------------------------
+
+PP_Var CreateArrayBufferVar(uint32_t size_in_bytes) {
+  return PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
+      size_in_bytes);
+}
+
+uint32_t ByteLength(struct PP_Var array) {
+  ArrayBufferVar* buffer = ArrayBufferVar::FromPPVar(array);
+  if (!buffer)
+    return 0;
+  return buffer->ByteLength();
+}
+
+void* Map(struct PP_Var array) {
+  ArrayBufferVar* buffer = ArrayBufferVar::FromPPVar(array);
+  if (!buffer)
+    return NULL;
+  return buffer->Map();
+}
+
+const PPB_VarArrayBuffer_Dev var_arraybuffer_interface = {
+  &CreateArrayBufferVar,
+  &ByteLength,
+  &Map
+};
+
 }  // namespace
 
 // static
@@ -72,6 +105,11 @@ const PPB_Var* PPB_Var_Shared::GetVarInterface() {
 // static
 const PPB_Var_1_0* PPB_Var_Shared::GetVarInterface1_0() {
   return &var_interface1_0;
+}
+
+// static
+const PPB_VarArrayBuffer_Dev* PPB_Var_Shared::GetVarArrayBufferInterface() {
+ return &var_arraybuffer_interface;
 }
 
 }  // namespace ppapi

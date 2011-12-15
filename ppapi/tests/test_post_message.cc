@@ -8,7 +8,7 @@
 
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/cpp/dev/scriptable_object_deprecated.h"
+#include "ppapi/cpp/dev/var_array_buffer_dev.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/tests/pp_thread.h"
@@ -111,6 +111,7 @@ void TestPostMessage::RunTests(const std::string& filter) {
   // that was sent in Init above.
   RUN_TEST(SendInInit, filter);
   RUN_TEST(SendingData, filter);
+  RUN_TEST(SendingArrayBuffer, filter);
   RUN_TEST(MessageEvent, filter);
   RUN_TEST(NoHandler, filter);
   RUN_TEST(ExtraParam, filter);
@@ -244,30 +245,90 @@ std::string TestPostMessage::TestSendingData() {
   PASS();
 }
 
+std::string TestPostMessage::TestSendingArrayBuffer() {
+  // Clean up after previous tests. This also swallows the message sent by Init
+  // if we didn't run the 'SendInInit' test. All tests other than 'SendInInit'
+  // should start with these.
+  WaitForMessages();
+  ASSERT_TRUE(ClearListeners());
+
+  // Create a 100-byte array buffer with test_data[i] == i.
+  pp::VarArrayBuffer_Dev test_data(100u);
+  ASSERT_NE(NULL, test_data.Map());
+  ASSERT_EQ(100u, test_data.ByteLength());
+  unsigned char* buff = static_cast<unsigned char*>(test_data.Map());
+  for (size_t i = 0; i < test_data.ByteLength(); ++i)
+    buff[i] = i;
+
+  // Have the listener test some properties of the ArrayBuffer.
+  const char* const properties_to_check[] = {
+      "message_event.data.constructor.name === 'ArrayBuffer'",
+      "message_event.data.byteLength === 100",
+      "(new DataView(message_event.data)).getInt8(0) == 0",
+      "(new DataView(message_event.data)).getInt8(99) == 99",
+      NULL};
+  for (size_t i = 0; properties_to_check[i]; ++i) {
+    ASSERT_TRUE(AddEchoingListener(properties_to_check[i]));
+    message_data_.clear();
+    instance_->PostMessage(test_data);
+    ASSERT_EQ(message_data_.size(), 0);
+    ASSERT_EQ(WaitForMessages(), 1);
+    ASSERT_TRUE(message_data_.back().is_bool());
+    if (!message_data_.back().AsBool())
+      return std::string("Failed: ") + properties_to_check[i];
+    ASSERT_TRUE(message_data_.back().AsBool());
+    ASSERT_TRUE(ClearListeners());
+  }
+
+  // Set up the JavaScript message event listener to echo the data part of the
+  // message event back to us.
+  ASSERT_TRUE(AddEchoingListener("message_event.data"));
+  message_data_.clear();
+  instance_->PostMessage(test_data);
+  // PostMessage is asynchronous, so we should not receive a response yet.
+  ASSERT_EQ(message_data_.size(), 0);
+  ASSERT_EQ(WaitForMessages(), 1);
+  ASSERT_TRUE(message_data_.back().is_array_buffer());
+  pp::VarArrayBuffer_Dev received(message_data_.back());
+  message_data_.clear();
+  ASSERT_EQ(test_data.ByteLength(), received.ByteLength());
+  unsigned char* received_buff = static_cast<unsigned char*>(received.Map());
+  // The buffer should be copied, so this should be a distinct buffer. When
+  // 'transferrables' are implemented for PPAPI, we'll also want to test that
+  // we get the _same_ buffer back when it's transferred.
+  ASSERT_NE(buff, received_buff);
+  for (size_t i = 0; i < test_data.ByteLength(); ++i)
+    ASSERT_EQ(buff[i], received_buff[i]);
+
+  ASSERT_TRUE(ClearListeners());
+
+  PASS();
+}
+
 std::string TestPostMessage::TestMessageEvent() {
   // Set up the JavaScript message event listener to pass us some values from
   // the MessageEvent and make sure they match our expectations.
 
   WaitForMessages();
   ASSERT_TRUE(ClearListeners());
-  // Have the listener pass back the type of message_event and make sure it's
-  // "object".
-  ASSERT_TRUE(AddEchoingListener("typeof(message_event)"));
+  // Have the listener pass back the class name of message_event and make sure
+  // it's "MessageEvent".
+  ASSERT_TRUE(AddEchoingListener("message_event.constructor.name"));
   message_data_.clear();
   instance_->PostMessage(pp::Var(kTestInt));
   ASSERT_EQ(message_data_.size(), 0);
   ASSERT_EQ(WaitForMessages(), 1);
   ASSERT_TRUE(message_data_.back().is_string());
-  ASSERT_EQ(message_data_.back().AsString(), "object");
+  ASSERT_EQ(message_data_.back().AsString(), "MessageEvent");
   ASSERT_TRUE(ClearListeners());
 
   // Make sure all the non-data properties have the expected values.
-  bool success = AddEchoingListener("((message_event.origin == '')"
-                                   " && (message_event.lastEventId == '')"
-                                   " && (message_event.source == null)"
-                                   " && (message_event.ports.length == 0)"
-                                   " && (message_event.bubbles == false)"
-                                   " && (message_event.cancelable == false)"
+  bool success = AddEchoingListener("((message_event.origin === '')"
+                                   " && (message_event.lastEventId === '')"
+                                   " && (message_event.source === null)"
+                                   " && (message_event.ports.length === 0)"
+                                   " && (message_event.bubbles === false)"
+                                   " && (message_event.cancelable === false)"
                                    ")");
   ASSERT_TRUE(success);
   message_data_.clear();

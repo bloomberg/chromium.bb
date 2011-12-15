@@ -6,9 +6,11 @@
 
 #include "base/logging.h"
 #include "ppapi/c/pp_var.h"
+#include "webkit/plugins/ppapi/host_array_buffer_var.h"
 #include "webkit/plugins/ppapi/npobject_var.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
+using ppapi::ArrayBufferVar;
 using ppapi::NPObjectVar;
 
 namespace webkit {
@@ -18,6 +20,10 @@ HostVarTracker::HostVarTracker() {
 }
 
 HostVarTracker::~HostVarTracker() {
+}
+
+ArrayBufferVar* HostVarTracker::CreateArrayBuffer(uint32 size_in_bytes) {
+  return new HostArrayBufferVar(size_in_bytes);
 }
 
 void HostVarTracker::AddNPObjectVar(NPObjectVar* object_var) {

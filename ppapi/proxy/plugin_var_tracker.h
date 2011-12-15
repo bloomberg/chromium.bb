@@ -62,12 +62,13 @@ class PPAPI_PROXY_EXPORT PluginVarTracker : public VarTracker {
   int GetRefCountForObject(const PP_Var& plugin_object);
   int GetTrackedWithNoReferenceCountForObject(const PP_Var& plugin_object);
 
- protected:
+ private:
   // VarTracker protected overrides.
   virtual int32 AddVarInternal(Var* var, AddVarRefMode mode) OVERRIDE;
   virtual void TrackedObjectGettingOneRef(VarMap::const_iterator iter) OVERRIDE;
   virtual void ObjectGettingZeroRef(VarMap::iterator iter) OVERRIDE;
   virtual bool DeleteObjectInfoIfNecessary(VarMap::iterator iter) OVERRIDE;
+  virtual ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes) OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<PluginVarTracker>;

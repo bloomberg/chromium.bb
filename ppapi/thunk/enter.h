@@ -94,7 +94,7 @@ class EnterFunction : subtle::LockOnEntry<lock_on_entry> {
   DISALLOW_COPY_AND_ASSIGN(EnterFunction);
 };
 
-// Like EnterResource but assumes the lock is already held.
+// Like EnterFunction but assumes the lock is already held.
 template<typename FunctionsT>
 class EnterFunctionNoLock : public EnterFunction<FunctionsT, false> {
  public:

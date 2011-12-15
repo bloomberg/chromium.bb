@@ -152,12 +152,15 @@ void SerializedVar::Inner::WriteToMessage(IPC::Message* m) const {
       // what looks like a valid empty string.
       m->WriteString(string_value_);
       break;
+    case PP_VARTYPE_ARRAY_BUFFER:
+      // TODO(dmichael): Proxy ArrayBuffer.
+      NOTIMPLEMENTED();
+      break;
     case PP_VARTYPE_OBJECT:
       m->WriteInt64(var_.value.as_id);
       break;
     case PP_VARTYPE_ARRAY:
     case PP_VARTYPE_DICTIONARY:
-    case PP_VARTYPE_ARRAY_BUFFER:
       // TODO(brettw) when these are supported, implement this.
       NOTIMPLEMENTED();
       break;

@@ -14,6 +14,7 @@
 
 namespace ppapi {
 
+class ArrayBufferVar;
 class NPObjectVar;
 class ProxyObjectVar;
 class StringVar;
@@ -30,12 +31,13 @@ class PPAPI_SHARED_EXPORT Var : public base::RefCounted<Var> {
   static std::string PPVarToLogString(PP_Var var);
 
   virtual StringVar* AsStringVar();
+  virtual ArrayBufferVar* AsArrayBufferVar();
   virtual NPObjectVar* AsNPObjectVar();
   virtual ProxyObjectVar* AsProxyObjectVar();
 
   // Creates a PP_Var corresponding to this object. The return value will have
   // one reference addrefed on behalf of the caller.
-  virtual PP_Var GetPPVar() = 0;
+  PP_Var GetPPVar();
 
   // Returns the type of this var.
   virtual PP_VarType GetType() const = 0;
@@ -97,7 +99,6 @@ class PPAPI_SHARED_EXPORT StringVar : public Var {
 
   // Var override.
   virtual StringVar* AsStringVar() OVERRIDE;
-  virtual PP_Var GetPPVar() OVERRIDE;
   virtual PP_VarType GetType() const OVERRIDE;
 
   // Helper function to create a PP_Var of type string that contains a copy of
@@ -117,6 +118,40 @@ class PPAPI_SHARED_EXPORT StringVar : public Var {
   std::string value_;
 
   DISALLOW_COPY_AND_ASSIGN(StringVar);
+};
+
+// ArrayBufferVar --------------------------------------------------------------
+
+// Represents an array buffer Var.
+//
+// Note this is an abstract class. To create an appropriate concrete one, you
+// need to use the VarTracker:
+//   VarArrayBuffer* buf =
+//       PpapiGlobals::Get()->GetVarTracker()->CreateArrayBuffer(size);
+//
+// Converting a PP_Var to an ArrayBufferVar:
+//   ArrayBufferVar* array = ArrayBufferVar::FromPPVar(var);
+//   if (!array)
+//     return false;  // Not an ArrayBuffer or an invalid var.
+//   DoSomethingWithTheBuffer(array);
+class PPAPI_SHARED_EXPORT ArrayBufferVar : public Var {
+ public:
+  ArrayBufferVar();
+  virtual ~ArrayBufferVar();
+
+  virtual void* Map() = 0;
+  virtual uint32 ByteLength() = 0;
+
+  // Var override.
+  virtual ArrayBufferVar* AsArrayBufferVar() OVERRIDE;
+  virtual PP_VarType GetType() const OVERRIDE;
+
+  // Helper function that converts a PP_Var to an ArrayBufferVar. This will
+  // return NULL if the PP_Var is not of ArrayBuffer type.
+  static ArrayBufferVar* FromPPVar(PP_Var var);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArrayBufferVar);
 };
 
 }  // namespace ppapi

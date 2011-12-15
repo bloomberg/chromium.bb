@@ -27,17 +27,6 @@ ProxyObjectVar* ProxyObjectVar::AsProxyObjectVar() {
   return this;
 }
 
-PP_Var ProxyObjectVar::GetPPVar() {
-  int32 id = GetOrCreateVarID();
-  if (!id)
-    return PP_MakeNull();
-
-  PP_Var result;
-  result.type = PP_VARTYPE_OBJECT;
-  result.value.as_id = id;
-  return result;
-}
-
 PP_VarType ProxyObjectVar::GetType() const {
   return PP_VARTYPE_OBJECT;
 }

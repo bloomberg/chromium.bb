@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/string_util.h"
+#include "webkit/plugins/ppapi/host_array_buffer_var.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/host_var_tracker.h"
 #include "webkit/plugins/ppapi/npobject_var.h"
@@ -21,6 +22,7 @@ using ppapi::NPObjectVar;
 using ppapi::PpapiGlobals;
 using ppapi::StringVar;
 using ppapi::Var;
+using WebKit::WebArrayBuffer;
 using WebKit::WebBindings;
 
 namespace webkit {
@@ -73,6 +75,10 @@ bool PPVarToNPVariant(PP_Var var, NPVariant* result) {
                           *result);
       break;
     }
+    // The following types are not supported for use with PPB_Var_Deprecated,
+    // because PPB_Var_Deprecated is only for trusted plugins, and the trusted
+    // plugins we have don't need these types. We can add support in the future
+    // if it becomes necessary.
     case PP_VARTYPE_ARRAY:
     case PP_VARTYPE_DICTIONARY:
     case PP_VARTYPE_ARRAY_BUFFER:
@@ -133,6 +139,15 @@ PP_Var NPIdentifierToPPVar(NPIdentifier id) {
 
 PP_Var NPObjectToPPVar(PluginInstance* instance, NPObject* object) {
   DCHECK(object);
+  WebArrayBuffer buffer;
+  // TODO(dmichael): Should I protect against duplicate Vars representing the
+  // same array buffer? It's probably not worth the trouble, since it will only
+  // affect in-process plugins.
+  if (WebBindings::getArrayBuffer(object, &buffer)) {
+    scoped_refptr<HostArrayBufferVar> buffer_var(
+        new HostArrayBufferVar(buffer));
+    return buffer_var->GetPPVar();
+  }
   scoped_refptr<NPObjectVar> object_var(
       HostGlobals::Get()->host_var_tracker()->NPObjectVarForNPObject(
           instance->pp_instance(), object));

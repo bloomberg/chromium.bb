@@ -65,12 +65,28 @@ StringVar* Var::AsStringVar() {
   return NULL;
 }
 
+ArrayBufferVar* Var::AsArrayBufferVar() {
+  return NULL;
+}
+
 NPObjectVar* Var::AsNPObjectVar() {
   return NULL;
 }
 
 ProxyObjectVar* Var::AsProxyObjectVar() {
   return NULL;
+}
+
+PP_Var Var::GetPPVar() {
+  int32 id = GetOrCreateVarID();
+  if (!id)
+    return PP_MakeNull();
+
+  PP_Var result;
+  result.type = GetType();
+  result.padding = 0;
+  result.value.as_id = id;
+  return result;
 }
 
 int32 Var::GetExistingVarID() const {
@@ -112,18 +128,6 @@ StringVar* StringVar::AsStringVar() {
   return this;
 }
 
-PP_Var StringVar::GetPPVar() {
-  int32 id = GetOrCreateVarID();
-  if (!id)
-    return PP_MakeNull();
-
-  PP_Var result;
-  result.type = PP_VARTYPE_STRING;
-  result.padding = 0;
-  result.value.as_id = id;
-  return result;
-}
-
 PP_VarType StringVar::GetType() const {
   return PP_VARTYPE_STRING;
 }
@@ -150,6 +154,33 @@ StringVar* StringVar::FromPPVar(PP_Var var) {
   if (!var_object)
     return NULL;
   return var_object->AsStringVar();
+}
+
+// ArrayBufferVar --------------------------------------------------------------
+
+ArrayBufferVar::ArrayBufferVar() {
+}
+
+ArrayBufferVar::~ArrayBufferVar() {
+}
+
+ArrayBufferVar* ArrayBufferVar::AsArrayBufferVar() {
+  return this;
+}
+
+PP_VarType ArrayBufferVar::GetType() const {
+  return PP_VARTYPE_ARRAY_BUFFER;
+}
+
+// static
+ArrayBufferVar* ArrayBufferVar::FromPPVar(PP_Var var) {
+  if (var.type != PP_VARTYPE_ARRAY_BUFFER)
+    return NULL;
+  scoped_refptr<Var> var_object(
+      PpapiGlobals::Get()->GetVarTracker()->GetVar(var));
+  if (!var_object)
+    return NULL;
+  return var_object->AsArrayBufferVar();
 }
 
 }  // namespace ppapi

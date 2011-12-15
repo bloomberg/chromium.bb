@@ -28,6 +28,7 @@
 #include "ppapi/cpp/dev/text_input_dev.h"
 #include "ppapi/cpp/dev/transport_dev.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
+#include "ppapi/cpp/dev/var_array_buffer_dev.h"
 #include "ppapi/cpp/dev/video_decoder_dev.h"
 #include "ppapi/cpp/dev/websocket_dev.h"
 #include "ppapi/cpp/dev/widget_client_dev.h"

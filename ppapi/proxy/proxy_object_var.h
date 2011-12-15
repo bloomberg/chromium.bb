@@ -26,7 +26,6 @@ class ProxyObjectVar : public Var {
 
   // Var overrides.
   virtual ProxyObjectVar* AsProxyObjectVar() OVERRIDE;
-  virtual PP_Var GetPPVar() OVERRIDE;
   virtual PP_VarType GetType() const OVERRIDE;
 
   proxy::PluginDispatcher* dispatcher() const { return dispatcher_; }

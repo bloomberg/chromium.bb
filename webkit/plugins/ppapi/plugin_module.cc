@@ -32,6 +32,7 @@
 #include "ppapi/c/dev/ppb_text_input_dev.h"
 #include "ppapi/c/dev/ppb_transport_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
+#include "ppapi/c/dev/ppb_var_array_buffer_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/dev/ppb_video_capture_dev.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
@@ -336,6 +337,8 @@ const void* GetInterface(const char* name) {
     return ::ppapi::PPB_Var_Shared::GetVarInterface1_0();
   if (strcmp(name, PPB_VAR_INTERFACE_1_1) == 0)
     return ::ppapi::PPB_Var_Shared::GetVarInterface();
+  if (strcmp(name, PPB_VAR_ARRAY_BUFFER_DEV_INTERFACE) == 0)
+    return ::ppapi::PPB_Var_Shared::GetVarArrayBufferInterface();
 
 #ifdef ENABLE_FLAPPER_HACKS
   if (strcmp(name, PPB_FLASH_NETCONNECTOR_INTERFACE) == 0)

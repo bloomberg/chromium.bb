@@ -8,11 +8,13 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
 
+class ArrayBufferVar;
 class Var;
 
 // Tracks non-POD (refcounted) var objects held by a plugin.
@@ -53,6 +55,10 @@ class PPAPI_SHARED_EXPORT VarTracker {
   // be deleted if there are no more refs to it.
   bool ReleaseVar(int32 var_id);
   bool ReleaseVar(const PP_Var& var);
+
+  // Create a new array buffer of size |size_in_bytes|. Return a PP_Var that
+  // that references it and has an initial reference-count of 1.
+  PP_Var MakeArrayBufferPPVar(uint32 size_in_bytes);
 
  protected:
   struct VarInfo {
@@ -125,6 +131,12 @@ class PPAPI_SHARED_EXPORT VarTracker {
 
   // Last assigned var ID.
   int32 last_var_id_;
+
+ private:
+  // Create and return a new ArrayBufferVar size_in_bytes bytes long. This is
+  // implemented by the Host and Plugin tracker separately, so that it can be
+  // a real WebKit ArrayBuffer on the host side.
+  virtual ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(VarTracker);
 };

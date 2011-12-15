@@ -12,6 +12,7 @@
 struct PP_Var;
 struct PPB_Var;
 struct PPB_Var_1_0;
+struct PPB_VarArrayBuffer_Dev;
 
 namespace ppapi {
 
@@ -19,6 +20,7 @@ class PPAPI_SHARED_EXPORT PPB_Var_Shared {
  public:
   static const PPB_Var* GetVarInterface();
   static const PPB_Var_1_0* GetVarInterface1_0();
+  static const PPB_VarArrayBuffer_Dev* GetVarArrayBufferInterface();
 };
 
 }  // namespace ppapi

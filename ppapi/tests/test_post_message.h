@@ -52,6 +52,9 @@ class TestPostMessage : public TestCase {
   // in both directions.
   std::string TestSendingData();
 
+  // Test sending ArrayBuffer vars in both directions.
+  std::string TestSendingArrayBuffer();
+
   // Test the MessageEvent object that JavaScript received to make sure it is
   // of the right type and has all the expected fields.
   std::string TestMessageEvent();

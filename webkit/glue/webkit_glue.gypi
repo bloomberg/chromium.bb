@@ -231,6 +231,8 @@
         '../plugins/ppapi/file_path.cc',
         '../plugins/ppapi/file_path.h',
         '../plugins/ppapi/fullscreen_container.h',
+        '../plugins/ppapi/host_array_buffer_var.cc',
+        '../plugins/ppapi/host_array_buffer_var.h',
         '../plugins/ppapi/host_globals.cc',
         '../plugins/ppapi/host_globals.h',
         '../plugins/ppapi/host_resource_tracker.cc',

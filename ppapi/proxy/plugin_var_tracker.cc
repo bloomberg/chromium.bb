@@ -7,6 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "ppapi/c/ppb_var.h"
+#include "ppapi/proxy/plugin_array_buffer_var.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/proxy_object_var.h"
@@ -154,6 +155,10 @@ int PluginVarTracker::GetTrackedWithNoReferenceCountForObject(
   if (found == live_vars_.end())
     return -1;
   return found->second.track_with_no_reference_count;
+}
+
+ArrayBufferVar* PluginVarTracker::CreateArrayBuffer(uint32 size_in_bytes) {
+  return new PluginArrayBufferVar(size_in_bytes);
 }
 
 int32 PluginVarTracker::AddVarInternal(Var* var, AddVarRefMode mode) {

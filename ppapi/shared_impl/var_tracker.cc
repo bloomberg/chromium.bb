@@ -139,7 +139,14 @@ VarTracker::VarMap::const_iterator VarTracker::GetLiveVar(
 }
 
 bool VarTracker::IsVarTypeRefcounted(PP_VarType type) const {
-  return type == PP_VARTYPE_STRING || type == PP_VARTYPE_OBJECT;
+  return type >= PP_VARTYPE_STRING;
+}
+
+PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes) {
+  scoped_refptr<ArrayBufferVar> array_buffer(CreateArrayBuffer(size_in_bytes));
+  if (!array_buffer)
+    return PP_MakeNull();
+  return array_buffer->GetPPVar();
 }
 
 void VarTracker::TrackedObjectGettingOneRef(VarMap::const_iterator obj) {

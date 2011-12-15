@@ -10,7 +10,9 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var.h"
+#include "ppapi/shared_impl/var_tracker.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMMessageEvent.h"
@@ -20,9 +22,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "v8/include/v8.h"
+#include "webkit/plugins/ppapi/host_array_buffer_var.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
+using ppapi::ArrayBufferVar;
+using ppapi::PpapiGlobals;
 using ppapi::StringVar;
 using WebKit::WebBindings;
 using WebKit::WebElement;
@@ -84,10 +89,21 @@ bool PPVarToV8Value(PP_Var var, v8::Handle<v8::Value>* result) {
       *result = v8::String::New(value.c_str(), value.size());
       break;
     }
+    case PP_VARTYPE_ARRAY_BUFFER: {
+      ArrayBufferVar* buffer = ArrayBufferVar::FromPPVar(var);
+      if (!buffer) {
+        result->Clear();
+        return false;
+      }
+      HostArrayBufferVar* host_buffer =
+          static_cast<HostArrayBufferVar*>(buffer);
+      *result =
+          v8::Local<v8::Value>::New(host_buffer->webkit_buffer().toV8Value());
+      break;
+    }
     case PP_VARTYPE_OBJECT:
     case PP_VARTYPE_ARRAY:
     case PP_VARTYPE_DICTIONARY:
-    case PP_VARTYPE_ARRAY_BUFFER:
       // These are not currently supported.
       NOTIMPLEMENTED();
       result->Clear();
@@ -100,8 +116,8 @@ bool PPVarToV8Value(PP_Var var, v8::Handle<v8::Value>* result) {
 // This currently just copies the value.  For a string Var, the result is a
 // PP_Var with the a copy of |var|'s string contents and a reference count of 1.
 //
-// TODO(dmichael):  We need to do structured clone eventually to copy a object
-// structure.  The details and PPAPI changes for this are TBD.
+// TODO(dmichael): Bypass this step for out-of-process plugins, since a copy
+// happens already when the Var is serialized.
 PP_Var CopyPPVar(const PP_Var& var) {
   if (var.type == PP_VARTYPE_OBJECT) {
     // Objects are not currently supported.
@@ -112,6 +128,15 @@ PP_Var CopyPPVar(const PP_Var& var) {
     if (!string)
       return PP_MakeUndefined();
     return StringVar::StringToPPVar(string->value());
+  } else if (var.type == PP_VARTYPE_ARRAY_BUFFER) {
+    ArrayBufferVar* buffer = ArrayBufferVar::FromPPVar(var);
+    if (!buffer)
+      return PP_MakeUndefined();
+    PP_Var new_buffer_var = PpapiGlobals::Get()->GetVarTracker()->
+        MakeArrayBufferPPVar(buffer->ByteLength());
+    ArrayBufferVar* new_buffer = ArrayBufferVar::FromPPVar(new_buffer_var);
+    memcpy(new_buffer->Map(), buffer->Map(), buffer->ByteLength());
+    return new_buffer_var;
   } else {
     return var;
   }
@@ -302,7 +327,13 @@ MessageChannel::MessageChannel(PluginInstance* instance)
 void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
   // Serialize the message data.
   v8::HandleScope scope;
-  v8::Handle<v8::Value> v8_val;
+  // Because V8 is probably not on the stack for Native->JS calls, we need to
+  // enter the appropriate context for the plugin.
+  v8::Local<v8::Context> context =
+      instance_->container()->element().document().frame()->
+          mainWorldScriptContext();
+  context->Enter();
+  v8::Local<v8::Value> v8_val;
   if (!PPVarToV8Value(message_data, &v8_val)) {
     NOTREACHED();
     return;
@@ -310,6 +341,7 @@ void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
 
   WebSerializedScriptValue serialized_val =
       WebSerializedScriptValue::serialize(v8_val);
+  context->Exit();
 
   MessageLoop::current()->PostTask(
       FROM_HERE,
