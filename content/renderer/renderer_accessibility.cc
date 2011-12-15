@@ -170,9 +170,11 @@ void RendererAccessibility::PostAccessibilityNotification(
     // TODO(dmazzoni): remove this as soon as
     // https://bugs.webkit.org/show_bug.cgi?id=73460 is fixed.
     last_scroll_offset_ = scroll_offset;
-    PostAccessibilityNotification(
-        document.accessibilityObject(),
-        WebKit::WebAccessibilityNotificationLayoutComplete);
+    if (notification != WebKit::WebAccessibilityNotificationLayoutComplete) {
+      PostAccessibilityNotification(
+          document.accessibilityObject(),
+          WebKit::WebAccessibilityNotificationLayoutComplete);
+    }
   }
 
   // Add the accessibility object to our cache and ensure it's valid.
