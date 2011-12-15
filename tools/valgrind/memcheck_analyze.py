@@ -267,7 +267,7 @@ class ValgrindError:
       output += "The report came from the `%s` test.\n" % self._testcase
     output += "Suppression (error hash=#%016X#):\n" % self.ErrorHash()
     output += ("  For more info on using suppressions see "
-               "http://dev.chromium.org/developers/how-tos/using-valgrind#TOC-Suppressing-Errors")
+               "http://dev.chromium.org/developers/tree-sheriffs/sheriff-details-chromium/memory-sheriff#TOC-Suppressing-memory-reports")
 
     # Widen suppression slightly to make portable between mac and linux
     # TODO(timurrrr): Oops, these transformations should happen
