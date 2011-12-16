@@ -120,18 +120,21 @@ class PowerManagerClientImpl : public PowerManagerClient {
   virtual ~PowerManagerClientImpl() {
   }
 
-  // PowerManagerClient override.
-  virtual void AddObserver(Observer* observer) {
+  // PowerManagerClient overrides:
+
+  virtual void AddObserver(Observer* observer) OVERRIDE {
     observers_.AddObserver(observer);
   }
 
-  // PowerManagerClient override.
-  virtual void RemoveObserver(Observer* observer) {
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {
     observers_.RemoveObserver(observer);
   }
 
-  // PowerManagerClient override.
-  virtual void DecreaseScreenBrightness(bool allow_off) {
+  virtual bool HasObserver(Observer* observer) OVERRIDE {
+    return observers_.HasObserver(observer);
+  }
+
+  virtual void DecreaseScreenBrightness(bool allow_off) OVERRIDE {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
         power_manager::kDecreaseScreenBrightness);
@@ -145,8 +148,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  // PowerManagerClient override.
-  virtual void IncreaseScreenBrightness() {
+  virtual void IncreaseScreenBrightness() OVERRIDE {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
         power_manager::kIncreaseScreenBrightness);
@@ -157,7 +159,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  // PowerManagerClient override.
   virtual void RequestStatusUpdate() OVERRIDE {
     dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
                                  power_manager::kGetAllPropertiesMethod);
@@ -372,22 +373,24 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
 
   virtual ~PowerManagerClientStubImpl() {}
 
-  // PowerManagerClient override.
+  // PowerManagerClient overrides:
+
   virtual void AddObserver(Observer* observer) OVERRIDE {
     observers_.AddObserver(observer);
   }
 
-  // PowerManagerClient override.
   virtual void RemoveObserver(Observer* observer) OVERRIDE {
     observers_.RemoveObserver(observer);
   }
 
-  // PowerManagerClient override.
+  virtual bool HasObserver(Observer* observer) OVERRIDE {
+    return observers_.HasObserver(observer);
+  }
+
   virtual void DecreaseScreenBrightness(bool allow_off) OVERRIDE {
     VLOG(1) << "Requested to descrease screen brightness";
   }
 
-  // PowerManagerClient override.
   virtual void IncreaseScreenBrightness() OVERRIDE {
     VLOG(1) << "Requested to increase screen brightness";
   }

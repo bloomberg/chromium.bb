@@ -74,8 +74,10 @@ class ScreenLockObserver : public chromeos::PowerManagerClient::Observer,
     if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
       // Register Screen Lock after login screen to make sure
       // we don't show the screen lock on top of the login screen by accident.
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-          AddObserver(this);
+      chromeos::PowerManagerClient* power_manager =
+          chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+      if (!power_manager->HasObserver(this))
+        power_manager->AddObserver(this);
     }
   }
 
