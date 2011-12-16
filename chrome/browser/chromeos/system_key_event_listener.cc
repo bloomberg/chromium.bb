@@ -282,14 +282,27 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
   input_method::InputMethodManager* input_method_manager =
       input_method::InputMethodManager::GetInstance();
 
+#if !defined(USE_AURA)
+  if (xevent->type == FocusIn) {
+    // This is a workaround for the Shift+Alt+Tab issue (crosbug.com/8855,
+    // crosbug.com/24182). Reset |hotkey_manager| on the Tab key press so that
+    // the manager will not switch current keyboard layout on the subsequent Alt
+    // or Shift key release. Note that when Aura is in use, we don't need this
+    // workaround since the environment does not have the Chrome OS Window
+    // Manager and the Tab key press/release is not consumed by the WM.
+    input_method::HotkeyManager* hotkey_manager =
+        input_method_manager->GetHotkeyManager();
+    hotkey_manager->OnFocus();
+  }
+#endif
+
   if (xevent->type == KeyPress || xevent->type == KeyRelease) {
     // Change the current keyboard layout (or input method) if xevent is one of
     // the input method hotkeys.
     input_method::HotkeyManager* hotkey_manager =
         input_method_manager->GetHotkeyManager();
-    if (hotkey_manager->FilterKeyEvent(*xevent)) {
+    if (hotkey_manager->FilterKeyEvent(*xevent))
       return true;
-    }
   }
 
   if (xevent->type == xkb_event_base_) {

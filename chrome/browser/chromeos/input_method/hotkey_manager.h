@@ -50,6 +50,9 @@ class HotkeyManager {
   // should be consumed.
   bool FilterKeyEvent(const XEvent& key_event);
 
+  // Called when a top-level window is focused.
+  void OnFocus();
+
  protected:
   // Note: These functions and variables are protected for testability.
 

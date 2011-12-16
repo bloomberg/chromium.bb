@@ -135,6 +135,17 @@ bool HotkeyManager::FilterKeyEvent(const XEvent& key_event) {
   return false;
 }
 
+void HotkeyManager::OnFocus() {
+  // This is necessary not to trigger IME/layout switching when Shift+Alt+Tab
+  // is pressed and the window manager consumed both Tab key press and release.
+  // In this case, HotKeyManager cannot distinguish Shift+Alt and Shift+Alt+Tab
+  // unless we notify focus change. Note that ibus-daemon also resets these
+  // flags when the fake context is focused. See bus_input_context_focus_in()
+  // and crosbug.com/8855 for details.
+  previous_keysym_ = NoSymbol;
+  previous_modifiers_ = 0x0U;
+}
+
 uint32 HotkeyManager::NormalizeModifiers(
     uint32 keysym, uint32 modifiers, bool is_key_press) const {
   modifiers &= (ControlMask | ShiftMask | Mod1Mask);

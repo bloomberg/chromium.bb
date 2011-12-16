@@ -436,6 +436,66 @@ TEST(HotkeyManagerTest, TestAltShiftANoKeyReleaseOfA) {
       XK_Shift_L, ShiftMask, false));
 }
 
+// Press Shift, then press Alt, then press Tab. Release Alt first.
+// Assume that Tab key press/release is consumed by the window manager.
+TEST(HotkeyManagerTest, TestAltShiftTab1) {
+  scoped_ptr<TestableHotkeyManager> manager(CreateManager());
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager->FilterKeyEventInternal(
+      XK_Shift_L, 0x0, true));
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager->FilterKeyEventInternal(
+      XK_Meta_L, ShiftMask, true));
+  manager->OnFocus();  // Tab is consumed by the WM. Window focus is changed.
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager->FilterKeyEventInternal(
+      XK_Meta_L, ShiftMask | Mod1Mask, false));
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager->FilterKeyEventInternal(
+      XK_Shift_L, ShiftMask, false));
+}
+
+// Press Shift, then press Alt. Release Shift first.
+// Assume that Tab key press/release is consumed by the window manager.
+TEST(HotkeyManagerTest, TestAltShiftTab2) {
+  scoped_ptr<TestableHotkeyManager> manager(CreateManager());
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager->FilterKeyEventInternal(
+      XK_Shift_L, 0x0, true));
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager->FilterKeyEventInternal(
+      XK_Meta_L, ShiftMask, true));
+  manager->OnFocus();
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager->FilterKeyEventInternal(
+      XK_Shift_L, ShiftMask | Mod1Mask, false));
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager->FilterKeyEventInternal(
+      XK_Alt_L, Mod1Mask, false));
+}
+
+// Press Alt, then press Shift. Release Shift first.
+// Assume that Tab key press/release is consumed by the window manager.
+TEST(HotkeyManagerTest, TestAltShiftTab3) {
+  scoped_ptr<TestableHotkeyManager> manager(CreateManager());
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager->FilterKeyEventInternal(
+      XK_Alt_L, 0x0, true));
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager->FilterKeyEventInternal(
+      XK_Shift_L, Mod1Mask, true));
+  manager->OnFocus();
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager->FilterKeyEventInternal(
+      XK_Shift_L, Mod1Mask | ShiftMask, false));
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager->FilterKeyEventInternal(
+      XK_Alt_L, Mod1Mask, false));
+}
+
+// Press Alt, then press Shift. Release Alt first.
+// Assume that Tab key press/release is consumed by the window manager.
+TEST(HotkeyManagerTest, TestAltShiftTab4) {
+  scoped_ptr<TestableHotkeyManager> manager(CreateManager());
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager->FilterKeyEventInternal(
+      XK_Alt_L, 0x0, true));
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager->FilterKeyEventInternal(
+      XK_Shift_L, Mod1Mask, true));
+  manager->OnFocus();
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager->FilterKeyEventInternal(
+      XK_Meta_L, Mod1Mask | ShiftMask, false));
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager->FilterKeyEventInternal(
+      XK_Shift_L, ShiftMask, false));
+}
+
 TEST(HotkeyManagerTest, TestUnknownEvent) {
   TestableHotkeyManager manager;
   XEvent bad_event;
