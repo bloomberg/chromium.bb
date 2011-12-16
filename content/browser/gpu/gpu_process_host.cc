@@ -164,6 +164,10 @@ static bool HostIsValid(GpuProcessHost* host) {
   if (!host)
     return false;
 
+  // Check if the GPU process has died and the host is about to be destroyed.
+  if (host->disconnect_was_alive())
+    return false;
+
   // The Gpu process is invalid if it's not using software, the card is
   // blacklisted, and we can kill it and start over.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||

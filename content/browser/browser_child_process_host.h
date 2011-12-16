@@ -74,6 +74,7 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   const string16& name() const { return data_.name; }
   base::ProcessHandle handle() const { return data_.handle; }
   int id() const { return data_.id; }
+  bool disconnect_was_alive() const { return disconnect_was_alive_; }
 
  protected:
   explicit BrowserChildProcessHost(content::ProcessType type);
