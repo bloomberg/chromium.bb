@@ -689,19 +689,14 @@
 # The following stack suppresses Memcheck false positives on NaCl browser_tests
 # See https://bugs.kde.org/show_bug.cgi?id=270709#c4 for possible reason
 {
-   valgrind_bitfields_false_positive
+   bug_101755 valgrind_bitfields_false_positive
    Memcheck:Uninitialized
+   ...
    fun:_ZN7WebCore13WidthIterator*
    ...
-   fun:_ZNK7WebCore4Font33getGlyphsAndAdvancesForSimpleTextERKNS_7TextRunEiiRNS_11GlyphBufferENS0_20ForTextEmphasisOrNotE
-   fun:_ZNK7WebCore4Font14drawSimpleTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
+   fun:_ZNK7WebCore4Font*
    ...
-   fun:_ZN7WebCoreL20paintTextWithShadowsEPNS_15GraphicsContextERKNS_4FontERKNS_7TextRunERKN3WTF12AtomicStringEiiiiRKNS_10FloatPointERKNS_9FloatRectEPKNS_10ShadowDataEbb
-   fun:_ZN7WebCore13InlineTextBox5paintERNS_9PaintInfoERKNS_8IntPointEii
-   ...
-   fun:_ZN7WebCore13RootInlineBox5paintERNS_9PaintInfoERKNS_8IntPointEii
-   fun:_ZNK7WebCore17RenderLineBoxList5paintEPNS_20RenderBoxModelObjectERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderBlock*paint*
+   fun:_ZNK7WebCore4Font*draw*Text*
 }
 
 #-----------------------------------------------------------------------
@@ -1656,62 +1651,35 @@
    fun:crc32
    ...
    fun:png_write_row
-   ...
-   fun:_ZN3gfx8PNGCodec*Encode*
 }
 {
    bug_30704b
-   Memcheck:Uninitialized
-   fun:crc32
-   ...
-   fun:png_write_row
-   ...
-   fun:_ZN3gfx8PNGCodec*Encode*
-}
-{
-   bug_30704c
    Memcheck:Param
    write(buf)
    ...
    fun:_ZN26SandboxedExtensionUnpacker17RewriteImageFilesEv
 }
 {
-   bug_30704d
+   bug_30704c
    Memcheck:Param
    write(buf)
    ...
    fun:_ZNK16BrowserThemePack11WriteToDiskE8FilePath
 }
 {
-   bug_30704e
-   Memcheck:Uninitialized
-   fun:crc32
-   ...
-   fun:png_write_row
-   fun:_ZN7WebCore*12encodePixels*_7IntSizeEPhbPN3WTF6VectorIhLj0EEE
-   fun:_ZN7WebCore15PNGImageEncoder6encode*
-}
-{
-   bug_30704f
+   bug_30704d
    Memcheck:Uninitialized
    ...
    fun:png_process_data
    fun:_ZN7WebCore14PNGImageReader6decodeERKNS_12SharedBufferEb
    fun:_ZN7WebCore15PNGImageDecoder6decodeEb
    fun:_ZN7WebCore15PNGImageDecoder18frameBufferAtIndexEm
-   fun:_ZN7WebCore11ImageSource18createFrameAtIndexEm
-   fun:_ZN7WebCore11BitmapImage10cacheFrameEm
-   fun:_ZN7WebCore11BitmapImage12frameAtIndexEm
-   fun:_ZN7WebCore11BitmapImage26nativeImageForCurrentFrameEv
-   fun:_ZN7WebCore11BitmapImage4drawEPNS_15GraphicsContextERKNS_9FloatRectES5_NS_10ColorSpaceENS_17CompositeOperatorE
-   fun:_ZN7WebCore15GraphicsContext9drawImageEPNS_5ImageENS_10ColorSpaceERKNS_9FloatRectES6_NS_17CompositeOperatorEb
-   fun:_ZN7WebCore15GraphicsContext9drawImageEPNS_5ImageENS_10ColorSpaceERKNS_7IntRectES6_NS_17CompositeOperatorEb
-   fun:_ZN7WebCore15GraphicsContext9drawImageEPNS_5ImageENS_10ColorSpaceERKNS_7IntRectENS_17CompositeOperatorEb
-   fun:_ZN7WebCore11RenderImage13paintIntoRectEPNS_15GraphicsContextERKNS_7IntRectE
-   fun:_ZN7WebCore11RenderImage13paintReplacedERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore14RenderReplaced5paintERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderImage5paintERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore9InlineBox5paintERNS_9PaintInfoERKNS_8IntPointEii
+}
+{
+   bug_30704e
+   Memcheck:Uninitialized
+   obj:*/libpng*
+   fun:png_write_row
 }
 {
    bug_87232
@@ -2033,7 +2001,7 @@
    fun:SSL3_SendAlert
    fun:ssl_SecureClose
    fun:ssl_Close
-   fun:PR_Close
+   ...
    fun:_ZN3net18SSLClientSocketNSS10DisconnectEv
 }
 {
@@ -2963,12 +2931,12 @@
    bug_70599
    Memcheck:Uninitialized
    fun:bcmp
-   fun:_ZN3WTF14VectorComparerILb1EN7WebCore11CSSPropertyEE7compareEPKS2_S5*
-   fun:_ZN3WTF20VectorTypeOperationsIN7WebCore11CSSPropertyEE7compareEPKS2_S5*
-   fun:_ZN3WTFeqIN7WebCore11CSSPropertyEL*EEEbRKNS_6VectorIT_XT0_EEES7_
+   fun:_ZN3WTF14VectorComparerILb1EN7WebCore11CSSPropertyE*
+   fun:_ZN3WTF20VectorTypeOperationsIN7WebCore11CSSPropertyE*
+   fun:_ZN3WTFeqIN7WebCore11CSSPropertyE*
    fun:_ZNK7WebCore26CSSMutableStyleDeclaration15propertiesEqualEPKS0_
    fun:_ZNK7WebCore12NamedNodeMap20mappedMapsEquivalentEPKS0_
-   fun:_ZNK7WebCore16CSSStyleSelector24canShareStyleWithElementEPNS_4NodeE
+   fun:_ZNK7WebCore16CSSStyleSelector24canShareStyleWithElementE*
 }
 {
    bug_70782
@@ -4517,7 +4485,7 @@
 {
    bug_100981
    Memcheck:Uninitialized
-   fun:_ZN7WebCore22CSSPrimitiveValueCache11createValueEdNS_17CSSPrimitiveValue9UnitTypesE
+   fun:_ZN7WebCore*
    fun:_ZN7WebCore27BorderImageQuadParseContext21commitBorderImageQuadEv
    fun:_ZN7WebCore9CSSParser20parseBorderImageQuadENS0_5UnitsERN3WTF6RefPtrINS_17CSSPrimitiveValueEEE
    fun:_ZN7WebCore9CSSParser21parseBorderImageWidthERN3WTF6RefPtrINS_17CSSPrimitiveValueEEE
@@ -4694,76 +4662,6 @@
    fun:_ZN7WebCoreL15fontConstructorERKNS_13QualifiedNameEPNS_8DocumentEb
    fun:_ZN7WebCore17SVGElementFactory16createSVGElementERKNS_13QualifiedNameEPNS_8DocumentEb
    fun:_ZN7WebCore8Document13createElementERKNS_13QualifiedNameEb
-}
-{
-   bug_101755_a
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN7WebCore13WidthIterator*
-   fun:_ZNK7WebCore4Font30offsetForPositionForSimpleTextERKNS_7TextRunEfb
-   fun:_ZNK7WebCore4Font17offsetForPositionERKNS_7TextRunEfb
-   fun:_ZNK7WebCore13InlineTextBox17offsetForPositionEfb
-}
-{
-   bug_101755_b
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN7WebCore13WidthIterator*
-   fun:_ZNK7WebCore4Font26selectionRectForSimpleTextERKNS_7TextRunERKNS_10FloatPointEiii
-   fun:_ZNK7WebCore4Font20selectionRectForTextERKNS_7TextRunERKNS_10FloatPointEiii
-}
-{
-   bug_101755_b1
-   Memcheck:Uninitialized
-   fun:_ZN7WebCore13WidthIterator*
-   fun:_ZNK7WebCore4Font23floatWidthForSimpleTextERKNS_7TextRunEPNS_11GlyphBufferEPN3WTF7HashSetIPKNS_14SimpleFontDataENS6_7PtrHashISA_EENS6_10HashTraitsISA_EEEEPNS_13GlyphOverflowE
-   fun:_ZNK7WebCore4Font30offsetForPositionForSimpleTextERKNS_7TextRunEfb
-   fun:_ZNK7WebCore4Font17offsetForPositionERKNS_7TextRunEfb
-}
-{
-   bug_101755_c
-   Memcheck:Uninitialized
-   fun:_ZN7WebCore21ComplexTextController*
-   ...
-   fun:_ZNK7WebCore4Font15drawComplexTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
-   fun:_ZNK7WebCore4Font8drawTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
-   fun:_ZN7WebCore15GraphicsContext8drawTextERKNS_4FontERKNS_7TextRunERKNS_10FloatPointEii
-   fun:_ZN7WebCoreL20paintTextWithShadowsEPNS_15GraphicsContextERKNS_4FontERKNS_7TextRunERKN3WTF12AtomicStringEiiiiRKNS_10FloatPointERKNS_9FloatRectEPKNS_10ShadowDataEbb
-   fun:_ZN7WebCore13InlineTextBox5paintERNS_9PaintInfoERKNS_8IntPointEii
-   fun:_ZN7WebCore13InlineFlowBox5paintERNS_9PaintInfoERKNS_8IntPointEii
-   fun:_ZN7WebCore13RootInlineBox5paintERNS_9PaintInfoERKNS_8IntPointEii
-   fun:_ZNK7WebCore17RenderLineBoxList5paintEPNS_20RenderBoxModelObjectERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderBlock13paintChildrenERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_8IntPointE
-}
-{
-   bug_101755_d
-   Memcheck:Uninitialized
-   ...
-   fun:_ZL22D1G_NoBounder_RectClipRK12SkDraw1GlyphiiRK7SkGlyph
-   fun:_ZNK6SkDraw11drawPosTextEPKcmPKffiRK7SkPaint
-   fun:_ZN8SkDevice11drawPosTextERK6SkDrawPKvmPKffiRK7SkPaint
-   fun:_ZN8SkCanvas11drawPosTextEPKvmPK7SkPointRK7SkPaint
-   fun:_ZNK7WebCore4Font10drawGlyphsEPNS_15GraphicsContextEPKNS_14SimpleFontDataERKNS_11GlyphBufferEiiRKNS_10FloatPointE
-   fun:_ZNK7WebCore4Font15drawGlyphBufferEPNS_15GraphicsContextERKNS_7TextRunERKNS_11GlyphBufferERKNS_10FloatPointE
-   fun:_ZNK7WebCore4Font14drawSimpleTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
-   fun:_ZNK7WebCore4Font8drawTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
-   fun:_ZN7WebCore15GraphicsContext8drawTextERKNS_4FontERKNS_7TextRunERKNS_10FloatPointEii
-   fun:_ZN7WebCoreL20paintTextWithShadowsEPNS_15GraphicsContextERKNS_4FontERKNS_7TextRunERKN3WTF12AtomicStringEiiiiRKNS_10FloatPointERKNS_9FloatRectEPKNS_10ShadowDataEbb
-   fun:_ZN7WebCore13InlineTextBox5paintERNS_9PaintInfoERKNS_8IntPointEii
-   fun:_ZN7WebCore13InlineFlowBox5paintERNS_9PaintInfoERKNS_8IntPointEii
-   fun:_ZN7WebCore13RootInlineBox5paintERNS_9PaintInfoERKNS_8IntPointEii
-   fun:_ZNK7WebCore17RenderLineBoxList5paintEPNS_20RenderBoxModelObjectERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore15RenderTableCell5paintERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore18RenderTableSection9paintCellEPNS_15RenderTableCellERNS_9PaintInfoERKNS_8IntPointE
 }
 {
    bug_101766
@@ -5274,42 +5172,16 @@
    fun:_ZN19ExtensionDispatcher8OnLoadedERKSt6vectorI26ExtensionMsg_Loaded_ParamsSaIS1_EE
 }
 {
-   bug_107503a
+   bug_107503
    Memcheck:Uninitialized
-   fun:bcmp
-   fun:_ZN3WTF14VectorComparerILb1EN7WebCore11CSSPropertyE*
-   fun:_ZN3WTF20VectorTypeOperationsIN7WebCore11CSSPropertyE*
-   fun:_ZN3WTFeqIN7WebCore11CSSPropertyE*
-   fun:_ZNK7WebCore26CSSMutableStyleDeclaration15propertiesEqualEPKS0_
-   fun:_ZNK7WebCore12NamedNodeMap20mappedMapsEquivalentEPKS0_
-   fun:_ZNK7WebCore16CSSStyleSelector24canShareStyleWithElementEPNS_13StyledElementE
-   fun:_ZNK7WebCore16CSSStyleSelector26findSiblingForStyleSharingEPNS_4NodeERj
-   fun:_ZN7WebCore16CSSStyleSelector17locateSharedStyleEv
-   fun:_ZN7WebCore16CSSStyleSelector15styleForElementEPNS_7ElementEPNS_11RenderStyleEbbPNS_12RenderRegionE
-   fun:_ZN7WebCore7Element16styleForRendererEv
-}
-{
-   bug_107503b
-   Memcheck:Uninitialized
-   fun:_ZNK7WebCore12NamedNodeMap20mappedMapsEquivalentEPKS0_
-   fun:_ZNK7WebCore16CSSStyleSelector24canShareStyleWithElementEPNS_13StyledElementE
-   fun:_ZNK7WebCore16CSSStyleSelector26findSiblingForStyleSharingEPNS_4NodeERj
-   fun:_ZN7WebCore16CSSStyleSelector17locateSharedStyleEv
+   ...
    fun:_ZN7WebCore16CSSStyleSelector15styleForElementEPNS_7ElementEPNS_11RenderStyleEbbPNS_12RenderRegionE
    fun:_ZN7WebCore7Element16styleForRendererEv
    fun:_ZN7WebCore7Element11recalcStyleENS_4Node11StyleChangeE
-   fun:_ZN7WebCore7Element11recalcStyleENS_4Node11StyleChangeE
-   fun:_ZN7WebCore7Element11recalcStyleENS_4Node11StyleChangeE
-   fun:_ZN7WebCore7Element11recalcStyleENS_4Node11StyleChangeE
-   fun:_ZN7WebCore7Element11recalcStyleENS_4Node11StyleChangeE
+   ...
    fun:_ZN7WebCore7Element11recalcStyleENS_4Node11StyleChangeE
    fun:_ZN7WebCore8Document11recalcStyleENS_4Node11StyleChangeE
    fun:_ZN7WebCore8Document19updateStyleIfNeededEv
-   fun:_ZN7WebCore8Document26updateStyleForAllDocumentsEv
-   fun:_ZN7WebCore16ScriptController13executeScriptERKNS_16ScriptSourceCodeE
-   fun:_ZN6WebKit12WebFrameImpl27executeScriptAndReturnValueERKNS_15WebScriptSourceE
-   fun:_ZN14RenderViewImpl14EvaluateScriptERKSbItN4base20string16_char_traitsESaItEES5_ib
-   fun:_ZN14RenderViewImpl19OnScriptEvalRequestERKSbItN4base20string16_char_traitsESaItEES5_ib
 }
 {
    bug_107696
