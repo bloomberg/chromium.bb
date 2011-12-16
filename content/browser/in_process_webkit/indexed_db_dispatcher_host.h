@@ -15,10 +15,12 @@
 class IndexedDBKey;
 class NullableString16;
 struct IndexedDBHostMsg_DatabaseCreateObjectStore_Params;
-struct IndexedDBHostMsg_FactoryGetDatabaseNames_Params;
 struct IndexedDBHostMsg_FactoryDeleteDatabase_Params;
+struct IndexedDBHostMsg_FactoryGetDatabaseNames_Params;
 struct IndexedDBHostMsg_FactoryOpen_Params;
+struct IndexedDBHostMsg_IndexCount_Params;
 struct IndexedDBHostMsg_IndexOpenCursor_Params;
+struct IndexedDBHostMsg_ObjectStoreCount_Params;
 struct IndexedDBHostMsg_ObjectStoreCreateIndex_Params;
 struct IndexedDBHostMsg_ObjectStoreOpenCursor_Params;
 struct IndexedDBHostMsg_ObjectStorePut_Params;
@@ -158,6 +160,8 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
         WebKit::WebExceptionCode* ec);
     void OnOpenKeyCursor(const IndexedDBHostMsg_IndexOpenCursor_Params& params,
                          WebKit::WebExceptionCode* ec);
+    void OnCount(const IndexedDBHostMsg_IndexCount_Params& params,
+                 WebKit::WebExceptionCode* ec);
     void OnGetObject(int idb_index_id,
                      int32 thread_id,
                      int32 response_id,
@@ -222,6 +226,8 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
     void OnOpenCursor(
         const IndexedDBHostMsg_ObjectStoreOpenCursor_Params& params,
         WebKit::WebExceptionCode* ec);
+    void OnCount(const IndexedDBHostMsg_ObjectStoreCount_Params& params,
+                 WebKit::WebExceptionCode* ec);
     void OnDestroyed(int32 idb_object_store_id);
 
     IndexedDBDispatcherHost* parent_;

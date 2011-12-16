@@ -86,6 +86,25 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_IndexOpenCursor_Params)
   IPC_STRUCT_MEMBER(int, transaction_id)
 IPC_STRUCT_END()
 
+// Used for counting values within an index IndexedDB.
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_IndexCount_Params)
+  // The response should have these ids.
+  IPC_STRUCT_MEMBER(int32, thread_id)
+  IPC_STRUCT_MEMBER(int32, response_id)
+  // The serialized lower key.
+  IPC_STRUCT_MEMBER(IndexedDBKey, lower_key)
+  // The serialized upper key.
+  IPC_STRUCT_MEMBER(IndexedDBKey, upper_key)
+  // Is the lower bound open?
+  IPC_STRUCT_MEMBER(bool, lower_open)
+  // Is the upper bound open?
+  IPC_STRUCT_MEMBER(bool, upper_open)
+  // The index the index belongs to.
+  IPC_STRUCT_MEMBER(int32, idb_index_id)
+  // The transaction this request belongs to.
+  IPC_STRUCT_MEMBER(int, transaction_id)
+IPC_STRUCT_END()
+
 // Used to set a value in an object store.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_ObjectStorePut_Params)
   // The object store's id.
@@ -167,6 +186,25 @@ IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params)
   IPC_STRUCT_MEMBER(std::vector<content::SerializedScriptValue>, values)
 IPC_STRUCT_END()
 
+
+// Used to count within an IndexedDB object store.
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_ObjectStoreCount_Params)
+  // The response should have these ids.
+  IPC_STRUCT_MEMBER(int32, thread_id)
+  IPC_STRUCT_MEMBER(int32, response_id)
+  // The serialized lower key.
+  IPC_STRUCT_MEMBER(IndexedDBKey, lower_key)
+  // The serialized upper key.
+  IPC_STRUCT_MEMBER(IndexedDBKey, upper_key)
+  // Is the lower bound open?
+  IPC_STRUCT_MEMBER(bool, lower_open)
+  // Is the upper bound open?
+  IPC_STRUCT_MEMBER(bool, upper_open)
+  // The object store the cursor belongs to.
+  IPC_STRUCT_MEMBER(int32, idb_object_store_id)
+  // The transaction this request belongs to.
+  IPC_STRUCT_MEMBER(int, transaction_id)
+IPC_STRUCT_END()
 
 // Indexed DB messages sent from the browser to the renderer.
 
@@ -375,6 +413,11 @@ IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_IndexOpenKeyCursor,
                             IndexedDBHostMsg_IndexOpenCursor_Params,
                             WebKit::WebExceptionCode /* ec */)
 
+// WebIDBIndex::count() message.
+IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_IndexCount,
+                            IndexedDBHostMsg_IndexCount_Params,
+                            WebKit::WebExceptionCode /* ec */)
+
 // WebIDBIndex::getObject() message.
 IPC_SYNC_MESSAGE_CONTROL5_1(IndexedDBHostMsg_IndexGetObject,
                             int32, /* idb_index_id */
@@ -466,6 +509,11 @@ IPC_SYNC_MESSAGE_CONTROL3_1(IndexedDBHostMsg_ObjectStoreDeleteIndex,
 // WebIDBObjectStore::openCursor() message.
 IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_ObjectStoreOpenCursor,
                             IndexedDBHostMsg_ObjectStoreOpenCursor_Params,
+                            WebKit::WebExceptionCode /* ec */)
+
+// WebIDBObjectStore::count() message.
+IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_ObjectStoreCount,
+                            IndexedDBHostMsg_ObjectStoreCount_Params,
                             WebKit::WebExceptionCode /* ec */)
 
 // WebIDBObjectStore::~WebIDBObjectStore() message.

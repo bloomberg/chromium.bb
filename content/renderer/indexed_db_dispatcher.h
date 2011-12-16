@@ -124,6 +124,13 @@ class IndexedDBDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode* ec);
 
+  void RequestIDBIndexCount(
+      const WebKit::WebIDBKeyRange& idb_key_range,
+      WebKit::WebIDBCallbacks* callbacks,
+      int32 idb_index_id,
+      const WebKit::WebIDBTransaction& transaction,
+      WebKit::WebExceptionCode* ec);
+
   void RequestIDBIndexGetObject(const IndexedDBKey& key,
                                 WebKit::WebIDBCallbacks* callbacks,
                                 int32 idb_index_id,
@@ -166,6 +173,13 @@ class IndexedDBDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
   void RequestIDBObjectStoreOpenCursor(
       const WebKit::WebIDBKeyRange& idb_key_range,
       unsigned short direction,
+      WebKit::WebIDBCallbacks* callbacks,
+      int32 idb_object_store_id,
+      const WebKit::WebIDBTransaction& transaction,
+      WebKit::WebExceptionCode* ec);
+
+  void RequestIDBObjectStoreCount(
+      const WebKit::WebIDBKeyRange& idb_key_range,
       WebKit::WebIDBCallbacks* callbacks,
       int32 idb_object_store_id,
       const WebKit::WebIDBTransaction& transaction,

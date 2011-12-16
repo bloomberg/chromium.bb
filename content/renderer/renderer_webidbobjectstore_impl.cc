@@ -171,3 +171,15 @@ void RendererWebIDBObjectStoreImpl::openCursor(
       idb_key_range, direction, callbacks,  idb_object_store_id_,
       transaction, &ec);
 }
+
+void RendererWebIDBObjectStoreImpl::count(
+    const WebIDBKeyRange& idb_key_range,
+    WebIDBCallbacks* callbacks,
+    const WebIDBTransaction& transaction,
+    WebExceptionCode& ec) {
+  IndexedDBDispatcher* dispatcher =
+      IndexedDBDispatcher::ThreadSpecificInstance();
+  dispatcher->RequestIDBObjectStoreCount(
+      idb_key_range, callbacks,  idb_object_store_id_,
+      transaction, &ec);
+}

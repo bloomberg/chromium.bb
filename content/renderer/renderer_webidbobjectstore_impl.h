@@ -66,6 +66,11 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
                   const WebKit::WebIDBTransaction& transaction,
                   WebKit::WebExceptionCode& ec);
 
+  virtual void count(const WebKit::WebIDBKeyRange& idb_key_range,
+                     WebKit::WebIDBCallbacks* callbacks,
+                     const WebKit::WebIDBTransaction& transaction,
+                     WebKit::WebExceptionCode& ec);
+
  private:
   int32 idb_object_store_id_;
 };

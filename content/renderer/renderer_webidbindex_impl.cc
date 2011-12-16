@@ -81,6 +81,17 @@ void RendererWebIDBIndexImpl::openKeyCursor(
       range, direction, callbacks,  idb_index_id_, transaction, &ec);
 }
 
+void RendererWebIDBIndexImpl::count(
+    const WebKit::WebIDBKeyRange& range,
+    WebKit::WebIDBCallbacks* callbacks,
+    const WebKit::WebIDBTransaction& transaction,
+    WebExceptionCode& ec) {
+  IndexedDBDispatcher* dispatcher =
+      IndexedDBDispatcher::ThreadSpecificInstance();
+  dispatcher->RequestIDBIndexCount(
+      range, callbacks, idb_index_id_, transaction, &ec);
+}
+
 void RendererWebIDBIndexImpl::getObject(
     const WebKit::WebIDBKey& key,
     WebKit::WebIDBCallbacks* callbacks,
