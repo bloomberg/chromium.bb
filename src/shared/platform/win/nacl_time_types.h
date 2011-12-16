@@ -45,6 +45,19 @@ struct NaClTimeState {
    * Ensure that reported unix time is monotonically non-decreasing.
    */
   uint64_t          last_reported_time_ms;
+
+  /*
+   * Members in this block should have valid values iff !allow_low_resolution,
+   * and are undefined o/w, with exception of can_use_qpc
+   * (can_use_qpc==0 if allow_low_resolution). Actually qpc_frequency,
+   * qpc_start, and last_qpc are valid iff !allow_low_resolution && can_use_qpc,
+   * so only can_use_qpc is well defined when !allow_low_resolution.
+   */
+  uint32_t          can_use_qpc;
+  int64_t           qpc_frequency;
+  int64_t           qpc_start;
+  int64_t           last_qpc;
+  int64_t           last_reported_time_mks;
 };
 
 EXTERN_C_END

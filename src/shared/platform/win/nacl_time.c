@@ -22,6 +22,20 @@
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/win/xlate_system_error.h"
 
+#define kMillisecondsPerSecond 1000
+#define kMicrosecondsPerMillisecond 1000
+#define kMicrosecondsPerSecond 1000000
+#define kCalibrateTimeoutMs 1000
+#define kCoarseMks 10
+
+/*
+ * Here's some usefull links related to timing on Windows:
+ * http://svn.wildfiregames.com/public/ps/trunk/docs/timing_pitfalls.pdf
+ * Rob Arnold (mozilla) blog:
+ * http://robarnold.org/measuring-performance/
+ * https://bugzilla.mozilla.org/show_bug.cgi?id=563082
+ */
+
 /*
  * To get a 1ms resolution time-of-day clock, we have to jump thrugh
  * some hoops.  This approach has the following defect: ntp
@@ -61,10 +75,104 @@ static uint32_t const kMaxCalibrationDiff = 4;
  */
 static uint64_t NaClFileTimeToMs(FILETIME *ftp) {
   ULARGE_INTEGER t;
-
   t.u.HighPart = ftp->dwHighDateTime;
   t.u.LowPart = ftp->dwLowDateTime;
   return t.QuadPart / NACL_100_NANOS_PER_MILLI;
+}
+
+#define kCpuInfoPageSize 4  /* Not in bytes, but in sizeof(uint32_t). */
+
+static char* CPU_GetBrandString() {
+  const int kBaseInfoPage = 0x80000000;
+  const int kCpuBrandStringPage1 = 0x80000002;
+  const int kCpuBrandStringPage2 = 0x80000003;
+  const int kCpuBrandStringPage3 = 0x80000004;
+
+  static int cpu_info[kCpuInfoPageSize * 4] = {0};
+  __cpuid(cpu_info, kBaseInfoPage);
+  if (cpu_info[0] < kCpuBrandStringPage3)
+    return "";
+
+  __cpuid(&cpu_info[0], kCpuBrandStringPage1);
+  __cpuid(&cpu_info[kCpuInfoPageSize], kCpuBrandStringPage2);
+  __cpuid(&cpu_info[kCpuInfoPageSize * 2], kCpuBrandStringPage3);
+  return (char*)cpu_info;
+}
+
+static int CPU_GetFamily() {
+  const int kFeaturesPage = 1;
+  int cpu_info[kCpuInfoPageSize];
+  __cpuid(cpu_info, kFeaturesPage);
+  return (cpu_info[0] >> 8) & 0xf;
+}
+
+/*
+ * Returns 1 if success, 0 in case of QueryPerformanceCounter is not supported.
+ *
+ * Calibration is done as described above.
+ *
+ * To ensure that the calibration is accurate, we interleave sampling
+ * the microsecond resolution counter via QueryPerformanceCounter with the 1
+ * millisecond resolution system clock via GetSystemTimeAsFileTime.
+ * When we see the edge transition where the system clock ticks, we
+ * compare the before and after microsecond counter values.  If it is
+ * within a calibration threshold (kMaxCalibrationDiff), then we
+ * record the instantaneous system time (1 msresolution) and the
+ * 64-bit counter value (~0.5 mks reslution).  Since we have a before and
+ * after counter value, we interpolate it to get the "average" counter
+ * value to associate with the system time.
+ */
+static int NaClCalibrateWindowsClockQpc(struct NaClTimeState *ntsp) {
+  FILETIME  ft_start;
+  FILETIME  ft_prev;
+  FILETIME  ft_now;
+  LARGE_INTEGER  counter_before;
+  LARGE_INTEGER  counter_after;
+  int64_t  counter_diff;
+  int64_t  counter_diff_ms;
+  uint64_t end_of_calibrate;
+  int sys_time_changed;
+  int calibration_success = 0;
+
+  NaClLog(4, "Entered NaClCalibrateWindowsClockQpc\n");
+
+  GetSystemTimeAsFileTime(&ft_start);
+  ft_prev = ft_start;
+  end_of_calibrate = NaClFileTimeToMs(&ft_start) + kCalibrateTimeoutMs;
+
+  do {
+    if (!QueryPerformanceCounter(&counter_before))
+      return 0;
+    GetSystemTimeAsFileTime(&ft_now);
+    if (!QueryPerformanceCounter(&counter_after))
+      return 0;
+
+    counter_diff = counter_after.QuadPart - counter_before.QuadPart;
+    counter_diff_ms =
+        (counter_diff * kMillisecondsPerSecond) / ntsp->qpc_frequency;
+    sys_time_changed = (ft_now.dwHighDateTime != ft_prev.dwHighDateTime) ||
+        (ft_now.dwLowDateTime != ft_prev.dwLowDateTime);
+
+    if ((counter_diff >= 0) &&
+        (counter_diff_ms <= kMaxCalibrationDiff) &&
+        sys_time_changed) {
+      calibration_success = 1;
+      break;
+    }
+    if (sys_time_changed)
+      ft_prev = ft_now;
+  } while (NaClFileTimeToMs(&ft_now) < end_of_calibrate);
+
+  ntsp->system_time_start_ms = NaClFileTimeToMs(&ft_now);
+  ntsp->qpc_start = counter_before.QuadPart + (counter_diff / 2);
+  ntsp->last_qpc = counter_after.QuadPart;
+  ntsp->last_reported_time_mks =
+      ntsp->system_time_start_ms * kMicrosecondsPerMillisecond;
+
+  NaClLog(4,
+          "Leaving NaClCalibrateWindowsClockQpc : %d\n",
+          calibration_success);
+  return calibration_success;
 }
 
 /*
@@ -124,11 +232,13 @@ void NaClTimeInternalInit(struct NaClTimeState *ntsp) {
   TIMECAPS    tc;
   SYSTEMTIME  st;
   FILETIME    ft;
+  LARGE_INTEGER qpc_freq;
 
   /*
    * Maximize timer/Sleep resolution.
    */
   timeGetDevCaps(&tc, sizeof tc);
+
   if (ntsp->allow_low_resolution) {
     /* Set resolution to max so we don't over-promise. */
     ntsp->wPeriodMin = tc.wPeriodMax;
@@ -154,13 +264,35 @@ void NaClTimeInternalInit(struct NaClTimeState *ntsp) {
   ntsp->last_reported_time_ms = 0;
   NaClLog(0, "Unix epoch start is  %"NACL_PRIu64"ms in Windows epoch time\n",
           ntsp->epoch_start_ms);
+
   NaClMutexCtor(&ntsp->mu);
+
   /*
    * We don't actually grab the lock, since the module initializer
    * should be called before going threaded.
    */
+  ntsp->can_use_qpc = 0;
   if (!ntsp->allow_low_resolution) {
-    NaClCalibrateWindowsClockMu(ntsp);
+    ntsp->can_use_qpc = QueryPerformanceFrequency(&qpc_freq);
+    /*
+     * On Athlon X2 CPUs (e.g. model 15) QueryPerformanceCounter is
+     * unreliable.  Fallback to low-res clock.
+     */
+    if (strstr(CPU_GetBrandString(), "AuthenticAMD") && (CPU_GetFamily() == 15))
+        ntsp->can_use_qpc = 0;
+
+    NaClLog(4,
+            "CPU_GetBrandString->[%s] ntsp->can_use_qpc=%d\n",
+            CPU_GetBrandString(),
+            ntsp->can_use_qpc);
+
+    if (ntsp->can_use_qpc) {
+      ntsp->qpc_frequency = qpc_freq.QuadPart;
+      if (!NaClCalibrateWindowsClockQpc(ntsp))
+        ntsp->can_use_qpc = 0;
+    }
+    if (!ntsp->can_use_qpc)
+      NaClCalibrateWindowsClockMu(ntsp);
   }
 }
 
@@ -186,6 +318,73 @@ uint64_t NaClTimerResolutionNanoseconds(void) {
   return NaClTimerResolutionNsInternal(&gNaClTimeState);
 }
 
+int NaClGetTimeOfDayInternQpc(struct nacl_abi_timeval *tv,
+                              struct NaClTimeState    *ntsp,
+                              int allow_calibration) {
+  FILETIME  ft_now;
+  int64_t sys_now_mks;
+  LARGE_INTEGER qpc;
+  int64_t qpc_diff;
+  int64_t qpc_diff_mks;
+  int64_t qpc_now_mks;
+  int64_t drift_mks;
+  int64_t drift_ms;
+
+  GetSystemTimeAsFileTime(&ft_now);
+  QueryPerformanceCounter(&qpc);
+  sys_now_mks = NaClFileTimeToMs(&ft_now) * kMicrosecondsPerMillisecond;
+
+  NaClMutexLock(&ntsp->mu);
+
+  qpc_diff = qpc.QuadPart - ntsp->qpc_start;
+  /*
+   * Coarse qpc_now_mks to 10 microseconds resolution,
+   * to match the other platforms and not make a side-channel
+   * attack any easier than it needs to be.
+   */
+  qpc_diff_mks = ((qpc_diff * (kMicrosecondsPerSecond / kCoarseMks)) /
+      ntsp->qpc_frequency) * kCoarseMks;
+
+  qpc_now_mks = (ntsp->system_time_start_ms * kMicrosecondsPerMillisecond) +
+      qpc_diff_mks;
+
+  if ((qpc_diff < 0) || (qpc.QuadPart < ntsp->last_qpc)) {
+    if (allow_calibration) {
+      NaClCalibrateWindowsClockQpc(ntsp);
+      NaClMutexUnlock(&ntsp->mu);
+      return NaClGetTimeOfDayInternQpc(tv, ntsp, 0);
+    } else {
+      /* use GetSystemTimeAsFileTime(), not QPC */
+      qpc_now_mks = sys_now_mks;
+    }
+  }
+  ntsp->last_qpc = qpc.QuadPart;
+  drift_mks = sys_now_mks - qpc_now_mks;
+  if (qpc_now_mks > sys_now_mks)
+    drift_mks = qpc_now_mks - sys_now_mks;
+
+  drift_ms = drift_mks / kMicrosecondsPerMillisecond;
+
+  if (allow_calibration &&
+      (drift_ms > kMaxMillsecondDriftBeforeRecalibration)) {
+    NaClCalibrateWindowsClockQpc(ntsp);
+    NaClMutexUnlock(&ntsp->mu);
+    return NaClGetTimeOfDayInternQpc(tv, ntsp, 0);
+  }
+
+  NaClMutexUnlock(&ntsp->mu);
+
+  if (qpc_now_mks < ntsp->last_reported_time_mks)
+    qpc_now_mks = ntsp->last_reported_time_mks;
+  ntsp->last_reported_time_mks = qpc_now_mks;
+
+  tv->nacl_abi_tv_sec =
+      (nacl_abi_time_t)(qpc_now_mks / kMicrosecondsPerSecond);
+  tv->nacl_abi_tv_usec =
+      (nacl_abi_suseconds_t)(qpc_now_mks % kMicrosecondsPerSecond);
+  return 0;
+}
+
 int NaClGetTimeOfDayIntern(struct nacl_abi_timeval *tv,
                            struct NaClTimeState    *ntsp) {
   FILETIME  ft_now;
@@ -194,6 +393,9 @@ int NaClGetTimeOfDayIntern(struct nacl_abi_timeval *tv,
   DWORD     ms_counter_at_ft_now;
   uint32_t  ms_counter_diff;
   uint64_t  unix_time_ms;
+
+  if (ntsp->can_use_qpc)
+    return NaClGetTimeOfDayInternQpc(tv, ntsp, 1);
 
   GetSystemTimeAsFileTime(&ft_now);
   ms_counter_now = timeGetTime();
