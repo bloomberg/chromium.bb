@@ -13,10 +13,11 @@ import unittest
 
 import mox
 
+import cros_test_lib as test_lib
 import gdata_lib
 
 # pylint: disable=W0201
-class GdataLibTest(unittest.TestCase):
+class GdataLibTest(test_lib.TestCase):
 
   def setUp(self):
     pass
@@ -88,7 +89,7 @@ class GdataLibTest(unittest.TestCase):
       expected = tests[val]
       self.assertEquals(expected, gdata_lib.ScrubValFromSS(val))
 
-class CredsTest(mox.MoxTestBase):
+class CredsTest(test_lib.MoxTestCase):
 
   USER = 'somedude@chromium.org'
   PASSWORD = 'worldsbestpassword'
@@ -97,20 +98,8 @@ class CredsTest(mox.MoxTestBase):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
 
-  def _GetTmpfilePath(self, touch=False):
-    tmpdir = tempfile.mkdtemp()
-    self.tmpfilepath = os.path.join(tmpdir, self.TMPFILE_NAME)
-    if touch:
-      open(self.tmpfilepath, 'w').close()
-    return self.tmpfilepath
-
-  def _RemoveTmpfile(self):
-    shutil.rmtree(os.path.dirname(self.tmpfilepath))
-
+  @test_lib.tempfile_decorator
   def testStoreLoadCreds(self):
-    # Determine temporary file to use.
-    tmpfilepath = self._GetTmpfilePath()
-
     # Replay script
     mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
     self.mox.ReplayAll()
@@ -121,7 +110,7 @@ class CredsTest(mox.MoxTestBase):
     self.assertEquals(self.USER, mocked_creds.user)
     self.assertEquals(self.PASSWORD, mocked_creds.password)
 
-    gdata_lib.Creds.StoreCreds(mocked_creds, tmpfilepath)
+    gdata_lib.Creds.StoreCreds(mocked_creds, self.tempfile)
     self.assertEquals(self.USER, mocked_creds.user)
     self.assertEquals(self.PASSWORD, mocked_creds.password)
 
@@ -131,29 +120,23 @@ class CredsTest(mox.MoxTestBase):
     self.assertEquals(None, mocked_creds.user)
     self.assertEquals(None, mocked_creds.password)
 
-    gdata_lib.Creds.LoadCreds(mocked_creds, tmpfilepath)
+    gdata_lib.Creds.LoadCreds(mocked_creds, self.tempfile)
     self.assertEquals(self.USER, mocked_creds.user)
     self.assertEquals(self.PASSWORD, mocked_creds.password)
     self.mox.VerifyAll()
 
-    # Cleanup
-    self._RemoveTmpfile()
-
+  @test_lib.tempfile_decorator
   def testCredsInitFromFile(self):
-    # Determine temporary file to use.
-    tmpfilepath = self._GetTmpfilePath(touch=True)
+    open(self.tempfile, 'w').close()
 
     # Replay script
     mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
-    mocked_creds.LoadCreds(tmpfilepath)
+    mocked_creds.LoadCreds(self.tempfile)
     self.mox.ReplayAll()
 
     # Verify
-    gdata_lib.Creds.__init__(mocked_creds, cred_file=tmpfilepath)
+    gdata_lib.Creds.__init__(mocked_creds, cred_file=self.tempfile)
     self.mox.VerifyAll()
-
-    # Cleanup
-    self._RemoveTmpfile()
 
   def testCredsInitFromUserPassword(self):
     # Replay script

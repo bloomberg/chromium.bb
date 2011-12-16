@@ -47,9 +47,8 @@ class Creds(object):
     ]
 
   def __init__(self, cred_file=None, user=None, password=None):
-    if cred_file and os.path.exists(cred_file):
-      self.LoadCreds(cred_file)
-    elif user:
+    # Prefer user/password if given.
+    if user:
       if not user.endswith('@chromium.org'):
         user = '%s@chromium.org' % user
 
@@ -59,8 +58,8 @@ class Creds(object):
       self.user = user
       self.password = password
 
-      if cred_file:
-        self.StoreCreds(cred_file)
+    elif cred_file and os.path.exists(cred_file):
+      self.LoadCreds(cred_file)
 
   def LoadCreds(self, filepath):
     """Load email/password credentials from |filepath|."""

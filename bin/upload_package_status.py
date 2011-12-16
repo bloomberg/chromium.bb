@@ -14,56 +14,26 @@ import sys
 import gdata.spreadsheet.service
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+import chromite.lib.gdata_lib as gdata_lib
 import chromite.lib.table as table
 import chromite.lib.operation as operation
 import chromite.lib.upgrade_table as utable
 import merge_package_status as mps
 
-REAL_SS_KEY = 'tJuuSuHmrEMqdL5b8dkgBIA'
-TEST_SS_KEY = 't3RE08XLO2f1vTiV4N-w2ng'
+REAL_SS_KEY = '0AsXDKtaHikmcdEp1dVN1SG1yRU1xZEw1Yjhka2dCSUE'
+TEST_SS_KEY = '0AsXDKtaHikmcdDlQMjI3ZDdPVGc4Rkl3Yk5OLWxjR1E'
 PKGS_WS_NAME = 'Packages'
 DEPS_WS_NAME = 'Dependencies'
 
 oper = operation.Operation('upload_package_status')
-oper.verbose = True # Without verbose Info messages don't show up.
-
-def _PrepColForSS(col):
-  """Translate a column name for spreadsheet "list" interface."""
-  # Spreadsheet "list" interface requires column names to be
-  # all lowercase and with no spaces.
-  return col.lower().replace(' ', '')
-
-def _PrepRowForSS(row):
-  """Make sure spreadsheet handles all values in row as strings."""
-  for key in row:
-    val = row[key]
-    row[key] = _PrepValForSS(val)
-  return row
-
-# Regex to detect values that the spreadsheet will auto-format as numbers.
-_NUM_REGEX = re.compile(r'^[\d\.]+$')
-def _PrepValForSS(val):
-  """Make sure spreadsheet handles this value as a string."""
-  if val and _NUM_REGEX.match(val):
-    return "'" + val
-  return val
-
-def _ScrubValFromSS(val):
-  """Remove string indicator prefix if found."""
-  if val and val[0] == "'":
-    return val[1:]
-  return val
 
 class Uploader(object):
   """Uploads portage package status data from csv file to Google spreadsheet."""
 
-  __slots__ = ['_docs_token', # Google Docs login token
-               '_email',      # Google Docs account email
+  __slots__ = ['_creds',      # gdata_lib.Creds object
                '_gd_client',  # gdata.spreadsheet.service.SpreadsheetsService
-               '_password',   # Google Docs account password
                '_ss_key',     # Google Doc spreadsheet key (string)
                '_table',      # table.Table
-               '_verbose',    # boolean
                '_ws_key',     # Worksheet key (string)
                '_ws_name',    # Worksheet name (string)
                ]
@@ -71,21 +41,13 @@ class Uploader(object):
   ID_COL = utable.UpgradeTable.COL_PACKAGE
   SOURCE = "Uploaded from CSV"
 
-  def __init__(self, table_obj, verbose=False):
+  def __init__(self, creds, table_obj):
+    self._creds = creds
     self._table = table_obj
     self._gd_client = None
-    self._docs_token = None
-    self._email = None
-    self._password = None
     self._ss_key = None
-    self._verbose = verbose
     self._ws_key = None
     self._ws_name = None
-
-  def _Verbose(self, msg):
-    """Print |msg| if _verbose is true."""
-    if self._verbose:
-      print msg
 
   def _GetWorksheetKey(self, ss_key, ws_name):
     """Get the worksheet key with name |ws_name| in spreadsheet |ss_key|."""
@@ -102,71 +64,10 @@ class Uploader(object):
     """Set up and connect the Google Doc client using email/password."""
     gd_client = gdata.spreadsheet.service.SpreadsheetsService()
     gd_client.source = self.SOURCE
-    gd_client.email = self._email
-    gd_client.password = self._password
+    gd_client.email = self._creds.user
+    gd_client.password = self._creds.password
     gd_client.ProgrammaticLogin()
     self._gd_client = gd_client
-    self._docs_token = gd_client.GetClientLoginToken()
-
-  def LoginDocsWithToken(self):
-    """Set up and connect Google Doc client using login token."""
-    print "Using existing credentials for docs login."
-    gd_client = gdata.spreadsheet.service.SpreadsheetsService()
-    gd_client.source = self.SOURCE
-    gd_client.SetClientLoginToken(self._docs_token)
-    self._gd_client = gd_client
-    self._email = None
-    self._password = None
-
-  def SetCreds(self, email, password):
-    """Set the email/password credentials to be used."""
-    self._email = email
-    self._password = password
-
-  def LoadCreds(self, filepath):
-    """Store email/password credentials to |filepath|."""
-    print "Loading Docs login credentials from '%s'" % filepath
-    # Read email from first line and password from second.
-    f = open(filepath, 'r')
-    (self._email, self._password) = (l.strip() for l in f.readlines())
-    f.close()
-
-  def StoreCreds(self, filepath):
-    """Load email/password credentials from |filepath|."""
-    print "Storing Docs login credentials to '%s'" % filepath
-    # Simply write email on first line and password on second.
-    f = open(filepath, 'w')
-    f.write(self._email + '\n')
-    f.write(self._password + '\n')
-    f.close()
-
-  def LoadDocsToken(self, filepath):
-    """Loads docs login token from |filepath|."""
-    self._docs_token = None
-    try:
-      print "Loading Docs login token from '%s'" % filepath
-      f = open(filepath, 'r')
-      obj = pickle.load(f)
-      f.close()
-      if obj.has_key('docs_token'):
-        self._docs_token = obj['docs_token']
-    except IOError:
-      print 'Unable to load credentials from file at %s' % filepath
-
-    return bool(self._docs_token)
-
-  def StoreDocsToken(self, filepath):
-    """Stores docs login token to disk at |filepath|."""
-    obj = {}
-    if self._docs_token:
-      obj['docs_token'] = self._docs_token
-    try:
-      print "Storing Docs login token to '%s'" % filepath
-      f = open(filepath, 'w')
-      pickle.dump(obj, f)
-      f.close()
-    except IOError:
-      print 'Unable to store credentials'
 
   def _GetSSRowForPackage(self, package):
     """Find the spreadsheet row object corresponding to Package=|package|."""
@@ -194,22 +95,22 @@ class Uploader(object):
     self._ws_name = ws_name
     self._ws_key = self._GetWorksheetKey(ss_key, ws_name)
 
-    self._Verbose("Details by package: S=Same, C=Changed, A=Added, D=Deleted")
+    oper.Info("Details by package: S=Same, C=Changed, A=Added, D=Deleted")
     rows_unchanged, rows_updated, rows_inserted = self._UploadChangedRows()
     rows_deleted, rows_with_owner_deleted = self._DeleteOldRows()
 
-    print("Final row stats: %d changed, %d added, %d deleted, %d same." %
-          (rows_updated, rows_inserted, rows_deleted, rows_unchanged))
+    oper.Notice("Final row stats: %d changed, %d added, %d deleted, %d same." %
+                (rows_updated, rows_inserted, rows_deleted, rows_unchanged))
     if rows_with_owner_deleted:
-      print("WARNING: %d rows with owner entry deleted, see above warnings." %
-            rows_with_owner_deleted)
+      oper.Warning("%d rows with owner entry deleted, see above warnings." %
+                   rows_with_owner_deleted)
     else:
-      print("No rows with owner entry were deleted.")
+      oper.Notice("No rows with owner entry were deleted.")
 
   def _UploadChangedRows(self):
     """Upload all rows in table that need to be changed in spreadsheet."""
-    print("Uploading to worksheet '%s' of spreadsheet '%s' now." %
-          (self._ws_name, self._ss_key))
+    oper.Notice("Uploading to worksheet '%s' of spreadsheet '%s' now." %
+                (self._ws_name, self._ss_key))
 
     rows_unchanged, rows_updated, rows_inserted = (0, 0, 0)
 
@@ -220,7 +121,8 @@ class Uploader(object):
       ss_row = self._GetSSRowForPackage(csv_package)
 
       # Seed new row values from csv_row values, with column translation.
-      new_row = dict((_PrepColForSS(key), csv_row[key]) for key in csv_row)
+      new_row = dict((gdata_lib.PrepColNameForSS(key),
+                      csv_row[key]) for key in csv_row)
 
       if ss_row:
         changed = []
@@ -228,46 +130,44 @@ class Uploader(object):
         # For columns that are in spreadsheet but not in csv, grab values
         # from spreadsheet so they are not overwritten by UpdateRow.
         for col in ss_row.custom:
-          ss_val = _ScrubValFromSS(ss_row.custom[col].text)
+          ss_val = gdata_lib.ScrubValFromSS(ss_row.custom[col].text)
           if col not in new_row:
             new_row[col] = ss_val
           elif (ss_val or new_row[col]) and ss_val != new_row[col]:
             changed.append("%s='%s'->'%s'" % (col, ss_val, new_row[col]))
-          elif ss_row.custom[col].text != _PrepValForSS(ss_val):
+          elif ss_row.custom[col].text != gdata_lib.PrepValForSS(ss_val):
             changed.append("%s=str'%s'" % (col, new_row[col]))
 
         if changed:
-          self._gd_client.UpdateRow(ss_row, _PrepRowForSS(new_row))
+          self._gd_client.UpdateRow(ss_row, gdata_lib.PrepRowForSS(new_row))
           rows_updated += 1
-          self._Verbose("C %-30s: %s" %
-                        (csv_package, ', '.join(changed)))
+          oper.Info("C %-30s: %s" % (csv_package, ', '.join(changed)))
         else:
           rows_unchanged += 1
-          self._Verbose("S %-30s:" % csv_package)
+          oper.Info("S %-30s:" % csv_package)
       else:
-        self._gd_client.InsertRow(_PrepRowForSS(new_row),
+        self._gd_client.InsertRow(gdata_lib.PrepRowForSS(new_row),
                                   self._ss_key, self._ws_key)
         rows_inserted += 1
         row_descr_list = []
         for col in sorted(new_row.keys()):
           if col != self.ID_COL:
             row_descr_list.append("%s='%s'" % (col, new_row[col]))
-        self._Verbose("A %-30s: %s" %
-                      (csv_package, ', '.join(row_descr_list)))
+        oper.Info("A %-30s: %s" % (csv_package, ', '.join(row_descr_list)))
 
     return (rows_unchanged, rows_updated, rows_inserted)
 
   def _DeleteOldRows(self):
     """Delete all rows from spreadsheet that not found in table."""
-    print "Checking for rows in spreadsheet that should be deleted now."
+    oper.Notice("Checking for rows in spreadsheet that should be deleted now.")
 
     rows_deleted, rows_with_owner_deleted = (0, 0)
 
     # Also need to delete rows in spreadsheet that are not in csv table.
     list_feed = self._gd_client.GetListFeed(self._ss_key, self._ws_key)
     for ss_row in list_feed.entry:
-      ss_id_col = _PrepColForSS(self.ID_COL)
-      ss_package = _ScrubValFromSS(ss_row.custom[ss_id_col].text)
+      ss_id_col = gdata_lib.PrepColNameForSS(self.ID_COL)
+      ss_package = gdata_lib.ScrubValFromSS(ss_row.custom[ss_id_col].text)
 
       # See whether this row is in csv table.
       csv_rows = self._table.GetRowsByValue({ self.ID_COL: ss_package })
@@ -283,17 +183,16 @@ class Uploader(object):
             owner_notes_val = ss_row.custom[col].text
 
           # Don't include ID_COL value in description, it is in prefix already.
-          if col != _PrepColForSS(self.ID_COL):
+          if col != gdata_lib.PrepColNameForSS(self.ID_COL):
             val = ss_row.custom[col].text
             row_descr_list.append("%s='%s'" % (col, val))
 
-        self._Verbose("D %-30s: %s" %
-                      (ss_package, ', '.join(row_descr_list)))
+        oper.Info("D %-30s: %s" % (ss_package, ', '.join(row_descr_list)))
         if owner_val or owner_notes_val:
           rows_with_owner_deleted += 1
-          print("WARNING: Deleting spreadsheet row with owner entry:\n" +
-                "  %-30s: Owner=%s, Owner Notes=%s" %
-                (ss_package, owner_val, owner_notes_val))
+          oper.Notice("WARNING: Deleting spreadsheet row with owner entry:\n" +
+                      "  %-30s: Owner=%s, Owner Notes=%s" %
+                      (ss_package, owner_val, owner_notes_val))
 
         self._gd_client.DeleteRow(ss_row)
         rows_deleted += 1
@@ -302,7 +201,7 @@ class Uploader(object):
 
 def LoadTable(table_file):
   """Load csv |table_file| into a table.  Return table."""
-  print "Loading csv table from '%s'." % (table_file)
+  oper.Notice("Loading csv table from '%s'." % (table_file))
   csv_table = table.Table.LoadFromCSV(table_file)
   return csv_table
 
@@ -325,43 +224,40 @@ def main():
   parser.add_option('--test-spreadsheet', dest='test_ss',
                     action='store_true', default=False,
                     help="Upload to the testing spreadsheet.")
-  parser.add_option('--token-file', dest='token_file', type='string',
-                    action='store', default=None,
-                    help="File for reading/writing Docs login token.")
   parser.add_option('--verbose', dest='verbose',
                     action='store_true', default=False,
                     help="Show details about packages..")
 
   (options, args) = parser.parse_args()
 
+  oper.verbose = options.verbose
+
   if len(args) < 1:
     parser.print_help()
     oper.Die("One csv_file is required.")
 
   # If email or password provided, the other is required.  If neither is
-  # provided, then either cred_file or token_file must be provided and
-  # be a real file.
+  # provided, then cred_file must be provided and be a real file.
   if options.email or options.password:
     if not (options.email and options.password):
       parser.print_help()
       oper.Die("The email/password options must be used together.")
-  elif not options.token_file and not options.cred_file:
+  elif not options.cred_file:
     parser.print_help()
-    oper.Die("Either email/password, cred-file, or token-file required.")
-  elif not ((options.token_file and os.path.exists(options.token_file)) or
-            (options.cred_file and os.path.exists(options.cred_file))):
+    oper.Die("Either email/password or cred-file required.")
+  elif not (options.cred_file and os.path.exists(options.cred_file)):
     parser.print_help()
-    oper.Die("Without email/password cred-file or token-file must exist.")
-  elif (options.token_file and os.path.exists(options.token_file) and
-        options.cred_file and os.path.exists(options.cred_file)):
-    parser.print_help()
-    oper.Die("Without email/password, both cred-file and token-file " +
-                 "is ambiguous.")
+    oper.Die("Without email/password cred-file must exist.")
 
   # --ss-key and --test-spreadsheet are mutually exclusive.
   if options.ss_key and options.test_ss:
     parser.print_help()
     oper.Die("Cannot specify --ss-key and --test-spreadsheet together.")
+
+  # Prepare credentials for spreadsheet access.
+  creds = gdata_lib.Creds(cred_file=options.cred_file,
+                          user=options.email,
+                          password=options.password)
 
   # Load the given csv file.
   csv_table = LoadTable(args[0])
@@ -370,29 +266,8 @@ def main():
   mps.FinalizeTable(csv_table)
 
   # Prepare the Google Doc client for uploading.
-  uploader = Uploader(csv_table, verbose=options.verbose)
-  if options.email and options.password:
-    # Login with supplied email/password
-    uploader.SetCreds(email=options.email, password=options.password)
-    uploader.LoginDocsWithEmailPassword()
-
-    # If cred or token file given, write them out now.
-    if options.token_file:
-      uploader.StoreDocsToken(options.token_file)
-    if options.cred_file:
-      uploader.StoreCreds(options.cred_file)
-  elif options.cred_file and os.path.exists(options.cred_file):
-    # Login by reading email/password from supplied file.
-    uploader.LoadCreds(options.cred_file)
-    uploader.LoginDocsWithEmailPassword()
-
-    # If token file given, write it out now.
-    if options.token_file:
-      uploader.StoreDocsToken(options.token_file)
-  elif options.token_file and os.path.exists(options.token_file):
-    # Login with token from supplied file.
-    uploader.LoadDocsToken(options.token_file)
-    uploader.LoginDocsWithToken()
+  uploader = Uploader(creds, csv_table)
+  uploader.LoginDocsWithEmailPassword()
 
   ss_key = options.ss_key
   ws_names = [PKGS_WS_NAME, DEPS_WS_NAME]
@@ -404,6 +279,11 @@ def main():
 
   for ws_name in ws_names:
     uploader.Upload(ss_key, ws_name=ws_name)
+
+  # If email/password given, as well as path to cred_file, write
+  # credentials out to that location.
+  if options.email and options.password and options.cred_file:
+    creds.StoreCreds(options.cred_file)
 
 if __name__ == '__main__':
   main()

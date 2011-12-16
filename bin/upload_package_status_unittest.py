@@ -17,6 +17,7 @@ import gdata.spreadsheet.service as gdata_ss
 import mox
 
 import chromite.lib.cros_test_lib as test_lib
+import chromite.lib.gdata_lib as gdata_lib
 import chromite.lib.table as tablelib
 import merge_package_status as mps
 import upload_package_status as ups
@@ -27,70 +28,6 @@ def _WriteCredsFile(tmpfile_path, email, password):
   with open(tmpfile_path, 'w') as tmpfile:
     tmpfile.write(email + '\n')
     tmpfile.write(password + '\n')
-
-class ModuleTest(test_lib.TestCase):
-  """Test misc functionality of the upload_package_status module."""
-
-  ROW_IN1 = {'Package': 'sys-fs/dosfstools',
-             'Overlay': 'portage',
-             'State': 'needs upgrade',
-             'Current Version': '3.0.2',
-             'Stable Upstream Version': '3.0.9',
-             'Latest Upstream Version': '3.0.11',
-             'Chrome OS Root Target': 'chromeos',
-             }
-  ROW_UP1 = {'package': 'sys-fs/dosfstools',
-             'overlay': 'portage',
-             'state': 'needs upgrade',
-             'currentversion': "'3.0.2",
-             'stableupstreamversion': "'3.0.9",
-             'latestupstreamversion': "'3.0.11",
-             'chromeosroottarget': 'chromeos',
-             }
-
-  def testPrepColForSS(self):
-    """Column names in spreadsheet must be lower-case with no spaces."""
-    cols = {'Package': 'package',
-            'Overlay': 'overlay',
-            'Current Version': 'currentversion',
-            'Stable Upstream Version': 'stableupstreamversion',
-            'Latest Upstream Version': 'latestupstreamversion',
-            'Chrome OS Root Target': 'chromeosroottarget',
-            }
-    for col_in in cols:
-      self.assertEquals(cols[col_in], ups._PrepColForSS(col_in))
-
-  def testPrepValForSS(self):
-    """Number-like vals should get a ' prefix to force string handling."""
-    strs = ['chromiumos-overlay',
-            'george',
-            'chromeos chromeos-dev',
-            '1.2.3-r1',
-            ]
-    nums = ['1',
-            '1.2',
-            '1.2.3',
-            ]
-    for val in strs:
-      self.assertEquals(val, ups._PrepValForSS(val))
-
-    for val in nums:
-      self.assertEquals("'" + val, ups._PrepValForSS(val))
-
-  def testPrepRowForSS(self):
-    row = dict(self.ROW_IN1)
-    ups._PrepRowForSS(row)
-    for col in row:
-      self.assertEquals(row[col], self.ROW_UP1[ups._PrepColForSS(col)])
-
-  def testScrubValFromSS(self):
-    vals = {"foo": "foo",
-            "'foo": "foo",
-            "1.2.3": "1.2.3",
-            "'1.2.3": "1.2.3",
-            }
-    for val_in in vals:
-      self.assertEquals(vals[val_in], ups._ScrubValFromSS(val_in))
 
 class SSEntry(object):
   """Class to simulate one spreadsheet entry."""
@@ -106,9 +43,9 @@ class SSRow(object):
       # If columns not specified, then column order doesn't matter.
       cols = row.keys()
     for col in cols:
-      ss_col = ups._PrepColForSS(col)
+      ss_col = gdata_lib.PrepColNameForSS(col)
       val = row[col]
-      ss_val = ups._PrepValForSS(val)
+      ss_val = gdata_lib.PrepValForSS(val)
       self.custom[ss_col] = SSEntry(ss_val)
 
 class SSFeed(object):
@@ -184,7 +121,6 @@ class UploaderTest(test_lib.MoxTestCase):
     for slot in ups.Uploader.__slots__:
       uploader.__setattr__(slot, None)
 
-    uploader._verbose = False
     uploader._table = table
     uploader._gd_client = gd_client
     if gd_client:
@@ -230,80 +166,22 @@ class UploaderTest(test_lib.MoxTestCase):
     self.assertEquals(loaded_table, 'loaded_table')
     self._StopCapturingOutput()
 
-  def testSetCreds(self):
-    mocked_uploader = self._MockUploader()
-
-    # Replay script
-    self.mox.ReplayAll()
-
-    # Verify
-    ups.Uploader.SetCreds(mocked_uploader, self.EMAIL, self.PASSWORD)
-    self.assertEquals(self.EMAIL, mocked_uploader._email)
-    self.assertEquals(self.PASSWORD, mocked_uploader._password)
-
-  @test_lib.tempfile_decorator
-  def testStoreLoadCreds(self):
-    table = self._CreateDefaultTable()
-    uploader = ups.Uploader(table)
-    # Use SetCreds to bootstrap (it has a separate unit test)
-    uploader.SetCreds(self.EMAIL, self.PASSWORD)
-
-    self._StartCapturingOutput()
-
-    self.assertEquals(uploader._email, self.EMAIL)
-    self.assertEquals(uploader._password, self.PASSWORD)
-
-    # Verify that Uploader can store/load creds
-    uploader.StoreCreds(self.tempfile)
-    uploader._email = None
-    uploader._password = None
-    self.assertFalse(uploader._email)
-    self.assertFalse(uploader._password)
-
-    uploader.LoadCreds(self.tempfile)
-    self.assertEquals(uploader._email, self.EMAIL)
-    self.assertEquals(uploader._password, self.PASSWORD)
-
-    self._StopCapturingOutput()
-
   def testLoginDocsWithEmailPassword(self):
     mocked_uploader = self._MockUploader()
-    ups.Uploader.SetCreds(mocked_uploader, self.EMAIL, self.PASSWORD)
+    creds = test_lib.EasyAttr(user=self.EMAIL, password=self.PASSWORD)
+    mocked_uploader._creds = creds
 
     self.mox.StubOutWithMock(gdata_ss.SpreadsheetsService,
                              'ProgrammaticLogin')
-    self.mox.StubOutWithMock(gdata_ss.SpreadsheetsService,
-                             'GetClientLoginToken')
 
     # Replay script
     gdata_ss.SpreadsheetsService.ProgrammaticLogin()
-    gdata_ss.SpreadsheetsService.GetClientLoginToken().AndReturn('Some Token')
     self.mox.ReplayAll()
 
     # Verify
     ups.Uploader.LoginDocsWithEmailPassword(mocked_uploader)
     self.assertEquals(mocked_uploader._gd_client.email, self.EMAIL)
     self.assertEquals(mocked_uploader._gd_client.password, self.PASSWORD)
-    self.assertEquals(mocked_uploader._docs_token, 'Some Token')
-
-  def testLoginDocsWithToken(self):
-    mocked_uploader = self._MockUploader()
-    mocked_uploader._docs_token = 'Some Token'
-
-    self.mox.StubOutWithMock(gdata_ss.SpreadsheetsService,
-                             'SetClientLoginToken')
-
-    # Replay script
-    gdata_ss.SpreadsheetsService.SetClientLoginToken('Some Token')
-    self.mox.ReplayAll()
-
-    # Verify
-    self._StartCapturingOutput()
-    self.assertFalse(mocked_uploader._gd_client)
-    ups.Uploader.LoginDocsWithToken(mocked_uploader)
-    self.assertTrue(isinstance(mocked_uploader._gd_client,
-                               gdata_ss.SpreadsheetsService))
-    self._StopCapturingOutput()
 
   def testGetSSRowForPackage(self):
     mocked_gd_client = self._MockGdClient()
@@ -337,11 +215,7 @@ class UploaderTest(test_lib.MoxTestCase):
     ws_key = 'Some ws_key'
 
     # Replay script
-    # TODO(mtennant): This approach just seems so brittle.  For example,
-    # I would prefer this test allow any number of calls to _Verbose
-    # at any time.  But I haven't figured out how.
     mocked_uploader._GetWorksheetKey(ss_key, ws_name).AndReturn(ws_key)
-    mocked_uploader._Verbose(mox.IgnoreArg())
     mocked_uploader._UploadChangedRows().AndReturn(tuple([0, 1, 2]))
     mocked_uploader._DeleteOldRows().AndReturn(tuple([3, 4]))
     self.mox.ReplayAll()
@@ -360,8 +234,8 @@ class UploaderTest(test_lib.MoxTestCase):
 
     def RowVerifier(ss_row, golden_row):
       for col in golden_row:
-        ss_col = ups._PrepColForSS(col)
-        golden_ss_val = ups._PrepValForSS(golden_row[col])
+        ss_col = gdata_lib.PrepColNameForSS(col)
+        golden_ss_val = gdata_lib.PrepValForSS(golden_row[col])
         if golden_ss_val != ss_row[ss_col]:
           return False
       return True
@@ -372,7 +246,6 @@ class UploaderTest(test_lib.MoxTestCase):
     mocked_uploader._GetSSRowForPackage(row0_pkg).AndReturn(None)
     mocked_gd_client.InsertRow(mox.IgnoreArg(), ss_key, ws_key)
     # Check for output indicating an added line (starts with A).
-    mocked_uploader._Verbose(mox.Regex(r'^A '))
 
     # Pretend second row does already exist in online spreadsheet.
     row1_pkg = self.ROW1[self.COL_PKG]
@@ -383,7 +256,6 @@ class UploaderTest(test_lib.MoxTestCase):
     # We expect ROW1 to be changed.
     mocked_gd_client.UpdateRow(mox.IgnoreArg(), mox.Func(row1_verifier))
     # Check for output indicating a changed line (starts with C).
-    mocked_uploader._Verbose(mox.Regex(r'^C '))
 
     self.mox.ReplayAll()
 
@@ -401,8 +273,8 @@ class UploaderTest(test_lib.MoxTestCase):
 
     def SSRowVerifier(ss_row, golden_row):
       for col in golden_row:
-        ss_col = ups._PrepColForSS(col)
-        golden_ss_val = ups._PrepValForSS(golden_row[col])
+        ss_col = gdata_lib.PrepColNameForSS(col)
+        golden_ss_val = gdata_lib.PrepValForSS(golden_row[col])
         ss_val = ss_row.custom[ss_col].text
         if golden_ss_val != ss_val:
           return False
@@ -412,7 +284,6 @@ class UploaderTest(test_lib.MoxTestCase):
     # Prepare spreadsheet feed with 2 rows, one in table and one not.
     feed = SSFeed([self.ROW1, self.ROW2], cols=self.COLS)
     mocked_gd_client.GetListFeed(ss_key, ws_key).AndReturn(feed)
-    mocked_uploader._Verbose(mox.Regex(r'^D '))
     # We expect ROW2 in spreadsheet to be deleted.
     mocked_gd_client.DeleteRow(mox.Func(row2_verifier))
     self.mox.ReplayAll()
@@ -485,15 +356,16 @@ class MainTest(test_lib.MoxTestCase):
     email = 'foo@g.com'
     password = '123'
 
+    self.mox.StubOutWithMock(gdata_lib.Creds, '__new__')
     self.mox.StubOutWithMock(ups, 'LoadTable')
-    self.mox.StubOutWithMock(ups.Uploader, 'SetCreds')
     self.mox.StubOutWithMock(ups.Uploader, 'LoginDocsWithEmailPassword')
     self.mox.StubOutWithMock(ups.Uploader, 'Upload')
     self.mox.StubOutWithMock(mps, 'FinalizeTable')
 
+    gdata_lib.Creds.__new__(gdata_lib.Creds, cred_file=None,
+                            user=email, password=password).AndReturn('Creds')
     ups.LoadTable(csv).AndReturn('csv_table')
     mps.FinalizeTable('csv_table')
-    ups.Uploader.SetCreds(email=email, password=password)
     ups.Uploader.LoginDocsWithEmailPassword()
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name='Packages')
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name='Dependencies')
@@ -515,15 +387,16 @@ class MainTest(test_lib.MoxTestCase):
     creds_file = self.tempfile
     _WriteCredsFile(creds_file, email, password)
 
+    self.mox.StubOutWithMock(gdata_lib.Creds, '__new__')
     self.mox.StubOutWithMock(ups, 'LoadTable')
-    self.mox.StubOutWithMock(ups.Uploader, 'LoadCreds')
     self.mox.StubOutWithMock(ups.Uploader, 'LoginDocsWithEmailPassword')
     self.mox.StubOutWithMock(ups.Uploader, 'Upload')
     self.mox.StubOutWithMock(mps, 'FinalizeTable')
 
+    gdata_lib.Creds.__new__(gdata_lib.Creds, cred_file=creds_file,
+                            user=None, password=None).AndReturn('Creds')
     ups.LoadTable(csv).AndReturn('csv_table')
     mps.FinalizeTable('csv_table')
-    ups.Uploader.LoadCreds(creds_file)
     ups.Uploader.LoginDocsWithEmailPassword()
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.PKGS_WS_NAME)
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.DEPS_WS_NAME)
