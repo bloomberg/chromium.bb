@@ -65,9 +65,6 @@ class DBusThreadManager {
   // Gets the global instance. Initialize() must be called first.
   static DBusThreadManager* Get();
 
-  // TODO(satorux): Rename the following getters to something like
-  // GetFooClient() as they are now virtual.
-
   // Returns the bluetooth adapter client, owned by DBusThreadManager.
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.
