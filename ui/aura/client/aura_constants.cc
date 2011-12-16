@@ -17,7 +17,6 @@ const char kRootWindowActiveWindow[] = "RootWindowActiveWindow";
 const char kRootWindowDragDropClientKey[] = "RootWindowDragDropClient";
 const char kRootWindowStackingClient[] = "RootWindowStackingClient";
 const char kRootWindowTooltipClientKey[] = "RootWindowTooltipClient";
-const char kShadowTypeKey[] = "ShadowType";
 const char kShowStateKey[] = "ShowState";
 const char kTooltipTextKey[] = "TooltipText";
 // Alphabetical sort.

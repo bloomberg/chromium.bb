@@ -9,12 +9,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/shadow_types.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/shadow.h"
+#include "ui/aura_shell/shadow_types.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/test/aura_shell_test_base.h"
+#include "ui/aura_shell/window_properties.h"
 #include "ui/gfx/compositor/layer.h"
 
 namespace aura_shell {
@@ -26,7 +27,6 @@ typedef aura_shell::test::AuraShellTestBase ShadowControllerTest;
 TEST_F(ShadowControllerTest, Shadow) {
   scoped_ptr<aura::Window> window(new aura::Window(NULL));
   window->SetType(aura::WINDOW_TYPE_NORMAL);
-  window->SetIntProperty(aura::kShadowTypeKey, aura::SHADOW_TYPE_RECTANGULAR);
   window->Init(ui::Layer::LAYER_HAS_TEXTURE);
   window->SetParent(NULL);
 
@@ -45,10 +45,10 @@ TEST_F(ShadowControllerTest, Shadow) {
   EXPECT_TRUE(shadow->layer()->visible());
 
   // If the shadow is disabled, it should be hidden.
-  window->SetIntProperty(aura::kShadowTypeKey, aura::SHADOW_TYPE_NONE);
+  internal::SetShadowType(window.get(), internal::SHADOW_TYPE_NONE);
   window->Show();
   EXPECT_FALSE(shadow->layer()->visible());
-  window->SetIntProperty(aura::kShadowTypeKey, aura::SHADOW_TYPE_RECTANGULAR);
+  internal::SetShadowType(window.get(), internal::SHADOW_TYPE_RECTANGULAR);
   EXPECT_TRUE(shadow->layer()->visible());
 
   // The shadow's layer should be a child of the window's layer.
@@ -73,7 +73,7 @@ TEST_F(ShadowControllerTest, ShadowBounds) {
 
   // When the shadow is first created, it should use the window's size (but
   // remain at the origin, since it's a child of the window's layer).
-  window->SetIntProperty(aura::kShadowTypeKey, aura::SHADOW_TYPE_RECTANGULAR);
+  internal::SetShadowType(window.get(), internal::SHADOW_TYPE_RECTANGULAR);
   internal::ShadowController::TestApi api(
       aura_shell::Shell::GetInstance()->shadow_controller());
   const internal::Shadow* shadow = api.GetShadowForWindow(window.get());

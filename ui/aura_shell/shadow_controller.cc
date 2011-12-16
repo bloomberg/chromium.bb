@@ -6,17 +6,39 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/logging.h"
+#include "ui/aura/aura_switches.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/shadow_types.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/shadow.h"
+#include "ui/aura_shell/shadow_types.h"
+#include "ui/aura_shell/window_properties.h"
 
 using std::make_pair;
 
 namespace aura_shell {
 namespace internal {
+
+namespace {
+
+ShadowType GetShadowTypeFromWindowType(aura::Window* window) {
+  switch (window->type()) {
+    case aura::WINDOW_TYPE_NORMAL:
+      return CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAuraTranslucentFrames) ?
+              SHADOW_TYPE_NONE : SHADOW_TYPE_RECTANGULAR;
+    case aura::WINDOW_TYPE_MENU:
+    case aura::WINDOW_TYPE_TOOLTIP:
+      return SHADOW_TYPE_RECTANGULAR;
+    default:
+      break;
+  }
+  return SHADOW_TYPE_NONE;
+}
+
+}  // namespace
 
 ShadowController::ShadowController() {
   aura::RootWindow::GetInstance()->AddRootWindowObserver(this);
@@ -32,13 +54,14 @@ ShadowController::~ShadowController() {
 
 void ShadowController::OnWindowInitialized(aura::Window* window) {
   window->AddObserver(this);
+  SetShadowType(window, GetShadowTypeFromWindowType(window));
   HandlePossibleShadowVisibilityChange(window);
 }
 
 void ShadowController::OnWindowPropertyChanged(aura::Window* window,
                                                const char* name,
                                                void* old) {
-  if (name == aura::kShadowTypeKey)
+  if (name == kShadowTypeKey)
     HandlePossibleShadowVisibilityChange(window);
 }
 
@@ -54,12 +77,11 @@ void ShadowController::OnWindowDestroyed(aura::Window* window) {
 }
 
 bool ShadowController::ShouldShowShadowForWindow(aura::Window* window) const {
-  const aura::ShadowType type = static_cast<aura::ShadowType>(
-      window->GetIntProperty(aura::kShadowTypeKey));
+  const ShadowType type = GetShadowType(window);
   switch (type) {
-    case aura::SHADOW_TYPE_NONE:
+    case SHADOW_TYPE_NONE:
       return false;
-    case aura::SHADOW_TYPE_RECTANGULAR:
+    case SHADOW_TYPE_RECTANGULAR:
       return true;
     default:
       NOTREACHED() << "Unknown shadow type " << type;

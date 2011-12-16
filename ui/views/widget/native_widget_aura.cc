@@ -9,7 +9,6 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
-#include "ui/aura/client/shadow_types.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -189,11 +188,6 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   }
 
   aura::client::SetActivationDelegate(window_, this);
-
-  if (window_type == Widget::InitParams::TYPE_MENU ||
-      window_type == Widget::InitParams::TYPE_TOOLTIP)
-    window_->SetIntProperty(aura::kShadowTypeKey,
-                            aura::SHADOW_TYPE_RECTANGULAR);
 }
 
 NonClientFrameView* NativeWidgetAura::CreateNonClientFrameView() {

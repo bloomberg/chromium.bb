@@ -9,6 +9,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura_shell/examples/example_factory.h"
 #include "ui/aura_shell/examples/toplevel_window.h"
+#include "ui/aura_shell/shadow_types.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/aura_shell/toplevel_frame_view.h"
 #include "ui/gfx/canvas.h"
@@ -144,6 +145,7 @@ void InitWindowTypeLauncher() {
       views::Widget::CreateWindowWithBounds(new WindowTypeLauncher,
                                             gfx::Rect(120, 150, 400, 300));
   widget->GetNativeView()->SetName("WindowTypeLauncher");
+  internal::SetShadowType(widget->GetNativeView(), internal::SHADOW_TYPE_NONE);
   widget->Show();
 }
 

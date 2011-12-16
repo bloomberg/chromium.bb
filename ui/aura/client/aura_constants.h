@@ -50,10 +50,6 @@ AURA_EXPORT extern const char kRootWindowStackingClient[];
 // the value is |aura::client::TooltipClient*|.
 AURA_EXPORT extern const char kRootWindowTooltipClientKey[];
 
-// A property key for a value from aura::ShadowType describing the drop shadow
-// that should be displayed under the window.  If unset, no shadow is displayed.
-AURA_EXPORT extern const char kShadowTypeKey[];
-
 // A property key to store ui::WindowShowState for a window.
 // See ui/base/ui_base_types.h for its definition.
 AURA_EXPORT extern const char kShowStateKey[];

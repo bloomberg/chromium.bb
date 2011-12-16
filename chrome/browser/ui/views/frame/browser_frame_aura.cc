@@ -14,7 +14,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/shadow_types.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -173,9 +172,6 @@ BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
     browser_view_->layer()->SetFillsBoundsOpaquely(false);
     // Background only needed for Aura-style windows.
     browser_view_->set_background(new ToolbarBackground(browser_view));
-  } else {
-    GetNativeWindow()->SetIntProperty(aura::kShadowTypeKey,
-                                      aura::SHADOW_TYPE_RECTANGULAR);
   }
 }
 
