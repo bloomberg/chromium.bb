@@ -5375,12 +5375,6 @@
    fun:dlsym
    fun:_ZN4base14PlatformThread7SetNameEPKc
 }
-{
-   bug_107841
-   Memcheck:Leak
-   ...
-   fun:_ZN3net15X509Certificate16GetPublicKeyInfoE*
-}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations

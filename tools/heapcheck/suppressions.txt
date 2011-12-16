@@ -1751,9 +1751,3 @@
    fun:browser_sync::DataTypeManagerImpl::Stop
    fun:ProfileSyncService::Shutdown
 }
-{
-   bug_107841
-   Heapcheck:Leak
-   ...
-   fun:net::X509Certificate::GetPublicKeyInfo
-}
