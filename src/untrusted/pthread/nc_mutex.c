@@ -37,7 +37,7 @@ int pthread_mutex_validate(pthread_mutex_t *mutex) {
 }
 
 int pthread_mutex_init (pthread_mutex_t *mutex,
-                        pthread_mutexattr_t *mutex_attr) {
+                        const pthread_mutexattr_t *mutex_attr) {
   int retval;
   nc_token_init(&mutex->token, 1);
   if (mutex_attr != NULL) {

@@ -17,7 +17,7 @@
 #include "native_client/src/untrusted/pthread/pthread_types.h"
 
 static int nc_thread_cond_init(pthread_cond_t *cond,
-                               pthread_condattr_t *cond_attr) {
+                               const pthread_condattr_t *cond_attr) {
   return __nc_irt_cond.cond_create(&cond->handle);
 }
 
@@ -35,7 +35,7 @@ void pthread_cond_validate(pthread_cond_t* cond) {
  * the default values if later is NULL.
  */
 int pthread_cond_init (pthread_cond_t *cond,
-                       pthread_condattr_t *cond_attr) {
+                       const pthread_condattr_t *cond_attr) {
   int retval;
   nc_token_init(&cond->token, 1);
   retval = nc_thread_cond_init(cond, cond_attr);

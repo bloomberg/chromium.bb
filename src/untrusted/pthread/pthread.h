@@ -156,7 +156,7 @@ typedef struct {
  * @return 0 upon success, 1 otherwise
  */
 extern int pthread_mutex_init(pthread_mutex_t *mutex,
-                              pthread_mutexattr_t *mutex_attr);
+                              const pthread_mutexattr_t *mutex_attr);
 
 /** @nqPosix
 * Destroys a mutex.
@@ -277,7 +277,7 @@ extern int pthread_mutexattr_gettype(const pthread_mutexattr_t *attr,
 * @return 0 for success, 1 otherwise.
 */
 extern int pthread_cond_init(pthread_cond_t *cond,
-                             pthread_condattr_t *cond_attr);
+                             const pthread_condattr_t *cond_attr);
 
 /** @nqPosix
 * Destroys a condition variable.
