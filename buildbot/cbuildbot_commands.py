@@ -25,7 +25,7 @@ _FACTORY_SHIM = 'factory_shim'
 _FACTORY_TEST = 'factory_test'
 _FACTORY_HWID = 'hwid'
 _FULL_BINHOST = 'FULL_BINHOST'
-_PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-overlay/'
+_PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-partner-overlay/'
                              'chromeos/binhost')
 _GSUTIL_PATH = '/b/build/scripts/slave/gsutil'
 _GS_ACL = '/home/chrome-bot/slave_archive_acl'
