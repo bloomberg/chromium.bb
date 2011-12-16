@@ -2838,6 +2838,19 @@ are declared in build/common.gypi.
         Server's certificate is signed using a weak signature algorithm.
       </message>
 
+      <message name="IDS_CERT_ERROR_WEAK_KEY_TITLE" desc="Title of the error page for a certificate containing a weak key">
+        The server certificate contains a weak cryptographic key!
+      </message>
+      <message name="IDS_CERT_ERROR_WEAK_KEY_DETAILS" desc="Details of the error page for a certificate containing a weak key">
+        You attempted to reach <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>, but the server presented a certificate containing a weak key. An attacker could have broken the private key, and the server may not be the server you expected (you may be communicating with an attacker).
+      </message>
+      <message name="IDS_CERT_ERROR_WEAK_KEY_EXTRA_INFO_2" desc="2nd paragraph of extra information for a X509 certificate that contains a weak key">
+        In this case, the server certificate or an intermediate CA certificate presented to your browser contains a weak key, such as an RSA key of less than 1024 bits. Because it is relatively easy to derive the corresponding private key for a weak public key, you may be communicating with an attacker.
+      </message>
+      <message name="IDS_CERT_ERROR_WEAK_KEY_DESCRIPTION" desc="Description of the error page for a certificate containing a weak key">
+        The server certificate contains a weak cryptographic key.
+      </message>
+
       <message name="IDS_CERT_ERROR_NOT_IN_DNS_TITLE" desc="Title of the error page for a certificate which was excluded by DNS data">
         Unlisted Server Certificate
       </message>

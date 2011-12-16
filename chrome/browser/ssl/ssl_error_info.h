@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,7 @@ class SSLErrorInfo {
     CERT_INVALID,
     CERT_WEAK_SIGNATURE_ALGORITHM,
     CERT_NOT_IN_DNS,
+    CERT_WEAK_KEY,
     UNKNOWN
   };
 

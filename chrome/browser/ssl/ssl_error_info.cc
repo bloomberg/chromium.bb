@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -177,6 +177,18 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
           l10n_util::GetStringUTF16(
               IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_EXTRA_INFO_2));
       break;
+    case CERT_WEAK_KEY:
+      title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_WEAK_KEY_TITLE);
+      details = l10n_util::GetStringFUTF16(
+          IDS_CERT_ERROR_WEAK_KEY_DETAILS, UTF8ToUTF16(request_url.host()));
+      short_description = l10n_util::GetStringUTF16(
+          IDS_CERT_ERROR_WEAK_KEY_DESCRIPTION);
+      extra_info.push_back(
+          l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_1));
+      extra_info.push_back(
+          l10n_util::GetStringUTF16(
+              IDS_CERT_ERROR_WEAK_KEY_EXTRA_INFO_2));
+      break;
     case CERT_NOT_IN_DNS:
       title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_NOT_IN_DNS_TITLE);
       details = l10n_util::GetStringUTF16(IDS_CERT_ERROR_NOT_IN_DNS_DETAILS);
@@ -221,6 +233,8 @@ SSLErrorInfo::ErrorType SSLErrorInfo::NetErrorToErrorType(int net_error) {
       return CERT_INVALID;
     case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
       return CERT_WEAK_SIGNATURE_ALGORITHM;
+    case net::ERR_CERT_WEAK_KEY:
+      return CERT_WEAK_KEY;
     case net::ERR_CERT_NOT_IN_DNS:
       return CERT_NOT_IN_DNS;
     default:
@@ -242,7 +256,8 @@ int SSLErrorInfo::GetErrorsForCertStatus(int cert_id,
     net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
     net::CERT_STATUS_REVOKED,
     net::CERT_STATUS_INVALID,
-    net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM
+    net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM,
+    net::CERT_STATUS_WEAK_KEY
   };
 
   const ErrorType kErrorTypes[] = {
@@ -253,7 +268,8 @@ int SSLErrorInfo::GetErrorsForCertStatus(int cert_id,
     CERT_UNABLE_TO_CHECK_REVOCATION,
     CERT_REVOKED,
     CERT_INVALID,
-    CERT_WEAK_SIGNATURE_ALGORITHM
+    CERT_WEAK_SIGNATURE_ALGORITHM,
+    CERT_WEAK_KEY
   };
   DCHECK(arraysize(kErrorFlags) == arraysize(kErrorTypes));
 
