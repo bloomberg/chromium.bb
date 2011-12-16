@@ -58,6 +58,14 @@ const Experiment::Choice kPrerenderFromOmniboxChoices[] = {
     switches::kPrerenderFromOmniboxSwitchValueDisabled }
 };
 
+#if defined(USE_AURA)
+const Experiment::Choice kAuraWindowModeChoices[] = {
+  { IDS_FLAGS_AURA_WINDOW_MODE_NORMAL, "", "" },
+  { IDS_FLAGS_AURA_WINDOW_MODE_COMPACT,
+      switches::kAuraWindowMode, switches::kAuraWindowModeCompact }
+};
+#endif
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -457,11 +465,11 @@ const Experiment kExperiments[] = {
   // Aura laptop mode performance and feature set match traditional non-Aura
   // builds.
   {
-    "aura-laptop-mode",
-    IDS_FLAGS_AURA_LAPTOP_MODE_NAME,
-    IDS_FLAGS_AURA_LAPTOP_MODE_DESCRIPTION,
+    "aura-window-mode",
+    IDS_FLAGS_AURA_WINDOW_MODE_NAME,
+    IDS_FLAGS_AURA_WINDOW_MODE_DESCRIPTION,
     kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kAuraLaptopMode)
+    MULTI_VALUE_TYPE(kAuraWindowModeChoices)
   },
 #endif
   {

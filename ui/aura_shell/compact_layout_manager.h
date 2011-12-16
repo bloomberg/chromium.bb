@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_LAPTOP_MODE_LAYOUT_MANAGER_H_
-#define UI_AURA_SHELL_LAPTOP_MODE_LAYOUT_MANAGER_H_
+#ifndef UI_AURA_SHELL_COMPACT_LAYOUT_MANAGER_H_
+#define UI_AURA_SHELL_COMPACT_LAYOUT_MANAGER_H_
 #pragma once
 
 #include <set>
@@ -17,15 +17,15 @@
 namespace aura_shell {
 namespace internal {
 
-// LaptopModeLayoutManager is an alternate LayoutManager for the container that
+// CompactLayoutManager is an alternate LayoutManager for the container that
 // hosts what the shell considers to be top-level windows. It is used for low
 // resolution screens and keeps the main browser window maximized.
 // It listens for changes to kShowStateKey and resizes the window appropriately.
-class AURA_SHELL_EXPORT LaptopModeLayoutManager : public aura::LayoutManager,
-                                                  public aura::WindowObserver {
+class AURA_SHELL_EXPORT CompactLayoutManager : public aura::LayoutManager,
+                                               public aura::WindowObserver {
  public:
-  LaptopModeLayoutManager();
-  virtual ~LaptopModeLayoutManager();
+  CompactLayoutManager();
+  virtual ~CompactLayoutManager();
 
   // LayoutManager overrides:
   virtual void OnWindowResized() OVERRIDE;
@@ -47,10 +47,10 @@ class AURA_SHELL_EXPORT LaptopModeLayoutManager : public aura::LayoutManager,
   // Set of windows we're listening to.
   Windows windows_;
 
-  DISALLOW_COPY_AND_ASSIGN(LaptopModeLayoutManager);
+  DISALLOW_COPY_AND_ASSIGN(CompactLayoutManager);
 };
 
 }  // namespace aura_shell
 }  // namespace internal
 
-#endif  // UI_AURA_SHELL_LAPTOP_MODE_LAYOUT_MANAGER_H_
+#endif  // UI_AURA_SHELL_COMPACT_LAYOUT_MANAGER_H_

@@ -17,12 +17,13 @@
 #include "ui/aura/window_types.h"
 #include "ui/aura_shell/activation_controller.h"
 #include "ui/aura_shell/app_list.h"
+#include "ui/aura_shell/compact_layout_manager.h"
+#include "ui/aura_shell/compact_status_area_layout_manager.h"
 #include "ui/aura_shell/default_container_event_filter.h"
 #include "ui/aura_shell/default_container_layout_manager.h"
 #include "ui/aura_shell/root_window_event_filter.h"
 #include "ui/aura_shell/root_window_layout_manager.h"
 #include "ui/aura_shell/drag_drop_controller.h"
-#include "ui/aura_shell/laptop_mode_layout_manager.h"
 #include "ui/aura_shell/launcher/launcher.h"
 #include "ui/aura_shell/modal_container_layout_manager.h"
 #include "ui/aura_shell/shadow_controller.h"
@@ -59,8 +60,8 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
   containers->push_back(background_container);
 
   aura::Window* default_container = new aura::Window(NULL);
-  // Primary windows in laptop mode don't allow drag, so don't use the filter.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraLaptopMode)) {
+  // Primary windows in compact mode don't allow drag, so don't use the filter.
+  if (!switches::IsAuraWindowModeCompact()) {
     default_container->SetEventFilter(
         new ToplevelWindowEventFilter(default_container));
   }
@@ -228,12 +229,15 @@ void Shell::InitLayoutManagers(aura::RootWindow* root_window) {
   aura::Window* default_container =
       GetContainer(internal::kShellWindowId_DefaultContainer);
 
-  // Laptop mode has a simplified layout manager and doesn't use the launcher,
+  // Compact mode has a simplified layout manager and doesn't use the launcher,
   // desktop background, shelf, etc.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraLaptopMode)) {
+  if (switches::IsAuraWindowModeCompact()) {
     default_container->SetLayoutManager(
-        new internal::LaptopModeLayoutManager());
-    // TODO(jamescook): Adjust status area layout.
+        new internal::CompactLayoutManager());
+    internal::CompactStatusAreaLayoutManager* status_area_layout_manager =
+        new internal::CompactStatusAreaLayoutManager(status_widget);
+    GetContainer(internal::kShellWindowId_StatusContainer)->
+        SetLayoutManager(status_area_layout_manager);
     return;
   }
 
