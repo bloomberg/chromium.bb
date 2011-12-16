@@ -8,8 +8,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/aura/screen_orientation_listener.h"
+#include "chrome/browser/ui/views/aura/screenshot_taker.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura_shell/shell.h"
+#include "ui/aura_shell/shell_accelerator_controller.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/system/runtime_environment.h"
@@ -40,7 +42,11 @@ void ChromeBrowserMainExtraPartsAura::PostBrowserProcessInit() {
 #endif
 
   // Shell takes ownership of ChromeShellDelegate.
-  aura_shell::Shell::CreateInstance(new ChromeShellDelegate);
+  aura_shell::Shell* aura_shell =
+      aura_shell::Shell::CreateInstance(new ChromeShellDelegate);
+  // accelerator controller takes ownership of ScreenshotDelegate.
+  aura_shell->accelerator_controller()->SetScreenshotDelegate(
+      new ScreenshotTaker);
 
   // Make sure the singleton ScreenOrientationListener object is created.
   ScreenOrientationListener::GetInstance();

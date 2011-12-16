@@ -3335,6 +3335,8 @@
         'browser/ui/views/aura/launcher_icon_updater.h',
         'browser/ui/views/aura/screen_orientation_listener.cc',
         'browser/ui/views/aura/screen_orientation_listener.h',
+        'browser/ui/views/aura/screenshot_taker.cc',
+        'browser/ui/views/aura/screenshot_taker.h',
         'browser/ui/views/aura/status_area_host_aura.cc',
         'browser/ui/views/aura/status_area_host_aura.h',
         'browser/ui/views/autocomplete/autocomplete_popup_contents_view.cc',

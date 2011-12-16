@@ -20,6 +20,8 @@ class AcceleratorManager;
 
 namespace aura_shell {
 
+class ScreenshotDelegate;
+
 // ShellAcceleratorController provides functions for registering or
 // unregistering global keyboard accelerators, which are handled earlier than
 // any windows. It also implements several handlers as an accelerator target.
@@ -53,11 +55,15 @@ class AURA_SHELL_EXPORT ShellAcceleratorController
   // Overridden from ui::AcceleratorTarget:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
+  void SetScreenshotDelegate(ScreenshotDelegate* screenshot_delegate);
+
  private:
   // Initialize the accelerators this class handles as a target.
   void Init();
 
   scoped_ptr<ui::AcceleratorManager> accelerator_manager_;
+
+  scoped_ptr<ScreenshotDelegate> screenshot_delegate_;
 
   // A map from accelerators to the AcceleratorAction values, which are used in
   // the implementation.

@@ -4,11 +4,11 @@
 
 #include "ui/aura_shell/shell_accelerator_controller.h"
 
-#include "base/logging.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura_shell/launcher/launcher.h"
 #include "ui/aura_shell/launcher/launcher_model.h"
+#include "ui/aura_shell/screenshot_delegate.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/aura_shell/window_util.h"
@@ -72,12 +72,6 @@ bool HandleCycleWindow(bool forward) {
       model->item_count();
   aura_shell::ActivateWindow(model->items()[next_index].window);
   return true;
-}
-
-bool HandleTakeScreenshot() {
-  // TODO(mazda): http://crbug.com/105198
-  NOTIMPLEMENTED();
-  return false;
 }
 
 #if !defined(NDEBUG)
@@ -171,6 +165,11 @@ bool ShellAcceleratorController::Process(const ui::Accelerator& accelerator) {
   return accelerator_manager_->Process(accelerator);
 }
 
+void ShellAcceleratorController::SetScreenshotDelegate(
+    ScreenshotDelegate* screenshot_delegate) {
+  screenshot_delegate_.reset(screenshot_delegate);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ShellAcceleratorController, ui::AcceleratorTarget implementation:
 
@@ -185,7 +184,10 @@ bool ShellAcceleratorController::AcceleratorPressed(
     case CYCLE_FORWARD:
       return HandleCycleWindow(true);
     case TAKE_SCREENSHOT:
-      return HandleTakeScreenshot();
+      if (screenshot_delegate_.get())
+        screenshot_delegate_->HandleTakeScreenshot();
+      // Return true to prevent propagation of the key event.
+      return true;
 #if !defined(NDEBUG)
     case ROTATE_SCREEN:
       return HandleRotateScreen();
