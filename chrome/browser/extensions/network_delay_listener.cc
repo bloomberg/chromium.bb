@@ -29,7 +29,7 @@ NetworkDelayListener::NetworkDelayListener()
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DOM_CONTENT_LOADED,
                  content::NotificationService::AllSources());
   AddRef();  // Will be balanced in Cleanup().
 }
@@ -149,7 +149,7 @@ void NetworkDelayListener::Observe(
       }
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
+    case chrome::NOTIFICATION_EXTENSION_HOST_DOM_CONTENT_LOADED: {
       const ExtensionHost* eh = content::Details<ExtensionHost>(details).ptr();
       if (eh->extension_host_type() !=
           chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE)

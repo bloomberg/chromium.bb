@@ -132,15 +132,20 @@ class NetworkDelayListenerTest
     ASSERT_TRUE(extension1_);
   }
 
-  void SendExtensionLoadedNotification(const Extension* extension) {
-    scoped_ptr<TestExtensionHost> background_host(
-        new TestExtensionHost(extension,
-                              chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE));
+  void SendExtensionLoadedNotification(const Extension* extension,
+                                       chrome::ViewType host_type) {
+    scoped_ptr<TestExtensionHost> extension_host(
+        new TestExtensionHost(extension, host_type));
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+        chrome::NOTIFICATION_EXTENSION_HOST_DOM_CONTENT_LOADED,
         content::Source<Profile>(profile_.get()),
-        content::Details<ExtensionHost>(background_host.get()));
+        content::Details<ExtensionHost>(extension_host.get()));
     MessageLoop::current()->RunAllPending();
+  }
+
+  void SendBackgroundLoadedNotification(const Extension* extension) {
+    SendExtensionLoadedNotification(extension,
+        chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
   }
 
   scoped_refptr<NetworkDelayListener> listener_;
@@ -164,15 +169,12 @@ TEST_F(NetworkDelayListenerTest, DelayAndLoad) {
   ASSERT_FALSE(request->is_pending());
 
   // We don't care about a loaded extension dialog.
-  scoped_ptr<TestExtensionHost> dialog_host(
-      new TestExtensionHost(extension1_, chrome::VIEW_TYPE_EXTENSION_DIALOG));
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-      content::Source<Profile>(profile_.get()),
-      content::Details<ExtensionHost>(dialog_host.get()));
-  MessageLoop::current()->RunAllPending();
+  SendExtensionLoadedNotification(extension1_,
+                                  chrome::VIEW_TYPE_EXTENSION_DIALOG);
 
-  SendExtensionLoadedNotification(extension1_);
+  ASSERT_FALSE(request->is_pending());
+
+  SendBackgroundLoadedNotification(extension1_);
   EXPECT_EQ(kTestData, delegate.data_received());
 }
 
@@ -191,6 +193,25 @@ TEST_F(NetworkDelayListenerTest, DelayAndUnload) {
   EXPECT_EQ(kTestData, delegate.data_received());
 }
 
+// Tests that an extension that uses Analytics in the recommended way (i.e.,
+// it includes a local JS file in a <script> tag in its background page and
+// also injects a <script> tag into the page that will be loaded
+// asynchronously) doesn't deadlock.
+TEST_F(NetworkDelayListenerTest, AsynchDelayAndLoad) {
+  LoadTestExtension(kTestExtensionId2);
+  ASSERT_EQ(1u, service_->extensions()->size());
+  const Extension* extension =
+      service_->extensions()->GetByID(kTestExtensionId2);
+  ASSERT_TRUE(extension);
+
+  TestDelegate delegate;
+  scoped_ptr<TestURLRequest> request(StartTestRequest(&delegate, kTestUrl));
+  ASSERT_FALSE(request->is_pending());
+
+  SendBackgroundLoadedNotification(extension);
+  EXPECT_EQ(kTestData, delegate.data_received());
+}
+
 // Tests that two blocking extensions must both load for the block to be
 // released.
 TEST_F(NetworkDelayListenerTest, TwoBlockingExtensions) {
@@ -205,10 +226,10 @@ TEST_F(NetworkDelayListenerTest, TwoBlockingExtensions) {
   scoped_ptr<TestURLRequest> request(StartTestRequest(&delegate, kTestUrl));
   ASSERT_FALSE(request->is_pending());
 
-  SendExtensionLoadedNotification(extension1_);
+  SendBackgroundLoadedNotification(extension1_);
   ASSERT_FALSE(request->is_pending());
 
-  SendExtensionLoadedNotification(extension2);
+  SendBackgroundLoadedNotification(extension2);
   EXPECT_EQ(kTestData, delegate.data_received());
 }
 
@@ -221,7 +242,7 @@ TEST_F(NetworkDelayListenerTest, ExtensionReadyTwice) {
   scoped_ptr<TestURLRequest> request(StartTestRequest(&delegate, kTestUrl));
   ASSERT_FALSE(request->is_pending());
 
-  SendExtensionLoadedNotification(extension1_);
+  SendBackgroundLoadedNotification(extension1_);
   EXPECT_EQ(kTestData, delegate.data_received());
 
   service_->UnloadExtension(extension1_->id(),

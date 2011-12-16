@@ -113,6 +113,7 @@ class ExtensionHost : public TabContentsDelegate,
   virtual void RenderViewReady() OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual void DocumentAvailableInMainFrame() OVERRIDE;
+  virtual void DocumentLoadedInFrame(int64 frame_id) OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
 
   // TabContentsDelegate

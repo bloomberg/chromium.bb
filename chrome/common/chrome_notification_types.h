@@ -426,7 +426,13 @@ enum NotificationType {
   // an ExtensionHost* and the source is a Profile*.
   NOTIFICATION_EXTENSION_HOST_DESTROYED,
 
-  // Sent by an ExtensionHost when it finished its initial page load.
+  // Sent by an ExtensionHost when it has finished loading its initial DOM
+  // content, not (necessarily) including any external resources.
+  // The details are an ExtensionHost* and the source is a Profile*.
+  NOTIFICATION_EXTENSION_HOST_DOM_CONTENT_LOADED,
+
+  // Sent by an ExtensionHost when it has finished its initial page load,
+  // including any external resources.
   // The details are an ExtensionHost* and the source is a Profile*.
   NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
 
