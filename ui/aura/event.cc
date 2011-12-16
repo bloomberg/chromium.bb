@@ -54,10 +54,18 @@ bool IsDoubleClick(const aura::MouseEvent& event) {
 
 namespace aura {
 
+Event::~Event() {
+#if defined(USE_X11)
+  if (delete_native_event_)
+    delete native_event_;
+#endif
+}
+
 Event::Event(ui::EventType type, int flags)
     : type_(type),
       time_stamp_(base::Time::NowFromSystemTime()),
-      flags_(flags) {
+      flags_(flags),
+      delete_native_event_(false) {
   Init();
 }
 
@@ -66,7 +74,8 @@ Event::Event(const base::NativeEvent& native_event,
              int flags)
     : type_(type),
       time_stamp_(base::Time::NowFromSystemTime()),
-      flags_(flags) {
+      flags_(flags),
+      delete_native_event_(false) {
   InitWithNativeEvent(native_event);
 }
 
@@ -74,7 +83,8 @@ Event::Event(const Event& copy)
     : native_event_(copy.native_event_),
       type_(copy.type_),
       time_stamp_(copy.time_stamp_),
-      flags_(copy.flags_) {
+      flags_(copy.flags_),
+      delete_native_event_(false) {
 }
 
 void Event::Init() {
@@ -249,6 +259,28 @@ uint16 KeyEvent::GetUnmodifiedCharacter() const {
   NOTIMPLEMENTED();
   return 0;
 #endif
+}
+
+base::NativeEvent CopyNativeEvent(const base::NativeEvent& event) {
+#if defined(USE_X11)
+  XEvent* copy = new XEvent;
+  *copy = *event;
+  return copy;
+#elif defined(OS_WIN)
+  return event;
+#else
+  NOTREACHED() <<
+      "Don't know how to copy base::NativeEvent for this platform";
+#endif
+}
+
+KeyEvent* KeyEvent::Copy() {
+  KeyEvent* copy = new KeyEvent(CopyNativeEvent(native_event()),
+                                is_char());
+#if defined(USE_X11)
+  copy->set_delete_native_event(true);
+#endif
+  return copy;
 }
 
 ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
