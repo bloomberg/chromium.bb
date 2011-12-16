@@ -225,6 +225,8 @@
       'cpp/dev/scriptable_object_deprecated.cc',
 
       # Private interfaces.
+      'cpp/private/flash.cc',
+      'cpp/private/flash.h',
       'cpp/private/flash_fullscreen.cc',
       'cpp/private/flash_fullscreen.h',
       'cpp/private/flash_menu.cc',
