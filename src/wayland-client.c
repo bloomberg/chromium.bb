@@ -198,6 +198,11 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 					 &proxy->object.interface->methods[opcode]);
 	va_end(ap);
 
+	if (closure == NULL) {
+		fprintf(stderr, "Error marshalling request\n");
+		abort();
+	}
+
 	wl_closure_send(closure, proxy->display->connection);
 
 	if (wl_debug)
@@ -473,7 +478,7 @@ handle_event(struct wl_display *display,
 					  size, &display->objects, message);
 
 	if (closure == NULL) {
-		fprintf(stderr, "Error demarshalling event: %m\n");
+		fprintf(stderr, "Error demarshalling event\n");
 		abort();
 	}
 

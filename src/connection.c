@@ -39,8 +39,6 @@
 #include "wayland-util.h"
 #include "wayland-private.h"
 
-#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
-
 struct wl_buffer {
 	char data[4096];
 	int head, tail;
@@ -54,7 +52,7 @@ struct wl_closure {
 	ffi_type *types[20];
 	ffi_cif cif;
 	void *args[20];
-	uint32_t buffer[64];
+	uint32_t buffer[256];
 	uint32_t *start;
 };
 
@@ -392,7 +390,7 @@ wl_connection_vmarshal(struct wl_connection *connection,
 {
 	struct wl_closure *closure = &connection->send_closure;
 	struct wl_object **objectp, *object;
-	uint32_t length, *p, *start, size;
+	uint32_t length, *p, *start, size, *end;
 	int dup_fd;
 	struct wl_array **arrayp, *array;
 	const char **sp, *s;
@@ -403,17 +401,23 @@ wl_connection_vmarshal(struct wl_connection *connection,
 	count = strlen(message->signature) + 2;
 	extra = (char *) closure->buffer;
 	start = &closure->buffer[DIV_ROUNDUP(extra_size, sizeof *p)];
+	end = &closure->buffer[ARRAY_LENGTH(closure->buffer)];
 	p = &start[2];
+
 	for (i = 2; i < count; i++) {
 		switch (message->signature[i - 2]) {
 		case 'u':
 			closure->types[i] = &ffi_type_uint32;
 			closure->args[i] = p;
+			if (end - p < 1)
+				goto err;
 			*p++ = va_arg(ap, uint32_t);
 			break;
 		case 'i':
 			closure->types[i] = &ffi_type_sint32;
 			closure->args[i] = p;
+			if (end - p < 1)
+				goto err;
 			*p++ = va_arg(ap, int32_t);
 			break;
 		case 's':
@@ -424,6 +428,8 @@ wl_connection_vmarshal(struct wl_connection *connection,
 
 			s = va_arg(ap, const char *);
 			length = s ? strlen(s) + 1: 0;
+			if (end - p < DIV_ROUNDUP(length, sizeof *p) + 1)
+				goto err;
 			*p++ = length;
 
 			if (length > 0)
@@ -442,6 +448,8 @@ wl_connection_vmarshal(struct wl_connection *connection,
 
 			object = va_arg(ap, struct wl_object *);
 			*objectp = object;
+			if (end - p < 1)
+				goto err;
 			*p++ = object ? object->id : 0;
 			break;
 
@@ -449,6 +457,8 @@ wl_connection_vmarshal(struct wl_connection *connection,
 			closure->types[i] = &ffi_type_uint32;
 			closure->args[i] = p;
 			object = va_arg(ap, struct wl_object *);
+			if (end - p < 1)
+				goto err;
 			*p++ = object ? object->id : 0;
 			break;
 
@@ -463,9 +473,13 @@ wl_connection_vmarshal(struct wl_connection *connection,
 
 			array = va_arg(ap, struct wl_array *);
 			if (array == NULL || array->size == 0) {
+				if (end - p < 1)
+					goto err;
 				*p++ = 0;
 				break;
 			}
+			if (end - p < DIV_ROUNDUP(array->size, sizeof *p) + 1)
+				goto err;
 			*p++ = array->size;
 			memcpy(p, array->data, array->size);
 
@@ -509,6 +523,12 @@ wl_connection_vmarshal(struct wl_connection *connection,
 	closure->count = count;
 
 	return closure;
+
+err:
+	printf("request too big to marshal, maximum size is %d\n",
+	       sizeof closure->buffer);
+	errno = ENOMEM;
+	return NULL;
 }
 
 struct wl_closure *
@@ -535,7 +555,8 @@ wl_connection_demarshal(struct wl_connection *connection,
 
 	extra_space = wl_message_size_extra(message);
 	if (sizeof closure->buffer < size + extra_space) {
-		printf("request too big, should malloc tmp buffer here\n");
+		printf("request too big to demarshal, maximum %d actual %d\n",
+		       sizeof closure->buffer, size + extra_space);
 		errno = ENOMEM;
 		wl_connection_consume(connection, size);
 		return NULL;
