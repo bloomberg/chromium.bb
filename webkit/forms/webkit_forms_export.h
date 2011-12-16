@@ -6,7 +6,7 @@
 #define WEBKIT_FORMS_WEBKIT_FORMS_EXPORT_H_
 #pragma once
 
-#if defined(COMPONENT_BUILD)
+#if 0 // defined(COMPONENT_BUILD)
 #if defined(WIN32)
 
 #if defined(WEBKIT_FORMS_IMPLEMENTATION)
