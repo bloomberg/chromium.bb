@@ -5131,6 +5131,27 @@
    fun:_ZN7WebCoreL17executeInsertHTMLEPNS_5FrameEPNS_5EventENS_19EditorCommandSourceERKN3WTF6StringE
 }
 {
+   bug_106183c
+   Memcheck:Uninitialized
+   fun:_ZN7WebCore21ComplexTextController*
+   ...
+   fun:_ZNK7WebCore4Font15drawComplexTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
+   fun:_ZNK7WebCore4Font8drawTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
+   fun:_ZN7WebCore15GraphicsContext8drawTextERKNS_4FontERKNS_7TextRunERKNS_10FloatPointEii
+   fun:_ZN7WebCoreL20paintTextWithShadowsEPNS_15GraphicsContextERKNS_4FontERKNS_7TextRunERKN3WTF12AtomicStringEiiiiRKNS_10FloatPointERKNS_9FloatRectEPKNS_10ShadowDataEbb
+   fun:_ZN7WebCore13InlineTextBox5paintERNS_9PaintInfoERKNS_8IntPointEii
+   fun:_ZN7WebCore13InlineFlowBox5paintERNS_9PaintInfoERKNS_8IntPointEii
+   fun:_ZN7WebCore13RootInlineBox5paintERNS_9PaintInfoERKNS_8IntPointEii
+   fun:_ZNK7WebCore17RenderLineBoxList5paintEPNS_20RenderBoxModelObjectERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore11RenderBlock13paintChildrenERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_8IntPointE
+}
+{
    bug_106402
    Memcheck:Leak
    fun:_Znw*
