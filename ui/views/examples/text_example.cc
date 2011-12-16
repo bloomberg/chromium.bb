@@ -92,6 +92,7 @@ class TextExample::TextExampleView : public View {
           ResourceBundle::BaseFont)),
       text_(ASCIIToUTF16(kShortText)),
       text_flags_(0),
+      halo_(false),
       fade_(false),
       fade_mode_(gfx::CanvasSkia::TruncateFadeTail) {
   }
