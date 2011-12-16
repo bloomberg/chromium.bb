@@ -6372,8 +6372,18 @@ void TestingAutomationProvider::DoesAutomationObjectExist(
 void TestingAutomationProvider::CloseTabJSON(
     DictionaryValue* args, IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
-  RenderViewHost* view;
+  Browser* browser;
+  TabContents* tab;
   std::string error;
+  // Close tabs synchronously.
+  if (GetBrowserAndTabFromJSONArgs(args, &browser, &tab, &error)) {
+    browser->CloseTabContents(tab);
+    reply.SendSuccess(NULL);
+    return;
+  }
+
+  // Close other types of views asynchronously.
+  RenderViewHost* view;
   if (!GetRenderViewFromJSONArgs(args, profile(), &view, &error)) {
     reply.SendError(error);
     return;

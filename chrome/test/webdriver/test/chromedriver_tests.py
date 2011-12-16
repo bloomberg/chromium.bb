@@ -769,8 +769,6 @@ class FrameSwitchingTest(ChromeDriverTest):
     driver.execute_script('window.open("about:blank")')
     old_window = driver.current_window_handle
     driver.close()
-    WebDriverWait(driver, 10).until(
-        lambda x: old_window not in driver.window_handles)
     driver.switch_to_window(driver.window_handles[0])
     self.assertEquals('about:blank', driver.current_url)
 
