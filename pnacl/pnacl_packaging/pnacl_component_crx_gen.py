@@ -17,6 +17,10 @@ import sys
 import tempfile
 import zipfile
 
+# shutil.copytree does not allow the target directory to exist.
+# Borrow this copy_tree, which does allow it (overwrites conflicts?).
+from distutils.dir_util import copy_tree as copytree_existing
+
 J = os.path.join
 
 ######################################################################
@@ -69,6 +73,14 @@ def DashFreeArch(arch):
   return arch.replace('-', '')
 
 ARCHES=['x86-32', 'x86-64', 'arm']
+
+def IsValidArch(arch):
+  return arch in ARCHES
+
+LIBMODES=['newlib', 'glibc']
+
+def IsValidLibmode(libmode):
+  return libmode in LIBMODES
 
 ######################################################################
 
@@ -149,17 +161,17 @@ def IsValidVersion(version):
 class PnaclPackaging(object):
 
   # For dogfooding, we also create a webstore extension.
-  # See: https://chrome.google.com/webstore/a/google.com/detail/fpgmfdhhglmmpglblfngkkiieinoocjd
+  # See: https://chrome.google.com/webstore/a/google.com/detail/gcodniebolpnpaiggndmcmmfpldlknih
   # To test offline, we need to be able to load via the command line on chrome,
-  # but we also need the AppID to remain the same. Thus we supply a "key"
-  # in the unpacked/offline extension manifest. See:
+  # but we also need the AppID to remain the same. Thus we supply the
+  # public key in the unpacked/offline extension manifest. See:
   # http://code.google.com/chrome/extensions/manifest.html#key
   # Summary:
   # 1) install the extension, then look for key in
   # 2) <profile>/Default/Extensions/<extensionId>/<versionString>/manifest.json
   # (Fret not -- this is not the private key, it's just a key stored in the
   # user's profile directory).
-  WEBSTORE_KEY="MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDNEqz0o/d3f42yfzmfhVABr9mMKIRfo6C0rWbBpzwgAfe5+vqR5XDLEFjr1i6FmY3ULn8qCfhmtf/5IGImDlLD+el1MIsYfNrjdvy1IAwPPA1FkYqz8S7YxNJ50GO7C5ZVo4XSmCuyEo65DMOUZ603U5eZ4WuLs2jzZF/4szsfWQIDAQAB"
+  WEBSTORE_PUBLIC_KEY="MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC7zhW8iytdYid7SXLokWfxNoz2Co9x2ItkVUS53Iq12xDLfcKkUZ2RNXQtua+yKgRTRMP0HigPtn2KZeeJYzvBYLP/kz62B3nM5nS8Mo0qQKEsJiNgTf1uOgYGPyrE6GrFBFolLGstnZ1msVgNHEv2dZruC2XewOJihvmeQsOjjwIDAQAB"
 
   package_base = os.path.dirname(__file__)
   manifest_template = J(package_base, 'pnacl_manifest_template.json')
@@ -182,6 +194,8 @@ class PnaclPackaging(object):
 
 class PnaclDirs(object):
 
+  output_dir = J(NACL_ROOT, 'toolchain', 'pnacl-package')
+
   @staticmethod
   def BaseDir(libmode):
     pnacl_dir = 'pnacl_%s_%s_%s' % (PNACL_BUILD_PLATFORM,
@@ -203,8 +217,12 @@ class PnaclDirs(object):
              'bin')
 
   @staticmethod
+  def SetOutputDir(d):
+    PnaclDirs.output_dir = d
+
+  @staticmethod
   def OutputDir():
-    return J(NACL_ROOT, 'toolchain', 'pnacl-package')
+    return PnaclDirs.output_dir
 
   @staticmethod
   def OutputAllDir():
@@ -212,7 +230,7 @@ class PnaclDirs(object):
 
   @staticmethod
   def OutputArchBase(arch):
-    return 'pnacl_%s' % arch
+    return '%s' % arch
 
   @staticmethod
   def OutputArchDir(arch):
@@ -252,7 +270,6 @@ def GeneratePrivateKey():
   """ Generate a dummy extension to generate a fresh private key. This will
   be left in the build dir, and the dummy extension will be cleaned up.
   """
-  Clean()
   StepBanner('GEN PRIVATE KEY', 'Generating fresh private key')
   tempdir = tempfile.mkdtemp(dir=PnaclDirs.OutputDir())
   ext_dir = J(tempdir, 'dummy_extension')
@@ -268,7 +285,11 @@ def GeneratePrivateKey():
          PnaclDirs.OutputDir())
 
 
-def BuildArchCRX(version_quad, arch, unpacked_only, prev_key=None):
+def BuildArchCRX(version_quad,
+                 arch,
+                 lib_overrides,
+                 unpacked_only,
+                 prev_key=None):
   """ Build an architecture specific version for the chrome component
   install (an actual CRX, vs a zip file).
   """
@@ -277,17 +298,30 @@ def BuildArchCRX(version_quad, arch, unpacked_only, prev_key=None):
   StepBanner('BUILD ARCH CRX %s' % arch,
              'Packaging for arch %s in %s' % (arch, target_dir))
 
-  shutil.copytree(PnaclDirs.SandboxedCompilerDir(arch),
-                  target_dir)
+  # Copy llc and ld.
+  copytree_existing(PnaclDirs.SandboxedCompilerDir(arch),
+                    target_dir)
 
-  lib_modes = ['newlib', 'glibc']
-  for lib_mode in lib_modes:
+  # Copy newlib deps, and glibc deps.
+  # Put newlib at the top level, and glibc on a separate subdir
+  # for now, until all the native link line looks the same, or
+  # at least there are no conflicting overlaps.
+  # E.g., libgcc_eh, libgcc are still not quite the same and overlap.
+  for lib_mode in LIBMODES:
     # Skip ARM glibc for now (no binaries).
     if lib_mode == 'glibc' and arch == 'arm':
       continue
-    lib_dir = J(target_dir, lib_mode)
-    shutil.copytree(PnaclDirs.LibDir(arch, lib_mode),
-                    lib_dir)
+    if lib_mode == 'newlib':
+      lib_dir = target_dir
+    else:
+      lib_dir = J(target_dir, lib_mode)
+    copytree_existing(PnaclDirs.LibDir(arch, lib_mode), lib_dir)
+    if (arch, lib_mode) in lib_overrides:
+      # Also copy files from the list of overrides.
+      for override in lib_overrides[(arch, lib_mode)]:
+        print 'Copying override %s to %s' % (override, lib_dir)
+        shutil.copy2(override, lib_dir)
+
 
   # Skip the CRX generation if we are only building the unpacked version
   # for commandline testing.
@@ -310,8 +344,8 @@ def LayoutAllDir():
     # We carefully avoid copying those to the "all dir" since having
     # more than one manifest.json will confuse the CRX tools (e.g., you will
     # get a mysterious failure when uploading to the webstore).
-    shutil.copytree(arch_dir,
-                    J(target_dir, PnaclDirs.OutputArchBase(arch)))
+    copytree_existing(arch_dir,
+                      J(target_dir, PnaclDirs.OutputArchBase(arch)))
 
 
 def BuildCWSZip(version_quad):
@@ -343,19 +377,18 @@ def BuildUnpacked(version_quad):
   PnaclPackaging.GenerateManifest(J(target_dir, 'manifest.json'),
                                   version_quad,
                                   'all',
-                                  PnaclPackaging.WEBSTORE_KEY)
+                                  PnaclPackaging.WEBSTORE_PUBLIC_KEY)
 
 
-def BuildAll(version_quad, unpacked_only, prev_key=None):
+def BuildAll(version_quad, lib_overrides, unpacked_only, prev_key=None):
   """ Package the pnacl components 3 ways.
   1) Arch-specific CRXes that can be queried by Omaha.
   2) A zip containing all arch files for the Chrome Webstore.
   3) An unpacked extesion with all arch files for offline testing.
   """
-  Clean()
   StepBanner("BUILD_ALL", "Packaging for version: %s" % version_quad)
   for arch in ARCHES:
-    BuildArchCRX(version_quad, arch, unpacked_only, prev_key)
+    BuildArchCRX(version_quad, arch, lib_overrides, unpacked_only, prev_key)
   LayoutAllDir()
   if not unpacked_only:
     BuildCWSZip(version_quad)
@@ -367,20 +400,52 @@ def Main():
   parser = optparse.OptionParser(usage)
   # We may want to accept a target directory to dump it in the usual
   # output directory (e.g., scons-out).
+  parser.add_option('-c', '--clean', dest='clean',
+                    action='store_true', default=False,
+                    help='Clean out destination directory first.')
   parser.add_option('-u', '--unpacked_only', action='store_true',
                     dest='unpacked_only',
                     default=False,
                     help='Only generate the unpacked version')
+  parser.add_option('-d', '--dest', dest='dest',
+                    help='The destination root for laying out the extension')
   parser.add_option('-p', '--priv_key', dest='prev_priv_key',
                     help='Specify the old private key')
+  parser.add_option('-L', '--lib_override',
+                    dest='lib_overrides', action='append', default=[],
+                    help='Specify path to a fresher native library ' +
+                    'that overrides the tarball library with ' +
+                    '(arch:libmode:libdir) tuple.')
   parser.add_option('-g', '--generate_key',
                     action='store_true', dest='gen_key',
                     help='Generate a fresh private key, and exit.')
 
   (options, args) = parser.parse_args()
+
+  # Set destination directory before doing any cleaning, etc.
+  if options.dest:
+    PnaclDirs.SetOutputDir(options.dest)
+
+  if options.clean:
+    Clean()
+
   if options.gen_key:
     GeneratePrivateKey()
     return 0
+
+  lib_overrides = {}
+  for o in options.lib_overrides:
+    arch, libmode, override_lib = o.split(',')
+    if not IsValidArch(arch):
+      raise Exception('Unknown arch for -L: %s (from %s)' % (arch, o))
+    if not IsValidLibmode(libmode):
+      raise Exception('Unknown libmode for -L: %s (from %s)' % (libmode, o))
+    if not os.path.isfile(override_lib):
+      raise Exception('Override native lib not a file for -L: %s (from %s)' %
+                      (override_lib, o))
+    override_list = lib_overrides.get((arch, libmode), [])
+    override_list.append(override_lib)
+    lib_overrides[(arch, libmode)] = override_list
 
   if len(args) != 1:
     parser.print_help()
@@ -391,7 +456,10 @@ def Main():
     print 'Invalid version format: %s\n' % version_quad
     return 1
 
-  BuildAll(version_quad, options.unpacked_only, options.prev_priv_key)
+  BuildAll(version_quad,
+           lib_overrides,
+           options.unpacked_only,
+           options.prev_priv_key)
   return 0
 
 

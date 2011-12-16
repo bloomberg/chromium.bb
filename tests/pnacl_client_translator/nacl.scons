@@ -3,7 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import platform
 import re        # For StripArchFromLDCommand hack.
 import os.path   # For getting basenames.
 
@@ -77,12 +76,9 @@ def LayoutTranslatorBinariesOnServer():
                                        'libgcc.a',
                                        'libgcc_eh.a',
                                        'libcrt_platform.a']]
-
-    # This might grab a more stale version of the pnacl IRT shim
-    # from the toolchain tarball but it should have the stable
-    # interfaces used by this PPAPI hello world example.
+    # Also grab the PPAPI IRT shim for x86-64.
     if arch == 'x86-64':
-      toolchain_native_libs.append(toolchain_lib_dir + 'libpnacl_irt_shim.a')
+      toolchain_native_libs.append('${LIB_DIR}/libpnacl_irt_shim.a')
 
     toolchain_local_files = toolchain_native_libs + toolchain_binaries
     ReplicateAndMap(toolchain_local_files,
@@ -140,8 +136,11 @@ test_example_pexe = bitcode_env.ComponentProgram(
                 'gio',
                 ])
 
+# TODO(jvoung): remove LayoutTranslatorBinariesOnServer() once we start
+# looking up support files through the CRX extension instead.
 # Page independent support assets.
 (map_files_toolchain, replicates_toolchain) = LayoutTranslatorBinariesOnServer()
+
 
 # Assets for the page.
 (map_files_page, replicates_page) = LayoutPageAssetsOnServer(

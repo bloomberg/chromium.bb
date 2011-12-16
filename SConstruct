@@ -1408,6 +1408,15 @@ def GeneratedManifestNode(env, manifest):
   return result
 
 
+def GetPnaclExtensionNode(env):
+  """Get the scons node representing the pnacl support files.
+  """
+  # This is "built" by src/untrusted/pnacl_support_extension/nacl.scons.
+  return env.Dir('${STAGING_DIR}/pnacl_all')
+
+pre_base_env.AddMethod(GetPnaclExtensionNode)
+
+
 # Compares output_file and golden_file.
 # If they are different, prints the difference and returns 1.
 # Otherwise, returns 0.
@@ -1506,6 +1515,9 @@ def PPAPIBrowserTester(env,
     command.extend(['--file', dep_file])
   for extension in extensions:
     command.extend(['--extension', extension])
+  if env.Bit('bitcode'):
+    pnacl_extension = env.GetPnaclExtensionNode()
+    command.extend(['--extension', pnacl_extension])
   for dest_path, dep_file in map_files:
     command.extend(['--map_file', dest_path, dep_file])
   for file_ext, mime_type in mime_types:
@@ -3157,6 +3169,7 @@ nacl_env.Append(
     'src/untrusted/nacl/nacl.scons',
     'src/untrusted/nacl_ppapi_util/nacl.scons',
     'src/untrusted/pnacl_irt_shim/nacl.scons',
+    'src/untrusted/pnacl_support_extension/nacl.scons',
     'src/untrusted/ppapi/nacl.scons',
     'src/untrusted/valgrind/nacl.scons',
     ####  ALPHABETICALLY SORTED ####

@@ -300,8 +300,8 @@ class ChromeLauncher(BrowserLauncher):
                  % self.options.ppapi_plugin)
       cmd.append('--no-sandbox')
     if self.options.browser_extensions:
-      for extension in self.options.browser_extensions:
-        cmd.append('--load-extension=%s' % extension)
+      cmd.append('--load-extension=%s' %
+                 ','.join(self.options.browser_extensions))
       cmd.append('--enable-experimental-extension-apis')
     if self.options.tool == 'memcheck':
       cmd = ['src/third_party/valgrind/memcheck.sh',
