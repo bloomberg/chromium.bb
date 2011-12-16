@@ -14,6 +14,7 @@
 #include "base/win/windows_version.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/common/content_switches.h"
+#include "third_party/angle/include/EGL/egl.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
@@ -190,19 +191,23 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     int32 command_buffer_id,
     gfx::PluginWindowHandle handle) {
   scoped_refptr<gfx::GLSurface> surface;
-
   base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
 
   if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
-      gfx::g_EGL_ANGLE_query_surface_pointer &&
-      gfx::g_EGL_ANGLE_d3d_share_handle_client_buffer &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableImageTransportSurface)) {
-    surface = new PbufferImageTransportSurface(manager,
-                                               render_view_id,
-                                               renderer_id,
-                                               command_buffer_id);
-  } else {
+    const char* extensions = eglQueryString(eglGetDisplay(EGL_DEFAULT_DISPLAY),
+                                            EGL_EXTENSIONS);
+    if (strstr(extensions, "EGL_ANGLE_query_surface_pointer") &&
+        strstr(extensions, "EGL_ANGLE_surface_d3d_texture_2d_share_handle")) {
+      surface = new PbufferImageTransportSurface(manager,
+                                                 render_view_id,
+                                                 renderer_id,
+                                                 command_buffer_id);
+    }
+  }
+
+  if (!surface.get()) {
     surface = gfx::GLSurface::CreateViewGLSurface(false, handle);
     if (!surface.get())
       return NULL;
