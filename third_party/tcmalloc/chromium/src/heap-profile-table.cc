@@ -431,7 +431,10 @@ bool HeapProfileTable::WriteProfile(const char* file_name,
 void HeapProfileTable::CleanupOldProfiles(const char* prefix) {
   if (!FLAGS_cleanup_old_heap_profiles)
     return;
-  string pattern = string(prefix) + ".*" + kFileExt;
+  char buf[1000];
+  snprintf(buf, 1000,"%s.%05d.", prefix, getpid());
+  string pattern = string(buf) + ".*" + kFileExt;
+
 #if defined(HAVE_GLOB_H)
   glob_t g;
   const int r = glob(pattern.c_str(), GLOB_ERR, NULL, &g);
