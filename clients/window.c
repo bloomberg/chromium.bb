@@ -2232,6 +2232,17 @@ display_add_output(struct display *d, uint32_t id)
 	wl_output_add_listener(output->output, &output_listener, output);
 }
 
+static void
+output_destroy(struct output *output)
+{
+	if (output->destroy_handler)
+		(*output->destroy_handler)(output, output->user_data);
+
+	wl_output_destroy(output->output);
+	wl_list_remove(&output->link);
+	free(output);
+}
+
 void
 display_set_output_configure_handler(struct display *display,
 				     display_output_handler_t handler)
@@ -2583,9 +2594,21 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 	return d;
 }
 
+static void
+display_destroy_outputs(struct display *display)
+{
+	struct output *tmp;
+	struct output *output;
+
+	wl_list_for_each_safe(output, tmp, &display->output_list, link)
+		output_destroy(output);
+}
+
 void
 display_destroy(struct display *display)
 {
+	display_destroy_outputs(display);
+
 	fini_xkb(display);
 	fini_egl(display);
 
