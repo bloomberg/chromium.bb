@@ -23,6 +23,7 @@ namespace internal {
 DesktopBackgroundView::DesktopBackgroundView() {
   wallpaper_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_AURA_WALLPAPER);
+  wallpaper_.buildMipMap(false);
 }
 
 DesktopBackgroundView::~DesktopBackgroundView() {
@@ -32,7 +33,10 @@ DesktopBackgroundView::~DesktopBackgroundView() {
 // DesktopBackgroundView, views::View overrides:
 
 void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
-  canvas->TileImageInt(wallpaper_, 0, 0, width(), height());
+  canvas->DrawBitmapInt(wallpaper_,
+      0, 0, wallpaper_.width(), wallpaper_.height(),
+      0, 0, width(), height(),
+      true);
 }
 
 bool DesktopBackgroundView::OnMousePressed(const views::MouseEvent& event) {

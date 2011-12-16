@@ -19,6 +19,7 @@
 #include "ui/base/resource/data_pack.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
@@ -369,12 +370,17 @@ SkBitmap* ResourceBundle::LoadBitmap(DataHandle data_handle, int resource_id) {
     return NULL;
 
   SkBitmap bitmap;
-  if (!gfx::PNGCodec::Decode(memory->front(), memory->size(), &bitmap)) {
-    NOTREACHED() << "Unable to decode theme image resource " << resource_id;
-    return NULL;
-  }
+  if (gfx::PNGCodec::Decode(memory->front(), memory->size(), &bitmap))
+    return new SkBitmap(bitmap);
 
-  return new SkBitmap(bitmap);
+  // 99% of our assets are PNGs, however fallback to JPEG.
+  SkBitmap* allocated_bitmap =
+      gfx::JPEGCodec::Decode(memory->front(), memory->size());
+  if (allocated_bitmap)
+    return allocated_bitmap;
+
+  NOTREACHED() << "Unable to decode theme image resource " << resource_id;
+  return NULL;
 }
 
 gfx::Image* ResourceBundle::GetEmptyImage() {
