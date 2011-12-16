@@ -346,7 +346,7 @@ void FileSystemOperation::Remove(const GURL& path, bool recursive) {
 }
 
 void FileSystemOperation::Write(
-    scoped_refptr<net::URLRequestContext> url_request_context,
+    const net::URLRequestContext* url_request_context,
     const GURL& path,
     const GURL& blob_url,
     int64 offset) {

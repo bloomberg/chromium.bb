@@ -32,6 +32,7 @@
         'file_system_operation.h',
         'file_system_operation_context.cc',
         'file_system_operation_context.h',
+        'file_system_operation_interface.h',
         'file_system_origin_database.cc',
         'file_system_origin_database.h',
         'file_system_path_manager.cc',

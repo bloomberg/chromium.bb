@@ -19,6 +19,7 @@
 #include "base/process.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_operation_context.h"
+#include "webkit/fileapi/file_system_operation_interface.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -40,13 +41,8 @@ class FileSystemContext;
 class FileWriterDelegate;
 class FileSystemOperationTest;
 
-// This class is designed to serve one-time file system operation per instance.
-// Only one method(CreateFile, CreateDirectory, Copy, Move, DirectoryExists,
-// GetMetadata, ReadDirectory and Remove) may be called during the lifetime of
-// this object and it should be called no more than once.
-// This class is self-destructed, or get deleted via base::Owned() fater the
-// operation finishes and completion callback is called.
-class FileSystemOperation {
+// FileSystemOperation implementation for local file systems.
+class FileSystemOperation : public FileSystemOperationInterface {
  public:
   // |dispatcher| will be owned by this class.
   FileSystemOperation(FileSystemCallbackDispatcher* dispatcher,
@@ -54,35 +50,38 @@ class FileSystemOperation {
                       FileSystemContext* file_system_context);
   virtual ~FileSystemOperation();
 
-  void OpenFileSystem(const GURL& origin_url,
-                      fileapi::FileSystemType type,
-                      bool create);
-  void CreateFile(const GURL& path,
-                  bool exclusive);
-  void CreateDirectory(const GURL& path,
-                       bool exclusive,
-                       bool recursive);
-  void Copy(const GURL& src_path,
-            const GURL& dest_path);
-  void Move(const GURL& src_path,
-            const GURL& dest_path);
-  void DirectoryExists(const GURL& path);
-  void FileExists(const GURL& path);
-  void GetMetadata(const GURL& path);
-  void ReadDirectory(const GURL& path);
-  void Remove(const GURL& path, bool recursive);
-  void Write(scoped_refptr<net::URLRequestContext> url_request_context,
-             const GURL& path,
-             const GURL& blob_url,
-             int64 offset);
-  void Truncate(const GURL& path, int64 length);
-  void TouchFile(const GURL& path,
-                 const base::Time& last_access_time,
-                 const base::Time& last_modified_time);
-  void OpenFile(
+  // FileSystemOperation overrides.
+  virtual void OpenFileSystem(const GURL& origin_url,
+                              fileapi::FileSystemType type,
+                              bool create) OVERRIDE;
+  virtual void CreateFile(const GURL& path,
+                          bool exclusive) OVERRIDE;
+  virtual void CreateDirectory(const GURL& path,
+                               bool exclusive,
+                               bool recursive) OVERRIDE;
+  virtual void Copy(const GURL& src_path,
+                    const GURL& dest_path) OVERRIDE;
+  virtual void Move(const GURL& src_path,
+                    const GURL& dest_path) OVERRIDE;
+  virtual void DirectoryExists(const GURL& path) OVERRIDE;
+  virtual void FileExists(const GURL& path) OVERRIDE;
+  virtual void GetMetadata(const GURL& path) OVERRIDE;
+  virtual void ReadDirectory(const GURL& path) OVERRIDE;
+  virtual void Remove(const GURL& path, bool recursive) OVERRIDE;
+  virtual void Write(const net::URLRequestContext* url_request_context,
+                     const GURL& path,
+                     const GURL& blob_url,
+                     int64 offset) OVERRIDE;
+  virtual void Truncate(const GURL& path, int64 length) OVERRIDE;
+  virtual void TouchFile(const GURL& path,
+                         const base::Time& last_access_time,
+                         const base::Time& last_modified_time) OVERRIDE;
+  virtual void OpenFile(
       const GURL& path,
       int file_flags,
-      base::ProcessHandle peer_handle);
+      base::ProcessHandle peer_handle) OVERRIDE;
+
+  // Synchronously gets the platform path for the given |path|.
   void SyncGetPlatformPath(const GURL& path, FilePath* platform_path);
 
   // Try to cancel the current operation [we support cancelling write or
