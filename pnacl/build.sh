@@ -243,7 +243,7 @@ fi
 readonly UPSTREAM_REV=${UPSTREAM_REV:-f01c8acb4ea4}
 
 readonly NEWLIB_REV=c6358617f3fd
-readonly BINUTILS_REV=fd474ae59e3d
+readonly BINUTILS_REV=ff96203dde3b
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 
 readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-146722}
