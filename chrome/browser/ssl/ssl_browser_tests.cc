@@ -46,6 +46,7 @@ class SSLUITest : public InProcessBrowserTest {
 
   void CheckAuthenticatedState(TabContents* tab,
                                bool displayed_insecure_content) {
+    ASSERT_FALSE(tab->is_crashed());
     NavigationEntry* entry = tab->controller().GetActiveEntry();
     ASSERT_TRUE(entry);
     EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->page_type());
@@ -58,6 +59,7 @@ class SSLUITest : public InProcessBrowserTest {
   }
 
   void CheckUnauthenticatedState(TabContents* tab) {
+    ASSERT_FALSE(tab->is_crashed());
     NavigationEntry* entry = tab->controller().GetActiveEntry();
     ASSERT_TRUE(entry);
     EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->page_type());
@@ -72,6 +74,7 @@ class SSLUITest : public InProcessBrowserTest {
                                       net::CertStatus error,
                                       bool ran_insecure_content,
                                       bool interstitial) {
+    ASSERT_FALSE(tab->is_crashed());
     NavigationEntry* entry = tab->controller().GetActiveEntry();
     ASSERT_TRUE(entry);
     EXPECT_EQ(interstitial ?
@@ -1256,10 +1259,10 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestUnsafeContentsInWorker) {
   CheckAuthenticationBrokenState(tab, 0, true, false);
 }
 
-// Test that when the browser blocks displaying insecure content, the
+// Test that when the browser blocks displaying insecure content (images), the
 // indicator shows a secure page, because the blocking made the otherwise
 // unsafe page safe (the notification of this state is handled by other means).
-IN_PROC_BROWSER_TEST_F(SSLUITestBlock, TestBlockDisplayingInsecureContent) {
+IN_PROC_BROWSER_TEST_F(SSLUITestBlock, TestBlockDisplayingInsecureImage) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
@@ -1274,6 +1277,26 @@ IN_PROC_BROWSER_TEST_F(SSLUITestBlock, TestBlockDisplayingInsecureContent) {
 
   CheckAuthenticatedState(browser()->GetSelectedTabContents(), false);
 }
+
+// Test that when the browser blocks displaying insecure content (iframes), the
+// indicator shows a secure page, because the blocking made the otherwise
+// unsafe page safe (the notification of this state is handled by other means)
+IN_PROC_BROWSER_TEST_F(SSLUITestBlock, TestBlockDisplayingInsecureIframe) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(https_server_.Start());
+
+  std::string replacement_path;
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
+      "files/ssl/page_displays_insecure_iframe.html",
+      test_server()->host_port_pair(),
+      &replacement_path));
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL(replacement_path));
+
+  CheckAuthenticatedState(browser()->GetSelectedTabContents(), false);
+}
+
 
 // Test that when the browser blocks running insecure content, the
 // indicator shows a secure page, because the blocking made the otherwise
