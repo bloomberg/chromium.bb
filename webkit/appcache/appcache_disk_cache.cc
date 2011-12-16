@@ -49,7 +49,7 @@ class AppCacheDiskCache::EntryImpl : public Entry {
 };
 
 // Separate object to hold state for each Create, Delete, or Doom call
-// while the call is in-flight and to produce an EntryImpl upon completion.
+// while the call is inflight and to produce an EntryImpl upon completion.
 class AppCacheDiskCache::ActiveCall {
  public:
   explicit ActiveCall(AppCacheDiskCache* owner)
@@ -72,8 +72,7 @@ class AppCacheDiskCache::ActiveCall {
 
   int DoomEntry(int64 key, net::OldCompletionCallback* callback) {
     int rv = owner_->disk_cache()->DoomEntry(
-        base::Int64ToString(key),
-        base::Bind(&ActiveCall::OnAsyncCompletion, base::Unretained(this)));
+        base::Int64ToString(key), &async_completion_);
     return HandleImmediateReturnValue(rv, NULL, callback);
   }
 
