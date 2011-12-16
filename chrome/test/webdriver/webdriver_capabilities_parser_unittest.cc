@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
 #include "base/values.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/zip.h"
 #include "chrome/test/webdriver/webdriver_capabilities_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -127,13 +128,100 @@ TEST(CapabilitiesParser, UnknownCap) {
   DictionaryValue dict;
   dict.SetString("chromeOptions.nosuchcap", "none");
   CapabilitiesParser parser(&dict, FilePath(), &caps);
-  ASSERT_FALSE(parser.Parse());
+  ASSERT_TRUE(parser.Parse());
 }
 
 TEST(CapabilitiesParser, BadInput) {
   Capabilities caps;
   DictionaryValue dict;
   dict.SetString("chromeOptions.verbose", "false");
+  CapabilitiesParser parser(&dict, FilePath(), &caps);
+  ASSERT_TRUE(parser.Parse());
+}
+
+TEST(CapabilitiesParser, ProxyCap) {
+  Capabilities caps;
+  DictionaryValue dict;
+  DictionaryValue* options = new DictionaryValue();
+  dict.Set("proxy", options);
+
+  const char kPacUrl[] = "test.wpad";
+  options->SetString("proxyType", "PAC");
+  options->SetString("proxyAutoconfigUrl", kPacUrl);
+
+  CapabilitiesParser parser(&dict, FilePath(), &caps);
+  ASSERT_FALSE(parser.Parse());
+  EXPECT_STREQ(kPacUrl,
+      caps.command.GetSwitchValueASCII(switches::kProxyPacUrl).c_str());
+}
+
+TEST(CapabilitiesParser, ProxyTypeCapIncompatiblePac) {
+  Capabilities caps;
+  DictionaryValue dict;
+  DictionaryValue* options = new DictionaryValue();
+  dict.Set("proxy", options);
+
+  options->SetString("proxyType", "pac");
+  options->SetString("httpProxy", "http://localhost:8001");
+
+  CapabilitiesParser parser(&dict, FilePath(), &caps);
+  ASSERT_TRUE(parser.Parse());
+}
+
+TEST(CapabilitiesParser, ProxyTypeCapIncompatibleManual) {
+  Capabilities caps;
+  DictionaryValue dict;
+  DictionaryValue* options = new DictionaryValue();
+  dict.Set("proxy", options);
+
+  options->SetString("proxyType", "manual");
+
+  CapabilitiesParser parser(&dict, FilePath(), &caps);
+  ASSERT_TRUE(parser.Parse());
+}
+
+TEST(CapabilitiesParser, ProxyTypeManualCap) {
+  const char kProxyServers[] = "ftp=localhost:9001;http=localhost:8001";
+  Capabilities caps;
+  DictionaryValue dict;
+  DictionaryValue* options = new DictionaryValue();
+  dict.Set("proxy", options);
+
+  options->SetString("proxyType", "manual");
+  options->SetString("httpProxy", "localhost:8001");
+  options->SetString("ftpProxy", "localhost:9001");
+
+  CapabilitiesParser parser(&dict, FilePath(), &caps);
+  ASSERT_FALSE(parser.Parse());
+  EXPECT_STREQ(kProxyServers,
+      caps.command.GetSwitchValueASCII(switches::kProxyServer).c_str());
+}
+
+TEST(CapabilitiesParser, ProxyBypassListCap) {
+  const char kBypassList[] = "google.com, youtube.com";
+  Capabilities caps;
+  DictionaryValue dict;
+  DictionaryValue* proxy_options = new DictionaryValue();
+  dict.Set("proxy", proxy_options);
+
+  proxy_options->SetString("proxyType", "manual");
+  proxy_options->SetString("noProxy", kBypassList);
+
+  CapabilitiesParser parser(&dict, FilePath(), &caps);
+  ASSERT_FALSE(parser.Parse());
+  EXPECT_STREQ(kBypassList,
+      caps.command.GetSwitchValueASCII(switches::kProxyBypassList).c_str());
+}
+
+TEST(CapabilitiesParser, UnknownProxyCap) {
+  Capabilities caps;
+  DictionaryValue dict;
+  DictionaryValue* options = new DictionaryValue();
+  dict.Set("proxy", options);
+
+  options->SetString("proxyType", "DIRECT");
+  options->SetString("badProxyCap", "error");
+
   CapabilitiesParser parser(&dict, FilePath(), &caps);
   ASSERT_TRUE(parser.Parse());
 }

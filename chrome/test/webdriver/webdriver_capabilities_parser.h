@@ -89,7 +89,12 @@ class CapabilitiesParser {
   Error* ParseExtensions(const base::Value* option);
   Error* ParseLoadAsync(const base::Value* option);
   Error* ParseNativeEvents(const base::Value* option);
+  Error* ParseNoProxy(const base::Value* option);
   Error* ParseProfile(const base::Value* option);
+  Error* ParseProxyAutoDetect(const base::DictionaryValue* options);
+  Error* ParseProxyAutoconfigUrl(const base::DictionaryValue* options);
+  Error* ParseProxyCapabilities(const base::DictionaryValue* options);
+  Error* ParseProxyServers(const base::DictionaryValue* options);
   Error* ParseNoWebsiteTestingDefaults(const base::Value* option);
   Error* ParseVerbose(const base::Value* option);
   // Decodes the given base64-encoded string, optionally unzips it, and
