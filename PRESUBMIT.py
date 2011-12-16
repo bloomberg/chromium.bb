@@ -341,5 +341,5 @@ def GetPreferredTrySlaves(project, change):
   preferred = ['win_rel', 'linux_rel', 'mac_rel']
   aura_re = '_aura[^/]*[.][^/]*'
   if any(re.search(aura_re, f.LocalPath()) for f in change.AffectedFiles()):
-    preferred.append('linux_aura:compile')
+    preferred.append('linux_chromeos_aura:compile')
   return preferred
