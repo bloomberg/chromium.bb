@@ -921,13 +921,12 @@
 {
    bug_70327
    Heapcheck:Leak
-   fun:g_malloc
+   ...
    fun:gfx::CanvasSkia::SizeStringInt
-   fun:gfx::PlatformFontGtk::GetStringWidth
+   fun:gfx::PlatformFont*::GetStringWidth
    fun:gfx::Font::GetStringWidth
-   fun:ui::ElideUrl
-   fun:ui::::RunTest
-   fun:ui::TextEliderTest_TestGeneralEliding_Test::TestBody
+   ...
+   fun:ui::TextEliderTest_*_Test::TestBody
 }
 {
    bug_70782
@@ -1751,4 +1750,10 @@
    fun:browser_sync::DataTypeManagerImpl::FinishStop
    fun:browser_sync::DataTypeManagerImpl::Stop
    fun:ProfileSyncService::Shutdown
+}
+{
+   bug_107841
+   Heapcheck:Leak
+   ...
+   fun:net::X509Certificate::GetPublicKeyInfo
 }
