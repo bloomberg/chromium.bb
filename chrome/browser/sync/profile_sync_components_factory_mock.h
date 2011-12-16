@@ -24,8 +24,8 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
       browser_sync::ChangeProcessor* change_processor);
   virtual ~ProfileSyncComponentsFactoryMock();
 
-  MOCK_METHOD1(CreateProfileSyncService,
-               ProfileSyncService*(const std::string&));
+  MOCK_METHOD0(CreateProfileSyncService,
+               ProfileSyncService*());
   MOCK_METHOD1(RegisterDataTypes, void(ProfileSyncService*));
   MOCK_METHOD2(CreateDataTypeManager,
                browser_sync::DataTypeManager*(

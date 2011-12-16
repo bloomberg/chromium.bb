@@ -1400,27 +1400,21 @@ ProfileSyncService* ProfileImpl::GetProfileSyncService() {
     return NULL;
   }
 #endif
-  return GetProfileSyncService("");
-}
-
-ProfileSyncService* ProfileImpl::GetProfileSyncService(
-    const std::string& cros_user) {
 
   if (!ProfileSyncService::IsSyncEnabled())
     return NULL;
   if (!profile_sync_service_created_) {
     profile_sync_service_created_ = true;
-    InitSyncService(cros_user);
+    InitSyncService();
   }
   return sync_service_.get();
 }
 
-void ProfileImpl::InitSyncService(const std::string& cros_user) {
+void ProfileImpl::InitSyncService() {
   profile_sync_factory_.reset(
       new ProfileSyncComponentsFactoryImpl(this,
                                            CommandLine::ForCurrentProcess()));
-  sync_service_.reset(
-      profile_sync_factory_->CreateProfileSyncService(cros_user));
+  sync_service_.reset(profile_sync_factory_->CreateProfileSyncService());
   profile_sync_factory_->RegisterDataTypes(sync_service_.get());
   sync_service_->Initialize();
 

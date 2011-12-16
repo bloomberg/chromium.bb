@@ -68,8 +68,9 @@ void SyncSetupWizard::Step(State advance_state) {
       return;
     // No flow is in progress, and we have never escorted the user all the
     // way through the wizard flow.
+    // TODO(atwilson): Make sure this works on all autostart_enabled platforms.
     State end_state = DONE;
-    if (!service_->cros_user().empty() &&
+    if (service_->auto_start_enabled() &&
         !service_->profile()->GetPrefs()->GetBoolean(
             prefs::kSyncSuppressStart)) {
       end_state = GAIA_SUCCESS;

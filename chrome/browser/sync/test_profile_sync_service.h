@@ -65,9 +65,12 @@ class TestProfileSyncService : public ProfileSyncService {
  public:
   // |callback| can be used to populate nodes before the OnBackendInitialized
   // callback fires.
+  // TODO(tim): Remove |synchronous_backend_initialization|, and add ability to
+  // inject TokenService alongside SigninManager.
   TestProfileSyncService(ProfileSyncComponentsFactory* factory,
                          Profile* profile,
-                         const std::string& test_user,
+                         SigninManager* signin,
+                         ProfileSyncService::StartBehavior behavior,
                          bool synchronous_backend_initialization,
                          const base::Closure& callback);
 

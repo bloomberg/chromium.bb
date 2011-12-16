@@ -27,23 +27,6 @@ using syncable::ModelType;
 using syncable::ScopedDirLookup;
 using sync_api::UserShare;
 
-namespace {
-
-class FakeSigninManager : public SigninManager {
- public:
-  FakeSigninManager() {}
-  virtual ~FakeSigninManager() {}
-
-  virtual void StartSignIn(const std::string& username,
-                           const std::string& password,
-                           const std::string& login_token,
-                           const std::string& login_captcha) OVERRIDE {
-    SetAuthenticatedUsername(username);
-  }
-};
-
-}  // namespace
-
 namespace browser_sync {
 
 SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
@@ -141,10 +124,14 @@ browser_sync::SyncBackendHostForProfileSyncTest*
 TestProfileSyncService::TestProfileSyncService(
     ProfileSyncComponentsFactory* factory,
     Profile* profile,
-    const std::string& test_user,
+    SigninManager* signin,
+    ProfileSyncService::StartBehavior behavior,
     bool synchronous_backend_initialization,
     const base::Closure& callback)
-    : ProfileSyncService(factory, profile, new FakeSigninManager(), test_user),
+    : ProfileSyncService(factory,
+                         profile,
+                         signin,
+                         behavior),
       synchronous_backend_initialization_(
           synchronous_backend_initialization),
       synchronous_sync_configuration_(false),
@@ -152,7 +139,6 @@ TestProfileSyncService::TestProfileSyncService(
       set_initial_sync_ended_on_init_(true),
       fail_initial_download_(false) {
   SetSyncSetupCompleted();
-  signin_->SetAuthenticatedUsername(test_user);
 }
 
 TestProfileSyncService::~TestProfileSyncService() {}

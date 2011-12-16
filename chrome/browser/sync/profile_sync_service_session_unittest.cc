@@ -32,6 +32,7 @@
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
+#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -223,8 +224,15 @@ class ProfileSyncServiceSessionTest
                         bool will_fail_association) {
     if (sync_service_.get())
       return false;
+    SigninManager* signin = new SigninManager();
+    signin->SetAuthenticatedUsername("test_user");
     sync_service_.reset(new TestProfileSyncService(
-        &factory_, profile(), "test user", false, callback));
+        &factory_,
+        profile(),
+        signin,
+        ProfileSyncService::AUTO_START,
+        false,
+        callback));
     SessionServiceFactory::SetForTestProfile(profile(), helper_.service());
 
     // Register the session data type.

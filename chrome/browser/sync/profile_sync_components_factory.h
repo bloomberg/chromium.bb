@@ -60,8 +60,7 @@ class ProfileSyncComponentsFactory {
   // caller.
   // TODO(tim): Bug 93922. Remove this method in favor of a
   // ProfileSyncServiceFactory singleton.
-  virtual ProfileSyncService* CreateProfileSyncService(
-      const std::string& cros_user) = 0;
+  virtual ProfileSyncService* CreateProfileSyncService() = 0;
 
   // Creates and registers enabled datatypes with the provided
   // ProfileSyncService.

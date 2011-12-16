@@ -284,8 +284,6 @@ class TestingProfile : public Profile {
   // Creates and initializes a profile sync service if the tests require one.
   virtual TokenService* GetTokenService() OVERRIDE;
   virtual ProfileSyncService* GetProfileSyncService() OVERRIDE;
-  virtual ProfileSyncService* GetProfileSyncService(
-      const std::string& cros_notes) OVERRIDE;
   virtual ChromeBlobStorageContext* GetBlobStorageContext() OVERRIDE;
   virtual ExtensionInfoMap* GetExtensionInfoMap() OVERRIDE;
   virtual PromoCounter* GetInstantPromoCounter() OVERRIDE;

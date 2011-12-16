@@ -29,6 +29,7 @@
 #include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
+#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -119,8 +120,15 @@ class ProfileSyncServicePreferenceTest
     if (service_.get())
       return false;
 
+    SigninManager* signin = new SigninManager();
+    signin->SetAuthenticatedUsername("test");
     service_.reset(new TestProfileSyncService(
-        &factory_, profile_.get(), "test", false, callback));
+        &factory_,
+        profile_.get(),
+        signin,
+        ProfileSyncService::AUTO_START,
+        false,
+        callback));
     pref_sync_service_ = reinterpret_cast<PrefModelAssociator*>(
         prefs_->GetSyncableService());
     if (!pref_sync_service_)

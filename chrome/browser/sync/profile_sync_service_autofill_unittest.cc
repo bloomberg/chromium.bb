@@ -40,6 +40,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
+#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -390,8 +391,15 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
                         bool will_fail_association,
                         syncable::ModelType type) {
     AbstractAutofillFactory* factory = GetFactory(type);
-    service_.reset(new TestProfileSyncService(
-        &factory_, &profile_, "test_user", false, callback));
+    SigninManager* signin = new SigninManager();
+    signin->SetAuthenticatedUsername("test_user");
+    service_.reset(
+        new TestProfileSyncService(&factory_,
+                                   &profile_,
+                                   signin,
+                                   ProfileSyncService::AUTO_START,
+                                   false,
+                                   callback));
     EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
         Return(service_.get()));
     DataTypeController* data_type_controller =

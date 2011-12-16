@@ -12,7 +12,7 @@
 #include "chrome/browser/sync/glue/data_type_manager_mock.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
-#include "chrome/browser/sync/signin_manager.h"
+#include "chrome/browser/sync/signin_manager_fake.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
@@ -66,8 +66,12 @@ class ProfileSyncServiceStartupTest : public testing::Test {
  protected:
   // Overridden below by ProfileSyncServiceStartupCrosTest.
   virtual void CreateSyncService() {
-    service_.reset(new TestProfileSyncService(
-        &factory_, profile_.get(), "", true, base::Closure()));
+    service_.reset(new TestProfileSyncService(&factory_,
+                                              profile_.get(),
+                                              new FakeSigninManager(),
+                                              ProfileSyncService::MANUAL_START,
+                                              true,
+                                              base::Closure()));
   }
 
   DataTypeManagerMock* SetUpDataTypeManager() {
@@ -89,8 +93,14 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
  protected:
   virtual void CreateSyncService() {
-    service_.reset(new TestProfileSyncService(
-        &factory_, profile_.get(), "test_user", true, base::Closure()));
+    SigninManager* signin = new SigninManager();
+    signin->SetAuthenticatedUsername("test_user");
+    service_.reset(new TestProfileSyncService(&factory_,
+                                              profile_.get(),
+                                              signin,
+                                              ProfileSyncService::AUTO_START,
+                                              true,
+                                              base::Closure()));
   }
 };
 

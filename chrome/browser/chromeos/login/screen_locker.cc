@@ -32,6 +32,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -279,7 +280,11 @@ void ScreenLocker::OnLoginSuccess(
 
   Profile* profile = ProfileManager::GetDefaultProfile();
   if (profile) {
-    ProfileSyncService* service = profile->GetProfileSyncService(username);
+    // TODO(tim): When do we get here? Does this get called if
+    // LoginUtils::StartSync has already happened (and presumably the username
+    // is already set)?
+    ProfileSyncService* service = profile->GetProfileSyncService();
+    service->signin()->SetAuthenticatedUsername(username);
     if (service && !service->HasSyncSetupCompleted()) {
       // If sync has failed somehow, try setting the sync passphrase here.
       service->SetPassphrase(password, false);

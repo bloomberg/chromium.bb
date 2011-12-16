@@ -126,10 +126,8 @@ class ProfileImpl : public Profile,
   virtual FilePath last_selected_directory() OVERRIDE;
   virtual void set_last_selected_directory(const FilePath& path) OVERRIDE;
   virtual ProfileSyncService* GetProfileSyncService() OVERRIDE;
-  virtual ProfileSyncService* GetProfileSyncService(
-      const std::string& cros_user) OVERRIDE;
   virtual TokenService* GetTokenService() OVERRIDE;
-  void InitSyncService(const std::string& cros_user);
+  void InitSyncService();
   virtual ExtensionInfoMap* GetExtensionInfoMap() OVERRIDE;
   virtual PromoCounter* GetInstantPromoCounter() OVERRIDE;
   virtual ChromeURLDataManager* GetChromeURLDataManager() OVERRIDE;
