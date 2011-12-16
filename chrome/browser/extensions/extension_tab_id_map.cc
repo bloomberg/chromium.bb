@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
+#include "chrome/browser/tab_contents/retargeting_details.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -48,7 +50,7 @@ ExtensionTabIdMap::TabObserver::TabObserver() {
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_TAB_PARENTED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, content::NOTIFICATION_RETARGETING,
+  registrar_.Add(this, chrome::NOTIFICATION_RETARGETING,
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
@@ -93,9 +95,9 @@ void ExtensionTabIdMap::TabObserver::Observe(
               tab->restore_tab_helper()->window_id().id()));
       break;
     }
-    case content::NOTIFICATION_RETARGETING: {
-      content::RetargetingDetails* retargeting_details =
-          content::Details<content::RetargetingDetails>(details).ptr();
+    case chrome::NOTIFICATION_RETARGETING: {
+      RetargetingDetails* retargeting_details =
+          content::Details<RetargetingDetails>(details).ptr();
       TabContents* contents = retargeting_details->target_tab_contents;
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(contents);

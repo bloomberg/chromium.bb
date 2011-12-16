@@ -76,6 +76,12 @@ enum NotificationType {
   // for the shown dialog.
   NOTIFICATION_HTML_DIALOG_SHOWN,
 
+  // A new tab is created from an existing tab to serve as a target of a
+  // navigation that is about to happen. The source will be a Source<Profile>
+  // corresponding to the profile in which the new tab will live.  Details in
+  // the form of a RetargetingDetails object are provided.
+  NOTIFICATION_RETARGETING,
+
   // Application-modal dialogs -----------------------------------------------
 
   // Sent after an application-modal dialog has been shown. The source

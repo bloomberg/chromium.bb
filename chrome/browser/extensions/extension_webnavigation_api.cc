@@ -15,7 +15,9 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_webnavigation_api_constants.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/retargeting_details.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -171,6 +173,13 @@ void DispatchOnCreatedNavigationTarget(
     bool source_frame_is_main_frame,
     TabContents* target_tab_contents,
     const GURL& target_url) {
+  // Check that the tab is already inserted into a tab strip model. This code
+  // path is exercised by ExtensionApiTest.WebNavigationRequestOpenTab.
+  DCHECK(ExtensionTabUtil::GetTabById(
+      ExtensionTabUtil::GetTabId(target_tab_contents),
+      Profile::FromBrowserContext(target_tab_contents->browser_context()),
+      false, NULL, NULL, NULL, NULL));
+
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger(keys::kSourceTabIdKey,
@@ -363,8 +372,8 @@ ExtensionWebNavigationEventRouter::~ExtensionWebNavigationEventRouter() {}
 void ExtensionWebNavigationEventRouter::Init() {
   if (registrar_.IsEmpty()) {
     registrar_.Add(this,
-                   content::NOTIFICATION_RETARGETING,
-                   content::Source<content::BrowserContext>(profile_));
+                   chrome::NOTIFICATION_RETARGETING,
+                   content::Source<Profile>(profile_));
     registrar_.Add(this,
                    content::NOTIFICATION_TAB_ADDED,
                    content::NotificationService::AllSources());
@@ -379,9 +388,9 @@ void ExtensionWebNavigationEventRouter::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_RETARGETING:
+    case chrome::NOTIFICATION_RETARGETING:
       Retargeting(
-          content::Details<const content::RetargetingDetails>(details).ptr());
+          content::Details<const RetargetingDetails>(details).ptr());
       break;
 
     case content::NOTIFICATION_TAB_ADDED:
@@ -398,7 +407,7 @@ void ExtensionWebNavigationEventRouter::Observe(
 }
 
 void ExtensionWebNavigationEventRouter::Retargeting(
-    const content::RetargetingDetails* details) {
+    const RetargetingDetails* details) {
   if (details->source_frame_id == 0)
     return;
   ExtensionWebNavigationTabObserver* tab_observer =
@@ -414,11 +423,13 @@ void ExtensionWebNavigationEventRouter::Retargeting(
   if (!frame_navigation_state.CanSendEvents(details->source_frame_id))
     return;
 
-  // If the TabContents was created as a response to an IPC from a renderer, it
-  // doesn't yet have a wrapper, and we need to delay the extension event until
-  // the TabContents is fully initialized.
-  if (TabContentsWrapper::GetCurrentWrapperForContents(
-      details->target_tab_contents) == NULL) {
+  // If the TabContents was created as a response to an IPC from a renderer
+  // (and therefore doesn't yet have a wrapper), or if it isn't yet inserted
+  // into a tab strip, we need to delay the extension event until the
+  // TabContents is fully initialized.
+  if ((TabContentsWrapper::GetCurrentWrapperForContents(
+       details->target_tab_contents) == NULL) ||
+      details->not_yet_in_tabstrip) {
     pending_tab_contents_[details->target_tab_contents] =
         PendingTabContents(
             details->source_tab_contents,

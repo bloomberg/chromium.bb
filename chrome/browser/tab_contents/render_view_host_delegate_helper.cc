@@ -21,6 +21,7 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/background_contents.h"
+#include "chrome/browser/tab_contents/retargeting_details.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_view_type.h"
@@ -271,16 +272,17 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowFromTabContents(
     if (tab_contents->delegate())
       tab_contents->delegate()->TabContentsCreated(new_contents);
 
-    content::RetargetingDetails details;
+    RetargetingDetails details;
     details.source_tab_contents = tab_contents;
     details.source_frame_id = params.opener_frame_id;
     details.target_url = params.target_url;
     details.target_tab_contents = new_contents;
+    details.not_yet_in_tabstrip = true;
     content::NotificationService::current()->Notify(
-        content::NOTIFICATION_RETARGETING,
-        content::Source<content::BrowserContext>(
-            tab_contents->browser_context()),
-        content::Details<content::RetargetingDetails>(&details));
+        chrome::NOTIFICATION_RETARGETING,
+        content::Source<Profile>(
+            Profile::FromBrowserContext(tab_contents->browser_context())),
+        content::Details<RetargetingDetails>(&details));
   } else {
     content::NotificationService::current()->Notify(
         content::NOTIFICATION_CREATING_NEW_WINDOW_CANCELLED,

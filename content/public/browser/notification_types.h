@@ -120,13 +120,6 @@ enum NotificationType {
   // are provided.
   NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
 
-  // A new tab is created from an existing tab to serve as a target of a
-  // navigation that is about to happen. The source will be a
-  // Source<BrowserContext> corresponding to the browser context in which the
-  // new tab will live. Details in the form of a RetargetingDetails object are
-  // provided.
-  NOTIFICATION_RETARGETING,
-
   // A new window was requested but was not created. The source will be a
   // Source<TabContents> corresponding to the tab the request originated from.
   // Details are the ViewHostMsg_CreateWindow_Params object that were used in

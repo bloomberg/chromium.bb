@@ -40,6 +40,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
+#include "chrome/browser/tab_contents/retargeting_details.h"
 #include "chrome/browser/tab_contents/spellchecker_submenu_observer.h"
 #include "chrome/browser/tab_contents/spelling_menu_observer.h"
 #include "chrome/browser/translate/translate_manager.h"
@@ -52,6 +53,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
@@ -1830,16 +1832,17 @@ void RenderViewContextMenu::OpenURL(
       transition, false));
 
   if (new_contents) {
-    content::RetargetingDetails details;
+    RetargetingDetails details;
     details.source_tab_contents = source_tab_contents_;
     details.source_frame_id = frame_id;
     details.target_url = url;
     details.target_tab_contents = new_contents;
+    details.not_yet_in_tabstrip = false;
     content::NotificationService::current()->Notify(
-        content::NOTIFICATION_RETARGETING,
-        content::Source<content::BrowserContext>(
-            source_tab_contents_->browser_context()),
-        content::Details<content::RetargetingDetails>(&details));
+        chrome::NOTIFICATION_RETARGETING,
+        content::Source<Profile>(Profile::FromBrowserContext(
+            source_tab_contents_->browser_context())),
+        content::Details<RetargetingDetails>(&details));
   }
 }
 

@@ -20,9 +20,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
-namespace content {
 struct RetargetingDetails;
-}
 class TabContents;
 
 // Tracks the navigation state of all frames in a given tab currently known to
@@ -207,7 +205,7 @@ class ExtensionWebNavigationEventRouter : public content::NotificationObserver {
   // Handler for the NOTIFICATION_RETARGETING event. The method takes the
   // details of such an event and stores them for the later
   // NOTIFICATION_TAB_ADDED event.
-  void Retargeting(const content::RetargetingDetails* details);
+  void Retargeting(const RetargetingDetails* details);
 
   // Handler for the NOTIFICATION_TAB_ADDED event. The method takes the details
   // of such an event and creates a JSON formated extension event from it.

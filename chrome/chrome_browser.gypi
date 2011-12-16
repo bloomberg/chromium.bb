@@ -2370,6 +2370,7 @@
         'browser/tab_contents/render_view_context_menu_observer.h',
         'browser/tab_contents/render_view_host_delegate_helper.cc',
         'browser/tab_contents/render_view_host_delegate_helper.h',
+        'browser/tab_contents/retargeting_details.h',
         'browser/tab_contents/tab_contents_ssl_helper.cc',
         'browser/tab_contents/tab_contents_ssl_helper.h',
         'browser/tab_contents/tab_contents_view_gtk.cc',
