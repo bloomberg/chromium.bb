@@ -405,7 +405,8 @@ void BackgroundModeManager::OnProfileAdded(const string16& profile_name,
   }
 }
 
-void BackgroundModeManager::OnProfileRemoved(const string16& profile_name) {
+void BackgroundModeManager::OnProfileWillBeRemoved(
+    const string16& profile_name) {
   // Remove the profile from our map of profiles.
   BackgroundModeInfoMap::iterator it =
       GetBackgroundModeIterator(profile_name);
@@ -414,6 +415,9 @@ void BackgroundModeManager::OnProfileRemoved(const string16& profile_name) {
     background_mode_data_.erase(it);
     UpdateStatusTrayIconContextMenu();
   }
+}
+
+void BackgroundModeManager::OnProfileWasRemoved(const string16& profile_name) {
 }
 
 void BackgroundModeManager::OnProfileNameChanged(

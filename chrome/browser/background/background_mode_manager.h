@@ -167,7 +167,8 @@ class BackgroundModeManager
                               const string16& profile_base_dir,
                               const FilePath& profile_path,
                               const gfx::Image* avatar_image) OVERRIDE;
-  virtual void OnProfileRemoved(const string16& profile_name) OVERRIDE;
+  virtual void OnProfileWillBeRemoved(const string16& profile_name) OVERRIDE;
+  virtual void OnProfileWasRemoved(const string16& profile_name) OVERRIDE;
   virtual void OnProfileNameChanged(const string16& old_profile_name,
                                     const string16& new_profile_name) OVERRIDE;
   virtual void OnProfileAvatarChanged(const string16& profile_name,

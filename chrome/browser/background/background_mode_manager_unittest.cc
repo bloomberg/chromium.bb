@@ -284,7 +284,7 @@ TEST_F(BackgroundModeManagerTest, ProfileInfoCacheObserver) {
   EXPECT_EQ(UTF8ToUTF16("p2new"),
             manager.GetBackgroundModeData(profile2)->name());
 
-  manager.OnProfileRemoved(UTF8ToUTF16("p2new"));
+  manager.OnProfileWillBeRemoved(UTF8ToUTF16("p2new"));
   EXPECT_EQ(1, manager.NumberOfBackgroundModeData());
 
   // Check that the background mode data we think is in the map actually is.

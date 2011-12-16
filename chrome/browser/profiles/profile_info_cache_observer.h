@@ -21,7 +21,9 @@ class ProfileInfoCacheObserver {
       const string16& profile_base_dir,
       const FilePath& profile_path,
       const gfx::Image* avatar_image) = 0;
-  virtual void OnProfileRemoved(
+  virtual void OnProfileWillBeRemoved(
+      const string16& profile_name) = 0;
+  virtual void OnProfileWasRemoved(
       const string16& profile_name) = 0;
   virtual void OnProfileNameChanged(
       const string16& old_profile_name,

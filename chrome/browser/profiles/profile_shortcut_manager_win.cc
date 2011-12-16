@@ -26,6 +26,7 @@
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
 
@@ -234,31 +235,47 @@ void ProfileShortcutManagerWin::OnProfileAdded(
                      base::Owned(avatar_copy), true));
     }
 
-    // If this is the very first multi-user account created, change the
-    // original shortcut to launch with the First User profile.
-    PrefService* local_state = g_browser_process->local_state();
-    if (local_state->GetInteger(prefs::kProfilesNumCreated) == 2) {
-      string16 default_name = l10n_util::GetStringUTF16(
-          IDS_DEFAULT_PROFILE_NAME);
+    // If this is the second existing multi-user account created, change the
+    // original shortcut use the first profile's details (name, badge,
+    // argument).
+    ProfileInfoCache& cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    if (cache.GetNumberOfProfiles() == 2) {
+      // Get the index of the first profile, based on the index of the second
+      // profile. It's either 0 or 1, whichever the second profile isn't.
+      size_t first_index = 0;
+      if (cache.GetIndexOfProfileWithPath(profile_path) == 0)
+        first_index = 1;
+      string16 first_name = cache.GetNameOfProfileAtIndex(first_index);
       BrowserDistribution* dist = BrowserDistribution::GetDistribution();
 
       string16 old_shortcut;
       string16 new_shortcut;
       if (ShellUtil::GetChromeShortcutName(dist, false, L"", &old_shortcut) &&
-          ShellUtil::GetChromeShortcutName(dist, false, default_name,
+          ShellUtil::GetChromeShortcutName(dist, false, first_name,
                                            &new_shortcut)) {
         // Update doesn't allow changing the target, so rename first.
         BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
             base::Bind(&RenameChromeDesktopShortcutForProfile,
                        old_shortcut, new_shortcut));
-        // TODO(stevet): We actually need to retrieve the newly assigned avatar
-        // icon for the original profile here and update it with that.
+
+        // Fetch the avatar for the first profile and make a copy of the Image
+        // to ensure that the underlying image data is AddRef'd, in case the
+        // original copy is deleted.
+        gfx::Image& first_avatar =
+            ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+                ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(
+                    cache.GetAvatarIconIndexOfProfileAtIndex(first_index)));
+        gfx::Image* first_avatar_copy = new gfx::Image(first_avatar);
+        FilePath first_path = cache.GetPathOfProfileAtIndex(first_index);
+
         BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
             base::Bind(&UpdateChromeDesktopShortcutForProfile,
                        new_shortcut,
-                       CreateProfileShortcutSwitch(
-                           UTF8ToUTF16(chrome::kInitialProfile)),
-                       profile_path, static_cast<gfx::Image*>(NULL)));
+                       CreateProfileShortcutSwitch(UTF8ToUTF16(
+                           first_path.BaseName().MaybeAsASCII())),
+                       first_path,
+                       base::Owned(first_avatar_copy)));
       }
     }
   } else {  // Only one profile, so create original shortcut, with no avatar.
@@ -268,7 +285,7 @@ void ProfileShortcutManagerWin::OnProfileAdded(
   }
 }
 
-void ProfileShortcutManagerWin::OnProfileRemoved(
+void ProfileShortcutManagerWin::OnProfileWillBeRemoved(
     const string16& profile_name) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   string16 shortcut;
@@ -279,6 +296,40 @@ void ProfileShortcutManagerWin::OnProfileRemoved(
             base::Bind(
                 &ShellUtil::RemoveChromeDesktopShortcutsWithAppendedNames,
                 shortcuts)));
+  }
+}
+
+void ProfileShortcutManagerWin::OnProfileWasRemoved(
+    const string16& profile_name) {
+  // If there is one profile left, we want to remove the badge and name from it.
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  if (cache.GetNumberOfProfiles() != 1)
+    return;
+
+  // TODO(stevet): Now that we've sunk our fangs onto ProfileInfoCache, we
+  // should clean up the ProfileInfoCacheObserver interface and its users
+  // (including us) to not pass every parameter through and instead query the
+  // cache when needed.
+  FilePath profile_path = cache.GetPathOfProfileAtIndex(0);
+  string16 old_shortcut;
+  string16 new_shortcut;
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  if (ShellUtil::GetChromeShortcutName(
+          dist, false, cache.GetNameOfProfileAtIndex(0), &old_shortcut) &&
+      ShellUtil::GetChromeShortcutName(
+          dist, false, L"", &new_shortcut)) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+        base::Bind(&RenameChromeDesktopShortcutForProfile,
+                   old_shortcut,
+                   new_shortcut));
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+        base::Bind(&UpdateChromeDesktopShortcutForProfile,
+                   new_shortcut,
+                   CreateProfileShortcutSwitch(UTF8ToUTF16(
+                       profile_path.BaseName().MaybeAsASCII())),
+                   profile_path,
+                   static_cast<gfx::Image*>(NULL)));
   }
 }
 

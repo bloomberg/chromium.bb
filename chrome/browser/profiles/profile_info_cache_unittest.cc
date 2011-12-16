@@ -37,10 +37,15 @@ void ProfileNameVerifierObserver::OnProfileAdded(
   profile_names_.insert(profile_name);
 }
 
-void ProfileNameVerifierObserver::OnProfileRemoved(
+void ProfileNameVerifierObserver::OnProfileWillBeRemoved(
     const string16& profile_name) {
   EXPECT_TRUE(profile_names_.find(profile_name) != profile_names_.end());
   profile_names_.erase(profile_name);
+}
+
+void ProfileNameVerifierObserver::OnProfileWasRemoved(
+    const string16& profile_name) {
+  EXPECT_TRUE(profile_names_.find(profile_name) == profile_names_.end());
 }
 
 void ProfileNameVerifierObserver::OnProfileNameChanged(
