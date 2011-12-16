@@ -895,7 +895,7 @@ void View::SetNextFocusableView(View* view) {
 }
 
 bool View::IsFocusableInRootView() const {
-  return IsFocusable() && IsDrawn();
+  return focusable_ && enabled_ && IsDrawn();
 }
 
 bool View::IsAccessibilityFocusableInRootView() const {
@@ -1093,7 +1093,7 @@ void View::OnPaintBorder(gfx::Canvas* canvas) {
 }
 
 void View::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if ((IsFocusable() || IsAccessibilityFocusableInRootView()) && HasFocus()) {
+  if ((focusable() || IsAccessibilityFocusableInRootView()) && HasFocus()) {
     TRACE_EVENT2("views", "views::OnPaintFocusBorder",
                  "width", canvas->GetSkCanvas()->getDevice()->width(),
                  "height", canvas->GetSkCanvas()->getDevice()->height());
@@ -1228,10 +1228,6 @@ void View::GetHitTestMask(gfx::Path* mask) const {
 }
 
 // Focus -----------------------------------------------------------------------
-
-bool View::IsFocusable() const {
-  return focusable_ && enabled_ && visible_;
-}
 
 void View::OnFocus() {
   // TODO(beng): Investigate whether it's possible for us to move this to

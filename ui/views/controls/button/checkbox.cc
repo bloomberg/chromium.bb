@@ -61,7 +61,7 @@ void Checkbox::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 void Checkbox::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus() && (IsFocusable() || IsAccessibilityFocusableInRootView())) {
+  if (HasFocus() && (focusable() || IsAccessibilityFocusableInRootView())) {
     gfx::Rect bounds(GetTextBounds());
     // Increate the bounding box by one on each side so that that focus border
     // does not draw on top of the letters.

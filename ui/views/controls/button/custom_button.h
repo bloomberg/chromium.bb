@@ -118,7 +118,6 @@ class VIEWS_EXPORT CustomButton : public Button,
   virtual void ViewHierarchyChanged(bool is_add,
                                     View* parent,
                                     View* child) OVERRIDE;
-  virtual bool IsFocusable() const OVERRIDE;
   virtual void OnBlur() OVERRIDE;
 
   // The button state (defined in implementation)

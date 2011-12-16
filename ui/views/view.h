@@ -248,8 +248,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Return whether a view is visible
   bool visible() const { return visible_; }
 
-  // Return whether this view and its ancestors are visible. Returns true if the
-  // path from this view to the root view is visible.
+  // Returns true if this view is drawn on screen.
   virtual bool IsDrawn() const;
 
   // Set whether this view is enabled. A disabled view does not receive keyboard
@@ -662,14 +661,17 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // IMPORTANT NOTE: loops in the focus hierarchy are not supported.
   void SetNextFocusableView(View* view);
 
-  // Sets whether this view can accept the focus.
+  // Sets whether this view is capable of taking focus.
   // Note that this is false by default so that a view used as a container does
   // not get the focus.
   void set_focusable(bool focusable) { focusable_ = focusable; }
 
+  // Returns true if this view is capable of taking focus.
+  bool focusable() const { return focusable_ && enabled_ && visible_; }
+
   // Returns true if the view is focusable (IsFocusable) and visible in the root
   // view. See also IsFocusable.
-  bool IsFocusableInRootView() const;
+  virtual bool IsFocusableInRootView() const;
 
   // Return whether this view is focusable when the user requires full keyboard
   // access, even though it may not be normally focusable.
@@ -695,7 +697,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Invoked when a view is about to be requested for focus due to the focus
   // traversal. Reverse is this request was generated going backward
   // (Shift-Tab).
-  virtual void AboutToRequestFocusFromTabTraversal(bool reverse) { }
+  virtual void AboutToRequestFocusFromTabTraversal(bool reverse) {}
 
   // Invoked when a key is pressed before the key event is processed (and
   // potentially eaten) by the focus manager for tab traversal, accelerators and
@@ -1007,12 +1009,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual void GetHitTestMask(gfx::Path* mask) const;
 
   // Focus ---------------------------------------------------------------------
-
-  // Returns whether this view can accept focus.
-  // A view can accept focus if it's enabled, focusable and visible.
-  // This method is intended for views to use when calculating preferred size.
-  // The FocusManager and other places use IsFocusableInRootView.
-  virtual bool IsFocusable() const;
 
   // Override to be notified when focus has changed either to or from this View.
   virtual void OnFocus();

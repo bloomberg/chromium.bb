@@ -28,7 +28,7 @@ class NativeTabContentsContainerAura : public NativeTabContentsContainer,
 
   // Overridden from views::View:
   virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) OVERRIDE;
-  virtual bool IsFocusable() const OVERRIDE;
+  virtual bool IsFocusableInRootView() const OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void RequestFocus() OVERRIDE;
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;

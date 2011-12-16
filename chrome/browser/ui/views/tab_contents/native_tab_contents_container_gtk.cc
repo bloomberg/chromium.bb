@@ -97,7 +97,7 @@ views::FocusTraversable* NativeTabContentsContainerGtk::GetFocusTraversable() {
   return NULL;
 }
 
-bool NativeTabContentsContainerGtk::IsFocusable() const {
+bool NativeTabContentsContainerGtk::IsFocusableInRootView() const {
   // We need to be focusable when our contents is not a view hierarchy, as
   // clicking on the contents needs to focus us.
   return container_->tab_contents() != NULL;

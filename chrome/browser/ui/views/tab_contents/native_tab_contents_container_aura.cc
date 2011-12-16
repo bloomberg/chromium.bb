@@ -94,7 +94,7 @@ bool NativeTabContentsContainerAura::SkipDefaultKeyEventProcessing(
          !container_->tab_contents()->is_crashed();
 }
 
-bool NativeTabContentsContainerAura::IsFocusable() const {
+bool NativeTabContentsContainerAura::IsFocusableInRootView() const {
   // We need to be focusable when our contents is not a view hierarchy, as
   // clicking on the contents needs to focus us.
   return container_->tab_contents() != NULL;

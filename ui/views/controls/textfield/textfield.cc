@@ -92,6 +92,7 @@ TextfieldController* Textfield::GetController() const {
 
 void Textfield::SetReadOnly(bool read_only) {
   read_only_ = read_only;
+  set_focusable(!read_only);
   if (native_wrapper_) {
     native_wrapper_->UpdateReadOnly();
     native_wrapper_->UpdateTextColor();
@@ -328,10 +329,6 @@ gfx::Size Textfield::GetPreferredSize() {
     insets = native_wrapper_->CalculateInsets();
   return gfx::Size(font_.GetExpectedTextWidth(default_width_in_chars_) +
                        insets.width(), font_.GetHeight() + insets.height());
-}
-
-bool Textfield::IsFocusable() const {
-  return View::IsFocusable() && !read_only_;
 }
 
 void Textfield::AboutToRequestFocusFromTabTraversal(bool reverse) {

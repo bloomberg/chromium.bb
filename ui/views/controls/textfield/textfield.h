@@ -225,7 +225,6 @@ class VIEWS_EXPORT Textfield : public View {
   // Overridden from View:
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual bool IsFocusable() const OVERRIDE;
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
   virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e) OVERRIDE;
   virtual void OnEnabledChanged() OVERRIDE;

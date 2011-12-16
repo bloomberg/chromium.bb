@@ -279,10 +279,6 @@ void CustomButton::ViewHierarchyChanged(bool is_add, View *parent,
     SetState(BS_NORMAL);
 }
 
-bool CustomButton::IsFocusable() const {
-  return (state_ != BS_DISABLED) && View::IsFocusable();
-}
-
 void CustomButton::OnBlur() {
   if (IsHotTracked())
     SetState(BS_NORMAL);

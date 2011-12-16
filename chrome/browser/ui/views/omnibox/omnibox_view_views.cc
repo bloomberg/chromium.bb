@@ -71,12 +71,6 @@ class AutocompleteTextfield : public views::Textfield {
     return omnibox_view_->HandleKeyReleaseEvent(event);
   }
 
-  virtual bool IsFocusable() const OVERRIDE {
-    // Bypass Textfield::IsFocusable. The omnibox in popup window requires
-    // focus in order for text selection to work.
-    return views::View::IsFocusable();
-  }
-
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
     return omnibox_view_->HandleMousePressEvent(event);
   }
