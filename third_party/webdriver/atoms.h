@@ -36,6 +36,7 @@ extern const char* const FIND_ELEMENTS[];
 extern const char* const GET_APPCACHE_STATUS[];
 extern const char* const GET_ATTRIBUTE[];
 extern const char* const GET_EFFECTIVE_STYLE[];
+extern const char* const GET_IN_VIEW_LOCATION[];
 extern const char* const GET_LOCAL_STORAGE_ITEM[];
 extern const char* const GET_LOCAL_STORAGE_KEY[];
 extern const char* const GET_LOCAL_STORAGE_KEYS[];
