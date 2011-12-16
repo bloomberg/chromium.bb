@@ -695,8 +695,6 @@
    fun:_ZN7WebCore13WidthIterator*
    ...
    fun:_ZNK7WebCore4Font*
-   ...
-   fun:_ZNK7WebCore4Font*draw*Text*
 }
 
 #-----------------------------------------------------------------------
