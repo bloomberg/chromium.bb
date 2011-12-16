@@ -145,6 +145,8 @@
 #include "chrome/browser/download/download_shelf.h"
 #endif
 
+using automation::Error;
+using automation::ErrorCode;
 using automation_util::SendErrorIfModalDialogActive;
 using content::BrowserThread;
 using content::ChildProcessHost;
@@ -5741,14 +5743,11 @@ namespace {
 
 // Gets the active JavaScript modal dialog, or NULL if none.
 JavaScriptAppModalDialog* GetActiveJavaScriptModalDialog(
-    std::string* error_msg) {
+    ErrorCode* error_code) {
   AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
-  if (!dialog_queue->HasActiveDialog()) {
-    *error_msg = "No modal dialog is showing";
-    return NULL;
-  }
-  if (!dialog_queue->active_dialog()->IsJavaScriptModalDialog()) {
-    *error_msg = "No JavaScript modal dialog is showing";
+  if (!dialog_queue->HasActiveDialog() ||
+      !dialog_queue->active_dialog()->IsJavaScriptModalDialog()) {
+    *error_code = automation::kNoJavaScriptModalDialogOpen;
     return NULL;
   }
   return static_cast<JavaScriptAppModalDialog*>(dialog_queue->active_dialog());
@@ -5759,10 +5758,10 @@ JavaScriptAppModalDialog* GetActiveJavaScriptModalDialog(
 void TestingAutomationProvider::GetAppModalDialogMessage(
     DictionaryValue* args, IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
-  std::string error_msg;
-  JavaScriptAppModalDialog* dialog = GetActiveJavaScriptModalDialog(&error_msg);
+  ErrorCode code;
+  JavaScriptAppModalDialog* dialog = GetActiveJavaScriptModalDialog(&code);
   if (!dialog) {
-    reply.SendError(error_msg);
+    reply.SendErrorCode(code);
     return;
   }
   DictionaryValue result_dict;
@@ -5779,10 +5778,10 @@ void TestingAutomationProvider::AcceptOrDismissAppModalDialog(
     return;
   }
 
-  std::string error_msg;
-  JavaScriptAppModalDialog* dialog = GetActiveJavaScriptModalDialog(&error_msg);
+  ErrorCode code;
+  JavaScriptAppModalDialog* dialog = GetActiveJavaScriptModalDialog(&code);
   if (!dialog) {
-    reply.SendError(error_msg);
+    reply.SendErrorCode(code);
     return;
   }
   if (accept) {

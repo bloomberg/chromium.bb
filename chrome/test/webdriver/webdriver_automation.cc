@@ -286,10 +286,10 @@ void Automation::Init(const BrowserOptions& options, Error** error) {
   // Check the version of Chrome is compatible with this ChromeDriver.
   chrome_details += ", version (" + automation()->server_version() + ")";
   int version = 0;
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendGetChromeDriverAutomationVersion(
-          automation(), &version, &error_msg)) {
-    *error = new Error(kUnknownError, error_msg + " " + chrome_details);
+          automation(), &version, &auto_error)) {
+    *error = Error::FromAutomationError(auto_error);
     return;
   }
   if (version > automation::kChromeDriverAutomationVersion) {
@@ -335,11 +335,11 @@ void Automation::ExecuteScript(const WebViewId& view_id,
     return;
 
   Value* unscoped_value;
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendExecuteJavascriptJSONRequest(automation(), view_locator,
                                         frame_path.value(), script,
-                                        &unscoped_value, &error_msg)) {
-    *error = new Error(kUnknownError, error_msg);
+                                        &unscoped_value, &auto_error)) {
+    *error = Error::FromAutomationError(auto_error);
     return;
   }
   scoped_ptr<Value> value(unscoped_value);
@@ -355,11 +355,11 @@ void Automation::MouseMove(const WebViewId& view_id,
   if (*error)
     return;
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendMouseMoveJSONRequest(
           automation(), view_locator, p.rounded_x(), p.rounded_y(),
-          &error_msg)) {
-    *error = new Error(kUnknownError, error_msg);
+          &auto_error)) {
+    *error = Error::FromAutomationError(auto_error);
   }
 }
 
@@ -372,11 +372,11 @@ void Automation::MouseClick(const WebViewId& view_id,
   if (*error)
     return;
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendMouseClickJSONRequest(
           automation(), view_locator, button, p.rounded_x(),
-          p.rounded_y(), &error_msg)) {
-    *error = new Error(kUnknownError, error_msg);
+          p.rounded_y(), &auto_error)) {
+    *error = Error::FromAutomationError(auto_error);
   }
 }
 
@@ -389,11 +389,11 @@ void Automation::MouseDrag(const WebViewId& view_id,
   if (*error)
     return;
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendMouseDragJSONRequest(
           automation(), view_locator, start.rounded_x(), start.rounded_y(),
-          end.rounded_x(), end.rounded_y(), &error_msg)) {
-    *error = new Error(kUnknownError, error_msg);
+          end.rounded_x(), end.rounded_y(), &auto_error)) {
+    *error = Error::FromAutomationError(auto_error);
   }
 }
 
@@ -409,11 +409,11 @@ void Automation::MouseButtonUp(const WebViewId& view_id,
   if (*error)
     return;
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendMouseButtonUpJSONRequest(
           automation(), view_locator, p.rounded_x(), p.rounded_y(),
-          &error_msg)) {
-    *error = new Error(kUnknownError, error_msg);
+          &auto_error)) {
+    *error = Error::FromAutomationError(auto_error);
   }
 }
 
@@ -429,11 +429,11 @@ void Automation::MouseButtonDown(const WebViewId& view_id,
   if (*error)
     return;
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendMouseButtonDownJSONRequest(
           automation(), view_locator, p.rounded_x(), p.rounded_y(),
-          &error_msg)) {
-    *error = new Error(kUnknownError, error_msg);
+          &auto_error)) {
+    *error = Error::FromAutomationError(auto_error);
   }
 }
 
@@ -449,11 +449,11 @@ void Automation::MouseDoubleClick(const WebViewId& view_id,
   if (*error)
     return;
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendMouseDoubleClickJSONRequest(
           automation(), view_locator, p.rounded_x(), p.rounded_y(),
-          &error_msg)) {
-    *error = new Error(kUnknownError, error_msg);
+          &auto_error)) {
+    *error = Error::FromAutomationError(auto_error);
   }
 }
 
@@ -466,11 +466,11 @@ void Automation::DragAndDropFilePaths(
     return;
   }
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendDragAndDropFilePathsJSONRequest(
           automation(), view_locator, location.rounded_x(),
-          location.rounded_y(), paths, &error_msg)) {
-    *error = new Error(kUnknownError, error_msg);
+          location.rounded_y(), paths, &auto_error)) {
+    *error = Error::FromAutomationError(auto_error);
   }
 }
 
@@ -482,10 +482,10 @@ void Automation::SendWebKeyEvent(const WebViewId& view_id,
   if (*error)
     return;
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendWebKeyEventJSONRequest(
-          automation(), view_locator, key_event, &error_msg)) {
-    *error = new Error(kUnknownError, error_msg);
+          automation(), view_locator, key_event, &auto_error)) {
+    *error = Error::FromAutomationError(auto_error);
   }
 }
 
@@ -498,10 +498,10 @@ void Automation::SendNativeKeyEvent(const WebViewId& view_id,
   if (*error)
     return;
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendNativeKeyEventJSONRequest(
-         automation(), view_locator, key_code, modifiers, &error_msg)) {
-    *error = new Error(kUnknownError, error_msg);
+         automation(), view_locator, key_code, modifiers, &auto_error)) {
+    *error = Error::FromAutomationError(auto_error);
   }
 }
 
@@ -513,10 +513,10 @@ void Automation::CaptureEntirePageAsPNG(const WebViewId& view_id,
   if (*error)
     return;
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendCaptureEntirePageJSONRequest(
-          automation(), view_locator, path, &error_msg)) {
-    *error = new Error(kUnknownError, error_msg);
+          automation(), view_locator, path, &auto_error)) {
+    *error = Error::FromAutomationError(auto_error);
   }
 }
 
@@ -529,11 +529,11 @@ void Automation::NavigateToURL(const WebViewId& view_id,
     return;
 
   AutomationMsg_NavigationResponseValues navigate_response;
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendNavigateToURLJSONRequest(automation(), view_locator,
                                     url, 1, &navigate_response,
-                                    &error_msg)) {
-    *error = new Error(kUnknownError, error_msg);
+                                    &auto_error)) {
+    *error = Error::FromAutomationError(auto_error);
     return;
   }
   // TODO(kkania): Do not rely on this enum.
@@ -549,12 +549,12 @@ void Automation::NavigateToURLAsync(const WebViewId& view_id,
   if (*error)
     return;
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (!view_id.old_style()) {
     AutomationMsg_NavigationResponseValues navigate_response;
     if (!SendNavigateToURLJSONRequest(automation(), view_locator, url,
-                                      0, &navigate_response, &error_msg)) {
-      *error = new Error(kUnknownError, error_msg);
+                                      0, &navigate_response, &auto_error)) {
+      *error = Error::FromAutomationError(auto_error);
       return;
     }
   } else {
@@ -582,10 +582,10 @@ void Automation::GoForward(const WebViewId& view_id, Error** error) {
   if (*error)
     return;
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendGoForwardJSONRequest(
-          automation(), view_locator, &error_msg)) {
-    *error = new Error(kUnknownError, error_msg);
+          automation(), view_locator, &auto_error)) {
+    *error = Error::FromAutomationError(auto_error);
   }
 }
 
@@ -595,9 +595,9 @@ void Automation::GoBack(const WebViewId& view_id, Error** error) {
   if (*error)
     return;
 
-  std::string error_msg;
-  if (!SendGoBackJSONRequest(automation(), view_locator, &error_msg))
-    *error = new Error(kUnknownError, error_msg);
+  automation::Error auto_error;
+  if (!SendGoBackJSONRequest(automation(), view_locator, &auto_error))
+    *error = Error::FromAutomationError(auto_error);
 }
 
 void Automation::Reload(const WebViewId& view_id, Error** error) {
@@ -606,35 +606,35 @@ void Automation::Reload(const WebViewId& view_id, Error** error) {
   if (*error)
     return;
 
-  std::string error_msg;
-  if (!SendReloadJSONRequest(automation(), view_locator, &error_msg))
-    *error = new Error(kUnknownError, error_msg);
+  automation::Error auto_error;
+  if (!SendReloadJSONRequest(automation(), view_locator, &auto_error))
+    *error = Error::FromAutomationError(auto_error);
 }
 
 void Automation::GetCookies(const std::string& url,
                             ListValue** cookies,
                             Error** error) {
-  std::string error_msg;
-  if (!SendGetCookiesJSONRequest(automation(), url, cookies, &error_msg))
-    *error = new Error(kUnknownError, error_msg);
+  automation::Error auto_error;
+  if (!SendGetCookiesJSONRequest(automation(), url, cookies, &auto_error))
+    *error = Error::FromAutomationError(auto_error);
 }
 
 void Automation::DeleteCookie(const std::string& url,
                               const std::string& cookie_name,
                               Error** error) {
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendDeleteCookieJSONRequest(
-          automation(), url, cookie_name, &error_msg)) {
-    *error = new Error(kUnknownError, error_msg);
+          automation(), url, cookie_name, &auto_error)) {
+    *error = Error::FromAutomationError(auto_error);
   }
 }
 
 void Automation::SetCookie(const std::string& url,
                            DictionaryValue* cookie_dict,
                            Error** error) {
-  std::string error_msg;
-  if (!SendSetCookieJSONRequest(automation(), url, cookie_dict, &error_msg))
-    *error = new Error(kUnknownError, error_msg);
+  automation::Error auto_error;
+  if (!SendSetCookieJSONRequest(automation(), url, cookie_dict, &auto_error))
+    *error = Error::FromAutomationError(auto_error);
 }
 
 void Automation::GetViews(std::vector<WebViewInfo>* views,
@@ -644,27 +644,27 @@ void Automation::GetViews(std::vector<WebViewInfo>* views,
   if (*error)
     return;
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (has_views) {
-    if (!SendGetWebViewsJSONRequest(automation(), views, &error_msg))
-      *error = new Error(kUnknownError, error_msg);
+    if (!SendGetWebViewsJSONRequest(automation(), views, &auto_error))
+      *error = Error::FromAutomationError(auto_error);
   } else {
-    if (!SendGetTabIdsJSONRequest(automation(), views, &error_msg))
-      *error = new Error(kUnknownError, error_msg);
+    if (!SendGetTabIdsJSONRequest(automation(), views, &auto_error))
+      *error = Error::FromAutomationError(auto_error);
   }
 }
 
 void Automation::DoesViewExist(
     const WebViewId& view_id, bool* does_exist, Error** error) {
-  std::string error_msg;
+  automation::Error auto_error;
   if (view_id.old_style()) {
     if (!SendIsTabIdValidJSONRequest(
-            automation(), view_id, does_exist, &error_msg))
-      *error = new Error(kUnknownError, error_msg);
+            automation(), view_id, does_exist, &auto_error))
+      *error = Error::FromAutomationError(auto_error);
   } else {
     if (!SendDoesAutomationObjectExistJSONRequest(
-            automation(), view_id, does_exist, &error_msg))
-      *error = new Error(kUnknownError, error_msg);
+            automation(), view_id, does_exist, &auto_error))
+      *error = Error::FromAutomationError(auto_error);
   }
 }
 
@@ -674,9 +674,9 @@ void Automation::CloseView(const WebViewId& view_id, Error** error) {
   if (*error)
     return;
 
-  std::string error_msg;
-  if (!SendCloseViewJSONRequest(automation(), view_locator, &error_msg))
-    *error = new Error(kUnknownError, error_msg);
+  automation::Error auto_error;
+  if (!SendCloseViewJSONRequest(automation(), view_locator, &auto_error))
+    *error = Error::FromAutomationError(auto_error);
 }
 
 void Automation::GetAppModalDialogMessage(std::string* message, Error** error) {
@@ -684,10 +684,10 @@ void Automation::GetAppModalDialogMessage(std::string* message, Error** error) {
   if (*error)
     return;
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendGetAppModalDialogMessageJSONRequest(
-          automation(), message, &error_msg)) {
-    *error = new Error(kUnknownError, error_msg);
+          automation(), message, &auto_error)) {
+    *error = Error::FromAutomationError(auto_error);
   }
 }
 
@@ -696,10 +696,10 @@ void Automation::AcceptOrDismissAppModalDialog(bool accept, Error** error) {
   if (*error)
     return;
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendAcceptOrDismissAppModalDialogJSONRequest(
-          automation(), accept, &error_msg)) {
-    *error = new Error(kUnknownError, error_msg);
+          automation(), accept, &auto_error)) {
+    *error = Error::FromAutomationError(auto_error);
   }
 }
 
@@ -709,10 +709,10 @@ void Automation::AcceptPromptAppModalDialog(const std::string& prompt_text,
   if (*error)
     return;
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendAcceptPromptAppModalDialogJSONRequest(
-          automation(), prompt_text, &error_msg)) {
-    *error = new Error(kUnknownError, error_msg);
+          automation(), prompt_text, &auto_error)) {
+    *error = Error::FromAutomationError(auto_error);
   }
 }
 
@@ -721,15 +721,15 @@ void Automation::GetBrowserVersion(std::string* version) {
 }
 
 void Automation::GetChromeDriverAutomationVersion(int* version, Error** error) {
-  std::string error_msg;
-  if (!SendGetChromeDriverAutomationVersion(automation(), version, &error_msg))
-    *error = new Error(kUnknownError, error_msg);
+  automation::Error auto_error;
+  if (!SendGetChromeDriverAutomationVersion(automation(), version, &auto_error))
+    *error = Error::FromAutomationError(auto_error);
 }
 
 void Automation::WaitForAllViewsToStopLoading(Error** error) {
-  std::string error_msg;
-  if (!SendWaitForAllViewsToStopLoadingJSONRequest(automation(), &error_msg))
-    *error = new Error(kUnknownError, error_msg);
+  automation::Error auto_error;
+  if (!SendWaitForAllViewsToStopLoadingJSONRequest(automation(), &auto_error))
+    *error = Error::FromAutomationError(auto_error);
 }
 
 void Automation::InstallExtensionDeprecated(
@@ -744,11 +744,11 @@ void Automation::InstallExtension(
   if (*error)
     return;
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendInstallExtensionJSONRequest(
           automation(), path, false /* with_ui */, extension_id,
-          &error_msg))
-    *error = new Error(kUnknownError, error_msg);
+          &auto_error))
+    *error = Error::FromAutomationError(auto_error);
 }
 
 void Automation::GetExtensionsInfo(
@@ -757,10 +757,10 @@ void Automation::GetExtensionsInfo(
   if (*error)
     return;
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendGetExtensionsInfoJSONRequest(
-          automation(), extensions_list, &error_msg))
-    *error = new Error(kUnknownError, error_msg);
+          automation(), extensions_list, &auto_error))
+    *error = Error::FromAutomationError(auto_error);
 }
 
 void Automation::IsPageActionVisible(
@@ -772,10 +772,10 @@ void Automation::IsPageActionVisible(
   if (*error)
     return;
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendIsPageActionVisibleJSONRequest(
-          automation(), tab_id, extension_id, is_visible, &error_msg))
-    *error = new Error(kUnknownError, error_msg);
+          automation(), tab_id, extension_id, is_visible, &auto_error))
+    *error = Error::FromAutomationError(auto_error);
 }
 
 void Automation::SetExtensionState(
@@ -786,21 +786,21 @@ void Automation::SetExtensionState(
   if (*error)
     return;
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendSetExtensionStateJSONRequest(
           automation(), extension_id, enable /* enable */,
-          false /* allow_in_incognito */, &error_msg))
-    *error = new Error(kUnknownError, error_msg);
+          false /* allow_in_incognito */, &auto_error))
+    *error = Error::FromAutomationError(auto_error);
 }
 
 void Automation::ClickExtensionButton(
     const std::string& extension_id,
     bool browser_action,
     Error** error) {
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendClickExtensionButtonJSONRequest(
-          automation(), extension_id, browser_action, &error_msg))
-    *error = new Error(kUnknownError, error_msg);
+          automation(), extension_id, browser_action, &auto_error))
+    *error = Error::FromAutomationError(auto_error);
 }
 
 void Automation::UninstallExtension(
@@ -809,10 +809,10 @@ void Automation::UninstallExtension(
   if (*error)
     return;
 
-  std::string error_msg;
+  automation::Error auto_error;
   if (!SendUninstallExtensionJSONRequest(
-          automation(), extension_id, &error_msg))
-    *error = new Error(kUnknownError, error_msg);
+          automation(), extension_id, &auto_error))
+    *error = Error::FromAutomationError(auto_error);
 }
 
 void Automation::SetLocalStatePreference(const std::string& pref,
@@ -827,10 +827,10 @@ void Automation::SetLocalStatePreference(const std::string& pref,
     return;
 
   if (has_new_local_state_api) {
-    std::string error_msg;
+    automation::Error auto_error;
     if (!SendSetLocalStatePreferenceJSONRequest(
-            automation(), pref, scoped_value.release(), &error_msg))
-      *error = new Error(kUnknownError, error_msg);
+            automation(), pref, scoped_value.release(), &auto_error))
+      *error = Error::FromAutomationError(auto_error);
   } else {
     std::string request, response;
     DictionaryValue request_dict;
@@ -858,10 +858,10 @@ void Automation::SetPreference(const std::string& pref,
     return;
 
   if (has_new_pref_api) {
-    std::string error_msg;
+    automation::Error auto_error;
     if (!SendSetPreferenceJSONRequest(
-            automation(), pref, scoped_value.release(), &error_msg))
-      *error = new Error(kUnknownError, error_msg);
+            automation(), pref, scoped_value.release(), &auto_error))
+      *error = Error::FromAutomationError(auto_error);
   } else {
     std::string request, response;
     DictionaryValue request_dict;
@@ -886,11 +886,11 @@ Error* Automation::ConvertViewIdToLocator(
     const WebViewId& view_id, WebViewLocator* view_locator) {
   if (view_id.old_style()) {
     int browser_index, tab_index;
-    std::string error_msg;
+    automation::Error auto_error;
     if (!SendGetIndicesFromTabIdJSONRequest(
             automation(), view_id.tab_id(), &browser_index, &tab_index,
-            &error_msg))
-      return new Error(kUnknownError, error_msg);
+            &auto_error))
+      return Error::FromAutomationError(auto_error);
     *view_locator = WebViewLocator::ForIndexPair(browser_index, tab_index);
   } else {
     *view_locator = WebViewLocator::ForViewId(view_id.GetId());

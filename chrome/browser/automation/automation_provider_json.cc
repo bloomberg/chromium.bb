@@ -16,20 +16,8 @@
 #include "chrome/common/automation_messages.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
-namespace {
-
-// Util for creating a JSON error return string (dict with key
-// 'error' and error string value).  No need to quote input.
-std::string JSONErrorString(const std::string& err) {
-  std::string prefix = "{\"error\": \"";
-  std::string no_quote_err;
-  std::string suffix = "\"}";
-
-  base::JsonDoubleQuote(err, false, &no_quote_err);
-  return prefix + no_quote_err + suffix;
-}
-
-}  // namespace
+using automation::Error;
+using automation::ErrorCode;
 
 AutomationJSONReply::AutomationJSONReply(AutomationProvider* provider,
                                          IPC::Message* reply_message)
@@ -53,10 +41,23 @@ void AutomationJSONReply::SendSuccess(const Value* value) {
 }
 
 void AutomationJSONReply::SendError(const std::string& error_message) {
+  SendErrorInternal(Error(error_message));
+}
+
+void AutomationJSONReply::SendErrorCode(ErrorCode code) {
+  SendErrorInternal(Error(code));
+}
+
+void AutomationJSONReply::SendErrorInternal(const Error& error) {
   DCHECK(message_) << "Resending reply for JSON automation request";
-  std::string json_string = JSONErrorString(error_message);
-  AutomationMsg_SendJSONRequest::WriteReplyParams(
-      message_, json_string, false);
+
+  base::DictionaryValue dict;
+  dict.SetString("error", error.message());
+  dict.SetInteger("code", error.code());
+  std::string json;
+  base::JSONWriter::Write(&dict, false /* pretty_print */, &json);
+
+  AutomationMsg_SendJSONRequest::WriteReplyParams(message_, json, false);
   provider_->Send(message_);
   message_ = NULL;
 }

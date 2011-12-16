@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "chrome/common/automation_constants.h"
 
 class AutomationId;
 class AutomationProvider;
@@ -47,7 +48,13 @@ class AutomationJSONReply {
   // Send an error reply along with error message |error_message|.
   void SendError(const std::string& error_message);
 
+  // Send an error reply along with the specified error code and its
+  // associated error message.
+  void SendErrorCode(automation::ErrorCode code);
+
  private:
+  void SendErrorInternal(const automation::Error& error);
+
   AutomationProvider* provider_;
   IPC::Message* message_;
 };

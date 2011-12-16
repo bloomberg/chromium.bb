@@ -921,12 +921,22 @@ Error* Session::IsOptionElementSelected(const FrameId& frame_id,
 Error* Session::SetOptionElementSelected(const FrameId& frame_id,
                                          const ElementId& element,
                                          bool selected) {
-  return ExecuteScriptAndParse(
+  // This wrapper ensures the script is started successfully and
+  // allows for an alert to happen when the option selection occurs.
+  // See selenium bug 2671.
+  const char kSetSelectedWrapper[] =
+      "var args = [].slice.apply(arguments);"
+      "args[args.length - 1]();"
+      "return (%s).apply(null, args.slice(0, args.length - 1));";
+  Value* value = NULL;
+  Error* error = ExecuteAsyncScript(
       frame_id,
-      atoms::asString(atoms::SET_SELECTED),
-      "setSelected",
+      base::StringPrintf(kSetSelectedWrapper,
+                         atoms::asString(atoms::SET_SELECTED).c_str()),
       CreateListValueFrom(element, selected),
-      CreateDirectValueParser(kSkipParsing));
+      &value);
+  scoped_ptr<Value> scoped_value(value);
+  return error;
 }
 
 Error* Session::ToggleOptionElement(const FrameId& frame_id,

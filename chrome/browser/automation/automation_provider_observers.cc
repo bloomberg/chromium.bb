@@ -1265,8 +1265,7 @@ void DomOperationMessageSender::OnDomOperationCompleted(
 void DomOperationMessageSender::OnModalDialogShown() {
   if (automation_ && use_json_interface_) {
     AutomationJSONReply(automation_, reply_message_.release())
-        .SendError("Could not complete script execution because a modal "
-                       "dialog is active");
+        .SendErrorCode(automation::kBlockedByModalDialog);
     delete this;
   }
 }

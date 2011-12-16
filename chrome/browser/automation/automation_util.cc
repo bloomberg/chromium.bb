@@ -397,8 +397,8 @@ bool SendErrorIfModalDialogActive(AutomationProvider* provider,
                                   IPC::Message* message) {
   bool active = AppModalDialogQueue::GetInstance()->HasActiveDialog();
   if (active) {
-    AutomationJSONReply(provider, message).SendError(
-        "Command cannot be performed because a modal dialog is active");
+    AutomationJSONReply(provider, message).SendErrorCode(
+        automation::kBlockedByModalDialog);
   }
   return active;
 }

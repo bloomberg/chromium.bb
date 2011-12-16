@@ -6,6 +6,8 @@
 
 #include <sstream>
 
+#include "chrome/common/automation_constants.h"
+
 namespace webdriver {
 
 namespace {
@@ -39,12 +41,56 @@ const char* DefaultMessageForErrorCode(ErrorCode code) {
       return "The cookie domain is invalid";
     case kUnableToSetCookie:
       return "Unable to set cookie";
+    case kUnexpectedAlertOpen:
+      return "An open modal dialog blocked the operation";
+    case kNoAlertOpenError:
+      return "No JavaScript modal dialog is open";
     default:
       return "<unknown>";
   }
 }
 
 }  // namespace
+
+// static
+Error* Error::FromAutomationError(const automation::Error& error) {
+  ErrorCode code = kUnknownError;
+  switch (error.code()) {
+    case automation::kNoJavaScriptModalDialogOpen:
+      code = kNoAlertOpenError;
+      break;
+    case automation::kBlockedByModalDialog:
+      code = kUnexpectedAlertOpen;
+      break;
+    default:
+      break;
+  }
+
+  // In Chrome 17 and before, the automation error was just a string.
+  // Compare against some strings that correspond to webdriver errors.
+  // TODO(kkania): Remove these comparisons when Chrome 17 is unsupported.
+  if (code == kUnknownError) {
+    if (error.message() ==
+            "Command cannot be performed because a modal dialog is active" ||
+        error.message() ==
+            "Could not complete script execution because a modal "
+                "dialog is active") {
+      code = kUnexpectedAlertOpen;
+    } else if (error.message() == "No modal dialog is showing" ||
+               error.message() == "No JavaScript modal dialog is showing") {
+      code = kNoAlertOpenError;
+    }
+  }
+
+  // If the automation error code did not refer to a webdriver error code
+  // (besides unknown), include the error message from chrome. Otherwise,
+  // include the webdriver error code and the webdriver error message.
+  if (code == kUnknownError) {
+    return new Error(code, error.message());
+  } else {
+    return new Error(code);
+  }
+}
 
 Error::Error(ErrorCode code)
     : code_(code),

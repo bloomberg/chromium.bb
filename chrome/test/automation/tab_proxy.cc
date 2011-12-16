@@ -11,6 +11,7 @@
 #include "base/string16.h"
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/automation/automation_proxy.h"
@@ -723,15 +724,15 @@ bool TabProxy::CaptureEntirePageAsPNG(const FilePath& path) {
     return false;
 
   int browser_index, tab_index;
-  std::string error_msg;
+  automation::Error error;
   if (!SendGetIndicesFromTabHandleJSONRequest(
-         sender_, handle_, &browser_index, &tab_index, &error_msg)) {
+         sender_, handle_, &browser_index, &tab_index, &error)) {
     return false;
   }
 
   return SendCaptureEntirePageJSONRequest(
       sender_, WebViewLocator::ForIndexPair(browser_index, tab_index),
-      path, &error_msg);
+      path, &error);
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)

@@ -10,6 +10,10 @@
 
 #include "base/basictypes.h"
 
+namespace automation {
+class Error;
+}
+
 namespace webdriver {
 
 // Error codes defined by the WebDriver wire protcol.
@@ -28,6 +32,8 @@ enum ErrorCode {
   kNoSuchWindow = 23,
   kInvalidCookieDomain = 24,
   kUnableToSetCookie = 25,
+  kUnexpectedAlertOpen = 26,
+  kNoAlertOpenError = 27,
 
   // HTTP status codes.
   kSeeOther = 303,
@@ -40,6 +46,8 @@ enum ErrorCode {
 // Represents a WebDriver error and the context within which the error occurred.
 class Error {
  public:
+  static Error* FromAutomationError(const automation::Error& error);
+
   explicit Error(ErrorCode code);
 
   Error(ErrorCode code, const std::string& details);

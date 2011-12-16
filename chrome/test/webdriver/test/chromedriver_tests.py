@@ -815,6 +815,18 @@ class AlertTest(ChromeDriverTest):
     driver.get(self.GetTestDataUrl() + '/alerts.html')
     self.assertRaises(WebDriverException, driver.execute_script, 'alert("ok")')
 
+  # See http://code.google.com/p/selenium/issues/detail?id=2671.
+  def testCanPerformJSBasedActionsThatCauseAlertsAtTheEnd(self):
+    driver = self.GetNewDriver()
+    driver.execute_script(
+        'var select = document.createElement("select");' +
+        'select.innerHTML = "<option>1</option><option>2</option>";' +
+        'select.addEventListener("change", function() { alert("hi"); });' +
+        'document.body.appendChild(select);')
+
+    # Shouldn't throw an exception, even though an alert appears mid-script.
+    driver.find_elements_by_tag_name('option')[-1].click()
+
   def testMustHandleAlertFirst(self):
     driver = self.GetNewDriver()
     driver.get(self.GetTestDataUrl() + '/alerts.html')
