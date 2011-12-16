@@ -34,6 +34,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image/image.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/controls/menu/menu_2.h"
@@ -761,7 +762,7 @@ GdkPixbuf* TaskManagerGtk::GetModelIcon(int row) {
       ResourceBundle::GetSharedInstance().GetBitmapNamed(
           IDR_DEFAULT_FAVICON)->pixelRef()) {
     return static_cast<GdkPixbuf*>(g_object_ref(
-        GtkThemeService::GetDefaultFavicon(true)));
+        GtkThemeService::GetDefaultFavicon(true)->ToGdkPixbuf()));
   }
 
   return gfx::GdkPixbufFromSkBitmap(&icon);

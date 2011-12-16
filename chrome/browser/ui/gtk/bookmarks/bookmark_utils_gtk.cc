@@ -23,6 +23,7 @@
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image/image.h"
 
 namespace {
 
@@ -170,11 +171,11 @@ GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model,
     if (model->GetFavicon(node).width() != 0) {
       pixbuf = gfx::GdkPixbufFromSkBitmap(&model->GetFavicon(node));
     } else {
-      pixbuf = GtkThemeService::GetDefaultFavicon(native);
+      pixbuf = GtkThemeService::GetDefaultFavicon(native)->ToGdkPixbuf();
       g_object_ref(pixbuf);
     }
   } else {
-    pixbuf = GtkThemeService::GetFolderIcon(native);
+    pixbuf = GtkThemeService::GetFolderIcon(native)->ToGdkPixbuf();
     g_object_ref(pixbuf);
   }
 

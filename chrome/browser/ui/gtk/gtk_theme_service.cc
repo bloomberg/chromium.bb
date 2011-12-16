@@ -1,4 +1,3 @@
-
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -248,8 +247,8 @@ void GdkColorHSLShift(const color_utils::HSL& shift, GdkColor* frame_color) {
 }  // namespace
 
 GtkWidget* GtkThemeService::icon_widget_ = NULL;
-GdkPixbuf* GtkThemeService::default_folder_icon_ = NULL;
-GdkPixbuf* GtkThemeService::default_bookmark_icon_ = NULL;
+gfx::Image* GtkThemeService::default_folder_icon_ = NULL;
+gfx::Image* GtkThemeService::default_bookmark_icon_ = NULL;
 
 // static
 GtkThemeService* GtkThemeService::GetFrom(Profile* profile) {
@@ -569,55 +568,44 @@ void GtkThemeService::GetScrollbarColors(GdkColor* thumb_active_color,
     *track_color = *theme_trough_color;
 }
 
-gfx::CairoCachedSurface* GtkThemeService::GetCairoIcon(
-    int id,
-    GtkWidget* widget_on_display) {
-  return GetSurfaceNamedImpl(id,
-                             &per_display_icon_surfaces_,
-                             &GtkThemeService::GetPixbufForIconId,
-                             widget_on_display);
-}
-
 // static
-GdkPixbuf* GtkThemeService::GetFolderIcon(bool native) {
+gfx::Image* GtkThemeService::GetFolderIcon(bool native) {
   if (native) {
     if (!icon_widget_)
       icon_widget_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     // We never release our ref, so we will leak this on program shutdown.
     if (!default_folder_icon_) {
-      default_folder_icon_ =
-          gtk_widget_render_icon(icon_widget_, GTK_STOCK_DIRECTORY,
-                                 GTK_ICON_SIZE_MENU, NULL);
+      GdkPixbuf* pixbuf = gtk_widget_render_icon(
+          icon_widget_, GTK_STOCK_DIRECTORY, GTK_ICON_SIZE_MENU, NULL);
+      if (pixbuf)
+        default_folder_icon_ = new gfx::Image(pixbuf);
     }
     if (default_folder_icon_)
       return default_folder_icon_;
   }
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  static GdkPixbuf* default_folder_icon_ = rb.GetNativeImageNamed(
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_BOOKMARK_BAR_FOLDER);
-  return default_folder_icon_;
 }
 
 // static
-GdkPixbuf* GtkThemeService::GetDefaultFavicon(bool native) {
+gfx::Image* GtkThemeService::GetDefaultFavicon(bool native) {
   if (native) {
     if (!icon_widget_)
       icon_widget_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     // We never release our ref, so we will leak this on program shutdown.
     if (!default_bookmark_icon_) {
-      default_bookmark_icon_ =
-          gtk_widget_render_icon(icon_widget_, GTK_STOCK_FILE,
-                                 GTK_ICON_SIZE_MENU, NULL);
+      GdkPixbuf* pixbuf = gtk_widget_render_icon(
+          icon_widget_, GTK_STOCK_FILE, GTK_ICON_SIZE_MENU, NULL);
+      if (pixbuf)
+        default_bookmark_icon_ = new gfx::Image(pixbuf);
     }
     if (default_bookmark_icon_)
       return default_bookmark_icon_;
   }
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  static GdkPixbuf* default_bookmark_icon_ = rb.GetNativeImageNamed(
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_DEFAULT_FAVICON);
-  return default_bookmark_icon_;
 }
 
 // static
@@ -685,16 +673,13 @@ void GtkThemeService::NotifyThemeChanged() {
 
 void GtkThemeService::FreePlatformCaches() {
   ThemeService::FreePlatformCaches();
-  FreePerDisplaySurfaces(&per_display_surfaces_);
-  FreePerDisplaySurfaces(&per_display_unthemed_surfaces_);
-  FreePerDisplaySurfaces(&per_display_icon_surfaces_);
   STLDeleteValues(&gtk_images_);
 }
 
 void GtkThemeService::OnStyleSet(GtkWidget* widget,
                                  GtkStyle* previous_style) {
-  GdkPixbuf* default_folder_icon = default_folder_icon_;
-  GdkPixbuf* default_bookmark_icon = default_bookmark_icon_;
+  gfx::Image* default_folder_icon = default_folder_icon_;
+  gfx::Image* default_bookmark_icon = default_bookmark_icon_;
   default_folder_icon_ = NULL;
   default_bookmark_icon_ = NULL;
 
@@ -709,9 +694,9 @@ void GtkThemeService::OnStyleSet(GtkWidget* widget,
   // Free the old icons only after the theme change notification has gone
   // through.
   if (default_folder_icon)
-    g_object_unref(default_folder_icon);
+    delete default_folder_icon;
   if (default_bookmark_icon)
-    g_object_unref(default_bookmark_icon);
+    delete default_bookmark_icon;
 }
 
 void GtkThemeService::LoadGtkValues() {
@@ -936,18 +921,6 @@ GdkColor GtkThemeService::BuildAndSetFrameColor(const GdkColor* base,
   return out_color;
 }
 
-void GtkThemeService::FreePerDisplaySurfaces(
-    PerDisplaySurfaceMap* per_display_map) {
-  for (PerDisplaySurfaceMap::iterator it = per_display_map->begin();
-       it != per_display_map->end(); ++it) {
-    for (CairoCachedSurfaceMap::iterator jt = it->second.begin();
-         jt != it->second.end(); ++jt) {
-      delete jt->second;
-    }
-  }
-  per_display_map->clear();
-}
-
 void GtkThemeService::FreeIconSets() {
   if (fullscreen_icon_set_) {
     gtk_icon_set_unref(fullscreen_icon_set_);
@@ -1101,45 +1074,6 @@ void GtkThemeService::GetSelectedEntryForegroundHSL(
   GtkStyle* style = gtk_rc_get_style(fake_entry_.get());
   const GdkColor color = style->text[GTK_STATE_SELECTED];
   color_utils::SkColorToHSL(GdkToSkColor(&color), tint);
-}
-
-gfx::CairoCachedSurface* GtkThemeService::GetSurfaceNamedImpl(
-    int id,
-    PerDisplaySurfaceMap* display_surface_map,
-    PixbufProvidingMethod provider,
-    GtkWidget* widget_on_display) {
-  GdkDisplay* display = gtk_widget_get_display(widget_on_display);
-  CairoCachedSurfaceMap& surface_map = (*display_surface_map)[display];
-
-  // Check to see if we already have the pixbuf in the cache.
-  CairoCachedSurfaceMap::const_iterator found = surface_map.find(id);
-  if (found != surface_map.end())
-    return found->second;
-
-  gfx::CairoCachedSurface* surface = new gfx::CairoCachedSurface;
-  surface->UsePixbuf((this->*provider)(id));
-
-  surface_map[id] = surface;
-
-  return surface;
-}
-
-// PixbufProvidingMethod that maps a GtkThemeService::CairoDefaultIcon to a
-// GdkPixbuf.
-GdkPixbuf* GtkThemeService::GetPixbufForIconId(int id) const {
-  switch (id) {
-    case GtkThemeService::NATIVE_FAVICON:
-      return GtkThemeService::GetDefaultFavicon(true);
-    case GtkThemeService::CHROME_FAVICON:
-      return GtkThemeService::GetDefaultFavicon(false);
-    case GtkThemeService::NATIVE_FOLDER:
-      return GtkThemeService::GetFolderIcon(true);
-    case GtkThemeService::CHROME_FOLDER:
-      return GtkThemeService::GetFolderIcon(false);
-    default:
-      NOTREACHED();
-      return NULL;
-  }
 }
 
 void GtkThemeService::OnDestroyChromeButton(GtkWidget* button) {

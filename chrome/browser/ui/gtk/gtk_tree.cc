@@ -10,6 +10,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/table_model.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image/image.h"
 
 namespace gtk_tree {
 
@@ -383,7 +384,7 @@ void TreeAdapter::FillRow(GtkTreeIter* iter, ui::TreeModelNode* node) {
   if (icon_index >= 0 && icon_index < static_cast<int>(pixbufs_.size()))
     pixbuf = pixbufs_[icon_index];
   else
-    pixbuf = GtkThemeService::GetFolderIcon(true);
+    pixbuf = GtkThemeService::GetFolderIcon(true)->ToGdkPixbuf();
   gtk_tree_store_set(tree_store_, iter,
                      COL_ICON, pixbuf,
                      COL_TITLE, UTF16ToUTF8(node->GetTitle()).c_str(),
