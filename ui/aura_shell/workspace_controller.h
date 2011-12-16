@@ -70,6 +70,7 @@ class AURA_SHELL_EXPORT WorkspaceController :
   virtual void LauncherItemRemoved(int index) OVERRIDE;
   virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE;
   virtual void LauncherItemImagesChanged(int index) OVERRIDE;
+  virtual void LauncherItemImagesWillChange(int index) OVERRIDE {}
 
  private:
   scoped_ptr<WorkspaceManager> workspace_manager_;

@@ -45,7 +45,7 @@ class FaviconTabHelper : public TabContentsObserver,
   // entries, which should rarely happen.
   SkBitmap GetFavicon() const;
 
-  // Returns true if we are not using the default favicon.
+  // Returns true if we have the favicon for the page.
   bool FaviconIsValid() const;
 
   // Returns whether the favicon should be displayed. If this returns false, no

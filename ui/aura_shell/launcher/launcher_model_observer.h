@@ -26,6 +26,10 @@ class AURA_SHELL_EXPORT LauncherModelObserver {
   // Invoked when the images of an item change.
   virtual void LauncherItemImagesChanged(int index) = 0;
 
+  // Signals that LauncherItemImagesChanged() is going to be sent in the
+  // near future.
+  virtual void LauncherItemImagesWillChange(int index) = 0;
+
  protected:
   virtual ~LauncherModelObserver() {}
 };

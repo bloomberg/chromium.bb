@@ -40,6 +40,10 @@ class AURA_SHELL_EXPORT LauncherModel {
   void SetTabbedImages(int index, const LauncherTabbedImages& images);
   void SetAppImage(int index, const SkBitmap& image);
 
+  // Sends LauncherItemImagesWillChange() to the observers. Used when the images
+  // are going to change for an item, but not for a while.
+  void SetPendingUpdate(int index);
+
   // Returns the index of the item with the specified window.
   int ItemIndexByWindow(aura::Window* window);
 

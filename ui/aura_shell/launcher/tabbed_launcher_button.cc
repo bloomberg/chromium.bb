@@ -8,6 +8,7 @@
 
 #include "grit/ui_resources.h"
 #include "ui/aura_shell/launcher/launcher_button_host.h"
+#include "ui/base/animation/multi_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
@@ -31,6 +32,28 @@ const int kBgLeftInset = 30;
 const int kBgBottomInset = 12;
 const int kBgRightInset = 8;
 
+TabbedLauncherButton::AnimationDelegateImpl::AnimationDelegateImpl(
+    TabbedLauncherButton* host)
+    : host_(host) {
+}
+
+TabbedLauncherButton::AnimationDelegateImpl::~AnimationDelegateImpl() {
+}
+
+void TabbedLauncherButton::AnimationDelegateImpl::AnimationEnded(
+    const ui::Animation* animation) {
+  AnimationProgressed(animation);
+  // Hide the image when the animation is done. We'll show it again the next
+  // time SetImages is invoked.
+  host_->show_image_ = false;
+}
+
+void TabbedLauncherButton::AnimationDelegateImpl::AnimationProgressed(
+    const ui::Animation* animation) {
+  if (host_->animation_->current_part_index() == 1)
+    host_->SchedulePaint();
+}
+
 // static
 TabbedLauncherButton::ImageSet* TabbedLauncherButton::bg_image_1_ = NULL;
 TabbedLauncherButton::ImageSet* TabbedLauncherButton::bg_image_2_ = NULL;
@@ -39,7 +62,9 @@ TabbedLauncherButton::ImageSet* TabbedLauncherButton::bg_image_3_ = NULL;
 TabbedLauncherButton::TabbedLauncherButton(views::ButtonListener* listener,
                                            LauncherButtonHost* host)
     : views::ImageButton(listener),
-      host_(host) {
+      host_(host),
+      ALLOW_THIS_IN_INITIALIZER_LIST(animation_delegate_(this)),
+      show_image_(true) {
   if (!bg_image_1_) {
     bg_image_1_ = CreateImageSet(IDR_AURA_LAUNCHER_TABBED_BROWSER_1,
                                  IDR_AURA_LAUNCHER_TABBED_BROWSER_1_PUSHED,
@@ -58,7 +83,23 @@ TabbedLauncherButton::TabbedLauncherButton(views::ButtonListener* listener,
 TabbedLauncherButton::~TabbedLauncherButton() {
 }
 
+void TabbedLauncherButton::PrepareForImageChange() {
+  if (!show_image_ || (animation_.get() && animation_->is_animating()))
+    return;
+
+  // Pause for 500ms, then ease out for 200ms.
+  ui::MultiAnimation::Parts animation_parts;
+  animation_parts.push_back(ui::MultiAnimation::Part(500, ui::Tween::ZERO));
+  animation_parts.push_back(ui::MultiAnimation::Part(200, ui::Tween::EASE_OUT));
+  animation_.reset(new ui::MultiAnimation(animation_parts));
+  animation_->set_continuous(false);
+  animation_->set_delegate(&animation_delegate_);
+  animation_->Start();
+}
+
 void TabbedLauncherButton::SetImages(const LauncherTabbedImages& images) {
+  animation_.reset();
+  show_image_ = true;
   images_ = images;
   ImageSet* set;
   if (images_.size() <= 1)
@@ -70,13 +111,19 @@ void TabbedLauncherButton::SetImages(const LauncherTabbedImages& images) {
   SetImage(BS_NORMAL, set->normal_image);
   SetImage(BS_HOT, set->hot_image);
   SetImage(BS_PUSHED, set->pushed_image);
+  SchedulePaint();
 }
 
 void TabbedLauncherButton::OnPaint(gfx::Canvas* canvas) {
   ImageButton::OnPaint(canvas);
 
-  if (images_.empty())
+  if (images_.empty() || images_[0].image.empty() || !show_image_)
     return;
+
+  bool save_layer = (animation_.get() && animation_->is_animating() &&
+                     animation_->current_part_index() == 1);
+  if (save_layer)
+    canvas->SaveLayerAlpha(animation_->CurrentValueBetween(255, 0));
 
   // Only show the first icon.
   // TODO(sky): if we settle on just 1 icon, then we should simplify surrounding
@@ -84,6 +131,9 @@ void TabbedLauncherButton::OnPaint(gfx::Canvas* canvas) {
   int x = (width() - images_[0].image.width()) / 2;
   int y = (height() - images_[0].image.height()) / 2 + 1;
   canvas->DrawBitmapInt(images_[0].image, x, y);
+
+  if (save_layer)
+    canvas->Restore();
 }
 
 bool TabbedLauncherButton::OnMousePressed(const views::MouseEvent& event) {

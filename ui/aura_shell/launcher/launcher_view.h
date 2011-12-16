@@ -96,6 +96,7 @@ class LauncherView : public views::WidgetDelegateView,
   virtual void LauncherItemRemoved(int model_index) OVERRIDE;
   virtual void LauncherItemImagesChanged(int model_index) OVERRIDE;
   virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE;
+  virtual void LauncherItemImagesWillChange(int index) OVERRIDE;
 
   // Overridden from LauncherButtonHost:
   virtual void MousePressedOnButton(views::View* view,

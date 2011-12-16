@@ -56,6 +56,11 @@ void LauncherModel::SetAppImage(int index, const SkBitmap& image) {
                     LauncherItemImagesChanged(index));
 }
 
+void LauncherModel::SetPendingUpdate(int index) {
+  FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
+                    LauncherItemImagesWillChange(index));
+}
+
 int LauncherModel::ItemIndexByWindow(aura::Window* window) {
   LauncherItems::const_iterator i = ItemByWindow(window);
   return i == items_.end() ? -1 : static_cast<int>((i - items_.begin()));

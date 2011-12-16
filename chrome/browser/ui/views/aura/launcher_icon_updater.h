@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_AURA_LAUNCHER_ICON_UPDATER_H_
 #pragma once
 
-#include <deque>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
+
+class TabContentsWrapper;
 
 namespace aura {
 class Window;
@@ -20,7 +20,7 @@ class LauncherModel;
 }
 
 // LauncherIconUpdater is responsible for keeping the launcher representation
-// of a window up to date with the tabs.
+// of a window up to date as the tab strip changes.
 class LauncherIconUpdater : public TabStripModelObserver {
  public:
   LauncherIconUpdater(TabStripModel* tab_model,
@@ -29,36 +29,25 @@ class LauncherIconUpdater : public TabStripModelObserver {
   virtual ~LauncherIconUpdater();
 
   // TabStripModel overrides:
-  virtual void TabInsertedAt(TabContentsWrapper* contents,
-                             int index,
-                             bool foreground) OVERRIDE;
-  virtual void TabDetachedAt(TabContentsWrapper* contents, int index) OVERRIDE;
-  virtual void TabSelectionChanged(
-      TabStripModel* tab_strip_model,
-      const TabStripSelectionModel& old_model) OVERRIDE;
+  virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
+                                TabContentsWrapper* new_contents,
+                                int index,
+                                bool user_gesture) OVERRIDE;
   virtual void TabChangedAt(
       TabContentsWrapper* tab,
       int index,
       TabStripModelObserver::TabChangeType change_type) OVERRIDE;
-  virtual void TabReplacedAt(TabStripModel* tab_strip_model,
-                             TabContentsWrapper* old_contents,
-                             TabContentsWrapper* new_contents,
-                             int index) OVERRIDE;
 
  private:
-  typedef std::deque<TabContentsWrapper*> Tabs;
-
-  // Updates the launcher from the current set of tabs.
-  void UpdateLauncher();
+  // Updates the launcher from |tab|.
+  void UpdateLauncher(TabContentsWrapper* tab);
 
   TabStripModel* tab_model_;
 
   aura_shell::LauncherModel* launcher_model_;
 
+  // Used to index into the model.
   aura::Window* window_;
-
-  // The tabs. This is an MRU cache of the tabs in the tabstrip model.
-  Tabs tabs_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherIconUpdater);
 };
