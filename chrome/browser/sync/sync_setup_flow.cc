@@ -445,8 +445,10 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
         // passphrase back into ProfileSyncService in a
         // NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL listener once we get rid of
         // SyncSetupFlow.
-        if (!cached_passphrase_.empty())
+        if (!cached_passphrase_.empty()) {
           service_->SetPassphrase(cached_passphrase_, false);
+          cached_passphrase_.clear();
+        }
         flow_handler_->ShowGaiaSuccessAndClose();
         break;
       }
