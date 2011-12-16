@@ -127,6 +127,8 @@ remoting.HostList.prototype.parseHostListResponse_ = function(xhr, onDone) {
       } else if (xhr.status >= 400 && xhr.status < 500) {
         // For other errors, tell the user to re-authorize us.
         this.lastError_ = remoting.Error.GENERIC;
+      } else if (xhr.status == 503) {
+        this.lastError_ = remoting.Error.SERVICE_UNAVAILABLE;
       } else {
         this.lastError_ = remoting.Error.UNEXPECTED;
       }

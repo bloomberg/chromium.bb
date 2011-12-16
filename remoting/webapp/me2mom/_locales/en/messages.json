@@ -103,6 +103,10 @@
     "message": "The server failed to respond to the network request.",
     "description": "Error displayed by the client if the server does not respond to a network request."
   },
+  "ERROR_SERVICE_UNAVAILABLE": {
+    "message": "The service is temporarily unavailable. Please try again later.",
+    "description": "Error displayed when the service returns a 503 error. Such errors are usually temporary, and resolve themselves in about 30 seconds."
+  },
   "ERROR_UNEXPECTED": {
     "message": "An unexpected error occurred. Please report this problem to the developers.",
     "description": "Error displayed in situations where things go wrong in ways not anticipated by the developers. There is typically no user-workaround to suggest, other than reporting the error so that we can investigate further."
