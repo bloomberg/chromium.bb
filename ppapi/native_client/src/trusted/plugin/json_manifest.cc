@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "native_client/src/trusted/plugin/manifest.h"
+#include "native_client/src/trusted/plugin/json_manifest.h"
 
 #include <stdlib.h>
 
@@ -162,6 +162,7 @@ bool GetURLFromISADictionary(const Json::Value& dictionary,
                              const nacl::string& sandbox_isa,
                              nacl::string* url,
                              nacl::string* error_string,
+                             bool prefer_portable,
                              bool* is_portable) {
   if (url == NULL || error_string == NULL || is_portable == NULL)
     return false;
@@ -174,7 +175,7 @@ bool GetURLFromISADictionary(const Json::Value& dictionary,
   // sandbox_isa or kPortableKey is present in the dictionary.
   bool has_portable = dictionary.isMember(kPortableKey);
   bool has_isa = dictionary.isMember(sandbox_isa);
-  if ((has_portable && Manifest::PreferPortable()) || !has_isa) {
+  if ((has_portable && prefer_portable) || !has_isa) {
     *is_portable = true;
     isa_string = kPortableKey;
   } else {
@@ -223,11 +224,8 @@ bool GetKeyUrl(const Json::Value& dictionary,
 
 }  // namespace
 
-bool Manifest::PreferPortable() {
-  return getenv("NACL_PREFER_PORTABLE_IN_MANIFEST") != NULL;
-}
-
-bool Manifest::Init(const nacl::string& manifest_json, ErrorInfo* error_info) {
+bool JsonManifest::Init(const nacl::string& manifest_json,
+                        ErrorInfo* error_info) {
   if (error_info == NULL) {
     return false;
   }
@@ -243,7 +241,7 @@ bool Manifest::Init(const nacl::string& manifest_json, ErrorInfo* error_info) {
   return MatchesSchema(error_info);
 }
 
-bool Manifest::MatchesSchema(ErrorInfo* error_info) {
+bool JsonManifest::MatchesSchema(ErrorInfo* error_info) {
   pp::Var exception;
   if (error_info == NULL) {
     return false;
@@ -264,7 +262,7 @@ bool Manifest::MatchesSchema(ErrorInfo* error_info) {
     if (!FindMatchingProperty(property_name,
                               kManifestTopLevelProperties,
                               NACL_ARRAY_SIZE(kManifestTopLevelProperties))) {
-      PLUGIN_PRINTF(("Manifest::MatchesSchema: WARNING: unknown top-level "
+      PLUGIN_PRINTF(("JsonManifest::MatchesSchema: WARNING: unknown top-level "
                      "section '%s' in manifest.\n", property_name.c_str()));
     }
   }
@@ -327,9 +325,9 @@ bool Manifest::MatchesSchema(ErrorInfo* error_info) {
   return true;
 }
 
-bool Manifest::ResolveURL(const nacl::string& relative_url,
-                          nacl::string* full_url,
-                          ErrorInfo* error_info) const {
+bool JsonManifest::ResolveURL(const nacl::string& relative_url,
+                              nacl::string* full_url,
+                              ErrorInfo* error_info) const {
   // The contents of the manifest are resolved relative to the manifest URL.
   CHECK(url_util_ != NULL);
   pp::Var resolved_url =
@@ -347,9 +345,9 @@ bool Manifest::ResolveURL(const nacl::string& relative_url,
   return true;
 }
 
-bool Manifest::GetProgramURL(nacl::string* full_url,
-                             ErrorInfo* error_info,
-                             bool* is_portable) {
+bool JsonManifest::GetProgramURL(nacl::string* full_url,
+                                 ErrorInfo* error_info,
+                                 bool* is_portable) {
   if (full_url == NULL || error_info == NULL || is_portable == NULL)
     return false;
 
@@ -362,6 +360,7 @@ bool Manifest::GetProgramURL(nacl::string* full_url,
                                sandbox_isa_,
                                &nexe_url,
                                &error_string,
+                               prefer_portable_,
                                is_portable)) {
     error_info->SetReport(ERROR_MANIFEST_GET_NEXE_URL,
                           nacl::string("program:") + sandbox_isa_ +
@@ -372,7 +371,7 @@ bool Manifest::GetProgramURL(nacl::string* full_url,
   return ResolveURL(nexe_url, full_url, error_info);
 }
 
-bool Manifest::GetFileKeys(std::set<nacl::string>* keys) const {
+bool JsonManifest::GetFileKeys(std::set<nacl::string>* keys) const {
   if (!dictionary_.isMember(kFilesKey)) {
     // trivial success: no keys when there is no "files" section.
     return true;
@@ -386,11 +385,11 @@ bool Manifest::GetFileKeys(std::set<nacl::string>* keys) const {
   return true;
 }
 
-bool Manifest::ResolveKey(const nacl::string& key,
-                          nacl::string* full_url,
-                          ErrorInfo* error_info,
-                          bool* is_portable) const {
-  NaClLog(3, "Manifest::ResolveKey(%s)\n", key.c_str());
+bool JsonManifest::ResolveKey(const nacl::string& key,
+                              nacl::string* full_url,
+                              ErrorInfo* error_info,
+                              bool* is_portable) const {
+  NaClLog(3, "JsonManifest::ResolveKey(%s)\n", key.c_str());
   // key must be one of kProgramKey or kFileKey '/' file-section-key
 
   *full_url = "";
@@ -418,7 +417,13 @@ bool Manifest::ResolveKey(const nacl::string& key,
   nacl::string rest(p + 1, key.end());
 
   const Json::Value& files = dictionary_[kFilesKey];
-  CHECK(files.isObject());
+  if (!files.isObject()) {
+    error_info->SetReport(
+        ERROR_MANIFEST_RESOLVE_URL,
+        nacl::string("ResolveKey: no \"files\" dictionary"));
+    *is_portable = false;
+    return false;
+  }
   if (!files.isMember(rest)) {
     error_info->SetReport(
         ERROR_MANIFEST_RESOLVE_URL,

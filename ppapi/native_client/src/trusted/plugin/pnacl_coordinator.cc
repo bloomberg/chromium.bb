@@ -12,6 +12,7 @@
 #include "native_client/src/shared/platform/nacl_sync_raii.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/browser_interface.h"
+#include "native_client/src/trusted/plugin/manifest.h"
 #include "native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "native_client/src/trusted/plugin/nexe_arch.h"
 #include "native_client/src/trusted/plugin/plugin.h"
@@ -61,6 +62,8 @@ const bool kWriteable = true;
 
 }  // namespace
 
+//////////////////////////////////////////////////////////////////////
+//  Temporary file descriptors.
 //////////////////////////////////////////////////////////////////////
 PnaclFileDescPair::PnaclFileDescPair(Plugin* plugin,
                                      pp::FileSystem* file_system,
@@ -165,6 +168,77 @@ void PnaclFileDescPair::ReadFileDidOpen(int32_t pp_error) {
 }
 
 //////////////////////////////////////////////////////////////////////
+//  Pnacl-specific manifest support.
+//////////////////////////////////////////////////////////////////////
+class PnaclManifest : public Manifest {
+ public:
+  PnaclManifest(const pp::URLUtil_Dev* url_util,
+                const nacl::string& manifest_base_url)
+      : Manifest(url_util, manifest_base_url, GetSandboxISA(), false) {
+    size_t last_slash_pos = manifest_base_url_.rfind("/");
+    CHECK(last_slash_pos != nacl::string::npos);
+    // url_prefix contains everything in manifest_base_url up to and including
+    // the last slash.
+    url_prefix_ =
+        manifest_base_url_.substr(0, last_slash_pos + 1) + ResourceBaseUrl();
+  }
+  virtual ~PnaclManifest() { }
+
+  virtual bool GetProgramURL(nacl::string* full_url,
+                             ErrorInfo* error_info,
+                             bool* is_portable) {
+    // Does not contain program urls.
+    UNREFERENCED_PARAMETER(full_url);
+    UNREFERENCED_PARAMETER(error_info);
+    UNREFERENCED_PARAMETER(is_portable);
+    PLUGIN_PRINTF(("PnaclManifest does not contain a program\n"));
+    error_info->SetReport(ERROR_MANIFEST_GET_NEXE_URL,
+                          "pnacl manifest does not contain a program");
+    return false;
+  }
+
+  virtual bool ResolveURL(const nacl::string& relative_url,
+                          nacl::string* full_url,
+                          ErrorInfo* error_info) const {
+    // Does not do general URL resolution, simply appends relative_url to
+    // the end of url_prefix_.
+    UNREFERENCED_PARAMETER(error_info);
+    *full_url = url_prefix_ + relative_url;
+    return true;
+  }
+
+  virtual bool GetFileKeys(std::set<nacl::string>* keys) const {
+    // Does not support enumeration.
+    PLUGIN_PRINTF(("PnaclManifest does not support key enumeration\n"));
+    UNREFERENCED_PARAMETER(keys);
+    return false;
+  }
+
+  virtual bool ResolveKey(const nacl::string& key,
+                          nacl::string* full_url,
+                          ErrorInfo* error_info,
+                          bool* is_portable) const {
+    *is_portable = false;
+    // We can only resolve keys in the files/ namespace.
+    const nacl::string kFilesPrefix = "files/";
+    size_t files_prefix_pos = key.find(kFilesPrefix);
+    if (files_prefix_pos == nacl::string::npos) {
+      error_info->SetReport(ERROR_MANIFEST_RESOLVE_URL,
+                            "key did not start with files/");
+      return false;
+    }
+    // Append what follows files to the pnacl URL prefix.
+    nacl::string key_basename = key.substr(kFilesPrefix.length());
+    return ResolveURL(key_basename, full_url, error_info);
+  }
+
+ private:
+  nacl::string url_prefix_;
+};
+
+//////////////////////////////////////////////////////////////////////
+//  The coordinator class.
+//////////////////////////////////////////////////////////////////////
 PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
     Plugin* plugin,
     const nacl::string& pexe_url,
@@ -232,15 +306,15 @@ PnaclCoordinator::PnaclCoordinator(
     ld_subprocess_(NULL),
     subprocesses_should_die_(false),
     file_system_(new pp::FileSystem(plugin, PP_FILESYSTEMTYPE_LOCALTEMPORARY)),
+    // TODO(sehr,jvoung): change base url to pnacl extension/testing url.
+    manifest_(new PnaclManifest(plugin->url_util(),
+                                plugin->manifest_base_url())),
     pexe_url_(pexe_url) {
   PLUGIN_PRINTF(("PnaclCoordinator::PnaclCoordinator (this=%p, plugin=%p)\n",
                  static_cast<void*>(this), static_cast<void*>(plugin)));
   callback_factory_.Initialize(this);
   NaClXMutexCtor(&subprocess_mu_);
-  // Initialize the file lookup related members.
-  NaClXMutexCtor(&lookup_service_mu_);
-  NaClXCondVarCtor(&lookup_service_cv_);
-  // Open the temporary file system.
+  // Check the temporary file system.
   CHECK(file_system_ != NULL);
 }
 
@@ -253,8 +327,6 @@ PnaclCoordinator::~PnaclCoordinator() {
     SetSubprocessesShouldDie(true);
     NaClThreadJoin(translate_thread_.get());
   }
-  NaClCondVarDtor(&lookup_service_cv_);
-  NaClMutexDtor(&lookup_service_mu_);
   NaClMutexDtor(&subprocess_mu_);
 }
 
@@ -377,12 +449,12 @@ void PnaclCoordinator::RunTranslate(int32_t pp_error) {
   // It would really be nice if we could create subprocesses from other than
   // the main thread.  Until we can, we create them both up front.
   // TODO(sehr): allow creation of subrpocesses from other threads.
-  llc_subprocess_ = StartSubprocess(kLlcUrl);
+  llc_subprocess_ = StartSubprocess(kLlcUrl, manifest_);
   if (llc_subprocess_ == NULL) {
     ReportPpapiError(PP_ERROR_FAILED);
     return;
   }
-  ld_subprocess_ = StartSubprocess(kLdUrl);
+  ld_subprocess_ = StartSubprocess(kLdUrl, manifest_);
   if (ld_subprocess_ == NULL) {
     ReportPpapiError(PP_ERROR_FAILED);
     return;
@@ -406,11 +478,13 @@ void PnaclCoordinator::RunTranslate(int32_t pp_error) {
 }
 
 NaClSubprocess* PnaclCoordinator::StartSubprocess(
-    const nacl::string& url_for_nexe) {
+    const nacl::string& url_for_nexe,
+    const Manifest* manifest) {
   PLUGIN_PRINTF(("PnaclCoordinator::StartSubprocess (url_for_nexe=%s)\n",
                  url_for_nexe.c_str()));
   nacl::DescWrapper* wrapper = resources_->WrapperForUrl(url_for_nexe);
-  NaClSubprocessId id = plugin_->LoadHelperNaClModule(wrapper, &error_info_);
+  NaClSubprocessId id =
+      plugin_->LoadHelperNaClModule(wrapper, manifest, &error_info_);
   if (kInvalidNaClSubprocessId == id) {
     PLUGIN_PRINTF((
         "PnaclCoordinator::StartSubprocess: invalid subprocess id\n"));
@@ -451,26 +525,15 @@ void WINAPI PnaclCoordinator::DoTranslateThread(void* arg) {
         "PnaclCoordinator::DoTranslateThread: killed by coordinator.\n"));
     NaClThreadExit(1);
   }
-  // Set up the lookup service for filename to handle resolution.
-  NaClSrpcService* service =
-      reinterpret_cast<NaClSrpcService*>(calloc(1, sizeof(*service)));
-  if (NULL == service) {
-    coordinator->TranslateFailed("lookup service alloc failed.");
-  }
-  if (!NaClSrpcServiceHandlerCtor(service, lookup_methods)) {
-    free(service);
-    coordinator->TranslateFailed("lookup service constructor failed.");
-  }
-  char* service_string = const_cast<char*>(service->service_string);
   NaClSubprocess* ld_subprocess = coordinator->ld_subprocess_;
-  ld_subprocess->srpc_client()->AttachService(service, coordinator);
+  nacl::DescWrapper* ld_in_file = coordinator->obj_file_->read_wrapper();
   nacl::DescWrapper* ld_out_file = coordinator->nexe_file_->write_wrapper();
   if (!PnaclSrpcLib::InvokeSrpcMethod(browser_interface,
                                       ld_subprocess,
                                       "RunWithDefaultCommandLine",
-                                      "ChiCC",
+                                      "hhiCC",
                                       &params,
-                                      service_string,
+                                      ld_in_file->desc(),
                                       ld_out_file->desc(),
                                       is_shared_library,
                                       soname.c_str(),
@@ -496,110 +559,6 @@ bool PnaclCoordinator::SubprocessesShouldDie() {
 void PnaclCoordinator::SetSubprocessesShouldDie(bool subprocesses_should_die) {
   nacl::MutexLocker ml(&subprocess_mu_);
   subprocesses_should_die_ = subprocesses_should_die;
-}
-
-void PnaclCoordinator::LoadOneFile(int32_t pp_error,
-                                   const nacl::string& url,
-                                   nacl::DescWrapper** wrapper,
-                                   pp::CompletionCallback& done_cb) {
-  PLUGIN_PRINTF(("PnaclCoordinator::LoadOneFile (pp_error=%"
-                 NACL_PRId32", url=%s)\n", pp_error, url.c_str()));
-  const nacl::string& full_url = resource_base_url_ + url;
-  pp::CompletionCallback callback =
-      callback_factory_.NewCallback(&PnaclCoordinator::DidLoadFile,
-                                    full_url,
-                                    wrapper,
-                                    done_cb);
-  if (!plugin_->StreamAsFile(full_url, callback.pp_completion_callback())) {
-    ReportNonPpapiError(nacl::string("failed to load ") + url + "\n");
-  }
-}
-
-void PnaclCoordinator::DidLoadFile(int32_t pp_error,
-                                   const nacl::string& full_url,
-                                   nacl::DescWrapper** wrapper,
-                                   pp::CompletionCallback& done_cb) {
-  PLUGIN_PRINTF(("PnaclCoordinator::DidLoadFile (pp_error=%"
-                 NACL_PRId32", url=%s)\n", pp_error, full_url.c_str()));
-  int32_t fd = GetLoadedFileDesc(pp_error, full_url, "resource");
-  if (fd < 0) {
-    PLUGIN_PRINTF((
-        "PnaclCoordinator::DidLoadFile: GetLoadedFileDesc returned bad fd.\n"));
-    return;
-  }
-  *wrapper = plugin_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY);
-  done_cb.Run(PP_OK);
-}
-
-void PnaclCoordinator::ResumeLookup(int32_t pp_error) {
-  PLUGIN_PRINTF(("PnaclCoordinator::ResumeLookup (pp_error=%"
-                 NACL_PRId32", url=%s)\n", pp_error));
-  UNREFERENCED_PARAMETER(pp_error);
-  nacl::MutexLocker ml(&lookup_service_mu_);
-  lookup_is_complete_ = true;
-  NaClXCondVarBroadcast(&lookup_service_cv_);
-}
-
-// Lookup service called by translator nexes.
-// TODO(sehr): replace this lookup by ReverseService.
-void PnaclCoordinator::LookupInputFile(NaClSrpcRpc* rpc,
-                                       NaClSrpcArg** inputs,
-                                       NaClSrpcArg** outputs,
-                                       NaClSrpcClosure* done) {
-  PLUGIN_PRINTF(("PnaclCoordinator::LookupInputFile (url=%s)\n",
-                 inputs[0]->arrays.str));
-  NaClSrpcClosureRunner runner(done);
-  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  const char* file_name = inputs[0]->arrays.str;
-  PnaclCoordinator* coordinator = reinterpret_cast<PnaclCoordinator*>(
-      rpc->channel->server_instance_data);
-  outputs[0]->u.hval = coordinator->LookupDesc(file_name);
-  rpc->result = NACL_SRPC_RESULT_OK;
-}
-
-NaClSrpcHandlerDesc PnaclCoordinator::lookup_methods[] = {
-  { "LookupInputFile:s:h", LookupInputFile },
-  { NULL, NULL }
-};
-
-struct NaClDesc* PnaclCoordinator::LookupDesc(const nacl::string& url) {
-  PLUGIN_PRINTF(("PnaclCoordinator::LookupDesc (url=%s)\n", url.c_str()));
-  // This filename is part of the contract with the linker.  It is a
-  // fake filename for the object file generated by llc and consumed by ld.
-  // TODO(sehr): Pass the FD in, and move lookup for this file to the linker.
-  const nacl::string kGeneratedObjectFileName = "___PNACL_GENERATED";
-  if (url == kGeneratedObjectFileName) {
-    return obj_file_->read_wrapper()->desc();
-  }
-  nacl::DescWrapper* wrapper;
-  // Create the callback used to report when lookup is done.
-  pp::CompletionCallback resume_cb =
-    callback_factory_.NewCallback(&PnaclCoordinator::ResumeLookup);
-  // Run the lookup request on the main thread.
-  lookup_is_complete_ = false;
-  pp::CompletionCallback load_cb =
-    callback_factory_.NewCallback(&PnaclCoordinator::LoadOneFile,
-                                  url, &wrapper, resume_cb);
-  pp::Core* core = pp::Module::Get()->core();
-  core->CallOnMainThread(0, load_cb, PP_OK);
-  // Wait for completion (timeout every 10ms to check for process end).
-  const int32_t kTenMilliseconds = 10 * 1000 * 1000;
-  NACL_TIMESPEC_T reltime;
-  reltime.tv_sec = 0;
-  reltime.tv_nsec = kTenMilliseconds;
-  NaClXMutexLock(&lookup_service_mu_);
-  while (!lookup_is_complete_) {
-    // Check for termination.
-    if (SubprocessesShouldDie()) {
-      NaClXMutexUnlock(&lookup_service_mu_);
-      NaClThreadExit(0);
-    }
-    NaClXCondVarTimedWaitRelative(&lookup_service_cv_,
-                                  &lookup_service_mu_,
-                                  &reltime);
-  }
-  NaClXMutexUnlock(&lookup_service_mu_);
-  return wrapper->desc();
 }
 
 }  // namespace plugin

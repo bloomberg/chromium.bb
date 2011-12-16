@@ -33,6 +33,7 @@ struct PPB_FileIOTrusted;
 
 namespace plugin {
 
+class Manifest;
 class Plugin;
 class PnaclCoordinator;
 
@@ -217,7 +218,8 @@ class PnaclCoordinator {
   // subprocesses, one for llc and one for ld.
   void RunTranslate(int32_t pp_error);
   // Starts an individual llc or ld subprocess used for translation.
-  NaClSubprocess* StartSubprocess(const nacl::string& url);
+  NaClSubprocess* StartSubprocess(const nacl::string& url,
+                                  const Manifest* manifest);
   // PnaclCoordinator creates a helper thread to allow translations to be
   // invoked via SRPC.  This is the helper thread function for translation.
   static void WINAPI DoTranslateThread(void* arg);
@@ -229,22 +231,6 @@ class PnaclCoordinator {
   void TranslateFinished(int32_t pp_error);
   // Signal that Pnacl translation failed, from the translation thread only.
   void TranslateFailed(const nacl::string& error_string);
-
-  // Support for file lookups needed for ld.
-  // TODO(sehr): remove this when file lookup is through ReverseService.
-  // Invoked on the main thread on behalf of the lookup service to start
-  // loading a particular URL.
-  void LoadOneFile(int32_t pp_error,
-                   const nacl::string& url,
-                   nacl::DescWrapper** wrapper,
-                   pp::CompletionCallback& done_cb);
-  // Invoked by the renderer when the file was loaded.
-  void DidLoadFile(int32_t pp_error,
-                   const nacl::string& full_url,
-                   nacl::DescWrapper** wrapper,
-                   pp::CompletionCallback& done_cb);
-  // Signals the waiting lookup service to resume.
-  void ResumeLookup(int32_t pp_error);
 
   // The plugin owning the nexe for which we are doing translation.
   Plugin* plugin_;
@@ -275,6 +261,8 @@ class PnaclCoordinator {
   nacl::scoped_ptr<NaClThread> translate_thread_;
   // Translation creates local temporary files.
   nacl::scoped_ptr<pp::FileSystem> file_system_;
+  // The manifest used by the reverse service to look up objects and libraries.
+  const Manifest* manifest_;
   // An auxiliary class that manages downloaded resources (llc and ld nexes).
   nacl::scoped_ptr<PnaclResources> resources_;
 
@@ -291,25 +279,6 @@ class PnaclCoordinator {
 
   // Used to report information when errors (PPAPI or otherwise) are reported.
   ErrorInfo error_info_;
-
-  // Support for file lookups (obsolescent).
-  // The SRPC file lookup service for ld.
-  static void LookupInputFile(NaClSrpcRpc* rpc,
-                              NaClSrpcArg** inputs,
-                              NaClSrpcArg** outputs,
-                              NaClSrpcClosure* done);
-  static NaClSrpcHandlerDesc lookup_methods[];
-
-  // Used by the SRPC file lookup service for ld.
-  // Looks up url and returns the read-only file descriptor for it.
-  // If url is the specially designated filename for the translated object
-  // file, it returns obj_file_.read_wrapper().  Otherwise the lookup causes
-  // the download of the requested resource via Plugin::StreamAsFile.
-  struct NaClDesc* LookupDesc(const nacl::string& url);
-
-  struct NaClMutex lookup_service_mu_;
-  struct NaClCondVar lookup_service_cv_;
-  bool lookup_is_complete_;
 };
 
 //----------------------------------------------------------------------

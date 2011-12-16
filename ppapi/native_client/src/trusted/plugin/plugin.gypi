@@ -9,7 +9,7 @@
       'browser_interface.cc',
       'desc_based_handle.cc',
       'file_downloader.cc',
-      'manifest.cc',
+      'json_manifest.cc',
       'method_map.cc',
       'module_ppapi.cc',
       'nacl_subprocess.cc',

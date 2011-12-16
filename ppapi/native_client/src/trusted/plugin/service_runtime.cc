@@ -69,11 +69,13 @@ namespace plugin {
 PluginReverseInterface::PluginReverseInterface(
     nacl::WeakRefAnchor* anchor,
     Plugin* plugin,
+    const Manifest* manifest,
     ServiceRuntime* service_runtime,
     pp::CompletionCallback init_done_cb,
     pp::CompletionCallback crash_cb)
       : anchor_(anchor),
         plugin_(plugin),
+        manifest_(manifest),
         service_runtime_(service_runtime),
         shutting_down_(false),
         init_done_cb_(init_done_cb),
@@ -156,7 +158,7 @@ void PluginReverseInterface::PostMessage_MainThreadContinuation(
 
 bool PluginReverseInterface::EnumerateManifestKeys(
     std::set<nacl::string>* out_keys) {
-  Manifest const* mp = plugin_->manifest();
+  Manifest const* mp = manifest_;
 
   if (!mp->GetFileKeys(out_keys)) {
     return false;
@@ -251,8 +253,8 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
   NaClLog(4, "Entered OpenManifestEntry_MainThreadContinuation\n");
 
   std::string mapped_url;
-  if (!plugin_->manifest()->ResolveKey(p->url, &mapped_url,
-                                       p->error_info, p->is_portable)) {
+  if (!manifest_->ResolveKey(p->url, &mapped_url,
+                             p->error_info, p->is_portable)) {
     NaClLog(4, "OpenManifestEntry_MainThreadContinuation: ResolveKey failed\n");
     // Failed, and error_info has the details on what happened.  Wake
     // up requesting thread -- we are done.
@@ -378,6 +380,7 @@ void PluginReverseInterface::ReportExitStatus(int exit_status) {
 }
 
 ServiceRuntime::ServiceRuntime(Plugin* plugin,
+                               const Manifest* manifest,
                                pp::CompletionCallback init_done_cb,
                                pp::CompletionCallback crash_cb)
     : plugin_(plugin),
@@ -388,6 +391,7 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
       async_send_desc_(NULL),
       anchor_(new nacl::WeakRefAnchor()),
       rev_interface_(new PluginReverseInterface(anchor_, plugin,
+                                                manifest,
                                                 this,
                                                 init_done_cb, crash_cb)),
       exit_status_(-1) {

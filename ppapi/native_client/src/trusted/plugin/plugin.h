@@ -149,6 +149,7 @@ class Plugin : public pp::InstancePrivate {
   // Does not update nacl_module_origin().
   // Returns kInvalidNaClSubprocessId or the ID of the new helper NaCl module.
   NaClSubprocessId LoadHelperNaClModule(nacl::DescWrapper* wrapper,
+                                        const Manifest* manifest,
                                         ErrorInfo* error_info);
 
   // Returns the argument value for the specified key, or NULL if not found.
@@ -326,6 +327,7 @@ class Plugin : public pp::InstancePrivate {
   bool enable_dev_interfaces() { return enable_dev_interfaces_; }
 
   Manifest const* manifest() const { return manifest_.get(); }
+  const pp::URLUtil_Dev* url_util() const { return url_util_; }
 
   // Extracts the exit status from the (main) service runtime.
   int exit_status() const {
@@ -375,6 +377,7 @@ class Plugin : public pp::InstancePrivate {
   // This will fully initialize the |subprocess| if the load was successful.
   bool LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
                             NaClSubprocess* subprocess,
+                            const Manifest* manifest,
                             ErrorInfo* error_info,
                             pp::CompletionCallback init_done_cb,
                             pp::CompletionCallback crash_cb);

@@ -41,7 +41,7 @@
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/plugin/browser_interface.h"
 #include "native_client/src/trusted/plugin/desc_based_handle.h"
-#include "native_client/src/trusted/plugin/manifest.h"
+#include "native_client/src/trusted/plugin/json_manifest.h"
 #include "native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "native_client/src/trusted/plugin/nexe_arch.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
@@ -648,13 +648,12 @@ void Plugin::ShutDownSubprocesses() {
 
 bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
                                   NaClSubprocess* subprocess,
+                                  const Manifest* manifest,
                                   ErrorInfo* error_info,
                                   pp::CompletionCallback init_done_cb,
                                   pp::CompletionCallback crash_cb) {
-  ServiceRuntime* new_service_runtime = new(std::nothrow) ServiceRuntime(
-      this,
-      init_done_cb,
-      crash_cb);
+  ServiceRuntime* new_service_runtime =
+      new(std::nothrow) ServiceRuntime(this, manifest, init_done_cb, crash_cb);
   subprocess->set_service_runtime(new_service_runtime);
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (service_runtime=%p)\n",
                  static_cast<void*>(new_service_runtime)));
@@ -730,8 +729,8 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
   // associated listener threads do not go unjoined because if they
   // outlive the Plugin object, they will not be memory safe.
   ShutDownSubprocesses();
-  if (!(LoadNaClModuleCommon(wrapper, &main_subprocess_, error_info,
-                             init_done_cb, crash_cb))) {
+  if (!(LoadNaClModuleCommon(wrapper, &main_subprocess_, manifest_.get(),
+                             error_info, init_done_cb, crash_cb))) {
     return false;
   }
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (%s)\n",
@@ -750,6 +749,7 @@ bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
 }
 
 NaClSubprocessId Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
+                                              const Manifest* manifest,
                                               ErrorInfo* error_info) {
   NaClSubprocessId next_id = next_nacl_subprocess_id();
   nacl::scoped_ptr<NaClSubprocess> nacl_subprocess(
@@ -760,7 +760,8 @@ NaClSubprocessId Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
     return kInvalidNaClSubprocessId;
   }
 
-  if (!(LoadNaClModuleCommon(wrapper, nacl_subprocess.get(), error_info,
+  if (!(LoadNaClModuleCommon(wrapper, nacl_subprocess.get(), manifest,
+                             error_info,
                              pp::BlockUntilComplete(),
                              pp::BlockUntilComplete())
         // We need not wait for the init_done callback.  We can block
@@ -1696,11 +1697,19 @@ bool Plugin::SetManifestObject(const nacl::string& manifest_json,
        manifest_json.c_str()));
   if (error_info == NULL)
     return false;
-  manifest_.reset(
-      new Manifest(url_util_, manifest_base_url(), GetSandboxISA()));
-  if (!manifest_->Init(manifest_json, error_info)) {
+  // Determine whether lookups should use portable (i.e., pnacl versions)
+  // rather than platform-specific files.
+  bool should_prefer_portable =
+      (getenv("NACL_PREFER_PORTABLE_IN_MANIFEST") != NULL);
+  nacl::scoped_ptr<JsonManifest> json_manifest(
+      new JsonManifest(url_util_,
+                       manifest_base_url(),
+                       GetSandboxISA(),
+                       should_prefer_portable));
+  if (!json_manifest->Init(manifest_json, error_info)) {
     return false;
   }
+  manifest_.reset(json_manifest.release());
   return true;
 }
 

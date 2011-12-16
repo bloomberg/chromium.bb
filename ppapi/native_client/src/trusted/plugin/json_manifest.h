@@ -4,10 +4,10 @@
  * found in the LICENSE file.
  */
 
-// Manifest interface class.
+// Manifest processing for JSON manifests.
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_MANIFEST_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_MANIFEST_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_JSON_MANIFEST_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_JSON_MANIFEST_H_
 
 #include <map>
 #include <set>
@@ -15,6 +15,7 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
+#include "native_client/src/trusted/plugin/manifest.h"
 #include "third_party/jsoncpp/source/include/json/value.h"
 
 namespace pp {
@@ -25,35 +26,37 @@ namespace plugin {
 
 class ErrorInfo;
 
-class Manifest {
+class JsonManifest : public Manifest {
  public:
-  Manifest(const pp::URLUtil_Dev* url_util,
+  JsonManifest(const pp::URLUtil_Dev* url_util,
            const nacl::string& manifest_base_url,
            const nacl::string& sandbox_isa,
            bool prefer_portable)
-      : url_util_(url_util),
-        manifest_base_url_(manifest_base_url),
-        sandbox_isa_(sandbox_isa),
-        prefer_portable_(prefer_portable) { }
-  virtual ~Manifest() { }
+      : Manifest(url_util, manifest_base_url, sandbox_isa, prefer_portable),
+        dictionary_(Json::nullValue) { }
+  virtual ~JsonManifest() { }
+
+  // Initialize the manifest object for use by later lookups.  The return
+  // value is true if the manifest parses correctly and matches the schema.
+  bool Init(const nacl::string& json, ErrorInfo* error_info);
 
   // Gets the full program URL for the current sandbox ISA from the
   // manifest file. Sets |is_portable| to |true| if the program is
   // portable bitcode.
   virtual bool GetProgramURL(nacl::string* full_url,
                              ErrorInfo* error_info,
-                             bool* is_portable) = 0;
+                             bool* is_portable);
 
   // Resolves a URL relative to the manifest base URL
   virtual bool ResolveURL(const nacl::string& relative_url,
                           nacl::string* full_url,
-                          ErrorInfo* error_info) const = 0;
+                          ErrorInfo* error_info) const;
 
   // Gets the file names from the "files" section of the manifest.  No
   // checking that the keys' values are proper ISA dictionaries -- it
   // is assumed that other consistency checks take care of that, and
   // that the keys are appropriate for use with ResolveKey.
-  virtual bool GetFileKeys(std::set<nacl::string>* keys) const = 0;
+  virtual bool GetFileKeys(std::set<nacl::string>* keys) const;
 
   // Resolves a key from the "files" section to a fully resolved URL,
   // i.e., relative URL values are fully expanded relative to the
@@ -64,20 +67,21 @@ class Manifest {
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
                           ErrorInfo* error_info,
-                          bool* is_portable) const = 0;
+                          bool* is_portable) const;
 
- protected:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Manifest);
 
-  const pp::URLUtil_Dev* url_util_;
-  nacl::string manifest_base_url_;
-  nacl::string sandbox_isa_;
-  // Determines whether portable programs are chosen in manifest files over
-  // native programs.
-  bool prefer_portable_;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(JsonManifest);
+
+  // Checks that |dictionary_| is a valid manifest, according to the schema.
+  // Returns true on success, and sets |error_info| to a detailed message
+  // if not.
+  bool MatchesSchema(ErrorInfo* error_info);
+
+  Json::Value dictionary_;
 };
 
 
 }  // namespace plugin
 
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_MANIFEST_H_
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_JSON_MANIFEST_H_
