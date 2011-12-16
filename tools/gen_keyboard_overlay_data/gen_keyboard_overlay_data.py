@@ -51,7 +51,7 @@ CC_OUTDIR = 'chrome/browser/ui/webui/chromeos'
 CC_FILENAME = 'keyboard_overlay_ui.cc'
 GRD_OUTDIR = 'chrome/app'
 GRD_FILENAME = 'generated_resources.grd'
-JS_OUTDIR = 'chrome/browser/resources'
+JS_OUTDIR = 'chrome/browser/resources/chromeos'
 JS_FILENAME = 'keyboard_overlay_data.js'
 ALTGR_OUTDIR = 'chrome/browser/chromeos/input_method'
 ALTGR_FILENAME = 'xkeyboard.cc'
@@ -291,7 +291,8 @@ def ParseOptions():
 
   # Get the password from the terminal, if needed.
   if not options.password:
-    options.password = getpass.getpass('Password for %s: ' % options.username)
+    options.password = getpass.getpass(
+        'Application specific password for %s: ' % options.username)
   return options
 
 
@@ -439,7 +440,10 @@ def UniqueBehaviors(hotkey_data):
 
 def GetPath(path_from_src):
   """Returns the absolute path of the specified path."""
-  return os.path.join(os.path.dirname(__file__), '../..', path_from_src)
+  path = os.path.join(os.path.dirname(__file__), '../..', path_from_src)
+  if not os.path.isfile(path):
+    print 'WARNING: %s does not exist. Maybe moved or renamed?' % path
+  return path
 
 
 def OutputJson(keyboard_glyph_data, hotkey_data, layouts, var_name, outdir):
