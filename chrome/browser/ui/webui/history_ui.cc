@@ -409,7 +409,8 @@ void BrowsingHistoryHandler::Observe(
   }
   history::URLsDeletedDetails* deletedDetails =
       content::Details<history::URLsDeletedDetails>(details).ptr();
-  if (deletedDetails->urls != urls_to_be_deleted_) {
+  if (deletedDetails->urls != urls_to_be_deleted_ ||
+      deletedDetails->all_history) {
     // Notify the page that someone else deleted from the history.
     web_ui_->CallJavascriptFunction("historyDeleted");
   }
