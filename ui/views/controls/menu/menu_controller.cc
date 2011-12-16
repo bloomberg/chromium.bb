@@ -889,13 +889,13 @@ base::MessagePumpDispatcher::DispatchStatus
   }
   switch (ui::EventTypeFromNative(xev)) {
     case ui::ET_KEY_PRESSED:
-      OnKeyDown(ui::KeyboardCodeFromNative(xev));
-      // OnKeyDown may have set exit_type_.
-      if (exit_type_ != EXIT_NONE)
+      if (!OnKeyDown(ui::KeyboardCodeFromNative(xev)))
         return base::MessagePumpDispatcher::EVENT_QUIT;
 
-      // TODO(oshima): support SelectChar
-      break;
+      // TODO(oshima): support SelectChar.
+      // See http://crbug.com/107869.
+
+      return base::MessagePumpDispatcher::EVENT_PROCESSED;
     case ui::ET_KEY_RELEASED:
       return base::MessagePumpDispatcher::EVENT_PROCESSED;
     default:
