@@ -2486,6 +2486,7 @@
         'browser/custom_handlers/protocol_handler_registry_browsertest.cc',
         'browser/download/download_browsertest.cc',
         'browser/download/download_extension_apitest.cc',
+        'browser/download/download_extension_test.cc',
         'browser/download/download_test_observer.cc',
         'browser/download/save_page_browsertest.cc',
         'browser/errorpage_browsertest.cc',

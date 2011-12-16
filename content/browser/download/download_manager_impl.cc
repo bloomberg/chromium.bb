@@ -1018,10 +1018,9 @@ DownloadItem* DownloadManagerImpl::GetDownloadItem(int download_id) {
 }
 
 DownloadItem* DownloadManagerImpl::GetActiveDownloadItem(int download_id) {
-  DCHECK(ContainsKey(active_downloads_, download_id));
-  DownloadItem* download = active_downloads_[download_id];
-  DCHECK(download != NULL);
-  return download;
+  if (ContainsKey(active_downloads_, download_id))
+    return active_downloads_[download_id];
+  return NULL;
 }
 
 // Confirm that everything in all maps is also in |downloads_|, and that

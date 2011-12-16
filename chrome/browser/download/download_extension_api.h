@@ -28,6 +28,16 @@ class ResourceContext;
 // controlling downloads from extensions. See the full API doc at
 // http://goo.gl/6hO1n
 
+namespace download_extension_errors {
+
+// Errors that can be returned through chrome.extension.lastError.message.
+extern const char kNotImplementedError[];
+extern const char kGenericError[];
+extern const char kInvalidUrlError[];
+extern const char kInvalidOperationError[];
+
+}  // namespace download_extension_errors
+
 class DownloadsFunctionInterface {
  public:
   enum DownloadsFunctionName {
@@ -49,8 +59,9 @@ class DownloadsFunctionInterface {
   // Return true if args_ is well-formed, otherwise set error_ and return false.
   virtual bool ParseArgs() = 0;
 
-  // Implementation-specific logic. "Do the thing that you do."
-  virtual void RunInternal() = 0;
+  // Implementation-specific logic. "Do the thing that you do."  Should return
+  // true if the call succeeded and false otherwise.
+  virtual bool RunInternal() = 0;
 
   // Which subclass is this.
   virtual DownloadsFunctionName function() const = 0;
@@ -99,7 +110,7 @@ class DownloadsDownloadFunction : public AsyncDownloadsFunction {
 
  protected:
   virtual bool ParseArgs() OVERRIDE;
-  virtual void RunInternal() OVERRIDE;
+  virtual bool RunInternal() OVERRIDE;
 
  private:
   struct IOData {
@@ -135,7 +146,7 @@ class DownloadsSearchFunction : public SyncDownloadsFunction {
 
  protected:
   virtual bool ParseArgs() OVERRIDE;
-  virtual void RunInternal() OVERRIDE;
+  virtual bool RunInternal() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsSearchFunction);
@@ -149,13 +160,14 @@ class DownloadsPauseFunction : public SyncDownloadsFunction {
 
  protected:
   virtual bool ParseArgs() OVERRIDE;
-  virtual void RunInternal() OVERRIDE;
+  virtual bool RunInternal() OVERRIDE;
 
  private:
+  int download_id_;
   DISALLOW_COPY_AND_ASSIGN(DownloadsPauseFunction);
 };
 
-class DownloadsResumeFunction : public AsyncDownloadsFunction {
+class DownloadsResumeFunction : public SyncDownloadsFunction {
  public:
   DownloadsResumeFunction();
   virtual ~DownloadsResumeFunction();
@@ -163,13 +175,14 @@ class DownloadsResumeFunction : public AsyncDownloadsFunction {
 
  protected:
   virtual bool ParseArgs() OVERRIDE;
-  virtual void RunInternal() OVERRIDE;
+  virtual bool RunInternal() OVERRIDE;
 
  private:
+  int download_id_;
   DISALLOW_COPY_AND_ASSIGN(DownloadsResumeFunction);
 };
 
-class DownloadsCancelFunction : public AsyncDownloadsFunction {
+class DownloadsCancelFunction : public SyncDownloadsFunction {
  public:
   DownloadsCancelFunction();
   virtual ~DownloadsCancelFunction();
@@ -177,9 +190,10 @@ class DownloadsCancelFunction : public AsyncDownloadsFunction {
 
  protected:
   virtual bool ParseArgs() OVERRIDE;
-  virtual void RunInternal() OVERRIDE;
+  virtual bool RunInternal() OVERRIDE;
 
  private:
+  int download_id_;
   DISALLOW_COPY_AND_ASSIGN(DownloadsCancelFunction);
 };
 
@@ -191,7 +205,7 @@ class DownloadsEraseFunction : public AsyncDownloadsFunction {
 
  protected:
   virtual bool ParseArgs() OVERRIDE;
-  virtual void RunInternal() OVERRIDE;
+  virtual bool RunInternal() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsEraseFunction);
@@ -205,7 +219,7 @@ class DownloadsSetDestinationFunction : public AsyncDownloadsFunction {
 
  protected:
   virtual bool ParseArgs() OVERRIDE;
-  virtual void RunInternal() OVERRIDE;
+  virtual bool RunInternal() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsSetDestinationFunction);
@@ -219,7 +233,7 @@ class DownloadsAcceptDangerFunction : public AsyncDownloadsFunction {
 
  protected:
   virtual bool ParseArgs() OVERRIDE;
-  virtual void RunInternal() OVERRIDE;
+  virtual bool RunInternal() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsAcceptDangerFunction);
@@ -233,7 +247,7 @@ class DownloadsShowFunction : public AsyncDownloadsFunction {
 
  protected:
   virtual bool ParseArgs() OVERRIDE;
-  virtual void RunInternal() OVERRIDE;
+  virtual bool RunInternal() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsShowFunction);
@@ -247,7 +261,7 @@ class DownloadsDragFunction : public AsyncDownloadsFunction {
 
  protected:
   virtual bool ParseArgs() OVERRIDE;
-  virtual void RunInternal() OVERRIDE;
+  virtual bool RunInternal() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsDragFunction);

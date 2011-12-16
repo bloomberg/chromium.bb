@@ -32,6 +32,7 @@
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "content/browser/download/download_file_manager.h"
+#include "content/browser/download/download_id.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_state_info.h"
 #include "content/browser/download/download_types.h"
@@ -44,12 +45,17 @@
 
 using content::BrowserThread;
 
-namespace {
+namespace download_extension_errors {
 
 // Error messages
-const char kNotImplemented[] = "NotImplemented";
+const char kNotImplementedError[] = "NotImplemented.";
 const char kGenericError[] = "I'm afraid I can't do that.";
-const char kInvalidURL[] = "Invalid URL";
+const char kInvalidURLError[] = "Invalid URL.";
+const char kInvalidOperationError[] = "Invalid operation.";
+
+}  // namespace download_extension_errors
+
+namespace {
 
 // Parameter keys
 const char kBodyKey[] = "body";
@@ -114,8 +120,7 @@ bool DownloadsFunctionInterface::RunImplImpl(
   if (!pimpl->ParseArgs()) return false;
   UMA_HISTOGRAM_ENUMERATION(
       "Download.ApiFunctions", pimpl->function(), DOWNLOADS_FUNCTION_LAST);
-  pimpl->RunInternal();
-  return true;
+  return pimpl->RunInternal();
 }
 
 SyncDownloadsFunction::SyncDownloadsFunction(
@@ -176,7 +181,7 @@ bool DownloadsDownloadFunction::ParseArgs() {
   EXTENSION_FUNCTION_VALIDATE(options->GetString(kUrlKey, &url));
   iodata_->url = GURL(url);
   if (!iodata_->url.is_valid()) {
-    error_ = kInvalidURL;
+    error_ = download_extension_errors::kInvalidURLError;
     return false;
   }
   if (options->HasKey(kFilenameKey))
@@ -185,7 +190,7 @@ bool DownloadsDownloadFunction::ParseArgs() {
   // TODO(benjhayden): More robust validation of filename.
   if (((iodata_->filename[0] == L'.') && (iodata_->filename[1] == L'.')) ||
       (iodata_->filename[0] == L'/')) {
-    error_ = kGenericError;
+    error_ = download_extension_errors::kGenericError;
     return false;
   }
   if (options->HasKey(kSaveAsKey))
@@ -214,7 +219,7 @@ bool DownloadsDownloadFunction::ParseArgs() {
       EXTENSION_FUNCTION_VALIDATE(header->GetString(
             kHeaderValueKey, &value));
       if (!net::HttpUtil::IsSafeHeader(name)) {
-        error_ = kGenericError;
+        error_ = download_extension_errors::kGenericError;
         return false;
       }
     }
@@ -226,13 +231,14 @@ bool DownloadsDownloadFunction::ParseArgs() {
   return true;
 }
 
-void DownloadsDownloadFunction::RunInternal() {
+bool DownloadsDownloadFunction::RunInternal() {
   VLOG(1) << __FUNCTION__ << " " << iodata_->url.spec();
   if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
           &DownloadsDownloadFunction::BeginDownloadOnIOThread, this))) {
-    error_ = kGenericError;
-    SendResponse(error_.empty());
+    error_ = download_extension_errors::kGenericError;
+    return false;
   }
+  return true;
 }
 
 void DownloadsDownloadFunction::BeginDownloadOnIOThread() {
@@ -297,66 +303,99 @@ DownloadsSearchFunction::~DownloadsSearchFunction() {}
 bool DownloadsSearchFunction::ParseArgs() {
   base::DictionaryValue* query_json = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &query_json));
-  error_ = kNotImplemented;
+  error_ = download_extension_errors::kNotImplementedError;
   return false;
 }
 
-void DownloadsSearchFunction::RunInternal() {
+bool DownloadsSearchFunction::RunInternal() {
   NOTIMPLEMENTED();
+  return false;
 }
 
 DownloadsPauseFunction::DownloadsPauseFunction()
-  : SyncDownloadsFunction(DOWNLOADS_FUNCTION_PAUSE) {
+  : SyncDownloadsFunction(DOWNLOADS_FUNCTION_PAUSE),
+    download_id_(DownloadId::Invalid().local()) {
 }
 
 DownloadsPauseFunction::~DownloadsPauseFunction() {}
 
 bool DownloadsPauseFunction::ParseArgs() {
-  int dl_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
-  VLOG(1) << __FUNCTION__ << " " << dl_id;
-  error_ = kNotImplemented;
-  return false;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &download_id_));
+  return true;
 }
 
-void DownloadsPauseFunction::RunInternal() {
-  NOTIMPLEMENTED();
+bool DownloadsPauseFunction::RunInternal() {
+  DownloadManager* download_manager =
+      DownloadServiceFactory::GetForProfile(profile())->GetDownloadManager();
+  DownloadItem* download_item =
+      download_manager->GetActiveDownloadItem(download_id_);
+  DCHECK(!download_item || download_item->IsInProgress());
+
+  if (!download_item) {
+    // This could be due to an invalid download ID, or it could be due to the
+    // download not being currently active.
+    error_ = download_extension_errors::kInvalidOperationError;
+  } else if (!download_item->IsPaused()) {
+    // If download_item->IsPaused() already then we treat it as a success.
+    download_item->TogglePause();
+  }
+  return error_.empty();
 }
 
 DownloadsResumeFunction::DownloadsResumeFunction()
-  : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_RESUME) {
+  : SyncDownloadsFunction(DOWNLOADS_FUNCTION_RESUME),
+    download_id_(DownloadId::Invalid().local()) {
 }
 
 DownloadsResumeFunction::~DownloadsResumeFunction() {}
 
 bool DownloadsResumeFunction::ParseArgs() {
-  int dl_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
-  VLOG(1) << __FUNCTION__ << " " << dl_id;
-  error_ = kNotImplemented;
-  return false;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &download_id_));
+  return true;
 }
 
-void DownloadsResumeFunction::RunInternal() {
-  NOTIMPLEMENTED();
+bool DownloadsResumeFunction::RunInternal() {
+  DownloadManager* download_manager =
+      DownloadServiceFactory::GetForProfile(profile())->GetDownloadManager();
+  DownloadItem* download_item =
+      download_manager->GetActiveDownloadItem(download_id_);
+  DCHECK(!download_item || download_item->IsInProgress());
+
+  if (!download_item) {
+    // This could be due to an invalid download ID, or it could be due to the
+    // download not being currently active.
+    error_ = download_extension_errors::kInvalidOperationError;
+  } else if (download_item->IsPaused()) {
+    // If !download_item->IsPaused() already, then we treat it as a success.
+    download_item->TogglePause();
+  }
+  return error_.empty();
 }
 
 DownloadsCancelFunction::DownloadsCancelFunction()
-  : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_CANCEL) {
+  : SyncDownloadsFunction(DOWNLOADS_FUNCTION_CANCEL),
+    download_id_(DownloadId::Invalid().local()) {
 }
 
 DownloadsCancelFunction::~DownloadsCancelFunction() {}
 
 bool DownloadsCancelFunction::ParseArgs() {
-  int dl_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
-  VLOG(1) << __FUNCTION__ << " " << dl_id;
-  error_ = kNotImplemented;
-  return false;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &download_id_));
+  return true;
 }
 
-void DownloadsCancelFunction::RunInternal() {
-  NOTIMPLEMENTED();
+bool DownloadsCancelFunction::RunInternal() {
+  DownloadManager* download_manager =
+      DownloadServiceFactory::GetForProfile(profile())->GetDownloadManager();
+  DownloadItem* download_item =
+      download_manager->GetActiveDownloadItem(download_id_);
+
+  if (download_item)
+    download_item->Cancel(true);
+  // |download_item| can be NULL if the download ID was invalid or if the
+  // download is not currently active.  Either way, we don't consider it a
+  // failure.
+  return error_.empty();
 }
 
 DownloadsEraseFunction::DownloadsEraseFunction()
@@ -368,12 +407,13 @@ DownloadsEraseFunction::~DownloadsEraseFunction() {}
 bool DownloadsEraseFunction::ParseArgs() {
   base::DictionaryValue* query_json = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &query_json));
-  error_ = kNotImplemented;
+  error_ = download_extension_errors::kNotImplementedError;
   return false;
 }
 
-void DownloadsEraseFunction::RunInternal() {
+bool DownloadsEraseFunction::RunInternal() {
   NOTIMPLEMENTED();
+  return false;
 }
 
 DownloadsSetDestinationFunction::DownloadsSetDestinationFunction()
@@ -388,12 +428,13 @@ bool DownloadsSetDestinationFunction::ParseArgs() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &path));
   VLOG(1) << __FUNCTION__ << " " << dl_id << " " << &path;
-  error_ = kNotImplemented;
+  error_ = download_extension_errors::kNotImplementedError;
   return false;
 }
 
-void DownloadsSetDestinationFunction::RunInternal() {
+bool DownloadsSetDestinationFunction::RunInternal() {
   NOTIMPLEMENTED();
+  return false;
 }
 
 DownloadsAcceptDangerFunction::DownloadsAcceptDangerFunction()
@@ -406,12 +447,13 @@ bool DownloadsAcceptDangerFunction::ParseArgs() {
   int dl_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
   VLOG(1) << __FUNCTION__ << " " << dl_id;
-  error_ = kNotImplemented;
+  error_ = download_extension_errors::kNotImplementedError;
   return false;
 }
 
-void DownloadsAcceptDangerFunction::RunInternal() {
+bool DownloadsAcceptDangerFunction::RunInternal() {
   NOTIMPLEMENTED();
+  return false;
 }
 
 DownloadsShowFunction::DownloadsShowFunction()
@@ -424,12 +466,13 @@ bool DownloadsShowFunction::ParseArgs() {
   int dl_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
   VLOG(1) << __FUNCTION__ << " " << dl_id;
-  error_ = kNotImplemented;
+  error_ = download_extension_errors::kNotImplementedError;
   return false;
 }
 
-void DownloadsShowFunction::RunInternal() {
+bool DownloadsShowFunction::RunInternal() {
   NOTIMPLEMENTED();
+  return false;
 }
 
 DownloadsDragFunction::DownloadsDragFunction()
@@ -442,12 +485,13 @@ bool DownloadsDragFunction::ParseArgs() {
   int dl_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
   VLOG(1) << __FUNCTION__ << " " << dl_id;
-  error_ = kNotImplemented;
+  error_ = download_extension_errors::kNotImplementedError;
   return false;
 }
 
-void DownloadsDragFunction::RunInternal() {
+bool DownloadsDragFunction::RunInternal() {
   NOTIMPLEMENTED();
+  return false;
 }
 
 namespace {

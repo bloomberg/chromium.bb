@@ -3724,7 +3724,7 @@
               {
                 "name": "pid",
                 "description": "Pid of the launched process.",
-                "type": "integer" 
+                "type": "integer"
               }
             ]
           }
@@ -4247,6 +4247,21 @@
         "type": "string",
         "value": "content",
         "description": "The download's content is malicious."
+      },
+      "ERROR_GENERIC": {
+        "type": "string",
+        "value": "I'm afraid I can't do that.",
+        "description": "Generic error."
+      },
+      "ERROR_INVALID_URL": {
+        "type": "string",
+        "value": "Invalid URL.",
+        "description": "The URL was invalid."
+      },
+      "ERROR_INVALID_OPERATION": {
+        "type": "string",
+        "value": "Invalid operation.",
+        "description": "The requested operation cannot be performed at this time. This maybe due to the download being in a state where the requested operation is not allowed."
       }
     },
     "types": [
@@ -4685,7 +4700,14 @@
         "type": "function",
         "description": "Pause the download.",
         "parameters": [
-          {"name": "id", "type": "integer"}
+          {"name": "id", "type": "integer"},
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": [],
+            "description": "Called when the pause request is completed. If the request was successful the download is in a paused state. Otherwise chrome.extension.lastError contains an error message. The request will fail if the download is not active."
+          }
         ]
       },
       {
@@ -4693,7 +4715,14 @@
         "type": "function",
         "description": "Resume a paused download.",
         "parameters": [
-          {"name": "id", "type": "integer"}
+          {"name": "id", "type": "integer"},
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": [],
+            "description": "Called when the resume request is completed. If the request was successful the download is in progress and unpaused. Otherwise chrome.extension.lastError contains an error message. The request will fail if the download is not active."
+          }
         ]
       },
       {
@@ -4701,7 +4730,14 @@
         "type": "function",
         "description": "Cancel a download.",
         "parameters": [
-          {"name": "id", "type": "integer"}
+          {"name": "id", "type": "integer"},
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": [],
+            "description": "Called when the request is completed. The download is cancelled, completed, interrupted or doesn't exist anymore."
+          }
         ]
       }
     ]

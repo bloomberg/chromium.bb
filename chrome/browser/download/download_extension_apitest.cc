@@ -11,7 +11,7 @@
 
 class DownloadsApiTest : public ExtensionApiTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) {
+  void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }

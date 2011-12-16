@@ -34,6 +34,11 @@ chrome.test.getConfig(function(testConfig) {
   // safe file. Specify zero seconds to return quickly.
   var SAFE_FAST_URL = getURL("slow?0");
 
+  var ERROR_GENERIC = chrome.experimental.downloads.ERROR_GENERIC;
+  var ERROR_INVALID_URL = chrome.experimental.downloads.ERROR_INVALID_URL;
+  var ERROR_INVALID_OPERATION =
+    chrome.experimental.downloads.ERROR_INVALID_OPERATION;
+
   chrome.test.runTests([
     // TODO(benjhayden): Test onErased using remove().
     function downloadFilename() {
@@ -88,7 +93,7 @@ chrome.test.getConfig(function(testConfig) {
     function downloadInvalidURL() {
       chrome.experimental.downloads.download(
         {"url": "foo bar"},
-        chrome.test.callbackFail("Invalid URL"));
+        chrome.test.callbackFail(ERROR_INVALID_URL));
     },
     function downloadInvalidMethod() {
       assertThrows(chrome.experimental.downloads.download,
@@ -124,8 +129,39 @@ chrome.test.getConfig(function(testConfig) {
       chrome.experimental.downloads.download(
         {"url": SAFE_FAST_URL,
          "headers": [{"name": "Cookie", "value": "fake"}]},
-        chrome.test.callbackFail("I'm afraid I can't do that."));
+        chrome.test.callbackFail(ERROR_GENERIC));
       // TODO(benjhayden): Give a better error message.
+    },
+    function downloadPauseInvalidId() {
+      chrome.experimental.downloads.pause(-42,
+        chrome.test.callbackFail(ERROR_INVALID_OPERATION));
+    },
+    function downloadPauseInvalidType() {
+      assertThrows(chrome.experimental.downloads.pause,
+                   "foo",
+                   ("Invalid value for argument 1. Expected 'integer' " +
+                    "but got 'string'."));
+    },
+    function downloadResumeInvalidId() {
+      chrome.experimental.downloads.resume(-42,
+        chrome.test.callbackFail(ERROR_INVALID_OPERATION));
+    },
+    function downloadResumeInvalidType() {
+      assertThrows(chrome.experimental.downloads.resume,
+                   "foo",
+                   ("Invalid value for argument 1. Expected 'integer' " +
+                    "but got 'string'."));
+    },
+    function downloadCancelInvalidId() {
+      // Canceling a non-existent download is not considered an error.
+      chrome.experimental.downloads.cancel(-42,
+        chrome.test.callbackPass(function() {}));
+    },
+    function downloadCancelInvalidType() {
+      assertThrows(chrome.experimental.downloads.cancel,
+                   "foo",
+                   ("Invalid value for argument 1. Expected 'integer' " +
+                    "but got 'string'."));
     }
   ]);
 });
