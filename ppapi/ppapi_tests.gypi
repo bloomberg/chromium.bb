@@ -152,6 +152,7 @@
         'shared_impl/resource_tracker_unittest.cc',
         'shared_impl/test_globals.cc',
         'shared_impl/test_globals.h',
+        'shared_impl/var_tracker_unittest.cc',
       ],
     },
     {

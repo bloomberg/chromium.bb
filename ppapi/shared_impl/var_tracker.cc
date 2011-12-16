@@ -162,6 +162,7 @@ bool VarTracker::DeleteObjectInfoIfNecessary(VarMap::iterator iter) {
   if (iter->second.ref_count != 0 ||
       iter->second.track_with_no_reference_count != 0)
     return false;  // Object still alive.
+  iter->second.var->ResetVarID();
   live_vars_.erase(iter);
   return true;
 }
