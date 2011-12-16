@@ -163,9 +163,7 @@ void ExtensionDisabledInfobarDelegate::Observe(
     DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_UNLOADED, type);
     UnloadedExtensionInfo* info =
         content::Details<UnloadedExtensionInfo>(details).ptr();
-    if (info->reason == extension_misc::UNLOAD_REASON_DISABLE ||
-        info->reason == extension_misc::UNLOAD_REASON_UNINSTALL)
-      extension = info->extension;
+    extension = info->extension;
   }
   if (extension == extension_)
     RemoveSelf();
