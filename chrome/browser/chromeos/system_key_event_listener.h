@@ -96,7 +96,6 @@ class SystemKeyEventListener : public MessageLoopForUI::Observer {
   int32 key_f8_;
   int32 key_f9_;
   int32 key_f10_;
-  int32 key_search_;
 
   bool stopped_;
 
