@@ -6,6 +6,8 @@
 #define CONTENT_COMMON_CHILD_PROCESS_SANDBOX_SUPPORT_IMPL_LINUX_H_
 #pragma once
 
+#include "base/global_descriptors_posix.h"
+#include "content/common/chrome_descriptors.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
 
 namespace WebKit {
@@ -30,6 +32,10 @@ void GetFontFamilyForCharacters(const uint16_t* utf16,
 
 void GetRenderStyleForStrike(const char* family, int sizeAndStyle,
                              WebKit::WebFontRenderStyle* out);
+
+inline int GetSandboxFD() {
+  return kSandboxIPCChannel + base::GlobalDescriptors::kBaseDescriptor;
+}
 
 };  // namespace content
 
