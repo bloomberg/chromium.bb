@@ -151,7 +151,8 @@ BaseTab::BaseTab(TabController* controller)
       loading_animation_frame_(0),
       should_display_crashed_favicon_(false),
       throbber_disabled_(false),
-      theme_provider_(NULL) {
+      theme_provider_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(hover_controller_(this)) {
   BaseTab::InitResources();
 
   set_id(VIEW_ID_TAB);
@@ -265,6 +266,7 @@ void BaseTab::StopPulse() {
 
 void BaseTab::set_animation_container(ui::AnimationContainer* container) {
   animation_container_ = container;
+  hover_controller_.SetAnimationContainer(container);
 }
 
 bool BaseTab::IsCloseable() const {
@@ -359,18 +361,11 @@ void BaseTab::OnMouseCaptureLost() {
 }
 
 void BaseTab::OnMouseEntered(const views::MouseEvent& event) {
-  if (!hover_animation_.get()) {
-    hover_animation_.reset(new ui::SlideAnimation(this));
-    hover_animation_->SetContainer(animation_container_.get());
-    hover_animation_->SetSlideDuration(kHoverDurationMs);
-  }
-  hover_animation_->SetTweenType(ui::Tween::EASE_OUT);
-  hover_animation_->Show();
+  hover_controller_.Show();
 }
 
 void BaseTab::OnMouseExited(const views::MouseEvent& event) {
-  hover_animation_->SetTweenType(ui::Tween::EASE_IN);
-  hover_animation_->Hide();
+  hover_controller_.Hide();
 }
 
 bool BaseTab::GetTooltipText(const gfx::Point& p, string16* tooltip) const {

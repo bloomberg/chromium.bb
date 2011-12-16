@@ -64,7 +64,8 @@ TabbedLauncherButton::TabbedLauncherButton(views::ButtonListener* listener,
     : views::ImageButton(listener),
       host_(host),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_delegate_(this)),
-      show_image_(true) {
+      show_image_(true),
+      ALLOW_THIS_IN_INITIALIZER_LIST(hover_controller_(this)) {
   if (!bg_image_1_) {
     bg_image_1_ = CreateImageSet(IDR_AURA_LAUNCHER_TABBED_BROWSER_1,
                                  IDR_AURA_LAUNCHER_TABBED_BROWSER_1_PUSHED,
@@ -117,6 +118,8 @@ void TabbedLauncherButton::SetImages(const LauncherTabbedImages& images) {
 void TabbedLauncherButton::OnPaint(gfx::Canvas* canvas) {
   ImageButton::OnPaint(canvas);
 
+  hover_controller_.Draw(canvas, *bg_image_1_->normal_image);
+
   if (images_.empty() || images_[0].image.empty() || !show_image_)
     return;
 
@@ -139,23 +142,41 @@ void TabbedLauncherButton::OnPaint(gfx::Canvas* canvas) {
 bool TabbedLauncherButton::OnMousePressed(const views::MouseEvent& event) {
   ImageButton::OnMousePressed(event);
   host_->MousePressedOnButton(this, event);
+  hover_controller_.HideImmediately();
   return true;
 }
 
 void TabbedLauncherButton::OnMouseReleased(const views::MouseEvent& event) {
   host_->MouseReleasedOnButton(this, false);
   ImageButton::OnMouseReleased(event);
+  hover_controller_.Show();
 }
 
 void TabbedLauncherButton::OnMouseCaptureLost() {
   host_->MouseReleasedOnButton(this, true);
   ImageButton::OnMouseCaptureLost();
+  hover_controller_.Hide();
 }
 
 bool TabbedLauncherButton::OnMouseDragged(const views::MouseEvent& event) {
   ImageButton::OnMouseDragged(event);
   host_->MouseDraggedOnButton(this, event);
   return true;
+}
+
+void TabbedLauncherButton::OnMouseEntered(const views::MouseEvent& event) {
+  ImageButton::OnMouseEntered(event);
+  hover_controller_.Show();
+}
+
+void TabbedLauncherButton::OnMouseMoved(const views::MouseEvent& event) {
+  ImageButton::OnMouseMoved(event);
+  hover_controller_.SetLocation(event.location());
+}
+
+void TabbedLauncherButton::OnMouseExited(const views::MouseEvent& event) {
+  ImageButton::OnMouseExited(event);
+  hover_controller_.Hide();
 }
 
 // static

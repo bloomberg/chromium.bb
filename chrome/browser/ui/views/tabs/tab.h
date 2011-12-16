@@ -80,7 +80,6 @@ class Tab : public BaseTab {
   void PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas);
   void PaintInactiveTabBackground(gfx::Canvas* canvas);
   void PaintActiveTabBackground(gfx::Canvas* canvas);
-  SkBitmap DrawHoverGlowBitmap(int width, int height);
 
   // Returns the number of favicon-size elements that can fit in the tab's
   // current size.
@@ -106,9 +105,6 @@ class Tab : public BaseTab {
 
   // The offset used to paint the inactive background image.
   gfx::Point background_offset_;
-
-  // The center point for the radial hover glow.
-  gfx::Point hover_point_;
 
   // Animation used when the title of an inactive mini tab changes.
   scoped_ptr<ui::MultiAnimation> mini_title_animation_;

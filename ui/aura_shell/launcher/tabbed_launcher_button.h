@@ -11,6 +11,7 @@
 #include "ui/aura_shell/launcher/launcher_types.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/glow_hover_controller.h"
 
 namespace ui {
 class MultiAnimation;
@@ -41,6 +42,9 @@ class TabbedLauncherButton : public views::ImageButton {
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
 
  private:
   // Used as the delegate for |animation_|. TabbedLauncherButton doesn't
@@ -90,6 +94,8 @@ class TabbedLauncherButton : public views::ImageButton {
   static ImageSet* bg_image_1_;
   static ImageSet* bg_image_2_;
   static ImageSet* bg_image_3_;
+
+  views::GlowHoverController hover_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(TabbedLauncherButton);
 };
