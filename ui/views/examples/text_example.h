@@ -29,7 +29,10 @@ class TextExample : public ExampleBase,
   virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
-  // Create and add a combo box to the layout.
+  // Creates and adds a check box to the layout.
+  Checkbox* AddCheckbox(GridLayout* layout, const char* name);
+
+  // Creates and adds a combo box to the layout.
   Combobox* AddCombobox(GridLayout* layout,
                         const char* name,
                         const char** strings,
@@ -68,6 +71,18 @@ class TextExample : public ExampleBase,
 
   // Check box to enable/disable character break behavior.
   Checkbox* break_checkbox_;
+
+  // Check box to enable/disable text halo.
+  Checkbox* halo_checkbox_;
+
+  // Check box to enable/disable bold style.
+  Checkbox* bold_checkbox_;
+
+  // Check box to enable/disable italic style.
+  Checkbox* italic_checkbox_;
+
+  // Check box to enable/disable underline style.
+  Checkbox* underline_checkbox_;
 
   DISALLOW_COPY_AND_ASSIGN(TextExample);
 };

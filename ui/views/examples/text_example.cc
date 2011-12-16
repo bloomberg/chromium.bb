@@ -17,6 +17,9 @@
 
 namespace {
 
+// Number of columns in the view layout.
+const int kNumColumns = 10;
+
 const char kShortText[] = "Batman";
 const char kMediumText[] = "The quick brown fox jumps over the lazy dog.";
 const char kLongText[] =
@@ -67,6 +70,14 @@ const char* kVerticalAlignments[] = {
     "Bottom",
 };
 
+// Toggles bit |flag| on |flags| based on state of |checkbox|.
+void SetFlagFromCheckbox(views::Checkbox* checkbox, int* flags, int flag) {
+  if (checkbox->checked())
+    *flags |= flag;
+  else
+    *flags &= ~flag;
+}
+
 }  // namespace
 
 namespace views {
@@ -97,8 +108,13 @@ class TextExample::TextExampleView : public View {
     }
 #endif
 
-    canvas->DrawStringInt(text_, font_, SK_ColorDKGRAY,
-                          0, 0, width(), height(), text_flags_);
+    if (halo_) {
+      canvas->AsCanvasSkia()->DrawStringWithHalo(text_, font_, SK_ColorDKGRAY,
+          SK_ColorWHITE, 0, 0, width(), height(), text_flags_);
+    } else {
+      canvas->DrawStringInt(text_, font_, SK_ColorDKGRAY, 0, 0, width(),
+          height(), text_flags_);
+    }
   }
 
   int text_flags() const { return text_flags_; }
@@ -107,12 +123,22 @@ class TextExample::TextExampleView : public View {
   const string16& text() const { return text_; }
   void set_text(const string16& text) { text_ = text; }
 
+  bool halo() const { return halo_; }
+  void set_halo(bool halo) { halo_ = halo; }
+
   bool fade() const { return fade_; }
   void set_fade(bool fade) { fade_ = fade; }
 
   gfx::CanvasSkia::TruncateFadeMode fade_mode() const { return fade_mode_; }
   void set_fade_mode(gfx::CanvasSkia::TruncateFadeMode fade_mode) {
     fade_mode_ = fade_mode;
+  }
+
+  int GetFontStyle() const {
+    return font_.GetStyle();
+  }
+  void SetFontStyle(int style) {
+    font_ = font_.DeriveFont(0, style);
   }
 
  private:
@@ -124,6 +150,10 @@ class TextExample::TextExampleView : public View {
 
   // Text flags for passing to |DrawStringInt()|.
   int text_flags_;
+
+  // If |true|, specifies to call |DrawStringWithHalo()| instead of
+  // |DrawStringInt()|.
+  bool halo_;
 
   // If |true|, specifies to call |DrawFadeTruncatingString()| instead of
   // |DrawStringInt()|.
@@ -141,6 +171,13 @@ TextExample::TextExample() : ExampleBase("Text Styles") {
 TextExample::~TextExample() {
 }
 
+Checkbox* TextExample::AddCheckbox(GridLayout* layout, const char* name) {
+  Checkbox* checkbox = new Checkbox(ASCIIToUTF16(name));
+  checkbox->set_listener(this);
+  layout->AddView(checkbox);
+  return checkbox;
+}
+
 Combobox* TextExample::AddCombobox(GridLayout* layout,
                                    const char* name,
                                    const char** strings,
@@ -150,7 +187,7 @@ Combobox* TextExample::AddCombobox(GridLayout* layout,
   Combobox* combo_box = new Combobox(new ExampleComboboxModel(strings, count));
   combo_box->SetSelectedItem(0);
   combo_box->set_listener(this);
-  layout->AddView(combo_box);
+  layout->AddView(combo_box, kNumColumns - 1, 1);
   return combo_box;
 }
 
@@ -166,8 +203,9 @@ void TextExample::CreateExampleView(View* container) {
   column_set->AddPaddingColumn(0, 8);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL,
                         0.1f, GridLayout::USE_PREF, 0, 0);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
-                        0.9f, GridLayout::USE_PREF, 0, 0);
+  for (int i = 0; i < kNumColumns - 1; i++)
+    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
+                          0.1f, GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, 8);
 
   h_align_cb_ = AddCombobox(layout,
@@ -192,12 +230,12 @@ void TextExample::CreateExampleView(View* container) {
                          arraysize(kTextExamples));
 
   layout->StartRow(0, 0);
-  multiline_checkbox_ = new Checkbox(ASCIIToUTF16("Multiline"));
-  multiline_checkbox_->set_listener(this);
-  layout->AddView(multiline_checkbox_);
-  break_checkbox_ = new Checkbox(ASCIIToUTF16("Character Break"));
-  break_checkbox_->set_listener(this);
-  layout->AddView(break_checkbox_);
+  multiline_checkbox_ = AddCheckbox(layout, "Multiline");
+  break_checkbox_ = AddCheckbox(layout, "Character Break");
+  halo_checkbox_ = AddCheckbox(layout, "Text Halo");
+  bold_checkbox_ = AddCheckbox(layout, "Bold");
+  italic_checkbox_ = AddCheckbox(layout, "Italic");
+  underline_checkbox_ = AddCheckbox(layout, "Underline");
 
   layout->AddPaddingRow(0, 32);
 
@@ -214,19 +252,16 @@ void TextExample::CreateExampleView(View* container) {
 
 void TextExample::ButtonPressed(Button* button,
                                 const Event& event) {
-  int text_flags = text_view_->text_flags();
-  if (button == multiline_checkbox_) {
-    if (multiline_checkbox_->checked())
-      text_flags |= gfx::Canvas::MULTI_LINE;
-    else
-      text_flags &= ~gfx::Canvas::MULTI_LINE;
-  } else if (button == break_checkbox_) {
-    if (break_checkbox_->checked())
-      text_flags |= gfx::Canvas::CHARACTER_BREAK;
-    else
-      text_flags &= ~gfx::Canvas::CHARACTER_BREAK;
-  }
-  text_view_->set_text_flags(text_flags);
+  int flags = text_view_->text_flags();
+  int style = text_view_->GetFontStyle();
+  SetFlagFromCheckbox(multiline_checkbox_, &flags, gfx::Canvas::MULTI_LINE);
+  SetFlagFromCheckbox(break_checkbox_, &flags, gfx::Canvas::CHARACTER_BREAK);
+  SetFlagFromCheckbox(bold_checkbox_, &style, gfx::Font::BOLD);
+  SetFlagFromCheckbox(italic_checkbox_, &style, gfx::Font::ITALIC);
+  SetFlagFromCheckbox(underline_checkbox_, &style, gfx::Font::UNDERLINED);
+  text_view_->set_halo(halo_checkbox_->checked());
+  text_view_->set_text_flags(flags);
+  text_view_->SetFontStyle(style);
   text_view_->SchedulePaint();
 }
 
