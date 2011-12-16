@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_INTER_PROCESS_TIME_TICKS_CONVERTER_H_
 
 #include "base/time.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
@@ -45,7 +46,7 @@ class RemoteTimeTicks;
 //
 // 2. The remote's range is shifted so that it is centered within the
 //    local's range. Any values converted will be shifted the same amount.
-class InterProcessTimeTicksConverter {
+class CONTENT_EXPORT InterProcessTimeTicksConverter {
  public:
   InterProcessTimeTicksConverter(const LocalTimeTicks& local_lower_bound,
                                  const LocalTimeTicks& local_upper_bound,
@@ -71,7 +72,7 @@ class InterProcessTimeTicksConverter {
   int64 remote_upper_bound_;
 };
 
-class LocalTimeDelta {
+class CONTENT_EXPORT LocalTimeDelta {
  public:
   int ToInt32() const { return value_; }
 
@@ -84,7 +85,7 @@ class LocalTimeDelta {
   int value_;
 };
 
-class LocalTimeTicks {
+class CONTENT_EXPORT LocalTimeTicks {
  public:
   static LocalTimeTicks FromTimeTicks(const base::TimeTicks& value) {
     return LocalTimeTicks(value.ToInternalValue());
@@ -106,7 +107,7 @@ class LocalTimeTicks {
   int64 value_;
 };
 
-class RemoteTimeDelta {
+class CONTENT_EXPORT RemoteTimeDelta {
  public:
   static RemoteTimeDelta FromRawDelta(int delta) {
     return RemoteTimeDelta(delta);
@@ -121,7 +122,7 @@ class RemoteTimeDelta {
   int value_;
 };
 
-class RemoteTimeTicks {
+class CONTENT_EXPORT RemoteTimeTicks {
  public:
   static RemoteTimeTicks FromTimeTicks(const base::TimeTicks& ticks) {
     return RemoteTimeTicks(ticks.ToInternalValue());
