@@ -8,9 +8,6 @@
 
 namespace media {
 
-// static
-const size_t DataSource::kReadError = static_cast<size_t>(-1);
-
 void ResetAndRunCB(FilterStatusCB* cb, PipelineStatus status) {
   DCHECK(!cb->is_null());
   FilterStatusCB tmp_cb(*cb);

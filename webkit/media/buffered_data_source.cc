@@ -5,7 +5,6 @@
 #include "webkit/media/buffered_data_source.h"
 
 #include "base/bind.h"
-#include "media/base/filter_host.h"
 #include "media/base/media_log.h"
 #include "net/base/net_errors.h"
 #include "webkit/media/web_data_source_factory.h"
@@ -85,7 +84,7 @@ BufferedResourceLoader* BufferedDataSource::CreateResourceLoader(
                                     media_log_);
 }
 
-void BufferedDataSource::set_host(media::FilterHost* host) {
+void BufferedDataSource::set_host(media::DataSourceHost* host) {
   DataSource::set_host(host);
 
   if (loader_.get()) {
@@ -650,13 +649,12 @@ void BufferedDataSource::UpdateHostState_Locked() {
   // Called from various threads, under lock.
   lock_.AssertAcquired();
 
-  media::FilterHost* filter_host = host();
-  if (!filter_host)
+  if (!host())
     return;
 
   if (total_bytes_ != kPositionNotSpecified)
-    filter_host->SetTotalBytes(total_bytes_);
-  filter_host->SetBufferedBytes(buffered_bytes_);
+    host()->SetTotalBytes(total_bytes_);
+  host()->SetBufferedBytes(buffered_bytes_);
 }
 
 }  // namespace webkit_media

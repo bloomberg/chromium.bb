@@ -6,7 +6,7 @@
 #define WEBKIT_MEDIA_WEB_DATA_SOURCE_H_
 
 #include "base/callback.h"
-#include "media/base/filters.h"
+#include "media/base/data_source.h"
 #include "media/base/pipeline_status.h"
 
 namespace webkit_media {

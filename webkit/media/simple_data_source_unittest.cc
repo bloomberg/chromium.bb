@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "media/base/filters.h"
 #include "media/base/mock_callback.h"
-#include "media/base/mock_filter_host.h"
+#include "media/base/mock_data_source_host.h"
 #include "media/base/mock_filters.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -154,7 +154,7 @@ class SimpleDataSourceTest : public testing::Test {
   scoped_ptr<MessageLoop> message_loop_;
   NiceMock<MockWebURLLoader>* url_loader_;
   scoped_refptr<SimpleDataSource> data_source_;
-  StrictMock<media::MockFilterHost> host_;
+  StrictMock<media::MockDataSourceHost> host_;
 
   MockWebFrameClient client_;
   WebView* view_;

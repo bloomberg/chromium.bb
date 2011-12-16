@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "media/base/media_log.h"
 #include "media/base/mock_callback.h"
-#include "media/base/mock_filter_host.h"
+#include "media/base/mock_data_source_host.h"
 #include "media/base/mock_filters.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLResponse.h"
@@ -176,7 +176,7 @@ class BufferedDataSourceTest : public testing::Test {
   MockWebFrameClient client_;
   WebView* view_;
 
-  StrictMock<media::MockFilterHost> host_;
+  StrictMock<media::MockDataSourceHost> host_;
   MessageLoop* message_loop_;
 
  private:

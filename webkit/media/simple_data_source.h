@@ -16,7 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "media/base/filter_factories.h"
-#include "media/base/filters.h"
+#include "media/base/data_source.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
@@ -46,11 +46,9 @@ class SimpleDataSource
   SimpleDataSource(MessageLoop* render_loop, WebKit::WebFrame* frame);
   virtual ~SimpleDataSource();
 
-  // media::Filter implementation.
-  virtual void set_host(media::FilterHost* host) OVERRIDE;
-  virtual void Stop(const base::Closure& callback) OVERRIDE;
-
   // media::DataSource implementation.
+  virtual void set_host(media::DataSourceHost* host) OVERRIDE;
+  virtual void Stop(const base::Closure& callback) OVERRIDE;
   virtual void Read(int64 position,
                     size_t size,
                     uint8* data,

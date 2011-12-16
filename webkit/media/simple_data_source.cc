@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
-#include "media/base/filter_host.h"
 #include "media/base/media_log.h"
 #include "net/base/data_url.h"
 #include "net/base/load_flags.h"
@@ -59,7 +58,7 @@ SimpleDataSource::~SimpleDataSource() {
   DCHECK(state_ == UNINITIALIZED || state_ == STOPPED);
 }
 
-void SimpleDataSource::set_host(media::FilterHost* host) {
+void SimpleDataSource::set_host(media::DataSourceHost* host) {
   DataSource::set_host(host);
 
   base::AutoLock auto_lock(lock_);

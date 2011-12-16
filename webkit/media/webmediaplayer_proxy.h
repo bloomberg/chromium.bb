@@ -20,6 +20,10 @@ namespace gfx {
 class Rect;
 }
 
+namespace media {
+class VideoFrame;
+}
+
 namespace webkit_media {
 
 class WebMediaPlayerImpl;

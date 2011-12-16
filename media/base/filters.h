@@ -46,19 +46,6 @@ class FilterHost;
 
 struct PipelineStatistics;
 
-// Used to specify video preload states. They are "hints" to the browser about
-// how aggressively the browser should load and buffer data.
-// Please see the HTML5 spec for the descriptions of these values:
-// http://www.w3.org/TR/html5/video.html#attr-media-preload
-//
-// Enum values must match the values in WebCore::MediaPlayer::Preload and
-// there will be assertions at compile time if they do not match.
-enum Preload {
-  NONE,
-  METADATA,
-  AUTO,
-};
-
 // Used for completing asynchronous methods.
 typedef base::Callback<void(PipelineStatus)> FilterStatusCB;
 
@@ -131,36 +118,6 @@ class MEDIA_EXPORT Filter : public base::RefCountedThreadSafe<Filter> {
   FilterHost* host_;
 
   DISALLOW_COPY_AND_ASSIGN(Filter);
-};
-
-class MEDIA_EXPORT DataSource : public Filter {
- public:
-  typedef base::Callback<void(size_t)> ReadCallback;
-  static const size_t kReadError;
-
-  // Reads |size| bytes from |position| into |data|. And when the read is done
-  // or failed, |read_callback| is called with the number of bytes read or
-  // kReadError in case of error.
-  // TODO(hclam): should change |size| to int! It makes the code so messy
-  // with size_t and int all over the place..
-  virtual void Read(int64 position, size_t size,
-                    uint8* data,
-                    const DataSource::ReadCallback& read_callback) = 0;
-
-  // Returns true and the file size, false if the file size could not be
-  // retrieved.
-  virtual bool GetSize(int64* size_out) = 0;
-
-  // Returns true if we are performing streaming. In this case seeking is
-  // not possible.
-  virtual bool IsStreaming() = 0;
-
-  // Alert the DataSource that the video preload value has been changed.
-  virtual void SetPreload(Preload preload) = 0;
-
-  // Notify the DataSource of the bitrate of the media.
-  // Values of |bitrate| <= 0 are invalid and should be ignored.
-  virtual void SetBitrate(int bitrate) = 0;
 };
 
 class MEDIA_EXPORT VideoDecoder : public Filter {

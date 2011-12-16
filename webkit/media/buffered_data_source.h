@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "media/base/filter_factories.h"
-#include "media/base/filters.h"
+#include "media/base/data_source.h"
 #include "webkit/media/buffered_resource_loader.h"
 
 namespace media {
@@ -37,13 +37,12 @@ class BufferedDataSource : public WebDataSource {
 
   virtual ~BufferedDataSource();
 
-  // media::Filter implementation.
-  virtual void set_host(media::FilterHost* host) OVERRIDE;
+  // media::DataSource implementation.
+  // Called from demuxer thread.
+  virtual void set_host(media::DataSourceHost* host) OVERRIDE;
   virtual void Stop(const base::Closure& callback) OVERRIDE;
   virtual void SetPlaybackRate(float playback_rate) OVERRIDE;
 
-  // media::DataSource implementation.
-  // Called from demuxer thread.
   virtual void Read(
       int64 position,
       size_t size,

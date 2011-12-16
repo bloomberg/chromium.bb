@@ -22,16 +22,9 @@ class CompositeFilter::FilterHostImpl : public FilterHost {
   virtual base::TimeDelta GetTime() const OVERRIDE;
   virtual base::TimeDelta GetDuration() const OVERRIDE;
   virtual void SetTime(base::TimeDelta time) OVERRIDE;
-  virtual void SetDuration(base::TimeDelta duration) OVERRIDE;
-  virtual void SetBufferedTime(base::TimeDelta buffered_time) OVERRIDE;
-  virtual void SetTotalBytes(int64 total_bytes) OVERRIDE;
-  virtual void SetBufferedBytes(int64 buffered_bytes) OVERRIDE;
   virtual void SetNaturalVideoSize(const gfx::Size& size) OVERRIDE;
   virtual void NotifyEnded() OVERRIDE;
-  virtual void SetNetworkActivity(bool network_activity) OVERRIDE;
   virtual void DisableAudioRenderer() OVERRIDE;
-  virtual void SetCurrentReadPosition(int64 offset) OVERRIDE;
-  virtual int64 GetCurrentReadPosition() OVERRIDE;
 
  private:
   CompositeFilter* parent_;
@@ -507,23 +500,6 @@ void CompositeFilter::FilterHostImpl::SetTime(base::TimeDelta time) {
   host_->SetTime(time);
 }
 
-void CompositeFilter::FilterHostImpl::SetDuration(base::TimeDelta duration) {
-  host_->SetDuration(duration);
-}
-
-void CompositeFilter::FilterHostImpl::SetBufferedTime(
-    base::TimeDelta buffered_time) {
-  host_->SetBufferedTime(buffered_time);
-}
-
-void CompositeFilter::FilterHostImpl::SetTotalBytes(int64 total_bytes) {
-  host_->SetTotalBytes(total_bytes);
-}
-
-void CompositeFilter::FilterHostImpl::SetBufferedBytes(int64 buffered_bytes) {
-  host_->SetBufferedBytes(buffered_bytes);
-}
-
 void CompositeFilter::FilterHostImpl::SetNaturalVideoSize(
     const gfx::Size& size) {
   host_->SetNaturalVideoSize(size);
@@ -533,21 +509,8 @@ void CompositeFilter::FilterHostImpl::NotifyEnded() {
   host_->NotifyEnded();
 }
 
-void CompositeFilter::FilterHostImpl::SetNetworkActivity(
-    bool network_activity) {
-  host_->SetNetworkActivity(network_activity);
-}
-
 void CompositeFilter::FilterHostImpl::DisableAudioRenderer() {
   host_->DisableAudioRenderer();
-}
-
-void CompositeFilter::FilterHostImpl::SetCurrentReadPosition(int64 offset) {
-  host_->SetCurrentReadPosition(offset);
-}
-
-int64 CompositeFilter::FilterHostImpl::GetCurrentReadPosition() {
-  return host_->GetCurrentReadPosition();
 }
 
 }  // namespace media

@@ -28,30 +28,15 @@ class MEDIA_EXPORT FilterHost {
   // method with PIPELINE_OK.
   virtual void SetError(PipelineStatus error) = 0;
 
-  // Gets the current time in microseconds.
+  // Gets the current time.
   virtual base::TimeDelta GetTime() const = 0;
 
-  // Gets the duration in microseconds.
+  // Gets the duration.
   virtual base::TimeDelta GetDuration() const = 0;
 
   // Updates the current time.  Other filters should poll to examine the updated
   // time.
   virtual void SetTime(base::TimeDelta time) = 0;
-
-  // Get the duration of the media in microseconds.  If the duration has not
-  // been determined yet, then returns 0.
-  virtual void SetDuration(base::TimeDelta duration) = 0;
-
-  // Set the approximate amount of playable data buffered so far in micro-
-  // seconds.
-  virtual void SetBufferedTime(base::TimeDelta buffered_time) = 0;
-
-  // Set the total size of the media file.
-  virtual void SetTotalBytes(int64 total_bytes) = 0;
-
-  // Sets the total number of bytes that are buffered on the client and ready to
-  // be played.
-  virtual void SetBufferedBytes(int64 buffered_bytes) = 0;
 
   // Sets the natural size of the video output in pixel units.
   virtual void SetNaturalVideoSize(const gfx::Size& size) = 0;
@@ -60,18 +45,9 @@ class MEDIA_EXPORT FilterHost {
   // endpoints such as renderers.
   virtual void NotifyEnded() = 0;
 
-  // Sets the flag to indicate current network activity.
-  virtual void SetNetworkActivity(bool is_downloading_data) = 0;
-
   // Disable audio renderer by calling OnAudioRendererDisabled() on all
   // filters.
   virtual void DisableAudioRenderer() = 0;
-
-  // Sets the byte offset at which the client is requesting the video.
-  virtual void SetCurrentReadPosition(int64 offset) = 0;
-
-  // Gets the byte offset at which the client is requesting the video.
-  virtual int64 GetCurrentReadPosition() = 0;
 
  protected:
   virtual ~FilterHost() {}
