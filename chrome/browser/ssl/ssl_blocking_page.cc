@@ -89,6 +89,9 @@ std::string SSLBlockingPage::GetHTMLContents() {
                       l10n_util::GetStringUTF16(IDS_SSL_BLOCKING_PAGE_PROCEED));
     strings.SetString("exit",
                       l10n_util::GetStringUTF16(IDS_SSL_BLOCKING_PAGE_EXIT));
+    strings.SetString("shouldNotProceed",
+                      l10n_util::GetStringUTF16(
+                          IDS_SSL_BLOCKING_PAGE_SHOULD_NOT_PROCEED));
   } else {
     resource_id = IDR_SSL_ERROR_HTML;
     strings.SetString("title",
@@ -168,7 +171,7 @@ void SSLBlockingPage::NotifyAllowCertificate() {
 void SSLBlockingPage::SetExtraInfo(
     DictionaryValue* strings,
     const std::vector<string16>& extra_info) {
-  DCHECK(extra_info.size() < 5);  // We allow 5 paragraphs max.
+  DCHECK_LT(extra_info.size(), 5U);  // We allow 5 paragraphs max.
   const char* keys[5] = {
       "moreInfo1", "moreInfo2", "moreInfo3", "moreInfo4", "moreInfo5"
   };
