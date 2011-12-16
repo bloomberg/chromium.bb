@@ -96,18 +96,30 @@
           }],  # branding
         ],  # conditions
       }],  # OS=="mac"
+      # TODO(mcgrathr): This duplicates native_client/build/common.gypi;
+      # we should figure out a way to unify the settings.
       ['target_arch=="ia32"', {
         'nacl_defines': [
-          # TODO(gregoryd): consider getting this from NaCl's common.gypi
           'NACL_TARGET_SUBARCH=32',
+          'NACL_TARGET_ARCH=x86',
           'NACL_BUILD_SUBARCH=32',
+          'NACL_BUILD_ARCH=x86',
         ],
       }],
       ['target_arch=="x64"', {
         'nacl_defines': [
-          # TODO(gregoryd): consider getting this from NaCl's common.gypi
           'NACL_TARGET_SUBARCH=64',
+          'NACL_TARGET_ARCH=x86',
           'NACL_BUILD_SUBARCH=64',
+          'NACL_BUILD_ARCH=x86',
+        ],
+      }],
+      ['target_arch=="arm"', {
+        'nacl_defines': [
+          'NACL_BUILD_ARCH=arm',
+          'NACL_BUILD_SUBARCH=32',
+          'NACL_TARGET_ARCH=arm',
+          'NACL_TARGET_SUBARCH=32',
         ],
       }],
     ],  # conditions
