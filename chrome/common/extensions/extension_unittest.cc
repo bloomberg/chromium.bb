@@ -512,7 +512,6 @@ TEST(ExtensionTest, ApiPermissions) {
     { "non_existing_permission", false },
     // Test default module/package permission.
     { "browserAction",  true },
-    { "browserActions", true },
     { "devtools",       true },
     { "extension",      true },
     { "i18n",           true },

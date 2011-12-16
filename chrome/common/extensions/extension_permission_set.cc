@@ -38,7 +38,6 @@ bool RcdBetterThan(std::string a, std::string b) {
 
 // Names of API modules that do not require a permission.
 const char kBrowserActionModuleName[] = "browserAction";
-const char kBrowserActionsModuleName[] = "browserActions";
 const char kDevToolsModuleName[] = "devtools";
 const char kExtensionModuleName[] = "extension";
 const char kI18NModuleName[] = "i18n";
@@ -53,7 +52,6 @@ const char kTypesModuleName[] = "types";
 // section of the manifest.
 const char* kNonPermissionModuleNames[] = {
   kBrowserActionModuleName,
-  kBrowserActionsModuleName,
   kDevToolsModuleName,
   kExtensionModuleName,
   kI18NModuleName,

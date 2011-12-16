@@ -52,7 +52,7 @@ class BrowserActionSetTitleFunction : public BrowserActionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setTitle")
 };
 
-// Implement chrome.browserActions.setPopup().
+// Implement chrome.browserAction.setPopup().
 class BrowserActionSetPopupFunction : public BrowserActionFunction {
   virtual ~BrowserActionSetPopupFunction() {}
   virtual bool RunBrowserAction() OVERRIDE;
