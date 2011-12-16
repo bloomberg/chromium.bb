@@ -29,6 +29,7 @@
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/component_updater/flash_component_installer.h"
 #include "chrome/browser/component_updater/recovery_component_installer.h"
+#include "chrome/browser/component_updater/swiftshader_component_installer.h"
 #include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/defaults.h"
@@ -623,6 +624,7 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
   RegisterRecoveryComponent(cus, g_browser_process->local_state());
   RegisterPepperFlashComponent(cus);
   RegisterNPAPIFlashComponent(cus);
+  RegisterSwiftShaderComponent(cus);
 
   // CRLSetFetcher attempts to load a CRL set from either the local disk or
   // network.
