@@ -33,6 +33,7 @@ template <> struct WebIDBToMsgHelper<WebKit::WebIDBTransaction> {
 class IndexedDBCallbacksBase : public WebKit::WebIDBCallbacks {
  public:
   IndexedDBCallbacksBase(IndexedDBDispatcherHost* dispatcher_host,
+                         int32 thread_id,
                          int32 response_id);
 
   virtual ~IndexedDBCallbacksBase();
@@ -44,11 +45,13 @@ class IndexedDBCallbacksBase : public WebKit::WebIDBCallbacks {
   IndexedDBDispatcherHost* dispatcher_host() const {
     return dispatcher_host_.get();
   }
+  int32 thread_id() const { return thread_id_; }
   int32 response_id() const { return response_id_; }
 
  private:
   scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
   int32 response_id_;
+  int32 thread_id_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacksBase);
 };
@@ -58,16 +61,20 @@ template <class WebObjectType>
 class IndexedDBCallbacks : public IndexedDBCallbacksBase {
  public:
   IndexedDBCallbacks(
-      IndexedDBDispatcherHost* dispatcher_host, int32 response_id,
+      IndexedDBDispatcherHost* dispatcher_host,
+      int32 thread_id,
+      int32 response_id,
       const GURL& origin_url)
-      : IndexedDBCallbacksBase(dispatcher_host, response_id),
-        origin_url_(origin_url) {
+      : IndexedDBCallbacksBase(dispatcher_host, thread_id, response_id),
+    origin_url_(origin_url) {
   }
 
   virtual void onSuccess(WebObjectType* idb_object) {
-    int32 object_id = dispatcher_host()->Add(idb_object, origin_url_);
+    int32 object_id = dispatcher_host()->Add(idb_object, thread_id(),
+                                             origin_url_);
     dispatcher_host()->Send(
-        new typename WebIDBToMsgHelper<WebObjectType>::MsgType(response_id(),
+        new typename WebIDBToMsgHelper<WebObjectType>::MsgType(thread_id(),
+                                                               response_id(),
                                                                object_id));
   }
 
@@ -85,9 +92,11 @@ class IndexedDBCallbacks<WebKit::WebIDBCursor>
     : public IndexedDBCallbacksBase {
  public:
   IndexedDBCallbacks(
-      IndexedDBDispatcherHost* dispatcher_host, int32 response_id,
+      IndexedDBDispatcherHost* dispatcher_host,
+      int32 thread_id,
+      int32 response_id,
       int32 cursor_id)
-      : IndexedDBCallbacksBase(dispatcher_host, response_id),
+      : IndexedDBCallbacksBase(dispatcher_host, thread_id, response_id),
         cursor_id_(cursor_id) { }
 
   virtual void onSuccess(WebKit::WebIDBCursor* idb_object);
@@ -113,9 +122,10 @@ template <>
 class IndexedDBCallbacks<WebKit::WebIDBKey>
     : public IndexedDBCallbacksBase {
  public:
-  IndexedDBCallbacks(
-      IndexedDBDispatcherHost* dispatcher_host, int32 response_id)
-      : IndexedDBCallbacksBase(dispatcher_host, response_id) { }
+  IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
+                     int32 thread_id,
+                     int32 response_id)
+      : IndexedDBCallbacksBase(dispatcher_host, thread_id, response_id) { }
 
   virtual void onSuccess(const WebKit::WebIDBKey& value);
 
@@ -131,8 +141,10 @@ class IndexedDBCallbacks<WebKit::WebDOMStringList>
     : public IndexedDBCallbacksBase {
  public:
   IndexedDBCallbacks(
-      IndexedDBDispatcherHost* dispatcher_host, int32 response_id)
-      : IndexedDBCallbacksBase(dispatcher_host, response_id) { }
+      IndexedDBDispatcherHost* dispatcher_host,
+      int32 thread_id,
+      int32 response_id)
+      : IndexedDBCallbacksBase(dispatcher_host, thread_id, response_id) { }
 
   virtual void onSuccess(const WebKit::WebDOMStringList& value);
 
@@ -147,9 +159,10 @@ template <>
 class IndexedDBCallbacks<WebKit::WebSerializedScriptValue>
     : public IndexedDBCallbacksBase {
  public:
-  IndexedDBCallbacks(
-      IndexedDBDispatcherHost* dispatcher_host, int32 response_id)
-      : IndexedDBCallbacksBase(dispatcher_host, response_id) { }
+  IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
+                     int32 thread_id,
+                     int32 response_id)
+      : IndexedDBCallbacksBase(dispatcher_host, thread_id, response_id) { }
 
   virtual void onSuccess(const WebKit::WebSerializedScriptValue& value);
 

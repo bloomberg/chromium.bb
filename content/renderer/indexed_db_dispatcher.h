@@ -11,15 +11,23 @@
 
 #include "base/id_map.h"
 #include "base/nullable_string16.h"
-#include "ipc/ipc_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabase.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBObjectStore.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
+#include "webkit/glue/worker_task_runner.h"
 
 class IndexedDBKey;
+struct IndexedDBMsg_CallbacksSuccessCursorContinue_Params;
+struct IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params;
+struct IndexedDBMsg_CallbacksSuccessIDBCursor_Params;
 class RendererWebIDBCursorImpl;
+
+namespace IPC {
+class Message;
+}
 
 namespace WebKit {
 class WebFrame;
@@ -31,14 +39,17 @@ namespace content {
 class SerializedScriptValue;
 }
 
-// Handle the indexed db related communication for this entire renderer.
-class IndexedDBDispatcher : public IPC::Channel::Listener {
+// Handle the indexed db related communication for this context thread - the
+// main thread and each worker thread have their own copies.
+class IndexedDBDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
  public:
-  IndexedDBDispatcher();
   virtual ~IndexedDBDispatcher();
+  static IndexedDBDispatcher* ThreadSpecificInstance();
 
-  // IPC::Channel::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  // webkit_glue::WorkerTaskRunner::Observer implementation.
+  virtual void OnWorkerRunLoopStopped() OVERRIDE;
+
+  void OnMessageReceived(const IPC::Message& msg);
   void Send(IPC::Message* msg);
 
   void RequestIDBFactoryGetDatabaseNames(
@@ -169,36 +180,41 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
   static int32 TransactionId(const WebKit::WebIDBTransaction& transaction);
 
  private:
+  IndexedDBDispatcher();
   // IDBCallback message handlers.
   void OnSuccessNull(int32 response_id);
-  void OnSuccessIDBDatabase(int32 response_id, int32 object_id);
-  void OnSuccessIndexedDBKey(int32 response_id, const IndexedDBKey& key);
-  void OnSuccessIDBTransaction(int32 response_id, int32 object_id);
-  void OnSuccessOpenCursor(int32 response_id, int32 object_id,
-                           const IndexedDBKey& key,
-                           const IndexedDBKey& primary_key,
-                           const content::SerializedScriptValue& value);
-  void OnSuccessCursorContinue(int32 response_id,
-                               int32 cursor_id,
-                               const IndexedDBKey& key,
-                               const IndexedDBKey& primary_key,
-                               const content::SerializedScriptValue& value);
+  void OnSuccessIDBDatabase(int32 thread_id,
+                            int32 response_id,
+                            int32 object_id);
+  void OnSuccessIndexedDBKey(int32 thread_id,
+                             int32 response_id,
+                             const IndexedDBKey& key);
+  void OnSuccessIDBTransaction(int32 thread_id,
+                               int32 response_id,
+                               int32 object_id);
+  void OnSuccessOpenCursor(
+      const IndexedDBMsg_CallbacksSuccessIDBCursor_Params& p);
+  void OnSuccessCursorContinue(
+      const IndexedDBMsg_CallbacksSuccessCursorContinue_Params& p);
   void OnSuccessCursorPrefetch(
-      int32 response_id,
-      int32 cursor_id,
-      const std::vector<IndexedDBKey>& keys,
-      const std::vector<IndexedDBKey>& primary_keys,
-      const std::vector<content::SerializedScriptValue>& values);
-  void OnSuccessStringList(int32 response_id,
+      const IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params& p);
+  void OnSuccessStringList(int32 thread_id,
+                           int32 response_id,
                            const std::vector<string16>& value);
   void OnSuccessSerializedScriptValue(
+      int32 thread_id,
       int32 response_id,
       const content::SerializedScriptValue& value);
-  void OnError(int32 response_id, int code, const string16& message);
-  void OnBlocked(int32 response_id);
-  void OnAbort(int32 transaction_id);
-  void OnComplete(int32 transaction_id);
-  void OnVersionChange(int32 database_id, const string16& newVersion);
+  void OnError(int32 thread_id,
+               int32 response_id,
+               int code,
+               const string16& message);
+  void OnBlocked(int32 thread_id, int32 response_id);
+  void OnAbort(int32 thread_id, int32 transaction_id);
+  void OnComplete(int32 thread_id, int32 transaction_id);
+  void OnVersionChange(int32 thread_id,
+                       int32 database_id,
+                       const string16& newVersion);
 
   // Reset cursor prefetch caches for all cursors except exception_cursor_id.
   void ResetCursorPrefetchCaches(int32 exception_cursor_id = -1);

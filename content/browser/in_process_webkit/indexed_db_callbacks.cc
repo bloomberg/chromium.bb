@@ -9,36 +9,43 @@
 
 IndexedDBCallbacksBase::IndexedDBCallbacksBase(
     IndexedDBDispatcherHost* dispatcher_host,
+    int32 thread_id,
     int32 response_id)
     : dispatcher_host_(dispatcher_host),
-      response_id_(response_id) {
+      response_id_(response_id),
+      thread_id_(thread_id) {
 }
 
 IndexedDBCallbacksBase::~IndexedDBCallbacksBase() {}
 
 void IndexedDBCallbacksBase::onError(const WebKit::WebIDBDatabaseError& error) {
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksError(
-      response_id_, error.code(), error.message()));
+      thread_id_, response_id_, error.code(), error.message()));
 }
 
 void IndexedDBCallbacksBase::onBlocked() {
-  dispatcher_host_->Send(new IndexedDBMsg_CallbacksBlocked(response_id_));
+  dispatcher_host_->Send(new IndexedDBMsg_CallbacksBlocked(thread_id_,
+                                                           response_id_));
 }
 
 void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccess(
     WebKit::WebIDBCursor* idb_object) {
   int32 object_id = dispatcher_host()->Add(idb_object);
-  dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessIDBCursor(
-      response_id(), object_id, IndexedDBKey(idb_object->key()),
-      IndexedDBKey(idb_object->primaryKey()),
-      content::SerializedScriptValue(idb_object->value())));
+  IndexedDBMsg_CallbacksSuccessIDBCursor_Params params;
+  params.thread_id = thread_id();
+  params.response_id = response_id();
+  params.cursor_id = object_id;
+  params.key = IndexedDBKey(idb_object->key());
+  params.primary_key = IndexedDBKey(idb_object->primaryKey());
+  params.serialized_value = content::SerializedScriptValue(idb_object->value());
+  dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessIDBCursor(params));
 }
 
 void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccess(
     const WebKit::WebSerializedScriptValue& value) {
   dispatcher_host()->Send(
       new IndexedDBMsg_CallbacksSuccessSerializedScriptValue(
-          response_id(), content::SerializedScriptValue(value)));
+          thread_id(), response_id(), content::SerializedScriptValue(value)));
 }
 
 void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccessWithContinuation() {
@@ -49,14 +56,16 @@ void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccessWithContinuation() {
   DCHECK(idb_cursor);
   if (!idb_cursor)
     return;
+  IndexedDBMsg_CallbacksSuccessCursorContinue_Params params;
+  params.thread_id = thread_id();
+  params.response_id = response_id();
+  params.cursor_id = cursor_id_;
+  params.key = IndexedDBKey(idb_cursor->key());
+  params.primary_key = IndexedDBKey(idb_cursor->primaryKey());
+  params.serialized_value = content::SerializedScriptValue(idb_cursor->value());
 
   dispatcher_host()->Send(
-      new IndexedDBMsg_CallbacksSuccessCursorContinue(
-          response_id(),
-          cursor_id_,
-          IndexedDBKey(idb_cursor->key()),
-          IndexedDBKey(idb_cursor->primaryKey()),
-          content::SerializedScriptValue(idb_cursor->value())));
+      new IndexedDBMsg_CallbacksSuccessCursorContinue(params));
 }
 
 void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccessWithPrefetch(
@@ -75,20 +84,22 @@ void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccessWithPrefetch(
     msgValues.push_back(content::SerializedScriptValue(values[i]));
   }
 
+  IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params params;
+  params.thread_id = thread_id();
+  params.response_id = response_id();
+  params.cursor_id = cursor_id_;
+  params.keys = msgKeys;
+  params.primary_keys = msgPrimaryKeys;
+  params.values = msgValues;
   dispatcher_host()->Send(
-      new IndexedDBMsg_CallbacksSuccessCursorPrefetch(
-          response_id(),
-          cursor_id_,
-          msgKeys,
-          msgPrimaryKeys,
-          msgValues));
+      new IndexedDBMsg_CallbacksSuccessCursorPrefetch(params));
 }
 
 void IndexedDBCallbacks<WebKit::WebIDBKey>::onSuccess(
     const WebKit::WebIDBKey& value) {
   dispatcher_host()->Send(
       new IndexedDBMsg_CallbacksSuccessIndexedDBKey(
-          response_id(), IndexedDBKey(value)));
+          thread_id(), response_id(), IndexedDBKey(value)));
 }
 
 void IndexedDBCallbacks<WebKit::WebDOMStringList>::onSuccess(
@@ -100,12 +111,12 @@ void IndexedDBCallbacks<WebKit::WebDOMStringList>::onSuccess(
 
   dispatcher_host()->Send(
       new IndexedDBMsg_CallbacksSuccessStringList(
-          response_id(), list));
+          thread_id(), response_id(), list));
 }
 
 void IndexedDBCallbacks<WebKit::WebSerializedScriptValue>::onSuccess(
     const WebKit::WebSerializedScriptValue& value) {
   dispatcher_host()->Send(
       new IndexedDBMsg_CallbacksSuccessSerializedScriptValue(
-          response_id(), content::SerializedScriptValue(value)));
+          thread_id(), response_id(), content::SerializedScriptValue(value)));
 }

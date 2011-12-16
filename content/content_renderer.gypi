@@ -76,6 +76,8 @@
     'renderer/idle_user_detector.h',
     'renderer/indexed_db_dispatcher.cc',
     'renderer/indexed_db_dispatcher.h',
+    'renderer/indexed_db_message_filter.cc',
+    'renderer/indexed_db_message_filter.h',
     'renderer/intents_dispatcher.cc',
     'renderer/intents_dispatcher.h',
     'renderer/java/java_bridge_channel.cc',

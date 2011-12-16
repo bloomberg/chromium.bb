@@ -43,6 +43,7 @@
 #include "content/renderer/gpu/compositor_thread.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
 #include "content/renderer/indexed_db_dispatcher.h"
+#include "content/renderer/indexed_db_message_filter.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
@@ -198,7 +199,8 @@ void RenderThreadImpl::Init() {
   task_factory_.reset(new ScopedRunnableMethodFactory<RenderThreadImpl>(this));
 
   appcache_dispatcher_.reset(new AppCacheDispatcher(Get()));
-  indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
+  main_thread_indexed_db_dispatcher_.reset(
+      IndexedDBDispatcher::ThreadSpecificInstance());
 
   db_message_filter_ = new DBMessageFilter();
   AddFilter(db_message_filter_.get());
@@ -214,6 +216,8 @@ void RenderThreadImpl::Init() {
 
   devtools_agent_message_filter_ = new DevToolsAgentFilter();
   AddFilter(devtools_agent_message_filter_.get());
+
+  AddFilter(new IndexedDBMessageFilter);
 
   content::GetContentClient()->renderer()->RenderThreadStarted();
 
@@ -707,8 +711,6 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
 
   // Some messages are handled by delegates.
   if (appcache_dispatcher_->OnMessageReceived(msg))
-    return true;
-  if (indexed_db_dispatcher_->OnMessageReceived(msg))
     return true;
 
   bool handled = true;

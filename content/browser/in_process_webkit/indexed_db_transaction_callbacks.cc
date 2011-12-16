@@ -9,8 +9,10 @@
 
 IndexedDBTransactionCallbacks::IndexedDBTransactionCallbacks(
     IndexedDBDispatcherHost* dispatcher_host,
+    int thread_id,
     int transaction_id)
     : dispatcher_host_(dispatcher_host),
+      thread_id_(thread_id),
       transaction_id_(transaction_id) {
 }
 
@@ -19,11 +21,12 @@ IndexedDBTransactionCallbacks::~IndexedDBTransactionCallbacks() {
 
 void IndexedDBTransactionCallbacks::onAbort() {
   dispatcher_host_->Send(
-      new IndexedDBMsg_TransactionCallbacksAbort(transaction_id_));
+      new IndexedDBMsg_TransactionCallbacksAbort(thread_id_, transaction_id_));
 }
 
 void IndexedDBTransactionCallbacks::onComplete() {
   dispatcher_host_->TransactionComplete(transaction_id_);
   dispatcher_host_->Send(
-      new IndexedDBMsg_TransactionCallbacksComplete(transaction_id_));
+      new IndexedDBMsg_TransactionCallbacksComplete(thread_id_,
+                                                    transaction_id_));
 }

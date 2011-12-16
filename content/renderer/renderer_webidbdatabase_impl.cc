@@ -11,6 +11,7 @@
 #include "content/renderer/renderer_webidbtransaction_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+#include "webkit/glue/worker_task_runner.h"
 
 using WebKit::WebDOMStringList;
 using WebKit::WebExceptionCode;
@@ -20,6 +21,7 @@ using WebKit::WebIDBDatabaseCallbacks;
 using WebKit::WebIDBTransaction;
 using WebKit::WebString;
 using WebKit::WebVector;
+using webkit_glue::WorkerTaskRunner;
 
 RendererWebIDBDatabaseImpl::RendererWebIDBDatabaseImpl(int32 idb_database_id)
     : idb_database_id_(idb_database_id) {
@@ -97,7 +99,7 @@ void RendererWebIDBDatabaseImpl::setVersion(
     WebIDBCallbacks* callbacks,
     WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
-      RenderThreadImpl::current()->indexed_db_dispatcher();
+      IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBDatabaseSetVersion(
       version, callbacks, idb_database_id_, &ec);
 }
@@ -112,10 +114,9 @@ WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::transaction(
     object_stores.push_back(names.item(i));
 
   int transaction_id;
-  ChildThread::current()->Send(
-      new IndexedDBHostMsg_DatabaseTransaction(
-          idb_database_id_, object_stores, mode,
-          &transaction_id, &ec));
+  ChildThread::current()->Send(new IndexedDBHostMsg_DatabaseTransaction(
+      WorkerTaskRunner::Instance()->CurrentWorkerId(),
+      idb_database_id_, object_stores, mode, &transaction_id, &ec));
   if (!transaction_id)
     return NULL;
   return new RendererWebIDBTransactionImpl(transaction_id);
@@ -123,12 +124,13 @@ WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::transaction(
 
 void RendererWebIDBDatabaseImpl::close() {
   IndexedDBDispatcher* dispatcher =
-      RenderThreadImpl::current()->indexed_db_dispatcher();
+      IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBDatabaseClose(idb_database_id_);
 }
 
 void RendererWebIDBDatabaseImpl::open(WebIDBDatabaseCallbacks* callbacks) {
   IndexedDBDispatcher* dispatcher =
-      RenderThreadImpl::current()->indexed_db_dispatcher();
+      IndexedDBDispatcher::ThreadSpecificInstance();
+  DCHECK(dispatcher);
   dispatcher->RequestIDBDatabaseOpen(callbacks, idb_database_id_);
 }

@@ -68,7 +68,7 @@ void RendererWebIDBTransactionImpl::setCallbacks(
     WebIDBTransactionCallbacks* callbacks)
 {
   IndexedDBDispatcher* dispatcher =
-      RenderThreadImpl::current()->indexed_db_dispatcher();
+      IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RegisterWebIDBTransactionCallbacks(callbacks,
                                                  idb_transaction_id_);
 }

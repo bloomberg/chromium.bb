@@ -134,10 +134,6 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
     return appcache_dispatcher_.get();
   }
 
-  IndexedDBDispatcher* indexed_db_dispatcher() const {
-    return indexed_db_dispatcher_.get();
-  }
-
   AudioInputMessageFilter* audio_input_message_filter() {
     return audio_input_message_filter_.get();
   }
@@ -193,7 +189,7 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   // These objects live solely on the render thread.
   scoped_ptr<ScopedRunnableMethodFactory<RenderThreadImpl> > task_factory_;
   scoped_ptr<AppCacheDispatcher> appcache_dispatcher_;
-  scoped_ptr<IndexedDBDispatcher> indexed_db_dispatcher_;
+  scoped_ptr<IndexedDBDispatcher> main_thread_indexed_db_dispatcher_;
   scoped_ptr<RendererWebKitPlatformSupportImpl> webkit_platform_support_;
   scoped_ptr<WebKit::WebStorageEventDispatcher> dom_storage_event_dispatcher_;
 

@@ -22,7 +22,8 @@ IPC_ENUM_TRAITS(WebKit::WebIDBObjectStore::PutMode)
 
 // Used to enumerate indexed databases.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryGetDatabaseNames_Params)
-  // The response should have this id.
+  // The response should have these ids.
+  IPC_STRUCT_MEMBER(int32, thread_id)
   IPC_STRUCT_MEMBER(int32, response_id)
   // The origin doing the initiating.
   IPC_STRUCT_MEMBER(string16, origin)
@@ -30,7 +31,8 @@ IPC_STRUCT_END()
 
 // Used to open an indexed database.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryOpen_Params)
-  // The response should have this id.
+  // The response should have these ids.
+  IPC_STRUCT_MEMBER(int32, thread_id)
   IPC_STRUCT_MEMBER(int32, response_id)
   // The origin doing the initiating.
   IPC_STRUCT_MEMBER(string16, origin)
@@ -40,7 +42,8 @@ IPC_STRUCT_END()
 
 // Used to delete an indexed database.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryDeleteDatabase_Params)
-  // The response should have this id.
+  // The response should have these ids.
+  IPC_STRUCT_MEMBER(int32, thread_id)
   IPC_STRUCT_MEMBER(int32, response_id)
   // The origin doing the initiating.
   IPC_STRUCT_MEMBER(string16, origin)
@@ -64,7 +67,8 @@ IPC_STRUCT_END()
 
 // Used to open both cursors and object cursors in IndexedDB.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_IndexOpenCursor_Params)
-  // The response should have this id.
+  // The response should have these ids.
+  IPC_STRUCT_MEMBER(int32, thread_id)
   IPC_STRUCT_MEMBER(int32, response_id)
   // The serialized lower key.
   IPC_STRUCT_MEMBER(IndexedDBKey, lower_key)
@@ -87,6 +91,7 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_ObjectStorePut_Params)
   // The object store's id.
   IPC_STRUCT_MEMBER(int32, idb_object_store_id)
   // The id any response should contain.
+  IPC_STRUCT_MEMBER(int32, thread_id)
   IPC_STRUCT_MEMBER(int32, response_id)
   // The value to set.
   IPC_STRUCT_MEMBER(content::SerializedScriptValue, serialized_value)
@@ -116,7 +121,8 @@ IPC_STRUCT_END()
 
 // Used to open an IndexedDB cursor.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_ObjectStoreOpenCursor_Params)
-  // The response should have this id.
+  // The response should have these ids.
+  IPC_STRUCT_MEMBER(int32, thread_id)
   IPC_STRUCT_MEMBER(int32, response_id)
   // The serialized lower key.
   IPC_STRUCT_MEMBER(IndexedDBKey, lower_key)
@@ -134,56 +140,89 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_ObjectStoreOpenCursor_Params)
   IPC_STRUCT_MEMBER(int, transaction_id)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessIDBCursor_Params)
+  IPC_STRUCT_MEMBER(int32, thread_id)
+  IPC_STRUCT_MEMBER(int32, response_id)
+  IPC_STRUCT_MEMBER(int32, cursor_id)
+  IPC_STRUCT_MEMBER(IndexedDBKey, key)
+  IPC_STRUCT_MEMBER(IndexedDBKey, primary_key)
+  IPC_STRUCT_MEMBER(content::SerializedScriptValue, serialized_value)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorContinue_Params)
+  IPC_STRUCT_MEMBER(int32, thread_id)
+  IPC_STRUCT_MEMBER(int32, response_id)
+  IPC_STRUCT_MEMBER(int32, cursor_id)
+  IPC_STRUCT_MEMBER(IndexedDBKey, key)
+  IPC_STRUCT_MEMBER(IndexedDBKey, primary_key)
+  IPC_STRUCT_MEMBER(content::SerializedScriptValue, serialized_value)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params)
+  IPC_STRUCT_MEMBER(int32, thread_id)
+  IPC_STRUCT_MEMBER(int32, response_id)
+  IPC_STRUCT_MEMBER(int32, cursor_id)
+  IPC_STRUCT_MEMBER(std::vector<IndexedDBKey>, keys)
+  IPC_STRUCT_MEMBER(std::vector<IndexedDBKey>, primary_keys)
+  IPC_STRUCT_MEMBER(std::vector<content::SerializedScriptValue>, values)
+IPC_STRUCT_END()
+
+
 // Indexed DB messages sent from the browser to the renderer.
 
+// The thread_id needs to be the first parameter in these messages.  In the IO
+// thread on the renderer/client process, an IDB message filter assumes the
+// thread_id is the first int.
+
 // IDBCallback message handlers.
-IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksSuccessIDBCursor,
-                     int32 /* response_id */,
-                     int32 /* cursor_id */,
-                     IndexedDBKey /* key */,
-                     IndexedDBKey /* primary key */,
-                     content::SerializedScriptValue /* script_value */)
-IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksSuccessCursorContinue,
-                     int32 /* response_id */,
-                     int32 /* cursor_id */,
-                     IndexedDBKey /* key */,
-                     IndexedDBKey /* primary key */,
-                     content::SerializedScriptValue /* script_value */)
-IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksSuccessCursorPrefetch,
-                     int32 /* response_id */,
-                     int32 /* cursor_id */,
-                     std::vector<IndexedDBKey> /* keys */,
-                     std::vector<IndexedDBKey> /* primary keys */,
-                     std::vector<content::SerializedScriptValue> /* values */)
-IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessIDBDatabase,
+IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessIDBCursor,
+                     IndexedDBMsg_CallbacksSuccessIDBCursor_Params)
+
+IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessCursorContinue,
+                     IndexedDBMsg_CallbacksSuccessCursorContinue_Params)
+
+IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessCursorPrefetch,
+                     IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params)
+
+IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessIDBDatabase,
+                     int32 /* thread_id */,
                      int32 /* response_id */,
                      int32 /* idb_database_id */)
-IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessIndexedDBKey,
+IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessIndexedDBKey,
+                     int32 /* thread_id */,
                      int32 /* response_id */,
                      IndexedDBKey /* indexed_db_key */)
-IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessIDBTransaction,
+IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessIDBTransaction,
+                     int32 /* thread_id */,
                      int32 /* response_id */,
                      int32 /* idb_transaction_id */)
-IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessSerializedScriptValue,
+IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessSerializedScriptValue,
+                     int32 /* thread_id */,
                      int32 /* response_id */,
                      content::SerializedScriptValue /* value */)
-IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessStringList,
+IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessStringList,
+                     int32 /* thread_id */,
                      int32 /* response_id */,
                      std::vector<string16> /* dom_string_list */)
-IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksError,
+IPC_MESSAGE_CONTROL4(IndexedDBMsg_CallbacksError,
+                     int32 /* thread_id */,
                      int32 /* response_id */,
                      int /* code */,
                      string16 /* message */)
-IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksBlocked,
+IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksBlocked,
+                     int32 /* thread_id */,
                      int32 /* response_id */)
 
 // IDBTransactionCallback message handlers.
-IPC_MESSAGE_CONTROL1(IndexedDBMsg_TransactionCallbacksAbort,
+IPC_MESSAGE_CONTROL2(IndexedDBMsg_TransactionCallbacksAbort,
+                     int32 /* thread_id */,
                      int32 /* transaction_id */)
-IPC_MESSAGE_CONTROL1(IndexedDBMsg_TransactionCallbacksComplete,
+IPC_MESSAGE_CONTROL2(IndexedDBMsg_TransactionCallbacksComplete,
+                     int32 /* thread_id */,
                      int32 /* transaction_id */)
 
-IPC_MESSAGE_CONTROL2(IndexedDBMsg_DatabaseCallbacksVersionChange,
+IPC_MESSAGE_CONTROL3(IndexedDBMsg_DatabaseCallbacksVersionChange,
+                     int32, /* thread_id */
                      int32, /* database_id */
                      string16) /* new_version */
 
@@ -195,22 +234,25 @@ IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_CursorDirection,
                             int32 /* direction */)
 
 // WebIDBCursor::update() message.
-IPC_SYNC_MESSAGE_CONTROL3_1(IndexedDBHostMsg_CursorUpdate,
+IPC_SYNC_MESSAGE_CONTROL4_1(IndexedDBHostMsg_CursorUpdate,
                      int32, /* idb_cursor_id */
+                     int32, /* thread_id */
                      int32, /* response_id */
                      content::SerializedScriptValue, /* value */
                      WebKit::WebExceptionCode /* ec */)
 
 // WebIDBCursor::continue() message.
-IPC_SYNC_MESSAGE_CONTROL3_1(IndexedDBHostMsg_CursorContinue,
+IPC_SYNC_MESSAGE_CONTROL4_1(IndexedDBHostMsg_CursorContinue,
                      int32, /* idb_cursor_id */
+                     int32, /* thread_id */
                      int32, /* response_id */
                      IndexedDBKey, /* key */
                      WebKit::WebExceptionCode /* ec */)
 
 // WebIDBCursor::prefetchContinue() message.
-IPC_SYNC_MESSAGE_CONTROL3_1(IndexedDBHostMsg_CursorPrefetch,
+IPC_SYNC_MESSAGE_CONTROL4_1(IndexedDBHostMsg_CursorPrefetch,
                      int32, /* idb_cursor_id */
+                     int32, /* thread_id */
                      int32, /* response_id */
                      int32, /* n */
                      WebKit::WebExceptionCode /* ec */)
@@ -222,8 +264,9 @@ IPC_SYNC_MESSAGE_CONTROL3_0(IndexedDBHostMsg_CursorPrefetchReset,
                      int32  /* used_prefetches */)
 
 // WebIDBCursor::remove() message.
-IPC_SYNC_MESSAGE_CONTROL2_1(IndexedDBHostMsg_CursorDelete,
+IPC_SYNC_MESSAGE_CONTROL3_1(IndexedDBHostMsg_CursorDelete,
                      int32, /* idb_cursor_id */
+                     int32, /* thread_id */
                      int32, /* response_id */
                      WebKit::WebExceptionCode /* ec */)
 
@@ -268,8 +311,9 @@ IPC_SYNC_MESSAGE_CONTROL3_1(IndexedDBHostMsg_DatabaseDeleteObjectStore,
                             WebKit::WebExceptionCode /* ec */)
 
 // WebIDBDatabase::setVersion() message.
-IPC_SYNC_MESSAGE_CONTROL3_1(IndexedDBHostMsg_DatabaseSetVersion,
+IPC_SYNC_MESSAGE_CONTROL4_1(IndexedDBHostMsg_DatabaseSetVersion,
                             int32, /* idb_database_id */
+                            int32, /* thread_id */
                             int32, /* response_id */
                             string16, /* version */
                             WebKit::WebExceptionCode /* ec */)
@@ -279,7 +323,8 @@ IPC_SYNC_MESSAGE_CONTROL3_1(IndexedDBHostMsg_DatabaseSetVersion,
 // temporary ID and keep a map in the browser process of real
 // IDs to temporary IDs. We can then update the transaction
 // to its real ID asynchronously.
-IPC_SYNC_MESSAGE_CONTROL3_2(IndexedDBHostMsg_DatabaseTransaction,
+IPC_SYNC_MESSAGE_CONTROL4_2(IndexedDBHostMsg_DatabaseTransaction,
+                            int32, /* thread_id */
                             int32, /* idb_database_id */
                             std::vector<string16>, /* object_stores */
                             int32, /* mode */
@@ -287,8 +332,9 @@ IPC_SYNC_MESSAGE_CONTROL3_2(IndexedDBHostMsg_DatabaseTransaction,
                             WebKit::WebExceptionCode /* ec */)
 
 // WebIDBDatabase::open() message.
-IPC_MESSAGE_CONTROL2(IndexedDBHostMsg_DatabaseOpen,
+IPC_MESSAGE_CONTROL3(IndexedDBHostMsg_DatabaseOpen,
                      int32, /* idb_database_id */
+                     int32 /* thread_id */,
                      int32 /* response_id */)
 
 // WebIDBDatabase::close() message.
@@ -330,16 +376,18 @@ IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_IndexOpenKeyCursor,
                             WebKit::WebExceptionCode /* ec */)
 
 // WebIDBIndex::getObject() message.
-IPC_SYNC_MESSAGE_CONTROL4_1(IndexedDBHostMsg_IndexGetObject,
+IPC_SYNC_MESSAGE_CONTROL5_1(IndexedDBHostMsg_IndexGetObject,
                             int32, /* idb_index_id */
+                            int32, /* thread_id */
                             int32, /* response_id */
                             IndexedDBKey, /* key */
                             int32, /* transaction_id */
                             WebKit::WebExceptionCode /* ec */)
 
 // WebIDBIndex::getKey() message.
-IPC_SYNC_MESSAGE_CONTROL4_1(IndexedDBHostMsg_IndexGetKey,
+IPC_SYNC_MESSAGE_CONTROL5_1(IndexedDBHostMsg_IndexGetKey,
                             int32, /* idb_index_id */
+                            int32, /* thread_id */
                             int32, /* response_id */
                             IndexedDBKey, /* key */
                             int32, /* transaction_id */
@@ -365,8 +413,9 @@ IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_ObjectStoreIndexNames,
                             std::vector<string16> /* index_names */)
 
 // WebIDBObjectStore::get() message.
-IPC_SYNC_MESSAGE_CONTROL4_1(IndexedDBHostMsg_ObjectStoreGet,
+IPC_SYNC_MESSAGE_CONTROL5_1(IndexedDBHostMsg_ObjectStoreGet,
                             int32, /* idb_object_store_id */
+                            int32, /* thread_id */
                             int32, /* response_id */
                             IndexedDBKey, /* key */
                             int32, /* transaction_id */
@@ -378,16 +427,18 @@ IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_ObjectStorePut,
                             WebKit::WebExceptionCode /* ec */)
 
 // WebIDBObjectStore::delete() message.
-IPC_SYNC_MESSAGE_CONTROL4_1(IndexedDBHostMsg_ObjectStoreDelete,
+IPC_SYNC_MESSAGE_CONTROL5_1(IndexedDBHostMsg_ObjectStoreDelete,
                             int32, /* idb_object_store_id */
+                            int32, /* thread_id */
                             int32, /* response_id */
                             IndexedDBKey, /* key */
                             int32, /* transaction_id */
                             WebKit::WebExceptionCode /* ec */)
 
 // WebIDBObjectStore::clear() message.
-IPC_SYNC_MESSAGE_CONTROL3_1(IndexedDBHostMsg_ObjectStoreClear,
+IPC_SYNC_MESSAGE_CONTROL4_1(IndexedDBHostMsg_ObjectStoreClear,
                             int32, /* idb_object_store_id */
+                            int32, /* thread_id */
                             int32, /* response_id */
                             int32, /* transaction_id */
                             WebKit::WebExceptionCode /* ec */)

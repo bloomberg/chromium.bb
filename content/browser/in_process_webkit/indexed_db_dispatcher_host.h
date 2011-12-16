@@ -60,10 +60,14 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   // The various IndexedDBCallbacks children call these methods to add the
   // results into the applicable map.  See below for more details.
   int32 Add(WebKit::WebIDBCursor* idb_cursor);
-  int32 Add(WebKit::WebIDBDatabase* idb_database, const GURL& origin_url);
+  int32 Add(WebKit::WebIDBDatabase* idb_database,
+            int32 thread_id,
+            const GURL& origin_url);
   int32 Add(WebKit::WebIDBIndex* idb_index);
   int32 Add(WebKit::WebIDBObjectStore* idb_object_store);
-  int32 Add(WebKit::WebIDBTransaction* idb_transaction, const GURL& origin_url);
+  int32 Add(WebKit::WebIDBTransaction* idb_transaction,
+            int32 thread_id,
+            const GURL& origin_url);
   int32 Add(WebKit::WebDOMStringList* domStringList);
 
   WebKit::WebIDBCursor* GetCursorFromId(int32 cursor_id);
@@ -118,15 +122,17 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
                              int32 transaction_id,
                              WebKit::WebExceptionCode* ec);
     void OnSetVersion(int32 idb_database_id,
+                      int32 thread_id,
                       int32 response_id,
                       const string16& version,
                       WebKit::WebExceptionCode* ec);
-    void OnTransaction(int32 idb_database_id,
+    void OnTransaction(int32 thread_id,
+                       int32 idb_database_id,
                        const std::vector<string16>& names,
                        int32 mode,
                        int32* idb_transaction_id,
                        WebKit::WebExceptionCode* ec);
-    void OnOpen(int32 idb_database_id, int32 response_id);
+    void OnOpen(int32 idb_database_id, int32 thread_id, int32 response_id);
     void OnClose(int32 idb_database_id);
     void OnDestroyed(int32 idb_database_id);
 
@@ -153,11 +159,13 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnOpenKeyCursor(const IndexedDBHostMsg_IndexOpenCursor_Params& params,
                          WebKit::WebExceptionCode* ec);
     void OnGetObject(int idb_index_id,
+                     int32 thread_id,
                      int32 response_id,
                      const IndexedDBKey& key,
                      int32 transaction_id,
                      WebKit::WebExceptionCode* ec);
     void OnGetKey(int idb_index_id,
+                  int32 thread_id,
                   int32 response_id,
                   const IndexedDBKey& key,
                   int32 transaction_id,
@@ -181,6 +189,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnIndexNames(int32 idb_object_store_id,
                       std::vector<string16>* index_names);
     void OnGet(int idb_object_store_id,
+               int32 thread_id,
                int32 response_id,
                const IndexedDBKey& key,
                int32 transaction_id,
@@ -188,11 +197,13 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnPut(const IndexedDBHostMsg_ObjectStorePut_Params& params,
                WebKit::WebExceptionCode* ec);
     void OnDelete(int idb_object_store_id,
+                  int32 thread_id,
                   int32 response_id,
                   const IndexedDBKey& key,
                   int32 transaction_id,
                   WebKit::WebExceptionCode* ec);
     void OnClear(int idb_object_store_id,
+                 int32 thread_id,
                  int32 response_id,
                  int32 transaction_id,
                  WebKit::WebExceptionCode* ec);
@@ -231,20 +242,24 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnValue(int32 idb_object_store_id,
                  content::SerializedScriptValue* script_value);
     void OnUpdate(int32 idb_object_store_id,
+                  int32 thread_id,
                   int32 response_id,
                   const content::SerializedScriptValue& value,
                   WebKit::WebExceptionCode* ec);
     void OnContinue(int32 idb_object_store_id,
+                    int32 thread_id,
                     int32 response_id,
                     const IndexedDBKey& key,
                     WebKit::WebExceptionCode* ec);
     void OnPrefetch(int32 idb_cursor_id,
+                    int32 thread_id,
                     int32 response_id,
                     int n,
                     WebKit::WebExceptionCode* ec);
     void OnPrefetchReset(int32 idb_cursor_id, int used_prefetches,
                          int unused_prefetches);
     void OnDelete(int32 idb_object_store_id,
+                  int32 thread_id,
                   int32 response_id,
                   WebKit::WebExceptionCode* ec);
     void OnDestroyed(int32 idb_cursor_id);

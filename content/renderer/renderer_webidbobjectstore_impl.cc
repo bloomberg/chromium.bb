@@ -75,7 +75,7 @@ void RendererWebIDBObjectStoreImpl::get(
     const WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
-      RenderThreadImpl::current()->indexed_db_dispatcher();
+      IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBObjectStoreGet(
       IndexedDBKey(key), callbacks, idb_object_store_id_, transaction, &ec);
 }
@@ -88,7 +88,7 @@ void RendererWebIDBObjectStoreImpl::put(
     const WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
-      RenderThreadImpl::current()->indexed_db_dispatcher();
+      IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBObjectStorePut(
       content::SerializedScriptValue(value), IndexedDBKey(key), put_mode,
       callbacks, idb_object_store_id_, transaction, &ec);
@@ -100,7 +100,7 @@ void RendererWebIDBObjectStoreImpl::deleteFunction(
     const WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
-      RenderThreadImpl::current()->indexed_db_dispatcher();
+      IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBObjectStoreDelete(
       IndexedDBKey(key), callbacks, idb_object_store_id_, transaction, &ec);
 }
@@ -110,7 +110,7 @@ void RendererWebIDBObjectStoreImpl::clear(
     const WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
-      RenderThreadImpl::current()->indexed_db_dispatcher();
+      IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBObjectStoreClear(
       callbacks, idb_object_store_id_, transaction, &ec);
 }
@@ -166,7 +166,7 @@ void RendererWebIDBObjectStoreImpl::openCursor(
     const WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
-      RenderThreadImpl::current()->indexed_db_dispatcher();
+      IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBObjectStoreOpenCursor(
       idb_key_range, direction, callbacks,  idb_object_store_id_,
       transaction, &ec);

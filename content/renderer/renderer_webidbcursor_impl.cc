@@ -29,7 +29,7 @@ RendererWebIDBCursorImpl::~RendererWebIDBCursorImpl() {
   ChildThread::current()->Send(new IndexedDBHostMsg_CursorDestroyed(
       idb_cursor_id_));
   IndexedDBDispatcher* dispatcher =
-      RenderThreadImpl::current()->indexed_db_dispatcher();
+      IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->CursorDestroyed(idb_cursor_id_);
 }
 
@@ -56,7 +56,7 @@ void RendererWebIDBCursorImpl::update(const WebSerializedScriptValue& value,
                                       WebIDBCallbacks* callbacks,
                                       WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
-      RenderThreadImpl::current()->indexed_db_dispatcher();
+      IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBCursorUpdate(
       content::SerializedScriptValue(value), callbacks, idb_cursor_id_, &ec);
 }
@@ -65,7 +65,7 @@ void RendererWebIDBCursorImpl::continueFunction(const WebIDBKey& key,
                                                 WebIDBCallbacks* callbacks,
                                                 WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
-      RenderThreadImpl::current()->indexed_db_dispatcher();
+      IndexedDBDispatcher::ThreadSpecificInstance();
 
   if (key.type() == WebIDBKey::InvalidType) {
     // No key, so this would qualify for a prefetch.
@@ -101,7 +101,7 @@ void RendererWebIDBCursorImpl::continueFunction(const WebIDBKey& key,
 void RendererWebIDBCursorImpl::deleteFunction(WebIDBCallbacks* callbacks,
                                               WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
-      RenderThreadImpl::current()->indexed_db_dispatcher();
+      IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBCursorDelete(callbacks, idb_cursor_id_, &ec);
 }
 
@@ -169,7 +169,7 @@ void RendererWebIDBCursorImpl::ResetPrefetchCache() {
   }
 
   IndexedDBDispatcher* dispatcher =
-      RenderThreadImpl::current()->indexed_db_dispatcher();
+      IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBCursorPrefetchReset(used_prefetches_,
                                             prefetch_keys_.size(),
                                             idb_cursor_id_);
