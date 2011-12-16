@@ -1123,12 +1123,6 @@ prune() {
   echo "removing .pyc files"
   rm -f "${INSTALL_BIN}"/*.pyc
 
-  if ${LIBMODE_GLIBC}; then
-    echo "remove pnacl_cache directory"
-    rm -rf "${INSTALL_LIB}"/pnacl_cache
-    rm -rf "${INSTALL_SDK_LIB}"/pnacl_cache
-  fi
-
   echo "remove driver log"
   rm -f "${INSTALL_ROOT}"/driver.log
 

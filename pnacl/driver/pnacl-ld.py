@@ -13,11 +13,6 @@ from driver_tools import *
 from driver_env import env
 from driver_log import Log, DriverOpen, TempFiles
 import platform
-import random
-import hashlib
-
-if not IsWindowsPython():
-  import fcntl
 
 EXTRA_ENV = {
   'ALLOW_NATIVE': '0', # Allow LD args which will change the behavior
@@ -285,8 +280,6 @@ def main(argv):
   inputs = ldtools.ExpandInputs(inputs,
                                 env.get('SEARCH_DIRS'),
                                 env.getbool('STATIC'))
-  if env.getbool('LIBMODE_GLIBC'):
-    TranslateInputs(inputs)
 
   # Make sure the inputs have matching arch.
   CheckInputsArch(inputs)
@@ -480,116 +473,6 @@ def WrapAS(infile, outfile):
 ######################################################################
 # END Bitcode Link Wrap Symbols Hack
 ######################################################################
-
-
-# This is a temporary hack.
-#
-# Until gold can recognize that .pso files should be treated like
-# dynamic dependencies, we need to translate them first.
-def TranslateInputs(inputs):
-  arch = GetArch()
-
-  for i in xrange(len(inputs)):
-    f = inputs[i]
-    if ldtools.IsFlag(f):
-      continue
-    if FileType(f) == 'pso':
-      inputs[i] = TranslatePSO(arch, f)
-
-def TranslatePSO(arch, path):
-  """ Translates a pso and returns the filename of the native so """
-  assert(FileType(path) == 'pso')
-  assert(arch)
-  if not pathtools.exists(path):
-    Log.Fatal("Couldn't open %s", pathtools.touser(path))
-  path_dir = pathtools.dirname(path)
-  cache_dir = pathtools.join(path_dir, 'pnacl_cache')
-  try:
-    os.mkdir(cache_dir)
-  except OSError:
-    pass
-
-  output_base = pathtools.join(cache_dir, pathtools.basename(path)) + '.' + arch
-
-  # Acquire a lock.
-  lock = FileLock(output_base)
-  if not lock:
-    # Add a random number to the file name to prevent collisions
-    output_base += '.%d' % random.getrandbits(32)
-
-  output = '%s.so' % output_base
-
-  # Make sure the existing file matches
-  if lock:
-    md5file = '%s.md5' % output_base
-    md5 = GetMD5Sum(path)
-    if pathtools.exists(output):
-      existing_md5 = ReadMD5(md5file)
-      if existing_md5 == md5:
-        lock.release()
-        return output
-
-  # TODO(pdox): Some driver flags, in particular --pnacl-driver-set
-  # and --pnacl-driver-append, could adversely affect the translation,
-  # and should probably not be passed along. However, since this is a
-  # temporary solution, and we never use those flags in combination
-  # with glibc, we'll just let them pass for now.
-  RunDriver('pnacl-translate',
-            ['-no-save-temps',
-            # -arch needs to be provided, whether or not
-            # there was an -arch to this invocation.
-             '-arch', arch, path, '-o', output],
-            suppress_arch = True) # To avoid duplicate -arch
-  if lock:
-    WriteMD5(md5, md5file)
-    lock.release()
-  else:
-    TempFiles.add(output)
-
-  return output
-
-def ReadMD5(file):
-  fp = DriverOpen(file, 'r', fail_ok = True)
-  if not fp:
-    return ''
-  s = fp.read()
-  fp.close()
-  return s
-
-def WriteMD5(s, file):
-  fp = DriverOpen(file, 'w')
-  fp.write(s)
-  fp.close()
-
-def GetMD5Sum(path):
-  m = hashlib.md5()
-  fp = DriverOpen(path, 'r')
-  m.update(fp.read())
-  fp.close()
-  return m.hexdigest()
-
-def FileLock(filename):
-  if IsWindowsPython():
-    return None
-  else:
-    return FileLockUnix(filename)
-
-class FileLockUnix(object):
-  def __init__(self, path):
-    self.lockfile = path + '.lock'
-    self.fd = None
-    self.acquire()
-
-  def acquire(self):
-    fd = DriverOpen(self.lockfile, 'w+')
-    fcntl.lockf(fd, fcntl.LOCK_EX)
-    self.fd = fd
-
-  def release(self):
-    if self.fd is not None:
-      fcntl.lockf(self.fd, fcntl.LOCK_UN)
-      self.fd.close()
-    self.fd = None
 
 if __name__ == "__main__":
   DriverMain(main)

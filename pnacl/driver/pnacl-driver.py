@@ -117,24 +117,19 @@ EXTRA_ENV = {
     '${DEFAULTLIBS ? --start-group ${LIBSTDCPP} -lc -lnacl --end-group ' +
     '-l:pnacl_abi.bc}',
 
-  # The next three are copied verbatim from nacl-gcc
+  # For glibc_static, libc.a needs symbols from libgcc.a and libgcc_eh.a.
   'LD_ARGS_glibc_static':
     '-l:crt1.bc -l:crti.bc -l:crtdummy.bc -l:crtbegin.bc ' +
     '${ld_inputs} ${DEFAULTLIBS ? ${LIBSTDCPP} -lc ' +
-    # Replace with pnacl_abi.bc
     '--start-group -lgcc_eh -lc -lgcc --end-group}',
 
   'LD_ARGS_glibc_shared':
     '-shared -l:crti.bc -l:crtdummy.bc -l:crtbeginS.bc ' +
-    '${ld_inputs} ${DEFAULTLIBS ? ${LIBSTDCPP} -lc ' +
-    # Replace with pnacl_abi.bc
-    '-lgcc_s}',
+    '${ld_inputs} ${DEFAULTLIBS ? ${LIBSTDCPP} -lc -l:pnacl_abi.bc}',
 
   'LD_ARGS_glibc_dynamic':
     '-l:crt1.bc -l:crti.bc -l:crtdummy.bc -l:crtbegin.bc ' +
-    '${ld_inputs} ${DEFAULTLIBS ? ${LIBSTDCPP} -lc ' +
-    # Replace with pnacl_abi.bc
-    '-lgcc_s}',
+    '${ld_inputs} ${DEFAULTLIBS ? ${LIBSTDCPP} -lc -l:pnacl_abi.bc}',
 
   'LIBSTDCPP'   : '${LANGUAGE==CXX ? -lstdc++ -lm }',
 
