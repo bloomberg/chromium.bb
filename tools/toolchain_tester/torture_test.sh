@@ -225,7 +225,7 @@ localgcc-x8664-torture() {
 #@
 trybot-pnacl-arm-torture() {
   install-tests
-  pnacl-arm-torture --verbose
+  pnacl-arm-torture --verbose "$@"
 }
 
 #@
@@ -233,7 +233,7 @@ trybot-pnacl-arm-torture() {
 #@
 trybot-pnacl-x8632-torture() {
   install-tests
-  pnacl-x8632-torture --verbose
+  pnacl-x8632-torture --verbose "$@"
 }
 
 #@
@@ -241,7 +241,7 @@ trybot-pnacl-x8632-torture() {
 #@
 trybot-pnacl-x8664-torture() {
   install-tests
-  pnacl-x8664-torture --verbose
+  pnacl-x8664-torture --verbose "$@"
 }
 
 #@
@@ -249,7 +249,7 @@ trybot-pnacl-x8664-torture() {
 #@
 trybot-naclgcc-x8632-torture() {
   install-tests
-  naclgcc-x8632-torture --verbose
+  naclgcc-x8632-torture --verbose "$@"
 }
 
 #@
@@ -257,7 +257,7 @@ trybot-naclgcc-x8632-torture() {
 #@
 trybot-naclgcc-x8664-torture() {
   install-tests
-  naclgcc-x8664-torture --verbose
+  naclgcc-x8664-torture --verbose "$@"
 }
 
 ######################################################################

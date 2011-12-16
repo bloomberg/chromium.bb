@@ -11,9 +11,11 @@ set -o xtrace
 set -o nounset
 set -o errexit
 
-PNACL_BUILD=pnacl/build.sh
-TORTURE_TEST=tools/toolchain_tester/torture_test.sh
-LLVM_TESTSUITE=pnacl/scripts/llvm-test-suite.sh
+readonly PNACL_BUILD=pnacl/build.sh
+readonly TORTURE_TEST=tools/toolchain_tester/torture_test.sh
+readonly LLVM_TESTSUITE=pnacl/scripts/llvm-test-suite.sh
+# build.sh, llvm test suite and torture tests all use this value
+export PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-8}
 
 export PNACL_BUILDBOT=true
 
@@ -44,10 +46,14 @@ tc-test-bot() {
   # for both test sets
   for arch in x8664 x8632 arm; do
     echo "@@@BUILD_STEP torture_tests $arch @@@"
-    ${TORTURE_TEST} trybot-pnacl-${arch}-torture || handle-error
+    ${TORTURE_TEST} trybot-pnacl-${arch}-torture \
+      --concurrency=${PNACL_CONCURRENCY} || handle-error
   done
 
-  for arch in x86-64 x86-32 arm; do
+  for arch in  arm; do
+    if [ $arch = "arm" ]; then
+      PNACL_CONCURRENCY=1
+    fi
     echo "@@@BUILD_STEP llvm-test-suite $arch @@@"
     ${LLVM_TESTSUITE} testsuite-prereq ${arch}
     ${LLVM_TESTSUITE} testsuite-clean

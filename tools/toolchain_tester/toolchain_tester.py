@@ -18,6 +18,7 @@ where options are
 --exclude=<filename>
 --tmp=<path>
 --check_excludes
+--concurrency=<number>
 
 e.g. --append "CFLAGS:-lsupc++" will enable C++ eh support
 
@@ -28,6 +29,7 @@ can only run one instance of this at a time.
 
 import getopt
 import glob
+import multiprocessing
 import os
 import shlex
 import subprocess
@@ -56,6 +58,10 @@ EXCLUDE = {}
 CHECK_EXCLUDES = 0
 # module with settings for compiler, etc.
 CFG = None
+# Number of simultaneous test processes
+CONCURRENCY = 1
+# Child processes push failing test results onto this queue
+ERRORS = multiprocessing.Queue()
 # ======================================================================
 # Hook print to we can print to both stdout and a file
 def Print(message):
@@ -104,16 +110,15 @@ def RunCommand(cmd, always_dump_stdout_stderr):
 
 def RemoveTempFiles():
   global TMP_PREFIX
-  for f in glob.glob(TMP_PREFIX + '.*'):
+  for f in glob.glob(TMP_PREFIX + '*'):
     os.remove(f)
 
 
 def MakeExecutableCustom(config, test, extra):
   global TMP_PREFIX
   global SHOW_CONSOLE
-  RemoveTempFiles()
   d = extra.copy()
-  d['tmp'] = TMP_PREFIX
+  d['tmp'] = TMP_PREFIX + '_' + os.path.basename(test)
   d['src'] = test
   for phase, command in config.GetCommands(d):
     command = shlex.split(command)
@@ -131,7 +136,7 @@ def MakeExecutableCustom(config, test, extra):
 def ParseCommandLineArgs(argv):
   """Process command line options and return the unprocessed left overs."""
   global VERBOSE, COMPILE_MODE, RUN_MODE, TMP_PREFIX
-  global CFG, APPEND, SHOW_CONSOLE, CHECK_EXCLUDES
+  global CFG, APPEND, SHOW_CONSOLE, CHECK_EXCLUDES, CONCURRENCY
   try:
     opts, args = getopt.getopt(argv[1:], '',
                                ['verbose',
@@ -140,7 +145,8 @@ def ParseCommandLineArgs(argv):
                                 'config=',
                                 'exclude=',
                                 'check_excludes',
-                                'tmp='])
+                                'tmp=',
+                                'concurrency='])
   except getopt.GetoptError, err:
     Print(str(err))  # will print something like 'option -a not recognized'
     sys.exit(-1)
@@ -172,6 +178,8 @@ def ParseCommandLineArgs(argv):
       APPEND.append((tag, value))
     elif o == 'config':
       CFG = a
+    elif o == 'concurrency':
+      CONCURRENCY = int(a)
     else:
       Print('ERROR: bad commandline arg: %s' % o)
       sys.exit(-1)
@@ -179,18 +187,28 @@ def ParseCommandLineArgs(argv):
   return args
 
 
+def RunTest(args):
+  num, total, config, test, extra_flags = args
+  Print('Running %d/%d: %s' %
+        (num + 1, total, os.path.basename(test)))
+  result = MakeExecutableCustom(config, test, extra_flags)
+  if result:
+    Print('Failure %s: %s' % (result, test))
+    ERRORS.put((result, test))
+
 def RunSuite(config, files, extra_flags, errors):
   """Run a collection of benchmarks."""
-  no_errors = sum(len(errors[k]) for k in errors)
+  global ERRORS, CONCURRENCY
   Banner('running %d tests' % (len(files)))
-  for no, test in enumerate(files):
-    result = MakeExecutableCustom(config, test, extra_flags)
-    if result:
-      Print('Failure %s: %s' % (result, test))
-      errors[result].append(test)
-      no_errors += 1
-    Print('%03d/%03d err %2d: %s  %s' %
-          (no, len(files), no_errors, os.path.basename(test), result))
+  pool = multiprocessing.Pool(processes=CONCURRENCY)
+  # create a list of run arguments to map over
+  argslist = [(num, len(files), config, test, extra_flags)
+         for num, test in enumerate(files)]
+  # let the process pool handle the test assignments, order doesn't matter
+  pool.map(RunTest, argslist)
+  while not ERRORS.empty():
+    phase, test = ERRORS.get()
+    errors[phase].append(test)
 
 
 def FilterOutExcludedTests(files, exclude):
@@ -227,7 +245,10 @@ def main(argv):
   if not CHECK_EXCLUDES:
     files = FilterOutExcludedTests(files, EXCLUDE)
   Print('Tests after filtering %d' % len(files))
-  RunSuite(config, files, {}, errors)
+  try:
+    RunSuite(config, files, {}, errors)
+  finally:
+    RemoveTempFiles()
 
   # print error report
   USED_EXCLUDES = {}
