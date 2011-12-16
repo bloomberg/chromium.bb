@@ -6,6 +6,13 @@
   'targets': [
     {
       'target_name': 'browser',
+      'type': 'none',
+      'dependencies': [
+        'browser_remaining',
+      ],
+    },
+    {
+      'target_name': 'browser_remaining',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
@@ -21,6 +28,7 @@
         'common',
         'common_net',
         'debugger',
+        'history_indexer_idl',
         'in_memory_url_index_cache_proto',
         'installer_util',
         'safe_browsing_proto',
@@ -4146,6 +4154,11 @@
         '<(SHARED_INTERMEDIATE_DIR)/autofill_regex_constants.cc',
       ],
       'conditions': [
+        # Shard this target into ten parts to work around linker limitations.
+        # on link time code generation builds.
+        ['OS=="win" and buildtype=="Official"', {
+          'msvs_shard': 10,
+        }],
         ['disable_nacl==0', {
           'sources': [
             'browser/nacl_host/nacl_broker_host_win.cc',
@@ -4676,8 +4689,6 @@
           'sources': [
             'browser/first_run/upgrade_util.cc',
             'browser/first_run/upgrade_util.h',
-            # Using built-in rule in vstudio for midl.
-            'browser/history/history_indexer.idl',
             'browser/ui/webui/conflicts_ui.cc',
             'browser/ui/webui/conflicts_ui.h',
           ],
@@ -5318,6 +5329,30 @@
             ['exclude', '^browser/ui/views/select_file_dialog_extension.cc'],
             ['exclude', '^browser/ui/views/select_file_dialog_extension.h'],
           ]}
+        ],
+      ],
+    },
+    {
+      'target_name': 'history_indexer_idl',
+      'type': 'none',
+      'conditions': [
+        ['OS=="win"', {
+            'sources': [
+              # Using built-in rule in vstudio for midl.
+              'browser/history/history_indexer.idl',
+            ],
+            'msvs_settings': {
+              # TODO(siggi): add browser/history to this path, then
+              #    fix includes to include the generated file by path.
+              'VCMIDLTool': {
+                'OutputDirectory': '<(SHARED_INTERMEDIATE_DIR)',
+              },
+            },
+            # Add the output dir for those who depend on us.
+            'direct_dependent_settings': {
+              'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
+            },
+          },
         ],
       ],
     },
