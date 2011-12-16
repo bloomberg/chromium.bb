@@ -20,7 +20,9 @@ class BorderContentsView;
 ////////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView {
  public:
-  BubbleFrameView(BubbleBorder::ArrowLocation arrow_location, SkColor color);
+  BubbleFrameView(BubbleBorder::ArrowLocation arrow_location,
+                  SkColor color,
+                  int margin);
   virtual ~BubbleFrameView();
 
   // NonClientFrameView overrides:

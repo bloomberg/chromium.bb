@@ -16,6 +16,7 @@ typedef ViewsTestBase BubbleFrameViewTest;
 const BubbleBorder::ArrowLocation kArrow = BubbleBorder::TOP_LEFT;
 const gfx::Rect kRect(10, 10, 200, 200);
 const SkColor kBackgroundColor = SK_ColorRED;
+const int kDefaultMargin = 6;
 
 namespace {
 
@@ -52,7 +53,7 @@ class TestBubbleFrameView : public BubbleFrameView {
 };
 
 TestBubbleFrameView::TestBubbleFrameView(const gfx::Rect& bounds)
-  : BubbleFrameView(kArrow, kBackgroundColor),
+  : BubbleFrameView(kArrow, kBackgroundColor, kDefaultMargin),
     monitor_bounds_(bounds) {
 }
 
@@ -65,7 +66,7 @@ gfx::Rect TestBubbleFrameView::GetMonitorBounds(const gfx::Rect& rect) {
 }  // namespace
 
 TEST_F(BubbleFrameViewTest, GetBoundsForClientView) {
-  BubbleFrameView frame(kArrow, kBackgroundColor);
+  BubbleFrameView frame(kArrow, kBackgroundColor, kDefaultMargin);
   EXPECT_EQ(kArrow, frame.bubble_border()->arrow_location());
   EXPECT_EQ(kBackgroundColor, frame.bubble_border()->background_color());
 

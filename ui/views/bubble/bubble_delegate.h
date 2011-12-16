@@ -67,6 +67,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   SkColor color() const { return color_; }
   void set_color(SkColor color) { color_ = color; }
 
+  int margin() const { return margin_; }
+  void set_margin(int margin) { margin_ = margin; }
+
   bool use_focusless() const { return use_focusless_; }
   void set_use_focusless(bool use_focusless) {
     use_focusless_ = use_focusless;
@@ -133,6 +136,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
 
   // The background color of the bubble.
   SkColor color_;
+
+  // The margin between the content and the inside of the border, in pixels.
+  int margin_;
 
   // Original opacity of the bubble.
   int original_opacity_;

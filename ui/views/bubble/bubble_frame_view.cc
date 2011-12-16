@@ -11,8 +11,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
 
-static const int kMargin = 6;
-
 namespace {
 
 // Get the |vertical| or horizontal screen overflow of the |window_bounds|.
@@ -42,9 +40,10 @@ int GetOffScreenLength(const gfx::Rect& monitor_bounds,
 namespace views {
 
 BubbleFrameView::BubbleFrameView(BubbleBorder::ArrowLocation arrow_location,
-                                 SkColor color)
+                                 SkColor color,
+                                 int margin)
     : bubble_border_(NULL),
-      content_margins_(kMargin, kMargin, kMargin, kMargin) {
+      content_margins_(margin, margin, margin, margin) {
   if (base::i18n::IsRTL())
     arrow_location = BubbleBorder::horizontal_mirror(arrow_location);
   // TODO(alicet): Expose the shadow option in BorderContentsView when we make

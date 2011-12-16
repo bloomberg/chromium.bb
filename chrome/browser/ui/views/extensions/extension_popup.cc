@@ -36,6 +36,8 @@ ExtensionPopup::ExtensionPopup(
     : BubbleDelegateView(anchor_view, arrow_location),
       extension_host_(host),
       inspect_with_devtools_(inspect_with_devtools) {
+  // Adjust the margin so that contents fit better.
+  set_margin(views::BubbleBorder::GetCornerRadius() / 2);
   SetLayoutManager(new views::FillLayout());
   AddChildView(host->view());
   host->view()->SetContainer(this);
@@ -145,9 +147,6 @@ ExtensionPopup* ExtensionPopup::ShowPopup(
   ExtensionPopup* popup = new ExtensionPopup(browser, host, anchor_view,
       arrow_location, inspect_with_devtools);
   browser::CreateViewsBubble(popup);
-
-  // TODO(msw): Use half the corner radius as contents margins so that contents
-  // fit better in the bubble. See http://crbug.com/80416.
 
   // If the host had somehow finished loading, then we'd miss the notification
   // and not show.  This seems to happen in single-process mode.

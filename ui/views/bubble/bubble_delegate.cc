@@ -12,6 +12,9 @@
 // The duration of the fade animation in milliseconds.
 static const int kHideFadeDurationMS = 200;
 
+// The defaut margin between the content and the inside border, in pixels.
+static const int kDefaultMargin = 6;
+
 namespace views {
 
 namespace {
@@ -86,6 +89,7 @@ BubbleDelegateView::BubbleDelegateView()
       anchor_view_(NULL),
       arrow_location_(BubbleBorder::TOP_LEFT),
       color_(kBackgroundColor),
+      margin_(kDefaultMargin),
       original_opacity_(255),
       border_widget_(NULL),
       use_focusless_(false) {
@@ -101,6 +105,7 @@ BubbleDelegateView::BubbleDelegateView(
       anchor_view_(anchor_view),
       arrow_location_(arrow_location),
       color_(kBackgroundColor),
+      margin_(kDefaultMargin),
       original_opacity_(255),
       border_widget_(NULL),
       use_focusless_(false) {
@@ -144,7 +149,7 @@ View* BubbleDelegateView::GetContentsView() {
 }
 
 NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView() {
-  return new BubbleFrameView(arrow_location(), color());
+  return new BubbleFrameView(arrow_location(), color(), margin());
 }
 
 void BubbleDelegateView::OnWidgetActivationChanged(Widget* widget,
