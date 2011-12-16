@@ -11,9 +11,10 @@
 
 #include <alsa/asoundlib.h>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
@@ -86,7 +87,8 @@ AudioMixerAlsa::~AudioMixerAlsa() {
   DCHECK(MessageLoop::current() != thread_->message_loop());
 
   thread_->message_loop()->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &AudioMixerAlsa::Disconnect));
+      FROM_HERE, base::Bind(&AudioMixerAlsa::Disconnect,
+                            base::Unretained(this)));
   disconnected_event_.Wait();
 
   base::ThreadRestrictions::ScopedAllowIO allow_io_for_thread_join;
@@ -104,7 +106,7 @@ void AudioMixerAlsa::Init() {
   thread_.reset(new base::Thread("AudioMixerAlsa"));
   CHECK(thread_->Start());
   thread_->message_loop()->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &AudioMixerAlsa::Connect));
+      FROM_HERE, base::Bind(&AudioMixerAlsa::Connect, base::Unretained(this)));
 }
 
 bool AudioMixerAlsa::IsInitialized() {
@@ -146,7 +148,7 @@ void AudioMixerAlsa::SetVolumeDb(double volume_db) {
   volume_db_ = volume_db;
   if (!apply_is_pending_)
     thread_->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &AudioMixerAlsa::ApplyState));
+        base::Bind(&AudioMixerAlsa::ApplyState, base::Unretained(this)));
 }
 
 bool AudioMixerAlsa::IsMuted() {
@@ -162,7 +164,7 @@ void AudioMixerAlsa::SetMuted(bool muted) {
   is_muted_ = muted;
   if (!apply_is_pending_)
     thread_->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &AudioMixerAlsa::ApplyState));
+        base::Bind(&AudioMixerAlsa::ApplyState, base::Unretained(this)));
 }
 
 // static
@@ -187,7 +189,7 @@ void AudioMixerAlsa::Connect() {
 
   if (!ConnectInternal()) {
     thread_->message_loop()->PostDelayedTask(FROM_HERE,
-        NewRunnableMethod(this, &AudioMixerAlsa::Connect),
+        base::Bind(&AudioMixerAlsa::Connect, base::Unretained(this)),
         kConnectionRetrySleepSec * 1000);
   }
 }

@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback_old.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
@@ -126,7 +125,5 @@ class AudioMixerAlsa : public AudioMixer {
 };
 
 }  // namespace chromeos
-
-DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::AudioMixerAlsa);
 
 #endif  // CHROME_BROWSER_CHROMEOS_AUDIO_MIXER_ALSA_H_

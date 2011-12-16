@@ -15,10 +15,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/i18n/icu_encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/time_formatting.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "base/json/json_writer.h"  // for debug output only.
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -1986,8 +1988,8 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   // List of networks to move to the user profile once logged in.
   std::list<std::string> user_networks_;
 
-  // Delayed task to notify a network change.
-  CancelableTask* notify_task_;
+  // Weak pointer factory for cancelling a network change callback.
+  base::WeakPtrFactory<NetworkLibraryImplBase> notify_manager_weak_factory_;
 
   // Cellular plan payment time.
   base::Time cellular_plan_payment_time_;
@@ -2011,7 +2013,7 @@ NetworkLibraryImplBase::NetworkLibraryImplBase()
       offline_mode_(false),
       is_locked_(false),
       sim_operation_(SIM_OPERATION_NONE),
-      notify_task_(NULL) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(notify_manager_weak_factory_(this)) {
   network_login_observer_.reset(new NetworkLoginObserver(this));
 }
 
@@ -3306,24 +3308,22 @@ std::string NetworkLibraryImplBase::GetProfilePath(NetworkProfileType type) {
 // notifications, e.g. connection state, devices, services, etc.
 void NetworkLibraryImplBase::NotifyNetworkManagerChanged(bool force_update) {
   // Cancel any pending signals.
-  if (notify_task_) {
-    notify_task_->Cancel();
-    notify_task_ = NULL;
-  }
+  notify_manager_weak_factory_.InvalidateWeakPtrs();
   if (force_update) {
     // Signal observers now.
     SignalNetworkManagerObservers();
   } else {
     // Schedule a delayed signal to limit the frequency of notifications.
-    notify_task_ = NewRunnableMethod(
-        this, &NetworkLibraryImplBase::SignalNetworkManagerObservers);
-    BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE, notify_task_,
-                                   kNetworkNotifyDelayMs);
+    BrowserThread::PostDelayedTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&NetworkLibraryImplBase::SignalNetworkManagerObservers,
+                   notify_manager_weak_factory_.GetWeakPtr()),
+        kNetworkNotifyDelayMs);
   }
 }
 
 void NetworkLibraryImplBase::SignalNetworkManagerObservers() {
-  notify_task_ = NULL;
   FOR_EACH_OBSERVER(NetworkManagerObserver,
                     network_manager_observers_,
                     OnNetworkManagerChanged(this));
@@ -5295,6 +5295,8 @@ void NetworkLibraryImplStub::CallConnectToNetwork(Network* network) {
   // If a delay has been set (i.e. we are interactive), delay the call to
   // ConnectToNetwork (but signal observers since we changed connecting state).
   if (connect_delay_ms_) {
+    // This class is a Singleton and won't be deleted until this callbacks has
+    // run.
     BrowserThread::PostDelayedTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&NetworkLibraryImplStub::ConnectToNetwork,
@@ -5428,7 +5430,3 @@ NetworkLibrary* NetworkLibrary::GetImpl(bool stub) {
 /////////////////////////////////////////////////////////////////////////////
 
 }  // namespace chromeos
-
-// Allows InvokeLater without adding refcounting. This class is a Singleton and
-// won't be deleted until its last InvokeLater is run.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::NetworkLibraryImplBase);
