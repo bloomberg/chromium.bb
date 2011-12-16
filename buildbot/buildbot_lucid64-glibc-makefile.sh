@@ -162,5 +162,5 @@ fi
 
 # First run 32bit tests, then 64bit tests.  Both should succeed.
 export INSIDE_TOOLCHAIN=1
-python buildbot/buildbot_standard.py opt 32 glibc
-exec python buildbot/buildbot_standard.py opt 64 glibc
+python buildbot/buildbot_standard.py --step-suffix=' (32)' opt 32 glibc
+exec python buildbot/buildbot_standard.py --step-suffix=' (64)' opt 64 glibc

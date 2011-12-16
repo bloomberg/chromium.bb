@@ -269,8 +269,8 @@ def BuildScript(status, context):
 
 def Main():
   # TODO(ncbray) make buildbot scripts composable to support toolchain use case.
-  status = BuildStatus()
   context = BuildContext()
+  status = BuildStatus(context)
   ParseStandardCommandLine(context)
   SetupContextVars(context)
   if context.Windows():
@@ -281,7 +281,7 @@ def Main():
     SetupMacEnvironment(context)
   else:
     raise Exception("Unsupported platform.")
-  RunBuild(BuildScript, status, context)
+  RunBuild(BuildScript, status)
 
 
 if __name__ == '__main__':

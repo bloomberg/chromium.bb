@@ -46,6 +46,8 @@ def ParseStandardCommandLine(context):
                     action='store_true', help='Build trusted code with Clang.')
   parser.add_option('--asan', dest='asan', default=False,
                     action='store_true', help='Build trusted code with ASan.')
+  parser.add_option('--step-suffix', metavar='SUFFIX', default='',
+                    help='Append SUFFIX to buildbot step names.')
 
   options, args = parser.parse_args()
 
@@ -86,6 +88,7 @@ def ParseStandardCommandLine(context):
   context['max_jobs'] = 8
   context['dry_run'] = options.dry_run
   context['inside_toolchain'] = options.inside_toolchain
+  context['step_suffix'] = options.step_suffix
 
   for key, value in sorted(context.config.items()):
     print '%s=%s' % (key, value)
@@ -288,7 +291,7 @@ class Step(object):
 
   def __init__(self, name, status, halt_on_fail=True):
     self.status = status
-    self.name = name
+    self.name = name + status.context['step_suffix']
     self.halt_on_fail = halt_on_fail
     self.step_failed = False
 
@@ -353,7 +356,8 @@ class BuildStatus(object):
   Keeps track of the overall status of the build.
   """
 
-  def __init__(self):
+  def __init__(self, context):
+    self.context = context
     self.ever_failed = False
     self.steps = []
 
@@ -433,9 +437,9 @@ class BuildContext(object):
     return e
 
 
-def RunBuild(script, status, context):
+def RunBuild(script, status):
   try:
-    script(status, context)
+    script(status, status.context)
   except StopBuild:
     pass
 
