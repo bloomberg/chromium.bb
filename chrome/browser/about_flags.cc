@@ -319,6 +319,13 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kPrerenderFromOmniboxChoices)
   },
   {
+    "omnibox-aggressive-with-history-urls",
+    IDS_FLAGS_OMNIBOX_AGGRESSIVE_HISTORY_URL_SCORING_NAME,
+    IDS_FLAGS_OMNIBOX_AGGRESSIVE_HISTORY_URL_SCORING_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableOmniboxAggressiveHistoryURL)
+  },
+  {
     "enable-panels",
     IDS_FLAGS_ENABLE_PANELS_NAME,
     IDS_FLAGS_ENABLE_PANELS_DESCRIPTION,

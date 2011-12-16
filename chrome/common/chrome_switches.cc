@@ -533,6 +533,10 @@ const char kEnableNaCl[]                    = "enable-nacl";
 // Enables debugging via RSP over a socket.
 const char kEnableNaClDebug[]               = "enable-nacl-debug";
 
+// Enables the HistoryURL provider to be more aggressive in omnibox ranking.
+const char kEnableOmniboxAggressiveHistoryURL[] =
+    "omnibox-aggressive-with-history-urls";
+
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                 = "enable-panels";
 

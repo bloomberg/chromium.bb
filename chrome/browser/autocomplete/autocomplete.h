@@ -44,16 +44,16 @@
 // --------------------------------------------------------------------|-----
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
 // Extension App (exact match)                                         | 1425
-// HistoryURL (exact or inline autocomplete match)                     | 1410
-// HistoryURL intranet url never visited                               | 1400
+// HistoryURL (good exact or inline autocomplete matches, some inexact)| 1410++
+// HistoryURL (intranet url never visited match, some inexact matches) | 1400++
 // Search Primary Provider (past query in history within 2 days)       | 1399**
 // Search Primary Provider (what you typed)                            | 1300
-// HistoryURL (what you typed)                                         | 1200
+// HistoryURL (what you typed, some inexact matches)                   | 1200++
 // Extension App (inexact match)                                       | 1175*~
 // Keyword (substituting, exact match)                                 | 1100
 // Search Primary Provider (past query in history older than 2 days)   | 1050--
 // HistoryContents (any match in title of starred page)                | 1000++
-// HistoryURL (inexact match)                                          |  900++
+// HistoryURL (some inexact matches)                                   |  900++
 // Search Primary Provider (navigational suggestion)                   |  800++
 // HistoryContents (any match in title of nonstarred page)             |  700++
 // Search Primary Provider (suggestion)                                |  600++
@@ -70,16 +70,16 @@
 // --------------------------------------------------------------------|-----
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
 // Extension App (exact match)                                         | 1425
-// HistoryURL (exact or inline autocomplete match)                     | 1410
-// HistoryURL intranet url never visited                               | 1400
+// HistoryURL (good exact or inline autocomplete matches, some inexact)| 1410++
+// HistoryURL (intranet url never visited match, some inexact matches) | 1400++
 // Search Primary Provider (past query in history within 2 days)       | 1399**
-// HistoryURL (what you typed)                                         | 1200
+// HistoryURL (what you typed, some inexact matches)                   | 1200++
 // Extension App (inexact match)                                       | 1175*~
 // Search Primary Provider (what you typed)                            | 1150
 // Keyword (substituting, exact match)                                 | 1100
 // Search Primary Provider (past query in history older than 2 days)   | 1050--
 // HistoryContents (any match in title of starred page)                | 1000++
-// HistoryURL (inexact match)                                          |  900++
+// HistoryURL (some inexact matches)                                   |  900++
 // Search Primary Provider (navigational suggestion)                   |  800++
 // HistoryContents (any match in title of nonstarred page)             |  700++
 // Search Primary Provider (suggestion)                                |  600++
@@ -96,12 +96,12 @@
 // --------------------------------------------------------------------|-----
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
 // Extension App (exact match)                                         | 1425
-// HistoryURL (exact or inline autocomplete match)                     | 1410
-// HistoryURL intranet url never visited                               | 1400
-// HistoryURL (what you typed)                                         | 1200
+// HistoryURL (good exact or inline autocomplete matches, some inexact)| 1410++
+// HistoryURL (intranet url never visited match, some inexact matches) | 1400++
+// HistoryURL (what you typed, some inexact matches)                   | 1200++
 // Extension App (inexact match)                                       | 1175*~
 // Keyword (substituting, exact match)                                 | 1100
-// HistoryURL (inexact match)                                          |  900++
+// HistoryURL (some inexact matches)                                   |  900++
 // Search Primary Provider (what you typed)                            |  850
 // Search Primary Provider (navigational suggestion)                   |  800++
 // Search Primary Provider (past query in history)                     |  750--

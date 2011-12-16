@@ -4914,6 +4914,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_PRERENDER_FROM_OMNIBOX_DISABLED" desc="Option name for always disabling Prerendering from Omnibox">
         Disabled
       </message>
+      <message name="IDS_FLAGS_OMNIBOX_AGGRESSIVE_HISTORY_URL_SCORING_NAME" desc="Title for the flag for omnibox to be more aggressive with matches from the HistoryURL provider">
+        Aggressive history URL scoring
+      </message>
+      <message name="IDS_FLAGS_OMNIBOX_AGGRESSIVE_HISTORY_URL_SCORING_DESCRIPTION" desc="Description for the flag for omnibox to be more aggressive with matches from the HistoryURL provider">
+        In omnibox autocomplete ranking, be more aggressive at ranking matches coming from the HistoryURL provider.
+      </message>
       <message name="IDS_FLAGS_ENABLE_ADDITIONAL_AUTOFILL_FEEDBACK_NAME" desc="Title for the flag to enable prompts for Autofill feedback">
         Send additional Autofill feedback
       </message>

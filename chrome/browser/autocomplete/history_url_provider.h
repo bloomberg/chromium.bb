@@ -146,6 +146,7 @@ class HistoryURLProvider : public HistoryProvider {
     : HistoryProvider(listener, profile, "History"),
       prefixes_(GetPrefixes()),
       params_(NULL),
+      enable_aggressive_scoring_(false),
       languages_(languages) {}
 #endif
 
@@ -187,13 +188,15 @@ class HistoryURLProvider : public HistoryProvider {
   // Returns the set of prefixes to use for prefixes_.
   static history::Prefixes GetPrefixes();
 
-  // Determines the relevance for some input, given its type and which match it
-  // is.  If |match_type| is NORMAL, |match_number| is a number
-  // [0, kMaxSuggestions) indicating the relevance of the match (higher == more
-  // relevant).  For other values of |match_type|, |match_number| is ignored.
-  static int CalculateRelevance(AutocompleteInput::Type input_type,
-                                MatchType match_type,
-                                size_t match_number);
+  // Determines the relevance for a match, given its type.  Behavior
+  // depends on enable_aggressive_scoring_.  If |match_type| is
+  // NORMAL, |match_number| is a number [0, kMaxSuggestions)
+  // indicating the relevance of the match (higher == more relevant).
+  // For other values of |match_type|, |match_number| is ignored.
+  // Only called some of the time; for some matches, relevancy scores
+  // are assigned consecutively decreasing (1416, 1415, 1414, ...).
+  int CalculateRelevance(MatchType match_type,
+                         size_t match_number) const;
 
   // Helper function that actually launches the two autocomplete passes.
   void RunAutocompletePasses(const AutocompleteInput& input,
@@ -267,9 +270,8 @@ class HistoryURLProvider : public HistoryProvider {
   AutocompleteMatch HistoryMatchToACMatch(
       HistoryURLProviderParams* params,
       const history::HistoryMatch& history_match,
-      const history::HistoryMatches& history_matches,
       MatchType match_type,
-      size_t match_number);
+      int relevance);
 
   // Prefixes to try appending to user input when looking for a match.
   const history::Prefixes prefixes_;
@@ -279,6 +281,10 @@ class HistoryURLProvider : public HistoryProvider {
   // parameter itself is freed once it's no longer needed.  The only reason we
   // keep this member is so we can set the cancel bit on it.
   HistoryURLProviderParams* params_;
+
+  // Command line flag omnibox-aggressive-with-history-urls.
+  // We examine and cache the value in the constructor.
+  bool enable_aggressive_scoring_;
 
   // Only used by unittests; if non-empty, overrides accept-languages in the
   // profile's pref system.
