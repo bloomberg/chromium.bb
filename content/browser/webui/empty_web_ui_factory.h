@@ -23,6 +23,8 @@ class CONTENT_EXPORT EmptyWebUIFactory : public content::WebUIFactory {
                                      const GURL& url) const OVERRIDE;
   virtual bool UseWebUIForURL(content::BrowserContext* browser_context,
                               const GURL& url) const OVERRIDE;
+  virtual bool UseWebUIBindingsForURL(content::BrowserContext* browser_context,
+                                      const GURL& url) const OVERRIDE;
   virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE;
   virtual bool IsURLAcceptableForWebUI(content::BrowserContext* browser_context,
                                        const GURL& url) const OVERRIDE;

@@ -38,6 +38,10 @@ class SiteInstanceTestWebUIFactory : public content::EmptyWebUIFactory {
                               const GURL& url) const OVERRIDE {
     return HasWebUIScheme(url);
   }
+  virtual bool UseWebUIBindingsForURL(content::BrowserContext* browser_context,
+                                      const GURL& url) const OVERRIDE {
+    return HasWebUIScheme(url);
+  }
   virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE {
     return url.SchemeIs(chrome::kChromeUIScheme);
   }

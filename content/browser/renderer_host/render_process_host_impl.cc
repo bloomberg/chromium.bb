@@ -245,22 +245,6 @@ size_t GetMaxRendererProcessCount() {
   return max_count;
 }
 
-// Returns true if the given host is suitable for launching a new view
-// associated with the given browser context.
-static bool IsSuitableHost(content::RenderProcessHost* host,
-                           content::BrowserContext* browser_context,
-                           const GURL& site_url) {
-  if (host->GetBrowserContext() != browser_context)
-    return false;
-
-  if (ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
-          host->GetID()) !=
-      content::WebUIFactory::Get()->HasWebUIScheme(site_url))
-    return false;
-
-  return content::GetContentClient()->browser()->IsSuitableHost(host, site_url);
-}
-
 // the global list of all renderer processes
 base::LazyInstance<
     IDMap<content::RenderProcessHost>,
@@ -1126,6 +1110,23 @@ void RenderProcessHostImpl::UnregisterHost(int host_id) {
 }
 
 // static
+bool RenderProcessHostImpl::IsSuitableHost(
+    content::RenderProcessHost* host,
+    content::BrowserContext* browser_context,
+    const GURL& site_url) {
+  if (host->GetBrowserContext() != browser_context)
+    return false;
+
+  if (ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
+          host->GetID()) !=
+      content::WebUIFactory::Get()->UseWebUIBindingsForURL(
+          browser_context, site_url))
+    return false;
+
+  return content::GetContentClient()->browser()->IsSuitableHost(host, site_url);
+}
+
+// static
 bool content::RenderProcessHost::run_renderer_in_process() {
   return g_run_renderer_in_process_;
 }
@@ -1173,7 +1174,7 @@ content::RenderProcessHost*
   iterator iter(AllHostsIterator());
   while (!iter.IsAtEnd()) {
     if (run_renderer_in_process() ||
-        IsSuitableHost(
+        RenderProcessHostImpl::IsSuitableHost(
             iter.GetCurrentValue(),
             browser_context, site_url))
       suitable_renderers.push_back(iter.GetCurrentValue());

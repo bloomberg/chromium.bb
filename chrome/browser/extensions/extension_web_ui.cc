@@ -137,8 +137,9 @@ ExtensionWebUI::ExtensionWebUI(TabContents* tab_contents, const GURL& url)
   // component apps like bookmark manager.
   should_hide_url_ = !extension->is_hosted_app();
 
-  // The base class defaults to enabling web ui bindings, but we don't need
-  // those.
+  // The base class defaults to enabling WebUI bindings, but we don't need
+  // those (this is also reflected in ChromeWebUIFactory::
+  // UseWebUIBindingsForURL).
   bindings_ = 0;
 
   // Bind externalHost to Extension WebUI loaded in Chrome Frame.

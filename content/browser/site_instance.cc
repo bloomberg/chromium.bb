@@ -8,7 +8,6 @@
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/webui/web_ui_factory.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -135,12 +134,11 @@ bool SiteInstance::HasWrongProcessForURL(const GURL& url) const {
   if (!HasProcess())
     return false;
 
-  // If the site URL is an extension (e.g., for hosted apps) but the
+  // If the site URL is an extension (e.g., for hosted apps or WebUI) but the
   // process is not (or vice versa), make sure we notice and fix it.
   GURL site_url = GetSiteForURL(browsing_instance_->browser_context(), url);
-  content::ContentBrowserClient* browser =
-      content::GetContentClient()->browser();
-  return !browser->IsSuitableHost(process_, site_url);
+  return !RenderProcessHostImpl::IsSuitableHost(
+      process_, browsing_instance_->browser_context(), site_url);
 }
 
 /*static*/

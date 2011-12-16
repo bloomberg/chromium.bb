@@ -35,6 +35,10 @@ class CONTENT_EXPORT WebUIFactory {
   virtual bool UseWebUIForURL(content::BrowserContext* browser_context,
                               const GURL& url) const = 0;
 
+  // Returns true for the subset of WebUIs that actually need WebUI bindings.
+  virtual bool UseWebUIBindingsForURL(content::BrowserContext* browser_context,
+                                      const GURL& url) const = 0;
+
   // Returns true if the url has a scheme for WebUI. This differs from the above
   // in that it only checks the scheme; it is faster and can be used to
   // determine security policy.

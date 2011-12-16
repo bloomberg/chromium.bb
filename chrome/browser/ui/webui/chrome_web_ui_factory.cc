@@ -108,6 +108,20 @@ ChromeWebUI* NewWebUI<AboutUI>(TabContents* contents, const GURL& url) {
   return new AboutUI(contents, url.host());
 }
 
+// Only create ExtensionWebUI for URLs that are allowed extension bindings,
+// hosted by actual tabs. If tab_contents has no wrapper, it likely refers
+// to another container type, like an extension background page. If there is
+// no tab_contents (it's not accessible when calling GetWebUIType and related
+// functions) then we conservatively assume that we need a WebUI.
+bool NeedsExtensionWebUI(TabContents* tab_contents,
+                         Profile* profile,
+                         const GURL& url) {
+  ExtensionService* service = profile ? profile->GetExtensionService() : NULL;
+  return service && service->ExtensionBindingsAllowed(url) &&
+      (!tab_contents ||
+        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents));
+}
+
 // Returns a function that can be used to create the right type of WebUI for a
 // tab, based on its URL. Returns NULL if the URL doesn't have WebUI associated
 // with it.
@@ -117,15 +131,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(TabContents* tab_contents,
   if (url.host() == chrome::kChromeUIDialogHost)
     return &NewWebUI<ConstrainedHtmlUI>;
 
-  // Only create ExtensionWebUI for URLs that are allowed extension bindings,
-  // hosted by actual tabs. If tab_contents has no wrapper, it likely refers
-  // to another container type, like an extension background page.
-  ExtensionService* service = profile ? profile->GetExtensionService() : NULL;
-  if (service && service->ExtensionBindingsAllowed(url) &&
-      (!tab_contents ||
-        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents))) {
+  if (NeedsExtensionWebUI(tab_contents, profile, url))
     return &NewWebUI<ExtensionWebUI>;
-  }
 
   // All platform builds of Chrome will need to have a cloud printing
   // dialog as backup.  It's just that on Chrome OS, it's the only
@@ -342,6 +349,16 @@ WebUI::TypeID ChromeWebUIFactory::GetWebUIType(
 bool ChromeWebUIFactory::UseWebUIForURL(
     content::BrowserContext* browser_context, const GURL& url) const {
   return GetWebUIType(browser_context, url) != WebUI::kNoWebUI;
+}
+
+bool ChromeWebUIFactory::UseWebUIBindingsForURL(
+    content::BrowserContext* browser_context, const GURL& url) const {
+  // Extensions are rendered via WebUI in tabs, but don't actually need WebUI
+  // bindings (see the ExtensionWebUI constructor).
+  return !NeedsExtensionWebUI(NULL,
+                              Profile::FromBrowserContext(browser_context),
+                              url) &&
+      UseWebUIForURL(browser_context, url);
 }
 
 bool ChromeWebUIFactory::HasWebUIScheme(const GURL& url) const {

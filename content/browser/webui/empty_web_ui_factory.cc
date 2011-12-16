@@ -27,6 +27,11 @@ bool EmptyWebUIFactory::UseWebUIForURL(
   return false;
 }
 
+bool EmptyWebUIFactory::UseWebUIBindingsForURL(
+    content::BrowserContext* browser_context, const GURL& url) const {
+  return false;
+}
+
 bool EmptyWebUIFactory::HasWebUIScheme(const GURL& url) const {
   return false;
 }

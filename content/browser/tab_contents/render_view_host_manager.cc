@@ -414,14 +414,12 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     if (curr_instance->HasRelatedSiteInstance(dest_url))
       return curr_instance->GetRelatedSiteInstance(dest_url);
 
-    // For extensions and Web UI URLs (such as the new tab page), we do not
-    // want to use the curr_instance if it has no site, since it will have a
-    // RenderProcessHost of TYPE_NORMAL.  Create a new SiteInstance for this
+    // For extensions, Web UI URLs (such as the new tab page), and apps we do
+    // not want to use the curr_instance if it has no site, since it will have a
+    // RenderProcessHost of PRIV_NORMAL.  Create a new SiteInstance for this
     // URL instead (with the correct process type).
-    if (content::WebUIFactory::Get()->UseWebUIForURL(browser_context,
-                                                     dest_url)) {
-      return SiteInstance::CreateSiteInstanceForURL(browser_context, dest_url);
-    }
+    if (curr_instance->HasWrongProcessForURL(dest_url))
+      return curr_instance->GetRelatedSiteInstance(dest_url);
 
     // Normally the "site" on the SiteInstance is set lazily when the load
     // actually commits. This is to support better process sharing in case

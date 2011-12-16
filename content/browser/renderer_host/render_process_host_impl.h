@@ -120,6 +120,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static void RegisterHost(int host_id, content::RenderProcessHost* host);
   static void UnregisterHost(int host_id);
 
+  // Returns true if the given host is suitable for launching a new view
+  // associated with the given browser context.
+  static bool IsSuitableHost(content::RenderProcessHost* host,
+                             content::BrowserContext* browser_context,
+                             const GURL& site_url);
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread (see
   // browser_process.h)

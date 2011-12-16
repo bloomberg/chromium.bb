@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
+#include "content/test/test_navigation_observer.h"
 #include "net/base/mock_host_resolver.h"
 
 class AppApiTest : public ExtensionApiTest {
@@ -519,6 +520,48 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
   EXPECT_TRUE(process_map->Contains(
       last_active_browser->GetTabContentsAt(0)->render_view_host()->process()->
           GetID()));
+}
+
+// Tests that if an extension launches an app via chrome.tabs.create with an URL
+// that's not in the app's extent but that redirects to it, we still end up with
+// an app process. See http://crbug.com/99349 for more details.
+IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromExtension) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(StartTestServer());
+
+  LoadExtension(test_data_dir_.AppendASCII("app_process"));
+  const Extension* launcher =
+      LoadExtension(test_data_dir_.AppendASCII("app_launcher"));
+
+  // There should be three navigations by the time the app page is loaded.
+  // 1. The extension launcher page.
+  // 2. The URL that the extension launches, which redirects.
+  // 3. The app's URL.
+  TestNavigationObserver test_navigation_observer(
+        content::NotificationService::AllSources(),
+        NULL,
+        3);
+
+  // Load the launcher extension, which should launch the app.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      launcher->GetResourceURL("main.html"),
+      CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Wait for app tab to be created and loaded.
+  test_navigation_observer.WaitForObservation(
+      base::Bind(&ui_test_utils::RunMessageLoop),
+      base::Bind(&MessageLoop::Quit,
+                 base::Unretained(MessageLoopForUI::current())));
+
+  // App has loaded, and chrome.app.isInstalled should be true.
+  bool is_installed = false;
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      browser()->GetSelectedTabContents()->render_view_host(), L"",
+      L"window.domAutomationController.send(chrome.app.isInstalled)",
+      &is_installed));
+  ASSERT_TRUE(is_installed);
 }
 
 // Tests that if we have an app process (path1/container.html) with a non-app
