@@ -297,7 +297,7 @@ DeleteDocumentOperation::DeleteDocumentOperation(Profile* profile,
 }
 
 content::URLFetcher::RequestType
-DeleteDocumentOperation::GetRequestType() const OVERRIDE {
+DeleteDocumentOperation::GetRequestType() const {
   return content::URLFetcher::DELETE_REQUEST;
 }
 
