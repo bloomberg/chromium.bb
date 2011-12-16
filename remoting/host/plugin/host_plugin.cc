@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/stringize_macros.h"
 #include "remoting/base/plugin_message_loop_proxy.h"
+#include "remoting/host/plugin/constants.h"
 #include "remoting/host/plugin/host_log_handler.h"
 #include "remoting/host/plugin/host_plugin_utils.h"
 #include "remoting/host/plugin/host_script_object.h"

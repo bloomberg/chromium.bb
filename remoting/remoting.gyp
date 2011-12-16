@@ -9,6 +9,7 @@
     'chromium_code': 1,
     # Use consistent strings across all platforms. Note that the plugin name
     # is brand-dependent and is defined further down.
+    # Must match host/plugin/constants.h
     'host_plugin_mime_type': 'application/vnd.chromium.remoting-host',
     'host_plugin_description': 'Allow another user to access your computer securely over the Internet.',
 
@@ -46,6 +47,7 @@
         'host_plugin_prefix': '',
       }],
       ['branding=="Chrome"', {
+        # Must match host/plugin/constants.h
         'host_plugin_name': 'Chrome Remote Desktop Host',
         'remoting_it2me_locale_files': [
           'webapp/me2mom/_locales.official/ar/messages.json',
@@ -92,6 +94,7 @@
           'webapp/me2mom/_locales.official/zh_TW/messages.json',
         ],
       }, {  # else: branding!="Chrome"
+        # Must match host/plugin/constants.h
         'host_plugin_name': 'Chromoting Host',
         'remoting_it2me_locale_files': [
           'webapp/me2mom/_locales/en/messages.json',
@@ -275,11 +278,6 @@
       'variables': { 'enable_wexit_time_destructors': 1, },
       'product_extension': '<(host_plugin_extension)',
       'product_prefix': '<(host_plugin_prefix)',
-      'defines': [
-        'HOST_PLUGIN_MIME_TYPE="<(host_plugin_mime_type)"',
-        'HOST_PLUGIN_NAME="<(host_plugin_name)"',
-        'HOST_PLUGIN_DESCRIPTION="<(host_plugin_description)"',
-      ],
       'dependencies': [
         'remoting_base',
         'remoting_host',
@@ -312,6 +310,9 @@
             'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
             'INFOPLIST_FILE': 'host/plugin/host_plugin-Info.plist',
             'INFOPLIST_PREPROCESS': 'YES',
+            # TODO(maruel): Use INFOPLIST_PREFIX_HEADER to remove the need to
+            # duplicate string once
+            # http://code.google.com/p/gyp/issues/detail?id=243 is fixed.
             'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'HOST_PLUGIN_MIME_TYPE="<(host_plugin_mime_type)" HOST_PLUGIN_NAME="<(host_plugin_name)" HOST_PLUGIN_DESCRIPTION="<(host_plugin_description)"',
           },
           # TODO(mark): Come up with a fancier way to do this.  It should
