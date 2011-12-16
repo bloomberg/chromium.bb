@@ -269,17 +269,6 @@ TEST_F(SiteInstanceTest, CloneNavigationEntry) {
   EXPECT_EQ(2, browsingDeleteCounter);
 }
 
-// Test to ensure UpdateMaxPageID is working properly.
-TEST_F(SiteInstanceTest, UpdateMaxPageID) {
-  scoped_refptr<SiteInstance> instance(SiteInstance::CreateSiteInstance(NULL));
-  EXPECT_EQ(-1, instance->max_page_id());
-
-  // Make sure max_page_id_ is monotonically increasing.
-  instance->UpdateMaxPageID(3);
-  instance->UpdateMaxPageID(1);
-  EXPECT_EQ(3, instance->max_page_id());
-}
-
 // Test to ensure GetProcess returns and creates processes correctly.
 TEST_F(SiteInstanceTest, GetProcess) {
   // Ensure that GetProcess returns a process.

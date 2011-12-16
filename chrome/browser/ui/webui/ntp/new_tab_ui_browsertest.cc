@@ -45,8 +45,7 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, LoadNTPInExistingProcess) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  EXPECT_EQ(1,
-            browser()->GetTabContentsAt(1)->GetSiteInstance()->max_page_id());
+  EXPECT_EQ(1, browser()->GetTabContentsAt(1)->GetMaxPageID());
 
   // Navigate that tab to another site.  This allows the NTP process to exit,
   // but it keeps the NTP SiteInstance (and its max_page_id) alive in history.
@@ -61,34 +60,30 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, LoadNTPInExistingProcess) {
     process_exited_observer.Wait();
   }
 
-  // Create and close another two NTPs to inflate the max_page_id.
+  // Creating a NTP in another tab should not be affected, since page IDs
+  // are now specific to a tab.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  EXPECT_EQ(2,
-            browser()->GetTabContentsAt(2)->GetSiteInstance()->max_page_id());
-  browser()->CloseTab();
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kChromeUINewTabURL), NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  EXPECT_EQ(3,
-            browser()->GetTabContentsAt(2)->GetSiteInstance()->max_page_id());
+  EXPECT_EQ(1, browser()->GetTabContentsAt(2)->GetMaxPageID());
   browser()->CloseTab();
 
   // Open another Web UI page in a new tab.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUISettingsURL), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  EXPECT_EQ(1,
-            browser()->GetTabContentsAt(2)->GetSiteInstance()->max_page_id());
+  EXPECT_EQ(1, browser()->GetTabContentsAt(2)->GetMaxPageID());
 
-  // At this point, opening another NTP will use the old SiteInstance (with a
-  // large max_page_id) in the existing Web UI process (with a small page ID).
-  // Make sure we don't confuse this as an existing navigation to an unknown
-  // entry.
+  // At this point, opening another NTP will use the old SiteInstance in the
+  // existing Web UI process, but the page IDs shouldn't affect each other.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  EXPECT_EQ(4,
-            browser()->GetTabContentsAt(3)->GetSiteInstance()->max_page_id());
+  EXPECT_EQ(1, browser()->GetTabContentsAt(3)->GetMaxPageID());
+
+  // Only navigating to the NTP in the original tab should have a higher
+  // page ID.
+  browser()->ActivateTabAt(1, true);
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  EXPECT_EQ(2, browser()->GetTabContentsAt(1)->GetMaxPageID());
 }

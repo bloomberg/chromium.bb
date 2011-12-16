@@ -635,14 +635,14 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
 
   // The name of the frame associated with this view (or empty if none).
   IPC_STRUCT_MEMBER(string16, frame_name)
+
+  // The initial page ID to use for this view, which must be larger than any
+  // existing navigation that might be loaded in the view.  Page IDs are unique
+  // to a view and are only updated by the renderer after this initial value.
+  IPC_STRUCT_MEMBER(int32, next_page_id)
 IPC_STRUCT_END()
 
 // Messages sent from the browser to the renderer.
-
-// Used typically when recovering from a crash.  The new rendering process
-// sets its global "next page id" counter to the given value.
-IPC_MESSAGE_CONTROL1(ViewMsg_SetNextPageID,
-                     int32 /* next_page_id */)
 
 // Sent to the RenderView when a new tab is swapped into an existing
 // tab and the histories need to be merged. The existing tab has a history of
@@ -944,10 +944,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetPageEncoding,
 
 // Reset encoding of page in the renderer back to default.
 IPC_MESSAGE_ROUTED0(ViewMsg_ResetPageEncodingToDefault)
-
-// Requests the renderer to reserve a range of page ids.
-IPC_MESSAGE_ROUTED1(ViewMsg_ReservePageIDRange,
-                    int  /* size_of_range */)
 
 // Used to tell a render view whether it should expose various bindings
 // that allow JS content extended privileges.  See BindingsPolicy for valid

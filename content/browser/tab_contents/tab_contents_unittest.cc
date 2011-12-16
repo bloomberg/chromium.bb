@@ -267,6 +267,29 @@ TEST_F(TabContentsTest, NTPViewSource) {
   EXPECT_EQ(ASCIIToUTF16(kUrl), contents()->GetTitle());
 }
 
+// Test to ensure UpdateMaxPageID is working properly.
+TEST_F(TabContentsTest, UpdateMaxPageID) {
+  SiteInstance* instance1 = contents()->GetSiteInstance();
+  scoped_refptr<SiteInstance> instance2(SiteInstance::CreateSiteInstance(NULL));
+
+  // Starts at -1.
+  EXPECT_EQ(-1, contents()->GetMaxPageID());
+  EXPECT_EQ(-1, contents()->GetMaxPageIDForSiteInstance(instance1));
+  EXPECT_EQ(-1, contents()->GetMaxPageIDForSiteInstance(instance2));
+
+  // Make sure max_page_id_ is monotonically increasing per SiteInstance.
+  contents()->UpdateMaxPageID(3);
+  contents()->UpdateMaxPageID(1);
+  EXPECT_EQ(3, contents()->GetMaxPageID());
+  EXPECT_EQ(3, contents()->GetMaxPageIDForSiteInstance(instance1));
+  EXPECT_EQ(-1, contents()->GetMaxPageIDForSiteInstance(instance2));
+
+  contents()->UpdateMaxPageIDForSiteInstance(instance2, 7);
+  EXPECT_EQ(3, contents()->GetMaxPageID());
+  EXPECT_EQ(3, contents()->GetMaxPageIDForSiteInstance(instance1));
+  EXPECT_EQ(7, contents()->GetMaxPageIDForSiteInstance(instance2));
+}
+
 // Test simple same-SiteInstance navigation.
 TEST_F(TabContentsTest, SimpleNavigation) {
   TestRenderViewHost* orig_rvh = rvh();

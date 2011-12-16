@@ -26,9 +26,6 @@ class MockRenderProcessHost : public content::RenderProcessHost {
   // renderer via this RenderProcessHost.
   IPC::TestSink& sink() { return sink_; }
 
-  // Provides tests access to the max page ID currently used for this process.
-  int max_page_id() const { return max_page_id_; }
-
   // Provides test access to how many times a bad message has been received.
   int bad_msg_count() const { return bad_msg_count_; }
 
@@ -36,7 +33,6 @@ class MockRenderProcessHost : public content::RenderProcessHost {
   virtual void EnableSendQueue() OVERRIDE;
   virtual bool Init(bool is_accessibility_enabled) OVERRIDE;
   virtual int GetNextRoutingID() OVERRIDE;
-  virtual void UpdateAndSendMaxPageID(int32 page_id) OVERRIDE;
   virtual void CancelResourceRequests(int render_widget_id) OVERRIDE;
   virtual void CrossSiteSwapOutACK(
       const ViewMsg_SwapOut_Params& params) OVERRIDE;
@@ -69,7 +65,6 @@ class MockRenderProcessHost : public content::RenderProcessHost {
   virtual void RemovePendingView() OVERRIDE;
   virtual void SetSuddenTerminationAllowed(bool allowed) OVERRIDE;
   virtual bool SuddenTerminationAllowed() const OVERRIDE;
-  virtual void UpdateMaxPageID(int32 page_id) OVERRIDE;
   virtual IPC::Channel::Listener* GetListenerByID(int routing_id) OVERRIDE;
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual IPC::ChannelProxy* GetChannel() OVERRIDE;
@@ -98,7 +93,6 @@ class MockRenderProcessHost : public content::RenderProcessHost {
   const MockRenderProcessHostFactory* factory_;
   int id_;
   content::BrowserContext* browser_context_;
-  int32 max_page_id_;
 
   IDMap<IPC::Channel::Listener> listeners_;
   bool fast_shutdown_started_;

@@ -412,7 +412,9 @@ TabContentsView* InterstitialPage::CreateTabContentsView() {
   render_view_host_->SetView(view);
   render_view_host_->AllowBindings(content::BINDINGS_POLICY_DOM_AUTOMATION);
 
-  render_view_host_->CreateRenderView(string16());
+  int32 max_page_id =
+      tab()->GetMaxPageIDForSiteInstance(render_view_host_->site_instance());
+  render_view_host_->CreateRenderView(string16(), max_page_id);
   view->SetSize(tab_contents_view->GetContainerSize());
   // Don't show the interstitial until we have navigated to it.
   view->Hide();

@@ -127,11 +127,10 @@ class RenderViewHostManagerTest : public RenderViewHostTestHarness {
     if (old_rvh != active_rvh())
       old_rvh->SendShouldCloseACK(true);
 
-    // Commit the navigation.
-    active_rvh()->SendNavigate(
-        static_cast<MockRenderProcessHost*>(active_rvh()->process())->
-            max_page_id() + 1,
-        url);
+    // Commit the navigation with a new page ID.
+    int32 max_page_id =
+        contents()->GetMaxPageIDForSiteInstance(active_rvh()->site_instance());
+    active_rvh()->SendNavigate(max_page_id + 1, url);
 
     // Simulate the SwapOut_ACK that fires if you commit a cross-site navigation
     // without making any network requests.
@@ -237,8 +236,8 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
       ViewHostMsg_ShouldClose_ACK(rvh()->routing_id(), true));
   ASSERT_TRUE(pending_rvh());  // New pending RenderViewHost will be created.
   RenderViewHost* last_rvh = pending_rvh();
-  int new_id = static_cast<MockRenderProcessHost*>(pending_rvh()->process())->
-               max_page_id() + 1;
+  int32 new_id = contents()->GetMaxPageIDForSiteInstance(
+      active_rvh()->site_instance()) + 1;
   pending_rvh()->SendNavigate(new_id, kUrl);
   EXPECT_EQ(controller().last_committed_entry_index(), 1);
   ASSERT_TRUE(controller().GetLastCommittedEntry());

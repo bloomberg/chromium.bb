@@ -232,7 +232,8 @@ class TestRenderViewHost : public RenderViewHost {
 
   // RenderViewHost overrides --------------------------------------------------
 
-  virtual bool CreateRenderView(const string16& frame_name) OVERRIDE;
+  virtual bool CreateRenderView(const string16& frame_name,
+                                int32 max_page_id) OVERRIDE;
   virtual bool IsRenderViewLive() const OVERRIDE;
 
  private:

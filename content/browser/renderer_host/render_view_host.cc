@@ -160,7 +160,8 @@ RenderViewHost::~RenderViewHost() {
       process()->GetID(), routing_id(), false);
 }
 
-bool RenderViewHost::CreateRenderView(const string16& frame_name) {
+bool RenderViewHost::CreateRenderView(const string16& frame_name,
+                                      int32 max_page_id) {
   DCHECK(!IsRenderViewLive()) << "Creating view twice";
 
   // The process may (if we're sharing a process with another host that already
@@ -177,6 +178,12 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
   process()->SetCompositingSurface(routing_id(),
                                    GetCompositingSurface());
 
+  // Ensure the RenderView starts with a next_page_id larger than any existing
+  // page ID it might be asked to render.
+  int32 next_page_id = 1;
+  if (max_page_id > -1)
+    next_page_id = max_page_id + 1;
+
   ViewMsg_New_Params params;
   params.parent_window = GetNativeViewId();
   params.renderer_preferences =
@@ -185,6 +192,7 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
   params.view_id = routing_id();
   params.session_storage_namespace_id = session_storage_namespace_->id();
   params.frame_name = frame_name;
+  params.next_page_id = next_page_id;
   Send(new ViewMsg_New(params));
 
   // If it's enabled, tell the renderer to set up the Javascript bindings for

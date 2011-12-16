@@ -175,7 +175,6 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
 
   void OnSetZoomLevelForCurrentURL(const GURL& url, double zoom_level);
   void OnDOMStorageEvent(const DOMStorageMsg_Event_Params& params);
-  void OnSetNextPageID(int32 next_page_id);
   void OnSetCSSColors(const std::vector<CSSColors::CSSColorMapping>& colors);
   void OnCreateNewView(const ViewMsg_New_Params& params);
   void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);

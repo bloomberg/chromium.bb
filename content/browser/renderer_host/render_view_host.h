@@ -153,8 +153,9 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
 
   // Set up the RenderView child process. Virtual because it is overridden by
   // TestRenderViewHost. If the |frame_name| parameter is non-empty, it is used
-  // as the name of the new top-level frame.
-  virtual bool CreateRenderView(const string16& frame_name);
+  // as the name of the new top-level frame.  If |max_page_id| is larger than
+  // -1, the RenderView is told to start issuing page IDs at |max_page_id| + 1.
+  virtual bool CreateRenderView(const string16& frame_name, int32 max_page_id);
 
   // Returns true if the RenderView is active and has not crashed. Virtual
   // because it is overridden by TestRenderViewHost.

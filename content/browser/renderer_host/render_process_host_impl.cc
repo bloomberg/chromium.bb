@@ -265,8 +265,7 @@ void content::RenderProcessHost::SetMaxRendererProcessCountForTest(
 
 RenderProcessHostImpl::RenderProcessHostImpl(
     content::BrowserContext* browser_context)
-        : max_page_id_(-1),
-          fast_shutdown_started_(false),
+        : fast_shutdown_started_(false),
           deleting_soon_(false),
           pending_views_(0),
           visible_widgets_(0),
@@ -525,12 +524,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 
 int RenderProcessHostImpl::GetNextRoutingID() {
   return widget_helper_->GetNextRoutingID();
-}
-
-void RenderProcessHostImpl::UpdateAndSendMaxPageID(int32 page_id) {
-  if (page_id > max_page_id_)
-    Send(new ViewMsg_SetNextPageID(page_id + 1));
-  UpdateMaxPageID(page_id);
 }
 
 void RenderProcessHostImpl::CancelResourceRequests(int render_widget_id) {
@@ -1062,11 +1055,6 @@ void RenderProcessHostImpl::RemovePendingView() {
   pending_views_--;
 }
 
-void RenderProcessHostImpl::UpdateMaxPageID(int32 page_id) {
-  if (page_id > max_page_id_)
-    max_page_id_ = page_id;
-}
-
 void RenderProcessHostImpl::SetSuddenTerminationAllowed(bool enabled) {
   sudden_termination_allowed_ = enabled;
 }
@@ -1288,9 +1276,6 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 
     child_process_launcher_->SetProcessBackgrounded(backgrounded_);
   }
-
-  if (max_page_id_ != -1)
-    Send(new ViewMsg_SetNextPageID(max_page_id_ + 1));
 
   // NOTE: This needs to be before sending queued messages because
   // ExtensionService uses this notification to initialize the renderer process

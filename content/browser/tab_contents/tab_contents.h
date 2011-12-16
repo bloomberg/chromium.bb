@@ -147,19 +147,27 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   virtual const GURL& GetURL() const OVERRIDE;
   virtual const string16& GetTitle() const;
 
-  // The max PageID of any page that this TabContents has loaded.  PageIDs
-  // increase with each new page that is loaded by a tab.  If this is a
-  // TabContents, then the max PageID is kept separately on each SiteInstance.
-  // Returns -1 if no PageIDs have yet been seen.
+  // The max page ID for any page that the current SiteInstance has loaded in
+  // this TabContents.  Page IDs are specific to a given SiteInstance and
+  // TabContents, corresponding to a specific RenderView in the renderer.
+  // Page IDs increase with each new page that is loaded by a tab.
   int32 GetMaxPageID();
 
-  // Updates the max PageID to be at least the given PageID.
+  // The max page ID for any page that the given SiteInstance has loaded in
+  // this TabContents.
+  int32 GetMaxPageIDForSiteInstance(SiteInstance* site_instance);
+
+  // Updates the max page ID for the current SiteInstance in this TabContents
+  // to be at least |page_id|.
   void UpdateMaxPageID(int32 page_id);
 
-  // Returns the site instance associated with the current page. By default,
-  // there is no site instance. TabContents overrides this to provide proper
-  // access to its site instance.
-  virtual SiteInstance* GetSiteInstance() const;
+  // Updates the max page ID for the given SiteInstance in this TabContents
+  // to be at least |page_id|.
+  void UpdateMaxPageIDForSiteInstance(SiteInstance* site_instance,
+                                      int32 page_id);
+
+  // Returns the SiteInstance associated with the current page.
+  SiteInstance* GetSiteInstance() const;
 
   // Returns the SiteInstance for the pending navigation, if any.  Otherwise
   // returns the current SiteInstance.
@@ -679,11 +687,11 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
 
-  // If our controller was restored and the page id is > than the site
-  // instance's page id, the site instances page id is updated as well as the
-  // renderers max page id.
-  void UpdateMaxPageIDIfNecessary(SiteInstance* site_instance,
-                                  RenderViewHost* rvh);
+  // If our controller was restored, update the max page ID associated with the
+  // given RenderViewHost to be larger than the number of restored entries.
+  // This is called in CreateRenderView before any navigations in the RenderView
+  // have begun, to prevent any races in updating RenderView::next_page_id.
+  void UpdateMaxPageIDIfNecessary(RenderViewHost* rvh);
 
   // Saves the given title to the navigation entry and does associated work. It
   // will update history and the view for the new title, and also synthesize
@@ -789,11 +797,10 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   // See waiting_for_response() above.
   bool waiting_for_response_;
 
-  // Indicates the largest PageID we've seen.  This field is ignored if we are
-  // a TabContents, in which case the max page ID is stored separately with
-  // each SiteInstance.
-  // TODO(brettw) this seems like it can be removed according to the comment.
-  int32 max_page_id_;
+  // Map of SiteInstance ID to max page ID for this tab. A page ID is specific
+  // to a given tab and SiteInstance, and must be valid for the lifetime of the
+  // TabContents.
+  std::map<int32, int32> max_page_ids_;
 
   // System time at which the current load was started.
   base::TimeTicks current_load_start_;

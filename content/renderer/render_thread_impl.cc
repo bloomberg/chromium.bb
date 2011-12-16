@@ -717,7 +717,6 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(RenderThreadImpl, msg)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForCurrentURL,
                         OnSetZoomLevelForCurrentURL)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetNextPageID, OnSetNextPageID)
     IPC_MESSAGE_HANDLER(ViewMsg_SetCSSColors, OnSetCSSColors)
     // TODO(port): removed from render_messages_internal.h;
     // is there a new non-windows message I should add here?
@@ -729,14 +728,6 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void RenderThreadImpl::OnSetNextPageID(int32 next_page_id) {
-  // This is called at process initialization time or when this process is
-  // being re-used for a new RenderView.  It is ok if another RenderView
-  // has identical page_ids or inflates next_page_id_ just before this arrives,
-  // as long as we ensure next_page_id_ is at least this large.
-  RenderViewImpl::SetNextPageID(next_page_id);
 }
 
 // Called when to register CSS Color name->system color mappings.
@@ -771,7 +762,8 @@ void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
       new SharedRenderViewCounter(0),
       params.view_id,
       params.session_storage_namespace_id,
-      params.frame_name);
+      params.frame_name,
+      params.next_page_id);
 }
 
 GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
@@ -848,12 +840,7 @@ void RenderThreadImpl::OnNetworkStateChanged(bool online) {
 }
 
 void RenderThreadImpl::OnTempCrashWithData(const GURL& data) {
-  // Append next_page_id_ to the data from the browser.
-  std::string temp = data.spec();
-  temp.append("#next");
-  temp.append(base::IntToString(RenderViewImpl::next_page_id()));
-
-  content::GetContentClient()->SetActiveURL(GURL(temp));
+  content::GetContentClient()->SetActiveURL(data);
   CHECK(false);
 }
 

@@ -36,7 +36,6 @@ SiteInstance::SiteInstance(BrowsingInstance* browsing_instance)
       browsing_instance_(browsing_instance),
       render_process_host_factory_(NULL),
       process_(NULL),
-      max_page_id_(-1),
       has_site_(false) {
   DCHECK(browsing_instance);
 
@@ -85,10 +84,6 @@ content::RenderProcessHost* SiteInstance::GetProcess() {
     }
 
     content::GetContentClient()->browser()->SiteInstanceGotProcess(this);
-
-    // Make sure the process starts at the right max_page_id, and ensure that
-    // we send an update to the renderer process.
-    process_->UpdateAndSendMaxPageID(max_page_id_);
 
     if (has_site_)
       LockToOrigin();

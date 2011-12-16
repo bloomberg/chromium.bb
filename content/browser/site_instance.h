@@ -73,13 +73,6 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance>,
     render_process_host_factory_ = rph_factory;
   }
 
-  // Update / Get the max page ID for this SiteInstance.
-  void UpdateMaxPageID(int32 page_id) {
-    if (page_id > max_page_id_)
-      max_page_id_ = page_id;
-  }
-  int32 max_page_id() const { return max_page_id_; }
-
   // Whether this SiteInstance has a running process associated with it.
   bool HasProcess() const;
 
@@ -195,11 +188,6 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance>,
   // will still remain the same even if the process crashes, since in that
   // scenario the RenderProcessHost remains the same.
   content::RenderProcessHost* process_;
-
-  // The current max_page_id in the SiteInstance's RenderProcessHost.  If the
-  // rendering process dies, its replacement should start issuing page IDs that
-  // are larger than this value.
-  int32 max_page_id_;
 
   // The web site that this SiteInstance is rendering pages for.
   GURL site_;

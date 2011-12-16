@@ -77,8 +77,6 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
 
   TestRenderViewHost* old_rvh =
       TestRenderViewHostForTab(controller->tab_contents());
-  MockRenderProcessHost* mock_rph = static_cast<MockRenderProcessHost*>(
-    old_rvh->process());
 
   TestRenderViewHost* pending_rvh = static_cast<TestRenderViewHost*>(
       controller->tab_contents()->render_manager_for_testing()->
@@ -103,10 +101,10 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
         controller->pending_entry()->transition_type());
   } else {
     test_rvh->SendNavigateWithTransition(
-        mock_rph->max_page_id() + 1,
+        controller->tab_contents()->
+            GetMaxPageIDForSiteInstance(test_rvh->site_instance()) + 1,
         controller->pending_entry()->url(),
         controller->pending_entry()->transition_type());
-    mock_rph->UpdateMaxPageID(mock_rph->max_page_id() + 1);
   }
 
   // Simulate the SwapOut_ACK that fires if you commit a cross-site navigation

@@ -196,7 +196,6 @@ TabContents::TabContents(content::BrowserContext* browser_context,
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       crashed_error_code_(0),
       waiting_for_response_(false),
-      max_page_id_(-1),
       load_state_(net::LOAD_STATE_IDLE, string16()),
       upload_size_(0),
       upload_position_(0),
@@ -391,19 +390,24 @@ const string16& TabContents::GetTitle() const {
 }
 
 int32 TabContents::GetMaxPageID() {
-  if (GetSiteInstance())
-    return GetSiteInstance()->max_page_id();
-  else
-    return max_page_id_;
+  return GetMaxPageIDForSiteInstance(GetSiteInstance());
+}
+
+int32 TabContents::GetMaxPageIDForSiteInstance(SiteInstance* site_instance) {
+  if (max_page_ids_.find(site_instance->id()) == max_page_ids_.end())
+    max_page_ids_[site_instance->id()] = -1;
+
+  return max_page_ids_[site_instance->id()];
 }
 
 void TabContents::UpdateMaxPageID(int32 page_id) {
-  // Ensure both the SiteInstance and RenderProcessHost update their max page
-  // IDs in sync. Only TabContents will also have site instances, except during
-  // testing.
-  if (GetSiteInstance())
-    GetSiteInstance()->UpdateMaxPageID(page_id);
-  GetRenderProcessHost()->UpdateMaxPageID(page_id);
+  UpdateMaxPageIDForSiteInstance(GetSiteInstance(), page_id);
+}
+
+void TabContents::UpdateMaxPageIDForSiteInstance(SiteInstance* site_instance,
+                                                 int32 page_id) {
+  if (GetMaxPageIDForSiteInstance(site_instance) < page_id)
+    max_page_ids_[site_instance->id()] = page_id;
 }
 
 SiteInstance* TabContents::GetSiteInstance() const {
@@ -1328,30 +1332,16 @@ void TabContents::DidNavigateAnyFramePostCommit(
                     DidNavigateAnyFrame(details, params));
 }
 
-void TabContents::UpdateMaxPageIDIfNecessary(SiteInstance* site_instance,
-                                             RenderViewHost* rvh) {
-  // If we are creating a RVH for a restored controller, then we might
-  // have more page IDs than the SiteInstance's current max page ID.  We must
-  // make sure that the max page ID is larger than any restored page ID.
-  // Note that it is ok for conflicting page IDs to exist in another tab
-  // (i.e., NavigationController), but if any page ID is larger than the max,
-  // the back/forward list will get confused.
+void TabContents::UpdateMaxPageIDIfNecessary(RenderViewHost* rvh) {
+  // If we are creating a RVH for a restored controller, then we need to make
+  // sure the RenderView starts with a next_page_id_ larger than the number
+  // of restored entries.  This must be called before the RenderView starts
+  // navigating (to avoid a race between the browser updating max_page_id and
+  // the renderer updating next_page_id_).  Because of this, we only call this
+  // from CreateRenderView and allow that to notify the RenderView for us.
   int max_restored_page_id = controller_.max_restored_page_id();
-  if (max_restored_page_id > 0) {
-    int curr_max_page_id = site_instance->max_page_id();
-    if (max_restored_page_id > curr_max_page_id) {
-      // Need to update the site instance immediately.
-      site_instance->UpdateMaxPageID(max_restored_page_id);
-
-      // Also tell the renderer to update its internal representation.  We
-      // need to reserve enough IDs to make all restored page IDs less than
-      // the max.
-      if (curr_max_page_id < 0)
-        curr_max_page_id = 0;
-      rvh->Send(new ViewMsg_ReservePageIDRange(
-          rvh->routing_id(), max_restored_page_id - curr_max_page_id));
-    }
-  }
+  if (max_restored_page_id > GetMaxPageIDForSiteInstance(rvh->site_instance()))
+    UpdateMaxPageIDForSiteInstance(rvh->site_instance(), max_restored_page_id);
 }
 
 bool TabContents::UpdateTitleForEntry(NavigationEntry* entry,
@@ -2018,7 +2008,12 @@ bool TabContents::CreateRenderViewForRenderManager(
   if (rwh_view)
     rwh_view->SetSize(view_->GetContainerSize());
 
-  if (!render_view_host->CreateRenderView(string16()))
+  // Make sure we use the correct starting page_id in the new RenderView.
+  UpdateMaxPageIDIfNecessary(render_view_host);
+  int32 max_page_id =
+      GetMaxPageIDForSiteInstance(render_view_host->site_instance());
+
+  if (!render_view_host->CreateRenderView(string16(), max_page_id))
     return false;
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
@@ -2030,8 +2025,6 @@ bool TabContents::CreateRenderViewForRenderManager(
   }
 #endif
 
-  UpdateMaxPageIDIfNecessary(render_view_host->site_instance(),
-                             render_view_host);
   return true;
 }
 

@@ -77,7 +77,8 @@ TestRenderViewHost::~TestRenderViewHost() {
   delete view();
 }
 
-bool TestRenderViewHost::CreateRenderView(const string16& frame_name) {
+bool TestRenderViewHost::CreateRenderView(const string16& frame_name,
+                                          int32 max_page_id) {
   DCHECK(!render_view_created_);
   render_view_created_ = true;
   return true;

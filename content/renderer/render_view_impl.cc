@@ -314,8 +314,6 @@ static WebReferrerPolicy getReferrerPolicyFromRequest(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int32 RenderViewImpl::next_page_id_ = 1;
-
 struct RenderViewImpl::PendingFileChooser {
   PendingFileChooser(const content::FileChooserParams& p,
                      WebFileChooserCompletion* c)
@@ -334,7 +332,8 @@ RenderViewImpl::RenderViewImpl(
     SharedRenderViewCounter* counter,
     int32 routing_id,
     int64 session_storage_namespace_id,
-    const string16& frame_name)
+    const string16& frame_name,
+    int32 next_page_id)
     : RenderWidget(WebKit::WebPopupTypeNone),
       webkit_preferences_(webkit_prefs),
       send_content_state_immediately_(false),
@@ -346,6 +345,7 @@ RenderViewImpl::RenderViewImpl(
       opener_suppressed_(false),
       page_id_(-1),
       last_page_id_sent_to_browser_(-1),
+      next_page_id_(next_page_id),
       history_list_offset_(-1),
       history_list_length_(0),
       target_url_status_(TARGET_NONE),
@@ -370,6 +370,9 @@ RenderViewImpl::RenderViewImpl(
   routing_id_ = routing_id;
   if (opener_id != MSG_ROUTING_NONE)
     opener_id_ = opener_id;
+
+  // Ensure we start with a valid next_page_id_ from the browser.
+  DCHECK_GE(next_page_id_, 0);
 
 #if defined(ENABLE_NOTIFICATIONS)
   notification_provider_ = new NotificationProvider(this);
@@ -506,7 +509,8 @@ RenderViewImpl* RenderViewImpl::Create(
     SharedRenderViewCounter* counter,
     int32 routing_id,
     int64 session_storage_namespace_id,
-    const string16& frame_name) {
+    const string16& frame_name,
+    int32 next_page_id) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
   return new RenderViewImpl(
       parent_hwnd,
@@ -516,17 +520,8 @@ RenderViewImpl* RenderViewImpl::Create(
       counter,
       routing_id,
       session_storage_namespace_id,
-      frame_name);  // adds reference
-}
-
-// static
-void RenderViewImpl::SetNextPageID(int32 next_page_id) {
-  // This method is called on startup or when the browser knows it needs to
-  // inflate the page_id when re-using the process.  The renderer may have
-  // incremented this just as the browser was sending the message, but we
-  // only care that next_page_id_ is at least as large as next_page_id.
-  if (next_page_id > next_page_id_)
-    next_page_id_ = next_page_id;
+      frame_name,
+      next_page_id);  // adds reference
 }
 
 void RenderViewImpl::AddObserver(RenderViewObserver* observer) {
@@ -633,7 +628,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnResetPageEncodingToDefault)
     IPC_MESSAGE_HANDLER(ViewMsg_ScriptEvalRequest, OnScriptEvalRequest)
     IPC_MESSAGE_HANDLER(ViewMsg_CSSInsertRequest, OnCSSInsertRequest)
-    IPC_MESSAGE_HANDLER(ViewMsg_ReservePageIDRange, OnReservePageIDRange)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragEnter, OnDragTargetDragEnter)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragOver, OnDragTargetDragOver)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragLeave, OnDragTargetDragLeave)
@@ -1352,7 +1346,8 @@ WebView* RenderViewImpl::createView(
       shared_popup_counter_,
       routing_id,
       cloned_session_storage_namespace_id,
-      frame_name);
+      frame_name,
+      1);
   view->opened_by_user_gesture_ = params.user_gesture;
 
   // Record whether the creator frame is trying to suppress the opener field.
@@ -3791,10 +3786,6 @@ void RenderViewImpl::OnSetWebUIProperty(const std::string& name,
                                         const std::string& value) {
   DCHECK(enabled_bindings_ & content::BINDINGS_POLICY_WEB_UI);
   GetWebUIBindings()->SetProperty(name, value);
-}
-
-void RenderViewImpl::OnReservePageIDRange(int size_of_range) {
-  next_page_id_ += size_of_range + 1;
 }
 
 void RenderViewImpl::OnDragTargetDragEnter(const WebDropData& drop_data,

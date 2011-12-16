@@ -75,7 +75,7 @@ void TestTabContents::TestDidNavigateWithReferrer(
 bool TestTabContents::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host) {
   // This will go to a TestRenderViewHost.
-  render_view_host->CreateRenderView(string16());
+  render_view_host->CreateRenderView(string16(), -1);
   return true;
 }
 
@@ -114,8 +114,7 @@ void TestTabContents::CommitPendingNavigation() {
   int page_id = entry->page_id();
   if (page_id == -1) {
     // It's a new navigation, assign a never-seen page id to it.
-    page_id =
-        static_cast<MockRenderProcessHost*>(rvh->process())->max_page_id() + 1;
+    page_id = GetMaxPageIDForSiteInstance(rvh->site_instance()) + 1;
   }
   rvh->SendNavigate(page_id, entry->url());
 
