@@ -13,7 +13,8 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/Xcomposite.h>
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "base/debug/trace_event.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
@@ -35,7 +36,7 @@ namespace {
 // an instance is created or destroyed.
 class EGLAcceleratedSurface : public base::RefCounted<EGLAcceleratedSurface> {
  public:
-  EGLAcceleratedSurface(const gfx::Size& size);
+  explicit EGLAcceleratedSurface(const gfx::Size& size);
   const gfx::Size& size() const { return size_; }
   uint32 pixmap() const { return pixmap_; }
   uint32 texture() const { return texture_; }
@@ -54,8 +55,10 @@ class EGLAcceleratedSurface : public base::RefCounted<EGLAcceleratedSurface> {
 
 // We are backed by an Pbuffer offscreen surface for the purposes of creating a
 // context, but use FBOs to render to X Pixmap backed EGLImages.
-class EGLImageTransportSurface : public ImageTransportSurface,
-                                 public gfx::PbufferGLSurfaceEGL {
+class EGLImageTransportSurface
+    : public ImageTransportSurface,
+      public gfx::PbufferGLSurfaceEGL,
+      public base::SupportsWeakPtr<EGLImageTransportSurface> {
  public:
   EGLImageTransportSurface(GpuChannelManager* manager,
                            int32 render_view_id,
@@ -86,6 +89,7 @@ class EGLImageTransportSurface : public ImageTransportSurface,
  private:
   virtual ~EGLImageTransportSurface() OVERRIDE;
   void ReleaseSurface(scoped_refptr<EGLAcceleratedSurface>* surface);
+  void SendBuffersSwapped();
 
   uint32 fbo_id_;
 
@@ -102,8 +106,10 @@ class EGLImageTransportSurface : public ImageTransportSurface,
 
 // We render to an off-screen (but mapped) window that the browser process will
 // read from via XComposite
-class GLXImageTransportSurface : public ImageTransportSurface,
-                                 public gfx::NativeViewGLSurfaceGLX {
+class GLXImageTransportSurface
+    : public ImageTransportSurface,
+      public gfx::NativeViewGLSurfaceGLX,
+      public base::SupportsWeakPtr<GLXImageTransportSurface> {
  public:
   GLXImageTransportSurface(GpuChannelManager* manager,
                            int32 render_view_id,
@@ -134,6 +140,9 @@ class GLXImageTransportSurface : public ImageTransportSurface,
 
   // Tell the browser to release the surface.
   void ReleaseSurface();
+
+  void SendBuffersSwapped();
+  void SendPostSubBuffer(int x, int y, int width, int height);
 
   XID dummy_parent_;
   gfx::Size size_;
@@ -352,11 +361,9 @@ void EGLImageTransportSurface::OnResize(gfx::Size size) {
 bool EGLImageTransportSurface::SwapBuffers() {
   front_surface_.swap(back_surface_);
   DCHECK_NE(front_surface_.get(), static_cast<EGLAcceleratedSurface*>(NULL));
-  glFlush();
-
-  GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
-  params.surface_id = front_surface_->pixmap();
-  helper_->SendAcceleratedSurfaceBuffersSwapped(params);
+  helper_->DeferToFence(base::Bind(
+      &EGLImageTransportSurface::SendBuffersSwapped,
+      AsWeakPtr()));
 
   gfx::Size expected_size = front_surface_->size();
   if (!back_surface_.get() || back_surface_->size() != expected_size) {
@@ -368,8 +375,14 @@ bool EGLImageTransportSurface::SwapBuffers() {
                               back_surface_->texture(),
                               0);
   }
-  helper_->SetScheduled(false);
   return true;
+}
+
+void EGLImageTransportSurface::SendBuffersSwapped() {
+  GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
+  params.surface_id = front_surface_->pixmap();
+  helper_->SendAcceleratedSurfaceBuffersSwapped(params);
+  helper_->SetScheduled(false);
 }
 
 bool EGLImageTransportSurface::PostSubBuffer(
@@ -523,7 +536,9 @@ void GLXImageTransportSurface::OnResize(gfx::Size size) {
 
 bool GLXImageTransportSurface::SwapBuffers() {
   gfx::NativeViewGLSurfaceGLX::SwapBuffers();
-  glFlush();
+  helper_->DeferToFence(base::Bind(
+      &GLXImageTransportSurface::SendBuffersSwapped,
+      AsWeakPtr()));
 
   if (needs_resize_) {
     GpuHostMsg_AcceleratedSurfaceNew_Params params;
@@ -534,19 +549,22 @@ bool GLXImageTransportSurface::SwapBuffers() {
     bound_ = true;
     needs_resize_ = false;
   }
+  return true;
+}
 
+void GLXImageTransportSurface::SendBuffersSwapped() {
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   params.surface_id = window_;
   helper_->SendAcceleratedSurfaceBuffersSwapped(params);
-
   helper_->SetScheduled(false);
-  return true;
 }
 
 bool GLXImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
   gfx::NativeViewGLSurfaceGLX::PostSubBuffer(x, y, width, height);
-  glFlush();
+  helper_->DeferToFence(base::Bind(
+      &GLXImageTransportSurface::SendPostSubBuffer,
+      AsWeakPtr(), x, y, width, height));
 
   if (needs_resize_) {
     GpuHostMsg_AcceleratedSurfaceNew_Params params;
@@ -557,7 +575,11 @@ bool GLXImageTransportSurface::PostSubBuffer(
     bound_ = true;
     needs_resize_ = false;
   }
+  return true;
+}
 
+void GLXImageTransportSurface::SendPostSubBuffer(
+    int x, int y, int width, int height) {
   GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
   params.surface_id = window_;
   params.x = x;
@@ -566,9 +588,7 @@ bool GLXImageTransportSurface::PostSubBuffer(
   params.height = height;
 
   helper_->SendAcceleratedSurfacePostSubBuffer(params);
-
   helper_->SetScheduled(false);
-  return true;
 }
 
 std::string GLXImageTransportSurface::GetExtensions() {

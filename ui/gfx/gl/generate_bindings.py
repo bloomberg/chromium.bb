@@ -620,7 +620,18 @@ GL_FUNCTIONS = [
   'arguments': 'GLuint fence', },
 { 'return_type': 'void',
   'names': ['glGetFenceivNV'],
-  'arguments': 'GLuint fence, GLenum pname, GLint* params', }
+  'arguments': 'GLuint fence, GLenum pname, GLint* params', },
+{ 'return_type': 'GLsync',
+  'names': ['glFenceSync'],
+  'arguments': 'GLenum condition, GLbitfield flags', },
+{ 'return_type': 'void',
+  'names': ['glDeleteSync'],
+  'arguments': 'GLsync sync', },
+{ 'return_type': 'void',
+  'names': ['glGetSynciv'],
+  'arguments':
+    'GLsync sync, GLenum pname, GLsizei bufSize, GLsizei* length,'
+    'GLint* values', },
 ]
 
 OSMESA_FUNCTIONS = [

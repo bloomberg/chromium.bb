@@ -472,6 +472,14 @@ class MockGLInterface : public GLInterface {
 
   MOCK_METHOD3(GetFenceivNV, void(GLuint fence, GLenum pname, GLint *params));
 
+  MOCK_METHOD2(FenceSync, GLsync(GLenum condition, GLbitfield flags));
+
+  MOCK_METHOD1(DeleteSync, void(GLsync sync));
+
+  MOCK_METHOD5(GetSynciv, void(
+      GLsync sync, GLenum pname, GLsizei bufSize,
+      GLsizei* length, GLint* values));
+
   MOCK_METHOD1(SetSurfaceCHROMIUM, void(GLuint));
 
   MOCK_METHOD0(GetGraphicsResetStatusARB, GLenum());

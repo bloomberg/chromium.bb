@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "ui/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_fence.h"
 #include "ui/gfx/gl/gl_switches.h"
 
 using ::base::SharedMemory;
@@ -154,48 +155,28 @@ void GpuScheduler::SetCommandProcessedCallback(
 }
 
 void GpuScheduler::DeferToFence(base::Closure task) {
-  UnscheduleFence fence;
-
-  // What if either of these GL calls fails? TestFenceNV will return true and
-  // PutChanged will treat the fence as having been crossed and thereby not
-  // poll indefinately. See spec:
-  // http://www.opengl.org/registry/specs/NV/fence.txt
-  //
-  // What should happen if TestFenceNV is called for a name before SetFenceNV
-  // is called?
-  //     We generate an INVALID_OPERATION error, and return TRUE.
-  //     This follows the semantics for texture object names before
-  //     they are bound, in that they acquire their state upon binding.
-  //     We will arbitrarily return TRUE for consistency.
-  if (gfx::g_GL_NV_fence) {
-    glGenFencesNV(1, &fence.fence);
-    glSetFenceNV(fence.fence, GL_ALL_COMPLETED_NV);
-  }
-
-  glFlush();
-
-  fence.task = task;
-
-  unschedule_fences_.push(fence);
+  unschedule_fences_.push(make_linked_ptr(
+       new UnscheduleFence(gfx::GLFence::Create(), task)));
 }
 
 bool GpuScheduler::PollUnscheduleFences() {
-  if (gfx::g_GL_NV_fence) {
+  if (unschedule_fences_.empty())
+    return true;
+
+  if (unschedule_fences_.front()->fence.get()) {
     while (!unschedule_fences_.empty()) {
-      if (glTestFenceNV(unschedule_fences_.front().fence)) {
-        glDeleteFencesNV(1, &unschedule_fences_.front().fence);
-        unschedule_fences_.front().task.Run();
+      if (unschedule_fences_.front()->fence->HasCompleted()) {
+        unschedule_fences_.front()->task.Run();
         unschedule_fences_.pop();
       } else {
         return false;
       }
     }
   } else {
-    if (!unschedule_fences_.empty())
-      glFinish();
+    glFinish();
 
     while (!unschedule_fences_.empty()) {
-      unschedule_fences_.front().task.Run();
+      unschedule_fences_.front()->task.Run();
       unschedule_fences_.pop();
     }
   }
@@ -203,7 +184,8 @@ bool GpuScheduler::PollUnscheduleFences() {
   return true;
 }
 
-GpuScheduler::UnscheduleFence::UnscheduleFence() : fence(0) {
+GpuScheduler::UnscheduleFence::UnscheduleFence(
+    gfx::GLFence* fence_, base::Closure task_): fence(fence_), task(task_) {
 }
 
 GpuScheduler::UnscheduleFence::~UnscheduleFence() {

@@ -590,6 +590,16 @@ class GL_EXPORT GLInterface {
 
   virtual GLenum GetGraphicsResetStatusARB() = 0;
 
+  virtual GLsync FenceSync(GLenum condition, GLbitfield flags) = 0;
+
+  virtual void DeleteSync(GLsync sync) = 0;
+
+  virtual void GetSynciv(GLsync sync,
+                         GLenum pname,
+                         GLsizei bufSize,
+                         GLsizei* length,
+                         GLint* values) = 0;
+
  private:
   static GLInterface* interface_;
 };

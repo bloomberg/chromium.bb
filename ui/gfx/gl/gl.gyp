@@ -50,6 +50,8 @@
         'gl_context_stub.h',
         'gl_context_win.cc',
         'gl_export.h',
+        'gl_fence.cc',
+        'gl_fence.h',
         'gl_implementation.cc',
         'gl_implementation.h',
         'gl_implementation_android.cc',

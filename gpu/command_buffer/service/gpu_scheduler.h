@@ -8,14 +8,18 @@
 #include <queue>
 
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/shared_memory.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+
+namespace gfx {
+class GLFence;
+}
 
 namespace gpu {
 
@@ -95,13 +99,13 @@ class GpuScheduler
   // The GpuScheduler will unschedule itself in the event that further GL calls
   // are issued to it before all these fences have been crossed by the GPU.
   struct UnscheduleFence {
-    UnscheduleFence();
+    UnscheduleFence(gfx::GLFence* fence, base::Closure task);
     ~UnscheduleFence();
 
-    uint32 fence;
+    scoped_ptr<gfx::GLFence> fence;
     base::Closure task;
   };
-  std::queue<UnscheduleFence> unschedule_fences_;
+  std::queue<linked_ptr<UnscheduleFence> > unschedule_fences_;
 
   base::Closure scheduled_callback_;
   base::Closure command_processed_callback_;
