@@ -53,8 +53,11 @@ struct ResourceLoadTimingInfo {
   WEBKIT_GLUE_EXPORT ResourceLoadTimingInfo();
   WEBKIT_GLUE_EXPORT ~ResourceLoadTimingInfo();
 
-  // All the values in this struct are given as offsets in milliseconds wrt
-  // this base time.
+  // All the values in this struct are given as offsets in ticks wrt
+  // this base tick count.
+  base::TimeTicks base_ticks;
+
+  // The value of Time::Now() when base_ticks was set.
   base::Time base_time;
 
   // The time that proxy processing started. For requests with no proxy phase,
@@ -329,9 +332,10 @@ class ResourceLoaderBridge {
 
     // Called when the response is complete.  This method signals completion of
     // the resource load.ff
-    virtual void OnCompletedRequest(const net::URLRequestStatus& status,
-                                    const std::string& security_info,
-                                    const base::Time& completion_time) = 0;
+    virtual void OnCompletedRequest(
+        const net::URLRequestStatus& status,
+        const std::string& security_info,
+        const base::TimeTicks& completion_time) = 0;
   };
 
   // use WebKitPlatformSupportImpl::CreateResourceLoader() for construction, but

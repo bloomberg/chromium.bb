@@ -13,6 +13,7 @@
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
+#include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/request_extra_data.h"
 #include "content/common/resource_messages.h"
 #include "content/public/common/resource_dispatcher_delegate.h"
@@ -22,6 +23,12 @@
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
 #include "webkit/glue/resource_type.h"
+
+using content::InterProcessTimeTicksConverter;
+using content::LocalTimeDelta;
+using content::LocalTimeTicks;
+using content::RemoteTimeDelta;
+using content::RemoteTimeTicks;
 
 // Each resource request is assigned an ID scoped to this process.
 static int MakeRequestID() {
@@ -348,6 +355,7 @@ void ResourceDispatcher::OnReceivedResponse(
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
+  request_info->response_start = base::TimeTicks::Now();
 
   if (delegate_) {
     webkit_glue::ResourceLoaderBridge::Peer* new_peer =
@@ -357,7 +365,9 @@ void ResourceDispatcher::OnReceivedResponse(
       request_info->peer = new_peer;
   }
 
-  request_info->peer->OnReceivedResponse(response_head);
+  webkit_glue::ResourceResponseInfo renderer_response_info;
+  ToResourceResponseInfo(*request_info, response_head, &renderer_response_info);
+  request_info->peer->OnReceivedResponse(renderer_response_info);
 }
 
 void ResourceDispatcher::OnReceivedCachedMetadata(
@@ -411,17 +421,20 @@ void ResourceDispatcher::OnReceivedRedirect(
     const IPC::Message& message,
     int request_id,
     const GURL& new_url,
-    const webkit_glue::ResourceResponseInfo& info) {
+    const content::ResourceResponseHead& response_head) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
+  request_info->response_start = base::TimeTicks::Now();
 
   int32 routing_id = message.routing_id();
   bool has_new_first_party_for_cookies = false;
   GURL new_first_party_for_cookies;
-  if (request_info->peer->OnReceivedRedirect(new_url, info,
-                                            &has_new_first_party_for_cookies,
-                                            &new_first_party_for_cookies)) {
+  webkit_glue::ResourceResponseInfo renderer_response_info;
+  ToResourceResponseInfo(*request_info, response_head, &renderer_response_info);
+  if (request_info->peer->OnReceivedRedirect(new_url, renderer_response_info,
+                                             &has_new_first_party_for_cookies,
+                                             &new_first_party_for_cookies)) {
     // Double-check if the request is still around. The call above could
     // potentially remove it.
     request_info = GetPendingRequestInfo(request_id);
@@ -447,13 +460,15 @@ void ResourceDispatcher::FollowPendingRedirect(
     message_sender()->Send(msg);
 }
 
-void ResourceDispatcher::OnRequestComplete(int request_id,
-                                           const net::URLRequestStatus& status,
-                                           const std::string& security_info,
-                                           const base::Time& completion_time) {
+void ResourceDispatcher::OnRequestComplete(
+    int request_id,
+    const net::URLRequestStatus& status,
+    const std::string& security_info,
+    const base::TimeTicks& browser_completion_time) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
+  request_info->completion_time = base::TimeTicks::Now();
 
   webkit_glue::ResourceLoaderBridge::Peer* peer = request_info->peer;
 
@@ -465,10 +480,12 @@ void ResourceDispatcher::OnRequestComplete(int request_id,
       request_info->peer = new_peer;
   }
 
+  base::TimeTicks renderer_completion_time = ToRendererCompletionTime(
+      *request_info, browser_completion_time);
   // The request ID will be removed from our pending list in the destructor.
   // Normally, dispatching this message causes the reference-counted request to
   // die immediately.
-  peer->OnCompletedRequest(status, security_info, completion_time);
+  peer->OnCompletedRequest(status, security_info, renderer_completion_time);
 }
 
 int ResourceDispatcher::AddPendingRequest(
@@ -579,6 +596,65 @@ webkit_glue::ResourceLoaderBridge* ResourceDispatcher::CreateBridge(
   return new webkit_glue::IPCResourceLoaderBridge(this, request_info);
 }
 
+void ResourceDispatcher::ToResourceResponseInfo(
+    const PendingRequestInfo& request_info,
+    const content::ResourceResponseHead& browser_info,
+    webkit_glue::ResourceResponseInfo* renderer_info) const {
+  *renderer_info = browser_info;
+  if (request_info.request_start.is_null() ||
+      request_info.response_start.is_null() ||
+      browser_info.request_start.is_null() ||
+      browser_info.response_start.is_null()) {
+    return;
+  }
+  content::InterProcessTimeTicksConverter converter(
+      LocalTimeTicks::FromTimeTicks(request_info.request_start),
+      LocalTimeTicks::FromTimeTicks(request_info.response_start),
+      RemoteTimeTicks::FromTimeTicks(browser_info.request_start),
+      RemoteTimeTicks::FromTimeTicks(browser_info.response_start));
+
+  LocalTimeTicks renderer_base_ticks = converter.ToLocalTimeTicks(
+      RemoteTimeTicks::FromTimeTicks(browser_info.load_timing.base_ticks));
+  renderer_info->load_timing.base_ticks = renderer_base_ticks.ToTimeTicks();
+
+#define CONVERT(field) \
+  LocalTimeDelta renderer_##field = converter.ToLocalTimeDelta( \
+      RemoteTimeDelta::FromRawDelta(browser_info.load_timing.field)); \
+  renderer_info->load_timing.field = renderer_##field.ToInt32()
+
+  CONVERT(proxy_start);
+  CONVERT(dns_start);
+  CONVERT(dns_end);
+  CONVERT(connect_start);
+  CONVERT(connect_end);
+  CONVERT(ssl_start);
+  CONVERT(ssl_end);
+  CONVERT(send_start);
+  CONVERT(send_end);
+  CONVERT(receive_headers_start);
+  CONVERT(receive_headers_end);
+
+#undef CONVERT
+}
+
+base::TimeTicks ResourceDispatcher::ToRendererCompletionTime(
+    const PendingRequestInfo& request_info,
+    const base::TimeTicks& browser_completion_time) const {
+  if (request_info.completion_time.is_null()) {
+    return browser_completion_time;
+  }
+
+  // TODO(simonjam): The optimal lower bound should be the most recent value of
+  // TimeTicks::Now() returned to WebKit. Is it worth trying to cache that?
+  // Until then, |response_start| is used as it is the most recent value
+  // returned for this request.
+  int64 result = std::max(browser_completion_time.ToInternalValue(),
+                          request_info.response_start.ToInternalValue());
+  result = std::min(result, request_info.completion_time.ToInternalValue());
+  return base::TimeTicks::FromInternalValue(result);
+}
+
+// static
 bool ResourceDispatcher::IsResourceDispatcherMessage(
     const IPC::Message& message) {
   switch (message.type()) {

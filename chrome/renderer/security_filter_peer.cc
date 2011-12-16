@@ -87,9 +87,10 @@ void SecurityFilterPeer::OnReceivedData(const char* data,
   NOTREACHED();
 }
 
-void SecurityFilterPeer::OnCompletedRequest(const net::URLRequestStatus& status,
-                                            const std::string& security_info,
-                                            const base::Time& completion_time) {
+void SecurityFilterPeer::OnCompletedRequest(
+    const net::URLRequestStatus& status,
+    const std::string& security_info,
+    const base::TimeTicks& completion_time) {
   NOTREACHED();
 }
 
@@ -149,7 +150,7 @@ void BufferedPeer::OnReceivedData(const char* data,
 
 void BufferedPeer::OnCompletedRequest(const net::URLRequestStatus& status,
                                       const std::string& security_info,
-                                      const base::Time& completion_time) {
+                                      const base::TimeTicks& completion_time) {
   // Make sure we delete ourselves at the end of this call.
   scoped_ptr<BufferedPeer> this_deleter(this);
 
@@ -201,7 +202,7 @@ void ReplaceContentPeer::OnReceivedData(const char* data,
 void ReplaceContentPeer::OnCompletedRequest(
     const net::URLRequestStatus& status,
     const std::string& security_info,
-    const base::Time& completion_time) {
+    const base::TimeTicks& completion_time) {
   webkit_glue::ResourceResponseInfo info;
   ProcessResponseInfo(info, &info, mime_type_);
   info.security_info = security_info;

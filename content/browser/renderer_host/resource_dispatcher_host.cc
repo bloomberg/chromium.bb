@@ -137,8 +137,8 @@ void AbortRequestBeforeItStarts(ResourceMessageFilter* filter,
         route_id,
         request_id,
         status,
-        std::string(),   // No security info needed, connection was not
-        base::Time()));  // established.
+        std::string(),   // No security info needed, connection not established.
+        base::TimeTicks()));
   }
 }
 

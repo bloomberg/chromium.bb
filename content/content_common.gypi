@@ -173,6 +173,8 @@
     'common/indexed_db_messages.h',
     'common/indexed_db_param_traits.cc',
     'common/indexed_db_param_traits.h',
+    'common/inter_process_time_ticks_converter.cc',
+    'common/inter_process_time_ticks_converter.h',
     'common/intents_messages.h',
     'common/java_bridge_messages.h',
     'common/mac/attributed_string_coder.h',

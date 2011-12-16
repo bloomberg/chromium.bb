@@ -288,7 +288,7 @@ class RequestProxy : public net::URLRequest::Delegate,
 
   void NotifyCompletedRequest(const net::URLRequestStatus& status,
                               const std::string& security_info,
-                              const base::Time& complete_time) {
+                              const base::TimeTicks& complete_time) {
     if (peer_) {
       peer_->OnCompletedRequest(status, security_info, complete_time);
       DropPeer();  // ensure no further notifications
@@ -423,7 +423,7 @@ class RequestProxy : public net::URLRequest::Delegate,
 
   virtual void OnCompletedRequest(const net::URLRequestStatus& status,
                                   const std::string& security_info,
-                                  const base::Time& complete_time) {
+                                  const base::TimeTicks& complete_time) {
     if (download_to_file_)
       file_stream_.Close();
     owner_loop_->PostTask(
@@ -519,7 +519,7 @@ class RequestProxy : public net::URLRequest::Delegate,
     // |failed_file_request_status_|. Otherwise use request_'s status.
     OnCompletedRequest(failed_file_request_status_.get() ?
                        *failed_file_request_status_ : request_->status(),
-                       std::string(), base::Time());
+                       std::string(), base::TimeTicks());
     request_.reset();  // destroy on the io thread
   }
 
@@ -729,7 +729,7 @@ class SyncRequestProxy : public RequestProxy {
 
   virtual void OnCompletedRequest(const net::URLRequestStatus& status,
                                   const std::string& security_info,
-                                  const base::Time& complete_time) {
+                                  const base::TimeTicks& complete_time) {
     if (download_to_file_)
       file_stream_.Close();
     result_->status = status;

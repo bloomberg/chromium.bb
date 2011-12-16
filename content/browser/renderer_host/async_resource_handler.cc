@@ -26,7 +26,6 @@
 #include "net/base/net_log.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
-using base::Time;
 using base::TimeTicks;
 
 namespace {
@@ -110,6 +109,8 @@ bool AsyncResourceHandler::OnRequestRedirected(
     rdh_->delegate()->OnRequestRedirected(request, response, filter_);
 
   DevToolsNetLogObserver::PopulateResponseInfo(request, response);
+  response->request_start = request->creation_time();
+  response->response_start = TimeTicks::Now();
   return filter_->Send(new ResourceMsg_ReceivedRedirect(
       routing_id_, request_id, new_url, *response));
 }
@@ -143,6 +144,8 @@ bool AsyncResourceHandler::OnResponseStarted(
             request_url))));
   }
 
+  response->request_start = request->creation_time();
+  response->response_start = TimeTicks::Now();
   filter_->Send(new ResourceMsg_ReceivedResponse(
       routing_id_, request_id, *response));
 
@@ -241,7 +244,7 @@ bool AsyncResourceHandler::OnResponseCompleted(
     int request_id,
     const net::URLRequestStatus& status,
     const std::string& security_info) {
-  Time completion_time = Time::Now();
+  TimeTicks completion_time = TimeTicks::Now();
   filter_->Send(new ResourceMsg_RequestComplete(routing_id_,
                                                 request_id,
                                                 status,

@@ -41,9 +41,10 @@ class SecurityFilterPeer : public webkit_glue::ResourceLoaderBridge::Peer {
   virtual void OnReceivedData(const char* data,
                               int data_length,
                               int encoded_data_length) OVERRIDE;
-  virtual void OnCompletedRequest(const net::URLRequestStatus& status,
-                                  const std::string& security_info,
-                                  const base::Time& completion_time) OVERRIDE;
+  virtual void OnCompletedRequest(
+      const net::URLRequestStatus& status,
+      const std::string& security_info,
+      const base::TimeTicks& completion_time) OVERRIDE;
 
  protected:
   SecurityFilterPeer(webkit_glue::ResourceLoaderBridge* resource_loader_bridge,
@@ -71,9 +72,10 @@ class BufferedPeer : public SecurityFilterPeer {
   virtual void OnReceivedData(const char* data,
                               int data_length,
                               int encoded_data_length) OVERRIDE;
-  virtual void OnCompletedRequest(const net::URLRequestStatus& status,
-                                  const std::string& security_info,
-                                  const base::Time& completion_time) OVERRIDE;
+  virtual void OnCompletedRequest(
+      const net::URLRequestStatus& status,
+      const std::string& security_info,
+      const base::TimeTicks& completion_time) OVERRIDE;
 
  protected:
   // Invoked when the entire request has been processed before the data is sent
@@ -113,9 +115,10 @@ class ReplaceContentPeer : public SecurityFilterPeer {
   virtual void OnReceivedData(const char* data,
                               int data_length,
                               int encoded_data_length) OVERRIDE;
-  virtual void OnCompletedRequest(const net::URLRequestStatus& status,
-                                  const std::string& security_info,
-                                  const base::Time& completion_time) OVERRIDE;
+  virtual void OnCompletedRequest(
+      const net::URLRequestStatus& status,
+      const std::string& security_info,
+      const base::TimeTicks& completion_time) OVERRIDE;
 
  private:
   webkit_glue::ResourceResponseInfo response_info_;

@@ -40,6 +40,7 @@ void ParamTraits<webkit_glue::ResourceLoadTimingInfo>::Write(
   WriteParam(m, p.base_time.is_null());
   if (p.base_time.is_null())
     return;
+  WriteParam(m, p.base_ticks);
   WriteParam(m, p.base_time);
   WriteParam(m, p.proxy_start);
   WriteParam(m, p.proxy_end);
@@ -64,6 +65,7 @@ bool ParamTraits<webkit_glue::ResourceLoadTimingInfo>::Read(
     return true;
 
   return
+      ReadParam(m, iter, &r->base_ticks) &&
       ReadParam(m, iter, &r->base_time) &&
       ReadParam(m, iter, &r->proxy_start) &&
       ReadParam(m, iter, &r->proxy_end) &&
@@ -82,6 +84,8 @@ bool ParamTraits<webkit_glue::ResourceLoadTimingInfo>::Read(
 void ParamTraits<webkit_glue::ResourceLoadTimingInfo>::Log(const param_type& p,
                                                            std::string* l) {
   l->append("(");
+  LogParam(p.base_ticks, l);
+  l->append(", ");
   LogParam(p.base_time, l);
   l->append(", ");
   LogParam(p.proxy_start, l);

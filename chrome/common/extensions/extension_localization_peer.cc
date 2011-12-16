@@ -68,7 +68,7 @@ void ExtensionLocalizationPeer::OnReceivedData(const char* data,
 void ExtensionLocalizationPeer::OnCompletedRequest(
     const net::URLRequestStatus& status,
     const std::string& security_info,
-    const base::Time& completion_time) {
+    const base::TimeTicks& completion_time) {
   // Make sure we delete ourselves at the end of this call.
   scoped_ptr<ExtensionLocalizationPeer> this_deleter(this);
 

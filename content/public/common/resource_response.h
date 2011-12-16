@@ -23,6 +23,10 @@ namespace content {
 struct ResourceResponseHead : webkit_glue::ResourceResponseInfo {
   // The response status.
   net::URLRequestStatus status;
+  // TimeTicks::Now() when the browser received the request from the renderer.
+  base::TimeTicks request_start;
+  // TimeTicks::Now() when the browser sent the response to the renderer.
+  base::TimeTicks response_start;
 };
 
 // Parameters for a synchronous resource response.

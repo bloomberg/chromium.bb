@@ -153,6 +153,7 @@ void LoadTimingObserver::OnAddURLRequestEntry(
       URLRequestRecord& record = url_request_to_record_[source.id];
       record.base_ticks = time;
       record.timing = ResourceLoadTimingInfo();
+      record.timing.base_ticks = time;
       record.timing.base_time = TimeTicksToTime(time);
     }
     return;

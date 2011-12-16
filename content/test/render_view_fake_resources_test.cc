@@ -175,7 +175,7 @@ void RenderViewFakeResourcesTest::OnRequestResource(
       request_id,
       net::URLRequestStatus(),
       std::string(),
-      base::Time())));
+      base::TimeTicks())));
 }
 
 void RenderViewFakeResourcesTest::OnRenderViewReady() {

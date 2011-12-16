@@ -36,7 +36,7 @@
 #include "webkit/glue/weburlrequest_extradata_impl.h"
 
 using base::Time;
-using base::TimeDelta;
+using base::TimeTicks;
 using WebKit::WebData;
 using WebKit::WebHTTPBody;
 using WebKit::WebHTTPHeaderVisitor;
@@ -124,6 +124,7 @@ bool GetInfoFromDataURL(const GURL& url,
     // Assure same time for all time fields of data: URLs.
     Time now = Time::Now();
     info->load_timing.base_time = now;
+    info->load_timing.base_ticks = TimeTicks::Now();
     info->request_time = now;
     info->response_time = now;
     info->headers = NULL;
@@ -173,7 +174,7 @@ void PopulateURLResponse(
   if (!timing_info.base_time.is_null()) {
     WebURLLoadTiming timing;
     timing.initialize();
-    timing.setRequestTime(timing_info.base_time.ToDoubleT());
+    timing.setRequestTime((timing_info.base_ticks - TimeTicks()).InSecondsF());
     timing.setProxyStart(timing_info.proxy_start);
     timing.setProxyEnd(timing_info.proxy_end);
     timing.setDNSStart(timing_info.dns_start);
@@ -284,7 +285,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   virtual void OnReceivedCachedMetadata(const char* data, int len);
   virtual void OnCompletedRequest(const net::URLRequestStatus& status,
                                   const std::string& security_info,
-                                  const base::Time& completion_time);
+                                  const base::TimeTicks& completion_time);
 
  private:
   friend class base::RefCounted<Context>;
@@ -610,7 +611,7 @@ void WebURLLoaderImpl::Context::OnReceivedCachedMetadata(
 void WebURLLoaderImpl::Context::OnCompletedRequest(
     const net::URLRequestStatus& status,
     const std::string& security_info,
-    const base::Time& completion_time) {
+    const base::TimeTicks& completion_time) {
   if (ftp_listing_delegate_.get()) {
     ftp_listing_delegate_->OnCompletedRequest();
     ftp_listing_delegate_.reset(NULL);
@@ -642,7 +643,8 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
       error.unreachableURL = request_.url();
       client_->didFail(loader_, error);
     } else {
-      client_->didFinishLoading(loader_, completion_time.ToDoubleT());
+      client_->didFinishLoading(
+          loader_, (completion_time - TimeTicks()).InSecondsF());
     }
   }
 
@@ -686,7 +688,7 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
       OnReceivedData(data.data(), data.size(), 0);
   }
 
-  OnCompletedRequest(status, info.security_info, base::Time::Now());
+  OnCompletedRequest(status, info.security_info, base::TimeTicks::Now());
 }
 
 // WebURLLoaderImpl -----------------------------------------------------------

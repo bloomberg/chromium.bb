@@ -42,9 +42,10 @@ class ExtensionLocalizationPeer
   virtual void OnReceivedData(const char* data,
                               int data_length,
                               int encoded_data_length) OVERRIDE;
-  virtual void OnCompletedRequest(const net::URLRequestStatus& status,
-                                  const std::string& security_info,
-                                  const base::Time& completion_time) OVERRIDE;
+  virtual void OnCompletedRequest(
+      const net::URLRequestStatus& status,
+      const std::string& security_info,
+      const base::TimeTicks& completion_time) OVERRIDE;
 
  private:
   friend class ExtensionLocalizationPeerTest;

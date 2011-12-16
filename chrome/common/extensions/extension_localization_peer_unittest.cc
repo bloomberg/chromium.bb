@@ -72,7 +72,7 @@ class MockResourceLoaderBridgePeer
   MOCK_METHOD3(OnCompletedRequest, void(
       const net::URLRequestStatus& status,
       const std::string& security_info,
-      const base::Time& completion_time));
+      const base::TimeTicks& completion_time));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockResourceLoaderBridgePeer);
@@ -142,11 +142,11 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestBadURLRequestStatus) {
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
-    IsURLRequestEqual(net::URLRequestStatus::CANCELED), "", base::Time()));
+    IsURLRequestEqual(net::URLRequestStatus::CANCELED), "", base::TimeTicks()));
 
   net::URLRequestStatus status;
   status.set_status(net::URLRequestStatus::FAILED);
-  filter_peer->OnCompletedRequest(status, "", base::Time());
+  filter_peer->OnCompletedRequest(status, "", base::TimeTicks());
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestEmptyData) {
@@ -158,11 +158,12 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestEmptyData) {
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
-      IsURLRequestEqual(net::URLRequestStatus::SUCCESS), "", base::Time()));
+      IsURLRequestEqual(net::URLRequestStatus::SUCCESS), "",
+      base::TimeTicks()));
 
   net::URLRequestStatus status;
   status.set_status(net::URLRequestStatus::SUCCESS);
-  filter_peer->OnCompletedRequest(status, "", base::Time());
+  filter_peer->OnCompletedRequest(status, "", base::TimeTicks());
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestNoCatalogs) {
@@ -180,18 +181,18 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestNoCatalogs) {
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_)).Times(2);
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
       IsURLRequestEqual(
-          net::URLRequestStatus::SUCCESS), "", base::Time())).Times(2);
+          net::URLRequestStatus::SUCCESS), "", base::TimeTicks())).Times(2);
 
   net::URLRequestStatus status;
   status.set_status(net::URLRequestStatus::SUCCESS);
-  filter_peer->OnCompletedRequest(status, "", base::Time());
+  filter_peer->OnCompletedRequest(status, "", base::TimeTicks());
 
   // Test if Send gets called again (it shouldn't be) when first call returned
   // an empty dictionary.
   filter_peer =
       CreateExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_1));
   SetData(filter_peer, "some text");
-  filter_peer->OnCompletedRequest(status, "", base::Time());
+  filter_peer->OnCompletedRequest(status, "", base::TimeTicks());
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestWithCatalogs) {
@@ -217,11 +218,12 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestWithCatalogs) {
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
-      IsURLRequestEqual(net::URLRequestStatus::SUCCESS), "", base::Time()));
+      IsURLRequestEqual(net::URLRequestStatus::SUCCESS), "",
+      base::TimeTicks()));
 
   net::URLRequestStatus status;
   status.set_status(net::URLRequestStatus::SUCCESS);
-  filter_peer->OnCompletedRequest(status, "", base::Time());
+  filter_peer->OnCompletedRequest(status, "", base::TimeTicks());
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestReplaceMessagesFails) {
@@ -247,9 +249,10 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestReplaceMessagesFails) {
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
-      IsURLRequestEqual(net::URLRequestStatus::SUCCESS), "", base::Time()));
+      IsURLRequestEqual(net::URLRequestStatus::SUCCESS), "",
+      base::TimeTicks()));
 
   net::URLRequestStatus status;
   status.set_status(net::URLRequestStatus::SUCCESS);
-  filter_peer->OnCompletedRequest(status, "", base::Time());
+  filter_peer->OnCompletedRequest(status, "", base::TimeTicks());
 }

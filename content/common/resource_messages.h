@@ -169,7 +169,7 @@ IPC_MESSAGE_ROUTED4(ResourceMsg_RequestComplete,
                     int /* request_id */,
                     net::URLRequestStatus /* status */,
                     std::string /* security info */,
-                    base::Time /* completion_time */)
+                    base::TimeTicks /* completion_time */)
 
 // Resource messages sent from the renderer to the browser.
 

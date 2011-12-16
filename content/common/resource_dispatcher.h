@@ -15,6 +15,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/shared_memory.h"
+#include "base/time.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_channel.h"
 #include "webkit/glue/resource_loader_bridge.h"
@@ -79,7 +80,8 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Channel::Listener {
         : peer(peer),
           resource_type(resource_type),
           is_deferred(false),
-          url(request_url) {
+          url(request_url),
+          request_start(base::TimeTicks::Now()) {
     }
     ~PendingRequestInfo() { }
     webkit_glue::ResourceLoaderBridge::Peer* peer;
@@ -88,6 +90,9 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Channel::Listener {
     bool is_deferred;
     GURL url;
     linked_ptr<IPC::Message> pending_redirect_message;
+    base::TimeTicks request_start;
+    base::TimeTicks response_start;
+    base::TimeTicks completion_time;
   };
   typedef base::hash_map<int, PendingRequestInfo> PendingRequestList;
 
@@ -110,7 +115,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Channel::Listener {
       const IPC::Message& message,
       int request_id,
       const GURL& new_url,
-      const webkit_glue::ResourceResponseInfo& info);
+      const content::ResourceResponseHead& response_head);
   void OnReceivedData(
       const IPC::Message& message,
       int request_id,
@@ -125,7 +130,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Channel::Listener {
       int request_id,
       const net::URLRequestStatus& status,
       const std::string& security_info,
-      const base::Time& completion_time);
+      const base::TimeTicks& completion_time);
 
   // Dispatch the message to one of the message response handlers.
   void DispatchMessage(const IPC::Message& message);
@@ -133,6 +138,15 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Channel::Listener {
   // Dispatch any deferred messages for the given request, provided it is not
   // again in the deferred state.
   void FlushDeferredMessages(int request_id);
+
+  void ToResourceResponseInfo(
+      const PendingRequestInfo& request_info,
+      const content::ResourceResponseHead& browser_info,
+      webkit_glue::ResourceResponseInfo* renderer_info) const;
+
+  base::TimeTicks ToRendererCompletionTime(
+      const PendingRequestInfo& request_info,
+      const base::TimeTicks& browser_completion_time) const;
 
   // Returns true if the message passed in is a resource related message.
   static bool IsResourceDispatcherMessage(const IPC::Message& message);
