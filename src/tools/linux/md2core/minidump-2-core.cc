@@ -35,13 +35,10 @@
 
 #include <elf.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <link.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
 #include <sys/user.h>
 #include <unistd.h>
 
@@ -50,6 +47,7 @@
 #include <vector>
 
 #include "client/linux/minidump_writer/minidump_extension_linux.h"
+#include "common/linux/memory_mapped_file.h"
 #include "google_breakpad/common/minidump_format.h"
 #include "google_breakpad/common/minidump_cpu_x86.h"
 #include "third_party/lss/linux_syscall_support.h"
@@ -76,6 +74,8 @@
 #elif defined(__mips__)
   #define ELF_ARCH  EM_MIPS
 #endif
+
+using google_breakpad::MemoryMappedFile;
 
 static const MDRVA kInvalidMDRVA = static_cast<MDRVA>(-1);
 static bool verbose;
@@ -970,21 +970,13 @@ main(int argc, char** argv) {
   if (argc != argi + 1)
     return usage(argv[0]);
 
-  const int fd = open(argv[argi], O_RDONLY);
-  if (fd < 0)
-    return usage(argv[0]);
-
-  struct stat st;
-  fstat(fd, &st);
-
-  const void* bytes = mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
-  close(fd);
-  if (bytes == MAP_FAILED) {
-    perror("Failed to mmap dump file");
+  MemoryMappedFile mapped_file(argv[argi]);
+  if (!mapped_file.data()) {
+    fprintf(stderr, "Failed to mmap dump file\n");
     return 1;
   }
 
-  MMappedRange dump(bytes, st.st_size);
+  MMappedRange dump(mapped_file.data(), mapped_file.size());
 
   const MDRawHeader* header =
       (const MDRawHeader*) dump.GetObject(0, sizeof(MDRawHeader));
@@ -1186,8 +1178,6 @@ main(int argc, char** argv) {
         return 1;
     }
   }
-
-  munmap(const_cast<void*>(bytes), st.st_size);
 
   return 0;
 }

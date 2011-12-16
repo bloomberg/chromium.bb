@@ -56,6 +56,7 @@
 #include "client/linux/minidump_writer/line_reader.h"
 #include "common/linux/file_id.h"
 #include "common/linux/linux_libc_support.h"
+#include "common/linux/memory_mapped_file.h"
 #include "third_party/lss/linux_syscall_support.h"
 
 static const char kMappedFileUnsafePrefix[] = "/dev/";
@@ -237,24 +238,12 @@ LinuxDumper::ElfFileIdentifierForMapping(const MappingInfo& mapping,
   filename[filename_len] = '\0';
   bool filename_modified = HandleDeletedFileInMapping(filename);
 
-  int fd = sys_open(filename, O_RDONLY, 0);
-  if (fd < 0)
-    return false;
-  struct kernel_stat st;
-  if (sys_fstat(fd, &st) != 0) {
-    sys_close(fd);
-    return false;
-  }
-#if defined(__x86_64)
-#define sys_mmap2 sys_mmap
-#endif
-  void* base = sys_mmap2(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-  sys_close(fd);
-  if (base == MAP_FAILED)
+  MemoryMappedFile mapped_file(filename);
+  if (!mapped_file.data())  // Should probably check if size >= ElfW(Ehdr)?
     return false;
 
-  bool success = FileID::ElfFileIdentifierFromMappedFile(base, identifier);
-  sys_munmap(base, st.st_size);
+  bool success =
+      FileID::ElfFileIdentifierFromMappedFile(mapped_file.data(), identifier);
   if (success && member && filename_modified) {
     mappings_[mapping_id]->name[filename_len -
                                 sizeof(kDeletedSuffix) + 1] = '\0';

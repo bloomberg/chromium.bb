@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-# Copyright (c) 2010, Google Inc.
+# Copyright (c) 2011, Google Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -72,7 +72,8 @@ src_client_linux_libbreakpad_client_a_SOURCES = \
 	src/common/md5.cc \
 	src/common/string_conversion.cc \
 	src/common/linux/file_id.cc \
-	src/common/linux/guid_creator.cc
+	src/common/linux/guid_creator.cc \
+	src/common/linux/memory_mapped_file.cc
 endif LINUX_HOST
 
 if !DISABLE_PROCESSOR
@@ -312,6 +313,7 @@ src_client_linux_linux_client_unittest_LDADD = \
 	src/common/md5.o \
 	src/common/linux/file_id.o \
 	src/common/linux/guid_creator.o \
+	src/common/linux/memory_mapped_file.o \
 	src/common/string_conversion.o
 
 src_client_linux_linux_client_unittest_DEPENDENCIES = src/client/linux/linux_dumper_unittest_helper src/client/linux/libbreakpad_client.a src/libbreakpad.a
@@ -331,9 +333,11 @@ src_tools_linux_dump_syms_dump_syms_SOURCES = \
 	src/common/linux/dump_symbols.cc \
 	src/common/linux/elf_symbols_to_module.cc \
 	src/common/linux/file_id.cc \
+	src/common/linux/memory_mapped_file.cc \
 	src/tools/linux/dump_syms/dump_syms.cc
 
 src_tools_linux_md2core_minidump_2_core_SOURCES = \
+	src/common/linux/memory_mapped_file.cc \
 	src/tools/linux/md2core/minidump-2-core.cc
 
 src_tools_linux_symupload_minidump_upload_SOURCES = \
@@ -355,6 +359,7 @@ src_common_dumper_unittest_SOURCES = \
 	src/common/dwarf_line_to_module.cc \
 	src/common/dwarf_line_to_module_unittest.cc \
 	src/common/language.cc \
+	src/common/memory_range_unittest.cc \
 	src/common/module.cc \
 	src/common/module_unittest.cc \
 	src/common/stabs_reader.cc \
@@ -373,6 +378,8 @@ src_common_dumper_unittest_SOURCES = \
 	src/common/linux/dump_symbols_unittest.cc \
 	src/common/linux/elf_symbols_to_module.cc \
 	src/common/linux/elf_symbols_to_module_unittest.cc \
+	src/common/linux/memory_mapped_file.cc \
+	src/common/linux/memory_mapped_file_unittest.cc \
 	src/common/linux/synth_elf.cc \
 	src/common/linux/synth_elf_unittest.cc \
 	src/common/linux/file_id.cc \

@@ -37,21 +37,17 @@
 #include <arpa/inet.h>
 #include <assert.h>
 #include <elf.h>
-#include <fcntl.h>
 #if defined(__ANDROID__)
 #include "client/linux/android_link.h"
 #else
 #include <link.h>
 #endif
-#include <stdio.h>
 #include <string.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <unistd.h>
 
 #include <algorithm>
 
 #include "common/linux/linux_libc_support.h"
+#include "common/linux/memory_mapped_file.h"
 #include "third_party/lss/linux_syscall_support.h"
 
 namespace google_breakpad {
@@ -231,7 +227,7 @@ static bool HashElfTextSection(const void *elf_mapped_base,
 }
 
 // static
-bool FileID::ElfFileIdentifierFromMappedFile(void* base,
+bool FileID::ElfFileIdentifierFromMappedFile(const void* base,
                                              uint8_t identifier[kMDGUIDSize]) {
   // Look for a build id note first.
   if (FindElfBuildIDNote(base, identifier))
@@ -242,23 +238,11 @@ bool FileID::ElfFileIdentifierFromMappedFile(void* base,
 }
 
 bool FileID::ElfFileIdentifier(uint8_t identifier[kMDGUIDSize]) {
-  int fd = open(path_, O_RDONLY);
-  if (fd < 0)
-    return false;
-  struct stat st;
-  if (fstat(fd, &st) != 0) {
-    close(fd);
-    return false;
-  }
-  void* base = mmap(NULL, st.st_size,
-                    PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
-  close(fd);
-  if (base == MAP_FAILED)
+  MemoryMappedFile mapped_file(path_);
+  if (!mapped_file.data())  // Should probably check if size >= ElfW(Ehdr)?
     return false;
 
-  bool success = ElfFileIdentifierFromMappedFile(base, identifier);
-  munmap(base, st.st_size);
-  return success;
+  return ElfFileIdentifierFromMappedFile(mapped_file.data(), identifier);
 }
 
 // static
