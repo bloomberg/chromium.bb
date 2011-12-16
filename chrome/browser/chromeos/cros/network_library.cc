@@ -2943,8 +2943,9 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
     }
   }
 
-  if (parser.GetNetworkConfigsSize() != 0 ||
-      parser.GetCertificatesSize() != 0) {
+  if (parser.GetNetworkConfigsSize() == 0 &&
+      parser.GetCertificatesSize() == 0) {
+      LOG(ERROR) << "Onc file missing networks and certs.";
       if (error)
         *error = l10n_util::GetStringUTF8(
             IDS_NETWORK_CONFIG_ERROR_NETWORK_IMPORT);
