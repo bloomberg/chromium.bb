@@ -95,6 +95,10 @@ const char* kNotPlatformAppKeys[] = {
   keys::kDevToolsPage,
   keys::kSidebar,
   keys::kHomepageURL,
+  keys::kPlugins,
+  keys::kInputComponents,
+  keys::kTtsEngine,
+  keys::kFileBrowserHandlers
 };
 
 // Returns all the manifest keys not including those in |filtered| or kTypeKeys.

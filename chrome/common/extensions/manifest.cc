@@ -59,7 +59,9 @@ struct Restrictions {
     map[keys::kRequirements] = all_but_themes;
     map[keys::kConvertedFromUserScript] = all_but_themes;
     map[keys::kNaClModules] = all_but_themes;
-    map[keys::kPlugins] = all_but_themes;
+
+    // Everything except themes and platform apps.
+    map[keys::kPlugins] = all_but_themes - Manifest::kTypePlatformApp;
 
     // Extensions and packaged apps.
     int ext_and_packaged =
@@ -70,14 +72,14 @@ struct Restrictions {
     map[keys::kSidebar] = ext_and_packaged;
     map[keys::kHomepageURL] = ext_and_packaged;
     map[keys::kChromeURLOverrides] = ext_and_packaged;
+    map[keys::kInputComponents] = ext_and_packaged;
+    map[keys::kTtsEngine] = ext_and_packaged;
+    map[keys::kFileBrowserHandlers] = ext_and_packaged;
 
     // Extensions, packaged apps and platform apps.
     int local_apps_and_ext = ext_and_packaged | Manifest::kTypePlatformApp;
     map[keys::kContentSecurityPolicy] = local_apps_and_ext;
-    map[keys::kFileBrowserHandlers] = local_apps_and_ext;
     map[keys::kIncognito] = local_apps_and_ext;
-    map[keys::kInputComponents] = local_apps_and_ext;
-    map[keys::kTtsEngine] = local_apps_and_ext;
     map[keys::kIntents] = local_apps_and_ext;
   }
 
