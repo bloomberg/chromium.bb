@@ -312,7 +312,9 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
     // Must still send the ACK.
     RenderWidgetHost::AcknowledgeSwapBuffers(params.route_id, gpu_host_id);
   } else {
-    window_->layer()->ScheduleDraw();
+    gfx::Size surface_size =
+        accelerated_surface_containers_[params.surface_id]->GetSize();
+    window_->SchedulePaintInRect(gfx::Rect(surface_size));
 
     // Add sending an ACK to the list of things to do OnCompositingEnded
     on_compositing_ended_callbacks_.push_back(
@@ -331,23 +333,23 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
     int gpu_host_id) {
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-  scoped_refptr<AcceleratedSurfaceContainerLinux> container =
-      accelerated_surface_containers_[params.surface_id];
-    window_->layer()->SetExternalTexture(container->GetTexture());
-  glFlush();
+  UpdateExternalTexture();
 
   if (!window_->layer()->GetCompositor()) {
     // We have no compositor, so we have no way to display the surface
     // Must still send the ACK
     RenderWidgetHost::AcknowledgePostSubBuffer(params.route_id, gpu_host_id);
   } else {
+    gfx::Size surface_size =
+        accelerated_surface_containers_[params.surface_id]->GetSize();
+
     // Co-ordinates come in OpenGL co-ordinate space.
     // We need to convert to layer space.
     window_->SchedulePaintInRect(gfx::Rect(
-       params.x,
-       container->GetSize().height() - params.y - params.height,
-       params.width,
-       params.height));
+        params.x,
+        surface_size.height() - params.y - params.height,
+        params.width,
+        params.height));
 
     // Add sending an ACK to the list of things to do OnCompositingEnded
     on_compositing_ended_callbacks_.push_back(

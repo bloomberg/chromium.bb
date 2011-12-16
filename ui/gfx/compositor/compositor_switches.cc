@@ -13,6 +13,8 @@ const char kDisableUIVsync[] = "disable-ui-vsync";
 const char kEnableCompositorOverdrawDebugging[] =
     "enable-compositor-overdraw-debugging";
 
+const char kUIEnablePartialSwap[] = "ui-enable-partial-swap";
+
 // Show FPS counter.
 const char kUIShowFPSCounter[] = "ui-show-fps-counter";
 

@@ -135,9 +135,12 @@ CompositorCC::CompositorCC(CompositorDelegate* delegate,
   WebKit::WebLayerTreeView::Settings settings;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   settings.showFPSCounter =
-     command_line->HasSwitch(switches::kUIShowFPSCounter);
+      command_line->HasSwitch(switches::kUIShowFPSCounter);
   settings.showPlatformLayerTree =
       command_line->HasSwitch(switches::kUIShowLayerTree);
+  settings.partialSwapEnabled =
+      command_line->HasSwitch(switches::kUIEnablePartialSwap);
+
 #ifndef WEBCOMPOSITOR_HAS_INITIALIZE
   settings.enableCompositorThread = !!g_compositor_thread;
 #endif
