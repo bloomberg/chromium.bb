@@ -5,6 +5,7 @@
 #include "ppapi/tests/test_websocket.h"
 
 #include <string.h>
+#include <vector>
 
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_websocket_dev.h"
@@ -13,6 +14,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_var.h"
+#include "ppapi/cpp/dev/websocket_dev.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/tests/test_utils.h"
@@ -20,6 +22,9 @@
 
 const char kEchoServerURL[] =
     "ws://localhost:8880/websocket/tests/hybi/echo";
+
+const char kCloseServerURL[] =
+    "ws://localhost:8880/websocket/tests/hybi/close";
 
 const char kProtocolTestServerURL[] =
     "ws://localhost:8880/websocket/tests/hybi/protocol-test?protocol=";
@@ -62,6 +67,8 @@ void TestWebSocket::RunTests(const std::string& filter) {
   RUN_TEST_WITH_REFERENCE_CHECK(ValidClose, filter);
   RUN_TEST_WITH_REFERENCE_CHECK(GetProtocol, filter);
   RUN_TEST_WITH_REFERENCE_CHECK(TextSendReceive, filter);
+
+  RUN_TEST_WITH_REFERENCE_CHECK(CcInterfaces, filter);
 }
 
 PP_Var TestWebSocket::CreateVar(const char* string) {
@@ -414,3 +421,58 @@ std::string TestWebSocket::TestTextSendReceive() {
 // TODO(toyoshim): Add tests for didReceiveMessageError().
 
 // TODO(toyoshim): Add other function tests.
+
+std::string TestWebSocket::TestCcInterfaces() {
+  // C++ bindings is simple straightforward, then just verifies interfaces work
+  // as a interface bridge fine.
+  pp::WebSocket_Dev ws(instance_);
+
+  // Check uninitialized properties access.
+  ASSERT_EQ(0, ws.GetBufferedAmount());
+  ASSERT_EQ(0, ws.GetCloseCode());
+  ASSERT_TRUE(AreEqual(ws.GetCloseReason().pp_var(), ""));
+  ASSERT_EQ(false, ws.GetCloseWasClean());
+  ASSERT_TRUE(AreEqual(ws.GetExtensions().pp_var(), ""));
+  ASSERT_TRUE(AreEqual(ws.GetProtocol().pp_var(), ""));
+  ASSERT_EQ(PP_WEBSOCKETREADYSTATE_INVALID_DEV, ws.GetReadyState());
+  ASSERT_TRUE(AreEqual(ws.GetURL().pp_var(), ""));
+
+  // Check communication interfaces (connect, send, receive, and close).
+  TestCompletionCallback connect_callback(instance_->pp_instance());
+  int32_t result = ws.Connect(pp::Var(std::string(kCloseServerURL)), NULL, 0U,
+      connect_callback);
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  result = connect_callback.WaitForResult();
+  ASSERT_EQ(PP_OK, result);
+
+  std::string message("hello C++");
+  result = ws.SendMessage(pp::Var(message));
+  ASSERT_EQ(PP_OK, result);
+
+  pp::Var receive_var;
+  TestCompletionCallback receive_callback(instance_->pp_instance());
+  result = ws.ReceiveMessage(&receive_var, receive_callback);
+  if (result == PP_OK_COMPLETIONPENDING)
+    result = receive_callback.WaitForResult();
+  ASSERT_EQ(PP_OK, result);
+  ASSERT_TRUE(AreEqual(receive_var.pp_var(), message.c_str()));
+
+  TestCompletionCallback close_callback(instance_->pp_instance());
+  std::string reason("bye");
+  result = ws.Close(kCloseCodeNormalClosure, pp::Var(reason), close_callback);
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  result = close_callback.WaitForResult();
+  ASSERT_EQ(PP_OK, result);
+
+  // Check initialized properties access.
+  ASSERT_EQ(0, ws.GetBufferedAmount());
+  ASSERT_EQ(kCloseCodeNormalClosure, ws.GetCloseCode());
+  ASSERT_TRUE(AreEqual(ws.GetCloseReason().pp_var(), reason.c_str()));
+  ASSERT_EQ(true, ws.GetCloseWasClean());
+  ASSERT_TRUE(AreEqual(ws.GetExtensions().pp_var(), ""));
+  ASSERT_TRUE(AreEqual(ws.GetProtocol().pp_var(), ""));
+  ASSERT_EQ(PP_WEBSOCKETREADYSTATE_CLOSED_DEV, ws.GetReadyState());
+  ASSERT_TRUE(AreEqual(ws.GetURL().pp_var(), kCloseServerURL));
+
+  PASS();
+}

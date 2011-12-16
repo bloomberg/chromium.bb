@@ -39,6 +39,8 @@ class TestWebSocket : public TestCase {
   std::string TestGetProtocol();
   std::string TestTextSendReceive();
 
+  std::string TestCcInterfaces();
+
   // Used by the tests that access the C API directly.
   const PPB_WebSocket_Dev* websocket_interface_;
   const PPB_Var* var_interface_;

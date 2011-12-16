@@ -179,6 +179,8 @@ CompletionCallback BlockUntilComplete();
 ///
 ///   class MyHandler {
 ///    public:
+///     // If an compiler warns on following using |this| in the initializer
+///     // list, use PP_ALLOW_THIS_IN_INITIALIZER_LIST macro.
 ///     MyHandler() : factory_(this), offset_(0) {
 ///     }
 ///
