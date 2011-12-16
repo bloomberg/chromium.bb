@@ -627,6 +627,10 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   }
 }
 
+- (int)verticalTextOffset {
+  return 1;
+}
+
 // Overriden from NSButtonCell so we can display a nice fadeout effect for
 // button titles that overflow.
 // This method is copied in the most part from GTMFadeTruncatingTextFieldCell,
@@ -645,6 +649,9 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   const CGFloat kOverflowBeforeClip = 2;
   // Don't complicate drawing unless we need to clip.
   if (floor(size.width) <= (NSWidth(cellFrame) + kOverflowBeforeClip)) {
+    cellFrame.origin.y += ([self verticalTextOffset] - 1);
+    // The super is called to provide the background shadow "highlight" for
+    // non-clipping text.
     return [super drawTitle:title withFrame:cellFrame inView:controlView];
   }
 
@@ -670,9 +677,10 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
     // view.
     NSRect buttonFrame = [[self controlView] frame];
 
-    // Off-by-one to match native NSButtonCell's version.
+    // Call the vertical offset to match native NSButtonCell's version.
     textOffset = NSMakePoint(textLeft,
-                             (NSHeight(buttonFrame) - size.height)/2 + 1);
+                             (NSHeight(buttonFrame) - size.height) / 2 +
+                             [self verticalTextOffset]);
     [title drawAtPoint:textOffset];
   }
 

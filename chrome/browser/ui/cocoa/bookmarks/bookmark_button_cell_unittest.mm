@@ -177,4 +177,29 @@ TEST_F(BookmarkButtonCellTest, FolderArrow) {
   EXPECT_GT(arrowSize.width, size.width);
 }
 
+TEST_F(BookmarkButtonCellTest, VerticalTextOffset) {
+  BookmarkModel* model = profile()->GetBookmarkModel();
+  const BookmarkNode* bar = model->bookmark_bar_node();
+  const BookmarkNode* node = model->AddURL(bar, bar->child_count(),
+                                           ASCIIToUTF16("title"),
+                                           GURL("http://www.google.com"));
+
+  scoped_nsobject<GradientButtonCell> gradient_cell(
+      [[GradientButtonCell alloc] initTextCell:@"Testing"]);
+  scoped_nsobject<BookmarkButtonCell> bookmark_cell(
+      [[BookmarkButtonCell alloc] initForNode:node
+                                  contextMenu:nil
+                                     cellText:@"small"
+                                    cellImage:nil]);
+
+  ASSERT_TRUE(gradient_cell.get());
+  ASSERT_TRUE(bookmark_cell.get());
+
+  EXPECT_EQ(1, [gradient_cell verticalTextOffset]);
+  EXPECT_EQ(0, [bookmark_cell verticalTextOffset]);
+
+  EXPECT_NE([bookmark_cell verticalTextOffset],
+            [gradient_cell verticalTextOffset]);
+}
+
 }  // namespace

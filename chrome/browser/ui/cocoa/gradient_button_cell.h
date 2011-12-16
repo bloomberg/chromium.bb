@@ -107,6 +107,10 @@ typedef enum {
 // Actually fetches current mouse position and does a hit test.
 - (BOOL)isMouseReallyInside;
 
+// Defines the top offset of text within the cell. Used by drawTitle and can
+// be overriden by objects that inherit this class for placement of text.
+- (int)verticalTextOffset;
+
 @property(assign, nonatomic) CGFloat hoverAlpha;
 
 // An image that will be drawn after the normal content of the button cell,

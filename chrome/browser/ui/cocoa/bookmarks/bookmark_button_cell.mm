@@ -261,4 +261,8 @@ using content::UserMetricsAction;
   }
 }
 
+- (int)verticalTextOffset {
+  return 0;
+}
+
 @end
