@@ -2607,10 +2607,29 @@ display_destroy_outputs(struct display *display)
 void
 display_destroy(struct display *display)
 {
+	if (!wl_list_empty(&display->window_list))
+		fprintf(stderr, "toytoolkit warning: windows exist.\n");
+
+	if (!wl_list_empty(&display->deferred_list))
+		fprintf(stderr, "toytoolkit warning: deferred tasks exist.\n");
+
 	display_destroy_outputs(display);
 
 	fini_xkb(display);
 	fini_egl(display);
+
+	if (display->shell)
+		wl_shell_destroy(display->shell);
+
+	if (display->shm)
+		wl_shm_destroy(display->shm);
+
+	if (display->data_device_manager)
+		wl_data_device_manager_destroy(display->data_device_manager);
+
+	wl_compositor_destroy(display->compositor);
+
+	close(display->epoll_fd);
 
 	wl_display_flush(display->display);
 	wl_display_destroy(display->display);
