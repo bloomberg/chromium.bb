@@ -355,6 +355,34 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP2) {
   CheckStringProperty(wifi, PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY, "anon");
 }
 
+TEST_F(OncNetworkParserTest, TestCreateNetworkUnknownFields) {
+  std::string test_blob(
+      "{"
+      "  \"NetworkConfigurations\": [{"
+      "    \"GUID\": \"{485d6076-dd44-6b6d-69787465725f5045}\","
+      "    \"Type\": \"WiFi\","
+      "    \"WiFi\": {"
+      "      \"Security\": \"WEP-PSK\","
+      "      \"SSID\": \"ssid\","
+      "      \"Passphrase\": \"pass\","
+      "    },"
+      "    \"UnknownField1\": \"Value1\","
+      "    \"UnknownField2\": {"
+      "      \"UnknownSubField\": \"Value2\""
+      "    },"
+      "  }]"
+      "}");
+  OncNetworkParser parser(test_blob, NetworkUIData::ONC_SOURCE_USER_IMPORT);
+  scoped_ptr<Network> network(parser.ParseNetwork(0));
+  ASSERT_TRUE(network.get());
+
+  EXPECT_EQ(network->type(), chromeos::TYPE_WIFI);
+  WifiNetwork* wifi = static_cast<WifiNetwork*>(network.get());
+  EXPECT_EQ(wifi->encryption(), chromeos::SECURITY_WEP);
+  EXPECT_EQ(wifi->name(), "ssid");
+  EXPECT_EQ(wifi->passphrase(), "pass");
+}
+
 TEST_F(OncNetworkParserTest, TestCreateNetworkOpenVPN) {
   std::string test_blob(std::string(
       "{"

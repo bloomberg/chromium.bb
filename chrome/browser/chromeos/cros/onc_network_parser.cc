@@ -394,15 +394,14 @@ bool OncNetworkParser::ParseNestedObject(Network* network,
         break;
     }
     if (signature[field_index].field == NULL) {
-      VLOG(1) << network->name() << ": unexpected field: "
-              << key << ", in type: " << onc_type;
-      any_errors = true;
+      LOG(WARNING) << network->name() << ": unexpected field: "
+                   << key << ", in type: " << onc_type;
       continue;
     }
     if (!inner_value->IsType(signature[field_index].type)) {
-      VLOG(1) << network->name() << ": field with wrong type: " << key
-              << ", actual type: " << inner_value->GetType()
-              << ", expected type: " << signature[field_index].type;
+      LOG(ERROR) << network->name() << ": field with wrong type: " << key
+                 << ", actual type: " << inner_value->GetType()
+                 << ", expected type: " << signature[field_index].type;
       any_errors = true;
       continue;
     }
@@ -411,7 +410,7 @@ bool OncNetworkParser::ParseNestedObject(Network* network,
     // change the mapped value.
     network->UpdatePropertyMap(index, *inner_value);
     if (!parser(this, index, *inner_value, network)) {
-      VLOG(1) << network->name() << ": field not parsed: " << key;
+      LOG(ERROR) << network->name() << ": field not parsed: " << key;
       any_errors = true;
       continue;
     }
