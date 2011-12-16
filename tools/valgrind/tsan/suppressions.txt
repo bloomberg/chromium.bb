@@ -713,3 +713,11 @@
   fun:AudioDevice::FireRenderCallback
   fun:AudioDevice::Run
 }
+{
+   bug_107903
+   ThreadSanitizer:Race
+   ...
+   fun:TestProfileSyncService::~TestProfileSyncService
+   fun:scoped_ptr::reset
+   fun:ProfileSyncServiceAutofillTest::TearDown
+}

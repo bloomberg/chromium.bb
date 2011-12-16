@@ -1971,60 +1971,17 @@
    fun:_ZN11MessageLoop22AddDestructionObserverEPNS_19DestructionObserverE
 }
 {
+   bug_44341a
+   Memcheck:Uninitialized
+   fun:memcpy
+   fun:fill_window
+   fun:deflate_slow
+}
+{
    bug_44341b
-   Memcheck:Uninitialized
-   fun:memcpy
-   fun:fill_window
-   fun:deflate_slow
-   fun:deflate
-   fun:ssl3_DeflateCompress
-   fun:ssl3_CompressMACEncryptRecord
-   fun:ssl3_SendRecord
-   fun:SSL3_SendAlert
-   fun:ssl_SecureClose
-   fun:ssl_Close
-   fun:PR_Close
-   fun:_ZN3net18SSLClientSocketNSS10DisconnectEv
-}
-{
-   bug_44341c
-   Memcheck:Uninitialized
-   fun:memcpy
-   fun:fill_window
-   fun:deflate_slow
-   fun:deflate
-   fun:ssl3_DeflateCompress
-   fun:ssl3_CompressMACEncryptRecord
-   fun:ssl3_SendRecord
-   fun:SSL3_SendAlert
-   fun:ssl_SecureClose
-   fun:ssl_Close
-   ...
-   fun:_ZN3net18SSLClientSocketNSS10DisconnectEv
-}
-{
-   bug_44341d
    Memcheck:Uninitialized
    fun:rijndael_encryptBlock128
    fun:rijndael_encryptCBC
-   ...
-   fun:_ZN3net18SSLClientSocketNSS14DoPayloadWriteEv
-}
-{
-   bug_44341e
-   Memcheck:Uninitialized
-   fun:memcpy
-   fun:fill_window
-   fun:deflate_slow
-   ...
-   fun:_ZN3net18SSLClientSocketNSS14DoPayloadWriteEv
-}
-{
-   bug_44341f
-   Memcheck:Uninitialized
-   fun:memcpy
-   fun:fill_window
-   fun:deflate_slow
    ...
    fun:_ZN3net18SSLClientSocketNSS14DoPayloadWriteEv
 }
