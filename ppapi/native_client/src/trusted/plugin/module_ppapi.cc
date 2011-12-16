@@ -26,6 +26,7 @@ class ModulePpapi : public pp::Module {
 
   virtual ~ModulePpapi() {
     if (init_was_successful_) {
+      NaClSrpcModuleFini();
       NaClNrdAllModulesFini();
     }
     MODULE_PRINTF(("ModulePpapi::~ModulePpapi (this=%p)\n",
@@ -50,6 +51,7 @@ class ModulePpapi : public pp::Module {
     // In the plugin, we don't need high resolution time of day.
     NaClAllowLowResolutionTimeOfDay();
     NaClNrdAllModulesInit();
+    NaClSrpcModuleInit();
 
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
     NaClHandlePassBrowserInit();

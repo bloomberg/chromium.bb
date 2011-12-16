@@ -999,7 +999,6 @@ Plugin::Plugin(PP_Instance pp_instance)
       time_of_last_progress_event_(0) {
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p, pp_instance=%"
                  NACL_PRId32")\n", static_cast<void*>(this), pp_instance));
-  NaClSrpcModuleInit();
   callback_factory_.Initialize(this);
   nexe_downloader_.Initialize(this);
 }
@@ -1055,11 +1054,6 @@ Plugin::~Plugin() {
   // though the Shutdown method may have been called, during the
   // lifetime of the service threads.
   ShutDownSubprocesses();
-
-  // Shutdown Srpc module only after the service threads are done.
-  // NB: NaClSrpcModuleInit and Fini should be invoked at dll
-  // load/unload and not in the Plugin ctor/dtor.
-  NaClSrpcModuleFini();
 
   delete wrapper_factory_;
   delete browser_interface_;
