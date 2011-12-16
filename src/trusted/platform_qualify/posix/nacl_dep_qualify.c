@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -16,7 +16,8 @@
 #include "native_client/src/trusted/platform_qualify/nacl_dep_qualify.h"
 #include "native_client/src/trusted/platform_qualify/linux/sysv_shm_and_mmap.h"
 
-#if NACL_OSX && NACL_BUILD_ARCH == NACL_x86 && NACL_BUILD_SUBARCH == 64
+#if (NACL_OSX && NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && \
+     NACL_BUILD_SUBARCH == 64)
 # define EXPECTED_SIGNAL SIGBUS
 #else
 # define EXPECTED_SIGNAL SIGSEGV
