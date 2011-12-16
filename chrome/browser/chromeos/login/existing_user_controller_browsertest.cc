@@ -61,6 +61,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
 
   MOCK_METHOD1(CreateLoginDisplay, LoginDisplay*(LoginDisplay::Delegate*));
   MOCK_CONST_METHOD0(GetNativeWindow, gfx::NativeWindow(void));
+  MOCK_CONST_METHOD0(GetWidget, views::Widget*(void));
   MOCK_METHOD0(OnSessionStart, void(void));
   MOCK_METHOD1(SetOobeProgress, void(BackgroundView::LoginStep));
   MOCK_METHOD1(SetOobeProgressBarVisible, void(bool));

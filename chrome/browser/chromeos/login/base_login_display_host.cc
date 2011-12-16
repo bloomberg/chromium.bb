@@ -34,13 +34,42 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/rect.h"
 #include "unicode/timezone.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#include "ui/aura_shell/shell.h"
+#include "ui/aura_shell/shell_window_ids.h"
+#include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/compositor/layer_animation_element.h"
+#include "ui/gfx/compositor/layer_animation_sequence.h"
+#include "ui/gfx/compositor/layer_animator.h"
+#include "ui/gfx/transform.h"
+#include "ui/views/widget/widget.h"
+#endif
+
 namespace {
+
+// Whether sign in transitions are enabled.
+const bool kEnableSigninTransitions = true;
+const bool kEnableBackgroundAnimation = false;
+const bool kEnableBrowserWindowsOpacityAnimation = true;
+
+// Sign in transition timings.
+static const int kLoginFadeoutTransitionDurationMs = 700;
+static const int kBackgroundTransitionPauseMs = 100;
+static const int kBackgroundTransitionDurationMs = 400;
+static const int kBrowserTransitionPauseMs = 750;
+static const int kBrowserTransitionDurationMs = 300;
+
+// Parameters for background transform transition.
+const float kBackgroundScale = 1.05f;
+const int kBackgroundTranslate = -50;
 
 // The delay of triggering initialization of the device policy subsystem
 // after the login screen is initialized. This makes sure that device policy
@@ -83,6 +112,12 @@ void DetermineAndSaveHardwareKeyboard(const std::string& locale,
   }
 }
 
+#if defined(USE_AURA)
+ui::Layer* GetLayer(views::Widget* widget) {
+  return widget->GetNativeView()->layer();
+}
+#endif
+
 }  // namespace
 
 namespace chromeos {
@@ -90,7 +125,8 @@ namespace chromeos {
 // static
 LoginDisplayHost* BaseLoginDisplayHost::default_host_ = NULL;
 
-// BaseLoginDisplayHost --------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+// BaseLoginDisplayHost, public
 
 BaseLoginDisplayHost::BaseLoginDisplayHost(const gfx::Rect& background_bounds)
     : background_bounds_(background_bounds) {
@@ -98,10 +134,9 @@ BaseLoginDisplayHost::BaseLoginDisplayHost(const gfx::Rect& background_bounds)
   // APP_TERMINATING will never be fired as long as this keeps ref-count.
   // APP_EXITING is safe here because there will be no browser instance that
   // will block the shutdown.
-  registrar_.Add(
-      this,
-      content::NOTIFICATION_APP_EXITING,
-      content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 content::NOTIFICATION_APP_EXITING,
+                 content::NotificationService::AllSources());
   DCHECK(default_host_ == NULL);
   default_host_ = this;
 
@@ -120,11 +155,21 @@ BaseLoginDisplayHost::~BaseLoginDisplayHost() {
   default_host_ = NULL;
 }
 
-// LoginDisplayHost implementation ---------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+// BaseLoginDisplayHost, LoginDisplayHost  implementation:
 
 void BaseLoginDisplayHost::OnSessionStart() {
-  registrar_.RemoveAll();
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  // In Aura case wait for first tab starting loading (NOTIFICATION_LOAD_START),
+  // then start transition animation. Display host is deleted once animation
+  // completes since sign in screen widget has to stay alive.
+#if defined(USE_AURA)
+  if (kEnableSigninTransitions)
+    StartAnimation();
+  else
+    ShutdownDisplayHost(false);
+#else
+  ShutdownDisplayHost(false);
+#endif
 }
 
 void BaseLoginDisplayHost::StartWizard(
@@ -179,22 +224,126 @@ void BaseLoginDisplayHost::StartSignInScreen() {
       kPolicyServiceInitializationDelayMilliseconds);
 }
 
-// BaseLoginDisplayHost --------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+// BaseLoginDisplayHost, ui::LayerAnimationObserver implementation:
+
+#if defined(USE_AURA)
+void BaseLoginDisplayHost::OnLayerAnimationEnded(
+    const ui::LayerAnimationSequence* sequence) {
+  ShutdownDisplayHost(false);
+}
+
+void BaseLoginDisplayHost::OnLayerAnimationAborted(
+    const ui::LayerAnimationSequence* sequence) {
+}
+
+void BaseLoginDisplayHost::OnLayerAnimationScheduled(
+    const ui::LayerAnimationSequence* sequence) {
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+// BaseLoginDisplayHost, content:NotificationObserver implementation:
 
 void BaseLoginDisplayHost::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   CHECK(type == content::NOTIFICATION_APP_EXITING);
+  ShutdownDisplayHost(true);
+}
 
+void BaseLoginDisplayHost::ShutdownDisplayHost(bool post_quit_task) {
+#if defined(USE_AURA)
+  if (kEnableSigninTransitions && GetWidget())
+    GetLayer(GetWidget())->GetAnimator()->RemoveObserver(this);
+#endif
   registrar_.RemoveAll();
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-  MessageLoop::current()->Quit();
+  if (post_quit_task)
+    MessageLoop::current()->Quit();
+}
+
+void BaseLoginDisplayHost::StartAnimation() {
+#if defined(USE_AURA)
+  // Fade out transition for sign in screen.
+  // BaseLoginDisplayHost will be deleted this animation is ended.
+  ui::Layer* layer = GetLayer(GetWidget());
+  layer->GetAnimator()->AddObserver(this);
+  ui::LayerAnimator::ScopedSettings signin_animation(layer->GetAnimator());
+  signin_animation.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kLoginFadeoutTransitionDurationMs));
+  layer->SetOpacity(0.0f);
+
+  // Background animation.
+  if (kEnableBackgroundAnimation) {
+    ui::Transform background_transform;
+    background_transform.SetScale(kBackgroundScale, kBackgroundScale);
+    background_transform.SetTranslateX(kBackgroundTranslate);
+    background_transform.SetTranslateY(kBackgroundTranslate);
+    scoped_ptr<ui::LayerAnimationElement>
+        background_transform_animation_initial(
+            ui::LayerAnimationElement::CreateTransformElement(
+                background_transform,
+                base::TimeDelta()));
+    ui::LayerAnimationElement::AnimatableProperties background_pause_properties;
+    background_pause_properties.insert(ui::LayerAnimationElement::TRANSFORM);
+    scoped_ptr<ui::LayerAnimationElement> background_pause(
+        ui::LayerAnimationElement::CreatePauseElement(
+            background_pause_properties,
+            base::TimeDelta::FromMilliseconds(kBackgroundTransitionPauseMs)));
+    scoped_ptr<ui::LayerAnimationElement> background_transform_animation(
+        ui::LayerAnimationElement::CreateTransformElement(
+            ui::Transform(),
+            base::TimeDelta::FromMilliseconds(
+                kBackgroundTransitionDurationMs)));
+    scoped_ptr<ui::LayerAnimationSequence> background_transition(
+        new ui::LayerAnimationSequence(
+            background_transform_animation_initial.release()));
+    background_transition->AddElement(background_pause.release());
+    background_transition->AddElement(background_transform_animation.release());
+    ui::Layer* background_layer =
+        aura_shell::Shell::GetInstance()->GetContainer(
+            aura_shell::internal::kShellWindowId_DesktopBackgroundContainer)->
+            layer();
+    background_layer->GetAnimator()->StartAnimation(
+        background_transition.release());
+  }
+
+  // Browser windows layer opacity animation.
+  if (kEnableBrowserWindowsOpacityAnimation) {
+    scoped_ptr<ui::LayerAnimationElement> browser_opacity_animation_initial(
+        ui::LayerAnimationElement::CreateOpacityElement(
+            0.0f,
+            base::TimeDelta()));
+    ui::LayerAnimationElement::AnimatableProperties browser_pause_properties;
+    browser_pause_properties.insert(ui::LayerAnimationElement::OPACITY);
+    scoped_ptr<ui::LayerAnimationElement> browser_pause_animation(
+        ui::LayerAnimationElement::CreatePauseElement(
+            browser_pause_properties,
+            base::TimeDelta::FromMilliseconds(kBrowserTransitionPauseMs)));
+    scoped_ptr<ui::LayerAnimationElement> browser_opacity_animation(
+        ui::LayerAnimationElement::CreateOpacityElement(
+            1.0f,
+            base::TimeDelta::FromMilliseconds(kBrowserTransitionDurationMs)));
+    scoped_ptr<ui::LayerAnimationSequence> browser_transition(
+        new ui::LayerAnimationSequence(
+            browser_opacity_animation_initial.release()));
+    browser_transition->AddElement(browser_pause_animation.release());
+    browser_transition->AddElement(browser_opacity_animation.release());
+    ui::Layer* default_container_layer =
+        aura_shell::Shell::GetInstance()->GetContainer(
+            aura_shell::internal::kShellWindowId_DefaultContainer)->layer();
+    default_container_layer->GetAnimator()->StartAnimation(
+        browser_transition.release());
+  }
+#endif
 }
 
 }  // namespace chromeos
 
-// browser::ShowLoginWizard implementation -------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+// browser::ShowLoginWizard implementation
 
 namespace browser {
 

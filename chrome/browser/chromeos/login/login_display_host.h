@@ -14,6 +14,10 @@
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace views {
+class Widget;
+}  // namespace views
+
 namespace chromeos {
 
 // An interface that defines OOBE/login screen host.
@@ -29,8 +33,10 @@ class LoginDisplayHost {
       LoginDisplay::Delegate* delegate) = 0;
 
   // Returns corresponding native window.
-  // TODO(nkostylev): Might be refactored, move to views-specific code.
   virtual gfx::NativeWindow GetNativeWindow() const = 0;
+
+  // Returns corresponding widget.
+  virtual views::Widget* GetWidget() const = 0;
 
   // Called when browsing session starts so
   // LoginDisplayHost instance may delete itself.
