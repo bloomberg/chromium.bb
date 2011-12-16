@@ -4159,12 +4159,12 @@
             'browser/nacl_host/nacl_process_host.h',
           ],
         }],
-        ['buildtype=="Official"', {
+        ['branding=="Chrome"', {
           'sources!': [
             'browser/protector/keys.cc',
           ],
         }],
-        ['buildtype!="Official"', {
+        ['branding!="Chrome"', {
           'sources!': [
             'browser/protector/internal/keys_internal.cc',
           ],
