@@ -182,6 +182,8 @@ bool ReverseEmulate::OpenManifestEntry(nacl::string url_key,
     return false;
   }
   nacl::string pathname = g_key_to_file[url_key];
+  NaClLog(1, "ReverseEmulate::OpenManifestEntry: pathname is %s.\n",
+          pathname.c_str());
   *out_desc = OPEN(pathname.c_str(), O_RDONLY);
   return *out_desc >= 0;
 }
