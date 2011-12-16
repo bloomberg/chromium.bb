@@ -3220,7 +3220,9 @@ irt_variant_tests = [
     'tests/nullptr/nacl.scons',
     'tests/postmessage_redir/nacl.scons',
     'tests/pnacl_abi/nacl.scons',
-    'tests/pnacl_client_translator/nacl.scons',
+    # Disabled until Chrome revision changes translator APIs to match.
+    # TODO(sehr): reenable translator test.
+    #'tests/pnacl_client_translator/nacl.scons',
     'tests/redir/nacl.scons',
     'tests/rodata_not_writable/nacl.scons',
     'tests/signal_handler/nacl.scons',
