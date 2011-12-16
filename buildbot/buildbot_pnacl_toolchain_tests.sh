@@ -50,7 +50,7 @@ tc-test-bot() {
       --concurrency=${PNACL_CONCURRENCY} || handle-error
   done
 
-  for arch in  arm; do
+  for arch in x8664 x8632 arm; do
     if [ $arch = "arm" ]; then
       PNACL_CONCURRENCY=1
     fi
