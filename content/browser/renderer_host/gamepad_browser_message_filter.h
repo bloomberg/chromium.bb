@@ -8,18 +8,18 @@
 
 #include "base/compiler_specific.h"
 #include "base/shared_memory.h"
-#include "content/browser/browser_message_filter.h"
+#include "content/public/browser/browser_message_filter.h"
 
 namespace content {
 
 class GamepadService;
 class RenderProcessHost;
 
-class GamepadBrowserMessageFilter : public BrowserMessageFilter {
+class GamepadBrowserMessageFilter : public content::BrowserMessageFilter {
  public:
   explicit GamepadBrowserMessageFilter(RenderProcessHost* rph);
 
-  // BrowserMessageFilter implementation.
+  // content::BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
   GamepadBrowserMessageFilter();

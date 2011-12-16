@@ -7,18 +7,18 @@
 #pragma once
 
 #include "base/callback_forward.h"
-#include "content/browser/browser_message_filter.h"
+#include "content/public/browser/browser_message_filter.h"
 
 namespace content {
 
-class WorkerDevToolsMessageFilter : public BrowserMessageFilter {
+class WorkerDevToolsMessageFilter : public content::BrowserMessageFilter {
  public:
   explicit WorkerDevToolsMessageFilter(int worker_process_host_id);
 
  private:
   virtual ~WorkerDevToolsMessageFilter();
 
-  // BrowserMessageFilter implementation.
+  // content::BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
   // Message handlers.

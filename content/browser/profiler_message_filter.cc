@@ -9,6 +9,7 @@
 #include "content/browser/profiler_controller_impl.h"
 #include "content/common/child_process_messages.h"
 
+using content::BrowserMessageFilter;
 using content::BrowserThread;
 
 ProfilerMessageFilter::ProfilerMessageFilter() {

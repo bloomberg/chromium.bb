@@ -22,7 +22,7 @@ class ChromePluginMessageFilter : public IPC::ChannelProxy::MessageFilter,
  public:
   explicit ChromePluginMessageFilter(PluginProcessHost* process);
 
-  // BrowserMessageFilter methods:
+  // IPC::ChannelProxy::MessageFilter methods:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // IPC::Message::Sender methods:

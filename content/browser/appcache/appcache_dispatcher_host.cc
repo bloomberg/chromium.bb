@@ -10,6 +10,7 @@
 #include "content/common/appcache_messages.h"
 #include "content/public/browser/user_metrics.h"
 
+using content::BrowserMessageFilter;
 using content::UserMetricsAction;
 
 AppCacheDispatcherHost::AppCacheDispatcherHost(

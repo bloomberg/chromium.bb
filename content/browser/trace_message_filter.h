@@ -8,20 +8,20 @@
 #include <string>
 #include <vector>
 
-#include "content/browser/browser_message_filter.h"
+#include "content/public/browser/browser_message_filter.h"
 
 // This class sends and receives trace messages on the browser process.
 // See also: trace_controller.h
 // See also: child_trace_message_filter.h
-class TraceMessageFilter : public BrowserMessageFilter {
+class TraceMessageFilter : public content::BrowserMessageFilter {
  public:
   TraceMessageFilter();
   virtual ~TraceMessageFilter();
 
-  // BrowserMessageFilter override.
+  // content::BrowserMessageFilter override.
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
 
-  // BrowserMessageFilter implementation.
+  // content::BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;

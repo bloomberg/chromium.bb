@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "content/browser/browser_message_filter.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GpuProcessHost;
@@ -22,13 +22,13 @@ struct GPUInfo;
 // A message filter for messages from the renderer to the GpuProcessHost(UIShim)
 // in the browser. Such messages are typically destined for the GPU process,
 // but need to be mediated by the browser.
-class GpuMessageFilter : public BrowserMessageFilter,
+class GpuMessageFilter : public content::BrowserMessageFilter,
                          public base::SupportsWeakPtr<GpuMessageFilter> {
  public:
   GpuMessageFilter(int render_process_id,
                    RenderWidgetHelper* render_widget_helper);
 
-  // BrowserMessageFilter methods:
+  // content::BrowserMessageFilter methods:
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 

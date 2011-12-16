@@ -8,6 +8,8 @@
 #include "content/browser/resource_context.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserMessageFilter;
+
 ResourceMessageFilter::ResourceMessageFilter(
     int child_id,
     content::ProcessType process_type,

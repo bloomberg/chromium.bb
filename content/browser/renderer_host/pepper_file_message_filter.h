@@ -14,7 +14,7 @@
 #include "base/process.h"
 #include "base/task.h"
 #include "build/build_config.h"
-#include "content/browser/browser_message_filter.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "ipc/ipc_platform_file.h"
 #include "webkit/plugins/ppapi/dir_contents.h"
 
@@ -29,12 +29,12 @@ class PepperFilePath;
 }
 
 // A message filter for Pepper-specific File I/O messages.
-class PepperFileMessageFilter : public BrowserMessageFilter {
+class PepperFileMessageFilter : public content::BrowserMessageFilter {
  public:
   PepperFileMessageFilter(int child_id,
                           content::BrowserContext* browser_context);
 
-  // BrowserMessageFilter methods:
+  // content::BrowserMessageFilter methods:
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
       content::BrowserThread::ID* thread) OVERRIDE;

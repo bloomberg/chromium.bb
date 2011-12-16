@@ -18,9 +18,9 @@
 #include "base/shared_memory.h"
 #include "base/string16.h"
 #include "build/build_config.h"
-#include "content/browser/browser_message_filter.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/surface/transport_dib.h"
@@ -63,7 +63,7 @@ struct WebPluginInfo;
 
 // This class filters out incoming IPC messages for the renderer process on the
 // IPC thread.
-class RenderMessageFilter : public BrowserMessageFilter {
+class RenderMessageFilter : public content::BrowserMessageFilter {
  public:
   // Create the filter.
   RenderMessageFilter(int render_process_id,
@@ -76,7 +76,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
   virtual void OnChannelClosing() OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 
-  // BrowserMessageFilter methods:
+  // content::BrowserMessageFilter methods:
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
   virtual void OnDestruct() const OVERRIDE;

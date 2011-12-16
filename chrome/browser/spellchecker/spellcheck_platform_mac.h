@@ -15,7 +15,9 @@
 #include "base/callback_forward.h"
 #include "base/string16.h"
 
+namespace content {
 class BrowserMessageFilter;
+}  // namespace content
 
 namespace spellcheck_mac {
 
@@ -87,7 +89,7 @@ void RequestTextCheck(int route_id,
                       int identifier,
                       int document_tag,
                       const string16& text,
-                      BrowserMessageFilter* destination);
+                      content::BrowserMessageFilter* destination);
 
 }  // namespace spellcheck_mac
 

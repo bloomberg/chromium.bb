@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "content/browser/browser_message_filter.h"
+#include "content/public/browser/browser_message_filter.h"
 
 #if defined(OS_WIN)
 #include "base/shared_memory.h"
@@ -28,11 +28,11 @@ class PrintJobManager;
 
 // This class filters out incoming printing related IPC messages for the
 // renderer process on the IPC thread.
-class PrintingMessageFilter : public BrowserMessageFilter {
+class PrintingMessageFilter : public content::BrowserMessageFilter {
  public:
   PrintingMessageFilter();
 
-  // BrowserMessageFilter methods.
+  // content::BrowserMessageFilter methods.
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
       content::BrowserThread::ID* thread) OVERRIDE;

@@ -7,7 +7,7 @@
 
 #include "base/hash_tables.h"
 #include "base/shared_memory.h"
-#include "content/browser/browser_message_filter.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "webkit/blob/blob_data.h"
 
 class ChromeBlobStorageContext;
@@ -17,13 +17,13 @@ namespace IPC {
 class Message;
 }
 
-class BlobMessageFilter : public BrowserMessageFilter {
+class BlobMessageFilter : public content::BrowserMessageFilter {
  public:
   BlobMessageFilter(int process_id,
                     ChromeBlobStorageContext* blob_storage_context);
   virtual ~BlobMessageFilter();
 
-  // BrowserMessageFilter implementation.
+  // content::BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;

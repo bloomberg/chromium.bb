@@ -17,11 +17,12 @@
 #include "base/time.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
-#include "content/browser/browser_message_filter.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 
 using base::TimeTicks;
+using content::BrowserMessageFilter;
 using content::BrowserThread;
 
 namespace {

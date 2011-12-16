@@ -6,8 +6,8 @@
 #define CONTENT_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MESSAGE_FILTER_H_
 #pragma once
 
-#include "content/browser/browser_message_filter.h"
 #include "content/common/mac/attributed_string_coder.h"
+#include "content/public/browser/browser_message_filter.h"
 
 namespace gfx {
 class Rect;
@@ -20,12 +20,12 @@ class Range;
 // This is a browser-side message filter that lives on the IO thread to handle
 // replies to messages sent by the TextInputClientMac. See
 // content/browser/renderer_host/text_input_client_mac.h for more information.
-class TextInputClientMessageFilter : public BrowserMessageFilter {
+class TextInputClientMessageFilter : public content::BrowserMessageFilter {
  public:
   explicit TextInputClientMessageFilter(int child_id);
   virtual ~TextInputClientMessageFilter();
 
-  // BrowserMessageFilter override:
+  // content::BrowserMessageFilter override:
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 

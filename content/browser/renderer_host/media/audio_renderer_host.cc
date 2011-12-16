@@ -16,6 +16,7 @@
 #include "media/audio/audio_util.h"
 #include "ipc/ipc_logging.h"
 
+using content::BrowserMessageFilter;
 using content::BrowserThread;
 
 AudioRendererHost::AudioEntry::AudioEntry()

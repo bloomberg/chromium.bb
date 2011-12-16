@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "content/browser/appcache/appcache_frontend_proxy.h"
-#include "content/browser/browser_message_filter.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "webkit/appcache/appcache_backend_impl.h"
 
 class ChromeAppCacheService;
@@ -22,7 +22,7 @@ class ChromeAppCacheService;
 // its child processes. There is a distinct host for each child process.
 // Messages are handled on the IO thread. The BrowserRenderProcessHost and
 // WorkerProcessHost create an instance and delegates calls to it.
-class AppCacheDispatcherHost : public BrowserMessageFilter {
+class AppCacheDispatcherHost : public content::BrowserMessageFilter {
  public:
   AppCacheDispatcherHost(ChromeAppCacheService* appcache_service,
                          int process_id);
@@ -34,7 +34,7 @@ class AppCacheDispatcherHost : public BrowserMessageFilter {
                                  bool* message_was_ok) OVERRIDE;
 
  private:
-  // BrowserMessageFilter override.
+  // content::BrowserMessageFilter override.
   virtual void BadMessageReceived() OVERRIDE;
 
   // IPC message handlers

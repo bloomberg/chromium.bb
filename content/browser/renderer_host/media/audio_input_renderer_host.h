@@ -63,8 +63,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
-#include "content/browser/browser_message_filter.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager_event_handler.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_input_controller.h"
 #include "media/audio/audio_io.h"
@@ -78,7 +78,7 @@ class AudioManager;
 struct AudioParameters;
 
 class CONTENT_EXPORT AudioInputRendererHost
-    : public BrowserMessageFilter,
+    : public content::BrowserMessageFilter,
       public media::AudioInputController::EventHandler,
       public media_stream::AudioInputDeviceManagerEventHandler {
  public:
@@ -107,7 +107,7 @@ class CONTENT_EXPORT AudioInputRendererHost
   explicit AudioInputRendererHost(
       const content::ResourceContext* resource_context);
 
-  // BrowserMessageFilter implementation.
+  // content::BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
   virtual void OnDestruct() const OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,

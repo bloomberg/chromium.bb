@@ -24,6 +24,7 @@
 #include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_util.h"
 
+using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::UserMetricsAction;
 using fileapi::FileSystemCallbackDispatcher;

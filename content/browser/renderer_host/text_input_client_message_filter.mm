@@ -15,6 +15,8 @@
 #include "ui/base/range/range.h"
 #include "ui/gfx/rect.h"
 
+using content::BrowserMessageFilter;
+
 TextInputClientMessageFilter::TextInputClientMessageFilter(int child_id)
     : BrowserMessageFilter(),
       child_process_id_(child_id) {

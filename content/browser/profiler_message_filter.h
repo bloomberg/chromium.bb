@@ -7,22 +7,22 @@
 
 #include <string>
 
-#include "content/browser/browser_message_filter.h"
+#include "content/public/browser/browser_message_filter.h"
 
 namespace base {
 class DictionaryValue;
 }
 
 // This class sends and receives profiler messages in the browser process.
-class ProfilerMessageFilter : public BrowserMessageFilter {
+class ProfilerMessageFilter : public content::BrowserMessageFilter {
  public:
   ProfilerMessageFilter();
   virtual ~ProfilerMessageFilter();
 
-  // BrowserMessageFilter implementation.
+  // content::BrowserMessageFilter implementation.
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 
-  // BrowserMessageFilter implementation.
+  // content::BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 

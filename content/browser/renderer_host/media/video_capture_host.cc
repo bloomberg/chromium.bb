@@ -12,6 +12,7 @@
 #include "content/browser/resource_context.h"
 #include "content/common/media/video_capture_messages.h"
 
+using content::BrowserMessageFilter;
 using content::BrowserThread;
 
 struct VideoCaptureHost::Entry {

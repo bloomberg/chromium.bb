@@ -14,8 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "base/time.h"
-#include "content/browser/browser_message_filter.h"
 #include "content/browser/font_list_async.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "net/base/ssl_config_service.h"
 #include "ppapi/c/pp_stdint.h"
 
@@ -38,14 +38,14 @@ class HostResolver;
 // PPAPI plugins and any requests that the PPAPI implementation code in the
 // renderer needs to make. The second is on the plugin->browser channel to
 // handle requests that out-of-process plugins send directly to the browser.
-class PepperMessageFilter : public BrowserMessageFilter {
+class PepperMessageFilter : public content::BrowserMessageFilter {
  public:
   explicit PepperMessageFilter(
       const content::ResourceContext* resource_context);
   explicit PepperMessageFilter(net::HostResolver* host_resolver);
   virtual ~PepperMessageFilter();
 
-  // BrowserMessageFilter methods.
+  // content::BrowserMessageFilter methods.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 

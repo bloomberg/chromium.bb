@@ -6,9 +6,9 @@
 #define CONTENT_BROWSER_SPEECH_SPEECH_INPUT_DISPATCHER_HOST_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/browser_message_filter.h"
 #include "content/browser/speech/speech_input_manager.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "net/url_request/url_request_context_getter.h"
 
 struct SpeechInputHostMsg_StartRecognition_Params;
@@ -22,7 +22,7 @@ namespace speech_input {
 // SpeechInputDispatcherHost is a delegate for Speech API messages used by
 // RenderMessageFilter.
 // It's the complement of SpeechInputDispatcher (owned by RenderView).
-class SpeechInputDispatcherHost : public BrowserMessageFilter,
+class SpeechInputDispatcherHost : public content::BrowserMessageFilter,
                                   public SpeechInputManager::Delegate {
  public:
   class SpeechInputCallers;
@@ -40,7 +40,7 @@ class SpeechInputDispatcherHost : public BrowserMessageFilter,
   virtual void DidCompleteRecording(int caller_id) OVERRIDE;
   virtual void DidCompleteRecognition(int caller_id) OVERRIDE;
 
-  // BrowserMessageFilter implementation.
+  // content::BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 

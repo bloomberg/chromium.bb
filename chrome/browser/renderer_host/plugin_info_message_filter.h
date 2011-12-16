@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/common/content_settings.h"
-#include "content/browser/browser_message_filter.h"
+#include "content/public/browser/browser_message_filter.h"
 
 struct ChromeViewHostMsg_GetPluginInfo_Status;
 class GURL;
@@ -29,12 +29,12 @@ struct WebPluginInfo;
 }
 
 // This class filters out incoming IPC messages requesting plug-in information.
-class PluginInfoMessageFilter : public BrowserMessageFilter {
+class PluginInfoMessageFilter : public content::BrowserMessageFilter {
  public:
   PluginInfoMessageFilter(int render_process_id, Profile* profile);
   virtual ~PluginInfoMessageFilter();
 
-  // BrowserMessageFilter methods:
+  // content::BrowserMessageFilter methods:
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
   virtual void OnDestruct() const OVERRIDE;
@@ -85,4 +85,4 @@ class PluginInfoMessageFilter : public BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(PluginInfoMessageFilter);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_CHROME_RENDER_MESSAGE_FILTER_H_
+#endif  // CHROME_BROWSER_RENDERER_HOST_PLUGIN_INFO_MESSAGE_FILTER_H_

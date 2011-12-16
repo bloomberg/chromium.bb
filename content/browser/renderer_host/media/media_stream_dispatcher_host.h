@@ -9,11 +9,11 @@
 #include <string>
 #include <utility>
 
-#include "content/browser/browser_message_filter.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
+#include "content/public/browser/browser_message_filter.h"
 
 namespace content {
 class ResourceContext;
@@ -25,7 +25,7 @@ namespace media_stream {
 // MediaStreamImpl. It's the complement of MediaStreamDispatcher
 // (owned by RenderView).
 class CONTENT_EXPORT MediaStreamDispatcherHost
-    : public BrowserMessageFilter,
+    : public content::BrowserMessageFilter,
       public MediaStreamRequester {
  public:
   MediaStreamDispatcherHost(const content::ResourceContext* resource_context,
@@ -42,7 +42,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   virtual void AudioDeviceFailed(const std::string& label, int index) OVERRIDE;
   virtual void VideoDeviceFailed(const std::string& label, int index) OVERRIDE;
 
-  // BrowserMessageFilter implementation.
+  // content::BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;

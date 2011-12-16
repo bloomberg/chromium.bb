@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/id_map.h"
-#include "content/browser/browser_message_filter.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "net/socket_stream/socket_stream.h"
 
 class GURL;
@@ -23,7 +23,7 @@ class ResourceContext;
 // Dispatches ViewHostMsg_SocketStream_* messages sent from renderer.
 // It also acts as SocketStream::Delegate so that it sends
 // ViewMsg_SocketStream_* messages back to renderer.
-class SocketStreamDispatcherHost : public BrowserMessageFilter,
+class SocketStreamDispatcherHost : public content::BrowserMessageFilter,
                                    public net::SocketStream::Delegate {
  public:
   SocketStreamDispatcherHost(
@@ -31,7 +31,7 @@ class SocketStreamDispatcherHost : public BrowserMessageFilter,
       const content::ResourceContext* resource_context);
   virtual ~SocketStreamDispatcherHost();
 
-  // BrowserMessageFilter methods.
+  // content::BrowserMessageFilter methods.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 

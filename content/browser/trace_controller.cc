@@ -8,13 +8,14 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/string_number_conversions.h"
-#include "content/browser/browser_message_filter.h"
 #include "content/browser/trace_message_filter.h"
 #include "content/browser/trace_subscriber_stdio.h"
 #include "content/common/child_process_messages.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "content/public/common/content_switches.h"
 
 using base::debug::TraceLog;
+using content::BrowserMessageFilter;
 using content::BrowserThread;
 
 namespace {

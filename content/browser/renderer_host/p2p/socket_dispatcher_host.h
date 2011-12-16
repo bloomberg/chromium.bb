@@ -7,8 +7,8 @@
 
 #include <map>
 
-#include "content/browser/browser_message_filter.h"
 #include "content/common/p2p_sockets.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/network_change_notifier.h"
 
@@ -18,13 +18,13 @@ class P2PSocketHost;
 class ResourceContext;
 
 class P2PSocketDispatcherHost
-    : public BrowserMessageFilter,
+    : public content::BrowserMessageFilter,
       public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   P2PSocketDispatcherHost(const content::ResourceContext* resource_context);
   virtual ~P2PSocketDispatcherHost();
 
-  // BrowserMessageFilter overrides.
+  // content::BrowserMessageFilter overrides.
   virtual void OnChannelClosing() OVERRIDE;
   virtual void OnDestruct() const OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,

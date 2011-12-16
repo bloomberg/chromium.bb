@@ -8,18 +8,18 @@
 
 #include "base/hash_tables.h"
 #include "base/string16.h"
-#include "content/browser/browser_message_filter.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "webkit/database/database_connections.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/quota/quota_types.h"
 
 class DatabaseMessageFilter
-    : public BrowserMessageFilter,
+    : public content::BrowserMessageFilter,
       public webkit_database::DatabaseTracker::Observer {
  public:
   explicit DatabaseMessageFilter(webkit_database::DatabaseTracker* db_tracker);
 
-  // BrowserMessageFilter implementation.
+  // content::BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,

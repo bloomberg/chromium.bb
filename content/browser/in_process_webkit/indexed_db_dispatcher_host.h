@@ -8,8 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
-#include "content/browser/browser_message_filter.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 
 class IndexedDBKey;
@@ -37,12 +37,12 @@ class SerializedScriptValue;
 }
 
 // Handles all IndexedDB related messages from a particular renderer process.
-class IndexedDBDispatcherHost : public BrowserMessageFilter {
+class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
  public:
   // Only call the constructor from the UI thread.
   IndexedDBDispatcherHost(int process_id, WebKitContext* webkit_context);
 
-  // BrowserMessageFilter implementation.
+  // content::BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,

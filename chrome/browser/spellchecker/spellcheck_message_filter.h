@@ -5,16 +5,16 @@
 #ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_MESSAGE_FILTER_H_
 #define CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_MESSAGE_FILTER_H_
 
-#include "content/browser/browser_message_filter.h"
+#include "content/public/browser/browser_message_filter.h"
 
 // A message filter implementation that receives
 // the platform spell checker requests from SpellCheckProvider.
-class SpellCheckMessageFilter : public BrowserMessageFilter {
+class SpellCheckMessageFilter : public content::BrowserMessageFilter {
  public:
   explicit SpellCheckMessageFilter(int render_process_id);
   virtual ~SpellCheckMessageFilter();
 
-  // BrowserMessageFilter implementation.
+  // content::BrowserMessageFilter implementation.
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
       content::BrowserThread::ID* thread) OVERRIDE;

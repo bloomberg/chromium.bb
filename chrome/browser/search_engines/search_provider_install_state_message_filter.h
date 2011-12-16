@@ -8,20 +8,21 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/search_engines/search_provider_install_data.h"
 #include "chrome/common/search_provider.h"
-#include "content/browser/browser_message_filter.h"
+#include "content/public/browser/browser_message_filter.h"
 
 class GURL;
 class Profile;
 
 // Handles messages regarding search provider install state on the I/O thread.
-class SearchProviderInstallStateMessageFilter : public BrowserMessageFilter {
+class SearchProviderInstallStateMessageFilter
+    : public content::BrowserMessageFilter {
  public:
   // Unlike the other methods, the constructor is called on the UI thread.
   SearchProviderInstallStateMessageFilter(int render_process_id,
                                           Profile* profile);
   virtual ~SearchProviderInstallStateMessageFilter();
 
-  // BrowserMessageFilter implementation.
+  // content::BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 

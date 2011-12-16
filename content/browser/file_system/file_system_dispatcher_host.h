@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
-#include "content/browser/browser_message_filter.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "webkit/fileapi/file_system_types.h"
 
 class FilePath;
@@ -29,7 +29,7 @@ class URLRequestContext;
 class URLRequestContextGetter;
 }  // namespace net
 
-class FileSystemDispatcherHost : public BrowserMessageFilter {
+class FileSystemDispatcherHost : public content::BrowserMessageFilter {
  public:
   // Used by the renderer process host on the UI thread.
   FileSystemDispatcherHost(
@@ -41,7 +41,7 @@ class FileSystemDispatcherHost : public BrowserMessageFilter {
       fileapi::FileSystemContext* file_system_context);
   virtual ~FileSystemDispatcherHost();
 
-  // BrowserMessageFilter implementation.
+  // content::BrowserMessageFilter implementation.
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,

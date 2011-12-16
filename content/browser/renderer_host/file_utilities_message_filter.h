@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "content/browser/browser_message_filter.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "ipc/ipc_platform_file.h"
 
 namespace base {
@@ -18,11 +18,11 @@ namespace IPC {
 class Message;
 }
 
-class FileUtilitiesMessageFilter : public BrowserMessageFilter {
+class FileUtilitiesMessageFilter : public content::BrowserMessageFilter {
  public:
   explicit FileUtilitiesMessageFilter(int process_id);
 
-  // BrowserMessageFilter implementation.
+  // content::BrowserMessageFilter implementation.
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
       content::BrowserThread::ID* thread) OVERRIDE;

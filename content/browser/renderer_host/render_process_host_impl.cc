@@ -116,6 +116,7 @@
 
 #include "third_party/skia/include/core/SkBitmap.h"
 
+using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::ChildProcessHost;
 using content::ChildProcessHostImpl;

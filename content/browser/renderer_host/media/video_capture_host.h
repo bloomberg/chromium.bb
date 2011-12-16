@@ -39,9 +39,9 @@
 #include <map>
 
 #include "base/memory/ref_counted.h"
-#include "content/browser/browser_message_filter.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "ipc/ipc_message.h"
 
 namespace content {
@@ -49,12 +49,12 @@ class ResourceContext;
 }  // namespace content
 
 class CONTENT_EXPORT VideoCaptureHost
-    : public BrowserMessageFilter,
+    : public content::BrowserMessageFilter,
       public VideoCaptureControllerEventHandler {
  public:
   explicit VideoCaptureHost(const content::ResourceContext* resource_context);
 
-  // BrowserMessageFilter implementation.
+  // content::BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
   virtual void OnDestruct() const OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,

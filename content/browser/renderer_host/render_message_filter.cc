@@ -66,6 +66,7 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
+using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::ChildProcessHostImpl;
 using content::PluginServiceFilter;

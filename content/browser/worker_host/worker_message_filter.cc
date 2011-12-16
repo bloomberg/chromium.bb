@@ -10,6 +10,7 @@
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
 
+using content::BrowserMessageFilter;
 using content::BrowserThread;
 
 WorkerMessageFilter::WorkerMessageFilter(

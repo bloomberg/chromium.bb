@@ -7,6 +7,7 @@
 #include "content/browser/trace_controller.h"
 #include "content/common/child_process_messages.h"
 
+using content::BrowserMessageFilter;
 using content::BrowserThread;
 
 TraceMessageFilter::TraceMessageFilter() :

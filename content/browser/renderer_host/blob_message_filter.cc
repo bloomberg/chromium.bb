@@ -11,6 +11,7 @@
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_storage_controller.h"
 
+using content::BrowserMessageFilter;
 using content::BrowserThread;
 using webkit_blob::BlobData;
 

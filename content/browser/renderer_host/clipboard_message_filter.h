@@ -9,12 +9,12 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "content/browser/browser_message_filter.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "ui/base/clipboard/clipboard.h"
 
 class GURL;
 
-class ClipboardMessageFilter : public BrowserMessageFilter {
+class ClipboardMessageFilter : public content::BrowserMessageFilter {
  public:
   ClipboardMessageFilter();
 

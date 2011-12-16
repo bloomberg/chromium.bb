@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
-#include "content/browser/browser_message_filter.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "webkit/quota/quota_types.h"
 
 class GURL;
@@ -22,7 +22,7 @@ class QuotaManager;
 
 class QuotaPermissionContext;
 
-class QuotaDispatcherHost : public BrowserMessageFilter {
+class QuotaDispatcherHost : public content::BrowserMessageFilter {
  public:
   QuotaDispatcherHost(int process_id,
                       quota::QuotaManager* quota_manager,

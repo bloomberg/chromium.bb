@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_WORKER_HOST_WORKER_MESSAGE_FILTER_H_
 
 #include "base/callback.h"
-#include "content/browser/browser_message_filter.h"
+#include "content/public/browser/browser_message_filter.h"
 
 class ResourceDispatcherHost;
 struct ViewHostMsg_CreateWorker_Params;
@@ -16,7 +16,7 @@ class ResourceContext;
 }  // namespace content
 
 
-class WorkerMessageFilter : public BrowserMessageFilter {
+class WorkerMessageFilter : public content::BrowserMessageFilter {
  public:
   typedef base::Callback<int(void)> NextRoutingIDCallback;
 
@@ -28,7 +28,7 @@ class WorkerMessageFilter : public BrowserMessageFilter {
       ResourceDispatcherHost* resource_dispatcher_host,
       const NextRoutingIDCallback& callback);
 
-  // BrowserMessageFilter implementation.
+  // content::BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;

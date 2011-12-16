@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROME_BENCHMARKING_MESSAGE_FILTER_H_
 #pragma once
 
-#include "content/browser/browser_message_filter.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 namespace net {
@@ -17,14 +17,14 @@ class Profile;
 
 // This class filters out incoming Chrome-specific benchmarking IPC messages
 // for the renderer process on the IPC thread.
-class ChromeBenchmarkingMessageFilter : public BrowserMessageFilter {
+class ChromeBenchmarkingMessageFilter : public content::BrowserMessageFilter {
  public:
   ChromeBenchmarkingMessageFilter(
       int render_process_id,
       Profile* profile,
       net::URLRequestContextGetter* request_context);
 
-  // BrowserMessageFilter methods:
+  // content::BrowserMessageFilter methods:
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
