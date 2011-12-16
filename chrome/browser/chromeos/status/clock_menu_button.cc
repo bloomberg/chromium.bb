@@ -151,7 +151,8 @@ void ClockMenuButton::ExecuteCommand(int id) {
 // StatusAreaButton implementation
 void ClockMenuButton::SetMenuActive(bool active) {
   // Activation gets updated when we change login state, so profile may change.
-  UpdateProfile();
+  if (active)
+    UpdateProfile();
   StatusAreaButton::SetMenuActive(active);
 }
 

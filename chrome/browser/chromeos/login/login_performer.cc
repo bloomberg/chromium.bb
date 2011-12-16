@@ -529,7 +529,14 @@ void LoginPerformer::StartLoginCompletion() {
 void LoginPerformer::StartAuthentication() {
   DVLOG(1) << "Auth started";
   BootTimesLoader::Get()->AddLoginTimeMarker("AuthStarted", false);
-  Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile();
+  Profile* profile;
+  {
+    // This should be the first place where GetDefaultProfile() is called with
+    // logged_in_ = true. This will trigger a call to Profile::CreateProfile()
+    // which requires IO access.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    profile = g_browser_process->profile_manager()->GetDefaultProfile();
+  }
   if (delegate_) {
     authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
     BrowserThread::PostTask(
