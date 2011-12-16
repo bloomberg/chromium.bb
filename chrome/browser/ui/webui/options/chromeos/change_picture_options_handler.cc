@@ -56,6 +56,9 @@ SelectFileDialog::FileTypeInfo GetUserImageFileTypeInfo() {
   return file_type_info;
 }
 
+// Time histogram suffix for profile image download.
+const char kProfileDownloadReason[] = "Preferences";
+
 }  // namespace
 
 ChangePictureOptionsHandler::ChangePictureOptionsHandler()
@@ -230,7 +233,7 @@ void ChangePictureOptionsHandler::UpdateProfileImage() {
       !user_manager->downloaded_profile_image().empty())
     SendProfileImage(user_manager->downloaded_profile_image(), false);
 
-  user_manager->DownloadProfileImage();
+  user_manager->DownloadProfileImage(kProfileDownloadReason);
 }
 
 void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {

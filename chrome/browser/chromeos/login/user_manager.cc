@@ -98,15 +98,53 @@ enum ProfileDownloadResult {
   kDownloadResultsCount
 };
 
-// Time histogram name for the default profile image download.
+// Time histogram prefix for the default profile image download.
 const char kProfileDownloadDefaultTime[] =
     "UserImage.ProfileDownloadTime.Default";
-// Time histogram name for a failed profile image download.
+// Time histogram prefix for a failed profile image download.
 const char kProfileDownloadFailureTime[] =
     "UserImage.ProfileDownloadTime.Failure";
-// Time histogram name for a successful profile image download.
-const char ProfileDownloadSuccessTime[] =
+// Time histogram prefix for a successful profile image download.
+const char kProfileDownloadSuccessTime[] =
     "UserImage.ProfileDownloadTime.Success";
+// Time histogram suffix for a profile image download after login.
+const char kProfileDownloadReasonLoggedIn[] = "LoggedIn";
+
+// Add a histogram showing the time it takes to download a profile image.
+// Separate histograms are reported for each download |reason| and |result|.
+void AddProfileImageTimeHistogram(ProfileDownloadResult result,
+                                  const std::string& download_reason,
+                                  const base::TimeDelta& time_delta) {
+  std::string histogram_name;
+  switch (result) {
+    case kDownloadFailure:
+      histogram_name = kProfileDownloadFailureTime;
+      break;
+    case kDownloadDefault:
+      histogram_name = kProfileDownloadDefaultTime;
+      break;
+    case kDownloadSuccess:
+      histogram_name = kProfileDownloadSuccessTime;
+      break;
+    default:
+      NOTREACHED();
+  }
+  if (!download_reason.empty()) {
+    histogram_name += ".";
+    histogram_name += download_reason;
+  }
+
+  static const base::TimeDelta min_time = base::TimeDelta::FromMilliseconds(1);
+  static const base::TimeDelta max_time = base::TimeDelta::FromSeconds(50);
+  const size_t bucket_count(50);
+
+  base::Histogram* counter = base::Histogram::FactoryTimeGet(
+      histogram_name, min_time, max_time, bucket_count,
+      base::Histogram::kUmaTargetedHistogramFlag);
+  counter->AddTime(time_delta);
+
+  DVLOG(1) << "Profile image download time: " << time_delta.InSecondsF();
+}
 
 // Used to handle the asynchronous response of deleting a cryptohome directory.
 class RemoveAttempt : public CryptohomeLibrary::Delegate {
@@ -287,7 +325,8 @@ void UserManager::UserLoggedIn(const std::string& email) {
           BrowserThread::UI,
           FROM_HERE,
           base::Bind(&UserManager::DownloadProfileImage,
-                     base::Unretained(this)),
+                     base::Unretained(this),
+                     kProfileDownloadReasonLoggedIn),
           kProfileImageDownloadDelayMs);
     }
 
@@ -498,7 +537,7 @@ void UserManager::SaveUserImageFromProfileImage(const std::string& username) {
   }
 }
 
-void UserManager::DownloadProfileImage() {
+void UserManager::DownloadProfileImage(const std::string& reason) {
   if (profile_image_downloader_.get()) {
     // Another download is already in progress
     return;
@@ -509,6 +548,7 @@ void UserManager::DownloadProfileImage() {
     return;
   }
 
+  profile_image_download_reason_ = reason;
   profile_image_load_start_time_ = base::Time::Now();
   profile_image_downloader_.reset(new ProfileDownloader(this));
   profile_image_downloader_->Start();
@@ -890,25 +930,19 @@ void UserManager::OnDownloadComplete(ProfileDownloader* downloader,
   DCHECK(profile_image_downloader.get() == downloader);
 
   ProfileDownloadResult result;
-  std::string time_histogram_name;
   if (!success) {
     result = kDownloadFailure;
-    time_histogram_name = kProfileDownloadFailureTime;
   } else if (downloader->GetProfilePicture().isNull()) {
     result = kDownloadDefault;
-    time_histogram_name = kProfileDownloadDefaultTime;
   } else {
     result = kDownloadSuccess;
-    time_histogram_name = ProfileDownloadSuccessTime;
   }
-
   UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult",
       result, kDownloadResultsCount);
 
   DCHECK(!profile_image_load_start_time_.is_null());
   base::TimeDelta delta = base::Time::Now() - profile_image_load_start_time_;
-  VLOG(1) << "Profile image download time: " << delta.InSecondsF();
-  UMA_HISTOGRAM_TIMES(time_histogram_name, delta);
+  AddProfileImageTimeHistogram(result, profile_image_download_reason_, delta);
 
   if (result == kDownloadSuccess) {
     // Check if this image is not the same as already downloaded.

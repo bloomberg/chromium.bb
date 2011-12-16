@@ -115,7 +115,9 @@ class UserManager : public ProfileDownloaderDelegate,
   // Starts downloading the profile image for the logged-in user.
   // If user's image index is |kProfileImageIndex|, newly downloaded image
   // is immediately set as user's current picture.
-  void DownloadProfileImage();
+  // |reason| is an arbitraty string (used to report UMA histograms with
+  // download times).
+  void DownloadProfileImage(const std::string& reason);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -278,6 +280,9 @@ class UserManager : public ProfileDownloaderDelegate,
 
   // Download user profile image on login to update it if it's changed.
   scoped_ptr<ProfileDownloader> profile_image_downloader_;
+
+  // Arbitrary string passed to the last |DownloadProfileImage| call.
+  std::string profile_image_download_reason_;
 
   // Time when the profile image download has started.
   base::Time profile_image_load_start_time_;

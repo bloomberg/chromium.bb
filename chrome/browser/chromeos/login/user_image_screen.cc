@@ -27,6 +27,9 @@ namespace {
 const int kFrameWidth = 480;
 const int kFrameHeight = 480;
 
+// Time histogram suffix for profile image download.
+const char kProfileDownloadReason[] = "OOBE";
+
 }  // namespace
 
 UserImageScreen::UserImageScreen(ScreenObserver* screen_observer,
@@ -65,7 +68,7 @@ void UserImageScreen::Show() {
   actor_->SelectImage(UserManager::Get()->logged_in_user().image_index());
 
   // Start fetching the profile image.
-  UserManager::Get()->DownloadProfileImage();
+  UserManager::Get()->DownloadProfileImage(kProfileDownloadReason);
 
   WizardAccessibilityHelper::GetInstance()->MaybeSpeak(
       l10n_util::GetStringUTF8(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT).c_str(),
