@@ -70,11 +70,11 @@ html.starting-up #dot-list {
  * yet.
  */
 .dot input {
-  color: #222;
+  color: #b2b2b2;
 }
 
 .dot:focus input, .dot:hover input, .dot.selected input {
-  color: black;
+  color: #7f7f7f;
 }
 
 .dot:focus .selection-bar,
