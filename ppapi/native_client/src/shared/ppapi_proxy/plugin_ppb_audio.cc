@@ -15,7 +15,6 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_resource.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/cpp/module_impl.h"
