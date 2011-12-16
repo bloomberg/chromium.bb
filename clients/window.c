@@ -62,7 +62,6 @@ struct display {
 	struct wl_compositor *compositor;
 	struct wl_shell *shell;
 	struct wl_shm *shm;
-	struct wl_output *output;
 	struct wl_data_device_manager *data_device_manager;
 	EGLDisplay dpy;
 	EGLConfig rgb_config;
@@ -84,7 +83,6 @@ struct display {
 	struct wl_list window_list;
 	struct wl_list input_list;
 	struct wl_list output_list;
-	char *device_name;
 	cairo_surface_t *active_frame, *inactive_frame, *shadow;
 	struct xkb_desc *xkb;
 	cairo_surface_t **pointer_surfaces;
@@ -126,7 +124,6 @@ struct window {
 	uint32_t name;
 	enum window_buffer_type buffer_type;
 
-	EGLImageKHR *image;
 	cairo_surface_t *cairo_surface, *pending_surface;
 
 	window_resize_handler_t resize_handler;
