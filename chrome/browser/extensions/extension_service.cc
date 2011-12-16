@@ -938,18 +938,22 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
       content::Source<Profile>(profile_),
       content::Details<const Extension>(extension));
 
-  // Tell renderers about the new extension.
-  for (content::RenderProcessHost::iterator i(
-          content::RenderProcessHost::AllHostsIterator());
-       !i.IsAtEnd(); i.Advance()) {
-    content::RenderProcessHost* host = i.GetCurrentValue();
-    Profile* host_profile =
-        Profile::FromBrowserContext(host->GetBrowserContext());
-    if (host_profile->GetOriginalProfile() == profile_->GetOriginalProfile()) {
-      std::vector<ExtensionMsg_Loaded_Params> loaded_extensions(
-          1, ExtensionMsg_Loaded_Params(extension));
-      host->Send(
-          new ExtensionMsg_Loaded(loaded_extensions));
+  // Tell renderers about the new extension, unless it's a theme (renderers
+  // don't need to know about themes).
+  if (!extension->is_theme()) {
+    for (content::RenderProcessHost::iterator i(
+            content::RenderProcessHost::AllHostsIterator());
+         !i.IsAtEnd(); i.Advance()) {
+      content::RenderProcessHost* host = i.GetCurrentValue();
+      Profile* host_profile =
+          Profile::FromBrowserContext(host->GetBrowserContext());
+      if (host_profile->GetOriginalProfile() ==
+          profile_->GetOriginalProfile()) {
+        std::vector<ExtensionMsg_Loaded_Params> loaded_extensions(
+            1, ExtensionMsg_Loaded_Params(extension));
+        host->Send(
+            new ExtensionMsg_Loaded(loaded_extensions));
+      }
     }
   }
 
@@ -2340,7 +2344,9 @@ void ExtensionService::Observe(int type,
       std::vector<ExtensionMsg_Loaded_Params> loaded_extensions;
       for (ExtensionSet::const_iterator iter = extensions_.begin();
            iter != extensions_.end(); ++iter) {
-        loaded_extensions.push_back(ExtensionMsg_Loaded_Params(*iter));
+        // Renderers don't need to know about themes.
+        if (!(*iter)->is_theme())
+          loaded_extensions.push_back(ExtensionMsg_Loaded_Params(*iter));
       }
       process->Send(new ExtensionMsg_Loaded(loaded_extensions));
       break;
