@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/socket/socket_api_controller.h"
+#include "chrome/browser/extensions/api/socket/socket_event_notifier.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -81,9 +81,12 @@ bool SocketCreateFunction::Prepare() {
 }
 
 void SocketCreateFunction::Work() {
+  SocketEventNotifier* event_notifier(new SocketEventNotifier(
+      profile()->GetExtensionEventRouter(), profile(), extension_id(),
+      src_id_, source_url()));
+  int socket_id = controller()->CreateUdp(event_notifier);
   DictionaryValue* result = new DictionaryValue();
-  int socket_id = controller()->CreateUdp(profile(), extension_id(), src_id_,
-                                          source_url());
+
   result->SetInteger(kSocketIdKey, socket_id);
   result_.reset(result);
 

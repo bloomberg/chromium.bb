@@ -11,18 +11,10 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "googleurl/src/gurl.h"
-#include "net/base/completion_callback.h"
 
 class Profile;
 
-namespace base {
-class ListValue;
-class Value;
-}
-
 namespace net {
-class UDPClientSocket;
 class IPEndPoint;
 }
 
@@ -34,6 +26,7 @@ namespace extensions {
 extern const char kSrcIdKey[];
 
 class Socket;
+class SocketEventNotifier;
 
 // SocketController keeps track of a collection of Sockets and provides a
 // convenient set of methods to manipulate them.
@@ -48,21 +41,22 @@ class SocketController {
   // TODO(miket): aa's suggestion to track lifetime of callbacks associated
   // with each socket, which will then let us clean up when we go out of scope
   // rather than requiring that the app developer remember to call Destroy.
-  int CreateUdp(Profile* profile, const std::string& extension_id, int src_id,
-                const GURL& src_url);
+  //
+  // Takes ownership of |event_notifier|.
+  int CreateUdp(SocketEventNotifier* event_notifier);
   bool DestroyUdp(int socket_id);
 
   // Connect, Close, Read, and Write map to the equivalent methods in
   // UDPClientSocket.
   //
   // TODO(miket): Implement Read.
-  bool ConnectUdp(int socket_id, const std::string address, int port);
+  bool ConnectUdp(int socket_id, const std::string& address, int port);
   void CloseUdp(int socket_id);
-  int WriteUdp(int socket_id, const std::string msg);
+  int WriteUdp(int socket_id, const std::string& message);
 
   // Converts a string IP address and integer port into a format that
   // UDPClientSocket can deal with. Public so test harness can use it.
-  static bool CreateIPEndPoint(const std::string address, int port,
+  static bool CreateIPEndPoint(const std::string& address, int port,
                                net::IPEndPoint* ip_end_point);
 
  private:
