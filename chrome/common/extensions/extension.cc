@@ -283,7 +283,7 @@ void Extension::OverrideLaunchUrl(const GURL& override_url) {
 
     launch_web_url_ = new_url.spec();
 
-    URLPattern pattern(URLPattern::ERROR_ON_PORTS, kValidWebExtentSchemes);
+    URLPattern pattern(URLPattern::USE_PORTS, kValidWebExtentSchemes);
     pattern.Parse(new_url.spec());
     pattern.SetPath(pattern.path() + '*');
     extent_.AddPattern(pattern);
@@ -797,8 +797,7 @@ FileBrowserHandler* Extension::LoadFileBrowserHandler(
       return NULL;
     }
     StringToLowerASCII(&filter);
-    URLPattern pattern(URLPattern::ERROR_ON_PORTS,
-                       URLPattern::SCHEME_FILESYSTEM);
+    URLPattern pattern(URLPattern::USE_PORTS, URLPattern::SCHEME_FILESYSTEM);
     if (pattern.Parse(filter) != URLPattern::PARSE_SUCCESS) {
       *error = ExtensionErrorUtils::FormatErrorMessage(
           errors::kInvalidURLPatternError, filter);
@@ -993,7 +992,7 @@ bool Extension::LoadLaunchURL(const extensions::Manifest* manifest,
 
     // Ensure the launch URL is a valid absolute URL and web extent scheme.
     GURL url(launch_url);
-    URLPattern pattern(URLPattern::ERROR_ON_PORTS, kValidWebExtentSchemes);
+    URLPattern pattern(URLPattern::USE_PORTS, kValidWebExtentSchemes);
     if (!url.is_valid() || !pattern.SetScheme(url.scheme())) {
       *error = errors::kInvalidLaunchWebURL;
       return false;
@@ -1008,7 +1007,7 @@ bool Extension::LoadLaunchURL(const extensions::Manifest* manifest,
   // If there is no extent, we default the extent based on the launch URL.
   if (web_extent().is_empty() && !launch_web_url().empty()) {
     GURL launch_url(launch_web_url());
-    URLPattern pattern(URLPattern::ERROR_ON_PORTS, kValidWebExtentSchemes);
+    URLPattern pattern(URLPattern::USE_PORTS, kValidWebExtentSchemes);
     if (!pattern.SetScheme("*")) {
       *error = errors::kInvalidLaunchWebURL;
       return false;

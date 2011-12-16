@@ -99,7 +99,7 @@ bool IsValidPortForScheme(const std::string scheme, const std::string& port) {
 }  // namespace
 
 URLPattern::URLPattern()
-    : parse_option_(ERROR_ON_PORTS),
+    : parse_option_(USE_PORTS),
       valid_schemes_(SCHEME_NONE),
       match_all_urls_(false),
       match_subdomains_(false),
@@ -115,7 +115,7 @@ URLPattern::URLPattern(URLPattern::ParseOption parse_option, int valid_schemes)
 URLPattern::URLPattern(int valid_schemes, const std::string& pattern)
     // Strict error checking is used, because this constructor is only
     // appropriate when we know |pattern| is valid.
-    : parse_option_(ERROR_ON_PORTS),
+    : parse_option_(USE_PORTS),
       valid_schemes_(valid_schemes),
       match_all_urls_(false),
       match_subdomains_(false),

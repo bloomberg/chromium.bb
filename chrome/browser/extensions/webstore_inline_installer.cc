@@ -298,7 +298,7 @@ void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
       return;
     }
 
-    URLPattern verified_site_pattern(URLPattern::ERROR_ON_PORTS,
+    URLPattern verified_site_pattern(URLPattern::USE_PORTS,
                                      URLPattern::SCHEME_ALL);
     verified_site_pattern.SetScheme("*");
     verified_site_pattern.SetHost(verified_site_domain);

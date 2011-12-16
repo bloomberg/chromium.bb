@@ -47,40 +47,6 @@ class GURL;
 // - http:/bar -- scheme separator not found
 // - foo://* -- invalid scheme
 // - chrome:// -- we don't support chrome internal URLs
-//
-// Design rationale:
-// * We need to be able to tell users what 'sites' a given URLPattern will
-//   affect. For example "This extension will interact with the site
-//   'www.google.com'.
-// * We'd like to be able to convert as many existing Greasemonkey @include
-//   patterns to URLPatterns as possible. Greasemonkey @include patterns are
-//   simple globs, so this won't be perfect.
-// * Although we would like to support any scheme, it isn't clear what to tell
-//   users about URLPatterns that affect data or javascript URLs, so those are
-//   left out for now.
-//
-// From a 2008-ish crawl of userscripts.org, the following patterns were found
-// in @include lines:
-// - total lines                    : 24471
-// - @include *                     :   919
-// - @include http://[^\*]+?/       : 11128 (no star in host)
-// - @include http://\*\.[^\*]+?/   :  2325 (host prefixed by *.)
-// - @include http://\*[^\.][^\*]+?/:  1524 (host prefixed by *, no dot -- many
-//                                           appear to only need subdomain
-//                                           matching, not real prefix matching)
-// - @include http://[^\*/]+\*/     :   320 (host suffixed by *)
-// - @include contains .tld         :   297 (host suffixed by .tld -- a special
-//                                           Greasemonkey domain component that
-//                                           tries to match all valid registry-
-//                                           controlled suffixes)
-// - @include http://\*/            :   228 (host is * exactly, but there is
-//                                           more to the pattern)
-//
-// So, we can support at least half of current @include lines without supporting
-// subdomain matching. We can pick up at least another 10% by supporting
-// subdomain matching. It is probably possible to coerce more of the existing
-// patterns to URLPattern, but the resulting pattern will be more restrictive
-// than the original glob, which is probably better than nothing.
 class URLPattern {
  public:
   // A collection of scheme bitmasks for use with valid_schemes.
@@ -127,7 +93,7 @@ class URLPattern {
   // The <all_urls> string pattern.
   static const char kAllUrlsPattern[];
 
-  explicit URLPattern(ParseOption parse_option, int valid_schemes);
+  URLPattern(ParseOption parse_option, int valid_schemes);
 
   // Convenience to construct a URLPattern from a string. The string is expected
   // to be a valid pattern when parsed with USE_PORTS. If the string is not
