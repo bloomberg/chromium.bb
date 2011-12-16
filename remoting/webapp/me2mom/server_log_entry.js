@@ -91,7 +91,10 @@ remoting.ServerLogEntry.getValueForConnectionError =
     default:
       return 'unknown-' + connectionError;
   }
-}
+};
+
+/** @private */
+remoting.ServerLogEntry.KEY_SESSION_DURATION_ = 'session-duration';
 
 /** @private */
 remoting.ServerLogEntry.VALUE_EVENT_NAME_CONNECTION_STATISTICS_ =
@@ -198,6 +201,17 @@ remoting.ServerLogEntry.makeClientSessionStateChange = function(state,
                   connectionError));
   }
   return entry;
+};
+
+/**
+ * Adds a session duration to a log entry.
+ *
+ * @param {number} sessionDuration
+ */
+remoting.ServerLogEntry.prototype.addSessionDurationField = function(
+    sessionDuration) {
+  this.set(remoting.ServerLogEntry.KEY_SESSION_DURATION_,
+      sessionDuration.toString());
 };
 
 /**

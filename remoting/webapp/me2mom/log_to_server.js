@@ -24,6 +24,8 @@ remoting.LogToServer = function() {
   this.sessionId = '';
   /** @type number */
   this.sessionIdGenerationTime = 0;
+  /** @type number */
+  this.sessionStartTime = 0;
 };
 
 // Local storage key.
@@ -63,12 +65,13 @@ remoting.LogToServer.prototype.setEnabled = function(enabled) {
 remoting.LogToServer.prototype.logClientSessionStateChange =
     function(state, connectionError) {
   this.maybeExpireSessionId();
-  // Maybe set the session ID.
-  if ((state == remoting.ClientSession.State.CONNECTING) ||
-      (state == remoting.ClientSession.State.INITIALIZING) ||
-      (state == remoting.ClientSession.State.CONNECTED)) {
+  // Maybe set the session ID and start time.
+  if (remoting.LogToServer.isStartOfSession(state)) {
     if (this.sessionId == '') {
       this.setSessionId();
+    }
+    if (this.sessionStartTime == 0) {
+      this.sessionStartTime = new Date().getTime();
     }
   }
   // Log the session state change.
@@ -78,15 +81,48 @@ remoting.LogToServer.prototype.logClientSessionStateChange =
   entry.addChromeVersionField();
   entry.addWebappVersionField();
   entry.addSessionIdField(this.sessionId);
+  // Maybe clear the session start time, and log the session duration.
+  if (remoting.LogToServer.isEndOfSession(state) &&
+      (this.sessionStartTime != 0)) {
+    entry.addSessionDurationField(
+        (new Date().getTime() - this.sessionStartTime) / 1000.0);
+    this.sessionStartTime = 0;
+  }
   this.log(entry);
   // Don't accumulate connection statistics across state changes.
   this.logAccumulatedStatistics();
   this.statsAccumulator.empty();
   // Maybe clear the session ID.
-  if ((state == remoting.ClientSession.State.CLOSED) ||
-      (state == remoting.ClientSession.State.CONNECTION_FAILED)) {
+  if (remoting.LogToServer.isEndOfSession(state)) {
     this.clearSessionId();
   }
+};
+
+/**
+ * Whether a session state is one of the states that occurs at the start of
+ * a session.
+ *
+ * @private
+ * @param {remoting.ClientSession.State} state
+ * @return {boolean}
+ */
+remoting.LogToServer.isStartOfSession = function(state) {
+  return ((state == remoting.ClientSession.State.CONNECTING) ||
+      (state == remoting.ClientSession.State.INITIALIZING) ||
+      (state == remoting.ClientSession.State.CONNECTED));
+};
+
+/**
+ * Whether a session state is one of the states that occurs at the end of
+ * a session.
+ *
+ * @private
+ * @param {remoting.ClientSession.State} state
+ * @return {boolean}
+ */
+remoting.LogToServer.isEndOfSession = function(state) {
+  return ((state == remoting.ClientSession.State.CLOSED) ||
+      (state == remoting.ClientSession.State.CONNECTION_FAILED));
 };
 
 /**
