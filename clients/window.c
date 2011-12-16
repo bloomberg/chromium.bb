@@ -997,6 +997,13 @@ window_destroy(struct window *window)
 		wl_shell_surface_destroy(window->shell_surface);
 	wl_surface_destroy(window->surface);
 	wl_list_remove(&window->link);
+
+	if (window->cairo_surface != NULL)
+		cairo_surface_destroy(window->cairo_surface);
+	if (window->pending_surface != NULL)
+		cairo_surface_destroy(window->pending_surface);
+
+	free(window->title);
 	free(window);
 }
 
