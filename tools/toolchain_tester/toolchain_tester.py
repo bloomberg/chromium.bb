@@ -18,7 +18,6 @@ where options are
 --exclude=<filename>
 --tmp=<path>
 --check_excludes
---concurrency=<number>
 
 e.g. --append "CFLAGS:-lsupc++" will enable C++ eh support
 
@@ -33,7 +32,6 @@ import os
 import shlex
 import subprocess
 import sys
-import threading
 import time
 
 import toolchain_config
@@ -58,10 +56,6 @@ EXCLUDE = {}
 CHECK_EXCLUDES = 0
 # module with settings for compiler, etc.
 CFG = None
-
-CONCURRENCY = 1
-ERRORS_LOCK = threading.Lock()
-NUM_ERRORS = 0
 # ======================================================================
 # Hook print to we can print to both stdout and a file
 def Print(message):
@@ -110,15 +104,16 @@ def RunCommand(cmd, always_dump_stdout_stderr):
 
 def RemoveTempFiles():
   global TMP_PREFIX
-  for f in glob.glob(TMP_PREFIX + '*'):
+  for f in glob.glob(TMP_PREFIX + '.*'):
     os.remove(f)
 
 
 def MakeExecutableCustom(config, test, extra):
   global TMP_PREFIX
   global SHOW_CONSOLE
+  RemoveTempFiles()
   d = extra.copy()
-  d['tmp'] = TMP_PREFIX + '_' + os.path.basename(test)
+  d['tmp'] = TMP_PREFIX
   d['src'] = test
   for phase, command in config.GetCommands(d):
     command = shlex.split(command)
@@ -136,7 +131,7 @@ def MakeExecutableCustom(config, test, extra):
 def ParseCommandLineArgs(argv):
   """Process command line options and return the unprocessed left overs."""
   global VERBOSE, COMPILE_MODE, RUN_MODE, TMP_PREFIX
-  global CFG, APPEND, SHOW_CONSOLE, CHECK_EXCLUDES, CONCURRENCY
+  global CFG, APPEND, SHOW_CONSOLE, CHECK_EXCLUDES
   try:
     opts, args = getopt.getopt(argv[1:], '',
                                ['verbose',
@@ -145,8 +140,7 @@ def ParseCommandLineArgs(argv):
                                 'config=',
                                 'exclude=',
                                 'check_excludes',
-                                'tmp=',
-                                'concurrency='])
+                                'tmp='])
   except getopt.GetoptError, err:
     Print(str(err))  # will print something like 'option -a not recognized'
     sys.exit(-1)
@@ -178,8 +172,6 @@ def ParseCommandLineArgs(argv):
       APPEND.append((tag, value))
     elif o == 'config':
       CFG = a
-    elif o == 'concurrency':
-      CONCURRENCY = int(a)
     else:
       Print('ERROR: bad commandline arg: %s' % o)
       sys.exit(-1)
@@ -187,35 +179,18 @@ def ParseCommandLineArgs(argv):
   return args
 
 
-def RunTest(sema, config, test, extra_flags, errors):
-  global ERRORS_LOCK, NUM_ERRORS
-  try:
+def RunSuite(config, files, extra_flags, errors):
+  """Run a collection of benchmarks."""
+  no_errors = sum(len(errors[k]) for k in errors)
+  Banner('running %d tests' % (len(files)))
+  for no, test in enumerate(files):
     result = MakeExecutableCustom(config, test, extra_flags)
     if result:
       Print('Failure %s: %s' % (result, test))
-      ERRORS_LOCK.acquire()
       errors[result].append(test)
-      NUM_ERRORS += 1
-      ERRORS_LOCK.release()
-  finally:
-    # ensure the main thread doesn't block even if there's an error here
-    sema.release()
-
-
-def RunSuite(config, files, extra_flags, errors):
-  """Run a collection of benchmarks."""
-  global NUM_ERRORS, CONCURRENCY
-  NUM_ERRORS = sum(len(errors[k]) for k in errors)
-  Banner('running %d tests' % (len(files)))
-  sema = threading.Semaphore(CONCURRENCY)
-  for num, test in enumerate(files):
-    threadargs = (sema, config, test, extra_flags, errors)
-    t = threading.Thread(target=RunTest, name=test, args=threadargs)
-    t.daemon = True # ensure program will exit when the main thread exits
-    sema.acquire()
-    Print('Running %03d/%03d: %s (%d errors so far)' %
-          (num, len(files), os.path.basename(test), NUM_ERRORS))
-    t.start()
+      no_errors += 1
+    Print('%03d/%03d err %2d: %s  %s' %
+          (no, len(files), no_errors, os.path.basename(test), result))
 
 
 def FilterOutExcludedTests(files, exclude):
@@ -252,10 +227,7 @@ def main(argv):
   if not CHECK_EXCLUDES:
     files = FilterOutExcludedTests(files, EXCLUDE)
   Print('Tests after filtering %d' % len(files))
-  try:
-    RunSuite(config, files, {}, errors)
-  finally:
-    RemoveTempFiles()
+  RunSuite(config, files, {}, errors)
 
   # print error report
   USED_EXCLUDES = {}
