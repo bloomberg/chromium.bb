@@ -1334,6 +1334,22 @@ window_handle_key(void *data, struct wl_input_device *input_device,
 }
 
 static void
+remove_pointer_focus(struct input *input, uint32_t time)
+{
+	struct window *window = input->pointer_focus;
+
+	if (!window)
+		return;
+
+	window_set_focus_item(window, NULL);
+
+	if (window->leave_handler)
+		window->leave_handler(window, input, time, window->user_data);
+	input->pointer_focus = NULL;
+	input->current_pointer_image = POINTER_UNSET;
+}
+
+static void
 window_handle_pointer_focus(void *data,
 			    struct wl_input_device *input_device,
 			    uint32_t time, struct wl_surface *surface,
@@ -1345,15 +1361,8 @@ window_handle_pointer_focus(void *data,
 	int pointer;
 
 	window = input->pointer_focus;
-	if (window && window->surface != surface) {
-		window_set_focus_item(window, NULL);
-
-		if (window->leave_handler)
-			window->leave_handler(window, input,
-					      time, window->user_data);
-		input->pointer_focus = NULL;
-		input->current_pointer_image = POINTER_UNSET;
-	}
+	if (window && window->surface != surface)
+		remove_pointer_focus(input, time);
 
 	if (surface) {
 		input->pointer_focus = wl_surface_get_user_data(surface);
@@ -1379,6 +1388,22 @@ window_handle_pointer_focus(void *data,
 }
 
 static void
+remove_keyboard_focus(struct input *input)
+{
+	struct window *window = input->keyboard_focus;
+
+	if (!window)
+		return;
+
+	window->keyboard_device = NULL;
+	if (window->keyboard_focus_handler)
+		(*window->keyboard_focus_handler)(window, NULL,
+						  window->user_data);
+
+	input->keyboard_focus = NULL;
+}
+
+static void
 window_handle_keyboard_focus(void *data,
 			     struct wl_input_device *input_device,
 			     uint32_t time,
@@ -1386,21 +1411,14 @@ window_handle_keyboard_focus(void *data,
 			     struct wl_array *keys)
 {
 	struct input *input = data;
-	struct window *window = input->keyboard_focus;
+	struct window *window;
 	struct display *d = input->display;
 	uint32_t *k, *end;
 
-	if (window) {
-		window->keyboard_device = NULL;
-		if (window->keyboard_focus_handler)
-			(*window->keyboard_focus_handler)(window, NULL,
-							  window->user_data);
-	}
+	remove_keyboard_focus(input);
 
 	if (surface)
 		input->keyboard_focus = wl_surface_get_user_data(surface);
-	else
-		input->keyboard_focus = NULL;
 
 	end = keys->data + keys->size;
 	input->modifiers = 0;
@@ -2319,6 +2337,24 @@ display_add_input(struct display *d, uint32_t id)
 }
 
 static void
+input_destroy(struct input *input)
+{
+	remove_keyboard_focus(input);
+	remove_pointer_focus(input, 0);
+
+	if (input->drag_offer)
+		data_offer_destroy(input->drag_offer);
+
+	if (input->selection_offer)
+		data_offer_destroy(input->selection_offer);
+
+	wl_data_device_destroy(input->data_device);
+	wl_list_remove(&input->link);
+	wl_input_device_destroy(input->input_device);
+	free(input);
+}
+
+static void
 display_handle_global(struct wl_display *display, uint32_t id,
 		      const char *interface, uint32_t version, void *data)
 {
@@ -2604,6 +2640,16 @@ display_destroy_outputs(struct display *display)
 		output_destroy(output);
 }
 
+static void
+display_destroy_inputs(struct display *display)
+{
+	struct input *tmp;
+	struct input *input;
+
+	wl_list_for_each_safe(input, tmp, &display->input_list, link)
+		input_destroy(input);
+}
+
 void
 display_destroy(struct display *display)
 {
@@ -2614,6 +2660,7 @@ display_destroy(struct display *display)
 		fprintf(stderr, "toytoolkit warning: deferred tasks exist.\n");
 
 	display_destroy_outputs(display);
+	display_destroy_inputs(display);
 
 	fini_xkb(display);
 	fini_egl(display);
