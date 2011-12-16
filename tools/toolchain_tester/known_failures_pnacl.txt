@@ -46,9 +46,9 @@ va-arg-pack-1.c
 builtin-prefetch-2.c
 # vector broken on ARM
 simd-6.c
-# uses __builtin_return_address (llc assert binary operator types.
-# perhaps __builtin_return_address does not have the right type on x8664?)
-20030323-1.c
+# This uses __builtin_return_address(1) (Works for x8632 O0/O3, and x8664 O0)
+# Addresses slightly off on x86-64 O3, and stock clang x86-64 O3 also.
+# Segfaults on ARM loading an uninit frame pointer (must force fp on?).
 20010122-1.c
 # DCE not performed at -O0 (wontfix?)
 medce-1.c
