@@ -305,6 +305,34 @@ void NaClProcessHost::OnProcessCrashed(int exit_code) {
   LOG(ERROR) << message;
 }
 
+namespace {
+
+// Determine the name of the IRT file based on the architecture.
+
+#define NACL_IRT_FILE_NAME(arch_string) \
+  (FILE_PATH_LITERAL("nacl_irt_")       \
+   FILE_PATH_LITERAL(arch_string)       \
+   FILE_PATH_LITERAL(".nexe"))
+
+const FilePath::StringType NaClIrtName() {
+#if defined(ARCH_CPU_X86_FAMILY)
+  bool is64 = RunningOnWOW64();
+#if defined(ARCH_CPU_X86_64)
+  is64 = true;
+#endif
+  return is64 ? NACL_IRT_FILE_NAME("x86_64") : NACL_IRT_FILE_NAME("x86_32");
+#elif defined(ARCH_CPU_ARMEL)
+  // TODO(mcgrathr): Eventually we'll need to distinguish arm32 vs thumb2.
+  // That may need to be based on the actual nexe rather than a static
+  // choice, which would require substantial refactoring.
+  return NACL_IRT_FILE_NAME("arm");
+#else
+#error Add support for your architecture to NaCl IRT file selection
+#endif
+}
+
+}  // namespace
+
 // This only ever runs on the BrowserThread::FILE thread.
 // If multiple tasks are posted, the later ones are no-ops.
 void NaClBrowser::OpenIrtLibraryFile() {
@@ -331,18 +359,7 @@ void NaClBrowser::OpenIrtLibraryFile() {
       return;
     }
 
-    bool on_x86_64 = RunningOnWOW64();
-#if defined(__x86_64__)
-    on_x86_64 = true;
-#endif
-    FilePath::StringType irt_name;
-    if (on_x86_64) {
-      irt_name = FILE_PATH_LITERAL("nacl_irt_x86_64.nexe");
-    } else {
-      irt_name = FILE_PATH_LITERAL("nacl_irt_x86_32.nexe");
-    }
-
-    irt_filepath = plugin_dir.Append(irt_name);
+    irt_filepath = plugin_dir.Append(NaClIrtName());
   }
 
   base::PlatformFileError error_code;
