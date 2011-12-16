@@ -260,8 +260,9 @@ class ValidationPool(object):
           changes_applied.add(change)
           changes_list.append(change)
           lkgm_manager.PrintLink(str(change), change.url)
-          change.HandleApplied(self.gerrit_helper, self.build_log,
-                               dryrun=self.dryrun)
+          if self.is_master:
+            change.HandleApplied(self.gerrit_helper, self.build_log,
+                                 dryrun=self.dryrun)
 
     if changes_applied:
       logging.debug('Done investigating changes.  Applied %s',
