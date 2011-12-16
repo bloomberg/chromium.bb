@@ -24,7 +24,9 @@ generated_file_c = nacl_gcc_env.Command(
     ('${PYTHON} ' +
      '${SOURCE_ROOT}/ppapi/generators/generator.py ' +
      '--srcroot=${SOURCE_ROOT}/ppapi/api ' +
-     '--wnone --pnacl --pnaclshim=${TARGETS} '))
+     '--wnone --pnacl --pnaclshim=${TARGETS} ' +
+     '${SOURCE_ROOT}/ppapi/api/*.idl ' +
+     '${SOURCE_ROOT}/ppapi/api/dev/*.idl '))
 
 pnacl_irt_shim = nacl_gcc_env.ComponentLibrary('pnacl_irt_shim', [
     generated_file_c,
