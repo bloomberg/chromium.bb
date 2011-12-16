@@ -4,7 +4,7 @@
 
 {
   'variables': {
-    'c_sources': [
+    'c_source_files': [
       'c/pp_bool.h',
       'c/pp_completion_callback.h',
       'c/pp_errors.h',
@@ -115,7 +115,7 @@
       'c/trusted/ppb_url_loader_trusted.h',
       'c/trusted/ppp_broker.h',
     ],
-    'cpp_sources': [
+    'cpp_source_files': [
       'cpp/audio.cc',
       'cpp/audio.h',
       'cpp/audio_config.cc',
@@ -249,7 +249,7 @@
     #
     # Common Testing source for trusted and untrusted (NaCl) pugins.
     #
-    'test_sources_common': [
+    'test_common_source_files': [
       # Common test files
       'tests/all_c_includes.h',
       'tests/all_cpp_includes.h',
@@ -274,7 +274,7 @@
     #
     # Sources used in NaCl tests.
     #
-    'test_sources_nacl': [
+    'test_nacl_source_files': [
       # Test cases (PLEASE KEEP THIS SECTION IN ALPHABETICAL ORDER)
       'tests/test_audio_config.cc',
       'tests/test_cursor_control.cc',
@@ -293,7 +293,7 @@
     #
     # Sources used in trusted tests.
     #
-    'test_sources_trusted': [
+    'test_trusted_source_files': [
       # Test cases (PLEASE KEEP THIS SECTION IN ALPHABETICAL ORDER)
       'tests/test_audio.cc',
       'tests/test_audio.h',
@@ -375,10 +375,10 @@
   'conditions': [
     ['p2p_apis==1', {
       'variables': {
-        'c_sources': [
+        'c_source_files': [
           'c/dev/ppb_transport_dev.h',
         ],
-        'cpp_sources': [
+        'cpp_source_files': [
           'cpp/dev/transport_dev.cc',
           'cpp/dev/transport_dev.h',
         ],

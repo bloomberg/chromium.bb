@@ -21,7 +21,7 @@ env.FilterOut(CCFLAGS=['-Wswitch-enum'])
 
 ppapi_sources_gypi = open(
     env.File('$SOURCE_ROOT/ppapi/ppapi_sources.gypi').abspath, 'r').read()
-ppapi_sources_list = eval(ppapi_sources_gypi)['variables']['cpp_sources']
+ppapi_sources_list = eval(ppapi_sources_gypi)['variables']['cpp_source_files']
 
 ppapi_cpp_gypi = gyp_extract.LoadGypFile(
     env.File('$SOURCE_ROOT/ppapi/ppapi_cpp.gypi').abspath)

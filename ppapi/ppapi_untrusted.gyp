@@ -20,7 +20,7 @@
         'build_glibc': 0,
         'build_newlib': 1,
         'sources': [
-          '<@(cpp_sources)',
+          '<@(cpp_source_files)',
           'cpp/module_embedder.h',
           'cpp/ppp_entrypoints.cc',
         ],
@@ -58,8 +58,8 @@
           '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libppapi.a',
         ],
         'sources': [
-          '<@(test_sources_common)',
-          '<@(test_sources_nacl)',
+          '<@(test_common_source_files)',
+          '<@(test_nacl_source_files)',
         ],
       },
     },

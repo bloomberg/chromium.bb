@@ -64,8 +64,8 @@
         'lib/gl/include',
       ],
       'sources': [
-        '<@(test_sources_common)',
-        '<@(test_sources_trusted)',
+        '<@(test_common_source_files)',
+        '<@(test_trusted_source_files)',
       ],
       'dependencies': [
         'ppapi.gyp:ppapi_cpp',

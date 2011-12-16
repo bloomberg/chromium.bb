@@ -19,7 +19,7 @@
         ],
       },
       'sources': [
-        '<@(c_sources)',
+        '<@(c_source_files)',
       ],
     },
     {
@@ -32,7 +32,7 @@
         '..',
       ],
       'sources': [
-        '<@(cpp_sources)',
+        '<@(cpp_source_files)',
       ],
       'conditions': [
         ['OS=="win"', {

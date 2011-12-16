@@ -164,21 +164,22 @@ ppapi_gl_gypi = gyp_extract.LoadGypFile(os.path.join(ppapi_base,
                                                      'ppapi_gl.gypi'))
 
 # From ppapi_cpp.gypi:ppapi_c:c/[^/]*\.h
-c_headers = GypSources(ppapi_sources_map['c_sources'], 'c/[^/]*\.h')
+c_headers = GypSources(ppapi_sources_map['c_source_files'], 'c/[^/]*\.h')
 
 # From ppapi_cpp.gypi:ppapi_c:c/dev/[^/]*\.h
-c_dev_headers = GypSources(ppapi_sources_map['c_sources'], 'c/dev/[^/]*\.h')
+c_dev_headers = GypSources(ppapi_sources_map['c_source_files'],
+                           'c/dev/[^/]*\.h')
 
 # From ppapi_cpp.gypi:ppapi_cpp_objects:cpp/[^/]*\.h
 # From ppapi_cpp.gypi:ppapi_cpp:cpp/[^/]*\.h
 cpp_headers = (
-    GypSources(ppapi_sources_map['cpp_sources'], 'cpp/[^/]*\.h') +
+    GypSources(ppapi_sources_map['cpp_source_files'], 'cpp/[^/]*\.h') +
     gyp_extract.GypTargetSources(
         ppapi_cpp_gypi, 'ppapi_cpp', 'cpp/[^/]*\.h')
 )
 
 # From ppapi_cpp.gypi:ppapi_cpp_objects:cpp/dev/[^/]*\.h
-cpp_dev_headers = GypSources(ppapi_sources_map['cpp_sources'],
+cpp_dev_headers = GypSources(ppapi_sources_map['cpp_source_files'],
                              'cpp/dev/[^/]*\.h')
 
 # From ppapi_gl.gypi:ppapi_gles2:.*\.h
@@ -204,7 +205,7 @@ cpp_dev_header_install = env.AddHeaderToSdk(
 # From ppapi_cpp.gypi:ppapi_cpp_objects:cpp/[^/]*\.cc
 # From ppapi_cpp.gypi:ppapi_cpp:cpp/[^/]*\.cc
 cpp_trusted_sources = (
-    GypSources(ppapi_sources_map['cpp_sources'], 'cpp/[^/]*\.cc') +
+    GypSources(ppapi_sources_map['cpp_source_files'], 'cpp/[^/]*\.cc') +
     gyp_extract.GypTargetSources(
         ppapi_cpp_gypi, 'ppapi_cpp', 'cpp/[^/]*\.cc')
 )
