@@ -507,6 +507,9 @@
         ['chromeos==1', {
           'sources': [
             '../../chromeos/fileapi/file_access_permissions_unittest.cc',
+            '../../chromeos/fileapi/memory_file_util.cc',
+            '../../chromeos/fileapi/memory_file_util.h',
+            '../../chromeos/fileapi/memory_file_util_unittest.cc',
           ],
         }],
         ['OS=="mac"', {

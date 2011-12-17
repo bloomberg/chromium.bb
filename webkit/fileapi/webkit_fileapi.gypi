@@ -73,10 +73,12 @@
         }],
         ['chromeos==1', {
           'sources': [
+            '../chromeos/fileapi/async_file_stream.h',
             '../chromeos/fileapi/cros_mount_point_provider.cc',
             '../chromeos/fileapi/cros_mount_point_provider.h',
             '../chromeos/fileapi/file_access_permissions.cc',
             '../chromeos/fileapi/file_access_permissions.h',
+            '../chromeos/fileapi/file_util_async.h',
           ],
         }],
       ],
