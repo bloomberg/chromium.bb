@@ -48,9 +48,9 @@ ExtensionPopup::ExtensionPopup(
   set_close_on_deactivate(!inspect_with_devtools);
 #endif
 
-  // We wait to show the popup until the contained host finishes loading.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-                 content::Source<Profile>(host->profile()));
+  // Wait to show the popup until the contained host finishes loading.
+  registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+                 content::Source<TabContents>(host->host_contents()));
 
   // Listen for the containing view calling window.close();
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
@@ -67,20 +67,18 @@ void ExtensionPopup::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
-      // Once we receive did stop loading, the content will be complete and
-      // the width will have been computed.  Now it's safe to show.
-      if (host() == content::Details<ExtensionHost>(details).ptr()) {
-        Show();
-        // Focus on the host contents when the bubble is first shown.
-        host()->host_contents()->Focus();
-        if (inspect_with_devtools_) {
-          // Listen for the the devtools window closing.
-          registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
-              content::Source<content::BrowserContext>(host()->profile()));
-          DevToolsWindow::ToggleDevToolsWindow(host()->render_view_host(),
-              DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
-        }
+    case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME:
+      DCHECK(content::Source<TabContents>(host()->host_contents()) == source);
+      // Show when the content finishes loading and its width is computed.
+      Show();
+      // Focus on the host contents when the bubble is first shown.
+      host()->host_contents()->Focus();
+      if (inspect_with_devtools_) {
+        // Listen for the the devtools window closing.
+        registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
+            content::Source<content::BrowserContext>(host()->profile()));
+        DevToolsWindow::ToggleDevToolsWindow(host()->render_view_host(),
+            DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
       }
       break;
     case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
