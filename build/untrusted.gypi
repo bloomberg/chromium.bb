@@ -59,7 +59,13 @@
            ],
           'link_flags': [],
           'get_sources': [
-              '>(python_exe)', '<(DEPTH)/native_client/build/scan_sources.py',
+            '>(python_exe)', '<(DEPTH)/native_client/build/scan_sources.py',
+            # This is needed to open the .c filenames, which are given
+            # relative to the .gyp file.
+            '-I.',
+            # This is needed to open the .h filenames, which are given
+            # relative to the native_client directory's parent.
+            '-I<(DEPTH)',
           ],
         },
       },
@@ -82,7 +88,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
-                    '>!@(>(get_sources) -I. -I.. >(sources))',
+                    '>!@(>(get_sources) >(sources))',
                     '>@(extra_deps64)',
                  ],
                  'outputs': ['>(out64)'],
@@ -126,7 +132,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
-                    '>!@(>(get_sources) -I. -I.. >(sources))',
+                    '>!@(>(get_sources) >(sources))',
                     '>@(extra_deps64)',
                  ],
                  'outputs': ['>(out64)'],
@@ -170,7 +176,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
-                    '>!@(>(get_sources) -I. -I.. >(sources))',
+                    '>!@(>(get_sources) >(sources))',
                     '>@(extra_deps32)',
                  ],
                  'outputs': ['>(out32)'],
@@ -214,7 +220,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
-                    '>!@(>(get_sources) -I. -I.. >(sources))',
+                    '>!@(>(get_sources) >(sources))',
                     '>@(extra_deps32)',
                  ],
                  'outputs': ['>(out32)'],
@@ -258,7 +264,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
-                    '>!@(>(get_sources) -I. -I.. >(sources))',
+                    '>!@(>(get_sources) >(sources))',
                     '>@(extra_deps64)',
                  ],
                  'outputs': ['>(out64)'],
@@ -302,7 +308,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
-                    '>!@(>(get_sources) -I. -I.. >(sources))',
+                    '>!@(>(get_sources) >(sources))',
                     '>@(extra_deps64)',
                  ],
                  'outputs': ['>(out64)'],
@@ -346,7 +352,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
-                    '>!@(>(get_sources) -I. -I.. >(sources))',
+                    '>!@(>(get_sources) >(sources))',
                     '>@(extra_deps32)',
                  ],
                  'outputs': ['>(out32)'],
@@ -390,7 +396,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
-                    '>!@(>(get_sources) -I. -I.. >(sources))',
+                    '>!@(>(get_sources) >(sources))',
                     '>@(extra_deps32)',
                  ],
                  'outputs': ['>(out32)'],
