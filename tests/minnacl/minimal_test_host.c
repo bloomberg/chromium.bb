@@ -40,8 +40,6 @@ static int32_t MySyscallExit(struct NaClAppThread *natp) {
 int main(int argc, char **argv) {
   struct NaClApp app;
   struct GioMemoryFileSnapshot gio_file;
-  /* sel_ldr_standard.c currently requires at least 1 argument. */
-  char *untrusted_argv[] = {"blah"};
   struct NaClSyscallTableEntry syscall_table[NACL_MAX_SYSCALLS] = {{0}};
   int index;
   for (index = 0; index < NACL_MAX_SYSCALLS; index++) {
@@ -77,7 +75,7 @@ int main(int argc, char **argv) {
    * TODO(mseaborn): It would be nice if we did not have to create a
    * separate thread for running the sandboxed code.
    */
-  if (!NaClCreateMainThread(&app, 1, untrusted_argv, NULL)) {
+  if (!NaClCreateMainThread(&app, 0, NULL, NULL)) {
     NaClLog(LOG_FATAL, "NaClCreateMainThread() failed\n");
   }
 

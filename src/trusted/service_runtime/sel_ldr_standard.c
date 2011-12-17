@@ -691,9 +691,9 @@ int NaClReportExitStatus(struct NaClApp *nap, int exit_status) {
 
 /*
  * preconditions:
- * argc > 0, argc and argv table is consistent
- * envv may be NULL (this happens on MacOS/Cocoa
- * if envv is non-NULL it is 'consistent', null terminated etc.
+ *  * argc is the length of the argv array
+ *  * envv may be NULL (this happens on MacOS/Cocoa and in tests)
+ *  * if envv is non-NULL it is 'consistent', null terminated etc.
  */
 int NaClCreateMainThread(struct NaClApp     *nap,
                          int                argc,
@@ -716,8 +716,8 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   uintptr_t             stack_ptr;
 
   retval = 0;  /* fail */
-  CHECK(argc > 0);
-  CHECK(NULL != argv);
+  CHECK(argc >= 0);
+  CHECK(NULL != argv || 0 == argc);
 
   envc = 0;
   if (NULL != envv) {
