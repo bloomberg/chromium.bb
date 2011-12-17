@@ -225,7 +225,7 @@ class MockAbortExtensionInstallUI : public ExtensionInstallUI {
   }
 
   virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon) {}
-  virtual void OnInstallFailure(const std::string& error) {}
+  virtual void OnInstallFailure(const string16& error) {}
 };
 
 // Mock that simulates a permissions dialog where the user allows
@@ -241,7 +241,7 @@ class MockAutoConfirmExtensionInstallUI : public ExtensionInstallUI {
   }
 
   virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon) {}
-  virtual void OnInstallFailure(const std::string& error) {}
+  virtual void OnInstallFailure(const string16& error) {}
 };
 
 static DownloadManager* DownloadManagerForBrowser(Browser* browser) {

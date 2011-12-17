@@ -109,7 +109,7 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnpackExtension_Succeeded,
 // Reply when the utility process has failed while unpacking an extension.
 // |error_message| is a user-displayable explanation of what went wrong.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnpackExtension_Failed,
-                     std::string /* error_message, if any */)
+                     string16 /* error_message, if any */)
 
 // Reply when the utility process is done unpacking and parsing JSON data
 // from a web resource.

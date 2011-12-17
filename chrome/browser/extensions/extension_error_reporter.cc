@@ -35,7 +35,7 @@ ExtensionErrorReporter::ExtensionErrorReporter(bool enable_noisy_errors)
 
 ExtensionErrorReporter::~ExtensionErrorReporter() {}
 
-void ExtensionErrorReporter::ReportError(const std::string& message,
+void ExtensionErrorReporter::ReportError(const string16& message,
                                          bool be_noisy) {
   // NOTE: There won't be a ui_loop_ in the unit test environment.
   if (ui_loop_ && MessageLoop::current() != ui_loop_) {
@@ -58,11 +58,11 @@ void ExtensionErrorReporter::ReportError(const std::string& message,
   if (enable_noisy_errors_ && be_noisy) {
     browser::ShowErrorBox(NULL,
                           UTF8ToUTF16("Extension error"),
-                          UTF8ToUTF16(message));
+                          message);
   }
 }
 
-const std::vector<std::string>* ExtensionErrorReporter::GetErrors() {
+const std::vector<string16>* ExtensionErrorReporter::GetErrors() {
   return &errors_;
 }
 

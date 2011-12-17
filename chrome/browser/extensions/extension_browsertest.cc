@@ -216,7 +216,7 @@ class MockAbortExtensionInstallUI : public ExtensionInstallUI {
 
   virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon) {}
 
-  virtual void OnInstallFailure(const std::string& error) {}
+  virtual void OnInstallFailure(const string16& error) {}
 };
 
 class MockAutoConfirmExtensionInstallUI : public ExtensionInstallUI {
@@ -302,9 +302,9 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
       VLOG(1) << "  " << (*it)->id();
 
     VLOG(1) << "Errors follow:";
-    const std::vector<std::string>* errors =
+    const std::vector<string16>* errors =
         ExtensionErrorReporter::GetInstance()->GetErrors();
-    for (std::vector<std::string>::const_iterator iter = errors->begin();
+    for (std::vector<string16>::const_iterator iter = errors->begin();
          iter != errors->end(); ++iter)
       VLOG(1) << *iter;
 

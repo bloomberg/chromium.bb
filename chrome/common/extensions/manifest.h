@@ -60,7 +60,7 @@ class Manifest {
 
   // Returns true if all keys in the manifest can be specified by
   // the extension type.
-  bool ValidateManifest(std::string* error) const;
+  bool ValidateManifest(string16* error) const;
 
   // Returns the manifest type.
   Type GetType() const;

@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/convert_user_script.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
@@ -30,12 +31,12 @@ TEST(ExtensionFromUserScript, Basic) {
   test_file = test_file.AppendASCII("extensions")
                        .AppendASCII("user_script_basic.user.js");
 
-  std::string error;
+  string16 error;
   scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
       test_file, GURL("http://www.google.com/foo"), &error));
 
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ("", error);
+  EXPECT_EQ(ASCIIToUTF16(""), error);
 
   // Use a temp dir so that the extensions dir will clean itself up.
   ScopedTempDir ext_dir;
@@ -73,12 +74,12 @@ TEST(ExtensionFromUserScript, NoMetdata) {
   test_file = test_file.AppendASCII("extensions")
                        .AppendASCII("user_script_no_metadata.user.js");
 
-  std::string error;
+  string16 error;
   scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
       test_file, GURL("http://www.google.com/foo/bar.user.js?monkey"), &error));
 
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ("", error);
+  EXPECT_EQ(ASCIIToUTF16(""), error);
 
   // Use a temp dir so that the extensions dir will clean itself up.
   ScopedTempDir ext_dir;
@@ -116,12 +117,12 @@ TEST(ExtensionFromUserScript, NotUTF8) {
   test_file = test_file.AppendASCII("extensions")
                        .AppendASCII("user_script_not_utf8.user.js");
 
-  std::string error;
+  string16 error;
   scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
       test_file, GURL("http://www.google.com/foo/bar.user.js?monkey"), &error));
 
   ASSERT_FALSE(extension.get());
-  EXPECT_EQ("User script must be UTF8 encoded.", error);
+  EXPECT_EQ(ASCIIToUTF16("User script must be UTF8 encoded."), error);
 }
 
 TEST(ExtensionFromUserScript, RunAtDocumentStart) {
@@ -130,12 +131,12 @@ TEST(ExtensionFromUserScript, RunAtDocumentStart) {
   test_file = test_file.AppendASCII("extensions")
                        .AppendASCII("user_script_run_at_start.user.js");
 
-  std::string error;
+  string16 error;
   scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
       test_file, GURL("http://www.google.com/foo"), &error));
 
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ("", error);
+  EXPECT_EQ(ASCIIToUTF16(""), error);
 
   // Use a temp dir so that the extensions dir will clean itself up.
   ScopedTempDir ext_dir;
@@ -159,12 +160,12 @@ TEST(ExtensionFromUserScript, RunAtDocumentEnd) {
   test_file = test_file.AppendASCII("extensions")
                        .AppendASCII("user_script_run_at_end.user.js");
 
-  std::string error;
+  string16 error;
   scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
       test_file, GURL("http://www.google.com/foo"), &error));
 
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ("", error);
+  EXPECT_EQ(ASCIIToUTF16(""), error);
 
   // Use a temp dir so that the extensions dir will clean itself up.
   ScopedTempDir ext_dir;
@@ -189,12 +190,12 @@ TEST(ExtensionFromUserScript, RunAtDocumentIdle) {
                        .AppendASCII("user_script_run_at_idle.user.js");
   ASSERT_TRUE(file_util::PathExists(test_file)) << test_file.value();
 
-  std::string error;
+  string16 error;
   scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
       test_file, GURL("http://www.google.com/foo"), &error));
 
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ("", error);
+  EXPECT_EQ(ASCIIToUTF16(""), error);
 
   // Use a temp dir so that the extensions dir will clean itself up.
   ScopedTempDir ext_dir;

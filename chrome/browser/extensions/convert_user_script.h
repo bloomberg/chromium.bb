@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/string16.h"
 
 class Extension;
 class FilePath;
@@ -22,6 +23,6 @@ class GURL;
 // NOTE: The caller takes ownership of the directory at extension->path() on the
 // returned object.
 scoped_refptr<Extension> ConvertUserScriptToExtension(
-    const FilePath& user_script, const GURL& original_url, std::string* error);
+    const FilePath& user_script, const GURL& original_url, string16* error);
 
 #endif  // CHROME_BROWSER_EXTENSIONS_CONVERT_USER_SCRIPT_H_

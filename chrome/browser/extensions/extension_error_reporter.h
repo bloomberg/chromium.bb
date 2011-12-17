@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,8 @@
 
 #include <string>
 #include <vector>
+
+#include "base/string16.h"
 
 class MessageLoop;
 
@@ -30,10 +32,10 @@ class ExtensionErrorReporter {
 
   // Report an error. Errors always go to VLOG(1). Optionally, they can also
   // cause a noisy alert box. This method can be called from any thread.
-  void ReportError(const std::string& message, bool be_noisy);
+  void ReportError(const string16& message, bool be_noisy);
 
   // Get the errors that have been reported so far.
-  const std::vector<std::string>* GetErrors();
+  const std::vector<string16>* GetErrors();
 
   // Clear the list of errors reported so far.
   void ClearErrors();
@@ -45,7 +47,7 @@ class ExtensionErrorReporter {
   ~ExtensionErrorReporter();
 
   MessageLoop* ui_loop_;
-  std::vector<std::string> errors_;
+  std::vector<string16> errors_;
   bool enable_noisy_errors_;
 };
 

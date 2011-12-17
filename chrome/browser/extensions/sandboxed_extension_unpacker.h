@@ -38,7 +38,7 @@ class SandboxedExtensionUnpackerClient
                                const FilePath& extension_root,
                                const base::DictionaryValue* original_manifest,
                                const Extension* extension) = 0;
-  virtual void OnUnpackFailure(const std::string& error) = 0;
+  virtual void OnUnpackFailure(const string16& error) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<SandboxedExtensionUnpackerClient>;
@@ -199,9 +199,9 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
 
   // IPC message handlers.
   void OnUnpackExtensionSucceeded(const base::DictionaryValue& manifest);
-  void OnUnpackExtensionFailed(const std::string& error_message);
+  void OnUnpackExtensionFailed(const string16& error_message);
 
-  void ReportFailure(FailureReason reason, const std::string& message);
+  void ReportFailure(FailureReason reason, const string16& message);
   void ReportSuccess(const base::DictionaryValue& original_manifest);
 
   // Overwrites original manifest with safe result from utility process.

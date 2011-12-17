@@ -59,7 +59,7 @@ class ExtensionUnpacker {
   static bool ReadMessageCatalogsFromFile(const FilePath& extension_path,
                                           base::DictionaryValue* catalogs);
 
-  const std::string& error_message() { return error_message_; }
+  const string16& error_message() { return error_message_; }
   base::DictionaryValue* parsed_manifest() {
     return parsed_manifest_.get();
   }
@@ -109,7 +109,7 @@ class ExtensionUnpacker {
   scoped_ptr<base::DictionaryValue> parsed_catalogs_;
 
   // The last error message that was set.  Empty if there were no errors.
-  std::string error_message_;
+  string16 error_message_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUnpacker);
 };

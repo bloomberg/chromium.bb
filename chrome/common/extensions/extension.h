@@ -381,7 +381,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool ParsePermissions(const extensions::Manifest* source,
                         const char* key,
                         int flags,
-                        std::string* error,
+                        string16* error,
                         ExtensionAPIPermissionSet* api_permissions,
                         URLPatternSet* host_permissions);
 
@@ -622,7 +622,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Initialize the extension from a parsed manifest.
   // Takes ownership of the manifest |value|.
   bool InitFromValue(extensions::Manifest* value, int flags,
-                     std::string* error);
+                     string16* error);
 
   // Helper function for implementing HasCachedImage/GetCachedImage. A return
   // value of NULL means there is no matching image cached (we allow caching an
@@ -635,7 +635,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadUserScriptHelper(const base::DictionaryValue* content_script,
                             int definition_index,
                             int flags,
-                            std::string* error,
+                            string16* error,
                             UserScript* result);
 
   // Helper method that loads either the include_globs or exclude_globs list
@@ -643,7 +643,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadGlobsHelper(const base::DictionaryValue* content_script,
                        int content_script_index,
                        const char* globs_property_name,
-                       std::string* error,
+                       string16* error,
                        void(UserScript::*add_method)(const std::string& glob),
                        UserScript *instance);
 
@@ -654,32 +654,32 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                   const char* list_error,
                   const char* value_error,
                   URLPattern::ParseOption parse_option,
-                  std::string* error);
+                  string16* error);
   bool LoadLaunchContainer(const extensions::Manifest* manifest,
-                           std::string* error);
+                           string16* error);
   bool LoadLaunchURL(const extensions::Manifest* manifest,
-                     std::string* error);
+                     string16* error);
   bool LoadAppIsolation(const extensions::Manifest* manifest,
-                        std::string* error);
+                        string16* error);
   bool LoadWebIntentServices(const extensions::Manifest* manifest,
-                             std::string* error);
+                             string16* error);
 
   // Helper method to load an ExtensionAction from the page_action or
   // browser_action entries in the manifest.
   ExtensionAction* LoadExtensionActionHelper(
-      const base::DictionaryValue* extension_action, std::string* error);
+      const base::DictionaryValue* extension_action, string16* error);
 
   // Helper method to load an FileBrowserHandlerList from the manifest.
   FileBrowserHandlerList* LoadFileBrowserHandlers(
-      const base::ListValue* extension_actions, std::string* error);
+      const base::ListValue* extension_actions, string16* error);
   // Helper method to load an FileBrowserHandler from manifest.
   FileBrowserHandler* LoadFileBrowserHandler(
-      const base::DictionaryValue* file_browser_handlers, std::string* error);
+      const base::DictionaryValue* file_browser_handlers, string16* error);
 
   // Helper method to load an ExtensionSidebarDefaults from the sidebar manifest
   // entry.
   ExtensionSidebarDefaults* LoadExtensionSidebarDefaults(
-      const base::DictionaryValue* sidebar, std::string* error);
+      const base::DictionaryValue* sidebar, string16* error);
 
   // Returns true if the extension has more than one "UI surface". For example,
   // an extension that has a browser action and a page action.
@@ -691,7 +691,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Returns true if this extension can specify |api|.
   bool CanSpecifyAPIPermission(const ExtensionAPIPermission* api,
-                               std::string* error) const;
+                               string16* error) const;
   bool CanSpecifyComponentOnlyPermission() const;
   bool CanSpecifyExperimentalPermission() const;
 

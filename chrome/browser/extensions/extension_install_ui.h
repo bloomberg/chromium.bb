@@ -145,7 +145,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon);
 
   // Installation failed. This is declared virtual for testing.
-  virtual void OnInstallFailure(const std::string& error);
+  virtual void OnInstallFailure(const string16& error);
 
   // ImageLoadingTracker::Observer:
   virtual void OnImageLoaded(

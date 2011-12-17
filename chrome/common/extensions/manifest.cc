@@ -114,7 +114,7 @@ std::set<std::string> Manifest::GetAllKnownKeys() {
 Manifest::Manifest(DictionaryValue* value) : value_(value) {}
 Manifest::~Manifest() {}
 
-bool Manifest::ValidateManifest(std::string* error) const {
+bool Manifest::ValidateManifest(string16* error) const {
   Restrictions restrictions = g_restrictions.Get();
   Type type = GetType();
 
@@ -129,7 +129,7 @@ bool Manifest::ValidateManifest(std::string* error) const {
     }
 
     if (!restrictions.CanAccessKey(*key, type)) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
+      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
           errors::kFeatureNotAllowed, *key);
       return false;
     }

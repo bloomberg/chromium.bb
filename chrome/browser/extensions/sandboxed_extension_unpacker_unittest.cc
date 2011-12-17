@@ -49,7 +49,7 @@ class MockSandboxedExtensionUnpackerClient
                     const Extension* extension));
 
   MOCK_METHOD1(OnUnpackFailure,
-               void(const std::string& error));
+               void(const string16& error));
 
   void DelegateToFake() {
     ON_CALL(*this, OnUnpackSuccess(_, _, _, _))

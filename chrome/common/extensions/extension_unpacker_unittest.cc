@@ -6,6 +6,7 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -48,21 +49,21 @@ public:
 TEST_F(ExtensionUnpackerTest, EmptyDefaultLocale) {
   SetupUnpacker("empty_default_locale.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_EQ(std::string(errors::kInvalidDefaultLocale),
+  EXPECT_EQ(ASCIIToUTF16(errors::kInvalidDefaultLocale),
             unpacker_->error_message());
 }
 
 TEST_F(ExtensionUnpackerTest, HasDefaultLocaleMissingLocalesFolder) {
   SetupUnpacker("has_default_missing_locales.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_EQ(std::string(errors::kLocalesTreeMissing),
+  EXPECT_EQ(ASCIIToUTF16(errors::kLocalesTreeMissing),
             unpacker_->error_message());
 }
 
 TEST_F(ExtensionUnpackerTest, InvalidDefaultLocale) {
   SetupUnpacker("invalid_default_locale.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_EQ(std::string(errors::kInvalidDefaultLocale),
+  EXPECT_EQ(ASCIIToUTF16(errors::kInvalidDefaultLocale),
             unpacker_->error_message());
 }
 
@@ -70,21 +71,21 @@ TEST_F(ExtensionUnpackerTest, InvalidMessagesFile) {
   SetupUnpacker("invalid_messages_file.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(MatchPattern(unpacker_->error_message(),
-    std::string("*_locales?en_US?messages.json: Line: 2, column: 3,"
+    ASCIIToUTF16("*_locales?en_US?messages.json: Line: 2, column: 3,"
                 " Dictionary keys must be quoted.")));
 }
 
 TEST_F(ExtensionUnpackerTest, MissingDefaultData) {
   SetupUnpacker("missing_default_data.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_EQ(std::string(errors::kLocalesNoDefaultMessages),
+  EXPECT_EQ(ASCIIToUTF16(errors::kLocalesNoDefaultMessages),
             unpacker_->error_message());
 }
 
 TEST_F(ExtensionUnpackerTest, MissingDefaultLocaleHasLocalesFolder) {
   SetupUnpacker("missing_default_has_locales.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_EQ(std::string(errors::kLocalesNoDefaultLocaleSpecified),
+  EXPECT_EQ(ASCIIToUTF16(errors::kLocalesNoDefaultLocaleSpecified),
             unpacker_->error_message());
 }
 
@@ -92,14 +93,14 @@ TEST_F(ExtensionUnpackerTest, MissingMessagesFile) {
   SetupUnpacker("missing_messages_file.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(MatchPattern(unpacker_->error_message(),
-    errors::kLocalesMessagesFileMissing +
-    std::string("*_locales?en_US?messages.json")));
+    ASCIIToUTF16(errors::kLocalesMessagesFileMissing) +
+    ASCIIToUTF16("*_locales?en_US?messages.json")));
 }
 
 TEST_F(ExtensionUnpackerTest, NoLocaleData) {
   SetupUnpacker("no_locale_data.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_EQ(std::string(errors::kLocalesNoDefaultMessages),
+  EXPECT_EQ(ASCIIToUTF16(errors::kLocalesNoDefaultMessages),
             unpacker_->error_message());
 }
 

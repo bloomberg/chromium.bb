@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
@@ -28,34 +29,34 @@ namespace values = extension_manifest_values;
 
 scoped_refptr<Extension> ConvertUserScriptToExtension(
     const FilePath& user_script_path, const GURL& original_url,
-    std::string* error) {
+    string16* error) {
   std::string content;
   if (!file_util::ReadFileToString(user_script_path, &content)) {
-    *error = "Could not read source file.";
+    *error = ASCIIToUTF16("Could not read source file.");
     return NULL;
   }
 
   if (!IsStringUTF8(content)) {
-    *error = "User script must be UTF8 encoded.";
+    *error = ASCIIToUTF16("User script must be UTF8 encoded.");
     return NULL;
   }
 
   UserScript script;
   if (!UserScriptMaster::ScriptReloader::ParseMetadataHeader(content,
                                                              &script)) {
-    *error = "Invalid script header.";
+    *error = ASCIIToUTF16("Invalid script header.");
     return NULL;
   }
 
   FilePath user_data_temp_dir = extension_file_util::GetUserDataTempDir();
   if (user_data_temp_dir.empty()) {
-    *error = "Could not get path to profile temporary directory.";
+    *error = ASCIIToUTF16("Could not get path to profile temporary directory.");
     return NULL;
   }
 
   ScopedTempDir temp_dir;
   if (!temp_dir.CreateUniqueTempDirUnderPath(user_data_temp_dir)) {
-    *error = "Could not create temporary directory.";
+    *error = ASCIIToUTF16("Could not create temporary directory.");
     return NULL;
   }
 
@@ -144,23 +145,27 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
       Extension::kManifestFilename);
   JSONFileValueSerializer serializer(manifest_path);
   if (!serializer.Serialize(*root)) {
-    *error = "Could not write JSON.";
+    *error = ASCIIToUTF16("Could not write JSON.");
     return NULL;
   }
 
   // Write the script file.
   if (!file_util::CopyFile(user_script_path,
                            temp_dir.path().AppendASCII("script.js"))) {
-    *error = "Could not copy script file.";
+    *error = ASCIIToUTF16("Could not copy script file.");
     return NULL;
   }
 
+  // TODO(rdevlin.cronin): Continue removing std::string errors and replacing
+  // with string16
+  std::string utf8_error;
   scoped_refptr<Extension> extension = Extension::Create(
       temp_dir.path(),
       Extension::INTERNAL,
       *root,
       Extension::NO_FLAGS,
-      error);
+      &utf8_error);
+  *error = UTF8ToUTF16(utf8_error);
   if (!extension) {
     NOTREACHED() << "Could not init extension " << *error;
     return NULL;

@@ -129,7 +129,7 @@ bool SandboxedExtensionUnpacker::CreateTempDirectory() {
   if (user_data_temp_dir.empty()) {
     ReportFailure(
         COULD_NOT_GET_TEMP_DIRECTORY,
-        l10n_util::GetStringFUTF8(
+        l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
             ASCIIToUTF16("COULD_NOT_GET_TEMP_DIRECTORY")));
     return false;
@@ -138,7 +138,7 @@ bool SandboxedExtensionUnpacker::CreateTempDirectory() {
   if (!temp_dir_.CreateUniqueTempDirUnderPath(user_data_temp_dir)) {
     ReportFailure(
         COULD_NOT_CREATE_TEMP_DIRECTORY,
-        l10n_util::GetStringFUTF8(
+        l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
             ASCIIToUTF16("COULD_NOT_CREATE_TEMP_DIRECTORY")));
     return false;
@@ -178,7 +178,7 @@ void SandboxedExtensionUnpacker::Start() {
     // Failed to copy extension file to temporary directory.
     ReportFailure(
         FAILED_TO_COPY_EXTENSION_FILE_TO_TEMP_DIRECTORY,
-        l10n_util::GetStringFUTF8(
+        l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
             ASCIIToUTF16("FAILED_TO_COPY_EXTENSION_FILE_TO_TEMP_DIRECTORY")));
     return;
@@ -202,7 +202,7 @@ void SandboxedExtensionUnpacker::Start() {
                  << temp_crx_path.value();
       ReportFailure(
           COULD_NOT_GET_SANDBOX_FRIENDLY_PATH,
-          l10n_util::GetStringUTF8(IDS_EXTENSION_UNPACK_FAILED));
+          l10n_util::GetStringUTF16(IDS_EXTENSION_UNPACK_FAILED));
       return;
     }
     PATH_LENGTH_HISTOGRAM("Extensions.SandboxUnpackLinkFreeCrxPathLength",
@@ -253,7 +253,7 @@ void SandboxedExtensionUnpacker::OnProcessCrashed(int exit_code) {
   // Utility process crashed while trying to install.
   ReportFailure(
      UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL,
-     l10n_util::GetStringFUTF8(
+     l10n_util::GetStringFUTF16(
          IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
          ASCIIToUTF16("UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL")));
 }
@@ -286,15 +286,18 @@ void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
   // extension.
 
   // Localize manifest now, so confirm UI gets correct extension name.
-  std::string error;
+
+  // TODO(rdevlin.cronin): Continue removing std::string errors and replacing
+  // with string16
+  std::string utf8_error;
   if (!extension_l10n_util::LocalizeExtension(extension_root_,
                                               final_manifest.get(),
-                                              &error)) {
+                                              &utf8_error)) {
     ReportFailure(
         COULD_NOT_LOCALIZE_EXTENSION,
-        l10n_util::GetStringFUTF8(
+        l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_ERROR_MESSAGE,
-            ASCIIToUTF16(error)));
+            UTF8ToUTF16(utf8_error)));
     return;
   }
 
@@ -303,12 +306,13 @@ void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
       location_,
       *final_manifest,
       Extension::REQUIRE_KEY | creation_flags_,
-      &error);
+      &utf8_error);
+
 
   if (!extension_.get()) {
     ReportFailure(
         INVALID_MANIFEST,
-        std::string("Manifest is invalid: ") + error);
+        ASCIIToUTF16("Manifest is invalid: " + utf8_error));
     return;
   }
 
@@ -322,14 +326,14 @@ void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
 }
 
 void SandboxedExtensionUnpacker::OnUnpackExtensionFailed(
-    const std::string& error) {
+    const string16& error) {
   CHECK(BrowserThread::CurrentlyOn(thread_identifier_));
   got_response_ = true;
   ReportFailure(
       UNPACKER_CLIENT_FAILED,
-      l10n_util::GetStringFUTF8(
+      l10n_util::GetStringFUTF16(
            IDS_EXTENSION_PACKAGE_ERROR_MESSAGE,
-           ASCIIToUTF16(error)));
+           error));
 }
 
 bool SandboxedExtensionUnpacker::ValidateSignature() {
@@ -356,7 +360,7 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
 
     ReportFailure(
         CRX_FILE_NOT_READABLE,
-        l10n_util::GetStringFUTF8(
+        l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_ERROR_CODE,
             ASCIIToUTF16("CRX_FILE_NOT_READABLE")));
     return false;
@@ -376,7 +380,7 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
     // Invalid crx header
     ReportFailure(
         CRX_HEADER_INVALID,
-        l10n_util::GetStringFUTF8(
+        l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_ERROR_CODE,
             ASCIIToUTF16("CRX_HEADER_INVALID")));
     return false;
@@ -386,7 +390,7 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
     // Bad magic number
     ReportFailure(
         CRX_MAGIC_NUMBER_INVALID,
-        l10n_util::GetStringFUTF8(
+        l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_ERROR_CODE,
             ASCIIToUTF16("CRX_MAGIC_NUMBER_INVALID")));
     return false;
@@ -394,7 +398,7 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
   if (header.version != kCurrentVersion) {
     // Bad version numer
     ReportFailure(CRX_VERSION_NUMBER_INVALID,
-        l10n_util::GetStringFUTF8(
+        l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_ERROR_CODE,
             ASCIIToUTF16("CRX_VERSION_NUMBER_INVALID")));
     return false;
@@ -404,7 +408,7 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
     // Excessively large key or signature
     ReportFailure(
         CRX_EXCESSIVELY_LARGE_KEY_OR_SIGNATURE,
-        l10n_util::GetStringFUTF8(
+        l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_ERROR_CODE,
             ASCIIToUTF16("CRX_EXCESSIVELY_LARGE_KEY_OR_SIGNATURE")));
     return false;
@@ -413,7 +417,7 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
     // Key length is zero
     ReportFailure(
         CRX_ZERO_KEY_LENGTH,
-        l10n_util::GetStringFUTF8(
+        l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_ERROR_CODE,
             ASCIIToUTF16("CRX_ZERO_KEY_LENGTH")));
     return false;
@@ -422,7 +426,7 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
     // Signature length is zero
     ReportFailure(
         CRX_ZERO_SIGNATURE_LENGTH,
-        l10n_util::GetStringFUTF8(
+        l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_ERROR_CODE,
             ASCIIToUTF16("CRX_ZERO_SIGNATURE_LENGTH")));
     return false;
@@ -435,7 +439,7 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
     // Invalid public key
     ReportFailure(
         CRX_PUBLIC_KEY_INVALID,
-        l10n_util::GetStringFUTF8(
+        l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_ERROR_CODE,
             ASCIIToUTF16("CRX_PUBLIC_KEY_INVALID")));
     return false;
@@ -449,7 +453,7 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
     // Invalid signature
     ReportFailure(
         CRX_SIGNATURE_INVALID,
-        l10n_util::GetStringFUTF8(
+        l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_ERROR_CODE,
             ASCIIToUTF16("CRX_SIGNATURE_INVALID")));
     return false;
@@ -466,7 +470,7 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
     // caused by a public key in the wrong format (should encode algorithm).
     ReportFailure(
         CRX_SIGNATURE_VERIFICATION_INITIALIZATION_FAILED,
-        l10n_util::GetStringFUTF8(
+        l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_ERROR_CODE,
             ASCIIToUTF16("CRX_SIGNATURE_VERIFICATION_INITIALIZATION_FAILED")));
     return false;
@@ -480,7 +484,7 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
     // Signature verification failed
     ReportFailure(
         CRX_SIGNATURE_VERIFICATION_FAILED,
-        l10n_util::GetStringFUTF8(
+        l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_ERROR_CODE,
             ASCIIToUTF16("CRX_SIGNATURE_VERIFICATION_FAILED")));
     return false;
@@ -492,7 +496,7 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
 }
 
 void SandboxedExtensionUnpacker::ReportFailure(FailureReason reason,
-                                               const std::string& error) {
+                                               const string16& error) {
   UMA_HISTOGRAM_ENUMERATION("Extensions.SandboxUnpackFailureReason",
                             reason, NUM_FAILURE_REASONS);
   UMA_HISTOGRAM_TIMES("Extensions.SandboxUnpackFailureTime",
@@ -531,7 +535,7 @@ DictionaryValue* SandboxedExtensionUnpacker::RewriteManifestFile(
     // Error serializing manifest.json.
     ReportFailure(
         ERROR_SERIALIZING_MANIFEST_JSON,
-        l10n_util::GetStringFUTF8(
+        l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
             ASCIIToUTF16("ERROR_SERIALIZING_MANIFEST_JSON")));
     return NULL;
@@ -544,7 +548,7 @@ DictionaryValue* SandboxedExtensionUnpacker::RewriteManifestFile(
     // Error saving manifest.json.
     ReportFailure(
         ERROR_SAVING_MANIFEST_JSON,
-        l10n_util::GetStringFUTF8(
+        l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
             ASCIIToUTF16("ERROR_SAVING_MANIFEST_JSON")));
     return NULL;
@@ -559,7 +563,7 @@ bool SandboxedExtensionUnpacker::RewriteImageFiles() {
     // Couldn't read image data from disk.
     ReportFailure(
         COULD_NOT_READ_IMAGE_DATA_FROM_DISK,
-        l10n_util::GetStringFUTF8(
+        l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
             ASCIIToUTF16("COULD_NOT_READ_IMAGE_DATA_FROM_DISK")));
     return false;
@@ -573,7 +577,7 @@ bool SandboxedExtensionUnpacker::RewriteImageFiles() {
     // Decoded images don't match what's in the manifest.
     ReportFailure(
         DECODED_IMAGES_DO_NOT_MATCH_THE_MANIFEST,
-        l10n_util::GetStringFUTF8(
+        l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
             ASCIIToUTF16("DECODED_IMAGES_DO_NOT_MATCH_THE_MANIFEST")));
     return false;
@@ -586,7 +590,7 @@ bool SandboxedExtensionUnpacker::RewriteImageFiles() {
       // Invalid path for browser image.
       ReportFailure(
           INVALID_PATH_FOR_BROWSER_IMAGE,
-          l10n_util::GetStringFUTF8(
+          l10n_util::GetStringFUTF16(
               IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
               ASCIIToUTF16("INVALID_PATH_FOR_BROWSER_IMAGE")));
       return false;
@@ -595,7 +599,7 @@ bool SandboxedExtensionUnpacker::RewriteImageFiles() {
       // Error removing old image file.
       ReportFailure(
           ERROR_REMOVING_OLD_IMAGE_FILE,
-          l10n_util::GetStringFUTF8(
+          l10n_util::GetStringFUTF16(
               IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
               ASCIIToUTF16("ERROR_REMOVING_OLD_IMAGE_FILE")));
       return false;
@@ -610,7 +614,7 @@ bool SandboxedExtensionUnpacker::RewriteImageFiles() {
       // Invalid path for bitmap image.
       ReportFailure(
           INVALID_PATH_FOR_BITMAP_IMAGE,
-          l10n_util::GetStringFUTF8(
+          l10n_util::GetStringFUTF16(
               IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
               ASCIIToUTF16("INVALID_PATH_FOR_BITMAP_IMAGE")));
       return false;
@@ -625,7 +629,7 @@ bool SandboxedExtensionUnpacker::RewriteImageFiles() {
       // Error re-encoding theme image.
       ReportFailure(
           ERROR_RE_ENCODING_THEME_IMAGE,
-          l10n_util::GetStringFUTF8(
+          l10n_util::GetStringFUTF16(
               IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
               ASCIIToUTF16("ERROR_RE_ENCODING_THEME_IMAGE")));
       return false;
@@ -638,7 +642,7 @@ bool SandboxedExtensionUnpacker::RewriteImageFiles() {
       // Error saving theme image.
       ReportFailure(
           ERROR_SAVING_THEME_IMAGE,
-          l10n_util::GetStringFUTF8(
+          l10n_util::GetStringFUTF16(
               IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
               ASCIIToUTF16("ERROR_SAVING_THEME_IMAGE")));
       return false;
@@ -655,7 +659,7 @@ bool SandboxedExtensionUnpacker::RewriteCatalogFiles() {
     // Could not read catalog data from disk.
     ReportFailure(
         COULD_NOT_READ_CATALOG_DATA_FROM_DISK,
-        l10n_util::GetStringFUTF8(
+        l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
             ASCIIToUTF16("COULD_NOT_READ_CATALOG_DATA_FROM_DISK")));
     return false;
@@ -669,7 +673,7 @@ bool SandboxedExtensionUnpacker::RewriteCatalogFiles() {
       // Invalid catalog data.
       ReportFailure(
           INVALID_CATALOG_DATA,
-          l10n_util::GetStringFUTF8(
+          l10n_util::GetStringFUTF16(
               IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
               ASCIIToUTF16("INVALID_CATALOG_DATA")));
       return false;
@@ -683,7 +687,7 @@ bool SandboxedExtensionUnpacker::RewriteCatalogFiles() {
       // Invalid path for catalog.
       ReportFailure(
           INVALID_PATH_FOR_CATALOG,
-          l10n_util::GetStringFUTF8(
+          l10n_util::GetStringFUTF16(
               IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
               ASCIIToUTF16("INVALID_PATH_FOR_CATALOG")));
       return false;
@@ -697,7 +701,7 @@ bool SandboxedExtensionUnpacker::RewriteCatalogFiles() {
       // Error serializing catalog.
       ReportFailure(
           ERROR_SERIALIZING_CATALOG,
-          l10n_util::GetStringFUTF8(
+          l10n_util::GetStringFUTF16(
               IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
               ASCIIToUTF16("ERROR_SERIALIZING_CATALOG")));
       return false;
@@ -711,7 +715,7 @@ bool SandboxedExtensionUnpacker::RewriteCatalogFiles() {
       // Error saving catalog.
       ReportFailure(
           ERROR_SAVING_CATALOG,
-          l10n_util::GetStringFUTF8(
+          l10n_util::GetStringFUTF16(
               IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
               ASCIIToUTF16("ERROR_SAVING_CATALOG")));
       return false;

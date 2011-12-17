@@ -101,14 +101,15 @@ struct ExtensionsOrder {
   }
 };
 
-static std::vector<std::string> GetErrors() {
-  const std::vector<std::string>* errors =
+static std::vector<string16> GetErrors() {
+  const std::vector<string16>* errors =
       ExtensionErrorReporter::GetInstance()->GetErrors();
-  std::vector<std::string> ret_val;
+  std::vector<string16> ret_val;
 
-  for (std::vector<std::string>::const_iterator iter = errors->begin();
+  for (std::vector<string16>::const_iterator iter = errors->begin();
        iter != errors->end(); ++iter) {
-    if (iter->find(".svn") == std::string::npos) {
+    std::string utf8_error = UTF16ToUTF8(*iter);
+    if (utf8_error.find(".svn") == std::string::npos) {
       ret_val.push_back(*iter);
     }
   }
@@ -652,7 +653,7 @@ class ExtensionServiceTest
   const Extension* WaitForCrxInstall(const FilePath& path,
                                      InstallState install_state) {
     loop_.RunAllPending();
-    std::vector<std::string> errors = GetErrors();
+    std::vector<string16> errors = GetErrors();
     const Extension* extension = NULL;
     if (install_state != INSTALL_FAILED) {
       if (install_state == INSTALL_NEW)
@@ -667,7 +668,7 @@ class ExtensionServiceTest
       extension = loaded_[0];
       EXPECT_TRUE(service_->GetExtensionById(extension->id(), false)) <<
           path.value();
-      for (std::vector<std::string>::iterator err = errors.begin();
+      for (std::vector<string16>::iterator err = errors.begin();
         err != errors.end(); ++err) {
         LOG(ERROR) << *err;
       }
@@ -710,7 +711,7 @@ class ExtensionServiceTest
     service_->UpdateExtension(id, path, GURL(), NULL);
     loop_.RunAllPending();
 
-    std::vector<std::string> errors = GetErrors();
+    std::vector<string16> errors = GetErrors();
     int error_count = errors.size();
     int enabled_extension_count =
         service_->extensions()->size();
@@ -1129,21 +1130,25 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectoryFail) {
   ASSERT_EQ(4u, GetErrors().size());
   ASSERT_EQ(0u, loaded_.size());
 
-  EXPECT_TRUE(MatchPattern(GetErrors()[0],
+  EXPECT_TRUE(MatchPattern(UTF16ToUTF8(GetErrors()[0]),
       std::string("Could not load extension from '*'. ") +
-      extension_manifest_errors::kManifestUnreadable)) << GetErrors()[0];
+      extension_manifest_errors::kManifestUnreadable)) <<
+      UTF16ToUTF8(GetErrors()[0]);
 
-  EXPECT_TRUE(MatchPattern(GetErrors()[1],
+  EXPECT_TRUE(MatchPattern(UTF16ToUTF8(GetErrors()[1]),
       std::string("Could not load extension from '*'. ") +
-      extension_manifest_errors::kManifestUnreadable)) << GetErrors()[1];
+      extension_manifest_errors::kManifestUnreadable)) <<
+      UTF16ToUTF8(GetErrors()[1]);
 
-  EXPECT_TRUE(MatchPattern(GetErrors()[2],
+  EXPECT_TRUE(MatchPattern(UTF16ToUTF8(GetErrors()[2]),
       std::string("Could not load extension from '*'. ") +
-      extension_manifest_errors::kMissingFile)) << GetErrors()[2];
+      extension_manifest_errors::kMissingFile)) <<
+      UTF16ToUTF8(GetErrors()[2]);
 
-  EXPECT_TRUE(MatchPattern(GetErrors()[3],
+  EXPECT_TRUE(MatchPattern(UTF16ToUTF8(GetErrors()[3]),
       std::string("Could not load extension from '*'. ") +
-      extension_manifest_errors::kManifestUnreadable)) << GetErrors()[3];
+      extension_manifest_errors::kManifestUnreadable)) <<
+      UTF16ToUTF8(GetErrors()[3]);
 };
 
 // Test that partially deleted extensions are cleaned up during startup
@@ -1419,7 +1424,7 @@ TEST_F(ExtensionServiceTest, InstallUserScript) {
       GURL("http://www.aaronboodman.com/scripts/user_script_basic.user.js"));
 
   loop_.RunAllPending();
-  std::vector<std::string> errors = GetErrors();
+  std::vector<string16> errors = GetErrors();
   EXPECT_TRUE(installed_) << "Nothing was installed.";
   ASSERT_EQ(1u, loaded_.size()) << "Nothing was loaded.";
   EXPECT_EQ(0u, errors.size()) << "There were errors: "
@@ -2523,8 +2528,8 @@ TEST_F(ExtensionServiceTest, WillNotLoadBlacklistedExtensionsFromDirectory) {
   // Load extensions.
   service_->Init();
 
-  std::vector<std::string> errors = GetErrors();
-  for (std::vector<std::string>::iterator err = errors.begin();
+  std::vector<string16> errors = GetErrors();
+  for (std::vector<string16>::iterator err = errors.begin();
     err != errors.end(); ++err) {
     LOG(ERROR) << *err;
   }

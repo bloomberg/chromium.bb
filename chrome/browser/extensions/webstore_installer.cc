@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -139,10 +140,12 @@ void WebstoreInstaller::Observe(int type,
       if (!profile_->IsSameProfile(crx_installer->profile()))
         return;
 
-      const std::string* error =
-          content::Details<const std::string>(details).ptr();
+      // TODO(rdevlin.cronin): Continue removing std::string errors and
+      // replacing with string16
+      const string16* error = content::Details<const string16>(details).ptr();
+      const std::string utf8_error = UTF16ToUTF8(*error);
       if (download_url_ == crx_installer->original_download_url())
-        ReportFailure(*error);
+        ReportFailure(utf8_error);
       break;
     }
 

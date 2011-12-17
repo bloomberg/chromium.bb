@@ -324,5 +324,5 @@ bool ExtensionUnpacker::ReadMessageCatalog(const FilePath& message_path) {
 }
 
 void ExtensionUnpacker::SetError(const std::string &error) {
-  error_message_ = error;
+  error_message_ = UTF8ToUTF16(error);
 }

@@ -199,10 +199,10 @@ class CrxInstaller
 
   // Called after OnUnpackSuccess as a last check to see whether the install
   // should complete.
-  bool AllowInstall(const Extension* extension, std::string* error);
+  bool AllowInstall(const Extension* extension, string16* error);
 
   // SandboxedExtensionUnpackerClient
-  virtual void OnUnpackFailure(const std::string& error_message) OVERRIDE;
+  virtual void OnUnpackFailure(const string16& error_message) OVERRIDE;
   virtual void OnUnpackSuccess(const FilePath& temp_dir,
                                const FilePath& extension_dir,
                                const base::DictionaryValue* original_manifest,
@@ -221,8 +221,8 @@ class CrxInstaller
   void CompleteInstall();
 
   // Result reporting.
-  void ReportFailureFromFileThread(const std::string& error);
-  void ReportFailureFromUIThread(const std::string& error);
+  void ReportFailureFromFileThread(const string16& error);
+  void ReportFailureFromUIThread(const string16& error);
   void ReportSuccessFromFileThread();
   void ReportSuccessFromUIThread();
   void NotifyCrxInstallComplete(const Extension* extension);

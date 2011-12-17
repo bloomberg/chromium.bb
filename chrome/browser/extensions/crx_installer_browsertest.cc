@@ -31,7 +31,7 @@ class MockInstallUI : public ExtensionInstallUI {
   void OnInstallSuccess(const Extension* extension, SkBitmap* icon) {
     MessageLoopForUI::current()->Quit();
   }
-  void OnInstallFailure(const std::string& error) {
+  void OnInstallFailure(const string16& error) {
     ADD_FAILURE() << "install failed";
     MessageLoopForUI::current()->Quit();
   }

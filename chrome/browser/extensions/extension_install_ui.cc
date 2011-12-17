@@ -304,7 +304,7 @@ bool disable_failure_ui_for_tests = false;
 
 }  // namespace
 
-void ExtensionInstallUI::OnInstallFailure(const std::string& error) {
+void ExtensionInstallUI::OnInstallFailure(const string16& error) {
   DCHECK(ui_loop_ == MessageLoop::current());
 
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
@@ -313,7 +313,7 @@ void ExtensionInstallUI::OnInstallFailure(const std::string& error) {
   browser::ShowErrorBox(
       browser ? browser->window()->GetNativeHandle() : NULL,
       l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_FAILURE_TITLE),
-      UTF8ToUTF16(error));
+      error);
 }
 
 void ExtensionInstallUI::SetIcon(SkBitmap* image) {
