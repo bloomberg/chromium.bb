@@ -184,13 +184,25 @@ TEST_F(ShellAcceleratorControllerTest, ProcessOnce) {
 #endif
 
 TEST_F(ShellAcceleratorControllerTest, GlobalAccelerators) {
-  // TODO(mazda): Uncomment the followings once they are implemented.
+  // A focused window must exist for accelerators to be processed.
+  aura::Window* default_container =
+      aura_shell::Shell::GetInstance()->GetContainer(
+          internal::kShellWindowId_DefaultContainer);
+  aura::Window* window = aura::test::CreateTestWindowWithDelegate(
+      new aura::test::TestWindowDelegate,
+      -1,
+      gfx::Rect(),
+      default_container);
+  ActivateWindow(window);
+
   // CycleBackward
-  // EXPECT_TRUE(GetController()->Process(
-  //     ui::Accelerator(ui::VKEY_TAB, true, false, true)));
+  EXPECT_TRUE(GetController()->Process(
+      ui::Accelerator(ui::VKEY_TAB, true, false, true)));
   // CycleForwrard
-  // EXPECT_TRUE(GetController()->Process(
-  //     ui::Accelerator(ui::VKEY_TAB, false, false, true)));
+  EXPECT_TRUE(GetController()->Process(
+      ui::Accelerator(ui::VKEY_F5, false, false, false)));
+  EXPECT_TRUE(GetController()->Process(
+      ui::Accelerator(ui::VKEY_TAB, false, false, true)));
   // TakeScreenshot
   // EXPECT_TRUE(GetController()->Process(
   //     ui::Accelerator(ui::VKEY_F5, false, true, false)));

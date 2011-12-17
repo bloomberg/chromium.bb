@@ -42,6 +42,7 @@ struct AcceleratorData {
 } kAcceleratorData[] = {
   { ui::VKEY_TAB, true, false, true, CYCLE_BACKWARD },
   { ui::VKEY_TAB, false, false, true, CYCLE_FORWARD },
+  { ui::VKEY_F5, false, false, false, CYCLE_FORWARD },
   { ui::VKEY_F5, false, true, false, TAKE_SCREENSHOT },
   { ui::VKEY_PRINT, false, false, false, TAKE_SCREENSHOT },
 #if !defined(NDEBUG)
