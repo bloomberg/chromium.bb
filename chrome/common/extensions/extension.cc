@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
+#include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -79,10 +80,13 @@ const char kDefaultContentSecurityPolicy[] =
 static void ConvertHexadecimalToIDAlphabet(std::string* id) {
   for (size_t i = 0; i < id->size(); ++i) {
     int val;
-    if (base::HexStringToInt(id->begin() + i, id->begin() + i + 1, &val))
+    if (base::HexStringToInt(base::StringPiece(id->begin() + i,
+                                               id->begin() + i + 1),
+                             &val)) {
       (*id)[i] = val + 'a';
-    else
+    } else {
       (*id)[i] = 'a';
+    }
   }
 }
 

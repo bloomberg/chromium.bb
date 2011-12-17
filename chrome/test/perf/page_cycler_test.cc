@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
+#include "base/string_piece.h"
 #include "base/sys_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
@@ -331,8 +332,8 @@ static bool HasDatabaseErrors(const std::string timings) {
     new_pos = timings.find(',', pos);
     if (new_pos == std::string::npos)
       new_pos = timings.length();
-    if (!base::StringToInt(timings.begin() + pos,
-                           timings.begin() + new_pos,
+    if (!base::StringToInt(base::StringPiece(timings.begin() + pos,
+                                             timings.begin() + new_pos),
                            &time)) {
       LOG(ERROR) << "Invalid time reported: " << time_str;
       return true;

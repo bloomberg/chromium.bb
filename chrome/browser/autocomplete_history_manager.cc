@@ -19,6 +19,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "webkit/forms/form_data.h"
 
+using base::StringPiece16;
 using webkit::forms::FormData;
 using webkit::forms::FormField;
 
@@ -63,26 +64,32 @@ bool IsSSN(const string16& text) {
     return false;
 
   int area;
-  if (!base::StringToInt(number_string.begin(),
-                         number_string.begin() + 3,
-                         &area))
+  if (!base::StringToInt(StringPiece16(number_string.begin(),
+                                       number_string.begin() + 3),
+                         &area)) {
     return false;
+  }
   if (area < 1 ||
       area == 666 ||
-      area >= 900)
+      area >= 900) {
     return false;
+  }
 
   int group;
-  if (!base::StringToInt(number_string.begin() + 3,
-                         number_string.begin() + 5,
-                         &group) || group == 0)
+  if (!base::StringToInt(StringPiece16(number_string.begin() + 3,
+                                       number_string.begin() + 5),
+                         &group)
+      || group == 0) {
     return false;
+  }
 
   int serial;
-  if (!base::StringToInt(number_string.begin() + 5,
-                         number_string.begin() + 9,
-                         &serial) || serial == 0)
+  if (!base::StringToInt(StringPiece16(number_string.begin() + 5,
+                                       number_string.begin() + 9),
+                         &serial)
+      || serial == 0) {
     return false;
+  }
 
   return true;
 }
