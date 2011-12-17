@@ -62,8 +62,7 @@ void MockInputMethod::DispatchKeyEvent(const base::NativeEvent& native_event) {
     // On key release, just dispatch it.
     delegate_->DispatchKeyEventPostIME(native_event);
   } else {
-    const uint32 state =
-        EventFlagsFromXFlags(reinterpret_cast<XKeyEvent*>(native_event)->state);
+    const uint32 state = EventFlagsFromXFlags(native_event->xkey.state);
     if (consume_next_key_) {
       // Send the VKEY_PROCESSKEY RawKeyDown event.
       SendFakeProcessKeyEvent(true, state);
@@ -73,7 +72,9 @@ void MockInputMethod::DispatchKeyEvent(const base::NativeEvent& native_event) {
       if (text_input_client_) {
         // then send a Char event via ui::TextInputClient.
         const KeyboardCode key_code = ui::KeyboardCodeFromNative(native_event);
-        uint16 ch = ui::GetCharacterFromXEvent(native_event);
+        uint16 ch = 0;
+        if (!(state & ui::EF_CONTROL_DOWN))
+          ch = ui::GetCharacterFromXEvent(native_event);
         if (!ch)
           ch = ui::GetCharacterFromKeyCode(key_code, state);
         if (ch)
