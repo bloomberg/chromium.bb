@@ -15,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
-#include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/timer.h"
@@ -75,13 +74,10 @@ static std::string HexStringToID(const std::string& hexstr) {
   std::string id;
   for (size_t i = 0; i < hexstr.size(); ++i) {
     int val;
-    if (base::HexStringToInt(base::StringPiece(hexstr.begin() + i,
-                                               hexstr.begin() + i + 1),
-                             &val)) {
+    if (base::HexStringToInt(hexstr.begin() + i, hexstr.begin() + i + 1, &val))
       id.append(1, val + 'a');
-    } else {
+    else
       id.append(1, 'a');
-    }
   }
   DCHECK(Extension::IdIsValid(id));
   return id;
