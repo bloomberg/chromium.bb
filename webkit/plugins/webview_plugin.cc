@@ -116,7 +116,7 @@ NPObject* WebViewPlugin::scriptableObject() {
   return NULL;
 }
 
-bool WebViewPlugin::getFormValue(WebString* value) {
+bool WebViewPlugin::getFormValue(WebString& value) {
   return false;
 }
 
