@@ -1290,6 +1290,8 @@ void ProfileSyncService::DeactivateDataType(syncable::ModelType type) {
 
 void ProfileSyncService::SetPassphrase(const std::string& passphrase,
                                        bool is_explicit) {
+  // TODO(sync): soften this once crbug.com/104189 is resolved.
+  CHECK(!passphrase.empty());
   if (ShouldPushChanges() || IsPassphraseRequired()) {
     DVLOG(1) << "Setting " << (is_explicit ? "explicit" : "implicit");
     backend_->SetPassphrase(passphrase, is_explicit);
