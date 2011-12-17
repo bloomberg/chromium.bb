@@ -35,6 +35,10 @@ class WebURLLoaderMock : public WebKit::WebURLLoader {
                                 const WebKit::WebData& data,
                                 const WebKit::WebURLError& error);
 
+  // Simulates the redirect being served.
+  WebKit::WebURLRequest ServeRedirect(
+      const WebKit::WebURLResponse& redirectResponse);
+
   // WebURLLoader methods:
   virtual void loadSynchronously(const WebKit::WebURLRequest& request,
                                  WebKit::WebURLResponse& response,
@@ -45,11 +49,14 @@ class WebURLLoaderMock : public WebKit::WebURLLoader {
   virtual void cancel();
   virtual void setDefersLoading(bool defer);
 
+  bool isDeferred() { return is_deferred_; }
+
  private:
   WebURLLoaderMockFactory* factory_;
   WebKit::WebURLLoaderClient* client_;
   scoped_ptr<WebKit::WebURLLoader> default_loader_;
   bool using_default_loader_;
+  bool is_deferred_;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderMock);
 };

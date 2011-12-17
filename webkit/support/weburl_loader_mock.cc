@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,8 @@ WebURLLoaderMock::WebURLLoaderMock(WebURLLoaderMockFactory* factory,
     : factory_(factory),
       client_(NULL),
       default_loader_(default_loader),
-      using_default_loader_(false) {
+      using_default_loader_(false),
+      is_deferred_(false) {
 }
 
 WebURLLoaderMock::~WebURLLoaderMock() {
@@ -31,6 +32,16 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
   client_->didReceiveResponse(this, response);
   client_->didReceiveData(this, data.data(), data.size(), data.size());
   client_->didFinishLoading(this, 0);
+}
+
+WebKit::WebURLRequest WebURLLoaderMock::ServeRedirect(
+    const WebKit::WebURLResponse& redirectResponse) {
+  WebKit::WebURLRequest newRequest;
+  newRequest.initialize();
+  GURL redirectURL(redirectResponse.httpHeaderField("Location"));
+  newRequest.setURL(redirectURL);
+  client_->willSendRequest(this, newRequest, redirectResponse);
+  return newRequest;
 }
 
 void WebURLLoaderMock::loadSynchronously(const WebKit::WebURLRequest& request,
@@ -66,6 +77,7 @@ void WebURLLoaderMock::cancel() {
 }
 
 void WebURLLoaderMock::setDefersLoading(bool deferred) {
+  is_deferred_ = deferred;
   if (using_default_loader_) {
     default_loader_->setDefersLoading(deferred);
     return;
