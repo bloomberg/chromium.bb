@@ -354,6 +354,8 @@ void ChromeRenderProcessObserver::OnGetV8HeapStats() {
 }
 
 void ChromeRenderProcessObserver::OnPurgeMemory() {
+  RenderThread::Get()->EnsureWebKitInitialized();
+
   // Clear the object cache (as much as possible; some live objects cannot be
   // freed).
   WebCache::clear();
