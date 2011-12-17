@@ -33,6 +33,13 @@
            'outputs': [['live_object_count', 'int32_t'],  # uint32_t
                       ]
           },
+          {'name': 'PPB_Testing_SimulateInputEvent',
+           'inputs': [['instance', 'PP_Instance'],
+                      ['input_event', 'PP_Resource'],
+                     ],
+           'outputs': [
+                      ]
+          },
 	  {'name': 'PPB_Testing_GetDocumentURL',
 	   'inputs': [['instance', 'PP_Instance'],
 	             ],

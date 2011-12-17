@@ -65,8 +65,7 @@ TestPostMessage::~TestPostMessage() {
              "plugin.removeEventListener('message',"
              "                           plugin.wait_for_messages_handler);"
              "delete plugin.wait_for_messages_handler;";
-  pp::Var exception;
-  instance_->ExecuteScript(js_code, &exception);
+  instance_->EvalScript(js_code);
 }
 
 bool TestPostMessage::Init() {
@@ -90,9 +89,7 @@ bool TestPostMessage::Init() {
              "plugin.addEventListener('message', wait_for_messages_handler);"
              // Stash it on the plugin so we can remove it in the destructor.
              "plugin.wait_for_messages_handler = wait_for_messages_handler;";
-  pp::Var exception;
-  instance_->ExecuteScript(js_code, &exception);
-  success = success && exception.is_undefined();
+  instance_->EvalScript(js_code);
 
   // Set up the JavaScript message event listener to echo the data part of the
   // message event back to us.
@@ -149,20 +146,19 @@ bool TestPostMessage::AddEchoingListener(const std::string& expression) {
              // ClearListeners()).
              "if (!plugin.eventListeners) plugin.eventListeners = [];"
              "plugin.eventListeners.push(message_handler);";
-  pp::Var exception;
-  instance_->ExecuteScript(js_code, &exception);
-  return exception.is_undefined();
+  instance_->EvalScript(js_code);
+  return true;
 }
 
 bool TestPostMessage::ClearListeners() {
-  std::string js_code(
-      "var plugin = document.getElementById('plugin');"
-      "while (plugin.eventListeners.length) {"
-      "  plugin.removeEventListener('message', plugin.eventListeners.pop());"
-      "}");
-  pp::Var exception;
-  instance_->ExecuteScript(js_code, &exception);
-  return(exception.is_undefined());
+  std::string js_code;
+  js_code += "var plugin = document.getElementById('plugin');"
+             "while (plugin.eventListeners.length) {"
+             "  plugin.removeEventListener('message',"
+             "                             plugin.eventListeners.pop());"
+             "}";
+  instance_->EvalScript(js_code);
+  return true;
 }
 
 int TestPostMessage::WaitForMessages() {

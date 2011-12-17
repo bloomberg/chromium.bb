@@ -52,8 +52,7 @@ TestInputEvent::~TestInputEvent() {
              "plugin.removeEventListener('message',"
              "                           plugin.wait_for_messages_handler);"
              "delete plugin.wait_for_messages_handler;";
-  pp::Var exception;
-  instance_->ExecuteScript(js_code, &exception);
+  instance_->EvalScript(js_code);
 }
 
 bool TestInputEvent::Init() {
@@ -94,9 +93,7 @@ bool TestInputEvent::Init() {
              "plugin.addEventListener('message', wait_for_messages_handler);"
              // Stash it on the plugin so we can remove it in the destructor.
              "plugin.wait_for_messages_handler = wait_for_messages_handler;";
-  pp::Var exception;
-  instance_->ExecuteScript(js_code, &exception);
-  success = success && exception.is_undefined();
+  instance_->EvalScript(js_code);
 
   return success;
 }

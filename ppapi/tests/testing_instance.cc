@@ -101,6 +101,12 @@ bool TestingInstance::HandleInputEvent(const pp::InputEvent& event) {
   return false;
 }
 
+void TestingInstance::EvalScript(const std::string& script) {
+  std::string message("TESTING_MESSAGE:EvalScript:");
+  message.append(script);
+  PostMessage(pp::Var(message));
+}
+
 void TestingInstance::LogTest(const std::string& test_name,
                               const std::string& error_message) {
   // Tell the browser we're still working.

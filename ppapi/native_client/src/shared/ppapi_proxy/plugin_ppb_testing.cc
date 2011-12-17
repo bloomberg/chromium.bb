@@ -102,6 +102,19 @@ PP_Bool IsOutOfProcess() {
   return PP_FALSE;
 }
 
+void SimulateInputEvent(PP_Instance instance, PP_Resource input_event) {
+  DebugPrintf("PPB_Testing::SimulateInputEvent: instance=%"NACL_PRId32", "
+              "input_event=%"NACL_PRId32"\n",
+              instance, input_event);
+
+  NaClSrpcError srpc_result =
+      PpbTestingRpcClient::PPB_Testing_SimulateInputEvent(GetMainSrpcChannel(),
+                                                          instance,
+                                                          input_event);
+  DebugPrintf("PPB_Testing::SimulateInputEvent: %s\n",
+              NaClSrpcErrorString(srpc_result));
+}
+
 struct PP_Var GetDocumentURL(PP_Instance instance,
                              struct PP_URLComponents_Dev* components) {
   DebugPrintf("PPB_Testing::GetDocumentURL: "
@@ -140,7 +153,7 @@ const PPB_Testing_Dev* PluginTesting::GetInterface() {
     QuitMessageLoop,
     GetLiveObjectsForInstance,
     IsOutOfProcess,
-    NULL,
+    SimulateInputEvent,
     GetDocumentURL
   };
   return &testing_interface;

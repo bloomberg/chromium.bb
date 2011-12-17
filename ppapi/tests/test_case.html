@@ -78,6 +78,7 @@ function ExtractSearchParameter(name) {
 //  - DidExecuteTests
 //  - LogHTML
 //  - SetCookie
+//  - EvalScript
 // The second item is the verbatim message_contents.
 function ParseTestingMessage(message_data) {
   if (typeof(message_data)!='string')
@@ -107,6 +108,13 @@ function SetCookie(key_value_string) {
   window.document.cookie = key_value_string + "; path=/";
 }
 
+function EvalScript(script) {
+  try {
+    eval(script);
+  } catch(ex) {
+  }
+}
+
 function IsTestingMessage(message_data) {
   return (ParseTestingMessage(message_data) != undefined);
 }
@@ -124,6 +132,8 @@ function handleTestingMessage(message_event) {
       LogHTML(contents);
     else if (type === "SetCookie")
       SetCookie(contents);
+    else if (type === "EvalScript")
+      EvalScript(contents);
   }
 }
 

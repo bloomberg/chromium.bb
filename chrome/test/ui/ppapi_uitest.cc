@@ -288,6 +288,8 @@ TEST_PPAPI_NACL_VIA_HTTP(CursorControl)
 
 TEST_PPAPI_IN_PROCESS(InputEvent)
 TEST_PPAPI_OUT_OF_PROCESS(InputEvent)
+// TODO(bbudge) Enable when input events are proxied correctly for NaCl.
+TEST_PPAPI_NACL_VIA_HTTP(DISABLED_InputEvent)
 
 TEST_PPAPI_IN_PROCESS(Instance)
 TEST_PPAPI_OUT_OF_PROCESS(Instance)
@@ -439,6 +441,12 @@ TEST_PPAPI_OUT_OF_PROCESS(PostMessage_ExtraParam)
 // Times out on Windows XP: http://crbug.com/95557
 TEST_PPAPI_OUT_OF_PROCESS(PostMessage_NonMainThread)
 #endif
+TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendInInit)
+TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendingData)
+TEST_PPAPI_NACL_VIA_HTTP(DISABLED_PostMessage_SendingArrayBuffer)
+TEST_PPAPI_NACL_VIA_HTTP(PostMessage_MessageEvent)
+TEST_PPAPI_NACL_VIA_HTTP(PostMessage_NoHandler)
+TEST_PPAPI_NACL_VIA_HTTP(PostMessage_ExtraParam)
 
 TEST_PPAPI_IN_PROCESS(Memory)
 TEST_PPAPI_OUT_OF_PROCESS(Memory)

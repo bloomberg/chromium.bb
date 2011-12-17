@@ -2056,6 +2056,21 @@ static void PPB_Testing_GetLiveObjectsForInstanceDispatcher(
   );
 }
 
+static void PPB_Testing_SimulateInputEventDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbTestingRpcServer::PPB_Testing_SimulateInputEvent(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival
+  );
+}
+
 static void PPB_Testing_GetDocumentURLDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -2692,6 +2707,7 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Testing_RunMessageLoop:i:", PPB_Testing_RunMessageLoopDispatcher },
   { "PPB_Testing_QuitMessageLoop:i:", PPB_Testing_QuitMessageLoopDispatcher },
   { "PPB_Testing_GetLiveObjectsForInstance:i:i", PPB_Testing_GetLiveObjectsForInstanceDispatcher },
+  { "PPB_Testing_SimulateInputEvent:ii:", PPB_Testing_SimulateInputEventDispatcher },
   { "PPB_Testing_GetDocumentURL:i:CC", PPB_Testing_GetDocumentURLDispatcher },
   { "PPB_UDPSocket_Private_Create:i:i", PPB_UDPSocket_Private_CreateDispatcher },
   { "PPB_UDPSocket_Private_IsUDPSocket:i:i", PPB_UDPSocket_Private_IsUDPSocketDispatcher },

@@ -83,6 +83,9 @@ pp::InstancePrivate {
     return protocol_;
   }
 
+  // Posts a message to the test page to eval() the script.
+  void EvalScript(const std::string& script);
+
  private:
   void ExecuteTests(int32_t unused);
 

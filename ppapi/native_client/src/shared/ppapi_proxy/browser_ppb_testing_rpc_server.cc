@@ -91,6 +91,21 @@ void PpbTestingRpcServer::PPB_Testing_GetLiveObjectsForInstance(
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
+void PpbTestingRpcServer::PPB_Testing_SimulateInputEvent(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
+    PP_Instance instance,
+    PP_Resource input_event) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+
+  PPBTestingInterface()->SimulateInputEvent(instance, input_event);
+
+  DebugPrintf("PPB_Testing::SimulateInputEvent: instance=%"NACL_PRIu32"\n",
+              instance);
+  rpc->result = NACL_SRPC_RESULT_OK;
+}
+
 void PpbTestingRpcServer::PPB_Testing_GetDocumentURL(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,

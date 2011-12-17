@@ -888,6 +888,10 @@ class PpbTestingRpcClient {
       NaClSrpcChannel* channel,
       PP_Instance instance,
       int32_t* live_object_count);
+  static NaClSrpcError PPB_Testing_SimulateInputEvent(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      PP_Resource input_event);
   static NaClSrpcError PPB_Testing_GetDocumentURL(
       NaClSrpcChannel* channel,
       PP_Instance instance,
