@@ -310,7 +310,13 @@ def BuildArchCRX(version_quad,
   for lib_mode in LIBMODES:
     # Skip ARM glibc for now (no binaries).
     if lib_mode == 'glibc' and arch == 'arm':
+      print 'Skip copying glibc libs for arch ARM'
       continue
+    # Skip glibc for mac and windows too (no glibc tarball).
+    if lib_mode == 'glibc' and PLATFORM != 'linux':
+      print 'Skip copying glibc libs for OS %s' % PLATFORM
+      continue
+
     if lib_mode == 'newlib':
       lib_dir = target_dir
     else:
