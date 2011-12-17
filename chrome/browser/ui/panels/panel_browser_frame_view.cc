@@ -751,7 +751,7 @@ void PanelBrowserFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
   // Paint the background.
   if (paint_state_ == PAINT_FOR_ATTENTION || UsingDefaultTheme()) {
     const SkPaint& paint = GetDefaultFrameTheme(paint_state_);
-    canvas->DrawRectInt(0, 0, width(), kTitlebarHeight, paint);
+    canvas->DrawRect(gfx::Rect(0, 0, width(), kTitlebarHeight), paint);
   } else {
     SkBitmap* bitmap = GetFrameTheme(paint_state_);
     canvas->TileImageInt(*bitmap, 0, 0, width(), kTitlebarHeight);
@@ -798,8 +798,9 @@ void PanelBrowserFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
 
   // Draw the divider between the titlebar and the client area.
   if (height() > kTitlebarHeight) {
-    canvas->DrawRectInt(kDividerColor, kBorderThickness, kTitlebarHeight,
-                        width() - 1 - 2 * kBorderThickness, kBorderThickness);
+    canvas->DrawRect(gfx::Rect(kBorderThickness, kTitlebarHeight,
+                               width() - 1 - 2 * kBorderThickness,
+                               kBorderThickness), kDividerColor);
   }
 }
 

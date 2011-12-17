@@ -712,10 +712,8 @@ void RenderText::DrawCursor(Canvas* canvas) {
   TRACE_EVENT0("gfx", "RenderText::DrawCursor");
   // Paint cursor. Replace cursor is drawn as rectangle for now.
   // TODO(msw): Draw a better cursor with a better indication of association.
-  if (cursor_visible() && focused()) {
-    Rect r(GetUpdatedCursorBounds());
-    canvas->DrawRectInt(kCursorColor, r.x(), r.y(), r.width(), r.height());
-  }
+  if (cursor_visible() && focused())
+    canvas->DrawRect(GetUpdatedCursorBounds(), kCursorColor);
 }
 
 }  // namespace gfx

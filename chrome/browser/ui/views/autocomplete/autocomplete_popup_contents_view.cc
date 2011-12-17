@@ -178,9 +178,9 @@ class AutocompletePopupContentsView::InstantOptInView
                                  kOptInBackgroundVInset));
     bg_painter_->Paint(width() - kOptInBackgroundHInset * 2,
                        height() - kOptInBackgroundVInset * 2, canvas);
-    canvas->DrawRectInt(ResourceBundle::toolbar_separator_color, 0, 0,
-                        width() - kOptInBackgroundHInset * 2,
-                        height() - kOptInBackgroundVInset * 2);
+    canvas->DrawRect(gfx::Rect(0, 0, width() - kOptInBackgroundHInset * 2,
+                               height() - kOptInBackgroundVInset * 2),
+                     ResourceBundle::toolbar_separator_color);
     canvas->Restore();
   }
 

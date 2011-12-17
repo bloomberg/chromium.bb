@@ -450,11 +450,12 @@ void AppPanelBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
       client_area_top, left->width(), client_area_height);
 
   // Draw the toolbar color to fill in the edges.
-  canvas->DrawRectInt(ResourceBundle::toolbar_color,
+  canvas->DrawRect(gfx::Rect(
       client_area_bounds.x() - kClientEdgeThickness,
       client_area_top - kClientEdgeThickness,
       client_area_bounds.width() + kClientEdgeThickness,
-      client_area_bottom - client_area_top + kClientEdgeThickness);
+      client_area_bottom - client_area_top + kClientEdgeThickness),
+      ResourceBundle::toolbar_color);
 }
 
 void AppPanelBrowserFrameView::LayoutWindowControls() {

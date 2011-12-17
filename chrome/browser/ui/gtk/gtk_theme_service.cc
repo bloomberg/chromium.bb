@@ -1017,7 +1017,7 @@ SkBitmap* GtkThemeService::GenerateFrameImage(
     paint.setShader(shader);
     shader->unref();
 
-    canvas.DrawRectInt(0, 0, kToolbarImageWidth, gradient_size, paint);
+    canvas.DrawRect(gfx::Rect(0, 0, kToolbarImageWidth, gradient_size), paint);
   }
 
   canvas.FillRect(base, gfx::Rect(0, gradient_size,

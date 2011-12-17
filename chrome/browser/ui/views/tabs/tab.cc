@@ -393,7 +393,8 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
       SkShader::kClamp_TileMode);
   paint.setShader(shader);
   shader->unref();
-  hover_canvas.DrawRectInt(x - radius, -radius, radius * 2, radius * 2, paint);
+  hover_canvas.DrawRect(gfx::Rect(x - radius, -radius, radius * 2, radius * 2),
+                        paint);
 
   // Draw the radial gradient clipped to the background into hover_image.
   SkBitmap hover_image = SkBitmapOperations::CreateMaskedBitmap(

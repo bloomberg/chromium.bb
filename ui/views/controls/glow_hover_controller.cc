@@ -95,9 +95,9 @@ void GlowHoverController::Draw(gfx::Canvas* canvas,
   if (shader) {
     paint.setShader(shader);
     shader->unref();
-    hover_canvas.DrawRectInt(location_.x() - radius,
-                             location_.y() - radius,
-                             radius * 2, radius * 2, paint);
+    hover_canvas.DrawRect(gfx::Rect(location_.x() - radius,
+                                    location_.y() - radius,
+                                    radius * 2, radius * 2), paint);
   }
   SkBitmap result = SkBitmapOperations::CreateMaskedBitmap(
       hover_canvas.ExtractBitmap(), mask_image);

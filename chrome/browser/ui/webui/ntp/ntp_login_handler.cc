@@ -56,7 +56,7 @@ SkBitmap GetGAIAPictureForNTP(const gfx::Image& image) {
 
   // Draw a gray border on the inside of the icon.
   SkColor color = SkColorSetARGB(83, 0, 0, 0);
-  canvas.DrawRectInt(color, 0, 0, length - 1, length - 1);
+  canvas.DrawRect(gfx::Rect(0, 0, length - 1, length - 1), color);
 
   return canvas.ExtractBitmap();
 }

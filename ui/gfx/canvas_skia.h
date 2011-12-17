@@ -109,13 +109,11 @@ class UI_EXPORT CanvasSkia : public Canvas {
                         SkXfermode::Mode mode) OVERRIDE;
   virtual void FillRect(const gfx::Brush* brush,
                         const gfx::Rect& rect) OVERRIDE;
-  virtual void DrawRectInt(const SkColor& color,
-                           int x, int y, int w, int h) OVERRIDE;
-  virtual void DrawRectInt(const SkColor& color,
-                           int x, int y, int w, int h,
-                           SkXfermode::Mode mode) OVERRIDE;
-  virtual void DrawRectInt(int x, int y, int w, int h,
-                           const SkPaint& paint) OVERRIDE;
+  virtual void DrawRect(const gfx::Rect& rect, const SkColor& color) OVERRIDE;
+  virtual void DrawRect(const gfx::Rect& rect,
+                        const SkColor& color,
+                        SkXfermode::Mode mode) OVERRIDE;
+  virtual void DrawRect(const gfx::Rect& rect, const SkPaint& paint) OVERRIDE;
   virtual void DrawLineInt(const SkColor& color,
                            int x1, int y1,
                            int x2, int y2) OVERRIDE;

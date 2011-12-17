@@ -418,7 +418,7 @@ void CanvasSkia::DrawStringWithHalo(const string16& text,
   CanvasSkia text_canvas(w + 2, h + 2, true);
   SkPaint bkgnd_paint;
   bkgnd_paint.setColor(halo_color);
-  text_canvas.DrawRectInt(0, 0, w + 2, h + 2, bkgnd_paint);
+  text_canvas.DrawRect(gfx::Rect(0, 0, w + 2, h + 2), bkgnd_paint);
 
   // Draw the text into the temporary buffer. This will have correct
   // ClearType since the background color is the same as the halo color.

@@ -30,7 +30,7 @@ gfx::Image GetAvatarIconForMenu(const gfx::Image& image,
 
   // Draw a gray border on the inside of the icon.
   SkColor color = SkColorSetARGB(83, 0, 0, 0);
-  canvas.DrawRectInt(color, x, y, length - 1, length - 1);
+  canvas.DrawRect(gfx::Rect(x, y, length - 1, length - 1), color);
 
   return gfx::Image(new SkBitmap(canvas.ExtractBitmap()));
 }
