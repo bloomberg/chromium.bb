@@ -427,6 +427,10 @@ DownloadShelf* Panel::GetDownloadShelf() {
   return tabbed_browser->window()->GetDownloadShelf();
 }
 
+void Panel::ShowRepostFormWarningDialog(TabContents* tab_contents) {
+  NOTIMPLEMENTED();
+}
+
 void Panel::ShowCollectedCookiesDialog(TabContentsWrapper* wrapper) {
   NOTIMPLEMENTED();
 }

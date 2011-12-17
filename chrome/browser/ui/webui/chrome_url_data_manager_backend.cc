@@ -78,7 +78,7 @@ class ChromeURLContentSecurityPolicyExceptionSet
 #if defined(OS_CHROMEOS) || defined(USE_AURA)
     insert(chrome::kChromeUICollectedCookiesHost);
     insert(chrome::kChromeUIHttpAuthHost);
-    insert(chrome::kChromeUITabModalConfirmDialogHost);
+    insert(chrome::kChromeUIRepostFormWarningHost);
 #endif
 #if defined(USE_AURA)
     insert(chrome::kChromeUIAppListHost);

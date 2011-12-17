@@ -77,7 +77,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
-#include "chrome/browser/repost_form_warning_controller.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -3796,9 +3795,7 @@ void Browser::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 }
 
 void Browser::ShowRepostFormWarningDialog(TabContents *tab_contents) {
-  browser::ShowTabModalConfirmDialog(
-      new RepostFormWarningController(tab_contents),
-      window()->GetNativeHandle(), tab_contents);
+  window()->ShowRepostFormWarningDialog(tab_contents);
 }
 
 void Browser::ShowContentSettingsPage(ContentSettingsType content_type) {

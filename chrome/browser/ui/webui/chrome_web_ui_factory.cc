@@ -261,7 +261,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(TabContents* tab_contents,
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
   if (url.host() == chrome::kChromeUICollectedCookiesHost ||
       url.host() == chrome::kChromeUIHttpAuthHost ||
-      url.host() == chrome::kChromeUITabModalConfirmDialogHost) {
+      url.host() == chrome::kChromeUIRepostFormWarningHost) {
     return &NewWebUI<ConstrainedHtmlUI>;
   }
 #endif

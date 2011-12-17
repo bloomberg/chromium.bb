@@ -239,6 +239,9 @@ class BrowserWindow {
   // Returns the DownloadShelf.
   virtual DownloadShelf* GetDownloadShelf() = 0;
 
+  // Shows the repost form confirmation dialog box.
+  virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) = 0;
+
   // Shows the collected cookies dialog box.
   virtual void ShowCollectedCookiesDialog(TabContentsWrapper* tab_contents) = 0;
 
