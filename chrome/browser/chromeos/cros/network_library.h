@@ -1620,6 +1620,13 @@ class NetworkLibrary {
   virtual Network* FindRememberedNetworkByUniqueId(
       const std::string& unique_id) const = 0;
 
+  // Return a pointer to the ONC dictionary for a network identified by unique
+  // ID. Returns NULL if there is no ONC dictionary available for that network.
+  // The ONC dictionary is usually only present for policy-configure networks
+  // which get reconfigured at startup.
+  virtual const base::DictionaryValue* FindOncForNetwork(
+      const std::string& unique_id) const = 0;
+
   // Retrieves the data plans associated with |path|, NULL if there are no
   // associated plans.
   virtual const CellularDataPlanVector* GetDataPlans(

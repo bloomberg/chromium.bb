@@ -60,8 +60,12 @@ class OncNetworkParser : public NetworkParser {
   // Returns the number of networks in the "NetworkConfigs" list.
   int GetNetworkConfigsSize() const;
 
+  // Returns the network configuration dictionary for the nth network. CHECKs if
+  // |n| is out of range and returns NULL on parse errors.
+  const base::DictionaryValue* GetNetworkConfig(int n);
+
   // Call to create the network by parsing network config in the nth position.
-  // (0-based). Returns NULL if there's a parse error or if n is out of range.
+  // (0-based). CHECKs if |n| is out of range and returns NULL on parse errors.
   Network* ParseNetwork(int n);
 
   // Returns the number of certificates in the "Certificates" list.

@@ -2,164 +2,133 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
-#include "base/stringprintf.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/network_ui_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
-namespace {
-
-// A mock network for testing. We really only need the ui_data() member.
-class TestNetwork : public Network {
- public:
-  TestNetwork()
-      : Network("wifi-network", TYPE_WIFI) {}
-};
-
-}  // namespace
-
 class NetworkUIDataTest : public testing::Test {
  protected:
   NetworkUIDataTest() {}
+  virtual ~NetworkUIDataTest() {}
 
-  static void SetProperty(DictionaryValue* dict,
-                          const char* property_key,
-                          const char* controller,
-                          base::Value* default_value) {
-    DictionaryValue* property_dict = new DictionaryValue();
-    if (controller) {
-      property_dict->SetString(NetworkPropertyUIData::kKeyController,
-                               controller);
+  void CheckProperty(const NetworkPropertyUIData& property,
+                     const base::Value* expected_default_value,
+                     bool expected_managed,
+                     bool expected_recommended,
+                     bool expected_editable) {
+    if (expected_default_value) {
+      EXPECT_TRUE(base::Value::Equals(expected_default_value,
+                                      property.default_value()));
+    } else {
+      EXPECT_FALSE(property.default_value());
     }
-    if (default_value) {
-      property_dict->Set(NetworkPropertyUIData::kKeyDefaultValue,
-                         default_value);
-    }
-    dict->Set(base::StringPrintf("%s.%s",
-                                 NetworkUIData::kKeyProperties,
-                                 property_key),
-              property_dict);
+    EXPECT_EQ(expected_managed, property.managed());
+    EXPECT_EQ(expected_recommended, property.recommended());
+    EXPECT_EQ(expected_editable, property.editable());
   }
-
-  static void CheckProperty(const DictionaryValue* dict,
-                            const char* property_key,
-                            const char* controller,
-                            base::Value* default_value) {
-    scoped_ptr<base::Value> scoped_default_value(default_value);
-    DictionaryValue* property_dict;
-    std::string key = base::StringPrintf("%s.%s",
-                                         NetworkUIData::kKeyProperties,
-                                         property_key);
-    EXPECT_TRUE(dict->GetDictionary(key, &property_dict));
-    ASSERT_TRUE(property_dict);
-    std::string actual_controller;
-    EXPECT_TRUE(property_dict->GetString(NetworkPropertyUIData::kKeyController,
-                                         &actual_controller));
-    EXPECT_EQ(controller, actual_controller);
-    if (default_value) {
-      base::Value* actual_value = NULL;
-      EXPECT_TRUE(property_dict->Get(NetworkPropertyUIData::kKeyDefaultValue,
-                                     &actual_value));
-      EXPECT_TRUE(base::Value::Equals(default_value, actual_value));
-    }
-  }
-
-  TestNetwork network_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkUIDataTest);
 };
 
 TEST_F(NetworkUIDataTest, ONCSource) {
-  network_.ui_data()->SetString(NetworkUIData::kKeyONCSource, "user_import");
+  base::DictionaryValue ui_data;
+
+  ui_data.SetString(NetworkUIData::kKeyONCSource, "user_import");
   EXPECT_EQ(NetworkUIData::ONC_SOURCE_USER_IMPORT,
-            NetworkUIData::GetONCSource(&network_));
-  EXPECT_FALSE(NetworkUIData::IsManaged(&network_));
+            NetworkUIData::GetONCSource(&ui_data));
+  EXPECT_FALSE(NetworkUIData::IsManaged(&ui_data));
 
-  network_.ui_data()->SetString(NetworkUIData::kKeyONCSource, "device_policy");
+  ui_data.SetString(NetworkUIData::kKeyONCSource, "device_policy");
   EXPECT_EQ(NetworkUIData::ONC_SOURCE_DEVICE_POLICY,
-            NetworkUIData::GetONCSource(&network_));
-  EXPECT_TRUE(NetworkUIData::IsManaged(&network_));
+            NetworkUIData::GetONCSource(&ui_data));
+  EXPECT_TRUE(NetworkUIData::IsManaged(&ui_data));
 
-  network_.ui_data()->SetString(NetworkUIData::kKeyONCSource, "user_policy");
+  ui_data.SetString(NetworkUIData::kKeyONCSource, "user_policy");
   EXPECT_EQ(NetworkUIData::ONC_SOURCE_USER_POLICY,
-            NetworkUIData::GetONCSource(&network_));
-  EXPECT_TRUE(NetworkUIData::IsManaged(&network_));
+            NetworkUIData::GetONCSource(&ui_data));
+  EXPECT_TRUE(NetworkUIData::IsManaged(&ui_data));
 }
 
-TEST_F(NetworkUIDataTest, ReadProperties) {
-  SetProperty(network_.ui_data(), NetworkUIData::kPropertyAutoConnect,
-              "policy", NULL);
-  SetProperty(network_.ui_data(), NetworkUIData::kPropertyPreferred,
-              "user", Value::CreateBooleanValue(true));
-  SetProperty(network_.ui_data(), NetworkUIData::kPropertyPassphrase,
-              NULL, Value::CreateIntegerValue(42));
+TEST_F(NetworkUIDataTest, PropertyInit) {
+  NetworkPropertyUIData empty_prop;
+  CheckProperty(empty_prop, NULL, false, false, true);
 
-  NetworkPropertyUIData property_ui_data(&network_,
-                                         NetworkUIData::kPropertyAutoConnect);
-  EXPECT_TRUE(property_ui_data.managed());
-  EXPECT_FALSE(property_ui_data.recommended());
-  EXPECT_FALSE(property_ui_data.editable());
-  EXPECT_FALSE(property_ui_data.default_value());
+  NetworkPropertyUIData null_prop(NULL);
+  CheckProperty(null_prop, NULL, false, false, true);
 
-  property_ui_data.UpdateFromNetwork(&network_,
-                                     NetworkUIData::kPropertyPreferred);
-  EXPECT_FALSE(property_ui_data.managed());
-  EXPECT_TRUE(property_ui_data.recommended());
-  EXPECT_TRUE(property_ui_data.editable());
-  base::FundamentalValue expected_preferred(true);
-  EXPECT_TRUE(base::Value::Equals(&expected_preferred,
-                                  property_ui_data.default_value()));
+  base::DictionaryValue empty_dict;
+  NetworkPropertyUIData empty_dict_prop(&empty_dict);
+  CheckProperty(empty_dict_prop, NULL, false, false, true);
 
-  property_ui_data.UpdateFromNetwork(&network_,
-                                     NetworkUIData::kPropertyPassphrase);
-  EXPECT_FALSE(property_ui_data.managed());
-  EXPECT_TRUE(property_ui_data.recommended());
-  EXPECT_TRUE(property_ui_data.editable());
-  base::FundamentalValue expected_passphrase(42);
-  EXPECT_TRUE(base::Value::Equals(&expected_passphrase,
-                                  property_ui_data.default_value()));
-
-  property_ui_data.UpdateFromNetwork(&network_,
-                                     NetworkUIData::kPropertySaveCredentials);
-  EXPECT_FALSE(property_ui_data.managed());
-  EXPECT_FALSE(property_ui_data.recommended());
-  EXPECT_TRUE(property_ui_data.editable());
-  EXPECT_FALSE(property_ui_data.default_value());
 }
 
-TEST_F(NetworkUIDataTest, WriteProperties) {
+TEST_F(NetworkUIDataTest, ParseOncProperty) {
+  base::DictionaryValue ui_data;
   NetworkUIData ui_data_builder;
+
+  base::DictionaryValue onc;
+
+  base::StringValue val_a("a");
+  base::StringValue val_b("b");
+  base::StringValue val_a_a("a_a");
+  base::StringValue val_a_b("a_b");
+
+  onc.Set("a", val_a.DeepCopy());
+  onc.Set("b", val_b.DeepCopy());
+  onc.Set("a.a", val_a_a.DeepCopy());
+  onc.Set("a.b", val_a_b.DeepCopy());
+  base::ListValue recommended;
+  recommended.Append(base::Value::CreateStringValue("b"));
+  recommended.Append(base::Value::CreateStringValue("c"));
+  recommended.Append(base::Value::CreateStringValue("a.a"));
+  onc.Set("Recommended", recommended.DeepCopy());
+  onc.Set("a.Recommended", recommended.DeepCopy());
+
+  NetworkPropertyUIData prop;
+
+  ui_data_builder.set_onc_source(NetworkUIData::ONC_SOURCE_USER_IMPORT);
+  ui_data_builder.FillDictionary(&ui_data);
+
+  prop.ParseOncProperty(NULL, &onc, "a");
+  CheckProperty(prop, NULL, false, false, true);
+
+  prop.ParseOncProperty(&ui_data, &onc, "a");
+  CheckProperty(prop, NULL, false, false, true);
+
+  prop.ParseOncProperty(&ui_data, &onc, "a.b");
+  CheckProperty(prop, NULL, false, false, true);
+
+  prop.ParseOncProperty(&ui_data, &onc, "c");
+  CheckProperty(prop, NULL, false, false, true);
+
   ui_data_builder.set_onc_source(NetworkUIData::ONC_SOURCE_USER_POLICY);
-  NetworkPropertyUIData auto_connect_ui_data(
-      NetworkPropertyUIData::CONTROLLER_USER,
-      base::Value::CreateBooleanValue(true));
-  ui_data_builder.SetProperty(NetworkUIData::kPropertyAutoConnect,
-                              auto_connect_ui_data);
-  NetworkPropertyUIData preferred_ui_data(
-      NetworkPropertyUIData::CONTROLLER_POLICY,
-      base::Value::CreateBooleanValue(42));
-  ui_data_builder.SetProperty(NetworkUIData::kPropertyPreferred,
-                              preferred_ui_data);
-  NetworkPropertyUIData passphrase_ui_data(
-      NetworkPropertyUIData::CONTROLLER_USER, NULL);
-  ui_data_builder.SetProperty(NetworkUIData::kPropertyPassphrase,
-                              passphrase_ui_data);
+  ui_data_builder.FillDictionary(&ui_data);
 
-  DictionaryValue dict;
-  ui_data_builder.FillDictionary(&dict);
+  prop.ParseOncProperty(&ui_data, &onc, "a");
+  CheckProperty(prop, NULL, true, false, false);
 
-  std::string onc_source;
-  EXPECT_TRUE(dict.GetString(NetworkUIData::kKeyONCSource, &onc_source));
-  EXPECT_EQ("user_policy", onc_source);
-  CheckProperty(&dict, NetworkUIData::kPropertyAutoConnect,
-                "user", base::Value::CreateBooleanValue(true));
-  CheckProperty(&dict, NetworkUIData::kPropertyPreferred,
-                "policy", base::Value::CreateBooleanValue(42));
-  CheckProperty(&dict, NetworkUIData::kPropertyPassphrase,
-                "user", NULL);
+  prop.ParseOncProperty(&ui_data, &onc, "b");
+  CheckProperty(prop, &val_b, false, true, true);
+
+  prop.ParseOncProperty(&ui_data, &onc, "c");
+  CheckProperty(prop, NULL, false, false, true);
+
+  prop.ParseOncProperty(&ui_data, &onc, "d");
+  CheckProperty(prop, NULL, true, false, false);
+
+  prop.ParseOncProperty(&ui_data, &onc, "a.a");
+  CheckProperty(prop, NULL, true, false, false);
+
+  prop.ParseOncProperty(&ui_data, &onc, "a.b");
+  CheckProperty(prop, &val_a_b, false, true, true);
+
+  prop.ParseOncProperty(&ui_data, &onc, "a.c");
+  CheckProperty(prop, NULL, false, false, true);
+
+  prop.ParseOncProperty(&ui_data, &onc, "a.d");
+  CheckProperty(prop, NULL, true, false, false);
+
+  prop.ParseOncProperty(&ui_data, NULL, "a.e");
+  CheckProperty(prop, NULL, true, false, false);
 }
 
 }  // namespace chromeos

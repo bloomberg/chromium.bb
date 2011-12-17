@@ -82,6 +82,9 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_CONST_METHOD1(FindRememberedNetworkByPath, Network*(const std::string&));
   MOCK_CONST_METHOD1(FindRememberedNetworkByUniqueId,
                      Network*(const std::string&));
+  MOCK_CONST_METHOD1(FindOncForNetwork,
+                     const base::DictionaryValue*(
+                         const std::string& unique_id));
   MOCK_CONST_METHOD1(GetDataPlans,
                      CellularDataPlanVector*(const std::string&));
   MOCK_CONST_METHOD1(GetSignificantDataPlan,

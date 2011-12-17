@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/cros/onc_constants.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
@@ -172,7 +173,7 @@ NetworkInfoDictionary::NetworkInfoDictionary(const chromeos::Network* network) {
   set_remembered(false);
   set_shared(false);
   set_needs_new_plan(false);
-  set_policy_managed(chromeos::NetworkUIData::IsManaged(network));
+  set_policy_managed(chromeos::NetworkUIData::IsManaged(network->ui_data()));
 }
 
 NetworkInfoDictionary::NetworkInfoDictionary(
@@ -189,7 +190,7 @@ NetworkInfoDictionary::NetworkInfoDictionary(
   set_remembered(true);
   set_shared(remembered->profile_type() == chromeos::PROFILE_SHARED);
   set_needs_new_plan(false);
-  set_policy_managed(chromeos::NetworkUIData::IsManaged(remembered));
+  set_policy_managed(chromeos::NetworkUIData::IsManaged(remembered->ui_data()));
 }
 
 DictionaryValue* NetworkInfoDictionary::BuildDictionary() {
@@ -866,6 +867,10 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
         network->service_path());
   }
 
+  const base::DictionaryValue* ui_data = network->ui_data();
+  const base::DictionaryValue* onc =
+      cros_->FindOncForNetwork(network->unique_id());
+
   DictionaryValue dictionary;
   std::string hardware_address;
   chromeos::NetworkIPConfigVector ipconfigs = cros_->GetIPConfigs(
@@ -890,10 +895,10 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
       ipconfig_static.reset(ipconfig_dict.release());
   }
 
-  chromeos::NetworkPropertyUIData ipconfig_dhcp_ui_data(network, NULL);
+  chromeos::NetworkPropertyUIData ipconfig_dhcp_ui_data(ui_data);
   SetValueDictionary(&dictionary, "ipconfigDHCP", ipconfig_dhcp.release(),
                      ipconfig_dhcp_ui_data);
-  chromeos::NetworkPropertyUIData ipconfig_static_ui_data(network, NULL);
+  chromeos::NetworkPropertyUIData ipconfig_static_ui_data(ui_data);
   SetValueDictionary(&dictionary, "ipconfigStatic", ipconfig_static.release(),
                      ipconfig_static_ui_data);
 
@@ -914,8 +919,7 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
   dictionary.SetBoolean("showStaticIPConfig", staticIPConfig &&
       (type == chromeos::TYPE_WIFI || type == chromeos::TYPE_ETHERNET));
 
-  chromeos::NetworkPropertyUIData preferred_ui_data(
-      network, chromeos::NetworkUIData::kPropertyPreferred);
+  chromeos::NetworkPropertyUIData preferred_ui_data(ui_data);
   if (network_profile == chromeos::PROFILE_USER) {
     dictionary.SetBoolean("showPreferred", true);
     SetValueDictionary(&dictionary, "preferred",
@@ -927,8 +931,13 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
                        Value::CreateBooleanValue(network->preferred()),
                        preferred_ui_data);
   }
-  chromeos::NetworkPropertyUIData auto_connect_ui_data(
-      network, chromeos::NetworkUIData::kPropertyAutoConnect);
+  chromeos::NetworkPropertyUIData auto_connect_ui_data(ui_data);
+  if (type == chromeos::TYPE_WIFI)
+    auto_connect_ui_data.ParseOncProperty(
+        ui_data, onc,
+        base::StringPrintf("%s.%s",
+                           chromeos::onc::kWiFi,
+                           chromeos::onc::wifi::kAutoConnect));
   SetValueDictionary(&dictionary, "autoConnect",
                      Value::CreateBooleanValue(network->auto_connect()),
                      auto_connect_ui_data);
@@ -1024,7 +1033,8 @@ void InternetOptionsHandler::PopulateCellularDetails(
   const chromeos::NetworkDevice* device =
       cros_->FindNetworkDeviceByPath(cellular->device_path());
   if (device) {
-    chromeos::NetworkPropertyUIData cellular_propety_ui_data(cellular, NULL);
+    chromeos::NetworkPropertyUIData cellular_propety_ui_data(
+        cellular->ui_data());
     dictionary->SetString("manufacturer", device->manufacturer());
     dictionary->SetString("modelId", device->model_id());
     dictionary->SetString("firmwareRevision", device->firmware_revision());

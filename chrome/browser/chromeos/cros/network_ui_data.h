@@ -15,7 +15,6 @@
 
 namespace chromeos {
 
-class Network;
 class NetworkPropertyUIData;
 
 // Helper for accessing and setting values in the network's UI data dictionary.
@@ -26,11 +25,6 @@ class NetworkPropertyUIData;
 //
 //      NetworkUIData ui_data;
 //      ui_data.set_onc_source(NetworkUIData::ONC_SOURCE_USER_IMPORT);
-//      NetworkPropertyUIData auto_connect_property(
-//              NetworkPropertyUIData::CONTROLLER_USER,
-//              base::Value::CreateBooleanValue(true));
-//      ui_data.SetProperty(NetworkUIData::kPropertyAutoConnect,
-//                          auto_connect_property);
 //      ui_data.FillDictionary(network->ui_data());
 class NetworkUIData {
  public:
@@ -49,53 +43,23 @@ class NetworkUIData {
   // Sets the ONC source.
   void set_onc_source(ONCSource onc_source) { onc_source_ = onc_source; }
 
-  // Fills in metadata for a property.
-  void SetProperty(const char* property_key,
-                   const NetworkPropertyUIData& ui_data);
-
   // Fills in |dict| with the currently configured values. This will write the
   // keys appropriate for Network::ui_data() as defined below (kKeyXXX).
-  void FillDictionary(DictionaryValue* dict) const;
+  void FillDictionary(base::DictionaryValue* dict) const;
 
   // Get the ONC source for a network.
-  static ONCSource GetONCSource(const Network* network);
+  static ONCSource GetONCSource(const base::DictionaryValue* ui_data);
 
   // Check whether a network is managed by policy.
-  static bool IsManaged(const Network* network);
+  static bool IsManaged(const base::DictionaryValue* ui_data);
 
   // Source of the ONC network. This is an integer according to enum ONCSource.
   static const char kKeyONCSource[];
-
-  // Per-property meta data. This is handled by NetworkPropertyUIData.
-  static const char kKeyProperties[];
-
-  // Property names for per-property dat
-  static const char kPropertyAutoConnect[];
-  static const char kPropertyPreferred[];
-  static const char kPropertyPassphrase[];
-  static const char kPropertySaveCredentials[];
-
-  static const char kPropertyVPNCaCertNss[];
-  static const char kPropertyVPNPskPassphrase[];
-  static const char kPropertyVPNClientCertId[];
-  static const char kPropertyVPNUsername[];
-  static const char kPropertyVPNUserPassphrase[];
-  static const char kPropertyVPNGroupName[];
-
-  static const char kPropertyEAPMethod[];
-  static const char kPropertyEAPPhase2Auth[];
-  static const char kPropertyEAPServerCaCertNssNickname[];
-  static const char kPropertyEAPClientCertPkcs11Id[];
-  static const char kPropertyEAPUseSystemCAs[];
-  static const char kPropertyEAPIdentity[];
-  static const char kPropertyEAPAnonymousIdentity[];
-  static const char kPropertyEAPPassphrase[];
 
  private:
   static EnumMapper<ONCSource>& GetONCSourceMapper();
 
   ONCSource onc_source_;
-  DictionaryValue properties_;
 
   static const EnumMapper<NetworkUIData::ONCSource>::Pair kONCSourceTable[];
 
@@ -119,21 +83,22 @@ class NetworkPropertyUIData {
   NetworkPropertyUIData();
   ~NetworkPropertyUIData();
 
+  // Initializes the object by calling Reset() with the provided ui_data.
+  explicit NetworkPropertyUIData(const base::DictionaryValue* ui_data);
+
   // Initializes the object with the given values. |default_value| may be NULL
   // to specify no default value is present. Takes ownership of |default_value|.
   NetworkPropertyUIData(Controller controller, base::Value* default_value);
 
-  // Initializes the object and calls UpdateFromNetwork.
-  NetworkPropertyUIData(const Network* network, const char* property_key);
+  // Resets the property to the controller specified by the given |ui_data| and
+  // clears the default value.
+  void Reset(const base::DictionaryValue* ui_data);
 
-  // Updates the object from the network-level UI data dictionary.
-  // |property_key| may be null, in which case the there'll be no default value
-  // and |controller| will be set to CONTROLLER_POLICY iff the network is
-  // managed.
-  void UpdateFromNetwork(const Network* network, const char* property_key);
-  // Builds a dictionary for storing in the network-level UI data dictionary.
-  // Ownership is transferred to the caller.
-  DictionaryValue* BuildDictionary() const;
+  // Update the property object from dictionary, reading the key given by
+  // |property_key|.
+  void ParseOncProperty(const base::DictionaryValue* ui_data,
+                        const base::DictionaryValue* onc,
+                        const std::string& property_key);
 
   const base::Value* default_value() const { return default_value_.get(); }
   bool managed() const { return controller_ == CONTROLLER_POLICY; }
@@ -143,16 +108,11 @@ class NetworkPropertyUIData {
   bool editable() const { return controller_ == CONTROLLER_USER; }
 
  private:
-  static EnumMapper<Controller>& GetControllerMapper();
-
   Controller controller_;
   scoped_ptr<base::Value> default_value_;
 
   static const char kKeyController[];
   static const char kKeyDefaultValue[];
-
-  static const EnumMapper<NetworkPropertyUIData::Controller>::Pair
-    kControllerTable[];
 
   // So it can access the kKeyXYZ constants.
   friend class NetworkUIDataTest;

@@ -5,8 +5,10 @@
 #include "chrome/browser/chromeos/options/vpn_config_view.h"
 
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/onc_constants.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -370,18 +372,12 @@ const std::string VPNConfigView::GetUserCertID() const {
 
 void VPNConfigView::Init(VirtualNetwork* vpn) {
   if (vpn) {
-    ca_cert_ui_data_.UpdateFromNetwork(
-        vpn, NetworkUIData::kPropertyVPNCaCertNss);
-    psk_passphrase_ui_data_.UpdateFromNetwork(
-        vpn, NetworkUIData::kPropertyVPNPskPassphrase);
-    user_cert_ui_data_.UpdateFromNetwork(
-        vpn, NetworkUIData::kPropertyVPNClientCertId);
-    username_ui_data_.UpdateFromNetwork(
-        vpn, NetworkUIData::kPropertyVPNUsername);
-    user_passphrase_ui_data_.UpdateFromNetwork(
-        vpn, NetworkUIData::kPropertyVPNUserPassphrase);
-    group_name_ui_data_.UpdateFromNetwork(
-        vpn, NetworkUIData::kPropertyVPNGroupName);
+    ParseVPNUIProperty(&ca_cert_ui_data_, vpn, onc::vpn::kServerCARef);
+    ParseVPNUIProperty(&psk_passphrase_ui_data_, vpn, onc::vpn::kPSK);
+    ParseVPNUIProperty(&user_cert_ui_data_, vpn, onc::vpn::kClientCertRef);
+    ParseVPNUIProperty(&username_ui_data_, vpn, onc::vpn::kUsername);
+    ParseVPNUIProperty(&user_passphrase_ui_data_, vpn, onc::vpn::kPassword);
+    ParseVPNUIProperty(&group_name_ui_data_, vpn, onc::vpn::kGroup);
   }
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
@@ -786,6 +782,26 @@ const std::string VPNConfigView::GetTextFromField(
   std::string result;
   TrimWhitespaceASCII(untrimmed, TRIM_ALL, &result);
   return result;
+}
+
+void VPNConfigView::ParseVPNUIProperty(NetworkPropertyUIData* property_ui_data,
+                                       Network* network,
+                                       const std::string& key) {
+  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  const base::DictionaryValue* onc =
+      network_library->FindOncForNetwork(network->unique_id());
+
+  base::DictionaryValue* vpn_dict = NULL;
+  if (!onc || !onc->GetDictionary(onc::kVPN, &vpn_dict))
+    return;
+
+  std::string vpn_type;
+  if (!vpn_dict || !vpn_dict->GetString(onc::kType, &vpn_type))
+    return;
+
+  property_ui_data->ParseOncProperty(
+      network->ui_data(), onc,
+      base::StringPrintf("%s.%s.%s", onc::kVPN, vpn_type.c_str(), key.c_str()));
 }
 
 }  // namespace chromeos

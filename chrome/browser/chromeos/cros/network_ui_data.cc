@@ -11,33 +11,8 @@ namespace chromeos {
 
 // Top-level UI data dictionary keys.
 const char NetworkUIData::kKeyONCSource[] = "onc_source";
-const char NetworkUIData::kKeyProperties[] = "properties";
 
 // Property names for per-property data stored under |kKeyProperties|.
-const char NetworkUIData::kPropertyAutoConnect[] = "auto_connect";
-const char NetworkUIData::kPropertyPreferred[] = "preferred";
-const char NetworkUIData::kPropertyPassphrase[] = "passphrase";
-const char NetworkUIData::kPropertySaveCredentials[] = "save_credentials";
-
-const char NetworkUIData::kPropertyVPNCaCertNss[] = "VPN.ca_cert_nss";
-const char NetworkUIData::kPropertyVPNPskPassphrase[] = "VPN.psk_passphrase";
-const char NetworkUIData::kPropertyVPNClientCertId[] = "VPN.client_cert_id";
-const char NetworkUIData::kPropertyVPNUsername[] = "VPN.username";
-const char NetworkUIData::kPropertyVPNUserPassphrase[] = "VPN.user_passphrase";
-const char NetworkUIData::kPropertyVPNGroupName[] = "VPN.group_name";
-
-const char NetworkUIData::kPropertyEAPMethod[] = "EAP.method";
-const char NetworkUIData::kPropertyEAPPhase2Auth[] = "EAP.phase_2_auth";
-const char NetworkUIData::kPropertyEAPServerCaCertNssNickname[] =
-    "EAP.server_ca_cert_nss_nickname";
-const char NetworkUIData::kPropertyEAPClientCertPkcs11Id[] =
-    "EAP.client_cert_pkcs11_id";
-const char NetworkUIData::kPropertyEAPUseSystemCAs[] = "EAP.use_system_cas";
-const char NetworkUIData::kPropertyEAPIdentity[] = "EAP.identity";
-const char NetworkUIData::kPropertyEAPAnonymousIdentity[] =
-    "EAP.anonymous_identity";
-const char NetworkUIData::kPropertyEAPPassphrase[] = "EAP.passphrase";
-
 const EnumMapper<NetworkUIData::ONCSource>::Pair
     NetworkUIData::kONCSourceTable[] =  {
   { "user_import", NetworkUIData::ONC_SOURCE_USER_IMPORT },
@@ -49,22 +24,11 @@ const EnumMapper<NetworkUIData::ONCSource>::Pair
 const char NetworkPropertyUIData::kKeyController[] = "controller";
 const char NetworkPropertyUIData::kKeyDefaultValue[] = "default_value";
 
-const EnumMapper<NetworkPropertyUIData::Controller>::Pair
-    NetworkPropertyUIData::kControllerTable[] =  {
-  { "user", NetworkPropertyUIData::CONTROLLER_USER },
-  { "policy", NetworkPropertyUIData::CONTROLLER_POLICY },
-};
-
 NetworkUIData::NetworkUIData()
   : onc_source_(ONC_SOURCE_NONE) {
 }
 
 NetworkUIData::~NetworkUIData() {
-}
-
-void NetworkUIData::SetProperty(const char* property_key,
-                                const NetworkPropertyUIData& ui_data) {
-  properties_.Set(property_key, ui_data.BuildDictionary());
 }
 
 void NetworkUIData::FillDictionary(base::DictionaryValue* dict) const {
@@ -73,20 +37,20 @@ void NetworkUIData::FillDictionary(base::DictionaryValue* dict) const {
   std::string source_string(GetONCSourceMapper().GetKey(onc_source_));
   if (!source_string.empty())
     dict->SetString(kKeyONCSource, source_string);
-  dict->Set(kKeyProperties, properties_.DeepCopy());
 }
 
 // static
-NetworkUIData::ONCSource NetworkUIData::GetONCSource(const Network* network) {
+NetworkUIData::ONCSource NetworkUIData::GetONCSource(
+    const base::DictionaryValue* ui_data) {
   std::string source;
-  if (network->ui_data()->GetString(kKeyONCSource, &source))
+  if (ui_data && ui_data->GetString(kKeyONCSource, &source))
     return GetONCSourceMapper().Get(source);
   return ONC_SOURCE_NONE;
 }
 
 // static
-bool NetworkUIData::IsManaged(const Network* network) {
-  ONCSource source = GetONCSource(network);
+bool NetworkUIData::IsManaged(const base::DictionaryValue* ui_data) {
+  ONCSource source = GetONCSource(ui_data);
   return source == ONC_SOURCE_DEVICE_POLICY || source == ONC_SOURCE_USER_POLICY;
 }
 
@@ -111,60 +75,44 @@ NetworkPropertyUIData::NetworkPropertyUIData(Controller controller,
       default_value_(default_value) {
 }
 
-NetworkPropertyUIData::NetworkPropertyUIData(const Network* network,
-                                             const char* property_key) {
-  UpdateFromNetwork(network, property_key);
+NetworkPropertyUIData::NetworkPropertyUIData(
+    const base::DictionaryValue* ui_data) {
+  Reset(ui_data);
 }
 
-void NetworkPropertyUIData::UpdateFromNetwork(const Network* network,
-                                              const char* property_key) {
-  // If there is no per-property information available, the property inherits
-  // the controlled state of the network.
-  controller_ =
-      NetworkUIData::IsManaged(network) ? CONTROLLER_POLICY : CONTROLLER_USER;
+void NetworkPropertyUIData::Reset(const base::DictionaryValue* ui_data) {
   default_value_.reset();
-
-  if (!property_key)
-    return;
-
-  const base::DictionaryValue* ui_data = network->ui_data();
-  if (!ui_data)
-    return;
-
-  base::DictionaryValue* property_map = NULL;
-  if (!ui_data->GetDictionary(NetworkUIData::kKeyProperties, &property_map))
-    return;
-
-  base::DictionaryValue* property = NULL;
-  if (!property_map->GetDictionary(property_key, &property))
-    return;
-
-  std::string controller;
-  if (property->GetString(kKeyController, &controller))
-    controller_ = GetControllerMapper().Get(controller);
-
-  base::Value* default_value = NULL;
-  if (property->Get(kKeyDefaultValue, &default_value) && default_value)
-    default_value_.reset(default_value->DeepCopy());
+  controller_ = NetworkUIData::IsManaged(ui_data) ? CONTROLLER_POLICY
+                                                  : CONTROLLER_USER;
 }
 
-base::DictionaryValue* NetworkPropertyUIData::BuildDictionary() const {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  std::string controller_string(GetControllerMapper().GetKey(controller_));
-  if (!controller_string.empty())
-    dict->SetString(kKeyController, controller_string);
-  if (default_value_.get())
-    dict->Set(kKeyDefaultValue, default_value_->DeepCopy());
-  return dict;
-}
+void NetworkPropertyUIData::ParseOncProperty(
+    const base::DictionaryValue* ui_data,
+    const base::DictionaryValue* onc,
+    const std::string& property_key) {
+  Reset(ui_data);
+  if (!onc || controller_ == CONTROLLER_USER)
+    return;
 
-// static
-EnumMapper<NetworkPropertyUIData::Controller>&
-    NetworkPropertyUIData::GetControllerMapper() {
-  CR_DEFINE_STATIC_LOCAL(EnumMapper<Controller>, mapper,
-                         (kControllerTable, arraysize(kControllerTable),
-                          CONTROLLER_USER));
-  return mapper;
+  size_t pos = property_key.find_last_of('.');
+  std::string recommended_property_key;
+  std::string property_basename(property_key);
+  if (pos != std::string::npos) {
+    recommended_property_key = property_key.substr(0, pos + 1);
+    property_basename = property_key.substr(pos + 1);
+  }
+  recommended_property_key += "Recommended";
+
+  base::ListValue* recommended_keys = NULL;
+  if (onc->GetList(recommended_property_key, &recommended_keys)) {
+    base::StringValue basename_value(property_basename);
+    if (recommended_keys->Find(basename_value) != recommended_keys->end()) {
+      controller_ = CONTROLLER_USER;
+      base::Value* default_value = NULL;
+      if (onc->Get(property_key, &default_value))
+        default_value_.reset(default_value->DeepCopy());
+    }
+  }
 }
 
 }  // namespace chromeos

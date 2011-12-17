@@ -98,6 +98,12 @@ class VPNConfigView : public ChildNetworkConfigView,
   const std::string GetServerCACertNssNickname() const;
   const std::string GetUserCertID() const;
 
+  // Parses a VPN UI |property| from the given |network|. |key| is the property
+  // name within the type-specific VPN subdictionary.
+  void ParseVPNUIProperty(NetworkPropertyUIData* property_ui_data,
+                          Network* network,
+                          const std::string& key);
+
   CertLibrary* cert_library_;
 
   std::string server_hostname_;

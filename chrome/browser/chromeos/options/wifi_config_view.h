@@ -107,6 +107,18 @@ class WifiConfigView : public ChildNetworkConfigView,
   // Updates the error text label.
   void UpdateErrorLabel();
 
+  // Parses a WiFi UI |property| from the ONC associated with |network|. |key|
+  // is the property name within the ONC WiFi dictionary.
+  void ParseWiFiUIProperty(NetworkPropertyUIData* property_ui_data,
+                           Network* network,
+                           const std::string& key);
+
+  // Parses a WiFi EAP UI |property| from the ONC associated with |network|.
+  // |key| is the property name within the ONC WiFi.EAP dictionary.
+  void ParseWiFiEAPUIProperty(NetworkPropertyUIData* property_ui_data,
+                              Network* network,
+                              const std::string& key);
+
   CertLibrary* cert_library_;
 
   NetworkPropertyUIData eap_method_ui_data_;

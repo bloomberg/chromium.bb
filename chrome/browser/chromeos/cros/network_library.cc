@@ -1705,6 +1705,9 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   virtual Network* FindRememberedNetworkByUniqueId(
       const std::string& unique_id) const OVERRIDE;
 
+  virtual const base::DictionaryValue* FindOncForNetwork(
+      const std::string& unique_id) const OVERRIDE;
+
   virtual const CellularDataPlanVector* GetDataPlans(
       const std::string& path) const OVERRIDE;
   virtual const CellularDataPlan* GetSignificantDataPlan(
@@ -1779,6 +1782,7 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   typedef std::map<std::string, int> PriorityMap;
   typedef std::map<std::string, NetworkDevice*> NetworkDeviceMap;
   typedef std::map<std::string, CellularDataPlanVector*> CellularDataPlanMap;
+  typedef std::map<std::string, const base::DictionaryValue*> NetworkOncMap;
 
   struct NetworkProfile {
     NetworkProfile(const std::string& p, NetworkProfileType t)
@@ -1997,6 +2001,9 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   // Temporary connection data for async connect calls.
   ConnectData connect_data_;
 
+  // Holds unique id to ONC mapping.
+  NetworkOncMap network_onc_map_;
+
   DISALLOW_COPY_AND_ASSIGN(NetworkLibraryImplBase);
 };
 
@@ -2028,6 +2035,7 @@ NetworkLibraryImplBase::~NetworkLibraryImplBase() {
   STLDeleteValues(&device_map_);
   STLDeleteValues(&network_device_observers_);
   STLDeleteValues(&network_observers_);
+  STLDeleteValues(&network_onc_map_);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2370,6 +2378,12 @@ Network* NetworkLibraryImplBase::FindRememberedNetworkByUniqueId(
   if (found != remembered_network_unique_id_map_.end())
     return found->second;
   return NULL;
+}
+
+const base::DictionaryValue* NetworkLibraryImplBase::FindOncForNetwork(
+    const std::string& unique_id) const {
+  NetworkOncMap::const_iterator iter = network_onc_map_.find(unique_id);
+  return iter != network_onc_map_.end() ? iter->second : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -2875,6 +2889,7 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
   }
 
   // Parse all networks. Bail out if that fails.
+  NetworkOncMap added_onc_map;
   ScopedVector<Network> networks;
   for (int i = 0; i < parser.GetNetworkConfigsSize(); i++) {
     // Parse Open Network Configuration blob into a temporary Network object.
@@ -2886,6 +2901,15 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
       return false;
     }
     networks.push_back(network);
+    added_onc_map[network->unique_id()] = parser.GetNetworkConfig(i);
+  }
+
+  // Update the ONC map.
+  for (NetworkOncMap::iterator iter(added_onc_map.begin());
+       iter != added_onc_map.end(); ++iter) {
+    const base::DictionaryValue*& entry = network_onc_map_[iter->first];
+    delete entry;
+    entry = iter->second->DeepCopy();
   }
 
   // Configure the networks. While doing so, collect unique identifiers of the
@@ -2926,7 +2950,7 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
     for (WifiNetworkVector::iterator i(remembered_wifi_networks_.begin());
          i != remembered_wifi_networks_.end(); ++i) {
       WifiNetwork* network = *i;
-      if (NetworkUIData::GetONCSource(network) == source &&
+      if (NetworkUIData::GetONCSource(network->ui_data()) == source &&
           network_ids.find(network->unique_id()) == network_ids.end())
         to_be_deleted.push_back(network->service_path());
     }
@@ -2934,7 +2958,7 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
     for (VirtualNetworkVector::iterator i(remembered_virtual_networks_.begin());
          i != remembered_virtual_networks_.end(); ++i) {
       VirtualNetwork* network = *i;
-      if (NetworkUIData::GetONCSource(network) == source &&
+      if (NetworkUIData::GetONCSource(network->ui_data()) == source &&
           network_ids.find(network->unique_id()) == network_ids.end())
         to_be_deleted.push_back(network->service_path());
     }
@@ -3177,6 +3201,14 @@ void NetworkLibraryImplBase::DeleteRememberedNetwork(
                                   remembered_network->service_path());
       profile.services.erase(found);
     }
+  }
+
+  // Remove the ONC blob for the network, if present.
+  NetworkOncMap::iterator onc_map_entry =
+      network_onc_map_.find(network->unique_id());
+  if (onc_map_entry != network_onc_map_.end()) {
+    delete onc_map_entry->second;
+    network_onc_map_.erase(onc_map_entry);
   }
 
   delete remembered_network;

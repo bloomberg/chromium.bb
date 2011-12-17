@@ -5,9 +5,11 @@
 #include "chrome/browser/chromeos/options/wifi_config_view.h"
 
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/cros/onc_constants.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -749,31 +751,24 @@ void WifiConfigView::Cancel() {
 // the 802.1x fields.
 void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
   if (wifi) {
-    eap_method_ui_data_.UpdateFromNetwork(
-        wifi, NetworkUIData::kPropertyEAPMethod);
-    phase_2_auth_ui_data_.UpdateFromNetwork(
-        wifi, NetworkUIData::kPropertyEAPPhase2Auth);
-    user_cert_ui_data_.UpdateFromNetwork(
-        wifi, NetworkUIData::kPropertyEAPClientCertPkcs11Id);
-    server_ca_cert_ui_data_.UpdateFromNetwork(
-        wifi, NetworkUIData::kPropertyEAPServerCaCertNssNickname);
+    ParseWiFiEAPUIProperty(&eap_method_ui_data_, wifi, onc::eap::kOuter);
+    ParseWiFiEAPUIProperty(&phase_2_auth_ui_data_, wifi, onc::eap::kInner);
+    ParseWiFiEAPUIProperty(&user_cert_ui_data_, wifi, onc::eap::kClientCertRef);
+    ParseWiFiEAPUIProperty(&server_ca_cert_ui_data_, wifi,
+                           onc::eap::kServerCARef);
     if (server_ca_cert_ui_data_.managed()) {
-      server_ca_cert_ui_data_.UpdateFromNetwork(
-          wifi, NetworkUIData::kPropertyEAPUseSystemCAs);
+      ParseWiFiEAPUIProperty(&server_ca_cert_ui_data_, wifi,
+                             onc::eap::kUseSystemCAs);
     }
-    identity_ui_data_.UpdateFromNetwork(
-        wifi, NetworkUIData::kPropertyEAPIdentity);
-    identity_anonymous_ui_data_.UpdateFromNetwork(
-        wifi, NetworkUIData::kPropertyEAPAnonymousIdentity);
-    save_credentials_ui_data_.UpdateFromNetwork(
-        wifi, NetworkUIData::kPropertySaveCredentials);
-    if (show_8021x) {
-      passphrase_ui_data_.UpdateFromNetwork(
-          wifi, NetworkUIData::kPropertyEAPPassphrase);
-    } else {
-      passphrase_ui_data_.UpdateFromNetwork(
-          wifi, NetworkUIData::kPropertyPassphrase);
-    }
+    ParseWiFiEAPUIProperty(&identity_ui_data_, wifi, onc::eap::kIdentity);
+    ParseWiFiEAPUIProperty(&identity_anonymous_ui_data_, wifi,
+                           onc::eap::kAnonymousIdentity);
+    ParseWiFiEAPUIProperty(&save_credentials_ui_data_, wifi,
+                           onc::eap::kSaveCredentials);
+    if (show_8021x)
+      ParseWiFiEAPUIProperty(&passphrase_ui_data_, wifi, onc::eap::kPassword);
+    else
+      ParseWiFiUIProperty(&passphrase_ui_data_, wifi, onc::wifi::kPassphrase);
   }
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
@@ -1133,6 +1128,26 @@ void WifiConfigView::InitFocus() {
     eap_method_combobox_->RequestFocus();
   else if (passphrase_textfield_ && passphrase_textfield_->enabled())
     passphrase_textfield_->RequestFocus();
+}
+
+void WifiConfigView::ParseWiFiUIProperty(
+    NetworkPropertyUIData* property_ui_data,
+    Network* network,
+    const std::string& key) {
+  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  property_ui_data->ParseOncProperty(
+      network->ui_data(),
+      network_library->FindOncForNetwork(network->unique_id()),
+      base::StringPrintf("%s.%s", onc::kWiFi, key.c_str()));
+}
+
+void WifiConfigView::ParseWiFiEAPUIProperty(
+    NetworkPropertyUIData* property_ui_data,
+    Network* network,
+    const std::string& key) {
+  ParseWiFiUIProperty(
+      property_ui_data, network,
+      base::StringPrintf("%s.%s", onc::wifi::kEAP, key.c_str()));
 }
 
 }  // namespace chromeos

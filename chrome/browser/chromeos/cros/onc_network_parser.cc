@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/cros/onc_constants.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "grit/generated_resources.h"
 #include "net/base/cert_database.h"
@@ -42,106 +43,117 @@ EnumMapper<PropertyIndex>::Pair network_configuration_table[] = {
 
 OncValueSignature network_configuration_signature[] = {
   // TODO(crosbug.com/23673): Support Ethernet settings.
-  { "GUID", PROPERTY_INDEX_GUID, TYPE_STRING },
-  { "Name", PROPERTY_INDEX_NAME, TYPE_STRING },
+  { onc::kGUID, PROPERTY_INDEX_GUID, TYPE_STRING },
+  { onc::kName, PROPERTY_INDEX_NAME, TYPE_STRING },
   // TODO(crosbug.com/23674): Support ProxySettings.
   // TODO(crosbug.com/23604): Handle removing networks.
-  { "Remove", PROPERTY_INDEX_ONC_REMOVE, TYPE_BOOLEAN },
-  { "Type", PROPERTY_INDEX_TYPE, TYPE_STRING },
-  { "WiFi", PROPERTY_INDEX_ONC_WIFI, TYPE_DICTIONARY },
-  { "VPN", PROPERTY_INDEX_ONC_VPN, TYPE_DICTIONARY },
+  { onc::kRemove, PROPERTY_INDEX_ONC_REMOVE, TYPE_BOOLEAN },
+  { onc::kType, PROPERTY_INDEX_TYPE, TYPE_STRING },
+  { onc::kWiFi, PROPERTY_INDEX_ONC_WIFI, TYPE_DICTIONARY },
+  { onc::kVPN, PROPERTY_INDEX_ONC_VPN, TYPE_DICTIONARY },
   { NULL }
 };
 
 OncValueSignature wifi_signature[] = {
-  { "AutoConnect", PROPERTY_INDEX_AUTO_CONNECT, TYPE_BOOLEAN },
-  { "EAP", PROPERTY_INDEX_EAP, TYPE_DICTIONARY },
-  { "HiddenSSID", PROPERTY_INDEX_HIDDEN_SSID, TYPE_BOOLEAN },
-  { "Passphrase", PROPERTY_INDEX_PASSPHRASE, TYPE_STRING },
-  { "ProxyURL", PROPERTY_INDEX_PROXY_CONFIG, TYPE_STRING },
-  { "Security", PROPERTY_INDEX_SECURITY, TYPE_STRING },
-  { "SSID", PROPERTY_INDEX_SSID, TYPE_STRING },
+  { onc::wifi::kAutoConnect, PROPERTY_INDEX_AUTO_CONNECT, TYPE_BOOLEAN },
+  { onc::wifi::kEAP, PROPERTY_INDEX_EAP, TYPE_DICTIONARY },
+  { onc::wifi::kHiddenSSID, PROPERTY_INDEX_HIDDEN_SSID, TYPE_BOOLEAN },
+  { onc::wifi::kPassphrase, PROPERTY_INDEX_PASSPHRASE, TYPE_STRING },
+  { onc::wifi::kProxyURL, PROPERTY_INDEX_PROXY_CONFIG, TYPE_STRING },
+  { onc::wifi::kSecurity, PROPERTY_INDEX_SECURITY, TYPE_STRING },
+  { onc::wifi::kSSID, PROPERTY_INDEX_SSID, TYPE_STRING },
   { NULL }
 };
 
 OncValueSignature eap_signature[] = {
-  { "AnonymousIdentity", PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY, TYPE_STRING },
-  { "ClientCertPattern", PROPERTY_INDEX_ONC_CLIENT_CERT_PATTERN,
+  { onc::eap::kAnonymousIdentity, PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY,
+    TYPE_STRING },
+  { onc::eap::kClientCertPattern, PROPERTY_INDEX_ONC_CLIENT_CERT_PATTERN,
     TYPE_DICTIONARY },
-  { "ClientCertRef", PROPERTY_INDEX_ONC_CLIENT_CERT_REF, TYPE_STRING },
-  { "ClientCertType", PROPERTY_INDEX_ONC_CLIENT_CERT_TYPE, TYPE_STRING },
-  { "Identity", PROPERTY_INDEX_EAP_IDENTITY, TYPE_STRING },
-  { "Inner", PROPERTY_INDEX_EAP_PHASE_2_AUTH, TYPE_STRING },
-  { "Outer", PROPERTY_INDEX_EAP_METHOD, TYPE_STRING },
-  { "Password", PROPERTY_INDEX_EAP_PASSWORD, TYPE_STRING },
-  { "ServerCARef", PROPERTY_INDEX_EAP_CA_CERT, TYPE_STRING },
-  { "UseSystemCAs", PROPERTY_INDEX_EAP_USE_SYSTEM_CAS, TYPE_BOOLEAN },
+  { onc::eap::kClientCertRef, PROPERTY_INDEX_ONC_CLIENT_CERT_REF, TYPE_STRING },
+  { onc::eap::kClientCertType, PROPERTY_INDEX_ONC_CLIENT_CERT_TYPE,
+    TYPE_STRING },
+  { onc::eap::kIdentity, PROPERTY_INDEX_EAP_IDENTITY, TYPE_STRING },
+  { onc::eap::kInner, PROPERTY_INDEX_EAP_PHASE_2_AUTH, TYPE_STRING },
+  { onc::eap::kOuter, PROPERTY_INDEX_EAP_METHOD, TYPE_STRING },
+  { onc::eap::kPassword, PROPERTY_INDEX_EAP_PASSWORD, TYPE_STRING },
+  { onc::eap::kServerCARef, PROPERTY_INDEX_EAP_CA_CERT, TYPE_STRING },
+  { onc::eap::kUseSystemCAs, PROPERTY_INDEX_EAP_USE_SYSTEM_CAS, TYPE_BOOLEAN },
+  { onc::eap::kSaveCredentials, PROPERTY_INDEX_SAVE_CREDENTIALS, TYPE_BOOLEAN },
   { NULL }
 };
 
 OncValueSignature vpn_signature[] = {
-  { "Host", PROPERTY_INDEX_PROVIDER_HOST, TYPE_STRING },
-  { "IPsec", PROPERTY_INDEX_ONC_IPSEC, TYPE_DICTIONARY },
-  { "L2TP", PROPERTY_INDEX_ONC_L2TP, TYPE_DICTIONARY },
-  { "OpenVPN", PROPERTY_INDEX_ONC_OPENVPN, TYPE_DICTIONARY },
-  { "Type", PROPERTY_INDEX_PROVIDER_TYPE, TYPE_STRING },
+  { onc::vpn::kHost, PROPERTY_INDEX_PROVIDER_HOST, TYPE_STRING },
+  { onc::vpn::kIPsec, PROPERTY_INDEX_ONC_IPSEC, TYPE_DICTIONARY },
+  { onc::vpn::kL2TP, PROPERTY_INDEX_ONC_L2TP, TYPE_DICTIONARY },
+  { onc::vpn::kOpenVPN, PROPERTY_INDEX_ONC_OPENVPN, TYPE_DICTIONARY },
+  { onc::vpn::kType, PROPERTY_INDEX_PROVIDER_TYPE, TYPE_STRING },
   { NULL }
 };
 
 OncValueSignature ipsec_signature[] = {
-  { "AuthenticationType", PROPERTY_INDEX_IPSEC_AUTHENTICATIONTYPE,
+  { onc::vpn::kAuthenticationType, PROPERTY_INDEX_IPSEC_AUTHENTICATIONTYPE,
     TYPE_STRING },
-  { "Group", PROPERTY_INDEX_L2TPIPSEC_GROUP_NAME, TYPE_STRING },
-  { "IKEVersion", PROPERTY_INDEX_IPSEC_IKEVERSION, TYPE_INTEGER },
-  { "ClientCertPattern", PROPERTY_INDEX_ONC_CLIENT_CERT_PATTERN,
+  { onc::vpn::kGroup, PROPERTY_INDEX_L2TPIPSEC_GROUP_NAME, TYPE_STRING },
+  { onc::vpn::kIKEVersion, PROPERTY_INDEX_IPSEC_IKEVERSION, TYPE_INTEGER },
+  { onc::vpn::kClientCertPattern, PROPERTY_INDEX_ONC_CLIENT_CERT_PATTERN,
     TYPE_DICTIONARY },
-  { "ClientCertRef", PROPERTY_INDEX_ONC_CLIENT_CERT_REF, TYPE_STRING },
-  { "ClientCertType", PROPERTY_INDEX_ONC_CLIENT_CERT_TYPE, TYPE_STRING },
+  { onc::vpn::kClientCertRef, PROPERTY_INDEX_ONC_CLIENT_CERT_REF, TYPE_STRING },
+  { onc::vpn::kClientCertType, PROPERTY_INDEX_ONC_CLIENT_CERT_TYPE,
+    TYPE_STRING },
   // Note: EAP and XAUTH not yet supported.
-  { "PSK", PROPERTY_INDEX_L2TPIPSEC_PSK, TYPE_STRING },
-  { "SaveCredentials", PROPERTY_INDEX_SAVE_CREDENTIALS, TYPE_BOOLEAN },
-  { "ServerCARef", PROPERTY_INDEX_L2TPIPSEC_CA_CERT_NSS, TYPE_STRING },
+  { onc::vpn::kPSK, PROPERTY_INDEX_L2TPIPSEC_PSK, TYPE_STRING },
+  { onc::vpn::kSaveCredentials, PROPERTY_INDEX_SAVE_CREDENTIALS, TYPE_BOOLEAN },
+  { onc::vpn::kServerCARef, PROPERTY_INDEX_L2TPIPSEC_CA_CERT_NSS, TYPE_STRING },
   { NULL }
 };
 
 OncValueSignature l2tp_signature[] = {
-  { "Password", PROPERTY_INDEX_L2TPIPSEC_PASSWORD, TYPE_STRING },
-  { "SaveCredentials", PROPERTY_INDEX_SAVE_CREDENTIALS, TYPE_BOOLEAN },
-  { "Username", PROPERTY_INDEX_L2TPIPSEC_USER, TYPE_STRING },
+  { onc::vpn::kPassword, PROPERTY_INDEX_L2TPIPSEC_PASSWORD, TYPE_STRING },
+  { onc::vpn::kSaveCredentials, PROPERTY_INDEX_SAVE_CREDENTIALS, TYPE_BOOLEAN },
+  { onc::vpn::kUsername, PROPERTY_INDEX_L2TPIPSEC_USER, TYPE_STRING },
   { NULL }
 };
 
 OncValueSignature openvpn_signature[] = {
-  { "Auth", PROPERTY_INDEX_OPEN_VPN_AUTH, TYPE_STRING },
-  { "AuthRetry", PROPERTY_INDEX_OPEN_VPN_AUTHRETRY, TYPE_STRING },
-  { "AuthNoCache", PROPERTY_INDEX_OPEN_VPN_AUTHNOCACHE, TYPE_BOOLEAN },
-  { "Cipher", PROPERTY_INDEX_OPEN_VPN_CIPHER, TYPE_STRING },
-  { "ClientCertPattern", PROPERTY_INDEX_ONC_CLIENT_CERT_PATTERN,
+  { onc::vpn::kAuth, PROPERTY_INDEX_OPEN_VPN_AUTH, TYPE_STRING },
+  { onc::vpn::kAuthRetry, PROPERTY_INDEX_OPEN_VPN_AUTHRETRY, TYPE_STRING },
+  { onc::vpn::kAuthNoCache, PROPERTY_INDEX_OPEN_VPN_AUTHNOCACHE, TYPE_BOOLEAN },
+  { onc::vpn::kCipher, PROPERTY_INDEX_OPEN_VPN_CIPHER, TYPE_STRING },
+  { onc::vpn::kClientCertPattern, PROPERTY_INDEX_ONC_CLIENT_CERT_PATTERN,
     TYPE_DICTIONARY },
-  { "ClientCertRef", PROPERTY_INDEX_ONC_CLIENT_CERT_REF, TYPE_STRING },
-  { "ClientCertType", PROPERTY_INDEX_ONC_CLIENT_CERT_TYPE, TYPE_STRING },
-  { "CompLZO", PROPERTY_INDEX_OPEN_VPN_COMPLZO, TYPE_STRING },
-  { "CompNoAdapt", PROPERTY_INDEX_OPEN_VPN_COMPNOADAPT, TYPE_BOOLEAN },
-  { "KeyDirection", PROPERTY_INDEX_OPEN_VPN_KEYDIRECTION, TYPE_STRING },
-  { "NsCertType", PROPERTY_INDEX_OPEN_VPN_NSCERTTYPE, TYPE_STRING },
-  { "Password", PROPERTY_INDEX_OPEN_VPN_PASSWORD, TYPE_STRING },
-  { "Port", PROPERTY_INDEX_OPEN_VPN_PORT, TYPE_INTEGER },
-  { "Proto", PROPERTY_INDEX_OPEN_VPN_PROTO, TYPE_STRING },
-  { "PushPeerInfo", PROPERTY_INDEX_OPEN_VPN_PUSHPEERINFO, TYPE_BOOLEAN },
-  { "RemoteCertEKU", PROPERTY_INDEX_OPEN_VPN_REMOTECERTEKU, TYPE_STRING },
-  { "RemoteCertKU", PROPERTY_INDEX_OPEN_VPN_REMOTECERTKU, TYPE_LIST },
-  { "RemoteCertTLS", PROPERTY_INDEX_OPEN_VPN_REMOTECERTTLS, TYPE_STRING },
-  { "RenegSec", PROPERTY_INDEX_OPEN_VPN_RENEGSEC, TYPE_INTEGER },
-  { "SaveCredentials", PROPERTY_INDEX_SAVE_CREDENTIALS, TYPE_BOOLEAN },
-  { "ServerCARef", PROPERTY_INDEX_OPEN_VPN_CACERT, TYPE_STRING },
-  { "ServerCertRef", PROPERTY_INDEX_OPEN_VPN_CERT, TYPE_STRING },
-  { "ServerPollTimeout", PROPERTY_INDEX_OPEN_VPN_SERVERPOLLTIMEOUT,
+  { onc::vpn::kClientCertRef, PROPERTY_INDEX_ONC_CLIENT_CERT_REF, TYPE_STRING },
+  { onc::vpn::kClientCertType, PROPERTY_INDEX_ONC_CLIENT_CERT_TYPE,
+    TYPE_STRING },
+  { onc::vpn::kCompLZO, PROPERTY_INDEX_OPEN_VPN_COMPLZO, TYPE_STRING },
+  { onc::vpn::kCompNoAdapt, PROPERTY_INDEX_OPEN_VPN_COMPNOADAPT, TYPE_BOOLEAN },
+  { onc::vpn::kKeyDirection, PROPERTY_INDEX_OPEN_VPN_KEYDIRECTION,
+    TYPE_STRING },
+  { onc::vpn::kNsCertType, PROPERTY_INDEX_OPEN_VPN_NSCERTTYPE, TYPE_STRING },
+  { onc::vpn::kPassword, PROPERTY_INDEX_OPEN_VPN_PASSWORD, TYPE_STRING },
+  { onc::vpn::kPort, PROPERTY_INDEX_OPEN_VPN_PORT, TYPE_INTEGER },
+  { onc::vpn::kProto, PROPERTY_INDEX_OPEN_VPN_PROTO, TYPE_STRING },
+  { onc::vpn::kPushPeerInfo, PROPERTY_INDEX_OPEN_VPN_PUSHPEERINFO,
+    TYPE_BOOLEAN },
+  { onc::vpn::kRemoteCertEKU, PROPERTY_INDEX_OPEN_VPN_REMOTECERTEKU,
+    TYPE_STRING },
+  { onc::vpn::kRemoteCertKU, PROPERTY_INDEX_OPEN_VPN_REMOTECERTKU, TYPE_LIST },
+  { onc::vpn::kRemoteCertTLS, PROPERTY_INDEX_OPEN_VPN_REMOTECERTTLS,
+    TYPE_STRING },
+  { onc::vpn::kRenegSec, PROPERTY_INDEX_OPEN_VPN_RENEGSEC, TYPE_INTEGER },
+  { onc::vpn::kSaveCredentials, PROPERTY_INDEX_SAVE_CREDENTIALS, TYPE_BOOLEAN },
+  { onc::vpn::kServerCARef, PROPERTY_INDEX_OPEN_VPN_CACERT, TYPE_STRING },
+  { onc::vpn::kServerCertRef, PROPERTY_INDEX_OPEN_VPN_CERT, TYPE_STRING },
+  { onc::vpn::kServerPollTimeout, PROPERTY_INDEX_OPEN_VPN_SERVERPOLLTIMEOUT,
     TYPE_INTEGER },
-  { "Shaper", PROPERTY_INDEX_OPEN_VPN_SHAPER, TYPE_INTEGER },
-  { "StaticChallenge", PROPERTY_INDEX_OPEN_VPN_STATICCHALLENGE, TYPE_STRING },
-  { "TLSAuthContents", PROPERTY_INDEX_OPEN_VPN_TLSAUTHCONTENTS, TYPE_STRING },
-  { "TLSRemote", PROPERTY_INDEX_OPEN_VPN_TLSREMOTE, TYPE_STRING },
-  { "Username", PROPERTY_INDEX_OPEN_VPN_USER, TYPE_STRING },
+  { onc::vpn::kShaper, PROPERTY_INDEX_OPEN_VPN_SHAPER, TYPE_INTEGER },
+  { onc::vpn::kStaticChallenge, PROPERTY_INDEX_OPEN_VPN_STATICCHALLENGE,
+    TYPE_STRING },
+  { onc::vpn::kTLSAuthContents, PROPERTY_INDEX_OPEN_VPN_TLSAUTHCONTENTS,
+    TYPE_STRING },
+  { onc::vpn::kTLSRemote, PROPERTY_INDEX_OPEN_VPN_TLSREMOTE, TYPE_STRING },
+  { onc::vpn::kUsername, PROPERTY_INDEX_OPEN_VPN_USER, TYPE_STRING },
   { NULL }
 };
 
@@ -231,20 +243,28 @@ int OncNetworkParser::GetNetworkConfigsSize() const {
   return network_configs_ ? network_configs_->GetSize() : 0;
 }
 
-Network* OncNetworkParser::ParseNetwork(int n) {
+const base::DictionaryValue* OncNetworkParser::GetNetworkConfig(int n) {
   CHECK(network_configs_);
   CHECK(static_cast<size_t>(n) < network_configs_->GetSize());
   CHECK_GE(n, 0);
-  DictionaryValue* info = NULL;
+  base::DictionaryValue* info = NULL;
   if (!network_configs_->GetDictionary(n, &info)) {
     parse_error_ = l10n_util::GetStringUTF8(
         IDS_NETWORK_CONFIG_ERROR_NETWORK_PROP_DICT_MALFORMED);
     return NULL;
   }
 
+  return info;
+}
+
+Network* OncNetworkParser::ParseNetwork(int n) {
+  const base::DictionaryValue* info = GetNetworkConfig(n);
+  if (!info)
+    return NULL;
+
   if (VLOG_IS_ON(2)) {
     std::string network_json;
-    base::JSONWriter::Write(static_cast<base::Value*>(info),
+    base::JSONWriter::Write(static_cast<const base::Value*>(info),
                             true, &network_json);
     VLOG(2) << "Parsing network at index " << n
             << ": " << network_json;
