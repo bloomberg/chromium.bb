@@ -89,8 +89,8 @@ remoting.HostTableEntry.prototype.init = function(host, onRename, onDelete) {
     var connectButton = document.createElement('button');
     connectButton.setAttribute('class', 'mode-select-button');
     connectButton.setAttribute('type', 'button');
-    connectButton.setAttribute('onclick',
-                               'window.open("' + hostUrl + '", "_blank");');
+    var startMe2Me = function() { window.location.replace(hostUrl); };
+    connectButton.addEventListener('click', startMe2Me, false);
     connectButton.innerHTML =
         chrome.i18n.getMessage(/*i18n-content*/'CONNECT_BUTTON');
     hostStatus.appendChild(connectButton);
