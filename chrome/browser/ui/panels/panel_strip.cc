@@ -137,6 +137,7 @@ void PanelStrip::AddPanel(Panel* panel) {
     if (x < display_area_.x()) {
       x = display_area_.x();
       panel->set_has_temporary_layout(true);
+      panel->set_draggable(false);
       MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&PanelStrip::DelayedMovePanelToOverflow,
@@ -353,6 +354,7 @@ void PanelStrip::OnPanelExpansionStateChanged(
         panel_manager_->panel_overflow_strip()->Remove(panel);
         AddPanel(panel);
         panel->SetAppIconVisibility(true);
+        panel->set_draggable(true);
       }
       break;
     case Panel::TITLE_ONLY:

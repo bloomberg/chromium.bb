@@ -340,8 +340,10 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 }
 
 - (void)mouseDown:(NSEvent*)event {
-  dragState_ = PANEL_DRAG_CAN_START;
-  dragStartLocation_ = [event locationInWindow];
+  if ([controller_ isDraggable]) {
+    dragState_ = PANEL_DRAG_CAN_START;
+    dragStartLocation_ = [event locationInWindow];
+  }
 }
 
 - (void)mouseUp:(NSEvent*)event {
@@ -358,6 +360,9 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 }
 
 - (void)mouseDragged:(NSEvent*)event {
+  if (dragState_ == PANEL_DRAG_SUPPRESSED)
+    return;
+
   // In addition to events needed to control the drag operation, fetch the right
   // mouse click events and key down events and ignore them, to prevent their
   // accumulation in the queue and "playing out" when the mouse is released.

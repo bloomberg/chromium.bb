@@ -434,8 +434,7 @@ bool PanelBrowserView::OnTitlebarMouseDragged(const gfx::Point& location) {
   if (!mouse_pressed_)
     return false;
 
-  // Dragging is not supported for overflow panel.
-  if (panel_->expansion_state() == Panel::IN_OVERFLOW)
+  if (!panel_->draggable())
     return true;
 
   gfx::Point last_mouse_location = mouse_location_;

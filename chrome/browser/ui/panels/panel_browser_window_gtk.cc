@@ -49,6 +49,7 @@ PanelBrowserWindowGtk::PanelBrowserWindowGtk(Browser* browser,
                                              Panel* panel,
                                              const gfx::Rect& bounds)
     : BrowserWindowGtk(browser),
+      system_drag_disabled_for_testing_(false),
       last_mouse_down_(NULL),
       drag_widget_(NULL),
       destroy_drag_widget_factory_(this),
@@ -447,7 +448,7 @@ void PanelBrowserWindowGtk::WillProcessEvent(GdkEvent* event) {
 
 void PanelBrowserWindowGtk::DidProcessEvent(GdkEvent* event) {
   DCHECK(last_mouse_down_);
-  if (event->type != GDK_MOTION_NOTIFY)
+  if (event->type != GDK_MOTION_NOTIFY || !panel_->draggable())
     return;
 
   gdouble new_x_double;
@@ -462,19 +463,24 @@ void PanelBrowserWindowGtk::DidProcessEvent(GdkEvent* event) {
   gint old_x = static_cast<gint>(old_x_double);
   gint old_y = static_cast<gint>(old_y_double);
 
+  if (!drag_widget_ &&
+      gtk_drag_check_threshold(titlebar_widget(), old_x,
+                               old_y, new_x, new_y)) {
+    CreateDragWidget();
+    if (!system_drag_disabled_for_testing_) {
+      GtkTargetList* list = ui::GetTargetListFromCodeMask(ui::CHROME_TAB);
+      gtk_drag_begin(drag_widget_, list, GDK_ACTION_MOVE, 1, last_mouse_down_);
+      // gtk_drag_begin increments reference count for GtkTargetList.  So unref
+      // it here to reduce the reference count.
+      gtk_target_list_unref(list);
+    }
+    panel_->manager()->StartDragging(panel_.get());
+  }
+
   if (drag_widget_) {
     panel_->manager()->Drag(new_x - old_x);
     gdk_event_free(last_mouse_down_);
     last_mouse_down_ = gdk_event_copy(event);
-  } else if (gtk_drag_check_threshold(titlebar_widget(), old_x,
-                                      old_y, new_x, new_y)) {
-    CreateDragWidget();
-    GtkTargetList* list = ui::GetTargetListFromCodeMask(ui::CHROME_TAB);
-    gtk_drag_begin(drag_widget_, list, GDK_ACTION_MOVE, 1, last_mouse_down_);
-    // gtk_drag_begin increments reference count for GtkTargetList.  So unref
-    // it here to reduce the reference count.
-    gtk_target_list_unref(list);
-    panel_->manager()->StartDragging(panel_.get());
   }
 }
 
@@ -537,18 +543,25 @@ void PanelBrowserWindowGtk::DestroyDragWidget() {
 }
 
 void PanelBrowserWindowGtk::EndDrag(bool canceled) {
+  if (!system_drag_disabled_for_testing_)
+    DCHECK(drag_widget_);
+
   // Make sure we only run EndDrag once by canceling any tasks that want
   // to call EndDrag.
   drag_end_factory_.InvalidateWeakPtrs();
 
-  // We must let gtk clean up after we handle the drag operation, otherwise
-  // there will be outstanding references to the drag widget when we try to
-  // destroy it.
-  MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&PanelBrowserWindowGtk::DestroyDragWidget,
-                 drag_end_factory_.GetWeakPtr()));
   CleanupDragDrop();
-  panel_->manager()->EndDragging(canceled);
+
+  if (drag_widget_) {
+    // We must let gtk clean up after we handle the drag operation, otherwise
+    // there will be outstanding references to the drag widget when we try to
+    // destroy it.
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&PanelBrowserWindowGtk::DestroyDragWidget,
+                   drag_end_factory_.GetWeakPtr()));
+    panel_->manager()->EndDragging(canceled);
+  }
 }
 
 void PanelBrowserWindowGtk::CleanupDragDrop() {
@@ -716,7 +729,7 @@ void NativePanelTestingGtk::PressLeftMouseButtonTitlebar(
 }
 
 void NativePanelTestingGtk::ReleaseMouseButtonTitlebar() {
-  GdkEvent* event = gdk_event_new(GDK_BUTTON_PRESS);
+  GdkEvent* event = gdk_event_new(GDK_BUTTON_RELEASE);
   event->button.button = 1;
   panel_browser_window_gtk_->OnTitlebarButtonReleaseEvent(
       panel_browser_window_gtk_->titlebar_widget(),
@@ -725,11 +738,9 @@ void NativePanelTestingGtk::ReleaseMouseButtonTitlebar() {
 }
 
 void NativePanelTestingGtk::DragTitlebar(int delta_x, int delta_y) {
-  if (!panel_browser_window_gtk_->drag_widget_) {
-    panel_browser_window_gtk_->CreateDragWidget();
-    panel_browser_window_gtk_->panel_->manager()->StartDragging(
-        panel_browser_window_gtk_->panel_.get());
-  }
+  // Prevent extra unwanted signals and focus grabs.
+  panel_browser_window_gtk_->system_drag_disabled_for_testing_ = true;
+
   GdkEvent* event = gdk_event_new(GDK_MOTION_NOTIFY);
   gdk_event_get_root_coords(panel_browser_window_gtk_->last_mouse_down_,
       &event->motion.x_root, &event->motion.y_root);

@@ -29,7 +29,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
                               public NativePanel,
                               public ui::AnimationDelegate,
                               public ui::WorkAreaWatcherXObserver {
-  friend class NativePanelTestingGtk;
  public:
   PanelBrowserWindowGtk(Browser* browser, Panel* panel,
                         const gfx::Rect& bounds);
@@ -105,6 +104,8 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void SetPanelAppIconVisibility(bool visible) OVERRIDE;
 
  private:
+  friend class NativePanelTestingGtk;
+
   void StartBoundsAnimation(const gfx::Rect& from_bounds,
                             const gfx::Rect& to_bounds);
   bool IsAnimatingBounds() const;
@@ -148,6 +149,10 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   // user presses space or return.
   CHROMEGTK_CALLBACK_1(PanelBrowserWindowGtk, gboolean, OnDragButtonReleased,
                        GdkEventButton*);
+
+  // Tests will set this to false to prevent actual GTK drags from being
+  // triggered as that generates extra unwanted signals and focus grabs.
+  bool system_drag_disabled_for_testing_;
 
   // A copy of the last button press event, used to initiate a drag.
   GdkEvent* last_mouse_down_;

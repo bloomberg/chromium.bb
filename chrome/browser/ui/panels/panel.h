@@ -220,6 +220,10 @@ class Panel : public BrowserWindow,
   const gfx::Size& min_size() const { return min_size_; }
   const gfx::Size& max_size() const { return max_size_; }
   bool auto_resizable() const { return auto_resizable_; }
+
+  bool draggable() const { return draggable_; }
+  void set_draggable(bool can_drag) { draggable_ = can_drag; }
+
   // The restored size is the size of the panel when it is expanded.
   gfx::Size restored_size() const { return restored_size_; }
   void set_restored_size(const gfx::Size& size) { restored_size_ = size; }
@@ -295,6 +299,9 @@ class Panel : public BrowserWindow,
 
   // True if this panel auto resizes based on content.
   bool auto_resizable_;
+
+  // True if this panel can be dragged.
+  bool draggable_;
 
   // Platform specifc implementation for panels.  It'd be one of
   // PanelBrowserWindowGtk/PanelBrowserView/PanelBrowserWindowCocoa.

@@ -393,6 +393,10 @@ enum {
                    forView:button];
 }
 
+- (BOOL)isDraggable {
+  return windowShim_->panel()->draggable();
+}
+
 - (void)startDrag {
   animateOnBoundsChange_ = NO;
   windowShim_->panel()->manager()->StartDragging(windowShim_->panel());

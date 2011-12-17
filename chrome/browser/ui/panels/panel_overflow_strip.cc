@@ -105,6 +105,7 @@ void PanelOverflowStrip::OnPanelExpansionStateChanged(
   panel_manager_->panel_strip()->Remove(panel);
   AddPanel(panel);
   panel->SetAppIconVisibility(false);
+  panel->set_draggable(false);
 }
 
 void PanelOverflowStrip::Refresh() {

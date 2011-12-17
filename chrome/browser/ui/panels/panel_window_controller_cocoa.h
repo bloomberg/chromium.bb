@@ -97,6 +97,7 @@ class PanelBrowserWindowCocoa;
               animate:(BOOL)animate;
 
 // Used by PanelTitlebarViewCocoa when user rearranges the Panels by dragging.
+- (BOOL)isDraggable;
 - (void)startDrag;
 - (void)endDrag:(BOOL)cancelled;
 - (void)dragWithDeltaX:(int)deltaX;

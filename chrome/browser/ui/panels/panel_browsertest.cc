@@ -765,6 +765,25 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DragThreePanels) {
   panel3->Close();
 }
 
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, NotDraggable) {
+  Panel* panel = CreatePanel("panel");
+  panel->set_draggable(false);
+  Panel* panel2 = CreatePanel("panel2");
+
+  scoped_ptr<NativePanelTesting> panel_testing(
+      NativePanelTesting::Create(panel->native_panel()));
+  gfx::Rect bounds = panel->GetBounds();
+  panel_testing->PressLeftMouseButtonTitlebar(bounds.origin());
+  EXPECT_EQ(bounds.x(), panel->GetBounds().x());
+  panel_testing->DragTitlebar(-50, 10);
+  EXPECT_EQ(bounds.x(), panel->GetBounds().x());
+  panel_testing->FinishDragTitlebar();
+  EXPECT_EQ(bounds.x(), panel->GetBounds().x());
+
+  panel->Close();
+  panel2->Close();
+}
+
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateSettingsMenu) {
   TestCreateSettingsMenuForExtension(
       FILE_PATH_LITERAL("extension1"), Extension::EXTERNAL_POLICY_DOWNLOAD,

@@ -168,6 +168,8 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
 // TODO(jianli): remove the guard when overflow support is enabled on other
 // platforms. http://crbug.com/105073
 #if defined(OS_WIN)
+#define MAYBE_CheckPanelProperties CheckPanelProperties
+#define MAYBE_UpdateDraggableStatus UpdateDraggableStatus
 #define MAYBE_CreateOverflowPanels CreateOverflowPanels
 #define MAYBE_CreateMoreOverflowPanels CreateMoreOverflowPanels
 // http://crbug.com/107230
@@ -177,6 +179,8 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
 #define MAYBE_ActivateOverflowPanels ActivateOverflowPanels
 #define MAYBE_HoverOverOverflowArea HoverOverOverflowArea
 #else
+#define MAYBE_CheckPanelProperties DISABLED_CheckPanelProperties
+#define MAYBE_UpdateDraggableStatus DISABLED_UpdateDraggableStatus
 #define MAYBE_CreateOverflowPanels DISABLED_CreateOverflowPanels
 #define MAYBE_CreateMoreOverflowPanels DISABLED_CreateMoreOverflowPanels
 #define MAYBE_CreatePanelOnDelayedOverflow DISABLED_CreatePanelOnDelayedOverflow
@@ -185,6 +189,52 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
 #define MAYBE_ActivateOverflowPanels DISABLED_ActivateOverflowPanels
 #define MAYBE_HoverOverOverflowArea DISABLED_HoverOverOverflowArea
 #endif
+
+IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CheckPanelProperties) {
+  // Create 3 panels that fit.
+  Panel* panel1 = CreatePanelWithBounds("1", gfx::Rect(0, 0, 250, 200));
+  Panel* panel2 = CreatePanelWithBounds("2", gfx::Rect(0, 0, 300, 200));
+  Panel* panel3 = CreatePanelWithBounds("3", gfx::Rect(0, 0, 200, 200));
+
+  // Create an overflow panel without waiting for it to be moved to overflow.
+  // Check its properties before and after it is moved to overflow.
+  CreatePanelParams params(
+      "4", gfx::Rect(0, 0, 255, 200), SHOW_AS_INACTIVE);
+  params.wait_for_fully_created = false;
+  Panel* panel4 = CreatePanelWithParams(params);
+
+  EXPECT_EQ(Panel::EXPANDED, panel1->expansion_state());
+  EXPECT_EQ(Panel::EXPANDED, panel2->expansion_state());
+  EXPECT_EQ(Panel::EXPANDED, panel3->expansion_state());
+  EXPECT_EQ(Panel::EXPANDED, panel4->expansion_state());
+
+  EXPECT_FALSE(panel1->has_temporary_layout());
+  EXPECT_FALSE(panel2->has_temporary_layout());
+  EXPECT_FALSE(panel3->has_temporary_layout());
+  EXPECT_TRUE(panel4->has_temporary_layout());
+
+  EXPECT_TRUE(panel1->draggable());
+  EXPECT_TRUE(panel2->draggable());
+  EXPECT_TRUE(panel3->draggable());
+  EXPECT_FALSE(panel4->draggable());
+
+  // Make sure last panel really did overflow.
+  WaitForExpansionStateChanged(panel4, Panel::IN_OVERFLOW);
+  EXPECT_FALSE(panel4->has_temporary_layout());
+  EXPECT_FALSE(panel4->draggable());
+
+  PanelManager::GetInstance()->RemoveAll();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_UpdateDraggableStatus) {
+  Panel* panel = CreatePanel("panel");
+  EXPECT_TRUE(panel->draggable());
+  panel->SetExpansionState(Panel::IN_OVERFLOW);
+  EXPECT_FALSE(panel->draggable());
+  panel->SetExpansionState(Panel::EXPANDED);
+  EXPECT_TRUE(panel->draggable());
+  panel->Close();
+}
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CreateOverflowPanels) {
   PanelManager* panel_manager = PanelManager::GetInstance();

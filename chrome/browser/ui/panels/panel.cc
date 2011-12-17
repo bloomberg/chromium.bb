@@ -39,6 +39,7 @@ Panel::Panel(Browser* browser, const gfx::Size& requested_size)
       has_temporary_layout_(false),
       restored_size_(requested_size),
       auto_resizable_(false),
+      draggable_(true),
       expansion_state_(EXPANDED),
       app_icon_visible_(true) {
 }
