@@ -623,7 +623,7 @@ void ChromeFrameAutomationClient::Uninitialize() {
     tab_ = NULL;    // scoped_refptr::Release
   }
 
-  // Wait for the background thread to exit.
+  // Wait for the automation proxy's worker thread to exit.
   ReleaseAutomationServer();
 
   // We must destroy the window, since if there are pending tasks
@@ -846,7 +846,7 @@ AutomationLaunchResult ChromeFrameAutomationClient::CreateExternalTabComplete(
   return launch_result;
 }
 
-// Invoked in launch background thread.
+// Invoked in the automation proxy's worker thread.
 void ChromeFrameAutomationClient::LaunchComplete(
     ChromeFrameAutomationProxy* proxy,
     AutomationLaunchResult result) {
@@ -889,6 +889,7 @@ void ChromeFrameAutomationClient::LaunchComplete(
   }
 }
 
+// Invoked in the automation proxy's worker thread.
 void ChromeFrameAutomationClient::AutomationServerDied() {
   // Make sure we notify our delegate.
   PostTask(
@@ -905,7 +906,6 @@ void ChromeFrameAutomationClient::InitializeComplete(
   DCHECK_EQ(base::PlatformThread::CurrentId(), ui_thread_id_);
   if (result != AUTOMATION_SUCCESS) {
     DLOG(WARNING) << "InitializeComplete: failure " << result;
-    ReleaseAutomationServer();
   } else {
     init_state_ = INITIALIZED;
 

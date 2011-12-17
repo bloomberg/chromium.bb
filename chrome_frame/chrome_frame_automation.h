@@ -208,7 +208,8 @@ class ChromeFrameLaunchParams :  // NOLINT
 };
 
 // Callback when chrome process launch is complete and automation handshake
-// (Hello message) is established.
+// (Hello message) is established.  All methods are invoked on the automation
+// proxy's worker thread.
 struct DECLSPEC_NOVTABLE LaunchDelegate {  // NOLINT
   virtual void LaunchComplete(ChromeFrameAutomationProxy* proxy,
                               AutomationLaunchResult result) = 0;
