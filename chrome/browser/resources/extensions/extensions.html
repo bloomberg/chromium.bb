@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 
 <link rel="stylesheet" href="extensions.css">
+<link rel="stylesheet" href="../shared/css/button.css">
+<link rel="stylesheet" href="../shared/css/checkbox.css">
+<link rel="stylesheet" href="../shared/css/chrome_shared2.css">
 
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/local_strings.js"></script>
@@ -45,7 +48,7 @@
     </div>
     <section class="extension-settings-content">
       <div class="extension-settings">
-        <list id="extension-settings-list"></list>
+        <div id="extension-settings-list"></div>
       </div>
     </section>
   </div>
@@ -59,6 +62,51 @@
       <div id="get-more-extensions"></div>
     </div>
   </section>
+</div>
+
+<div id="extension-item-template" class="extension-list-item-wrapper" hidden>
+  <div class="extension-list-item">
+    <div class="extension-details">
+      <div>
+        <span class="extension-title"></span>
+        <span class="extension-version"></span>
+      </div>
+      <div class="extension-description"></div>
+      <div class="optional-controls">
+        <label class="incognito-checkbox">
+          <input type="checkbox"></input>
+          <span i18n-content="extensionSettingsEnableIncognito"></span>
+        </label>
+        <label class="file-access-checkbox">
+          <input type="checkbox"></input>
+          <span i18n-content="extensionSettingsAllowFileAccess"></span>
+        </label>
+        <a class="options-link" i18n-content="extensionSettingsOptions"
+            href="#"></a>
+        <a class="store-link" i18n-content="extensionSettingsVisitWebsite"></a>
+        <a class="reload-link" i18n-content="extensionSettingsReload"
+            href="#"></a>
+      </div>
+      <div class="butter-bar"
+          i18n-values=".innerHTML:extensionSettingsIncognitoWarning" hidden>
+      </div>
+    </div>
+    <div class="enable-controls">
+      <a class="terminated-reload-link" href="#"
+          i18n-content="extensionSettingsReload" hidden></a>
+      <label class="enable-checkbox" hidden>
+        <input type="checkbox"></input>
+        <div class="enable-checkbox-text">
+          <span class="enabled-text" i18n-content="extensionSettingsEnabled">
+          </span>
+          <span class="enable-text" i18n-content="extensionSettingsEnable">
+          </span>
+        </div>
+      </label>
+      <button class="remove-button" i18n-content="extensionSettingsRemove">
+      </button>
+    </div>
+  </div>
 </div>
 
 </body>

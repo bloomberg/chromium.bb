@@ -63,11 +63,7 @@ select:not(.custom-appearance):focus {
   outline: none;
 }
 
-/* Search boxes use an outline because it follows the contours of the box.
- * TODO(estade): remove the first 2 of these selectors when we use checkbox.css
- * in more places. */
-html:not(#print-preview) input[type='checkbox']:not(.custom-appearance):focus,
-html:not(#print-preview) input[type='radio']:not(.custom-appearance):focus,
+/* Search boxes use an outline because it follows the contours of the box. */
 input[type='search']:not(.custom-appearance):focus {
   outline-color: #4080fa;
 }

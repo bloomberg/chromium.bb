@@ -139,8 +139,6 @@ input[type='text']:disabled {
 }
 
 /* CHECKBOX, RADIO */
-/* TODO(estade): all of this should be merged into checkbox.css and then we can
- * remove the print-preview hack. */
 div.checkbox,
 div.radio {
   margin: 5px 0;
