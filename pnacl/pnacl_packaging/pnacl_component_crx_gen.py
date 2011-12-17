@@ -312,8 +312,8 @@ def BuildArchCRX(version_quad,
     if lib_mode == 'glibc' and arch == 'arm':
       print 'Skip copying glibc libs for arch ARM'
       continue
-    # Skip glibc for mac and windows too (no glibc tarball).
-    if lib_mode == 'glibc' and PLATFORM != 'linux':
+    # PNaCl GlibC tarball is only available for X86-64 linux
+    if lib_mode == 'glibc' and (PLATFORM != 'linux' or ARCH != 'x86-64'):
       print 'Skip copying glibc libs for OS %s' % PLATFORM
       continue
 
