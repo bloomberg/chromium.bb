@@ -102,6 +102,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool accelerated_painting_enabled;
   bool accelerated_filters_enabled;
   bool accelerated_plugins_enabled;
+  bool partial_swap_enabled;
   bool memory_info_enabled;
   bool interactive_form_validation_enabled;
   bool fullscreen_enabled;

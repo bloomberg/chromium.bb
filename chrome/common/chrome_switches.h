@@ -154,6 +154,7 @@ extern const char kEnableNaCl[];
 extern const char kEnableNaClDebug[];
 extern const char kEnableOmniboxAggressiveHistoryURL[];
 extern const char kEnablePanels[];
+extern const char kEnablePartialSwap[];
 extern const char kEnablePlatformApps[];
 extern const char kEnablePnacl[];
 extern const char kEnablePreconnect[];

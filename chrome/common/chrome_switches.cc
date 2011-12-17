@@ -540,6 +540,9 @@ const char kEnableOmniboxAggressiveHistoryURL[] =
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                 = "enable-panels";
 
+// Enables partial swaps in the WK compositor on platforms that support it.
+const char kEnablePartialSwap[]             = "enable-partial-swap";
+
 // Enables advanced app capabilities.
 const char kEnablePlatformApps[]            = "enable-platform-apps";
 

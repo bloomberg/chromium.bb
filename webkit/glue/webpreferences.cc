@@ -88,6 +88,7 @@ WebPreferences::WebPreferences()
       accelerated_painting_enabled(false),
       accelerated_filters_enabled(false),
       accelerated_plugins_enabled(false),
+      partial_swap_enabled(false),
       memory_info_enabled(false),
       interactive_form_validation_enabled(true),
       fullscreen_enabled(false),
@@ -302,6 +303,9 @@ void WebPreferences::Apply(WebView* web_view) const {
   // WebGL and accelerated 2D canvas are always gpu composited.
   settings->setAcceleratedCompositingForCanvasEnabled(
       experimental_webgl_enabled || accelerated_2d_canvas_enabled);
+
+  // Enable partial swaps if specified form the command line.
+  settings->setPartialSwapEnabled(partial_swap_enabled);
 
   // Enable memory info reporting to page if requested on the command line.
   settings->setMemoryInfoEnabled(memory_info_enabled);

@@ -474,6 +474,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         !command_line.HasSwitch(switches::kDisableAcceleratedPlugins);
     web_prefs.accelerated_video_enabled =
         !command_line.HasSwitch(switches::kDisableAcceleratedVideo);
+    web_prefs.partial_swap_enabled =
+        command_line.HasSwitch(switches::kEnablePartialSwap);
     web_prefs.memory_info_enabled =
         prefs->GetBoolean(prefs::kEnableMemoryInfo);
     web_prefs.interactive_form_validation_enabled =
