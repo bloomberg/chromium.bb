@@ -9,6 +9,7 @@
     "tabs",
     "experimental",
     "tts",
+    "systemPrivate",
     "<all_urls>"
   ],
   "content_scripts": [
