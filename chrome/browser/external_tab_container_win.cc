@@ -23,9 +23,11 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/repost_form_warning_controller.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
@@ -696,7 +698,9 @@ void ExternalTabContainer::BeforeUnloadFired(TabContents* tab,
 
 void ExternalTabContainer::ShowRepostFormWarningDialog(
     TabContents* tab_contents) {
-  browser::ShowRepostFormWarningDialog(GetNativeView(), tab_contents);
+  browser::ShowTabModalConfirmDialog(
+      new RepostFormWarningController(tab_contents),
+      GetNativeView(), tab_contents);
 }
 
 void ExternalTabContainer::RunFileChooser(

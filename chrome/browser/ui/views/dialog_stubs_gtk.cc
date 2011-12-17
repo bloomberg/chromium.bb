@@ -10,16 +10,10 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/gtk/edit_search_engine_dialog.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
-#include "chrome/browser/ui/webui/collected_cookies_ui_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if !defined(WEBUI_TASK_MANAGER)
 #include "chrome/browser/ui/gtk/task_manager_gtk.h"
-#endif
-
-#if !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/gtk/collected_cookies_gtk.h"
-#include "chrome/browser/ui/gtk/repost_form_warning_gtk.h"
 #endif
 
 namespace browser {

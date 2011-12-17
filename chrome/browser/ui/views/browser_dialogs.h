@@ -82,14 +82,9 @@ void EditSearchEngine(gfx::NativeWindow parent,
                       EditSearchEngineControllerDelegate* delegate,
                       Profile* profile);
 
-// Shows the repost form confirmation dialog box.
-void ShowRepostFormWarningDialog(gfx::NativeWindow parent_window,
-                                 TabContents* tab_contents);
-
 // Shows the collected cookies dialog box.
 void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,
                                 TabContentsWrapper* tab_contents);
-
 
 // Shows the create web app shortcut dialog box.
 void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,

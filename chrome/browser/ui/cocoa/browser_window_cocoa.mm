@@ -31,7 +31,6 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/nsmenuitem_additions.h"
-#include "chrome/browser/ui/cocoa/repost_form_warning_mac.h"
 #include "chrome/browser/ui/cocoa/restart_browser.h"
 #include "chrome/browser/ui/cocoa/status_bubble_mac.h"
 #include "chrome/browser/ui/cocoa/task_manager_mac.h"
@@ -431,11 +430,6 @@ bool BrowserWindowCocoa::IsDownloadShelfVisible() const {
 DownloadShelf* BrowserWindowCocoa::GetDownloadShelf() {
   DownloadShelfController* shelfController = [controller_ downloadShelf];
   return [shelfController bridge];
-}
-
-void BrowserWindowCocoa::ShowRepostFormWarningDialog(
-    TabContents* tab_contents) {
-  RepostFormWarningMac::Create(GetNativeHandle(), tab_contents);
 }
 
 void BrowserWindowCocoa::ShowCollectedCookiesDialog(

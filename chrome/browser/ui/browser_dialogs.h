@@ -16,6 +16,7 @@ class HtmlDialogUIDelegate;
 class Profile;
 class SkBitmap;
 class TabContents;
+class TabModalConfirmDialogDelegate;
 class TemplateURL;
 
 namespace browser {
@@ -61,6 +62,11 @@ void HideNativeHungRendererDialog(TabContents* contents);
 // Show the edit search engine dialog.
 void ConfirmAddSearchProvider(const TemplateURL* template_url,
                               Profile* profile);
+
+// Shows a tab-modal dialog box.
+void ShowTabModalConfirmDialog(TabModalConfirmDialogDelegate* delegate,
+                               gfx::NativeWindow parent_window,
+                               TabContents* tab_contents);
 
 }  // namespace browser
 

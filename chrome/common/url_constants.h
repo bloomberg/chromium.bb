@@ -98,7 +98,7 @@ extern const char kChromeUIFileManagerURL[];
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
 extern const char kChromeUICollectedCookiesURL[];
 extern const char kChromeUIHttpAuthURL[];
-extern const char kChromeUIRepostFormWarningURL[];
+extern const char kChromeUITabModalConfirmDialogURL[];
 #endif
 
 #if defined(USE_AURA)
@@ -227,7 +227,7 @@ extern const char kChromeUIFileManagerHost[];
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
 extern const char kChromeUICollectedCookiesHost[];
 extern const char kChromeUIHttpAuthHost[];
-extern const char kChromeUIRepostFormWarningHost[];
+extern const char kChromeUITabModalConfirmDialogHost[];
 #endif
 
 #if defined(USE_AURA)
