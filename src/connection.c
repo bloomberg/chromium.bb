@@ -525,7 +525,7 @@ wl_connection_vmarshal(struct wl_connection *connection,
 	return closure;
 
 err:
-	printf("request too big to marshal, maximum size is %d\n",
+	printf("request too big to marshal, maximum size is %lu\n",
 	       sizeof closure->buffer);
 	errno = ENOMEM;
 	return NULL;
@@ -555,7 +555,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 
 	extra_space = wl_message_size_extra(message);
 	if (sizeof closure->buffer < size + extra_space) {
-		printf("request too big to demarshal, maximum %d actual %d\n",
+		printf("request too big to demarshal, maximum %lu actual %d\n",
 		       sizeof closure->buffer, size + extra_space);
 		errno = ENOMEM;
 		wl_connection_consume(connection, size);
