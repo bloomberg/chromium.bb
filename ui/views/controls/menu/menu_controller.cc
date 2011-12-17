@@ -892,10 +892,16 @@ base::MessagePumpDispatcher::DispatchStatus
       if (!OnKeyDown(ui::KeyboardCodeFromNative(xev)))
         return base::MessagePumpDispatcher::EVENT_QUIT;
 
-      // TODO(oshima): support SelectChar.
-      // See http://crbug.com/107869.
+      // OnKeyDown may have set exit_type_.
+      // TODO(sky): This shouldn't be necessary if OnKeyDown returns correct
+      // value for space key on edit menu. Fix OnKeyDown and remove this.
+      // See crbug.com/107919.
+      if (exit_type_ != EXIT_NONE)
+        return base::MessagePumpDispatcher::EVENT_QUIT;
 
-      return base::MessagePumpDispatcher::EVENT_PROCESSED;
+      return SelectByChar(ui::KeyboardCodeFromNative(xev)) ?
+          base::MessagePumpDispatcher::EVENT_QUIT :
+          base::MessagePumpDispatcher::EVENT_PROCESSED;
     case ui::ET_KEY_RELEASED:
       return base::MessagePumpDispatcher::EVENT_PROCESSED;
     default:
@@ -924,6 +930,7 @@ bool MenuController::Dispatch(GdkEvent* event) {
         return false;
 
       // OnKeyDown may have set exit_type_.
+      // TODO(sky): Eliminate this. See crbug.com/107919.
       if (exit_type_ != EXIT_NONE)
         return false;
 
