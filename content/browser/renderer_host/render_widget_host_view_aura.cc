@@ -104,9 +104,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
 }
 
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
-  ui::Compositor* compositor = window_->layer()->GetCompositor();
-  if (compositor && compositor->HasObserver(this))
-    compositor->RemoveObserver(this);
 }
 
 void RenderWidgetHostViewAura::InitAsChild() {
