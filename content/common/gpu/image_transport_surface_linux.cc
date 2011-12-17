@@ -739,14 +739,38 @@ bool OSMesaImageTransportSurface::SwapBuffers() {
 
 bool OSMesaImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
-  NOTREACHED();
-  return false;
+  DCHECK_NE(shared_mem_.get(), static_cast<void*>(NULL));
+
+  // Copy the OSMesa buffer to the shared memory
+  glFinish();
+
+  int flipped_y = GetSize().height() - y - height;
+
+  for (int row = 0; row < height; ++row) {
+    int mem_offset = ((flipped_y + row) * size_.width() + x);
+    int32* dest_address = static_cast<int32*>(shared_mem_->memory()) +
+        mem_offset;
+    int32* src_address = static_cast<int32*>(GetHandle()) + mem_offset;
+    memcpy(dest_address, src_address, width * 4);
+  }
+
+  GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
+  params.surface_id = shared_id_;
+  params.x = x;
+  params.y = y;
+  params.width = width;
+  params.height = height;
+  helper_->SendAcceleratedSurfacePostSubBuffer(params);
+
+  helper_->SetScheduled(false);
+  return true;
 }
 
 std::string OSMesaImageTransportSurface::GetExtensions() {
   std::string extensions = gfx::GLSurface::GetExtensions();
   extensions += extensions.empty() ? "" : " ";
-  extensions += "GL_CHROMIUM_front_buffer_cached";
+  extensions += "GL_CHROMIUM_front_buffer_cached ";
+  extensions += "GL_CHROMIUM_post_sub_buffer";
   return extensions;
 }
 
@@ -755,7 +779,7 @@ void OSMesaImageTransportSurface::OnBuffersSwappedACK() {
 }
 
 void OSMesaImageTransportSurface::OnPostSubBufferACK() {
-  NOTREACHED();
+  helper_->SetScheduled(true);
 }
 
 gfx::Size OSMesaImageTransportSurface::GetSize() {
