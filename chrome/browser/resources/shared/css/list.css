@@ -87,3 +87,8 @@ grid > .spacer {
   visibility: hidden;
   margin: 0;
 }
+
+list > [hidden],
+grid > [hidden] {
+  display: none;
+}

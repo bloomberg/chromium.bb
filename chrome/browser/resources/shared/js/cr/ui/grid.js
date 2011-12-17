@@ -176,39 +176,54 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Adds items to the list and {@code newCachedItems}.
+     * Merges list items. Calls the base class implementation and then
+     * puts spacers on the right places.
      * @param {number} firstIndex The index of first item, inclusively.
      * @param {number} lastIndex The index of last item, exclusively.
      * @param {Object.<string, ListItem>} cachedItems Old items cache.
      * @param {Object.<string, ListItem>} newCachedItems New items cache.
      * @override
      */
-    addItems: function(firstIndex, lastIndex, cachedItems, newCachedItems) {
-      var listItem;
-      var dataModel = this.dataModel;
-      var spacers = this.spacers_ || {};
-      var spacerIndex = 0;
+    mergeItems: function(firstIndex, lastIndex, cachedItems, newCachedItems) {
+      List.prototype.mergeItems.call(this,
+          firstIndex, lastIndex, cachedItems, newCachedItems);
+
+      var afterFiller = this.afterFiller_;
       var columns = this.columns;
 
-      for (var y = firstIndex; y < lastIndex; y++) {
-        if (y % columns == 0 && y > 0) {
-          var spacer = spacers[spacerIndex];
-          if (!spacer) {
-            spacer = this.ownerDocument.createElement('div');
-            spacer.className = 'spacer';
-            spacers[spacerIndex] = spacer;
-          }
-          this.appendChild(spacer);
-          spacerIndex++;
+      for (var item = this.beforeFiller_.nextSibling; item != afterFiller;) {
+        var next = item.nextSibling;
+        if (isSpacer(item)) {
+          // Spacer found on a place it mustn't be.
+          this.removeChild(item);
+          item = next;
+          continue;
         }
-        var dataItem = dataModel.item(y);
-        listItem = cachedItems[y] || this.createItem(dataItem);
-        listItem.listIndex = y;
-        this.appendChild(listItem);
-        newCachedItems[y] = listItem;
+        var index = item.listIndex;
+        var nextIndex = index + 1;
+
+        // Invisible pinned item could be outside of the
+        // [firstIndex, lastIndex). Ignore it.
+        if (index >= firstIndex && nextIndex < lastIndex &&
+            nextIndex % columns == 0) {
+          if (isSpacer(next)) {
+            // Leave the spacer on its place.
+            item = next.nextSibling;
+          } else {
+            // Insert spacer.
+            var spacer = this.ownerDocument.createElement('div');
+            spacer.className = 'spacer';
+            this.insertBefore(spacer, next);
+            item = next;
+          }
+        } else
+          item = next;
       }
 
-      this.spacers_ = spacers;
+      function isSpacer(child) {
+        return child.classList.contains('spacer') &&
+               child != afterFiller;  // Must not be removed.
+      }
     },
 
     /**
@@ -225,6 +240,17 @@ cr.define('cr.ui', function() {
       var afterRows = Math.floor((this.dataModel.length - 1) / columns) -
           Math.floor((lastIndex - 1) / columns);
       return afterRows * itemHeight;
+    },
+
+    /**
+     * Returns true if the child is a list item.
+     * @param {Node} child Child of the list.
+     * @return {boolean} True if a list item.
+     */
+    isItem: function(child) {
+      // Non-items are before-, afterFiller and spacers added in mergeItems.
+      return child.nodeType == Node.ELEMENT_NODE &&
+             !child.classList.contains('spacer');
     }
   };
 

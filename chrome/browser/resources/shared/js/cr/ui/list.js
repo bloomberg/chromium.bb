@@ -300,14 +300,23 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * The HTML elements representing the items. This is just all the list item
-     * children but subclasses may override this to filter out certain elements.
+     * The HTML elements representing the items.
      * @type {HTMLCollection}
      */
     get items() {
-      return Array.prototype.filter.call(this.children, function(child) {
-        return !child.classList.contains('spacer');
-      });
+      return Array.prototype.filter.call(this.children,
+                                         this.isItem, this);
+    },
+
+    /**
+     * Returns true if the child is a list item. Subclasses may override this
+     * to filter out certain elements.
+     * @param {Node} child Child of the list.
+     * @return {boolean} True if a list item.
+     */
+    isItem: function(child) {
+      return child.nodeType == Node.ELEMENT_NODE &&
+             child != this.beforeFiller_ && child != this.afterFiller_;
     },
 
     batchCount_: 0,
@@ -340,6 +349,7 @@ cr.define('cr.ui', function() {
       this.afterFiller_ = this.ownerDocument.createElement('div');
       this.beforeFiller_.className = 'spacer';
       this.afterFiller_.className = 'spacer';
+      this.textContent = '';
       this.appendChild(this.beforeFiller_);
       this.appendChild(this.afterFiller_);
 
@@ -893,29 +903,71 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Adds items to the list and {@code newCachedItems}.
+     * Merges list items currently existing in the list with items in the range
+     * [firstIndex, lastIndex). Removes or adds items if needed.
+     * Doesn't delete {@code this.pinnedItem_} if it presents (instead hides if
+     * it's out of the range). Also adds the items to {@code newCachedItems}.
      * @param {number} firstIndex The index of first item, inclusively.
      * @param {number} lastIndex The index of last item, exclusively.
      * @param {Object.<string, ListItem>} cachedItems Old items cache.
      * @param {Object.<string, ListItem>} newCachedItems New items cache.
      */
-    addItems: function(firstIndex, lastIndex, cachedItems, newCachedItems) {
+    mergeItems: function(firstIndex, lastIndex, cachedItems, newCachedItems) {
       var dataModel = this.dataModel;
 
-      window.l = this;
-      for (var y = firstIndex; y < lastIndex; y++) {
-        var dataItem = dataModel.item(y);
-        var listItem = cachedItems[y] || this.createItem(dataItem);
-        listItem.listIndex = y;
-        this.appendChild(listItem);
-        newCachedItems[y] = listItem;
+      function insert(to) {
+        var dataItem = dataModel.item(currentIndex);
+        var newItem = cachedItems[currentIndex] || to.createItem(dataItem);
+        newItem.listIndex = currentIndex;
+        newCachedItems[currentIndex] = newItem;
+        to.insertBefore(newItem, item);
+        currentIndex++;
       }
 
-      // Mesurings must be placed after adding all the elements, to prevent
-      // performance reducing.
-      for (var y = firstIndex; y < lastIndex; y++) {
-        this.cachedItemSizes_[y] = measureItem(this, newCachedItems[y]);
+      function remove(from) {
+        var next = item.nextSibling;
+        if (item != from.pinnedItem_)
+          from.removeChild(item);
+        item = next;
       }
+
+      var currentIndex = firstIndex;
+      for (var item = this.beforeFiller_.nextSibling;
+           item != this.afterFiller_ && currentIndex < lastIndex;) {
+        if (!this.isItem(item)) {
+          item = item.nextSibling;
+          continue;
+        }
+
+        var index = item.listIndex;
+        if (!(index in cachedItems) || index < currentIndex) {
+          remove(this);
+        } else if (index == currentIndex) {
+          newCachedItems[currentIndex] = item;
+          item = item.nextSibling;
+          currentIndex++;
+        } else {  // index > currentIndex
+          insert(this);
+        }
+      }
+
+      while (item != this.afterFiller_) {
+        if (this.isItem(item))
+          remove(this);
+        else
+          item = item.nextSibling;
+      }
+
+      if (this.pinnedItem_) {
+        var index = this.pinnedItem_.listIndex;
+        this.pinnedItem_.hidden = index < firstIndex || index >= lastIndex;
+        newCachedItems[index] = this.pinnedItem_;
+        if (index >= lastIndex)
+          item = this.pinnedItem_;  // Insert new items before this one.
+      }
+
+      while (currentIndex < lastIndex)
+        insert(this);
     },
 
     /**
@@ -984,7 +1036,7 @@ cr.define('cr.ui', function() {
         this.firstIndex_ = 0;
         this.lastIndex_ = 0;
         this.remainingSpace_ = true;
-        this.textContent = '';
+        this.mergeItems(0, 0, {}, {});
         return;
       }
 
@@ -1015,19 +1067,22 @@ cr.define('cr.ui', function() {
       var afterFillerHeight =
           this.autoExpands ? 0 : this.getAfterFillerHeight(lastIndex);
 
-      // Clear list and Adds elements on list.
-      this.textContent = '';
-
       this.beforeFiller_.style.height = beforeFillerHeight + 'px';
-      this.appendChild(this.beforeFiller_);
-
-      this.addItems(firstIndex, lastIndex, cachedItems, newCachedItems);
-
-      this.afterFiller_.style.height = afterFillerHeight + 'px';
-      this.appendChild(this.afterFiller_);
 
       var sm = this.selectionModel;
       var leadIndex = sm.leadIndex;
+
+      if (this.pinnedItem_ &&
+          this.pinnedItem_ != cachedItems[leadIndex] &&
+          this.pinnedItem_.hidden) {
+        this.removeChild(this.pinnedItem_);
+        this.pinnedItem_ = undefined;
+      }
+      this.pinnedItem_ = this.pinnedItem_ || cachedItems[leadIndex];
+
+      this.mergeItems(firstIndex, lastIndex, cachedItems, newCachedItems);
+
+      this.afterFiller_.style.height = afterFillerHeight + 'px';
 
       // We don't set the lead or selected properties until after adding all
       // items, in case they force relayout in response to these events.
@@ -1048,6 +1103,11 @@ cr.define('cr.ui', function() {
 
       this.remainingSpace_ = itemsInViewPort.last > dataModel.length;
       this.cachedItems_ = newCachedItems;
+
+      // Mesurings must be placed after adding all the elements, to prevent
+      // performance reducing.
+      for (var y = firstIndex; y < lastIndex; y++)
+        this.cachedItemSizes_[y] = measureItem(this, newCachedItems[y]);
 
       // Measure again in case the item height has changed due to a page zoom.
       //
