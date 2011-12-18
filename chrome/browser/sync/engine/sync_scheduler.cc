@@ -453,9 +453,11 @@ void SyncScheduler::ScheduleClearUserData() {
 // functions, too.
 void SyncScheduler::ScheduleCleanupDisabledTypes() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  ScheduleSyncSessionJob(
-      TimeDelta::FromSeconds(0), SyncSessionJob::CLEANUP_DISABLED_TYPES,
-      CreateSyncSession(SyncSourceInfo()), FROM_HERE);
+  SyncSessionJob job(SyncSessionJob::CLEANUP_DISABLED_TYPES, TimeTicks::Now(),
+                     make_linked_ptr(CreateSyncSession(SyncSourceInfo())),
+                     false,
+                     FROM_HERE);
+  ScheduleSyncSessionJob(job);
 }
 
 void SyncScheduler::ScheduleNudge(
@@ -503,9 +505,12 @@ void SyncScheduler::ScheduleNudgeWithPayloads(
 
 void SyncScheduler::ScheduleClearUserDataImpl() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  ScheduleSyncSessionJob(
-      TimeDelta::FromSeconds(0), SyncSessionJob::CLEAR_USER_DATA,
-      CreateSyncSession(SyncSourceInfo()), FROM_HERE);
+  SyncSessionJob job(SyncSessionJob::CLEAR_USER_DATA, TimeTicks::Now(),
+                     make_linked_ptr(CreateSyncSession(SyncSourceInfo())),
+                     false,
+                     FROM_HERE);
+
+  ScheduleSyncSessionJob(job);
 }
 
 void SyncScheduler::ScheduleNudgeImpl(
@@ -543,22 +548,18 @@ void SyncScheduler::ScheduleNudgeImpl(
     SDVLOG(2) << "Coalescing pending nudge";
     pending_nudge_->session->Coalesce(*(job.session.get()));
 
-    if (!IsBackingOff()) {
-      SDVLOG(2) << "Dropping a nudge because"
-                << " we are not in backoff and the job was coalesced";
-      return;
-    } else {
-      SDVLOG(2) << "Rescheduling pending nudge";
-      SyncSession* s = pending_nudge_->session.get();
-      job.session.reset(new SyncSession(s->context(), s->delegate(),
-          s->source(), s->routing_info(), s->workers()));
-      pending_nudge_.reset();
-    }
+    SDVLOG(2) << "Rescheduling pending nudge";
+    SyncSession* s = pending_nudge_->session.get();
+    job.session.reset(new SyncSession(s->context(), s->delegate(),
+        s->source(), s->routing_info(), s->workers()));
+
+    // Choose the start time as the earliest of the 2.
+    job.scheduled_start = std::min(job.scheduled_start,
+                                   pending_nudge_->scheduled_start);
+    pending_nudge_.reset();
   }
 
-  // TODO(lipalani) - pass the job itself to ScheduleSyncSessionJob.
-  ScheduleSyncSessionJob(delay, SyncSessionJob::NUDGE, job.session.release(),
-      nudge_location);
+  ScheduleSyncSessionJob(job);
 }
 
 // Helper to extract the routing info and workers corresponding to types in
@@ -637,8 +638,11 @@ void SyncScheduler::ScheduleConfigImpl(
           syncable::ModelTypePayloadMapFromRoutingInfo(
               routing_info, std::string())),
       routing_info, workers);
-  ScheduleSyncSessionJob(TimeDelta::FromSeconds(0),
-      SyncSessionJob::CONFIGURATION, session, FROM_HERE);
+  SyncSessionJob job(SyncSessionJob::CONFIGURATION, TimeTicks::Now(),
+                     make_linked_ptr(session),
+                     false,
+                     FROM_HERE);
+  ScheduleSyncSessionJob(job);
 }
 
 const char* SyncScheduler::GetModeString(SyncScheduler::Mode mode) {
@@ -684,25 +688,23 @@ void SyncScheduler::PostDelayedTask(
   sync_loop_->PostDelayedTask(from_here, task, delay_ms);
 }
 
-void SyncScheduler::ScheduleSyncSessionJob(
-    const base::TimeDelta& delay,
-    SyncSessionJob::SyncSessionJobPurpose purpose,
-    sessions::SyncSession* session,
-    const tracked_objects::Location& from_here) {
+void SyncScheduler::ScheduleSyncSessionJob(const SyncSessionJob& job) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  SDVLOG_LOC(from_here, 2)
+  TimeDelta delay = job.scheduled_start - TimeTicks::Now();
+  if (delay < TimeDelta::FromMilliseconds(0))
+    delay = TimeDelta::FromMilliseconds(0);
+  SDVLOG_LOC(job.from_here, 2)
       << "In ScheduleSyncSessionJob with "
-      << SyncSessionJob::GetPurposeString(purpose)
+      << SyncSessionJob::GetPurposeString(job.purpose)
       << " job and " << delay.InMilliseconds() << " ms delay";
 
-  SyncSessionJob job(purpose, TimeTicks::Now() + delay,
-                     make_linked_ptr(session), false, from_here);
-  if (purpose == SyncSessionJob::NUDGE) {
-    SDVLOG_LOC(from_here, 2) << "Resetting pending_nudge";
-    DCHECK(!pending_nudge_.get() || pending_nudge_->session.get() == session);
+  if (job.purpose == SyncSessionJob::NUDGE) {
+    SDVLOG_LOC(job.from_here, 2) << "Resetting pending_nudge";
+    DCHECK(!pending_nudge_.get() || pending_nudge_->session.get() ==
+           job.session);
     pending_nudge_.reset(new SyncSessionJob(job));
   }
-  PostDelayedTask(from_here, "DoSyncSessionJob",
+  PostDelayedTask(job.from_here, "DoSyncSessionJob",
                   base::Bind(&SyncScheduler::DoSyncSessionJob,
                              weak_ptr_factory_.GetWeakPtr(),
                              job),
@@ -1082,8 +1084,13 @@ void SyncScheduler::PollTimerCallback() {
       syncable::ModelTypePayloadMapFromRoutingInfo(r, std::string());
   SyncSourceInfo info(GetUpdatesCallerInfo::PERIODIC, types_with_payloads);
   SyncSession* s = CreateSyncSession(info);
-  ScheduleSyncSessionJob(TimeDelta::FromSeconds(0), SyncSessionJob::POLL, s,
-      FROM_HERE);
+
+  SyncSessionJob job(SyncSessionJob::POLL, TimeTicks::Now(),
+                     make_linked_ptr(s),
+                     false,
+                     FROM_HERE);
+
+  ScheduleSyncSessionJob(job);
 }
 
 void SyncScheduler::Unthrottle() {

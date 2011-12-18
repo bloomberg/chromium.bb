@@ -23,6 +23,7 @@
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/nigori_util.h"
+#include "chrome/browser/sync/engine/polling_constants.h"
 #include "chrome/browser/sync/engine/syncapi_internal.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/http_post_provider_factory.h"
@@ -1494,6 +1495,20 @@ TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
     ReadNode password_node(&trans);
     EXPECT_FALSE(password_node.InitByIdLookup(node_id));
   }
+}
+
+TEST_F(SyncManagerTest, NudgeDelayTest) {
+  EXPECT_EQ(sync_manager_.GetNudgeDelayTimeDelta(syncable::BOOKMARKS),
+      base::TimeDelta::FromMilliseconds(
+          SyncManager::kDefaultNudgeDelayMilliseconds));
+
+  EXPECT_EQ(sync_manager_.GetNudgeDelayTimeDelta(syncable::AUTOFILL),
+      base::TimeDelta::FromSeconds(
+          browser_sync::kDefaultShortPollIntervalSeconds));
+
+  EXPECT_EQ(sync_manager_.GetNudgeDelayTimeDelta(syncable::PREFERENCES),
+      base::TimeDelta::FromMilliseconds(
+          SyncManager::kPreferencesNudgeDelayMilliseconds));
 }
 
 // Friended by WriteNode, so can't be in an anonymouse namespace.
