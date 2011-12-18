@@ -362,8 +362,9 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
   RecursiveAssertUniqueIds(tree, &ids);
 }
 
+// Test fails, see http://crbug.com/107985
 IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
-                       CrossPlatformTableSpan) {
+                       FAILS_CrossPlatformTableSpan) {
   // +---+---+---+
   // |   1   | 2 |
   // +---+---+---+
