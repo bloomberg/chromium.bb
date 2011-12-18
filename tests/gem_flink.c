@@ -117,10 +117,15 @@ int main(int argc, char **argv)
 {
 	int fd;
 
+	if (geteuid()) {
+		fprintf(stderr, "requires root privileges, skipping\n");
+		return 77;
+	}
+
 	fd = drm_open_matching("8086:*", 0);
 	if (fd < 0) {
 		fprintf(stderr, "failed to open intel drm device, skipping\n");
-		return 0;
+		return 77;
 	}
 
 	test_flink(fd);
