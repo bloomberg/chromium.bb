@@ -377,6 +377,9 @@ void
 evdev_input_add_devices(struct wlsc_compositor *c,
 			struct udev *udev, const char *seat);
 
+void
+evdev_input_destroy(struct wlsc_input_device *input_base);
+
 enum {
 	TTY_ENTER_VT,
 	TTY_LEAVE_VT

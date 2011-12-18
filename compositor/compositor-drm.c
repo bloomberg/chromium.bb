@@ -772,10 +772,14 @@ static void
 drm_destroy(struct wlsc_compositor *ec)
 {
 	struct drm_compositor *d = (struct drm_compositor *) ec;
+	struct wlsc_input_device *input, *next;
 
 	wlsc_compositor_shutdown(ec);
 	gbm_device_destroy(d->gbm);
 	tty_destroy(d->tty);
+
+	wl_list_for_each_safe(input, next, &ec->input_device_list, link)
+		evdev_input_destroy(input);
 
 	free(d);
 }

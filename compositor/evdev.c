@@ -537,3 +537,30 @@ evdev_input_add_devices(struct wlsc_compositor *c,
 
 	c->input_device = &input->base.input_device;
 }
+
+static void
+evdev_remove_devices(struct wlsc_input_device *input_base)
+{
+	struct evdev_input *input = (struct evdev_input *) input_base;
+	struct evdev_input_device *device, *next;
+
+        wl_list_for_each_safe(device, next, &input->devices_list, link) {
+		fprintf(stderr, "evdev input device: removed: %s\n", device->devnode);
+		wl_event_source_remove(device->source);
+		wl_list_remove(&device->link);
+		close(device->fd);
+		free(device->devnode);
+		free(device);
+	}
+}
+
+void
+evdev_input_destroy(struct wlsc_input_device *input_base)
+{
+	struct evdev_input *input = (struct evdev_input *) input_base;
+
+	evdev_remove_devices(input_base);
+	wl_list_remove(&input->base.link);
+	free(input->seat_id);
+	free(input);
+}
