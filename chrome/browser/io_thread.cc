@@ -623,8 +623,9 @@ void IOThread::InitSystemRequestContext() {
   // If we're in unit_tests, IOThread may not be run.
   if (!BrowserThread::IsMessageLoopValid(BrowserThread::IO))
     return;
+  bool wait_for_first_update = (pref_proxy_config_tracker_.get() != NULL);
   ChromeProxyConfigService* proxy_config_service =
-      ProxyServiceFactory::CreateProxyConfigService();
+      ProxyServiceFactory::CreateProxyConfigService(wait_for_first_update);
   system_proxy_config_service_.reset(proxy_config_service);
   if (pref_proxy_config_tracker_.get()) {
     pref_proxy_config_tracker_->SetChromeProxyConfigService(

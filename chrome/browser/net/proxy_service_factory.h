@@ -30,7 +30,11 @@ class ProxyServiceFactory {
  public:
   // Creates a ProxyConfigService that delivers the system preferences
   // (or the respective ChromeOS equivalent).
-  static ChromeProxyConfigService* CreateProxyConfigService();
+  // If |wait_for_first_update| is true, the ChromeProxyConfigService
+  // returns "pending" until it has been informed about the proxy configuration
+  // by calling its UpdateProxyConfig method.
+  static ChromeProxyConfigService* CreateProxyConfigService(
+      bool wait_for_first_update);
 
 #if defined(OS_CHROMEOS)
   static chromeos::ProxyConfigServiceImpl* CreatePrefProxyConfigTracker(

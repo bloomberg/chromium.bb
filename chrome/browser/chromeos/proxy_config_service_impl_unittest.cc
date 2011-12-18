@@ -241,7 +241,7 @@ class ProxyConfigServiceImplTestBase : public TESTBASE {
     DBusThreadManager::Initialize();
     PrefProxyConfigTrackerImpl::RegisterPrefs(pref_service);
     ProxyConfigServiceImpl::RegisterPrefs(pref_service);
-    proxy_config_service_.reset(new ChromeProxyConfigService(NULL));
+    proxy_config_service_.reset(new ChromeProxyConfigService(NULL, true));
     config_service_impl_.reset(new ProxyConfigServiceImpl(pref_service));
     config_service_impl_->SetChromeProxyConfigService(
         proxy_config_service_.get());

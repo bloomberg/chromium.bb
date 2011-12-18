@@ -245,7 +245,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->protocol_handler_registry = profile->GetProtocolHandlerRegistry();
 
   ChromeProxyConfigService* proxy_config_service =
-      ProxyServiceFactory::CreateProxyConfigService();
+      ProxyServiceFactory::CreateProxyConfigService(true);
   params->proxy_config_service.reset(proxy_config_service);
   profile->GetProxyConfigTracker()->SetChromeProxyConfigService(
       proxy_config_service);

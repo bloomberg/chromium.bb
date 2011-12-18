@@ -20,9 +20,11 @@ using content::BrowserThread;
 //============================= ChromeProxyConfigService =======================
 
 ChromeProxyConfigService::ChromeProxyConfigService(
-    net::ProxyConfigService* base_service)
+    net::ProxyConfigService* base_service,
+    bool wait_for_first_update)
     : base_service_(base_service),
       pref_config_state_(ProxyPrefs::CONFIG_UNSET),
+      pref_config_read_pending_(wait_for_first_update),
       registered_observer_(false) {
 }
 
@@ -45,6 +47,9 @@ void ChromeProxyConfigService::RemoveObserver(
 net::ProxyConfigService::ConfigAvailability
     ChromeProxyConfigService::GetLatestProxyConfig(net::ProxyConfig* config) {
   RegisterObserver();
+
+  if (pref_config_read_pending_)
+    return net::ProxyConfigService::CONFIG_PENDING;
 
   // Ask the base service if available.
   net::ProxyConfig system_config;
@@ -70,6 +75,7 @@ void ChromeProxyConfigService::UpdateProxyConfig(
     const net::ProxyConfig& config) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
+  pref_config_read_pending_ = false;
   pref_config_state_ = config_state;
   pref_config_ = config;
 
