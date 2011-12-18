@@ -30,6 +30,7 @@
           'nlib_target': '',
           'build_newlib': 0,
           'build_glibc': 0,
+          'disable_glibc%': 1,
           'extra_args': [],
           'enable_x86_32': 1,
           'enable_x86_64': 1,
@@ -249,7 +250,7 @@
     ['target_arch=="x64" or OS=="win"', {
       'target_defaults': {
         'target_conditions': [
-           ['nexe_target!="" and build_glibc!=0 and enable_x86_64!=0', {
+           ['nexe_target!="" and build_glibc!=0 and enable_x86_64!=0 and disable_glibc==0', {
              'variables': {
                 'tool_name': 'glibc',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc',
@@ -293,7 +294,7 @@
     ['target_arch=="x64" or OS=="win"', {
       'target_defaults': {
         'target_conditions': [
-           ['nlib_target!="" and build_glibc!=0 and enable_x86_64!=0', {
+           ['nlib_target!="" and build_glibc!=0 and enable_x86_64!=0 and disable_glibc==0', {
              'variables': {
                 'tool_name': 'glibc',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc',
@@ -337,7 +338,7 @@
     ['target_arch=="ia32"', {
       'target_defaults': {
         'target_conditions': [
-           ['nexe_target!="" and build_glibc!=0 and enable_x86_32!=0', {
+           ['nexe_target!="" and build_glibc!=0 and enable_x86_32!=0 and disable_glibc==0', {
              'variables': {
                 'tool_name': 'glibc',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc',
@@ -381,7 +382,7 @@
     ['target_arch=="ia32"', {
       'target_defaults': {
         'target_conditions': [
-           ['nlib_target!="" and build_glibc!=0 and enable_x86_32!=0', {
+           ['nlib_target!="" and build_glibc!=0 and enable_x86_32!=0 and disable_glibc==0', {
              'variables': {
                 'tool_name': 'glibc',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc',

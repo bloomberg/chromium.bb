@@ -42,14 +42,23 @@
             'arch': '--arch=<(target_arch)',
             'name': '--name=hello_world',
             'path': '--path=<(PRODUCT_DIR)',
-            'tools': '--tools=newlib,glibc',
             'script': '<(DEPTH)/native_client/build/test_build.py',
+            'disable_glibc%': 1,
           },
           'conditions': [
             ['OS=="win"', {
               'dependencies': [
                 'src/trusted/service_runtime/service_runtime.gyp:sel_ldr64',
               ],
+            }],
+            ['disable_glibc==0',{
+              'variables': {
+                'tools': '--tools=newlib,glibc',
+              },
+            }, {
+              'variables': {
+                'tools': '--tools=newlib',
+              },
             }],
           ],
           'actions': [
