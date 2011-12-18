@@ -434,6 +434,32 @@ device_removed(struct udev_device *udev_device, struct evdev_input *master)
 	fprintf(stderr, "evdev input device: removed: %s\n", devnode);
 }
 
+static void
+evdev_add_devices(struct udev *udev, struct wlsc_input_device *input_base)
+{
+	struct evdev_input *input = (struct evdev_input *) input_base;
+	struct udev_enumerate *e;
+	struct udev_list_entry *entry;
+	struct udev_device *device;
+	const char *path;
+
+	e = udev_enumerate_new(udev);
+	udev_enumerate_add_match_subsystem(e, "input");
+	udev_enumerate_scan_devices(e);
+	udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
+		path = udev_list_entry_get_name(entry);
+		device = udev_device_new_from_syspath(udev, path);
+
+		if (strncmp("event", udev_device_get_sysname(device), 5) != 0)
+			continue;
+
+		device_added(device, input);
+
+		udev_device_unref(device);
+	}
+	udev_enumerate_unref(e);
+}
+
 static int
 evdev_udev_handler(int fd, uint32_t mask, void *data)
 {
@@ -491,10 +517,6 @@ evdev_input_add_devices(struct wlsc_compositor *c,
 			struct udev *udev, const char *seat)
 {
 	struct evdev_input *input;
-	struct udev_enumerate *e;
-	struct udev_list_entry *entry;
-	struct udev_device *device;
-	const char *path;
 
 	input = malloc(sizeof *input);
 	if (input == NULL)
@@ -511,21 +533,7 @@ evdev_input_add_devices(struct wlsc_compositor *c,
 		return;
 	}
 
-	e = udev_enumerate_new(udev);
-	udev_enumerate_add_match_subsystem(e, "input");
-	udev_enumerate_scan_devices(e);
-	udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
-		path = udev_list_entry_get_name(entry);
-		device = udev_device_new_from_syspath(udev, path);
-
-		if (strncmp("event", udev_device_get_sysname(device), 5) != 0)
-			continue;
-
-		device_added(device, input);
-
-		udev_device_unref(device);
-	}
-	udev_enumerate_unref(e);
+	evdev_add_devices(udev, &input->base);
 
 	c->input_device = &input->base.input_device;
 }
