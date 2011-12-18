@@ -70,6 +70,8 @@ COMPILE_ASSERT(kTextures == 4, kTextures_is_not_4);
 // the command failed its result size will 0.
 template <typename T>
 struct SizedResult {
+  typedef T Type;
+
   T* GetData() {
     return static_cast<T*>(static_cast<void*>(&data));
   }

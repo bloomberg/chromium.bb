@@ -433,6 +433,12 @@ class GLES2ImplementationTest : public GLES2CommandBufferTestBase {
   static const GLint kNumCompressedTextureFormats = 0;
   static const GLint kNumShaderBinaryFormats = 0;
   static const GLuint kStartId = 1024;
+  static const GLuint kBuffersStartId =
+      GLES2Implementation::kClientSideArrayId + 2;
+  static const GLuint kFramebuffersStartId = 1;
+  static const GLuint kProgramsAndShadersStartId = 1;
+  static const GLuint kRenderbuffersStartId = 1;
+  static const GLuint kTexturesStartId = 1;
 
   GLES2ImplementationTest() { }
 
@@ -531,6 +537,28 @@ class GLES2ImplementationStrictSharedTest : public GLES2ImplementationTest {
     Initialize(true, false);
   }
 };
+
+// GCC requires these declarations, but MSVC requires they not be present
+#ifndef _MSC_VER
+const GLint GLES2ImplementationTest::kMaxCombinedTextureImageUnits;
+const GLint GLES2ImplementationTest::kMaxCubeMapTextureSize;
+const GLint GLES2ImplementationTest::kMaxFragmentUniformVectors;
+const GLint GLES2ImplementationTest::kMaxRenderbufferSize;
+const GLint GLES2ImplementationTest::kMaxTextureImageUnits;
+const GLint GLES2ImplementationTest::kMaxTextureSize;
+const GLint GLES2ImplementationTest::kMaxVaryingVectors;
+const GLint GLES2ImplementationTest::kMaxVertexAttribs;
+const GLint GLES2ImplementationTest::kMaxVertexTextureImageUnits;
+const GLint GLES2ImplementationTest::kMaxVertexUniformVectors;
+const GLint GLES2ImplementationTest::kNumCompressedTextureFormats;
+const GLint GLES2ImplementationTest::kNumShaderBinaryFormats;
+const GLuint GLES2ImplementationTest::kStartId;
+const GLuint GLES2ImplementationTest::kBuffersStartId;
+const GLuint GLES2ImplementationTest::kFramebuffersStartId;
+const GLuint GLES2ImplementationTest::kProgramsAndShadersStartId;
+const GLuint GLES2ImplementationTest::kRenderbuffersStartId;
+const GLuint GLES2ImplementationTest::kTexturesStartId;
+#endif
 
 TEST_F(GLES2ImplementationTest, ShaderSource) {
   const uint32 kBucketId = 1;  // This id is hardcoded into GLES2Implemenation
@@ -2066,19 +2094,88 @@ TEST_F(GLES2ImplementationTest, CreateStreamTextureCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
-TEST_F(GLES2ImplementationTest, DestroyStreamTextureCHROMIUM) {
-  const GLuint kTextureHandle = 456;
-
+TEST_F(GLES2ImplementationTest, GetString) {
+  const uint32 kBucketId = 1;  // This id is hardcoded into GLES2Implemenation
+  const Str7 kString = {"foobar"};
+  // GL_CHROMIUM_map_sub GL_CHROMIUM_flipy are hard coded into
+  // GLES2Implementation.
+  const char* expected_str = "foobar GL_CHROMIUM_map_sub GL_CHROMIUM_flipy";
+  const char kBad = 0x12;
   struct Cmds {
-    DestroyStreamTextureCHROMIUM destroy_stream;
+    cmd::SetBucketSize set_bucket_size1;
+    GetString get_string;
+    cmd::GetBucketSize get_bucket_size;
+    cmd::GetBucketData get_bucket_data;
+    cmd::SetToken set_token1;
+    cmd::SetBucketSize set_bucket_size2;
+  };
+  uint32 offset = AllocateTransferBuffer(sizeof(kString));
+  Cmds expected;
+  expected.set_bucket_size1.Init(kBucketId, 0);
+  expected.get_string.Init(GL_EXTENSIONS, kBucketId);
+  expected.get_bucket_size.Init(kBucketId, transfer_buffer_id_, 0);
+  expected.get_bucket_data.Init(
+      kBucketId, 0, sizeof(kString), transfer_buffer_id_, offset);
+  expected.set_token1.Init(GetNextToken());
+  expected.set_bucket_size2.Init(kBucketId, 0);
+  char buf[sizeof(kString) + 1];
+  memset(buf, kBad, sizeof(buf));
+
+  EXPECT_CALL(*command_buffer_, OnFlush(_))
+      .WillOnce(SetMemory(uint32(sizeof(kString))))
+      .WillOnce(SetMemoryAtOffset(offset, kString))
+      .RetiresOnSaturation();
+
+  const GLubyte* result = gl_->GetString(GL_EXTENSIONS);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_STREQ(expected_str, reinterpret_cast<const char*>(result));
+}
+
+TEST_F(GLES2ImplementationTest, PixelStoreiGLPackReverseRowOrderANGLE) {
+  const uint32 kBucketId = 1;  // This id is hardcoded into GLES2Implemenation
+  const Str7 kString = {"foobar"};
+  struct Cmds {
+    cmd::SetBucketSize set_bucket_size1;
+    GetString get_string;
+    cmd::GetBucketSize get_bucket_size;
+    cmd::GetBucketData get_bucket_data;
+    cmd::SetToken set_token1;
+    cmd::SetBucketSize set_bucket_size2;
+    PixelStorei pixel_store;
+  };
+  uint32 offset = AllocateTransferBuffer(sizeof(kString));
+  Cmds expected;
+  expected.set_bucket_size1.Init(kBucketId, 0);
+  expected.get_string.Init(GL_EXTENSIONS, kBucketId);
+  expected.get_bucket_size.Init(kBucketId, transfer_buffer_id_, 0);
+  expected.get_bucket_data.Init(
+      kBucketId, 0, sizeof(kString), transfer_buffer_id_, offset);
+  expected.set_token1.Init(GetNextToken());
+  expected.set_bucket_size2.Init(kBucketId, 0);
+  expected.pixel_store.Init(GL_PACK_REVERSE_ROW_ORDER_ANGLE, 1);
+
+  EXPECT_CALL(*command_buffer_, OnFlush(_))
+      .WillOnce(SetMemory(uint32(sizeof(kString))))
+      .WillOnce(SetMemoryAtOffset(offset, kString))
+      .RetiresOnSaturation();
+
+  gl_->PixelStorei(GL_PACK_REVERSE_ROW_ORDER_ANGLE, 1);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, CreateProgram) {
+  struct Cmds {
+    CreateProgram cmd;
   };
 
   Cmds expected;
-  expected.destroy_stream.Init(kTextureHandle);
-
-  gl_->DestroyStreamTextureCHROMIUM(kTextureHandle);
+  expected.cmd.Init(kProgramsAndShadersStartId);
+  GLuint id = gl_->CreateProgram();
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(kProgramsAndShadersStartId, id);
 }
+
+#include "gpu/command_buffer/client/gles2_implementation_unittest_autogen.h"
 
 }  // namespace gles2
 }  // namespace gpu

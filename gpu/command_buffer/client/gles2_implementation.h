@@ -494,6 +494,8 @@ class GLES2Implementation {
   bool GetShaderivHelper(GLuint shader, GLenum pname, GLint* params);
   bool GetTexParameterfvHelper(GLenum target, GLenum pname, GLfloat* params);
   bool GetTexParameterivHelper(GLenum target, GLenum pname, GLint* params);
+  const GLubyte* GetStringHelper(GLenum name);
+
 
   GLES2Util util_;
   GLES2CmdHelper* helper_;

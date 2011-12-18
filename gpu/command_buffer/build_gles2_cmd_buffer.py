@@ -1139,7 +1139,8 @@ _ENUM_LISTS = {
 # needs_size:   If true a data_size field is added to the command.
 # data_type:    The type of data the command uses. For PUTn or PUT types.
 # count:        The number of units per element. For PUTn or PUT types.
-# unit_test:    If False no unit test will be generated.
+# unit_test:    If False no service side unit test will be generated.
+# client_test:  If False no client side unit test will be generated.
 # expectation:  If False the unit test will have no expected calls.
 # gen_func:     Name of function that generates GL resource for corresponding
 #               bind function.
@@ -1151,6 +1152,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoActiveTexture',
     'unit_test': False,
     'impl_func': False,
+    'client_test': False,
   },
   'AttachShader': {'decoder_func': 'DoAttachShader'},
   'BindAttribLocation': {'type': 'GLchar', 'bucket': True, 'needs_size': True},
@@ -1181,8 +1183,16 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'extension': True,
   },
-  'BufferData': {'type': 'Manual', 'immediate': True},
-  'BufferSubData': {'type': 'Data', 'decoder_func': 'DoBufferSubData'},
+  'BufferData': {
+    'type': 'Manual',
+    'immediate': True,
+    'client_test': False,
+  },
+  'BufferSubData': {
+    'type': 'Data',
+    'client_test': False,
+    'decoder_func': 'DoBufferSubData',
+  },
   'CheckFramebufferStatus': {
     'type': 'Is',
     'decoder_func': 'DoCheckFramebufferStatus',
@@ -1225,8 +1235,14 @@ _FUNCTION_INFO = {
   'CopyTexSubImage2D': {
     'decoder_func': 'DoCopyTexSubImage2D',
   },
-  'CreateProgram': {'type': 'Create'},
-  'CreateShader': {'type': 'Create'},
+  'CreateProgram': {
+    'type': 'Create',
+    'client_test': False,
+  },
+  'CreateShader': {
+    'type': 'Create',
+    'client_test': False,
+  },
   'DeleteBuffers': {
     'type': 'DELn',
     'gl_test_func': 'glDeleteBuffersARB',
@@ -1263,11 +1279,13 @@ _FUNCTION_INFO = {
   },
   'DrawArrays': {
     'type': 'Manual',
-    'cmd_args': 'GLenum mode, GLint first, GLsizei count',
+    'cmd_args': 'GLenumDrawMode mode, GLint first, GLsizei count',
   },
   'DrawElements': {
     'type': 'Manual',
-    'cmd_args': 'GLenum mode, GLsizei count, GLenum type, GLuint index_offset',
+    'cmd_args': 'GLenumDrawMode mode, GLsizei count, '
+                'GLenumIndexType type, GLuint index_offset',
+    'client_test': False
   },
   'Enable': {
     'decoder_func': 'DoEnable',
@@ -1276,7 +1294,10 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoEnableVertexAttribArray',
     'impl_decl': False,
   },
-  'Finish': {'impl_func': False},
+  'Finish': {
+    'impl_func': False,
+    'client_test': False,
+  },
   'Flush': {'impl_func': False},
   'FramebufferRenderbuffer': {
     'decoder_func': 'DoFramebufferRenderbuffer',
@@ -1354,6 +1375,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'GetGLError',
     'impl_func': False,
     'result': ['GLenum'],
+    'client_test': False,
   },
   'GetFloatv': {
     'type': 'GETn',
@@ -1371,12 +1393,14 @@ _FUNCTION_INFO = {
     'type': 'GETn',
     'result': ['SizedResult<GLint>'],
     'decoder_func': 'DoGetIntegerv',
+    'client_test': False,
   },
   'GetMaxValueInBufferCHROMIUM': {
     'type': 'Is',
     'decoder_func': 'DoGetMaxValueInBufferCHROMIUM',
     'result': ['GLuint'],
     'unit_test': False,
+    'client_test': False,
     'extension': True,
     'chromium': True,
   },
@@ -1386,6 +1410,7 @@ _FUNCTION_INFO = {
     'expectation': False,
     'extension': True,
     'chromium': True,
+    'client_test': False,
   },
   'GetProgramiv': {
     'type': 'GETn',
@@ -1399,6 +1424,7 @@ _FUNCTION_INFO = {
     'impl_func': False,
     'extension': True,
     'chromium': True,
+    'client_test': False,
     'cmd_args': 'GLidProgram program, uint32 bucket_id',
     'result': [
       'uint32 link_status',
@@ -1445,9 +1471,11 @@ _FUNCTION_INFO = {
     'get_len_func': 'DoGetShaderiv',
     'get_len_enum': 'GL_SHADER_SOURCE_LENGTH',
     'unit_test': False,
+    'client_test': False,
     },
   'GetString': {
       'type': 'Custom',
+      'client_test': False,
       'cmd_args': 'GLenumStringType name, uint32 bucket_id',
   },
   'GetTexParameterfv': {'type': 'GETn', 'result': ['SizedResult<GLfloat>']},
@@ -1484,6 +1512,7 @@ _FUNCTION_INFO = {
     'impl_decl': False,
     'decoder_func': 'DoGetVertexAttribfv',
     'expectation': False,
+    'client_test': False,
   },
   'GetVertexAttribiv': {
     'type': 'GETn',
@@ -1491,11 +1520,13 @@ _FUNCTION_INFO = {
     'impl_decl': False,
     'decoder_func': 'DoGetVertexAttribiv',
     'expectation': False,
+    'client_test': False,
   },
   'GetVertexAttribPointerv': {
     'type': 'Custom',
     'immediate': False,
     'result': ['SizedResult<GLuint>'],
+    'client_test': False,
   },
   'IsBuffer': {
     'type': 'Is',
@@ -1536,17 +1567,20 @@ _FUNCTION_INFO = {
     'gen_cmd': False,
     'extension': True,
     'chromium': True,
+    'client_test': False,
   },
   'MapTexSubImage2DCHROMIUM': {
     'gen_cmd': False,
     'extension': True,
     'chromium': True,
+    'client_test': False,
   },
   'PixelStorei': {'type': 'Manual'},
   'PostSubBufferCHROMIUM': {
       'type': 'Custom',
       'impl_func': False,
       'unit_test': False,
+      'client_test': False,
       'extension': True,
       'chromium': True,
   },
@@ -1570,9 +1604,11 @@ _FUNCTION_INFO = {
     'type': 'Custom',
     'immediate': False,
     'impl_func': False,
+    'client_test': False,
     'cmd_args':
-        'GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, '
-        'GLenum type, uint32 pixels_shm_id, uint32 pixels_shm_offset, '
+        'GLint x, GLint y, GLsizei width, GLsizei height, '
+        'GLenumReadPixelFormat format, GLenumPixelType type, '
+        'uint32 pixels_shm_id, uint32 pixels_shm_offset, '
         'uint32 result_shm_id, uint32 result_shm_offset',
     'result': ['uint32'],
   },
@@ -1589,12 +1625,16 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoReleaseShaderCompiler',
     'unit_test': False,
   },
-  'ShaderBinary': {'type': 'Custom'},
+  'ShaderBinary': {
+    'type': 'Custom',
+    'client_test': False,
+  },
   'ShaderSource': {
     'type': 'Manual',
     'immediate': True,
     'bucket': True,
     'needs_size': True,
+    'client_test': False,
     'cmd_args':
         'GLuint shader, const char* data',
   },
@@ -1607,9 +1647,14 @@ _FUNCTION_INFO = {
     'type': 'Custom',
     'impl_func': False,
     'unit_test': False,
+    'client_test': False,
     'extension': True,
   },
-  'TexImage2D': {'type': 'Manual', 'immediate': True},
+  'TexImage2D': {
+    'type': 'Manual',
+    'immediate': True,
+    'client_test': False,
+  },
   'TexParameterf': {
     'decoder_func': 'DoTexParameterf',
     'valid_args': {
@@ -1639,8 +1684,11 @@ _FUNCTION_INFO = {
   'TexSubImage2D': {
     'type': 'Manual',
     'immediate': True,
-    'cmd_args': 'GLenum target, GLint level, GLint xoffset, GLint yoffset, '
-                'GLsizei width, GLsizei height, GLenum format, GLenum type, '
+    'client_test': False,
+    'cmd_args': 'GLenumTextureTarget target, GLint level, '
+                'GLint xoffset, GLint yoffset, '
+                'GLsizei width, GLsizei height, '
+                'GLenumTextureFormat format, GLenumPixelType type, '
                 'const void* pixels, GLboolean internal'
   },
   'Uniform1f': {'type': 'PUTXn', 'data_type': 'GLfloat', 'count': 1},
@@ -1721,11 +1769,13 @@ _FUNCTION_INFO = {
     'gen_cmd': False,
     'extension': True,
     'chromium': True,
+    'client_test': False,
     },
   'UnmapTexSubImage2DCHROMIUM': {
     'gen_cmd': False,
     'extension': True,
     'chromium': True,
+    'client_test': False,
   },
   'UseProgram': {'decoder_func': 'DoUseProgram', 'unit_test': False},
   'ValidateProgram': {'decoder_func': 'DoValidateProgram'},
@@ -1759,8 +1809,10 @@ _FUNCTION_INFO = {
   },
   'VertexAttribPointer': {
       'type': 'Manual',
-      'cmd_args': 'GLuint indx, GLint size, GLenum type, GLboolean normalized, '
+      'cmd_args': 'GLuint indx, GLintVertexAttribSize size, '
+                  'GLenumVertexAttribType type, GLboolean normalized, '
                   'GLsizei stride, GLuint offset',
+      'client_test': False,
   },
   'ResizeCHROMIUM': {
       'type': 'Custom',
@@ -1781,6 +1833,7 @@ _FUNCTION_INFO = {
     'type': 'Custom',
     'impl_func': False,
     'immediate': False,
+    'client_test': False,
     'cmd_args': 'uint32 bucket_id',
     'extension': True,
     'chromium': True,
@@ -1789,6 +1842,7 @@ _FUNCTION_INFO = {
     'gen_cmd': False,
     'extension': True,
     'chromium': True,
+    'client_test': False,
   },
   'Placeholder447CHROMIUM': {
     'type': 'UnknownCommand',
@@ -1804,6 +1858,7 @@ _FUNCTION_INFO = {
     'expectation': False,
     'extension': True,
     'chromium': True,
+    'client_test': False,
    },
   'DestroyStreamTextureCHROMIUM':  {
     'type': 'Custom',
@@ -1878,8 +1933,8 @@ class CWriter(object):
 
   def __init__(self, filename):
     self.filename = filename
-    self.file = open(filename, "wb")
     self.file_num = 0
+    self.content = []
 
   def SetFileNum(self, num):
     """Used to help write number files and tests."""
@@ -1932,7 +1987,7 @@ class CWriter(object):
         nolint = ''
         if len(line1) > 80:
           nolint = '  // NOLINT'
-        self.file.write(line1 + nolint + '\n')
+        self.__AddLine(line1 + nolint + '\n')
         match = re.match("( +)", line1)
         indent = ""
         if match:
@@ -1945,13 +2000,27 @@ class CWriter(object):
     nolint = ''
     if len(line) > 80:
       nolint = '  // NOLINT'
-    self.file.write(line + nolint)
+    self.__AddLine(line + nolint)
     if ends_with_eol:
-      self.file.write('\n')
+      self.__AddLine('\n')
+
+  def __AddLine(self, line):
+    self.content.append(line)
 
   def Close(self):
     """Close the file."""
-    self.file.close()
+    content = "".join(self.content)
+    write_file = True
+    if os.path.exists(self.filename):
+      old_file = open(self.filename, "rb");
+      old_content = old_file.read()
+      old_file.close();
+      if content == old_content:
+        write_file = False
+    if write_file:
+      file = open(self.filename, "wb")
+      file.write(content)
+      file.close()
 
 
 class CHeaderWriter(CWriter):
@@ -2381,6 +2450,42 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       file.Write("\n")
     else:
       self.WriteGLES2ImplementationDeclaration(func, file)
+
+  def WriteGLES2ImplementationUnitTest(self, func, file):
+    """Writes the GLES2 Implemention unit test."""
+    client_test = func.GetInfo('client_test')
+    if (func.can_auto_generate and
+        (client_test == None or client_test == True)):
+      code = """
+TEST_F(GLES2ImplementationTest, %(name)s) {
+  struct Cmds {
+    %(name)s cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(%(cmd_args)s);
+
+  gl_->%(name)s(%(args)s);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+"""
+      cmd_arg_strings = []
+      count = 0
+      for arg in func.GetCmdArgs():
+        cmd_arg_strings.append(arg.GetValidClientSideCmdArg(func, count, 0))
+        count += 1
+      gl_arg_strings = []
+      count = 0
+      for arg in func.GetOriginalArgs():
+        gl_arg_strings.append(arg.GetValidClientSideArg(func, count, 0))
+        count += 1
+      file.Write(code % {
+            'name': func.name,
+            'args': ", ".join(gl_arg_strings),
+            'cmd_args': ", ".join(cmd_arg_strings),
+          })
+    else:
+      if client_test != False:
+        file.Write("// TODO: Implement unit test for %s\n" % func.name)
 
   def WriteDestinationInitalizationValidation(self, func, file):
     """Writes the client side destintion initialization validation."""
@@ -2883,6 +2988,30 @@ class GENnHandler(TypeHandler):
 """
     file.Write(code % args)
 
+  def WriteGLES2ImplementationUnitTest(self, func, file):
+    """Overrriden from TypeHandler."""
+    code = """
+TEST_F(GLES2ImplementationTest, %(name)s) {
+  GLuint ids[2] = { 0, };
+  struct Cmds {
+    %(name)sImmediate gen;
+    GLuint data[2];
+  };
+  Cmds expected;
+  expected.gen.Init(arraysize(ids), &ids[0]);
+  expected.data[0] = k%(type)ssStartId;
+  expected.data[1] = k%(type)ssStartId + 1;
+  gl_->%(name)s(arraysize(ids), &ids[0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(k%(type)ssStartId, ids[0]);
+  EXPECT_EQ(k%(type)ssStartId + 1, ids[1]);
+}
+"""
+    file.Write(code % {
+          'name': func.name,
+          'type': func.name[3:-1],
+        })
+
   def WriteServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
     valid_test = """
@@ -3147,6 +3276,28 @@ class DELnHandler(TypeHandler):
   }
 """
     file.Write(code)
+
+  def WriteGLES2ImplementationUnitTest(self, func, file):
+    """Overrriden from TypeHandler."""
+    code = """
+TEST_F(GLES2ImplementationTest, %(name)s) {
+  GLuint ids[2] = { k%(type)ssStartId, k%(type)ssStartId + 1 };
+  struct Cmds {
+    %(name)sImmediate del;
+    GLuint data[2];
+  };
+  Cmds expected;
+  expected.del.Init(arraysize(ids), &ids[0]);
+  expected.data[0] = k%(type)ssStartId;
+  expected.data[1] = k%(type)ssStartId + 1;
+  gl_->%(name)s(arraysize(ids), &ids[0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+"""
+    file.Write(code % {
+          'name': func.name,
+          'type': func.GetOriginalArgs()[1].name[0:-1].capitalize(),
+        })
 
   def WriteServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
@@ -3441,6 +3592,43 @@ class GETnHandler(TypeHandler):
           'all_arg_string': all_arg_string,
         })
 
+  def WriteGLES2ImplementationUnitTest(self, func, file):
+    """Writes the GLES2 Implemention unit test."""
+    code = """
+TEST_F(GLES2ImplementationTest, %(name)s) {
+  struct Cmds {
+    %(name)s cmd;
+  };
+  typedef %(name)s::Result Result;
+  Result::Type result = 0;
+  Cmds expected;
+  expected.cmd.Init(%(cmd_args)s, transfer_buffer_id_, 0);
+  EXPECT_CALL(*command_buffer_, OnFlush(_))
+      .WillOnce(SetMemory(SizedResultHelper<Result::Type>(1)))
+      .RetiresOnSaturation();
+  gl_->%(name)s(%(args)s, &result);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(static_cast<Result::Type>(1), result);
+}
+"""
+    cmd_arg_strings = []
+    count = 0
+    for arg in func.GetCmdArgs()[0:-2]:
+      cmd_arg_strings.append(arg.GetValidClientSideCmdArg(func, count, 0))
+      count += 1
+    cmd_arg_strings[0] = '123'
+    gl_arg_strings = []
+    count = 0
+    for arg in func.GetOriginalArgs()[0:-1]:
+      gl_arg_strings.append(arg.GetValidClientSideArg(func, count, 0))
+      count += 1
+    gl_arg_strings[0] = '123'
+    file.Write(code % {
+          'name': func.name,
+          'args': ", ".join(gl_arg_strings),
+          'cmd_args': ", ".join(cmd_arg_strings),
+        })
+
   def WriteServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
     valid_test = """
@@ -3612,6 +3800,42 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
                (func.name, func.MakeOriginalArgString("")))
     file.Write("}\n")
     file.Write("\n")
+
+  def WriteGLES2ImplementationUnitTest(self, func, file):
+    """Writes the GLES2 Implemention unit test."""
+    code = """
+TEST_F(GLES2ImplementationTest, %(name)s) {
+  struct Cmds {
+    %(name)sImmediate cmd;
+    %(type)s data[%(count)d];
+  };
+
+  Cmds expected;
+  for (int jj = 0; jj < %(count)d; ++jj) {
+    expected.data[jj] = static_cast<%(type)s>(jj);
+  }
+  expected.cmd.Init(%(cmd_args)s, &expected.data[0]);
+  gl_->%(name)s(%(args)s, &expected.data[0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+"""
+    cmd_arg_strings = []
+    count = 0
+    for arg in func.GetCmdArgs()[0:-2]:
+      cmd_arg_strings.append(arg.GetValidClientSideCmdArg(func, count, 0))
+      count += 1
+    gl_arg_strings = []
+    count = 0
+    for arg in func.GetOriginalArgs()[0:-1]:
+      gl_arg_strings.append(arg.GetValidClientSideArg(func, count, 0))
+      count += 1
+    file.Write(code % {
+          'name': func.name,
+          'type': func.GetInfo('data_type'),
+          'count': func.GetInfo('count'),
+          'args': ", ".join(gl_arg_strings),
+          'cmd_args': ", ".join(cmd_arg_strings),
+        })
 
   def WriteImmediateCmdComputeSize(self, func, file):
     """Overrriden from TypeHandler."""
@@ -3842,6 +4066,44 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
                (func.name, func.MakeOriginalArgString("")))
     file.Write("}\n")
     file.Write("\n")
+
+  def WriteGLES2ImplementationUnitTest(self, func, file):
+    """Writes the GLES2 Implemention unit test."""
+    code = """
+TEST_F(GLES2ImplementationTest, %(name)s) {
+  struct Cmds {
+    %(name)sImmediate cmd;
+    %(type)s data[2][%(count)d];
+  };
+
+  Cmds expected;
+  for (int ii = 0; ii < 2; ++ii) {
+    for (int jj = 0; jj < %(count)d; ++jj) {
+      expected.data[ii][jj] = static_cast<%(type)s>(ii * %(count)d + jj);
+    }
+  }
+  expected.cmd.Init(%(cmd_args)s, &expected.data[0][0]);
+  gl_->%(name)s(%(args)s, &expected.data[0][0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+"""
+    cmd_arg_strings = []
+    count = 0
+    for arg in func.GetCmdArgs()[0:-2]:
+      cmd_arg_strings.append(arg.GetValidClientSideCmdArg(func, count, 0))
+      count += 1
+    gl_arg_strings = []
+    count = 0
+    for arg in func.GetOriginalArgs()[0:-1]:
+      gl_arg_strings.append(arg.GetValidClientSideArg(func, count, 0))
+      count += 1
+    file.Write(code % {
+          'name': func.name,
+          'type': func.GetInfo('data_type'),
+          'count': func.GetInfo('count'),
+          'args': ", ".join(gl_arg_strings),
+          'cmd_args': ", ".join(cmd_arg_strings),
+        })
 
   def WriteImmediateCmdComputeSize(self, func, file):
     """Overrriden from TypeHandler."""
@@ -4234,6 +4496,33 @@ TEST_F(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
     else:
       self.WriteGLES2ImplementationDeclaration(func, file)
 
+  def WriteGLES2ImplementationUnitTest(self, func, file):
+    """Overrriden from TypeHandler."""
+    client_test = func.GetInfo('client_test')
+    if client_test == None or client_test == True:
+      code = """
+TEST_F(GLES2ImplementationTest, %(name)s) {
+  struct Cmds {
+    %(name)s cmd;
+  };
+
+  typedef %(name)s::Result Result;
+  Cmds expected;
+  expected.cmd.Init(1, transfer_buffer_id_, 0);
+
+  EXPECT_CALL(*command_buffer_, OnFlush(_))
+      .WillOnce(SetMemory(uint32(1)))
+      .RetiresOnSaturation();
+
+  GLboolean result = gl_->%(name)s(1);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_TRUE(result);
+}
+"""
+      file.Write(code % {
+            'name': func.name,
+          })
+
 
 class STRnHandler(TypeHandler):
   """Handler for GetProgramInfoLog, GetShaderInfoLog, GetShaderSource, and
@@ -4385,11 +4674,16 @@ class UnknownCommandHandler(TypeHandler):
 
   def WriteGLES2CLibImplementation(self, func, file):
     """Overrriden from TypeHandler."""
-    pass;
+    pass
 
   def WriteServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
-    pass;
+    pass
+
+  def WriteGLES2ImplementationUnitTest(self, func, file):
+    """Overrriden from TypeHandler."""
+    pass
+
 
 class FunctionInfo(object):
   """Holds info about a function."""
@@ -4442,6 +4736,14 @@ class Argument(object):
     valid_arg = func.GetValidArg(offset)
     if valid_arg != None:
       return valid_arg
+    return str(offset + 1)
+
+  def GetValidClientSideArg(self, func, offset, index):
+    """Gets a valid value for this argument."""
+    return str(offset + 1)
+
+  def GetValidClientSideCmdArg(self, func, offset, index):
+    """Gets a valid value for this argument."""
     return str(offset + 1)
 
   def GetValidGLArg(self, func, offset, index):
@@ -4514,6 +4816,14 @@ class BoolArgument(Argument):
     Argument.__init__(self, name, 'GLboolean')
 
   def GetValidArg(self, func, offset, index):
+    """Gets a valid value for this argument."""
+    return 'true'
+
+  def GetValidClientSideArg(self, func, offset, index):
+    """Gets a valid value for this argument."""
+    return 'true'
+
+  def GetValidClientSideCmdArg(self, func, offset, index):
     """Gets a valid value for this argument."""
     return 'true'
 
@@ -4617,7 +4927,16 @@ class EnumBaseArgument(Argument):
       return valid[index]
     return str(offset + 1)
 
+  def GetValidClientSideArg(self, func, offset, index):
+    """Gets a valid value for this argument."""
+    return self.GetValidArg(func, offset, index)
+
+  def GetValidClientSideCmdArg(self, func, offset, index):
+    """Gets a valid value for this argument."""
+    return self.GetValidArg(func, offset, index)
+
   def GetValidGLArg(self, func, offset, index):
+    """Gets a valid value for this argument."""
     return self.GetValidArg(func, offset, index)
 
   def GetNumInvalidValues(self, func):
@@ -5165,6 +5484,10 @@ class Function(object):
     """Writes the GLES2 Implemention declaration."""
     self.type_handler.WriteGLES2ImplementationHeader(self, file)
 
+  def WriteGLES2ImplementationUnitTest(self, file):
+    """Writes the GLES2 Implemention unit test."""
+    self.type_handler.WriteGLES2ImplementationUnitTest(self, file)
+
   def WriteDestinationInitalizationValidation(self, file):
     """Writes the client side destintion initialization validation."""
     self.type_handler.WriteDestinationInitalizationValidation(self, file)
@@ -5671,6 +5994,16 @@ class GLGenerator(object):
       func.WriteGLES2ImplementationHeader(file)
     file.Close()
 
+  def WriteGLES2ImplementationUnitTests(self, filename):
+    """Writes the GLES2 helper header."""
+    file = CHeaderWriter(
+        filename,
+        "// This file is included by gles2_implementation.h to declare the\n"
+        "// GL api functions.\n")
+    for func in self.original_functions:
+      func.WriteGLES2ImplementationUnitTest(file)
+    file.Close()
+
   def WriteServiceUtilsHeader(self, filename):
     """Writes the gles2 auto generated utility header."""
     file = CHeaderWriter(filename)
@@ -6014,6 +6347,8 @@ def main(argv):
     gen.WriteFormat("common/gles2_cmd_format_autogen.h")
     gen.WriteFormatTest("common/gles2_cmd_format_test_autogen.h")
     gen.WriteGLES2ImplementationHeader("client/gles2_implementation_autogen.h")
+    gen.WriteGLES2ImplementationUnitTests(
+        "client/gles2_implementation_unittest_autogen.h")
     gen.WriteGLES2CLibImplementation("client/gles2_c_lib_autogen.h")
     gen.WriteCmdHelperHeader("client/gles2_cmd_helper_autogen.h")
     gen.WriteServiceImplementation("service/gles2_cmd_decoder_autogen.h")

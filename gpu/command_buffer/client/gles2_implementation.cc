@@ -2001,10 +2001,7 @@ void GLES2Implementation::GetShaderPrecisionFormat(
   }
 }
 
-const GLubyte* GLES2Implementation::GetString(GLenum name) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << this << "] glGetString("
-      << GLES2Util::GetStringStringType(name) << ")");
+const GLubyte* GLES2Implementation::GetStringHelper(GLenum name) {
   const char* result = NULL;
   // Clears the bucket so if the command fails nothing will be in it.
   helper_->SetBucketSize(kResultBucketId, 0);
@@ -2044,8 +2041,16 @@ const GLubyte* GLES2Implementation::GetString(GLenum name) {
       result = insert_result.first->c_str();
     }
   }
-  GPU_CLIENT_LOG("  returned " << static_cast<const char*>(result));
   return reinterpret_cast<const GLubyte*>(result);
+}
+
+const GLubyte* GLES2Implementation::GetString(GLenum name) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << this << "] glGetString("
+      << GLES2Util::GetStringStringType(name) << ")");
+  const GLubyte* result = GetStringHelper(name);
+  GPU_CLIENT_LOG("  returned " << reinterpret_cast<const char*>(result));
+  return result;
 }
 
 void GLES2Implementation::GetUniformfv(
