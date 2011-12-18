@@ -1932,10 +1932,10 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 WL_EXPORT void
 wlsc_compositor_shutdown(struct wlsc_compositor *ec)
 {
-	struct wlsc_output *output;
+	struct wlsc_output *output, *next;
 
 	/* Destroy all outputs associated with this compositor */
-	wl_list_for_each(output, &ec->output_list, link)
+	wl_list_for_each_safe(output, next, &ec->output_list, link)
 		output->destroy(output);
 }
 
