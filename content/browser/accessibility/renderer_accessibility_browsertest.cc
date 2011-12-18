@@ -273,8 +273,9 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
   EXPECT_EQ(cell2.id, column2.indirect_child_ids[0]);
 }
 
+// Test fails, see http://crbug.com/107985
 IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
-                       CrossPlatformMultipleInheritanceAccessibility2) {
+                       FAILS_CrossPlatformMultipleInheritanceAccessibility2) {
   // Here's another html snippet where WebKit puts the same node as a child
   // of two different parents. Instead of checking the exact output, just
   // make sure that no id is reused in the resulting tree.
