@@ -13,7 +13,6 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
-#include "base/string_piece.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -682,9 +681,8 @@ bool ProfileInfoCache::IsDefaultAvatarIconUrl(const std::string& url,
     return false;
 
   int int_value = -1;
-  if (base::StringToInt(base::StringPiece(url.begin() +
-                                          strlen(kDefaultUrlPrefix),
-                                          url.end()),
+  if (base::StringToInt(url.begin() + strlen(kDefaultUrlPrefix),
+                        url.end(),
                         &int_value)) {
     if (int_value < 0 ||
         int_value >= static_cast<int>(kDefaultAvatarIconsCount))

@@ -16,7 +16,6 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
-#include "base/string_piece.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -1555,9 +1554,7 @@ int GetXUaCompatibleDirective(const std::string& directive, char delimiter) {
     }
 
     int header_ie_version = 0;
-    if (!base::StringToInt(base::StringPiece(filter_begin + 2,
-                                             filter_end),
-                           &header_ie_version) ||
+    if (!base::StringToInt(filter_begin + 2, filter_end, &header_ie_version) ||
         header_ie_version == 0) {  // ensure it's not a sequence of 0's
       continue;
     }

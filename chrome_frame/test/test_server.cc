@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
-#include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -50,8 +49,8 @@ void Request::ParseHeaders(const std::string& headers) {
   while (it.GetNext()) {
     if (LowerCaseEqualsASCII(it.name(), "content-length")) {
       int int_content_length;
-      base::StringToInt(base::StringPiece(it.values_begin(),
-                                          it.values_end()),
+      base::StringToInt(it.values_begin(),
+                        it.values_end(),
                         &int_content_length);
       content_length_ = int_content_length;
       break;
