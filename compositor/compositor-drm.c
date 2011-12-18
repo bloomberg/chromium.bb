@@ -35,6 +35,7 @@
 #include <gbm.h>
 
 #include "compositor.h"
+#include "evdev.h"
 
 struct drm_compositor {
 	struct wlsc_compositor base;
@@ -894,7 +895,7 @@ drm_compositor_create(struct wl_display *display,
 	udev_enumerate_unref(e);
 	path = NULL;
 
-	evdev_input_add_devices(&ec->base, ec->udev, seat);
+	evdev_input_create(&ec->base, ec->udev, seat);
 
 	loop = wl_display_get_event_loop(ec->base.wl_display);
 	ec->drm_source =

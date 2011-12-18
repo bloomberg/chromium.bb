@@ -373,20 +373,6 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 void
 wlsc_switcher_init(struct wlsc_compositor *compositor);
 
-void
-evdev_input_add_devices(struct wlsc_compositor *c,
-			struct udev *udev, const char *seat);
-
-void
-evdev_add_devices(struct udev *udev, struct wlsc_input_device
-		       *input_base);
-
-void
-evdev_remove_devices(struct wlsc_input_device *input_base);
-
-void
-evdev_input_destroy(struct wlsc_input_device *input_base);
-
 enum {
 	TTY_ENTER_VT,
 	TTY_LEAVE_VT

@@ -28,6 +28,7 @@
 #include <fcntl.h>
 
 #include "compositor.h"
+#include "evdev.h"
 
 struct evdev_input {
 	struct wlsc_input_device base;
@@ -513,8 +514,8 @@ evdev_config_udev_monitor(struct udev *udev, struct evdev_input *master)
 }
 
 void
-evdev_input_add_devices(struct wlsc_compositor *c,
-			struct udev *udev, const char *seat)
+evdev_input_create(struct wlsc_compositor *c, struct udev *udev,
+		   const char *seat)
 {
 	struct evdev_input *input;
 

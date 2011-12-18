@@ -52,7 +52,7 @@ drm_backend = drm-backend.la
 drm_backend_la_LDFLAGS = -module -avoid-version
 drm_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(DRM_COMPOSITOR_LIBS)
 drm_backend_la_CFLAGS = $(DRM_COMPOSITOR_CFLAGS) $(GCC_CFLAGS)
-drm_backend_la_SOURCES = compositor-drm.c tty.c evdev.c
+drm_backend_la_SOURCES = compositor-drm.c tty.c evdev.c evdev.h
 endif
 
 if ENABLE_WAYLAND_COMPOSITOR
@@ -68,7 +68,7 @@ openwfd_backend = openwfd-backend.la
 openwfd_backend_la_LDFLAGS = -module -avoid-version
 openwfd_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(OPENWFD_COMPOSITOR_LIBS)
 openwfd_backend_la_CFLAGS = $(OPENWFD_COMPOSITOR_CFLAGS) $(GCC_CFLAGS)
-openwfd_backend_la_SOURCES = compositor-openwfd.c tty.c evdev.c
+openwfd_backend_la_SOURCES = compositor-openwfd.c tty.c evdev.c evdev.h
 endif
 
 if ENABLE_DESKTOP_SHELL
