@@ -378,6 +378,13 @@ evdev_input_add_devices(struct wlsc_compositor *c,
 			struct udev *udev, const char *seat);
 
 void
+evdev_add_devices(struct udev *udev, struct wlsc_input_device
+		       *input_base);
+
+void
+evdev_remove_devices(struct wlsc_input_device *input_base);
+
+void
 evdev_input_destroy(struct wlsc_input_device *input_base);
 
 enum {

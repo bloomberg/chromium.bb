@@ -434,7 +434,7 @@ device_removed(struct udev_device *udev_device, struct evdev_input *master)
 	fprintf(stderr, "evdev input device: removed: %s\n", devnode);
 }
 
-static void
+void
 evdev_add_devices(struct udev *udev, struct wlsc_input_device *input_base)
 {
 	struct evdev_input *input = (struct evdev_input *) input_base;
@@ -538,7 +538,7 @@ evdev_input_add_devices(struct wlsc_compositor *c,
 	c->input_device = &input->base.input_device;
 }
 
-static void
+void
 evdev_remove_devices(struct wlsc_input_device *input_base)
 {
 	struct evdev_input *input = (struct evdev_input *) input_base;

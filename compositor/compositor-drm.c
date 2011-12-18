@@ -789,6 +789,7 @@ vt_func(struct wlsc_compositor *compositor, int event)
 {
 	struct drm_compositor *ec = (struct drm_compositor *) compositor;
 	struct wlsc_output *output;
+	struct wlsc_input_device *input;
 
 	switch (event) {
 	case TTY_ENTER_VT:
@@ -796,12 +797,16 @@ vt_func(struct wlsc_compositor *compositor, int event)
 		drmSetMaster(ec->drm.fd);
 		compositor->state = ec->prev_state;
 		wlsc_compositor_damage_all(compositor);
+		wl_list_for_each(input, &compositor->input_device_list, link)
+			evdev_add_devices(ec->udev, input);
 		break;
 	case TTY_LEAVE_VT:
 		compositor->focus = 0;
 		ec->prev_state = compositor->state;
 		compositor->state = WLSC_COMPOSITOR_SLEEPING;
 
+		wl_list_for_each(input, &compositor->input_device_list, link)
+			evdev_remove_devices(input);
 		wl_list_for_each(output, &ec->base.output_list, link)
 			drm_output_set_cursor(output, NULL);
 
