@@ -12,6 +12,7 @@
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/string_number_conversions.h"
+#include "base/string_piece.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -467,8 +468,9 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
   size_t colon_index = command.find(':');
   if (colon_index != std::string::npos) {
     DCHECK(colon_index < command.size() - 1);
-    bool result = base::StringToInt(command.begin() + colon_index + 1,
-                                    command.end(),
+    bool result = base::StringToInt(base::StringPiece(command.begin() +
+                                                      colon_index + 1,
+                                                      command.end()),
                                     &element_index);
     command = command.substr(0, colon_index);
     DCHECK(result);

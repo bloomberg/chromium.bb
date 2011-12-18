@@ -64,6 +64,7 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
+#include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/bloom_filter.h"
@@ -242,7 +243,8 @@ void CalculateBloomFilterFalsePositives(
     if (use_weights) {
       std::string::size_type pos = url.find_last_of(",");
       if (pos != std::string::npos) {
-        base::StringToInt(url.begin() + pos + 1, url.end(), &weight);
+        base::StringToInt(base::StringPiece(url.begin() + pos + 1, url.end()),
+                          &weight);
         url = url.substr(0, pos);
       }
     }
