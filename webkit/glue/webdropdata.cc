@@ -35,10 +35,11 @@ WebDropData::WebDropData(const WebDragData& drag_data)
   WebData contents = drag_data.fileContent();
   if (!contents.isEmpty())
     file_contents.assign(contents.data(), contents.size());
-  WebVector<WebDragData::CustomData> custom_data_copy = drag_data.customData();
-  for (size_t i = 0; i < custom_data_copy.size(); ++i) {
-    custom_data.insert(std::make_pair(custom_data_copy[i].type,
-                                      custom_data_copy[i].data));
+  const WebVector<WebDragData::CustomData>& custom_data_alias =
+      drag_data.customData();
+  for (size_t i = 0; i < custom_data_alias.size(); ++i) {
+    custom_data.insert(std::make_pair(custom_data_alias[i].type,
+                                      custom_data_alias[i].data));
   }
 }
 
@@ -68,5 +69,6 @@ WebDragData WebDropData::ToDragData() const {
     WebDragData::CustomData data = {it->first, it->second};
     custom_data_vector[i] = data;
   }
+  result.setCustomData(custom_data_vector);
   return result;
 }

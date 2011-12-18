@@ -38,7 +38,10 @@ enum {
   TEXT_PLAIN_NO_CHARSET = 1 << 8,
   DIRECT_SAVE_FILE = 1 << 9,
 
-  INVALID_TARGET = 1 << 10,
+  // Custom data for web drag/drop.
+  CUSTOM_DATA = 1 << 10,
+
+  INVALID_TARGET = 1 << 11,
 };
 
 // Get the atom for a given target (of the above enum type). Will return NULL

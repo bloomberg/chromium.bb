@@ -19,7 +19,21 @@
 
 class Pickle;
 
+#if defined(OS_MACOSX)
+#ifdef __OBJC__
+@class NSString;
+#else
+class NSString;
+#endif
+#endif  // defined(OS_MACOSX)
+
 namespace ui {
+
+#if (!defined(OS_WIN) && defined(USE_AURA)) || defined(TOOLKIT_USES_GTK)
+UI_EXPORT extern const char kMimeTypeWebCustomData[];
+#elif defined(OS_MACOSX)
+UI_EXPORT extern NSString* const kWebCustomDataPboardType;
+#endif
 
 UI_EXPORT void ReadCustomDataTypes(const void* data,
                                    size_t data_length,

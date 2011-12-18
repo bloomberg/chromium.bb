@@ -27,6 +27,7 @@ IPC_STRUCT_TRAITS_BEGIN(WebDropData)
   IPC_STRUCT_TRAITS_MEMBER(html_base_url)
   IPC_STRUCT_TRAITS_MEMBER(file_description_filename)
   IPC_STRUCT_TRAITS_MEMBER(file_contents)
+  IPC_STRUCT_TRAITS_MEMBER(custom_data)
 IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the renderer.

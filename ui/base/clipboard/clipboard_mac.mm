@@ -33,9 +33,6 @@ NSString* const kUTTypeURLName = @"public.url-name";
 // actual data associated with this type.
 NSString* const kWebSmartPastePboardType = @"NeXT smart paste pasteboard type";
 
-// TODO(dcheng): This name is temporary. See crbug.com/106449.
-NSString* const kWebCustomDataType = @"org.chromium.web-custom-data";
-
 NSPasteboard* GetPasteboard() {
   // The pasteboard should not be nil in a UI session, but this handy DCHECK
   // can help track down problems if someone tries using clipboard code outside
@@ -247,8 +244,8 @@ void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
   *contains_filenames = false;
 
   NSPasteboard* pb = GetPasteboard();
-  if ([[pb types] containsObject:kWebCustomDataType]) {
-    NSData* data = [pb dataForType:kWebCustomDataType];
+  if ([[pb types] containsObject:kWebCustomDataPboardType]) {
+    NSData* data = [pb dataForType:kWebCustomDataPboardType];
     if ([data length])
       ReadCustomDataTypes([data bytes], [data length], types);
   }
@@ -340,8 +337,8 @@ void Clipboard::ReadCustomData(Buffer buffer,
   DCHECK_EQ(buffer, BUFFER_STANDARD);
 
   NSPasteboard* pb = GetPasteboard();
-  if ([[pb types] containsObject:kWebCustomDataType]) {
-    NSData* data = [pb dataForType:kWebCustomDataType];
+  if ([[pb types] containsObject:kWebCustomDataPboardType]) {
+    NSData* data = [pb dataForType:kWebCustomDataPboardType];
     if ([data length])
       ReadCustomDataForType([data bytes], [data length], type, result);
   }
@@ -464,7 +461,7 @@ const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
 
 // static
 const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kWebCustomDataType));
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kWebCustomDataPboardType));
   return type;
 }
 

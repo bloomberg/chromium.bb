@@ -16,6 +16,7 @@
 #include "content/browser/tab_contents/web_drag_dest_delegate.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
+#include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/gtk/gtk_screen_utils.h"
 
@@ -97,6 +98,7 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
       ui::NETSCAPE_URL,
       ui::CHROME_NAMED_URL,
       // TODO(estade): support image drags?
+      ui::CUSTOM_DATA,
     };
 
     // Add the delegate's requested target if applicable. Need to do this here
@@ -193,6 +195,9 @@ void WebDragDestGtk::OnDragDataReceived(
       }
     } else if (data->target == ui::GetAtomForTarget(ui::CHROME_NAMED_URL)) {
       ui::ExtractNamedURL(data, &drop_data_->url, &drop_data_->url_title);
+    } else if (data->target == ui::GetAtomForTarget(ui::CUSTOM_DATA)) {
+      ui::ReadCustomDataIntoMap(
+          data->data, data->length, &drop_data_->custom_data);
     }
   }
 

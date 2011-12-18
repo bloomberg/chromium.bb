@@ -20,6 +20,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
+#include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_screen_utils.h"
@@ -98,6 +99,8 @@ void WebDragSourceGtk::StartDragging(const WebDropData& drop_data,
                                                 &download_url_)) {
     targets_mask |= ui::DIRECT_SAVE_FILE;
   }
+  if (!drop_data.custom_data.empty())
+    targets_mask |= ui::CUSTOM_DATA;
 
   // NOTE: Begin a drag even if no targets present. Otherwise, things like
   // draggable list elements will not work.
@@ -260,10 +263,22 @@ void WebDragSourceGtk::OnDragDataGet(GtkWidget* sender,
         // Return the status code to the file manager.
         gtk_selection_data_set(selection_data,
                                selection_data->target,
-                               8,
+                               kBitsPerByte,
                                reinterpret_cast<guchar*>(&status_code),
                                1);
       }
+      break;
+    }
+
+    case ui::CUSTOM_DATA: {
+      Pickle custom_data;
+      ui::WriteCustomDataToPickle(drop_data_->custom_data, &custom_data);
+      gtk_selection_data_set(
+          selection_data,
+          ui::GetAtomForTarget(ui::CUSTOM_DATA),
+          kBitsPerByte,
+          reinterpret_cast<const guchar*>(custom_data.data()),
+          custom_data.size());
       break;
     }
 

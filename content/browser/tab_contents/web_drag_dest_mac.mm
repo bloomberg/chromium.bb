@@ -9,6 +9,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/web_drag_dest_delegate.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#include "ui/base/clipboard/custom_data_helper.h"
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -233,6 +234,14 @@ using WebKit::WebDragOperationsMask;
   }
 
   // TODO(pinkerton): Get file contents. http://crbug.com/34661
+
+  // Get custom MIME data.
+  if ([types containsObject:ui::kWebCustomDataPboardType]) {
+    NSData* customData = [pboard dataForType:ui::kWebCustomDataPboardType];
+    ui::ReadCustomDataIntoMap([customData bytes],
+                              [customData length],
+                              &data->custom_data);
+  }
 }
 
 @end

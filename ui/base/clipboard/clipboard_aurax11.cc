@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/linux_util.h"
 #include "ui/gfx/size.h"
 
@@ -16,8 +17,6 @@ namespace ui {
 namespace {
 const char kMimeTypeBitmap[] = "image/bmp";
 const char kMimeTypeWebkitSmartPaste[] = "chromium/x-webkit-paste";
-// TODO(dcheng): This name is temporary. See crbug.com/106449
-const char kMimeTypeWebCustomData[] = "chromium/x-web-custom-data";
 
 // ClipboardData contains data copied to the Clipboard for a variety of formats.
 // It mostly just provides APIs to cleanly access and manipulate this data.

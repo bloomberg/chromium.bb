@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/file_path.h"
+#include "base/pickle.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/task.h"
@@ -23,6 +24,7 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
+#include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 #include "webkit/glue/webdropdata.h"
 
@@ -201,6 +203,13 @@ void PromiseWriterHelper(const WebDropData& drop_data,
     DCHECK(!dropData_->plain_text.empty());
     [pboard setString:SysUTF16ToNSString(dropData_->plain_text)
               forType:NSStringPboardType];
+
+  // Custom MIME data.
+  } else if ([type isEqualToString:ui::kWebCustomDataPboardType]) {
+    Pickle pickle;
+    ui::WriteCustomDataToPickle(dropData_->custom_data, &pickle);
+    [pboard setData:[NSData dataWithBytes:pickle.data() length:pickle.size()]
+            forType:ui::kWebCustomDataPboardType];
 
   // Oops!
   } else {
@@ -418,6 +427,12 @@ void PromiseWriterHelper(const WebDropData& drop_data,
   if (!dropData_->plain_text.empty())
     [pasteboard_ addTypes:[NSArray arrayWithObject:NSStringPboardType]
                     owner:contentsView_];
+
+  if (!dropData_->custom_data.empty()) {
+    [pasteboard_
+        addTypes:[NSArray arrayWithObject:ui::kWebCustomDataPboardType]
+           owner:contentsView_];
+  }
 }
 
 - (NSImage*)dragImage {

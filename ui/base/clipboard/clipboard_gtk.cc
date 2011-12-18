@@ -108,8 +108,6 @@ GdkFilterReturn SelectionChangeObserver::OnXEvent(GdkXEvent* xevent,
 const char kMimeTypeBitmap[] = "image/bmp";
 const char kMimeTypeMozillaURL[] = "text/x-moz-url";
 const char kMimeTypeWebkitSmartPaste[] = "chromium/x-webkit-paste";
-// TODO(dcheng): This name is temporary. See crbug.com/106449
-const char kMimeTypeWebCustomData[] = "chromium/x-web-custom-data";
 
 std::string GdkAtomToString(const GdkAtom& atom) {
   gchar* name = gdk_atom_name(atom);

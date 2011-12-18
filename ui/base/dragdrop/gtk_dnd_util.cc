@@ -10,6 +10,7 @@
 #include "base/pickle.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/clipboard/custom_data_helper.h"
 
 static const int kBitsPerByte = 8;
 
@@ -49,6 +50,11 @@ void AddTargetToList(GtkTargetList* targets, int target_code) {
           ui::GetAtomForTarget(ui::DIRECT_SAVE_FILE), 0, ui::DIRECT_SAVE_FILE);
       break;
 
+    case ui::CUSTOM_DATA:
+      gtk_target_list_add(targets,
+          ui::GetAtomForTarget(ui::CUSTOM_DATA), 0, ui::CUSTOM_DATA);
+      break;
+
     default:
       NOTREACHED() << " Unexpected target code: " << target_code;
   }
@@ -59,49 +65,54 @@ void AddTargetToList(GtkTargetList* targets, int target_code) {
 GdkAtom GetAtomForTarget(int target) {
   switch (target) {
     case CHROME_TAB:
-      static GdkAtom tab_atom = gdk_atom_intern(
-          const_cast<char*>("application/x-chrome-tab"), false);
-      return tab_atom;
+      static const GdkAtom kTabAtom = gdk_atom_intern(
+          "application/x-chrome-tab", false);
+      return kTabAtom;
 
     case TEXT_HTML:
-      static GdkAtom html_atom = gdk_atom_intern(
-          const_cast<char*>("text/html"), false);
-      return html_atom;
+      static const GdkAtom kHtmlAtom = gdk_atom_intern(
+          "text/html", false);
+      return kHtmlAtom;
 
     case CHROME_BOOKMARK_ITEM:
-      static GdkAtom bookmark_atom = gdk_atom_intern(
-          const_cast<char*>("application/x-chrome-bookmark-item"), false);
-      return bookmark_atom;
+      static const GdkAtom kBookmarkAtom = gdk_atom_intern(
+          "application/x-chrome-bookmark-item", false);
+      return kBookmarkAtom;
 
     case TEXT_PLAIN:
-      static GdkAtom text_atom = gdk_atom_intern(
-          const_cast<char*>("text/plain;charset=utf-8"), false);
-      return text_atom;
+      static const GdkAtom kTextAtom= gdk_atom_intern(
+          "text/plain;charset=utf-8", false);
+      return kTextAtom;
 
     case TEXT_URI_LIST:
-      static GdkAtom uris_atom = gdk_atom_intern(
-          const_cast<char*>("text/uri-list"), false);
-      return uris_atom;
+      static const GdkAtom kUrisAtom = gdk_atom_intern(
+          "text/uri-list", false);
+      return kUrisAtom;
 
     case CHROME_NAMED_URL:
-      static GdkAtom named_url = gdk_atom_intern(
-          const_cast<char*>("application/x-chrome-named-url"), false);
-      return named_url;
+      static const GdkAtom kNamedUrl = gdk_atom_intern(
+          "application/x-chrome-named-url", false);
+      return kNamedUrl;
 
     case NETSCAPE_URL:
-      static GdkAtom netscape_url = gdk_atom_intern(
-          const_cast<char*>("_NETSCAPE_URL"), false);
-      return netscape_url;
+      static const GdkAtom kNetscapeUrl = gdk_atom_intern(
+          "_NETSCAPE_URL", false);
+      return kNetscapeUrl;
 
     case TEXT_PLAIN_NO_CHARSET:
-      static GdkAtom text_no_charset_atom = gdk_atom_intern(
-          const_cast<char*>("text/plain"), false);
-      return text_no_charset_atom;
+      static const GdkAtom kTextNoCharsetAtom = gdk_atom_intern(
+          "text/plain", false);
+      return kTextNoCharsetAtom;
 
     case DIRECT_SAVE_FILE:
-      static GdkAtom xds_atom = gdk_atom_intern(
-          const_cast<char*>("XdndDirectSave0"), false);
-      return xds_atom;
+      static const GdkAtom kXdsAtom = gdk_atom_intern(
+          "XdndDirectSave0", false);
+      return kXdsAtom;
+
+    case CUSTOM_DATA:
+      static const GdkAtom kCustomData = gdk_atom_intern(
+          kMimeTypeWebCustomData, false);
+      return kCustomData;
 
     default:
       NOTREACHED();
