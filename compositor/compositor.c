@@ -2092,9 +2092,9 @@ int main(int argc, char *argv[])
 
 	if (ec->has_bind_display)
 		ec->unbind_display(ec->display, display);
-	wl_display_destroy(display);
 
 	ec->destroy(ec);
+	wl_display_destroy(display);
 
 	return 0;
 }
