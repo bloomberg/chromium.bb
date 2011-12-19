@@ -60,16 +60,32 @@ aura::WindowType GetAuraWindowTypeForWidgetType(Widget::InitParams::Type type) {
   }
 }
 
-void NotifyLocaleChangedInternal(aura::Window* window) {
+typedef void (*WidgetCallback)(Widget*);
+
+void ForEachNativeWidgetInternal(aura::Window* window,
+                                 WidgetCallback callback) {
   Widget* widget = Widget::GetWidgetForNativeWindow(window);
   if (widget)
-    widget->LocaleChanged();
+    callback(widget);
 
   const aura::Window::Windows& children = window->children();
   for (aura::Window::Windows::const_iterator it = children.begin();
        it != children.end(); ++it) {
-    NotifyLocaleChangedInternal(*it);
+    ForEachNativeWidgetInternal(*it, callback);
   }
+}
+
+void ForEachNativeWidget(WidgetCallback callback) {
+  ForEachNativeWidgetInternal(aura::RootWindow::GetInstance(), callback);
+}
+
+void NotifyLocaleChangedCallback(Widget* widget) {
+    widget->LocaleChanged();
+}
+
+void CloseAllSecondaryWidgetsCallback(Widget* widget) {
+  if (widget->is_secondary_widget())
+    widget->Close();
 }
 
 }  // namespace
@@ -746,13 +762,12 @@ int NativeWidgetAura::OnPerformDrop(const aura::DropTargetEvent& event) {
 
 // static
 void Widget::NotifyLocaleChanged() {
-  NotifyLocaleChangedInternal(aura::RootWindow::GetInstance());
+  ForEachNativeWidget(NotifyLocaleChangedCallback);
 }
 
 // static
 void Widget::CloseAllSecondaryWidgets() {
-  // http://crbug.com/102575
-  NOTIMPLEMENTED();
+  ForEachNativeWidget(CloseAllSecondaryWidgetsCallback);
 }
 
 bool Widget::ConvertRect(const Widget* source,
