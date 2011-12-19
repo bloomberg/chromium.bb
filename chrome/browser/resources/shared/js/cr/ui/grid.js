@@ -87,8 +87,14 @@ cr.define('cr.ui', function() {
      * @private
      */
     getColumnCount_: function() {
+      // Size comes here with margin already collapsed.
       var size = this.getDefaultItemSize_();
-      var width = size.width + size.marginHorizontal; // Uncollapse margin.
+
+      // We should uncollapse margin, since margin isn't collapsed for
+      // inline-block elements according to css spec which are thumbnail items.
+
+      var width = size.width + Math.min(size.marginLeft, size.marginRight);
+
       return width ? Math.floor(this.clientWidth / width) : 0;
     },
 

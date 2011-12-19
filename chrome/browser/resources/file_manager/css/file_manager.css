@@ -214,13 +214,14 @@ button.thumbnail-view > img {
   top: 0;
   left: 0;
   border: 0;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 /* An item in the thumbnail view. */
 .thumbnail-item {
   margin-top: 10px;
-  margin-left: 10px;
+  margin-left: 5px;
+  margin-right: 5px;  
   width: 120px;
   height: 145px;
   text-align: center;

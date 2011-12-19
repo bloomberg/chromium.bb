@@ -39,9 +39,10 @@ cr.define('cr.ui', function() {
    * @param {ListItem=} opt_item The list item to use to do the measuring. If
    *     this is not provided an item will be created based on the first value
    *     in the model.
-   * @return {{height: number, marginVertical: number, width: number,
-   *     marginHorizontal: number}} The height and width of the item, taking
-   *     margins into account, and the height and width of the margins
+   * @return {{height: number, marginTop: number, marginBottom:number,
+   *     width: number, marginLeft: number, marginRight:number}}
+   *     The height and width of the item, taking
+   *     margins into account, and the top, bottom, left and right margins
    *     themselves.
    */
   function measureItem(list, opt_item) {
@@ -85,8 +86,10 @@ cr.define('cr.ui', function() {
     if (!opt_item)
       list.removeChild(item);
     return {
-        height: Math.max(0, h), marginVertical: mv,
-        width: Math.max(0, w), marginHorizontal: mh};
+        height: Math.max(0, h),
+        marginTop: mt, marginBottom: mb,
+        width: Math.max(0, w),
+        marginLeft: ml, marginRight: mr};
   }
 
   function getComputedStyle(el) {
@@ -109,8 +112,8 @@ cr.define('cr.ui', function() {
      * is needed. Note that lead item is allowed to have a different height, to
      * accommodate lists where a single item at a time can be expanded to show
      * more detail.
-     * @type {{height: number, marginVertical: number, width: number,
-     *     marginHorizontal: number}}
+     * @type {{height: number, marginTop: number, marginBottom:number,
+     *     width: number, marginLeft: number, marginRight:number}}
      * @private
      */
     measured_: undefined,
