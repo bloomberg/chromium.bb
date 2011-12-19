@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "media/base/data_buffer.h"
-#include "media/filters/audio_renderer_algorithm_ola.h"
+#include "media/filters/audio_renderer_algorithm_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,30 +19,16 @@ using ::testing::AnyNumber;
 
 namespace media {
 
-class MockDataProvider {
- public:
-  MockDataProvider() {}
-
-  MOCK_METHOD0(Read, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockDataProvider);
-};
-
 static const int kChannels = 1;
 static const int kSampleRate = 1000;
 static const int kSampleBits = 8;
+static void DoNothing() {}
 
-TEST(AudioRendererAlgorithmOLATest, FillBuffer_NormalRate) {
+TEST(AudioRendererAlgorithmBaseTest, FillBuffer_NormalRate) {
   // When playback rate == 1.0f: straight copy of whatever is in |queue_|.
-  MockDataProvider mock;
-  AudioRendererAlgorithmOLA algorithm;
+  AudioRendererAlgorithmBase algorithm;
   algorithm.Initialize(kChannels, kSampleRate, kSampleBits, 1.0f,
-                       base::Bind(&MockDataProvider::Read,
-                                  base::Unretained(&mock)));
-
-  // We won't reply to any read requests.
-  EXPECT_CALL(mock, Read()).Times(AnyNumber());
+                       base::Bind(&DoNothing));
 
   // Enqueue a buffer of any size since it doesn't matter.
   const size_t kDataSize = 1024;
@@ -55,16 +41,11 @@ TEST(AudioRendererAlgorithmOLATest, FillBuffer_NormalRate) {
   EXPECT_EQ(0u, algorithm.QueueSize());
 }
 
-TEST(AudioRendererAlgorithmOLATest, FillBuffer_DoubleRate) {
+TEST(AudioRendererAlgorithmBaseTest, FillBuffer_DoubleRate) {
   // When playback rate > 1.0f: input is read faster than output is written.
-  MockDataProvider mock;
-  AudioRendererAlgorithmOLA algorithm;
+  AudioRendererAlgorithmBase algorithm;
   algorithm.Initialize(kChannels, kSampleRate, kSampleBits, 2.0f,
-                       base::Bind(&MockDataProvider::Read,
-                                  base::Unretained(&mock)));
-
-  // We won't reply to any read requests.
-  EXPECT_CALL(mock, Read()).Times(AnyNumber());
+                       base::Bind(&DoNothing));
 
   // First parameter is the input buffer size, second parameter is how much data
   // we expect to consume in order to have no data left in the |algorithm|.
@@ -92,16 +73,11 @@ TEST(AudioRendererAlgorithmOLATest, FillBuffer_DoubleRate) {
   }
 }
 
-TEST(AudioRendererAlgorithmOLATest, FillBuffer_HalfRate) {
+TEST(AudioRendererAlgorithmBaseTest, FillBuffer_HalfRate) {
   // When playback rate < 1.0f: input is read slower than output is written.
-  MockDataProvider mock;
-  AudioRendererAlgorithmOLA algorithm;
+  AudioRendererAlgorithmBase algorithm;
   algorithm.Initialize(kChannels, kSampleRate, kSampleBits, 0.5f,
-                       base::Bind(&MockDataProvider::Read,
-                                  base::Unretained(&mock)));
-
-  // We won't reply to any read requests.
-  EXPECT_CALL(mock, Read()).Times(AnyNumber());
+                       base::Bind(&DoNothing));
 
   // First parameter is the input buffer size, second parameter is how much data
   // we expect to consume in order to have no data left in the |algorithm|.
@@ -129,16 +105,11 @@ TEST(AudioRendererAlgorithmOLATest, FillBuffer_HalfRate) {
   }
 }
 
-TEST(AudioRendererAlgorithmOLATest, FillBuffer_QuarterRate) {
+TEST(AudioRendererAlgorithmBaseTest, FillBuffer_QuarterRate) {
   // When playback rate is very low the audio is simply muted.
-  MockDataProvider mock;
-  AudioRendererAlgorithmOLA algorithm;
+  AudioRendererAlgorithmBase algorithm;
   algorithm.Initialize(kChannels, kSampleRate, kSampleBits, 0.25f,
-                       base::Bind(&MockDataProvider::Read,
-                                  base::Unretained(&mock)));
-
-  // We won't reply to any read requests.
-  EXPECT_CALL(mock, Read()).Times(AnyNumber());
+                       base::Bind(&DoNothing));
 
   // First parameter is the input buffer size, second parameter is how much data
   // we expect to consume in order to have no data left in the |algorithm|.

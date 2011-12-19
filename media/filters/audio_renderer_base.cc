@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "media/base/filter_host.h"
-#include "media/filters/audio_renderer_algorithm_ola.h"
 
 namespace media {
 
@@ -103,7 +102,7 @@ void AudioRendererBase::Initialize(AudioDecoder* decoder,
   base::Closure cb = base::Bind(&AudioRendererBase::ScheduleRead_Locked, this);
 
   // Construct the algorithm.
-  algorithm_.reset(new AudioRendererAlgorithmOLA());
+  algorithm_.reset(new AudioRendererAlgorithmBase());
 
   // Initialize our algorithm with media properties, initial playback rate,
   // and a callback to request more reads from the data source.
@@ -286,7 +285,7 @@ void AudioRendererBase::ScheduleRead_Locked() {
 }
 
 void AudioRendererBase::SetPlaybackRate(float playback_rate) {
-  algorithm_->set_playback_rate(playback_rate);
+  algorithm_->SetPlaybackRate(playback_rate);
 }
 
 float AudioRendererBase::GetPlaybackRate() {

@@ -2,23 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// AudioRendererAlgorithmBase provides an interface for algorithms that modify
-// playback speed. ARAB owns a BufferQueue which hides Buffer boundaries from
-// subclasses and allows them to access data by byte. Subclasses must implement
-// the following method:
+// AudioRendererAlgorithmBase buffers and transforms audio data. The owner of
+// this object provides audio data to the object through EnqueueBuffer() and
+// requests data from the buffer via FillBuffer(). The owner also sets the
+// playback rate, and the AudioRendererAlgorithm will stretch or compress the
+// buffered audio as necessary to match the playback rate when fulfilling
+// FillBuffer() requests. AudioRendererAlgorithm can request more data to be
+// buffered via a read callback passed in during initialization.
 //
-//   FillBuffer() - fills the buffer passed to it & returns how many bytes
-//                  copied.
+// This class is *not* thread-safe. Calls to enqueue and retrieve data must be
+// locked if called from multiple threads.
 //
-// The general assumption is that the owner of this class will provide us with
-// Buffers and a playback speed, and we will fill an output buffer when our
-// owner requests it. If we needs more Buffers, we will query our owner via
-// a callback passed during construction. This should be a nonblocking call.
-// When the owner has a Buffer ready for us, it calls EnqueueBuffer().
+// AudioRendererAlgorithmBase uses a simple pitch-preservation algorithm to
+// stretch and compress audio data to meet playback speeds less than and
+// greater than the natural playback of the audio stream.
 //
-// Exectution of ARAB is thread-unsafe. This class should be used as
-// the guts of AudioRendererBase, which should lock calls into us so
-// enqueues and processes do not cause an unpredictable |queue_| size.
+// Audio at very low or very high playback rates are muted to preserve quality.
 
 #ifndef MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_BASE_H_
 #define MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_BASE_H_
@@ -26,6 +25,7 @@
 #include <deque>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/seekable_buffer.h"
@@ -37,48 +37,47 @@ class Buffer;
 class MEDIA_EXPORT AudioRendererAlgorithmBase {
  public:
   AudioRendererAlgorithmBase();
-  virtual ~AudioRendererAlgorithmBase();
+  ~AudioRendererAlgorithmBase();
 
   // Checks validity of audio parameters and takes ownership of |callback|.
-  virtual void Initialize(int channels,
+  void Initialize(int channels,
                           int sample_rate,
                           int sample_bits,
                           float initial_playback_rate,
                           const base::Closure& callback);
 
-  // Implement this strategy method in derived classes. Tries to fill |length|
-  // bytes of |dest| with possibly scaled data from our |queue_|. Returns the
-  // number of bytes copied into |dest|.
-  virtual uint32 FillBuffer(uint8* dest, uint32 length) = 0;
+  // Tries to fill |length| bytes of |dest| with possibly scaled data from
+  // our |queue_|. Returns the number of bytes copied into |dest|.
+  uint32 FillBuffer(uint8* dest, uint32 length);
 
   // Clears |queue_|.
-  virtual void FlushBuffers();
+  void FlushBuffers();
 
   // Returns the time of the next byte in our data or kNoTimestamp if current
   // time is unknown.
-  virtual base::TimeDelta GetTime();
+  base::TimeDelta GetTime();
 
   // Enqueues a buffer. It is called from the owner of the algorithm after a
   // read completes.
-  virtual void EnqueueBuffer(Buffer* buffer_in);
+  void EnqueueBuffer(Buffer* buffer_in);
 
   // Getter/setter for |playback_rate_|.
-  virtual float playback_rate();
-  virtual void set_playback_rate(float new_rate);
+  float playback_rate();
+  void SetPlaybackRate(float new_rate);
 
   // Returns whether |queue_| is empty.
-  virtual bool IsQueueEmpty();
+  bool IsQueueEmpty();
 
   // Returns true if we have enough data
-  virtual bool IsQueueFull();
+  bool IsQueueFull();
 
   // Returns the number of bytes left in |queue_|.
-  virtual uint32 QueueSize();
+  uint32 QueueSize();
 
   // Increase the capacity of |queue_| if possible.
-  virtual void IncreaseQueueCapacity();
+  void IncreaseQueueCapacity();
 
- protected:
+ private:
   // Advances |queue_|'s internal pointer by |bytes|.
   void AdvanceInputPosition(uint32 bytes);
 
@@ -90,16 +89,25 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   // the current sample rate, channel count, and bytes per sample.
   int DurationToBytes(int duration_in_milliseconds) const;
 
-  // Number of audio channels.
-  virtual int channels();
+  FRIEND_TEST_ALL_PREFIXES(AudioRendererAlgorithmBaseTest,
+                           FillBuffer_NormalRate);
+  FRIEND_TEST_ALL_PREFIXES(AudioRendererAlgorithmBaseTest,
+                           FillBuffer_DoubleRate);
+  FRIEND_TEST_ALL_PREFIXES(AudioRendererAlgorithmBaseTest,
+                           FillBuffer_HalfRate);
+  FRIEND_TEST_ALL_PREFIXES(AudioRendererAlgorithmBaseTest,
+                           FillBuffer_QuarterRate);
 
-  // Sample rate in hertz.
-  virtual int sample_rate();
+  // Aligns |value| to a channel and sample boundary.
+  void AlignToSampleBoundary(uint32* value);
 
-  // Number of bytes per sample per channel.
-  virtual int sample_bytes();
+  // Crossfades |samples| samples of |dest| with the data in |src|. Assumes
+  // there is room in |dest| and enough data in |src|. Type is the datatype
+  // of a data point in the waveform (i.e. uint8, int16, int32, etc). Also,
+  // sizeof(one sample) == sizeof(Type) * channels.
+  template <class Type>
+  void Crossfade(int samples, const Type* src, Type* dest);
 
- private:
   // Audio properties.
   int channels_;
   int sample_rate_;
@@ -116,6 +124,18 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
 
   // Largest capacity queue_ can grow to.
   size_t max_queue_capacity_;
+
+  // Members for ease of calculation in FillBuffer(). These members are based
+  // on |playback_rate_|, but are stored separately so they don't have to be
+  // recalculated on every call to FillBuffer().
+  uint32 input_step_;
+  uint32 output_step_;
+
+  // Length for crossfade in bytes.
+  uint32 crossfade_size_;
+
+  // Window size, in bytes (calculated from audio properties).
+  uint32 window_size_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererAlgorithmBase);
 };
