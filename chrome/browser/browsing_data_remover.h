@@ -245,8 +245,6 @@ class BrowsingDataRemover : public content::NotificationObserver,
   // True if Remove has been invoked.
   static bool removing_;
 
-  // Used to delete data from the HTTP caches.
-  net::OldCompletionCallbackImpl<BrowsingDataRemover> cache_callback_;
   CacheState next_cache_state_;
   disk_cache::Backend* cache_;
 

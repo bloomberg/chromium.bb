@@ -94,8 +94,6 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       special_storage_policy_(profile->GetExtensionSpecialStoragePolicy()),
       delete_begin_(delete_begin),
       delete_end_(delete_end),
-      ALLOW_THIS_IN_INITIALIZER_LIST(cache_callback_(
-          this, &BrowsingDataRemover::DoClearCache)),
       next_cache_state_(STATE_NONE),
       cache_(NULL),
       main_context_getter_(profile->GetRequestContext()),
@@ -118,8 +116,6 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       special_storage_policy_(profile->GetExtensionSpecialStoragePolicy()),
       delete_begin_(CalculateBeginDeleteTime(time_period)),
       delete_end_(delete_end),
-      ALLOW_THIS_IN_INITIALIZER_LIST(cache_callback_(
-          this, &BrowsingDataRemover::DoClearCache)),
       next_cache_state_(STATE_NONE),
       cache_(NULL),
       main_context_getter_(profile->GetRequestContext()),
@@ -468,7 +464,9 @@ void BrowsingDataRemover::DoClearCache(int rv) {
         net::HttpTransactionFactory* factory =
             getter->GetURLRequestContext()->http_transaction_factory();
 
-        rv = factory->GetCache()->GetBackend(&cache_, &cache_callback_);
+        rv = factory->GetCache()->GetBackend(
+            &cache_, base::Bind(&BrowsingDataRemover::DoClearCache,
+                                base::Unretained(this)));
         next_cache_state_ = (next_cache_state_ == STATE_CREATE_MAIN) ?
                                 STATE_DELETE_MAIN : STATE_DELETE_MEDIA;
         break;

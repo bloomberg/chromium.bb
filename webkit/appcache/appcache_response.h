@@ -73,9 +73,9 @@ class APPCACHE_EXPORT AppCacheDiskCacheInterface {
   class Entry {
    public:
     virtual int Read(int index, int64 offset, net::IOBuffer* buf, int buf_len,
-                     net::OldCompletionCallback* completion_callback) = 0;
+                     const net::CompletionCallback& callback) = 0;
     virtual int Write(int index, int64 offset, net::IOBuffer* buf, int buf_len,
-                      net::OldCompletionCallback* completion_callback) = 0;
+                      const net::CompletionCallback& callback) = 0;
     virtual int64 GetSize(int index) = 0;
     virtual void Close() = 0;
    protected:
@@ -139,9 +139,6 @@ class APPCACHE_EXPORT AppCacheResponseIO {
 
  private:
   void OnRawIOComplete(int result);
-
-  scoped_refptr<net::CancelableOldCompletionCallback<AppCacheResponseIO> >
-      raw_callback_;
 };
 
 // Reads existing response data from storage. If the object is deleted

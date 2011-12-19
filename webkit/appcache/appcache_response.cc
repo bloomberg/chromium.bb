@@ -76,14 +76,10 @@ AppCacheResponseIO::AppCacheResponseIO(
     int64 response_id, int64 group_id, AppCacheDiskCacheInterface* disk_cache)
     : response_id_(response_id), group_id_(group_id), disk_cache_(disk_cache),
       entry_(NULL), buffer_len_(0), user_callback_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(raw_callback_(
-          new net::CancelableOldCompletionCallback<AppCacheResponseIO>(
-              this, &AppCacheResponseIO::OnRawIOComplete))) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 AppCacheResponseIO::~AppCacheResponseIO() {
-  raw_callback_->Cancel();
   if (entry_)
     entry_->Close();
 }
@@ -107,28 +103,27 @@ void AppCacheResponseIO::InvokeUserOldCompletionCallback(int result) {
 void AppCacheResponseIO::ReadRaw(int index, int offset,
                                  net::IOBuffer* buf, int buf_len) {
   DCHECK(entry_);
-  raw_callback_->AddRef();  // Balanced in OnRawIOComplete.
-  int rv = entry_->Read(index, offset, buf, buf_len, raw_callback_);
-  if (rv != net::ERR_IO_PENDING) {
-    raw_callback_->Release();
+  int rv = entry_->Read(
+      index, offset, buf, buf_len,
+      base::Bind(&AppCacheResponseIO::OnRawIOComplete,
+                 weak_factory_.GetWeakPtr()));
+  if (rv != net::ERR_IO_PENDING)
     ScheduleIOOldCompletionCallback(rv);
-  }
 }
 
 void AppCacheResponseIO::WriteRaw(int index, int offset,
                                  net::IOBuffer* buf, int buf_len) {
   DCHECK(entry_);
-  raw_callback_->AddRef();  // Balanced in OnRawIOComplete.
-  int rv = entry_->Write(index, offset, buf, buf_len, raw_callback_);
-  if (rv != net::ERR_IO_PENDING) {
-    raw_callback_->Release();
+  int rv = entry_->Write(
+      index, offset, buf, buf_len,
+      base::Bind(&AppCacheResponseIO::OnRawIOComplete,
+                 weak_factory_.GetWeakPtr()));
+  if (rv != net::ERR_IO_PENDING)
     ScheduleIOOldCompletionCallback(rv);
-  }
 }
 
 void AppCacheResponseIO::OnRawIOComplete(int result) {
   DCHECK_NE(net::ERR_IO_PENDING, result);
-  raw_callback_->Release();  // Balance the AddRefs
   OnIOComplete(result);
 }
 
@@ -363,7 +358,7 @@ void AppCacheResponseWriter::OnCreateEntryComplete(int rv) {
 
   if (creation_phase_ == INITIAL_ATTEMPT) {
     if (rv != net::OK) {
-      // We may try to overrite existing entries.
+      // We may try to overwrite existing entries.
       creation_phase_ = DOOM_EXISTING;
       rv = disk_cache_->DoomEntry(response_id_, create_callback_.get());
       if (rv != net::ERR_IO_PENDING)

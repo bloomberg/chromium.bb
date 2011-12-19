@@ -4,6 +4,8 @@
 
 #include "webkit/appcache/appcache_disk_cache.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -20,25 +22,29 @@ class AppCacheDiskCache::EntryImpl : public Entry {
       : disk_cache_entry_(disk_cache_entry) {
     DCHECK(disk_cache_entry);
   }
+
+  // Entry implementation.
   virtual int Read(int index, int64 offset, net::IOBuffer* buf, int buf_len,
-                   net::OldCompletionCallback* completion_callback) {
+                   const net::CompletionCallback& callback) {
     if (offset < 0 || offset > kint32max)
       return net::ERR_INVALID_ARGUMENT;
     return disk_cache_entry_->ReadData(
-        index, static_cast<int>(offset), buf, buf_len, completion_callback);
+        index, static_cast<int>(offset), buf, buf_len, callback);
   }
+
   virtual int Write(int index, int64 offset, net::IOBuffer* buf, int buf_len,
-                    net::OldCompletionCallback* completion_callback) {
+                    const net::CompletionCallback& callback) {
     if (offset < 0 || offset > kint32max)
       return net::ERR_INVALID_ARGUMENT;
     const bool kTruncate = true;
     return disk_cache_entry_->WriteData(
-        index, static_cast<int>(offset), buf, buf_len,
-        completion_callback, kTruncate);
+        index, static_cast<int>(offset), buf, buf_len, callback, kTruncate);
   }
+
   virtual int64 GetSize(int index) {
     return disk_cache_entry_->GetDataSize(index);
   }
+
   virtual void Close() {
     disk_cache_entry_->Close();
     delete this;
@@ -58,15 +64,21 @@ class AppCacheDiskCache::ActiveCall {
             async_completion_(this, &ActiveCall::OnAsyncCompletion)) {
   }
 
-  int CreateEntry(int64 key, Entry** entry, net::OldCompletionCallback* callback) {
+  int CreateEntry(int64 key, Entry** entry,
+                  net::OldCompletionCallback* callback) {
     int rv = owner_->disk_cache()->CreateEntry(
-        base::Int64ToString(key), &entry_ptr_, &async_completion_);
+        base::Int64ToString(key), &entry_ptr_,
+        base::Bind(&ActiveCall::OnAsyncCompletion,
+                   base::Unretained(this)));
     return HandleImmediateReturnValue(rv, entry, callback);
   }
 
-  int OpenEntry(int64 key, Entry** entry, net::OldCompletionCallback* callback) {
+  int OpenEntry(int64 key, Entry** entry,
+                net::OldCompletionCallback* callback) {
     int rv = owner_->disk_cache()->OpenEntry(
-        base::Int64ToString(key), &entry_ptr_, &async_completion_);
+        base::Int64ToString(key), &entry_ptr_,
+        base::Bind(&ActiveCall::OnAsyncCompletion,
+                   base::Unretained(this)));
     return HandleImmediateReturnValue(rv, entry, callback);
   }
 
@@ -212,7 +224,8 @@ int AppCacheDiskCache::Init(net::CacheType cache_type,
 
   int rv = disk_cache::CreateCacheBackend(
       cache_type, cache_directory, cache_size, force, cache_thread, NULL,
-      &(create_backend_callback_->backend_ptr_), create_backend_callback_);
+      &(create_backend_callback_->backend_ptr_),
+      base::Bind(&net::OldCompletionCallbackAdapter, create_backend_callback_));
   if (rv == net::ERR_IO_PENDING)
     init_callback_ = callback;
   else

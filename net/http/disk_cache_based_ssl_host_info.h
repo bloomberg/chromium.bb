@@ -105,7 +105,7 @@ class NET_EXPORT_PRIVATE DiskCacheBasedSSLHostInfo
   // IsCallbackPending returns true if we have a pending callback.
   bool IsCallbackPending() const;
 
-  base::WeakPtrFactory<DiskCacheBasedSSLHostInfo> weak_ptr_factory_;
+  base::WeakPtrFactory<DiskCacheBasedSSLHostInfo> weak_factory_;
   CallbackImpl* callback_;
   State state_;
   bool ready_;
