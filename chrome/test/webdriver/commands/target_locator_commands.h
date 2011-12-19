@@ -63,6 +63,8 @@ class WindowCommand : public WebDriverCommand {
   virtual void ExecutePost(Response* const response) OVERRIDE;
   virtual void ExecuteDelete(Response* const response) OVERRIDE;
 
+  virtual bool ShouldRunPreAndPostCommandHandlers() OVERRIDE;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowCommand);
 };

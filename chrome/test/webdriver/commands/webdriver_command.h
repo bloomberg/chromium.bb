@@ -36,6 +36,10 @@ class WebDriverCommand : public Command {
 
   virtual void Finish() OVERRIDE;
 
+  // Returns whether this command should run the session pre and post
+  // command handlers. These handlers include waiting for the page to load.
+  virtual bool ShouldRunPreAndPostCommandHandlers();
+
  protected:
   Session* session_;
   std::string session_id_;

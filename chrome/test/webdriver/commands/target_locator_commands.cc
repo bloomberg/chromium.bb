@@ -94,6 +94,10 @@ void WindowCommand::ExecuteDelete(Response* const response) {
     response->SetError(error);
 }
 
+bool WindowCommand::ShouldRunPreAndPostCommandHandlers() {
+  return false;
+}
+
 SwitchFrameCommand::SwitchFrameCommand(
     const std::vector<std::string>& path_segments,
     DictionaryValue* parameters)

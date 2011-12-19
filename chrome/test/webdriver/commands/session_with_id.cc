@@ -80,4 +80,8 @@ void SessionWithID::ExecuteDelete(Response* const response) {
   session_->Terminate();
 }
 
+bool SessionWithID::ShouldRunPreAndPostCommandHandlers() {
+  return false;
+}
+
 }  // namespace webdriver

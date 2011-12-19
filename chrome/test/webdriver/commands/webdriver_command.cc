@@ -41,10 +41,12 @@ bool WebDriverCommand::Init(Response* const response) {
     return false;
   }
 
-  Error* error = session_->BeforeExecuteCommand();
-  if (error) {
-    response->SetError(error);
-    return false;
+  if (ShouldRunPreAndPostCommandHandlers()) {
+    Error* error = session_->BeforeExecuteCommand();
+    if (error) {
+      response->SetError(error);
+      return false;
+    }
   }
   response->SetField("sessionId", Value::CreateStringValue(session_id_));
   return true;
@@ -54,11 +56,17 @@ void WebDriverCommand::Finish() {
   // The session may have been terminated as a result of the command.
   if (!SessionManager::GetInstance()->Has(session_id_))
     return;
-  scoped_ptr<Error> error(session_->AfterExecuteCommand());
-  if (error.get()) {
-    LOG(WARNING) << "Command did not finish successfully: "
-                 << error->details();
+  if (ShouldRunPreAndPostCommandHandlers()) {
+    scoped_ptr<Error> error(session_->AfterExecuteCommand());
+    if (error.get()) {
+      LOG(WARNING) << "Command did not finish successfully: "
+                   << error->details();
+    }
   }
+}
+
+bool WebDriverCommand::ShouldRunPreAndPostCommandHandlers() {
+  return true;
 }
 
 }  // namespace webdriver

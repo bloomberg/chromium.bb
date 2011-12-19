@@ -34,6 +34,8 @@ class SessionWithID : public WebDriverCommand {
   virtual void ExecuteGet(Response* const response) OVERRIDE;
   virtual void ExecuteDelete(Response* const response) OVERRIDE;
 
+  virtual bool ShouldRunPreAndPostCommandHandlers() OVERRIDE;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionWithID);
 };
