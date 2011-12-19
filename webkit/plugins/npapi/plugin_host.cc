@@ -1011,7 +1011,8 @@ NPError NPN_GetValueForURL(NPP id,
       if (!webplugin)
         return NPERR_GENERIC_ERROR;
 
-      result = webplugin->FindProxyForUrl(GURL(std::string(url)), &result);
+      if (!webplugin->FindProxyForUrl(GURL(std::string(url)), &result))
+        return NPERR_GENERIC_ERROR;
       break;
     }
     case NPNURLVCookie: {
