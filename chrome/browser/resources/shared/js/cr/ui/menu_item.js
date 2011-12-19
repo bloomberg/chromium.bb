@@ -105,7 +105,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleMouseUp_: function(e) {
-      if (!this.disabled && !this.isSeparator()) {
+      if (!this.disabled && !this.isSeparator() && this.selected) {
         // Dispatch command event followed by executing the command object.
         if (cr.dispatchSimpleEvent(this, 'activate', true, true)) {
           var command = this.command;
