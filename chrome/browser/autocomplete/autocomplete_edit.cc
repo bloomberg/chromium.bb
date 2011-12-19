@@ -34,6 +34,7 @@
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -513,11 +514,21 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
   if (popup_->IsOpen()) {
     AutocompleteLog log(autocomplete_controller_->input().text(),
                         autocomplete_controller_->input().type(),
-                        popup_->selected_line(), 0, result());
+                        popup_->selected_line(),
+                        -1,  // don't yet know tab ID; set later if appropriate
+                        0,  // inline autocomplete length; possibly set later
+                        result());
     if (index != AutocompletePopupModel::kNoMatch)
       log.selected_index = index;
     else if (!has_temporary_text_)
       log.inline_autocompleted_length = inline_autocomplete_text_.length();
+    if (disposition == CURRENT_TAB) {
+      // If we know the destination is being opened in the curren tab,
+      // we can easily get the tab ID.  (If it's being opened in a new
+      // tab, we don't know the tab ID yet.)
+      log.tab_id = controller_->GetTabContentsWrapper()->
+                       restore_tab_helper()->session_id().id();
+    }
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
         content::Source<Profile>(profile_),

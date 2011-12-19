@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "base/timer.h"
+#include "chrome/browser/sessions/session_id.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_parse.h"
 
@@ -737,11 +738,13 @@ struct AutocompleteLog {
   AutocompleteLog(const string16& text,
                   AutocompleteInput::Type input_type,
                   size_t selected_index,
+                  SessionID::id_type tab_id,
                   size_t inline_autocompleted_length,
                   const AutocompleteResult& result)
       : text(text),
         input_type(input_type),
         selected_index(selected_index),
+        tab_id(tab_id),
         inline_autocompleted_length(inline_autocompleted_length),
         result(result) {
   }
@@ -751,6 +754,9 @@ struct AutocompleteLog {
   AutocompleteInput::Type input_type;
   // Selected index (if selected) or -1 (AutocompletePopupModel::kNoMatch).
   size_t selected_index;
+  // ID of the tab the selected autocomplete suggestion was opened in.
+  // Set to -1 if we haven't yet determined the destination tab.
+  SessionID::id_type tab_id;
   // Inline autocompleted length (if displayed).
   size_t inline_autocompleted_length;
   // Result set.

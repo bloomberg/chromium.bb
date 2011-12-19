@@ -486,6 +486,10 @@ void MetricsLog::RecordOmniboxOpenedURL(const AutocompleteLog& log) {
   WriteAttribute("targetidhash", "");
   // TODO(kochi): Properly track windows.
   WriteIntAttribute("window", 0);
+  if (log.tab_id != -1) {
+    // If we know what tab the autocomplete URL was opened in, log it.
+    WriteIntAttribute("tab", static_cast<int>(log.tab_id));
+  }
   WriteCommonEventAttributes();
 
   {
