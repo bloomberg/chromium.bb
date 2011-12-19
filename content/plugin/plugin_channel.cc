@@ -26,12 +26,9 @@
 
 namespace {
 
-class PluginReleaseTask : public Task {
- public:
-  void Run() {
-    ChildProcess::current()->ReleaseProcess();
-  }
-};
+void PluginReleaseCallback() {
+  ChildProcess::current()->ReleaseProcess();
+}
 
 // How long we wait before releasing the plugin process.
 const int kPluginReleaseTimeMs = 5 * 60 * 1000;  // 5 minutes
@@ -179,8 +176,8 @@ PluginChannel::~PluginChannel() {
   if (renderer_handle_)
     base::CloseProcessHandle(renderer_handle_);
 
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, new PluginReleaseTask(),
-                                          kPluginReleaseTimeMs);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, base::Bind(&PluginReleaseCallback), kPluginReleaseTimeMs);
 }
 
 bool PluginChannel::Send(IPC::Message* msg) {

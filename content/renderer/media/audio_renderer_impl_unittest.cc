@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/synchronization/waitable_event.h"
@@ -43,22 +44,12 @@ class MockRenderProcess : public RenderProcess {
 };
 }
 
-// This task can be posted on the IO thread and will signal an event when
+// This callback can be posted on the IO thread and will signal an event when
 // done. The caller can then wait for this signal to ensure that no
 // additional tasks remain in the task queue.
-class WaitTask : public Task {
- public:
-  explicit WaitTask(base::WaitableEvent* event)
-      : event_(event) {}
-  virtual ~WaitTask() {}
-  virtual void Run() {
-    event_->Signal();
-  }
-
- private:
-  base::WaitableEvent* event_;
-  DISALLOW_COPY_AND_ASSIGN(WaitTask);
-};
+void WaitCallback(base::WaitableEvent* event) {
+  event->Signal();
+}
 
 // Class we would be testing.
 class TestAudioRendererImpl : public AudioRendererImpl {
@@ -134,7 +125,7 @@ class AudioRendererImplTest
   // Posts a final task to the IO message loop and waits for completion.
   void WaitForIOThreadCompletion() {
     ChildProcess::current()->io_message_loop()->PostTask(
-        FROM_HERE, new WaitTask(event_.get()));
+        FROM_HERE, base::Bind(&WaitCallback, base::Unretained(event_.get())));
     EXPECT_TRUE(event_->TimedWait(
         base::TimeDelta::FromMilliseconds(TestTimeouts::action_timeout_ms())));
   }

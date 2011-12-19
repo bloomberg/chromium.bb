@@ -207,9 +207,8 @@ void PluginService::StartWatchingPlugins() {
     VLOG(1) << "Watching for changes in: " << plugin_dirs[i].value();
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableFunction(
-            &PluginService::RegisterFilePathWatcher,
-            watcher, plugin_dirs[i], file_watcher_delegate_));
+        base::Bind(&PluginService::RegisterFilePathWatcher, watcher,
+                   plugin_dirs[i], file_watcher_delegate_));
     file_watchers_.push_back(watcher);
   }
 #endif
@@ -566,7 +565,7 @@ void PluginService::Observe(int type,
 #if defined(OS_MACOSX)
   if (type == content::NOTIFICATION_APP_ACTIVATED) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            NewRunnableFunction(&NotifyPluginsOfActivation));
+                            base::Bind(&NotifyPluginsOfActivation));
     return;
   }
 #endif

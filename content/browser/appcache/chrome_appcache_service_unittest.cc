@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
@@ -79,11 +80,9 @@ ChromeAppCacheServiceTest::CreateAppCacheService(
   mock_policy->AddSessionOnly(kSessionOnlyManifestURL.GetOrigin());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(appcache_service.get(),
-                        &ChromeAppCacheService::InitializeOnIOThread,
-                        appcache_path,
-                        resource_context,
-                        mock_policy));
+      base::Bind(&ChromeAppCacheService::InitializeOnIOThread,
+                 appcache_service.get(), appcache_path, resource_context,
+                 mock_policy));
   // Steps needed to initialize the storage of AppCache data.
   message_loop_.RunAllPending();
   if (init_storage) {
