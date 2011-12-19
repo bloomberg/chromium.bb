@@ -101,14 +101,12 @@ struct NaClProcessHost::NaClInternal {
   std::vector<nacl::Handle> sockets_for_sel_ldr;
 };
 
-static bool RunningOnWOW64() {
 #if defined(OS_WIN)
+static bool RunningOnWOW64() {
   return (base::win::OSInfo::GetInstance()->wow64_status() ==
           base::win::OSInfo::WOW64_ENABLED);
-#else
-  return false;
-#endif
 }
+#endif
 
 NaClProcessHost::NaClProcessHost(const std::wstring& url)
     : BrowserChildProcessHost(content::PROCESS_TYPE_NACL_LOADER),
@@ -316,9 +314,12 @@ namespace {
 
 const FilePath::StringType NaClIrtName() {
 #if defined(ARCH_CPU_X86_FAMILY)
-  bool is64 = RunningOnWOW64();
 #if defined(ARCH_CPU_X86_64)
-  is64 = true;
+  bool is64 = true;
+#elif defined(OS_WIN)
+  bool is64 = RunningOnWOW64();
+#else
+  bool is64 = false;
 #endif
   return is64 ? NACL_IRT_FILE_NAME("x86_64") : NACL_IRT_FILE_NAME("x86_32");
 #elif defined(ARCH_CPU_ARMEL)
