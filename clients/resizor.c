@@ -157,15 +157,17 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 static void
 show_menu(struct resizor *resizor, struct input *input)
 {
-	int32_t x, y, width = 200, height = 200;
+	int32_t x, y;
+	static const char *entries[] = {
+		"Roy", "Pris", "Leon", "Zhora"
+	};
 
 	input_get_position(input, &x, &y);
-	resizor->menu = window_create_transient(resizor->display,
-						resizor->window,
-						x - 10, y - 10, width, height);
+	resizor->menu = window_create_menu(resizor->display,
+					   resizor->window,
+					   x - 10, y - 10, entries, 4);
 
-	window_draw(resizor->menu);
-	window_flush(resizor->menu);
+	window_schedule_redraw(resizor->menu);
 }
 
 static void
@@ -179,8 +181,6 @@ button_handler(struct window *window,
 	case BTN_RIGHT:
 		if (state)
 			show_menu(resizor, input);
-		else
-			window_destroy(resizor->menu);
 		break;
 	}
 }

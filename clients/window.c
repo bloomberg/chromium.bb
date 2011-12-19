@@ -100,6 +100,7 @@ enum {
 	TYPE_TOPLEVEL,
 	TYPE_FULLSCREEN,
 	TYPE_TRANSIENT,
+	TYPE_MENU,
 	TYPE_CUSTOM
 };
        
@@ -772,6 +773,8 @@ window_set_type(struct window *window)
 					       window->parent->shell_surface,
 					       window->x, window->y, 0);
 		break;
+	case TYPE_MENU:
+		break;
 	case TYPE_CUSTOM:
 		break;
 	}
@@ -930,28 +933,6 @@ window_create_surface(struct window *window)
 }
 
 static void
-window_draw_menu(struct window *window)
-{
-	cairo_t *cr;
-	int width, height, r = 5;
-
-	window_create_surface(window);
-
-	cr = cairo_create(window->cairo_surface);
-	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0);
-	cairo_paint(cr);
-
-	width = window->allocation.width;
-	height = window->allocation.height;
-	rounded_rect(cr, r, r, width - r, height - r, r);
-	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-	cairo_set_source_rgba(cr, 1.0, 1.0, 0.0, 0.5);
-	cairo_fill(cr);
-	cairo_destroy(cr);
-}
-
-static void
 window_draw_decorations(struct window *window)
 {
 	cairo_t *cr;
@@ -1090,9 +1071,7 @@ item_get_user_data(struct item *item)
 void
 window_draw(struct window *window)
 {
-	if (window->parent)
-		window_draw_menu(window);
-	else if (!window->decoration)
+	if (!window->decoration)
 		window_create_surface(window);
 	else
 		window_draw_decorations(window);
@@ -2037,6 +2016,146 @@ window_create_transient(struct display *display, struct window *parent,
 	window->type = TYPE_TRANSIENT;
 	window->x = x;
 	window->y = y;
+
+	return window;
+}
+
+struct menu {
+	struct window *window;
+	const char **entries;
+	int current;
+	int count;
+};
+
+static int
+menu_set_item(struct window *window, struct menu *menu, int sy)
+{
+	int next;
+
+	next = (sy - 8) / 20;
+	if (menu->current != next) {
+		menu->current = next;
+		window_schedule_redraw(window);
+	}
+
+	return POINTER_LEFT_PTR;
+}
+
+static int
+menu_motion_handler(struct window *window,
+		    struct input *input, uint32_t time,
+		    int32_t x, int32_t y,
+		    int32_t sx, int32_t sy, void *data)
+{
+	return menu_set_item(window, data, sy);
+}
+
+static int
+menu_enter_handler(struct window *window,
+		    struct input *input, uint32_t time,
+		    int32_t x, int32_t y, void *data)
+{
+	return menu_set_item(window, data, y);
+}
+
+static void
+menu_leave_handler(struct window *window,
+		   struct input *input, uint32_t time, void *data)
+{
+	menu_set_item(window, data, -200);
+}
+
+static void
+menu_button_handler(struct window *window,
+		    struct input *input, uint32_t time,
+		    int button, int state, void *data)
+
+{
+	struct menu *menu = data;
+
+	/* Either relase after press-drag-release or click-motion-click. */
+	if (state == 0 && 0 <= menu->current && menu->current < menu->count)
+		window_destroy(window);
+}
+
+static void
+menu_redraw_handler(struct window *window, void *data)
+{
+	cairo_t *cr;
+	const int32_t r = 3, margin = 3;
+	struct menu *menu = data;
+	int32_t width, height, i;
+
+	width = 200;
+	height = menu->count * 20 + margin * 2;
+	window_set_child_size(window, width, height);
+	window_create_surface(window);
+
+	cr = cairo_create(window->cairo_surface);
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0);
+	cairo_paint(cr);
+
+	width = window->allocation.width;
+	height = window->allocation.height;
+	rounded_rect(cr, 0, 0, width, height, r);
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+	cairo_set_source_rgba(cr, 0.0, 0.0, 0.4, 0.8);
+	cairo_fill(cr);
+
+	for (i = 0; i < menu->count; i++) {
+		if (i == menu->current) {
+			cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+			cairo_rectangle(cr, margin, i * 20 + margin,
+					width - 2 * margin, 20);
+			cairo_fill(cr);
+			cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
+			cairo_move_to(cr, 10, i * 20 + 16);
+			cairo_show_text(cr, menu->entries[i]);
+		} else {
+			cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+			cairo_move_to(cr, 10, i * 20 + 16);
+			cairo_show_text(cr, menu->entries[i]);
+		}
+	}
+
+	cairo_destroy(cr);
+	window_flush(window);
+}
+
+struct window *
+window_create_menu(struct display *display, struct window *parent,
+		   int32_t x, int32_t y, const char **entries, int count)
+{
+	struct window *window;
+	struct menu *menu;
+
+	menu = malloc(sizeof *menu);
+	if (!menu)
+		return NULL;
+
+	window = window_create_internal(parent->display, parent, 0, 0);
+	if (!window)
+		return NULL;
+
+	menu->window = window;
+	menu->entries = entries;
+	menu->count = count;
+	window->decoration = 0;
+	window->type = TYPE_MENU;
+	window->x = x;
+	window->y = y;
+
+	wl_shell_surface_set_transient(window->shell_surface,
+				  window->parent->shell_surface,
+				  window->x, window->y, 0);
+
+	window_set_motion_handler(window, menu_motion_handler);
+	window_set_enter_handler(window, menu_enter_handler);
+	window_set_leave_handler(window, menu_leave_handler);
+	window_set_button_handler(window, menu_button_handler);
+	window_set_redraw_handler(window, menu_redraw_handler);
+	window_set_user_data(window, menu);
 
 	return window;
 }
