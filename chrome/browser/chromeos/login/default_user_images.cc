@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
+#include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "grit/theme_resources.h"
@@ -50,8 +51,8 @@ bool IsDefaultImageString(const std::string& s,
     return false;
 
   int image_index = -1;
-  if (base::StringToInt(s.begin() + prefix.length(),
-                        s.end(),
+  if (base::StringToInt(base::StringPiece(s.begin() + prefix.length(),
+                                          s.end()),
                         &image_index)) {
     if (image_index < 0 || image_index >= kDefaultImagesCount)
       return false;
