@@ -799,6 +799,16 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 }
 
 static void
+terminate_binding(struct wl_input_device *device, uint32_t time,
+		  uint32_t key, uint32_t button, uint32_t state, void *data)
+{
+	struct wlsc_compositor *compositor = data;
+
+	if (state)
+		wl_display_terminate(compositor->wl_display);
+}
+
+static void
 activate(struct wlsc_shell *base, struct wlsc_surface *es,
 	 struct wlsc_input_device *device, uint32_t time)
 {
@@ -838,6 +848,21 @@ activate(struct wlsc_shell *base, struct wlsc_surface *es,
 			}
 		}
 	}
+}
+
+static void
+click_to_activate_binding(struct wl_input_device *device,
+                         uint32_t time, uint32_t key,
+			  uint32_t button, uint32_t state, void *data)
+{
+	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
+	struct wlsc_compositor *compositor = data;
+	struct wlsc_surface *focus;
+
+	focus = (struct wlsc_surface *) device->pointer_focus;
+	if (state && focus && device->grab == NULL)
+		compositor->shell->activate(compositor->shell,
+					    focus, wd, time);
 }
 
 static void
@@ -1258,6 +1283,14 @@ shell_init(struct wlsc_compositor *ec)
 				    move_binding, shell);
 	wlsc_compositor_add_binding(ec, 0, BTN_MIDDLE, MODIFIER_SUPER,
 				    resize_binding, shell);
+	wlsc_compositor_add_binding(ec, KEY_BACKSPACE, 0,
+				    MODIFIER_CTRL | MODIFIER_ALT,
+				    terminate_binding, ec);
+	wlsc_compositor_add_binding(ec, 0, BTN_LEFT, 0,
+				    click_to_activate_binding, ec);
+
+
+
 
 	ec->shell = &shell->shell;
 

@@ -1298,31 +1298,6 @@ notify_button(struct wl_input_device *device,
 }
 
 static void
-terminate_binding(struct wl_input_device *device, uint32_t time,
-		  uint32_t key, uint32_t button, uint32_t state, void *data)
-{
-	struct wlsc_compositor *compositor = data;
-
-	if (state)
-		wl_display_terminate(compositor->wl_display);
-}
-
-static void
-click_to_activate_binding(struct wl_input_device *device,
-                         uint32_t time, uint32_t key,
-			  uint32_t button, uint32_t state, void *data)
-{
-	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
-	struct wlsc_compositor *compositor = data;
-	struct wlsc_surface *focus;
-
-	focus = (struct wlsc_surface *) device->pointer_focus;
-	if (state && focus && device->grab == NULL)
-		compositor->shell->activate(compositor->shell,
-					    focus, wd, time);
-}
-
-static void
 update_modifier_state(struct wlsc_input_device *device,
 		      uint32_t key, uint32_t state)
 {
@@ -1861,13 +1836,6 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	wlsc_spring_init(&ec->fade.spring, 30.0, 1.0, 1.0);
 	ec->fade.animation.frame = fade_frame;
 	wl_list_init(&ec->fade.animation.link);
-
-	wlsc_compositor_add_binding(ec, KEY_BACKSPACE, 0,
-				    MODIFIER_CTRL | MODIFIER_ALT,
-				    terminate_binding, ec);
-
-	wlsc_compositor_add_binding(ec, 0, BTN_LEFT, 0,
-				    click_to_activate_binding, ec);
 
 	screenshooter_create(ec);
 
