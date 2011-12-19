@@ -16,7 +16,7 @@ class ExtensionServiceInterface;
 class GURL;
 
 // Class PendingExtensionManager manages the set of extensions which are
-// being installed or updated. In general, instalation and updates take
+// being installed or updated. In general, installation and updates take
 // time, because they involve downloading, unpacking, and installing.
 // This class allows us to avoid race cases where multiple sources install
 // the same extension.

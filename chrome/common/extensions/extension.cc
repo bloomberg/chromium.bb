@@ -2879,8 +2879,7 @@ bool Extension::CanCaptureVisiblePage(const GURL& page_url,
 }
 
 bool Extension::UpdatesFromGallery() const {
-  return update_url() == extension_urls::GetWebstoreUpdateUrl(false) ||
-         update_url() == extension_urls::GetWebstoreUpdateUrl(true);
+  return extension_urls::IsWebstoreUpdateUrl(update_url());
 }
 
 bool Extension::OverlapsWithOrigin(const GURL& origin) const {
@@ -2914,11 +2913,8 @@ Extension::SyncType Extension::GetSyncType() const {
   //
   // TODO(akalin): Relax this restriction once we've put in UI to
   // approve synced extensions.
-  if (!update_url().is_empty() &&
-      (update_url() != extension_urls::GetWebstoreUpdateUrl(false)) &&
-      (update_url() != extension_urls::GetWebstoreUpdateUrl(true))) {
+  if (!update_url().is_empty() && !UpdatesFromGallery())
     return SYNC_TYPE_NONE;
-  }
 
   // Disallow extensions with native code plugins.
   //
@@ -2934,8 +2930,7 @@ Extension::SyncType Extension::GetSyncType() const {
 
     case Extension::TYPE_USER_SCRIPT:
       // We only want to sync user scripts with gallery update URLs.
-      if (update_url() == extension_urls::GetWebstoreUpdateUrl(true) ||
-          update_url() == extension_urls::GetWebstoreUpdateUrl(false))
+      if (UpdatesFromGallery())
         return SYNC_TYPE_EXTENSION;
       else
         return SYNC_TYPE_NONE;

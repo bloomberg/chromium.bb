@@ -308,6 +308,9 @@ namespace extension_urls {
   // --apps-gallery-update-url.
   GURL GetWebstoreUpdateUrl(bool secure);
 
+  // Returns whether the URL is the webstore update URL (secure or not).
+  bool IsWebstoreUpdateUrl(const GURL& update_url);
+
   // The greatest common prefixes of the main extensions gallery's browse and
   // download URLs.
   extern const char kGalleryBrowsePrefix[];

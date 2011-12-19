@@ -467,6 +467,11 @@ GURL GetWebstoreUpdateUrl(bool secure) {
     return GURL(secure ? kGalleryUpdateHttpsUrl : kGalleryUpdateHttpUrl);
 }
 
+bool IsWebstoreUpdateUrl(const GURL& update_url) {
+  return update_url == GetWebstoreUpdateUrl(false) ||
+         update_url == GetWebstoreUpdateUrl(true);
+}
+
 const char kGalleryBrowsePrefix[] = "https://chrome.google.com/webstore";
 }
 
