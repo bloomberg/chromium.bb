@@ -42,7 +42,8 @@ class JavaBridgeDispatcherHost
   // RenderViewHostObserver overrides:
   // The IPC macros require this to be public.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
-  virtual void RenderViewHostDestroyed() OVERRIDE;
+  virtual void RenderViewHostDestroyed(
+      RenderViewHost* render_view_host) OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<JavaBridgeDispatcherHost>;

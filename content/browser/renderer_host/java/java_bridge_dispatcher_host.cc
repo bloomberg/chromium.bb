@@ -66,7 +66,8 @@ bool JavaBridgeDispatcherHost::Send(IPC::Message* msg) {
   return RenderViewHostObserver::Send(msg);
 }
 
-void JavaBridgeDispatcherHost::RenderViewHostDestroyed() {
+void JavaBridgeDispatcherHost::RenderViewHostDestroyed(
+    RenderViewHost* render_view_host) {
   // Base implementation deletes the object. This class is ref counted, with
   // refs held by the JavaBridgeDispatcherHostManager and base::Bind, so that
   // behavior is unwanted.
