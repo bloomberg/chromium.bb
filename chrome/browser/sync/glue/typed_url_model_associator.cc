@@ -46,7 +46,7 @@ static bool CheckVisitOrdering(const history::VisitVector& visits) {
       // source, so we just log an error instead of failing an assertion.
       // (http://crbug.com/91473).
       if (previous_visit_time == visit->visit_time.ToInternalValue())
-        LOG(ERROR) << "Duplicate visit time encountered";
+        DVLOG(1) << "Duplicate visit time encountered";
       else if (previous_visit_time > visit->visit_time.ToInternalValue())
         return false;
     }
