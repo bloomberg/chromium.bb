@@ -19,7 +19,6 @@
 #include "chrome/browser/sync/engine/all_status.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/nigori_util.h"
-#include "chrome/browser/sync/engine/polling_constants.h"
 #include "chrome/browser/sync/engine/syncapi_internal.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/sync_scheduler.h"
@@ -121,9 +120,6 @@ GetUpdatesCallerInfo::GetUpdatesSource GetSourceFromReason(
 
 namespace sync_api {
 
-const int SyncManager::kDefaultNudgeDelayMilliseconds = 200;
-const int SyncManager::kPreferencesNudgeDelayMilliseconds = 2000;
-
 //////////////////////////////////////////////////////////////////////////
 // SyncManager's implementation: SyncManager::SyncInternal
 class SyncManager::SyncInternal
@@ -134,6 +130,8 @@ class SyncManager::SyncInternal
       public SyncEngineEventListener,
       public ServerConnectionEventListener,
       public syncable::DirectoryChangeDelegate {
+  static const int kDefaultNudgeDelayMilliseconds;
+  static const int kPreferencesNudgeDelayMilliseconds;
  public:
   explicit SyncInternal(const std::string& name)
       : name_(name),
@@ -293,7 +291,7 @@ class SyncManager::SyncInternal
   SyncAPIServerConnectionManager* connection_manager() {
     return connection_manager_.get();
   }
-  SyncScheduler* scheduler() const { return scheduler_.get(); }
+  SyncScheduler* scheduler() { return scheduler_.get(); }
   UserShare* GetUserShare() {
     DCHECK(initialized_);
     return &share_;
@@ -312,8 +310,6 @@ class SyncManager::SyncInternal
   void RequestNudgeForDataType(
       const tracked_objects::Location& nudge_location,
       const ModelType& type);
-
-  TimeDelta GetNudgeDelayTimeDelta(const ModelType& model_type);
 
   // See SyncManager::Shutdown* for information.
   void StopSyncingForShutdown(const base::Closure& callback);
@@ -567,81 +563,8 @@ class SyncManager::SyncInternal
 
   MessageLoop* const created_on_loop_;
 };
-
-// A class to calculate nudge delays for types.
-class NudgeStrategy {
- public:
-  static TimeDelta GetNudgeDelayTimeDelta(const ModelType& model_type,
-                                          SyncManager::SyncInternal* core) {
-    NudgeDelayStrategy delay_type = GetNudgeDelayStrategy(model_type);
-    return GetNudgeDelayTimeDeltaFromType(delay_type,
-                                          model_type,
-                                          core);
-  }
-
- private:
-  // Possible types of nudge delay for datatypes.
-  // Note: These are just hints. If a sync happens then all dirty entries
-  // would be committed as part of the sync.
-  enum NudgeDelayStrategy {
-    // Sync right away.
-    IMMEDIATE,
-
-    // Sync this change while syncing another change.
-    ACCOMPANY_ONLY,
-
-    // The datatype does not use one of the predefined wait times but defines
-    // its own wait time logic for nudge.
-    CUSTOM,
-  };
-
-  static NudgeDelayStrategy GetNudgeDelayStrategy(const ModelType& type) {
-    switch (type) {
-     case syncable::AUTOFILL:
-     case syncable::AUTOFILL_PROFILE:
-       return ACCOMPANY_ONLY;
-     case syncable::PREFERENCES:
-     case syncable::SESSIONS:
-       return CUSTOM;
-     default:
-       return IMMEDIATE;
-    }
-  }
-
-  static TimeDelta GetNudgeDelayTimeDeltaFromType(
-      const NudgeDelayStrategy& delay_type, const ModelType& model_type,
-      const SyncManager::SyncInternal* core) {
-    CHECK(core);
-    TimeDelta delay = TimeDelta::FromMilliseconds(
-       SyncManager::kDefaultNudgeDelayMilliseconds);
-    switch (delay_type) {
-     case IMMEDIATE:
-       delay = TimeDelta::FromMilliseconds(
-           SyncManager::kDefaultNudgeDelayMilliseconds);
-       break;
-     case ACCOMPANY_ONLY:
-       delay = TimeDelta::FromSeconds(
-           browser_sync::kDefaultShortPollIntervalSeconds);
-       break;
-     case CUSTOM:
-       switch (model_type) {
-         case syncable::PREFERENCES:
-           delay = TimeDelta::FromMilliseconds(
-               SyncManager::kPreferencesNudgeDelayMilliseconds);
-           break;
-         case syncable::SESSIONS:
-           delay = core->scheduler()->sessions_commit_delay();
-           break;
-         default:
-           NOTREACHED();
-       }
-       break;
-     default:
-       NOTREACHED();
-    }
-    return delay;
-  }
-};
+const int SyncManager::SyncInternal::kDefaultNudgeDelayMilliseconds = 200;
+const int SyncManager::SyncInternal::kPreferencesNudgeDelayMilliseconds = 2000;
 
 SyncManager::ChangeDelegate::~ChangeDelegate() {}
 
@@ -1698,11 +1621,6 @@ void SyncManager::SyncInternal::RequestNudge(
         ModelTypeSet(), location);
 }
 
-TimeDelta SyncManager::SyncInternal::GetNudgeDelayTimeDelta(
-    const ModelType& model_type) {
-  return NudgeStrategy::GetNudgeDelayTimeDelta(model_type, this);
-}
-
 void SyncManager::SyncInternal::RequestNudgeForDataType(
     const tracked_objects::Location& nudge_location,
     const ModelType& type) {
@@ -1710,10 +1628,20 @@ void SyncManager::SyncInternal::RequestNudgeForDataType(
     NOTREACHED();
     return;
   }
-
-  base::TimeDelta nudge_delay = NudgeStrategy::GetNudgeDelayTimeDelta(type,
-                                                                      this);
-  syncable::ModelTypeSet types(type);
+  base::TimeDelta nudge_delay;
+  switch (type) {
+    case syncable::PREFERENCES:
+      nudge_delay =
+          TimeDelta::FromMilliseconds(kPreferencesNudgeDelayMilliseconds);
+      break;
+    case syncable::SESSIONS:
+      nudge_delay = scheduler()->sessions_commit_delay();
+      break;
+    default:
+      nudge_delay =
+          TimeDelta::FromMilliseconds(kDefaultNudgeDelayMilliseconds);
+      break;
+  }
   scheduler()->ScheduleNudge(nudge_delay,
                              browser_sync::NUDGE_SOURCE_LOCAL,
                              ModelTypeSet(type),
@@ -2142,11 +2070,6 @@ void SyncManager::DoneRefreshNigori(const base::Closure& done_callback,
   if (is_ready)
     data_->RefreshEncryption();
   done_callback.Run();
-}
-
-TimeDelta SyncManager::GetNudgeDelayTimeDelta(
-    const ModelType& model_type) {
-  return data_->GetNudgeDelayTimeDelta(model_type);
 }
 
 syncable::ModelTypeSet SyncManager::GetEncryptedDataTypesForTest() const {

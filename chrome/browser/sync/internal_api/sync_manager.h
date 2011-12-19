@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
-#include "base/time.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/configure_reason.h"
@@ -56,7 +55,6 @@ enum PassphraseRequiredReason {
                                        // decryption with the cached passphrase
                                        // was unsuccessful.
 };
-
 
 // Contains everything needed to talk to and identify a user account.
 struct SyncCredentials {
@@ -582,16 +580,7 @@ class SyncManager {
   void TriggerOnIncomingNotificationForTest(
       syncable::ModelTypeSet model_types);
 
-  static const int kDefaultNudgeDelayMilliseconds;
-  static const int kPreferencesNudgeDelayMilliseconds;
-  static const int kPiggybackNudgeDelay;
-
  private:
-  FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, NudgeDelayTest);
-
-  // For unit tests.
-  base::TimeDelta GetNudgeDelayTimeDelta(const syncable::ModelType& model_type);
-
   base::ThreadChecker thread_checker_;
 
   // Internal callback of RefreshNigori.
