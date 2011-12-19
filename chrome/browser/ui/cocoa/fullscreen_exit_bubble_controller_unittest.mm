@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/site_instance.h"
+#include "content/public/browser/notification_service.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/accelerators/accelerator_cocoa.h"
 

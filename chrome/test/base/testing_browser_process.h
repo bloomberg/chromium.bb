@@ -16,7 +16,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "content/browser/notification_service_impl.h"
 
 class BackgroundModeManager;
 class CRLSetFetcher;
@@ -26,6 +25,10 @@ class MHTMLGenerationManager;
 class NotificationUIManager;
 class PrefService;
 class WatchDogThread;
+
+namespace content {
+class NotificationService;
+}
 
 namespace policy {
 class BrowserPolicyConnector;
@@ -113,7 +116,7 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetBrowserPolicyConnector(policy::BrowserPolicyConnector* connector);
 
  private:
-  NotificationServiceImpl notification_service_;
+  scoped_ptr<content::NotificationService> notification_service_;
   unsigned int module_ref_count_;
   scoped_ptr<ui::Clipboard> clipboard_;
   std::string app_locale_;

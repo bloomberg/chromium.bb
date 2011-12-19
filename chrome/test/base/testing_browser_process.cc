@@ -13,12 +13,14 @@
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TestingBrowserProcess::TestingBrowserProcess()
-    : module_ref_count_(0),
+    : notification_service_(content::NotificationService::Create()),
+      module_ref_count_(0),
       app_locale_("en"),
       local_state_(NULL),
       io_thread_(NULL) {
