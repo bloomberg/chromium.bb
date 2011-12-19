@@ -15,7 +15,7 @@
 
 class HtmlDialogWindowDelegateBridge;
 class Profile;
-class TabContents;
+class TabContentsWrapper;
 
 // This controller manages a dialog box with properties and HTML content taken
 // from a HTMLDialogUIDelegate object.
@@ -24,7 +24,7 @@ class TabContents;
   // Order here is important, as tab_contents_ may send messages to
   // delegate_ when it gets destroyed.
   scoped_ptr<HtmlDialogWindowDelegateBridge> delegate_;
-  scoped_ptr<TabContents> tabContents_;
+  scoped_ptr<TabContentsWrapper> contentsWrapper_;
 }
 
 // Creates and shows an HtmlDialogWindowController with the given

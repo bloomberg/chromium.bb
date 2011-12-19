@@ -12,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #include "chrome/browser/ui/dialog_style.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -286,17 +287,19 @@ void HtmlDialogWindowDelegateBridge::HandleKeyboardEvent(
 }
 
 - (void)loadDialogContents {
-  tabContents_.reset(new TabContents(
-      delegate_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL));
-  [[self window] setContentView:tabContents_->GetNativeView()];
-  tabContents_->set_delegate(delegate_.get());
+  contentsWrapper_.reset(new TabContentsWrapper(new TabContents(
+      delegate_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL)));
+  [[self window]
+      setContentView:contentsWrapper_->tab_contents()->GetNativeView()];
+  contentsWrapper_->tab_contents()->set_delegate(delegate_.get());
 
   // This must be done before loading the page; see the comments in
   // HtmlDialogUI.
-  HtmlDialogUI::GetPropertyAccessor().SetProperty(tabContents_->property_bag(),
-                                                  delegate_.get());
+  HtmlDialogUI::GetPropertyAccessor().SetProperty(
+      contentsWrapper_->tab_contents()->property_bag(), delegate_.get());
 
-  tabContents_->controller().LoadURL(delegate_->GetDialogContentURL(),
+  contentsWrapper_->tab_contents()->controller().LoadURL(
+                                      delegate_->GetDialogContentURL(),
                                       content::Referrer(),
                                       content::PAGE_TRANSITION_START_PAGE,
                                       std::string());
