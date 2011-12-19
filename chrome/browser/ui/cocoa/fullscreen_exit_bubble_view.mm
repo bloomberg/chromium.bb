@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/fullscreen_exit_bubble_view.h"
 
+#include "base/mac/mac_util.h"
 #include "base/memory/scoped_nsobject.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
@@ -13,7 +14,10 @@ const CGFloat kShadowTop = 20;
 const CGFloat kShadowBottom = 50;
 const CGFloat kShadowLeft = 50;
 const CGFloat kShadowRight = 50;
-const CGFloat kShadowBlurRadius = 290;
+const CGFloat kShadowBlurRadius = 150;
+// NOTE(koz): The blur radius parameter to setShadowBlurRadius: has a bigger
+// effect on lion, so use a smaller value for it.
+const CGFloat kShadowBlurRadiusLion = 30;
 const CGFloat kShadowAlpha = 0.5;
 const CGFloat kBubbleCornerRadius = 8.0;
 
@@ -40,7 +44,11 @@ const CGFloat kBubbleCornerRadius = 8.0;
   [[NSColor whiteColor] set];
   gfx::ScopedNSGraphicsContextSaveGState scoped_g_state;
   scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
-  [shadow setShadowBlurRadius:kShadowBlurRadius];
+  if (base::mac::IsOSLionOrLater()) {
+    [shadow setShadowBlurRadius:kShadowBlurRadiusLion];
+  } else {
+    [shadow setShadowBlurRadius:kShadowBlurRadius];
+  }
   [shadow setShadowColor:[[NSColor blackColor]
     colorWithAlphaComponent:kShadowAlpha]];
   [shadow set];
