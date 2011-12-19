@@ -648,7 +648,8 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 
 		case XCB_FOCUS_OUT:
 			focus_in = (xcb_focus_in_event_t *) event;
-			if (focus_in->mode == XCB_NOTIFY_MODE_WHILE_GRABBED)
+			if (focus_in->mode == XCB_NOTIFY_MODE_WHILE_GRABBED ||
+			    focus_in->mode == XCB_NOTIFY_MODE_UNGRAB)
 				break;
 			notify_keyboard_focus(c->base.input_device,
 					      wlsc_compositor_get_time(),
