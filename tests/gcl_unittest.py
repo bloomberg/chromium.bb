@@ -309,7 +309,6 @@ class CMDuploadUnittest(GclTestsBase):
     #gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
     gcl.os.getcwd().AndReturn('somewhere')
     change_info.GetFiles().AndReturn(change_info.files)
-    change_info.GetLocalRoot().AndReturn('proout')
     gcl.os.chdir('proout')
     change_info.GetFileNames().AndReturn(files)
     gcl.GenerateDiff(files)
@@ -318,6 +317,7 @@ class CMDuploadUnittest(GclTestsBase):
                          '--message=\'\'', '--issue=1'],
                          change_info.patch).AndReturn(("1",
                                                                     "2"))
+    change_info.GetLocalRoot().AndReturn('proout')
     change_info.Save()
     change_info.PrimeLint()
     gcl.os.chdir('somewhere')
@@ -450,9 +450,9 @@ class CMDuploadUnittest(GclTestsBase):
     #gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
     gcl.os.getcwd().AndReturn('somewhere')
     change_info.GetFiles().AndReturn(change_info.files)
+    change_info.GetFileNames().AndReturn(files)
     change_info.GetLocalRoot().AndReturn('proout')
     gcl.os.chdir('proout')
-    change_info.GetFileNames().AndReturn(files)
     gcl.GenerateDiff(files)
     gcl.upload.RealMain(['upload.py', '-y', '--server=my_server',
                          '--reviewers=georges@example.com',
@@ -529,8 +529,6 @@ class CMDCommitUnittest(GclTestsBase):
     gcl.os.write(43, '\n'.join(change_info.GetFileNames()))
     gcl.os.close(43)
 
-    gcl.os.getcwd().AndReturn('prev')
-    gcl.os.chdir(change_info.GetLocalRoot())
     gcl.RunShell(['svn', 'commit', '--file=commit', '--targets=files'],
         True).AndReturn(shell_output)
     if 'Committed' in shell_output:
@@ -539,7 +537,6 @@ class CMDCommitUnittest(GclTestsBase):
 
     gcl.os.remove('commit')
     gcl.os.remove('files')
-    gcl.os.chdir('prev')
 
   def testPresubmitEmpty(self):
     self.mockLoad(files=[])
@@ -563,7 +560,6 @@ class CMDCommitUnittest(GclTestsBase):
     self.mockPresubmit(change_info, fail=False)
     self.mockCommit(change_info, 'deescription\nReview URL: http://my_server/1',
                     '')
-
     self.mox.ReplayAll()
 
     retval = gcl.CMDcommit(['naame'])

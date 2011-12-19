@@ -233,8 +233,11 @@ def ErrorExit(msg):
 def RunShellWithReturnCode(command, print_output=False):
   """Executes a command and returns the output and the return code."""
   p = subprocess2.Popen(
-      command, stdout=subprocess2.PIPE,
-      stderr=subprocess2.STDOUT, universal_newlines=True)
+      command,
+      cwd=GetRepositoryRoot(),
+      stdout=subprocess2.PIPE,
+      stderr=subprocess2.STDOUT,
+      universal_newlines=True)
   if print_output:
     output_array = []
     while True:
@@ -613,6 +616,17 @@ class ChangeInfo(object):
   def _LoadNewFormat(content):
     return json.loads(content)
 
+  def __str__(self):
+    out = ['%s:' % self.__class__.__name__]
+    for k in dir(self):
+      if k.startswith('__'):
+        continue
+      v = getattr(self, k)
+      if v is self or callable(getattr(self, k)):
+        continue
+      out.append('  %s: %r' % (k, v))
+    return '\n'.join(out)
+
 
 def GetChangelistInfoFile(changename):
   """Returns the file that stores information about a changelist."""
@@ -679,9 +693,8 @@ def GetModifiedFiles():
     for status, filename in change_info.GetFiles():
       files_in_cl[filename] = change_info.name
 
-  # Get all the modified files.
-  status_result = SVN.CaptureStatus(None, GetRepositoryRoot())
-  for line in status_result:
+  # Get all the modified files down the current directory.
+  for line in SVN.CaptureStatus(None, os.getcwd()):
     status = line[0]
     filename = line[1]
     if status[0] == "?":
@@ -884,28 +897,31 @@ def CMDupload(change_info, args):
     if GetCodeReviewSetting("PRIVATE") == "True":
       upload_arg.append("--private")
 
-  # Change the current working directory before calling upload.py so that it
-  # shows the correct base.
-  previous_cwd = os.getcwd()
-  os.chdir(change_info.GetLocalRoot())
   # If we have a lot of files with long paths, then we won't be able to fit
   # the command to "svn diff".  Instead, we generate the diff manually for
   # each file and concatenate them before passing it to upload.py.
   if change_info.patch is None:
     change_info.patch = GenerateDiff(change_info.GetFileNames())
-  try:
-    issue, patchset = upload.RealMain(upload_arg, change_info.patch)
-  except KeyboardInterrupt:
-    sys.exit(1)
-  if issue and patchset:
-    change_info.issue = int(issue)
-    change_info.patchset = int(patchset)
-    change_info.Save()
 
-  if desc_file:
-    os.remove(desc_file)
-  change_info.PrimeLint()
-  os.chdir(previous_cwd)
+  # Change the current working directory before calling upload.py so that it
+  # shows the correct base.
+  previous_cwd = os.getcwd()
+  os.chdir(change_info.GetLocalRoot())
+  try:
+    try:
+      issue, patchset = upload.RealMain(upload_arg, change_info.patch)
+    except KeyboardInterrupt:
+      sys.exit(1)
+    if issue and patchset:
+      change_info.issue = int(issue)
+      change_info.patchset = int(patchset)
+      change_info.Save()
+
+    if desc_file:
+      os.remove(desc_file)
+    change_info.PrimeLint()
+  finally:
+    os.chdir(previous_cwd)
   print "*** Upload does not submit a try; use gcl try to submit a try. ***"
   return 0
 
@@ -1011,8 +1027,6 @@ def CMDcommit(change_info, args):
       commit_cmd += ['--file=' + commit_filename]
       commit_cmd += ['--targets=' + targets_filename]
       # Change the current working directory before calling commit.
-      previous_cwd = os.getcwd()
-      os.chdir(change_info.GetLocalRoot())
       output = ''
       try:
         output = RunShell(commit_cmd, True)
@@ -1033,7 +1047,6 @@ def CMDcommit(change_info, args):
       if viewvc_url:
         change_info.description += "\nCommitted: " + viewvc_url + revision
       change_info.CloseIssue()
-  os.chdir(previous_cwd)
   return 0
 
 
@@ -1162,6 +1175,8 @@ def CMDlint(change_info, args):
 
   Checks all the files in the changelist for possible style violations.
   """
+  # Access to a protected member _XX of a client class
+  # pylint: disable=W0212
   try:
     import cpplint
     import cpplint_chromium
@@ -1171,32 +1186,32 @@ def CMDlint(change_info, args):
   # shows the correct base.
   previous_cwd = os.getcwd()
   os.chdir(change_info.GetLocalRoot())
-  # Process cpplints arguments if any.
-  filenames = cpplint.ParseArguments(args + change_info.GetFileNames())
+  try:
+    # Process cpplints arguments if any.
+    filenames = cpplint.ParseArguments(args + change_info.GetFileNames())
 
-  white_list = GetCodeReviewSetting("LINT_REGEX")
-  if not white_list:
-    white_list = DEFAULT_LINT_REGEX
-  white_regex = re.compile(white_list)
-  black_list = GetCodeReviewSetting("LINT_IGNORE_REGEX")
-  if not black_list:
-    black_list = DEFAULT_LINT_IGNORE_REGEX
-  black_regex = re.compile(black_list)
-  extra_check_functions = [cpplint_chromium.CheckPointerDeclarationWhitespace]
-  # Access to a protected member _XX of a client class
-  # pylint: disable=W0212
-  for filename in filenames:
-    if white_regex.match(filename):
-      if black_regex.match(filename):
-        print "Ignoring file %s" % filename
+    white_list = GetCodeReviewSetting("LINT_REGEX")
+    if not white_list:
+      white_list = DEFAULT_LINT_REGEX
+    white_regex = re.compile(white_list)
+    black_list = GetCodeReviewSetting("LINT_IGNORE_REGEX")
+    if not black_list:
+      black_list = DEFAULT_LINT_IGNORE_REGEX
+    black_regex = re.compile(black_list)
+    extra_check_functions = [cpplint_chromium.CheckPointerDeclarationWhitespace]
+    for filename in filenames:
+      if white_regex.match(filename):
+        if black_regex.match(filename):
+          print "Ignoring file %s" % filename
+        else:
+          cpplint.ProcessFile(filename, cpplint._cpplint_state.verbose_level,
+                              extra_check_functions)
       else:
-        cpplint.ProcessFile(filename, cpplint._cpplint_state.verbose_level,
-                            extra_check_functions)
-    else:
-      print "Skipping file %s" % filename
+        print "Skipping file %s" % filename
+  finally:
+    os.chdir(previous_cwd)
 
   print "Total errors found: %d\n" % cpplint._cpplint_state.error_count
-  os.chdir(previous_cwd)
   return 1
 
 
