@@ -157,10 +157,6 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLBlocked) {
   RunTest(url, EXPECT_NO_GPU_PROCESS);
 }
 
-#if defined(OS_LINUX)
-// http://crbug.com/104142
-#define Canvas2DAllowed DISABLED_Canvas2DAllowed
-#endif
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
   GpuFeatureFlags flags = GpuDataManager::GetInstance()->GetGpuFeatureFlags();
   EXPECT_EQ(flags.flags(), 0u);
