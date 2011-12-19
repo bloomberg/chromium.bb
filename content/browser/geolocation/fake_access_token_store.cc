@@ -4,28 +4,30 @@
 
 #include "content/browser/geolocation/fake_access_token_store.h"
 
-#include "base/logging.h"
-
 using testing::_;
 using testing::Invoke;
 
 FakeAccessTokenStore::FakeAccessTokenStore() {
-  ON_CALL(*this, LoadAccessTokens(_))
+  ON_CALL(*this, DoLoadAccessTokens(_))
       .WillByDefault(Invoke(this,
-                            &FakeAccessTokenStore::DefaultLoadAccessTokens));
+                            &FakeAccessTokenStore::DefaultDoLoadAccessTokens));
   ON_CALL(*this, SaveAccessToken(_, _))
       .WillByDefault(Invoke(this,
                             &FakeAccessTokenStore::DefaultSaveAccessToken));
 }
 
 void FakeAccessTokenStore::NotifyDelegateTokensLoaded() {
+  CHECK(request_ != NULL);
   net::URLRequestContextGetter* context_getter = NULL;
-  callback_.Run(access_token_set_, context_getter);
+  request_->ForwardResult(access_token_set_, context_getter);
+  request_ = NULL;
 }
 
-void FakeAccessTokenStore::DefaultLoadAccessTokens(
-    const LoadAccessTokensCallbackType& callback) {
-  callback_ = callback;
+void FakeAccessTokenStore::DefaultDoLoadAccessTokens(
+    scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request) {
+  DCHECK(request_ == NULL)
+      << "Fake token store currently only allows one request at a time";
+  request_ = request;
 }
 
 void FakeAccessTokenStore::DefaultSaveAccessToken(

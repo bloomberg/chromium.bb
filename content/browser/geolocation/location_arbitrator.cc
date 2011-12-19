@@ -64,6 +64,7 @@ void GeolocationArbitrator::StartProviders(
   if (providers_.empty()) {
     DCHECK(GURL(kDefaultNetworkProviderUrl).is_valid());
     access_token_store_->LoadAccessTokens(
+        &request_consumer_,
         base::Bind(&GeolocationArbitrator::OnAccessTokenStoresLoaded,
                    base::Unretained(this)));
   } else {

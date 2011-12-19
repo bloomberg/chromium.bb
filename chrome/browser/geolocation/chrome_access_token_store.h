@@ -17,13 +17,15 @@ class ChromeAccessTokenStore : public AccessTokenStore {
   static void RegisterPrefs(PrefService* prefs);
 
   ChromeAccessTokenStore();
-  virtual ~ChromeAccessTokenStore();
-
-  virtual void LoadAccessTokens(
-      const LoadAccessTokensCallbackType& request) OVERRIDE;
 
  private:
+  void LoadDictionaryStoreInUIThread(
+      scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request);
+
   // AccessTokenStore
+  virtual void DoLoadAccessTokens(
+      scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request)
+          OVERRIDE;
   virtual void SaveAccessToken(
       const GURL& server_url, const string16& access_token) OVERRIDE;
 

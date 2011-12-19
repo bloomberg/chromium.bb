@@ -141,10 +141,10 @@ TEST_F(GeolocationProviderTest, StartStop) {
       new MockDependencyFactory(&message_loop_, fake_access_token_store.get());
   base::WaitableEvent event(false, false);
 
-  EXPECT_CALL(*(fake_access_token_store.get()), LoadAccessTokens(_))
+  EXPECT_CALL(*(fake_access_token_store.get()), DoLoadAccessTokens(_))
       .Times(1)
       .WillOnce(DoAll(Invoke(fake_access_token_store.get(),
-                             &FakeAccessTokenStore::DefaultLoadAccessTokens),
+                             &FakeAccessTokenStore::DefaultDoLoadAccessTokens),
                       InvokeWithoutArgs(&event, &base::WaitableEvent::Signal)));
 
   GeolocationArbitrator::SetDependencyFactoryForTest(dependency_factory.get());

@@ -9,3 +9,15 @@ AccessTokenStore::AccessTokenStore() {
 
 AccessTokenStore::~AccessTokenStore() {
 }
+
+AccessTokenStore::Handle AccessTokenStore::LoadAccessTokens(
+    CancelableRequestConsumerBase* consumer,
+    const LoadAccessTokensCallbackType& callback) {
+  scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request(
+      new CancelableRequest<LoadAccessTokensCallbackType>(callback));
+  AddRequest(request, consumer);
+  DCHECK(request->handle());
+
+  DoLoadAccessTokens(request);
+  return request->handle();
+}

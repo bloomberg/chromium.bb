@@ -167,7 +167,9 @@ TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
   arbitrator_->StartProviders(GeolocationObserverOptions(false));
 
   EXPECT_TRUE(access_token_store_->access_token_set_.empty());
+  EXPECT_TRUE(access_token_store_->request_);
   EXPECT_TRUE(access_token_store_->access_token_set_.empty());
+  ASSERT_TRUE(access_token_store_->request_);
 
   access_token_store_->NotifyDelegateTokensLoaded();
   ASSERT_TRUE(cell());

@@ -18,18 +18,20 @@ class FakeAccessTokenStore : public AccessTokenStore {
   void NotifyDelegateTokensLoaded();
 
   // AccessTokenStore
-  MOCK_METHOD1(LoadAccessTokens,
-               void(const LoadAccessTokensCallbackType& callback));
+  MOCK_METHOD1(DoLoadAccessTokens,
+               void(scoped_refptr<CancelableRequest
+                    <LoadAccessTokensCallbackType> > request));
   MOCK_METHOD2(SaveAccessToken,
                void(const GURL& server_url, const string16& access_token));
 
-  void DefaultLoadAccessTokens(const LoadAccessTokensCallbackType& callback);
+  void DefaultDoLoadAccessTokens(
+      scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request);
 
   void DefaultSaveAccessToken(const GURL& server_url,
                               const string16& access_token);
 
   AccessTokenSet access_token_set_;
-  LoadAccessTokensCallbackType callback_;
+  scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request_;
 
  private:
   virtual ~FakeAccessTokenStore();
