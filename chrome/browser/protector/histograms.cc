@@ -14,14 +14,16 @@ namespace protector {
 const char kProtectorHistogramDefaultSearchProvider[] =
     "Protector.DefaultSearchProvider";
 
-const char kProtectorHistogramNewSearchProvider[] =
-    "Protector.SearchProvider.New";
 const char kProtectorHistogramSearchProviderApplied[] =
     "Protector.SearchProvider.Applied";
+const char kProtectorHistogramSearchProviderCorrupt[] =
+    "Protector.SearchProvider.Corrupt";
 const char kProtectorHistogramSearchProviderDiscarded[] =
     "Protector.SearchProvider.Discarded";
 const char kProtectorHistogramSearchProviderFallback[] =
     "Protector.SearchProvider.Fallback";
+const char kProtectorHistogramSearchProviderHijacked[] =
+    "Protector.SearchProvider.Hijacked";
 const char kProtectorHistogramSearchProviderMissing[] =
     "Protector.SearchProvider.Missing";
 const char kProtectorHistogramSearchProviderRestored[] =

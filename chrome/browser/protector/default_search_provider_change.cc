@@ -171,10 +171,17 @@ DefaultSearchProviderChange::~DefaultSearchProviderChange() {
 bool DefaultSearchProviderChange::Init(Protector* protector) {
   BaseSettingChange::Init(protector);
 
-  UMA_HISTOGRAM_ENUMERATION(
-      kProtectorHistogramNewSearchProvider,
-      new_histogram_id_,
-      kProtectorMaxSearchProviderID);
+  if (old_id_) {
+    UMA_HISTOGRAM_ENUMERATION(
+        kProtectorHistogramSearchProviderHijacked,
+        new_histogram_id_,
+        kProtectorMaxSearchProviderID);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(
+        kProtectorHistogramSearchProviderCorrupt,
+        new_histogram_id_,
+        kProtectorMaxSearchProviderID);
+  }
 
   // Initially reset the search engine to its previous setting.
   default_search_provider_ = SetDefaultSearchProvider(old_id_, true);
