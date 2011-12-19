@@ -653,7 +653,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                   URLPatternSet* extent,
                   const char* list_error,
                   const char* value_error,
-                  URLPattern::ParseOption parse_option,
                   string16* error);
   bool LoadLaunchContainer(const extensions::Manifest* manifest,
                            string16* error);

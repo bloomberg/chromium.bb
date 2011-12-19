@@ -359,17 +359,7 @@ TEST_F(ExtensionManifestTest, AppWebUrls) {
           base::IntToString(1),
           errors::kCannotClaimAllHostsInExtent));
 
-  // Ports in app.urls only raise an error when loading as a
-  // developer would.
-  LoadAndExpectSuccess("web_urls_invalid_has_port.json");
-  LoadAndExpectError(
-      "web_urls_invalid_has_port.json",
-      ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidWebURL,
-          base::IntToString(1),
-          URLPattern::GetParseResultString(URLPattern::PARSE_ERROR_HAS_COLON)),
-      Extension::INTERNAL,
-      Extension::STRICT_ERROR_CHECKS);
+  LoadAndExpectSuccess("web_urls_has_port.json");
 
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess("web_urls_default.json"));
@@ -485,8 +475,7 @@ TEST_F(ExtensionManifestTest, ChromeResourcesPermissionValidOnlyForComponents) {
   EXPECT_EQ("", error);
 }
 
-TEST_F(ExtensionManifestTest, InvalidContentScriptMatchPattern) {
-
+TEST_F(ExtensionManifestTest, ContentScriptMatchPattern) {
   // chrome:// urls are not allowed.
   LoadAndExpectError(
       "content_script_chrome_url_invalid.json",
@@ -506,21 +495,7 @@ TEST_F(ExtensionManifestTest, InvalidContentScriptMatchPattern) {
           base::IntToString(0),
           errors::kExpectString));
 
-  // Ports in match patterns cause an error, but only when loading
-  // in developer mode.
-  LoadAndExpectSuccess("forbid_ports_in_content_scripts.json");
-
-  // Loading as a developer would should give an error.
-  LoadAndExpectError(
-      "forbid_ports_in_content_scripts.json",
-      ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidMatch,
-          base::IntToString(1),
-          base::IntToString(0),
-          URLPattern::GetParseResultString(
-              URLPattern::PARSE_ERROR_HAS_COLON)),
-      Extension::INTERNAL,
-      Extension::STRICT_ERROR_CHECKS);
+  LoadAndExpectSuccess("ports_in_content_scripts.json");
 }
 
 TEST_F(ExtensionManifestTest, ExcludeMatchPatterns) {
@@ -868,16 +843,9 @@ TEST_F(ExtensionManifestTest, WebIntents) {
             extension->intents_services()[0].disposition);
 }
 
-TEST_F(ExtensionManifestTest, ForbidPortsInPermissions) {
+TEST_F(ExtensionManifestTest, PortsInPermissions) {
   // Loading as a user would shoud not trigger an error.
-  LoadAndExpectSuccess("forbid_ports_in_permissions.json");
-
-  // Ideally, loading as a developer would give an error.
-  // To ensure that we do not error out on a valid permission
-  // in a future version of chrome, validation is to loose
-  // to flag this case.
-  LoadAndExpectSuccess("forbid_ports_in_permissions.json",
-                       Extension::INTERNAL, Extension::STRICT_ERROR_CHECKS);
+  LoadAndExpectSuccess("ports_in_permissions.json");
 }
 
 TEST_F(ExtensionManifestTest, IsolatedApps) {

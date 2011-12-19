@@ -22,12 +22,6 @@ class GURL;
 // <path> := '/' <any chars>
 //
 // * Host is not used when the scheme is 'file'.
-// * The port is only used if the pattern is parsed with the USE_PORTS option.
-//   If the patterns is parsed with the ERROR_ON_PORTS option, the port is not
-//   allowed, and the resulting pattern matches any port. If it is parsed with
-//   the IGNORE_PORTS option, the port (including colon) is kept as part of the
-//   host to maintain backwards compatibility with previous versions, which
-//   makes the pattern effectively never match any URL.
 // * The path can have embedded '*' characters which act as glob wildcards.
 // * '<all_urls>' is a special pattern that matches any URL that contains a
 //   valid scheme (as specified by valid_schemes_).
@@ -69,13 +63,6 @@ class URLPattern {
     SCHEME_ALL      = -1,
   };
 
-  // Options for URLPattern::Parse().
-  enum ParseOption {
-    ERROR_ON_PORTS,
-    IGNORE_PORTS,
-    USE_PORTS,
-  };
-
   // Error codes returned from Parse().
   enum ParseResult {
     PARSE_SUCCESS = 0,
@@ -85,18 +72,16 @@ class URLPattern {
     PARSE_ERROR_EMPTY_HOST,
     PARSE_ERROR_INVALID_HOST_WILDCARD,
     PARSE_ERROR_EMPTY_PATH,
-    PARSE_ERROR_HAS_COLON,     // Only checked when parsing with ERROR_ON_PORTS.
-    PARSE_ERROR_INVALID_PORT,  // Only checked when parsing with USE_PORTS.
+    PARSE_ERROR_INVALID_PORT,
     NUM_PARSE_RESULTS
   };
 
   // The <all_urls> string pattern.
   static const char kAllUrlsPattern[];
 
-  URLPattern(ParseOption parse_option, int valid_schemes);
+  explicit URLPattern(int valid_schemes);
 
-  // Convenience to construct a URLPattern from a string. The string is expected
-  // to be a valid pattern when parsed with USE_PORTS. If the string is not
+  // Convenience to construct a URLPattern from a string. If the string is not
   // known ahead of time, use Parse() instead, which returns success or failure.
   URLPattern(int valid_schemes, const std::string& pattern);
 
@@ -115,10 +100,6 @@ class URLPattern {
   // Gets the bitmask of valid schemes.
   int valid_schemes() const { return valid_schemes_; }
   void SetValidSchemes(int valid_schemes);
-
-  // Gets or sets the parse option used with Parse().
-  ParseOption parse_option() const { return parse_option_; }
-  void SetParseOption(ParseOption parse_option);
 
   // Gets the host the pattern matches. This can be an empty string if the
   // pattern matches all hosts (the input was <scheme>://*/<whatever>).
@@ -214,9 +195,6 @@ class URLPattern {
   // equivalent literal schemes, otherwise returns the current scheme.
   std::vector<std::string> GetExplicitSchemes() const;
 
-  // Controls how to interpret the input to Parse().
-  ParseOption parse_option_;
-
   // A bitmask containing the schemes which are considered valid for this
   // pattern. Parse() uses this to decide whether a pattern contains a valid
   // scheme. MatchesScheme uses this to decide whether a wildcard scheme_
@@ -236,8 +214,7 @@ class URLPattern {
   // component of the pattern's host was "*".
   bool match_subdomains_;
 
-  // The port. URL patterns only support specific ports if they are parsed with
-  // the |USE_PORTS| option.
+  // The port.
   std::string port_;
 
   // The path to match. This is everything after the host of the URL, or

@@ -425,7 +425,6 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
       for (size_t i = 0; i < urls_value->GetSize(); ++i) {
         std::string url;
         URLPattern pattern(
-            URLPattern::USE_PORTS,
             URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS |
             URLPattern::SCHEME_FTP | URLPattern::SCHEME_FILE |
             URLPattern::SCHEME_EXTENSION);

@@ -446,9 +446,9 @@ bool ExtensionPrefs::ReadExtensionPrefURLPatternSet(
     std::string item;
     if (!value->GetString(i, &item))
       return false;
-    URLPattern pattern(URLPattern::IGNORE_PORTS, valid_schemes);
+    URLPattern pattern(valid_schemes);
     if (pattern.Parse(item) != URLPattern::PARSE_SUCCESS) {
-      NOTREACHED();
+      LOG(ERROR) << "Invaid permission pattern: " << item;
       return false;
     }
     if (!allow_file_access && pattern.MatchesScheme(chrome::kFileScheme)) {

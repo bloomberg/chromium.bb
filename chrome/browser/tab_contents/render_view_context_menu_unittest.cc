@@ -72,7 +72,7 @@ static ContextMenuParams CreateParams(int contexts) {
 
 // Generates a URLPatternSet with a single pattern
 static URLPatternSet CreatePatternSet(const std::string& pattern) {
-  URLPattern target(URLPattern::IGNORE_PORTS, URLPattern::SCHEME_HTTP);
+  URLPattern target(URLPattern::SCHEME_HTTP);
   target.Parse(pattern);
 
   URLPatternSet rv;

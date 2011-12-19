@@ -286,7 +286,7 @@ void Extension::OverrideLaunchUrl(const GURL& override_url) {
 
     launch_web_url_ = new_url.spec();
 
-    URLPattern pattern(URLPattern::USE_PORTS, kValidWebExtentSchemes);
+    URLPattern pattern(kValidWebExtentSchemes);
     pattern.Parse(new_url.spec());
     pattern.SetPath(pattern.path() + '*');
     extent_.AddPattern(pattern);
@@ -389,11 +389,6 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
                                      int flags,
                                      string16* error,
                                      UserScript* result) {
-  // When strict error checks are enabled, make URL pattern parsing strict.
-  URLPattern::ParseOption parse_option =
-      (flags & STRICT_ERROR_CHECKS ? URLPattern::ERROR_ON_PORTS
-                                   : URLPattern::IGNORE_PORTS);
-
   // run_at
   if (content_script->HasKey(keys::kRunAt)) {
     std::string run_location;
@@ -455,7 +450,7 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
       return false;
     }
 
-    URLPattern pattern(parse_option, UserScript::kValidUserScriptSchemes);
+    URLPattern pattern(UserScript::kValidUserScriptSchemes);
     if (CanExecuteScriptEverywhere())
       pattern.SetValidSchemes(URLPattern::SCHEME_ALL);
 
@@ -501,7 +496,7 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
         return false;
       }
 
-      URLPattern pattern(parse_option, UserScript::kValidUserScriptSchemes);
+      URLPattern pattern(UserScript::kValidUserScriptSchemes);
       if (CanExecuteScriptEverywhere())
         pattern.SetValidSchemes(URLPattern::SCHEME_ALL);
       URLPattern::ParseResult parse_result = pattern.Parse(match_str);
@@ -811,7 +806,7 @@ FileBrowserHandler* Extension::LoadFileBrowserHandler(
       return NULL;
     }
     StringToLowerASCII(&filter);
-    URLPattern pattern(URLPattern::USE_PORTS, URLPattern::SCHEME_FILESYSTEM);
+    URLPattern pattern(URLPattern::SCHEME_FILESYSTEM);
     if (pattern.Parse(filter) != URLPattern::PARSE_SUCCESS) {
       *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidURLPatternError, filter);
@@ -899,7 +894,6 @@ bool Extension::LoadExtent(const extensions::Manifest* manifest,
                            URLPatternSet* extent,
                            const char* list_error,
                            const char* value_error,
-                           URLPattern::ParseOption parse_option,
                            string16* error) {
   Value* temp = NULL;
   if (!manifest->Get(key, &temp))
@@ -920,7 +914,7 @@ bool Extension::LoadExtent(const extensions::Manifest* manifest,
       return false;
     }
 
-    URLPattern pattern(parse_option, kValidWebExtentSchemes);
+    URLPattern pattern(kValidWebExtentSchemes);
     URLPattern::ParseResult parse_result = pattern.Parse(pattern_string);
     if (parse_result == URLPattern::PARSE_ERROR_EMPTY_PATH) {
       pattern_string += "/";
@@ -1010,7 +1004,7 @@ bool Extension::LoadLaunchURL(const extensions::Manifest* manifest,
 
     // Ensure the launch URL is a valid absolute URL and web extent scheme.
     GURL url(launch_url);
-    URLPattern pattern(URLPattern::USE_PORTS, kValidWebExtentSchemes);
+    URLPattern pattern(kValidWebExtentSchemes);
     if (!url.is_valid() || !pattern.SetScheme(url.scheme())) {
       *error = ASCIIToUTF16(errors::kInvalidLaunchWebURL);
       return false;
@@ -1025,7 +1019,7 @@ bool Extension::LoadLaunchURL(const extensions::Manifest* manifest,
   // If there is no extent, we default the extent based on the launch URL.
   if (web_extent().is_empty() && !launch_web_url().empty()) {
     GURL launch_url(launch_web_url());
-    URLPattern pattern(URLPattern::USE_PORTS, kValidWebExtentSchemes);
+    URLPattern pattern(kValidWebExtentSchemes);
     if (!pattern.SetScheme("*")) {
       *error = ASCIIToUTF16(errors::kInvalidLaunchWebURL);
       return false;
@@ -1404,11 +1398,6 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
   if (!manifest->ValidateManifest(error))
     return false;
 
-  // When strict error checks are enabled, make URL pattern parsing strict.
-  URLPattern::ParseOption parse_option =
-      (flags & STRICT_ERROR_CHECKS ? URLPattern::ERROR_ON_PORTS
-                                   : URLPattern::IGNORE_PORTS);
-
   // Initialize permissions with an empty, default permission set.
   runtime_data_.SetActivePermissions(new ExtensionPermissionSet());
   optional_permission_set_ = new ExtensionPermissionSet();
@@ -1490,10 +1479,8 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
   // ParsePermissions(), because the valid permissions depend on what type of
   // package this is.
   if (is_app() &&
-      (!LoadExtent(manifest_.get(), keys::kWebURLs,
-                   &extent_,
-                   errors::kInvalidWebURLs, errors::kInvalidWebURL,
-                   parse_option, error) ||
+      (!LoadExtent(manifest_.get(), keys::kWebURLs, &extent_,
+                   errors::kInvalidWebURLs, errors::kInvalidWebURL, error) ||
        !LoadLaunchURL(manifest_.get(), error) ||
        !LoadLaunchContainer(manifest_.get(), error))) {
     return false;
@@ -2537,10 +2524,6 @@ bool Extension::ParsePermissions(const extensions::Manifest* source,
                                  ExtensionAPIPermissionSet* api_permissions,
                                  URLPatternSet* host_permissions) {
   if (source->HasKey(key)) {
-    // When strict error checks are enabled, make URL pattern parsing strict.
-    URLPattern::ParseOption parse_option =
-        (flags & STRICT_ERROR_CHECKS ? URLPattern::ERROR_ON_PORTS
-                                     : URLPattern::IGNORE_PORTS);
     ListValue* permissions = NULL;
     if (!source->GetList(key, &permissions)) {
       *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
@@ -2571,7 +2554,7 @@ bool Extension::ParsePermissions(const extensions::Manifest* source,
       const int kAllowedSchemes = CanExecuteScriptEverywhere() ?
           URLPattern::SCHEME_ALL : kValidHostPermissionSchemes;
 
-      URLPattern pattern = URLPattern(parse_option, kAllowedSchemes);
+      URLPattern pattern = URLPattern(kAllowedSchemes);
       URLPattern::ParseResult parse_result = pattern.Parse(permission_str);
       if (parse_result == URLPattern::PARSE_SUCCESS) {
         if (!CanSpecifyHostPermission(pattern, *api_permissions)) {
@@ -2904,8 +2887,7 @@ bool Extension::OverlapsWithOrigin(const GURL& origin) const {
     return false;
 
   // Note: patterns and extents ignore port numbers.
-  URLPattern origin_only_pattern(URLPattern::ERROR_ON_PORTS,
-                                 kValidWebExtentSchemes);
+  URLPattern origin_only_pattern(kValidWebExtentSchemes);
   if (!origin_only_pattern.SetScheme(origin.scheme()))
     return false;
   origin_only_pattern.SetHost(origin.host());

@@ -139,7 +139,7 @@ bool ExtensionContextMenuFunction::ParseURLPatterns(
     if (!(*i)->GetAsString(&tmp))
       return false;
 
-    URLPattern pattern(URLPattern::IGNORE_PORTS, URLPattern::SCHEME_ALL);
+    URLPattern pattern(URLPattern::SCHEME_ALL);
     // TODO(skerner):  Consider enabling strict pattern parsing
     // if this extension's location indicates that it is under development.
     if (URLPattern::PARSE_SUCCESS != pattern.Parse(tmp)) {
