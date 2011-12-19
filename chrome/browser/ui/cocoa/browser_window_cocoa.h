@@ -91,7 +91,6 @@ class BrowserWindowCocoa : public BrowserWindow,
                                   bool already_bookmarked) OVERRIDE;
   virtual bool IsDownloadShelfVisible() const OVERRIDE;
   virtual DownloadShelf* GetDownloadShelf() OVERRIDE;
-  virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) OVERRIDE;
   virtual void ShowCollectedCookiesDialog(TabContentsWrapper* wrapper) OVERRIDE;
   virtual void ConfirmBrowserCloseWithPendingDownloads() OVERRIDE;
   virtual void UserChangedTheme() OVERRIDE;

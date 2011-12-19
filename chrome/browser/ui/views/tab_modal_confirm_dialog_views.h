@@ -2,35 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_REPOST_FORM_WARNING_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_REPOST_FORM_WARNING_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TAB_MODAL_CONFIRM_DIALOG_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_TAB_MODAL_CONFIRM_DIALOG_VIEWS_H_
 #pragma once
 
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/window/dialog_delegate.h"
 
-class RepostFormWarningController;
-class TabContents;
+class TabContentsWrapper;
+class TabModalConfirmDialogDelegate;
 
 namespace views {
 class MessageBoxView;
 }
 
-// Displays a dialog that warns the user that they are about to resubmit
-// a form.
+// Displays a tab-modal dialog, i.e. a dialog that will block the current page
+// but still allow the user to switch to a different page.
 // To display the dialog, allocate this object on the heap. It will open the
 // dialog from its constructor and then delete itself when the user dismisses
 // the dialog.
-class RepostFormWarningView : public views::DialogDelegate {
+class TabModalConfirmDialogViews : public views::DialogDelegate {
  public:
-  // Use BrowserWindow::ShowRepostFormWarningDialog to use.
-  RepostFormWarningView(gfx::NativeWindow parent_window,
-                        TabContents* tab_contents);
+  TabModalConfirmDialogViews(TabModalConfirmDialogDelegate* delegate,
+                             TabContentsWrapper* wrapper);
 
   // views::DialogDelegate:
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
-  virtual void DeleteDelegate() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
 
@@ -38,16 +36,17 @@ class RepostFormWarningView : public views::DialogDelegate {
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
+  virtual void DeleteDelegate() OVERRIDE;
 
  private:
-  virtual ~RepostFormWarningView();
+  virtual ~TabModalConfirmDialogViews();
 
-  scoped_ptr<RepostFormWarningController> controller_;
+  scoped_ptr<TabModalConfirmDialogDelegate> delegate_;
 
   // The message box view whose commands we handle.
   views::MessageBoxView* message_box_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(RepostFormWarningView);
+  DISALLOW_COPY_AND_ASSIGN(TabModalConfirmDialogViews);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_REPOST_FORM_WARNING_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TAB_MODAL_CONFIRM_DIALOG_VIEWS_H_

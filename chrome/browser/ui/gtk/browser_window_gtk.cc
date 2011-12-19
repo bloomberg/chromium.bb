@@ -62,7 +62,6 @@
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
 #include "chrome/browser/ui/gtk/reload_button_gtk.h"
-#include "chrome/browser/ui/gtk/repost_form_warning_gtk.h"
 #include "chrome/browser/ui/gtk/status_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
@@ -1043,10 +1042,6 @@ DownloadShelf* BrowserWindowGtk::GetDownloadShelf() {
     download_shelf_.reset(new DownloadShelfGtk(browser_.get(),
                                                render_area_vbox_));
   return download_shelf_.get();
-}
-
-void BrowserWindowGtk::ShowRepostFormWarningDialog(TabContents* tab_contents) {
-  new RepostFormWarningGtk(GetNativeHandle(), tab_contents);
 }
 
 void BrowserWindowGtk::ShowCollectedCookiesDialog(TabContentsWrapper* wrapper) {

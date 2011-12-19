@@ -1145,10 +1145,6 @@ DownloadShelf* BrowserView::GetDownloadShelf() {
 #endif
 }
 
-void BrowserView::ShowRepostFormWarningDialog(TabContents* tab_contents) {
-  browser::ShowRepostFormWarningDialog(GetNativeHandle(), tab_contents);
-}
-
 void BrowserView::ShowCollectedCookiesDialog(TabContentsWrapper* wrapper) {
   browser::ShowCollectedCookiesDialog(GetNativeHandle(), wrapper);
 }
