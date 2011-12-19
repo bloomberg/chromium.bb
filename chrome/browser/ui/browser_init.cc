@@ -1474,9 +1474,8 @@ bool BrowserInit::LaunchWithProfile::CheckIfAutoLaunched(Profile* profile) {
                             base::Bind(&CheckAutoLaunchCallback));
     return true;
   }
-
-  return false;
 #endif
+  return false;
 }
 
 std::vector<GURL> BrowserInit::GetURLsFromCommandLine(
