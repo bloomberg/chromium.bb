@@ -34,8 +34,12 @@ REMOTING_COMMAND = "remoting_me2me_host"
 # Command-line switch for passing the config path to remoting_me2me_host.
 HOST_CONFIG_SWITCH_NAME = "host-config"
 
+# Needs to be an absolute path, since the current working directory is changed
+# when this process self-daemonizes.
 SCRIPT_PATH = os.path.dirname(sys.argv[0])
-if not SCRIPT_PATH:
+if SCRIPT_PATH:
+  SCRIPT_PATH = os.path.abspath(SCRIPT_PATH)
+else:
   SCRIPT_PATH = os.getcwd()
 
 # These are relative to SCRIPT_PATH.
@@ -46,6 +50,7 @@ EXE_PATHS_TO_TRY = [
 ]
 
 CONFIG_DIR = os.path.expanduser("~/.config/chrome-remote-desktop")
+HOME_DIR = os.environ["HOME"]
 
 X_LOCK_FILE_TEMPLATE = "/tmp/.X%d-lock"
 FIRST_X_DISPLAY_NUMBER = 20
@@ -53,17 +58,15 @@ FIRST_X_DISPLAY_NUMBER = 20
 X_AUTH_FILE = os.path.expanduser("~/.Xauthority")
 os.environ["XAUTHORITY"] = X_AUTH_FILE
 
-def locate_executable(exe_name):
-  for path in EXE_PATHS_TO_TRY:
-    exe_path = os.path.join(SCRIPT_PATH, path, exe_name)
-    if os.path.exists(exe_path):
-      return exe_path
-  raise Exception("Could not locate executable '%s'" % exe_name)
 
+# Globals needed by the atexit cleanup() handler.
 g_desktops = []
+g_pidfile = None
+
 
 class Authentication:
   """Manage authentication tokens for Chromoting/xmpp"""
+
   def __init__(self, config_file):
     self.config_file = config_file
 
@@ -98,10 +101,12 @@ class Authentication:
         "chromoting_auth_token": self.chromoting_auth_token,
         "xmpp_auth_token": self.xmpp_auth_token,
     }
-    os.umask(0066) # Set permission mask for created file.
+    # File will contain private keys, so deny read/write access to others.
+    old_umask = os.umask(0066)
     settings_file = open(self.config_file, 'w')
     settings_file.write(json.dumps(data, indent=2))
     settings_file.close()
+    os.umask(old_umask)
 
 
 class Host:
@@ -187,21 +192,9 @@ class Host:
     settings_file.close()
 
 
-def cleanup():
-  logging.info("Cleanup.")
-
-  for desktop in g_desktops:
-    if desktop.x_proc:
-      logging.info("Terminating Xvfb")
-      desktop.x_proc.terminate()
-
-def signal_handler(signum, stackframe):
-    # Exit cleanly so the atexit handler, cleanup(), gets called.
-    raise SystemExit
-
-
 class Desktop:
   """Manage a single virtual desktop"""
+
   def __init__(self, width, height):
     self.x_proc = None
     self.width = width
@@ -268,8 +261,8 @@ class Desktop:
     # Daemonization would solve this problem by separating the process from the
     # controlling terminal.
     session_proc = subprocess.Popen("/etc/X11/Xsession",
-                                    stdin=open("/dev/null", "r"),
-                                    cwd=os.environ["HOME"],
+                                    stdin=open(os.devnull, "r"),
+                                    cwd=HOME_DIR,
                                     env=self.child_env)
     if not session_proc.pid:
       raise Exception("Could not start X session")
@@ -283,11 +276,170 @@ class Desktop:
       raise Exception("Could not start remoting host")
 
 
+class PidFile:
+  """Class to allow creating and deleting a file which holds the PID of the
+  running process.  This is used to detect if a process is already running, and
+  inform the user of the PID.  On process termination, the PID file is
+  deleted.
+
+  Note that PID files are not truly atomic or reliable, see
+  http://mywiki.wooledge.org/ProcessManagement for more discussion on this.
+
+  So this class is just to prevent the user from accidentally running two
+  instances of this script, and to report which PID may be the other running
+  instance.
+  """
+
+  def __init__(self, filename):
+    """Create an object to manage a PID file.  This does not create the PID
+    file itself."""
+    self.filename = filename
+    self.created = False
+
+  def check_and_create_file(self):
+    """Attempt to create the PID file, checking first for any currently-running
+    process.
+
+    Returns:
+      Tuple (created, pid):
+      |created| is True if the new file was created, False if there was an
+      existing process running.
+      |pid| holds the process ID of the running instance if |created| is False.
+      If the PID file exists but the PID couldn't be read from the file
+      (perhaps if the data hasn't been written yet), 0 is returned.
+
+    Raises:
+      IOError: Filesystem error occurred.
+    """
+    if os.path.exists(self.filename):
+      pid_file = open(self.filename, 'r')
+      file_contents = pid_file.read()
+      pid_file.close()
+
+      try:
+        pid = int(file_contents)
+      except ValueError:
+        return False, 0
+
+      # Test to see if there's a process currently running with that PID.
+      # If there is no process running, the existing PID file is definitely
+      # stale and it is safe to overwrite it.  Otherwise, report the PID as
+      # possibly a running instance of this script.
+      if os.path.exists("/proc/%d" % pid):
+        return False, pid
+
+    # Create new (or overwrite existing) PID file.
+    pid_file = open(self.filename, 'w')
+    pid_file.close()
+    self.created = True
+    return True, 0
+
+  def write_pid(self):
+    """Write the current process's PID to the PID file.
+
+    This is done separately from check_and_create_file() as this needs to be
+    called after any daemonization, when the correct PID becomes known.  But
+    check_and_create_file() has to happen before daemonization, so that if
+    another instance is already running, this fact can be reported to the
+    user's terminal session.  This also avoids corrupting the log file of the
+    other process, since daemonize() would create a new log file.
+    """
+    pid_file = open(self.filename, 'w')
+    pid_file.write('%d\n' % os.getpid())
+    pid_file.close()
+
+  def delete_file(self):
+    """Delete the PID file if it was created by this instance.
+
+    This is called on process termination.
+    """
+    if self.created:
+      os.remove(self.filename)
+
+
+def locate_executable(exe_name):
+  for path in EXE_PATHS_TO_TRY:
+    exe_path = os.path.join(SCRIPT_PATH, path, exe_name)
+    if os.path.exists(exe_path):
+      return exe_path
+
+  raise Exception("Could not locate executable '%s'" % exe_name)
+
+
+def daemonize(log_filename):
+  """Background this process and detach from controlling terminal, redirecting
+  stdout/stderr to |log_filename|."""
+
+  # Create new (temporary) file-descriptors before forking, so any errors get
+  # reported to the main process and set the correct exit-code.
+  devnull_fd = os.open(os.devnull, os.O_RDONLY)
+  log_fd = os.open(log_filename, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
+
+  pid = os.fork()
+
+  if pid == 0:
+    # Child process
+    os.setsid()
+
+    # The second fork ensures that the daemon isn't a session leader, so that
+    # it doesn't acquire a controlling terminal.
+    pid = os.fork()
+
+    if pid == 0:
+      # Grandchild process
+      pass
+    else:
+      # Child process
+      os._exit(0)
+  else:
+    # Parent process
+    os._exit(0)
+
+  logging.info("Daemon process running, PID = %d, logging to '%s'" %
+               (os.getpid(), log_filename))
+
+  os.chdir(HOME_DIR)
+
+  # Copy the file-descriptors to create new stdin, stdout and stderr.  Note
+  # that dup2(oldfd, newfd) closes newfd first, so this will close the current
+  # stdin, stdout and stderr, detaching from the terminal.
+  os.dup2(devnull_fd, sys.stdin.fileno())
+  os.dup2(log_fd, sys.stdout.fileno())
+  os.dup2(log_fd, sys.stderr.fileno())
+
+  # Close the temporary file-descriptors.
+  os.close(devnull_fd)
+  os.close(log_fd)
+
+
+def cleanup():
+  logging.info("Cleanup.")
+
+  if g_pidfile:
+    try:
+      g_pidfile.delete_file()
+    except Exception, e:
+      logging.error("Unexpected error deleting PID file: " + str(e))
+
+  for desktop in g_desktops:
+    if desktop.x_proc:
+      logging.info("Terminating Xvfb")
+      desktop.x_proc.terminate()
+
+
+def signal_handler(signum, stackframe):
+    # Exit cleanly so the atexit handler, cleanup(), gets called.
+    raise SystemExit
+
+
 def main():
   parser = optparse.OptionParser(
       "Usage: %prog [options] [ -- [ X server options ] ]")
   parser.add_option("-s", "--size", dest="size", default="1280x1024",
                     help="dimensions of virtual desktop (default: %default)")
+  parser.add_option("-f", "--foreground", dest="foreground", default=False,
+                    action="store_true",
+                    help="don't run as a background daemon")
   (options, args) = parser.parse_args()
 
   size_components = options.size.split("x")
@@ -330,6 +482,30 @@ def main():
     host.create_config(auth)
     host.save_config()
 
+  pid_filename = os.path.join(CONFIG_DIR, "host#%s.pid" % host_hash)
+  global g_pidfile
+  g_pidfile = PidFile(pid_filename)
+  created, pid = g_pidfile.check_and_create_file()
+
+  if not created:
+    if pid == 0:
+      pid = 'unknown'
+
+    logging.error("An instance of this script is already running, PID is %s." %
+                  pid)
+    logging.error("If this isn't the case, delete '%s' and try again." %
+                  pid_filename)
+    return 1
+
+  # daemonize() must only be called after prompting for user/password, as the
+  # process will become detached from the controlling terminal.
+  log_filename = os.path.join(CONFIG_DIR, "host#%s.log" % host_hash)
+
+  if not options.foreground:
+    daemonize(log_filename)
+
+  g_pidfile.write_pid()
+
   logging.info("Using host_id: " + host.host_id)
 
   desktop = Desktop(width, height)
@@ -348,6 +524,7 @@ def main():
     if pid == desktop.host_proc.pid:
       logging.info("Host process terminated, relaunching")
       desktop.launch_host(host)
+
 
 if __name__ == "__main__":
   logging.basicConfig(level=logging.DEBUG)
