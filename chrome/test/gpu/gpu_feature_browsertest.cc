@@ -16,6 +16,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/gpu/gpu_blacklist.h"
 #include "content/browser/gpu/gpu_data_manager.h"
+#include "content/public/common/content_switches.h"
 #include "net/base/net_util.h"
 #include "ui/gfx/gl/gl_switches.h"
 
@@ -30,14 +31,24 @@ class GpuFeatureTest : public InProcessBrowserTest {
  public:
   GpuFeatureTest() {}
 
+  virtual void SetUpInProcessBrowserTestFixture() {
+    FilePath test_dir;
+    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
+    gpu_test_dir_ = test_dir.AppendASCII("gpu");
+  }
+
   virtual void SetUpCommandLine(CommandLine* command_line) {
     // This enables DOM automation for tab contents.
     EnableDOMAutomation();
+
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+
 #if !defined(OS_MACOSX)
     CHECK(test_launcher_utils::OverrideGLImplementation(
         command_line, gfx::kGLImplementationOSMesaName)) <<
         "kUseGL must not be set by test framework code!";
 #endif
+    command_line->AppendSwitch(switches::kDisablePopupBlocking);
   }
 
   void SetupBlacklist(const std::string& json_blacklist) {
@@ -53,9 +64,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
     using namespace trace_analyzer;
 
     FilePath test_path;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_path);
-    test_path = test_path.Append(FILE_PATH_LITERAL("gpu"));
-    test_path = test_path.Append(url);
+    test_path = gpu_test_dir_.Append(url);
 
     ASSERT_TRUE(file_util::PathExists(test_path))
         << "Missing test file: " << test_path.value();
@@ -91,6 +100,9 @@ class GpuFeatureTest : public InProcessBrowserTest {
                 size_t(0));
     }
   }
+
+ protected:
+  FilePath gpu_test_dir_;
 };
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, AcceleratedCompositingAllowed) {
@@ -187,6 +199,32 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DBlocked) {
 
   const FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
   RunTest(url, EXPECT_NO_GPU_PROCESS);
+}
+
+// Test is flaky and timing out.  See crbug.com/99883
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest,
+                       DISABLED_CanOpenPopupAndRenderWithWebGLCanvas) {
+  ui_test_utils::DOMMessageQueue message_queue;
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      net::FilePathToFileURL(gpu_test_dir_.AppendASCII("webgl_popup.html")));
+
+  std::string result;
+  ASSERT_TRUE(message_queue.WaitForMessage(&result));
+  EXPECT_EQ("\"SUCCESS\"", result);
+}
+
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, CanOpenPopupAndRenderWith2DCanvas) {
+  ui_test_utils::DOMMessageQueue message_queue;
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      net::FilePathToFileURL(gpu_test_dir_.AppendASCII("canvas_popup.html")));
+
+  std::string result;
+  ASSERT_TRUE(message_queue.WaitForMessage(&result));
+  EXPECT_EQ("\"SUCCESS\"", result);
 }
 
 }  // namespace anonymous

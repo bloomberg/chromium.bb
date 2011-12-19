@@ -2595,7 +2595,6 @@
         'browser/first_run/first_run_browsertest.cc',
         'browser/geolocation/access_token_store_browsertest.cc',
         'browser/geolocation/geolocation_browsertest.cc',
-        'browser/gpu_browsertest.cc',
         'browser/history/history_browsertest.cc',
         'browser/history/history_extension_apitest.cc',
         'browser/history/top_sites_extension_test.cc',
