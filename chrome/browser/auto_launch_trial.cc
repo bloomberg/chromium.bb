@@ -7,6 +7,7 @@
 #include "base/file_path.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/string_util.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/master_preferences.h"
@@ -21,6 +22,14 @@ bool IsInAutoLaunchGroup() {
   return base::FieldTrialList::TrialExists(kAutoLaunchTrialName) &&
          base::FieldTrialList::Find(kAutoLaunchTrialName)->group_name()
              == kAutoLaunchTrialAutoLaunchGroup;
+}
+
+bool IsInExperimentGroup(const std::string& brand_code) {
+  return LowerCaseEqualsASCII(brand_code, "rngp");
+}
+
+bool IsInControlGroup(const std::string& brand_code) {
+  return LowerCaseEqualsASCII(brand_code, "rngq");
 }
 
 void UpdateToggleAutoLaunchMetric(bool auto_launch) {

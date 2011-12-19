@@ -1115,10 +1115,10 @@ void ChromeBrowserMainParts::AutoLaunchChromeFieldTrial() {
   google_util::GetBrand(&brand);
 
   // Create a 100% field trial based on the brand code.
-  if (LowerCaseEqualsASCII(brand, "rngp")) {
+  if (auto_launch_trial::IsInExperimentGroup(brand)) {
     base::FieldTrialList::CreateFieldTrial(kAutoLaunchTrialName,
                                            kAutoLaunchTrialAutoLaunchGroup);
-  } else if (LowerCaseEqualsASCII(brand, "rngq")) {
+  } else if (auto_launch_trial::IsInControlGroup(brand)) {
     base::FieldTrialList::CreateFieldTrial(kAutoLaunchTrialName,
                                            kAutoLaunchTrialControlGroup);
   }

@@ -37,6 +37,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/net/crl_set_fetcher.h"
 #include "chrome/browser/net/predictor.h"
@@ -350,12 +351,11 @@ void CheckAutoLaunchCallback() {
   Browser* browser = BrowserList::GetLastActive();
   TabContentsWrapper* tab = browser->GetSelectedTabContentsWrapper();
 
-  int infobar_shown =
-      tab->profile()->GetPrefs()->GetInteger(prefs::kShownAutoLaunchInfobar);
-  if (infobar_shown >= kMaxInfobarShown)
+  // Don't show the info-bar if there are already info-bars showing.
+  InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
+  if (infobar_helper->infobar_count() > 0)
     return;
 
-  InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
   infobar_helper->AddInfoBar(
       new AutolaunchInfoBarDelegate(infobar_helper,
       tab->profile()->GetPrefs()));
@@ -845,10 +845,10 @@ bool BrowserInit::LaunchWithProfile::Launch(
     if (process_startup) {
       if (browser_defaults::kOSSupportsOtherBrowsers &&
           !command_line_.HasSwitch(switches::kNoDefaultBrowserCheck)) {
-        CheckIfAutoLaunched(profile);
-
-        // Check whether we are the default browser.
-        CheckDefaultBrowser(profile);
+        if (!CheckIfAutoLaunched(profile)) {
+          // Check whether we are the default browser.
+          CheckDefaultBrowser(profile);
+        }
       }
 #if defined(OS_MACOSX)
       // Check whether the auto-update system needs to be promoted from user
@@ -1457,16 +1457,25 @@ void BrowserInit::LaunchWithProfile::CheckDefaultBrowser(Profile* profile) {
       BrowserThread::FILE, FROM_HERE, base::Bind(&CheckDefaultBrowserCallback));
 }
 
-void BrowserInit::LaunchWithProfile::CheckIfAutoLaunched(Profile* profile) {
+bool BrowserInit::LaunchWithProfile::CheckIfAutoLaunched(Profile* profile) {
 #if defined(OS_WIN)
   if (!auto_launch_trial::IsInAutoLaunchGroup())
-    return;
+    return false;
+
+  int infobar_shown =
+      profile->GetPrefs()->GetInteger(prefs::kShownAutoLaunchInfobar);
+  if (infobar_shown >= kMaxInfobarShown)
+    return false;
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kAutoLaunchAtStartup)) {
+  if (command_line.HasSwitch(switches::kAutoLaunchAtStartup) ||
+      FirstRun::IsChromeFirstRun()) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(&CheckAutoLaunchCallback));
+    return true;
   }
+
+  return false;
 #endif
 }
 

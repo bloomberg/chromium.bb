@@ -227,8 +227,9 @@ class BrowserInit {
     // previously instructed not to do so) and warns the user if it is not.
     void CheckDefaultBrowser(Profile* profile);
 
-    // Checks whether Chrome was auto-started at login.
-    void CheckIfAutoLaunched(Profile* profile);
+    // Checks whether Chrome should show the 'Chrome was auto-started' infobar.
+    // Returns true if so.
+    bool CheckIfAutoLaunched(Profile* profile);
 
     const FilePath cur_dir_;
     const CommandLine& command_line_;

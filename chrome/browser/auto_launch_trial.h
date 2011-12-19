@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_AUTO_LAUNCH_TRIAL_H_
 #pragma once
 
+#include <string>
+
 // Strings used with the "auto launching Chrome at computer startup" trial.  If
 // the field trial is running then...
 // base::FieldTrialList::TrialExists(kAutoLaunchTrial_Name) returns true.
@@ -36,6 +38,12 @@ enum InfobarMetricResponse {
 
 // Whether the auto-launch experiment is active and the user is part of it.
 bool IsInAutoLaunchGroup();
+
+// Whether the brand is part of the experiment group for auto-launch.
+bool IsInExperimentGroup(const std::string& brand_code);
+
+// Whether the brand is part of the control group for auto-launch.
+bool IsInControlGroup(const std::string& brand_code);
 
 // Updates UMA to reflect user changing the auto-launch setting.
 void UpdateToggleAutoLaunchMetric(bool auto_launch);
