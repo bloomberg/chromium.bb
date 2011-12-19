@@ -202,7 +202,7 @@ Rect RenderTextWin::GetCursorBounds(const SelectionModel& selection,
     DCHECK(SUCCEEDED(hr));
   }
   // TODO(msw): Use the last visual run's font instead of the default font?
-  int height = run ? run->font.GetHeight() : default_style().font.GetHeight();
+  int height = run ? run->font.GetHeight() : GetFont().GetHeight();
   Rect rect(std::min(start_x, end_x), 0, std::abs(end_x - start_x), height);
   // Offset to the run start or the right/left end for an out of bounds index.
   // Also center the rect vertically in the display area.
@@ -508,7 +508,7 @@ void RenderTextWin::ItemizeLogicalText() {
   for (int run_break = 0; run_break < text_length;) {
     internal::TextRun* run = new internal::TextRun();
     run->range.set_start(run_break);
-    run->font = style->font;
+    run->font = GetFont();
     run->foreground = style->foreground;
     run->strike = style->strike;
     run->underline = style->underline;
@@ -577,6 +577,7 @@ void RenderTextWin::LayoutVisualText() {
          }
 
         // The run's font doesn't contain the required glyphs, use an alternate.
+        // TODO(msw): support RenderText's font_list().
         if (ChooseFallbackFont(hdc, run->font, run_text, run_length,
                                &run->font)) {
           ScriptFreeCache(&run->script_cache);

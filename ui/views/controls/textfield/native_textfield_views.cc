@@ -12,9 +12,11 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "grit/app_locale_settings.h"
 #include "grit/ui_strings.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
@@ -77,9 +79,14 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
   // Lowercase is not supported.
   DCHECK_NE(parent->style(), Textfield::STYLE_LOWERCASE);
 
+#if defined(OS_CHROMEOS)
+  GetRenderText()->SetFontList(gfx::FontList(l10n_util::GetStringUTF8(
+      IDS_UI_FONT_FAMILY_CROS)));
+#else
+  GetRenderText()->SetFontList(gfx::FontList(textfield_->font()));
+#endif
   // Set the default text style.
   gfx::StyleRange default_style;
-  default_style.font = textfield_->font();
   default_style.foreground = textfield_->text_color();
   GetRenderText()->set_default_style(default_style);
   GetRenderText()->ApplyDefaultStyle();
@@ -390,13 +397,12 @@ void NativeTextfieldViews::UpdateReadOnly() {
 }
 
 void NativeTextfieldViews::UpdateFont() {
-  // Update the default text style.
-  gfx::StyleRange default_style(GetRenderText()->default_style());
-  default_style.font = textfield_->font();
-  GetRenderText()->set_default_style(default_style);
-  GetRenderText()->ApplyDefaultStyle();
-
+#if !defined(OS_CHROMEOS)
+  // For ChromeOS, we support a font list per locale, UpdateFont() should not
+  // take any effect.
+  GetRenderText()->SetFontList(gfx::FontList(textfield_->font()));
   OnCaretBoundsChanged();
+#endif
 }
 
 void NativeTextfieldViews::UpdateIsPassword() {
