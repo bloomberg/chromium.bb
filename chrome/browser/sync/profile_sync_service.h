@@ -143,11 +143,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     CLEAR_SUCCEEDED = 4,
   };
 
-  enum StartBehavior {
-    AUTO_START,
-    MANUAL_START,
-  };
-
   // Default sync server URL.
   static const char* kSyncServerUrl;
   // Sync server URL for dev channel users
@@ -156,7 +151,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   ProfileSyncService(ProfileSyncComponentsFactory* factory,
                      Profile* profile,
                      SigninManager* signin,  // Service takes ownership.
-                     StartBehavior start_behavior);
+                     const std::string& cros_user);
   virtual ~ProfileSyncService();
 
   // Initializes the object. This should be called every time an object of this
@@ -471,8 +466,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   bool ShouldPushChanges();
 
   const GURL& sync_service_url() const { return sync_service_url_; }
+  SigninManager* signin() { return signin_.get(); }
+  const std::string& cros_user() const { return cros_user_; }
   bool auto_start_enabled() const { return auto_start_enabled_; }
-  SigninManager* signin() const { return signin_.get(); }
 
   // Stops the sync backend and sets the flag for suppressing sync startup.
   void StopAndSuppress();
@@ -604,6 +600,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // preferences.
   browser_sync::SyncPrefs sync_prefs_;
 
+  // Email for the ChromiumOS user, if we're running under ChromiumOS.
+  std::string cros_user_;
+
   // TODO(ncarter): Put this in a profile, once there is UI for it.
   // This specifies where to find the sync server.
   GURL sync_service_url_;
@@ -691,7 +690,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // credentials (user doesn't need to go through the startup flow). This is
   // typically enabled on platforms (like ChromeOS) that have their own
   // distinct signin flow.
-  const bool auto_start_enabled_;
+  bool auto_start_enabled_;
 
   scoped_ptr<browser_sync::BackendMigrator> migrator_;
 

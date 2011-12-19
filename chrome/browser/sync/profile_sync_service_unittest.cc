@@ -12,7 +12,6 @@
 #include "chrome/browser/sync/js/js_arg_list.h"
 #include "chrome/browser/sync/js/js_event_details.h"
 #include "chrome/browser/sync/js/js_test_util.h"
-#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/chrome_version_info.h"
@@ -91,14 +90,9 @@ class ProfileSyncServiceTest : public testing::Test {
       bool sync_setup_completed,
       bool expect_create_dtm) {
     if (!service_.get()) {
-      SigninManager* signin = new SigninManager();
-      signin->SetAuthenticatedUsername("test");
-      service_.reset(new TestProfileSyncService(&factory_,
-                                                profile_.get(),
-                                                signin,
-                                                ProfileSyncService::AUTO_START,
-                                                true,
-                                                base::Closure()));
+      // Set bootstrap to true and it will provide a logged in user for test
+      service_.reset(new TestProfileSyncService(
+          &factory_, profile_.get(), "test", true, base::Closure()));
       if (!set_initial_sync_ended)
         service_->dont_set_initial_sync_ended_on_init();
       if (synchronous_sync_configuration)
@@ -142,12 +136,8 @@ class ProfileSyncServiceTest : public testing::Test {
 };
 
 TEST_F(ProfileSyncServiceTest, InitialState) {
-  service_.reset(new TestProfileSyncService(&factory_,
-                                            profile_.get(),
-                                            new SigninManager(),
-                                            ProfileSyncService::MANUAL_START,
-                                            true,
-                                            base::Closure()));
+  service_.reset(new TestProfileSyncService(
+      &factory_, profile_.get(), "", true, base::Closure()));
   EXPECT_TRUE(
       service_->sync_service_url().spec() ==
         ProfileSyncService::kSyncServerUrl ||
@@ -159,25 +149,15 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicy) {
   profile_->GetTestingPrefService()->SetManagedPref(
       prefs::kSyncManaged,
       Value::CreateBooleanValue(true));
-  service_.reset(new TestProfileSyncService(&factory_,
-                                            profile_.get(),
-                                            new SigninManager(),
-                                            ProfileSyncService::MANUAL_START,
-                                            true,
-                                            base::Closure()));
+  service_.reset(new TestProfileSyncService(
+      &factory_, profile_.get(), "", true, base::Closure()));
   service_->Initialize();
   EXPECT_TRUE(service_->IsManaged());
 }
 
 TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
-  SigninManager* signin = new SigninManager();
-  signin->SetAuthenticatedUsername("test");
-  service_.reset(new TestProfileSyncService(&factory_,
-                                            profile_.get(),
-                                            signin,
-                                            ProfileSyncService::AUTO_START,
-                                            true,
-                                            base::Closure()));
+  service_.reset(new TestProfileSyncService(
+      &factory_, profile_.get(), "test", true, base::Closure()));
   EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).Times(0);
   EXPECT_CALL(factory_, CreateBookmarkSyncComponents(_, _)).Times(0);
   service_->RegisterDataTypeController(
@@ -190,14 +170,8 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
 }
 
 TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
-  SigninManager* signin = new SigninManager();
-  signin->SetAuthenticatedUsername("test");
-  service_.reset(new TestProfileSyncService(&factory_,
-                                            profile_.get(),
-                                            signin,
-                                            ProfileSyncService::AUTO_START,
-                                            true,
-                                            base::Closure()));
+  service_.reset(new TestProfileSyncService(
+      &factory_, profile_.get(), "test", true, base::Closure()));
   // Register the bookmark data type.
   EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
       WillRepeatedly(ReturnNewDataTypeManager());

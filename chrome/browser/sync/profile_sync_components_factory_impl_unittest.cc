@@ -79,7 +79,7 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
                               syncable::ModelType type) {
     command_line_->AppendSwitch(cmd_switch);
     scoped_ptr<ProfileSyncService> pss(
-        profile_sync_service_factory_->CreateProfileSyncService());
+        profile_sync_service_factory_->CreateProfileSyncService(""));
     profile_sync_service_factory_->RegisterDataTypes(pss.get());
     DataTypeController::StateMap controller_states;
     pss->GetDataTypeControllerStates(&controller_states);
@@ -96,7 +96,7 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
 
 TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDefault) {
   scoped_ptr<ProfileSyncService> pss(
-      profile_sync_service_factory_->CreateProfileSyncService());
+      profile_sync_service_factory_->CreateProfileSyncService(""));
   profile_sync_service_factory_->RegisterDataTypes(pss.get());
   DataTypeController::StateMap controller_states;
   pss->GetDataTypeControllerStates(&controller_states);

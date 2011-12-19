@@ -33,7 +33,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
-#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
@@ -174,14 +173,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
 
   void StartSyncService(const base::Closure& callback) {
     if (!service_.get()) {
-      SigninManager* signin = new SigninManager();
-      signin->SetAuthenticatedUsername("test");
       service_.reset(
-          new TestProfileSyncService(&factory_,
-                                     &profile_,
-                                     signin,
-                                     ProfileSyncService::AUTO_START,
-                                     false,
+          new TestProfileSyncService(&factory_, &profile_, "test", false,
                                      callback));
       EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
           Return(service_.get()));

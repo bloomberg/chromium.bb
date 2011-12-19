@@ -12,17 +12,11 @@
 #include "chrome/test/base/testing_profile.h"
 
 ProfileSyncServiceMock::ProfileSyncServiceMock()
-    : ProfileSyncService(NULL,
-                         NULL,
-                         new SigninManager(),
-                         ProfileSyncService::MANUAL_START) {
+    : ProfileSyncService(NULL, NULL, new SigninManager(), "") {
 }
 
 ProfileSyncServiceMock::ProfileSyncServiceMock(
-    Profile* profile) : ProfileSyncService(NULL,
-                                           profile,
-                                           NULL,
-                                           ProfileSyncService::MANUAL_START) {
+    Profile* profile) : ProfileSyncService(NULL, profile, NULL, "") {
 }
 
 ProfileSyncServiceMock::~ProfileSyncServiceMock() {

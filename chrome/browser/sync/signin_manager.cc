@@ -77,7 +77,7 @@ void SigninManager::SetAuthenticatedUsername(const std::string& username) {
   authenticated_username_ = username;
   // TODO(tim): We could go further in ensuring kGoogleServicesUsername and
   // authenticated_username_ are consistent once established (e.g. remove
-  // authenticated_username_ altogether). Bug 107160.
+  // authenticated_username_ altogether).
 }
 
 void SigninManager::PrepareForSignin() {

@@ -105,7 +105,7 @@ void RemoveLogins(PasswordStore* store) {
 }
 
 void SetPassphrase(int index, const std::string& passphrase) {
-  test()->GetProfile(index)->GetProfileSyncService()->SetPassphrase(
+  test()->GetProfile(index)->GetProfileSyncService("")->SetPassphrase(
       passphrase, true);
 }
 

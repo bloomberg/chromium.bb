@@ -444,6 +444,11 @@ ProfileSyncService* OffTheRecordProfileImpl::GetProfileSyncService() {
   return NULL;
 }
 
+ProfileSyncService* OffTheRecordProfileImpl::GetProfileSyncService(
+    const std::string& cros_user) {
+  return NULL;
+}
+
 bool OffTheRecordProfileImpl::IsSameProfile(Profile* profile) {
   return (profile == this) || (profile == profile_);
 }

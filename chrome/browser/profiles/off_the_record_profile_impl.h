@@ -91,6 +91,8 @@ class OffTheRecordProfileImpl : public Profile,
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
   virtual TokenService* GetTokenService() OVERRIDE;
   virtual ProfileSyncService* GetProfileSyncService() OVERRIDE;
+  virtual ProfileSyncService* GetProfileSyncService(
+      const std::string& cros_user) OVERRIDE;
   virtual bool IsSameProfile(Profile* profile) OVERRIDE;
   virtual Time GetStartTime() const OVERRIDE;
   virtual SpellCheckHost* GetSpellCheckHost() OVERRIDE;
