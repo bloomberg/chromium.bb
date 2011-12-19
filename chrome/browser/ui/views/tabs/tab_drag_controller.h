@@ -8,8 +8,8 @@
 
 #include <vector>
 
-class BaseTabStrip;
 class BaseTab;
+class TabStrip;
 class TabStripSelectionModel;
 
 namespace gfx {
@@ -40,7 +40,7 @@ class TabDragController {
   // strip. |initial_selection_model| is the selection model before the drag
   // started and is only non-empty if |source_tab| was not initially selected.
   static TabDragController* Create(
-      BaseTabStrip* source_tabstrip,
+      TabStrip* source_tabstrip,
       BaseTab* source_tab,
       const std::vector<BaseTab*>& tabs,
       const gfx::Point& mouse_offset,
@@ -51,7 +51,7 @@ class TabDragController {
   // |tab_strip|.
   // NOTE: this returns false if the TabDragController is in the process of
   // finishing the drag.
-  static bool IsAttachedTo(BaseTabStrip* tab_strip);
+  static bool IsAttachedTo(TabStrip* tab_strip);
 
   // Responds to drag events subsequent to StartDrag. If the mouse moves a
   // sufficient distance before the mouse is released, a drag session is

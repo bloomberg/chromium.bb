@@ -15,8 +15,8 @@
 #include "content/public/browser/notification_registrar.h"
 
 class BaseTab;
-class BaseTabStrip;
 class Browser;
+class TabStrip;
 class TabStripSelectionModel;
 
 struct TabRendererData;
@@ -30,7 +30,7 @@ class BrowserTabStripController : public TabStripController,
   BrowserTabStripController(Browser* browser, TabStripModel* model);
   virtual ~BrowserTabStripController();
 
-  void InitFromModel(BaseTabStrip* tabstrip);
+  void InitFromModel(TabStrip* tabstrip);
 
   TabStripModel* model() const { return model_; }
 
@@ -62,7 +62,7 @@ class BrowserTabStripController : public TabStripController,
   virtual void PerformDrop(bool drop_before,
                            int index,
                            const GURL& url) OVERRIDE;
-  virtual bool IsCompatibleWith(BaseTabStrip* other) const OVERRIDE;
+  virtual bool IsCompatibleWith(TabStrip* other) const OVERRIDE;
   virtual void CreateNewTab() OVERRIDE;
   virtual void ClickActiveTab(int index) OVERRIDE;
 
@@ -112,7 +112,7 @@ class BrowserTabStripController : public TabStripController,
 
   Profile* profile() const { return model_->profile(); }
 
-  const BaseTabStrip* tabstrip() const { return tabstrip_; }
+  const TabStrip* tabstrip() const { return tabstrip_; }
 
   const Browser* browser() const { return browser_; }
 
@@ -131,7 +131,7 @@ class BrowserTabStripController : public TabStripController,
 
   TabStripModel* model_;
 
-  BaseTabStrip* tabstrip_;
+  TabStrip* tabstrip_;
 
   // Non-owning pointer to the browser which is using this controller.
   Browser* browser_;

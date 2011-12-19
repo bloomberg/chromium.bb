@@ -24,8 +24,8 @@ namespace views {
 class View;
 }
 class BaseTab;
-class BaseTabStrip;
 class DraggedTabView;
+class TabStrip;
 class TabStripModel;
 
 struct TabRendererData;
@@ -48,7 +48,7 @@ class DefaultTabDragController : public TabDragController,
   // for a horizontal tab strip, and the vertical distance for a vertical tab
   // strip. |initial_selection_model| is the selection model before the drag
   // started and is only non-empty if |source_tab| was not initially selected.
-  void Init(BaseTabStrip* source_tabstrip,
+  void Init(TabStrip* source_tabstrip,
             BaseTab* source_tab,
             const std::vector<BaseTab*>& tabs,
             const gfx::Point& mouse_offset,
@@ -57,7 +57,7 @@ class DefaultTabDragController : public TabDragController,
 
   // See description above fields for details on these.
   bool active() const { return active_; }
-  const BaseTabStrip* attached_tabstrip() const { return attached_tabstrip_; }
+  const TabStrip* attached_tabstrip() const { return attached_tabstrip_; }
 
  private:
   class DockDisplayer;
@@ -177,18 +177,18 @@ class DefaultTabDragController : public TabDragController,
 #if defined(OS_WIN) && !defined(USE_AURA)
   // Returns the compatible TabStrip that is under the specified point (screen
   // coordinates), or NULL if there is none.
-  BaseTabStrip* GetTabStripForPoint(const gfx::Point& screen_point);
+  TabStrip* GetTabStripForPoint(const gfx::Point& screen_point);
 #endif
 
   DockInfo GetDockInfoAtPoint(const gfx::Point& screen_point);
 
   // Returns the specified |tabstrip| if it contains the specified point
   // (screen coordinates), NULL if it does not.
-  BaseTabStrip* GetTabStripIfItContains(BaseTabStrip* tabstrip,
-                                        const gfx::Point& screen_point) const;
+  TabStrip* GetTabStripIfItContains(TabStrip* tabstrip,
+                                    const gfx::Point& screen_point) const;
 
   // Attach the dragged Tab to the specified TabStrip.
-  void Attach(BaseTabStrip* attached_tabstrip, const gfx::Point& screen_point);
+  void Attach(TabStrip* attached_tabstrip, const gfx::Point& screen_point);
 
   // Detach the dragged Tab from the current TabStrip.
   void Detach();
@@ -211,7 +211,7 @@ class DefaultTabDragController : public TabDragController,
 
   // Finds the Tabs within the specified TabStrip that corresponds to the
   // TabContents of the dragged tabs. Returns an empty vector if not attached.
-  std::vector<BaseTab*> GetTabsMatchingDraggedContents(BaseTabStrip* tabstrip);
+  std::vector<BaseTab*> GetTabsMatchingDraggedContents(TabStrip* tabstrip);
 
   // Does the work for EndDrag. If we actually started a drag and |how_end| is
   // not TAB_DESTROYED then one of EndDrag or RevertDrag is invoked.
@@ -271,17 +271,17 @@ class DefaultTabDragController : public TabDragController,
   bool AreTabsConsecutive();
 
   // Returns the TabStripModel for the specified tabstrip.
-  TabStripModel* GetModel(BaseTabStrip* tabstrip) const;
+  TabStripModel* GetModel(TabStrip* tabstrip) const;
 
   // Handles registering for notifications.
   content::NotificationRegistrar registrar_;
 
   // The TabStrip the drag originated from.
-  BaseTabStrip* source_tabstrip_;
+  TabStrip* source_tabstrip_;
 
   // The TabStrip the dragged Tab is currently attached to, or NULL if the
   // dragged Tab is detached.
-  BaseTabStrip* attached_tabstrip_;
+  TabStrip* attached_tabstrip_;
 
   // The visual representation of the dragged Tab.
   scoped_ptr<DraggedTabView> view_;

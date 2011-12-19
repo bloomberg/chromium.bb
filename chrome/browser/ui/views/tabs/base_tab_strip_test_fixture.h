@@ -6,11 +6,12 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_BASE_TAB_STRIP_TEST_FIXTURE_H_
 #pragma once
 
-#include "chrome/browser/ui/views/tabs/base_tab_strip.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// TODO(sky): nuke this class. There is no point in making this a template.
 template <class TAB_STRIP_TYPE>
 class BaseTabStripTestFixture : public testing::Test {
  public:
@@ -19,7 +20,7 @@ class BaseTabStripTestFixture : public testing::Test {
   }
 
  protected:
-  BaseTabStrip* tab_strip() { return &tab_strip_; }
+  TabStrip* tab_strip() { return &tab_strip_; }
 
  private:
   TAB_STRIP_TYPE tab_strip_;

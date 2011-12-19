@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
-#include "chrome/browser/ui/views/tabs/base_tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -153,7 +153,7 @@ BrowserTabStripController::~BrowserTabStripController() {
   model_->RemoveObserver(this);
 }
 
-void BrowserTabStripController::InitFromModel(BaseTabStrip* tabstrip) {
+void BrowserTabStripController::InitFromModel(TabStrip* tabstrip) {
   tabstrip_ = tabstrip;
   // Walk the model, calling our insertion observer method for each item within
   // it.
@@ -298,7 +298,7 @@ void BrowserTabStripController::PerformDrop(bool drop_before,
   browser::Navigate(&params);
 }
 
-bool BrowserTabStripController::IsCompatibleWith(BaseTabStrip* other) const {
+bool BrowserTabStripController::IsCompatibleWith(TabStrip* other) const {
   Profile* other_profile =
       static_cast<BrowserTabStripController*>(other->controller())->profile();
   return other_profile == profile();

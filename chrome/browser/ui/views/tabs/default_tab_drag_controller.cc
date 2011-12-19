@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/base_tab.h"
-#include "chrome/browser/ui/views/tabs/base_tab_strip.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/dragged_tab_view.h"
 #include "chrome/browser/ui/views/tabs/native_view_photobooth.h"
@@ -172,7 +171,7 @@ class DockView : public views::View {
 
 // Returns the the x-coordinate of |point| if the type of tabstrip is horizontal
 // otherwise returns the y-coordinate.
-int MajorAxisValue(const gfx::Point& point, BaseTabStrip* tabstrip) {
+int MajorAxisValue(const gfx::Point& point, TabStrip* tabstrip) {
   return point.x();
 }
 
@@ -335,7 +334,7 @@ DefaultTabDragController::~DefaultTabDragController() {
 }
 
 void DefaultTabDragController::Init(
-    BaseTabStrip* source_tabstrip,
+    TabStrip* source_tabstrip,
     BaseTab* source_tab,
     const std::vector<BaseTab*>& tabs,
     const gfx::Point& mouse_offset,
@@ -646,9 +645,9 @@ void DefaultTabDragController::ContinueDragging() {
   // Determine whether or not we have dragged over a compatible TabStrip in
   // another browser window. If we have, we should attach to it and start
   // dragging within it.
-  BaseTabStrip* target_tabstrip = GetTabStripForPoint(screen_point);
+  TabStrip* target_tabstrip = GetTabStripForPoint(screen_point);
 #else
-  BaseTabStrip* target_tabstrip = source_tabstrip_;
+  TabStrip* target_tabstrip = source_tabstrip_;
 #endif
   if (target_tabstrip != attached_tabstrip_) {
     // Make sure we're fully detached from whatever TabStrip we're attached to
@@ -764,7 +763,7 @@ DockInfo DefaultTabDragController::GetDockInfoAtPoint(
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-BaseTabStrip* DefaultTabDragController::GetTabStripForPoint(
+TabStrip* DefaultTabDragController::GetTabStripForPoint(
     const gfx::Point& screen_point) {
   gfx::NativeView dragged_view = NULL;
   if (view_.get()) {
@@ -786,8 +785,7 @@ BaseTabStrip* DefaultTabDragController::GetTabStripForPoint(
 
   // This cast seems ugly, but the controller and the view are tighly coupled at
   // creation time, so it will be okay.
-  BaseTabStrip* other_tabstrip =
-      static_cast<BaseTabStrip*>(browser->tabstrip());
+  TabStrip* other_tabstrip = static_cast<TabStrip*>(browser->tabstrip());
 
   if (!other_tabstrip->controller()->IsCompatibleWith(source_tabstrip_))
     return NULL;
@@ -795,8 +793,8 @@ BaseTabStrip* DefaultTabDragController::GetTabStripForPoint(
 }
 #endif
 
-BaseTabStrip* DefaultTabDragController::GetTabStripIfItContains(
-    BaseTabStrip* tabstrip,
+TabStrip* DefaultTabDragController::GetTabStripIfItContains(
+    TabStrip* tabstrip,
     const gfx::Point& screen_point) const {
   static const int kVerticalDetachMagnetism = 15;
   // Make sure the specified screen point is actually within the bounds of the
@@ -816,7 +814,7 @@ BaseTabStrip* DefaultTabDragController::GetTabStripIfItContains(
   return NULL;
 }
 
-void DefaultTabDragController::Attach(BaseTabStrip* attached_tabstrip,
+void DefaultTabDragController::Attach(TabStrip* attached_tabstrip,
                                       const gfx::Point& screen_point) {
   DCHECK(!attached_tabstrip_);  // We should already have detached by the time
                                 // we get here.
@@ -1036,7 +1034,7 @@ gfx::Point DefaultTabDragController::GetAttachedDragPoint(
 }
 
 std::vector<BaseTab*> DefaultTabDragController::GetTabsMatchingDraggedContents(
-    BaseTabStrip* tabstrip) {
+    TabStrip* tabstrip) {
   TabStripModel* model = GetModel(attached_tabstrip_);
   std::vector<BaseTab*> tabs;
   for (size_t i = 0; i < drag_data_.size(); ++i) {
@@ -1398,7 +1396,7 @@ void DefaultTabDragController::BringWindowUnderMouseToFront() {
 }
 
 TabStripModel* DefaultTabDragController::GetModel(
-    BaseTabStrip* tabstrip) const {
+    TabStrip* tabstrip) const {
   return static_cast<BrowserTabStripController*>(tabstrip->controller())->
       model();
 }
@@ -1415,7 +1413,7 @@ bool DefaultTabDragController::AreTabsConsecutive() {
 
 // static
 TabDragController* TabDragController::Create(
-      BaseTabStrip* source_tabstrip,
+      TabStrip* source_tabstrip,
       BaseTab* source_tab,
       const std::vector<BaseTab*>& tabs,
       const gfx::Point& mouse_offset,
@@ -1428,7 +1426,7 @@ TabDragController* TabDragController::Create(
 }
 
 // static
-bool TabDragController::IsAttachedTo(BaseTabStrip* tab_strip) {
+bool TabDragController::IsAttachedTo(TabStrip* tab_strip) {
   return instance_ && instance_->active()&&
       instance_->attached_tabstrip() == tab_strip;
 }

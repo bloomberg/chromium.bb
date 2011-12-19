@@ -77,7 +77,7 @@ void FakeBaseTabStripController::PerformDrop(bool drop_before,
                                              const GURL& url) {
 }
 
-bool FakeBaseTabStripController::IsCompatibleWith(BaseTabStrip* other) const {
+bool FakeBaseTabStripController::IsCompatibleWith(TabStrip* other) const {
   return false;
 }
 

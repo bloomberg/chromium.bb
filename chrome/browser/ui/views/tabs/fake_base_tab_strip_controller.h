@@ -36,7 +36,7 @@ class FakeBaseTabStripController : public TabStripController {
   virtual void PerformDrop(bool drop_before,
                            int index,
                            const GURL& url) OVERRIDE;
-  virtual bool IsCompatibleWith(BaseTabStrip* other) const OVERRIDE;
+  virtual bool IsCompatibleWith(TabStrip* other) const OVERRIDE;
   virtual void CreateNewTab() OVERRIDE;
   virtual void ClickActiveTab(int index) OVERRIDE;
 

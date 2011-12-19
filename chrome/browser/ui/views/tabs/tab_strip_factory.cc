@@ -16,7 +16,7 @@ AbstractTabStripView* CreateTabStrip(Browser* browser,
   // Ownership of this controller is given to a specific tabstrip when we
   // construct it below.
 
-  BaseTabStrip* tabstrip = new TabStrip(tabstrip_controller);
+  TabStrip* tabstrip = new TabStrip(tabstrip_controller);
   parent->AddChildView(tabstrip);
   tabstrip_controller->InitFromModel(tabstrip);
   return tabstrip;
