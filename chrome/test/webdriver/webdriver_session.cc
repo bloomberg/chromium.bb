@@ -1603,8 +1603,15 @@ Error* Session::PostBrowserStartInit() {
 }
 
 Error* Session::InitForWebsiteTesting() {
+  bool has_prefs_api = false;
+  // Don't set these prefs for Chrome 14 and below.
+  // TODO(kkania): Remove this when Chrome 14 is unsupported.
+  Error* error = CompareBrowserVersion(874, 0, &has_prefs_api);
+  if (error || !has_prefs_api)
+    return error;
+
   // Disable checking for SSL certificate revocation.
-  Error* error = SetPreference(
+  error = SetPreference(
       "ssl.rev_checking.enabled",
       false /* is_user_pref */,
       Value::CreateBooleanValue(false));

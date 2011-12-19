@@ -236,12 +236,12 @@ Error* CapabilitiesParser::ParseProxyCapabilities(
   proxy_options.insert("proxyType");
   proxy_options.insert("proxyAutoconfigUrl");
   proxy_options.insert("sslProxy");
+  proxy_options.insert("class");  // Created by BeanToJSONConverter.
 
   base::DictionaryValue::key_iterator key_iter = options->begin_keys();
   for (; key_iter != options->end_keys(); ++key_iter) {
     if (proxy_options.find(*key_iter) == proxy_options.end()) {
-      return new Error(kBadRequest,
-                       "Unrecognized proxy capability: " + *key_iter);
+      LOG(WARNING) << "Unrecognized proxy capability: " << *key_iter;
     }
   }
 
