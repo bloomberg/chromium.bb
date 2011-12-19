@@ -48,10 +48,24 @@ class RootTestCase(BaseSCMTestCase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-        'ElementTree', 'GetCasedPath', 'GenFakeDiff', 'GIT', 'SVN',
+        'cStringIO',
+        'determine_scm',
+        'ElementTree',
+        'gclient_utils',
+        'GenFakeDiff',
+        'GetCasedPath',
+        'GIT',
+        'glob',
+        'logging',
+        'only_int',
+        'os',
+        're',
+        'subprocess2',
+        'SVN',
+        'sys',
+        'tempfile',
+        'time',
         'ValidateEmail',
-        'cStringIO', 'determine_scm', 'gclient_utils', 'glob', 'logging',
-        'only_int', 'os', 're', 'subprocess2', 'sys', 'tempfile', 'time',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm, members)
@@ -60,12 +74,26 @@ class RootTestCase(BaseSCMTestCase):
 class GitWrapperTestCase(BaseSCMTestCase):
   def testMembersChanged(self):
     members = [
-        'AssertVersion', 'Capture', 'CaptureStatus',
-        'FetchUpstreamTuple',
-        'GenerateDiff', 'GetBranch', 'GetBranchRef', 'GetCheckoutRoot',
-        'GetDifferentFiles', 'GetEmail', 'GetPatchName', 'GetSVNBranch',
-        'GetUpstreamBranch', 'IsGitSvn', 'MatchSvnGlob', 'ShortBranchName',
+        'AssertVersion',
+        'Capture',
+        'CaptureStatus',
         'current_version',
+        'FetchUpstreamTuple',
+        'GenerateDiff',
+        'GetBranch',
+        'GetBranchRef',
+        'GetCheckoutRoot',
+        'GetDifferentFiles',
+        'GetEmail',
+        'GetGitSvnHeadRev',
+        'GetPatchName',
+        'GetSha1ForSvnRev',
+        'GetSVNBranch',
+        'GetUpstreamBranch',
+        'IsGitSvn',
+        'IsValidRevision',
+        'MatchSvnGlob',
+        'ShortBranchName',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm.GIT, members)
@@ -89,6 +117,66 @@ class GitWrapperTestCase(BaseSCMTestCase):
         'branches/*:refs/remotes/*',
         True), 'refs/remotes/bleeding_edge')
 
+
+class RealGitTest(fake_repos.FakeReposTestBase):
+  def setUp(self):
+    super(RealGitTest, self).setUp()
+    self.enabled = self.FAKE_REPOS.set_up_git()
+    if self.enabled:
+      self.clone_dir = scm.os.path.join(self.FAKE_REPOS.git_root, 'repo_1')
+
+  def testIsValidRevision(self):
+    if not self.enabled:
+      return
+    # Sha1's are [0-9a-z]{32}, so starting with a 'z' or 'r' should always fail.
+    self.assertFalse(scm.GIT.IsValidRevision(cwd=self.clone_dir, rev='zebra'))
+    self.assertFalse(scm.GIT.IsValidRevision(cwd=self.clone_dir, rev='r123456'))
+    # Valid cases
+    first_rev = self.githash('repo_1', 1)
+    self.assertTrue(scm.GIT.IsValidRevision(cwd=self.clone_dir, rev=first_rev))
+    self.assertTrue(scm.GIT.IsValidRevision(cwd=self.clone_dir, rev='HEAD'))
+
+
+class RealGitSvnTest(fake_repos.FakeReposTestBase):
+  def setUp(self):
+    super(RealGitSvnTest, self).setUp()
+    self.enabled = self.FAKE_REPOS.set_up_git() and self.FAKE_REPOS.set_up_svn()
+    if self.enabled:
+      self.tree_name = 'git-svn'
+      self.svn_url = scm.os.path.join(self.FAKE_REPOS.svn_base, 'trunk')
+      self.clone_dir = scm.os.path.join(self.FAKE_REPOS.git_root,
+                                        self.tree_name)
+      scm.os.makedirs(self.clone_dir)
+      self._capture(['svn', 'clone', '-q', '-q', self.svn_url, self.clone_dir])
+      # git rev-list gives revisions in reverse chronological order.
+      hashes = reversed(self._capture(['rev-list', 'HEAD']).splitlines())
+      # We insert a null value at 0 to do 1-based indexing, not 0-based, as SVN
+      # revisions are 1-based (i.e. they start at r1, not r0).
+      self.git_hashes = ([None] + list(hashes))
+
+  def tearDown(self):
+    scm.gclient_utils.rmtree(self.clone_dir)
+
+  def _capture(self, cmd, **kwargs):
+    kwargs.setdefault('cwd', self.clone_dir)
+    return scm.GIT.Capture(cmd, **kwargs)
+
+  def testGetGitSvnHeadRev(self):
+    if not self.enabled:
+      return
+    self.assertEquals(scm.GIT.GetGitSvnHeadRev(cwd=self.clone_dir), 2)
+    self._capture(['reset', '--hard', 'HEAD^'])
+    self.assertEquals(scm.GIT.GetGitSvnHeadRev(cwd=self.clone_dir), 1)
+
+  def testGetGetSha1ForSvnRev(self):
+    if not self.enabled:
+      return
+    self.assertEquals(scm.GIT.GetSha1ForSvnRev(cwd=self.clone_dir, rev=1),
+                      self.git_hashes[1])
+    self.assertEquals(scm.GIT.GetSha1ForSvnRev(cwd=self.clone_dir, rev=2),
+                      self.git_hashes[2])
+
+
 class SVNTestCase(BaseSCMTestCase):
   def setUp(self):
     BaseSCMTestCase.setUp(self)
@@ -98,11 +186,24 @@ class SVNTestCase(BaseSCMTestCase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-        'AssertVersion', 'Capture', 'CaptureRevision', 'CaptureLocalInfo',
+        'AssertVersion',
+        'Capture',
+        'CaptureLocalInfo',
         'CaptureRemoteInfo',
-        'CaptureStatus', 'current_version', 'DiffItem', 'GenerateDiff',
-        'GetCheckoutRoot', 'GetEmail', 'GetFileProperty', 'IsMoved',
-        'IsMovedInfo', 'ReadSimpleAuth', 'Revert', 'RunAndGetFileList',
+        'CaptureRevision',
+        'CaptureStatus',
+        'current_version',
+        'DiffItem',
+        'GenerateDiff',
+        'GetCheckoutRoot',
+        'GetEmail',
+        'GetFileProperty',
+        'IsMoved',
+        'IsMovedInfo',
+        'IsValidRevision',
+        'ReadSimpleAuth',
+        'Revert',
+        'RunAndGetFileList',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm.SVN, members)
@@ -287,6 +388,19 @@ class RealSvnTest(fake_repos.FakeReposTestBase):
       return
     # Checkout and verify the tree.
     self.assertTree(self.tree, self.svn_root)
+
+  def testIsValidRevision(self):
+    if not self.enabled:
+      return
+    url_at_rev = self.svn_base + 'trunk/third_party@%s'
+    # Invalid or non-existent.
+    self.assertFalse(scm.SVN.IsValidRevision('url://totally_invalid/trunk/foo'))
+    self.assertFalse(scm.SVN.IsValidRevision(url_at_rev % 0))
+    self.assertFalse(scm.SVN.IsValidRevision(url_at_rev % 123))
+    # Valid.
+    self.assertTrue(scm.SVN.IsValidRevision(url_at_rev % 1))
+    self.assertTrue(scm.SVN.IsValidRevision(url_at_rev % 2))
+    self.assertTrue(scm.SVN.IsValidRevision(url_at_rev % 'HEAD'))
 
   def testRevert(self):
     if not self.enabled:

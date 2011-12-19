@@ -93,10 +93,21 @@ class SVNWrapperTestCase(BaseTestCase):
 
   def testDir(self):
     members = [
-        'FullUrlForRelativeUrl', 'GetRevisionDate', 'RunCommand',
-        'cleanup', 'diff', 'pack', 'relpath', 'revert',
-        'revinfo', 'runhooks', 'status', 'update',
-        'updatesingle', 'url',
+        'FullUrlForRelativeUrl',
+        'GetRevisionDate',
+        'GetUsableRev',
+        'RunCommand',
+        'cleanup',
+        'diff',
+        'pack',
+        'relpath',
+        'revert',
+        'revinfo',
+        'runhooks',
+        'status',
+        'update',
+        'updatesingle',
+        'url',
     ]
 
     # If you add a member, be sure to add the relevant test!
@@ -544,6 +555,26 @@ class SVNWrapperTestCase(BaseTestCase):
     self.checkstdout(
         ('________ found .hg directory; skipping %s\n' % self.relpath))
 
+  def testGetUsableRevSVN(self):
+    # pylint: disable=E1101
+    options = self.Options(verbose=True)
+
+    # Mock SVN revision validity checking.
+    self.mox.StubOutWithMock(
+        gclient_scm.scm.SVN, 'IsValidRevision', True)
+    gclient_scm.scm.SVN.IsValidRevision(url='%s@%s' % (self.url, 1)
+        ).AndReturn(True)
+    gclient_scm.scm.SVN.IsValidRevision(url='%s@%s' % (self.url, 'fake')
+        ).AndReturn(False)
+
+    self.mox.ReplayAll()
+
+    svn_scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir)
+    # With an SVN checkout, 1 an example of a valid usable rev.
+    self.assertEquals(svn_scm.GetUsableRev(1, options), 1)
+    # With an SVN checkout, a fake or unknown rev should raise an excpetion.
+    self.assertRaises(gclient_scm.gclient_utils.Error,
+                      svn_scm.GetUsableRev, 'fake', options)
 
 class BaseGitWrapperTestCase(GCBaseTestCase, StdoutCheck, TestCaseUtils,
                              unittest.TestCase):
@@ -646,13 +677,23 @@ from :3
     unittest.TestCase.tearDown(self)
     rmtree(self.root_dir)
 
-
 class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
   def testDir(self):
     members = [
-        'FullUrlForRelativeUrl', 'GetRevisionDate', 'RunCommand',
-        'cleanup', 'diff', 'pack', 'relpath', 'revert',
-        'revinfo', 'runhooks', 'status', 'update', 'url',
+        'FullUrlForRelativeUrl',
+        'GetRevisionDate',
+        'GetUsableRev',
+        'RunCommand',
+        'cleanup',
+        'diff',
+        'pack',
+        'relpath',
+        'revert',
+        'revinfo',
+        'runhooks',
+        'status',
+        'update',
+        'url',
     ]
 
     # If you add a member, be sure to add the relevant test!
@@ -927,6 +968,111 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
                                 relpath=self.relpath)
     rev_info = scm.revinfo(options, (), None)
     self.assertEquals(rev_info, '069c602044c5388d2d15c3f875b057c852003458')
+
+
+class ManagedGitWrapperTestCaseMox(BaseTestCase):
+  class OptionsObject(object):
+    def __init__(self, verbose=False, revision=None, force=False):
+      self.verbose = verbose
+      self.revision = revision
+      self.deps_os = None
+      self.force = force
+      self.reset = False
+      self.nohooks = False
+      # TODO(maruel): Test --jobs > 1.
+      self.jobs = 1
+
+  def Options(self, *args, **kwargs):
+    return self.OptionsObject(*args, **kwargs)
+
+  def setUp(self):
+    BaseTestCase.setUp(self)
+    self.fake_hash_1 = 't0ta11yf4k3'
+    self.fake_hash_2 = '3v3nf4k3r'
+    self.url = 'git://foo'
+    self.root_dir = '/tmp'
+    self.relpath = 'fake'
+    self.base_path = os.path.join(self.root_dir, self.relpath)
+
+  def tearDown(self):
+    BaseTestCase.tearDown(self)
+
+  def testGetUsableRevGit(self):
+    # pylint: disable=E1101
+    options = self.Options(verbose=True)
+
+    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsValidRevision', True)
+    gclient_scm.scm.GIT.IsValidRevision(cwd=self.base_path, rev=self.fake_hash_1
+        ).AndReturn(True)
+    gclient_scm.scm.GIT.IsValidRevision(cwd=self.base_path, rev='1'
+        ).AndReturn(False)
+
+    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
+    gclient_scm.scm.GIT.IsGitSvn(cwd=self.base_path).MultipleTimes(
+        ).AndReturn(False)
+
+    self.mox.ReplayAll()
+
+    git_scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
+                                    relpath=self.relpath)
+    # A [fake] git sha1 with a git repo should work (this is in the case that
+    # the LKGR gets flipped to git sha1's some day).
+    self.assertEquals(git_scm.GetUsableRev(self.fake_hash_1, options),
+                      self.fake_hash_1)
+    # An SVN rev with a purely git repo should raise an exception.
+    self.assertRaises(gclient_scm.gclient_utils.Error,
+                      git_scm.GetUsableRev, '1', options)
+
+  def testGetUsableRevGitSvn(self):
+    # pylint: disable=E1101
+    options = self.Options()
+    too_big = str(1e7)
+
+    # Pretend like the git-svn repo's HEAD is at r2.
+    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'GetGitSvnHeadRev', True)
+    gclient_scm.scm.GIT.GetGitSvnHeadRev(cwd=self.base_path).MultipleTimes(
+        ).AndReturn(2)
+
+    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'GetSha1ForSvnRev', True)
+    # r1 -> first fake hash, r3 -> second fake hash.
+    gclient_scm.scm.GIT.GetSha1ForSvnRev(cwd=self.base_path, rev='1'
+        ).AndReturn(self.fake_hash_1)
+    gclient_scm.scm.GIT.GetSha1ForSvnRev(cwd=self.base_path, rev='3'
+        ).AndReturn(self.fake_hash_2)
+
+    # Ensure that we call git svn fetch if our LKGR is > the git-svn HEAD rev.
+    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'Capture', True)
+    gclient_scm.scm.GIT.Capture(['svn', 'fetch'], cwd=self.base_path)
+
+    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
+    gclient_scm.scm.GIT.IsGitSvn(cwd=self.base_path).MultipleTimes(
+        ).AndReturn(True)
+
+    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsValidRevision', True)
+    gclient_scm.scm.GIT.IsValidRevision(cwd=self.base_path, rev=self.fake_hash_1
+        ).AndReturn(True)
+    gclient_scm.scm.GIT.IsValidRevision(cwd=self.base_path, rev=too_big
+        ).AndReturn(False)
+
+    self.mox.ReplayAll()
+
+    git_svn_scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                                    relpath=self.relpath)
+    # Given an SVN revision with a git-svn checkout, it should be translated to
+    # a git sha1 and be usable.
+    self.assertEquals(git_svn_scm.GetUsableRev('1', options),
+                      self.fake_hash_1)
+    # Our fake HEAD rev is r2, so this should call git svn fetch to get more
+    # revs (pymox will complain if this doesn't happen).
+    self.assertEquals(git_svn_scm.GetUsableRev('3', options),
+                      self.fake_hash_2)
+    # Given a git sha1 with a git-svn checkout, it should be used as is.
+    self.assertEquals(git_svn_scm.GetUsableRev(self.fake_hash_1, options),
+                      self.fake_hash_1)
+    # We currently check for seemingly valid SVN revisions by assuming 6 digit
+    # numbers, so assure that numeric revs >= 1000000 don't work.
+    self.assertRaises(gclient_scm.gclient_utils.Error,
+                      git_svn_scm.GetUsableRev, too_big, options)
 
 
 class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):

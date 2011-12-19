@@ -380,6 +380,37 @@ class GIT(object):
     root = GIT.Capture(['rev-parse', '--show-cdup'], cwd=cwd).strip()
     return os.path.abspath(os.path.join(cwd, root))
 
+  @staticmethod
+  def GetGitSvnHeadRev(cwd):
+    """Gets the most recently pulled git-svn revision."""
+    try:
+      output = GIT.Capture(['svn', 'info'], cwd=cwd)
+      match = re.search(r'^Revision: ([0-9]+)$', output, re.MULTILINE)
+      return int(match.group(1)) if match else None
+    except (subprocess2.CalledProcessError, ValueError):
+      return None
+
+  @staticmethod
+  def GetSha1ForSvnRev(cwd, rev):
+    """Returns a corresponding git sha1 for a SVN revision."""
+    if not GIT.IsGitSvn(cwd=cwd):
+      return None
+    try:
+      lines = GIT.Capture(
+          ['svn', 'find-rev', 'r' + str(rev)], cwd=cwd).splitlines()
+      return lines[-1].strip() if lines else None
+    except subprocess2.CalledProcessError:
+      return None
+
+  @staticmethod
+  def IsValidRevision(cwd, rev):
+    """Verifies the revision is a proper git revision."""
+    try:
+      GIT.Capture(['rev-parse', rev], cwd=cwd)
+      return True
+    except subprocess2.CalledProcessError:
+      return False
+
   @classmethod
   def AssertVersion(cls, min_version):
     """Asserts git's version is at least min_version."""
@@ -945,6 +976,15 @@ class SVN(object):
         break
       cwd = parent
     return GetCasedPath(cwd)
+
+  @staticmethod
+  def IsValidRevision(url):
+    """Verifies the revision looks like an SVN revision."""
+    try:
+      SVN.Capture(['info', url], cwd=None)
+      return True
+    except subprocess2.CalledProcessError:
+      return False
 
   @classmethod
   def AssertVersion(cls, min_version):

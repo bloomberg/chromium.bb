@@ -923,8 +923,15 @@ solutions = [
           handle = urllib.urlopen(s.safesync_url)
           rev = handle.read().strip()
           handle.close()
-          if len(rev):
-            self._options.revisions.append('%s@%s' % (s.name, rev))
+          scm = gclient_scm.CreateSCM(s.url, s.root.root_dir, s.name)
+          safe_rev = scm.GetUsableRev(rev=rev, options=self._options)
+          if not safe_rev:
+            raise gclient_utils.Error(
+                'Despite our best attempts, we couldn\'t find a useful\n'
+                'safesync_url revision for you.')
+          if self._options.verbose:
+            print('Using safesync_url revision: %s.\n' % safe_rev)
+          self._options.revisions.append('%s@%s' % (s.name, safe_rev))
     if not self._options.revisions:
       return revision_overrides
     solutions_names = [s.name for s in self.dependencies]
