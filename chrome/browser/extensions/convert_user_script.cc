@@ -114,6 +114,16 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
     matches->Append(Value::CreateStringValue("https://*/*"));
   }
 
+  // Read the exclude matches, if any are present.
+  ListValue* exclude_matches = new ListValue();
+  if (!script.exclude_url_patterns().is_empty()) {
+    for (URLPatternSet::const_iterator i =
+         script.exclude_url_patterns().begin();
+         i != script.exclude_url_patterns().end(); ++i) {
+      exclude_matches->Append(Value::CreateStringValue(i->GetAsString()));
+    }
+  }
+
   ListValue* includes = new ListValue();
   for (size_t i = 0; i < script.globs().size(); ++i)
     includes->Append(Value::CreateStringValue(script.globs().at(i)));
@@ -124,6 +134,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
 
   DictionaryValue* content_script = new DictionaryValue();
   content_script->Set(keys::kMatches, matches);
+  content_script->Set(keys::kExcludeMatches, exclude_matches);
   content_script->Set(keys::kIncludeGlobs, includes);
   content_script->Set(keys::kExcludeGlobs, excludes);
   content_script->Set(keys::kJs, js_files);

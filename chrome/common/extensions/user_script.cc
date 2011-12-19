@@ -90,51 +90,52 @@ void UserScript::File::Pickle(::Pickle* pickle) const {
 }
 
 void UserScript::File::Unpickle(const ::Pickle& pickle, void** iter) {
-  // Read url.
+  // Read the url from the pickle.
   std::string url;
   CHECK(pickle.ReadString(iter, &url));
   set_url(GURL(url));
 }
 
 void UserScript::Pickle(::Pickle* pickle) const {
-  // Write simple types.
+  // Write the simple types to the pickle.
   pickle->WriteInt(run_location());
   pickle->WriteString(extension_id());
   pickle->WriteBool(emulate_greasemonkey());
   pickle->WriteBool(match_all_frames());
   pickle->WriteBool(is_incognito_enabled());
 
-  // Write globs.
-  std::vector<std::string>::const_iterator glob;
-  pickle->WriteSize(globs_.size());
-  for (glob = globs_.begin(); glob != globs_.end(); ++glob) {
-    pickle->WriteString(*glob);
-  }
-  pickle->WriteSize(exclude_globs_.size());
-  for (glob = exclude_globs_.begin(); glob != exclude_globs_.end(); ++glob) {
-    pickle->WriteString(*glob);
-  }
+  PickleGlobs(pickle, globs_);
+  PickleGlobs(pickle, exclude_globs_);
+  PickleURLPatternSet(pickle, url_set_);
+  PickleURLPatternSet(pickle, exclude_url_set_);
+  PickleScripts(pickle, js_scripts_);
+  PickleScripts(pickle, css_scripts_);
+}
 
-  // Write url patterns.
-  URLPatternSet pattern_list = url_set_;
+void UserScript::PickleGlobs(::Pickle* pickle,
+                             const std::vector<std::string>& globs) const {
+  pickle->WriteSize(globs.size());
+  for (std::vector<std::string>::const_iterator glob = globs.begin();
+       glob != globs.end(); ++glob) {
+    pickle->WriteString(*glob);
+  }
+}
+
+void UserScript::PickleURLPatternSet(::Pickle* pickle,
+                                     const URLPatternSet& pattern_list) const {
   pickle->WriteSize(pattern_list.patterns().size());
   for (URLPatternSet::const_iterator pattern = pattern_list.begin();
        pattern != pattern_list.end(); ++pattern) {
     pickle->WriteInt(pattern->valid_schemes());
     pickle->WriteString(pattern->GetAsString());
   }
+}
 
-  // Write js scripts.
-  pickle->WriteSize(js_scripts_.size());
-  for (FileList::const_iterator file = js_scripts_.begin();
-    file != js_scripts_.end(); ++file) {
-    file->Pickle(pickle);
-  }
-
-  // Write css scripts.
-  pickle->WriteSize(css_scripts_.size());
-  for (FileList::const_iterator file = css_scripts_.begin();
-    file != css_scripts_.end(); ++file) {
+void UserScript::PickleScripts(::Pickle* pickle,
+                               const FileList& scripts) const {
+  pickle->WriteSize(scripts.size());
+  for (FileList::const_iterator file = scripts.begin();
+       file != scripts.end(); ++file) {
     file->Pickle(pickle);
   }
 }
@@ -151,29 +152,32 @@ void UserScript::Unpickle(const ::Pickle& pickle, void** iter) {
   CHECK(pickle.ReadBool(iter, &match_all_frames_));
   CHECK(pickle.ReadBool(iter, &incognito_enabled_));
 
-  // Read globs.
+  UnpickleGlobs(pickle, iter, &globs_);
+  UnpickleGlobs(pickle, iter, &exclude_globs_);
+  UnpickleURLPatternSet(pickle, iter, &url_set_);
+  UnpickleURLPatternSet(pickle, iter, &exclude_url_set_);
+  UnpickleScripts(pickle, iter, &js_scripts_);
+  UnpickleScripts(pickle, iter, &css_scripts_);
+}
+
+void UserScript::UnpickleGlobs(const ::Pickle& pickle, void** iter,
+                               std::vector<std::string>* globs) {
   size_t num_globs = 0;
   CHECK(pickle.ReadSize(iter, &num_globs));
-  globs_.clear();
+  globs->clear();
   for (size_t i = 0; i < num_globs; ++i) {
     std::string glob;
     CHECK(pickle.ReadString(iter, &glob));
-    globs_.push_back(glob);
+    globs->push_back(glob);
   }
+}
 
-  CHECK(pickle.ReadSize(iter, &num_globs));
-  exclude_globs_.clear();
-  for (size_t i = 0; i < num_globs; ++i) {
-    std::string glob;
-    CHECK(pickle.ReadString(iter, &glob));
-    exclude_globs_.push_back(glob);
-  }
-
-  // Read url patterns.
+void UserScript::UnpickleURLPatternSet(const ::Pickle& pickle, void** iter,
+                                       URLPatternSet* pattern_list) {
   size_t num_patterns = 0;
   CHECK(pickle.ReadSize(iter, &num_patterns));
 
-  url_set_.ClearPatterns();
+  pattern_list->ClearPatterns();
   for (size_t i = 0; i < num_patterns; ++i) {
     int valid_schemes;
     CHECK(pickle.ReadInt(iter, &valid_schemes));
@@ -191,26 +195,18 @@ void UserScript::Unpickle(const ::Pickle& pickle, void** iter) {
     if (!had_file_scheme)
       pattern.SetValidSchemes(valid_schemes);
 
-    url_set_.AddPattern(pattern);
+    pattern_list->AddPattern(pattern);
   }
+}
 
-  // Read js scripts.
-  size_t num_js_files = 0;
-  CHECK(pickle.ReadSize(iter, &num_js_files));
-  js_scripts_.clear();
-  for (size_t i = 0; i < num_js_files; ++i) {
+void UserScript::UnpickleScripts(const ::Pickle& pickle, void** iter,
+                                 FileList* scripts) {
+  size_t num_files = 0;
+  CHECK(pickle.ReadSize(iter, &num_files));
+  scripts->clear();
+  for (size_t i = 0; i < num_files; ++i) {
     File file;
     file.Unpickle(pickle, iter);
-    js_scripts_.push_back(file);
-  }
-
-  // Read css scripts.
-  size_t num_css_files = 0;
-  CHECK(pickle.ReadSize(iter, &num_css_files));
-  css_scripts_.clear();
-  for (size_t i = 0; i < num_css_files; ++i) {
-    File file;
-    file.Unpickle(pickle, iter);
-    css_scripts_.push_back(file);
+    scripts->push_back(file);
   }
 }

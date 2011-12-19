@@ -70,6 +70,7 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
   static const base::StringPiece kIncludeDeclaration("// @include");
   static const base::StringPiece kExcludeDeclaration("// @exclude");
   static const base::StringPiece kMatchDeclaration("// @match");
+  static const base::StringPiece kExcludeMatchDeclaration("// @exclude_match");
   static const base::StringPiece kRunAtDeclaration("// @run-at");
   static const base::StringPiece kRunAtDocumentStartValue("document-start");
   static const base::StringPiece kRunAtDocumentEndValue("document-end");
@@ -116,6 +117,11 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
         if (URLPattern::PARSE_SUCCESS != pattern.Parse(value))
           return false;
         script->add_url_pattern(pattern);
+      } else if (GetDeclarationValue(line, kExcludeMatchDeclaration, &value)) {
+        URLPattern exclude(UserScript::kValidUserScriptSchemes);
+        if (URLPattern::PARSE_SUCCESS != exclude.Parse(value))
+          return false;
+        script->add_exclude_url_pattern(exclude);
       } else if (GetDeclarationValue(line, kRunAtDeclaration, &value)) {
         if (value == kRunAtDocumentStartValue)
           script->set_run_location(UserScript::DOCUMENT_START);

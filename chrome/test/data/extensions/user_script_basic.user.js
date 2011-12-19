@@ -7,6 +7,7 @@
 // @include http://www.yahoo.com/*
 // @exclude *foo*
 // @match http://www.google.com/*
+// @exclude_match http://www.google.com/foo*
 // ==/UserScript==
 
 alert("Hello! This is my script.");

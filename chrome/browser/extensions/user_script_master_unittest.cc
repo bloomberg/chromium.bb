@@ -208,6 +208,26 @@ TEST_F(UserScriptMasterTest, Parse7) {
             script.url_patterns().begin()->GetAsString());
 }
 
+TEST_F(UserScriptMasterTest, Parse8) {
+  const std::string text(
+    "// ==UserScript==\n"
+    "// @name myscript\n"
+    "// @match http://www.google.com/*\n"
+    "// @exclude_match http://www.google.com/foo*\n"
+    "// ==/UserScript==\n");
+
+  UserScript script;
+  EXPECT_TRUE(UserScriptMaster::ScriptReloader::ParseMetadataHeader(
+      text, &script));
+  ASSERT_EQ("myscript", script.name());
+  ASSERT_EQ(1U, script.url_patterns().patterns().size());
+  EXPECT_EQ("http://www.google.com/*",
+            script.url_patterns().begin()->GetAsString());
+  ASSERT_EQ(1U, script.exclude_url_patterns().patterns().size());
+  EXPECT_EQ("http://www.google.com/foo*",
+            script.exclude_url_patterns().begin()->GetAsString());
+}
+
 TEST_F(UserScriptMasterTest, SkipBOMAtTheBeginning) {
   FilePath path = temp_dir_.path().AppendASCII("script.user.js");
   const std::string content("\xEF\xBB\xBF alert('hello');");

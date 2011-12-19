@@ -60,6 +60,9 @@ TEST(ExtensionFromUserScript, Basic) {
   ASSERT_EQ(1u, script.url_patterns().patterns().size());
   EXPECT_EQ("http://www.google.com/*",
             script.url_patterns().begin()->GetAsString());
+  ASSERT_EQ(1u, script.exclude_url_patterns().patterns().size());
+  EXPECT_EQ("http://www.google.com/foo*",
+            script.exclude_url_patterns().begin()->GetAsString());
 
   // Make sure the files actually exist on disk.
   EXPECT_TRUE(file_util::PathExists(

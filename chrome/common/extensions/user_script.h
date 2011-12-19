@@ -190,6 +190,21 @@ class UserScript {
   void Unpickle(const ::Pickle& pickle, void** iter);
 
  private:
+  // Pickle helper functions used to pickle the individual types of components.
+  void PickleGlobs(::Pickle* pickle,
+                   const std::vector<std::string>& globs) const;
+  void PickleURLPatternSet(::Pickle* pickle,
+                           const URLPatternSet& pattern_list) const;
+  void PickleScripts(::Pickle* pickle, const FileList& scripts) const;
+
+  // Unpickle helper functions used to unpickle individual types of components.
+  void UnpickleGlobs(const ::Pickle& pickle, void** iter,
+                     std::vector<std::string>* globs);
+  void UnpickleURLPatternSet(const ::Pickle& pickle, void** iter,
+                             URLPatternSet* pattern_list);
+  void UnpickleScripts(const ::Pickle& pickle, void** iter,
+                       FileList* scripts);
+
   // The location to run the script inside the document.
   RunLocation run_location_;
 

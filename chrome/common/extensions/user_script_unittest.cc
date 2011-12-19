@@ -159,8 +159,12 @@ TEST(ExtensionUserScriptTest, UrlPatternGlobInteraction) {
 TEST(ExtensionUserScriptTest, Pickle) {
   URLPattern pattern1(kAllSchemes);
   URLPattern pattern2(kAllSchemes);
+  URLPattern exclude1(kAllSchemes);
+  URLPattern exclude2(kAllSchemes);
   ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern1.Parse("http://*/foo*"));
   ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern2.Parse("http://bar/baz*"));
+  ASSERT_EQ(URLPattern::PARSE_SUCCESS, exclude1.Parse("*://*/*bar"));
+  ASSERT_EQ(URLPattern::PARSE_SUCCESS, exclude2.Parse("https://*/*"));
 
   UserScript script1;
   script1.js_scripts().push_back(UserScript::File(
@@ -179,6 +183,8 @@ TEST(ExtensionUserScriptTest, Pickle) {
 
   script1.add_url_pattern(pattern1);
   script1.add_url_pattern(pattern2);
+  script1.add_exclude_url_pattern(exclude1);
+  script1.add_exclude_url_pattern(exclude2);
 
   Pickle pickle;
   script1.Pickle(&pickle);
@@ -201,6 +207,7 @@ TEST(ExtensionUserScriptTest, Pickle) {
   }
 
   ASSERT_EQ(script1.url_patterns(), script2.url_patterns());
+  ASSERT_EQ(script1.exclude_url_patterns(), script2.exclude_url_patterns());
 }
 
 TEST(ExtensionUserScriptTest, Defaults) {
