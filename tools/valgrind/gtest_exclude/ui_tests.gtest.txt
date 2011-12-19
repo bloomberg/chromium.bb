@@ -140,3 +140,6 @@ WidgetOwnershipTest.Ownership_ViewsNativeWidgetOwnsWidget_NativeDestroy
 # Leaks in audio tests http://crbug.com/106036
 PPAPITest.Audio_*
 OutOfProcessPPAPITest.Audio_*
+
+# Started failing since r114924 http://crbug.com/108014
+OutOfProcessPPAPITest.InputEvent
