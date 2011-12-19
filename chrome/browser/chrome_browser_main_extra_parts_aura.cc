@@ -27,7 +27,7 @@ ChromeBrowserMainExtraPartsAura::ChromeBrowserMainExtraPartsAura()
     : ChromeBrowserMainExtraParts() {
 }
 
-void ChromeBrowserMainExtraPartsAura::PostBrowserProcessInit() {
+void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestCompositor)) {
 #if defined(USE_WEBKIT_COMPOSITOR)
     ui::SetupTestCompositor();
