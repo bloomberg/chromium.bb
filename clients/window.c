@@ -995,11 +995,6 @@ window_draw_decorations(struct window *window)
 	cairo_show_text(cr, window->title);
 
 	cairo_destroy(cr);
-
-	/* FIXME: this breakes gears, fix cairo? */
-#if 0 
-	cairo_device_flush (window->display->device);
-#endif
 }
 
 void
@@ -2529,6 +2524,7 @@ display_acquire_window_surface(struct display *display,
 	data = cairo_surface_get_user_data(window->cairo_surface,
 					   &surface_data_key);
 
+	cairo_device_flush(device);
 	cairo_device_acquire(device);
 	if (!eglMakeCurrent(display->dpy, data->surf, data->surf, ctx))
 		fprintf(stderr, "failed to make surface current\n");
