@@ -365,7 +365,7 @@ function seventhTest() {
 
   var trans = db.transaction(['store'], IDBTransaction.READ_WRITE);
   trans.onabort = unexpectedAbortCallback;
-  trans.oncomplete = done;
+  trans.oncomplete = eighthTest;
 
   var store = trans.objectStore('store');
   var index = store.index('index');
@@ -387,6 +387,39 @@ function seventhTest() {
       shouldBe("cursor.primaryKey", "count");
     if (cursor.value !== count)
       shouldBe("cursor.value", "count");
+
+    ++count;
+    cursor.continue();
+  }
+}
+
+function eighthTest() {
+  debug("eighthTest()");
+
+  // Run a key cursor over an index.
+
+  var trans = db.transaction(['store'], IDBTransaction.READ_WRITE);
+  trans.onabort = unexpectedAbortCallback;
+  trans.oncomplete = done;
+
+  var store = trans.objectStore('store');
+  var index = store.index('index');
+
+  var cursorReq = index.openKeyCursor();
+  cursorReq.onerror = unexpectedErrorCallback;
+  count = 0;
+
+  cursorReq.onsuccess = function() {
+    cursor = event.target.result;
+    if (cursor === null) {
+      shouldBe("count", "kNumberOfItems");
+      return;
+    }
+
+    if (cursor.key !== count)
+      shouldBe("cursor.key", "count");
+    if (cursor.primaryKey !== count)
+      shouldBe("cursor.primaryKey", "count");
 
     ++count;
     cursor.continue();
