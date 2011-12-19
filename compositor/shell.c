@@ -861,8 +861,7 @@ click_to_activate_binding(struct wl_input_device *device,
 
 	focus = (struct wlsc_surface *) device->pointer_focus;
 	if (state && focus && device->grab == NULL)
-		compositor->shell->activate(compositor->shell,
-					    focus, wd, time);
+		activate(compositor->shell, focus, wd, time);
 }
 
 static void
@@ -1249,7 +1248,6 @@ shell_init(struct wlsc_compositor *ec)
 
 	memset(shell, 0, sizeof *shell);
 	shell->compositor = ec;
-	shell->shell.activate = activate;
 	shell->shell.lock = lock;
 	shell->shell.unlock = unlock;
 	shell->shell.map = map;

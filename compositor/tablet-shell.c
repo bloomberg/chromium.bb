@@ -389,13 +389,6 @@ toggle_switcher(struct tablet_shell *shell)
 }
 
 static void
-tablet_shell_activate(struct wlsc_shell *base, struct wlsc_surface *es,
-		      struct wlsc_input_device *device, uint32_t time)
-{
-	wlsc_surface_activate(es, device, time);
-}
-
-static void
 tablet_shell_lock(struct wlsc_shell *base)
 {
 	struct tablet_shell *shell =
@@ -555,7 +548,6 @@ shell_init(struct wlsc_compositor *compositor)
 
 	compositor->shell = &shell->shell;
 
-	shell->shell.activate = tablet_shell_activate;
 	shell->shell.lock = tablet_shell_lock;
 	shell->shell.unlock = tablet_shell_unlock;
 	shell->shell.map = tablet_shell_map;

@@ -148,9 +148,6 @@ struct wlsc_spring {
 };
 
 struct wlsc_shell {
-	void (*activate)(struct wlsc_shell *shell,
-			 struct wlsc_surface *es,
-			 struct wlsc_input_device *device, uint32_t time);
 	void (*lock)(struct wlsc_shell *shell);
 	void (*unlock)(struct wlsc_shell *shell);
 	void (*map)(struct wlsc_shell *shell, struct wlsc_surface *surface,
