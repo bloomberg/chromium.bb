@@ -228,6 +228,13 @@
       <arg name="time" type="uint"/>
     </request>
 
+    <!-- The data_offer event introduces a new wl_data_offer object,
+         which will subsequently be used in either the
+         data_device.enter event (for drag and drop) or the
+         data_device.selection event (for selections).  Immediately
+         following the data_device_data_offer event, the new
+         data_offer object will send out data_offer.offer events to
+         describe the mime-types it offers. -->
     <event name="data_offer">
       <arg name="id" type="new_id" interface="wl_data_offer"/>
     </event>
@@ -250,6 +257,15 @@
 
     <event name="drop"/>
 
+    <!-- The selection event is sent out to notify the client of a new
+         wl_data_offer for the selection for this device.  The
+         data_device.data_offer and the data_offer.offer events are
+         sent out immediately before this event to introduce the data
+         offer object.  The selection event is sent to a client
+         immediately before receiving keyboard focus and when a new
+         selection is set while the client has keyboard focus.  The
+         data_offer is valid until a new data_offer or NULL is
+         received or until the client loses keyboard focus. -->
     <event name="selection">
       <arg name="id" type="object" interface="wl_data_offer"/>
     </event>
