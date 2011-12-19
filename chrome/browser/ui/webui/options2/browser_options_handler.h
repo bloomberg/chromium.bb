@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -89,6 +90,22 @@ class BrowserOptionsHandler : public OptionsPage2UIHandler,
   void EnableInstant(const ListValue* args);
   void DisableInstant(const ListValue* args);
 
+  // Enables/disables auto-launching of Chrome on computer startup.
+  void ToggleAutoLaunch(const ListValue* args);
+
+  // Checks (on the file thread) whether the user is in the auto-launch trial
+  // and whether Chrome is set to auto-launch at login. Gets a reply on the UI
+  // thread (see CheckAutoLaunchCallback). A weak pointer to this is passed in
+  // as a parameter to avoid the need to lock between this function and the
+  // destructor.
+
+  void CheckAutoLaunch(base::WeakPtr<BrowserOptionsHandler> weak_this);
+  // Sets up (on the UI thread) the necessary bindings for toggling auto-launch
+  // (if the user is part of the auto-launch and makes sure the HTML UI knows
+  // whether Chrome will auto-launch at login.
+  void CheckAutoLaunchCallback(bool is_in_auto_launch_group,
+                               bool will_launch_at_login);
+
   // Called to request information about the Instant field trial.
   void GetInstantFieldTrialStatus(const ListValue* args);
 
@@ -129,6 +146,11 @@ class BrowserOptionsHandler : public OptionsPage2UIHandler,
   scoped_ptr<CustomHomePagesTableModel> startup_custom_pages_table_model_;
 
   scoped_ptr<AutocompleteController> autocomplete_controller_;
+
+  // Used to get |weak_ptr_| to self for use on the File thread.
+  base::WeakPtrFactory<BrowserOptionsHandler> weak_ptr_factory_for_file_;
+  // Used to post update tasks to the UI thread.
+  base::WeakPtrFactory<BrowserOptionsHandler> weak_ptr_factory_for_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserOptionsHandler);
 };

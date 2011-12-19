@@ -8,9 +8,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/singleton.h"
+#include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
@@ -37,10 +39,18 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_WIN)
+#include "chrome/installer/util/auto_launch_util.h"
+#endif
+
+using content::BrowserThread;
 using content::UserMetricsAction;
 
 BrowserOptionsHandler::BrowserOptionsHandler()
-    : template_url_service_(NULL), startup_custom_pages_table_model_(NULL) {
+    : template_url_service_(NULL),
+      startup_custom_pages_table_model_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_for_file_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_for_ui_(this)) {
 #if !defined(OS_MACOSX)
   default_browser_worker_ = new ShellIntegration::DefaultBrowserWorker(this);
 #endif
@@ -91,6 +101,9 @@ void BrowserOptionsHandler::GetLocalizedValues(
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   localized_strings->SetString("defaultBrowserUseAsDefault",
       l10n_util::GetStringFUTF16(IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  localized_strings->SetString("autoLaunchText",
+      l10n_util::GetStringFUTF16(IDS_AUTOLAUNCH_TEXT,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 }
 
@@ -154,6 +167,47 @@ void BrowserOptionsHandler::Initialize() {
   UpdateSearchEngines();
 
   autocomplete_controller_.reset(new AutocompleteController(profile, this));
+
+#if defined(OS_WIN)
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      base::Bind(&BrowserOptionsHandler::CheckAutoLaunch,
+                 weak_ptr_factory_for_ui_.GetWeakPtr(),
+                 weak_ptr_factory_for_file_.GetWeakPtr()));
+  weak_ptr_factory_for_ui_.DetachFromThread();
+#endif
+}
+
+void BrowserOptionsHandler::CheckAutoLaunch(
+    base::WeakPtr<BrowserOptionsHandler> weak_this) {
+#if defined(OS_WIN)
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  // Pass in weak pointer to this to avoid race if BrowserOptionsHandler is
+  // deleted.
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      base::Bind(&BrowserOptionsHandler::CheckAutoLaunchCallback,
+                 weak_this,
+                 auto_launch_trial::IsInAutoLaunchGroup(),
+                 auto_launch_util::WillLaunchAtLogin(FilePath())));
+#endif
+}
+
+void BrowserOptionsHandler::CheckAutoLaunchCallback(
+    bool is_in_auto_launch_group,
+    bool will_launch_at_login) {
+#if defined(OS_WIN)
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (is_in_auto_launch_group) {
+    web_ui_->RegisterMessageCallback("toggleAutoLaunch",
+        base::Bind(&BrowserOptionsHandler::ToggleAutoLaunch,
+        base::Unretained(this)));
+
+    base::FundamentalValue enabled(will_launch_at_login);
+    web_ui_->CallJavascriptFunction("BrowserOptions.updateAutoLaunchState",
+      enabled);
+  }
+#endif
 }
 
 void BrowserOptionsHandler::UpdateDefaultBrowserState() {
@@ -461,6 +515,23 @@ void BrowserOptionsHandler::EnableInstant(const ListValue* args) {
 
 void BrowserOptionsHandler::DisableInstant(const ListValue* args) {
   InstantController::Disable(Profile::FromWebUI(web_ui_));
+}
+
+void BrowserOptionsHandler::ToggleAutoLaunch(const ListValue* args) {
+#if defined(OS_WIN)
+  if (!auto_launch_trial::IsInAutoLaunchGroup())
+    return;
+
+  bool enable;
+  CHECK_EQ(args->GetSize(), 1U);
+  CHECK(args->GetBoolean(0, &enable));
+
+  // Make sure we keep track of how many disable and how many enable.
+  auto_launch_trial::UpdateToggleAutoLaunchMetric(enable);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&auto_launch_util::SetWillLaunchAtLogin, enable, FilePath()));
+#endif  // OS_WIN
 }
 
 void BrowserOptionsHandler::GetInstantFieldTrialStatus(const ListValue* args) {
