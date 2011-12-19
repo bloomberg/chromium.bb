@@ -172,6 +172,8 @@ void NetworkScreenHandler::HandleOnLanguageChanged(const ListValue* args) {
   static_cast<OobeUI*>(web_ui_)->GetLocalizedStrings(&localized_strings);
   web_ui_->CallJavascriptFunction("cr.ui.Oobe.reloadContent",
                                   localized_strings);
+  // Buttons are recreated, updated "Continue" button state.
+  EnableContinue(is_continue_enabled_);
 }
 
 void NetworkScreenHandler::HandleOnInputMethodChanged(const ListValue* args) {
