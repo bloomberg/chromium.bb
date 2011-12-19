@@ -1286,14 +1286,6 @@ notify_button(struct wl_input_device *device,
 	else
 		wlsc_compositor_idle_release(compositor);
 
-	if (state && surface && device->grab == NULL) {
-		compositor->shell->activate(compositor->shell,
-					    surface, wd, time);
-		wl_input_device_start_grab(device,
-					   &device->implicit_grab,
-					   button, time);
-	}
-
 	wl_list_for_each(b, &compositor->binding_list, link) {
 		if (b->button == button &&
 		    b->modifier == wd->modifier_state && state) {
@@ -1301,6 +1293,12 @@ notify_button(struct wl_input_device *device,
 				   time, 0, button, state, b->data);
 			break;
 		}
+	}
+
+	if (state && surface && device->grab == NULL) {
+		wl_input_device_start_grab(device,
+					   &device->implicit_grab,
+					   button, time);
 	}
 
 	if (device->grab)
@@ -1324,6 +1322,21 @@ terminate_binding(struct wl_input_device *device, uint32_t time,
 
 	if (state)
 		wl_display_terminate(compositor->wl_display);
+}
+
+static void
+click_to_activate_binding(struct wl_input_device *device,
+                         uint32_t time, uint32_t key,
+			  uint32_t button, uint32_t state, void *data)
+{
+	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
+	struct wlsc_compositor *compositor = data;
+	struct wlsc_surface *focus;
+
+	focus = (struct wlsc_surface *) device->pointer_focus;
+	if (state && focus && device->grab == NULL)
+		compositor->shell->activate(compositor->shell,
+					    focus, wd, time);
 }
 
 WL_EXPORT struct wlsc_binding *
@@ -1905,6 +1918,9 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	wlsc_compositor_add_binding(ec, KEY_BACKSPACE, 0,
 				    MODIFIER_CTRL | MODIFIER_ALT,
 				    terminate_binding, ec);
+
+	wlsc_compositor_add_binding(ec, 0, BTN_LEFT, 0,
+				    click_to_activate_binding, ec);
 
 	screenshooter_create(ec);
 
