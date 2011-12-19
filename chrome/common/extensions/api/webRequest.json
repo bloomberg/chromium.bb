@@ -1,0 +1,524 @@
+[
+  {
+    "namespace": "webRequest",
+    "types": [
+      {
+        "id": "RequestFilter",
+        "type": "object",
+        "description": "An object describing filters to apply to webRequest events.",
+        "properties": {
+          "urls": {
+            "type": "array",
+            "description": "A list of URLs or URL patterns. Requests that cannot match any of the URLs will be filtered out.",
+            "items": { "type": "string" }
+          },
+          "types": {
+            "type": "array",
+            "optional": true,
+            "description": "A list of request types. Requests that cannot match any of the types will be filtered out.",
+            "items": { "type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"] }
+          },
+          "tabId": { "type": "integer", "optional": true },
+          "windowId": { "type": "integer", "optional": true }
+        }
+      },
+      {
+        "id": "HttpHeaders",
+        "type": "array",
+        "description": "An array of HTTP headers. Each header is represented as a dictionary containing the keys <code>name</code> and either <code>value</code> or <code>binaryValue</code>.",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {"type": "string", "description": "Name of the HTTP header."},
+            "value": {"type": "string", "optional": true, "description": "Value of the HTTP header if it can be represented by UTF-8."},
+            "binaryValue": {
+              "type": "array",
+              "optional": true,
+              "description": "Value of the HTTP header if it cannot be represented by UTF-8, stored as individual byte values (0..255).",
+              "items": {"type": "integer"}
+            }
+          }
+        }
+      },
+      {
+        "id": "BlockingResponse",
+        "type": "object",
+        "description": "Returns value for event handlers that have the 'blocking' extraInfoSpec applied. Allows the event handler to modify network requests.",
+        "properties": {
+          "cancel": {
+            "type": "boolean",
+            "optional": true,
+            "description": "If true, the request is cancelled. Used in onBeforeRequest, this prevents the request from being sent."
+          },
+          "redirectUrl": {
+            "type": "string",
+            "optional": true,
+            "description": "Only used as a response to the onBeforeRequest event. If set, the original request is prevented from being sent and is instead redirected to the given URL."
+          },
+          "requestHeaders": {
+            "$ref": "HttpHeaders",
+            "optional": true,
+            "description": "Only used as a response to the onBeforeSendHeaders event. If set, the request is made with these request headers instead."
+          },
+          "responseHeaders": {
+            "$ref": "HttpHeaders",
+            "optional": true,
+            "description": "Only used as a response to the onHeadersReceived event. If set, the server is assumed to have responsed with these response headers instead. Only return <code>responseHeaders</code> if you really want to modify the headers in order to limit the number of conflicts (only one extension may modify <code>responseHeaders</code> for each request)."
+          },
+          "authCredentials": {
+            "type": "object",
+            "description": "Only used as a response to the onAuthRequired event. If set, the request is made using the supplied credentials.",
+            "optional": true,
+            "properties": {
+              "username": {"type": "string"},
+              "password": {"type": "string"}
+            }
+          }
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "addEventListener",
+        "nodoc": true,
+        "type": "function",
+        "description": "Used internally to implement the special form of addListener for the webRequest events.",
+        "parameters": [
+          {"type": "function", "name": "callback"},
+          {
+            "$ref": "RequestFilter",
+            "name": "filter",
+            "description": "A set of filters that restricts the events that will be sent to this listener."
+          },
+          {
+            "type": "array",
+            "optional": true,
+            "name": "extraInfoSpec",
+            "description": "Array of extra information that should be passed to the listener function.",
+            "items": {
+              "type": "string",
+              "enum": ["requestHeaders", "responseHeaders", "blocking", "asyncBlocking"]
+            }
+          },
+          {"type": "string", "name": "eventName"},
+          {"type": "string", "name": "subEventName"}
+        ]
+      },
+      {
+        "name": "eventHandled",
+        "nodoc": true,
+        "type": "function",
+        "description": "Used internally to send a response for a blocked event.",
+        "parameters": [
+          {"type": "string", "name": "eventName"},
+          {"type": "string", "name": "subEventName"},
+          {"type": "string", "name": "requestId"},
+          {
+            "$ref": "BlockingResponse",
+            "optional": true,
+            "name": "response"
+          }
+        ]
+      },
+      {
+        "name": "handlerBehaviorChanged",
+        "type": "function",
+        "description": "Needs to be called when the behavior of the webRequest handlers has changed to prevent incorrect handling due to caching. This function call is expensive. Don't call it often.",
+        "parameters": [
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onBeforeRequest",
+        "type": "function",
+        "description": "Fired when a request is about to occur.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
+              "url": {"type": "string"},
+              "method": {"type": "string", "description": "Standard HTTP method."},
+              "frameId": {"type": "integer", "description": "0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
+              "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
+              "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"], "description": "How the requested resource will be used."},
+              "timeStamp": {"type": "number", "description": "The time when this signal is triggered, in milliseconds since the epoch."}
+            }
+          }
+        ],
+        "extraParameters": [
+          {
+            "$ref": "RequestFilter",
+            "name": "filter",
+            "description": "A set of filters that restricts the events that will be sent to this listener."
+          },
+          {
+            "type": "array",
+            "optional": true,
+            "name": "extraInfoSpec",
+            "description": "Array of extra information that should be passed to the listener function.",
+            "items": {
+              "type": "string",
+              "enum": ["blocking"]
+            }
+          }
+        ],
+        "returns": {
+          "$ref": "BlockingResponse",
+          "description": "If \"blocking\" is specified in the \"extraInfoSpec\" parameter, the event listener should return an object of this type.",
+          "optional": true
+        }
+      },
+      {
+        "name": "onBeforeSendHeaders",
+        "type": "function",
+        "description": "Fired before sending an HTTP request, once the request headers are available. This may occur after a TCP connection is made to the server, but before any HTTP data is sent. ",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
+              "url": {"type": "string"},
+              "method": {"type": "string", "description": "Standard HTTP method."},
+              "frameId": {"type": "integer", "description": "0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
+              "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
+              "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"], "description": "How the requested resource will be used."},
+              "timeStamp": {"type": "number", "description": "The time when this signal is triggered, in milliseconds since the epoch."},
+              "requestHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP request headers that are going to be sent out with this request."}
+            }
+          }
+        ],
+        "extraParameters": [
+          {
+            "$ref": "RequestFilter",
+            "name": "filter",
+            "description": "A set of filters that restricts the events that will be sent to this listener."
+          },
+          {
+            "type": "array",
+            "optional": true,
+            "name": "extraInfoSpec",
+            "description": "Array of extra information that should be passed to the listener function.",
+            "items": {
+              "type": "string",
+              "enum": ["requestHeaders", "blocking"]
+            }
+          }
+        ],
+        "returns": {
+          "$ref": "BlockingResponse",
+          "description": "If \"blocking\" is specified in the \"extraInfoSpec\" parameter, the event listener should return an object of this type.",
+          "optional": true
+        }
+      },
+      {
+        "name": "onSendHeaders",
+        "type": "function",
+        "description": "Fired just before a request is going to be sent to the server (modifications of prvious onBeforeSendHeaders callbacks are visible by the time onSendHeaders is fired).",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
+              "url": {"type": "string"},
+              "method": {"type": "string", "description": "Standard HTTP method."},
+              "frameId": {"type": "integer", "description": "0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
+              "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
+              "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"], "description": "How the requested resource will be used."},
+              "timeStamp": {"type": "number", "description": "The time when this signal is triggered, in milliseconds since the epoch."},
+              "requestHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP request headers that have been sent out with this request."}
+            }
+          }
+        ],
+        "extraParameters": [
+          {
+            "$ref": "RequestFilter",
+            "name": "filter",
+            "description": "A set of filters that restricts the events that will be sent to this listener."
+          },
+          {
+            "type": "array",
+            "optional": true,
+            "name": "extraInfoSpec",
+            "description": "Array of extra information that should be passed to the listener function.",
+            "items": {
+              "type": "string",
+              "enum": ["requestHeaders"]
+            }
+          }
+        ]
+      },
+      {
+        "name": "onHeadersReceived",
+        "type": "function",
+        "description": "Fired when HTTP response headers of a request have been received",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "deails",
+            "properties": {
+              "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
+              "url": {"type": "string"},
+              "method": {"type": "string", "description": "Standard HTTP method."},
+              "frameId": {"type": "integer", "description": "0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
+              "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
+              "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"], "description": "How the requested resource will be used."},
+              "timeStamp": {"type": "number", "description": "The time when this signal is triggered, in milliseconds since the epoch."},
+              "statusLine": {"type": "string", "optional": true, "description": "HTTP status line of the response"},
+              "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that have been received with this response."}
+             }
+          }
+        ],
+        "extraParameters": [
+          {
+            "$ref": "RequestFilter",
+            "name": "filter",
+            "description": "A set of filters that restricts the events that will be sent to this listener."
+          },
+          {
+            "type": "array",
+            "optional": true,
+            "name": "extraInfoSpec",
+            "description": "Array of extra information that should be passed to the listener function.",
+            "items": {
+              "type": "string",
+              "enum": ["blocking", "responseHeaders"]
+            }
+          }
+        ],
+        "returns": {
+          "$ref": "BlockingResponse",
+          "description": "If \"blocking\" is specified in the \"extraInfoSpec\" parameter, the event listener should return an object of this type.",
+          "optional": true
+        }
+      },
+      {
+        "name": "onAuthRequired",
+        "type": "function",
+        "description": "Fired when an authentication failure was received. The listener has three options: it can provide authentication credentials, it can cancel the request and display the error page, or it can take no action on the challenge. If bad user credentials are provided, this may be called multiple times for the same request.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
+              "url": {"type": "string"},
+              "method": {"type": "string", "description": "Standard HTTP method."},
+              "frameId": {"type": "integer", "description": "0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
+              "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
+              "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"], "description": "How the requested resource will be used."},
+              "timeStamp": {"type": "number", "description": "The time when this signal is triggered, in milliseconds since the epoch."},
+              "scheme": {"type": "string", "description": "The authentication scheme, e.g. Basic or Digest."},
+              "realm": {"type": "string", "description": "The authentication realm provided by the server, if there is one.", "optional": true},
+              "challenger": {"type": "object", "description": "The server requesting authentication.", "properties": {"host": {"type": "string"}, "port": {"type": "integer"}}},
+              "isProxy": {"type": "boolean", "description": "True for Proxy-Authenticate, false for WWW-Authenticate."},
+              "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that were received along with this response."},
+              "statusLine": {"type": "string", "optional": true, "description": "HTTP status line of the response"}
+            }
+          },
+          {
+            "type": "function",
+            "optional": true,
+            "name": "callback",
+            "parameters": [
+              {"name": "response", "$ref": "BlockingResponse"}
+            ]
+          }
+        ],
+        "extraParameters": [
+          {
+            "$ref": "RequestFilter",
+            "name": "filter",
+            "description": "A set of filters that restricts the events that will be sent to this listener."
+          },
+          {
+            "type": "array",
+            "optional": true,
+            "name": "extraInfoSpec",
+            "description": "Array of extra information that should be passed to the listener function.",
+            "items": {
+              "type": "string",
+              "enum": ["responseHeaders", "blocking", "asyncBlocking"]
+            }
+          }
+        ],
+        "returns": {
+          "$ref": "BlockingResponse",
+          "description": "If \"blocking\" is specified in the \"extraInfoSpec\" parameter, the event listener should return an object of this type.",
+          "optional": true
+        }
+      },
+      {
+        "name": "onResponseStarted",
+        "type": "function",
+        "description": "Fired when the first byte of the response body is received. For HTTP requests, this means that the status line and response headers are available.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
+              "url": {"type": "string"},
+              "method": {"type": "string", "description": "Standard HTTP method."},
+              "frameId": {"type": "integer", "description": "0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
+              "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
+              "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"], "description": "How the requested resource will be used."},
+              "timeStamp": {"type": "number", "description": "The time when this signal is triggered, in milliseconds since the epoch."},
+              "ip": {"type": "string", "optional": true, "description": "The server IP address that the request was actually sent to. Note that it may be a literal IPv6 address."},
+              "fromCache": {"type": "boolean", "description": "Indicates if this response was fetched from disk cache."},
+              "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
+              "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that were received along with this response."},
+              "statusLine": {"type": "string", "optional": true, "description": "HTTP status line of the response"}
+            }
+          }
+        ],
+        "extraParameters": [
+          {
+            "$ref": "RequestFilter",
+            "name": "filter",
+            "description": "A set of filters that restricts the events that will be sent to this listener."
+          },
+          {
+            "type": "array",
+            "optional": true,
+            "name": "extraInfoSpec",
+            "description": "Array of extra information that should be passed to the listener function.",
+            "items": {
+              "type": "string",
+              "enum": ["responseHeaders"]
+            }
+          }
+        ]
+      },
+      {
+        "name": "onBeforeRedirect",
+        "type": "function",
+        "description": "Fired when a server initiated redirect is about to occur.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
+              "url": {"type": "string"},
+              "method": {"type": "string", "description": "Standard HTTP method."},
+              "frameId": {"type": "integer", "description": "0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
+              "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
+              "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"], "description": "How the requested resource will be used."},
+              "timeStamp": {"type": "number", "description": "The time when this signal is triggered, in milliseconds since the epoch."},
+              "ip": {"type": "string", "optional": true, "description": "The server IP address that the request was actually sent to. Note that it may be a literal IPv6 address."},
+              "fromCache": {"type": "boolean", "description": "Indicates if this response was fetched from disk cache."},
+              "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
+              "redirectUrl": {"type": "string", "description": "The new URL."},
+              "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that were received along with this redirect."},
+              "statusLine": {"type": "string", "optional": true, "description": "HTTP status line of the response"}
+            }
+          }
+        ],
+        "extraParameters": [
+          {
+            "$ref": "RequestFilter",
+            "name": "filter",
+            "description": "A set of filters that restricts the events that will be sent to this listener."
+          },
+          {
+            "type": "array",
+            "optional": true,
+            "name": "extraInfoSpec",
+            "description": "Array of extra information that should be passed to the listener function.",
+            "items": {
+              "type": "string",
+              "enum": ["responseHeaders"]
+            }
+          }
+        ]
+      },
+      {
+        "name": "onCompleted",
+        "type": "function",
+        "description": "Fired when a request is completed.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
+              "url": {"type": "string"},
+              "method": {"type": "string", "description": "Standard HTTP method."},
+              "frameId": {"type": "integer", "description": "0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
+              "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
+              "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"], "description": "How the requested resource will be used."},
+              "timeStamp": {"type": "number", "description": "The time when this signal is triggered, in milliseconds since the epoch."},
+              "ip": {"type": "string", "optional": true, "description": "The server IP address that the request was actually sent to. Note that it may be a literal IPv6 address."},
+              "fromCache": {"type": "boolean", "description": "Indicates if this response was fetched from disk cache."},
+              "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
+              "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that were received along with this response."},
+              "statusLine": {"type": "string", "optional": true, "description": "HTTP status line of the response"}
+            }
+          }
+        ],
+        "extraParameters": [
+          {
+            "$ref": "RequestFilter",
+            "name": "filter",
+            "description": "A set of filters that restricts the events that will be sent to this listener."
+          },
+          {
+            "type": "array",
+            "optional": true,
+            "name": "extraInfoSpec",
+            "description": "Array of extra information that should be passed to the listener function.",
+            "items": {
+              "type": "string",
+              "enum": ["responseHeaders"]
+            }
+          }
+        ]
+      },
+      {
+        "name": "onErrorOccurred",
+        "type": "function",
+        "description": "Fired when an error occurs.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
+              "url": {"type": "string"},
+              "method": {"type": "string", "description": "Standard HTTP method."},
+              "frameId": {"type": "integer", "description": "0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
+              "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
+              "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"], "description": "How the requested resource will be used."},
+              "timeStamp": {"type": "number", "description": "The time when this signal is triggered, in milliseconds since the epoch."},
+              "ip": {"type": "string", "optional": true, "description": "The server IP address that the request was actually sent to. Note that it may be a literal IPv6 address."},
+              "fromCache": {"type": "boolean", "description": "Indicates if this response was fetched from disk cache."},
+              "error": {"type": "string", "description": "The error description. This string is <em>not</em> guaranteed to remain backwards compatible between releases. You must not parse and act based upon its content."}
+            }
+          }
+        ],
+        "extraParameters": [
+          {
+            "$ref": "RequestFilter",
+            "name": "filter",
+            "description": "A set of filters that restricts the events that will be sent to this listener."
+          }
+        ]
+      }
+    ]
+  }
+]

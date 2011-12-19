@@ -1,0 +1,46 @@
+[
+  {
+    "namespace": "idle",
+    "types": [],
+    "functions": [
+      {
+        "name": "queryState",
+        "type": "function",
+        "description": "Returns the current state of the browser.",
+        "parameters": [
+          {
+            "name": "thresholdSeconds",
+            "type": "integer",
+            "minimum": 15,
+            "description": "Threshold, in seconds, used to determine when a machine is in the idle state."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "newState",
+                "type": "string",
+                "enum": ["active", "idle", "locked"]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onStateChanged",
+        "type": "function",
+        "description": "Fired when the browser changes to an active state.  Currently only reports the transition from idle to active.",
+        "parameters": [
+          {
+            "name": "newState",
+            "type": "string",
+            "enum": ["active"]
+          }
+        ]
+      }
+    ]
+  }
+]

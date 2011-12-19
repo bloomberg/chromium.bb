@@ -1,0 +1,64 @@
+[
+  {
+    "namespace": "systemPrivate",
+    "nodoc": true,
+    "types": [
+      {
+        "id": "UpdateStatus",
+        "type": "object",
+        "description": "Information about the system update.",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": ["NotAvailable", "Updating", "NeedRestart"],
+            "description": "State of system update.  NotAvailable when there is no available update or the update system is in error state, Updating when a system update is in progress, NeedRestart when a system update is finished and restart is needed."
+          },
+          "download_progress": {
+            "type": "number",
+            "description": "Value between 0 and 1 describing the progress of system update download.  This value will be set to 0 when |state| is NotAvailable, 1 when NeedRestart."
+          }
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "getIncognitoModeAvailability",
+        "type": "function",
+        "description": "Returns whether the incognito mode is enabled, disabled or forced",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Called with the result.",
+            "parameters": [
+              {
+                "name": "value",
+                "type": "string",
+                "enum": ["enabled", "disabled", "forced"],
+                "description": "Exposes whether the incognito mode is available to windows. One of 'enabled', 'disabled' (user cannot browse pages in Incognito mode), 'forced' (all pages/sessions are forced into Incognito mode)."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getUpdateStatus",
+        "type": "function",
+        "description": "Gets information about the system update.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "$ref": "UpdateStatus",
+                "name": "status",
+                "description": "Details of the system update"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

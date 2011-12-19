@@ -1,0 +1,53 @@
+[
+  {
+    "namespace": "i18n",
+    "types": [],
+    "functions": [
+      {
+        "name": "getAcceptLanguages",
+        "type": "function",
+        "description": "Gets the accept-languages of the browser. This is different from the locale used by the browser; to get the locale, use <code>window.navigator.language</code>.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {"name": "languages", "type": "array", "items": {"type": "string"}, "description": "Array of the accept languages of the browser, such as en-US,en,zh-CN"}
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getMessage",
+        "type": "function",
+        "unprivileged": true,
+        "description": "Gets the localized string for the specified message. If the message is missing, this method returns an empty string (''). If the format of the <code>getMessage()</code> call is wrong &mdash; for example, <em>messageName</em> is not a string or the <em>substitutions</em> array is empty or has more than 9 elements &mdash; this method returns <code>undefined</code>.",
+        "parameters": [
+          { "type": "string",
+            "name": "messageName",
+            "description": "The name of the message, as specified in the <a href='i18n-messages.html'><code>messages.json</code></a> file."
+          },
+          {
+            "choices": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1,
+                "maxItems": 9
+              }
+            ],
+            "name": "substitutions",
+            "optional": true,
+            "description": "1 - 9 substitution strings, if the message requires any."
+          }
+        ],
+        "returns": {
+          "type": "string",
+          "description": "Message localized for current locale."
+        }
+      }
+    ],
+    "events": []
+  }
+]

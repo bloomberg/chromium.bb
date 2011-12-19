@@ -1,0 +1,44 @@
+[
+  {
+    "namespace": "inputMethodPrivate",
+    "nodoc": true,
+    "platforms": ["chromeos"],
+    "types": [],
+    "functions": [
+      {
+        "name": "get",
+        "type": "function",
+        "description": "Gets the current input method.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": false,
+            "description": "Callback which is called with the current input method.",
+            "parameters": [
+              {
+                "name": "inputMethodId",
+                "type": "string",
+                "description": "Current input method."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onChanged",
+        "type": "function",
+        "description": "Fired when the input method is changed.",
+        "parameters": [
+          {
+            "name": "newInputMethodId",
+            "type": "string",
+            "description": "New input method which is being used."
+          }
+        ]
+      }
+    ]
+  }
+]

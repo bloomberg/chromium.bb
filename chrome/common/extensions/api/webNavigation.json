@@ -1,0 +1,212 @@
+[
+  {
+    "namespace": "webNavigation",
+    "types": [],
+    "functions": [
+      {
+        "name": "getFrame",
+        "type": "function",
+        "description": "Retrieves information about the given frame. A frame refers to an &lt;iframe&gt; or a &lt;frame&gt; of a web page and is identified by a tab ID and a frame ID.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "description": "Information about the frame to retrieve information about.",
+            "properties": {
+              "tabId": { "type": "integer", "minimum": 0, "description": "The ID of the tab in which the frame is." },
+              "frameId": { "type": "integer", "minimum": 0, "description": "The ID of the frame in the given tab." }
+            }
+          },
+          {
+            "type": "function", "name": "callback", "parameters": [
+              {
+                "type": "object",
+                "name": "details",
+                "optional": true,
+                "description": "Information about the requested frame, null if the specified frame ID and/or tab ID are invalid.",
+                "properties": {
+                  "errorOccurred": {
+                    "type": "boolean",
+                    "description": "True if the last navigation in this frame was interrupted by an error, i.e. the onErrorOccurred event fired."
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "The URL currently associated with this frame, if the frame identified by the frameId existed at one point in the given tab. The fact that an URL is associated with a given frameId does not imply that the corresponding frame still exists."
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getAllFrames",
+        "type": "function",
+        "description": "Retrieves information about all frames of a given tab.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "description": "Information about the tab to retrieve all frames from.",
+            "properties": {
+              "tabId": { "type": "integer", "minimum": 0, "description": "The ID of the tab." }
+            }
+          },
+          {
+            "type": "function", "name": "callback", "parameters": [
+              {
+                "type": "array",
+                "description": "A list of frames in the given tab, null if the specified tab ID is invalid.",
+                "optional": true,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "errorOccurred": {
+                      "type": "boolean",
+                      "description": "True if the last navigation in this frame was interrupted by an error, i.e. the onErrorOccurred event fired."
+                    },
+                    "frameId": {
+                      "type": "integer",
+                      "description": "The ID of the frame. 0 indicates that this is the main frame; a positive value indicates the ID of a subframe."
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "The URL currently associated with this frame, if the frame identified by the frameId existed at one point in the given tab. The fact that an URL is associated with a given frameId does not imply that the corresponding frame still exists."
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onBeforeNavigate",
+        "type": "function",
+        "description": "Fired when a navigation is about to occur.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation is about to occur."},
+              "url": {"type": "string"},
+              "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab."},
+              "timeStamp": {"type": "number", "description": "The time when the browser was about to start the navigation, in milliseconds since the epoch."}
+            }
+          }
+        ]
+      },
+      {
+        "name": "onCommitted",
+        "type": "function",
+        "description": "Fired when a navigation is committed. The document (and the resources it refers to, such as images and subframes) might still be downloading, but at least part of the document has been received from the server and the browser has decided to switch to the new document.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation occurs."},
+              "url": {"type": "string"},
+              "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab."},
+              "transitionType": {"type": "string", "enum": ["link", "typed", "auto_bookmark", "auto_subframe", "manual_subframe", "generated", "start_page", "form_submit", "reload", "keyword", "keyword_generated"], "description": "Cause of the navigation. The same transition types as defined in the history API are used."},
+              "transitionQualifiers": {"type": "array", "description": "A list of transition qualifiers.", "items:": {"type": "string", "enum": ["client_redirect", "server_redirect", "forward_back", "from_address_bar"]}},
+              "timeStamp": {"type": "number", "description": "The time when the navigation was committed, in milliseconds since the epoch."}
+            }
+          }
+        ]
+      },
+      {
+        "name": "onDOMContentLoaded",
+        "type": "function",
+        "description": "Fired when the page's DOM is fully constructed, but the referenced resources may not finish loading.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation occurs."},
+              "url": {"type": "string"},
+              "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab."},
+              "timeStamp": {"type": "number", "description": "The time when the page's DOM was fully constructed, in milliseconds since the epoch."}
+            }
+          }
+        ]
+      },
+      {
+        "name": "onCompleted",
+        "type": "function",
+        "description": "Fired when a document, including the resources it refers to, is completely loaded and initialized.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation occurs."},
+              "url": {"type": "string"},
+              "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab."},
+              "timeStamp": {"type": "number", "description": "The time when the document finished loading, in milliseconds since the epoch."}
+            }
+          }
+        ]
+      },
+      {
+        "name": "onErrorOccurred",
+        "type": "function",
+        "description": "Fired when an error occurs and the navigation is aborted. This can happen if either a network error occurred, or the user aborted the navigation.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation occurs."},
+              "url": {"type": "string"},
+              "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab."},
+              "error": {"type": "string", "description": "The error description."},
+              "timeStamp": {"type": "number", "description": "The time when the error occurred, in milliseconds since the epoch."}
+            }
+          }
+        ]
+      },
+      {
+        "name": "onCreatedNavigationTarget",
+        "type": "function",
+        "description": "Fired when a new window, or a new tab in an existing window, is created to host a navigation.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "sourceTabId": {"type": "integer", "description": "The ID of the tab in which the navigation is triggered."},
+              "sourceFrameId": {"type": "integer", "description": "The ID of the frame with sourceTabId in which the navigation is triggered. 0 indicates the main frame."},
+              "url": {"type": "string", "description": "The URL to be opened in the new window."},
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the url is opened"},
+              "timeStamp": {"type": "number", "description": "The time when the browser was about to create a new view, in milliseconds since the epoch."}
+            }
+          }
+        ]
+      },
+      {
+        "name": "onReferenceFragmentUpdated",
+        "type": "function",
+        "description": "Fired when the reference fragment of a frame was updated. All future events for that frame will use the updated URL.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation occurs."},
+              "url": {"type": "string"},
+              "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab."},
+              "transitionType": {"type": "string", "enum": ["link", "typed", "auto_bookmark", "auto_subframe", "manual_subframe", "generated", "start_page", "form_submit", "reload", "keyword", "keyword_generated"], "description": "Cause of the navigation. The same transition types as defined in the history API are used."},
+              "transitionQualifiers": {"type": "array", "description": "A list of transition qualifiers.", "items:": {"type": "string", "enum": ["client_redirect", "server_redirect", "forward_back", "from_address_bar"]}},
+              "timeStamp": {"type": "number", "description": "The time when the navigation was committed, in milliseconds since the epoch."}
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,117 @@
+[
+  {
+    "namespace": "test",
+    "nodoc": true,
+    "types": [],
+    "functions": [
+      {
+        "name": "getConfig",
+        "type": "function",
+        "description": "Gives configuration options set by the test.",
+        "parameters": [
+          {
+            "type": "function", "name": "callback", "parameters": [
+              {
+                "type": "object",
+                "name": "testConfig",
+                "properties": {
+                  "testServer": {
+                    "type": "object",
+                    "optional": true,
+                    "description": "Details on the test server used to mock network responses.  Will be set only if test calls ExtensionApiTest::StartTestServer().",
+                    "properties": {
+                      "port": {
+                        "type": "integer",
+                        "description": "The port on which the test server is listening.",
+                        "minimum": 1024,
+                        "maximum": 65535
+                      }
+                    }
+                  },
+                  "testDataDirectory": {
+                    "type": "string",
+                    "description": "file:/// URL for the API test data directory."
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "notifyFail",
+        "unprivileged": true,
+        "type": "function",
+        "description": "Notifies the browser process that test code running in the extension failed.  This is only used for internal unit testing.",
+        "parameters": [
+          {"type": "string", "name": "message"}
+        ]
+      },
+      {
+        "name": "notifyPass",
+        "unprivileged": true,
+        "type": "function",
+        "description": "Notifies the browser process that test code running in the extension passed.  This is only used for internal unit testing.",
+        "parameters": [
+          {"type": "string", "name": "message", "optional": true}
+        ]
+      },
+      {
+        "name": "resetQuota",
+        "type": "function",
+        "description": "Resets all accumulated quota state for all extensions.  This is only used for internal unit testing.",
+        "parameters": []
+      },
+      {
+        "name": "log",
+        "type": "function",
+        "description": "Logs a message during internal unit testing.",
+        "parameters": [
+          {"type": "string", "name": "message"}
+        ]
+      },
+      {
+        "name": "createIncognitoTab",
+        "type": "function",
+        "description": "Creates an incognito tab during internal testing. Succeeds even if the extension is not enabled in incognito mode.",
+        "parameters": [
+          {"type": "string", "name": "url"}
+        ]
+      },
+      {
+        "name": "sendMessage",
+        "type": "function",
+        "description": "Sends a string message to the browser process, generating a Notification that C++ test code can wait for.",
+        "parameters": [
+          {"type": "string", "name": "message"},
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {"type": "string", "name": "response"}
+            ]
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onMessage",
+        "type": "function",
+        "unprivileged": true,
+        "description": "Used to test sending messages to extensions.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "info",
+            "properties": {
+              "data": { "type": "string", "description": "Additional information." },
+              "lastMessage": { "type": "boolean", "description": "True if this was the last message for this test" }
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

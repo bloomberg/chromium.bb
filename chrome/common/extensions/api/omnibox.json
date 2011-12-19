@@ -1,0 +1,112 @@
+[
+  {
+    "namespace": "omnibox",
+    "types": [
+      {
+        "id": "SuggestResult",
+        "type": "object",
+        "description": "A suggest result.",
+        "properties": {
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The text that is put into the URL bar, and that is sent to the extension when the user chooses this entry."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The text that is displayed in the URL dropdown. Can contain XML-style markup for styling. The supported tags are 'url' (for a literal URL), 'match' (for highlighting text that matched what the user's query), and 'dim' (for dim helper text). The styles can be nested, eg. <dim><match>dimmed match</match></dim>."
+          }
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "sendSuggestions",
+        "nodoc": true,
+        "type": "function",
+        "description": "A callback passed to the onInputChanged event used for sending suggestions back to the browser.",
+        "parameters": [
+          {"type": "integer", "name": "requestId"},
+          {
+            "type": "array",
+            "description": "Array of suggest results",
+            "items": {
+              "type": "object",
+              "additionalProperties": { "type": "any" }
+            }
+          }
+        ]
+      },
+      {
+        "name": "setDefaultSuggestion",
+        "type": "function",
+        "description": "Sets the description and styling for the default suggestion. The default suggestion is the text that is displayed in the first suggestion row underneath the URL bar.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "suggestion",
+            "description": "A partial SuggestResult object, without the 'content' parameter. See SuggestResult for a description of the parameters.",
+            "properties": {
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The text to display in the default suggestion. The placeholder string '%s' can be included and will be replaced with the user's input."
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onInputStarted",
+        "type": "function",
+        "description": "User has started a keyword input session by typing the extension's keyword. This is guaranteed to be sent exactly once per input session, and before any onInputChanged events.",
+        "parameters": []
+      },
+      {
+        "name": "onInputChanged",
+        "type": "function",
+        "description": "User has changed what is typed into the omnibox.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "text"
+          },
+          {
+            "name": "suggest",
+            "type": "function",
+            "description": "A callback passed to the onInputChanged event used for sending suggestions back to the browser.",
+            "parameters": [
+              {
+                "type": "array",
+                "description": "Array of suggest results",
+                "items": {
+                  "$ref": "SuggestResult"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "onInputEntered",
+        "type": "function",
+        "description": "User has accepted what is typed into the omnibox.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "text"
+          }
+        ]
+      },
+      {
+        "name": "onInputCancelled",
+        "type": "function",
+        "description": "User has ended the keyword input session without accepting the input.",
+        "parameters": []
+      }
+    ]
+  }
+]

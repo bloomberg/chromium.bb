@@ -1,0 +1,39 @@
+[
+  {
+    "namespace": "experimental.topSites",
+    "nodoc": true,
+    "types": [],
+    "functions": [
+      {
+        "name": "get",
+        "type": "function",
+        "description": "Gets a list of top sites.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "type": "array",
+                "name": "data",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string",
+                      "description": "Page title"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "Page url"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,279 @@
+[
+  {
+    "namespace":"management",
+    "types": [
+      {
+        "id": "IconInfo",
+        "description": "Information about an icon belonging to an extension or app.",
+        "type": "object",
+        "properties": {
+          "size": { "type": "integer", "description": "A number representing the width and height of the icon. Likely values include (but are not limited to) 128, 48, 24, and 16."  },
+          "url": { "type": "string", "description": "The URL for this icon image. To display a grayscale version of the icon (to indicate that an extension is disabled, for example), append <code>?grayscale=true</code> to the URL." }
+        }
+      },
+      {
+        "id": "ExtensionInfo",
+        "description": "Information about an installed extension or app.",
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "The extension's unique identifier.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The name of this extension or app.",
+            "type": "string"
+          },
+          "description": {
+            "description": "The description of this extension or app.",
+            "type": "string"
+          },
+          "version": {
+            "description": "The <a href='manifest.html#version'>version</a> of this extension or app.",
+            "type": "string"
+          },
+          "mayDisable": {
+            "description": "Whether this extension can be disabled or uninstalled by the user.",
+            "type": "boolean"
+          },
+          "enabled": {
+            "description": "Whether it is currently enabled or disabled.",
+            "type": "boolean"
+          },
+          "disabledReason": {
+            "description": "A reason the item is disabled.",
+            "type": "string",
+            "enum": ["unknown", "permissions_increase"],
+            "optional": true
+          },
+          "isApp": {
+            "description": "True if this is an app.",
+            "type": "boolean"
+          },
+          "appLaunchUrl": {
+            "description": "The launch url (only present for apps).",
+            "type": "string",
+            "optional": true
+          },
+          "homepageUrl": {
+            "description": "The URL of the homepage of this extension or app.",
+            "type": "string",
+            "optional": true
+          },
+          "updateUrl": {
+            "description": "The update URL of this extension or app.",
+            "type": "string",
+            "optional": true
+          },
+          "offlineEnabled": {
+            "description": "Whether the extension or app declares that it supports offline.",
+            "type": "boolean"
+          },
+          "optionsUrl": {
+            "description": "The url for the item's options page, if it has one.",
+            "type": "string"
+          },
+          "icons": {
+            "description": "A list of icon information. Note that this just reflects what was declared in the manifest, and the actual image at that url may be larger or smaller than what was declared, so you might consider using explicit width and height attributes on img tags referencing these images. See the <a href='manifest.html#icons'>manifest documentation on icons</a> for more details.",
+            "type": "array",
+            "optional": true,
+            "items": {
+              "$ref": "IconInfo"
+            }
+          },
+          "permissions": {
+            "description": "Returns a list of API based permissions.",
+            "type": "array",
+            "items" : {
+              "type": "string"
+            }
+          },
+          "hostPermissions": {
+            "description": "Returns a list of host based permissions.",
+            "type": "array",
+            "items" : {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "getAll",
+        "description": "Returns a list of information about installed extensions and apps.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "type": "array",
+                "name": "result",
+                "items": {
+                  "$ref": "ExtensionInfo"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "get",
+        "description": "Returns information about the installed extension or app that has the given ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "The ID from an item of $ref:ExtensionInfo."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": "true",
+            "parameters": [
+              {
+                "name": "result",
+                "$ref": "ExtensionInfo"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getPermissionWarningsById",
+        "description": "Returns a list of <a href='permission_warnings.html'>permission warnings</a> for the given extension id.",
+        "parameters": [
+          { "name": "id",
+            "type": "string",
+            "description": "The ID of an already installed extension."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "true",
+            "parameters": [
+              {
+                "name": "permissionWarnings",
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getPermissionWarningsByManifest",
+        "description": "Returns a list of <a href='permission_warnings.html'>permission warnings</a> for the given extension manifest string. Note: This function can be used without requesting the 'management' permission in the manifest.",
+        "parameters": [
+          {
+            "name": "manifestStr",
+            "type": "string",
+            "description": "Extension manifest JSON string."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "true",
+            "parameters": [
+              {
+                "name": "permissionWarnings",
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setEnabled",
+        "description": "Enables or disables an app or extension.",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "This should be the id from an item of $ref:ExtensionInfo."
+          },
+          {
+            "name": "enabled",
+            "type": "boolean",
+            "description": "Whether this item should be enabled or disabled."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "true",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "uninstall",
+        "description": "Uninstalls a currently installed app or extension.",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "This should be the id from an item of $ref:ExtensionInfo."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "true",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "launchApp",
+        "description": "Launches an application.",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "The extension id of the application."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "true",
+            "parameters": []
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onInstalled",
+        "description": "Fired when an app or extension has been installed.",
+        "type": "function",
+        "parameters": [{"name": "info", "$ref":"ExtensionInfo"}]
+      },
+      {
+        "name": "onUninstalled",
+        "description": "Fired when an app or extension has been uninstalled.",
+        "type": "function",
+        "parameters": [
+          {
+           "name": "id",
+           "type": "string",
+           "description": "The id of the extension or app that was uninstalled."
+          }
+        ]
+      },
+      {
+        "name": "onEnabled",
+        "description": "Fired when an app or extension has been enabled.",
+        "type": "function",
+        "parameters": [{"name": "info", "$ref":"ExtensionInfo"}]
+      },
+      {
+        "name": "onDisabled",
+        "description": "Fired when an app or extension has been disabled",
+        "type": "function",
+        "parameters": [{"name": "info", "$ref":"ExtensionInfo"}]
+      }
+    ]
+  }
+]

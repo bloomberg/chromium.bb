@@ -1,0 +1,570 @@
+[
+  {
+    "namespace":"fileBrowserPrivate",
+    "nodoc": "true",
+    "types": [
+      {
+        "id": "FileBrowserTask",
+        "type": "object",
+        "description": "Represents information about available browser tasks. A task is an abstraction of an operation that the file browser can perform over a selected file set.",
+        "properties": {
+          "taskId": {"type": "string", "description": "The unique identifier of the task."},
+          "title": {"type": "string", "description": "Task title."},
+          "iconUrl": {"type": "string", "description": "Task icon url (from chrome://extension-icon/...)"},
+          "patterns": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "The list of URL patterns supported by the task that matched at least one file."
+          }
+        }
+      },
+      {
+        "id": "VolumeInfo",
+        "type": "object",
+        "description": "Mounted disk volume information.",
+        "properties": {
+          "mountPath": {
+            "type": "string",
+            "description": "Disk volume mount point path. The value corresponds to its Entry.fullPath in File API."
+          },
+          "devicePath": {
+            "type": "string",
+            "description": "Disk volume device path."
+          },
+          "label": {
+            "type": "string",
+            "description": "Volume label."
+          },
+          "deviceType": {
+            "type": "string",
+            "enum": ["flash", "hdd", "optical", "undefined"],
+            "description": "Device type."
+          },
+          "readOnly": {
+            "type": "boolean",
+            "description": "Flag that specifies if volume is mounted in read-only mode."
+          },
+          "totalSizeKB": {
+            "type": "integer",
+            "description": "Total disk volume size in KBs"
+          }
+        }
+      },
+      {
+        "id": "MountPointInfo",
+        "type": "object",
+        "description": "Mounted point information.",
+        "properties": {
+          "mountPath": {
+            "type": "string",
+            "optional": true,
+            "description": "Disk volume mount point path. The value corresponds to its Entry.fullPath in File API."
+          },
+          "sourceUrl": {
+            "type": "string",
+            "description": "The path to the mounted devicem, url of the mounted archive file or network resource."
+          },
+          "mountType": {
+            "type": "string",
+            "enum": ["device", "file", "network"],
+            "description": "Type of the mount."
+          },
+          "mountCondition": {
+            "type": "string",
+            "description": "Additional data about mount, for example, that the filesystem is not supported."
+          }
+        }
+      },
+      {
+        "id": "MountPointSizeStats",
+        "type": "object",
+        "description": "Information about total and remaining size on the mount point.",
+        "properties": {
+          "totalSizeKB": {
+            "type": "integer",
+            "description": "Total available size on the mount point."
+          },
+          "remainingSizeKB": {
+            "type": "integer",
+            "description": "Remaining available size on the mount point."
+          }
+        }
+      },
+      {
+        "id": "VolumeMetadata",
+        "type": "object",
+        "description": "Mounted disk volume metadata.",
+        "properties": {
+          "mountPath": {
+            "type": "string",
+            "description": "Disk volume mount point path."
+          },
+          "devicePath": {
+            "type": "string",
+            "description": "Disk volume device path."
+          },
+          "systemPath": {
+            "type": "string",
+            "description": "Disk volume system path."
+          },
+          "filePath": {
+            "type": "string",
+            "description": "Disk volume file path."
+          },
+          "deviceLabel": {
+            "type": "string",
+            "description": "Volume label."
+          },
+          "driveLabel": {
+            "type": "string",
+            "description": "Volume's disk label."
+          },
+          "deviceType": {
+            "type": "string",
+            "enum": ["flash", "hdd", "optical", "undefined"],
+            "description": "Device type."
+          },
+          "isParent": {
+            "type": "boolean",
+            "description": "Flag that specifies if volume is a parent device."
+          },
+          "isReadOnly": {
+            "type": "boolean",
+            "description": "Flag that specifies if volume is mounted in read-only mode."
+          },
+          "hasMedia": {
+            "type": "boolean",
+            "description": "Flag that specifies if volume has any media."
+          },
+          "isOnBootDevice": {
+            "type": "boolean",
+            "description": "Flag that specifies if volume is on boot device."
+          },
+          "totalSize": {
+            "type": "integer",
+            "description": "Total disk volume size."
+          }
+        }
+      },
+      {
+        "id": "MountEvent",
+        "type": "object",
+        "description": "Payload data for disk mount / unmount event.",
+        "properties": {
+          "eventType": {
+            "type": "string",
+            "enum": ["added", "removed"],
+            "description": "Event type that tells listeners which disk volume even was raised."
+          },
+          "volumeInfo": {
+            "$ref": "VolumeInfo",
+            "description":"Volume information that this mount event applies to."
+          }
+        }
+      },
+      {
+        "id": "MountCompletedEvent",
+        "type": "object",
+        "description": "Payload data for mount event.",
+        "properties": {
+          "eventType": {
+            "type": "string",
+            "enum": ["mount", "unmount"],
+            "description": "Is the event raised for mounting or unmounting."
+          },
+          "status": {
+            "type": "string",
+            "enum": ["success", "error_unknown", "error_internal",
+                     "error_unknown_filesystem", "error_unsuported_filesystem",
+                     "error_invalid_archive", "error_libcros_missing"],
+            "description": "Event type that tells listeners if mount was successfull or an error occurred. It also specifies the error."
+          },
+          "sourceUrl": {
+            "type": "string",
+            "description": "Path that has been mounted."
+          },
+          "mountPath": {
+            "type": "string",
+            "optional": true,
+            "description": "Path that sourcePath was mounted to."
+          },
+          "mountType": {
+            "type": "string",
+            "enum": ["device", "file", "network"],
+            "description": "Type of the mount."
+          }
+        }
+      },
+      {
+        "id": "FileWatchEvent",
+        "type": "object",
+        "description": "Payload data for disk mount / unmount event.",
+        "properties": {
+          "eventType": {
+            "type": "string",
+            "enum": ["changed", "error"],
+            "description": "Specifies type of event that is raised."
+          },
+          "fileUrl": {
+            "type": "string",
+            "description":"URL of watched file"
+          }
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "cancelDialog",
+        "type": "function",
+        "description": "Cancels file selection.",
+        "parameters": []
+      },
+      {
+        "name": "executeTask",
+        "description": "Executes file browser task over selected files",
+        "parameters": [
+          {
+            "name": "taskId",
+            "type": "string",
+            "description": "The unique identifier of task to execute."
+          },
+          {
+            "name": "fileURLs",
+            "type": "array",
+            "description": "Array of file URLs",
+            "items": { "type": "string" }
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              {
+                "name": "success",
+                "type": "boolean",
+                "optional": "true",
+                "description": "True of task execution was successfully initiated."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getFileTasks",
+        "description": "Gets the list of tasks that can be performed over selected files.",
+        "parameters": [
+          {
+            "name": "fileURLs",
+            "type": "array",
+            "description": "Array of selected file URLs",
+            "items": { "type": "string" }
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              {
+                "name": "tasks",
+                "type": "array",
+                "items": {"$ref": "FileBrowserTask"},
+                "description": "The list of matched file URL patterns for this task."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getStrings",
+        "type": "function",
+        "description": "Gets Strings.",
+        "parameters": [
+          {
+            "type": "function",
+             "name": "callback",
+             "parameters": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": {"type": "string"}
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "addFileWatch",
+        "description": "Adds file watch.",
+        "parameters": [
+          {
+            "name": "fileUrl",
+            "type": "string",
+            "description": "URL of file to watch"
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              {
+                "name" : "success",
+                "type": "boolean",
+                "optional": "true",
+                "description": "True when file watch is successfully added."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "removeFileWatch",
+        "description": "Removes file watch.",
+        "parameters": [
+          {
+            "name": "fileUrl",
+            "type": "string",
+            "description": "URL of watched file to remove"
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              {
+                "name" : "success",
+                "type": "boolean",
+                "optional": "true",
+                "description": "True when file watch is successfully removed."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "requestLocalFileSystem",
+        "description": "Requests access to local file system",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              {
+                "name" : "fileSystem",
+                "type": "object",
+                "optional": "true",
+                "description": "A DOMFileSystem instance for local file system access. null if the caller has no appropriate permissions."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "selectFiles",
+        "type": "function",
+        "description": "Selects multiple files.",
+        "parameters": [
+          {
+            "type": "array",
+            "description": "Array of selected paths",
+            "items": {"type": "string"}
+          }
+        ]
+      },
+      {
+        "name": "selectFile",
+        "type": "function",
+        "description": "Selects a file.",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "A selected path"
+          },
+          {
+            "type": "integer",
+            "description": "Index of Filter"
+          }
+        ]
+      },
+      {
+        "name": "viewFiles",
+        "type": "function",
+        "description": "Views multiple files.",
+        "parameters": [
+          {
+            "name": "fileUrls",
+            "type": "array",
+            "description": "Array of selected paths",
+            "items": {"type": "string"}
+          },
+          {
+            "name": "id",
+            "type": "string",
+            "description": "File browser handler id as for internal tasks."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              {
+                "name" : "success",
+                "type": "boolean",
+                "description": "True if the selected files can be viewed by the browser."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getVolumeMetadata",
+        "description": "Requests volume's metadata",
+        "parameters": [
+          {
+            "name": "devicePath",
+            "type": "string",
+            "description": "Device path of the volume."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              {
+                "name" : "volumeMetadata",
+                "$ref": "VolumeMetadata",
+                "optional": "true",
+                "description": "A requested metadata dictionary object. null if there is no volume with selected devicePath"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "addMount",
+        "description": "Mount a resource or a file.",
+        "parameters": [
+          {
+            "name": "source",
+            "type": "string",
+            "description": "Mount point source. For compressed files it is relative file path within external file system"
+          },
+          {
+            "name": "mountType",
+            "type": "string",
+            "enum": ["device", "file", "network"],
+            "description": "Mount point type. 'file' for compressed files"
+          },
+          {
+            "name": "options",
+            "type": "object",
+            "description": "Name/value pairs for source specific options",
+            "optional": "true"
+          }
+        ]
+      },
+      {
+        "name": "removeMount",
+        "description": "Unmounts a mounted resource.",
+        "parameters": [
+          {
+            "name": "mountPath",
+            "type": "string",
+            "description": "A path of the mount."
+          }
+        ]
+      },
+      {
+        "name": "getMountPoints",
+        "description": "Get the list of mount points.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              {
+                "name" : "mountPoints",
+                "type": "array",
+                "items": {"$ref": "MountPointInfo"},
+                "description": "The list of MountPointInfo representing mounted devices."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getSizeStats",
+        "description": "Retrieves total and remaining size of a mount point.",
+        "parameters": [
+          {
+            "name": "mountPath",
+            "type": "string",
+            "description": "Mount point path."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": false,
+            "parameters": [
+              {
+                "name" : "sizeStats",
+                "$ref": "MountPointSizeStats",
+                "description": "Name/value pairs of size stats."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "formatDevice",
+        "description": "Formats a mounted device",
+        "parameters": [
+          {
+            "name": "mountPath",
+            "type": "string",
+            "description": "Device's mount path."
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onDiskChanged",
+        "type": "function",
+        "description": "Fired when disk mount/unmount event is detected.",
+        "parameters": [
+          {
+            "$ref": "MountEvent",
+            "name": "event",
+            "description": "Mount event information."
+          }
+        ]
+      },
+      {
+        "name": "onMountCompleted",
+        "type": "function",
+        "description": "Fired when mount event is detected.",
+        "parameters": [
+          {
+            "$ref": "MountCompletedEvent",
+            "name": "event",
+            "description": "MountCompleted event information."
+          }
+        ]
+      },
+      {
+        "name": "onFileChanged",
+        "type": "function",
+        "description": "Fired when watched file change event is detected.",
+        "parameters": [
+          {
+            "$ref": "FileWatchEvent",
+            "name": "event",
+            "description": "File watch event information."
+          }
+        ]
+      }
+    ]
+  }
+]

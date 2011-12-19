@@ -8,10 +8,10 @@ Contributing To The Extension Docs:
 scheme. If you do, you can refresh to instantly see any changes you make].
 
 *I want to document methods, events or parameters in the api itself:
-=>Edit ../api/extension_api.json. Usually you can just add or edit the
-"description" property. This will appear automatically in the corresponding doc
-page at ./<page>.html (where <page> is the name of the apimodule ("tabs", etc..)
-that contains the change you are making.
+=>Edit the JSON file for the api in ../api/. Usually you can just add or edit
+the "description" property. This will appear automatically in the corresponding
+doc page at ./<page>.html (where <page> is the name of the apimodule ("tabs",
+etc..) that contains the change you are making.
 
 *I want to edit static content for an API reference module:
 =>Look in /static/<page>.html (for your module). If the file exists, edit it,
@@ -47,7 +47,7 @@ I. Inputs
 
 There are two sources of input:
 
-1) The contents of ../api/extension_api.json
+1) The contents of the json files in ../api/
 which contains the "IDL" of the the methods, events, and types of the api. This
 file is linked as a resource into the chromium binary and then dynamically
 bound to chrome.* objects that are exposed to extension contexts. This file
@@ -67,7 +67,7 @@ For each given <page>:
 3) ./template/api_template.html is loaded and inserted into the body of the page
 4) If a ./static/<page>.html exists, its content is inserted into the main
 content column of the api_template.html
-5) If the <page> matches an api "module" in extension_api.json, the api is then
+5) If the <page> matches an api "module" in ../api/, the api is then
 fed through the api template within api_template.html
 6) The result is written on top of the existing /<page>.html. If the new file
 differs in content, it is reported as changed by the build.py script.

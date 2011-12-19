@@ -1,0 +1,42 @@
+[
+  {
+    "namespace":"fileBrowserHandler",
+    "types": [
+      {
+        "id": "FileHandlerExecuteEventDetails",
+        "type": "object",
+        "description": "Event details payload for fileBrowserHandler.onExecute event.",
+        "properties": {
+          "entries": {
+            "type": "any",
+            "description": "Array of Entry instances representing files that are targets of this action (selected in ChromeOS file browser)."
+          },
+          "tab_id" : {
+            "type": "integer",
+            "optional": true,
+            "description": "The ID of the tab that raised this event. Tab IDs are unique within a browser session."
+          }
+        }
+      }
+    ],
+    "events": [
+      {
+        "name": "onExecute",
+        "type": "function",
+        "description": "Fired when file system action is executed from ChromeOS file browser.",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "File browser action id as specified in the listener component's manifest."
+          },
+          {
+            "name": "details",
+            "$ref": "FileHandlerExecuteEventDetails",
+            "description": "File handler execute event details."
+          }
+        ]
+      }
+    ]
+  }
+]

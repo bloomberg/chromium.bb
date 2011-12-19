@@ -1,0 +1,36 @@
+[
+  {
+    "namespace": "chromeosInfoPrivate",
+    "nodoc": "true",
+    "functions": [
+      {
+        "name": "get",
+        "description": "Fetches customization values for the given property names. See property names in the declaration of the returned dictionary.",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "propertyNames",
+            "type": "array",
+            "item": {"type": "string", "description": "Chrome OS Property name"}
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "propertiesDictionary",
+                "type": "object",
+                "description": "Dictionary which contains all requested properties",
+                "properties": {
+                  "hwid": {"type": "string", "optional": "true", "description": "Hardware ID"},
+                  "homeProvider" : {"type": "string", "optional": "true", "description": "Home provider which is used by the cellular device"},
+                  "initialLocale" : {"type": "string", "optional": "true", "description": "Initial locale for the device"}
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

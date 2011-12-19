@@ -146,7 +146,7 @@ class MainPage(webapp.RequestHandler):
     # TODO(nickbaum): this is super cumbersome to maintain
     if path == "third_party/jstemplate/jstemplate_compiled.js":
       url = url + path
-    elif path == "api/extension_api.json":
+    elif path.startswith("api/") and path.endswith(".json"):
       url = url + "common/extensions/" + path
     elif path == "favicon.ico":
       url = "http://src.chromium.org/favicon.ico"
@@ -218,11 +218,12 @@ class MainPage(webapp.RequestHandler):
     self.check("/beta/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/third_party/jstemplate/jstemplate_compiled.js", Channel.BETA)
     self.check("/stable/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/third_party/jstemplate/jstemplate_compiled.js", Channel.STABLE)
 
-    self.response.out.write("<br/>Testing extension_api.json<br/>")
-    self.check("/trunk/api/extension_api.json", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/api/extension_api.json", Channel.TRUNK)
-    self.check("/dev/api/extension_api.json", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/api/extension_api.json", Channel.DEV)
-    self.check("/beta/api/extension_api.json", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/api/extension_api.json", Channel.BETA)
-    self.check("/stable/api/extension_api.json", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/api/extension_api.json", Channel.STABLE)
+    self.response.out.write("<br/>Testing extension API JSON<br/>")
+    self.check("/trunk/api/bookmarks.json", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/api/bookmarks.json", Channel.TRUNK)
+    self.check("/dev/api/bookmarks.json", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/api/bookmarks.json", Channel.DEV)
+    self.check("/beta/api/bookmarks.json", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/api/bookmarks.json", Channel.BETA)
+    self.check("/stable/api/bookmarks.json", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/api/bookmarks.json", Channel.STABLE)
+    self.check("/stable/api/experimental.clear.json", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/api/experimental.clear.json", Channel.STABLE)
 
     self.response.out.write("<br/>Testing favicon.ico<br/>")
     self.check("/trunk/favicon.ico", "http://src.chromium.org/favicon.ico", Channel.TRUNK)

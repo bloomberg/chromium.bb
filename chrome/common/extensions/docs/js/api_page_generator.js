@@ -8,8 +8,8 @@
  *
  * It expects to have available via XHR (relative path):
  *   1) API_TEMPLATE which is the main template for the api pages.
- *   2) A file located at SCHEMA which is shared with the extension system and
- *      defines the methods and events contained in one api.
+ *   2) The files located at MODULE_SCHEMAS which are shared with the extension
+ *      system and defines the methods and events contained in one api.
  *   3) (Possibly) A static version of the current page url in /static/. I.e.
  *      if called as ../foo.html, it will look for ../static/foo.html.
  *
@@ -19,8 +19,62 @@
  */
 
 var API_TEMPLATE = 'template/api_template.html';
-var SCHEMA = '../api/extension_api.json';
-var MODULE_SCHEMAS = ['../api/extension.json'];
+var MODULE_SCHEMAS = [
+  '../api/bookmarks.json',
+  '../api/browserAction.json',
+  '../api/chromeAuthPrivate.json',
+  '../api/chromePrivate.json',
+  '../api/chromeosInfoPrivate.json',
+  '../api/contentSettings.json',
+  '../api/contextMenus.json',
+  '../api/cookies.json',
+  '../api/devtools.json',
+  '../api/experimental.accessibility.json',
+  '../api/experimental.app.json',
+  '../api/experimental.bookmarkManager.json',
+  '../api/experimental.clear.json',
+  '../api/experimental.debugger.json',
+  '../api/experimental.downloads.json',
+  '../api/experimental.infobars.json',
+  '../api/experimental.input.ime.json',
+  '../api/experimental.input.ui.json',
+  '../api/experimental.input.virtualKeyboard.json',
+  '../api/experimental.privacy.json',
+  '../api/experimental.processes.json',
+  '../api/experimental.rlz.json',
+  '../api/experimental.sidebar.json',
+  '../api/experimental.socket.json',
+  '../api/experimental.speechInput.json',
+  '../api/experimental.storage.json',
+  '../api/experimental.topSites.json',
+  '../api/extension.json',
+  '../api/fileBrowserHandler.json',
+  '../api/fileBrowserPrivate.json',
+  '../api/history.json',
+  '../api/i18n.json',
+  '../api/idle.json',
+  '../api/inputMethodPrivate.json',
+  '../api/management.json',
+  '../api/mediaPlayerPrivate.json',
+  '../api/metricsPrivate.json',
+  '../api/omnibox.json',
+  '../api/pageAction.json',
+  '../api/pageActions.json',
+  '../api/pageCapture.json',
+  '../api/permissions.json',
+  '../api/proxy.json',
+  '../api/systemPrivate.json',
+  '../api/tabs.json',
+  '../api/test.json',
+  '../api/tts.json',
+  '../api/ttsEngine.json',
+  '../api/types.json',
+  '../api/webNavigation.json',
+  '../api/webRequest.json',
+  '../api/webSocketProxyPrivate.json',
+  '../api/webstorePrivate.json',
+  '../api/windows.json',
+]
 var DEVTOOLS_SCHEMA = '../api/devtools_api.json';
 var USE_DEVTOOLS_SCHEMA =
   /\.devtools[^/]*\.html/.test(location.pathname);
@@ -117,10 +171,8 @@ function fetchSchema() {
   var is_experimental_index = /\/experimental\.html$/.test(location.pathname);
 
   var schemas_to_retrieve = [];
-  if (!USE_DEVTOOLS_SCHEMA || is_experimental_index) {
-    schemas_to_retrieve.push(SCHEMA);
+  if (!USE_DEVTOOLS_SCHEMA || is_experimental_index)
     schemas_to_retrieve = schemas_to_retrieve.concat(MODULE_SCHEMAS);
-  }
   if (USE_DEVTOOLS_SCHEMA || is_experimental_index)
     schemas_to_retrieve.push(DEVTOOLS_SCHEMA);
 

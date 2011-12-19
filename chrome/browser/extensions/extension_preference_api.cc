@@ -29,7 +29,7 @@
 namespace {
 
 struct PrefMappingEntry {
-  // Name of the preference referenced by extension_api.json.
+  // Name of the preference referenced by the extension API JSON.
   const char* extension_pref;
 
   // Name of the preference in the PrefStores.

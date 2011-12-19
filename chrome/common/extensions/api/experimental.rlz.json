@@ -1,0 +1,53 @@
+[
+  {
+    "namespace": "experimental.rlz",
+    "nodoc": true,
+    "types": [],
+    "functions": [
+      {
+        "name": "recordProductEvent",
+        "type": "function",
+        "description": "Records an RLZ event for a given product's access point.",
+        "parameters": [
+          {"name": "product", "type": "string", "minLength": 1, "maxLength": 1},
+          {"name": "accessPoint", "type": "string", "minLength": 1, "maxLength": 2},
+          {"name": "event", "type": "string", "enum": ["install", "set-to-google", "first-search", "activate"]}
+        ]
+      },
+      {
+        "name": "getAccessPointRlz",
+        "type": "function",
+        "description": "Gets the RLZ string to be used when accessing a Google property through the given access point.",
+        "parameters": [
+          {"name": "accessPoint", "type": "string", "minLength": 1, "maxLength": 2},
+          {"name": "callback", "type": "function", "parameters": [{"name": "rlz", "type": "string"}]}
+        ]
+      },
+      {
+        "name": "sendFinancialPing",
+        "type": "function",
+        "description": "Sends Google promotional information about this extension.",
+        "parameters": [
+          {"name": "product", "type": "string", "minLength": 1, "maxLength": 1},
+          {"name": "accessPoints", "type": "array", "items": {"type": "string", "minLength": 1, "maxLength": 2}, "minItems": 1},
+          {"name": "signature", "type": "string"},
+          {"name": "brand", "type": "string"},
+          {"name": "id", "type": "string"},
+          {"name": "lang", "type": "string"},
+          {"name": "exclude_machine_id", "type": "boolean"},
+          {"name": "callback", "type": "function", "optional": true, "parameters": [{"name": "sent", "type": "boolean"}]}
+        ]
+      },
+      {
+        "name": "clearProductState",
+        "type": "function",
+        "description": "Clears all product-specific RLZ state from the machine, as well as clearing all events for the specified access points.",
+        "parameters": [
+          {"name": "product", "type": "string", "minLength": 1, "maxLength": 1},
+          {"name": "accessPoints", "type": "array", "items": {"type": "string", "minLength": 1, "maxLength": 2}, "minItems": 1}
+        ]
+      }
+    ],
+    "events": []
+  }
+]

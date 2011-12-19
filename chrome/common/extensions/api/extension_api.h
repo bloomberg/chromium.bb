@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/values.h"
 
 namespace base {
 class DictionaryValue;
@@ -26,7 +27,7 @@ class ExtensionAPI {
   static ExtensionAPI* GetInstance();
 
   const base::ListValue* value() const {
-    return value_.get();
+    return &value_;
   }
 
   // Returns ture if |name| is a privileged API. Privileged APIs can only be
@@ -43,7 +44,7 @@ class ExtensionAPI {
 
   // Find an item in |list| with the specified property name and value, or NULL
   // if no such item exists.
-  base::DictionaryValue* FindListItem(base::ListValue* list,
+  base::DictionaryValue* FindListItem(const base::ListValue* list,
                                       const std::string& property_name,
                                       const std::string& property_value) const;
 
@@ -56,7 +57,7 @@ class ExtensionAPI {
 
   static ExtensionAPI* instance_;
 
-  scoped_ptr<base::ListValue> value_;
+  base::ListValue value_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAPI);
 };

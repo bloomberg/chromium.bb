@@ -1,0 +1,162 @@
+[
+  {
+    "namespace": "experimental.storage",
+    "types": [
+      {
+        "id": "StorageChange",
+        "type": "object",
+        "properties": {
+          "oldValue": {
+            "type": "any",
+            "description": "The old value of the item, if there was an old value.",
+            "optional": true
+          },
+          "newValue": {
+            "type": "any",
+            "description": "The new value of the item, if there is a new value.",
+            "optional": true
+          }
+        }
+      },
+      {
+        "id": "StorageNamespace",
+        "type": "object",
+        "functions": [
+          {
+            "name": "get",
+            "unprivileged": true,
+            "type": "function",
+            "description": "Gets one or more items from storage.",
+            "parameters": [
+              {
+                "name": "keys",
+                "choices": [
+                  { "type": "string" },
+                  { "type": "array", "items": { "type": "string" } },
+                  {
+                    "type": "object",
+                    "description": "Storage items to return in the callback, where the values are replaced with those from storage if they exist.",
+                    "properties": {},
+                    "additionalProperties": { "type": "any" }
+                  }
+                ],
+                "description": "A single key to get, list of keys to get, or a dictionary specifying default values (see description of the object).  An empty list or object will return an empty result object.  Pass in null or undefined to get the entire contents of storage; this should only be used for debugging.",
+                "optional": true
+              },
+              {
+                "name": "callback",
+                "type": "function",
+                "description": "Callback with storage items, or on failure (in which case lastError will be set).",
+                "parameters": [
+                  {
+                    "name": "items",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": { "type": "any" },
+                    "description": "Object with items in their key-value mappings."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "set",
+            "unprivileged": true,
+            "type": "function",
+            "description": "Sets multiple items.",
+            "parameters": [
+              {
+                "name": "items",
+                "type": "object",
+                "properties": {},
+                "additionalProperties": { "type": "any" },
+                "description": "Object specifying items to augment storage with. Values that cannot be serialized (functions, etc) will be ignored."
+              },
+              {
+                "name": "callback",
+                "type": "function",
+                "description": "Callback on success, or on failure (in which case lastError will be set).",
+                "parameters": [],
+                "optional": true
+              }
+            ]
+          },
+          {
+            "name": "remove",
+            "unprivileged": true,
+            "type": "function",
+            "description": "Removes one or more items from storage.",
+            "parameters": [
+              {
+                "name": "keys",
+                "choices": [
+                  {"type": "string"},
+                  {"type": "array", "items": {"type": "string"}, "minItems": 1}
+                ],
+                "description": "A single key or a list of keys for items to remove."
+              },
+              {
+                "name": "callback",
+                "type": "function",
+                "description": "Callback on success, or on failure (in which case lastError will be set).",
+                "parameters": [],
+                "optional": true
+              }
+            ]
+          },
+          {
+            "name": "clear",
+            "unprivileged": true,
+            "type": "function",
+            "description": "Removes all items from storage.",
+            "parameters": [
+              {
+                "name": "callback",
+                "type": "function",
+                "description": "Callback on success, or on failure (in which case lastError will be set).",
+                "parameters": [],
+                "optional": true
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onChanged",
+        "unprivileged": true,
+        "type": "function",
+        "description": "Fired when one or more items change.",
+        "parameters": [
+          {
+            "name": "changes",
+            "type": "object",
+            "properties": {},
+            "additionalProperties": { "$ref": "StorageChange" },
+            "description": "Object mapping each key that changed to its corresponding <a href='#type-StorageChange'>StorageChange</a> for that item."
+          },
+          {
+            "name": "namespace",
+            "type": "string",
+            "description": "The namespace (\"sync\" or \"local\") of the storage area the changes are for."
+          }
+        ]
+      }
+    ],
+    "properties": {
+      "sync": {
+        "$ref": "StorageNamespace",
+        "description": "Items under the \"sync\" namespace are synced using Chrome Sync.",
+        "unprivileged": true,
+        "value": [ "sync" ]
+      },
+      "local": {
+        "$ref": "StorageNamespace",
+        "description": "Items under the \"local\" namespace are local to each machine.",
+        "unprivileged": true,
+        "value": [ "local" ]
+      }
+    }
+  }
+]

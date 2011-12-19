@@ -1,0 +1,99 @@
+[
+  {
+    "namespace": "ttsEngine",
+    "functions": [
+      {
+        "name": "sendTtsEvent",
+        "nodoc": true,
+        "type": "function",
+        "description": "Routes a TTS event from a speech engine to a client.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "requestId"
+          },
+          {
+            "name": "event",
+            "$ref": "TtsEvent",
+            "description": "The update event from the text-to-speech engine indicating the status of this utterance."
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onSpeak",
+        "type": "function",
+        "description": "Called when the user makes a call to tts.speak() and one of the voices from this extension's manifest is the first to match the options object.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "utterance",
+            "description": "The text to speak, specified as either plain text or an SSML document. If your engine does not support SSML, you should strip out all XML markup and synthesize only the underlying text content. The value of this parameter is guaranteed to be no more than 32,768 characters. If this engine does not support speaking that many characters at a time, the utterance should be split into smaller chunks and queued internally without returning an error."
+          },
+          {
+            "type": "object",
+            "name": "options",
+            "description": "Options specified to the tts.speak() method.",
+            "properties": {
+              "voiceName": {
+                "type": "string",
+                "optional": true,
+                "description": "The name of the voice to use for synthesis."
+              },
+              "lang": {
+                "type": "string",
+                "optional": true,
+                "description": "The language to be used for synthesis, in the form <em>language</em>-<em>region</em>. Examples: 'en', 'en-US', 'en-GB', 'zh-CN'."
+              },
+              "gender": {
+                "type": "string",
+                "optional": true,
+                "description": "Gender of voice for synthesized speech.",
+                "enum": ["male", "female"]
+              },
+              "rate": {
+                "type": "number",
+                "optional": true,
+                "minimum": 0.1,
+                "maximum": 10.0,
+                "description": "Speaking rate relative to the default rate for this voice. 1.0 is the default rate, normally around 180 to 220 words per minute. 2.0 is twice as fast, and 0.5 is half as fast. This value is guaranteed to be between 0.1 and 10.0, inclusive. When a voice does not support this full range of rates, don't return an error. Instead, clip the rate to the range the voice supports."
+              },
+              "pitch": {
+                "type": "number",
+                "optional": true,
+                "minimum": 0,
+                "maximum": 2,
+                "description": "Speaking pitch between 0 and 2 inclusive, with 0 being lowest and 2 being highest. 1.0 corresponds to this voice's default pitch."
+              },
+              "volume": {
+                "type": "number",
+                "optional": true,
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Speaking volume between 0 and 1 inclusive, with 0 being lowest and 1 being highest, with a default of 1.0."
+              }
+            }
+          },
+          {
+            "name": "sendTtsEvent",
+            "type": "function",
+            "description": "Call this function with events that occur in the process of speaking the utterance.",
+            "parameters": [
+              {
+                "name": "event",
+                "$ref": "TtsEvent",
+                "description": "The event from the text-to-speech engine indicating the status of this utterance."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "onStop",
+        "type": "function",
+        "description": "Fired when a call is made to tts.stop and this extension may be in the middle of speaking. If an extension receives a call to onStop and speech is already stopped, it should do nothing (not raise an error)."
+      }
+    ]
+  }
+]

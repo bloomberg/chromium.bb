@@ -1,0 +1,135 @@
+[
+  {
+    "namespace": "experimental.input.virtualKeyboard",
+    "nodoc": true,
+    "types": [],
+    "functions": [
+      {
+        "name": "sendKeyboardEvent",
+        "type": "function",
+        "description": "Sends a keyboard event to Chrome.",
+        "parameters": [
+          { "type": "object",
+            "name": "event",
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "One of 'keyup' or 'keydown'."
+              },
+              "keyIdentifier": {
+                "type": "string",
+                "description": "See http://www.w3.org/TR/2003/NOTE-DOM-Level-3-Events-20031107/keyset.html#KeySet-Set"
+              },
+              "altKey": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether or not the ALT key is pressed."
+              },
+              "ctrlKey": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether or not the CTRL key is pressed."
+              },
+              "metaKey": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether or not the META key is pressed."
+              },
+              "shiftKey": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether or not the SHIFT key is pressed."
+              }
+            },
+            "description": "The keyboard event to be sent."
+          },
+          { "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "This function is called when the event processing is completed.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "hideKeyboard",
+        "type": "function",
+        "description": "Hides the keyboard UI.",
+        "parameters": [
+          { "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "This function is called when the event processing is completed.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "setKeyboardHeight",
+        "type": "function",
+        "description": "Sets the height of the keyboard UI.",
+        "parameters": [
+          { "type": "integer",
+            "name": "height",
+            "minimum": 0,
+            "optional": false,
+            "description": "The height of the keyboard UI."
+          },
+          { "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "This function is called when the event processing is completed but the resizeing may be not finished.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "sendHandwritingStroke",
+        "type": "function",
+        "description": "Sends a handwriting event to Chrome.",
+        "parameters": [
+          {
+            "name": "stroke",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "x": {"type": "number", "minimum": 0, "maximum": 1},
+                "y": {"type": "number", "minimum": 0, "maximum": 1}
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "cancelHandwritingStrokes",
+        "type": "function",
+        "description": "Clears last N handwriting strokes.",
+        "parameters": [
+          {
+            "name": "strokeCount",
+            "optional": true,
+            "description": "The number of strokes to be removed. Pass 0 to remove all strokes. If omitted, removes all.",
+            "type": "integer",
+            "minimum": 0
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onTextInputTypeChanged",
+        "type": "function",
+        "description": "This event is sent to the virtual keyboard when the text input type is changed.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "type",
+            "enum": ["none", "text", "password", "search", "email", "number", "tel", "url"],
+            "description": "Type of the current focused input field."
+          }
+        ]
+      }
+    ]
+  }
+]
