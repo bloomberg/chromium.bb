@@ -27,6 +27,7 @@
 #include <cairo.h>
 #include <math.h>
 
+#include <linux/input.h>
 #include <wayland-client.h>
 
 #include "window.h"
@@ -175,7 +176,7 @@ button_handler(struct window *window,
 	struct resizor *resizor = data;
 
 	switch (button) {
-	case 274:
+	case BTN_RIGHT:
 		if (state)
 			show_menu(resizor, input);
 		else
