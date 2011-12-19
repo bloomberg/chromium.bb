@@ -94,8 +94,7 @@ Syncer::ScopedSyncStartStopTracker::~ScopedSyncStartStopTracker() {
 }
 
 Syncer::Syncer()
-    : early_exit_requested_(false),
-      pre_conflict_resolution_closure_(NULL) {
+    : early_exit_requested_(false) {
 }
 
 Syncer::~Syncer() {}
@@ -255,13 +254,6 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         break;
       }
       case RESOLVE_CONFLICTS: {
-
-        // Trigger the pre_conflict_resolution_closure_, which is a testing
-        // hook for the unit tests, if it is non-NULL.
-        if (pre_conflict_resolution_closure_) {
-          pre_conflict_resolution_closure_->Run();
-        }
-
         StatusController* status = session->mutable_status_controller();
         status->reset_conflicts_resolved();
         ResolveConflictsCommand resolve_conflicts_command;
