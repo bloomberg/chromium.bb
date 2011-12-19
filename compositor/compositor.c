@@ -1270,13 +1270,30 @@ struct wlsc_binding {
 	struct wl_list link;
 };
 
+static void
+wlsc_compositor_run_binding(struct wlsc_compositor *compositor,
+			    struct wlsc_input_device *device,
+			    uint32_t time,
+			    uint32_t key, uint32_t button, int32_t state)
+{
+	struct wlsc_binding *b;
+
+	wl_list_for_each(b, &compositor->binding_list, link) {
+		if (b->key == key && b->button == button &&
+		    b->modifier == device->modifier_state && state) {
+			b->handler(&device->input_device,
+				   time, key, button, state, b->data);
+			break;
+		}
+	}
+}
+
 WL_EXPORT void
 notify_button(struct wl_input_device *device,
 	      uint32_t time, int32_t button, int32_t state)
 {
 	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
 	struct wlsc_compositor *compositor = wd->compositor;
-	struct wlsc_binding *b;
 	struct wlsc_surface *surface =
 		(struct wlsc_surface *) device->pointer_focus;
 	int32_t sx, sy;
@@ -1286,14 +1303,7 @@ notify_button(struct wl_input_device *device,
 	else
 		wlsc_compositor_idle_release(compositor);
 
-	wl_list_for_each(b, &compositor->binding_list, link) {
-		if (b->button == button &&
-		    b->modifier == wd->modifier_state && state) {
-			b->handler(&wd->input_device,
-				   time, 0, button, state, b->data);
-			break;
-		}
-	}
+	wlsc_compositor_run_binding(compositor, wd, time, 0, button, state);
 
 	if (state && surface && device->grab == NULL) {
 		wl_input_device_start_grab(device,
@@ -1407,21 +1417,13 @@ notify_key(struct wl_input_device *device,
 	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
 	struct wlsc_compositor *compositor = wd->compositor;
 	uint32_t *k, *end;
-	struct wlsc_binding *b;
 
 	if (state)
 		wlsc_compositor_idle_inhibit(compositor);
 	else
 		wlsc_compositor_idle_release(compositor);
 
-	wl_list_for_each(b, &compositor->binding_list, link) {
-		if (b->key == key &&
-		    b->modifier == wd->modifier_state) {
-			b->handler(&wd->input_device,
-				   time, key, 0, state, b->data);
-			break;
-		}
-	}
+	wlsc_compositor_run_binding(compositor, wd, time, key, 0, state);
 
 	update_modifier_state(wd, key, state);
 	end = device->keys.data + device->keys.size;
