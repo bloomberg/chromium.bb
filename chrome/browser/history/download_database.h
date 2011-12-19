@@ -72,6 +72,9 @@ class DownloadDatabase {
   bool DropDownloadTable();
 
  private:
+  // TODO(rdsmith): Remove after http://crbug.com/96627 has been resolved.
+  void CheckThread();
+
   bool EnsureColumnExists(const std::string& name, const std::string& type);
 
   // TODO(rdsmith): Remove after http://crbug.com/96627 has been resolved.

@@ -69,6 +69,15 @@ DownloadDatabase::DownloadDatabase()
 DownloadDatabase::~DownloadDatabase() {
 }
 
+void DownloadDatabase::CheckThread() {
+  if (owning_thread_set_) {
+    CHECK_EQ(owning_thread_, base::PlatformThread::CurrentId());
+  } else {
+    owning_thread_ = base::PlatformThread::CurrentId();
+    owning_thread_set_ = true;
+  }
+}
+
 bool DownloadDatabase::EnsureColumnExists(
     const std::string& name, const std::string& type) {
   std::string add_col = "ALTER TABLE downloads ADD COLUMN " + name + " " + type;
@@ -77,6 +86,7 @@ bool DownloadDatabase::EnsureColumnExists(
 }
 
 bool DownloadDatabase::InitDownloadTable() {
+  CheckThread();
   meta_table_.Init(&GetDB(), 0, 0);
   meta_table_.GetValue(kNextDownloadId, &next_id_);
   if (GetDB().DoesTableExist("downloads")) {
@@ -88,11 +98,13 @@ bool DownloadDatabase::InitDownloadTable() {
 }
 
 bool DownloadDatabase::DropDownloadTable() {
+  CheckThread();
   return GetDB().Execute("DROP TABLE downloads");
 }
 
 void DownloadDatabase::QueryDownloads(
     std::vector<DownloadPersistentStoreInfo>* results) {
+  CheckThread();
   results->clear();
 
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
@@ -116,10 +128,19 @@ void DownloadDatabase::QueryDownloads(
     info.end_time = base::Time::FromTimeT(statement.ColumnInt64(7));
     info.opened = statement.ColumnInt(8) != 0;
     results->push_back(info);
+
+    // TODO(rdsmith): Remove when http://crbug.com/96627 is resolved.
+    // This path is used for the initial loading of the downloads
+    // from the history.  Insert ids into returned_ids_ to initialize it.
+    // We don't assert on the id not already being there in case
+    // this call is used on some path other than the initialization path.
+    if (returned_ids_.count(info.db_handle) == 0)
+      returned_ids_.insert(info.db_handle);
   }
 }
 
 bool DownloadDatabase::UpdateDownload(const DownloadPersistentStoreInfo& data) {
+  CheckThread();
   DCHECK(data.db_handle > 0);
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE downloads "
@@ -137,6 +158,7 @@ bool DownloadDatabase::UpdateDownload(const DownloadPersistentStoreInfo& data) {
 
 bool DownloadDatabase::UpdateDownloadPath(const FilePath& path,
                                           DownloadID db_handle) {
+  CheckThread();
   DCHECK(db_handle > 0);
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE downloads SET full_path=? WHERE id=?"));
@@ -149,6 +171,7 @@ bool DownloadDatabase::UpdateDownloadPath(const FilePath& path,
 }
 
 bool DownloadDatabase::CleanUpInProgressEntries() {
+  CheckThread();
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE downloads SET state=? WHERE state=?"));
   if (!statement)
@@ -160,12 +183,7 @@ bool DownloadDatabase::CleanUpInProgressEntries() {
 
 int64 DownloadDatabase::CreateDownload(
     const DownloadPersistentStoreInfo& info) {
-  if (owning_thread_set_) {
-    CHECK_EQ(owning_thread_, base::PlatformThread::CurrentId());
-  } else {
-    owning_thread_ = base::PlatformThread::CurrentId();
-    owning_thread_set_ = true;
-  }
+  CheckThread();
 
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO downloads "
@@ -187,7 +205,24 @@ int64 DownloadDatabase::CreateDownload(
   if (statement.Run()) {
     int64 id = GetDB().GetLastInsertRowId();
 
-    CHECK_EQ(0u, returned_ids_.count(id));
+    // TODO(rdsmith): Remove when http://crbug.com/96627 is resolved.
+    if (returned_ids_.count(id) != 0) {
+      // We have an invariant violation and we're going to crash.  Take a
+      // moment more before crashing to figure out if it's a returned_ids_/DB
+      // inconsistency, or an inconsistency inside the DB.
+      sql::Statement dbg_statement(GetDB().GetCachedStatement(
+          SQL_FROM_HERE,
+          "SELECT id FROM downloads;"));
+      CHECK(dbg_statement);
+
+      std::set<int64> database_ids;
+      while (dbg_statement.Step()) {
+        bool success = database_ids.insert(dbg_statement.ColumnInt64(0)).second;
+        CHECK(success);
+      }
+      CHECK(false);
+    }
+
     returned_ids_.insert(id);
 
     // TODO(benjhayden) if(info.id>next_id_){setvalue;next_id_=info.id;}
@@ -199,19 +234,21 @@ int64 DownloadDatabase::CreateDownload(
 }
 
 void DownloadDatabase::RemoveDownload(DownloadID db_handle) {
+  CheckThread();
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM downloads WHERE id=?"));
   if (!statement)
     return;
 
   statement.BindInt64(0, db_handle);
-  statement.Run();
-
-  returned_ids_.erase(db_handle);
+  if (statement.Run())
+    // TODO(rdsmith): Remove when http://crbug.com/96627 is resolved.
+    returned_ids_.erase(db_handle);
 }
 
 void DownloadDatabase::RemoveDownloadsBetween(base::Time delete_begin,
                                               base::Time delete_end) {
+  CheckThread();
   time_t start_time = delete_begin.ToTimeT();
   time_t end_time = delete_end.ToTimeT();
 
