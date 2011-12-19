@@ -1105,20 +1105,79 @@ var chrome = chrome || {};
       chromeHidden.contextMenus.handlers = {};
     });
 
+    // TODO(skerner,mtytel): The next step to omitting optional arguments is the
+    // replacement of this code with code that matches arguments by type.
+    // Once this is working for captureVisibleTab() it can be enabled for
+    // the rest of the API. See crbug/29215 .
     apiFunctions.setUpdateArgumentsPreValidate("tabs.captureVisibleTab",
         function() {
       // Old signature:
       //    captureVisibleTab(int windowId, function callback);
       // New signature:
       //    captureVisibleTab(int windowId, object details, function callback);
-      //
-      // TODO(skerner): The next step to omitting optional arguments is the
-      // replacement of this code with code that matches arguments by type.
-      // Once this is working for captureVisibleTab() it can be enabled for
-      // the rest of the API. See crbug/29215 .
       if (arguments.length == 2 && typeof(arguments[1]) == "function") {
         // If the old signature is used, add a null details object.
         newArgs = [arguments[0], null, arguments[1]];
+      } else {
+        newArgs = arguments;
+      }
+      return newArgs;
+    });
+
+    apiFunctions.setUpdateArgumentsPreValidate("windows.get",
+        function() {
+      // Old signature:
+      //    get(int windowId, function callback);
+      // New signature:
+      //    get(int windowId, object populate, function callback);
+      if (arguments.length == 2 && typeof(arguments[1]) == "function") {
+        // If the old signature is used, add a null populate object.
+        newArgs = [arguments[0], null, arguments[1]];
+      } else {
+        newArgs = arguments;
+      }
+      return newArgs;
+    });
+
+    apiFunctions.setUpdateArgumentsPreValidate("windows.getCurrent",
+        function() {
+      // Old signature:
+      //    getCurrent(function callback);
+      // New signature:
+      //    getCurrent(object populate, function callback);
+      if (arguments.length == 1 && typeof(arguments[0]) == "function") {
+        // If the old signature is used, add a null populate object.
+        newArgs = [null, arguments[0]];
+      } else {
+        newArgs = arguments;
+      }
+      return newArgs;
+    });
+
+    apiFunctions.setUpdateArgumentsPreValidate("windows.getLastFocused",
+        function() {
+      // Old signature:
+      //    getLastFocused(function callback);
+      // New signature:
+      //    getLastFocused(object populate, function callback);
+      if (arguments.length == 1 && typeof(arguments[0]) == "function") {
+        // If the old signature is used, add a null populate object.
+        newArgs = [null, arguments[0]];
+      } else {
+        newArgs = arguments;
+      }
+      return newArgs;
+    });
+
+    apiFunctions.setUpdateArgumentsPreValidate("windows.getAll",
+        function() {
+      // Old signature:
+      //    getAll(function callback);
+      // New signature:
+      //    getAll(object populate, function callback);
+      if (arguments.length == 1 && typeof(arguments[0]) == "function") {
+        // If the old signature is used, add a null populate object.
+        newArgs = [null, arguments[0]];
       } else {
         newArgs = arguments;
       }

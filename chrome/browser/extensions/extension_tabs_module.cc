@@ -138,7 +138,7 @@ bool IsCrashURL(const GURL& url) {
 bool ReadOneOrMoreIntegers(
     Value* value, std::vector<int>* result) {
   if (value->IsType(Value::TYPE_INTEGER)) {
-    int tab_id;
+    int tab_id = -1;
     if (!value->GetAsInteger(&tab_id))
       return false;
     result->push_back(tab_id);
@@ -147,7 +147,7 @@ bool ReadOneOrMoreIntegers(
   } else if (value->IsType(Value::TYPE_LIST)) {
     ListValue* tabs = static_cast<ListValue*>(value);
     for (size_t i = 0; i < tabs->GetSize(); ++i) {
-      int tab_id;
+      int tab_id = -1;
       if (!tabs->GetInteger(i, &tab_id))
         return false;
       result->push_back(tab_id);
@@ -186,8 +186,19 @@ QueryArg ParseBoolQueryArg(base::DictionaryValue* query, const char* key) {
 // Windows ---------------------------------------------------------------------
 
 bool GetWindowFunction::RunImpl() {
-  int window_id;
+  int window_id = -1;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &window_id));
+
+  bool populate_tabs = false;
+  if (HasOptionalArgument(1)) {
+    DictionaryValue* args = NULL;
+    EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &args));
+
+    if (args->HasKey(keys::kPopulateKey)) {
+      EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kPopulateKey,
+          &populate_tabs));
+    }
+  }
 
   Browser* browser = GetBrowserInProfileWithId(profile(), window_id,
                                                include_incognito(), &error_);
@@ -197,35 +208,57 @@ bool GetWindowFunction::RunImpl() {
     return false;
   }
 
-  result_.reset(ExtensionTabUtil::CreateWindowValue(browser, false));
+  result_.reset(ExtensionTabUtil::CreateWindowValue(browser, populate_tabs));
   return true;
 }
 
 bool GetCurrentWindowFunction::RunImpl() {
+  bool populate_tabs = false;
+  if (HasOptionalArgument(0)) {
+    DictionaryValue* args = NULL;
+    EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
+
+    if (args->HasKey(keys::kPopulateKey)) {
+      EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kPopulateKey,
+          &populate_tabs));
+    }
+  }
+
   Browser* browser = GetCurrentBrowser();
   if (!browser || !browser->window()) {
     error_ = keys::kNoCurrentWindowError;
     return false;
   }
-  result_.reset(ExtensionTabUtil::CreateWindowValue(browser, false));
+  result_.reset(ExtensionTabUtil::CreateWindowValue(browser, populate_tabs));
   return true;
 }
 
 bool GetLastFocusedWindowFunction::RunImpl() {
+  bool populate_tabs = false;
+  if (HasOptionalArgument(0)) {
+    DictionaryValue* args = NULL;
+    EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
+
+    if (args->HasKey(keys::kPopulateKey)) {
+      EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kPopulateKey,
+          &populate_tabs));
+    }
+  }
+
   Browser* browser = BrowserList::FindAnyBrowser(
       profile(), include_incognito());
   if (!browser || !browser->window()) {
     error_ = keys::kNoLastFocusedWindowError;
     return false;
   }
-  result_.reset(ExtensionTabUtil::CreateWindowValue(browser, false));
+  result_.reset(ExtensionTabUtil::CreateWindowValue(browser, populate_tabs));
   return true;
 }
 
 bool GetAllWindowsFunction::RunImpl() {
   bool populate_tabs = false;
   if (HasOptionalArgument(0)) {
-    DictionaryValue* args;
+    DictionaryValue* args = NULL;
     EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
     if (args->HasKey(keys::kPopulateKey)) {
@@ -352,7 +385,7 @@ bool CreateWindowFunction::RunImpl() {
 
   // Look for optional tab id.
   if (args) {
-    int tab_id;
+    int tab_id = -1;
     if (args->HasKey(keys::kTabIdKey)) {
       EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kTabIdKey, &tab_id));
 
@@ -403,7 +436,7 @@ bool CreateWindowFunction::RunImpl() {
   std::string extension_id;
 
   // Decide whether we are opening a normal window or an incognito window.
-  bool is_error;
+  bool is_error = true;
   bool open_incognito_window = ShouldOpenIncognitoWindow(args, &urls,
                                                          &is_error);
   if (is_error) {
@@ -416,7 +449,7 @@ bool CreateWindowFunction::RunImpl() {
 
   if (args) {
     // Any part of the bounds can optionally be set by the caller.
-    int bounds_val;
+    int bounds_val = -1;
     if (args->HasKey(keys::kLeftKey)) {
       EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kLeftKey,
                                                    &bounds_val));
@@ -517,7 +550,7 @@ bool CreateWindowFunction::RunImpl() {
 }
 
 bool UpdateWindowFunction::RunImpl() {
-  int window_id;
+  int window_id = -1;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &window_id));
   DictionaryValue* update_props;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &update_props));
@@ -640,7 +673,7 @@ bool UpdateWindowFunction::RunImpl() {
 }
 
 bool RemoveWindowFunction::RunImpl() {
-  int window_id;
+  int window_id = -1;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &window_id));
 
   Browser* browser = GetBrowserInProfileWithId(profile(), window_id,
@@ -802,7 +835,7 @@ bool QueryTabsFunction::RunImpl() {
 }
 
 bool CreateTabFunction::RunImpl() {
-  DictionaryValue* args;
+  DictionaryValue* args = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
   Browser *browser;
@@ -913,7 +946,7 @@ bool CreateTabFunction::RunImpl() {
 }
 
 bool GetTabFunction::RunImpl() {
-  int tab_id;
+  int tab_id = -1;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id));
 
   TabStripModel* tab_strip = NULL;
@@ -1001,7 +1034,7 @@ UpdateTabFunction::UpdateTabFunction() {
 }
 
 bool UpdateTabFunction::RunImpl() {
-  DictionaryValue* update_props;
+  DictionaryValue* update_props = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &update_props));
 
   Value* tab_value = NULL;
@@ -1151,7 +1184,7 @@ bool UpdateTabFunction::OnMessageReceived(const IPC::Message& message) {
   if (message.type() != ExtensionHostMsg_ExecuteCodeFinished::ID)
     return false;
 
-  int message_request_id;
+  int message_request_id = -1;
   void* iter = NULL;
   if (!message.ReadInt(&iter, &message_request_id)) {
     NOTREACHED() << "malformed extension message";
@@ -1189,10 +1222,10 @@ bool MoveTabsFunction::RunImpl() {
   std::vector<int> tab_ids;
   EXTENSION_FUNCTION_VALIDATE(ReadOneOrMoreIntegers(tab_value, &tab_ids));
 
-  DictionaryValue* update_props;
+  DictionaryValue* update_props = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &update_props));
 
-  int new_index;
+  int new_index = -1;
   EXTENSION_FUNCTION_VALIDATE(update_props->GetInteger(
       keys::kIndexKey, &new_index));
   EXTENSION_FUNCTION_VALIDATE(new_index >= 0);
@@ -1218,8 +1251,8 @@ bool MoveTabsFunction::RunImpl() {
     new_index += i;
 
     if (update_props->HasKey(keys::kWindowIdKey)) {
-      Browser* target_browser;
-      int window_id;
+      Browser* target_browser = NULL;
+      int window_id = -1;
       EXTENSION_FUNCTION_VALIDATE(update_props->GetInteger(
           keys::kWindowIdKey, &window_id));
       target_browser = GetBrowserInProfileWithId(profile(), window_id,
@@ -1328,7 +1361,7 @@ bool ReloadTabFunction::RunImpl() {
     if (!ExtensionTabUtil::GetDefaultTab(browser, &contents, NULL))
       return false;
   } else {
-    int tab_id;
+    int tab_id = -1;
     EXTENSION_FUNCTION_VALIDATE(tab_value->GetAsInteger(&tab_id));
 
     Browser* browser = NULL;
@@ -1384,7 +1417,7 @@ bool RemoveTabsFunction::RunImpl() {
 }
 
 bool CaptureVisibleTabFunction::RunImpl() {
-  Browser* browser;
+  Browser* browser = NULL;
   // windowId defaults to "current" window.
   int window_id = -1;
 
@@ -1405,7 +1438,7 @@ bool CaptureVisibleTabFunction::RunImpl() {
   image_quality_ = kDefaultQuality;  // Default quality setting.
 
   if (HasOptionalArgument(1)) {
-    DictionaryValue* options;
+    DictionaryValue* options = NULL;
     EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &options));
 
     if (options->HasKey(keys::kFormatKey)) {

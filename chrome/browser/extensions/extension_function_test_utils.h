@@ -39,6 +39,9 @@ std::string GetString(base::DictionaryValue* val, const std::string& key);
 // If |val| is a dictionary, return it as one, otherwise NULL.
 base::DictionaryValue* ToDictionary(base::Value* val);
 
+// If |val| is a list, return it as one, otherwise NULL.
+base::ListValue* ToList(base::Value* val);
+
 // Creates an extension instance that can be attached to an ExtensionFunction
 // before running it.
 scoped_refptr<Extension> CreateEmptyExtension();

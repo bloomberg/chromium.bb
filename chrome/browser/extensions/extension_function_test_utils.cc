@@ -94,6 +94,12 @@ base::DictionaryValue* ToDictionary(base::Value* val) {
   return static_cast<base::DictionaryValue*>(val);
 }
 
+base::ListValue* ToList(base::Value* val) {
+  EXPECT_TRUE(val);
+  EXPECT_EQ(base::Value::TYPE_LIST, val->GetType());
+  return static_cast<base::ListValue*>(val);
+}
+
 scoped_refptr<Extension> CreateEmptyExtension() {
   std::string error;
   const FilePath test_extension_path;

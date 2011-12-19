@@ -42,6 +42,15 @@
         "parameters": [
           {"type": "integer", "name": "windowId", "minimum": 0},
           {
+            "type": "object",
+            "name": "getInfo",
+            "optional": true,
+            "description": "",
+            "properties": {
+              "populate": {"type": "boolean", "optional": true, "description": "If true, the window object will have a <var>tabs</var> property that contains a list of the $ref:Tab objects" }
+            }
+          },
+          {
             "type": "function",
             "name": "callback",
             "parameters": [
@@ -58,6 +67,15 @@
         "description": "Gets the <a href='#current-window'>current window</a>.",
         "parameters": [
           {
+            "type": "object",
+            "name": "getInfo",
+            "optional": true,
+            "description": "",
+            "properties": {
+              "populate": {"type": "boolean", "optional": true, "description": "If true, the window object will have a <var>tabs</var> property that contains a list of the $ref:Tab objects" }
+            }
+          },
+          {
             "type": "function",
             "name": "callback",
             "parameters": [
@@ -73,6 +91,15 @@
         "type": "function",
         "description": "Gets the window that was most recently focused &mdash; typically the window 'on top'.",
         "parameters": [
+          {
+            "type": "object",
+            "name": "getInfo",
+            "optional": true,
+            "description": "",
+            "properties": {
+              "populate": {"type": "boolean", "optional": true, "description": "If true, the window object will have a <var>tabs</var> property that contains a list of the $ref:Tab objects" }
+            }
+          },
           {
             "type": "function",
             "name": "callback",
