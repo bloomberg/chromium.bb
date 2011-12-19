@@ -604,7 +604,8 @@ var chrome = chrome || {};
             }
           });
     } catch (e) {
-      console.error(e);
+      // This extension doesn't have permission to access socket, so we can
+      // safely ignore this.
     }
   }
 
