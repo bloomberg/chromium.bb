@@ -45,11 +45,13 @@ class ProfileSyncServiceTest : public testing::Test {
  protected:
   ProfileSyncServiceTest()
       : ui_thread_(BrowserThread::UI, &ui_loop_),
+        file_thread_(BrowserThread::FILE),
         io_thread_(BrowserThread::IO) {}
 
   virtual ~ProfileSyncServiceTest() {}
 
   virtual void SetUp() {
+    file_thread_.Start();
     io_thread_.StartIOThread();
     profile_.reset(new TestingProfile());
     profile_->CreateRequestContext();
@@ -71,6 +73,7 @@ class ProfileSyncServiceTest : public testing::Test {
     // posting on the IO thread).
     ui_loop_.RunAllPending();
     io_thread_.Stop();
+    file_thread_.Stop();
     // Ensure that the sync objects destruct to avoid memory leaks.
     ui_loop_.RunAllPending();
   }
@@ -128,6 +131,8 @@ class ProfileSyncServiceTest : public testing::Test {
   MessageLoop ui_loop_;
   // Needed by |service_|.
   content::TestBrowserThread ui_thread_;
+  // Needed by DisableAndEnableSyncTemporarily test case.
+  content::TestBrowserThread file_thread_;
   // Needed by |service| and |profile_|'s request context.
   content::TestBrowserThread io_thread_;
 

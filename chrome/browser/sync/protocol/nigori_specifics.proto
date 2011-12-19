@@ -28,13 +28,20 @@ message NigoriKeyBag {
   repeated NigoriKey key = 2;
 }
 
+message DeviceInformation {
+  optional string cache_guid = 1;
+  optional string name = 2;
+  optional string platform = 3;
+  optional string chrome_version = 4;
+}
+
 // Properties of nigori sync object.
 message NigoriSpecifics {
   optional EncryptedData encrypted = 1;
   // True if |encrypted| is encrypted using a passphrase
   // explicitly set by the user.
   optional bool using_explicit_passphrase = 2;
-  
+
   // Obsolete encryption fields. These were deprecated due to legacy versions
   // that understand their usage but did not perform encryption properly.
   // optional bool deprecated_encrypt_bookmarks = 3;
@@ -47,7 +54,7 @@ message NigoriSpecifics {
   // optional bool deprecated_encrypt_sessions = 10;
   // optional bool deprecated_encrypt_apps = 11;
   // optional bool deprecated_encrypt_search_engines = 12;
-  
+
   // Booleans corresponding to whether a datatype should be encrypted.
   // Passwords are always encrypted, so we don't need a field here.
   optional bool encrypt_bookmarks = 13;
@@ -60,15 +67,18 @@ message NigoriSpecifics {
   optional bool encrypt_sessions = 20;
   optional bool encrypt_apps = 21;
   optional bool encrypt_search_engines = 22;
-  
+
   optional bool sync_tabs = 23;
-  
+
   // If true, all current and future datatypes will be encrypted.
   optional bool encrypt_everything = 24;
 
   optional bool encrypt_extension_settings = 25;
   optional bool encrypt_app_notifications = 26;
   optional bool encrypt_app_settings = 27;
+
+  // User device information.
+  repeated DeviceInformation device_information = 28;
 }
 
 extend EntitySpecifics {

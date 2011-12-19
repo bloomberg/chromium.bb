@@ -9,6 +9,9 @@ include_rules = [
   # Some functionality depends on command-line swithces
   "+chrome/common/chrome_switches.h",
 
+  # We store the Chrome version in the nigori node.
+  "+chrome/common/chrome_version_info.h",
+
   # unittests need this for mac osx keychain overriding
   "+chrome/browser/password_manager/encryptor.h",
 

@@ -37,6 +37,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
  public:
   ProfileSyncServiceStartupTest()
       : ui_thread_(BrowserThread::UI, &ui_loop_),
+        file_thread_(BrowserThread::FILE),
         io_thread_(BrowserThread::IO),
         profile_(new TestingProfile) {}
 
@@ -44,6 +45,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   }
 
   virtual void SetUp() {
+    file_thread_.Start();
     io_thread_.StartIOThread();
     profile_->CreateRequestContext();
     CreateSyncService();
@@ -60,6 +62,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     // posting on the IO thread).
     ui_loop_.RunAllPending();
     io_thread_.Stop();
+    file_thread_.Stop();
     ui_loop_.RunAllPending();
   }
 
@@ -83,6 +86,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
   MessageLoop ui_loop_;
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
   scoped_ptr<TestingProfile> profile_;
   ProfileSyncComponentsFactoryMock factory_;

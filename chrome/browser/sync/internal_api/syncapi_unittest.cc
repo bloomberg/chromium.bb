@@ -10,6 +10,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/location.h"
@@ -18,6 +19,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "base/test/thread_test_helper.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/password_manager/encryptor.h"
@@ -692,6 +694,9 @@ class SyncNotifierMock : public sync_notifier::SyncNotifier {
 class SyncManagerTest : public testing::Test,
                         public ModelSafeWorkerRegistrar,
                         public SyncManager::ChangeDelegate {
+ public:
+  void EmptyClosure() {}
+
  protected:
   enum NigoriStatus {
     DONT_WRITE_NIGORI,
@@ -705,6 +710,7 @@ class SyncManagerTest : public testing::Test,
 
   SyncManagerTest()
       : ui_thread_(BrowserThread::UI, &ui_loop_),
+        file_thread_(BrowserThread::FILE),
         sync_notifier_mock_(NULL),
         sync_manager_("Test sync manager"),
         sync_notifier_observer_(NULL),
@@ -717,6 +723,8 @@ class SyncManagerTest : public testing::Test,
   // Test implementation.
   void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+    file_thread_.Start();
 
     SyncCredentials credentials;
     credentials.email = "foo@bar.com";
@@ -903,6 +911,8 @@ class SyncManagerTest : public testing::Test,
   MessageLoopForUI ui_loop_;
   // Needed by |sync_manager_|.
   content::TestBrowserThread ui_thread_;
+  // Needed by |sync_manager_|.
+  content::TestBrowserThread file_thread_;
   // Needed by |sync_manager_|.
   ScopedTempDir temp_dir_;
   // Sync Id's for the roots of the enabled datatypes.
@@ -1268,7 +1278,15 @@ TEST_F(SyncManagerTest, OnIncomingNotification) {
 TEST_F(SyncManagerTest, RefreshEncryptionReady) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   EXPECT_CALL(observer_, OnEncryptionComplete());
-  sync_manager_.RefreshEncryption();
+
+  sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
+                                         base::Unretained(this)));
+  scoped_refptr<base::ThreadTestHelper> helper(
+      new base::ThreadTestHelper(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+  ASSERT_TRUE(helper->Run());
+  PumpLoop();
+
   const syncable::ModelTypeSet encrypted_types =
       sync_manager_.GetEncryptedDataTypesForTest();
   EXPECT_TRUE(encrypted_types.Has(syncable::PASSWORDS));
@@ -1279,6 +1297,7 @@ TEST_F(SyncManagerTest, RefreshEncryptionReady) {
     EXPECT_TRUE(node.InitByIdLookup(GetIdForDataType(syncable::NIGORI)));
     sync_pb::NigoriSpecifics nigori = node.GetNigoriSpecifics();
     EXPECT_TRUE(nigori.has_encrypted());
+    EXPECT_GT(nigori.device_information_size(), 0);
     Cryptographer* cryptographer = trans.GetCryptographer();
     EXPECT_TRUE(cryptographer->is_ready());
     EXPECT_TRUE(cryptographer->CanDecrypt(nigori.encrypted()));
@@ -1288,7 +1307,16 @@ TEST_F(SyncManagerTest, RefreshEncryptionReady) {
 // Attempt to refresh encryption when nigori not downloaded.
 TEST_F(SyncManagerTest, RefreshEncryptionNotReady) {
   // Don't set up encryption (no nigori node created).
-  sync_manager_.RefreshEncryption();  // Should fail.
+
+  // Should fail.
+  sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
+                                         base::Unretained(this)));
+  scoped_refptr<base::ThreadTestHelper> helper(
+      new base::ThreadTestHelper(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+  ASSERT_TRUE(helper->Run());
+  PumpLoop();
+
   const syncable::ModelTypeSet encrypted_types =
       sync_manager_.GetEncryptedDataTypesForTest();
   EXPECT_TRUE(encrypted_types.Has(syncable::PASSWORDS));  // Hardcoded.
@@ -1299,7 +1327,16 @@ TEST_F(SyncManagerTest, RefreshEncryptionNotReady) {
 TEST_F(SyncManagerTest, RefreshEncryptionEmptyNigori) {
   EXPECT_TRUE(SetUpEncryption(DONT_WRITE_NIGORI, DEFAULT_ENCRYPTION));
   EXPECT_CALL(observer_, OnEncryptionComplete());
-  sync_manager_.RefreshEncryption();  // Should write to nigori.
+
+  // Should write to nigori.
+  sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
+                                         base::Unretained(this)));
+  scoped_refptr<base::ThreadTestHelper> helper(
+      new base::ThreadTestHelper(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+  ASSERT_TRUE(helper->Run());
+  PumpLoop();
+
   const syncable::ModelTypeSet encrypted_types =
       sync_manager_.GetEncryptedDataTypesForTest();
   EXPECT_TRUE(encrypted_types.Has(syncable::PASSWORDS));  // Hardcoded.
@@ -1310,6 +1347,7 @@ TEST_F(SyncManagerTest, RefreshEncryptionEmptyNigori) {
     EXPECT_TRUE(node.InitByIdLookup(GetIdForDataType(syncable::NIGORI)));
     sync_pb::NigoriSpecifics nigori = node.GetNigoriSpecifics();
     EXPECT_TRUE(nigori.has_encrypted());
+    EXPECT_GT(nigori.device_information_size(), 0);
     Cryptographer* cryptographer = trans.GetCryptographer();
     EXPECT_TRUE(cryptographer->is_ready());
     EXPECT_TRUE(cryptographer->CanDecrypt(nigori.encrypted()));
@@ -1645,7 +1683,15 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
                   HasModelTypes(syncable::ModelTypeSet::All()), true));
   EXPECT_CALL(observer_, OnEncryptionComplete());
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, FULL_ENCRYPTION));
-  sync_manager_.RefreshEncryption();
+
+  sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
+                                         base::Unretained(this)));
+  scoped_refptr<base::ThreadTestHelper> helper(
+      new base::ThreadTestHelper(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+  ASSERT_TRUE(helper->Run());
+  PumpLoop();
+
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode node(&trans);
@@ -1684,7 +1730,12 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   // Force a re-encrypt everything. Should not set is_unsynced.
   testing::Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_CALL(observer_, OnEncryptionComplete());
-  sync_manager_.RefreshEncryption();
+
+  sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
+                                         base::Unretained(this)));
+  ASSERT_TRUE(helper->Run());
+  PumpLoop();
+
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode node(&trans);

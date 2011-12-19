@@ -175,6 +175,16 @@ DictionaryValue* PasswordSpecificsDataToValue(
   return value;
 }
 
+DictionaryValue* DeviceInformationToValue(
+    const sync_pb::DeviceInformation& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_STR(cache_guid);
+  SET_STR(name);
+  SET_STR(platform);
+  SET_STR(chrome_version);
+  return value;
+}
+
 DictionaryValue* AppNotificationSpecificsToValue(
     const sync_pb::AppNotificationSpecifics& proto) {
   DictionaryValue* value = new DictionaryValue();
@@ -286,6 +296,7 @@ DictionaryValue* NigoriSpecificsToValue(
   SET_BOOL(encrypt_search_engines);
   SET_BOOL(sync_tabs);
   SET_BOOL(encrypt_everything);
+  SET_REP(device_information, DeviceInformationToValue);
   return value;
 }
 

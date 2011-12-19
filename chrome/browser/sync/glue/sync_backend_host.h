@@ -312,9 +312,10 @@ class SyncBackendHost {
                             // constructed a SyncManager.
     DOWNLOADING_NIGORI,     // The SyncManager is initialized, but
                             // we're fetching encryption information.
-    REFRESHING_ENCRYPTION,  // The SyncManager is initialized, and we
+    REFRESHING_NIGORI,      // The SyncManager is initialized, and we
                             // have the encryption information, but we
-                            // still need to refresh encryption.
+                            // still need to refresh encryption. Also, we need
+                            // to update the device information in the nigori.
     INITIALIZED,            // Initialization is complete.
   };
 
@@ -392,9 +393,9 @@ class SyncBackendHost {
     void DoEnableEncryptEverything();
 
     // Called to refresh encryption with the most recent passphrase
-    // and set of encrypted types.  |done_callback| is called on the
-    // sync thread.
-    void DoRefreshEncryption(const base::Closure& done_callback);
+    // and set of encrypted types. Also adds device information to the nigori
+    // node. |done_callback| is called on the sync thread.
+    void DoRefreshNigori(const base::Closure& done_callback);
 
     // The shutdown order is a bit complicated:
     // 1) From |sync_thread_|, invoke the syncapi Shutdown call to do
@@ -558,7 +559,7 @@ class SyncBackendHost {
 
   // Must be called on |frontend_loop_|.  |done_callback| is called on
   // |frontend_loop_|.
-  void RefreshEncryption(const base::Closure& done_callback);
+  void RefreshNigori(const base::Closure& done_callback);
 
   // Handles stopping the core's SyncManager, accounting for whether
   // initialization is done yet.

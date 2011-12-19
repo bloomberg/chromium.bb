@@ -542,9 +542,11 @@ class SyncManager {
   // OnEncryptedTypesChanged() if necessary (see comments for
   // OnEncryptedTypesChanged()), and then OnEncryptionComplete().
   //
+  // Also updates or adds device information to the nigori node.
+  //
   // Note: opens a transaction, so must only be called after syncapi
   // has been initialized.
-  void RefreshEncryption();
+  void RefreshNigori(const base::Closure& done_callback);
 
   // Enable encryption of all sync data. Once enabled, it can never be
   // disabled without clearing the server data.
@@ -591,6 +593,10 @@ class SyncManager {
   base::TimeDelta GetNudgeDelayTimeDelta(const syncable::ModelType& model_type);
 
   base::ThreadChecker thread_checker_;
+
+  // Internal callback of RefreshNigori.
+  void DoneRefreshNigori(const base::Closure& done_callback,
+                         bool is_ready);
 
   // An opaque pointer to the nested private class.
   SyncInternal* data_;

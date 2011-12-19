@@ -100,6 +100,7 @@ sync_api::ImmutableChangeRecordList
 AbstractProfileSyncServiceTest::AbstractProfileSyncServiceTest()
     : ui_thread_(BrowserThread::UI, &ui_loop_),
       db_thread_(BrowserThread::DB),
+      file_thread_(BrowserThread::FILE),
       io_thread_(BrowserThread::IO),
       token_service_(new TokenService) {}
 
@@ -107,6 +108,7 @@ AbstractProfileSyncServiceTest::~AbstractProfileSyncServiceTest() {}
 
 void AbstractProfileSyncServiceTest::SetUp() {
   db_thread_.Start();
+  file_thread_.Start();
   io_thread_.StartIOThread();
 }
 
@@ -121,6 +123,7 @@ void AbstractProfileSyncServiceTest::TearDown() {
   // the |io_thread_|, the deletion never happens.
   token_service_.reset(NULL);
   io_thread_.Stop();
+  file_thread_.Stop();
   db_thread_.Stop();
   ui_loop_.RunAllPending();
 }

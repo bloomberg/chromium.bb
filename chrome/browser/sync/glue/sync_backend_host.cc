@@ -808,11 +808,10 @@ void SyncBackendHost::Core::DoEnableEncryptEverything() {
   sync_manager_->EnableEncryptEverything();
 }
 
-void SyncBackendHost::Core::DoRefreshEncryption(
+void SyncBackendHost::Core::DoRefreshNigori(
     const base::Closure& done_callback) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  sync_manager_->RefreshEncryption();
-  done_callback.Run();
+  sync_manager_->RefreshNigori(done_callback);
 }
 
 void SyncBackendHost::Core::DoStopSyncManagerForShutdown(
@@ -909,7 +908,7 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
   }
 
   // If setup has completed, start off in DOWNLOADING_NIGORI so that
-  // we start off by refreshing encryption.
+  // we start off by refreshing nigori.
   CHECK(sync_prefs_.get());
   if (sync_prefs_->HasSyncSetupCompleted() &&
       initialization_state_ < DOWNLOADING_NIGORI) {
@@ -932,16 +931,16 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
           true);
       break;
     case DOWNLOADING_NIGORI:
-      initialization_state_ = REFRESHING_ENCRYPTION;
+      initialization_state_ = REFRESHING_NIGORI;
       // Triggers OnEncryptedTypesChanged() and OnEncryptionComplete()
       // if necessary.
-      RefreshEncryption(
+      RefreshNigori(
           base::Bind(
               &SyncBackendHost::
                   HandleInitializationCompletedOnFrontendLoop,
               weak_ptr_factory_.GetWeakPtr(), js_backend, true));
       break;
-    case REFRESHING_ENCRYPTION:
+    case REFRESHING_NIGORI:
       initialization_state_ = INITIALIZED;
       // Now that we've downloaded the nigori node, we can see if there are any
       // experimental types to enable. This should be done before we inform
@@ -1070,14 +1069,14 @@ void PostClosure(MessageLoop* message_loop,
 
 }  // namespace
 
-void SyncBackendHost::RefreshEncryption(const base::Closure& done_callback) {
+void SyncBackendHost::RefreshNigori(const base::Closure& done_callback) {
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
   base::Closure sync_thread_done_callback =
       base::Bind(&PostClosure,
                  MessageLoop::current(), FROM_HERE, done_callback);
   sync_thread_.message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&SyncBackendHost::Core::DoRefreshEncryption,
+      base::Bind(&SyncBackendHost::Core::DoRefreshNigori,
                  core_.get(), sync_thread_done_callback));
 }
 

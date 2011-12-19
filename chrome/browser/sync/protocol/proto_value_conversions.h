@@ -20,6 +20,7 @@ class AppSpecifics;
 class AutofillProfileSpecifics;
 class AutofillSpecifics;
 class BookmarkSpecifics;
+class DeviceInformation;
 class EncryptedData;
 class EntitySpecifics;
 class ExtensionSettingSpecifics;
@@ -78,6 +79,11 @@ base::DictionaryValue* TabNavigationToValue(
 
 base::DictionaryValue* PasswordSpecificsDataToValue(
     const sync_pb::PasswordSpecificsData& password_specifics_data);
+
+// Sub-protocol of NigoriSpecifics.
+
+base::DictionaryValue* DeviceInformationToValue(
+    const sync_pb::DeviceInformation& device_information);
 
 // Main *SpecificsToValue functions.
 

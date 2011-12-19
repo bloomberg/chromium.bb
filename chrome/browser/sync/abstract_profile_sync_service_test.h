@@ -64,6 +64,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   MessageLoopForUI ui_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
+  content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
   ProfileSyncComponentsFactoryMock factory_;
   scoped_ptr<TokenService> token_service_;
