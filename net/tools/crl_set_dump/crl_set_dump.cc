@@ -1,0 +1,74 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This utility can dump the contents of CRL set, optionally augmented with a
+// delta CRL set.
+
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <string>
+
+#include "base/at_exit.h"
+#include "base/file_util.h"
+#include "base/memory/ref_counted.h"
+#include "base/string_number_conversions.h"
+#include "net/base/crl_set.h"
+
+static int Usage(const char* argv0) {
+  fprintf(stderr, "Usage: %s <crl-set file> [<delta file>]\n", argv0);
+  return 1;
+}
+
+int main(int argc, char** argv) {
+  base::AtExitManager at_exit_manager;
+
+  if (argc < 2)
+    return Usage(argv[0]);
+
+  FilePath crl_set_filename, delta_filename;
+
+  if (argc != 2 && argc != 3)
+    return Usage(argv[0]);
+
+  crl_set_filename = FilePath::FromUTF8Unsafe(argv[1]);
+  if (argc == 3)
+    delta_filename = FilePath::FromUTF8Unsafe(argv[2]);
+
+  std::string crl_set_bytes, delta_bytes;
+  if (!file_util::ReadFileToString(crl_set_filename, &crl_set_bytes))
+    return 1;
+  if (!delta_filename.empty() &&
+      !file_util::ReadFileToString(delta_filename, &delta_bytes)) {
+    return 1;
+  }
+
+  scoped_refptr<net::CRLSet> crl_set, final_crl_set;
+  if (!net::CRLSet::Parse(crl_set_bytes, &crl_set)) {
+    fprintf(stderr, "Failed to parse CRLSet\n");
+    return 1;
+  }
+
+  if (!delta_bytes.empty()) {
+    if (!crl_set->ApplyDelta(delta_bytes, &final_crl_set)) {
+      fprintf(stderr, "Failed to apply delta to CRLSet\n");
+      return 1;
+    }
+  } else {
+    final_crl_set = crl_set;
+  }
+
+  const net::CRLSet::CRLList& crls = crl_set->crls();
+  for (net::CRLSet::CRLList::const_iterator i = crls.begin(); i != crls.end();
+       i++) {
+    printf("%s\n", base::HexEncode(i->first.data(), i->first.size()).c_str());
+    for (std::vector<std::string>::const_iterator j = i->second.begin();
+         j != i->second.end(); j++) {
+      printf("  %s\n", base::HexEncode(j->data(), j->size()).c_str());
+    }
+  }
+
+  return 0;
+}
