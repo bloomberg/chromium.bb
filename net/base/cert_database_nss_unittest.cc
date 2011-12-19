@@ -520,7 +520,9 @@ TEST_F(CertDatabaseNSSTest, ImportCACertNotHierarchy) {
   EXPECT_EQ("Test CA", cert_list[0]->subject().common_name);
 }
 
-TEST_F(CertDatabaseNSSTest, ImportServerCert) {
+// http://crbug.com/108009 - Disabled, as google.chain.pem is an expired
+// certificate.
+TEST_F(CertDatabaseNSSTest, DISABLED_ImportServerCert) {
   // Need to import intermediate cert for the verify of google cert, otherwise
   // it will try to fetch it automatically with cert_pi_useAIACertFetch, which
   // will cause OCSPCreateSession on the main thread, which is not allowed.
