@@ -39,8 +39,6 @@
           'lib_dirs': [],
           'include_dirs': ['<(DEPTH)','<(DEPTH)/ppapi'],
           'defines': [
-            '-DNACL_BLOCK_SHIFT=5',
-            '-DNACL_BLOCK_SIZE=32',
             '-DNACL_BUILD_ARCH=x86',
             '-D__linux__',
             '-D__STDC_LIMIT_MACROS=1',

@@ -334,8 +334,6 @@
           '-Wl,-z,noexecstack',
         ],
         'defines': [
-          'NACL_BLOCK_SHIFT=5',
-          'NACL_BLOCK_SIZE=32',
           'NACL_LINUX=1',
           'NACL_OSX=0',
           'NACL_WINDOWS=0',
@@ -602,8 +600,6 @@
           }],
         ],
         'defines': [
-          'NACL_BLOCK_SHIFT=5',
-          'NACL_BLOCK_SIZE=32',
           'NACL_LINUX=0',
           'NACL_OSX=1',
           'NACL_WINDOWS=0',
@@ -652,8 +648,6 @@
           '_HAS_TR1=0',
           '__STDC_LIMIT_MACROS=1',
 
-          'NACL_BLOCK_SHIFT=5',
-          'NACL_BLOCK_SIZE=32',
           'NACL_LINUX=0',
           'NACL_OSX=0',
           'NACL_WINDOWS=1'

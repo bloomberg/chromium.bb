@@ -65,8 +65,6 @@ def NewAsmEnv(env, defines, rodata_address, rwdata_address):
   asm_env['LINKCOM'] = link_cmd
 
   asm_env.Append(CPPDEFINES = [
-                     ['NACL_BLOCK_SHIFT', '${NACL_BLOCK_SHIFT}'],
-                     ['NACL_BLOCK_SIZE', '${NACL_BLOCK_SIZE}'],
                      ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
                      ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
                      ['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}' ],

@@ -20,14 +20,12 @@
 #define NACL_MAX_PROGRAM_HEADERS  128
 
 /*
- * this value must be consistent with NaCl compiler flags
- * -falign-functions -falign-labels -and nacl-align.
+ * NACL_BLOCK_SHIFT is defined per-architecture, below.
+ *
+ * This value must be consistent with what the compiler generates.
+ * In current toolchains, this is hard-coded and not configurable.
  */
-#if defined(NACL_BLOCK_SHIFT)
-# define NACL_INSTR_BLOCK_SHIFT       (NACL_BLOCK_SHIFT)
-#else
-# error "NACL_BLOCK_SHIFT should be defined by CFLAGS"
-#endif
+#define NACL_INSTR_BLOCK_SHIFT        (NACL_BLOCK_SHIFT)
 #define NACL_INSTR_BLOCK_SIZE         (1 << NACL_INSTR_BLOCK_SHIFT)
 
 /* this must be a multiple of the system page size */
@@ -166,6 +164,8 @@
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 
+# define NACL_BLOCK_SHIFT         (5)
+
 # if NACL_BUILD_SUBARCH == 32
 #  define NACL_USERRET_FIX        (0x8)
 #  define NACL_SYSARGS_FIX        (NACL_USERRET_FIX + 0x4)
@@ -199,6 +199,8 @@
 
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 
+# define NACL_BLOCK_SHIFT         (4)
+
 # if defined(NACL_TARGET_ARM_THUMB2_MODE)
 #  define NACL_HALT         bkpt
 # else
@@ -227,8 +229,6 @@
  *       synchronized with NaClThreadContext
  */
 # define NACL_CALLEE_SAVE_LIST {r4, r5, r6, r7, r8, r9, r10, fp, sp}
-
-
 
 #else /* NACL_ARCH(NACL_BUILD_ARCH) */
 
