@@ -17,20 +17,16 @@ ray
 # http://code.google.com/p/nativeclient/issues/detail?id=2449
 SIBsim4
 
-# link error (pexe link line is wrong?)
-tls
-spirit
 # runtime errors
 # crash, works on ARM
 aha
 # crash
 dt
-flops
 lua
 # crash on ARM/qemu
-AMGmk
 almabench
 exception_spec_test
+spirit
 # wrong output on ARM (a time? really?)
 stepanov_v1p2
 # has stderr ordering problem, but also extraneous "<<" in output
