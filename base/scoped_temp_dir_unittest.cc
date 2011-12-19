@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/file_util.h"
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
@@ -60,8 +62,8 @@ TEST(ScopedTempDir, TempDir) {
 TEST(ScopedTempDir, UniqueTempDirUnderPath) {
   // Create a path which will contain a unique temp path.
   FilePath base_path;
-  file_util::CreateNewTempDirectory(FILE_PATH_LITERAL("base_dir"),
-                                    &base_path);
+  ASSERT_TRUE(file_util::CreateNewTempDirectory(FILE_PATH_LITERAL("base_dir"),
+                                                &base_path));
 
   FilePath test_path;
   {
@@ -73,6 +75,7 @@ TEST(ScopedTempDir, UniqueTempDirUnderPath) {
     EXPECT_TRUE(test_path.value().find(base_path.value()) != std::string::npos);
   }
   EXPECT_FALSE(file_util::DirectoryExists(test_path));
+  file_util::Delete(base_path, true);
 }
 
 TEST(ScopedTempDir, MultipleInvocations) {
