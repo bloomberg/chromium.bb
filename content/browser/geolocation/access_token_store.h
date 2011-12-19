@@ -19,7 +19,6 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
-#include "content/browser/cancelable_request.h"
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 
@@ -30,10 +29,8 @@ class URLRequestContextGetter;
 }
 
 // Provides storage for the access token used in the network request.
-class AccessTokenStore : public base::RefCountedThreadSafe<AccessTokenStore>,
-                         public CancelableRequestProvider {
+class AccessTokenStore : public base::RefCountedThreadSafe<AccessTokenStore> {
  public:
-
   // Map of server URLs to associated access token.
   typedef std::map<GURL, string16> AccessTokenSet;
   typedef base::Callback<void(AccessTokenSet, net::URLRequestContextGetter*)>
@@ -45,10 +42,8 @@ class AccessTokenStore : public base::RefCountedThreadSafe<AccessTokenStore>,
   // in Chrome the call to obtain this must also be performed on the UI thread
   // so it is efficient to piggyback it onto this request.
   // Takes ownership of |callback|.
-  // Returns a handle which can subsequently be used with CancelRequest().
-  CONTENT_EXPORT Handle LoadAccessTokens(
-      CancelableRequestConsumerBase* consumer,
-      const LoadAccessTokensCallbackType& callback);
+  CONTENT_EXPORT virtual void LoadAccessTokens(
+      const LoadAccessTokensCallbackType& callback) = 0;
 
   virtual void SaveAccessToken(
       const GURL& server_url, const string16& access_token) = 0;
@@ -57,9 +52,6 @@ class AccessTokenStore : public base::RefCountedThreadSafe<AccessTokenStore>,
   friend class base::RefCountedThreadSafe<AccessTokenStore>;
   CONTENT_EXPORT AccessTokenStore();
   CONTENT_EXPORT virtual ~AccessTokenStore();
-
-  virtual void DoLoadAccessTokens(
-      scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > req) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccessTokenStore);

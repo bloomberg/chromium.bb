@@ -96,7 +96,6 @@ class CONTENT_EXPORT GeolocationArbitrator
   // The provider which supplied the current |position_|
   const LocationProviderBase* position_provider_;
   GURL most_recent_authorized_frame_;
-  CancelableRequestConsumer request_consumer_;
   // The current best estimate of our position.
   Geoposition position_;
 
