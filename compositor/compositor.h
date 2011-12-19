@@ -326,6 +326,12 @@ wlsc_compositor_add_binding(struct wlsc_compositor *compositor,
 void
 wlsc_binding_destroy(struct wlsc_binding *binding);
 
+void
+wlsc_compositor_run_binding(struct wlsc_compositor *compositor,
+			    struct wlsc_input_device *device,
+			    uint32_t time,
+			    uint32_t key, uint32_t button, int32_t state);
+
 struct wlsc_surface *
 wlsc_surface_create(struct wlsc_compositor *compositor,
 		    int32_t x, int32_t y, int32_t width, int32_t height);

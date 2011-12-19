@@ -244,3 +244,58 @@ wlsc_zoom_run(struct wlsc_surface *surface, GLfloat start, GLfloat stop,
 
 	return zoom;
 }
+
+struct wlsc_binding {
+	uint32_t key;
+	uint32_t button;
+	uint32_t modifier;
+	wlsc_binding_handler_t handler;
+	void *data;
+	struct wl_list link;
+};
+
+WL_EXPORT struct wlsc_binding *
+wlsc_compositor_add_binding(struct wlsc_compositor *compositor,
+			    uint32_t key, uint32_t button, uint32_t modifier,
+			    wlsc_binding_handler_t handler, void *data)
+{
+	struct wlsc_binding *binding;
+
+	binding = malloc(sizeof *binding);
+	if (binding == NULL)
+		return NULL;
+
+	binding->key = key;
+	binding->button = button;
+	binding->modifier = modifier;
+	binding->handler = handler;
+	binding->data = data;
+	wl_list_insert(compositor->binding_list.prev, &binding->link);
+
+	return binding;
+}
+
+WL_EXPORT void
+wlsc_binding_destroy(struct wlsc_binding *binding)
+{
+	wl_list_remove(&binding->link);
+	free(binding);
+}
+
+WL_EXPORT void
+wlsc_compositor_run_binding(struct wlsc_compositor *compositor,
+			    struct wlsc_input_device *device,
+			    uint32_t time,
+			    uint32_t key, uint32_t button, int32_t state)
+{
+	struct wlsc_binding *b;
+
+	wl_list_for_each(b, &compositor->binding_list, link) {
+		if (b->key == key && b->button == button &&
+		    b->modifier == device->modifier_state && state) {
+			b->handler(&device->input_device,
+				   time, key, button, state, b->data);
+			break;
+		}
+	}
+}
