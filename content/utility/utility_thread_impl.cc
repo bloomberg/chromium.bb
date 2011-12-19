@@ -137,9 +137,10 @@ void UtilityThreadImpl::OnLoadPlugins(
   // On Linux, some plugins expect the browser to have loaded glib/gtk. Do that
   // before attempting to call into the plugin.
 #if defined(TOOLKIT_USES_GTK)
-  CHECK(!g_thread_get_initialized());
-  g_thread_init(NULL);
-  gfx::GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
+  if (!g_thread_get_initialized()) {
+    g_thread_init(NULL);
+    gfx::GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
+  }
 #endif
 
   for (size_t i = 0; i < plugin_paths.size(); ++i) {
