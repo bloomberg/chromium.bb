@@ -68,6 +68,7 @@
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/browser/ui/webui/bug_report_ui.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/browser/ui/webui/task_manager_dialog.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -1078,8 +1079,7 @@ void BrowserView::ShowTaskManager() {
   TaskManagerDialog::Show();
 #else
   // Uses WebUI TaskManager when swiches is set. It is beta feature.
-  if (CommandLine::ForCurrentProcess()
-        ->HasSwitch(switches::kEnableWebUITaskManager)) {
+  if (ChromeWebUI::IsMoreWebUI()) {
     TaskManagerDialog::Show();
   } else {
     browser::ShowTaskManager();
@@ -1092,8 +1092,7 @@ void BrowserView::ShowBackgroundPages() {
   TaskManagerDialog::ShowBackgroundPages();
 #else
   // Uses WebUI TaskManager when swiches is set. It is beta feature.
-  if (CommandLine::ForCurrentProcess()
-        ->HasSwitch(switches::kEnableWebUITaskManager)) {
+  if (ChromeWebUI::IsMoreWebUI()) {
     TaskManagerDialog::ShowBackgroundPages();
   } else {
     browser::ShowBackgroundPages();

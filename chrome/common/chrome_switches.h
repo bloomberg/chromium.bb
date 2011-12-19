@@ -174,7 +174,6 @@ extern const char kEnableTabGroupsContextMenu[];
 extern const char kEnableTopSites[];
 extern const char kEnableWatchdog[];
 extern const char kEnableWebSocketOverSpdy[];
-extern const char kEnableWebUITaskManager[];
 extern const char kExperimentalSpellcheckerFeatures[];
 extern const char kExplicitlyAllowedPorts[];
 extern const char kExtensionProcess[];

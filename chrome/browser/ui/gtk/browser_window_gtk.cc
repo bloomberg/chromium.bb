@@ -72,6 +72,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/page_info_bubble.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/browser/ui/webui/task_manager_dialog.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -1007,8 +1008,7 @@ void BrowserWindowGtk::ShowTaskManager() {
   TaskManagerDialog::Show();
 #else
   // Uses WebUI TaskManager when swiches is set. It is beta feature.
-  if (CommandLine::ForCurrentProcess()
-        ->HasSwitch(switches::kEnableWebUITaskManager)) {
+  if (ChromeWebUI::IsMoreWebUI()) {
     TaskManagerDialog::Show();
   } else {
     TaskManagerGtk::Show(false);
@@ -1021,8 +1021,7 @@ void BrowserWindowGtk::ShowBackgroundPages() {
   TaskManagerDialog::ShowBackgroundPages();
 #else
   // Uses WebUI TaskManager when swiches is set. It is beta feature.
-  if (CommandLine::ForCurrentProcess()
-        ->HasSwitch(switches::kEnableWebUITaskManager)) {
+  if (ChromeWebUI::IsMoreWebUI()) {
     TaskManagerDialog::ShowBackgroundPages();
   } else {
     TaskManagerGtk::Show(true);
