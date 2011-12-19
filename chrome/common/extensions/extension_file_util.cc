@@ -57,6 +57,35 @@ FilePath InstallExtension(const FilePath& unpacked_source_dir,
       return FilePath();
   }
 
+  FilePath profile_temp_dir = GetUserDataTempDir();
+  // Move the extracted extension to a temp folder under the profile which will
+  // then be moved to the final destination to ensure integrity of the installed
+  // extension. The first move is actually a copy+delete to ensure proper
+  // behavor in case we are moving a folder inside another folder on the same
+  // level because Move will attempt rename in this case instead of proper move.
+  // PLEASE NOTE: This issue has been observed in extension unit tests that try
+  // to install user exnteions (not crx files but unpacked ones) from subfolder
+  // of the temp folder. In that case a move will only rename the folder insted
+  // of miving it into the destination folder as expected. That is the reason we
+  // do copy+delete instead of a plain delete here! It can happen in the wild
+  // with say autounpacked archive going to the temp folder and the user tries
+  // to install it from there.
+  ScopedTempDir extension_temp_dir;
+  if (profile_temp_dir.empty() ||
+      !extension_temp_dir.CreateUniqueTempDirUnderPath(profile_temp_dir)) {
+    LOG(ERROR) << "Creating of temp dir under in the profile failed.";
+    return FilePath();
+  }
+  if (!file_util::CopyDirectory(unpacked_source_dir,
+                                extension_temp_dir.path(), true)) {
+    LOG(ERROR) << "Moving extension from : " << unpacked_source_dir.value()
+               << " to : " << extension_temp_dir.path().value() << " failed.";
+    return FilePath();
+  }
+  file_util::Delete(unpacked_source_dir, true);
+  FilePath crx_temp_source =
+      extension_temp_dir.path().Append(unpacked_source_dir.BaseName());
+
   // Try to find a free directory. There can be legitimate conflicts in the case
   // of overinstallation of the same version.
   const int kMaxAttempts = 100;
@@ -70,13 +99,16 @@ FilePath InstallExtension(const FilePath& unpacked_source_dir,
   }
 
   if (version_dir.empty()) {
-    DLOG(ERROR) << "Could not find a home for extension " << id << " with "
-                << "version " << version << ".";
+    LOG(ERROR) << "Could not find a home for extension " << id << " with "
+               << "version " << version << ".";
     return FilePath();
   }
 
-  if (!file_util::Move(unpacked_source_dir, version_dir))
+  if (!file_util::Move(crx_temp_source, version_dir)) {
+    LOG(ERROR) << "Installing extension from : " << crx_temp_source.value()
+               << " into : " << version_dir.value() << " failed.";
     return FilePath();
+  }
 
   return version_dir;
 }

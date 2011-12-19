@@ -108,6 +108,57 @@ void RecordSuccessfulUnpackTimeHistograms(
   }
 }
 
+// Work horse for FindWritableTempLocation. Creates a temp file in the folder
+// and uses NormalizeFilePath to check if the path is junction free.
+bool VerifyJunctionFreeLocation(FilePath* temp_dir) {
+  if (temp_dir->empty())
+    return false;
+
+  FilePath temp_file;
+  if (!file_util::CreateTemporaryFileInDir(*temp_dir, &temp_file)) {
+    LOG(ERROR) << temp_dir->value() << " is not writable";
+    return false;
+  }
+  // NormalizeFilePath requires a non-empty file, so write some data.
+  // If you change the exit points of this function please make sure all
+  // exit points delete this temp file!
+  file_util::WriteFile(temp_file, ".", 1);
+
+  FilePath normalized_temp_file;
+  bool normalized =
+      file_util::NormalizeFilePath(temp_file, &normalized_temp_file);
+  if (!normalized) {
+    // If |temp_file| contains a link, the sandbox will block al file system
+    // operations, and the install will fail.
+    LOG(ERROR) << temp_dir->value() << " seem to be on remote drive.";
+  } else {
+    *temp_dir = normalized_temp_file.DirName();
+  }
+  // Clean up the temp file.
+  file_util::Delete(temp_file, false);
+
+  return normalized;
+}
+
+// This function tries to find a location for unpacking the extension archive
+// that is writable and does not lie on a shared drive so that the sandboxed
+// unpacking process can write there. If no such location exists we can not
+// proceed and should fail.
+// The result will be written to |temp_dir|. The function will write to this
+// parameter even if it returns false.
+bool FindWritableTempLocation(FilePath* temp_dir) {
+  PathService::Get(base::DIR_TEMP, temp_dir);
+  if (VerifyJunctionFreeLocation(temp_dir))
+    return true;
+  *temp_dir = extension_file_util::GetUserDataTempDir();
+  if (VerifyJunctionFreeLocation(temp_dir))
+    return true;
+  // Neither paths is link free chances are good installation will fail.
+  LOG(ERROR) << "Both the %TEMP% folder and the profile seem to be on "
+             << "remote drives or read-only. Installation can not complete!";
+  return false;
+}
+
 }  // namespace
 
 SandboxedExtensionUnpacker::SandboxedExtensionUnpacker(
@@ -125,8 +176,8 @@ SandboxedExtensionUnpacker::SandboxedExtensionUnpacker(
 bool SandboxedExtensionUnpacker::CreateTempDirectory() {
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&thread_identifier_));
 
-  FilePath user_data_temp_dir = extension_file_util::GetUserDataTempDir();
-  if (user_data_temp_dir.empty()) {
+  FilePath temp_dir;
+  if (!FindWritableTempLocation(&temp_dir)) {
     ReportFailure(
         COULD_NOT_GET_TEMP_DIRECTORY,
         l10n_util::GetStringFUTF16(
@@ -135,7 +186,7 @@ bool SandboxedExtensionUnpacker::CreateTempDirectory() {
     return false;
   }
 
-  if (!temp_dir_.CreateUniqueTempDirUnderPath(user_data_temp_dir)) {
+  if (!temp_dir_.CreateUniqueTempDirUnderPath(temp_dir)) {
     ReportFailure(
         COULD_NOT_CREATE_TEMP_DIRECTORY,
         l10n_util::GetStringFUTF16(
