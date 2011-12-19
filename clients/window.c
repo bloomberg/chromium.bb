@@ -697,6 +697,19 @@ create_pointer_surfaces(struct display *display)
 
 }
 
+static void
+destroy_pointer_surfaces(struct display *display)
+{
+	int i, count;
+
+	count = ARRAY_LENGTH(pointer_images);
+	for (i = 0; i < count; ++i) {
+		if (display->pointer_surfaces[i])
+			cairo_surface_destroy(display->pointer_surfaces[i]);
+	}
+	free(display->pointer_surfaces);
+}
+
 cairo_surface_t *
 display_get_pointer_surface(struct display *display, int pointer,
 			    int *width, int *height,
@@ -2663,6 +2676,12 @@ display_destroy(struct display *display)
 	display_destroy_inputs(display);
 
 	fini_xkb(display);
+
+	cairo_surface_destroy(display->active_frame);
+	cairo_surface_destroy(display->inactive_frame);
+	cairo_surface_destroy(display->shadow);
+	destroy_pointer_surfaces(display);
+
 	fini_egl(display);
 
 	if (display->shell)
