@@ -35,13 +35,13 @@ class SURFACE_EXPORT AcceleratedSurface
                                   const base::Closure& completion_task);
 
   // Synchronously present a frame with no acknowledgement.
-  void Present();
+  bool Present();
 
  private:
   void DoInitialize();
-  void QueriesDestroyed();
   void DoDestroy();
   void DoResize(const gfx::Size& size);
+  void DoReset();
   void DoPresentAndAcknowledge(const gfx::Size& size,
                                int64 surface_id,
                                const base::Closure& completion_task);
@@ -54,6 +54,10 @@ class SURFACE_EXPORT AcceleratedSurface
   // The size of the swap chain once any pending resizes have been processed.
   // Only accessed on the UI thread so the lock is unnecessary.
   gfx::Size pending_size_;
+
+  // The current size of the swap chain. This is only accessed on the thread
+  // with which the surface has affinity.
+  gfx::Size size_;
 
   // The number of pending resizes. This is accessed with atomic operations so
   // the lock is not necessary.
@@ -70,9 +74,6 @@ class SURFACE_EXPORT AcceleratedSurface
   // made by the GPU and it is safe for the producer to modify its shared
   // texture again.
   base::win::ScopedComPtr<IDirect3DQuery9> query_;
-
-  // The current size of the swap chain.
-  gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurface);
 };

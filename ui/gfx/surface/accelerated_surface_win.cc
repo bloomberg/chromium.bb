@@ -142,7 +142,7 @@ void AcceleratedSurface::AsyncPresentAndAcknowledge(
                  completion_task));
 }
 
-void AcceleratedSurface::Present() {
+bool AcceleratedSurface::Present() {
   TRACE_EVENT0("surface", "Present");
 
   HRESULT hr;
@@ -150,11 +150,11 @@ void AcceleratedSurface::Present() {
   base::AutoLock locked(lock_);
 
   if (!device_)
-    return;
+    return true;
 
   RECT rect;
   if (!GetClientRect(window_, &rect))
-    return;
+    return true;
 
   {
     TRACE_EVENT0("surface", "PresentEx");
@@ -163,13 +163,26 @@ void AcceleratedSurface::Present() {
                             NULL,
                             NULL,
                             D3DPRESENT_INTERVAL_IMMEDIATE);
+
+    // If the device hung, force a resize to reset the device.
+    if (hr == D3DERR_DEVICELOST || hr == D3DERR_DEVICEHUNG) {
+      base::AtomicRefCountInc(&num_pending_resizes_);
+      g_present_thread_pool.Pointer()->PostTask(
+          thread_affinity_,
+          FROM_HERE,
+          base::Bind(&AcceleratedSurface::DoReset, this));
+
+      // A device hang destroys the contents of the back buffer so no point in
+      // scheduling a present.
+    }
+
     if (FAILED(hr))
-      return;
+      return false;
   }
 
   hr = query_->Issue(D3DISSUE_END);
   if (FAILED(hr))
-    return;
+    return true;
 
   {
     TRACE_EVENT0("surface", "spin");
@@ -180,6 +193,8 @@ void AcceleratedSurface::Present() {
         Sleep(0);
     } while (hr == S_FALSE);
   }
+
+  return true;
 }
 
 void AcceleratedSurface::DoInitialize() {
@@ -231,14 +246,6 @@ void AcceleratedSurface::DoInitialize() {
   return;
 }
 
-void AcceleratedSurface::QueriesDestroyed() {
-  g_present_thread_pool.Pointer()->PostTask(
-      thread_affinity_,
-      FROM_HERE,
-      base::Bind(&AcceleratedSurface::DoDestroy,
-                 this));
-}
-
 void AcceleratedSurface::DoDestroy() {
   TRACE_EVENT0("surface", "DoDestroy");
 
@@ -250,6 +257,12 @@ void AcceleratedSurface::DoDestroy() {
 
 void AcceleratedSurface::DoResize(const gfx::Size& size) {
   TRACE_EVENT0("surface", "DoResize");
+  size_ = size;
+  DoReset();
+}
+
+void AcceleratedSurface::DoReset() {
+  TRACE_EVENT0("surface", "DoReset");
 
   HRESULT hr;
 
@@ -261,8 +274,8 @@ void AcceleratedSurface::DoResize(const gfx::Size& size) {
     return;
 
   D3DPRESENT_PARAMETERS parameters = { 0 };
-  parameters.BackBufferWidth = size.width();
-  parameters.BackBufferHeight = size.height();
+  parameters.BackBufferWidth = size_.width();
+  parameters.BackBufferHeight = size_.height();
   parameters.BackBufferCount = 1;
   parameters.BackBufferFormat = D3DFMT_A8R8G8B8;
   parameters.hDeviceWindow = window_;
@@ -274,8 +287,6 @@ void AcceleratedSurface::DoResize(const gfx::Size& size) {
   hr = device_->ResetEx(&parameters, NULL);
   if (FAILED(hr))
     return;
-
-  size_ = size;
 
   device_->Clear(0, NULL, D3DCLEAR_TARGET, 0xFFFFFFFF, 0, 0);
 }
@@ -380,7 +391,17 @@ void AcceleratedSurface::DoPresentAndAcknowledge(
   {
     TRACE_EVENT0("surface", "Present");
     hr = device_->Present(&rect, &rect, NULL, NULL);
-    if (FAILED(hr))
-      return;
+
+    // If the device hung, force a resize to reset the device.
+    if (hr == D3DERR_DEVICELOST || hr == D3DERR_DEVICEHUNG) {
+      base::AtomicRefCountInc(&num_pending_resizes_);
+      g_present_thread_pool.Pointer()->PostTask(
+          thread_affinity_,
+          FROM_HERE,
+          base::Bind(&AcceleratedSurface::DoReset, this));
+
+      // A device hang destroys the contents of the back buffer so no point in
+      // scheduling a present.
+    }
   }
 }

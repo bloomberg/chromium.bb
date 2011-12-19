@@ -1940,9 +1940,7 @@ static LRESULT CALLBACK CompositorHostWindowProc(HWND hWnd, UINT message,
 void RenderWidgetHostViewWin::ScheduleComposite() {
   // If we have a previous frame then present it immediately. Otherwise request
   // a new frame be composited.
-  if (accelerated_surface_.get()) {
-    accelerated_surface_->Present();
-  } else {
+  if (!accelerated_surface_.get() || !accelerated_surface_->Present()) {
     if (render_widget_host_)
       render_widget_host_->ScheduleComposite();
   }
