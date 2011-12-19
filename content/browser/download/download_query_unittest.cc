@@ -310,8 +310,8 @@ TEST_F(DownloadQueryTest, DownloadQuerySortPaused) {
   query()->AddSorter(
       DownloadQuery::SORT_PAUSED, DownloadQuery::ASCENDING);
   Search();
-  EXPECT_EQ(false, results()->at(0)->IsPaused());
-  EXPECT_EQ(true, results()->at(1)->IsPaused());
+  EXPECT_FALSE(results()->at(0)->IsPaused());
+  EXPECT_TRUE(results()->at(1)->IsPaused());
 }
 
 TEST_F(DownloadQueryTest, DownloadQuerySortStartTime) {
