@@ -106,6 +106,7 @@ AutomationProxy::AutomationProxy(int action_timeout_ms,
       shutdown_event_(new base::WaitableEvent(true, false)),
       perform_version_check_(false),
       disconnect_on_failure_(disconnect_on_failure),
+      channel_disconnected_on_failure_(false),
       action_timeout_(
           TimeDelta::FromMilliseconds(action_timeout_ms)),
       listener_thread_id_(0) {
@@ -452,6 +453,7 @@ bool AutomationProxy::Send(IPC::Message* message, int timeout_ms) {
     // state, and further IPC requests are extremely likely to fail (possibly
     // timeout, which would make tests slower). Disconnect the channel now
     // to avoid the slowness.
+    channel_disconnected_on_failure_ = true;
     LOG(ERROR) << "Disconnecting channel after error!";
     Disconnect();
   }

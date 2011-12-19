@@ -287,6 +287,11 @@ class AutomationProxy : public IPC::Channel::Listener,
   void SetChannel(IPC::Channel* channel);
   void ResetChannel();
 
+  // See description above |channel_disconnected_on_failure_|.
+  bool channel_disconnected_on_failure() const {
+    return channel_disconnected_on_failure_;
+  }
+
  protected:
   template <class T> scoped_refptr<T> ProxyObjectFromHandle(int handle);
   void InitializeThread();
@@ -316,6 +321,9 @@ class AutomationProxy : public IPC::Channel::Listener,
   // If true, the proxy will disconnect the IPC channel on first failure
   // to send an IPC message. This helps avoid long timeouts in tests.
   bool disconnect_on_failure_;
+
+  // Set if disconnect_on_failure_ caused the connection to be dropped.
+  bool channel_disconnected_on_failure_;
 
   // Delay to let the browser execute the command.
   base::TimeDelta action_timeout_;

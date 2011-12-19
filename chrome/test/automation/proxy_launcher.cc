@@ -340,7 +340,12 @@ bool ProxyLauncher::WaitForBrowserProcessToQuit(int timeout, int* exit_code) {
 #ifdef WAIT_FOR_DEBUGGER_ON_OPEN
   timeout = 500000;
 #endif
-  bool success = base::WaitForExitCodeWithTimeout(process_, exit_code, timeout);
+  bool success = false;
+
+  // Only wait for exit if the "browser, please terminate" message had a
+  // chance of making it through.
+  if (!automation_proxy_->channel_disconnected_on_failure())
+    success = base::WaitForExitCodeWithTimeout(process_, exit_code, timeout);
 
   if (!success)
     TerminateAllChromeProcesses(process_id_);
