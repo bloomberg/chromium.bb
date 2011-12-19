@@ -5,7 +5,6 @@
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
@@ -20,7 +19,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -84,7 +82,7 @@ const char kSharedWorkerTestPage[] =
 const char kReloadSharedWorkerTestPage[] =
     "files/workers/debug_shared_worker_initialization.html";
 
-void RunTestFunction(DevToolsWindow* window, const char* test_name) {
+void RunTestFuntion(DevToolsWindow* window, const char* test_name) {
   std::string result;
 
   // At first check that JavaScript part of the front-end is loaded by
@@ -124,7 +122,7 @@ class DevToolsSanityTest : public InProcessBrowserTest {
  protected:
   void RunTest(const std::string& test_name, const std::string& test_page) {
     OpenDevToolsWindow(test_page);
-    RunTestFunction(window_, test_name.c_str());
+    RunTestFuntion(window_, test_name.c_str());
     CloseDevToolsWindow();
   }
 
@@ -254,11 +252,6 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
   FilePath test_extensions_dir_;
 };
 
-class DevToolsExtensionAPITest : public DevToolsExtensionDebugTest {
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
-  }
-};
 
 class WorkerDevToolsSanityTest : public InProcessBrowserTest {
  public:
@@ -337,7 +330,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 
     scoped_refptr<WorkerData> worker_data = WaitForFirstSharedWorker();
     OpenDevToolsWindowForSharedWorker(worker_data.get());
-    RunTestFunction(window_, test_name);
+    RunTestFuntion(window_, test_name);
     CloseDevToolsWindow();
   }
 
@@ -444,13 +437,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 }
 
 // Tests that a content script is in the scripts list.
-IN_PROC_BROWSER_TEST_F(DevToolsExtensionAPITest,
-                       TestDevToolsExtensionAPI) {
-  LoadExtension("devtools_extension");
-  RunTest("waitForTestResultsInConsole", "");
-}
-
-// Tests that a content script is in the scripts list.
+// This test is disabled, see bug 28961.
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionDebugTest,
                        TestContentScriptIsPresent) {
   LoadExtension("simple_content_script");
@@ -520,7 +507,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestReattachAfterCrash) {
   browser()->Reload(CURRENT_TAB);
   observer.Wait();
 
-  RunTestFunction(window_, "testReattachAfterCrash");
+  RunTestFuntion(window_, "testReattachAfterCrash");
   CloseDevToolsWindow();
 }
 
@@ -562,7 +549,7 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, MAYBE_InspectSharedWorker) {
 // MAYBE_PauseInSharedWorkerInitialization into
 // DISABLED_PauseInSharedWorkerInitialization
 IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest,
-                       MAYBE_PauseInSharedWorkerInitialization) {
+                       DISABLED_PauseInSharedWorkerInitialization) {
     ASSERT_TRUE(test_server()->Start());
     GURL url = test_server()->GetURL(kReloadSharedWorkerTestPage);
     ui_test_utils::NavigateToURL(browser(), url);
@@ -576,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest,
     ui_test_utils::NavigateToURL(browser(), url);
 
     // Wait until worker script is paused on the debugger statement.
-    RunTestFunction(window_, "testPauseInSharedWorkerInitialization");
+    RunTestFuntion(window_, "testPauseInSharedWorkerInitialization");
     CloseDevToolsWindow();
 }
 
