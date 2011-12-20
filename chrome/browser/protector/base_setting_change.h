@@ -26,8 +26,7 @@ class BaseSettingChange {
 
   // Applies initial actions to the setting if needed. Must be called before
   // any other calls are made, including text getters.
-  // Returns true if initialization was successful. Otherwise, no other
-  // calls should be made.
+  // Returns true if initialization was successful.
   // Associates this change with |protector_| instance so overrides must
   // call the base method.
   virtual bool Init(Protector* protector);

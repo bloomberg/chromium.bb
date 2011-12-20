@@ -44,10 +44,15 @@ TemplateURLService* Protector::GetTemplateURLService() {
 
 void Protector::ShowChange(BaseSettingChange* change) {
   DCHECK(change);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&Protector::InitAndShowChange,
-                 base::Unretained(this), change));
+  change_.reset(change);
+  DVLOG(1) << "Init change";
+  if (!change->Init(this)) {
+    LOG(WARNING) << "Error while initializing, removing ourselves";
+    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
+    return;
+  }
+  error_.reset(new SettingsChangeGlobalError(change, this));
+  error_->ShowForProfile(profile_);
 }
 
 void Protector::DismissChange() {
@@ -72,20 +77,6 @@ void Protector::OnDecisionTimeout() {
 
 void Protector::OnRemovedFromProfile() {
   BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
-}
-
-void Protector::InitAndShowChange(BaseSettingChange* change) {
-  DVLOG(1) << "Init change";
-  if (!change->Init(this)) {
-    LOG(WARNING) << "Error while initializing, removing ourselves";
-    delete change;
-    delete this;
-    return;
-  }
-  // |change_| should not be set until a successful |Init| call.
-  change_.reset(change);
-  error_.reset(new SettingsChangeGlobalError(change, this));
-  error_->ShowForProfile(profile_);
 }
 
 

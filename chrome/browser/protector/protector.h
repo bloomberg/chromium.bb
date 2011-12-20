@@ -53,12 +53,6 @@ class Protector : public SettingsChangeGlobalErrorDelegate {
   // The object can only be allocated and destroyed on heap.
   virtual ~Protector();
 
-  // Performs the initial action on settings change and shows it. This is run
-  // asynchronously on UI thread because |ShowChange| may be called in the
-  // middle of some operations on settings that have changed. If the initial
-  // action fails, deletes itself.
-  void InitAndShowChange(BaseSettingChange* change);
-
   // Pointer to error bubble controller. Indicates if we're showing change
   // notification to user.
   scoped_ptr<SettingsChangeGlobalError> error_;

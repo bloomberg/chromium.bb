@@ -120,6 +120,9 @@ class DefaultSearchProviderChange : public BaseSettingChange,
   // Opens the Search engine settings page in a new tab.
   void OpenSearchEngineSettings();
 
+  // Stops observing the TemplateURLService changes.
+  void StopObservingTemplateURLService();
+
   int64 old_id_;
   int64 new_id_;
   // ID of the search engine that we fall back to if the backup is lost.
@@ -161,7 +164,6 @@ DefaultSearchProviderChange::DefaultSearchProviderChange(
     // with the ID. Old ID is useless in this case so the prepopulated default
     // search provider will be used.
     old_id_ = 0;
-    // TODO(ivankr): restore the default search provider from the backup table.
   }
 }
 
@@ -169,7 +171,8 @@ DefaultSearchProviderChange::~DefaultSearchProviderChange() {
 }
 
 bool DefaultSearchProviderChange::Init(Protector* protector) {
-  BaseSettingChange::Init(protector);
+  if (!BaseSettingChange::Init(protector))
+    return false;
 
   if (old_id_) {
     UMA_HISTOGRAM_ENUMERATION(
@@ -208,7 +211,9 @@ bool DefaultSearchProviderChange::Init(Protector* protector) {
         kProtectorMaxSearchProviderID);
   }
 
-  protector->GetTemplateURLService()->AddObserver(this);
+  TemplateURLService* url_service = protector->GetTemplateURLService();
+  if (url_service)
+    url_service->AddObserver(this);
 
   return true;
 }
@@ -219,7 +224,7 @@ void DefaultSearchProviderChange::Apply() {
       new_histogram_id_,
       kProtectorMaxSearchProviderID);
 
-  protector()->GetTemplateURLService()->RemoveObserver(this);
+  StopObservingTemplateURLService();
   if (!new_id_) {
     // Open settings page in case the new setting is invalid.
     OpenSearchEngineSettings();
@@ -234,7 +239,7 @@ void DefaultSearchProviderChange::Discard() {
       new_histogram_id_,
       kProtectorMaxSearchProviderID);
 
-  protector()->GetTemplateURLService()->RemoveObserver(this);
+  StopObservingTemplateURLService();
   if (!old_id_) {
     // Open settings page in case the old setting is invalid.
     OpenSearchEngineSettings();
@@ -251,7 +256,7 @@ void DefaultSearchProviderChange::Timeout() {
 }
 
 void DefaultSearchProviderChange::OnBeforeRemoved() {
-  protector()->GetTemplateURLService()->RemoveObserver(this);
+  StopObservingTemplateURLService();
 }
 
 int DefaultSearchProviderChange::GetBadgeIconID() const {
@@ -383,6 +388,12 @@ void DefaultSearchProviderChange::OpenSearchEngineSettings() {
   protector()->OpenTab(
       GURL(std::string(chrome::kChromeUISettingsURL) +
            chrome::kSearchEnginesSubPage));
+}
+
+void DefaultSearchProviderChange::StopObservingTemplateURLService() {
+  TemplateURLService* url_service = protector()->GetTemplateURLService();
+  if (url_service)
+    url_service->RemoveObserver(this);
 }
 
 BaseSettingChange* CreateDefaultSearchProviderChange(

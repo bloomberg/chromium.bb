@@ -528,25 +528,19 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   LoadDefaultSearchProviderFromPrefs(&default_from_prefs,
                                      &is_default_search_managed_);
 
-  // Check if the default search provider has been changed and notify
-  // Protector instance about it. Don't check if the default search is
-  // managed.
+  // Check if the default search provider has been changed in Web Data by
+  // another program. No immediate action is performed because the default
+  // search may be changed below by Sync which effectively undoes the hijacking.
+  bool is_default_search_hijacked = false;
+  const TemplateURL* hijacked_default_search_provider = NULL;
   const TemplateURL* backup_default_search_provider = NULL;
+  // No check is required if the default search is managed.
   if (!is_default_search_managed_ &&
-      DidDefaultSearchProviderChange(
-          *result,
-          template_urls,
-          &backup_default_search_provider) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoProtector)) {
-    // TODO: need to handle no default_search_provider better. Likely need to
-    // make sure the default search engine is there, and if not assume it was
-    // deleted and add it back.
-
-    // Protector will delete itself when it's needed no longer.
-    protector::Protector* protector = new protector::Protector(profile());
-    protector->ShowChange(protector::CreateDefaultSearchProviderChange(
-        default_search_provider,
-        backup_default_search_provider));
+      DidDefaultSearchProviderChange(*result,
+                                     template_urls,
+                                     &backup_default_search_provider)) {
+    hijacked_default_search_provider = default_search_provider;
+    is_default_search_hijacked = true;
   }
 
   // Remove entries that were created because of policy as they may have
@@ -623,6 +617,25 @@ void TemplateURLService::OnWebDataServiceRequestDone(
 
   if (new_resource_keyword_version && service_.get())
     service_->SetBuiltinKeywordVersion(new_resource_keyword_version);
+
+  // Don't do anything if the default search provider has been changed since the
+  // check at the beginning (overridden by Sync).
+  if (is_default_search_hijacked &&
+      default_search_provider_ == hijacked_default_search_provider) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoProtector)) {
+      // Protector is turned off: set the current default search to itself
+      // to update the backup and sign it. Otherwise, change will be reported
+      // every time when keywords are loaded until a search provider is added.
+      // Note that this saves the default search provider to prefs.
+      SetDefaultSearchProviderNoNotify(default_search_provider_);
+    } else {
+      // Protector instance will delete itself when it's needed no longer.
+      protector::Protector* protector = new protector::Protector(profile());
+      protector->ShowChange(protector::CreateDefaultSearchProviderChange(
+          hijacked_default_search_provider,
+          backup_default_search_provider));
+    }
+  }
 
   NotifyObservers();
   NotifyLoaded();
