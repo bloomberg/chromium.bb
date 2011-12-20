@@ -6,14 +6,17 @@
 
 #include <string>
 
-#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/webdriver/commands/response.h"
 #include "chrome/test/webdriver/webdriver_error.h"
+#include "chrome/test/webdriver/webdriver_logging.h"
 #include "chrome/test/webdriver/webdriver_session.h"
 #include "chrome/test/webdriver/webdriver_session_manager.h"
+#include "chrome/test/webdriver/webdriver_util.h"
 
 namespace webdriver {
 
@@ -41,6 +44,12 @@ bool WebDriverCommand::Init(Response* const response) {
     return false;
   }
 
+  std::string message = base::StringPrintf(
+      "Command received (%s)", JoinString(path_segments_, '/').c_str());
+  if (parameters_.get())
+    message += " with params " + JsonStringifyForDisplay(parameters_.get());
+  session_->logger().Log(kFineLogLevel, message);
+
   if (ShouldRunPreAndPostCommandHandlers()) {
     Error* error = session_->BeforeExecuteCommand();
     if (error) {
@@ -52,17 +61,27 @@ bool WebDriverCommand::Init(Response* const response) {
   return true;
 }
 
-void WebDriverCommand::Finish() {
+void WebDriverCommand::Finish(Response* const response) {
   // The session may have been terminated as a result of the command.
   if (!SessionManager::GetInstance()->Has(session_id_))
     return;
+
   if (ShouldRunPreAndPostCommandHandlers()) {
     scoped_ptr<Error> error(session_->AfterExecuteCommand());
     if (error.get()) {
-      LOG(WARNING) << "Command did not finish successfully: "
-                   << error->details();
+      session_->logger().Log(kWarningLogLevel,
+                             "AfterExecuteCommand failed: " + error->details());
     }
   }
+
+  LogLevel level = kWarningLogLevel;
+  if (response->GetStatus() == kSuccess)
+    level = kFineLogLevel;
+  session_->logger().Log(
+      level, base::StringPrintf(
+          "Command finished (%s) with response %s",
+          JoinString(path_segments_, '/').c_str(),
+          JsonStringifyForDisplay(response->GetDictionary()).c_str()));
 }
 
 bool WebDriverCommand::ShouldRunPreAndPostCommandHandlers() {

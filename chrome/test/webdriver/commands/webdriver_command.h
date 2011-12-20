@@ -34,7 +34,7 @@ class WebDriverCommand : public Command {
   // Initializes this webdriver command by fetching the command session.
   virtual bool Init(Response* const response) OVERRIDE;
 
-  virtual void Finish() OVERRIDE;
+  virtual void Finish(Response* const response) OVERRIDE;
 
   // Returns whether this command should run the session pre and post
   // command handlers. These handlers include waiting for the page to load.

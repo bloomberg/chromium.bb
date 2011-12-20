@@ -19,7 +19,7 @@ void CheckEvents(const string16& keys,
                  size_t expected_size) {
   std::vector<WebKeyEvent> events;
   std::string error_msg;
-  EXPECT_TRUE(ConvertKeysToWebKeyEvents(keys, &events, &error_msg));
+  EXPECT_TRUE(ConvertKeysToWebKeyEvents(keys, Logger(), &events, &error_msg));
   EXPECT_EQ(expected_size, events.size());
   for (size_t i = 0; i < events.size() && i < expected_size; ++i) {
     EXPECT_EQ(expected_events[i].type, events[i].type);
@@ -41,8 +41,8 @@ void CheckNonShiftChar(ui::KeyboardCode key_code, char character) {
   char_string.push_back(character);
   std::vector<WebKeyEvent> events;
   std::string error_msg;
-  EXPECT_TRUE(ConvertKeysToWebKeyEvents(ASCIIToUTF16(char_string), &events,
-                                        &error_msg));
+  EXPECT_TRUE(ConvertKeysToWebKeyEvents(ASCIIToUTF16(char_string), Logger(),
+                                        &events, &error_msg));
   ASSERT_EQ(3u, events.size()) << "Char: " << character;
   EXPECT_EQ(key_code, events[0].key_code) << "Char: " << character;
   ASSERT_EQ(1u, events[1].modified_text.length()) << "Char: " << character;
@@ -57,8 +57,8 @@ void CheckShiftChar(ui::KeyboardCode key_code, char character, char lower) {
   char_string.push_back(character);
   std::vector<WebKeyEvent> events;
   std::string error_msg;
-  EXPECT_TRUE(ConvertKeysToWebKeyEvents(ASCIIToUTF16(char_string), &events,
-                                        &error_msg));
+  EXPECT_TRUE(ConvertKeysToWebKeyEvents(ASCIIToUTF16(char_string), Logger(),
+                                        &events, &error_msg));
   ASSERT_EQ(5u, events.size()) << "Char: " << character;
   EXPECT_EQ(ui::VKEY_SHIFT, events[0].key_code) << "Char: " << character;
   EXPECT_EQ(key_code, events[1].key_code) << "Char: " << character;
@@ -281,11 +281,13 @@ TEST(WebDriverKeyConverter, AllSpecialWebDriverKeysOnEnglishKeyboard) {
     std::vector<WebKeyEvent> events;
     std::string error_msg;
     if (i == 1) {
-      EXPECT_FALSE(ConvertKeysToWebKeyEvents(keys, &events, &error_msg))
+      EXPECT_FALSE(ConvertKeysToWebKeyEvents(keys, Logger(), &events,
+                                             &error_msg))
           << "Index: " << i;
       EXPECT_EQ(0u, events.size()) << "Index: " << i;
     } else {
-      EXPECT_TRUE(ConvertKeysToWebKeyEvents(keys, &events, &error_msg))
+      EXPECT_TRUE(ConvertKeysToWebKeyEvents(keys, Logger(),
+                                            &events, &error_msg))
           << "Index: " << i;
       if (i == 0) {
         EXPECT_EQ(0u, events.size()) << "Index: " << i;

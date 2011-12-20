@@ -45,7 +45,7 @@ class Command {
   // Called after this command is executed. Returns NULL if no error occurs.
   // This is only called if |Init| is successful and regardless of whether
   // the execution results in a |Error|.
-  virtual void Finish();
+  virtual void Finish(Response* const response);
 
   // Executes the corresponding variant of this command URL.
   // Always called after |Init()| and called from the Execute function.
@@ -101,10 +101,10 @@ class Command {
   // false if there is no such parameter, or if it is not a list.
   bool GetListParameter(const std::string& key, ListValue** out) const;
 
- private:
   const std::vector<std::string> path_segments_;
   const scoped_ptr<const DictionaryValue> parameters_;
 
+ private:
 #if defined(OS_MACOSX)
   // An autorelease pool must exist on any thread where Objective C is used,
   // even implicitly. Otherwise the warning:

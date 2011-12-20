@@ -19,7 +19,9 @@
 #include "chrome/test/webdriver/frame_path.h"
 #include "chrome/test/webdriver/webdriver_automation.h"
 #include "chrome/test/webdriver/webdriver_basic_types.h"
+#include "chrome/test/webdriver/webdriver_capabilities_parser.h"
 #include "chrome/test/webdriver/webdriver_element_id.h"
+#include "chrome/test/webdriver/webdriver_logging.h"
 
 class FilePath;
 
@@ -51,43 +53,15 @@ struct FrameId {
 // A session manages its own lifetime.
 class Session {
  public:
-  struct Options {
-    Options();
-    ~Options();
-
-    // True if the session should simulate OS-level input. Currently only
-    // applies to keyboard input.
-    bool use_native_events;
-
-    // True if the session should not wait for page loads and navigate
-    // asynchronously.
-    bool load_async;
-
-    // By default, ChromeDriver configures Chrome in such a way as convenient
-    // for website testing. E.g., it configures Chrome so that sites are allowed
-    // to use the geolocation API without requesting the user's consent.
-    // If this is set to true, ChromeDriver will not modify Chrome's default
-    // behavior.
-    bool no_website_testing_defaults;
-
-    // A list of extensions to install on startup.
-    std::vector<FilePath> extensions;
-  };
-
   // Adds this |Session| to the |SessionManager|. The session manages its own
-  // lifetime. Do not call delete.
-  explicit Session(const Options& options);
+  // lifetime. Call |Terminate|, not delete, if you need to quit.
+  Session();
 
   // Removes this |Session| from the |SessionManager|.
   ~Session();
 
-  // Starts the session thread and a new browser, using the exe found at
-  // |browser_exe| and duplicating the provided |user_data_dir|.
-  // If |browser_exe| is empty, it will search in all the default locations.
-  // It |user_data_dir| is empty, it will use a temporary dir.
-  // Returns true on success. On failure, the session will delete
-  // itself and return an error code.
-  Error* Init(const Automation::BrowserOptions& options);
+  // Initializes the session with the given capabilities.
+  Error* Init(const base::DictionaryValue* capabilities_dict);
 
   // Should be called before executing a command.
   Error* BeforeExecuteCommand();
@@ -347,6 +321,10 @@ class Session {
                        bool is_user_pref,
                        base::Value* value);
 
+  // Returns a copy of the current log entries. Caller is responsible for
+  // returned value.
+  base::ListValue* GetLog() const;
+
   const std::string& id() const;
 
   const FrameId& current_target() const;
@@ -359,7 +337,9 @@ class Session {
 
   const Point& get_mouse_position() const;
 
-  const Options& options() const;
+  const Logger& logger() const;
+
+  const Capabilities& capabilities() const;
 
   // Gets the browser connection state.
   Error* GetBrowserConnectionState(bool* online);
@@ -418,6 +398,9 @@ class Session {
   Error* PostBrowserStartInit();
   Error* InitForWebsiteTesting();
 
+  scoped_ptr<InMemoryLog> session_log_;
+  Logger logger_;
+
   const std::string id_;
   FrameId current_target_;
 
@@ -446,7 +429,7 @@ class Session {
   std::string alert_prompt_text_;
   bool has_alert_prompt_text_;
 
-  Options options_;
+  Capabilities capabilities_;
 
   DISALLOW_COPY_AND_ASSIGN(Session);
 };

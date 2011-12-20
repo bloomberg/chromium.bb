@@ -15,7 +15,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
@@ -190,7 +189,7 @@ Automation::BrowserOptions::BrowserOptions()
 
 Automation::BrowserOptions::~BrowserOptions() {}
 
-Automation::Automation() {}
+Automation::Automation(const Logger& logger) : logger_(logger) {}
 
 Automation::~Automation() {}
 
@@ -229,7 +228,6 @@ void Automation::Init(const BrowserOptions& options, Error** error) {
   std::string chrome_details = base::StringPrintf(
       "Using Chrome binary at: %" PRFilePath,
       command.GetProgram().value().c_str());
-  LOG(INFO) << chrome_details;
 
   // Create the ProxyLauncher and launch Chrome.
   // In Chrome 13/14, the only way to detach the browser process is to use a
@@ -257,9 +255,16 @@ void Automation::Init(const BrowserOptions& options, Error** error) {
 #endif
   }
   if (channel_id.empty()) {
+    std::string command_line_str;
+#if defined(OS_WIN)
+    command_line_str = WideToUTF8(command.GetCommandLineString());
+#elif defined(OS_POSIX)
+    command_line_str = command.GetCommandLineString();
+#endif
+    logger_.Log(kInfoLogLevel, "Launching chrome: " + command_line_str);
     launcher_.reset(new AnonymousProxyLauncher(false));
   } else {
-    LOG(INFO) << "Using named testing interface";
+    logger_.Log(kInfoLogLevel, "Using named testing interface");
     launcher_.reset(new NamedProxyLauncher(channel_id, launch_browser, false));
   }
   ProxyLauncher::LaunchState launch_props = {
@@ -271,7 +276,7 @@ void Automation::Init(const BrowserOptions& options, Error** error) {
       true   // show_window
   };
   if (!launcher_->InitializeConnection(launch_props, true)) {
-    LOG(ERROR) << "Failed to initialize connection";
+    logger_.Log(kSevereLogLevel, "Failed to initialize connection");
     *error = new Error(
         kUnknownError,
         "Unable to either launch or connect to Chrome. Please check that "
@@ -280,8 +285,8 @@ void Automation::Init(const BrowserOptions& options, Error** error) {
   }
 
   launcher_->automation()->set_action_timeout_ms(base::kNoTimeout);
-  LOG(INFO) << "Chrome launched successfully. Version: "
-            << automation()->server_version();
+  logger_.Log(kInfoLogLevel, "Connected to Chrome successfully. Version: " +
+                  automation()->server_version());
 
   // Check the version of Chrome is compatible with this ChromeDriver.
   chrome_details += ", version (" + automation()->server_version() + ")";

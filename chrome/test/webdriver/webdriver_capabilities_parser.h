@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "chrome/test/webdriver/webdriver_logging.h"
 
 namespace base {
 class DictionaryValue;
@@ -45,6 +46,9 @@ struct Capabilities {
   // Whether Chrome should not block when loading.
   bool load_async;
 
+  // The minimum level to log for each log type.
+  LogLevel log_levels[LogType::kNum];
+
   // Whether Chrome should simulate input events using OS APIs instead of
   // WebKit APIs.
   bool native_events;
@@ -58,9 +62,6 @@ struct Capabilities {
 
   // Path to a custom profile to use.
   FilePath profile;
-
-  // Whether ChromeDriver should log verbosely.
-  bool verbose;
 };
 
 // Parses the given capabilities dictionary to produce a |Capabilities|
@@ -75,6 +76,7 @@ class CapabilitiesParser {
   // this directory.
   CapabilitiesParser(const base::DictionaryValue* capabilities_dict,
                      const FilePath& root_path,
+                     const Logger& logger,
                      Capabilities* capabilities);
   ~CapabilitiesParser();
 
@@ -88,15 +90,15 @@ class CapabilitiesParser {
   Error* ParseDetach(const base::Value* option);
   Error* ParseExtensions(const base::Value* option);
   Error* ParseLoadAsync(const base::Value* option);
+  Error* ParseLoggingPrefs(const base::Value* option);
   Error* ParseNativeEvents(const base::Value* option);
   Error* ParseNoProxy(const base::Value* option);
   Error* ParseProfile(const base::Value* option);
+  Error* ParseProxy(const base::Value* option);
   Error* ParseProxyAutoDetect(const base::DictionaryValue* options);
   Error* ParseProxyAutoconfigUrl(const base::DictionaryValue* options);
-  Error* ParseProxyCapabilities(const base::DictionaryValue* options);
   Error* ParseProxyServers(const base::DictionaryValue* options);
   Error* ParseNoWebsiteTestingDefaults(const base::Value* option);
-  Error* ParseVerbose(const base::Value* option);
   // Decodes the given base64-encoded string, optionally unzips it, and
   // writes the result to |path|.
   // On error, false will be returned and |error_msg| will be set.
@@ -110,6 +112,9 @@ class CapabilitiesParser {
 
   // The root directory under which to write all files.
   const FilePath root_;
+
+  // Reference to the logger to use.
+  const Logger& logger_;
 
   // A pointer to the capabilities to modify while parsing.
   Capabilities* caps_;

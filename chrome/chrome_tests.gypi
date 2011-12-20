@@ -984,6 +984,8 @@
         'test/webdriver/commands/execute_command.h',
         'test/webdriver/commands/find_element_commands.cc',
         'test/webdriver/commands/find_element_commands.h',
+        'test/webdriver/commands/log_command.cc',
+        'test/webdriver/commands/log_command.h',
         'test/webdriver/commands/navigate_commands.cc',
         'test/webdriver/commands/navigate_commands.h',
         'test/webdriver/commands/mouse_commands.cc',

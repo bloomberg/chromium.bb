@@ -9,6 +9,9 @@
 #include "base/logging.h"
 #include "base/values.h"
 
+using base::DictionaryValue;
+using base::Value;
+
 namespace webdriver {
 
 namespace {
@@ -41,8 +44,7 @@ void Response::SetStatus(ErrorCode status) {
 
 const Value* Response::GetValue() const {
   Value* out = NULL;
-  LOG_IF(WARNING, !data_.Get(kValueKey, &out))
-      << "Accessing unset response value.";  // Should never happen.
+  data_.Get(kValueKey, &out);
   return out;
 }
 
@@ -61,6 +63,10 @@ void Response::SetError(Error* error) {
 
 void Response::SetField(const std::string& key, Value* value) {
   data_.Set(key, value);
+}
+
+const Value* Response::GetDictionary() const {
+  return &data_;
 }
 
 std::string Response::ToJSON() const {

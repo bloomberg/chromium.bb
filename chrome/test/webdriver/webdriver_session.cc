@@ -14,7 +14,6 @@
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/process.h"
@@ -35,8 +34,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/automation/value_conversion_util.h"
+#include "chrome/test/webdriver/webdriver_capabilities_parser.h"
 #include "chrome/test/webdriver/webdriver_error.h"
 #include "chrome/test/webdriver/webdriver_key_converter.h"
+#include "chrome/test/webdriver/webdriver_logging.h"
 #include "chrome/test/webdriver/webdriver_session_manager.h"
 #include "chrome/test/webdriver/webdriver_util.h"
 #include "third_party/webdriver/atoms.h"
@@ -50,43 +51,58 @@ FrameId::FrameId(const WebViewId& view_id, const FramePath& frame_path)
       frame_path(frame_path) {
 }
 
-Session::Options::Options()
-    : use_native_events(false),
-      load_async(false),
-      no_website_testing_defaults(false) {
-}
-
-Session::Options::~Options() {
-}
-
-Session::Session(const Options& options)
-    : id_(GenerateRandomID()),
+Session::Session()
+    : session_log_(new InMemoryLog()),
+      logger_(kAllLogLevel),
+      id_(GenerateRandomID()),
       current_target_(FrameId(WebViewId(), FramePath())),
       thread_(id_.c_str()),
       async_script_timeout_(0),
       implicit_wait_(0),
-      has_alert_prompt_text_(false),
-      options_(options) {
+      has_alert_prompt_text_(false) {
   SessionManager::GetInstance()->Add(this);
+  logger_.AddHandler(session_log_.get());
+  if (FileLog::Get())
+    logger_.AddHandler(FileLog::Get());
 }
 
 Session::~Session() {
   SessionManager::GetInstance()->Remove(id_);
 }
 
-Error* Session::Init(const Automation::BrowserOptions& options) {
+Error* Session::Init(const DictionaryValue* capabilities_dict) {
   if (!thread_.Start()) {
     delete this;
     return new Error(kUnknownError, "Cannot start session thread");
   }
+  ScopedTempDir temp_dir;
+  if (!temp_dir.CreateUniqueTempDir()) {
+    delete this;
+    return new Error(
+        kUnknownError, "Unable to create temp directory for unpacking");
+  }
+  logger_.Log(kFineLogLevel,
+              "Initializing session with capabilities " +
+                  JsonStringifyForDisplay(capabilities_dict));
+  CapabilitiesParser parser(
+      capabilities_dict, temp_dir.path(), logger_, &capabilities_);
+  Error* error = parser.Parse();
+  if (error) {
+    delete this;
+    return error;
+  }
+  logger_.set_min_log_level(capabilities_.log_levels[LogType::kDriver]);
 
-  Error* error = NULL;
+  Automation::BrowserOptions browser_options;
+  browser_options.command = capabilities_.command;
+  browser_options.channel_id = capabilities_.channel;
+  browser_options.detach_process = capabilities_.detach;
+  browser_options.user_data_dir = capabilities_.profile;
   RunSessionTask(base::Bind(
       &Session::InitOnSessionThread,
       base::Unretained(this),
-      options,
+      browser_options,
       &error));
-
   if (!error)
     error = PostBrowserStartInit();
 
@@ -114,10 +130,8 @@ Error* Session::BeforeExecuteCommand() {
 
 Error* Session::AfterExecuteCommand() {
   Error* error = NULL;
-  if (!options_.load_async) {
-    LOG(INFO) << "Waiting for the page to stop loading";
+  if (!capabilities_.load_async) {
     error = WaitForAllViewsToStopLoading();
-    LOG(INFO) << "Done waiting for the page to stop loading";
   }
   return error;
 }
@@ -291,7 +305,7 @@ Error* Session::NavigateToURL(const std::string& url) {
                      "The current target does not support navigation");
   }
   Error* error = NULL;
-  if (options_.load_async) {
+  if (capabilities_.load_async) {
     RunSessionTask(base::Bind(
         &Automation::NavigateToURLAsync,
         base::Unretained(automation_.get()),
@@ -1020,11 +1034,14 @@ Error* Session::GetAttribute(const ElementId& element,
 Error* Session::WaitForAllViewsToStopLoading() {
   if (!automation_.get())
     return NULL;
+
+  logger_.Log(kFinerLogLevel, "Waiting for all views to stop loading...");
   Error* error = NULL;
   RunSessionTask(base::Bind(
       &Automation::WaitForAllViewsToStopLoading,
       base::Unretained(automation_.get()),
       &error));
+  logger_.Log(kFinerLogLevel, "Done waiting for all views to stop loading");
   return error;
 }
 
@@ -1137,6 +1154,10 @@ Error* Session::SetPreference(
   return error;
 }
 
+base::ListValue* Session::GetLog() const {
+  return session_log_->entries_list()->DeepCopy();
+}
+
 const std::string& Session::id() const {
   return id_;
 }
@@ -1165,8 +1186,12 @@ const Point& Session::get_mouse_position() const {
   return mouse_position_;
 }
 
-const Session::Options& Session::options() const {
-  return options_;
+const Logger& Session::logger() const {
+  return logger_;
+}
+
+const Capabilities& Session::capabilities() const {
+  return capabilities_;
 }
 
 void Session::RunSessionTask(Task* task) {
@@ -1204,7 +1229,7 @@ void Session::RunClosureOnSessionThread(const base::Closure& task,
 
 void Session::InitOnSessionThread(const Automation::BrowserOptions& options,
                                   Error** error) {
-  automation_.reset(new Automation());
+  automation_.reset(new Automation(logger_));
   automation_->Init(options, error);
   if (*error)
     return;
@@ -1279,12 +1304,12 @@ Error* Session::ExecuteScriptAndParseValue(const FrameId& frame_id,
 void Session::SendKeysOnSessionThread(const string16& keys, Error** error) {
   std::vector<WebKeyEvent> key_events;
   std::string error_msg;
-  if (!ConvertKeysToWebKeyEvents(keys, &key_events, &error_msg)) {
+  if (!ConvertKeysToWebKeyEvents(keys, logger_, &key_events, &error_msg)) {
     *error = new Error(kUnknownError, error_msg);
     return;
   }
   for (size_t i = 0; i < key_events.size(); ++i) {
-    if (options_.use_native_events) {
+    if (capabilities_.native_events) {
       // The automation provider will generate up/down events for us, we
       // only need to call it once as compared to the WebKeyEvent method.
       // Hence we filter events by their types, keeping only rawkeydown.
@@ -1511,7 +1536,7 @@ Error* Session::VerifyElementIsClickable(
     return new Error(kUnknownError, message);
   }
   if (message.length()) {
-    LOG(WARNING) << message;
+    logger_.Log(kWarningLogLevel, message);
   }
   return NULL;
 }
@@ -1588,14 +1613,14 @@ Error* Session::GetAppCacheStatus(int* status) {
 
 Error* Session::PostBrowserStartInit() {
   Error* error = NULL;
-  if (!options_.no_website_testing_defaults)
+  if (!capabilities_.no_website_testing_defaults)
     error = InitForWebsiteTesting();
   if (error)
     return error;
 
   // Install extensions.
-  for (size_t i = 0; i < options_.extensions.size(); ++i) {
-    error = InstallExtensionDeprecated(options_.extensions[i]);
+  for (size_t i = 0; i < capabilities_.extensions.size(); ++i) {
+    error = InstallExtensionDeprecated(capabilities_.extensions[i]);
     if (error)
       return error;
   }

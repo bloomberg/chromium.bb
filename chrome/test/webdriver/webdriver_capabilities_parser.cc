@@ -7,7 +7,6 @@
 #include "base/base64.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
-#include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/values.h"
@@ -16,6 +15,7 @@
 #include "chrome/test/webdriver/webdriver_error.h"
 #include "chrome/test/webdriver/webdriver_util.h"
 
+using base::DictionaryValue;
 using base::Value;
 
 namespace webdriver {
@@ -39,39 +39,49 @@ Capabilities::Capabilities()
       detach(false),
       load_async(false),
       native_events(false),
-      no_website_testing_defaults(false),
-      verbose(false) { }
+      no_website_testing_defaults(false) {
+  log_levels[LogType::kDriver] = kAllLogLevel;
+}
 
 Capabilities::~Capabilities() { }
 
 CapabilitiesParser::CapabilitiesParser(
-    const base::DictionaryValue* capabilities_dict,
+    const DictionaryValue* capabilities_dict,
     const FilePath& root_path,
+    const Logger& logger,
     Capabilities* capabilities)
     : dict_(capabilities_dict),
       root_(root_path),
+      logger_(logger),
       caps_(capabilities) {
 }
 
 CapabilitiesParser::~CapabilitiesParser() { }
 
 Error* CapabilitiesParser::Parse() {
-  // Parse WebDriver proxy capabilities first.
-  const char kProxyKey[] = "proxy";
-  Value* proxy_options_value;
-  if (dict_->Get(kProxyKey, &proxy_options_value)) {
-    const base::DictionaryValue* proxy_options;
-    if (!proxy_options_value->GetAsDictionary(&proxy_options)) {
-      return CreateBadInputError(
-          kProxyKey, Value::TYPE_DICTIONARY, proxy_options_value);
+  // Parse WebDriver standard capabilities.
+  typedef Error* (CapabilitiesParser::*Parser)(const Value*);
+
+  struct NameAndParser {
+    const char* name;
+    Parser parser;
+  };
+  NameAndParser name_and_parser[] = {
+    { "proxy", &CapabilitiesParser::ParseProxy },
+    { "loggingPrefs", &CapabilitiesParser::ParseLoggingPrefs }
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(name_and_parser); ++i) {
+    Value* value;
+    if (dict_->Get(name_and_parser[i].name, &value)) {
+      Error* error = (this->*name_and_parser[i].parser)(value);
+      if (error)
+        return error;
     }
-    Error* error = ParseProxyCapabilities(proxy_options);
-    if (error)
-      return error;
   }
 
+  // Parse Chrome custom capabilities (a.k.a., ChromeOptions).
   const char kOptionsKey[] = "chromeOptions";
-  const base::DictionaryValue* options = dict_;
+  const DictionaryValue* options = dict_;
   bool legacy_options = true;
   Value* options_value;
   if (dict_->Get(kOptionsKey, &options_value)) {
@@ -84,7 +94,6 @@ Error* CapabilitiesParser::Parse() {
     }
   }
 
-  typedef Error* (CapabilitiesParser::*Parser)(const Value*);
   std::map<std::string, Parser> parser_map;
   if (legacy_options) {
     parser_map["chrome.binary"] = &CapabilitiesParser::ParseBinary;
@@ -97,7 +106,6 @@ Error* CapabilitiesParser::Parse() {
     parser_map["chrome.switches"] = &CapabilitiesParser::ParseArgs;
     parser_map["chrome.noWebsiteTestingDefaults"] =
         &CapabilitiesParser::ParseNoWebsiteTestingDefaults;
-    parser_map["chrome.verbose"] = &CapabilitiesParser::ParseVerbose;
   } else {
     parser_map["args"] = &CapabilitiesParser::ParseArgs;
     parser_map["binary"] = &CapabilitiesParser::ParseBinary;
@@ -109,10 +117,9 @@ Error* CapabilitiesParser::Parse() {
     parser_map["profile"] = &CapabilitiesParser::ParseProfile;
     parser_map["noWebsiteTestingDefaults"] =
         &CapabilitiesParser::ParseNoWebsiteTestingDefaults;
-    parser_map["verbose"] = &CapabilitiesParser::ParseVerbose;
   }
 
-  base::DictionaryValue::key_iterator key_iter = options->begin_keys();
+  DictionaryValue::key_iterator key_iter = options->begin_keys();
   for (; key_iter != options->end_keys(); ++key_iter) {
     if (parser_map.find(*key_iter) == parser_map.end()) {
       if (!legacy_options)
@@ -207,6 +214,31 @@ Error* CapabilitiesParser::ParseLoadAsync(const Value* option) {
   return NULL;
 }
 
+Error* CapabilitiesParser::ParseLoggingPrefs(const base::Value* option) {
+  const DictionaryValue* logging_prefs;
+  if (!option->GetAsDictionary(&logging_prefs))
+    return CreateBadInputError("loggingPrefs", Value::TYPE_DICTIONARY, option);
+
+  DictionaryValue::key_iterator key_iter = logging_prefs->begin_keys();
+  for (; key_iter != logging_prefs->end_keys(); ++key_iter) {
+    LogType log_type;
+    if (!LogType::FromString(*key_iter, &log_type))
+      continue;
+
+    Value* level_value;
+    logging_prefs->Get(*key_iter, &level_value);
+    int level;
+    if (!level_value->GetAsInteger(&level)) {
+      return CreateBadInputError(
+          std::string("loggingPrefs.") + *key_iter,
+          Value::TYPE_INTEGER,
+          level_value);
+    }
+    caps_->log_levels[log_type.type()] = static_cast<LogLevel>(level);
+  }
+  return NULL;
+}
+
 Error* CapabilitiesParser::ParseNativeEvents(const Value* option) {
   if (!option->GetAsBoolean(&caps_->native_events))
     return CreateBadInputError("nativeEvents", Value::TYPE_BOOLEAN, option);
@@ -225,8 +257,11 @@ Error* CapabilitiesParser::ParseProfile(const Value* option) {
   return NULL;
 }
 
-Error* CapabilitiesParser::ParseProxyCapabilities(
-    const base::DictionaryValue* options) {
+Error* CapabilitiesParser::ParseProxy(const base::Value* option) {
+  const DictionaryValue* options;
+  if (!option->GetAsDictionary(&options))
+    return CreateBadInputError("proxy", Value::TYPE_DICTIONARY, option);
+
   // Quick check of proxy capabilities.
   std::set<std::string> proxy_options;
   proxy_options.insert("autodetect");
@@ -238,10 +273,10 @@ Error* CapabilitiesParser::ParseProxyCapabilities(
   proxy_options.insert("sslProxy");
   proxy_options.insert("class");  // Created by BeanToJSONConverter.
 
-  base::DictionaryValue::key_iterator key_iter = options->begin_keys();
+  DictionaryValue::key_iterator key_iter = options->begin_keys();
   for (; key_iter != options->end_keys(); ++key_iter) {
     if (proxy_options.find(*key_iter) == proxy_options.end()) {
-      LOG(WARNING) << "Unrecognized proxy capability: " << *key_iter;
+      logger_.Log(kInfoLogLevel, "Unrecognized proxy capability: " + *key_iter);
     }
   }
 
@@ -255,13 +290,14 @@ Error* CapabilitiesParser::ParseProxyCapabilities(
   proxy_type_parser_map["direct"] = NULL;
   proxy_type_parser_map["system"] = NULL;
 
-  Value* option;
-  if (!options->Get("proxyType", &option))
+  Value* proxy_type_value;
+  if (!options->Get("proxyType", &proxy_type_value))
     return new Error(kBadRequest, "Missing 'proxyType' capability.");
 
   std::string proxy_type;
-  if (!option->GetAsString(&proxy_type))
-    return CreateBadInputError("proxyType", Value::TYPE_STRING, option);
+  if (!proxy_type_value->GetAsString(&proxy_type))
+    return CreateBadInputError("proxyType", Value::TYPE_STRING,
+                               proxy_type_value);
 
   proxy_type = StringToLowerASCII(proxy_type);
   if (proxy_type_parser_map.find(proxy_type) == proxy_type_parser_map.end())
@@ -283,7 +319,7 @@ Error* CapabilitiesParser::ParseProxyCapabilities(
 }
 
 Error* CapabilitiesParser::ParseProxyAutoDetect(
-    const base::DictionaryValue* options){
+    const DictionaryValue* options){
   const char kProxyAutoDetectKey[] = "autodetect";
   bool proxy_auto_detect = false;
   if (!options->GetBoolean(kProxyAutoDetectKey, &proxy_auto_detect))
@@ -295,7 +331,7 @@ Error* CapabilitiesParser::ParseProxyAutoDetect(
 }
 
 Error* CapabilitiesParser::ParseProxyAutoconfigUrl(
-    const base::DictionaryValue* options){
+    const DictionaryValue* options){
   const char kProxyAutoconfigUrlKey[] = "proxyAutoconfigUrl";
   CommandLine::StringType proxy_pac_url;
   if (!options->GetString(kProxyAutoconfigUrlKey, &proxy_pac_url))
@@ -306,7 +342,7 @@ Error* CapabilitiesParser::ParseProxyAutoconfigUrl(
 }
 
 Error* CapabilitiesParser::ParseProxyServers(
-    const base::DictionaryValue* options) {
+    const DictionaryValue* options) {
   const char kNoProxy[] = "noProxy";
   const char kFtpProxy[] = "ftpProxy";
   const char kHttpProxy[] = "httpProxy";
@@ -371,12 +407,6 @@ Error* CapabilitiesParser::ParseNoWebsiteTestingDefaults(const Value* option) {
   if (!option->GetAsBoolean(&caps_->no_website_testing_defaults))
     return CreateBadInputError("noWebsiteTestingDefaults",
                                Value::TYPE_BOOLEAN, option);
-  return NULL;
-}
-
-Error* CapabilitiesParser::ParseVerbose(const Value* option) {
-  if (!option->GetAsBoolean(&caps_->verbose))
-    return CreateBadInputError("verbose", Value::TYPE_BOOLEAN, option);
   return NULL;
 }
 

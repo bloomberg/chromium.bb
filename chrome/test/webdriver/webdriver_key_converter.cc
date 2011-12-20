@@ -10,6 +10,7 @@
 #include "chrome/common/automation_constants.h"
 #include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/webdriver/keycode_text_conversion.h"
+#include "chrome/test/webdriver/webdriver_logging.h"
 
 namespace {
 
@@ -178,6 +179,7 @@ WebKeyEvent CreateCharEvent(const std::string& unmodified_text,
 }
 
 bool ConvertKeysToWebKeyEvents(const string16& client_keys,
+                               const Logger& logger,
                                std::vector<WebKeyEvent>* client_key_events,
                                std::string* error_msg) {
   std::vector<WebKeyEvent> key_events;
@@ -268,8 +270,10 @@ bool ConvertKeysToWebKeyEvents(const string16& client_keys,
       }
       if (unmodified_text.empty() || modified_text.empty()) {
         // Do a best effort and use the raw key we were given.
-        LOG(WARNING) << "No translation for key code. Code point: "
-                     << static_cast<int>(key);
+        logger.Log(
+            kWarningLogLevel,
+            base::StringPrintf("No translation for key code. Code point: %d",
+                static_cast<int>(key)));
         if (unmodified_text.empty())
           unmodified_text = UTF16ToUTF8(keys.substr(i, 1));
         if (modified_text.empty())

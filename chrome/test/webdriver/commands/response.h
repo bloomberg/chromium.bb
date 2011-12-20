@@ -28,11 +28,11 @@ class Response {
   void SetStatus(ErrorCode status);
 
   // Ownership of the returned pointer is kept by this object.
-  const Value* GetValue() const;
+  const base::Value* GetValue() const;
 
   // Sets the |value| of this response, assuming ownership of the object in the
   // process.
-  void SetValue(Value* value);
+  void SetValue(base::Value* value);
 
   // Configures this response to report the given error. Ownership of the error
   // is taken from the caller.
@@ -42,13 +42,16 @@ class Response {
   // string to indicate the value should be set in a nested object. Any
   // previously set value for the |key| will be deleted.
   // This object assumes ownership of |value|.
-  void SetField(const std::string& key, Value* value);
+  void SetField(const std::string& key, base::Value* value);
+
+  // Returns a pointer to the actual response dictionary.
+  const base::Value* GetDictionary() const;
 
   // Returns this response as a JSON string.
   std::string ToJSON() const;
 
  private:
-  DictionaryValue data_;
+  base::DictionaryValue data_;
 
   DISALLOW_COPY_AND_ASSIGN(Response);
 };

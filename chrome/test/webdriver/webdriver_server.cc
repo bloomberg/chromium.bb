@@ -16,7 +16,6 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -24,6 +23,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -37,6 +37,7 @@
 #include "chrome/test/webdriver/commands/execute_async_script_command.h"
 #include "chrome/test/webdriver/commands/execute_command.h"
 #include "chrome/test/webdriver/commands/find_element_commands.h"
+#include "chrome/test/webdriver/commands/log_command.h"
 #include "chrome/test/webdriver/commands/navigate_commands.h"
 #include "chrome/test/webdriver/commands/mouse_commands.h"
 #include "chrome/test/webdriver/commands/screenshot_command.h"
@@ -63,6 +64,8 @@
 #endif
 
 namespace webdriver {
+
+namespace {
 
 void InitCallbacks(Dispatcher* dispatcher,
                    base::WaitableEvent* shutdown_event,
@@ -134,6 +137,7 @@ void InitCallbacks(Dispatcher* dispatcher,
   dispatcher->Add<SetAsyncScriptTimeoutCommand>(
                                         "/session/*/timeouts/async_script");
   dispatcher->Add<ImplicitWaitCommand>( "/session/*/timeouts/implicit_wait");
+  dispatcher->Add<LogCommand>(          "/session/*/log");
 
   // Cookie functions.
   dispatcher->Add<CookieCommand>(     "/session/*/cookie");
@@ -155,17 +159,13 @@ void InitCallbacks(Dispatcher* dispatcher,
     dispatcher->ForbidAllOtherRequests();
 }
 
-}  // namespace webdriver
-
-namespace {
-
 void* ProcessHttpRequest(mg_event event_raised,
                          struct mg_connection* connection,
                          const struct mg_request_info* request_info) {
   bool handler_result_code = false;
   if (event_raised == MG_NEW_REQUEST) {
     handler_result_code =
-        reinterpret_cast<webdriver::Dispatcher*>(request_info->user_data)->
+        reinterpret_cast<Dispatcher*>(request_info->user_data)->
             ProcessHttpRequest(connection, request_info);
   }
 
@@ -191,13 +191,9 @@ void MakeMongooseOptions(const std::string& port,
 
 }  // namespace
 
-// Sets up and runs the Mongoose HTTP server for the JSON over HTTP
-// protcol of webdriver.  The spec is located at:
-// http://code.google.com/p/selenium/wiki/JsonWireProtocol.
-int main(int argc, char *argv[]) {
+int RunChromeDriver() {
   base::AtExitManager exit;
   base::WaitableEvent shutdown_event(false, false);
-  CommandLine::Init(argc, argv);
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
 #if defined(OS_POSIX)
@@ -210,11 +206,15 @@ int main(int argc, char *argv[]) {
   chrome::RegisterPathProvider();
   TestTimeouts::Initialize();
 
+  InitWebDriverLogging(kAllLogLevel);
+  FileLog::Get()->Log(kInfoLogLevel,
+                      base::Time::Now(),
+                      std::string("ChromeDriver ") + chrome::kChromeVersion);
+
   // Parse command line flags.
   std::string port = "9515";
   std::string root;
   std::string url_base;
-  bool verbose = false;
   int http_threads = 4;
   bool enable_keep_alive = true;
   if (cmd_line->HasSwitch("port"))
@@ -226,9 +226,6 @@ int main(int argc, char *argv[]) {
     root = cmd_line->GetSwitchValueASCII("root");
   if (cmd_line->HasSwitch("url-base"))
     url_base = cmd_line->GetSwitchValueASCII("url-base");
-  // Whether or not to do verbose logging.
-  if (cmd_line->HasSwitch("verbose"))
-    verbose = true;
   if (cmd_line->HasSwitch("http-threads")) {
     if (!base::StringToInt(cmd_line->GetSwitchValueASCII("http-threads"),
                            &http_threads)) {
@@ -239,15 +236,12 @@ int main(int argc, char *argv[]) {
   if (cmd_line->HasSwitch("disable-keep-alive"))
     enable_keep_alive = false;
 
-  webdriver::InitWebDriverLogging(
-      verbose ? logging::LOG_INFO : logging::LOG_WARNING);
-
-  webdriver::SessionManager* manager = webdriver::SessionManager::GetInstance();
+  SessionManager* manager = SessionManager::GetInstance();
   manager->set_port(port);
   manager->set_url_base(url_base);
 
-  webdriver::Dispatcher dispatcher(url_base);
-  webdriver::InitCallbacks(&dispatcher, &shutdown_event, root.empty());
+  Dispatcher dispatcher(url_base);
+  InitCallbacks(&dispatcher, &shutdown_event, root.empty());
 
   std::vector<std::string> args;
   MakeMongooseOptions(port, root, http_threads, enable_keep_alive, &args);
@@ -283,4 +277,11 @@ int main(int argc, char *argv[]) {
   shutdown_event.Wait();
 
   return (EXIT_SUCCESS);
+}
+
+}  // namespace webdriver
+
+int main(int argc, char *argv[]) {
+  CommandLine::Init(argc, argv);
+  webdriver::RunChromeDriver();
 }

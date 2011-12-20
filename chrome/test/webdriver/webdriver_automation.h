@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/common/automation_constants.h"
+#include "chrome/test/webdriver/webdriver_logging.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 class AutomationId;
@@ -65,7 +66,7 @@ class Automation {
     bool detach_process;
   };
 
-  Automation();
+  explicit Automation(const Logger& logger);
   virtual ~Automation();
 
   // Start the system's default Chrome binary.
@@ -232,6 +233,7 @@ class Automation {
   Error* CheckAdvancedInteractionsSupported();
   Error* CheckNewExtensionInterfaceSupported();
 
+  const Logger& logger_;
   scoped_ptr<ProxyLauncher> launcher_;
 
   DISALLOW_COPY_AND_ASSIGN(Automation);

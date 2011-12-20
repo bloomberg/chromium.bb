@@ -82,7 +82,7 @@ void DispatchCommand(Command* const command,
   } else {
     NOTREACHED();
   }
-  command->Finish();
+  command->Finish(response);
 }
 
 void SendOkWithBody(struct mg_connection* connection,
@@ -114,7 +114,7 @@ void SendLog(struct mg_connection* connection,
              const struct mg_request_info* request_info,
              void* user_data) {
   std::string content, log;
-  if (GetLogContents(&log)) {
+  if (FileLog::Get()->GetLogContents(&log)) {
     content = "START ChromeDriver log";
     const size_t kMaxSizeWithoutHeaders = kMaxHttpMessageSize - 10000;
     if (log.size() > kMaxSizeWithoutHeaders) {

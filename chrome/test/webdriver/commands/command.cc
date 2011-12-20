@@ -29,7 +29,7 @@ bool Command::Init(Response* const response) {
   return true;
 }
 
-void Command::Finish() {}
+void Command::Finish(Response* const response) {}
 
 std::string Command::GetPathVariable(const size_t i) const {
   return i < path_segments_.size() ? path_segments_.at(i) : "";

@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/logging.h"
 #include "chrome/test/webdriver/commands/response.h"
 #include "third_party/mongoose/mongoose.h"
 
@@ -95,8 +94,6 @@ void Dispatch(struct mg_connection* connection,
                                  &path_segments,
                                  &parameters,
                                  &response)) {
-    LOG(INFO) << "Received command, url: " << request_info->uri
-              << ", method: " << request_info->request_method;
     internal::DispatchHelper(
         new CommandType(path_segments, parameters),
         method,
@@ -105,7 +102,6 @@ void Dispatch(struct mg_connection* connection,
   internal::SendResponse(connection,
                          request_info->request_method,
                          response);
-  LOG(INFO) << "Sent command response, url: " << request_info->uri;
 }
 
 class Dispatcher {

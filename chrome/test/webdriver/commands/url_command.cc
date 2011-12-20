@@ -49,7 +49,6 @@ void URLCommand::ExecutePost(Response* const response) {
     response->SetError(error);
     return;
   }
-  response->SetValue(new StringValue(url));
 }
 
 
