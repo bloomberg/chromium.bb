@@ -72,7 +72,7 @@ cr.define('tracing', function() {
 
       this.saveBn_.disabled = !hasEvents;
 
-      this.timelineView_.traceEvents = this.traceEvents_;
+      this.timelineView_.traceData = this.traceEvents_;
     },
 
     onKeypress_: function(event) {

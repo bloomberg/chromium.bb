@@ -45,7 +45,7 @@ cr.define('tracing', function() {
     __proto__: HTMLDivElement.prototype,
 
     decorate: function() {
-      this.className = 'timeline-view';
+      this.classList.add('timeline-view');
 
       this.timelineContainer_ = document.createElement('div');
       this.timelineContainer_.className = 'timeline-container';
@@ -63,14 +63,22 @@ cr.define('tracing', function() {
       this.onSelectionChangedBoundToThis_ = this.onSelectionChanged_.bind(this);
     },
 
-    set traceEvents(traceEvents) {
-      this.timelineModel_ = new tracing.TimelineModel(traceEvents);
+    set traceData(traceData) {
+      this.model = new tracing.TimelineModel(traceData);
+    },
+
+    get model(model) {
+      return this.timelineModel_;
+    },
+
+    set model(model) {
+      this.timelineModel_ = model;
 
       // remove old timeline
       this.timelineContainer_.textContent = '';
 
       // create new timeline if needed
-      if (traceEvents.length) {
+      if (this.timelineModel_.minTimestamp !== undefined) {
         if (this.timeline_)
           this.timeline_.detach();
         this.timeline_ = new tracing.Timeline();
@@ -83,6 +91,10 @@ cr.define('tracing', function() {
       } else {
         this.timeline_ = null;
       }
+    },
+
+    get timeline() {
+      return this.timeline_;
     },
 
     onSelectionChanged_: function(e) {

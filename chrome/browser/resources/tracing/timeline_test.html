@@ -13,6 +13,8 @@ found in the LICENSE file.
 <script src="../shared/js/cr/ui.js"></script>
 <script src="../shared/js/util.js"></script>
 <script src="timeline_model.js"></script>
+<script src="linux_perf_importer.js"></script>
+<script src="trace_event_importer.js"></script>
 <script src="sorted_array_utils.js"></script>
 <script src="measuring_stick.js"></script>
 <script src="timeline.js"></script>
@@ -48,6 +50,9 @@ found in the LICENSE file.
   <div class="timeline-test" src="./tests/main_thread_has_unclosed_slices.json">
   </div>
 
+  <div class="timeline-test" src="./tests/linux_perf_simple.txt">
+  </div>
+
   <script>
   function load(parentEl) {
     var src = parentEl.getAttribute('src');
@@ -77,20 +82,16 @@ found in the LICENSE file.
     // Creating attached vs detached stress tests the canvas- and viewport-
     // setup code.
     var create_detached = parentEl.getAttribute('create-attached') == 1;
-    if (create_detached) {
-      containerEl.appendChild(timelineEl);
-      test_utils.getJSON(src, function(events) {
-        var model = new tracing.TimelineModel(events);
-        timelineEl.model = model;
-      });
-    } else {
-      test_utils.getJSON(src, function(events) {
-        var model = new tracing.TimelineModel(events);
-        timelineEl.model = model;
+    function createModel(data) {
+      timelineEl.model = new tracing.TimelineModel(data);
+      if (!create_detached)
         containerEl.appendChild(timelineEl);
-      });
     }
+    if (create_detached)
+      containerEl.appendChild(timelineEl);
+    test_utils.getAsync(src, createModel);
   }
+
   function onLoad() {
     Array.prototype.forEach.call(document.querySelectorAll('.timeline-test'),
                                  load);

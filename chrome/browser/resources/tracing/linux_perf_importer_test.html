@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<!--
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<head>
+<title>Perf Importer tests</title>
+<script src=
+    "http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js">
+</script>
+<script src="../shared/js/cr.js"></script>
+<script src="../shared/js/cr/event_target.js"></script>
+<script src="test_utils.js"></script>
+<script src="timeline_model.js"></script>
+<script src="linux_perf_importer.js"></script>
+<script>
+  goog.require('goog.testing.jsunit');
+</script>
+
+</head>
+<body>
+<script>
+function testLineRE() {
+  var re = tracing._LinuxPerfImporterTestExports.lineRE;
+  var x = re.exec('   <idle>-0     [001]  4467.843475: sched_switch: ' +
+      'prev_comm=swapper prev_pid=0 prev_prio=120 prev_state=R ==> ' +
+      'next_comm=SurfaceFlinger next_pid=178 next_prio=112');
+  assertNotNull(x);
+  assertEquals('<idle>-0', x[1]);
+  assertEquals('001', x[2]);
+  assertEquals('4467.843475', x[3]);
+  assertEquals('sched_switch', x[4]);
+  assertEquals('prev_comm=swapper prev_pid=0 prev_prio=120 prev_state=R ==> ' +
+      'next_comm=SurfaceFlinger next_pid=178 next_prio=112', x[5]);
+
+  var x = re.exec('Binder Thread #-647   [001]   260.464294: sched_switch: ' +
+      'prev_comm=Binder Thread # prev_pid=647 prev_prio=120 prev_state=D ==> ' +
+      'next_comm=.android.chrome next_pid=1562 next_prio=120');
+  assertNotNull(x);
+}
+
+function testSchedSwitchRE() {
+  var re = tracing._LinuxPerfImporterTestExports.schedSwitchRE;
+  var x = re.exec('prev_comm=swapper prev_pid=0 prev_prio=120 prev_state=R ' +
+      '==> next_comm=SurfaceFlinger next_pid=178 next_prio=112');
+  assertNotNull(x);
+  assertEquals('swapper', x[1]);
+  assertEquals('0', x[2]);
+  assertEquals('120', x[3]);
+  assertEquals('R', x[4]);
+  assertEquals('SurfaceFlinger', x[5]);
+  assertEquals('178', x[6]);
+  assertEquals('112', x[7]);
+
+  var x = re.exec('prev_comm=.android.chrome prev_pid=1562 prev_prio=120 ' +
+      'prev_state=R ==> next_comm=Binder Thread # next_pid=195 next_prio=120');
+  assertNotNull(x);
+  assertEquals('.android.chrome', x[1]);
+  assertEquals('Binder Thread #', x[5]);
+
+  var x = re.exec('prev_comm=Binder Thread # prev_pid=1562 prev_prio=120 ' +
+      'prev_state=R ==> next_comm=.android.chrome next_pid=195 next_prio=120');
+  assertNotNull(x);
+  assertEquals('Binder Thread #', x[1]);
+  assertEquals('.android.chrome', x[5]);
+}
+
+function testSchedWakeupRE() {
+  var re = tracing._LinuxPerfImporterTestExports.schedWakeupRE;
+  var x = re.exec(
+      'comm=SensorService pid=207 prio=112 success=1 target_cpu=000');
+  assertNotNull(x);
+  assertEquals('SensorService', x[1]);
+  assertEquals('207', x[2]);
+  assertEquals('112', x[3]);
+  assertEquals('1', x[4]);
+  assertEquals('000', x[5]);
+}
+
+function testTraceEventClockSyncRE() {
+  var re = tracing._LinuxPerfImporterTestExports.traceEventClockSyncRE;
+  var x = re.exec('trace_event_clock_sync: parent_ts=19581477508');
+  assertNotNull(x);
+  assertEquals('19581477508', x[1]);
+
+  var x = re.exec('trace_event_clock_sync: parent_ts=123.456');
+  assertNotNull(x);
+  assertEquals('123.456', x[1]);
+}
+
+function testCanImport() {
+  lines = [
+    '# tracer: nop',
+    '#',
+    '#           TASK-PID    CPU#    TIMESTAMP  FUNCTION',
+    '#              | |       |          |         |',
+    '          <idle>-0     [001]  4467.843475: sched_switch: ' +
+        'prev_comm=swapper prev_pid=0 prev_prio=120 prev_state=R ==> ' +
+        'next_comm=SurfaceFlinger next_pid=178 next_prio=112',
+
+    '  SurfaceFlinger-178   [001]  4467.843536: sched_switch: ' +
+        'prev_comm=SurfaceFlinger prev_pid=178 prev_prio=112 prev_state=S ' +
+        '==> next_comm=kworker/u:2 next_pid=2844 next_prio=120',
+
+    '     kworker/u:2-2844  [001]  4467.843567: sched_switch: ' +
+        'prev_comm=kworker/u:2 prev_pid=2844 prev_prio=120 prev_state=S ' +
+        '==> next_comm=swapper next_pid=0 next_prio=120',
+
+    '          <idle>-0     [001]  4467.844208: sched_switch: ' +
+          'prev_comm=swapper prev_pid=0 prev_prio=120 prev_state=R ==> ' +
+          'next_comm=kworker/u:2 next_pid=2844 next_prio=120'
+  ];
+  assertTrue(tracing.LinuxPerfImporter.canImport(lines.join('\n')));
+
+  lines = [
+    '          <idle>-0     [001]  4467.843475: sched_switch: ' +
+            'prev_comm=swapper prev_pid=0 prev_prio=120 prev_state=R ==> ' +
+            'next_comm=SurfaceFlinger next_pid=178 next_prio=112'
+  ];
+  assertTrue(tracing.LinuxPerfImporter.canImport(lines.join('\n')));
+
+  lines = [
+    '          <idle>-0     [001]  4467.843475: sched_switch: ' +
+              'prev_comm=swapper prev_pid=0 prev_prio=120 prev_state=R ==> ' +
+              'next_comm=SurfaceFlinger next_pid=178 next_prio=112',
+
+    '  SurfaceFlinger-178   [001]  4467.843536: sched_switch: ' +
+              'prev_comm=SurfaceFlinger prev_pid=178 prev_prio=112 ' +
+              'prev_state=S ==> next_comm=kworker/u:2 next_pid=2844 ' +
+              'next_prio=120'
+  ];
+  assertTrue(tracing.LinuxPerfImporter.canImport(lines.join('\n')));
+
+  lines = [
+    'SomeRandomText',
+    'More random text'
+  ];
+  assertFalse(tracing.LinuxPerfImporter.canImport(lines.join('\n')));
+}
+
+function testImportOneSequence() {
+  lines = [
+    '          <idle>-0     [001]  4467.843475: sched_switch: ' +
+                'prev_comm=swapper prev_pid=0 prev_prio=120 prev_state=R ==> ' +
+                'next_comm=SurfaceFlinger next_pid=178 next_prio=112',
+
+                '  SurfaceFlinger-178   [001]  4467.843536: sched_switch: ' +
+                'prev_comm=SurfaceFlinger prev_pid=178 prev_prio=112 ' +
+                'prev_state=S ==> next_comm=kworker/u:2 next_pid=2844 ' +
+                'next_prio=120',
+
+                '     kworker/u:2-2844  [001]  4467.843567: sched_switch: ' +
+                'prev_comm=kworker/u:2 prev_pid=2844 prev_prio=120 ' +
+                'prev_state=S ==> next_comm=swapper next_pid=0 next_prio=120'
+  ];
+  var m = new tracing.TimelineModel(lines.join('\n'), false);
+  assertEquals(0, m.importErrors.length);
+
+  var c = m.cpus[1];
+  assertEquals(2, c.slices.length);
+
+  assertEquals('SurfaceFlinger', c.slices[0].title);
+  assertEquals(4467843.475, c.slices[0].start);
+  assertAlmostEquals(.536 - .475, c.slices[0].duration);
+}
+
+function testImportOneSequenceWithSchedWakeUp() {
+  // TODO(nduca): write test for this.
+}
+
+function testImportWithNewline() {
+  lines = [
+    ''
+  ];
+  var m = new tracing.TimelineModel(lines.join('\n'));
+  assertEquals(0, m.importErrors.length);
+}
+
+function testClockSync() {
+  lines = [
+    '          <idle>-0     [001]  4467.843475: sched_switch: ' +
+                  'prev_comm=swapper prev_pid=0 prev_prio=120 prev_state=R ' +
+                  '==> next_comm=SurfaceFlinger next_pid=178 next_prio=112',
+    '  SurfaceFlinger-178   [001]  4467.843536: sched_switch: ' +
+                  'prev_comm=SurfaceFlinger prev_pid=178 prev_prio=112 ' +
+                  'prev_state=S ==> next_comm=kworker/u:2 next_pid=2844 ' +
+                  'next_prio=120',
+    '     kworker/u:2-2844  [001]  4467.843567: sched_switch: ' +
+                  'prev_comm=kworker/u:2 prev_pid=2844 prev_prio=120 ' +
+                  'prev_state=S ==> next_comm=swapper next_pid=0 ' +
+                  'next_prio=120',
+    '     kworker/u:2-2844  [001]  4467.843000: 0: ' +
+                  'trace_event_clock_sync: parent_ts=0.0'
+  ];
+  var m = new tracing.TimelineModel(lines.join('\n'), false);
+  assertEquals(0, m.importErrors.length);
+
+  var c = m.cpus[1];
+  assertEquals(2, c.slices.length);
+
+  assertAlmostEquals((467.843475 - 467.843) * 1000, c.slices[0].start);
+}
+
+function testImportWithoutClockSyncDeletesEverything() {
+}
+
+function testWorkQueueImport() {
+}
+
+function testPowerStartImport() {
+}
+
+function testCpuFrequencyImport() {
+}
+
+</script>
+</body>
+</html>

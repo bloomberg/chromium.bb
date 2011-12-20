@@ -1,0 +1,14 @@
+This directory contains the UI for Chrome's about:tracing tool.
+
+To work on this code:
+  cd src/chrome/browser/resources/
+  python -m SimpleHTTPServer
+
+In any browser, navigate to
+  http://localhost:8000/tracing/
+
+We use Closure's unit test harness for testing. There isn't a master
+test file, so just run all the .html files you find. :/
+
+If you add a file, make sure to update ../tracing.js and verify all the tests,
+since we don't have a sane module system.

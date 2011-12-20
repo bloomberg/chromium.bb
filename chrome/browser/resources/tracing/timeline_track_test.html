@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <!--
-Copyright (c) 2010 The Chromium Authors. All rights reserved.
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
@@ -42,6 +42,8 @@ found in the LICENSE file.
 <script>
   var TimelineCounter = tracing.TimelineCounter;
   var TimelineCounterTrack = tracing.TimelineCounterTrack;
+  var TimelineCpu = tracing.TimelineCpu;
+  var TimelineCpuTrack = tracing.TimelineCpuTrack;
   var TimelineSliceTrack = tracing.TimelineSliceTrack;
   var TimelineSlice = tracing.TimelineSlice;
   var TimelineViewport = tracing.TimelineViewport;
@@ -124,6 +126,25 @@ found in the LICENSE file.
     assertEquals(0, hits.length);
   }
 
+  function testBasicCpu() {
+    var testEl = getTestDiv('testBasicCpu');
+
+    var cpu = new TimelineCpu(7);
+    cpu.slices = [
+      new TimelineSlice('a', 0, 1, {}, 1),
+      new TimelineSlice('b', 1, 2.1, {}, 4.8)
+    ];
+    cpu.updateBounds();
+
+    var track = TimelineCpuTrack();
+    testEl.appendChild(track);
+    track.heading = 'CPU ' + cpu.cpuNumber;
+    track.cpu = cpu;
+    track.viewport = new TimelineViewport(testEl);
+    track.viewport.setPanAndScale(0,
+        track.clientWidth / (1.1 * cpu.maxTimestamp));
+  }
+
   function testBasicCounter() {
     var testEl = getTestDiv('testBasicCounter');
 
@@ -144,7 +165,7 @@ found in the LICENSE file.
                    3.1, 0.5];
     ctr.updateBounds();
 
-    var track = TimelineCounterTrack();
+    var track = new TimelineCounterTrack();
     testEl.appendChild(track);
     track.heading = ctr.name;
     track.counter = ctr;

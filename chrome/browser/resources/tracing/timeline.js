@@ -308,6 +308,9 @@ cr.define('tracing', function() {
       model.getAllCounters().forEach(function(c) {
         allHeadings.push(c.name);
       });
+      model.getAllCpus().forEach(function(c) {
+        allHeadings.push('CPU ' + c.cpuNumber);
+      });
 
       // Figure out the maximum heading size.
       var maxHeadingWidth = 0;
@@ -331,10 +334,32 @@ cr.define('tracing', function() {
         this.tracks_.children[i].detach();
       this.tracks_.textContent = '';
 
+      // Get a sorted list of CPUs
+      var cpus = model.getAllCpus();
+      cpus.sort(tracing.TimelineCpu.compare);
+
+      // Create tracks for each CPU.
+      cpus.forEach(function(cpu) {
+        var track = new tracing.TimelineCpuTrack();
+        track.heading = 'CPU ' + cpu.cpuNumber + ':';
+        track.headingWidth = maxHeadingWidth;
+        track.viewport = this.viewport_;
+        track.cpu = cpu;
+        this.tracks_.appendChild(track);
+
+        for (var counterName in cpu.counters) {
+          var counter = cpu.counters[counterName];
+          track = new tracing.TimelineCounterTrack();
+          track.heading = 'CPU ' + cpu.cpuNumber + ' ' + counter.name + ':';
+          track.headingWidth = maxHeadingWidth;
+          track.viewport = this.viewport_;
+          track.counter = counter;
+          this.tracks_.appendChild(track);
+        }
+      }.bind(this));
+
       // Get a sorted list of processes.
-      var processes = [];
-      for (var pid in model.processes)
-        processes.push(model.processes[pid]);
+      var processes = model.getAllProcesses();
       processes.sort(tracing.TimelineProcess.compare);
 
       // Create tracks for each process.
@@ -630,12 +655,13 @@ cr.define('tracing', function() {
     },
 
     onMouseDown_: function(e) {
-      rect = this.getClientRects()[0];
-      if (!rect ||
-          e.clientX < rect.left ||
-          e.clientX >= rect.right ||
-          e.clientY < rect.top ||
-          e.clientY >= rect.bottom)
+      rect = this.tracks_.getClientRects()[0];
+      var inside = rect &&
+          e.clientX >= rect.left &&
+          e.clientX < rect.right &&
+          e.clientY >= rect.top &&
+          e.clientY < rect.bottom;
+      if (!inside)
         return;
 
       var canv = this.firstCanvas;

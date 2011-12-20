@@ -46,6 +46,7 @@ found in the LICENSE file.
 
 .timeline-canvas-based-track-canvas {
   -webkit-box-flex: 1;
+  display: block;
   height: 100%;
   width: 100%;
 }
