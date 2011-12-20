@@ -338,20 +338,20 @@ BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
   }
 
   instance->PreInitialize(this, parent, child_id, index_in_parent, src);
+  child_id_map_[child_id] = instance;
+  renderer_id_to_child_id_map_[src.id] = child_id;
+
+  if ((src.state >> WebAccessibility::STATE_FOCUSED) & 1)
+    SetFocus(instance, false);
+
   for (int i = 0; i < static_cast<int>(src.children.size()); ++i) {
     BrowserAccessibility* child = CreateAccessibilityTree(
         instance, src.children[i], i, children_can_send_show_events);
     instance->AddChild(child);
   }
 
-  child_id_map_[child_id] = instance;
-  renderer_id_to_child_id_map_[src.id] = child_id;
-
   if (src.role == WebAccessibility::ROLE_ROOT_WEB_AREA)
     root_ = instance;
-
-  if ((src.state >> WebAccessibility::STATE_FOCUSED) & 1)
-    SetFocus(instance, false);
 
   // Note: the purpose of send_show_events and children_can_send_show_events
   // is so that we send a single OBJECT_SHOW event for the root of a subtree
