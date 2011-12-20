@@ -1345,8 +1345,7 @@ decode_3d_1d(uint32_t *data, uint32_t count,
 						break;
 					case 3:
 						instr_out(data, hw_offset, i,
-							  "S3: not documented\n",
-							  word);
+							  "S3: not documented\n");
 						break;
 					case 4:
 						{
@@ -1410,7 +1409,7 @@ decode_3d_1d(uint32_t *data, uint32_t count,
 								  hw_offset, i,
 								  "S4: point_width=%i, line_width=%.1f,"
 								  "%s%s%s%s%s cullmode=%s, vfmt=%s%s%s%s%s%s "
-								  "%s%s\n",
+								  "%s%s%s%s%s\n",
 								  (data[i] >>
 								   23) & 0x1ff,
 								  ((data[i] >>
@@ -2026,9 +2025,7 @@ decode_3d_1d(uint32_t *data, uint32_t count,
 				dword = data[i];
 				instr_out(data, hw_offset, i++,
 					  "sampler %d SS4: border color\n",
-					  sampler,
-					  ((dword >> 24) & 0xff) / (0x10 * 1.0),
-					  dword);
+					  sampler);
 			}
 		}
 		if (len != i) {
@@ -3183,11 +3180,12 @@ decode_3d_965(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid
 			  (data[4] & (1 << 12)) != 0 ? 4 : 8,
 			  (data[4] & (1 << 11)) != 0);
 		instr_out(data, hw_offset, 5,
-			  "Global Depth Offset Constant %f\n", data[5]);
+			  "Global Depth Offset Constant %f\n",
+			  *(float *)(&data[5]));
 		instr_out(data, hw_offset, 6, "Global Depth Offset Scale %f\n",
-			  data[6]);
+			  *(float *)(&data[6]));
 		instr_out(data, hw_offset, 7, "Global Depth Offset Clamp %f\n",
-			  data[7]);
+			  *(float *)(&data[7]));
 		int i, j;
 		for (i = 0, j = 0; i < 8; i++, j += 2)
 			instr_out(data, hw_offset, i + 8,
