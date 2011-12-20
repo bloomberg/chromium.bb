@@ -320,7 +320,7 @@ Error* CapabilitiesParser::ParseProxyServers(
   Error* error = NULL;
   Value* option = NULL;
   bool has_manual_settings = false;
-  if (options->Get(kNoProxy, &option)) {
+  if (options->Get(kNoProxy, &option) && !option->IsType(Value::TYPE_NULL)) {
     error = ParseNoProxy(option);
     if (error)
       return error;
@@ -330,7 +330,7 @@ Error* CapabilitiesParser::ParseProxyServers(
   std::vector<std::string> proxy_servers;
   std::set<std::string>::const_iterator iter = proxy_servers_options.begin();
   for (; iter != proxy_servers_options.end(); ++iter) {
-    if (options->Get(*iter, &option)) {
+    if (options->Get(*iter, &option) && !option->IsType(Value::TYPE_NULL)) {
       std::string value;
       if (!option->GetAsString(&value))
         return CreateBadInputError(*iter, Value::TYPE_STRING, option);

@@ -180,6 +180,18 @@ TEST(CapabilitiesParser, ProxyTypeCapIncompatibleManual) {
   ASSERT_TRUE(parser.Parse());
 }
 
+TEST(CapabilitiesParser, ProxyTypeCapNullValue) {
+  Capabilities caps;
+  DictionaryValue dict;
+  DictionaryValue* options = new DictionaryValue();
+  dict.Set("proxy", options);
+
+  options->Set("proxyType", Value::CreateNullValue());
+
+  CapabilitiesParser parser(&dict, FilePath(), &caps);
+  ASSERT_TRUE(parser.Parse());
+}
+
 TEST(CapabilitiesParser, ProxyTypeManualCap) {
   const char kProxyServers[] = "ftp=localhost:9001;http=localhost:8001";
   Capabilities caps;
@@ -201,16 +213,31 @@ TEST(CapabilitiesParser, ProxyBypassListCap) {
   const char kBypassList[] = "google.com, youtube.com";
   Capabilities caps;
   DictionaryValue dict;
-  DictionaryValue* proxy_options = new DictionaryValue();
-  dict.Set("proxy", proxy_options);
+  DictionaryValue* options = new DictionaryValue();
+  dict.Set("proxy", options);
 
-  proxy_options->SetString("proxyType", "manual");
-  proxy_options->SetString("noProxy", kBypassList);
+  options->SetString("proxyType", "manual");
+  options->SetString("noProxy", kBypassList);
 
   CapabilitiesParser parser(&dict, FilePath(), &caps);
   ASSERT_FALSE(parser.Parse());
   EXPECT_STREQ(kBypassList,
       caps.command.GetSwitchValueASCII(switches::kProxyBypassList).c_str());
+}
+
+TEST(CapabilitiesParser, ProxyBypassListCapNullValue) {
+  Capabilities caps;
+  DictionaryValue dict;
+  DictionaryValue* options = new DictionaryValue();
+  dict.Set("proxy", options);
+
+  options->SetString("proxyType", "manual");
+  options->Set("noProxy", Value::CreateNullValue());
+  options->SetString("httpProxy", "localhost:8001");
+
+  CapabilitiesParser parser(&dict, FilePath(), &caps);
+  ASSERT_FALSE(parser.Parse());
+  EXPECT_FALSE(caps.command.HasSwitch(switches::kProxyBypassList));
 }
 
 TEST(CapabilitiesParser, UnknownProxyCap) {
@@ -223,7 +250,23 @@ TEST(CapabilitiesParser, UnknownProxyCap) {
   options->SetString("badProxyCap", "error");
 
   CapabilitiesParser parser(&dict, FilePath(), &caps);
-  ASSERT_TRUE(parser.Parse());
+  ASSERT_FALSE(parser.Parse());
+}
+
+TEST(CapabilitiesParser, ProxyFtpServerCapNullValue) {
+  Capabilities caps;
+  DictionaryValue dict;
+  DictionaryValue* options = new DictionaryValue();
+  dict.Set("proxy", options);
+
+  options->SetString("proxyType", "manual");
+  options->SetString("httpProxy", "localhost:8001");
+  options->Set("ftpProxy", Value::CreateNullValue());
+
+  CapabilitiesParser parser(&dict, FilePath(), &caps);
+  ASSERT_FALSE(parser.Parse());
+  EXPECT_STREQ("http=localhost:8001",
+      caps.command.GetSwitchValueASCII(switches::kProxyServer).c_str());
 }
 
 }  // namespace webdriver
