@@ -1,5 +1,7 @@
 #!/usr/bin/python
-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 from optparse import OptionParser
 import os
@@ -338,7 +340,6 @@ def Main(argv):
     return -1
 
   build = Builder(options)
-  build.verbose = 1
   objs = []
   for filename in files:
     out = build.Compile(filename)
